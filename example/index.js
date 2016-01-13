@@ -37,8 +37,8 @@ Object.defineProperty(provider, 'Account', {
 
 if (process.env.HEROKU) {
   app.proxy = true;
-  provider.configuration.cookies.short.secureProxy = true;
-  provider.configuration.cookies.long.secureProxy = true;
+  provider.configuration.cookies.short.secure = true;
+  provider.configuration.cookies.long.secure = true;
 }
 
 app.use(rewrite(/^\/\.well-known\/(.*)/, '/op/.well-known/$1'));
