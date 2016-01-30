@@ -17,9 +17,13 @@
   },
   "description": "",
   "devDependencies": {
+    "chai": "^3.5.0",
     "koa-ejs": "^3.0.0",
     "koa-mount": "^1.3.0",
-    "koa-rewrite": "^1.1.1"
+    "koa-rewrite": "^1.1.1",
+    "mocha": "^2.4.5",
+    "sinon": "^1.17.3",
+    "supertest": "^1.2.0"
   },
   "main": "lib/index.js",
   "name": "@panva/platform-op",
@@ -28,7 +32,8 @@
     "url": "git@github.com:panva/platform-op.git"
   },
   "scripts": {
-    "test": "mocha"
+    "test": "mocha",
+    "coverage": "node --harmony_destructuring node_modules/istanbul/lib/cli.js cover node_modules/.bin/_mocha -- -R progress"
   },
   "version": "0.1.6"
 }
