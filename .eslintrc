@@ -1,6 +1,7 @@
 {
   "env": {
     "node": true,
+    "mocha": true,
     "es6": true
   },
   "rules": {
@@ -17,15 +18,18 @@
     "max-statements": [0, 15],
     "new-cap": 1,
     "no-extend-native": 2,
+    "no-spaced-func": 2,
     "no-mixed-spaces-and-tabs": 2,
     "no-trailing-spaces": 2,
     "no-undef": 1,
     "no-unused-vars": 1,
     "no-use-before-define": [2, "nofunc"],
-    "object-curly-spacing": [2, "never"],
+    "object-curly-spacing": [2, "always"],
     "quotes": [2, "single", "avoid-escape"],
     "semi": [2, "always"],
-    "space-after-keywords": [2, "always"],
+    "keyword-spacing": 2,
+    "key-spacing": 2,
+    "space-before-function-paren": [2, "never"],
     "space-unary-ops": 2
   }
 }
