@@ -2,7 +2,7 @@
 
 const { Provider } = require('../lib');
 const path = require('path');
-const supertest = require('supertest');
+const supertest = require('supertest').agent;
 
 module.exports = function(dir, basename) {
   let conf = path.format({
@@ -10,12 +10,12 @@ module.exports = function(dir, basename) {
     name: basename || path.basename(dir),
     ext: '.config.js'
   });
-  let profile = require(conf);
-  let provider = new Provider('http://localhost', profile);
+  let config = require(conf);
+  let provider = new Provider('http://localhost', { config });
   let server = provider.application.listen();
   let request = supertest(server);
 
   provider.issuer = `http://localhost:${server.address().port}`;
 
-  return { provider, request, server, profile };
+  return { provider, request, server, config };
 };

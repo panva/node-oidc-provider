@@ -1,5 +1,12 @@
 'use strict';
 
 module.exports = {
-  some: 'config'
+  cookies: {
+    long: {
+      signed: false
+    },
+    short: {
+      signed: false
+    }
+  }
 };
