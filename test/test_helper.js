@@ -1,8 +1,12 @@
 'use strict';
 
+process.env.NODE_ENV = process.env.NODE_ENV || 'test';
+
 const { agent } = require('supertest');
 const { Provider } = require('../lib');
 const path = require('path');
+const jose = require('node-jose');
+const delegate = require('delegates');
 const _ = require('lodash');
 const responses = {
   serverErrorBody: {
@@ -19,6 +23,18 @@ module.exports = function(dir, basename) {
   });
   let { config, certs, clients } = require(conf);
   let provider = new Provider('http://127.0.0.1', { config });
+
+  // gotta delegate the keystore object so that i can stub the method calls
+  // with sinon
+  let store = jose.JWK.createKeyStore();
+  let delegatedStore = { store };
+  delegate(delegatedStore, 'store')
+    .method('toJSON')
+    .method('add')
+    .method('remove')
+    .method('get');
+  provider.keystore = delegatedStore;
+
   let server = provider.app.listen();
   let request = agent(server);
 

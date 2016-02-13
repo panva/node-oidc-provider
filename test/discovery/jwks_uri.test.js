@@ -30,7 +30,20 @@ describe(route, function() {
 
   });
 
-  xdescribe('with errors', function() {
+  describe('EC keys', function() {
+    setupCerts([require('./ec.key')]);
+
+    it('responds with json 200', function() {
+      return request.get(route)
+        .expect(function(res) {
+          expect(res.body.keys).to.have.length(1);
+          expect(res.body.keys[0]).to.have.all.keys(['kty', 'kid', 'use', 'crv', 'x', 'y']);
+        });
+    });
+
+  });
+
+  describe('with errors', function() {
     before(function() {
       sinon.stub(provider.keystore, 'toJSON').throws(new InvalidRequestError());
     });
@@ -45,9 +58,9 @@ describe(route, function() {
         .expect(400);
     });
 
-    it('emits discovery.error on errors', function() {
+    it('emits certificates.error on errors', function() {
       let spy = sinon.spy();
-      provider.once('discovery.error', spy);
+      provider.once('certificates.error', spy);
 
       return request.get(route)
         .expect(function() {
@@ -56,7 +69,7 @@ describe(route, function() {
     });
   });
 
-  xdescribe('with exceptions', function() {
+  describe('with exceptions', function() {
     before(function() {
       sinon.stub(provider.keystore, 'toJSON').throws();
     });

@@ -10,14 +10,10 @@ const { expect } = require('chai');
 const route = '/.well-known/openid-configuration';
 
 describe(route, function() {
-  describe('when ok', function() {
-
-    it('responds with json 200', function() {
-      return request.get(route)
-        .expect('Content-Type', /application\/json/)
-        .expect(200);
-    });
-
+  it('responds with json 200', function() {
+    return request.get(route)
+      .expect('Content-Type', /application\/json/)
+      .expect(200);
   });
 
   describe('with errors', function() {
