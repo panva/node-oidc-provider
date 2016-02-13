@@ -3,6 +3,7 @@
 const { agent } = require('supertest');
 const { Provider } = require('../lib');
 const path = require('path');
+const _ = require('lodash');
 const responses = {
   serverErrorBody: {
     error: 'server_error',
@@ -25,10 +26,27 @@ module.exports = function(dir, basename) {
 
   return {
     provider, request, server, config, responses,
-    setupCerts: function() {
+    setupCerts: function(passed) {
+      const pre = _.pick(provider.configuration, [
+        'requestObjectEncryptionAlgValuesSupported',
+        'idTokenSigningAlgValuesSupported',
+        'userinfoSigningAlgValuesSupported'
+      ]);
+      const keys = [];
+
       before(function(done) {
-        Promise.all(certs.map(cert => provider.addKey(cert)))
-          .then(() => done(), done);
+        let add = passed || certs;
+        let promises = add.map(cert => provider.addKey(cert).then((key) => {
+          return keys.push(key);
+        }));
+        Promise.all(promises).then(() => {
+          done();
+        }, done);
+      });
+
+      after(function() {
+        _.assign(provider.configuration, pre);
+        keys.forEach(key => provider.keystore.remove(key));
       });
     }
   };
