@@ -1,12 +1,9 @@
 'use strict';
 
 module.exports = {
-  cookies: {
-    long: {
-      signed: false
-    },
-    short: {
-      signed: false
-    }
-  }
+  config: require('../default.config'),
+  clients: [],
+  certs: [
+    require('../default.sig.key')
+  ]
 };

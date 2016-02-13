@@ -12,7 +12,7 @@ const route = '/.well-known/openid-configuration';
 describe(route, function() {
   describe('when ok', function() {
 
-    it('responds with JSON 200', function() {
+    it('responds with json 200', function() {
       return request.get(route)
         .expect('Content-Type', /application\/json/)
         .expect(200);
@@ -29,7 +29,7 @@ describe(route, function() {
       provider.pathFor.restore();
     });
 
-    it('handles errors with JSON and corresponding status', function() {
+    it('handles errors with json and corresponding status', function() {
       return request.get(route)
         .expect('Content-Type', /application\/json/)
         .expect(400);
@@ -55,7 +55,7 @@ describe(route, function() {
       provider.pathFor.restore();
     });
 
-    it('handles exceptions with JSON 500', function() {
+    it('handles exceptions with json 500', function() {
       return request.get(route)
         .expect('Content-Type', /application\/json/)
         .expect(500, responses.serverErrorBody);

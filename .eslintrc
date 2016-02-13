@@ -29,7 +29,7 @@
     "semi": [2, "always"],
     "keyword-spacing": 2,
     "key-spacing": 2,
-    "space-before-function-paren": [2, "never"],
+    "space-before-function-paren": [1, "never"],
     "space-unary-ops": 2
   }
 }

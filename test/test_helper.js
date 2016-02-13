@@ -16,12 +16,20 @@ module.exports = function(dir, basename) {
     name: basename || path.basename(dir),
     ext: '.config.js'
   });
-  let config = require(conf);
+  let { config, certs, clients } = require(conf);
   let provider = new Provider('http://127.0.0.1', { config });
   let server = provider.app.listen();
   let request = agent(server);
 
   provider.issuer = `http://127.0.0.1:${server.address().port}`;
 
-  return { provider, request, server, config, responses };
+  return {
+    provider, request, server, config, responses,
+    setupCerts: function() {
+      before(function(done) {
+        Promise.all(certs.map(cert => provider.addKey(cert)))
+          .then(() => done(), done);
+      });
+    }
+  };
 };
