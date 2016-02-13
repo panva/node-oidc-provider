@@ -2,7 +2,13 @@
 
 const { Provider } = require('../lib');
 const path = require('path');
-const supertest = require('supertest').agent;
+const { agent } = require('supertest');
+const responses = {
+  serverErrorBody: {
+    error: 'server_error',
+    error_description: 'oops something went wrong',
+  }
+};
 
 module.exports = function(dir, basename) {
   let conf = path.format({
@@ -13,9 +19,9 @@ module.exports = function(dir, basename) {
   let config = require(conf);
   let provider = new Provider('http://localhost', { config });
   let server = provider.application.listen();
-  let request = supertest(server);
+  let request = agent(server);
 
   provider.issuer = `http://localhost:${server.address().port}`;
 
-  return { provider, request, server, config };
+  return { provider, request, server, config, responses };
 };
