@@ -1,8 +1,8 @@
 'use strict';
 
+const { agent } = require('supertest');
 const { Provider } = require('../lib');
 const path = require('path');
-const { agent } = require('supertest');
 const responses = {
   serverErrorBody: {
     error: 'server_error',
@@ -18,7 +18,7 @@ module.exports = function(dir, basename) {
   });
   let config = require(conf);
   let provider = new Provider('http://127.0.0.1', { config });
-  let server = provider.application.listen();
+  let server = provider.app.listen();
   let request = agent(server);
 
   provider.issuer = `http://127.0.0.1:${server.address().port}`;

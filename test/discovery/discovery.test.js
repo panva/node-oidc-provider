@@ -4,6 +4,7 @@ const {
   request, provider, responses } = require('../test_helper')(__dirname);
 
 const sinon = require('sinon');
+const { InvalidRequestError } = require('../../lib/helpers/errors');
 const { expect } = require('chai');
 
 const route = '/.well-known/openid-configuration';
@@ -21,6 +22,32 @@ describe(route, function() {
 
   describe('with errors', function() {
     before(function() {
+      sinon.stub(provider, 'pathFor').throws(new InvalidRequestError());
+    });
+
+    after(function() {
+      provider.pathFor.restore();
+    });
+
+    it('handles errors with JSON and corresponding status', function() {
+      return request.get(route)
+        .expect('Content-Type', /application\/json/)
+        .expect(400);
+    });
+
+    it('emits discovery.error on errors', function() {
+      let spy = sinon.spy();
+      provider.once('discovery.error', spy);
+
+      return request.get(route)
+        .expect(function() {
+          expect(spy.called).to.be.true;
+        });
+    });
+  });
+
+  describe('with exceptions', function() {
+    before(function() {
       sinon.stub(provider, 'pathFor').throws();
     });
 
@@ -28,13 +55,13 @@ describe(route, function() {
       provider.pathFor.restore();
     });
 
-    it('handles unexpected errors with JSON 500', function() {
+    it('handles exceptions with JSON 500', function() {
       return request.get(route)
         .expect('Content-Type', /application\/json/)
         .expect(500, responses.serverErrorBody);
     });
 
-    it('emits server_error on unexpected errors', function() {
+    it('emits server_error on exceptions', function() {
       let spy = sinon.spy();
       provider.once('server_error', spy);
 

@@ -42,7 +42,7 @@ if (process.env.HEROKU) {
 }
 
 app.use(rewrite(/^\/\.well-known\/(.*)/, '/op/.well-known/$1'));
-app.use(mount('/op', provider.application));
+app.use(mount('/op', provider.app));
 
 let router = new Router();
 
