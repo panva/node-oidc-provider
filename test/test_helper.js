@@ -26,18 +26,37 @@ module.exports = function(dir, basename) {
 
   return {
     provider, request, server, config, responses,
+    setupClients: function(passed) {
+      const added = [];
+
+      before(function(done) {
+        let add = passed || clients;
+        let promises = add.map(client => provider.Client.add(client).then((client) => {
+          return added.push(client);
+        }));
+        Promise.all(promises).then(() => {
+          done();
+        }, done);
+      });
+
+      after(function() {
+        added.forEach((client) => {
+          provider.Client.remove(client.clientId);
+        });
+      });
+    },
     setupCerts: function(passed) {
       const pre = _.pick(provider.configuration, [
         'requestObjectEncryptionAlgValuesSupported',
         'idTokenSigningAlgValuesSupported',
         'userinfoSigningAlgValuesSupported'
       ]);
-      const keys = [];
+      const added = [];
 
       before(function(done) {
         let add = passed || certs;
         let promises = add.map(cert => provider.addKey(cert).then((key) => {
-          return keys.push(key);
+          return added.push(key);
         }));
         Promise.all(promises).then(() => {
           done();
@@ -46,7 +65,7 @@ module.exports = function(dir, basename) {
 
       after(function() {
         _.assign(provider.configuration, pre);
-        keys.forEach(key => provider.keystore.remove(key));
+        added.forEach(key => provider.keystore.remove(key));
       });
     }
   };
