@@ -17,11 +17,11 @@ module.exports = function(dir, basename) {
     ext: '.config.js'
   });
   let config = require(conf);
-  let provider = new Provider('http://localhost', { config });
+  let provider = new Provider('http://127.0.0.1', { config });
   let server = provider.application.listen();
   let request = agent(server);
 
-  provider.issuer = `http://localhost:${server.address().port}`;
+  provider.issuer = `http://127.0.0.1:${server.address().port}`;
 
   return { provider, request, server, config, responses };
 };
