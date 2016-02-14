@@ -1,7 +1,7 @@
 'use strict';
 
 const {
-  request, provider, responses, setupCerts
+  provider, responses, setupCerts, agent
 } = require('../test_helper')(__dirname);
 
 const sinon = require('sinon');
@@ -12,7 +12,7 @@ const route = '/certs';
 
 describe(route, function() {
   it('responds with json 200', function() {
-    return request.get(route)
+    return agent.get(route)
       .expect('Content-Type', /application\/json/)
       .expect(200, { keys: [] });
   });
@@ -21,7 +21,7 @@ describe(route, function() {
     setupCerts();
 
     it('responds with json 200', function() {
-      return request.get(route)
+      return agent.get(route)
         .expect(function(res) {
           expect(res.body.keys).to.have.length(1);
           expect(res.body.keys[0]).to.have.all.keys(['kty', 'kid', 'use', 'e', 'n']);
@@ -34,7 +34,7 @@ describe(route, function() {
     setupCerts([require('./ec.key')]);
 
     it('responds with json 200', function() {
-      return request.get(route)
+      return agent.get(route)
         .expect(function(res) {
           expect(res.body.keys).to.have.length(1);
           expect(res.body.keys[0]).to.have.all.keys(['kty', 'kid', 'use', 'crv', 'x', 'y']);
@@ -53,7 +53,7 @@ describe(route, function() {
     });
 
     it('handles errors with json and corresponding status', function() {
-      return request.get(route)
+      return agent.get(route)
         .expect('Content-Type', /application\/json/)
         .expect(400);
     });
@@ -62,7 +62,7 @@ describe(route, function() {
       let spy = sinon.spy();
       provider.once('certificates.error', spy);
 
-      return request.get(route)
+      return agent.get(route)
         .expect(function() {
           expect(spy.called).to.be.true;
         });
@@ -79,7 +79,7 @@ describe(route, function() {
     });
 
     it('handles exceptions with json 500', function() {
-      return request.get(route)
+      return agent.get(route)
         .expect('Content-Type', /application\/json/)
         .expect(500, responses.serverErrorBody);
     });
@@ -88,7 +88,7 @@ describe(route, function() {
       let spy = sinon.spy();
       provider.once('server_error', spy);
 
-      return request.get(route)
+      return agent.get(route)
         .expect(function() {
           expect(spy.called).to.be.true;
         });

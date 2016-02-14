@@ -1,3 +1,2 @@
 test/**/*\.test.js
 --harmony_destructuring
---bail

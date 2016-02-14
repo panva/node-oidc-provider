@@ -33,6 +33,7 @@
   },
   "scripts": {
     "test": "mocha",
+    "watch": "mocha --watch --reporter min",
     "coverage": "node --harmony_destructuring node_modules/istanbul/lib/cli.js cover node_modules/.bin/_mocha -- -R progress"
   },
   "version": "0.1.6"
