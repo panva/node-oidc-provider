@@ -108,6 +108,12 @@ module.exports = function(dir, basename) {
     });
   }
 
+  AuthenticationRequest.prototype.validateFragment = function(response) {
+    let { hash } = parse(response.headers.location);
+    expect(hash).to.exist;
+    response.headers.location = response.headers.location.replace('#', '?');
+  };
+
   AuthenticationRequest.prototype.validatePresence = function(keys) {
     return (response) => {
       let { query } = parse(response.headers.location, true);
