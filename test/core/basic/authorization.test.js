@@ -11,7 +11,7 @@ const route = '/auth';
 provider.setupClient();
 provider.setupCerts();
 
-describe(`${route} with session`, function() {
+describe(`BASIC ${route} with session`, function() {
   agent.login();
 
   it('responds with a code in search', function() {
@@ -45,7 +45,7 @@ describe(`${route} with session`, function() {
   });
 });
 
-describe(`${route} without session`, function() {
+describe(`BASIC ${route} without session`, function() {
 
   agent.logout();
 
@@ -67,7 +67,7 @@ describe(`${route} without session`, function() {
   });
 });
 
-describe(`${route} interactions required`, function() {
+describe(`BASIC ${route} interactions required`, function() {
   it('no account id was found in the session info');
   it('login was requested by the client by prompt parameter');
   it('session is too old for this authentication request');
@@ -76,7 +76,7 @@ describe(`${route} interactions required`, function() {
   it('single requested authentication context class reference is not met');
 });
 
-describe(`${route} errors`, function() {
+describe(`BASIC ${route} errors`, function() {
 
   agent.logout();
 
