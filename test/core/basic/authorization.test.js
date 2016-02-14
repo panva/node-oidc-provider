@@ -1,19 +1,22 @@
 'use strict';
 
 const {
-  setupCerts, setupClient, agent, AuthenticationRequest
+  provider, agent, AuthenticationRequest
 } = require('../../test_helper')(__dirname);
 
 const route = '/auth';
 
-setupClient();
-setupCerts();
+provider.setupClient();
+provider.setupCerts();
 
 describe(`${route} logged in`, function() {
   agent.login();
 
   it('works', function() {
-    const auth = new AuthenticationRequest();
+    const auth = new AuthenticationRequest({
+      response_type: 'code',
+      scope: 'openid'
+    });
 
     return agent.get(route)
       .query(auth)
@@ -30,6 +33,8 @@ describe(`${route} logged out`, function() {
 
   it('works', function() {
     const auth = new AuthenticationRequest({
+      response_type: 'code',
+      scope: 'openid',
       prompt: 'none'
     });
 

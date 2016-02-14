@@ -1,7 +1,7 @@
 'use strict';
 
 const {
-  provider, responses, setupCerts, agent
+  provider, responses, agent
 } = require('../test_helper')(__dirname);
 
 const sinon = require('sinon');
@@ -18,7 +18,7 @@ describe(route, function() {
   });
 
   describe('when populated with signing keys', function() {
-    setupCerts();
+    provider.setupCerts();
 
     it('responds with json 200', function() {
       return agent.get(route)
@@ -31,7 +31,7 @@ describe(route, function() {
   });
 
   describe('EC keys', function() {
-    setupCerts([require('./ec.key')]);
+    provider.setupCerts([require('./ec.key')]);
 
     it('responds with json 200', function() {
       return agent.get(route)

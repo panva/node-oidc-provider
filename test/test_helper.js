@@ -46,9 +46,10 @@ module.exports = function(dir, basename) {
   provider.issuer = `http://127.0.0.1:${server.address().port}`;
 
   agent.logout = function() {
+    const self = this;
     before(function() {
       const expire = new Date(0);
-      agent.saveCookies({
+      self.saveCookies({
         headers: {
           'set-cookie': [
             `_session=; path=/; expires=${expire.toGMTString()}; httponly`
@@ -59,6 +60,7 @@ module.exports = function(dir, basename) {
   };
 
   agent.login = function() {
+    const self = this;
     const sessionId = uuid();
     const loginTs = new Date() / 1000 | 0;
     const expire = new Date();
@@ -69,7 +71,7 @@ module.exports = function(dir, basename) {
       let session = new provider.Session(sessionId, { loginTs, account });
 
       return Account.findById(account).then(session.save()).then(() => {
-        agent.saveCookies({
+        self.saveCookies({
           headers: {
             'set-cookie': [
               `_session=${sessionId}; path=/; expires=${expire.toGMTString()}; httponly`
@@ -84,8 +86,6 @@ module.exports = function(dir, basename) {
 
   function AuthenticationRequest(query) {
     this.client_id = client.client_id;
-    this.response_type = 'code';
-    this.scope = 'openid';
     this.state = Math.random().toString();
     this.redirect_uri = client.redirect_uris[0];
 
@@ -130,18 +130,20 @@ module.exports = function(dir, basename) {
     };
   };
 
-  function setupClient() {
+  provider.setupClient = function() {
+    const self = this;
     before('adding client', function() {
-      return provider.Client.add(client);
+      return self.Client.add(client);
     });
 
     after('removing client', function() {
-      provider.Client.remove(client.client_id);
+      self.Client.remove(client.client_id);
     });
   };
 
-  function setupCerts(passed) {
-    const pre = _.pick(provider.configuration, [
+  provider.setupCerts = function(passed) {
+    const self = this;
+    const pre = _.pick(self.configuration, [
       'requestObjectEncryptionAlgValuesSupported',
       'idTokenSigningAlgValuesSupported',
       'userinfoSigningAlgValuesSupported'
@@ -150,7 +152,7 @@ module.exports = function(dir, basename) {
 
     before('adding certificate', function(done) {
       let add = passed || certs;
-      let promises = add.map(cert => provider.addKey(cert).then((key) => {
+      let promises = add.map(cert => self.addKey(cert).then((key) => {
         return added.push(key);
       }));
       Promise.all(promises).then(() => {
@@ -159,8 +161,8 @@ module.exports = function(dir, basename) {
     });
 
     after('removing certificate', function() {
-      _.assign(provider.configuration, pre);
-      added.forEach(key => provider.keystore.remove(key));
+      _.assign(self.configuration, pre);
+      added.forEach(key => self.keystore.remove(key));
     });
   };
 
@@ -168,12 +170,6 @@ module.exports = function(dir, basename) {
     AuthenticationRequest,
     provider,
     agent,
-    server,
-    config,
-    responses,
-    client,
-    certs,
-    setupClient,
-    setupCerts
+    responses
   };
 };
