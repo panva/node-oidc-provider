@@ -68,7 +68,12 @@ describe(`${route} without session`, function() {
 });
 
 describe(`${route} interactions required`, function() {
-
+  it('no account id was found in the session info');
+  it('login was requested by the client by prompt parameter');
+  it('session is too old for this authentication request');
+  it('session subject value differs from the one requested');
+  it('none of multiple authentication context class references requested are met');
+  it('single requested authentication context class reference is not met');
 });
 
 describe(`${route} errors`, function() {
