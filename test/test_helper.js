@@ -3,7 +3,7 @@
 process.env.NODE_ENV = process.env.NODE_ENV || 'test';
 
 const { agent: supertest } = require('supertest');
-const { v4: uuid } = require('uuid');
+const { v4: uuid } = require('node-uuid');
 const { Provider } = require('../lib');
 const { Account } = require('./models');
 const { expect } = require('chai');
@@ -22,8 +22,7 @@ const responses = {
 module.exports = function(dir, basename) {
   let conf = path.format({
     dir,
-    name: basename || path.basename(dir),
-    ext: '.config.js'
+    base: `${basename || path.basename(dir)}.config.js`
   });
   let { config, certs, client } = require(conf);
   let provider = new Provider('http://127.0.0.1', { config });
