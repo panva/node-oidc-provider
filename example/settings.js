@@ -3,6 +3,7 @@
 module.exports.config = {
   features: {
     clientCredentials: true,
+    claimsParameter: true,
     encryption: true,
     introspection: true,
     registration: true,
