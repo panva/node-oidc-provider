@@ -9,10 +9,10 @@ const route = '/auth';
 provider.setupClient();
 provider.setupCerts();
 
-describe(`${route} logged in`, function() {
+describe(`${route} with session`, function() {
   agent.login();
 
-  it('works', function() {
+  it('responds with a code in search', function() {
     const auth = new AuthenticationRequest({
       response_type: 'code',
       scope: 'openid'
@@ -25,13 +25,29 @@ describe(`${route} logged in`, function() {
       .expect(auth.validateState)
       .expect(auth.validateClientLocation);
   });
+
+  it('responds with a code in fragment', function() {
+    const auth = new AuthenticationRequest({
+      response_type: 'code',
+      response_mode: 'fragment',
+      scope: 'openid'
+    });
+
+    return agent.get(route)
+      .query(auth)
+      .expect(302)
+      .expect(auth.validateFragment)
+      .expect(auth.validatePresence(['code', 'state']))
+      .expect(auth.validateState)
+      .expect(auth.validateClientLocation);
+  });
 });
 
-describe(`${route} logged out`, function() {
+describe(`${route} without session`, function() {
 
   agent.logout();
 
-  it('works', function() {
+  it('redirects back to client when prompt=none', function() {
     const auth = new AuthenticationRequest({
       response_type: 'code',
       scope: 'openid',
