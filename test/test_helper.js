@@ -82,6 +82,7 @@ module.exports = function(dir, basename) {
   function AuthenticationRequest(query) {
     this.client_id = client.client_id;
     this.state = Math.random().toString();
+    this.nonce = Math.random().toString();
     this.redirect_uri = client.redirect_uris[0];
 
     Object.assign(this, query);
@@ -207,10 +208,33 @@ module.exports = function(dir, basename) {
     });
   };
 
+  function getSession(agent) {
+    let { value: sessionId } = agent.jar.getCookie('_session', { path: '/' });
+    let key = provider.Session.adapter.key(sessionId);
+    return provider.Session.adapter.storage.get(key);
+  }
+
+  function wrap(opts) {
+    let { agent, route, verb, auth } = opts;
+    switch (verb) {
+      case 'get':
+        return agent
+          .get(route)
+          .query(auth);
+      case 'post':
+        return agent
+          .post(route)
+          .send(auth)
+          .set('Content-Type', 'application/x-www-form-urlencoded');
+    }
+  }
+
   return {
     AuthenticationRequest,
     provider,
     agent,
-    responses
+    responses,
+    getSession,
+    wrap
   };
 };

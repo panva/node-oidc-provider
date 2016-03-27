@@ -1,7 +1,7 @@
 'use strict';
 
 const {
-  provider, agent, AuthenticationRequest
+  provider, agent, AuthenticationRequest, getSession, wrap
 } = require('../../test_helper')(__dirname);
 const sinon = require('sinon');
 const { expect } = require('chai');
@@ -11,30 +11,9 @@ const route = '/auth';
 provider.setupClient();
 provider.setupCerts();
 
-function getSession(agent) {
-  let { value: sessionId } = agent.jar.getCookie('_session', { path: '/' });
-  let key = provider.Session.adapter.key(sessionId);
-  return provider.Session.adapter.storage.get(key);
-}
-
-function wrap(opts) {
-  let { agent, route, verb, auth } = opts;
-  switch (verb) {
-    case 'get':
-      return agent
-        .get(route)
-        .query(auth);
-    case 'post':
-      return agent
-        .post(route)
-        .send(auth)
-        .set('Content-Type', 'application/x-www-form-urlencoded');
-  }
-}
-
 ['get', 'post'].forEach((verb) => {
 
-describe(`BASIC ${verb} ${route} with session`, function() {
+describe(`BASIC code ${verb} ${route} with session`, function() {
   before(agent.login);
 
   it('responds with a code in search', function() {
@@ -64,9 +43,11 @@ describe(`BASIC ${verb} ${route} with session`, function() {
       .expect(auth.validateState)
       .expect(auth.validateClientLocation);
   });
+
+  // TODO: test the authorization_code grant
 });
 
-describe(`BASIC ${verb} ${route} interactions`, function() {
+describe(`BASIC code ${verb} ${route} interactions`, function() {
 
   beforeEach(agent.login);
   after(agent.logout);
@@ -124,7 +105,7 @@ describe(`BASIC ${verb} ${route} interactions`, function() {
 
 });
 
-describe(`BASIC ${verb} ${route} errors`, function() {
+describe(`BASIC code ${verb} ${route} errors`, function() {
 
   // before(agent.logout);
 
