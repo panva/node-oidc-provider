@@ -5,7 +5,7 @@ process.env.NODE_ENV = process.env.NODE_ENV || 'test';
 const { agent: supertest } = require('supertest');
 const { v4: uuid } = require('node-uuid');
 const { Provider } = require('../lib');
-const { Account } = require('./models');
+const { Account, TestAdapter } = require('./models');
 const { expect } = require('chai');
 const { parse } = require('url');
 const path = require('path');
@@ -27,6 +27,9 @@ module.exports = function(dir, basename) {
   let { config, certs, client } = require(conf);
   let provider = new Provider('http://127.0.0.1', { config });
   provider.Account = Account;
+
+  provider.configuration.adapters.TestAdapter = TestAdapter;
+  provider.configuration.adapter = 'TestAdapter';
 
   // gotta delegate the keystore object so that i can stub the method calls
   // with sinon

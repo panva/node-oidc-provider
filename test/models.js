@@ -1,11 +1,86 @@
 'use strict';
 
-let store = new Map();
+var store = new Map();
+
+class TestAdapter {
+  constructor(name) {
+    this.name = name;
+  }
+
+  static get storage() {
+    return store;
+  }
+
+  get storage() {
+    return store;
+  }
+
+  key(id) {
+    return [this.name, id].join(':');
+  }
+
+  grantKey(id) {
+    return ['grant', id].join(':');
+  }
+
+  destroy(id) {
+    let key = this.key(id);
+    let grantId = store.get(key) && store.get(key).grantId;
+
+    store.delete(key);
+
+    if (grantId) {
+      let grantKey = this.grantKey(grantId);
+
+      store.get(grantKey).forEach(key => {
+        store.del(key);
+      });
+    }
+
+    return Promise.resolve();
+  }
+
+  consume(id) {
+    store.get(this.key(id)).consumed = Date.now() / 1000 | 0;
+    return Promise.resolve();
+  }
+
+  find(id) {
+    return Promise.resolve(store.get(this.key(id)));
+  }
+
+  upsert(id, payload, expiresIn) {
+    let key = this.key(id);
+
+    let grantId = payload.grantId;
+    if (grantId) {
+      let grantKey = this.grantKey(grantId);
+      let grant = store.get(grantKey);
+      if (!grant) {
+        store.set(grantKey, [key]);
+      } else {
+        grant.push(key);
+      }
+    }
+
+    store.set(key, payload, expiresIn * 1000);
+
+    return Promise.resolve();
+  }
+}
 
 class Account {
   constructor(id) {
     this.accountId = id;
-    store.set(this.accountId, this);
+    store.set(`Account:${this.accountId}`, this);
+  }
+
+  static get storage() {
+    return store;
+  }
+
+  get storage() {
+    return store;
   }
 
   claims() {
@@ -41,7 +116,7 @@ class Account {
   }
 
   static findById(id) {
-    let acc = store.get(id);
+    let acc = store.get(`Account:${id}`);
     if (!acc) {
       acc = new Account(id);
     }
@@ -49,4 +124,4 @@ class Account {
   }
 }
 
-module.exports = { Account };
+module.exports = { Account, TestAdapter };
