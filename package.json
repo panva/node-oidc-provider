@@ -18,6 +18,7 @@
   "description": "",
   "devDependencies": {
     "chai": "^3.5.0",
+    "cookiejar": "^2.0.6",
     "delegates": "^1.0.0",
     "istanbul": "^0.4.3",
     "koa-ejs": "^3.0.0",

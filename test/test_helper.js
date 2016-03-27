@@ -7,6 +7,7 @@ const { v4: uuid } = require('node-uuid');
 const { Provider } = require('../lib');
 const { Account, TestAdapter } = require('./models');
 const { expect } = require('chai');
+const { Cookie } = require('cookiejar');
 const { parse } = require('url');
 const path = require('path');
 const jose = require('node-jose');
@@ -48,42 +49,34 @@ module.exports = function(dir, basename) {
   provider.issuer = `http://127.0.0.1:${server.address().port}`;
 
   agent.logout = function() {
-    const self = this;
-    before(function() {
-      const expire = new Date(0);
-      self.saveCookies({
-        headers: {
-          'set-cookie': [
-            `_session=; path=/; expires=${expire.toGMTString()}; httponly`
-          ]
-        }
-      });
+    const expire = new Date(0);
+    return agent.saveCookies({
+      headers: {
+        'set-cookie': [
+          `_session=; path=/; expires=${expire.toGMTString()}; httponly`
+        ]
+      }
     });
   };
 
   agent.login = function() {
-    const self = this;
     const sessionId = uuid();
     const loginTs = new Date() / 1000 | 0;
     const expire = new Date();
     expire.setDate(expire.getDate() + 1);
     const account = uuid();
 
-    before(function() {
-      let session = new provider.Session(sessionId, { loginTs, account });
+    let session = new provider.Session(sessionId, { loginTs, account });
 
-      return Account.findById(account).then(session.save()).then(() => {
-        self.saveCookies({
-          headers: {
-            'set-cookie': [
-              `_session=${sessionId}; path=/; expires=${expire.toGMTString()}; httponly`
-            ]
-          }
-        });
+    return Account.findById(account).then(session.save()).then(() => {
+      agent.saveCookies({
+        headers: {
+          'set-cookie': [
+            `_session=${sessionId}; path=/; expires=${expire.toGMTString()}; httponly`
+          ]
+        }
       });
     });
-
-    return account;
   };
 
   function AuthenticationRequest(query) {
@@ -109,7 +102,47 @@ module.exports = function(dir, basename) {
         expect(state).to.equal(this.state);
       }
     });
+
+    Object.defineProperty(this, 'validateInteractionRedirect', {
+      value: (response) => {
+        let { hostname, search, query } = parse(response.headers.location);
+        expect(hostname).to.be.null;
+        expect(search).to.be.null;
+        expect(query).to.be.null;
+        expect(response).to.have.deep.property('headers.set-cookie').that.is.an('array');
+
+        let value = response.headers['set-cookie'][1];
+        // validate the interaction route has the cookie set
+        expect(value).to.exist;
+        let { value: interaction } = new Cookie(value);
+        interaction = JSON.parse(interaction);
+
+        value = response.headers['set-cookie'][2];
+        // validate the interaction route has the cookie set
+        expect(value).to.exist;
+        let { value: respond } = new Cookie(value);
+        respond = JSON.parse(respond);
+
+        for (var attr in this) {
+          if (this.hasOwnProperty(attr)) {
+            expect(respond).to.have.property(attr, this[attr]);
+            expect(interaction.params).to.have.property(attr, this[attr]);
+          }
+        }
+      }
+    });
   }
+
+  AuthenticationRequest.prototype.validateInteractionError = function(expectedError, expectedReason) {
+    return (response) => {
+      let value = response.headers['set-cookie'][1];
+      let { value: interaction } = new Cookie(value);
+      let { details: { error, reason } } = JSON.parse(interaction);
+
+      expect(error).to.equal(expectedError);
+      expect(reason).to.equal(expectedReason);
+    };
+  };
 
   AuthenticationRequest.prototype.validateFragment = function(response) {
     let { hash } = parse(response.headers.location);

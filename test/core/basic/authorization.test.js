@@ -11,6 +11,12 @@ const route = '/auth';
 provider.setupClient();
 provider.setupCerts();
 
+function getSession(agent) {
+  let { value: sessionId } = agent.jar.getCookie('_session', { path: '/' });
+  let key = provider.Session.adapter.key(sessionId);
+  return provider.Session.adapter.storage.get(key);
+}
+
 function wrap(opts) {
   let { agent, route, verb, auth } = opts;
   switch (verb) {
@@ -29,7 +35,7 @@ function wrap(opts) {
 ['get', 'post'].forEach((verb) => {
 
 describe(`BASIC ${verb} ${route} with session`, function() {
-  agent.login();
+  before(agent.login);
 
   it('responds with a code in search', function() {
     const auth = new AuthenticationRequest({
@@ -60,39 +66,67 @@ describe(`BASIC ${verb} ${route} with session`, function() {
   });
 });
 
-describe(`BASIC ${verb} ${route} without session`, function() {
+describe(`BASIC ${verb} ${route} interactions`, function() {
 
-  agent.logout();
+  beforeEach(agent.login);
+  after(agent.logout);
 
-  it('redirects back to client when prompt=none', function() {
+  it('no account id was found in the session info', function() {
+    const session = getSession(agent);
+    delete session.loginTs;
+    delete session.account;
+
     const auth = new AuthenticationRequest({
       response_type: 'code',
-      scope: 'openid',
-      prompt: 'none'
+      scope: 'openid'
     });
 
     return wrap({ agent, route, verb, auth })
       .expect(302)
-      .expect(auth.validatePresence(['error', 'error_description', 'state']))
-      .expect(auth.validateState)
-      .expect(auth.validateClientLocation)
-      .expect(auth.validateError('login_required'))
-      .expect(auth.validateErrorDescription('End-User authentication is required'));
+      .expect(auth.validateInteractionRedirect)
+      .expect(auth.validateInteractionError('login_required', 'no_session'));
   });
-});
 
-describe(`BASIC ${verb} ${route} interactions required`, function() {
-  it('no account id was found in the session info');
-  it('login was requested by the client by prompt parameter');
-  it('session is too old for this authentication request');
-  it('session subject value differs from the one requested');
-  it('none of multiple authentication context class references requested are met');
-  it('single requested authentication context class reference is not met');
+  describe('requested by the End-User', function() {
+    it('login was requested by the client by prompt parameter', function() {
+      const auth = new AuthenticationRequest({
+        response_type: 'code',
+        prompt: 'login',
+        scope: 'openid'
+      });
+
+      return wrap({ agent, route, verb, auth })
+        .expect(302)
+        .expect(auth.validateInteractionRedirect)
+        .expect(auth.validateInteractionError('login_required', 'login_prompt'));
+    });
+
+    it('session is too old for this authentication request', function() {
+      const session = getSession(agent);
+      session.loginTs = (new Date() / 1000 | 0) - 3600; // an hour ago
+
+      const auth = new AuthenticationRequest({
+        response_type: 'code',
+        max_age: '1800', // 30 minutes old session max
+        scope: 'openid'
+      });
+
+      return wrap({ agent, route, verb, auth })
+        .expect(302)
+        .expect(auth.validateInteractionRedirect)
+        .expect(auth.validateInteractionError('login_required', 'max_age'));
+    });
+
+    it('//claims tests; session subject value differs from the one requested');
+    it('//claims tests; none of multiple authentication context class references requested are met');
+    it('//claims tests; single requested authentication context class reference is not met');
+  });
+
 });
 
 describe(`BASIC ${verb} ${route} errors`, function() {
 
-  agent.logout();
+  // before(agent.logout);
 
   it('dupe parameters', function() {
     // fake a query like this scope=openid&scope=openid
@@ -106,7 +140,7 @@ describe(`BASIC ${verb} ${route} errors`, function() {
     return wrap({ agent, route, verb, auth })
       .expect(302)
       .expect(function() {
-        expect(spy.called).to.be.true;
+        expect(spy.calledOnce).to.be.true;
       })
       .expect(auth.validatePresence(['error', 'error_description', 'state']))
       .expect(auth.validateState)
@@ -127,7 +161,7 @@ describe(`BASIC ${verb} ${route} errors`, function() {
     return wrap({ agent, route, verb, auth })
       .expect(302)
       .expect(function() {
-        expect(spy.called).to.be.true;
+        expect(spy.calledOnce).to.be.true;
       })
       .expect(auth.validatePresence(['error', 'error_description', 'state']))
       .expect(auth.validateState)
@@ -150,7 +184,7 @@ describe(`BASIC ${verb} ${route} errors`, function() {
         .query(auth)
         .expect(302)
         .expect(function() {
-          expect(spy.called).to.be.true;
+          expect(spy.calledOnce).to.be.true;
         })
         .expect(auth.validatePresence(['error', 'error_description', 'state']))
         .expect(auth.validateState)
@@ -159,7 +193,31 @@ describe(`BASIC ${verb} ${route} errors`, function() {
     });
   });
 
-  it('missing mandatory parameter redirect_uri');
+  it('missing mandatory parameter redirect_uri', function() {
+    let emitSpy = sinon.spy();
+    let renderSpy = sinon.spy(provider.configuration, 'renderError');
+    provider.once('authentication.error', emitSpy);
+    const auth = new AuthenticationRequest({
+      response_type: 'code',
+      scope: 'openid'
+    });
+    delete auth.redirect_uri;
+
+    return agent.get(route)
+      .query(auth)
+      .expect(function() {
+        renderSpy.restore();
+      })
+      .expect(200)
+      .expect(function() {
+        expect(emitSpy.calledOnce).to.be.true;
+        expect(renderSpy.calledOnce).to.be.true;
+        let renderArgs = renderSpy.args[0][0];
+        expect(renderArgs).to.have.property('error', 'invalid_request');
+        expect(renderArgs).to.have.property('error_description', 'missing required parameter(s) redirect_uri');
+
+      });
+  });
 
   ['response_type', 'client_id', 'scope'].forEach(function(param) {
     it(`missing mandatory parameter ${param}`, function() {
@@ -175,7 +233,7 @@ describe(`BASIC ${verb} ${route} errors`, function() {
         .query(auth)
         .expect(302)
         .expect(function() {
-          expect(spy.called).to.be.true;
+          expect(spy.calledOnce).to.be.true;
         })
         .expect(auth.validatePresence(['error', 'error_description', 'state']))
         .expect(auth.validateState)
@@ -197,7 +255,7 @@ describe(`BASIC ${verb} ${route} errors`, function() {
     return wrap({ agent, route, verb, auth })
       .expect(302)
       .expect(function() {
-        expect(spy.called).to.be.true;
+        expect(spy.calledOnce).to.be.true;
       })
       .expect(auth.validatePresence(['error', 'error_description', 'state']))
       .expect(auth.validateState)
@@ -218,7 +276,7 @@ describe(`BASIC ${verb} ${route} errors`, function() {
     return wrap({ agent, route, verb, auth })
       .expect(302)
       .expect(function() {
-        expect(spy.called).to.be.true;
+        expect(spy.calledOnce).to.be.true;
       })
       .expect(auth.validatePresence(['error', 'error_description', 'state']))
       .expect(auth.validateState)
@@ -238,7 +296,7 @@ describe(`BASIC ${verb} ${route} errors`, function() {
     return wrap({ agent, route, verb, auth })
       .expect(302)
       .expect(function() {
-        expect(spy.called).to.be.true;
+        expect(spy.calledOnce).to.be.true;
       })
       .expect(auth.validatePresence(['error', 'error_description', 'state']))
       .expect(auth.validateState)
@@ -258,7 +316,7 @@ describe(`BASIC ${verb} ${route} errors`, function() {
     return wrap({ agent, route, verb, auth })
       .expect(302)
       .expect(function() {
-        expect(spy.called).to.be.true;
+        expect(spy.calledOnce).to.be.true;
       })
       .expect(auth.validatePresence(['error', 'error_description', 'state']))
       .expect(auth.validateState)
@@ -278,7 +336,7 @@ describe(`BASIC ${verb} ${route} errors`, function() {
     return wrap({ agent, route, verb, auth })
       .expect(302)
       .expect(function() {
-        expect(spy.called).to.be.true;
+        expect(spy.calledOnce).to.be.true;
       })
       .expect(auth.validatePresence(['error', 'error_description', 'state']))
       .expect(auth.validateState)
@@ -299,7 +357,7 @@ describe(`BASIC ${verb} ${route} errors`, function() {
     return wrap({ agent, route, verb, auth })
       .expect(302)
       .expect(function() {
-        expect(spy.called).to.be.true;
+        expect(spy.calledOnce).to.be.true;
       })
       .expect(auth.validatePresence(['error', 'error_description', 'state']))
       .expect(auth.validateState)
@@ -319,7 +377,7 @@ describe(`BASIC ${verb} ${route} errors`, function() {
     return wrap({ agent, route, verb, auth })
       .expect(302)
       .expect(function() {
-        expect(spy.called).to.be.true;
+        expect(spy.calledOnce).to.be.true;
       })
       .expect(auth.validatePresence(['error', 'error_description', 'state']))
       .expect(auth.validateState)
@@ -339,7 +397,7 @@ describe(`BASIC ${verb} ${route} errors`, function() {
     return wrap({ agent, route, verb, auth })
       .expect(302)
       .expect(function() {
-        expect(spy.called).to.be.true;
+        expect(spy.calledOnce).to.be.true;
       })
       .expect(auth.validatePresence(['error', 'error_description', 'state']))
       .expect(auth.validateState)
@@ -348,10 +406,34 @@ describe(`BASIC ${verb} ${route} errors`, function() {
       .expect(auth.validateErrorDescription('response_type not allowed for this client'));
   });
 
-  it('redirect_uri mismatch');
+  it('redirect_uri mismatch', function() {
+    let emitSpy = sinon.spy();
+    let renderSpy = sinon.spy(provider.configuration, 'renderError');
+    provider.once('authentication.error', emitSpy);
+    const auth = new AuthenticationRequest({
+      response_type: 'code',
+      scope: 'openid',
+      redirect_uri: 'http://example.client.dev/notregistered'
+    });
+
+    return agent.get(route)
+      .query(auth)
+      .expect(function() {
+        renderSpy.restore();
+      })
+      .expect(200)
+      .expect(function() {
+        expect(emitSpy.calledOnce).to.be.true;
+        expect(renderSpy.calledOnce).to.be.true;
+        let renderArgs = renderSpy.args[0][0];
+        expect(renderArgs).to.have.property('error', 'redirect_uri_mismatch');
+        expect(renderArgs).to.have.property('error_description', 'redirect_uri did not match any client\'s registered redirect_uri');
+
+      });
+  });
 
   describe('login state specific', function() {
-    agent.login();
+    before(agent.login);
 
     it('malformed id_token_hint', function() {
       let spy = sinon.spy();
@@ -365,7 +447,7 @@ describe(`BASIC ${verb} ${route} errors`, function() {
       return wrap({ agent, route, verb, auth })
         .expect(302)
         .expect(function() {
-          expect(spy.called).to.be.true;
+          expect(spy.calledOnce).to.be.true;
         })
         .expect(auth.validatePresence(['error', 'error_description', 'state']))
         .expect(auth.validateState)
