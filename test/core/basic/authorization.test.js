@@ -11,7 +11,24 @@ const route = '/auth';
 provider.setupClient();
 provider.setupCerts();
 
-describe(`BASIC ${route} with session`, function() {
+function wrap(opts) {
+  let { agent, route, verb, auth } = opts;
+  switch (verb) {
+    case 'get':
+      return agent
+        .get(route)
+        .query(auth);
+    case 'post':
+      return agent
+        .post(route)
+        .send(auth)
+        .set('Content-Type', 'application/x-www-form-urlencoded');
+  }
+}
+
+['get', 'post'].forEach((verb) => {
+
+describe(`BASIC ${verb} ${route} with session`, function() {
   agent.login();
 
   it('responds with a code in search', function() {
@@ -20,8 +37,7 @@ describe(`BASIC ${route} with session`, function() {
       scope: 'openid'
     });
 
-    return agent.get(route)
-      .query(auth)
+    return wrap({ agent, route, verb, auth })
       .expect(302)
       .expect(auth.validatePresence(['code', 'state']))
       .expect(auth.validateState)
@@ -35,8 +51,7 @@ describe(`BASIC ${route} with session`, function() {
       scope: 'openid'
     });
 
-    return agent.get(route)
-      .query(auth)
+    return wrap({ agent, route, verb, auth })
       .expect(302)
       .expect(auth.validateFragment)
       .expect(auth.validatePresence(['code', 'state']))
@@ -45,7 +60,7 @@ describe(`BASIC ${route} with session`, function() {
   });
 });
 
-describe(`BASIC ${route} without session`, function() {
+describe(`BASIC ${verb} ${route} without session`, function() {
 
   agent.logout();
 
@@ -56,8 +71,7 @@ describe(`BASIC ${route} without session`, function() {
       prompt: 'none'
     });
 
-    return agent.get(route)
-      .query(auth)
+    return wrap({ agent, route, verb, auth })
       .expect(302)
       .expect(auth.validatePresence(['error', 'error_description', 'state']))
       .expect(auth.validateState)
@@ -67,7 +81,7 @@ describe(`BASIC ${route} without session`, function() {
   });
 });
 
-describe(`BASIC ${route} interactions required`, function() {
+describe(`BASIC ${verb} ${route} interactions required`, function() {
   it('no account id was found in the session info');
   it('login was requested by the client by prompt parameter');
   it('session is too old for this authentication request');
@@ -76,7 +90,7 @@ describe(`BASIC ${route} interactions required`, function() {
   it('single requested authentication context class reference is not met');
 });
 
-describe(`BASIC ${route} errors`, function() {
+describe(`BASIC ${verb} ${route} errors`, function() {
 
   agent.logout();
 
@@ -89,8 +103,7 @@ describe(`BASIC ${route} errors`, function() {
       scope: ['openid', 'openid']
     });
 
-    return agent.get(route)
-      .query(auth)
+    return wrap({ agent, route, verb, auth })
       .expect(302)
       .expect(function() {
         expect(spy.called).to.be.true;
@@ -111,8 +124,7 @@ describe(`BASIC ${route} errors`, function() {
       response_mode: 'query'
     });
 
-    return agent.get(route)
-      .query(auth)
+    return wrap({ agent, route, verb, auth })
       .expect(302)
       .expect(function() {
         expect(spy.called).to.be.true;
@@ -182,8 +194,7 @@ describe(`BASIC ${route} errors`, function() {
       prompt: 'unsupported'
     });
 
-    return agent.get(route)
-      .query(auth)
+    return wrap({ agent, route, verb, auth })
       .expect(302)
       .expect(function() {
         expect(spy.called).to.be.true;
@@ -204,8 +215,7 @@ describe(`BASIC ${route} errors`, function() {
       prompt: 'none login'
     });
 
-    return agent.get(route)
-      .query(auth)
+    return wrap({ agent, route, verb, auth })
       .expect(302)
       .expect(function() {
         expect(spy.called).to.be.true;
@@ -225,8 +235,7 @@ describe(`BASIC ${route} errors`, function() {
       scope: 'openid and unsupported'
     });
 
-    return agent.get(route)
-      .query(auth)
+    return wrap({ agent, route, verb, auth })
       .expect(302)
       .expect(function() {
         expect(spy.called).to.be.true;
@@ -246,8 +255,7 @@ describe(`BASIC ${route} errors`, function() {
       scope: 'profile'
     });
 
-    return agent.get(route)
-      .query(auth)
+    return wrap({ agent, route, verb, auth })
       .expect(302)
       .expect(function() {
         expect(spy.called).to.be.true;
@@ -267,8 +275,7 @@ describe(`BASIC ${route} errors`, function() {
       scope: 'openid offline_access'
     });
 
-    return agent.get(route)
-      .query(auth)
+    return wrap({ agent, route, verb, auth })
       .expect(302)
       .expect(function() {
         expect(spy.called).to.be.true;
@@ -289,8 +296,7 @@ describe(`BASIC ${route} errors`, function() {
       client_id: 'unrecognized'
     });
 
-    return agent.get(route)
-      .query(auth)
+    return wrap({ agent, route, verb, auth })
       .expect(302)
       .expect(function() {
         expect(spy.called).to.be.true;
@@ -310,8 +316,7 @@ describe(`BASIC ${route} errors`, function() {
       scope: 'openid'
     });
 
-    return agent.get(route)
-      .query(auth)
+    return wrap({ agent, route, verb, auth })
       .expect(302)
       .expect(function() {
         expect(spy.called).to.be.true;
@@ -331,8 +336,7 @@ describe(`BASIC ${route} errors`, function() {
       scope: 'openid'
     });
 
-    return agent.get(route)
-      .query(auth)
+    return wrap({ agent, route, verb, auth })
       .expect(302)
       .expect(function() {
         expect(spy.called).to.be.true;
@@ -358,17 +362,17 @@ describe(`BASIC ${route} errors`, function() {
         id_token_hint: 'invalid'
       });
 
-      return agent.get(route)
-      .query(auth)
-      .expect(302)
-      .expect(function() {
-        expect(spy.called).to.be.true;
-      })
-      .expect(auth.validatePresence(['error', 'error_description', 'state']))
-      .expect(auth.validateState)
-      .expect(auth.validateClientLocation)
-      .expect(auth.validateError('invalid_request'))
-      .expect(auth.validateErrorDescription('could not validate id_token_hint'));
+      return wrap({ agent, route, verb, auth })
+        .expect(302)
+        .expect(function() {
+          expect(spy.called).to.be.true;
+        })
+        .expect(auth.validatePresence(['error', 'error_description', 'state']))
+        .expect(auth.validateState)
+        .expect(auth.validateClientLocation)
+        .expect(auth.validateError('invalid_request'))
+        .expect(auth.validateErrorDescription('could not validate id_token_hint'));
     });
   });
+});
 });
