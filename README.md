@@ -1,13 +1,13 @@
-node-oidc
+oidc-provider
 =======
 
-node-oidc is an OpenID Provider implementation of [OpenID Connect](http://openid.net/connect/). It allows to export a complete Koa.js OpenID Provider implementation which you can mount to your existing Koa.js applications. This implementation does not force you into any data models or persistance stores, instead it expects you to provide interfaces. Comes with several example interfaces (in-memory, Redis, MongoDB, API).
+oidc-provider is an OpenID Provider implementation of [OpenID Connect](http://openid.net/connect/). It allows to export a complete Koa.js OpenID Provider implementation which you can mount to your existing Koa.js applications or run standalone. This implementation does not force you into any data models or persistance stores, instead it expects you to provide interfaces. Comes with several example interfaces (in-memory, Redis, MongoDB, API).
 
-The provided examples also implement simple user interaction views but those are not forced on you as they do not come as part of the exported application, instead you are encouraged to implement your own unique-looking user flows.
+The provided examples also implement simple user interaction views but those are not forced on you as they do not come as part of the exported application, instead you are encouraged to implement your own unique-looking and functioning user flows.
 
 ## Implemented Specs & Features
 
-The following specifications are implemented by node-oidc, where it makes sense you can choose to configure them or simply disable them completely if you do not plan to utilize them.
+The following specifications are implemented by oidc-provider, where it makes sense you can choose to configure them or simply disable them completely if you do not plan to utilize them.
 
 - [OpenID Connect Core 1.0 incorporating errata set 1](http://openid.net/specs/openid-connect-core-1_0.html)
   - Authentication
@@ -74,7 +74,20 @@ The Provider instance is an event emitter, the following events are available.
 | `"token.consumed"` | `(token[object])` |
 | `"token.revoked"` | `(token[object])` |
 
+## Example
+To run and experiment with the example, clone the oidc-provider repo and install the dependencies:
+
+```bash
+$ git clone git://github.com/panva/node-oidc-provider.git oidc-provider
+$ cd oidc-provider
+$ npm install
+$ node example
+```
+
 ## Certification
 ![openid_certified](https://cloud.githubusercontent.com/assets/1454075/7611268/4d19de32-f97b-11e4-895b-31b2455a7ca6.png)
 
 [OpenID Certified™](http://openid.net/certification/) by Filip Skokan to the OP Basic, OP Implicit, OP Hybrid, OP Config and OP Dynamic profiles of the OpenID Connect™ protocol.
+
+## License
+[MIT](LICENSE.md)
