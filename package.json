@@ -15,7 +15,7 @@
     "node-jose": "^0.8.0",
     "node-uuid": "^1.4.7"
   },
-  "description": "",
+  "description": "OpenID Provider (OP) implementation for Node.js OpenID Connect servers.",
   "devDependencies": {
     "chai": "^3.5.0",
     "cookiejar": "^2.0.6",
@@ -31,11 +31,17 @@
     "supertest": "^1.2.0"
   },
   "main": "lib/index.js",
-  "name": "@panva/platform-op",
-  "repository": {
-    "type": "git",
-    "url": "git@github.com:panva/platform-op.git"
+  "name": "oidc-provider",
+  "repository": "panva/node-oidc-provider",
+  "engines": {
+    "node": ">=4"
   },
+  "license": "MIT",
+  "keywords": [
+    "openid",
+    "provider",
+    "oidc"
+  ],
   "scripts": {
     "test": "mocha",
     "watch": "multi=\"mocha-osx-reporter=- min=-\" ./node_modules/.bin/mocha --watch --reporter mocha-multi",
