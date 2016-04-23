@@ -1,7 +1,9 @@
 oidc-provider
 =======
 
-oidc-provider is an OpenID Provider implementation of [OpenID Connect](http://openid.net/connect/). It allows to export a complete Koa.js OpenID Provider implementation which you can mount to your existing Koa.js applications or run standalone. This implementation does not force you into any data models or persistance stores, instead it expects you to provide interfaces. Comes with several example interfaces (in-memory, Redis, MongoDB, API).
+[![Build Status][travis-image]][travis-url]
+
+oidc-provider is an OpenID Provider implementation of [OpenID Connect][openid-connect]. It allows to export a complete Koa.js OpenID Provider implementation which you can mount to your existing Koa.js applications or run standalone. This implementation does not force you into any data models or persistance stores, instead it expects you to provide interfaces. Comes with several example interfaces (in-memory, Redis, MongoDB, API).
 
 The provided examples also implement simple user interaction views but those are not forced on you as they do not come as part of the exported application, instead you are encouraged to implement your own unique-looking and functioning user flows.
 
@@ -9,7 +11,7 @@ The provided examples also implement simple user interaction views but those are
 
 The following specifications are implemented by oidc-provider, where it makes sense you can choose to configure them or simply disable them completely if you do not plan to utilize them.
 
-- [OpenID Connect Core 1.0 incorporating errata set 1](http://openid.net/specs/openid-connect-core-1_0.html)
+- [OpenID Connect Core 1.0 incorporating errata set 1][feature-core]
   - Authentication
     - Authorization Code Flow
     - Implicit Flow
@@ -41,14 +43,13 @@ The following specifications are implemented by oidc-provider, where it makes se
     - client_secret_post
     - client_secret_jwt
     - private_key_jwt
-- [OpenID Connect Discovery 1.0 incorporating errata set 1](http://openid.net/specs/openid-connect-discovery-1_0.html)
-- [OpenID Connect Dynamic Client Registration 1.0 incorporating errata set 1](http://openid.net/specs/openid-connect-registration-1_0.html)
-- [OpenID Connect Session Management 1.0 - draft25](http://openid.net/specs/openid-connect-session-1_0.html)
-- [OAuth 2.0 Multiple Response Type Encoding Practices](http://openid.net/specs/oauth-v2-multiple-response-types-1_0.html)
-- [OAuth 2.0 Form Post Response Mode](http://openid.net/specs/oauth-v2-form-post-response-mode-1_0.html)
-- [RFC7009 - OAuth 2.0 Token Revocation](https://tools.ietf.org/html/rfc7009)
-- [RFC7662 - OAuth 2.0 Token Introspection](https://tools.ietf.org/html/rfc7662)
-- [RFC7638 - JSON Web Key (JWK) Thumbprint](https://tools.ietf.org/html/rfc7638)
+- [OpenID Connect Discovery 1.0 incorporating errata set 1][feature-discovery]
+- [OpenID Connect Dynamic Client Registration 1.0 incorporating errata set 1][feature-registration]
+- [OpenID Connect Session Management 1.0 - draft25][feature-session-management]
+- [OAuth 2.0 Form Post Response mode][feature-form-post]
+- [RFC7009 - OAuth 2.0 Token revocation][feature-revocation]
+- [RFC7662 - OAuth 2.0 Token introspection][feature-introspection]
+- [RFC7638 - JSON Web Key (JWK) thumbprint][feature-thumbprint]
 
 ## Events
 The Provider instance is an event emitter, the following events are available.
@@ -85,9 +86,23 @@ $ node example
 ```
 
 ## Certification
-![openid_certified](https://cloud.githubusercontent.com/assets/1454075/7611268/4d19de32-f97b-11e4-895b-31b2455a7ca6.png)
+![openid_certified][openid-certified-logo]
 
-[OpenID Certified™](http://openid.net/certification/) by Filip Skokan to the OP Basic, OP Implicit, OP Hybrid, OP Config and OP Dynamic profiles of the OpenID Connect™ protocol.
+[OpenID Certified™][openid-certified-link] by Filip Skokan to the OP Basic, OP Implicit, OP Hybrid, OP Config and OP Dynamic profiles of the OpenID Connect™ protocol.
 
 ## License
 [MIT](LICENSE.md)
+
+[travis-image]: https://travis-ci.org/panva/node-oidc-provider.svg?branch=master
+[travis-url]: https://travis-ci.org/panva/node-oidc-provider
+[openid-certified-link]: http://openid.net/certification/
+[openid-certified-logo]: https://cloud.githubusercontent.com/assets/1454075/7611268/4d19de32-f97b-11e4-895b-31b2455a7ca6.png
+[openid-connect]: http://openid.net/connect/
+[feature-core]: http://openid.net/specs/openid-connect-core-1_0.html
+[feature-discovery]: http://openid.net/specs/openid-connect-discovery-1_0.html
+[feature-registration]: http://openid.net/specs/openid-connect-registration-1_0.html
+[feature-session-management]: http://openid.net/specs/openid-connect-session-1_0.html
+[feature-form-post]: http://openid.net/specs/oauth-v2-form-post-response-mode-1_0.html
+[feature-revocation]: https://tools.ietf.org/html/rfc7009
+[feature-introspection]: https://tools.ietf.org/html/rfc7662
+[feature-thumbprint]: https://tools.ietf.org/html/rfc7638
