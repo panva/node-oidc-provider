@@ -1,20 +1,7 @@
 'use strict';
 
 module.exports = {
-  config: {
-    cookies: {
-      long: {
-        signed: false
-      },
-      short: {
-        signed: false
-      }
-    },
-    responseTypesSupported: ['none', 'code id_token', 'code token', 'code id_token token'],
-    scopes: ['openid'],
-    subjectTypesSupported: ['public'],
-    tokenEndpointAuthMethodsSupported: ['client_secret_basic', 'client_secret_post']
-  },
+  config: require('../../default.config'),
   client: {
     client_id: 'client',
     client_secret: 'secret',

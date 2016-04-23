@@ -17,6 +17,10 @@ const responses = {
   serverErrorBody: {
     error: 'server_error',
     error_description: 'oops something went wrong',
+  },
+  tokenAuthSucceeded: {
+    error: 'restricted_grant_type',
+    error_description: 'requested grant type is restricted to this client'
   }
 };
 
@@ -172,14 +176,15 @@ module.exports = function(dir, basename) {
     };
   };
 
-  provider.setupClient = function() {
+  provider.setupClient = function(pass) {
     const self = this;
+    const add = pass || client;
     before('adding client', function() {
-      return self.Client.add(client);
+      return self.Client.add(add);
     });
 
     after('removing client', function() {
-      self.Client.remove(client.client_id);
+      self.Client.remove(add.client_id);
     });
   };
 
@@ -225,7 +230,7 @@ module.exports = function(dir, basename) {
         return agent
           .post(route)
           .send(auth)
-          .set('Content-Type', 'application/x-www-form-urlencoded');
+          .type('form');
     }
   }
 
