@@ -4,14 +4,14 @@
 
 module.exports.config = {
   features: {
-    clientCredentials: true,
     claimsParameter: true,
+    clientCredentials: true,
     encryption: true,
     introspection: true,
     registration: true,
-    revocation: true,
     request: true,
     requestUri: true,
+    revocation: true,
     sessionManagement: true,
   },
 };

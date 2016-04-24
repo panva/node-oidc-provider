@@ -51,6 +51,57 @@ The following specifications are implemented by oidc-provider, where it makes se
 - [RFC7662 - OAuth 2.0 Token introspection][feature-introspection]
 - [RFC7638 - JSON Web Key (JWK) thumbprint][feature-thumbprint]
 
+## Example
+To run and experiment with the example, clone the oidc-provider repo and install the dependencies:
+
+```bash
+$ git clone git://github.com/panva/node-oidc-provider.git oidc-provider
+$ cd oidc-provider
+$ npm install
+$ node example
+```
+
+## Configuration
+This is how you configure your provider. blah blah
+
+### Enabling features
+| feature | option name | short description | default option value |
+| --- | --- | --- | --- |
+| discovery | discovery | enables the `.well-known` routes | `true` |
+| claims parameter | claimsParameter | enables `claims` authentication parameter | `false` |
+| client credentials | clientCredentials | enables the `client_credentials` grant on the token endpoint | `false` |
+| encryption | encryption | enables ID Token, UserInfo and Request encryption | `false` |
+| refresh token | refreshToken | enables the `refresh_token` grant on the token endpoint and makes the OP return refresh_token with every `authorization_code` grant too | `false` |
+| registration | registration | `TODO` | `false` |
+| request | request | enables `request` authentication parameter | `false` |
+| request uri | requestUri | enables `request_uri` authentication parameter | `false` |
+| introspection | introspection | enables the introspection route | `false` |
+| revocation | revocation | enables the revocation route | `false` |
+| session management | sessionManagement |  `false` |
+
+### Default routes
+The following are the respective endpoint routes.
+```json5
+routes: {
+  authentication: '/auth',
+  certificates: '/certs',
+  check_session: '/session/check',
+  end_session: '/session/end',
+  introspection: '/token/introspection',
+  registration: '/reg',
+  revocation: '/token/revocation',
+  token: '/token',
+  userinfo: '/me',
+}
+```
+
+### Persistance adapter
+
+### Configuring ...
+interactionPath
+renderError
+uniqueness
+
 ## Events
 The Provider instance is an event emitter, the following events are available.
 
@@ -74,16 +125,6 @@ The Provider instance is an event emitter, the following events are available.
 | `"token.issued"` | `(token[object])` |
 | `"token.consumed"` | `(token[object])` |
 | `"token.revoked"` | `(token[object])` |
-
-## Example
-To run and experiment with the example, clone the oidc-provider repo and install the dependencies:
-
-```bash
-$ git clone git://github.com/panva/node-oidc-provider.git oidc-provider
-$ cd oidc-provider
-$ npm install
-$ node example
-```
 
 ## Certification
 ![openid_certified][openid-certified-logo]
