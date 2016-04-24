@@ -45,7 +45,7 @@
   ],
   "scripts": {
     "test": "mocha",
-    "lint": "eslint lib example --fix",
+    "lint": "eslint lib example test --fix",
     "watch": "multi=\"mocha-osx-reporter=- min=-\" ./node_modules/.bin/mocha --watch --reporter mocha-multi",
     "coverage": "node --harmony_destructuring node_modules/istanbul/lib/cli.js cover node_modules/.bin/_mocha -- -R progress"
   },

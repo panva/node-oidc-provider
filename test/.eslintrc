@@ -1,0 +1,12 @@
+{
+  "env": {
+    "mocha": true
+  },
+  "rules": {
+    "max-len": "off",
+    "func-names": "off",
+    "prefer-arrow-callback": "off",
+    "comma-dangle": "off",
+    "no-unused-expressions": "off"
+  }
+}

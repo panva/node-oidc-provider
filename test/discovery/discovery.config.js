@@ -1,9 +1,10 @@
 'use strict';
 
+const config = require('../default.config');
+const cert = require('../default.sig.key');
+
 module.exports = {
-  config: require('../default.config'),
+  config,
   clients: [],
-  certs: [
-    require('../default.sig.key')
-  ]
+  certs: [cert],
 };

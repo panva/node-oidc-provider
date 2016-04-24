@@ -1,6 +1,6 @@
 'use strict';
 
-var store = new Map();
+const store = new Map();
 
 class TestAdapter {
   constructor(name) {
@@ -24,17 +24,15 @@ class TestAdapter {
   }
 
   destroy(id) {
-    let key = this.key(id);
-    let grantId = store.get(key) && store.get(key).grantId;
+    const key = this.key(id);
+    const grantId = store.get(key) && store.get(key).grantId;
 
     store.delete(key);
 
     if (grantId) {
-      let grantKey = this.grantKey(grantId);
+      const grantKey = this.grantKey(grantId);
 
-      store.get(grantKey).forEach(key => {
-        store.del(key);
-      });
+      store.get(grantKey).forEach(token => store.del(token));
     }
 
     return Promise.resolve();
@@ -50,12 +48,12 @@ class TestAdapter {
   }
 
   upsert(id, payload, expiresIn) {
-    let key = this.key(id);
+    const key = this.key(id);
 
-    let grantId = payload.grantId;
+    const grantId = payload.grantId;
     if (grantId) {
-      let grantKey = this.grantKey(grantId);
-      let grant = store.get(grantKey);
+      const grantKey = this.grantKey(grantId);
+      const grant = store.get(grantKey);
       if (!grant) {
         store.set(grantKey, [key]);
       } else {

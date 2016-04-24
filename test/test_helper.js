@@ -20,17 +20,17 @@ const responses = {
   },
   tokenAuthSucceeded: {
     error: 'restricted_grant_type',
-    error_description: 'requested grant type is restricted to this client'
-  }
+    error_description: 'requested grant type is restricted to this client',
+  },
 };
 
-module.exports = function(dir, basename) {
-  let conf = path.format({
+module.exports = function testHelper(dir, basename) {
+  const conf = path.format({
     dir,
-    base: `${basename || path.basename(dir)}.config.js`
+    base: `${basename || path.basename(dir)}.config.js`,
   });
-  let { config, certs, client } = require(conf);
-  let provider = new Provider('http://127.0.0.1', { config });
+  const { config, certs, client } = require(conf); // eslint-disable-line global-require
+  const provider = new Provider('http://127.0.0.1', { config });
   provider.Account = Account;
 
   provider.configuration.adapters.TestAdapter = TestAdapter;
@@ -38,8 +38,8 @@ module.exports = function(dir, basename) {
 
   // gotta delegate the keystore object so that i can stub the method calls
   // with sinon
-  let store = jose.JWK.createKeyStore();
-  let delegatedStore = { store };
+  const store = jose.JWK.createKeyStore();
+  const delegatedStore = { store };
   delegate(delegatedStore, 'store')
     .method('toJSON')
     .method('add')
@@ -47,70 +47,70 @@ module.exports = function(dir, basename) {
     .method('get');
   provider.keystore = delegatedStore;
 
-  let server = provider.app.listen();
-  let agent = supertest(server);
+  const server = provider.app.listen();
+  const agent = supertest(server);
 
   provider.issuer = `http://127.0.0.1:${server.address().port}`;
 
-  agent.logout = function() {
+  agent.logout = function logout() {
     const expire = new Date(0);
     return agent.saveCookies({
       headers: {
         'set-cookie': [
-          `_session=; path=/; expires=${expire.toGMTString()}; httponly`
-        ]
-      }
+          `_session=; path=/; expires=${expire.toGMTString()}; httponly`,
+        ],
+      },
     });
   };
 
-  agent.login = function() {
+  agent.login = function login() {
     const sessionId = uuid();
     const loginTs = new Date() / 1000 | 0;
     const expire = new Date();
     expire.setDate(expire.getDate() + 1);
     const account = uuid();
 
-    let session = new provider.Session(sessionId, { loginTs, account });
+    const session = new provider.Session(sessionId, { loginTs, account });
 
     return Account.findById(account).then(session.save()).then(() => {
       agent.saveCookies({
         headers: {
           'set-cookie': [
-            `_session=${sessionId}; path=/; expires=${expire.toGMTString()}; httponly`
-          ]
-        }
+            `_session=${sessionId}; path=/; expires=${expire.toGMTString()}; httponly`,
+          ],
+        },
       });
     });
   };
 
-  function AuthenticationRequest(query) {
+  function AuthenticationRequest(parameters) {
     this.client_id = client.client_id;
     this.state = Math.random().toString();
     this.nonce = Math.random().toString();
     this.redirect_uri = client.redirect_uris[0];
 
-    Object.assign(this, query);
+    Object.assign(this, parameters);
 
     Object.defineProperty(this, 'validateClientLocation', {
       value: (response) => {
-        let expected = parse(this.redirect_uri, true);
-        let actual = parse(response.headers.location, true);
+        const expected = parse(this.redirect_uri, true);
+        const actual = parse(response.headers.location, true);
         ['protocol', 'host', 'pathname'].forEach((attr) => {
           expect(actual[attr]).to.equal(expected[attr]);
         });
-      }
+      },
     });
 
     Object.defineProperty(this, 'validateState', {
       value: (response) => {
-        let { query: { state } } = parse(response.headers.location, true);
+        const { query: { state } } = parse(response.headers.location, true);
         expect(state).to.equal(this.state);
-      }
+      },
     });
 
     Object.defineProperty(this, 'validateInteractionRedirect', {
       value: (response) => {
-        let { hostname, search, query } = parse(response.headers.location);
+        const { hostname, search, query } = parse(response.headers.location);
         expect(hostname).to.be.null;
         expect(search).to.be.null;
         expect(query).to.be.null;
@@ -128,7 +128,8 @@ module.exports = function(dir, basename) {
         let { value: respond } = new Cookie(value);
         respond = JSON.parse(respond);
 
-        for (var attr in this) {
+
+        for (const attr in this) { // eslint-disable-line
           if (this.hasOwnProperty(attr)) {
             expect(respond).to.have.property(attr, this[attr]);
             expect(interaction.params).to.have.property(attr, this[attr]);
@@ -138,57 +139,52 @@ module.exports = function(dir, basename) {
     });
   }
 
-  AuthenticationRequest.prototype.validateInteractionError = function(expectedError, expectedReason) {
+  AuthenticationRequest.prototype.validateInteractionError = function (expectedError, expectedReason) {
     return (response) => {
-      let value = response.headers['set-cookie'][1];
-      let { value: interaction } = new Cookie(value);
-      let { details: { error, reason } } = JSON.parse(interaction);
+      const value = response.headers['set-cookie'][1];
+      const { value: interaction } = new Cookie(value);
+      const { details: { error, reason } } = JSON.parse(interaction);
 
       expect(error).to.equal(expectedError);
       expect(reason).to.equal(expectedReason);
     };
   };
 
-  AuthenticationRequest.prototype.validateFragment = function(response) {
-    let { hash } = parse(response.headers.location);
+  AuthenticationRequest.prototype.validateFragment = function (response) {
+    const { hash } = parse(response.headers.location);
     expect(hash).to.exist;
     response.headers.location = response.headers.location.replace('#', '?');
   };
 
-  AuthenticationRequest.prototype.validatePresence = function(keys) {
+  AuthenticationRequest.prototype.validatePresence = function (keys) {
     return (response) => {
-      let { query } = parse(response.headers.location, true);
+      const { query } = parse(response.headers.location, true);
       expect(query).to.have.all.keys(keys);
     };
   };
 
-  AuthenticationRequest.prototype.validateError = function(expected) {
+  AuthenticationRequest.prototype.validateError = function (expected) {
     return (response) => {
-      let { query: { error } } = parse(response.headers.location, true);
+      const { query: { error } } = parse(response.headers.location, true);
       expect(error).to.equal(expected);
     };
   };
 
-  AuthenticationRequest.prototype.validateErrorDescription = function(expected) {
+  AuthenticationRequest.prototype.validateErrorDescription = function (expected) {
     return (response) => {
-      let { query: { error_description } } = parse(response.headers.location, true);
+      const { query: { error_description } } = parse(response.headers.location, true);
       expect(error_description).to.equal(expected);
     };
   };
 
-  provider.setupClient = function(pass) {
+  provider.setupClient = function setupClient(pass) {
     const self = this;
     const add = pass || client;
-    before('adding client', function() {
-      return self.Client.add(add);
-    });
-
-    after('removing client', function() {
-      self.Client.remove(add.client_id);
-    });
+    before('adding client', () => self.Client.add(add));
+    after('removing client', () => self.Client.remove(add.client_id));
   };
 
-  provider.setupCerts = function(passed) {
+  provider.setupCerts = function (passed) {
     const self = this;
     const pre = _.pick(self.configuration, [
       'requestObjectEncryptionAlgValuesSupported',
@@ -197,30 +193,28 @@ module.exports = function(dir, basename) {
     ]);
     const added = [];
 
-    before('adding certificate', function(done) {
-      let add = passed || certs;
-      let promises = add.map(cert => self.addKey(cert).then((key) => {
-        return added.push(key);
-      }));
+    before('adding certificate', function (done) {
+      const add = passed || certs;
+      const promises = add.map(cert => self.addKey(cert).then((key) => added.push(key)));
       Promise.all(promises).then(() => {
         done();
       }, done);
     });
 
-    after('removing certificate', function() {
+    after('removing certificate', function () {
       _.assign(self.configuration, pre);
       added.forEach(key => self.keystore.remove(key));
     });
   };
 
-  function getSession(agent) {
-    let { value: sessionId } = agent.jar.getCookie('_session', { path: '/' });
-    let key = provider.Session.adapter.key(sessionId);
+  function getSession(userAgent) {
+    const { value: sessionId } = userAgent.jar.getCookie('_session', { path: '/' });
+    const key = provider.Session.adapter.key(sessionId);
     return provider.Session.adapter.storage.get(key);
   }
 
   function wrap(opts) {
-    let { agent, route, verb, auth } = opts;
+    const { agent, route, verb, auth } = opts; // eslint-disable-line no-shadow
     switch (verb) {
       case 'get':
         return agent
@@ -231,6 +225,8 @@ module.exports = function(dir, basename) {
           .post(route)
           .send(auth)
           .type('form');
+      default:
+        throw new Error('invalid wrap verb');
     }
   }
 

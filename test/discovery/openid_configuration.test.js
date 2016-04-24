@@ -8,60 +8,60 @@ const { expect } = require('chai');
 
 const route = '/.well-known/openid-configuration';
 
-describe(route, function() {
-  it('responds with json 200', function() {
+describe(route, function () {
+  it('responds with json 200', function () {
     return agent.get(route)
       .expect('Content-Type', /application\/json/)
       .expect(200);
   });
 
-  describe('with errors', function() {
-    before(function() {
+  describe('with errors', function () {
+    before(function () {
       sinon.stub(provider, 'pathFor').throws(new InvalidRequestError());
     });
 
-    after(function() {
+    after(function () {
       provider.pathFor.restore();
     });
 
-    it('handles errors with json and corresponding status', function() {
+    it('handles errors with json and corresponding status', function () {
       return agent.get(route)
         .expect('Content-Type', /application\/json/)
         .expect(400);
     });
 
-    it('emits discovery.error on errors', function() {
-      let spy = sinon.spy();
+    it('emits discovery.error on errors', function () {
+      const spy = sinon.spy();
       provider.once('discovery.error', spy);
 
       return agent.get(route)
-        .expect(function() {
+        .expect(function () {
           expect(spy.called).to.be.true;
         });
     });
   });
 
-  describe('with exceptions', function() {
-    before(function() {
+  describe('with exceptions', function () {
+    before(function () {
       sinon.stub(provider, 'pathFor').throws();
     });
 
-    after(function() {
+    after(function () {
       provider.pathFor.restore();
     });
 
-    it('handles exceptions with json 500', function() {
+    it('handles exceptions with json 500', function () {
       return agent.get(route)
         .expect('Content-Type', /application\/json/)
         .expect(500, responses.serverErrorBody);
     });
 
-    it('emits server_error on exceptions', function() {
-      let spy = sinon.spy();
+    it('emits server_error on exceptions', function () {
+      const spy = sinon.spy();
       provider.once('server_error', spy);
 
       return agent.get(route)
-        .expect(function() {
+        .expect(function () {
           expect(spy.called).to.be.true;
         });
     });
