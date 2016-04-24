@@ -1,3 +1,5 @@
+/* eslint-disable max-len */
+
 'use strict';
 
 module.exports.config = {
@@ -11,7 +13,7 @@ module.exports.config = {
     request: true,
     requestUri: true,
     sessionManagement: true,
-  }
+  },
 };
 
 module.exports.clients = [{
@@ -19,7 +21,7 @@ module.exports.clients = [{
   client_secret: '91c0fabd17a9db3cfe53f28a10728e39b7724e234ecd78dba1fb05b909fb4ed98c476afc50a634d52808ad3cb2ea744bc8c3b45b7149ec459b5c416a6e8db242',
   grant_types: ['client_credentials', 'refresh_token', 'authorization_code'],
   redirect_uris: ['http://sso-client.dev/providers/7/open_id', 'http://sso-client.dev/providers/8/open_id'],
-},];
+}];
 
 module.exports.certificates = [{
   d: 'VEZOsY07JTFzGTqv6cC2Y32vsfChind2I_TTuvV225_-0zrSej3XLRg8iE_u0-3GSgiGi4WImmTwmEgLo4Qp3uEcxCYbt4NMJC7fwT2i3dfRZjtZ4yJwFl0SIj8TgfQ8ptwZbFZUlcHGXZIr4nL8GXyQT0CK8wy4COfmymHrrUoyfZA154ql_OsoiupSUCRcKVvZj2JHL2KILsq_sh_l7g2dqAN8D7jYfJ58MkqlknBMa2-zi5I0-1JUOwztVNml_zGrp27UbEU60RqV3GHjoqwI6m01U7K0a8Q_SQAKYGqgepbAYOA-P4_TLl5KC4-WWBZu_rVfwgSENwWNEhw8oQ',
@@ -61,4 +63,4 @@ module.exports.certificates = [{
   kty: 'EC',
   x: 'AamstoAouLxrWi6WHt903QR7NMpK4NszB5mNEFqLqaCxRXhPwrq_BG5R-7UP41cUIF38TQCePJpGLnoC5amCJNy3',
   y: 'AUguNqeqkhVSrmolR58H4J26S58XinSN3kcnoIl75iHMKRMJDXBI9J4lBHALVn6i0zc9N9ucQAb8kmOXfObga_9J',
-},];
+}];

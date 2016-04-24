@@ -1,3 +1,4 @@
+/* eslint-disable no-console */
 'use strict';
 
 const path = require('path');
@@ -46,7 +47,7 @@ app.use(mount('/op', provider.app));
 
 const router = new Router();
 
-router.get('/interaction/:grant', function * (next) {
+router.get('/interaction/:grant', function * renderInteraction(next) {
   const grant = JSON.parse(this.cookies.get('_grant', {
     signed: true,
   })).params;
@@ -66,7 +67,7 @@ router.get('/interaction/:grant', function * (next) {
   yield next;
 });
 
-router.post('/login', body(), function * () {
+router.post('/login', body(), function * submitLoginForm() {
   const account = yield Account.findByLogin(this.request.body.login);
 
   const result = {
