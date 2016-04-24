@@ -1,8 +1,8 @@
 'use strict';
 
-let store = new Map();
-let logins = new Map();
-let uuid = require('node-uuid');
+const store = new Map();
+const logins = new Map();
+const uuid = require('node-uuid');
 
 class Account {
   constructor() {

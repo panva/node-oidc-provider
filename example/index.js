@@ -1,16 +1,16 @@
 'use strict';
 
-let path = require('path');
-let koa = require('koa');
-let body = require('koa-body');
-let port = process.env.PORT || 3000;
-let mount = require('koa-mount');
-let querystring = require('querystring');
-let rewrite = require('koa-rewrite');
-let Router = require('koa-router');
-let render = require('koa-ejs');
+const path = require('path');
+const koa = require('koa');
+const body = require('koa-body');
+const port = process.env.PORT || 3000;
+const mount = require('koa-mount');
+const querystring = require('querystring');
+const rewrite = require('koa-rewrite');
+const Router = require('koa-router');
+const render = require('koa-ejs');
 
-let app = koa();
+const app = koa();
 
 render(app, {
   cache: false,
@@ -20,14 +20,14 @@ render(app, {
 
 app.keys = ['some secret key', 'and also the old one'];
 
-let Account = require('./account');
-let settings = require('./settings');
+const Account = require('./account');
+const settings = require('./settings');
 
-let Provider = require('../lib').Provider;
-let issuer = process.env.HEROKU ?
+const Provider = require('../lib').Provider;
+const issuer = process.env.HEROKU ?
   'https://guarded-cliffs-8635.herokuapp.com/op' : 'http://oidc.dev/op';
 
-let provider = new Provider(issuer, {
+const provider = new Provider(issuer, {
   config: settings.config,
 });
 
@@ -44,19 +44,18 @@ if (process.env.HEROKU) {
 app.use(rewrite(/^\/\.well-known\/(.*)/, '/op/.well-known/$1'));
 app.use(mount('/op', provider.app));
 
-let router = new Router();
+const router = new Router();
 
 router.get('/interaction/:grant', function * (next) {
-
-  let grant = JSON.parse(this.cookies.get('_grant', {
+  const grant = JSON.parse(this.cookies.get('_grant', {
     signed: true,
   })).params;
 
-  let client = provider.Client.find(grant.client_id);
+  const client = provider.Client.find(grant.client_id);
 
   yield this.render('login', {
+    client,
     action: '/login',
-    client: client,
     debug: querystring.stringify(grant, ',<br/>', ' = ', {
       encodeURIComponent: (value) => value,
     }),
@@ -68,10 +67,9 @@ router.get('/interaction/:grant', function * (next) {
 });
 
 router.post('/login', body(), function * () {
+  const account = yield Account.findByLogin(this.request.body.login);
 
-  let account = yield Account.findByLogin(this.request.body.login);
-
-  let result = {
+  const result = {
     login: {
       account: account.accountId,
       acr: '1',
@@ -97,12 +95,10 @@ app.use(router.routes());
 app.use(router.allowedMethods());
 
 Promise.all(settings.certificates.map(cert => provider.addKey(cert)))
-  .then(() => {
-    return Promise.all(
-        settings.clients.map(client => provider.Client.add(client))
-      ).catch((err) => {
-        console.log(err);
-      });
-  })
+  .then(() => Promise.all(
+    settings.clients.map(client => provider.Client.add(client))
+  ).catch((err) => {
+    console.log(err);
+  }))
   .then(
     () => app.listen(port));
