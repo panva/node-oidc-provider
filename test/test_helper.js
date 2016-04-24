@@ -22,6 +22,10 @@ const responses = {
     error: 'restricted_grant_type',
     error_description: 'requested grant type is restricted to this client',
   },
+  tokenAuthRejected: {
+    error: 'invalid_client',
+    error_description: 'client is invalid',
+  }
 };
 
 module.exports = function testHelper(dir, basename) {

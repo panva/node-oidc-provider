@@ -9,7 +9,7 @@ The provided examples also implement simple user interaction views but those are
 
 ## Implemented Specs & Features
 
-The following specifications are implemented by oidc-provider, where it makes sense you can choose to configure them or simply disable them completely if you do not plan to utilize them.
+The following specifications are implemented by oidc-provider.
 
 - [OpenID Connect Core 1.0 incorporating errata set 1][feature-core]
   - Authentication
