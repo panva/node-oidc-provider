@@ -52,7 +52,7 @@
     "test": "make test",
     "lint": "eslint lib example test --fix"
   },
-  "version": "0.1.6",
+  "version": "0.2.0",
   "files": [
     "lib"
   ]
