@@ -1,3 +1,0 @@
-test/**/*\.test.js
--r test/environment
---harmony_destructuring

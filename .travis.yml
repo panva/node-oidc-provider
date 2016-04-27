@@ -1,4 +1,9 @@
 language: node_js
 node_js:
-  - 4
+  - 6
   - stable
+script:
+  - make test-travis
+after_script:
+  - npm install codecov
+  - ./node_modules/.bin/codecov
