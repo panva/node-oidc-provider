@@ -1,8 +1,4 @@
-oidc-provider
-=======
-
-[![Build Status][travis-image]][travis-url]
-[![codecov][codecov-image]][codecov-url]
+# oidc-provider [![Build Status][travis-image]][travis-url] [![codecov][codecov-image]][codecov-url]
 
 oidc-provider is an OpenID Provider implementation of [OpenID Connect][openid-connect]. It allows to export a complete Koa.js OpenID Provider implementation which you can mount to your existing Koa.js applications or run standalone. This implementation does not force you into any data models or persistance stores, instead it expects you to provide interfaces. Comes with several example interfaces (in-memory, Redis, MongoDB, API).
 

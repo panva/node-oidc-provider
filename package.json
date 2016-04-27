@@ -41,8 +41,11 @@
   "license": "MIT",
   "keywords": [
     "openid",
+    "connect",
     "provider",
-    "oidc"
+    "oidc",
+    "oauth",
+    "oauth2"
   ],
   "scripts": {
     "coverage": "make test-cov",
