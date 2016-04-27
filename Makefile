@@ -1,14 +1,9 @@
-# SRC = lib/*.js
+NODE_VERSION = $(wordlist 1,1,$(subst ., ,$(subst v, ,$(shell node -v))))
 
-# BIN = iojs
 
-# ifeq ($(findstring io.js, $(shell which node)),)
-# 	BIN = node
-# endif
-#
-# ifeq (node, $(BIN))
-# 	FLAGS = --harmony
-# endif
+ifeq ($(shell echo ${NODE_VERSION}\<6 | bc), 1)
+	FLAGS = --harmony_destructuring
+endif
 
 REQUIRED = --require test/environment
 

@@ -1,9 +1,13 @@
 language: node_js
 node_js:
+  - 4
+  - 5
   - 6
   - stable
 script:
   - make test-travis
+before_script:
+  - sudo apt-get install bc
 after_script:
   - npm install codecov
   - ./node_modules/.bin/codecov
