@@ -1,10 +1,25 @@
 # oidc-provider [![Build Status][travis-image]][travis-url] [![codecov][codecov-image]][codecov-url]
 
-oidc-provider is an OpenID Provider implementation of [OpenID Connect][openid-connect]. It allows to export a complete Koa.js OpenID Provider implementation which you can mount to your existing Koa.js applications or run standalone. This implementation does not force you into any data models or persistance stores, instead it expects you to provide interfaces. Comes with several example interfaces (in-memory, Redis, MongoDB, API).
+oidc-provider is an OpenID Provider implementation of [OpenID Connect][openid-connect]. It allows to
+export a complete Koa.js OpenID Provider implementation which you can mount to your existing Koa.js
+applications or run standalone. This implementation does not force you into any data models or
+persistance stores, instead it expects you to provide an adapter. Several generic adapters (i.e.
+in-memory, Redis, MongoDB) are available to get you started faster.
 
-The provided examples also implement simple user interaction views but those are not forced on you as they do not come as part of the exported application, instead you are encouraged to implement your own unique-looking and functioning user flows.
+The provided examples also implement simple user interaction views but those are not forced on you
+as they do not come as part of the exported application, instead you are encouraged to implement
+your own unique-looking and functioning user flows.
 
 Note: The README is a work in progress.
+
+**Table of Contents**
+
+  * [Implemented Specs &amp; Features](#implemented-specs--features)
+  * [Example](#example)
+  * [Configuration](#configuration)
+  * [Events](#events)
+  * [Certification](#certification)
+  * [License](#license)
 
 ## Implemented Specs & Features
 
@@ -51,7 +66,8 @@ The following specifications are implemented by oidc-provider.
 - [RFC7638 - JSON Web Key (JWK) thumbprint][feature-thumbprint]
 
 ## Example
-To run and experiment with the example, clone the oidc-provider repo and install the dependencies:
+To run and experiment with an example client and a server, clone the oidc-provider repo and install
+the dependencies:
 
 ```bash
 $ git clone git://github.com/panva/node-oidc-provider.git oidc-provider
@@ -61,7 +77,7 @@ $ node example
 ```
 
 ## Configuration
-This is how you configure your provider. blah blah
+
 
 ### Enabling features
 | feature | option name | short description | default option value |
@@ -76,7 +92,7 @@ This is how you configure your provider. blah blah
 | request uri | requestUri | enables `request_uri` authentication parameter | `false` |
 | introspection | introspection | enables the introspection route | `false` |
 | revocation | revocation | enables the revocation route | `false` |
-| session management | sessionManagement |  `false` |
+| session management | sessionManagement | enables session management features | `false` |
 
 ### Default routes
 The following are the respective endpoint routes.
@@ -102,33 +118,95 @@ renderError
 uniqueness
 
 ## Events
-The Provider instance is an event emitter, the following events are available.
+The Provider instance is an event emitter, `this` is always the instance. In events where `ctx`(koa
+request context) is emitted `ctx.oidc` holds additional details like recognized parameters, loaded
+client or session.
 
-| emitted events | arguments |
-| --- | --- |
-| `"server_error"` | `(error, ctx)` |
-| `"authentication.success"` | `(ctx)` |
-| `"authentication.error"` | `(error, ctx)` |
-| `"grant.success"` | `(ctx)` |
-| `"grant.error"` | `(error, ctx)` |
-| `"grant.revoked"` | `(grantId[string])` |
-| `"certificates.error"` | `(error, ctx)` |
-| `"discovery.error"` | `(error, ctx)` |
-| `"introspection.error"` | `(error, ctx)` |
-| `"registration.error"` | `(error, ctx)` |
-| `"revocation.error"` | `(error, ctx)` |
-| `"userinfo.error"` | `(error, ctx)` |
-| `"check_session.error"` | `(error, ctx)` |
-| `"end_session.error"` | `(error, ctx)` |
-| `"webfinger.error"` | `(error, ctx)` |
-| `"token.issued"` | `(token[object])` |
-| `"token.consumed"` | `(token[object])` |
-| `"token.revoked"` | `(token[object])` |
+### Event: 'server_error'
+`function (error, ctx) { }`  
+Emitted when an exception is thrown or promise rejected from either the Provider or your provided
+adapters. If it comes from the library you should probably report it.
+
+### Event: 'authentication.success'
+`function (ctx) { }`  
+Emitted with every successful authentication request. Useful i.e. for collecting metrics or
+triggering any action you need to execute after succeeded authentication.
+
+### Event: 'authentication.error'
+`function (error, ctx) { }`  
+Emitted when a handled error is encountered in the `authentication` endpoint.
+
+### Event: 'grant.success'
+`function (ctx) { }`  
+Emitted with every successful grant request. Useful i.e. for collecting metrics or triggering any
+action you need to execute after succeeded grant.
+
+### Event: 'grant.error'
+`function (error, ctx) { }`  
+Emitted when a handled error is encountered in the `grant` endpoint.
+
+### Event: 'certificates.error'
+`function (error, ctx) { }`  
+Emitted when a handled error is encountered in the `certificates` endpoint.
+
+### Event: 'discovery.error'
+`function (error, ctx) { }`  
+Emitted when a handled error is encountered in the `discovery` endpoint.
+
+### Event: 'introspection.error'
+`function (error, ctx) { }`  
+Emitted when a handled error is encountered in the `introspection` endpoint.
+
+### Event: 'registration.error'
+`function (error, ctx) { }`  
+Emitted when a handled error is encountered in the `registration` endpoint.
+
+### Event: 'revocation.error'
+`function (error, ctx) { }`  
+Emitted when a handled error is encountered in the `revocation` endpoint.
+
+### Event: 'userinfo.error'
+`function (error, ctx) { }`  
+Emitted when a handled error is encountered in the `userinfo` endpoint.
+
+### Event: 'check_session.error'
+`function (error, ctx) { }`  
+Emitted when a handled error is encountered in the `check_session` endpoint.
+
+### Event: 'end_session.error'
+`function (error, ctx) { }`  
+Emitted when a handled error is encountered in the `end_session` endpoint.
+
+### Event: 'webfinger.error'
+`function (error, ctx) { }`  
+Emitted when a handled error is encountered in the `webfinger` endpoint.
+
+### Event: 'token.issued'
+`function (token) { }`  
+Emitted when a token is issued. All tokens extending `provider.OAuthToken` emit this event.
+token can be one of `provider.AccessToken`, `provider.AuthorizationCode`,
+`provider.ClientCredentials`, `provider.RefreshToken`.
+
+### Event: 'token.consumed'
+`function (token) { }`  
+Emitted when a token (actually just AuthorizationCode) is used.
+
+### Event: 'token.revoked'
+`function (token) { }`  
+Emitted when a token is about to be revoked.
+
+### Event: 'grant.revoked'
+`function (grantId) { }`  
+Emitted when tokens resulting from a single grant are about to be revoked.
+`grantId` is uuid formatted string. Use this to cascade the token revocation in cases where your
+adapter cannot provides functionality.
+
 
 ## Certification
 ![openid_certified][openid-certified-logo]
 
-[OpenID Certified™][openid-certified-link] by Filip Skokan to the OP Basic, OP Implicit, OP Hybrid, OP Config and OP Dynamic profiles of the OpenID Connect™ protocol.
+[OpenID Certified™][openid-certified-link] by Filip Skokan to the OP Basic, OP Implicit, OP Hybrid,
+OP Config and OP Dynamic profiles of the OpenID Connect™ protocol.
 
 ## License
 [MIT](LICENSE.md)

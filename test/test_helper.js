@@ -34,7 +34,7 @@ module.exports = function testHelper(dir, basename) {
     base: `${basename || path.basename(dir)}.config.js`,
   });
   const { config, certs, client } = require(conf); // eslint-disable-line global-require
-  const provider = new Provider('http://127.0.0.1', { config });
+  const provider = new Provider('http://127.0.0.1', config);
   provider.Account = Account;
 
   provider.configuration.adapters.TestAdapter = TestAdapter;

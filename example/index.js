@@ -28,9 +28,7 @@ const Provider = require('../lib').Provider;
 const issuer = process.env.HEROKU ?
   'https://guarded-cliffs-8635.herokuapp.com/op' : 'http://oidc.dev/op';
 
-const provider = new Provider(issuer, {
-  config: settings.config,
-});
+const provider = new Provider(issuer, settings.config);
 
 Object.defineProperty(provider, 'Account', {
   value: Account,
