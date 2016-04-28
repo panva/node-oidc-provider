@@ -4,6 +4,8 @@ oidc-provider is an OpenID Provider implementation of [OpenID Connect][openid-co
 
 The provided examples also implement simple user interaction views but those are not forced on you as they do not come as part of the exported application, instead you are encouraged to implement your own unique-looking and functioning user flows.
 
+Note: The README is a work in progress.
+
 ## Implemented Specs & Features
 
 The following specifications are implemented by oidc-provider.
