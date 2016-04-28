@@ -184,7 +184,7 @@ module.exports = function testHelper(dir, basename) {
   provider.setupClient = function setupClient(pass) {
     const self = this;
     const add = pass || client;
-    before('adding client', () => self.Client.add(add));
+    before('adding client', () => self.addClient(add));
     after('removing client', () => self.Client.remove(add.client_id));
   };
 
