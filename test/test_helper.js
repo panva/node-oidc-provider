@@ -34,7 +34,7 @@ module.exports = function testHelper(dir, basename) {
     base: `${basename || path.basename(dir)}.config.js`,
   });
   const { config, certs, client } = require(conf); // eslint-disable-line global-require
-  const provider = new Provider('http://127.0.0.1', { config });
+  const provider = new Provider('http://127.0.0.1', config);
   provider.Account = Account;
 
   provider.configuration.adapters.TestAdapter = TestAdapter;
@@ -184,7 +184,7 @@ module.exports = function testHelper(dir, basename) {
   provider.setupClient = function setupClient(pass) {
     const self = this;
     const add = pass || client;
-    before('adding client', () => self.Client.add(add));
+    before('adding client', () => self.addClient(add));
     after('removing client', () => self.Client.remove(add.client_id));
   };
 

@@ -28,9 +28,7 @@ const Provider = require('../lib').Provider;
 const issuer = process.env.HEROKU ?
   'https://guarded-cliffs-8635.herokuapp.com/op' : 'http://oidc.dev/op';
 
-const provider = new Provider(issuer, {
-  config: settings.config,
-});
+const provider = new Provider(issuer, settings.config);
 
 Object.defineProperty(provider, 'Account', {
   value: Account,
@@ -97,7 +95,7 @@ app.use(router.allowedMethods());
 
 Promise.all(settings.certificates.map(cert => provider.addKey(cert)))
   .then(() => Promise.all(
-    settings.clients.map(client => provider.Client.add(client))
+    settings.clients.map(client => provider.addClient(client))
   ).catch((err) => {
     console.log(err);
   }))

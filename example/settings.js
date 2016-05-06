@@ -8,7 +8,7 @@ module.exports.config = {
     clientCredentials: true,
     encryption: true,
     introspection: true,
-    registration: true,
+    registration: true, // experimental
     request: true,
     requestUri: true,
     revocation: true,
