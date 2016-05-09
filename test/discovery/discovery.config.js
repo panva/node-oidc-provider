@@ -5,6 +5,5 @@ const cert = require('../default.sig.key');
 
 module.exports = {
   config,
-  clients: [],
   certs: [cert],
 };

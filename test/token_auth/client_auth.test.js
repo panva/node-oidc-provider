@@ -437,6 +437,7 @@ describe('private_key_jwt auth', function () {
 
   const client = {
     client_id: 'client',
+    client_secret: 'whateverwontbeusedanyway',
     redirect_uris: ['https://client.example.com/cb'],
     token_endpoint_auth_method: 'private_key_jwt',
     jwks: {

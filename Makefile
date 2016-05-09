@@ -7,7 +7,7 @@ endif
 
 REQUIRED = --require test/environment
 
-TESTS = test/**/**/*.test.js
+TESTS = test/**/**/*.test.js test/**/*.test.js
 
 test:
 	node $(FLAGS) \
@@ -15,7 +15,7 @@ test:
 		$(REQUIRED) \
 		$(TESTS)
 
-test-cov:
+coverage:
 	node $(FLAGS) \
 		./node_modules/.bin/istanbul cover \
 		./node_modules/.bin/_mocha \
@@ -30,4 +30,4 @@ test-travis:
 		$(REQUIRED) \
 		$(TESTS)
 
-.PHONY: test
+.PHONY: test coverage

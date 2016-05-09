@@ -21,7 +21,7 @@
     "cookiejar": "^2.0.6",
     "delegates": "^1.0.0",
     "eslint": "^2.8.0",
-    "eslint-config-airbnb-base": "^1.0.3",
+    "eslint-config-airbnb-base": "^3.0.1",
     "eslint-plugin-import": "^1.5.0",
     "istanbul": "^0.4.3",
     "koa-ejs": "^3.0.0",
@@ -48,7 +48,7 @@
     "oauth2"
   ],
   "scripts": {
-    "coverage": "make test-cov",
+    "coverage": "make coverage",
     "test": "make test",
     "lint": "eslint lib example test --fix"
   },
