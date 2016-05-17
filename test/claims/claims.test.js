@@ -4,11 +4,11 @@ const {
   provider,
   agent,
   AuthenticationRequest,
-  // getSession,
   wrap
 } = require('../test_helper')(__dirname);
-// const sinon = require('sinon');
-// const { expect } = require('chai');
+const { parse: parseLocation } = require('url');
+const { decode: decodeJWT } = require('../../lib/helpers/jwt');
+const { expect } = require('chai');
 
 const route = '/auth';
 
@@ -16,124 +16,244 @@ provider.setupClient();
 provider.setupCerts();
 
 ['get', 'post'].forEach((verb) => {
-  describe(`claimsParameter use via ${verb} ${route}`, function () {
-    it('should not be combined with response_type=none', function () {
-      const auth = new AuthenticationRequest({
-        response_type: 'none',
-        scope: 'openid',
-        claims: 'something'
-      });
+  describe(`claimsParameter via ${verb} ${route}`, function () {
+    describe('specify id_token', function () {
+      before(agent.login);
+      after(agent.logout);
 
-      return wrap({ agent, route, verb, auth })
-      .expect(302)
-      // .expect(auth.validateFragment)
-      .expect(auth.validatePresence(['error', 'error_description', 'state']))
-      .expect(auth.validateState)
-      .expect(auth.validateClientLocation)
-      .expect(auth.validateError('invalid_request'))
-      .expect(auth.validateErrorDescription('claims parameter should not be combined with response_type none'));
+      it('should return individual claims requested', function () {
+        const auth = new AuthenticationRequest({
+          response_type: 'id_token token',
+          scope: 'openid',
+          claims: JSON.stringify({
+            id_token: {
+              email: null, // returned
+              family_name: { essential: true }, // returned
+              gender: { essential: false }, // returned
+              given_name: { value: 'John' }, // returned
+              locale: { values: ['en-US', 'en-GB'] }, // returned
+              middle_name: {} // not returned
+            }
+          })
+        });
+
+        return wrap({ agent, route, verb, auth })
+        .expect(302)
+        .expect(auth.validateFragment)
+        .expect(auth.validatePresence(['id_token'], false))
+        .expect(function (response) {
+          const { query: { id_token } } = parseLocation(response.headers.location, true);
+          const { payload } = decodeJWT(id_token);
+          expect(payload).to.contain.keys('email', 'family_name', 'gender', 'given_name', 'locale');
+          expect(payload).not.to.have.key('middle_name');
+        });
+      });
     });
 
-    it('should handle when invalid json is provided', function () {
-      const auth = new AuthenticationRequest({
-        response_type: 'id_token token',
-        scope: 'openid',
-        claims: 'something'
-      });
+    describe('specify userinfo', function () {
+      before(agent.login);
+      after(agent.logout);
 
-      return wrap({ agent, route, verb, auth })
-      .expect(302)
-      .expect(auth.validateFragment)
-      .expect(auth.validatePresence(['error', 'error_description', 'state']))
-      .expect(auth.validateState)
-      .expect(auth.validateClientLocation)
-      .expect(auth.validateError('invalid_request'))
-      .expect(auth.validateErrorDescription('could not parse the claims parameter JSON'));
+      it('should return individual claims requested', function (done) {
+        const auth = new AuthenticationRequest({
+          response_type: 'id_token token',
+          scope: 'openid',
+          claims: JSON.stringify({
+            userinfo: {
+              email: null, // returned
+              family_name: { essential: true }, // returned
+              gender: { essential: false }, // returned
+              given_name: { value: 'John' }, // returned
+              locale: { values: ['en-US', 'en-GB'] }, // returned
+              middle_name: {} // not returned
+            }
+          })
+        });
+
+        wrap({ agent, route, verb, auth })
+        .expect(302)
+        .expect(auth.validateFragment)
+        .expect(auth.validatePresence(['access_token'], false))
+        .end(function (err, response) {
+          if (err) {
+            return done(err);
+          }
+
+          const { query: { access_token } } = parseLocation(response.headers.location, true);
+          return agent
+            .get('/me')
+            .query({ access_token })
+            .expect(200)
+            .expect(function (userinfo) {
+              expect(userinfo.body).to.contain.keys('email', 'family_name', 'gender', 'given_name', 'locale');
+              expect(userinfo.body).not.to.have.key('middle_name');
+            })
+            .end(done);
+        });
+      });
     });
 
-    it('should validate an object is passed', function () {
-      const auth = new AuthenticationRequest({
-        response_type: 'id_token token',
-        scope: 'openid',
-        claims: 'true'
-      });
+    describe('specify both id_token and userinfo', function () {
+      before(agent.login);
+      after(agent.logout);
 
-      return wrap({ agent, route, verb, auth })
-      .expect(302)
-      .expect(auth.validateFragment)
-      .expect(auth.validatePresence(['error', 'error_description', 'state']))
-      .expect(auth.validateState)
-      .expect(auth.validateClientLocation)
-      .expect(auth.validateError('invalid_request'))
-      .expect(auth.validateErrorDescription('claims parameter should be a JSON object'));
+      it('should return individual claims requested', function (done) {
+        const auth = new AuthenticationRequest({
+          response_type: 'id_token token',
+          scope: 'openid',
+          claims: JSON.stringify({
+            id_token: {
+              email: null
+            },
+            userinfo: {
+              given_name: null
+            }
+          })
+        });
+
+        wrap({ agent, route, verb, auth })
+        .expect(302)
+        .expect(auth.validateFragment)
+        .expect(auth.validatePresence(['id_token', 'access_token'], false))
+        .expect(function (response) {
+          const { query: { id_token } } = parseLocation(response.headers.location, true);
+          const { payload } = decodeJWT(id_token);
+          expect(payload).to.contain.key('email');
+          expect(payload).not.to.have.key('given_name');
+        })
+        .end(function (err, response) {
+          const { query: { access_token } } = parseLocation(response.headers.location, true);
+          agent
+            .get('/me')
+            .query({ access_token })
+            .expect(200)
+            .expect(function (userinfo) {
+              expect(userinfo.body).to.contain.key('given_name');
+              expect(userinfo.body).not.to.have.key('email');
+            })
+            .end(done);
+        });
+      });
     });
 
-    it('should check accepted properties being present', function () {
-      const auth = new AuthenticationRequest({
-        response_type: 'id_token token',
-        scope: 'openid',
-        claims: '{"not_recognized": "does not matter"}'
+    describe('parameter validations', function () {
+      it('should not be combined with response_type=none', function () {
+        const auth = new AuthenticationRequest({
+          response_type: 'none',
+          scope: 'openid',
+          claims: 'something'
+        });
+
+        return wrap({ agent, route, verb, auth })
+        .expect(302)
+        .expect(auth.validatePresence(['error', 'error_description', 'state']))
+        .expect(auth.validateState)
+        .expect(auth.validateClientLocation)
+        .expect(auth.validateError('invalid_request'))
+        .expect(auth.validateErrorDescription('claims parameter should not be combined with response_type none'));
       });
 
-      return wrap({ agent, route, verb, auth })
-      .expect(302)
-      .expect(auth.validateFragment)
-      .expect(auth.validatePresence(['error', 'error_description', 'state']))
-      .expect(auth.validateState)
-      .expect(auth.validateClientLocation)
-      .expect(auth.validateError('invalid_request'))
-      .expect(auth.validateErrorDescription('claims parameter should have userinfo or id_token properties'));
-    });
+      it('should handle when invalid json is provided', function () {
+        const auth = new AuthenticationRequest({
+          response_type: 'id_token token',
+          scope: 'openid',
+          claims: 'something'
+        });
 
-    it('should check userinfo property being a simple object', function () {
-      const auth = new AuthenticationRequest({
-        response_type: 'id_token token',
-        scope: 'openid',
-        claims: '{"userinfo": "Not an Object"}'
+        return wrap({ agent, route, verb, auth })
+        .expect(302)
+        .expect(auth.validateFragment)
+        .expect(auth.validatePresence(['error', 'error_description', 'state']))
+        .expect(auth.validateState)
+        .expect(auth.validateClientLocation)
+        .expect(auth.validateError('invalid_request'))
+        .expect(auth.validateErrorDescription('could not parse the claims parameter JSON'));
       });
 
-      return wrap({ agent, route, verb, auth })
-      .expect(302)
-      .expect(auth.validateFragment)
-      .expect(auth.validatePresence(['error', 'error_description', 'state']))
-      .expect(auth.validateState)
-      .expect(auth.validateClientLocation)
-      .expect(auth.validateError('invalid_request'))
-      .expect(auth.validateErrorDescription('claims.userinfo should be an object'));
-    });
+      it('should validate an object is passed', function () {
+        const auth = new AuthenticationRequest({
+          response_type: 'id_token token',
+          scope: 'openid',
+          claims: 'true'
+        });
 
-    it('should check id_token property being a simple object', function () {
-      const auth = new AuthenticationRequest({
-        response_type: 'id_token token',
-        scope: 'openid',
-        claims: '{"id_token": "Not an Object"}'
+        return wrap({ agent, route, verb, auth })
+        .expect(302)
+        .expect(auth.validateFragment)
+        .expect(auth.validatePresence(['error', 'error_description', 'state']))
+        .expect(auth.validateState)
+        .expect(auth.validateClientLocation)
+        .expect(auth.validateError('invalid_request'))
+        .expect(auth.validateErrorDescription('claims parameter should be a JSON object'));
       });
 
-      return wrap({ agent, route, verb, auth })
-      .expect(302)
-      .expect(auth.validateFragment)
-      .expect(auth.validatePresence(['error', 'error_description', 'state']))
-      .expect(auth.validateState)
-      .expect(auth.validateClientLocation)
-      .expect(auth.validateError('invalid_request'))
-      .expect(auth.validateErrorDescription('claims.id_token should be an object'));
-    });
+      it('should check accepted properties being present', function () {
+        const auth = new AuthenticationRequest({
+          response_type: 'id_token token',
+          scope: 'openid',
+          claims: '{"not_recognized": "does not matter"}'
+        });
 
-    it('should check that userinfo claims are not specified for id_token requests', function () {
-      const auth = new AuthenticationRequest({
-        response_type: 'id_token',
-        scope: 'openid',
-        claims: '{"userinfo": {}}'
+        return wrap({ agent, route, verb, auth })
+        .expect(302)
+        .expect(auth.validateFragment)
+        .expect(auth.validatePresence(['error', 'error_description', 'state']))
+        .expect(auth.validateState)
+        .expect(auth.validateClientLocation)
+        .expect(auth.validateError('invalid_request'))
+        .expect(auth.validateErrorDescription('claims parameter should have userinfo or id_token properties'));
       });
 
-      return wrap({ agent, route, verb, auth })
-      .expect(302)
-      .expect(auth.validateFragment)
-      .expect(auth.validatePresence(['error', 'error_description', 'state']))
-      .expect(auth.validateState)
-      .expect(auth.validateClientLocation)
-      .expect(auth.validateError('invalid_request'))
-      .expect(auth.validateErrorDescription('claims.userinfo should not be used if access_token is not issued'));
+      it('should check userinfo property being a simple object', function () {
+        const auth = new AuthenticationRequest({
+          response_type: 'id_token token',
+          scope: 'openid',
+          claims: '{"userinfo": "Not an Object"}'
+        });
+
+        return wrap({ agent, route, verb, auth })
+        .expect(302)
+        .expect(auth.validateFragment)
+        .expect(auth.validatePresence(['error', 'error_description', 'state']))
+        .expect(auth.validateState)
+        .expect(auth.validateClientLocation)
+        .expect(auth.validateError('invalid_request'))
+        .expect(auth.validateErrorDescription('claims.userinfo should be an object'));
+      });
+
+      it('should check id_token property being a simple object', function () {
+        const auth = new AuthenticationRequest({
+          response_type: 'id_token token',
+          scope: 'openid',
+          claims: '{"id_token": "Not an Object"}'
+        });
+
+        return wrap({ agent, route, verb, auth })
+        .expect(302)
+        .expect(auth.validateFragment)
+        .expect(auth.validatePresence(['error', 'error_description', 'state']))
+        .expect(auth.validateState)
+        .expect(auth.validateClientLocation)
+        .expect(auth.validateError('invalid_request'))
+        .expect(auth.validateErrorDescription('claims.id_token should be an object'));
+      });
+
+      it('should check that userinfo claims are not specified for id_token requests', function () {
+        const auth = new AuthenticationRequest({
+          response_type: 'id_token',
+          scope: 'openid',
+          claims: '{"userinfo": {}}'
+        });
+
+        return wrap({ agent, route, verb, auth })
+        .expect(302)
+        .expect(auth.validateFragment)
+        .expect(auth.validatePresence(['error', 'error_description', 'state']))
+        .expect(auth.validateState)
+        .expect(auth.validateClientLocation)
+        .expect(auth.validateError('invalid_request'))
+        .expect(auth.validateErrorDescription('claims.userinfo should not be used if access_token is not issued'));
+      });
     });
   });
 });
