@@ -47,6 +47,8 @@ module.exports = function testHelper(dir, basename) {
   delegate(delegatedStore, 'store')
     .method('toJSON')
     .method('add')
+    .method('all')
+    .method('generate')
     .method('remove')
     .method('get');
   provider.keystore = delegatedStore;
@@ -160,10 +162,21 @@ module.exports = function testHelper(dir, basename) {
     response.headers.location = response.headers.location.replace('#', '?');
   };
 
-  AuthenticationRequest.prototype.validatePresence = function (keys) {
+  AuthenticationRequest.prototype.validatePresence = function (keys, all) {
+    let absolute;
+    if (all === undefined) {
+      absolute = true;
+    } else {
+      absolute = all;
+    }
+
     return (response) => {
       const { query } = parse(response.headers.location, true);
-      expect(query).to.have.all.keys(keys);
+      if (absolute) {
+        expect(query).to.have.keys(keys);
+      } else {
+        expect(query).to.contain.keys(keys);
+      }
     };
   };
 

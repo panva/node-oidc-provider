@@ -6,8 +6,9 @@ ifeq ($(shell echo ${NODE_VERSION}\<6 | bc), 1)
 endif
 
 REQUIRED = --require test/environment
+EXCLUDE = -x **/adapters/**
 
-TESTS = test/**/**/*.test.js
+TESTS = test/**/**/*.test.js test/**/*.test.js
 
 test:
 	node $(FLAGS) \
@@ -15,11 +16,12 @@ test:
 		$(REQUIRED) \
 		$(TESTS)
 
-test-cov:
+coverage:
 	node $(FLAGS) \
 		./node_modules/.bin/istanbul cover \
 		./node_modules/.bin/_mocha \
 		$(REQUIRED) \
+		$(EXCLUDE) \
 		$(TESTS)
 
 test-travis:
@@ -28,6 +30,7 @@ test-travis:
 		./node_modules/.bin/_mocha \
 		--report lcovonly \
 		$(REQUIRED) \
+		$(EXCLUDE) \
 		$(TESTS)
 
-.PHONY: test
+.PHONY: test coverage

@@ -14,6 +14,7 @@ module.exports.config = {
     revocation: true,
     sessionManagement: true,
   },
+  pairwiseSalt: 'da1c442b365b563dfc121f285a11eedee5bbff7110d55c88',
 };
 
 module.exports.clients = [{
