@@ -381,7 +381,7 @@ provider.setupCerts();
       const spy = sinon.spy();
       provider.once('authentication.error', spy);
       const auth = new AuthenticationRequest({
-        response_type: 'none',
+        response_type: 'code',
         scope: 'openid'
       });
 

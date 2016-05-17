@@ -364,7 +364,7 @@ provider.setupCerts();
       const spy = sinon.spy();
       provider.once('authentication.error', spy);
       const auth = new AuthenticationRequest({
-        response_type: 'none',
+        response_type: 'id_token',
         scope: 'openid'
       });
 
@@ -373,6 +373,7 @@ provider.setupCerts();
       .expect(function () {
         expect(spy.calledOnce).to.be.true;
       })
+      .expect(auth.validateFragment)
       .expect(auth.validatePresence(['error', 'error_description', 'state']))
       .expect(auth.validateState)
       .expect(auth.validateClientLocation)
