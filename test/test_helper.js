@@ -204,9 +204,9 @@ module.exports = function testHelper(dir, basename) {
   provider.setupCerts = function (passed) {
     const self = this;
     const pre = _.pick(self.configuration, [
-      'requestObjectEncryptionAlgValuesSupported',
-      'idTokenSigningAlgValuesSupported',
-      'userinfoSigningAlgValuesSupported'
+      'requestObjectEncryptionAlgValues',
+      'idTokenSigningAlgValues',
+      'userinfoSigningAlgValues'
     ]);
     const added = [];
 

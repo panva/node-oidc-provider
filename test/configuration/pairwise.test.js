@@ -8,12 +8,12 @@ describe('Provider configuration', function () {
     const throws = [
       function () {
         new Provider('http://localhost:3000', { // eslint-disable-line no-new
-          subjectTypesSupported: ['pairwise']
+          subjectTypes: ['pairwise']
         });
       },
       function () {
         new Provider('http://localhost:3000', { // eslint-disable-line no-new
-          subjectTypesSupported: ['public', 'pairwise']
+          subjectTypes: ['public', 'pairwise']
         });
       },
     ];
@@ -21,7 +21,7 @@ describe('Provider configuration', function () {
     const notThrows = [
       function () {
         new Provider('http://localhost:3000', { // eslint-disable-line no-new
-          subjectTypesSupported: ['public'],
+          subjectTypes: ['public'],
           pairwiseSalt: 'is provided'
         });
       }

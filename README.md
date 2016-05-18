@@ -89,6 +89,8 @@ const Provider = require('oidc-provider').Provider;
 const issuer = 'http://localhost:3000';
 const configuration = {
   // ... see available options below
+  subjectTypes: ['public', 'pairwise'],
+  pairwiseSalt: 'this is sooo random'
 };
 
 const oidc = new Provider(issuer, configuration);
