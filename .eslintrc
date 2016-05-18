@@ -1,11 +1,11 @@
 {
   "extends": "airbnb-base",
   "rules": {
-    strict: "off",
-    "no-empty": ["error", { "allowEmptyCatch": true }],
-    "no-underscore-dangle": ["warn", { "allowAfterThis": true }],
-    "generator-star-spacing": ["warn", "both"],
-    "no-cond-assign": ["error", "except-parens"],
-    "no-param-reassign": ["error", { "props": false }]
+    "strict": 0,
+    "no-empty": [2, { "allowEmptyCatch": true }],
+    "no-underscore-dangle": [1, { "allowAfterThis": true }],
+    "generator-star-spacing": [1, "both"],
+    "no-cond-assign": [2, "except-parens"],
+    "no-param-reassign": [2, { "props": false }]
   }
 }
