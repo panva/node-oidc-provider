@@ -4,6 +4,7 @@ const {
   provider,
   agent,
   AuthenticationRequest,
+  getSession,
   wrap
 } = require('../test_helper')(__dirname);
 const { parse: parseLocation } = require('url');
@@ -132,6 +133,161 @@ provider.setupCerts();
               expect(userinfo.body).not.to.have.key('email');
             })
             .end(done);
+        });
+      });
+    });
+
+    describe('related interactions', function () {
+      beforeEach(agent.login);
+      afterEach(agent.logout);
+      context('are met', function () {
+        it('session subject value differs from the one requested', function () {
+          const session = getSession(agent);
+          const auth = new AuthenticationRequest({
+            response_type: 'id_token',
+            scope: 'openid',
+            prompt: 'none',
+            claims: JSON.stringify({
+              id_token: {
+                sub: {
+                  value: session.account
+                }
+              }
+            })
+          });
+
+          return wrap({ agent, route, verb, auth })
+          .expect(302)
+          .expect(auth.validateFragment)
+          .expect(auth.validatePresence(['id_token', 'state']))
+          .expect(auth.validateState)
+          .expect(auth.validateClientLocation);
+        });
+
+        it('none of multiple authentication context class references requested are met', function () {
+          const session = getSession(agent);
+          session.acrValue = '2';
+          const auth = new AuthenticationRequest({
+            response_type: 'id_token',
+            scope: 'openid',
+            prompt: 'none',
+            claims: JSON.stringify({
+              id_token: {
+                acr: {
+                  essential: true,
+                  values: ['1', '2']
+                }
+              }
+            })
+          });
+
+          return wrap({ agent, route, verb, auth })
+          .expect(302)
+          .expect(auth.validateFragment)
+          .expect(auth.validatePresence(['id_token', 'state']))
+          .expect(auth.validateState)
+          .expect(auth.validateClientLocation);
+        });
+
+        it('single requested authentication context class reference is not met', function () {
+          const session = getSession(agent);
+          session.acrValue = '1';
+          const auth = new AuthenticationRequest({
+            response_type: 'id_token',
+            scope: 'openid',
+            prompt: 'none',
+            claims: JSON.stringify({
+              id_token: {
+                acr: {
+                  essential: true,
+                  value: '1'
+                }
+              }
+            })
+          });
+
+          return wrap({ agent, route, verb, auth })
+          .expect(302)
+          .expect(auth.validateFragment)
+          .expect(auth.validatePresence(['id_token', 'state']))
+          .expect(auth.validateState)
+          .expect(auth.validateClientLocation);
+        });
+      });
+
+      context('are not met', function () {
+        it('session subject value differs from the one requested', function () {
+          const auth = new AuthenticationRequest({
+            response_type: 'id_token',
+            scope: 'openid',
+            prompt: 'none',
+            claims: JSON.stringify({
+              id_token: {
+                sub: {
+                  value: 'iexpectthisid'
+                }
+              }
+            })
+          });
+
+          return wrap({ agent, route, verb, auth })
+          .expect(302)
+          .expect(auth.validateFragment)
+          .expect(auth.validatePresence(['error', 'error_description', 'state']))
+          .expect(auth.validateState)
+          .expect(auth.validateClientLocation)
+          .expect(auth.validateError('login_required'))
+          .expect(auth.validateErrorDescription('requested subject could not be obtained'));
+        });
+
+        it('none of multiple authentication context class references requested are met', function () {
+          const auth = new AuthenticationRequest({
+            response_type: 'id_token',
+            scope: 'openid',
+            prompt: 'none',
+            claims: JSON.stringify({
+              id_token: {
+                acr: {
+                  essential: true,
+                  values: ['1', '2']
+                }
+              }
+            })
+          });
+
+          return wrap({ agent, route, verb, auth })
+          .expect(302)
+          .expect(auth.validateFragment)
+          .expect(auth.validatePresence(['error', 'error_description', 'state']))
+          .expect(auth.validateState)
+          .expect(auth.validateClientLocation)
+          .expect(auth.validateError('login_required'))
+          .expect(auth.validateErrorDescription('none of the requested ACRs could not be obtained'));
+        });
+
+        it('single requested authentication context class reference is not met', function () {
+          const auth = new AuthenticationRequest({
+            response_type: 'id_token',
+            scope: 'openid',
+            prompt: 'none',
+            claims: JSON.stringify({
+              id_token: {
+                acr: {
+                  essential: true,
+                  value: '1'
+                }
+              }
+            })
+          });
+
+          return wrap({ agent, route, verb, auth })
+          .expect(302)
+          .expect(auth.validateFragment)
+          .expect(auth.validatePresence(['error', 'error_description', 'state']))
+          .expect(auth.validateState)
+          .expect(auth.validateClientLocation)
+          .expect(auth.validateError('login_required'))
+          .expect(auth.validateErrorDescription('requested ACR could not be obtained'));
         });
       });
     });

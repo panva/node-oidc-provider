@@ -1,7 +1,7 @@
 {
   "extends": "airbnb-base",
   "rules": {
-    strict: "off",
+    "strict": "off",
     "no-empty": ["error", { "allowEmptyCatch": true }],
     "no-underscore-dangle": ["warn", { "allowAfterThis": true }],
     "generator-star-spacing": ["warn", "both"],

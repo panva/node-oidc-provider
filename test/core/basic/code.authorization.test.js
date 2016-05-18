@@ -95,10 +95,6 @@ provider.setupCerts();
         .expect(auth.validateInteractionRedirect)
         .expect(auth.validateInteractionError('login_required', 'max_age'));
       });
-
-      it('//claims tests; session subject value differs from the one requested');
-      it('//claims tests; none of multiple authentication context class references requested are met');
-      it('//claims tests; single requested authentication context class reference is not met');
     });
   });
 
