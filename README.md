@@ -24,7 +24,6 @@ your own unique-looking and functioning user flows.
     * [Persistance](#persistance)
   * [Events](#events)
   * [Certification](#certification)
-  * [License](#license)
 
 ## Implemented specs & features
 
