@@ -426,5 +426,37 @@ provider.setupCerts();
         .expect(auth.validateErrorDescription('could not validate id_token_hint'));
       });
     });
+
+    context('exception handling', function () {
+      before(function () {
+        sinon.stub(provider.Client, 'find').throws();
+      });
+
+      after(function () {
+        provider.Client.find.restore();
+      });
+
+      it('responds with server_error redirect to redirect_uri', function () {
+        const auth = new AuthenticationRequest({
+          response_type: 'code',
+          prompt: 'none',
+          scope: 'openid'
+        });
+
+        const spy = sinon.spy();
+        provider.once('server_error', spy);
+
+        return wrap({ agent, route, verb, auth })
+          .expect(302)
+          .expect(function () {
+            expect(spy.called).to.be.true;
+          })
+          .expect(auth.validatePresence(['error', 'error_description', 'state']))
+          .expect(auth.validateState)
+          .expect(auth.validateClientLocation)
+          .expect(auth.validateError('server_error'))
+          .expect(auth.validateErrorDescription('oops something went wrong'));
+      });
+    });
   });
 });

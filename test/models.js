@@ -32,7 +32,7 @@ class TestAdapter {
     if (grantId) {
       const grantKey = this.grantKey(grantId);
 
-      store.get(grantKey).forEach(token => store.del(token));
+      store.get(grantKey).forEach(token => store.delete(token));
     }
 
     return Promise.resolve();
@@ -43,8 +43,12 @@ class TestAdapter {
     return Promise.resolve();
   }
 
+  syncFind(id) {
+    return store.get(this.key(id));
+  }
+
   find(id) {
-    return Promise.resolve(store.get(this.key(id)));
+    return Promise.resolve(this.syncFind(id));
   }
 
   upsert(id, payload, expiresIn) {
