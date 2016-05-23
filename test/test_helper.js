@@ -34,13 +34,11 @@ module.exports = function testHelper(dir, basename) {
     base: `${basename || path.basename(dir)}.config.js`,
   });
   const { config, certs, client } = require(conf); // eslint-disable-line global-require
+  config.adapter = TestAdapter;
   const provider = new Provider('http://127.0.0.1', config);
   provider.Account = Account;
 
-  provider.configuration.adapters.TestAdapter = TestAdapter;
-  provider.configuration.adapter = 'TestAdapter';
-
-  // gotta delegate the keystore object so that i can stub the method calls
+  // gotta delegate the keystore object so that we can stub the method calls
   // with sinon
   const store = jose.JWK.createKeyStore();
   const delegatedStore = { store };

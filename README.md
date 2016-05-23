@@ -207,7 +207,7 @@ const configuration = {
 
 
 ### Keys (signing and encryption)
-To add RSA or EC signing and encryption keys use the `addKey` method on a Provider instance. This
+To add RSA or EC signing and encryption keys use the `addKey` method on a oidc-provider instance. This
 accepts a jwk formatted private key object and returns a Promise, resolved with
 [node-jose][node-jose] jose.JWK.Key
 
@@ -217,7 +217,7 @@ signing and encryption. When `kid` is ommited it will be calculated according to
 [JSON Web Key (JWK) Thumbprint][feature-thumbprint].
 
 ### Clients
-To add pre-established clients use the `addClient` method on a Provider instance. This accepts a
+To add pre-established clients use the `addClient` method on a oidc-provider instance. This accepts a
 metadata object and returns a Promise, fulfilled with the Client object, rejected with a validation
 or other errors that may have been encountered. At the very least you must provide client_id,
 client_secret and redirect_uris. See the rest of the available metadata [here][client-metadata].
@@ -231,9 +231,120 @@ oidc.addClient(clientMetadata).then(fulfillmentHandler, rejectionHandler);
 
 
 ### Persistance
+The provided example and any new instance of oidc-provider will use the basic in-memory adapter for
+storing issued tokens, codes and user sessions. This is fine for as long as you develop, configure
+and generally just play around since every time you restart your process all information will be
+lost. As soon as you cannot live with this limitation you will be required to provide an adapter
+for oidc-provider to use. Below you can see the API oidc-provider will expect and test for when
+starting up. For reference see the [memory adapter](lib/adapters/memory_adapter.js) and a [redis
+adapter](example/adapters/redis.js).
+There's also a simple [test](example/adapters/redis_test.js) you can use to check your own
+implementation.
+
+```
+class MyAdapter {
+
+  /**
+   *
+   * Creates an instance of MyAdapter for an oidc-provider model.
+   *
+   * @constructor
+   * @param {string} name Name of the oidc-provider model. One of "Session", "AccessToken",
+   * "AuthorizationCode", "RefreshToken", "ClientCredentials".
+   *
+   */
+  constructor(name) {
+
+  }
+
+  /**
+   *
+   * Update or Create an instance of an oidc-provider model.
+   *
+   * @return {Promise} Promise fulfilled when the operation succeeded. Rejected with error when
+   * encountered.
+   * @param {string} id Identifier that oidc-provider will use to reference this token for future
+   * operations.
+   * @param {object} payload Object with all properties intended for storage.
+   * @param {expiresIn} integer Number of seconds intended for this model to be stored.
+   *
+   */
+  upsert(id, payload, expiresIn) {
+
+    /**
+     *
+     * When this is one of AccessToken, AuthorizationCode, RefreshToken, ClientCredentials the
+     * payload will contain the following properties:
+     * - grantId {string} the original id assigned to a grant (authorization request)
+     * - header {string} oidc-provider tokens are themselves JWTs, this is the first part of the token
+     * - payload {string} second part of the token
+     * - signature {string} the signature of the token
+     *
+     * Hint: you can JSON.parse(base64decode( ... )) the header and payload to get the token
+     * properties and store them too, they may be helpful for getting insights on your usage.
+     * Modifying any of header, payload or signature values will result in the token being invalid,
+     * remember that oidc-provider will do a JWT signature check of both the received and stored
+     * token to detect potential manipulation.
+     *
+     * Hint2: in order to fulfill all OAuth2.0 behaviors in regards to invalidating and expiring
+     * potentially misused or sniffed tokens you should keep track of all tokens that belong to the
+     * same grantId.
+     *
+     */  
+  }
+
+  /**
+   *
+   * Return previously stored instance of an oidc-provider model.
+   *
+   * @return {Promise} Promise fulfilled with either Object (when found and not dropped yet due to
+   * expiration) or falsy value when not found anymore. Rejected with error when encountered.
+   * @param {string} id Identifier of oidc-provider model
+   *
+   */
+  find(id) {
+
+  }
+
+  /**
+   *
+   * Mark a stored oidc-provider model as consumed (not yet expired though!). Future finds for this
+   * id should be fulfilled with an object containing additional property named "consumed".
+   *
+   * @return {Promise} Promise fulfilled when the operation succeeded. Rejected with error when
+   * encountered.
+   * @param {string} id Identifier of oidc-provider model
+   *
+   */
+  consume(id) {
+
+  }
+
+  /**
+   *
+   * Destroy/Drop/Remove a stored oidc-provider model and other grant related models. Future finds
+   * for this id should be fulfilled with falsy values.
+   *
+   * @return {Promise} Promise fulfilled when the operation succeeded. Rejected with error when
+   * encountered.
+   * @param {string} id Identifier of oidc-provider model
+   *
+   */
+  destroy(id) {
+
+    /**
+     *
+     * See upsert for the note on grantId, it's imperitive to destroy all tokens with the same
+     * grantId when destroy is called. To query your persistancy store for the grantId of this token
+     * and also trigger a chain of removals for all related tokens is recommended.
+     *
+     */
+  }
+}
+```
 
 ## Events
-The Provider instance is an event emitter, `this` is always the instance. In events where `ctx`(koa
+The oidc-provider instance is an event emitter, `this` is always the instance. In events where `ctx`(koa
 request context) is passed to the listener `ctx.oidc` holds additional details like recognized
 parameters, loaded client or session.
 

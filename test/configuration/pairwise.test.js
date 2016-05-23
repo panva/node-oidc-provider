@@ -22,7 +22,12 @@ describe('Provider configuration', function () {
       function () {
         new Provider('http://localhost:3000', { // eslint-disable-line no-new
           subjectTypes: ['public'],
-          pairwiseSalt: 'is provided'
+          pairwiseSalt: 'may be provided'
+        });
+      },
+      function () {
+        new Provider('http://localhost:3000', { // eslint-disable-line no-new
+          subjectTypes: ['public']
         });
       }
     ];

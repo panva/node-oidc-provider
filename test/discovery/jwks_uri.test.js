@@ -25,7 +25,7 @@ describe(route, function () {
       return agent.get(route)
         .expect(function (res) {
           expect(res.body.keys).to.have.length(1);
-          expect(res.body.keys[0]).to.have.all.keys(['kty', 'kid', 'use', 'e', 'n']);
+          expect(res.body.keys[0]).to.have.all.keys(['kty', 'kid', 'e', 'n']);
         });
     });
   });
@@ -37,7 +37,7 @@ describe(route, function () {
       return agent.get(route)
         .expect(function (res) {
           expect(res.body.keys).to.have.length(1);
-          expect(res.body.keys[0]).to.have.all.keys(['kty', 'kid', 'use', 'crv', 'x', 'y']);
+          expect(res.body.keys[0]).to.have.all.keys(['kty', 'kid', 'crv', 'x', 'y']);
         });
     });
   });
