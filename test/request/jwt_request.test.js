@@ -19,6 +19,16 @@ provider.setupClient({
 });
 provider.setupCerts();
 
+describe('configuration features.requestUri', function () {
+  it('extends discovery', function () {
+    return agent.get('/.well-known/openid-configuration')
+      .expect(200)
+      .expect(function (response) {
+        expect(response.body).to.have.property('request_parameter_supported', true);
+      });
+  });
+});
+
 ['get', 'post'].forEach((verb) => {
   describe(`${route} ${verb} passing request parameters as JWTs`, function () {
     before(agent.login);
@@ -104,7 +114,7 @@ provider.setupCerts();
             response_type: 'code'
           }
         })
-        .expect(200)
+        .expect(302)
         .expect(function () {
           expect(spy.calledOnce).to.be.true;
           expect(spy.args[0][0]).to.have.property('message', 'invalid_request_object');
@@ -135,7 +145,7 @@ provider.setupCerts();
             response_type: 'code'
           }
         })
-        .expect(200)
+        .expect(302)
         .expect(function () {
           expect(spy.calledOnce).to.be.true;
           expect(spy.args[0][0]).to.have.property('message', 'invalid_request_object');
@@ -165,7 +175,7 @@ provider.setupCerts();
             response_type: 'code'
           }
         })
-        .expect(200)
+        .expect(302)
         .expect(function () {
           expect(spy.calledOnce).to.be.true;
           expect(spy.args[0][0]).to.have.property('message', 'invalid_request_object');
@@ -195,7 +205,7 @@ provider.setupCerts();
             response_type: 'code'
           }
         })
-        .expect(200)
+        .expect(302)
         .expect(function () {
           expect(spy.calledOnce).to.be.true;
           expect(spy.args[0][0]).to.have.property('message', 'invalid_request_object');
@@ -220,7 +230,7 @@ provider.setupCerts();
           response_type: 'code'
         }
       })
-      .expect(200)
+      .expect(302)
       .expect(function () {
         expect(spy.calledOnce).to.be.true;
         expect(spy.args[0][0]).to.have.property('message', 'invalid_request_object');
@@ -250,7 +260,7 @@ provider.setupCerts();
             response_type: 'code'
           }
         })
-        .expect(200)
+        .expect(302)
         .expect(function () {
           expect(spy.calledOnce).to.be.true;
           expect(spy.args[0][0]).to.have.property('message', 'invalid_request_object');
@@ -282,7 +292,7 @@ provider.setupCerts();
             response_type: 'code'
           }
         })
-        .expect(200)
+        .expect(302)
         .expect(function () {
           expect(spy.calledOnce).to.be.true;
           expect(spy.args[0][0]).to.have.property('message', 'invalid_request_object');

@@ -20,12 +20,42 @@ provider.setupClient({
 });
 provider.setupCerts();
 
+describe('configuration features.requestUri', function () {
+  it('extends discovery', function () {
+    return agent.get('/.well-known/openid-configuration')
+      .expect(200)
+      .expect(function (response) {
+        expect(response.body).to.have.property('request_uri_parameter_supported', true);
+        expect(response.body).not.to.have.property('require_request_uri_registration');
+      });
+  });
+
+  context('requireRequestUriRegistration', function () {
+    before(function () {
+      provider.configuration.features.requestUri = { requireRequestUriRegistration: true };
+    });
+
+    after(function () {
+      provider.configuration.features.requestUri = true;
+    });
+
+    it('extends discovery', function () {
+      return agent.get('/.well-known/openid-configuration')
+        .expect(200)
+        .expect(function (response) {
+          expect(response.body).to.have.property('request_uri_parameter_supported', true);
+          expect(response.body).to.have.property('require_request_uri_registration', true);
+        });
+    });
+  });
+});
+
 ['get', 'post'].forEach((verb) => {
   describe(`${route} ${verb} passing request parameters in request_uri`, function () {
     before(agent.login);
     after(agent.logout);
 
-    it('works with signed by none', function () {
+    it('works with signed by an actual alg', function () {
       const key = provider.Client.find('client-with-HS-sig').keystore.get('clientSecret');
       return JWT.sign({
         client_id: 'client-with-HS-sig',
@@ -56,7 +86,7 @@ provider.setupCerts();
       });
     });
 
-    it('works with signed by an actual alg', function () {
+    it('works with signed by none', function () {
       return JWT.sign({
         client_id: 'client',
         response_type: 'code',
@@ -104,12 +134,79 @@ provider.setupCerts();
           response_type: 'code'
         }
       })
-      .expect(200)
+      .expect(302)
       .expect(function () {
         expect(spy.calledOnce).to.be.true;
         expect(spy.args[0][0]).to.have.property('message', 'invalid_request_uri');
         expect(spy.args[0][0]).to.have.property('error_description',
           'the request_uri MUST NOT exceed 512 characters');
+      });
+    });
+
+    context('when client has requestUris set', function () {
+      before(function () {
+        provider.Client.find('client').requestUris = ['https://thisoneisallowed.com'];
+      });
+
+      after(function () {
+        provider.Client.find('client').requestUris = undefined;
+      });
+
+      it('checks the whitelist', function () {
+        return JWT.sign({
+          client_id: 'client',
+          response_type: 'code',
+          redirect_uri: 'https://client.example.com/cb'
+        }, null, 'none').then((request) => {
+          nock('https://thisoneisallowed.com')
+            .get('/')
+            .reply(200, request);
+
+          return wrap({
+            agent,
+            route,
+            verb,
+            auth: {
+              request_uri: 'https://thisoneisallowed.com',
+              scope: 'openid',
+              client_id: 'client',
+              response_type: 'code'
+            }
+          })
+          .expect(302)
+          .expect(function (response) {
+            const expected = parse('https://client.example.com/cb', true);
+            const actual = parse(response.headers.location, true);
+            ['protocol', 'host', 'pathname'].forEach((attr) => {
+              expect(actual[attr]).to.equal(expected[attr]);
+            });
+            expect(actual.query).to.have.property('code');
+          });
+        });
+      });
+
+      it('doesnt allow to bypass these', function () {
+        const spy = sinon.spy();
+        provider.once('authentication.error', spy);
+
+        return wrap({
+          agent,
+          route,
+          verb,
+          auth: {
+            request_uri: 'https://thisoneisnot.com',
+            scope: 'openid',
+            client_id: 'client',
+            response_type: 'code'
+          }
+        })
+        .expect(302)
+        .expect(function () {
+          expect(spy.calledOnce).to.be.true;
+          expect(spy.args[0][0]).to.have.property('message', 'invalid_request_uri');
+          expect(spy.args[0][0]).to.have.property('error_description',
+          'not registered request_uri provided');
+        });
       });
     });
 
@@ -128,7 +225,7 @@ provider.setupCerts();
           response_type: 'code'
         }
       })
-      .expect(200)
+      .expect(302)
       .expect(function () {
         expect(spy.calledOnce).to.be.true;
         expect(spy.args[0][0]).to.have.property('message', 'invalid_request_uri');
@@ -157,7 +254,7 @@ provider.setupCerts();
           response_type: 'code'
         }
       })
-      .expect(200)
+      .expect(302)
       .expect(function () {
         expect(spy.calledOnce).to.be.true;
         expect(spy.args[0][0]).to.have.property('message', 'invalid_request_uri');
@@ -185,7 +282,7 @@ provider.setupCerts();
           response_type: 'code'
         }
       })
-      .expect(200)
+      .expect(302)
       .expect(function () {
         expect(spy.calledOnce).to.be.true;
         expect(spy.args[0][0]).to.have.property('message', 'invalid_request_uri');
@@ -214,7 +311,7 @@ provider.setupCerts();
           response_type: 'code'
         }
       })
-      .expect(200)
+      .expect(302)
       .expect(function () {
         expect(spy.calledOnce).to.be.true;
         expect(spy.args[0][0]).to.have.property('message', 'invalid_request_uri');
@@ -246,7 +343,7 @@ provider.setupCerts();
             response_type: 'code'
           }
         })
-        .expect(200)
+        .expect(302)
         .expect(function () {
           expect(spy.calledOnce).to.be.true;
           expect(spy.args[0][0]).to.have.property('message', 'invalid_request_object');
@@ -281,7 +378,7 @@ provider.setupCerts();
             response_type: 'code'
           }
         })
-        .expect(200)
+        .expect(302)
         .expect(function () {
           expect(spy.calledOnce).to.be.true;
           expect(spy.args[0][0]).to.have.property('message', 'invalid_request_object');
@@ -315,7 +412,7 @@ provider.setupCerts();
             response_type: 'code'
           }
         })
-        .expect(200)
+        .expect(302)
         .expect(function () {
           expect(spy.calledOnce).to.be.true;
           expect(spy.args[0][0]).to.have.property('message', 'invalid_request_object');
@@ -349,7 +446,7 @@ provider.setupCerts();
             response_type: 'code'
           }
         })
-        .expect(200)
+        .expect(302)
         .expect(function () {
           expect(spy.calledOnce).to.be.true;
           expect(spy.args[0][0]).to.have.property('message', 'invalid_request_object');
@@ -378,7 +475,7 @@ provider.setupCerts();
           response_type: 'code'
         }
       })
-      .expect(200)
+      .expect(302)
       .expect(function () {
         expect(spy.calledOnce).to.be.true;
         expect(spy.args[0][0]).to.have.property('message', 'invalid_request_object');
@@ -412,7 +509,7 @@ provider.setupCerts();
             response_type: 'code'
           }
         })
-        .expect(200)
+        .expect(302)
         .expect(function () {
           expect(spy.calledOnce).to.be.true;
           expect(spy.args[0][0]).to.have.property('message', 'invalid_request_object');
@@ -448,7 +545,7 @@ provider.setupCerts();
             response_type: 'code'
           }
         })
-        .expect(200)
+        .expect(302)
         .expect(function () {
           expect(spy.calledOnce).to.be.true;
           expect(spy.args[0][0]).to.have.property('message', 'invalid_request_object');

@@ -151,28 +151,38 @@ provider.setupCerts();
       });
     });
 
-    it('missing mandatory parameter redirect_uri', function () {
-      const emitSpy = sinon.spy();
-      const renderSpy = sinon.spy(provider.configuration, 'renderError');
-      provider.once('authentication.error', emitSpy);
-      const auth = new AuthenticationRequest({
-        response_type: 'code token',
-        scope: 'openid'
+    context('when client has more then one redirect_uri', function () {
+      before(function () {
+        provider.Client.find('client').redirectUris.push('https://someOtherUri.com');
       });
-      delete auth.redirect_uri;
 
-      return agent.get(route)
-      .query(auth)
-      .expect(function () {
-        renderSpy.restore();
-      })
-      .expect(200)
-      .expect(function () {
-        expect(emitSpy.calledOnce).to.be.true;
-        expect(renderSpy.calledOnce).to.be.true;
-        const renderArgs = renderSpy.args[0][0];
-        expect(renderArgs).to.have.property('error', 'invalid_request');
-        expect(renderArgs).to.have.property('error_description', 'missing required parameter(s) redirect_uri');
+      after(function () {
+        provider.Client.find('client').redirectUris.pop();
+      });
+
+      it('missing mandatory parameter redirect_uri', function () {
+        const emitSpy = sinon.spy();
+        const renderSpy = sinon.spy(provider.configuration, 'renderError');
+        provider.once('authentication.error', emitSpy);
+        const auth = new AuthenticationRequest({
+          response_type: 'code token',
+          scope: 'openid'
+        });
+        delete auth.redirect_uri;
+
+        return agent.get(route)
+        .query(auth)
+        .expect(function () {
+          renderSpy.restore();
+        })
+        .expect(200)
+        .expect(function () {
+          expect(emitSpy.calledOnce).to.be.true;
+          expect(renderSpy.calledOnce).to.be.true;
+          const renderArgs = renderSpy.args[0][0];
+          expect(renderArgs).to.have.property('error', 'invalid_request');
+          expect(renderArgs).to.have.property('error_description', 'missing required parameter(s) redirect_uri');
+        });
       });
     });
 
