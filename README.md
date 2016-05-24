@@ -159,6 +159,11 @@ Enables the use and validations of `request_uri` parameter as described in
 [Core 1.0][core-jwt-parameters-url] and the discovery endpoint property
 `request_uri_parameter_supported` set to true.
 
+To also enable require_request_uri_registration do this:
+```js
+const configuration = { features: { requestUri: { requireRequestUriRegistration: true } } };
+```
+
 **Introspection endpoint**  
 ```js
 const configuration = { features: { introspection: Boolean[false] } };
