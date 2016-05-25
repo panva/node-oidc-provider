@@ -38,7 +38,7 @@ describe('grant_type=refresh_token', function () {
       return agent.get('/auth')
       .query({
         client_id: 'client',
-        scope: 'openid',
+        scope: 'openid email',
         response_type: 'code',
         redirect_uri: 'https://client.example.com/cb'
       })
@@ -91,24 +91,50 @@ describe('grant_type=refresh_token', function () {
       });
     });
 
-    context('', function () {
-      before(function () {
-        this.prev = provider.RefreshToken.expiresIn;
-        provider.RefreshToken.expiresIn = 1;
+
+    describe('validates', function () {
+      context('', function () {
+        before(function () {
+          this.prev = provider.RefreshToken.expiresIn;
+          provider.RefreshToken.expiresIn = 1;
+        });
+
+        after(function () {
+          provider.RefreshToken.expiresIn = this.prev;
+        });
+
+        it('validates code is not expired', function (done) {
+          const rt = this.rt;
+          setTimeout(() => {
+            const spy = sinon.spy();
+            provider.once('grant.error', spy);
+
+            return agent.post(route)
+              .auth('client', 'secret')
+              .send(qs({
+                refresh_token: rt,
+                grant_type: 'refresh_token'
+              }))
+              .expect(400)
+              .expect(function () {
+                expect(spy.calledOnce).to.be.true;
+                expect(errorDetail(spy)).to.equal('refresh token is expired');
+              })
+              .expect(function (response) {
+                expect(response.body).to.have.property('error', 'invalid_grant');
+              })
+              .end(done);
+          }, 1000);
+        });
       });
 
-      after(function () {
-        provider.RefreshToken.expiresIn = this.prev;
-      });
-
-      it('validates code is not expired', function (done) {
+      it('validates that token belongs to client', function () {
         const rt = this.rt;
-        setTimeout(() => {
-          const spy = sinon.spy();
-          provider.once('grant.error', spy);
+        const spy = sinon.spy();
+        provider.once('grant.error', spy);
 
-          return agent.post(route)
-          .auth('client', 'secret')
+        return agent.post(route)
+          .auth('client2', 'secret')
           .send(qs({
             refresh_token: rt,
             grant_type: 'refresh_token'
@@ -116,69 +142,62 @@ describe('grant_type=refresh_token', function () {
           .expect(400)
           .expect(function () {
             expect(spy.calledOnce).to.be.true;
-            expect(errorDetail(spy)).to.equal('refresh token is expired');
+            expect(errorDetail(spy)).to.equal('refresh token client mismatch');
           })
           .expect(function (response) {
             expect(response.body).to.have.property('error', 'invalid_grant');
+          });
+      });
+
+      it('scopes are not getting extended', function () {
+        const rt = this.rt;
+        const spy = sinon.spy();
+        provider.once('grant.error', spy);
+
+        return agent.post(route)
+          .auth('client', 'secret')
+          .send(qs({
+            refresh_token: rt,
+            grant_type: 'refresh_token',
+            scope: 'openid profile'
+          }))
+          .expect(400)
+          .expect(function (response) {
+            expect(response.body).to.have.property('error', 'invalid_scope');
+            expect(response.body).to.have.property('error_description', 'refresh token missing requested scope');
+            expect(response.body).to.have.property('scope', 'profile');
+          });
+      });
+
+      it('validates account is still there', function () {
+        const rt = this.rt;
+        sinon.stub(provider.Account, 'findById', function () {
+          return Promise.resolve();
+        });
+
+        const spy = sinon.spy();
+        provider.once('grant.error', spy);
+
+        return agent.post(route)
+          .auth('client', 'secret')
+          .send(qs({
+            refresh_token: rt,
+            grant_type: 'refresh_token'
+          }))
+          .expect(function () {
+            provider.Account.findById.restore();
           })
-          .end(done);
-        }, 1000);
+          .expect(400)
+          .expect(function () {
+            expect(spy.calledOnce).to.be.true;
+            expect(errorDetail(spy)).to.equal('refresh token invalid (referenced account not found)');
+          })
+          .expect(function (response) {
+            expect(response.body).to.have.property('error', 'invalid_grant');
+          });
       });
     });
 
-    it('validates that token belongs to client', function () {
-      const rt = this.rt;
-      const spy = sinon.spy();
-      provider.once('grant.error', spy);
-
-      return agent.post(route)
-      .auth('client2', 'secret')
-      .send(qs({
-        refresh_token: rt,
-        grant_type: 'refresh_token'
-      }))
-      .expect(400)
-      .expect(function () {
-        expect(spy.calledOnce).to.be.true;
-        expect(errorDetail(spy)).to.equal('refresh token client mismatch');
-      })
-      .expect(function (response) {
-        expect(response.body).to.have.property('error', 'invalid_grant');
-      });
-    });
-
-    it('validates scopes are not getting broadened');
-
-    it('validates account is still there', function () {
-      const rt = this.rt;
-      sinon.stub(provider.Account, 'findById', function () {
-        return Promise.resolve();
-      });
-
-      const spy = sinon.spy();
-      provider.once('grant.error', spy);
-
-      return agent.post(route)
-      .auth('client', 'secret')
-      .send(qs({
-        refresh_token: rt,
-        grant_type: 'refresh_token'
-      }))
-      .expect(function () {
-        provider.Account.findById.restore();
-      })
-      .expect(400)
-      .expect(function () {
-        expect(spy.calledOnce).to.be.true;
-        expect(errorDetail(spy)).to.equal('refresh token invalid (referenced account not found)');
-      })
-      .expect(function (response) {
-        expect(response.body).to.have.property('error', 'invalid_grant');
-      });
-    });
-  });
-
-  describe('validates', function () {
     it('refresh_token presence', function () {
       return agent.post(route)
       .auth('client', 'secret')

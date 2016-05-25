@@ -42,8 +42,6 @@ provider.setupCerts();
       .expect(auth.validateState)
       .expect(auth.validateClientLocation);
     });
-
-  // TODO: test the authorization_code grant
   });
 
   describe(`BASIC code ${verb} ${route} interactions`, function () {

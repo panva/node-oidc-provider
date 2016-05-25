@@ -28,8 +28,6 @@ provider.setupCerts();
       .expect(auth.validateState)
       .expect(auth.validateClientLocation);
     });
-
-  // TODO: validate the id_token and code
   });
 
   describe(`HYBRID code+id_token ${verb} ${route} interactions`, function () {

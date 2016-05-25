@@ -28,8 +28,6 @@ provider.setupCerts();
       .expect(auth.validateState)
       .expect(auth.validateClientLocation);
     });
-
-  // TODO: validate the id_token
   });
 
   describe(`IMPLICIT id_token ${verb} ${route} interactions`, function () {
