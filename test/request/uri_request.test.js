@@ -62,13 +62,16 @@ describe('configuration features.requestUri', function () {
         response_type: 'code',
         redirect_uri: 'https://client.example.com/cb'
       }, key, 'HS256').then((request) => {
-        nock('https://client.example.com').get('/request').reply(200, request);
+        nock('https://client.example.com')
+          .get('/request')
+          .reply(200, request);
+
         return wrap({
           agent,
           route,
           verb,
           auth: {
-            request_uri: 'https://client.example.com/request',
+            request_uri: `https://client.example.com/request#${Date.now()}`,
             scope: 'openid',
             client_id: 'client-with-HS-sig',
             response_type: 'code'
@@ -101,7 +104,7 @@ describe('configuration features.requestUri', function () {
           route,
           verb,
           auth: {
-            request_uri: 'https://client.example.com/request',
+            request_uri: `https://client.example.com/request#${Date.now()}`,
             scope: 'openid',
             client_id: 'client',
             response_type: 'code'
@@ -185,6 +188,39 @@ describe('configuration features.requestUri', function () {
         });
       });
 
+      it('allows for fragments to be provided', function () {
+        return JWT.sign({
+          client_id: 'client',
+          response_type: 'code',
+          redirect_uri: 'https://client.example.com/cb'
+        }, null, 'none').then((request) => {
+          nock('https://thisoneisallowed.com#hash234')
+            .get('/')
+            .reply(200, request);
+
+          return wrap({
+            agent,
+            route,
+            verb,
+            auth: {
+              request_uri: 'https://thisoneisallowed.com#hash234',
+              scope: 'openid',
+              client_id: 'client',
+              response_type: 'code'
+            }
+          })
+          .expect(302)
+          .expect(function (response) {
+            const expected = parse('https://client.example.com/cb', true);
+            const actual = parse(response.headers.location, true);
+            ['protocol', 'host', 'pathname'].forEach((attr) => {
+              expect(actual[attr]).to.equal(expected[attr]);
+            });
+            expect(actual.query).to.have.property('code');
+          });
+        });
+      });
+
       it('doesnt allow to bypass these', function () {
         const spy = sinon.spy();
         provider.once('authentication.error', spy);
@@ -248,7 +284,7 @@ describe('configuration features.requestUri', function () {
         route,
         verb,
         auth: {
-          request_uri: 'https://client.example.com/request',
+          request_uri: `https://client.example.com/request#${Date.now()}`,
           scope: 'openid',
           client_id: 'client',
           response_type: 'code'
@@ -276,7 +312,7 @@ describe('configuration features.requestUri', function () {
         route,
         verb,
         auth: {
-          request_uri: 'https://client.example.com/request',
+          request_uri: `https://client.example.com/request#${Date.now()}`,
           scope: 'openid',
           client_id: 'client',
           response_type: 'code'
@@ -305,7 +341,7 @@ describe('configuration features.requestUri', function () {
         route,
         verb,
         auth: {
-          request_uri: 'https://client.example.com/request',
+          request_uri: `https://client.example.com/request#${Date.now()}`,
           scope: 'openid',
           client_id: 'client',
           response_type: 'code'
@@ -337,7 +373,7 @@ describe('configuration features.requestUri', function () {
           route,
           verb,
           auth: {
-            request_uri: 'https://client.example.com/request',
+            request_uri: `https://client.example.com/request#${Date.now()}`,
             scope: 'openid',
             client_id: 'client',
             response_type: 'code'
@@ -372,7 +408,7 @@ describe('configuration features.requestUri', function () {
           route,
           verb,
           auth: {
-            request_uri: 'https://client.example.com/request',
+            request_uri: `https://client.example.com/request#${Date.now()}`,
             scope: 'openid',
             client_id: 'client',
             response_type: 'code'
@@ -406,7 +442,7 @@ describe('configuration features.requestUri', function () {
           route,
           verb,
           auth: {
-            request_uri: 'https://client.example.com/request',
+            request_uri: `https://client.example.com/request#${Date.now()}`,
             scope: 'openid',
             client_id: 'client',
             response_type: 'code'
@@ -440,7 +476,7 @@ describe('configuration features.requestUri', function () {
           route,
           verb,
           auth: {
-            request_uri: 'https://client.example.com/request',
+            request_uri: `https://client.example.com/request#${Date.now()}`,
             scope: 'openid',
             client_id: 'client',
             response_type: 'code'
@@ -469,7 +505,7 @@ describe('configuration features.requestUri', function () {
         route,
         verb,
         auth: {
-          request_uri: 'https://client.example.com/request',
+          request_uri: `https://client.example.com/request#${Date.now()}`,
           scope: 'openid',
           client_id: 'client',
           response_type: 'code'
@@ -503,7 +539,7 @@ describe('configuration features.requestUri', function () {
           route,
           verb,
           auth: {
-            request_uri: 'https://client.example.com/request',
+            request_uri: `https://client.example.com/request#${Date.now()}`,
             scope: 'openid',
             client_id: 'client-with-HS-sig',
             response_type: 'code'
@@ -539,7 +575,7 @@ describe('configuration features.requestUri', function () {
           route,
           verb,
           auth: {
-            request_uri: 'https://client.example.com/request',
+            request_uri: `https://client.example.com/request#${Date.now()}`,
             scope: 'openid',
             client_id: 'client',
             response_type: 'code'
