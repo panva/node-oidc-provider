@@ -1,5 +1,6 @@
 {
   "author": "Filip Skokan",
+  "homepage": "https://github.com/panva/node-oidc-provider",
   "dependencies": {
     "base64url": "^1.0.4",
     "buffer-equals-constant": "^1.0.0",

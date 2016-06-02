@@ -33,7 +33,10 @@ provider.setupCerts();
               gender: { essential: false }, // returned
               given_name: { value: 'John' }, // returned
               locale: { values: ['en-US', 'en-GB'] }, // returned
-              middle_name: {} // not returned
+              middle_name: {}, // not returned
+              preferred_username: 'not returned',
+              picture: 1, // not returned
+              website: true, // not returned
             }
           })
         });
@@ -46,7 +49,7 @@ provider.setupCerts();
           const { query: { id_token } } = parseLocation(response.headers.location, true);
           const { payload } = decodeJWT(id_token);
           expect(payload).to.contain.keys('email', 'family_name', 'gender', 'given_name', 'locale');
-          expect(payload).not.to.have.key('middle_name');
+          expect(payload).not.to.have.keys('middle_name', 'preferred_username', 'picture', 'website');
         });
       });
     });
