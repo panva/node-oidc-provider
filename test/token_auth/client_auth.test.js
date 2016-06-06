@@ -359,6 +359,42 @@ describe('client_secret_jwt auth', function () {
       }));
   });
 
+  it('rejects invalid assertions', function () {
+    return agent.post(route)
+      .send({
+        client_assertion: 'this.notatall.valid',
+        grant_type: 'implicit',
+        client_assertion_type: 'urn:ietf:params:oauth:client-assertion-type:jwt-bearer'
+      })
+      .type('form')
+      .expect({
+        error: 'invalid_request',
+        error_description: 'invalid client_assertion',
+      });
+  });
+
+  it('rejects invalid jwts', function () {
+    const key = provider.Client.clients.client.keystore.get();
+    return JWT.sign({
+      jti: uuid(),
+      aud: provider.issuer + provider.pathFor('token'),
+      sub: client.client_id,
+      iss: client.client_id
+    }, key, 'HS256', {
+      expiresIn: -1
+    }).then((assertion) => agent.post(route)
+      .send({
+        client_assertion: assertion,
+        grant_type: 'implicit',
+        client_assertion_type: 'urn:ietf:params:oauth:client-assertion-type:jwt-bearer'
+      })
+      .type('form')
+      .expect({
+        error: 'invalid_client',
+        error_description: 'client is invalid',
+      }));
+  });
+
   describe('JTI uniqueness', function () {
     before(function () {
       sinon.stub(provider.configuration, 'uniqueness', function () {

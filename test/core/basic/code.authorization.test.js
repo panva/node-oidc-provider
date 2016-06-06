@@ -364,6 +364,26 @@ provider.setupCerts();
       .expect(auth.validateErrorDescription('response_type not supported. (unsupported)'));
     });
 
+    if (verb === 'post') {
+      it('only supports application/x-www-form-urlencoded', function () {
+        const spy = sinon.spy();
+        provider.once('authentication.error', spy);
+        const auth = new AuthenticationRequest({
+          response_type: 'code',
+          scope: 'openid'
+        });
+
+        return wrap({ agent, route, verb, auth })
+        .type('json')
+        .expect(200)
+        .expect(/only application\/x-www-form-urlencoded content-type POST bodies are supported/)
+        .expect(/invalid_request/)
+        .expect(function () {
+          expect(spy.calledOnce).to.be.true;
+        });
+      });
+    }
+
     it('restricted response_type', function () {
       const spy = sinon.spy();
       provider.once('authentication.error', spy);

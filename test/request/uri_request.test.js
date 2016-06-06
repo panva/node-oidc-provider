@@ -3,6 +3,7 @@
 const {
   provider, agent, wrap
 } = require('../test_helper')(__dirname);
+const RequestUriCache = require('../../lib/helpers/request_uri_cache');
 const JWT = require('../../lib/helpers/jwt');
 const sinon = require('sinon');
 const nock = require('nock');
@@ -119,6 +120,48 @@ describe('configuration features.requestUri', function () {
           });
           expect(actual.query).to.have.property('code');
         });
+      });
+    });
+
+    context('caching of the request_uris', function () {
+      it('caches the uris', function * () {
+        const cache = new RequestUriCache(provider);
+        nock('https://client.example.com')
+          .get('/cachedRequest')
+          .reply(200, 'content')
+          .get('/cachedRequest')
+          .reply(200, 'content2');
+
+        const first = yield cache.resolve('https://client.example.com/cachedRequest#1');
+        const second = yield cache.resolve('https://client.example.com/cachedRequest#1');
+        const third = yield cache.resolve('https://client.example.com/cachedRequest#2');
+        const fourth = yield cache.resolve('https://client.example.com/cachedRequest#2');
+
+        expect(first).to.equal(second);
+        expect(first).not.to.equal(third);
+        expect(third).to.equal(fourth);
+      });
+
+      it('respects provided max-age', function * () {
+        const cache = new RequestUriCache(provider);
+        nock('https://client.example.com')
+          .get('/cachedRequest')
+          .reply(200, 'content24', {
+            'Cache-Control': 'private, max-age=1'
+          })
+          .get('/cachedRequest')
+          .reply(200, 'content82');
+
+        const first = yield cache.resolve('https://client.example.com/cachedRequest');
+        yield new Promise(function (resolve) {
+          setTimeout(function () {
+            resolve();
+          }, 1001);
+        });
+        const second = yield cache.resolve('https://client.example.com/cachedRequest');
+
+        expect(first).to.equal('content24');
+        expect(second).to.equal('content82');
       });
     });
 

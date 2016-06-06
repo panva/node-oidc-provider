@@ -2,6 +2,11 @@
 
 process.env.NODE_ENV = process.env.NODE_ENV || 'test';
 
+const mocha = require('mocha');
+const coMocha = require('co-mocha');
+
+coMocha(mocha);
+
 const { agent: supertest } = require('supertest');
 const { v4: uuid } = require('node-uuid');
 const { Provider } = require('../lib');
