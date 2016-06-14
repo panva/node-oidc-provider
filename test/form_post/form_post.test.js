@@ -56,7 +56,7 @@ provider.setupCerts();
 
       context('[exception]', function () {
         before(function () {
-          sinon.stub(provider.Client, 'find').throws();
+          sinon.stub(provider.Client, 'find').returns(Promise.reject(new Error()));
         });
 
         after(function () {

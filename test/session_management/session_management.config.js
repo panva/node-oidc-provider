@@ -11,7 +11,9 @@ module.exports = {
   client: {
     client_id: 'client',
     client_secret: 'secret',
-    redirect_uris: ['https://client.example.com/cb'],
+    response_types: ['code', 'id_token'],
+    grant_types: ['authorization_code', 'implicit'],
+    redirect_uris: ['https://client.example.com/cb']
   },
   certs: [cert],
 };

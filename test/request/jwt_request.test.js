@@ -35,7 +35,7 @@ describe('configuration features.requestUri', function () {
     after(agent.logout);
 
     it('works with signed by none', function () {
-      const key = provider.Client.find('client-with-HS-sig').keystore.get('clientSecret');
+      const key = provider.Client.clients['client-with-HS-sig'].keystore.get('clientSecret');
       return JWT.sign({
         client_id: 'client-with-HS-sig',
         response_type: 'code',
@@ -275,7 +275,7 @@ describe('configuration features.requestUri', function () {
       const spy = sinon.spy();
       provider.once('authentication.error', spy);
 
-      const key = provider.Client.find('client-with-HS-sig').keystore.get('clientSecret');
+      const key = provider.Client.clients['client-with-HS-sig'].keystore.get('clientSecret');
       return JWT.sign({
         client_id: 'client',
         response_type: 'code',

@@ -25,8 +25,16 @@ const Account = require('./account');
 const settings = require('./settings');
 
 const Provider = require('../lib').Provider;
-const issuer = process.env.HEROKU ?
-  'https://guarded-cliffs-8635.herokuapp.com/op' : 'http://oidc.dev/op';
+let issuer = 'http://oidc.dev/op';
+
+if (process.env.HEROKU) {
+  issuer = 'https://guarded-cliffs-8635.herokuapp.com/op';
+  settings.config.timeouts = {
+    request_uri: 15000,
+    sector_identifier_uri: 15000,
+    jwks_uri: 15000,
+  };
+}
 
 const provider = new Provider(issuer, settings.config);
 
@@ -50,7 +58,7 @@ router.get('/interaction/:grant', function * renderInteraction(next) {
     signed: true,
   })).params;
 
-  const client = provider.Client.find(grant.client_id);
+  const client = yield provider.Client.find(grant.client_id);
 
   yield this.render('login', {
     client,

@@ -54,6 +54,37 @@ provider.setupCerts();
       });
     });
 
+    describe('with acr_values on the client', function () {
+      before(agent.login);
+      after(agent.logout);
+
+      before(function * () {
+        const client = yield provider.Client.find('client');
+        client.defaultAcrValues = ['1', '2'];
+      });
+
+      after(function * () {
+        const client = yield provider.Client.find('client');
+        delete client.defaultAcrValues;
+      });
+
+      it('should include the acr claim now', function () {
+        const auth = new AuthenticationRequest({
+          response_type: 'id_token token',
+          scope: 'openid'
+        });
+
+        return wrap({ agent, route, verb, auth })
+        .expect(auth.validateFragment)
+        .expect(auth.validatePresence(['id_token'], false))
+        .expect(function (response) {
+          const { query: { id_token } } = parseLocation(response.headers.location, true);
+          const { payload } = decodeJWT(id_token);
+          expect(payload).to.contain.keys('acr');
+        });
+      });
+    });
+
     describe('specify userinfo', function () {
       before(agent.login);
       after(agent.logout);
@@ -291,6 +322,57 @@ provider.setupCerts();
           .expect(auth.validateClientLocation)
           .expect(auth.validateError('login_required'))
           .expect(auth.validateErrorDescription('requested ACR could not be obtained'));
+        });
+
+        it('id_token_hint belongs to a user that is not currently logged in', function * () {
+          const client = yield provider.Client.find('client');
+          const idToken = new provider.IdToken({
+            sub: 'not-the-droid-you-are-looking-for'
+          });
+
+          idToken.scope = 'openid';
+          const hint = yield idToken.toJWT(client);
+
+          const auth = new AuthenticationRequest({
+            response_type: 'id_token',
+            scope: 'openid',
+            prompt: 'none',
+            id_token_hint: hint
+          });
+
+          return wrap({ agent, route, verb, auth })
+          .expect(302)
+          .expect(auth.validateFragment)
+          .expect(auth.validatePresence(['error', 'error_description', 'state']))
+          .expect(auth.validateState)
+          .expect(auth.validateClientLocation)
+          .expect(auth.validateError('login_required'))
+          .expect(auth.validateErrorDescription('id_token_hint and authenticated subject do not match'));
+        });
+
+        it('id_token_hint belongs to a user that is currently logged in', function * () {
+          const session = getSession(agent);
+          const client = yield provider.Client.find('client');
+          const idToken = new provider.IdToken({
+            sub: session.account
+          });
+
+          idToken.scope = 'openid';
+          const hint = yield idToken.toJWT(client);
+
+          const auth = new AuthenticationRequest({
+            response_type: 'id_token',
+            scope: 'openid',
+            prompt: 'none',
+            id_token_hint: hint
+          });
+
+          return wrap({ agent, route, verb, auth })
+          .expect(302)
+          .expect(auth.validateFragment)
+          .expect(auth.validatePresence(['id_token', 'state']))
+          .expect(auth.validateState)
+          .expect(auth.validateClientLocation);
         });
       });
     });

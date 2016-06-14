@@ -34,24 +34,38 @@ class RedisAdapter {
   }
 
   find(id) {
-    return client.hgetall(this.key(id)).then((some) => {
-      if (_.isEmpty(some)) {
+    return client.hgetall(this.key(id)).then((data) => {
+      if (_.isEmpty(data)) {
         return undefined;
+      } else if (data.dump !== undefined) {
+        return JSON.parse(data.dump);
       }
-      return some;
+      return data;
     });
   }
 
   upsert(id, payload, expiresIn) {
     const key = this.key(id);
+    let toStore = payload;
 
-    const multi = client.multi()
-      .hmset(key, payload)
-      .expire(key, expiresIn);
+    // Clients are not simple objects where value is always a string
+    // redis does only allow string values =>
+    // work around it to keep the adapter interface simple
+    if (this.name === 'Client') {
+      toStore = {
+        dump: JSON.stringify(payload),
+      };
+    }
 
-    const grantId = payload.grantId;
-    if (grantId) {
-      const grantKey = this.grantKey(grantId);
+    const multi = client.multi();
+    multi.hmset(key, toStore);
+
+    if (expiresIn) {
+      multi.expire(key, expiresIn);
+    }
+
+    if (toStore.grantId) {
+      const grantKey = this.grantKey(toStore.grantId);
       multi.rpush(grantKey, key);
     }
 

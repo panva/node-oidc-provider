@@ -234,16 +234,16 @@ module.exports = function testHelper(dir, basename) {
   }
 
   function wrap(opts) {
-    const { agent, route, verb, auth } = opts; // eslint-disable-line no-shadow
+    const { agent, route, verb, auth, params } = opts; // eslint-disable-line no-shadow
     switch (verb) {
       case 'get':
         return agent
           .get(route)
-          .query(auth);
+          .query(auth || params);
       case 'post':
         return agent
           .post(route)
-          .send(auth)
+          .send(auth || params)
           .type('form');
       default:
         throw new Error('invalid wrap verb');

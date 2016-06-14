@@ -114,7 +114,7 @@ describe('pairwise client configuration', function () {
     it('doesnt allow slow requests (socket delay)', function () {
       nock('https://client.example.com/')
         .get('/file_of_redirect_uris')
-        .socketDelay(1600)
+        .socketDelay(100)
         .reply(200, JSON.stringify('https://client.example.com/cb'));
 
       return provider.addClient({
@@ -135,7 +135,7 @@ describe('pairwise client configuration', function () {
     it('doesnt allow slow requests (response delay)', function () {
       nock('https://client.example.com/')
         .get('/file_of_redirect_uris')
-        .delay(1600)
+        .delay(100)
         .reply(200, JSON.stringify('https://client.example.com/cb'));
 
       return provider.addClient({

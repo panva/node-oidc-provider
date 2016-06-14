@@ -152,11 +152,11 @@ provider.setupCerts();
 
     context('when client has more then one redirect_uri', function () {
       before(function () {
-        provider.Client.find('client').redirectUris.push('https://someOtherUri.com');
+        provider.Client.clients.client.redirectUris.push('https://someOtherUri.com');
       });
 
       after(function () {
-        provider.Client.find('client').redirectUris.pop();
+        provider.Client.clients.client.redirectUris.pop();
       });
 
       it('missing mandatory parameter redirect_uri', function () {
