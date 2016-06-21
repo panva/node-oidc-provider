@@ -2,7 +2,7 @@
 'use strict';
 
 const _ = require('lodash');
-const uuid = require('uuid').v4;
+const uuid = require('node-uuid').v4;
 const assert = require('assert');
 
 class AdapterTest {

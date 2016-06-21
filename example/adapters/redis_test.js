@@ -6,8 +6,8 @@ const Provider = require('../../lib').Provider;
 const RedisAdapter = require('./redis');
 const AdapterTest = require('./adapter_test');
 
-const accountId = require('uuid').v4;
-const clientId = require('uuid').v4;
+const accountId = require('node-uuid').v4;
+const clientId = require('node-uuid').v4;
 
 const provider = new Provider('http://localhost', {
   adapter: RedisAdapter,

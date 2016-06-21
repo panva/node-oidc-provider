@@ -81,7 +81,7 @@ describe('client keystore refresh', function () {
     }, (err) => {
       expect(err).to.be.an('error');
       expect(err.message).to.match(/jwks_uri could not be refreshed/);
-      expect(err.message).to.match(/JSON/);
+      expect(err.message).to.match(/Unexpected token/);
     });
   });
 
