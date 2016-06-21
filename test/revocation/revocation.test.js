@@ -34,7 +34,7 @@ describe('revocation features', function () {
         return Promise.resolve();
       });
 
-      at.toToken().then(function (token) {
+      at.save().then(function (token) {
         agent.post(route)
         .auth('client', 'secret')
         .send(qs({
@@ -61,7 +61,7 @@ describe('revocation features', function () {
 
       sinon.stub(provider.AccessToken, 'find').throws();
 
-      at.toToken().then(function (token) {
+      at.save().then(function (token) {
         agent.post(route)
         .auth('client', 'secret')
         .send(qs({
@@ -89,7 +89,7 @@ describe('revocation features', function () {
         return Promise.resolve();
       });
 
-      rt.toToken().then(function (token) {
+      rt.save().then(function (token) {
         agent.post(route)
         .auth('client', 'secret')
         .send(qs({
@@ -116,7 +116,7 @@ describe('revocation features', function () {
 
       sinon.stub(provider.RefreshToken, 'find').throws();
 
-      at.toToken().then(function (token) {
+      at.save().then(function (token) {
         agent.post(route)
         .auth('client', 'secret')
         .send(qs({
@@ -142,7 +142,7 @@ describe('revocation features', function () {
         return Promise.resolve();
       });
 
-      rt.toToken().then(function (token) {
+      rt.save().then(function (token) {
         agent.post(route)
         .auth('client', 'secret')
         .send(qs({
@@ -169,7 +169,7 @@ describe('revocation features', function () {
 
       sinon.stub(provider.ClientCredentials, 'find').throws();
 
-      at.toToken().then(function (token) {
+      at.save().then(function (token) {
         agent.post(route)
         .auth('client', 'secret')
         .send(qs({
@@ -195,7 +195,7 @@ describe('revocation features', function () {
 
       sinon.stub(provider.OAuthToken, 'decode').throws();
 
-      at.toToken().then(function (token) {
+      at.save().then(function (token) {
         agent.post(route)
         .auth('client', 'secret')
         .send(qs({

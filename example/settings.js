@@ -37,7 +37,7 @@ module.exports.config = {
     clientCredentials: true,
     encryption: true,
     introspection: true,
-    registration: true, // experimental
+    registration: true,
     request: true,
     requestUri: true,
     revocation: true,

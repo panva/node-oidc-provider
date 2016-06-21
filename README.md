@@ -62,6 +62,7 @@ The following specifications are implemented by oidc-provider.
     - client_secret_jwt
     - private_key_jwt
 - [OpenID Connect Discovery 1.0 incorporating errata set 1][feature-discovery]
+- [OpenID Connect Dynamic Client Registration 1.0 incorporating errata set 1][feature-registration]
 - [OpenID Connect Session Management 1.0 - draft26][feature-session-management]
 - [OAuth 2.0 Form Post Response mode][feature-form-post]
 - [RFC7009 - OAuth 2.0 Token revocation][feature-revocation]
@@ -193,6 +194,12 @@ const configuration = { features: { sessionManagement: Boolean[false] } };
 Enables features described in [Session Management 1.0 - draft26][feature-session-management].
 
 
+**Dynamic registration features**  
+```js
+const configuration = { features: { registration: Boolean[false] } };
+```
+Enables features described in [Dynamic Client Registration 1.0][feature-registration].
+
 ### Routes
 The following are the respective endpoint routes.
 ```js
@@ -203,6 +210,7 @@ const configuration = {
     check_session: '/session/check',
     end_session: '/session/end',
     introspection: '/token/introspection',
+    registration: '/reg',
     revocation: '/token/revocation',
     token: '/token',
     userinfo: '/me',
@@ -392,6 +400,10 @@ Emitted when a handled error is encountered in the `introspection` endpoint.
 oidc.on(`'revocation.error', function (error, ctx) { }`)  
 Emitted when a handled error is encountered in the `revocation` endpoint.
 
+**registration.error**  
+oidc.on(`'registration.error', function (error, ctx) { }`)  
+Emitted when a handled error is encountered in the `registration` endpoint.
+
 **userinfo.error**  
 oidc.on(`'userinfo.error', function (error, ctx) { }`)  
 Emitted when a handled error is encountered in the `userinfo` endpoint.
@@ -448,6 +460,7 @@ OP Config and OP Dynamic profiles of the OpenID Connect™ protocol.
 [openid-connect]: http://openid.net/connect/
 [feature-core]: http://openid.net/specs/openid-connect-core-1_0.html
 [feature-discovery]: http://openid.net/specs/openid-connect-discovery-1_0.html
+[feature-registration]: http://openid.net/specs/openid-connect-registration-1_0.html
 [feature-session-management]: http://openid.net/specs/openid-connect-session-1_0.html
 [feature-form-post]: http://openid.net/specs/oauth-v2-form-post-response-mode-1_0.html
 [feature-revocation]: https://tools.ietf.org/html/rfc7009

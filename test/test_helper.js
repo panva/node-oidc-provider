@@ -67,6 +67,7 @@ module.exports = function testHelper(dir, basename) {
       headers: {
         'set-cookie': [
           `_session=; path=/; expires=${expire.toGMTString()}; httponly`,
+          `_session_states=; path=/; expires=${expire.toGMTString()}; httponly`,
         ],
       },
     });
@@ -136,7 +137,6 @@ module.exports = function testHelper(dir, basename) {
         expect(value).to.exist;
         let { value: respond } = new Cookie(value);
         respond = JSON.parse(respond);
-
 
         for (const attr in this) { // eslint-disable-line
           if (this.hasOwnProperty(attr)) {

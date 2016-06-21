@@ -156,7 +156,7 @@ describe('configuration features.requestUri', function () {
         yield new Promise(function (resolve) {
           setTimeout(function () {
             resolve();
-          }, 1001);
+          }, 1050);
         });
         const second = yield cache.resolve('https://client.example.com/cachedRequest');
 

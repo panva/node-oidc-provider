@@ -95,7 +95,7 @@ router.post('/login', body(), function * submitLoginForm() {
     // }
   };
 
-  provider.respond(this, this.request.body.grant, result);
+  provider.resume(this, this.request.body.grant, result);
 });
 
 app.use(router.routes());

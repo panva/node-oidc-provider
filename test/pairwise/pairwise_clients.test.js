@@ -3,6 +3,7 @@
 const { provider } = require('../test_helper')(__dirname);
 const getMask = require('../../lib/helpers/claims');
 const Claims = getMask(provider.configuration);
+const j = JSON.stringify;
 const _ = require('lodash');
 const { expect } = require('chai');
 const nock = require('nock');
@@ -55,7 +56,7 @@ describe('pairwise client configuration', function () {
     it('validates the sector from the provided uri', function () {
       nock('https://client.example.com/')
         .get('/file_of_redirect_uris')
-        .reply(200, JSON.stringify(['https://client.example.com/cb', 'https://another.example.com/forum/cb']));
+        .reply(200, j(['https://client.example.com/cb', 'https://another.example.com/forum/cb']));
 
       return provider.addClient({
         client_id: 'client',
@@ -74,7 +75,7 @@ describe('pairwise client configuration', function () {
     it('validates all redirect_uris are in the uri', function () {
       nock('https://client.example.com/')
         .get('/file_of_redirect_uris')
-        .reply(200, JSON.stringify(['https://client.example.com/cb', 'https://another.example.com/forum/cb']));
+        .reply(200, j(['https://client.example.com/cb', 'https://another.example.com/forum/cb']));
 
       return provider.addClient({
         client_id: 'client',
@@ -94,7 +95,7 @@ describe('pairwise client configuration', function () {
     it('validates only accepts json array responses', function () {
       nock('https://client.example.com/')
         .get('/file_of_redirect_uris')
-        .reply(200, JSON.stringify('https://client.example.com/cb'));
+        .reply(200, j('https://client.example.com/cb'));
 
       return provider.addClient({
         client_id: 'client',
@@ -115,7 +116,7 @@ describe('pairwise client configuration', function () {
       nock('https://client.example.com/')
         .get('/file_of_redirect_uris')
         .socketDelay(100)
-        .reply(200, JSON.stringify('https://client.example.com/cb'));
+        .reply(200, j('https://client.example.com/cb'));
 
       return provider.addClient({
         client_id: 'client',
@@ -136,7 +137,7 @@ describe('pairwise client configuration', function () {
       nock('https://client.example.com/')
         .get('/file_of_redirect_uris')
         .delay(100)
-        .reply(200, JSON.stringify('https://client.example.com/cb'));
+        .reply(200, j('https://client.example.com/cb'));
 
       return provider.addClient({
         client_id: 'client',

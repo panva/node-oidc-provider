@@ -30,7 +30,7 @@ describe('introspection features', function () {
         scope: 'scope',
       });
 
-      at.toToken().then(function (token) {
+      at.save().then(function (token) {
         agent.post(route)
         .auth('client', 'secret')
         .send(qs({
@@ -51,7 +51,7 @@ describe('introspection features', function () {
         scope: 'scope',
       });
 
-      rt.toToken().then(function (token) {
+      rt.save().then(function (token) {
         agent.post(route)
         .auth('client', 'secret')
         .send(qs({
@@ -70,7 +70,7 @@ describe('introspection features', function () {
         clientId: 'clientId'
       });
 
-      rt.toToken().then(function (token) {
+      rt.save().then(function (token) {
         agent.post(route)
         .auth('client', 'secret')
         .send(qs({

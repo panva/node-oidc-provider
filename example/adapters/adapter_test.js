@@ -38,7 +38,7 @@ class AdapterTest {
     console.log('AuthorizationCode upsert()');
     let initialPromise;
     try {
-      initialPromise = ac.toToken();
+      initialPromise = ac.save();
     } catch (err) {
       console.error(err);
       process.exit(1);
@@ -73,7 +73,7 @@ class AdapterTest {
       const at = new provider.AccessToken(_.pick(this.code, 'accountId', 'claims', 'clientId', 'grantId', 'scope'));
       console.log('AccessToken upsert()');
 
-      return at.toToken();
+      return at.save();
     })
     .then((token) => {
       console.log('AccessToken inserted');

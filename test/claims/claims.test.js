@@ -8,6 +8,7 @@ const {
   wrap
 } = require('../test_helper')(__dirname);
 const { parse: parseLocation } = require('url');
+const j = JSON.stringify;
 const { decode: decodeJWT } = require('../../lib/helpers/jwt');
 const { expect } = require('chai');
 
@@ -26,7 +27,7 @@ provider.setupCerts();
         const auth = new AuthenticationRequest({
           response_type: 'id_token token',
           scope: 'openid',
-          claims: JSON.stringify({
+          claims: j({
             id_token: {
               email: null, // returned
               family_name: { essential: true }, // returned
@@ -93,7 +94,7 @@ provider.setupCerts();
         const auth = new AuthenticationRequest({
           response_type: 'id_token token',
           scope: 'openid',
-          claims: JSON.stringify({
+          claims: j({
             userinfo: {
               email: null, // returned
               family_name: { essential: true }, // returned
@@ -136,7 +137,7 @@ provider.setupCerts();
         const auth = new AuthenticationRequest({
           response_type: 'id_token token',
           scope: 'openid',
-          claims: JSON.stringify({
+          claims: j({
             id_token: {
               email: null
             },
@@ -181,7 +182,7 @@ provider.setupCerts();
             response_type: 'id_token',
             scope: 'openid',
             prompt: 'none',
-            claims: JSON.stringify({
+            claims: j({
               id_token: {
                 sub: {
                   value: session.account
@@ -205,7 +206,7 @@ provider.setupCerts();
             response_type: 'id_token',
             scope: 'openid',
             prompt: 'none',
-            claims: JSON.stringify({
+            claims: j({
               id_token: {
                 acr: {
                   essential: true,
@@ -230,7 +231,7 @@ provider.setupCerts();
             response_type: 'id_token',
             scope: 'openid',
             prompt: 'none',
-            claims: JSON.stringify({
+            claims: j({
               id_token: {
                 acr: {
                   essential: true,
@@ -255,7 +256,7 @@ provider.setupCerts();
             response_type: 'id_token',
             scope: 'openid',
             prompt: 'none',
-            claims: JSON.stringify({
+            claims: j({
               id_token: {
                 sub: {
                   value: 'iexpectthisid'
@@ -279,7 +280,7 @@ provider.setupCerts();
             response_type: 'id_token',
             scope: 'openid',
             prompt: 'none',
-            claims: JSON.stringify({
+            claims: j({
               id_token: {
                 acr: {
                   essential: true,
@@ -304,7 +305,7 @@ provider.setupCerts();
             response_type: 'id_token',
             scope: 'openid',
             prompt: 'none',
-            claims: JSON.stringify({
+            claims: j({
               id_token: {
                 acr: {
                   essential: true,
@@ -331,7 +332,7 @@ provider.setupCerts();
           });
 
           idToken.scope = 'openid';
-          const hint = yield idToken.toJWT(client);
+          const hint = yield idToken.sign(client);
 
           const auth = new AuthenticationRequest({
             response_type: 'id_token',
@@ -358,7 +359,7 @@ provider.setupCerts();
           });
 
           idToken.scope = 'openid';
-          const hint = yield idToken.toJWT(client);
+          const hint = yield idToken.sign(client);
 
           const auth = new AuthenticationRequest({
             response_type: 'id_token',

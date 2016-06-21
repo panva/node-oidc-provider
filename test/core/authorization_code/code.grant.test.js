@@ -67,6 +67,33 @@ describe('grant_type=authorization_code', function () {
       });
     });
 
+    it('handles internal token signature validation', function () {
+      sinon.stub(provider.AuthorizationCode, 'fromJWT', function () {
+        return Promise.reject(new Error());
+      });
+
+      const spy = sinon.spy();
+      provider.once('grant.error', spy);
+
+      return agent.post(route)
+      .auth('client', 'secret')
+      .send(qs({
+        code: this.ac,
+        grant_type: 'authorization_code',
+        redirect_uri: 'https://client.example.com/cb'
+      }))
+      .expect(function () {
+        provider.AuthorizationCode.fromJWT.restore();
+      })
+      .expect(401)
+      .expect(function () {
+        expect(spy.calledOnce).to.be.true;
+      })
+      .expect(function (response) {
+        expect(response.body).to.have.property('error', 'invalid_token');
+      });
+    });
+
     context('', function () {
       before(function () {
         this.prev = provider.AuthorizationCode.expiresIn;
@@ -277,6 +304,27 @@ describe('grant_type=authorization_code', function () {
       })
       .expect(function (response) {
         expect(response.body).to.have.property('error', 'invalid_grant');
+      });
+    });
+
+    it('code being "valid format"', function () {
+      const spy = sinon.spy();
+      provider.once('grant.error', spy);
+      return agent.post(route)
+      .auth('client', 'secret')
+      .send(qs(
+        {
+          grant_type: 'authorization_code',
+          redirect_uri: 'http://client.example.com',
+          code: 'not even close'
+        }
+      ))
+      .expect(401)
+      .expect(function () {
+        expect(spy.calledOnce).to.be.true;
+      })
+      .expect(function (response) {
+        expect(response.body).to.have.property('error', 'invalid_token');
       });
     });
   });
