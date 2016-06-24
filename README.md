@@ -69,8 +69,7 @@ The following specifications are implemented by oidc-provider.
 - [RFC7662 - OAuth 2.0 Token introspection][feature-introspection]
 
 ## Get started
-To run and experiment with an example client and a server, clone the oidc-provider repo and install
-the dependencies:
+To run and experiment with an example server, clone the oidc-provider repo and install the dependencies:
 
 ```bash
 $ git clone https://github.com/panva/node-oidc-provider.git oidc-provider
@@ -78,6 +77,7 @@ $ cd oidc-provider
 $ npm install
 $ node example
 ```
+Visiting `http://localhost:3000/.well-known/openid-configuration` will help you to discover how the example is [configured](example).
 
 Otherwise just install the package in your app and follow the [example use](example/index.js).
 ```
