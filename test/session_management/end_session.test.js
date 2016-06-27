@@ -1,7 +1,7 @@
 'use strict';
 
 const {
-  provider, agent, wrap, getSession
+  provider, agent, wrap, getSessionId
 } = require('../test_helper')(__dirname);
 const sinon = require('sinon');
 const { parse: parseUrl } = require('url');
@@ -18,8 +18,8 @@ provider.setupCerts();
     beforeEach(agent.login);
     afterEach(agent.logout);
     afterEach(function () {
-      if (provider.Session.adapter.destroy.restore) {
-        provider.Session.adapter.destroy.restore();
+      if (provider.get('Session').adapter.destroy.restore) {
+        provider.get('Session').adapter.destroy.restore();
       }
     });
 
@@ -43,14 +43,14 @@ provider.setupCerts();
       const params = {
         id_token_hint: this.idToken
       };
-      const session = getSession(agent);
-      const adapter = provider.Session.adapter;
+      const sessionId = getSessionId(agent);
+      const adapter = provider.get('Session').adapter;
       sinon.spy(adapter, 'destroy');
 
       return wrap({ agent, route, verb, params })
       .expect(function () {
         expect(adapter.destroy.called).to.be.true;
-        expect(adapter.destroy.withArgs(session.id).calledOnce).to.be.true;
+        expect(adapter.destroy.withArgs(sessionId).calledOnce).to.be.true;
       });
     });
 
@@ -74,11 +74,11 @@ provider.setupCerts();
     });
 
     context('client with postLogoutRedirectUris', function () {
-      before(function () {
-        provider.Client.clients.client.postLogoutRedirectUris = ['https://client.example.com/logout/cb'];
+      before(function * () {
+        (yield provider.get('Client').find('client')).postLogoutRedirectUris = ['https://client.example.com/logout/cb'];
       });
-      after(function () {
-        provider.Client.clients.client.postLogoutRedirectUris = [];
+      after(function * () {
+        (yield provider.get('Client').find('client')).postLogoutRedirectUris = [];
       });
 
       it('allows to redirect there', function () {

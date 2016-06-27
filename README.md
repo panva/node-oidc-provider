@@ -263,7 +263,7 @@ class MyAdapter {
    *
    * @constructor
    * @param {string} name Name of the oidc-provider model. One of "Session", "AccessToken",
-   * "AuthorizationCode", "RefreshToken", "ClientCredentials".
+   * "AuthorizationCode", "RefreshToken", "ClientCredentials" or "Client".
    *
    */
   constructor(name) {
@@ -302,6 +302,13 @@ class MyAdapter {
      * Hint2: in order to fulfill all OAuth2.0 behaviors in regards to invalidating and expiring
      * potentially misused or sniffed tokens you should keep track of all tokens that belong to the
      * same grantId.
+     *
+     * Client model will only use this when registered through Dynamic Registration features.
+     *
+     * Session model payload contains the following properties:
+     * - account {string} the session account identifier
+     * - loginTs {number} timestamp of user's authentication
+     * - acrValue {string} the ACR value of user's authentication
      *
      */  
   }
@@ -422,9 +429,9 @@ Emitted when a handled error is encountered in the `webfinger` endpoint.
 
 **token.issued**  
 oidc.on(`'token.issued', function (token) { }`)  
-Emitted when a token is issued. All tokens extending `provider.OAuthToken` emit this event.
-token can be one of `provider.AccessToken`, `provider.AuthorizationCode`,
-`provider.ClientCredentials`, `provider.RefreshToken`.
+Emitted when a token is issued. All tokens extending `OAuthToken` emit this event.
+token can be one of `AccessToken`, `AuthorizationCode`,
+`ClientCredentials`, `RefreshToken`.
 
 **token.consumed**  
 oidc.on(`'token.consumed', function (token) { }`)  

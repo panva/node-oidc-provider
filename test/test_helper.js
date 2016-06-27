@@ -80,7 +80,7 @@ module.exports = function testHelper(dir, basename) {
     expire.setDate(expire.getDate() + 1);
     const account = uuid();
 
-    const session = new provider.Session(sessionId, { loginTs, account });
+    const session = new (provider.get('Session'))(sessionId, { loginTs, account });
 
     return Account.findById(account).then(session.save()).then(() => {
       agent.saveCookies({
@@ -201,7 +201,7 @@ module.exports = function testHelper(dir, basename) {
     const self = this;
     const add = pass || client;
     before('adding client', () => self.addClient(add));
-    after('removing client', () => self.Client.remove(add.client_id));
+    after('removing client', () => self.get('Client').remove(add.client_id));
   };
 
   provider.setupCerts = function (passed) {
@@ -228,9 +228,15 @@ module.exports = function testHelper(dir, basename) {
   };
 
   function getSession(userAgent) {
+    const Session = provider.get('Session');
     const { value: sessionId } = userAgent.jar.getCookie('_session', { path: '/' });
-    const key = provider.Session.adapter.key(sessionId);
-    return provider.Session.adapter.storage.get(key);
+    const key = Session.adapter.key(sessionId);
+    return Session.adapter.storage.get(key);
+  }
+
+  function getSessionId(userAgent) {
+    const { value: sessionId } = userAgent.jar.getCookie('_session', { path: '/' });
+    return sessionId;
   }
 
   function wrap(opts) {
@@ -255,6 +261,7 @@ module.exports = function testHelper(dir, basename) {
     provider,
     agent,
     responses,
+    getSessionId,
     getSession,
     wrap
   };

@@ -14,10 +14,12 @@ class AdapterTest {
 
   run() {
     const provider = this.provider;
+    const AccessToken = provider.get('AccessToken');
+    const AuthorizationCode = provider.get('AuthorizationCode');
 
-    const ac = new provider.AuthorizationCode({
+    const ac = new AuthorizationCode({
       accountId: this.accountId(),
-      acr: provider.configuration.acrValues[0],
+      acr: provider.configuration('acrValues[0]'),
       authTime: new Date() / 1000 | 0,
       claims: {
         id_token: {
@@ -48,7 +50,7 @@ class AdapterTest {
       console.log('AuthorizationCode inserted');
       this.ac = code;
       console.log('AuthorizationCode find()');
-      return provider.AuthorizationCode.find(code, {
+      return AuthorizationCode.find(code, {
         ignoreExpiration: true,
       });
     })
@@ -61,7 +63,7 @@ class AdapterTest {
     })
     .then(() => {
       console.log('AuthorizationCode consumed');
-      return provider.AuthorizationCode.find(this.ac, {
+      return AuthorizationCode.find(this.ac, {
         ignoreExpiration: true,
       });
     })
@@ -70,7 +72,7 @@ class AdapterTest {
       console.log('AuthorizationCode consumed PASS');
     })
     .then(() => {
-      const at = new provider.AccessToken(_.pick(this.code, 'accountId', 'claims', 'clientId', 'grantId', 'scope'));
+      const at = new AccessToken(_.pick(this.code, 'accountId', 'claims', 'clientId', 'grantId', 'scope'));
       console.log('AccessToken upsert()');
 
       return at.save();
@@ -79,7 +81,7 @@ class AdapterTest {
       console.log('AccessToken inserted');
       this.at = token;
       console.log('AccessToken find()');
-      return provider.AccessToken.find(token, {
+      return AccessToken.find(token, {
         ignoreExpiration: true,
       });
     })
@@ -93,7 +95,7 @@ class AdapterTest {
     .then(() => {
       console.log('AccessToken destroyed');
       console.log('AccessToken find() again');
-      return provider.AccessToken.find(this.at, {
+      return AccessToken.find(this.at, {
         ignoreExpiration: true,
       });
     })
@@ -103,7 +105,7 @@ class AdapterTest {
     })
     .then(() => {
       console.log('AuthorizationCode find() again');
-      return provider.AuthorizationCode.find(this.ac, {
+      return AuthorizationCode.find(this.ac, {
         ignoreExpiration: true,
       });
     })

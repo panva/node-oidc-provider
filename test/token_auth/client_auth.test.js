@@ -6,6 +6,7 @@ const route = '/token';
 const jose = require('node-jose');
 const sinon = require('sinon');
 const JWT = require('../../lib/helpers/jwt');
+const Client = provider.get('Client');
 
 describe('none auth', function () {
   const client = {
@@ -130,8 +131,8 @@ describe('client_secret_jwt auth', function () {
   };
   provider.setupClient(client);
 
-  it('accepts the auth', function () {
-    const key = provider.Client.clients.client.keystore.get();
+  it('accepts the auth', function * () {
+    const key = (yield Client.find('client')).keystore.get();
     return JWT.sign({
       jti: uuid(),
       aud: provider.issuer + provider.pathFor('token'),
@@ -166,8 +167,8 @@ describe('client_secret_jwt auth', function () {
       });
   });
 
-  it('exp must be set', function () {
-    const key = provider.Client.clients.client.keystore.get();
+  it('exp must be set', function * () {
+    const key = (yield Client.find('client')).keystore.get();
     return JWT.sign({
       jti: uuid(),
       aud: provider.issuer + provider.pathFor('token'),
@@ -189,8 +190,8 @@ describe('client_secret_jwt auth', function () {
       }));
   });
 
-  it('jti must be set', function () {
-    const key = provider.Client.clients.client.keystore.get();
+  it('jti must be set', function * () {
+    const key = (yield Client.find('client')).keystore.get();
     return JWT.sign({
       // jti: uuid(),
       aud: provider.issuer + provider.pathFor('token'),
@@ -211,8 +212,8 @@ describe('client_secret_jwt auth', function () {
       }));
   });
 
-  it('iss must be set', function () {
-    const key = provider.Client.clients.client.keystore.get();
+  it('iss must be set', function * () {
+    const key = (yield Client.find('client')).keystore.get();
     return JWT.sign({
       jti: uuid(),
       aud: provider.issuer + provider.pathFor('token'),
@@ -233,8 +234,8 @@ describe('client_secret_jwt auth', function () {
       }));
   });
 
-  it('iss must be the client id', function () {
-    const key = provider.Client.clients.client.keystore.get();
+  it('iss must be the client id', function * () {
+    const key = (yield Client.find('client')).keystore.get();
     return JWT.sign({
       jti: uuid(),
       aud: provider.issuer + provider.pathFor('token'),
@@ -255,8 +256,8 @@ describe('client_secret_jwt auth', function () {
       }));
   });
 
-  it('audience as array must contain the token endpoint', function () {
-    const key = provider.Client.clients.client.keystore.get();
+  it('audience as array must contain the token endpoint', function * () {
+    const key = (yield Client.find('client')).keystore.get();
     return JWT.sign({
       jti: uuid(),
       // aud: provider.issuer + provider.pathFor('token'),
@@ -278,8 +279,8 @@ describe('client_secret_jwt auth', function () {
       }));
   });
 
-  it('audience as single entry must be the token endpoint', function () {
-    const key = provider.Client.clients.client.keystore.get();
+  it('audience as single entry must be the token endpoint', function * () {
+    const key = (yield Client.find('client')).keystore.get();
     return JWT.sign({
       jti: uuid(),
       // aud: provider.issuer + provider.pathFor('token'),
@@ -315,8 +316,8 @@ describe('client_secret_jwt auth', function () {
       });
   });
 
-  it('requires client_assertion_type', function () {
-    const key = provider.Client.clients.client.keystore.get();
+  it('requires client_assertion_type', function * () {
+    const key = (yield Client.find('client')).keystore.get();
     return JWT.sign({
       jti: uuid(),
       aud: provider.issuer + provider.pathFor('token'),
@@ -337,8 +338,8 @@ describe('client_secret_jwt auth', function () {
       }));
   });
 
-  it('requires client_assertion_type of specific value', function () {
-    const key = provider.Client.clients.client.keystore.get();
+  it('requires client_assertion_type of specific value', function * () {
+    const key = (yield Client.find('client')).keystore.get();
     return JWT.sign({
       jti: uuid(),
       aud: provider.issuer + provider.pathFor('token'),
@@ -373,8 +374,8 @@ describe('client_secret_jwt auth', function () {
       });
   });
 
-  it('rejects invalid jwts', function () {
-    const key = provider.Client.clients.client.keystore.get();
+  it('rejects invalid jwts', function * () {
+    const key = (yield Client.find('client')).keystore.get();
     return JWT.sign({
       jti: uuid(),
       aud: provider.issuer + provider.pathFor('token'),
@@ -397,17 +398,17 @@ describe('client_secret_jwt auth', function () {
 
   describe('JTI uniqueness', function () {
     before(function () {
-      sinon.stub(provider.configuration, 'uniqueness', function () {
+      sinon.stub(provider.configuration(), 'uniqueness', function () {
         return Promise.resolve(false);
       });
     });
 
     after(function () {
-      provider.configuration.uniqueness.restore();
+      provider.configuration().uniqueness.restore();
     });
 
-    it('reused jtis must be rejected', function () {
-      const key = provider.Client.clients.client.keystore.get();
+    it('reused jtis must be rejected', function * () {
+      const key = (yield Client.find('client')).keystore.get();
       return JWT.sign({
         jti: uuid(),
         aud: provider.issuer + provider.pathFor('token'),
@@ -430,14 +431,14 @@ describe('client_secret_jwt auth', function () {
   });
 
   describe('when token_endpoint_auth_signing_alg is set on the client', function () {
-    before(function () {
-      provider.Client.clients.client.tokenEndpointAuthSigningAlg = 'HS384';
+    before(function * () {
+      (yield Client.find('client')).tokenEndpointAuthSigningAlg = 'HS384';
     });
-    after(function () {
-      delete provider.Client.clients.client.tokenEndpointAuthSigningAlg;
+    after(function * () {
+      delete (yield Client.find('client')).tokenEndpointAuthSigningAlg;
     });
-    it('rejects signatures with different algorithm', function () {
-      const key = provider.Client.clients.client.keystore.get();
+    it('rejects signatures with different algorithm', function * () {
+      const key = (yield Client.find('client')).keystore.get();
       return JWT.sign({
         jti: uuid(),
         aud: provider.issuer + provider.pathFor('token'),

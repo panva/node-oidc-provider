@@ -6,6 +6,8 @@ const {
 const sinon = require('sinon');
 const { expect } = require('chai');
 
+const Client = provider.get('Client');
+
 const route = '/auth';
 
 provider.setupClient();
@@ -151,17 +153,17 @@ provider.setupCerts();
     });
 
     context('when client has more then one redirect_uri', function () {
-      before(function () {
-        provider.Client.clients.client.redirectUris.push('https://someOtherUri.com');
+      before(function * () {
+        (yield Client.find('client')).redirectUris.push('https://someOtherUri.com');
       });
 
-      after(function () {
-        provider.Client.clients.client.redirectUris.pop();
+      after(function * () {
+        (yield Client.find('client')).redirectUris.pop();
       });
 
       it('missing mandatory parameter redirect_uri', function () {
         const emitSpy = sinon.spy();
-        const renderSpy = sinon.spy(provider.configuration, 'renderError');
+        const renderSpy = sinon.spy(provider.configuration(), 'renderError');
         provider.once('authentication.error', emitSpy);
         const auth = new AuthenticationRequest({
           response_type: 'code id_token token',
@@ -403,7 +405,7 @@ provider.setupCerts();
 
     it('redirect_uri mismatch', function () {
       const emitSpy = sinon.spy();
-      const renderSpy = sinon.spy(provider.configuration, 'renderError');
+      const renderSpy = sinon.spy(provider.configuration(), 'renderError');
       provider.once('authentication.error', emitSpy);
       const auth = new AuthenticationRequest({
         response_type: 'code id_token token',

@@ -95,7 +95,7 @@ provider.setupCerts();
       });
 
       it('session is too old for this client', function * () {
-        const client = yield provider.Client.find('client');
+        const client = yield provider.get('Client').find('client');
         client.defaultMaxAge = 1800;
 
         const session = getSession(agent);
@@ -184,17 +184,19 @@ provider.setupCerts();
     });
 
     context('when client has more then one redirect_uri', function () {
-      before(function () {
-        provider.Client.clients.client.redirectUris.push('https://someOtherUri.com');
+      before(function * () {
+        const client = yield provider.get('Client').find('client');
+        client.redirectUris.push('https://someOtherUri.com');
       });
 
-      after(function () {
-        provider.Client.clients.client.redirectUris.pop();
+      after(function * () {
+        const client = yield provider.get('Client').find('client');
+        client.redirectUris.pop();
       });
 
       it('missing mandatory parameter redirect_uri', function () {
         const emitSpy = sinon.spy();
-        const renderSpy = sinon.spy(provider.configuration, 'renderError');
+        const renderSpy = sinon.spy(provider.configuration(), 'renderError');
         provider.once('authentication.error', emitSpy);
         const auth = new AuthenticationRequest({
           response_type: 'code',
@@ -428,7 +430,7 @@ provider.setupCerts();
 
     it('redirect_uri mismatch', function () {
       const emitSpy = sinon.spy();
-      const renderSpy = sinon.spy(provider.configuration, 'renderError');
+      const renderSpy = sinon.spy(provider.configuration(), 'renderError');
       provider.once('authentication.error', emitSpy);
       const auth = new AuthenticationRequest({
         response_type: 'code',
@@ -478,11 +480,11 @@ provider.setupCerts();
 
     context('exception handling', function () {
       before(function () {
-        sinon.stub(provider.Client, 'find').returns(Promise.reject(new Error()));
+        sinon.stub(provider.get('Client'), 'find').returns(Promise.reject(new Error()));
       });
 
       after(function () {
-        provider.Client.find.restore();
+        provider.get('Client').find.restore();
       });
 
       it('responds with server_error redirect to redirect_uri', function () {

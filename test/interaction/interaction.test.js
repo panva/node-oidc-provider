@@ -17,7 +17,7 @@ const { expect } = require('chai');
 provider.setupClient();
 provider.setupCerts();
 
-provider.configuration.prompts.push('custom');
+provider.configuration('prompts').push('custom');
 
 function setup(grant, results) {
   const cookies = [];

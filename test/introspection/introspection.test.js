@@ -7,6 +7,7 @@ const { encode: base64url } = require('base64url');
 const { stringify: qs } = require('querystring');
 const route = '/token/introspection';
 const j = JSON.stringify;
+const AccessToken = provider.get('AccessToken');
 
 provider.setupClient();
 provider.setupCerts();
@@ -24,7 +25,7 @@ describe('introspection features', function () {
 
   describe('/token/introspection', function () {
     it('returns the properties for access token', function (done) {
-      const at = new provider.AccessToken({
+      const at = new AccessToken({
         accountId: 'accountId',
         clientId: 'clientId',
         scope: 'scope',
@@ -45,7 +46,7 @@ describe('introspection features', function () {
     });
 
     it('returns the properties for refresh token', function (done) {
-      const rt = new provider.RefreshToken({
+      const rt = new (provider.get('RefreshToken'))({
         accountId: 'accountId',
         clientId: 'clientId',
         scope: 'scope',
@@ -66,7 +67,7 @@ describe('introspection features', function () {
     });
 
     it('returns the properties for client credentials token', function (done) {
-      const rt = new provider.ClientCredentials({
+      const rt = new (provider.get('ClientCredentials'))({
         clientId: 'clientId'
       });
 

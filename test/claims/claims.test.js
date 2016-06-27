@@ -60,12 +60,12 @@ provider.setupCerts();
       after(agent.logout);
 
       before(function * () {
-        const client = yield provider.Client.find('client');
+        const client = yield provider.get('Client').find('client');
         client.defaultAcrValues = ['1', '2'];
       });
 
       after(function * () {
-        const client = yield provider.Client.find('client');
+        const client = yield provider.get('Client').find('client');
         delete client.defaultAcrValues;
       });
 
@@ -326,8 +326,9 @@ provider.setupCerts();
         });
 
         it('id_token_hint belongs to a user that is not currently logged in', function * () {
-          const client = yield provider.Client.find('client');
-          const idToken = new provider.IdToken({
+          const client = yield provider.get('Client').find('client');
+          const IdToken = provider.get('IdToken');
+          const idToken = new IdToken({
             sub: 'not-the-droid-you-are-looking-for'
           });
 
@@ -353,8 +354,9 @@ provider.setupCerts();
 
         it('id_token_hint belongs to a user that is currently logged in', function * () {
           const session = getSession(agent);
-          const client = yield provider.Client.find('client');
-          const idToken = new provider.IdToken({
+          const client = yield provider.get('Client').find('client');
+          const IdToken = provider.get('IdToken');
+          const idToken = new IdToken({
             sub: session.account
           });
 

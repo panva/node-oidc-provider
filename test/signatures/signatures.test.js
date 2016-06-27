@@ -8,6 +8,8 @@ const { v4: uuid } = require('node-uuid');
 const { decode } = require('../../lib/helpers/jwt');
 const { expect } = require('chai');
 
+const AuthorizationCode = provider.get('AuthorizationCode');
+
 provider.setupClient();
 provider.setupClient({
   client_id: 'client-sig-none',
@@ -30,7 +32,7 @@ provider.setupCerts();
 describe('token hashes in id_token', function () {
   let client;
   before(function * () {
-    client = yield provider.Client.find('client');
+    client = yield provider.get('Client').find('client');
   });
 
   before(agent.login);
@@ -99,9 +101,9 @@ describe('token hashes in id_token', function () {
 
 describe('when id_token_signed_response_alg=none', function () {
   beforeEach(function * () {
-    const ac = new provider.AuthorizationCode({
+    const ac = new AuthorizationCode({
       accountId: 'accountIdentity',
-      acr: provider.configuration.acrValues[0],
+      acr: provider.configuration('acrValues[0]'),
       authTime: new Date() / 1000 | 0,
       clientId: 'client-sig-none',
       grantId: uuid(),
@@ -151,9 +153,9 @@ describe('when id_token_signed_response_alg=none', function () {
 
 describe('when id_token_signed_response_alg=HS256', function () {
   beforeEach(function * () {
-    const ac = new provider.AuthorizationCode({
+    const ac = new AuthorizationCode({
       accountId: 'accountIdentity',
-      acr: provider.configuration.acrValues[0],
+      acr: provider.configuration('acrValues[0]'),
       authTime: new Date() / 1000 | 0,
       clientId: 'client-sig-HS256',
       grantId: uuid(),

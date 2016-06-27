@@ -3,6 +3,7 @@
 const { agent, provider } = require('../test_helper')(__dirname);
 // const sinon = require('sinon');
 const { expect } = require('chai');
+const Client = provider.get('Client');
 
 provider.setupCerts();
 
@@ -49,9 +50,9 @@ describe('registration features', function () {
       .end(function (err, response) {
         if (err) return done(err);
 
-        provider.Client.clients = {};
+        Client.clients = {};
 
-        return provider.Client.find(response.body.client_id)
+        return Client.find(response.body.client_id)
         .then((client) => {
           expect(client).to.be.ok;
         })

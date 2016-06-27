@@ -8,6 +8,8 @@ const { expect } = require('chai');
 const sinon = require('sinon');
 const route = '/auth';
 
+const Client = provider.get('Client');
+
 provider.setupClient();
 provider.setupCerts();
 
@@ -56,11 +58,11 @@ provider.setupCerts();
 
       context('[exception]', function () {
         before(function () {
-          sinon.stub(provider.Client, 'find').returns(Promise.reject(new Error()));
+          sinon.stub(Client, 'find').returns(Promise.reject(new Error()));
         });
 
         after(function () {
-          provider.Client.find.restore();
+          Client.find.restore();
         });
 
         it('responds by rendering a self-submitting form with the exception', function () {

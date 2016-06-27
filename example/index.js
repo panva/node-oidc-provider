@@ -2,6 +2,7 @@
 'use strict';
 
 const path = require('path');
+const _ = require('lodash');
 const koa = require('koa');
 const body = require('koa-body');
 const port = process.env.PORT || 3000;
@@ -34,6 +35,9 @@ if (process.env.HEROKU) {
     sector_identifier_uri: 15000,
     jwks_uri: 15000,
   };
+  app.proxy = true;
+  _.set(settings.config, 'cookies.short.secure', true);
+  _.set(settings.config, 'cookies.long.secure', true);
 }
 
 const provider = new Provider(issuer, settings.config);
@@ -41,12 +45,6 @@ const provider = new Provider(issuer, settings.config);
 Object.defineProperty(provider, 'Account', {
   value: Account,
 });
-
-if (process.env.HEROKU) {
-  app.proxy = true;
-  provider.configuration.cookies.short.secure = true;
-  provider.configuration.cookies.long.secure = true;
-}
 
 app.use(rewrite(/^\/\.well-known\/(.*)/, '/op/.well-known/$1'));
 app.use(mount('/op', provider.app));
@@ -58,7 +56,7 @@ router.get('/interaction/:grant', function * renderInteraction(next) {
     signed: true,
   })).params;
 
-  const client = yield provider.Client.find(grant.client_id);
+  const client = yield provider.get('Client').find(grant.client_id);
 
   yield this.render('login', {
     client,
@@ -83,16 +81,6 @@ router.post('/login', body(), function * submitLoginForm() {
       remember: !!this.request.body.remember,
       ts: Date.now() / 1000 | 0,
     },
-    // decline the full profile
-    // consent: {
-    //   decline: {} || null || "" (_.isEmpty() => true)
-    // },
-    // decline one from profile.
-    // consent: {
-    //   decline: {
-    //     profile: null
-    //   }
-    // }
   };
 
   provider.resume(this, this.request.body.grant, result);
@@ -104,8 +92,6 @@ app.use(router.allowedMethods());
 Promise.all(settings.certificates.map(cert => provider.addKey(cert)))
   .then(() => Promise.all(
     settings.clients.map(client => provider.addClient(client))
-  ).catch((err) => {
-    console.log(err);
-  }))
+  ).catch(console.error))
   .then(
     () => app.listen(port));

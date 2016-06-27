@@ -10,6 +10,8 @@ const { stringify: qs } = require('querystring');
 const { expect } = require('chai');
 const j = JSON.parse;
 
+const RefreshToken = provider.get('RefreshToken');
+
 const route = '/token';
 
 provider.setupClient();
@@ -63,7 +65,7 @@ describe('grant_type=refresh_token', function () {
         .expect((response) => {
           expect(response.body).to.have.property('refresh_token');
           const jti = j(base64url(response.body.refresh_token.split('.')[0])).jti;
-          this.refreshToken = provider.RefreshToken.adapter.syncFind(jti);
+          this.refreshToken = RefreshToken.adapter.syncFind(jti);
           this.rt = response.body.refresh_token;
         })
         .end(done);
@@ -95,12 +97,12 @@ describe('grant_type=refresh_token', function () {
     describe('validates', function () {
       context('', function () {
         before(function () {
-          this.prev = provider.RefreshToken.expiresIn;
-          provider.RefreshToken.expiresIn = 1;
+          this.prev = RefreshToken.expiresIn;
+          provider.configuration('ttl').RefreshToken = 1;
         });
 
         after(function () {
-          provider.RefreshToken.expiresIn = this.prev;
+          provider.configuration('ttl').RefreshToken = this.prev;
         });
 
         it('validates code is not expired', function (done) {
@@ -171,7 +173,7 @@ describe('grant_type=refresh_token', function () {
 
       it('validates account is still there', function () {
         const rt = this.rt;
-        sinon.stub(provider.Account, 'findById', function () {
+        sinon.stub(provider.get('Account'), 'findById', function () {
           return Promise.resolve();
         });
 
@@ -185,7 +187,7 @@ describe('grant_type=refresh_token', function () {
             grant_type: 'refresh_token'
           }))
           .expect(function () {
-            provider.Account.findById.restore();
+            provider.get('Account').findById.restore();
           })
           .expect(400)
           .expect(function () {
