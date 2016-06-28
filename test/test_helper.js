@@ -198,10 +198,21 @@ module.exports = function testHelper(dir, basename) {
   };
 
   provider.setupClient = function setupClient(pass) {
-    const self = this;
+    if (provider.configuration('idTokenSigningAlgValues').indexOf('RS256') === -1) {
+      this.setupCerts();
+    }
+
     const add = pass || client;
-    before('adding client', () => self.addClient(add));
-    after('removing client', () => self.get('Client').remove(add.client_id));
+    before('adding client', function () {
+      return provider.addClient(add).catch((err) => {
+        console.log(err);
+        throw err;
+      });
+    });
+
+    after('removing client', function () {
+      return provider.get('Client').remove(add.client_id);
+    });
   };
 
   provider.setupCerts = function (passed) {

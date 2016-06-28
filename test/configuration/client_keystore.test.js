@@ -1,15 +1,14 @@
 'use strict';
 
-const Lib = require('../../lib').Provider;
 const keystore = require('node-jose').JWK.createKeyStore();
-const provider = new Lib('https://sso.example.com', {
-  subjectTypes: ['public']
-});
+const { provider } = require('../test_helper')(__dirname);
 const nock = require('nock');
 const { expect } = require('chai');
 const endpoint = nock('https://client.example.com/');
 
 describe('client keystore refresh', function () {
+  provider.setupCerts();
+
   before(function () {
     return keystore.generate('RSA', 1024).then(function () {
       endpoint

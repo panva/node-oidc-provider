@@ -1,12 +1,11 @@
 'use strict';
 
+const { provider } = require('../test_helper')(__dirname);
 const { expect } = require('chai');
-const { Provider } = require('../../lib');
-const provider = new Provider('http://localhost:3000', {
-  subjectTypes: ['public']
-});
 
 describe('Provider#addClient', function () {
+  provider.setupCerts();
+
   [
     'id_token_signed_response_alg',
     'request_object_signing_alg',
@@ -25,6 +24,7 @@ describe('Provider#addClient', function () {
         }, function (err) {
           expect(err).to.be.ok;
           expect(err).to.have.property('message', 'invalid_client_metadata');
+          expect(err).to.have.property('error_description', 'insufficient client_secret length');
         });
       });
 
@@ -39,6 +39,7 @@ describe('Provider#addClient', function () {
         }, function (err) {
           expect(err).to.be.ok;
           expect(err).to.have.property('message', 'invalid_client_metadata');
+          expect(err).to.have.property('error_description', 'insufficient client_secret length');
         });
       });
 
@@ -53,6 +54,7 @@ describe('Provider#addClient', function () {
         }, function (err) {
           expect(err).to.be.ok;
           expect(err).to.have.property('message', 'invalid_client_metadata');
+          expect(err).to.have.property('error_description', 'insufficient client_secret length');
         });
       });
     });

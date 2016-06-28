@@ -6,7 +6,6 @@
     "buffer-equals-constant": "^1.0.0",
     "got": "^6.1.1",
     "http-errors": "^1.4.0",
-    "joi": "^8.0.5",
     "koa": "^1.0.0",
     "koa-body": "^1.2.1",
     "koa-compose": "^2.3.0",
@@ -14,7 +13,8 @@
     "lodash": "^4.5.0",
     "lru-cache": "^4.0.0",
     "node-jose": "^0.8.0",
-    "node-uuid": "^1.4.7"
+    "node-uuid": "^1.4.7",
+    "valid-url": "^1.0.9"
   },
   "description": "OpenID Provider (OP) implementation for Node.js OpenID Connect servers.",
   "devDependencies": {

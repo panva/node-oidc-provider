@@ -291,30 +291,6 @@ describe('configuration features.requestUri', function () {
       });
     });
 
-    it('doesnt allow http', function () {
-      const spy = sinon.spy();
-      provider.once('authentication.error', spy);
-
-      return wrap({
-        agent,
-        route,
-        verb,
-        auth: {
-          request_uri: 'http://insecure.com',
-          scope: 'openid',
-          client_id: 'client',
-          response_type: 'code'
-        }
-      })
-      .expect(302)
-      .expect(function () {
-        expect(spy.calledOnce).to.be.true;
-        expect(spy.args[0][0]).to.have.property('message', 'invalid_request_uri');
-        expect(spy.args[0][0]).to.have.property('error_description',
-          'request_uri must use https scheme');
-      });
-    });
-
     it('doesnt allow slow requests (socket delay)', function () {
       const spy = sinon.spy();
       provider.once('authentication.error', spy);

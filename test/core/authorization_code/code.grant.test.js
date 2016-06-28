@@ -14,13 +14,13 @@ const AuthorizationCode = provider.get('AuthorizationCode');
 
 const route = '/token';
 
+provider.setupCerts();
 provider.setupClient();
 provider.setupClient({
   client_id: 'client2',
   client_secret: 'secret',
   redirect_uris: ['https://client.example.com/cb']
 });
-provider.setupCerts();
 
 function errorDetail(spy) {
   return spy.args[0][0].error_detail;

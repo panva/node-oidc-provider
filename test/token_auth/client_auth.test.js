@@ -9,6 +9,8 @@ const JWT = require('../../lib/helpers/jwt');
 const Client = provider.get('Client');
 
 describe('none auth', function () {
+  provider.setupCerts();
+
   const client = {
     token_endpoint_auth_method: 'none',
     client_id: 'client',

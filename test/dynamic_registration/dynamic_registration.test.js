@@ -64,7 +64,8 @@ describe('registration features', function () {
     it('validates the parameters to be valid and responds with errors', function () {
       return agent.post('/reg')
       .send({
-        grant_types: ['this is clearly wrong']
+        grant_types: ['this is clearly wrong'],
+        redirect_uris: ['https://client.example.com/cb']
       })
       .expect(400)
       .expect(validateError('invalid_client_metadata'))

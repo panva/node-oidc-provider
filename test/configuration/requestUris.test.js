@@ -15,6 +15,7 @@ describe('client.requestUris', function () {
     return provider.addClient({
       client_id: 'client',
       client_secret: 'secret',
+      id_token_signed_response_alg: 'none',
       redirect_uris: ['https://client.example.com/cb']
     }).then(function (client) {
       expect(client).to.have.property('requestUris').that.is.an('array');
@@ -33,9 +34,10 @@ describe('client.requestUris', function () {
     return provider.addClient({
       client_id: 'client',
       client_secret: 'secret',
+      id_token_signed_response_alg: 'none',
       redirect_uris: ['https://client.example.com/cb']
     }).then(function (client) {
-      expect(client).not.to.have.property('requestUris');
+      expect(client.requestUris).to.be.undefined;
     });
   });
 });
