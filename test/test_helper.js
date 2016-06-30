@@ -205,7 +205,6 @@ module.exports = function testHelper(dir, basename) {
     const add = pass || client;
     before('adding client', function () {
       return provider.addClient(add).catch((err) => {
-        console.log(err);
         throw err;
       });
     });

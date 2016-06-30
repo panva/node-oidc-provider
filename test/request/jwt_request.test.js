@@ -304,5 +304,36 @@ describe('configuration features.requestUri', function () {
         })
       );
     });
+
+    it('handles unrecognized parameters', function * () {
+      const key = (yield Client.find('client-with-HS-sig')).keystore.get('clientSecret');
+      return JWT.sign({
+        client_id: 'client-with-HS-sig',
+        unrecognized: true,
+        response_type: 'code',
+        redirect_uri: 'https://client.example.com/cb'
+      }, key, 'HS256').then((request) =>
+        wrap({
+          agent,
+          route,
+          verb,
+          auth: {
+            request,
+            scope: 'openid',
+            client_id: 'client-with-HS-sig',
+            response_type: 'code'
+          }
+        })
+        .expect(302)
+        .expect(function (response) {
+          const expected = parse('https://client.example.com/cb', true);
+          const actual = parse(response.headers.location, true);
+          ['protocol', 'host', 'pathname'].forEach((attr) => {
+            expect(actual[attr]).to.equal(expected[attr]);
+          });
+          expect(actual.query).to.have.property('code');
+        })
+      );
+    });
   });
 });

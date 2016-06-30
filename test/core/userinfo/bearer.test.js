@@ -9,10 +9,10 @@ describe('providing Bearer token', function () {
   context('invalid requests', function () {
     it('nothing provided', function () {
       return agent.get('/me')
-      .expect(401)
+      .expect(400)
       .expect(function (response) {
-        expect(response.body.error).to.equal('invalid_token');
-        expect(response.body.error_description).to.equal('invalid token provided');
+        expect(response.body.error).to.equal('invalid_request');
+        expect(response.body.error_description).to.equal('no bearer token provided');
       });
     });
 

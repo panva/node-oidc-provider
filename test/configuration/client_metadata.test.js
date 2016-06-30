@@ -397,7 +397,13 @@ describe('Client validations', function () {
     defaultsTo(this.title, 'client_secret_basic');
     mustBeString(this.title);
     DefaultProvider.configuration('tokenEndpointAuthMethods').forEach((value) => {
-      allows(this.title, value);
+      if (value === 'private_key_jwt') {
+        allows(this.title, value, {
+          jwks: { keys: [sigKey] }
+        });
+      } else {
+        allows(this.title, value);
+      }
     });
     rejects(this.title, 'not-a-method');
   });
@@ -515,16 +521,30 @@ describe('Client validations', function () {
   });
 
   context('jwks', function () {
-    // TODO: must be object
-    // TODO: must have property keys that is an array and at least one member
-
-    // TODO: required when (token_endpoint_auth_method = pkj) || request_object_signing_alg ~= /RS|ES/
+    rejects(this.title, 'string', 'jwks must be a JWK Set');
+    rejects(this.title, {}, 'jwks must be a JWK Set');
+    rejects(this.title, 1, 'jwks must be a JWK Set');
+    rejects(this.title, 0, 'jwks must be a JWK Set');
+    rejects(this.title, true, 'jwks must be a JWK Set');
+    rejects(this.title, { keys: [] }, 'jwks.keys must not be empty');
+    rejects(this.title, undefined, 'jwks or jwks_uri is mandatory for this client', {
+      token_endpoint_auth_method: 'private_key_jwt'
+    });
+    rejects(this.title, undefined, 'jwks or jwks_uri is mandatory for this client', {
+      request_object_signing_alg: 'RS256'
+    });
+    rejects(this.title, undefined, 'jwks or jwks_uri is mandatory for this client', {
+      request_object_signing_alg: 'ES384'
+    });
+    rejects(this.title, { keys: ['something'] }, 'jwks and jwks_uri must not be used at the same time', {
+      jwks_uri: 'https://client.example.com/jwks'
+    });
   });
 
-  context.skip('jwks_uri', function () {
+  context('jwks_uri', function () {
     mustBeString(this.title);
-    mustBeUri(this.title, ['http', 'https']);
-    // TODO: required when (token_endpoint_auth_method = pkj) || request_object_signing_alg ~= /RS|ES/
+
+    // more in client_keystore.test.js
   });
 
   it('allows unrecognized properties but does not yield them back', function () {

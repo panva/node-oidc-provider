@@ -50,7 +50,7 @@ describe('registration features', function () {
       .end(function (err, response) {
         if (err) return done(err);
 
-        Client.clients = {};
+        Client.purge(); // wipe the cache
 
         return Client.find(response.body.client_id)
         .then((client) => {
@@ -140,7 +140,8 @@ describe('registration features', function () {
 
     it('validates auth presence', function () {
       return agent.get(`/reg/${this.clientId}`)
-        .expect(401);
+        .expect(400)
+        .expect(validateError('invalid_request'));
     });
 
     it('validates auth validity', function () {
