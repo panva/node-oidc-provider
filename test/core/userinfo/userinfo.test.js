@@ -49,3 +49,13 @@ describe('userinfo /me', function () {
       .expect({ error: 'invalid_scope', scope: 'profile', error_description: 'access token missing requested scope' });
   });
 });
+
+describe('userinfo /me WWW-Authenticate header', function () {
+  it('is set', function () {
+    return agent.get('/me')
+    .set('Authorization', 'Bearer ThisIsNotAValidToken')
+    .expect(401)
+    .expect('WWW-Authenticate', new RegExp(`^Bearer realm="${provider.issuer}"`))
+    .expect('WWW-Authenticate', /error="invalid_token"/);
+  });
+});
