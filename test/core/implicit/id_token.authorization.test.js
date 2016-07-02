@@ -177,7 +177,7 @@ provider.setupCerts();
         .expect(function () {
           renderSpy.restore();
         })
-        .expect(200)
+        .expect(400)
         .expect(function () {
           expect(emitSpy.calledOnce).to.be.true;
           expect(renderSpy.calledOnce).to.be.true;
@@ -419,7 +419,7 @@ provider.setupCerts();
       .expect(function () {
         renderSpy.restore();
       })
-      .expect(200)
+      .expect(400)
       .expect(function () {
         expect(emitSpy.calledOnce).to.be.true;
         expect(renderSpy.calledOnce).to.be.true;

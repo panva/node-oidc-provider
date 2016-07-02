@@ -42,7 +42,7 @@ describe('resume after interaction', function () {
     it('needs the results to be present, else renders an err', function () {
       return agent.get(`/auth/${uuid()}`)
         .expect(400)
-        .expect('authentication request has expired');
+        .expect(/authentication request has expired/);
     });
   });
 

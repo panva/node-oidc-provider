@@ -209,7 +209,7 @@ provider.setupCerts();
         .expect(function () {
           renderSpy.restore();
         })
-        .expect(200)
+        .expect(400)
         .expect(function () {
           expect(emitSpy.calledOnce).to.be.true;
           expect(renderSpy.calledOnce).to.be.true;
@@ -398,7 +398,7 @@ provider.setupCerts();
 
         return wrap({ agent, route, verb, auth })
         .type('json')
-        .expect(200)
+        .expect(400)
         .expect(/only application\/x-www-form-urlencoded content-type POST bodies are supported/)
         .expect(/invalid_request/)
         .expect(function () {
@@ -443,7 +443,7 @@ provider.setupCerts();
       .expect(function () {
         renderSpy.restore();
       })
-      .expect(200)
+      .expect(400)
       .expect(function () {
         expect(emitSpy.calledOnce).to.be.true;
         expect(renderSpy.calledOnce).to.be.true;
