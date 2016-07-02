@@ -109,6 +109,40 @@ describe('resume after interaction', function () {
     });
   });
 
+  context('consent results', function () {
+    it('should use the consents from resume cookie if provided', function () {
+      const auth = new AuthenticationRequest({
+        response_type: 'code',
+        scope: 'openid'
+      });
+
+      setup(auth, {
+        login: {
+          account: uuid(),
+          remember: true
+        },
+        consent: {
+          scope: 'openid profile'
+        }
+      });
+
+      let authorizationCode;
+
+      provider.once('token.issued', function (code) {
+        authorizationCode = code;
+      });
+
+      return agent.get(`/auth/${uuid()}`)
+        .expect(function () {
+          provider.removeAllListeners('token.issued');
+        })
+        .expect(function () {
+          expect(authorizationCode).to.be.ok;
+          expect(authorizationCode).to.have.property('scope', 'openid profile');
+        });
+    });
+  });
+
   context('custom prompts', function () {
     before(agent.login);
     after(agent.logout);
