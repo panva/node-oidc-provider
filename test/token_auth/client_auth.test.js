@@ -152,7 +152,7 @@ describe('client_secret_jwt auth', function () {
       .expect(responses.tokenAuthSucceeded));
   });
 
-  it('rejects tokens signed wrong, invalid or expired');
+  // TODO: it('rejects tokens signed wrong, invalid or expired');
 
   it('rejects malformed assertions', function () {
     return agent.post(route)

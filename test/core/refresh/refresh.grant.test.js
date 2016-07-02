@@ -29,7 +29,7 @@ function errorDetail(spy) {
 
 describe('grant_type=refresh_token', function () {
   describe('extends authorization_code', function () {
-    it('omits to issue a refresh_token if the client cannot use it (misses allowed grant)');
+    // TODO: it('omits to issue a refresh_token if the client cannot use it (misses allowed grant)');
   });
 
   context('with real tokens', function () {

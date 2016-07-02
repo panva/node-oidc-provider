@@ -330,8 +330,8 @@ describe('Client validations', function () {
 
   context('request_object_signing_alg', function () {
     mustBeString(this.title);
-    it('allows one of');
-    it('rejects other than');
+    // TODO: it('allows one of');
+    // TODO: it('rejects other than');
   });
 
   context('request_uris', function () {
