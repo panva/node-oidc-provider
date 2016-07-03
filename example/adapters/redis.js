@@ -1,4 +1,3 @@
-/* istanbul ignore next */
 'use strict';
 
 const Redis = require('ioredis'); // eslint-disable-line import/no-unresolved

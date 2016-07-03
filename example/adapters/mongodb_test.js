@@ -5,10 +5,10 @@ const oidc = require('../../lib');
 const Provider = oidc.Provider;
 const AdapterTest = oidc.AdapterTest;
 
-const RedisAdapter = require('./redis');
+const MongoAdapter = require('./mongodb');
 
 const provider = new Provider('http://localhost', {
-  adapter: RedisAdapter,
+  adapter: MongoAdapter,
 });
 
 const test = new AdapterTest(provider);

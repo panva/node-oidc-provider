@@ -249,10 +249,10 @@ storing issued tokens, codes and user sessions. This is fine for as long as you 
 and generally just play around since every time you restart your process all information will be
 lost. As soon as you cannot live with this limitation you will be required to provide an adapter
 for oidc-provider to use. Below you can see the API oidc-provider will expect and test for when
-starting up. For reference see the [memory adapter](lib/adapters/memory_adapter.js) and a [redis
-adapter](example/adapters/redis.js).
-There's also a simple [test](example/adapters/redis_test.js) you can use to check your own
-implementation.
+starting up. For reference see the [memory adapter](lib/adapters/memory_adapter.js) and
+[redis](example/adapters/redis.js) or [mongodb](example/adapters/mongodb.js) adapters. There's also
+a simple test [[redis](example/adapters/redis_test.js),[mongodb](example/adapters/mongodb_test.js)]
+you can use to check your own implementation.
 
 ```
 class MyAdapter {

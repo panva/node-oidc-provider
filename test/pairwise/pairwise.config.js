@@ -1,7 +1,9 @@
 'use strict';
 
+const _ = require('lodash');
 const cert = require('../default.sig.key');
-const config = require('../default.config');
+const config = _.clone(require('../default.config'));
+config.subjectTypes = ['public', 'pairwise'];
 
 module.exports = {
   config,
