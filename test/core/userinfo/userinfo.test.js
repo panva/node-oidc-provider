@@ -1,7 +1,7 @@
 'use strict';
 
 const {
-  provider, agent, AuthenticationRequest, wrap
+  provider, agent, AuthorizationRequest, wrap
 } = require('../../test_helper')(__dirname);
 const { expect } = require('chai');
 const url = require('url');
@@ -13,7 +13,7 @@ describe('userinfo /me', function () {
   before(agent.login);
 
   before(function () {
-    const auth = new AuthenticationRequest({
+    const auth = new AuthorizationRequest({
       response_type: 'id_token token',
       scope: 'openid email'
     });
@@ -47,5 +47,15 @@ describe('userinfo /me', function () {
       .set('Authorization', `Bearer ${this.access_token}`)
       .expect(400)
       .expect({ error: 'invalid_scope', scope: 'profile', error_description: 'access token missing requested scope' });
+  });
+});
+
+describe('userinfo /me WWW-Authenticate header', function () {
+  it('is set', function () {
+    return agent.get('/me')
+    .set('Authorization', 'Bearer ThisIsNotAValidToken')
+    .expect(401)
+    .expect('WWW-Authenticate', new RegExp(`^Bearer realm="${provider.issuer}"`))
+    .expect('WWW-Authenticate', /error="invalid_token"/);
   });
 });

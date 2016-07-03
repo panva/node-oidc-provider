@@ -10,6 +10,8 @@ const nock = require('nock');
 const { expect } = require('chai');
 const { parse } = require('url');
 
+const Client = provider.get('Client');
+
 const route = '/auth';
 
 provider.setupClient();
@@ -33,11 +35,11 @@ describe('configuration features.requestUri', function () {
 
   context('requireRequestUriRegistration', function () {
     before(function () {
-      provider.configuration.features.requestUri = { requireRequestUriRegistration: true };
+      provider.configuration().features.requestUri = { requireRequestUriRegistration: true };
     });
 
     after(function () {
-      provider.configuration.features.requestUri = true;
+      provider.configuration().features.requestUri = true;
     });
 
     it('extends discovery', function () {
@@ -56,8 +58,8 @@ describe('configuration features.requestUri', function () {
     before(agent.login);
     after(agent.logout);
 
-    it('works with signed by an actual alg', function () {
-      const key = provider.Client.clients['client-with-HS-sig'].keystore.get('clientSecret');
+    it('works with signed by an actual alg', function * () {
+      const key = (yield Client.find('client-with-HS-sig')).keystore.get('clientSecret');
       return JWT.sign({
         client_id: 'client-with-HS-sig',
         response_type: 'code',
@@ -167,7 +169,7 @@ describe('configuration features.requestUri', function () {
 
     it('doesnt allow too long request_uris', function () {
       const spy = sinon.spy();
-      provider.once('authentication.error', spy);
+      provider.once('authorization.error', spy);
 
       return wrap({
         agent,
@@ -190,12 +192,12 @@ describe('configuration features.requestUri', function () {
     });
 
     context('when client has requestUris set', function () {
-      before(function () {
-        provider.Client.clients.client.requestUris = ['https://thisoneisallowed.com'];
+      before(function * () {
+        (yield Client.find('client')).requestUris = ['https://thisoneisallowed.com'];
       });
 
-      after(function () {
-        provider.Client.clients.client.requestUris = undefined;
+      after(function * () {
+        (yield Client.find('client')).requestUris = undefined;
       });
 
       it('checks the whitelist', function () {
@@ -266,7 +268,7 @@ describe('configuration features.requestUri', function () {
 
       it('doesnt allow to bypass these', function () {
         const spy = sinon.spy();
-        provider.once('authentication.error', spy);
+        provider.once('authorization.error', spy);
 
         return wrap({
           agent,
@@ -289,33 +291,9 @@ describe('configuration features.requestUri', function () {
       });
     });
 
-    it('doesnt allow http', function () {
-      const spy = sinon.spy();
-      provider.once('authentication.error', spy);
-
-      return wrap({
-        agent,
-        route,
-        verb,
-        auth: {
-          request_uri: 'http://insecure.com',
-          scope: 'openid',
-          client_id: 'client',
-          response_type: 'code'
-        }
-      })
-      .expect(302)
-      .expect(function () {
-        expect(spy.calledOnce).to.be.true;
-        expect(spy.args[0][0]).to.have.property('message', 'invalid_request_uri');
-        expect(spy.args[0][0]).to.have.property('error_description',
-          'request_uri must use https scheme');
-      });
-    });
-
     it('doesnt allow slow requests (socket delay)', function () {
       const spy = sinon.spy();
-      provider.once('authentication.error', spy);
+      provider.once('authorization.error', spy);
 
       nock('https://client.example.com')
         .get('/request')
@@ -343,7 +321,7 @@ describe('configuration features.requestUri', function () {
 
     it('doesnt allow slow requests (response delay)', function () {
       const spy = sinon.spy();
-      provider.once('authentication.error', spy);
+      provider.once('authorization.error', spy);
 
       nock('https://client.example.com')
         .get('/request')
@@ -371,7 +349,7 @@ describe('configuration features.requestUri', function () {
 
     it('doesnt accepts 200s, rejects even on redirect', function () {
       const spy = sinon.spy();
-      provider.once('authentication.error', spy);
+      provider.once('authorization.error', spy);
 
       nock('https://client.example.com')
         .get('/request')
@@ -400,7 +378,7 @@ describe('configuration features.requestUri', function () {
 
     it('doesnt allow request inception', function () {
       const spy = sinon.spy();
-      provider.once('authentication.error', spy);
+      provider.once('authorization.error', spy);
 
       return JWT.sign({
         client_id: 'client',
@@ -434,7 +412,7 @@ describe('configuration features.requestUri', function () {
 
     it('doesnt allow requestUri inception', function () {
       const spy = sinon.spy();
-      provider.once('authentication.error', spy);
+      provider.once('authorization.error', spy);
 
       return JWT.sign({
         client_id: 'client',
@@ -469,7 +447,7 @@ describe('configuration features.requestUri', function () {
 
     it('doesnt allow response_type to differ', function () {
       const spy = sinon.spy();
-      provider.once('authentication.error', spy);
+      provider.once('authorization.error', spy);
 
       return JWT.sign({
         client_id: 'client',
@@ -503,7 +481,7 @@ describe('configuration features.requestUri', function () {
 
     it('doesnt allow client_id to differ', function () {
       const spy = sinon.spy();
-      provider.once('authentication.error', spy);
+      provider.once('authorization.error', spy);
 
       return JWT.sign({
         client_id: 'client2',
@@ -537,7 +515,7 @@ describe('configuration features.requestUri', function () {
 
     it('handles invalid signed looklike jwts', function () {
       const spy = sinon.spy();
-      provider.once('authentication.error', spy);
+      provider.once('authorization.error', spy);
 
       nock('https://client.example.com')
         .get('/request')
@@ -566,7 +544,7 @@ describe('configuration features.requestUri', function () {
 
     it('doesnt allow clients with predefined alg to bypass this alg', function () {
       const spy = sinon.spy();
-      provider.once('authentication.error', spy);
+      provider.once('authorization.error', spy);
 
       return JWT.sign({
         client_id: 'client-with-HS-sig',
@@ -599,11 +577,11 @@ describe('configuration features.requestUri', function () {
     });
 
 
-    it('bad signatures will be rejected', function () {
+    it('bad signatures will be rejected', function * () {
       const spy = sinon.spy();
-      provider.once('authentication.error', spy);
+      provider.once('authorization.error', spy);
 
-      const key = provider.Client.clients['client-with-HS-sig'].keystore.get('clientSecret');
+      const key = (yield Client.find('client-with-HS-sig')).keystore.get('clientSecret');
       return JWT.sign({
         client_id: 'client',
         response_type: 'code',

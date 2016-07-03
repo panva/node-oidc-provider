@@ -1,15 +1,14 @@
 'use strict';
 
-const Lib = require('../../lib').Provider;
 const keystore = require('node-jose').JWK.createKeyStore();
-const provider = new Lib('https://sso.example.com', {
-  subjectTypes: ['public']
-});
+const { provider } = require('../test_helper')(__dirname);
 const nock = require('nock');
 const { expect } = require('chai');
 const endpoint = nock('https://client.example.com/');
 
 describe('client keystore refresh', function () {
+  provider.setupCerts();
+
   before(function () {
     return keystore.generate('RSA', 1024).then(function () {
       endpoint
@@ -28,12 +27,12 @@ describe('client keystore refresh', function () {
   });
 
   it('gets the jwks from the uri', function * () {
-    const client = yield provider.Client.find('client');
+    const client = yield provider.get('Client').find('client');
     expect(client.keystore.get({ kty: 'RSA' })).to.be.ok;
   });
 
   it('adds new keys', function * () {
-    const client = yield provider.Client.find('client');
+    const client = yield provider.get('Client').find('client');
     yield keystore.generate('RSA', 1024);
     endpoint
       .get('/jwks')
@@ -49,7 +48,7 @@ describe('client keystore refresh', function () {
       .get('/jwks')
       .reply(200, '{"keys":[]}');
 
-    const client = yield provider.Client.find('client');
+    const client = yield provider.get('Client').find('client');
     return client.keystore.refresh().then(function () {
       expect(client.keystore.get({ kty: 'RSA' })).not.to.be.ok;
     });
@@ -60,7 +59,7 @@ describe('client keystore refresh', function () {
       .get('/jwks')
       .reply(302, '/somewhere');
 
-    const client = yield provider.Client.find('client');
+    const client = yield provider.get('Client').find('client');
     return client.keystore.refresh().then(() => {
       throw new Error('expected refresh to be rejected');
     }, (err) => {
@@ -75,7 +74,7 @@ describe('client keystore refresh', function () {
       .get('/jwks')
       .reply(200, 'not json');
 
-    const client = yield provider.Client.find('client');
+    const client = yield provider.get('Client').find('client');
     return client.keystore.refresh().then(() => {
       throw new Error('expected refresh to be rejected');
     }, (err) => {
@@ -90,7 +89,7 @@ describe('client keystore refresh', function () {
       .get('/jwks')
       .reply(200, '{"keys": {}}');
 
-    const client = yield provider.Client.find('client');
+    const client = yield provider.get('Client').find('client');
     return client.keystore.refresh().then(() => {
       throw new Error('expected refresh to be rejected');
     }, (err) => {

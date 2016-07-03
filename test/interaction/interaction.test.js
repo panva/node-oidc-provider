@@ -5,7 +5,7 @@ const {
   provider,
   agent,
   getSession,
-  AuthenticationRequest,
+  AuthorizationRequest,
 } = require('../test_helper')(__dirname);
 
 const expire = new Date();
@@ -17,7 +17,7 @@ const { expect } = require('chai');
 provider.setupClient();
 provider.setupCerts();
 
-provider.configuration.prompts.push('custom');
+provider.configuration('prompts').push('custom');
 
 function setup(grant, results) {
   const cookies = [];
@@ -42,13 +42,13 @@ describe('resume after interaction', function () {
     it('needs the results to be present, else renders an err', function () {
       return agent.get(`/auth/${uuid()}`)
         .expect(400)
-        .expect('authentication request has expired');
+        .expect(/authorization request has expired/);
     });
   });
 
   context('login results', function () {
     it('should redirect to client with error if interaction did not resolve in a session', function () {
-      const auth = new AuthenticationRequest({
+      const auth = new AuthorizationRequest({
         response_type: 'code',
         scope: 'openid'
       });
@@ -64,7 +64,7 @@ describe('resume after interaction', function () {
     });
 
     it('should process newly established permanent sessions', function () {
-      const auth = new AuthenticationRequest({
+      const auth = new AuthorizationRequest({
         response_type: 'code',
         scope: 'openid'
       });
@@ -87,7 +87,7 @@ describe('resume after interaction', function () {
     });
 
     it('should process newly established temporary sessions', function () {
-      const auth = new AuthenticationRequest({
+      const auth = new AuthorizationRequest({
         response_type: 'code',
         scope: 'openid'
       });
@@ -109,12 +109,46 @@ describe('resume after interaction', function () {
     });
   });
 
+  context('consent results', function () {
+    it('should use the consents from resume cookie if provided', function () {
+      const auth = new AuthorizationRequest({
+        response_type: 'code',
+        scope: 'openid'
+      });
+
+      setup(auth, {
+        login: {
+          account: uuid(),
+          remember: true
+        },
+        consent: {
+          scope: 'openid profile'
+        }
+      });
+
+      let authorizationCode;
+
+      provider.once('token.issued', function (code) {
+        authorizationCode = code;
+      });
+
+      return agent.get(`/auth/${uuid()}`)
+        .expect(function () {
+          provider.removeAllListeners('token.issued');
+        })
+        .expect(function () {
+          expect(authorizationCode).to.be.ok;
+          expect(authorizationCode).to.have.property('scope', 'openid profile');
+        });
+    });
+  });
+
   context('custom prompts', function () {
     before(agent.login);
     after(agent.logout);
 
     it('should fail if they are not resolved', function () {
-      const auth = new AuthenticationRequest({
+      const auth = new AuthorizationRequest({
         response_type: 'code',
         scope: 'openid',
         prompt: 'custom'

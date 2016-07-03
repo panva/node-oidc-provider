@@ -17,10 +17,10 @@ your own unique-looking and functioning user flows.
   * [Implemented specs &amp; features](#implemented-specs--features)
   * [Get started](#get-started)
   * [Configuration](#configuration)
-    * [Certificates](#keys-signing-and-encryption)
-    * [Clients](#clients)
     * [Features](#features)
     * [Routes](#routes)
+    * [Certificates](#keys-signing-and-encryption)
+    * [Clients](#clients)
     * [Persistance](#persistance)
   * [Events](#events)
   * [Certification](#certification)
@@ -30,7 +30,7 @@ your own unique-looking and functioning user flows.
 The following specifications are implemented by oidc-provider.
 
 - [OpenID Connect Core 1.0 incorporating errata set 1][feature-core]
-  - Authentication
+  - Authorization
     - Authorization Code Flow
     - Implicit Flow
     - Hybrid Flow
@@ -77,7 +77,8 @@ $ cd oidc-provider
 $ npm install
 $ node example
 ```
-Visiting `http://localhost:3000/.well-known/openid-configuration` will help you to discover how the example is [configured](example).
+Visiting `http://localhost:3000/.well-known/openid-configuration` will help you to discover how the
+example is [configured](example).
 
 Otherwise just install the package in your app and follow the [example use](example/index.js).
 ```
@@ -90,8 +91,6 @@ const Provider = require('oidc-provider').Provider;
 const issuer = 'http://localhost:3000';
 const configuration = {
   // ... see available options below
-  subjectTypes: ['public', 'pairwise'],
-  pairwiseSalt: 'this is sooo random'
 };
 
 const oidc = new Provider(issuer, configuration);
@@ -201,27 +200,22 @@ const configuration = { features: { registration: Boolean[false] } };
 Enables features described in [Dynamic Client Registration 1.0][feature-registration].
 
 ### Routes
-The following are the respective endpoint routes.
+You can change the [default routes](lib/helpers/defaults.js#L72-L82) by providing a routes object
+to the oidc-provider constructor.
+
 ```js
-const configuration = {  
+const oidc = new Provider('http://localhost:3000', {
   routes: {
-    authentication: '/auth',
-    certificates: '/certs',
-    check_session: '/session/check',
-    end_session: '/session/end',
-    introspection: '/token/introspection',
-    registration: '/reg',
-    revocation: '/token/revocation',
-    token: '/token',
-    userinfo: '/me',
+    authorization: '/authz',
+    certificates: '/jwks'
   }
-};
+});
 ```
 
 
 ### Keys (signing and encryption)
-To add RSA or EC signing and encryption keys use the `addKey` method on a oidc-provider instance. This
-accepts a jwk formatted private key object and returns a Promise, resolved with
+To add RSA or EC signing and encryption keys use the `addKey` method on a oidc-provider instance.
+This accepts a jwk formatted private key object and returns a Promise, resolved with
 [node-jose][node-jose] jose.JWK.Key
 
 At the very least you must add one RSA key (and do yourself a favor and use at least 2048 bit). You
@@ -229,132 +223,54 @@ MAY provide the `use` and `kid` properties. When `use` is ommited the key will b
 signing and encryption. When `kid` is ommited it will be calculated according to
 [JSON Web Key (JWK) Thumbprint][feature-thumbprint].
 
-### Clients
-To add pre-established clients use the `addClient` method on a oidc-provider instance. This accepts a
-metadata object and returns a Promise, fulfilled with the Client object, rejected with a validation
-or other errors that may have been encountered. At the very least you must provide client_id,
-client_secret and redirect_uris. See the rest of the available metadata [here][client-metadata].
-
-```js
-const clientMetadata = {
-  // ...
-};
-oidc.addClient(clientMetadata).then(fulfillmentHandler, rejectionHandler);
-```
-
 
 ### Persistance
 The provided example and any new instance of oidc-provider will use the basic in-memory adapter for
 storing issued tokens, codes and user sessions. This is fine for as long as you develop, configure
 and generally just play around since every time you restart your process all information will be
 lost. As soon as you cannot live with this limitation you will be required to provide an adapter
-for oidc-provider to use. Below you can see the API oidc-provider will expect and test for when
-starting up. For reference see the [memory adapter](lib/adapters/memory_adapter.js) and a [redis
-adapter](example/adapters/redis.js).
-There's also a simple [test](example/adapters/redis_test.js) you can use to check your own
-implementation.
+for oidc-provider to use.
 
+```js
+const MyAdapter = require('./my_adapter');
+const oidc = new Provider('http://localhost:3000', {
+  adapter: MyAdapter
+});
 ```
-class MyAdapter {
 
-  /**
-   *
-   * Creates an instance of MyAdapter for an oidc-provider model.
-   *
-   * @constructor
-   * @param {string} name Name of the oidc-provider model. One of "Session", "AccessToken",
-   * "AuthorizationCode", "RefreshToken", "ClientCredentials".
-   *
-   */
-  constructor(name) {
+The API oidc-provider expects is documented [here](example/my_adapter.js). For reference see the
+[memory adapter](lib/adapters/memory_adapter.js) and [redis](example/adapters/redis.js) of
+[mongodb](example/adapters/mongodb.js) adapters. There's also a simple test
+[[redis](example/adapters/redis_test.js),[mongodb](example/adapters/mongodb_test.js)] you can use to
+check your own implementation.
 
-  }
+### Clients
+Clients can be managed programmatically or via out of bounds mechanisms using your provided Adapter.
+At the very least you must provide client_id, client_secret and redirect_uris for each client. See
+the rest of the available metadata [here][client-metadata].
 
-  /**
-   *
-   * Update or Create an instance of an oidc-provider model.
-   *
-   * @return {Promise} Promise fulfilled when the operation succeeded. Rejected with error when
-   * encountered.
-   * @param {string} id Identifier that oidc-provider will use to reference this token for future
-   * operations.
-   * @param {object} payload Object with all properties intended for storage.
-   * @param {expiresIn} integer Number of seconds intended for this model to be stored.
-   *
-   */
-  upsert(id, payload, expiresIn) {
+Note: each oidc-provider caches the clients once they are loaded (via either of the mechanisms),
+when in need of client configuration "reload" you can purge this cache like so
+`oidc.get('Client').purge()`;
 
-    /**
-     *
-     * When this is one of AccessToken, AuthorizationCode, RefreshToken, ClientCredentials the
-     * payload will contain the following properties:
-     * - grantId {string} the original id assigned to a grant (authorization request)
-     * - header {string} oidc-provider tokens are themselves JWTs, this is the first part of the token
-     * - payload {string} second part of the token
-     * - signature {string} the signature of the token
-     *
-     * Hint: you can JSON.parse(base64decode( ... )) the header and payload to get the token
-     * properties and store them too, they may be helpful for getting insights on your usage.
-     * Modifying any of header, payload or signature values will result in the token being invalid,
-     * remember that oidc-provider will do a JWT signature check of both the received and stored
-     * token to detect potential manipulation.
-     *
-     * Hint2: in order to fulfill all OAuth2.0 behaviors in regards to invalidating and expiring
-     * potentially misused or sniffed tokens you should keep track of all tokens that belong to the
-     * same grantId.
-     *
-     */  
-  }
+**via Provider interface**  
+To add pre-established clients use the `addClient` method on a oidc-provider instance. This accepts
+metadata object and returns a Promise, fulfilled with the added Client object, rejected with a
+validation or other errors that may have been encountered.
 
-  /**
-   *
-   * Return previously stored instance of an oidc-provider model.
-   *
-   * @return {Promise} Promise fulfilled with either Object (when found and not dropped yet due to
-   * expiration) or falsy value when not found anymore. Rejected with error when encountered.
-   * @param {string} id Identifier of oidc-provider model
-   *
-   */
-  find(id) {
-
-  }
-
-  /**
-   *
-   * Mark a stored oidc-provider model as consumed (not yet expired though!). Future finds for this
-   * id should be fulfilled with an object containing additional property named "consumed".
-   *
-   * @return {Promise} Promise fulfilled when the operation succeeded. Rejected with error when
-   * encountered.
-   * @param {string} id Identifier of oidc-provider model
-   *
-   */
-  consume(id) {
-
-  }
-
-  /**
-   *
-   * Destroy/Drop/Remove a stored oidc-provider model and other grant related models. Future finds
-   * for this id should be fulfilled with falsy values.
-   *
-   * @return {Promise} Promise fulfilled when the operation succeeded. Rejected with error when
-   * encountered.
-   * @param {string} id Identifier of oidc-provider model
-   *
-   */
-  destroy(id) {
-
-    /**
-     *
-     * See upsert for the note on grantId, it's imperitive to destroy all tokens with the same
-     * grantId when destroy is called. To query your persistancy store for the grantId of this token
-     * and also trigger a chain of removals for all related tokens is recommended.
-     *
-     */
-  }
-}
+```js
+const oidc = new Provider('http://localhost:3000');
+const metadata = {
+  // ...
+};
+oidc.addClient(metadata).then(fulfillmentHandler, rejectionHandler);
 ```
+
+**via Adapter**  
+Storing client metadata in your storage is recommended for distributed deployments. Also when you
+want to provide a client configuration GUI or plan on changing this data often. Clients get loaded
+*! and validated !* when they first get loaded, any metadata validation error encountered during
+this first load will be thrown and handled like any other context specific errors.
 
 ## Events
 The oidc-provider instance is an event emitter, `this` is always the instance. In events where `ctx`(koa
@@ -366,14 +282,14 @@ oidc.on(`'server_error', function (error, ctx) { }`)
 Emitted when an exception is thrown or promise rejected from either the Provider or your provided
 adapters. If it comes from the library you should probably report it.
 
-**authentication.success**  
-oidc.on(`'authentication.success', function (ctx) { }`)  
-Emitted with every successful authentication request. Useful i.e. for collecting metrics or
-triggering any action you need to execute after succeeded authentication.
+**authorization.success**  
+oidc.on(`'authorization.success', function (ctx) { }`)  
+Emitted with every successful authorization request. Useful i.e. for collecting metrics or
+triggering any action you need to execute after succeeded authorization.
 
-**authentication.error**  
-oidc.on(`'authentication.error', function (error, ctx) { }`)  
-Emitted when a handled error is encountered in the `authentication` endpoint.
+**authorization.error**  
+oidc.on(`'authorization.error', function (error, ctx) { }`)  
+Emitted when a handled error is encountered in the `authorization` endpoint.
 
 **grant.success**  
 oidc.on(`'grant.success', function (ctx) { }`)  
@@ -422,9 +338,9 @@ Emitted when a handled error is encountered in the `webfinger` endpoint.
 
 **token.issued**  
 oidc.on(`'token.issued', function (token) { }`)  
-Emitted when a token is issued. All tokens extending `provider.OAuthToken` emit this event.
-token can be one of `provider.AccessToken`, `provider.AuthorizationCode`,
-`provider.ClientCredentials`, `provider.RefreshToken`.
+Emitted when a token is issued. All tokens extending `OAuthToken` emit this event.
+token can be one of `AccessToken`, `AuthorizationCode`,
+`ClientCredentials`, `RefreshToken`.
 
 **token.consumed**  
 oidc.on(`'token.consumed', function (token) { }`)  

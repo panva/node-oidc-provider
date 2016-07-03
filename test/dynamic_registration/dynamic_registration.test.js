@@ -3,6 +3,7 @@
 const { agent, provider } = require('../test_helper')(__dirname);
 // const sinon = require('sinon');
 const { expect } = require('chai');
+const Client = provider.get('Client');
 
 provider.setupCerts();
 
@@ -49,9 +50,9 @@ describe('registration features', function () {
       .end(function (err, response) {
         if (err) return done(err);
 
-        provider.Client.clients = {};
+        Client.purge(); // wipe the cache
 
-        return provider.Client.find(response.body.client_id)
+        return Client.find(response.body.client_id)
         .then((client) => {
           expect(client).to.be.ok;
         })
@@ -63,7 +64,8 @@ describe('registration features', function () {
     it('validates the parameters to be valid and responds with errors', function () {
       return agent.post('/reg')
       .send({
-        grant_types: ['this is clearly wrong']
+        grant_types: ['this is clearly wrong'],
+        redirect_uris: ['https://client.example.com/cb']
       })
       .expect(400)
       .expect(validateError('invalid_client_metadata'))
@@ -138,7 +140,8 @@ describe('registration features', function () {
 
     it('validates auth presence', function () {
       return agent.get(`/reg/${this.clientId}`)
-        .expect(401);
+        .expect(400)
+        .expect(validateError('invalid_request'));
     });
 
     it('validates auth validity', function () {

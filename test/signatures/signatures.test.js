@@ -1,12 +1,14 @@
 'use strict';
 
 const {
-  provider, agent, AuthenticationRequest, wrap
+  provider, agent, AuthorizationRequest, wrap
 } = require('../test_helper')(__dirname);
 const { parse: parseLocation } = require('url');
 const { v4: uuid } = require('node-uuid');
 const { decode } = require('../../lib/helpers/jwt');
 const { expect } = require('chai');
+
+const AuthorizationCode = provider.get('AuthorizationCode');
 
 provider.setupClient();
 provider.setupClient({
@@ -30,7 +32,7 @@ provider.setupCerts();
 describe('token hashes in id_token', function () {
   let client;
   before(function * () {
-    client = yield provider.Client.find('client');
+    client = yield provider.get('Client').find('client');
   });
 
   before(agent.login);
@@ -41,7 +43,7 @@ describe('token hashes in id_token', function () {
 
   it('responds with a access_token and code (half of sha512)', function () {
     client.idTokenSignedResponseAlg = 'RS512';
-    const auth = new AuthenticationRequest({
+    const auth = new AuthorizationRequest({
       response_type: 'code id_token token',
       scope: 'openid'
     });
@@ -60,7 +62,7 @@ describe('token hashes in id_token', function () {
 
   it('responds with a access_token and code (half of sha384)', function () {
     client.idTokenSignedResponseAlg = 'RS384';
-    const auth = new AuthenticationRequest({
+    const auth = new AuthorizationRequest({
       response_type: 'code id_token token',
       scope: 'openid'
     });
@@ -79,7 +81,7 @@ describe('token hashes in id_token', function () {
 
   it('responds with a access_token and code (half of sha256)', function () {
     client.idTokenSignedResponseAlg = 'RS256';
-    const auth = new AuthenticationRequest({
+    const auth = new AuthorizationRequest({
       response_type: 'code id_token token',
       scope: 'openid'
     });
@@ -99,9 +101,9 @@ describe('token hashes in id_token', function () {
 
 describe('when id_token_signed_response_alg=none', function () {
   beforeEach(function * () {
-    const ac = new provider.AuthorizationCode({
+    const ac = new AuthorizationCode({
       accountId: 'accountIdentity',
-      acr: provider.configuration.acrValues[0],
+      acr: provider.configuration('acrValues[0]'),
       authTime: new Date() / 1000 | 0,
       clientId: 'client-sig-none',
       grantId: uuid(),
@@ -131,7 +133,7 @@ describe('when id_token_signed_response_alg=none', function () {
   });
 
   it('the unsigned token can be used as id_token_hint', function () {
-    const auth = new AuthenticationRequest({
+    const auth = new AuthorizationRequest({
       response_type: 'code',
       scope: 'openid',
       prompt: 'none',
@@ -151,9 +153,9 @@ describe('when id_token_signed_response_alg=none', function () {
 
 describe('when id_token_signed_response_alg=HS256', function () {
   beforeEach(function * () {
-    const ac = new provider.AuthorizationCode({
+    const ac = new AuthorizationCode({
       accountId: 'accountIdentity',
-      acr: provider.configuration.acrValues[0],
+      acr: provider.configuration('acrValues[0]'),
       authTime: new Date() / 1000 | 0,
       clientId: 'client-sig-HS256',
       grantId: uuid(),
@@ -183,7 +185,7 @@ describe('when id_token_signed_response_alg=HS256', function () {
   });
 
   it('the HS256 signed token can be used as id_token_hint', function () {
-    const auth = new AuthenticationRequest({
+    const auth = new AuthorizationRequest({
       response_type: 'code',
       scope: 'openid',
       prompt: 'none',

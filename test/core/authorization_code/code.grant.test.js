@@ -10,15 +10,17 @@ const { stringify: qs } = require('querystring');
 const { expect } = require('chai');
 const j = JSON.parse;
 
+const AuthorizationCode = provider.get('AuthorizationCode');
+
 const route = '/token';
 
+provider.setupCerts();
 provider.setupClient();
 provider.setupClient({
   client_id: 'client2',
   client_secret: 'secret',
   redirect_uris: ['https://client.example.com/cb']
 });
-provider.setupCerts();
 
 function errorDetail(spy) {
   return spy.args[0][0].error_detail;
@@ -41,7 +43,7 @@ describe('grant_type=authorization_code', function () {
       .expect((response) => {
         const { query: { code } } = parseUrl(response.headers.location, true);
         const jti = j(base64url(code.split('.')[0])).jti;
-        this.code = provider.AuthorizationCode.adapter.syncFind(jti);
+        this.code = AuthorizationCode.adapter.syncFind(jti);
         this.ac = code;
       });
     });
@@ -68,7 +70,7 @@ describe('grant_type=authorization_code', function () {
     });
 
     it('handles internal token signature validation', function () {
-      sinon.stub(provider.AuthorizationCode, 'fromJWT', function () {
+      sinon.stub(AuthorizationCode, 'fromJWT', function () {
         return Promise.reject(new Error());
       });
 
@@ -83,7 +85,7 @@ describe('grant_type=authorization_code', function () {
         redirect_uri: 'https://client.example.com/cb'
       }))
       .expect(function () {
-        provider.AuthorizationCode.fromJWT.restore();
+        AuthorizationCode.fromJWT.restore();
       })
       .expect(401)
       .expect(function () {
@@ -96,12 +98,12 @@ describe('grant_type=authorization_code', function () {
 
     context('', function () {
       before(function () {
-        this.prev = provider.AuthorizationCode.expiresIn;
-        provider.AuthorizationCode.expiresIn = 1;
+        this.prev = AuthorizationCode.expiresIn;
+        provider.configuration('ttl').AuthorizationCode = 1;
       });
 
       after(function () {
-        provider.AuthorizationCode.expiresIn = this.prev;
+        provider.configuration('ttl').AuthorizationCode = this.prev;
       });
 
       it('validates code is not expired', function (done) {
@@ -210,7 +212,7 @@ describe('grant_type=authorization_code', function () {
     });
 
     it('validates account is still there', function () {
-      sinon.stub(provider.Account, 'findById', function () {
+      sinon.stub(provider.get('Account'), 'findById', function () {
         return Promise.resolve();
       });
 
@@ -225,7 +227,7 @@ describe('grant_type=authorization_code', function () {
         redirect_uri: 'https://client.example.com/cb'
       }))
       .expect(function () {
-        provider.Account.findById.restore();
+        provider.get('Account').findById.restore();
       })
       .expect(400)
       .expect(function () {
@@ -331,11 +333,11 @@ describe('grant_type=authorization_code', function () {
 
   describe('error handling', function () {
     before(function () {
-      sinon.stub(provider.Client, 'find').returns(Promise.reject(new Error()));
+      sinon.stub(provider.get('Client'), 'find').returns(Promise.reject(new Error()));
     });
 
     after(function () {
-      provider.Client.find.restore();
+      provider.get('Client').find.restore();
     });
 
     it('handles errors', function () {

@@ -80,7 +80,7 @@ module.exports = function testHelper(dir, basename) {
     expire.setDate(expire.getDate() + 1);
     const account = uuid();
 
-    const session = new provider.Session(sessionId, { loginTs, account });
+    const session = new (provider.get('Session'))(sessionId, { loginTs, account });
 
     return Account.findById(account).then(session.save()).then(() => {
       agent.saveCookies({
@@ -93,7 +93,7 @@ module.exports = function testHelper(dir, basename) {
     });
   };
 
-  function AuthenticationRequest(parameters) {
+  function AuthorizationRequest(parameters) {
     this.client_id = client.client_id;
     this.state = Math.random().toString();
     this.nonce = Math.random().toString();
@@ -148,7 +148,7 @@ module.exports = function testHelper(dir, basename) {
     });
   }
 
-  AuthenticationRequest.prototype.validateInteractionError = function (expectedError, expectedReason) {
+  AuthorizationRequest.prototype.validateInteractionError = function (expectedError, expectedReason) {
     return (response) => {
       const value = response.headers['set-cookie'][1];
       const { value: interaction } = new Cookie(value);
@@ -159,13 +159,13 @@ module.exports = function testHelper(dir, basename) {
     };
   };
 
-  AuthenticationRequest.prototype.validateFragment = function (response) {
+  AuthorizationRequest.prototype.validateFragment = function (response) {
     const { hash } = parse(response.headers.location);
     expect(hash).to.exist;
     response.headers.location = response.headers.location.replace('#', '?');
   };
 
-  AuthenticationRequest.prototype.validatePresence = function (keys, all) {
+  AuthorizationRequest.prototype.validatePresence = function (keys, all) {
     let absolute;
     if (all === undefined) {
       absolute = true;
@@ -183,14 +183,14 @@ module.exports = function testHelper(dir, basename) {
     };
   };
 
-  AuthenticationRequest.prototype.validateError = function (expected) {
+  AuthorizationRequest.prototype.validateError = function (expected) {
     return (response) => {
       const { query: { error } } = parse(response.headers.location, true);
       expect(error).to.equal(expected);
     };
   };
 
-  AuthenticationRequest.prototype.validateErrorDescription = function (expected) {
+  AuthorizationRequest.prototype.validateErrorDescription = function (expected) {
     return (response) => {
       const { query: { error_description } } = parse(response.headers.location, true);
       expect(error_description).to.equal(expected);
@@ -198,10 +198,20 @@ module.exports = function testHelper(dir, basename) {
   };
 
   provider.setupClient = function setupClient(pass) {
-    const self = this;
+    if (provider.configuration('idTokenSigningAlgValues').indexOf('RS256') === -1) {
+      this.setupCerts();
+    }
+
     const add = pass || client;
-    before('adding client', () => self.addClient(add));
-    after('removing client', () => self.Client.remove(add.client_id));
+    before('adding client', function () {
+      return provider.addClient(add).catch((err) => {
+        throw err;
+      });
+    });
+
+    after('removing client', function () {
+      return provider.get('Client').remove(add.client_id);
+    });
   };
 
   provider.setupCerts = function (passed) {
@@ -228,9 +238,15 @@ module.exports = function testHelper(dir, basename) {
   };
 
   function getSession(userAgent) {
+    const Session = provider.get('Session');
     const { value: sessionId } = userAgent.jar.getCookie('_session', { path: '/' });
-    const key = provider.Session.adapter.key(sessionId);
-    return provider.Session.adapter.storage.get(key);
+    const key = Session.adapter.key(sessionId);
+    return Session.adapter.storage.get(key);
+  }
+
+  function getSessionId(userAgent) {
+    const { value: sessionId } = userAgent.jar.getCookie('_session', { path: '/' });
+    return sessionId;
   }
 
   function wrap(opts) {
@@ -251,10 +267,11 @@ module.exports = function testHelper(dir, basename) {
   }
 
   return {
-    AuthenticationRequest,
+    AuthorizationRequest,
     provider,
     agent,
     responses,
+    getSessionId,
     getSession,
     wrap
   };

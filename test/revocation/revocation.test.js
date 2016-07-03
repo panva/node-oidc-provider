@@ -8,6 +8,10 @@ const { stringify: qs } = require('querystring');
 const route = '/token/revocation';
 const j = JSON.stringify;
 
+const AccessToken = provider.get('AccessToken');
+const ClientCredentials = provider.get('ClientCredentials');
+const RefreshToken = provider.get('RefreshToken');
+
 provider.setupClient();
 provider.setupCerts();
 
@@ -24,13 +28,13 @@ describe('revocation features', function () {
 
   describe('/token/revocation', function () {
     it('revokes access token', function (done) {
-      const at = new provider.AccessToken({
+      const at = new AccessToken({
         accountId: 'accountId',
         clientId: 'clientId',
         scope: 'scope',
       });
 
-      const stub = sinon.stub(provider.AccessToken.prototype, 'destroy', function () {
+      const stub = sinon.stub(AccessToken.prototype, 'destroy', function () {
         return Promise.resolve();
       });
 
@@ -42,7 +46,7 @@ describe('revocation features', function () {
         }))
         .expect(function () {
           expect(stub.calledOnce).to.be.true;
-          provider.AccessToken.prototype.destroy.restore();
+          AccessToken.prototype.destroy.restore();
         })
         .expect(200)
         .expect(function (response) {
@@ -53,13 +57,13 @@ describe('revocation features', function () {
     });
 
     it('ignores find exceptions on AccessToken', function (done) {
-      const at = new provider.AccessToken({
+      const at = new AccessToken({
         accountId: 'accountId',
         clientId: 'clientId',
         scope: 'scope',
       });
 
-      sinon.stub(provider.AccessToken, 'find').throws();
+      sinon.stub(AccessToken, 'find').throws();
 
       at.save().then(function (token) {
         agent.post(route)
@@ -68,7 +72,7 @@ describe('revocation features', function () {
           token
         }))
         .expect(function () {
-          provider.AccessToken.find.restore();
+          AccessToken.find.restore();
         })
         .expect(200)
         .expect(function (response) {
@@ -79,13 +83,13 @@ describe('revocation features', function () {
     });
 
     it('revokes refresh token', function (done) {
-      const rt = new provider.RefreshToken({
+      const rt = new RefreshToken({
         accountId: 'accountId',
         clientId: 'clientId',
         scope: 'scope',
       });
 
-      const stub = sinon.stub(provider.RefreshToken.prototype, 'destroy', function () {
+      const stub = sinon.stub(RefreshToken.prototype, 'destroy', function () {
         return Promise.resolve();
       });
 
@@ -97,7 +101,7 @@ describe('revocation features', function () {
         }))
         .expect(function () {
           expect(stub.calledOnce).to.be.true;
-          provider.RefreshToken.prototype.destroy.restore();
+          RefreshToken.prototype.destroy.restore();
         })
         .expect(200)
         .expect(function (response) {
@@ -108,13 +112,13 @@ describe('revocation features', function () {
     });
 
     it('ignores find exceptions on RefreshToken', function (done) {
-      const at = new provider.RefreshToken({
+      const at = new RefreshToken({
         accountId: 'accountId',
         clientId: 'clientId',
         scope: 'scope',
       });
 
-      sinon.stub(provider.RefreshToken, 'find').throws();
+      sinon.stub(RefreshToken, 'find').throws();
 
       at.save().then(function (token) {
         agent.post(route)
@@ -123,7 +127,7 @@ describe('revocation features', function () {
           token
         }))
         .expect(function () {
-          provider.RefreshToken.find.restore();
+          RefreshToken.find.restore();
         })
         .expect(200)
         .expect(function (response) {
@@ -134,11 +138,11 @@ describe('revocation features', function () {
     });
 
     it('revokes client credentials token', function (done) {
-      const rt = new provider.ClientCredentials({
+      const rt = new ClientCredentials({
         clientId: 'clientId'
       });
 
-      const stub = sinon.stub(provider.ClientCredentials.prototype, 'destroy', function () {
+      const stub = sinon.stub(ClientCredentials.prototype, 'destroy', function () {
         return Promise.resolve();
       });
 
@@ -150,7 +154,7 @@ describe('revocation features', function () {
         }))
         .expect(function () {
           expect(stub.calledOnce).to.be.true;
-          provider.ClientCredentials.prototype.destroy.restore();
+          ClientCredentials.prototype.destroy.restore();
         })
         .expect(200)
         .expect(function (response) {
@@ -161,13 +165,13 @@ describe('revocation features', function () {
     });
 
     it('ignores find exceptions on ClientCredentials', function (done) {
-      const at = new provider.ClientCredentials({
+      const at = new ClientCredentials({
         accountId: 'accountId',
         clientId: 'clientId',
         scope: 'scope',
       });
 
-      sinon.stub(provider.ClientCredentials, 'find').throws();
+      sinon.stub(ClientCredentials, 'find').throws();
 
       at.save().then(function (token) {
         agent.post(route)
@@ -176,7 +180,7 @@ describe('revocation features', function () {
           token
         }))
         .expect(function () {
-          provider.ClientCredentials.find.restore();
+          ClientCredentials.find.restore();
         })
         .expect(200)
         .expect(function (response) {
@@ -187,13 +191,13 @@ describe('revocation features', function () {
     });
 
     it('ignores decode exceptions', function (done) {
-      const at = new provider.ClientCredentials({
+      const at = new ClientCredentials({
         accountId: 'accountId',
         clientId: 'clientId',
         scope: 'scope',
       });
 
-      sinon.stub(provider.OAuthToken, 'decode').throws();
+      sinon.stub(provider.get('OAuthToken'), 'decode').throws();
 
       at.save().then(function (token) {
         agent.post(route)
@@ -202,7 +206,7 @@ describe('revocation features', function () {
           token
         }))
         .expect(function () {
-          provider.OAuthToken.decode.restore();
+          provider.get('OAuthToken').decode.restore();
         })
         .expect(200)
         .expect(function (response) {

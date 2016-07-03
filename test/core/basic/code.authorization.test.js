@@ -1,7 +1,7 @@
 'use strict';
 
 const {
-  provider, agent, AuthenticationRequest, getSession, wrap
+  provider, agent, AuthorizationRequest, getSession, wrap
 } = require('../../test_helper')(__dirname);
 const sinon = require('sinon');
 const { expect } = require('chai');
@@ -16,7 +16,7 @@ provider.setupCerts();
     before(agent.login);
 
     it('responds with a code in search', function () {
-      const auth = new AuthenticationRequest({
+      const auth = new AuthorizationRequest({
         response_type: 'code',
         scope: 'openid'
       });
@@ -29,7 +29,7 @@ provider.setupCerts();
     });
 
     it('responds with a code in fragment', function () {
-      const auth = new AuthenticationRequest({
+      const auth = new AuthorizationRequest({
         response_type: 'code',
         response_mode: 'fragment',
         scope: 'openid'
@@ -53,7 +53,7 @@ provider.setupCerts();
       delete session.loginTs;
       delete session.account;
 
-      const auth = new AuthenticationRequest({
+      const auth = new AuthorizationRequest({
         response_type: 'code',
         scope: 'openid'
       });
@@ -66,7 +66,7 @@ provider.setupCerts();
 
     describe('requested by the End-User', function () {
       it('login was requested by the client by prompt parameter', function () {
-        const auth = new AuthenticationRequest({
+        const auth = new AuthorizationRequest({
           response_type: 'code',
           prompt: 'login',
           scope: 'openid'
@@ -78,11 +78,11 @@ provider.setupCerts();
         .expect(auth.validateInteractionError('login_required', 'login_prompt'));
       });
 
-      it('session is too old for this authentication request', function () {
+      it('session is too old for this authorization request', function () {
         const session = getSession(agent);
         session.loginTs = (new Date() / 1000 | 0) - 3600; // an hour ago
 
-        const auth = new AuthenticationRequest({
+        const auth = new AuthorizationRequest({
           response_type: 'code',
           max_age: '1800', // 30 minutes old session max
           scope: 'openid'
@@ -95,13 +95,13 @@ provider.setupCerts();
       });
 
       it('session is too old for this client', function * () {
-        const client = yield provider.Client.find('client');
+        const client = yield provider.get('Client').find('client');
         client.defaultMaxAge = 1800;
 
         const session = getSession(agent);
         session.loginTs = (new Date() / 1000 | 0) - 3600; // an hour ago
 
-        const auth = new AuthenticationRequest({
+        const auth = new AuthorizationRequest({
           response_type: 'code',
           scope: 'openid'
         });
@@ -121,8 +121,8 @@ provider.setupCerts();
     it('dupe parameters', function () {
     // fake a query like this scope=openid&scope=openid
       const spy = sinon.spy();
-      provider.once('authentication.error', spy);
-      const auth = new AuthenticationRequest({
+      provider.once('authorization.error', spy);
+      const auth = new AuthorizationRequest({
         response_type: 'code',
         scope: ['openid', 'openid']
       });
@@ -141,8 +141,8 @@ provider.setupCerts();
 
     it('disallowed response mode', function () {
       const spy = sinon.spy();
-      provider.once('authentication.error', spy);
-      const auth = new AuthenticationRequest({
+      provider.once('authorization.error', spy);
+      const auth = new AuthorizationRequest({
         response_type: 'code token',
         scope: 'openid',
         response_mode: 'query'
@@ -163,8 +163,8 @@ provider.setupCerts();
     ['request', 'request_uri', 'registration'].forEach(function (param) {
       it(`not supported parameter ${param}`, function () {
         const spy = sinon.spy();
-        provider.once('authentication.error', spy);
-        const auth = new AuthenticationRequest({
+        provider.once('authorization.error', spy);
+        const auth = new AuthorizationRequest({
           response_type: 'code',
           scope: 'openid',
           [param]: 'some'
@@ -184,19 +184,21 @@ provider.setupCerts();
     });
 
     context('when client has more then one redirect_uri', function () {
-      before(function () {
-        provider.Client.clients.client.redirectUris.push('https://someOtherUri.com');
+      before(function * () {
+        const client = yield provider.get('Client').find('client');
+        client.redirectUris.push('https://someOtherUri.com');
       });
 
-      after(function () {
-        provider.Client.clients.client.redirectUris.pop();
+      after(function * () {
+        const client = yield provider.get('Client').find('client');
+        client.redirectUris.pop();
       });
 
       it('missing mandatory parameter redirect_uri', function () {
         const emitSpy = sinon.spy();
-        const renderSpy = sinon.spy(provider.configuration, 'renderError');
-        provider.once('authentication.error', emitSpy);
-        const auth = new AuthenticationRequest({
+        const renderSpy = sinon.spy(provider.configuration(), 'renderError');
+        provider.once('authorization.error', emitSpy);
+        const auth = new AuthorizationRequest({
           response_type: 'code',
           scope: 'openid'
         });
@@ -207,7 +209,7 @@ provider.setupCerts();
         .expect(function () {
           renderSpy.restore();
         })
-        .expect(200)
+        .expect(400)
         .expect(function () {
           expect(emitSpy.calledOnce).to.be.true;
           expect(renderSpy.calledOnce).to.be.true;
@@ -221,8 +223,8 @@ provider.setupCerts();
     ['response_type', 'client_id', 'scope'].forEach(function (param) {
       it(`missing mandatory parameter ${param}`, function () {
         const spy = sinon.spy();
-        provider.once('authentication.error', spy);
-        const auth = new AuthenticationRequest({
+        provider.once('authorization.error', spy);
+        const auth = new AuthorizationRequest({
           response_type: 'code',
           scope: 'openid'
         });
@@ -244,8 +246,8 @@ provider.setupCerts();
 
     it('unsupported prompt', function () {
       const spy = sinon.spy();
-      provider.once('authentication.error', spy);
-      const auth = new AuthenticationRequest({
+      provider.once('authorization.error', spy);
+      const auth = new AuthorizationRequest({
         response_type: 'code',
         scope: 'openid',
         prompt: 'unsupported'
@@ -265,8 +267,8 @@ provider.setupCerts();
 
     it('bad prompt combination', function () {
       const spy = sinon.spy();
-      provider.once('authentication.error', spy);
-      const auth = new AuthenticationRequest({
+      provider.once('authorization.error', spy);
+      const auth = new AuthorizationRequest({
         response_type: 'code',
         scope: 'openid',
         prompt: 'none login'
@@ -286,8 +288,8 @@ provider.setupCerts();
 
     it('unsupported scope', function () {
       const spy = sinon.spy();
-      provider.once('authentication.error', spy);
-      const auth = new AuthenticationRequest({
+      provider.once('authorization.error', spy);
+      const auth = new AuthorizationRequest({
         response_type: 'code',
         scope: 'openid and unsupported'
       });
@@ -306,8 +308,8 @@ provider.setupCerts();
 
     it('missing openid scope', function () {
       const spy = sinon.spy();
-      provider.once('authentication.error', spy);
-      const auth = new AuthenticationRequest({
+      provider.once('authorization.error', spy);
+      const auth = new AuthorizationRequest({
         response_type: 'code',
         scope: 'profile'
       });
@@ -326,8 +328,8 @@ provider.setupCerts();
 
     it('invalid use of scope offline_access', function () {
       const spy = sinon.spy();
-      provider.once('authentication.error', spy);
-      const auth = new AuthenticationRequest({
+      provider.once('authorization.error', spy);
+      const auth = new AuthorizationRequest({
         response_type: 'code',
         scope: 'openid offline_access'
       });
@@ -346,8 +348,8 @@ provider.setupCerts();
 
     it('unrecognized client_id provided', function () {
       const spy = sinon.spy();
-      provider.once('authentication.error', spy);
-      const auth = new AuthenticationRequest({
+      provider.once('authorization.error', spy);
+      const auth = new AuthorizationRequest({
         response_type: 'code',
         scope: 'openid',
         client_id: 'unrecognized'
@@ -367,8 +369,8 @@ provider.setupCerts();
 
     it('unsupported response_type', function () {
       const spy = sinon.spy();
-      provider.once('authentication.error', spy);
-      const auth = new AuthenticationRequest({
+      provider.once('authorization.error', spy);
+      const auth = new AuthorizationRequest({
         response_type: 'unsupported',
         scope: 'openid'
       });
@@ -388,15 +390,15 @@ provider.setupCerts();
     if (verb === 'post') {
       it('only supports application/x-www-form-urlencoded', function () {
         const spy = sinon.spy();
-        provider.once('authentication.error', spy);
-        const auth = new AuthenticationRequest({
+        provider.once('authorization.error', spy);
+        const auth = new AuthorizationRequest({
           response_type: 'code',
           scope: 'openid'
         });
 
         return wrap({ agent, route, verb, auth })
         .type('json')
-        .expect(200)
+        .expect(400)
         .expect(/only application\/x-www-form-urlencoded content-type POST bodies are supported/)
         .expect(/invalid_request/)
         .expect(function () {
@@ -407,8 +409,8 @@ provider.setupCerts();
 
     it('restricted response_type', function () {
       const spy = sinon.spy();
-      provider.once('authentication.error', spy);
-      const auth = new AuthenticationRequest({
+      provider.once('authorization.error', spy);
+      const auth = new AuthorizationRequest({
         response_type: 'id_token',
         scope: 'openid'
       });
@@ -428,9 +430,9 @@ provider.setupCerts();
 
     it('redirect_uri mismatch', function () {
       const emitSpy = sinon.spy();
-      const renderSpy = sinon.spy(provider.configuration, 'renderError');
-      provider.once('authentication.error', emitSpy);
-      const auth = new AuthenticationRequest({
+      const renderSpy = sinon.spy(provider.configuration(), 'renderError');
+      provider.once('authorization.error', emitSpy);
+      const auth = new AuthorizationRequest({
         response_type: 'code',
         scope: 'openid',
         redirect_uri: 'http://example.client.dev/notregistered'
@@ -441,7 +443,7 @@ provider.setupCerts();
       .expect(function () {
         renderSpy.restore();
       })
-      .expect(200)
+      .expect(400)
       .expect(function () {
         expect(emitSpy.calledOnce).to.be.true;
         expect(renderSpy.calledOnce).to.be.true;
@@ -456,8 +458,8 @@ provider.setupCerts();
 
       it('malformed id_token_hint', function () {
         const spy = sinon.spy();
-        provider.once('authentication.error', spy);
-        const auth = new AuthenticationRequest({
+        provider.once('authorization.error', spy);
+        const auth = new AuthorizationRequest({
           response_type: 'code',
           scope: 'openid',
           id_token_hint: 'invalid'
@@ -478,15 +480,15 @@ provider.setupCerts();
 
     context('exception handling', function () {
       before(function () {
-        sinon.stub(provider.Client, 'find').returns(Promise.reject(new Error()));
+        sinon.stub(provider.get('Client'), 'find').returns(Promise.reject(new Error()));
       });
 
       after(function () {
-        provider.Client.find.restore();
+        provider.get('Client').find.restore();
       });
 
       it('responds with server_error redirect to redirect_uri', function () {
-        const auth = new AuthenticationRequest({
+        const auth = new AuthorizationRequest({
           response_type: 'code',
           prompt: 'none',
           scope: 'openid'

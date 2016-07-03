@@ -2,7 +2,7 @@
 
 const { provider } = require('../test_helper')(__dirname);
 const getMask = require('../../lib/helpers/claims');
-const Claims = getMask(provider.configuration);
+const Claims = getMask(provider.configuration());
 const j = JSON.stringify;
 const _ = require('lodash');
 const { expect } = require('chai');

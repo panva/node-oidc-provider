@@ -1,7 +1,7 @@
 'use strict';
 
 const {
-  provider, agent, AuthenticationRequest, wrap
+  provider, agent, AuthorizationRequest, wrap
 } = require('../../test_helper')(__dirname);
 
 const route = '/auth';
@@ -15,7 +15,7 @@ provider.setupCerts();
     after(agent.logout);
 
     it('responds with a state in search', function () {
-      const auth = new AuthenticationRequest({
+      const auth = new AuthorizationRequest({
         response_type: 'none',
         scope: 'openid'
       });
@@ -28,7 +28,7 @@ provider.setupCerts();
     });
 
     it('responds with a state in fragment', function () {
-      const auth = new AuthenticationRequest({
+      const auth = new AuthorizationRequest({
         response_type: 'none',
         response_mode: 'fragment',
         scope: 'openid'

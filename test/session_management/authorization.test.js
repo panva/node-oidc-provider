@@ -1,7 +1,7 @@
 'use strict';
 
 const {
-  provider, agent, AuthenticationRequest, wrap
+  provider, agent, AuthorizationRequest, wrap
 } = require('../test_helper')(__dirname);
 
 const route = '/auth';
@@ -14,7 +14,7 @@ provider.setupCerts();
     before(agent.login);
 
     it('provides session_state in the response', function () {
-      const auth = new AuthenticationRequest({
+      const auth = new AuthorizationRequest({
         response_type: 'code',
         scope: 'openid'
       });

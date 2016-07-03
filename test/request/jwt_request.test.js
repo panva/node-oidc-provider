@@ -8,6 +8,8 @@ const sinon = require('sinon');
 const { expect } = require('chai');
 const { parse } = require('url');
 
+const Client = provider.get('Client');
+
 const route = '/auth';
 
 provider.setupClient();
@@ -34,8 +36,8 @@ describe('configuration features.requestUri', function () {
     before(agent.login);
     after(agent.logout);
 
-    it('works with signed by none', function () {
-      const key = provider.Client.clients['client-with-HS-sig'].keystore.get('clientSecret');
+    it('works with signed by none', function * () {
+      const key = (yield Client.find('client-with-HS-sig')).keystore.get('clientSecret');
       return JWT.sign({
         client_id: 'client-with-HS-sig',
         response_type: 'code',
@@ -95,7 +97,7 @@ describe('configuration features.requestUri', function () {
 
     it('doesnt allow request inception', function () {
       const spy = sinon.spy();
-      provider.once('authentication.error', spy);
+      provider.once('authorization.error', spy);
 
       return JWT.sign({
         client_id: 'client',
@@ -126,7 +128,7 @@ describe('configuration features.requestUri', function () {
 
     it('doesnt allow requestUri inception', function () {
       const spy = sinon.spy();
-      provider.once('authentication.error', spy);
+      provider.once('authorization.error', spy);
 
       return JWT.sign({
         client_id: 'client',
@@ -157,7 +159,7 @@ describe('configuration features.requestUri', function () {
 
     it('doesnt allow response_type to differ', function () {
       const spy = sinon.spy();
-      provider.once('authentication.error', spy);
+      provider.once('authorization.error', spy);
 
       return JWT.sign({
         client_id: 'client',
@@ -187,7 +189,7 @@ describe('configuration features.requestUri', function () {
 
     it('doesnt allow client_id to differ', function () {
       const spy = sinon.spy();
-      provider.once('authentication.error', spy);
+      provider.once('authorization.error', spy);
 
       return JWT.sign({
         client_id: 'client2',
@@ -217,7 +219,7 @@ describe('configuration features.requestUri', function () {
 
     it('handles invalid signed looklike jwts', function () {
       const spy = sinon.spy();
-      provider.once('authentication.error', spy);
+      provider.once('authorization.error', spy);
 
       return wrap({
         agent,
@@ -242,7 +244,7 @@ describe('configuration features.requestUri', function () {
 
     it('doesnt allow clients with predefined alg to bypass this alg', function () {
       const spy = sinon.spy();
-      provider.once('authentication.error', spy);
+      provider.once('authorization.error', spy);
 
       return JWT.sign({
         client_id: 'client-with-HS-sig',
@@ -271,11 +273,11 @@ describe('configuration features.requestUri', function () {
     });
 
 
-    it('bad signatures will be rejected', function () {
+    it('bad signatures will be rejected', function * () {
       const spy = sinon.spy();
-      provider.once('authentication.error', spy);
+      provider.once('authorization.error', spy);
 
-      const key = provider.Client.clients['client-with-HS-sig'].keystore.get('clientSecret');
+      const key = (yield Client.find('client-with-HS-sig')).keystore.get('clientSecret');
       return JWT.sign({
         client_id: 'client',
         response_type: 'code',
@@ -299,6 +301,37 @@ describe('configuration features.requestUri', function () {
           expect(spy.args[0][0]).to.have.property('error_description').that.matches(
             /could not validate request object signature/
           );
+        })
+      );
+    });
+
+    it('handles unrecognized parameters', function * () {
+      const key = (yield Client.find('client-with-HS-sig')).keystore.get('clientSecret');
+      return JWT.sign({
+        client_id: 'client-with-HS-sig',
+        unrecognized: true,
+        response_type: 'code',
+        redirect_uri: 'https://client.example.com/cb'
+      }, key, 'HS256').then((request) =>
+        wrap({
+          agent,
+          route,
+          verb,
+          auth: {
+            request,
+            scope: 'openid',
+            client_id: 'client-with-HS-sig',
+            response_type: 'code'
+          }
+        })
+        .expect(302)
+        .expect(function (response) {
+          const expected = parse('https://client.example.com/cb', true);
+          const actual = parse(response.headers.location, true);
+          ['protocol', 'host', 'pathname'].forEach((attr) => {
+            expect(actual[attr]).to.equal(expected[attr]);
+          });
+          expect(actual.query).to.have.property('code');
         })
       );
     });
