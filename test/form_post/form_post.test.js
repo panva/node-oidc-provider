@@ -1,7 +1,7 @@
 'use strict';
 
 const {
-  provider, agent, AuthenticationRequest, wrap
+  provider, agent, AuthorizationRequest, wrap
 } = require('../test_helper')(__dirname);
 
 const { expect } = require('chai');
@@ -20,7 +20,7 @@ provider.setupCerts();
       after(agent.logout);
 
       it('responds by rendering a self-submitting form with the code', function () {
-        const auth = new AuthenticationRequest({
+        const auth = new AuthorizationRequest({
           response_type: 'code',
           response_mode: 'form_post',
           scope: 'openid'
@@ -36,7 +36,7 @@ provider.setupCerts();
 
     context('error handling', function () {
       it('responds by rendering a self-submitting form with the error', function () {
-        const auth = new AuthenticationRequest({
+        const auth = new AuthorizationRequest({
           response_type: 'code',
           prompt: 'none',
           response_mode: 'form_post',
@@ -44,7 +44,7 @@ provider.setupCerts();
         });
 
         const spy = sinon.spy();
-        provider.once('authentication.error', spy);
+        provider.once('authorization.error', spy);
 
         return wrap({ agent, route, verb, auth })
         .expect(200)
@@ -66,7 +66,7 @@ provider.setupCerts();
         });
 
         it('responds by rendering a self-submitting form with the exception', function () {
-          const auth = new AuthenticationRequest({
+          const auth = new AuthorizationRequest({
             response_type: 'code',
             prompt: 'none',
             response_mode: 'form_post',

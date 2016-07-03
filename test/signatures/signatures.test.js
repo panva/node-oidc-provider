@@ -1,7 +1,7 @@
 'use strict';
 
 const {
-  provider, agent, AuthenticationRequest, wrap
+  provider, agent, AuthorizationRequest, wrap
 } = require('../test_helper')(__dirname);
 const { parse: parseLocation } = require('url');
 const { v4: uuid } = require('node-uuid');
@@ -43,7 +43,7 @@ describe('token hashes in id_token', function () {
 
   it('responds with a access_token and code (half of sha512)', function () {
     client.idTokenSignedResponseAlg = 'RS512';
-    const auth = new AuthenticationRequest({
+    const auth = new AuthorizationRequest({
       response_type: 'code id_token token',
       scope: 'openid'
     });
@@ -62,7 +62,7 @@ describe('token hashes in id_token', function () {
 
   it('responds with a access_token and code (half of sha384)', function () {
     client.idTokenSignedResponseAlg = 'RS384';
-    const auth = new AuthenticationRequest({
+    const auth = new AuthorizationRequest({
       response_type: 'code id_token token',
       scope: 'openid'
     });
@@ -81,7 +81,7 @@ describe('token hashes in id_token', function () {
 
   it('responds with a access_token and code (half of sha256)', function () {
     client.idTokenSignedResponseAlg = 'RS256';
-    const auth = new AuthenticationRequest({
+    const auth = new AuthorizationRequest({
       response_type: 'code id_token token',
       scope: 'openid'
     });
@@ -133,7 +133,7 @@ describe('when id_token_signed_response_alg=none', function () {
   });
 
   it('the unsigned token can be used as id_token_hint', function () {
-    const auth = new AuthenticationRequest({
+    const auth = new AuthorizationRequest({
       response_type: 'code',
       scope: 'openid',
       prompt: 'none',
@@ -185,7 +185,7 @@ describe('when id_token_signed_response_alg=HS256', function () {
   });
 
   it('the HS256 signed token can be used as id_token_hint', function () {
-    const auth = new AuthenticationRequest({
+    const auth = new AuthorizationRequest({
       response_type: 'code',
       scope: 'openid',
       prompt: 'none',

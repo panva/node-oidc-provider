@@ -1,7 +1,7 @@
 'use strict';
 
 const {
-  provider, agent, AuthenticationRequest, wrap
+  provider, agent, AuthorizationRequest, wrap
 } = require('../test_helper')(__dirname);
 const { expect } = require('chai');
 const { parse } = require('url');
@@ -26,7 +26,7 @@ before(function () {
     before(agent.login);
 
     before(function () {
-      const auth = new AuthenticationRequest({
+      const auth = new AuthorizationRequest({
         response_type: 'id_token token',
         scope: 'openid'
       });

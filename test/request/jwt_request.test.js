@@ -97,7 +97,7 @@ describe('configuration features.requestUri', function () {
 
     it('doesnt allow request inception', function () {
       const spy = sinon.spy();
-      provider.once('authentication.error', spy);
+      provider.once('authorization.error', spy);
 
       return JWT.sign({
         client_id: 'client',
@@ -128,7 +128,7 @@ describe('configuration features.requestUri', function () {
 
     it('doesnt allow requestUri inception', function () {
       const spy = sinon.spy();
-      provider.once('authentication.error', spy);
+      provider.once('authorization.error', spy);
 
       return JWT.sign({
         client_id: 'client',
@@ -159,7 +159,7 @@ describe('configuration features.requestUri', function () {
 
     it('doesnt allow response_type to differ', function () {
       const spy = sinon.spy();
-      provider.once('authentication.error', spy);
+      provider.once('authorization.error', spy);
 
       return JWT.sign({
         client_id: 'client',
@@ -189,7 +189,7 @@ describe('configuration features.requestUri', function () {
 
     it('doesnt allow client_id to differ', function () {
       const spy = sinon.spy();
-      provider.once('authentication.error', spy);
+      provider.once('authorization.error', spy);
 
       return JWT.sign({
         client_id: 'client2',
@@ -219,7 +219,7 @@ describe('configuration features.requestUri', function () {
 
     it('handles invalid signed looklike jwts', function () {
       const spy = sinon.spy();
-      provider.once('authentication.error', spy);
+      provider.once('authorization.error', spy);
 
       return wrap({
         agent,
@@ -244,7 +244,7 @@ describe('configuration features.requestUri', function () {
 
     it('doesnt allow clients with predefined alg to bypass this alg', function () {
       const spy = sinon.spy();
-      provider.once('authentication.error', spy);
+      provider.once('authorization.error', spy);
 
       return JWT.sign({
         client_id: 'client-with-HS-sig',
@@ -275,7 +275,7 @@ describe('configuration features.requestUri', function () {
 
     it('bad signatures will be rejected', function * () {
       const spy = sinon.spy();
-      provider.once('authentication.error', spy);
+      provider.once('authorization.error', spy);
 
       const key = (yield Client.find('client-with-HS-sig')).keystore.get('clientSecret');
       return JWT.sign({

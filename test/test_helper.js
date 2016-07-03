@@ -93,7 +93,7 @@ module.exports = function testHelper(dir, basename) {
     });
   };
 
-  function AuthenticationRequest(parameters) {
+  function AuthorizationRequest(parameters) {
     this.client_id = client.client_id;
     this.state = Math.random().toString();
     this.nonce = Math.random().toString();
@@ -148,7 +148,7 @@ module.exports = function testHelper(dir, basename) {
     });
   }
 
-  AuthenticationRequest.prototype.validateInteractionError = function (expectedError, expectedReason) {
+  AuthorizationRequest.prototype.validateInteractionError = function (expectedError, expectedReason) {
     return (response) => {
       const value = response.headers['set-cookie'][1];
       const { value: interaction } = new Cookie(value);
@@ -159,13 +159,13 @@ module.exports = function testHelper(dir, basename) {
     };
   };
 
-  AuthenticationRequest.prototype.validateFragment = function (response) {
+  AuthorizationRequest.prototype.validateFragment = function (response) {
     const { hash } = parse(response.headers.location);
     expect(hash).to.exist;
     response.headers.location = response.headers.location.replace('#', '?');
   };
 
-  AuthenticationRequest.prototype.validatePresence = function (keys, all) {
+  AuthorizationRequest.prototype.validatePresence = function (keys, all) {
     let absolute;
     if (all === undefined) {
       absolute = true;
@@ -183,14 +183,14 @@ module.exports = function testHelper(dir, basename) {
     };
   };
 
-  AuthenticationRequest.prototype.validateError = function (expected) {
+  AuthorizationRequest.prototype.validateError = function (expected) {
     return (response) => {
       const { query: { error } } = parse(response.headers.location, true);
       expect(error).to.equal(expected);
     };
   };
 
-  AuthenticationRequest.prototype.validateErrorDescription = function (expected) {
+  AuthorizationRequest.prototype.validateErrorDescription = function (expected) {
     return (response) => {
       const { query: { error_description } } = parse(response.headers.location, true);
       expect(error_description).to.equal(expected);
@@ -267,7 +267,7 @@ module.exports = function testHelper(dir, basename) {
   }
 
   return {
-    AuthenticationRequest,
+    AuthorizationRequest,
     provider,
     agent,
     responses,

@@ -26,7 +26,7 @@ const Account = require('./account');
 const settings = require('./settings');
 
 const Provider = require('../lib').Provider;
-let issuer = 'http://oidc.dev/op';
+let issuer = 'http://localhost:3000/op';
 
 if (process.env.HEROKU) {
   issuer = 'https://guarded-cliffs-8635.herokuapp.com/op';

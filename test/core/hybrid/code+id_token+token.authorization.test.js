@@ -1,7 +1,7 @@
 'use strict';
 
 const {
-  provider, agent, AuthenticationRequest, getSession, wrap
+  provider, agent, AuthorizationRequest, getSession, wrap
 } = require('../../test_helper')(__dirname);
 const sinon = require('sinon');
 const { expect } = require('chai');
@@ -18,7 +18,7 @@ provider.setupCerts();
     before(agent.login);
 
     it('responds with a access_token and code in fragment', function () {
-      const auth = new AuthenticationRequest({
+      const auth = new AuthorizationRequest({
         response_type: 'code id_token token',
         scope: 'openid'
       });
@@ -41,7 +41,7 @@ provider.setupCerts();
       delete session.loginTs;
       delete session.account;
 
-      const auth = new AuthenticationRequest({
+      const auth = new AuthorizationRequest({
         response_type: 'code id_token token',
         scope: 'openid'
       });
@@ -54,7 +54,7 @@ provider.setupCerts();
 
     describe('requested by the End-User', function () {
       it('login was requested by the client by prompt parameter', function () {
-        const auth = new AuthenticationRequest({
+        const auth = new AuthorizationRequest({
           response_type: 'code id_token token',
           prompt: 'login',
           scope: 'openid'
@@ -66,11 +66,11 @@ provider.setupCerts();
         .expect(auth.validateInteractionError('login_required', 'login_prompt'));
       });
 
-      it('session is too old for this authentication request', function () {
+      it('session is too old for this authorization request', function () {
         const session = getSession(agent);
         session.loginTs = (new Date() / 1000 | 0) - 3600; // an hour ago
 
-        const auth = new AuthenticationRequest({
+        const auth = new AuthorizationRequest({
           response_type: 'code id_token token',
           max_age: '1800', // 30 minutes old session max
           scope: 'openid'
@@ -87,10 +87,10 @@ provider.setupCerts();
   describe(`HYBRID code+id_token+token ${verb} ${route} errors`, function () {
     it('dupe parameters', function () {
       const spy = sinon.spy();
-      provider.once('authentication.error', spy);
+      provider.once('authorization.error', spy);
 
       // fake a query like this scope=openid&scope=openid
-      const auth = new AuthenticationRequest({
+      const auth = new AuthorizationRequest({
         response_type: 'code id_token token',
         scope: ['openid', 'openid']
       });
@@ -109,8 +109,8 @@ provider.setupCerts();
 
     it('disallowed response mode', function () {
       const spy = sinon.spy();
-      provider.once('authentication.error', spy);
-      const auth = new AuthenticationRequest({
+      provider.once('authorization.error', spy);
+      const auth = new AuthorizationRequest({
         response_type: 'code id_token token',
         scope: 'openid',
         response_mode: 'query'
@@ -131,8 +131,8 @@ provider.setupCerts();
     ['request', 'request_uri', 'registration'].forEach(function (param) {
       it(`not supported parameter ${param}`, function () {
         const spy = sinon.spy();
-        provider.once('authentication.error', spy);
-        const auth = new AuthenticationRequest({
+        provider.once('authorization.error', spy);
+        const auth = new AuthorizationRequest({
           response_type: 'code id_token token',
           scope: 'openid',
           [param]: 'some'
@@ -164,8 +164,8 @@ provider.setupCerts();
       it('missing mandatory parameter redirect_uri', function () {
         const emitSpy = sinon.spy();
         const renderSpy = sinon.spy(provider.configuration(), 'renderError');
-        provider.once('authentication.error', emitSpy);
-        const auth = new AuthenticationRequest({
+        provider.once('authorization.error', emitSpy);
+        const auth = new AuthorizationRequest({
           response_type: 'code id_token token',
           scope: 'openid'
         });
@@ -190,8 +190,8 @@ provider.setupCerts();
     ['client_id', 'scope', 'nonce'].forEach(function (param) {
       it(`missing mandatory parameter ${param}`, function () {
         const spy = sinon.spy();
-        provider.once('authentication.error', spy);
-        const auth = new AuthenticationRequest({
+        provider.once('authorization.error', spy);
+        const auth = new AuthorizationRequest({
           response_type: 'code id_token token',
           scope: 'openid'
         });
@@ -214,8 +214,8 @@ provider.setupCerts();
 
     it('missing mandatory parameter response_type', function () {
       const spy = sinon.spy();
-      provider.once('authentication.error', spy);
-      const auth = new AuthenticationRequest({
+      provider.once('authorization.error', spy);
+      const auth = new AuthorizationRequest({
         response_type: 'code id_token token',
         scope: 'openid'
       });
@@ -236,8 +236,8 @@ provider.setupCerts();
 
     it('unsupported prompt', function () {
       const spy = sinon.spy();
-      provider.once('authentication.error', spy);
-      const auth = new AuthenticationRequest({
+      provider.once('authorization.error', spy);
+      const auth = new AuthorizationRequest({
         response_type: 'code id_token token',
         scope: 'openid',
         prompt: 'unsupported'
@@ -258,8 +258,8 @@ provider.setupCerts();
 
     it('bad prompt combination', function () {
       const spy = sinon.spy();
-      provider.once('authentication.error', spy);
-      const auth = new AuthenticationRequest({
+      provider.once('authorization.error', spy);
+      const auth = new AuthorizationRequest({
         response_type: 'code id_token token',
         scope: 'openid',
         prompt: 'none login'
@@ -280,8 +280,8 @@ provider.setupCerts();
 
     it('unsupported scope', function () {
       const spy = sinon.spy();
-      provider.once('authentication.error', spy);
-      const auth = new AuthenticationRequest({
+      provider.once('authorization.error', spy);
+      const auth = new AuthorizationRequest({
         response_type: 'code id_token token',
         scope: 'openid and unsupported'
       });
@@ -301,8 +301,8 @@ provider.setupCerts();
 
     it('missing openid scope', function () {
       const spy = sinon.spy();
-      provider.once('authentication.error', spy);
-      const auth = new AuthenticationRequest({
+      provider.once('authorization.error', spy);
+      const auth = new AuthorizationRequest({
         response_type: 'code id_token token',
         scope: 'profile'
       });
@@ -322,8 +322,8 @@ provider.setupCerts();
 
     it('invalid use of scope offline_access', function () {
       const spy = sinon.spy();
-      provider.once('authentication.error', spy);
-      const auth = new AuthenticationRequest({
+      provider.once('authorization.error', spy);
+      const auth = new AuthorizationRequest({
         response_type: 'code id_token token',
         scope: 'openid offline_access'
       });
@@ -343,8 +343,8 @@ provider.setupCerts();
 
     it('unrecognized client_id provided', function () {
       const spy = sinon.spy();
-      provider.once('authentication.error', spy);
-      const auth = new AuthenticationRequest({
+      provider.once('authorization.error', spy);
+      const auth = new AuthorizationRequest({
         response_type: 'code id_token token',
         scope: 'openid',
         client_id: 'unrecognized'
@@ -365,8 +365,8 @@ provider.setupCerts();
 
     it('unsupported response_type', function () {
       const spy = sinon.spy();
-      provider.once('authentication.error', spy);
-      const auth = new AuthenticationRequest({
+      provider.once('authorization.error', spy);
+      const auth = new AuthorizationRequest({
         response_type: 'unsupported',
         scope: 'openid'
       });
@@ -385,8 +385,8 @@ provider.setupCerts();
 
     it('restricted response_type', function () {
       const spy = sinon.spy();
-      provider.once('authentication.error', spy);
-      const auth = new AuthenticationRequest({
+      provider.once('authorization.error', spy);
+      const auth = new AuthorizationRequest({
         response_type: 'code',
         scope: 'openid'
       });
@@ -406,8 +406,8 @@ provider.setupCerts();
     it('redirect_uri mismatch', function () {
       const emitSpy = sinon.spy();
       const renderSpy = sinon.spy(provider.configuration(), 'renderError');
-      provider.once('authentication.error', emitSpy);
-      const auth = new AuthenticationRequest({
+      provider.once('authorization.error', emitSpy);
+      const auth = new AuthorizationRequest({
         response_type: 'code id_token token',
         scope: 'openid',
         redirect_uri: 'http://example.client.dev/notregistered'
@@ -433,8 +433,8 @@ provider.setupCerts();
 
       it('malformed id_token_hint', function () {
         const spy = sinon.spy();
-        provider.once('authentication.error', spy);
-        const auth = new AuthenticationRequest({
+        provider.once('authorization.error', spy);
+        const auth = new AuthorizationRequest({
           response_type: 'code id_token token',
           scope: 'openid',
           id_token_hint: 'invalid'

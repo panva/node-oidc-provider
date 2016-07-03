@@ -3,7 +3,7 @@
 const {
   provider,
   agent,
-  AuthenticationRequest,
+  AuthorizationRequest,
   getSession,
   wrap
 } = require('../test_helper')(__dirname);
@@ -24,7 +24,7 @@ provider.setupCerts();
       after(agent.logout);
 
       it('should return individual claims requested', function () {
-        const auth = new AuthenticationRequest({
+        const auth = new AuthorizationRequest({
           response_type: 'id_token token',
           scope: 'openid',
           claims: j({
@@ -70,7 +70,7 @@ provider.setupCerts();
       });
 
       it('should include the acr claim now', function () {
-        const auth = new AuthenticationRequest({
+        const auth = new AuthorizationRequest({
           response_type: 'id_token token',
           scope: 'openid'
         });
@@ -91,7 +91,7 @@ provider.setupCerts();
       after(agent.logout);
 
       it('should return individual claims requested', function (done) {
-        const auth = new AuthenticationRequest({
+        const auth = new AuthorizationRequest({
           response_type: 'id_token token',
           scope: 'openid',
           claims: j({
@@ -134,7 +134,7 @@ provider.setupCerts();
       after(agent.logout);
 
       it('should return individual claims requested', function (done) {
-        const auth = new AuthenticationRequest({
+        const auth = new AuthorizationRequest({
           response_type: 'id_token token',
           scope: 'openid',
           claims: j({
@@ -178,7 +178,7 @@ provider.setupCerts();
       context('are met', function () {
         it('session subject value differs from the one requested', function () {
           const session = getSession(agent);
-          const auth = new AuthenticationRequest({
+          const auth = new AuthorizationRequest({
             response_type: 'id_token',
             scope: 'openid',
             prompt: 'none',
@@ -202,7 +202,7 @@ provider.setupCerts();
         it('none of multiple authentication context class references requested are met', function () {
           const session = getSession(agent);
           session.acrValue = '2';
-          const auth = new AuthenticationRequest({
+          const auth = new AuthorizationRequest({
             response_type: 'id_token',
             scope: 'openid',
             prompt: 'none',
@@ -227,7 +227,7 @@ provider.setupCerts();
         it('single requested authentication context class reference is not met', function () {
           const session = getSession(agent);
           session.acrValue = '1';
-          const auth = new AuthenticationRequest({
+          const auth = new AuthorizationRequest({
             response_type: 'id_token',
             scope: 'openid',
             prompt: 'none',
@@ -252,7 +252,7 @@ provider.setupCerts();
 
       context('are not met', function () {
         it('session subject value differs from the one requested', function () {
-          const auth = new AuthenticationRequest({
+          const auth = new AuthorizationRequest({
             response_type: 'id_token',
             scope: 'openid',
             prompt: 'none',
@@ -276,7 +276,7 @@ provider.setupCerts();
         });
 
         it('none of multiple authentication context class references requested are met', function () {
-          const auth = new AuthenticationRequest({
+          const auth = new AuthorizationRequest({
             response_type: 'id_token',
             scope: 'openid',
             prompt: 'none',
@@ -301,7 +301,7 @@ provider.setupCerts();
         });
 
         it('single requested authentication context class reference is not met', function () {
-          const auth = new AuthenticationRequest({
+          const auth = new AuthorizationRequest({
             response_type: 'id_token',
             scope: 'openid',
             prompt: 'none',
@@ -335,7 +335,7 @@ provider.setupCerts();
           idToken.scope = 'openid';
           const hint = yield idToken.sign(client);
 
-          const auth = new AuthenticationRequest({
+          const auth = new AuthorizationRequest({
             response_type: 'id_token',
             scope: 'openid',
             prompt: 'none',
@@ -363,7 +363,7 @@ provider.setupCerts();
           idToken.scope = 'openid';
           const hint = yield idToken.sign(client);
 
-          const auth = new AuthenticationRequest({
+          const auth = new AuthorizationRequest({
             response_type: 'id_token',
             scope: 'openid',
             prompt: 'none',
@@ -382,7 +382,7 @@ provider.setupCerts();
 
     describe('parameter validations', function () {
       it('should not be combined with response_type=none', function () {
-        const auth = new AuthenticationRequest({
+        const auth = new AuthorizationRequest({
           response_type: 'none',
           scope: 'openid',
           claims: 'something'
@@ -398,7 +398,7 @@ provider.setupCerts();
       });
 
       it('should handle when invalid json is provided', function () {
-        const auth = new AuthenticationRequest({
+        const auth = new AuthorizationRequest({
           response_type: 'id_token token',
           scope: 'openid',
           claims: 'something'
@@ -415,7 +415,7 @@ provider.setupCerts();
       });
 
       it('should validate an object is passed', function () {
-        const auth = new AuthenticationRequest({
+        const auth = new AuthorizationRequest({
           response_type: 'id_token token',
           scope: 'openid',
           claims: 'true'
@@ -432,7 +432,7 @@ provider.setupCerts();
       });
 
       it('should check accepted properties being present', function () {
-        const auth = new AuthenticationRequest({
+        const auth = new AuthorizationRequest({
           response_type: 'id_token token',
           scope: 'openid',
           claims: '{"not_recognized": "does not matter"}'
@@ -449,7 +449,7 @@ provider.setupCerts();
       });
 
       it('should check userinfo property being a simple object', function () {
-        const auth = new AuthenticationRequest({
+        const auth = new AuthorizationRequest({
           response_type: 'id_token token',
           scope: 'openid',
           claims: '{"userinfo": "Not an Object"}'
@@ -466,7 +466,7 @@ provider.setupCerts();
       });
 
       it('should check id_token property being a simple object', function () {
-        const auth = new AuthenticationRequest({
+        const auth = new AuthorizationRequest({
           response_type: 'id_token token',
           scope: 'openid',
           claims: '{"id_token": "Not an Object"}'
@@ -483,7 +483,7 @@ provider.setupCerts();
       });
 
       it('should check that userinfo claims are not specified for id_token requests', function () {
-        const auth = new AuthenticationRequest({
+        const auth = new AuthorizationRequest({
           response_type: 'id_token',
           scope: 'openid',
           claims: '{"userinfo": {}}'

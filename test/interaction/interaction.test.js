@@ -5,7 +5,7 @@ const {
   provider,
   agent,
   getSession,
-  AuthenticationRequest,
+  AuthorizationRequest,
 } = require('../test_helper')(__dirname);
 
 const expire = new Date();
@@ -42,13 +42,13 @@ describe('resume after interaction', function () {
     it('needs the results to be present, else renders an err', function () {
       return agent.get(`/auth/${uuid()}`)
         .expect(400)
-        .expect(/authentication request has expired/);
+        .expect(/authorization request has expired/);
     });
   });
 
   context('login results', function () {
     it('should redirect to client with error if interaction did not resolve in a session', function () {
-      const auth = new AuthenticationRequest({
+      const auth = new AuthorizationRequest({
         response_type: 'code',
         scope: 'openid'
       });
@@ -64,7 +64,7 @@ describe('resume after interaction', function () {
     });
 
     it('should process newly established permanent sessions', function () {
-      const auth = new AuthenticationRequest({
+      const auth = new AuthorizationRequest({
         response_type: 'code',
         scope: 'openid'
       });
@@ -87,7 +87,7 @@ describe('resume after interaction', function () {
     });
 
     it('should process newly established temporary sessions', function () {
-      const auth = new AuthenticationRequest({
+      const auth = new AuthorizationRequest({
         response_type: 'code',
         scope: 'openid'
       });
@@ -111,7 +111,7 @@ describe('resume after interaction', function () {
 
   context('consent results', function () {
     it('should use the consents from resume cookie if provided', function () {
-      const auth = new AuthenticationRequest({
+      const auth = new AuthorizationRequest({
         response_type: 'code',
         scope: 'openid'
       });
@@ -148,7 +148,7 @@ describe('resume after interaction', function () {
     after(agent.logout);
 
     it('should fail if they are not resolved', function () {
-      const auth = new AuthenticationRequest({
+      const auth = new AuthorizationRequest({
         response_type: 'code',
         scope: 'openid',
         prompt: 'custom'
