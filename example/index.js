@@ -37,6 +37,14 @@ if (process.env.HEROKU) {
   app.proxy = true;
   _.set(settings.config, 'cookies.short.secure', true);
   _.set(settings.config, 'cookies.long.secure', true);
+
+  app.use(function * ensureSecure(next) {
+    if (this.secure) {
+      yield next;
+    } else {
+      this.redirect(this.href.replace(/^http:\/\//i, 'https://'));
+    }
+  });
 }
 
 const provider = new Provider(issuer, settings.config);
