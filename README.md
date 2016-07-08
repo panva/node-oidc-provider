@@ -80,6 +80,10 @@ $ node example
 Visiting `http://localhost:3000/.well-known/openid-configuration` will help you to discover how the
 example is [configured](example).
 
+This example is also deployed and available for you to experiment with [here][heroku-example].
+An example client using this provider is available [here][heroku-example-client]
+(uses [openid-client][openid-client]).
+
 Otherwise just install the package in your app and follow the [example use](example/index.js).
 ```
 $ npm install oidc-provider --save
@@ -386,3 +390,6 @@ OP Config and OP Dynamic profiles of the OpenID Connect™ protocol.
 [core-claims-url]: http://openid.net/specs/openid-connect-core-1_0.html#ClaimsParameter
 [core-jwt-parameters-url]: http://openid.net/specs/openid-connect-core-1_0.html#JWTRequests
 [node-jose]: https://github.com/cisco/node-jose
+[heroku-example]: https://guarded-cliffs-8635.herokuapp.com/op/.well-known/openid-configuration
+[heroku-example-client]: https://tranquil-reef-95185.herokuapp.com/client
+[openid-client]: https://github.com/panva/node-openid-client
