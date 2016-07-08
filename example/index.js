@@ -26,10 +26,9 @@ const Account = require('./account');
 const settings = require('./settings');
 
 const Provider = require('../lib').Provider;
-let issuer = 'http://localhost:3000/op';
+const issuer = process.env.ISSUER || 'http://localhost:3000/op';
 
 if (process.env.HEROKU) {
-  issuer = 'https://guarded-cliffs-8635.herokuapp.com/op';
   settings.config.timeouts = {
     request_uri: 15000,
     sector_identifier_uri: 15000,
@@ -42,9 +41,7 @@ if (process.env.HEROKU) {
 
 const provider = new Provider(issuer, settings.config);
 
-Object.defineProperty(provider, 'Account', {
-  value: Account,
-});
+Object.defineProperty(provider, 'Account', { value: Account });
 
 app.use(rewrite(/^\/\.well-known\/(.*)/, '/op/.well-known/$1'));
 app.use(mount('/op', provider.app));
@@ -52,10 +49,7 @@ app.use(mount('/op', provider.app));
 const router = new Router();
 
 router.get('/interaction/:grant', function * renderInteraction(next) {
-  const grant = JSON.parse(this.cookies.get('_grant', {
-    signed: true,
-  })).params;
-
+  const grant = JSON.parse(this.cookies.get('_grant', { signed: true })).params;
   const client = yield provider.get('Client').find(grant.client_id);
 
   yield this.render('login', {
@@ -81,6 +75,7 @@ router.post('/login', body(), function * submitLoginForm() {
       remember: !!this.request.body.remember,
       ts: Date.now() / 1000 | 0,
     },
+    consent: {},
   };
 
   provider.resume(this, this.request.body.grant, result);

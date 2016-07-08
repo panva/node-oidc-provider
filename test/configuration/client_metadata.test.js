@@ -318,7 +318,12 @@ describe('Client validations', function () {
   });
 
   context('post_logout_redirect_uris', function () {
-    defaultsTo(this.title, []);
+    defaultsTo(this.title, [], undefined, {
+      features: {
+        sessionManagement: true
+      }
+    });
+    defaultsTo(this.title, undefined);
     mustBeArray(this.title);
 
     rejects(this.title, [123], /must only contain strings$/);

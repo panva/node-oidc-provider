@@ -139,7 +139,7 @@ module.exports = function testHelper(dir, basename) {
         respond = JSON.parse(respond);
 
         for (const attr in this) { // eslint-disable-line
-          if (this.hasOwnProperty(attr)) {
+          if (this.hasOwnProperty(attr)) { // eslint-disable-line
             expect(respond).to.have.property(attr, this[attr]);
             expect(interaction.params).to.have.property(attr, this[attr]);
           }
