@@ -110,6 +110,37 @@ describe('resume after interaction', function () {
   });
 
   context('consent results', function () {
+    it('when scope includes offline_access', function () {
+      const auth = new AuthorizationRequest({
+        response_type: 'code',
+        prompt: 'consent',
+        scope: 'openid offline_access'
+      });
+
+      setup(auth, {
+        login: {
+          account: uuid(),
+          remember: true
+        },
+        consent: {}
+      });
+
+      let authorizationCode;
+
+      provider.once('token.issued', function (code) {
+        authorizationCode = code;
+      });
+
+      return agent.get(`/auth/${uuid()}`)
+        .expect(function () {
+          provider.removeAllListeners('token.issued');
+        })
+        .expect(function () {
+          expect(authorizationCode).to.be.ok;
+          expect(authorizationCode).to.have.property('scope', 'openid offline_access');
+        });
+    });
+
     it('should use the consents from resume cookie if provided', function () {
       const auth = new AuthorizationRequest({
         response_type: 'code',
