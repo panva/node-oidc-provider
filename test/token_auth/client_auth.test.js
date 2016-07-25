@@ -2,10 +2,11 @@
 
 const { agent, provider, responses } = require('../test_helper')(__dirname);
 const { v4: uuid } = require('node-uuid');
-const route = '/token';
 const jose = require('node-jose');
 const sinon = require('sinon');
 const JWT = require('../../lib/helpers/jwt');
+
+const route = '/token';
 const Client = provider.get('Client');
 
 describe('none auth', function () {
@@ -98,7 +99,7 @@ describe('client_secret_post auth', function () {
       .expect(responses.tokenAuthSucceeded);
   });
 
-  it('accepts the auth', function () {
+  it('rejects the auth', function () {
     return agent.post(route)
       .send({
         grant_type: 'implicit',

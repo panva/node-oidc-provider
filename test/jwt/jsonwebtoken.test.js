@@ -1,9 +1,10 @@
 'use strict';
 
 const JWT = require('../../lib/helpers/jwt');
-const jose = require('node-jose');
-const keystore = jose.JWK.createKeyStore();
 const { expect } = require('chai');
+const jose = require('node-jose');
+
+const keystore = jose.JWK.createKeyStore();
 
 describe('JSON Web Token (JWT) RFC7519 implementation', function () {
   before(function () {

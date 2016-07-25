@@ -8,10 +8,9 @@ const { decode: base64url } = require('base64url');
 const { parse: parseUrl } = require('url');
 const { stringify: qs } = require('querystring');
 const { expect } = require('chai');
-const j = JSON.parse;
 
 const RefreshToken = provider.get('RefreshToken');
-
+const j = JSON.parse;
 const route = '/token';
 
 provider.setupClient();

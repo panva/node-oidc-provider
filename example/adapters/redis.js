@@ -2,6 +2,7 @@
 
 const Redis = require('ioredis'); // eslint-disable-line import/no-unresolved
 const _ = require('lodash');
+
 const client = new Redis(process.env.REDIS_URL, {
   keyPrefix: 'oidc:',
 });

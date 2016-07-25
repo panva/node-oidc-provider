@@ -5,9 +5,10 @@ const sinon = require('sinon');
 const { expect } = require('chai');
 const { encode: base64url } = require('base64url');
 const { stringify: qs } = require('querystring');
+
 const route = '/token/introspection';
-const j = JSON.stringify;
 const AccessToken = provider.get('AccessToken');
+const j = JSON.stringify;
 
 provider.setupClient();
 provider.setupCerts();

@@ -8,8 +8,8 @@ let connecting;
 
 class CollectionSet extends Set {
   add(name) {
-    const nu = this.has.apply(this, arguments); // eslint-disable-line prefer-rest-params
-    super.add.apply(this, arguments); // eslint-disable-line prefer-rest-params
+    const nu = this.has.apply(this, arguments);
+    super.add.apply(this, arguments);
     if (!nu) {
       DB.collection(name).createIndexes([
         { key: { grantId: 1 } },

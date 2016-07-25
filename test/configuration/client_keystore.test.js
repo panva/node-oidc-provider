@@ -4,6 +4,7 @@ const keystore = require('node-jose').JWK.createKeyStore();
 const { provider } = require('../test_helper')(__dirname);
 const nock = require('nock');
 const { expect } = require('chai');
+
 const endpoint = nock('https://client.example.com/');
 
 describe('client keystore refresh', function () {

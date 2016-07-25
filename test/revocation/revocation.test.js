@@ -5,6 +5,7 @@ const sinon = require('sinon');
 const { expect } = require('chai');
 const { encode: base64url } = require('base64url');
 const { stringify: qs } = require('querystring');
+
 const route = '/token/revocation';
 const j = JSON.stringify;
 

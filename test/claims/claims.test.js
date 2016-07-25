@@ -8,10 +8,10 @@ const {
   wrap
 } = require('../test_helper')(__dirname);
 const { parse: parseLocation } = require('url');
-const j = JSON.stringify;
 const { decode: decodeJWT } = require('../../lib/helpers/jwt');
 const { expect } = require('chai');
 
+const j = JSON.stringify;
 const route = '/auth';
 
 provider.setupClient();

@@ -2,15 +2,14 @@
 'use strict';
 
 const oidc = require('../../lib');
+const RedisAdapter = require('./redis');
+
 const Provider = oidc.Provider;
 const AdapterTest = oidc.AdapterTest;
-
-const RedisAdapter = require('./redis');
 
 const provider = new Provider('http://localhost', {
   adapter: RedisAdapter,
 });
-
 const test = new AdapterTest(provider);
 
 provider.keystore.generate('RSA', 512)

@@ -6,6 +6,8 @@
     "no-underscore-dangle": ["warn", { "allowAfterThis": true }],
     "generator-star-spacing": ["warn", "both"],
     "no-cond-assign": ["error", "except-parens"],
-    "no-param-reassign": ["error", { "props": false }]
+    "no-param-reassign": ["error", { "props": false }],
+    "prefer-rest-params": "off",
+    "prefer-spread": "off"
   }
 }

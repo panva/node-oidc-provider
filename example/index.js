@@ -5,13 +5,13 @@ const path = require('path');
 const _ = require('lodash');
 const koa = require('koa');
 const body = require('koa-body');
-const port = process.env.PORT || 3000;
 const mount = require('koa-mount');
 const querystring = require('querystring');
 const rewrite = require('koa-rewrite');
 const Router = require('koa-router');
 const render = require('koa-ejs');
 
+const port = process.env.PORT || 3000;
 const app = koa();
 
 render(app, {
@@ -24,8 +24,8 @@ app.keys = ['some secret key', 'and also the old one'];
 
 const Account = require('./account');
 const settings = require('./settings');
-
 const Provider = require('../lib').Provider;
+
 const issuer = process.env.ISSUER || 'http://localhost:3000/op';
 
 if (process.env.HEROKU) {

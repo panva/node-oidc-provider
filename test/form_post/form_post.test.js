@@ -3,11 +3,10 @@
 const {
   provider, agent, AuthorizationRequest, wrap
 } = require('../test_helper')(__dirname);
-
 const { expect } = require('chai');
 const sinon = require('sinon');
-const route = '/auth';
 
+const route = '/auth';
 const Client = provider.get('Client');
 
 provider.setupClient();

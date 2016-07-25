@@ -18,6 +18,7 @@ const path = require('path');
 const jose = require('node-jose');
 const delegate = require('delegates');
 const _ = require('lodash');
+
 const responses = {
   serverErrorBody: {
     error: 'server_error',
