@@ -4,7 +4,6 @@ const { agent, provider } = require('../test_helper')(__dirname);
 const sinon = require('sinon');
 const { expect } = require('chai');
 const { encode: base64url } = require('base64url');
-const { stringify: qs } = require('querystring');
 
 const route = '/token/introspection';
 const AccessToken = provider.get('AccessToken');
@@ -35,9 +34,10 @@ describe('introspection features', function () {
       at.save().then(function (token) {
         agent.post(route)
         .auth('client', 'secret')
-        .send(qs({
+        .send({
           token
-        }))
+        })
+        .type('form')
         .expect(200)
         .expect(function (response) {
           expect(response.body).to.contain.keys('client_id', 'scope', 'sub');
@@ -56,9 +56,8 @@ describe('introspection features', function () {
       rt.save().then(function (token) {
         agent.post(route)
         .auth('client', 'secret')
-        .send(qs({
-          token
-        }))
+        .send({ token })
+        .type('form')
         .expect(200)
         .expect(function (response) {
           expect(response.body).to.contain.keys('client_id', 'scope', 'sub');
@@ -75,9 +74,8 @@ describe('introspection features', function () {
       rt.save().then(function (token) {
         agent.post(route)
         .auth('client', 'secret')
-        .send(qs({
-          token
-        }))
+        .send({ token })
+        .type('form')
         .expect(200)
         .expect(function (response) {
           expect(response.body).to.contain.keys('client_id');
@@ -89,7 +87,8 @@ describe('introspection features', function () {
     it('validates token param presence', function () {
       return agent.post(route)
       .auth('client', 'secret')
-      .send(qs({}))
+      .send({})
+      .type('form')
       .expect(400)
       .expect(function (response) {
         expect(response.body).to.have.property('error', 'invalid_request');
@@ -100,9 +99,10 @@ describe('introspection features', function () {
     it('responds with active=false for total bs', function () {
       return agent.post(route)
       .auth('client', 'secret')
-      .send(qs({
+      .send({
         token: 'this is not even a token'
-      }))
+      })
+      .type('form')
       .expect(200)
       .expect(function (response) {
         expect(response.body).to.have.property('active', false);
@@ -121,9 +121,10 @@ describe('introspection features', function () {
       };
       return agent.post(route)
       .auth('client', 'secret')
-      .send(qs({
+      .send({
         token: `${base64url(j(fields))}.`
-      }))
+      })
+      .type('form')
       .expect(200)
       .expect(function (response) {
         delete fields.kind;
@@ -137,7 +138,8 @@ describe('introspection features', function () {
 
       return agent.post(route)
       .auth('invalid', 'auth')
-      .send(qs({}))
+      .send({})
+      .type('form')
       .expect(400)
       .expect(function () {
         expect(spy.calledOnce).to.be.true;

@@ -4,7 +4,6 @@ const { agent, provider } = require('../test_helper')(__dirname);
 const sinon = require('sinon');
 const { expect } = require('chai');
 const { encode: base64url } = require('base64url');
-const { stringify: qs } = require('querystring');
 
 const route = '/token/revocation';
 const j = JSON.stringify;
@@ -42,9 +41,8 @@ describe('revocation features', function () {
       at.save().then(function (token) {
         agent.post(route)
         .auth('client', 'secret')
-        .send(qs({
-          token
-        }))
+        .send({ token })
+        .type('form')
         .expect(function () {
           expect(stub.calledOnce).to.be.true;
           AccessToken.prototype.destroy.restore();
@@ -69,9 +67,8 @@ describe('revocation features', function () {
       at.save().then(function (token) {
         agent.post(route)
         .auth('client', 'secret')
-        .send(qs({
-          token
-        }))
+        .send({ token })
+        .type('form')
         .expect(function () {
           AccessToken.find.restore();
         })
@@ -97,9 +94,8 @@ describe('revocation features', function () {
       rt.save().then(function (token) {
         agent.post(route)
         .auth('client', 'secret')
-        .send(qs({
-          token
-        }))
+        .send({ token })
+        .type('form')
         .expect(function () {
           expect(stub.calledOnce).to.be.true;
           RefreshToken.prototype.destroy.restore();
@@ -124,9 +120,8 @@ describe('revocation features', function () {
       at.save().then(function (token) {
         agent.post(route)
         .auth('client', 'secret')
-        .send(qs({
-          token
-        }))
+        .send({ token })
+        .type('form')
         .expect(function () {
           RefreshToken.find.restore();
         })
@@ -150,9 +145,8 @@ describe('revocation features', function () {
       rt.save().then(function (token) {
         agent.post(route)
         .auth('client', 'secret')
-        .send(qs({
-          token
-        }))
+        .send({ token })
+        .type('form')
         .expect(function () {
           expect(stub.calledOnce).to.be.true;
           ClientCredentials.prototype.destroy.restore();
@@ -177,9 +171,8 @@ describe('revocation features', function () {
       at.save().then(function (token) {
         agent.post(route)
         .auth('client', 'secret')
-        .send(qs({
-          token
-        }))
+        .send({ token })
+        .type('form')
         .expect(function () {
           ClientCredentials.find.restore();
         })
@@ -203,9 +196,8 @@ describe('revocation features', function () {
       at.save().then(function (token) {
         agent.post(route)
         .auth('client', 'secret')
-        .send(qs({
-          token
-        }))
+        .send({ token })
+        .type('form')
         .expect(function () {
           provider.get('OAuthToken').decode.restore();
         })
@@ -220,7 +212,8 @@ describe('revocation features', function () {
     it('validates token param presence', function () {
       return agent.post(route)
       .auth('client', 'secret')
-      .send(qs({}))
+      .send({})
+      .type('form')
       .expect(400)
       .expect(function (response) {
         expect(response.body).to.have.property('error', 'invalid_request');
@@ -238,9 +231,10 @@ describe('revocation features', function () {
       };
       return agent.post(route)
       .auth('client', 'secret')
-      .send(qs({
+      .send({
         token: `${base64url(j(fields))}.`
-      }))
+      })
+      .type('form')
       .expect(200)
       .expect(function (response) {
         expect(response.body).to.eql({});
@@ -257,9 +251,10 @@ describe('revocation features', function () {
       };
       return agent.post(route)
       .auth('client', 'secret')
-      .send(qs({
+      .send({
         token: `${base64url(j(fields))}.`
-      }))
+      })
+      .type('form')
       .expect(400)
       .expect(function (response) {
         expect(response.body).to.have.property('error', 'unsupported_token_type');
@@ -272,7 +267,8 @@ describe('revocation features', function () {
 
       return agent.post(route)
       .auth('invalid', 'auth')
-      .send(qs({}))
+      .send({})
+      .type('form')
       .expect(400)
       .expect(function () {
         expect(spy.calledOnce).to.be.true;

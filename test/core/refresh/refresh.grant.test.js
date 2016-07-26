@@ -6,7 +6,6 @@ const {
 const sinon = require('sinon');
 const { decode: base64url } = require('base64url');
 const { parse: parseUrl } = require('url');
-const { stringify: qs } = require('querystring');
 const { expect } = require('chai');
 
 const RefreshToken = provider.get('RefreshToken');
@@ -53,13 +52,12 @@ describe('grant_type=refresh_token', function () {
 
         return agent.post(route)
         .auth('client', 'secret')
-        .send(qs(
-          {
-            code,
-            grant_type: 'authorization_code',
-            redirect_uri: 'https://client.example.com/cb'
-          }
-        ))
+        .type('form')
+        .send({
+          code,
+          grant_type: 'authorization_code',
+          redirect_uri: 'https://client.example.com/cb'
+        })
         .expect(200)
         .expect((response) => {
           expect(response.body).to.have.property('refresh_token');
@@ -78,10 +76,11 @@ describe('grant_type=refresh_token', function () {
 
       return agent.post(route)
       .auth('client', 'secret')
-      .send(qs({
+      .send({
         refresh_token: rt,
         grant_type: 'refresh_token'
-      }))
+      })
+      .type('form')
       .expect(200)
       .expect(function () {
         expect(spy.calledOnce).to.be.true;
@@ -112,10 +111,11 @@ describe('grant_type=refresh_token', function () {
 
             return agent.post(route)
               .auth('client', 'secret')
-              .send(qs({
+              .send({
                 refresh_token: rt,
                 grant_type: 'refresh_token'
-              }))
+              })
+              .type('form')
               .expect(400)
               .expect(function () {
                 expect(spy.calledOnce).to.be.true;
@@ -136,10 +136,11 @@ describe('grant_type=refresh_token', function () {
 
         return agent.post(route)
           .auth('client2', 'secret')
-          .send(qs({
+          .send({
             refresh_token: rt,
             grant_type: 'refresh_token'
-          }))
+          })
+          .type('form')
           .expect(400)
           .expect(function () {
             expect(spy.calledOnce).to.be.true;
@@ -157,11 +158,12 @@ describe('grant_type=refresh_token', function () {
 
         return agent.post(route)
           .auth('client', 'secret')
-          .send(qs({
+          .send({
             refresh_token: rt,
             grant_type: 'refresh_token',
             scope: 'openid profile'
-          }))
+          })
+          .type('form')
           .expect(400)
           .expect(function (response) {
             expect(response.body).to.have.property('error', 'invalid_scope');
@@ -181,10 +183,11 @@ describe('grant_type=refresh_token', function () {
 
         return agent.post(route)
           .auth('client', 'secret')
-          .send(qs({
+          .send({
             refresh_token: rt,
             grant_type: 'refresh_token'
-          }))
+          })
+          .type('form')
           .expect(function () {
             provider.get('Account').findById.restore();
           })
@@ -202,11 +205,10 @@ describe('grant_type=refresh_token', function () {
     it('refresh_token presence', function () {
       return agent.post(route)
       .auth('client', 'secret')
-      .send(qs(
-        {
-          grant_type: 'refresh_token'
-        }
-      ))
+      .send({
+        grant_type: 'refresh_token'
+      })
+      .type('form')
       .expect(400)
       .expect(function (response) {
         expect(response.body).to.have.property('error', 'invalid_request');
@@ -220,12 +222,11 @@ describe('grant_type=refresh_token', function () {
       provider.once('grant.error', spy);
       return agent.post(route)
       .auth('client', 'secret')
-      .send(qs(
-        {
-          grant_type: 'refresh_token',
-          refresh_token: 'eyJraW5kIjoiUmVmcmVzaFRva2VuIiwianRpIjoiYzc4ZjdlYjMtZjdkYi00ZDNmLWFjNzUtYTY3MTA2NTUxOTYyIiwiaWF0IjoxNDYzNjY5Mjk1LCJleHAiOjE0NjM2NzEwOTUsImlzcyI6Imh0dHA6Ly8xMjcuMC4wLjE6NjAxNDMifQ.KJxy5D3_lwAlBs6E0INhrjJm1Bk9BrPlRacoyYztt5s_yxWidNua_eSvMbmRqqIq6t2hGguW7ZkEJhVHGNxvaHctGjSIrAOjaZhh1noqP9keXnATf2N2Twdsz-Viim5F0A7vu9OlhNm75P-yfreOTmmbQ4goM5449Dvq_xli2gmgg1j4HnASAI3YuxAzCCSJPbJDE2UL0-_q7nIvH0Ak2RuNbTJLjYt36jymfLnJ2OOe1z9N2RuZrIQQy7ksAIJkJs_3SJ0RYKDBtUplPC2fK7qsNk4wUTgxLJE3Xp_sJZKwVG2ascsVdexVnUCxqDN3xt9MpI14M3Zw7UwGghdIfQ'
-        }
-      ))
+      .send({
+        grant_type: 'refresh_token',
+        refresh_token: 'eyJraW5kIjoiUmVmcmVzaFRva2VuIiwianRpIjoiYzc4ZjdlYjMtZjdkYi00ZDNmLWFjNzUtYTY3MTA2NTUxOTYyIiwiaWF0IjoxNDYzNjY5Mjk1LCJleHAiOjE0NjM2NzEwOTUsImlzcyI6Imh0dHA6Ly8xMjcuMC4wLjE6NjAxNDMifQ.KJxy5D3_lwAlBs6E0INhrjJm1Bk9BrPlRacoyYztt5s_yxWidNua_eSvMbmRqqIq6t2hGguW7ZkEJhVHGNxvaHctGjSIrAOjaZhh1noqP9keXnATf2N2Twdsz-Viim5F0A7vu9OlhNm75P-yfreOTmmbQ4goM5449Dvq_xli2gmgg1j4HnASAI3YuxAzCCSJPbJDE2UL0-_q7nIvH0Ak2RuNbTJLjYt36jymfLnJ2OOe1z9N2RuZrIQQy7ksAIJkJs_3SJ0RYKDBtUplPC2fK7qsNk4wUTgxLJE3Xp_sJZKwVG2ascsVdexVnUCxqDN3xt9MpI14M3Zw7UwGghdIfQ'
+      })
+      .type('form')
       .expect(400)
       .expect(function () {
         expect(spy.calledOnce).to.be.true;

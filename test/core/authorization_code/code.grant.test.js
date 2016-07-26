@@ -6,7 +6,6 @@ const {
 const sinon = require('sinon');
 const { decode: base64url } = require('base64url');
 const { parse: parseUrl } = require('url');
-const { stringify: qs } = require('querystring');
 const { expect } = require('chai');
 
 const j = JSON.parse;
@@ -53,11 +52,12 @@ describe('grant_type=authorization_code', function () {
 
       return agent.post(route)
       .auth('client', 'secret')
-      .send(qs({
+      .type('form')
+      .send({
         code: this.ac,
         grant_type: 'authorization_code',
         redirect_uri: 'https://client.example.com/cb'
-      }))
+      })
       .expect(200)
       .expect(function () {
         expect(spy.calledOnce).to.be.true;
@@ -78,11 +78,12 @@ describe('grant_type=authorization_code', function () {
 
       return agent.post(route)
       .auth('client', 'secret')
-      .send(qs({
+      .type('form')
+      .send({
         code: this.ac,
         grant_type: 'authorization_code',
         redirect_uri: 'https://client.example.com/cb'
-      }))
+      })
       .expect(function () {
         AuthorizationCode.fromJWT.restore();
       })
@@ -112,11 +113,12 @@ describe('grant_type=authorization_code', function () {
 
           return agent.post(route)
           .auth('client', 'secret')
-          .send(qs({
+          .send({
             code: this.ac,
             grant_type: 'authorization_code',
             redirect_uri: 'https://client.example.com/cb'
-          }))
+          })
+          .type('form')
           .expect(400)
           .expect(function () {
             expect(spy.calledOnce).to.be.true;
@@ -139,11 +141,12 @@ describe('grant_type=authorization_code', function () {
 
       return agent.post(route)
       .auth('client', 'secret')
-      .send(qs({
+      .send({
         code: this.ac,
         grant_type: 'authorization_code',
         redirect_uri: 'https://client.example.com/cb'
-      }))
+      })
+      .type('form')
       .expect(400)
       .expect(function () {
         expect(spy.calledOnce).to.be.true;
@@ -157,11 +160,12 @@ describe('grant_type=authorization_code', function () {
     it('consumes the code', function () {
       return agent.post(route)
       .auth('client', 'secret')
-      .send(qs({
+      .send({
         code: this.ac,
         grant_type: 'authorization_code',
         redirect_uri: 'https://client.example.com/cb'
-      }))
+      })
+      .type('form')
       .expect(() => {
         expect(this.code).to.have.property('consumed').and.be.most(Date.now() / 1000 | 0);
       })
@@ -174,11 +178,12 @@ describe('grant_type=authorization_code', function () {
 
       return agent.post(route)
       .auth('client2', 'secret')
-      .send(qs({
+      .send({
         code: this.ac,
         grant_type: 'authorization_code',
         redirect_uri: 'https://client.example.com/cb'
-      }))
+      })
+      .type('form')
       .expect(400)
       .expect(function () {
         expect(spy.calledOnce).to.be.true;
@@ -195,11 +200,12 @@ describe('grant_type=authorization_code', function () {
 
       return agent.post(route)
       .auth('client', 'secret')
-      .send(qs({
+      .send({
         code: this.ac,
         grant_type: 'authorization_code',
         redirect_uri: 'https://client.example.com/cb?thensome'
-      }))
+      })
+      .type('form')
       .expect(400)
       .expect(function () {
         expect(spy.calledOnce).to.be.true;
@@ -220,11 +226,12 @@ describe('grant_type=authorization_code', function () {
 
       return agent.post(route)
       .auth('client', 'secret')
-      .send(qs({
+      .send({
         code: this.ac,
         grant_type: 'authorization_code',
         redirect_uri: 'https://client.example.com/cb'
-      }))
+      })
+      .type('form')
       .expect(function () {
         provider.get('Account').findById.restore();
       })
@@ -243,7 +250,8 @@ describe('grant_type=authorization_code', function () {
     it('grant_type presence', function () {
       return agent.post(route)
       .auth('client', 'secret')
-      .send(qs({}))
+      .send({})
+      .type('form')
       .expect(400)
       .expect(function (response) {
         expect(response.body).to.have.property('error', 'invalid_request');
@@ -255,12 +263,11 @@ describe('grant_type=authorization_code', function () {
     it('code presence', function () {
       return agent.post(route)
       .auth('client', 'secret')
-      .send(qs(
-        {
-          grant_type: 'authorization_code',
-          redirect_uri: 'blah'
-        }
-      ))
+      .send({
+        grant_type: 'authorization_code',
+        redirect_uri: 'blah'
+      })
+      .type('form')
       .expect(400)
       .expect(function (response) {
         expect(response.body).to.have.property('error', 'invalid_request');
@@ -272,12 +279,11 @@ describe('grant_type=authorization_code', function () {
     it('redirect_uri presence', function () {
       return agent.post(route)
       .auth('client', 'secret')
-      .send(qs(
-        {
-          grant_type: 'authorization_code',
-          code: 'blah'
-        }
-      ))
+      .send({
+        grant_type: 'authorization_code',
+        code: 'blah'
+      })
+      .type('form')
       .expect(400)
       .expect(function (response) {
         expect(response.body).to.have.property('error', 'invalid_request');
@@ -291,13 +297,12 @@ describe('grant_type=authorization_code', function () {
       provider.once('grant.error', spy);
       return agent.post(route)
       .auth('client', 'secret')
-      .send(qs(
-        {
-          grant_type: 'authorization_code',
-          redirect_uri: 'http://client.example.com',
-          code: 'eyJraW5kIjoiQXV0aG9yaXphdGlvbkNvZGUiLCJqdGkiOiIxNTU0M2RiYS0zYThmLTRiZWEtYmRjNi04NDQ2N2MwOWZjYTYiLCJpYXQiOjE0NjM2NTk2OTgsImV4cCI6MTQ2MzY1OTc1OCwiaXNzIjoiaHR0cHM6Ly9ndWFyZGVkLWNsaWZmcy04NjM1Lmhlcm9rdWFwcC5jb20vb3AifQ.qUTaR48lavULtmDWBcpwhcF9NXhP8xzc-643h3yWLEgIyxPzKINT-upNn-byflH7P7rQlzZ-9SJKSs72ZVqWWMNikUGgJo-XmLyersONQ8sVx7v0quo4CRXamwyXfz2gq76gFlv5mtsrWwCij1kUnSaFm_HhAcoDPzGtSqhsHNoz36KjdmC3R-m84reQk_LEGizUeV-OmsBWJs3gedPGYcRCvsnW9qa21B0yZO2-HT9VQYY68UIGucDKNvizFRmIgepDZ5PUtsvyPD0PQQ9UHiEZvICeArxPLE8t1xz-lukpTMn8vA_YJ0s7kD9HYJUwxiYIuLXwDUNpGhsegxdvbw'
-        }
-      ))
+      .send({
+        grant_type: 'authorization_code',
+        redirect_uri: 'http://client.example.com',
+        code: 'eyJraW5kIjoiQXV0aG9yaXphdGlvbkNvZGUiLCJqdGkiOiIxNTU0M2RiYS0zYThmLTRiZWEtYmRjNi04NDQ2N2MwOWZjYTYiLCJpYXQiOjE0NjM2NTk2OTgsImV4cCI6MTQ2MzY1OTc1OCwiaXNzIjoiaHR0cHM6Ly9ndWFyZGVkLWNsaWZmcy04NjM1Lmhlcm9rdWFwcC5jb20vb3AifQ.qUTaR48lavULtmDWBcpwhcF9NXhP8xzc-643h3yWLEgIyxPzKINT-upNn-byflH7P7rQlzZ-9SJKSs72ZVqWWMNikUGgJo-XmLyersONQ8sVx7v0quo4CRXamwyXfz2gq76gFlv5mtsrWwCij1kUnSaFm_HhAcoDPzGtSqhsHNoz36KjdmC3R-m84reQk_LEGizUeV-OmsBWJs3gedPGYcRCvsnW9qa21B0yZO2-HT9VQYY68UIGucDKNvizFRmIgepDZ5PUtsvyPD0PQQ9UHiEZvICeArxPLE8t1xz-lukpTMn8vA_YJ0s7kD9HYJUwxiYIuLXwDUNpGhsegxdvbw'
+      })
+      .type('form')
       .expect(400)
       .expect(function () {
         expect(spy.calledOnce).to.be.true;
@@ -313,13 +318,13 @@ describe('grant_type=authorization_code', function () {
       provider.once('grant.error', spy);
       return agent.post(route)
       .auth('client', 'secret')
-      .send(qs(
-        {
-          grant_type: 'authorization_code',
-          redirect_uri: 'http://client.example.com',
-          code: 'not even close'
-        }
-      ))
+      .send({
+        grant_type: 'authorization_code',
+        redirect_uri: 'http://client.example.com',
+        code: 'not even close'
+      }
+      )
+      .type('form')
       .expect(401)
       .expect(function () {
         expect(spy.calledOnce).to.be.true;
@@ -344,7 +349,8 @@ describe('grant_type=authorization_code', function () {
       provider.once('grant.error', spy);
 
       return agent.post(route)
-      .send(qs({}))
+      .send({})
+      .type('form')
       .expect(400)
       .expect(function () {
         expect(spy.calledOnce).to.be.true;
@@ -360,11 +366,12 @@ describe('grant_type=authorization_code', function () {
 
       return agent.post(route)
       .auth('client', 'secret')
-      .send(qs({
+      .send({
         grant_type: 'authorization_code',
         code: 'code',
         redirect_uri: 'is there too'
-      }))
+      })
+      .type('form')
       .expect(500)
       .expect(function () {
         expect(spy.calledOnce).to.be.true;

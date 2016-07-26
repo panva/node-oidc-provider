@@ -18,6 +18,8 @@ const path = require('path');
 const jose = require('node-jose');
 const delegate = require('delegates');
 const _ = require('lodash');
+const koa = require('koa');
+const mount = require('koa-mount');
 
 const responses = {
   serverErrorBody: {
@@ -34,15 +36,15 @@ const responses = {
   }
 };
 
-module.exports = function testHelper(dir, basename) {
+module.exports = function testHelper(dir, basename, mountTo) {
   const conf = path.format({
     dir,
     base: `${basename || path.basename(dir)}.config.js`,
   });
   const { config, certs, client } = require(conf); // eslint-disable-line global-require
   config.adapter = TestAdapter;
-  const provider = new Provider('http://127.0.0.1', config);
-  provider.Account = Account;
+  config.findById = Account.findById;
+  const provider = new Provider(`http://127.0.0.1${mountTo || ''}`, config);
 
   // gotta delegate the keystore object so that we can stub the method calls
   // with sinon
@@ -57,10 +59,19 @@ module.exports = function testHelper(dir, basename) {
     .method('get');
   provider.keystore = delegatedStore;
 
-  const server = provider.app.listen();
+  let server;
+
+  if (mountTo) {
+    const app = koa();
+    app.use(mount(mountTo, provider.app));
+    server = app.listen();
+  } else {
+    server = provider.app.listen();
+  }
+
   const agent = supertest(server);
 
-  provider.issuer = `http://127.0.0.1:${server.address().port}`;
+  provider.issuer = `http://127.0.0.1:${server.address().port}${mountTo || ''}`;
 
   agent.logout = function logout() {
     const expire = new Date(0);
@@ -151,9 +162,9 @@ module.exports = function testHelper(dir, basename) {
 
   AuthorizationRequest.prototype.validateInteractionError = function (expectedError, expectedReason) {
     return (response) => {
-      const value = response.headers['set-cookie'][1];
-      const { value: interaction } = new Cookie(value);
-      const { details: { error, reason } } = JSON.parse(interaction);
+      const setCookie = response.headers['set-cookie'][1];
+      const { value: interaction } = new Cookie(setCookie);
+      const { interaction: { error, reason } } = JSON.parse(interaction);
 
       expect(error).to.equal(expectedError);
       expect(reason).to.equal(expectedReason);

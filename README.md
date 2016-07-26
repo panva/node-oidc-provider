@@ -20,8 +20,11 @@ your own unique-looking and functioning user flows.
     * [Features](#features)
     * [Routes](#routes)
     * [Certificates](#keys-signing-and-encryption)
-    * [Clients](#clients)
     * [Persistance](#persistance)
+    * [Accounts](#accounts)
+    * [Interaction](#interaction)
+    * [Clients](#clients)
+    * [Custom Grant Types](#custom-grant-types)
   * [Events](#events)
   * [Certification](#certification)
 
@@ -223,8 +226,8 @@ This accepts a jwk formatted private key object and returns a Promise, resolved 
 [node-jose][node-jose] jose.JWK.Key
 
 At the very least you must add one RSA key (and do yourself a favor and use at least 2048 bit). You
-MAY provide the `use` and `kid` properties. When `use` is ommited the key will be available for both
-signing and encryption. When `kid` is ommited it will be calculated according to
+MAY provide the `use` and `kid` properties. When `use` is omitted the key will be available for both
+signing and encryption. When `kid` is omitted it will be calculated using
 [JSON Web Key (JWK) Thumbprint][feature-thumbprint].
 
 
@@ -247,6 +250,44 @@ The API oidc-provider expects is documented [here](example/my_adapter.js). For r
 [mongodb](example/adapters/mongodb.js) adapters. There's also a simple test
 [[redis](example/adapters/redis_test.js),[mongodb](example/adapters/mongodb_test.js)] you can use to
 check your own implementation.
+
+### Accounts
+oidc-provider needs to be able to find an account and once found the account needs to have an
+`accountId` property as well as `claims()` function returning an object with claims that correspond
+to the claims your issuer supports. You can make oidc-provider lookup your accounts using your
+method during initialization.
+
+```js
+const oidc = new Provider('http://localhost:3000', {
+  findById: function (id) {
+    return Promise.resolve({
+      accountId: id,
+      claims() { return { sub: id }; },
+    });
+  }
+});
+```
+
+Note: the `findById` method needs to be yieldable, returning a Promise is recommended.  
+Tip: check how the [example](example/account.js) deals with this
+
+### Interaction
+Since oidc-provider comes with no views and interaction handlers what so ever it's up to you to fill
+those in, here's how oidc-provider allows you to do so:
+
+When oidc-provider cannot fulfill the authorization request for any of the possible reasons (missing
+user session, requested ACR not fulfilled, prompt requested, ...) it will resolve an `interactionUrl`
+(configured during initialization) and redirect the User-Agent to that url. Before doing so it will
+create a signed `_grant` cookie that you can read from your interaction 'app'. This
+cookie contains 1) details of the interaction that is required; 2) all authorization request
+parameters and 3) the uuid of the authorization request and 4) the url to redirect the user to once
+interaction is finished. oidc-provider expects that you resolve all future interactions in one go
+and only then redirect the User-Agent back with the results.
+
+Once all necessary interaction is finished you are expected to redirect back to the authorization
+endpoint, affixed by the uuid of the original request and the interaction results dumped in a signed
+`_grant_result` cookie. Please see the [example](example/index.js), it's using a helper `resume` of
+the provider instance that ties things together for you.
 
 ### Clients
 Clients can be managed programmatically or via out of bounds mechanisms using your provided Adapter.
@@ -273,8 +314,49 @@ oidc.addClient(metadata).then(fulfillmentHandler, rejectionHandler);
 **via Adapter**  
 Storing client metadata in your storage is recommended for distributed deployments. Also when you
 want to provide a client configuration GUI or plan on changing this data often. Clients get loaded
-*! and validated !* when they first get loaded, any metadata validation error encountered during
+*! and validated !* when they are first needed, any metadata validation error encountered during
 this first load will be thrown and handled like any other context specific errors.
+
+### Custom Grant Types
+oidc-provider comes with the basic grants implemented, but you can register your own grant types,
+for example to implement a [password grant type][password-grant]. You can check the standard
+grant factories [here](lib/actions/token).
+
+```js
+const parameters = ['username', 'password'];
+
+provider.registerGrantType('password', function passwordGrantTypeFactory(providerInstance) {
+  return function * passwordGrantType(next) {
+    if (this.oidc.params.username === 'foo' && this.oidc.params.password === 'bar') {
+      const AccessToken = providerInstance.get('AccessToken');
+      const at = new AccessToken({
+        accountId: 'foo',
+        clientId: this.oidc.client.clientId,
+        grantId: this.oidc.uuid,
+      });
+
+      const accessToken = yield at.save();
+      const tokenType = 'Bearer';
+      const expiresIn = AccessToken.expiresIn;
+
+      this.body = {
+        access_token: accessToken,
+        expires_in: expiresIn,
+        token_type: tokenType,
+      };
+    } else {
+      this.body = {
+        error: 'invalid_grant',
+        error_description: 'invalid credentials provided',
+      };
+      this.status = 400;
+    }
+
+    yield next;
+  };
+}, parameters);
+```
+Tip: you are able to modify the implemented grant type behavior like this.
 
 ## Events
 The oidc-provider instance is an event emitter, `this` is always the instance. In events where `ctx`(koa
@@ -393,3 +475,4 @@ OP Config and OP Dynamic profiles of the OpenID Connect™ protocol.
 [heroku-example]: https://guarded-cliffs-8635.herokuapp.com/op/.well-known/openid-configuration
 [heroku-example-client]: https://tranquil-reef-95185.herokuapp.com/client
 [openid-client]: https://github.com/panva/node-openid-client
+[password-grant]: https://tools.ietf.org/html/rfc6749#section-4.3

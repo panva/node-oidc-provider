@@ -47,9 +47,9 @@ if (process.env.HEROKU) {
   });
 }
 
-const provider = new Provider(issuer, settings.config);
+settings.config.findById = Account.findById;
 
-Object.defineProperty(provider, 'Account', { value: Account });
+const provider = new Provider(issuer, settings.config);
 
 app.use(rewrite(/^\/\.well-known\/(.*)/, '/op/.well-known/$1'));
 app.use(mount('/op', provider.app));
@@ -57,24 +57,26 @@ app.use(mount('/op', provider.app));
 const router = new Router();
 
 router.get('/interaction/:grant', function * renderInteraction(next) {
-  const grant = JSON.parse(this.cookies.get('_grant', { signed: true })).params;
-  const client = yield provider.get('Client').find(grant.client_id);
+  const cookie = JSON.parse(this.cookies.get('_grant', { signed: true }));
+  const client = yield provider.get('Client').find(cookie.params.client_id);
 
   yield this.render('login', {
     client,
+    cookie,
     action: '/login',
-    debug: querystring.stringify(grant, ',<br/>', ' = ', {
+    debug: querystring.stringify(cookie.params, ',<br/>', ' = ', {
       encodeURIComponent: (value) => value,
     }),
-    grant: this.params.grant,
-    request: grant,
+    interaction: querystring.stringify(cookie.interaction, ',<br/>', ' = ', {
+      encodeURIComponent: (value) => value,
+    }),
   });
 
   yield next;
 });
 
 router.post('/login', body(), function * submitLoginForm() {
-  const account = yield Account.findByLogin(this.request.body.login);
+  const account = yield Account.findByLogin(this.request.body.uuid);
 
   const result = {
     login: {
@@ -86,11 +88,10 @@ router.post('/login', body(), function * submitLoginForm() {
     consent: {},
   };
 
-  provider.resume(this, this.request.body.grant, result);
+  provider.resume(this, this.request.body.uuid, result);
 });
 
 app.use(router.routes());
-app.use(router.allowedMethods());
 
 Promise.all(settings.certificates.map(cert => provider.addKey(cert)))
   .then(() => Promise.all(
