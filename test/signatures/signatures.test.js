@@ -37,7 +37,7 @@ describe('token hashes in id_token', function () {
 
   before(agent.login);
 
-  after(function * () {
+  after(function () {
     client.idTokenSignedResponseAlg = 'RS256';
   });
 

@@ -1,10 +1,11 @@
 'use strict';
 
 const oidc = require('../../lib');
+const { TestAdapter } = require('../models');
+
 const Provider = oidc.Provider;
 const AdapterTest = oidc.AdapterTest;
 
-const { TestAdapter } = require('../models');
 
 describe('AdapterTest', function () {
   it('passes with the default MemoryAdapter', function () {

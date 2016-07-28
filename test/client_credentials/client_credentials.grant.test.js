@@ -4,7 +4,6 @@ const {
   agent, provider
 } = require('../test_helper')(__dirname);
 const sinon = require('sinon');
-const { stringify: qs } = require('querystring');
 const { expect } = require('chai');
 
 const route = '/token';
@@ -19,9 +18,10 @@ describe('grant_type=client_credentials', function () {
 
     return agent.post(route)
     .auth('client', 'secret')
-    .send(qs({
+    .send({
       grant_type: 'client_credentials'
-    }))
+    })
+    .type('form')
     .expect(200)
     .expect(function () {
       expect(spy.calledOnce).to.be.true;

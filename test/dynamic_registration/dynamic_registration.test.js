@@ -1,8 +1,8 @@
 'use strict';
 
 const { agent, provider } = require('../test_helper')(__dirname);
-// const sinon = require('sinon');
 const { expect } = require('chai');
+
 const Client = provider.get('Client');
 
 provider.setupCerts();

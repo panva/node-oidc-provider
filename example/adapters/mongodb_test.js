@@ -2,15 +2,14 @@
 'use strict';
 
 const oidc = require('../../lib');
+const MongoAdapter = require('./mongodb');
+
 const Provider = oidc.Provider;
 const AdapterTest = oidc.AdapterTest;
-
-const MongoAdapter = require('./mongodb');
 
 const provider = new Provider('http://localhost', {
   adapter: MongoAdapter,
 });
-
 const test = new AdapterTest(provider);
 
 provider.keystore.generate('RSA', 512)

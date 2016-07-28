@@ -5,13 +5,13 @@ const path = require('path');
 const _ = require('lodash');
 const koa = require('koa');
 const body = require('koa-body');
-const port = process.env.PORT || 3000;
 const mount = require('koa-mount');
 const querystring = require('querystring');
 const rewrite = require('koa-rewrite');
 const Router = require('koa-router');
 const render = require('koa-ejs');
 
+const port = process.env.PORT || 3000;
 const app = koa();
 
 render(app, {
@@ -24,12 +24,11 @@ app.keys = ['some secret key', 'and also the old one'];
 
 const Account = require('./account');
 const settings = require('./settings');
-
 const Provider = require('../lib').Provider;
-let issuer = 'http://localhost:3000/op';
+
+const issuer = process.env.ISSUER || 'http://localhost:3000/op';
 
 if (process.env.HEROKU) {
-  issuer = 'https://guarded-cliffs-8635.herokuapp.com/op';
   settings.config.timeouts = {
     request_uri: 15000,
     sector_identifier_uri: 15000,
@@ -38,13 +37,19 @@ if (process.env.HEROKU) {
   app.proxy = true;
   _.set(settings.config, 'cookies.short.secure', true);
   _.set(settings.config, 'cookies.long.secure', true);
+
+  app.use(function * ensureSecure(next) {
+    if (this.secure) {
+      yield next;
+    } else {
+      this.redirect(this.href.replace(/^http:\/\//i, 'https://'));
+    }
+  });
 }
 
-const provider = new Provider(issuer, settings.config);
+settings.config.findById = Account.findById;
 
-Object.defineProperty(provider, 'Account', {
-  value: Account,
-});
+const provider = new Provider(issuer, settings.config);
 
 app.use(rewrite(/^\/\.well-known\/(.*)/, '/op/.well-known/$1'));
 app.use(mount('/op', provider.app));
@@ -52,27 +57,26 @@ app.use(mount('/op', provider.app));
 const router = new Router();
 
 router.get('/interaction/:grant', function * renderInteraction(next) {
-  const grant = JSON.parse(this.cookies.get('_grant', {
-    signed: true,
-  })).params;
-
-  const client = yield provider.get('Client').find(grant.client_id);
+  const cookie = JSON.parse(this.cookies.get('_grant', { signed: true }));
+  const client = yield provider.get('Client').find(cookie.params.client_id);
 
   yield this.render('login', {
     client,
+    cookie,
     action: '/login',
-    debug: querystring.stringify(grant, ',<br/>', ' = ', {
+    debug: querystring.stringify(cookie.params, ',<br/>', ' = ', {
       encodeURIComponent: (value) => value,
     }),
-    grant: this.params.grant,
-    request: grant,
+    interaction: querystring.stringify(cookie.interaction, ',<br/>', ' = ', {
+      encodeURIComponent: (value) => value,
+    }),
   });
 
   yield next;
 });
 
 router.post('/login', body(), function * submitLoginForm() {
-  const account = yield Account.findByLogin(this.request.body.login);
+  const account = yield Account.findByLogin(this.request.body.uuid);
 
   const result = {
     login: {
@@ -81,13 +85,13 @@ router.post('/login', body(), function * submitLoginForm() {
       remember: !!this.request.body.remember,
       ts: Date.now() / 1000 | 0,
     },
+    consent: {},
   };
 
-  provider.resume(this, this.request.body.grant, result);
+  provider.resume(this, this.request.body.uuid, result);
 });
 
 app.use(router.routes());
-app.use(router.allowedMethods());
 
 Promise.all(settings.certificates.map(cert => provider.addKey(cert)))
   .then(() => Promise.all(

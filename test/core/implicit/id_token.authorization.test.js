@@ -181,7 +181,7 @@ provider.setupCerts();
         .expect(function () {
           expect(emitSpy.calledOnce).to.be.true;
           expect(renderSpy.calledOnce).to.be.true;
-          const renderArgs = renderSpy.args[0][0];
+          const renderArgs = renderSpy.args[0][1];
           expect(renderArgs).to.have.property('error', 'invalid_request');
           expect(renderArgs).to.have.property('error_description', 'missing required parameter(s) redirect_uri');
         });
@@ -423,7 +423,7 @@ provider.setupCerts();
       .expect(function () {
         expect(emitSpy.calledOnce).to.be.true;
         expect(renderSpy.calledOnce).to.be.true;
-        const renderArgs = renderSpy.args[0][0];
+        const renderArgs = renderSpy.args[0][1];
         expect(renderArgs).to.have.property('error', 'redirect_uri_mismatch');
         expect(renderArgs).to.have.property('error_description', 'redirect_uri did not match any client\'s registered redirect_uri');
       });

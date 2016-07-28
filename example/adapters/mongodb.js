@@ -8,8 +8,8 @@ let connecting;
 
 class CollectionSet extends Set {
   add(name) {
-    const nu = this.has.apply(this, arguments); // eslint-disable-line prefer-rest-params
-    super.add.apply(this, arguments); // eslint-disable-line prefer-rest-params
+    const nu = this.has.apply(this, arguments);
+    super.add.apply(this, arguments);
     if (!nu) {
       DB.collection(name).createIndexes([
         { key: { grantId: 1 } },
@@ -33,10 +33,12 @@ class MongoAdapter {
   static coll(name) {
     if (DB) return Promise.resolve(DB.collection(name));
     if (connecting) return Promise.reject(new Error('mongodb connection not established yet'));
+    connecting = true;
     return Mongo.connect('mongodb://localhost/test').then((db) => {
       if (DB) {
         db.close(true); // a race condition resulted in more connections, close this one
       } else {
+        connecting = false;
         DB = db;
         collections.add(name);
       }
@@ -74,7 +76,7 @@ class MongoAdapter {
 
     if (expiresIn) {
       const now = new Date();
-      expiresAt = new Date(now.getTime() + expiresIn * 1000);
+      expiresAt = new Date((now.getTime() + expiresIn) * 1000);
     }
 
     const document = Object.assign({ _id }, payload, { expiresAt });

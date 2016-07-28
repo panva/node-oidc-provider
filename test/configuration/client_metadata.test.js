@@ -318,7 +318,12 @@ describe('Client validations', function () {
   });
 
   context('post_logout_redirect_uris', function () {
-    defaultsTo(this.title, []);
+    defaultsTo(this.title, [], undefined, {
+      features: {
+        sessionManagement: true
+      }
+    });
+    defaultsTo(this.title, undefined);
     mustBeArray(this.title);
 
     rejects(this.title, [123], /must only contain strings$/);
@@ -417,7 +422,9 @@ describe('Client validations', function () {
 
   context('id_token_encrypted_response_alg', function () {
     defaultsTo(this.title, undefined);
-    mustBeString(this.title);
+    mustBeString(this.title, undefined, {
+      jwks: { keys: [sigKey] }
+    });
     it('is required when id_token_encrypted_response_enc is also provided', function () {
       return addClient({
         id_token_encrypted_response_enc: 'whatever'
@@ -427,7 +434,9 @@ describe('Client validations', function () {
       });
     });
     DefaultProvider.configuration('idTokenEncryptionAlgValues').forEach((value) => {
-      allows(this.title, value);
+      allows(this.title, value, {
+        jwks: { keys: [sigKey] }
+      });
     });
     rejects(this.title, 'not-an-alg');
   });
@@ -435,24 +444,30 @@ describe('Client validations', function () {
   context('id_token_encrypted_response_enc', function () {
     defaultsTo(this.title, undefined);
     defaultsTo(this.title, 'A128CBC-HS256', {
-      id_token_encrypted_response_alg: 'RSA1_5'
+      id_token_encrypted_response_alg: 'RSA1_5',
+      jwks: { keys: [sigKey] }
     });
     mustBeString(this.title, null, {
-      id_token_encrypted_response_alg: 'RSA1_5'
+      id_token_encrypted_response_alg: 'RSA1_5',
+      jwks: { keys: [sigKey] }
     });
     DefaultProvider.configuration('idTokenEncryptionEncValues').forEach((value) => {
       allows(this.title, value, {
-        id_token_encrypted_response_alg: 'RSA1_5'
+        id_token_encrypted_response_alg: 'RSA1_5',
+        jwks: { keys: [sigKey] }
       });
     });
     rejects(this.title, 'not-an-enc', null, {
-      id_token_encrypted_response_alg: 'RSA1_5'
+      id_token_encrypted_response_alg: 'RSA1_5',
+      jwks: { keys: [sigKey] }
     });
   });
 
   context('userinfo_encrypted_response_alg', function () {
     defaultsTo(this.title, undefined);
-    mustBeString(this.title);
+    mustBeString(this.title, undefined, {
+      jwks: { keys: [sigKey] }
+    });
     it('is required when userinfo_encrypted_response_enc is also provided', function () {
       return addClient({
         userinfo_encrypted_response_enc: 'whatever'
@@ -462,7 +477,9 @@ describe('Client validations', function () {
       });
     });
     DefaultProvider.configuration('userinfoEncryptionAlgValues').forEach((value) => {
-      allows(this.title, value);
+      allows(this.title, value, {
+        jwks: { keys: [sigKey] }
+      });
     });
     rejects(this.title, 'not-an-alg');
   });
@@ -470,18 +487,22 @@ describe('Client validations', function () {
   context('userinfo_encrypted_response_enc', function () {
     defaultsTo(this.title, undefined);
     defaultsTo(this.title, 'A128CBC-HS256', {
-      userinfo_encrypted_response_alg: 'RSA1_5'
+      userinfo_encrypted_response_alg: 'RSA1_5',
+      jwks: { keys: [sigKey] }
     });
     mustBeString(this.title, null, {
-      userinfo_encrypted_response_alg: 'RSA1_5'
+      userinfo_encrypted_response_alg: 'RSA1_5',
+      jwks: { keys: [sigKey] }
     });
     DefaultProvider.configuration('userinfoEncryptionEncValues').forEach((value) => {
       allows(this.title, value, {
-        userinfo_encrypted_response_alg: 'RSA1_5'
+        userinfo_encrypted_response_alg: 'RSA1_5',
+        jwks: { keys: [sigKey] }
       });
     });
     rejects(this.title, 'not-an-enc', null, {
-      userinfo_encrypted_response_alg: 'RSA1_5'
+      userinfo_encrypted_response_alg: 'RSA1_5',
+      jwks: { keys: [sigKey] }
     });
   });
 

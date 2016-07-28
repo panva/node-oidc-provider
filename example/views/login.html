@@ -130,26 +130,29 @@
         <% if (locals.client.logoUri) { %><img src="<%= locals.client.logoUri %>"><% } %>
       </div>
       <form autocomplete="off" action="<%= locals.action %>" method="post">
-        <input type="hidden" name="grant" value="<%= locals.grant %>"/>
-        <input required type="text" name="login" placeholder="Enter any login" <% if (!locals.request.login_hint) { %>autofocus="on"<% } else { %> value="<%= locals.request.login_hint %>" <% } %>>
-        <input required type="password" name="password" placeholder="and password" <% if (locals.request.login_hint) { %>autofocus="on"<% } %>>
+        <input type="hidden" name="uuid" value="<%= locals.cookie.uuid %>"/>
+        <input required type="text" name="login" placeholder="Enter any login" <% if (!locals.cookie.params.login_hint) { %>autofocus="on"<% } else { %> value="<%= locals.cookie.params.login_hint %>" <% } %>>
+        <input required type="password" name="password" placeholder="and password" <% if (locals.cookie.params.login_hint) { %>autofocus="on"<% } %>>
 
         <label><input type="checkbox" name="remember" value="yes" checked="yes">Stay signed in</label>
 
         <button type="submit" name="submit" class="login login-submit">Sign-in</button>
       </form>
       <div class="login-help">
-        <a href="/op/auth/<%= locals.grant %>">[ Cancel ]</a>
+        <a href="<%= locals.cookie.returnTo %>">[ Cancel ]</a>
         <% if (locals.client.tosUri) { %><a href="<%= locals.client.tosUri %>">[ Terms of Service ]</a><% } %>
         <% if (locals.client.policyUri) { %><a href="<%= locals.client.policyUri %>">[ Privacy Policy ]</a><% } %>
       </div>
     </div>
     <div class="login-card">
       <div class="grant-debug">
-        <%= locals.grant %>
+        <%= locals.cookie.uuid %>
       </div>
       <div class="grant-debug">
         <%- locals.debug %>
+      </div>
+      <div class="grant-debug">
+        <%- locals.interaction %>
       </div>
     </div
   </body>
