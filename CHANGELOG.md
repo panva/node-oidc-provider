@@ -1,6 +1,9 @@
 Following semver, 1.0.0 will mark the first API stable release and commence of this file,
 until then please use the compare views of github for reference.
 
+- https://github.com/panva/node-oidc-provider/compare/v0.7.2...v0.8.0
+  - fixed a bug that allowed userinfo and idtoken encrypting clients to pass validation
+  - account is configured entirely different now - check examples!
 - https://github.com/panva/node-oidc-provider/compare/v0.7.1...v0.7.2
   - fixed a bug that prevented non default client auth strategies to be recognized for introspection and revocation
 - https://github.com/panva/node-oidc-provider/compare/v0.7.0...v0.7.1
