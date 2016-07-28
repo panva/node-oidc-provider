@@ -14,9 +14,7 @@ provider.setupClient();
 provider.setupCerts();
 
 before(function () {
-  return jose.JWK.asKeyStore(privKey).then((keystore) => {
-    this.keystore = keystore;
-  });
+  return jose.JWK.asKeyStore(privKey).then(keystore => { this.keystore = keystore; });
 });
 
 ['get', 'post'].forEach((verb) => {
@@ -101,6 +99,28 @@ before(function () {
           expect(actual.query).to.have.property('code');
         })
       );
+    });
+
+    it('handles when no suitable encryption key is found', function * () {
+      const client = yield provider.get('Client').find('client');
+
+      client.idTokenEncryptedResponseAlg = 'ECDH-ES';
+
+      const auth = new AuthorizationRequest({
+        response_type: 'id_token token',
+        scope: 'openid'
+      });
+
+      return wrap({ agent, route, verb, auth })
+        .expect(() => {
+          client.idTokenEncryptedResponseAlg = 'RSA1_5';
+        })
+        .expect(auth.validateFragment)
+        .expect((response) => {
+          const { query } = url.parse(response.headers.location, true);
+          expect(query).to.have.property('error', 'invalid_client_metadata');
+          expect(query).to.have.property('error_description', 'no suitable encryption key found (ECDH-ES)');
+        });
     });
   });
 });
