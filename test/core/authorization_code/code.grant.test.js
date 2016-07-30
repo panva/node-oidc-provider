@@ -68,6 +68,19 @@ describe('grant_type=authorization_code', function () {
       });
     });
 
+    it('returns token-endpoint-like cache headers', function () {
+      return agent.post(route)
+      .auth('client', 'secret')
+      .type('form')
+      .send({
+        code: this.ac,
+        grant_type: 'authorization_code',
+        redirect_uri: 'https://client.example.com/cb'
+      })
+      .expect('pragma', 'no-cache')
+      .expect('cache-control', 'no-store');
+    });
+
     it('handles internal token signature validation', function () {
       sinon.stub(AuthorizationCode, 'fromJWT', function () {
         return Promise.reject(new Error());

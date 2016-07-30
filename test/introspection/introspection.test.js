@@ -84,6 +84,15 @@ describe('introspection features', function () {
       });
     });
 
+    it('returns token-endpoint-like cache headers', function () {
+      return agent.post(route)
+      .auth('client', 'secret')
+      .send({})
+      .type('form')
+      .expect('pragma', 'no-cache')
+      .expect('cache-control', 'no-store');
+    });
+
     it('validates token param presence', function () {
       return agent.post(route)
       .auth('client', 'secret')

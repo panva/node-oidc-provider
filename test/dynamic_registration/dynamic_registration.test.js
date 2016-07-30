@@ -42,6 +42,15 @@ describe('registration features', function () {
       });
     });
 
+    it('returns token-endpoint-like cache headers', function () {
+      return agent.post('/reg')
+      .send({
+        redirect_uris: ['https://client.example.com/cb']
+      })
+      .expect('pragma', 'no-cache')
+      .expect('cache-control', 'no-store');
+    });
+
     it('stores the client using the provided adapter', function (done) {
       return agent.post('/reg')
       .send({
@@ -127,6 +136,15 @@ describe('registration features', function () {
           expect(response.body).to.have.property('response_types').and.eql(['code']);
           expect(response.body).to.have.property('registration_client_uri', provider.issuer + '/reg/' + response.body.client_id); // eslint-disable-line prefer-template
         });
+    });
+
+    it('returns token-endpoint-like cache headers', function () {
+      return agent.get(`/reg/${this.clientId}`)
+        .query({
+          access_token: this.token
+        })
+        .expect('pragma', 'no-cache')
+        .expect('cache-control', 'no-store');
     });
 
     it('validates client is a valid client', function () {
