@@ -76,7 +76,7 @@ router.get('/interaction/:grant', function * renderInteraction(next) {
 });
 
 router.post('/login', body(), function * submitLoginForm() {
-  const account = yield Account.findByLogin(this.request.body.uuid);
+  const account = yield Account.findByLogin(this.request.body.login);
 
   const result = {
     login: {
