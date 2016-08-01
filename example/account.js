@@ -5,8 +5,8 @@ const logins = new Map();
 const uuid = require('node-uuid');
 
 class Account {
-  constructor() {
-    this.accountId = uuid.v4();
+  constructor(id) {
+    this.accountId = id || uuid.v4();
     store.set(this.accountId, this);
   }
 
@@ -30,7 +30,7 @@ class Account {
       middle_name: 'Middle',
       name: 'John Doe',
       nickname: 'Johny',
-      phone_number: '+420 721 773500',
+      phone_number: '+49 000 000000',
       phone_number_verified: false,
       picture: 'http://lorempixel.com/400/200/',
       preferred_username: 'Jdawg',
@@ -51,6 +51,7 @@ class Account {
   }
 
   static findById(id) {
+    if (!store.get(id)) new Account(id); // eslint-disable-line no-new
     return Promise.resolve(store.get(id));
   }
 }

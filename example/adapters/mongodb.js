@@ -1,10 +1,16 @@
 'use strict';
 
+const EventEmitter = require('events').EventEmitter;
 const Mongo = require('mongodb').MongoClient; // eslint-disable-line import/no-unresolved
 const _ = require('lodash');
 
+const emitter = new EventEmitter();
 let DB;
-let connecting;
+let connecting = Mongo.connect(process.env.MONGODB_URI).then(db => {
+  DB = db;
+  connecting = undefined;
+  emitter.emit('ready');
+});
 
 class CollectionSet extends Set {
   add(name) {
@@ -24,6 +30,7 @@ const collections = new CollectionSet();
 class MongoAdapter {
   constructor(name) {
     this.name = _.snakeCase(name);
+    collections.add(this.name);
   }
 
   coll(name) {
@@ -31,31 +38,20 @@ class MongoAdapter {
   }
 
   static coll(name) {
-    if (DB) return Promise.resolve(DB.collection(name));
-    if (connecting) return Promise.reject(new Error('mongodb connection not established yet'));
-    connecting = true;
-    return Mongo.connect('mongodb://localhost/test').then((db) => {
-      if (DB) {
-        db.close(true); // a race condition resulted in more connections, close this one
-      } else {
-        connecting = false;
-        DB = db;
-        collections.add(name);
-      }
-      return DB.collection(name);
-    });
+    if (connecting) return Promise.reject(new Error('DB connection not established'));
+    return DB.collection(name);
   }
 
   destroy(id) {
-    return this.coll()
-      .then((coll) => coll.findOneAndDelete({ _id: id }))
+    return this.coll().findOneAndDelete({ _id: id })
       .then((found) => {
         if (found.lastErrorObject.n && found.value.grantId) {
           const promises = [];
+
           collections.forEach((name) => {
-            promises.push(this.coll(name)
-              .then((coll) => coll.findOneAndDelete({ grantId: found.value.grantId })));
+            promises.push(this.coll(name).deleteMany({ grantId: found.value.grantId }));
           });
+
           return Promise.all(promises);
         }
         return undefined;
@@ -63,25 +59,31 @@ class MongoAdapter {
   }
 
   consume(id) {
-    return this.coll().then((coll) => coll.findOneAndUpdate({ _id: id },
-      { $set: { consumed: new Date() } }));
+    return this.coll().findOneAndUpdate({ _id: id }, { $set: { consumed: new Date() } });
   }
 
   find(id) {
-    return this.coll().then((coll) => coll.find({ _id: id }).limit(1).next());
+    return this.coll().find({ _id: id }).limit(1).next();
   }
 
   upsert(_id, payload, expiresIn) {
     let expiresAt;
 
     if (expiresIn) {
-      const now = new Date();
-      expiresAt = new Date((now.getTime() + expiresIn) * 1000);
+      expiresAt = new Date(new Date().getTime() + (expiresIn * 1000));
     }
 
-    const document = Object.assign({ _id }, payload, { expiresAt });
-    return this.coll().then((coll) => coll.insertOne(document));
+    const document = Object.assign(payload, { expiresAt });
+    return this.coll().updateOne({ _id }, document, { upsert: true });
   }
 }
+
+MongoAdapter.once = function onceReady() {
+  emitter.once.apply(emitter, arguments);
+};
+
+MongoAdapter.on = function onReady() {
+  emitter.on.apply(emitter, arguments);
+};
 
 module.exports = MongoAdapter;

@@ -54,7 +54,8 @@
   "scripts": {
     "coverage": "make coverage",
     "test": "make test",
-    "lint": "eslint lib example test --fix"
+    "lint": "eslint lib example test --fix",
+    "heroku-postbuild": "npm install mongodb"
   },
   "version": "0.8.2",
   "files": [

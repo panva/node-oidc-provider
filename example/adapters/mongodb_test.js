@@ -12,13 +12,15 @@ const provider = new Provider('http://localhost', {
 });
 const test = new AdapterTest(provider);
 
-provider.keystore.generate('RSA', 512)
-.then(() => test.execute())
-.then(() => {
-  console.log('tests passed');
-  process.exit();
-})
-.catch((err) => {
-  console.dir(err);
-  process.exit(1);
+MongoAdapter.once('ready', () => {
+  provider.keystore.generate('RSA', 512)
+  .then(() => test.execute())
+  .then(() => {
+    console.log('tests passed');
+    process.exit();
+  })
+  .catch((err) => {
+    console.dir(err);
+    process.exit(1);
+  });
 });
