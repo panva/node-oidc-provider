@@ -172,6 +172,28 @@ describe('resume after interaction', function () {
           expect(authorizationCode).to.have.property('scope', 'openid profile');
         });
     });
+
+    it('if not resolved returns consent_required error', function () {
+      const auth = new AuthorizationRequest({
+        response_type: 'code',
+        scope: 'openid',
+        prompt: 'consent'
+      });
+
+      setup(auth, {
+        login: {
+          account: uuid(),
+          remember: true
+        }
+      });
+
+      return agent.get(`/auth/${uuid()}`)
+        .expect(302)
+        .expect(auth.validateState)
+        .expect(auth.validateClientLocation)
+        .expect(auth.validateError('consent_required'))
+        .expect(auth.validateErrorDescription('prompt consent was not resolved'));
+    });
   });
 
   context('custom prompts', function () {
