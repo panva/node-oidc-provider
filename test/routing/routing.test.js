@@ -24,6 +24,16 @@ describe('default routing behavior', function () {
         error_description: 'not implemented'
       });
     });
+
+    it('handles unrecognized routes with 404 json response', function () {
+      return agent.get('/foobar')
+      .expect(404)
+      .expect('content-type', /application\/json/)
+      .expect({
+        error: 'invalid_request',
+        error_description: 'unrecognized route'
+      });
+    });
   });
 
   describe('when mounted', function () {
@@ -39,6 +49,22 @@ describe('default routing behavior', function () {
           }
         });
       });
+    });
+
+    it('handles unrecognized routes with 404 json response', function () {
+      return agent.get('/oidc/foobar')
+      .expect(404)
+      .expect('content-type', /application\/json/)
+      .expect({
+        error: 'invalid_request',
+        error_description: 'unrecognized route'
+      });
+    });
+
+    it('does not interfere with the unmounted namespace', function () {
+      return agent.get('/foobar')
+      .expect(404)
+      .expect('Not Found');
     });
   });
 });

@@ -42,8 +42,14 @@ if (process.env.HEROKU) {
   app.use(function * ensureSecure(next) {
     if (this.secure) {
       yield next;
-    } else {
+    } else if (this.method === 'GET' || this.method === 'HEAD') {
       this.redirect(this.href.replace(/^http:\/\//i, 'https://'));
+    } else {
+      this.body = {
+        error: 'invalid_request',
+        error_description: 'do yourself a favor and only use https',
+      };
+      this.status = 400;
     }
   });
 }
