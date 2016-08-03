@@ -81,7 +81,9 @@ module.exports = function testHelper(dir, basename, mountTo) {
       headers: {
         'set-cookie': [
           `_session=; path=/; expires=${expire.toGMTString()}; httponly`,
+          `_session.sig=; path=/; expires=${expire.toGMTString()}; httponly`,
           `_session_states=; path=/; expires=${expire.toGMTString()}; httponly`,
+          `_session_states.sig=; path=/; expires=${expire.toGMTString()}; httponly`,
         ],
       },
     });
@@ -95,13 +97,16 @@ module.exports = function testHelper(dir, basename, mountTo) {
     const account = uuid();
 
     const session = new (provider.get('Session'))(sessionId, { loginTs, account });
+    const cookies = [`_session=${sessionId}; path=/; expires=${expire.toGMTString()}; httponly`];
+
+    if (provider.configuration('features.sessionManagement')) {
+      cookies.push(`_session_states=${JSON.stringify({ [client.client_id]: String(loginTs) })}; path=/; expires=${expire.toGMTString()};`);
+    }
 
     return Account.findById(account).then(session.save()).then(() => {
       agent._saveCookies.bind(agent)({
         headers: {
-          'set-cookie': [
-            `_session=${sessionId}; path=/; expires=${expire.toGMTString()}; httponly`,
-          ],
+          'set-cookie': cookies,
         },
       });
     });
