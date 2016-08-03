@@ -198,14 +198,22 @@ module.exports = function testHelper(dir, basename, mountTo) {
   AuthorizationRequest.prototype.validateError = function (expected) {
     return (response) => {
       const { query: { error } } = parse(response.headers.location, true);
-      expect(error).to.equal(expected);
+      if (expected.exec) {
+        expect(error).to.match(expected);
+      } else {
+        expect(error).to.equal(expected);
+      }
     };
   };
 
   AuthorizationRequest.prototype.validateErrorDescription = function (expected) {
     return (response) => {
       const { query: { error_description } } = parse(response.headers.location, true);
-      expect(error_description).to.equal(expected);
+      if (expected.exec) {
+        expect(error_description).to.match(expected);
+      } else {
+        expect(error_description).to.equal(expected);
+      }
     };
   };
 

@@ -474,7 +474,7 @@ provider.setupCerts();
         .expect(auth.validateState)
         .expect(auth.validateClientLocation)
         .expect(auth.validateError('invalid_request'))
-        .expect(auth.validateErrorDescription('could not validate id_token_hint'));
+        .expect(auth.validateErrorDescription(/could not validate id_token_hint/));
       });
     });
 

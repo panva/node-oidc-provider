@@ -7,6 +7,7 @@ const { parse: parseLocation } = require('url');
 const { v4: uuid } = require('uuid');
 const { decode } = require('../../lib/helpers/jwt');
 const { expect } = require('chai');
+const base64url = require('base64url');
 
 const AuthorizationCode = provider.get('AuthorizationCode');
 
@@ -36,6 +37,7 @@ describe('token hashes in id_token', function () {
   });
 
   before(agent.login);
+  after(agent.logout);
 
   after(function () {
     client.idTokenSignedResponseAlg = 'RS256';
@@ -100,6 +102,8 @@ describe('token hashes in id_token', function () {
 });
 
 describe('when id_token_signed_response_alg=none', function () {
+  before(agent.login);
+  after(agent.logout);
   beforeEach(function * () {
     const ac = new AuthorizationCode({
       accountId: 'accountIdentity',
@@ -149,9 +153,35 @@ describe('when id_token_signed_response_alg=none', function () {
     .expect(auth.validateError('login_required'))
     .expect(auth.validateErrorDescription('id_token_hint and authenticated subject do not match'));
   });
+
+  it('still validates the tokens payload', function () {
+    const parts = this.idToken.split('.');
+    const payload = JSON.parse(base64url.decode(parts[1]));
+    payload.iss = 'foobar';
+    parts[1] = base64url.encode(JSON.stringify(payload));
+    this.idToken = parts.join('.');
+    const auth = new AuthorizationRequest({
+      response_type: 'code',
+      scope: 'openid',
+      prompt: 'none',
+      id_token_hint: this.idToken
+    });
+    auth.client_id = 'client-sig-none';
+
+
+    return wrap({ agent, auth, route: '/auth', verb: 'get' })
+    .expect(302)
+    .expect(auth.validatePresence(['error', 'error_description', 'state']))
+    .expect(auth.validateState)
+    .expect(auth.validateClientLocation)
+    .expect(auth.validateError('invalid_request'))
+    .expect(auth.validateErrorDescription(/^could not validate id_token_hint \(jwt issuer invalid/));
+  });
 });
 
 describe('when id_token_signed_response_alg=HS256', function () {
+  before(agent.login);
+  after(agent.logout);
   beforeEach(function * () {
     const ac = new AuthorizationCode({
       accountId: 'accountIdentity',
