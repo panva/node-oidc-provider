@@ -10,7 +10,6 @@ const querystring = require('querystring');
 const rewrite = require('koa-rewrite');
 const Router = require('koa-router');
 const render = require('koa-ejs');
-const MongoAdapter = require('./adapters/mongodb');
 
 const port = process.env.PORT || 3000;
 const app = koa();
@@ -55,6 +54,8 @@ if (process.env.HEROKU) {
 }
 
 if (process.env.MONGODB_URI) {
+  const MongoAdapter = require('./adapters/mongodb'); // eslint-disable-line global-require
+
   settings.config.adapter = MongoAdapter;
 }
 

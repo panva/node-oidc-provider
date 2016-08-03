@@ -64,7 +64,9 @@ before(function () {
           .then((result) => {
             expect(result.payload).to.be.ok;
             expect(result.payload.toString().split('.')).to.have.lengthOf(3);
-            expect(JWT.decode(result.payload)).to.be.ok;
+            const decode = JWT.decode(result.payload);
+            expect(decode).to.be.ok;
+            expect(decode.payload).to.have.property('exp').above(Date.now() / 1000);
           })
           .then(done, done);
         });
