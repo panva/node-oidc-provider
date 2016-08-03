@@ -2,7 +2,7 @@
 
 const {
   agent
-} = require('../../test_helper')(__dirname);
+} = require('../test_helper')(__dirname);
 const { expect } = require('chai');
 
 describe('providing Bearer token', function () {

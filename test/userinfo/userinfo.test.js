@@ -2,7 +2,7 @@
 
 const {
   provider, agent, AuthorizationRequest, wrap
-} = require('../../test_helper')(__dirname);
+} = require('../test_helper')(__dirname);
 const { expect } = require('chai');
 const url = require('url');
 

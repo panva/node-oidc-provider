@@ -2,7 +2,7 @@
 
 const {
   agent, provider
-} = require('../../test_helper')(__dirname);
+} = require('../test_helper')(__dirname);
 const sinon = require('sinon');
 const { decode: base64url } = require('base64url');
 const { parse: parseUrl } = require('url');
