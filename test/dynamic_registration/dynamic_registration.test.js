@@ -52,7 +52,7 @@ describe('registration features', function () {
     });
 
     it('stores the client using the provided adapter', function (done) {
-      return agent.post('/reg')
+      agent.post('/reg')
       .send({
         redirect_uris: ['https://client.example.com/cb']
       })

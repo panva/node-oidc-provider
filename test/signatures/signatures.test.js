@@ -4,7 +4,7 @@ const {
   provider, agent, AuthorizationRequest, wrap
 } = require('../test_helper')(__dirname);
 const { parse: parseLocation } = require('url');
-const { v4: uuid } = require('node-uuid');
+const { v4: uuid } = require('uuid');
 const { decode } = require('../../lib/helpers/jwt');
 const { expect } = require('chai');
 

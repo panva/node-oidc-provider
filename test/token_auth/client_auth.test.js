@@ -1,7 +1,7 @@
 'use strict';
 
 const { agent, provider, responses } = require('../test_helper')(__dirname);
-const { v4: uuid } = require('node-uuid');
+const { v4: uuid } = require('uuid');
 const jose = require('node-jose');
 const sinon = require('sinon');
 const JWT = require('../../lib/helpers/jwt');

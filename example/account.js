@@ -2,7 +2,7 @@
 
 const store = new Map();
 const logins = new Map();
-const uuid = require('node-uuid');
+const uuid = require('uuid');
 
 class Account {
   constructor(id) {

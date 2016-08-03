@@ -1,6 +1,6 @@
 # oidc-provider
 
-[![build][travis-image]][travis-url] [![codecov][codecov-image]][codecov-url] [![npm][npm-image]][npm-url] [![licence][licence-image]][licence-url]
+[![build][travis-image]][travis-url] [![dependencies][david-image]][david-url] [![codecov][codecov-image]][codecov-url] [![npm][npm-image]][npm-url] [![licence][licence-image]][licence-url]
 
 oidc-provider is an OpenID Provider implementation of [OpenID Connect][openid-connect]. It allows to
 export a complete Koa.js OpenID Provider implementation which you can mount to your existing Koa.js
@@ -451,6 +451,8 @@ OP Config and OP Dynamic profiles of the OpenID Connect™ protocol.
 
 [travis-image]: https://img.shields.io/travis/panva/node-oidc-provider/master.svg?style=flat-square&maxAge=7200
 [travis-url]: https://travis-ci.org/panva/node-oidc-provider
+[david-image]: https://img.shields.io/david/panva/node-oidc-provider.svg?style=flat-square&maxAge=7200
+[david-url]: https://david-dm.org/panva/node-oidc-provider
 [codecov-image]: https://img.shields.io/codecov/c/github/panva/node-oidc-provider/master.svg?style=flat-square&maxAge=7200
 [codecov-url]: https://codecov.io/gh/panva/node-oidc-provider
 [npm-image]: https://img.shields.io/npm/v/oidc-provider.svg?style=flat-square&maxAge=7200

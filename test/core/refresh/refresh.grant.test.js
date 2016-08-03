@@ -35,7 +35,7 @@ describe('grant_type=refresh_token', function () {
     after(agent.logout);
 
     beforeEach(function (done) {
-      return agent.get('/auth')
+      agent.get('/auth')
       .query({
         client_id: 'client',
         scope: 'openid email',

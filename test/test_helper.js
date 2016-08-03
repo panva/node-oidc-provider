@@ -8,7 +8,7 @@ const coMocha = require('co-mocha');
 coMocha(mocha);
 
 const { agent: supertest } = require('supertest');
-const { v4: uuid } = require('node-uuid');
+const { v4: uuid } = require('uuid');
 const { Provider } = require('../lib');
 const { Account, TestAdapter } = require('./models');
 const { expect } = require('chai');
@@ -75,7 +75,7 @@ module.exports = function testHelper(dir, basename, mountTo) {
 
   agent.logout = function logout() {
     const expire = new Date(0);
-    return agent.saveCookies({
+    return agent._saveCookies.bind(agent)({
       headers: {
         'set-cookie': [
           `_session=; path=/; expires=${expire.toGMTString()}; httponly`,
@@ -95,7 +95,7 @@ module.exports = function testHelper(dir, basename, mountTo) {
     const session = new (provider.get('Session'))(sessionId, { loginTs, account });
 
     return Account.findById(account).then(session.save()).then(() => {
-      agent.saveCookies({
+      agent._saveCookies.bind(agent)({
         headers: {
           'set-cookie': [
             `_session=${sessionId}; path=/; expires=${expire.toGMTString()}; httponly`,

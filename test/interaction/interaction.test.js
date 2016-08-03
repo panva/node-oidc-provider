@@ -1,6 +1,6 @@
 'use strict';
 
-const { v4: uuid } = require('node-uuid');
+const { v4: uuid } = require('uuid');
 const {
   provider,
   agent,
@@ -30,7 +30,7 @@ function setup(grant, results) {
     cookies.push(`_grant_result=${j(results)}; path=/; expires=${expire.toGMTString()}; httponly`);
   }
 
-  agent.saveCookies({
+  agent._saveCookies.bind(agent)({
     headers: {
       'set-cookie': cookies
     },
