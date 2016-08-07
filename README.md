@@ -445,6 +445,10 @@ Emitted when a handled error is encountered in the `introspection` endpoint.
 oidc.on(`'revocation.error', function (error, ctx) { }`)  
 Emitted when a handled error is encountered in the `revocation` endpoint.
 
+**registration.success**  
+oidc.on(`'registration.success', function (client, ctx) { }`)  
+Emitted with every successful client registration request. 
+
 **registration.error**  
 oidc.on(`'registration.error', function (error, ctx) { }`)  
 Emitted when a handled error is encountered in the `registration` endpoint.

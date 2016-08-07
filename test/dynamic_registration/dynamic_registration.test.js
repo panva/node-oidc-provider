@@ -2,6 +2,7 @@
 
 const { agent, provider } = require('../test_helper')(__dirname);
 const { expect } = require('chai');
+const sinon = require('sinon');
 
 const Client = provider.get('Client');
 
@@ -51,10 +52,18 @@ describe('registration features', function () {
       .expect('cache-control', 'no-store');
     });
 
-    it('stores the client using the provided adapter', function (done) {
+    it('stores the client using the provided adapter and emits an event', function (done) {
+      const spy = sinon.spy();
+      provider.once('registration.success', spy);
+
       agent.post('/reg')
       .send({
         redirect_uris: ['https://client.example.com/cb']
+      })
+      .expect(function () {
+        expect(spy.calledOnce).to.be.true;
+        expect(spy.firstCall.args[0].constructor.name).to.equal('Client');
+        expect(spy.firstCall.args[1]).to.have.property('oidc');
       })
       .end(function (err, response) {
         if (err) return done(err);
