@@ -46,8 +46,9 @@ The following specifications are implemented by oidc-provider.
       - max_age
   - Scopes
   - Claims
-    - Standard-defined Claims
-    - Custom Claims
+    - Normal Claims
+    - Aggregated Claims
+    - Distributed Claims
   - UserInfo Endpoint including
     - Signing (Asymmetric and Symmetric Signatures)
     - Encryption (RSA, Elliptic Curve)
@@ -271,6 +272,24 @@ const oidc = new Provider('http://localhost:3000', {
 Note: the `findById` method needs to be yieldable, returning a Promise is recommended.  
 Tip: check how the [example](example/account.js) deals with this
 
+**Aggregated and Distributed claims**  
+Returning aggregated and distributed claims is as easy as having your Account#claims method return
+the two necessary members `_claim_sources` and `_claim_names` with the
+[expected][feature-aggregated-distributed-claims] properties. oidc-provider will include only the
+sources for claims that are part of the request scope, omitting the ones that the RP did not request
+and leaving out the entire `_claim_sources` and `_claim_sources` if they bear no requested claims.
+
+Note: to make sure the RPs can expect these claims you should configure your discovery to return
+the respective claim types via the `claim_types_supported` property.
+```js
+const oidc = new Provider('http://localhost:3000', {
+  discovery: {
+    claim_types_supported: ['normal', 'aggregated', 'distributed']
+  }
+});
+```
+
+
 ### Interaction
 Since oidc-provider comes with no views and interaction handlers what so ever it's up to you to fill
 those in, here's how oidc-provider allows you to do so:
@@ -478,3 +497,4 @@ OP Config and OP Dynamic profiles of the OpenID Connect™ protocol.
 [heroku-example-client]: https://tranquil-reef-95185.herokuapp.com/client
 [openid-client]: https://github.com/panva/node-openid-client
 [password-grant]: https://tools.ietf.org/html/rfc6749#section-4.3
+[feature-aggregated-distributed-claims]: http://openid.net/specs/openid-connect-core-1_0.html#AggregatedDistributedClaims
