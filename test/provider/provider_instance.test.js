@@ -5,6 +5,27 @@ const { expect } = require('chai');
 const sinon = require('sinon');
 
 describe('provider instance', function () {
+  context('when in non test environment', function () {
+    /* eslint-disable no-console */
+    before(() => {
+      delete process.env.NODE_ENV;
+      sinon.stub(console, 'warn', () => {});
+    });
+    after(() => {
+      process.env.NODE_ENV = 'test';
+      console.warn.restore();
+    });
+
+    it('it warns when draft/experimental specs are enabled', function () {
+      new Provider('http://localhost', { // eslint-disable-line no-new
+        features: { sessionManagement: true }
+      });
+
+      expect(console.warn.calledOnce).to.be.true;
+    });
+    /* eslint-enable */
+  });
+
   describe('#urlFor', function () {
     it('returns the route for unprefixed issuers', function () {
       const provider = new Provider('http://localhost');
