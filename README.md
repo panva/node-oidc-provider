@@ -68,11 +68,15 @@ The following specifications are implemented by oidc-provider.
     - private_key_jwt
 - [OpenID Connect Discovery 1.0 incorporating errata set 1][feature-discovery]
 - [OpenID Connect Dynamic Client Registration 1.0 incorporating errata set 1][feature-registration]
-- [OpenID Connect Session Management 1.0 - draft 26][feature-session-management]
-- [OpenID Connect Back-Channel Logout 1.0 - draft 02][feature-backchannel-logout]
 - [OAuth 2.0 Form Post Response mode][feature-form-post]
 - [RFC7009 - OAuth 2.0 Token revocation][feature-revocation]
 - [RFC7662 - OAuth 2.0 Token introspection][feature-introspection]
+
+The following drafts/experimental specifications are implemented by oidc-provider.
+- [OpenID Connect Session Management 1.0 - draft 26][feature-session-management]
+- [OpenID Connect Back-Channel Logout 1.0 - draft 02][feature-backchannel-logout]
+
+Updates to drafts and experimental specifications are released as MINOR versions.
 
 ## Get started
 To run and experiment with an example server, clone the oidc-provider repo and install the dependencies:
@@ -504,7 +508,7 @@ OP Config and OP Dynamic profiles of the OpenID Connect™ protocol.
 [feature-core]: http://openid.net/specs/openid-connect-core-1_0.html
 [feature-discovery]: http://openid.net/specs/openid-connect-discovery-1_0.html
 [feature-registration]: http://openid.net/specs/openid-connect-registration-1_0.html
-[feature-session-management]: http://openid.net/specs/openid-connect-session-1_0.html
+[feature-session-management]: http://openid.net/specs/openid-connect-session-1_0-26.html
 [feature-form-post]: http://openid.net/specs/oauth-v2-form-post-response-mode-1_0.html
 [feature-revocation]: https://tools.ietf.org/html/rfc7009
 [feature-introspection]: https://tools.ietf.org/html/rfc7662
