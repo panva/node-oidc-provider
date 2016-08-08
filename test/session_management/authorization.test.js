@@ -3,6 +3,7 @@
 const {
   provider, agent, AuthorizationRequest, wrap
 } = require('../test_helper')(__dirname);
+const { expect } = require('chai');
 
 const route = '/auth';
 
@@ -24,6 +25,20 @@ provider.setupCerts();
       .expect(auth.validatePresence(['session_state'], false))
       .expect(auth.validateState)
       .expect(auth.validateClientLocation);
+    });
+
+    it('sets a _session_states cookie with the clientId as keys', function () {
+      const auth = new AuthorizationRequest({
+        response_type: 'code',
+        scope: 'openid'
+      });
+
+      return wrap({ agent, route, verb, auth })
+      .expect(function () {
+        const states = agent.jar.getCookie('_session_states', { path: '/' });
+        expect(states).to.be.ok;
+        expect(JSON.parse(states.value)).to.have.key('client');
+      });
     });
   });
 });

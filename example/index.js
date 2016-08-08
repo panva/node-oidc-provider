@@ -32,6 +32,7 @@ if (process.env.HEROKU) {
   settings.config.timeouts = {
     request_uri: 15000,
     sector_identifier_uri: 15000,
+    backchannel_logout_uri: 15000,
     jwks_uri: 15000,
   };
   app.proxy = true;
