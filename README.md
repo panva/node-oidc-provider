@@ -25,6 +25,7 @@ your own unique-looking and functioning user flows.
     * [Interaction](#interaction)
     * [Clients](#clients)
     * [Custom Grant Types](#custom-grant-types)
+    * [Custom Discovery Properties](#custom-discovery-properties)
   * [Events](#events)
   * [Certification](#certification)
 
@@ -357,6 +358,17 @@ provider.registerGrantType('password', function passwordGrantTypeFactory(provide
 }, parameters);
 ```
 Tip: you are able to modify the implemented grant type behavior like this.
+
+### Custom Discovery Properties
+You can extend the returned discovery properties beyond the defaults
+```js
+const oidc = new Provider('http://localhost:3000', {
+  discovery: {
+     service_documentation: 'http://server.example.com/connect/service_documentation.html',
+     ui_locales_supported: ['en-US', 'en-GB', 'en-CA', 'fr-FR', 'fr-CA']
+  }
+});
+```
 
 ## Events
 The oidc-provider instance is an event emitter, `this` is always the instance. In events where `ctx`(koa

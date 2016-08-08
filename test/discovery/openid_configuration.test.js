@@ -15,6 +15,17 @@ describe(route, function () {
       .expect(200);
   });
 
+  it('is configurable with extra properties', function () {
+    provider.configuration('discovery').service_documentation = 'https://docs.example.com';
+    provider.configuration('discovery').authorization_endpoint = 'this will not be used';
+
+    return agent.get(route)
+      .expect(function (response) {
+        expect(response.body).to.have.property('service_documentation', 'https://docs.example.com');
+        expect(response.body.authorization_endpoint).not.to.equal('this will not be used');
+      });
+  });
+
   describe('with errors', function () {
     before(function () {
       sinon.stub(provider, 'pathFor').throws(new InvalidRequestError());
