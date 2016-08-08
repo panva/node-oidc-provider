@@ -55,7 +55,7 @@ const mustBeString = (prop, values, meta) => {
         } else {
           expect(err.message).to.equal('invalid_client_metadata');
         }
-        expect(err.error_description).to.equal(`${prop} must be a string`);
+        expect(err.error_description).to.equal(`${prop} must be a non-empty string if provided`);
       });
     });
 
@@ -132,9 +132,9 @@ const defaultsTo = (prop, value, meta, provider) => {
   });
 };
 
-const isRequired = (prop) => {
+const isRequired = (prop, values) => {
   it('is required', function () {
-    const promises = [null, undefined, ''].map(function (nonValue) {
+    const promises = (values || [null, undefined, '']).map(function (nonValue) {
       return addClient({
         [prop]: nonValue
       }).then(fail, function (err) {
@@ -204,8 +204,8 @@ describe('Client validations', function () {
   });
 
   context('client_secret', function () {
-    isRequired(this.title);
-    mustBeString(this.title, [123, {}, [], true]);
+    isRequired(this.title, [null, undefined]);
+    mustBeString(this.title);
     allows(this.title, 'whatever client secret');
     // must of certain length => GOTO: client_secrets.test.js
   });
@@ -402,15 +402,28 @@ describe('Client validations', function () {
     defaultsTo(this.title, 'client_secret_basic');
     mustBeString(this.title);
     DefaultProvider.configuration('tokenEndpointAuthMethods').forEach((value) => {
-      if (value === 'private_key_jwt') {
-        allows(this.title, value, {
-          jwks: { keys: [sigKey] }
-        });
-      } else {
-        allows(this.title, value);
+      switch (value) {
+        case 'private_key_jwt':
+          allows(this.title, value, {
+            jwks: { keys: [sigKey] }
+          });
+          break;
+        case 'none':
+          break;
+        default: {
+          allows(this.title, value);
+        }
       }
     });
     rejects(this.title, 'not-a-method');
+    rejects(this.title, 'none', /token_endpoint_auth_method is none/, {
+      grant_types: ['authorization_code']
+    });
+
+    allows(this.title, 'none', {
+      response_types: ['id_token'],
+      grant_types: ['implicit']
+    });
   });
 
   context('userinfo_signed_response_alg', function () {

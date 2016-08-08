@@ -43,6 +43,52 @@ describe('registration features', function () {
       });
     });
 
+    it('omits the client_secret generation when it is not needed', function () {
+      return agent.post('/reg')
+      .send({
+        token_endpoint_auth_method: 'none',
+        redirect_uris: ['https://client.example.com/cb'],
+        response_types: ['id_token'],
+        grant_types: ['implicit']
+      })
+      .expect(201)
+      .expect(function (response) {
+        expect(response.body).not.to.have.property('client_secret');
+        expect(response.body).not.to.have.property('client_secret_expires_at');
+      });
+    });
+
+    it('issues the client_secret when needed for sig', function () {
+      return agent.post('/reg')
+      .send({
+        token_endpoint_auth_method: 'none',
+        redirect_uris: ['https://client.example.com/cb'],
+        response_types: ['id_token'],
+        grant_types: ['implicit'],
+        id_token_signed_response_alg: 'HS256',
+      })
+      .expect(201)
+      .expect(function (response) {
+        expect(response.body).to.have.property('client_secret');
+        expect(response.body).to.have.property('client_secret_expires_at');
+      });
+    });
+
+    it('issues the client_secret when needed for auth', function () {
+      return agent.post('/reg')
+      .send({
+        token_endpoint_auth_method: 'client_secret_jwt',
+        redirect_uris: ['https://client.example.com/cb'],
+        response_types: ['id_token'],
+        grant_types: ['implicit']
+      })
+      .expect(201)
+      .expect(function (response) {
+        expect(response.body).to.have.property('client_secret');
+        expect(response.body).to.have.property('client_secret_expires_at');
+      });
+    });
+
     it('returns token-endpoint-like cache headers', function () {
       return agent.post('/reg')
       .send({
