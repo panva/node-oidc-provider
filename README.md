@@ -183,10 +183,15 @@ const configuration = { features: { requestUri: { requireRequestUriRegistration:
 const configuration = { features: { introspection: Boolean[false] } };
 ```
 Enables the use of Introspection endpoint as described in [RFC7662][feature-introspection] for
-tokens of type AccessToken, ClientCredentials and RefreshToken. When enabled
-token_introspection_endpoint property of the discovery endpoint is `true`, otherwise the property
+tokens of type AccessToken, ClientCredentials and RefreshToken. When enabled the
+token_introspection_endpoint property of the discovery endpoint is published, otherwise the property
 is not sent. The use of this endpoint is covered by the same authz mechanism as the regular token
 endpoint.
+
+This feature is a recommended way for Resource Servers to validate presented Bearer tokens, since
+the token endpoint access must be authorized it is recommended to setup a client for the RS to
+use. This client should be unusable for standard authorization flow, to set up such a client provide
+grant_types, response_types and redirect_uris as empty arrays.
 
 
 **Revocation endpoint**  
@@ -194,8 +199,8 @@ endpoint.
 const configuration = { features: { revocation: Boolean[false] } };
 ```
 Enables the use of Revocation endpoint as described in [RFC7009][feature-revocation] for tokens of
-type AccessToken, ClientCredentials and RefreshToken. When enabled
-token_revocation_endpoint property of the discovery endpoint is `true`, otherwise the property
+type AccessToken, ClientCredentials and RefreshToken. When enabled the
+token_revocation_endpoint property of the discovery endpoint is published, otherwise the property
 is not sent. The use of this endpoint is covered by the same authz mechanism as the regular token
 endpoint.
 
@@ -447,7 +452,7 @@ Emitted when a handled error is encountered in the `revocation` endpoint.
 
 **registration.success**  
 oidc.on(`'registration.success', function (client, ctx) { }`)  
-Emitted with every successful client registration request. 
+Emitted with every successful client registration request.
 
 **registration.error**  
 oidc.on(`'registration.error', function (error, ctx) { }`)  

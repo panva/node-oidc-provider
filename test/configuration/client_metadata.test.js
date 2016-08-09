@@ -594,4 +594,18 @@ describe('Client validations', function () {
       expect(client).not.to.have.property('unrecognized');
     });
   });
+
+  it('allows clients without grants, for introspection, revocation (RS clients)', function () {
+    return addClient({
+      client_id: 'authorization-server',
+      client_secret: 'foobar',
+      redirect_uris: [],
+      response_types: [],
+      grant_types: []
+    }).then(client => {
+      expect(client.grantTypes).to.be.empty;
+      expect(client.responseTypes).to.be.empty;
+      expect(client.redirectUris).to.be.empty;
+    });
+  });
 });

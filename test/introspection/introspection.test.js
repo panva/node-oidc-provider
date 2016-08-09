@@ -10,6 +10,19 @@ const AccessToken = provider.get('AccessToken');
 const j = JSON.stringify;
 
 provider.setupClient();
+provider.setupClient({
+  client_id: 'client-pairwise',
+  client_secret: 'secret',
+  subject_type: 'pairwise',
+  redirect_uris: ['https://client.example.com/cb']
+});
+provider.setupClient({
+  client_id: 'client-introspection',
+  client_secret: 'secret',
+  redirect_uris: [],
+  response_types: [],
+  grant_types: [],
+});
 provider.setupCerts();
 
 describe('introspection features', function () {
@@ -27,7 +40,7 @@ describe('introspection features', function () {
     it('returns the properties for access token', function (done) {
       const at = new AccessToken({
         accountId: 'accountId',
-        clientId: 'clientId',
+        clientId: 'client',
         scope: 'scope',
       });
 
@@ -41,6 +54,7 @@ describe('introspection features', function () {
         .expect(200)
         .expect(function (response) {
           expect(response.body).to.contain.keys('client_id', 'scope', 'sub');
+          expect(response.body.sub).to.equal('accountId');
         })
         .end(done);
       });
@@ -49,7 +63,7 @@ describe('introspection features', function () {
     it('returns the properties for refresh token', function (done) {
       const rt = new (provider.get('RefreshToken'))({
         accountId: 'accountId',
-        clientId: 'clientId',
+        clientId: 'client',
         scope: 'scope',
       });
 
@@ -68,7 +82,7 @@ describe('introspection features', function () {
 
     it('returns the properties for client credentials token', function (done) {
       const rt = new (provider.get('ClientCredentials'))({
-        clientId: 'clientId'
+        clientId: 'client'
       });
 
       rt.save().then(function (token) {
@@ -79,6 +93,27 @@ describe('introspection features', function () {
         .expect(200)
         .expect(function (response) {
           expect(response.body).to.contain.keys('client_id');
+        })
+        .end(done);
+      });
+    });
+
+    it('can be called by RS clients and uses the original subject_type', function (done) {
+      const rt = new (provider.get('RefreshToken'))({
+        accountId: 'accountId',
+        clientId: 'client-pairwise',
+        scope: 'scope',
+      });
+
+      rt.save().then(function (token) {
+        agent.post(route)
+        .auth('client-introspection', 'secret')
+        .send({ token })
+        .type('form')
+        .expect(200)
+        .expect(function (response) {
+          expect(response.body).to.contain.keys('client_id', 'scope', 'sub');
+          expect(response.body.sub).not.to.equal('accountId');
         })
         .end(done);
       });
