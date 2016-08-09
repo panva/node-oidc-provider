@@ -45,7 +45,7 @@ class MongoAdapter {
   destroy(id) {
     return this.coll().findOneAndDelete({ _id: id })
       .then((found) => {
-        if (found.lastErrorObject.n && found.value.grantId) {
+        if (found.value && found.value.grantId) {
           const promises = [];
 
           collections.forEach((name) => {
