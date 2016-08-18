@@ -75,6 +75,7 @@ The following specifications are implemented by oidc-provider.
 The following drafts/experimental specifications are implemented by oidc-provider.
 - [OpenID Connect Session Management 1.0 - draft 26][feature-session-management]
 - [OpenID Connect Back-Channel Logout 1.0 - draft 03][feature-backchannel-logout]
+- [RFC7592 - OAuth 2.0 Dynamic Client Registration Management Protocol (Update and Delete)][feature-registration-management]
 
 Updates to drafts and experimental specifications are released as MINOR versions.
 
@@ -224,6 +225,13 @@ Enables features described in [Back-Channel Logout 1.0 - draft 02][feature-backc
 const configuration = { features: { registration: Boolean[false] } };
 ```
 Enables features described in [Dynamic Client Registration 1.0][feature-registration].
+
+**Dynamic registration management features**  
+```js
+const configuration = { features: { registration: true, registrationManagement: Boolean[false] } };
+```
+Enables Update and Delete features described in
+[OAuth 2.0 Dynamic Client Registration Management Protocol][feature-registration-management].
 
 ### Routes
 You can change the [default routes](lib/helpers/defaults.js#L72-L82) by providing a routes object
@@ -450,13 +458,33 @@ Emitted when a handled error is encountered in the `introspection` endpoint.
 oidc.on(`'revocation.error', function (error, ctx) { }`)  
 Emitted when a handled error is encountered in the `revocation` endpoint.
 
-**registration.success**  
-oidc.on(`'registration.success', function (client, ctx) { }`)  
+**registration_create.success**  
+oidc.on(`'registration_create.success', function (client, ctx) { }`)  
 Emitted with every successful client registration request.
 
-**registration.error**  
-oidc.on(`'registration.error', function (error, ctx) { }`)  
-Emitted when a handled error is encountered in the `registration` endpoint.
+**registration_create.error**  
+oidc.on(`'registration_create.error', function (error, ctx) { }`)  
+Emitted when a handled error is encountered in the POST `registration` endpoint.
+
+**registration_read.error**  
+oidc.on(`'registration_read.error', function (error, ctx) { }`)  
+Emitted when a handled error is encountered in the GET `registration` endpoint.
+
+**registration_update.success**  
+oidc.on(`'registration_update.success', function (client, ctx) { }`)  
+Emitted with every successful update client registration request.
+
+**registration_update.error**  
+oidc.on(`'registration_update.error', function (error, ctx) { }`)  
+Emitted when a handled error is encountered in the PUT `registration` endpoint.
+
+**registration_delete.success**  
+oidc.on(`'registration_delete.success', function (client, ctx) { }`)  
+Emitted with every successful delete client registration request.
+
+**registration_delete.error**  
+oidc.on(`'registration_delete.error', function (error, ctx) { }`)  
+Emitted when a handled error is encountered in the DELETE `registration` endpoint.
 
 **userinfo.error**  
 oidc.on(`'userinfo.error', function (error, ctx) { }`)  
@@ -532,3 +560,4 @@ OP Config and OP Dynamic profiles of the OpenID Connect™ protocol.
 [password-grant]: https://tools.ietf.org/html/rfc6749#section-4.3
 [feature-aggregated-distributed-claims]: http://openid.net/specs/openid-connect-core-1_0.html#AggregatedDistributedClaims
 [feature-backchannel-logout]: http://openid.net/specs/openid-connect-backchannel-1_0-03.html
+[feature-registration-management]: https://tools.ietf.org/html/rfc7592

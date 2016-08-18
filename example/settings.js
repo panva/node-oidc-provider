@@ -38,6 +38,7 @@ module.exports.config = {
     encryption: true,
     introspection: true,
     registration: true,
+    registrationManagement: false,
     request: true,
     requestUri: true,
     revocation: true,
