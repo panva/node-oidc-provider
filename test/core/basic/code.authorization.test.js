@@ -220,7 +220,7 @@ provider.setupCerts();
       });
     });
 
-    ['response_type', 'client_id', 'scope'].forEach(function (param) {
+    ['response_type', 'scope'].forEach(function (param) {
       it(`missing mandatory parameter ${param}`, function () {
         const spy = sinon.spy();
         provider.once('authorization.error', spy);
@@ -346,25 +346,71 @@ provider.setupCerts();
       .expect(auth.validateErrorDescription('offline_access scope requires consent prompt'));
     });
 
+    // section-4.1.2.1 RFC6749
+    it('missing mandatory parameter client_id', function () {
+      const renderSpy = sinon.spy(provider.configuration(), 'renderError');
+      const auth = new AuthorizationRequest({
+        response_type: 'code',
+        scope: 'openid'
+      });
+      delete auth.client_id;
+
+      return agent.get(route)
+      .query(auth)
+      .expect(function () {
+        renderSpy.restore();
+      })
+      .expect(400)
+      .expect(function () {
+        expect(renderSpy.calledOnce).to.be.true;
+        const renderArgs = renderSpy.args[0][1];
+        expect(renderArgs).to.have.property('error', 'invalid_request');
+        expect(renderArgs).to.have.property('error_description', 'missing required parameter client_id');
+      });
+    });
+
+    // section-4.1.2.1 RFC6749
     it('unrecognized client_id provided', function () {
-      const spy = sinon.spy();
-      provider.once('authorization.error', spy);
+      const renderSpy = sinon.spy(provider.configuration(), 'renderError');
       const auth = new AuthorizationRequest({
         response_type: 'code',
         scope: 'openid',
-        client_id: 'unrecognized'
+        client_id: 'foobar'
       });
 
-      return wrap({ agent, route, verb, auth })
-      .expect(302)
+      return agent.get(route)
+      .query(auth)
       .expect(function () {
-        expect(spy.calledOnce).to.be.true;
+        renderSpy.restore();
       })
-      .expect(auth.validatePresence(['error', 'error_description', 'state']))
-      .expect(auth.validateState)
-      .expect(auth.validateClientLocation)
-      .expect(auth.validateError('invalid_request'))
-      .expect(auth.validateErrorDescription('unrecognized client_id'));
+      .expect(400)
+      .expect(function () {
+        expect(renderSpy.calledOnce).to.be.true;
+        const renderArgs = renderSpy.args[0][1];
+        expect(renderArgs).to.have.property('error', 'invalid_client');
+      });
+    });
+
+    // section-4.1.2.1 RFC6749
+    it('validates redirect_uri ad acta even if other errors were encountered beforehand', function () {
+      const renderSpy = sinon.spy(provider.configuration(), 'renderError');
+      const auth = new AuthorizationRequest({
+        response_type: 'code',
+        // scope: 'openid',
+        redirect_uri: 'https://attacker.example.com/foobar'
+      });
+
+      return agent.get(route)
+      .query(auth)
+      .expect(function () {
+        renderSpy.restore();
+      })
+      .expect(400)
+      .expect(function () {
+        expect(renderSpy.calledOnce).to.be.true;
+        const renderArgs = renderSpy.args[0][1];
+        expect(renderArgs).to.have.property('error', 'redirect_uri_mismatch');
+      });
     });
 
     it('unsupported response_type', function () {

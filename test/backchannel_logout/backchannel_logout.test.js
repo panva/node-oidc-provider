@@ -29,6 +29,7 @@ describe('Back-Channel Logout 1.0', function () {
   });
 
   describe('Client#backchannelLogout', function () {
+    // TODO: REDO, it's failing sometimes
     it('triggers the call, does not return values', function * () {
       const client = yield provider.get('Client').find('client');
       const now = Date.now() / 1000 | 0;
