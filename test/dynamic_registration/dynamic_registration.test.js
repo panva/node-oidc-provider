@@ -171,13 +171,31 @@ describe('registration features', function () {
           conf.features.registration = true;
         });
 
-        it('allows reg calls with the access tokens as a Bearer token', function () {
+        it('allows reg calls with the access tokens as a Bearer token [query]', function () {
           return agent.post('/reg')
           .send({
             redirect_uris: ['https://client.example.com/cb']
           })
           .query({
             access_token: 'foobar'
+          })
+          .expect(201);
+        });
+
+        it('allows reg calls with the access tokens as a Bearer token [post]', function () {
+          return agent.post('/reg')
+          .send({
+            redirect_uris: ['https://client.example.com/cb'],
+            access_token: 'foobar'
+          })
+          .expect(201);
+        });
+
+        it('allows reg calls with the access tokens as a Bearer token [header]', function () {
+          return agent.post('/reg')
+          .set('Authorization', 'Bearer foobar')
+          .send({
+            redirect_uris: ['https://client.example.com/cb']
           })
           .expect(201);
         });
