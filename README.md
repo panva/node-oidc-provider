@@ -226,6 +226,19 @@ const configuration = { features: { registration: Boolean[false] } };
 ```
 Enables features described in [Dynamic Client Registration 1.0][feature-registration].
 
+To set a fixed Initial Access Token for the POST registration call use
+```js
+const configuration = { features: { registration: { initialAccessToken: 'tokenValue' } } };
+```
+
+To have the option of multiple Initial Access Tokens covered by your adapter use
+```js
+const configuration = { features: { registration: { initialAccessToken: true } } };
+
+// to add a token and retrieve it's value
+new (provider.get('InitialAccessToken'))({}).then(console.log);
+```
+
 **Dynamic registration management features**  
 ```js
 const configuration = { features: { registration: true, registrationManagement: Boolean[false] } };
