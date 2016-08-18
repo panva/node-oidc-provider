@@ -1,8 +1,6 @@
 'use strict';
 
-const {
-  provider, responses, agent
-} = require('../test_helper')(__dirname);
+const bootstrap = require('../test_helper');
 const key = require('./ec.key');
 
 const sinon = require('sinon');
@@ -12,6 +10,8 @@ const { expect } = require('chai');
 const route = '/certs';
 
 describe(route, function () {
+  const { provider, responses, agent } = bootstrap(__dirname);
+
   it('responds with json 200', function () {
     return agent.get(route)
       .expect('Content-Type', /application\/json/)

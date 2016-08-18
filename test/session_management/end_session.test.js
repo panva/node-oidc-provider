@@ -1,8 +1,6 @@
 'use strict';
 
-const {
-  provider, agent, wrap, getSessionId, TestAdapter
-} = require('../test_helper')(__dirname);
+const bootstrap = require('../test_helper');
 const sinon = require('sinon');
 const { parse: parseUrl } = require('url');
 const { expect } = require('chai');
@@ -10,11 +8,12 @@ const JWT = require('../../lib/helpers/jwt');
 
 const route = '/session/end';
 
-provider.setupClient();
-provider.setupCerts();
-
 ['get', 'post'].forEach((verb) => {
   describe(`[session_management] ${verb} ${route} with session`, function () {
+    const { provider, agent, wrap, getSessionId, TestAdapter } = bootstrap(__dirname);
+    provider.setupClient();
+    provider.setupCerts();
+
     beforeEach(agent.login);
     afterEach(agent.logout);
     afterEach(function () {

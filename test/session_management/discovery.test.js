@@ -1,13 +1,11 @@
 'use strict';
 
-const {
-  provider, agent
-} = require('../test_helper')(__dirname);
+const bootstrap = require('../test_helper');
 const { expect } = require('chai');
 
-provider.setupCerts();
-
 describe('configuration features.encryption', function () {
+  const { provider, agent } = bootstrap(__dirname);
+  provider.setupCerts();
   it('extends discovery', function () {
     return agent.get('/.well-known/openid-configuration')
       .expect(200)

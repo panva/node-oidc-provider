@@ -1,19 +1,19 @@
 'use strict';
 
-const {
-  provider, agent, AuthorizationRequest, wrap
-} = require('../test_helper')(__dirname);
+const bootstrap = require('../test_helper');
 const { expect } = require('chai');
 const sinon = require('sinon');
 
 const route = '/auth';
-const Client = provider.get('Client');
-
-provider.setupClient();
-provider.setupCerts();
 
 ['get', 'post'].forEach((verb) => {
   describe(`${verb} ${route} response_mode=form_post`, function () {
+    const { provider, agent, AuthorizationRequest, wrap } = bootstrap(__dirname);
+    const Client = provider.get('Client');
+
+    provider.setupClient();
+    provider.setupCerts();
+
     context('logged in', function () {
       before(agent.login);
       after(agent.logout);

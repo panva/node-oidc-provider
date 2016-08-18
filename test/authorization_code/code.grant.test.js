@@ -1,30 +1,30 @@
 'use strict';
 
-const {
-  agent, provider, TestAdapter
-} = require('../test_helper')(__dirname);
+const bootstrap = require('../test_helper');
 const sinon = require('sinon');
-const { decode: base64url } = require('base64url');
 const { parse: parseUrl } = require('url');
 const { expect } = require('chai');
 
-const j = JSON.parse;
-const AuthorizationCode = provider.get('AuthorizationCode');
 const route = '/token';
-
-provider.setupCerts();
-provider.setupClient();
-provider.setupClient({
-  client_id: 'client2',
-  client_secret: 'secret',
-  redirect_uris: ['https://client.example.com/cb']
-});
 
 function errorDetail(spy) {
   return spy.args[0][0].error_detail;
 }
 
 describe('grant_type=authorization_code', function () {
+  const {
+    agent, provider, TestAdapter
+  } = bootstrap(__dirname);
+
+  provider.setupCerts();
+  provider.setupClient();
+  provider.setupClient({
+    client_id: 'client2',
+    client_secret: 'secret',
+    redirect_uris: ['https://client.example.com/cb']
+  });
+  const AuthorizationCode = provider.get('AuthorizationCode');
+
   context('with real tokens', function () {
     before(agent.login);
     after(agent.logout);
@@ -40,7 +40,7 @@ describe('grant_type=authorization_code', function () {
       .expect(302)
       .expect((response) => {
         const { query: { code } } = parseUrl(response.headers.location, true);
-        const jti = j(base64url(code.split('.')[0])).jti;
+        const jti = code.substring(0, 48);
         this.code = TestAdapter.for('AuthorizationCode').syncFind(jti);
         this.ac = code;
       });

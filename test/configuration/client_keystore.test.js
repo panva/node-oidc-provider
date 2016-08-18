@@ -2,16 +2,17 @@
 
 const keystore = require('node-jose').JWK.createKeyStore();
 const moment = require('moment');
-const { provider } = require('../test_helper')(__dirname);
 const nock = require('nock');
 const { expect } = require('chai');
 const JWT = require('../../lib/helpers/jwt');
+const bootstrap = require('../test_helper');
 
 const fail = () => { throw new Error('expected promise to be rejected'); };
 
 const endpoint = nock('https://client.example.com/');
 
 describe('client keystore refresh', function () {
+  const { provider } = bootstrap(__dirname);
   provider.setupCerts();
 
   before(function () {

@@ -1,17 +1,15 @@
 'use strict';
 
-const {
-  agent, provider
-} = require('../test_helper')(__dirname);
+const bootstrap = require('../test_helper');
 const sinon = require('sinon');
 const { expect } = require('chai');
 
 const route = '/token';
 
-provider.setupClient();
-provider.setupCerts();
-
 describe('grant_type=client_credentials', function () {
+  const { agent, provider } = bootstrap(__dirname);
+  provider.setupClient();
+  provider.setupCerts();
   it('provides a Bearer client credentials token', function () {
     const spy = sinon.spy();
     provider.once('grant.success', spy);

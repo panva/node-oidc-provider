@@ -1,4 +1,6 @@
-const { provider, agent } = require('../test_helper')(__dirname);
+'use strict';
+
+const bootstrap = require('../test_helper');
 const sinon = require('sinon');
 const { expect } = require('chai');
 const { parse: parseUrl } = require('url');
@@ -6,10 +8,11 @@ const base64url = require('base64url');
 const nock = require('nock');
 const { Provider } = require('../../lib');
 
-provider.setupCerts();
-provider.setupClient();
-
 describe('Back-Channel Logout 1.0', function () {
+  const { provider, agent } = bootstrap(__dirname);
+  provider.setupCerts();
+  provider.setupClient();
+
   afterEach(nock.cleanAll);
   afterEach(function * () {
     const client = yield provider.get('Client').find('client');

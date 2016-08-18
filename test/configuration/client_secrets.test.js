@@ -1,9 +1,10 @@
 'use strict';
 
-const { provider } = require('../test_helper')(__dirname);
+const bootstrap = require('../test_helper');
 const { expect } = require('chai');
 
 describe('Provider#addClient', function () {
+  const { provider } = bootstrap(__dirname);
   provider.setupCerts();
 
   [

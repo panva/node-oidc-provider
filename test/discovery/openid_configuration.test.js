@@ -1,7 +1,6 @@
 'use strict';
 
-const { agent, provider, responses } = require('../test_helper')(__dirname);
-
+const bootstrap = require('../test_helper');
 const sinon = require('sinon');
 const { InvalidRequestError } = require('../../lib/helpers/errors');
 const { expect } = require('chai');
@@ -9,6 +8,8 @@ const { expect } = require('chai');
 const route = '/.well-known/openid-configuration';
 
 describe(route, function () {
+  const { agent, provider, responses } = bootstrap(__dirname);
+
   it('responds with json 200', function () {
     return agent.get(route)
       .expect('Content-Type', /application\/json/)

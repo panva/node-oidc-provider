@@ -2,42 +2,38 @@
 
 /* eslint-disable no-underscore-dangle */
 
-const {
-  provider,
-  agent,
-  AuthorizationRequest,
-  wrap
-} = require('../test_helper')(__dirname);
+const bootstrap = require('../test_helper');
 const { parse: parseLocation } = require('url');
 const { decode: decodeJWT } = require('../../lib/helpers/jwt');
 const { expect } = require('chai');
 
-provider.setupClient();
-provider.setupCerts();
-
-const Account = provider.get('Account');
-
-Account.findById = id => Promise.resolve({
-  accountId: id,
-  claims() {
-    return {
-      sub: id,
-      nickname: 'foobar',
-      _claim_names: {
-        given_name: 'src1',
-        family_name: 'src2',
-        email: 'notused'
-      },
-      _claim_sources: {
-        src1: { endpoint: 'https://op.example.com/me', access_token: 'distributed' },
-        src2: { JWT: 'foo.bar.baz' },
-        notused: { JWT: 'foo.bar.baz' }
-      },
-    };
-  },
-});
-
 describe('distributed and aggregated claims', function () {
+  const { provider, agent, AuthorizationRequest, wrap } = bootstrap(__dirname);
+  provider.setupClient();
+  provider.setupCerts();
+
+  const Account = provider.get('Account');
+
+  Account.findById = id => Promise.resolve({
+    accountId: id,
+    claims() {
+      return {
+        sub: id,
+        nickname: 'foobar',
+        _claim_names: {
+          given_name: 'src1',
+          family_name: 'src2',
+          email: 'notused'
+        },
+        _claim_sources: {
+          src1: { endpoint: 'https://op.example.com/me', access_token: 'distributed' },
+          src2: { JWT: 'foo.bar.baz' },
+          notused: { JWT: 'foo.bar.baz' }
+        },
+      };
+    },
+  });
+
   before(agent.login);
   after(agent.logout);
 

@@ -26,6 +26,11 @@ until then please use the compare views of github for reference.
 
 
 
+- feature/change-token-format
+  - BREAKING: ALL previously issued tokens are incompatible with the new version, the value of the
+  tokens is now shorter and does not contain any information about the token context or type
+  - fix: revocation is only possible for client's OWN tokens
+
 - https://github.com/panva/node-oidc-provider/compare/v0.10.0...0.10.2
   - fix: push nonce from code to refresh token and then id_token upon refresh
   - fix: RFC6749 4.1.2.1 - missing, unrecognized, invalid clientid and redirect_uri handling (consistent no redirect)

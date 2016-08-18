@@ -1,11 +1,11 @@
 'use strict';
 
-const { provider, agent } = require('../test_helper')(__dirname);
 const { expect } = require('chai');
-
-provider.setupCerts();
+const bootstrap = require('../test_helper');
 
 describe('custom token endpoint grant types', function () {
+  const { provider, agent } = bootstrap(__dirname);
+  provider.setupCerts();
   it('allows for grant types to be added', function () {
     expect(function () {
       provider.registerGrantType('lotto', function (passedProvider) {

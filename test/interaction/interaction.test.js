@@ -3,12 +3,7 @@
 /* eslint-disable no-underscore-dangle */
 
 const { v4: uuid } = require('uuid');
-const {
-  provider,
-  agent,
-  getSession,
-  AuthorizationRequest,
-} = require('../test_helper')(__dirname);
+const bootstrap = require('../test_helper');
 
 const expire = new Date();
 expire.setDate(expire.getDate() + 1);
@@ -16,30 +11,31 @@ expire.setDate(expire.getDate() + 1);
 const j = JSON.stringify;
 const { expect } = require('chai');
 
-provider.setupClient();
-provider.setupCerts();
-
-provider.configuration('prompts').push('custom');
-
-function setup(grant, results) {
-  const cookies = [];
-
-  if (grant) {
-    cookies.push(`_grant=${j(grant)}; path=/; expires=${expire.toGMTString()}; httponly`);
-  }
-
-  if (results) {
-    cookies.push(`_grant_result=${j(results)}; path=/; expires=${expire.toGMTString()}; httponly`);
-  }
-
-  agent._saveCookies.bind(agent)({
-    headers: {
-      'set-cookie': cookies
-    },
-  });
-}
-
 describe('resume after interaction', function () {
+  const { provider, agent, getSession, AuthorizationRequest, } = bootstrap(__dirname);
+  provider.setupClient();
+  provider.setupCerts();
+
+  provider.configuration('prompts').push('custom');
+
+  function setup(grant, results) {
+    const cookies = [];
+
+    if (grant) {
+      cookies.push(`_grant=${j(grant)}; path=/; expires=${expire.toGMTString()}; httponly`);
+    }
+
+    if (results) {
+      cookies.push(`_grant_result=${j(results)}; path=/; expires=${expire.toGMTString()}; httponly`);
+    }
+
+    agent._saveCookies.bind(agent)({
+      headers: {
+        'set-cookie': cookies
+      },
+    });
+  }
+
   context('general', function () {
     it('needs the results to be present, else renders an err', function () {
       return agent.get(`/auth/${uuid()}`)

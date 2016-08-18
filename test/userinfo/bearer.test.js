@@ -1,11 +1,10 @@
 'use strict';
 
-const {
-  agent
-} = require('../test_helper')(__dirname);
+const bootstrap = require('../test_helper');
 const { expect } = require('chai');
 
 describe('providing Bearer token', function () {
+  const { agent } = bootstrap(__dirname);
   context('invalid requests', function () {
     it('nothing provided', function () {
       return agent.get('/me')

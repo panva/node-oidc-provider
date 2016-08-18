@@ -1,12 +1,6 @@
 'use strict';
 
-const {
-  provider,
-  agent,
-  AuthorizationRequest,
-  getSession,
-  wrap
-} = require('../test_helper')(__dirname);
+const bootstrap = require('../test_helper');
 const { parse: parseLocation } = require('url');
 const { decode: decodeJWT } = require('../../lib/helpers/jwt');
 const { expect } = require('chai');
@@ -14,11 +8,11 @@ const { expect } = require('chai');
 const j = JSON.stringify;
 const route = '/auth';
 
-provider.setupClient();
-provider.setupCerts();
-
 ['get', 'post'].forEach((verb) => {
   describe(`claimsParameter via ${verb} ${route}`, function () {
+    const { provider, agent, AuthorizationRequest, getSession, wrap } = bootstrap(__dirname);
+    provider.setupClient();
+    provider.setupCerts();
     describe('specify id_token', function () {
       before(agent.login);
       after(agent.logout);

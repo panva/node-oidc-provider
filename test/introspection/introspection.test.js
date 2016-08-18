@@ -1,31 +1,34 @@
 'use strict';
 
-const { agent, provider } = require('../test_helper')(__dirname);
+const bootstrap = require('../test_helper');
 const sinon = require('sinon');
 const { expect } = require('chai');
-const { encode: base64url } = require('base64url');
 
 const route = '/token/introspection';
-const AccessToken = provider.get('AccessToken');
-const j = JSON.stringify;
 
-provider.setupClient();
-provider.setupClient({
-  client_id: 'client-pairwise',
-  client_secret: 'secret',
-  subject_type: 'pairwise',
-  redirect_uris: ['https://client.example.com/cb']
-});
-provider.setupClient({
-  client_id: 'client-introspection',
-  client_secret: 'secret',
-  redirect_uris: [],
-  response_types: [],
-  grant_types: [],
-});
-provider.setupCerts();
 
 describe('introspection features', function () {
+  const { agent, provider } = bootstrap(__dirname);
+  const AccessToken = provider.get('AccessToken');
+  const ClientCredentials = provider.get('ClientCredentials');
+  const RefreshToken = provider.get('RefreshToken');
+  const AuthorizationCode = provider.get('AuthorizationCode');
+
+  provider.setupClient();
+  provider.setupClient({
+    client_id: 'client-pairwise',
+    client_secret: 'secret',
+    subject_type: 'pairwise',
+    redirect_uris: ['https://client.example.com/cb']
+  });
+  provider.setupClient({
+    client_id: 'client-introspection',
+    client_secret: 'secret',
+    redirect_uris: [],
+    response_types: [],
+    grant_types: [],
+  });
+  provider.setupCerts();
   describe('enriched discovery', function () {
     it('shows the url now', function () {
       return agent.get('/.well-known/openid-configuration')
@@ -37,7 +40,7 @@ describe('introspection features', function () {
   });
 
   describe('/token/introspection', function () {
-    it('returns the properties for access token', function (done) {
+    it('returns the properties for access token [no hint]', function (done) {
       const at = new AccessToken({
         accountId: 'accountId',
         clientId: 'client',
@@ -60,8 +63,80 @@ describe('introspection features', function () {
       });
     });
 
-    it('returns the properties for refresh token', function (done) {
-      const rt = new (provider.get('RefreshToken'))({
+    it('returns the properties for access token [correct hint]', function (done) {
+      const at = new AccessToken({
+        accountId: 'accountId',
+        clientId: 'client',
+        scope: 'scope',
+      });
+
+      at.save().then(function (token) {
+        agent.post(route)
+        .auth('client', 'secret')
+        .send({
+          token,
+          token_type_hint: 'access_token'
+        })
+        .type('form')
+        .expect(200)
+        .expect(function (response) {
+          expect(response.body).to.contain.keys('client_id', 'scope', 'sub');
+          expect(response.body.sub).to.equal('accountId');
+        })
+        .end(done);
+      });
+    });
+
+    it('returns the properties for access token [wrong hint]', function (done) {
+      const at = new AccessToken({
+        accountId: 'accountId',
+        clientId: 'client',
+        scope: 'scope',
+      });
+
+      at.save().then(function (token) {
+        agent.post(route)
+        .auth('client', 'secret')
+        .send({
+          token,
+          token_type_hint: 'refresh_token'
+        })
+        .type('form')
+        .expect(200)
+        .expect(function (response) {
+          expect(response.body).to.contain.keys('client_id', 'scope', 'sub');
+          expect(response.body.sub).to.equal('accountId');
+        })
+        .end(done);
+      });
+    });
+
+    it('returns the properties for access token [unrecognized hint]', function (done) {
+      const at = new AccessToken({
+        accountId: 'accountId',
+        clientId: 'client',
+        scope: 'scope',
+      });
+
+      at.save().then(function (token) {
+        agent.post(route)
+        .auth('client', 'secret')
+        .send({
+          token,
+          token_type_hint: 'foobar'
+        })
+        .type('form')
+        .expect(200)
+        .expect(function (response) {
+          expect(response.body).to.contain.keys('client_id', 'scope', 'sub');
+          expect(response.body.sub).to.equal('accountId');
+        })
+        .end(done);
+      });
+    });
+
+    it('returns the properties for refresh token [no hint]', function (done) {
+      const rt = new RefreshToken({
         accountId: 'accountId',
         clientId: 'client',
         scope: 'scope',
@@ -80,8 +155,68 @@ describe('introspection features', function () {
       });
     });
 
-    it('returns the properties for client credentials token', function (done) {
-      const rt = new (provider.get('ClientCredentials'))({
+    it('returns the properties for refresh token [correct hint]', function (done) {
+      const rt = new RefreshToken({
+        accountId: 'accountId',
+        clientId: 'client',
+        scope: 'scope',
+      });
+
+      rt.save().then(function (token) {
+        agent.post(route)
+        .auth('client', 'secret')
+        .send({ token, token_type_hint: 'refresh_token' })
+        .type('form')
+        .expect(200)
+        .expect(function (response) {
+          expect(response.body).to.contain.keys('client_id', 'scope', 'sub');
+        })
+        .end(done);
+      });
+    });
+
+    it('returns the properties for refresh token [wrong hint]', function (done) {
+      const rt = new RefreshToken({
+        accountId: 'accountId',
+        clientId: 'client',
+        scope: 'scope',
+      });
+
+      rt.save().then(function (token) {
+        agent.post(route)
+        .auth('client', 'secret')
+        .send({ token, token_type_hint: 'client_credentials' })
+        .type('form')
+        .expect(200)
+        .expect(function (response) {
+          expect(response.body).to.contain.keys('client_id', 'scope', 'sub');
+        })
+        .end(done);
+      });
+    });
+
+    it('returns the properties for refresh token [unrecognized hint]', function (done) {
+      const rt = new RefreshToken({
+        accountId: 'accountId',
+        clientId: 'client',
+        scope: 'scope',
+      });
+
+      rt.save().then(function (token) {
+        agent.post(route)
+        .auth('client', 'secret')
+        .send({ token, token_type_hint: 'foobar' })
+        .type('form')
+        .expect(200)
+        .expect(function (response) {
+          expect(response.body).to.contain.keys('client_id', 'scope', 'sub');
+        })
+        .end(done);
+      });
+    });
+
+    it('returns the properties for client credentials token [no hint]', function (done) {
+      const rt = new ClientCredentials({
         clientId: 'client'
       });
 
@@ -98,8 +233,62 @@ describe('introspection features', function () {
       });
     });
 
+    it('returns the properties for client credentials token [correct hint]', function (done) {
+      const rt = new ClientCredentials({
+        clientId: 'client'
+      });
+
+      rt.save().then(function (token) {
+        agent.post(route)
+        .auth('client', 'secret')
+        .send({ token, token_type_hint: 'client_credentials' })
+        .type('form')
+        .expect(200)
+        .expect(function (response) {
+          expect(response.body).to.contain.keys('client_id');
+        })
+        .end(done);
+      });
+    });
+
+    it('returns the properties for client credentials token [wrong hint]', function (done) {
+      const rt = new ClientCredentials({
+        clientId: 'client'
+      });
+
+      rt.save().then(function (token) {
+        agent.post(route)
+        .auth('client', 'secret')
+        .send({ token, token_type_hint: 'access_token' })
+        .type('form')
+        .expect(200)
+        .expect(function (response) {
+          expect(response.body).to.contain.keys('client_id');
+        })
+        .end(done);
+      });
+    });
+
+    it('returns the properties for client credentials token [unrecognized hint]', function (done) {
+      const rt = new ClientCredentials({
+        clientId: 'client'
+      });
+
+      rt.save().then(function (token) {
+        agent.post(route)
+        .auth('client', 'secret')
+        .send({ token, token_type_hint: 'foobar' })
+        .type('form')
+        .expect(200)
+        .expect(function (response) {
+          expect(response.body).to.contain.keys('client_id');
+        })
+        .end(done);
+      });
+    });
+
     it('can be called by RS clients and uses the original subject_type', function (done) {
-      const rt = new (provider.get('RefreshToken'))({
+      const rt = new RefreshToken({
         accountId: 'accountId',
         clientId: 'client-pairwise',
         scope: 'scope',
@@ -154,28 +343,6 @@ describe('introspection features', function () {
       });
     });
 
-    it('responds with atleast what it can decode', function () {
-      const fields = {
-        kind: 'whateveratthisstage',
-        exp: 1,
-        iat: 2,
-        iss: 'me',
-        jti: 'id',
-        scope: 'openid'
-      };
-      return agent.post(route)
-      .auth('client', 'secret')
-      .send({
-        token: `${base64url(j(fields))}.`
-      })
-      .type('form')
-      .expect(200)
-      .expect(function (response) {
-        delete fields.kind;
-        expect(response.body).to.contain.all.keys(Object.keys(fields));
-      });
-    });
-
     it('emits on (i.e. auth) error', function () {
       const spy = sinon.spy();
       provider.once('introspection.error', spy);
@@ -187,6 +354,21 @@ describe('introspection features', function () {
       .expect(400)
       .expect(function () {
         expect(spy.calledOnce).to.be.true;
+      });
+    });
+
+    it('ignores unsupported tokens', function * () {
+      const ac = new AuthorizationCode({ clientId: 'client' });
+      return agent.post(route)
+      .auth('client', 'secret')
+      .send({
+        token: yield ac.save()
+      })
+      .type('form')
+      .expect(200)
+      .expect(function (response) {
+        expect(response.body).to.have.property('active', false);
+        expect(response.body).to.have.keys('active');
       });
     });
   });

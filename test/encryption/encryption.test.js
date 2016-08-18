@@ -1,8 +1,6 @@
 'use strict';
 
-const {
-  provider, agent, AuthorizationRequest, wrap
-} = require('../test_helper')(__dirname);
+const bootstrap = require('../test_helper');
 const { expect } = require('chai');
 const { parse } = require('url');
 const url = require('url');
@@ -10,17 +8,17 @@ const jose = require('node-jose');
 const { privKey } = require('./encryption.config');
 const JWT = require('../../lib/helpers/jwt');
 
-provider.setupClient();
-provider.setupCerts();
-
-before(function () {
-  return jose.JWK.asKeyStore(privKey).then(keystore => { this.keystore = keystore; });
-});
+const route = '/auth';
 
 ['get', 'post'].forEach((verb) => {
-  const route = '/auth';
-
   describe(`[encryption] IMPLICIT id_token+token ${verb} ${route}`, function () {
+    const { provider, agent, AuthorizationRequest, wrap } = bootstrap(__dirname);
+    provider.setupClient();
+    provider.setupCerts();
+
+    before(function () {
+      return jose.JWK.asKeyStore(privKey).then(keystore => { this.keystore = keystore; });
+    });
     before(agent.login);
 
 

@@ -1,31 +1,30 @@
 'use strict';
 
-const {
-  agent, provider, TestAdapter
-} = require('../test_helper')(__dirname);
+const bootstrap = require('../test_helper');
 const sinon = require('sinon');
 const { decode: base64url } = require('base64url');
 const { parse: parseUrl } = require('url');
 const { expect } = require('chai');
 
-const RefreshToken = provider.get('RefreshToken');
 const j = JSON.parse;
 const route = '/token';
-
-provider.setupClient();
-provider.setupClient({
-  client_id: 'client2',
-  client_secret: 'secret',
-  grant_types: ['authorization_code', 'refresh_token'],
-  redirect_uris: ['https://client.example.com/cb']
-});
-provider.setupCerts();
 
 function errorDetail(spy) {
   return spy.args[0][0].error_detail;
 }
 
 describe('grant_type=refresh_token', function () {
+  const { agent, provider, TestAdapter } = bootstrap(__dirname);
+  const RefreshToken = provider.get('RefreshToken');
+  provider.setupClient();
+  provider.setupClient({
+    client_id: 'client2',
+    client_secret: 'secret',
+    grant_types: ['authorization_code', 'refresh_token'],
+    redirect_uris: ['https://client.example.com/cb']
+  });
+  provider.setupCerts();
+
   describe('extends authorization_code', function () {
     // TODO: it('omits to issue a refresh_token if the client cannot use it (misses allowed grant)');
   });
@@ -62,7 +61,7 @@ describe('grant_type=refresh_token', function () {
         .expect(200)
         .expect((response) => {
           expect(response.body).to.have.property('refresh_token');
-          const jti = j(base64url(response.body.refresh_token.split('.')[0])).jti;
+          const jti = response.body.refresh_token.substring(0, 48);
           this.refreshToken = TestAdapter.for('RefreshToken').syncFind(jti);
           this.rt = response.body.refresh_token;
         })

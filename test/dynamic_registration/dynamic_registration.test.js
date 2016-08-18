@@ -1,13 +1,9 @@
 'use strict';
 
-const { agent, provider } = require('../test_helper')(__dirname);
+const bootstrap = require('../test_helper');
 const { expect } = require('chai');
 const sinon = require('sinon');
 const base64url = require('base64url');
-
-const Client = provider.get('Client');
-
-provider.setupCerts();
 
 function validateError(error) {
   const assert = error.exec ? 'match' : 'equal';
@@ -24,6 +20,10 @@ function validateErrorDescription(description) {
 }
 
 describe('registration features', function () {
+  const { agent, provider, TestAdapter } = bootstrap(__dirname);
+  const Client = provider.get('Client');
+  provider.setupCerts();
+
   context('POST /reg', function () {
     it('generates the id, secret that does not expire and reg access token and returns the defaulted values', function () {
       return agent.post('/reg')
@@ -236,7 +236,9 @@ describe('registration features', function () {
           return new IAT({
             expiresIn: 24 * 60 * 60
           }).save().then(function (v) {
-            expect(JSON.parse(base64url.decode(v.split('.')[0]))).to.have.property('exp');
+            const jti = v.substring(0, 48);
+            const token = TestAdapter.for('InitialAccessToken').syncFind(jti);
+            expect(JSON.parse(base64url.decode(token.payload))).to.have.property('exp');
           });
         });
 

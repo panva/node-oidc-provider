@@ -1,21 +1,22 @@
 'use strict';
 
-const { agent, provider } = require('../test_helper')(__dirname);
+const bootstrap = require('../test_helper');
 const sinon = require('sinon');
 const { expect } = require('chai');
-const { encode: base64url } = require('base64url');
 
 const route = '/token/revocation';
-const j = JSON.stringify;
 
-const AccessToken = provider.get('AccessToken');
-const ClientCredentials = provider.get('ClientCredentials');
-const RefreshToken = provider.get('RefreshToken');
-
-provider.setupClient();
-provider.setupCerts();
 
 describe('revocation features', function () {
+  const { agent, provider } = bootstrap(__dirname);
+  const AuthorizationCode = provider.get('AuthorizationCode');
+  const AccessToken = provider.get('AccessToken');
+  const ClientCredentials = provider.get('ClientCredentials');
+  const RefreshToken = provider.get('RefreshToken');
+
+  provider.setupClient();
+  provider.setupCerts();
+
   describe('enriched discovery', function () {
     it('shows the url now', function () {
       return agent.get('/.well-known/openid-configuration')
@@ -26,11 +27,11 @@ describe('revocation features', function () {
     });
   });
 
-  describe('/token/revocation', function () {
-    it('revokes access token', function (done) {
+  describe(route, function () {
+    it('revokes access token [no hint]', function (done) {
       const at = new AccessToken({
         accountId: 'accountId',
-        clientId: 'clientId',
+        clientId: 'client',
         scope: 'scope',
       });
 
@@ -55,22 +56,25 @@ describe('revocation features', function () {
       });
     });
 
-    it('ignores find exceptions on AccessToken', function (done) {
+    it('revokes access token [correct hint]', function (done) {
       const at = new AccessToken({
         accountId: 'accountId',
-        clientId: 'clientId',
+        clientId: 'client',
         scope: 'scope',
       });
 
-      sinon.stub(AccessToken, 'find').throws();
+      const stub = sinon.stub(AccessToken.prototype, 'destroy', function () {
+        return Promise.resolve();
+      });
 
       at.save().then(function (token) {
         agent.post(route)
         .auth('client', 'secret')
-        .send({ token })
+        .send({ token, token_type_hint: 'access_token' })
         .type('form')
         .expect(function () {
-          AccessToken.find.restore();
+          expect(stub.calledOnce).to.be.true;
+          AccessToken.prototype.destroy.restore();
         })
         .expect(200)
         .expect(function (response) {
@@ -80,10 +84,91 @@ describe('revocation features', function () {
       });
     });
 
-    it('revokes refresh token', function (done) {
+    it('revokes access token [wrong hint]', function (done) {
+      const at = new AccessToken({
+        accountId: 'accountId',
+        clientId: 'client',
+        scope: 'scope',
+      });
+
+      const stub = sinon.stub(AccessToken.prototype, 'destroy', function () {
+        return Promise.resolve();
+      });
+
+      at.save().then(function (token) {
+        agent.post(route)
+        .auth('client', 'secret')
+        .send({ token, token_type_hint: 'refresh_token' })
+        .type('form')
+        .expect(function () {
+          expect(stub.calledOnce).to.be.true;
+          AccessToken.prototype.destroy.restore();
+        })
+        .expect(200)
+        .expect(function (response) {
+          expect(response.body).to.eql({});
+        })
+        .end(done);
+      });
+    });
+
+    it('revokes access token [unrecognized hint]', function (done) {
+      const at = new AccessToken({
+        accountId: 'accountId',
+        clientId: 'client',
+        scope: 'scope',
+      });
+
+      const stub = sinon.stub(AccessToken.prototype, 'destroy', function () {
+        return Promise.resolve();
+      });
+
+      at.save().then(function (token) {
+        agent.post(route)
+        .auth('client', 'secret')
+        .send({ token, token_type_hint: 'foobar' })
+        .type('form')
+        .expect(function () {
+          expect(stub.calledOnce).to.be.true;
+          AccessToken.prototype.destroy.restore();
+        })
+        .expect(200)
+        .expect(function (response) {
+          expect(response.body).to.eql({});
+        })
+        .end(done);
+      });
+    });
+
+    it('propagates exceptions on find', function (done) {
+      const at = new AccessToken({
+        accountId: 'accountId',
+        clientId: 'client',
+        scope: 'scope',
+      });
+
+      sinon.stub(AccessToken, 'find').returns(Promise.reject(new Error('Error')));
+
+      at.save().then(function (token) {
+        agent.post(route)
+        .auth('client', 'secret')
+        .send({ token })
+        .type('form')
+        .expect(function () {
+          AccessToken.find.restore();
+        })
+        .expect(500)
+        .expect(function (response) {
+          expect(response.body.error).to.eql('server_error');
+        })
+        .end(done);
+      });
+    });
+
+    it('revokes refresh token [no hint]', function (done) {
       const rt = new RefreshToken({
         accountId: 'accountId',
-        clientId: 'clientId',
+        clientId: 'client',
         scope: 'scope',
       });
 
@@ -108,22 +193,25 @@ describe('revocation features', function () {
       });
     });
 
-    it('ignores find exceptions on RefreshToken', function (done) {
-      const at = new RefreshToken({
+    it('revokes refresh token [correct hint]', function (done) {
+      const rt = new RefreshToken({
         accountId: 'accountId',
-        clientId: 'clientId',
+        clientId: 'client',
         scope: 'scope',
       });
 
-      sinon.stub(RefreshToken, 'find').throws();
+      const stub = sinon.stub(RefreshToken.prototype, 'destroy', function () {
+        return Promise.resolve();
+      });
 
-      at.save().then(function (token) {
+      rt.save().then(function (token) {
         agent.post(route)
         .auth('client', 'secret')
-        .send({ token })
+        .send({ token, token_type_hint: 'refresh_token' })
         .type('form')
         .expect(function () {
-          RefreshToken.find.restore();
+          expect(stub.calledOnce).to.be.true;
+          RefreshToken.prototype.destroy.restore();
         })
         .expect(200)
         .expect(function (response) {
@@ -133,9 +221,65 @@ describe('revocation features', function () {
       });
     });
 
-    it('revokes client credentials token', function (done) {
+    it('revokes refresh token [wrong hint]', function (done) {
+      const rt = new RefreshToken({
+        accountId: 'accountId',
+        clientId: 'client',
+        scope: 'scope',
+      });
+
+      const stub = sinon.stub(RefreshToken.prototype, 'destroy', function () {
+        return Promise.resolve();
+      });
+
+      rt.save().then(function (token) {
+        agent.post(route)
+        .auth('client', 'secret')
+        .send({ token, token_type_hint: 'client_credentials' })
+        .type('form')
+        .expect(function () {
+          expect(stub.calledOnce).to.be.true;
+          RefreshToken.prototype.destroy.restore();
+        })
+        .expect(200)
+        .expect(function (response) {
+          expect(response.body).to.eql({});
+        })
+        .end(done);
+      });
+    });
+
+    it('revokes refresh token [unrecognized hint]', function (done) {
+      const rt = new RefreshToken({
+        accountId: 'accountId',
+        clientId: 'client',
+        scope: 'scope',
+      });
+
+      const stub = sinon.stub(RefreshToken.prototype, 'destroy', function () {
+        return Promise.resolve();
+      });
+
+      rt.save().then(function (token) {
+        agent.post(route)
+        .auth('client', 'secret')
+        .send({ token, token_type_hint: 'foobar' })
+        .type('form')
+        .expect(function () {
+          expect(stub.calledOnce).to.be.true;
+          RefreshToken.prototype.destroy.restore();
+        })
+        .expect(200)
+        .expect(function (response) {
+          expect(response.body).to.eql({});
+        })
+        .end(done);
+      });
+    });
+
+    it('revokes client credentials token [no hint]', function (done) {
       const rt = new ClientCredentials({
-        clientId: 'clientId'
+        clientId: 'client'
       });
 
       const stub = sinon.stub(ClientCredentials.prototype, 'destroy', function () {
@@ -159,22 +303,23 @@ describe('revocation features', function () {
       });
     });
 
-    it('ignores find exceptions on ClientCredentials', function (done) {
-      const at = new ClientCredentials({
-        accountId: 'accountId',
-        clientId: 'clientId',
-        scope: 'scope',
+    it('revokes client credentials token [correct hint]', function (done) {
+      const rt = new ClientCredentials({
+        clientId: 'client'
       });
 
-      sinon.stub(ClientCredentials, 'find').throws();
+      const stub = sinon.stub(ClientCredentials.prototype, 'destroy', function () {
+        return Promise.resolve();
+      });
 
-      at.save().then(function (token) {
+      rt.save().then(function (token) {
         agent.post(route)
         .auth('client', 'secret')
-        .send({ token })
+        .send({ token, token_type_hint: 'client_credentials' })
         .type('form')
         .expect(function () {
-          ClientCredentials.find.restore();
+          expect(stub.calledOnce).to.be.true;
+          ClientCredentials.prototype.destroy.restore();
         })
         .expect(200)
         .expect(function (response) {
@@ -184,22 +329,49 @@ describe('revocation features', function () {
       });
     });
 
-    it('ignores decode exceptions', function (done) {
-      const at = new ClientCredentials({
-        accountId: 'accountId',
-        clientId: 'clientId',
-        scope: 'scope',
+    it('revokes client credentials token [wrong hint]', function (done) {
+      const rt = new ClientCredentials({
+        clientId: 'client'
       });
 
-      sinon.stub(provider.get('OAuthToken'), 'decode').throws();
+      const stub = sinon.stub(ClientCredentials.prototype, 'destroy', function () {
+        return Promise.resolve();
+      });
 
-      at.save().then(function (token) {
+      rt.save().then(function (token) {
         agent.post(route)
         .auth('client', 'secret')
-        .send({ token })
+        .send({ token, token_type_hint: 'access_token' })
         .type('form')
         .expect(function () {
-          provider.get('OAuthToken').decode.restore();
+          expect(stub.calledOnce).to.be.true;
+          ClientCredentials.prototype.destroy.restore();
+        })
+        .expect(200)
+        .expect(function (response) {
+          expect(response.body).to.eql({});
+        })
+        .end(done);
+      });
+    });
+
+    it('revokes client credentials token [unrecognized hint]', function (done) {
+      const rt = new ClientCredentials({
+        clientId: 'client'
+      });
+
+      const stub = sinon.stub(ClientCredentials.prototype, 'destroy', function () {
+        return Promise.resolve();
+      });
+
+      rt.save().then(function (token) {
+        agent.post(route)
+        .auth('client', 'secret')
+        .send({ token, token_type_hint: 'foobar' })
+        .type('form')
+        .expect(function () {
+          expect(stub.calledOnce).to.be.true;
+          ClientCredentials.prototype.destroy.restore();
         })
         .expect(200)
         .expect(function (response) {
@@ -221,18 +393,11 @@ describe('revocation features', function () {
       });
     });
 
-    it('even bad tokens of valid format still get valid response', function () {
-      const fields = {
-        kind: 'ClientCredentials',
-        exp: 1,
-        iat: 2,
-        iss: 'me',
-        jti: 'id'
-      };
+    it('rejects completely wrong tokens with the expected OK response', function () {
       return agent.post(route)
       .auth('client', 'secret')
       .send({
-        token: `${base64url(j(fields))}.`
+        token: 'dsahjdasdsa'
       })
       .type('form')
       .expect(200)
@@ -241,23 +406,40 @@ describe('revocation features', function () {
       });
     });
 
-    it('rejects unssuported tokens', function () {
-      const fields = {
-        kind: 'whateveratthisstage',
-        exp: 1,
-        iat: 2,
-        iss: 'me',
-        jti: 'id'
-      };
+    it('rejects unsupported tokens', function * () {
+      const ac = new AuthorizationCode({ clientId: 'client' });
       return agent.post(route)
       .auth('client', 'secret')
       .send({
-        token: `${base64url(j(fields))}.`
+        token: yield ac.save()
       })
       .type('form')
       .expect(400)
       .expect(function (response) {
         expect(response.body).to.have.property('error', 'unsupported_token_type');
+      });
+    });
+
+    it('does not revoke tokens of other clients', function (done) {
+      const at = new AccessToken({
+        accountId: 'accountId',
+        clientId: 'client2',
+        scope: 'scope',
+      });
+
+      at.save().then(function (token) {
+        agent.post(route)
+          .auth('client', 'secret')
+          .send({ token })
+          .type('form')
+          .expect(400)
+          .expect(function (response) {
+            expect(response.body).to.eql({
+              error: 'invalid_request',
+              error_description: 'this token does not belong to you'
+            });
+          })
+          .end(done);
       });
     });
 
