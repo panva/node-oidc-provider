@@ -47,6 +47,7 @@
     "openid",
     "connect",
     "provider",
+    "server",
     "oidc",
     "oauth",
     "oauth2"
