@@ -1,6 +1,8 @@
 Following semver, 1.0.0 will mark the first API stable release and commence of this file,
 until then please use the compare views of github for reference.
 
+- https://github.com/panva/node-oidc-provider/compare/v0.10.0...master
+  - fix: push nonce from code to refresh token and then id_token upon refresh
 - https://github.com/panva/node-oidc-provider/compare/v0.9.0...v0.10.0
   - added: custom discovery property config
   - added: returning distributed and aggregated claims
