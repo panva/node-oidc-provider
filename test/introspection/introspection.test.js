@@ -125,7 +125,7 @@ describe('introspection features', function () {
       .send({})
       .type('form')
       .expect('pragma', 'no-cache')
-      .expect('cache-control', 'no-store');
+      .expect('cache-control', 'no-cache, no-store');
     });
 
     it('validates token param presence', function () {

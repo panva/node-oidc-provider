@@ -78,7 +78,7 @@ describe('grant_type=authorization_code', function () {
         redirect_uri: 'https://client.example.com/cb'
       })
       .expect('pragma', 'no-cache')
-      .expect('cache-control', 'no-store');
+      .expect('cache-control', 'no-cache, no-store');
     });
 
     it('handles internal token signature validation', function () {
