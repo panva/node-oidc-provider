@@ -74,7 +74,7 @@ The following specifications are implemented by oidc-provider.
 
 The following drafts/experimental specifications are implemented by oidc-provider.
 - [OpenID Connect Session Management 1.0 - draft 26][feature-session-management]
-- [OpenID Connect Back-Channel Logout 1.0 - draft 02][feature-backchannel-logout]
+- [OpenID Connect Back-Channel Logout 1.0 - draft 03][feature-backchannel-logout]
 
 Updates to drafts and experimental specifications are released as MINOR versions.
 
@@ -531,4 +531,4 @@ OP Config and OP Dynamic profiles of the OpenID Connect™ protocol.
 [openid-client]: https://github.com/panva/node-openid-client
 [password-grant]: https://tools.ietf.org/html/rfc6749#section-4.3
 [feature-aggregated-distributed-claims]: http://openid.net/specs/openid-connect-core-1_0.html#AggregatedDistributedClaims
-[feature-backchannel-logout]: http://openid.net/specs/openid-connect-backchannel-1_0-02.html
+[feature-backchannel-logout]: http://openid.net/specs/openid-connect-backchannel-1_0-03.html

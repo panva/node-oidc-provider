@@ -32,17 +32,15 @@ describe('Back-Channel Logout 1.0', function () {
     // TODO: REDO, it's failing sometimes
     it('triggers the call, does not return values', function * () {
       const client = yield provider.get('Client').find('client');
-      const now = Date.now() / 1000 | 0;
 
       nock('https://client.example.com/')
         .filteringRequestBody(function (body) {
           expect(body).to.match(/^logout_token=(([\w-]+\.?){3})$/);
           const decoded = JSON.parse(base64url.decode(RegExp.$1.split('.')[1]));
-          expect(decoded).to.have.all.keys('sub', 'logout_only', 'iat', 'exp', 'aud', 'iss', 'jti');
-          expect(decoded).to.have.property('logout_only', true);
+          expect(decoded).to.have.all.keys('sub', 'events', 'iat', 'aud', 'iss', 'jti');
+          expect(decoded).to.have.property('events').and.eql(['http://schemas.openid.net/event/backchannel-logout']);
           expect(decoded).to.have.property('aud', 'client');
           expect(decoded).to.have.property('sub', 'subject');
-          expect(decoded).to.have.property('exp').to.be.at.most(now + 120);
         })
         .post('/backchannel_logout')
         .reply(204);
