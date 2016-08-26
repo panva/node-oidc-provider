@@ -3,6 +3,7 @@
 const { agent, provider } = require('../test_helper')(__dirname);
 const { expect } = require('chai');
 const sinon = require('sinon');
+const base64url = require('base64url');
 
 const Client = provider.get('Client');
 
@@ -100,7 +101,7 @@ describe('registration features', function () {
 
     it('stores the client using the provided adapter and emits an event', function (done) {
       const spy = sinon.spy();
-      provider.once('registration.success', spy);
+      provider.once('registration_create.success', spy);
 
       agent.post('/reg')
       .send({
@@ -158,6 +159,121 @@ describe('registration features', function () {
         error_description: 'only application/json content-type POST bodies are supported'
       });
     });
+
+    describe('initial access tokens', function () {
+      describe('fix string one', function () {
+        before(function () {
+          const conf = provider.configuration();
+          conf.features.registration = { initialAccessToken: 'foobar' };
+        });
+        after(function () {
+          const conf = provider.configuration();
+          conf.features.registration = true;
+        });
+
+        it('allows reg calls with the access tokens as a Bearer token [query]', function () {
+          return agent.post('/reg')
+          .send({
+            redirect_uris: ['https://client.example.com/cb']
+          })
+          .query({
+            access_token: 'foobar'
+          })
+          .expect(201);
+        });
+
+        it('allows reg calls with the access tokens as a Bearer token [post]', function () {
+          return agent.post('/reg')
+          .send({
+            redirect_uris: ['https://client.example.com/cb'],
+            access_token: 'foobar'
+          })
+          .expect(201);
+        });
+
+        it('allows reg calls with the access tokens as a Bearer token [header]', function () {
+          return agent.post('/reg')
+          .set('Authorization', 'Bearer foobar')
+          .send({
+            redirect_uris: ['https://client.example.com/cb']
+          })
+          .expect(201);
+        });
+
+        it('rejects calls with bad access token', function () {
+          return agent.post('/reg')
+          .send({
+            redirect_uris: ['https://client.example.com/cb']
+          })
+          .query({
+            access_token: 'foobarbaz'
+          })
+          .expect(401);
+        });
+      });
+
+      describe('using a model', function () {
+        before(function () {
+          const conf = provider.configuration();
+          conf.features.registration = { initialAccessToken: true };
+
+          const iat = new (provider.get('InitialAccessToken'))({});
+          return iat.save().then(value => {
+            this.token = value;
+          });
+        });
+        after(function () {
+          const conf = provider.configuration();
+          conf.features.registration = true;
+        });
+
+        it('allows the developers to insert new tokens with no expiration', function () {
+          return new (provider.get('InitialAccessToken'))().save();
+        });
+
+        it('allows the developers to insert new tokens with expiration', function () {
+          const IAT = provider.get('InitialAccessToken');
+          return new IAT({
+            expiresIn: 24 * 60 * 60
+          }).save().then(function (v) {
+            expect(JSON.parse(base64url.decode(v.split('.')[0]))).to.have.property('exp');
+          });
+        });
+
+        it('allows reg calls with the access tokens as a Bearer token', function () {
+          return agent.post('/reg')
+          .send({
+            redirect_uris: ['https://client.example.com/cb']
+          })
+          .query({
+            access_token: this.token
+          })
+          .expect(201);
+        });
+
+        it('rejects calls with bad access token', function () {
+          return agent.post('/reg')
+          .send({
+            redirect_uris: ['https://client.example.com/cb']
+          })
+          .query({
+            access_token: 'foobarbaz'
+          })
+          .expect(401);
+        });
+
+        it('rejects calls with manipulated access token', function () {
+          return agent.post('/reg')
+          .send({
+            redirect_uris: ['https://client.example.com/cb']
+          })
+          .query({
+            access_token: this.token.slice(0, -1)
+          })
+          .expect(401);
+        });
+      });
+    });
   });
 
   context('GET /reg/:clientId', function () {
@@ -207,8 +323,8 @@ describe('registration features', function () {
         .query({
           access_token: 'wahtever'
         })
-        .expect(400)
-        .expect(validateError('invalid_client'));
+        .expect(401)
+        .expect(validateError('invalid_token'));
     });
 
     it('validates auth presence', function () {
@@ -217,7 +333,7 @@ describe('registration features', function () {
         .expect(validateError('invalid_request'));
     });
 
-    it('validates auth validity', function () {
+    it('validates auth', function () {
       return agent.get(`/reg/${this.clientId}`)
         .query({
           access_token: 'invalid token'
@@ -237,6 +353,24 @@ describe('registration features', function () {
       return agent.get(`/reg/${this.clientId}`)
         .set('Authorization', `Bearer ${this.token}`)
         .expect(200);
+    });
+
+    it('invalidates registration_access_token if used on the wrong client', function () {
+      const spy = sinon.spy();
+      provider.once('token.revoked', spy);
+
+      return agent.get('/reg/foobar')
+        .query({
+          access_token: this.token
+        })
+        .expect('pragma', 'no-cache')
+        .expect('cache-control', 'no-cache, no-store')
+        .expect(401)
+        .expect(() => {
+          expect(spy.calledOnce).to.be.true;
+          expect(spy.firstCall.args[0].constructor.name).to.equal('RegistrationAccessToken');
+          expect(spy.firstCall.args[0].clientId).to.equal(this.clientId);
+        });
     });
   });
 });
