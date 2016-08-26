@@ -364,7 +364,7 @@ describe('registration features', function () {
           access_token: this.token
         })
         .expect('pragma', 'no-cache')
-        .expect('cache-control', 'no-store')
+        .expect('cache-control', 'no-cache, no-store')
         .expect(401)
         .expect(() => {
           expect(spy.calledOnce).to.be.true;
