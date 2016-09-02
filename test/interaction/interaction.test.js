@@ -80,11 +80,12 @@ describe('resume after interaction', function () {
 
       return agent.get(`/auth/${uuid()}`)
         .expect(302)
+        .expect('set-cookie', /expires/) // expect a permanent cookie
         .expect(auth.validateState)
         .expect(auth.validateClientLocation)
         .expect(auth.validatePresence(['code', 'state']))
         .expect(function () {
-          expect(getSession(agent)).to.be.ok;
+          expect(getSession(agent)).to.be.ok.and.not.have.property('transient');
         });
     });
 
@@ -103,10 +104,11 @@ describe('resume after interaction', function () {
       return agent.get(`/auth/${uuid()}`)
         .expect(302)
         .expect(auth.validateState)
+        .expect('set-cookie', /^((?!expires).)*$/) // expect a transient cookie
         .expect(auth.validateClientLocation)
         .expect(auth.validatePresence(['code', 'state']))
         .expect(function () {
-          expect(getSession(agent)).to.be.undefined;
+          expect(getSession(agent)).to.be.ok.and.have.property('transient');
         });
     });
   });

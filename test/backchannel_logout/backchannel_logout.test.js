@@ -29,7 +29,6 @@ describe('Back-Channel Logout 1.0', function () {
   });
 
   describe('Client#backchannelLogout', function () {
-    // TODO: REDO, it's failing sometimes
     it('triggers the call, does not return values', function * () {
       const client = yield provider.get('Client').find('client');
 
@@ -66,7 +65,7 @@ describe('Back-Channel Logout 1.0', function () {
       return agent.get('/.well-known/openid-configuration')
       .expect(function (response) {
         expect(response.body).to.have.property('backchannel_logout_supported', true);
-        expect(response.body).not.to.have.property('backchannel_logout_session_supported');
+        expect(response.body).to.have.property('backchannel_logout_session_supported', true);
       });
     });
   });
@@ -81,14 +80,64 @@ describe('Back-Channel Logout 1.0', function () {
         client_id: 'client',
         scope: 'openid',
         nonce: String(Math.random()),
-        response_type: 'id_token',
+        response_type: 'code id_token',
         redirect_uri: 'https://client.example.com/cb'
       })
       .expect(302)
       .expect((response) => {
-        const { query: { id_token: idToken } } = parseUrl(response.headers.location.replace('#', '?'), true);
+        const { query: { code, id_token: idToken } } = parseUrl(response.headers.location.replace('#', '?'), true);
         this.idToken = idToken;
+        this.code = code;
       });
+    });
+
+    it('makes sid available in id_token issued by authorization endpoint', function () {
+      const payload = JSON.parse(base64url.decode(this.idToken.split('.')[1]));
+      expect(payload).to.have.property('sid').that.is.a('string');
+    });
+
+    it('makes sid available in id_token issued by grant_type=authorization_code', function () {
+      return agent.post('/token')
+        .auth('client', 'secret')
+        .type('form')
+        .send({
+          code: this.code,
+          grant_type: 'authorization_code',
+          redirect_uri: 'https://client.example.com/cb'
+        })
+        .expect(200)
+        .expect(function (response) {
+          const payload = JSON.parse(base64url.decode(response.body.id_token.split('.')[1]));
+          expect(payload).to.have.property('sid').that.is.a('string');
+        });
+    });
+
+    it('makes sid available in id_token issued by grant_type=refresh_token', function (done) {
+      agent.post('/token')
+        .auth('client', 'secret')
+        .type('form')
+        .send({
+          code: this.code,
+          grant_type: 'authorization_code',
+          redirect_uri: 'https://client.example.com/cb'
+        })
+        .expect(200)
+        .end(function (error, acResponse) {
+          if (error) { done(error); return; }
+          agent.post('/token')
+            .auth('client', 'secret')
+            .type('form')
+            .send({
+              refresh_token: acResponse.body.refresh_token,
+              grant_type: 'refresh_token'
+            })
+            .expect(200)
+            .expect(function (rtResponse) {
+              const payload = JSON.parse(base64url.decode(rtResponse.body.id_token.split('.')[1]));
+              expect(payload).to.have.property('sid').that.is.a('string');
+            })
+            .end(done);
+        });
     });
 
     it('triggers the backchannelLogout for visited clients', function * () {
@@ -97,10 +146,14 @@ describe('Back-Channel Logout 1.0', function () {
 
       sinon.spy(client, 'backchannelLogout');
 
+      const accountId = this.loggedInAccountId;
+      const sid = this.clientSessionId;
+
       return agent.get('/session/end')
       .query(params)
       .expect(function () {
         expect(client.backchannelLogout.called).to.be.true;
+        expect(client.backchannelLogout.calledWith(accountId, sid)).to.be.true;
         client.backchannelLogout.restore();
       });
     });

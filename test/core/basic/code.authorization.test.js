@@ -64,7 +64,7 @@ provider.setupCerts();
       .expect(auth.validateInteractionError('login_required', 'no_session'));
     });
 
-    describe('requested by the End-User', function () {
+    describe('requested from the End-User', function () {
       it('login was requested by the client by prompt parameter', function () {
         const auth = new AuthorizationRequest({
           response_type: 'code',
@@ -113,6 +113,21 @@ provider.setupCerts();
         .expect(302)
         .expect(auth.validateInteractionRedirect)
         .expect(auth.validateInteractionError('login_required', 'max_age'));
+      });
+
+      it('client not authorized in session yet', function () {
+        const session = getSession(agent);
+        session.authorizations = {};
+
+        const auth = new AuthorizationRequest({
+          response_type: 'code',
+          scope: 'openid'
+        });
+
+        return wrap({ agent, route, verb, auth })
+          .expect(302)
+          .expect(auth.validateInteractionRedirect)
+          .expect(auth.validateInteractionError('consent_required', 'client_not_authorized'));
       });
     });
   });

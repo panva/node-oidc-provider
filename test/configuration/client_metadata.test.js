@@ -581,6 +581,17 @@ describe('Client validations', function () {
     mustBeUri(this.title, ['http', 'https']);
   });
 
+  context('backchannel_logout_session_required', function () {
+    defaultsTo(this.title, undefined);
+    defaultsTo(this.title, false, undefined, {
+      features: {
+        backchannelLogout: true,
+        sessionManagement: true
+      }
+    });
+    mustBeBoolean(this.title);
+  });
+
   context('jwks_uri', function () {
     mustBeString(this.title);
 

@@ -44,6 +44,7 @@ module.exports = function testHelper(dir, basename, mountTo) {
     base: `${basename || path.basename(dir)}.config.js`,
   });
   const { config, certs, client } = require(conf); // eslint-disable-line global-require
+  const additionalClients = [];
   config.adapter = TestAdapter;
   config.findById = Account.findById;
   const provider = new Provider(`http://127.0.0.1${mountTo || ''}`, config);
@@ -95,9 +96,15 @@ module.exports = function testHelper(dir, basename, mountTo) {
     const expire = new Date();
     expire.setDate(expire.getDate() + 1);
     const account = uuid();
+    this.loggedInAccountId = account;
 
     const session = new (provider.get('Session'))(sessionId, { loginTs, account });
     const cookies = [`_session=${sessionId}; path=/; expires=${expire.toGMTString()}; httponly`];
+
+    const sid = uuid();
+    session.authorizations = { [client.client_id]: { sid } };
+    additionalClients.forEach(clientId => { session.authorizations[clientId] = { sid: uuid() }; });
+    this.clientSessionId = sid;
 
     if (provider.configuration('features.sessionManagement')) {
       cookies.push(`_session_states=${JSON.stringify({ [client.client_id]: String(loginTs) })}; path=/; expires=${expire.toGMTString()};`);
@@ -228,6 +235,8 @@ module.exports = function testHelper(dir, basename, mountTo) {
     if (provider.configuration('idTokenSigningAlgValues').indexOf('RS256') === -1) {
       this.setupCerts();
     }
+
+    if (pass) additionalClients.push(pass.client_id);
 
     const add = pass || client;
     before('adding client', function () {

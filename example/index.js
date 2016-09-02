@@ -4,7 +4,7 @@
 const path = require('path');
 const _ = require('lodash');
 const koa = require('koa');
-const body = require('koa-body');
+const bodyParser = require('koa-body');
 const mount = require('koa-mount');
 const querystring = require('querystring');
 const rewrite = require('koa-rewrite');
@@ -16,7 +16,7 @@ const app = koa();
 
 render(app, {
   cache: false,
-  layout: false,
+  layout: '_layout',
   root: path.join(__dirname, 'views'),
 });
 
@@ -73,22 +73,45 @@ router.get('/interaction/:grant', function * renderInteraction(next) {
   const cookie = JSON.parse(this.cookies.get('_grant', { signed: true }));
   const client = yield provider.get('Client').find(cookie.params.client_id);
 
-  yield this.render('login', {
-    client,
-    cookie,
-    action: '/login',
-    debug: querystring.stringify(cookie.params, ',<br/>', ' = ', {
-      encodeURIComponent: (value) => value,
-    }),
-    interaction: querystring.stringify(cookie.interaction, ',<br/>', ' = ', {
-      encodeURIComponent: (value) => value,
-    }),
-  });
+  if (cookie.interaction.error === 'login_required') {
+    yield this.render('login', {
+      client,
+      cookie,
+      title: 'Sign-in',
+      debug: querystring.stringify(cookie.params, ',<br/>', ' = ', {
+        encodeURIComponent: (value) => value,
+      }),
+      interaction: querystring.stringify(cookie.interaction, ',<br/>', ' = ', {
+        encodeURIComponent: (value) => value,
+      }),
+    });
+  } else {
+    yield this.render('interaction', {
+      client,
+      cookie,
+      title: 'Authorize',
+      debug: querystring.stringify(cookie.params, ',<br/>', ' = ', {
+        encodeURIComponent: (value) => value,
+      }),
+      interaction: querystring.stringify(cookie.interaction, ',<br/>', ' = ', {
+        encodeURIComponent: (value) => value,
+      }),
+    });
+  }
+
 
   yield next;
 });
 
-router.post('/login', body(), function * submitLoginForm() {
+const body = bodyParser();
+
+router.post('/confirm', body, function * submitConfirmationForm(next) {
+  const result = { consent: {} };
+  provider.resume(this, this.request.body.uuid, result);
+  yield next;
+});
+
+router.post('/login', body, function * submitLoginForm() {
   const account = yield Account.findByLogin(this.request.body.login);
 
   const result = {

@@ -1,6 +1,8 @@
 Following semver, 1.0.0 will mark the first API stable release and commence of this file,
 until then please use the compare views of github for reference.
 
+
+
 - master
   - changed: Back-Channel Logout draft implementation bumped from 02 to 03
   - added: Initial Access Token for Dynamic Registration (either fixed string or backed by adapter)
@@ -11,6 +13,18 @@ until then please use the compare views of github for reference.
   registration are now invalid, create new ones with
   `new RegistrationAccessToken({ clientId }).save()` this, when resolved, returns the string value
   of a new registration_access_token
+  - change: when remember is missing from the resume cookie a transient cookie is issued instead of
+  no cookie at all
+  - errors now use the renderError helper when viewed in a browser environment
+  - Back-Channel Logout session now supported
+    - sid claim is available in id tokens when backchannelLogout is enabled
+    - unique sid is now stored for each encountered client in a session
+  - session model changes
+    - new property `authorizations` of type Object now stored with the session, currently can only
+    contain sid key, in the future will contain more
+  - Interaction is now requested first time a client is encountered (strategies for this coming later)
+
+
 
 - https://github.com/panva/node-oidc-provider/compare/v0.10.0...0.10.2
   - fix: push nonce from code to refresh token and then id_token upon refresh
