@@ -1,7 +1,7 @@
 'use strict';
 
 const {
-  agent, provider
+  agent, provider, TestAdapter
 } = require('../test_helper')(__dirname);
 const sinon = require('sinon');
 const { decode: base64url } = require('base64url');
@@ -41,7 +41,7 @@ describe('grant_type=authorization_code', function () {
       .expect((response) => {
         const { query: { code } } = parseUrl(response.headers.location, true);
         const jti = j(base64url(code.split('.')[0])).jti;
-        this.code = AuthorizationCode.adapter.syncFind(jti);
+        this.code = TestAdapter.for('AuthorizationCode').syncFind(jti);
         this.ac = code;
       });
     });

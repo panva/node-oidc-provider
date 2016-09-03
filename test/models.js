@@ -3,8 +3,15 @@
 const store = new Map();
 
 class TestAdapter {
-  constructor(name) {
+  constructor(name) { // eslint-disable-line consistent-return
     this.name = name;
+    if (store.has(name)) return store.get(name);
+
+    store.set(name, this);
+  }
+
+  static for(name) {
+    return store.get(name);
   }
 
   static get storage() {

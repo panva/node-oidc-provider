@@ -1,7 +1,7 @@
 'use strict';
 
 const {
-  agent, provider
+  agent, provider, TestAdapter
 } = require('../test_helper')(__dirname);
 const sinon = require('sinon');
 const { decode: base64url } = require('base64url');
@@ -63,7 +63,7 @@ describe('grant_type=refresh_token', function () {
         .expect((response) => {
           expect(response.body).to.have.property('refresh_token');
           const jti = j(base64url(response.body.refresh_token.split('.')[0])).jti;
-          this.refreshToken = RefreshToken.adapter.syncFind(jti);
+          this.refreshToken = TestAdapter.for('RefreshToken').syncFind(jti);
           this.rt = response.body.refresh_token;
         })
         .end(done);

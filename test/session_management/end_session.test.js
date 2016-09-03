@@ -1,7 +1,7 @@
 'use strict';
 
 const {
-  provider, agent, wrap, getSessionId
+  provider, agent, wrap, getSessionId, TestAdapter
 } = require('../test_helper')(__dirname);
 const sinon = require('sinon');
 const { parse: parseUrl } = require('url');
@@ -18,8 +18,8 @@ provider.setupCerts();
     beforeEach(agent.login);
     afterEach(agent.logout);
     afterEach(function () {
-      if (provider.get('Session').adapter.destroy.restore) {
-        provider.get('Session').adapter.destroy.restore();
+      if (TestAdapter.for('Session').destroy.restore) {
+        TestAdapter.for('Session').destroy.restore();
       }
     });
 
@@ -44,7 +44,7 @@ provider.setupCerts();
         id_token_hint: this.idToken
       };
       const sessionId = getSessionId(agent);
-      const adapter = provider.get('Session').adapter;
+      const adapter = TestAdapter.for('Session');
       sinon.spy(adapter, 'destroy');
 
       return wrap({ agent, route, verb, params })

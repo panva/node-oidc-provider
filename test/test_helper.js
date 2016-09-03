@@ -274,10 +274,9 @@ module.exports = function testHelper(dir, basename, mountTo) {
   };
 
   function getSession(userAgent) {
-    const Session = provider.get('Session');
     const { value: sessionId } = userAgent.jar.getCookie('_session', { path: '/' });
-    const key = Session.adapter.key(sessionId);
-    return Session.adapter.storage.get(key);
+    const key = TestAdapter.for('Session').key(sessionId);
+    return TestAdapter.for('Session').storage.get(key);
   }
 
   function getSessionId(userAgent) {
@@ -309,6 +308,7 @@ module.exports = function testHelper(dir, basename, mountTo) {
     responses,
     getSessionId,
     getSession,
-    wrap
+    wrap,
+    TestAdapter
   };
 };
