@@ -47,6 +47,19 @@ module.exports = function testHelper(dir, basename, mountTo) {
   const additionalClients = [];
   config.adapter = TestAdapter;
   config.findById = Account.findById;
+
+  if (!process.env.INTEGRITY) process.env.INTEGRITY = 'random';
+
+  const integrity = (process.env.INTEGRITY === 'random' && Math.floor(Math.random() * 2)) ||
+    process.env.INTEGRITY === 'on';
+
+  if (integrity) {
+    const ks = jose.JWK.createKeyStore();
+    config.tokenIntegrity = ks;
+    before(function () {
+      return ks.generate('oct', 512, { alg: 'HS512' });
+    });
+  }
   const provider = new Provider(`http://127.0.0.1${mountTo || ''}`, config);
 
   // gotta delegate the keystore object so that we can stub the method calls
