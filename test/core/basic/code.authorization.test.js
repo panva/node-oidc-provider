@@ -11,7 +11,7 @@ describe('BASIC code', function () {
   provider.setupClient();
   provider.setupCerts();
 
-  ['get', 'post'].forEach((verb) => {
+  ['get', 'post'].forEach(verb => {
     describe(`${verb} ${route} with session`, function () {
       before(agent.login);
 
@@ -95,7 +95,7 @@ describe('BASIC code', function () {
 
         it('session is too old for this authorization request', function () {
           const session = getSession(agent);
-          session.loginTs = (new Date() / 1000 | 0) - 3600; // an hour ago
+          session.loginTs = (Date.now() / 1000 | 0) - 3600; // an hour ago
 
           const auth = new AuthorizationRequest({
             response_type: 'code',
@@ -114,7 +114,7 @@ describe('BASIC code', function () {
           client.defaultMaxAge = 1800;
 
           const session = getSession(agent);
-          session.loginTs = (new Date() / 1000 | 0) - 3600; // an hour ago
+          session.loginTs = (Date.now() / 1000 | 0) - 3600; // an hour ago
 
           const auth = new AuthorizationRequest({
             response_type: 'code',

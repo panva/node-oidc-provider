@@ -17,7 +17,7 @@ describe('JSON Web Token (JWT) RFC7519 implementation', function () {
     return JWT.sign({ data: true }, null, 'none', {
       noTimestamp: true
     })
-    .then((jwt) => JWT.decode(jwt))
+    .then(jwt => JWT.decode(jwt))
     .then(function (decoded) {
       expect(decoded.header).not.to.have.property('kid');
       expect(decoded.header).to.have.property('alg', 'none');
@@ -30,7 +30,7 @@ describe('JSON Web Token (JWT) RFC7519 implementation', function () {
     return JWT.sign({ data: true }, key, 'HS256', {
       noTimestamp: true
     })
-    .then((jwt) => JWT.verify(jwt, key))
+    .then(jwt => JWT.verify(jwt, key))
     .then(function (decoded) {
       expect(decoded.header).not.to.have.property('kid');
       expect(decoded.header).to.have.property('alg', 'HS256');
@@ -43,7 +43,7 @@ describe('JSON Web Token (JWT) RFC7519 implementation', function () {
     return JWT.sign({ data: true }, key, 'RS256', {
       noTimestamp: true
     })
-    .then((jwt) => JWT.verify(jwt, key))
+    .then(jwt => JWT.verify(jwt, key))
     .then(function (decoded) {
       expect(decoded.header).to.have.property('kid');
       expect(decoded.header).to.have.property('alg', 'RS256');
@@ -56,7 +56,7 @@ describe('JSON Web Token (JWT) RFC7519 implementation', function () {
     return JWT.sign({ data: true }, key, 'ES256', {
       noTimestamp: true
     })
-    .then((jwt) => JWT.verify(jwt, key))
+    .then(jwt => JWT.verify(jwt, key))
     .then(function (decoded) {
       expect(decoded.header).to.have.property('kid');
       expect(decoded.header).to.have.property('alg', 'ES256');
@@ -67,7 +67,7 @@ describe('JSON Web Token (JWT) RFC7519 implementation', function () {
   describe('sign options', function () {
     it('iat by default', function () {
       return JWT.sign({ data: true }, null, 'none')
-      .then((jwt) => JWT.decode(jwt))
+      .then(jwt => JWT.decode(jwt))
       .then(function (decoded) {
         expect(decoded.payload).to.have.property('iat');
       });
@@ -75,7 +75,7 @@ describe('JSON Web Token (JWT) RFC7519 implementation', function () {
 
     it('expiresIn', function () {
       return JWT.sign({ data: true }, null, 'none', { expiresIn: 60 })
-      .then((jwt) => JWT.decode(jwt))
+      .then(jwt => JWT.decode(jwt))
       .then(function (decoded) {
         expect(decoded.payload).to.have.property('exp', decoded.payload.iat + 60);
       });
@@ -83,7 +83,7 @@ describe('JSON Web Token (JWT) RFC7519 implementation', function () {
 
     it('audience', function () {
       return JWT.sign({ data: true }, null, 'none', { audience: 'clientId' })
-      .then((jwt) => JWT.decode(jwt))
+      .then(jwt => JWT.decode(jwt))
       .then(function (decoded) {
         expect(decoded.payload).to.have.property('aud', 'clientId');
       });
@@ -91,7 +91,7 @@ describe('JSON Web Token (JWT) RFC7519 implementation', function () {
 
     it('issuer', function () {
       return JWT.sign({ data: true }, null, 'none', { issuer: 'http://example.com/issuer' })
-      .then((jwt) => JWT.decode(jwt))
+      .then(jwt => JWT.decode(jwt))
       .then(function (decoded) {
         expect(decoded.payload).to.have.property('iss', 'http://example.com/issuer');
       });
@@ -99,7 +99,7 @@ describe('JSON Web Token (JWT) RFC7519 implementation', function () {
 
     it('subject', function () {
       return JWT.sign({ data: true }, null, 'none', { subject: 'http://example.com/subject' })
-      .then((jwt) => JWT.decode(jwt))
+      .then(jwt => JWT.decode(jwt))
       .then(function (decoded) {
         expect(decoded.payload).to.have.property('sub', 'http://example.com/subject');
       });
@@ -110,10 +110,10 @@ describe('JSON Web Token (JWT) RFC7519 implementation', function () {
     it('nbf', function () {
       const key = keystore.get({ kty: 'oct' });
       return JWT.sign({ data: true, nbf: (Date.now() / 1000 | 0) + 3600 }, key, 'HS256')
-      .then((jwt) => JWT.verify(jwt, key))
-      .then((valid) => {
+      .then(jwt => JWT.verify(jwt, key))
+      .then(valid => {
         expect(valid).not.to.be.ok;
-      }, (err) => {
+      }, err => {
         expect(err).to.be.ok;
         expect(err).to.have.property('name', 'AssertionError');
         expect(err).to.have.property('message', 'jwt not active yet');
@@ -123,7 +123,7 @@ describe('JSON Web Token (JWT) RFC7519 implementation', function () {
     it('nbf ignored', function () {
       const key = keystore.get({ kty: 'oct' });
       return JWT.sign({ data: true, nbf: (Date.now() / 1000 | 0) + 3600 }, key, 'HS256')
-      .then((jwt) => JWT.verify(jwt, key, {
+      .then(jwt => JWT.verify(jwt, key, {
         ignoreNotBefore: true
       }));
     });
@@ -131,10 +131,10 @@ describe('JSON Web Token (JWT) RFC7519 implementation', function () {
     it('nbf invalid', function () {
       const key = keystore.get({ kty: 'oct' });
       return JWT.sign({ data: true, nbf: 'not a nbf' }, key, 'HS256')
-      .then((jwt) => JWT.verify(jwt, key))
-      .then((valid) => {
+      .then(jwt => JWT.verify(jwt, key))
+      .then(valid => {
         expect(valid).not.to.be.ok;
-      }, (err) => {
+      }, err => {
         expect(err).to.be.ok;
         expect(err).to.have.property('name', 'AssertionError');
         expect(err).to.have.property('message', 'invalid nbf value');
@@ -146,10 +146,10 @@ describe('JSON Web Token (JWT) RFC7519 implementation', function () {
       return JWT.sign({ data: true, iat: (Date.now() / 1000 | 0) + 3600 }, key, 'HS256', {
         noTimestamp: true
       })
-      .then((jwt) => JWT.verify(jwt, key))
-      .then((valid) => {
+      .then(jwt => JWT.verify(jwt, key))
+      .then(valid => {
         expect(valid).not.to.be.ok;
-      }, (err) => {
+      }, err => {
         expect(err).to.be.ok;
         expect(err).to.have.property('name', 'AssertionError');
         expect(err).to.have.property('message', 'jwt issued in the future');
@@ -161,7 +161,7 @@ describe('JSON Web Token (JWT) RFC7519 implementation', function () {
       return JWT.sign({ data: true, iat: (Date.now() / 1000 | 0) + 3600 }, key, 'HS256', {
         noTimestamp: true
       })
-      .then((jwt) => JWT.verify(jwt, key, {
+      .then(jwt => JWT.verify(jwt, key, {
         ignoreIssued: true
       }));
     });
@@ -171,10 +171,10 @@ describe('JSON Web Token (JWT) RFC7519 implementation', function () {
       return JWT.sign({ data: true, iat: 'not an iat' }, key, 'HS256', {
         noTimestamp: true
       })
-      .then((jwt) => JWT.verify(jwt, key))
-      .then((valid) => {
+      .then(jwt => JWT.verify(jwt, key))
+      .then(valid => {
         expect(valid).not.to.be.ok;
-      }, (err) => {
+      }, err => {
         expect(err).to.be.ok;
         expect(err).to.have.property('name', 'AssertionError');
         expect(err).to.have.property('message', 'invalid iat value');
@@ -184,10 +184,10 @@ describe('JSON Web Token (JWT) RFC7519 implementation', function () {
     it('exp', function () {
       const key = keystore.get({ kty: 'oct' });
       return JWT.sign({ data: true, exp: (Date.now() / 1000 | 0) - 3600 }, key, 'HS256')
-      .then((jwt) => JWT.verify(jwt, key))
-      .then((valid) => {
+      .then(jwt => JWT.verify(jwt, key))
+      .then(valid => {
         expect(valid).not.to.be.ok;
-      }, (err) => {
+      }, err => {
         expect(err).to.be.ok;
         expect(err).to.have.property('name', 'AssertionError');
         expect(err).to.have.property('message', 'jwt expired');
@@ -197,7 +197,7 @@ describe('JSON Web Token (JWT) RFC7519 implementation', function () {
     it('exp ignored', function () {
       const key = keystore.get({ kty: 'oct' });
       return JWT.sign({ data: true, exp: (Date.now() / 1000 | 0) - 3600 }, key, 'HS256')
-      .then((jwt) => JWT.verify(jwt, key, {
+      .then(jwt => JWT.verify(jwt, key, {
         ignoreExpiration: true
       }));
     });
@@ -205,10 +205,10 @@ describe('JSON Web Token (JWT) RFC7519 implementation', function () {
     it('exp invalid', function () {
       const key = keystore.get({ kty: 'oct' });
       return JWT.sign({ data: true, exp: 'not an exp' }, key, 'HS256')
-      .then((jwt) => JWT.verify(jwt, key))
-      .then((valid) => {
+      .then(jwt => JWT.verify(jwt, key))
+      .then(valid => {
         expect(valid).not.to.be.ok;
-      }, (err) => {
+      }, err => {
         expect(err).to.be.ok;
         expect(err).to.have.property('name', 'AssertionError');
         expect(err).to.have.property('message', 'invalid exp value');
@@ -220,7 +220,7 @@ describe('JSON Web Token (JWT) RFC7519 implementation', function () {
       return JWT.sign({ data: true }, key, 'HS256', {
         audience: 'client'
       })
-      .then((jwt) => JWT.verify(jwt, key, {
+      .then(jwt => JWT.verify(jwt, key, {
         audience: 'client'
       }));
     });
@@ -230,7 +230,7 @@ describe('JSON Web Token (JWT) RFC7519 implementation', function () {
       return JWT.sign({ data: true }, key, 'HS256', {
         audience: ['client', 'momma']
       })
-      .then((jwt) => JWT.verify(jwt, key, {
+      .then(jwt => JWT.verify(jwt, key, {
         audience: 'momma'
       }));
     });
@@ -240,7 +240,7 @@ describe('JSON Web Token (JWT) RFC7519 implementation', function () {
       return JWT.sign({ data: true }, key, 'HS256', {
         audience: 'client'
       })
-      .then((jwt) => JWT.verify(jwt, key, {
+      .then(jwt => JWT.verify(jwt, key, {
         audience: ['pappa']
       }))
       .then(function (valid) {
@@ -258,7 +258,7 @@ describe('JSON Web Token (JWT) RFC7519 implementation', function () {
       return JWT.sign({ data: true }, key, 'HS256', {
         audience: ['client', 'momma']
       })
-      .then((jwt) => JWT.verify(jwt, key, {
+      .then(jwt => JWT.verify(jwt, key, {
         audience: 'pappa'
       }))
       .then(function (valid) {
@@ -276,7 +276,7 @@ describe('JSON Web Token (JWT) RFC7519 implementation', function () {
       return JWT.sign({ data: true }, key, 'HS256', {
         issuer: 'me'
       })
-      .then((jwt) => JWT.verify(jwt, key, {
+      .then(jwt => JWT.verify(jwt, key, {
         issuer: 'me'
       }));
     });
@@ -286,7 +286,7 @@ describe('JSON Web Token (JWT) RFC7519 implementation', function () {
       return JWT.sign({ data: true }, key, 'HS256', {
         issuer: 'me'
       })
-      .then((jwt) => JWT.verify(jwt, key, {
+      .then(jwt => JWT.verify(jwt, key, {
         issuer: 'you'
       }))
       .then(function (valid) {

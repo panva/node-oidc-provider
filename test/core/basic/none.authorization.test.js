@@ -4,7 +4,7 @@ const bootstrap = require('../../test_helper');
 
 const route = '/auth';
 
-['get', 'post'].forEach((verb) => {
+['get', 'post'].forEach(verb => {
   describe(`${verb} ${route} response_type=none`, function () {
     const { provider, agent, AuthorizationRequest, wrap } = bootstrap(__dirname);
     provider.setupClient();

@@ -30,7 +30,7 @@ describe('request parameter features', function () {
     });
   });
 
-  ['get', 'post'].forEach((verb) => {
+  ['get', 'post'].forEach(verb => {
     describe(`${route} ${verb} passing request parameters as JWTs`, function () {
       before(agent.login);
       after(agent.logout);
@@ -41,7 +41,7 @@ describe('request parameter features', function () {
           client_id: 'client-with-HS-sig',
           response_type: 'code',
           redirect_uri: 'https://client.example.com/cb'
-        }, key, 'HS256').then((request) =>
+        }, key, 'HS256').then(request =>
         wrap({
           agent,
           route,
@@ -57,7 +57,7 @@ describe('request parameter features', function () {
         .expect(function (response) {
           const expected = parse('https://client.example.com/cb', true);
           const actual = parse(response.headers.location, true);
-          ['protocol', 'host', 'pathname'].forEach((attr) => {
+          ['protocol', 'host', 'pathname'].forEach(attr => {
             expect(actual[attr]).to.equal(expected[attr]);
           });
           expect(actual.query).to.have.property('code');
@@ -70,7 +70,7 @@ describe('request parameter features', function () {
           client_id: 'client',
           response_type: 'code',
           redirect_uri: 'https://client.example.com/cb'
-        }, null, 'none').then((request) =>
+        }, null, 'none').then(request =>
         wrap({
           agent,
           route,
@@ -86,7 +86,7 @@ describe('request parameter features', function () {
         .expect(function (response) {
           const expected = parse('https://client.example.com/cb', true);
           const actual = parse(response.headers.location, true);
-          ['protocol', 'host', 'pathname'].forEach((attr) => {
+          ['protocol', 'host', 'pathname'].forEach(attr => {
             expect(actual[attr]).to.equal(expected[attr]);
           });
           expect(actual.query).to.have.property('code');
@@ -103,7 +103,7 @@ describe('request parameter features', function () {
           response_type: 'code',
           request: 'request inception',
           redirect_uri: 'https://client.example.com/cb'
-        }, null, 'none').then((request) =>
+        }, null, 'none').then(request =>
         wrap({
           agent,
           route,
@@ -134,7 +134,7 @@ describe('request parameter features', function () {
           response_type: 'code',
           request_uri: 'request uri inception',
           redirect_uri: 'https://client.example.com/cb'
-        }, null, 'none').then((request) =>
+        }, null, 'none').then(request =>
         wrap({
           agent,
           route,
@@ -164,7 +164,7 @@ describe('request parameter features', function () {
           client_id: 'client',
           response_type: 'id_token',
           redirect_uri: 'https://client.example.com/cb'
-        }, null, 'none').then((request) =>
+        }, null, 'none').then(request =>
         wrap({
           agent,
           route,
@@ -194,7 +194,7 @@ describe('request parameter features', function () {
           client_id: 'client2',
           response_type: 'code',
           redirect_uri: 'https://client.example.com/cb'
-        }, null, 'none').then((request) =>
+        }, null, 'none').then(request =>
         wrap({
           agent,
           route,
@@ -249,7 +249,7 @@ describe('request parameter features', function () {
           client_id: 'client-with-HS-sig',
           response_type: 'code',
           redirect_uri: 'https://client.example.com/cb'
-        }, null, 'none').then((request) =>
+        }, null, 'none').then(request =>
         wrap({
           agent,
           route,
@@ -281,7 +281,7 @@ describe('request parameter features', function () {
           client_id: 'client',
           response_type: 'code',
           redirect_uri: 'https://client.example.com/cb'
-        }, key, 'HS256').then((request) =>
+        }, key, 'HS256').then(request =>
         wrap({
           agent,
           route,
@@ -311,7 +311,7 @@ describe('request parameter features', function () {
           unrecognized: true,
           response_type: 'code',
           redirect_uri: 'https://client.example.com/cb'
-        }, key, 'HS256').then((request) =>
+        }, key, 'HS256').then(request =>
         wrap({
           agent,
           route,
@@ -327,7 +327,7 @@ describe('request parameter features', function () {
         .expect(function (response) {
           const expected = parse('https://client.example.com/cb', true);
           const actual = parse(response.headers.location, true);
-          ['protocol', 'host', 'pathname'].forEach((attr) => {
+          ['protocol', 'host', 'pathname'].forEach(attr => {
             expect(actual[attr]).to.equal(expected[attr]);
           });
           expect(actual.query).to.have.property('code');

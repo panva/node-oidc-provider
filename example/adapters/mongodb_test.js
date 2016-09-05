@@ -19,7 +19,7 @@ MongoAdapter.once('ready', () => {
     console.log('tests passed');
     process.exit();
   })
-  .catch((err) => {
+  .catch(err => {
     console.dir(err);
     process.exit(1);
   });

@@ -147,7 +147,7 @@ describe('client authentication options', function () {
         iss: client.client_id
       }, key, 'HS256', {
         expiresIn: 60
-      }).then((assertion) => agent.post(route)
+      }).then(assertion => agent.post(route)
       .send({
         client_assertion: assertion,
         grant_type: 'implicit',
@@ -184,7 +184,7 @@ describe('client authentication options', function () {
         exp: ''
       }, key, 'HS256', {
         // expiresIn: 60
-      }).then((assertion) => agent.post(route)
+      }).then(assertion => agent.post(route)
       .send({
         client_assertion: assertion,
         grant_type: 'implicit',
@@ -206,7 +206,7 @@ describe('client authentication options', function () {
         iss: client.client_id,
       }, key, 'HS256', {
         expiresIn: 60
-      }).then((assertion) => agent.post(route)
+      }).then(assertion => agent.post(route)
       .send({
         client_assertion: assertion,
         grant_type: 'implicit',
@@ -228,7 +228,7 @@ describe('client authentication options', function () {
         // iss: client.client_id,
       }, key, 'HS256', {
         expiresIn: 60
-      }).then((assertion) => agent.post(route)
+      }).then(assertion => agent.post(route)
       .send({
         client_assertion: assertion,
         grant_type: 'implicit',
@@ -250,7 +250,7 @@ describe('client authentication options', function () {
         iss: 'not equal to clientid',
       }, key, 'HS256', {
         expiresIn: 60
-      }).then((assertion) => agent.post(route)
+      }).then(assertion => agent.post(route)
       .send({
         client_assertion: assertion,
         grant_type: 'implicit',
@@ -273,7 +273,7 @@ describe('client authentication options', function () {
         iss: client.client_id,
       }, key, 'HS256', {
         expiresIn: 60
-      }).then((assertion) => agent.post(route)
+      }).then(assertion => agent.post(route)
       .send({
         client_assertion: assertion,
         grant_type: 'implicit',
@@ -296,7 +296,7 @@ describe('client authentication options', function () {
         iss: client.client_id,
       }, key, 'HS256', {
         expiresIn: 60
-      }).then((assertion) => agent.post(route)
+      }).then(assertion => agent.post(route)
       .send({
         client_assertion: assertion,
         grant_type: 'implicit',
@@ -332,7 +332,7 @@ describe('client authentication options', function () {
         iss: client.client_id
       }, key, 'HS256', {
         expiresIn: 60
-      }).then((assertion) => agent.post(route)
+      }).then(assertion => agent.post(route)
       .send({
         client_assertion: assertion,
         grant_type: 'implicit',
@@ -354,7 +354,7 @@ describe('client authentication options', function () {
         iss: client.client_id
       }, key, 'HS256', {
         expiresIn: 60
-      }).then((assertion) => agent.post(route)
+      }).then(assertion => agent.post(route)
       .send({
         client_assertion: assertion,
         grant_type: 'implicit',
@@ -390,7 +390,7 @@ describe('client authentication options', function () {
         iss: client.client_id
       }, key, 'HS256', {
         expiresIn: -1
-      }).then((assertion) => agent.post(route)
+      }).then(assertion => agent.post(route)
       .send({
         client_assertion: assertion,
         grant_type: 'implicit',
@@ -423,7 +423,7 @@ describe('client authentication options', function () {
           iss: client.client_id
         }, key, 'HS256', {
           expiresIn: 60
-        }).then((assertion) => agent.post(route)
+        }).then(assertion => agent.post(route)
         .send({
           client_assertion: assertion,
           grant_type: 'implicit',
@@ -453,7 +453,7 @@ describe('client authentication options', function () {
           iss: client.client_id
         }, key, 'HS256', {
           expiresIn: 60
-        }).then((assertion) => agent.post(route)
+        }).then(assertion => agent.post(route)
         .send({
           client_assertion: assertion,
           grant_type: 'implicit',
@@ -496,7 +496,7 @@ describe('client authentication options', function () {
         iss: client.client_id
       }, privateKey, 'RS256', {
         expiresIn: 60
-      }).then((assertion) => agent.post(route)
+      }).then(assertion => agent.post(route)
       .send({
         client_assertion: assertion,
         grant_type: 'implicit',

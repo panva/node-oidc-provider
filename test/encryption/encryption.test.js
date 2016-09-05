@@ -10,7 +10,7 @@ const JWT = require('../../lib/helpers/jwt');
 
 const route = '/auth';
 
-['get', 'post'].forEach((verb) => {
+['get', 'post'].forEach(verb => {
   describe(`[encryption] IMPLICIT id_token+token ${verb} ${route}`, function () {
     const { provider, agent, AuthorizationRequest, wrap } = bootstrap(__dirname);
     provider.setupClient();
@@ -31,7 +31,7 @@ const route = '/auth';
 
         return wrap({ agent, route, verb, auth })
         .expect(auth.validateFragment)
-        .expect((response) => {
+        .expect(response => {
           const { query } = url.parse(response.headers.location, true);
           this.id_token = query.id_token;
           this.access_token = query.access_token;
@@ -42,7 +42,7 @@ const route = '/auth';
         expect(this.id_token).to.be.ok;
         expect(this.id_token.split('.')).to.have.lengthOf(5);
 
-        return jose.JWE.createDecrypt(this.keystore).decrypt(this.id_token).then((result) => {
+        return jose.JWE.createDecrypt(this.keystore).decrypt(this.id_token).then(result => {
           expect(result.payload).to.be.ok;
           expect(result.payload.toString().split('.')).to.have.lengthOf(3);
           expect(JWT.decode(result.payload)).to.be.ok;
@@ -54,14 +54,14 @@ const route = '/auth';
         .set('Authorization', `Bearer ${this.access_token}`)
         .expect(200)
         .expect('content-type', /application\/jwt/)
-        .expect((response) => {
+        .expect(response => {
           expect(response.text.split('.')).to.have.lengthOf(5);
         })
         .end((err, response) => {
           if (err) throw err;
           jose.JWE.createDecrypt(this.keystore)
           .decrypt(response.text)
-          .then((result) => {
+          .then(result => {
             expect(result.payload).to.be.ok;
 
             expect(JSON.parse(result.payload)).to.have.keys('sub');
@@ -86,14 +86,14 @@ const route = '/auth';
           .set('Authorization', `Bearer ${this.access_token}`)
           .expect(200)
           .expect('content-type', /application\/jwt/)
-          .expect((response) => {
+          .expect(response => {
             expect(response.text.split('.')).to.have.lengthOf(5);
           })
           .end((err, response) => {
             if (err) throw err;
             jose.JWE.createDecrypt(this.keystore)
             .decrypt(response.text)
-            .then((result) => {
+            .then(result => {
               expect(result.payload).to.be.ok;
               expect(result.payload.toString().split('.')).to.have.lengthOf(3);
               const decode = JWT.decode(result.payload);
@@ -112,9 +112,9 @@ const route = '/auth';
           client_id: 'client',
           response_type: 'code',
           redirect_uri: 'https://client.example.com/cb'
-        }, null, 'none').then((signed) =>
+        }, null, 'none').then(signed =>
         JWT.encrypt(signed, provider.keystore.get(), 'A128CBC-HS256', 'RSA1_5')
-      ).then((encrypted) =>
+      ).then(encrypted =>
         wrap({
           agent,
           route,
@@ -130,7 +130,7 @@ const route = '/auth';
           .expect(function (response) {
             const expected = parse('https://client.example.com/cb', true);
             const actual = parse(response.headers.location, true);
-            ['protocol', 'host', 'pathname'].forEach((attr) => {
+            ['protocol', 'host', 'pathname'].forEach(attr => {
               expect(actual[attr]).to.equal(expected[attr]);
             });
             expect(actual.query).to.have.property('code');
@@ -154,7 +154,7 @@ const route = '/auth';
           client.idTokenEncryptedResponseAlg = 'RSA1_5';
         })
         .expect(auth.validateFragment)
-        .expect((response) => {
+        .expect(response => {
           const { query } = url.parse(response.headers.location, true);
           expect(query).to.have.property('error', 'invalid_client_metadata');
           expect(query).to.have.property('error_description', 'no suitable encryption key found (ECDH-ES)');

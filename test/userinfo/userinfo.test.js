@@ -20,7 +20,7 @@ describe('userinfo /me', function () {
 
     return wrap({ agent, auth, verb: 'get', route: '/auth' })
     .expect(auth.validateFragment)
-    .expect((response) => {
+    .expect(response => {
       const { query } = url.parse(response.headers.location, true);
       this.access_token = query.access_token;
     });

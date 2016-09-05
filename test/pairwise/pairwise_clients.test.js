@@ -191,7 +191,7 @@ describe('pairwise features', function () {
         client_secret: 'secret',
         redirect_uris: ['https://clientone.com/cb'],
         subject_type: 'pairwise'
-      }).then((client) => {
+      }).then(client => {
         clients.push(client);
       });
     });
@@ -202,7 +202,7 @@ describe('pairwise features', function () {
         client_secret: 'secret',
         redirect_uris: ['https://clienttwo.com/cb'],
         subject_type: 'pairwise'
-      }).then((client) => {
+      }).then(client => {
         clients.push(client);
       });
     });
@@ -212,7 +212,7 @@ describe('pairwise features', function () {
         client_id: 'clientThree',
         client_secret: 'secret',
         redirect_uris: ['https://clientthree.com/cb']
-      }).then((client) => {
+      }).then(client => {
         clients.push(client);
       });
     });

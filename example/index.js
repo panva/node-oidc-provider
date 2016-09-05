@@ -79,10 +79,10 @@ router.get('/interaction/:grant', function * renderInteraction(next) {
       cookie,
       title: 'Sign-in',
       debug: querystring.stringify(cookie.params, ',<br/>', ' = ', {
-        encodeURIComponent: (value) => value,
+        encodeURIComponent: value => value,
       }),
       interaction: querystring.stringify(cookie.interaction, ',<br/>', ' = ', {
-        encodeURIComponent: (value) => value,
+        encodeURIComponent: value => value,
       }),
     });
   } else {
@@ -91,10 +91,10 @@ router.get('/interaction/:grant', function * renderInteraction(next) {
       cookie,
       title: 'Authorize',
       debug: querystring.stringify(cookie.params, ',<br/>', ' = ', {
-        encodeURIComponent: (value) => value,
+        encodeURIComponent: value => value,
       }),
       interaction: querystring.stringify(cookie.interaction, ',<br/>', ' = ', {
-        encodeURIComponent: (value) => value,
+        encodeURIComponent: value => value,
       }),
     });
   }

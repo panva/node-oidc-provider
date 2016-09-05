@@ -59,7 +59,7 @@ describe('grant_type=refresh_token', function () {
           redirect_uri: 'https://client.example.com/cb'
         })
         .expect(200)
-        .expect((response) => {
+        .expect(response => {
           expect(response.body).to.have.property('refresh_token');
           const jti = response.body.refresh_token.substring(0, 48);
           this.refreshToken = TestAdapter.for('RefreshToken').syncFind(jti);

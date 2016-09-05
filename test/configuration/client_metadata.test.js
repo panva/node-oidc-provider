@@ -86,7 +86,7 @@ const mustBeUri = (prop, protocols) => {
   });
 };
 
-const mustBeArray = (prop) => {
+const mustBeArray = prop => {
   it('must be a array', function () {
     const promises = [{}, 'string', 123, true].map(function (nonArray) {
       return addClient({
@@ -105,7 +105,7 @@ const mustBeArray = (prop) => {
   });
 };
 
-const mustBeBoolean = (prop) => {
+const mustBeBoolean = prop => {
   it('must be a boolean', function () {
     const promises = [{}, 'string', 123, []].map(function (nonBoolean) {
       return addClient({
@@ -221,7 +221,7 @@ describe('Client validations', function () {
     mustBeArray(this.title);
 
     allows(this.title, []);
-    DefaultProvider.configuration('acrValues').forEach((value) => {
+    DefaultProvider.configuration('acrValues').forEach(value => {
       allows(this.title, [value]);
     });
     allows(this.title, DefaultProvider.configuration('acrValues'));
@@ -272,7 +272,7 @@ describe('Client validations', function () {
     'logo_uri',
     'policy_uri',
     'tos_uri',
-  ].forEach((prop) => {
+  ].forEach(prop => {
     context(prop, function () {
       mustBeString(this.title);
       mustBeUri(this.title, ['http', 'https']);
@@ -370,7 +370,7 @@ describe('Client validations', function () {
     defaultsTo(this.title, ['code']);
     mustBeArray(this.title);
 
-    DefaultProvider.configuration('responseTypes').forEach((value) => {
+    DefaultProvider.configuration('responseTypes').forEach(value => {
       allows(this.title, [value], {
         grant_types: ['implicit', 'authorization_code']
       });
@@ -401,7 +401,7 @@ describe('Client validations', function () {
   context('token_endpoint_auth_method', function () {
     defaultsTo(this.title, 'client_secret_basic');
     mustBeString(this.title);
-    DefaultProvider.configuration('tokenEndpointAuthMethods').forEach((value) => {
+    DefaultProvider.configuration('tokenEndpointAuthMethods').forEach(value => {
       switch (value) {
         case 'private_key_jwt':
           allows(this.title, value, {
@@ -446,7 +446,7 @@ describe('Client validations', function () {
         expect(err.error_description).to.equal('id_token_encrypted_response_alg is mandatory property');
       });
     });
-    DefaultProvider.configuration('idTokenEncryptionAlgValues').forEach((value) => {
+    DefaultProvider.configuration('idTokenEncryptionAlgValues').forEach(value => {
       allows(this.title, value, {
         jwks: { keys: [sigKey] }
       });
@@ -464,7 +464,7 @@ describe('Client validations', function () {
       id_token_encrypted_response_alg: 'RSA1_5',
       jwks: { keys: [sigKey] }
     });
-    DefaultProvider.configuration('idTokenEncryptionEncValues').forEach((value) => {
+    DefaultProvider.configuration('idTokenEncryptionEncValues').forEach(value => {
       allows(this.title, value, {
         id_token_encrypted_response_alg: 'RSA1_5',
         jwks: { keys: [sigKey] }
@@ -489,7 +489,7 @@ describe('Client validations', function () {
         expect(err.error_description).to.equal('userinfo_encrypted_response_alg is mandatory property');
       });
     });
-    DefaultProvider.configuration('userinfoEncryptionAlgValues').forEach((value) => {
+    DefaultProvider.configuration('userinfoEncryptionAlgValues').forEach(value => {
       allows(this.title, value, {
         jwks: { keys: [sigKey] }
       });
@@ -507,7 +507,7 @@ describe('Client validations', function () {
       userinfo_encrypted_response_alg: 'RSA1_5',
       jwks: { keys: [sigKey] }
     });
-    DefaultProvider.configuration('userinfoEncryptionEncValues').forEach((value) => {
+    DefaultProvider.configuration('userinfoEncryptionEncValues').forEach(value => {
       allows(this.title, value, {
         userinfo_encrypted_response_alg: 'RSA1_5',
         jwks: { keys: [sigKey] }
@@ -530,7 +530,7 @@ describe('Client validations', function () {
         expect(err.error_description).to.equal('request_object_encryption_alg is mandatory property');
       });
     });
-    DefaultProvider.configuration('requestObjectEncryptionAlgValues').forEach((value) => {
+    DefaultProvider.configuration('requestObjectEncryptionAlgValues').forEach(value => {
       allows(this.title, value);
     });
     rejects(this.title, 'not-an-alg');
@@ -544,7 +544,7 @@ describe('Client validations', function () {
     mustBeString(this.title, null, {
       request_object_encryption_alg: 'RSA1_5'
     });
-    DefaultProvider.configuration('requestObjectEncryptionEncValues').forEach((value) => {
+    DefaultProvider.configuration('requestObjectEncryptionEncValues').forEach(value => {
       allows(this.title, value, {
         request_object_encryption_alg: 'RSA1_5'
       });

@@ -44,11 +44,11 @@ class MongoAdapter {
 
   destroy(id) {
     return this.coll().findOneAndDelete({ _id: id })
-      .then((found) => {
+      .then(found => {
         if (found.value && found.value.grantId) {
           const promises = [];
 
-          collections.forEach((name) => {
+          collections.forEach(name => {
             promises.push(this.coll(name).deleteMany({ grantId: found.value.grantId }));
           });
 
@@ -59,7 +59,7 @@ class MongoAdapter {
   }
 
   consume(id) {
-    return this.coll().findOneAndUpdate({ _id: id }, { $set: { consumed: new Date() } });
+    return this.coll().findOneAndUpdate({ _id: id }, { $currentDate: { consumed: true } });
   }
 
   find(id) {
@@ -70,7 +70,7 @@ class MongoAdapter {
     let expiresAt;
 
     if (expiresIn) {
-      expiresAt = new Date(new Date().getTime() + (expiresIn * 1000));
+      expiresAt = new Date(Date.now() + (expiresIn * 1000));
     }
 
     const document = Object.assign(payload, { expiresAt });

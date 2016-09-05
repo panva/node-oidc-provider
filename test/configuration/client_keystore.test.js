@@ -69,7 +69,7 @@ describe('client keystore refresh', function () {
       .reply(302, '/somewhere');
 
     const client = yield provider.get('Client').find('client');
-    return client.keystore.refresh().then(fail, (err) => {
+    return client.keystore.refresh().then(fail, err => {
       expect(err).to.be.an('error');
       expect(err.message).to.match(/jwks_uri could not be refreshed/);
       expect(err.message).to.match(/unexpected jwks_uri statusCode, expected 200, got 302/);
@@ -82,7 +82,7 @@ describe('client keystore refresh', function () {
       .reply(200, 'not json');
 
     const client = yield provider.get('Client').find('client');
-    return client.keystore.refresh().then(fail, (err) => {
+    return client.keystore.refresh().then(fail, err => {
       expect(err).to.be.an('error');
       expect(err.message).to.match(/jwks_uri could not be refreshed/);
       expect(err.message).to.match(/Unexpected token/);
@@ -95,7 +95,7 @@ describe('client keystore refresh', function () {
       .reply(200, '{"keys": {}}');
 
     const client = yield provider.get('Client').find('client');
-    return client.keystore.refresh().then(fail, (err) => {
+    return client.keystore.refresh().then(fail, err => {
       expect(err).to.be.an('error');
       expect(err.message).to.match(/jwks_uri could not be refreshed/);
       expect(err.message).to.match(/invalid jwks_uri response/);
@@ -153,7 +153,7 @@ describe('client keystore refresh', function () {
       return client.keystore.refresh().then(() => {
         expect(client.keystore.fresh()).to.be.true;
         expect(client.keystore.stale()).to.be.false;
-        expect(client.keystore.freshUntil).to.equal((new Date() / 1000 | 0) + 3600);
+        expect(client.keystore.freshUntil).to.equal((Date.now() / 1000 | 0) + 3600);
       });
     });
 
@@ -168,7 +168,7 @@ describe('client keystore refresh', function () {
       return client.keystore.refresh().then(() => {
         expect(client.keystore.fresh()).to.be.true;
         expect(client.keystore.stale()).to.be.false;
-        expect(client.keystore.freshUntil).to.equal((new Date() / 1000 | 0) + 60);
+        expect(client.keystore.freshUntil).to.equal((Date.now() / 1000 | 0) + 60);
       });
     });
   });
@@ -182,7 +182,7 @@ describe('client keystore refresh', function () {
       expect(nock.isDone()).to.be.false;
 
       const client = yield provider.get('Client').find('client');
-      client.keystore.freshUntil = (new Date() / 1000 | 0) - 1;
+      client.keystore.freshUntil = (Date.now() / 1000 | 0) - 1;
       return JWT.verify(
         'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiYWRtaW4iOnRydWV9.TJVA95OrM7E2cBab30RMHrHDcEfxjoYZgeFONFh7HgQ'
       , client.keystore).then(fail, function () {
@@ -198,7 +198,7 @@ describe('client keystore refresh', function () {
       expect(nock.isDone()).to.be.false;
 
       const client = yield provider.get('Client').find('client');
-      client.keystore.freshUntil = (new Date() / 1000 | 0) - 1;
+      client.keystore.freshUntil = (Date.now() / 1000 | 0) - 1;
 
       const IdToken = provider.get('IdToken');
       const token = new IdToken({ foo: 'bar' });

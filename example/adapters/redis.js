@@ -24,8 +24,8 @@ class RedisAdapter {
     const key = this.key(id);
 
     return client.hget(key, 'grantId')
-    .then((grantId) => client.lrange(this.grantKey(grantId), 0, -1))
-    .then((tokens) => Promise.all(_.map(tokens, (token) => client.del(token))))
+    .then(grantId => client.lrange(this.grantKey(grantId), 0, -1))
+    .then(tokens => Promise.all(_.map(tokens, token => client.del(token))))
     .then(() => client.del(key));
   }
 
@@ -34,7 +34,7 @@ class RedisAdapter {
   }
 
   find(id) {
-    return client.hgetall(this.key(id)).then((data) => {
+    return client.hgetall(this.key(id)).then(data => {
       if (_.isEmpty(data)) {
         return undefined;
       } else if (data.dump !== undefined) {

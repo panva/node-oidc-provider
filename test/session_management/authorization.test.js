@@ -10,7 +10,7 @@ describe('session management', function () {
   provider.setupClient();
   provider.setupCerts();
 
-  ['get', 'post'].forEach((verb) => {
+  ['get', 'post'].forEach(verb => {
     describe(`[session_management] ${verb} ${route} with session`, function () {
       before(agent.login);
 

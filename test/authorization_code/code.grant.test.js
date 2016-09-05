@@ -38,7 +38,7 @@ describe('grant_type=authorization_code', function () {
         redirect_uri: 'https://client.example.com/cb'
       })
       .expect(302)
-      .expect((response) => {
+      .expect(response => {
         const { query: { code } } = parseUrl(response.headers.location, true);
         const jti = code.substring(0, 48);
         this.code = TestAdapter.for('AuthorizationCode').syncFind(jti);

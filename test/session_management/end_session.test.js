@@ -8,7 +8,7 @@ const JWT = require('../../lib/helpers/jwt');
 
 const route = '/session/end';
 
-['get', 'post'].forEach((verb) => {
+['get', 'post'].forEach(verb => {
   describe(`[session_management] ${verb} ${route} with session`, function () {
     const { provider, agent, wrap, getSessionId, TestAdapter } = bootstrap(__dirname);
     provider.setupClient();
@@ -32,7 +32,7 @@ const route = '/session/end';
         redirect_uri: 'https://client.example.com/cb'
       })
       .expect(302)
-      .expect((response) => {
+      .expect(response => {
         const { query: { id_token: idToken } } = parseUrl(response.headers.location.replace('#', '?'), true);
         this.idToken = idToken;
       });

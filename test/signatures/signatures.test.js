@@ -109,7 +109,7 @@ describe('signatures', function () {
       const ac = new AuthorizationCode({
         accountId: 'accountIdentity',
         acr: provider.configuration('acrValues[0]'),
-        authTime: new Date() / 1000 | 0,
+        authTime: Date.now() / 1000 | 0,
         clientId: 'client-sig-none',
         grantId: uuid(),
         redirectUri: 'https://client.example.com/cb',
@@ -125,7 +125,7 @@ describe('signatures', function () {
         code: yield ac.save()
       })
       .expect(200)
-      .expect((response) => {
+      .expect(response => {
         this.idToken = response.body.id_token;
       });
     });
@@ -187,7 +187,7 @@ describe('signatures', function () {
       const ac = new AuthorizationCode({
         accountId: 'accountIdentity',
         acr: provider.configuration('acrValues[0]'),
-        authTime: new Date() / 1000 | 0,
+        authTime: Date.now() / 1000 | 0,
         clientId: 'client-sig-HS256',
         grantId: uuid(),
         redirectUri: 'https://client.example.com/cb',
@@ -203,7 +203,7 @@ describe('signatures', function () {
         code: yield ac.save()
       })
       .expect(200)
-      .expect((response) => {
+      .expect(response => {
         this.idToken = response.body.id_token;
       });
     });

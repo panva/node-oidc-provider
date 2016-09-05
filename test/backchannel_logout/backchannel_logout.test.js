@@ -87,7 +87,7 @@ describe('Back-Channel Logout 1.0', function () {
         redirect_uri: 'https://client.example.com/cb'
       })
       .expect(302)
-      .expect((response) => {
+      .expect(response => {
         const { query: { code, id_token: idToken } } = parseUrl(response.headers.location.replace('#', '?'), true);
         this.idToken = idToken;
         this.code = code;
