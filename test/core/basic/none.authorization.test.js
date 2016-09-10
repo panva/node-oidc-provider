@@ -5,7 +5,7 @@ const bootstrap = require('../../test_helper');
 const route = '/auth';
 
 ['get', 'post'].forEach(verb => {
-  describe(`${verb} ${route} response_type=none`, function () {
+  describe(`${verb} ${route} response_type=none`, () => {
     const { provider, agent, AuthorizationRequest, wrap } = bootstrap(__dirname);
     provider.setupClient();
     provider.setupCerts();
@@ -13,7 +13,7 @@ const route = '/auth';
     before(agent.login);
     after(agent.logout);
 
-    it('responds with a state in search', function () {
+    it('responds with a state in search', () => {
       const auth = new AuthorizationRequest({
         response_type: 'none',
         scope: 'openid'
@@ -26,7 +26,7 @@ const route = '/auth';
       .expect(auth.validateClientLocation);
     });
 
-    it('responds with a state in fragment', function () {
+    it('responds with a state in fragment', () => {
       const auth = new AuthorizationRequest({
         response_type: 'none',
         response_mode: 'fragment',

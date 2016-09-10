@@ -1,7 +1,6 @@
 {
   "extends": "airbnb-base",
   "rules": {
-    "generator-star-spacing": ["warn", "both"],
     "no-empty": ["error", { "allowEmptyCatch": true }],
     "no-param-reassign": ["error", { "props": false }],
     "prefer-rest-params": "off",

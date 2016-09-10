@@ -4,11 +4,11 @@ const bootstrap = require('../test_helper');
 const { parse: parseLocation } = require('url');
 const { v4: uuid } = require('uuid');
 const { decode } = require('../../lib/helpers/jwt');
+const epochTime = require('../../lib/helpers/epoch_time');
 const { expect } = require('chai');
 const base64url = require('base64url');
 
-
-describe('signatures', function () {
+describe('signatures', () => {
   const { provider, agent, AuthorizationRequest, wrap } = bootstrap(__dirname);
   const AuthorizationCode = provider.get('AuthorizationCode');
 
@@ -31,20 +31,20 @@ describe('signatures', function () {
   });
   provider.setupCerts();
 
-  describe('token hashes in id_token', function () {
+  describe('token hashes in id_token', () => {
     let client;
-    before(function * () {
+    before(function* () {
       client = yield provider.get('Client').find('client');
     });
 
     before(agent.login);
     after(agent.logout);
 
-    after(function () {
+    after(() => {
       client.idTokenSignedResponseAlg = 'RS256';
     });
 
-    it('responds with a access_token and code (half of sha512)', function () {
+    it('responds with a access_token and code (half of sha512)', () => {
       client.idTokenSignedResponseAlg = 'RS512';
       const auth = new AuthorizationRequest({
         response_type: 'code id_token token',
@@ -55,7 +55,7 @@ describe('signatures', function () {
       .expect(302)
       .expect(auth.validateFragment)
       .expect(auth.validateClientLocation)
-      .expect(function (response) {
+      .expect((response) => {
         const { query: { id_token } } = parseLocation(response.headers.location, true);
         const { payload } = decode(id_token);
         expect(payload).to.contain.keys('at_hash', 'c_hash');
@@ -63,7 +63,7 @@ describe('signatures', function () {
       });
     });
 
-    it('responds with a access_token and code (half of sha384)', function () {
+    it('responds with a access_token and code (half of sha384)', () => {
       client.idTokenSignedResponseAlg = 'RS384';
       const auth = new AuthorizationRequest({
         response_type: 'code id_token token',
@@ -74,7 +74,7 @@ describe('signatures', function () {
       .expect(302)
       .expect(auth.validateFragment)
       .expect(auth.validateClientLocation)
-      .expect(function (response) {
+      .expect((response) => {
         const { query: { id_token } } = parseLocation(response.headers.location, true);
         const { payload } = decode(id_token);
         expect(payload).to.contain.keys('at_hash', 'c_hash');
@@ -82,7 +82,7 @@ describe('signatures', function () {
       });
     });
 
-    it('responds with a access_token and code (half of sha256)', function () {
+    it('responds with a access_token and code (half of sha256)', () => {
       client.idTokenSignedResponseAlg = 'RS256';
       const auth = new AuthorizationRequest({
         response_type: 'code id_token token',
@@ -93,7 +93,7 @@ describe('signatures', function () {
       .expect(302)
       .expect(auth.validateFragment)
       .expect(auth.validateClientLocation)
-      .expect(function (response) {
+      .expect((response) => {
         const { query: { id_token } } = parseLocation(response.headers.location, true);
         const { payload } = decode(id_token);
         expect(payload).to.contain.keys('at_hash', 'c_hash');
@@ -102,14 +102,14 @@ describe('signatures', function () {
     });
   });
 
-  describe('when id_token_signed_response_alg=none', function () {
+  describe('when id_token_signed_response_alg=none', () => {
     before(agent.login);
     after(agent.logout);
-    beforeEach(function * () {
+    beforeEach(function* () {
       const ac = new AuthorizationCode({
         accountId: 'accountIdentity',
         acr: provider.configuration('acrValues[0]'),
-        authTime: Date.now() / 1000 | 0,
+        authTime: epochTime(),
         clientId: 'client-sig-none',
         grantId: uuid(),
         redirectUri: 'https://client.example.com/cb',
@@ -180,14 +180,14 @@ describe('signatures', function () {
     });
   });
 
-  describe('when id_token_signed_response_alg=HS256', function () {
+  describe('when id_token_signed_response_alg=HS256', () => {
     before(agent.login);
     after(agent.logout);
-    beforeEach(function * () {
+    beforeEach(function* () {
       const ac = new AuthorizationCode({
         accountId: 'accountIdentity',
         acr: provider.configuration('acrValues[0]'),
-        authTime: Date.now() / 1000 | 0,
+        authTime: epochTime(),
         clientId: 'client-sig-HS256',
         grantId: uuid(),
         redirectUri: 'https://client.example.com/cb',

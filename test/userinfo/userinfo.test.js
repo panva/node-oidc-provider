@@ -4,7 +4,7 @@ const bootstrap = require('../test_helper');
 const { expect } = require('chai');
 const url = require('url');
 
-describe('userinfo /me', function () {
+describe('userinfo /me', () => {
   const { provider, agent, AuthorizationRequest, wrap } = bootstrap(__dirname);
 
   provider.setupClient();
@@ -33,7 +33,7 @@ describe('userinfo /me', function () {
       })
       .set('Authorization', `Bearer ${this.access_token}`)
       .expect(200)
-      .expect(function (response) {
+      .expect((response) => {
         expect(response.body).to.have.keys(['sub']);
         expect(response.body).not.to.have.keys(['email', 'email_verified']);
       });
@@ -49,8 +49,8 @@ describe('userinfo /me', function () {
       .expect({ error: 'invalid_scope', scope: 'profile', error_description: 'access token missing requested scope' });
   });
 
-  describe('userinfo /me WWW-Authenticate header', function () {
-    it('is set', function () {
+  describe('userinfo /me WWW-Authenticate header', () => {
+    it('is set', () => {
       return agent.get('/me')
       .set('Authorization', 'Bearer ThisIsNotAValidToken')
       .expect(401)

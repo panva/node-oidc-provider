@@ -8,7 +8,7 @@ const Provider = oidc.Provider;
 const AdapterTest = oidc.AdapterTest;
 
 
-describe('AdapterTest', function () {
+describe('AdapterTest', () => {
   const integrity = (!process.env.INTEGRITY && Math.floor(Math.random() * 2)) ||
     process.env.INTEGRITY === 'true';
 

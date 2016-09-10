@@ -7,18 +7,18 @@ const sinon = require('sinon');
 const route = '/auth';
 
 ['get', 'post'].forEach(verb => {
-  describe(`${verb} ${route} response_mode=form_post`, function () {
+  describe(`${verb} ${route} response_mode=form_post`, () => {
     const { provider, agent, AuthorizationRequest, wrap } = bootstrap(__dirname);
     const Client = provider.get('Client');
 
     provider.setupClient();
     provider.setupCerts();
 
-    context('logged in', function () {
+    context('logged in', () => {
       before(agent.login);
       after(agent.logout);
 
-      it('responds by rendering a self-submitting form with the code', function () {
+      it('responds by rendering a self-submitting form with the code', () => {
         const auth = new AuthorizationRequest({
           response_type: 'code',
           response_mode: 'form_post',
@@ -33,8 +33,8 @@ const route = '/auth';
       });
     });
 
-    context('error handling', function () {
-      it('responds by rendering a self-submitting form with the error', function () {
+    context('error handling', () => {
+      it('responds by rendering a self-submitting form with the error', () => {
         const auth = new AuthorizationRequest({
           response_type: 'code',
           prompt: 'none',
@@ -47,7 +47,7 @@ const route = '/auth';
 
         return wrap({ agent, route, verb, auth })
         .expect(200)
-        .expect(function () {
+        .expect(() => {
           expect(spy.called).to.be.true;
         })
         .expect(new RegExp('input type="hidden" name="error" value="login_required"'))
@@ -55,16 +55,16 @@ const route = '/auth';
         .expect(new RegExp(`form method="post" action="${auth.redirect_uri}"`));
       });
 
-      context('[exception]', function () {
-        before(function () {
+      context('[exception]', () => {
+        before(() => {
           sinon.stub(Client, 'find').returns(Promise.reject(new Error()));
         });
 
-        after(function () {
+        after(() => {
           Client.find.restore();
         });
 
-        it('responds by rendering a self-submitting form with the exception', function () {
+        it('responds by rendering a self-submitting form with the exception', () => {
           const auth = new AuthorizationRequest({
             response_type: 'code',
             prompt: 'none',
@@ -77,7 +77,7 @@ const route = '/auth';
 
           return wrap({ agent, route, verb, auth })
           .expect(200)
-          .expect(function () {
+          .expect(() => {
             expect(spy.called).to.be.true;
           })
           .expect(new RegExp('input type="hidden" name="error" value="server_error"'))

@@ -4,8 +4,8 @@ const { Provider } = require('../../lib');
 const { expect } = require('chai');
 const sinon = require('sinon');
 
-describe('provider instance', function () {
-  context('when in non test environment', function () {
+describe('provider instance', () => {
+  context('when in non test environment', () => {
     /* eslint-disable no-console */
     before(() => {
       delete process.env.NODE_ENV;
@@ -16,7 +16,7 @@ describe('provider instance', function () {
       console.warn.restore();
     });
 
-    it('it warns when draft/experimental specs are enabled', function () {
+    it('it warns when draft/experimental specs are enabled', () => {
       new Provider('http://localhost', { // eslint-disable-line no-new
         features: { sessionManagement: true }
       });
@@ -26,25 +26,25 @@ describe('provider instance', function () {
     /* eslint-enable */
   });
 
-  describe('#urlFor', function () {
-    it('returns the route for unprefixed issuers', function () {
+  describe('#urlFor', () => {
+    it('returns the route for unprefixed issuers', () => {
       const provider = new Provider('http://localhost');
       expect(provider.urlFor('authorization')).to.equal('http://localhost/auth');
     });
 
-    it('returns the route for prefixed issuers', function () {
+    it('returns the route for prefixed issuers', () => {
       const provider = new Provider('http://localhost/op/2.0');
       expect(provider.urlFor('authorization')).to.equal('http://localhost/op/2.0/auth');
     });
 
-    it('passes the options', function () {
+    it('passes the options', () => {
       const provider = new Provider('http://localhost');
       expect(provider.urlFor('resume', { grant: 'foo' })).to.equal('http://localhost/auth/foo');
     });
   });
 
-  describe('#resume', function () {
-    it('redirects the context, and sets a cookie', function () {
+  describe('#resume', () => {
+    it('redirects the context, and sets a cookie', () => {
       const provider = new Provider('http://localhost');
 
       const ctx = { cookies: { set: sinon.spy() }, redirect: sinon.spy() };

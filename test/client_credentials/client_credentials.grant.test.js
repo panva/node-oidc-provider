@@ -6,11 +6,11 @@ const { expect } = require('chai');
 
 const route = '/token';
 
-describe('grant_type=client_credentials', function () {
+describe('grant_type=client_credentials', () => {
   const { agent, provider } = bootstrap(__dirname);
   provider.setupClient();
   provider.setupCerts();
-  it('provides a Bearer client credentials token', function () {
+  it('provides a Bearer client credentials token', () => {
     const spy = sinon.spy();
     provider.once('grant.success', spy);
 
@@ -21,10 +21,10 @@ describe('grant_type=client_credentials', function () {
     })
     .type('form')
     .expect(200)
-    .expect(function () {
+    .expect(() => {
       expect(spy.calledOnce).to.be.true;
     })
-    .expect(function (response) {
+    .expect((response) => {
       expect(response.body).to.have.keys('access_token', 'expires_in', 'token_type');
     });
   });

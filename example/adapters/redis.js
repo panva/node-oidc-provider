@@ -7,6 +7,10 @@ const client = new Redis(process.env.REDIS_URL, {
   keyPrefix: 'oidc:',
 });
 
+function grantKeyFor(id) {
+  return `grant:${id}`;
+}
+
 class RedisAdapter {
   constructor(name) {
     this.name = name;
@@ -16,21 +20,17 @@ class RedisAdapter {
     return `${this.name}:${id}`;
   }
 
-  grantKey(id) {
-    return `grant:${id}`;
-  }
-
   destroy(id) {
     const key = this.key(id);
 
     return client.hget(key, 'grantId')
-    .then(grantId => client.lrange(this.grantKey(grantId), 0, -1))
+    .then(grantId => client.lrange(grantKeyFor(grantId), 0, -1))
     .then(tokens => Promise.all(_.map(tokens, token => client.del(token))))
     .then(() => client.del(key));
   }
 
   consume(id) {
-    return client.hset(this.key(id), 'consumed', Date.now() / 1000 | 0);
+    return client.hset(this.key(id), 'consumed', Math.floor(Date.now() / 1000));
   }
 
   find(id) {
@@ -65,7 +65,7 @@ class RedisAdapter {
     }
 
     if (toStore.grantId) {
-      const grantKey = this.grantKey(toStore.grantId);
+      const grantKey = grantKeyFor(toStore.grantId);
       multi.rpush(grantKey, key);
     }
 

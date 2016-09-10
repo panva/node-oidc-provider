@@ -22,6 +22,7 @@ const delegate = require('delegates');
 const _ = require('lodash');
 const koa = require('koa');
 const mount = require('koa-mount');
+const epochTime = require('../lib/helpers/epoch_time');
 
 const responses = {
   serverErrorBody: {
@@ -56,7 +57,7 @@ module.exports = function testHelper(dir, basename, mountTo) {
   if (integrity) {
     const ks = jose.JWK.createKeyStore();
     config.tokenIntegrity = ks;
-    before(function () {
+    before(() => {
       return ks.generate('oct', 512, { alg: 'HS512' });
     });
   }
@@ -105,7 +106,7 @@ module.exports = function testHelper(dir, basename, mountTo) {
 
   agent.login = function login() {
     const sessionId = uuid();
-    const loginTs = Date.now() / 1000 | 0;
+    const loginTs = epochTime();
     const expire = new Date();
     expire.setDate(expire.getDate() + 1);
     const account = uuid();
@@ -252,13 +253,13 @@ module.exports = function testHelper(dir, basename, mountTo) {
     if (pass) additionalClients.push(pass.client_id);
 
     const add = pass || client;
-    before('adding client', function () {
+    before('adding client', () => {
       return provider.addClient(add).catch(err => {
         throw err;
       });
     });
 
-    after('removing client', function () {
+    after('removing client', () => {
       return provider.get('Client').remove(add.client_id);
     });
   };
@@ -272,7 +273,7 @@ module.exports = function testHelper(dir, basename, mountTo) {
     ]);
     const added = [];
 
-    before('adding certificate', function (done) {
+    before('adding certificate', (done) => {
       const add = passed || certs;
       const promises = add.map(cert => self.addKey(cert).then(key => added.push(key)));
       Promise.all(promises).then(() => {
@@ -280,7 +281,7 @@ module.exports = function testHelper(dir, basename, mountTo) {
       }, done);
     });
 
-    after('removing certificate', function () {
+    after('removing certificate', () => {
       _.assign(self.configuration, pre);
       added.forEach(key => self.keystore.remove(key));
     });
@@ -289,7 +290,7 @@ module.exports = function testHelper(dir, basename, mountTo) {
   function getSession(userAgent) {
     const { value: sessionId } = userAgent.jar.getCookie('_session', { path: '/' });
     const key = TestAdapter.for('Session').key(sessionId);
-    return TestAdapter.for('Session').storage.get(key);
+    return TestAdapter.for('Session').get(key);
   }
 
   function getSessionId(userAgent) {

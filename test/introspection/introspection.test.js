@@ -7,7 +7,7 @@ const { expect } = require('chai');
 const route = '/token/introspection';
 
 
-describe('introspection features', function () {
+describe('introspection features', () => {
   const { agent, provider } = bootstrap(__dirname);
   const AccessToken = provider.get('AccessToken');
   const ClientCredentials = provider.get('ClientCredentials');
@@ -29,25 +29,25 @@ describe('introspection features', function () {
     grant_types: [],
   });
   provider.setupCerts();
-  describe('enriched discovery', function () {
-    it('shows the url now', function () {
+  describe('enriched discovery', () => {
+    it('shows the url now', () => {
       return agent.get('/.well-known/openid-configuration')
       .expect(200)
-      .expect(function (response) {
+      .expect((response) => {
         expect(response.body).to.have.property('token_introspection_endpoint').and.matches(/token\/introspect/);
       });
     });
   });
 
-  describe('/token/introspection', function () {
-    it('returns the properties for access token [no hint]', function (done) {
+  describe('/token/introspection', () => {
+    it('returns the properties for access token [no hint]', (done) => {
       const at = new AccessToken({
         accountId: 'accountId',
         clientId: 'client',
         scope: 'scope',
       });
 
-      at.save().then(function (token) {
+      at.save().then((token) => {
         agent.post(route)
         .auth('client', 'secret')
         .send({
@@ -55,7 +55,7 @@ describe('introspection features', function () {
         })
         .type('form')
         .expect(200)
-        .expect(function (response) {
+        .expect((response) => {
           expect(response.body).to.contain.keys('client_id', 'scope', 'sub');
           expect(response.body.sub).to.equal('accountId');
         })
@@ -63,14 +63,14 @@ describe('introspection features', function () {
       });
     });
 
-    it('returns the properties for access token [correct hint]', function (done) {
+    it('returns the properties for access token [correct hint]', (done) => {
       const at = new AccessToken({
         accountId: 'accountId',
         clientId: 'client',
         scope: 'scope',
       });
 
-      at.save().then(function (token) {
+      at.save().then((token) => {
         agent.post(route)
         .auth('client', 'secret')
         .send({
@@ -79,7 +79,7 @@ describe('introspection features', function () {
         })
         .type('form')
         .expect(200)
-        .expect(function (response) {
+        .expect((response) => {
           expect(response.body).to.contain.keys('client_id', 'scope', 'sub');
           expect(response.body.sub).to.equal('accountId');
         })
@@ -87,14 +87,14 @@ describe('introspection features', function () {
       });
     });
 
-    it('returns the properties for access token [wrong hint]', function (done) {
+    it('returns the properties for access token [wrong hint]', (done) => {
       const at = new AccessToken({
         accountId: 'accountId',
         clientId: 'client',
         scope: 'scope',
       });
 
-      at.save().then(function (token) {
+      at.save().then((token) => {
         agent.post(route)
         .auth('client', 'secret')
         .send({
@@ -103,7 +103,7 @@ describe('introspection features', function () {
         })
         .type('form')
         .expect(200)
-        .expect(function (response) {
+        .expect((response) => {
           expect(response.body).to.contain.keys('client_id', 'scope', 'sub');
           expect(response.body.sub).to.equal('accountId');
         })
@@ -111,14 +111,14 @@ describe('introspection features', function () {
       });
     });
 
-    it('returns the properties for access token [unrecognized hint]', function (done) {
+    it('returns the properties for access token [unrecognized hint]', (done) => {
       const at = new AccessToken({
         accountId: 'accountId',
         clientId: 'client',
         scope: 'scope',
       });
 
-      at.save().then(function (token) {
+      at.save().then((token) => {
         agent.post(route)
         .auth('client', 'secret')
         .send({
@@ -127,7 +127,7 @@ describe('introspection features', function () {
         })
         .type('form')
         .expect(200)
-        .expect(function (response) {
+        .expect((response) => {
           expect(response.body).to.contain.keys('client_id', 'scope', 'sub');
           expect(response.body.sub).to.equal('accountId');
         })
@@ -135,172 +135,172 @@ describe('introspection features', function () {
       });
     });
 
-    it('returns the properties for refresh token [no hint]', function (done) {
+    it('returns the properties for refresh token [no hint]', (done) => {
       const rt = new RefreshToken({
         accountId: 'accountId',
         clientId: 'client',
         scope: 'scope',
       });
 
-      rt.save().then(function (token) {
+      rt.save().then((token) => {
         agent.post(route)
         .auth('client', 'secret')
         .send({ token })
         .type('form')
         .expect(200)
-        .expect(function (response) {
+        .expect((response) => {
           expect(response.body).to.contain.keys('client_id', 'scope', 'sub');
         })
         .end(done);
       });
     });
 
-    it('returns the properties for refresh token [correct hint]', function (done) {
+    it('returns the properties for refresh token [correct hint]', (done) => {
       const rt = new RefreshToken({
         accountId: 'accountId',
         clientId: 'client',
         scope: 'scope',
       });
 
-      rt.save().then(function (token) {
+      rt.save().then((token) => {
         agent.post(route)
         .auth('client', 'secret')
         .send({ token, token_type_hint: 'refresh_token' })
         .type('form')
         .expect(200)
-        .expect(function (response) {
+        .expect((response) => {
           expect(response.body).to.contain.keys('client_id', 'scope', 'sub');
         })
         .end(done);
       });
     });
 
-    it('returns the properties for refresh token [wrong hint]', function (done) {
+    it('returns the properties for refresh token [wrong hint]', (done) => {
       const rt = new RefreshToken({
         accountId: 'accountId',
         clientId: 'client',
         scope: 'scope',
       });
 
-      rt.save().then(function (token) {
+      rt.save().then((token) => {
         agent.post(route)
         .auth('client', 'secret')
         .send({ token, token_type_hint: 'client_credentials' })
         .type('form')
         .expect(200)
-        .expect(function (response) {
+        .expect((response) => {
           expect(response.body).to.contain.keys('client_id', 'scope', 'sub');
         })
         .end(done);
       });
     });
 
-    it('returns the properties for refresh token [unrecognized hint]', function (done) {
+    it('returns the properties for refresh token [unrecognized hint]', (done) => {
       const rt = new RefreshToken({
         accountId: 'accountId',
         clientId: 'client',
         scope: 'scope',
       });
 
-      rt.save().then(function (token) {
+      rt.save().then((token) => {
         agent.post(route)
         .auth('client', 'secret')
         .send({ token, token_type_hint: 'foobar' })
         .type('form')
         .expect(200)
-        .expect(function (response) {
+        .expect((response) => {
           expect(response.body).to.contain.keys('client_id', 'scope', 'sub');
         })
         .end(done);
       });
     });
 
-    it('returns the properties for client credentials token [no hint]', function (done) {
+    it('returns the properties for client credentials token [no hint]', (done) => {
       const rt = new ClientCredentials({
         clientId: 'client'
       });
 
-      rt.save().then(function (token) {
+      rt.save().then((token) => {
         agent.post(route)
         .auth('client', 'secret')
         .send({ token })
         .type('form')
         .expect(200)
-        .expect(function (response) {
+        .expect((response) => {
           expect(response.body).to.contain.keys('client_id');
         })
         .end(done);
       });
     });
 
-    it('returns the properties for client credentials token [correct hint]', function (done) {
+    it('returns the properties for client credentials token [correct hint]', (done) => {
       const rt = new ClientCredentials({
         clientId: 'client'
       });
 
-      rt.save().then(function (token) {
+      rt.save().then((token) => {
         agent.post(route)
         .auth('client', 'secret')
         .send({ token, token_type_hint: 'client_credentials' })
         .type('form')
         .expect(200)
-        .expect(function (response) {
+        .expect((response) => {
           expect(response.body).to.contain.keys('client_id');
         })
         .end(done);
       });
     });
 
-    it('returns the properties for client credentials token [wrong hint]', function (done) {
+    it('returns the properties for client credentials token [wrong hint]', (done) => {
       const rt = new ClientCredentials({
         clientId: 'client'
       });
 
-      rt.save().then(function (token) {
+      rt.save().then((token) => {
         agent.post(route)
         .auth('client', 'secret')
         .send({ token, token_type_hint: 'access_token' })
         .type('form')
         .expect(200)
-        .expect(function (response) {
+        .expect((response) => {
           expect(response.body).to.contain.keys('client_id');
         })
         .end(done);
       });
     });
 
-    it('returns the properties for client credentials token [unrecognized hint]', function (done) {
+    it('returns the properties for client credentials token [unrecognized hint]', (done) => {
       const rt = new ClientCredentials({
         clientId: 'client'
       });
 
-      rt.save().then(function (token) {
+      rt.save().then((token) => {
         agent.post(route)
         .auth('client', 'secret')
         .send({ token, token_type_hint: 'foobar' })
         .type('form')
         .expect(200)
-        .expect(function (response) {
+        .expect((response) => {
           expect(response.body).to.contain.keys('client_id');
         })
         .end(done);
       });
     });
 
-    it('can be called by RS clients and uses the original subject_type', function (done) {
+    it('can be called by RS clients and uses the original subject_type', (done) => {
       const rt = new RefreshToken({
         accountId: 'accountId',
         clientId: 'client-pairwise',
         scope: 'scope',
       });
 
-      rt.save().then(function (token) {
+      rt.save().then((token) => {
         agent.post(route)
         .auth('client-introspection', 'secret')
         .send({ token })
         .type('form')
         .expect(200)
-        .expect(function (response) {
+        .expect((response) => {
           expect(response.body).to.contain.keys('client_id', 'scope', 'sub');
           expect(response.body.sub).not.to.equal('accountId');
         })
@@ -308,7 +308,7 @@ describe('introspection features', function () {
       });
     });
 
-    it('returns token-endpoint-like cache headers', function () {
+    it('returns token-endpoint-like cache headers', () => {
       return agent.post(route)
       .auth('client', 'secret')
       .send({})
@@ -317,19 +317,19 @@ describe('introspection features', function () {
       .expect('cache-control', 'no-cache, no-store');
     });
 
-    it('validates token param presence', function () {
+    it('validates token param presence', () => {
       return agent.post(route)
       .auth('client', 'secret')
       .send({})
       .type('form')
       .expect(400)
-      .expect(function (response) {
+      .expect((response) => {
         expect(response.body).to.have.property('error', 'invalid_request');
         expect(response.body).to.have.property('error_description').and.matches(/missing required parameter.+\(token\)/);
       });
     });
 
-    it('responds with active=false for total bs', function () {
+    it('responds with active=false for total bs', () => {
       return agent.post(route)
       .auth('client', 'secret')
       .send({
@@ -337,13 +337,13 @@ describe('introspection features', function () {
       })
       .type('form')
       .expect(200)
-      .expect(function (response) {
+      .expect((response) => {
         expect(response.body).to.have.property('active', false);
         expect(response.body).to.have.keys('active');
       });
     });
 
-    it('emits on (i.e. auth) error', function () {
+    it('emits on (i.e. auth) error', () => {
       const spy = sinon.spy();
       provider.once('introspection.error', spy);
 
@@ -352,12 +352,12 @@ describe('introspection features', function () {
       .send({})
       .type('form')
       .expect(400)
-      .expect(function () {
+      .expect(() => {
         expect(spy.calledOnce).to.be.true;
       });
     });
 
-    it('ignores unsupported tokens', function * () {
+    it('ignores unsupported tokens', function* () {
       const ac = new AuthorizationCode({ clientId: 'client' });
       return agent.post(route)
       .auth('client', 'secret')
@@ -366,7 +366,7 @@ describe('introspection features', function () {
       })
       .type('form')
       .expect(200)
-      .expect(function (response) {
+      .expect((response) => {
         expect(response.body).to.have.property('active', false);
         expect(response.body).to.have.keys('active');
       });

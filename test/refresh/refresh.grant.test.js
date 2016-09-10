@@ -13,7 +13,7 @@ function errorDetail(spy) {
   return spy.args[0][0].error_detail;
 }
 
-describe('grant_type=refresh_token', function () {
+describe('grant_type=refresh_token', () => {
   const { agent, provider, TestAdapter } = bootstrap(__dirname);
   const RefreshToken = provider.get('RefreshToken');
   provider.setupClient();
@@ -25,11 +25,11 @@ describe('grant_type=refresh_token', function () {
   });
   provider.setupCerts();
 
-  describe('extends authorization_code', function () {
+  describe('extends authorization_code', () => {
     // TODO: it('omits to issue a refresh_token if the client cannot use it (misses allowed grant)');
   });
 
-  context('with real tokens', function () {
+  context('with real tokens', () => {
     before(agent.login);
     after(agent.logout);
 
@@ -82,10 +82,10 @@ describe('grant_type=refresh_token', function () {
       })
       .type('form')
       .expect(200)
-      .expect(function () {
+      .expect(() => {
         expect(spy.calledOnce).to.be.true;
       })
-      .expect(function (response) {
+      .expect((response) => {
         expect(response.body).to.have.keys('access_token', 'id_token', 'expires_in', 'token_type', 'refresh_token');
         const refreshIdToken = j(base64url(response.body.id_token.split('.')[1]));
         expect(refreshIdToken).to.have.property('nonce', 'foobarnonce');
@@ -94,8 +94,8 @@ describe('grant_type=refresh_token', function () {
     });
 
 
-    describe('validates', function () {
-      context('', function () {
+    describe('validates', () => {
+      context('', () => {
         before(function () {
           this.prev = RefreshToken.expiresIn;
           provider.configuration('ttl').RefreshToken = 1;
@@ -119,11 +119,11 @@ describe('grant_type=refresh_token', function () {
               })
               .type('form')
               .expect(400)
-              .expect(function () {
+              .expect(() => {
                 expect(spy.calledOnce).to.be.true;
                 expect(errorDetail(spy)).to.equal('refresh token is expired');
               })
-              .expect(function (response) {
+              .expect((response) => {
                 expect(response.body).to.have.property('error', 'invalid_grant');
               })
               .end(done);
@@ -144,11 +144,11 @@ describe('grant_type=refresh_token', function () {
           })
           .type('form')
           .expect(400)
-          .expect(function () {
+          .expect(() => {
             expect(spy.calledOnce).to.be.true;
             expect(errorDetail(spy)).to.equal('refresh token client mismatch');
           })
-          .expect(function (response) {
+          .expect((response) => {
             expect(response.body).to.have.property('error', 'invalid_grant');
           });
       });
@@ -167,7 +167,7 @@ describe('grant_type=refresh_token', function () {
           })
           .type('form')
           .expect(400)
-          .expect(function (response) {
+          .expect((response) => {
             expect(response.body).to.have.property('error', 'invalid_scope');
             expect(response.body).to.have.property('error_description', 'refresh token missing requested scope');
             expect(response.body).to.have.property('scope', 'profile');
@@ -176,7 +176,7 @@ describe('grant_type=refresh_token', function () {
 
       it('validates account is still there', function () {
         const rt = this.rt;
-        sinon.stub(provider.get('Account'), 'findById', function () {
+        sinon.stub(provider.get('Account'), 'findById', () => {
           return Promise.resolve();
         });
 
@@ -190,21 +190,21 @@ describe('grant_type=refresh_token', function () {
             grant_type: 'refresh_token'
           })
           .type('form')
-          .expect(function () {
+          .expect(() => {
             provider.get('Account').findById.restore();
           })
           .expect(400)
-          .expect(function () {
+          .expect(() => {
             expect(spy.calledOnce).to.be.true;
             expect(errorDetail(spy)).to.equal('refresh token invalid (referenced account not found)');
           })
-          .expect(function (response) {
+          .expect((response) => {
             expect(response.body).to.have.property('error', 'invalid_grant');
           });
       });
     });
 
-    it('refresh_token presence', function () {
+    it('refresh_token presence', () => {
       return agent.post(route)
       .auth('client', 'secret')
       .send({
@@ -212,14 +212,14 @@ describe('grant_type=refresh_token', function () {
       })
       .type('form')
       .expect(400)
-      .expect(function (response) {
+      .expect((response) => {
         expect(response.body).to.have.property('error', 'invalid_request');
         expect(response.body).to.have.property('error_description').and.matches(/missing required parameter/);
         expect(response.body).to.have.property('error_description').and.matches(/refresh_token/);
       });
     });
 
-    it('code being "found"', function () {
+    it('code being "found"', () => {
       const spy = sinon.spy();
       provider.once('grant.error', spy);
       return agent.post(route)
@@ -230,11 +230,11 @@ describe('grant_type=refresh_token', function () {
       })
       .type('form')
       .expect(400)
-      .expect(function () {
+      .expect(() => {
         expect(spy.calledOnce).to.be.true;
         expect(errorDetail(spy)).to.equal('refresh token not found');
       })
-      .expect(function (response) {
+      .expect((response) => {
         expect(response.body).to.have.property('error', 'invalid_grant');
       });
     });

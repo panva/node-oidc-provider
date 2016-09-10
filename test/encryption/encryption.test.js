@@ -11,7 +11,7 @@ const JWT = require('../../lib/helpers/jwt');
 const route = '/auth';
 
 ['get', 'post'].forEach(verb => {
-  describe(`[encryption] IMPLICIT id_token+token ${verb} ${route}`, function () {
+  describe(`[encryption] IMPLICIT id_token+token ${verb} ${route}`, () => {
     const { provider, agent, AuthorizationRequest, wrap } = bootstrap(__dirname);
     provider.setupClient();
     provider.setupCerts();
@@ -22,7 +22,7 @@ const route = '/auth';
     before(agent.login);
 
 
-    describe('encrypted authorization results', function () {
+    describe('encrypted authorization results', () => {
       before(function () {
         const auth = new AuthorizationRequest({
           response_type: 'id_token token',
@@ -70,13 +70,13 @@ const route = '/auth';
         });
       });
 
-      describe('userinfo nested signed and encrypted', function () {
-        before(function * () {
+      describe('userinfo nested signed and encrypted', () => {
+        before(function* () {
           const client = yield provider.get('Client').find('client');
           client.userinfoSignedResponseAlg = 'RS256';
         });
 
-        after(function * () {
+        after(function* () {
           const client = yield provider.get('Client').find('client');
           client.userinfoSignedResponseAlg = undefined;
         });
@@ -106,8 +106,8 @@ const route = '/auth';
       });
     });
 
-    describe('authorization request object encryption', function () {
-      it('works with signed by none', function () {
+    describe('authorization request object encryption', () => {
+      it('works with signed by none', () => {
         return JWT.sign({
           client_id: 'client',
           response_type: 'code',
@@ -127,7 +127,7 @@ const route = '/auth';
           }
         })
           .expect(302)
-          .expect(function (response) {
+          .expect((response) => {
             const expected = parse('https://client.example.com/cb', true);
             const actual = parse(response.headers.location, true);
             ['protocol', 'host', 'pathname'].forEach(attr => {
@@ -139,7 +139,7 @@ const route = '/auth';
       });
     });
 
-    it('handles when no suitable encryption key is found', function * () {
+    it('handles when no suitable encryption key is found', function* () {
       const client = yield provider.get('Client').find('client');
 
       client.idTokenEncryptedResponseAlg = 'ECDH-ES';

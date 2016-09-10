@@ -6,15 +6,15 @@ const { expect } = require('chai');
 
 const route = '/auth';
 
-describe('IMPLICIT id_token', function () {
+describe('IMPLICIT id_token', () => {
   const { provider, agent, AuthorizationRequest, wrap } = bootstrap(__dirname);
   provider.setupClient();
   provider.setupCerts();
   ['get', 'post'].forEach(verb => {
-    describe(`IMPLICIT id_token ${verb} ${route} with session`, function () {
+    describe(`IMPLICIT id_token ${verb} ${route} with session`, () => {
       before(agent.login);
 
-      it('responds with a id_token in fragment', function () {
+      it('responds with a id_token in fragment', () => {
         const auth = new AuthorizationRequest({
           response_type: 'id_token',
           scope: 'openid'
@@ -29,10 +29,10 @@ describe('IMPLICIT id_token', function () {
       });
     });
 
-    describe(`IMPLICIT id_token ${verb} ${route} errors`, function () {
+    describe(`IMPLICIT id_token ${verb} ${route} errors`, () => {
   // before(agent.logout);
 
-      it('disallowed response mode', function () {
+      it('disallowed response mode', () => {
         const spy = sinon.spy();
         provider.once('authorization.error', spy);
         const auth = new AuthorizationRequest({
@@ -43,7 +43,7 @@ describe('IMPLICIT id_token', function () {
 
         return wrap({ agent, route, verb, auth })
       .expect(302)
-      .expect(function () {
+      .expect(() => {
         expect(spy.calledOnce).to.be.true;
       })
       .expect(auth.validatePresence(['error', 'error_description', 'state']))
@@ -53,7 +53,7 @@ describe('IMPLICIT id_token', function () {
       .expect(auth.validateErrorDescription('response_mode not allowed for this response_type'));
       });
 
-      it('missing mandatory parameter nonce', function () {
+      it('missing mandatory parameter nonce', () => {
         const spy = sinon.spy();
         provider.once('authorization.error', spy);
         const auth = new AuthorizationRequest({
@@ -65,7 +65,7 @@ describe('IMPLICIT id_token', function () {
         return agent.get(route)
       .query(auth)
       .expect(302)
-      .expect(function () {
+      .expect(() => {
         expect(spy.calledOnce).to.be.true;
       })
       .expect(auth.validateFragment)

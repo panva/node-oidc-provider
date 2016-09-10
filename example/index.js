@@ -39,7 +39,7 @@ if (process.env.HEROKU) {
   _.set(settings.config, 'cookies.short.secure', true);
   _.set(settings.config, 'cookies.long.secure', true);
 
-  app.use(function * ensureSecure(next) {
+  app.use(function* ensureSecure(next) {
     if (this.secure) {
       yield next;
     } else if (this.method === 'GET' || this.method === 'HEAD') {
@@ -69,7 +69,7 @@ app.use(mount('/op', provider.app));
 
 const router = new Router();
 
-router.get('/interaction/:grant', function * renderInteraction(next) {
+router.get('/interaction/:grant', function* renderInteraction(next) {
   const cookie = JSON.parse(this.cookies.get('_grant', { signed: true }));
   const client = yield provider.get('Client').find(cookie.params.client_id);
 
@@ -105,13 +105,13 @@ router.get('/interaction/:grant', function * renderInteraction(next) {
 
 const body = bodyParser();
 
-router.post('/confirm', body, function * submitConfirmationForm(next) {
+router.post('/confirm', body, function* submitConfirmationForm(next) {
   const result = { consent: {} };
   provider.resume(this, this.request.body.uuid, result);
   yield next;
 });
 
-router.post('/login', body, function * submitLoginForm() {
+router.post('/login', body, function* submitLoginForm() {
   const account = yield Account.findByLogin(this.request.body.login);
 
   const result = {
@@ -119,7 +119,7 @@ router.post('/login', body, function * submitLoginForm() {
       account: account.accountId,
       acr: '1',
       remember: !!this.request.body.remember,
-      ts: Date.now() / 1000 | 0,
+      ts: Math.floor(Date.now() / 1000),
     },
     consent: {},
   };

@@ -9,14 +9,14 @@ const JWT = require('../../lib/helpers/jwt');
 const route = '/session/end';
 
 ['get', 'post'].forEach(verb => {
-  describe(`[session_management] ${verb} ${route} with session`, function () {
+  describe(`[session_management] ${verb} ${route} with session`, () => {
     const { provider, agent, wrap, getSessionId, TestAdapter } = bootstrap(__dirname);
     provider.setupClient();
     provider.setupCerts();
 
     beforeEach(agent.login);
     afterEach(agent.logout);
-    afterEach(function () {
+    afterEach(() => {
       if (TestAdapter.for('Session').destroy.restore) {
         TestAdapter.for('Session').destroy.restore();
       }
@@ -47,7 +47,7 @@ const route = '/session/end';
       sinon.spy(adapter, 'destroy');
 
       return wrap({ agent, route, verb, params })
-      .expect(function () {
+      .expect(() => {
         expect(adapter.destroy.called).to.be.true;
         expect(adapter.destroy.withArgs(sessionId).calledOnce).to.be.true;
       });
@@ -72,11 +72,11 @@ const route = '/session/end';
       .expect('location', '/');
     });
 
-    context('client with postLogoutRedirectUris', function () {
-      before(function * () {
+    context('client with postLogoutRedirectUris', () => {
+      before(function* () {
         (yield provider.get('Client').find('client')).postLogoutRedirectUris = ['https://client.example.com/logout/cb'];
       });
-      after(function * () {
+      after(function* () {
         (yield provider.get('Client').find('client')).postLogoutRedirectUris = [];
       });
 
@@ -102,7 +102,7 @@ const route = '/session/end';
       });
     });
 
-    it('validates id_token_hint presence', function () {
+    it('validates id_token_hint presence', () => {
       const params = {};
 
       return wrap({ agent, route, verb, params })
@@ -123,7 +123,7 @@ const route = '/session/end';
       .expect(/"error_description":"post_logout_redirect_uri not registered"/);
     });
 
-    it('rejects invalid JWTs', function () {
+    it('rejects invalid JWTs', () => {
       const params = {
         id_token_hint: 'not.a.jwt'
       };
@@ -134,7 +134,7 @@ const route = '/session/end';
       .expect(/"error_description":"could not decode id_token_hint/);
     });
 
-    it('rejects JWTs with unrecognized client', function * () {
+    it('rejects JWTs with unrecognized client', function* () {
       const params = {
         id_token_hint: yield JWT.sign({
           aud: 'nonexistant'
@@ -147,7 +147,7 @@ const route = '/session/end';
       .expect(/"error_description":"could not validate id_token_hint \(invalid_client\)/);
     });
 
-    it('rejects JWTs with bad signatures', function * () {
+    it('rejects JWTs with bad signatures', function* () {
       const params = {
         id_token_hint: yield JWT.sign({
           aud: 'client'

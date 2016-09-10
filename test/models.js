@@ -1,33 +1,30 @@
 'use strict';
 
 const store = new Map();
+const epochTime = require('../lib/helpers/epoch_time');
+
+function grantKeyFor(id) {
+  return ['grant', id].join(':');
+}
 
 class TestAdapter {
   constructor(name) { // eslint-disable-line consistent-return
     this.name = name;
     if (store.has(name)) return store.get(name);
-
     store.set(name, this);
+    this.store = store;
   }
 
   static for(name) {
     return store.get(name);
   }
 
-  static get storage() {
-    return store;
-  }
-
-  get storage() {
-    return store;
+  get(key) {
+    return this.constructor.for(key);
   }
 
   key(id) {
     return [this.name, id].join(':');
-  }
-
-  grantKey(id) {
-    return ['grant', id].join(':');
   }
 
   destroy(id) {
@@ -37,7 +34,7 @@ class TestAdapter {
     store.delete(key);
 
     if (grantId) {
-      const grantKey = this.grantKey(grantId);
+      const grantKey = grantKeyFor(grantId);
 
       store.get(grantKey).forEach(token => store.delete(token));
     }
@@ -46,7 +43,7 @@ class TestAdapter {
   }
 
   consume(id) {
-    store.get(this.key(id)).consumed = Date.now() / 1000 | 0;
+    store.get(this.key(id)).consumed = epochTime();
     return Promise.resolve();
   }
 
@@ -63,7 +60,7 @@ class TestAdapter {
 
     const grantId = payload.grantId;
     if (grantId) {
-      const grantKey = this.grantKey(grantId);
+      const grantKey = grantKeyFor(grantId);
       const grant = store.get(grantKey);
       if (!grant) {
         store.set(grantKey, [key]);
@@ -85,10 +82,6 @@ class Account {
   }
 
   static get storage() {
-    return store;
-  }
-
-  get storage() {
     return store;
   }
 

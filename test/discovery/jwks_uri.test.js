@@ -9,86 +9,86 @@ const { expect } = require('chai');
 
 const route = '/certs';
 
-describe(route, function () {
+describe(route, () => {
   const { provider, responses, agent } = bootstrap(__dirname);
 
-  it('responds with json 200', function () {
+  it('responds with json 200', () => {
     return agent.get(route)
       .expect('Content-Type', /application\/json/)
       .expect(200, { keys: [] });
   });
 
-  describe('when populated with signing keys', function () {
+  describe('when populated with signing keys', () => {
     provider.setupCerts();
 
-    it('responds with json 200', function () {
+    it('responds with json 200', () => {
       return agent.get(route)
-        .expect(function (res) {
+        .expect((res) => {
           expect(res.body.keys).to.have.length(1);
           expect(res.body.keys[0]).to.have.all.keys(['kty', 'kid', 'e', 'n']);
         });
     });
   });
 
-  describe('EC keys', function () {
+  describe('EC keys', () => {
     provider.setupCerts([key]);
 
-    it('responds with json 200', function () {
+    it('responds with json 200', () => {
       return agent.get(route)
-        .expect(function (res) {
+        .expect((res) => {
           expect(res.body.keys).to.have.length(1);
           expect(res.body.keys[0]).to.have.all.keys(['kty', 'kid', 'crv', 'x', 'y']);
         });
     });
   });
 
-  describe('with errors', function () {
-    before(function () {
+  describe('with errors', () => {
+    before(() => {
       sinon.stub(provider.keystore, 'toJSON').throws(new InvalidRequestError());
     });
 
-    after(function () {
+    after(() => {
       provider.keystore.toJSON.restore();
     });
 
-    it('handles errors with json and corresponding status', function () {
+    it('handles errors with json and corresponding status', () => {
       return agent.get(route)
         .expect('Content-Type', /application\/json/)
         .expect(400);
     });
 
-    it('emits certificates.error on errors', function () {
+    it('emits certificates.error on errors', () => {
       const spy = sinon.spy();
       provider.once('certificates.error', spy);
 
       return agent.get(route)
-        .expect(function () {
+        .expect(() => {
           expect(spy.called).to.be.true;
         });
     });
   });
 
-  describe('with exceptions', function () {
-    before(function () {
+  describe('with exceptions', () => {
+    before(() => {
       sinon.stub(provider.keystore, 'toJSON').throws();
     });
 
-    after(function () {
+    after(() => {
       provider.keystore.toJSON.restore();
     });
 
-    it('handles exceptions with json 500', function () {
+    it('handles exceptions with json 500', () => {
       return agent.get(route)
         .expect('Content-Type', /application\/json/)
         .expect(500, responses.serverErrorBody);
     });
 
-    it('emits server_error on exceptions', function () {
+    it('emits server_error on exceptions', () => {
       const spy = sinon.spy();
       provider.once('server_error', spy);
 
       return agent.get(route)
-        .expect(function () {
+        .expect(() => {
           expect(spy.called).to.be.true;
         });
     });

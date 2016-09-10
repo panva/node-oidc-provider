@@ -3,8 +3,8 @@
 const { expect } = require('chai');
 const { Provider } = require('../../lib');
 
-describe('Provider#addKey', function () {
-  it('validates pairwiseSalt presence when pairwise is configured', function (done) {
+describe('Provider#addKey', () => {
+  it('validates pairwiseSalt presence when pairwise is configured', (done) => {
     const provider = new Provider('http://localhost:3000', {
       subjectTypes: ['public']
     });

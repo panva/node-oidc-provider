@@ -9,11 +9,11 @@ const JWT = require('../../lib/helpers/jwt');
 
 const route = '/token';
 
-describe('client authentication options', function () {
+describe('client authentication options', () => {
   const { agent, provider, responses } = bootstrap(__dirname);
   const Client = provider.get('Client');
 
-  describe('none auth', function () {
+  describe('none auth', () => {
     provider.setupCerts();
 
     const client = {
@@ -26,7 +26,7 @@ describe('client authentication options', function () {
     };
     provider.setupClient(client);
 
-    it('accepts the auth', function () {
+    it('accepts the auth', () => {
       return agent.post(route)
       .send({
         grant_type: 'implicit'
@@ -40,7 +40,7 @@ describe('client authentication options', function () {
     });
   });
 
-  describe('client_secret_basic auth', function () {
+  describe('client_secret_basic auth', () => {
     const client = {
       token_endpoint_auth_method: 'client_secret_basic',
       client_id: 'client',
@@ -49,7 +49,7 @@ describe('client authentication options', function () {
     };
     provider.setupClient(client);
 
-    it('accepts the auth', function () {
+    it('accepts the auth', () => {
       return agent.post(route)
       .send({
         grant_type: 'implicit'
@@ -59,7 +59,7 @@ describe('client authentication options', function () {
       .expect(responses.tokenAuthSucceeded);
     });
 
-    it('rejects invalid secrets', function () {
+    it('rejects invalid secrets', () => {
       return agent.post(route)
       .send({
         grant_type: 'implicit'
@@ -69,7 +69,7 @@ describe('client authentication options', function () {
       .expect(responses.tokenAuthRejected);
     });
 
-    it('requires the client_secret to be sent', function () {
+    it('requires the client_secret to be sent', () => {
       return agent.post(route)
       .send({
         grant_type: 'implicit'
@@ -83,7 +83,7 @@ describe('client authentication options', function () {
     });
   });
 
-  describe('client_secret_post auth', function () {
+  describe('client_secret_post auth', () => {
     const client = {
       token_endpoint_auth_method: 'client_secret_post',
       client_id: 'client',
@@ -92,7 +92,7 @@ describe('client authentication options', function () {
     };
     provider.setupClient(client);
 
-    it('accepts the auth', function () {
+    it('accepts the auth', () => {
       return agent.post(route)
       .send({
         grant_type: 'implicit',
@@ -103,7 +103,7 @@ describe('client authentication options', function () {
       .expect(responses.tokenAuthSucceeded);
     });
 
-    it('rejects the auth', function () {
+    it('rejects the auth', () => {
       return agent.post(route)
       .send({
         grant_type: 'implicit',
@@ -114,7 +114,7 @@ describe('client authentication options', function () {
       .expect(responses.tokenAuthRejected);
     });
 
-    it('requires the client_secret to be sent', function () {
+    it('requires the client_secret to be sent', () => {
       return agent.post(route)
       .send({
         grant_type: 'implicit',
@@ -129,7 +129,7 @@ describe('client authentication options', function () {
     });
   });
 
-  describe('client_secret_jwt auth', function () {
+  describe('client_secret_jwt auth', () => {
     const client = {
       token_endpoint_auth_method: 'client_secret_jwt',
       client_id: 'client',
@@ -138,7 +138,7 @@ describe('client authentication options', function () {
     };
     provider.setupClient(client);
 
-    it('accepts the auth', function * () {
+    it('accepts the auth', function* () {
       const key = (yield Client.find('client')).keystore.get();
       return JWT.sign({
         jti: uuid(),
@@ -159,7 +159,7 @@ describe('client authentication options', function () {
 
     // TODO: it('rejects tokens signed wrong, invalid or expired');
 
-    it('rejects malformed assertions', function () {
+    it('rejects malformed assertions', () => {
       return agent.post(route)
       .send({
         client_id: client.client_id,
@@ -174,7 +174,7 @@ describe('client authentication options', function () {
       });
     });
 
-    it('exp must be set', function * () {
+    it('exp must be set', function* () {
       const key = (yield Client.find('client')).keystore.get();
       return JWT.sign({
         jti: uuid(),
@@ -197,7 +197,7 @@ describe('client authentication options', function () {
       }));
     });
 
-    it('jti must be set', function * () {
+    it('jti must be set', function* () {
       const key = (yield Client.find('client')).keystore.get();
       return JWT.sign({
         // jti: uuid(),
@@ -219,7 +219,7 @@ describe('client authentication options', function () {
       }));
     });
 
-    it('iss must be set', function * () {
+    it('iss must be set', function* () {
       const key = (yield Client.find('client')).keystore.get();
       return JWT.sign({
         jti: uuid(),
@@ -241,7 +241,7 @@ describe('client authentication options', function () {
       }));
     });
 
-    it('iss must be the client id', function * () {
+    it('iss must be the client id', function* () {
       const key = (yield Client.find('client')).keystore.get();
       return JWT.sign({
         jti: uuid(),
@@ -263,7 +263,7 @@ describe('client authentication options', function () {
       }));
     });
 
-    it('audience as array must contain the token endpoint', function * () {
+    it('audience as array must contain the token endpoint', function* () {
       const key = (yield Client.find('client')).keystore.get();
       return JWT.sign({
         jti: uuid(),
@@ -286,7 +286,7 @@ describe('client authentication options', function () {
       }));
     });
 
-    it('audience as single entry must be the token endpoint', function * () {
+    it('audience as single entry must be the token endpoint', function* () {
       const key = (yield Client.find('client')).keystore.get();
       return JWT.sign({
         jti: uuid(),
@@ -309,7 +309,7 @@ describe('client authentication options', function () {
       }));
     });
 
-    it('requires client_assertion', function () {
+    it('requires client_assertion', () => {
       return agent.post(route)
       .send({
         grant_type: 'implicit',
@@ -323,7 +323,7 @@ describe('client authentication options', function () {
       });
     });
 
-    it('requires client_assertion_type', function * () {
+    it('requires client_assertion_type', function* () {
       const key = (yield Client.find('client')).keystore.get();
       return JWT.sign({
         jti: uuid(),
@@ -345,7 +345,7 @@ describe('client authentication options', function () {
       }));
     });
 
-    it('requires client_assertion_type of specific value', function * () {
+    it('requires client_assertion_type of specific value', function* () {
       const key = (yield Client.find('client')).keystore.get();
       return JWT.sign({
         jti: uuid(),
@@ -367,7 +367,7 @@ describe('client authentication options', function () {
       }));
     });
 
-    it('rejects invalid assertions', function () {
+    it('rejects invalid assertions', () => {
       return agent.post(route)
       .send({
         client_assertion: 'this.notatall.valid',
@@ -381,7 +381,7 @@ describe('client authentication options', function () {
       });
     });
 
-    it('rejects invalid jwts', function * () {
+    it('rejects invalid jwts', function* () {
       const key = (yield Client.find('client')).keystore.get();
       return JWT.sign({
         jti: uuid(),
@@ -403,18 +403,18 @@ describe('client authentication options', function () {
       }));
     });
 
-    describe('JTI uniqueness', function () {
-      before(function () {
-        sinon.stub(provider.configuration(), 'uniqueness', function () {
+    describe('JTI uniqueness', () => {
+      before(() => {
+        sinon.stub(provider.configuration(), 'uniqueness', () => {
           return Promise.resolve(false);
         });
       });
 
-      after(function () {
+      after(() => {
         provider.configuration().uniqueness.restore();
       });
 
-      it('reused jtis must be rejected', function * () {
+      it('reused jtis must be rejected', function* () {
         const key = (yield Client.find('client')).keystore.get();
         return JWT.sign({
           jti: uuid(),
@@ -437,14 +437,14 @@ describe('client authentication options', function () {
       });
     });
 
-    describe('when token_endpoint_auth_signing_alg is set on the client', function () {
-      before(function * () {
+    describe('when token_endpoint_auth_signing_alg is set on the client', () => {
+      before(function* () {
         (yield Client.find('client')).tokenEndpointAuthSigningAlg = 'HS384';
       });
-      after(function * () {
+      after(function* () {
         delete (yield Client.find('client')).tokenEndpointAuthSigningAlg;
       });
-      it('rejects signatures with different algorithm', function * () {
+      it('rejects signatures with different algorithm', function* () {
         const key = (yield Client.find('client')).keystore.get();
         return JWT.sign({
           jti: uuid(),
@@ -468,11 +468,11 @@ describe('client authentication options', function () {
     });
   });
 
-  describe('private_key_jwt auth', function () {
+  describe('private_key_jwt auth', () => {
     let privateKey;
 
-    before(function () {
-      return jose.JWK.asKey(clientKey).then(function (key) {
+    before(() => {
+      return jose.JWK.asKey(clientKey).then((key) => {
         privateKey = key;
       });
     });
@@ -488,7 +488,7 @@ describe('client authentication options', function () {
     };
     provider.setupClient(client);
 
-    it('accepts the auth', function () {
+    it('accepts the auth', () => {
       return JWT.sign({
         jti: uuid(),
         aud: provider.issuer + provider.pathFor('token'),

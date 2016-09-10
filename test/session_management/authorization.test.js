@@ -5,16 +5,16 @@ const { expect } = require('chai');
 
 const route = '/auth';
 
-describe('session management', function () {
+describe('session management', () => {
   const { provider, agent, AuthorizationRequest, wrap } = bootstrap(__dirname);
   provider.setupClient();
   provider.setupCerts();
 
   ['get', 'post'].forEach(verb => {
-    describe(`[session_management] ${verb} ${route} with session`, function () {
+    describe(`[session_management] ${verb} ${route} with session`, () => {
       before(agent.login);
 
-      it('provides session_state in the response', function () {
+      it('provides session_state in the response', () => {
         const auth = new AuthorizationRequest({
           response_type: 'code',
           scope: 'openid'
@@ -27,14 +27,14 @@ describe('session management', function () {
       .expect(auth.validateClientLocation);
       });
 
-      it('sets a _session_states cookie with the clientId as keys', function () {
+      it('sets a _session_states cookie with the clientId as keys', () => {
         const auth = new AuthorizationRequest({
           response_type: 'code',
           scope: 'openid'
         });
 
         return wrap({ agent, route, verb, auth })
-      .expect(function () {
+      .expect(() => {
         const states = agent.jar.getCookie('_session_states', { path: '/' });
         expect(states).to.be.ok;
         expect(JSON.parse(states.value)).to.have.key('client');
@@ -42,8 +42,8 @@ describe('session management', function () {
       });
     });
 
-    describe('[session_management] check_session_iframe', function () {
-      it('responds with frameable html', function () {
+    describe('[session_management] check_session_iframe', () => {
+      it('responds with frameable html', () => {
         return agent.get('/session/check')
     .expect(200)
     .expect('content-type', /text\/html/);
