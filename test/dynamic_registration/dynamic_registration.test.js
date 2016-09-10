@@ -21,8 +21,8 @@ function validateErrorDescription(description) {
 
 describe('registration features', () => {
   const { agent, provider, TestAdapter } = bootstrap(__dirname);
-  const Client = provider.get('Client');
-  provider.setupCerts();
+  const Client = provider.Client;
+
 
   context('POST /reg', () => {
     it('generates the id, secret that does not expire and reg access token and returns the defaulted values', () => {
@@ -217,7 +217,7 @@ describe('registration features', () => {
           const conf = provider.configuration();
           conf.features.registration = { initialAccessToken: true };
 
-          const iat = new (provider.get('InitialAccessToken'))({});
+          const iat = new (provider.InitialAccessToken)({});
           return iat.save().then(value => {
             this.token = value;
           });
@@ -228,11 +228,11 @@ describe('registration features', () => {
         });
 
         it('allows the developers to insert new tokens with no expiration', () => {
-          return new (provider.get('InitialAccessToken'))().save();
+          return new (provider.InitialAccessToken)().save();
         });
 
         it('allows the developers to insert new tokens with expiration', () => {
-          const IAT = provider.get('InitialAccessToken');
+          const IAT = provider.InitialAccessToken;
           return new IAT({
             expiresIn: 24 * 60 * 60
           }).save().then((v) => {

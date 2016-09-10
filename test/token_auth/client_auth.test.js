@@ -11,11 +11,9 @@ const route = '/token';
 
 describe('client authentication options', () => {
   const { agent, provider, responses } = bootstrap(__dirname);
-  const Client = provider.get('Client');
+  const Client = provider.Client;
 
   describe('none auth', () => {
-    provider.setupCerts();
-
     const client = {
       token_endpoint_auth_method: 'none',
       client_id: 'client',

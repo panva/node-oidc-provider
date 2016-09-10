@@ -10,7 +10,7 @@ const route = '/auth';
 
 describe('request parameter features', () => {
   const { provider, agent, wrap } = bootstrap(__dirname);
-  const Client = provider.get('Client');
+  const Client = provider.Client;
   provider.setupClient();
   provider.setupClient({
     client_id: 'client-with-HS-sig',
@@ -18,7 +18,7 @@ describe('request parameter features', () => {
     request_object_signing_alg: 'HS256',
     redirect_uris: ['https://client.example.com/cb'],
   });
-  provider.setupCerts();
+
 
   describe('configuration features.requestUri', () => {
     it('extends discovery', () => {

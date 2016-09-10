@@ -5,7 +5,7 @@ const bootstrap = require('../test_helper');
 
 describe('custom token endpoint grant types', () => {
   const { provider, agent } = bootstrap(__dirname);
-  provider.setupCerts();
+
   it('allows for grant types to be added', () => {
     expect(() => {
       provider.registerGrantType('lotto', (passedProvider) => {

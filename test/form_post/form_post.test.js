@@ -9,10 +9,10 @@ const route = '/auth';
 ['get', 'post'].forEach(verb => {
   describe(`${verb} ${route} response_mode=form_post`, () => {
     const { provider, agent, AuthorizationRequest, wrap } = bootstrap(__dirname);
-    const Client = provider.get('Client');
+    const Client = provider.Client;
 
     provider.setupClient();
-    provider.setupCerts();
+
 
     context('logged in', () => {
       before(agent.login);

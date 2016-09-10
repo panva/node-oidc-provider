@@ -10,7 +10,7 @@ const route = '/auth';
 describe('BASIC code', () => {
   const { provider, agent, AuthorizationRequest, getSession, wrap } = bootstrap(__dirname);
   provider.setupClient();
-  provider.setupCerts();
+
 
   ['get', 'post'].forEach(verb => {
     describe(`${verb} ${route} with session`, () => {
@@ -111,7 +111,7 @@ describe('BASIC code', () => {
         });
 
         it('session is too old for this client', function* () {
-          const client = yield provider.get('Client').find('client');
+          const client = yield provider.Client.find('client');
           client.defaultMaxAge = 1800;
 
           const session = getSession(agent);
@@ -201,12 +201,12 @@ describe('BASIC code', () => {
 
       context('when client has more then one redirect_uri', () => {
         before(function* () {
-          const client = yield provider.get('Client').find('client');
+          const client = yield provider.Client.find('client');
           client.redirectUris.push('https://someOtherUri.com');
         });
 
         after(function* () {
-          const client = yield provider.get('Client').find('client');
+          const client = yield provider.Client.find('client');
           client.redirectUris.pop();
         });
 
@@ -542,11 +542,11 @@ describe('BASIC code', () => {
 
       context('exception handling', () => {
         before(() => {
-          sinon.stub(provider.get('Client'), 'find').returns(Promise.reject(new Error()));
+          sinon.stub(provider.Client, 'find').returns(Promise.reject(new Error()));
         });
 
         after(() => {
-          provider.get('Client').find.restore();
+          provider.Client.find.restore();
         });
 
         it('responds with server_error redirect to redirect_uri', () => {

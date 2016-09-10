@@ -9,7 +9,7 @@ const route = '/token';
 describe('grant_type=client_credentials', () => {
   const { agent, provider } = bootstrap(__dirname);
   provider.setupClient();
-  provider.setupCerts();
+
   it('provides a Bearer client credentials token', () => {
     const spy = sinon.spy();
     provider.once('grant.success', spy);

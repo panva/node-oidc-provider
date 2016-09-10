@@ -14,7 +14,7 @@ const route = '/auth';
   describe(`[encryption] IMPLICIT id_token+token ${verb} ${route}`, () => {
     const { provider, agent, AuthorizationRequest, wrap } = bootstrap(__dirname);
     provider.setupClient();
-    provider.setupCerts();
+
 
     before(function () {
       return jose.JWK.asKeyStore(privKey).then(keystore => { this.keystore = keystore; });
@@ -72,12 +72,12 @@ const route = '/auth';
 
       describe('userinfo nested signed and encrypted', () => {
         before(function* () {
-          const client = yield provider.get('Client').find('client');
+          const client = yield provider.Client.find('client');
           client.userinfoSignedResponseAlg = 'RS256';
         });
 
         after(function* () {
-          const client = yield provider.get('Client').find('client');
+          const client = yield provider.Client.find('client');
           client.userinfoSignedResponseAlg = undefined;
         });
 
@@ -140,7 +140,7 @@ const route = '/auth';
     });
 
     it('handles when no suitable encryption key is found', function* () {
-      const client = yield provider.get('Client').find('client');
+      const client = yield provider.Client.find('client');
 
       client.idTokenEncryptedResponseAlg = 'ECDH-ES';
 

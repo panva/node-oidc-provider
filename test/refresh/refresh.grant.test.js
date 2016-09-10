@@ -15,7 +15,7 @@ function errorDetail(spy) {
 
 describe('grant_type=refresh_token', () => {
   const { agent, provider, TestAdapter } = bootstrap(__dirname);
-  const RefreshToken = provider.get('RefreshToken');
+  const RefreshToken = provider.RefreshToken;
   provider.setupClient();
   provider.setupClient({
     client_id: 'client2',
@@ -23,7 +23,7 @@ describe('grant_type=refresh_token', () => {
     grant_types: ['authorization_code', 'refresh_token'],
     redirect_uris: ['https://client.example.com/cb']
   });
-  provider.setupCerts();
+
 
   describe('extends authorization_code', () => {
     // TODO: it('omits to issue a refresh_token if the client cannot use it (misses allowed grant)');
@@ -176,7 +176,7 @@ describe('grant_type=refresh_token', () => {
 
       it('validates account is still there', function () {
         const rt = this.rt;
-        sinon.stub(provider.get('Account'), 'findById', () => {
+        sinon.stub(provider.Account, 'findById', () => {
           return Promise.resolve();
         });
 
@@ -191,7 +191,7 @@ describe('grant_type=refresh_token', () => {
           })
           .type('form')
           .expect(() => {
-            provider.get('Account').findById.restore();
+            provider.Account.findById.restore();
           })
           .expect(400)
           .expect(() => {

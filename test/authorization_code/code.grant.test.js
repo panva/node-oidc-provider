@@ -17,14 +17,14 @@ describe('grant_type=authorization_code', () => {
     agent, provider, TestAdapter
   } = bootstrap(__dirname);
 
-  provider.setupCerts();
+
   provider.setupClient();
   provider.setupClient({
     client_id: 'client2',
     client_secret: 'secret',
     redirect_uris: ['https://client.example.com/cb']
   });
-  const AuthorizationCode = provider.get('AuthorizationCode');
+  const AuthorizationCode = provider.AuthorizationCode;
 
   context('with real tokens', () => {
     before(agent.login);
@@ -231,7 +231,7 @@ describe('grant_type=authorization_code', () => {
     });
 
     it('validates account is still there', function () {
-      sinon.stub(provider.get('Account'), 'findById', () => {
+      sinon.stub(provider.Account, 'findById', () => {
         return Promise.resolve();
       });
 
@@ -247,7 +247,7 @@ describe('grant_type=authorization_code', () => {
       })
       .type('form')
       .expect(() => {
-        provider.get('Account').findById.restore();
+        provider.Account.findById.restore();
       })
       .expect(400)
       .expect(() => {
@@ -351,11 +351,11 @@ describe('grant_type=authorization_code', () => {
 
   describe('error handling', () => {
     before(() => {
-      sinon.stub(provider.get('Client'), 'find').returns(Promise.reject(new Error()));
+      sinon.stub(provider.Client, 'find').returns(Promise.reject(new Error()));
     });
 
     after(() => {
-      provider.get('Client').find.restore();
+      provider.Client.find.restore();
     });
 
     it('handles errors', () => {

@@ -9,7 +9,7 @@ const route = '/auth';
 describe('IMPLICIT id_token', () => {
   const { provider, agent, AuthorizationRequest, wrap } = bootstrap(__dirname);
   provider.setupClient();
-  provider.setupCerts();
+
   ['get', 'post'].forEach(verb => {
     describe(`IMPLICIT id_token ${verb} ${route} with session`, () => {
       before(agent.login);

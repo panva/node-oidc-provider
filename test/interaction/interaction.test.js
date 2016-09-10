@@ -14,7 +14,7 @@ const { expect } = require('chai');
 describe('resume after interaction', () => {
   const { provider, agent, getSession, AuthorizationRequest, } = bootstrap(__dirname);
   provider.setupClient();
-  provider.setupCerts();
+
 
   provider.configuration('prompts').push('custom');
 

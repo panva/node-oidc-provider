@@ -10,12 +10,12 @@ const { Provider } = require('../../lib');
 
 describe('Back-Channel Logout 1.0', () => {
   const { provider, agent } = bootstrap(__dirname);
-  provider.setupCerts();
+
   provider.setupClient();
 
   afterEach(nock.cleanAll);
   afterEach(function* () {
-    const client = yield provider.get('Client').find('client');
+    const client = yield provider.Client.find('client');
     if (client.backchannelLogout.restore) client.backchannelLogout.restore();
   });
 
@@ -33,7 +33,7 @@ describe('Back-Channel Logout 1.0', () => {
 
   describe('Client#backchannelLogout', () => {
     it('triggers the call, does not return values', function* () {
-      const client = yield provider.get('Client').find('client');
+      const client = yield provider.Client.find('client');
 
       nock('https://client.example.com/')
         .filteringRequestBody((body) => {
@@ -54,7 +54,7 @@ describe('Back-Channel Logout 1.0', () => {
     });
 
     it('does ignore request and sig errors', function* () {
-      const client = yield provider.get('Client').find('client');
+      const client = yield provider.Client.find('client');
 
       // not defining the nock scope makes the request part throw
       return client.backchannelLogout('subject').catch(() => {
@@ -145,7 +145,7 @@ describe('Back-Channel Logout 1.0', () => {
 
     it('triggers the backchannelLogout for visited clients', function* () {
       const params = { id_token_hint: this.idToken };
-      const client = yield provider.get('Client').find('client');
+      const client = yield provider.Client.find('client');
 
       sinon.spy(client, 'backchannelLogout');
 
@@ -163,7 +163,7 @@ describe('Back-Channel Logout 1.0', () => {
 
     it('ignores the backchannelLogout when client does not support', function* () {
       const params = { id_token_hint: this.idToken };
-      const client = yield provider.get('Client').find('client');
+      const client = yield provider.Client.find('client');
       delete client.backchannelLogoutUri;
 
       sinon.spy(client, 'backchannelLogout');

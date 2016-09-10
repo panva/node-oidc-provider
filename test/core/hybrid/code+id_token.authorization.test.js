@@ -9,7 +9,7 @@ const route = '/auth';
 describe('HYBRID code+id_token', () => {
   const { provider, agent, AuthorizationRequest, wrap } = bootstrap(__dirname);
   provider.setupClient();
-  provider.setupCerts();
+
   ['get', 'post'].forEach(verb => {
     describe(`${verb} ${route} with session`, () => {
       before(agent.login);

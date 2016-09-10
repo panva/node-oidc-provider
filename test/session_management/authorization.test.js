@@ -8,7 +8,7 @@ const route = '/auth';
 describe('session management', () => {
   const { provider, agent, AuthorizationRequest, wrap } = bootstrap(__dirname);
   provider.setupClient();
-  provider.setupCerts();
+
 
   ['get', 'post'].forEach(verb => {
     describe(`[session_management] ${verb} ${route} with session`, () => {

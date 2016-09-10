@@ -5,7 +5,7 @@ const { expect } = require('chai');
 
 describe('Provider#addClient', () => {
   const { provider } = bootstrap(__dirname);
-  provider.setupCerts();
+
 
   [
     'id_token_signed_response_alg',

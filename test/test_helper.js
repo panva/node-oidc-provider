@@ -1,5 +1,4 @@
 'use strict';
-
 /* eslint-disable no-underscore-dangle */
 
 process.env.NODE_ENV = process.env.NODE_ENV || 'test';
@@ -18,8 +17,6 @@ const { Cookie } = require('cookiejar');
 const { parse } = require('url');
 const path = require('path');
 const jose = require('node-jose');
-const delegate = require('delegates');
-const _ = require('lodash');
 const koa = require('koa');
 const mount = require('koa-mount');
 const epochTime = require('../lib/helpers/epoch_time');
@@ -44,7 +41,7 @@ module.exports = function testHelper(dir, basename, mountTo) {
     dir,
     base: `${basename || path.basename(dir)}.config.js`,
   });
-  const { config, certs, client } = require(conf); // eslint-disable-line global-require
+  const { config, client } = require(conf); // eslint-disable-line global-require
   const additionalClients = [];
   config.adapter = TestAdapter;
   config.findById = Account.findById;
@@ -61,20 +58,11 @@ module.exports = function testHelper(dir, basename, mountTo) {
       return ks.generate('oct', 512, { alg: 'HS512' });
     });
   }
-  const provider = new Provider(`http://127.0.0.1${mountTo || ''}`, config);
 
-  // gotta delegate the keystore object so that we can stub the method calls
-  // with sinon
-  const store = jose.JWK.createKeyStore();
-  const delegatedStore = { store };
-  delegate(delegatedStore, 'store')
-    .method('toJSON')
-    .method('add')
-    .method('all')
-    .method('generate')
-    .method('remove')
-    .method('get');
-  provider.keystore = delegatedStore;
+  config.keystore = global.keystore;
+
+  const provider = new Provider(`http://127.0.0.1${mountTo || ''}`, config);
+  provider.defaultHttpOptions = { timeout: 50 };
 
   let server;
 
@@ -112,7 +100,7 @@ module.exports = function testHelper(dir, basename, mountTo) {
     const account = uuid();
     this.loggedInAccountId = account;
 
-    const session = new (provider.get('Session'))(sessionId, { loginTs, account });
+    const session = new (provider.Session)(sessionId, { loginTs, account });
     const cookies = [`_session=${sessionId}; path=/; expires=${expire.toGMTString()}; httponly`];
 
     const sid = uuid();
@@ -246,10 +234,6 @@ module.exports = function testHelper(dir, basename, mountTo) {
   };
 
   provider.setupClient = function setupClient(pass) {
-    if (provider.configuration('idTokenSigningAlgValues').indexOf('RS256') === -1) {
-      this.setupCerts();
-    }
-
     if (pass) additionalClients.push(pass.client_id);
 
     const add = pass || client;
@@ -260,30 +244,7 @@ module.exports = function testHelper(dir, basename, mountTo) {
     });
 
     after('removing client', () => {
-      return provider.get('Client').remove(add.client_id);
-    });
-  };
-
-  provider.setupCerts = function (passed) {
-    const self = this;
-    const pre = _.pick(self.configuration, [
-      'requestObjectEncryptionAlgValues',
-      'idTokenSigningAlgValues',
-      'userinfoSigningAlgValues'
-    ]);
-    const added = [];
-
-    before('adding certificate', (done) => {
-      const add = passed || certs;
-      const promises = add.map(cert => self.addKey(cert).then(key => added.push(key)));
-      Promise.all(promises).then(() => {
-        done();
-      }, done);
-    });
-
-    after('removing certificate', () => {
-      _.assign(self.configuration, pre);
-      added.forEach(key => self.keystore.remove(key));
+      return provider.Client.remove(add.client_id);
     });
   };
 

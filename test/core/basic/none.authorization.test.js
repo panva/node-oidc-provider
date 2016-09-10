@@ -8,7 +8,7 @@ const route = '/auth';
   describe(`${verb} ${route} response_type=none`, () => {
     const { provider, agent, AuthorizationRequest, wrap } = bootstrap(__dirname);
     provider.setupClient();
-    provider.setupCerts();
+
 
     before(agent.login);
     after(agent.logout);

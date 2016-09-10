@@ -12,7 +12,7 @@ const j = JSON.stringify;
 describe('pairwise features', () => {
   const { provider } = bootstrap(__dirname);
   const Claims = getMask(provider.configuration());
-  provider.setupCerts();
+
 
   describe('pairwise client configuration', () => {
     context('sector_identifier_uri is not provided', () => {

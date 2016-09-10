@@ -236,7 +236,7 @@ To have the option of multiple Initial Access Tokens covered by your adapter use
 const configuration = { features: { registration: { initialAccessToken: true } } };
 
 // to add a token and retrieve it's value
-new (provider.get('InitialAccessToken'))({}).then(console.log);
+new (provider.InitialAccessToken)({}).then(console.log);
 ```
 
 **Dynamic registration management features**  
@@ -354,7 +354,7 @@ the rest of the available metadata [here][client-metadata].
 
 Note: each oidc-provider caches the clients once they are loaded (via either of the mechanisms),
 when in need of client configuration "reload" you can purge this cache like so
-`oidc.get('Client').purge()`;
+`oidc.Client.purge()`;
 
 **via Provider interface**  
 To add pre-established clients use the `addClient` method on a oidc-provider instance. This accepts
@@ -386,7 +386,7 @@ const parameters = ['username', 'password'];
 provider.registerGrantType('password', function passwordGrantTypeFactory(providerInstance) {
   return function * passwordGrantType(next) {
     if (this.oidc.params.username === 'foo' && this.oidc.params.password === 'bar') {
-      const AccessToken = providerInstance.get('AccessToken');
+      const AccessToken = providerInstance.AccessToken;
       const at = new AccessToken({
         accountId: 'foo',
         clientId: this.oidc.client.clientId,

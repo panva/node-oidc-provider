@@ -9,7 +9,7 @@ const { expect } = require('chai');
 // const nock = require('nock');
 const { Provider } = require('../../lib');
 
-provider.setupCerts();
+
 provider.setupClient();
 
 describe('OAuth 2.0 Dynamic Client Registration Management Protocol', () => {
@@ -199,9 +199,9 @@ describe('OAuth 2.0 Dynamic Client Registration Management Protocol', () => {
     }));
 
     it('cannot update non-dynamic clients', function* () {
-      const rat = new (provider.get('RegistrationAccessToken'))({ clientId: 'client' });
+      const rat = new (provider.RegistrationAccessToken)({ clientId: 'client' });
       const bearer = yield rat.save();
-      const client = yield provider.get('Client').find('client');
+      const client = yield provider.Client.find('client');
       return agent.put('/reg/client')
       .set('Authorization', `Bearer ${bearer}`)
       .send(updateProperties(client.metadata(), {
@@ -240,7 +240,7 @@ describe('OAuth 2.0 Dynamic Client Registration Management Protocol', () => {
     }));
 
     it('cannot delete non-dynamic clients', function* () {
-      const rat = new (provider.get('RegistrationAccessToken'))({ clientId: 'client' });
+      const rat = new (provider.RegistrationAccessToken)({ clientId: 'client' });
       const bearer = yield rat.save();
       return agent.del('/reg/client')
       .set('Authorization', `Bearer ${bearer}`)

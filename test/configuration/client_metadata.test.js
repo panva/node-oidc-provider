@@ -2,9 +2,10 @@
 
 const Provider = require('../../lib').Provider;
 const { expect } = require('chai');
-const sigKey = require('../default.sig.key');
 
+const sigKey = global.keystore.get().toJSON(true);
 const DefaultProvider = new Provider('http://localhost', Object.assign({
+  keystore: global.keystore,
   features: {
     encryption: true
   },
@@ -16,6 +17,7 @@ function addClient(metadata, provider) {
 
   if (provider) {
     P = new Provider('http://localhost', Object.assign({
+      keystore: global.keystore,
       features: {
         encryption: true
       },
@@ -23,18 +25,11 @@ function addClient(metadata, provider) {
     }, provider));
   }
 
-  return new Promise((resolve) => {
-    if (P.configuration('idTokenSigningAlgValues').indexOf('RS256') === -1) {
-      return resolve(P.addKey(sigKey));
-    }
-    return resolve();
-  }).then(() => {
-    return P.addClient(Object.assign({
-      client_id: 'client',
-      client_secret: 'its64bytes_____________________________________________________!',
-      redirect_uris: ['https://client.example.com/cb']
-    }, metadata));
-  });
+  return P.addClient(Object.assign({
+    client_id: 'client',
+    client_secret: 'its64bytes_____________________________________________________!',
+    redirect_uris: ['https://client.example.com/cb']
+  }, metadata));
 }
 
 const fail = () => {

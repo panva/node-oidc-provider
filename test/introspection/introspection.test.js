@@ -9,10 +9,10 @@ const route = '/token/introspection';
 
 describe('introspection features', () => {
   const { agent, provider } = bootstrap(__dirname);
-  const AccessToken = provider.get('AccessToken');
-  const ClientCredentials = provider.get('ClientCredentials');
-  const RefreshToken = provider.get('RefreshToken');
-  const AuthorizationCode = provider.get('AuthorizationCode');
+  const AccessToken = provider.AccessToken;
+  const ClientCredentials = provider.ClientCredentials;
+  const RefreshToken = provider.RefreshToken;
+  const AuthorizationCode = provider.AuthorizationCode;
 
   provider.setupClient();
   provider.setupClient({
@@ -28,7 +28,7 @@ describe('introspection features', () => {
     response_types: [],
     grant_types: [],
   });
-  provider.setupCerts();
+
   describe('enriched discovery', () => {
     it('shows the url now', () => {
       return agent.get('/.well-known/openid-configuration')

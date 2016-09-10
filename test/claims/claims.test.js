@@ -12,7 +12,7 @@ const route = '/auth';
   describe(`claimsParameter via ${verb} ${route}`, () => {
     const { provider, agent, AuthorizationRequest, getSession, wrap } = bootstrap(__dirname);
     provider.setupClient();
-    provider.setupCerts();
+
     describe('specify id_token', () => {
       before(agent.login);
       after(agent.logout);
@@ -54,12 +54,12 @@ const route = '/auth';
       after(agent.logout);
 
       before(function* () {
-        const client = yield provider.get('Client').find('client');
+        const client = yield provider.Client.find('client');
         client.defaultAcrValues = ['1', '2'];
       });
 
       after(function* () {
-        const client = yield provider.get('Client').find('client');
+        const client = yield provider.Client.find('client');
         delete client.defaultAcrValues;
       });
 
@@ -320,8 +320,8 @@ const route = '/auth';
         });
 
         it('id_token_hint belongs to a user that is not currently logged in', function* () {
-          const client = yield provider.get('Client').find('client');
-          const IdToken = provider.get('IdToken');
+          const client = yield provider.Client.find('client');
+          const IdToken = provider.IdToken;
           const idToken = new IdToken({
             sub: 'not-the-droid-you-are-looking-for'
           });
@@ -348,8 +348,8 @@ const route = '/auth';
 
         it('id_token_hint belongs to a user that is currently logged in', function* () {
           const session = getSession(agent);
-          const client = yield provider.get('Client').find('client');
-          const IdToken = provider.get('IdToken');
+          const client = yield provider.Client.find('client');
+          const IdToken = provider.IdToken;
           const idToken = new IdToken({
             sub: session.account
           });

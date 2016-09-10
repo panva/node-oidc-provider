@@ -9,7 +9,7 @@ const route = '/auth';
 describe('HYBRID code+id_token+token', () => {
   const { provider, agent, AuthorizationRequest, wrap } = bootstrap(__dirname);
   provider.setupClient();
-  provider.setupCerts();
+
 
   ['get', 'post'].forEach(verb => {
     describe(`${verb} ${route} with session`, () => {
@@ -22,11 +22,11 @@ describe('HYBRID code+id_token+token', () => {
         });
 
         return wrap({ agent, route, verb, auth })
-      .expect(302)
-      .expect(auth.validateFragment)
-      .expect(auth.validatePresence(['code', 'id_token', 'state', 'access_token', 'expires_in', 'token_type']))
-      .expect(auth.validateState)
-      .expect(auth.validateClientLocation);
+          .expect(302)
+          .expect(auth.validateFragment)
+          .expect(auth.validatePresence(['code', 'id_token', 'state', 'access_token', 'expires_in', 'token_type']))
+          .expect(auth.validateState)
+          .expect(auth.validateClientLocation);
       });
     });
 
@@ -41,15 +41,15 @@ describe('HYBRID code+id_token+token', () => {
         });
 
         return wrap({ agent, route, verb, auth })
-      .expect(302)
-      .expect(() => {
-        expect(spy.calledOnce).to.be.true;
-      })
-      .expect(auth.validatePresence(['error', 'error_description', 'state']))
-      .expect(auth.validateState)
-      .expect(auth.validateClientLocation)
-      .expect(auth.validateError('invalid_request'))
-      .expect(auth.validateErrorDescription('response_mode not allowed for this response_type'));
+          .expect(302)
+          .expect(() => {
+            expect(spy.calledOnce).to.be.true;
+          })
+          .expect(auth.validatePresence(['error', 'error_description', 'state']))
+          .expect(auth.validateState)
+          .expect(auth.validateClientLocation)
+          .expect(auth.validateError('invalid_request'))
+          .expect(auth.validateErrorDescription('response_mode not allowed for this response_type'));
       });
 
       it('missing mandatory parameter nonce', () => {
@@ -62,17 +62,17 @@ describe('HYBRID code+id_token+token', () => {
         delete auth.nonce;
 
         return agent.get(route)
-      .query(auth)
-      .expect(302)
-      .expect(() => {
-        expect(spy.calledOnce).to.be.true;
-      })
-      .expect(auth.validateFragment)
-      .expect(auth.validatePresence(['error', 'error_description', 'state']))
-      .expect(auth.validateState)
-      .expect(auth.validateClientLocation)
-      .expect(auth.validateError('invalid_request'))
-      .expect(auth.validateErrorDescription('missing required parameter(s) nonce'));
+          .query(auth)
+          .expect(302)
+          .expect(() => {
+            expect(spy.calledOnce).to.be.true;
+          })
+          .expect(auth.validateFragment)
+          .expect(auth.validatePresence(['error', 'error_description', 'state']))
+          .expect(auth.validateState)
+          .expect(auth.validateClientLocation)
+          .expect(auth.validateError('invalid_request'))
+          .expect(auth.validateErrorDescription('missing required parameter(s) nonce'));
       });
     });
   });

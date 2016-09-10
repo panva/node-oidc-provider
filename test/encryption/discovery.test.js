@@ -4,8 +4,8 @@ const bootstrap = require('../test_helper');
 const { expect } = require('chai');
 
 describe('configuration features.encryption', () => {
-  const { provider, agent } = bootstrap(__dirname);
-  provider.setupCerts();
+  const { agent } = bootstrap(__dirname);
+
   it('extends discovery', () => {
     return agent.get('/.well-known/openid-configuration')
       .expect(200)

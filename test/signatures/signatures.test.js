@@ -10,7 +10,7 @@ const base64url = require('base64url');
 
 describe('signatures', () => {
   const { provider, agent, AuthorizationRequest, wrap } = bootstrap(__dirname);
-  const AuthorizationCode = provider.get('AuthorizationCode');
+  const AuthorizationCode = provider.AuthorizationCode;
 
   provider.setupClient();
   provider.setupClient({
@@ -29,12 +29,12 @@ describe('signatures', () => {
     id_token_signed_response_alg: 'HS256',
     redirect_uris: ['https://client.example.com/cb'],
   });
-  provider.setupCerts();
+
 
   describe('token hashes in id_token', () => {
     let client;
     before(function* () {
-      client = yield provider.get('Client').find('client');
+      client = yield provider.Client.find('client');
     });
 
     before(agent.login);

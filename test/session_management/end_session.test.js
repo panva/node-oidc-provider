@@ -12,7 +12,7 @@ const route = '/session/end';
   describe(`[session_management] ${verb} ${route} with session`, () => {
     const { provider, agent, wrap, getSessionId, TestAdapter } = bootstrap(__dirname);
     provider.setupClient();
-    provider.setupCerts();
+
 
     beforeEach(agent.login);
     afterEach(agent.logout);
@@ -74,10 +74,10 @@ const route = '/session/end';
 
     context('client with postLogoutRedirectUris', () => {
       before(function* () {
-        (yield provider.get('Client').find('client')).postLogoutRedirectUris = ['https://client.example.com/logout/cb'];
+        (yield provider.Client.find('client')).postLogoutRedirectUris = ['https://client.example.com/logout/cb'];
       });
       after(function* () {
-        (yield provider.get('Client').find('client')).postLogoutRedirectUris = [];
+        (yield provider.Client.find('client')).postLogoutRedirectUris = [];
       });
 
       it('allows to redirect there', function () {

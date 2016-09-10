@@ -9,13 +9,13 @@ const route = '/token/revocation';
 
 describe('revocation features', () => {
   const { agent, provider } = bootstrap(__dirname);
-  const AuthorizationCode = provider.get('AuthorizationCode');
-  const AccessToken = provider.get('AccessToken');
-  const ClientCredentials = provider.get('ClientCredentials');
-  const RefreshToken = provider.get('RefreshToken');
+  const AuthorizationCode = provider.AuthorizationCode;
+  const AccessToken = provider.AccessToken;
+  const ClientCredentials = provider.ClientCredentials;
+  const RefreshToken = provider.RefreshToken;
 
   provider.setupClient();
-  provider.setupCerts();
+
 
   describe('enriched discovery', () => {
     it('shows the url now', () => {

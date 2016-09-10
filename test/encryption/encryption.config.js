@@ -1,7 +1,6 @@
 'use strict';
 
 const _ = require('lodash');
-const cert = require('../default.sig.key');
 const config = _.clone(require('../default.config'));
 
 config.features = { request: true, encryption: true };
@@ -40,6 +39,5 @@ module.exports = {
     // request_object_encryption_enc: 'A128CBC-HS256',
     userinfo_encrypted_response_alg: 'RSA1_5',
     // userinfo_encrypted_response_enc: 'A128CBC-HS256',
-  },
-  certs: [cert],
+  }
 };

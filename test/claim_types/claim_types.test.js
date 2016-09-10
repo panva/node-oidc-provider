@@ -10,9 +10,9 @@ const { expect } = require('chai');
 describe('distributed and aggregated claims', () => {
   const { provider, agent, AuthorizationRequest, wrap } = bootstrap(__dirname);
   provider.setupClient();
-  provider.setupCerts();
 
-  const Account = provider.get('Account');
+
+  const Account = provider.Account;
 
   Account.findById = id => Promise.resolve({
     accountId: id,
