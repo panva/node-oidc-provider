@@ -58,8 +58,16 @@ if (process.env.MONGODB_URI) {
 
 settings.config.findById = Account.findById;
 
-LIB.asKeyStore({ keys: settings.certificates }).then(keystore => {
+Promise.all([
+  LIB.asKeyStore({ keys: settings.certificates }),
+  LIB.asKeyStore({ keys: settings.integrityKeys }),
+]).then(results => {
+  const keystore = results[0];
+  const tokenIntegrity = results[1];
+  
   settings.config.keystore = keystore;
+  settings.config.tokenIntegrity = tokenIntegrity;
+
   const provider = new Provider(issuer, settings.config);
 
   if (process.env.HEROKU) {

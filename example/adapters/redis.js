@@ -51,10 +51,8 @@ class RedisAdapter {
     // Clients are not simple objects where value is always a string
     // redis does only allow string values =>
     // work around it to keep the adapter interface simple
-    if (this.name === 'Client') {
-      toStore = {
-        dump: JSON.stringify(payload),
-      };
+    if (this.name === 'Client' || this.name === 'Session') {
+      toStore = { dump: JSON.stringify(payload) };
     }
 
     const multi = client.multi();
