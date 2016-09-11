@@ -16,7 +16,6 @@ const { expect } = require('chai');
 const { Cookie } = require('cookiejar');
 const { parse } = require('url');
 const path = require('path');
-const jose = require('node-jose');
 const koa = require('koa');
 const mount = require('koa-mount');
 const epochTime = require('../lib/helpers/epoch_time');
@@ -48,16 +47,10 @@ module.exports = function testHelper(dir, basename, mountTo) {
 
   if (!process.env.INTEGRITY) process.env.INTEGRITY = 'random';
 
-  const integrity = (process.env.INTEGRITY === 'random' && Math.floor(Math.random() * 2)) ||
-    process.env.INTEGRITY === 'on';
+  const integrity = process.env.INTEGRITY === 'on' ||
+    (process.env.INTEGRITY === 'random' && Math.floor(Math.random() * 2));
 
-  if (integrity) {
-    const ks = jose.JWK.createKeyStore();
-    config.tokenIntegrity = ks;
-    before(() => {
-      return ks.generate('oct', 512, { alg: 'HS512' });
-    });
-  }
+  if (integrity) config.tokenIntegrity = global.integrity;
 
   config.keystore = global.keystore;
 

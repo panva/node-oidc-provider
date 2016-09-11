@@ -26,6 +26,10 @@ until then please use the compare views of github for reference.
 
 
 - feature/change-token-format
+  - DEPRECATION: provider.get('ModelName') now deprecated, instead use provider.ModelName, ie.
+  provider.AccessToken
+  - DEPRECATION: provider.addKey now deprecated, prepare your keystores before new call and pass it
+  via configuration.keystore
   - BREAKING: ALL previously issued tokens are incompatible with the new version, the length of the
   tokens is now shorter and does not contain any information about the token context or type
   - fix: revocation is only possible for client's OWN tokens

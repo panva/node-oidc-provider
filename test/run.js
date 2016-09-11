@@ -23,6 +23,10 @@ jose.JWK.asKeyStore({ keys: [
   }
 ] }).then(keystore => {
   global.keystore = keystore;
-}).then(() => {
+}).then(() => jose.JWK.createKeyStore().generate('oct', 512, { alg: 'HS512' }))
+.then((key) => {
+  global.integrity = key.keystore;
+})
+.then(() => {
   require('../node_modules/.bin/_mocha'); // eslint-disable-line global-require
 });
