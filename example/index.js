@@ -64,7 +64,7 @@ Promise.all([
 ]).then(results => {
   const keystore = results[0];
   const tokenIntegrity = results[1];
-  
+
   settings.config.keystore = keystore;
   settings.config.tokenIntegrity = tokenIntegrity;
 

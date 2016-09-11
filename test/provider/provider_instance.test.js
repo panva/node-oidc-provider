@@ -21,7 +21,7 @@ describe('provider instance', () => {
         features: { sessionManagement: true }
       });
 
-      expect(console.warn.calledOnce).to.be.true;
+      expect(console.warn.called).to.be.true;
     });
     /* eslint-enable */
   });
@@ -56,8 +56,7 @@ describe('provider instance', () => {
         {
           path: '/auth/foo',
           httpOnly: true,
-          maxAge: 3600000,
-          signed: true
+          maxAge: 3600000
         }
       )).to.be.true;
       expect(ctx.redirect.calledOnce).to.be.true;

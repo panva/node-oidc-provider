@@ -3,6 +3,10 @@
 'use strict';
 
 module.exports.config = {
+  cookies: {
+    long: { signed: true },
+    short: { signed: true },
+  },
   claims: {
     address: {
       address: null,

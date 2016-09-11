@@ -9,11 +9,17 @@ until then please use the compare views of github for reference.
   is to make space for Token Integrity feature that brings much faster, cheaper token generation.
   [Read More](#token-integrity)
   - fix: revocation is only possible for client's OWN tokens
-  - changed: Back-Channel Logout draft implementation bumped from 02 to 03
+  - change: configuration.timeouts is removed
+  - change: Back-Channel Logout draft implementation bumped from 02 to 03
   - change: dynamic registration related events now include the relevant CRUD verb
   - change: when remember is missing from the resume cookie a transient cookie is issued instead of
   no cookie at all
   - change: errors now use the renderError helper when viewed in a browser environment
+  - change: interactionUrl has now ctx bound as this, and as parameter gets the interaction details
+  - change: uniqueness has now ctx bound as this
+  - change: renderError has now ctx bound as this
+  - change: default cookies not signed (faster up and running development)
+  - added: Setting defaultHttpOptions on provider instance for external http requests
   - added: Initial Access Token for Dynamic Registration (either fixed string or backed by adapter)
   - added: Update and Delete from RFC7592 - OAuth 2.0 Dynamic Client Registration Management
   Protocol
