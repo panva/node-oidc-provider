@@ -73,16 +73,19 @@ module.exports = function testHelper(dir, basename, mountTo) {
 
   agent.logout = function logout() {
     const expire = new Date(0);
-    return agent._saveCookies.bind(agent)({
-      headers: {
-        'set-cookie': [
-          `_session=; path=/; expires=${expire.toGMTString()}; httponly`,
-          `_session.sig=; path=/; expires=${expire.toGMTString()}; httponly`,
-          `_session_states=; path=/; expires=${expire.toGMTString()}; httponly`,
-          `_session_states.sig=; path=/; expires=${expire.toGMTString()}; httponly`,
-        ],
-      },
+    const cookies = [
+      `_session=; path=/; expires=${expire.toGMTString()}; httponly`,
+      `_session.sig=; path=/; expires=${expire.toGMTString()}; httponly`,
+    ];
+
+    cookies.push(`_state.${client.client_id}=; path=/; expires=${expire.toGMTString()}; httponly`);
+    cookies.push(`_state.${client.client_id}.sig=; path=/; expires=${expire.toGMTString()}; httponly`);
+    additionalClients.forEach(clientId => {
+      cookies.push(`_state.${clientId}=; path=/; expires=${expire.toGMTString()}; httponly`);
+      cookies.push(`_state.${clientId}.sig=; path=/; expires=${expire.toGMTString()}; httponly`);
     });
+
+    return agent._saveCookies.bind(agent)({ headers: { 'set-cookie': cookies } });
   };
 
   agent.login = function login() {
@@ -102,15 +105,11 @@ module.exports = function testHelper(dir, basename, mountTo) {
     this.clientSessionId = sid;
 
     if (provider.configuration('features.sessionManagement')) {
-      cookies.push(`_session_states=${JSON.stringify({ [client.client_id]: String(loginTs) })}; path=/; expires=${expire.toGMTString()};`);
+      cookies.push(`_state.${client.client_id}=${loginTs}; path=/; expires=${expire.toGMTString()};`);
     }
 
     return Account.findById(account).then(session.save()).then(() => {
-      agent._saveCookies.bind(agent)({
-        headers: {
-          'set-cookie': cookies,
-        },
-      });
+      agent._saveCookies.bind(agent)({ headers: { 'set-cookie': cookies } });
     });
   };
 

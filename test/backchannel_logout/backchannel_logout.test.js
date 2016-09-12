@@ -9,7 +9,7 @@ const nock = require('nock');
 const { Provider } = require('../../lib');
 
 describe('Back-Channel Logout 1.0', () => {
-  const { provider, agent } = bootstrap(__dirname);
+  const { provider, agent, getSession } = bootstrap(__dirname);
 
   provider.setupClient();
 
@@ -144,7 +144,8 @@ describe('Back-Channel Logout 1.0', () => {
     });
 
     it('triggers the backchannelLogout for visited clients', function* () {
-      const params = { id_token_hint: this.idToken };
+      getSession(agent).logout = { secret: '123', postLogoutRedirectUri: '/' };
+      const params = { logout: 'yes', xsrf: '123' };
       const client = yield provider.Client.find('client');
 
       sinon.spy(client, 'backchannelLogout');
@@ -152,8 +153,10 @@ describe('Back-Channel Logout 1.0', () => {
       const accountId = this.loggedInAccountId;
       const sid = this.clientSessionId;
 
-      return agent.get('/session/end')
-      .query(params)
+      return agent.post('/session/end')
+      .send(params)
+      .type('form')
+      .expect(302)
       .expect(() => {
         expect(client.backchannelLogout.called).to.be.true;
         expect(client.backchannelLogout.calledWith(accountId, sid)).to.be.true;
@@ -162,14 +165,17 @@ describe('Back-Channel Logout 1.0', () => {
     });
 
     it('ignores the backchannelLogout when client does not support', function* () {
-      const params = { id_token_hint: this.idToken };
+      getSession(agent).logout = { secret: '123', postLogoutRedirectUri: '/' };
+      const params = { logout: 'yes', xsrf: '123' };
       const client = yield provider.Client.find('client');
       delete client.backchannelLogoutUri;
 
       sinon.spy(client, 'backchannelLogout');
 
-      return agent.get('/session/end')
-      .query(params)
+      return agent.post('/session/end')
+      .send(params)
+      .type('form')
+      .expect(302)
       .expect(() => {
         expect(client.backchannelLogout.called).to.be.false;
         client.backchannelLogout.restore();

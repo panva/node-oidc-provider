@@ -9,6 +9,8 @@ until then please use the compare views of github for reference.
   is to make space for Token Integrity feature that brings much faster, cheaper token generation.
   [Read More](#token-integrity)
   - fix: revocation is only possible for client's OWN tokens
+  - change: end_session now with user confirmation and optionally without id_token_hint (as per spec)
+  - change: session management individual states now in individual cookies rather than one
   - change: configuration.timeouts is removed
   - change: Back-Channel Logout draft implementation bumped from 02 to 03
   - change: dynamic registration related events now include the relevant CRUD verb

@@ -27,7 +27,7 @@ describe('session management', () => {
       .expect(auth.validateClientLocation);
       });
 
-      it('sets a _session_states cookie with the clientId as keys', () => {
+      it('sets a _state.clientId cookies', () => {
         const auth = new AuthorizationRequest({
           response_type: 'code',
           scope: 'openid'
@@ -35,9 +35,8 @@ describe('session management', () => {
 
         return wrap({ agent, route, verb, auth })
       .expect(() => {
-        const states = agent.jar.getCookie('_session_states', { path: '/' });
-        expect(states).to.be.ok;
-        expect(JSON.parse(states.value)).to.have.key('client');
+        const state = agent.jar.getCookie('_state.client', { path: '/' });
+        expect(state).to.be.ok;
       });
       });
     });
