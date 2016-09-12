@@ -29,4 +29,8 @@ jose.JWK.asKeyStore({ keys: [
 })
 .then(() => {
   require('../node_modules/.bin/_mocha'); // eslint-disable-line global-require
+})
+.catch(error => {
+  console.error(error); // eslint-disable-line no-console
+  process.exit(1);
 });

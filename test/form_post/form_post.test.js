@@ -31,31 +31,6 @@ describe('/auth', () => {
           .expect(new RegExp(`input type="hidden" name="state" value="${auth.state}"`))
           .expect(new RegExp(`form method="post" action="${auth.redirect_uri}"`));
         });
-
-        describe('customization', function () {
-          before(function () {
-            this.orig = provider.configuration('formPost');
-            provider.configuration().formPost = function () {
-              this.body = 'mycontent';
-            };
-          });
-
-          after(function () {
-            provider.configuration().formPost = this.orig;
-          });
-
-          it('renders my content', function () {
-            const auth = new AuthorizationRequest({
-              response_type: 'code',
-              response_mode: 'form_post',
-              scope: 'openid'
-            });
-
-            return wrap({ agent, route, verb, auth })
-            .expect(200)
-            .expect('mycontent');
-          });
-        });
       });
 
       context('error handling', () => {
