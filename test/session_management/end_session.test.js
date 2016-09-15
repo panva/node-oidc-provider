@@ -197,5 +197,22 @@ describe('[session_management]', () => {
           expect(adapter.destroy.called).to.be.false;
         });
     });
+
+    it('follows a domain if configured', function () {
+      getSession(agent).logout = { secret: '123', postLogoutRedirectUri: '/', clientId: 'client' };
+
+      provider.configuration().cookies.long.domain = '.oidc.dev';
+
+      return agent.post('/session/end')
+        .send({ xsrf: '123', logout: 'yes' })
+        .type('form')
+        .expect(() => {
+          delete provider.configuration().cookies.long.domain;
+        })
+        .expect(302)
+        .expect((response) => {
+          expect(response.headers['set-cookie']).to.contain('_state.client=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT; domain=.oidc.dev; httponly');
+        });
+    });
   });
 });
