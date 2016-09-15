@@ -6,7 +6,7 @@ const _ = require('lodash');
 
 const emitter = new EventEmitter();
 let DB;
-let connecting = Mongo.connect(process.env.MONGODB_URI).then(db => {
+let connecting = Mongo.connect(process.env.MONGODB_URI).then((db) => {
   DB = db;
   connecting = undefined;
   emitter.emit('ready');
@@ -59,7 +59,7 @@ class MongoAdapter {
   }
 
   consume(id) {
-    return this.coll().findOneAndUpdate({ _id: id }, { $set: { consumed: new Date() } });
+    return this.coll().findOneAndUpdate({ _id: id }, { $currentDate: { consumed: true } });
   }
 
   find(id) {
@@ -70,7 +70,7 @@ class MongoAdapter {
     let expiresAt;
 
     if (expiresIn) {
-      expiresAt = new Date(new Date().getTime() + (expiresIn * 1000));
+      expiresAt = new Date(Date.now() + (expiresIn * 1000));
     }
 
     const document = Object.assign(payload, { expiresAt });

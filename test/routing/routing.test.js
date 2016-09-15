@@ -4,10 +4,10 @@ const bootstrap = require('../test_helper');
 const _ = require('lodash');
 const { expect } = require('chai');
 
-describe('default routing behavior', function () {
-  describe('without mounting', function () {
+describe('default routing behavior', () => {
+  describe('without mounting', () => {
     const { agent } = bootstrap(__dirname);
-    it('handles invalid verbs with 405 invalid request', function () {
+    it('handles invalid verbs with 405 invalid request', () => {
       return agent.post('/.well-known/openid-configuration')
       .expect(405)
       .expect({
@@ -16,7 +16,7 @@ describe('default routing behavior', function () {
       });
     });
 
-    it('handles invalid verbs with 405 invalid request', function () {
+    it('handles invalid verbs with 405 invalid request', () => {
       return agent.trace('/.well-known/openid-configuration')
       .expect(501)
       .expect({
@@ -25,7 +25,7 @@ describe('default routing behavior', function () {
       });
     });
 
-    it('handles unrecognized routes with 404 json response', function () {
+    it('handles unrecognized routes with 404 json response', () => {
       return agent.get('/foobar')
       .expect(404)
       .expect('content-type', /application\/json/)
@@ -36,14 +36,14 @@ describe('default routing behavior', function () {
     });
   });
 
-  describe('when mounted', function () {
+  describe('when mounted', () => {
     const { agent } = bootstrap(__dirname, undefined, '/oidc');
 
-    it('handles being prefixed', function () {
+    it('handles being prefixed', () => {
       return agent.get('/oidc/.well-known/openid-configuration')
       .expect(200)
-      .expect(function (res) {
-        _.forEach(res.body, function (value) {
+      .expect((res) => {
+        _.forEach(res.body, (value) => {
           if (value.startsWith && value.startsWith('http')) {
             expect(value).to.match(new RegExp('^http://127.0.0.1:\\d{5}/oidc'));
           }
@@ -51,7 +51,7 @@ describe('default routing behavior', function () {
       });
     });
 
-    it('handles unrecognized routes with 404 json response', function () {
+    it('handles unrecognized routes with 404 json response', () => {
       return agent.get('/oidc/foobar')
       .expect(404)
       .expect('content-type', /application\/json/)
@@ -61,7 +61,7 @@ describe('default routing behavior', function () {
       });
     });
 
-    it('does not interfere with the unmounted namespace', function () {
+    it('does not interfere with the unmounted namespace', () => {
       return agent.get('/foobar')
       .expect(404)
       .expect('Not Found');

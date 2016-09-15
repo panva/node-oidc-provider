@@ -1,5 +1,4 @@
 'use strict';
-
 /* eslint-disable no-underscore-dangle */
 
 process.env.NODE_ENV = process.env.NODE_ENV || 'test';
@@ -17,11 +16,9 @@ const { expect } = require('chai');
 const { Cookie } = require('cookiejar');
 const { parse } = require('url');
 const path = require('path');
-const jose = require('node-jose');
-const delegate = require('delegates');
-const _ = require('lodash');
 const koa = require('koa');
 const mount = require('koa-mount');
+const epochTime = require('../lib/helpers/epoch_time');
 
 const responses = {
   serverErrorBody: {
@@ -43,24 +40,22 @@ module.exports = function testHelper(dir, basename, mountTo) {
     dir,
     base: `${basename || path.basename(dir)}.config.js`,
   });
-  const { config, certs, client } = require(conf); // eslint-disable-line global-require
+  const { config, client } = require(conf); // eslint-disable-line global-require
   const additionalClients = [];
   config.adapter = TestAdapter;
   config.findById = Account.findById;
-  const provider = new Provider(`http://127.0.0.1${mountTo || ''}`, config);
 
-  // gotta delegate the keystore object so that we can stub the method calls
-  // with sinon
-  const store = jose.JWK.createKeyStore();
-  const delegatedStore = { store };
-  delegate(delegatedStore, 'store')
-    .method('toJSON')
-    .method('add')
-    .method('all')
-    .method('generate')
-    .method('remove')
-    .method('get');
-  provider.keystore = delegatedStore;
+  if (!process.env.INTEGRITY) process.env.INTEGRITY = 'random';
+
+  const integrity = process.env.INTEGRITY === 'on' ||
+    (process.env.INTEGRITY === 'random' && Math.floor(Math.random() * 2));
+
+  if (integrity) config.tokenIntegrity = global.integrity;
+
+  config.keystore = global.keystore;
+
+  const provider = new Provider(`http://127.0.0.1${mountTo || ''}`, config);
+  provider.defaultHttpOptions = { timeout: 50 };
 
   let server;
 
@@ -78,44 +73,43 @@ module.exports = function testHelper(dir, basename, mountTo) {
 
   agent.logout = function logout() {
     const expire = new Date(0);
-    return agent._saveCookies.bind(agent)({
-      headers: {
-        'set-cookie': [
-          `_session=; path=/; expires=${expire.toGMTString()}; httponly`,
-          `_session.sig=; path=/; expires=${expire.toGMTString()}; httponly`,
-          `_session_states=; path=/; expires=${expire.toGMTString()}; httponly`,
-          `_session_states.sig=; path=/; expires=${expire.toGMTString()}; httponly`,
-        ],
-      },
+    const cookies = [
+      `_session=; path=/; expires=${expire.toGMTString()}; httponly`,
+      `_session.sig=; path=/; expires=${expire.toGMTString()}; httponly`,
+    ];
+
+    cookies.push(`_state.${client.client_id}=; path=/; expires=${expire.toGMTString()}; httponly`);
+    cookies.push(`_state.${client.client_id}.sig=; path=/; expires=${expire.toGMTString()}; httponly`);
+    additionalClients.forEach((clientId) => {
+      cookies.push(`_state.${clientId}=; path=/; expires=${expire.toGMTString()}; httponly`);
+      cookies.push(`_state.${clientId}.sig=; path=/; expires=${expire.toGMTString()}; httponly`);
     });
+
+    return agent._saveCookies.bind(agent)({ headers: { 'set-cookie': cookies } });
   };
 
   agent.login = function login() {
     const sessionId = uuid();
-    const loginTs = new Date() / 1000 | 0;
+    const loginTs = epochTime();
     const expire = new Date();
     expire.setDate(expire.getDate() + 1);
     const account = uuid();
     this.loggedInAccountId = account;
 
-    const session = new (provider.get('Session'))(sessionId, { loginTs, account });
+    const session = new (provider.Session)(sessionId, { loginTs, account });
     const cookies = [`_session=${sessionId}; path=/; expires=${expire.toGMTString()}; httponly`];
 
     const sid = uuid();
     session.authorizations = { [client.client_id]: { sid } };
-    additionalClients.forEach(clientId => { session.authorizations[clientId] = { sid: uuid() }; });
+    additionalClients.forEach((clientId) => { session.authorizations[clientId] = { sid: uuid() }; });
     this.clientSessionId = sid;
 
     if (provider.configuration('features.sessionManagement')) {
-      cookies.push(`_session_states=${JSON.stringify({ [client.client_id]: String(loginTs) })}; path=/; expires=${expire.toGMTString()};`);
+      cookies.push(`_state.${client.client_id}=${loginTs}; path=/; expires=${expire.toGMTString()};`);
     }
 
     return Account.findById(account).then(session.save()).then(() => {
-      agent._saveCookies.bind(agent)({
-        headers: {
-          'set-cookie': cookies,
-        },
-      });
+      agent._saveCookies.bind(agent)({ headers: { 'set-cookie': cookies } });
     });
   };
 
@@ -232,51 +226,24 @@ module.exports = function testHelper(dir, basename, mountTo) {
   };
 
   provider.setupClient = function setupClient(pass) {
-    if (provider.configuration('idTokenSigningAlgValues').indexOf('RS256') === -1) {
-      this.setupCerts();
-    }
-
     if (pass) additionalClients.push(pass.client_id);
 
     const add = pass || client;
-    before('adding client', function () {
+    before('adding client', () => {
       return provider.addClient(add).catch((err) => {
         throw err;
       });
     });
 
-    after('removing client', function () {
-      return provider.get('Client').remove(add.client_id);
-    });
-  };
-
-  provider.setupCerts = function (passed) {
-    const self = this;
-    const pre = _.pick(self.configuration, [
-      'requestObjectEncryptionAlgValues',
-      'idTokenSigningAlgValues',
-      'userinfoSigningAlgValues'
-    ]);
-    const added = [];
-
-    before('adding certificate', function (done) {
-      const add = passed || certs;
-      const promises = add.map(cert => self.addKey(cert).then((key) => added.push(key)));
-      Promise.all(promises).then(() => {
-        done();
-      }, done);
-    });
-
-    after('removing certificate', function () {
-      _.assign(self.configuration, pre);
-      added.forEach(key => self.keystore.remove(key));
+    after('removing client', () => {
+      return provider.Client.remove(add.client_id);
     });
   };
 
   function getSession(userAgent) {
     const { value: sessionId } = userAgent.jar.getCookie('_session', { path: '/' });
     const key = TestAdapter.for('Session').key(sessionId);
-    return TestAdapter.for('Session').storage.get(key);
+    return TestAdapter.for('Session').get(key);
   }
 
   function getSessionId(userAgent) {

@@ -1,57 +1,58 @@
 'use strict';
 
-const { provider } = require('../test_helper')(__dirname);
+const bootstrap = require('../test_helper');
 const { expect } = require('chai');
 
-describe('Provider#addClient', function () {
-  provider.setupCerts();
+describe('Provider#addClient', () => {
+  const { provider } = bootstrap(__dirname);
+
 
   [
     'id_token_signed_response_alg',
     'request_object_signing_alg',
     'token_endpoint_auth_signing_alg',
     'userinfo_signed_response_alg'
-  ].forEach(function (metadata) {
-    context(`configuring ${metadata} when secrets are not long enough`, function () {
-      it('validates the secret length (HS256)', function () {
+  ].forEach((metadata) => {
+    context(`configuring ${metadata} when secrets are not long enough`, () => {
+      it('validates the secret length (HS256)', () => {
         return provider.addClient({
           client_id: `${Math.random()}`,
           client_secret: 'not32bytes_____________________',
           redirect_uris: ['https://client.example.com/cb'],
           [metadata]: 'HS256'
-        }).then(function (client) {
+        }).then((client) => {
           expect(client).not.to.be.ok;
-        }, function (err) {
+        }, (err) => {
           expect(err).to.be.ok;
           expect(err).to.have.property('message', 'invalid_client_metadata');
           expect(err).to.have.property('error_description', 'insufficient client_secret length');
         });
       });
 
-      it('validates the secret length (HS384)', function () {
+      it('validates the secret length (HS384)', () => {
         return provider.addClient({
           client_id: `${Math.random()}`,
           client_secret: 'not48bytes_____________________________________',
           redirect_uris: ['https://client.example.com/cb'],
           [metadata]: 'HS384'
-        }).then(function (client) {
+        }).then((client) => {
           expect(client).not.to.be.ok;
-        }, function (err) {
+        }, (err) => {
           expect(err).to.be.ok;
           expect(err).to.have.property('message', 'invalid_client_metadata');
           expect(err).to.have.property('error_description', 'insufficient client_secret length');
         });
       });
 
-      it('validates the secret length (HS512)', function () {
+      it('validates the secret length (HS512)', () => {
         return provider.addClient({
           client_id: `${Math.random()}`,
           client_secret: 'not64bytes_____________________________________________________',
           redirect_uris: ['https://client.example.com/cb'],
           [metadata]: 'HS512'
-        }).then(function (client) {
+        }).then((client) => {
           expect(client).not.to.be.ok;
-        }, function (err) {
+        }, (err) => {
           expect(err).to.be.ok;
           expect(err).to.have.property('message', 'invalid_client_metadata');
           expect(err).to.have.property('error_description', 'insufficient client_secret length');
@@ -59,8 +60,8 @@ describe('Provider#addClient', function () {
       });
     });
 
-    context(`configuring ${metadata} when secrets are long enough`, function () {
-      it('allows HS256', function () {
+    context(`configuring ${metadata} when secrets are long enough`, () => {
+      it('allows HS256', () => {
         return provider.addClient({
           client_id: `${Math.random()}`,
           client_secret: 'its32bytes_____________________!',
@@ -69,7 +70,7 @@ describe('Provider#addClient', function () {
         });
       });
 
-      it('allows HS384', function () {
+      it('allows HS384', () => {
         return provider.addClient({
           client_id: `${Math.random()}`,
           client_secret: 'its48bytes_____________________________________!',
@@ -78,7 +79,7 @@ describe('Provider#addClient', function () {
         });
       });
 
-      it('allows HS512', function () {
+      it('allows HS512', () => {
         return provider.addClient({
           client_id: `${Math.random()}`,
           client_secret: 'its64bytes_____________________________________________________!',

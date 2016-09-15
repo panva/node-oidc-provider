@@ -2,9 +2,10 @@
 
 const Provider = require('../../lib').Provider;
 const { expect } = require('chai');
-const sigKey = require('../default.sig.key');
 
+const sigKey = global.keystore.get().toJSON(true);
 const DefaultProvider = new Provider('http://localhost', Object.assign({
+  keystore: global.keystore,
   features: {
     encryption: true
   },
@@ -16,6 +17,7 @@ function addClient(metadata, provider) {
 
   if (provider) {
     P = new Provider('http://localhost', Object.assign({
+      keystore: global.keystore,
       features: {
         encryption: true
       },
@@ -23,18 +25,11 @@ function addClient(metadata, provider) {
     }, provider));
   }
 
-  return new Promise(function (resolve) {
-    if (P.configuration('idTokenSigningAlgValues').indexOf('RS256') === -1) {
-      return resolve(P.addKey(sigKey));
-    }
-    return resolve();
-  }).then(function () {
-    return P.addClient(Object.assign({
-      client_id: 'client',
-      client_secret: 'its64bytes_____________________________________________________!',
-      redirect_uris: ['https://client.example.com/cb']
-    }, metadata));
-  });
+  return P.addClient(Object.assign({
+    client_id: 'client',
+    client_secret: 'its64bytes_____________________________________________________!',
+    redirect_uris: ['https://client.example.com/cb']
+  }, metadata));
 }
 
 const fail = () => {
@@ -45,11 +40,11 @@ const mustBeString = (prop, values, meta) => {
   if (!values) {
     values = [[], 123, true, false, {}, '']; // eslint-disable-line
   }
-  it('must be a string', function () {
-    const promises = values.map(function (nonString) {
+  it('must be a string', () => {
+    const promises = values.map((nonString) => {
       return addClient(Object.assign({}, meta, {
         [prop]: nonString
-      })).then(fail, function (err) {
+      })).then(fail, (err) => {
         if (prop === 'redirect_uris') {
           expect(err.message).to.equal('invalid_redirect_uri');
         } else {
@@ -64,10 +59,10 @@ const mustBeString = (prop, values, meta) => {
 };
 
 const mustBeUri = (prop, protocols) => {
-  it('must be a uri', function () {
+  it('must be a uri', () => {
     return addClient({
       [prop]: 'whatever://not but not a uri'
-    }).then(fail, function (err) {
+    }).then(fail, (err) => {
       if (prop === 'redirect_uris') {
         expect(err.message).to.equal('invalid_redirect_uri');
       } else {
@@ -77,8 +72,8 @@ const mustBeUri = (prop, protocols) => {
     });
   });
 
-  protocols.forEach(function (protocol) {
-    it(`can be ${protocol} uri`, function () {
+  protocols.forEach((protocol) => {
+    it(`can be ${protocol} uri`, () => {
       return addClient({
         [prop]: `${protocol}://example.com/${prop}`
       });
@@ -87,11 +82,11 @@ const mustBeUri = (prop, protocols) => {
 };
 
 const mustBeArray = (prop) => {
-  it('must be a array', function () {
-    const promises = [{}, 'string', 123, true].map(function (nonArray) {
+  it('must be a array', () => {
+    const promises = [{}, 'string', 123, true].map((nonArray) => {
       return addClient({
         [prop]: nonArray
-      }).then(fail, function (err) {
+      }).then(fail, (err) => {
         if (prop === 'redirect_uris') {
           expect(err.message).to.equal('invalid_redirect_uri');
         } else {
@@ -106,11 +101,11 @@ const mustBeArray = (prop) => {
 };
 
 const mustBeBoolean = (prop) => {
-  it('must be a boolean', function () {
-    const promises = [{}, 'string', 123, []].map(function (nonBoolean) {
+  it('must be a boolean', () => {
+    const promises = [{}, 'string', 123, []].map((nonBoolean) => {
       return addClient({
         [prop]: nonBoolean
-      }).then(fail, function (err) {
+      }).then(fail, (err) => {
         if (prop === 'redirect_uris') {
           expect(err.message).to.equal('invalid_redirect_uri');
         } else {
@@ -125,19 +120,19 @@ const mustBeBoolean = (prop) => {
 };
 
 const defaultsTo = (prop, value, meta, provider) => {
-  it('defaults to', function () {
-    return addClient(meta, provider).then(function (client) {
+  it('defaults to', () => {
+    return addClient(meta, provider).then((client) => {
       expect(client.metadata()[prop]).to.eql(value);
     });
   });
 };
 
 const isRequired = (prop, values) => {
-  it('is required', function () {
-    const promises = (values || [null, undefined, '']).map(function (nonValue) {
+  it('is required', () => {
+    const promises = (values || [null, undefined, '']).map((nonValue) => {
       return addClient({
         [prop]: nonValue
-      }).then(fail, function (err) {
+      }).then(fail, (err) => {
         if (prop === 'redirect_uris') {
           expect(err.message).to.equal('invalid_redirect_uri');
         } else {
@@ -152,20 +147,20 @@ const isRequired = (prop, values) => {
 };
 
 const allows = (prop, value, meta) => {
-  it(`passes ${JSON.stringify(value)}`, function () {
+  it(`passes ${JSON.stringify(value)}`, () => {
     return addClient(Object.assign({}, meta, {
       [prop]: value
-    })).then(function (client) {
+    })).then((client) => {
       expect(client.metadata()[prop]).to.eql(value);
     });
   });
 };
 
 const rejects = (prop, value, description, meta) => {
-  it(`rejects ${JSON.stringify(value)}`, function () {
+  it(`rejects ${JSON.stringify(value)}`, () => {
     return addClient(Object.assign({}, meta, {
       [prop]: value
-    })).then(fail, function (err) {
+    })).then(fail, (err) => {
       if (prop === 'redirect_uris') {
         expect(err.message).to.equal('invalid_redirect_uri');
       } else {
@@ -179,7 +174,7 @@ const rejects = (prop, value, description, meta) => {
   });
 };
 
-describe('Client validations', function () {
+describe('Client validations', () => {
   context('application_type', function () {
     defaultsTo(this.title, 'web');
     mustBeString(this.title);
@@ -438,10 +433,10 @@ describe('Client validations', function () {
     mustBeString(this.title, undefined, {
       jwks: { keys: [sigKey] }
     });
-    it('is required when id_token_encrypted_response_enc is also provided', function () {
+    it('is required when id_token_encrypted_response_enc is also provided', () => {
       return addClient({
         id_token_encrypted_response_enc: 'whatever'
-      }).then(fail, function (err) {
+      }).then(fail, (err) => {
         expect(err.message).to.equal('invalid_client_metadata');
         expect(err.error_description).to.equal('id_token_encrypted_response_alg is mandatory property');
       });
@@ -481,10 +476,10 @@ describe('Client validations', function () {
     mustBeString(this.title, undefined, {
       jwks: { keys: [sigKey] }
     });
-    it('is required when userinfo_encrypted_response_enc is also provided', function () {
+    it('is required when userinfo_encrypted_response_enc is also provided', () => {
       return addClient({
         userinfo_encrypted_response_enc: 'whatever'
-      }).then(fail, function (err) {
+      }).then(fail, (err) => {
         expect(err.message).to.equal('invalid_client_metadata');
         expect(err.error_description).to.equal('userinfo_encrypted_response_alg is mandatory property');
       });
@@ -522,10 +517,10 @@ describe('Client validations', function () {
   context('request_object_encryption_alg', function () {
     defaultsTo(this.title, undefined);
     mustBeString(this.title);
-    it('is required when request_object_encryption_enc is also provided', function () {
+    it('is required when request_object_encryption_enc is also provided', () => {
       return addClient({
         request_object_encryption_enc: 'whatever'
-      }).then(fail, function (err) {
+      }).then(fail, (err) => {
         expect(err.message).to.equal('invalid_client_metadata');
         expect(err.error_description).to.equal('request_object_encryption_alg is mandatory property');
       });
@@ -598,22 +593,22 @@ describe('Client validations', function () {
     // more in client_keystore.test.js
   });
 
-  it('allows unrecognized properties but does not yield them back', function () {
+  it('allows unrecognized properties but does not yield them back', () => {
     return addClient({
       unrecognized: true
-    }).then(function (client) {
+    }).then((client) => {
       expect(client).not.to.have.property('unrecognized');
     });
   });
 
-  it('allows clients without grants, for introspection, revocation (RS clients)', function () {
+  it('allows clients without grants, for introspection, revocation (RS clients)', () => {
     return addClient({
       client_id: 'authorization-server',
       client_secret: 'foobar',
       redirect_uris: [],
       response_types: [],
       grant_types: []
-    }).then(client => {
+    }).then((client) => {
       expect(client.grantTypes).to.be.empty;
       expect(client.responseTypes).to.be.empty;
       expect(client.redirectUris).to.be.empty;

@@ -17,15 +17,18 @@ your own unique-looking and functioning user flows.
   * [Implemented specs &amp; features](#implemented-specs--features)
   * [Get started](#get-started)
   * [Configuration](#configuration)
+    * [Available Claims](#available-claims)
     * [Features](#features)
     * [Routes](#routes)
-    * [Certificates](#keys-signing-and-encryption)
+    * [Certificates](#keys-for-signing-and-encryption)
     * [Persistance](#persistance)
     * [Accounts](#accounts)
     * [Interaction](#interaction)
     * [Clients](#clients)
     * [Custom Grant Types](#custom-grant-types)
     * [Custom Discovery Properties](#custom-discovery-properties)
+    * [OAuth Token Integrity](#oauth-token-integrity)
+    * [Changing HTTP request defaults](#changing-http-request-defaults)
   * [Events](#events)
   * [Certification](#certification)
 
@@ -79,6 +82,7 @@ The following drafts/experimental specifications are implemented by oidc-provide
 
 Updates to drafts and experimental specifications are released as MINOR versions.
 
+
 ## Get started
 To run and experiment with an example server, clone the oidc-provider repo and install the dependencies:
 
@@ -100,6 +104,7 @@ Otherwise just install the package in your app and follow the [example use](exam
 $ npm install oidc-provider --save
 ```
 
+
 ## Configuration
 ```js
 const Provider = require('oidc-provider').Provider;
@@ -111,6 +116,41 @@ const configuration = {
 const oidc = new Provider(issuer, configuration);
 ```
 [Default configuration values](lib/helpers/defaults.js).
+
+### Available Claims
+By default oidc-provider pushes `acr, auth_time, iss, sub` claims to the id token. The `claims`
+configuration parameter can be used to define which claims belong to which scope. The value follows
+the following scheme:
+```js
+new Provider('http://localhost:3000', {
+  claims: {
+    [scope name]: {
+      [claim name]: null,
+      [claim name]: null,
+    },
+    [scope name]: {
+      [claim name]: null,
+    }
+  }
+});
+```
+
+To follow the [Core-defined scope-to-claim mapping][core-account-claims] use:
+```js
+new Provider('http://localhost:3000', {
+  claims: {
+    address: { address: null },
+    email: { email: null, email_verified: null },
+    phone: { phone_number: null, phone_number_verified: null },
+    profile: {
+      birthdate: null, family_name: null, gender: null, given_name: null, locale: null,
+      middle_name: null, name: null, nickname: null, picture: null, preferred_username: null,
+      profile: null, updated_at: null, website: null, zoneinfo: null
+    }
+  }
+});
+```
+
 
 ### Features
 
@@ -217,7 +257,7 @@ Enables features described in [Session Management 1.0 - draft 26][feature-sessio
 ```js
 const configuration = { features: { sessionManagement: true, backchannelLogout: Boolean[false] } };
 ```
-Enables features described in [Back-Channel Logout 1.0 - draft 02][feature-backchannel-logout].
+Enables features described in [Back-Channel Logout 1.0 - draft 03][feature-backchannel-logout].
 
 
 **Dynamic registration features**  
@@ -236,7 +276,7 @@ To have the option of multiple Initial Access Tokens covered by your adapter use
 const configuration = { features: { registration: { initialAccessToken: true } } };
 
 // to add a token and retrieve it's value
-new (provider.get('InitialAccessToken'))({}).then(console.log);
+new (provider.InitialAccessToken)({}).then(console.log);
 ```
 
 **Dynamic registration management features**  
@@ -246,8 +286,9 @@ const configuration = { features: { registration: true, registrationManagement: 
 Enables Update and Delete features described in
 [OAuth 2.0 Dynamic Client Registration Management Protocol][feature-registration-management].
 
+
 ### Routes
-You can change the [default routes](lib/helpers/defaults.js#L72-L82) by providing a routes object
+You can change the [default routes](lib/helpers/defaults.js#L45-L55) by providing a routes object
 to the oidc-provider constructor.
 
 ```js
@@ -260,15 +301,22 @@ const oidc = new Provider('http://localhost:3000', {
 ```
 
 
-### Keys (signing and encryption)
-To add RSA or EC signing and encryption keys use the `addKey` method on a oidc-provider instance.
-This accepts a jwk formatted private key object and returns a Promise, resolved with
-[node-jose][node-jose] jose.JWK.Key
+### Keys (for signing and encryption)
+oidc-provider expects a jose.JWK.KeyStore populated with your keys passed in with the configuration,
+at the very least you must add a RS256 sig capable key, else your OP would be invalid. For
+convenience the relevant node-jose methods  are exposed next to the Provider - asKeyStore and createKeyStore.
 
-At the very least you must add one RSA key (and do yourself a favor and use at least 2048 bit). You
-MAY provide the `use` and `kid` properties. When `use` is omitted the key will be available for both
-signing and encryption. When `kid` is omitted it will be calculated using
-[JSON Web Key (JWK) Thumbprint][feature-thumbprint].
+```js
+const { Provider, asKeyStore } = require('oidc-provider');
+asKeyStore({
+  keys: [
+    { d: '..', dp: '..', dq: '..', e: '..', kty: 'RSA', n: '..', p: '..', q: '..', qi: '..' },
+    { d: '..', dp: '..', dq: '..', e: '..', kty: 'RSA', n: '..', p: '..', q: '..', qi: '..' },
+  ]
+}).then(keystore => {
+  new Provider('http://localhost:3000', { keystore });
+});
+```
 
 
 ### Persistance
@@ -290,6 +338,7 @@ The API oidc-provider expects is documented [here](example/my_adapter.js). For r
 [mongodb](example/adapters/mongodb.js) adapters. There's also a simple test
 [[redis](example/adapters/redis_test.js),[mongodb](example/adapters/mongodb_test.js)] you can use to
 check your own implementation.
+
 
 ### Accounts
 oidc-provider needs to be able to find an account and once found the account needs to have an
@@ -347,6 +396,7 @@ endpoint, affixed by the uuid of the original request and the interaction result
 `_grant_result` cookie. Please see the [example](example/index.js), it's using a helper `resume` of
 the provider instance that ties things together for you.
 
+
 ### Clients
 Clients can be managed programmatically or via out of bounds mechanisms using your provided Adapter.
 At the very least you must provide client_id, client_secret and redirect_uris for each client. See
@@ -354,7 +404,7 @@ the rest of the available metadata [here][client-metadata].
 
 Note: each oidc-provider caches the clients once they are loaded (via either of the mechanisms),
 when in need of client configuration "reload" you can purge this cache like so
-`oidc.get('Client').purge()`;
+`oidc.Client.purge()`;
 
 **via Provider interface**  
 To add pre-established clients use the `addClient` method on a oidc-provider instance. This accepts
@@ -375,6 +425,7 @@ want to provide a client configuration GUI or plan on changing this data often. 
 *! and validated !* when they are first needed, any metadata validation error encountered during
 this first load will be thrown and handled like any other context specific errors.
 
+
 ### Custom Grant Types
 oidc-provider comes with the basic grants implemented, but you can register your own grant types,
 for example to implement a [password grant type][password-grant]. You can check the standard
@@ -386,7 +437,7 @@ const parameters = ['username', 'password'];
 provider.registerGrantType('password', function passwordGrantTypeFactory(providerInstance) {
   return function * passwordGrantType(next) {
     if (this.oidc.params.username === 'foo' && this.oidc.params.password === 'bar') {
-      const AccessToken = providerInstance.get('AccessToken');
+      const AccessToken = providerInstance.AccessToken;
       const at = new AccessToken({
         accountId: 'foo',
         clientId: this.oidc.client.clientId,
@@ -416,6 +467,7 @@ provider.registerGrantType('password', function passwordGrantTypeFactory(provide
 ```
 Tip: you are able to modify the implemented grant type behavior like this.
 
+
 ### Custom Discovery Properties
 You can extend the returned discovery properties beyond the defaults
 ```js
@@ -426,6 +478,38 @@ const oidc = new Provider('http://localhost:3000', {
   }
 });
 ```
+
+
+### OAuth Token Integrity
+To enable an extra layer of protection (against someone controlling your tokens via the storage
+layer) you just need to pass a jose.JWK.KeyStore as `tokenIntegrity` configuration option.
+The first token you push on to this key store will be used to cryptographically sign the oauth tokens
+prohibiting any tampering with the payload and header content.
+
+
+### Changing HTTP request defaults
+Setting `defaultHttpOptions` on `Provider` instance merges your passed options with the defaults.
+oidc-provider uses [got][got-library] for http requests with the following default request options
+
+```js
+const DEFAULT_HTTP_OPTIONS = {
+  followRedirect: false,
+  headers: { 'User-Agent': `${pkg.name}/${pkg.version} (${this.issuer}; ${pkg.homepage})` },
+  retries: 0,
+  timeout: 1500,
+};
+```
+
+You can add your own headers, change the user-agent used or change the timeout setting
+```js
+provider.defaultHttpOptions = { timeout: 2500, headers: { 'X-Your-Header': '<whatever>' } };
+```
+
+Confirm your httpOptions by
+```js
+console.log('httpOptions %j', provider.defaultHttpOptions);
+```
+
 
 ## Events
 The oidc-provider instance is an event emitter, `this` is always the instance. In events where `ctx`(koa
@@ -574,3 +658,5 @@ OP Config and OP Dynamic profiles of the OpenID Connect™ protocol.
 [feature-aggregated-distributed-claims]: http://openid.net/specs/openid-connect-core-1_0.html#AggregatedDistributedClaims
 [feature-backchannel-logout]: http://openid.net/specs/openid-connect-backchannel-1_0-03.html
 [feature-registration-management]: https://tools.ietf.org/html/rfc7592
+[got-library]: https://github.com/sindresorhus/got
+[core-account-claims]: http://openid.net/specs/openid-connect-core-1_0.html#ScopeClaims

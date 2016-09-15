@@ -1,8 +1,6 @@
 'use strict';
 
-const {
-  provider, agent, AuthorizationRequest, wrap
-} = require('../test_helper')(__dirname);
+const bootstrap = require('../test_helper');
 const { expect } = require('chai');
 const { parse } = require('url');
 const url = require('url');
@@ -10,21 +8,21 @@ const jose = require('node-jose');
 const { privKey } = require('./encryption.config');
 const JWT = require('../../lib/helpers/jwt');
 
-provider.setupClient();
-provider.setupCerts();
-
-before(function () {
-  return jose.JWK.asKeyStore(privKey).then(keystore => { this.keystore = keystore; });
-});
+const route = '/auth';
 
 ['get', 'post'].forEach((verb) => {
-  const route = '/auth';
+  describe(`[encryption] IMPLICIT id_token+token ${verb} ${route}`, () => {
+    const { provider, agent, AuthorizationRequest, wrap } = bootstrap(__dirname);
+    provider.setupClient();
 
-  describe(`[encryption] IMPLICIT id_token+token ${verb} ${route}`, function () {
+
+    before(function () {
+      return jose.JWK.asKeyStore(privKey).then((keystore) => { this.keystore = keystore; });
+    });
     before(agent.login);
 
 
-    describe('encrypted authorization results', function () {
+    describe('encrypted authorization results', () => {
       before(function () {
         const auth = new AuthorizationRequest({
           response_type: 'id_token token',
@@ -72,14 +70,14 @@ before(function () {
         });
       });
 
-      describe('userinfo nested signed and encrypted', function () {
-        before(function * () {
-          const client = yield provider.get('Client').find('client');
+      describe('userinfo nested signed and encrypted', () => {
+        before(function* () {
+          const client = yield provider.Client.find('client');
           client.userinfoSignedResponseAlg = 'RS256';
         });
 
-        after(function * () {
-          const client = yield provider.get('Client').find('client');
+        after(function* () {
+          const client = yield provider.Client.find('client');
           client.userinfoSignedResponseAlg = undefined;
         });
 
@@ -108,15 +106,15 @@ before(function () {
       });
     });
 
-    describe('authorization request object encryption', function () {
-      it('works with signed by none', function () {
+    describe('authorization request object encryption', () => {
+      it('works with signed by none', () => {
         return JWT.sign({
           client_id: 'client',
           response_type: 'code',
           redirect_uri: 'https://client.example.com/cb'
-        }, null, 'none').then((signed) =>
+        }, null, 'none').then(signed =>
         JWT.encrypt(signed, provider.keystore.get(), 'A128CBC-HS256', 'RSA1_5')
-      ).then((encrypted) =>
+      ).then(encrypted =>
         wrap({
           agent,
           route,
@@ -129,7 +127,7 @@ before(function () {
           }
         })
           .expect(302)
-          .expect(function (response) {
+          .expect((response) => {
             const expected = parse('https://client.example.com/cb', true);
             const actual = parse(response.headers.location, true);
             ['protocol', 'host', 'pathname'].forEach((attr) => {
@@ -141,8 +139,8 @@ before(function () {
       });
     });
 
-    it('handles when no suitable encryption key is found', function * () {
-      const client = yield provider.get('Client').find('client');
+    it('handles when no suitable encryption key is found', function* () {
+      const client = yield provider.Client.find('client');
 
       client.idTokenEncryptedResponseAlg = 'ECDH-ES';
 

@@ -1,31 +1,32 @@
 'use strict';
 
-const {
-  agent, provider, TestAdapter
-} = require('../test_helper')(__dirname);
+const bootstrap = require('../test_helper');
 const sinon = require('sinon');
-const { decode: base64url } = require('base64url');
 const { parse: parseUrl } = require('url');
 const { expect } = require('chai');
+const epochTime = require('../../lib/helpers/epoch_time');
 
-const j = JSON.parse;
-const AuthorizationCode = provider.get('AuthorizationCode');
 const route = '/token';
-
-provider.setupCerts();
-provider.setupClient();
-provider.setupClient({
-  client_id: 'client2',
-  client_secret: 'secret',
-  redirect_uris: ['https://client.example.com/cb']
-});
 
 function errorDetail(spy) {
   return spy.args[0][0].error_detail;
 }
 
-describe('grant_type=authorization_code', function () {
-  context('with real tokens', function () {
+describe('grant_type=authorization_code', () => {
+  const {
+    agent, provider, TestAdapter
+  } = bootstrap(__dirname);
+
+
+  provider.setupClient();
+  provider.setupClient({
+    client_id: 'client2',
+    client_secret: 'secret',
+    redirect_uris: ['https://client.example.com/cb']
+  });
+  const AuthorizationCode = provider.AuthorizationCode;
+
+  context('with real tokens', () => {
     before(agent.login);
     after(agent.logout);
 
@@ -40,7 +41,7 @@ describe('grant_type=authorization_code', function () {
       .expect(302)
       .expect((response) => {
         const { query: { code } } = parseUrl(response.headers.location, true);
-        const jti = j(base64url(code.split('.')[0])).jti;
+        const jti = code.substring(0, 48);
         this.code = TestAdapter.for('AuthorizationCode').syncFind(jti);
         this.ac = code;
       });
@@ -59,10 +60,10 @@ describe('grant_type=authorization_code', function () {
         redirect_uri: 'https://client.example.com/cb'
       })
       .expect(200)
-      .expect(function () {
+      .expect(() => {
         expect(spy.calledOnce).to.be.true;
       })
-      .expect(function (response) {
+      .expect((response) => {
         expect(response.body).to.have.keys('access_token', 'id_token', 'expires_in', 'token_type');
         expect(response.body).not.to.have.key('refresh_token');
       });
@@ -82,7 +83,7 @@ describe('grant_type=authorization_code', function () {
     });
 
     it('handles internal token signature validation', function () {
-      sinon.stub(AuthorizationCode, 'fromJWT', function () {
+      sinon.stub(AuthorizationCode, 'fromJWT', () => {
         return Promise.reject(new Error());
       });
 
@@ -97,19 +98,19 @@ describe('grant_type=authorization_code', function () {
         grant_type: 'authorization_code',
         redirect_uri: 'https://client.example.com/cb'
       })
-      .expect(function () {
+      .expect(() => {
         AuthorizationCode.fromJWT.restore();
       })
       .expect(401)
-      .expect(function () {
+      .expect(() => {
         expect(spy.calledOnce).to.be.true;
       })
-      .expect(function (response) {
+      .expect((response) => {
         expect(response.body).to.have.property('error', 'invalid_token');
       });
     });
 
-    context('', function () {
+    context('', () => {
       before(function () {
         this.prev = AuthorizationCode.expiresIn;
         provider.configuration('ttl').AuthorizationCode = 1;
@@ -133,11 +134,11 @@ describe('grant_type=authorization_code', function () {
           })
           .type('form')
           .expect(400)
-          .expect(function () {
+          .expect(() => {
             expect(spy.calledOnce).to.be.true;
             expect(errorDetail(spy)).to.equal('authorization code is expired');
           })
-          .expect(function (response) {
+          .expect((response) => {
             expect(response.body).to.have.property('error', 'invalid_grant');
           })
           .end(done);
@@ -150,7 +151,7 @@ describe('grant_type=authorization_code', function () {
       const spy = sinon.spy();
       provider.once('grant.error', spy);
 
-      this.code.consumed = Date.now() / 1000 | 0;
+      this.code.consumed = epochTime();
 
       return agent.post(route)
       .auth('client', 'secret')
@@ -161,11 +162,11 @@ describe('grant_type=authorization_code', function () {
       })
       .type('form')
       .expect(400)
-      .expect(function () {
+      .expect(() => {
         expect(spy.calledOnce).to.be.true;
         expect(errorDetail(spy)).to.equal('authorization code already consumed');
       })
-      .expect(function (response) {
+      .expect((response) => {
         expect(response.body).to.have.property('error', 'invalid_grant');
       });
     });
@@ -180,7 +181,7 @@ describe('grant_type=authorization_code', function () {
       })
       .type('form')
       .expect(() => {
-        expect(this.code).to.have.property('consumed').and.be.most(Date.now() / 1000 | 0);
+        expect(this.code).to.have.property('consumed').and.be.most(epochTime());
       })
       .expect(200);
     });
@@ -198,11 +199,11 @@ describe('grant_type=authorization_code', function () {
       })
       .type('form')
       .expect(400)
-      .expect(function () {
+      .expect(() => {
         expect(spy.calledOnce).to.be.true;
         expect(errorDetail(spy)).to.equal('authorization code client mismatch');
       })
-      .expect(function (response) {
+      .expect((response) => {
         expect(response.body).to.have.property('error', 'invalid_grant');
       });
     });
@@ -220,17 +221,17 @@ describe('grant_type=authorization_code', function () {
       })
       .type('form')
       .expect(400)
-      .expect(function () {
+      .expect(() => {
         expect(spy.calledOnce).to.be.true;
         expect(errorDetail(spy)).to.equal('authorization code redirect_uri mismatch');
       })
-      .expect(function (response) {
+      .expect((response) => {
         expect(response.body).to.have.property('error', 'invalid_grant');
       });
     });
 
     it('validates account is still there', function () {
-      sinon.stub(provider.get('Account'), 'findById', function () {
+      sinon.stub(provider.Account, 'findById', () => {
         return Promise.resolve();
       });
 
@@ -245,35 +246,35 @@ describe('grant_type=authorization_code', function () {
         redirect_uri: 'https://client.example.com/cb'
       })
       .type('form')
-      .expect(function () {
-        provider.get('Account').findById.restore();
+      .expect(() => {
+        provider.Account.findById.restore();
       })
       .expect(400)
-      .expect(function () {
+      .expect(() => {
         expect(spy.calledOnce).to.be.true;
         expect(errorDetail(spy)).to.equal('authorization code invalid (referenced account not found)');
       })
-      .expect(function (response) {
+      .expect((response) => {
         expect(response.body).to.have.property('error', 'invalid_grant');
       });
     });
   });
 
-  describe('validates', function () {
-    it('grant_type presence', function () {
+  describe('validates', () => {
+    it('grant_type presence', () => {
       return agent.post(route)
       .auth('client', 'secret')
       .send({})
       .type('form')
       .expect(400)
-      .expect(function (response) {
+      .expect((response) => {
         expect(response.body).to.have.property('error', 'invalid_request');
         expect(response.body).to.have.property('error_description').and.matches(/missing required parameter/);
         expect(response.body).to.have.property('error_description').and.matches(/grant_type/);
       });
     });
 
-    it('code presence', function () {
+    it('code presence', () => {
       return agent.post(route)
       .auth('client', 'secret')
       .send({
@@ -282,14 +283,14 @@ describe('grant_type=authorization_code', function () {
       })
       .type('form')
       .expect(400)
-      .expect(function (response) {
+      .expect((response) => {
         expect(response.body).to.have.property('error', 'invalid_request');
         expect(response.body).to.have.property('error_description').and.matches(/missing required parameter/);
         expect(response.body).to.have.property('error_description').and.matches(/code/);
       });
     });
 
-    it('redirect_uri presence', function () {
+    it('redirect_uri presence', () => {
       return agent.post(route)
       .auth('client', 'secret')
       .send({
@@ -298,14 +299,14 @@ describe('grant_type=authorization_code', function () {
       })
       .type('form')
       .expect(400)
-      .expect(function (response) {
+      .expect((response) => {
         expect(response.body).to.have.property('error', 'invalid_request');
         expect(response.body).to.have.property('error_description').and.matches(/missing required parameter/);
         expect(response.body).to.have.property('error_description').and.matches(/redirect_uri/);
       });
     });
 
-    it('code being "found"', function () {
+    it('code being "found"', () => {
       const spy = sinon.spy();
       provider.once('grant.error', spy);
       return agent.post(route)
@@ -317,16 +318,16 @@ describe('grant_type=authorization_code', function () {
       })
       .type('form')
       .expect(400)
-      .expect(function () {
+      .expect(() => {
         expect(spy.calledOnce).to.be.true;
         expect(errorDetail(spy)).to.equal('authorization code not found');
       })
-      .expect(function (response) {
+      .expect((response) => {
         expect(response.body).to.have.property('error', 'invalid_grant');
       });
     });
 
-    it('code being "valid format"', function () {
+    it('code being "valid format"', () => {
       const spy = sinon.spy();
       provider.once('grant.error', spy);
       return agent.post(route)
@@ -339,25 +340,25 @@ describe('grant_type=authorization_code', function () {
       )
       .type('form')
       .expect(401)
-      .expect(function () {
+      .expect(() => {
         expect(spy.calledOnce).to.be.true;
       })
-      .expect(function (response) {
+      .expect((response) => {
         expect(response.body).to.have.property('error', 'invalid_token');
       });
     });
   });
 
-  describe('error handling', function () {
-    before(function () {
-      sinon.stub(provider.get('Client'), 'find').returns(Promise.reject(new Error()));
+  describe('error handling', () => {
+    before(() => {
+      sinon.stub(provider.Client, 'find').returns(Promise.reject(new Error()));
     });
 
-    after(function () {
-      provider.get('Client').find.restore();
+    after(() => {
+      provider.Client.find.restore();
     });
 
-    it('handles errors', function () {
+    it('handles errors', () => {
       const spy = sinon.spy();
       provider.once('grant.error', spy);
 
@@ -365,15 +366,15 @@ describe('grant_type=authorization_code', function () {
       .send({})
       .type('form')
       .expect(400)
-      .expect(function () {
+      .expect(() => {
         expect(spy.calledOnce).to.be.true;
       })
-      .expect(function (response) {
+      .expect((response) => {
         expect(response.body).not.to.have.property('error', 'server_error');
       });
     });
 
-    it('handles exceptions', function () {
+    it('handles exceptions', () => {
       const spy = sinon.spy();
       provider.once('server_error', spy);
 
@@ -386,10 +387,10 @@ describe('grant_type=authorization_code', function () {
       })
       .type('form')
       .expect(500)
-      .expect(function () {
+      .expect(() => {
         expect(spy.calledOnce).to.be.true;
       })
-      .expect(function (response) {
+      .expect((response) => {
         expect(response.body).to.have.property('error', 'server_error');
         expect(response.body).to.have.property('error_description', 'oops something went wrong');
       });

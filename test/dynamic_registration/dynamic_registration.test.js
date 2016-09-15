@@ -1,13 +1,9 @@
 'use strict';
 
-const { agent, provider } = require('../test_helper')(__dirname);
+const bootstrap = require('../test_helper');
 const { expect } = require('chai');
 const sinon = require('sinon');
 const base64url = require('base64url');
-
-const Client = provider.get('Client');
-
-provider.setupCerts();
 
 function validateError(error) {
   const assert = error.exec ? 'match' : 'equal';
@@ -23,15 +19,19 @@ function validateErrorDescription(description) {
   };
 }
 
-describe('registration features', function () {
-  context('POST /reg', function () {
-    it('generates the id, secret that does not expire and reg access token and returns the defaulted values', function () {
+describe('registration features', () => {
+  const { agent, provider, TestAdapter } = bootstrap(__dirname);
+  const Client = provider.Client;
+
+
+  context('POST /reg', () => {
+    it('generates the id, secret that does not expire and reg access token and returns the defaulted values', () => {
       return agent.post('/reg')
       .send({
         redirect_uris: ['https://client.example.com/cb']
       })
       .expect(201)
-      .expect(function (response) {
+      .expect((response) => {
         expect(response.body).to.contain.keys('client_id', 'client_secret', 'registration_access_token');
         expect(response.body).to.have.property('client_secret_expires_at', 0);
         expect(response.body).to.have.property('application_type', 'web');
@@ -44,7 +44,7 @@ describe('registration features', function () {
       });
     });
 
-    it('omits the client_secret generation when it is not needed', function () {
+    it('omits the client_secret generation when it is not needed', () => {
       return agent.post('/reg')
       .send({
         token_endpoint_auth_method: 'none',
@@ -53,13 +53,13 @@ describe('registration features', function () {
         grant_types: ['implicit']
       })
       .expect(201)
-      .expect(function (response) {
+      .expect((response) => {
         expect(response.body).not.to.have.property('client_secret');
         expect(response.body).not.to.have.property('client_secret_expires_at');
       });
     });
 
-    it('issues the client_secret when needed for sig', function () {
+    it('issues the client_secret when needed for sig', () => {
       return agent.post('/reg')
       .send({
         token_endpoint_auth_method: 'none',
@@ -69,13 +69,13 @@ describe('registration features', function () {
         id_token_signed_response_alg: 'HS256',
       })
       .expect(201)
-      .expect(function (response) {
+      .expect((response) => {
         expect(response.body).to.have.property('client_secret');
         expect(response.body).to.have.property('client_secret_expires_at');
       });
     });
 
-    it('issues the client_secret when needed for auth', function () {
+    it('issues the client_secret when needed for auth', () => {
       return agent.post('/reg')
       .send({
         token_endpoint_auth_method: 'client_secret_jwt',
@@ -84,13 +84,13 @@ describe('registration features', function () {
         grant_types: ['implicit']
       })
       .expect(201)
-      .expect(function (response) {
+      .expect((response) => {
         expect(response.body).to.have.property('client_secret');
         expect(response.body).to.have.property('client_secret_expires_at');
       });
     });
 
-    it('returns token-endpoint-like cache headers', function () {
+    it('returns token-endpoint-like cache headers', () => {
       return agent.post('/reg')
       .send({
         redirect_uris: ['https://client.example.com/cb']
@@ -99,7 +99,7 @@ describe('registration features', function () {
       .expect('cache-control', 'no-cache, no-store');
     });
 
-    it('stores the client using the provided adapter and emits an event', function (done) {
+    it('stores the client using the provided adapter and emits an event', (done) => {
       const spy = sinon.spy();
       provider.once('registration_create.success', spy);
 
@@ -107,12 +107,12 @@ describe('registration features', function () {
       .send({
         redirect_uris: ['https://client.example.com/cb']
       })
-      .expect(function () {
+      .expect(() => {
         expect(spy.calledOnce).to.be.true;
         expect(spy.firstCall.args[0].constructor.name).to.equal('Client');
         expect(spy.firstCall.args[1]).to.have.property('oidc');
       })
-      .end(function (err, response) {
+      .end((err, response) => {
         if (err) return done(err);
 
         Client.purge(); // wipe the cache
@@ -126,7 +126,7 @@ describe('registration features', function () {
       });
     });
 
-    it('validates the parameters to be valid and responds with errors', function () {
+    it('validates the parameters to be valid and responds with errors', () => {
       return agent.post('/reg')
       .send({
         grant_types: ['this is clearly wrong'],
@@ -137,7 +137,7 @@ describe('registration features', function () {
       .expect(validateErrorDescription(/grant_types/));
     });
 
-    it('validates the parameters to be valid and responds with redirect_uri errors', function () {
+    it('validates the parameters to be valid and responds with redirect_uri errors', () => {
       return agent.post('/reg')
       .send({
         // redirect_uris missing here
@@ -147,7 +147,7 @@ describe('registration features', function () {
       .expect(validateErrorDescription(/redirect_uris/));
     });
 
-    it('only accepts application/json POSTs', function () {
+    it('only accepts application/json POSTs', () => {
       return agent.post('/reg')
       .send({
         redirect_uris: ['https://client.example.com/cb']
@@ -160,18 +160,18 @@ describe('registration features', function () {
       });
     });
 
-    describe('initial access tokens', function () {
-      describe('fix string one', function () {
-        before(function () {
+    describe('initial access tokens', () => {
+      describe('fix string one', () => {
+        before(() => {
           const conf = provider.configuration();
           conf.features.registration = { initialAccessToken: 'foobar' };
         });
-        after(function () {
+        after(() => {
           const conf = provider.configuration();
           conf.features.registration = true;
         });
 
-        it('allows reg calls with the access tokens as a Bearer token [query]', function () {
+        it('allows reg calls with the access tokens as a Bearer token [query]', () => {
           return agent.post('/reg')
           .send({
             redirect_uris: ['https://client.example.com/cb']
@@ -182,7 +182,7 @@ describe('registration features', function () {
           .expect(201);
         });
 
-        it('allows reg calls with the access tokens as a Bearer token [post]', function () {
+        it('allows reg calls with the access tokens as a Bearer token [post]', () => {
           return agent.post('/reg')
           .send({
             redirect_uris: ['https://client.example.com/cb'],
@@ -191,7 +191,7 @@ describe('registration features', function () {
           .expect(201);
         });
 
-        it('allows reg calls with the access tokens as a Bearer token [header]', function () {
+        it('allows reg calls with the access tokens as a Bearer token [header]', () => {
           return agent.post('/reg')
           .set('Authorization', 'Bearer foobar')
           .send({
@@ -200,7 +200,7 @@ describe('registration features', function () {
           .expect(201);
         });
 
-        it('rejects calls with bad access token', function () {
+        it('rejects calls with bad access token', () => {
           return agent.post('/reg')
           .send({
             redirect_uris: ['https://client.example.com/cb']
@@ -212,31 +212,33 @@ describe('registration features', function () {
         });
       });
 
-      describe('using a model', function () {
+      describe('using a model', () => {
         before(function () {
           const conf = provider.configuration();
           conf.features.registration = { initialAccessToken: true };
 
-          const iat = new (provider.get('InitialAccessToken'))({});
-          return iat.save().then(value => {
+          const iat = new (provider.InitialAccessToken)({});
+          return iat.save().then((value) => {
             this.token = value;
           });
         });
-        after(function () {
+        after(() => {
           const conf = provider.configuration();
           conf.features.registration = true;
         });
 
-        it('allows the developers to insert new tokens with no expiration', function () {
-          return new (provider.get('InitialAccessToken'))().save();
+        it('allows the developers to insert new tokens with no expiration', () => {
+          return new (provider.InitialAccessToken)().save();
         });
 
-        it('allows the developers to insert new tokens with expiration', function () {
-          const IAT = provider.get('InitialAccessToken');
+        it('allows the developers to insert new tokens with expiration', () => {
+          const IAT = provider.InitialAccessToken;
           return new IAT({
             expiresIn: 24 * 60 * 60
-          }).save().then(function (v) {
-            expect(JSON.parse(base64url.decode(v.split('.')[0]))).to.have.property('exp');
+          }).save().then((v) => {
+            const jti = v.substring(0, 48);
+            const token = TestAdapter.for('InitialAccessToken').syncFind(jti);
+            expect(JSON.parse(base64url.decode(token.payload))).to.have.property('exp');
           });
         });
 
@@ -251,7 +253,7 @@ describe('registration features', function () {
           .expect(201);
         });
 
-        it('rejects calls with bad access token', function () {
+        it('rejects calls with bad access token', () => {
           return agent.post('/reg')
           .send({
             redirect_uris: ['https://client.example.com/cb']
@@ -276,7 +278,7 @@ describe('registration features', function () {
     });
   });
 
-  context('GET /reg/:clientId', function () {
+  context('GET /reg/:clientId', () => {
     before(function () {
       return agent.post('/reg')
       .send({
@@ -296,7 +298,7 @@ describe('registration features', function () {
         })
         .expect(200)
         .expect('content-type', /application\/json/)
-        .expect(function (response) {
+        .expect((response) => {
           expect(response.body).to.contain.keys('client_id', 'client_secret', 'registration_access_token');
           expect(response.body).to.have.property('client_secret_expires_at', 0);
           expect(response.body).to.have.property('application_type', 'web');
@@ -318,7 +320,7 @@ describe('registration features', function () {
         .expect('cache-control', 'no-cache, no-store');
     });
 
-    it('validates client is a valid client', function () {
+    it('validates client is a valid client', () => {
       return agent.get('/reg/thisDOesnotCompute')
         .query({
           access_token: 'wahtever'

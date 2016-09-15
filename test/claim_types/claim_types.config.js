@@ -1,6 +1,5 @@
 'use strict';
 
-const cert = require('../default.sig.key');
 const config = require('../default.config');
 
 module.exports = {
@@ -11,6 +10,5 @@ module.exports = {
     grant_types: ['implicit'],
     response_types: ['id_token token'],
     redirect_uris: ['https://client.example.com/cb'],
-  },
-  certs: [cert],
+  }
 };

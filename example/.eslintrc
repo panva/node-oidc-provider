@@ -1,5 +1,11 @@
 {
+  "extends": "airbnb-base",
   "rules": {
-    "import/no-extraneous-dependencies": "off"
+    "import/no-extraneous-dependencies": "off",
+    "no-empty": ["error", { "allowEmptyCatch": true }],
+    "no-param-reassign": ["error", { "props": false }],
+    "prefer-rest-params": "off",
+    "prefer-spread": "off",
+    "strict": "off"
   }
 }

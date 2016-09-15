@@ -3,12 +3,7 @@
 /* eslint-disable no-underscore-dangle */
 
 const { v4: uuid } = require('uuid');
-const {
-  provider,
-  agent,
-  getSession,
-  AuthorizationRequest,
-} = require('../test_helper')(__dirname);
+const bootstrap = require('../test_helper');
 
 const expire = new Date();
 expire.setDate(expire.getDate() + 1);
@@ -16,40 +11,41 @@ expire.setDate(expire.getDate() + 1);
 const j = JSON.stringify;
 const { expect } = require('chai');
 
-provider.setupClient();
-provider.setupCerts();
+describe('resume after interaction', () => {
+  const { provider, agent, getSession, AuthorizationRequest, } = bootstrap(__dirname);
+  provider.setupClient();
 
-provider.configuration('prompts').push('custom');
 
-function setup(grant, results) {
-  const cookies = [];
+  provider.configuration('prompts').push('custom');
 
-  if (grant) {
-    cookies.push(`_grant=${j(grant)}; path=/; expires=${expire.toGMTString()}; httponly`);
+  function setup(grant, results) {
+    const cookies = [];
+
+    if (grant) {
+      cookies.push(`_grant=${j(grant)}; path=/; expires=${expire.toGMTString()}; httponly`);
+    }
+
+    if (results) {
+      cookies.push(`_grant_result=${j(results)}; path=/; expires=${expire.toGMTString()}; httponly`);
+    }
+
+    agent._saveCookies.bind(agent)({
+      headers: {
+        'set-cookie': cookies
+      },
+    });
   }
 
-  if (results) {
-    cookies.push(`_grant_result=${j(results)}; path=/; expires=${expire.toGMTString()}; httponly`);
-  }
-
-  agent._saveCookies.bind(agent)({
-    headers: {
-      'set-cookie': cookies
-    },
-  });
-}
-
-describe('resume after interaction', function () {
-  context('general', function () {
-    it('needs the results to be present, else renders an err', function () {
+  context('general', () => {
+    it('needs the results to be present, else renders an err', () => {
       return agent.get(`/auth/${uuid()}`)
         .expect(400)
         .expect(/authorization request has expired/);
     });
   });
 
-  context('login results', function () {
-    it('should redirect to client with error if interaction did not resolve in a session', function () {
+  context('login results', () => {
+    it('should redirect to client with error if interaction did not resolve in a session', () => {
       const auth = new AuthorizationRequest({
         response_type: 'code',
         scope: 'openid'
@@ -65,7 +61,7 @@ describe('resume after interaction', function () {
         .expect(auth.validateErrorDescription('End-User authentication is required'));
     });
 
-    it('should process newly established permanent sessions', function () {
+    it('should process newly established permanent sessions', () => {
       const auth = new AuthorizationRequest({
         response_type: 'code',
         scope: 'openid'
@@ -84,12 +80,12 @@ describe('resume after interaction', function () {
         .expect(auth.validateState)
         .expect(auth.validateClientLocation)
         .expect(auth.validatePresence(['code', 'state']))
-        .expect(function () {
+        .expect(() => {
           expect(getSession(agent)).to.be.ok.and.not.have.property('transient');
         });
     });
 
-    it('should process newly established temporary sessions', function () {
+    it('should process newly established temporary sessions', () => {
       const auth = new AuthorizationRequest({
         response_type: 'code',
         scope: 'openid'
@@ -107,14 +103,14 @@ describe('resume after interaction', function () {
         .expect('set-cookie', /^((?!expires).)*$/) // expect a transient cookie
         .expect(auth.validateClientLocation)
         .expect(auth.validatePresence(['code', 'state']))
-        .expect(function () {
+        .expect(() => {
           expect(getSession(agent)).to.be.ok.and.have.property('transient');
         });
     });
   });
 
-  context('consent results', function () {
-    it('when scope includes offline_access', function () {
+  context('consent results', () => {
+    it('when scope includes offline_access', () => {
       const auth = new AuthorizationRequest({
         response_type: 'code',
         prompt: 'consent',
@@ -131,21 +127,21 @@ describe('resume after interaction', function () {
 
       let authorizationCode;
 
-      provider.once('token.issued', function (code) {
+      provider.once('token.issued', (code) => {
         authorizationCode = code;
       });
 
       return agent.get(`/auth/${uuid()}`)
-        .expect(function () {
+        .expect(() => {
           provider.removeAllListeners('token.issued');
         })
-        .expect(function () {
+        .expect(() => {
           expect(authorizationCode).to.be.ok;
           expect(authorizationCode).to.have.property('scope', 'openid offline_access');
         });
     });
 
-    it('should use the consents from resume cookie if provided', function () {
+    it('should use the consents from resume cookie if provided', () => {
       const auth = new AuthorizationRequest({
         response_type: 'code',
         scope: 'openid'
@@ -163,21 +159,21 @@ describe('resume after interaction', function () {
 
       let authorizationCode;
 
-      provider.once('token.issued', function (code) {
+      provider.once('token.issued', (code) => {
         authorizationCode = code;
       });
 
       return agent.get(`/auth/${uuid()}`)
-        .expect(function () {
+        .expect(() => {
           provider.removeAllListeners('token.issued');
         })
-        .expect(function () {
+        .expect(() => {
           expect(authorizationCode).to.be.ok;
           expect(authorizationCode).to.have.property('scope', 'openid profile');
         });
     });
 
-    it('if not resolved returns consent_required error', function () {
+    it('if not resolved returns consent_required error', () => {
       const auth = new AuthorizationRequest({
         response_type: 'code',
         scope: 'openid',
@@ -200,11 +196,11 @@ describe('resume after interaction', function () {
     });
   });
 
-  context('custom prompts', function () {
+  context('custom prompts', () => {
     before(agent.login);
     after(agent.logout);
 
-    it('should fail if they are not resolved', function () {
+    it('should fail if they are not resolved', () => {
       const auth = new AuthorizationRequest({
         response_type: 'code',
         scope: 'openid',

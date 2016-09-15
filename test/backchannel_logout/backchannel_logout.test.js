@@ -1,4 +1,6 @@
-const { provider, agent } = require('../test_helper')(__dirname);
+'use strict';
+
+const bootstrap = require('../test_helper');
 const sinon = require('sinon');
 const { expect } = require('chai');
 const { parse: parseUrl } = require('url');
@@ -6,19 +8,20 @@ const base64url = require('base64url');
 const nock = require('nock');
 const { Provider } = require('../../lib');
 
-provider.setupCerts();
-provider.setupClient();
+describe('Back-Channel Logout 1.0', () => {
+  const { provider, agent, getSession } = bootstrap(__dirname);
 
-describe('Back-Channel Logout 1.0', function () {
+  provider.setupClient();
+
   afterEach(nock.cleanAll);
-  afterEach(function * () {
-    const client = yield provider.get('Client').find('client');
+  afterEach(function* () {
+    const client = yield provider.Client.find('client');
     if (client.backchannelLogout.restore) client.backchannelLogout.restore();
   });
 
-  describe('feature flag', function () {
-    it('checks sessionManagement is also enabled', function () {
-      expect(function () {
+  describe('feature flag', () => {
+    it('checks sessionManagement is also enabled', () => {
+      expect(() => {
         new Provider('http://localhost', { // eslint-disable-line no-new
           features: {
             backchannelLogout: true
@@ -28,12 +31,12 @@ describe('Back-Channel Logout 1.0', function () {
     });
   });
 
-  describe('Client#backchannelLogout', function () {
-    it('triggers the call, does not return values', function * () {
-      const client = yield provider.get('Client').find('client');
+  describe('Client#backchannelLogout', () => {
+    it('triggers the call, does not return values', function* () {
+      const client = yield provider.Client.find('client');
 
       nock('https://client.example.com/')
-        .filteringRequestBody(function (body) {
+        .filteringRequestBody((body) => {
           expect(body).to.match(/^logout_token=(([\w-]+\.?){3})$/);
           const decoded = JSON.parse(base64url.decode(RegExp.$1.split('.')[1]));
           expect(decoded).to.have.all.keys('sub', 'events', 'iat', 'aud', 'iss', 'jti');
@@ -44,33 +47,33 @@ describe('Back-Channel Logout 1.0', function () {
         .post('/backchannel_logout')
         .reply(204);
 
-      return client.backchannelLogout('subject').then(result => {
+      return client.backchannelLogout('subject').then((result) => {
         expect(result).to.be.undefined;
         expect(nock.isDone()).to.be.true;
       });
     });
 
-    it('does ignore request and sig errors', function * () {
-      const client = yield provider.get('Client').find('client');
+    it('does ignore request and sig errors', function* () {
+      const client = yield provider.Client.find('client');
 
       // not defining the nock scope makes the request part throw
-      return client.backchannelLogout('subject').catch(function () {
+      return client.backchannelLogout('subject').catch(() => {
         throw new Error('expected promise to be resolved');
       });
     });
   });
 
-  describe('discovery extension', function () {
-    it('extends the well known config', function () {
+  describe('discovery extension', () => {
+    it('extends the well known config', () => {
       return agent.get('/.well-known/openid-configuration')
-      .expect(function (response) {
+      .expect((response) => {
         expect(response.body).to.have.property('backchannel_logout_supported', true);
         expect(response.body).to.have.property('backchannel_logout_session_supported', true);
       });
     });
   });
 
-  describe('end_session extension', function () {
+  describe('end_session extension', () => {
     beforeEach(agent.login);
     afterEach(agent.logout);
 
@@ -106,7 +109,7 @@ describe('Back-Channel Logout 1.0', function () {
           redirect_uri: 'https://client.example.com/cb'
         })
         .expect(200)
-        .expect(function (response) {
+        .expect((response) => {
           const payload = JSON.parse(base64url.decode(response.body.id_token.split('.')[1]));
           expect(payload).to.have.property('sid').that.is.a('string');
         });
@@ -122,7 +125,7 @@ describe('Back-Channel Logout 1.0', function () {
           redirect_uri: 'https://client.example.com/cb'
         })
         .expect(200)
-        .end(function (error, acResponse) {
+        .end((error, acResponse) => {
           if (error) { done(error); return; }
           agent.post('/token')
             .auth('client', 'secret')
@@ -132,7 +135,7 @@ describe('Back-Channel Logout 1.0', function () {
               grant_type: 'refresh_token'
             })
             .expect(200)
-            .expect(function (rtResponse) {
+            .expect((rtResponse) => {
               const payload = JSON.parse(base64url.decode(rtResponse.body.id_token.split('.')[1]));
               expect(payload).to.have.property('sid').that.is.a('string');
             })
@@ -140,34 +143,40 @@ describe('Back-Channel Logout 1.0', function () {
         });
     });
 
-    it('triggers the backchannelLogout for visited clients', function * () {
-      const params = { id_token_hint: this.idToken };
-      const client = yield provider.get('Client').find('client');
+    it('triggers the backchannelLogout for visited clients', function* () {
+      getSession(agent).logout = { secret: '123', postLogoutRedirectUri: '/' };
+      const params = { logout: 'yes', xsrf: '123' };
+      const client = yield provider.Client.find('client');
 
       sinon.spy(client, 'backchannelLogout');
 
       const accountId = this.loggedInAccountId;
       const sid = this.clientSessionId;
 
-      return agent.get('/session/end')
-      .query(params)
-      .expect(function () {
+      return agent.post('/session/end')
+      .send(params)
+      .type('form')
+      .expect(302)
+      .expect(() => {
         expect(client.backchannelLogout.called).to.be.true;
         expect(client.backchannelLogout.calledWith(accountId, sid)).to.be.true;
         client.backchannelLogout.restore();
       });
     });
 
-    it('ignores the backchannelLogout when client does not support', function * () {
-      const params = { id_token_hint: this.idToken };
-      const client = yield provider.get('Client').find('client');
+    it('ignores the backchannelLogout when client does not support', function* () {
+      getSession(agent).logout = { secret: '123', postLogoutRedirectUri: '/' };
+      const params = { logout: 'yes', xsrf: '123' };
+      const client = yield provider.Client.find('client');
       delete client.backchannelLogoutUri;
 
       sinon.spy(client, 'backchannelLogout');
 
-      return agent.get('/session/end')
-      .query(params)
-      .expect(function () {
+      return agent.post('/session/end')
+      .send(params)
+      .type('form')
+      .expect(302)
+      .expect(() => {
         expect(client.backchannelLogout.called).to.be.false;
         client.backchannelLogout.restore();
       });
