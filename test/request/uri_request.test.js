@@ -52,7 +52,7 @@ describe('request Uri features', () => {
     });
   });
 
-  ['get', 'post'].forEach(verb => {
+  ['get', 'post'].forEach((verb) => {
     describe(`${route} ${verb} passing request parameters in request_uri`, () => {
       before(agent.login);
       after(agent.logout);
@@ -63,7 +63,7 @@ describe('request Uri features', () => {
           client_id: 'client-with-HS-sig',
           response_type: 'code',
           redirect_uri: 'https://client.example.com/cb'
-        }, key, 'HS256').then(request => {
+        }, key, 'HS256').then((request) => {
           nock('https://client.example.com')
           .get('/request')
           .reply(200, request);
@@ -83,7 +83,7 @@ describe('request Uri features', () => {
         .expect((response) => {
           const expected = parse('https://client.example.com/cb', true);
           const actual = parse(response.headers.location, true);
-          ['protocol', 'host', 'pathname'].forEach(attr => {
+          ['protocol', 'host', 'pathname'].forEach((attr) => {
             expect(actual[attr]).to.equal(expected[attr]);
           });
           expect(actual.query).to.have.property('code');
@@ -96,7 +96,7 @@ describe('request Uri features', () => {
           client_id: 'client',
           response_type: 'code',
           redirect_uri: 'https://client.example.com/cb'
-        }, null, 'none').then(request => {
+        }, null, 'none').then((request) => {
           nock('https://client.example.com')
           .get('/request')
           .reply(200, request);
@@ -116,7 +116,7 @@ describe('request Uri features', () => {
         .expect((response) => {
           const expected = parse('https://client.example.com/cb', true);
           const actual = parse(response.headers.location, true);
-          ['protocol', 'host', 'pathname'].forEach(attr => {
+          ['protocol', 'host', 'pathname'].forEach((attr) => {
             expect(actual[attr]).to.equal(expected[attr]);
           });
           expect(actual.query).to.have.property('code');
@@ -204,7 +204,7 @@ describe('request Uri features', () => {
             client_id: 'client',
             response_type: 'code',
             redirect_uri: 'https://client.example.com/cb'
-          }, null, 'none').then(request => {
+          }, null, 'none').then((request) => {
             nock('https://thisoneisallowed.com')
             .get('/')
             .reply(200, request);
@@ -224,7 +224,7 @@ describe('request Uri features', () => {
           .expect((response) => {
             const expected = parse('https://client.example.com/cb', true);
             const actual = parse(response.headers.location, true);
-            ['protocol', 'host', 'pathname'].forEach(attr => {
+            ['protocol', 'host', 'pathname'].forEach((attr) => {
               expect(actual[attr]).to.equal(expected[attr]);
             });
             expect(actual.query).to.have.property('code');
@@ -237,7 +237,7 @@ describe('request Uri features', () => {
             client_id: 'client',
             response_type: 'code',
             redirect_uri: 'https://client.example.com/cb'
-          }, null, 'none').then(request => {
+          }, null, 'none').then((request) => {
             nock('https://thisoneisallowed.com#hash234')
             .get('/')
             .reply(200, request);
@@ -257,7 +257,7 @@ describe('request Uri features', () => {
           .expect((response) => {
             const expected = parse('https://client.example.com/cb', true);
             const actual = parse(response.headers.location, true);
-            ['protocol', 'host', 'pathname'].forEach(attr => {
+            ['protocol', 'host', 'pathname'].forEach((attr) => {
               expect(actual[attr]).to.equal(expected[attr]);
             });
             expect(actual.query).to.have.property('code');
@@ -384,7 +384,7 @@ describe('request Uri features', () => {
           response_type: 'code',
           request: 'request inception',
           redirect_uri: 'https://client.example.com/cb'
-        }, null, 'none').then(request => {
+        }, null, 'none').then((request) => {
           nock('https://client.example.com')
           .get('/request')
           .reply(200, request);
@@ -418,7 +418,7 @@ describe('request Uri features', () => {
           response_type: 'code',
           request_uri: 'request uri inception',
           redirect_uri: 'https://client.example.com/cb'
-        }, null, 'none').then(request => {
+        }, null, 'none').then((request) => {
           nock('https://client.example.com')
           .get('/request')
           .reply(200, request);
@@ -452,7 +452,7 @@ describe('request Uri features', () => {
           client_id: 'client',
           response_type: 'id_token',
           redirect_uri: 'https://client.example.com/cb'
-        }, null, 'none').then(request => {
+        }, null, 'none').then((request) => {
           nock('https://client.example.com')
           .get('/request')
           .reply(200, request);
@@ -486,7 +486,7 @@ describe('request Uri features', () => {
           client_id: 'client2',
           response_type: 'code',
           redirect_uri: 'https://client.example.com/cb'
-        }, null, 'none').then(request => {
+        }, null, 'none').then((request) => {
           nock('https://client.example.com')
           .get('/request')
           .reply(200, request);
@@ -549,7 +549,7 @@ describe('request Uri features', () => {
           client_id: 'client-with-HS-sig',
           response_type: 'code',
           redirect_uri: 'https://client.example.com/cb'
-        }, null, 'none').then(request => {
+        }, null, 'none').then((request) => {
           nock('https://client.example.com')
           .get('/request')
           .reply(200, request);
@@ -585,7 +585,7 @@ describe('request Uri features', () => {
           client_id: 'client',
           response_type: 'code',
           redirect_uri: 'https://client.example.com/cb'
-        }, key, 'HS256').then(request => {
+        }, key, 'HS256').then((request) => {
           nock('https://client.example.com')
           .get('/request')
           .reply(200, request);

@@ -34,7 +34,7 @@ class RedisAdapter {
   }
 
   find(id) {
-    return client.hgetall(this.key(id)).then(data => {
+    return client.hgetall(this.key(id)).then((data) => {
       if (_.isEmpty(data)) {
         return undefined;
       } else if (data.dump !== undefined) {

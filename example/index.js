@@ -61,7 +61,7 @@ settings.config.findById = Account.findById;
 Promise.all([
   LIB.asKeyStore({ keys: settings.certificates }),
   LIB.asKeyStore({ keys: settings.integrityKeys }),
-]).then(results => {
+]).then((results) => {
   const keystore = results[0];
   const tokenIntegrity = results[1];
 

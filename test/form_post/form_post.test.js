@@ -12,7 +12,7 @@ describe('/auth', () => {
 
   provider.setupClient();
 
-  ['get', 'post'].forEach(verb => {
+  ['get', 'post'].forEach((verb) => {
     describe(`${verb} response_mode=form_post`, () => {
       context('logged in', () => {
         before(agent.login);

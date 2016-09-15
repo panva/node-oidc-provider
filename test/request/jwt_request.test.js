@@ -30,7 +30,7 @@ describe('request parameter features', () => {
     });
   });
 
-  ['get', 'post'].forEach(verb => {
+  ['get', 'post'].forEach((verb) => {
     describe(`${route} ${verb} passing request parameters as JWTs`, () => {
       before(agent.login);
       after(agent.logout);
@@ -57,7 +57,7 @@ describe('request parameter features', () => {
         .expect((response) => {
           const expected = parse('https://client.example.com/cb', true);
           const actual = parse(response.headers.location, true);
-          ['protocol', 'host', 'pathname'].forEach(attr => {
+          ['protocol', 'host', 'pathname'].forEach((attr) => {
             expect(actual[attr]).to.equal(expected[attr]);
           });
           expect(actual.query).to.have.property('code');
@@ -86,7 +86,7 @@ describe('request parameter features', () => {
         .expect((response) => {
           const expected = parse('https://client.example.com/cb', true);
           const actual = parse(response.headers.location, true);
-          ['protocol', 'host', 'pathname'].forEach(attr => {
+          ['protocol', 'host', 'pathname'].forEach((attr) => {
             expect(actual[attr]).to.equal(expected[attr]);
           });
           expect(actual.query).to.have.property('code');
@@ -327,7 +327,7 @@ describe('request parameter features', () => {
         .expect((response) => {
           const expected = parse('https://client.example.com/cb', true);
           const actual = parse(response.headers.location, true);
-          ['protocol', 'host', 'pathname'].forEach(attr => {
+          ['protocol', 'host', 'pathname'].forEach((attr) => {
             expect(actual[attr]).to.equal(expected[attr]);
           });
           expect(actual.query).to.have.property('code');

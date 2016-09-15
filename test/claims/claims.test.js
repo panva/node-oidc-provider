@@ -8,7 +8,7 @@ const { expect } = require('chai');
 const j = JSON.stringify;
 const route = '/auth';
 
-['get', 'post'].forEach(verb => {
+['get', 'post'].forEach((verb) => {
   describe(`claimsParameter via ${verb} ${route}`, () => {
     const { provider, agent, AuthorizationRequest, getSession, wrap } = bootstrap(__dirname);
     provider.setupClient();

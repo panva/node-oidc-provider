@@ -112,9 +112,9 @@ describe('JSON Web Token (JWT) RFC7519 implementation', () => {
       const key = keystore.get({ kty: 'oct' });
       return JWT.sign({ data: true, nbf: epochTime() + 3600 }, key, 'HS256')
       .then(jwt => JWT.verify(jwt, key))
-      .then(valid => {
+      .then((valid) => {
         expect(valid).not.to.be.ok;
-      }, err => {
+      }, (err) => {
         expect(err).to.be.ok;
         expect(err).to.have.property('name', 'AssertionError');
         expect(err).to.have.property('message', 'jwt not active yet');
@@ -133,9 +133,9 @@ describe('JSON Web Token (JWT) RFC7519 implementation', () => {
       const key = keystore.get({ kty: 'oct' });
       return JWT.sign({ data: true, nbf: 'not a nbf' }, key, 'HS256')
       .then(jwt => JWT.verify(jwt, key))
-      .then(valid => {
+      .then((valid) => {
         expect(valid).not.to.be.ok;
-      }, err => {
+      }, (err) => {
         expect(err).to.be.ok;
         expect(err).to.have.property('name', 'AssertionError');
         expect(err).to.have.property('message', 'invalid nbf value');
@@ -148,9 +148,9 @@ describe('JSON Web Token (JWT) RFC7519 implementation', () => {
         noTimestamp: true
       })
       .then(jwt => JWT.verify(jwt, key))
-      .then(valid => {
+      .then((valid) => {
         expect(valid).not.to.be.ok;
-      }, err => {
+      }, (err) => {
         expect(err).to.be.ok;
         expect(err).to.have.property('name', 'AssertionError');
         expect(err).to.have.property('message', 'jwt issued in the future');
@@ -173,9 +173,9 @@ describe('JSON Web Token (JWT) RFC7519 implementation', () => {
         noTimestamp: true
       })
       .then(jwt => JWT.verify(jwt, key))
-      .then(valid => {
+      .then((valid) => {
         expect(valid).not.to.be.ok;
-      }, err => {
+      }, (err) => {
         expect(err).to.be.ok;
         expect(err).to.have.property('name', 'AssertionError');
         expect(err).to.have.property('message', 'invalid iat value');
@@ -186,9 +186,9 @@ describe('JSON Web Token (JWT) RFC7519 implementation', () => {
       const key = keystore.get({ kty: 'oct' });
       return JWT.sign({ data: true, exp: epochTime() - 3600 }, key, 'HS256')
       .then(jwt => JWT.verify(jwt, key))
-      .then(valid => {
+      .then((valid) => {
         expect(valid).not.to.be.ok;
-      }, err => {
+      }, (err) => {
         expect(err).to.be.ok;
         expect(err).to.have.property('name', 'AssertionError');
         expect(err).to.have.property('message', 'jwt expired');
@@ -207,9 +207,9 @@ describe('JSON Web Token (JWT) RFC7519 implementation', () => {
       const key = keystore.get({ kty: 'oct' });
       return JWT.sign({ data: true, exp: 'not an exp' }, key, 'HS256')
       .then(jwt => JWT.verify(jwt, key))
-      .then(valid => {
+      .then((valid) => {
         expect(valid).not.to.be.ok;
-      }, err => {
+      }, (err) => {
         expect(err).to.be.ok;
         expect(err).to.have.property('name', 'AssertionError');
         expect(err).to.have.property('message', 'invalid exp value');

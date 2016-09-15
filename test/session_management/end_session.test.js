@@ -30,7 +30,7 @@ describe('[session_management]', () => {
       redirect_uri: 'https://client.example.com/cb'
     })
     .expect(302)
-    .expect(response => {
+    .expect((response) => {
       const { query: { id_token: idToken } } = parseUrl(response.headers.location.replace('#', '?'), true);
       this.idToken = idToken;
     });
@@ -171,7 +171,7 @@ describe('[session_management]', () => {
         .send({ xsrf: '123', logout: 'yes' })
         .type('form')
         .expect(302)
-        .expect(response => {
+        .expect((response) => {
           expect(response.headers['set-cookie']).to.contain('_state.client=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT; httponly');
           expect(adapter.destroy.called).to.be.true;
           expect(adapter.destroy.withArgs(sessionId).calledOnce).to.be.true;
@@ -190,7 +190,7 @@ describe('[session_management]', () => {
         .send({ xsrf: '123' })
         .type('form')
         .expect(302)
-        .expect(response => {
+        .expect((response) => {
           expect(response.headers['set-cookie']).to.contain('_state.client=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT; httponly');
           expect(response.headers['set-cookie']).to.contain('_state.client.sig=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT; httponly');
           expect(session.authorizations.client).to.be.undefined;

@@ -80,7 +80,7 @@ module.exports = function testHelper(dir, basename, mountTo) {
 
     cookies.push(`_state.${client.client_id}=; path=/; expires=${expire.toGMTString()}; httponly`);
     cookies.push(`_state.${client.client_id}.sig=; path=/; expires=${expire.toGMTString()}; httponly`);
-    additionalClients.forEach(clientId => {
+    additionalClients.forEach((clientId) => {
       cookies.push(`_state.${clientId}=; path=/; expires=${expire.toGMTString()}; httponly`);
       cookies.push(`_state.${clientId}.sig=; path=/; expires=${expire.toGMTString()}; httponly`);
     });
@@ -101,7 +101,7 @@ module.exports = function testHelper(dir, basename, mountTo) {
 
     const sid = uuid();
     session.authorizations = { [client.client_id]: { sid } };
-    additionalClients.forEach(clientId => { session.authorizations[clientId] = { sid: uuid() }; });
+    additionalClients.forEach((clientId) => { session.authorizations[clientId] = { sid: uuid() }; });
     this.clientSessionId = sid;
 
     if (provider.configuration('features.sessionManagement')) {
@@ -122,24 +122,24 @@ module.exports = function testHelper(dir, basename, mountTo) {
     Object.assign(this, parameters);
 
     Object.defineProperty(this, 'validateClientLocation', {
-      value: response => {
+      value: (response) => {
         const expected = parse(this.redirect_uri, true);
         const actual = parse(response.headers.location, true);
-        ['protocol', 'host', 'pathname'].forEach(attr => {
+        ['protocol', 'host', 'pathname'].forEach((attr) => {
           expect(actual[attr]).to.equal(expected[attr]);
         });
       },
     });
 
     Object.defineProperty(this, 'validateState', {
-      value: response => {
+      value: (response) => {
         const { query: { state } } = parse(response.headers.location, true);
         expect(state).to.equal(this.state);
       },
     });
 
     Object.defineProperty(this, 'validateInteractionRedirect', {
-      value: response => {
+      value: (response) => {
         const { hostname, search, query } = parse(response.headers.location);
         expect(hostname).to.be.null;
         expect(search).to.be.null;
@@ -169,7 +169,7 @@ module.exports = function testHelper(dir, basename, mountTo) {
   }
 
   AuthorizationRequest.prototype.validateInteractionError = function (expectedError, expectedReason) {
-    return response => {
+    return (response) => {
       const setCookie = response.headers['set-cookie'][1];
       const { value: interaction } = new Cookie(setCookie);
       const { interaction: { error, reason } } = JSON.parse(interaction);
@@ -193,7 +193,7 @@ module.exports = function testHelper(dir, basename, mountTo) {
       absolute = all;
     }
 
-    return response => {
+    return (response) => {
       const { query } = parse(response.headers.location, true);
       if (absolute) {
         expect(query).to.have.keys(keys);
@@ -204,7 +204,7 @@ module.exports = function testHelper(dir, basename, mountTo) {
   };
 
   AuthorizationRequest.prototype.validateError = function (expected) {
-    return response => {
+    return (response) => {
       const { query: { error } } = parse(response.headers.location, true);
       if (expected.exec) {
         expect(error).to.match(expected);
@@ -215,7 +215,7 @@ module.exports = function testHelper(dir, basename, mountTo) {
   };
 
   AuthorizationRequest.prototype.validateErrorDescription = function (expected) {
-    return response => {
+    return (response) => {
       const { query: { error_description } } = parse(response.headers.location, true);
       if (expected.exec) {
         expect(error_description).to.match(expected);
@@ -230,7 +230,7 @@ module.exports = function testHelper(dir, basename, mountTo) {
 
     const add = pass || client;
     before('adding client', () => {
-      return provider.addClient(add).catch(err => {
+      return provider.addClient(add).catch((err) => {
         throw err;
       });
     });

@@ -125,7 +125,7 @@ describe('signatures', () => {
         code: yield ac.save()
       })
       .expect(200)
-      .expect(response => {
+      .expect((response) => {
         this.idToken = response.body.id_token;
       });
     });
@@ -203,7 +203,7 @@ describe('signatures', () => {
         code: yield ac.save()
       })
       .expect(200)
-      .expect(response => {
+      .expect((response) => {
         this.idToken = response.body.id_token;
       });
     });

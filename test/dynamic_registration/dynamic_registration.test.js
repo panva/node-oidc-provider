@@ -7,14 +7,14 @@ const base64url = require('base64url');
 
 function validateError(error) {
   const assert = error.exec ? 'match' : 'equal';
-  return response => {
+  return (response) => {
     expect(response.body.error).to[assert](error);
   };
 }
 
 function validateErrorDescription(description) {
   const assert = description.exec ? 'match' : 'equal';
-  return response => {
+  return (response) => {
     expect(response.body.error_description).to[assert](description);
   };
 }
@@ -118,7 +118,7 @@ describe('registration features', () => {
         Client.purge(); // wipe the cache
 
         return Client.find(response.body.client_id)
-        .then(client => {
+        .then((client) => {
           expect(client).to.be.ok;
         })
         .then(done)
@@ -218,7 +218,7 @@ describe('registration features', () => {
           conf.features.registration = { initialAccessToken: true };
 
           const iat = new (provider.InitialAccessToken)({});
-          return iat.save().then(value => {
+          return iat.save().then((value) => {
             this.token = value;
           });
         });
@@ -284,7 +284,7 @@ describe('registration features', () => {
       .send({
         redirect_uris: ['https://client.example.com/cb']
       })
-      .expect(response => {
+      .expect((response) => {
         this.clientId = response.body.client_id;
         this.token = response.body.registration_access_token;
         this.registrationResponse = response.body;

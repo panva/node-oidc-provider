@@ -21,7 +21,7 @@ jose.JWK.asKeyStore({ keys: [
     x: 'FWZ9rSkLt6Dx9E3pxLybhdM6xgR5obGsj5_pqmnz5J4',
     y: '_n8G69C-A2Xl4xUW2lF0i8ZGZnk_KPYrhv4GbTGu5G4',
   }
-] }).then(keystore => {
+] }).then((keystore) => {
   global.keystore = keystore;
 }).then(() => jose.JWK.createKeyStore().generate('oct', 512, { alg: 'HS512' }))
 .then((key) => {
@@ -30,7 +30,7 @@ jose.JWK.asKeyStore({ keys: [
 .then(() => {
   require('../node_modules/.bin/_mocha'); // eslint-disable-line global-require
 })
-.catch(error => {
+.catch((error) => {
   console.error(error); // eslint-disable-line no-console
   process.exit(1);
 });

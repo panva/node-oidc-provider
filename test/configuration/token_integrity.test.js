@@ -19,7 +19,7 @@ describe('configuration.tokenIntegrity', () => {
   });
 
   it('works with the exported.asKeyStore fn', function () {
-    return asKeyStore({ keys: [] }).then(keystore => {
+    return asKeyStore({ keys: [] }).then((keystore) => {
       new Provider('http://localhost', { // eslint-disable-line no-new
         tokenIntegrity: keystore
       });

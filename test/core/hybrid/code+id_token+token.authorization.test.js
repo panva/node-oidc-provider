@@ -11,7 +11,7 @@ describe('HYBRID code+id_token+token', () => {
   provider.setupClient();
 
 
-  ['get', 'post'].forEach(verb => {
+  ['get', 'post'].forEach((verb) => {
     describe(`${verb} ${route} with session`, () => {
       before(agent.login);
 

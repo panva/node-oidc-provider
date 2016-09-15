@@ -6,7 +6,7 @@ const _ = require('lodash');
 
 const emitter = new EventEmitter();
 let DB;
-let connecting = Mongo.connect(process.env.MONGODB_URI).then(db => {
+let connecting = Mongo.connect(process.env.MONGODB_URI).then((db) => {
   DB = db;
   connecting = undefined;
   emitter.emit('ready');
@@ -44,11 +44,11 @@ class MongoAdapter {
 
   destroy(id) {
     return this.coll().findOneAndDelete({ _id: id })
-      .then(found => {
+      .then((found) => {
         if (found.value && found.value.grantId) {
           const promises = [];
 
-          collections.forEach(name => {
+          collections.forEach((name) => {
             promises.push(this.coll(name).deleteMany({ grantId: found.value.grantId }));
           });
 

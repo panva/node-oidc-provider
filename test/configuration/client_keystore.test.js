@@ -70,7 +70,7 @@ describe('client keystore refresh', () => {
       .reply(302, '/somewhere');
 
     const client = yield provider.Client.find('client');
-    return client.keystore.refresh().then(fail, err => {
+    return client.keystore.refresh().then(fail, (err) => {
       expect(err).to.be.an('error');
       expect(err.message).to.match(/jwks_uri could not be refreshed/);
       expect(err.message).to.match(/unexpected jwks_uri statusCode, expected 200, got 302/);
@@ -83,7 +83,7 @@ describe('client keystore refresh', () => {
       .reply(200, 'not json');
 
     const client = yield provider.Client.find('client');
-    return client.keystore.refresh().then(fail, err => {
+    return client.keystore.refresh().then(fail, (err) => {
       expect(err).to.be.an('error');
       expect(err.message).to.match(/jwks_uri could not be refreshed/);
       expect(err.message).to.match(/Unexpected token/);
@@ -96,7 +96,7 @@ describe('client keystore refresh', () => {
       .reply(200, '{"keys": {}}');
 
     const client = yield provider.Client.find('client');
-    return client.keystore.refresh().then(fail, err => {
+    return client.keystore.refresh().then(fail, (err) => {
       expect(err).to.be.an('error');
       expect(err.message).to.match(/jwks_uri could not be refreshed/);
       expect(err.message).to.match(/invalid jwks_uri response/);
