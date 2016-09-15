@@ -3,10 +3,9 @@
 [![build][travis-image]][travis-url] [![dependencies][david-image]][david-url] [![codecov][codecov-image]][codecov-url] [![npm][npm-image]][npm-url] [![licence][licence-image]][licence-url]
 
 oidc-provider is an OpenID Provider implementation of [OpenID Connect][openid-connect]. It allows to
-export a complete Koa.js OpenID Provider implementation which you can mount to your existing Koa.js
-applications or run standalone. This implementation does not force you into any data models or
-persistance stores, instead it expects you to provide an adapter. A generic in memory adapter is
-available to get you started.
+export a complete express and koa mountable OpenID Provider implementation. This implementation does
+not force you into any data models or persistance stores, instead it expects you to provide an
+adapter. A generic in memory adapter is available to get you started.
 
 The provided examples also implement simple user interaction views but those are not forced on you
 as they do not come as part of the exported application, instead you are encouraged to implement
@@ -100,6 +99,7 @@ An example client using this provider is available [here][heroku-example-client]
 (uses [openid-client][openid-client]).
 
 Otherwise just install the package in your app and follow the [example use](example/index.js).
+[express how-to](example/express.js).
 ```
 $ npm install oidc-provider --save
 ```
@@ -160,9 +160,6 @@ const configuration = { features: { discovery: Boolean[true] } };
 ```
 Exposes `/.well-known/webfinger` and `/.well-known/openid-configuration` endpoints. Contents of the
 latter reflect your actual configuration, i.e. available claims, features and so on.
-Note: when using koa-mount to slap the Provider on to an existing application you may want to have
-these endpoints relative from your root, to see how (using koa-rewrite) check the
-[example](example/index.js).
 
 
 **Authorization `claims` parameter**  
@@ -512,8 +509,8 @@ console.log('httpOptions %j', provider.defaultHttpOptions);
 
 
 ## Events
-The oidc-provider instance is an event emitter, `this` is always the instance. In events where `ctx`(koa
-request context) is passed to the listener `ctx.oidc` holds additional details like recognized
+The oidc-provider instance is an event emitter, `this` is always the instance. In events where `ctx`
+(request context) is passed to the listener `ctx.oidc` holds additional details like recognized
 parameters, loaded client or session.
 
 **server_error**  
