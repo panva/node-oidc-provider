@@ -50,7 +50,9 @@
     "server",
     "oidc",
     "oauth",
-    "oauth2"
+    "oauth2",
+    "express",
+    "koa"
   ],
   "scripts": {
     "coverage": "make coverage",
@@ -59,7 +61,7 @@
     "lint-fix": "eslint lib example test --fix",
     "heroku-postbuild": "npm install mongodb"
   },
-  "version": "0.10.2",
+  "version": "0.11.0",
   "files": [
     "lib"
   ]

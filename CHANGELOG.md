@@ -3,7 +3,7 @@
 Following semver, 1.0.0 will mark the first API stable release and commence of this file,
 until then please use the compare views of github for reference.
 
-- https://github.com/panva/node-oidc-provider/compare/v0.10.2...feature/o-eleven
+- https://github.com/panva/node-oidc-provider/compare/v0.10.2...v0.11.0
   - BREAKING: ALL previously issued tokens are incompatible with the new version, the length of the
   tokens is now shorter and does not contain any information about the token context or type, this
   is to make space for Token Integrity feature that brings much faster, cheaper token generation.
