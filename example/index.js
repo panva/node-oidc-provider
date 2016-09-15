@@ -28,7 +28,7 @@ const settings = require('./settings');
 
 const Provider = LIB.Provider;
 
-const issuer = process.env.ISSUER || 'http://localhost:3000/op';
+const issuer = process.env.ISSUER || 'http://localhost:3000';
 
 if (process.env.HEROKU) {
   app.proxy = true;
