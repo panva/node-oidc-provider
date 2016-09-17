@@ -71,6 +71,7 @@ The following specifications are implemented by oidc-provider.
 - [OpenID Connect Discovery 1.0 incorporating errata set 1][feature-discovery]
 - [OpenID Connect Dynamic Client Registration 1.0 incorporating errata set 1][feature-registration]
 - [OAuth 2.0 Form Post Response mode][feature-form-post]
+- [RFC7636 - Proof Key for Code Exchange by OAuth Public Clients][feature-pixy]
 - [RFC7009 - OAuth 2.0 Token revocation][feature-revocation]
 - [RFC7662 - OAuth 2.0 Token introspection][feature-introspection]
 
@@ -644,6 +645,7 @@ OP Config and OP Dynamic profiles of the OpenID Connect™ protocol.
 [feature-revocation]: https://tools.ietf.org/html/rfc7009
 [feature-introspection]: https://tools.ietf.org/html/rfc7662
 [feature-thumbprint]: https://tools.ietf.org/html/rfc7638
+[feature-pixy]: https://tools.ietf.org/html/rfc7636
 [client-metadata]: http://openid.net/specs/openid-connect-registration-1_0.html#ClientMetadata
 [core-claims-url]: http://openid.net/specs/openid-connect-core-1_0.html#ClaimsParameter
 [core-jwt-parameters-url]: http://openid.net/specs/openid-connect-core-1_0.html#JWTRequests
