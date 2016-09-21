@@ -58,7 +58,7 @@ describe('request Uri features', () => {
       after(agent.logout);
 
       it('works with signed by an actual alg', function* () {
-        const key = (yield Client.find('client-with-HS-sig')).keystore.get('clientSecret');
+        const key = (yield Client.find('client-with-HS-sig')).keystore.get({ alg: 'HS256' });
         return JWT.sign({
           client_id: 'client-with-HS-sig',
           response_type: 'code',
@@ -580,7 +580,7 @@ describe('request Uri features', () => {
         const spy = sinon.spy();
         provider.once('authorization.error', spy);
 
-        const key = (yield Client.find('client-with-HS-sig')).keystore.get('clientSecret');
+        const key = (yield Client.find('client-with-HS-sig')).keystore.get({ alg: 'HS256' });
         return JWT.sign({
           client_id: 'client',
           response_type: 'code',

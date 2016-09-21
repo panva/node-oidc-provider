@@ -36,7 +36,7 @@ describe('request parameter features', () => {
       after(agent.logout);
 
       it('works with signed by none', function* () {
-        const key = (yield Client.find('client-with-HS-sig')).keystore.get('clientSecret');
+        const key = (yield Client.find('client-with-HS-sig')).keystore.get({ alg: 'HS256' });
         return JWT.sign({
           client_id: 'client-with-HS-sig',
           response_type: 'code',
@@ -276,7 +276,7 @@ describe('request parameter features', () => {
         const spy = sinon.spy();
         provider.once('authorization.error', spy);
 
-        const key = (yield Client.find('client-with-HS-sig')).keystore.get('clientSecret');
+        const key = (yield Client.find('client-with-HS-sig')).keystore.get({ alg: 'HS256' });
         return JWT.sign({
           client_id: 'client',
           response_type: 'code',
@@ -305,7 +305,7 @@ describe('request parameter features', () => {
       });
 
       it('handles unrecognized parameters', function* () {
-        const key = (yield Client.find('client-with-HS-sig')).keystore.get('clientSecret');
+        const key = (yield Client.find('client-with-HS-sig')).keystore.get({ alg: 'HS256' });
         return JWT.sign({
           client_id: 'client-with-HS-sig',
           unrecognized: true,

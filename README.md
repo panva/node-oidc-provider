@@ -52,12 +52,12 @@ The following specifications are implemented by oidc-provider.
     - Normal Claims
     - Aggregated Claims
     - Distributed Claims
-  - UserInfo Endpoint including
-    - Signing (Asymmetric and Symmetric Signatures)
-    - Encryption (RSA, Elliptic Curve)
+  - UserInfo Endpoint and ID Tokens including
+    - Signing - Asymmetric and Symmetric
+    - Encryption - Asymmetric and Symmetric
   - Passing a Request Object by Value or Reference including
-    - Signing (Asymmetric and Symmetric Signatures)
-    - Encryption (RSA, Elliptic Curve)
+    - Signing - Asymmetric and Symmetric
+    - Encryption - Asymmetric using RSA or Elliptic Curve
   - Subject Identifier Types
     - public
     - pairwise
@@ -299,7 +299,7 @@ const oidc = new Provider('http://localhost:3000', {
 ```
 
 
-### Keys (for signing and encryption)
+### Keys (for asymmetric signatures and encryption)
 oidc-provider expects a jose.JWK.KeyStore populated with your keys passed in with the configuration,
 at the very least you must add a RS256 sig capable key, else your OP would be invalid. For
 convenience the relevant node-jose methods  are exposed next to the Provider - asKeyStore and createKeyStore.
