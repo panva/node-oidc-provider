@@ -4,6 +4,7 @@ const bootstrap = require('../test_helper');
 const { expect } = require('chai');
 const { parse } = require('url');
 const url = require('url');
+const base64url = require('base64url');
 const jose = require('node-jose');
 const { privKey } = require('./encryption.config');
 const JWT = require('../../lib/helpers/jwt');
@@ -15,12 +16,10 @@ const route = '/auth';
     const { provider, agent, AuthorizationRequest, wrap } = bootstrap(__dirname);
     provider.setupClient();
 
-
     before(function () {
       return jose.JWK.asKeyStore(privKey).then((keystore) => { this.keystore = keystore; });
     });
     before(agent.login);
-
 
     describe('encrypted authorization results', () => {
       before(function () {
@@ -159,6 +158,45 @@ const route = '/auth';
           expect(query).to.have.property('error', 'invalid_client_metadata');
           expect(query).to.have.property('error_description', 'no suitable encryption key found (ECDH-ES)');
         });
+    });
+
+    describe('symmetric encryption', () => {
+      provider.setupClient({
+        client_id: 'clientSymmetric',
+        client_secret: 'secret',
+        redirect_uris: ['https://client.example.com/cb'],
+        response_types: ['id_token'],
+        grant_types: ['implicit'],
+        id_token_encrypted_response_alg: 'PBES2-HS384+A192KW',
+      });
+
+      before(function () {
+        const auth = new AuthorizationRequest({
+          response_type: 'id_token',
+          scope: 'openid',
+          client_id: 'clientSymmetric',
+        });
+
+        return wrap({ agent, route, verb, auth })
+          .expect(auth.validateFragment)
+          .expect((response) => {
+            const { query } = url.parse(response.headers.location, true);
+            this.id_token = query.id_token;
+          });
+      });
+
+      it('symmetric encryption makes client secret mandatory', function () {
+        expect(provider.Client.needsSecret({
+          token_endpoint_auth_method: 'none',
+          id_token_encrypted_response_alg: 'A128GCMKW',
+        })).to.be.true;
+      });
+
+      it('responds encrypted with i.e. PBES2 derived key', function () {
+        expect(this.id_token).to.be.ok;
+        expect(this.id_token.split('.')).to.have.lengthOf(5);
+        expect(JSON.parse(base64url.decode(this.id_token.split('.')[0]))).to.have.property('alg', 'PBES2-HS384+A192KW');
+      });
     });
   });
 });
