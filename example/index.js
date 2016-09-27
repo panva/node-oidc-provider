@@ -1,5 +1,6 @@
-/* eslint-disable no-console */
 'use strict';
+
+/* eslint-disable no-console */
 
 const LIB = require('../lib');
 const path = require('path');

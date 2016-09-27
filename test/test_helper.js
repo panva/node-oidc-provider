@@ -1,4 +1,5 @@
 'use strict';
+
 /* eslint-disable no-underscore-dangle */
 
 process.env.NODE_ENV = process.env.NODE_ENV || 'test';
@@ -40,7 +41,7 @@ module.exports = function testHelper(dir, basename, mountTo) {
     dir,
     base: `${basename || path.basename(dir)}.config.js`,
   });
-  const { config, client } = require(conf); // eslint-disable-line global-require
+  const { config, client } = require(conf); // eslint-disable-line
   const additionalClients = [];
   config.adapter = TestAdapter;
   config.findById = Account.findById;

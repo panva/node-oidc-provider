@@ -1,5 +1,6 @@
-/* eslint-disable no-console */
 'use strict';
+
+/* eslint-disable no-console */
 
 const oidc = require('../../lib');
 const MongoAdapter = require('./mongodb');

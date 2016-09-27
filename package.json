@@ -24,7 +24,7 @@
     "co-mocha": "^1.1.2",
     "cookiejar": "*",
     "eslint": "^3.0.0",
-    "eslint-config-airbnb-base": "^7.0.0",
+    "eslint-config-airbnb-base": "^8.0.0",
     "eslint-plugin-import": "^1.0.0",
     "istanbul": "^0.4.3",
     "koa-ejs": "^3.0.0",

@@ -1,4 +1,5 @@
 'use strict';
+
 /* eslint-disable no-new */
 
 const jose = require('node-jose');
