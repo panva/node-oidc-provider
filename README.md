@@ -524,7 +524,7 @@ oidc.on(`'authorization.accepted', function (ctx) { }`)
 Emitted with every syntactically correct authorization request pending resolving.
 
 **interaction.started**  
-oidc.on(`'interaction.started', function (ctx) { }`)  
+oidc.on(`'interaction.started', function (detail, ctx) { }`)  
 Emitted when interaction is being requested from the end-user.
 
 **interaction.ended**  
