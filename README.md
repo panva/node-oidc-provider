@@ -519,10 +519,22 @@ oidc.on(`'server_error', function (error, ctx) { }`)
 Emitted when an exception is thrown or promise rejected from either the Provider or your provided
 adapters. If it comes from the library you should probably report it.
 
+**authorization.accepted**  
+oidc.on(`'authorization.accepted', function (ctx) { }`)  
+Emitted with every syntactically correct authorization request pending resolving.
+
+**interaction.started**  
+oidc.on(`'interaction.started', function (ctx) { }`)  
+Emitted when interaction is being requested from the end-user.
+
+**interaction.ended**  
+oidc.on(`'interaction.ended', function (ctx) { }`)  
+Emitted when interaction has been resolved and the authorization request continues being processed.
+
 **authorization.success**  
 oidc.on(`'authorization.success', function (ctx) { }`)  
-Emitted with every successful authorization request. Useful i.e. for collecting metrics or
-triggering any action you need to execute after succeeded authorization.
+Emitted with every successfully completed authorization request. Useful i.e. for collecting metrics
+or triggering any action you need to execute after succeeded authorization.
 
 **authorization.error**  
 oidc.on(`'authorization.error', function (error, ctx) { }`)  
