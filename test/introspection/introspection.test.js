@@ -7,31 +7,12 @@ const { expect } = require('chai');
 const route = '/token/introspection';
 
 
-describe('introspection features', () => {
-  const { agent, provider } = bootstrap(__dirname);
-  const AccessToken = provider.AccessToken;
-  const ClientCredentials = provider.ClientCredentials;
-  const RefreshToken = provider.RefreshToken;
-  const AuthorizationCode = provider.AuthorizationCode;
+describe('introspection features', function () {
+  before(bootstrap(__dirname)); // agent, provider
 
-  provider.setupClient();
-  provider.setupClient({
-    client_id: 'client-pairwise',
-    client_secret: 'secret',
-    subject_type: 'pairwise',
-    redirect_uris: ['https://client.example.com/cb']
-  });
-  provider.setupClient({
-    client_id: 'client-introspection',
-    client_secret: 'secret',
-    redirect_uris: [],
-    response_types: [],
-    grant_types: [],
-  });
-
-  describe('enriched discovery', () => {
-    it('shows the url now', () => {
-      return agent.get('/.well-known/openid-configuration')
+  describe('enriched discovery', function () {
+    it('shows the url now', function () {
+      return this.agent.get('/.well-known/openid-configuration')
       .expect(200)
       .expect((response) => {
         expect(response.body).to.have.property('token_introspection_endpoint').and.matches(/token\/introspect/);
@@ -39,16 +20,16 @@ describe('introspection features', () => {
     });
   });
 
-  describe('/token/introspection', () => {
-    it('returns the properties for access token [no hint]', (done) => {
-      const at = new AccessToken({
+  describe('/token/introspection', function () {
+    it('returns the properties for access token [no hint]', function (done) {
+      const at = new this.provider.AccessToken({
         accountId: 'accountId',
         clientId: 'client',
         scope: 'scope',
       });
 
       at.save().then((token) => {
-        agent.post(route)
+        this.agent.post(route)
         .auth('client', 'secret')
         .send({
           token
@@ -63,15 +44,15 @@ describe('introspection features', () => {
       });
     });
 
-    it('returns the properties for access token [correct hint]', (done) => {
-      const at = new AccessToken({
+    it('returns the properties for access token [correct hint]', function (done) {
+      const at = new this.provider.AccessToken({
         accountId: 'accountId',
         clientId: 'client',
         scope: 'scope',
       });
 
       at.save().then((token) => {
-        agent.post(route)
+        this.agent.post(route)
         .auth('client', 'secret')
         .send({
           token,
@@ -87,15 +68,15 @@ describe('introspection features', () => {
       });
     });
 
-    it('returns the properties for access token [wrong hint]', (done) => {
-      const at = new AccessToken({
+    it('returns the properties for access token [wrong hint]', function (done) {
+      const at = new this.provider.AccessToken({
         accountId: 'accountId',
         clientId: 'client',
         scope: 'scope',
       });
 
       at.save().then((token) => {
-        agent.post(route)
+        this.agent.post(route)
         .auth('client', 'secret')
         .send({
           token,
@@ -111,15 +92,15 @@ describe('introspection features', () => {
       });
     });
 
-    it('returns the properties for access token [unrecognized hint]', (done) => {
-      const at = new AccessToken({
+    it('returns the properties for access token [unrecognized hint]', function (done) {
+      const at = new this.provider.AccessToken({
         accountId: 'accountId',
         clientId: 'client',
         scope: 'scope',
       });
 
       at.save().then((token) => {
-        agent.post(route)
+        this.agent.post(route)
         .auth('client', 'secret')
         .send({
           token,
@@ -135,15 +116,15 @@ describe('introspection features', () => {
       });
     });
 
-    it('returns the properties for refresh token [no hint]', (done) => {
-      const rt = new RefreshToken({
+    it('returns the properties for refresh token [no hint]', function (done) {
+      const rt = new this.provider.RefreshToken({
         accountId: 'accountId',
         clientId: 'client',
         scope: 'scope',
       });
 
       rt.save().then((token) => {
-        agent.post(route)
+        this.agent.post(route)
         .auth('client', 'secret')
         .send({ token })
         .type('form')
@@ -155,15 +136,15 @@ describe('introspection features', () => {
       });
     });
 
-    it('returns the properties for refresh token [correct hint]', (done) => {
-      const rt = new RefreshToken({
+    it('returns the properties for refresh token [correct hint]', function (done) {
+      const rt = new this.provider.RefreshToken({
         accountId: 'accountId',
         clientId: 'client',
         scope: 'scope',
       });
 
       rt.save().then((token) => {
-        agent.post(route)
+        this.agent.post(route)
         .auth('client', 'secret')
         .send({ token, token_type_hint: 'refresh_token' })
         .type('form')
@@ -175,15 +156,15 @@ describe('introspection features', () => {
       });
     });
 
-    it('returns the properties for refresh token [wrong hint]', (done) => {
-      const rt = new RefreshToken({
+    it('returns the properties for refresh token [wrong hint]', function (done) {
+      const rt = new this.provider.RefreshToken({
         accountId: 'accountId',
         clientId: 'client',
         scope: 'scope',
       });
 
       rt.save().then((token) => {
-        agent.post(route)
+        this.agent.post(route)
         .auth('client', 'secret')
         .send({ token, token_type_hint: 'client_credentials' })
         .type('form')
@@ -195,15 +176,15 @@ describe('introspection features', () => {
       });
     });
 
-    it('returns the properties for refresh token [unrecognized hint]', (done) => {
-      const rt = new RefreshToken({
+    it('returns the properties for refresh token [unrecognized hint]', function (done) {
+      const rt = new this.provider.RefreshToken({
         accountId: 'accountId',
         clientId: 'client',
         scope: 'scope',
       });
 
       rt.save().then((token) => {
-        agent.post(route)
+        this.agent.post(route)
         .auth('client', 'secret')
         .send({ token, token_type_hint: 'foobar' })
         .type('form')
@@ -215,13 +196,13 @@ describe('introspection features', () => {
       });
     });
 
-    it('returns the properties for client credentials token [no hint]', (done) => {
-      const rt = new ClientCredentials({
+    it('returns the properties for client credentials token [no hint]', function (done) {
+      const rt = new this.provider.ClientCredentials({
         clientId: 'client'
       });
 
       rt.save().then((token) => {
-        agent.post(route)
+        this.agent.post(route)
         .auth('client', 'secret')
         .send({ token })
         .type('form')
@@ -233,13 +214,13 @@ describe('introspection features', () => {
       });
     });
 
-    it('returns the properties for client credentials token [correct hint]', (done) => {
-      const rt = new ClientCredentials({
+    it('returns the properties for client credentials token [correct hint]', function (done) {
+      const rt = new this.provider.ClientCredentials({
         clientId: 'client'
       });
 
       rt.save().then((token) => {
-        agent.post(route)
+        this.agent.post(route)
         .auth('client', 'secret')
         .send({ token, token_type_hint: 'client_credentials' })
         .type('form')
@@ -251,13 +232,13 @@ describe('introspection features', () => {
       });
     });
 
-    it('returns the properties for client credentials token [wrong hint]', (done) => {
-      const rt = new ClientCredentials({
+    it('returns the properties for client credentials token [wrong hint]', function (done) {
+      const rt = new this.provider.ClientCredentials({
         clientId: 'client'
       });
 
       rt.save().then((token) => {
-        agent.post(route)
+        this.agent.post(route)
         .auth('client', 'secret')
         .send({ token, token_type_hint: 'access_token' })
         .type('form')
@@ -269,13 +250,13 @@ describe('introspection features', () => {
       });
     });
 
-    it('returns the properties for client credentials token [unrecognized hint]', (done) => {
-      const rt = new ClientCredentials({
+    it('returns the properties for client credentials token [unrecognized hint]', function (done) {
+      const rt = new this.provider.ClientCredentials({
         clientId: 'client'
       });
 
       rt.save().then((token) => {
-        agent.post(route)
+        this.agent.post(route)
         .auth('client', 'secret')
         .send({ token, token_type_hint: 'foobar' })
         .type('form')
@@ -287,15 +268,15 @@ describe('introspection features', () => {
       });
     });
 
-    it('can be called by RS clients and uses the original subject_type', (done) => {
-      const rt = new RefreshToken({
+    it('can be called by RS clients and uses the original subject_type', function (done) {
+      const rt = new this.provider.RefreshToken({
         accountId: 'accountId',
         clientId: 'client-pairwise',
         scope: 'scope',
       });
 
       rt.save().then((token) => {
-        agent.post(route)
+        this.agent.post(route)
         .auth('client-introspection', 'secret')
         .send({ token })
         .type('form')
@@ -308,8 +289,8 @@ describe('introspection features', () => {
       });
     });
 
-    it('returns token-endpoint-like cache headers', () => {
-      return agent.post(route)
+    it('returns token-endpoint-like cache headers', function () {
+      return this.agent.post(route)
       .auth('client', 'secret')
       .send({})
       .type('form')
@@ -317,8 +298,8 @@ describe('introspection features', () => {
       .expect('cache-control', 'no-cache, no-store');
     });
 
-    it('validates token param presence', () => {
-      return agent.post(route)
+    it('validates token param presence', function () {
+      return this.agent.post(route)
       .auth('client', 'secret')
       .send({})
       .type('form')
@@ -329,8 +310,8 @@ describe('introspection features', () => {
       });
     });
 
-    it('responds with active=false for total bs', () => {
-      return agent.post(route)
+    it('responds with active=false for total bs', function () {
+      return this.agent.post(route)
       .auth('client', 'secret')
       .send({
         token: 'this is not even a token'
@@ -343,11 +324,11 @@ describe('introspection features', () => {
       });
     });
 
-    it('emits on (i.e. auth) error', () => {
+    it('emits on (i.e. auth) error', function () {
       const spy = sinon.spy();
-      provider.once('introspection.error', spy);
+      this.provider.once('introspection.error', spy);
 
-      return agent.post(route)
+      return this.agent.post(route)
       .auth('invalid', 'auth')
       .send({})
       .type('form')
@@ -358,8 +339,8 @@ describe('introspection features', () => {
     });
 
     it('ignores unsupported tokens', function* () {
-      const ac = new AuthorizationCode({ clientId: 'client' });
-      return agent.post(route)
+      const ac = new this.provider.AuthorizationCode({ clientId: 'client' });
+      return this.agent.post(route)
       .auth('client', 'secret')
       .send({
         token: yield ac.save()

@@ -24,9 +24,9 @@ class RedisAdapter {
     const key = this.key(id);
 
     return client.hget(key, 'grantId')
-    .then(grantId => client.lrange(grantKeyFor(grantId), 0, -1))
-    .then(tokens => Promise.all(_.map(tokens, token => client.del(token))))
-    .then(() => client.del(key));
+      .then(grantId => client.lrange(grantKeyFor(grantId), 0, -1))
+      .then(tokens => Promise.all(_.map(tokens, token => client.del(token))))
+      .then(() => client.del(key));
   }
 
   consume(id) {

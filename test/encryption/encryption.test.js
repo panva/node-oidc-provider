@@ -12,23 +12,22 @@ const JWT = require('../../lib/helpers/jwt');
 const route = '/auth';
 
 ['get', 'post'].forEach((verb) => {
-  describe(`[encryption] IMPLICIT id_token+token ${verb} ${route}`, () => {
-    const { provider, agent, AuthorizationRequest, wrap } = bootstrap(__dirname);
-    provider.setupClient();
+  describe(`[encryption] IMPLICIT id_token+token ${verb} ${route}`, function () {
+    before(bootstrap(__dirname)); // provider, this.agent, AuthorizationRequest, wrap
 
     before(function () {
       return jose.JWK.asKeyStore(privKey).then((keystore) => { this.keystore = keystore; });
     });
-    before(agent.login);
+    before(function () { return this.login(); });
 
-    describe('encrypted authorization results', () => {
+    describe('encrypted authorization results', function () {
       before(function () {
-        const auth = new AuthorizationRequest({
+        const auth = new this.AuthorizationRequest({
           response_type: 'id_token token',
           scope: 'openid'
         });
 
-        return wrap({ agent, route, verb, auth })
+        return this.wrap({ route, verb, auth })
         .expect(auth.validateFragment)
         .expect((response) => {
           const { query } = url.parse(response.headers.location, true);
@@ -49,7 +48,7 @@ const route = '/auth';
       });
 
       it('responds with an encrypted userinfo JWT', function (done) {
-        agent.get('/me')
+        this.agent.get('/me')
         .set('Authorization', `Bearer ${this.access_token}`)
         .expect(200)
         .expect('content-type', /application\/jwt/)
@@ -69,19 +68,19 @@ const route = '/auth';
         });
       });
 
-      describe('userinfo nested signed and encrypted', () => {
+      describe('userinfo nested signed and encrypted', function () {
         before(function* () {
-          const client = yield provider.Client.find('client');
+          const client = yield this.provider.Client.find('client');
           client.userinfoSignedResponseAlg = 'RS256';
         });
 
         after(function* () {
-          const client = yield provider.Client.find('client');
+          const client = yield this.provider.Client.find('client');
           client.userinfoSignedResponseAlg = undefined;
         });
 
         it('also handles nested encrypted and signed userinfo JWT', function (done) {
-          agent.get('/me')
+          this.agent.get('/me')
           .set('Authorization', `Bearer ${this.access_token}`)
           .expect(200)
           .expect('content-type', /application\/jwt/)
@@ -105,17 +104,16 @@ const route = '/auth';
       });
     });
 
-    describe('authorization request object encryption', () => {
-      it('works with signed by none', () => {
+    describe('authorization request object encryption', function () {
+      it('works with signed by none', function () {
         return JWT.sign({
           client_id: 'client',
           response_type: 'code',
           redirect_uri: 'https://client.example.com/cb'
         }, null, 'none').then(signed =>
-        JWT.encrypt(signed, provider.keystore.get(), 'A128CBC-HS256', 'RSA1_5')
+        JWT.encrypt(signed, instance(this.provider).keystore.get(), 'A128CBC-HS256', 'RSA1_5')
       ).then(encrypted =>
-        wrap({
-          agent,
+        this.wrap({
           route,
           verb,
           auth: {
@@ -139,16 +137,16 @@ const route = '/auth';
     });
 
     it('handles when no suitable encryption key is found', function* () {
-      const client = yield provider.Client.find('client');
+      const client = yield this.provider.Client.find('client');
 
       client.idTokenEncryptedResponseAlg = 'ECDH-ES';
 
-      const auth = new AuthorizationRequest({
+      const auth = new this.AuthorizationRequest({
         response_type: 'id_token token',
         scope: 'openid'
       });
 
-      return wrap({ agent, route, verb, auth })
+      return this.wrap({ route, verb, auth })
         .expect(() => {
           client.idTokenEncryptedResponseAlg = 'RSA1_5';
         })
@@ -160,24 +158,15 @@ const route = '/auth';
         });
     });
 
-    describe('symmetric encryption', () => {
-      provider.setupClient({
-        client_id: 'clientSymmetric',
-        client_secret: 'secret',
-        redirect_uris: ['https://client.example.com/cb'],
-        response_types: ['id_token'],
-        grant_types: ['implicit'],
-        id_token_encrypted_response_alg: 'PBES2-HS384+A192KW',
-      });
-
+    describe('symmetric encryption', function () {
       before(function () {
-        const auth = new AuthorizationRequest({
+        const auth = new this.AuthorizationRequest({
           response_type: 'id_token',
           scope: 'openid',
           client_id: 'clientSymmetric',
         });
 
-        return wrap({ agent, route, verb, auth })
+        return this.wrap({ route, verb, auth })
           .expect(auth.validateFragment)
           .expect((response) => {
             const { query } = url.parse(response.headers.location, true);
@@ -186,7 +175,7 @@ const route = '/auth';
       });
 
       it('symmetric encryption makes client secret mandatory', function () {
-        expect(provider.Client.needsSecret({
+        expect(this.provider.Client.needsSecret({
           token_endpoint_auth_method: 'none',
           id_token_encrypted_response_alg: 'A128GCMKW',
         })).to.be.true;

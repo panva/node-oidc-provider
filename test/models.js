@@ -16,7 +16,8 @@ class TestAdapter {
   }
 
   static for(name) {
-    return store.get(name);
+    if (store.has(name)) return store.get(name);
+    return new this(name);
   }
 
   get(key) {

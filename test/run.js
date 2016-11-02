@@ -1,6 +1,10 @@
 'use strict';
 
+/* eslint-disable no-console */
+
 const jose = require('node-jose');
+
+const NOOP = () => {};
 
 jose.JWK.asKeyStore({ keys: [
   {
@@ -23,14 +27,14 @@ jose.JWK.asKeyStore({ keys: [
   }
 ] }).then((keystore) => {
   global.keystore = keystore;
-}).then(() => jose.JWK.createKeyStore().generate('oct', 512, { alg: 'HS512' }))
-.then((key) => {
-  global.integrity = key.keystore;
 })
 .then(() => {
+  console.info = NOOP;
+  process.on('unhandledRejection', NOOP);
+  process.on('rejectionHandled', NOOP);
   require('../node_modules/.bin/_mocha'); // eslint-disable-line global-require
 })
 .catch((error) => {
-  console.error(error); // eslint-disable-line no-console
+  console.error(error);
   process.exit(1);
 });

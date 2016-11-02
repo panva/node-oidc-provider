@@ -4,29 +4,28 @@ const { expect } = require('chai');
 const sinon = require('sinon');
 const bootstrap = require('../test_helper');
 
-describe('custom response modes', () => {
-  const { provider, agent, AuthorizationRequest } = bootstrap(__dirname);
+describe('custom response modes', function () {
+  before(bootstrap(__dirname)); // provider, agent, AuthorizationRequest
 
-  provider.setupClient();
-  before(agent.login);
+  before(function () { return this.login(); });
 
-  it('allows for grant types to be added', () => {
+  it('allows for grant types to be added', function () {
     expect(() => {
-      provider.registerResponseMode('custom', function handler() {});
+      this.provider.registerResponseMode('custom', function handler() {});
     }).not.to.throw();
   });
 
   it('is used for success authorization results', function () {
     const spy = sinon.spy();
-    provider.registerResponseMode('custom', spy);
+    this.provider.registerResponseMode('custom', spy);
 
-    const auth = new AuthorizationRequest({
+    const auth = new this.AuthorizationRequest({
       response_type: 'code',
       scope: 'openid',
       response_mode: 'custom'
     });
 
-    return agent.get('/auth')
+    return this.agent.get('/auth')
       .query(auth)
       .expect(() => {
         expect(spy.calledOnce).to.be.true;
@@ -37,16 +36,16 @@ describe('custom response modes', () => {
 
   it('is used for error authorization results', function () {
     const spy = sinon.spy();
-    provider.registerResponseMode('custom', spy);
+    this.provider.registerResponseMode('custom', spy);
 
-    const auth = new AuthorizationRequest({
+    const auth = new this.AuthorizationRequest({
       response_type: 'code',
       scope: 'openid',
       response_mode: 'custom',
       prompt: 'none login' // causes invalid_request
     });
 
-    return agent.get('/auth')
+    return this.agent.get('/auth')
       .query(auth)
       .expect(() => {
         expect(spy.calledOnce).to.be.true;

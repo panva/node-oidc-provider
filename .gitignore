@@ -23,8 +23,10 @@ coverage
 # Compiled binary addons (http://nodejs.org/api/addons.html)
 build/Release
 
-# Dependency directory
+# Dependency directory and lockfiles
 node_modules
+yarn.lock
+npm-shrinkwrap.json
 
 # Optional npm cache directory
 .npm

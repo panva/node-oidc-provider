@@ -6,15 +6,14 @@ const { expect } = require('chai');
 
 const route = '/token';
 
-describe('grant_type=client_credentials', () => {
-  const { agent, provider } = bootstrap(__dirname);
-  provider.setupClient();
+describe('grant_type=client_credentials', function () {
+  before(bootstrap(__dirname)); // agent, provider
 
-  it('provides a Bearer client credentials token', () => {
+  it('provides a Bearer client credentials token', function () {
     const spy = sinon.spy();
-    provider.once('grant.success', spy);
+    this.provider.once('grant.success', spy);
 
-    return agent.post(route)
+    return this.agent.post(route)
     .auth('client', 'secret')
     .send({
       grant_type: 'client_credentials'

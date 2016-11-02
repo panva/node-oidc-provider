@@ -37,6 +37,7 @@ module.exports.config = {
     },
   },
   features: {
+    devInteractions: false,
     claimsParameter: true,
     clientCredentials: true,
     encryption: true,

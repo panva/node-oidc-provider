@@ -3,16 +3,12 @@ node_js:
   - lts/argon
   - lts/boron
   - stable
-env:
-  - INTEGRITY=on
-  - INTEGRITY=off
-  - INTEGRITY=random
 script:
   - make test-travis
 before_script:
   - sudo apt-get install bc
 after_script:
-  - test $INTEGRITY = "random" && npm install codecov
-  - test $INTEGRITY = "random" && ./node_modules/.bin/codecov
+  - npm install codecov
+  - ./node_modules/.bin/codecov
 notifications:
   email: false

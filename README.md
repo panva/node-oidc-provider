@@ -3,7 +3,7 @@
 [![build][travis-image]][travis-url] [![dependencies][david-image]][david-url] [![codecov][codecov-image]][codecov-url] [![npm][npm-image]][npm-url] [![licence][licence-image]][licence-url]
 
 oidc-provider is an OpenID Provider implementation of [OpenID Connect][openid-connect]. It allows to
-export a complete express and koa mountable OpenID Provider implementation. This implementation does
+export a complete mountable or standalone OpenID Provider implementation. This implementation does
 not force you into any data models or persistance stores, instead it expects you to provide an
 adapter. A generic in memory adapter is available to get you started.
 
@@ -13,61 +13,31 @@ your own unique-looking and functioning user flows.
 
 **Table of Contents**
 
-  * [Implemented specs &amp; features](#implemented-specs--features)
-  * [Get started](#get-started)
-  * [Configuration](#configuration)
-    * [Available Claims](#available-claims)
-    * [Features](#features)
-    * [Routes](#routes)
-    * [Certificates](#keys-for-signing-and-encryption)
-    * [Persistance](#persistance)
-    * [Accounts](#accounts)
-    * [Interaction](#interaction)
-    * [Clients](#clients)
-    * [Custom Grant Types](#custom-grant-types)
-    * [Custom Discovery Properties](#custom-discovery-properties)
-    * [OAuth Token Integrity](#oauth-token-integrity)
-    * [Changing HTTP request defaults](#changing-http-request-defaults)
-  * [Events](#events)
-  * [Certification](#certification)
+<!-- TOC START min:2 max:2 link:true update:true -->
+  - [Implemented specs & features](#implemented-specs--features)
+  - [Get started](#get-started)
+  - [Configuration and Initialization](#configuration-and-initialization)
+  - [Events](#events)
+  - [Certification](#certification)
+
+<!-- TOC END -->
 
 ## Implemented specs & features
 
 The following specifications are implemented by oidc-provider.
 
 - [OpenID Connect Core 1.0 incorporating errata set 1][feature-core]
-  - Authorization
-    - Authorization Code Flow
-    - Implicit Flow
-    - Hybrid Flow
-    - proper handling for parameters
-      - claims
-      - request
-      - request_uri
-      - acr_values
-      - id_token_hint
-      - max_age
-  - Scopes
-  - Claims
-    - Normal Claims
-    - Aggregated Claims
-    - Distributed Claims
+  - Authorization (Authorization Code Flow, Implicit Flow, Hybrid Flow)
   - UserInfo Endpoint and ID Tokens including
     - Signing - Asymmetric and Symmetric
     - Encryption - Asymmetric and Symmetric
   - Passing a Request Object by Value or Reference including
     - Signing - Asymmetric and Symmetric
     - Encryption - Asymmetric using RSA or Elliptic Curve
-  - Subject Identifier Types
-    - public
-    - pairwise
+  - Public and Pairwise Subject Identifier Types
   - Offline Access / Refresh Token Grant
   - Client Credentials Grant
-  - Client Authentication
-    - client_secret_basic
-    - client_secret_post
-    - client_secret_jwt
-    - private_key_jwt
+  - Client Authentication via (client_secret_basic, client_secret_post, client_secret_jwt or private_key_jwt)
 - [OpenID Connect Discovery 1.0 incorporating errata set 1][feature-discovery]
 - [OpenID Connect Dynamic Client Registration 1.0 incorporating errata set 1][feature-registration]
 - [OAuth 2.0 Form Post Response mode][feature-form-post]
@@ -76,12 +46,11 @@ The following specifications are implemented by oidc-provider.
 - [RFC7662 - OAuth 2.0 Token introspection][feature-introspection]
 
 The following drafts/experimental specifications are implemented by oidc-provider.
-- [OpenID Connect Session Management 1.0 - draft 26][feature-session-management]
+- [OpenID Connect Session Management 1.0 - draft 27][feature-session-management]
 - [OpenID Connect Back-Channel Logout 1.0 - draft 03][feature-backchannel-logout]
 - [RFC7592 - OAuth 2.0 Dynamic Client Registration Management Protocol (Update and Delete)][feature-registration-management]
 
-Updates to drafts and experimental specifications are released as MINOR versions.
-
+Updates to drafts and experimental specification versions are released as MINOR library versions.
 
 ## Get started
 To run and experiment with an example server, clone the oidc-provider repo and install the dependencies:
@@ -93,542 +62,47 @@ $ npm install
 $ node example
 ```
 Visiting `http://localhost:3000/.well-known/openid-configuration` will help you to discover how the
-example is [configured](example).
+example is [configured](/example).
 
 This example is also deployed and available for you to experiment with [here][heroku-example].
 An example client using this provider is available [here][heroku-example-client]
 (uses [openid-client][openid-client]).
 
-Otherwise just install the package in your app and follow the [example use](example/index.js).
-[express how-to](example/express.js).
+Otherwise just install the package in your app and follow the [example use](/example/index.js).
+It is easy to use with [express](/example/express.js) too.
 ```
 $ npm install oidc-provider --save
 ```
 
+### 1.0.0 Notice
+Migrating from 0.11.x release? Quite a bit has changed along the way to end up with a stable and
+sustainable API, see the [CHANGELOG](/CHANGELOG.md#version-100) for list of changes and how to
+change your existing 0.11 providers to 1.0
 
-## Configuration
+## Configuration and Initialization
+oidc-provider allows to be extended and configured in various ways to fit a variety of uses. See
+the [available configuration](/docs/configuration.md).
+
 ```js
 const Provider = require('oidc-provider').Provider;
 const issuer = 'http://localhost:3000';
 const configuration = {
-  // ... see available options below
+  // ... see available options /docs/configuration.md
 };
+const clients = [  ];
 
 const oidc = new Provider(issuer, configuration);
-```
-[Default configuration values](lib/helpers/defaults.js).
-
-### Available Claims
-By default oidc-provider pushes `acr, auth_time, iss, sub` claims to the id token. The `claims`
-configuration parameter can be used to define which claims belong to which scope. The value follows
-the following scheme:
-```js
-new Provider('http://localhost:3000', {
-  claims: {
-    [scope name]: {
-      [claim name]: null,
-      [claim name]: null,
-    },
-    [scope name]: {
-      [claim name]: null,
-    }
-  }
+oidc.initialize({ clients }).then(function () {
+  console.log(oidc.callback); // => express/nodejs style application callback (req, res)
+  console.log(oidc.app); // => koa1.x application
 });
 ```
-
-To follow the [Core-defined scope-to-claim mapping][core-account-claims] use:
-```js
-new Provider('http://localhost:3000', {
-  claims: {
-    address: { address: null },
-    email: { email: null, email_verified: null },
-    phone: { phone_number: null, phone_number_verified: null },
-    profile: {
-      birthdate: null, family_name: null, gender: null, given_name: null, locale: null,
-      middle_name: null, name: null, nickname: null, picture: null, preferred_username: null,
-      profile: null, updated_at: null, website: null, zoneinfo: null
-    }
-  }
-});
-```
-
-
-### Features
-
-**Discovery**  
-```js
-const configuration = { features: { discovery: Boolean[true] } };
-```
-Exposes `/.well-known/webfinger` and `/.well-known/openid-configuration` endpoints. Contents of the
-latter reflect your actual configuration, i.e. available claims, features and so on.
-
-
-**Authorization `claims` parameter**  
-```js
-const configuration = { features: { claimsParameter: Boolean[false] } };
-```
-Enables the use and validations of `claims` parameter as described in [Core 1.0][core-claims-url]
-and the discovery endpoint property `claims_parameter_supported` set to true.
-
-**Token endpoint `client_credentials` grant**  
-```js
-const configuration = { features: { clientCredentials: Boolean[false] } };
-```
-Enables `grant_type=client_credentials` to be used on the token endpoint. Note: client still has to
-be allowed this grant.  
-Hint: allowing this grant together with token introspection and revocation is an easy and elegant
-way to allow authorized access to some less sensitive backend actions.
-
-**Encryption features**  
-```js
-const configuration = { features: { encryption: Boolean[false] } };
-```
-... userinfo, idtoken and request parameter depending on client configuration
-
-
-**Refresh tokens for everyone**  
-```js
-const configuration = { features: { refreshToken: Boolean[false] } };
-```
-Every grant_type=authorization_code will result in refresh_token being issued (if a client also has
-refresh_token part of it's announced `grant_type`s). Also enables the `grant_type=refresh_token` for
-these clients.
-
-
-**Authorization `request` parameter**  
-```js
-const configuration = { features: { request: Boolean[false] } };
-```
-Enables the use and validations of `request` parameter as described in
-[Core 1.0][core-jwt-parameters-url] and the discovery endpoint property
-`request_parameter_supported` set to true.
-
-
-**Authorization `request_uri` parameter**  
-```js
-const configuration = { features: { requestUri: Boolean[false] } };
-```
-Enables the use and validations of `request_uri` parameter as described in
-[Core 1.0][core-jwt-parameters-url] and the discovery endpoint property
-`request_uri_parameter_supported` set to true.
-
-To also enable require_request_uri_registration do this:
-```js
-const configuration = { features: { requestUri: { requireRequestUriRegistration: true } } };
-```
-
-**Introspection endpoint**  
-```js
-const configuration = { features: { introspection: Boolean[false] } };
-```
-Enables the use of Introspection endpoint as described in [RFC7662][feature-introspection] for
-tokens of type AccessToken, ClientCredentials and RefreshToken. When enabled the
-token_introspection_endpoint property of the discovery endpoint is published, otherwise the property
-is not sent. The use of this endpoint is covered by the same authz mechanism as the regular token
-endpoint.
-
-This feature is a recommended way for Resource Servers to validate presented Bearer tokens, since
-the token endpoint access must be authorized it is recommended to setup a client for the RS to
-use. This client should be unusable for standard authorization flow, to set up such a client provide
-grant_types, response_types and redirect_uris as empty arrays.
-
-
-**Revocation endpoint**  
-```js
-const configuration = { features: { revocation: Boolean[false] } };
-```
-Enables the use of Revocation endpoint as described in [RFC7009][feature-revocation] for tokens of
-type AccessToken, ClientCredentials and RefreshToken. When enabled the
-token_revocation_endpoint property of the discovery endpoint is published, otherwise the property
-is not sent. The use of this endpoint is covered by the same authz mechanism as the regular token
-endpoint.
-
-
-**Session management features**  
-```js
-const configuration = { features: { sessionManagement: Boolean[false] } };
-```
-Enables features described in [Session Management 1.0 - draft 26][feature-session-management].
-
-
-**Back-Channel Logout features**  
-```js
-const configuration = { features: { sessionManagement: true, backchannelLogout: Boolean[false] } };
-```
-Enables features described in [Back-Channel Logout 1.0 - draft 03][feature-backchannel-logout].
-
-
-**Dynamic registration features**  
-```js
-const configuration = { features: { registration: Boolean[false] } };
-```
-Enables features described in [Dynamic Client Registration 1.0][feature-registration].
-
-To set a fixed Initial Access Token for the POST registration call use
-```js
-const configuration = { features: { registration: { initialAccessToken: 'tokenValue' } } };
-```
-
-To have the option of multiple Initial Access Tokens covered by your adapter use
-```js
-const configuration = { features: { registration: { initialAccessToken: true } } };
-
-// to add a token and retrieve it's value
-new (provider.InitialAccessToken)({}).then(console.log);
-```
-
-**Dynamic registration management features**  
-```js
-const configuration = { features: { registration: true, registrationManagement: Boolean[false] } };
-```
-Enables Update and Delete features described in
-[OAuth 2.0 Dynamic Client Registration Management Protocol][feature-registration-management].
-
-
-### Routes
-You can change the [default routes](lib/helpers/defaults.js#L45-L55) by providing a routes object
-to the oidc-provider constructor.
-
-```js
-const oidc = new Provider('http://localhost:3000', {
-  routes: {
-    authorization: '/authz',
-    certificates: '/jwks'
-  }
-});
-```
-
-
-### Keys (for asymmetric signatures and encryption)
-oidc-provider expects a jose.JWK.KeyStore populated with your keys passed in with the configuration,
-at the very least you must add a RS256 sig capable key, else your OP would be invalid. For
-convenience the relevant node-jose methods  are exposed next to the Provider - asKeyStore and createKeyStore.
-
-```js
-const { Provider, asKeyStore } = require('oidc-provider');
-asKeyStore({
-  keys: [
-    { d: '..', dp: '..', dq: '..', e: '..', kty: 'RSA', n: '..', p: '..', q: '..', qi: '..' },
-    { d: '..', dp: '..', dq: '..', e: '..', kty: 'RSA', n: '..', p: '..', q: '..', qi: '..' },
-  ]
-}).then(keystore => {
-  new Provider('http://localhost:3000', { keystore });
-});
-```
-
-
-### Persistance
-The provided example and any new instance of oidc-provider will use the basic in-memory adapter for
-storing issued tokens, codes and user sessions. This is fine for as long as you develop, configure
-and generally just play around since every time you restart your process all information will be
-lost. As soon as you cannot live with this limitation you will be required to provide an adapter
-for oidc-provider to use.
-
-```js
-const MyAdapter = require('./my_adapter');
-const oidc = new Provider('http://localhost:3000', {
-  adapter: MyAdapter
-});
-```
-
-The API oidc-provider expects is documented [here](example/my_adapter.js). For reference see the
-[memory adapter](lib/adapters/memory_adapter.js) and [redis](example/adapters/redis.js) of
-[mongodb](example/adapters/mongodb.js) adapters. There's also a simple test
-[[redis](example/adapters/redis_test.js),[mongodb](example/adapters/mongodb_test.js)] you can use to
-check your own implementation.
-
-
-### Accounts
-oidc-provider needs to be able to find an account and once found the account needs to have an
-`accountId` property as well as `claims()` function returning an object with claims that correspond
-to the claims your issuer supports. You can make oidc-provider lookup your accounts using your
-method during initialization.
-
-```js
-const oidc = new Provider('http://localhost:3000', {
-  findById: function (id) {
-    return Promise.resolve({
-      accountId: id,
-      claims() { return { sub: id }; },
-    });
-  }
-});
-```
-
-Note: the `findById` method needs to be yieldable, returning a Promise is recommended.  
-Tip: check how the [example](example/account.js) deals with this
-
-**Aggregated and Distributed claims**  
-Returning aggregated and distributed claims is as easy as having your Account#claims method return
-the two necessary members `_claim_sources` and `_claim_names` with the
-[expected][feature-aggregated-distributed-claims] properties. oidc-provider will include only the
-sources for claims that are part of the request scope, omitting the ones that the RP did not request
-and leaving out the entire `_claim_sources` and `_claim_sources` if they bear no requested claims.
-
-Note: to make sure the RPs can expect these claims you should configure your discovery to return
-the respective claim types via the `claim_types_supported` property.
-```js
-const oidc = new Provider('http://localhost:3000', {
-  discovery: {
-    claim_types_supported: ['normal', 'aggregated', 'distributed']
-  }
-});
-```
-
-
-### Interaction
-Since oidc-provider comes with no views and interaction handlers what so ever it's up to you to fill
-those in, here's how oidc-provider allows you to do so:
-
-When oidc-provider cannot fulfill the authorization request for any of the possible reasons (missing
-user session, requested ACR not fulfilled, prompt requested, ...) it will resolve an `interactionUrl`
-(configured during initialization) and redirect the User-Agent to that url. Before doing so it will
-create a signed `_grant` cookie that you can read from your interaction 'app'. This
-cookie contains 1) details of the interaction that is required; 2) all authorization request
-parameters and 3) the uuid of the authorization request and 4) the url to redirect the user to once
-interaction is finished. oidc-provider expects that you resolve all future interactions in one go
-and only then redirect the User-Agent back with the results.
-
-Once all necessary interaction is finished you are expected to redirect back to the authorization
-endpoint, affixed by the uuid of the original request and the interaction results dumped in a signed
-`_grant_result` cookie. Please see the [example](example/index.js), it's using a helper `resume` of
-the provider instance that ties things together for you.
-
-
-### Clients
-Clients can be managed programmatically or via out of bounds mechanisms using your provided Adapter.
-At the very least you must provide client_id, client_secret and redirect_uris for each client. See
-the rest of the available metadata [here][client-metadata].
-
-Note: each oidc-provider caches the clients once they are loaded (via either of the mechanisms),
-when in need of client configuration "reload" you can purge this cache like so
-`oidc.Client.purge()`;
-
-**via Provider interface**  
-To add pre-established clients use the `addClient` method on a oidc-provider instance. This accepts
-metadata object and returns a Promise, fulfilled with the added Client object, rejected with a
-validation or other errors that may have been encountered.
-
-```js
-const oidc = new Provider('http://localhost:3000');
-const metadata = {
-  // ...
-};
-oidc.addClient(metadata).then(fulfillmentHandler, rejectionHandler);
-```
-
-**via Adapter**  
-Storing client metadata in your storage is recommended for distributed deployments. Also when you
-want to provide a client configuration GUI or plan on changing this data often. Clients get loaded
-*! and validated !* when they are first needed, any metadata validation error encountered during
-this first load will be thrown and handled like any other context specific errors.
-
-
-### Custom Grant Types
-oidc-provider comes with the basic grants implemented, but you can register your own grant types,
-for example to implement a [password grant type][password-grant]. You can check the standard
-grant factories [here](lib/actions/token).
-
-```js
-const parameters = ['username', 'password'];
-
-provider.registerGrantType('password', function passwordGrantTypeFactory(providerInstance) {
-  return function * passwordGrantType(next) {
-    if (this.oidc.params.username === 'foo' && this.oidc.params.password === 'bar') {
-      const AccessToken = providerInstance.AccessToken;
-      const at = new AccessToken({
-        accountId: 'foo',
-        clientId: this.oidc.client.clientId,
-        grantId: this.oidc.uuid,
-      });
-
-      const accessToken = yield at.save();
-      const tokenType = 'Bearer';
-      const expiresIn = AccessToken.expiresIn;
-
-      this.body = {
-        access_token: accessToken,
-        expires_in: expiresIn,
-        token_type: tokenType,
-      };
-    } else {
-      this.body = {
-        error: 'invalid_grant',
-        error_description: 'invalid credentials provided',
-      };
-      this.status = 400;
-    }
-
-    yield next;
-  };
-}, parameters);
-```
-Tip: you are able to modify the implemented grant type behavior like this.
-
-
-### Custom Discovery Properties
-You can extend the returned discovery properties beyond the defaults
-```js
-const oidc = new Provider('http://localhost:3000', {
-  discovery: {
-     service_documentation: 'http://server.example.com/connect/service_documentation.html',
-     ui_locales_supported: ['en-US', 'en-GB', 'en-CA', 'fr-FR', 'fr-CA']
-  }
-});
-```
-
-
-### OAuth Token Integrity
-To enable an extra layer of protection (against someone controlling your tokens via the storage
-layer) you just need to pass a jose.JWK.KeyStore as `tokenIntegrity` configuration option.
-The first token you push on to this key store will be used to cryptographically sign the oauth tokens
-prohibiting any tampering with the payload and header content.
-
-
-### Changing HTTP request defaults
-Setting `defaultHttpOptions` on `Provider` instance merges your passed options with the defaults.
-oidc-provider uses [got][got-library] for http requests with the following default request options
-
-```js
-const DEFAULT_HTTP_OPTIONS = {
-  followRedirect: false,
-  headers: { 'User-Agent': `${pkg.name}/${pkg.version} (${this.issuer}; ${pkg.homepage})` },
-  retries: 0,
-  timeout: 1500,
-};
-```
-
-You can add your own headers, change the user-agent used or change the timeout setting
-```js
-provider.defaultHttpOptions = { timeout: 2500, headers: { 'X-Your-Header': '<whatever>' } };
-```
-
-Confirm your httpOptions by
-```js
-console.log('httpOptions %j', provider.defaultHttpOptions);
-```
-
 
 ## Events
-The oidc-provider instance is an event emitter, `this` is always the instance. In events where `ctx`
-(request context) is passed to the listener `ctx.oidc` holds additional details like recognized
-parameters, loaded client or session.
-
-**server_error**  
-oidc.on(`'server_error', function (error, ctx) { }`)  
-Emitted when an exception is thrown or promise rejected from either the Provider or your provided
-adapters. If it comes from the library you should probably report it.
-
-**authorization.accepted**  
-oidc.on(`'authorization.accepted', function (ctx) { }`)  
-Emitted with every syntactically correct authorization request pending resolving.
-
-**interaction.started**  
-oidc.on(`'interaction.started', function (detail, ctx) { }`)  
-Emitted when interaction is being requested from the end-user.
-
-**interaction.ended**  
-oidc.on(`'interaction.ended', function (ctx) { }`)  
-Emitted when interaction has been resolved and the authorization request continues being processed.
-
-**authorization.success**  
-oidc.on(`'authorization.success', function (ctx) { }`)  
-Emitted with every successfully completed authorization request. Useful i.e. for collecting metrics
-or triggering any action you need to execute after succeeded authorization.
-
-**authorization.error**  
-oidc.on(`'authorization.error', function (error, ctx) { }`)  
-Emitted when a handled error is encountered in the `authorization` endpoint.
-
-**grant.success**  
-oidc.on(`'grant.success', function (ctx) { }`)  
-Emitted with every successful grant request. Useful i.e. for collecting metrics or triggering any
-action you need to execute after succeeded grant.
-
-**grant.error**  
-oidc.on(`'grant.error', function (error, ctx) { }`)  
-Emitted when a handled error is encountered in the `grant` endpoint.
-
-**certificates.error**  
-oidc.on(`'certificates.error', function (error, ctx) { }`)  
-Emitted when a handled error is encountered in the `certificates` endpoint.
-
-**discovery.error**  
-oidc.on(`'discovery.error', function (error, ctx) { }`)  
-Emitted when a handled error is encountered in the `discovery` endpoint.
-
-**introspection.error**  
-oidc.on(`'introspection.error', function (error, ctx) { }`)  
-Emitted when a handled error is encountered in the `introspection` endpoint.
-
-**revocation.error**  
-oidc.on(`'revocation.error', function (error, ctx) { }`)  
-Emitted when a handled error is encountered in the `revocation` endpoint.
-
-**registration_create.success**  
-oidc.on(`'registration_create.success', function (client, ctx) { }`)  
-Emitted with every successful client registration request.
-
-**registration_create.error**  
-oidc.on(`'registration_create.error', function (error, ctx) { }`)  
-Emitted when a handled error is encountered in the POST `registration` endpoint.
-
-**registration_read.error**  
-oidc.on(`'registration_read.error', function (error, ctx) { }`)  
-Emitted when a handled error is encountered in the GET `registration` endpoint.
-
-**registration_update.success**  
-oidc.on(`'registration_update.success', function (client, ctx) { }`)  
-Emitted with every successful update client registration request.
-
-**registration_update.error**  
-oidc.on(`'registration_update.error', function (error, ctx) { }`)  
-Emitted when a handled error is encountered in the PUT `registration` endpoint.
-
-**registration_delete.success**  
-oidc.on(`'registration_delete.success', function (client, ctx) { }`)  
-Emitted with every successful delete client registration request.
-
-**registration_delete.error**  
-oidc.on(`'registration_delete.error', function (error, ctx) { }`)  
-Emitted when a handled error is encountered in the DELETE `registration` endpoint.
-
-**userinfo.error**  
-oidc.on(`'userinfo.error', function (error, ctx) { }`)  
-Emitted when a handled error is encountered in the `userinfo` endpoint.
-
-**check_session.error**  
-oidc.on(`'check_session.error', function (error, ctx) { }`)  
-Emitted when a handled error is encountered in the `check_session` endpoint.
-
-**end_session.error**  
-oidc.on(`'end_session.error', function (error, ctx) { }`)  
-Emitted when a handled error is encountered in the `end_session` endpoint.
-
-**webfinger.error**  
-oidc.on(`'webfinger.error', function (error, ctx) { }`)  
-Emitted when a handled error is encountered in the `webfinger` endpoint.
-
-**token.issued**  
-oidc.on(`'token.issued', function (token) { }`)  
-Emitted when a token is issued. All tokens extending `OAuthToken` emit this event.
-token can be one of `AccessToken`, `AuthorizationCode`,
-`ClientCredentials`, `RefreshToken`.
-
-**token.consumed**  
-oidc.on(`'token.consumed', function (token) { }`)  
-Emitted when a token (actually just AuthorizationCode) is used.
-
-**token.revoked**  
-oidc.on(`'token.revoked', function (token) { }`)  
-Emitted when a token is about to be revoked.
-
-**grant.revoked**  
-oidc.on(`'grant.revoked', function (grantId) { }`)  
-Emitted when tokens resulting from a single grant are about to be revoked.
-`grantId` is uuid formatted string. Use this to cascade the token revocation in cases where your
-adapter cannot provides functionality.
-
+Your oidc-provider instance is an event emitter, using event handlers you can hook into the various
+actions and i.e. emit metrics or that react to specific triggers. In some scenarios you can even
+change the defined behavior.  
+See the list of available emitted [event names](/docs/events.md) and their description.
 
 ## Certification
 ![openid_certified][openid-certified-logo]
@@ -652,22 +126,15 @@ OP Config and OP Dynamic profiles of the OpenID Connect™ protocol.
 [feature-core]: http://openid.net/specs/openid-connect-core-1_0.html
 [feature-discovery]: http://openid.net/specs/openid-connect-discovery-1_0.html
 [feature-registration]: http://openid.net/specs/openid-connect-registration-1_0.html
-[feature-session-management]: http://openid.net/specs/openid-connect-session-1_0-26.html
+[feature-session-management]: http://openid.net/specs/openid-connect-session-1_0-27.html
 [feature-form-post]: http://openid.net/specs/oauth-v2-form-post-response-mode-1_0.html
 [feature-revocation]: https://tools.ietf.org/html/rfc7009
 [feature-introspection]: https://tools.ietf.org/html/rfc7662
 [feature-thumbprint]: https://tools.ietf.org/html/rfc7638
 [feature-pixy]: https://tools.ietf.org/html/rfc7636
-[client-metadata]: http://openid.net/specs/openid-connect-registration-1_0.html#ClientMetadata
-[core-claims-url]: http://openid.net/specs/openid-connect-core-1_0.html#ClaimsParameter
-[core-jwt-parameters-url]: http://openid.net/specs/openid-connect-core-1_0.html#JWTRequests
 [node-jose]: https://github.com/cisco/node-jose
 [heroku-example]: https://guarded-cliffs-8635.herokuapp.com/op/.well-known/openid-configuration
 [heroku-example-client]: https://tranquil-reef-95185.herokuapp.com/client
 [openid-client]: https://github.com/panva/node-openid-client
-[password-grant]: https://tools.ietf.org/html/rfc6749#section-4.3
-[feature-aggregated-distributed-claims]: http://openid.net/specs/openid-connect-core-1_0.html#AggregatedDistributedClaims
 [feature-backchannel-logout]: http://openid.net/specs/openid-connect-backchannel-1_0-03.html
 [feature-registration-management]: https://tools.ietf.org/html/rfc7592
-[got-library]: https://github.com/sindresorhus/got
-[core-account-claims]: http://openid.net/specs/openid-connect-core-1_0.html#ScopeClaims

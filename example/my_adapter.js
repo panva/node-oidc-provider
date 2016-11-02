@@ -23,8 +23,8 @@ class MyAdapter {
    *
    * @return {Promise} Promise fulfilled when the operation succeeded. Rejected with error when
    * encountered.
-   * @param {string} id Identifier that oidc-provider will use to reference this token for future
-   * operations.
+   * @param {string} id Identifier that oidc-provider will use to reference this model instance for
+   * future operations.
    * @param {object} payload Object with all properties intended for storage.
    * @param {expiresIn} integer Number of seconds intended for this model to be stored.
    *
@@ -33,10 +33,11 @@ class MyAdapter {
 
     /**
      *
-     * When this is one of AccessToken, AuthorizationCode, RefreshToken, ClientCredentials the
-     * payload will contain the following properties:
+     * When this is one of AccessToken, AuthorizationCode, RefreshToken, ClientCredentials,
+     * InitialAccessToken or RegistrationAccessToken the payload will contain the following
+     * properties:
      * - grantId {string} the original id assigned to a grant (authorization request)
-     * - header {string} oidc-provider tokens are themselves JWTs, this is the first part of the token
+     * - header {string} oidc-provider tokens are themselves JWTs, this is the header part of the token
      * - payload {string} second part of the token
      * - signature {string} the signature of the token
      *
@@ -54,6 +55,7 @@ class MyAdapter {
      *
      * Session model payload contains the following properties:
      * - account {string} the session account identifier
+     * - authorizations {object} object with session authorized clients and their session identifiers
      * - loginTs {number} timestamp of user's authentication
      * - acrValue {string} the ACR value of user's authentication
      *

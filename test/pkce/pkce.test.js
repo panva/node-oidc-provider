@@ -5,27 +5,26 @@ const bootstrap = require('../test_helper');
 const { parse: parseUrl } = require('url');
 const { expect } = require('chai');
 
-describe('PKCE RFC7636', () => {
-  const { provider, agent, AuthorizationRequest, TestAdapter } = bootstrap(__dirname);
-  provider.setupClient();
+describe('PKCE RFC7636', function () {
+  before(bootstrap(__dirname)); // provider, agent, this.AuthorizationRequest, TestAdapter
 
   describe('authorization', function () {
-    before(agent.login);
+    before(function () { return this.login(); });
 
     it('stores codeChallenge and codeChallengeMethod in the code', function () {
-      const auth = new AuthorizationRequest({
+      const auth = new this.AuthorizationRequest({
         response_type: 'code',
         scope: 'openid',
         code_challenge: 'foobar',
         code_challenge_method: 'plain',
       });
 
-      return agent.get('/auth')
+      return this.agent.get('/auth')
         .query(auth)
         .expect((response) => {
           const { query: { code } } = parseUrl(response.headers.location, true);
           const jti = code.substring(0, 48);
-          const stored = TestAdapter.for('AuthorizationCode').syncFind(jti);
+          const stored = this.TestAdapter.for('AuthorizationCode').syncFind(jti);
           const payload = JSON.parse(base64url.decode(stored.payload));
 
           expect(payload).to.have.property('codeChallengeMethod', 'plain');
@@ -34,18 +33,18 @@ describe('PKCE RFC7636', () => {
     });
 
     it('defaults the codeChallengeMethod if not provided', function () {
-      const auth = new AuthorizationRequest({
+      const auth = new this.AuthorizationRequest({
         response_type: 'code',
         scope: 'openid',
         code_challenge: 'foobar'
       });
 
-      return agent.get('/auth')
+      return this.agent.get('/auth')
         .query(auth)
         .expect((response) => {
           const { query: { code } } = parseUrl(response.headers.location, true);
           const jti = code.substring(0, 48);
-          const stored = TestAdapter.for('AuthorizationCode').syncFind(jti);
+          const stored = this.TestAdapter.for('AuthorizationCode').syncFind(jti);
           const payload = JSON.parse(base64url.decode(stored.payload));
 
           expect(payload).to.have.property('codeChallengeMethod', 'plain');
@@ -54,13 +53,13 @@ describe('PKCE RFC7636', () => {
     });
 
     it('checks that codeChallenge is provided if codeChallengeMethod was', function () {
-      const auth = new AuthorizationRequest({
+      const auth = new this.AuthorizationRequest({
         response_type: 'code',
         scope: 'openid',
         code_challenge_method: 'S256',
       });
 
-      return agent.get('/auth')
+      return this.agent.get('/auth')
         .query(auth)
         .expect(auth.validatePresence(['error', 'error_description', 'state']))
         .expect(auth.validateError('invalid_request'))
@@ -68,14 +67,14 @@ describe('PKCE RFC7636', () => {
     });
 
     it('validates the value of codeChallengeMethod if provided', function () {
-      const auth = new AuthorizationRequest({
+      const auth = new this.AuthorizationRequest({
         response_type: 'code',
         scope: 'openid',
         code_challenge: 'foobar',
         code_challenge_method: 'bar',
       });
 
-      return agent.get('/auth')
+      return this.agent.get('/auth')
         .query(auth)
         .expect(auth.validatePresence(['error', 'error_description', 'state']))
         .expect(auth.validateError('invalid_request'))
@@ -85,7 +84,7 @@ describe('PKCE RFC7636', () => {
 
   describe('token grant_type=authorization_code', function () {
     it('passes with plain values', function* () {
-      const authCode = new provider.AuthorizationCode({
+      const authCode = new this.provider.AuthorizationCode({
         accountId: 'sub',
         scope: 'openid',
         clientId: 'client',
@@ -95,7 +94,7 @@ describe('PKCE RFC7636', () => {
       });
       const code = yield authCode.save();
 
-      return agent.post('/token')
+      return this.agent.post('/token')
         .auth('client', 'secret')
         .type('form')
         .send({
@@ -108,7 +107,7 @@ describe('PKCE RFC7636', () => {
     });
 
     it('passes with S256 values', function* () {
-      const authCode = new provider.AuthorizationCode({
+      const authCode = new this.provider.AuthorizationCode({
         accountId: 'sub',
         scope: 'openid',
         clientId: 'client',
@@ -118,7 +117,7 @@ describe('PKCE RFC7636', () => {
       });
       const code = yield authCode.save();
 
-      return agent.post('/token')
+      return this.agent.post('/token')
         .auth('client', 'secret')
         .type('form')
         .send({
@@ -131,7 +130,7 @@ describe('PKCE RFC7636', () => {
     });
 
     it('checks presence of code_verifier param if code has codeChallenge', function* () {
-      const authCode = new provider.AuthorizationCode({
+      const authCode = new this.provider.AuthorizationCode({
         accountId: 'sub',
         scope: 'openid',
         clientId: 'client',
@@ -141,7 +140,7 @@ describe('PKCE RFC7636', () => {
       });
       const code = yield authCode.save();
 
-      return agent.post('/token')
+      return this.agent.post('/token')
         .auth('client', 'secret')
         .type('form')
         .send({
@@ -156,7 +155,7 @@ describe('PKCE RFC7636', () => {
     });
 
     it('checks value of code_verifier when method = plain', function* () {
-      const authCode = new provider.AuthorizationCode({
+      const authCode = new this.provider.AuthorizationCode({
         accountId: 'sub',
         scope: 'openid',
         clientId: 'client',
@@ -166,7 +165,7 @@ describe('PKCE RFC7636', () => {
       });
       const code = yield authCode.save();
 
-      return agent.post('/token')
+      return this.agent.post('/token')
         .auth('client', 'secret')
         .type('form')
         .send({
@@ -182,7 +181,7 @@ describe('PKCE RFC7636', () => {
     });
 
     it('checks value of code_verifier when method = S256', function* () {
-      const authCode = new provider.AuthorizationCode({
+      const authCode = new this.provider.AuthorizationCode({
         accountId: 'sub',
         scope: 'openid',
         clientId: 'client',
@@ -192,7 +191,7 @@ describe('PKCE RFC7636', () => {
       });
       const code = yield authCode.save();
 
-      return agent.post('/token')
+      return this.agent.post('/token')
         .auth('client', 'secret')
         .type('form')
         .send({

@@ -7,19 +7,12 @@ const { expect } = require('chai');
 const route = '/token/revocation';
 
 
-describe('revocation features', () => {
-  const { agent, provider } = bootstrap(__dirname);
-  const AuthorizationCode = provider.AuthorizationCode;
-  const AccessToken = provider.AccessToken;
-  const ClientCredentials = provider.ClientCredentials;
-  const RefreshToken = provider.RefreshToken;
+describe('revocation features', function () {
+  before(bootstrap(__dirname)); // this.agent, provider
 
-  provider.setupClient();
-
-
-  describe('enriched discovery', () => {
-    it('shows the url now', () => {
-      return agent.get('/.well-known/openid-configuration')
+  describe('enriched discovery', function () {
+    it('shows the url now', function () {
+      return this.agent.get('/.well-known/openid-configuration')
       .expect(200)
       .expect((response) => {
         expect(response.body).to.have.property('token_revocation_endpoint').and.matches(/token\/revocation/);
@@ -27,26 +20,26 @@ describe('revocation features', () => {
     });
   });
 
-  describe(route, () => {
-    it('revokes access token [no hint]', (done) => {
-      const at = new AccessToken({
+  describe(route, function () {
+    it('revokes access token [no hint]', function (done) {
+      const at = new this.provider.AccessToken({
         accountId: 'accountId',
         clientId: 'client',
         scope: 'scope',
       });
 
-      const stub = sinon.stub(AccessToken.prototype, 'destroy', () => {
+      const stub = sinon.stub(this.provider.AccessToken.prototype, 'destroy', () => {
         return Promise.resolve();
       });
 
       at.save().then((token) => {
-        agent.post(route)
+        this.agent.post(route)
         .auth('client', 'secret')
         .send({ token })
         .type('form')
         .expect(() => {
           expect(stub.calledOnce).to.be.true;
-          AccessToken.prototype.destroy.restore();
+          this.provider.AccessToken.prototype.destroy.restore();
         })
         .expect(200)
         .expect((response) => {
@@ -56,25 +49,25 @@ describe('revocation features', () => {
       });
     });
 
-    it('revokes access token [correct hint]', (done) => {
-      const at = new AccessToken({
+    it('revokes access token [correct hint]', function (done) {
+      const at = new this.provider.AccessToken({
         accountId: 'accountId',
         clientId: 'client',
         scope: 'scope',
       });
 
-      const stub = sinon.stub(AccessToken.prototype, 'destroy', () => {
+      const stub = sinon.stub(this.provider.AccessToken.prototype, 'destroy', () => {
         return Promise.resolve();
       });
 
       at.save().then((token) => {
-        agent.post(route)
+        this.agent.post(route)
         .auth('client', 'secret')
         .send({ token, token_type_hint: 'access_token' })
         .type('form')
         .expect(() => {
           expect(stub.calledOnce).to.be.true;
-          AccessToken.prototype.destroy.restore();
+          this.provider.AccessToken.prototype.destroy.restore();
         })
         .expect(200)
         .expect((response) => {
@@ -84,25 +77,25 @@ describe('revocation features', () => {
       });
     });
 
-    it('revokes access token [wrong hint]', (done) => {
-      const at = new AccessToken({
+    it('revokes access token [wrong hint]', function (done) {
+      const at = new this.provider.AccessToken({
         accountId: 'accountId',
         clientId: 'client',
         scope: 'scope',
       });
 
-      const stub = sinon.stub(AccessToken.prototype, 'destroy', () => {
+      const stub = sinon.stub(this.provider.AccessToken.prototype, 'destroy', () => {
         return Promise.resolve();
       });
 
       at.save().then((token) => {
-        agent.post(route)
+        this.agent.post(route)
         .auth('client', 'secret')
         .send({ token, token_type_hint: 'refresh_token' })
         .type('form')
         .expect(() => {
           expect(stub.calledOnce).to.be.true;
-          AccessToken.prototype.destroy.restore();
+          this.provider.AccessToken.prototype.destroy.restore();
         })
         .expect(200)
         .expect((response) => {
@@ -112,25 +105,25 @@ describe('revocation features', () => {
       });
     });
 
-    it('revokes access token [unrecognized hint]', (done) => {
-      const at = new AccessToken({
+    it('revokes access token [unrecognized hint]', function (done) {
+      const at = new this.provider.AccessToken({
         accountId: 'accountId',
         clientId: 'client',
         scope: 'scope',
       });
 
-      const stub = sinon.stub(AccessToken.prototype, 'destroy', () => {
+      const stub = sinon.stub(this.provider.AccessToken.prototype, 'destroy', () => {
         return Promise.resolve();
       });
 
       at.save().then((token) => {
-        agent.post(route)
+        this.agent.post(route)
         .auth('client', 'secret')
         .send({ token, token_type_hint: 'foobar' })
         .type('form')
         .expect(() => {
           expect(stub.calledOnce).to.be.true;
-          AccessToken.prototype.destroy.restore();
+          this.provider.AccessToken.prototype.destroy.restore();
         })
         .expect(200)
         .expect((response) => {
@@ -140,22 +133,22 @@ describe('revocation features', () => {
       });
     });
 
-    it('propagates exceptions on find', (done) => {
-      const at = new AccessToken({
+    it('propagates exceptions on find', function (done) {
+      const at = new this.provider.AccessToken({
         accountId: 'accountId',
         clientId: 'client',
         scope: 'scope',
       });
 
-      sinon.stub(AccessToken, 'find').returns(Promise.reject(new Error('Error')));
+      sinon.stub(this.provider.AccessToken, 'find').returns(Promise.reject(new Error('Error')));
 
       at.save().then((token) => {
-        agent.post(route)
+        this.agent.post(route)
         .auth('client', 'secret')
         .send({ token })
         .type('form')
         .expect(() => {
-          AccessToken.find.restore();
+          this.provider.AccessToken.find.restore();
         })
         .expect(500)
         .expect((response) => {
@@ -165,25 +158,25 @@ describe('revocation features', () => {
       });
     });
 
-    it('revokes refresh token [no hint]', (done) => {
-      const rt = new RefreshToken({
+    it('revokes refresh token [no hint]', function (done) {
+      const rt = new this.provider.RefreshToken({
         accountId: 'accountId',
         clientId: 'client',
         scope: 'scope',
       });
 
-      const stub = sinon.stub(RefreshToken.prototype, 'destroy', () => {
+      const stub = sinon.stub(this.provider.RefreshToken.prototype, 'destroy', () => {
         return Promise.resolve();
       });
 
       rt.save().then((token) => {
-        agent.post(route)
+        this.agent.post(route)
         .auth('client', 'secret')
         .send({ token })
         .type('form')
         .expect(() => {
           expect(stub.calledOnce).to.be.true;
-          RefreshToken.prototype.destroy.restore();
+          this.provider.RefreshToken.prototype.destroy.restore();
         })
         .expect(200)
         .expect((response) => {
@@ -193,25 +186,25 @@ describe('revocation features', () => {
       });
     });
 
-    it('revokes refresh token [correct hint]', (done) => {
-      const rt = new RefreshToken({
+    it('revokes refresh token [correct hint]', function (done) {
+      const rt = new this.provider.RefreshToken({
         accountId: 'accountId',
         clientId: 'client',
         scope: 'scope',
       });
 
-      const stub = sinon.stub(RefreshToken.prototype, 'destroy', () => {
+      const stub = sinon.stub(this.provider.RefreshToken.prototype, 'destroy', () => {
         return Promise.resolve();
       });
 
       rt.save().then((token) => {
-        agent.post(route)
+        this.agent.post(route)
         .auth('client', 'secret')
         .send({ token, token_type_hint: 'refresh_token' })
         .type('form')
         .expect(() => {
           expect(stub.calledOnce).to.be.true;
-          RefreshToken.prototype.destroy.restore();
+          this.provider.RefreshToken.prototype.destroy.restore();
         })
         .expect(200)
         .expect((response) => {
@@ -221,25 +214,25 @@ describe('revocation features', () => {
       });
     });
 
-    it('revokes refresh token [wrong hint]', (done) => {
-      const rt = new RefreshToken({
+    it('revokes refresh token [wrong hint]', function (done) {
+      const rt = new this.provider.RefreshToken({
         accountId: 'accountId',
         clientId: 'client',
         scope: 'scope',
       });
 
-      const stub = sinon.stub(RefreshToken.prototype, 'destroy', () => {
+      const stub = sinon.stub(this.provider.RefreshToken.prototype, 'destroy', () => {
         return Promise.resolve();
       });
 
       rt.save().then((token) => {
-        agent.post(route)
+        this.agent.post(route)
         .auth('client', 'secret')
         .send({ token, token_type_hint: 'client_credentials' })
         .type('form')
         .expect(() => {
           expect(stub.calledOnce).to.be.true;
-          RefreshToken.prototype.destroy.restore();
+          this.provider.RefreshToken.prototype.destroy.restore();
         })
         .expect(200)
         .expect((response) => {
@@ -249,25 +242,25 @@ describe('revocation features', () => {
       });
     });
 
-    it('revokes refresh token [unrecognized hint]', (done) => {
-      const rt = new RefreshToken({
+    it('revokes refresh token [unrecognized hint]', function (done) {
+      const rt = new this.provider.RefreshToken({
         accountId: 'accountId',
         clientId: 'client',
         scope: 'scope',
       });
 
-      const stub = sinon.stub(RefreshToken.prototype, 'destroy', () => {
+      const stub = sinon.stub(this.provider.RefreshToken.prototype, 'destroy', () => {
         return Promise.resolve();
       });
 
       rt.save().then((token) => {
-        agent.post(route)
+        this.agent.post(route)
         .auth('client', 'secret')
         .send({ token, token_type_hint: 'foobar' })
         .type('form')
         .expect(() => {
           expect(stub.calledOnce).to.be.true;
-          RefreshToken.prototype.destroy.restore();
+          this.provider.RefreshToken.prototype.destroy.restore();
         })
         .expect(200)
         .expect((response) => {
@@ -277,23 +270,23 @@ describe('revocation features', () => {
       });
     });
 
-    it('revokes client credentials token [no hint]', (done) => {
-      const rt = new ClientCredentials({
+    it('revokes client credentials token [no hint]', function (done) {
+      const rt = new this.provider.ClientCredentials({
         clientId: 'client'
       });
 
-      const stub = sinon.stub(ClientCredentials.prototype, 'destroy', () => {
+      const stub = sinon.stub(this.provider.ClientCredentials.prototype, 'destroy', () => {
         return Promise.resolve();
       });
 
       rt.save().then((token) => {
-        agent.post(route)
+        this.agent.post(route)
         .auth('client', 'secret')
         .send({ token })
         .type('form')
         .expect(() => {
           expect(stub.calledOnce).to.be.true;
-          ClientCredentials.prototype.destroy.restore();
+          this.provider.ClientCredentials.prototype.destroy.restore();
         })
         .expect(200)
         .expect((response) => {
@@ -303,23 +296,23 @@ describe('revocation features', () => {
       });
     });
 
-    it('revokes client credentials token [correct hint]', (done) => {
-      const rt = new ClientCredentials({
+    it('revokes client credentials token [correct hint]', function (done) {
+      const rt = new this.provider.ClientCredentials({
         clientId: 'client'
       });
 
-      const stub = sinon.stub(ClientCredentials.prototype, 'destroy', () => {
+      const stub = sinon.stub(this.provider.ClientCredentials.prototype, 'destroy', () => {
         return Promise.resolve();
       });
 
       rt.save().then((token) => {
-        agent.post(route)
+        this.agent.post(route)
         .auth('client', 'secret')
         .send({ token, token_type_hint: 'client_credentials' })
         .type('form')
         .expect(() => {
           expect(stub.calledOnce).to.be.true;
-          ClientCredentials.prototype.destroy.restore();
+          this.provider.ClientCredentials.prototype.destroy.restore();
         })
         .expect(200)
         .expect((response) => {
@@ -329,23 +322,23 @@ describe('revocation features', () => {
       });
     });
 
-    it('revokes client credentials token [wrong hint]', (done) => {
-      const rt = new ClientCredentials({
+    it('revokes client credentials token [wrong hint]', function (done) {
+      const rt = new this.provider.ClientCredentials({
         clientId: 'client'
       });
 
-      const stub = sinon.stub(ClientCredentials.prototype, 'destroy', () => {
+      const stub = sinon.stub(this.provider.ClientCredentials.prototype, 'destroy', () => {
         return Promise.resolve();
       });
 
       rt.save().then((token) => {
-        agent.post(route)
+        this.agent.post(route)
         .auth('client', 'secret')
         .send({ token, token_type_hint: 'access_token' })
         .type('form')
         .expect(() => {
           expect(stub.calledOnce).to.be.true;
-          ClientCredentials.prototype.destroy.restore();
+          this.provider.ClientCredentials.prototype.destroy.restore();
         })
         .expect(200)
         .expect((response) => {
@@ -355,23 +348,23 @@ describe('revocation features', () => {
       });
     });
 
-    it('revokes client credentials token [unrecognized hint]', (done) => {
-      const rt = new ClientCredentials({
+    it('revokes client credentials token [unrecognized hint]', function (done) {
+      const rt = new this.provider.ClientCredentials({
         clientId: 'client'
       });
 
-      const stub = sinon.stub(ClientCredentials.prototype, 'destroy', () => {
+      const stub = sinon.stub(this.provider.ClientCredentials.prototype, 'destroy', () => {
         return Promise.resolve();
       });
 
       rt.save().then((token) => {
-        agent.post(route)
+        this.agent.post(route)
         .auth('client', 'secret')
         .send({ token, token_type_hint: 'foobar' })
         .type('form')
         .expect(() => {
           expect(stub.calledOnce).to.be.true;
-          ClientCredentials.prototype.destroy.restore();
+          this.provider.ClientCredentials.prototype.destroy.restore();
         })
         .expect(200)
         .expect((response) => {
@@ -381,8 +374,8 @@ describe('revocation features', () => {
       });
     });
 
-    it('validates token param presence', () => {
-      return agent.post(route)
+    it('validates token param presence', function () {
+      return this.agent.post(route)
       .auth('client', 'secret')
       .send({})
       .type('form')
@@ -393,8 +386,8 @@ describe('revocation features', () => {
       });
     });
 
-    it('rejects completely wrong tokens with the expected OK response', () => {
-      return agent.post(route)
+    it('rejects completely wrong tokens with the expected OK response', function () {
+      return this.agent.post(route)
       .auth('client', 'secret')
       .send({
         token: 'dsahjdasdsa'
@@ -407,8 +400,8 @@ describe('revocation features', () => {
     });
 
     it('rejects unsupported tokens', function* () {
-      const ac = new AuthorizationCode({ clientId: 'client' });
-      return agent.post(route)
+      const ac = new this.provider.AuthorizationCode({ clientId: 'client' });
+      return this.agent.post(route)
       .auth('client', 'secret')
       .send({
         token: yield ac.save()
@@ -420,15 +413,15 @@ describe('revocation features', () => {
       });
     });
 
-    it('does not revoke tokens of other clients', (done) => {
-      const at = new AccessToken({
+    it('does not revoke tokens of other clients', function (done) {
+      const at = new this.provider.AccessToken({
         accountId: 'accountId',
         clientId: 'client2',
         scope: 'scope',
       });
 
       at.save().then((token) => {
-        agent.post(route)
+        this.agent.post(route)
           .auth('client', 'secret')
           .send({ token })
           .type('form')
@@ -443,11 +436,11 @@ describe('revocation features', () => {
       });
     });
 
-    it('emits on (i.e. auth) error', () => {
+    it('emits on (i.e. auth) error', function () {
       const spy = sinon.spy();
-      provider.once('revocation.error', spy);
+      this.provider.once('revocation.error', spy);
 
-      return agent.post(route)
+      return this.agent.post(route)
       .auth('invalid', 'auth')
       .send({})
       .type('form')

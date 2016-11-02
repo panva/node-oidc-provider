@@ -1,7 +1,52 @@
-# Changelog
+# oidc-provider CHANGELOG
 
-Following semver, 1.0.0 will mark the first API stable release and commence of this file,
-until then please use the compare views of github for reference.
+Yay for [SemVer](http://semver.org/).
+
+**Table of Contents**
+
+<!-- TOC START min:2 max:2 link:true update:true -->
+  - [Version 1.0.0](#version-100)
+  - [Migrating from 0.11.x to 1.0.0](#migrating-from-011x-to-100)
+  - [pre 1.x changelog](#pre-1x-changelog)
+
+<!-- TOC END -->
+
+## Version 1.0.0
+- [DIFF](https://github.com/panva/node-oidc-provider/compare/v0.11.4...v1.0.0)
+- Please see [1.x migration](#migrating-from-011x-to-100) to update your 0.11.x deployment into 1.x.
+
+Notable changes:
+- feature flag devInteractions, enabled by default, complementing the default configuration
+  enables to experiment with just the required library, no need to clone the example anymore
+  to get working interactions
+  - a console notice is in place to let developers know the feature is enabled
+- `provider#initialize` to pass integrity and cert keystores as well as pre-set client
+  configurations
+  - removed the option to add clients programmatically during runtime (outside of dynamic
+    registration)
+- `offline_access` scope ignored for Implicit Flow (def. Core 1.0 - section Offline Access)
+- default `uniqueness` works as intended for single-process deployments
+- provider.OAuthToken deprecated in favor of provider.BaseToken
+
+Bugfixes:
+- client validation: https URI scheme only uris now validated for https scheme (initiate_login_uri,
+  sector_identifier_uri, request_uris)
+- client validation: https URI scheme is now forbidden for native clients
+- client validation: http URI scheme is now forbidden for implicit web clients
+
+## Migrating from 0.11.x to 1.0.0
+
+1. set configuration option feature.`devInteractions` to `false`
+2. resolve provider`#initialize()` before accessing provider`.app` or provider`.callback`
+3. move configuration.`keystore`, `integrity` and `clients` to provider`#initialize()`
+4. change all your provider#`addClient` calls to one provider`#initialize({ clients: [ {}, {}, ... ] })`
+
+## pre 1.x changelog
+
+    4. Major version zero (0.y.z) is for initial development. Anything may change at any time.
+       The public API should not be considered stable.
+
+    5. Version 1.0.0 defines the public API.
 
 - https://github.com/panva/node-oidc-provider/compare/v0.10.2...v0.11.0
   - BREAKING: ALL previously issued tokens are incompatible with the new version, the length of the
@@ -73,14 +118,14 @@ until then please use the compare views of github for reference.
 - https://github.com/panva/node-oidc-provider/compare/v0.3.0...v0.3.1
 - https://github.com/panva/node-oidc-provider/compare/v0.2.0...v0.3.0
 
-## Token Integrity
+### Token Integrity
 pre-0.11 all oauth tokens used JWT for serialization and your mandatory RS256 able key for
 integrity validation and the string value was > 300 characters long containing the body and signature
 part of the JWT with all sensitive information pushed to the header part which only remained in your
 storage/adapter.  
 Whenever a token would be presented it would be decoded for jti, looked up, and it's signature
 validated. This is problematic for providers who want to rotate their signing keys without
-invalidating issued tokens and for. You couldn't choose which key is used for integrity check, you
+invalidating issued tokens. You couldn't choose which key is used for integrity check, you
 had no control over the alg used, causing tokens to be issued slowly in high concurrency scenarios.  
 0.11 by default comes with token integrity disabled, oauth tokens will not be cryptographically
 signed and instead just be random values (which is fine for most).  
