@@ -4,21 +4,18 @@ const bootstrap = require('../test_helper');
 const { expect } = require('chai');
 const url = require('url');
 
-describe('userinfo /me', () => {
-  const { provider, agent, AuthorizationRequest, wrap } = bootstrap(__dirname);
+describe('userinfo /me', function () {
+  before(bootstrap(__dirname)); // this.provider, agent, this.AuthorizationRequest, wrap
 
-  provider.setupClient();
-
-
-  before(agent.login);
+  before(function () { return this.login(); });
 
   before(function () {
-    const auth = new AuthorizationRequest({
+    const auth = new this.AuthorizationRequest({
       response_type: 'id_token token',
       scope: 'openid email'
     });
 
-    return wrap({ agent, auth, verb: 'get', route: '/auth' })
+    return this.wrap({ auth, verb: 'get', route: '/auth' })
     .expect(auth.validateFragment)
     .expect((response) => {
       const { query } = url.parse(response.headers.location, true);
@@ -27,7 +24,7 @@ describe('userinfo /me', () => {
   });
 
   it('does allow for scopes to be shrunk', function () {
-    return agent.get('/me')
+    return this.agent.get('/me')
       .query({
         scope: 'openid'
       })
@@ -40,7 +37,7 @@ describe('userinfo /me', () => {
   });
 
   it('does not allow for scopes to be extended', function () {
-    return agent.get('/me')
+    return this.agent.get('/me')
       .query({
         scope: 'openid profile'
       })
@@ -49,12 +46,12 @@ describe('userinfo /me', () => {
       .expect({ error: 'invalid_scope', scope: 'profile', error_description: 'access token missing requested scope' });
   });
 
-  describe('userinfo /me WWW-Authenticate header', () => {
-    it('is set', () => {
-      return agent.get('/me')
+  describe('userinfo /me WWW-Authenticate header', function () {
+    it('is set', function () {
+      return this.agent.get('/me')
       .set('Authorization', 'Bearer ThisIsNotAValidToken')
       .expect(401)
-      .expect('WWW-Authenticate', new RegExp(`^Bearer realm="${provider.issuer}"`))
+      .expect('WWW-Authenticate', new RegExp(`^Bearer realm="${this.provider.issuer}"`))
       .expect('WWW-Authenticate', /error="invalid_token"/);
     });
   });

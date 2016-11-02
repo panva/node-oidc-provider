@@ -3,8 +3,8 @@
 const { expect } = require('chai');
 const { Provider } = require('../../lib');
 
-describe('Provider configuration', () => {
-  it('validates pairwiseSalt presence when pairwise is configured', () => {
+describe('Provider configuration', function () {
+  it('validates pairwiseSalt presence when pairwise is configured', function () {
     const throws = [
       function () {
         new Provider('http://localhost:3000', { // eslint-disable-line no-new

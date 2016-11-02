@@ -7,14 +7,14 @@ const epochTime = require('../../lib/helpers/epoch_time');
 
 const keystore = jose.JWK.createKeyStore();
 
-describe('JSON Web Token (JWT) RFC7519 implementation', () => {
-  before(() => {
+describe('JSON Web Token (JWT) RFC7519 implementation', function () {
+  before(function () {
     return keystore.generate('oct', 256)
       .then(keystore.generate('RSA', 512))
       .then(keystore.generate('EC', 'P-256'));
   });
 
-  it('signs and validates with none', () => {
+  it('signs and validates with none', function () {
     return JWT.sign({ data: true }, null, 'none', {
       noTimestamp: true
     })
@@ -26,7 +26,7 @@ describe('JSON Web Token (JWT) RFC7519 implementation', () => {
     });
   });
 
-  it('signs and validates with oct', () => {
+  it('signs and validates with oct', function () {
     const key = keystore.get({ kty: 'oct' });
     return JWT.sign({ data: true }, key, 'HS256', {
       noTimestamp: true
@@ -39,7 +39,7 @@ describe('JSON Web Token (JWT) RFC7519 implementation', () => {
     });
   });
 
-  it('signs and validates with RSA', () => {
+  it('signs and validates with RSA', function () {
     const key = keystore.get({ kty: 'RSA' });
     return JWT.sign({ data: true }, key, 'RS256', {
       noTimestamp: true
@@ -52,7 +52,7 @@ describe('JSON Web Token (JWT) RFC7519 implementation', () => {
     });
   });
 
-  it('signs and validates with EC', () => {
+  it('signs and validates with EC', function () {
     const key = keystore.get({ kty: 'EC' });
     return JWT.sign({ data: true }, key, 'ES256', {
       noTimestamp: true
@@ -65,8 +65,8 @@ describe('JSON Web Token (JWT) RFC7519 implementation', () => {
     });
   });
 
-  describe('sign options', () => {
-    it('iat by default', () => {
+  describe('sign options', function () {
+    it('iat by default', function () {
       return JWT.sign({ data: true }, null, 'none')
       .then(jwt => JWT.decode(jwt))
       .then((decoded) => {
@@ -74,7 +74,7 @@ describe('JSON Web Token (JWT) RFC7519 implementation', () => {
       });
     });
 
-    it('expiresIn', () => {
+    it('expiresIn', function () {
       return JWT.sign({ data: true }, null, 'none', { expiresIn: 60 })
       .then(jwt => JWT.decode(jwt))
       .then((decoded) => {
@@ -82,7 +82,7 @@ describe('JSON Web Token (JWT) RFC7519 implementation', () => {
       });
     });
 
-    it('audience', () => {
+    it('audience', function () {
       return JWT.sign({ data: true }, null, 'none', { audience: 'clientId' })
       .then(jwt => JWT.decode(jwt))
       .then((decoded) => {
@@ -90,7 +90,7 @@ describe('JSON Web Token (JWT) RFC7519 implementation', () => {
       });
     });
 
-    it('issuer', () => {
+    it('issuer', function () {
       return JWT.sign({ data: true }, null, 'none', { issuer: 'http://example.com/issuer' })
       .then(jwt => JWT.decode(jwt))
       .then((decoded) => {
@@ -98,7 +98,7 @@ describe('JSON Web Token (JWT) RFC7519 implementation', () => {
       });
     });
 
-    it('subject', () => {
+    it('subject', function () {
       return JWT.sign({ data: true }, null, 'none', { subject: 'http://example.com/subject' })
       .then(jwt => JWT.decode(jwt))
       .then((decoded) => {
@@ -107,8 +107,8 @@ describe('JSON Web Token (JWT) RFC7519 implementation', () => {
     });
   });
 
-  describe('verify', () => {
-    it('nbf', () => {
+  describe('verify', function () {
+    it('nbf', function () {
       const key = keystore.get({ kty: 'oct' });
       return JWT.sign({ data: true, nbf: epochTime() + 3600 }, key, 'HS256')
       .then(jwt => JWT.verify(jwt, key))
@@ -121,7 +121,7 @@ describe('JSON Web Token (JWT) RFC7519 implementation', () => {
       });
     });
 
-    it('nbf ignored', () => {
+    it('nbf ignored', function () {
       const key = keystore.get({ kty: 'oct' });
       return JWT.sign({ data: true, nbf: epochTime() + 3600 }, key, 'HS256')
       .then(jwt => JWT.verify(jwt, key, {
@@ -129,7 +129,7 @@ describe('JSON Web Token (JWT) RFC7519 implementation', () => {
       }));
     });
 
-    it('nbf invalid', () => {
+    it('nbf invalid', function () {
       const key = keystore.get({ kty: 'oct' });
       return JWT.sign({ data: true, nbf: 'not a nbf' }, key, 'HS256')
       .then(jwt => JWT.verify(jwt, key))
@@ -142,7 +142,7 @@ describe('JSON Web Token (JWT) RFC7519 implementation', () => {
       });
     });
 
-    it('iat', () => {
+    it('iat', function () {
       const key = keystore.get({ kty: 'oct' });
       return JWT.sign({ data: true, iat: epochTime() + 3600 }, key, 'HS256', {
         noTimestamp: true
@@ -157,7 +157,7 @@ describe('JSON Web Token (JWT) RFC7519 implementation', () => {
       });
     });
 
-    it('iat ignored', () => {
+    it('iat ignored', function () {
       const key = keystore.get({ kty: 'oct' });
       return JWT.sign({ data: true, iat: epochTime() + 3600 }, key, 'HS256', {
         noTimestamp: true
@@ -167,7 +167,7 @@ describe('JSON Web Token (JWT) RFC7519 implementation', () => {
       }));
     });
 
-    it('iat invalid', () => {
+    it('iat invalid', function () {
       const key = keystore.get({ kty: 'oct' });
       return JWT.sign({ data: true, iat: 'not an iat' }, key, 'HS256', {
         noTimestamp: true
@@ -182,7 +182,7 @@ describe('JSON Web Token (JWT) RFC7519 implementation', () => {
       });
     });
 
-    it('exp', () => {
+    it('exp', function () {
       const key = keystore.get({ kty: 'oct' });
       return JWT.sign({ data: true, exp: epochTime() - 3600 }, key, 'HS256')
       .then(jwt => JWT.verify(jwt, key))
@@ -195,7 +195,7 @@ describe('JSON Web Token (JWT) RFC7519 implementation', () => {
       });
     });
 
-    it('exp ignored', () => {
+    it('exp ignored', function () {
       const key = keystore.get({ kty: 'oct' });
       return JWT.sign({ data: true, exp: epochTime() - 3600 }, key, 'HS256')
       .then(jwt => JWT.verify(jwt, key, {
@@ -203,7 +203,7 @@ describe('JSON Web Token (JWT) RFC7519 implementation', () => {
       }));
     });
 
-    it('exp invalid', () => {
+    it('exp invalid', function () {
       const key = keystore.get({ kty: 'oct' });
       return JWT.sign({ data: true, exp: 'not an exp' }, key, 'HS256')
       .then(jwt => JWT.verify(jwt, key))
@@ -216,7 +216,7 @@ describe('JSON Web Token (JWT) RFC7519 implementation', () => {
       });
     });
 
-    it('audience (single)', () => {
+    it('audience (single)', function () {
       const key = keystore.get({ kty: 'oct' });
       return JWT.sign({ data: true }, key, 'HS256', {
         audience: 'client'
@@ -226,7 +226,7 @@ describe('JSON Web Token (JWT) RFC7519 implementation', () => {
       }));
     });
 
-    it('audience (multi)', () => {
+    it('audience (multi)', function () {
       const key = keystore.get({ kty: 'oct' });
       return JWT.sign({ data: true }, key, 'HS256', {
         audience: ['client', 'momma']
@@ -236,7 +236,7 @@ describe('JSON Web Token (JWT) RFC7519 implementation', () => {
       }));
     });
 
-    it('audience (single) failed', () => {
+    it('audience (single) failed', function () {
       const key = keystore.get({ kty: 'oct' });
       return JWT.sign({ data: true }, key, 'HS256', {
         audience: 'client'
@@ -254,7 +254,7 @@ describe('JSON Web Token (JWT) RFC7519 implementation', () => {
       });
     });
 
-    it('audience (multi) failed', () => {
+    it('audience (multi) failed', function () {
       const key = keystore.get({ kty: 'oct' });
       return JWT.sign({ data: true }, key, 'HS256', {
         audience: ['client', 'momma']
@@ -272,7 +272,7 @@ describe('JSON Web Token (JWT) RFC7519 implementation', () => {
       });
     });
 
-    it('issuer', () => {
+    it('issuer', function () {
       const key = keystore.get({ kty: 'oct' });
       return JWT.sign({ data: true }, key, 'HS256', {
         issuer: 'me'
@@ -282,7 +282,7 @@ describe('JSON Web Token (JWT) RFC7519 implementation', () => {
       }));
     });
 
-    it('issuer failed', () => {
+    it('issuer failed', function () {
       const key = keystore.get({ kty: 'oct' });
       return JWT.sign({ data: true }, key, 'HS256', {
         issuer: 'me'

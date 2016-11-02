@@ -9,16 +9,15 @@ const j = JSON.stringify;
 const route = '/auth';
 
 ['get', 'post'].forEach((verb) => {
-  describe(`claimsParameter via ${verb} ${route}`, () => {
-    const { provider, agent, AuthorizationRequest, getSession, wrap } = bootstrap(__dirname);
-    provider.setupClient();
+  describe(`claimsParameter via ${verb} ${route}`, function () {
+    before(bootstrap(__dirname)); // provider, AuthorizationRequest, getSession, wrap
 
-    describe('specify id_token', () => {
-      before(agent.login);
-      after(agent.logout);
+    describe('specify id_token', function () {
+      before(function () { return this.login(); });
+      after(function () { return this.logout(); });
 
-      it('should return individual claims requested', () => {
-        const auth = new AuthorizationRequest({
+      it('should return individual claims requested', function () {
+        const auth = new this.AuthorizationRequest({
           response_type: 'id_token token',
           scope: 'openid',
           claims: j({
@@ -36,7 +35,7 @@ const route = '/auth';
           })
         });
 
-        return wrap({ agent, route, verb, auth })
+        return this.wrap({ route, verb, auth })
         .expect(302)
         .expect(auth.validateFragment)
         .expect(auth.validatePresence(['id_token'], false))
@@ -49,27 +48,27 @@ const route = '/auth';
       });
     });
 
-    describe('with acr_values on the client', () => {
-      before(agent.login);
-      after(agent.logout);
+    describe('with acr_values on the client', function () {
+      before(function () { return this.login(); });
+      after(function () { return this.logout(); });
 
       before(function* () {
-        const client = yield provider.Client.find('client');
+        const client = yield this.provider.Client.find('client');
         client.defaultAcrValues = ['1', '2'];
       });
 
       after(function* () {
-        const client = yield provider.Client.find('client');
+        const client = yield this.provider.Client.find('client');
         delete client.defaultAcrValues;
       });
 
-      it('should include the acr claim now', () => {
-        const auth = new AuthorizationRequest({
+      it('should include the acr claim now', function () {
+        const auth = new this.AuthorizationRequest({
           response_type: 'id_token token',
           scope: 'openid'
         });
 
-        return wrap({ agent, route, verb, auth })
+        return this.wrap({ route, verb, auth })
         .expect(auth.validateFragment)
         .expect(auth.validatePresence(['id_token'], false))
         .expect((response) => {
@@ -80,12 +79,12 @@ const route = '/auth';
       });
     });
 
-    describe('specify userinfo', () => {
-      before(agent.login);
-      after(agent.logout);
+    describe('specify userinfo', function () {
+      before(function () { return this.login(); });
+      after(function () { return this.logout(); });
 
-      it('should return individual claims requested', (done) => {
-        const auth = new AuthorizationRequest({
+      it('should return individual claims requested', function (done) {
+        const auth = new this.AuthorizationRequest({
           response_type: 'id_token token',
           scope: 'openid',
           claims: j({
@@ -100,7 +99,7 @@ const route = '/auth';
           })
         });
 
-        wrap({ agent, route, verb, auth })
+        this.wrap({ route, verb, auth })
         .expect(302)
         .expect(auth.validateFragment)
         .expect(auth.validatePresence(['access_token'], false))
@@ -110,7 +109,7 @@ const route = '/auth';
           }
 
           const { query: { access_token } } = parseLocation(response.headers.location, true);
-          return agent
+          return this.agent
             .get('/me')
             .query({ access_token })
             .expect(200)
@@ -123,12 +122,12 @@ const route = '/auth';
       });
     });
 
-    describe('specify both id_token and userinfo', () => {
-      before(agent.login);
-      after(agent.logout);
+    describe('specify both id_token and userinfo', function () {
+      before(function () { return this.login(); });
+      after(function () { return this.logout(); });
 
-      it('should return individual claims requested', (done) => {
-        const auth = new AuthorizationRequest({
+      it('should return individual claims requested', function (done) {
+        const auth = new this.AuthorizationRequest({
           response_type: 'id_token token',
           scope: 'openid',
           claims: j({
@@ -141,7 +140,7 @@ const route = '/auth';
           })
         });
 
-        wrap({ agent, route, verb, auth })
+        this.wrap({ route, verb, auth })
         .expect(302)
         .expect(auth.validateFragment)
         .expect(auth.validatePresence(['id_token', 'access_token'], false))
@@ -153,7 +152,7 @@ const route = '/auth';
         })
         .end((err, response) => {
           const { query: { access_token } } = parseLocation(response.headers.location, true);
-          agent
+          this.agent
             .get('/me')
             .query({ access_token })
             .expect(200)
@@ -166,13 +165,13 @@ const route = '/auth';
       });
     });
 
-    describe('related interactions', () => {
-      beforeEach(agent.login);
-      afterEach(agent.logout);
-      context('are met', () => {
-        it('session subject value differs from the one requested', () => {
-          const session = getSession(agent);
-          const auth = new AuthorizationRequest({
+    describe('related interactions', function () {
+      beforeEach(function () { return this.login(); });
+      afterEach(function () { return this.logout(); });
+      context('are met', function () {
+        it('session subject value differs from the one requested', function () {
+          const session = this.getSession();
+          const auth = new this.AuthorizationRequest({
             response_type: 'id_token',
             scope: 'openid',
             prompt: 'none',
@@ -185,7 +184,7 @@ const route = '/auth';
             })
           });
 
-          return wrap({ agent, route, verb, auth })
+          return this.wrap({ route, verb, auth })
           .expect(302)
           .expect(auth.validateFragment)
           .expect(auth.validatePresence(['id_token', 'state']))
@@ -193,10 +192,10 @@ const route = '/auth';
           .expect(auth.validateClientLocation);
         });
 
-        it('none of multiple authentication context class references requested are met', () => {
-          const session = getSession(agent);
+        it('none of multiple authentication context class references requested are met', function () {
+          const session = this.getSession();
           session.acrValue = '2';
-          const auth = new AuthorizationRequest({
+          const auth = new this.AuthorizationRequest({
             response_type: 'id_token',
             scope: 'openid',
             prompt: 'none',
@@ -210,7 +209,7 @@ const route = '/auth';
             })
           });
 
-          return wrap({ agent, route, verb, auth })
+          return this.wrap({ route, verb, auth })
           .expect(302)
           .expect(auth.validateFragment)
           .expect(auth.validatePresence(['id_token', 'state']))
@@ -218,10 +217,10 @@ const route = '/auth';
           .expect(auth.validateClientLocation);
         });
 
-        it('single requested authentication context class reference is not met', () => {
-          const session = getSession(agent);
+        it('single requested authentication context class reference is not met', function () {
+          const session = this.getSession();
           session.acrValue = '1';
-          const auth = new AuthorizationRequest({
+          const auth = new this.AuthorizationRequest({
             response_type: 'id_token',
             scope: 'openid',
             prompt: 'none',
@@ -235,7 +234,7 @@ const route = '/auth';
             })
           });
 
-          return wrap({ agent, route, verb, auth })
+          return this.wrap({ route, verb, auth })
           .expect(302)
           .expect(auth.validateFragment)
           .expect(auth.validatePresence(['id_token', 'state']))
@@ -244,9 +243,9 @@ const route = '/auth';
         });
       });
 
-      context('are not met', () => {
-        it('session subject value differs from the one requested', () => {
-          const auth = new AuthorizationRequest({
+      context('are not met', function () {
+        it('session subject value differs from the one requested', function () {
+          const auth = new this.AuthorizationRequest({
             response_type: 'id_token',
             scope: 'openid',
             prompt: 'none',
@@ -259,7 +258,7 @@ const route = '/auth';
             })
           });
 
-          return wrap({ agent, route, verb, auth })
+          return this.wrap({ route, verb, auth })
           .expect(302)
           .expect(auth.validateFragment)
           .expect(auth.validatePresence(['error', 'error_description', 'state']))
@@ -269,8 +268,8 @@ const route = '/auth';
           .expect(auth.validateErrorDescription('requested subject could not be obtained'));
         });
 
-        it('none of multiple authentication context class references requested are met', () => {
-          const auth = new AuthorizationRequest({
+        it('none of multiple authentication context class references requested are met', function () {
+          const auth = new this.AuthorizationRequest({
             response_type: 'id_token',
             scope: 'openid',
             prompt: 'none',
@@ -284,7 +283,7 @@ const route = '/auth';
             })
           });
 
-          return wrap({ agent, route, verb, auth })
+          return this.wrap({ route, verb, auth })
           .expect(302)
           .expect(auth.validateFragment)
           .expect(auth.validatePresence(['error', 'error_description', 'state']))
@@ -294,8 +293,8 @@ const route = '/auth';
           .expect(auth.validateErrorDescription('none of the requested ACRs could not be obtained'));
         });
 
-        it('single requested authentication context class reference is not met', () => {
-          const auth = new AuthorizationRequest({
+        it('single requested authentication context class reference is not met', function () {
+          const auth = new this.AuthorizationRequest({
             response_type: 'id_token',
             scope: 'openid',
             prompt: 'none',
@@ -309,7 +308,7 @@ const route = '/auth';
             })
           });
 
-          return wrap({ agent, route, verb, auth })
+          return this.wrap({ route, verb, auth })
           .expect(302)
           .expect(auth.validateFragment)
           .expect(auth.validatePresence(['error', 'error_description', 'state']))
@@ -320,8 +319,8 @@ const route = '/auth';
         });
 
         it('id_token_hint belongs to a user that is not currently logged in', function* () {
-          const client = yield provider.Client.find('client');
-          const IdToken = provider.IdToken;
+          const client = yield this.provider.Client.find('client');
+          const IdToken = this.provider.IdToken;
           const idToken = new IdToken({
             sub: 'not-the-droid-you-are-looking-for'
           });
@@ -329,14 +328,14 @@ const route = '/auth';
           idToken.scope = 'openid';
           const hint = yield idToken.sign(client);
 
-          const auth = new AuthorizationRequest({
+          const auth = new this.AuthorizationRequest({
             response_type: 'id_token',
             scope: 'openid',
             prompt: 'none',
             id_token_hint: hint
           });
 
-          return wrap({ agent, route, verb, auth })
+          return this.wrap({ route, verb, auth })
           .expect(302)
           .expect(auth.validateFragment)
           .expect(auth.validatePresence(['error', 'error_description', 'state']))
@@ -347,9 +346,9 @@ const route = '/auth';
         });
 
         it('id_token_hint belongs to a user that is currently logged in', function* () {
-          const session = getSession(agent);
-          const client = yield provider.Client.find('client');
-          const IdToken = provider.IdToken;
+          const session = this.getSession();
+          const client = yield this.provider.Client.find('client');
+          const IdToken = this.provider.IdToken;
           const idToken = new IdToken({
             sub: session.account
           });
@@ -357,14 +356,14 @@ const route = '/auth';
           idToken.scope = 'openid';
           const hint = yield idToken.sign(client);
 
-          const auth = new AuthorizationRequest({
+          const auth = new this.AuthorizationRequest({
             response_type: 'id_token',
             scope: 'openid',
             prompt: 'none',
             id_token_hint: hint
           });
 
-          return wrap({ agent, route, verb, auth })
+          return this.wrap({ route, verb, auth })
           .expect(302)
           .expect(auth.validateFragment)
           .expect(auth.validatePresence(['id_token', 'state']))
@@ -374,15 +373,15 @@ const route = '/auth';
       });
     });
 
-    describe('parameter validations', () => {
-      it('should not be combined with response_type=none', () => {
-        const auth = new AuthorizationRequest({
+    describe('parameter validations', function () {
+      it('should not be combined with response_type=none', function () {
+        const auth = new this.AuthorizationRequest({
           response_type: 'none',
           scope: 'openid',
           claims: 'something'
         });
 
-        return wrap({ agent, route, verb, auth })
+        return this.wrap({ route, verb, auth })
         .expect(302)
         .expect(auth.validatePresence(['error', 'error_description', 'state']))
         .expect(auth.validateState)
@@ -391,14 +390,14 @@ const route = '/auth';
         .expect(auth.validateErrorDescription('claims parameter should not be combined with response_type none'));
       });
 
-      it('should handle when invalid json is provided', () => {
-        const auth = new AuthorizationRequest({
+      it('should handle when invalid json is provided', function () {
+        const auth = new this.AuthorizationRequest({
           response_type: 'id_token token',
           scope: 'openid',
           claims: 'something'
         });
 
-        return wrap({ agent, route, verb, auth })
+        return this.wrap({ route, verb, auth })
         .expect(302)
         .expect(auth.validateFragment)
         .expect(auth.validatePresence(['error', 'error_description', 'state']))
@@ -408,14 +407,14 @@ const route = '/auth';
         .expect(auth.validateErrorDescription('could not parse the claims parameter JSON'));
       });
 
-      it('should validate an object is passed', () => {
-        const auth = new AuthorizationRequest({
+      it('should validate an object is passed', function () {
+        const auth = new this.AuthorizationRequest({
           response_type: 'id_token token',
           scope: 'openid',
           claims: 'true'
         });
 
-        return wrap({ agent, route, verb, auth })
+        return this.wrap({ route, verb, auth })
         .expect(302)
         .expect(auth.validateFragment)
         .expect(auth.validatePresence(['error', 'error_description', 'state']))
@@ -425,14 +424,14 @@ const route = '/auth';
         .expect(auth.validateErrorDescription('claims parameter should be a JSON object'));
       });
 
-      it('should check accepted properties being present', () => {
-        const auth = new AuthorizationRequest({
+      it('should check accepted properties being present', function () {
+        const auth = new this.AuthorizationRequest({
           response_type: 'id_token token',
           scope: 'openid',
           claims: '{"not_recognized": "does not matter"}'
         });
 
-        return wrap({ agent, route, verb, auth })
+        return this.wrap({ route, verb, auth })
         .expect(302)
         .expect(auth.validateFragment)
         .expect(auth.validatePresence(['error', 'error_description', 'state']))
@@ -442,14 +441,14 @@ const route = '/auth';
         .expect(auth.validateErrorDescription('claims parameter should have userinfo or id_token properties'));
       });
 
-      it('should check userinfo property being a simple object', () => {
-        const auth = new AuthorizationRequest({
+      it('should check userinfo property being a simple object', function () {
+        const auth = new this.AuthorizationRequest({
           response_type: 'id_token token',
           scope: 'openid',
           claims: '{"userinfo": "Not an Object"}'
         });
 
-        return wrap({ agent, route, verb, auth })
+        return this.wrap({ route, verb, auth })
         .expect(302)
         .expect(auth.validateFragment)
         .expect(auth.validatePresence(['error', 'error_description', 'state']))
@@ -459,14 +458,14 @@ const route = '/auth';
         .expect(auth.validateErrorDescription('claims.userinfo should be an object'));
       });
 
-      it('should check id_token property being a simple object', () => {
-        const auth = new AuthorizationRequest({
+      it('should check id_token property being a simple object', function () {
+        const auth = new this.AuthorizationRequest({
           response_type: 'id_token token',
           scope: 'openid',
           claims: '{"id_token": "Not an Object"}'
         });
 
-        return wrap({ agent, route, verb, auth })
+        return this.wrap({ route, verb, auth })
         .expect(302)
         .expect(auth.validateFragment)
         .expect(auth.validatePresence(['error', 'error_description', 'state']))
@@ -476,14 +475,14 @@ const route = '/auth';
         .expect(auth.validateErrorDescription('claims.id_token should be an object'));
       });
 
-      it('should check that userinfo claims are not specified for id_token requests', () => {
-        const auth = new AuthorizationRequest({
+      it('should check that userinfo claims are not specified for id_token requests', function () {
+        const auth = new this.AuthorizationRequest({
           response_type: 'id_token',
           scope: 'openid',
           claims: '{"userinfo": {}}'
         });
 
-        return wrap({ agent, route, verb, auth })
+        return this.wrap({ route, verb, auth })
         .expect(302)
         .expect(auth.validateFragment)
         .expect(auth.validatePresence(['error', 'error_description', 'state']))

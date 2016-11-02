@@ -19,14 +19,12 @@ function validateErrorDescription(description) {
   };
 }
 
-describe('registration features', () => {
-  const { agent, provider, TestAdapter } = bootstrap(__dirname);
-  const Client = provider.Client;
+describe('registration features', function () {
+  before(bootstrap(__dirname)); // agent, provider, TestAdapter
 
-
-  context('POST /reg', () => {
-    it('generates the id, secret that does not expire and reg access token and returns the defaulted values', () => {
-      return agent.post('/reg')
+  context('POST /reg', function () {
+    it('generates the id, secret that does not expire and reg access token and returns the defaulted values', function () {
+      return this.agent.post('/reg')
       .send({
         redirect_uris: ['https://client.example.com/cb']
       })
@@ -40,12 +38,12 @@ describe('registration features', () => {
         expect(response.body).to.have.property('require_auth_time', false);
         expect(response.body).to.have.property('grant_types').and.eql(['authorization_code']);
         expect(response.body).to.have.property('response_types').and.eql(['code']);
-        expect(response.body).to.have.property('registration_client_uri', provider.issuer + '/reg/' + response.body.client_id); // eslint-disable-line prefer-template
+        expect(response.body).to.have.property('registration_client_uri', this.provider.issuer + '/reg/' + response.body.client_id); // eslint-disable-line prefer-template
       });
     });
 
-    it('omits the client_secret generation when it is not needed', () => {
-      return agent.post('/reg')
+    it('omits the client_secret generation when it is not needed', function () {
+      return this.agent.post('/reg')
       .send({
         token_endpoint_auth_method: 'none',
         redirect_uris: ['https://client.example.com/cb'],
@@ -59,8 +57,8 @@ describe('registration features', () => {
       });
     });
 
-    it('issues the client_secret when needed for sig', () => {
-      return agent.post('/reg')
+    it('issues the client_secret when needed for sig', function () {
+      return this.agent.post('/reg')
       .send({
         token_endpoint_auth_method: 'none',
         redirect_uris: ['https://client.example.com/cb'],
@@ -75,8 +73,8 @@ describe('registration features', () => {
       });
     });
 
-    it('issues the client_secret when needed for auth', () => {
-      return agent.post('/reg')
+    it('issues the client_secret when needed for auth', function () {
+      return this.agent.post('/reg')
       .send({
         token_endpoint_auth_method: 'client_secret_jwt',
         redirect_uris: ['https://client.example.com/cb'],
@@ -90,8 +88,8 @@ describe('registration features', () => {
       });
     });
 
-    it('returns token-endpoint-like cache headers', () => {
-      return agent.post('/reg')
+    it('returns token-endpoint-like cache headers', function () {
+      return this.agent.post('/reg')
       .send({
         redirect_uris: ['https://client.example.com/cb']
       })
@@ -99,35 +97,40 @@ describe('registration features', () => {
       .expect('cache-control', 'no-cache, no-store');
     });
 
-    it('stores the client using the provided adapter and emits an event', (done) => {
+    it('stores the client and emits an event', function () {
       const spy = sinon.spy();
-      provider.once('registration_create.success', spy);
+      this.provider.once('registration_create.success', spy);
+      const adapter = this.TestAdapter.for('Client');
+      const upsert = sinon.spy(adapter, 'upsert');
 
-      agent.post('/reg')
+      return this.agent.post('/reg')
       .send({
         redirect_uris: ['https://client.example.com/cb']
       })
       .expect(() => {
+        expect(upsert.calledOnce).to.be.true;
         expect(spy.calledOnce).to.be.true;
         expect(spy.firstCall.args[0].constructor.name).to.equal('Client');
         expect(spy.firstCall.args[1]).to.have.property('oidc');
-      })
-      .end((err, response) => {
-        if (err) return done(err);
-
-        Client.purge(); // wipe the cache
-
-        return Client.find(response.body.client_id)
-        .then((client) => {
-          expect(client).to.be.ok;
-        })
-        .then(done)
-        .catch(done);
       });
     });
 
-    it('validates the parameters to be valid and responds with errors', () => {
-      return agent.post('/reg')
+    it('uses the adapter to find stored clients', function () {
+      const adapter = this.TestAdapter.for('Client');
+      adapter.store.set('Client:foobar', {
+        client_id: 'foobar',
+        client_secret: 'foobarbaz',
+        redirect_uris: ['https://client.example.com/cb'],
+      });
+
+      return this.provider.Client.find('foobar')
+        .then((client) => {
+          expect(client).to.be.ok;
+        });
+    });
+
+    it('validates the parameters to be valid and responds with errors', function () {
+      return this.agent.post('/reg')
       .send({
         grant_types: ['this is clearly wrong'],
         redirect_uris: ['https://client.example.com/cb']
@@ -137,8 +140,8 @@ describe('registration features', () => {
       .expect(validateErrorDescription(/grant_types/));
     });
 
-    it('validates the parameters to be valid and responds with redirect_uri errors', () => {
-      return agent.post('/reg')
+    it('validates the parameters to be valid and responds with redirect_uri errors', function () {
+      return this.agent.post('/reg')
       .send({
         // redirect_uris missing here
       })
@@ -147,8 +150,8 @@ describe('registration features', () => {
       .expect(validateErrorDescription(/redirect_uris/));
     });
 
-    it('only accepts application/json POSTs', () => {
-      return agent.post('/reg')
+    it('only accepts application/json POSTs', function () {
+      return this.agent.post('/reg')
       .send({
         redirect_uris: ['https://client.example.com/cb']
       })
@@ -160,19 +163,19 @@ describe('registration features', () => {
       });
     });
 
-    describe('initial access tokens', () => {
-      describe('fix string one', () => {
-        before(() => {
-          const conf = provider.configuration();
+    describe('initial access tokens', function () {
+      describe('fix string one', function () {
+        before(function () {
+          const conf = i(this.provider).configuration();
           conf.features.registration = { initialAccessToken: 'foobar' };
         });
-        after(() => {
-          const conf = provider.configuration();
+        after(function () {
+          const conf = i(this.provider).configuration();
           conf.features.registration = true;
         });
 
-        it('allows reg calls with the access tokens as a Bearer token [query]', () => {
-          return agent.post('/reg')
+        it('allows reg calls with the access tokens as a Bearer token [query]', function () {
+          return this.agent.post('/reg')
           .send({
             redirect_uris: ['https://client.example.com/cb']
           })
@@ -182,8 +185,8 @@ describe('registration features', () => {
           .expect(201);
         });
 
-        it('allows reg calls with the access tokens as a Bearer token [post]', () => {
-          return agent.post('/reg')
+        it('allows reg calls with the access tokens as a Bearer token [post]', function () {
+          return this.agent.post('/reg')
           .send({
             redirect_uris: ['https://client.example.com/cb'],
             access_token: 'foobar'
@@ -191,8 +194,8 @@ describe('registration features', () => {
           .expect(201);
         });
 
-        it('allows reg calls with the access tokens as a Bearer token [header]', () => {
-          return agent.post('/reg')
+        it('allows reg calls with the access tokens as a Bearer token [header]', function () {
+          return this.agent.post('/reg')
           .set('Authorization', 'Bearer foobar')
           .send({
             redirect_uris: ['https://client.example.com/cb']
@@ -200,8 +203,8 @@ describe('registration features', () => {
           .expect(201);
         });
 
-        it('rejects calls with bad access token', () => {
-          return agent.post('/reg')
+        it('rejects calls with bad access token', function () {
+          return this.agent.post('/reg')
           .send({
             redirect_uris: ['https://client.example.com/cb']
           })
@@ -212,38 +215,38 @@ describe('registration features', () => {
         });
       });
 
-      describe('using a model', () => {
+      describe('using a model', function () {
         before(function () {
-          const conf = provider.configuration();
+          const conf = i(this.provider).configuration();
           conf.features.registration = { initialAccessToken: true };
 
-          const iat = new (provider.InitialAccessToken)({});
+          const iat = new (this.provider.InitialAccessToken)({});
           return iat.save().then((value) => {
             this.token = value;
           });
         });
-        after(() => {
-          const conf = provider.configuration();
+        after(function () {
+          const conf = i(this.provider).configuration();
           conf.features.registration = true;
         });
 
-        it('allows the developers to insert new tokens with no expiration', () => {
-          return new (provider.InitialAccessToken)().save();
+        it('allows the developers to insert new tokens with no expiration', function () {
+          return new (this.provider.InitialAccessToken)().save();
         });
 
-        it('allows the developers to insert new tokens with expiration', () => {
-          const IAT = provider.InitialAccessToken;
+        it('allows the developers to insert new tokens with expiration', function () {
+          const IAT = this.provider.InitialAccessToken;
           return new IAT({
             expiresIn: 24 * 60 * 60
           }).save().then((v) => {
             const jti = v.substring(0, 48);
-            const token = TestAdapter.for('InitialAccessToken').syncFind(jti);
+            const token = this.TestAdapter.for('InitialAccessToken').syncFind(jti);
             expect(JSON.parse(base64url.decode(token.payload))).to.have.property('exp');
           });
         });
 
         it('allows reg calls with the access tokens as a Bearer token', function () {
-          return agent.post('/reg')
+          return this.agent.post('/reg')
           .send({
             redirect_uris: ['https://client.example.com/cb']
           })
@@ -253,8 +256,8 @@ describe('registration features', () => {
           .expect(201);
         });
 
-        it('rejects calls with bad access token', () => {
-          return agent.post('/reg')
+        it('rejects calls with bad access token', function () {
+          return this.agent.post('/reg')
           .send({
             redirect_uris: ['https://client.example.com/cb']
           })
@@ -265,7 +268,7 @@ describe('registration features', () => {
         });
 
         it('rejects calls with manipulated access token', function () {
-          return agent.post('/reg')
+          return this.agent.post('/reg')
           .send({
             redirect_uris: ['https://client.example.com/cb']
           })
@@ -278,9 +281,9 @@ describe('registration features', () => {
     });
   });
 
-  context('GET /reg/:clientId', () => {
+  context('GET /reg/:clientId', function () {
     before(function () {
-      return agent.post('/reg')
+      return this.agent.post('/reg')
       .send({
         redirect_uris: ['https://client.example.com/cb']
       })
@@ -292,7 +295,7 @@ describe('registration features', () => {
     });
 
     it('returns all available nonsecret metadata', function () {
-      return agent.get(`/reg/${this.clientId}`)
+      return this.agent.get(`/reg/${this.clientId}`)
         .query({
           access_token: this.token
         })
@@ -307,12 +310,12 @@ describe('registration features', () => {
           expect(response.body).to.have.property('require_auth_time', false);
           expect(response.body).to.have.property('grant_types').and.eql(['authorization_code']);
           expect(response.body).to.have.property('response_types').and.eql(['code']);
-          expect(response.body).to.have.property('registration_client_uri', provider.issuer + '/reg/' + response.body.client_id); // eslint-disable-line prefer-template
+          expect(response.body).to.have.property('registration_client_uri', this.provider.issuer + '/reg/' + response.body.client_id); // eslint-disable-line prefer-template
         });
     });
 
     it('returns token-endpoint-like cache headers', function () {
-      return agent.get(`/reg/${this.clientId}`)
+      return this.agent.get(`/reg/${this.clientId}`)
         .query({
           access_token: this.token
         })
@@ -320,8 +323,8 @@ describe('registration features', () => {
         .expect('cache-control', 'no-cache, no-store');
     });
 
-    it('validates client is a valid client', () => {
-      return agent.get('/reg/thisDOesnotCompute')
+    it('validates client is a valid client', function () {
+      return this.agent.get('/reg/thisDOesnotCompute')
         .query({
           access_token: 'wahtever'
         })
@@ -330,13 +333,13 @@ describe('registration features', () => {
     });
 
     it('validates auth presence', function () {
-      return agent.get(`/reg/${this.clientId}`)
+      return this.agent.get(`/reg/${this.clientId}`)
         .expect(400)
         .expect(validateError('invalid_request'));
     });
 
     it('validates auth', function () {
-      return agent.get(`/reg/${this.clientId}`)
+      return this.agent.get(`/reg/${this.clientId}`)
         .query({
           access_token: 'invalid token'
         })
@@ -344,7 +347,7 @@ describe('registration features', () => {
     });
 
     it('accepts query', function () {
-      return agent.get(`/reg/${this.clientId}`)
+      return this.agent.get(`/reg/${this.clientId}`)
         .query({
           access_token: this.token
         })
@@ -352,16 +355,16 @@ describe('registration features', () => {
     });
 
     it('accepts header', function () {
-      return agent.get(`/reg/${this.clientId}`)
+      return this.agent.get(`/reg/${this.clientId}`)
         .set('Authorization', `Bearer ${this.token}`)
         .expect(200);
     });
 
     it('invalidates registration_access_token if used on the wrong client', function () {
       const spy = sinon.spy();
-      provider.once('token.revoked', spy);
+      this.provider.once('token.revoked', spy);
 
-      return agent.get('/reg/foobar')
+      return this.agent.get('/reg/foobar')
         .query({
           access_token: this.token
         })

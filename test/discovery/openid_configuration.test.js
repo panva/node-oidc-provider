@@ -7,72 +7,72 @@ const { expect } = require('chai');
 
 const route = '/.well-known/openid-configuration';
 
-describe(route, () => {
-  const { agent, provider, responses } = bootstrap(__dirname);
+describe(route, function () {
+  before(bootstrap(__dirname)); // agent, provider, responses
 
-  it('responds with json 200', () => {
-    return agent.get(route)
+  it('responds with json 200', function () {
+    return this.agent.get(route)
       .expect('Content-Type', /application\/json/)
       .expect(200);
   });
 
-  it('is configurable with extra properties', () => {
-    provider.configuration('discovery').service_documentation = 'https://docs.example.com';
-    provider.configuration('discovery').authorization_endpoint = 'this will not be used';
+  it('is configurable with extra properties', function () {
+    i(this.provider).configuration('discovery').service_documentation = 'https://docs.example.com';
+    i(this.provider).configuration('discovery').authorization_endpoint = 'this will not be used';
 
-    return agent.get(route)
+    return this.agent.get(route)
       .expect((response) => {
         expect(response.body).to.have.property('service_documentation', 'https://docs.example.com');
         expect(response.body.authorization_endpoint).not.to.equal('this will not be used');
       });
   });
 
-  describe('with errors', () => {
-    before(() => {
-      sinon.stub(provider, 'pathFor').throws(new InvalidRequestError());
+  describe('with errors', function () {
+    before(function () {
+      sinon.stub(this.provider, 'pathFor').throws(new InvalidRequestError());
     });
 
-    after(() => {
-      provider.pathFor.restore();
+    after(function () {
+      this.provider.pathFor.restore();
     });
 
-    it('handles errors with json and corresponding status', () => {
-      return agent.get(route)
+    it('handles errors with json and corresponding status', function () {
+      return this.agent.get(route)
         .expect('Content-Type', /application\/json/)
         .expect(400);
     });
 
-    it('emits discovery.error on errors', () => {
+    it('emits discovery.error on errors', function () {
       const spy = sinon.spy();
-      provider.once('discovery.error', spy);
+      this.provider.once('discovery.error', spy);
 
-      return agent.get(route)
+      return this.agent.get(route)
         .expect(() => {
           expect(spy.called).to.be.true;
         });
     });
   });
 
-  describe('with exceptions', () => {
-    before(() => {
-      sinon.stub(provider, 'pathFor').throws();
+  describe('with exceptions', function () {
+    before(function () {
+      sinon.stub(this.provider, 'pathFor').throws();
     });
 
-    after(() => {
-      provider.pathFor.restore();
+    after(function () {
+      this.provider.pathFor.restore();
     });
 
-    it('handles exceptions with json 500', () => {
-      return agent.get(route)
+    it('handles exceptions with json 500', function () {
+      return this.agent.get(route)
         .expect('Content-Type', /application\/json/)
-        .expect(500, responses.serverErrorBody);
+        .expect(500, this.responses.serverErrorBody);
     });
 
-    it('emits server_error on exceptions', () => {
+    it('emits server_error on exceptions', function () {
       const spy = sinon.spy();
-      provider.once('server_error', spy);
+      this.provider.once('server_error', spy);
 
-      return agent.get(route)
+      return this.agent.get(route)
         .expect(() => {
           expect(spy.called).to.be.true;
         });

@@ -8,20 +8,19 @@ const JWT = require('../../lib/helpers/jwt');
 
 const route = '/session/end';
 
-describe('[session_management]', () => {
-  const { provider, agent, getSession, getSessionId, TestAdapter } = bootstrap(__dirname);
-  provider.setupClient();
+describe('[session_management]', function () {
+  before(bootstrap(__dirname)); // this.provider, agent, getSession, getSessionId, this.TestAdapter
 
-  beforeEach(agent.login);
-  afterEach(agent.logout);
-  afterEach(() => {
-    if (TestAdapter.for('Session').destroy.restore) {
-      TestAdapter.for('Session').destroy.restore();
+  beforeEach(function () { return this.login(); });
+  afterEach(function () { return this.logout(); });
+  afterEach(function () {
+    if (this.TestAdapter.for('Session').destroy.restore) {
+      this.TestAdapter.for('Session').destroy.restore();
     }
   });
 
   beforeEach(function () {
-    return agent.get('/auth')
+    return this.agent.get('/auth')
     .query({
       client_id: 'client',
       scope: 'openid',
@@ -36,13 +35,13 @@ describe('[session_management]', () => {
     });
   });
 
-  describe('GET end_session', () => {
-    context('client with postLogoutRedirectUris', () => {
+  describe('GET end_session', function () {
+    context('client with postLogoutRedirectUris', function () {
       before(function* () {
-        (yield provider.Client.find('client')).postLogoutRedirectUris = ['https://client.example.com/logout/cb'];
+        (yield this.provider.Client.find('client')).postLogoutRedirectUris = ['https://client.example.com/logout/cb'];
       });
       after(function* () {
-        (yield provider.Client.find('client')).postLogoutRedirectUris = [];
+        (yield this.provider.Client.find('client')).postLogoutRedirectUris = [];
       });
 
       it('allows to redirect there', function () {
@@ -51,11 +50,11 @@ describe('[session_management]', () => {
           post_logout_redirect_uri: 'https://client.example.com/logout/cb'
         };
 
-        return agent.get(route)
+        return this.agent.get(route)
           .query(params)
           .expect(200)
           .expect(() => {
-            const { logout: { postLogoutRedirectUri } } = getSession(agent);
+            const { logout: { postLogoutRedirectUri } } = this.getSession();
             expect(postLogoutRedirectUri).to.equal('https://client.example.com/logout/cb');
           });
       });
@@ -63,11 +62,11 @@ describe('[session_management]', () => {
       it('can omit the post_logout_redirect_uri and uses the provider one', function () {
         const params = { id_token_hint: this.idToken };
 
-        return agent.get(route)
+        return this.agent.get(route)
           .query(params)
           .expect(200)
           .expect(() => {
-            const { logout: { postLogoutRedirectUri } } = getSession(agent);
+            const { logout: { postLogoutRedirectUri } } = this.getSession();
             expect(postLogoutRedirectUri).to.equal('/?loggedOut=true');
           });
       });
@@ -76,11 +75,11 @@ describe('[session_management]', () => {
     it('without id_token_hint ignores the provided post_logout_redirect_uri', function () {
       const params = { post_logout_redirect_uri: 'http://rp.example.com/logout/cb' };
 
-      return agent.get(route)
+      return this.agent.get(route)
         .query(params)
         .expect(200)
         .expect(() => {
-          const { logout: { postLogoutRedirectUri } } = getSession(agent);
+          const { logout: { postLogoutRedirectUri } } = this.getSession();
           expect(postLogoutRedirectUri).to.equal('/?loggedOut=true');
         });
     });
@@ -91,19 +90,19 @@ describe('[session_management]', () => {
         post_logout_redirect_uri: 'https://client.example.com/callback/logout'
       };
 
-      return agent.get(route)
+      return this.agent.get(route)
         .query(params)
         .expect(400)
         .expect(/"error":"invalid_request"/)
         .expect(/"error_description":"post_logout_redirect_uri not registered"/);
     });
 
-    it('rejects invalid JWTs', () => {
+    it('rejects invalid JWTs', function () {
       const params = {
         id_token_hint: 'not.a.jwt'
       };
 
-      return agent.get(route)
+      return this.agent.get(route)
         .query(params)
         .expect(400)
         .expect(/"error":"invalid_request"/)
@@ -117,7 +116,7 @@ describe('[session_management]', () => {
         }, null, 'none')
       };
 
-      return agent.get(route)
+      return this.agent.get(route)
         .query(params)
         .expect(400)
         .expect(/"error":"invalid_request"/)
@@ -131,7 +130,7 @@ describe('[session_management]', () => {
         }, null, 'none')
       };
 
-      return agent.get(route)
+      return this.agent.get(route)
         .query(params)
         .expect(400)
         .expect(/"error":"invalid_request"/)
@@ -139,9 +138,9 @@ describe('[session_management]', () => {
     });
   });
 
-  describe('POST end_session', () => {
+  describe('POST end_session', function () {
     it('checks session.logout is set', function () {
-      return agent.post('/session/end')
+      return this.agent.post('/session/end')
         .send({})
         .type('form')
         .expect(400)
@@ -150,9 +149,9 @@ describe('[session_management]', () => {
     });
 
     it('checks session.logout.secret (xsrf is right)', function () {
-      getSession(agent).logout = { secret: '123' };
+      this.getSession().logout = { secret: '123' };
 
-      return agent.post('/session/end')
+      return this.agent.post('/session/end')
         .send({ xsrf: 'not right' })
         .type('form')
         .expect(400)
@@ -161,13 +160,13 @@ describe('[session_management]', () => {
     });
 
     it('destroys complete session if user wants to', function () {
-      const sessionId = getSessionId(agent);
-      const adapter = TestAdapter.for('Session');
+      const sessionId = this.getSessionId();
+      const adapter = this.TestAdapter.for('Session');
       sinon.spy(adapter, 'destroy');
 
-      getSession(agent).logout = { secret: '123', postLogoutRedirectUri: '/', clientId: 'client' };
+      this.getSession().logout = { secret: '123', postLogoutRedirectUri: '/', clientId: 'client' };
 
-      return agent.post('/session/end')
+      return this.agent.post('/session/end')
         .send({ xsrf: '123', logout: 'yes' })
         .type('form')
         .expect(302)
@@ -179,14 +178,14 @@ describe('[session_management]', () => {
     });
 
     it('only clears one clients session if user doesnt wanna log out', function () {
-      const adapter = TestAdapter.for('Session');
+      const adapter = this.TestAdapter.for('Session');
       sinon.spy(adapter, 'destroy');
-      const session = getSession(agent);
+      const session = this.getSession();
       session.logout = { secret: '123', postLogoutRedirectUri: '/', clientId: 'client' };
 
       expect(session.authorizations.client).to.be.ok;
 
-      return agent.post('/session/end')
+      return this.agent.post('/session/end')
         .send({ xsrf: '123' })
         .type('form')
         .expect(302)
@@ -199,15 +198,15 @@ describe('[session_management]', () => {
     });
 
     it('follows a domain if configured', function () {
-      getSession(agent).logout = { secret: '123', postLogoutRedirectUri: '/', clientId: 'client' };
+      this.getSession().logout = { secret: '123', postLogoutRedirectUri: '/', clientId: 'client' };
 
-      provider.configuration().cookies.long.domain = '.oidc.dev';
+      i(this.provider).configuration().cookies.long.domain = '.oidc.dev';
 
-      return agent.post('/session/end')
+      return this.agent.post('/session/end')
         .send({ xsrf: '123', logout: 'yes' })
         .type('form')
         .expect(() => {
-          delete provider.configuration().cookies.long.domain;
+          delete i(this.provider).configuration().cookies.long.domain;
         })
         .expect(302)
         .expect((response) => {

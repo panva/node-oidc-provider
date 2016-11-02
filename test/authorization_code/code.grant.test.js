@@ -12,26 +12,15 @@ function errorDetail(spy) {
   return spy.args[0][0].error_detail;
 }
 
-describe('grant_type=authorization_code', () => {
-  const {
-    agent, provider, TestAdapter
-  } = bootstrap(__dirname);
+describe('grant_type=authorization_code', function () {
+  before(bootstrap(__dirname));
 
-
-  provider.setupClient();
-  provider.setupClient({
-    client_id: 'client2',
-    client_secret: 'secret',
-    redirect_uris: ['https://client.example.com/cb']
-  });
-  const AuthorizationCode = provider.AuthorizationCode;
-
-  context('with real tokens', () => {
-    before(agent.login);
-    after(agent.logout);
+  context('with real tokens', function () {
+    before(function () { return this.login(); });
+    after(function () { return this.logout(); });
 
     beforeEach(function () {
-      return agent.get('/auth')
+      return this.agent.get('/auth')
       .query({
         client_id: 'client',
         scope: 'openid',
@@ -42,16 +31,16 @@ describe('grant_type=authorization_code', () => {
       .expect((response) => {
         const { query: { code } } = parseUrl(response.headers.location, true);
         const jti = code.substring(0, 48);
-        this.code = TestAdapter.for('AuthorizationCode').syncFind(jti);
+        this.code = this.TestAdapter.for('AuthorizationCode').syncFind(jti);
         this.ac = code;
       });
     });
 
     it('returns the right stuff', function () {
       const spy = sinon.spy();
-      provider.once('grant.success', spy);
+      this.provider.once('grant.success', spy);
 
-      return agent.post(route)
+      return this.agent.post(route)
       .auth('client', 'secret')
       .type('form')
       .send({
@@ -70,7 +59,7 @@ describe('grant_type=authorization_code', () => {
     });
 
     it('returns token-endpoint-like cache headers', function () {
-      return agent.post(route)
+      return this.agent.post(route)
       .auth('client', 'secret')
       .type('form')
       .send({
@@ -83,14 +72,14 @@ describe('grant_type=authorization_code', () => {
     });
 
     it('handles internal token signature validation', function () {
-      sinon.stub(AuthorizationCode, 'fromJWT', () => {
+      sinon.stub(this.provider.AuthorizationCode, 'fromJWT', () => {
         return Promise.reject(new Error());
       });
 
       const spy = sinon.spy();
-      provider.once('grant.error', spy);
+      this.provider.once('grant.error', spy);
 
-      return agent.post(route)
+      return this.agent.post(route)
       .auth('client', 'secret')
       .type('form')
       .send({
@@ -99,7 +88,7 @@ describe('grant_type=authorization_code', () => {
         redirect_uri: 'https://client.example.com/cb'
       })
       .expect(() => {
-        AuthorizationCode.fromJWT.restore();
+        this.provider.AuthorizationCode.fromJWT.restore();
       })
       .expect(401)
       .expect(() => {
@@ -110,22 +99,22 @@ describe('grant_type=authorization_code', () => {
       });
     });
 
-    context('', () => {
+    context('', function () {
       before(function () {
-        this.prev = AuthorizationCode.expiresIn;
-        provider.configuration('ttl').AuthorizationCode = 1;
+        this.prev = this.provider.AuthorizationCode.expiresIn;
+        i(this.provider).configuration('ttl').AuthorizationCode = 1;
       });
 
       after(function () {
-        provider.configuration('ttl').AuthorizationCode = this.prev;
+        i(this.provider).configuration('ttl').AuthorizationCode = this.prev;
       });
 
       it('validates code is not expired', function (done) {
         setTimeout(() => {
           const spy = sinon.spy();
-          provider.once('grant.error', spy);
+          this.provider.once('grant.error', spy);
 
-          return agent.post(route)
+          return this.agent.post(route)
           .auth('client', 'secret')
           .send({
             code: this.ac,
@@ -149,11 +138,11 @@ describe('grant_type=authorization_code', () => {
 
     it('validates code is not already used', function () {
       const spy = sinon.spy();
-      provider.once('grant.error', spy);
+      this.provider.once('grant.error', spy);
 
       this.code.consumed = epochTime();
 
-      return agent.post(route)
+      return this.agent.post(route)
       .auth('client', 'secret')
       .send({
         code: this.ac,
@@ -172,7 +161,7 @@ describe('grant_type=authorization_code', () => {
     });
 
     it('consumes the code', function () {
-      return agent.post(route)
+      return this.agent.post(route)
       .auth('client', 'secret')
       .send({
         code: this.ac,
@@ -188,9 +177,9 @@ describe('grant_type=authorization_code', () => {
 
     it('validates code belongs to client', function () {
       const spy = sinon.spy();
-      provider.once('grant.error', spy);
+      this.provider.once('grant.error', spy);
 
-      return agent.post(route)
+      return this.agent.post(route)
       .auth('client2', 'secret')
       .send({
         code: this.ac,
@@ -210,9 +199,9 @@ describe('grant_type=authorization_code', () => {
 
     it('validates used redirect_uri', function () {
       const spy = sinon.spy();
-      provider.once('grant.error', spy);
+      this.provider.once('grant.error', spy);
 
-      return agent.post(route)
+      return this.agent.post(route)
       .auth('client', 'secret')
       .send({
         code: this.ac,
@@ -231,14 +220,14 @@ describe('grant_type=authorization_code', () => {
     });
 
     it('validates account is still there', function () {
-      sinon.stub(provider.Account, 'findById', () => {
+      sinon.stub(this.provider.Account, 'findById', () => {
         return Promise.resolve();
       });
 
       const spy = sinon.spy();
-      provider.once('grant.error', spy);
+      this.provider.once('grant.error', spy);
 
-      return agent.post(route)
+      return this.agent.post(route)
       .auth('client', 'secret')
       .send({
         code: this.ac,
@@ -247,7 +236,7 @@ describe('grant_type=authorization_code', () => {
       })
       .type('form')
       .expect(() => {
-        provider.Account.findById.restore();
+        this.provider.Account.findById.restore();
       })
       .expect(400)
       .expect(() => {
@@ -260,9 +249,9 @@ describe('grant_type=authorization_code', () => {
     });
   });
 
-  describe('validates', () => {
-    it('grant_type presence', () => {
-      return agent.post(route)
+  describe('validates', function () {
+    it('grant_type presence', function () {
+      return this.agent.post(route)
       .auth('client', 'secret')
       .send({})
       .type('form')
@@ -274,8 +263,8 @@ describe('grant_type=authorization_code', () => {
       });
     });
 
-    it('code presence', () => {
-      return agent.post(route)
+    it('code presence', function () {
+      return this.agent.post(route)
       .auth('client', 'secret')
       .send({
         grant_type: 'authorization_code',
@@ -290,8 +279,8 @@ describe('grant_type=authorization_code', () => {
       });
     });
 
-    it('redirect_uri presence', () => {
-      return agent.post(route)
+    it('redirect_uri presence', function () {
+      return this.agent.post(route)
       .auth('client', 'secret')
       .send({
         grant_type: 'authorization_code',
@@ -306,10 +295,10 @@ describe('grant_type=authorization_code', () => {
       });
     });
 
-    it('code being "found"', () => {
+    it('code being "found"', function () {
       const spy = sinon.spy();
-      provider.once('grant.error', spy);
-      return agent.post(route)
+      this.provider.once('grant.error', spy);
+      return this.agent.post(route)
       .auth('client', 'secret')
       .send({
         grant_type: 'authorization_code',
@@ -327,10 +316,10 @@ describe('grant_type=authorization_code', () => {
       });
     });
 
-    it('code being "valid format"', () => {
+    it('code being "valid format"', function () {
       const spy = sinon.spy();
-      provider.once('grant.error', spy);
-      return agent.post(route)
+      this.provider.once('grant.error', spy);
+      return this.agent.post(route)
       .auth('client', 'secret')
       .send({
         grant_type: 'authorization_code',
@@ -349,20 +338,20 @@ describe('grant_type=authorization_code', () => {
     });
   });
 
-  describe('error handling', () => {
-    before(() => {
-      sinon.stub(provider.Client, 'find').returns(Promise.reject(new Error()));
+  describe('error handling', function () {
+    before(function () {
+      sinon.stub(this.provider.Client, 'find').returns(Promise.reject(new Error()));
     });
 
-    after(() => {
-      provider.Client.find.restore();
+    after(function () {
+      this.provider.Client.find.restore();
     });
 
-    it('handles errors', () => {
+    it('handles errors', function () {
       const spy = sinon.spy();
-      provider.once('grant.error', spy);
+      this.provider.once('grant.error', spy);
 
-      return agent.post(route)
+      return this.agent.post(route)
       .send({})
       .type('form')
       .expect(400)
@@ -374,11 +363,11 @@ describe('grant_type=authorization_code', () => {
       });
     });
 
-    it('handles exceptions', () => {
+    it('handles exceptions', function () {
       const spy = sinon.spy();
-      provider.once('server_error', spy);
+      this.provider.once('server_error', spy);
 
-      return agent.post(route)
+      return this.agent.post(route)
       .auth('client', 'secret')
       .send({
         grant_type: 'authorization_code',

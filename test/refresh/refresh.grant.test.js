@@ -13,28 +13,19 @@ function errorDetail(spy) {
   return spy.args[0][0].error_detail;
 }
 
-describe('grant_type=refresh_token', () => {
-  const { agent, provider, TestAdapter } = bootstrap(__dirname);
-  const RefreshToken = provider.RefreshToken;
-  provider.setupClient();
-  provider.setupClient({
-    client_id: 'client2',
-    client_secret: 'secret',
-    grant_types: ['authorization_code', 'refresh_token'],
-    redirect_uris: ['https://client.example.com/cb']
-  });
+describe('grant_type=refresh_token', function () {
+  before(bootstrap(__dirname)); // agent, provider, this.TestAdapter
 
-
-  describe('extends authorization_code', () => {
+  describe('extends authorization_code', function () {
     // TODO: it('omits to issue a refresh_token if the client cannot use it (misses allowed grant)');
   });
 
-  context('with real tokens', () => {
-    before(agent.login);
-    after(agent.logout);
+  context('with real tokens', function () {
+    before(function () { return this.login(); });
+    after(function () { return this.logout(); });
 
     beforeEach(function (done) {
-      agent.get('/auth')
+      this.agent.get('/auth')
       .query({
         client_id: 'client',
         scope: 'openid email',
@@ -50,7 +41,7 @@ describe('grant_type=refresh_token', () => {
 
         const { query: { code } } = parseUrl(authResponse.headers.location, true);
 
-        return agent.post(route)
+        return this.agent.post(route)
         .auth('client', 'secret')
         .type('form')
         .send({
@@ -62,7 +53,7 @@ describe('grant_type=refresh_token', () => {
         .expect((response) => {
           expect(response.body).to.have.property('refresh_token');
           const jti = response.body.refresh_token.substring(0, 48);
-          this.refreshToken = TestAdapter.for('RefreshToken').syncFind(jti);
+          this.refreshToken = this.TestAdapter.for('RefreshToken').syncFind(jti);
           this.rt = response.body.refresh_token;
         })
         .end(done);
@@ -72,9 +63,9 @@ describe('grant_type=refresh_token', () => {
     it('returns the right stuff', function () {
       const rt = this.rt;
       const spy = sinon.spy();
-      provider.once('grant.success', spy);
+      this.provider.once('grant.success', spy);
 
-      return agent.post(route)
+      return this.agent.post(route)
       .auth('client', 'secret')
       .send({
         refresh_token: rt,
@@ -94,24 +85,24 @@ describe('grant_type=refresh_token', () => {
     });
 
 
-    describe('validates', () => {
-      context('', () => {
+    describe('validates', function () {
+      context('', function () {
         before(function () {
-          this.prev = RefreshToken.expiresIn;
-          provider.configuration('ttl').RefreshToken = 1;
+          this.prev = this.provider.RefreshToken.expiresIn;
+          i(this.provider).configuration('ttl').RefreshToken = 1;
         });
 
         after(function () {
-          provider.configuration('ttl').RefreshToken = this.prev;
+          i(this.provider).configuration('ttl').RefreshToken = this.prev;
         });
 
         it('validates code is not expired', function (done) {
           const rt = this.rt;
           setTimeout(() => {
             const spy = sinon.spy();
-            provider.once('grant.error', spy);
+            this.provider.once('grant.error', spy);
 
-            return agent.post(route)
+            return this.agent.post(route)
               .auth('client', 'secret')
               .send({
                 refresh_token: rt,
@@ -134,9 +125,9 @@ describe('grant_type=refresh_token', () => {
       it('validates that token belongs to client', function () {
         const rt = this.rt;
         const spy = sinon.spy();
-        provider.once('grant.error', spy);
+        this.provider.once('grant.error', spy);
 
-        return agent.post(route)
+        return this.agent.post(route)
           .auth('client2', 'secret')
           .send({
             refresh_token: rt,
@@ -156,9 +147,9 @@ describe('grant_type=refresh_token', () => {
       it('scopes are not getting extended', function () {
         const rt = this.rt;
         const spy = sinon.spy();
-        provider.once('grant.error', spy);
+        this.provider.once('grant.error', spy);
 
-        return agent.post(route)
+        return this.agent.post(route)
           .auth('client', 'secret')
           .send({
             refresh_token: rt,
@@ -176,14 +167,14 @@ describe('grant_type=refresh_token', () => {
 
       it('validates account is still there', function () {
         const rt = this.rt;
-        sinon.stub(provider.Account, 'findById', () => {
+        sinon.stub(this.provider.Account, 'findById', () => {
           return Promise.resolve();
         });
 
         const spy = sinon.spy();
-        provider.once('grant.error', spy);
+        this.provider.once('grant.error', spy);
 
-        return agent.post(route)
+        return this.agent.post(route)
           .auth('client', 'secret')
           .send({
             refresh_token: rt,
@@ -191,7 +182,7 @@ describe('grant_type=refresh_token', () => {
           })
           .type('form')
           .expect(() => {
-            provider.Account.findById.restore();
+            this.provider.Account.findById.restore();
           })
           .expect(400)
           .expect(() => {
@@ -204,8 +195,8 @@ describe('grant_type=refresh_token', () => {
       });
     });
 
-    it('refresh_token presence', () => {
-      return agent.post(route)
+    it('refresh_token presence', function () {
+      return this.agent.post(route)
       .auth('client', 'secret')
       .send({
         grant_type: 'refresh_token'
@@ -219,10 +210,10 @@ describe('grant_type=refresh_token', () => {
       });
     });
 
-    it('code being "found"', () => {
+    it('code being "found"', function () {
       const spy = sinon.spy();
-      provider.once('grant.error', spy);
-      return agent.post(route)
+      this.provider.once('grant.error', spy);
+      return this.agent.post(route)
       .auth('client', 'secret')
       .send({
         grant_type: 'refresh_token',

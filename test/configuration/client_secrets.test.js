@@ -3,9 +3,8 @@
 const bootstrap = require('../test_helper');
 const { expect } = require('chai');
 
-describe('Provider#addClient', () => {
-  const { provider } = bootstrap(__dirname);
-
+describe('Client#add', function () {
+  before(bootstrap(__dirname)); // provider
 
   [
     'id_token_signed_response_alg',
@@ -13,9 +12,9 @@ describe('Provider#addClient', () => {
     'token_endpoint_auth_signing_alg',
     'userinfo_signed_response_alg'
   ].forEach((metadata) => {
-    context(`configuring ${metadata} when secrets are not long enough`, () => {
-      it('validates the secret length (HS256)', () => {
-        return provider.addClient({
+    context(`configuring ${metadata} when secrets are not long enough`, function () {
+      it('validates the secret length (HS256)', function () {
+        return i(this.provider).clientAdd({
           client_id: `${Math.random()}`,
           client_secret: 'not32bytes_____________________',
           redirect_uris: ['https://client.example.com/cb'],
@@ -29,8 +28,8 @@ describe('Provider#addClient', () => {
         });
       });
 
-      it('validates the secret length (HS384)', () => {
-        return provider.addClient({
+      it('validates the secret length (HS384)', function () {
+        return i(this.provider).clientAdd({
           client_id: `${Math.random()}`,
           client_secret: 'not48bytes_____________________________________',
           redirect_uris: ['https://client.example.com/cb'],
@@ -44,8 +43,8 @@ describe('Provider#addClient', () => {
         });
       });
 
-      it('validates the secret length (HS512)', () => {
-        return provider.addClient({
+      it('validates the secret length (HS512)', function () {
+        return i(this.provider).clientAdd({
           client_id: `${Math.random()}`,
           client_secret: 'not64bytes_____________________________________________________',
           redirect_uris: ['https://client.example.com/cb'],
@@ -60,9 +59,9 @@ describe('Provider#addClient', () => {
       });
     });
 
-    context(`configuring ${metadata} when secrets are long enough`, () => {
-      it('allows HS256', () => {
-        return provider.addClient({
+    context(`configuring ${metadata} when secrets are long enough`, function () {
+      it('allows HS256', function () {
+        return i(this.provider).clientAdd({
           client_id: `${Math.random()}`,
           client_secret: 'its32bytes_____________________!',
           redirect_uris: ['https://client.example.com/cb'],
@@ -70,8 +69,8 @@ describe('Provider#addClient', () => {
         });
       });
 
-      it('allows HS384', () => {
-        return provider.addClient({
+      it('allows HS384', function () {
+        return i(this.provider).clientAdd({
           client_id: `${Math.random()}`,
           client_secret: 'its48bytes_____________________________________!',
           redirect_uris: ['https://client.example.com/cb'],
@@ -79,8 +78,8 @@ describe('Provider#addClient', () => {
         });
       });
 
-      it('allows HS512', () => {
-        return provider.addClient({
+      it('allows HS512', function () {
+        return i(this.provider).clientAdd({
           client_id: `${Math.random()}`,
           client_secret: 'its64bytes_____________________________________________________!',
           redirect_uris: ['https://client.example.com/cb'],

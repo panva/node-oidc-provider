@@ -8,50 +8,30 @@ const epochTime = require('../../lib/helpers/epoch_time');
 const { expect } = require('chai');
 const base64url = require('base64url');
 
-describe('signatures', () => {
-  const { provider, agent, AuthorizationRequest, wrap } = bootstrap(__dirname);
-  const AuthorizationCode = provider.AuthorizationCode;
+describe('signatures', function () {
+  before(bootstrap(__dirname)); // this.provider, agent, this.AuthorizationRequest, wrap
 
-  provider.setupClient();
-  provider.setupClient({
-    client_id: 'client-sig-none',
-    client_secret: 'secret',
-    response_types: ['code'],
-    grant_types: ['authorization_code'],
-    id_token_signed_response_alg: 'none',
-    redirect_uris: ['https://client.example.com/cb'],
-  });
-  provider.setupClient({
-    client_id: 'client-sig-HS256',
-    client_secret: 'atleast32byteslongforHS256mmkay?',
-    response_types: ['code'],
-    grant_types: ['authorization_code'],
-    id_token_signed_response_alg: 'HS256',
-    redirect_uris: ['https://client.example.com/cb'],
-  });
-
-
-  describe('token hashes in id_token', () => {
+  describe('token hashes in id_token', function () {
     let client;
     before(function* () {
-      client = yield provider.Client.find('client');
+      client = yield this.provider.Client.find('client');
     });
 
-    before(agent.login);
-    after(agent.logout);
+    before(function () { return this.login(); });
+    after(function () { return this.logout(); });
 
-    after(() => {
+    after(function () {
       client.idTokenSignedResponseAlg = 'RS256';
     });
 
-    it('responds with a access_token and code (half of sha512)', () => {
+    it('responds with a access_token and code (half of sha512)', function () {
       client.idTokenSignedResponseAlg = 'RS512';
-      const auth = new AuthorizationRequest({
+      const auth = new this.AuthorizationRequest({
         response_type: 'code id_token token',
         scope: 'openid'
       });
 
-      return wrap({ agent, auth, verb: 'get', route: '/auth' })
+      return this.wrap({ auth, verb: 'get', route: '/auth' })
       .expect(302)
       .expect(auth.validateFragment)
       .expect(auth.validateClientLocation)
@@ -63,14 +43,14 @@ describe('signatures', () => {
       });
     });
 
-    it('responds with a access_token and code (half of sha384)', () => {
+    it('responds with a access_token and code (half of sha384)', function () {
       client.idTokenSignedResponseAlg = 'RS384';
-      const auth = new AuthorizationRequest({
+      const auth = new this.AuthorizationRequest({
         response_type: 'code id_token token',
         scope: 'openid'
       });
 
-      return wrap({ agent, auth, verb: 'get', route: '/auth' })
+      return this.wrap({ auth, verb: 'get', route: '/auth' })
       .expect(302)
       .expect(auth.validateFragment)
       .expect(auth.validateClientLocation)
@@ -82,14 +62,14 @@ describe('signatures', () => {
       });
     });
 
-    it('responds with a access_token and code (half of sha256)', () => {
+    it('responds with a access_token and code (half of sha256)', function () {
       client.idTokenSignedResponseAlg = 'RS256';
-      const auth = new AuthorizationRequest({
+      const auth = new this.AuthorizationRequest({
         response_type: 'code id_token token',
         scope: 'openid'
       });
 
-      return wrap({ agent, auth, verb: 'get', route: '/auth' })
+      return this.wrap({ auth, verb: 'get', route: '/auth' })
       .expect(302)
       .expect(auth.validateFragment)
       .expect(auth.validateClientLocation)
@@ -102,13 +82,13 @@ describe('signatures', () => {
     });
   });
 
-  describe('when id_token_signed_response_alg=none', () => {
-    before(agent.login);
-    after(agent.logout);
+  describe('when id_token_signed_response_alg=none', function () {
+    before(function () { return this.login(); });
+    after(function () { return this.logout(); });
     beforeEach(function* () {
-      const ac = new AuthorizationCode({
+      const ac = new this.provider.AuthorizationCode({
         accountId: 'accountIdentity',
-        acr: provider.configuration('acrValues[0]'),
+        acr: i(this.provider).configuration('acrValues[0]'),
         authTime: epochTime(),
         clientId: 'client-sig-none',
         grantId: uuid(),
@@ -116,7 +96,7 @@ describe('signatures', () => {
         scope: 'openid',
       });
 
-      return agent.post('/token')
+      return this.agent.post('/token')
       .auth('client-sig-none', 'secret')
       .type('form')
       .send({
@@ -138,7 +118,7 @@ describe('signatures', () => {
     });
 
     it('the unsigned token can be used as id_token_hint', function () {
-      const auth = new AuthorizationRequest({
+      const auth = new this.AuthorizationRequest({
         response_type: 'code',
         scope: 'openid',
         prompt: 'none',
@@ -146,7 +126,7 @@ describe('signatures', () => {
       });
       auth.client_id = 'client-sig-none';
 
-      return wrap({ agent, auth, route: '/auth', verb: 'get' })
+      return this.wrap({ auth, route: '/auth', verb: 'get' })
       .expect(302)
       .expect(auth.validatePresence(['error', 'error_description', 'state']))
       .expect(auth.validateState)
@@ -161,7 +141,7 @@ describe('signatures', () => {
       payload.iss = 'foobar';
       parts[1] = base64url.encode(JSON.stringify(payload));
       this.idToken = parts.join('.');
-      const auth = new AuthorizationRequest({
+      const auth = new this.AuthorizationRequest({
         response_type: 'code',
         scope: 'openid',
         prompt: 'none',
@@ -170,7 +150,7 @@ describe('signatures', () => {
       auth.client_id = 'client-sig-none';
 
 
-      return wrap({ agent, auth, route: '/auth', verb: 'get' })
+      return this.wrap({ auth, route: '/auth', verb: 'get' })
       .expect(302)
       .expect(auth.validatePresence(['error', 'error_description', 'state']))
       .expect(auth.validateState)
@@ -180,13 +160,13 @@ describe('signatures', () => {
     });
   });
 
-  describe('when id_token_signed_response_alg=HS256', () => {
-    before(agent.login);
-    after(agent.logout);
+  describe('when id_token_signed_response_alg=HS256', function () {
+    before(function () { return this.login(); });
+    after(function () { return this.logout(); });
     beforeEach(function* () {
-      const ac = new AuthorizationCode({
+      const ac = new this.provider.AuthorizationCode({
         accountId: 'accountIdentity',
-        acr: provider.configuration('acrValues[0]'),
+        acr: i(this.provider).configuration('acrValues[0]'),
         authTime: epochTime(),
         clientId: 'client-sig-HS256',
         grantId: uuid(),
@@ -194,7 +174,7 @@ describe('signatures', () => {
         scope: 'openid',
       });
 
-      return agent.post('/token')
+      return this.agent.post('/token')
       .auth('client-sig-HS256', 'atleast32byteslongforHS256mmkay?')
       .type('form')
       .send({
@@ -216,7 +196,7 @@ describe('signatures', () => {
     });
 
     it('the HS256 signed token can be used as id_token_hint', function () {
-      const auth = new AuthorizationRequest({
+      const auth = new this.AuthorizationRequest({
         response_type: 'code',
         scope: 'openid',
         prompt: 'none',
@@ -224,7 +204,7 @@ describe('signatures', () => {
       });
       auth.client_id = 'client-sig-HS256';
 
-      return wrap({ agent, auth, route: '/auth', verb: 'get' })
+      return this.wrap({ auth, route: '/auth', verb: 'get' })
       .expect(302)
       .expect(auth.validatePresence(['error', 'error_description', 'state']))
       .expect(auth.validateState)

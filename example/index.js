@@ -64,10 +64,8 @@ Promise.all([
   LIB.asKeyStore({ keys: settings.integrityKeys }),
 ]).then((results) => {
   const keystore = results[0];
-  const tokenIntegrity = results[1];
-
-  settings.config.keystore = keystore;
-  settings.config.tokenIntegrity = tokenIntegrity;
+  const integrity = results[1];
+  const clients = settings.clients;
 
   const provider = new Provider(issuer, settings.config);
 
@@ -75,6 +73,8 @@ Promise.all([
     provider.defaultHttpOptions = { timeout: 15000 };
   }
 
+  return provider.initialize({ keystore, integrity, clients });
+}).then((provider) => {
   app.use(rewrite(/^\/\.well-known\/(.*)/, '/op/.well-known/$1'));
   app.use(mount('/op', provider.app));
 
@@ -110,7 +110,6 @@ Promise.all([
       });
     }
 
-
     yield next;
   });
 
@@ -139,8 +138,6 @@ Promise.all([
   });
 
   app.use(router.routes());
-
-  return Promise.all(settings.clients.map(client => provider.addClient(client)));
 })
 .then(() => app.listen(port))
 .catch((err) => {

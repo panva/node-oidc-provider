@@ -3,11 +3,11 @@
 const bootstrap = require('../test_helper');
 const { expect } = require('chai');
 
-describe('providing Bearer token', () => {
-  const { agent } = bootstrap(__dirname);
-  context('invalid requests', () => {
-    it('nothing provided', () => {
-      return agent.get('/me')
+describe('providing Bearer token', function () {
+  before(bootstrap(__dirname)); // agent
+  context('invalid requests', function () {
+    it('nothing provided', function () {
+      return this.agent.get('/me')
       .expect(400)
       .expect((response) => {
         expect(response.body.error).to.equal('invalid_request');
@@ -15,8 +15,8 @@ describe('providing Bearer token', () => {
       });
     });
 
-    it('provided twice', () => {
-      return agent.get('/me')
+    it('provided twice', function () {
+      return this.agent.get('/me')
       .auth('auth', 'provided')
       .query({ access_token: 'whaaat' })
       .expect(400)
@@ -26,8 +26,8 @@ describe('providing Bearer token', () => {
       });
     });
 
-    it('bad Authorization header format (one part)', () => {
-      return agent.get('/me')
+    it('bad Authorization header format (one part)', function () {
+      return this.agent.get('/me')
       .set('Authorization', 'Bearer')
       .expect(400)
       .expect((response) => {
@@ -36,8 +36,8 @@ describe('providing Bearer token', () => {
       });
     });
 
-    it('bad Authorization header format (more then two parts)', () => {
-      return agent.get('/me')
+    it('bad Authorization header format (more then two parts)', function () {
+      return this.agent.get('/me')
       .set('Authorization', 'Bearer some three')
       .expect(400)
       .expect((response) => {
@@ -46,8 +46,8 @@ describe('providing Bearer token', () => {
       });
     });
 
-    it('bad Authorization header format (not bearer)', () => {
-      return agent.get('/me')
+    it('bad Authorization header format (not bearer)', function () {
+      return this.agent.get('/me')
       .set('Authorization', 'Basic some')
       .expect(400)
       .expect((response) => {
@@ -56,8 +56,8 @@ describe('providing Bearer token', () => {
       });
     });
 
-    it('[query] empty token provided', () => {
-      return agent.get('/me')
+    it('[query] empty token provided', function () {
+      return this.agent.get('/me')
       .query({ access_token: '' })
       .expect(400)
       .expect((response) => {
@@ -66,8 +66,8 @@ describe('providing Bearer token', () => {
       });
     });
 
-    it('[body] empty token provided', () => {
-      return agent.post('/me')
+    it('[body] empty token provided', function () {
+      return this.agent.post('/me')
       .send('access_token=')
       .expect(400)
       .expect((response) => {

@@ -1,7 +1,7 @@
 'use strict';
 
 const _ = require('lodash');
-const { provider, agent } = require('../test_helper')(__dirname);
+const bootstrap = require('../test_helper');
 const sinon = require('sinon');
 const { expect } = require('chai');
 // const { parse: parseUrl } = require('url');
@@ -9,24 +9,22 @@ const { expect } = require('chai');
 // const nock = require('nock');
 const { Provider } = require('../../lib');
 
+describe('OAuth 2.0 Dynamic Client Registration Management Protocol', function () {
+  before(bootstrap(__dirname)); // provider, agent
 
-provider.setupClient();
+  // setup does not have the provider;
 
-describe('OAuth 2.0 Dynamic Client Registration Management Protocol', () => {
-  function setup(meta, cb) {
-    return function () {
-      const props = Object.assign({
-        redirect_uris: ['https://client.example.com/cb']
-      }, meta);
+  function setup(meta) {
+    const props = Object.assign({
+      redirect_uris: ['https://client.example.com/cb']
+    }, meta);
 
-      return agent.post('/reg').send(props).expect(201)
-        .then(res => res.body)
-        .then(cb);
-    };
+    return this.agent.post('/reg').send(props).expect(201)
+      .then(res => res.body);
   }
 
-  describe('feature flag', () => {
-    it('checks registration is also enabled', () => {
+  describe('feature flag', function () {
+    it('checks registration is also enabled', function () {
       expect(() => {
         new Provider('http://localhost', { // eslint-disable-line no-new
           features: {
@@ -37,16 +35,17 @@ describe('OAuth 2.0 Dynamic Client Registration Management Protocol', () => {
     });
   });
 
-  describe('Client Update Request', () => {
+  describe('Client Update Request', function () {
     const NOGO = ['registration_access_token', 'registration_client_uri', 'client_secret_expires_at', 'client_id_issued_at'];
     function updateProperties(client, props) {
       return Object.assign(_.omit(client, NOGO), props);
     }
 
-    it('responds w/ 200 JSON and nocache headers', setup({}, (client) => {
+    it('responds w/ 200 JSON and nocache headers', function* () {
+      const client = yield setup.call(this, {});
       // changing the redirect_uris;
       // console.log(client);
-      return agent.put(`/reg/${client.client_id}`)
+      return this.agent.put(`/reg/${client.client_id}`)
       .set('Authorization', `Bearer ${client.registration_access_token}`)
       .send(updateProperties(client, {
         redirect_uris: ['https://client.example.com/foobar/cb']
@@ -62,12 +61,13 @@ describe('OAuth 2.0 Dynamic Client Registration Management Protocol', () => {
         expect(res.body).to.have.property('client_id_issued_at', client.client_id_issued_at);
         expect(res.body.redirect_uris).to.eql(['https://client.example.com/foobar/cb']);
       });
-    }));
+    });
 
-    it('allows for properties to be deleted', setup({ userinfo_signed_response_alg: 'RS256' }, (client) => {
+    it('allows for properties to be deleted', function* () {
+      const client = yield setup.call(this, { userinfo_signed_response_alg: 'RS256' });
       // removing userinfo_signed_response_alg and having it defaulted
       // console.log(client);
-      return agent.put(`/reg/${client.client_id}`)
+      return this.agent.put(`/reg/${client.client_id}`)
       .set('Authorization', `Bearer ${client.registration_access_token}`)
       .send(updateProperties(client, {
         userinfo_signed_response_alg: null
@@ -76,12 +76,13 @@ describe('OAuth 2.0 Dynamic Client Registration Management Protocol', () => {
       .expect((res) => {
         expect(res.body).not.to.have.property('userinfo_signed_response_alg');
       });
-    }));
+    });
 
-    it('must contain all previous properties', setup({ userinfo_signed_response_alg: 'RS256' }, (client) => {
+    it('must contain all previous properties', function* () {
+      const client = yield setup.call(this, { userinfo_signed_response_alg: 'RS256' });
       // removing userinfo_signed_response_alg and having it defaulted
       // console.log(client);
-      return agent.put(`/reg/${client.client_id}`)
+      return this.agent.put(`/reg/${client.client_id}`)
       .set('Authorization', `Bearer ${client.registration_access_token}`)
       .send(updateProperties(client, {
         userinfo_signed_response_alg: undefined
@@ -93,17 +94,14 @@ describe('OAuth 2.0 Dynamic Client Registration Management Protocol', () => {
           error_description: 'userinfo_signed_response_alg must be provided'
         });
       });
-    }));
+    });
 
-    it('provides a secret if suddently needed', setup({
-      token_endpoint_auth_method: 'none',
-      response_types: ['id_token'],
-      grant_types: ['implicit']
-    }, (client) => {
+    it('provides a secret if suddently needed', function* () {
+      const client = yield setup.call(this, { token_endpoint_auth_method: 'none', response_types: ['id_token'], grant_types: ['implicit'] });
       // removing userinfo_signed_response_alg and having it defaulted
       // console.log(client);
       expect(client).not.to.have.property('client_secret');
-      return agent.put(`/reg/${client.client_id}`)
+      return this.agent.put(`/reg/${client.client_id}`)
       .set('Authorization', `Bearer ${client.registration_access_token}`)
       .send(updateProperties(client, {
         response_types: ['code'],
@@ -115,24 +113,26 @@ describe('OAuth 2.0 Dynamic Client Registration Management Protocol', () => {
         expect(res.body).to.have.property('client_secret');
         expect(res.body).to.have.property('client_secret_expires_at');
       });
-    }));
+    });
 
-    it('emits an event', setup({}, (client) => {
+    it('emits an event', function* () {
+      const client = yield setup.call(this, {});
       const spy = sinon.spy();
-      provider.once('registration_update.success', spy);
+      this.provider.once('registration_update.success', spy);
 
-      return agent.put(`/reg/${client.client_id}`)
+      return this.agent.put(`/reg/${client.client_id}`)
       .set('Authorization', `Bearer ${client.registration_access_token}`)
       .send(updateProperties(client))
       .expect(200)
       .expect(() => {
         expect(spy.calledOnce).to.be.true;
       });
-    }));
+    });
 
-    it('must not contain registration_access_token', setup({}, (client) => {
+    it('must not contain registration_access_token', function* () {
+      const client = yield setup.call(this, {});
       // changing the redirect_uris;
-      return agent.put(`/reg/${client.client_id}`)
+      return this.agent.put(`/reg/${client.client_id}`)
       .set('Authorization', `Bearer ${client.registration_access_token}`)
       .send(updateProperties(client, {
         redirect_uris: ['https://client.example.com/foobar/cb'],
@@ -145,11 +145,12 @@ describe('OAuth 2.0 Dynamic Client Registration Management Protocol', () => {
           error_description: 'request MUST NOT include the "registration_access_token" field'
         });
       });
-    }));
+    });
 
-    it('must not contain registration_client_uri', setup({}, (client) => {
+    it('must not contain registration_client_uri', function* () {
+      const client = yield setup.call(this, {});
       // changing the redirect_uris;
-      return agent.put(`/reg/${client.client_id}`)
+      return this.agent.put(`/reg/${client.client_id}`)
       .set('Authorization', `Bearer ${client.registration_access_token}`)
       .send(updateProperties(client, {
         redirect_uris: ['https://client.example.com/foobar/cb'],
@@ -162,11 +163,12 @@ describe('OAuth 2.0 Dynamic Client Registration Management Protocol', () => {
           error_description: 'request MUST NOT include the "registration_client_uri" field'
         });
       });
-    }));
+    });
 
-    it('must not contain client_secret_expires_at', setup({}, (client) => {
+    it('must not contain client_secret_expires_at', function* () {
+      const client = yield setup.call(this, {});
       // changing the redirect_uris;
-      return agent.put(`/reg/${client.client_id}`)
+      return this.agent.put(`/reg/${client.client_id}`)
       .set('Authorization', `Bearer ${client.registration_access_token}`)
       .send(updateProperties(client, {
         redirect_uris: ['https://client.example.com/foobar/cb'],
@@ -179,11 +181,12 @@ describe('OAuth 2.0 Dynamic Client Registration Management Protocol', () => {
           error_description: 'request MUST NOT include the "client_secret_expires_at" field'
         });
       });
-    }));
+    });
 
-    it('must not contain client_id_issued_at', setup({}, (client) => {
+    it('must not contain client_id_issued_at', function* () {
+      const client = yield setup.call(this, {});
       // changing the redirect_uris;
-      return agent.put(`/reg/${client.client_id}`)
+      return this.agent.put(`/reg/${client.client_id}`)
       .set('Authorization', `Bearer ${client.registration_access_token}`)
       .send(updateProperties(client, {
         redirect_uris: ['https://client.example.com/foobar/cb'],
@@ -196,13 +199,13 @@ describe('OAuth 2.0 Dynamic Client Registration Management Protocol', () => {
           error_description: 'request MUST NOT include the "client_id_issued_at" field'
         });
       });
-    }));
+    });
 
     it('cannot update non-dynamic clients', function* () {
-      const rat = new (provider.RegistrationAccessToken)({ clientId: 'client' });
+      const rat = new (this.provider.RegistrationAccessToken)({ clientId: 'client' });
       const bearer = yield rat.save();
-      const client = yield provider.Client.find('client');
-      return agent.put('/reg/client')
+      const client = yield this.provider.Client.find('client');
+      return this.agent.put('/reg/client')
       .set('Authorization', `Bearer ${bearer}`)
       .send(updateProperties(client.metadata(), {
         redirect_uris: ['https://client.example.com/foobar/cb']
@@ -217,32 +220,34 @@ describe('OAuth 2.0 Dynamic Client Registration Management Protocol', () => {
     });
   });
 
-  describe('Client Delete Request', () => {
-    it('responds w/ empty 204 and nocache headers', setup({}, (client) => {
-      return agent.del(`/reg/${client.client_id}`)
+  describe('Client Delete Request', function () {
+    it('responds w/ empty 204 and nocache headers', function* () {
+      const client = yield setup.call(this, {});
+      return this.agent.del(`/reg/${client.client_id}`)
       .set('Authorization', `Bearer ${client.registration_access_token}`)
       .expect('pragma', 'no-cache')
       .expect('cache-control', 'no-cache, no-store')
       .expect('') // empty body
       .expect(204);
-    }));
+    });
 
-    it('emits an event', setup({}, (client) => {
+    it('emits an event', function* () {
+      const client = yield setup.call(this, {});
       const spy = sinon.spy();
-      provider.once('registration_delete.success', spy);
+      this.provider.once('registration_delete.success', spy);
 
-      return agent.del(`/reg/${client.client_id}`)
+      return this.agent.del(`/reg/${client.client_id}`)
       .set('Authorization', `Bearer ${client.registration_access_token}`)
       .expect(204)
       .expect(() => {
         expect(spy.calledOnce).to.be.true;
       });
-    }));
+    });
 
     it('cannot delete non-dynamic clients', function* () {
-      const rat = new (provider.RegistrationAccessToken)({ clientId: 'client' });
+      const rat = new (this.provider.RegistrationAccessToken)({ clientId: 'client' });
       const bearer = yield rat.save();
-      return agent.del('/reg/client')
+      return this.agent.del('/reg/client')
       .set('Authorization', `Bearer ${bearer}`)
       .expect(403)
       .expect((response) => {

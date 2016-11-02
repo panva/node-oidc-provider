@@ -5,45 +5,43 @@ const { expect } = require('chai');
 
 const route = '/auth';
 
-describe('session management', () => {
-  const { provider, agent, AuthorizationRequest, wrap } = bootstrap(__dirname);
-  provider.setupClient();
-
+describe('session management', function () {
+  before(bootstrap(__dirname)); // provider, agent, this.AuthorizationRequest, wrap
 
   ['get', 'post'].forEach((verb) => {
-    describe(`[session_management] ${verb} ${route} with session`, () => {
-      before(agent.login);
+    describe(`[session_management] ${verb} ${route} with session`, function () {
+      before(function () { return this.login(); });
 
-      it('provides session_state in the response', () => {
-        const auth = new AuthorizationRequest({
+      it('provides session_state in the response', function () {
+        const auth = new this.AuthorizationRequest({
           response_type: 'code',
           scope: 'openid'
         });
 
-        return wrap({ agent, route, verb, auth })
+        return this.wrap({ route, verb, auth })
       .expect(302)
       .expect(auth.validatePresence(['session_state'], false))
       .expect(auth.validateState)
       .expect(auth.validateClientLocation);
       });
 
-      it('sets a _state.clientId cookies', () => {
-        const auth = new AuthorizationRequest({
+      it('sets a _state.clientId cookies', function () {
+        const auth = new this.AuthorizationRequest({
           response_type: 'code',
           scope: 'openid'
         });
 
-        return wrap({ agent, route, verb, auth })
+        return this.wrap({ route, verb, auth })
       .expect(() => {
-        const state = agent.jar.getCookie('_state.client', { path: '/' });
+        const state = this.agent.jar.getCookie('_state.client', { path: '/' });
         expect(state).to.be.ok;
       });
       });
     });
 
-    describe('[session_management] check_session_iframe', () => {
-      it('responds with frameable html', () => {
-        return agent.get('/session/check')
+    describe('[session_management] check_session_iframe', function () {
+      it('responds with frameable html', function () {
+        return this.agent.get('/session/check')
     .expect(200)
     .expect('content-type', /text\/html/);
       });

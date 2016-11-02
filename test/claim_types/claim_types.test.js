@@ -7,44 +7,42 @@ const { parse: parseLocation } = require('url');
 const { decode: decodeJWT } = require('../../lib/helpers/jwt');
 const { expect } = require('chai');
 
-describe('distributed and aggregated claims', () => {
-  const { provider, agent, AuthorizationRequest, wrap } = bootstrap(__dirname);
-  provider.setupClient();
-
-
-  const Account = provider.Account;
-
-  Account.findById = id => Promise.resolve({
-    accountId: id,
-    claims() {
-      return {
-        sub: id,
-        nickname: 'foobar',
-        _claim_names: {
-          given_name: 'src1',
-          family_name: 'src2',
-          email: 'notused'
-        },
-        _claim_sources: {
-          src1: { endpoint: 'https://op.example.com/me', access_token: 'distributed' },
-          src2: { JWT: 'foo.bar.baz' },
-          notused: { JWT: 'foo.bar.baz' }
-        },
-      };
-    },
+describe('distributed and aggregated claims', function () {
+  before(bootstrap(__dirname)); // provider, agent, AuthorizationRequest, wrap
+  before(function () {
+    const Account = this.provider.Account;
+    Account.findById = id => Promise.resolve({
+      accountId: id,
+      claims() {
+        return {
+          sub: id,
+          nickname: 'foobar',
+          _claim_names: {
+            given_name: 'src1',
+            family_name: 'src2',
+            email: 'notused'
+          },
+          _claim_sources: {
+            src1: { endpoint: 'https://op.example.com/me', access_token: 'distributed' },
+            src2: { JWT: 'foo.bar.baz' },
+            notused: { JWT: 'foo.bar.baz' }
+          },
+        };
+      },
+    });
   });
 
-  before(agent.login);
-  after(agent.logout);
+  before(function () { return this.login(); });
+  after(function () { return this.logout(); });
 
-  context('id_token', () => {
-    it('should return _claim_names and _claim_sources members', () => {
-      const auth = new AuthorizationRequest({
+  context('id_token', function () {
+    it('should return _claim_names and _claim_sources members', function () {
+      const auth = new this.AuthorizationRequest({
         response_type: 'id_token token',
         scope: 'openid profile'
       });
 
-      return wrap({ agent, auth, route: '/auth', verb: 'get' })
+      return this.wrap({ auth, route: '/auth', verb: 'get' })
       .expect(auth.validateFragment)
       .expect((response) => {
         const { query: { id_token } } = parseLocation(response.headers.location, true);
@@ -61,13 +59,13 @@ describe('distributed and aggregated claims', () => {
       });
     });
 
-    it('does not return the members if these claims arent requested at all', () => {
-      const auth = new AuthorizationRequest({
+    it('does not return the members if these claims arent requested at all', function () {
+      const auth = new this.AuthorizationRequest({
         response_type: 'id_token token',
         scope: 'openid'
       });
 
-      return wrap({ agent, auth, route: '/auth', verb: 'get' })
+      return this.wrap({ auth, route: '/auth', verb: 'get' })
       .expect(auth.validateFragment)
       .expect((response) => {
         const { query: { id_token } } = parseLocation(response.headers.location, true);
@@ -79,21 +77,21 @@ describe('distributed and aggregated claims', () => {
     });
   });
 
-  context('userinfo', () => {
-    it('should return _claim_names and _claim_sources members', (done) => {
-      const auth = new AuthorizationRequest({
+  context('userinfo', function () {
+    it('should return _claim_names and _claim_sources members', function (done) {
+      const auth = new this.AuthorizationRequest({
         response_type: 'id_token token',
         scope: 'openid profile'
       });
 
-      wrap({ agent, auth, route: '/auth', verb: 'get' })
+      this.wrap({ auth, route: '/auth', verb: 'get' })
       .expect(auth.validateFragment)
       .end((error, authorization) => {
         if (error) return done(error);
 
         const { query: { access_token } } = parseLocation(authorization.headers.location, true);
 
-        return agent.get('/me')
+        return this.agent.get('/me')
           .query({ access_token })
           .expect(200)
           .end((userinfoError, userinfo) => {
@@ -115,20 +113,20 @@ describe('distributed and aggregated claims', () => {
       });
     });
 
-    it('does not return the members if these claims arent requested at all', (done) => {
-      const auth = new AuthorizationRequest({
+    it('does not return the members if these claims arent requested at all', function (done) {
+      const auth = new this.AuthorizationRequest({
         response_type: 'id_token token',
         scope: 'openid'
       });
 
-      wrap({ agent, auth, route: '/auth', verb: 'get' })
+      this.wrap({ auth, route: '/auth', verb: 'get' })
       .expect(auth.validateFragment)
       .end((error, authorization) => {
         if (error) return done(error);
 
         const { query: { access_token } } = parseLocation(authorization.headers.location, true);
 
-        return agent.get('/me')
+        return this.agent.get('/me')
           .query({ access_token })
           .expect(200)
           .end((userinfoError, userinfo) => {
