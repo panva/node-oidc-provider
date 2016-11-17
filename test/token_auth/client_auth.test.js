@@ -183,8 +183,8 @@ describe('client authentication options', function () {
   });
 
   describe('client_secret_jwt auth', function () {
-    before(function* () {
-      this.key = (yield this.provider.Client.find('client-jwt-secret')).keystore.get();
+    before(async function () {
+      this.key = (await this.provider.Client.find('client-jwt-secret')).keystore.get();
     });
 
     it('accepts the auth', function () {
@@ -482,11 +482,11 @@ describe('client authentication options', function () {
     });
 
     describe('when token_endpoint_auth_signing_alg is set on the client', function () {
-      before(function* () {
-        (yield this.provider.Client.find('client-jwt-secret')).tokenEndpointAuthSigningAlg = 'HS384';
+      before(async function () {
+        (await this.provider.Client.find('client-jwt-secret')).tokenEndpointAuthSigningAlg = 'HS384';
       });
-      after(function* () {
-        delete (yield this.provider.Client.find('client-jwt-secret')).tokenEndpointAuthSigningAlg;
+      after(async function () {
+        delete (await this.provider.Client.find('client-jwt-secret')).tokenEndpointAuthSigningAlg;
       });
       it('rejects signatures with different algorithm', function () {
         return JWT.sign({

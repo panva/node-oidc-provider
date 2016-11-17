@@ -69,13 +69,13 @@ const route = '/auth';
       });
 
       describe('userinfo nested signed and encrypted', function () {
-        before(function* () {
-          const client = yield this.provider.Client.find('client');
+        before(async function () {
+          const client = await this.provider.Client.find('client');
           client.userinfoSignedResponseAlg = 'RS256';
         });
 
-        after(function* () {
-          const client = yield this.provider.Client.find('client');
+        after(async function () {
+          const client = await this.provider.Client.find('client');
           client.userinfoSignedResponseAlg = undefined;
         });
 
@@ -136,8 +136,8 @@ const route = '/auth';
       });
     });
 
-    it('handles when no suitable encryption key is found', function* () {
-      const client = yield this.provider.Client.find('client');
+    it('handles when no suitable encryption key is found', async function () {
+      const client = await this.provider.Client.find('client');
 
       client.idTokenEncryptedResponseAlg = 'ECDH-ES';
 

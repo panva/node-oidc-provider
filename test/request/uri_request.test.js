@@ -48,8 +48,8 @@ describe('request Uri features', function () {
       before(function () { return this.login(); });
       after(function () { return this.logout(); });
 
-      it('works with signed by an actual alg', function* () {
-        const key = (yield this.provider.Client.find('client-with-HS-sig')).keystore.get({ alg: 'HS256' });
+      it('works with signed by an actual alg', async function () {
+        const key = (await this.provider.Client.find('client-with-HS-sig')).keystore.get({ alg: 'HS256' });
         return JWT.sign({
           client_id: 'client-with-HS-sig',
           response_type: 'code',
@@ -116,7 +116,7 @@ describe('request Uri features', function () {
       });
 
       context('caching of the request_uris', function () {
-        it('caches the uris', function* () {
+        it('caches the uris', async function () {
           const cache = new RequestUriCache(this.provider);
           nock('https://client.example.com')
           .get('/cachedRequest')
@@ -124,17 +124,17 @@ describe('request Uri features', function () {
           .get('/cachedRequest')
           .reply(200, 'content2');
 
-          const first = yield cache.resolve('https://client.example.com/cachedRequest#1');
-          const second = yield cache.resolve('https://client.example.com/cachedRequest#1');
-          const third = yield cache.resolve('https://client.example.com/cachedRequest#2');
-          const fourth = yield cache.resolve('https://client.example.com/cachedRequest#2');
+          const first = await cache.resolve('https://client.example.com/cachedRequest#1');
+          const second = await cache.resolve('https://client.example.com/cachedRequest#1');
+          const third = await cache.resolve('https://client.example.com/cachedRequest#2');
+          const fourth = await cache.resolve('https://client.example.com/cachedRequest#2');
 
           expect(first).to.equal(second);
           expect(first).not.to.equal(third);
           expect(third).to.equal(fourth);
         });
 
-        it('respects provided max-age', function* () {
+        it('respects provided max-age', async function () {
           const cache = new RequestUriCache(this.provider);
           nock('https://client.example.com')
           .get('/cachedRequest')
@@ -144,13 +144,13 @@ describe('request Uri features', function () {
           .get('/cachedRequest')
           .reply(200, 'content82');
 
-          const first = yield cache.resolve('https://client.example.com/cachedRequest');
-          yield new Promise((resolve) => {
+          const first = await cache.resolve('https://client.example.com/cachedRequest');
+          await new Promise((resolve) => {
             setTimeout(() => {
               resolve();
             }, 1050);
           });
-          const second = yield cache.resolve('https://client.example.com/cachedRequest');
+          const second = await cache.resolve('https://client.example.com/cachedRequest');
 
           expect(first).to.equal('content24');
           expect(second).to.equal('content82');
@@ -182,12 +182,12 @@ describe('request Uri features', function () {
       });
 
       context('when client has requestUris set', function () {
-        before(function* () {
-          (yield this.provider.Client.find('client')).requestUris = ['https://thisoneisallowed.com'];
+        before(async function () {
+          (await this.provider.Client.find('client')).requestUris = ['https://thisoneisallowed.com'];
         });
 
-        after(function* () {
-          (yield this.provider.Client.find('client')).requestUris = undefined;
+        after(async function () {
+          (await this.provider.Client.find('client')).requestUris = undefined;
         });
 
         it('checks the whitelist', function () {
@@ -567,11 +567,11 @@ describe('request Uri features', function () {
       });
 
 
-      it('bad signatures will be rejected', function* () {
+      it('bad signatures will be rejected', async function () {
         const spy = sinon.spy();
         this.provider.once('authorization.error', spy);
 
-        const key = (yield this.provider.Client.find('client-with-HS-sig')).keystore.get({ alg: 'HS256' });
+        const key = (await this.provider.Client.find('client-with-HS-sig')).keystore.get({ alg: 'HS256' });
         return JWT.sign({
           client_id: 'client',
           response_type: 'code',

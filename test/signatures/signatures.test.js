@@ -12,20 +12,19 @@ describe('signatures', function () {
   before(bootstrap(__dirname)); // this.provider, agent, this.AuthorizationRequest, wrap
 
   describe('token hashes in id_token', function () {
-    let client;
-    before(function* () {
-      client = yield this.provider.Client.find('client');
+    before(async function () {
+      this.client = await this.provider.Client.find('client');
     });
 
     before(function () { return this.login(); });
     after(function () { return this.logout(); });
 
     after(function () {
-      client.idTokenSignedResponseAlg = 'RS256';
+      this.client.idTokenSignedResponseAlg = 'RS256';
     });
 
     it('responds with a access_token and code (half of sha512)', function () {
-      client.idTokenSignedResponseAlg = 'RS512';
+      this.client.idTokenSignedResponseAlg = 'RS512';
       const auth = new this.AuthorizationRequest({
         response_type: 'code id_token token',
         scope: 'openid'
@@ -44,7 +43,7 @@ describe('signatures', function () {
     });
 
     it('responds with a access_token and code (half of sha384)', function () {
-      client.idTokenSignedResponseAlg = 'RS384';
+      this.client.idTokenSignedResponseAlg = 'RS384';
       const auth = new this.AuthorizationRequest({
         response_type: 'code id_token token',
         scope: 'openid'
@@ -63,7 +62,7 @@ describe('signatures', function () {
     });
 
     it('responds with a access_token and code (half of sha256)', function () {
-      client.idTokenSignedResponseAlg = 'RS256';
+      this.client.idTokenSignedResponseAlg = 'RS256';
       const auth = new this.AuthorizationRequest({
         response_type: 'code id_token token',
         scope: 'openid'
@@ -85,7 +84,7 @@ describe('signatures', function () {
   describe('when id_token_signed_response_alg=none', function () {
     before(function () { return this.login(); });
     after(function () { return this.logout(); });
-    beforeEach(function* () {
+    beforeEach(async function () {
       const ac = new this.provider.AuthorizationCode({
         accountId: 'accountIdentity',
         acr: i(this.provider).configuration('acrValues[0]'),
@@ -102,7 +101,7 @@ describe('signatures', function () {
       .send({
         redirect_uri: 'https://client.example.com/cb',
         grant_type: 'authorization_code',
-        code: yield ac.save()
+        code: await ac.save()
       })
       .expect(200)
       .expect((response) => {
@@ -163,7 +162,7 @@ describe('signatures', function () {
   describe('when id_token_signed_response_alg=HS256', function () {
     before(function () { return this.login(); });
     after(function () { return this.logout(); });
-    beforeEach(function* () {
+    beforeEach(async function () {
       const ac = new this.provider.AuthorizationCode({
         accountId: 'accountIdentity',
         acr: i(this.provider).configuration('acrValues[0]'),
@@ -180,7 +179,7 @@ describe('signatures', function () {
       .send({
         redirect_uri: 'https://client.example.com/cb',
         grant_type: 'authorization_code',
-        code: yield ac.save()
+        code: await ac.save()
       })
       .expect(200)
       .expect((response) => {

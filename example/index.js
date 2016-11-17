@@ -5,22 +5,24 @@
 const LIB = require('../lib');
 const path = require('path');
 const _ = require('lodash');
-const koa = require('koa');
+const Koa = require('koa');
 const bodyParser = require('koa-body');
 const mount = require('koa-mount');
 const querystring = require('querystring');
 const rewrite = require('koa-rewrite');
 const Router = require('koa-router');
 const render = require('koa-ejs');
+const co = require('co');
 
 const port = process.env.PORT || 3000;
-const app = koa();
+const app = new Koa();
 
 render(app, {
   cache: false,
   layout: '_layout',
   root: path.join(__dirname, 'views'),
 });
+app.context.render = co.wrap(app.context.render);
 
 app.keys = ['some secret key', 'and also the old one'];
 
@@ -36,17 +38,17 @@ if (process.env.HEROKU) {
   _.set(settings.config, 'cookies.short.secure', true);
   _.set(settings.config, 'cookies.long.secure', true);
 
-  app.use(function* ensureSecure(next) {
-    if (this.secure) {
-      yield next;
-    } else if (this.method === 'GET' || this.method === 'HEAD') {
-      this.redirect(this.href.replace(/^http:\/\//i, 'https://'));
+  app.use(async (ctx, next) => {
+    if (ctx.secure) {
+      await next();
+    } else if (ctx.method === 'GET' || ctx.method === 'HEAD') {
+      ctx.redirect(ctx.href.replace(/^http:\/\//i, 'https://'));
     } else {
-      this.body = {
+      ctx.body = {
         error: 'invalid_request',
         error_description: 'do yourself a favor and only use https',
       };
-      this.status = 400;
+      ctx.status = 400;
     }
   });
 }
@@ -80,12 +82,12 @@ Promise.all([
 
   const router = new Router();
 
-  router.get('/interaction/:grant', function* renderInteraction(next) {
-    const cookie = JSON.parse(this.cookies.get('_grant', { signed: true }));
-    const client = yield provider.Client.find(cookie.params.client_id);
+  router.get('/interaction/:grant', async (ctx, next) => {
+    const cookie = JSON.parse(ctx.cookies.get('_grant', { signed: true }));
+    const client = await provider.Client.find(cookie.params.client_id);
 
     if (cookie.interaction.error === 'login_required') {
-      yield this.render('login', {
+      await ctx.render('login', {
         client,
         cookie,
         title: 'Sign-in',
@@ -97,7 +99,7 @@ Promise.all([
         }),
       });
     } else {
-      yield this.render('interaction', {
+      await ctx.render('interaction', {
         client,
         cookie,
         title: 'Authorize',
@@ -110,31 +112,32 @@ Promise.all([
       });
     }
 
-    yield next;
+    await next();
   });
 
   const body = bodyParser();
 
-  router.post('/confirm', body, function* submitConfirmationForm(next) {
+  router.post('/confirm', body, async (ctx, next) => {
     const result = { consent: {} };
-    provider.resume(this, this.request.body.uuid, result);
-    yield next;
+    provider.resume(ctx, ctx.request.body.uuid, result);
+    await next();
   });
 
-  router.post('/login', body, function* submitLoginForm() {
-    const account = yield Account.findByLogin(this.request.body.login);
+  router.post('/login', body, async (ctx, next) => {
+    const account = await Account.findByLogin(ctx.request.body.login);
 
     const result = {
       login: {
         account: account.accountId,
         acr: '1',
-        remember: !!this.request.body.remember,
+        remember: !!ctx.request.body.remember,
         ts: Math.floor(Date.now() / 1000),
       },
       consent: {},
     };
 
-    provider.resume(this, this.request.body.uuid, result);
+    provider.resume(ctx, ctx.request.body.uuid, result);
+    await next();
   });
 
   app.use(router.routes());

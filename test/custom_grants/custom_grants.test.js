@@ -10,10 +10,10 @@ describe('custom token endpoint grant types', function () {
     expect(() => {
       this.provider.registerGrantType('lotto', (passedProvider) => {
         expect(passedProvider).to.equal(this.provider);
-        return function* (next) {
-          this.body = { winner: this.oidc.params.name };
-          this.status = 201;
-          yield next;
+        return async function (ctx, next) {
+          ctx.body = { winner: ctx.oidc.params.name };
+          ctx.status = 201;
+          await next();
         };
       }, ['name']);
     }).not.to.throw();
@@ -23,7 +23,7 @@ describe('custom token endpoint grant types', function () {
 
   it('does not need to be passed extra parameters', function () {
     expect(() => {
-      this.provider.registerGrantType('lotto-2', () => function* () {}); // eslint-disable-line no-empty-function
+      this.provider.registerGrantType('lotto-2', () => async function () {}); // eslint-disable-line no-empty-function
     }).not.to.throw();
 
     expect(i(this.provider).configuration('grantTypes').has('lotto-2')).to.be.true;
@@ -31,8 +31,8 @@ describe('custom token endpoint grant types', function () {
 
   it('can be passed null or a string', function () {
     expect(() => {
-      this.provider.registerGrantType('lotto-3', () => function* () {}, null); // eslint-disable-line no-empty-function
-      this.provider.registerGrantType('lotto-4', () => function* () {}, 'name'); // eslint-disable-line no-empty-function
+      this.provider.registerGrantType('lotto-3', () => async function () {}, null); // eslint-disable-line no-empty-function
+      this.provider.registerGrantType('lotto-4', () => async function () {}, 'name'); // eslint-disable-line no-empty-function
     }).not.to.throw();
 
     expect(i(this.provider).configuration('grantTypes').has('lotto-3')).to.be.true;
@@ -40,8 +40,8 @@ describe('custom token endpoint grant types', function () {
   });
 
   describe('when added', function () {
-    before(function* () {
-      const client = yield this.provider.Client.find('client');
+    before(async function () {
+      const client = await this.provider.Client.find('client');
       client.grantTypes.push('lotto');
     });
 

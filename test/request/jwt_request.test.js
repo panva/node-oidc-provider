@@ -34,8 +34,8 @@ describe('request parameter features', function () {
         return this.logout();
       });
 
-      it('works with signed by none', function* () {
-        const key = (yield this.provider.Client.find('client-with-HS-sig')).keystore.get({
+      it('works with signed by none', async function () {
+        const key = (await this.provider.Client.find('client-with-HS-sig')).keystore.get({
           alg: 'HS256'
         });
         return JWT.sign({
@@ -259,11 +259,11 @@ describe('request parameter features', function () {
       });
 
 
-      it('bad signatures will be rejected', function* () {
+      it('bad signatures will be rejected', async function () {
         const spy = sinon.spy();
         this.provider.once('authorization.error', spy);
 
-        const key = (yield this.provider.Client.find('client-with-HS-sig')).keystore.get({
+        const key = (await this.provider.Client.find('client-with-HS-sig')).keystore.get({
           alg: 'HS256'
         });
         return JWT.sign({
@@ -291,8 +291,8 @@ describe('request parameter features', function () {
         }));
       });
 
-      it('handles unrecognized parameters', function* () {
-        const key = (yield this.provider.Client.find('client-with-HS-sig')).keystore.get({
+      it('handles unrecognized parameters', async function () {
+        const key = (await this.provider.Client.find('client-with-HS-sig')).keystore.get({
           alg: 'HS256'
         });
         return JWT.sign({

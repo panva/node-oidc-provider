@@ -4,11 +4,6 @@
 
 process.env.NODE_ENV = process.env.NODE_ENV || 'test';
 
-const mocha = require('mocha');
-const coMocha = require('co-mocha');
-
-coMocha(mocha);
-
 const { agent: supertest } = require('supertest');
 const { v4: uuid } = require('uuid');
 const { Provider } = require('../lib');
@@ -17,7 +12,7 @@ const { expect } = require('chai');
 const { Cookie } = require('cookiejar');
 const { parse } = require('url');
 const path = require('path');
-const koa = require('koa');
+const Koa = require('koa');
 const mount = require('koa-mount');
 const epochTime = require('../lib/helpers/epoch_time');
 global.i = global.instance = require('../lib/helpers/weak_cache');
@@ -261,7 +256,7 @@ module.exports = function testHelper(dir, basename, mountTo) {
         keystore: global.keystore,
       }).then(() => {
         if (mountTo) {
-          const app = koa();
+          const app = new Koa();
           app.use(mount(mountTo, provider.app));
           server = app.listen(port);
         } else {

@@ -83,7 +83,7 @@ describe('PKCE RFC7636', function () {
   });
 
   describe('token grant_type=authorization_code', function () {
-    it('passes with plain values', function* () {
+    it('passes with plain values', async function () {
       const authCode = new this.provider.AuthorizationCode({
         accountId: 'sub',
         scope: 'openid',
@@ -92,7 +92,7 @@ describe('PKCE RFC7636', function () {
         codeChallengeMethod: 'plain',
         redirectUri: 'myapp://localhost/cb',
       });
-      const code = yield authCode.save();
+      const code = await authCode.save();
 
       return this.agent.post('/token')
         .auth('client', 'secret')
@@ -106,7 +106,7 @@ describe('PKCE RFC7636', function () {
         .expect(200);
     });
 
-    it('passes with S256 values', function* () {
+    it('passes with S256 values', async function () {
       const authCode = new this.provider.AuthorizationCode({
         accountId: 'sub',
         scope: 'openid',
@@ -115,7 +115,7 @@ describe('PKCE RFC7636', function () {
         codeChallengeMethod: 'S256',
         redirectUri: 'myapp://localhost/cb',
       });
-      const code = yield authCode.save();
+      const code = await authCode.save();
 
       return this.agent.post('/token')
         .auth('client', 'secret')
@@ -129,7 +129,7 @@ describe('PKCE RFC7636', function () {
         .expect(200);
     });
 
-    it('checks presence of code_verifier param if code has codeChallenge', function* () {
+    it('checks presence of code_verifier param if code has codeChallenge', async function () {
       const authCode = new this.provider.AuthorizationCode({
         accountId: 'sub',
         scope: 'openid',
@@ -138,7 +138,7 @@ describe('PKCE RFC7636', function () {
         codeChallengeMethod: 'plain',
         redirectUri: 'myapp://localhost/cb',
       });
-      const code = yield authCode.save();
+      const code = await authCode.save();
 
       return this.agent.post('/token')
         .auth('client', 'secret')
@@ -154,7 +154,7 @@ describe('PKCE RFC7636', function () {
         });
     });
 
-    it('checks value of code_verifier when method = plain', function* () {
+    it('checks value of code_verifier when method = plain', async function () {
       const authCode = new this.provider.AuthorizationCode({
         accountId: 'sub',
         scope: 'openid',
@@ -163,7 +163,7 @@ describe('PKCE RFC7636', function () {
         codeChallengeMethod: 'plain',
         redirectUri: 'myapp://localhost/cb',
       });
-      const code = yield authCode.save();
+      const code = await authCode.save();
 
       return this.agent.post('/token')
         .auth('client', 'secret')
@@ -180,7 +180,7 @@ describe('PKCE RFC7636', function () {
         });
     });
 
-    it('checks value of code_verifier when method = S256', function* () {
+    it('checks value of code_verifier when method = S256', async function () {
       const authCode = new this.provider.AuthorizationCode({
         accountId: 'sub',
         scope: 'openid',
@@ -189,7 +189,7 @@ describe('PKCE RFC7636', function () {
         codeChallengeMethod: 'S256',
         redirectUri: 'myapp://localhost/cb',
       });
-      const code = yield authCode.save();
+      const code = await authCode.save();
 
       return this.agent.post('/token')
         .auth('client', 'secret')

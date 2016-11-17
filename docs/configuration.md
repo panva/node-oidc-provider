@@ -371,33 +371,33 @@ grant factories [here](/lib/actions/token).
 const parameters = ['username', 'password'];
 
 provider.registerGrantType('password', function passwordGrantTypeFactory(providerInstance) {
-  return function * passwordGrantType(next) {
-    if (this.oidc.params.username === 'foo' && this.oidc.params.password === 'bar') {
+  return async function passwordGrantType(ctx, next) {
+    if (ctx.oidc.params.username === 'foo' && ctx.oidc.params.password === 'bar') {
       const AccessToken = providerInstance.AccessToken;
       const at = new AccessToken({
         accountId: 'foo',
-        clientId: this.oidc.client.clientId,
-        grantId: this.oidc.uuid,
+        clientId: ctx.oidc.client.clientId,
+        grantId: ctx.oidc.uuid,
       });
 
-      const accessToken = yield at.save();
+      const accessToken = await at.save();
       const tokenType = 'Bearer';
       const expiresIn = AccessToken.expiresIn;
 
-      this.body = {
+      ctx.body = {
         access_token: accessToken,
         expires_in: expiresIn,
         token_type: tokenType,
       };
     } else {
-      this.body = {
+      ctx.body = {
         error: 'invalid_grant',
         error_description: 'invalid credentials provided',
       };
-      this.status = 400;
+      ctx.status = 400;
     }
 
-    yield next;
+    await next();
   };
 }, parameters);
 ```

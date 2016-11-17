@@ -399,12 +399,12 @@ describe('revocation features', function () {
       });
     });
 
-    it('rejects unsupported tokens', function* () {
+    it('rejects unsupported tokens', async function () {
       const ac = new this.provider.AuthorizationCode({ clientId: 'client' });
       return this.agent.post(route)
       .auth('client', 'secret')
       .send({
-        token: yield ac.save()
+        token: await ac.save()
       })
       .type('form')
       .expect(400)

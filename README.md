@@ -59,7 +59,7 @@ To run and experiment with an example server, clone the oidc-provider repo and i
 $ git clone https://github.com/panva/node-oidc-provider.git oidc-provider
 $ cd oidc-provider
 $ npm install
-$ node example
+$ node --harmony_async_await example
 ```
 Visiting `http://localhost:3000/.well-known/openid-configuration` will help you to discover how the
 example is [configured](/example).

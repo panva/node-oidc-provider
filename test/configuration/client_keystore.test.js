@@ -35,14 +35,14 @@ describe('client keystore refresh', function () {
     });
   });
 
-  it('gets the jwks from the uri', function* () {
-    const client = yield this.provider.Client.find('client');
+  it('gets the jwks from the uri', async function () {
+    const client = await this.provider.Client.find('client');
     expect(client.keystore.get({ kty: 'RSA' })).to.be.ok;
   });
 
-  it('adds new keys', function* () {
-    const client = yield this.provider.Client.find('client');
-    yield keystore.generate('RSA', 1024);
+  it('adds new keys', async function () {
+    const client = await this.provider.Client.find('client');
+    await keystore.generate('RSA', 1024);
     endpoint
       .get('/jwks')
       .reply(200, keystore.toJSON());
@@ -52,23 +52,23 @@ describe('client keystore refresh', function () {
     });
   });
 
-  it('removes not found keys', function* () {
+  it('removes not found keys', async function () {
     endpoint
       .get('/jwks')
       .reply(200, '{"keys":[]}');
 
-    const client = yield this.provider.Client.find('client');
+    const client = await this.provider.Client.find('client');
     return client.keystore.refresh().then(() => {
       expect(client.keystore.get({ kty: 'RSA' })).not.to.be.ok;
     });
   });
 
-  it('only accepts 200s', function* () {
+  it('only accepts 200s', async function () {
     endpoint
       .get('/jwks')
       .reply(302, '/somewhere');
 
-    const client = yield this.provider.Client.find('client');
+    const client = await this.provider.Client.find('client');
     return client.keystore.refresh().then(fail, (err) => {
       expect(err).to.be.an('error');
       expect(err.message).to.match(/jwks_uri could not be refreshed/);
@@ -76,12 +76,12 @@ describe('client keystore refresh', function () {
     });
   });
 
-  it('only accepts parseable json', function* () {
+  it('only accepts parseable json', async function () {
     endpoint
       .get('/jwks')
       .reply(200, 'not json');
 
-    const client = yield this.provider.Client.find('client');
+    const client = await this.provider.Client.find('client');
     return client.keystore.refresh().then(fail, (err) => {
       expect(err).to.be.an('error');
       expect(err.message).to.match(/jwks_uri could not be refreshed/);
@@ -89,12 +89,12 @@ describe('client keystore refresh', function () {
     });
   });
 
-  it('only accepts keys as array', function* () {
+  it('only accepts keys as array', async function () {
     endpoint
       .get('/jwks')
       .reply(200, '{"keys": {}}');
 
-    const client = yield this.provider.Client.find('client');
+    const client = await this.provider.Client.find('client');
     return client.keystore.refresh().then(fail, (err) => {
       expect(err).to.be.an('error');
       expect(err.message).to.match(/jwks_uri could not be refreshed/);
@@ -103,9 +103,9 @@ describe('client keystore refresh', function () {
   });
 
   describe('caching', function () {
-    it('uses expires caching header to determine stale states', function* () {
-      const client = yield this.provider.Client.find('client');
-      yield keystore.generate('RSA', 1024);
+    it('uses expires caching header to determine stale states', async function () {
+      const client = await this.provider.Client.find('client');
+      await keystore.generate('RSA', 1024);
       const until = moment().add(2, 'hours').toDate();
 
       endpoint
@@ -121,9 +121,9 @@ describe('client keystore refresh', function () {
       });
     });
 
-    it('ignores the cache-control one when expires is provided', function* () {
-      const client = yield this.provider.Client.find('client');
-      yield keystore.generate('RSA', 1024);
+    it('ignores the cache-control one when expires is provided', async function () {
+      const client = await this.provider.Client.find('client');
+      await keystore.generate('RSA', 1024);
       const until = moment().add(2, 'hours').toDate();
 
       endpoint
@@ -140,9 +140,9 @@ describe('client keystore refresh', function () {
       });
     });
 
-    it('uses the max-age if Cache-Control is missing', function* () {
-      const client = yield this.provider.Client.find('client');
-      yield keystore.generate('RSA', 1024);
+    it('uses the max-age if Cache-Control is missing', async function () {
+      const client = await this.provider.Client.find('client');
+      await keystore.generate('RSA', 1024);
 
       endpoint
         .get('/jwks')
@@ -157,9 +157,9 @@ describe('client keystore refresh', function () {
       });
     });
 
-    it('falls back to 1 minute throttle if no caching header is found', function* () {
-      const client = yield this.provider.Client.find('client');
-      yield keystore.generate('RSA', 1024);
+    it('falls back to 1 minute throttle if no caching header is found', async function () {
+      const client = await this.provider.Client.find('client');
+      await keystore.generate('RSA', 1024);
 
       endpoint
         .get('/jwks')
@@ -174,14 +174,14 @@ describe('client keystore refresh', function () {
   });
 
   describe('refreshing', function () {
-    it('when a stale keystore is passed to JWT verification it gets refreshed', function* () {
+    it('when a stale keystore is passed to JWT verification it gets refreshed', async function () {
       endpoint
         .get('/jwks')
         .reply(200, keystore.toJSON());
 
       expect(nock.isDone()).to.be.false;
 
-      const client = yield this.provider.Client.find('client');
+      const client = await this.provider.Client.find('client');
       client.keystore.freshUntil = epochTime() - 1;
       return JWT.verify(
         'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiYWRtaW4iOnRydWV9.TJVA95OrM7E2cBab30RMHrHDcEfxjoYZgeFONFh7HgQ'
@@ -190,14 +190,14 @@ describe('client keystore refresh', function () {
       });
     });
 
-    it('refreshes stale keystores before id_token encryption', function* () {
+    it('refreshes stale keystores before id_token encryption', async function () {
       endpoint
         .get('/jwks')
         .reply(200, keystore.toJSON());
 
       expect(nock.isDone()).to.be.false;
 
-      const client = yield this.provider.Client.find('client');
+      const client = await this.provider.Client.find('client');
       client.keystore.freshUntil = epochTime() - 1;
 
       const IdToken = this.provider.IdToken;

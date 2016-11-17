@@ -37,11 +37,11 @@ describe('[session_management]', function () {
 
   describe('GET end_session', function () {
     context('client with postLogoutRedirectUris', function () {
-      before(function* () {
-        (yield this.provider.Client.find('client')).postLogoutRedirectUris = ['https://client.example.com/logout/cb'];
+      before(async function () {
+        (await this.provider.Client.find('client')).postLogoutRedirectUris = ['https://client.example.com/logout/cb'];
       });
-      after(function* () {
-        (yield this.provider.Client.find('client')).postLogoutRedirectUris = [];
+      after(async function () {
+        (await this.provider.Client.find('client')).postLogoutRedirectUris = [];
       });
 
       it('allows to redirect there', function () {
@@ -109,9 +109,9 @@ describe('[session_management]', function () {
         .expect(/"error_description":"could not decode id_token_hint/);
     });
 
-    it('rejects JWTs with unrecognized client', function* () {
+    it('rejects JWTs with unrecognized client', async function () {
       const params = {
-        id_token_hint: yield JWT.sign({
+        id_token_hint: await JWT.sign({
           aud: 'nonexistant'
         }, null, 'none')
       };
@@ -123,9 +123,9 @@ describe('[session_management]', function () {
         .expect(/"error_description":"could not validate id_token_hint \(invalid_client\)/);
     });
 
-    it('rejects JWTs with bad signatures', function* () {
+    it('rejects JWTs with bad signatures', async function () {
       const params = {
-        id_token_hint: yield JWT.sign({
+        id_token_hint: await JWT.sign({
           aud: 'client'
         }, null, 'none')
       };

@@ -1,14 +1,9 @@
 language: node_js
 node_js:
-  - lts/argon
-  - lts/boron
   - stable
 script:
-  - make test-travis
+  - make test
 before_script:
   - sudo apt-get install bc
-after_script:
-  - npm install codecov
-  - ./node_modules/.bin/codecov
 notifications:
   email: false

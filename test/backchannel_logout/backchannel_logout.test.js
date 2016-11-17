@@ -12,8 +12,8 @@ describe('Back-Channel Logout 1.0', function () {
   before(bootstrap(__dirname));
 
   afterEach(nock.cleanAll);
-  afterEach(function* () {
-    const client = yield this.provider.Client.find('client');
+  afterEach(async function () {
+    const client = await this.provider.Client.find('client');
     if (client.backchannelLogout.restore) client.backchannelLogout.restore();
   });
 
@@ -30,8 +30,8 @@ describe('Back-Channel Logout 1.0', function () {
   });
 
   describe('Client#backchannelLogout', function () {
-    it('triggers the call, does not return values', function* () {
-      const client = yield this.provider.Client.find('client');
+    it('triggers the call, does not return values', async function () {
+      const client = await this.provider.Client.find('client');
 
       nock('https://client.example.com/')
         .filteringRequestBody((body) => {
@@ -51,8 +51,8 @@ describe('Back-Channel Logout 1.0', function () {
       });
     });
 
-    it('does ignore request and sig errors', function* () {
-      const client = yield this.provider.Client.find('client');
+    it('does ignore request and sig errors', async function () {
+      const client = await this.provider.Client.find('client');
 
       // not defining the nock scope makes the request part throw
       return client.backchannelLogout('subject').catch(() => {
@@ -141,11 +141,11 @@ describe('Back-Channel Logout 1.0', function () {
         });
     });
 
-    it('triggers the backchannelLogout for visited clients', function* () {
+    it('triggers the backchannelLogout for visited clients', async function () {
       const session = this.getSession(this.agent);
       session.logout = { secret: '123', postLogoutRedirectUri: '/' };
       const params = { logout: 'yes', xsrf: '123' };
-      const client = yield this.provider.Client.find('client');
+      const client = await this.provider.Client.find('client');
 
       sinon.spy(client, 'backchannelLogout');
 
@@ -163,10 +163,10 @@ describe('Back-Channel Logout 1.0', function () {
       });
     });
 
-    it('ignores the backchannelLogout when client does not support', function* () {
+    it('ignores the backchannelLogout when client does not support', async function () {
       this.getSession(this.agent).logout = { secret: '123', postLogoutRedirectUri: '/' };
       const params = { logout: 'yes', xsrf: '123' };
-      const client = yield this.provider.Client.find('client');
+      const client = await this.provider.Client.find('client');
       delete client.backchannelLogoutUri;
 
       sinon.spy(client, 'backchannelLogout');

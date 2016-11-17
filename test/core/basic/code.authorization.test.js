@@ -108,8 +108,8 @@ describe('BASIC code', function () {
           .expect(auth.validateInteractionError('login_required', 'max_age'));
         });
 
-        it('session is too old for this client', function* () {
-          const client = yield this.provider.Client.find('client');
+        it('session is too old for this client', async function () {
+          const client = await this.provider.Client.find('client');
           client.defaultMaxAge = 1800;
 
           const session = this.getSession();
@@ -198,13 +198,13 @@ describe('BASIC code', function () {
       });
 
       context('when client has more then one redirect_uri', function () {
-        before(function* () {
-          const client = yield this.provider.Client.find('client');
+        before(async function () {
+          const client = await this.provider.Client.find('client');
           client.redirectUris.push('https://someOtherUri.com');
         });
 
-        after(function* () {
-          const client = yield this.provider.Client.find('client');
+        after(async function () {
+          const client = await this.provider.Client.find('client');
           client.redirectUris.pop();
         });
 

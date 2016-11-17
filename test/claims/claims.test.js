@@ -52,13 +52,13 @@ const route = '/auth';
       before(function () { return this.login(); });
       after(function () { return this.logout(); });
 
-      before(function* () {
-        const client = yield this.provider.Client.find('client');
+      before(async function () {
+        const client = await this.provider.Client.find('client');
         client.defaultAcrValues = ['1', '2'];
       });
 
-      after(function* () {
-        const client = yield this.provider.Client.find('client');
+      after(async function () {
+        const client = await this.provider.Client.find('client');
         delete client.defaultAcrValues;
       });
 
@@ -318,15 +318,15 @@ const route = '/auth';
           .expect(auth.validateErrorDescription('requested ACR could not be obtained'));
         });
 
-        it('id_token_hint belongs to a user that is not currently logged in', function* () {
-          const client = yield this.provider.Client.find('client');
+        it('id_token_hint belongs to a user that is not currently logged in', async function () {
+          const client = await this.provider.Client.find('client');
           const IdToken = this.provider.IdToken;
           const idToken = new IdToken({
             sub: 'not-the-droid-you-are-looking-for'
           });
 
           idToken.scope = 'openid';
-          const hint = yield idToken.sign(client);
+          const hint = await idToken.sign(client);
 
           const auth = new this.AuthorizationRequest({
             response_type: 'id_token',
@@ -345,16 +345,16 @@ const route = '/auth';
           .expect(auth.validateErrorDescription('id_token_hint and authenticated subject do not match'));
         });
 
-        it('id_token_hint belongs to a user that is currently logged in', function* () {
+        it('id_token_hint belongs to a user that is currently logged in', async function () {
           const session = this.getSession();
-          const client = yield this.provider.Client.find('client');
+          const client = await this.provider.Client.find('client');
           const IdToken = this.provider.IdToken;
           const idToken = new IdToken({
             sub: session.account
           });
 
           idToken.scope = 'openid';
-          const hint = yield idToken.sign(client);
+          const hint = await idToken.sign(client);
 
           const auth = new this.AuthorizationRequest({
             response_type: 'id_token',
