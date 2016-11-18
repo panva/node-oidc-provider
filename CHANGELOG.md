@@ -5,11 +5,16 @@ Yay for [SemVer](http://semver.org/).
 **Table of Contents**
 
 <!-- TOC START min:2 max:2 link:true update:true -->
+  - [Version 1.0.1](#version-101)
   - [Version 1.0.0](#version-100)
   - [Migrating from 0.11.x to 1.0.0](#migrating-from-011x-to-100)
   - [pre 1.x changelog](#pre-1x-changelog)
 
 <!-- TOC END -->
+
+## Version 1.0.1
+- [DIFF](https://github.com/panva/node-oidc-provider/compare/v1.0.0...v1.0.1)
+- Updated uuid dependency
 
 ## Version 1.0.0
 - [DIFF](https://github.com/panva/node-oidc-provider/compare/v0.11.4...v1.0.0)

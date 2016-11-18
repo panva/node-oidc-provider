@@ -1,5 +1,5 @@
 {
-  "author": "Filip Skokan",
+  "author": "Filip Skokan <panva.ip@gmail.com>",
   "homepage": "https://github.com/panva/node-oidc-provider",
   "dependencies": {
     "base64url": "^2.0.0",
@@ -16,7 +16,7 @@
     "lru-cache": "^4.0.0",
     "node-jose": "^0.9.0",
     "oidc-token-hash": "^1.0.0",
-    "uuid": "^2.0.2",
+    "uuid": "^3.0.0",
     "valid-url": "^1.0.9"
   },
   "description": "OpenID Provider (OP) implementation for Node.js OpenID Connect servers.",
@@ -62,7 +62,7 @@
     "lint-fix": "eslint lib example test --fix",
     "heroku-postbuild": "npm install mongodb"
   },
-  "version": "1.0.0",
+  "version": "1.0.1",
   "files": [
     "lib"
   ]
