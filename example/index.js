@@ -127,7 +127,8 @@ Promise.all([
     const result = {
       login: {
         account: account.accountId,
-        acr: '1',
+        acr: 'urn:mace:incommon:iap:bronze',
+        amr: ['pwd'],
         remember: !!this.request.body.remember,
         ts: Math.floor(Date.now() / 1000),
       },

@@ -3,6 +3,7 @@
 'use strict';
 
 module.exports.config = {
+  acrValues: ['session', 'urn:mace:incommon:iap:bronze'],
   cookies: {
     long: { signed: true },
     short: { signed: true },
@@ -11,6 +12,7 @@ module.exports.config = {
     address: {
       address: null,
     },
+    amr: null,
     email: {
       email: null,
       email_verified: null,
