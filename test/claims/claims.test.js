@@ -1,5 +1,7 @@
 'use strict';
 
+/* eslint-disable no-underscore-dangle */
+
 const bootstrap = require('../test_helper');
 const { parse: parseLocation } = require('url');
 const { decode: decodeJWT } = require('../../lib/helpers/jwt');
@@ -7,6 +9,8 @@ const { expect } = require('chai');
 
 const j = JSON.stringify;
 const route = '/auth';
+const expire = new Date();
+expire.setDate(expire.getDate() + 1);
 
 ['get', 'post'].forEach((verb) => {
   describe(`claimsParameter via ${verb} ${route}`, function () {
@@ -169,6 +173,24 @@ const route = '/auth';
       beforeEach(function () { return this.login(); });
       afterEach(function () { return this.logout(); });
       context('are met', function () {
+        function setup(agent, grant, results) {
+          const cookies = [];
+
+          if (grant) {
+            cookies.push(`_grant=${j(grant)}; path=/; expires=${expire.toGMTString()}; httponly`);
+          }
+
+          if (results) {
+            cookies.push(`_grant_result=${j(results)}; path=/; expires=${expire.toGMTString()}; httponly`);
+          }
+
+          agent._saveCookies.bind(agent)({
+            headers: {
+              'set-cookie': cookies
+            },
+          });
+        }
+
         it('session subject value differs from the one requested', function () {
           const session = this.getSession();
           const auth = new this.AuthorizationRequest({
@@ -192,55 +214,67 @@ const route = '/auth';
           .expect(auth.validateClientLocation);
         });
 
-        it('none of multiple authentication context class references requested are met', function () {
-          const session = this.getSession();
-          session.acrValue = '2';
-          const auth = new this.AuthorizationRequest({
-            response_type: 'id_token',
-            scope: 'openid',
-            prompt: 'none',
-            claims: j({
-              id_token: {
-                acr: {
-                  essential: true,
-                  values: ['1', '2']
+        if (verb === 'get') {
+          it('none of multiple authentication context class references requested are met', function () {
+            const auth = new this.AuthorizationRequest({
+              response_type: 'id_token',
+              scope: 'openid',
+              prompt: 'none',
+              claims: j({
+                id_token: {
+                  acr: {
+                    essential: true,
+                    values: ['1', '2']
+                  }
                 }
+              })
+            });
+
+            setup(this.agent, auth, {
+              login: {
+                account: this.loggedInAccountId,
+                acr: '2',
               }
-            })
+            });
+
+            return this.wrap({ route: `${route}/resume`, verb, auth })
+            .expect(302)
+            .expect(auth.validateFragment)
+            .expect(auth.validatePresence(['id_token', 'state']))
+            .expect(auth.validateState)
+            .expect(auth.validateClientLocation);
           });
 
-          return this.wrap({ route, verb, auth })
-          .expect(302)
-          .expect(auth.validateFragment)
-          .expect(auth.validatePresence(['id_token', 'state']))
-          .expect(auth.validateState)
-          .expect(auth.validateClientLocation);
-        });
-
-        it('single requested authentication context class reference is not met', function () {
-          const session = this.getSession();
-          session.acrValue = '1';
-          const auth = new this.AuthorizationRequest({
-            response_type: 'id_token',
-            scope: 'openid',
-            prompt: 'none',
-            claims: j({
-              id_token: {
-                acr: {
-                  essential: true,
-                  value: '1'
+          it('single requested authentication context class reference is not met', function () {
+            const auth = new this.AuthorizationRequest({
+              response_type: 'id_token',
+              scope: 'openid',
+              prompt: 'none',
+              claims: j({
+                id_token: {
+                  acr: {
+                    essential: true,
+                    value: '1'
+                  }
                 }
-              }
-            })
-          });
+              })
+            });
 
-          return this.wrap({ route, verb, auth })
-          .expect(302)
-          .expect(auth.validateFragment)
-          .expect(auth.validatePresence(['id_token', 'state']))
-          .expect(auth.validateState)
-          .expect(auth.validateClientLocation);
-        });
+            setup(this.agent, auth, {
+              login: {
+                account: this.loggedInAccountId,
+                acr: '1',
+              }
+            });
+
+            return this.wrap({ route: `${route}/resume`, verb, auth })
+            .expect(302)
+            .expect(auth.validateFragment)
+            .expect(auth.validatePresence(['id_token', 'state']))
+            .expect(auth.validateState)
+            .expect(auth.validateClientLocation);
+          });
+        }
       });
 
       context('are not met', function () {

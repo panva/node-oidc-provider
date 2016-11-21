@@ -57,7 +57,6 @@ class MyAdapter {
      * - account {string} the session account identifier
      * - authorizations {object} object with session authorized clients and their session identifiers
      * - loginTs {number} timestamp of user's authentication
-     * - acrValue {string} the ACR value of user's authentication
      *
      */
   }
