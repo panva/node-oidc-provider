@@ -2,10 +2,16 @@
 
 'use strict';
 
+const pkg = require('../package.json');
+
 module.exports.config = {
   cookies: {
     long: { signed: true },
     short: { signed: true },
+  },
+  discovery: {
+    service_documentation: pkg.homepage,
+    version: pkg.version,
   },
   claims: {
     address: {
