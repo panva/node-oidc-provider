@@ -13,6 +13,7 @@ point to get an idea of what you should provide.
   - [Clients](#clients)
   - [Certificates and Token Integrity](#certificates-and-token-integrity)
   - [Configuring available claims](#configuring-available-claims)
+  - [Configuring available scopes](#configuring-available-scopes)
   - [Persistance](#persistance)
   - [Interaction](#interaction)
   - [Enable/Disable optional OIDC features](#enabledisable-optional-oidc-features)
@@ -114,22 +115,20 @@ See [Certificates, Keystores, Token Integrity](/docs/keystores.md).
 
 
 ## Configuring available claims
-
-By default oidc-provider pushes `acr, auth_time, iss, sub` claims to the id token. The `claims`
-configuration parameter can be used to define which claims fall under which scope as well as to
-expose additional claims that are available to RPs via the claims authorization parameter.
-The configuration value uses the following scheme:
+oidc-provider pushes by default `acr, auth_time, iss, sub` claims to the id token and userinfo.
+The `claims` configuration parameter can be used to define which claims fall under which scope
+as well as to expose additional claims that are available to RPs via the claims authorization
+parameter. The configuration value uses the following scheme:
 
 ```js
 new Provider('http://localhost:3000', {
   claims: {
-    [scope name]: {
-      [claim name]: null,
-      [claim name]: null,
-    },
+    [scope name]: ['claim name', 'claim name'],
+    // or
     [scope name]: {
       [claim name]: null,
     },
+    // or (for standalone claims)
     [standalone claim name]: null
   }
 });
@@ -140,17 +139,19 @@ To follow the [Core-defined scope-to-claim mapping][core-account-claims] use:
 ```js
 new Provider('http://localhost:3000', {
   claims: {
-    address: { address: null },
-    email: { email: null, email_verified: null },
-    phone: { phone_number: null, phone_number_verified: null },
-    profile: {
-      birthdate: null, family_name: null, gender: null, given_name: null, locale: null,
-      middle_name: null, name: null, nickname: null, picture: null, preferred_username: null,
-      profile: null, updated_at: null, website: null, zoneinfo: null
-    }
-  }
+    address: ['address'],
+    email: ['email', 'email_verified'],
+    phone: ['phone_number', 'phone_number_verified'],
+    profile: ['birthdate', 'family_name', 'gender', 'given_name', 'locale', 'middle_name', 'name',
+      'nickname', 'picture', 'preferred_username', 'profile', 'updated_at', 'website', 'zoneinfo'],
+  },
 });
 ```
+
+## Configuring available scopes
+Use the `scopes` configuration parameter to extend or reduce the default scope names that are
+available. This list is extended by all scope names detected in the claims parameter as well.
+The parameter accepts an array of scope names.
 
 ## Persistance
 The provided example and any new instance of oidc-provider will use the basic in-memory adapter for
