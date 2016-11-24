@@ -5,6 +5,7 @@ Yay for [SemVer](http://semver.org/).
 **Table of Contents**
 
 <!-- TOC START min:2 max:2 link:true update:true -->
+  - [Version 1.1.0](#version-110)
   - [Version 1.0.3](#version-103)
   - [Version 1.0.2](#version-102)
   - [Version 1.0.1](#version-101)
@@ -13,6 +14,13 @@ Yay for [SemVer](http://semver.org/).
   - [pre 1.x changelog](#pre-1x-changelog)
 
 <!-- TOC END -->
+
+## Version 1.1.0
+- [DIFF](https://github.com/panva/node-oidc-provider/compare/v1.0.3...v1.1.0)
+- resolved #37 - authorization endpoint can now be configured with additional whitelisted parameters
+- amr claim handling (similar to acr)
+- defining custom claims with a new array syntax (in addition, prev. syntax still works)
+- scope names from claims are automatically added to the published scopes_supported list
 
 ## Version 1.0.3
 - [DIFF](https://github.com/panva/node-oidc-provider/compare/v1.0.2...v1.0.3)

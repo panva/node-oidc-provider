@@ -18,6 +18,7 @@ point to get an idea of what you should provide.
   - [Interaction](#interaction)
   - [Enable/Disable optional OIDC features](#enabledisable-optional-oidc-features)
   - [Custom Grant Types](#custom-grant-types)
+  - [Extending Authorization with Custom Parameters](#extending-authorization-with-custom-parameters)
   - [Extending Discovery with Custom Properties](#extending-discovery-with-custom-properties)
   - [Configuring Routes](#configuring-routes)
   - [Changing HTTP Request Defaults](#changing-http-request-defaults)
@@ -403,6 +404,17 @@ provider.registerGrantType('password', function passwordGrantTypeFactory(provide
 }, parameters);
 ```
 Tip: you are able to modify the implemented grant type behavior like this.
+
+
+## Extending Authorization with Custom Parameters
+You can extend the whitelisted parameters of authorization/authentication endpoint beyond the
+defaults. These will be available in ctx.oidc.params as well as passed via the `_grant` cookie
+to the interaction.
+```js
+const oidc = new Provider('http://localhost:3000', {
+  extraParams: ['utm_campaign', 'utm_medium', 'utm_source', 'utm_term'],
+});
+```
 
 
 ## Extending Discovery with Custom Properties
