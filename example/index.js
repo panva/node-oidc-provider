@@ -115,13 +115,13 @@ Promise.all([
 
   const body = bodyParser();
 
-  router.post('/confirm', body, function* submitConfirmationForm(next) {
+  router.post('/interaction/:grant/confirm', body, function* submitConfirmationForm(next) {
     const result = { consent: {} };
     provider.resume(this, this.request.body.uuid, result);
     yield next;
   });
 
-  router.post('/login', body, function* submitLoginForm() {
+  router.post('/interaction/:grant/login', body, function* submitLoginForm() {
     const account = yield Account.findByLogin(this.request.body.login);
 
     const result = {
