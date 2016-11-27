@@ -14,6 +14,7 @@ your own unique-looking and functioning user flows.
 **Table of Contents**
 
 <!-- TOC START min:2 max:2 link:true update:true -->
+  - ['next' branch/release](#next-branchrelease)
   - [Implemented specs & features](#implemented-specs--features)
   - [Get started](#get-started)
   - [Configuration and Initialization](#configuration-and-initialization)
@@ -21,6 +22,19 @@ your own unique-looking and functioning user flows.
   - [Certification](#certification)
 
 <!-- TOC END -->
+
+## 'next' branch/release
+This branch is being kept up to date with the latest master only having the internal dependencies
+being koa2 based, therefore requiring ES7 async/await capable node runtime (or live transpile).
+There are no extra features or master-unreleased features. 2.0.0 of this library will come when koa2
+releases as latest and when ES7 async/await lands in LTS nodejs release (probably LTSv8).
+
+You can use this library if you already use node stable with `--harmony_async_await`, just declare
+your dependency in package.json with the @next distribution tag.
+
+The published versions also use pre-release version scheme 2.0.0-alpha.x.y.z with xyz being the same
+as the corresponding latest release. i.e. 2.0.0-alpha.1.2.0 is essentially version 1.2.0 only with
+the updated dependencies.
 
 ## Implemented specs & features
 
@@ -56,7 +70,7 @@ Updates to drafts and experimental specification versions are released as MINOR 
 To run and experiment with an example server, clone the oidc-provider repo and install the dependencies:
 
 ```bash
-$ git clone https://github.com/panva/node-oidc-provider.git oidc-provider
+$ git clone -b next https://github.com/panva/node-oidc-provider.git oidc-provider
 $ cd oidc-provider
 $ npm install
 $ node --harmony_async_await example
@@ -71,7 +85,7 @@ An example client using this provider is available [here][heroku-example-client]
 Otherwise just install the package in your app and follow the [example use](/example/index.js).
 It is easy to use with [express](/example/express.js) too.
 ```
-$ npm install oidc-provider --save
+$ npm install oidc-provider@next --save
 ```
 
 ### 1.0.0 Notice
