@@ -13,13 +13,16 @@ point to get an idea of what you should provide.
   - [Clients](#clients)
   - [Certificates and Token Integrity](#certificates-and-token-integrity)
   - [Configuring available claims](#configuring-available-claims)
+  - [Configuring available scopes](#configuring-available-scopes)
   - [Persistance](#persistance)
   - [Interaction](#interaction)
   - [Enable/Disable optional OIDC features](#enabledisable-optional-oidc-features)
   - [Custom Grant Types](#custom-grant-types)
+  - [Extending Authorization with Custom Parameters](#extending-authorization-with-custom-parameters)
   - [Extending Discovery with Custom Properties](#extending-discovery-with-custom-properties)
   - [Configuring Routes](#configuring-routes)
   - [Changing HTTP Request Defaults](#changing-http-request-defaults)
+  - [Authentication Context Class Reference](#authentication-context-class-reference)
 
 <!-- TOC END -->
 
@@ -32,7 +35,8 @@ what part of the OP they affect.
 ## Accounts
 oidc-provider needs to be able to find an account and once found the account needs to have an
 `accountId` property as well as `claims()` function returning an object with claims that correspond
-to the claims your issuer supports. Tell oidc-provider how to find your account by an ID.
+to the claims your issuer supports. Tell oidc-provider how to find your account by an ID.  
+`#claims()` can also return a Promise later resolved / rejected.
 
 ```js
 const oidc = new Provider('http://localhost:3000', {
@@ -114,22 +118,20 @@ See [Certificates, Keystores, Token Integrity](/docs/keystores.md).
 
 
 ## Configuring available claims
-
-By default oidc-provider pushes `acr, auth_time, iss, sub` claims to the id token. The `claims`
-configuration parameter can be used to define which claims fall under which scope as well as to
-expose additional claims that are available to RPs via the claims authorization parameter.
-The configuration value uses the following scheme:
+oidc-provider pushes by default `acr, auth_time, iss, sub` claims to the id token and userinfo.
+The `claims` configuration parameter can be used to define which claims fall under which scope
+as well as to expose additional claims that are available to RPs via the claims authorization
+parameter. The configuration value uses the following scheme:
 
 ```js
 new Provider('http://localhost:3000', {
   claims: {
-    [scope name]: {
-      [claim name]: null,
-      [claim name]: null,
-    },
+    [scope name]: ['claim name', 'claim name'],
+    // or
     [scope name]: {
       [claim name]: null,
     },
+    // or (for standalone claims)
     [standalone claim name]: null
   }
 });
@@ -140,17 +142,19 @@ To follow the [Core-defined scope-to-claim mapping][core-account-claims] use:
 ```js
 new Provider('http://localhost:3000', {
   claims: {
-    address: { address: null },
-    email: { email: null, email_verified: null },
-    phone: { phone_number: null, phone_number_verified: null },
-    profile: {
-      birthdate: null, family_name: null, gender: null, given_name: null, locale: null,
-      middle_name: null, name: null, nickname: null, picture: null, preferred_username: null,
-      profile: null, updated_at: null, website: null, zoneinfo: null
-    }
-  }
+    address: ['address'],
+    email: ['email', 'email_verified'],
+    phone: ['phone_number', 'phone_number_verified'],
+    profile: ['birthdate', 'family_name', 'gender', 'given_name', 'locale', 'middle_name', 'name',
+      'nickname', 'picture', 'preferred_username', 'profile', 'updated_at', 'website', 'zoneinfo'],
+  },
 });
 ```
+
+## Configuring available scopes
+Use the `scopes` configuration parameter to extend or reduce the default scope names that are
+available. This list is extended by all scope names detected in the claims parameter as well.
+The parameter accepts an array of scope names.
 
 ## Persistance
 The provided example and any new instance of oidc-provider will use the basic in-memory adapter for
@@ -404,6 +408,17 @@ provider.registerGrantType('password', function passwordGrantTypeFactory(provide
 Tip: you are able to modify the implemented grant type behavior like this.
 
 
+## Extending Authorization with Custom Parameters
+You can extend the whitelisted parameters of authorization/authentication endpoint beyond the
+defaults. These will be available in ctx.oidc.params as well as passed via the `_grant` cookie
+to the interaction.
+```js
+const oidc = new Provider('http://localhost:3000', {
+  extraParams: ['utm_campaign', 'utm_medium', 'utm_source', 'utm_term'],
+});
+```
+
+
 ## Extending Discovery with Custom Properties
 You can extend the returned discovery properties beyond the defaults
 ```js
@@ -460,6 +475,10 @@ Confirm your httpOptions by
 ```js
 console.log('httpOptions %j', provider.defaultHttpOptions);
 ```
+
+## Authentication Context Class Reference
+Supply an array of string values to acrValues configuration option to overwrite the default
+`['0', '1', '2']`, passing an empty array will disable the acr claim completely.
 
 [client-metadata]: http://openid.net/specs/openid-connect-registration-1_0.html#ClientMetadata
 [core-account-claims]: http://openid.net/specs/openid-connect-core-1_0.html#ScopeClaims

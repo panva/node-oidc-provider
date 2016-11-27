@@ -1,4 +1,4 @@
-<form autocomplete="off" action="/login" method="post">
+<form autocomplete="off" action="/interaction/<%= cookie.uuid %>/login" method="post">
   <input type="hidden" name="uuid" value="<%= cookie.uuid %>"/>
   <input required type="text" name="login" placeholder="Enter any login" <% if (!cookie.params.login_hint) { %>autofocus="on"<% } else { %> value="<%= cookie.params.login_hint %>" <% } %>>
   <input required type="password" name="password" placeholder="and password" <% if (cookie.params.login_hint) { %>autofocus="on"<% } %>>

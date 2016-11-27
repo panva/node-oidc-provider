@@ -117,19 +117,20 @@ Promise.all([
 
   const body = bodyParser();
 
-  router.post('/confirm', body, async (ctx, next) => {
+  router.post('/interaction/:grant/confirm', body, async (ctx, next) => {
     const result = { consent: {} };
     provider.resume(ctx, ctx.request.body.uuid, result);
     await next();
   });
 
-  router.post('/login', body, async (ctx, next) => {
+  router.post('/interaction/:grant/login', body, async (ctx, next) => {
     const account = await Account.findByLogin(ctx.request.body.login);
 
     const result = {
       login: {
         account: account.accountId,
-        acr: '1',
+        acr: 'urn:mace:incommon:iap:bronze',
+        amr: ['pwd'],
         remember: !!ctx.request.body.remember,
         ts: Math.floor(Date.now() / 1000),
       },

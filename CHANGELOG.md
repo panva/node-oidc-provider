@@ -5,6 +5,9 @@ Yay for [SemVer](http://semver.org/).
 **Table of Contents**
 
 <!-- TOC START min:2 max:2 link:true update:true -->
+  - [Version 1.2.0](#version-120)
+  - [Version 1.1.0](#version-110)
+  - [Version 1.0.3](#version-103)
   - [Version 1.0.2](#version-102)
   - [Version 1.0.1](#version-101)
   - [Version 1.0.0](#version-100)
@@ -12,6 +15,24 @@ Yay for [SemVer](http://semver.org/).
   - [pre 1.x changelog](#pre-1x-changelog)
 
 <!-- TOC END -->
+
+## Version 1.2.0
+- [DIFF](https://github.com/panva/node-oidc-provider/compare/v1.1.0...v1.2.0)
+- account's `#claims()` can now return a promise
+- when acrValues passed in are empty the claim is not published as supported, the neither is
+  acr_values_supported as it would be an empty array anyway
+
+## Version 1.1.0
+- [DIFF](https://github.com/panva/node-oidc-provider/compare/v1.0.3...v1.1.0)
+- resolved #37 - authorization endpoint can now be configured with additional whitelisted parameters
+- amr claim handling (similar to acr)
+- defining custom claims with a new array syntax (in addition, prev. syntax still works)
+- scope names from claims are automatically added to the published scopes_supported list
+
+## Version 1.0.3
+- [DIFF](https://github.com/panva/node-oidc-provider/compare/v1.0.2...v1.0.3)
+- fixes #36 - devInteractions feature rendering when mounted
+- ensure server_error is emitted for actions without a specific eventName
 
 ## Version 1.0.2
 - [DIFF](https://github.com/panva/node-oidc-provider/compare/v1.0.1...v1.0.2)

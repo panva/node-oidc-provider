@@ -5,6 +5,7 @@
 const pkg = require('../package.json');
 
 module.exports.config = {
+  acrValues: ['session', 'urn:mace:incommon:iap:bronze'],
   cookies: {
     long: { signed: true },
     short: { signed: true },
@@ -14,33 +15,12 @@ module.exports.config = {
     version: pkg.version,
   },
   claims: {
-    address: {
-      address: null,
-    },
-    email: {
-      email: null,
-      email_verified: null,
-    },
-    phone: {
-      phone_number: null,
-      phone_number_verified: null,
-    },
-    profile: {
-      birthdate: null,
-      family_name: null,
-      gender: null,
-      given_name: null,
-      locale: null,
-      middle_name: null,
-      name: null,
-      nickname: null,
-      picture: null,
-      preferred_username: null,
-      profile: null,
-      updated_at: null,
-      website: null,
-      zoneinfo: null,
-    },
+    amr: null,
+    address: ['address'],
+    email: ['email', 'email_verified'],
+    phone: ['phone_number', 'phone_number_verified'],
+    profile: ['birthdate', 'family_name', 'gender', 'given_name', 'locale', 'middle_name', 'name',
+      'nickname', 'picture', 'preferred_username', 'profile', 'updated_at', 'website', 'zoneinfo'],
   },
   features: {
     devInteractions: false,
@@ -58,6 +38,10 @@ module.exports.config = {
   },
   subjectTypes: ['public', 'pairwise'],
   pairwiseSalt: 'da1c442b365b563dfc121f285a11eedee5bbff7110d55c88',
+  interactionUrl: function interactionUrl(interaction) { // eslint-disable-line no-unused-vars
+    // this => koa context;
+    return `/interaction/${this.oidc.uuid}`;
+  },
 };
 
 module.exports.clients = [{
