@@ -5,6 +5,7 @@ Yay for [SemVer](http://semver.org/).
 **Table of Contents**
 
 <!-- TOC START min:2 max:2 link:true update:true -->
+  - [Version 1.2.0](#version-120)
   - [Version 1.1.0](#version-110)
   - [Version 1.0.3](#version-103)
   - [Version 1.0.2](#version-102)
@@ -14,6 +15,12 @@ Yay for [SemVer](http://semver.org/).
   - [pre 1.x changelog](#pre-1x-changelog)
 
 <!-- TOC END -->
+
+## Version 1.2.0
+- [DIFF](https://github.com/panva/node-oidc-provider/compare/v1.1.0...v1.2.0)
+- account's `#claims()` can now return a promise
+- when acrValues passed in are empty the claim is not published as supported, the neither is
+  acr_values_supported as it would be an empty array anyway
 
 ## Version 1.1.0
 - [DIFF](https://github.com/panva/node-oidc-provider/compare/v1.0.3...v1.1.0)

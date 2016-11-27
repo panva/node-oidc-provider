@@ -22,6 +22,7 @@ point to get an idea of what you should provide.
   - [Extending Discovery with Custom Properties](#extending-discovery-with-custom-properties)
   - [Configuring Routes](#configuring-routes)
   - [Changing HTTP Request Defaults](#changing-http-request-defaults)
+  - [Authentication Context Class Reference](#authentication-context-class-reference)
 
 <!-- TOC END -->
 
@@ -474,6 +475,10 @@ Confirm your httpOptions by
 ```js
 console.log('httpOptions %j', provider.defaultHttpOptions);
 ```
+
+## Authentication Context Class Reference
+Supply an array of string values to acrValues configuration option to overwrite the default
+`['0', '1', '2']`, passing an empty array will disable the acr claim completely.
 
 [client-metadata]: http://openid.net/specs/openid-connect-registration-1_0.html#ClientMetadata
 [core-account-claims]: http://openid.net/specs/openid-connect-core-1_0.html#ScopeClaims
