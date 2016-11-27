@@ -42,4 +42,12 @@ describe('custom claims', function () {
 
     expect(i(provider).configuration('scopes')).to.contain('insurance', 'payment');
   });
+
+  it('removes the acr claim if no acrs are configured', function () {
+    const provider = new Provider('https://op.example.com', {
+      acrValues: [],
+    });
+
+    expect(i(provider).configuration('scopes')).not.to.contain('acr');
+  });
 });
