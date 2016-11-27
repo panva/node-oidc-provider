@@ -24,8 +24,8 @@ your own unique-looking and functioning user flows.
 <!-- TOC END -->
 
 ## 'next' branch/release
-This branch is being kept up to date with the latest master only having the internal dependencies
-being koa2 based, therefore requiring ES7 async/await capable node runtime (or live transpile).
+This branch is being kept up to date with the latest release, only having the internal dependencies
+koa2 based, therefore requiring ES7 async/await capable node runtime (or live transpile).
 There are no extra features or master-unreleased features. 2.0.0 of this library will come when koa2
 releases as latest and when ES7 async/await lands in LTS nodejs release (probably LTSv8).
 
