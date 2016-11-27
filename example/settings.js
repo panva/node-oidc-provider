@@ -38,6 +38,10 @@ module.exports.config = {
   },
   subjectTypes: ['public', 'pairwise'],
   pairwiseSalt: 'da1c442b365b563dfc121f285a11eedee5bbff7110d55c88',
+  interactionUrl: function interactionUrl(interaction) { // eslint-disable-line no-unused-vars
+    // this => koa context;
+    return `/interaction/${this.oidc.uuid}`;
+  },
 };
 
 module.exports.clients = [{
