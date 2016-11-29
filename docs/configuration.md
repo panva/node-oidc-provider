@@ -293,7 +293,7 @@ Enables the use and validations of `request_uri` parameter as described in
 const configuration = { features: { requestUri: Boolean[false] } };
 ```
 
-To also enable require_request_uri_registration do the following
+To also enable require_request_uri_registration configure requestUri as an object like so:
 ```js
 const configuration = { features: { requestUri: { requireRequestUriRegistration: true } } };
 ```
@@ -345,16 +345,18 @@ Enables features described in [Dynamic Client Registration 1.0][feature-registra
 const configuration = { features: { registration: Boolean[false] } };
 ```
 
-To set a fixed Initial Access Token for the POST registration call use
+To enable a fixed Initial Access Token for the registration POST call configure registration to be
+an object like so:
 ```js
 const configuration = { features: { registration: { initialAccessToken: 'tokenValue' } } };
 ```
 
-To have the option of multiple Initial Access Tokens covered by your adapter use
+To enable a Initial Access Token lookup from your storage (via an Adapter of course) configure
+registration to be an object like so:
 ```js
 const configuration = { features: { registration: { initialAccessToken: true } } };
 
-// to add a token and retrieve it's value
+// adding a token and retrieving it's value
 new (provider.InitialAccessToken)({}).then(console.log);
 ```
 
@@ -363,6 +365,12 @@ Enables Update and Delete features described in
 [OAuth 2.0 Dynamic Client Registration Management Protocol][feature-registration-management].
 ```js
 const configuration = { features: { registration: true, registrationManagement: Boolean[false] } };
+```
+
+To have your provider discard the used and issue new RegistrationAccessToken with a successful update
+configure registrationManagement as an object like so:
+```js
+const configuration = { features: { ..., registrationManagement: { rotateRegistrationAccessToken: true } } };
 ```
 
 
