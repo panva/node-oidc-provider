@@ -6,7 +6,7 @@ const uuid = require('uuid');
 
 class Account {
   constructor(id) {
-    this.accountId = id || uuid.v4();
+    this.accountId = id || uuid();
     store.set(this.accountId, this);
   }
 
