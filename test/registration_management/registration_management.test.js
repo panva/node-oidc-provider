@@ -218,6 +218,49 @@ describe('OAuth 2.0 Dynamic Client Registration Management Protocol', function (
         });
       });
     });
+
+    describe('rotateRegistrationAccessToken', function () {
+      before(function () {
+        const conf = i(this.provider).configuration();
+        conf.features.registrationManagement = { rotateRegistrationAccessToken: true };
+      });
+
+      after(function () {
+        const conf = i(this.provider).configuration();
+        conf.features.registrationManagement = true;
+      });
+
+      it('destroys the old RegistrationAccessToken', function* () {
+        const client = yield setup.call(this, {});
+        const spy = sinon.spy();
+        this.provider.once('token.revoked', spy);
+
+        return this.agent.put(`/reg/${client.client_id}`)
+        .set('Authorization', `Bearer ${client.registration_access_token}`)
+        .send(updateProperties(client))
+        .expect(200)
+        .expect(() => {
+          expect(spy.calledOnce).to.be.true;
+        });
+      });
+
+      it('issues and returns new RegistrationAccessToken', function* () {
+        const client = yield setup.call(this, {});
+        const spy = sinon.spy();
+        this.provider.once('token.issued', spy);
+
+        return this.agent.put(`/reg/${client.client_id}`)
+        .set('Authorization', `Bearer ${client.registration_access_token}`)
+        .send(updateProperties(client))
+        .expect(200)
+        .expect((response) => {
+          expect(spy.calledOnce).to.be.true;
+          const args = spy.firstCall.args[0];
+          expect(args.clientId).to.equal(client.client_id);
+          expect(response.body.registration_access_token.substring(0, 48)).to.equal(args.jti);
+        });
+      });
+    });
   });
 
   describe('Client Delete Request', function () {

@@ -28,7 +28,7 @@ point to get an idea of what you should provide.
 
 ## Default configuration values
 Default values are available for all configuration options.
-[Default configuration](/lib/helpers/defaults.js) provides details on what the options mean and
+[Default configuration][defaults] provides details on what the options mean and
 what part of the OP they affect.
 
 
@@ -36,7 +36,8 @@ what part of the OP they affect.
 oidc-provider needs to be able to find an account and once found the account needs to have an
 `accountId` property as well as `claims()` function returning an object with claims that correspond
 to the claims your issuer supports. Tell oidc-provider how to find your account by an ID.  
-`#claims()` can also return a Promise later resolved / rejected.
+`#claims()` can also return a Promise later resolved / rejected and `this` is set to the request
+context.
 
 ```js
 const oidc = new Provider('http://localhost:3000', {
@@ -293,7 +294,7 @@ Enables the use and validations of `request_uri` parameter as described in
 const configuration = { features: { requestUri: Boolean[false] } };
 ```
 
-To also enable require_request_uri_registration do the following
+To also enable require_request_uri_registration configure requestUri as an object like so:
 ```js
 const configuration = { features: { requestUri: { requireRequestUriRegistration: true } } };
 ```
@@ -345,16 +346,18 @@ Enables features described in [Dynamic Client Registration 1.0][feature-registra
 const configuration = { features: { registration: Boolean[false] } };
 ```
 
-To set a fixed Initial Access Token for the POST registration call use
+To enable a fixed Initial Access Token for the registration POST call configure registration to be
+an object like so:
 ```js
 const configuration = { features: { registration: { initialAccessToken: 'tokenValue' } } };
 ```
 
-To have the option of multiple Initial Access Tokens covered by your adapter use
+To enable a Initial Access Token lookup from your storage (via an Adapter of course) configure
+registration to be an object like so:
 ```js
 const configuration = { features: { registration: { initialAccessToken: true } } };
 
-// to add a token and retrieve it's value
+// adding a token and retrieving it's value
 new (provider.InitialAccessToken)({}).then(console.log);
 ```
 
@@ -363,6 +366,12 @@ Enables Update and Delete features described in
 [OAuth 2.0 Dynamic Client Registration Management Protocol][feature-registration-management].
 ```js
 const configuration = { features: { registration: true, registrationManagement: Boolean[false] } };
+```
+
+To have your provider discard the used and issue new RegistrationAccessToken with a successful update
+configure registrationManagement as an object like so:
+```js
+const configuration = { features: { ..., registrationManagement: { rotateRegistrationAccessToken: true } } };
 ```
 
 
@@ -433,8 +442,8 @@ const oidc = new Provider('http://localhost:3000', {
 
 
 ## Configuring Routes
-You can change the [default routes](/lib/helpers/defaults.js#L121-L137) by providing a routes object
-to the oidc-provider constructor.
+You can change the default routes by providing a routes object to the oidc-provider constructor.
+See the specific routes in [default configuration][defaults].
 
 ```js
 const oidc = new Provider('http://localhost:3000', {
@@ -493,3 +502,4 @@ Supply an array of string values to acrValues configuration option to overwrite 
 [feature-session-management]: http://openid.net/specs/openid-connect-session-1_0-27.html
 [got-library]: https://github.com/sindresorhus/got
 [password-grant]: https://tools.ietf.org/html/rfc6749#section-4.3
+[defaults]: /lib/helpers/defaults.js
