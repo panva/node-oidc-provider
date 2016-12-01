@@ -433,9 +433,9 @@ You can extend the returned discovery properties beyond the defaults
 ```js
 const oidc = new Provider('http://localhost:3000', {
   discovery: {
-     service_documentation: 'http://server.example.com/connect/service_documentation.html',
-     ui_locales_supported: ['en-US', 'en-GB', 'en-CA', 'fr-FR', 'fr-CA'],
-     version: '3.1'
+    service_documentation: 'http://server.example.com/connect/service_documentation.html',
+    ui_locales_supported: ['en-US', 'en-GB', 'en-CA', 'fr-FR', 'fr-CA'],
+    version: '3.1'
   }
 });
 ```
