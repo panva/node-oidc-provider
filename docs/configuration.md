@@ -16,7 +16,7 @@ point to get an idea of what you should provide.
   - [Configuring available scopes](#configuring-available-scopes)
   - [Persistance](#persistance)
   - [Interaction](#interaction)
-  - [Enable/Disable optional OIDC features](#enabledisable-optional-oidc-features)
+  - [Enable/Disable optional oidc-provider features](#enabledisable-optional-oidc-provider-features)
   - [Custom Grant Types](#custom-grant-types)
   - [Extending Authorization with Custom Parameters](#extending-authorization-with-custom-parameters)
   - [Extending Discovery with Custom Properties](#extending-discovery-with-custom-properties)
@@ -198,7 +198,7 @@ endpoint, affixed by the uuid of the original request and the interaction result
 the provider instance that ties things together for you.
 
 
-## Enable/Disable optional OIDC features
+## Enable/Disable optional oidc-provider features
 
 There are many features defined in OIDC which are optional and can be omitted to keep your
 deployment compact. The feature flags with their default values are
@@ -218,6 +218,7 @@ deployment compact. The feature flags with their default values are
 | request | no |
 | requestUri | no |
 | revocation | no |
+| oauthNativeApps | no |
 | sessionManagement | no |
 
 **Development quick-start interactions**
@@ -323,6 +324,14 @@ is not sent. The use of this endpoint is covered by the same authz mechanism as 
 endpoint.
 ```js
 const configuration = { features: { revocation: Boolean[false] } };
+```
+
+
+**OAuth 2.0 Native Apps Best Current Practice**
+Changes `redirect_uris` validations for clients with application_type `native` to those described by
+[OAuth 2.0 for Native Apps][feature-oauth-native-apps].
+```js
+const configuration = { features: { oauthNativeApps: Boolean[false] } };
 ```
 
 
@@ -499,6 +508,7 @@ Supply an array of string values to acrValues configuration option to overwrite 
 [feature-registration-management]: https://tools.ietf.org/html/rfc7592
 [feature-registration]: http://openid.net/specs/openid-connect-registration-1_0.html
 [feature-revocation]: https://tools.ietf.org/html/rfc7009
+[feature-oauth-native-apps]: https://tools.ietf.org/html/draft-ietf-oauth-native-apps-06
 [feature-session-management]: http://openid.net/specs/openid-connect-session-1_0-27.html
 [got-library]: https://github.com/sindresorhus/got
 [password-grant]: https://tools.ietf.org/html/rfc6749#section-4.3
