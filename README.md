@@ -50,7 +50,7 @@ The following drafts/experimental specifications are implemented by oidc-provide
 - [OpenID Connect Session Management 1.0 - draft 27][feature-session-management]
 - [OpenID Connect Back-Channel Logout 1.0 - draft 03][feature-backchannel-logout]
 - [RFC7592 - OAuth 2.0 Dynamic Client Registration Management Protocol (Update and Delete)][feature-registration-management]
-- [OAuth 2.0 for Native Apps - draft 06][feature-oauth-native-apps]
+- [OAuth 2.0 for Native Apps BCP - draft 06][feature-oauth-native-apps]
 
 Updates to drafts and experimental specification versions are released as MINOR library versions.
 
