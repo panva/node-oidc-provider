@@ -212,7 +212,7 @@ deployment compact. The feature flags with their default values are
 | discovery | yes |
 | encryption | no |
 | introspection | no |
-| refreshToken | no |
+| alwaysIssueRefresh | no |
 | registration | no |
 | registrationManagement | no |
 | request | no |
@@ -274,7 +274,7 @@ client has refresh_token in it's configured grant_types. No extra configuration 
 2) The OP is configured to always issue a refresh_token and the client has refresh_token in it's
 configured grant_types. Configuration below:
 ```js
-const configuration = { features: { refreshToken: Boolean[false] } };
+const configuration = { features: { alwaysIssueRefresh: Boolean[false] } };
 ```
 
 
