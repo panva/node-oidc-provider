@@ -221,7 +221,7 @@ deployment compact. The feature flags with their default values are
 | oauthNativeApps | no |
 | sessionManagement | no |
 
-**Development quick-start interactions**
+**Development quick-start interactions**  
 Development-ready out of the box interaction views bundled with the library allow you to skip the
 boring frontend part while experimenting with oidc-provider. Enter any username (will be used as sub
 claim value) and any password to proceed.
@@ -286,12 +286,13 @@ const configuration = { features: { alwaysIssueRefresh: Boolean[false] } };
 
 
 **Authorization `request` parameter**  
-```js
-const configuration = { features: { request: Boolean[false] } };
-```
 Enables the use and validations of `request` parameter as described in
 [Core 1.0][core-jwt-parameters-url] and sets the discovery endpoint property
 `request_parameter_supported` to true.
+
+```js
+const configuration = { features: { request: Boolean[false] } };
+```
 
 
 **Authorization `request_uri` parameter**  
