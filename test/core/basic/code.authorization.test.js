@@ -42,6 +42,22 @@ describe('BASIC code', function () {
         .expect(auth.validateClientLocation);
       });
 
+      it('ignores unsupported scopes', function () {
+        const spy = sinon.spy();
+        this.provider.once('token.issued', spy);
+        const auth = new this.AuthorizationRequest({
+          response_type: 'code',
+          scope: 'openid and unsupported'
+        });
+
+        return this.wrap({ route, verb, auth })
+        .expect(302)
+        .expect(auth.validateClientLocation)
+        .expect(() => {
+          expect(spy.firstCall.args[0]).to.have.property('scope', 'openid');
+        });
+      });
+
       it('ignores the scope offline_access unless prompt consent is present', function () {
         const spy = sinon.spy();
         this.provider.once('token.issued', spy);
@@ -52,8 +68,6 @@ describe('BASIC code', function () {
 
         return this.wrap({ route, verb, auth })
         .expect(302)
-        .expect(auth.validatePresence(['code', 'state']))
-        .expect(auth.validateState)
         .expect(auth.validateClientLocation)
         .expect(() => {
           expect(spy.firstCall.args[0]).to.have.property('scope').and.not.include('offline_access');
@@ -316,26 +330,6 @@ describe('BASIC code', function () {
         .expect(auth.validateClientLocation)
         .expect(auth.validateError('invalid_request'))
         .expect(auth.validateErrorDescription('prompt none must only be used alone'));
-      });
-
-      it('unsupported scope', function () {
-        const spy = sinon.spy();
-        this.provider.once('authorization.error', spy);
-        const auth = new this.AuthorizationRequest({
-          response_type: 'code',
-          scope: 'openid and unsupported'
-        });
-
-        return this.wrap({ route, verb, auth })
-        .expect(302)
-        .expect(() => {
-          expect(spy.calledOnce).to.be.true;
-        })
-        .expect(auth.validatePresence(['error', 'error_description', 'state']))
-        .expect(auth.validateState)
-        .expect(auth.validateClientLocation)
-        .expect(auth.validateError('invalid_request'))
-        .expect(auth.validateErrorDescription('invalid scope value(s) provided. (and,unsupported)'));
       });
 
       it('missing openid scope', function () {
