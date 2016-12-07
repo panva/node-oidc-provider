@@ -5,6 +5,8 @@ Yay for [SemVer](http://semver.org/).
 **Table of Contents**
 
 <!-- TOC START min:2 max:2 link:true update:true -->
+  - [Version 1.4.0](#version-140)
+  - [Version 1.3.0](#version-130)
   - [Version 1.2.0](#version-120)
   - [Version 1.1.0](#version-110)
   - [Version 1.0.3](#version-103)
@@ -15,6 +17,19 @@ Yay for [SemVer](http://semver.org/).
   - [pre 1.x changelog](#pre-1x-changelog)
 
 <!-- TOC END -->
+
+## Version 1.4.0
+- [DIFF](https://github.com/panva/node-oidc-provider/compare/v1.3.0...v1.4.0)
+- added optional support for [OAuth 2.0 for Native Apps BCP - draft 06][feature-oauth-native-apps]
+  - enable with configuration `features.oauthNativeApps = true`;
+- offline_access scope is now ignored when consent prompt is missing instead of being rejected as invalid_request
+- unrecognized authentication requests scopes are now ignored instead of being rejected as invalid_request
+- renamed the refreshToken feature flag to a more appropriate alwaysIssueRefresh
+
+## Version 1.3.0
+- [DIFF](https://github.com/panva/node-oidc-provider/compare/v1.2.0...v1.3.0)
+- added optional Registration Access Token rotation strategy for Dynamic Client Registration Management Protocol
+- added request ctx bind to findById
 
 ## Version 1.2.0
 - [DIFF](https://github.com/panva/node-oidc-provider/compare/v1.1.0...v1.2.0)
@@ -166,3 +181,5 @@ To enable the extra layer of protection (essentially against someone controlling
 storage layer) you just need to pass a jose.JWK.KeyStore as `tokenIntegrity` configuration option.
 The first token you push on to this key store will be used to cryptographically sign the oauth tokens
 prohibiting any tampering with the payload and header content.
+
+[feature-oauth-native-apps]: https://tools.ietf.org/html/draft-ietf-oauth-native-apps-06

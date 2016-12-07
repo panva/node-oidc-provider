@@ -16,7 +16,7 @@ point to get an idea of what you should provide.
   - [Configuring available scopes](#configuring-available-scopes)
   - [Persistance](#persistance)
   - [Interaction](#interaction)
-  - [Enable/Disable optional OIDC features](#enabledisable-optional-oidc-features)
+  - [Enable/Disable optional oidc-provider features](#enabledisable-optional-oidc-provider-features)
   - [Custom Grant Types](#custom-grant-types)
   - [Extending Authorization with Custom Parameters](#extending-authorization-with-custom-parameters)
   - [Extending Discovery with Custom Properties](#extending-discovery-with-custom-properties)
@@ -198,7 +198,7 @@ endpoint, affixed by the uuid of the original request and the interaction result
 the provider instance that ties things together for you.
 
 
-## Enable/Disable optional OIDC features
+## Enable/Disable optional oidc-provider features
 
 There are many features defined in OIDC which are optional and can be omitted to keep your
 deployment compact. The feature flags with their default values are
@@ -212,12 +212,13 @@ deployment compact. The feature flags with their default values are
 | discovery | yes |
 | encryption | no |
 | introspection | no |
-| refreshToken | no |
+| alwaysIssueRefresh | no |
 | registration | no |
 | registrationManagement | no |
 | request | no |
 | requestUri | no |
 | revocation | no |
+| oauthNativeApps | no |
 | sessionManagement | no |
 
 **Development quick-start interactions**
@@ -265,15 +266,22 @@ const configuration = { features: { encryption: Boolean[false] } };
 ```
 
 
-**Refresh tokens**  
-Refresh Tokens will be issued by the authorization_code grant automatically in the following cases:
+**Offline access - Refresh Tokens**  
+The use of Refresh Tokens (offline access) as described in [Core 1.0 Offline Access][core-offline-access]
+does not require any feature flag as Refresh Tokens will be issued by the authorization_code grant
+automatically in case the authentication request included offline_access scope and consent prompt and
+the client in question has the refresh_token grant configured.
 
-1) The used authorization code was requested with and granted the offline_access scope and the
-client has refresh_token in it's configured grant_types. No extra configuration required.  
-2) The OP is configured to always issue a refresh_token and the client has refresh_token in it's
-configured grant_types. Configuration below:
+**Refresh Tokens beyond the scope**  
+  > The use of Refresh Tokens is not exclusive to the offline_access use case. The Authorization
+  > Server MAY grant Refresh Tokens in other contexts that are beyond the scope of this specification.
+
+Provide `alwaysIssueRefresh` feature flag to have your provider instance issue Refresh Tokens even
+if offline_access scope is not requested. The client still has to have refresh_token grant
+configured, else no Refresh Token will be issued since the client couldn't finish the grant anyway.
+
 ```js
-const configuration = { features: { refreshToken: Boolean[false] } };
+const configuration = { features: { alwaysIssueRefresh: Boolean[false] } };
 ```
 
 
@@ -323,6 +331,14 @@ is not sent. The use of this endpoint is covered by the same authz mechanism as 
 endpoint.
 ```js
 const configuration = { features: { revocation: Boolean[false] } };
+```
+
+
+**OAuth 2.0 Native Apps Best Current Practice**
+Changes `redirect_uris` validations for clients with application_type `native` to those defined in
+[OAuth 2.0 for Native Apps][feature-oauth-native-apps].
+```js
+const configuration = { features: { oauthNativeApps: Boolean[false] } };
 ```
 
 
@@ -433,9 +449,9 @@ You can extend the returned discovery properties beyond the defaults
 ```js
 const oidc = new Provider('http://localhost:3000', {
   discovery: {
-     service_documentation: 'http://server.example.com/connect/service_documentation.html',
-     ui_locales_supported: ['en-US', 'en-GB', 'en-CA', 'fr-FR', 'fr-CA'],
-     version: '3.1'
+    service_documentation: 'http://server.example.com/connect/service_documentation.html',
+    ui_locales_supported: ['en-US', 'en-GB', 'en-CA', 'fr-FR', 'fr-CA'],
+    version: '3.1'
   }
 });
 ```
@@ -491,6 +507,7 @@ Supply an array of string values to acrValues configuration option to overwrite 
 
 [client-metadata]: http://openid.net/specs/openid-connect-registration-1_0.html#ClientMetadata
 [core-account-claims]: http://openid.net/specs/openid-connect-core-1_0.html#ScopeClaims
+[core-offline-access]: http://openid.net/specs/openid-connect-core-1_0.html#OfflineAccess
 [core-claims-url]: http://openid.net/specs/openid-connect-core-1_0.html#ClaimsParameter
 [core-jwt-parameters-url]: http://openid.net/specs/openid-connect-core-1_0.html#JWTRequests
 [feature-aggregated-distributed-claims]: http://openid.net/specs/openid-connect-core-1_0.html#AggregatedDistributedClaims
@@ -499,6 +516,7 @@ Supply an array of string values to acrValues configuration option to overwrite 
 [feature-registration-management]: https://tools.ietf.org/html/rfc7592
 [feature-registration]: http://openid.net/specs/openid-connect-registration-1_0.html
 [feature-revocation]: https://tools.ietf.org/html/rfc7009
+[feature-oauth-native-apps]: https://tools.ietf.org/html/draft-ietf-oauth-native-apps-06
 [feature-session-management]: http://openid.net/specs/openid-connect-session-1_0-27.html
 [got-library]: https://github.com/sindresorhus/got
 [password-grant]: https://tools.ietf.org/html/rfc6749#section-4.3
