@@ -266,13 +266,20 @@ const configuration = { features: { encryption: Boolean[false] } };
 ```
 
 
-**Refresh tokens**  
-Refresh Tokens will be issued by the authorization_code grant automatically in the following cases:
+**Offline access - Refresh Tokens**  
+The use of Refresh Tokens (offline access) as described in [Core 1.0 Offline Access][core-offline-access]
+does not require any feature flag as Refresh Tokens will be issued by the authorization_code grant
+automatically in case the authentication request included offline_access scope and consent prompt and
+the client in question has the refresh_token grant configured.
 
-1) The used authorization code was requested with and granted the offline_access scope and the
-client has refresh_token in it's configured grant_types. No extra configuration required.  
-2) The OP is configured to always issue a refresh_token and the client has refresh_token in it's
-configured grant_types. Configuration below:
+**Refresh Tokens beyond the scope**  
+  > The use of Refresh Tokens is not exclusive to the offline_access use case. The Authorization
+  > Server MAY grant Refresh Tokens in other contexts that are beyond the scope of this specification.
+
+Provide `alwaysIssueRefresh` feature flag to have your provider instance issue Refresh Tokens even
+if offline_access scope is not requested. The client still has to have refresh_token grant
+configured, else no Refresh Token will be issued since the client couldn't finish the grant anyway.
+
 ```js
 const configuration = { features: { alwaysIssueRefresh: Boolean[false] } };
 ```
@@ -328,7 +335,7 @@ const configuration = { features: { revocation: Boolean[false] } };
 
 
 **OAuth 2.0 Native Apps Best Current Practice**
-Changes `redirect_uris` validations for clients with application_type `native` to those described by
+Changes `redirect_uris` validations for clients with application_type `native` to those defined in
 [OAuth 2.0 for Native Apps][feature-oauth-native-apps].
 ```js
 const configuration = { features: { oauthNativeApps: Boolean[false] } };
@@ -500,6 +507,7 @@ Supply an array of string values to acrValues configuration option to overwrite 
 
 [client-metadata]: http://openid.net/specs/openid-connect-registration-1_0.html#ClientMetadata
 [core-account-claims]: http://openid.net/specs/openid-connect-core-1_0.html#ScopeClaims
+[core-offline-access]: http://openid.net/specs/openid-connect-core-1_0.html#OfflineAccess
 [core-claims-url]: http://openid.net/specs/openid-connect-core-1_0.html#ClaimsParameter
 [core-jwt-parameters-url]: http://openid.net/specs/openid-connect-core-1_0.html#JWTRequests
 [feature-aggregated-distributed-claims]: http://openid.net/specs/openid-connect-core-1_0.html#AggregatedDistributedClaims
