@@ -18,6 +18,10 @@ Yay for [SemVer](http://semver.org/).
 
 <!-- TOC END -->
 
+## Version 1.4.1
+- [DIFF](https://github.com/panva/node-oidc-provider/compare/v1.4.0...v1.4.1)
+- fixed custom uri scheme native clients hostname validations
+
 ## Version 1.4.0
 - [DIFF](https://github.com/panva/node-oidc-provider/compare/v1.3.0...v1.4.0)
 - added optional support for [OAuth 2.0 for Native Apps BCP - draft 06][feature-oauth-native-apps]

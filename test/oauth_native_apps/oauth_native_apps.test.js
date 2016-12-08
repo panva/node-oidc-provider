@@ -22,20 +22,6 @@ describe('OAuth 2.0 for Native Apps Best Current Practice features', function ()
           redirect_uris: ['com.example.app://localhost/op/callback', 'myapp://localhost/op/callback'],
         });
       });
-
-      it('rejects custom uri scheme uris if not using localhost', function () {
-        return i(this.provider).clientAdd({
-          application_type: 'native',
-          client_id: 'native-custom',
-          grant_types: ['implicit'],
-          response_types: ['id_token'],
-          token_endpoint_auth_method: 'none',
-          redirect_uris: ['com.example.app://foobar/op/callback'],
-        }).then(fail, (err) => {
-          expect(err).to.have.property('message', 'invalid_redirect_uri');
-          expect(err).to.have.property('error_description', 'redirect_uris for native clients using custom URI scheme must be using localhost as hostname');
-        });
-      });
     });
 
     describe('App-claimed HTTPS URI Redirection', function () {

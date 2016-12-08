@@ -311,7 +311,7 @@ describe('Client validations', function () {
     rejects(this.title, ['https://some#whatever'], null, {
       application_type: 'web'
     });
-    rejects(this.title, ['ftp://some'], null, {
+    rejects(this.title, ['web-custom-scheme://some'], null, {
       application_type: 'web'
     });
     rejects(this.title, ['http://localhost'], null, {
@@ -321,9 +321,6 @@ describe('Client validations', function () {
       application_type: 'native'
     });
     allows(this.title, ['native://localhost'], {
-      application_type: 'native'
-    });
-    rejects(this.title, ['ftp://some'], null, {
       application_type: 'native'
     });
     rejects(this.title, ['http://some'], null, {
@@ -355,7 +352,7 @@ describe('Client validations', function () {
     allows(this.title, ['http://a-web-uri']);
     allows(this.title, ['https://a-web-uri']);
     rejects(this.title, ['not a uri'], /must only contain web uris$/);
-    rejects(this.title, ['ftp://not-a-web-uri'], /must only contain web uris$/);
+    rejects(this.title, ['custom-scheme://not-a-web-uri'], /must only contain web uris$/);
   });
 
   context('request_object_signing_alg', function () {
@@ -382,7 +379,7 @@ describe('Client validations', function () {
     rejects(this.title, [123], /must only contain strings$/);
     allows(this.title, ['https://a-web-uri']);
     rejects(this.title, ['not a uri'], /must only contain https uris$/);
-    rejects(this.title, ['ftp://not-a-web-uri'], /must only contain https uris$/);
+    rejects(this.title, ['custom-scheme://not-a-web-uri'], /must only contain https uris$/);
     rejects(this.title, ['http://a-web-uri'], /must only contain https uris$/);
   });
 
