@@ -8,7 +8,6 @@
     "http-errors": "^1.4.0",
     "kcors": "next",
     "koa": "next",
-    "koa-body": "next",
     "koa-compose": "next",
     "ejs": "^2.5.2",
     "koa-router": "next",
@@ -16,12 +15,14 @@
     "lru-cache": "^4.0.0",
     "node-jose": "^0.9.0",
     "oidc-token-hash": "^1.0.0",
+    "raw-body": "^2.1.7",
     "uuid": "^3.0.0",
     "valid-url": "^1.0.9"
   },
   "description": "OpenID Provider (OP) implementation for Node.js OpenID Connect servers.",
   "devDependencies": {
     "chai": "^3.5.0",
+    "koa-body": "next",
     "cookiejar": "*",
     "eslint": "^3.0.0",
     "eslint-config-airbnb-base": "^10.0.0",
@@ -61,7 +62,7 @@
     "lint-fix": "eslint lib example test --fix",
     "heroku-postbuild": "npm install mongodb"
   },
-  "version": "2.0.0-alpha.1.4.1",
+  "version": "2.0.0-alpha.1.4.2",
   "files": [
     "lib"
   ],

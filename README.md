@@ -135,7 +135,7 @@ OP Config and OP Dynamic profiles of the OpenID Connect™ protocol.
 [licence-image]: https://img.shields.io/github/license/panva/node-oidc-provider.svg?style=flat-square&maxAge=7200
 [licence-url]: LICENSE.md
 [openid-certified-link]: http://openid.net/certification/
-[openid-certified-logo]: https://cloud.githubusercontent.com/assets/1454075/7611268/4d19de32-f97b-11e4-895b-31b2455a7ca6.png
+[openid-certified-logo]: https://cdn.rawgit.com/panva/node-oidc-provider/master/OpenID_Certified.png
 [openid-connect]: http://openid.net/connect/
 [feature-core]: http://openid.net/specs/openid-connect-core-1_0.html
 [feature-discovery]: http://openid.net/specs/openid-connect-discovery-1_0.html

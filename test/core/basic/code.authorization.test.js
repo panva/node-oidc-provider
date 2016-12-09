@@ -2,6 +2,7 @@
 
 const bootstrap = require('../../test_helper');
 const sinon = require('sinon');
+const querystring = require('querystring');
 const { expect } = require('chai');
 const epochTime = require('../../../lib/helpers/epoch_time');
 
@@ -170,11 +171,25 @@ describe('BASIC code', function () {
         this.provider.once('authorization.error', spy);
         const auth = new this.AuthorizationRequest({
           response_type: 'code',
-          scope: ['openid', 'openid']
+          scope: 'openid',
         });
 
-        return this.wrap({ route, verb, auth })
-        .expect(302)
+        const wrapped = ((data) => { // eslint-disable-line consistent-return
+          switch (verb) {
+            case 'get':
+              return this.agent
+                .get(route)
+                .query(`${data}&scope=openid`);
+            case 'post':
+              return this.agent
+                .post(route)
+                .send(`${data}&scope=openid`)
+                .type('form');
+            default:
+          }
+        })(querystring.stringify(auth));
+
+        return wrapped.expect(302)
         .expect(() => {
           expect(spy.calledOnce).to.be.true;
         })
