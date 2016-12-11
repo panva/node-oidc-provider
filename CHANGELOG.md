@@ -5,30 +5,26 @@ Yay for [SemVer](http://semver.org/).
 **Table of Contents**
 
 <!-- TOC START min:2 max:2 link:true update:true -->
-  - [Version 1.4.2](#version-142)
-  - [Version 1.4.1](#version-141)
   - [Version 1.4.0](#version-140)
   - [Version 1.3.0](#version-130)
   - [Version 1.2.0](#version-120)
   - [Version 1.1.0](#version-110)
-  - [Version 1.0.3](#version-103)
-  - [Version 1.0.2](#version-102)
-  - [Version 1.0.1](#version-101)
   - [Version 1.0.0](#version-100)
   - [Migrating from 0.11.x to 1.0.0](#migrating-from-011x-to-100)
   - [pre 1.x changelog](#pre-1x-changelog)
 
 <!-- TOC END -->
 
-## Version 1.4.2
+## Version 1.4.0
+### Version 1.4.2
 - [DIFF](https://github.com/panva/node-oidc-provider/compare/v1.4.1...v1.4.2)
 - fixed an issue for provider instances with upstream already parsing the request body
 
-## Version 1.4.1
+### Version 1.4.1
 - [DIFF](https://github.com/panva/node-oidc-provider/compare/v1.4.0...v1.4.1)
 - fixed custom uri scheme native clients hostname validations
 
-## Version 1.4.0
+### Version 1.4.0
 - [DIFF](https://github.com/panva/node-oidc-provider/compare/v1.3.0...v1.4.0)
 - added optional support for [OAuth 2.0 for Native Apps BCP - draft 06][feature-oauth-native-apps]
   - enable with configuration `features.oauthNativeApps = true`;
@@ -54,22 +50,23 @@ Yay for [SemVer](http://semver.org/).
 - defining custom claims with a new array syntax (in addition, prev. syntax still works)
 - scope names from claims are automatically added to the published scopes_supported list
 
-## Version 1.0.3
+## Version 1.0.0
+### Version 1.0.3
 - [DIFF](https://github.com/panva/node-oidc-provider/compare/v1.0.2...v1.0.3)
 - fixes #36 - devInteractions feature rendering when mounted
 - ensure server_error is emitted for actions without a specific eventName
 
-## Version 1.0.2
+### Version 1.0.2
 - [DIFF](https://github.com/panva/node-oidc-provider/compare/v1.0.1...v1.0.2)
 - Fixed acr claim behavior - only the authentication request ACR was negotiated for should have
   higher than the fallback value
 - Fixed server_error when acr was requested via claims parameter with null value
 
-## Version 1.0.1
+### Version 1.0.1
 - [DIFF](https://github.com/panva/node-oidc-provider/compare/v1.0.0...v1.0.1)
 - Updated uuid dependency
 
-## Version 1.0.0
+### Version 1.0.0
 - [DIFF](https://github.com/panva/node-oidc-provider/compare/v0.11.4...v1.0.0)
 - Please see [1.x migration](#migrating-from-011x-to-100) to update your 0.11.x deployment into 1.x.
 
