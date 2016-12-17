@@ -5,6 +5,7 @@ Yay for [SemVer](http://semver.org/).
 **Table of Contents**
 
 <!-- TOC START min:2 max:2 link:true update:true -->
+  - [Version 1.5.0](#version-150)
   - [Version 1.4.0](#version-140)
   - [Version 1.3.0](#version-130)
   - [Version 1.2.0](#version-120)
@@ -14,6 +15,10 @@ Yay for [SemVer](http://semver.org/).
   - [pre 1.x changelog](#pre-1x-changelog)
 
 <!-- TOC END -->
+
+## Version 1.5.0
+- [DIFF](https://github.com/panva/node-oidc-provider/compare/v1.4.2...v1.5.0)
+- added debugging utility via [debug][debug-link]
 
 ## Version 1.4.0
 ### Version 1.4.2
@@ -190,3 +195,4 @@ The first token you push on to this key store will be used to cryptographically 
 prohibiting any tampering with the payload and header content.
 
 [feature-oauth-native-apps]: https://tools.ietf.org/html/draft-ietf-oauth-native-apps-06
+[debug-link]: https://github.com/visionmedia/debug

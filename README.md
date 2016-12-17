@@ -17,6 +17,7 @@ your own unique-looking and functioning user flows.
   - [Implemented specs & features](#implemented-specs--features)
   - [Get started](#get-started)
   - [Configuration and Initialization](#configuration-and-initialization)
+  - [Debugging](#debugging)
   - [Events](#events)
   - [Certification](#certification)
 
@@ -100,6 +101,16 @@ oidc.initialize({ clients }).then(function () {
 });
 ```
 
+## Debugging
+oidc-provider uses the [debug][debug-link] module internally to log information about various states
+of authentication requests, errors and grants. To see all these set the DEBUG environment variable
+to oidc-provider:* when launching your app.
+
+There is no filter on what is included in the debug output, since it may end-user Personally
+identifiable information or client credentials it's use is only advised for debugging, not regular
+logging. Use emitted events to cherry pick the one's of interest to your flows and form your own
+logs aware of what should and should not be a part of a logged message.
+
 ## Events
 Your oidc-provider instance is an event emitter, using event handlers you can hook into the various
 actions and i.e. emit metrics or that react to specific triggers. In some scenarios you can even
@@ -107,7 +118,7 @@ change the defined behavior.
 See the list of available emitted [event names](/docs/events.md) and their description.
 
 ## Certification
-![openid_certified][openid-certified-logo]
+[![OpenId Certification][openid-certified-logo]][openid-certified-link]
 
 [OpenID Certified™][openid-certified-link] by Filip Skokan to the OP Basic, OP Implicit, OP Hybrid,
 OP Config and OP Dynamic profiles of the OpenID Connect™ protocol.
@@ -139,3 +150,4 @@ OP Config and OP Dynamic profiles of the OpenID Connect™ protocol.
 [feature-backchannel-logout]: http://openid.net/specs/openid-connect-backchannel-1_0-03.html
 [feature-registration-management]: https://tools.ietf.org/html/rfc7592
 [feature-oauth-native-apps]: https://tools.ietf.org/html/draft-ietf-oauth-native-apps-06
+[debug-link]: https://github.com/visionmedia/debug
