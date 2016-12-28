@@ -53,6 +53,11 @@
     "provider",
     "certified",
     "server",
+    "dynamic",
+    "config",
+    "basic",
+    "hybrid",
+    "implicit",
     "oidc",
     "auth",
     "authentication",
@@ -69,7 +74,7 @@
     "lint-fix": "eslint lib example test --fix",
     "heroku-postbuild": "npm install mongodb"
   },
-  "version": "1.5.0",
+  "version": "1.5.1",
   "files": [
     "lib"
   ]
