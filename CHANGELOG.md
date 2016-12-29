@@ -18,11 +18,11 @@ Yay for [SemVer](http://semver.org/).
 
 ## Version 1.5.0
 ### Version 1.5.2
-- [DIFF](https://github.com/panva/node-oidc-provider/compare/v1.5.1...1.5.2)
+- [DIFF](https://github.com/panva/node-oidc-provider/compare/v1.5.1...v1.5.2)
 - fixed www-authenticate header value for html rendered userinfo unauthorized
 
 ### Version 1.5.1
-- [DIFF](https://github.com/panva/node-oidc-provider/compare/v1.5.0...1.5.1)
+- [DIFF](https://github.com/panva/node-oidc-provider/compare/v1.5.0...v1.5.1)
 - fixed a 500 Server Error case on end_session when no `_state` cookies were matched
 
 ### Version 1.5.0
