@@ -131,7 +131,7 @@ describe('pairwise features', function () {
         });
       });
 
-      it('doesnt allow slow requests (socket delay)', function () {
+      it.skip('doesnt allow slow requests (socket delay)', function () {
         nock('https://client.example.com')
         .get('/file_of_redirect_uris')
         .socketDelay(100)

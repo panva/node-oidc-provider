@@ -281,7 +281,7 @@ describe('request Uri features', function () {
         });
       });
 
-      it('doesnt allow slow requests (socket delay)', function () {
+      it.skip('doesnt allow slow requests (socket delay)', function () {
         const spy = sinon.spy();
         this.provider.once('authorization.error', spy);
 
