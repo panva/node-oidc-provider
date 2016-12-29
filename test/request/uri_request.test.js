@@ -281,14 +281,13 @@ describe('request Uri features', function () {
         });
       });
 
-      it.skip('doesnt allow slow requests (socket delay)', function () {
+      it('handles got lib errors', function () {
         const spy = sinon.spy();
         this.provider.once('authorization.error', spy);
 
         nock('https://client.example.com')
         .get('/request')
-        .socketDelay(100)
-        .reply(200);
+        .reply(500);
 
         return this.wrap({
           agent: this.agent,
@@ -305,35 +304,7 @@ describe('request Uri features', function () {
       .expect(() => {
         expect(spy.calledOnce).to.be.true;
         expect(spy.args[0][0]).to.have.property('message', 'invalid_request_uri');
-        expect(spy.args[0][0]).to.have.property('error_description').and.matches(/Socket timed out on request to/);
-      });
-      });
-
-      it.skip('doesnt allow slow requests (response delay)', function () {
-        const spy = sinon.spy();
-        this.provider.once('authorization.error', spy);
-
-        nock('https://client.example.com')
-        .get('/request')
-        .delay(100)
-        .reply(200);
-
-        return this.wrap({
-          agent: this.agent,
-          route,
-          verb,
-          auth: {
-            request_uri: `https://client.example.com/request#${Date.now()}`,
-            scope: 'openid',
-            client_id: 'client',
-            response_type: 'code'
-          }
-        })
-      .expect(302)
-      .expect(() => {
-        expect(spy.calledOnce).to.be.true;
-        expect(spy.args[0][0]).to.have.property('message', 'invalid_request_uri');
-        expect(spy.args[0][0]).to.have.property('error_description').and.matches(/Connection timed out on request to/);
+        expect(spy.args[0][0]).to.have.property('error_description', 'could not load or parse request_uri (Response code 500 (Internal Server Error))');
       });
       });
 
