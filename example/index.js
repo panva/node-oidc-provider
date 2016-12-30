@@ -7,9 +7,7 @@ const path = require('path');
 const _ = require('lodash');
 const koa = require('koa');
 const bodyParser = require('koa-body');
-const mount = require('koa-mount');
 const querystring = require('querystring');
-const rewrite = require('koa-rewrite');
 const Router = require('koa-router');
 const render = require('koa-ejs');
 
@@ -29,9 +27,9 @@ const settings = require('./settings');
 
 const Provider = LIB.Provider;
 
-const issuer = process.env.ISSUER || 'http://localhost:3000/op';
+const issuer = process.env.ISSUER || 'http://localhost:3000';
 
-if (process.env.HEROKU) {
+if (process.env.NODE_ENV === 'production') {
   app.proxy = true;
   _.set(settings.config, 'cookies.short.secure', true);
   _.set(settings.config, 'cookies.long.secure', true);
@@ -75,9 +73,6 @@ Promise.all([
 
   return provider.initialize({ keystore, integrity, clients });
 }).then((provider) => {
-  app.use(rewrite(/^\/\.well-known\/(.*)/, '/op/.well-known/$1'));
-  app.use(mount('/op', provider.app));
-
   const router = new Router();
 
   router.get('/interaction/:grant', function* renderInteraction(next) {
