@@ -56,7 +56,8 @@ The following drafts/experimental specifications are implemented by oidc-provide
 Updates to drafts and experimental specification versions are released as MINOR library versions.
 
 ## Get started
-To run and experiment with an example server, clone the oidc-provider repo and install the dependencies:
+You may follow an example [step by step setup][example-repo] (recommended), or run and experiment with an
+example server that's part of the repo (if you can follow the structure, if not check the step by step).
 
 ```bash
 $ git clone https://github.com/panva/node-oidc-provider.git oidc-provider
@@ -144,6 +145,7 @@ OP Config and OP Dynamic profiles of the OpenID Connect™ protocol.
 [feature-thumbprint]: https://tools.ietf.org/html/rfc7638
 [feature-pixy]: https://tools.ietf.org/html/rfc7636
 [node-jose]: https://github.com/cisco/node-jose
+[example-repo]: https://github.com/panva/node-oidc-provider-example
 [heroku-example]: https://guarded-cliffs-8635.herokuapp.com/op/.well-known/openid-configuration
 [heroku-example-client]: https://tranquil-reef-95185.herokuapp.com/client
 [openid-client]: https://github.com/panva/node-openid-client
