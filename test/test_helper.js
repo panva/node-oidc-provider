@@ -11,7 +11,7 @@ coMocha(mocha);
 
 const { agent: supertest } = require('supertest');
 const { v4: uuid } = require('uuid');
-const { Provider } = require('../lib');
+const Provider = require('../lib');
 const { Account, TestAdapter } = require('./models');
 const { expect } = require('chai');
 const { Cookie } = require('cookiejar');

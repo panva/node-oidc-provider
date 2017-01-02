@@ -4,7 +4,7 @@
 
 const jose = require('node-jose');
 const { expect } = require('chai');
-const { Provider } = require('../../lib');
+const Provider = require('../../lib');
 
 const keystore = jose.JWK.createKeyStore();
 const fail = () => { throw new Error('expected promise to be rejected'); };

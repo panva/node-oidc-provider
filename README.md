@@ -88,7 +88,7 @@ oidc-provider allows to be extended and configured in various ways to fit a vari
 the [available configuration](/docs/configuration.md).
 
 ```js
-const Provider = require('oidc-provider').Provider;
+const Provider = require('oidc-provider');
 const issuer = 'http://localhost:3000';
 const configuration = {
   // ... see available options /docs/configuration.md

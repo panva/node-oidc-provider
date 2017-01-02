@@ -4,9 +4,13 @@
 
 const assert = require('assert');
 const { expect } = require('chai');
-const { Provider } = require('../../lib');
+const Provider = require('../../lib');
 
 describe('Provider issuer configuration', function () {
+  it('is exported as default as well as .Provider', function () {
+    expect(Provider).to.equal(Provider.Provider);
+  });
+
   it('validates the issuer input to be present and valid', function () {
     expect(function () {
       new Provider();

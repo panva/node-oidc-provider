@@ -1,6 +1,6 @@
 'use strict';
 
-const { Provider } = require('../../lib');
+const Provider = require('../../lib');
 const { expect } = require('chai');
 
 describe('default findById behavior', function () {
