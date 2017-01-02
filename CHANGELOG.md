@@ -5,6 +5,7 @@ Yay for [SemVer](http://semver.org/).
 **Table of Contents**
 
 <!-- TOC START min:2 max:2 link:true update:true -->
+  - [Version 1.6.0](#version-160)
   - [Version 1.5.0](#version-150)
   - [Version 1.4.0](#version-140)
   - [Version 1.3.0](#version-130)
@@ -15,6 +16,11 @@ Yay for [SemVer](http://semver.org/).
   - [pre 1.x changelog](#pre-1x-changelog)
 
 <!-- TOC END -->
+
+## Version 1.6.0
+- [DIFF](https://github.com/panva/node-oidc-provider/compare/v1.5.2...v1.6.0)
+- Deprecated `require('oidc-provider').Provider` export in favor of just `require('oidc-provider')`
+- Added presence and format validations for the Provider constructor Issuer Identifier parameter
 
 ## Version 1.5.0
 ### Version 1.5.2
