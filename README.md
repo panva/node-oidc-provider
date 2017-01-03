@@ -146,7 +146,7 @@ OP Config and OP Dynamic profiles of the OpenID Connect™ protocol.
 [feature-pixy]: https://tools.ietf.org/html/rfc7636
 [node-jose]: https://github.com/cisco/node-jose
 [example-repo]: https://github.com/panva/node-oidc-provider-example
-[heroku-example]: https://guarded-cliffs-8635.herokuapp.com/op/.well-known/openid-configuration
+[heroku-example]: https://guarded-cliffs-8635.herokuapp.com/.well-known/openid-configuration
 [heroku-example-client]: https://tranquil-reef-95185.herokuapp.com/client
 [openid-client]: https://github.com/panva/node-openid-client
 [feature-backchannel-logout]: http://openid.net/specs/openid-connect-backchannel-1_0-03.html
