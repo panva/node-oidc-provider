@@ -2,7 +2,7 @@
 
 /* eslint-disable no-console */
 
-const LIB = require('../lib');
+const Provider = require('../lib');
 const path = require('path');
 const _ = require('lodash');
 const bodyParser = require('koa-body');
@@ -14,8 +14,6 @@ const port = process.env.PORT || 3000;
 
 const Account = require('./account');
 const settings = require('./settings');
-
-const Provider = LIB.Provider;
 
 const issuer = process.env.ISSUER || 'http://localhost:3000';
 
@@ -105,7 +103,7 @@ provider.initialize({
 
   router.post('/interaction/:grant/confirm', body, function* submitConfirmationForm(next) {
     const result = { consent: {} };
-    provider.resume(this, this.request.body.uuid, result);
+    provider.interactionFinished(this.req, this.res, result);
     yield next;
   });
 
@@ -123,7 +121,7 @@ provider.initialize({
       consent: {},
     };
 
-    provider.resume(this, this.request.body.uuid, result);
+    provider.interactionFinished(this.req, this.res, result);
   });
 
   provider.app.use(router.routes());
