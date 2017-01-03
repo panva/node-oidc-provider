@@ -1,7 +1,9 @@
 'use strict';
 
-const { Provider, AdapterTest } = require('../../lib');
+const Provider = require('../../lib');
 const { TestAdapter } = require('../models');
+
+const AdapterTest = Provider.AdapterTest;
 
 describe('AdapterTest', function () {
   it('passes with the default MemoryAdapter', function () {

@@ -4,11 +4,10 @@
 
 /* eslint-disable no-console */
 
-const oidc = require('../../lib');
+const Provider = require('../../lib');
 const MongoAdapter = require('./mongodb');
 
-const Provider = oidc.Provider;
-const AdapterTest = oidc.AdapterTest;
+const AdapterTest = Provider.AdapterTest;
 
 const provider = new Provider('http://localhost', {
   adapter: MongoAdapter,
