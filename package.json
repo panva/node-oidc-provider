@@ -4,6 +4,7 @@
   "dependencies": {
     "base64url": "^2.0.0",
     "buffer-equals-constant": "^1.0.0",
+    "cookies": "^0.6.2",
     "debug": "^2.4.4",
     "ejs": "^2.5.2",
     "got": "^6.1.1",
