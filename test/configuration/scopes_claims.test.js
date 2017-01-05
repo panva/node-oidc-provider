@@ -48,6 +48,6 @@ describe('custom claims', function () {
       acrValues: [],
     });
 
-    expect(i(provider).configuration('scopes')).not.to.contain('acr');
+    expect(i(provider).configuration('claimsSupported')).not.to.contain('acr');
   });
 });
