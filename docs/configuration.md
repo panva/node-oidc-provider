@@ -181,22 +181,82 @@ check your own implementation.
 
 
 ## Interaction
-Since oidc-provider comes with no feature-rich views and interaction handlers it's up to you to fill
+Since oidc-provider only comes with feature-less views and interaction handlers it's up to you to fill
 those in, here's how oidc-provider allows you to do so:
 
 When oidc-provider cannot fulfill the authorization request for any of the possible reasons (missing
 user session, requested ACR not fulfilled, prompt requested, ...) it will resolve an `interactionUrl`
 (configurable) and redirect the User-Agent to that url. Before doing so it will
-create a signed `_grant` cookie that you can read from your interaction 'app'. This
-cookie contains 1) details of the interaction that is required; 2) all authorization request
-parameters and 3) the uuid of the authorization request and 4) the url to redirect the user to once
-interaction is finished. oidc-provider expects that you resolve all future interactions in one go
-and only then redirect the User-Agent back with the results.
+create a `_grant` cookie that you can read from your interaction 'app'.
+
+This cookie contains (serialized as JSON):
+
+- details of the interaction that is required
+- all authorization request parameters
+- the uuid of the authorization request
+- the url to redirect the user to once interaction is finished.
+
+oidc-provider expects that you resolve all future interactions in one go and only then redirect the
+User-Agent back with the results.
 
 Once the required interactions are finished you are expected to redirect back to the authorization
 endpoint, affixed by the uuid of the original request and the interaction results dumped in a signed
-`_grant_result` cookie. Please see the [example](/example/index.js), it's using a helper `resume` of
-the provider instance that ties things together for you.
+`_grant_result` cookie.
+
+The Provider instance comes with helpers that aid with getting interaction details as well as
+packing the results. See them used in the [step-by-step](https://github.com/panva/node-oidc-provider-example)
+or [in-repo](/example/index.js) examples.
+
+
+**Provider#interactionDetails**
+```js
+//   with express
+expressApp.get('/interaction/:grant', (req, res) => {
+  const details = provider.interactionDetails(req);
+  // ...
+});
+
+//   with koa
+router.get('/interaction/:grant', function* (next) {
+  const details = provider.interactionDetails(this.req);
+  // ...
+});
+```
+
+**Provider#interactionFinished**
+```js
+//   with express
+expressApp.post('/interaction/:grant/login', (req, res) => {
+    provider.interactionFinished(req, res, results); // result object below
+  // ...
+});
+
+//   with koa
+router.post('/interaction/:grant', function* (next) {
+  provider.interactionFinished(this.req, this.res, results); // result object below
+  // ...
+});
+
+// results should be an object with some or all the following properties
+{
+  // authentication/login prompt got resolved, omit if no authentication happened, i.e. the user
+  // cancelled
+  login: {
+    account: '7ff1d19a-d3fd-4863-978e-8cce75fa880c', // logged-in account id
+    acr: string, // acr value for the authentication
+    remember: boolean, // true if provider should use a persistent cookie rather than a session one
+    ts: number, // unix timestamp of the authentication
+  },
+
+  // consent was given by the user to the client for this session
+  consent: {
+    // use the scope property if you wish to remove/add scopes from the request, otherwise don't
+    // include it use when i.e. offline_access was not given, or user declined to provide address
+    scope: 'space separated list of scopes',
+  },
+  ['custom prompt name resolved']: {},
+}
+```
 
 
 ## Enable/Disable optional oidc-provider features
@@ -223,12 +283,12 @@ deployment compact. The feature flags with their default values are
 | sessionManagement | no |
 
 **Development quick-start interactions**  
-Development-ready out of the box interaction views bundled with the library allow you to skip the
+Development-ONLY out of the box interaction views bundled with the library allow you to skip the
 boring frontend part while experimenting with oidc-provider. Enter any username (will be used as sub
 claim value) and any password to proceed.
 
 Be sure to disable and replace this feature with your actual frontend flows and End-User
-authentication flows as soon as possible.
+authentication flows as soon as possible. These views are not meant to ever be seen by actual users.
 
 ```js
 const configuration = { features: { devInteractions: Boolean[true] } };

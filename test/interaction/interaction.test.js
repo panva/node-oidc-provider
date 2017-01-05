@@ -250,7 +250,7 @@ describe('resume after interaction', function () {
         });
     });
 
-    it('should use the consents from resume cookie if provided', function () {
+    it('should use the scope from resume cookie if provided', function () {
       const auth = new this.AuthorizationRequest({
         response_type: 'code',
         scope: 'openid'
