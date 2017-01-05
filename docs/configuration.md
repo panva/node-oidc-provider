@@ -375,7 +375,7 @@ registration to be an object like so:
 const configuration = { features: { registration: { initialAccessToken: true } } };
 
 // adding a token and retrieving it's value
-new (provider.InitialAccessToken)({}).then(console.log);
+new (provider.InitialAccessToken)({}).save().then(console.log);
 ```
 
 **Dynamic registration management features**  
