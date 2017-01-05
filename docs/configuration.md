@@ -21,6 +21,7 @@ point to get an idea of what you should provide.
   - [Extending Authorization with Custom Parameters](#extending-authorization-with-custom-parameters)
   - [Extending Discovery with Custom Properties](#extending-discovery-with-custom-properties)
   - [Configuring Routes](#configuring-routes)
+  - [Fine-tuning supported algorithms](#fine-tuning-supported-algorithms)
   - [Changing HTTP Request Defaults](#changing-http-request-defaults)
   - [Authentication Context Class Reference](#authentication-context-class-reference)
 
@@ -470,6 +471,17 @@ const oidc = new Provider('http://localhost:3000', {
   }
 });
 ```
+
+
+## Fine-tuning supported algorithms
+The lists of supported algorithms exposed via discovery and used when validating request objects and
+client metadata is a union of
+
+- all symmetrical algorithsm where they apply
+- algorithms from the keystore you initialize the provider with
+
+If you wish to tune the algorithms further you may do so via the `unsupported` [configuration][defaults]
+property.
 
 
 ## Changing HTTP Request Defaults

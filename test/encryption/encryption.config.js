@@ -4,6 +4,9 @@ const _ = require('lodash');
 const config = _.clone(require('../default.config'));
 
 config.features = { request: true, encryption: true };
+config.unsupported = {
+  requestObjectEncryptionAlgValues: ['RSA-OAEP'],
+};
 
 const privKey = { keys: [{ kty: 'RSA',
   kid: 'c0jtckfxSkYmeFpVA_YWYdhxLl7C5ZPtjUe6l3-eyxg',
