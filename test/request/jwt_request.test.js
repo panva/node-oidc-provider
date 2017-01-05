@@ -225,7 +225,7 @@ describe('request parameter features', function () {
           expect(spy.calledOnce).to.be.true;
           expect(spy.args[0][0]).to.have.property('message', 'invalid_request_object');
           expect(spy.args[0][0]).to.have.property('error_description').and.matches(
-            /could not parse request_uri as valid JWT/
+            /could not parse request object as valid JWT/
           );
         });
       });

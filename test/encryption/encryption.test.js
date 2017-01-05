@@ -134,6 +134,32 @@ const route = '/auth';
           })
         );
       });
+
+      it('handles enc unsupported algs and encs', function () {
+        return JWT.sign({
+          client_id: 'client',
+          response_type: 'code',
+          redirect_uri: 'https://client.example.com/cb'
+        }, null, 'none').then(signed =>
+          JWT.encrypt(signed, instance(this.provider).keystore.get(), 'A128CBC-HS256', 'RSA-OAEP')
+      ).then(encrypted =>
+        this.wrap({
+          route,
+          verb,
+          auth: {
+            request: encrypted,
+            scope: 'openid',
+            client_id: 'client',
+            response_type: 'code'
+          }
+        })
+        .expect((response) => {
+          const { query } = url.parse(response.headers.location, true);
+          expect(query).to.have.property('error', 'invalid_request_object');
+          expect(query).to.have.property('error_description').contains('unsupported encrypted request alg');
+        })
+        );
+      });
     });
 
     it('handles when no suitable encryption key is found', function* () {
