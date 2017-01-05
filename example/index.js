@@ -67,7 +67,7 @@ provider.initialize({
   const router = new Router();
 
   router.get('/interaction/:grant', function* renderInteraction(next) {
-    const cookie = JSON.parse(this.cookies.get('_grant', { signed: true }));
+    const cookie = provider.interactionDetails(this.req);
     const client = yield provider.Client.find(cookie.params.client_id);
 
     if (cookie.interaction.error === 'login_required') {
