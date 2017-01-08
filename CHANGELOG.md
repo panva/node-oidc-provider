@@ -21,6 +21,7 @@ Yay for [SemVer](http://semver.org/).
 ## Version 1.7.0
 - [DIFF](https://github.com/panva/node-oidc-provider/compare/v1.6.0...v1.7.0)
 - Added new interaction helpers `provider#interactionDetails` and `provider#interactionFinished`
+- Deprecated `provider#resume` in favor of the new helper
 - Added Fine-tuning supported algorithms
 - Moved final interaction check to configuration to allow for it's customization
 - Fixed removing of acr from claims_supported when passed an empty array in configuration
