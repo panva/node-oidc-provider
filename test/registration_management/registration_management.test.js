@@ -7,7 +7,7 @@ const { expect } = require('chai');
 // const { parse: parseUrl } = require('url');
 // const base64url = require('base64url');
 // const nock = require('nock');
-const { Provider } = require('../../lib');
+const Provider = require('../../lib');
 
 describe('OAuth 2.0 Dynamic Client Registration Management Protocol', function () {
   before(bootstrap(__dirname)); // provider, agent

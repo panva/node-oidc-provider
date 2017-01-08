@@ -1,6 +1,6 @@
 'use strict';
 
-const { Provider } = require('../../lib');
+const Provider = require('../../lib');
 const bootstrap = require('../test_helper');
 const clientKey = require('../client.sig.key');
 const { v4: uuid } = require('uuid');

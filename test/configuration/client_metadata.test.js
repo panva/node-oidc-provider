@@ -1,6 +1,6 @@
 'use strict';
 
-const Provider = require('../../lib').Provider;
+const Provider = require('../../lib');
 const { expect } = require('chai');
 
 const sigKey = global.keystore.get().toJSON(true);

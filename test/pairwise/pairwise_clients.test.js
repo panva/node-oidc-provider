@@ -131,11 +131,10 @@ describe('pairwise features', function () {
         });
       });
 
-      it('doesnt allow slow requests (socket delay)', function () {
+      it('handles got lib errors', function () {
         nock('https://client.example.com')
         .get('/file_of_redirect_uris')
-        .socketDelay(100)
-        .reply(200, j(['https://client.example.com/cb']));
+        .reply(500);
 
         return i(this.provider).clientAdd({
           client_id: 'client',
@@ -148,28 +147,7 @@ describe('pairwise features', function () {
         }, (err) => {
           expect(err).to.be.ok;
           expect(err.message).to.eq('invalid_client_metadata');
-          expect(err.error_description).to.match(/could not load sector_identifier_uri \(Socket timed out on request to/);
-        });
-      });
-
-      it.skip('doesnt allow slow requests (response delay)', function () {
-        nock('https://client.example.com')
-        .get('/file_of_redirect_uris')
-        .delay(100)
-        .reply(200, j(['https://client.example.com/cb']));
-
-        return i(this.provider).clientAdd({
-          client_id: 'client',
-          client_secret: 'secret',
-          redirect_uris: ['https://client.example.com/cb', 'https://missing.example.com/forum/cb'],
-          sector_identifier_uri: 'https://client.example.com/file_of_redirect_uris',
-          subject_type: 'pairwise'
-        }).then((client) => {
-          expect(client).not.to.be.ok;
-        }, (err) => {
-          expect(err).to.be.ok;
-          expect(err.message).to.eq('invalid_client_metadata');
-          expect(err.error_description).to.match(/could not load sector_identifier_uri \(Connection timed out on request to/);
+          expect(err.error_description).to.eq('could not load sector_identifier_uri (Response code 500 (Internal Server Error))');
         });
       });
 

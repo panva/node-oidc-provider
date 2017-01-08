@@ -1,6 +1,6 @@
 'use strict';
 
-const Provider = require('../../lib').Provider;
+const Provider = require('../../lib');
 const { expect } = require('chai');
 
 describe('custom claims', function () {
@@ -48,6 +48,6 @@ describe('custom claims', function () {
       acrValues: [],
     });
 
-    expect(i(provider).configuration('scopes')).not.to.contain('acr');
+    expect(i(provider).configuration('claimsSupported')).not.to.contain('acr');
   });
 });

@@ -168,7 +168,7 @@ describe('client keystore refresh', function () {
       return client.keystore.refresh().then(() => {
         expect(client.keystore.fresh()).to.be.true;
         expect(client.keystore.stale()).to.be.false;
-        expect(client.keystore.freshUntil).to.equal(epochTime() + 60);
+        expect(client.keystore.freshUntil).to.be.above(epochTime() + 55);
       });
     });
   });

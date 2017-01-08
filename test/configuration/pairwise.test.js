@@ -1,7 +1,7 @@
 'use strict';
 
 const { expect } = require('chai');
-const { Provider } = require('../../lib');
+const Provider = require('../../lib');
 
 describe('Provider configuration', function () {
   it('validates pairwiseSalt presence when pairwise is configured', function () {

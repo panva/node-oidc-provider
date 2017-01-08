@@ -54,5 +54,14 @@ describe('userinfo /me', function () {
       .expect('WWW-Authenticate', new RegExp(`^Bearer realm="${this.provider.issuer}"`))
       .expect('WWW-Authenticate', /error="invalid_token"/);
     });
+
+    it('is set when html request', function () {
+      return this.agent.get('/me')
+      .accept('html')
+      .query({ access_token: 'ThisIsNotAValidToken' })
+      .expect(401)
+      .expect('WWW-Authenticate', new RegExp(`^Bearer realm="${this.provider.issuer}"`))
+      .expect('WWW-Authenticate', /error="invalid_token"/);
+    });
   });
 });

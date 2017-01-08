@@ -1,6 +1,6 @@
 'use strict';
 
-const Provider = require('../lib').Provider;
+const Provider = require('../lib');
 const express = require('express'); // eslint-disable-line import/no-unresolved
 
 const app = express();
