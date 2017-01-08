@@ -147,7 +147,7 @@ describe('pairwise features', function () {
         }, (err) => {
           expect(err).to.be.ok;
           expect(err.message).to.eq('invalid_client_metadata');
-          expect(err.error_description).to.eq('could not load sector_identifier_uri (Response code 500 (Internal Server Error))')
+          expect(err.error_description).to.eq('could not load sector_identifier_uri (Response code 500 (Internal Server Error))');
         });
       });
 
