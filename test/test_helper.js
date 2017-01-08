@@ -37,8 +37,10 @@ const responses = {
   }
 };
 
+let base = 33000;
 function ephemeralPort() {
-  return Math.floor(Math.random() * (61000 - 32768 + 1)) + 32768; // eslint-disable-line no-mixed-operators, max-len
+  base += 1;
+  return base;
 }
 
 module.exports = function testHelper(dir, basename, mountTo) {
