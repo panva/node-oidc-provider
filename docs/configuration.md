@@ -424,6 +424,11 @@ Enables features described in [Dynamic Client Registration 1.0][feature-registra
 const configuration = { features: { registration: Boolean[false] } };
 ```
 
+To provide your own factory to get a new clientId:
+```js
+const configuration = { features: { registration: { idFactory: () => randomValue() } } };
+```
+
 To enable a fixed Initial Access Token for the registration POST call configure registration to be
 an object like so:
 ```js
