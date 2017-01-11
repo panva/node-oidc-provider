@@ -24,6 +24,7 @@ point to get an idea of what you should provide.
   - [Fine-tuning supported algorithms](#fine-tuning-supported-algorithms)
   - [Changing HTTP Request Defaults](#changing-http-request-defaults)
   - [Authentication Context Class Reference](#authentication-context-class-reference)
+  - [Mounting oidc-provider](#mounting-oidc-provider)
 
 <!-- TOC END -->
 
@@ -582,6 +583,29 @@ console.log('httpOptions %j', provider.defaultHttpOptions);
 ## Authentication Context Class Reference
 Supply an array of string values to acrValues configuration option to overwrite the default
 `['0', '1', '2']`, passing an empty array will disable the acr claim completely.
+
+
+## Mounting oidc-provider
+The following snippets show how a provider instance can be mounted to existing applications with a
+path prefix. As shown it is recommended to rewrite the well-known uri calls so that they get handled
+by the provider.
+
+### to an express application
+```js
+const rewrite = require('express-urlrewrite');
+const prefix = '/op'
+expressApp.use(rewrite('/.well-known/*', `${prefix}/.well-known/$1`));
+expressApp.use(prefix, oidc.callback);
+```
+
+### to a koa application
+```js
+const rewrite = require('koa-rewrite');
+const mount = require('koa-mount');
+const prefix = '/op'
+koaApp.use(rewrite('/.well-known/*', `${prefix}/.well-known/$1`));
+koaApp.use(prefix, oidc.app);
+```
 
 [client-metadata]: http://openid.net/specs/openid-connect-registration-1_0.html#ClientMetadata
 [core-account-claims]: http://openid.net/specs/openid-connect-core-1_0.html#ScopeClaims
