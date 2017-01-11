@@ -20,8 +20,8 @@ Yay for [SemVer](http://semver.org/).
 <!-- TOC END -->
 
 ## Version 1.8.0
-### Version 1.8.1
-- [DIFF](https://github.com/panva/node-oidc-provider/compare/v1.8.0...v1.8.1)
+### Version 1.8.2
+- [DIFF](https://github.com/panva/node-oidc-provider/compare/v1.8.0...v1.8.2)
 - fixed unchanged interactionUrl in mounted OP scenarios
 
 ### Version 1.8.0
