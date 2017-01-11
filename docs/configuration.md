@@ -79,10 +79,10 @@ client_id is encountered. If you only wish to support clients that are initializ
 registration then make it so that your adapter resolves client find calls with a falsy value. (e.g.
 `return Promise.resolve()`).  
 
-Available [Client Metadata][client-metadata] is validated as defined by the specification.
+Available [Client Metadata][client-metadata] is validated as defined by the specifications.
 
 Note: each oidc-provider caches the clients once they are loaded. When your client configuration
-changes you should reload your processes.
+changes you should either reload your processes or trigger a cache clear (`provider.Client.cacheClear()`).
 
 **via Provider interface**  
 To add pre-established clients use the `initialize` method on a oidc-provider instance. This accepts
