@@ -24,6 +24,7 @@ point to get an idea of what you should provide.
   - [Fine-tuning supported algorithms](#fine-tuning-supported-algorithms)
   - [Changing HTTP Request Defaults](#changing-http-request-defaults)
   - [Authentication Context Class Reference](#authentication-context-class-reference)
+  - [Mounting oidc-provider](#mounting-oidc-provider)
 
 <!-- TOC END -->
 
@@ -79,10 +80,10 @@ client_id is encountered. If you only wish to support clients that are initializ
 registration then make it so that your adapter resolves client find calls with a falsy value. (e.g.
 `return Promise.resolve()`).  
 
-Available [Client Metadata][client-metadata] is validated as defined by the specification.
+Available [Client Metadata][client-metadata] is validated as defined by the specifications.
 
 Note: each oidc-provider caches the clients once they are loaded. When your client configuration
-changes you should reload your processes.
+changes you should either reload your processes or trigger a cache clear (`provider.Client.cacheClear()`).
 
 **via Provider interface**  
 To add pre-established clients use the `initialize` method on a oidc-provider instance. This accepts
@@ -424,6 +425,11 @@ Enables features described in [Dynamic Client Registration 1.0][feature-registra
 const configuration = { features: { registration: Boolean[false] } };
 ```
 
+To provide your own factory to get a new clientId:
+```js
+const configuration = { features: { registration: { idFactory: () => randomValue() } } };
+```
+
 To enable a fixed Initial Access Token for the registration POST call configure registration to be
 an object like so:
 ```js
@@ -577,6 +583,29 @@ console.log('httpOptions %j', provider.defaultHttpOptions);
 ## Authentication Context Class Reference
 Supply an array of string values to acrValues configuration option to overwrite the default
 `['0', '1', '2']`, passing an empty array will disable the acr claim completely.
+
+
+## Mounting oidc-provider
+The following snippets show how a provider instance can be mounted to existing applications with a
+path prefix. As shown it is recommended to rewrite the well-known uri calls so that they get handled
+by the provider.
+
+### to an express application
+```js
+const rewrite = require('express-urlrewrite');
+const prefix = '/op'
+expressApp.use(rewrite('/.well-known/*', `${prefix}/.well-known/$1`));
+expressApp.use(prefix, oidc.callback);
+```
+
+### to a koa application
+```js
+const rewrite = require('koa-rewrite');
+const mount = require('koa-mount');
+const prefix = '/op'
+koaApp.use(rewrite('/.well-known/*', `${prefix}/.well-known/$1`));
+koaApp.use(prefix, oidc.app);
+```
 
 [client-metadata]: http://openid.net/specs/openid-connect-registration-1_0.html#ClientMetadata
 [core-account-claims]: http://openid.net/specs/openid-connect-core-1_0.html#ScopeClaims

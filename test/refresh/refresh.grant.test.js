@@ -6,6 +6,7 @@ const { decode: base64url } = require('base64url');
 const { parse: parseUrl } = require('url');
 const { expect } = require('chai');
 
+const fail = () => { throw new Error('expected promise to be rejected'); };
 const j = JSON.parse;
 const route = '/token';
 
@@ -227,6 +228,74 @@ describe('grant_type=refresh_token', function () {
       })
       .expect((response) => {
         expect(response.body).to.have.property('error', 'invalid_grant');
+      });
+    });
+
+    describe('refreshTokenRotation=rotateAndConsume', function () {
+      before(function () {
+        i(this.provider).configuration().refreshTokenRotation = 'rotateAndConsume';
+      });
+
+      after(function () {
+        i(this.provider).configuration().refreshTokenRotation = 'none';
+      });
+
+      it('issues a new refresh token and consumes the old one', function () {
+        const rt = this.rt;
+        const consumeSpy = sinon.spy();
+        const issueSpy = sinon.spy();
+        this.provider.once('token.consumed', consumeSpy);
+        this.provider.once('token.issued', issueSpy);
+
+        return this.agent.post(route)
+        .auth('client', 'secret')
+        .send({
+          refresh_token: rt,
+          grant_type: 'refresh_token'
+        })
+        .type('form')
+        .expect(200)
+        .expect(() => {
+          expect(consumeSpy.calledOnce).to.be.true;
+          expect(issueSpy.calledOnce).to.be.true;
+        })
+        .expect((response) => {
+          expect(response.body).to.have.keys('access_token', 'id_token', 'expires_in', 'token_type', 'refresh_token');
+          const refreshIdToken = j(base64url(response.body.id_token.split('.')[1]));
+          expect(refreshIdToken).to.have.property('nonce', 'foobarnonce');
+          expect(response.body).to.have.property('refresh_token').not.equal(rt);
+        });
+      });
+
+      it('revokes the complete grant if the old token is used again', function () {
+        const rt = this.rt;
+
+        const grantRevokeSpy = sinon.spy();
+        const tokenRevokeSpy = sinon.spy();
+        this.provider.once('grant.revoked', grantRevokeSpy);
+        this.provider.once('token.revoked', tokenRevokeSpy);
+
+        return Promise.all([
+          this.agent.post(route)
+            .auth('client', 'secret')
+            .send({
+              refresh_token: rt,
+              grant_type: 'refresh_token'
+            })
+            .type('form')
+            .expect(200), // one of them will fail.
+          this.agent.post(route)
+            .auth('client', 'secret')
+            .send({
+              refresh_token: rt,
+              grant_type: 'refresh_token'
+            })
+            .type('form')
+            .expect(200), // one of them will fail.
+        ]).then(fail, function () {
+          expect(grantRevokeSpy.calledOnce).to.be.true;
+          expect(tokenRevokeSpy.calledOnce).to.be.true;
+        });
       });
     });
   });
