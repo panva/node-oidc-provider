@@ -5,6 +5,7 @@ Yay for [SemVer](http://semver.org/).
 **Table of Contents**
 
 <!-- TOC START min:2 max:2 link:true update:true -->
+  - [Version 1.8.0](#version-180)
   - [Version 1.7.0](#version-170)
   - [Version 1.6.0](#version-160)
   - [Version 1.5.0](#version-150)
@@ -17,6 +18,14 @@ Yay for [SemVer](http://semver.org/).
   - [pre 1.x changelog](#pre-1x-changelog)
 
 <!-- TOC END -->
+
+## Version 1.8.0
+- [DIFF](https://github.com/panva/node-oidc-provider/compare/v1.7.0...v1.8.0)
+- fixed scenarios where oidc-provider is mounted in an express application
+- documented recommended mounting approach for both koa and express
+- added registration feature option to overwrite the generated client_id format
+- added `refreshTokenRotation` configuration option, default 'none', optional 'rotateAndConsume'
+- added `provider.Client.cacheClear()` method to allow wiping the internal client cache programmatically
 
 ## Version 1.7.0
 - [DIFF](https://github.com/panva/node-oidc-provider/compare/v1.6.0...v1.7.0)
