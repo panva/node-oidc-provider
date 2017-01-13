@@ -20,6 +20,10 @@ Yay for [SemVer](http://semver.org/).
 <!-- TOC END -->
 
 ## Version 1.8.0
+### Version 1.8.4
+- [DIFF](https://github.com/panva/node-oidc-provider/compare/v1.8.3...v1.8.4)
+- fixed unchanged interactionUrl with devInteractions disabled
+
 ### Version 1.8.3
 - [DIFF](https://github.com/panva/node-oidc-provider/compare/v1.8.2...v1.8.3)
 - fixed Client#find to always load a freshly stored client in dynamic registration reads and updates
