@@ -20,7 +20,7 @@ Yay for [SemVer](http://semver.org/).
 <!-- TOC END -->
 
 ## Version 1.8.0
-### Version 1.8.5
+### Version 1.8.6
 - [DIFF](https://github.com/panva/node-oidc-provider/compare/v1.8.3...v1.8.6)
 - fixed unchanged interactionUrl with devInteractions disabled
 
