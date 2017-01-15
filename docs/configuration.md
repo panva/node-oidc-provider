@@ -411,6 +411,12 @@ Enables features described in [Session Management 1.0 - draft 27][feature-sessio
 const configuration = { features: { sessionManagement: Boolean[false] } };
 ```
 
+To disable removing frame-ancestors from Content-Security-Policy and X-Frame-Options in
+`check_session_iframe` calls because you know what you're doing with them, set:
+```js
+const configuration = { features: { sessionManagement: { keepHeaders: true } } };
+```
+
 
 **Back-Channel Logout features**  
 Enables features described in [Back-Channel Logout 1.0 - draft 03][feature-backchannel-logout].
