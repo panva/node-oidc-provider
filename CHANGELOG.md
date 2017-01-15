@@ -19,6 +19,13 @@ Yay for [SemVer](http://semver.org/).
 
 <!-- TOC END -->
 
+## Version 1.9.0
+- [DIFF](https://github.com/panva/node-oidc-provider/compare/v1.8.6...v1.9.0)
+- ensure x-frame-options and content-security-policy headers from tools like helmet do not interfere
+  with `check_session_iframe`, see options to disable the behavior if you know what you're actually
+  doing with those headers
+- fixed client validation not checking `token_endpoint_auth_signing_alg` values
+
 ## Version 1.8.0
 ### Version 1.8.6
 - [DIFF](https://github.com/panva/node-oidc-provider/compare/v1.8.3...v1.8.6)
