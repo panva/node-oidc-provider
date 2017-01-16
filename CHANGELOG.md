@@ -20,6 +20,12 @@ Yay for [SemVer](http://semver.org/).
 
 <!-- TOC END -->
 
+**Pending Release**
+- [DIFF](https://github.com/panva/node-oidc-provider/compare/v1.9.0...master)
+- fixed discovery `token_introspection_endpoint (kept until 2.0) -> introspection_endpoint (added)`
+- fixed discovery `token_revocation_endpoint (kept until 2.0) -> revocation_endpoint (added)`
+- added missing discovery `code_challenge_methods_supported`
+
 ## Version 1.9.0
 - [DIFF](https://github.com/panva/node-oidc-provider/compare/v1.8.6...v1.9.0)
 - ensure x-frame-options and content-security-policy headers from tools like helmet do not interfere
