@@ -191,7 +191,6 @@ describe('[session_management]', function () {
         .expect(302)
         .expect((response) => {
           expect(response.headers['set-cookie']).to.contain('_state.client=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT; httponly');
-          expect(response.headers['set-cookie']).to.contain('_state.client.sig=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT; httponly');
           expect(session.authorizations.client).to.be.undefined;
           expect(adapter.destroy.called).to.be.false;
         });
