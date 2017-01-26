@@ -5,6 +5,7 @@ Yay for [SemVer](http://semver.org/).
 **Table of Contents**
 
 <!-- TOC START min:2 max:2 link:true update:true -->
+  - [Version 1.10.0](#version-1100)
   - [Version 1.9.0](#version-190)
   - [Version 1.8.0](#version-180)
   - [Version 1.7.0](#version-170)
@@ -19,6 +20,12 @@ Yay for [SemVer](http://semver.org/).
   - [pre 1.x changelog](#pre-1x-changelog)
 
 <!-- TOC END -->
+
+## Version 1.10.0
+- [DIFF](https://github.com/panva/node-oidc-provider/compare/v1.9.1...v1.10.0)
+- added the option to change used cookie names
+- fixed cleanup of OP cookies after interaction and logout
+- fixed logout form action in mounted OP scenarios
 
 ## Version 1.9.0
 ### Version 1.9.1
