@@ -321,7 +321,7 @@ describe('client authentication options', function () {
       .type('form')
       .expect({
         error: 'invalid_request',
-        error_description: 'list of audience (aud) must include the token endpoint url',
+        error_description: 'list of audience (aud) must include the endpoint url',
       }));
     });
 
@@ -343,7 +343,7 @@ describe('client authentication options', function () {
       .type('form')
       .expect({
         error: 'invalid_request',
-        error_description: 'audience (aud) must equal the token endpoint url',
+        error_description: 'audience (aud) must equal the endpoint url',
       }));
     });
 
