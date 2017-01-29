@@ -57,7 +57,7 @@ Updates to drafts and experimental specification versions are released as MINOR 
 
 
 ## Certification
-[<img width="184" height="96" align="right" src="https://cdn.rawgit.com/panva/node-oidc-provider/master/OpenID_Certified.png" alt="OpenID Certification">][openid-certified-link]  
+[<img width="184" height="96" align="right" src="https://cdn.rawgit.com/panva/node-oidc-provider/acd3ebf2/OpenID_Certified.png" alt="OpenID Certification">][openid-certified-link]  
 Filip Skokan has [certified][openid-certified-link] that [oidc-provider][npm-url]
 conforms to the OP Basic, OP Implicit, OP Hybrid, OP Config and OP Dynamic profiles
 of the OpenID Connect™ protocol.
