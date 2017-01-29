@@ -218,8 +218,8 @@ expressApp.get('/interaction/:grant', (req, res) => {
 });
 
 //   with koa
-router.get('/interaction/:grant', function* (next) {
-  const details = provider.interactionDetails(this.req);
+router.get('/interaction/:grant', async function (ctx, next) {
+  const details = provider.interactionDetails(ctx.req);
   // ...
 });
 ```
@@ -233,8 +233,8 @@ expressApp.post('/interaction/:grant/login', (req, res) => {
 });
 
 //   with koa
-router.post('/interaction/:grant', function* (next) {
-  provider.interactionFinished(this.req, this.res, results); // result object below
+router.post('/interaction/:grant', async function (ctx, next) {
+  provider.interactionFinished(ctx.req, ctx.res, results); // result object below
   // ...
 });
 
@@ -409,6 +409,12 @@ const configuration = { features: { oauthNativeApps: Boolean[false] } };
 Enables features described in [Session Management 1.0 - draft 27][feature-session-management].
 ```js
 const configuration = { features: { sessionManagement: Boolean[false] } };
+```
+
+To disable removing frame-ancestors from Content-Security-Policy and X-Frame-Options in
+`check_session_iframe` calls because you know what you're doing with them, set:
+```js
+const configuration = { features: { sessionManagement: { keepHeaders: true } } };
 ```
 
 

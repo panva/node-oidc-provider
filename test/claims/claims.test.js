@@ -177,11 +177,11 @@ expire.setDate(expire.getDate() + 1);
           const cookies = [];
 
           if (grant) {
-            cookies.push(`_grant=${j(grant)}; path=/; expires=${expire.toGMTString()}; httponly`);
+            cookies.push(`_grant=${j(grant)}; path=/auth/resume; expires=${expire.toGMTString()}; httponly`);
           }
 
           if (results) {
-            cookies.push(`_grant_result=${j(results)}; path=/; expires=${expire.toGMTString()}; httponly`);
+            cookies.push(`_grant_result=${j(results)}; path=/auth/resume; expires=${expire.toGMTString()}; httponly`);
           }
 
           agent._saveCookies.bind(agent)({

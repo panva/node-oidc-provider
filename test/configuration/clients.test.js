@@ -14,22 +14,22 @@ describe('provider.Client', function () {
       });
     });
 
-    it('keeps the fixed clients in cache', function* () {
-      expect(yield this.provider.Client.find('fixed')).to.be.ok;
+    it('keeps the fixed clients in cache', async function () {
+      expect(await this.provider.Client.find('fixed')).to.be.ok;
       this.provider.Client.cacheClear();
-      expect(yield this.provider.Client.find('fixed')).to.be.ok;
+      expect(await this.provider.Client.find('fixed')).to.be.ok;
     });
 
-    it('removes the adapter backed ones from cache', function* () {
-      yield i(this.provider).clientAdd({
+    it('removes the adapter backed ones from cache', async function () {
+      await i(this.provider).clientAdd({
         client_id: 'client',
         client_secret: 'secret',
         redirect_uris: ['https://client.example.com/cb'],
       });
 
-      expect(yield this.provider.Client.find('client')).to.be.ok;
+      expect(await this.provider.Client.find('client')).to.be.ok;
       this.provider.Client.cacheClear();
-      expect(yield this.provider.Client.find('client')).not.to.be.ok;
+      expect(await this.provider.Client.find('client')).not.to.be.ok;
     });
   });
 });

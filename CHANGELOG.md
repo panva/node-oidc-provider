@@ -5,6 +5,9 @@ Yay for [SemVer](http://semver.org/).
 **Table of Contents**
 
 <!-- TOC START min:2 max:2 link:true update:true -->
+  - [Version 2.x](#version-2x)
+  - [Version 1.10.0](#version-1100)
+  - [Version 1.9.0](#version-190)
   - [Version 1.8.0](#version-180)
   - [Version 1.7.0](#version-170)
   - [Version 1.6.0](#version-160)
@@ -19,7 +22,44 @@ Yay for [SemVer](http://semver.org/).
 
 <!-- TOC END -->
 
+## Version 2.x
+- [DIFF](https://github.com/panva/node-oidc-provider/compare/v1.10.0...next)
+
+## Version 1.10.0
+- [DIFF](https://github.com/panva/node-oidc-provider/compare/v1.9.1...v1.10.0)
+- added the option to change used cookie names
+- fixed cleanup of OP cookies after interaction and logout
+- fixed logout form action in mounted OP scenarios
+
+## Version 1.9.0
+### Version 1.9.1
+- [DIFF](https://github.com/panva/node-oidc-provider/compare/v1.9.0...v1.9.1)
+- fixed discovery `token_introspection_endpoint (kept until 2.0) -> introspection_endpoint (added)`
+- fixed discovery `token_revocation_endpoint (kept until 2.0) -> revocation_endpoint (added)`
+- fixed default response mode for `token` response_type to be also `fragment`
+- added missing discovery `code_challenge_methods_supported`
+
+### Version 1.9.0
+- [DIFF](https://github.com/panva/node-oidc-provider/compare/v1.8.6...v1.9.0)
+- ensure x-frame-options and content-security-policy headers from tools like helmet do not interfere
+  with `check_session_iframe`, see options to disable the behavior if you know what you're actually
+  doing with those headers
+- fixed client validation not checking `token_endpoint_auth_signing_alg` values
+
 ## Version 1.8.0
+### Version 1.8.6
+- [DIFF](https://github.com/panva/node-oidc-provider/compare/v1.8.3...v1.8.6)
+- fixed unchanged interactionUrl with devInteractions disabled
+
+### Version 1.8.3
+- [DIFF](https://github.com/panva/node-oidc-provider/compare/v1.8.2...v1.8.3)
+- fixed Client#find to always load a freshly stored client in dynamic registration reads and updates
+
+### Version 1.8.2
+- [DIFF](https://github.com/panva/node-oidc-provider/compare/v1.8.0...v1.8.2)
+- fixed unchanged interactionUrl in mounted OP scenarios
+
+### Version 1.8.0
 - [DIFF](https://github.com/panva/node-oidc-provider/compare/v1.7.0...v1.8.0)
 - fixed scenarios where oidc-provider is mounted in an express application
 - documented recommended mounting approach for both koa and express

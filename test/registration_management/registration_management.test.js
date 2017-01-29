@@ -230,8 +230,8 @@ describe('OAuth 2.0 Dynamic Client Registration Management Protocol', function (
         conf.features.registrationManagement = true;
       });
 
-      it('destroys the old RegistrationAccessToken', function* () {
-        const client = yield setup.call(this, {});
+      it('destroys the old RegistrationAccessToken', async function () {
+        const client = await setup.call(this, {});
         const spy = sinon.spy();
         this.provider.once('token.revoked', spy);
 
@@ -244,8 +244,8 @@ describe('OAuth 2.0 Dynamic Client Registration Management Protocol', function (
         });
       });
 
-      it('issues and returns new RegistrationAccessToken', function* () {
-        const client = yield setup.call(this, {});
+      it('issues and returns new RegistrationAccessToken', async function () {
+        const client = await setup.call(this, {});
         const spy = sinon.spy();
         this.provider.once('token.issued', spy);
 

@@ -9,9 +9,9 @@ const upstreamParser = require('koa-body');
 
 describe('body parser', function () {
   describe('application/x-www-form-urlencoded', function () {
-    it('uses the upstream parser albeit reluctantly', function* () {
+    it('uses the upstream parser albeit reluctantly', async function () {
       const provider = new Provider('http://localhost:3000');
-      yield provider.initialize({
+      await provider.initialize({
         clients: [{
           client_id: 'client',
           client_secret: 'secret',
@@ -39,11 +39,11 @@ describe('body parser', function () {
   });
 
   describe('application/json', function () {
-    it('uses the upstream parser albeit reluctantly', function* () {
+    it('uses the upstream parser albeit reluctantly', async function () {
       const provider = new Provider('http://localhost:3000', {
         features: { registration: true }
       });
-      yield provider.initialize();
+      await provider.initialize();
       const app = new Koa();
 
       app.use(upstreamParser());
@@ -60,11 +60,11 @@ describe('body parser', function () {
         .expect(201);
     });
 
-    it('handles parsing errors', function* () {
+    it('handles parsing errors', async function () {
       const provider = new Provider('http://localhost:3000', {
         features: { registration: true }
       });
-      yield provider.initialize();
+      await provider.initialize();
       const server = http.createServer(provider.app.callback()).listen();
 
       return supertest(server)

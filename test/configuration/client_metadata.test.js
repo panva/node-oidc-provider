@@ -174,11 +174,11 @@ describe('Client validations', function () {
     });
   };
 
-  const rejects = (prop, value, description, meta) => {
+  const rejects = (prop, value, description, meta, configuration) => {
     it(`rejects ${JSON.stringify(value)}`, function () {
       return addClient(Object.assign({}, meta, {
         [prop]: value
-      })).then(fail, (err) => {
+      }), configuration).then(fail, (err) => {
         if (prop === 'redirect_uris') {
           expect(err.message).to.equal('invalid_redirect_uri');
         } else {
@@ -445,6 +445,21 @@ describe('Client validations', function () {
     allows(this.title, 'none', {
       response_types: ['id_token'],
       grant_types: ['implicit']
+    });
+  });
+
+
+  context('token_endpoint_auth_signing_alg', function () {
+    allows(this.title, 'RS256', {
+      token_endpoint_auth_method: 'client_secret_jwt',
+    });
+
+    rejects(this.title, 'RS384', /^token_endpoint_auth_signing_alg must be one of/, {
+      token_endpoint_auth_method: 'client_secret_jwt',
+    }, {
+      unsupported: {
+        tokenEndpointAuthSigningAlgValues: ['RS384'],
+      }
     });
   });
 
