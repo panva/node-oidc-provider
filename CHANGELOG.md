@@ -22,6 +22,12 @@ Yay for [SemVer](http://semver.org/).
 <!-- TOC END -->
 
 ## Version 1.10.0
+### Version 1.10.1
+- [DIFF](https://github.com/panva/node-oidc-provider/compare/v1.10.0...v1.10.1)
+- fixed expected aud value in private_key_jwt and client_secret_jwt client authentication
+  for introspection_endpoint and revocation_endpoint
+
+### Version 1.10.0
 - [DIFF](https://github.com/panva/node-oidc-provider/compare/v1.9.1...v1.10.0)
 - added the option to change used cookie names
 - fixed cleanup of OP cookies after interaction and logout
