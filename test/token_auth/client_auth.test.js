@@ -22,6 +22,8 @@ describe('client authentication options', function () {
       });
 
       expect(i(provider).configuration('tokenEndpointAuthSigningAlgValues')).to.be.undefined;
+      expect(i(provider).configuration('introspectionEndpointAuthSigningAlgValues')).to.be.undefined;
+      expect(i(provider).configuration('revocationEndpointAuthSigningAlgValues')).to.be.undefined;
     });
 
     it('pushes only symmetric algs when client_secret_jwt is enabled', function () {
@@ -34,11 +36,15 @@ describe('client authentication options', function () {
         ],
       });
 
-      expect(i(provider).configuration('tokenEndpointAuthSigningAlgValues')).to.eql([
+      const algs = [
         'HS256',
         'HS384',
         'HS512',
-      ]);
+      ];
+
+      expect(i(provider).configuration('tokenEndpointAuthSigningAlgValues')).to.eql(algs);
+      expect(i(provider).configuration('introspectionEndpointAuthSigningAlgValues')).to.eql(algs);
+      expect(i(provider).configuration('revocationEndpointAuthSigningAlgValues')).to.eql(algs);
     });
 
     it('pushes only asymmetric algs when private_key_jwt is enabled', function () {
@@ -51,7 +57,7 @@ describe('client authentication options', function () {
         ],
       });
 
-      expect(i(provider).configuration('tokenEndpointAuthSigningAlgValues')).to.eql([
+      const algs = [
         'RS256',
         'RS384',
         'RS512',
@@ -61,7 +67,11 @@ describe('client authentication options', function () {
         'ES256',
         'ES384',
         'ES512',
-      ]);
+      ];
+
+      expect(i(provider).configuration('tokenEndpointAuthSigningAlgValues')).to.eql(algs);
+      expect(i(provider).configuration('introspectionEndpointAuthSigningAlgValues')).to.eql(algs);
+      expect(i(provider).configuration('revocationEndpointAuthSigningAlgValues')).to.eql(algs);
     });
 
     it('pushes all algs when both _jwt methods are enabled', function () {
@@ -75,7 +85,7 @@ describe('client authentication options', function () {
         ],
       });
 
-      expect(i(provider).configuration('tokenEndpointAuthSigningAlgValues')).to.eql([
+      const algs = [
         'HS256',
         'HS384',
         'HS512',
@@ -88,7 +98,11 @@ describe('client authentication options', function () {
         'ES256',
         'ES384',
         'ES512',
-      ]);
+      ];
+
+      expect(i(provider).configuration('tokenEndpointAuthSigningAlgValues')).to.eql(algs);
+      expect(i(provider).configuration('introspectionEndpointAuthSigningAlgValues')).to.eql(algs);
+      expect(i(provider).configuration('revocationEndpointAuthSigningAlgValues')).to.eql(algs);
     });
   });
 

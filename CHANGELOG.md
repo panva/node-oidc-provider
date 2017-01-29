@@ -37,6 +37,26 @@ Yay for [SemVer](http://semver.org/).
   during initialization, use to establish the necessary adapter connections
 - enabling oauthNativeApps (still draft) now also enables pkce.skipClientAuth unless it was,
   explicitly disabled
+- introspection and revocation endpoint authentication now has dedicated settings and properties,
+  unless specific settings for those are provided they default to what's provided for token_endpoint
+  equivalents, this allows for fine-tuning while not disrupting existing behavior (y)
+- new client metadata supported:
+  - introspection_endpoint_auth_method
+  - introspection_endpoint_auth_signing_alg
+  - revocation_endpoint_auth_method
+  - revocation_endpoint_auth_signing_alg
+- new configuration properties:
+  - introspectionEndpointAuthMethods
+  - introspectionEndpointAuthSigningAlgValues
+  - unsupported.introspectionEndpointAuthSigningAlgValues
+  - revocationEndpointAuthMethods
+  - revocationEndpointAuthSigningAlgValues
+  - unsupported.revocationEndpointAuthSigningAlgValues
+- new discovery properties:
+  - introspection_endpoint_auth_methods_supported
+  - introspection_endpoint_auth_signing_alg_values_supported
+  - revocation_endpoint_auth_methods_supported
+  - revocation_endpoint_auth_signing_alg_values_supported
 
 *Fixes*
 - fixed logout buttons in browsers not supporting "form" attribute
