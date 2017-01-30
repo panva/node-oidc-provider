@@ -16,11 +16,11 @@ your own unique-looking and functioning user flows.
 <!-- TOC START min:2 max:2 link:true update:true -->
   - ['next' branch/release](#next-branchrelease)
   - [Implemented specs & features](#implemented-specs--features)
+  - [Certification](#certification)
   - [Get started](#get-started)
   - [Configuration and Initialization](#configuration-and-initialization)
   - [Debugging](#debugging)
   - [Events](#events)
-  - [Certification](#certification)
 
 <!-- TOC END -->
 
@@ -69,6 +69,14 @@ The following drafts/experimental specifications are implemented by oidc-provide
 
 Updates to drafts and experimental specification versions are released as MINOR library versions.
 
+
+## Certification
+[<img width="184" height="96" align="right" src="https://cdn.rawgit.com/panva/node-oidc-provider/acd3ebf2/OpenID_Certified.png" alt="OpenID Certification">][openid-certified-link]  
+Filip Skokan has [certified][openid-certified-link] that [oidc-provider][npm-url]
+conforms to the OP Basic, OP Implicit, OP Hybrid, OP Config and OP Dynamic profiles
+of the OpenID Connect™ protocol.
+
+
 ## Get started
 You may follow an example [step by step setup][example-repo] (recommended), or run and experiment with an
 example server that's part of the repo (if you can follow the structure, if not check the step by step).
@@ -92,10 +100,12 @@ It is easy to use with [express](/example/express.js) too.
 $ npm install oidc-provider@next --save
 ```
 
+
 ### 1.0.0 Notice
 Migrating from 0.11.x release? Quite a bit has changed along the way to end up with a stable and
 sustainable API, see the [CHANGELOG](/CHANGELOG.md#version-100) for list of changes and how to
 change your existing 0.11 providers to 1.0
+
 
 ## Configuration and Initialization
 oidc-provider allows to be extended and configured in various ways to fit a variety of uses. See
@@ -116,6 +126,7 @@ oidc.initialize({ clients }).then(function () {
 });
 ```
 
+
 ## Debugging
 oidc-provider uses the [debug][debug-link] module internally to log information about various states
 of authentication requests, errors and grants. To see all these set the DEBUG environment variable
@@ -126,17 +137,13 @@ identifiable information or client credentials it's use is only advised for debu
 logging. Use emitted events to cherry pick the one's of interest to your flows and form your own
 logs aware of what should and should not be a part of a logged message.
 
+
 ## Events
 Your oidc-provider instance is an event emitter, using event handlers you can hook into the various
 actions and i.e. emit metrics or that react to specific triggers. In some scenarios you can even
 change the defined behavior.  
 See the list of available emitted [event names](/docs/events.md) and their description.
 
-## Certification
-[![OpenId Certification][openid-certified-logo]][openid-certified-link]
-
-[OpenID Certified™][openid-certified-link] by Filip Skokan to the OP Basic, OP Implicit, OP Hybrid,
-OP Config and OP Dynamic profiles of the OpenID Connect™ protocol.
 
 [travis-image]: https://img.shields.io/travis/panva/node-oidc-provider/master.svg?style=flat-square&maxAge=7200
 [travis-url]: https://travis-ci.org/panva/node-oidc-provider
@@ -147,7 +154,6 @@ OP Config and OP Dynamic profiles of the OpenID Connect™ protocol.
 [licence-image]: https://img.shields.io/github/license/panva/node-oidc-provider.svg?style=flat-square&maxAge=7200
 [licence-url]: LICENSE.md
 [openid-certified-link]: http://openid.net/certification/
-[openid-certified-logo]: https://cdn.rawgit.com/panva/node-oidc-provider/master/OpenID_Certified.png
 [openid-connect]: http://openid.net/connect/
 [feature-core]: http://openid.net/specs/openid-connect-core-1_0.html
 [feature-discovery]: http://openid.net/specs/openid-connect-discovery-1_0.html
