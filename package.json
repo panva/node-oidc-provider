@@ -37,7 +37,7 @@
     "moment": "^2.14.1",
     "nock": "^9.0.2",
     "sinon": "^1.17.3",
-    "supertest": "^2.0.0"
+    "supertest": "^3.0.0"
   },
   "main": "lib/index.js",
   "name": "oidc-provider",
@@ -73,7 +73,7 @@
     "lint-fix": "eslint lib example test --fix",
     "heroku-postbuild": "npm install mongodb"
   },
-  "version": "2.0.0-alpha.1.10.1",
+  "version": "2.0.0-alpha.1.10.2",
   "files": [
     "lib"
   ],

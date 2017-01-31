@@ -26,6 +26,10 @@ Yay for [SemVer](http://semver.org/).
 - [DIFF](https://github.com/panva/node-oidc-provider/compare/v1.10.0...next)
 
 ## Version 1.10.0
+### Version 1.10.2
+- [DIFF](https://github.com/panva/node-oidc-provider/compare/v1.10.1...v1.10.2)
+- fixed state parameter pass-through for Session Management end_session endpoint
+
 ### Version 1.10.1
 - [DIFF](https://github.com/panva/node-oidc-provider/compare/v1.10.0...v1.10.1)
 - fixed expected aud value in private_key_jwt and client_secret_jwt client authentication

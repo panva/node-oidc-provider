@@ -59,6 +59,23 @@ describe('[session_management]', function () {
           });
       });
 
+      it('also forwards the state if provided', function () {
+        const params = {
+          id_token_hint: this.idToken,
+          post_logout_redirect_uri: 'https://client.example.com/logout/cb',
+          state: 'foobar'
+        };
+
+        return this.agent.get(route)
+          .query(params)
+          .expect(200)
+          .expect(() => {
+            const { logout: { postLogoutRedirectUri, state } } = this.getSession();
+            expect(postLogoutRedirectUri).to.equal('https://client.example.com/logout/cb');
+            expect(state).to.equal('foobar');
+          });
+      });
+
       it('can omit the post_logout_redirect_uri and uses the provider one', function () {
         const params = { id_token_hint: this.idToken };
 
@@ -208,6 +225,24 @@ describe('[session_management]', function () {
           delete i(this.provider).configuration().cookies.long.domain;
         })
         .expect(302)
+        .expect((response) => {
+          expect(response.headers['set-cookie']).to.contain('_state.client=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT; domain=.oidc.dev; httponly');
+        });
+    });
+
+    it('forwards the state too', function () {
+      this.getSession().logout = { secret: '123', postLogoutRedirectUri: '/', clientId: 'client', state: 'foobar' };
+
+      i(this.provider).configuration().cookies.long.domain = '.oidc.dev';
+
+      return this.agent.post('/session/end')
+        .send({ xsrf: '123', logout: 'yes' })
+        .type('form')
+        .expect(() => {
+          delete i(this.provider).configuration().cookies.long.domain;
+        })
+        .expect(302)
+        .expect('location', '/?state=foobar')
         .expect((response) => {
           expect(response.headers['set-cookie']).to.contain('_state.client=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT; domain=.oidc.dev; httponly');
         });
