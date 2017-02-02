@@ -6,6 +6,7 @@ Yay for [SemVer](http://semver.org/).
 
 <!-- TOC START min:2 max:2 link:true update:true -->
   - [Version 2.x](#version-2x)
+  - [Version 1.11.0](#version-1110)
   - [Version 1.10.0](#version-1100)
   - [Version 1.9.0](#version-190)
   - [Version 1.8.0](#version-180)
@@ -24,6 +25,13 @@ Yay for [SemVer](http://semver.org/).
 
 ## Version 2.x
 - [DIFF](https://github.com/panva/node-oidc-provider/compare/v1.10.0...next)
+
+## Version 1.11.0
+- [DIFF](https://github.com/panva/node-oidc-provider/compare/v1.10.2...v1.11.0)
+- Updated implementation of Back-Channel Logout from draft03 to draft04
+  - Logout Token's event claim is now an object with `http://schemas.openid.net/event/backchannel-logout`
+    as a member name.
+- Session Management and Native Apps BCP draft references updated, no change in implementations
 
 ## Version 1.10.0
 ### Version 1.10.2
@@ -114,7 +122,7 @@ Yay for [SemVer](http://semver.org/).
 
 ### Version 1.4.0
 - [DIFF](https://github.com/panva/node-oidc-provider/compare/v1.3.0...v1.4.0)
-- added optional support for [OAuth 2.0 for Native Apps BCP - draft 06][feature-oauth-native-apps]
+- added optional support for [OAuth 2.0 for Native Apps BCP - draft 06][https://tools.ietf.org/html/draft-ietf-oauth-native-apps-06]
   - enable with configuration `features.oauthNativeApps = true`;
 - offline_access scope is now ignored when consent prompt is missing instead of being rejected as invalid_request
 - unrecognized authentication requests scopes are now ignored instead of being rejected as invalid_request
@@ -277,5 +285,4 @@ storage layer) you just need to pass a jose.JWK.KeyStore as `tokenIntegrity` con
 The first token you push on to this key store will be used to cryptographically sign the oauth tokens
 prohibiting any tampering with the payload and header content.
 
-[feature-oauth-native-apps]: https://tools.ietf.org/html/draft-ietf-oauth-native-apps-06
 [debug-link]: https://github.com/visionmedia/debug

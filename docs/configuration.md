@@ -406,7 +406,7 @@ const configuration = { features: { oauthNativeApps: Boolean[false] } };
 
 
 **Session management features**  
-Enables features described in [Session Management 1.0 - draft 27][feature-session-management].
+Enables features described in [Session Management 1.0 - draft 28][feature-session-management].
 ```js
 const configuration = { features: { sessionManagement: Boolean[false] } };
 ```
@@ -419,7 +419,7 @@ const configuration = { features: { sessionManagement: { keepHeaders: true } } }
 
 
 **Back-Channel Logout features**  
-Enables features described in [Back-Channel Logout 1.0 - draft 03][feature-backchannel-logout].
+Enables features described in [Back-Channel Logout 1.0 - draft 04][feature-backchannel-logout].
 ```js
 const configuration = { features: { sessionManagement: true, backchannelLogout: Boolean[false] } };
 ```
@@ -619,13 +619,13 @@ koaApp.use(prefix, oidc.app);
 [core-claims-url]: http://openid.net/specs/openid-connect-core-1_0.html#ClaimsParameter
 [core-jwt-parameters-url]: http://openid.net/specs/openid-connect-core-1_0.html#JWTRequests
 [feature-aggregated-distributed-claims]: http://openid.net/specs/openid-connect-core-1_0.html#AggregatedDistributedClaims
-[feature-backchannel-logout]: http://openid.net/specs/openid-connect-backchannel-1_0-03.html
+[feature-backchannel-logout]: http://openid.net/specs/openid-connect-backchannel-1_0-04.html
 [feature-introspection]: https://tools.ietf.org/html/rfc7662
 [feature-registration-management]: https://tools.ietf.org/html/rfc7592
 [feature-registration]: http://openid.net/specs/openid-connect-registration-1_0.html
 [feature-revocation]: https://tools.ietf.org/html/rfc7009
-[feature-oauth-native-apps]: https://tools.ietf.org/html/draft-ietf-oauth-native-apps-06
-[feature-session-management]: http://openid.net/specs/openid-connect-session-1_0-27.html
+[feature-oauth-native-apps]: https://tools.ietf.org/html/draft-ietf-oauth-native-apps-07
+[feature-session-management]: http://openid.net/specs/openid-connect-session-1_0-28.html
 [got-library]: https://github.com/sindresorhus/got
 [password-grant]: https://tools.ietf.org/html/rfc6749#section-4.3
 [defaults]: /lib/helpers/defaults.js
