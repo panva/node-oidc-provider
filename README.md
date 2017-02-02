@@ -48,12 +48,14 @@ enabled by default, check the configuration section on how to enable them.
 - [RFC7662 - OAuth 2.0 Token introspection][feature-introspection]
 
 The following drafts/experimental specifications are implemented by oidc-provider.
-- [OpenID Connect Session Management 1.0 - draft 27][feature-session-management]
-- [OpenID Connect Back-Channel Logout 1.0 - draft 03][feature-backchannel-logout]
+- [OpenID Connect Session Management 1.0 - draft 28][feature-session-management]
+- [OpenID Connect Back-Channel Logout 1.0 - draft 04][feature-backchannel-logout]
 - [RFC7592 - OAuth 2.0 Dynamic Client Registration Management Protocol (Update and Delete)][feature-registration-management]
-- [OAuth 2.0 for Native Apps BCP - draft 06][feature-oauth-native-apps]
+- [OAuth 2.0 for Native Apps BCP - draft 07][feature-oauth-native-apps]
 
-Updates to drafts and experimental specification versions are released as MINOR library versions.
+Updates to draft and experimental specification versions are released as MINOR library versions,
+if you utilize these specification implementations consider using the tilde `~` operator in your
+package.json since breaking changes may be introduced as part of these version updates.
 
 
 ## Certification
@@ -144,7 +146,7 @@ See the list of available emitted [event names](/docs/events.md) and their descr
 [feature-core]: http://openid.net/specs/openid-connect-core-1_0.html
 [feature-discovery]: http://openid.net/specs/openid-connect-discovery-1_0.html
 [feature-registration]: http://openid.net/specs/openid-connect-registration-1_0.html
-[feature-session-management]: http://openid.net/specs/openid-connect-session-1_0-27.html
+[feature-session-management]: http://openid.net/specs/openid-connect-session-1_0-28.html
 [feature-form-post]: http://openid.net/specs/oauth-v2-form-post-response-mode-1_0.html
 [feature-revocation]: https://tools.ietf.org/html/rfc7009
 [feature-introspection]: https://tools.ietf.org/html/rfc7662
@@ -155,7 +157,7 @@ See the list of available emitted [event names](/docs/events.md) and their descr
 [heroku-example]: https://guarded-cliffs-8635.herokuapp.com/.well-known/openid-configuration
 [heroku-example-client]: https://tranquil-reef-95185.herokuapp.com/client
 [openid-client]: https://github.com/panva/node-openid-client
-[feature-backchannel-logout]: http://openid.net/specs/openid-connect-backchannel-1_0-03.html
+[feature-backchannel-logout]: http://openid.net/specs/openid-connect-backchannel-1_0-04.html
 [feature-registration-management]: https://tools.ietf.org/html/rfc7592
-[feature-oauth-native-apps]: https://tools.ietf.org/html/draft-ietf-oauth-native-apps-06
+[feature-oauth-native-apps]: https://tools.ietf.org/html/draft-ietf-oauth-native-apps-07
 [debug-link]: https://github.com/visionmedia/debug
