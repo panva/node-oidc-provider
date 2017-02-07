@@ -610,7 +610,7 @@ const rewrite = require('koa-rewrite');
 const mount = require('koa-mount');
 const prefix = '/op'
 koaApp.use(rewrite('/.well-known/*', `${prefix}/.well-known/$1`));
-koaApp.use(mount(prefix, oidc));
+koaApp.use(mount(prefix, oidc.app));
 ```
 
 [client-metadata]: http://openid.net/specs/openid-connect-registration-1_0.html#ClientMetadata
