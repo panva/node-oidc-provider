@@ -20,7 +20,9 @@ const path = require('path');
 const koa = require('koa');
 const mount = require('koa-mount');
 const epochTime = require('../lib/helpers/epoch_time');
-global.i = global.instance = require('../lib/helpers/weak_cache');
+global.instance = require('../lib/helpers/weak_cache');
+
+global.i = instance;
 
 const responses = {
   serverErrorBody: {
@@ -270,7 +272,8 @@ module.exports = function testHelper(dir, basename, mountTo) {
           server = provider.app.listen(port);
         }
 
-        this.agent = agent = supertest(server);
+        agent = supertest(server);
+        this.agent = agent;
       }, reject).then(resolve);
     });
   };
