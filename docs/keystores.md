@@ -45,7 +45,7 @@ you.
 
 ```js
 provider.initialize({
-  keystore: {
+  integrity: {
     keys: [
       { kty, alg, k, kid, use } // oct JWK
     ]
@@ -53,7 +53,7 @@ provider.initialize({
 }).then(() => { /* your app is ready */ });
 
 // or
-provider.initialize({ keystore }).then(() => { /* your app is ready */ });
+provider.initialize({ integrity }).then(() => { /* your app is ready */ });
 ```
 
 ## Generating new keys
