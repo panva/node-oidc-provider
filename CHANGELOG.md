@@ -5,6 +5,7 @@ Yay for [SemVer](http://semver.org/).
 **Table of Contents**
 
 <!-- TOC START min:2 max:2 link:true update:true -->
+  - [Version 1.12.0](#version-1120)
   - [Version 1.11.0](#version-1110)
   - [Version 1.10.0](#version-1100)
   - [Version 1.9.0](#version-190)
@@ -21,6 +22,11 @@ Yay for [SemVer](http://semver.org/).
   - [pre 1.x changelog](#pre-1x-changelog)
 
 <!-- TOC END -->
+
+## Version 1.12.0
+- [DIFF](https://github.com/panva/node-oidc-provider/compare/v1.11.0...v1.12.0)
+- Added a detection of session management cookies being blocked as a result of a user-agent optout
+  and added appropriate handling to mitigate resulting incorrect `changed` states
 
 ## Version 1.11.0
 - [DIFF](https://github.com/panva/node-oidc-provider/compare/v1.10.2...v1.11.0)
