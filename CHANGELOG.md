@@ -24,6 +24,11 @@ Yay for [SemVer](http://semver.org/).
 <!-- TOC END -->
 
 ## Version 1.12.0
+### Version 1.12.1
+- [DIFF](https://github.com/panva/node-oidc-provider/compare/v1.12.0...v1.12.1)
+- fixed request parameter containing claims parameter being an object (#78)
+
+### Version 1.12.0
 - [DIFF](https://github.com/panva/node-oidc-provider/compare/v1.11.0...v1.12.0)
 - Added a detection of session management cookies being blocked as a result of a user-agent optout
   and added appropriate handling to mitigate resulting incorrect `changed` states
