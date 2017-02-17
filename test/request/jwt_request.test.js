@@ -34,7 +34,90 @@ describe('request parameter features', function () {
         return this.logout();
       });
 
-      it('works with signed by none', function* () {
+      it('works with signed by none', function () {
+        return JWT.sign({
+          client_id: 'client',
+          response_type: 'code',
+          redirect_uri: 'https://client.example.com/cb'
+        }, null, 'none').then(request => this.wrap({
+          agent: this.agent,
+          route,
+          verb,
+          auth: {
+            request,
+            scope: 'openid',
+            client_id: 'client',
+            response_type: 'code'
+          }
+        })
+        .expect(302)
+        .expect((response) => {
+          const expected = parse('https://client.example.com/cb', true);
+          const actual = parse(response.headers.location, true);
+          ['protocol', 'host', 'pathname'].forEach((attr) => {
+            expect(actual[attr]).to.equal(expected[attr]);
+          });
+          expect(actual.query).to.have.property('code');
+        }));
+      });
+
+      it('can contain claims parameter as JSON', function () {
+        return JWT.sign({
+          client_id: 'client',
+          response_type: 'code',
+          redirect_uri: 'https://client.example.com/cb',
+          claims: JSON.stringify({ id_token: { email: null } })
+        }, null, 'none').then(request => this.wrap({
+          agent: this.agent,
+          route,
+          verb,
+          auth: {
+            request,
+            scope: 'openid',
+            client_id: 'client',
+            response_type: 'code'
+          }
+        })
+        .expect(302)
+        .expect((response) => {
+          const expected = parse('https://client.example.com/cb', true);
+          const actual = parse(response.headers.location, true);
+          ['protocol', 'host', 'pathname'].forEach((attr) => {
+            expect(actual[attr]).to.equal(expected[attr]);
+          });
+          expect(actual.query).to.have.property('code');
+        }));
+      });
+
+      it('can contain claims parameter as object', function () {
+        return JWT.sign({
+          client_id: 'client',
+          response_type: 'code',
+          redirect_uri: 'https://client.example.com/cb',
+          claims: { id_token: { email: null } }
+        }, null, 'none').then(request => this.wrap({
+          agent: this.agent,
+          route,
+          verb,
+          auth: {
+            request,
+            scope: 'openid',
+            client_id: 'client',
+            response_type: 'code'
+          }
+        })
+        .expect(302)
+        .expect((response) => {
+          const expected = parse('https://client.example.com/cb', true);
+          const actual = parse(response.headers.location, true);
+          ['protocol', 'host', 'pathname'].forEach((attr) => {
+            expect(actual[attr]).to.equal(expected[attr]);
+          });
+          expect(actual.query).to.have.property('code');
+        }));
+      });
+
+      it('works with signed by an actual HS', function* () {
         const key = (yield this.provider.Client.find('client-with-HS-sig')).keystore.get({
           alg: 'HS256'
         });
@@ -50,33 +133,6 @@ describe('request parameter features', function () {
             request,
             scope: 'openid',
             client_id: 'client-with-HS-sig',
-            response_type: 'code'
-          }
-        })
-        .expect(302)
-        .expect((response) => {
-          const expected = parse('https://client.example.com/cb', true);
-          const actual = parse(response.headers.location, true);
-          ['protocol', 'host', 'pathname'].forEach((attr) => {
-            expect(actual[attr]).to.equal(expected[attr]);
-          });
-          expect(actual.query).to.have.property('code');
-        }));
-      });
-
-      it('works with signed by an actual alg', function () {
-        return JWT.sign({
-          client_id: 'client',
-          response_type: 'code',
-          redirect_uri: 'https://client.example.com/cb'
-        }, null, 'none').then(request => this.wrap({
-          agent: this.agent,
-          route,
-          verb,
-          auth: {
-            request,
-            scope: 'openid',
-            client_id: 'client',
             response_type: 'code'
           }
         })
