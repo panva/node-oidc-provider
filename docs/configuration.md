@@ -25,6 +25,7 @@ point to get an idea of what you should provide.
   - [Changing HTTP Request Defaults](#changing-http-request-defaults)
   - [Authentication Context Class Reference](#authentication-context-class-reference)
   - [Mounting oidc-provider](#mounting-oidc-provider)
+  - [Trusting ssl offloading proxies](#trusting-ssl-offloading-proxies)
 
 <!-- TOC END -->
 
@@ -612,6 +613,20 @@ const prefix = '/op'
 koaApp.use(rewrite('/.well-known/*', `${prefix}/.well-known/$1`));
 koaApp.use(mount(prefix, oidc.app));
 ```
+
+## Trusting ssl offloading proxies
+Having a TLS offloading proxy in front of node.js running oidc-provider is the norm. As with
+any express/koa application you have to tell your app to trust `x-forwarded-proto` and `x-forwarded-for`
+headers commonly set by those proxies to let the downstream application know of the original protocol
+and ip.
+
+Depending on your setup you should do the following
+
+| setup | example |
+|---|---|
+| standalone oidc-provider | `provider.app.proxy = true; ` |
+| oidc-provider mounted to a koa app | `yourKoaApp.proxy = true` |
+| oidc-provider mounted to an express app | `provider.app.proxy = true; ` |
 
 [client-metadata]: http://openid.net/specs/openid-connect-registration-1_0.html#ClientMetadata
 [core-account-claims]: http://openid.net/specs/openid-connect-core-1_0.html#ScopeClaims
