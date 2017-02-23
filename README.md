@@ -30,7 +30,7 @@ koa2 based, therefore requiring ES7 async/await capable node runtime (or live tr
 There are no extra features or master-unreleased features. 2.0.0 of this library will come when koa2
 releases as latest and when ES7 async/await lands in LTS nodejs release (probably LTSv8).
 
-You can use this library if you already use node stable with `--harmony_async_await`, just declare
+You can use this library if you already use node current (>= 7.6.0), just declare
 your dependency in package.json with the @next distribution tag.
 
 The published versions also use pre-release version scheme 2.0.0-alpha.x.y.z with xyz being the same
@@ -86,8 +86,9 @@ example server that's part of the repo (if you can follow the structure, if not 
 ```bash
 $ git clone -b next https://github.com/panva/node-oidc-provider.git oidc-provider
 $ cd oidc-provider
+$ nvm use 7
 $ npm install
-$ node --harmony_async_await example
+$ node example
 ```
 Visiting `http://localhost:3000/.well-known/openid-configuration` will help you to discover how the
 example is [configured](/example).

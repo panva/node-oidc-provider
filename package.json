@@ -28,7 +28,7 @@
     "eslint": "^3.0.0",
     "eslint-config-airbnb-base": "^11.0.0",
     "eslint-plugin-import": "^2.0.1",
-    "istanbul": "^0.4.3",
+    "istanbul": "next",
     "koa-body": "next",
     "koa-ejs": "^3.0.0",
     "koa-mount": "next",
@@ -43,7 +43,7 @@
   "name": "oidc-provider",
   "repository": "panva/node-oidc-provider",
   "engines": {
-    "node": ">=7"
+    "node": ">=7.6.0"
   },
   "license": "MIT",
   "keywords": [
