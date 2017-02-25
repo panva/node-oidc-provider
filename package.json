@@ -10,7 +10,7 @@
     "got": "^6.1.1",
     "http-errors": "^1.4.0",
     "kcors": "next",
-    "koa": "next",
+    "koa": "^2.0.1",
     "koa-compose": "next",
     "koa-router": "next",
     "lodash": "^4.5.0",
