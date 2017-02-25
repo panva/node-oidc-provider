@@ -27,6 +27,7 @@ parameters, loaded client or session.
 | registration_delete.error | (error, ctx) | ... whenever a handled error is encountered in the DELETE `registration` endpoint. |
 | userinfo.error | (error, ctx) | ... whenever a handled error is encountered in the `userinfo` endpoint. |
 | check_session.error | (error, ctx) | ... whenever a handled error is encountered in the `check_session` endpoint. |
+| end_session.success | (ctx) | ... with every success end session request. |
 | end_session.error | (error, ctx) | ... whenever a handled error is encountered in the `end_session` endpoint. |
 | webfinger.error | (error, ctx) | ... whenever a handled error is encountered in the `webfinger` endpoint. |
 | token.issued | (token) | ... whenever a token is issued. All tokens extending `BaseToken` emit this event. token can be one of `AccessToken`, `AuthorizationCode`, `ClientCredentials`, `RefreshToken`, `InitialAccessToken`, `RegistrationAccessToken`. |

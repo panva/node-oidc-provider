@@ -6,6 +6,7 @@ Yay for [SemVer](http://semver.org/).
 
 <!-- TOC START min:2 max:2 link:true update:true -->
   - [Version 2.x](#version-2x)
+  - [Version 1.13.0](#version-1130)
   - [Version 1.12.0](#version-1120)
   - [Version 1.11.0](#version-1110)
   - [Version 1.10.0](#version-1100)
@@ -26,6 +27,11 @@ Yay for [SemVer](http://semver.org/).
 
 ## Version 2.x
 - [DIFF](https://github.com/panva/node-oidc-provider/compare/master...next)
+
+## Version 1.13.0
+- [DIFF](https://github.com/panva/node-oidc-provider/compare/v1.12.1...v1.13.0)
+- added `end_session.success` event
+- added a warning for detected untrusted `x-forwarded-*` headers
 
 ## Version 1.12.0
 ### Version 1.12.1
