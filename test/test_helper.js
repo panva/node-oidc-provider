@@ -14,9 +14,9 @@ const { v4: uuid } = require('uuid');
 const Provider = require('../lib');
 const { Account, TestAdapter } = require('./models');
 const { expect } = require('chai');
-const { Cookie } = require('cookiejar');
 const { parse } = require('url');
 const path = require('path');
+const querystring = require('querystring');
 const koa = require('koa');
 const mount = require('koa-mount');
 const epochTime = require('../lib/helpers/epoch_time');
@@ -43,6 +43,13 @@ let base = 33000;
 function ephemeralPort() {
   base += 1;
   return base;
+}
+
+function jParseCookie(value) {
+  expect(value).to.exist;
+  const parsed = querystring.parse(value, '; ');
+  const key = Object.keys(parsed)[0];
+  return JSON.parse(parsed[key]);
 }
 
 module.exports = function testHelper(dir, basename, mountTo) {
@@ -135,17 +142,8 @@ module.exports = function testHelper(dir, basename, mountTo) {
         expect(query).to.be.null;
         expect(response).to.have.deep.property('headers.set-cookie').that.is.an('array');
 
-        let value = response.headers['set-cookie'][1];
-        // validate the interaction route has the cookie set
-        expect(value).to.exist;
-        let { value: interaction } = new Cookie(value);
-        interaction = JSON.parse(interaction);
-
-        value = response.headers['set-cookie'][2];
-        // validate the interaction route has the cookie set
-        expect(value).to.exist;
-        let { value: respond } = new Cookie(value);
-        respond = JSON.parse(respond);
+        const interaction = jParseCookie(response.headers['set-cookie'][1]);
+        const respond = jParseCookie(response.headers['set-cookie'][2]);
 
         for (const attr in this) { // eslint-disable-line
           if (this.hasOwnProperty(attr)) { // eslint-disable-line
@@ -159,10 +157,7 @@ module.exports = function testHelper(dir, basename, mountTo) {
 
   AuthorizationRequest.prototype.validateInteractionError = function (expectedError, expectedReason) {
     return (response) => {
-      const setCookie = response.headers['set-cookie'][1];
-      const { value: interaction } = new Cookie(setCookie);
-      const { interaction: { error, reason } } = JSON.parse(interaction);
-
+      const { interaction: { error, reason } } = jParseCookie(response.headers['set-cookie'][1]);
       expect(error).to.equal(expectedError);
       expect(reason).to.equal(expectedReason);
     };

@@ -24,7 +24,6 @@
   "devDependencies": {
     "chai": "^3.5.0",
     "co-mocha": "^1.1.2",
-    "cookiejar": "*",
     "eslint": "^3.0.0",
     "eslint-config-airbnb-base": "^11.0.0",
     "eslint-plugin-import": "^2.0.1",
