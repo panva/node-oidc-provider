@@ -205,5 +205,130 @@ describe('PKCE RFC7636', function () {
           expect(response.body).to.have.property('error', 'invalid_grant');
         });
     });
+
+    describe('when skipping client authentication', function () {
+      it('passes when auth is ommited but PKCE is provided (basic)', function* () {
+        const authCode = new this.provider.AuthorizationCode({
+          accountId: 'sub',
+          scope: 'openid',
+          clientId: 'client',
+          codeChallenge: 'plainFoobar',
+          codeChallengeMethod: 'plain',
+          redirectUri: 'myapp://localhost/cb',
+        });
+        const code = yield authCode.save();
+
+        return this.agent.post('/token')
+          .auth('client')
+          .type('form')
+          .send({
+            code,
+            grant_type: 'authorization_code',
+            redirect_uri: 'myapp://localhost/cb',
+            code_verifier: 'plainFoobar'
+          })
+          .expect(200);
+      });
+
+      it('passes when auth is ommited but PKCE is provided (post)', function* () {
+        const authCode = new this.provider.AuthorizationCode({
+          accountId: 'sub',
+          scope: 'openid',
+          clientId: 'clientPost',
+          codeChallenge: 'plainFoobar',
+          codeChallengeMethod: 'plain',
+          redirectUri: 'myapp://localhost/cb',
+        });
+        const code = yield authCode.save();
+
+        return this.agent.post('/token')
+          .type('form')
+          .send({
+            code,
+            client_id: 'clientPost',
+            grant_type: 'authorization_code',
+            redirect_uri: 'myapp://localhost/cb',
+            code_verifier: 'plainFoobar'
+          })
+          .expect(200);
+      });
+
+      it('checks presence of code_verifier param if code has codeChallenge', function* () {
+        const authCode = new this.provider.AuthorizationCode({
+          accountId: 'sub',
+          scope: 'openid',
+          clientId: 'client',
+          codeChallenge: 'plainFoobar',
+          codeChallengeMethod: 'plain',
+          redirectUri: 'myapp://localhost/cb',
+        });
+        const code = yield authCode.save();
+
+        return this.agent.post('/token')
+          .auth('client', 'secret')
+          .type('form')
+          .send({
+            code,
+            grant_type: 'authorization_code',
+            redirect_uri: 'myapp://localhost/cb',
+          })
+          .expect(400)
+          .expect((response) => {
+            expect(response.body).to.have.property('error', 'invalid_grant');
+          });
+      });
+
+      it('still checks value of code_verifier when method = plain', function* () {
+        const authCode = new this.provider.AuthorizationCode({
+          accountId: 'sub',
+          scope: 'openid',
+          clientId: 'client',
+          codeChallenge: 'plainFoobar',
+          codeChallengeMethod: 'plain',
+          redirectUri: 'myapp://localhost/cb',
+        });
+        const code = yield authCode.save();
+
+        return this.agent.post('/token')
+          .auth('client')
+          .type('form')
+          .send({
+            code,
+            grant_type: 'authorization_code',
+            redirect_uri: 'myapp://localhost/cb',
+            code_verifier: 'plainFoobars'
+          })
+          .expect(400)
+          .expect((response) => {
+            expect(response.body).to.have.property('error', 'invalid_grant');
+          });
+      });
+
+      it('still checks value of code_verifier when method = S256', function* () {
+        const authCode = new this.provider.AuthorizationCode({
+          accountId: 'sub',
+          scope: 'openid',
+          clientId: 'client',
+          codeChallenge: 'E9Melhoa2OwvFrEMTJguCHaoeK1t8URWbuGJSstw-cM',
+          codeChallengeMethod: 'S256',
+          redirectUri: 'myapp://localhost/cb',
+        });
+        const code = yield authCode.save();
+
+        return this.agent.post('/token')
+          .auth('client')
+          .type('form')
+          .send({
+            code,
+            grant_type: 'authorization_code',
+            redirect_uri: 'myapp://localhost/cb',
+            code_verifier: 'invalidE9Melhoa2OwvFrEMTJguCHaoeK1t8URWbuGJSstw-cM'
+          })
+          .expect(400)
+          .expect((response) => {
+            expect(response.body).to.have.property('error', 'invalid_grant');
+          });
+      });
+    });
   });
 });
