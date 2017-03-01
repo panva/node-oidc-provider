@@ -19,7 +19,7 @@ describe('OAuth 2.0 for Native Apps Best Current Practice features', function ()
           grant_types: ['implicit'],
           response_types: ['id_token'],
           token_endpoint_auth_method: 'none',
-          redirect_uris: ['com.example.app://localhost/op/callback', 'myapp://localhost/op/callback'],
+          redirect_uris: ['com.example.app://localhost/op/callback', 'myapp://localhost/op/callback', 'com.example.app:/op/callback', 'myapp:/op/callback'],
         });
       });
     });
