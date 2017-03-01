@@ -4,7 +4,6 @@
   "dependencies": {
     "base64url": "^2.0.0",
     "buffer-equals-constant": "^1.0.0",
-    "cookies": "^0.6.2",
     "debug": "^2.4.4",
     "ejs": "^2.5.2",
     "got": "^6.1.1",
@@ -15,7 +14,7 @@
     "koa-router": "^7.0.1",
     "lodash": "^4.5.0",
     "lru-cache": "^4.0.0",
-    "node-jose": "^0.9.0",
+    "node-jose": "~0.9.0",
     "oidc-token-hash": "^1.0.0",
     "raw-body": "^2.1.7",
     "uuid": "^3.0.0",
@@ -24,13 +23,12 @@
   "description": "OpenID Provider (OP) implementation for Node.js OpenID Connect servers.",
   "devDependencies": {
     "chai": "^3.5.0",
-    "cookiejar": "*",
     "eslint": "^3.0.0",
     "eslint-config-airbnb-base": "^11.0.0",
     "eslint-plugin-import": "^2.0.1",
     "istanbul": "next",
     "koa-body": "^2.0.0",
-    "koa-ejs": "^3.0.0",
+    "koa-ejs": "^4.0.0",
     "koa-mount": "^2.0.0",
     "koa-rewrite": "^2.1.0",
     "mocha": "^3.0.0",
@@ -73,7 +71,7 @@
     "lint-fix": "eslint lib example test --fix",
     "heroku-postbuild": "npm install mongodb"
   },
-  "version": "2.0.0-alpha.1.13.0",
+  "version": "2.0.0-alpha.1.14.0",
   "files": [
     "lib"
   ],

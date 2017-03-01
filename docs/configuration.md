@@ -283,6 +283,7 @@ deployment compact. The feature flags with their default values are
 | revocation | no |
 | oauthNativeApps | no |
 | sessionManagement | no |
+| pkce | yes |
 
 **Development quick-start interactions**  
 Development-ONLY out of the box interaction views bundled with the library allow you to skip the
@@ -465,6 +466,24 @@ configure registrationManagement as an object like so:
 const configuration = { features: { ..., registrationManagement: { rotateRegistrationAccessToken: true } } };
 ```
 
+**PKCE**  
+Enables [RFC7636 - Proof Key for Code Exchange by OAuth Public Clients][feature-pixy]
+```js
+const configuration = { features: { pkce: Boolean[true] } };
+```
+
+To have native clients using code or hybrid flow forced to use pkce configure pkce as an object
+like so:
+```js
+const configuration = { features: { pkce: { forcedForNative: true } } };
+```
+
+To allow native clients using that use pkce to skip token endpoint auth configure pkce as an object
+like so:
+```js
+const configuration = { features: { pkce: { skipClientAuth: true } } };
+```
+
 
 ## Custom Grant Types
 oidc-provider comes with the basic grants implemented, but you can register your own grant types,
@@ -635,6 +654,7 @@ Depending on your setup you should do the following
 [core-jwt-parameters-url]: http://openid.net/specs/openid-connect-core-1_0.html#JWTRequests
 [feature-aggregated-distributed-claims]: http://openid.net/specs/openid-connect-core-1_0.html#AggregatedDistributedClaims
 [feature-backchannel-logout]: http://openid.net/specs/openid-connect-backchannel-1_0-04.html
+[feature-pixy]: https://tools.ietf.org/html/rfc7636
 [feature-introspection]: https://tools.ietf.org/html/rfc7662
 [feature-registration-management]: https://tools.ietf.org/html/rfc7592
 [feature-registration]: http://openid.net/specs/openid-connect-registration-1_0.html

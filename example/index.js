@@ -9,7 +9,6 @@ const bodyParser = require('koa-body');
 const querystring = require('querystring');
 const Router = require('koa-router');
 const render = require('koa-ejs');
-const co = require('co');
 
 const port = process.env.PORT || 3000;
 
@@ -42,7 +41,6 @@ provider.initialize({
     layout: '_layout',
     root: path.join(__dirname, 'views'),
   });
-  provider.app.context.render = co.wrap(provider.app.context.render);
 
   provider.app.keys = ['some secret key', 'and also the old one'];
 

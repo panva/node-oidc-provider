@@ -314,7 +314,12 @@ describe('Client validations', function () {
     rejects(this.title, ['web-custom-scheme://some'], null, {
       application_type: 'web'
     });
-    rejects(this.title, ['http://localhost'], null, {
+    rejects(this.title, ['https://localhost'], null, {
+      application_type: 'web',
+      grant_types: ['implicit', 'authorization_code'],
+      response_types: ['code id_token'],
+    });
+    allows(this.title, ['http://localhost'], null, {
       application_type: 'web'
     });
     allows(this.title, ['http://localhost'], {

@@ -80,6 +80,55 @@ describe('PKCE RFC7636', function () {
         .expect(auth.validateError('invalid_request'))
         .expect(auth.validateErrorDescription('not supported value of code_challenge_method'));
     });
+
+    describe('forcedForNative flag', function () {
+      before(function () {
+        i(this.provider).configuration('features.pkce').forcedForNative = true;
+      });
+
+      after(function () {
+        i(this.provider).configuration('features.pkce').forcedForNative = false;
+      });
+
+      it('forces native clients using code flow to use pkce', function () {
+        const auth = new this.AuthorizationRequest({
+          response_type: 'code',
+          scope: 'openid',
+        });
+
+        return this.agent.get('/auth')
+          .query(auth)
+          .expect(auth.validatePresence(['error', 'error_description', 'state']))
+          .expect(auth.validateError('invalid_request'))
+          .expect(auth.validateErrorDescription('PKCE must be provided for native clients'));
+      });
+
+      it('forces native clients using hybrid flow to use pkce', function () {
+        const auth = new this.AuthorizationRequest({
+          response_type: 'code id_token',
+          scope: 'openid',
+        });
+
+        return this.agent.get('/auth')
+          .query(auth)
+          .expect(auth.validateFragment)
+          .expect(auth.validatePresence(['error', 'error_description', 'state']))
+          .expect(auth.validateError('invalid_request'))
+          .expect(auth.validateErrorDescription('PKCE must be provided for native clients'));
+      });
+
+      it('is not in effect for implicit flows', function () {
+        const auth = new this.AuthorizationRequest({
+          response_type: 'id_token',
+          scope: 'openid',
+        });
+
+        return this.agent.get('/auth')
+          .query(auth)
+          .expect(auth.validateFragment)
+          .expect(auth.validatePresence(['id_token', 'state']));
+      });
+    });
   });
 
   describe('token grant_type=authorization_code', function () {
@@ -204,6 +253,175 @@ describe('PKCE RFC7636', function () {
         .expect((response) => {
           expect(response.body).to.have.property('error', 'invalid_grant');
         });
+    });
+
+    describe('skipClientAuth flag', function () {
+      before(function () {
+        i(this.provider).configuration('features.pkce').skipClientAuth = true;
+      });
+
+      after(function () {
+        i(this.provider).configuration('features.pkce').skipClientAuth = false;
+      });
+
+      it('passes when auth is ommited but PKCE is provided (basic)', async function () {
+        const authCode = new this.provider.AuthorizationCode({
+          accountId: 'sub',
+          scope: 'openid offline_access',
+          clientId: 'client',
+          codeChallenge: 'plainFoobar',
+          codeChallengeMethod: 'plain',
+          redirectUri: 'myapp://localhost/cb',
+        });
+        const code = await authCode.save();
+
+        let token;
+        await this.agent.post('/token')
+          .auth('client')
+          .type('form')
+          .send({
+            code,
+            grant_type: 'authorization_code',
+            redirect_uri: 'myapp://localhost/cb',
+            code_verifier: 'plainFoobar'
+          })
+          .expect(200)
+          .expect((response) => {
+            token = response.body.refresh_token;
+            const jti = token.substring(0, 48);
+            const stored = this.TestAdapter.for('RefreshToken').syncFind(jti);
+            const payload = JSON.parse(base64url.decode(stored.payload));
+
+            expect(payload).to.have.property('onlyPKCE', true);
+          });
+
+        return this.agent.post('/token')
+          .auth('client')
+          .type('form')
+          .send({
+            refresh_token: token,
+            grant_type: 'refresh_token',
+          })
+          .expect(200);
+      });
+
+      it('passes when auth is ommited but PKCE is provided (post)', async function () {
+        const authCode = new this.provider.AuthorizationCode({
+          accountId: 'sub',
+          scope: 'openid offline_access',
+          clientId: 'clientPost',
+          codeChallenge: 'plainFoobar',
+          codeChallengeMethod: 'plain',
+          redirectUri: 'myapp://localhost/cb',
+        });
+        const code = await authCode.save();
+
+        let token;
+        await this.agent.post('/token')
+          .type('form')
+          .send({
+            code,
+            client_id: 'clientPost',
+            grant_type: 'authorization_code',
+            redirect_uri: 'myapp://localhost/cb',
+            code_verifier: 'plainFoobar'
+          })
+          .expect(200)
+          .expect((response) => {
+            token = response.body.refresh_token;
+            const jti = token.substring(0, 48);
+            const stored = this.TestAdapter.for('RefreshToken').syncFind(jti);
+            const payload = JSON.parse(base64url.decode(stored.payload));
+
+            expect(payload).to.have.property('onlyPKCE', true);
+          });
+
+        return this.agent.post('/token')
+          .type('form')
+          .send({
+            client_id: 'clientPost',
+            refresh_token: token,
+            grant_type: 'refresh_token',
+          })
+          .expect(200);
+      });
+
+      it('checks presence of code_verifier param if code has codeChallenge', async function () {
+        const authCode = new this.provider.AuthorizationCode({
+          accountId: 'sub',
+          scope: 'openid',
+          clientId: 'client',
+          codeChallenge: 'plainFoobar',
+          codeChallengeMethod: 'plain',
+          redirectUri: 'myapp://localhost/cb',
+        });
+        const code = await authCode.save();
+
+        return this.agent.post('/token')
+          .auth('client', 'secret')
+          .type('form')
+          .send({
+            code,
+            grant_type: 'authorization_code',
+            redirect_uri: 'myapp://localhost/cb',
+          })
+          .expect(400)
+          .expect((response) => {
+            expect(response.body).to.have.property('error', 'invalid_grant');
+          });
+      });
+
+      it('still checks value of code_verifier when method = plain', async function () {
+        const authCode = new this.provider.AuthorizationCode({
+          accountId: 'sub',
+          scope: 'openid',
+          clientId: 'client',
+          codeChallenge: 'plainFoobar',
+          codeChallengeMethod: 'plain',
+          redirectUri: 'myapp://localhost/cb',
+        });
+        const code = await authCode.save();
+
+        return this.agent.post('/token')
+          .auth('client')
+          .type('form')
+          .send({
+            code,
+            grant_type: 'authorization_code',
+            redirect_uri: 'myapp://localhost/cb',
+            code_verifier: 'plainFoobars'
+          })
+          .expect(400)
+          .expect((response) => {
+            expect(response.body).to.have.property('error', 'invalid_grant');
+          });
+      });
+
+      it('still checks value of code_verifier when method = S256', async function () {
+        const authCode = new this.provider.AuthorizationCode({
+          accountId: 'sub',
+          scope: 'openid',
+          clientId: 'client',
+          codeChallenge: 'E9Melhoa2OwvFrEMTJguCHaoeK1t8URWbuGJSstw-cM',
+          codeChallengeMethod: 'S256',
+          redirectUri: 'myapp://localhost/cb',
+        });
+        const code = await authCode.save();
+
+        return this.agent.post('/token')
+          .auth('client')
+          .type('form')
+          .send({
+            code,
+            grant_type: 'authorization_code',
+            redirect_uri: 'myapp://localhost/cb',
+            code_verifier: 'invalidE9Melhoa2OwvFrEMTJguCHaoeK1t8URWbuGJSstw-cM'
+          })
+          .expect(400)
+          .expect((response) => {
+            expect(response.body).to.have.property('error', 'invalid_grant');
+          });
+      });
     });
   });
 });

@@ -64,7 +64,7 @@ describe('request Uri features', function () {
             route,
             verb,
             auth: {
-              request_uri: `https://client.example.com/request#${Date.now()}`,
+              request_uri: `https://client.example.com/request#${Math.random()}`,
               scope: 'openid',
               client_id: 'client-with-HS-sig',
               response_type: 'code'
@@ -97,7 +97,7 @@ describe('request Uri features', function () {
             route,
             verb,
             auth: {
-              request_uri: `https://client.example.com/request#${Date.now()}`,
+              request_uri: `https://client.example.com/request#${Math.random()}`,
               scope: 'openid',
               client_id: 'client',
               response_type: 'code'
@@ -294,7 +294,7 @@ describe('request Uri features', function () {
           route,
           verb,
           auth: {
-            request_uri: `https://client.example.com/request#${Date.now()}`,
+            request_uri: `https://client.example.com/request#${Math.random()}`,
             scope: 'openid',
             client_id: 'client',
             response_type: 'code'
@@ -323,7 +323,7 @@ describe('request Uri features', function () {
           route,
           verb,
           auth: {
-            request_uri: `https://client.example.com/request#${Date.now()}`,
+            request_uri: `https://client.example.com/request#${Math.random()}`,
             scope: 'openid',
             client_id: 'client',
             response_type: 'code'
@@ -355,7 +355,7 @@ describe('request Uri features', function () {
             route,
             verb,
             auth: {
-              request_uri: `https://client.example.com/request#${Date.now()}`,
+              request_uri: `https://client.example.com/request#${Math.random()}`,
               scope: 'openid',
               client_id: 'client',
               response_type: 'code'
@@ -390,7 +390,7 @@ describe('request Uri features', function () {
             route,
             verb,
             auth: {
-              request_uri: `https://client.example.com/request#${Date.now()}`,
+              request_uri: `https://client.example.com/request#${Math.random()}`,
               scope: 'openid',
               client_id: 'client',
               response_type: 'code'
@@ -424,7 +424,7 @@ describe('request Uri features', function () {
             route,
             verb,
             auth: {
-              request_uri: `https://client.example.com/request#${Date.now()}`,
+              request_uri: `https://client.example.com/request#${Math.random()}`,
               scope: 'openid',
               client_id: 'client',
               response_type: 'code'
@@ -458,7 +458,7 @@ describe('request Uri features', function () {
             route,
             verb,
             auth: {
-              request_uri: `https://client.example.com/request#${Date.now()}`,
+              request_uri: `https://client.example.com/request#${Math.random()}`,
               scope: 'openid',
               client_id: 'client',
               response_type: 'code'
@@ -487,7 +487,7 @@ describe('request Uri features', function () {
           route,
           verb,
           auth: {
-            request_uri: `https://client.example.com/request#${Date.now()}`,
+            request_uri: `https://client.example.com/request#${Math.random()}`,
             scope: 'openid',
             client_id: 'client',
             response_type: 'code'
@@ -521,7 +521,7 @@ describe('request Uri features', function () {
             route,
             verb,
             auth: {
-              request_uri: `https://client.example.com/request#${Date.now()}`,
+              request_uri: `https://client.example.com/request#${Math.random()}`,
               scope: 'openid',
               client_id: 'client-with-HS-sig',
               response_type: 'code'
@@ -557,7 +557,7 @@ describe('request Uri features', function () {
             route,
             verb,
             auth: {
-              request_uri: `https://client.example.com/request#${Date.now()}`,
+              request_uri: `https://client.example.com/request#${Math.random()}`,
               scope: 'openid',
               client_id: 'client',
               response_type: 'code'

@@ -6,6 +6,7 @@ Yay for [SemVer](http://semver.org/).
 
 <!-- TOC START min:2 max:2 link:true update:true -->
   - [Version 2.x](#version-2x)
+  - [Version 1.14.0](#version-1140)
   - [Version 1.13.0](#version-1130)
   - [Version 1.12.0](#version-1120)
   - [Version 1.11.0](#version-1110)
@@ -27,6 +28,16 @@ Yay for [SemVer](http://semver.org/).
 
 ## Version 2.x
 - [DIFF](https://github.com/panva/node-oidc-provider/compare/master...next)
+
+## Version 1.14.0
+- [DIFF](https://github.com/panva/node-oidc-provider/compare/v1.13.0...v1.14.0)
+- backwards compatible default-on pkce feature flag added so now pkce support can be disabled
+- forcedForNative flag for pkce added to force native clients using hybrid or code flow to use pkce
+- skipClientAuth flag for pkce added to allow skipping basic or post client auth for `authorization_code`
+  and `refresh_token` grants (to be in line with default AppAuth sdk behavior)
+- loosened coe flow only web clients redirect_uris restriction
+- removed cookies dependency
+- locked dependencies below semver >= 1.0.0 with ~ instead of ^
 
 ## Version 1.13.0
 - [DIFF](https://github.com/panva/node-oidc-provider/compare/v1.12.1...v1.13.0)
