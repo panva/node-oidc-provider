@@ -267,7 +267,7 @@ describe('PKCE RFC7636', function () {
       it('passes when auth is ommited but PKCE is provided (basic)', function* () {
         const authCode = new this.provider.AuthorizationCode({
           accountId: 'sub',
-          scope: 'openid',
+          scope: 'openid offline_access',
           clientId: 'client',
           codeChallenge: 'plainFoobar',
           codeChallengeMethod: 'plain',
@@ -275,7 +275,8 @@ describe('PKCE RFC7636', function () {
         });
         const code = yield authCode.save();
 
-        return this.agent.post('/token')
+        let token;
+        yield this.agent.post('/token')
           .auth('client')
           .type('form')
           .send({
@@ -284,13 +285,30 @@ describe('PKCE RFC7636', function () {
             redirect_uri: 'myapp://localhost/cb',
             code_verifier: 'plainFoobar'
           })
+          .expect(200)
+          .expect((response) => {
+            token = response.body.refresh_token;
+            const jti = token.substring(0, 48);
+            const stored = this.TestAdapter.for('RefreshToken').syncFind(jti);
+            const payload = JSON.parse(base64url.decode(stored.payload));
+
+            expect(payload).to.have.property('onlyPKCE', true);
+          });
+
+        return this.agent.post('/token')
+          .auth('client')
+          .type('form')
+          .send({
+            refresh_token: token,
+            grant_type: 'refresh_token',
+          })
           .expect(200);
       });
 
       it('passes when auth is ommited but PKCE is provided (post)', function* () {
         const authCode = new this.provider.AuthorizationCode({
           accountId: 'sub',
-          scope: 'openid',
+          scope: 'openid offline_access',
           clientId: 'clientPost',
           codeChallenge: 'plainFoobar',
           codeChallengeMethod: 'plain',
@@ -298,7 +316,8 @@ describe('PKCE RFC7636', function () {
         });
         const code = yield authCode.save();
 
-        return this.agent.post('/token')
+        let token;
+        yield this.agent.post('/token')
           .type('form')
           .send({
             code,
@@ -306,6 +325,23 @@ describe('PKCE RFC7636', function () {
             grant_type: 'authorization_code',
             redirect_uri: 'myapp://localhost/cb',
             code_verifier: 'plainFoobar'
+          })
+          .expect(200)
+          .expect((response) => {
+            token = response.body.refresh_token;
+            const jti = token.substring(0, 48);
+            const stored = this.TestAdapter.for('RefreshToken').syncFind(jti);
+            const payload = JSON.parse(base64url.decode(stored.payload));
+
+            expect(payload).to.have.property('onlyPKCE', true);
+          });
+
+        return this.agent.post('/token')
+          .type('form')
+          .send({
+            client_id: 'clientPost',
+            refresh_token: token,
+            grant_type: 'refresh_token',
           })
           .expect(200);
       });

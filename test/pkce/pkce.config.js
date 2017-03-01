@@ -19,6 +19,7 @@ module.exports = {
     application_type: 'native',
     client_id: 'client',
     client_secret: 'secret',
+    grant_types: ['authorization_code', 'refresh_token'],
     redirect_uris: ['myapp://localhost/cb'],
   }],
 };
