@@ -72,7 +72,7 @@
     "lint-fix": "eslint lib example test --fix",
     "heroku-postbuild": "npm install mongodb"
   },
-  "version": "1.13.0",
+  "version": "1.14.0",
   "files": [
     "lib"
   ]
