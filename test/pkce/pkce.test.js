@@ -80,6 +80,55 @@ describe('PKCE RFC7636', function () {
         .expect(auth.validateError('invalid_request'))
         .expect(auth.validateErrorDescription('not supported value of code_challenge_method'));
     });
+
+    describe('forcedForNative flag', function () {
+      before(function () {
+        i(this.provider).configuration('features.pkce').forcedForNative = true;
+      });
+
+      after(function () {
+        i(this.provider).configuration('features.pkce').forcedForNative = false;
+      });
+
+      it('forces native clients using code flow to use pkce', function () {
+        const auth = new this.AuthorizationRequest({
+          response_type: 'code',
+          scope: 'openid',
+        });
+
+        return this.agent.get('/auth')
+          .query(auth)
+          .expect(auth.validatePresence(['error', 'error_description', 'state']))
+          .expect(auth.validateError('invalid_request'))
+          .expect(auth.validateErrorDescription('PKCE must be provided for native clients'));
+      });
+
+      it('forces native clients using hybrid flow to use pkce', function () {
+        const auth = new this.AuthorizationRequest({
+          response_type: 'code id_token',
+          scope: 'openid',
+        });
+
+        return this.agent.get('/auth')
+          .query(auth)
+          .expect(auth.validateFragment)
+          .expect(auth.validatePresence(['error', 'error_description', 'state']))
+          .expect(auth.validateError('invalid_request'))
+          .expect(auth.validateErrorDescription('PKCE must be provided for native clients'));
+      });
+
+      it('is not in effect for implicit flows', function () {
+        const auth = new this.AuthorizationRequest({
+          response_type: 'id_token',
+          scope: 'openid',
+        });
+
+        return this.agent.get('/auth')
+          .query(auth)
+          .expect(auth.validateFragment)
+          .expect(auth.validatePresence(['id_token', 'state']));
+      });
+    });
   });
 
   describe('token grant_type=authorization_code', function () {
@@ -206,7 +255,15 @@ describe('PKCE RFC7636', function () {
         });
     });
 
-    describe('when skipping client authentication', function () {
+    describe('skipClientAuth flag', function () {
+      before(function () {
+        i(this.provider).configuration('features.pkce').skipClientAuth = true;
+      });
+
+      after(function () {
+        i(this.provider).configuration('features.pkce').skipClientAuth = false;
+      });
+
       it('passes when auth is ommited but PKCE is provided (basic)', function* () {
         const authCode = new this.provider.AuthorizationCode({
           accountId: 'sub',
