@@ -270,6 +270,9 @@ module.exports = function testHelper(dir, basename, mountTo) {
         agent = supertest(server);
         this.agent = agent;
       }, reject).then(resolve);
+    }).catch((err) => {
+      console.error(err); // eslint-disable-line no-console
+      throw err;
     });
   };
 };
