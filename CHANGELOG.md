@@ -27,6 +27,12 @@ Yay for [SemVer](http://semver.org/).
 <!-- TOC END -->
 
 ## Version 1.15.0
+### Version 1.15.1
+- [DIFF](https://github.com/panva/node-oidc-provider/compare/v1.15.0...v1.15.1)
+- fixed full logout sessions still being upserted after their removal
+- fixed partial logout sessions still having the logout details
+
+### Version 1.15.0
 - [DIFF](https://github.com/panva/node-oidc-provider/compare/v1.14.0...v1.15.0)
 - fix: 'none' token_endpoint_auth_method clients can still use code flow with PKCE.
 - Native Apps BCP draft updated from draft07 to draft09
