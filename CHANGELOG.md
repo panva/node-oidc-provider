@@ -27,6 +27,10 @@ Yay for [SemVer](http://semver.org/).
 <!-- TOC END -->
 
 ## Version 1.15.0
+### Version 1.15.2
+- [DIFF](https://github.com/panva/node-oidc-provider/compare/v1.15.1...v1.15.2)
+- bumped minimum node-jose version to cover http://blog.intothesymmetry.com/2017/03/critical-vulnerability-in-json-web.html
+
 ### Version 1.15.1
 - [DIFF](https://github.com/panva/node-oidc-provider/compare/v1.15.0...v1.15.1)
 - fixed full logout sessions still being upserted after their removal
