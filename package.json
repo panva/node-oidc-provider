@@ -14,7 +14,7 @@
     "koa-router": "^5.2.3",
     "lodash": "^4.5.0",
     "lru-cache": "^4.0.0",
-    "node-jose": "~0.9.0",
+    "node-jose": "~0.9.3",
     "oidc-token-hash": "^1.0.0",
     "raw-body": "^2.1.7",
     "uuid": "^3.0.0",
