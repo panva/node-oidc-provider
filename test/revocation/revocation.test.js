@@ -28,7 +28,7 @@ describe('revocation features', function () {
         scope: 'scope',
       });
 
-      const stub = sinon.stub(this.provider.AccessToken.prototype, 'destroy', () => {
+      const stub = sinon.stub(this.provider.AccessToken.prototype, 'destroy').callsFake(() => {
         return Promise.resolve();
       });
 
@@ -56,7 +56,7 @@ describe('revocation features', function () {
         scope: 'scope',
       });
 
-      const stub = sinon.stub(this.provider.AccessToken.prototype, 'destroy', () => {
+      const stub = sinon.stub(this.provider.AccessToken.prototype, 'destroy').callsFake(() => {
         return Promise.resolve();
       });
 
@@ -84,7 +84,7 @@ describe('revocation features', function () {
         scope: 'scope',
       });
 
-      const stub = sinon.stub(this.provider.AccessToken.prototype, 'destroy', () => {
+      const stub = sinon.stub(this.provider.AccessToken.prototype, 'destroy').callsFake(() => {
         return Promise.resolve();
       });
 
@@ -112,7 +112,7 @@ describe('revocation features', function () {
         scope: 'scope',
       });
 
-      const stub = sinon.stub(this.provider.AccessToken.prototype, 'destroy', () => {
+      const stub = sinon.stub(this.provider.AccessToken.prototype, 'destroy').callsFake(() => {
         return Promise.resolve();
       });
 
@@ -165,7 +165,7 @@ describe('revocation features', function () {
         scope: 'scope',
       });
 
-      const stub = sinon.stub(this.provider.RefreshToken.prototype, 'destroy', () => {
+      const stub = sinon.stub(this.provider.RefreshToken.prototype, 'destroy').callsFake(() => {
         return Promise.resolve();
       });
 
@@ -193,7 +193,7 @@ describe('revocation features', function () {
         scope: 'scope',
       });
 
-      const stub = sinon.stub(this.provider.RefreshToken.prototype, 'destroy', () => {
+      const stub = sinon.stub(this.provider.RefreshToken.prototype, 'destroy').callsFake(() => {
         return Promise.resolve();
       });
 
@@ -221,7 +221,7 @@ describe('revocation features', function () {
         scope: 'scope',
       });
 
-      const stub = sinon.stub(this.provider.RefreshToken.prototype, 'destroy', () => {
+      const stub = sinon.stub(this.provider.RefreshToken.prototype, 'destroy').callsFake(() => {
         return Promise.resolve();
       });
 
@@ -249,7 +249,7 @@ describe('revocation features', function () {
         scope: 'scope',
       });
 
-      const stub = sinon.stub(this.provider.RefreshToken.prototype, 'destroy', () => {
+      const stub = sinon.stub(this.provider.RefreshToken.prototype, 'destroy').callsFake(() => {
         return Promise.resolve();
       });
 
@@ -275,7 +275,7 @@ describe('revocation features', function () {
         clientId: 'client'
       });
 
-      const stub = sinon.stub(this.provider.ClientCredentials.prototype, 'destroy', () => {
+      const stub = sinon.stub(this.provider.ClientCredentials.prototype, 'destroy').callsFake(() => {
         return Promise.resolve();
       });
 
@@ -301,7 +301,7 @@ describe('revocation features', function () {
         clientId: 'client'
       });
 
-      const stub = sinon.stub(this.provider.ClientCredentials.prototype, 'destroy', () => {
+      const stub = sinon.stub(this.provider.ClientCredentials.prototype, 'destroy').callsFake(() => {
         return Promise.resolve();
       });
 
@@ -327,7 +327,7 @@ describe('revocation features', function () {
         clientId: 'client'
       });
 
-      const stub = sinon.stub(this.provider.ClientCredentials.prototype, 'destroy', () => {
+      const stub = sinon.stub(this.provider.ClientCredentials.prototype, 'destroy').callsFake(() => {
         return Promise.resolve();
       });
 
@@ -353,7 +353,7 @@ describe('revocation features', function () {
         clientId: 'client'
       });
 
-      const stub = sinon.stub(this.provider.ClientCredentials.prototype, 'destroy', () => {
+      const stub = sinon.stub(this.provider.ClientCredentials.prototype, 'destroy').callsFake(() => {
         return Promise.resolve();
       });
 

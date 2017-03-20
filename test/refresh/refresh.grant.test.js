@@ -168,7 +168,7 @@ describe('grant_type=refresh_token', function () {
 
       it('validates account is still there', function () {
         const rt = this.rt;
-        sinon.stub(this.provider.Account, 'findById', () => {
+        sinon.stub(this.provider.Account, 'findById').callsFake(() => {
           return Promise.resolve();
         });
 

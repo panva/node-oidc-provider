@@ -35,7 +35,7 @@
     "mocha": "^3.0.0",
     "moment": "^2.14.1",
     "nock": "^9.0.2",
-    "sinon": "^1.17.3",
+    "sinon": "^2.1.0",
     "supertest": "^3.0.0"
   },
   "main": "lib/index.js",
