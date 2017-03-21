@@ -9,7 +9,7 @@ describe('provider instance', function () {
     /* eslint-disable no-console */
     before(function () {
       delete process.env.NODE_ENV;
-      sinon.stub(console, 'info', () => {});
+      sinon.stub(console, 'info').callsFake(() => {});
     });
     after(function () {
       process.env.NODE_ENV = 'test';

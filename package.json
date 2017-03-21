@@ -14,7 +14,7 @@
     "koa-router": "^7.0.1",
     "lodash": "^4.5.0",
     "lru-cache": "^4.0.0",
-    "node-jose": "~0.9.0",
+    "node-jose": "~0.9.3",
     "oidc-token-hash": "^1.0.0",
     "raw-body": "^2.1.7",
     "uuid": "^3.0.0",
@@ -34,7 +34,7 @@
     "mocha": "^3.0.0",
     "moment": "^2.14.1",
     "nock": "^9.0.2",
-    "sinon": "^1.17.3",
+    "sinon": "^2.1.0",
     "supertest": "^3.0.0"
   },
   "main": "lib/index.js",
@@ -71,7 +71,7 @@
     "lint-fix": "eslint lib example test --fix",
     "heroku-postbuild": "npm install mongodb"
   },
-  "version": "2.0.0-alpha.1.14.0",
+  "version": "2.0.0-alpha.1.15.2",
   "files": [
     "lib"
   ],

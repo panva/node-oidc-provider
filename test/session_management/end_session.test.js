@@ -17,6 +17,9 @@ describe('[session_management]', function () {
     if (this.TestAdapter.for('Session').destroy.restore) {
       this.TestAdapter.for('Session').destroy.restore();
     }
+    if (this.TestAdapter.for('Session').upsert.restore) {
+      this.TestAdapter.for('Session').upsert.restore();
+    }
   });
 
   beforeEach(function () {
@@ -180,6 +183,7 @@ describe('[session_management]', function () {
       const sessionId = this.getSessionId();
       const adapter = this.TestAdapter.for('Session');
       sinon.spy(adapter, 'destroy');
+      sinon.spy(adapter, 'upsert');
 
       this.getSession().logout = { secret: '123', postLogoutRedirectUri: '/', clientId: 'client' };
 
@@ -190,6 +194,7 @@ describe('[session_management]', function () {
         .expect((response) => {
           expect(response.headers['set-cookie']).to.contain('_state.client=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT; httponly');
           expect(adapter.destroy.called).to.be.true;
+          expect(adapter.upsert.called).not.to.be.true;
           expect(adapter.destroy.withArgs(sessionId).calledOnce).to.be.true;
         });
     });
@@ -197,7 +202,7 @@ describe('[session_management]', function () {
     it('only clears one clients session if user doesnt wanna log out', function () {
       const adapter = this.TestAdapter.for('Session');
       sinon.spy(adapter, 'destroy');
-      const session = this.getSession();
+      let session = this.getSession();
       session.logout = { secret: '123', postLogoutRedirectUri: '/', clientId: 'client' };
 
       expect(session.authorizations.client).to.be.ok;
@@ -207,8 +212,10 @@ describe('[session_management]', function () {
         .type('form')
         .expect(302)
         .expect((response) => {
+          session = this.getSession();
           expect(response.headers['set-cookie']).to.contain('_state.client=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT; httponly');
           expect(session.authorizations.client).to.be.undefined;
+          expect(session.logout).to.be.undefined;
           expect(adapter.destroy.called).to.be.false;
         });
     });

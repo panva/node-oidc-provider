@@ -72,7 +72,7 @@ describe('grant_type=authorization_code', function () {
     });
 
     it('handles internal token signature validation', function () {
-      sinon.stub(this.provider.AuthorizationCode, 'fromJWT', () => {
+      sinon.stub(this.provider.AuthorizationCode, 'fromJWT').callsFake(() => {
         return Promise.reject(new Error());
       });
 
@@ -220,7 +220,7 @@ describe('grant_type=authorization_code', function () {
     });
 
     it('validates account is still there', function () {
-      sinon.stub(this.provider.Account, 'findById', () => {
+      sinon.stub(this.provider.Account, 'findById').callsFake(() => {
         return Promise.resolve();
       });
 

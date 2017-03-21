@@ -6,6 +6,7 @@ Yay for [SemVer](http://semver.org/).
 
 <!-- TOC START min:2 max:2 link:true update:true -->
   - [Version 2.x](#version-2x)
+  - [Version 1.15.0](#version-1150)
   - [Version 1.14.0](#version-1140)
   - [Version 1.13.0](#version-1130)
   - [Version 1.12.0](#version-1120)
@@ -29,13 +30,34 @@ Yay for [SemVer](http://semver.org/).
 ## Version 2.x
 - [DIFF](https://github.com/panva/node-oidc-provider/compare/master...next)
 
+## Version 1.15.0
+### Version 1.15.2
+- [DIFF](https://github.com/panva/node-oidc-provider/compare/v1.15.1...v1.15.2)
+- bumped minimum node-jose version to cover http://blog.intothesymmetry.com/2017/03/critical-vulnerability-in-json-web.html
+
+### Version 1.15.1
+- [DIFF](https://github.com/panva/node-oidc-provider/compare/v1.15.0...v1.15.1)
+- fixed full logout sessions still being upserted after their removal
+- fixed partial logout sessions still having the logout details
+
+### Version 1.15.0
+- [DIFF](https://github.com/panva/node-oidc-provider/compare/v1.14.0...v1.15.0)
+- fix: 'none' token_endpoint_auth_method clients can still use code flow with PKCE.
+- Native Apps BCP draft updated from draft07 to draft09
+  - custom uri schemes not containing a period character (".") will be rejected
+
+  > For Custom URI scheme based redirects, authorization servers SHOULD
+  > enforce the requirement in Section 7.1 that clients use reverse
+  > domain name based schemes.  At a minimum, any scheme that doesn't
+  > contain a period character ("."), SHOULD be rejected.
+
 ## Version 1.14.0
 - [DIFF](https://github.com/panva/node-oidc-provider/compare/v1.13.0...v1.14.0)
 - backwards compatible default-on pkce feature flag added so now pkce support can be disabled
 - forcedForNative flag for pkce added to force native clients using hybrid or code flow to use pkce
 - skipClientAuth flag for pkce added to allow skipping basic or post client auth for `authorization_code`
   and `refresh_token` grants (to be in line with default AppAuth sdk behavior)
-- loosened coe flow only web clients redirect_uris restriction
+- loosened code flow only web clients redirect_uris restriction
 - removed cookies dependency
 - locked dependencies below semver >= 1.0.0 with ~ instead of ^
 

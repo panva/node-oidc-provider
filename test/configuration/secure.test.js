@@ -7,7 +7,7 @@ const bootstrap = require('../test_helper');
 describe('x-forwarded-proto trust, detection and warnings', function () {
   /* eslint-disable no-console */
   beforeEach(function () {
-    sinon.stub(console, 'warn', () => {});
+    sinon.stub(console, 'warn').callsFake(() => {});
   });
 
   afterEach(function () {

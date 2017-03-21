@@ -198,7 +198,7 @@ describe('Client validations', function () {
 
     allows(this.title, 'web');
     allows(this.title, 'native', {
-      redirect_uris: ['myapp://localhost/redirect']
+      redirect_uris: ['com.example.myapp:/localhost/redirect']
     });
     rejects(this.title, 'foobar', 'application_type must be one of [native,web]');
   });
