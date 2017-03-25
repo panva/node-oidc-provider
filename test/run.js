@@ -1,5 +1,3 @@
-'use strict';
-
 /* eslint-disable no-console */
 
 const jose = require('node-jose');

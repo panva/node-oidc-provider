@@ -1,5 +1,3 @@
-'use strict';
-
 const config = require('../default.config');
 const clientKey = require('../client.sig.key');
 

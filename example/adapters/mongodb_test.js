@@ -1,5 +1,3 @@
-'use strict';
-
 // MONGODB_URI=mongodb://localhost:27017/test node example/adapters/mongodb_test.js
 
 /* eslint-disable no-console */

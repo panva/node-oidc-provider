@@ -1,5 +1,3 @@
-'use strict';
-
 const bootstrap = require('../test_helper');
 const _ = require('lodash');
 const { expect } = require('chai');

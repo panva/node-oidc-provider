@@ -1,5 +1,3 @@
-'use strict';
-
 /* eslint-disable no-underscore-dangle */
 
 process.env.NODE_ENV = process.env.NODE_ENV || 'test';
@@ -150,7 +148,7 @@ module.exports = function testHelper(dir, basename, mountTo) {
     });
   }
 
-  AuthorizationRequest.prototype.validateInteractionError = function (expectedError, expectedReason) {
+  AuthorizationRequest.prototype.validateInteractionError = (expectedError, expectedReason) => {
     return (response) => {
       const { interaction: { error, reason } } = jParseCookie(response.headers['set-cookie'][1]);
       expect(error).to.equal(expectedError);

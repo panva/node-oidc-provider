@@ -1,5 +1,3 @@
-'use strict';
-
 require('../test_helper');
 const Provider = require('../../lib');
 const { expect } = require('chai');

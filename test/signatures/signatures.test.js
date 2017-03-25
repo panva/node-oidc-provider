@@ -1,5 +1,3 @@
-'use strict';
-
 const bootstrap = require('../test_helper');
 const { parse: parseLocation } = require('url');
 const { v4: uuid } = require('uuid');

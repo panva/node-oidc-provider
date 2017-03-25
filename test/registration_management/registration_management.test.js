@@ -1,5 +1,3 @@
-'use strict';
-
 const _ = require('lodash');
 const bootstrap = require('../test_helper');
 const sinon = require('sinon');

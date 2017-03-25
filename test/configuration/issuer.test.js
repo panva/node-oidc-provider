@@ -1,5 +1,3 @@
-'use strict';
-
 /* eslint-disable no-new */
 
 const assert = require('assert');

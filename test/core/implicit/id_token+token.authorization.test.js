@@ -1,5 +1,3 @@
-'use strict';
-
 const bootstrap = require('../../test_helper');
 const url = require('url');
 const sinon = require('sinon');

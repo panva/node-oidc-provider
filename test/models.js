@@ -1,5 +1,3 @@
-'use strict';
-
 const store = new Map();
 const epochTime = require('../lib/helpers/epoch_time');
 

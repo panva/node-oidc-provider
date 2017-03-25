@@ -1,5 +1,3 @@
-'use strict';
-
 const bootstrap = require('../test_helper');
 const sinon = require('sinon');
 const { decode: base64url } = require('base64url');
@@ -16,10 +14,6 @@ function errorDetail(spy) {
 
 describe('grant_type=refresh_token', function () {
   before(bootstrap(__dirname)); // agent, provider, this.TestAdapter
-
-  describe('extends authorization_code', function () {
-    // TODO: it('omits to issue a refresh_token if the client cannot use it (misses allowed grant)');
-  });
 
   context('with real tokens', function () {
     before(function () { return this.login(); });

@@ -1,5 +1,3 @@
-'use strict';
-
 const Redis = require('ioredis'); // eslint-disable-line import/no-unresolved
 const _ = require('lodash');
 

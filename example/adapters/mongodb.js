@@ -1,5 +1,3 @@
-'use strict';
-
 const EventEmitter = require('events').EventEmitter;
 const Mongo = require('mongodb').MongoClient; // eslint-disable-line import/no-unresolved
 const _ = require('lodash');

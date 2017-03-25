@@ -11,7 +11,6 @@
     "comma-dangle": "off",
     "arrow-body-style": "off",
     "func-names": "off",
-    "max-len": "off",
     "no-unused-expressions": "off",
     "prefer-arrow-callback": "off"
   }

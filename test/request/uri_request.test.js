@@ -1,5 +1,3 @@
-'use strict';
-
 const bootstrap = require('../test_helper');
 const RequestUriCache = require('../../lib/helpers/request_uri_cache');
 const JWT = require('../../lib/helpers/jwt');
@@ -25,7 +23,9 @@ describe('request Uri features', function () {
 
     context('requireRequestUriRegistration', function () {
       before(function () {
-        i(this.provider).configuration().features.requestUri = { requireRequestUriRegistration: true };
+        i(this.provider).configuration().features.requestUri = {
+          requireRequestUriRegistration: true,
+        };
       });
 
       after(function () {

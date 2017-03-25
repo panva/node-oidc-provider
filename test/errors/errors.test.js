@@ -1,5 +1,3 @@
-'use strict';
-
 const bootstrap = require('../test_helper');
 
 describe('default error behavior', function () {

@@ -1,5 +1,3 @@
-'use strict';
-
 const keystore = require('node-jose').JWK.createKeyStore();
 const moment = require('moment');
 const nock = require('nock');

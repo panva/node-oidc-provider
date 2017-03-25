@@ -1,5 +1,3 @@
-'use strict';
-
 const Provider = require('../../lib');
 const bootstrap = require('../test_helper');
 const clientKey = require('../client.sig.key');

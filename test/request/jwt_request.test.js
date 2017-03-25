@@ -1,5 +1,3 @@
-'use strict';
-
 const bootstrap = require('../test_helper');
 const JWT = require('../../lib/helpers/jwt');
 const sinon = require('sinon');

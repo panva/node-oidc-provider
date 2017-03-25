@@ -1,5 +1,3 @@
-'use strict';
-
 const Provider = require('../lib');
 const express = require('express'); // eslint-disable-line import/no-unresolved
 

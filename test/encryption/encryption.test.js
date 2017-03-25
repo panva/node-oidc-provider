@@ -1,5 +1,3 @@
-'use strict';
-
 const bootstrap = require('../test_helper');
 const { expect } = require('chai');
 const { parse } = require('url');

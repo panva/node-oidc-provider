@@ -1,5 +1,3 @@
-'use strict';
-
 const bootstrap = require('../test_helper');
 const sinon = require('sinon');
 const { expect } = require('chai');

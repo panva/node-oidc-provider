@@ -1,5 +1,3 @@
-'use strict';
-
 const store = new Map();
 const logins = new Map();
 const uuid = require('uuid');

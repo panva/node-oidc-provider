@@ -1,5 +1,3 @@
-'use strict';
-
 // node example/adapters/redis_test.js
 
 /* eslint-disable no-console */

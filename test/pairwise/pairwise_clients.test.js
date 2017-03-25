@@ -1,5 +1,3 @@
-'use strict';
-
 const bootstrap = require('../test_helper');
 const getMask = require('../../lib/helpers/claims');
 const _ = require('lodash');

@@ -1,5 +1,3 @@
-'use strict';
-
 const base64url = require('base64url');
 const bootstrap = require('../test_helper');
 const { parse: parseUrl } = require('url');

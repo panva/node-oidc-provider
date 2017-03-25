@@ -1,5 +1,3 @@
-'use strict';
-
 const Provider = require('../../lib');
 const Koa = require('koa');
 const http = require('http');

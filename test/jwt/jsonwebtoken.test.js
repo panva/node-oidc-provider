@@ -1,5 +1,3 @@
-'use strict';
-
 const JWT = require('../../lib/helpers/jwt');
 const { expect } = require('chai');
 const jose = require('node-jose');

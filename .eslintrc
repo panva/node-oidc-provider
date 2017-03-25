@@ -1,7 +1,6 @@
 {
   "extends": "airbnb-base",
   "rules": {
-    "strict": "off",
     "no-param-reassign": ["error", { "props": true, "ignorePropertyModificationsFor": ["ctx"] }]
   }
 }

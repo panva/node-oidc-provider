@@ -1,5 +1,3 @@
-'use strict';
-
 /* eslint-disable no-underscore-dangle */
 
 const bootstrap = require('../test_helper');
