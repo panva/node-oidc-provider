@@ -12,17 +12,19 @@ describe('pathFor related behaviors', function () {
     });
   });
 
-  it('interactionUrl resolves to /interaction/uuid when devInteractions is disabled', function () {
+  it('interactionUrl resolves to /interaction/uuid when devInteractions is disabled', async function () {
     const provider = new Provider('http://localhost', {
       features: {
         devInteractions: false,
       },
     });
 
-    expect(i(provider).configuration('interactionUrl').call({
+    const interactionUrl = await i(provider).configuration('interactionUrl')({
       oidc: {
         uuid: 'foobar',
       }
-    })).to.equal('/interaction/foobar');
+    });
+
+    expect(interactionUrl).to.equal('/interaction/foobar');
   });
 });
