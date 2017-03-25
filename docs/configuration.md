@@ -122,7 +122,7 @@ See [Certificates, Keystores, Token Integrity](/docs/keystores.md).
 
 
 ## Configuring available claims
-oidc-provider pushes by default `acr, auth_time, iss, sub` claims to the id token and userinfo.
+oidc-provider pushes by default `auth_time, iss, sub` claims to the id token and userinfo.
 The `claims` configuration parameter can be used to define which claims fall under which scope
 as well as to expose additional claims that are available to RPs via the claims authorization
 parameter. The configuration value uses the following scheme:
@@ -375,7 +375,7 @@ const configuration = { features: { requestUri: { requireRequestUriRegistration:
 **Introspection endpoint**  
 Enables the use of Introspection endpoint as described in [RFC7662][feature-introspection] for
 tokens of type AccessToken, ClientCredentials and RefreshToken. When enabled the
-token_introspection_endpoint property of the discovery endpoint is published, otherwise the property
+introspection_endpoint property of the discovery endpoint is published, otherwise the property
 is not sent. The use of this endpoint is covered by the same authz mechanism as the regular token
 endpoint.
 ```js
@@ -391,7 +391,7 @@ grant_types, response_types and redirect_uris as empty arrays.
 **Revocation endpoint**  
 Enables the use of Revocation endpoint as described in [RFC7009][feature-revocation] for tokens of
 type AccessToken, ClientCredentials and RefreshToken. When enabled the
-token_revocation_endpoint property of the discovery endpoint is published, otherwise the property
+revocation_endpoint property of the discovery endpoint is published, otherwise the property
 is not sent. The use of this endpoint is covered by the same authz mechanism as the regular token
 endpoint.
 ```js
@@ -401,7 +401,8 @@ const configuration = { features: { revocation: Boolean[false] } };
 
 **OAuth 2.0 Native Apps Best Current Practice**
 Changes `redirect_uris` validations for clients with application_type `native` to those defined in
-[OAuth 2.0 for Native Apps][feature-oauth-native-apps].
+[OAuth 2.0 for Native Apps][feature-oauth-native-apps]. If pkce is not enabled it will be enabled
+automatically so that AppAuth SDKs work out of the box. (🤞)
 ```js
 const configuration = { features: { oauthNativeApps: Boolean[false] } };
 ```
@@ -607,8 +608,8 @@ console.log('httpOptions %j', provider.defaultHttpOptions);
 ```
 
 ## Authentication Context Class Reference
-Supply an array of string values to acrValues configuration option to overwrite the default
-`['0', '1', '2']`, passing an empty array will disable the acr claim completely.
+Supply an array of string values to acrValues configuration option to set `acr_values_supported`.
+Passing an empty array disables the acr claim and removes `acr_values_supported` from discovery.
 
 
 ## Mounting oidc-provider

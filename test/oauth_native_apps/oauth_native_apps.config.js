@@ -3,7 +3,7 @@
 const _ = require('lodash');
 const config = _.clone(require('../default.config'));
 
-config.features = { oauthNativeApps: true };
+config.features = { oauthNativeApps: true, pkce: false };
 
 module.exports = {
   config,

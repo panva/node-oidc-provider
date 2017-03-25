@@ -29,8 +29,8 @@ describe('custom response modes', function () {
       .query(auth)
       .expect(() => {
         expect(spy.calledOnce).to.be.true;
-        expect(spy.calledWith('https://client.example.com/cb')).to.be.true;
-        expect(spy.firstCall.args[1]).to.have.keys('code', 'state');
+        expect(spy.firstCall.args[1]).to.equal('https://client.example.com/cb');
+        expect(spy.firstCall.args[2]).to.have.keys('code', 'state');
       });
   });
 
@@ -49,8 +49,8 @@ describe('custom response modes', function () {
       .query(auth)
       .expect(() => {
         expect(spy.calledOnce).to.be.true;
-        expect(spy.calledWith('https://client.example.com/cb')).to.be.true;
-        expect(spy.firstCall.args[1]).to.have.keys('error', 'error_description', 'state');
+        expect(spy.firstCall.args[1]).to.equal('https://client.example.com/cb');
+        expect(spy.firstCall.args[2]).to.have.keys('error', 'error_description', 'state');
       });
   });
 });

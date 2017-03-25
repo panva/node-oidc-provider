@@ -14,7 +14,6 @@ your own unique-looking and functioning user flows.
 **Table of Contents**
 
 <!-- TOC START min:2 max:2 link:true update:true -->
-  - ['next' branch/release](#next-branchrelease)
   - [Implemented specs & features](#implemented-specs--features)
   - [Certification](#certification)
   - [Get started](#get-started)
@@ -23,19 +22,6 @@ your own unique-looking and functioning user flows.
   - [Events](#events)
 
 <!-- TOC END -->
-
-## 'next' branch/release
-This branch is being kept up to date with the latest release, only having the internal dependencies
-koa2 based, therefore requiring ES7 async/await capable node runtime (or live transpile).
-There are no extra features or master-unreleased features. 2.0.0 of this library will come when koa2
-releases as latest and when ES7 async/await lands in LTS nodejs release (probably LTSv8).
-
-You can use this library if you already use node current (>= 7.6.0), just declare
-your dependency in package.json with the @next distribution tag.
-
-The published versions also use pre-release version scheme 2.0.0-alpha.x.y.z with xyz being the same
-as the corresponding latest release. i.e. 2.0.0-alpha.1.2.0 is essentially version 1.2.0 only with
-the updated dependencies.
 
 ## Implemented specs & features
 
@@ -148,9 +134,9 @@ change the defined behavior.
 See the list of available emitted [event names](/docs/events.md) and their description.
 
 
-[travis-image]: https://img.shields.io/travis/panva/node-oidc-provider/master.svg?style=flat-square&maxAge=7200
+[travis-image]: https://img.shields.io/travis/panva/node-oidc-provider/next.svg?style=flat-square&maxAge=7200
 [travis-url]: https://travis-ci.org/panva/node-oidc-provider
-[codecov-image]: https://img.shields.io/codecov/c/github/panva/node-oidc-provider/master.svg?style=flat-square&maxAge=7200
+[codecov-image]: https://img.shields.io/codecov/c/github/panva/node-oidc-provider/next.svg?style=flat-square&maxAge=7200
 [codecov-url]: https://codecov.io/gh/panva/node-oidc-provider
 [npm-image]: https://img.shields.io/npm/v/oidc-provider.svg?style=flat-square&maxAge=7200
 [npm-url]: https://www.npmjs.com/package/oidc-provider

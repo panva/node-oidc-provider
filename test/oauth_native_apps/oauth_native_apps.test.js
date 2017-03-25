@@ -10,6 +10,10 @@ const fail = () => {
 describe('OAuth 2.0 for Native Apps Best Current Practice features', function () {
   before(bootstrap(__dirname)); // provider
 
+  it('auto enables pkce with skipClientAuth', function () {
+    expect(i(this.provider).configuration('features.pkce')).to.eql({ skipClientAuth: true });
+  });
+
   describe('changed native client validations', function () {
     describe('App-declared Custom URI Scheme Redirection', function () {
       it('allows custom uri scheme uris with localhost', function () {

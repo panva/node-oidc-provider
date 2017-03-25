@@ -58,27 +58,4 @@ describe('provider instance', function () {
       });
     });
   });
-
-  describe('#resume', function () {
-    it('redirects the context, and sets a cookie', function () {
-      const provider = new Provider('http://localhost');
-
-      return provider.initialize({}).then(function () {
-        const ctx = { cookies: { set: sinon.spy() }, redirect: sinon.spy() };
-
-        provider.resume(ctx, 'foo', {});
-
-        expect(ctx.cookies.set.calledOnce).to.be.true;
-        expect(ctx.cookies.set.firstCall.calledWith('_grant_result', '{}',
-          {
-            path: '/auth/foo',
-            httpOnly: true,
-            maxAge: 3600000
-          }
-        )).to.be.true;
-        expect(ctx.redirect.calledOnce).to.be.true;
-        expect(ctx.redirect.firstCall.calledWith('http://localhost/auth/foo')).to.be.true;
-      });
-    });
-  });
 });
