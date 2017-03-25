@@ -164,11 +164,11 @@ describe('Client validations', function () {
     });
   };
 
-  const allows = (prop, value, meta) => {
+  const allows = (prop, value, meta, provider) => {
     it(`passes ${JSON.stringify(value)}`, function () {
       return addClient(Object.assign({}, meta, {
         [prop]: value
-      })).then((client) => {
+      }), provider).then((client) => {
         expect(client.metadata()[prop]).to.eql(value);
       });
     });
@@ -235,9 +235,9 @@ describe('Client validations', function () {
 
     allows(this.title, []);
     acrValues.forEach((value) => {
-      allows(this.title, [value]);
+      allows(this.title, [value], null, { acrValues });
     });
-    allows(this.title, acrValues);
+    allows(this.title, acrValues, null, { acrValues });
     rejects(this.title, [123], /must only contain strings$/);
     rejects(this.title, ['not a member']);
     rejects(this.title, ['not a member', '1']);
