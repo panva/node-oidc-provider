@@ -118,12 +118,12 @@ class Account {
     };
   }
 
-  static findById(id) {
+  static async findById(ctx, id) {
     let acc = store.get(`Account:${id}`);
     if (!acc) {
       acc = new Account(id);
     }
-    return Promise.resolve(acc);
+    return acc;
   }
 }
 

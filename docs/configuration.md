@@ -44,11 +44,11 @@ context.
 
 ```js
 const oidc = new Provider('http://localhost:3000', {
-  findById: function (id) {
-    return Promise.resolve({
+  async findById(ctx, id) {
+    return {
       accountId: id,
-      claims() { return { sub: id }; },
-    });
+      async claims() { return { sub: id }; },
+    };
   }
 });
 ```

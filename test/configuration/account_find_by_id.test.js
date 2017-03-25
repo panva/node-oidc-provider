@@ -8,17 +8,17 @@ describe('default findById behavior', function () {
     const provider = new Provider('http://localhost');
     const Account = provider.Account;
 
-    expect(Account.findById('id') instanceof Promise).to.be.true;
+    expect(Account.findById({}, 'id') instanceof Promise).to.be.true;
   });
 
   it('resolves to an object with property and accountId property and claims function', function () {
     const provider = new Provider('http://localhost');
     const Account = provider.Account;
 
-    return Account.findById('id').then((account) => {
+    return Account.findById({}, 'id').then(async (account) => {
       expect(account.accountId).to.equal('id');
-      expect(account.claims).to.be.a('function');
-      expect(account.claims()).to.eql({ sub: 'id' });
+      expect(account.claims).to.be.an('AsyncFunction');
+      expect(await account.claims()).to.eql({ sub: 'id' });
     });
   });
 });

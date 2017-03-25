@@ -11,7 +11,7 @@ describe('distributed and aggregated claims', function () {
   before(bootstrap(__dirname)); // provider, agent, AuthorizationRequest, wrap
   before(function () {
     const Account = this.provider.Account;
-    Account.findById = id => Promise.resolve({
+    Account.findById = (ctx, id) => Promise.resolve({
       accountId: id,
       claims() {
         return {

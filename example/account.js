@@ -50,9 +50,9 @@ class Account {
     return Promise.resolve(logins.get(login));
   }
 
-  static findById(id) {
+  static async findById(ctx, id) {
     if (!store.get(id)) new Account(id); // eslint-disable-line no-new
-    return Promise.resolve(store.get(id));
+    return store.get(id);
   }
 }
 

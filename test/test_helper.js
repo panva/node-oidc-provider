@@ -99,7 +99,7 @@ module.exports = function testHelper(dir, basename, mountTo) {
       }
     });
 
-    return Account.findById(account).then(session.save()).then(() => {
+    return Account.findById({}, account).then(session.save()).then(() => {
       agent._saveCookies.bind(agent)({ headers: { 'set-cookie': cookies } });
     });
   }
