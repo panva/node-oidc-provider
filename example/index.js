@@ -2,7 +2,7 @@
 
 const Provider = require('../lib');
 const path = require('path');
-const _ = require('lodash');
+const { set } = require('lodash');
 const bodyParser = require('koa-body');
 const querystring = require('querystring');
 const Router = require('koa-router');
@@ -44,8 +44,8 @@ provider.initialize({
 
   if (process.env.NODE_ENV === 'production') {
     provider.app.proxy = true;
-    _.set(settings.config, 'cookies.short.secure', true);
-    _.set(settings.config, 'cookies.long.secure', true);
+    set(settings.config, 'cookies.short.secure', true);
+    set(settings.config, 'cookies.long.secure', true);
 
     provider.app.middleware.unshift(async (ctx, next) => {
       if (ctx.secure) {

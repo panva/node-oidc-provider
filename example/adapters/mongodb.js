@@ -1,10 +1,10 @@
-const EventEmitter = require('events').EventEmitter;
-const Mongo = require('mongodb').MongoClient; // eslint-disable-line import/no-unresolved
-const _ = require('lodash');
+const EventEmitter = require('events');
+const { MongoClient } = require('mongodb'); // eslint-disable-line import/no-unresolved
+const { snakeCase } = require('lodash');
 
 const emitter = new EventEmitter();
 let DB;
-let connecting = Mongo.connect(process.env.MONGODB_URI).then((db) => {
+let connecting = MongoClient.connect(process.env.MONGODB_URI).then((db) => {
   DB = db;
   connecting = undefined;
   emitter.emit('ready');
@@ -27,7 +27,7 @@ const collections = new CollectionSet();
 
 class MongoAdapter {
   constructor(name) {
-    this.name = _.snakeCase(name);
+    this.name = snakeCase(name);
     collections.add(this.name);
   }
 

@@ -1,10 +1,7 @@
-const _ = require('lodash');
+const { omit } = require('lodash');
 const bootstrap = require('../test_helper');
 const sinon = require('sinon');
 const { expect } = require('chai');
-// const { parse: parseUrl } = require('url');
-// const base64url = require('base64url');
-// const nock = require('nock');
 const Provider = require('../../lib');
 
 describe('OAuth 2.0 Dynamic Client Registration Management Protocol', function () {
@@ -36,7 +33,7 @@ describe('OAuth 2.0 Dynamic Client Registration Management Protocol', function (
   describe('Client Update Request', function () {
     const NOGO = ['registration_access_token', 'registration_client_uri', 'client_secret_expires_at', 'client_id_issued_at'];
     function updateProperties(client, props) {
-      return Object.assign(_.omit(client, NOGO), props);
+      return Object.assign(omit(client, NOGO), props);
     }
 
     it('responds w/ 200 JSON and nocache headers', async function () {

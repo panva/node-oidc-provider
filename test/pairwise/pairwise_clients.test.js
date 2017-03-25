@@ -1,6 +1,6 @@
 const bootstrap = require('../test_helper');
 const getMask = require('../../lib/helpers/claims');
-const _ = require('lodash');
+const { map, uniq } = require('lodash');
 const { expect } = require('chai');
 const nock = require('nock');
 
@@ -211,13 +211,13 @@ describe('pairwise features', function () {
     it('returns different subs', function () {
       const Claims = getMask(i(this.provider).configuration());
 
-      const subs = _.map(clients, (client) => {
+      const subs = map(clients, (client) => {
         const { sub } = new Claims({ sub: 'accountId' }, client.sectorIdentifier).scope('openid').result();
         return sub;
       });
 
       expect(subs).to.have.lengthOf(3);
-      expect(_.uniq(subs)).to.have.lengthOf(3);
+      expect(uniq(subs)).to.have.lengthOf(3);
       expect(subs).to.contain('accountId');
     });
   });

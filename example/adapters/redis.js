@@ -1,5 +1,5 @@
 const Redis = require('ioredis'); // eslint-disable-line import/no-unresolved
-const _ = require('lodash');
+const { map, isEmpty } = require('lodash');
 
 const client = new Redis(process.env.REDIS_URL, {
   keyPrefix: 'oidc:',
@@ -23,7 +23,7 @@ class RedisAdapter {
 
     return client.hget(key, 'grantId')
       .then(grantId => client.lrange(grantKeyFor(grantId), 0, -1))
-      .then(tokens => Promise.all(_.map(tokens, token => client.del(token))))
+      .then(tokens => Promise.all(map(tokens, token => client.del(token))))
       .then(() => client.del(key));
   }
 
@@ -33,7 +33,7 @@ class RedisAdapter {
 
   find(id) {
     return client.hgetall(this.key(id)).then((data) => {
-      if (_.isEmpty(data)) {
+      if (isEmpty(data)) {
         return undefined;
       } else if (data.dump !== undefined) {
         return JSON.parse(data.dump);
