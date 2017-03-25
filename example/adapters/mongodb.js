@@ -14,8 +14,8 @@ let connecting = Mongo.connect(process.env.MONGODB_URI).then((db) => {
 
 class CollectionSet extends Set {
   add(name) {
-    const nu = this.has.apply(this, arguments);
-    super.add.apply(this, arguments);
+    const nu = this.has(name);
+    super.add(name);
     if (!nu) {
       DB.collection(name).createIndexes([
         { key: { grantId: 1 } },
@@ -81,12 +81,12 @@ class MongoAdapter {
   }
 }
 
-MongoAdapter.once = function onceReady() {
-  emitter.once.apply(emitter, arguments);
+MongoAdapter.once = function onceReady(...args) {
+  emitter.once(...args);
 };
 
-MongoAdapter.on = function onReady() {
-  emitter.on.apply(emitter, arguments);
+MongoAdapter.on = function onReady(...args) {
+  emitter.on(...args);
 };
 
 module.exports = MongoAdapter;

@@ -1,10 +1,7 @@
 {
   "extends": "airbnb-base",
   "rules": {
-    "no-empty": ["error", { "allowEmptyCatch": true }],
-    "prefer-rest-params": "off",
-    "prefer-spread": "off",
     "strict": "off",
-    "no-param-reassign": ["error", { "props": false }]
+    "no-param-reassign": ["error", { "props": true, "ignorePropertyModificationsFor": ["ctx"] }]
   }
 }

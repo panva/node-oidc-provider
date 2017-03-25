@@ -7,6 +7,7 @@
     "instance": true
   },
   "rules": {
+    "import/no-extraneous-dependencies": [ "error", { "devDependencies": [ "**" ] } ],
     "comma-dangle": "off",
     "arrow-body-style": "off",
     "func-names": "off",
