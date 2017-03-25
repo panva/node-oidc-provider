@@ -1,6 +1,6 @@
 # oidc-provider
 
-[![build][travis-image]][travis-url] [![codecov][codecov-image]][codecov-url] [![npm][npm-image]][npm-url] [![licence][licence-image]][licence-url]
+[![build][travis-image]][travis-url] [![codecov][codecov-image]][codecov-url]
 
 oidc-provider is an OpenID Provider implementation of [OpenID Connect][openid-connect]. It allows to
 export a complete mountable or standalone OpenID Provider implementation. This implementation does
@@ -90,12 +90,6 @@ $ npm install oidc-provider@next --save
 ```
 
 
-### 1.0.0 Notice
-Migrating from 0.11.x release? Quite a bit has changed along the way to end up with a stable and
-sustainable API, see the [CHANGELOG](/CHANGELOG.md#version-100) for list of changes and how to
-change your existing 0.11 providers to 1.0
-
-
 ## Configuration and Initialization
 oidc-provider allows to be extended and configured in various ways to fit a variety of uses. See
 the [available configuration](/docs/configuration.md).
@@ -140,8 +134,6 @@ See the list of available emitted [event names](/docs/events.md) and their descr
 [codecov-url]: https://codecov.io/gh/panva/node-oidc-provider
 [npm-image]: https://img.shields.io/npm/v/oidc-provider.svg?style=flat-square&maxAge=7200
 [npm-url]: https://www.npmjs.com/package/oidc-provider
-[licence-image]: https://img.shields.io/github/license/panva/node-oidc-provider.svg?style=flat-square&maxAge=7200
-[licence-url]: LICENSE.md
 [openid-certified-link]: http://openid.net/certification/
 [openid-connect]: http://openid.net/connect/
 [feature-core]: http://openid.net/specs/openid-connect-core-1_0.html
