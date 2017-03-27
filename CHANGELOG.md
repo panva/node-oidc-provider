@@ -28,6 +28,17 @@ Yay for [SemVer](http://semver.org/).
 ## Version 2.x
 - [DIFF](https://github.com/panva/node-oidc-provider/compare/master...next)
 
+### pre.1
+*Breaking Changes*
+- adapter is now a property passed into `#initialize()`, adapter properties in configuration will
+  result in a rejected initialize
+- `static` function named `connect` can now be present on an Adapter prototype, this will be awaited
+  during initialization, use to establish the necessary adapter connections
+- `postLogoutRedirectUri` configuration option is now a helper function and is awaited to (was a string property)
+
+*Fixes*
+- fixed logout submit when there was is no session
+
 ### pre.0
 *Breaking Changes*
 - oidc-provider now requires node v7.6.0 or higher for ES2015 and async function support
