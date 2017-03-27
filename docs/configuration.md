@@ -170,7 +170,8 @@ for every model is accessed the first time it is needed.
 
 ```js
 const MyAdapter = require('./my_adapter');
-const oidc = new Provider('http://localhost:3000', {
+const oidc = new Provider('http://localhost:3000');
+oidc.initialize({
   adapter: MyAdapter
 });
 ```
