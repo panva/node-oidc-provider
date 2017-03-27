@@ -52,7 +52,6 @@ module.exports = function testHelper(dir, basename, mountTo) {
   });
   let { config, client, clients } = require(conf); // eslint-disable-line
   if (client && !clients) { clients = [client]; }
-  config.adapter = TestAdapter;
   config.findById = Account.findById;
 
   const port = ephemeralPort();
@@ -250,6 +249,7 @@ module.exports = function testHelper(dir, basename, mountTo) {
     return new Promise((resolve, reject) => {
       provider.initialize({
         clients,
+        adapter: TestAdapter,
         keystore: global.keystore,
       }).then(() => {
         if (mountTo) {

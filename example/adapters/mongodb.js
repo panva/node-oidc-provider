@@ -1,14 +1,7 @@
-const EventEmitter = require('events');
 const { MongoClient } = require('mongodb'); // eslint-disable-line import/no-unresolved
 const { snakeCase } = require('lodash');
 
-const emitter = new EventEmitter();
 let DB;
-let connecting = MongoClient.connect(process.env.MONGODB_URI).then((db) => {
-  DB = db;
-  connecting = undefined;
-  emitter.emit('ready');
-});
 
 class CollectionSet extends Set {
   add(name) {
@@ -36,24 +29,16 @@ class MongoAdapter {
   }
 
   static coll(name) {
-    if (connecting) return Promise.reject(new Error('DB connection not established'));
     return DB.collection(name);
   }
 
-  destroy(id) {
-    return this.coll().findOneAndDelete({ _id: id })
-      .then((found) => {
-        if (found.value && found.value.grantId) {
-          const promises = [];
-
-          collections.forEach((name) => {
-            promises.push(this.coll(name).deleteMany({ grantId: found.value.grantId }));
-          });
-
-          return Promise.all(promises);
-        }
-        return undefined;
-      });
+  async destroy(id) {
+    const found = await this.coll().findOneAndDelete({ _id: id });
+    if (found.value && found.value.grantId) {
+      await Promise.all(collections.map(name =>
+        this.coll(name).deleteMany({ grantId: found.value.grantId })));
+    }
+    return undefined;
   }
 
   consume(id) {
@@ -77,14 +62,10 @@ class MongoAdapter {
     }
     return this.coll().updateOne({ _id }, document, { upsert: true });
   }
+
+  static async connect() {
+    DB = await MongoClient.connect(process.env.MONGODB_URI);
+  }
 }
-
-MongoAdapter.once = function onceReady(...args) {
-  emitter.once(...args);
-};
-
-MongoAdapter.on = function onReady(...args) {
-  emitter.on(...args);
-};
 
 module.exports = MongoAdapter;

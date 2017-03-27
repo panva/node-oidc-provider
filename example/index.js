@@ -15,11 +15,6 @@ const settings = require('./settings');
 
 const issuer = process.env.ISSUER || 'http://localhost:3000';
 
-if (process.env.MONGODB_URI) {
-  const MongoAdapter = require('./adapters/mongodb'); // eslint-disable-line global-require
-  settings.config.adapter = MongoAdapter;
-}
-
 settings.config.findById = Account.findById;
 const clients = settings.clients;
 
@@ -30,6 +25,7 @@ if (process.env.HEROKU) {
 }
 
 provider.initialize({
+  adapter: process.env.MONGODB_URI ? require('./adapters/mongodb') : undefined, // eslint-disable-line global-require
   clients,
   keystore: { keys: settings.certificates },
   integrity: { keys: settings.integrityKeys },

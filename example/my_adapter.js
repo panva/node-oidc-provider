@@ -29,7 +29,7 @@ class MyAdapter {
    * @param {expiresIn} integer Number of seconds intended for this model to be stored.
    *
    */
-  upsert(id, payload, expiresIn) {
+  async upsert(id, payload, expiresIn) {
 
     /**
      *
@@ -70,7 +70,7 @@ class MyAdapter {
    * @param {string} id Identifier of oidc-provider model
    *
    */
-  find(id) {
+  async find(id) {
 
   }
 
@@ -84,7 +84,7 @@ class MyAdapter {
    * @param {string} id Identifier of oidc-provider model
    *
    */
-  consume(id) {
+  async consume(id) {
 
   }
 
@@ -98,7 +98,7 @@ class MyAdapter {
    * @param {string} id Identifier of oidc-provider model
    *
    */
-  destroy(id) {
+  async destroy(id) {
 
     /**
      *
@@ -107,6 +107,21 @@ class MyAdapter {
      * and also trigger a chain of removals for all related tokens is recommended.
      *
      */
+  }
+
+
+  /**
+   *
+   * A one time hook called when initializing the Provider instance, use to establish necessary
+   * connections if applicable, afterwards only new instances will initialized.
+   *
+   * @return {Promise} Promise fulfilled when the operation succeeded. Rejected with error when
+   * encountered.
+   * @param {Provider} provider Provider instance for which the connection is needed
+   *
+   */
+  static async connect(provider) {
+
   }
 }
 
