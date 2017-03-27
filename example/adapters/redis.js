@@ -1,5 +1,5 @@
 const Redis = require('ioredis'); // eslint-disable-line import/no-unresolved
-const { map, isEmpty } = require('lodash');
+const { isEmpty } = require('lodash');
 
 const client = new Redis(process.env.REDIS_URL, {
   keyPrefix: 'oidc:',
@@ -18,28 +18,27 @@ class RedisAdapter {
     return `${this.name}:${id}`;
   }
 
-  destroy(id) {
+  async destroy(id) {
     const key = this.key(id);
-
-    return client.hget(key, 'grantId')
-      .then(grantId => client.lrange(grantKeyFor(grantId), 0, -1))
-      .then(tokens => Promise.all(map(tokens, token => client.del(token))))
-      .then(() => client.del(key));
+    const grantId = await client.hget(key, 'grantId');
+    const tokens = await client.lrange(grantKeyFor(grantId), 0, -1);
+    const deletions = tokens.map(token => client.del(token));
+    deletions.push(client.del(key));
+    await deletions;
   }
 
   consume(id) {
     return client.hset(this.key(id), 'consumed', Math.floor(Date.now() / 1000));
   }
 
-  find(id) {
-    return client.hgetall(this.key(id)).then((data) => {
-      if (isEmpty(data)) {
-        return undefined;
-      } else if (data.dump !== undefined) {
-        return JSON.parse(data.dump);
-      }
-      return data;
-    });
+  async find(id) {
+    const data = await client.hgetall(this.key(id));
+    if (isEmpty(data)) {
+      return undefined;
+    } else if (data.dump !== undefined) {
+      return JSON.parse(data.dump);
+    }
+    return data;
   }
 
   upsert(id, payload, expiresIn) {
