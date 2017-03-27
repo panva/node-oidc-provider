@@ -32,13 +32,20 @@ class MongoAdapter {
     return DB.collection(name);
   }
 
-  async destroy(id) {
-    const found = await this.coll().findOneAndDelete({ _id: id });
-    if (found.value && found.value.grantId) {
-      await Promise.all(collections.map(name =>
-        this.coll(name).deleteMany({ grantId: found.value.grantId })));
-    }
-    return undefined;
+  destroy(id) {
+    return this.coll().findOneAndDelete({ _id: id })
+      .then((found) => {
+        if (found.value && found.value.grantId) {
+          const promises = [];
+
+          collections.forEach((name) => {
+            promises.push(this.coll(name).deleteMany({ grantId: found.value.grantId }));
+          });
+
+          return Promise.all(promises);
+        }
+        return undefined;
+      });
   }
 
   consume(id) {
