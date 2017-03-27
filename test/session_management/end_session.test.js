@@ -85,7 +85,7 @@ describe('[session_management]', function () {
           .expect(200)
           .expect(() => {
             const { logout: { postLogoutRedirectUri } } = this.getSession();
-            expect(postLogoutRedirectUri).to.equal('/?loggedOut=true');
+            expect(postLogoutRedirectUri).to.equal(this.provider.issuer);
           });
       });
     });
@@ -98,7 +98,7 @@ describe('[session_management]', function () {
         .expect(200)
         .expect(() => {
           const { logout: { postLogoutRedirectUri } } = this.getSession();
-          expect(postLogoutRedirectUri).to.equal('/?loggedOut=true');
+          expect(postLogoutRedirectUri).to.equal(this.provider.issuer);
         });
     });
 
