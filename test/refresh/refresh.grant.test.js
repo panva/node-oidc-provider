@@ -56,7 +56,7 @@ describe('grant_type=refresh_token', function () {
     });
 
     it('returns the right stuff', function () {
-      const rt = this.rt;
+      const { rt } = this;
       const spy = sinon.spy();
       this.provider.once('grant.success', spy);
 
@@ -92,7 +92,7 @@ describe('grant_type=refresh_token', function () {
         });
 
         it('validates code is not expired', function (done) {
-          const rt = this.rt;
+          const { rt } = this;
           setTimeout(() => {
             const spy = sinon.spy();
             this.provider.once('grant.error', spy);
@@ -118,7 +118,7 @@ describe('grant_type=refresh_token', function () {
       });
 
       it('validates that token belongs to client', function () {
-        const rt = this.rt;
+        const { rt } = this;
         const spy = sinon.spy();
         this.provider.once('grant.error', spy);
 
@@ -140,7 +140,7 @@ describe('grant_type=refresh_token', function () {
       });
 
       it('scopes are not getting extended', function () {
-        const rt = this.rt;
+        const { rt } = this;
         const spy = sinon.spy();
         this.provider.once('grant.error', spy);
 
@@ -161,7 +161,7 @@ describe('grant_type=refresh_token', function () {
       });
 
       it('validates account is still there', function () {
-        const rt = this.rt;
+        const { rt } = this;
         sinon.stub(this.provider.Account, 'findById').callsFake(() => {
           return Promise.resolve();
         });
@@ -235,7 +235,7 @@ describe('grant_type=refresh_token', function () {
       });
 
       it('issues a new refresh token and consumes the old one', function () {
-        const rt = this.rt;
+        const { rt } = this;
         const consumeSpy = sinon.spy();
         const issueSpy = sinon.spy();
         this.provider.once('token.consumed', consumeSpy);
@@ -262,7 +262,7 @@ describe('grant_type=refresh_token', function () {
       });
 
       it('revokes the complete grant if the old token is used again', function () {
-        const rt = this.rt;
+        const { rt } = this;
 
         const grantRevokeSpy = sinon.spy();
         const tokenRevokeSpy = sinon.spy();

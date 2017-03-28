@@ -198,7 +198,7 @@ describe('client keystore refresh', function () {
       const client = await this.provider.Client.find('client');
       client.keystore.freshUntil = epochTime() - 1;
 
-      const IdToken = this.provider.IdToken;
+      const { IdToken } = this.provider;
       const token = new IdToken({ foo: 'bar' });
 
       return token.sign(client).then(() => {

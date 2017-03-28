@@ -352,7 +352,7 @@ expire.setDate(expire.getDate() + 1);
 
         it('id_token_hint belongs to a user that is not currently logged in', async function () {
           const client = await this.provider.Client.find('client');
-          const IdToken = this.provider.IdToken;
+          const { IdToken } = this.provider;
           const idToken = new IdToken({
             sub: 'not-the-droid-you-are-looking-for'
           });
@@ -380,7 +380,7 @@ expire.setDate(expire.getDate() + 1);
         it('id_token_hint belongs to a user that is currently logged in', async function () {
           const session = this.getSession();
           const client = await this.provider.Client.find('client');
-          const IdToken = this.provider.IdToken;
+          const { IdToken } = this.provider;
           const idToken = new IdToken({
             sub: session.account
           });

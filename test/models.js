@@ -57,7 +57,7 @@ class TestAdapter {
   upsert(id, payload, expiresIn) {
     const key = this.key(id);
 
-    const grantId = payload.grantId;
+    const { grantId } = payload;
     if (grantId) {
       const grantKey = grantKeyFor(grantId);
       const grant = store.get(grantKey);

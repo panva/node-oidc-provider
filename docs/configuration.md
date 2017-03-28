@@ -506,13 +506,12 @@ provider.registerGrantType('password', function passwordGrantTypeFactory(provide
       });
 
       const accessToken = await at.save();
-      const tokenType = 'Bearer';
       const expiresIn = AccessToken.expiresIn;
 
       ctx.body = {
         access_token: accessToken,
         expires_in: expiresIn,
-        token_type: tokenType,
+        token_type: 'Bearer',
       };
     } else {
       ctx.body = {

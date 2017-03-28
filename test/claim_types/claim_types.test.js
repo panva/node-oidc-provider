@@ -8,7 +8,7 @@ const { expect } = require('chai');
 describe('distributed and aggregated claims', function () {
   before(bootstrap(__dirname)); // provider, agent, AuthorizationRequest, wrap
   before(function () {
-    const Account = this.provider.Account;
+    const { Account } = this.provider;
     Account.findById = (ctx, id) => Promise.resolve({
       accountId: id,
       claims() {

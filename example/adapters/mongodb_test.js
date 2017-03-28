@@ -5,7 +5,7 @@
 const Provider = require('../../lib');
 const MongoAdapter = require('./mongodb');
 
-const AdapterTest = Provider.AdapterTest;
+const { AdapterTest } = Provider;
 
 const provider = new Provider('http://localhost', {
   adapter: MongoAdapter,

@@ -148,7 +148,7 @@ describe('Back-Channel Logout 1.0', function () {
       sinon.spy(client, 'backchannelLogout');
 
       const accountId = session.account;
-      const sid = session.authorizations.client.sid;
+      const { sid } = session.authorizations.client;
 
       return this.agent.post('/session/end')
       .send(params)

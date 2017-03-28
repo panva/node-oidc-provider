@@ -11,14 +11,13 @@ const render = require('koa-ejs');
 const port = process.env.PORT || 3000;
 
 const Account = require('./account');
-const settings = require('./settings');
+const { config, clients, certificates, integrityKeys } = require('./settings');
 
 const issuer = process.env.ISSUER || 'http://localhost:3000';
 
-settings.config.findById = Account.findById;
-const clients = settings.clients;
+config.findById = Account.findById;
 
-const provider = new Provider(issuer, settings.config);
+const provider = new Provider(issuer, config);
 
 if (process.env.HEROKU) {
   provider.defaultHttpOptions = { timeout: 15000 };
@@ -27,8 +26,8 @@ if (process.env.HEROKU) {
 provider.initialize({
   adapter: process.env.MONGODB_URI ? require('./adapters/mongodb') : undefined, // eslint-disable-line global-require
   clients,
-  keystore: { keys: settings.certificates },
-  integrity: { keys: settings.integrityKeys },
+  keystore: { keys: certificates },
+  integrity: { keys: integrityKeys },
 }).then(() => {
   render(provider.app, {
     cache: false,
@@ -40,8 +39,8 @@ provider.initialize({
 
   if (process.env.NODE_ENV === 'production') {
     provider.app.proxy = true;
-    set(settings.config, 'cookies.short.secure', true);
-    set(settings.config, 'cookies.long.secure', true);
+    set(config, 'cookies.short.secure', true);
+    set(config, 'cookies.long.secure', true);
 
     provider.app.middleware.unshift(async (ctx, next) => {
       if (ctx.secure) {

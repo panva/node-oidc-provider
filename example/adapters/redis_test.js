@@ -5,7 +5,7 @@
 const Provider = require('../../lib');
 const RedisAdapter = require('./redis');
 
-const AdapterTest = Provider.AdapterTest;
+const { AdapterTest } = Provider;
 
 const provider = new Provider('http://localhost', {
   adapter: RedisAdapter,

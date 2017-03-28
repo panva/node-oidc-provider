@@ -1,7 +1,7 @@
 const Provider = require('../../lib');
 const { TestAdapter } = require('../models');
 
-const AdapterTest = Provider.AdapterTest;
+const { AdapterTest } = Provider;
 
 describe('AdapterTest', function () {
   it('passes with the default MemoryAdapter', function () {
