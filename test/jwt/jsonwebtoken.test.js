@@ -20,7 +20,7 @@ describe('JSON Web Token (JWT) RFC7519 implementation', function () {
     .then((decoded) => {
       expect(decoded.header).not.to.have.property('kid');
       expect(decoded.header).to.have.property('alg', 'none');
-      expect(decoded.payload).to.eql({ data: true });
+      expect(decoded.payload).to.contain({ data: true });
     });
   });
 
@@ -33,7 +33,7 @@ describe('JSON Web Token (JWT) RFC7519 implementation', function () {
     .then((decoded) => {
       expect(decoded.header).not.to.have.property('kid');
       expect(decoded.header).to.have.property('alg', 'HS256');
-      expect(decoded.payload).to.eql({ data: true });
+      expect(decoded.payload).to.contain({ data: true });
     });
   });
 
@@ -46,7 +46,7 @@ describe('JSON Web Token (JWT) RFC7519 implementation', function () {
     .then((decoded) => {
       expect(decoded.header).to.have.property('kid');
       expect(decoded.header).to.have.property('alg', 'RS256');
-      expect(decoded.payload).to.eql({ data: true });
+      expect(decoded.payload).to.contain({ data: true });
     });
   });
 
@@ -59,7 +59,7 @@ describe('JSON Web Token (JWT) RFC7519 implementation', function () {
     .then((decoded) => {
       expect(decoded.header).to.have.property('kid');
       expect(decoded.header).to.have.property('alg', 'ES256');
-      expect(decoded.payload).to.eql({ data: true });
+      expect(decoded.payload).to.contain({ data: true });
     });
   });
 

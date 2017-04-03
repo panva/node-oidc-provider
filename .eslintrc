@@ -1,6 +1,7 @@
 {
   "extends": "airbnb-base",
   "rules": {
-    "no-param-reassign": ["error", { "props": true, "ignorePropertyModificationsFor": ["ctx", "opts"] }]
+    "no-param-reassign": ["error", { "props": true, "ignorePropertyModificationsFor": ["ctx", "opts", "options"] }],
+    "no-underscore-dangle": ["error", { "allow": ["_claim_names", "_claim_sources"] }],
   }
 }
