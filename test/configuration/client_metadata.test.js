@@ -258,7 +258,7 @@ describe('Client validations', function () {
     mustBeArray(this.title);
     allows(this.title, ['authorization_code', 'refresh_token']);
     rejects(this.title, [123], /must only contain strings$/);
-    rejects(this.title, [], /must contain members$/);
+    rejects(this.title, []);
     rejects(this.title, ['not-a-type']);
     rejects(this.title, ['implicit'], null, { // misses authorization_code
       response_types: ['id_token', 'code']
@@ -266,6 +266,7 @@ describe('Client validations', function () {
     rejects(this.title, ['authorization_code'], null, { // misses implicit
       response_types: ['id_token']
     });
+    rejects(this.title, ['refresh_token'], 'refresh_token grant must be used in combination with authorization_code grant'); // misses authorization_code
     rejects(this.title, ['authorization_code'], null, { // misses implicit
       response_types: ['token']
     });
@@ -717,6 +718,22 @@ describe('Client validations', function () {
       grant_types: []
     }).then((client) => {
       expect(client.grantTypes).to.be.empty;
+      expect(client.responseTypes).to.be.empty;
+      expect(client.redirectUris).to.be.empty;
+    });
+  });
+
+  it('allows clients only with client_credentials', function () {
+    return addClient({
+      client_id: 'resource-server',
+      client_secret: 'foobar',
+      redirect_uris: [],
+      response_types: [],
+      grant_types: ['client_credentials']
+    }, {
+      features: { clientCredentials: true },
+    }).then((client) => {
+      expect(client.grantTypes).not.to.be.empty;
       expect(client.responseTypes).to.be.empty;
       expect(client.redirectUris).to.be.empty;
     });
