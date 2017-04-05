@@ -514,7 +514,7 @@ describe('BASIC code', function () {
           expect(renderSpy.calledOnce).to.be.true;
           const renderArgs = renderSpy.args[0][1];
           expect(renderArgs).to.have.property('error', 'redirect_uri_mismatch');
-          expect(renderArgs).to.have.property('error_description', 'redirect_uri did not match any client\'s registered redirect_uri');
+          expect(renderArgs).to.have.property('error_description', 'redirect_uri did not match any client\'s registered redirect_uris');
         });
       });
 
