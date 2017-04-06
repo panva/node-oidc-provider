@@ -64,6 +64,7 @@ Filip Skokan has [certified][openid-certified-link] that [oidc-provider][npm-url
 conforms to the OP Basic, OP Implicit, OP Hybrid, OP Config and OP Dynamic profiles
 of the OpenID Connect™ protocol.
 
+[![build][conformance-image]][conformance-url]
 
 ## Get started
 You may follow an example [step by step setup][example-repo] (recommended), or run and experiment with an
@@ -130,9 +131,10 @@ See the list of available emitted [event names](/docs/events.md) and their descr
 
 [travis-image]: https://img.shields.io/travis/panva/node-oidc-provider/next.svg?style=flat-square&maxAge=7200
 [travis-url]: https://travis-ci.org/panva/node-oidc-provider
+[conformance-image]: https://img.shields.io/travis/panva/oidc-provider-conformance-tests/master.svg?style=flat-square&maxAge=7200&label=conformance%20build%20status
+[conformance-url]: https://github.com/panva/oidc-provider-conformance-tests
 [codecov-image]: https://img.shields.io/codecov/c/github/panva/node-oidc-provider/next.svg?style=flat-square&maxAge=7200
 [codecov-url]: https://codecov.io/gh/panva/node-oidc-provider
-[npm-image]: https://img.shields.io/npm/v/oidc-provider.svg?style=flat-square&maxAge=7200
 [npm-url]: https://www.npmjs.com/package/oidc-provider
 [openid-certified-link]: http://openid.net/certification/
 [openid-connect]: http://openid.net/connect/
