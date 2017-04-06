@@ -27,6 +27,11 @@ Yay for [SemVer](http://semver.org/).
 <!-- TOC END -->
 
 ## Version 1.15.0
+### Version 1.15.3
+- [DIFF](https://github.com/panva/node-oidc-provider/compare/v1.15.2...v1.15.3)
+- redone client validations concerning response_types, grant_types and redirect_uris to allow niche
+  client setups (i.e. custom or client_credential grant only)
+
 ### Version 1.15.2
 - [DIFF](https://github.com/panva/node-oidc-provider/compare/v1.15.1...v1.15.2)
 - bumped minimum node-jose version to cover http://blog.intothesymmetry.com/2017/03/critical-vulnerability-in-json-web.html
