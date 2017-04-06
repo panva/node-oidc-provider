@@ -11,7 +11,7 @@ Yay for [SemVer](http://semver.org/).
 <!-- TOC END -->
 
 ## Version 2.0.0
-- [DIFF](https://github.com/panva/node-oidc-provider/compare/1.15.3...next)
+- [DIFF](https://github.com/panva/node-oidc-provider/compare/v1.15.3...next)
 
 *Breaking Changes*
 - oidc-provider now requires node v7.6.0 or higher for ES2015 and async function support
