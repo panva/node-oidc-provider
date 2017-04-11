@@ -41,6 +41,10 @@ Yay for [SemVer](http://semver.org/).
 
 ## Versions 1.x
 ### Version 1.15.0
+#### Version 1.15.4
+- [DIFF](https://github.com/panva/node-oidc-provider/compare/v1.15.3...v1.15.4)
+- fixed the provider removing middlewares from an upstream app (mounted case scenario)
+
 #### Version 1.15.3
 - [DIFF](https://github.com/panva/node-oidc-provider/compare/v1.15.2...v1.15.3)
 - redone client validations concerning response_types, grant_types and redirect_uris to allow niche
