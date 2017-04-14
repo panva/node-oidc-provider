@@ -19,9 +19,7 @@ config.findById = Account.findById;
 
 const provider = new Provider(issuer, config);
 
-if (process.env.HEROKU) {
-  provider.defaultHttpOptions = { timeout: 15000 };
-}
+provider.defaultHttpOptions = { timeout: 15000 };
 
 provider.initialize({
   adapter: process.env.MONGODB_URI ? require('./adapters/mongodb') : undefined, // eslint-disable-line global-require
