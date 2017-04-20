@@ -27,6 +27,11 @@ Yay for [SemVer](http://semver.org/).
 <!-- TOC END -->
 
 ## Version 1.15.0
+### Version 1.15.6
+- [DIFF](https://github.com/panva/node-oidc-provider/compare/v1.15.4...v1.15.6)
+- bumped node-jose dependency to avoid github tar.gz dependencies
+- fix: allow id_token_signed_response_alg=none for code+token response_type
+
 ### Version 1.15.4
 - [DIFF](https://github.com/panva/node-oidc-provider/compare/v1.15.3...v1.15.4)
 - fixed the provider removing middlewares from an upstream app (mounted case scenario)
