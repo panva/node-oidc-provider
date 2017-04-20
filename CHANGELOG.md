@@ -11,11 +11,12 @@ Yay for [SemVer](http://semver.org/).
 <!-- TOC END -->
 
 ## Version 2.0.0
-- [DIFF](https://github.com/panva/node-oidc-provider/compare/v1.15.3...next)
+- [DIFF](https://github.com/panva/node-oidc-provider/compare/v1.15.3...v2.0.0)
 
 *Breaking Changes*
 - oidc-provider now requires node v7.6.0 or higher for ES2015 and async function support
-- internal koa (and related) dependencies updated to their respective 'next' versions
+- internal koa (and related) dependencies updated to their respective 'next' or koa2 middleware
+  compatible versions
 - adapter is now a property passed into `#initialize()`, adapter properties in configuration will
   result in a rejected initialize
 - helper functions which returned or accepted generators will no longer work, use async functions instead

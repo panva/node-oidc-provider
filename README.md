@@ -71,7 +71,7 @@ You may follow an example [step by step setup][example-repo] (recommended), or r
 example server that's part of the repo (if you can follow the structure, if not check the step by step).
 
 ```bash
-$ git clone -b next https://github.com/panva/node-oidc-provider.git oidc-provider
+$ git clone https://github.com/panva/node-oidc-provider.git oidc-provider
 $ cd oidc-provider
 $ nvm use 7
 $ npm install
@@ -87,7 +87,7 @@ An example client using this provider is available [here][heroku-example-client]
 Otherwise just install the package in your app and follow the [example use](/example/index.js).
 It is easy to use with [express](/example/express.js) too.
 ```
-$ npm install oidc-provider@next --save
+$ npm install oidc-provider --save
 ```
 
 
@@ -129,11 +129,11 @@ change the defined behavior.
 See the list of available emitted [event names](/docs/events.md) and their description.
 
 
-[travis-image]: https://img.shields.io/travis/panva/node-oidc-provider/next.svg?style=flat-square&maxAge=7200
+[travis-image]: https://img.shields.io/travis/panva/node-oidc-provider/master.svg?style=flat-square&maxAge=7200
 [travis-url]: https://travis-ci.org/panva/node-oidc-provider
 [conformance-image]: https://img.shields.io/travis/panva/oidc-provider-conformance-tests/master.svg?style=flat-square&maxAge=7200&label=conformance%20build%20status
 [conformance-url]: https://github.com/panva/oidc-provider-conformance-tests
-[codecov-image]: https://img.shields.io/codecov/c/github/panva/node-oidc-provider/next.svg?style=flat-square&maxAge=7200
+[codecov-image]: https://img.shields.io/codecov/c/github/panva/node-oidc-provider/master.svg?style=flat-square&maxAge=7200
 [codecov-url]: https://codecov.io/gh/panva/node-oidc-provider
 [npm-url]: https://www.npmjs.com/package/oidc-provider
 [openid-certified-link]: http://openid.net/certification/
