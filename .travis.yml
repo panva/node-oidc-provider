@@ -1,4 +1,7 @@
 language: node_js
+branches:
+  except:
+    - /^v[0-9]/
 node_js:
   - stable
 script:
