@@ -11,7 +11,7 @@ describe('OAuth 2.0 for Native Apps Best Current Practice features', function ()
   before(bootstrap(__dirname)); // provider
 
   describe('changed native client validations', function () {
-    describe('App-declared Custom URI Scheme Redirection', function () {
+    describe('Private-use URI Scheme Redirection', function () {
       it('allows custom uri scheme uris with localhost', function () {
         return i(this.provider).clientAdd({
           application_type: 'native',
@@ -38,7 +38,7 @@ describe('OAuth 2.0 for Native Apps Best Current Practice features', function ()
       });
     });
 
-    describe('App-claimed HTTPS URI Redirection', function () {
+    describe('Claimed HTTPS URI Redirection', function () {
       it('allows claimed https uris', function () {
         return i(this.provider).clientAdd({
           application_type: 'native',
@@ -65,7 +65,7 @@ describe('OAuth 2.0 for Native Apps Best Current Practice features', function ()
       });
     });
 
-    describe('Loopback URI Redirection', function () {
+    describe('Loopback Interface Redirection', function () {
       it('allows http protocol localhost loopback uris', function () {
         return i(this.provider).clientAdd({
           application_type: 'native',
