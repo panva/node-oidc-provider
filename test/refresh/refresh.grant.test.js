@@ -75,7 +75,7 @@ describe('grant_type=refresh_token', function () {
         expect(response.body).to.have.keys('access_token', 'id_token', 'expires_in', 'token_type', 'refresh_token');
         const refreshIdToken = j(base64url(response.body.id_token.split('.')[1]));
         expect(refreshIdToken).to.have.property('nonce', 'foobarnonce');
-        expect(response.body).to.have.property('refresh_token', rt);
+        expect(response.body).to.have.property('refresh_token').that.is.a('string');
       });
     });
 

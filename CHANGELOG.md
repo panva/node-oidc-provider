@@ -30,6 +30,7 @@ Yay for [SemVer](http://semver.org/).
 - findById helper signature changed to (ctx, accountId)
 - `postLogoutRedirectUri` configuration option is now a helper function and is awaited to (was a string property)
 - `ctx.prompted` renamed to more descriptive `ctx.promptPending`
+- default refreshTokenRotation changed from 'none' to 'rotateAndConsume'
 
 *New features*
 - `static` function named `connect` can now be present on an Adapter prototype, this will be awaited
