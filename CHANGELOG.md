@@ -29,6 +29,7 @@ Yay for [SemVer](http://semver.org/).
 - interactionCheck helper signature changed to (ctx)
 - findById helper signature changed to (ctx, accountId)
 - `postLogoutRedirectUri` configuration option is now a helper function and is awaited to (was a string property)
+- `ctx.prompted` renamed to more descriptive `ctx.promptPending`
 
 *New features*
 - `static` function named `connect` can now be present on an Adapter prototype, this will be awaited
