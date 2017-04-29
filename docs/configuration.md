@@ -478,12 +478,6 @@ like so:
 const configuration = { features: { pkce: { forcedForNative: true } } };
 ```
 
-To allow native clients using that use pkce to skip token endpoint auth configure pkce as an object
-like so:
-```js
-const configuration = { features: { pkce: { skipClientAuth: true } } };
-```
-
 
 ## Custom Grant Types
 oidc-provider comes with the basic grants implemented, but you can register your own grant types,

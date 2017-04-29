@@ -264,47 +264,6 @@ describe('PKCE RFC7636', function () {
         i(this.provider).configuration('features.pkce').skipClientAuth = false;
       });
 
-      it('passes when auth is ommited but PKCE is provided (none)', function* () {
-        const authCode = new this.provider.AuthorizationCode({
-          accountId: 'sub',
-          scope: 'openid offline_access',
-          clientId: 'clientNone',
-          codeChallenge: 'plainFoobar',
-          codeChallengeMethod: 'plain',
-          redirectUri: 'com.example.myapp:/localhost/cb',
-        });
-        const code = yield authCode.save();
-
-        let token;
-        yield this.agent.post('/token')
-          .type('form')
-          .send({
-            code,
-            client_id: 'clientNone',
-            grant_type: 'authorization_code',
-            redirect_uri: 'com.example.myapp:/localhost/cb',
-            code_verifier: 'plainFoobar'
-          })
-          .expect(200)
-          .expect((response) => {
-            token = response.body.refresh_token;
-            const jti = token.substring(0, 48);
-            const stored = this.TestAdapter.for('RefreshToken').syncFind(jti);
-            const payload = JSON.parse(base64url.decode(stored.payload));
-
-            expect(payload).to.have.property('onlyPKCE', true);
-          });
-
-        return this.agent.post('/token')
-          .auth('clientNone')
-          .type('form')
-          .send({
-            refresh_token: token,
-            grant_type: 'refresh_token',
-          })
-          .expect(200);
-      });
-
       it('passes when auth is ommited but PKCE is provided (basic)', function* () {
         const authCode = new this.provider.AuthorizationCode({
           accountId: 'sub',
