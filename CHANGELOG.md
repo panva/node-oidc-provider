@@ -31,12 +31,11 @@ Yay for [SemVer](http://semver.org/).
 - `postLogoutRedirectUri` configuration option is now a helper function and is awaited to (was a string property)
 - `ctx.prompted` renamed to more descriptive `ctx.promptPending`
 - default refreshTokenRotation changed from 'none' to 'rotateAndConsume'
+- pkce.skipClientAuth removed, native clients not willing to submit secrets should be registered with method none
 
 *New features*
 - `static` function named `connect` can now be present on an Adapter prototype, this will be awaited
   during initialization, use to establish the necessary adapter connections
-- enabling oauthNativeApps (still draft) now also enables pkce.skipClientAuth unless it was,
-  explicitly disabled
 - introspection and revocation endpoint authentication now has dedicated settings and properties,
   unless specific settings for those are provided they default to what's provided for token_endpoint
   equivalents, this allows for fine-tuning while not disrupting existing behavior (y)

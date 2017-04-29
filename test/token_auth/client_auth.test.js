@@ -110,13 +110,13 @@ describe('client authentication options', function () {
     it('accepts the auth', function () {
       return this.agent.post(route)
       .send({
-        grant_type: 'implicit'
+        grant_type: 'implicit',
+        client_id: 'client-none',
       })
       .type('form')
-      .auth('client-none', 'secret')
       .expect({
         error: 'invalid_request',
-        error_description: 'client not supposed to access token endpoint',
+        error_description: 'implicit is not a grant resolved with a token endpoint call',
       });
     });
   });

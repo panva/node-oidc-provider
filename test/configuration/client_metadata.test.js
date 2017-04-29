@@ -442,9 +442,6 @@ describe('Client validations', function () {
       }
     });
     rejects(this.title, 'not-a-method');
-    rejects(this.title, 'none', /token_endpoint_auth_method is none/, {
-      grant_types: ['authorization_code']
-    });
 
     allows(this.title, 'none', {
       response_types: ['id_token'],
