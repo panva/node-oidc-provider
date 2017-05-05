@@ -36,6 +36,7 @@ module.exports.config = {
     sessionManagement: true,
     backchannelLogout: true,
     oauthNativeApps: true,
+    pkce: { skipClientAuth: true },
   },
   subjectTypes: ['public', 'pairwise'],
   pairwiseSalt: 'da1c442b365b563dfc121f285a11eedee5bbff7110d55c88',
