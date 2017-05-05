@@ -7,7 +7,14 @@ const mount = require('koa-mount');
 const supertest = require('supertest');
 const upstreamParser = require('koa-body');
 
+let server;
+
 describe('body parser', function () {
+  afterEach(function (done) {
+    server.on('close', done);
+    server.close();
+  });
+
   describe('application/x-www-form-urlencoded', function () {
     it('uses the upstream parser albeit reluctantly', function* () {
       const provider = new Provider('http://localhost:3000');
@@ -24,7 +31,7 @@ describe('body parser', function () {
       app.use(upstreamParser());
       app.use(mount('/op', provider.app));
 
-      const server = http.createServer(app.callback()).listen();
+      server = http.createServer(app.callback()).listen();
 
       return supertest(server)
         .post('/op/token')
@@ -49,7 +56,7 @@ describe('body parser', function () {
       app.use(upstreamParser());
       app.use(mount('/op', provider.app));
 
-      const server = http.createServer(app.callback()).listen();
+      server = http.createServer(app.callback()).listen();
 
       return supertest(server)
         .post('/op/reg')
@@ -65,7 +72,7 @@ describe('body parser', function () {
         features: { registration: true }
       });
       yield provider.initialize();
-      const server = http.createServer(provider.app.callback()).listen();
+      server = http.createServer(provider.app.callback()).listen();
 
       return supertest(server)
         .post('/reg')
