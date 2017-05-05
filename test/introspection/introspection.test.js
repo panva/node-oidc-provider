@@ -323,6 +323,29 @@ describe('introspection features', function () {
       });
     });
 
+    it('responds with active=false when client auth = none and token does not belong to it', function (done) {
+      const at = new this.provider.AccessToken({
+        accountId: 'accountId',
+        clientId: 'client',
+        scope: 'scope',
+      });
+
+      at.save().then((token) => {
+        this.agent.post(route)
+        .send({
+          token,
+          client_id: 'client-none',
+        })
+        .type('form')
+        .expect(200)
+        .expect((response) => {
+          expect(response.body).to.have.property('active', false);
+          expect(response.body).to.have.keys('active');
+        })
+        .end(done);
+      });
+    });
+
     it('emits on (i.e. auth) error', function () {
       const spy = sinon.spy();
       this.provider.once('introspection.error', spy);

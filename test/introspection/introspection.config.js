@@ -22,5 +22,11 @@ module.exports = {
     redirect_uris: [],
     response_types: [],
     grant_types: [],
+  }, {
+    client_id: 'client-none',
+    token_endpoint_auth_method: 'none',
+    redirect_uris: [],
+    grant_types: [],
+    response_types: []
   }]
 };

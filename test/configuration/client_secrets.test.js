@@ -4,6 +4,24 @@ const { expect } = require('chai');
 describe('Client#add', function () {
   before(bootstrap(__dirname)); // provider
 
+  it('client secret is mandatory if even one of the authz needs it', function () {
+    expect(this.provider.Client.needsSecret({
+      token_endpoint_auth_method: 'none',
+      revocation_endpoint_auth_method: 'none',
+      introspection_endpoint_auth_method: 'client_secret_basic',
+    })).to.be.true;
+    expect(this.provider.Client.needsSecret({
+      token_endpoint_auth_method: 'none',
+      revocation_endpoint_auth_method: 'client_secret_basic',
+      introspection_endpoint_auth_method: 'none',
+    })).to.be.true;
+    expect(this.provider.Client.needsSecret({
+      token_endpoint_auth_method: 'client_secret_basic',
+      revocation_endpoint_auth_method: 'none',
+      introspection_endpoint_auth_method: 'none',
+    })).to.be.true;
+  });
+
   [
     'id_token_signed_response_alg',
     'request_object_signing_alg',

@@ -31,14 +31,15 @@ Yay for [SemVer](http://semver.org/).
 - `postLogoutRedirectUri` configuration option is now a helper function and is awaited to (was a string property)
 - `ctx.prompted` renamed to more descriptive `ctx.promptPending`
 - default refreshTokenRotation changed from 'none' to 'rotateAndConsume'
-- pkce.skipClientAuth removed, native clients not willing to submit secrets should be registered with method none
+- pkce.skipClientAuth removed, native clients not willing to submit secrets should be registered
+  with method none
 
 *New features*
 - `static` function named `connect` can now be present on an Adapter prototype, this will be awaited
   during initialization, use to establish the necessary adapter connections
 - introspection and revocation endpoint authentication now has dedicated settings and properties,
   unless specific settings for those are provided they default to what's provided for token_endpoint
-  equivalents, this allows for fine-tuning while not disrupting existing behavior (y)
+  equivalents, this allows for fine-tuning while not disrupting existing behavior
 - new client metadata supported:
   - introspection_endpoint_auth_method
   - introspection_endpoint_auth_signing_alg
@@ -63,6 +64,15 @@ Yay for [SemVer](http://semver.org/).
 
 ## Versions 1.x
 ### Version 1.15.0
+#### Version 1.15.7
+- [DIFF](https://github.com/panva/node-oidc-provider/compare/v1.15.6...v1.15.7)
+- Native Apps BCP draft reference updated, no change in implementation
+- allow introspection and revocation w/o auth for native clients when pkce.skipClientAuth is enabled
+- fixed client post_logout_redirect_uris validation to allow all urls
+- fixed token_endpoint_auth_method=none to how it should be (skip auth instead of forbid use)
+- fixed a 500 from token_endpoint when a valid(whitelisted) but invalid(d'oh) grant_type=implicit
+  is submitted
+
 #### Version 1.15.6
 - [DIFF](https://github.com/panva/node-oidc-provider/compare/v1.15.4...v1.15.6)
 - bumped node-jose dependency to avoid github tar.gz dependencies

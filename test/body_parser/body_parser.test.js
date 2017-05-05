@@ -1,11 +1,14 @@
 const Provider = require('../../lib');
 const Koa = require('koa');
-const http = require('http');
 const mount = require('koa-mount');
 const supertest = require('supertest');
 const upstreamParser = require('koa-body');
 
 describe('body parser', function () {
+  afterEach(function () {
+    global.server.removeAllListeners('request');
+  });
+
   describe('application/x-www-form-urlencoded', function () {
     it('uses the upstream parser albeit reluctantly', async function () {
       const provider = new Provider('http://localhost:3000');
@@ -22,9 +25,9 @@ describe('body parser', function () {
       app.use(upstreamParser());
       app.use(mount('/op', provider.app));
 
-      const server = http.createServer(app.callback()).listen();
+      global.server.on('request', app.callback());
 
-      return supertest(server)
+      return supertest(global.server)
         .post('/op/token')
         .send({
           client_id: 'client',
@@ -47,9 +50,9 @@ describe('body parser', function () {
       app.use(upstreamParser());
       app.use(mount('/op', provider.app));
 
-      const server = http.createServer(app.callback()).listen();
+      global.server.on('request', app.callback());
 
-      return supertest(server)
+      return supertest(global.server)
         .post('/op/reg')
         .send({
           redirect_uris: ['https://rp.example.com/cb'],
@@ -63,9 +66,10 @@ describe('body parser', function () {
         features: { registration: true }
       });
       await provider.initialize();
-      const server = http.createServer(provider.app.callback()).listen();
 
-      return supertest(server)
+      global.server.on('request', provider.app.callback());
+
+      return supertest(global.server)
         .post('/reg')
         .send('not a json')
         .type('json')
