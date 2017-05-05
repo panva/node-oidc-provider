@@ -238,7 +238,8 @@ module.exports = function testHelper(dir, basename, mountTo) {
   }
 
   after(function (done) {
-    server.close(done);
+    server.on('close', done);
+    server.close();
   });
 
   return function () {
