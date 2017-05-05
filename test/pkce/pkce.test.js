@@ -2,6 +2,7 @@
 
 const base64url = require('base64url');
 const bootstrap = require('../test_helper');
+const sinon = require('sinon');
 const { parse: parseUrl } = require('url');
 const { expect } = require('chai');
 
@@ -264,163 +265,239 @@ describe('PKCE RFC7636', function () {
         i(this.provider).configuration('features.pkce').skipClientAuth = false;
       });
 
-      it('passes when auth is ommited but PKCE is provided (basic)', function* () {
-        const authCode = new this.provider.AuthorizationCode({
-          accountId: 'sub',
-          scope: 'openid offline_access',
-          clientId: 'client',
-          codeChallenge: 'plainFoobar',
-          codeChallengeMethod: 'plain',
-          redirectUri: 'com.example.myapp:/localhost/cb',
-        });
-        const code = yield authCode.save();
-
-        let token;
-        yield this.agent.post('/token')
-          .auth('client')
-          .type('form')
-          .send({
-            code,
-            grant_type: 'authorization_code',
-            redirect_uri: 'com.example.myapp:/localhost/cb',
-            code_verifier: 'plainFoobar'
-          })
-          .expect(200)
-          .expect((response) => {
-            token = response.body.refresh_token;
-            const jti = token.substring(0, 48);
-            const stored = this.TestAdapter.for('RefreshToken').syncFind(jti);
-            const payload = JSON.parse(base64url.decode(stored.payload));
-
-            expect(payload).to.have.property('onlyPKCE', true);
+      describe('token_endpoint', function () {
+        it('passes when auth is ommited but PKCE is provided (basic)', function* () {
+          const authCode = new this.provider.AuthorizationCode({
+            accountId: 'sub',
+            scope: 'openid offline_access',
+            clientId: 'client',
+            codeChallenge: 'plainFoobar',
+            codeChallengeMethod: 'plain',
+            redirectUri: 'com.example.myapp:/localhost/cb',
           });
+          const code = yield authCode.save();
 
-        return this.agent.post('/token')
-          .auth('client')
-          .type('form')
-          .send({
-            refresh_token: token,
-            grant_type: 'refresh_token',
-          })
-          .expect(200);
+          let token;
+          yield this.agent.post('/token')
+            .auth('client')
+            .type('form')
+            .send({
+              code,
+              grant_type: 'authorization_code',
+              redirect_uri: 'com.example.myapp:/localhost/cb',
+              code_verifier: 'plainFoobar'
+            })
+            .expect(200)
+            .expect((response) => {
+              token = response.body.refresh_token;
+              const jti = token.substring(0, 48);
+              const stored = this.TestAdapter.for('RefreshToken').syncFind(jti);
+              const payload = JSON.parse(base64url.decode(stored.payload));
+
+              expect(payload).to.have.property('onlyPKCE', true);
+            });
+
+          return this.agent.post('/token')
+            .auth('client')
+            .type('form')
+            .send({
+              refresh_token: token,
+              grant_type: 'refresh_token',
+            })
+            .expect(200);
+        });
+
+        it('passes when auth is ommited but PKCE is provided (post)', function* () {
+          const authCode = new this.provider.AuthorizationCode({
+            accountId: 'sub',
+            scope: 'openid offline_access',
+            clientId: 'clientPost',
+            codeChallenge: 'plainFoobar',
+            codeChallengeMethod: 'plain',
+            redirectUri: 'com.example.myapp:/localhost/cb',
+          });
+          const code = yield authCode.save();
+
+          let token;
+          yield this.agent.post('/token')
+            .type('form')
+            .send({
+              code,
+              client_id: 'clientPost',
+              grant_type: 'authorization_code',
+              redirect_uri: 'com.example.myapp:/localhost/cb',
+              code_verifier: 'plainFoobar'
+            })
+            .expect(200)
+            .expect((response) => {
+              token = response.body.refresh_token;
+              const jti = token.substring(0, 48);
+              const stored = this.TestAdapter.for('RefreshToken').syncFind(jti);
+              const payload = JSON.parse(base64url.decode(stored.payload));
+
+              expect(payload).to.have.property('onlyPKCE', true);
+            });
+
+          return this.agent.post('/token')
+            .type('form')
+            .send({
+              client_id: 'clientPost',
+              refresh_token: token,
+              grant_type: 'refresh_token',
+            })
+            .expect(200);
+        });
+
+        it('checks presence of code_verifier param if code has codeChallenge', function* () {
+          const authCode = new this.provider.AuthorizationCode({
+            accountId: 'sub',
+            scope: 'openid',
+            clientId: 'client',
+            codeChallenge: 'plainFoobar',
+            codeChallengeMethod: 'plain',
+            redirectUri: 'com.example.myapp:/localhost/cb',
+          });
+          const code = yield authCode.save();
+
+          return this.agent.post('/token')
+            .auth('client', 'secret')
+            .type('form')
+            .send({
+              code,
+              grant_type: 'authorization_code',
+              redirect_uri: 'com.example.myapp:/localhost/cb',
+            })
+            .expect(400)
+            .expect((response) => {
+              expect(response.body).to.have.property('error', 'invalid_grant');
+            });
+        });
+
+        it('still checks value of code_verifier when method = plain', function* () {
+          const authCode = new this.provider.AuthorizationCode({
+            accountId: 'sub',
+            scope: 'openid',
+            clientId: 'client',
+            codeChallenge: 'plainFoobar',
+            codeChallengeMethod: 'plain',
+            redirectUri: 'com.example.myapp:/localhost/cb',
+          });
+          const code = yield authCode.save();
+
+          return this.agent.post('/token')
+            .auth('client')
+            .type('form')
+            .send({
+              code,
+              grant_type: 'authorization_code',
+              redirect_uri: 'com.example.myapp:/localhost/cb',
+              code_verifier: 'plainFoobars'
+            })
+            .expect(400)
+            .expect((response) => {
+              expect(response.body).to.have.property('error', 'invalid_grant');
+            });
+        });
+
+        it('still checks value of code_verifier when method = S256', function* () {
+          const authCode = new this.provider.AuthorizationCode({
+            accountId: 'sub',
+            scope: 'openid',
+            clientId: 'client',
+            codeChallenge: 'E9Melhoa2OwvFrEMTJguCHaoeK1t8URWbuGJSstw-cM',
+            codeChallengeMethod: 'S256',
+            redirectUri: 'com.example.myapp:/localhost/cb',
+          });
+          const code = yield authCode.save();
+
+          return this.agent.post('/token')
+            .auth('client')
+            .type('form')
+            .send({
+              code,
+              grant_type: 'authorization_code',
+              redirect_uri: 'com.example.myapp:/localhost/cb',
+              code_verifier: 'invalidE9Melhoa2OwvFrEMTJguCHaoeK1t8URWbuGJSstw-cM'
+            })
+            .expect(400)
+            .expect((response) => {
+              expect(response.body).to.have.property('error', 'invalid_grant');
+            });
+        });
       });
 
-      it('passes when auth is ommited but PKCE is provided (post)', function* () {
-        const authCode = new this.provider.AuthorizationCode({
-          accountId: 'sub',
-          scope: 'openid offline_access',
-          clientId: 'clientPost',
-          codeChallenge: 'plainFoobar',
-          codeChallengeMethod: 'plain',
-          redirectUri: 'com.example.myapp:/localhost/cb',
-        });
-        const code = yield authCode.save();
-
-        let token;
-        yield this.agent.post('/token')
-          .type('form')
-          .send({
-            code,
-            client_id: 'clientPost',
-            grant_type: 'authorization_code',
-            redirect_uri: 'com.example.myapp:/localhost/cb',
-            code_verifier: 'plainFoobar'
-          })
-          .expect(200)
-          .expect((response) => {
-            token = response.body.refresh_token;
-            const jti = token.substring(0, 48);
-            const stored = this.TestAdapter.for('RefreshToken').syncFind(jti);
-            const payload = JSON.parse(base64url.decode(stored.payload));
-
-            expect(payload).to.have.property('onlyPKCE', true);
+      describe('revocation_endpoint', function () {
+        it('allows to skip auth', function* () {
+          const at = new this.provider.AccessToken({
+            accountId: 'sub',
+            scope: 'openid',
+            clientId: 'client',
           });
 
-        return this.agent.post('/token')
-          .type('form')
-          .send({
-            client_id: 'clientPost',
-            refresh_token: token,
-            grant_type: 'refresh_token',
-          })
-          .expect(200);
+          const stub = sinon.stub(this.provider.AccessToken.prototype, 'destroy').callsFake(() => {
+            return Promise.resolve();
+          });
+
+          const token = yield at.save();
+
+          return this.agent.post('/token/revocation')
+            .type('form')
+            .send({
+              token,
+              client_id: 'client',
+            })
+            .expect(200)
+            .expect((response) => {
+              expect(response.body).to.eql({});
+            })
+            .expect(() => {
+              expect(stub.calledOnce).to.be.true;
+              this.provider.AccessToken.prototype.destroy.restore();
+            });
+        });
       });
 
-      it('checks presence of code_verifier param if code has codeChallenge', function* () {
-        const authCode = new this.provider.AuthorizationCode({
-          accountId: 'sub',
-          scope: 'openid',
-          clientId: 'client',
-          codeChallenge: 'plainFoobar',
-          codeChallengeMethod: 'plain',
-          redirectUri: 'com.example.myapp:/localhost/cb',
-        });
-        const code = yield authCode.save();
-
-        return this.agent.post('/token')
-          .auth('client', 'secret')
-          .type('form')
-          .send({
-            code,
-            grant_type: 'authorization_code',
-            redirect_uri: 'com.example.myapp:/localhost/cb',
-          })
-          .expect(400)
-          .expect((response) => {
-            expect(response.body).to.have.property('error', 'invalid_grant');
+      describe('introspection_endpoint', function () {
+        it('allows to skip auth', function* () {
+          const at = new this.provider.AccessToken({
+            accountId: 'sub',
+            scope: 'openid',
+            clientId: 'client',
           });
-      });
+          const token = yield at.save();
 
-      it('still checks value of code_verifier when method = plain', function* () {
-        const authCode = new this.provider.AuthorizationCode({
-          accountId: 'sub',
-          scope: 'openid',
-          clientId: 'client',
-          codeChallenge: 'plainFoobar',
-          codeChallengeMethod: 'plain',
-          redirectUri: 'com.example.myapp:/localhost/cb',
+          return this.agent.post('/token/introspection')
+            .type('form')
+            .send({
+              token,
+              client_id: 'client',
+            })
+            .expect(200)
+            .expect((response) => {
+              expect(response.body).to.have.property('active', true);
+              expect(response.body).to.have.property('client_id', 'client');
+            });
         });
-        const code = yield authCode.save();
 
-        return this.agent.post('/token')
-          .auth('client')
-          .type('form')
-          .send({
-            code,
-            grant_type: 'authorization_code',
-            redirect_uri: 'com.example.myapp:/localhost/cb',
-            code_verifier: 'plainFoobars'
-          })
-          .expect(400)
-          .expect((response) => {
-            expect(response.body).to.have.property('error', 'invalid_grant');
+        it('but only for own tokens', function* () {
+          const at = new this.provider.AccessToken({
+            accountId: 'sub',
+            scope: 'openid',
+            clientId: 'a-different-client',
           });
-      });
+          const token = yield at.save();
 
-      it('still checks value of code_verifier when method = S256', function* () {
-        const authCode = new this.provider.AuthorizationCode({
-          accountId: 'sub',
-          scope: 'openid',
-          clientId: 'client',
-          codeChallenge: 'E9Melhoa2OwvFrEMTJguCHaoeK1t8URWbuGJSstw-cM',
-          codeChallengeMethod: 'S256',
-          redirectUri: 'com.example.myapp:/localhost/cb',
+          return this.agent.post('/token/introspection')
+            .type('form')
+            .send({
+              token,
+              client_id: 'client',
+            })
+            .expect(200)
+            .expect((response) => {
+              expect(response.body).to.eql({ active: false });
+            });
         });
-        const code = yield authCode.save();
-
-        return this.agent.post('/token')
-          .auth('client')
-          .type('form')
-          .send({
-            code,
-            grant_type: 'authorization_code',
-            redirect_uri: 'com.example.myapp:/localhost/cb',
-            code_verifier: 'invalidE9Melhoa2OwvFrEMTJguCHaoeK1t8URWbuGJSstw-cM'
-          })
-          .expect(400)
-          .expect((response) => {
-            expect(response.body).to.have.property('error', 'invalid_grant');
-          });
       });
     });
   });

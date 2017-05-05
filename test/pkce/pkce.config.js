@@ -3,7 +3,7 @@
 const _ = require('lodash');
 const config = _.clone(require('../default.config'));
 
-config.features = { pkce: {} };
+config.features = { pkce: {}, introspection: true, revocation: true };
 
 module.exports = {
   config,
