@@ -39,18 +39,14 @@ const responses = {
   }
 };
 
-let base = 33000;
-function ephemeralPort() {
-  base += 1;
-  return base;
-}
-
 function jParseCookie(value) {
   expect(value).to.exist;
   const parsed = querystring.parse(value, '; ');
   const key = Object.keys(parsed)[0];
   return JSON.parse(parsed[key]);
 }
+
+const port = global.server.address().port;
 
 module.exports = function testHelper(dir, basename, mountTo) {
   const conf = path.format({
@@ -62,12 +58,9 @@ module.exports = function testHelper(dir, basename, mountTo) {
   config.adapter = TestAdapter;
   config.findById = Account.findById;
 
-  const port = ephemeralPort();
-
   const provider = new Provider(`http://127.0.0.1:${port}${mountTo || ''}`, config);
   provider.defaultHttpOptions = { timeout: 50 };
 
-  let server;
   let agent;
 
   function logout() {
@@ -237,9 +230,8 @@ module.exports = function testHelper(dir, basename, mountTo) {
     }
   }
 
-  after(function (done) {
-    server.on('close', done);
-    server.close();
+  after(function () {
+    global.server.removeAllListeners('request');
   });
 
   return function () {
@@ -263,12 +255,12 @@ module.exports = function testHelper(dir, basename, mountTo) {
         if (mountTo) {
           const app = koa();
           app.use(mount(mountTo, provider.app));
-          server = app.listen(port);
+          global.server.on('request', app.callback());
         } else {
-          server = provider.app.listen(port);
+          global.server.on('request', provider.app.callback());
         }
 
-        agent = supertest(server);
+        agent = supertest(global.server);
         this.agent = agent;
       }, reject).then(resolve);
     }).catch((err) => {

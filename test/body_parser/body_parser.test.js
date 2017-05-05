@@ -7,12 +7,9 @@ const mount = require('koa-mount');
 const supertest = require('supertest');
 const upstreamParser = require('koa-body');
 
-let server;
-
 describe('body parser', function () {
-  afterEach(function (done) {
-    server.on('close', done);
-    server.close();
+  afterEach(function () {
+    global.server.removeAllListeners('request');
   });
 
   describe('application/x-www-form-urlencoded', function () {
@@ -31,9 +28,9 @@ describe('body parser', function () {
       app.use(upstreamParser());
       app.use(mount('/op', provider.app));
 
-      server = http.createServer(app.callback()).listen();
+      global.server.on('request', app.callback());
 
-      return supertest(server)
+      return supertest(global.server)
         .post('/op/token')
         .send({
           client_id: 'client',
@@ -56,9 +53,9 @@ describe('body parser', function () {
       app.use(upstreamParser());
       app.use(mount('/op', provider.app));
 
-      server = http.createServer(app.callback()).listen();
+      global.server.on('request', app.callback());
 
-      return supertest(server)
+      return supertest(global.server)
         .post('/op/reg')
         .send({
           redirect_uris: ['https://rp.example.com/cb'],
@@ -72,9 +69,10 @@ describe('body parser', function () {
         features: { registration: true }
       });
       yield provider.initialize();
-      server = http.createServer(provider.app.callback()).listen();
 
-      return supertest(server)
+      global.server.on('request', provider.app.callback());
+
+      return supertest(global.server)
         .post('/reg')
         .send('not a json')
         .type('json')
