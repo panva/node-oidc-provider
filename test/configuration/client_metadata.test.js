@@ -357,8 +357,8 @@ describe('Client validations', function () {
     rejects(this.title, [123], /must only contain strings$/);
     allows(this.title, ['http://a-web-uri']);
     allows(this.title, ['https://a-web-uri']);
-    rejects(this.title, ['not a uri'], /must only contain web uris$/);
-    rejects(this.title, ['custom-scheme://not-a-web-uri'], /must only contain web uris$/);
+    allows(this.title, ['any-custom-scheme://not-a-web-uri']);
+    rejects(this.title, ['not a uri'], /must only contain uris$/);
   });
 
   context('request_object_signing_alg', function () {
