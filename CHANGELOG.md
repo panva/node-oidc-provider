@@ -28,6 +28,7 @@ Yay for [SemVer](http://semver.org/).
 
 ## Version 1.15.0
 ### Version 1.15.7
+- [DIFF](https://github.com/panva/node-oidc-provider/compare/v1.15.6...v1.15.7)
 - Native Apps BCP draft reference updated, no change in implementation
 - allow introspection and revocation w/o auth for native clients when pkce.skipClientAuth is enabled
 - fixed client post_logout_redirect_uris validation to allow all urls
