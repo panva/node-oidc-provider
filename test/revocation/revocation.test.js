@@ -406,20 +406,6 @@ describe('revocation features', function () {
       .expect(200);
     });
 
-    it('rejects unsupported tokens', function* () {
-      const ac = new this.provider.AuthorizationCode({ clientId: 'client' });
-      return this.agent.post(route)
-      .auth('client', 'secret')
-      .send({
-        token: yield ac.save()
-      })
-      .type('form')
-      .expect(400)
-      .expect((response) => {
-        expect(response.body).to.have.property('error', 'unsupported_token_type');
-      });
-    });
-
     it('does not revoke tokens of other clients', function (done) {
       const at = new this.provider.AccessToken({
         accountId: 'accountId',
