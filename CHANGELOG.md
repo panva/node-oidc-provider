@@ -27,6 +27,13 @@ Yay for [SemVer](http://semver.org/).
 <!-- TOC END -->
 
 ## Version 1.15.0
+### Version 1.15.8
+- [DIFF](https://github.com/panva/node-oidc-provider/compare/v1.15.7...v1.15.8)
+- fixed revocation response body to be empty
+- fixed revocation response when invalid inputs occur, unsupported_token_type may not happen since
+  token type support for revocation does not support defining which tokens are supported and which
+  arent
+
 ### Version 1.15.7
 - [DIFF](https://github.com/panva/node-oidc-provider/compare/v1.15.6...v1.15.7)
 - Native Apps BCP draft reference updated, no change in implementation
