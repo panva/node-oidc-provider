@@ -79,6 +79,10 @@ Yay for [SemVer](http://semver.org/).
 
 ## ^1.0.0
 ### 1.15.x
+- fixed revocation response body to be empty
+- fixed revocation response when invalid inputs occur, unsupported_token_type may not happen since
+  token type support for revocation does not support defining which tokens are supported and which
+  arent
 - Native Apps BCP draft reference updated, no change in implementation
 - allow introspection and revocation w/o auth for native clients when pkce.skipClientAuth is enabled
 - fixed client post_logout_redirect_uris validation to allow all urls

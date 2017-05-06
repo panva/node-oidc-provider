@@ -392,24 +392,17 @@ describe('revocation features', function () {
         token: 'dsahjdasdsa'
       })
       .type('form')
-      .expect(200)
-      .expect((response) => {
-        expect(response.body).to.eql({});
-      });
+      .expect(200);
     });
 
-    it('rejects unsupported tokens', async function () {
-      const ac = new this.provider.AuthorizationCode({ clientId: 'client' });
+    it('rejects wrong tokens', function () {
       return this.agent.post(route)
       .auth('client', 'secret')
       .send({
-        token: await ac.save()
+        token: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiYWRtaW4iOnRydWV9.TJVA95OrM7E2cBab30RMHrHDcEfxjoYZgeFONFh7HgQ'
       })
       .type('form')
-      .expect(400)
-      .expect((response) => {
-        expect(response.body).to.have.property('error', 'unsupported_token_type');
-      });
+      .expect(200);
     });
 
     it('does not revoke tokens of other clients', function (done) {

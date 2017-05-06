@@ -26,7 +26,7 @@
     "eslint": "^3.0.0",
     "eslint-config-airbnb-base": "^11.0.0",
     "eslint-plugin-import": "^2.0.1",
-    "istanbul": "next",
+    "istanbul": "^0.4.5",
     "koa-body": "^2.0.0",
     "koa-ejs": "^4.0.0",
     "koa-mount": "^3.0.0",
