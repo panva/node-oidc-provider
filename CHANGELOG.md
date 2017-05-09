@@ -27,6 +27,10 @@ Yay for [SemVer](http://semver.org/).
 <!-- TOC END -->
 
 ## Version 1.15.0
+### Version 1.15.10
+- [DIFF](https://github.com/panva/node-oidc-provider/compare/v1.15.9...v1.15.10)
+- fixed subsequent refresh token refresh with pkce.skipClientAuth = true
+
 ### Version 1.15.9
 - [DIFF](https://github.com/panva/node-oidc-provider/compare/v1.15.7...v1.15.9)
 - fixed revocation response body to be empty
