@@ -99,13 +99,7 @@ Yay for [SemVer](http://semver.org/).
 - fixed full logout sessions still being upserted after their removal
 - fixed partial logout sessions still having the logout details
 - fix: 'none' token_endpoint_auth_method clients can still use code flow with PKCE.
-- Native Apps BCP draft updated from draft07 to draft09
-  - custom uri schemes not containing a period character (".") will be rejected
-
-  > For Custom URI scheme based redirects, authorization servers SHOULD
-  > enforce the requirement in Section 7.1 that clients use reverse
-  > domain name based schemes.  At a minimum, any scheme that doesn't
-  > contain a period character ("."), SHOULD be rejected.
+- Native Apps BCP draft updated from draft07 to draft09 (custom uri schemes not containing a period character (".") will be rejected)
 
 ### 1.14.x
 - backwards compatible default-on pkce feature flag added so now pkce support can be disabled
