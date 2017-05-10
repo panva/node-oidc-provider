@@ -79,6 +79,7 @@ Yay for [SemVer](http://semver.org/).
 
 ## ^1.0.0
 ### 1.15.x
+- fixed subsequent refresh token refresh with pkce.skipClientAuth = true
 - fixed revocation response body to be empty
 - fixed revocation response when invalid inputs occur, unsupported_token_type may not happen since
   token type support for revocation does not support defining which tokens are supported and which

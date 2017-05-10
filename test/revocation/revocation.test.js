@@ -41,9 +41,7 @@ describe('revocation features', function () {
           this.provider.AccessToken.prototype.destroy.restore();
         })
         .expect(200)
-        .expect((response) => {
-          expect(response.body).to.eql({});
-        })
+        .expect('')
         .end(done);
       });
     });
@@ -69,9 +67,7 @@ describe('revocation features', function () {
           this.provider.AccessToken.prototype.destroy.restore();
         })
         .expect(200)
-        .expect((response) => {
-          expect(response.body).to.eql({});
-        })
+        .expect('')
         .end(done);
       });
     });
@@ -97,9 +93,7 @@ describe('revocation features', function () {
           this.provider.AccessToken.prototype.destroy.restore();
         })
         .expect(200)
-        .expect((response) => {
-          expect(response.body).to.eql({});
-        })
+        .expect('')
         .end(done);
       });
     });
@@ -125,9 +119,7 @@ describe('revocation features', function () {
           this.provider.AccessToken.prototype.destroy.restore();
         })
         .expect(200)
-        .expect((response) => {
-          expect(response.body).to.eql({});
-        })
+        .expect('')
         .end(done);
       });
     });
@@ -178,9 +170,7 @@ describe('revocation features', function () {
           this.provider.RefreshToken.prototype.destroy.restore();
         })
         .expect(200)
-        .expect((response) => {
-          expect(response.body).to.eql({});
-        })
+        .expect('')
         .end(done);
       });
     });
@@ -206,9 +196,7 @@ describe('revocation features', function () {
           this.provider.RefreshToken.prototype.destroy.restore();
         })
         .expect(200)
-        .expect((response) => {
-          expect(response.body).to.eql({});
-        })
+        .expect('')
         .end(done);
       });
     });
@@ -234,9 +222,7 @@ describe('revocation features', function () {
           this.provider.RefreshToken.prototype.destroy.restore();
         })
         .expect(200)
-        .expect((response) => {
-          expect(response.body).to.eql({});
-        })
+        .expect('')
         .end(done);
       });
     });
@@ -262,9 +248,7 @@ describe('revocation features', function () {
           this.provider.RefreshToken.prototype.destroy.restore();
         })
         .expect(200)
-        .expect((response) => {
-          expect(response.body).to.eql({});
-        })
+        .expect('')
         .end(done);
       });
     });
@@ -288,9 +272,7 @@ describe('revocation features', function () {
           this.provider.ClientCredentials.prototype.destroy.restore();
         })
         .expect(200)
-        .expect((response) => {
-          expect(response.body).to.eql({});
-        })
+        .expect('')
         .end(done);
       });
     });
@@ -314,9 +296,7 @@ describe('revocation features', function () {
           this.provider.ClientCredentials.prototype.destroy.restore();
         })
         .expect(200)
-        .expect((response) => {
-          expect(response.body).to.eql({});
-        })
+        .expect('')
         .end(done);
       });
     });
@@ -340,9 +320,7 @@ describe('revocation features', function () {
           this.provider.ClientCredentials.prototype.destroy.restore();
         })
         .expect(200)
-        .expect((response) => {
-          expect(response.body).to.eql({});
-        })
+        .expect('')
         .end(done);
       });
     });
@@ -366,9 +344,7 @@ describe('revocation features', function () {
           this.provider.ClientCredentials.prototype.destroy.restore();
         })
         .expect(200)
-        .expect((response) => {
-          expect(response.body).to.eql({});
-        })
+        .expect('')
         .end(done);
       });
     });
@@ -392,6 +368,7 @@ describe('revocation features', function () {
         token: 'dsahjdasdsa'
       })
       .type('form')
+      .expect('')
       .expect(200);
     });
 
@@ -402,6 +379,7 @@ describe('revocation features', function () {
         token: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiYWRtaW4iOnRydWV9.TJVA95OrM7E2cBab30RMHrHDcEfxjoYZgeFONFh7HgQ'
       })
       .type('form')
+      .expect('')
       .expect(200);
     });
 
