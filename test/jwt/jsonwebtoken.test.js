@@ -39,6 +39,17 @@ describe('JSON Web Token (JWT) RFC7519 implementation', function () {
     });
   });
 
+  it('handles utf8 characters', function () {
+    const key = keystore.get({ kty: 'oct' });
+    return JWT.sign({ 'ś∂źć√': 'ś∂źć√' }, key, 'HS256', {
+      noTimestamp: true
+    })
+    .then(jwt => JWT.decode(jwt))
+    .then((decoded) => {
+      expect(decoded.payload).to.eql({ 'ś∂źć√': 'ś∂źć√' });
+    });
+  });
+
   it('signs and validates with RSA', function () {
     const key = keystore.get({ kty: 'RSA' });
     return JWT.sign({ data: true }, key, 'RS256', {
