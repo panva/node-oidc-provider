@@ -27,6 +27,10 @@ Yay for [SemVer](http://semver.org/).
 <!-- TOC END -->
 
 ## Version 1.15.0
+### Version 1.15.11
+- [DIFF](https://github.com/panva/node-oidc-provider/compare/v1.15.10...v1.15.11)
+- fixed JWT signing of utf8 containing input
+
 ### Version 1.15.10
 - [DIFF](https://github.com/panva/node-oidc-provider/compare/v1.15.9...v1.15.10)
 - fixed subsequent refresh token refresh with pkce.skipClientAuth = true
