@@ -79,6 +79,7 @@ Yay for [SemVer](http://semver.org/).
 
 ## ^1.0.0
 ### 1.15.x
+- fixed JWT signing of utf8 containing input
 - fixed subsequent refresh token refresh with pkce.skipClientAuth = true
 - fixed revocation response body to be empty
 - fixed revocation response when invalid inputs occur, unsupported_token_type may not happen since

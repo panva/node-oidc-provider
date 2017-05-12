@@ -13,9 +13,7 @@ describe('JSON Web Token (JWT) RFC7519 implementation', function () {
   });
 
   it('signs and validates with none', function () {
-    return JWT.sign({ data: true }, null, 'none', {
-      noTimestamp: true
-    })
+    return JWT.sign({ data: true }, null, 'none')
     .then(jwt => JWT.decode(jwt))
     .then((decoded) => {
       expect(decoded.header).not.to.have.property('kid');
@@ -26,9 +24,7 @@ describe('JSON Web Token (JWT) RFC7519 implementation', function () {
 
   it('signs and validates with oct', function () {
     const key = keystore.get({ kty: 'oct' });
-    return JWT.sign({ data: true }, key, 'HS256', {
-      noTimestamp: true
-    })
+    return JWT.sign({ data: true }, key, 'HS256')
     .then(jwt => JWT.verify(jwt, key))
     .then((decoded) => {
       expect(decoded.header).not.to.have.property('kid');
@@ -37,11 +33,18 @@ describe('JSON Web Token (JWT) RFC7519 implementation', function () {
     });
   });
 
+  it('handles utf8 characters', function () {
+    const key = keystore.get({ kty: 'oct' });
+    return JWT.sign({ 'ś∂źć√': 'ś∂źć√' }, key, 'HS256')
+    .then(jwt => JWT.decode(jwt))
+    .then((decoded) => {
+      expect(decoded.payload).to.contain({ 'ś∂źć√': 'ś∂źć√' });
+    });
+  });
+
   it('signs and validates with RSA', function () {
     const key = keystore.get({ kty: 'RSA' });
-    return JWT.sign({ data: true }, key, 'RS256', {
-      noTimestamp: true
-    })
+    return JWT.sign({ data: true }, key, 'RS256')
     .then(jwt => JWT.verify(jwt, key))
     .then((decoded) => {
       expect(decoded.header).to.have.property('kid');
@@ -52,9 +55,7 @@ describe('JSON Web Token (JWT) RFC7519 implementation', function () {
 
   it('signs and validates with EC', function () {
     const key = keystore.get({ kty: 'EC' });
-    return JWT.sign({ data: true }, key, 'ES256', {
-      noTimestamp: true
-    })
+    return JWT.sign({ data: true }, key, 'ES256')
     .then(jwt => JWT.verify(jwt, key))
     .then((decoded) => {
       expect(decoded.header).to.have.property('kid');
