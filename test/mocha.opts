@@ -1,3 +1,2 @@
 --require test/test_helper
---exclude example/adapters/*.js
 test/**/*.test.js
