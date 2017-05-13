@@ -8,7 +8,7 @@ addons:
 node_js:
   - stable
 script:
-  - make test-travis
+  - npm run coverage
 after_script:
   - npm install codecov
   - ./node_modules/.bin/codecov

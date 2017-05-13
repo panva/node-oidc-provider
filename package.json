@@ -26,7 +26,6 @@
     "eslint": "^3.0.0",
     "eslint-config-airbnb-base": "^11.0.0",
     "eslint-plugin-import": "^2.0.1",
-    "istanbul": "next",
     "koa-body": "^2.0.0",
     "koa-ejs": "^4.0.0",
     "koa-mount": "^3.0.0",
@@ -34,6 +33,7 @@
     "mocha": "^3.0.0",
     "moment": "^2.14.1",
     "nock": "^9.0.2",
+    "nyc": "^10.3.2",
     "sinon": "^2.1.0",
     "supertest": "^3.0.0"
   },
@@ -65,8 +65,8 @@
     "koa"
   ],
   "scripts": {
-    "coverage": "make coverage",
-    "test": "make test",
+    "coverage": "nyc node ./test/run",
+    "test": "node ./test/run",
     "lint": "eslint lib example test",
     "lint-fix": "eslint lib example test --fix",
     "heroku-postbuild": "npm install mongodb"
@@ -77,5 +77,11 @@
   ],
   "publishConfig": {
     "tag": "next"
+  },
+  "nyc": {
+    "reporter": [
+      "lcov",
+      "text-summary"
+    ]
   }
 }
