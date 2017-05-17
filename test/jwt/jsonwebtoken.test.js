@@ -8,8 +8,8 @@ const keystore = jose.JWK.createKeyStore();
 describe('JSON Web Token (JWT) RFC7519 implementation', function () {
   before(function () {
     return keystore.generate('oct', 256)
-      .then(keystore.generate('RSA', 512))
-      .then(keystore.generate('EC', 'P-256'));
+      .then(() => keystore.generate('RSA', 512))
+      .then(() => keystore.generate('EC', 'P-256'));
   });
 
   it('signs and validates with none', function () {
