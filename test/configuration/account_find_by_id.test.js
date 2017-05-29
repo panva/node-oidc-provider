@@ -15,7 +15,6 @@ describe('default findById behavior', function () {
 
     return Account.findById({}, 'id').then(async (account) => {
       expect(account.accountId).to.equal('id');
-      expect(account.claims).to.be.an('AsyncFunction');
       expect(await account.claims()).to.eql({ sub: 'id' });
     });
   });

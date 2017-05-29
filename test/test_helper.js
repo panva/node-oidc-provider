@@ -125,7 +125,7 @@ module.exports = function testHelper(dir, basename, mountTo) {
         expect(hostname).to.be.null;
         expect(search).to.be.null;
         expect(query).to.be.null;
-        expect(response).to.have.deep.property('headers.set-cookie').that.is.an('array');
+        expect(response).to.have.nested.property('headers.set-cookie').that.is.an('array');
 
         const interaction = jParseCookie(response.headers['set-cookie'][1]);
         const respond = jParseCookie(response.headers['set-cookie'][2]);

@@ -111,7 +111,7 @@ describe('signatures', function () {
       const components = this.idToken.split('.');
       expect(components).to.have.lengthOf(3);
       expect(components[2]).to.equal('');
-      expect(decode(this.idToken)).to.have.deep.property('header.alg', 'none');
+      expect(decode(this.idToken)).to.have.nested.property('header.alg', 'none');
     });
 
     it('the unsigned token can be used as id_token_hint', function () {
@@ -189,7 +189,7 @@ describe('signatures', function () {
       const components = this.idToken.split('.');
       expect(components).to.have.lengthOf(3);
       expect(components[2]).not.to.equal('');
-      expect(decode(this.idToken)).to.have.deep.property('header.alg', 'HS256');
+      expect(decode(this.idToken)).to.have.nested.property('header.alg', 'HS256');
     });
 
     it('the HS256 signed token can be used as id_token_hint', function () {
