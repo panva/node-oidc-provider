@@ -323,18 +323,44 @@ describe('Client validations', function () {
     });
     allows(this.title, ['http://localhost'], {
       application_type: 'native'
+    }, {
+      features: {
+        oauthNativeApps: false,
+      },
     });
     allows(this.title, ['native://localhost'], {
       application_type: 'native'
+    }, {
+      features: {
+        oauthNativeApps: false,
+      },
     });
     rejects(this.title, ['http://some'], null, {
       application_type: 'native'
     });
+    rejects(this.title, ['http://some'], null, {
+      application_type: 'native'
+    }, {
+      features: {
+        oauthNativeApps: false,
+      },
+    });
     rejects(this.title, ['not-a-uri'], null, {
       application_type: 'native'
     });
+    rejects(this.title, ['not-a-uri'], null, {
+      application_type: 'native'
+    }, {
+      features: {
+        oauthNativeApps: false,
+      },
+    });
     rejects(this.title, ['https://localhost/foo/bar'], null, {
       application_type: 'native'
+    }, {
+      features: {
+        oauthNativeApps: false,
+      },
     });
     rejects(this.title, ['http://foo/bar'], null, {
       application_type: 'web',

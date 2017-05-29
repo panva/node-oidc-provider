@@ -282,7 +282,7 @@ deployment compact. The feature flags with their default values are
 | request | no |
 | requestUri | no |
 | revocation | no |
-| oauthNativeApps | no |
+| oauthNativeApps | yes |
 | sessionManagement | no |
 | pkce | yes |
 
