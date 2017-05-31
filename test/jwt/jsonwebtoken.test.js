@@ -2,6 +2,7 @@
 
 const JWT = require('../../lib/helpers/jwt');
 const { expect } = require('chai');
+const { AssertionError } = require('assert');
 const jose = require('node-jose');
 const epochTime = require('../../lib/helpers/epoch_time');
 
@@ -127,7 +128,7 @@ describe('JSON Web Token (JWT) RFC7519 implementation', function () {
         expect(valid).not.to.be.ok;
       }, (err) => {
         expect(err).to.be.ok;
-        expect(err).to.have.property('name', 'AssertionError');
+        expect(err).to.be.an.instanceOf(AssertionError);
         expect(err).to.have.property('message', 'jwt not active yet');
       });
     });
@@ -148,7 +149,7 @@ describe('JSON Web Token (JWT) RFC7519 implementation', function () {
         expect(valid).not.to.be.ok;
       }, (err) => {
         expect(err).to.be.ok;
-        expect(err).to.have.property('name', 'AssertionError');
+        expect(err).to.be.an.instanceOf(AssertionError);
         expect(err).to.have.property('message', 'invalid nbf value');
       });
     });
@@ -163,7 +164,7 @@ describe('JSON Web Token (JWT) RFC7519 implementation', function () {
         expect(valid).not.to.be.ok;
       }, (err) => {
         expect(err).to.be.ok;
-        expect(err).to.have.property('name', 'AssertionError');
+        expect(err).to.be.an.instanceOf(AssertionError);
         expect(err).to.have.property('message', 'jwt issued in the future');
       });
     });
@@ -188,7 +189,7 @@ describe('JSON Web Token (JWT) RFC7519 implementation', function () {
         expect(valid).not.to.be.ok;
       }, (err) => {
         expect(err).to.be.ok;
-        expect(err).to.have.property('name', 'AssertionError');
+        expect(err).to.be.an.instanceOf(AssertionError);
         expect(err).to.have.property('message', 'invalid iat value');
       });
     });
@@ -201,7 +202,7 @@ describe('JSON Web Token (JWT) RFC7519 implementation', function () {
         expect(valid).not.to.be.ok;
       }, (err) => {
         expect(err).to.be.ok;
-        expect(err).to.have.property('name', 'AssertionError');
+        expect(err).to.be.an.instanceOf(AssertionError);
         expect(err).to.have.property('message', 'jwt expired');
       });
     });
@@ -222,7 +223,7 @@ describe('JSON Web Token (JWT) RFC7519 implementation', function () {
         expect(valid).not.to.be.ok;
       }, (err) => {
         expect(err).to.be.ok;
-        expect(err).to.have.property('name', 'AssertionError');
+        expect(err).to.be.an.instanceOf(AssertionError);
         expect(err).to.have.property('message', 'invalid exp value');
       });
     });
@@ -260,7 +261,7 @@ describe('JSON Web Token (JWT) RFC7519 implementation', function () {
       })
       .catch((err) => {
         expect(err).to.be.ok;
-        expect(err).to.have.property('name', 'AssertionError');
+        expect(err).to.be.an.instanceOf(AssertionError);
         expect(err).to.have.property('message').that.matches(/jwt audience invalid/);
       });
     });
@@ -278,7 +279,7 @@ describe('JSON Web Token (JWT) RFC7519 implementation', function () {
       })
       .catch((err) => {
         expect(err).to.be.ok;
-        expect(err).to.have.property('name', 'AssertionError');
+        expect(err).to.be.an.instanceOf(AssertionError);
         expect(err).to.have.property('message').that.matches(/jwt audience invalid/);
       });
     });
@@ -306,7 +307,7 @@ describe('JSON Web Token (JWT) RFC7519 implementation', function () {
       })
       .catch((err) => {
         expect(err).to.be.ok;
-        expect(err).to.have.property('name', 'AssertionError');
+        expect(err).to.be.an.instanceOf(AssertionError);
         expect(err).to.have.property('message').that.matches(/jwt issuer invalid/);
       });
     });
