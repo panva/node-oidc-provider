@@ -172,13 +172,37 @@ describe('request Uri features', function () {
             response_type: 'code'
           }
         })
-      .expect(302)
-      .expect(() => {
-        expect(spy.calledOnce).to.be.true;
-        expect(spy.args[0][0]).to.have.property('message', 'invalid_request_uri');
-        expect(spy.args[0][0]).to.have.property('error_description',
-          'the request_uri MUST NOT exceed 512 characters');
+        .expect(302)
+        .expect(() => {
+          expect(spy.calledOnce).to.be.true;
+          expect(spy.args[0][0]).to.have.property('message', 'invalid_request_uri');
+          expect(spy.args[0][0]).to.have.property('error_description',
+            'the request_uri MUST NOT exceed 512 characters');
+        });
       });
+
+      it('requires https protocol to be used', function () {
+        const spy = sinon.spy();
+        this.provider.once('authorization.error', spy);
+
+        return this.wrap({
+          agent: this.agent,
+          route,
+          verb,
+          auth: {
+            request_uri: 'http://rp.example.com/request_uri#123',
+            scope: 'openid',
+            client_id: 'client',
+            response_type: 'code'
+          }
+        })
+        .expect(302)
+        .expect(() => {
+          expect(spy.calledOnce).to.be.true;
+          expect(spy.args[0][0]).to.have.property('message', 'invalid_request_uri');
+          expect(spy.args[0][0]).to.have.property('error_description',
+            'request_uri must use https scheme');
+        });
       });
 
       context('when client has requestUris set', function () {
