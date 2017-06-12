@@ -215,6 +215,22 @@ describe('client authentication options', function () {
       .expect(this.responses.tokenAuthSucceeded));
     });
 
+    it('accepts the auth when aud is an array', function () {
+      return JWT.sign({
+        jti: uuid(),
+        aud: [this.provider.issuer + this.provider.pathFor('token')],
+        sub: 'client-jwt-secret',
+        iss: 'client-jwt-secret'
+      }, this.key, 'HS256', { expiresIn: 60 }).then(assertion => this.agent.post(route)
+      .send({
+        client_assertion: assertion,
+        grant_type: 'implicit',
+        client_assertion_type: 'urn:ietf:params:oauth:client-assertion-type:jwt-bearer'
+      })
+      .type('form')
+      .expect(this.responses.tokenAuthSucceeded));
+    });
+
     it('rejects malformed assertions', function () {
       return this.agent.post(route)
       .send({
