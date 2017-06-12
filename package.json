@@ -41,7 +41,7 @@
   "name": "oidc-provider",
   "repository": "panva/node-oidc-provider",
   "engines": {
-    "node": ">=7.6.0"
+    "node": ">=8.0.0"
   },
   "license": "MIT",
   "keywords": [

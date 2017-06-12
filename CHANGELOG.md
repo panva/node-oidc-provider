@@ -50,6 +50,7 @@ Yay for [SemVer](http://semver.org/).
   with method none
 - `features.oauthNativeApps` enabled by default
 - `features.oauthNativeApps` automatically enables `features.pkce` with `{ forcedForNative: true }`
+- integrity keystore is no longer supported as it's a leftover from early oidc-provider design
 
 *New features*
 - `static` function named `connect` can now be present on an Adapter prototype, this will be awaited

@@ -1,4 +1,4 @@
-# Certificates, Keystores, Token Integrity
+# Certificates, Keystores
 
 oidc-provider uses [node-jose][node-jose-library] for everything JW(S|E|K) related. oidc-provider
 expects to either receive a a jose.JWK.KeyStore object or a JWKS formatted javascript object
@@ -8,7 +8,6 @@ with the private keys during `#initialize()` call.
 
 <!-- TOC START min:2 max:2 link:true update:true -->
   - [Certificates Keystore (jwks_uri)](#certificates-keystore-jwks_uri)
-  - [Integrity Keystore](#integrity-keystore)
   - [Generating new keys](#generating-new-keys)
   - [Generating all keys for all features](#generating-all-keys-for-all-features)
   - [Transforming existing keys from other formats](#transforming-existing-keys-from-other-formats)
@@ -36,25 +35,7 @@ provider.initialize({
 provider.initialize({ keystore }).then(() => { /* your app is ready */ });
 ```
 
-## Integrity Keystore
-This keystore is used to have the token values cryptographically bound to their properties, making
-database manipulation with your stored tokens not exploitable in order to gain access to unintended
-resources. The used algorithm on these keys will determine the length of your token values and the
-throughput your provider can issue them. HS512 is recommended for this but any JWA is available to
-you.
 
-```js
-provider.initialize({
-  integrity: {
-    keys: [
-      { kty, alg, k, kid, use } // oct JWK
-    ]
-  }
-}).then(() => { /* your app is ready */ });
-
-// or
-provider.initialize({ integrity }).then(() => { /* your app is ready */ });
-```
 
 ## Generating new keys
 Refer to this snippet to securely generate a new key using node-jose and get the JWK format of it.
@@ -134,7 +115,7 @@ asKey(input, format).then(function(key) {
 ```
 
 ## Signing Key Rotation
-Following action order is recommended when rotating signing certificates or integrity keys on a
+Following action order is recommended when rotating signing certificates keys on a
 distributed deployment with rolling reloads in place.
 
 1. push new keys at the very end of the "keys" array in your JWKS

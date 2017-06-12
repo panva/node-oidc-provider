@@ -71,7 +71,7 @@ describe('grant_type=authorization_code', function () {
 
     it('handles internal token signature validation', function () {
       sinon.stub(this.provider.AuthorizationCode, 'fromJWT').callsFake(() => {
-        return Promise.reject(new Error());
+        throw new Error();
       });
 
       const spy = sinon.spy();
