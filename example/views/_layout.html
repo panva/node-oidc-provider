@@ -136,14 +136,14 @@
       </div>
       <%- body %>
       <div class="login-help">
-        <a href="<%= cookie.returnTo %>">[ Cancel ]</a>
+        <a href="<%= details.returnTo %>">[ Cancel ]</a>
         <% if (client.tosUri) { %><a href="<%= client.tosUri %>">[ Terms of Service ]</a><% } %>
         <% if (client.policyUri) { %><a href="<%= client.policyUri %>">[ Privacy Policy ]</a><% } %>
       </div>
     </div>
     <div class="login-card">
       <div class="grant-debug">
-        <%= cookie.uuid %>
+        <%= details.uuid %>
       </div>
       <div class="grant-debug">
         <%- debug %>

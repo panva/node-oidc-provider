@@ -32,11 +32,11 @@ const responses = {
   }
 };
 
-function jParseCookie(value) {
+function readCookie(value) {
   expect(value).to.exist;
   const parsed = querystring.parse(value, '; ');
   const key = Object.keys(parsed)[0];
-  return JSON.parse(parsed[key]);
+  return parsed[key];
 }
 
 const port = global.server.address().port;
@@ -127,12 +127,13 @@ module.exports = function testHelper(dir, basename, mountTo) {
         expect(query).to.be.null;
         expect(response).to.have.nested.property('headers.set-cookie').that.is.an('array');
 
-        const interaction = jParseCookie(response.headers['set-cookie'][1]);
-        const respond = jParseCookie(response.headers['set-cookie'][2]);
+        const grantid = readCookie(response.headers['set-cookie'][1]);
+        expect(readCookie(response.headers['set-cookie'][1])).to.equal(readCookie(response.headers['set-cookie'][2]));
+
+        const interaction = TestAdapter.for('Session').syncFind(grantid);
 
         for (const attr in this) { // eslint-disable-line
           if (this.hasOwnProperty(attr)) { // eslint-disable-line
-            expect(respond).to.have.property(attr, this[attr]);
             expect(interaction.params).to.have.property(attr, this[attr]);
           }
         }
@@ -142,7 +143,8 @@ module.exports = function testHelper(dir, basename, mountTo) {
 
   AuthorizationRequest.prototype.validateInteractionError = (expectedError, expectedReason) => {
     return (response) => {
-      const { interaction: { error, reason } } = jParseCookie(response.headers['set-cookie'][1]);
+      const grantid = readCookie(response.headers['set-cookie'][1]);
+      const { interaction: { error, reason } } = TestAdapter.for('Session').syncFind(grantid);
       expect(error).to.equal(expectedError);
       expect(reason).to.equal(expectedReason);
     };

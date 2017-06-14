@@ -29,9 +29,9 @@ Yay for [SemVer](http://semver.org/).
 ## ^2.0.0
 
 *Breaking Changes*
-- oidc-provider now requires node v7.6.0 or higher for ES2015 and async function support
-- internal koa (and related) dependencies updated to their respective 'next' or koa2 middleware
-  compatible versions
+- **oidc-provider now requires node v8.0.0 or higher for ES2015, async function and utils.promisify support**
+- **internal koa (and related) dependencies updated to their respective 'next' or koa2 middleware
+  compatible versions**
 - adapter is now a property passed into `#initialize()`, adapter properties in configuration will
   result in a rejected initialize
 - helper functions which returned or accepted generators will no longer work, use async functions instead
@@ -45,11 +45,19 @@ Yay for [SemVer](http://semver.org/).
 - findById helper signature changed to (ctx, accountId)
 - `postLogoutRedirectUri` configuration option is now a helper function and is awaited to (was a string property)
 - `ctx.prompted` renamed to more descriptive `ctx.promptPending`
-- default refreshTokenRotation changed from 'none' to 'rotateAndConsume'
+- **default refreshTokenRotation changed from 'none' to 'rotateAndConsume'**
 - pkce.skipClientAuth removed, native clients not willing to submit secrets should be registered
   with method none
-- `features.oauthNativeApps` enabled by default
+- **`features.oauthNativeApps` enabled by default**
 - `features.oauthNativeApps` automatically enables `features.pkce` with `{ forcedForNative: true }`
+- **interaction details no longer utilize cookies to store the details and request parameters,
+  short lived sessions are created and maintained via the adapter instead**
+- **Integrity keystore is no longer used, random strings are used to generate a lengthy token,
+  a none signed JWT is used to store the metadata, keeping the datasets the same as 1.x**
+- interaction helper `provider#interactionDetails` now returns a Promise, it reads the short lived
+  session id and loads the details using your adapter
+- interaction helper `provider.interactionFinished` now returns a Promise, it reads the short lived
+  session id and stores the interaction results there
 
 *New features*
 - `static` function named `connect` can now be present on an Adapter prototype, this will be awaited

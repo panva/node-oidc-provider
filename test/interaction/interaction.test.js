@@ -6,7 +6,6 @@ const bootstrap = require('../test_helper');
 const expire = new Date();
 expire.setDate(expire.getDate() + 1);
 
-const j = JSON.stringify;
 const { expect } = require('chai');
 
 describe('devInteractions', function () {
@@ -82,7 +81,7 @@ describe('devInteractions', function () {
           login: 'foobar',
         })
         .type('form')
-        .expect('set-cookie', /_grant_result={"login":{"account":"foobar","acr":"1","remember":false,"ts":\d+},"consent":{}};/)
+        // TODO: // .expect('set-cookie', /_grant_result={"login":{"account":"foobar","acr":"1","remember":false,"ts":\d+},"consent":{}};/)
         .expect(302)
         .expect('location', new RegExp(this.url.replace('interaction', 'auth')));
     });
@@ -111,7 +110,7 @@ describe('devInteractions', function () {
           view: 'interaction'
         })
         .type('form')
-        .expect('set-cookie', /_grant_result={"consent":{}};/)
+        // TODO: // .expect('set-cookie', /_grant_result={"consent":{}};/)
         .expect(302)
         .expect('location', new RegExp(this.url.replace('interaction', 'auth')));
     });
@@ -125,27 +124,32 @@ describe('resume after interaction', function () {
     i(this.provider).configuration('prompts').push('custom');
   });
 
-  function setup(agent, grant, results) {
+  function setup(grant, result) {
     const cookies = [];
 
+    const sess = new this.provider.Session('resume', {});
+
     if (grant) {
-      cookies.push(`_grant=${j(grant)}; path=/; expires=${expire.toGMTString()}; httponly`);
+      cookies.push(`_grant=resume; path=/auth/resume; expires=${expire.toGMTString()}; httponly`);
+      Object.assign(sess, { params: grant });
     }
 
-    if (results) {
-      cookies.push(`_grant_result=${j(results)}; path=/; expires=${expire.toGMTString()}; httponly`);
+    if (result) {
+      Object.assign(sess, { result });
     }
 
-    agent._saveCookies.bind(agent)({
+    this.agent._saveCookies.bind(this.agent)({
       headers: {
         'set-cookie': cookies
       },
     });
+
+    return sess.save();
   }
 
   context('general', function () {
     it('needs the results to be present, else renders an err', function () {
-      return this.agent.get(`/auth/${uuid()}`)
+      return this.agent.get('/auth/resume')
         .expect(400)
         .expect(/authorization request has expired/);
     });
@@ -158,9 +162,9 @@ describe('resume after interaction', function () {
         scope: 'openid'
       });
 
-      setup(this.agent, auth);
+      setup.call(this, auth);
 
-      return this.agent.get(`/auth/${uuid()}`)
+      return this.agent.get('/auth/resume')
         .expect(302)
         .expect(auth.validateState)
         .expect(auth.validateClientLocation)
@@ -174,14 +178,14 @@ describe('resume after interaction', function () {
         scope: 'openid'
       });
 
-      setup(this.agent, auth, {
+      setup.call(this, auth, {
         login: {
           account: uuid(),
           remember: true
         }
       });
 
-      return this.agent.get(`/auth/${uuid()}`)
+      return this.agent.get('/auth/resume')
         .expect(302)
         .expect('set-cookie', /expires/) // expect a permanent cookie
         .expect(auth.validateState)
@@ -198,13 +202,13 @@ describe('resume after interaction', function () {
         scope: 'openid'
       });
 
-      setup(this.agent, auth, {
+      setup.call(this, auth, {
         login: {
           account: uuid()
         }
       });
 
-      return this.agent.get(`/auth/${uuid()}`)
+      return this.agent.get('/auth/resume')
         .expect(302)
         .expect(auth.validateState)
         .expect('set-cookie', /^_session=((?!expires).)+,/) // expect a transient session cookie
@@ -224,7 +228,7 @@ describe('resume after interaction', function () {
         scope: 'openid offline_access'
       });
 
-      setup(this.agent, auth, {
+      setup.call(this, auth, {
         login: {
           account: uuid(),
           remember: true
@@ -238,7 +242,7 @@ describe('resume after interaction', function () {
         authorizationCode = code;
       });
 
-      return this.agent.get(`/auth/${uuid()}`)
+      return this.agent.get('/auth/resume')
         .expect(() => {
           this.provider.removeAllListeners('token.issued');
         })
@@ -254,7 +258,7 @@ describe('resume after interaction', function () {
         scope: 'openid'
       });
 
-      setup(this.agent, auth, {
+      setup.call(this, auth, {
         login: {
           account: uuid(),
           remember: true
@@ -270,7 +274,7 @@ describe('resume after interaction', function () {
         authorizationCode = code;
       });
 
-      return this.agent.get(`/auth/${uuid()}`)
+      return this.agent.get('/auth/resume')
         .expect(() => {
           this.provider.removeAllListeners('token.issued');
         })
@@ -287,14 +291,14 @@ describe('resume after interaction', function () {
         prompt: 'consent'
       });
 
-      setup(this.agent, auth, {
+      setup.call(this, auth, {
         login: {
           account: uuid(),
           remember: true
         }
       });
 
-      return this.agent.get(`/auth/${uuid()}`)
+      return this.agent.get('/auth/resume')
         .expect(302)
         .expect(auth.validateState)
         .expect(auth.validateClientLocation)
@@ -314,9 +318,9 @@ describe('resume after interaction', function () {
         prompt: 'custom'
       });
 
-      setup(this.agent, auth);
+      setup.call(this, auth);
 
-      return this.agent.get(`/auth/${uuid()}`)
+      return this.agent.get('/auth/resume')
         .expect(302)
         .expect(auth.validateState)
         .expect(auth.validateClientLocation)

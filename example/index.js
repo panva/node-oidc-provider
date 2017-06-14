@@ -58,30 +58,30 @@ provider.initialize({
   const router = new Router();
 
   router.get('/interaction/:grant', async (ctx, next) => {
-    const cookie = provider.interactionDetails(ctx.req);
-    const client = await provider.Client.find(cookie.params.client_id);
+    const details = await provider.interactionDetails(ctx.req);
+    const client = await provider.Client.find(details.params.client_id);
 
-    if (cookie.interaction.error === 'login_required') {
+    if (details.interaction.error === 'login_required') {
       await ctx.render('login', {
         client,
-        cookie,
+        details,
         title: 'Sign-in',
-        debug: querystring.stringify(cookie.params, ',<br/>', ' = ', {
+        debug: querystring.stringify(details.params, ',<br/>', ' = ', {
           encodeURIComponent: value => value,
         }),
-        interaction: querystring.stringify(cookie.interaction, ',<br/>', ' = ', {
+        interaction: querystring.stringify(details.interaction, ',<br/>', ' = ', {
           encodeURIComponent: value => value,
         }),
       });
     } else {
       await ctx.render('interaction', {
         client,
-        cookie,
+        details,
         title: 'Authorize',
-        debug: querystring.stringify(cookie.params, ',<br/>', ' = ', {
+        debug: querystring.stringify(details.params, ',<br/>', ' = ', {
           encodeURIComponent: value => value,
         }),
-        interaction: querystring.stringify(cookie.interaction, ',<br/>', ' = ', {
+        interaction: querystring.stringify(details.interaction, ',<br/>', ' = ', {
           encodeURIComponent: value => value,
         }),
       });
@@ -94,7 +94,7 @@ provider.initialize({
 
   router.post('/interaction/:grant/confirm', body, async (ctx, next) => {
     const result = { consent: {} };
-    provider.interactionFinished(ctx.req, ctx.res, result);
+    await provider.interactionFinished(ctx.req, ctx.res, result);
     await next();
   });
 
@@ -112,7 +112,7 @@ provider.initialize({
       consent: {},
     };
 
-    provider.interactionFinished(ctx.req, ctx.res, result);
+    await provider.interactionFinished(ctx.req, ctx.res, result);
     await next();
   });
 

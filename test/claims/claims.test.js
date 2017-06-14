@@ -171,22 +171,27 @@ expire.setDate(expire.getDate() + 1);
       beforeEach(function () { return this.login(); });
       afterEach(function () { return this.logout(); });
       context('are met', function () {
-        function setup(agent, grant, results) {
+        function setup(grant, result) {
           const cookies = [];
 
+          const sess = new this.provider.Session('resume', {});
+
           if (grant) {
-            cookies.push(`_grant=${j(grant)}; path=/auth/resume; expires=${expire.toGMTString()}; httponly`);
+            cookies.push(`_grant=resume; path=/auth/resume; expires=${expire.toGMTString()}; httponly`);
+            Object.assign(sess, { params: grant });
           }
 
-          if (results) {
-            cookies.push(`_grant_result=${j(results)}; path=/auth/resume; expires=${expire.toGMTString()}; httponly`);
+          if (result) {
+            Object.assign(sess, { result });
           }
 
-          agent._saveCookies.bind(agent)({
+          this.agent._saveCookies.bind(this.agent)({
             headers: {
               'set-cookie': cookies
             },
           });
+
+          return sess.save();
         }
 
         it('session subject value differs from the one requested', function () {
@@ -228,7 +233,7 @@ expire.setDate(expire.getDate() + 1);
               })
             });
 
-            setup(this.agent, auth, {
+            setup.call(this, auth, {
               login: {
                 account: this.loggedInAccountId,
                 acr: '2',
@@ -258,7 +263,7 @@ expire.setDate(expire.getDate() + 1);
               })
             });
 
-            setup(this.agent, auth, {
+            setup.call(this, auth, {
               login: {
                 account: this.loggedInAccountId,
                 acr: '1',
