@@ -11,7 +11,7 @@ const render = require('koa-ejs');
 const port = process.env.PORT || 3000;
 
 const Account = require('./account');
-const { config, clients, certificates, integrityKeys } = require('./settings');
+const { config, clients, certificates } = require('./settings');
 
 const issuer = process.env.ISSUER || 'http://localhost:3000';
 
@@ -25,7 +25,6 @@ provider.initialize({
   adapter: process.env.MONGODB_URI ? require('./adapters/mongodb') : undefined, // eslint-disable-line global-require
   clients,
   keystore: { keys: certificates },
-  integrity: { keys: integrityKeys },
 }).then(() => {
   render(provider.app, {
     cache: false,

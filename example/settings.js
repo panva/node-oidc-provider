@@ -94,9 +94,3 @@ module.exports.certificates = [{
   x: 'AamstoAouLxrWi6WHt903QR7NMpK4NszB5mNEFqLqaCxRXhPwrq_BG5R-7UP41cUIF38TQCePJpGLnoC5amCJNy3',
   y: 'AUguNqeqkhVSrmolR58H4J26S58XinSN3kcnoIl75iHMKRMJDXBI9J4lBHALVn6i0zc9N9ucQAb8kmOXfObga_9J',
 }];
-
-module.exports.integrityKeys = [{
-  kty: 'oct',
-  k: 'TQcYPUBhQvg68X_7hwRyVyRNxpdkN-xsrOqVjgaCi-PsbeBrPHOYHcc4lPDIzdfEtdxpQ7pOMJn5__pW-NJx9w',
-  alg: 'HS512',
-}];

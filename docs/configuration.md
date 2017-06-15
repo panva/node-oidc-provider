@@ -11,7 +11,7 @@ point to get an idea of what you should provide.
   - [Default configuration values](#default-configuration-values)
   - [Accounts](#accounts)
   - [Clients](#clients)
-  - [Certificates and Token Integrity](#certificates-and-token-integrity)
+  - [Certificates](#certificates)
   - [Configuring available claims](#configuring-available-claims)
   - [Configuring available scopes](#configuring-available-scopes)
   - [Persistance](#persistance)
@@ -117,8 +117,8 @@ this first load will be thrown and handled like any other context specific error
 Note: Make sure your adapter returns an object with the correct property value types as if they were
 submitted via dynamic registration.
 
-## Certificates and Token Integrity
-See [Certificates, Keystores, Token Integrity](/docs/keystores.md).
+## Certificates
+See [Certificates](/docs/keystores.md).
 
 
 ## Configuring available claims
@@ -405,7 +405,7 @@ Changes `redirect_uris` validations for clients with application_type `native` t
 [OAuth 2.0 for Native Apps][feature-oauth-native-apps]. If pkce is not enabled it will be enabled
 automatically so that AppAuth SDKs work out of the box. (🤞)
 ```js
-const configuration = { features: { oauthNativeApps: Boolean[false] } };
+const configuration = { features: { oauthNativeApps: Boolean[true] } };
 ```
 
 
