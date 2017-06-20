@@ -307,6 +307,26 @@ describe('client authentication options', function () {
       }));
     });
 
+    it('aud must be set', function () {
+      return JWT.sign({
+        jti: uuid(),
+        sub: 'client-jwt-secret',
+        iss: 'client-jwt-secret',
+      }, this.key, 'HS256', {
+        expiresIn: 60,
+      }).then(assertion => this.agent.post(route)
+      .send({
+        client_assertion: assertion,
+        grant_type: 'implicit',
+        client_assertion_type: 'urn:ietf:params:oauth:client-assertion-type:jwt-bearer'
+      })
+      .type('form')
+      .expect({
+        error: 'invalid_request',
+        error_description: 'aud (JWT audience) must be provided in the client_assertion JWT',
+      }));
+    });
+
     it('jti must be set', function () {
       return JWT.sign({
         // jti: uuid(),
