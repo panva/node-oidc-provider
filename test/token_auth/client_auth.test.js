@@ -132,6 +132,45 @@ describe('client authentication options', function () {
       .expect(this.responses.tokenAuthSucceeded);
     });
 
+    it('validates the Basic scheme format (parts)', function () {
+      return this.agent.post(route)
+      .send({
+        grant_type: 'implicit'
+      })
+      .type('form')
+      .set('Authorization', 'Basic')
+      .expect({
+        error: 'invalid_request',
+        error_description: 'invalid authorization header value format',
+      });
+    });
+
+    it('validates the Basic scheme format (Basic)', function () {
+      return this.agent.post(route)
+      .send({
+        grant_type: 'implicit'
+      })
+      .type('form')
+      .set('Authorization', 'Bearer foo')
+      .expect({
+        error: 'invalid_request',
+        error_description: 'invalid authorization header value format',
+      });
+    });
+
+    it('validates the Basic scheme format (no :)', function () {
+      return this.agent.post(route)
+      .send({
+        grant_type: 'implicit'
+      })
+      .type('form')
+      .set('Authorization', 'Basic Zm9v')
+      .expect({
+        error: 'invalid_request',
+        error_description: 'invalid authorization header value format',
+      });
+    });
+
     it('rejects invalid secrets', function () {
       return this.agent.post(route)
       .send({
@@ -372,6 +411,26 @@ describe('client authentication options', function () {
       .expect({
         error: 'invalid_request',
         error_description: 'audience (aud) must equal the endpoint url',
+      }));
+    });
+
+    it('checks for mismatch in client_assertion client_id and body client_id', function () {
+      return JWT.sign({
+        jti: uuid(),
+        aud: this.provider.issuer + this.provider.pathFor('token'),
+        sub: 'client-jwt-secret',
+        iss: 'client-jwt-secret'
+      }, this.key, 'HS256', { expiresIn: 60 }).then(assertion => this.agent.post(route)
+      .send({
+        client_assertion: assertion,
+        grant_type: 'implicit',
+        client_id: 'mismatching-client-id',
+        client_assertion_type: 'urn:ietf:params:oauth:client-assertion-type:jwt-bearer'
+      })
+      .type('form')
+      .expect({
+        error: 'invalid_request',
+        error_description: 'subject of client_assertion must be the same as client_id',
       }));
     });
 
