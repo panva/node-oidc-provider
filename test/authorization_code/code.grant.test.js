@@ -195,6 +195,21 @@ describe('grant_type=authorization_code', function () {
       });
     });
 
+    it('validates a grant type is supported', function () {
+      return this.agent.post(route)
+      .auth('client', 'secret')
+      .send({
+        code: this.ac,
+        grant_type: 'foobar',
+        redirect_uri: 'https://client.example.com/cb'
+      })
+      .type('form')
+      .expect(400)
+      .expect((response) => {
+        expect(response.body).to.have.property('error', 'unsupported_grant_type');
+      });
+    });
+
     it('validates used redirect_uri', function () {
       const spy = sinon.spy();
       this.provider.once('grant.error', spy);

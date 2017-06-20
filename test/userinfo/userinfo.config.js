@@ -1,4 +1,13 @@
-const config = require('../default.config');
+const _ = require('lodash');
+const config = _.clone(require('../default.config'));
+
+config.findById = (ctx, id) => {
+  if (id === 'notfound') return undefined;
+  return {
+    accountId: id,
+    claims() { return { sub: id }; },
+  };
+};
 
 module.exports = {
   config,

@@ -48,7 +48,7 @@ module.exports = function testHelper(dir, basename, mountTo) {
   });
   let { config, client, clients } = require(conf); // eslint-disable-line
   if (client && !clients) { clients = [client]; }
-  config.findById = Account.findById;
+  if (!config.findById) config.findById = Account.findById;
 
   const provider = new Provider(`http://127.0.0.1:${port}${mountTo || ''}`, config);
   provider.defaultHttpOptions = { timeout: 50 };

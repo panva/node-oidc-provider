@@ -21,6 +21,29 @@ describe('userinfo /me', function () {
     });
   });
 
+  it('validates access token is found', function () {
+    return this.agent.get('/me')
+      .set('Authorization', 'Bearer Loremipsumdolorsitametconsecteturadipisicingelitsed')
+      .expect(401)
+      .expect({ error: 'invalid_token', error_description: 'invalid token provided' });
+  });
+
+  it('validates a client is still valid for a found token', async function () {
+    const at = await new this.provider.AccessToken({ clientId: 'notfound', }).save();
+    return this.agent.get('/me')
+      .set('Authorization', `Bearer ${at}`)
+      .expect(401)
+      .expect({ error: 'invalid_token', error_description: 'invalid token provided' });
+  });
+
+  it('validates an account still valid for a found token', async function () {
+    const at = await new this.provider.AccessToken({ clientId: 'client', accountId: 'notfound' }).save();
+    return this.agent.get('/me')
+      .set('Authorization', `Bearer ${at}`)
+      .expect(401)
+      .expect({ error: 'invalid_token', error_description: 'invalid token provided' });
+  });
+
   it('does allow for scopes to be shrunk', function () {
     return this.agent.get('/me')
       .query({
