@@ -109,56 +109,70 @@ describe('BASIC code', function () {
           .expect(auth.validateInteractionError('consent_required', 'client_not_authorized'));
       });
 
-      describe('requested by the End-User', function () {
-        it('login was requested by the client by prompt parameter', function () {
-          const auth = new this.AuthorizationRequest({
-            response_type: 'code',
-            prompt: 'login',
-            scope: 'openid'
-          });
-
-          return this.wrap({ route, verb, auth })
-          .expect(302)
-          .expect(auth.validateInteractionRedirect)
-          .expect(auth.validateInteractionError('login_required', 'login_prompt'));
+      it('are required for native clients by default', function () {
+        const auth = new this.AuthorizationRequest({
+          response_type: 'code',
+          client_id: 'client-native',
+          redirect_uri: 'com.example.app:/cb',
+          scope: 'openid',
+          code_challenge: 'foo',
+          code_challenge_method: 'plain',
         });
 
-        it('session is too old for this authorization request', function () {
-          const session = this.getSession();
-          session.loginTs = epochTime() - 3600; // an hour ago
+        return this.wrap({ route, verb, auth })
+        .expect(302)
+        .expect(auth.validateInteractionRedirect)
+        .expect(auth.validateInteractionError('interaction_required', 'native_client_prompt'));
+      });
 
-          const auth = new this.AuthorizationRequest({
-            response_type: 'code',
-            max_age: '1800', // 30 minutes old session max
-            scope: 'openid'
-          });
-
-          return this.wrap({ route, verb, auth })
-          .expect(302)
-          .expect(auth.validateInteractionRedirect)
-          .expect(auth.validateInteractionError('login_required', 'max_age'));
+      it('login was requested by the client by prompt parameter', function () {
+        const auth = new this.AuthorizationRequest({
+          response_type: 'code',
+          prompt: 'login',
+          scope: 'openid'
         });
 
-        it('session is too old for this client', async function () {
-          const client = await this.provider.Client.find('client');
-          client.defaultMaxAge = 1800;
+        return this.wrap({ route, verb, auth })
+        .expect(302)
+        .expect(auth.validateInteractionRedirect)
+        .expect(auth.validateInteractionError('login_required', 'login_prompt'));
+      });
 
-          const session = this.getSession();
-          session.loginTs = epochTime() - 3600; // an hour ago
+      it('session is too old for this authorization request', function () {
+        const session = this.getSession();
+        session.loginTs = epochTime() - 3600; // an hour ago
 
-          const auth = new this.AuthorizationRequest({
-            response_type: 'code',
-            scope: 'openid'
-          });
-
-          return this.wrap({ route, verb, auth })
-          .expect(() => {
-            delete client.defaultMaxAge;
-          })
-          .expect(302)
-          .expect(auth.validateInteractionRedirect)
-          .expect(auth.validateInteractionError('login_required', 'max_age'));
+        const auth = new this.AuthorizationRequest({
+          response_type: 'code',
+          max_age: '1800', // 30 minutes old session max
+          scope: 'openid'
         });
+
+        return this.wrap({ route, verb, auth })
+        .expect(302)
+        .expect(auth.validateInteractionRedirect)
+        .expect(auth.validateInteractionError('login_required', 'max_age'));
+      });
+
+      it('session is too old for this client', async function () {
+        const client = await this.provider.Client.find('client');
+        client.defaultMaxAge = 1800;
+
+        const session = this.getSession();
+        session.loginTs = epochTime() - 3600; // an hour ago
+
+        const auth = new this.AuthorizationRequest({
+          response_type: 'code',
+          scope: 'openid'
+        });
+
+        return this.wrap({ route, verb, auth })
+        .expect(() => {
+          delete client.defaultMaxAge;
+        })
+        .expect(302)
+        .expect(auth.validateInteractionRedirect)
+        .expect(auth.validateInteractionError('login_required', 'max_age'));
       });
     });
 
