@@ -42,6 +42,8 @@ Yay for [SemVer](http://semver.org/).
 - renderError helper signature changed to (ctx, error) **and is now awaited**
 - uniqueness helper signature changed to (ctx, jti, expiresAt)
 - interactionCheck helper signature changed to (ctx)
+- default interactionCheck helper requires all native application client authorizations to pass
+  through interactions
 - findById helper signature changed to (ctx, accountId)
 - `postLogoutRedirectUri` configuration option is now a helper function and is awaited to (was a string property)
 - `ctx.prompted` renamed to more descriptive `ctx.promptPending`
