@@ -265,6 +265,17 @@ describe('registration features', function () {
           .expect(401);
         });
 
+        it('rejects calls with not found access token', function () {
+          return this.agent.post('/reg')
+          .send({
+            redirect_uris: ['https://client.example.com/cb']
+          })
+          .query({
+            access_token: 'Loremipsumdolorsitametconsecteturadipisicingelitsed'
+          })
+          .expect(401);
+        });
+
         it('rejects calls with manipulated access token', function () {
           return this.agent.post('/reg')
           .send({
@@ -340,6 +351,14 @@ describe('registration features', function () {
       return this.agent.get(`/reg/${this.clientId}`)
         .query({
           access_token: 'invalid token'
+        })
+        .expect(401);
+    });
+
+    it('validates auth (notfoundtoken)', function () {
+      return this.agent.get(`/reg/${this.clientId}`)
+        .query({
+          access_token: 'Loremipsumdolorsitametconsecteturadipisicingelitsed'
         })
         .expect(401);
     });
