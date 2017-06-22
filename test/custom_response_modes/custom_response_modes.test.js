@@ -51,4 +51,18 @@ describe('custom response modes', function () {
         expect(spy.firstCall.args[2]).to.have.keys('error', 'error_description', 'state');
       });
   });
+
+  it('handles invalid response_mode values', function () {
+    const auth = new this.AuthorizationRequest({
+      response_type: 'code',
+      scope: 'openid',
+      response_mode: 'foo'
+    });
+
+    return this.agent.get('/auth')
+      .query(auth)
+      .expect(auth.validateClientLocation)
+      .expect(auth.validateError('unsupported_response_mode'))
+      .expect(auth.validateErrorDescription('unsupported response_mode requested'));
+  });
 });
