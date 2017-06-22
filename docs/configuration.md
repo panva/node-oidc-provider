@@ -14,7 +14,7 @@ point to get an idea of what you should provide.
   - [Certificates](#certificates)
   - [Configuring available claims](#configuring-available-claims)
   - [Configuring available scopes](#configuring-available-scopes)
-  - [Persistance](#persistance)
+  - [Persistence](#persistence)
   - [Interaction](#interaction)
   - [Enable/Disable optional oidc-provider features](#enabledisable-optional-oidc-provider-features)
   - [Custom Grant Types](#custom-grant-types)
@@ -39,8 +39,7 @@ what part of the OP they affect.
 oidc-provider needs to be able to find an account and once found the account needs to have an
 `accountId` property as well as `claims()` function returning an object with claims that correspond
 to the claims your issuer supports. Tell oidc-provider how to find your account by an ID.  
-`#claims()` can also return a Promise later resolved / rejected and `this` is set to the request
-context.
+`#claims()` can also return a Promise later resolved / rejected.
 
 ```js
 const oidc = new Provider('http://localhost:3000', {
@@ -53,13 +52,10 @@ const oidc = new Provider('http://localhost:3000', {
 });
 ```
 
-Note: the `findById` method needs to be yieldable, returning a Promise is recommended.  
-Tip: check how the [example](/example/account.js) deals with this.
-
 **Aggregated and Distributed claims**  
 Returning aggregated and distributed claims is as easy as having your Account#claims method return
 the two necessary members `_claim_sources` and `_claim_names` with the
-[expected][feature-aggregated-distributed-claims] properties. oidc-provider will include only the
+[expected][aggregated-distributed-claims] properties. oidc-provider will include only the
 sources for claims that are part of the request scope, omitting the ones that the RP did not request
 and leaving out the entire `_claim_sources` and `_claim_sources` if they bear no requested claims.
 
@@ -83,8 +79,9 @@ registration then make it so that your adapter resolves client find calls with a
 
 Available [Client Metadata][client-metadata] is validated as defined by the specifications.
 
-Note: each oidc-provider caches the clients once they are loaded. When your client configuration
-changes you should either reload your processes or trigger a cache clear (`provider.Client.cacheClear()`).
+Note: each oidc-provider caches the clients once they are loaded. When your adapter-stored client
+configuration changes you should either reload your processes or trigger a cache clear
+(`provider.Client.cacheClear()`).
 
 **via Provider interface**  
 To add pre-established clients use the `initialize` method on a oidc-provider instance. This accepts
@@ -122,8 +119,7 @@ See [Certificates](/docs/keystores.md).
 
 
 ## Configuring available claims
-oidc-provider pushes by default `auth_time, iss, sub` claims to the id token and userinfo.
-The `claims` configuration parameter can be used to define which claims fall under which scope
+The `claims` configuration parameter can be used to define which claims fall under what scope
 as well as to expose additional claims that are available to RPs via the claims authorization
 parameter. The configuration value uses the following scheme:
 
@@ -135,7 +131,8 @@ new Provider('http://localhost:3000', {
     [scope name]: {
       [claim name]: null,
     },
-    // or (for standalone claims)
+    // or (for standalone claims) - only requestable via claims parameter
+    //   (when features.claimsParameter is true)
     [standalone claim name]: null
   }
 });
@@ -160,13 +157,14 @@ Use the `scopes` configuration parameter to extend or reduce the default scope n
 available. This list is extended by all scope names detected in the claims parameter as well.
 The parameter accepts an array of scope names.
 
-## Persistance
+## Persistence
 The provided example and any new instance of oidc-provider will use the basic in-memory adapter for
 storing issued tokens, codes, user sessions and dynamically registered clients. This is fine for as
 long as you develop, configure and generally just play around since every time you restart your
 process all information will be lost. As soon as you cannot live with this limitation you will be
 required to provide an adapter constructor for oidc-provider to use. This constructor will be called
-for every model is accessed the first time it is needed.
+for every model is accessed the first time it is needed. A static `connect` method is called if
+present during the initialize phase.
 
 ```js
 const MyAdapter = require('./my_adapter');
@@ -189,22 +187,22 @@ those in, here's how oidc-provider allows you to do so:
 
 When oidc-provider cannot fulfill the authorization request for any of the possible reasons (missing
 user session, requested ACR not fulfilled, prompt requested, ...) it will resolve an `interactionUrl`
-(configurable) and redirect the User-Agent to that url. Before doing so it will
-create a `_grant` cookie that you can read from your interaction 'app'.
+(configurable) and redirect the User-Agent to that url. Before doing so it will save a short-lived
+session and its identifier dumped into a cookie scoped to the resolved interaction path.
 
-This cookie contains (serialized as JSON):
+This session contains:
 
 - details of the interaction that is required
 - all authorization request parameters
 - the uuid of the authorization request
-- the url to redirect the user to once interaction is finished.
+- the url to redirect the user to once interaction is finished
 
 oidc-provider expects that you resolve all future interactions in one go and only then redirect the
-User-Agent back with the results.
+User-Agent back with the results
 
 Once the required interactions are finished you are expected to redirect back to the authorization
-endpoint, affixed by the uuid of the original request and the interaction results dumped in a signed
-`_grant_result` cookie.
+endpoint, affixed by the uuid of the original request and the interaction results stored in the
+interaction session object.
 
 The Provider instance comes with helpers that aid with getting interaction details as well as
 packing the results. See them used in the [step-by-step](https://github.com/panva/node-oidc-provider-example)
@@ -213,30 +211,30 @@ or [in-repo](/example/index.js) examples.
 
 **Provider#interactionDetails**
 ```js
-//   with express
-expressApp.get('/interaction/:grant', (req, res) => {
-  const details = provider.interactionDetails(req);
+// with express
+expressApp.get('/interaction/:grant', async (req, res) => {
+  const details = await provider.interactionDetails(req);
   // ...
 });
 
-//   with koa
-router.get('/interaction/:grant', async function (ctx, next) {
-  const details = provider.interactionDetails(ctx.req);
+// with koa
+router.get('/interaction/:grant', async (ctx, next) => {
+  const details = await provider.interactionDetails(ctx.req);
   // ...
 });
 ```
 
 **Provider#interactionFinished**
 ```js
-//   with express
-expressApp.post('/interaction/:grant/login', (req, res) => {
-    provider.interactionFinished(req, res, results); // result object below
+// with express
+expressApp.post('/interaction/:grant/login', async (req, res) => {
+  await provider.interactionFinished(req, res, results); // result object below
   // ...
 });
 
-//   with koa
-router.post('/interaction/:grant', async function (ctx, next) {
-  provider.interactionFinished(ctx.req, ctx.res, results); // result object below
+// with koa
+router.post('/interaction/:grant', async (ctx, next) => {
+  await provider.interactionFinished(ctx.req, ctx.res, results); // result object below
   // ...
 });
 
@@ -282,7 +280,7 @@ deployment compact. The feature flags with their default values are
 | request | no |
 | requestUri | no |
 | revocation | no |
-| oauthNativeApps | yes |
+| oauthNativeApps | yes (forces pkce on with forcedForNative) |
 | sessionManagement | no |
 | pkce | yes |
 
@@ -337,7 +335,7 @@ does not require any feature flag as Refresh Tokens will be issued by the author
 automatically in case the authentication request included offline_access scope and consent prompt and
 the client in question has the refresh_token grant configured.
 
-**Refresh Tokens beyond the scope**  
+**Refresh Tokens beyond the spec scope**  
   > The use of Refresh Tokens is not exclusive to the offline_access use case. The Authorization
   > Server MAY grant Refresh Tokens in other contexts that are beyond the scope of this specification.
 
@@ -374,7 +372,7 @@ const configuration = { features: { requestUri: { requireRequestUriRegistration:
 ```
 
 **Introspection endpoint**  
-Enables the use of Introspection endpoint as described in [RFC7662][feature-introspection] for
+Enables the use of Introspection endpoint as described in [RFC7662][introspection] for
 tokens of type AccessToken, ClientCredentials and RefreshToken. When enabled the
 introspection_endpoint property of the discovery endpoint is published, otherwise the property
 is not sent. The use of this endpoint is covered by the same authz mechanism as the regular token
@@ -390,7 +388,7 @@ grant_types, response_types and redirect_uris as empty arrays.
 
 
 **Revocation endpoint**  
-Enables the use of Revocation endpoint as described in [RFC7009][feature-revocation] for tokens of
+Enables the use of Revocation endpoint as described in [RFC7009][revocation] for tokens of
 type AccessToken, ClientCredentials and RefreshToken. When enabled the
 revocation_endpoint property of the discovery endpoint is published, otherwise the property
 is not sent. The use of this endpoint is covered by the same authz mechanism as the regular token
@@ -402,7 +400,7 @@ const configuration = { features: { revocation: Boolean[false] } };
 
 **OAuth 2.0 Native Apps Best Current Practice**
 Changes `redirect_uris` validations for clients with application_type `native` to those defined in
-[OAuth 2.0 for Native Apps][feature-oauth-native-apps]. If pkce is not enabled it will be enabled
+[OAuth 2.0 for Native Apps][oauth-native-apps]. If pkce is not enabled it will be enabled
 automatically so that AppAuth SDKs work out of the box. (🤞)
 ```js
 const configuration = { features: { oauthNativeApps: Boolean[true] } };
@@ -410,7 +408,7 @@ const configuration = { features: { oauthNativeApps: Boolean[true] } };
 
 
 **Session management features**  
-Enables features described in [Session Management 1.0 - draft 28][feature-session-management].
+Enables features described in [Session Management 1.0 - draft 28][session-management].
 ```js
 const configuration = { features: { sessionManagement: Boolean[false] } };
 ```
@@ -423,14 +421,14 @@ const configuration = { features: { sessionManagement: { keepHeaders: true } } }
 
 
 **Back-Channel Logout features**  
-Enables features described in [Back-Channel Logout 1.0 - draft 04][feature-backchannel-logout].
+Enables features described in [Back-Channel Logout 1.0 - draft 04][backchannel-logout].
 ```js
 const configuration = { features: { sessionManagement: true, backchannelLogout: Boolean[false] } };
 ```
 
 
 **Dynamic registration features**  
-Enables features described in [Dynamic Client Registration 1.0][feature-registration].
+Enables features described in [Dynamic Client Registration 1.0][registration].
 ```js
 const configuration = { features: { registration: Boolean[false] } };
 ```
@@ -457,7 +455,7 @@ new (provider.InitialAccessToken)({}).save().then(console.log);
 
 **Dynamic registration management features**  
 Enables Update and Delete features described in
-[OAuth 2.0 Dynamic Client Registration Management Protocol][feature-registration-management].
+[OAuth 2.0 Dynamic Client Registration Management Protocol][registration-management].
 ```js
 const configuration = { features: { registration: true, registrationManagement: Boolean[false] } };
 ```
@@ -469,7 +467,7 @@ const configuration = { features: { ..., registrationManagement: { rotateRegistr
 ```
 
 **PKCE**  
-Enables [RFC7636 - Proof Key for Code Exchange by OAuth Public Clients][feature-pixy]
+Enables [RFC7636 - Proof Key for Code Exchange by OAuth Public Clients][pkce]
 ```js
 const configuration = { features: { pkce: Boolean[true] } };
 ```
@@ -647,15 +645,15 @@ Depending on your setup you should do the following
 [core-offline-access]: http://openid.net/specs/openid-connect-core-1_0.html#OfflineAccess
 [core-claims-url]: http://openid.net/specs/openid-connect-core-1_0.html#ClaimsParameter
 [core-jwt-parameters-url]: http://openid.net/specs/openid-connect-core-1_0.html#JWTRequests
-[feature-aggregated-distributed-claims]: http://openid.net/specs/openid-connect-core-1_0.html#AggregatedDistributedClaims
-[feature-backchannel-logout]: http://openid.net/specs/openid-connect-backchannel-1_0-04.html
-[feature-pixy]: https://tools.ietf.org/html/rfc7636
-[feature-introspection]: https://tools.ietf.org/html/rfc7662
-[feature-registration-management]: https://tools.ietf.org/html/rfc7592
-[feature-registration]: http://openid.net/specs/openid-connect-registration-1_0.html
-[feature-revocation]: https://tools.ietf.org/html/rfc7009
-[feature-oauth-native-apps]: https://tools.ietf.org/html/draft-ietf-oauth-native-apps-07
-[feature-session-management]: http://openid.net/specs/openid-connect-session-1_0-28.html
+[aggregated-distributed-claims]: http://openid.net/specs/openid-connect-core-1_0.html#AggregatedDistributedClaims
+[backchannel-logout]: http://openid.net/specs/openid-connect-backchannel-1_0-04.html
+[pkce]: https://tools.ietf.org/html/rfc7636
+[introspection]: https://tools.ietf.org/html/rfc7662
+[registration-management]: https://tools.ietf.org/html/rfc7592
+[registration]: http://openid.net/specs/openid-connect-registration-1_0.html
+[revocation]: https://tools.ietf.org/html/rfc7009
+[oauth-native-apps]: https://tools.ietf.org/html/draft-ietf-oauth-native-apps-07
+[session-management]: http://openid.net/specs/openid-connect-session-1_0-28.html
 [got-library]: https://github.com/sindresorhus/got
 [password-grant]: https://tools.ietf.org/html/rfc6749#section-4.3
 [defaults]: /lib/helpers/defaults.js

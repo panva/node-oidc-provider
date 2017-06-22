@@ -4,12 +4,10 @@
 
 oidc-provider is an OpenID Provider implementation of [OpenID Connect][openid-connect]. It allows to
 export a complete mountable or standalone OpenID Provider implementation. This implementation does
-not force you into any data models or persistance stores, instead it expects you to provide an
-adapter. A generic in memory adapter is available to get you started.
+not force you into any data models or persistence stores, instead it expects you to provide an
+adapter for these. A generic in memory adapter is available to get you started.
 
-The provided examples also implement simple user interaction views but those are not forced on you
-as they do not come as part of the exported application, instead you are encouraged to implement
-your own unique-looking and functioning user flows.
+*TODO: do not use unless you are prepared to develop your user interactions*
 
 **Table of Contents**
 
@@ -28,7 +26,7 @@ your own unique-looking and functioning user flows.
 The following specifications are implemented by oidc-provider. Note that not all features are
 enabled by default, check the configuration section on how to enable them.
 
-- [OpenID Connect Core 1.0 incorporating errata set 1][feature-core]
+- [OpenID Connect Core 1.0][core]
   - Authorization (Authorization Code Flow, Implicit Flow, Hybrid Flow)
   - UserInfo Endpoint and ID Tokens including
     - Signing - Asymmetric and Symmetric
@@ -40,18 +38,18 @@ enabled by default, check the configuration section on how to enable them.
   - Offline Access / Refresh Token Grant
   - Client Credentials Grant
   - Client Authentication via (client_secret_basic, client_secret_post, client_secret_jwt or private_key_jwt)
-- [OpenID Connect Discovery 1.0 incorporating errata set 1][feature-discovery]
-- [OpenID Connect Dynamic Client Registration 1.0 incorporating errata set 1][feature-registration]
-- [OAuth 2.0 Form Post Response mode][feature-form-post]
-- [RFC7636 - Proof Key for Code Exchange by OAuth Public Clients][feature-pixy]
-- [RFC7009 - OAuth 2.0 Token revocation][feature-revocation]
-- [RFC7662 - OAuth 2.0 Token introspection][feature-introspection]
+- [OpenID Connect Discovery 1.0][discovery]
+- [OpenID Connect Dynamic Client Registration 1.0][registration]
+- [OAuth 2.0 Form Post Response Mode][form-post]
+- [RFC7636 - Proof Key for Code Exchange by OAuth Public Clients][pkce]
+- [RFC7009 - OAuth 2.0 Token Revocation][revocation]
+- [RFC7662 - OAuth 2.0 Token Introspection][introspection]
+- [OAuth 2.0 for Native Apps BCP][oauth-native-apps]
 
 The following drafts/experimental specifications are implemented by oidc-provider.
-- [OpenID Connect Session Management 1.0 - draft 28][feature-session-management]
-- [OpenID Connect Back-Channel Logout 1.0 - draft 04][feature-backchannel-logout]
-- [RFC7592 - OAuth 2.0 Dynamic Client Registration Management Protocol (Update and Delete)][feature-registration-management]
-- [OAuth 2.0 for Native Apps BCP - draft 12][feature-oauth-native-apps]
+- [OpenID Connect Session Management 1.0 - draft 28][session-management]
+- [OpenID Connect Back-Channel Logout 1.0 - draft 04][backchannel-logout]
+- [RFC7592 - OAuth 2.0 Dynamic Client Registration Management Protocol (Update and Delete)][registration-management]
 
 Updates to draft and experimental specification versions are released as MINOR library versions,
 if you utilize these specification implementations consider using the tilde `~` operator in your
@@ -138,21 +136,20 @@ See the list of available emitted [event names](/docs/events.md) and their descr
 [npm-url]: https://www.npmjs.com/package/oidc-provider
 [openid-certified-link]: http://openid.net/certification/
 [openid-connect]: http://openid.net/connect/
-[feature-core]: http://openid.net/specs/openid-connect-core-1_0.html
-[feature-discovery]: http://openid.net/specs/openid-connect-discovery-1_0.html
-[feature-registration]: http://openid.net/specs/openid-connect-registration-1_0.html
-[feature-session-management]: http://openid.net/specs/openid-connect-session-1_0-28.html
-[feature-form-post]: http://openid.net/specs/oauth-v2-form-post-response-mode-1_0.html
-[feature-revocation]: https://tools.ietf.org/html/rfc7009
-[feature-introspection]: https://tools.ietf.org/html/rfc7662
-[feature-thumbprint]: https://tools.ietf.org/html/rfc7638
-[feature-pixy]: https://tools.ietf.org/html/rfc7636
+[core]: http://openid.net/specs/openid-connect-core-1_0.html
+[discovery]: http://openid.net/specs/openid-connect-discovery-1_0.html
+[registration]: http://openid.net/specs/openid-connect-registration-1_0.html
+[session-management]: http://openid.net/specs/openid-connect-session-1_0-28.html
+[form-post]: http://openid.net/specs/oauth-v2-form-post-response-mode-1_0.html
+[revocation]: https://tools.ietf.org/html/rfc7009
+[introspection]: https://tools.ietf.org/html/rfc7662
+[pkce]: https://tools.ietf.org/html/rfc7636
 [node-jose]: https://github.com/cisco/node-jose
 [example-repo]: https://github.com/panva/node-oidc-provider-example
 [heroku-example]: https://guarded-cliffs-8635.herokuapp.com/.well-known/openid-configuration
 [heroku-example-client]: https://tranquil-reef-95185.herokuapp.com/client
 [openid-client]: https://github.com/panva/node-openid-client
-[feature-backchannel-logout]: http://openid.net/specs/openid-connect-backchannel-1_0-04.html
-[feature-registration-management]: https://tools.ietf.org/html/rfc7592
-[feature-oauth-native-apps]: https://tools.ietf.org/html/draft-ietf-oauth-native-apps-12
+[backchannel-logout]: http://openid.net/specs/openid-connect-backchannel-1_0-04.html
+[registration-management]: https://tools.ietf.org/html/rfc7592
+[oauth-native-apps]: https://tools.ietf.org/html/draft-ietf-oauth-native-apps
 [debug-link]: https://github.com/visionmedia/debug
