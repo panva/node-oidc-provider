@@ -81,7 +81,6 @@ describe('devInteractions', function () {
           login: 'foobar',
         })
         .type('form')
-        // TODO: // .expect('set-cookie', /_grant_result={"login":{"account":"foobar","acr":"1","remember":false,"ts":\d+},"consent":{}};/)
         .expect(302)
         .expect('location', new RegExp(this.url.replace('interaction', 'auth')));
     });
@@ -110,7 +109,6 @@ describe('devInteractions', function () {
           view: 'interaction'
         })
         .type('form')
-        // TODO: // .expect('set-cookie', /_grant_result={"consent":{}};/)
         .expect(302)
         .expect('location', new RegExp(this.url.replace('interaction', 'auth')));
     });
