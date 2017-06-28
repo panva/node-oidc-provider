@@ -27,6 +27,10 @@ Yay for [SemVer](http://semver.org/).
 <!-- TOC END -->
 
 ## Version 1.15.0
+### Version 1.15.12
+- [DIFF](https://github.com/panva/node-oidc-provider/compare/v1.15.11...v1.15.12)
+- fixed clients schema validation for clients with custom ROPC grant and refresh
+
 ### Version 1.15.11
 - [DIFF](https://github.com/panva/node-oidc-provider/compare/v1.15.10...v1.15.11)
 - fixed JWT signing of utf8 containing input
