@@ -266,7 +266,6 @@ describe('Client validations', function () {
     rejects(this.title, ['authorization_code'], null, { // misses implicit
       response_types: ['id_token']
     });
-    rejects(this.title, ['refresh_token'], 'refresh_token grant must be used in combination with authorization_code grant'); // misses authorization_code
     rejects(this.title, ['authorization_code'], null, { // misses implicit
       response_types: ['token']
     });
