@@ -304,7 +304,8 @@ latter reflect your actual configuration, i.e. available claims, features and so
 ```js
 const configuration = { features: { discovery: Boolean[true] } };
 ```
-
+WebFinger always returns positive results and links to this issuer, it is not resolving the resources
+in any way.
 
 **Authorization `claims` parameter**  
 Enables the use and validations of `claims` parameter as described in [Core 1.0][core-claims-url]
@@ -362,14 +363,14 @@ const configuration = { features: { request: Boolean[false] } };
 **Authorization `request_uri` parameter**  
 Enables the use and validations of `request_uri` parameter as described in
 [Core 1.0][core-jwt-parameters-url] and sets the discovery endpoint property
-`request_uri_parameter_supported` to true.
+`request_uri_parameter_supported` and `require_request_uri_registration` to true.
 ```js
-const configuration = { features: { requestUri: Boolean[false] } };
+const configuration = { features: { requestUri: Boolean[true] } };
 ```
 
-To also enable require_request_uri_registration configure requestUri as an object like so:
+To disable require_request_uri_registration configure requestUri as an object like so:
 ```js
-const configuration = { features: { requestUri: { requireRequestUriRegistration: true } } };
+const configuration = { features: { requestUri: { requireRequestUriRegistration: false } } };
 ```
 
 **Introspection endpoint**  

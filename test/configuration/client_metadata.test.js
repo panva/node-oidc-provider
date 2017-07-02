@@ -391,15 +391,15 @@ describe('Client validations', function () {
   });
 
   context('request_uris', function () {
-    defaultsTo(this.title, undefined, undefined, {
+    defaultsTo(this.title, [], undefined, {
       features: {
         requestUri: true
       }
     });
-    defaultsTo(this.title, [], undefined, {
+    defaultsTo(this.title, undefined, undefined, {
       features: {
         requestUri: {
-          requireRequestUriRegistration: true
+          requireRequestUriRegistration: false
         }
       }
     });

@@ -49,7 +49,7 @@ Yay for [SemVer](http://semver.org/).
 - **default refreshTokenRotation changed from 'none' to 'rotateAndConsume'**
 - pkce.skipClientAuth removed, native clients not willing to submit secrets should be registered
   with method none
-- **`features.requestUri` enabled by default**
+- **`features.requestUri` enabled by default with requireRequestUriRegistration**
 - **`features.oauthNativeApps` enabled by default**
 - `features.oauthNativeApps` automatically enables `features.pkce` with `{ forcedForNative: true }`
 - **interaction details no longer utilize cookies to store the details and request parameters,

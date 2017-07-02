@@ -1,7 +1,11 @@
 const { clone } = require('lodash');
 const config = clone(require('../default.config'));
 
-config.features = { request: true, requestUri: true, claimsParameter: true };
+config.features = {
+  request: true,
+  requestUri: { requireRequestUriRegistration: false },
+  claimsParameter: true,
+};
 
 module.exports = {
   config,
