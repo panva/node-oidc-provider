@@ -8,8 +8,9 @@ not dictate a fixed data models or persistence store, instead, you must provide 
 A generic in memory adapter is available to get you started as well as feature-less dev-only views
 to be able to get off the ground.
 
-Notice: ^2.0.0 oidc-provider only works with Node.JS >= 8.0.0, for LTS/4 and LTS/6 use the
-[^1.0.0](/panva/node-oidc-provider/tree/v1.x) semver range.
+Notice: ^2.0.0 oidc-provider only works with Node.JS >= 8.0.0 and introduces many breaking changes, for LTS/4 and LTS/6 use the
+[^1.0.0](/panva/node-oidc-provider/tree/v1.x) semver range. Updating from ^1.0.0? See the
+[CHANGELOG](/CHANGELOG.md)
 
 **Table of Contents**
 
@@ -87,7 +88,12 @@ const Provider = require('oidc-provider');
 const configuration = {
   // ... see available options /docs/configuration.md
 };
-const clients = [];
+const clients = [{
+  client_id: 'foo',
+  client_secret: 'bar',
+  redirect_uris: ['http://lvh.me:8080/cb'],
+  // + other client properties
+}];
 
 const oidc = new Provider('http://localhost:3000', configuration);
 oidc.initialize({ clients }).then(function () {

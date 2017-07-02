@@ -32,11 +32,8 @@ Yay for [SemVer](http://semver.org/).
 - **oidc-provider now requires node v8.0.0 or higher for ES2015, async function and utils.promisify support**
 - **internal koa (and related) dependencies updated to their respective 'next' or koa2 middleware
   compatible versions**
-- adapter is now a property passed into `#initialize()`, adapter properties in configuration will
-  result in a rejected initialize
-- helper functions which returned or accepted generators will no longer work, use async functions instead
-- default acrValues configuration option is now empty, if you used the old values `['0', '1', '2']`,
-  you must configure the value explicitly
+- adapter must now be passed into `#initialize()`
+- helper functions which returned or accepted generators will no longer work, use async functions
 - helper functions no longer have koa ctx bound to `this`, instead their signature is changed
 - interactionUrl helper signature changed to (ctx, interaction) **and is now awaited**
 - renderError helper signature changed to (ctx, error) **and is now awaited**
@@ -45,11 +42,14 @@ Yay for [SemVer](http://semver.org/).
 - default interactionCheck helper requires all native application client authorizations to pass
   through interactions
 - findById helper signature changed to (ctx, accountId)
-- `postLogoutRedirectUri` configuration option is now a helper function and is awaited to (was a string property)
+- `postLogoutRedirectUri` configuration option is now a helper function and is awaited to
+- default acrValues configuration option is now empty, if you used the old values `['0', '1', '2']`,
+  you must configure the value explicitly
 - `ctx.prompted` renamed to more descriptive `ctx.promptPending`
 - **default refreshTokenRotation changed from 'none' to 'rotateAndConsume'**
 - pkce.skipClientAuth removed, native clients not willing to submit secrets should be registered
   with method none
+- **`features.requestUri` enabled by default**
 - **`features.oauthNativeApps` enabled by default**
 - `features.oauthNativeApps` automatically enables `features.pkce` with `{ forcedForNative: true }`
 - **interaction details no longer utilize cookies to store the details and request parameters,
@@ -84,10 +84,6 @@ Yay for [SemVer](http://semver.org/).
   - introspection_endpoint_auth_signing_alg_values_supported
   - revocation_endpoint_auth_methods_supported
   - revocation_endpoint_auth_signing_alg_values_supported
-
-*Fixes*
-- fixed logout buttons in browsers not supporting "form" attribute
-- fixed logout submit when there was is no session
 
 ## ^1.0.0
 ### 1.15.x

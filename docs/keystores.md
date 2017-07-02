@@ -1,8 +1,10 @@
 # Certificates, Keystores
 
-oidc-provider uses [node-jose][node-jose-library] for everything JW(S|E|K) related. oidc-provider
-expects to either receive a a jose.JWK.KeyStore object or a JWKS formatted javascript object
-with the private keys during `#initialize()` call.
+**Notice: Follow the best practices for distributing private keying material and secrets!**
+
+oidc-provider uses the brilliant [node-jose][node-jose-library] for everything JW(S|E|K) related.
+oidc-provider expects to either receive a a jose.JWK.KeyStore object or a JWKS formatted javascript
+object with the private keys during `#initialize()` call.
 
 **Table of Contents**
 
@@ -38,8 +40,9 @@ provider.initialize({ keystore }).then(() => { /* your app is ready */ });
 
 
 ## Generating new keys
-Refer to this snippet to securely generate a new key using node-jose and get the JWK format of it.
-In this snippet a the required RS256 sig key is generated and a full JWKS is printed to the console.
+Refer to this snippet to generate a new random key using node-jose and get the JWK representation
+of it. In this snippet a the required RS256 sig key is generated and a full JWKS is printed to the
+console.
 
 ```js
 const { createKeyStore } = require('oidc-provider');
@@ -124,8 +127,7 @@ distributed deployment with rolling reloads in place.
 2. reload all your processes
 3. move your new key to the very front of the "keys" array in your JWKS
   - this means the key will be used for signing
-4. strip the private properties from the deprecated keys (only EC and RSA)
-5. reload all your processes
+4. reload all your processes
 
 [node-jose-library]: https://github.com/cisco/node-jose
 [jose-jwk]: https://tools.ietf.org/html/rfc7517

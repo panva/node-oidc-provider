@@ -114,6 +114,7 @@ this first load will be thrown and handled like any other context specific error
 Note: Make sure your adapter returns an object with the correct property value types as if they were
 submitted via dynamic registration.
 
+
 ## Certificates
 See [Certificates](/docs/keystores.md).
 
@@ -163,7 +164,7 @@ storing issued tokens, codes, user sessions and dynamically registered clients. 
 long as you develop, configure and generally just play around since every time you restart your
 process all information will be lost. As soon as you cannot live with this limitation you will be
 required to provide an adapter constructor for oidc-provider to use. This constructor will be called
-for every model is accessed the first time it is needed. A static `connect` method is called if
+for every model accessed the first time it is needed. A static `connect` method is called if
 present during the initialize phase.
 
 ```js
@@ -183,7 +184,7 @@ check your own implementation.
 
 ## Interaction
 Since oidc-provider only comes with feature-less views and interaction handlers it's up to you to fill
-those in, here's how oidc-provider allows you to do so:
+those in, here is how oidc-provider allows you to do so:
 
 When oidc-provider cannot fulfill the authorization request for any of the possible reasons (missing
 user session, requested ACR not fulfilled, prompt requested, ...) it will resolve an `interactionUrl`
@@ -611,7 +612,7 @@ by the provider.
 ### to an express application
 ```js
 const rewrite = require('express-urlrewrite');
-const prefix = '/op'
+const prefix = '/oidc';
 expressApp.use(rewrite('/.well-known/*', `${prefix}/.well-known/$1`));
 expressApp.use(prefix, oidc.callback);
 ```
@@ -620,7 +621,7 @@ expressApp.use(prefix, oidc.callback);
 ```js
 const rewrite = require('koa-rewrite');
 const mount = require('koa-mount');
-const prefix = '/op'
+const prefix = '/oidc';
 koaApp.use(rewrite('/.well-known/*', `${prefix}/.well-known/$1`));
 koaApp.use(mount(prefix, oidc.app));
 ```
