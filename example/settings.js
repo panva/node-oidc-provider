@@ -25,7 +25,7 @@ module.exports.config = {
     introspection: true,
     registration: true,
     request: true,
-    requestUri: true,
+    requestUri: { requireRequestUriRegistration: false },
     revocation: true,
     sessionManagement: true,
     backchannelLogout: true,
