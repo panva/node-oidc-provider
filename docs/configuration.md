@@ -517,7 +517,6 @@ provider.registerGrantType('password', function passwordGrantTypeFactory(provide
   };
 }, parameters);
 ```
-Tip: you are able to modify the implemented grant type behavior like this.
 
 
 ## Extending Authorization with Custom Parameters

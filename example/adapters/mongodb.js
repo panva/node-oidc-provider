@@ -63,10 +63,8 @@ class MongoAdapter {
       expiresAt = new Date(Date.now() + (expiresIn * 1000));
     }
 
-    const document = Object.assign(payload, { expiresAt });
-    if (!document.expiresAt) {
-      delete document.expiresAt;
-    }
+    const document = Object.assign(payload, expiresAt && { expiresAt });
+    
     return this.coll().updateOne({ _id }, document, { upsert: true });
   }
 

@@ -91,6 +91,7 @@ Yay for [SemVer](http://semver.org/).
 
 ## ^1.0.0
 ### 1.15.x
+- fixed clients schema validation for clients with custom ROPC grant and refresh
 - fixed JWT signing of utf8 containing input
 - fixed subsequent refresh token refresh with pkce.skipClientAuth = true
 - fixed revocation response body to be empty
