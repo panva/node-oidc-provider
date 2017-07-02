@@ -60,6 +60,7 @@ Yay for [SemVer](http://semver.org/).
   session id and loads the details using your adapter
 - interaction helper `provider.interactionFinished` now returns a Promise, it reads the short lived
   session id and stores the interaction results there
+- default token TTLs shortened
 
 *New features*
 - `static` function named `connect` can now be present on an Adapter prototype, this will be awaited
