@@ -4,10 +4,12 @@
 
 oidc-provider is an OpenID Provider implementation of [OpenID Connect][openid-connect]. It allows to
 export a complete mountable or standalone OpenID Provider implementation. This implementation does
-not force you into any data models or persistence stores, instead it expects you to provide an
-adapter for these. A generic in memory adapter is available to get you started.
+not dictate a fixed data models or persistence store, instead, you must provide adapters for these.
+A generic in memory adapter is available to get you started as well as feature-less dev-only views
+to be able to get off the ground.
 
-*TODO: do not use unless you are prepared to develop your user interactions*
+Notice: ^2.0.0 oidc-provider only works with Node.JS >= 8.0.0, for LTS/4 and LTS/6 use the
+[^1.0.0](/panva/node-oidc-provider/tree/v1.x) semver range.
 
 **Table of Contents**
 
@@ -64,29 +66,16 @@ of the OpenID Connect™ protocol.
 
 [![build][conformance-image]][conformance-url]
 
+
 ## Get started
 You may follow an example [step by step setup][example-repo] (recommended), or run and experiment with an
 example server that's part of the repo (if you can follow the structure, if not check the step by step).
 
-```bash
-$ git clone https://github.com/panva/node-oidc-provider.git oidc-provider
-$ cd oidc-provider
-$ nvm use 7
-$ npm install
-$ node example
-```
-Visiting `http://localhost:3000/.well-known/openid-configuration` will help you to discover how the
-example is [configured](/example).
-
-This example is also deployed and available for you to experiment with [here][heroku-example].
+The example bundled in this repo's codebase is available for you to experiment with [here][heroku-example].
+Dynamic Registration is open, you can literally register any
+client you want there.  
 An example client using this provider is available [here][heroku-example-client]
 (uses [openid-client][openid-client]).
-
-Otherwise just install the package in your app and follow the [example use](/example/index.js).
-It is easy to use with [express](/example/express.js) too.
-```
-$ npm install oidc-provider --save
-```
 
 
 ## Configuration and Initialization
@@ -95,13 +84,12 @@ the [available configuration](/docs/configuration.md).
 
 ```js
 const Provider = require('oidc-provider');
-const issuer = 'http://localhost:3000';
 const configuration = {
   // ... see available options /docs/configuration.md
 };
-const clients = [  ];
+const clients = [];
 
-const oidc = new Provider(issuer, configuration);
+const oidc = new Provider('http://localhost:3000', configuration);
 oidc.initialize({ clients }).then(function () {
   console.log(oidc.callback); // => express/nodejs style application callback (req, res)
   console.log(oidc.app); // => koa2.x application
