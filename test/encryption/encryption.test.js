@@ -108,7 +108,7 @@ const route = '/auth';
           client_id: 'client',
           response_type: 'code',
           redirect_uri: 'https://client.example.com/cb'
-        }, null, 'none').then(signed =>
+        }, null, 'none', { issuer: 'client', audience: this.provider.issuer }).then(signed =>
         JWT.encrypt(signed, instance(this.provider).keystore.get(), 'A128CBC-HS256', 'RSA1_5')
       ).then(encrypted =>
         this.wrap({
@@ -138,7 +138,7 @@ const route = '/auth';
           client_id: 'client',
           response_type: 'code',
           redirect_uri: 'https://client.example.com/cb'
-        }, null, 'none').then(signed =>
+        }, null, 'none', { issuer: 'client', audience: this.provider.issuer }).then(signed =>
           JWT.encrypt(signed, instance(this.provider).keystore.get(), 'A128CBC-HS256', 'RSA-OAEP')
       ).then(encrypted =>
         this.wrap({

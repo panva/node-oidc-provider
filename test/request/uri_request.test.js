@@ -54,7 +54,7 @@ describe('request Uri features', function () {
           client_id: 'client-with-HS-sig',
           response_type: 'code',
           redirect_uri: 'https://client.example.com/cb'
-        }, key, 'HS256').then((request) => {
+        }, key, 'HS256', { issuer: 'client-with-HS-sig', audience: this.provider.issuer }).then((request) => {
           nock('https://client.example.com')
           .get('/request')
           .reply(200, request);
@@ -87,7 +87,7 @@ describe('request Uri features', function () {
           client_id: 'client',
           response_type: 'code',
           redirect_uri: 'https://client.example.com/cb'
-        }, null, 'none').then((request) => {
+        }, null, 'none', { issuer: 'client', audience: this.provider.issuer }).then((request) => {
           nock('https://client.example.com')
           .get('/request')
           .reply(200, request);
@@ -219,7 +219,7 @@ describe('request Uri features', function () {
             client_id: 'client',
             response_type: 'code',
             redirect_uri: 'https://client.example.com/cb'
-          }, null, 'none').then((request) => {
+          }, null, 'none', { issuer: 'client', audience: this.provider.issuer }).then((request) => {
             nock('https://thisoneisallowed.com')
             .get('/')
             .reply(200, request);
@@ -252,7 +252,7 @@ describe('request Uri features', function () {
             client_id: 'client',
             response_type: 'code',
             redirect_uri: 'https://client.example.com/cb'
-          }, null, 'none').then((request) => {
+          }, null, 'none', { issuer: 'client', audience: this.provider.issuer }).then((request) => {
             nock('https://thisoneisallowed.com#hash234')
             .get('/')
             .reply(200, request);
@@ -370,7 +370,7 @@ describe('request Uri features', function () {
           response_type: 'code',
           request: 'request inception',
           redirect_uri: 'https://client.example.com/cb'
-        }, null, 'none').then((request) => {
+        }, null, 'none', { issuer: 'client', audience: this.provider.issuer }).then((request) => {
           nock('https://client.example.com')
           .get('/request')
           .reply(200, request);
@@ -404,7 +404,7 @@ describe('request Uri features', function () {
           response_type: 'code',
           request_uri: 'request uri inception',
           redirect_uri: 'https://client.example.com/cb'
-        }, null, 'none').then((request) => {
+        }, null, 'none', { issuer: 'client', audience: this.provider.issuer }).then((request) => {
           nock('https://client.example.com')
           .get('/request')
           .reply(200, request);
@@ -438,7 +438,7 @@ describe('request Uri features', function () {
           client_id: 'client',
           response_type: 'id_token',
           redirect_uri: 'https://client.example.com/cb'
-        }, null, 'none').then((request) => {
+        }, null, 'none', { issuer: 'client', audience: this.provider.issuer }).then((request) => {
           nock('https://client.example.com')
           .get('/request')
           .reply(200, request);
@@ -472,7 +472,7 @@ describe('request Uri features', function () {
           client_id: 'client2',
           response_type: 'code',
           redirect_uri: 'https://client.example.com/cb'
-        }, null, 'none').then((request) => {
+        }, null, 'none', { issuer: 'client2', audience: this.provider.issuer }).then((request) => {
           nock('https://client.example.com')
           .get('/request')
           .reply(200, request);
@@ -535,7 +535,7 @@ describe('request Uri features', function () {
           client_id: 'client-with-HS-sig',
           response_type: 'code',
           redirect_uri: 'https://client.example.com/cb'
-        }, null, 'none').then((request) => {
+        }, null, 'none', { issuer: 'client-with-HS-sig', audience: this.provider.issuer }).then((request) => {
           nock('https://client.example.com')
           .get('/request')
           .reply(200, request);
@@ -571,7 +571,7 @@ describe('request Uri features', function () {
           client_id: 'client',
           response_type: 'code',
           redirect_uri: 'https://client.example.com/cb'
-        }, key, 'HS256').then((request) => {
+        }, key, 'HS256', { issuer: 'client', audience: this.provider.issuer }).then((request) => {
           nock('https://client.example.com')
           .get('/request')
           .reply(200, request);
@@ -592,7 +592,7 @@ describe('request Uri features', function () {
           expect(spy.calledOnce).to.be.true;
           expect(spy.args[0][0]).to.have.property('message', 'invalid_request_object');
           expect(spy.args[0][0]).to.have.property('error_description').that.matches(
-            /could not validate request object signature/
+            /could not validate request object/
           );
         });
         });

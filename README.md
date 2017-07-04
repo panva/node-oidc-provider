@@ -8,9 +8,9 @@ not dictate a fixed data models or persistence store, instead, you must provide 
 A generic in memory adapter is available to get you started as well as feature-less dev-only views
 to be able to get off the ground.
 
-Notice: ^2.0.0 oidc-provider only works with Node.JS >= 8.0.0 and introduces many breaking changes, for LTS/4 and LTS/6 use the
-[^1.0.0](/panva/node-oidc-provider/tree/v1.x) semver range. Updating from ^1.0.0? See the
-[CHANGELOG](/CHANGELOG.md)
+Notice: ^2.0.0 oidc-provider only works with Node.JS >= 8.0.0 and introduces many breaking changes,
+for LTS/4 and LTS/6 use the [^1.0.0](https://github.com/panva/node-oidc-provider/tree/v1.x) semver
+range. Updating from ^1.0.0? See the [CHANGELOG](/CHANGELOG.md)
 
 **Table of Contents**
 
@@ -40,7 +40,7 @@ enabled by default, check the configuration section on how to enable them.
   - Public and Pairwise Subject Identifier Types
   - Offline Access / Refresh Token Grant
   - Client Credentials Grant
-  - Client Authentication via (client_secret_basic, client_secret_post, client_secret_jwt or private_key_jwt)
+  - Client Authentication incl. client_secret_jwt and private_key_jwt methods
 - [OpenID Connect Discovery 1.0][discovery]
 - [OpenID Connect Dynamic Client Registration 1.0][registration]
 - [OAuth 2.0 Form Post Response Mode][form-post]

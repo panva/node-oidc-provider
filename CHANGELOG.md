@@ -61,6 +61,8 @@ Yay for [SemVer](http://semver.org/).
 - interaction helper `provider.interactionFinished` now returns a Promise, it reads the short lived
   session id and stores the interaction results there
 - default token TTLs shortened
+- Request Object `iss` (issuer) and `aud` (audience) values are now being validated to be equal to
+  Client's identifier (`iss`) and the OP Issuer identifier (`aud`) per the specification SHOULD
 
 *New features*
 - `static` function named `connect` can now be present on an Adapter prototype, this will be awaited
