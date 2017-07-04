@@ -71,13 +71,10 @@
     "lint-fix": "eslint lib example test --fix",
     "heroku-postbuild": "npm install mongodb"
   },
-  "version": "2.0.0-pre.3",
+  "version": "2.0.0",
   "files": [
     "lib"
   ],
-  "publishConfig": {
-    "tag": "next"
-  },
   "nyc": {
     "reporter": [
       "lcov",
