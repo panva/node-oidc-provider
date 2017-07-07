@@ -64,7 +64,7 @@ class MongoAdapter {
     }
 
     const document = Object.assign(payload, expiresAt && { expiresAt });
-    
+
     return this.coll().updateOne({ _id }, document, { upsert: true });
   }
 

@@ -10,6 +10,8 @@ class Account {
 
   claims() {
     return {
+      sub: this.accountId, // it is essential to always return a sub claim
+
       address: {
         country: '000',
         formatted: '000',
@@ -33,7 +35,6 @@ class Account {
       picture: 'http://lorempixel.com/400/200/',
       preferred_username: 'Jdawg',
       profile: 'https://johnswebsite.com',
-      sub: this.accountId,
       updated_at: 1454704946,
       website: 'http://example.com',
       zoneinfo: 'Europe/Berlin',
@@ -48,7 +49,10 @@ class Account {
     return Promise.resolve(logins.get(login));
   }
 
-  static async findById(ctx, id) {
+  static async findById(ctx, id, token) { // eslint-disable-line no-unused-vars
+    // token is a reference to the token used for which a given account is being loaded,
+    //   it is undefined in scenarios where account claims are returned from authorization endpoint
+    // ctx is the koa request context
     if (!store.get(id)) new Account(id); // eslint-disable-line no-new
     return store.get(id);
   }
