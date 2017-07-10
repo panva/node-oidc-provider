@@ -3,7 +3,7 @@ const config = clone(require('../default.config'));
 
 config.subjectTypes = ['public', 'pairwise'];
 config.pairwiseSalt = 'foobar';
-config.features = { introspection: true };
+config.features = { introspection: true, clientCredentials: true };
 
 module.exports = {
   config,
