@@ -1,4 +1,4 @@
-// node example/adapters/redis_test.js
+// node example/adapters/sequelize_test.js
 
 /* eslint-disable no-console */
 
