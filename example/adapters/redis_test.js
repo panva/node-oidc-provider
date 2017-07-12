@@ -7,12 +7,10 @@ const RedisAdapter = require('./redis');
 
 const { AdapterTest } = Provider;
 
-const provider = new Provider('http://localhost', {
-  adapter: RedisAdapter,
-});
+const provider = new Provider('http://localhost');
 const test = new AdapterTest(provider);
 
-provider.initialize()
+provider.initialize({ adapter: RedisAdapter })
   .then(() => test.execute())
   .then(() => {
     console.log('tests passed');

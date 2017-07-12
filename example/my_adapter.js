@@ -53,10 +53,19 @@ class MyAdapter {
      *
      * Client model will only use this when registered through Dynamic Registration features.
      *
-     * Session model payload contains the following properties:
+     * OIDC Session model payload contains the following properties:
      * - account {string} the session account identifier
      * - authorizations {object} object with session authorized clients and their session identifiers
      * - loginTs {number} timestamp of user's authentication
+     *
+     * Short-lived Interaction Session model payload contains the following properties:
+     * - returnTo {string} after resolving interactions send the user-agent to this url
+     * - interaction {object} details on the interaction details (error, reason code and descriptions)
+     * - uuid {string} - uuid of the grant
+     * - params {object} - parsed recognized parameters object
+     * - signed {array} - array of parameter names (keys) that were received from a signed and/or
+     *                    encrypted request/_uri object
+     * - result {object} - interaction results object is expected here
      *
      */
   }
