@@ -14,10 +14,10 @@ describe('AdapterTest', function () {
   });
 
   it('passes with the TestAdapter', function () {
-    const provider = new Provider('http://localhost', {
-      adapter: TestAdapter
-    });
-    return provider.initialize().then(() => {
+    const provider = new Provider('http://localhost');
+    return provider.initialize({
+      adapter: TestAdapter,
+    }).then(() => {
       const test = new AdapterTest(provider);
       return test.execute();
     });
