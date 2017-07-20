@@ -112,10 +112,12 @@ describe('client keystore refresh', function () {
           Expires: until.toUTCString()
         });
 
+      const freshUntil = epochTime(until);
+
       return client.keystore.refresh().then(() => {
         expect(client.keystore.fresh()).to.be.true;
         expect(client.keystore.stale()).to.be.false;
-        expect(client.keystore.freshUntil).to.equal(epochTime(until));
+        expect(client.keystore.freshUntil).to.equal(freshUntil);
       });
     });
 
@@ -131,10 +133,12 @@ describe('client keystore refresh', function () {
           'Cache-Control': 'private, max-age: 3600'
         });
 
+      const freshUntil = epochTime(until);
+
       return client.keystore.refresh().then(() => {
         expect(client.keystore.fresh()).to.be.true;
         expect(client.keystore.stale()).to.be.false;
-        expect(client.keystore.freshUntil).to.equal(epochTime(until));
+        expect(client.keystore.freshUntil).to.equal(freshUntil);
       });
     });
 
@@ -148,10 +152,12 @@ describe('client keystore refresh', function () {
           'Cache-Control': 'private, max-age=3600'
         });
 
+      const freshUntil = epochTime() + 3600;
+
       return client.keystore.refresh().then(() => {
         expect(client.keystore.fresh()).to.be.true;
         expect(client.keystore.stale()).to.be.false;
-        expect(client.keystore.freshUntil).to.equal(epochTime() + 3600);
+        expect(client.keystore.freshUntil).to.equal(freshUntil);
       });
     });
 
@@ -163,10 +169,12 @@ describe('client keystore refresh', function () {
         .get('/jwks')
         .reply(200, keystore.toJSON());
 
+      const freshUntil = epochTime() + 55;
+
       return client.keystore.refresh().then(() => {
         expect(client.keystore.fresh()).to.be.true;
         expect(client.keystore.stale()).to.be.false;
-        expect(client.keystore.freshUntil).to.be.above(epochTime() + 55);
+        expect(client.keystore.freshUntil).to.be.above(freshUntil);
       });
     });
   });
