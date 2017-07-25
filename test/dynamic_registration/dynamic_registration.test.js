@@ -23,76 +23,76 @@ describe('registration features', function () {
   context('POST /reg', function () {
     it('generates the id, secret that does not expire and reg access token and returns the defaulted values', function () {
       return this.agent.post('/reg')
-      .send({
-        redirect_uris: ['https://client.example.com/cb']
-      })
-      .expect(201)
-      .expect((response) => {
-        expect(response.body).to.contain.keys('client_id', 'client_secret', 'registration_access_token');
-        expect(response.body).to.have.property('client_secret_expires_at', 0);
-        expect(response.body).to.have.property('application_type', 'web');
-        expect(response.body).to.have.property('id_token_signed_response_alg', 'RS256');
-        expect(response.body).to.have.property('token_endpoint_auth_method', 'client_secret_basic');
-        expect(response.body).to.have.property('require_auth_time', false);
-        expect(response.body).to.have.property('grant_types').and.eql(['authorization_code']);
-        expect(response.body).to.have.property('response_types').and.eql(['code']);
-        expect(response.body).to.have.property('registration_client_uri', this.provider.issuer + '/reg/' + response.body.client_id); // eslint-disable-line prefer-template
-      });
+        .send({
+          redirect_uris: ['https://client.example.com/cb']
+        })
+        .expect(201)
+        .expect((response) => {
+          expect(response.body).to.contain.keys('client_id', 'client_secret', 'registration_access_token');
+          expect(response.body).to.have.property('client_secret_expires_at', 0);
+          expect(response.body).to.have.property('application_type', 'web');
+          expect(response.body).to.have.property('id_token_signed_response_alg', 'RS256');
+          expect(response.body).to.have.property('token_endpoint_auth_method', 'client_secret_basic');
+          expect(response.body).to.have.property('require_auth_time', false);
+          expect(response.body).to.have.property('grant_types').and.eql(['authorization_code']);
+          expect(response.body).to.have.property('response_types').and.eql(['code']);
+          expect(response.body).to.have.property('registration_client_uri', this.provider.issuer + '/reg/' + response.body.client_id); // eslint-disable-line prefer-template
+        });
     });
 
     it('omits the client_secret generation when it is not needed', function () {
       return this.agent.post('/reg')
-      .send({
-        token_endpoint_auth_method: 'none',
-        redirect_uris: ['https://client.example.com/cb'],
-        response_types: ['id_token'],
-        grant_types: ['implicit']
-      })
-      .expect(201)
-      .expect((response) => {
-        expect(response.body).not.to.have.property('client_secret');
-        expect(response.body).not.to.have.property('client_secret_expires_at');
-      });
+        .send({
+          token_endpoint_auth_method: 'none',
+          redirect_uris: ['https://client.example.com/cb'],
+          response_types: ['id_token'],
+          grant_types: ['implicit']
+        })
+        .expect(201)
+        .expect((response) => {
+          expect(response.body).not.to.have.property('client_secret');
+          expect(response.body).not.to.have.property('client_secret_expires_at');
+        });
     });
 
     it('issues the client_secret when needed for sig', function () {
       return this.agent.post('/reg')
-      .send({
-        token_endpoint_auth_method: 'none',
-        redirect_uris: ['https://client.example.com/cb'],
-        response_types: ['id_token'],
-        grant_types: ['implicit'],
-        id_token_signed_response_alg: 'HS256',
-      })
-      .expect(201)
-      .expect((response) => {
-        expect(response.body).to.have.property('client_secret');
-        expect(response.body).to.have.property('client_secret_expires_at');
-      });
+        .send({
+          token_endpoint_auth_method: 'none',
+          redirect_uris: ['https://client.example.com/cb'],
+          response_types: ['id_token'],
+          grant_types: ['implicit'],
+          id_token_signed_response_alg: 'HS256',
+        })
+        .expect(201)
+        .expect((response) => {
+          expect(response.body).to.have.property('client_secret');
+          expect(response.body).to.have.property('client_secret_expires_at');
+        });
     });
 
     it('issues the client_secret when needed for auth', function () {
       return this.agent.post('/reg')
-      .send({
-        token_endpoint_auth_method: 'client_secret_jwt',
-        redirect_uris: ['https://client.example.com/cb'],
-        response_types: ['id_token'],
-        grant_types: ['implicit']
-      })
-      .expect(201)
-      .expect((response) => {
-        expect(response.body).to.have.property('client_secret');
-        expect(response.body).to.have.property('client_secret_expires_at');
-      });
+        .send({
+          token_endpoint_auth_method: 'client_secret_jwt',
+          redirect_uris: ['https://client.example.com/cb'],
+          response_types: ['id_token'],
+          grant_types: ['implicit']
+        })
+        .expect(201)
+        .expect((response) => {
+          expect(response.body).to.have.property('client_secret');
+          expect(response.body).to.have.property('client_secret_expires_at');
+        });
     });
 
     it('returns token-endpoint-like cache headers', function () {
       return this.agent.post('/reg')
-      .send({
-        redirect_uris: ['https://client.example.com/cb']
-      })
-      .expect('pragma', 'no-cache')
-      .expect('cache-control', 'no-cache, no-store');
+        .send({
+          redirect_uris: ['https://client.example.com/cb']
+        })
+        .expect('pragma', 'no-cache')
+        .expect('cache-control', 'no-cache, no-store');
     });
 
     it('stores the client and emits an event', function () {
@@ -102,15 +102,15 @@ describe('registration features', function () {
       const upsert = sinon.spy(adapter, 'upsert');
 
       return this.agent.post('/reg')
-      .send({
-        redirect_uris: ['https://client.example.com/cb']
-      })
-      .expect(() => {
-        expect(upsert.calledOnce).to.be.true;
-        expect(spy.calledOnce).to.be.true;
-        expect(spy.firstCall.args[0].constructor.name).to.equal('Client');
-        expect(spy.firstCall.args[1]).to.have.property('oidc');
-      });
+        .send({
+          redirect_uris: ['https://client.example.com/cb']
+        })
+        .expect(() => {
+          expect(upsert.calledOnce).to.be.true;
+          expect(spy.calledOnce).to.be.true;
+          expect(spy.firstCall.args[0].constructor.name).to.equal('Client');
+          expect(spy.firstCall.args[1]).to.have.property('oidc');
+        });
     });
 
     it('uses the adapter to find stored clients', function () {
@@ -129,36 +129,36 @@ describe('registration features', function () {
 
     it('validates the parameters to be valid and responds with errors', function () {
       return this.agent.post('/reg')
-      .send({
-        grant_types: ['this is clearly wrong'],
-        redirect_uris: ['https://client.example.com/cb']
-      })
-      .expect(400)
-      .expect(validateError('invalid_client_metadata'))
-      .expect(validateErrorDescription(/grant_types/));
+        .send({
+          grant_types: ['this is clearly wrong'],
+          redirect_uris: ['https://client.example.com/cb']
+        })
+        .expect(400)
+        .expect(validateError('invalid_client_metadata'))
+        .expect(validateErrorDescription(/grant_types/));
     });
 
     it('validates the parameters to be valid and responds with redirect_uri errors', function () {
       return this.agent.post('/reg')
-      .send({
+        .send({
         // redirect_uris missing here
-      })
-      .expect(400)
-      .expect(validateError('invalid_redirect_uri'))
-      .expect(validateErrorDescription(/redirect_uris/));
+        })
+        .expect(400)
+        .expect(validateError('invalid_redirect_uri'))
+        .expect(validateErrorDescription(/redirect_uris/));
     });
 
     it('only accepts application/json POSTs', function () {
       return this.agent.post('/reg')
-      .send({
-        redirect_uris: ['https://client.example.com/cb']
-      })
-      .type('form')
-      .expect(400)
-      .expect({
-        error: 'invalid_request',
-        error_description: 'only application/json content-type POST bodies are supported'
-      });
+        .send({
+          redirect_uris: ['https://client.example.com/cb']
+        })
+        .type('form')
+        .expect(400)
+        .expect({
+          error: 'invalid_request',
+          error_description: 'only application/json content-type POST bodies are supported'
+        });
     });
 
     describe('initial access tokens', function () {
@@ -174,42 +174,42 @@ describe('registration features', function () {
 
         it('allows reg calls with the access tokens as a Bearer token [query]', function () {
           return this.agent.post('/reg')
-          .send({
-            redirect_uris: ['https://client.example.com/cb']
-          })
-          .query({
-            access_token: 'foobar'
-          })
-          .expect(201);
+            .send({
+              redirect_uris: ['https://client.example.com/cb']
+            })
+            .query({
+              access_token: 'foobar'
+            })
+            .expect(201);
         });
 
         it('allows reg calls with the access tokens as a Bearer token [post]', function () {
           return this.agent.post('/reg')
-          .send({
-            redirect_uris: ['https://client.example.com/cb'],
-            access_token: 'foobar'
-          })
-          .expect(201);
+            .send({
+              redirect_uris: ['https://client.example.com/cb'],
+              access_token: 'foobar'
+            })
+            .expect(201);
         });
 
         it('allows reg calls with the access tokens as a Bearer token [header]', function () {
           return this.agent.post('/reg')
-          .set('Authorization', 'Bearer foobar')
-          .send({
-            redirect_uris: ['https://client.example.com/cb']
-          })
-          .expect(201);
+            .set('Authorization', 'Bearer foobar')
+            .send({
+              redirect_uris: ['https://client.example.com/cb']
+            })
+            .expect(201);
         });
 
         it('rejects calls with bad access token', function () {
           return this.agent.post('/reg')
-          .send({
-            redirect_uris: ['https://client.example.com/cb']
-          })
-          .query({
-            access_token: 'foobarbaz'
-          })
-          .expect(401);
+            .send({
+              redirect_uris: ['https://client.example.com/cb']
+            })
+            .query({
+              access_token: 'foobarbaz'
+            })
+            .expect(401);
         });
       });
 
@@ -245,46 +245,46 @@ describe('registration features', function () {
 
         it('allows reg calls with the access tokens as a Bearer token', function () {
           return this.agent.post('/reg')
-          .send({
-            redirect_uris: ['https://client.example.com/cb']
-          })
-          .query({
-            access_token: this.token
-          })
-          .expect(201);
+            .send({
+              redirect_uris: ['https://client.example.com/cb']
+            })
+            .query({
+              access_token: this.token
+            })
+            .expect(201);
         });
 
         it('rejects calls with bad access token', function () {
           return this.agent.post('/reg')
-          .send({
-            redirect_uris: ['https://client.example.com/cb']
-          })
-          .query({
-            access_token: 'foobarbaz'
-          })
-          .expect(401);
+            .send({
+              redirect_uris: ['https://client.example.com/cb']
+            })
+            .query({
+              access_token: 'foobarbaz'
+            })
+            .expect(401);
         });
 
         it('rejects calls with not found access token', function () {
           return this.agent.post('/reg')
-          .send({
-            redirect_uris: ['https://client.example.com/cb']
-          })
-          .query({
-            access_token: 'Loremipsumdolorsitametconsecteturadipisicingelitsed'
-          })
-          .expect(401);
+            .send({
+              redirect_uris: ['https://client.example.com/cb']
+            })
+            .query({
+              access_token: 'Loremipsumdolorsitametconsecteturadipisicingelitsed'
+            })
+            .expect(401);
         });
 
         it('rejects calls with manipulated access token', function () {
           return this.agent.post('/reg')
-          .send({
-            redirect_uris: ['https://client.example.com/cb']
-          })
-          .query({
-            access_token: this.token.slice(0, -1)
-          })
-          .expect(401);
+            .send({
+              redirect_uris: ['https://client.example.com/cb']
+            })
+            .query({
+              access_token: this.token.slice(0, -1)
+            })
+            .expect(401);
         });
       });
     });
@@ -293,14 +293,14 @@ describe('registration features', function () {
   context('GET /reg/:clientId', function () {
     before(function () {
       return this.agent.post('/reg')
-      .send({
-        redirect_uris: ['https://client.example.com/cb']
-      })
-      .expect((response) => {
-        this.clientId = response.body.client_id;
-        this.token = response.body.registration_access_token;
-        this.registrationResponse = response.body;
-      });
+        .send({
+          redirect_uris: ['https://client.example.com/cb']
+        })
+        .expect((response) => {
+          this.clientId = response.body.client_id;
+          this.token = response.body.registration_access_token;
+          this.registrationResponse = response.body;
+        });
     });
 
     it('returns all available nonsecret metadata', function () {

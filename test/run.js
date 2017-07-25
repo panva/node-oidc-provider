@@ -29,14 +29,14 @@ server.once('listening', () => {
   ] }).then((keystore) => {
     global.keystore = keystore;
   })
-  .then(() => {
-    console.info = NOOP;
-    process.on('unhandledRejection', NOOP);
-    process.on('rejectionHandled', NOOP);
-    require('../node_modules/.bin/_mocha'); // eslint-disable-line global-require
-  })
-  .catch((error) => {
-    console.error(error);
-    process.exit(1);
-  });
+    .then(() => {
+      console.info = NOOP;
+      process.on('unhandledRejection', NOOP);
+      process.on('rejectionHandled', NOOP);
+      require('../node_modules/.bin/_mocha'); // eslint-disable-line global-require
+    })
+    .catch((error) => {
+      console.error(error);
+      process.exit(1);
+    });
 });

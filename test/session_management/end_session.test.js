@@ -22,18 +22,18 @@ describe('[session_management]', function () {
 
   beforeEach(function () {
     return this.agent.get('/auth')
-    .query({
-      client_id: 'client',
-      scope: 'openid',
-      nonce: String(Math.random()),
-      response_type: 'id_token',
-      redirect_uri: 'https://client.example.com/cb'
-    })
-    .expect(302)
-    .expect((response) => {
-      const { query: { id_token: idToken } } = parseUrl(response.headers.location.replace('#', '?'), true);
-      this.idToken = idToken;
-    });
+      .query({
+        client_id: 'client',
+        scope: 'openid',
+        nonce: String(Math.random()),
+        response_type: 'id_token',
+        redirect_uri: 'https://client.example.com/cb'
+      })
+      .expect(302)
+      .expect((response) => {
+        const { query: { id_token: idToken } } = parseUrl(response.headers.location.replace('#', '?'), true);
+        this.idToken = idToken;
+      });
   });
 
   describe('GET end_session', function () {

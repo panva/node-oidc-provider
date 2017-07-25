@@ -117,8 +117,8 @@ provider.initialize({
 
   provider.app.use(router.routes());
 })
-.then(() => provider.app.listen(port))
-.catch((err) => {
-  console.error(err);
-  process.exit(1);
-});
+  .then(() => provider.app.listen(port))
+  .catch((err) => {
+    console.error(err);
+    process.exit(1);
+  });

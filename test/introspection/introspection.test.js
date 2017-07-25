@@ -11,11 +11,11 @@ describe('introspection features', function () {
   describe('enriched discovery', function () {
     it('shows the url now', function () {
       return this.agent.get('/.well-known/openid-configuration')
-      .expect(200)
-      .expect((response) => {
-        expect(response.body).to.have.property('introspection_endpoint').and.matches(/token\/introspect/);
-        expect(response.body).not.to.have.property('token_introspection_endpoint');
-      });
+        .expect(200)
+        .expect((response) => {
+          expect(response.body).to.have.property('introspection_endpoint').and.matches(/token\/introspect/);
+          expect(response.body).not.to.have.property('token_introspection_endpoint');
+        });
     });
   });
 
@@ -29,17 +29,17 @@ describe('introspection features', function () {
 
       at.save().then((token) => {
         this.agent.post(route)
-        .auth('client', 'secret')
-        .send({
-          token
-        })
-        .type('form')
-        .expect(200)
-        .expect((response) => {
-          expect(response.body).to.contain.keys('client_id', 'scope', 'sub');
-          expect(response.body.sub).to.equal('accountId');
-        })
-        .end(done);
+          .auth('client', 'secret')
+          .send({
+            token
+          })
+          .type('form')
+          .expect(200)
+          .expect((response) => {
+            expect(response.body).to.contain.keys('client_id', 'scope', 'sub');
+            expect(response.body.sub).to.equal('accountId');
+          })
+          .end(done);
       });
     });
 
@@ -52,18 +52,18 @@ describe('introspection features', function () {
 
       at.save().then((token) => {
         this.agent.post(route)
-        .auth('client', 'secret')
-        .send({
-          token,
-          token_type_hint: 'access_token'
-        })
-        .type('form')
-        .expect(200)
-        .expect((response) => {
-          expect(response.body).to.contain.keys('client_id', 'scope', 'sub');
-          expect(response.body.sub).to.equal('accountId');
-        })
-        .end(done);
+          .auth('client', 'secret')
+          .send({
+            token,
+            token_type_hint: 'access_token'
+          })
+          .type('form')
+          .expect(200)
+          .expect((response) => {
+            expect(response.body).to.contain.keys('client_id', 'scope', 'sub');
+            expect(response.body.sub).to.equal('accountId');
+          })
+          .end(done);
       });
     });
 
@@ -76,18 +76,18 @@ describe('introspection features', function () {
 
       at.save().then((token) => {
         this.agent.post(route)
-        .auth('client', 'secret')
-        .send({
-          token,
-          token_type_hint: 'refresh_token'
-        })
-        .type('form')
-        .expect(200)
-        .expect((response) => {
-          expect(response.body).to.contain.keys('client_id', 'scope', 'sub');
-          expect(response.body.sub).to.equal('accountId');
-        })
-        .end(done);
+          .auth('client', 'secret')
+          .send({
+            token,
+            token_type_hint: 'refresh_token'
+          })
+          .type('form')
+          .expect(200)
+          .expect((response) => {
+            expect(response.body).to.contain.keys('client_id', 'scope', 'sub');
+            expect(response.body.sub).to.equal('accountId');
+          })
+          .end(done);
       });
     });
 
@@ -100,18 +100,18 @@ describe('introspection features', function () {
 
       at.save().then((token) => {
         this.agent.post(route)
-        .auth('client', 'secret')
-        .send({
-          token,
-          token_type_hint: 'foobar'
-        })
-        .type('form')
-        .expect(200)
-        .expect((response) => {
-          expect(response.body).to.contain.keys('client_id', 'scope', 'sub');
-          expect(response.body.sub).to.equal('accountId');
-        })
-        .end(done);
+          .auth('client', 'secret')
+          .send({
+            token,
+            token_type_hint: 'foobar'
+          })
+          .type('form')
+          .expect(200)
+          .expect((response) => {
+            expect(response.body).to.contain.keys('client_id', 'scope', 'sub');
+            expect(response.body.sub).to.equal('accountId');
+          })
+          .end(done);
       });
     });
 
@@ -124,14 +124,14 @@ describe('introspection features', function () {
 
       rt.save().then((token) => {
         this.agent.post(route)
-        .auth('client', 'secret')
-        .send({ token })
-        .type('form')
-        .expect(200)
-        .expect((response) => {
-          expect(response.body).to.contain.keys('client_id', 'scope', 'sub');
-        })
-        .end(done);
+          .auth('client', 'secret')
+          .send({ token })
+          .type('form')
+          .expect(200)
+          .expect((response) => {
+            expect(response.body).to.contain.keys('client_id', 'scope', 'sub');
+          })
+          .end(done);
       });
     });
 
@@ -144,14 +144,14 @@ describe('introspection features', function () {
 
       rt.save().then((token) => {
         this.agent.post(route)
-        .auth('client', 'secret')
-        .send({ token, token_type_hint: 'refresh_token' })
-        .type('form')
-        .expect(200)
-        .expect((response) => {
-          expect(response.body).to.contain.keys('client_id', 'scope', 'sub');
-        })
-        .end(done);
+          .auth('client', 'secret')
+          .send({ token, token_type_hint: 'refresh_token' })
+          .type('form')
+          .expect(200)
+          .expect((response) => {
+            expect(response.body).to.contain.keys('client_id', 'scope', 'sub');
+          })
+          .end(done);
       });
     });
 
@@ -164,14 +164,14 @@ describe('introspection features', function () {
 
       rt.save().then((token) => {
         this.agent.post(route)
-        .auth('client', 'secret')
-        .send({ token, token_type_hint: 'client_credentials' })
-        .type('form')
-        .expect(200)
-        .expect((response) => {
-          expect(response.body).to.contain.keys('client_id', 'scope', 'sub');
-        })
-        .end(done);
+          .auth('client', 'secret')
+          .send({ token, token_type_hint: 'client_credentials' })
+          .type('form')
+          .expect(200)
+          .expect((response) => {
+            expect(response.body).to.contain.keys('client_id', 'scope', 'sub');
+          })
+          .end(done);
       });
     });
 
@@ -184,14 +184,14 @@ describe('introspection features', function () {
 
       rt.save().then((token) => {
         this.agent.post(route)
-        .auth('client', 'secret')
-        .send({ token, token_type_hint: 'foobar' })
-        .type('form')
-        .expect(200)
-        .expect((response) => {
-          expect(response.body).to.contain.keys('client_id', 'scope', 'sub');
-        })
-        .end(done);
+          .auth('client', 'secret')
+          .send({ token, token_type_hint: 'foobar' })
+          .type('form')
+          .expect(200)
+          .expect((response) => {
+            expect(response.body).to.contain.keys('client_id', 'scope', 'sub');
+          })
+          .end(done);
       });
     });
 
@@ -202,14 +202,14 @@ describe('introspection features', function () {
 
       rt.save().then((token) => {
         this.agent.post(route)
-        .auth('client', 'secret')
-        .send({ token })
-        .type('form')
-        .expect(200)
-        .expect((response) => {
-          expect(response.body).to.contain.keys('client_id');
-        })
-        .end(done);
+          .auth('client', 'secret')
+          .send({ token })
+          .type('form')
+          .expect(200)
+          .expect((response) => {
+            expect(response.body).to.contain.keys('client_id');
+          })
+          .end(done);
       });
     });
 
@@ -220,14 +220,14 @@ describe('introspection features', function () {
 
       rt.save().then((token) => {
         this.agent.post(route)
-        .auth('client', 'secret')
-        .send({ token, token_type_hint: 'client_credentials' })
-        .type('form')
-        .expect(200)
-        .expect((response) => {
-          expect(response.body).to.contain.keys('client_id');
-        })
-        .end(done);
+          .auth('client', 'secret')
+          .send({ token, token_type_hint: 'client_credentials' })
+          .type('form')
+          .expect(200)
+          .expect((response) => {
+            expect(response.body).to.contain.keys('client_id');
+          })
+          .end(done);
       });
     });
 
@@ -238,14 +238,14 @@ describe('introspection features', function () {
 
       rt.save().then((token) => {
         this.agent.post(route)
-        .auth('client', 'secret')
-        .send({ token, token_type_hint: 'access_token' })
-        .type('form')
-        .expect(200)
-        .expect((response) => {
-          expect(response.body).to.contain.keys('client_id');
-        })
-        .end(done);
+          .auth('client', 'secret')
+          .send({ token, token_type_hint: 'access_token' })
+          .type('form')
+          .expect(200)
+          .expect((response) => {
+            expect(response.body).to.contain.keys('client_id');
+          })
+          .end(done);
       });
     });
 
@@ -256,14 +256,14 @@ describe('introspection features', function () {
 
       rt.save().then((token) => {
         this.agent.post(route)
-        .auth('client', 'secret')
-        .send({ token, token_type_hint: 'foobar' })
-        .type('form')
-        .expect(200)
-        .expect((response) => {
-          expect(response.body).to.contain.keys('client_id');
-        })
-        .end(done);
+          .auth('client', 'secret')
+          .send({ token, token_type_hint: 'foobar' })
+          .type('form')
+          .expect(200)
+          .expect((response) => {
+            expect(response.body).to.contain.keys('client_id');
+          })
+          .end(done);
       });
     });
 
@@ -276,51 +276,51 @@ describe('introspection features', function () {
 
       rt.save().then((token) => {
         this.agent.post(route)
-        .auth('client-introspection', 'secret')
-        .send({ token })
-        .type('form')
-        .expect(200)
-        .expect((response) => {
-          expect(response.body).to.contain.keys('client_id', 'scope', 'sub');
-          expect(response.body.sub).not.to.equal('accountId');
-        })
-        .end(done);
+          .auth('client-introspection', 'secret')
+          .send({ token })
+          .type('form')
+          .expect(200)
+          .expect((response) => {
+            expect(response.body).to.contain.keys('client_id', 'scope', 'sub');
+            expect(response.body.sub).not.to.equal('accountId');
+          })
+          .end(done);
       });
     });
 
     it('returns token-endpoint-like cache headers', function () {
       return this.agent.post(route)
-      .auth('client', 'secret')
-      .send({})
-      .type('form')
-      .expect('pragma', 'no-cache')
-      .expect('cache-control', 'no-cache, no-store');
+        .auth('client', 'secret')
+        .send({})
+        .type('form')
+        .expect('pragma', 'no-cache')
+        .expect('cache-control', 'no-cache, no-store');
     });
 
     it('validates token param presence', function () {
       return this.agent.post(route)
-      .auth('client', 'secret')
-      .send({})
-      .type('form')
-      .expect(400)
-      .expect((response) => {
-        expect(response.body).to.have.property('error', 'invalid_request');
-        expect(response.body).to.have.property('error_description').and.matches(/missing required parameter.+\(token\)/);
-      });
+        .auth('client', 'secret')
+        .send({})
+        .type('form')
+        .expect(400)
+        .expect((response) => {
+          expect(response.body).to.have.property('error', 'invalid_request');
+          expect(response.body).to.have.property('error_description').and.matches(/missing required parameter.+\(token\)/);
+        });
     });
 
     it('responds with active=false for total bs', function () {
       return this.agent.post(route)
-      .auth('client', 'secret')
-      .send({
-        token: 'this is not even a token'
-      })
-      .type('form')
-      .expect(200)
-      .expect((response) => {
-        expect(response.body).to.have.property('active', false);
-        expect(response.body).to.have.keys('active');
-      });
+        .auth('client', 'secret')
+        .send({
+          token: 'this is not even a token'
+        })
+        .type('form')
+        .expect(200)
+        .expect((response) => {
+          expect(response.body).to.have.property('active', false);
+          expect(response.body).to.have.keys('active');
+        });
     });
 
     it('responds with active=false when client auth = none and token does not belong to it', function (done) {
@@ -332,17 +332,17 @@ describe('introspection features', function () {
 
       at.save().then((token) => {
         this.agent.post(route)
-        .send({
-          token,
-          client_id: 'client-none',
-        })
-        .type('form')
-        .expect(200)
-        .expect((response) => {
-          expect(response.body).to.have.property('active', false);
-          expect(response.body).to.have.keys('active');
-        })
-        .end(done);
+          .send({
+            token,
+            client_id: 'client-none',
+          })
+          .type('form')
+          .expect(200)
+          .expect((response) => {
+            expect(response.body).to.have.property('active', false);
+            expect(response.body).to.have.keys('active');
+          })
+          .end(done);
       });
     });
 
@@ -351,28 +351,28 @@ describe('introspection features', function () {
       this.provider.once('introspection.error', spy);
 
       return this.agent.post(route)
-      .auth('invalid', 'auth')
-      .send({})
-      .type('form')
-      .expect(400)
-      .expect(() => {
-        expect(spy.calledOnce).to.be.true;
-      });
+        .auth('invalid', 'auth')
+        .send({})
+        .type('form')
+        .expect(400)
+        .expect(() => {
+          expect(spy.calledOnce).to.be.true;
+        });
     });
 
     it('ignores unsupported tokens', async function () {
       const ac = new this.provider.AuthorizationCode({ clientId: 'client' });
       return this.agent.post(route)
-      .auth('client', 'secret')
-      .send({
-        token: await ac.save()
-      })
-      .type('form')
-      .expect(200)
-      .expect((response) => {
-        expect(response.body).to.have.property('active', false);
-        expect(response.body).to.have.keys('active');
-      });
+        .auth('client', 'secret')
+        .send({
+          token: await ac.save()
+        })
+        .type('form')
+        .expect(200)
+        .expect((response) => {
+          expect(response.body).to.have.property('active', false);
+          expect(response.body).to.have.keys('active');
+        });
     });
   });
 });

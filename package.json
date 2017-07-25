@@ -23,7 +23,7 @@
   "description": "OpenID Provider (OP) implementation for Node.js OpenID Connect servers.",
   "devDependencies": {
     "chai": "^4.0.0",
-    "eslint": "^3.0.0",
+    "eslint": "^4.3.0",
     "eslint-config-airbnb-base": "^11.0.0",
     "eslint-plugin-import": "^2.0.1",
     "koa-body": "^2.0.0",

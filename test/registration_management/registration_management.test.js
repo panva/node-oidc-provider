@@ -41,21 +41,21 @@ describe('OAuth 2.0 Dynamic Client Registration Management Protocol', function (
       // changing the redirect_uris;
       // console.log(client);
       return this.agent.put(`/reg/${client.client_id}`)
-      .set('Authorization', `Bearer ${client.registration_access_token}`)
-      .send(updateProperties(client, {
-        redirect_uris: ['https://client.example.com/foobar/cb']
-      }))
-      .expect(200)
-      .expect('content-type', /application\/json/)
-      .expect('pragma', 'no-cache')
-      .expect('cache-control', 'no-cache, no-store')
-      .expect((res) => {
-        expect(res.body).to.have.property('registration_access_token', client.registration_access_token);
-        expect(res.body).to.have.property('registration_client_uri', client.registration_client_uri);
-        expect(res.body).to.have.property('client_secret_expires_at', client.client_secret_expires_at);
-        expect(res.body).to.have.property('client_id_issued_at', client.client_id_issued_at);
-        expect(res.body.redirect_uris).to.eql(['https://client.example.com/foobar/cb']);
-      });
+        .set('Authorization', `Bearer ${client.registration_access_token}`)
+        .send(updateProperties(client, {
+          redirect_uris: ['https://client.example.com/foobar/cb']
+        }))
+        .expect(200)
+        .expect('content-type', /application\/json/)
+        .expect('pragma', 'no-cache')
+        .expect('cache-control', 'no-cache, no-store')
+        .expect((res) => {
+          expect(res.body).to.have.property('registration_access_token', client.registration_access_token);
+          expect(res.body).to.have.property('registration_client_uri', client.registration_client_uri);
+          expect(res.body).to.have.property('client_secret_expires_at', client.client_secret_expires_at);
+          expect(res.body).to.have.property('client_id_issued_at', client.client_id_issued_at);
+          expect(res.body.redirect_uris).to.eql(['https://client.example.com/foobar/cb']);
+        });
     });
 
     it('allows for properties to be deleted', async function () {
@@ -63,14 +63,14 @@ describe('OAuth 2.0 Dynamic Client Registration Management Protocol', function (
       // removing userinfo_signed_response_alg and having it defaulted
       // console.log(client);
       return this.agent.put(`/reg/${client.client_id}`)
-      .set('Authorization', `Bearer ${client.registration_access_token}`)
-      .send(updateProperties(client, {
-        userinfo_signed_response_alg: null
-      }))
-      .expect(200)
-      .expect((res) => {
-        expect(res.body).not.to.have.property('userinfo_signed_response_alg');
-      });
+        .set('Authorization', `Bearer ${client.registration_access_token}`)
+        .send(updateProperties(client, {
+          userinfo_signed_response_alg: null
+        }))
+        .expect(200)
+        .expect((res) => {
+          expect(res.body).not.to.have.property('userinfo_signed_response_alg');
+        });
     });
 
     it('must contain all previous properties', async function () {
@@ -78,17 +78,17 @@ describe('OAuth 2.0 Dynamic Client Registration Management Protocol', function (
       // removing userinfo_signed_response_alg and having it defaulted
       // console.log(client);
       return this.agent.put(`/reg/${client.client_id}`)
-      .set('Authorization', `Bearer ${client.registration_access_token}`)
-      .send(updateProperties(client, {
-        userinfo_signed_response_alg: undefined
-      }))
-      .expect(400)
-      .expect((res) => {
-        expect(res.body).to.eql({
-          error: 'invalid_request',
-          error_description: 'userinfo_signed_response_alg must be provided'
+        .set('Authorization', `Bearer ${client.registration_access_token}`)
+        .send(updateProperties(client, {
+          userinfo_signed_response_alg: undefined
+        }))
+        .expect(400)
+        .expect((res) => {
+          expect(res.body).to.eql({
+            error: 'invalid_request',
+            error_description: 'userinfo_signed_response_alg must be provided'
+          });
         });
-      });
     });
 
     it('provides a secret if suddently needed', async function () {
@@ -97,17 +97,17 @@ describe('OAuth 2.0 Dynamic Client Registration Management Protocol', function (
       // console.log(client);
       expect(client).not.to.have.property('client_secret');
       return this.agent.put(`/reg/${client.client_id}`)
-      .set('Authorization', `Bearer ${client.registration_access_token}`)
-      .send(updateProperties(client, {
-        response_types: ['code'],
-        grant_types: ['authorization_code'],
-        token_endpoint_auth_method: 'client_secret_basic',
-      }))
-      .expect(200)
-      .expect((res) => {
-        expect(res.body).to.have.property('client_secret');
-        expect(res.body).to.have.property('client_secret_expires_at');
-      });
+        .set('Authorization', `Bearer ${client.registration_access_token}`)
+        .send(updateProperties(client, {
+          response_types: ['code'],
+          grant_types: ['authorization_code'],
+          token_endpoint_auth_method: 'client_secret_basic',
+        }))
+        .expect(200)
+        .expect((res) => {
+          expect(res.body).to.have.property('client_secret');
+          expect(res.body).to.have.property('client_secret_expires_at');
+        });
     });
 
     it('emits an event', async function () {
@@ -116,84 +116,84 @@ describe('OAuth 2.0 Dynamic Client Registration Management Protocol', function (
       this.provider.once('registration_update.success', spy);
 
       return this.agent.put(`/reg/${client.client_id}`)
-      .set('Authorization', `Bearer ${client.registration_access_token}`)
-      .send(updateProperties(client))
-      .expect(200)
-      .expect(() => {
-        expect(spy.calledOnce).to.be.true;
-      });
+        .set('Authorization', `Bearer ${client.registration_access_token}`)
+        .send(updateProperties(client))
+        .expect(200)
+        .expect(() => {
+          expect(spy.calledOnce).to.be.true;
+        });
     });
 
     it('must not contain registration_access_token', async function () {
       const client = await setup.call(this, {});
       // changing the redirect_uris;
       return this.agent.put(`/reg/${client.client_id}`)
-      .set('Authorization', `Bearer ${client.registration_access_token}`)
-      .send(updateProperties(client, {
-        redirect_uris: ['https://client.example.com/foobar/cb'],
-        registration_access_token: 'foobar'
-      }))
-      .expect(400)
-      .expect((response) => {
-        expect(response.body).to.eql({
-          error: 'invalid_request',
-          error_description: 'request MUST NOT include the "registration_access_token" field'
+        .set('Authorization', `Bearer ${client.registration_access_token}`)
+        .send(updateProperties(client, {
+          redirect_uris: ['https://client.example.com/foobar/cb'],
+          registration_access_token: 'foobar'
+        }))
+        .expect(400)
+        .expect((response) => {
+          expect(response.body).to.eql({
+            error: 'invalid_request',
+            error_description: 'request MUST NOT include the "registration_access_token" field'
+          });
         });
-      });
     });
 
     it('must not contain registration_client_uri', async function () {
       const client = await setup.call(this, {});
       // changing the redirect_uris;
       return this.agent.put(`/reg/${client.client_id}`)
-      .set('Authorization', `Bearer ${client.registration_access_token}`)
-      .send(updateProperties(client, {
-        redirect_uris: ['https://client.example.com/foobar/cb'],
-        registration_client_uri: 'foobar'
-      }))
-      .expect(400)
-      .expect((response) => {
-        expect(response.body).to.eql({
-          error: 'invalid_request',
-          error_description: 'request MUST NOT include the "registration_client_uri" field'
+        .set('Authorization', `Bearer ${client.registration_access_token}`)
+        .send(updateProperties(client, {
+          redirect_uris: ['https://client.example.com/foobar/cb'],
+          registration_client_uri: 'foobar'
+        }))
+        .expect(400)
+        .expect((response) => {
+          expect(response.body).to.eql({
+            error: 'invalid_request',
+            error_description: 'request MUST NOT include the "registration_client_uri" field'
+          });
         });
-      });
     });
 
     it('must not contain client_secret_expires_at', async function () {
       const client = await setup.call(this, {});
       // changing the redirect_uris;
       return this.agent.put(`/reg/${client.client_id}`)
-      .set('Authorization', `Bearer ${client.registration_access_token}`)
-      .send(updateProperties(client, {
-        redirect_uris: ['https://client.example.com/foobar/cb'],
-        client_secret_expires_at: 'foobar'
-      }))
-      .expect(400)
-      .expect((response) => {
-        expect(response.body).to.eql({
-          error: 'invalid_request',
-          error_description: 'request MUST NOT include the "client_secret_expires_at" field'
+        .set('Authorization', `Bearer ${client.registration_access_token}`)
+        .send(updateProperties(client, {
+          redirect_uris: ['https://client.example.com/foobar/cb'],
+          client_secret_expires_at: 'foobar'
+        }))
+        .expect(400)
+        .expect((response) => {
+          expect(response.body).to.eql({
+            error: 'invalid_request',
+            error_description: 'request MUST NOT include the "client_secret_expires_at" field'
+          });
         });
-      });
     });
 
     it('must not contain client_id_issued_at', async function () {
       const client = await setup.call(this, {});
       // changing the redirect_uris;
       return this.agent.put(`/reg/${client.client_id}`)
-      .set('Authorization', `Bearer ${client.registration_access_token}`)
-      .send(updateProperties(client, {
-        redirect_uris: ['https://client.example.com/foobar/cb'],
-        client_id_issued_at: 'foobar'
-      }))
-      .expect(400)
-      .expect((response) => {
-        expect(response.body).to.eql({
-          error: 'invalid_request',
-          error_description: 'request MUST NOT include the "client_id_issued_at" field'
+        .set('Authorization', `Bearer ${client.registration_access_token}`)
+        .send(updateProperties(client, {
+          redirect_uris: ['https://client.example.com/foobar/cb'],
+          client_id_issued_at: 'foobar'
+        }))
+        .expect(400)
+        .expect((response) => {
+          expect(response.body).to.eql({
+            error: 'invalid_request',
+            error_description: 'request MUST NOT include the "client_id_issued_at" field'
+          });
         });
-      });
     });
 
     it('cannot update non-dynamic clients', async function () {
@@ -201,17 +201,17 @@ describe('OAuth 2.0 Dynamic Client Registration Management Protocol', function (
       const bearer = await rat.save();
       const client = await this.provider.Client.find('client');
       return this.agent.put('/reg/client')
-      .set('Authorization', `Bearer ${bearer}`)
-      .send(updateProperties(client.metadata(), {
-        redirect_uris: ['https://client.example.com/foobar/cb']
-      }))
-      .expect(403)
-      .expect((response) => {
-        expect(response.body).to.eql({
-          error: 'invalid_request',
-          error_description: 'this client is not allowed to update its records'
+        .set('Authorization', `Bearer ${bearer}`)
+        .send(updateProperties(client.metadata(), {
+          redirect_uris: ['https://client.example.com/foobar/cb']
+        }))
+        .expect(403)
+        .expect((response) => {
+          expect(response.body).to.eql({
+            error: 'invalid_request',
+            error_description: 'this client is not allowed to update its records'
+          });
         });
-      });
     });
 
     describe('rotateRegistrationAccessToken', function () {
@@ -231,12 +231,12 @@ describe('OAuth 2.0 Dynamic Client Registration Management Protocol', function (
         this.provider.once('token.revoked', spy);
 
         return this.agent.put(`/reg/${client.client_id}`)
-        .set('Authorization', `Bearer ${client.registration_access_token}`)
-        .send(updateProperties(client))
-        .expect(200)
-        .expect(() => {
-          expect(spy.calledOnce).to.be.true;
-        });
+          .set('Authorization', `Bearer ${client.registration_access_token}`)
+          .send(updateProperties(client))
+          .expect(200)
+          .expect(() => {
+            expect(spy.calledOnce).to.be.true;
+          });
       });
 
       it('issues and returns new RegistrationAccessToken', async function () {
@@ -245,15 +245,15 @@ describe('OAuth 2.0 Dynamic Client Registration Management Protocol', function (
         this.provider.once('token.issued', spy);
 
         return this.agent.put(`/reg/${client.client_id}`)
-        .set('Authorization', `Bearer ${client.registration_access_token}`)
-        .send(updateProperties(client))
-        .expect(200)
-        .expect((response) => {
-          expect(spy.calledOnce).to.be.true;
-          const args = spy.firstCall.args[0];
-          expect(args.clientId).to.equal(client.client_id);
-          expect(response.body.registration_access_token.substring(0, 48)).to.equal(args.jti);
-        });
+          .set('Authorization', `Bearer ${client.registration_access_token}`)
+          .send(updateProperties(client))
+          .expect(200)
+          .expect((response) => {
+            expect(spy.calledOnce).to.be.true;
+            const args = spy.firstCall.args[0];
+            expect(args.clientId).to.equal(client.client_id);
+            expect(response.body.registration_access_token.substring(0, 48)).to.equal(args.jti);
+          });
       });
     });
   });
@@ -262,11 +262,11 @@ describe('OAuth 2.0 Dynamic Client Registration Management Protocol', function (
     it('responds w/ empty 204 and nocache headers', async function () {
       const client = await setup.call(this, {});
       return this.agent.del(`/reg/${client.client_id}`)
-      .set('Authorization', `Bearer ${client.registration_access_token}`)
-      .expect('pragma', 'no-cache')
-      .expect('cache-control', 'no-cache, no-store')
-      .expect('') // empty body
-      .expect(204);
+        .set('Authorization', `Bearer ${client.registration_access_token}`)
+        .expect('pragma', 'no-cache')
+        .expect('cache-control', 'no-cache, no-store')
+        .expect('') // empty body
+        .expect(204);
     });
 
     it('emits an event', async function () {
@@ -275,25 +275,25 @@ describe('OAuth 2.0 Dynamic Client Registration Management Protocol', function (
       this.provider.once('registration_delete.success', spy);
 
       return this.agent.del(`/reg/${client.client_id}`)
-      .set('Authorization', `Bearer ${client.registration_access_token}`)
-      .expect(204)
-      .expect(() => {
-        expect(spy.calledOnce).to.be.true;
-      });
+        .set('Authorization', `Bearer ${client.registration_access_token}`)
+        .expect(204)
+        .expect(() => {
+          expect(spy.calledOnce).to.be.true;
+        });
     });
 
     it('cannot delete non-dynamic clients', async function () {
       const rat = new (this.provider.RegistrationAccessToken)({ clientId: 'client' });
       const bearer = await rat.save();
       return this.agent.del('/reg/client')
-      .set('Authorization', `Bearer ${bearer}`)
-      .expect(403)
-      .expect((response) => {
-        expect(response.body).to.eql({
-          error: 'invalid_request',
-          error_description: 'this client is not allowed to delete itself'
+        .set('Authorization', `Bearer ${bearer}`)
+        .expect(403)
+        .expect((response) => {
+          expect(response.body).to.eql({
+            error: 'invalid_request',
+            error_description: 'this client is not allowed to delete itself'
+          });
         });
-      });
     });
   });
 });

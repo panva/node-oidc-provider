@@ -191,7 +191,7 @@ describe('client keystore refresh', function () {
       client.keystore.freshUntil = epochTime() - 1;
       return JWT.verify(
         'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiYWRtaW4iOnRydWV9.TJVA95OrM7E2cBab30RMHrHDcEfxjoYZgeFONFh7HgQ'
-      , client.keystore).then(fail, () => {
+        , client.keystore).then(fail, () => {
         expect(nock.isDone()).to.be.true;
       });
     });

@@ -525,10 +525,10 @@ describe('Client validations', function () {
       'PBES2-HS256+A128KW',
       'PBES2-HS384+A192KW',
       'PBES2-HS512+A256KW'].forEach((value) => {
-        allows(this.title, value, {
-          jwks: { keys: [sigKey] }
-        });
+      allows(this.title, value, {
+        jwks: { keys: [sigKey] }
       });
+    });
     rejects(this.title, 'not-an-alg');
   });
 

@@ -18,10 +18,10 @@ describe('devInteractions', function () {
       });
 
       return this.agent.get('/auth')
-      .query(auth)
-      .then((response) => {
-        this.url = response.headers.location;
-      });
+        .query(auth)
+        .then((response) => {
+          this.url = response.headers.location;
+        });
     });
 
     it('with a form', function () {
@@ -44,10 +44,10 @@ describe('devInteractions', function () {
       });
 
       return this.agent.get('/auth')
-      .query(auth)
-      .then((response) => {
-        this.url = response.headers.location;
-      });
+        .query(auth)
+        .then((response) => {
+          this.url = response.headers.location;
+        });
     });
 
     it('with a form', function () {
@@ -68,10 +68,10 @@ describe('devInteractions', function () {
       });
 
       return this.agent.get('/auth')
-      .query(auth)
-      .then((response) => {
-        this.url = response.headers.location;
-      });
+        .query(auth)
+        .then((response) => {
+          this.url = response.headers.location;
+        });
     });
 
     it('accepts the login and resumes auth', function () {
@@ -97,10 +97,10 @@ describe('devInteractions', function () {
       });
 
       return this.agent.get('/auth')
-      .query(auth)
-      .then((response) => {
-        this.url = response.headers.location;
-      });
+        .query(auth)
+        .then((response) => {
+          this.url = response.headers.location;
+        });
     });
 
     it('accepts the interaction and resumes auth', function () {

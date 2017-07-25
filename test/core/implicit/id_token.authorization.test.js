@@ -32,11 +32,11 @@ describe('IMPLICIT id_token', function () {
         });
 
         return this.wrap({ route, verb, auth })
-        .expect(302)
-        .expect(auth.validateFragment)
-        .expect(auth.validatePresence(['id_token', 'state']))
-        .expect(auth.validateState)
-        .expect(auth.validateClientLocation);
+          .expect(302)
+          .expect(auth.validateFragment)
+          .expect(auth.validatePresence(['id_token', 'state']))
+          .expect(auth.validateState)
+          .expect(auth.validateClientLocation);
       });
     });
 

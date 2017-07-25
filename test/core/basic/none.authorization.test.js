@@ -16,10 +16,10 @@ const route = '/auth';
       });
 
       return this.wrap({ route, verb, auth })
-      .expect(302)
-      .expect(auth.validatePresence(['state']))
-      .expect(auth.validateState)
-      .expect(auth.validateClientLocation);
+        .expect(302)
+        .expect(auth.validatePresence(['state']))
+        .expect(auth.validateState)
+        .expect(auth.validateClientLocation);
     });
 
     it('responds with a state in fragment', function () {
@@ -30,11 +30,11 @@ const route = '/auth';
       });
 
       return this.wrap({ route, verb, auth })
-      .expect(302)
-      .expect(auth.validateFragment)
-      .expect(auth.validatePresence(['state']))
-      .expect(auth.validateState)
-      .expect(auth.validateClientLocation);
+        .expect(302)
+        .expect(auth.validateFragment)
+        .expect(auth.validatePresence(['state']))
+        .expect(auth.validateState)
+        .expect(auth.validateClientLocation);
     });
   });
 });

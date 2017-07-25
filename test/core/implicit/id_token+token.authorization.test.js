@@ -34,19 +34,19 @@ describe('IMPLICIT id_token+token', function () {
         });
 
         return this.wrap({ route, verb, auth })
-        .expect(302)
-        .expect(auth.validateFragment)
-        .expect(auth.validatePresence(['id_token', 'state', 'access_token', 'expires_in', 'token_type']))
-        .expect(auth.validateState)
-        .expect(auth.validateClientLocation)
-        .then((response) => {
-          const { query: { access_token } } = url.parse(response.headers.location, true);
-          const jti = access_token.substring(0, 48);
-          const stored = this.TestAdapter.for('AccessToken').syncFind(jti);
-          const payload = JSON.parse(base64url.decode(stored.payload));
+          .expect(302)
+          .expect(auth.validateFragment)
+          .expect(auth.validatePresence(['id_token', 'state', 'access_token', 'expires_in', 'token_type']))
+          .expect(auth.validateState)
+          .expect(auth.validateClientLocation)
+          .then((response) => {
+            const { query: { access_token } } = url.parse(response.headers.location, true);
+            const jti = access_token.substring(0, 48);
+            const stored = this.TestAdapter.for('AccessToken').syncFind(jti);
+            const payload = JSON.parse(base64url.decode(stored.payload));
 
-          expect(payload).to.have.property('scope', 'openid');
-        });
+            expect(payload).to.have.property('scope', 'openid');
+          });
       });
     });
 

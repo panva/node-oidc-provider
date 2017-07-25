@@ -20,10 +20,10 @@ describe('BASIC code', function () {
         });
 
         return this.wrap({ route, verb, auth })
-        .expect(302)
-        .expect(auth.validatePresence(['code', 'state']))
-        .expect(auth.validateState)
-        .expect(auth.validateClientLocation);
+          .expect(302)
+          .expect(auth.validatePresence(['code', 'state']))
+          .expect(auth.validateState)
+          .expect(auth.validateClientLocation);
       });
 
       it('responds with a code in fragment', function () {
@@ -34,11 +34,11 @@ describe('BASIC code', function () {
         });
 
         return this.wrap({ route, verb, auth })
-        .expect(302)
-        .expect(auth.validateFragment)
-        .expect(auth.validatePresence(['code', 'state']))
-        .expect(auth.validateState)
-        .expect(auth.validateClientLocation);
+          .expect(302)
+          .expect(auth.validateFragment)
+          .expect(auth.validatePresence(['code', 'state']))
+          .expect(auth.validateState)
+          .expect(auth.validateClientLocation);
       });
 
       it('ignores unsupported scopes', function () {
@@ -50,11 +50,11 @@ describe('BASIC code', function () {
         });
 
         return this.wrap({ route, verb, auth })
-        .expect(302)
-        .expect(auth.validateClientLocation)
-        .expect(() => {
-          expect(spy.firstCall.args[0]).to.have.property('scope', 'openid');
-        });
+          .expect(302)
+          .expect(auth.validateClientLocation)
+          .expect(() => {
+            expect(spy.firstCall.args[0]).to.have.property('scope', 'openid');
+          });
       });
 
       it('ignores the scope offline_access unless prompt consent is present', function () {
@@ -66,11 +66,11 @@ describe('BASIC code', function () {
         });
 
         return this.wrap({ route, verb, auth })
-        .expect(302)
-        .expect(auth.validateClientLocation)
-        .expect(() => {
-          expect(spy.firstCall.args[0]).to.have.property('scope').and.not.include('offline_access');
-        });
+          .expect(302)
+          .expect(auth.validateClientLocation)
+          .expect(() => {
+            expect(spy.firstCall.args[0]).to.have.property('scope').and.not.include('offline_access');
+          });
       });
     });
 
@@ -89,9 +89,9 @@ describe('BASIC code', function () {
         });
 
         return this.wrap({ route, verb, auth })
-        .expect(302)
-        .expect(auth.validateInteractionRedirect)
-        .expect(auth.validateInteractionError('login_required', 'no_session'));
+          .expect(302)
+          .expect(auth.validateInteractionRedirect)
+          .expect(auth.validateInteractionError('login_required', 'no_session'));
       });
 
       it('client not authorized in session yet', function () {
@@ -120,9 +120,9 @@ describe('BASIC code', function () {
         });
 
         return this.wrap({ route, verb, auth })
-        .expect(302)
-        .expect(auth.validateInteractionRedirect)
-        .expect(auth.validateInteractionError('interaction_required', 'native_client_prompt'));
+          .expect(302)
+          .expect(auth.validateInteractionRedirect)
+          .expect(auth.validateInteractionError('interaction_required', 'native_client_prompt'));
       });
 
       it('login was requested by the client by prompt parameter', function () {
@@ -133,9 +133,9 @@ describe('BASIC code', function () {
         });
 
         return this.wrap({ route, verb, auth })
-        .expect(302)
-        .expect(auth.validateInteractionRedirect)
-        .expect(auth.validateInteractionError('login_required', 'login_prompt'));
+          .expect(302)
+          .expect(auth.validateInteractionRedirect)
+          .expect(auth.validateInteractionError('login_required', 'login_prompt'));
       });
 
       it('session is too old for this authorization request', function () {
@@ -149,9 +149,9 @@ describe('BASIC code', function () {
         });
 
         return this.wrap({ route, verb, auth })
-        .expect(302)
-        .expect(auth.validateInteractionRedirect)
-        .expect(auth.validateInteractionError('login_required', 'max_age'));
+          .expect(302)
+          .expect(auth.validateInteractionRedirect)
+          .expect(auth.validateInteractionError('login_required', 'max_age'));
       });
 
       it('session is too old for this client', async function () {
@@ -167,12 +167,12 @@ describe('BASIC code', function () {
         });
 
         return this.wrap({ route, verb, auth })
-        .expect(() => {
-          delete client.defaultMaxAge;
-        })
-        .expect(302)
-        .expect(auth.validateInteractionRedirect)
-        .expect(auth.validateInteractionError('login_required', 'max_age'));
+          .expect(() => {
+            delete client.defaultMaxAge;
+          })
+          .expect(302)
+          .expect(auth.validateInteractionRedirect)
+          .expect(auth.validateInteractionError('login_required', 'max_age'));
       });
     });
 
@@ -202,14 +202,14 @@ describe('BASIC code', function () {
         })(querystring.stringify(auth));
 
         return wrapped.expect(302)
-        .expect(() => {
-          expect(spy.calledOnce).to.be.true;
-        })
-        .expect(auth.validatePresence(['error', 'error_description', 'state']))
-        .expect(auth.validateState)
-        .expect(auth.validateClientLocation)
-        .expect(auth.validateError('invalid_request'))
-        .expect(auth.validateErrorDescription('parameters must not be provided twice. scope'));
+          .expect(() => {
+            expect(spy.calledOnce).to.be.true;
+          })
+          .expect(auth.validatePresence(['error', 'error_description', 'state']))
+          .expect(auth.validateState)
+          .expect(auth.validateClientLocation)
+          .expect(auth.validateError('invalid_request'))
+          .expect(auth.validateErrorDescription('parameters must not be provided twice. scope'));
       });
 
       it('disallowed response mode', function () {
@@ -222,15 +222,15 @@ describe('BASIC code', function () {
         });
 
         return this.wrap({ route, verb, auth })
-        .expect(302)
-        .expect(() => {
-          expect(spy.calledOnce).to.be.true;
-        })
-        .expect(auth.validatePresence(['error', 'error_description', 'state']))
-        .expect(auth.validateState)
-        .expect(auth.validateClientLocation)
-        .expect(auth.validateError('invalid_request'))
-        .expect(auth.validateErrorDescription('response_mode not allowed for this response_type'));
+          .expect(302)
+          .expect(() => {
+            expect(spy.calledOnce).to.be.true;
+          })
+          .expect(auth.validatePresence(['error', 'error_description', 'state']))
+          .expect(auth.validateState)
+          .expect(auth.validateClientLocation)
+          .expect(auth.validateError('invalid_request'))
+          .expect(auth.validateErrorDescription('response_mode not allowed for this response_type'));
       });
 
       ['request', 'request_uri', 'registration'].forEach((param) => {
@@ -244,15 +244,15 @@ describe('BASIC code', function () {
           });
 
           return this.agent.get(route)
-          .query(auth)
-          .expect(302)
-          .expect(() => {
-            expect(spy.calledOnce).to.be.true;
-          })
-          .expect(auth.validatePresence(['error', 'error_description', 'state']))
-          .expect(auth.validateState)
-          .expect(auth.validateClientLocation)
-          .expect(auth.validateError(`${param}_not_supported`));
+            .query(auth)
+            .expect(302)
+            .expect(() => {
+              expect(spy.calledOnce).to.be.true;
+            })
+            .expect(auth.validatePresence(['error', 'error_description', 'state']))
+            .expect(auth.validateState)
+            .expect(auth.validateClientLocation)
+            .expect(auth.validateError(`${param}_not_supported`));
         });
       });
 
@@ -278,18 +278,18 @@ describe('BASIC code', function () {
           delete auth.redirect_uri;
 
           return this.agent.get(route)
-          .query(auth)
-          .expect(() => {
-            renderSpy.restore();
-          })
-          .expect(400)
-          .expect(() => {
-            expect(emitSpy.calledOnce).to.be.true;
-            expect(renderSpy.calledOnce).to.be.true;
-            const renderArgs = renderSpy.args[0][1];
-            expect(renderArgs).to.have.property('error', 'invalid_request');
-            expect(renderArgs).to.have.property('error_description', 'missing required parameter(s) redirect_uri');
-          });
+            .query(auth)
+            .expect(() => {
+              renderSpy.restore();
+            })
+            .expect(400)
+            .expect(() => {
+              expect(emitSpy.calledOnce).to.be.true;
+              expect(renderSpy.calledOnce).to.be.true;
+              const renderArgs = renderSpy.args[0][1];
+              expect(renderArgs).to.have.property('error', 'invalid_request');
+              expect(renderArgs).to.have.property('error_description', 'missing required parameter(s) redirect_uri');
+            });
         });
       });
 
@@ -304,16 +304,16 @@ describe('BASIC code', function () {
           delete auth[param];
 
           return this.agent.get(route)
-          .query(auth)
-          .expect(302)
-          .expect(() => {
-            expect(spy.calledOnce).to.be.true;
-          })
-          .expect(auth.validatePresence(['error', 'error_description', 'state']))
-          .expect(auth.validateState)
-          .expect(auth.validateClientLocation)
-          .expect(auth.validateError('invalid_request'))
-          .expect(auth.validateErrorDescription(`missing required parameter(s) ${param}`));
+            .query(auth)
+            .expect(302)
+            .expect(() => {
+              expect(spy.calledOnce).to.be.true;
+            })
+            .expect(auth.validatePresence(['error', 'error_description', 'state']))
+            .expect(auth.validateState)
+            .expect(auth.validateClientLocation)
+            .expect(auth.validateError('invalid_request'))
+            .expect(auth.validateErrorDescription(`missing required parameter(s) ${param}`));
         });
       });
 
@@ -327,15 +327,15 @@ describe('BASIC code', function () {
         });
 
         return this.wrap({ route, verb, auth })
-        .expect(302)
-        .expect(() => {
-          expect(spy.calledOnce).to.be.true;
-        })
-        .expect(auth.validatePresence(['error', 'error_description', 'state']))
-        .expect(auth.validateState)
-        .expect(auth.validateClientLocation)
-        .expect(auth.validateError('invalid_request'))
-        .expect(auth.validateErrorDescription('invalid prompt value(s) provided. (unsupported)'));
+          .expect(302)
+          .expect(() => {
+            expect(spy.calledOnce).to.be.true;
+          })
+          .expect(auth.validatePresence(['error', 'error_description', 'state']))
+          .expect(auth.validateState)
+          .expect(auth.validateClientLocation)
+          .expect(auth.validateError('invalid_request'))
+          .expect(auth.validateErrorDescription('invalid prompt value(s) provided. (unsupported)'));
       });
 
       it('bad prompt combination', function () {
@@ -348,15 +348,15 @@ describe('BASIC code', function () {
         });
 
         return this.wrap({ route, verb, auth })
-        .expect(302)
-        .expect(() => {
-          expect(spy.calledOnce).to.be.true;
-        })
-        .expect(auth.validatePresence(['error', 'error_description', 'state']))
-        .expect(auth.validateState)
-        .expect(auth.validateClientLocation)
-        .expect(auth.validateError('invalid_request'))
-        .expect(auth.validateErrorDescription('prompt none must only be used alone'));
+          .expect(302)
+          .expect(() => {
+            expect(spy.calledOnce).to.be.true;
+          })
+          .expect(auth.validatePresence(['error', 'error_description', 'state']))
+          .expect(auth.validateState)
+          .expect(auth.validateClientLocation)
+          .expect(auth.validateError('invalid_request'))
+          .expect(auth.validateErrorDescription('prompt none must only be used alone'));
       });
 
       it('missing openid scope', function () {
@@ -368,15 +368,15 @@ describe('BASIC code', function () {
         });
 
         return this.wrap({ route, verb, auth })
-        .expect(302)
-        .expect(() => {
-          expect(spy.calledOnce).to.be.true;
-        })
-        .expect(auth.validatePresence(['error', 'error_description', 'state']))
-        .expect(auth.validateState)
-        .expect(auth.validateClientLocation)
-        .expect(auth.validateError('invalid_request'))
-        .expect(auth.validateErrorDescription('openid is required scope'));
+          .expect(302)
+          .expect(() => {
+            expect(spy.calledOnce).to.be.true;
+          })
+          .expect(auth.validatePresence(['error', 'error_description', 'state']))
+          .expect(auth.validateState)
+          .expect(auth.validateClientLocation)
+          .expect(auth.validateError('invalid_request'))
+          .expect(auth.validateErrorDescription('openid is required scope'));
       });
 
       // section-4.1.2.1 RFC6749
@@ -389,17 +389,17 @@ describe('BASIC code', function () {
         delete auth.client_id;
 
         return this.agent.get(route)
-        .query(auth)
-        .expect(() => {
-          renderSpy.restore();
-        })
-        .expect(400)
-        .expect(() => {
-          expect(renderSpy.calledOnce).to.be.true;
-          const renderArgs = renderSpy.args[0][1];
-          expect(renderArgs).to.have.property('error', 'invalid_request');
-          expect(renderArgs).to.have.property('error_description', 'missing required parameter client_id');
-        });
+          .query(auth)
+          .expect(() => {
+            renderSpy.restore();
+          })
+          .expect(400)
+          .expect(() => {
+            expect(renderSpy.calledOnce).to.be.true;
+            const renderArgs = renderSpy.args[0][1];
+            expect(renderArgs).to.have.property('error', 'invalid_request');
+            expect(renderArgs).to.have.property('error_description', 'missing required parameter client_id');
+          });
       });
 
       // section-4.1.2.1 RFC6749
@@ -412,16 +412,16 @@ describe('BASIC code', function () {
         });
 
         return this.agent.get(route)
-        .query(auth)
-        .expect(() => {
-          renderSpy.restore();
-        })
-        .expect(400)
-        .expect(() => {
-          expect(renderSpy.calledOnce).to.be.true;
-          const renderArgs = renderSpy.args[0][1];
-          expect(renderArgs).to.have.property('error', 'invalid_client');
-        });
+          .query(auth)
+          .expect(() => {
+            renderSpy.restore();
+          })
+          .expect(400)
+          .expect(() => {
+            expect(renderSpy.calledOnce).to.be.true;
+            const renderArgs = renderSpy.args[0][1];
+            expect(renderArgs).to.have.property('error', 'invalid_client');
+          });
       });
 
       // section-4.1.2.1 RFC6749
@@ -434,16 +434,16 @@ describe('BASIC code', function () {
         });
 
         return this.agent.get(route)
-        .query(auth)
-        .expect(() => {
-          renderSpy.restore();
-        })
-        .expect(400)
-        .expect(() => {
-          expect(renderSpy.calledOnce).to.be.true;
-          const renderArgs = renderSpy.args[0][1];
-          expect(renderArgs).to.have.property('error', 'redirect_uri_mismatch');
-        });
+          .query(auth)
+          .expect(() => {
+            renderSpy.restore();
+          })
+          .expect(400)
+          .expect(() => {
+            expect(renderSpy.calledOnce).to.be.true;
+            const renderArgs = renderSpy.args[0][1];
+            expect(renderArgs).to.have.property('error', 'redirect_uri_mismatch');
+          });
       });
 
       it('unsupported response_type', function () {
@@ -455,15 +455,15 @@ describe('BASIC code', function () {
         });
 
         return this.wrap({ route, verb, auth })
-        .expect(302)
-        .expect(() => {
-          expect(spy.calledOnce).to.be.true;
-        })
-        .expect(auth.validatePresence(['error', 'error_description', 'state']))
-        .expect(auth.validateState)
-        .expect(auth.validateClientLocation)
-        .expect(auth.validateError('unsupported_response_type'))
-        .expect(auth.validateErrorDescription('response_type not supported. (unsupported)'));
+          .expect(302)
+          .expect(() => {
+            expect(spy.calledOnce).to.be.true;
+          })
+          .expect(auth.validatePresence(['error', 'error_description', 'state']))
+          .expect(auth.validateState)
+          .expect(auth.validateClientLocation)
+          .expect(auth.validateError('unsupported_response_type'))
+          .expect(auth.validateErrorDescription('response_type not supported. (unsupported)'));
       });
 
       if (verb === 'post') {
@@ -476,13 +476,13 @@ describe('BASIC code', function () {
           });
 
           return this.wrap({ route, verb, auth })
-          .type('json')
-          .expect(400)
-          .expect(/only application\/x-www-form-urlencoded content-type POST bodies are supported/)
-          .expect(/invalid_request/)
-          .expect(() => {
-            expect(spy.calledOnce).to.be.true;
-          });
+            .type('json')
+            .expect(400)
+            .expect(/only application\/x-www-form-urlencoded content-type POST bodies are supported/)
+            .expect(/invalid_request/)
+            .expect(() => {
+              expect(spy.calledOnce).to.be.true;
+            });
         });
       }
 
@@ -495,16 +495,16 @@ describe('BASIC code', function () {
         });
 
         return this.wrap({ route, verb, auth })
-        .expect(302)
-        .expect(() => {
-          expect(spy.calledOnce).to.be.true;
-        })
-        .expect(auth.validateFragment)
-        .expect(auth.validatePresence(['error', 'error_description', 'state']))
-        .expect(auth.validateState)
-        .expect(auth.validateClientLocation)
-        .expect(auth.validateError('restricted_response_type'))
-        .expect(auth.validateErrorDescription('response_type not allowed for this client'));
+          .expect(302)
+          .expect(() => {
+            expect(spy.calledOnce).to.be.true;
+          })
+          .expect(auth.validateFragment)
+          .expect(auth.validatePresence(['error', 'error_description', 'state']))
+          .expect(auth.validateState)
+          .expect(auth.validateClientLocation)
+          .expect(auth.validateError('restricted_response_type'))
+          .expect(auth.validateErrorDescription('response_type not allowed for this client'));
       });
 
       it('redirect_uri mismatch', function () {
@@ -518,18 +518,18 @@ describe('BASIC code', function () {
         });
 
         return this.agent.get(route)
-        .query(auth)
-        .expect(() => {
-          renderSpy.restore();
-        })
-        .expect(400)
-        .expect(() => {
-          expect(emitSpy.calledOnce).to.be.true;
-          expect(renderSpy.calledOnce).to.be.true;
-          const renderArgs = renderSpy.args[0][1];
-          expect(renderArgs).to.have.property('error', 'redirect_uri_mismatch');
-          expect(renderArgs).to.have.property('error_description', 'redirect_uri did not match any client\'s registered redirect_uris');
-        });
+          .query(auth)
+          .expect(() => {
+            renderSpy.restore();
+          })
+          .expect(400)
+          .expect(() => {
+            expect(emitSpy.calledOnce).to.be.true;
+            expect(renderSpy.calledOnce).to.be.true;
+            const renderArgs = renderSpy.args[0][1];
+            expect(renderArgs).to.have.property('error', 'redirect_uri_mismatch');
+            expect(renderArgs).to.have.property('error_description', 'redirect_uri did not match any client\'s registered redirect_uris');
+          });
       });
 
       describe('login state specific', function () {
@@ -545,15 +545,15 @@ describe('BASIC code', function () {
           });
 
           return this.wrap({ route, verb, auth })
-          .expect(302)
-          .expect(() => {
-            expect(spy.calledOnce).to.be.true;
-          })
-          .expect(auth.validatePresence(['error', 'error_description', 'state']))
-          .expect(auth.validateState)
-          .expect(auth.validateClientLocation)
-          .expect(auth.validateError('invalid_request'))
-          .expect(auth.validateErrorDescription(/could not validate id_token_hint/));
+            .expect(302)
+            .expect(() => {
+              expect(spy.calledOnce).to.be.true;
+            })
+            .expect(auth.validatePresence(['error', 'error_description', 'state']))
+            .expect(auth.validateState)
+            .expect(auth.validateClientLocation)
+            .expect(auth.validateError('invalid_request'))
+            .expect(auth.validateErrorDescription(/could not validate id_token_hint/));
         });
       });
 
@@ -577,15 +577,15 @@ describe('BASIC code', function () {
           this.provider.once('server_error', spy);
 
           return this.wrap({ route, verb, auth })
-          .expect(302)
-          .expect(() => {
-            expect(spy.called).to.be.true;
-          })
-          .expect(auth.validatePresence(['error', 'error_description', 'state']))
-          .expect(auth.validateState)
-          .expect(auth.validateClientLocation)
-          .expect(auth.validateError('server_error'))
-          .expect(auth.validateErrorDescription('oops something went wrong'));
+            .expect(302)
+            .expect(() => {
+              expect(spy.called).to.be.true;
+            })
+            .expect(auth.validatePresence(['error', 'error_description', 'state']))
+            .expect(auth.validateState)
+            .expect(auth.validateClientLocation)
+            .expect(auth.validateError('server_error'))
+            .expect(auth.validateErrorDescription('oops something went wrong'));
         });
       });
     });

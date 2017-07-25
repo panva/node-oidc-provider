@@ -26,12 +26,12 @@ const route = '/auth';
         });
 
         return this.wrap({ route, verb, auth })
-        .expect(auth.validateFragment)
-        .expect((response) => {
-          const { query } = url.parse(response.headers.location, true);
-          this.id_token = query.id_token;
-          this.access_token = query.access_token;
-        });
+          .expect(auth.validateFragment)
+          .expect((response) => {
+            const { query } = url.parse(response.headers.location, true);
+            this.id_token = query.id_token;
+            this.access_token = query.access_token;
+          });
       });
 
       it('responds with a nested encrypted and signed id_token JWT', function () {
@@ -47,23 +47,23 @@ const route = '/auth';
 
       it('responds with an encrypted userinfo JWT', function (done) {
         this.agent.get('/me')
-        .set('Authorization', `Bearer ${this.access_token}`)
-        .expect(200)
-        .expect('content-type', /application\/jwt/)
-        .expect((response) => {
-          expect(response.text.split('.')).to.have.lengthOf(5);
-        })
-        .end((err, response) => {
-          if (err) throw err;
-          jose.JWE.createDecrypt(this.keystore)
-          .decrypt(response.text)
-          .then((result) => {
-            expect(result.payload).to.be.ok;
-
-            expect(JSON.parse(result.payload)).to.have.keys('sub');
+          .set('Authorization', `Bearer ${this.access_token}`)
+          .expect(200)
+          .expect('content-type', /application\/jwt/)
+          .expect((response) => {
+            expect(response.text.split('.')).to.have.lengthOf(5);
           })
-          .then(done, done);
-        });
+          .end((err, response) => {
+            if (err) throw err;
+            jose.JWE.createDecrypt(this.keystore)
+              .decrypt(response.text)
+              .then((result) => {
+                expect(result.payload).to.be.ok;
+
+                expect(JSON.parse(result.payload)).to.have.keys('sub');
+              })
+              .then(done, done);
+          });
       });
 
       describe('userinfo nested signed and encrypted', function () {
@@ -79,25 +79,25 @@ const route = '/auth';
 
         it('also handles nested encrypted and signed userinfo JWT', function (done) {
           this.agent.get('/me')
-          .set('Authorization', `Bearer ${this.access_token}`)
-          .expect(200)
-          .expect('content-type', /application\/jwt/)
-          .expect((response) => {
-            expect(response.text.split('.')).to.have.lengthOf(5);
-          })
-          .end((err, response) => {
-            if (err) throw err;
-            jose.JWE.createDecrypt(this.keystore)
-            .decrypt(response.text)
-            .then((result) => {
-              expect(result.payload).to.be.ok;
-              expect(result.payload.toString().split('.')).to.have.lengthOf(3);
-              const decode = JWT.decode(result.payload);
-              expect(decode).to.be.ok;
-              expect(decode.payload).to.have.property('exp').above(Date.now() / 1000);
+            .set('Authorization', `Bearer ${this.access_token}`)
+            .expect(200)
+            .expect('content-type', /application\/jwt/)
+            .expect((response) => {
+              expect(response.text.split('.')).to.have.lengthOf(5);
             })
-            .then(done, done);
-          });
+            .end((err, response) => {
+              if (err) throw err;
+              jose.JWE.createDecrypt(this.keystore)
+                .decrypt(response.text)
+                .then((result) => {
+                  expect(result.payload).to.be.ok;
+                  expect(result.payload.toString().split('.')).to.have.lengthOf(3);
+                  const decode = JWT.decode(result.payload);
+                  expect(decode).to.be.ok;
+                  expect(decode.payload).to.have.property('exp').above(Date.now() / 1000);
+                })
+                .then(done, done);
+            });
         });
       });
     });
@@ -109,27 +109,27 @@ const route = '/auth';
           response_type: 'code',
           redirect_uri: 'https://client.example.com/cb'
         }, null, 'none', { issuer: 'client', audience: this.provider.issuer }).then(signed =>
-        JWT.encrypt(signed, instance(this.provider).keystore.get(), 'A128CBC-HS256', 'RSA1_5')
-      ).then(encrypted =>
-        this.wrap({
-          route,
-          verb,
-          auth: {
-            request: encrypted,
-            scope: 'openid',
-            client_id: 'client',
-            response_type: 'code'
-          }
-        })
-          .expect(302)
-          .expect((response) => {
-            const expected = parse('https://client.example.com/cb', true);
-            const actual = parse(response.headers.location, true);
-            ['protocol', 'host', 'pathname'].forEach((attr) => {
-              expect(actual[attr]).to.equal(expected[attr]);
-            });
-            expect(actual.query).to.have.property('code');
+          JWT.encrypt(signed, instance(this.provider).keystore.get(), 'A128CBC-HS256', 'RSA1_5')
+        ).then(encrypted =>
+          this.wrap({
+            route,
+            verb,
+            auth: {
+              request: encrypted,
+              scope: 'openid',
+              client_id: 'client',
+              response_type: 'code'
+            }
           })
+            .expect(302)
+            .expect((response) => {
+              const expected = parse('https://client.example.com/cb', true);
+              const actual = parse(response.headers.location, true);
+              ['protocol', 'host', 'pathname'].forEach((attr) => {
+                expect(actual[attr]).to.equal(expected[attr]);
+              });
+              expect(actual.query).to.have.property('code');
+            })
         );
       });
 
@@ -140,22 +140,22 @@ const route = '/auth';
           redirect_uri: 'https://client.example.com/cb'
         }, null, 'none', { issuer: 'client', audience: this.provider.issuer }).then(signed =>
           JWT.encrypt(signed, instance(this.provider).keystore.get(), 'A128CBC-HS256', 'RSA-OAEP')
-      ).then(encrypted =>
-        this.wrap({
-          route,
-          verb,
-          auth: {
-            request: encrypted,
-            scope: 'openid',
-            client_id: 'client',
-            response_type: 'code'
-          }
-        })
-        .expect((response) => {
-          const { query } = url.parse(response.headers.location, true);
-          expect(query).to.have.property('error', 'invalid_request_object');
-          expect(query).to.have.property('error_description').contains('unsupported encrypted request alg');
-        })
+        ).then(encrypted =>
+          this.wrap({
+            route,
+            verb,
+            auth: {
+              request: encrypted,
+              scope: 'openid',
+              client_id: 'client',
+              response_type: 'code'
+            }
+          })
+            .expect((response) => {
+              const { query } = url.parse(response.headers.location, true);
+              expect(query).to.have.property('error', 'invalid_request_object');
+              expect(query).to.have.property('error_description').contains('unsupported encrypted request alg');
+            })
         );
       });
     });

@@ -11,11 +11,11 @@ describe('revocation features', function () {
   describe('enriched discovery', function () {
     it('shows the url now', function () {
       return this.agent.get('/.well-known/openid-configuration')
-      .expect(200)
-      .expect((response) => {
-        expect(response.body).to.have.property('revocation_endpoint').and.matches(/token\/revocation/);
-        expect(response.body).not.to.have.property('token_revocation_endpoint');
-      });
+        .expect(200)
+        .expect((response) => {
+          expect(response.body).to.have.property('revocation_endpoint').and.matches(/token\/revocation/);
+          expect(response.body).not.to.have.property('token_revocation_endpoint');
+        });
     });
   });
 
@@ -33,16 +33,16 @@ describe('revocation features', function () {
 
       at.save().then((token) => {
         this.agent.post(route)
-        .auth('client', 'secret')
-        .send({ token })
-        .type('form')
-        .expect(() => {
-          expect(stub.calledOnce).to.be.true;
-          this.provider.AccessToken.prototype.destroy.restore();
-        })
-        .expect(200)
-        .expect('')
-        .end(done);
+          .auth('client', 'secret')
+          .send({ token })
+          .type('form')
+          .expect(() => {
+            expect(stub.calledOnce).to.be.true;
+            this.provider.AccessToken.prototype.destroy.restore();
+          })
+          .expect(200)
+          .expect('')
+          .end(done);
       });
     });
 
@@ -59,16 +59,16 @@ describe('revocation features', function () {
 
       at.save().then((token) => {
         this.agent.post(route)
-        .auth('client', 'secret')
-        .send({ token, token_type_hint: 'access_token' })
-        .type('form')
-        .expect(() => {
-          expect(stub.calledOnce).to.be.true;
-          this.provider.AccessToken.prototype.destroy.restore();
-        })
-        .expect(200)
-        .expect('')
-        .end(done);
+          .auth('client', 'secret')
+          .send({ token, token_type_hint: 'access_token' })
+          .type('form')
+          .expect(() => {
+            expect(stub.calledOnce).to.be.true;
+            this.provider.AccessToken.prototype.destroy.restore();
+          })
+          .expect(200)
+          .expect('')
+          .end(done);
       });
     });
 
@@ -85,16 +85,16 @@ describe('revocation features', function () {
 
       at.save().then((token) => {
         this.agent.post(route)
-        .auth('client', 'secret')
-        .send({ token, token_type_hint: 'refresh_token' })
-        .type('form')
-        .expect(() => {
-          expect(stub.calledOnce).to.be.true;
-          this.provider.AccessToken.prototype.destroy.restore();
-        })
-        .expect(200)
-        .expect('')
-        .end(done);
+          .auth('client', 'secret')
+          .send({ token, token_type_hint: 'refresh_token' })
+          .type('form')
+          .expect(() => {
+            expect(stub.calledOnce).to.be.true;
+            this.provider.AccessToken.prototype.destroy.restore();
+          })
+          .expect(200)
+          .expect('')
+          .end(done);
       });
     });
 
@@ -111,16 +111,16 @@ describe('revocation features', function () {
 
       at.save().then((token) => {
         this.agent.post(route)
-        .auth('client', 'secret')
-        .send({ token, token_type_hint: 'foobar' })
-        .type('form')
-        .expect(() => {
-          expect(stub.calledOnce).to.be.true;
-          this.provider.AccessToken.prototype.destroy.restore();
-        })
-        .expect(200)
-        .expect('')
-        .end(done);
+          .auth('client', 'secret')
+          .send({ token, token_type_hint: 'foobar' })
+          .type('form')
+          .expect(() => {
+            expect(stub.calledOnce).to.be.true;
+            this.provider.AccessToken.prototype.destroy.restore();
+          })
+          .expect(200)
+          .expect('')
+          .end(done);
       });
     });
 
@@ -135,17 +135,17 @@ describe('revocation features', function () {
 
       at.save().then((token) => {
         this.agent.post(route)
-        .auth('client', 'secret')
-        .send({ token })
-        .type('form')
-        .expect(() => {
-          this.provider.AccessToken.find.restore();
-        })
-        .expect(500)
-        .expect((response) => {
-          expect(response.body.error).to.eql('server_error');
-        })
-        .end(done);
+          .auth('client', 'secret')
+          .send({ token })
+          .type('form')
+          .expect(() => {
+            this.provider.AccessToken.find.restore();
+          })
+          .expect(500)
+          .expect((response) => {
+            expect(response.body.error).to.eql('server_error');
+          })
+          .end(done);
       });
     });
 
@@ -162,16 +162,16 @@ describe('revocation features', function () {
 
       rt.save().then((token) => {
         this.agent.post(route)
-        .auth('client', 'secret')
-        .send({ token })
-        .type('form')
-        .expect(() => {
-          expect(stub.calledOnce).to.be.true;
-          this.provider.RefreshToken.prototype.destroy.restore();
-        })
-        .expect(200)
-        .expect('')
-        .end(done);
+          .auth('client', 'secret')
+          .send({ token })
+          .type('form')
+          .expect(() => {
+            expect(stub.calledOnce).to.be.true;
+            this.provider.RefreshToken.prototype.destroy.restore();
+          })
+          .expect(200)
+          .expect('')
+          .end(done);
       });
     });
 
@@ -188,16 +188,16 @@ describe('revocation features', function () {
 
       rt.save().then((token) => {
         this.agent.post(route)
-        .auth('client', 'secret')
-        .send({ token, token_type_hint: 'refresh_token' })
-        .type('form')
-        .expect(() => {
-          expect(stub.calledOnce).to.be.true;
-          this.provider.RefreshToken.prototype.destroy.restore();
-        })
-        .expect(200)
-        .expect('')
-        .end(done);
+          .auth('client', 'secret')
+          .send({ token, token_type_hint: 'refresh_token' })
+          .type('form')
+          .expect(() => {
+            expect(stub.calledOnce).to.be.true;
+            this.provider.RefreshToken.prototype.destroy.restore();
+          })
+          .expect(200)
+          .expect('')
+          .end(done);
       });
     });
 
@@ -214,16 +214,16 @@ describe('revocation features', function () {
 
       rt.save().then((token) => {
         this.agent.post(route)
-        .auth('client', 'secret')
-        .send({ token, token_type_hint: 'client_credentials' })
-        .type('form')
-        .expect(() => {
-          expect(stub.calledOnce).to.be.true;
-          this.provider.RefreshToken.prototype.destroy.restore();
-        })
-        .expect(200)
-        .expect('')
-        .end(done);
+          .auth('client', 'secret')
+          .send({ token, token_type_hint: 'client_credentials' })
+          .type('form')
+          .expect(() => {
+            expect(stub.calledOnce).to.be.true;
+            this.provider.RefreshToken.prototype.destroy.restore();
+          })
+          .expect(200)
+          .expect('')
+          .end(done);
       });
     });
 
@@ -240,16 +240,16 @@ describe('revocation features', function () {
 
       rt.save().then((token) => {
         this.agent.post(route)
-        .auth('client', 'secret')
-        .send({ token, token_type_hint: 'foobar' })
-        .type('form')
-        .expect(() => {
-          expect(stub.calledOnce).to.be.true;
-          this.provider.RefreshToken.prototype.destroy.restore();
-        })
-        .expect(200)
-        .expect('')
-        .end(done);
+          .auth('client', 'secret')
+          .send({ token, token_type_hint: 'foobar' })
+          .type('form')
+          .expect(() => {
+            expect(stub.calledOnce).to.be.true;
+            this.provider.RefreshToken.prototype.destroy.restore();
+          })
+          .expect(200)
+          .expect('')
+          .end(done);
       });
     });
 
@@ -264,16 +264,16 @@ describe('revocation features', function () {
 
       rt.save().then((token) => {
         this.agent.post(route)
-        .auth('client', 'secret')
-        .send({ token })
-        .type('form')
-        .expect(() => {
-          expect(stub.calledOnce).to.be.true;
-          this.provider.ClientCredentials.prototype.destroy.restore();
-        })
-        .expect(200)
-        .expect('')
-        .end(done);
+          .auth('client', 'secret')
+          .send({ token })
+          .type('form')
+          .expect(() => {
+            expect(stub.calledOnce).to.be.true;
+            this.provider.ClientCredentials.prototype.destroy.restore();
+          })
+          .expect(200)
+          .expect('')
+          .end(done);
       });
     });
 
@@ -288,16 +288,16 @@ describe('revocation features', function () {
 
       rt.save().then((token) => {
         this.agent.post(route)
-        .auth('client', 'secret')
-        .send({ token, token_type_hint: 'client_credentials' })
-        .type('form')
-        .expect(() => {
-          expect(stub.calledOnce).to.be.true;
-          this.provider.ClientCredentials.prototype.destroy.restore();
-        })
-        .expect(200)
-        .expect('')
-        .end(done);
+          .auth('client', 'secret')
+          .send({ token, token_type_hint: 'client_credentials' })
+          .type('form')
+          .expect(() => {
+            expect(stub.calledOnce).to.be.true;
+            this.provider.ClientCredentials.prototype.destroy.restore();
+          })
+          .expect(200)
+          .expect('')
+          .end(done);
       });
     });
 
@@ -312,16 +312,16 @@ describe('revocation features', function () {
 
       rt.save().then((token) => {
         this.agent.post(route)
-        .auth('client', 'secret')
-        .send({ token, token_type_hint: 'access_token' })
-        .type('form')
-        .expect(() => {
-          expect(stub.calledOnce).to.be.true;
-          this.provider.ClientCredentials.prototype.destroy.restore();
-        })
-        .expect(200)
-        .expect('')
-        .end(done);
+          .auth('client', 'secret')
+          .send({ token, token_type_hint: 'access_token' })
+          .type('form')
+          .expect(() => {
+            expect(stub.calledOnce).to.be.true;
+            this.provider.ClientCredentials.prototype.destroy.restore();
+          })
+          .expect(200)
+          .expect('')
+          .end(done);
       });
     });
 
@@ -336,51 +336,51 @@ describe('revocation features', function () {
 
       rt.save().then((token) => {
         this.agent.post(route)
-        .auth('client', 'secret')
-        .send({ token, token_type_hint: 'foobar' })
-        .type('form')
-        .expect(() => {
-          expect(stub.calledOnce).to.be.true;
-          this.provider.ClientCredentials.prototype.destroy.restore();
-        })
-        .expect(200)
-        .expect('')
-        .end(done);
+          .auth('client', 'secret')
+          .send({ token, token_type_hint: 'foobar' })
+          .type('form')
+          .expect(() => {
+            expect(stub.calledOnce).to.be.true;
+            this.provider.ClientCredentials.prototype.destroy.restore();
+          })
+          .expect(200)
+          .expect('')
+          .end(done);
       });
     });
 
     it('validates token param presence', function () {
       return this.agent.post(route)
-      .auth('client', 'secret')
-      .send({})
-      .type('form')
-      .expect(400)
-      .expect((response) => {
-        expect(response.body).to.have.property('error', 'invalid_request');
-        expect(response.body).to.have.property('error_description').and.matches(/missing required parameter.+\(token\)/);
-      });
+        .auth('client', 'secret')
+        .send({})
+        .type('form')
+        .expect(400)
+        .expect((response) => {
+          expect(response.body).to.have.property('error', 'invalid_request');
+          expect(response.body).to.have.property('error_description').and.matches(/missing required parameter.+\(token\)/);
+        });
     });
 
     it('rejects completely wrong tokens with the expected OK response', function () {
       return this.agent.post(route)
-      .auth('client', 'secret')
-      .send({
-        token: 'dsahjdasdsa'
-      })
-      .type('form')
-      .expect('')
-      .expect(200);
+        .auth('client', 'secret')
+        .send({
+          token: 'dsahjdasdsa'
+        })
+        .type('form')
+        .expect('')
+        .expect(200);
     });
 
     it('rejects wrong tokens', function () {
       return this.agent.post(route)
-      .auth('client', 'secret')
-      .send({
-        token: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiYWRtaW4iOnRydWV9.TJVA95OrM7E2cBab30RMHrHDcEfxjoYZgeFONFh7HgQ'
-      })
-      .type('form')
-      .expect('')
-      .expect(200);
+        .auth('client', 'secret')
+        .send({
+          token: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiYWRtaW4iOnRydWV9.TJVA95OrM7E2cBab30RMHrHDcEfxjoYZgeFONFh7HgQ'
+        })
+        .type('form')
+        .expect('')
+        .expect(200);
     });
 
     it('does not revoke tokens of other clients', function (done) {
@@ -411,13 +411,13 @@ describe('revocation features', function () {
       this.provider.once('revocation.error', spy);
 
       return this.agent.post(route)
-      .auth('invalid', 'auth')
-      .send({})
-      .type('form')
-      .expect(400)
-      .expect(() => {
-        expect(spy.calledOnce).to.be.true;
-      });
+        .auth('invalid', 'auth')
+        .send({})
+        .type('form')
+        .expect(400)
+        .expect(() => {
+          expect(spy.calledOnce).to.be.true;
+        });
     });
   });
 });

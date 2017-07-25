@@ -14,11 +14,11 @@ describe('request Uri features', function () {
   describe('configuration features.requestUri', function () {
     it('extends discovery', function () {
       return this.agent.get('/.well-known/openid-configuration')
-      .expect(200)
-      .expect((response) => {
-        expect(response.body).to.have.property('request_uri_parameter_supported', true);
-        expect(response.body).not.to.have.property('require_request_uri_registration');
-      });
+        .expect(200)
+        .expect((response) => {
+          expect(response.body).to.have.property('request_uri_parameter_supported', true);
+          expect(response.body).not.to.have.property('require_request_uri_registration');
+        });
     });
 
     context('requireRequestUriRegistration', function () {
@@ -34,11 +34,11 @@ describe('request Uri features', function () {
 
       it('extends discovery', function () {
         return this.agent.get('/.well-known/openid-configuration')
-        .expect(200)
-        .expect((response) => {
-          expect(response.body).to.have.property('request_uri_parameter_supported', true);
-          expect(response.body).to.have.property('require_request_uri_registration', true);
-        });
+          .expect(200)
+          .expect((response) => {
+            expect(response.body).to.have.property('request_uri_parameter_supported', true);
+            expect(response.body).to.have.property('require_request_uri_registration', true);
+          });
       });
     });
   });
@@ -56,8 +56,8 @@ describe('request Uri features', function () {
           redirect_uri: 'https://client.example.com/cb'
         }, key, 'HS256', { issuer: 'client-with-HS-sig', audience: this.provider.issuer }).then((request) => {
           nock('https://client.example.com')
-          .get('/request')
-          .reply(200, request);
+            .get('/request')
+            .reply(200, request);
 
           return this.wrap({
             agent: this.agent,
@@ -70,15 +70,15 @@ describe('request Uri features', function () {
               response_type: 'code'
             }
           })
-        .expect(302)
-        .expect((response) => {
-          const expected = parse('https://client.example.com/cb', true);
-          const actual = parse(response.headers.location, true);
-          ['protocol', 'host', 'pathname'].forEach((attr) => {
-            expect(actual[attr]).to.equal(expected[attr]);
-          });
-          expect(actual.query).to.have.property('code');
-        });
+            .expect(302)
+            .expect((response) => {
+              const expected = parse('https://client.example.com/cb', true);
+              const actual = parse(response.headers.location, true);
+              ['protocol', 'host', 'pathname'].forEach((attr) => {
+                expect(actual[attr]).to.equal(expected[attr]);
+              });
+              expect(actual.query).to.have.property('code');
+            });
         });
       });
 
@@ -89,8 +89,8 @@ describe('request Uri features', function () {
           redirect_uri: 'https://client.example.com/cb'
         }, null, 'none', { issuer: 'client', audience: this.provider.issuer }).then((request) => {
           nock('https://client.example.com')
-          .get('/request')
-          .reply(200, request);
+            .get('/request')
+            .reply(200, request);
 
           return this.wrap({
             agent: this.agent,
@@ -103,15 +103,15 @@ describe('request Uri features', function () {
               response_type: 'code'
             }
           })
-        .expect(302)
-        .expect((response) => {
-          const expected = parse('https://client.example.com/cb', true);
-          const actual = parse(response.headers.location, true);
-          ['protocol', 'host', 'pathname'].forEach((attr) => {
-            expect(actual[attr]).to.equal(expected[attr]);
-          });
-          expect(actual.query).to.have.property('code');
-        });
+            .expect(302)
+            .expect((response) => {
+              const expected = parse('https://client.example.com/cb', true);
+              const actual = parse(response.headers.location, true);
+              ['protocol', 'host', 'pathname'].forEach((attr) => {
+                expect(actual[attr]).to.equal(expected[attr]);
+              });
+              expect(actual.query).to.have.property('code');
+            });
         });
       });
 
@@ -119,10 +119,10 @@ describe('request Uri features', function () {
         it('caches the uris', async function () {
           const cache = new RequestUriCache(this.provider);
           nock('https://client.example.com')
-          .get('/cachedRequest')
-          .reply(200, 'content')
-          .get('/cachedRequest')
-          .reply(200, 'content2');
+            .get('/cachedRequest')
+            .reply(200, 'content')
+            .get('/cachedRequest')
+            .reply(200, 'content2');
 
           const first = await cache.resolve('https://client.example.com/cachedRequest#1');
           const second = await cache.resolve('https://client.example.com/cachedRequest#1');
@@ -137,12 +137,12 @@ describe('request Uri features', function () {
         it('respects provided max-age', async function () {
           const cache = new RequestUriCache(this.provider);
           nock('https://client.example.com')
-          .get('/cachedRequest')
-          .reply(200, 'content24', {
-            'Cache-Control': 'private, max-age=1'
-          })
-          .get('/cachedRequest')
-          .reply(200, 'content82');
+            .get('/cachedRequest')
+            .reply(200, 'content24', {
+              'Cache-Control': 'private, max-age=1'
+            })
+            .get('/cachedRequest')
+            .reply(200, 'content82');
 
           const first = await cache.resolve('https://client.example.com/cachedRequest');
           await new Promise((resolve) => {
@@ -172,13 +172,13 @@ describe('request Uri features', function () {
             response_type: 'code'
           }
         })
-        .expect(302)
-        .expect(() => {
-          expect(spy.calledOnce).to.be.true;
-          expect(spy.args[0][0]).to.have.property('message', 'invalid_request_uri');
-          expect(spy.args[0][0]).to.have.property('error_description',
-            'the request_uri MUST NOT exceed 512 characters');
-        });
+          .expect(302)
+          .expect(() => {
+            expect(spy.calledOnce).to.be.true;
+            expect(spy.args[0][0]).to.have.property('message', 'invalid_request_uri');
+            expect(spy.args[0][0]).to.have.property('error_description',
+              'the request_uri MUST NOT exceed 512 characters');
+          });
       });
 
       it('requires https protocol to be used', function () {
@@ -196,13 +196,13 @@ describe('request Uri features', function () {
             response_type: 'code'
           }
         })
-        .expect(302)
-        .expect(() => {
-          expect(spy.calledOnce).to.be.true;
-          expect(spy.args[0][0]).to.have.property('message', 'invalid_request_uri');
-          expect(spy.args[0][0]).to.have.property('error_description',
-            'request_uri must use https scheme');
-        });
+          .expect(302)
+          .expect(() => {
+            expect(spy.calledOnce).to.be.true;
+            expect(spy.args[0][0]).to.have.property('message', 'invalid_request_uri');
+            expect(spy.args[0][0]).to.have.property('error_description',
+              'request_uri must use https scheme');
+          });
       });
 
       context('when client has requestUris set', function () {
@@ -221,8 +221,8 @@ describe('request Uri features', function () {
             redirect_uri: 'https://client.example.com/cb'
           }, null, 'none', { issuer: 'client', audience: this.provider.issuer }).then((request) => {
             nock('https://thisoneisallowed.com')
-            .get('/')
-            .reply(200, request);
+              .get('/')
+              .reply(200, request);
 
             return this.wrap({
               agent: this.agent,
@@ -235,15 +235,15 @@ describe('request Uri features', function () {
                 response_type: 'code'
               }
             })
-          .expect(302)
-          .expect((response) => {
-            const expected = parse('https://client.example.com/cb', true);
-            const actual = parse(response.headers.location, true);
-            ['protocol', 'host', 'pathname'].forEach((attr) => {
-              expect(actual[attr]).to.equal(expected[attr]);
-            });
-            expect(actual.query).to.have.property('code');
-          });
+              .expect(302)
+              .expect((response) => {
+                const expected = parse('https://client.example.com/cb', true);
+                const actual = parse(response.headers.location, true);
+                ['protocol', 'host', 'pathname'].forEach((attr) => {
+                  expect(actual[attr]).to.equal(expected[attr]);
+                });
+                expect(actual.query).to.have.property('code');
+              });
           });
         });
 
@@ -254,8 +254,8 @@ describe('request Uri features', function () {
             redirect_uri: 'https://client.example.com/cb'
           }, null, 'none', { issuer: 'client', audience: this.provider.issuer }).then((request) => {
             nock('https://thisoneisallowed.com#hash234')
-            .get('/')
-            .reply(200, request);
+              .get('/')
+              .reply(200, request);
 
             return this.wrap({
               agent: this.agent,
@@ -268,15 +268,15 @@ describe('request Uri features', function () {
                 response_type: 'code'
               }
             })
-          .expect(302)
-          .expect((response) => {
-            const expected = parse('https://client.example.com/cb', true);
-            const actual = parse(response.headers.location, true);
-            ['protocol', 'host', 'pathname'].forEach((attr) => {
-              expect(actual[attr]).to.equal(expected[attr]);
-            });
-            expect(actual.query).to.have.property('code');
-          });
+              .expect(302)
+              .expect((response) => {
+                const expected = parse('https://client.example.com/cb', true);
+                const actual = parse(response.headers.location, true);
+                ['protocol', 'host', 'pathname'].forEach((attr) => {
+                  expect(actual[attr]).to.equal(expected[attr]);
+                });
+                expect(actual.query).to.have.property('code');
+              });
           });
         });
 
@@ -295,13 +295,13 @@ describe('request Uri features', function () {
               response_type: 'code'
             }
           })
-        .expect(302)
-        .expect(() => {
-          expect(spy.calledOnce).to.be.true;
-          expect(spy.args[0][0]).to.have.property('message', 'invalid_request_uri');
-          expect(spy.args[0][0]).to.have.property('error_description',
-          'not registered request_uri provided');
-        });
+            .expect(302)
+            .expect(() => {
+              expect(spy.calledOnce).to.be.true;
+              expect(spy.args[0][0]).to.have.property('message', 'invalid_request_uri');
+              expect(spy.args[0][0]).to.have.property('error_description',
+                'not registered request_uri provided');
+            });
         });
       });
 
@@ -310,8 +310,8 @@ describe('request Uri features', function () {
         this.provider.once('authorization.error', spy);
 
         nock('https://client.example.com')
-        .get('/request')
-        .reply(500);
+          .get('/request')
+          .reply(500);
 
         return this.wrap({
           agent: this.agent,
@@ -324,12 +324,12 @@ describe('request Uri features', function () {
             response_type: 'code'
           }
         })
-      .expect(302)
-      .expect(() => {
-        expect(spy.calledOnce).to.be.true;
-        expect(spy.args[0][0]).to.have.property('message', 'invalid_request_uri');
-        expect(spy.args[0][0]).to.have.property('error_description', 'could not load or parse request_uri (Response code 500 (Internal Server Error))');
-      });
+          .expect(302)
+          .expect(() => {
+            expect(spy.calledOnce).to.be.true;
+            expect(spy.args[0][0]).to.have.property('message', 'invalid_request_uri');
+            expect(spy.args[0][0]).to.have.property('error_description', 'could not load or parse request_uri (Response code 500 (Internal Server Error))');
+          });
       });
 
       it('doesnt accepts 200s, rejects even on redirect', function () {
@@ -337,10 +337,10 @@ describe('request Uri features', function () {
         this.provider.once('authorization.error', spy);
 
         nock('https://client.example.com')
-        .get('/request')
-        .reply(302, 'redirecting', {
-          location: '/someotherrequest'
-        });
+          .get('/request')
+          .reply(302, 'redirecting', {
+            location: '/someotherrequest'
+          });
 
         return this.wrap({
           agent: this.agent,
@@ -353,12 +353,12 @@ describe('request Uri features', function () {
             response_type: 'code'
           }
         })
-      .expect(302)
-      .expect(() => {
-        expect(spy.calledOnce).to.be.true;
-        expect(spy.args[0][0]).to.have.property('message', 'invalid_request_uri');
-        expect(spy.args[0][0]).to.have.property('error_description').and.matches(/expected 200, got 302/);
-      });
+          .expect(302)
+          .expect(() => {
+            expect(spy.calledOnce).to.be.true;
+            expect(spy.args[0][0]).to.have.property('message', 'invalid_request_uri');
+            expect(spy.args[0][0]).to.have.property('error_description').and.matches(/expected 200, got 302/);
+          });
       });
 
       it('doesnt allow request inception', function () {
@@ -372,8 +372,8 @@ describe('request Uri features', function () {
           redirect_uri: 'https://client.example.com/cb'
         }, null, 'none', { issuer: 'client', audience: this.provider.issuer }).then((request) => {
           nock('https://client.example.com')
-          .get('/request')
-          .reply(200, request);
+            .get('/request')
+            .reply(200, request);
           return this.wrap({
             agent: this.agent,
             route,
@@ -385,13 +385,13 @@ describe('request Uri features', function () {
               response_type: 'code'
             }
           })
-        .expect(302)
-        .expect(() => {
-          expect(spy.calledOnce).to.be.true;
-          expect(spy.args[0][0]).to.have.property('message', 'invalid_request_object');
-          expect(spy.args[0][0]).to.have.property('error_description',
-            'request object must not contain request or request_uri properties');
-        });
+            .expect(302)
+            .expect(() => {
+              expect(spy.calledOnce).to.be.true;
+              expect(spy.args[0][0]).to.have.property('message', 'invalid_request_object');
+              expect(spy.args[0][0]).to.have.property('error_description',
+                'request object must not contain request or request_uri properties');
+            });
         });
       });
 
@@ -406,8 +406,8 @@ describe('request Uri features', function () {
           redirect_uri: 'https://client.example.com/cb'
         }, null, 'none', { issuer: 'client', audience: this.provider.issuer }).then((request) => {
           nock('https://client.example.com')
-          .get('/request')
-          .reply(200, request);
+            .get('/request')
+            .reply(200, request);
 
           return this.wrap({
             agent: this.agent,
@@ -420,13 +420,13 @@ describe('request Uri features', function () {
               response_type: 'code'
             }
           })
-        .expect(302)
-        .expect(() => {
-          expect(spy.calledOnce).to.be.true;
-          expect(spy.args[0][0]).to.have.property('message', 'invalid_request_object');
-          expect(spy.args[0][0]).to.have.property('error_description',
-            'request object must not contain request or request_uri properties');
-        });
+            .expect(302)
+            .expect(() => {
+              expect(spy.calledOnce).to.be.true;
+              expect(spy.args[0][0]).to.have.property('message', 'invalid_request_object');
+              expect(spy.args[0][0]).to.have.property('error_description',
+                'request object must not contain request or request_uri properties');
+            });
         });
       });
 
@@ -440,8 +440,8 @@ describe('request Uri features', function () {
           redirect_uri: 'https://client.example.com/cb'
         }, null, 'none', { issuer: 'client', audience: this.provider.issuer }).then((request) => {
           nock('https://client.example.com')
-          .get('/request')
-          .reply(200, request);
+            .get('/request')
+            .reply(200, request);
 
           return this.wrap({
             agent: this.agent,
@@ -454,13 +454,13 @@ describe('request Uri features', function () {
               response_type: 'code'
             }
           })
-        .expect(302)
-        .expect(() => {
-          expect(spy.calledOnce).to.be.true;
-          expect(spy.args[0][0]).to.have.property('message', 'invalid_request_object');
-          expect(spy.args[0][0]).to.have.property('error_description',
-            'request response_type must equal the one in request parameters');
-        });
+            .expect(302)
+            .expect(() => {
+              expect(spy.calledOnce).to.be.true;
+              expect(spy.args[0][0]).to.have.property('message', 'invalid_request_object');
+              expect(spy.args[0][0]).to.have.property('error_description',
+                'request response_type must equal the one in request parameters');
+            });
         });
       });
 
@@ -474,8 +474,8 @@ describe('request Uri features', function () {
           redirect_uri: 'https://client.example.com/cb'
         }, null, 'none', { issuer: 'client2', audience: this.provider.issuer }).then((request) => {
           nock('https://client.example.com')
-          .get('/request')
-          .reply(200, request);
+            .get('/request')
+            .reply(200, request);
 
           return this.wrap({
             agent: this.agent,
@@ -488,13 +488,13 @@ describe('request Uri features', function () {
               response_type: 'code'
             }
           })
-        .expect(302)
-        .expect(() => {
-          expect(spy.calledOnce).to.be.true;
-          expect(spy.args[0][0]).to.have.property('message', 'invalid_request_object');
-          expect(spy.args[0][0]).to.have.property('error_description',
-            'request client_id must equal the one in request parameters');
-        });
+            .expect(302)
+            .expect(() => {
+              expect(spy.calledOnce).to.be.true;
+              expect(spy.args[0][0]).to.have.property('message', 'invalid_request_object');
+              expect(spy.args[0][0]).to.have.property('error_description',
+                'request client_id must equal the one in request parameters');
+            });
         });
       });
 
@@ -503,8 +503,8 @@ describe('request Uri features', function () {
         this.provider.once('authorization.error', spy);
 
         nock('https://client.example.com')
-        .get('/request')
-        .reply(200, 'definitely.notsigned.jwt');
+          .get('/request')
+          .reply(200, 'definitely.notsigned.jwt');
 
         return this.wrap({
           agent: this.agent,
@@ -517,14 +517,14 @@ describe('request Uri features', function () {
             response_type: 'code'
           }
         })
-      .expect(302)
-      .expect(() => {
-        expect(spy.calledOnce).to.be.true;
-        expect(spy.args[0][0]).to.have.property('message', 'invalid_request_object');
-        expect(spy.args[0][0]).to.have.property('error_description').and.matches(
-          /could not parse request object as valid JWT/
-        );
-      });
+          .expect(302)
+          .expect(() => {
+            expect(spy.calledOnce).to.be.true;
+            expect(spy.args[0][0]).to.have.property('message', 'invalid_request_object');
+            expect(spy.args[0][0]).to.have.property('error_description').and.matches(
+              /could not parse request object as valid JWT/
+            );
+          });
       });
 
       it('doesnt allow clients with predefined alg to bypass this alg', function () {
@@ -537,8 +537,8 @@ describe('request Uri features', function () {
           redirect_uri: 'https://client.example.com/cb'
         }, null, 'none', { issuer: 'client-with-HS-sig', audience: this.provider.issuer }).then((request) => {
           nock('https://client.example.com')
-          .get('/request')
-          .reply(200, request);
+            .get('/request')
+            .reply(200, request);
 
           return this.wrap({
             agent: this.agent,
@@ -551,13 +551,13 @@ describe('request Uri features', function () {
               response_type: 'code'
             }
           })
-        .expect(302)
-        .expect(() => {
-          expect(spy.calledOnce).to.be.true;
-          expect(spy.args[0][0]).to.have.property('message', 'invalid_request_object');
-          expect(spy.args[0][0]).to.have.property('error_description',
-            'the preregistered alg must be used in request or request_uri');
-        });
+            .expect(302)
+            .expect(() => {
+              expect(spy.calledOnce).to.be.true;
+              expect(spy.args[0][0]).to.have.property('message', 'invalid_request_object');
+              expect(spy.args[0][0]).to.have.property('error_description',
+                'the preregistered alg must be used in request or request_uri');
+            });
         });
       });
 
@@ -573,8 +573,8 @@ describe('request Uri features', function () {
           redirect_uri: 'https://client.example.com/cb'
         }, key, 'HS256', { issuer: 'client', audience: this.provider.issuer }).then((request) => {
           nock('https://client.example.com')
-          .get('/request')
-          .reply(200, request);
+            .get('/request')
+            .reply(200, request);
 
           return this.wrap({
             agent: this.agent,
@@ -587,14 +587,14 @@ describe('request Uri features', function () {
               response_type: 'code'
             }
           })
-        .expect(302)
-        .expect(() => {
-          expect(spy.calledOnce).to.be.true;
-          expect(spy.args[0][0]).to.have.property('message', 'invalid_request_object');
-          expect(spy.args[0][0]).to.have.property('error_description').that.matches(
-            /could not validate request object/
-          );
-        });
+            .expect(302)
+            .expect(() => {
+              expect(spy.calledOnce).to.be.true;
+              expect(spy.args[0][0]).to.have.property('message', 'invalid_request_object');
+              expect(spy.args[0][0]).to.have.property('error_description').that.matches(
+                /could not validate request object/
+              );
+            });
         });
       });
     });

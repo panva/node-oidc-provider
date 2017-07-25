@@ -48,15 +48,15 @@ describe('request parameter features', function () {
             response_type: 'code'
           }
         })
-        .expect(302)
-        .expect((response) => {
-          const expected = parse('https://client.example.com/cb', true);
-          const actual = parse(response.headers.location, true);
-          ['protocol', 'host', 'pathname'].forEach((attr) => {
-            expect(actual[attr]).to.equal(expected[attr]);
-          });
-          expect(actual.query).to.have.property('code');
-        }));
+          .expect(302)
+          .expect((response) => {
+            const expected = parse('https://client.example.com/cb', true);
+            const actual = parse(response.headers.location, true);
+            ['protocol', 'host', 'pathname'].forEach((attr) => {
+              expect(actual[attr]).to.equal(expected[attr]);
+            });
+            expect(actual.query).to.have.property('code');
+          }));
       });
 
       it('can contain claims parameter as JSON', function () {
@@ -76,15 +76,15 @@ describe('request parameter features', function () {
             response_type: 'code'
           }
         })
-        .expect(302)
-        .expect((response) => {
-          const expected = parse('https://client.example.com/cb', true);
-          const actual = parse(response.headers.location, true);
-          ['protocol', 'host', 'pathname'].forEach((attr) => {
-            expect(actual[attr]).to.equal(expected[attr]);
-          });
-          expect(actual.query).to.have.property('code');
-        }));
+          .expect(302)
+          .expect((response) => {
+            const expected = parse('https://client.example.com/cb', true);
+            const actual = parse(response.headers.location, true);
+            ['protocol', 'host', 'pathname'].forEach((attr) => {
+              expect(actual[attr]).to.equal(expected[attr]);
+            });
+            expect(actual.query).to.have.property('code');
+          }));
       });
 
       it('can contain claims parameter as object', function () {
@@ -104,15 +104,15 @@ describe('request parameter features', function () {
             response_type: 'code'
           }
         })
-        .expect(302)
-        .expect((response) => {
-          const expected = parse('https://client.example.com/cb', true);
-          const actual = parse(response.headers.location, true);
-          ['protocol', 'host', 'pathname'].forEach((attr) => {
-            expect(actual[attr]).to.equal(expected[attr]);
-          });
-          expect(actual.query).to.have.property('code');
-        }));
+          .expect(302)
+          .expect((response) => {
+            const expected = parse('https://client.example.com/cb', true);
+            const actual = parse(response.headers.location, true);
+            ['protocol', 'host', 'pathname'].forEach((attr) => {
+              expect(actual[attr]).to.equal(expected[attr]);
+            });
+            expect(actual.query).to.have.property('code');
+          }));
       });
 
       it('works with signed by an actual HS', async function () {
@@ -134,15 +134,15 @@ describe('request parameter features', function () {
             response_type: 'code'
           }
         })
-        .expect(302)
-        .expect((response) => {
-          const expected = parse('https://client.example.com/cb', true);
-          const actual = parse(response.headers.location, true);
-          ['protocol', 'host', 'pathname'].forEach((attr) => {
-            expect(actual[attr]).to.equal(expected[attr]);
-          });
-          expect(actual.query).to.have.property('code');
-        }));
+          .expect(302)
+          .expect((response) => {
+            const expected = parse('https://client.example.com/cb', true);
+            const actual = parse(response.headers.location, true);
+            ['protocol', 'host', 'pathname'].forEach((attr) => {
+              expect(actual[attr]).to.equal(expected[attr]);
+            });
+            expect(actual.query).to.have.property('code');
+          }));
       });
 
       it('doesnt allow request inception', function () {
@@ -165,13 +165,13 @@ describe('request parameter features', function () {
             response_type: 'code'
           }
         })
-        .expect(302)
-        .expect(() => {
-          expect(spy.calledOnce).to.be.true;
-          expect(spy.args[0][0]).to.have.property('message', 'invalid_request_object');
-          expect(spy.args[0][0]).to.have.property('error_description',
-            'request object must not contain request or request_uri properties');
-        }));
+          .expect(302)
+          .expect(() => {
+            expect(spy.calledOnce).to.be.true;
+            expect(spy.args[0][0]).to.have.property('message', 'invalid_request_object');
+            expect(spy.args[0][0]).to.have.property('error_description',
+              'request object must not contain request or request_uri properties');
+          }));
       });
 
       it('doesnt allow requestUri inception', function () {
@@ -194,13 +194,13 @@ describe('request parameter features', function () {
             response_type: 'code'
           }
         })
-        .expect(302)
-        .expect(() => {
-          expect(spy.calledOnce).to.be.true;
-          expect(spy.args[0][0]).to.have.property('message', 'invalid_request_object');
-          expect(spy.args[0][0]).to.have.property('error_description',
-            'request object must not contain request or request_uri properties');
-        }));
+          .expect(302)
+          .expect(() => {
+            expect(spy.calledOnce).to.be.true;
+            expect(spy.args[0][0]).to.have.property('message', 'invalid_request_object');
+            expect(spy.args[0][0]).to.have.property('error_description',
+              'request object must not contain request or request_uri properties');
+          }));
       });
 
       it('doesnt allow response_type to differ', function () {
@@ -222,13 +222,13 @@ describe('request parameter features', function () {
             response_type: 'code'
           }
         })
-        .expect(302)
-        .expect(() => {
-          expect(spy.calledOnce).to.be.true;
-          expect(spy.args[0][0]).to.have.property('message', 'invalid_request_object');
-          expect(spy.args[0][0]).to.have.property('error_description',
-            'request response_type must equal the one in request parameters');
-        }));
+          .expect(302)
+          .expect(() => {
+            expect(spy.calledOnce).to.be.true;
+            expect(spy.args[0][0]).to.have.property('message', 'invalid_request_object');
+            expect(spy.args[0][0]).to.have.property('error_description',
+              'request response_type must equal the one in request parameters');
+          }));
       });
 
       it('doesnt allow client_id to differ', function () {
@@ -250,13 +250,13 @@ describe('request parameter features', function () {
             response_type: 'code'
           }
         })
-        .expect(302)
-        .expect(() => {
-          expect(spy.calledOnce).to.be.true;
-          expect(spy.args[0][0]).to.have.property('message', 'invalid_request_object');
-          expect(spy.args[0][0]).to.have.property('error_description',
-            'request client_id must equal the one in request parameters');
-        }));
+          .expect(302)
+          .expect(() => {
+            expect(spy.calledOnce).to.be.true;
+            expect(spy.args[0][0]).to.have.property('message', 'invalid_request_object');
+            expect(spy.args[0][0]).to.have.property('error_description',
+              'request client_id must equal the one in request parameters');
+          }));
       });
 
       it('handles invalid signed looklike jwts', function () {
@@ -274,14 +274,14 @@ describe('request parameter features', function () {
             response_type: 'code'
           }
         })
-        .expect(302)
-        .expect(() => {
-          expect(spy.calledOnce).to.be.true;
-          expect(spy.args[0][0]).to.have.property('message', 'invalid_request_object');
-          expect(spy.args[0][0]).to.have.property('error_description').and.matches(
-            /could not parse request object as valid JWT/
-          );
-        });
+          .expect(302)
+          .expect(() => {
+            expect(spy.calledOnce).to.be.true;
+            expect(spy.args[0][0]).to.have.property('message', 'invalid_request_object');
+            expect(spy.args[0][0]).to.have.property('error_description').and.matches(
+              /could not parse request object as valid JWT/
+            );
+          });
       });
 
       it('doesnt allow clients with predefined alg to bypass this alg', function () {
@@ -303,13 +303,13 @@ describe('request parameter features', function () {
             response_type: 'code'
           }
         })
-        .expect(302)
-        .expect(() => {
-          expect(spy.calledOnce).to.be.true;
-          expect(spy.args[0][0]).to.have.property('message', 'invalid_request_object');
-          expect(spy.args[0][0]).to.have.property('error_description',
-            'the preregistered alg must be used in request or request_uri');
-        }));
+          .expect(302)
+          .expect(() => {
+            expect(spy.calledOnce).to.be.true;
+            expect(spy.args[0][0]).to.have.property('message', 'invalid_request_object');
+            expect(spy.args[0][0]).to.have.property('error_description',
+              'the preregistered alg must be used in request or request_uri');
+          }));
       });
 
 
@@ -335,14 +335,14 @@ describe('request parameter features', function () {
             response_type: 'code'
           }
         })
-        .expect(302)
-        .expect(() => {
-          expect(spy.calledOnce).to.be.true;
-          expect(spy.args[0][0]).to.have.property('message', 'invalid_request_object');
-          expect(spy.args[0][0]).to.have.property('error_description').that.matches(
-            /could not validate request object/
-          );
-        }));
+          .expect(302)
+          .expect(() => {
+            expect(spy.calledOnce).to.be.true;
+            expect(spy.args[0][0]).to.have.property('message', 'invalid_request_object');
+            expect(spy.args[0][0]).to.have.property('error_description').that.matches(
+              /could not validate request object/
+            );
+          }));
       });
 
       it('handles unrecognized parameters', async function () {
@@ -365,15 +365,15 @@ describe('request parameter features', function () {
             response_type: 'code'
           }
         })
-        .expect(302)
-        .expect((response) => {
-          const expected = parse('https://client.example.com/cb', true);
-          const actual = parse(response.headers.location, true);
-          ['protocol', 'host', 'pathname'].forEach((attr) => {
-            expect(actual[attr]).to.equal(expected[attr]);
-          });
-          expect(actual.query).to.have.property('code');
-        }));
+          .expect(302)
+          .expect((response) => {
+            const expected = parse('https://client.example.com/cb', true);
+            const actual = parse(response.headers.location, true);
+            ['protocol', 'host', 'pathname'].forEach((attr) => {
+              expect(actual[attr]).to.equal(expected[attr]);
+            });
+            expect(actual.query).to.have.property('code');
+          }));
       });
     });
   });

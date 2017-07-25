@@ -14,11 +14,11 @@ describe('userinfo /me', function () {
     });
 
     return this.wrap({ auth, verb: 'get', route: '/auth' })
-    .expect(auth.validateFragment)
-    .expect((response) => {
-      const { query } = url.parse(response.headers.location, true);
-      this.access_token = query.access_token;
-    });
+      .expect(auth.validateFragment)
+      .expect((response) => {
+        const { query } = url.parse(response.headers.location, true);
+        this.access_token = query.access_token;
+      });
   });
 
   it('validates access token is found', function () {
@@ -70,19 +70,19 @@ describe('userinfo /me', function () {
   describe('userinfo /me WWW-Authenticate header', function () {
     it('is set', function () {
       return this.agent.get('/me')
-      .set('Authorization', 'Bearer ThisIsNotAValidToken')
-      .expect(401)
-      .expect('WWW-Authenticate', new RegExp(`^Bearer realm="${this.provider.issuer}"`))
-      .expect('WWW-Authenticate', /error="invalid_token"/);
+        .set('Authorization', 'Bearer ThisIsNotAValidToken')
+        .expect(401)
+        .expect('WWW-Authenticate', new RegExp(`^Bearer realm="${this.provider.issuer}"`))
+        .expect('WWW-Authenticate', /error="invalid_token"/);
     });
 
     it('is set when html request', function () {
       return this.agent.get('/me')
-      .accept('html')
-      .query({ access_token: 'ThisIsNotAValidToken' })
-      .expect(401)
-      .expect('WWW-Authenticate', new RegExp(`^Bearer realm="${this.provider.issuer}"`))
-      .expect('WWW-Authenticate', /error="invalid_token"/);
+        .accept('html')
+        .query({ access_token: 'ThisIsNotAValidToken' })
+        .expect(401)
+        .expect('WWW-Authenticate', new RegExp(`^Bearer realm="${this.provider.issuer}"`))
+        .expect('WWW-Authenticate', /error="invalid_token"/);
     });
   });
 });

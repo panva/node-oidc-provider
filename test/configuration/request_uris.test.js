@@ -18,10 +18,10 @@ describe('client.requestUris', function () {
         redirect_uris: ['https://client.example.com/cb']
       }]
     }).then(() => provider.Client.find('client'))
-    .then((client) => {
-      expect(client).to.have.property('requestUris').that.is.an('array');
-      expect(client.requestUris).to.be.empty;
-    });
+      .then((client) => {
+        expect(client).to.have.property('requestUris').that.is.an('array');
+        expect(client.requestUris).to.be.empty;
+      });
   });
 
   it('defaults to undefined when registration of them is not mandatory', function () {
@@ -40,6 +40,6 @@ describe('client.requestUris', function () {
         redirect_uris: ['https://client.example.com/cb']
       }]
     }).then(() => provider.Client.find('client'))
-    .then(client => expect(client.requestUris).to.be.undefined);
+      .then(client => expect(client.requestUris).to.be.undefined);
   });
 });

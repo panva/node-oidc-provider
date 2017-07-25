@@ -91,8 +91,8 @@ describe('pairwise features', function () {
 
       it('validates all redirect_uris are in the uri', function () {
         nock('https://client.example.com')
-        .get('/file_of_redirect_uris')
-        .reply(200, j(['https://client.example.com/cb', 'https://another.example.com/forum/cb']));
+          .get('/file_of_redirect_uris')
+          .reply(200, j(['https://client.example.com/cb', 'https://another.example.com/forum/cb']));
 
         return i(this.provider).clientAdd({
           client_id: 'client',
@@ -111,8 +111,8 @@ describe('pairwise features', function () {
 
       it('validates only accepts json array responses', function () {
         nock('https://client.example.com')
-        .get('/file_of_redirect_uris')
-        .reply(200, j('https://client.example.com/cb'));
+          .get('/file_of_redirect_uris')
+          .reply(200, j('https://client.example.com/cb'));
 
         return i(this.provider).clientAdd({
           client_id: 'client',
@@ -131,8 +131,8 @@ describe('pairwise features', function () {
 
       it('handles got lib errors', function () {
         nock('https://client.example.com')
-        .get('/file_of_redirect_uris')
-        .reply(500);
+          .get('/file_of_redirect_uris')
+          .reply(500);
 
         return i(this.provider).clientAdd({
           client_id: 'client',
@@ -151,10 +151,10 @@ describe('pairwise features', function () {
 
       it('doesnt accepts 200s, rejects even on redirect', function () {
         nock('https://client.example.com')
-        .get('/file_of_redirect_uris')
-        .reply(302, 'redirecting', {
-          location: '/otherfile'
-        });
+          .get('/file_of_redirect_uris')
+          .reply(302, 'redirecting', {
+            location: '/otherfile'
+          });
 
         return i(this.provider).clientAdd({
           client_id: 'client',

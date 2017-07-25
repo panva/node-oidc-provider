@@ -29,15 +29,15 @@ describe('signatures', function () {
       });
 
       return this.wrap({ auth, verb: 'get', route: '/auth' })
-      .expect(302)
-      .expect(auth.validateFragment)
-      .expect(auth.validateClientLocation)
-      .expect((response) => {
-        const { query: { id_token } } = parseLocation(response.headers.location, true);
-        const { payload } = decode(id_token);
-        expect(payload).to.contain.keys('at_hash', 'c_hash');
-        expect(payload.at_hash).to.have.lengthOf(43);
-      });
+        .expect(302)
+        .expect(auth.validateFragment)
+        .expect(auth.validateClientLocation)
+        .expect((response) => {
+          const { query: { id_token } } = parseLocation(response.headers.location, true);
+          const { payload } = decode(id_token);
+          expect(payload).to.contain.keys('at_hash', 'c_hash');
+          expect(payload.at_hash).to.have.lengthOf(43);
+        });
     });
 
     it('responds with a access_token and code (half of sha384)', function () {
@@ -48,15 +48,15 @@ describe('signatures', function () {
       });
 
       return this.wrap({ auth, verb: 'get', route: '/auth' })
-      .expect(302)
-      .expect(auth.validateFragment)
-      .expect(auth.validateClientLocation)
-      .expect((response) => {
-        const { query: { id_token } } = parseLocation(response.headers.location, true);
-        const { payload } = decode(id_token);
-        expect(payload).to.contain.keys('at_hash', 'c_hash');
-        expect(payload.at_hash).to.have.lengthOf(32);
-      });
+        .expect(302)
+        .expect(auth.validateFragment)
+        .expect(auth.validateClientLocation)
+        .expect((response) => {
+          const { query: { id_token } } = parseLocation(response.headers.location, true);
+          const { payload } = decode(id_token);
+          expect(payload).to.contain.keys('at_hash', 'c_hash');
+          expect(payload.at_hash).to.have.lengthOf(32);
+        });
     });
 
     it('responds with a access_token and code (half of sha256)', function () {
@@ -67,15 +67,15 @@ describe('signatures', function () {
       });
 
       return this.wrap({ auth, verb: 'get', route: '/auth' })
-      .expect(302)
-      .expect(auth.validateFragment)
-      .expect(auth.validateClientLocation)
-      .expect((response) => {
-        const { query: { id_token } } = parseLocation(response.headers.location, true);
-        const { payload } = decode(id_token);
-        expect(payload).to.contain.keys('at_hash', 'c_hash');
-        expect(payload.at_hash).to.have.lengthOf(22);
-      });
+        .expect(302)
+        .expect(auth.validateFragment)
+        .expect(auth.validateClientLocation)
+        .expect((response) => {
+          const { query: { id_token } } = parseLocation(response.headers.location, true);
+          const { payload } = decode(id_token);
+          expect(payload).to.contain.keys('at_hash', 'c_hash');
+          expect(payload.at_hash).to.have.lengthOf(22);
+        });
     });
   });
 
@@ -94,17 +94,17 @@ describe('signatures', function () {
       });
 
       return this.agent.post('/token')
-      .auth('client-sig-none', 'secret')
-      .type('form')
-      .send({
-        redirect_uri: 'https://client.example.com/cb',
-        grant_type: 'authorization_code',
-        code: await ac.save()
-      })
-      .expect(200)
-      .expect((response) => {
-        this.idToken = response.body.id_token;
-      });
+        .auth('client-sig-none', 'secret')
+        .type('form')
+        .send({
+          redirect_uri: 'https://client.example.com/cb',
+          grant_type: 'authorization_code',
+          code: await ac.save()
+        })
+        .expect(200)
+        .expect((response) => {
+          this.idToken = response.body.id_token;
+        });
     });
 
     it('issues an unsigned id_token', function () {
@@ -124,12 +124,12 @@ describe('signatures', function () {
       auth.client_id = 'client-sig-none';
 
       return this.wrap({ auth, route: '/auth', verb: 'get' })
-      .expect(302)
-      .expect(auth.validatePresence(['error', 'error_description', 'state']))
-      .expect(auth.validateState)
-      .expect(auth.validateClientLocation)
-      .expect(auth.validateError('login_required'))
-      .expect(auth.validateErrorDescription('id_token_hint and authenticated subject do not match'));
+        .expect(302)
+        .expect(auth.validatePresence(['error', 'error_description', 'state']))
+        .expect(auth.validateState)
+        .expect(auth.validateClientLocation)
+        .expect(auth.validateError('login_required'))
+        .expect(auth.validateErrorDescription('id_token_hint and authenticated subject do not match'));
     });
 
     it('still validates the tokens payload', function () {
@@ -148,12 +148,12 @@ describe('signatures', function () {
 
 
       return this.wrap({ auth, route: '/auth', verb: 'get' })
-      .expect(302)
-      .expect(auth.validatePresence(['error', 'error_description', 'state']))
-      .expect(auth.validateState)
-      .expect(auth.validateClientLocation)
-      .expect(auth.validateError('invalid_request'))
-      .expect(auth.validateErrorDescription(/^could not validate id_token_hint \(jwt issuer invalid/));
+        .expect(302)
+        .expect(auth.validatePresence(['error', 'error_description', 'state']))
+        .expect(auth.validateState)
+        .expect(auth.validateClientLocation)
+        .expect(auth.validateError('invalid_request'))
+        .expect(auth.validateErrorDescription(/^could not validate id_token_hint \(jwt issuer invalid/));
     });
   });
 
@@ -172,17 +172,17 @@ describe('signatures', function () {
       });
 
       return this.agent.post('/token')
-      .auth('client-sig-HS256', 'atleast32byteslongforHS256mmkay?')
-      .type('form')
-      .send({
-        redirect_uri: 'https://client.example.com/cb',
-        grant_type: 'authorization_code',
-        code: await ac.save()
-      })
-      .expect(200)
-      .expect((response) => {
-        this.idToken = response.body.id_token;
-      });
+        .auth('client-sig-HS256', 'atleast32byteslongforHS256mmkay?')
+        .type('form')
+        .send({
+          redirect_uri: 'https://client.example.com/cb',
+          grant_type: 'authorization_code',
+          code: await ac.save()
+        })
+        .expect(200)
+        .expect((response) => {
+          this.idToken = response.body.id_token;
+        });
     });
 
     it('issues an HS256 signed id_token', function () {
@@ -202,12 +202,12 @@ describe('signatures', function () {
       auth.client_id = 'client-sig-HS256';
 
       return this.wrap({ auth, route: '/auth', verb: 'get' })
-      .expect(302)
-      .expect(auth.validatePresence(['error', 'error_description', 'state']))
-      .expect(auth.validateState)
-      .expect(auth.validateClientLocation)
-      .expect(auth.validateError('login_required'))
-      .expect(auth.validateErrorDescription('id_token_hint and authenticated subject do not match'));
+        .expect(302)
+        .expect(auth.validatePresence(['error', 'error_description', 'state']))
+        .expect(auth.validateState)
+        .expect(auth.validateClientLocation)
+        .expect(auth.validateError('login_required'))
+        .expect(auth.validateErrorDescription('id_token_hint and authenticated subject do not match'));
     });
   });
 });

@@ -41,20 +41,20 @@ describe('distributed and aggregated claims', function () {
       });
 
       return this.wrap({ auth, route: '/auth', verb: 'get' })
-      .expect(auth.validateFragment)
-      .expect((response) => {
-        const { query: { id_token } } = parseLocation(response.headers.location, true);
-        const { payload } = decodeJWT(id_token);
+        .expect(auth.validateFragment)
+        .expect((response) => {
+          const { query: { id_token } } = parseLocation(response.headers.location, true);
+          const { payload } = decodeJWT(id_token);
 
-        expect(payload).to.have.property('nickname', 'foobar');
-        expect(payload).not.to.have.property('given_name');
+          expect(payload).to.have.property('nickname', 'foobar');
+          expect(payload).not.to.have.property('given_name');
 
-        expect(payload).to.have.property('_claim_names');
-        expect(payload).to.have.property('_claim_sources');
+          expect(payload).to.have.property('_claim_names');
+          expect(payload).to.have.property('_claim_sources');
 
-        expect(payload._claim_names).to.have.keys('given_name', 'family_name');
-        expect(payload._claim_sources).to.have.keys('src1', 'src2');
-      });
+          expect(payload._claim_names).to.have.keys('given_name', 'family_name');
+          expect(payload._claim_sources).to.have.keys('src1', 'src2');
+        });
     });
 
     it('does not return the members if these claims arent requested at all', function () {
@@ -64,14 +64,14 @@ describe('distributed and aggregated claims', function () {
       });
 
       return this.wrap({ auth, route: '/auth', verb: 'get' })
-      .expect(auth.validateFragment)
-      .expect((response) => {
-        const { query: { id_token } } = parseLocation(response.headers.location, true);
-        const { payload } = decodeJWT(id_token);
+        .expect(auth.validateFragment)
+        .expect((response) => {
+          const { query: { id_token } } = parseLocation(response.headers.location, true);
+          const { payload } = decodeJWT(id_token);
 
-        expect(payload).not.to.have.property('_claim_names');
-        expect(payload).not.to.have.property('_claim_sources');
-      });
+          expect(payload).not.to.have.property('_claim_names');
+          expect(payload).not.to.have.property('_claim_sources');
+        });
     });
   });
 
@@ -83,32 +83,32 @@ describe('distributed and aggregated claims', function () {
       });
 
       this.wrap({ auth, route: '/auth', verb: 'get' })
-      .expect(auth.validateFragment)
-      .end((error, authorization) => {
-        if (error) return done(error);
+        .expect(auth.validateFragment)
+        .end((error, authorization) => {
+          if (error) return done(error);
 
-        const { query: { access_token } } = parseLocation(authorization.headers.location, true);
+          const { query: { access_token } } = parseLocation(authorization.headers.location, true);
 
-        return this.agent.get('/me')
-          .query({ access_token })
-          .expect(200)
-          .end((userinfoError, userinfo) => {
-            if (userinfoError) return done(userinfoError);
+          return this.agent.get('/me')
+            .query({ access_token })
+            .expect(200)
+            .end((userinfoError, userinfo) => {
+              if (userinfoError) return done(userinfoError);
 
-            const payload = userinfo.body;
+              const payload = userinfo.body;
 
-            expect(payload).to.have.property('nickname', 'foobar');
-            expect(payload).not.to.have.property('given_name');
+              expect(payload).to.have.property('nickname', 'foobar');
+              expect(payload).not.to.have.property('given_name');
 
-            expect(payload).to.have.property('_claim_names');
-            expect(payload).to.have.property('_claim_sources');
+              expect(payload).to.have.property('_claim_names');
+              expect(payload).to.have.property('_claim_sources');
 
-            expect(payload._claim_names).to.have.keys('given_name', 'family_name');
-            expect(payload._claim_sources).to.have.keys('src1', 'src2');
+              expect(payload._claim_names).to.have.keys('given_name', 'family_name');
+              expect(payload._claim_sources).to.have.keys('src1', 'src2');
 
-            return done();
-          });
-      });
+              return done();
+            });
+        });
     });
 
     it('does not return the members if these claims arent requested at all', function (done) {
@@ -118,26 +118,26 @@ describe('distributed and aggregated claims', function () {
       });
 
       this.wrap({ auth, route: '/auth', verb: 'get' })
-      .expect(auth.validateFragment)
-      .end((error, authorization) => {
-        if (error) return done(error);
+        .expect(auth.validateFragment)
+        .end((error, authorization) => {
+          if (error) return done(error);
 
-        const { query: { access_token } } = parseLocation(authorization.headers.location, true);
+          const { query: { access_token } } = parseLocation(authorization.headers.location, true);
 
-        return this.agent.get('/me')
-          .query({ access_token })
-          .expect(200)
-          .end((userinfoError, userinfo) => {
-            if (userinfoError) return done(userinfoError);
+          return this.agent.get('/me')
+            .query({ access_token })
+            .expect(200)
+            .end((userinfoError, userinfo) => {
+              if (userinfoError) return done(userinfoError);
 
-            const payload = userinfo.body;
+              const payload = userinfo.body;
 
-            expect(payload).not.to.have.property('_claim_names');
-            expect(payload).not.to.have.property('_claim_sources');
+              expect(payload).not.to.have.property('_claim_names');
+              expect(payload).not.to.have.property('_claim_sources');
 
-            return done();
-          });
-      });
+              return done();
+            });
+        });
     });
   });
 });

@@ -21,10 +21,10 @@ describe('/auth', function () {
           });
 
           return this.wrap({ route, verb, auth })
-          .expect(200)
-          .expect(/input type="hidden" name="code" value=/)
-          .expect(new RegExp(`input type="hidden" name="state" value="${auth.state}"`))
-          .expect(new RegExp(`form method="post" action="${auth.redirect_uri}"`));
+            .expect(200)
+            .expect(/input type="hidden" name="code" value=/)
+            .expect(new RegExp(`input type="hidden" name="state" value="${auth.state}"`))
+            .expect(new RegExp(`form method="post" action="${auth.redirect_uri}"`));
         });
       });
 
@@ -41,13 +41,13 @@ describe('/auth', function () {
           this.provider.once('authorization.error', spy);
 
           return this.wrap({ route, verb, auth })
-          .expect(200)
-          .expect(() => {
-            expect(spy.called).to.be.true;
-          })
-          .expect(new RegExp('input type="hidden" name="error" value="login_required"'))
-          .expect(new RegExp(`input type="hidden" name="state" value="${auth.state}"`))
-          .expect(new RegExp(`form method="post" action="${auth.redirect_uri}"`));
+            .expect(200)
+            .expect(() => {
+              expect(spy.called).to.be.true;
+            })
+            .expect(new RegExp('input type="hidden" name="error" value="login_required"'))
+            .expect(new RegExp(`input type="hidden" name="state" value="${auth.state}"`))
+            .expect(new RegExp(`form method="post" action="${auth.redirect_uri}"`));
         });
 
         context('[exception]', function () {
@@ -71,13 +71,13 @@ describe('/auth', function () {
             this.provider.once('server_error', spy);
 
             return this.wrap({ route, verb, auth })
-            .expect(200)
-            .expect(() => {
-              expect(spy.called).to.be.true;
-            })
-            .expect(new RegExp('input type="hidden" name="error" value="server_error"'))
-            .expect(new RegExp(`input type="hidden" name="state" value="${auth.state}"`))
-            .expect(new RegExp(`form method="post" action="${auth.redirect_uri}"`));
+              .expect(200)
+              .expect(() => {
+                expect(spy.called).to.be.true;
+              })
+              .expect(new RegExp('input type="hidden" name="error" value="server_error"'))
+              .expect(new RegExp(`input type="hidden" name="state" value="${auth.state}"`))
+              .expect(new RegExp(`form method="post" action="${auth.redirect_uri}"`));
           });
         });
       });

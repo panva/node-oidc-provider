@@ -17,10 +17,10 @@ describe('session management', function () {
         });
 
         return this.wrap({ route, verb, auth })
-      .expect(302)
-      .expect(auth.validatePresence(['session_state'], false))
-      .expect(auth.validateState)
-      .expect(auth.validateClientLocation);
+          .expect(302)
+          .expect(auth.validatePresence(['session_state'], false))
+          .expect(auth.validateState)
+          .expect(auth.validateClientLocation);
       });
 
       it('sets a _state.clientId cookies', function () {
@@ -30,10 +30,10 @@ describe('session management', function () {
         });
 
         return this.wrap({ route, verb, auth })
-      .expect(() => {
-        const state = this.agent.jar.getCookie('_state.client', { path: '/' });
-        expect(state).to.be.ok;
-      });
+          .expect(() => {
+            const state = this.agent.jar.getCookie('_state.client', { path: '/' });
+            expect(state).to.be.ok;
+          });
       });
     });
 

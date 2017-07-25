@@ -12,17 +12,17 @@ describe('grant_type=client_credentials', function () {
     this.provider.once('grant.success', spy);
 
     return this.agent.post(route)
-    .auth('client', 'secret')
-    .send({
-      grant_type: 'client_credentials'
-    })
-    .type('form')
-    .expect(200)
-    .expect(() => {
-      expect(spy.calledOnce).to.be.true;
-    })
-    .expect((response) => {
-      expect(response.body).to.have.keys('access_token', 'expires_in', 'token_type');
-    });
+      .auth('client', 'secret')
+      .send({
+        grant_type: 'client_credentials'
+      })
+      .type('form')
+      .expect(200)
+      .expect(() => {
+        expect(spy.calledOnce).to.be.true;
+      })
+      .expect((response) => {
+        expect(response.body).to.have.keys('access_token', 'expires_in', 'token_type');
+      });
   });
 });

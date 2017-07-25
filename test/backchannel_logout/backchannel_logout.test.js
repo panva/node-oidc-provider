@@ -62,10 +62,10 @@ describe('Back-Channel Logout 1.0', function () {
   describe('discovery extension', function () {
     it('extends the well known config', function () {
       return this.agent.get('/.well-known/openid-configuration')
-      .expect((response) => {
-        expect(response.body).to.have.property('backchannel_logout_supported', true);
-        expect(response.body).to.have.property('backchannel_logout_session_supported', true);
-      });
+        .expect((response) => {
+          expect(response.body).to.have.property('backchannel_logout_supported', true);
+          expect(response.body).to.have.property('backchannel_logout_session_supported', true);
+        });
     });
   });
 
@@ -75,19 +75,19 @@ describe('Back-Channel Logout 1.0', function () {
 
     beforeEach(function () {
       return this.agent.get('/auth')
-      .query({
-        client_id: 'client',
-        scope: 'openid',
-        nonce: String(Math.random()),
-        response_type: 'code id_token',
-        redirect_uri: 'https://client.example.com/cb'
-      })
-      .expect(302)
-      .expect((response) => {
-        const { query: { code, id_token: idToken } } = parseUrl(response.headers.location.replace('#', '?'), true);
-        this.idToken = idToken;
-        this.code = code;
-      });
+        .query({
+          client_id: 'client',
+          scope: 'openid',
+          nonce: String(Math.random()),
+          response_type: 'code id_token',
+          redirect_uri: 'https://client.example.com/cb'
+        })
+        .expect(302)
+        .expect((response) => {
+          const { query: { code, id_token: idToken } } = parseUrl(response.headers.location.replace('#', '?'), true);
+          this.idToken = idToken;
+          this.code = code;
+        });
     });
 
     it('makes sid available in id_token issued by authorization endpoint', function () {
@@ -151,14 +151,14 @@ describe('Back-Channel Logout 1.0', function () {
       const { sid } = session.authorizations.client;
 
       return this.agent.post('/session/end')
-      .send(params)
-      .type('form')
-      .expect(302)
-      .expect(() => {
-        expect(client.backchannelLogout.called).to.be.true;
-        expect(client.backchannelLogout.calledWith(accountId, sid)).to.be.true;
-        client.backchannelLogout.restore();
-      });
+        .send(params)
+        .type('form')
+        .expect(302)
+        .expect(() => {
+          expect(client.backchannelLogout.called).to.be.true;
+          expect(client.backchannelLogout.calledWith(accountId, sid)).to.be.true;
+          client.backchannelLogout.restore();
+        });
     });
 
     it('ignores the backchannelLogout when client does not support', async function () {
@@ -170,13 +170,13 @@ describe('Back-Channel Logout 1.0', function () {
       sinon.spy(client, 'backchannelLogout');
 
       return this.agent.post('/session/end')
-      .send(params)
-      .type('form')
-      .expect(302)
-      .expect(() => {
-        expect(client.backchannelLogout.called).to.be.false;
-        client.backchannelLogout.restore();
-      });
+        .send(params)
+        .type('form')
+        .expect(302)
+        .expect(() => {
+          expect(client.backchannelLogout.called).to.be.false;
+          client.backchannelLogout.restore();
+        });
     });
   });
 });
