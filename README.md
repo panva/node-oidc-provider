@@ -53,6 +53,7 @@ The following drafts/experimental specifications are implemented by oidc-provide
 - [OpenID Connect Session Management 1.0 - draft 28][session-management]
 - [OpenID Connect Back-Channel Logout 1.0 - draft 04][backchannel-logout]
 - [RFC7592 - OAuth 2.0 Dynamic Client Registration Management Protocol (Update and Delete)][registration-management]
+- [OAuth 2.0 Mix-Up Mitigation - draft 01][mixup-mitigation]
 
 Updates to draft and experimental specification versions are released as MINOR library versions,
 if you utilize these specification implementations consider using the tilde `~` operator in your
@@ -147,3 +148,4 @@ See the list of available emitted [event names](/docs/events.md) and their descr
 [registration-management]: https://tools.ietf.org/html/rfc7592
 [oauth-native-apps]: https://tools.ietf.org/html/draft-ietf-oauth-native-apps
 [debug-link]: https://github.com/visionmedia/debug
+[mixup-mitigation]: https://tools.ietf.org/html/draft-ietf-oauth-mix-up-mitigation-01
