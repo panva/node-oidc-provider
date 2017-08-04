@@ -5,7 +5,9 @@ Yay for [SemVer](http://semver.org/).
 **Table of Contents**
 
 <!-- TOC START min:2 max:3 link:true update:true -->
-  - [^2.0.0](#200)
+  - [2.0.x](#20x)
+    - [2.0.1](#201)
+    - [2.0.0](#200)
   - [^1.0.0](#100)
     - [1.15.x](#115x)
     - [1.14.x](#114x)
@@ -26,8 +28,12 @@ Yay for [SemVer](http://semver.org/).
 
 <!-- TOC END -->
 
-## ^2.0.0
+## 2.0.x
+### 2.0.1
+- [DIFF](https://github.com/panva/node-oidc-provider/compare/v2.0.0...v2.0.1)
+- fixed infinite interactionCheck loop for `application_type=native` clients
 
+### 2.0.0
 *Breaking Changes*
 - **oidc-provider now requires node v8.0.0 or higher for ES2015, async function and utils.promisify support**
 - **internal koa (and related) dependencies updated to their respective 'next' or koa2 middleware
