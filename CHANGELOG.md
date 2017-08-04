@@ -5,6 +5,7 @@ Yay for [SemVer](http://semver.org/).
 **Table of Contents**
 
 <!-- TOC START min:2 max:3 link:true update:true -->
+  - [2.1.0](#210)
   - [2.0.x](#20x)
     - [2.0.1](#201)
     - [2.0.0](#200)
@@ -27,6 +28,19 @@ Yay for [SemVer](http://semver.org/).
     - [1.0.x](#10x)
 
 <!-- TOC END -->
+
+## 2.1.0
+- [DIFF](https://github.com/panva/node-oidc-provider/compare/v2.0.1...v2.1.0)
+- added a third parameter for `findById` helper, when `findById` is used in relation to an access
+  token or an authorization code the token instance will be passed
+- added `ctx.oidc.signed` with an array of parameter names which were received using a signed or
+  encrypted request/Uri parameter.
+- `signed` array of strings is available in the short lived session for interactions
+- added optional support for [OAuth 2.0 Mix-Up Mitigation - draft 01][https://tools.ietf.org/html/draft-ietf-oauth-mix-up-mitigation-01]
+- added basic sequelize adapter example
+- fixed a bug where client credential and refresh token adapter instances were used even if these
+  grants/tokens weren't enabled
+- fixed a bug which allowed for non-enabled scopes to be added in client_credential grants
 
 ## 2.0.x
 ### 2.0.1
