@@ -36,7 +36,7 @@ Yay for [SemVer](http://semver.org/).
 - added `ctx.oidc.signed` with an array of parameter names which were received using a signed or
   encrypted request/Uri parameter.
 - `signed` array of strings is available in the short lived session for interactions
-- added optional support for [OAuth 2.0 Mix-Up Mitigation - draft 01][https://tools.ietf.org/html/draft-ietf-oauth-mix-up-mitigation-01]
+- added optional support for [OAuth 2.0 Mix-Up Mitigation - draft 01](https://tools.ietf.org/html/draft-ietf-oauth-mix-up-mitigation-01)
 - added basic sequelize adapter example
 - fixed a bug where extraParams weren't recognized when part of a `request` or `request_uri` parameters
 - fixed a bug where client credential and refresh token adapter instances were used even if these
