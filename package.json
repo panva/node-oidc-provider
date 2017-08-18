@@ -17,8 +17,7 @@
     "node-jose": "^0.9.4",
     "oidc-token-hash": "^1.0.0",
     "raw-body": "^2.1.7",
-    "uuid": "^3.0.0",
-    "valid-url": "^1.0.9"
+    "uuid": "^3.0.0"
   },
   "description": "OpenID Provider (OP) implementation for Node.js OpenID Connect servers.",
   "devDependencies": {
