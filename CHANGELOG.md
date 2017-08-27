@@ -5,6 +5,7 @@ Yay for [SemVer](http://semver.org/).
 **Table of Contents**
 
 <!-- TOC START min:2 max:3 link:true update:true -->
+  - [2.2.0](#220)
   - [2.1.0](#210)
   - [2.0.x](#20x)
     - [2.0.1](#201)
@@ -28,6 +29,13 @@ Yay for [SemVer](http://semver.org/).
     - [1.0.x](#10x)
 
 <!-- TOC END -->
+
+## 2.2.0
+- [DIFF](https://github.com/panva/node-oidc-provider/compare/v2.1.0...v2.2.0)
+- added a `clientCacheDuration` option (defaults to `Infinity`), this option defines the time a client
+  configuration loaded from an adapter will be kept in cache before being loaded again with the next
+  request
+- removed `valid-url` dependency in favor of STDLIB's WHATWG `url.URL`
 
 ## 2.1.0
 - [DIFF](https://github.com/panva/node-oidc-provider/compare/v2.0.1...v2.1.0)
