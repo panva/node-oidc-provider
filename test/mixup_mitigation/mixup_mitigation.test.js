@@ -181,7 +181,7 @@ describe('OAuth 2.0 Mix-Up Mitigation', function () {
         .expect(() => {
           expect(spy.calledOnce).to.be.true;
           expect(errorDetail(spy)).to.equal('state mismatch');
-        })
+        });
     });
   });
 });
