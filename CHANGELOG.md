@@ -5,6 +5,7 @@ Yay for [SemVer](http://semver.org/).
 **Table of Contents**
 
 <!-- TOC START min:2 max:3 link:true update:true -->
+  - [2.3.0](#230)
   - [2.2.x](#22x)
     - [2.2.1](#221)
     - [2.2.0](#220)
@@ -31,6 +32,14 @@ Yay for [SemVer](http://semver.org/).
     - [1.0.x](#10x)
 
 <!-- TOC END -->
+
+## 2.3.0
+- [DIFF](https://github.com/panva/node-oidc-provider/compare/v2.2.1...v2.3.0)
+- added `s_hash` support for ID Tokens returned by authorization endpoint
+- added Request Object symmetrical encryption support
+- fixed `claims` parameter handling when part of a Request object as an object
+- removed bugged? and/or previously not working `A(128|192|256)GCMKW` symmetrical encryption algs
+- removed support for discontinued OAuth 2.0 Mix-Up Mitigation (was experimental)
 
 ## 2.2.x
 ### 2.2.1
