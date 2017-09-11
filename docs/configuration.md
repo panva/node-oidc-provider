@@ -268,23 +268,22 @@ deployment compact. The feature flags with their default values are
 
 | feature flag | enabled by default? |
 | --- | --- |
-| alwaysIssueRefresh | no |
+| devInteractions | yes (!!!) |
 | backchannelLogout | no |
 | claimsParameter | no |
 | clientCredentials | no |
-| devInteractions | yes (!!!) |
 | discovery | yes |
 | encryption | no |
 | introspection | no |
-| mixupMitigation | no |
-| oauthNativeApps | yes (forces pkce on with forcedForNative) |
-| pkce | yes |
+| alwaysIssueRefresh | no |
 | registration | no |
 | registrationManagement | no |
 | request | no |
 | requestUri | yes |
 | revocation | no |
+| oauthNativeApps | yes (forces pkce on with forcedForNative) |
 | sessionManagement | no |
+| pkce | yes |
 
 **Development quick-start interactions**  
 Development-ONLY out of the box interaction views bundled with the library allow you to skip the
@@ -407,13 +406,6 @@ Changes `redirect_uris` validations for clients with application_type `native` t
 automatically so that AppAuth SDKs work out of the box. (🤞)
 ```js
 const configuration = { features: { oauthNativeApps: Boolean[true] } };
-```
-
-**OAuth 2.0 Mix-Up Mitigation**
-Enables additional authorization response parameters and token endpoint validations defined in
-[OAuth 2.0 Mix-Up Mitigation - draft 01][mixup-mitigation].
-```js
-const configuration = { features: { mixupMitigation: Boolean[false] } };
 ```
 
 
@@ -666,4 +658,3 @@ Depending on your setup you should do the following
 [got-library]: https://github.com/sindresorhus/got
 [password-grant]: https://tools.ietf.org/html/rfc6749#section-4.3
 [defaults]: /lib/helpers/defaults.js
-[mixup-mitigation]: https://tools.ietf.org/html/draft-ietf-oauth-mix-up-mitigation-01
