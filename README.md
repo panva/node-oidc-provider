@@ -31,12 +31,8 @@ enabled by default, check the configuration section on how to enable them.
 
 - [OpenID Connect Core 1.0][core]
   - Authorization (Authorization Code Flow, Implicit Flow, Hybrid Flow)
-  - UserInfo Endpoint and ID Tokens including
-    - Signing - Asymmetric and Symmetric
-    - Encryption - Asymmetric and Symmetric
-  - Passing a Request Object by Value or Reference including
-    - Signing - Asymmetric and Symmetric
-    - Encryption - Asymmetric using RSA or Elliptic Curve
+  - UserInfo Endpoint and ID Tokens including Signing and Encryption
+  - Passing a Request Object by Value or Reference including Signing and Encryption
   - Public and Pairwise Subject Identifier Types
   - Offline Access / Refresh Token Grant
   - Client Credentials Grant
