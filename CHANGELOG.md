@@ -37,6 +37,7 @@ Yay for [SemVer](http://semver.org/).
 - [DIFF](https://github.com/panva/node-oidc-provider/compare/v2.2.1...v2.3.0)
 - added `s_hash` support for ID Tokens returned by authorization endpoint
 - added Request Object symmetrical encryption support
+- fixed PBES2 encryption to use client_secret derived symmetrical key instead of its full octet value
 - fixed `claims` parameter handling when part of a Request object as an object
 - removed bugged? and/or previously not working `A(128|192|256)GCMKW` symmetrical encryption algs
 - removed support for discontinued OAuth 2.0 Mix-Up Mitigation (was experimental)
