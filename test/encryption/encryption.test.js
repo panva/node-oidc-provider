@@ -201,7 +201,7 @@ const route = '/auth';
       it('symmetric encryption makes client secret mandatory', function () {
         expect(this.provider.Client.needsSecret({
           token_endpoint_auth_method: 'none',
-          id_token_encrypted_response_alg: 'A128GCMKW',
+          id_token_encrypted_response_alg: 'A128KW',
         })).to.be.true;
       });
 
