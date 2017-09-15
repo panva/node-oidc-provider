@@ -5,7 +5,9 @@ Yay for [SemVer](http://semver.org/).
 **Table of Contents**
 
 <!-- TOC START min:2 max:3 link:true update:true -->
-  - [2.3.0](#230)
+  - [2.3.x](#23x)
+    - [2.3.1](#231)
+    - [2.3.0](#230)
   - [2.2.x](#22x)
     - [2.2.1](#221)
     - [2.2.0](#220)
@@ -33,7 +35,12 @@ Yay for [SemVer](http://semver.org/).
 
 <!-- TOC END -->
 
-## 2.3.0
+## 2.3.x
+### 2.3.1
+- [DIFF](https://github.com/panva/node-oidc-provider/compare/v2.3.0...v2.3.1)
+- fixed `devInteractions` reported with the same grant `uuid`
+
+### 2.3.0
 - [DIFF](https://github.com/panva/node-oidc-provider/compare/v2.2.1...v2.3.0)
 - added `s_hash` support for ID Tokens returned by authorization endpoint
 - added Request Object symmetrical encryption support
