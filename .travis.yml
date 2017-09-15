@@ -6,6 +6,7 @@ addons:
     packages:
       - bc
 node_js:
+  - v8.0.0
   - stable
 script:
   - npm run coverage
