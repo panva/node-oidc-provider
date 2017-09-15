@@ -10,7 +10,7 @@ const JWT = require('../../lib/helpers/jwt');
 const route = '/auth';
 
 ['get', 'post'].forEach((verb) => {
-  describe(`[encryption] IMPLICIT id_token+token ${verb} ${route}`, function () {
+  describe(`[encryption] IMPLICIT id_token+token ${verb} ${route}`, () => {
     before(bootstrap(__dirname)); // provider, this.agent, AuthorizationRequest, wrap
 
     before(function () {
@@ -18,11 +18,11 @@ const route = '/auth';
     });
     before(function () { return this.login(); });
 
-    describe('encrypted authorization results', function () {
+    describe('encrypted authorization results', () => {
       before(function () {
         const auth = new this.AuthorizationRequest({
           response_type: 'id_token token',
-          scope: 'openid'
+          scope: 'openid',
         });
 
         return this.wrap({ route, verb, auth })
@@ -66,7 +66,7 @@ const route = '/auth';
           });
       });
 
-      describe('userinfo nested signed and encrypted', function () {
+      describe('userinfo nested signed and encrypted', () => {
         before(async function () {
           const client = await this.provider.Client.find('client');
           client.userinfoSignedResponseAlg = 'RS256';
@@ -102,15 +102,14 @@ const route = '/auth';
       });
     });
 
-    describe('authorization request object encryption', function () {
+    describe('authorization request object encryption', () => {
       it('works with signed by none', function () {
         return JWT.sign({
           client_id: 'client',
           response_type: 'code',
-          redirect_uri: 'https://client.example.com/cb'
+          redirect_uri: 'https://client.example.com/cb',
         }, null, 'none', { issuer: 'client', audience: this.provider.issuer }).then(signed =>
-          JWT.encrypt(signed, instance(this.provider).keystore.get(), 'A128CBC-HS256', 'RSA1_5')
-        ).then(encrypted =>
+          JWT.encrypt(signed, instance(this.provider).keystore.get(), 'A128CBC-HS256', 'RSA1_5')).then(encrypted =>
           this.wrap({
             route,
             verb,
@@ -118,8 +117,8 @@ const route = '/auth';
               request: encrypted,
               scope: 'openid',
               client_id: 'client',
-              response_type: 'code'
-            }
+              response_type: 'code',
+            },
           })
             .expect(302)
             .expect((response) => {
@@ -129,18 +128,16 @@ const route = '/auth';
                 expect(actual[attr]).to.equal(expected[attr]);
               });
               expect(actual.query).to.have.property('code');
-            })
-        );
+            }));
       });
 
       it('handles enc unsupported algs and encs', function () {
         return JWT.sign({
           client_id: 'client',
           response_type: 'code',
-          redirect_uri: 'https://client.example.com/cb'
+          redirect_uri: 'https://client.example.com/cb',
         }, null, 'none', { issuer: 'client', audience: this.provider.issuer }).then(signed =>
-          JWT.encrypt(signed, instance(this.provider).keystore.get(), 'A128CBC-HS256', 'RSA-OAEP')
-        ).then(encrypted =>
+          JWT.encrypt(signed, instance(this.provider).keystore.get(), 'A128CBC-HS256', 'RSA-OAEP')).then(encrypted =>
           this.wrap({
             route,
             verb,
@@ -148,15 +145,14 @@ const route = '/auth';
               request: encrypted,
               scope: 'openid',
               client_id: 'client',
-              response_type: 'code'
-            }
+              response_type: 'code',
+            },
           })
             .expect((response) => {
               const { query } = url.parse(response.headers.location, true);
               expect(query).to.have.property('error', 'invalid_request_object');
               expect(query).to.have.property('error_description').contains('unsupported encrypted request alg');
-            })
-        );
+            }));
       });
     });
 
@@ -167,7 +163,7 @@ const route = '/auth';
 
       const auth = new this.AuthorizationRequest({
         response_type: 'id_token token',
-        scope: 'openid'
+        scope: 'openid',
       });
 
       return this.wrap({ route, verb, auth })
@@ -182,7 +178,7 @@ const route = '/auth';
         });
     });
 
-    describe('symmetric encryption', function () {
+    describe('symmetric encryption', () => {
       before(function () {
         const auth = new this.AuthorizationRequest({
           response_type: 'id_token',

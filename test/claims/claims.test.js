@@ -11,10 +11,10 @@ const expire = new Date();
 expire.setDate(expire.getDate() + 1);
 
 ['get', 'post'].forEach((verb) => {
-  describe(`claimsParameter via ${verb} ${route}`, function () {
+  describe(`claimsParameter via ${verb} ${route}`, () => {
     before(bootstrap(__dirname)); // provider, AuthorizationRequest, getSession, wrap
 
-    describe('specify id_token', function () {
+    describe('specify id_token', () => {
       before(function () { return this.login(); });
       after(function () { return this.logout(); });
 
@@ -33,8 +33,8 @@ expire.setDate(expire.getDate() + 1);
               preferred_username: 'not returned',
               picture: 1, // not returned
               website: true, // not returned
-            }
-          })
+            },
+          }),
         });
 
         return this.wrap({ route, verb, auth })
@@ -50,7 +50,7 @@ expire.setDate(expire.getDate() + 1);
       });
     });
 
-    describe('with acr_values on the client', function () {
+    describe('with acr_values on the client', () => {
       before(function () { return this.login(); });
       after(function () { return this.logout(); });
 
@@ -67,7 +67,7 @@ expire.setDate(expire.getDate() + 1);
       it('should include the acr claim now', function () {
         const auth = new this.AuthorizationRequest({
           response_type: 'id_token token',
-          scope: 'openid'
+          scope: 'openid',
         });
 
         return this.wrap({ route, verb, auth })
@@ -81,7 +81,7 @@ expire.setDate(expire.getDate() + 1);
       });
     });
 
-    describe('specify userinfo', function () {
+    describe('specify userinfo', () => {
       before(function () { return this.login(); });
       after(function () { return this.logout(); });
 
@@ -96,9 +96,9 @@ expire.setDate(expire.getDate() + 1);
               gender: { essential: false }, // returned
               given_name: { value: 'John' }, // returned
               locale: { values: ['en-US', 'en-GB'] }, // returned
-              middle_name: {} // not returned
-            }
-          })
+              middle_name: {}, // not returned
+            },
+          }),
         });
 
         this.wrap({ route, verb, auth })
@@ -124,7 +124,7 @@ expire.setDate(expire.getDate() + 1);
       });
     });
 
-    describe('specify both id_token and userinfo', function () {
+    describe('specify both id_token and userinfo', () => {
       before(function () { return this.login(); });
       after(function () { return this.logout(); });
 
@@ -134,12 +134,12 @@ expire.setDate(expire.getDate() + 1);
           scope: 'openid',
           claims: j({
             id_token: {
-              email: null
+              email: null,
             },
             userinfo: {
-              given_name: null
-            }
-          })
+              given_name: null,
+            },
+          }),
         });
 
         this.wrap({ route, verb, auth })
@@ -167,10 +167,10 @@ expire.setDate(expire.getDate() + 1);
       });
     });
 
-    describe('related interactions', function () {
+    describe('related interactions', () => {
       beforeEach(function () { return this.login(); });
       afterEach(function () { return this.logout(); });
-      context('are met', function () {
+      context('are met', () => {
         function setup(grant, result) {
           const cookies = [];
 
@@ -187,7 +187,7 @@ expire.setDate(expire.getDate() + 1);
 
           this.agent._saveCookies.bind(this.agent)({
             headers: {
-              'set-cookie': cookies
+              'set-cookie': cookies,
             },
           });
 
@@ -203,10 +203,10 @@ expire.setDate(expire.getDate() + 1);
             claims: j({
               id_token: {
                 sub: {
-                  value: session.account
-                }
-              }
-            })
+                  value: session.account,
+                },
+              },
+            }),
           });
 
           return this.wrap({ route, verb, auth })
@@ -227,17 +227,17 @@ expire.setDate(expire.getDate() + 1);
                 id_token: {
                   acr: {
                     essential: true,
-                    values: ['1', '2']
-                  }
-                }
-              })
+                    values: ['1', '2'],
+                  },
+                },
+              }),
             });
 
             setup.call(this, auth, {
               login: {
                 account: this.loggedInAccountId,
                 acr: '2',
-              }
+              },
             });
 
             return this.wrap({ route: `${route}/resume`, verb, auth })
@@ -257,17 +257,17 @@ expire.setDate(expire.getDate() + 1);
                 id_token: {
                   acr: {
                     essential: true,
-                    value: '1'
-                  }
-                }
-              })
+                    value: '1',
+                  },
+                },
+              }),
             });
 
             setup.call(this, auth, {
               login: {
                 account: this.loggedInAccountId,
                 acr: '1',
-              }
+              },
             });
 
             return this.wrap({ route: `${route}/resume`, verb, auth })
@@ -280,7 +280,7 @@ expire.setDate(expire.getDate() + 1);
         }
       });
 
-      context('are not met', function () {
+      context('are not met', () => {
         it('session subject value differs from the one requested', function () {
           const auth = new this.AuthorizationRequest({
             response_type: 'id_token',
@@ -289,10 +289,10 @@ expire.setDate(expire.getDate() + 1);
             claims: j({
               id_token: {
                 sub: {
-                  value: 'iexpectthisid'
-                }
-              }
-            })
+                  value: 'iexpectthisid',
+                },
+              },
+            }),
           });
 
           return this.wrap({ route, verb, auth })
@@ -314,10 +314,10 @@ expire.setDate(expire.getDate() + 1);
               id_token: {
                 acr: {
                   essential: true,
-                  values: ['1', '2']
-                }
-              }
-            })
+                  values: ['1', '2'],
+                },
+              },
+            }),
           });
 
           return this.wrap({ route, verb, auth })
@@ -339,10 +339,10 @@ expire.setDate(expire.getDate() + 1);
               id_token: {
                 acr: {
                   essential: true,
-                  value: '1'
-                }
-              }
-            })
+                  value: '1',
+                },
+              },
+            }),
           });
 
           return this.wrap({ route, verb, auth })
@@ -359,7 +359,7 @@ expire.setDate(expire.getDate() + 1);
           const client = await this.provider.Client.find('client');
           const { IdToken } = this.provider;
           const idToken = new IdToken({
-            sub: 'not-the-droid-you-are-looking-for'
+            sub: 'not-the-droid-you-are-looking-for',
           });
 
           idToken.scope = 'openid';
@@ -369,7 +369,7 @@ expire.setDate(expire.getDate() + 1);
             response_type: 'id_token',
             scope: 'openid',
             prompt: 'none',
-            id_token_hint: hint
+            id_token_hint: hint,
           });
 
           return this.wrap({ route, verb, auth })
@@ -387,7 +387,7 @@ expire.setDate(expire.getDate() + 1);
           const client = await this.provider.Client.find('client');
           const { IdToken } = this.provider;
           const idToken = new IdToken({
-            sub: session.account
+            sub: session.account,
           });
 
           idToken.scope = 'openid';
@@ -397,7 +397,7 @@ expire.setDate(expire.getDate() + 1);
             response_type: 'id_token',
             scope: 'openid',
             prompt: 'none',
-            id_token_hint: hint
+            id_token_hint: hint,
           });
 
           return this.wrap({ route, verb, auth })
@@ -410,12 +410,12 @@ expire.setDate(expire.getDate() + 1);
       });
     });
 
-    describe('parameter validations', function () {
+    describe('parameter validations', () => {
       it('should not be combined with response_type=none', function () {
         const auth = new this.AuthorizationRequest({
           response_type: 'none',
           scope: 'openid',
-          claims: 'something'
+          claims: 'something',
         });
 
         return this.wrap({ route, verb, auth })
@@ -431,7 +431,7 @@ expire.setDate(expire.getDate() + 1);
         const auth = new this.AuthorizationRequest({
           response_type: 'id_token token',
           scope: 'openid',
-          claims: 'something'
+          claims: 'something',
         });
 
         return this.wrap({ route, verb, auth })
@@ -448,7 +448,7 @@ expire.setDate(expire.getDate() + 1);
         const auth = new this.AuthorizationRequest({
           response_type: 'id_token token',
           scope: 'openid',
-          claims: 'true'
+          claims: 'true',
         });
 
         return this.wrap({ route, verb, auth })
@@ -465,7 +465,7 @@ expire.setDate(expire.getDate() + 1);
         const auth = new this.AuthorizationRequest({
           response_type: 'id_token token',
           scope: 'openid',
-          claims: '{"not_recognized": "does not matter"}'
+          claims: '{"not_recognized": "does not matter"}',
         });
 
         return this.wrap({ route, verb, auth })
@@ -482,7 +482,7 @@ expire.setDate(expire.getDate() + 1);
         const auth = new this.AuthorizationRequest({
           response_type: 'id_token token',
           scope: 'openid',
-          claims: '{"userinfo": "Not an Object"}'
+          claims: '{"userinfo": "Not an Object"}',
         });
 
         return this.wrap({ route, verb, auth })
@@ -499,7 +499,7 @@ expire.setDate(expire.getDate() + 1);
         const auth = new this.AuthorizationRequest({
           response_type: 'id_token token',
           scope: 'openid',
-          claims: '{"id_token": "Not an Object"}'
+          claims: '{"id_token": "Not an Object"}',
         });
 
         return this.wrap({ route, verb, auth })
@@ -516,7 +516,7 @@ expire.setDate(expire.getDate() + 1);
         const auth = new this.AuthorizationRequest({
           response_type: 'id_token',
           scope: 'openid',
-          claims: '{"userinfo": {}}'
+          claims: '{"userinfo": {}}',
         });
 
         return this.wrap({ route, verb, auth })

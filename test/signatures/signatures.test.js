@@ -6,10 +6,10 @@ const epochTime = require('../../lib/helpers/epoch_time');
 const { expect } = require('chai');
 const base64url = require('base64url');
 
-describe('signatures', function () {
+describe('signatures', () => {
   before(bootstrap(__dirname)); // this.provider, agent, this.AuthorizationRequest, wrap
 
-  describe('token hashes in id_token', function () {
+  describe('token hashes in id_token', () => {
     before(async function () {
       this.client = await this.provider.Client.find('client');
     });
@@ -25,7 +25,7 @@ describe('signatures', function () {
       this.client.idTokenSignedResponseAlg = 'RS512';
       const auth = new this.AuthorizationRequest({
         response_type: 'code id_token token',
-        scope: 'openid'
+        scope: 'openid',
       });
 
       return this.wrap({ auth, verb: 'get', route: '/auth' })
@@ -44,7 +44,7 @@ describe('signatures', function () {
       this.client.idTokenSignedResponseAlg = 'RS384';
       const auth = new this.AuthorizationRequest({
         response_type: 'code id_token token',
-        scope: 'openid'
+        scope: 'openid',
       });
 
       return this.wrap({ auth, verb: 'get', route: '/auth' })
@@ -63,7 +63,7 @@ describe('signatures', function () {
       this.client.idTokenSignedResponseAlg = 'RS256';
       const auth = new this.AuthorizationRequest({
         response_type: 'code id_token token',
-        scope: 'openid'
+        scope: 'openid',
       });
 
       return this.wrap({ auth, verb: 'get', route: '/auth' })
@@ -79,7 +79,7 @@ describe('signatures', function () {
     });
   });
 
-  describe('when id_token_signed_response_alg=none', function () {
+  describe('when id_token_signed_response_alg=none', () => {
     before(function () { return this.login(); });
     after(function () { return this.logout(); });
     beforeEach(async function () {
@@ -99,7 +99,7 @@ describe('signatures', function () {
         .send({
           redirect_uri: 'https://client.example.com/cb',
           grant_type: 'authorization_code',
-          code: await ac.save()
+          code: await ac.save(),
         })
         .expect(200)
         .expect((response) => {
@@ -119,7 +119,7 @@ describe('signatures', function () {
         response_type: 'code',
         scope: 'openid',
         prompt: 'none',
-        id_token_hint: this.idToken
+        id_token_hint: this.idToken,
       });
       auth.client_id = 'client-sig-none';
 
@@ -142,7 +142,7 @@ describe('signatures', function () {
         response_type: 'code',
         scope: 'openid',
         prompt: 'none',
-        id_token_hint: this.idToken
+        id_token_hint: this.idToken,
       });
       auth.client_id = 'client-sig-none';
 
@@ -157,7 +157,7 @@ describe('signatures', function () {
     });
   });
 
-  describe('when id_token_signed_response_alg=HS256', function () {
+  describe('when id_token_signed_response_alg=HS256', () => {
     before(function () { return this.login(); });
     after(function () { return this.logout(); });
     beforeEach(async function () {
@@ -177,7 +177,7 @@ describe('signatures', function () {
         .send({
           redirect_uri: 'https://client.example.com/cb',
           grant_type: 'authorization_code',
-          code: await ac.save()
+          code: await ac.save(),
         })
         .expect(200)
         .expect((response) => {
@@ -197,7 +197,7 @@ describe('signatures', function () {
         response_type: 'code',
         scope: 'openid',
         prompt: 'none',
-        id_token_hint: this.idToken
+        id_token_hint: this.idToken,
       });
       auth.client_id = 'client-sig-HS256';
 

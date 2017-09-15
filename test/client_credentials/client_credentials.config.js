@@ -11,5 +11,5 @@ module.exports = {
     grant_types: ['authorization_code', 'client_credentials'],
     response_types: ['code'],
     redirect_uris: ['https://client.example.com/cb'],
-  }
+  },
 };

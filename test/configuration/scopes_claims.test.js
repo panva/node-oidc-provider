@@ -1,8 +1,8 @@
 const Provider = require('../../lib');
 const { expect } = require('chai');
 
-describe('custom claims', function () {
-  it('allows for claims to be added under openid scope using array syntax', function () {
+describe('custom claims', () => {
+  it('allows for claims to be added under openid scope using array syntax', () => {
     const provider = new Provider('https://op.example.com', {
       claims: {
         openid: ['foo'],
@@ -15,7 +15,7 @@ describe('custom claims', function () {
     });
   });
 
-  it('allows for claims to be added under openid scope using object syntax', function () {
+  it('allows for claims to be added under openid scope using object syntax', () => {
     const provider = new Provider('https://op.example.com', {
       claims: {
         openid: { foo: null },
@@ -28,7 +28,7 @@ describe('custom claims', function () {
     });
   });
 
-  it('detects new scopes from claims definition', function () {
+  it('detects new scopes from claims definition', () => {
     const provider = new Provider('https://op.example.com', {
       claims: {
         insurance: ['company_name', 'coverage'],
@@ -41,7 +41,7 @@ describe('custom claims', function () {
     expect(i(provider).configuration('scopes')).to.contain('insurance', 'payment');
   });
 
-  it('removes the acr claim if no acrs are configured', function () {
+  it('removes the acr claim if no acrs are configured', () => {
     const provider = new Provider('https://op.example.com', {
       acrValues: [],
     });

@@ -1,6 +1,6 @@
 const bootstrap = require('../test_helper');
 
-describe('default error behavior', function () {
+describe('default error behavior', () => {
   before(bootstrap(__dirname)); // agent
 
   it('responds with json when no Accept header', function () {

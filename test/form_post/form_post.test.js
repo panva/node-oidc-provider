@@ -4,12 +4,12 @@ const sinon = require('sinon');
 
 const route = '/auth';
 
-describe('/auth', function () {
+describe('/auth', () => {
   before(bootstrap(__dirname)); // provider, agent, this.AuthorizationRequest, wrap
 
   ['get', 'post'].forEach((verb) => {
-    describe(`${verb} response_mode=form_post`, function () {
-      context('logged in', function () {
+    describe(`${verb} response_mode=form_post`, () => {
+      context('logged in', () => {
         before(function () { return this.login(); });
         after(function () { return this.logout(); });
 
@@ -17,7 +17,7 @@ describe('/auth', function () {
           const auth = new this.AuthorizationRequest({
             response_type: 'code',
             response_mode: 'form_post',
-            scope: 'openid'
+            scope: 'openid',
           });
 
           return this.wrap({ route, verb, auth })
@@ -28,13 +28,13 @@ describe('/auth', function () {
         });
       });
 
-      context('error handling', function () {
+      context('error handling', () => {
         it('responds by rendering a self-submitting form with the error', function () {
           const auth = new this.AuthorizationRequest({
             response_type: 'code',
             prompt: 'none',
             response_mode: 'form_post',
-            scope: 'openid'
+            scope: 'openid',
           });
 
           const spy = sinon.spy();
@@ -50,7 +50,7 @@ describe('/auth', function () {
             .expect(new RegExp(`form method="post" action="${auth.redirect_uri}"`));
         });
 
-        context('[exception]', function () {
+        context('[exception]', () => {
           before(function () {
             sinon.stub(this.provider.Client, 'find').returns(Promise.reject(new Error()));
           });
@@ -64,7 +64,7 @@ describe('/auth', function () {
               response_type: 'code',
               prompt: 'none',
               response_mode: 'form_post',
-              scope: 'openid'
+              scope: 'openid',
             });
 
             const spy = sinon.spy();

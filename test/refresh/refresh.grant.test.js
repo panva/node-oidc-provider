@@ -12,10 +12,10 @@ function errorDetail(spy) {
   return spy.args[0][0].error_detail;
 }
 
-describe('grant_type=refresh_token', function () {
+describe('grant_type=refresh_token', () => {
   before(bootstrap(__dirname)); // agent, provider, this.TestAdapter
 
-  context('with real tokens', function () {
+  context('with real tokens', () => {
     before(function () { return this.login(); });
     after(function () { return this.logout(); });
 
@@ -26,7 +26,7 @@ describe('grant_type=refresh_token', function () {
           scope: 'openid email',
           response_type: 'code',
           redirect_uri: 'https://client.example.com/cb',
-          nonce: 'foobarnonce'
+          nonce: 'foobarnonce',
         })
         .expect(302)
         .end((err, authResponse) => {
@@ -42,7 +42,7 @@ describe('grant_type=refresh_token', function () {
             .send({
               code,
               grant_type: 'authorization_code',
-              redirect_uri: 'https://client.example.com/cb'
+              redirect_uri: 'https://client.example.com/cb',
             })
             .expect(200)
             .expect((response) => {
@@ -64,7 +64,7 @@ describe('grant_type=refresh_token', function () {
         .auth('client', 'secret')
         .send({
           refresh_token: rt,
-          grant_type: 'refresh_token'
+          grant_type: 'refresh_token',
         })
         .type('form')
         .expect(200)
@@ -80,8 +80,8 @@ describe('grant_type=refresh_token', function () {
     });
 
 
-    describe('validates', function () {
-      context('', function () {
+    describe('validates', () => {
+      context('', () => {
         before(function () {
           this.prev = this.provider.RefreshToken.expiresIn;
           i(this.provider).configuration('ttl').RefreshToken = 1;
@@ -101,7 +101,7 @@ describe('grant_type=refresh_token', function () {
               .auth('client', 'secret')
               .send({
                 refresh_token: rt,
-                grant_type: 'refresh_token'
+                grant_type: 'refresh_token',
               })
               .type('form')
               .expect(400)
@@ -126,7 +126,7 @@ describe('grant_type=refresh_token', function () {
           .auth('client2', 'secret')
           .send({
             refresh_token: rt,
-            grant_type: 'refresh_token'
+            grant_type: 'refresh_token',
           })
           .type('form')
           .expect(400)
@@ -149,7 +149,7 @@ describe('grant_type=refresh_token', function () {
           .send({
             refresh_token: rt,
             grant_type: 'refresh_token',
-            scope: 'openid profile'
+            scope: 'openid profile',
           })
           .type('form')
           .expect(400)
@@ -162,9 +162,7 @@ describe('grant_type=refresh_token', function () {
 
       it('validates account is still there', function () {
         const { rt } = this;
-        sinon.stub(this.provider.Account, 'findById').callsFake(() => {
-          return Promise.resolve();
-        });
+        sinon.stub(this.provider.Account, 'findById').callsFake(() => Promise.resolve());
 
         const spy = sinon.spy();
         this.provider.once('grant.error', spy);
@@ -173,7 +171,7 @@ describe('grant_type=refresh_token', function () {
           .auth('client', 'secret')
           .send({
             refresh_token: rt,
-            grant_type: 'refresh_token'
+            grant_type: 'refresh_token',
           })
           .type('form')
           .expect(() => {
@@ -194,7 +192,7 @@ describe('grant_type=refresh_token', function () {
       return this.agent.post(route)
         .auth('client', 'secret')
         .send({
-          grant_type: 'refresh_token'
+          grant_type: 'refresh_token',
         })
         .type('form')
         .expect(400)
@@ -212,7 +210,7 @@ describe('grant_type=refresh_token', function () {
         .auth('client', 'secret')
         .send({
           grant_type: 'refresh_token',
-          refresh_token: 'eyJraW5kIjoiUmVmcmVzaFRva2VuIiwianRpIjoiYzc4ZjdlYjMtZjdkYi00ZDNmLWFjNzUtYTY3MTA2NTUxOTYyIiwiaWF0IjoxNDYzNjY5Mjk1LCJleHAiOjE0NjM2NzEwOTUsImlzcyI6Imh0dHA6Ly8xMjcuMC4wLjE6NjAxNDMifQ.KJxy5D3_lwAlBs6E0INhrjJm1Bk9BrPlRacoyYztt5s_yxWidNua_eSvMbmRqqIq6t2hGguW7ZkEJhVHGNxvaHctGjSIrAOjaZhh1noqP9keXnATf2N2Twdsz-Viim5F0A7vu9OlhNm75P-yfreOTmmbQ4goM5449Dvq_xli2gmgg1j4HnASAI3YuxAzCCSJPbJDE2UL0-_q7nIvH0Ak2RuNbTJLjYt36jymfLnJ2OOe1z9N2RuZrIQQy7ksAIJkJs_3SJ0RYKDBtUplPC2fK7qsNk4wUTgxLJE3Xp_sJZKwVG2ascsVdexVnUCxqDN3xt9MpI14M3Zw7UwGghdIfQ'
+          refresh_token: 'eyJraW5kIjoiUmVmcmVzaFRva2VuIiwianRpIjoiYzc4ZjdlYjMtZjdkYi00ZDNmLWFjNzUtYTY3MTA2NTUxOTYyIiwiaWF0IjoxNDYzNjY5Mjk1LCJleHAiOjE0NjM2NzEwOTUsImlzcyI6Imh0dHA6Ly8xMjcuMC4wLjE6NjAxNDMifQ.KJxy5D3_lwAlBs6E0INhrjJm1Bk9BrPlRacoyYztt5s_yxWidNua_eSvMbmRqqIq6t2hGguW7ZkEJhVHGNxvaHctGjSIrAOjaZhh1noqP9keXnATf2N2Twdsz-Viim5F0A7vu9OlhNm75P-yfreOTmmbQ4goM5449Dvq_xli2gmgg1j4HnASAI3YuxAzCCSJPbJDE2UL0-_q7nIvH0Ak2RuNbTJLjYt36jymfLnJ2OOe1z9N2RuZrIQQy7ksAIJkJs_3SJ0RYKDBtUplPC2fK7qsNk4wUTgxLJE3Xp_sJZKwVG2ascsVdexVnUCxqDN3xt9MpI14M3Zw7UwGghdIfQ',
         })
         .type('form')
         .expect(400)
@@ -225,7 +223,7 @@ describe('grant_type=refresh_token', function () {
         });
     });
 
-    describe('refreshTokenRotation=rotateAndConsume', function () {
+    describe('refreshTokenRotation=rotateAndConsume', () => {
       before(function () {
         i(this.provider).configuration().refreshTokenRotation = 'rotateAndConsume';
       });
@@ -245,7 +243,7 @@ describe('grant_type=refresh_token', function () {
           .auth('client', 'secret')
           .send({
             refresh_token: rt,
-            grant_type: 'refresh_token'
+            grant_type: 'refresh_token',
           })
           .type('form')
           .expect(200)
@@ -274,7 +272,7 @@ describe('grant_type=refresh_token', function () {
             .auth('client', 'secret')
             .send({
               refresh_token: rt,
-              grant_type: 'refresh_token'
+              grant_type: 'refresh_token',
             })
             .type('form')
             .expect(200), // one of them will fail.
@@ -282,11 +280,11 @@ describe('grant_type=refresh_token', function () {
             .auth('client', 'secret')
             .send({
               refresh_token: rt,
-              grant_type: 'refresh_token'
+              grant_type: 'refresh_token',
             })
             .type('form')
             .expect(200), // one of them will fail.
-        ]).then(fail, function () {
+        ]).then(fail, () => {
           expect(grantRevokeSpy.calledOnce).to.be.true;
           expect(tokenRevokeSpy.calledOnce).to.be.true;
         });

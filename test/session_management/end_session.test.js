@@ -6,7 +6,7 @@ const JWT = require('../../lib/helpers/jwt');
 
 const route = '/session/end';
 
-describe('[session_management]', function () {
+describe('[session_management]', () => {
   before(bootstrap(__dirname)); // this.provider, agent, getSession, getSessionId, this.TestAdapter
 
   beforeEach(function () { return this.login(); });
@@ -27,7 +27,7 @@ describe('[session_management]', function () {
         scope: 'openid',
         nonce: String(Math.random()),
         response_type: 'id_token',
-        redirect_uri: 'https://client.example.com/cb'
+        redirect_uri: 'https://client.example.com/cb',
       })
       .expect(302)
       .expect((response) => {
@@ -36,8 +36,8 @@ describe('[session_management]', function () {
       });
   });
 
-  describe('GET end_session', function () {
-    context('client with postLogoutRedirectUris', function () {
+  describe('GET end_session', () => {
+    context('client with postLogoutRedirectUris', () => {
       before(async function () {
         (await this.provider.Client.find('client')).postLogoutRedirectUris = ['https://client.example.com/logout/cb'];
       });
@@ -48,7 +48,7 @@ describe('[session_management]', function () {
       it('allows to redirect there', function () {
         const params = {
           id_token_hint: this.idToken,
-          post_logout_redirect_uri: 'https://client.example.com/logout/cb'
+          post_logout_redirect_uri: 'https://client.example.com/logout/cb',
         };
 
         return this.agent.get(route)
@@ -64,7 +64,7 @@ describe('[session_management]', function () {
         const params = {
           id_token_hint: this.idToken,
           post_logout_redirect_uri: 'https://client.example.com/logout/cb',
-          state: 'foobar'
+          state: 'foobar',
         };
 
         return this.agent.get(route)
@@ -105,7 +105,7 @@ describe('[session_management]', function () {
     it('validates post_logout_redirect_uri allowed on client', function () {
       const params = {
         id_token_hint: this.idToken,
-        post_logout_redirect_uri: 'https://client.example.com/callback/logout'
+        post_logout_redirect_uri: 'https://client.example.com/callback/logout',
       };
 
       return this.agent.get(route)
@@ -117,7 +117,7 @@ describe('[session_management]', function () {
 
     it('rejects invalid JWTs', function () {
       const params = {
-        id_token_hint: 'not.a.jwt'
+        id_token_hint: 'not.a.jwt',
       };
 
       return this.agent.get(route)
@@ -130,8 +130,8 @@ describe('[session_management]', function () {
     it('rejects JWTs with unrecognized client', async function () {
       const params = {
         id_token_hint: await JWT.sign({
-          aud: 'nonexistant'
-        }, null, 'none')
+          aud: 'nonexistant',
+        }, null, 'none'),
       };
 
       return this.agent.get(route)
@@ -144,8 +144,8 @@ describe('[session_management]', function () {
     it('rejects JWTs with bad signatures', async function () {
       const params = {
         id_token_hint: await JWT.sign({
-          aud: 'client'
-        }, null, 'none')
+          aud: 'client',
+        }, null, 'none'),
       };
 
       return this.agent.get(route)
@@ -156,7 +156,7 @@ describe('[session_management]', function () {
     });
   });
 
-  describe('POST end_session', function () {
+  describe('POST end_session', () => {
     it('checks session.logout is set', function () {
       return this.agent.post('/session/end')
         .send({})
@@ -236,7 +236,9 @@ describe('[session_management]', function () {
     });
 
     it('forwards the state too', function () {
-      this.getSession().logout = { secret: '123', postLogoutRedirectUri: '/', clientId: 'client', state: 'foobar' };
+      this.getSession().logout = {
+        secret: '123', postLogoutRedirectUri: '/', clientId: 'client', state: 'foobar',
+      };
 
       i(this.provider).configuration().cookies.long.domain = '.oidc.dev';
 

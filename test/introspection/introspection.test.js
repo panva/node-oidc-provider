@@ -5,10 +5,10 @@ const { expect } = require('chai');
 const route = '/token/introspection';
 
 
-describe('introspection features', function () {
+describe('introspection features', () => {
   before(bootstrap(__dirname)); // agent, provider
 
-  describe('enriched discovery', function () {
+  describe('enriched discovery', () => {
     it('shows the url now', function () {
       return this.agent.get('/.well-known/openid-configuration')
         .expect(200)
@@ -19,7 +19,7 @@ describe('introspection features', function () {
     });
   });
 
-  describe('/token/introspection', function () {
+  describe('/token/introspection', () => {
     it('returns the properties for access token [no hint]', function (done) {
       const at = new this.provider.AccessToken({
         accountId: 'accountId',
@@ -31,7 +31,7 @@ describe('introspection features', function () {
         this.agent.post(route)
           .auth('client', 'secret')
           .send({
-            token
+            token,
           })
           .type('form')
           .expect(200)
@@ -55,7 +55,7 @@ describe('introspection features', function () {
           .auth('client', 'secret')
           .send({
             token,
-            token_type_hint: 'access_token'
+            token_type_hint: 'access_token',
           })
           .type('form')
           .expect(200)
@@ -79,7 +79,7 @@ describe('introspection features', function () {
           .auth('client', 'secret')
           .send({
             token,
-            token_type_hint: 'refresh_token'
+            token_type_hint: 'refresh_token',
           })
           .type('form')
           .expect(200)
@@ -103,7 +103,7 @@ describe('introspection features', function () {
           .auth('client', 'secret')
           .send({
             token,
-            token_type_hint: 'foobar'
+            token_type_hint: 'foobar',
           })
           .type('form')
           .expect(200)
@@ -197,7 +197,7 @@ describe('introspection features', function () {
 
     it('returns the properties for client credentials token [no hint]', function (done) {
       const rt = new this.provider.ClientCredentials({
-        clientId: 'client'
+        clientId: 'client',
       });
 
       rt.save().then((token) => {
@@ -215,7 +215,7 @@ describe('introspection features', function () {
 
     it('returns the properties for client credentials token [correct hint]', function (done) {
       const rt = new this.provider.ClientCredentials({
-        clientId: 'client'
+        clientId: 'client',
       });
 
       rt.save().then((token) => {
@@ -233,7 +233,7 @@ describe('introspection features', function () {
 
     it('returns the properties for client credentials token [wrong hint]', function (done) {
       const rt = new this.provider.ClientCredentials({
-        clientId: 'client'
+        clientId: 'client',
       });
 
       rt.save().then((token) => {
@@ -251,7 +251,7 @@ describe('introspection features', function () {
 
     it('returns the properties for client credentials token [unrecognized hint]', function (done) {
       const rt = new this.provider.ClientCredentials({
-        clientId: 'client'
+        clientId: 'client',
       });
 
       rt.save().then((token) => {
@@ -313,7 +313,7 @@ describe('introspection features', function () {
       return this.agent.post(route)
         .auth('client', 'secret')
         .send({
-          token: 'this is not even a token'
+          token: 'this is not even a token',
         })
         .type('form')
         .expect(200)
@@ -365,7 +365,7 @@ describe('introspection features', function () {
       return this.agent.post(route)
         .auth('client', 'secret')
         .send({
-          token: await ac.save()
+          token: await ac.save(),
         })
         .type('form')
         .expect(200)

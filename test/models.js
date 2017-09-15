@@ -6,7 +6,7 @@ function grantKeyFor(id) {
 }
 
 class TestAdapter {
-  constructor(name) { // eslint-disable-line consistent-return
+  constructor(name) {
     this.name = name;
     if (store.has(name)) return store.get(name);
     store.set(name, this);

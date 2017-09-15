@@ -5,11 +5,11 @@ const fail = () => {
   throw new Error('expected promise to be rejected');
 };
 
-describe('OAuth 2.0 for Native Apps Best Current Practice features', function () {
+describe('OAuth 2.0 for Native Apps Best Current Practice features', () => {
   before(bootstrap(__dirname)); // provider
 
-  describe('changed native client validations', function () {
-    describe('Private-use URI Scheme Redirection', function () {
+  describe('changed native client validations', () => {
+    describe('Private-use URI Scheme Redirection', () => {
       it('allows custom uri scheme uris with localhost', function () {
         return i(this.provider).clientAdd({
           application_type: 'native',
@@ -36,7 +36,7 @@ describe('OAuth 2.0 for Native Apps Best Current Practice features', function ()
       });
     });
 
-    describe('Claimed HTTPS URI Redirection', function () {
+    describe('Claimed HTTPS URI Redirection', () => {
       it('allows claimed https uris', function () {
         return i(this.provider).clientAdd({
           application_type: 'native',
@@ -63,7 +63,7 @@ describe('OAuth 2.0 for Native Apps Best Current Practice features', function ()
       });
     });
 
-    describe('Loopback Interface Redirection', function () {
+    describe('Loopback Interface Redirection', () => {
       it('allows http protocol localhost loopback uris', function () {
         return i(this.provider).clientAdd({
           application_type: 'native',

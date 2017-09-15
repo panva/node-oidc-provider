@@ -2,8 +2,8 @@ require('../test_helper');
 const { expect } = require('chai');
 const Provider = require('../../lib');
 
-describe('provider.Client', function () {
-  describe('#cacheClear()', function () {
+describe('provider.Client', () => {
+  describe('#cacheClear()', () => {
     before(function () {
       return new Provider('http://localhost:3000').initialize({
         clients: [{ client_id: 'fixed', client_secret: 'foobar', redirect_uris: ['http://rp.example.com/cb'] }],

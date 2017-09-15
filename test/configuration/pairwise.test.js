@@ -1,17 +1,17 @@
 const { expect } = require('chai');
 const Provider = require('../../lib');
 
-describe('Provider configuration', function () {
-  it('validates pairwiseSalt presence when pairwise is configured', function () {
+describe('Provider configuration', () => {
+  it('validates pairwiseSalt presence when pairwise is configured', () => {
     const throws = [
       function () {
         new Provider('http://localhost:3000', { // eslint-disable-line no-new
-          subjectTypes: ['pairwise']
+          subjectTypes: ['pairwise'],
         });
       },
       function () {
         new Provider('http://localhost:3000', { // eslint-disable-line no-new
-          subjectTypes: ['public', 'pairwise']
+          subjectTypes: ['public', 'pairwise'],
         });
       },
     ];
@@ -20,14 +20,14 @@ describe('Provider configuration', function () {
       function () {
         new Provider('http://localhost:3000', { // eslint-disable-line no-new
           subjectTypes: ['public'],
-          pairwiseSalt: 'may be provided'
+          pairwiseSalt: 'may be provided',
         });
       },
       function () {
         new Provider('http://localhost:3000', { // eslint-disable-line no-new
-          subjectTypes: ['public']
+          subjectTypes: ['public'],
         });
-      }
+      },
     ];
 
     throws.forEach((fn) => {

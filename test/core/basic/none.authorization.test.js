@@ -3,7 +3,7 @@ const bootstrap = require('../../test_helper');
 const route = '/auth';
 
 ['get', 'post'].forEach((verb) => {
-  describe(`${verb} ${route} response_type=none`, function () {
+  describe(`${verb} ${route} response_type=none`, () => {
     before(bootstrap(__dirname)); // provider, agent, AuthorizationRequest, wrap
 
     before(function () { return this.login(); });
@@ -12,7 +12,7 @@ const route = '/auth';
     it('responds with a state in search', function () {
       const auth = new this.AuthorizationRequest({
         response_type: 'none',
-        scope: 'openid'
+        scope: 'openid',
       });
 
       return this.wrap({ route, verb, auth })
@@ -26,7 +26,7 @@ const route = '/auth';
       const auth = new this.AuthorizationRequest({
         response_type: 'none',
         response_mode: 'fragment',
-        scope: 'openid'
+        scope: 'openid',
       });
 
       return this.wrap({ route, verb, auth })

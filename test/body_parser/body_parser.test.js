@@ -4,13 +4,13 @@ const mount = require('koa-mount');
 const supertest = require('supertest');
 const upstreamParser = require('koa-body');
 
-describe('body parser', function () {
-  afterEach(function () {
+describe('body parser', () => {
+  afterEach(() => {
     global.server.removeAllListeners('request');
   });
 
-  describe('application/x-www-form-urlencoded', function () {
-    it('uses the upstream parser albeit reluctantly', async function () {
+  describe('application/x-www-form-urlencoded', () => {
+    it('uses the upstream parser albeit reluctantly', async () => {
       const provider = new Provider('http://localhost:3000');
       await provider.initialize({
         clients: [{
@@ -39,10 +39,10 @@ describe('body parser', function () {
     });
   });
 
-  describe('application/json', function () {
-    it('uses the upstream parser albeit reluctantly', async function () {
+  describe('application/json', () => {
+    it('uses the upstream parser albeit reluctantly', async () => {
       const provider = new Provider('http://localhost:3000', {
-        features: { registration: true }
+        features: { registration: true },
       });
       await provider.initialize();
       const app = new Koa();
@@ -61,9 +61,9 @@ describe('body parser', function () {
         .expect(201);
     });
 
-    it('handles parsing errors', async function () {
+    it('handles parsing errors', async () => {
       const provider = new Provider('http://localhost:3000', {
-        features: { registration: true }
+        features: { registration: true },
       });
       await provider.initialize();
 

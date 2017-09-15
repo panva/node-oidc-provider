@@ -12,5 +12,5 @@ module.exports = {
     grant_types: ['implicit'],
     response_types: ['id_token token', 'none', 'id_token'],
     redirect_uris: ['https://client.example.com/cb'],
-  }
+  },
 };

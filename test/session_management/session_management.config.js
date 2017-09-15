@@ -10,6 +10,6 @@ module.exports = {
     client_secret: 'secret',
     response_types: ['code', 'id_token'],
     grant_types: ['authorization_code', 'implicit'],
-    redirect_uris: ['https://client.example.com/cb']
-  }
+    redirect_uris: ['https://client.example.com/cb'],
+  },
 };

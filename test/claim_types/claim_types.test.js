@@ -5,7 +5,7 @@ const { parse: parseLocation } = require('url');
 const { decode: decodeJWT } = require('../../lib/helpers/jwt');
 const { expect } = require('chai');
 
-describe('distributed and aggregated claims', function () {
+describe('distributed and aggregated claims', () => {
   before(bootstrap(__dirname)); // provider, agent, AuthorizationRequest, wrap
   before(function () {
     const { Account } = this.provider;
@@ -18,12 +18,12 @@ describe('distributed and aggregated claims', function () {
           _claim_names: {
             given_name: 'src1',
             family_name: 'src2',
-            email: 'notused'
+            email: 'notused',
           },
           _claim_sources: {
             src1: { endpoint: 'https://op.example.com/me', access_token: 'distributed' },
             src2: { JWT: 'foo.bar.baz' },
-            notused: { JWT: 'foo.bar.baz' }
+            notused: { JWT: 'foo.bar.baz' },
           },
         };
       },
@@ -33,11 +33,11 @@ describe('distributed and aggregated claims', function () {
   before(function () { return this.login(); });
   after(function () { return this.logout(); });
 
-  context('id_token', function () {
+  context('id_token', () => {
     it('should return _claim_names and _claim_sources members', function () {
       const auth = new this.AuthorizationRequest({
         response_type: 'id_token token',
-        scope: 'openid profile'
+        scope: 'openid profile',
       });
 
       return this.wrap({ auth, route: '/auth', verb: 'get' })
@@ -60,7 +60,7 @@ describe('distributed and aggregated claims', function () {
     it('does not return the members if these claims arent requested at all', function () {
       const auth = new this.AuthorizationRequest({
         response_type: 'id_token token',
-        scope: 'openid'
+        scope: 'openid',
       });
 
       return this.wrap({ auth, route: '/auth', verb: 'get' })
@@ -75,11 +75,11 @@ describe('distributed and aggregated claims', function () {
     });
   });
 
-  context('userinfo', function () {
+  context('userinfo', () => {
     it('should return _claim_names and _claim_sources members', function (done) {
       const auth = new this.AuthorizationRequest({
         response_type: 'id_token token',
-        scope: 'openid profile'
+        scope: 'openid profile',
       });
 
       this.wrap({ auth, route: '/auth', verb: 'get' })
@@ -114,7 +114,7 @@ describe('distributed and aggregated claims', function () {
     it('does not return the members if these claims arent requested at all', function (done) {
       const auth = new this.AuthorizationRequest({
         response_type: 'id_token token',
-        scope: 'openid'
+        scope: 'openid',
       });
 
       this.wrap({ auth, route: '/auth', verb: 'get' })

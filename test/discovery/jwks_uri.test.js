@@ -4,10 +4,10 @@ const { expect } = require('chai');
 
 const route = '/certs';
 
-describe(route, function () {
+describe(route, () => {
   before(bootstrap(__dirname)); // agent
 
-  describe('when populated with signing keys', function () {
+  describe('when populated with signing keys', () => {
     it('responds with json 200', function () {
       return this.agent.get(route)
         .expect('Content-Type', /application\/json/)
@@ -18,7 +18,7 @@ describe(route, function () {
     });
   });
 
-  describe('EC keys', function () {
+  describe('EC keys', () => {
     it('responds with json 200', function () {
       return this.agent.get(route)
         .expect('Content-Type', /application\/json/)

@@ -8,10 +8,10 @@ const { parse } = require('url');
 
 const route = '/auth';
 
-describe('request Uri features', function () {
+describe('request Uri features', () => {
   before(bootstrap(__dirname)); // provider, agent, wrap
 
-  describe('configuration features.requestUri', function () {
+  describe('configuration features.requestUri', () => {
     it('extends discovery', function () {
       return this.agent.get('/.well-known/openid-configuration')
         .expect(200)
@@ -21,7 +21,7 @@ describe('request Uri features', function () {
         });
     });
 
-    context('requireRequestUriRegistration', function () {
+    context('requireRequestUriRegistration', () => {
       before(function () {
         i(this.provider).configuration().features.requestUri = {
           requireRequestUriRegistration: true,
@@ -44,7 +44,7 @@ describe('request Uri features', function () {
   });
 
   ['get', 'post'].forEach((verb) => {
-    describe(`${route} ${verb} passing request parameters in request_uri`, function () {
+    describe(`${route} ${verb} passing request parameters in request_uri`, () => {
       before(function () { return this.login(); });
       after(function () { return this.logout(); });
 
@@ -53,7 +53,7 @@ describe('request Uri features', function () {
         return JWT.sign({
           client_id: 'client-with-HS-sig',
           response_type: 'code',
-          redirect_uri: 'https://client.example.com/cb'
+          redirect_uri: 'https://client.example.com/cb',
         }, key, 'HS256', { issuer: 'client-with-HS-sig', audience: this.provider.issuer }).then((request) => {
           nock('https://client.example.com')
             .get('/request')
@@ -67,8 +67,8 @@ describe('request Uri features', function () {
               request_uri: `https://client.example.com/request#${Math.random()}`,
               scope: 'openid',
               client_id: 'client-with-HS-sig',
-              response_type: 'code'
-            }
+              response_type: 'code',
+            },
           })
             .expect(302)
             .expect((response) => {
@@ -86,7 +86,7 @@ describe('request Uri features', function () {
         return JWT.sign({
           client_id: 'client',
           response_type: 'code',
-          redirect_uri: 'https://client.example.com/cb'
+          redirect_uri: 'https://client.example.com/cb',
         }, null, 'none', { issuer: 'client', audience: this.provider.issuer }).then((request) => {
           nock('https://client.example.com')
             .get('/request')
@@ -100,8 +100,8 @@ describe('request Uri features', function () {
               request_uri: `https://client.example.com/request#${Math.random()}`,
               scope: 'openid',
               client_id: 'client',
-              response_type: 'code'
-            }
+              response_type: 'code',
+            },
           })
             .expect(302)
             .expect((response) => {
@@ -115,7 +115,7 @@ describe('request Uri features', function () {
         });
       });
 
-      context('caching of the request_uris', function () {
+      context('caching of the request_uris', () => {
         it('caches the uris', async function () {
           const cache = new RequestUriCache(this.provider);
           nock('https://client.example.com')
@@ -139,7 +139,7 @@ describe('request Uri features', function () {
           nock('https://client.example.com')
             .get('/cachedRequest')
             .reply(200, 'content24', {
-              'Cache-Control': 'private, max-age=1'
+              'Cache-Control': 'private, max-age=1',
             })
             .get('/cachedRequest')
             .reply(200, 'content82');
@@ -169,15 +169,17 @@ describe('request Uri features', function () {
             request_uri: 'https://veeeeryloong.com/uri#Lorem&Ipsum&is&simply&dummy&text&of&the&printing&and&typesetting&industry.&Lorem&Ipsum&has&been&the&industrys&standard&dummy&text&ever&since&the&1500s,&when&an&unknown&printer&took&a&galley&of&type&and&scrambled&it&to&make&a&type&specimen&book.&It&has&survived&not&only&five&centuries,&but&also&the&leap&into&electronic&typesetting,&remaining&essentially&unchanged.&It&was&popularised&in&the&1960s&with&the&release&of&Letraset&sheets&containing&Lorem&Ipsum&passages,&and&more&recently&with&desktop&publishing&software&like&Aldus&PageMaker&including&versions&of&Lorem&Ipsum',
             scope: 'openid',
             client_id: 'client',
-            response_type: 'code'
-          }
+            response_type: 'code',
+          },
         })
           .expect(302)
           .expect(() => {
             expect(spy.calledOnce).to.be.true;
             expect(spy.args[0][0]).to.have.property('message', 'invalid_request_uri');
-            expect(spy.args[0][0]).to.have.property('error_description',
-              'the request_uri MUST NOT exceed 512 characters');
+            expect(spy.args[0][0]).to.have.property(
+              'error_description',
+              'the request_uri MUST NOT exceed 512 characters',
+            );
           });
       });
 
@@ -193,19 +195,21 @@ describe('request Uri features', function () {
             request_uri: 'http://rp.example.com/request_uri#123',
             scope: 'openid',
             client_id: 'client',
-            response_type: 'code'
-          }
+            response_type: 'code',
+          },
         })
           .expect(302)
           .expect(() => {
             expect(spy.calledOnce).to.be.true;
             expect(spy.args[0][0]).to.have.property('message', 'invalid_request_uri');
-            expect(spy.args[0][0]).to.have.property('error_description',
-              'request_uri must use https scheme');
+            expect(spy.args[0][0]).to.have.property(
+              'error_description',
+              'request_uri must use https scheme',
+            );
           });
       });
 
-      context('when client has requestUris set', function () {
+      context('when client has requestUris set', () => {
         before(async function () {
           (await this.provider.Client.find('client')).requestUris = ['https://thisoneisallowed.com'];
         });
@@ -218,7 +222,7 @@ describe('request Uri features', function () {
           return JWT.sign({
             client_id: 'client',
             response_type: 'code',
-            redirect_uri: 'https://client.example.com/cb'
+            redirect_uri: 'https://client.example.com/cb',
           }, null, 'none', { issuer: 'client', audience: this.provider.issuer }).then((request) => {
             nock('https://thisoneisallowed.com')
               .get('/')
@@ -232,8 +236,8 @@ describe('request Uri features', function () {
                 request_uri: 'https://thisoneisallowed.com',
                 scope: 'openid',
                 client_id: 'client',
-                response_type: 'code'
-              }
+                response_type: 'code',
+              },
             })
               .expect(302)
               .expect((response) => {
@@ -251,7 +255,7 @@ describe('request Uri features', function () {
           return JWT.sign({
             client_id: 'client',
             response_type: 'code',
-            redirect_uri: 'https://client.example.com/cb'
+            redirect_uri: 'https://client.example.com/cb',
           }, null, 'none', { issuer: 'client', audience: this.provider.issuer }).then((request) => {
             nock('https://thisoneisallowed.com#hash234')
               .get('/')
@@ -265,8 +269,8 @@ describe('request Uri features', function () {
                 request_uri: 'https://thisoneisallowed.com#hash234',
                 scope: 'openid',
                 client_id: 'client',
-                response_type: 'code'
-              }
+                response_type: 'code',
+              },
             })
               .expect(302)
               .expect((response) => {
@@ -292,15 +296,17 @@ describe('request Uri features', function () {
               request_uri: 'https://thisoneisnot.com',
               scope: 'openid',
               client_id: 'client',
-              response_type: 'code'
-            }
+              response_type: 'code',
+            },
           })
             .expect(302)
             .expect(() => {
               expect(spy.calledOnce).to.be.true;
               expect(spy.args[0][0]).to.have.property('message', 'invalid_request_uri');
-              expect(spy.args[0][0]).to.have.property('error_description',
-                'not registered request_uri provided');
+              expect(spy.args[0][0]).to.have.property(
+                'error_description',
+                'not registered request_uri provided',
+              );
             });
         });
       });
@@ -321,8 +327,8 @@ describe('request Uri features', function () {
             request_uri: `https://client.example.com/request#${Math.random()}`,
             scope: 'openid',
             client_id: 'client',
-            response_type: 'code'
-          }
+            response_type: 'code',
+          },
         })
           .expect(302)
           .expect(() => {
@@ -339,7 +345,7 @@ describe('request Uri features', function () {
         nock('https://client.example.com')
           .get('/request')
           .reply(302, 'redirecting', {
-            location: '/someotherrequest'
+            location: '/someotherrequest',
           });
 
         return this.wrap({
@@ -350,8 +356,8 @@ describe('request Uri features', function () {
             request_uri: `https://client.example.com/request#${Math.random()}`,
             scope: 'openid',
             client_id: 'client',
-            response_type: 'code'
-          }
+            response_type: 'code',
+          },
         })
           .expect(302)
           .expect(() => {
@@ -369,7 +375,7 @@ describe('request Uri features', function () {
           client_id: 'client',
           response_type: 'code',
           request: 'request inception',
-          redirect_uri: 'https://client.example.com/cb'
+          redirect_uri: 'https://client.example.com/cb',
         }, null, 'none', { issuer: 'client', audience: this.provider.issuer }).then((request) => {
           nock('https://client.example.com')
             .get('/request')
@@ -382,15 +388,17 @@ describe('request Uri features', function () {
               request_uri: `https://client.example.com/request#${Math.random()}`,
               scope: 'openid',
               client_id: 'client',
-              response_type: 'code'
-            }
+              response_type: 'code',
+            },
           })
             .expect(302)
             .expect(() => {
               expect(spy.calledOnce).to.be.true;
               expect(spy.args[0][0]).to.have.property('message', 'invalid_request_object');
-              expect(spy.args[0][0]).to.have.property('error_description',
-                'request object must not contain request or request_uri properties');
+              expect(spy.args[0][0]).to.have.property(
+                'error_description',
+                'request object must not contain request or request_uri properties',
+              );
             });
         });
       });
@@ -403,7 +411,7 @@ describe('request Uri features', function () {
           client_id: 'client',
           response_type: 'code',
           request_uri: 'request uri inception',
-          redirect_uri: 'https://client.example.com/cb'
+          redirect_uri: 'https://client.example.com/cb',
         }, null, 'none', { issuer: 'client', audience: this.provider.issuer }).then((request) => {
           nock('https://client.example.com')
             .get('/request')
@@ -417,15 +425,17 @@ describe('request Uri features', function () {
               request_uri: `https://client.example.com/request#${Math.random()}`,
               scope: 'openid',
               client_id: 'client',
-              response_type: 'code'
-            }
+              response_type: 'code',
+            },
           })
             .expect(302)
             .expect(() => {
               expect(spy.calledOnce).to.be.true;
               expect(spy.args[0][0]).to.have.property('message', 'invalid_request_object');
-              expect(spy.args[0][0]).to.have.property('error_description',
-                'request object must not contain request or request_uri properties');
+              expect(spy.args[0][0]).to.have.property(
+                'error_description',
+                'request object must not contain request or request_uri properties',
+              );
             });
         });
       });
@@ -437,7 +447,7 @@ describe('request Uri features', function () {
         return JWT.sign({
           client_id: 'client',
           response_type: 'id_token',
-          redirect_uri: 'https://client.example.com/cb'
+          redirect_uri: 'https://client.example.com/cb',
         }, null, 'none', { issuer: 'client', audience: this.provider.issuer }).then((request) => {
           nock('https://client.example.com')
             .get('/request')
@@ -451,15 +461,17 @@ describe('request Uri features', function () {
               request_uri: `https://client.example.com/request#${Math.random()}`,
               scope: 'openid',
               client_id: 'client',
-              response_type: 'code'
-            }
+              response_type: 'code',
+            },
           })
             .expect(302)
             .expect(() => {
               expect(spy.calledOnce).to.be.true;
               expect(spy.args[0][0]).to.have.property('message', 'invalid_request_object');
-              expect(spy.args[0][0]).to.have.property('error_description',
-                'request response_type must equal the one in request parameters');
+              expect(spy.args[0][0]).to.have.property(
+                'error_description',
+                'request response_type must equal the one in request parameters',
+              );
             });
         });
       });
@@ -471,7 +483,7 @@ describe('request Uri features', function () {
         return JWT.sign({
           client_id: 'client2',
           response_type: 'code',
-          redirect_uri: 'https://client.example.com/cb'
+          redirect_uri: 'https://client.example.com/cb',
         }, null, 'none', { issuer: 'client2', audience: this.provider.issuer }).then((request) => {
           nock('https://client.example.com')
             .get('/request')
@@ -485,15 +497,17 @@ describe('request Uri features', function () {
               request_uri: `https://client.example.com/request#${Math.random()}`,
               scope: 'openid',
               client_id: 'client',
-              response_type: 'code'
-            }
+              response_type: 'code',
+            },
           })
             .expect(302)
             .expect(() => {
               expect(spy.calledOnce).to.be.true;
               expect(spy.args[0][0]).to.have.property('message', 'invalid_request_object');
-              expect(spy.args[0][0]).to.have.property('error_description',
-                'request client_id must equal the one in request parameters');
+              expect(spy.args[0][0]).to.have.property(
+                'error_description',
+                'request client_id must equal the one in request parameters',
+              );
             });
         });
       });
@@ -514,16 +528,14 @@ describe('request Uri features', function () {
             request_uri: `https://client.example.com/request#${Math.random()}`,
             scope: 'openid',
             client_id: 'client',
-            response_type: 'code'
-          }
+            response_type: 'code',
+          },
         })
           .expect(302)
           .expect(() => {
             expect(spy.calledOnce).to.be.true;
             expect(spy.args[0][0]).to.have.property('message', 'invalid_request_object');
-            expect(spy.args[0][0]).to.have.property('error_description').and.matches(
-              /could not parse request object as valid JWT/
-            );
+            expect(spy.args[0][0]).to.have.property('error_description').and.matches(/could not parse request object as valid JWT/);
           });
       });
 
@@ -534,7 +546,7 @@ describe('request Uri features', function () {
         return JWT.sign({
           client_id: 'client-with-HS-sig',
           response_type: 'code',
-          redirect_uri: 'https://client.example.com/cb'
+          redirect_uri: 'https://client.example.com/cb',
         }, null, 'none', { issuer: 'client-with-HS-sig', audience: this.provider.issuer }).then((request) => {
           nock('https://client.example.com')
             .get('/request')
@@ -548,15 +560,17 @@ describe('request Uri features', function () {
               request_uri: `https://client.example.com/request#${Math.random()}`,
               scope: 'openid',
               client_id: 'client-with-HS-sig',
-              response_type: 'code'
-            }
+              response_type: 'code',
+            },
           })
             .expect(302)
             .expect(() => {
               expect(spy.calledOnce).to.be.true;
               expect(spy.args[0][0]).to.have.property('message', 'invalid_request_object');
-              expect(spy.args[0][0]).to.have.property('error_description',
-                'the preregistered alg must be used in request or request_uri');
+              expect(spy.args[0][0]).to.have.property(
+                'error_description',
+                'the preregistered alg must be used in request or request_uri',
+              );
             });
         });
       });
@@ -570,7 +584,7 @@ describe('request Uri features', function () {
         return JWT.sign({
           client_id: 'client',
           response_type: 'code',
-          redirect_uri: 'https://client.example.com/cb'
+          redirect_uri: 'https://client.example.com/cb',
         }, key, 'HS256', { issuer: 'client', audience: this.provider.issuer }).then((request) => {
           nock('https://client.example.com')
             .get('/request')
@@ -584,16 +598,14 @@ describe('request Uri features', function () {
               request_uri: `https://client.example.com/request#${Math.random()}`,
               scope: 'openid',
               client_id: 'client',
-              response_type: 'code'
-            }
+              response_type: 'code',
+            },
           })
             .expect(302)
             .expect(() => {
               expect(spy.calledOnce).to.be.true;
               expect(spy.args[0][0]).to.have.property('message', 'invalid_request_object');
-              expect(spy.args[0][0]).to.have.property('error_description').that.matches(
-                /could not validate request object/
-              );
+              expect(spy.args[0][0]).to.have.property('error_description').that.matches(/could not validate request object/);
             });
         });
       });

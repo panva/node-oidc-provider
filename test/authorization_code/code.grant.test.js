@@ -10,10 +10,10 @@ function errorDetail(spy) {
   return spy.args[0][0].error_detail;
 }
 
-describe('grant_type=authorization_code', function () {
+describe('grant_type=authorization_code', () => {
   before(bootstrap(__dirname));
 
-  context('with real tokens', function () {
+  context('with real tokens', () => {
     before(function () { return this.login(); });
     after(function () { return this.logout(); });
 
@@ -23,7 +23,7 @@ describe('grant_type=authorization_code', function () {
           client_id: 'client',
           scope: 'openid',
           response_type: 'code',
-          redirect_uri: 'https://client.example.com/cb'
+          redirect_uri: 'https://client.example.com/cb',
         })
         .expect(302)
         .expect((response) => {
@@ -44,7 +44,7 @@ describe('grant_type=authorization_code', function () {
         .send({
           code: this.ac,
           grant_type: 'authorization_code',
-          redirect_uri: 'https://client.example.com/cb'
+          redirect_uri: 'https://client.example.com/cb',
         })
         .expect(200)
         .expect(() => {
@@ -63,7 +63,7 @@ describe('grant_type=authorization_code', function () {
         .send({
           code: this.ac,
           grant_type: 'authorization_code',
-          redirect_uri: 'https://client.example.com/cb'
+          redirect_uri: 'https://client.example.com/cb',
         })
         .expect('pragma', 'no-cache')
         .expect('cache-control', 'no-cache, no-store');
@@ -83,7 +83,7 @@ describe('grant_type=authorization_code', function () {
         .send({
           code: this.ac,
           grant_type: 'authorization_code',
-          redirect_uri: 'https://client.example.com/cb'
+          redirect_uri: 'https://client.example.com/cb',
         })
         .expect(() => {
           this.provider.AuthorizationCode.fromJWT.restore();
@@ -97,7 +97,7 @@ describe('grant_type=authorization_code', function () {
         });
     });
 
-    context('', function () {
+    context('', () => {
       before(function () {
         this.prev = this.provider.AuthorizationCode.expiresIn;
         i(this.provider).configuration('ttl').AuthorizationCode = 1;
@@ -117,7 +117,7 @@ describe('grant_type=authorization_code', function () {
             .send({
               code: this.ac,
               grant_type: 'authorization_code',
-              redirect_uri: 'https://client.example.com/cb'
+              redirect_uri: 'https://client.example.com/cb',
             })
             .type('form')
             .expect(400)
@@ -145,7 +145,7 @@ describe('grant_type=authorization_code', function () {
         .send({
           code: this.ac,
           grant_type: 'authorization_code',
-          redirect_uri: 'https://client.example.com/cb'
+          redirect_uri: 'https://client.example.com/cb',
         })
         .type('form')
         .expect(400)
@@ -164,7 +164,7 @@ describe('grant_type=authorization_code', function () {
         .send({
           code: this.ac,
           grant_type: 'authorization_code',
-          redirect_uri: 'https://client.example.com/cb'
+          redirect_uri: 'https://client.example.com/cb',
         })
         .type('form')
         .expect(() => {
@@ -182,7 +182,7 @@ describe('grant_type=authorization_code', function () {
         .send({
           code: this.ac,
           grant_type: 'authorization_code',
-          redirect_uri: 'https://client.example.com/cb'
+          redirect_uri: 'https://client.example.com/cb',
         })
         .type('form')
         .expect(400)
@@ -201,7 +201,7 @@ describe('grant_type=authorization_code', function () {
         .send({
           code: this.ac,
           grant_type: 'foobar',
-          redirect_uri: 'https://client.example.com/cb'
+          redirect_uri: 'https://client.example.com/cb',
         })
         .type('form')
         .expect(400)
@@ -219,7 +219,7 @@ describe('grant_type=authorization_code', function () {
         .send({
           code: this.ac,
           grant_type: 'authorization_code',
-          redirect_uri: 'https://client.example.com/cb?thensome'
+          redirect_uri: 'https://client.example.com/cb?thensome',
         })
         .type('form')
         .expect(400)
@@ -233,9 +233,7 @@ describe('grant_type=authorization_code', function () {
     });
 
     it('validates account is still there', function () {
-      sinon.stub(this.provider.Account, 'findById').callsFake(() => {
-        return Promise.resolve();
-      });
+      sinon.stub(this.provider.Account, 'findById').callsFake(() => Promise.resolve());
 
       const spy = sinon.spy();
       this.provider.once('grant.error', spy);
@@ -245,7 +243,7 @@ describe('grant_type=authorization_code', function () {
         .send({
           code: this.ac,
           grant_type: 'authorization_code',
-          redirect_uri: 'https://client.example.com/cb'
+          redirect_uri: 'https://client.example.com/cb',
         })
         .type('form')
         .expect(() => {
@@ -262,7 +260,7 @@ describe('grant_type=authorization_code', function () {
     });
   });
 
-  describe('validates', function () {
+  describe('validates', () => {
     it('grant_type presence', function () {
       return this.agent.post(route)
         .auth('client', 'secret')
@@ -281,7 +279,7 @@ describe('grant_type=authorization_code', function () {
         .auth('client', 'secret')
         .send({
           grant_type: 'authorization_code',
-          redirect_uri: 'blah'
+          redirect_uri: 'blah',
         })
         .type('form')
         .expect(400)
@@ -297,7 +295,7 @@ describe('grant_type=authorization_code', function () {
         .auth('client', 'secret')
         .send({
           grant_type: 'authorization_code',
-          code: 'blah'
+          code: 'blah',
         })
         .type('form')
         .expect(400)
@@ -316,7 +314,7 @@ describe('grant_type=authorization_code', function () {
         .send({
           grant_type: 'authorization_code',
           redirect_uri: 'http://client.example.com',
-          code: 'eyJraW5kIjoiQXV0aG9yaXphdGlvbkNvZGUiLCJqdGkiOiIxNTU0M2RiYS0zYThmLTRiZWEtYmRjNi04NDQ2N2MwOWZjYTYiLCJpYXQiOjE0NjM2NTk2OTgsImV4cCI6MTQ2MzY1OTc1OCwiaXNzIjoiaHR0cHM6Ly9ndWFyZGVkLWNsaWZmcy04NjM1Lmhlcm9rdWFwcC5jb20vb3AifQ.qUTaR48lavULtmDWBcpwhcF9NXhP8xzc-643h3yWLEgIyxPzKINT-upNn-byflH7P7rQlzZ-9SJKSs72ZVqWWMNikUGgJo-XmLyersONQ8sVx7v0quo4CRXamwyXfz2gq76gFlv5mtsrWwCij1kUnSaFm_HhAcoDPzGtSqhsHNoz36KjdmC3R-m84reQk_LEGizUeV-OmsBWJs3gedPGYcRCvsnW9qa21B0yZO2-HT9VQYY68UIGucDKNvizFRmIgepDZ5PUtsvyPD0PQQ9UHiEZvICeArxPLE8t1xz-lukpTMn8vA_YJ0s7kD9HYJUwxiYIuLXwDUNpGhsegxdvbw'
+          code: 'eyJraW5kIjoiQXV0aG9yaXphdGlvbkNvZGUiLCJqdGkiOiIxNTU0M2RiYS0zYThmLTRiZWEtYmRjNi04NDQ2N2MwOWZjYTYiLCJpYXQiOjE0NjM2NTk2OTgsImV4cCI6MTQ2MzY1OTc1OCwiaXNzIjoiaHR0cHM6Ly9ndWFyZGVkLWNsaWZmcy04NjM1Lmhlcm9rdWFwcC5jb20vb3AifQ.qUTaR48lavULtmDWBcpwhcF9NXhP8xzc-643h3yWLEgIyxPzKINT-upNn-byflH7P7rQlzZ-9SJKSs72ZVqWWMNikUGgJo-XmLyersONQ8sVx7v0quo4CRXamwyXfz2gq76gFlv5mtsrWwCij1kUnSaFm_HhAcoDPzGtSqhsHNoz36KjdmC3R-m84reQk_LEGizUeV-OmsBWJs3gedPGYcRCvsnW9qa21B0yZO2-HT9VQYY68UIGucDKNvizFRmIgepDZ5PUtsvyPD0PQQ9UHiEZvICeArxPLE8t1xz-lukpTMn8vA_YJ0s7kD9HYJUwxiYIuLXwDUNpGhsegxdvbw',
         })
         .type('form')
         .expect(400)
@@ -337,9 +335,8 @@ describe('grant_type=authorization_code', function () {
         .send({
           grant_type: 'authorization_code',
           redirect_uri: 'http://client.example.com',
-          code: 'not even close'
-        }
-        )
+          code: 'not even close',
+        })
         .type('form')
         .expect(401)
         .expect(() => {
@@ -351,7 +348,7 @@ describe('grant_type=authorization_code', function () {
     });
   });
 
-  describe('error handling', function () {
+  describe('error handling', () => {
     before(function () {
       sinon.stub(this.provider.Client, 'find').returns(Promise.reject(new Error()));
     });
@@ -385,7 +382,7 @@ describe('grant_type=authorization_code', function () {
         .send({
           grant_type: 'authorization_code',
           code: 'code',
-          redirect_uri: 'is there too'
+          redirect_uri: 'is there too',
         })
         .type('form')
         .expect(500)

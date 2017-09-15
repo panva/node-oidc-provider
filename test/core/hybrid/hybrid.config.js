@@ -8,5 +8,5 @@ module.exports = {
     grant_types: ['implicit', 'authorization_code'],
     response_types: ['code id_token', 'code token', 'code id_token token', 'none'],
     redirect_uris: ['https://client.example.com/cb'],
-  }
+  },
 };

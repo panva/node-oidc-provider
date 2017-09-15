@@ -12,5 +12,5 @@ module.exports = {
     response_types: ['code'],
     subject_type: 'pairwise',
     redirect_uris: ['https://client.example.com/cb'],
-  }
+  },
 };

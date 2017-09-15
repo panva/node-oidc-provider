@@ -1,7 +1,7 @@
 const bootstrap = require('../test_helper');
 const { expect } = require('chai');
 
-describe('configuration features.encryption', function () {
+describe('configuration features.encryption', () => {
   before(bootstrap(__dirname)); // agent
 
   it('extends discovery', function () {
@@ -14,7 +14,7 @@ describe('configuration features.encryption', function () {
           'request_object_encryption_alg_values_supported',
           'request_object_encryption_enc_values_supported',
           'userinfo_encryption_alg_values_supported',
-          'userinfo_encryption_enc_values_supported'
+          'userinfo_encryption_enc_values_supported',
         );
       });
   });

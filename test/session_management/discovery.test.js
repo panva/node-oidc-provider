@@ -1,7 +1,7 @@
 const bootstrap = require('../test_helper');
 const { expect } = require('chai');
 
-describe('configuration features.encryption', function () {
+describe('configuration features.encryption', () => {
   before(bootstrap(__dirname)); // agent
 
   it('extends discovery', function () {
@@ -10,7 +10,7 @@ describe('configuration features.encryption', function () {
       .expect((response) => {
         expect(response.body).to.contain.keys(
           'check_session_iframe',
-          'end_session_endpoint'
+          'end_session_endpoint',
         );
       });
   });

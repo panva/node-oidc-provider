@@ -1,9 +1,9 @@
 const bootstrap = require('../test_helper');
 const { expect } = require('chai');
 
-describe('providing Bearer token', function () {
+describe('providing Bearer token', () => {
   before(bootstrap(__dirname)); // agent
-  context('invalid requests', function () {
+  context('invalid requests', () => {
     it('nothing provided', function () {
       return this.agent.get('/me')
         .expect(400)

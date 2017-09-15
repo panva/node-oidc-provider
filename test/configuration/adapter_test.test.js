@@ -3,8 +3,8 @@ const { TestAdapter } = require('../models');
 
 const { AdapterTest } = Provider;
 
-describe('AdapterTest', function () {
-  it('passes with the default MemoryAdapter', function () {
+describe('AdapterTest', () => {
+  it('passes with the default MemoryAdapter', () => {
     const provider = new Provider('http://localhost');
 
     return provider.initialize().then(() => {
@@ -13,7 +13,7 @@ describe('AdapterTest', function () {
     });
   });
 
-  it('passes with the TestAdapter', function () {
+  it('passes with the TestAdapter', () => {
     const provider = new Provider('http://localhost');
     return provider.initialize({
       adapter: TestAdapter,

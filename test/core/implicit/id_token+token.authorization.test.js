@@ -6,17 +6,17 @@ const { expect } = require('chai');
 
 const route = '/auth';
 
-describe('IMPLICIT id_token+token', function () {
+describe('IMPLICIT id_token+token', () => {
   before(bootstrap(__dirname)); // provider, agent, AuthorizationRequest, wrap
 
   ['get', 'post'].forEach((verb) => {
-    describe(`${verb} ${route} with session`, function () {
+    describe(`${verb} ${route} with session`, () => {
       before(function () { return this.login(); });
 
       it('responds with a id_token in fragment', function () {
         const auth = new this.AuthorizationRequest({
           response_type: 'id_token token',
-          scope: 'openid'
+          scope: 'openid',
         });
 
         return this.wrap({ route, verb, auth })
@@ -30,7 +30,7 @@ describe('IMPLICIT id_token+token', function () {
       it('ignores offline_access scope for non code-including response_types', function () {
         const auth = new this.AuthorizationRequest({
           response_type: 'id_token token',
-          scope: 'openid offline_access'
+          scope: 'openid offline_access',
         });
 
         return this.wrap({ route, verb, auth })
@@ -50,14 +50,14 @@ describe('IMPLICIT id_token+token', function () {
       });
     });
 
-    describe(`${verb} ${route} errors`, function () {
+    describe(`${verb} ${route} errors`, () => {
       it('disallowed response mode', function () {
         const spy = sinon.spy();
         this.provider.once('authorization.error', spy);
         const auth = new this.AuthorizationRequest({
           response_type: 'code token',
           scope: 'openid',
-          response_mode: 'query'
+          response_mode: 'query',
         });
 
         return this.wrap({ route, verb, auth })
@@ -77,7 +77,7 @@ describe('IMPLICIT id_token+token', function () {
         this.provider.once('authorization.error', spy);
         const auth = new this.AuthorizationRequest({
           response_type: 'id_token token',
-          scope: 'openid'
+          scope: 'openid',
         });
         delete auth.nonce;
 

@@ -4,17 +4,17 @@ const { expect } = require('chai');
 
 const route = '/auth';
 
-describe('HYBRID code+token', function () {
+describe('HYBRID code+token', () => {
   before(bootstrap(__dirname)); // provider, agent, AuthorizationRequest, wrap
 
   ['get', 'post'].forEach((verb) => {
-    describe(`${verb} ${route} with session`, function () {
+    describe(`${verb} ${route} with session`, () => {
       before(function () { return this.login(); });
 
       it('responds with a access_token and code in fragment', function () {
         const auth = new this.AuthorizationRequest({
           response_type: 'code token',
-          scope: 'openid'
+          scope: 'openid',
         });
 
         return this.wrap({ route, verb, auth })
@@ -31,7 +31,7 @@ describe('HYBRID code+token', function () {
 
         const auth = new this.AuthorizationRequest({
           response_type: 'code token',
-          scope: 'openid offline_access'
+          scope: 'openid offline_access',
         });
 
         return this.wrap({ route, verb, auth })
@@ -44,14 +44,14 @@ describe('HYBRID code+token', function () {
       });
     });
 
-    describe(`${verb} ${route} errors`, function () {
+    describe(`${verb} ${route} errors`, () => {
       it('disallowed response mode', function () {
         const spy = sinon.spy();
         this.provider.once('authorization.error', spy);
         const auth = new this.AuthorizationRequest({
           response_type: 'code token',
           scope: 'openid',
-          response_mode: 'query'
+          response_mode: 'query',
         });
 
         return this.wrap({ route, verb, auth })

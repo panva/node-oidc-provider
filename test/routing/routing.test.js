@@ -2,8 +2,8 @@ const bootstrap = require('../test_helper');
 const { forEach } = require('lodash');
 const { expect } = require('chai');
 
-describe('default routing behavior', function () {
-  describe('without mounting', function () {
+describe('default routing behavior', () => {
+  describe('without mounting', () => {
     before(bootstrap(__dirname)); // agent
 
     it('handles invalid verbs with 405 invalid request', function () {
@@ -11,7 +11,7 @@ describe('default routing behavior', function () {
         .expect(405)
         .expect({
           error: 'invalid_request',
-          error_description: 'method not allowed'
+          error_description: 'method not allowed',
         });
     });
 
@@ -20,7 +20,7 @@ describe('default routing behavior', function () {
         .expect(501)
         .expect({
           error: 'invalid_request',
-          error_description: 'not implemented'
+          error_description: 'not implemented',
         });
     });
 
@@ -30,12 +30,12 @@ describe('default routing behavior', function () {
         .expect('content-type', /application\/json/)
         .expect({
           error: 'invalid_request',
-          error_description: 'unrecognized route'
+          error_description: 'unrecognized route',
         });
     });
   });
 
-  describe('when mounted', function () {
+  describe('when mounted', () => {
     before(bootstrap(__dirname, undefined, '/oidc'));
 
     it('handles being prefixed', function () {
@@ -56,7 +56,7 @@ describe('default routing behavior', function () {
         .expect('content-type', /application\/json/)
         .expect({
           error: 'invalid_request',
-          error_description: 'unrecognized route'
+          error_description: 'unrecognized route',
         });
     });
 

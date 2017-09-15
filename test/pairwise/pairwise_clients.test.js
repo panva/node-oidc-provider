@@ -7,19 +7,19 @@ const nock = require('nock');
 const j = JSON.stringify;
 
 
-describe('pairwise features', function () {
+describe('pairwise features', () => {
   before(bootstrap(__dirname)); // provider
 
-  describe('pairwise client configuration', function () {
+  describe('pairwise client configuration', () => {
     beforeEach(nock.cleanAll);
 
-    context('sector_identifier_uri is not provided', function () {
+    context('sector_identifier_uri is not provided', () => {
       it('resolves the sector_identifier from one redirect_uri', function () {
         return i(this.provider).clientAdd({
           client_id: 'client',
           client_secret: 'secret',
           redirect_uris: ['https://client.example.com/cb'],
-          subject_type: 'pairwise'
+          subject_type: 'pairwise',
         }).then((client) => {
           expect(client.sectorIdentifier).to.be.ok;
           expect(client.sectorIdentifier).to.eq('client.example.com');
@@ -31,7 +31,7 @@ describe('pairwise features', function () {
           client_id: 'client',
           client_secret: 'secret',
           redirect_uris: ['https://client.example.com/cb', 'https://client.example.com/forum/cb'],
-          subject_type: 'pairwise'
+          subject_type: 'pairwise',
         }).then((client) => {
           expect(client.sectorIdentifier).to.be.ok;
           expect(client.sectorIdentifier).to.eq('client.example.com');
@@ -43,7 +43,7 @@ describe('pairwise features', function () {
           client_id: 'client',
           client_secret: 'secret',
           redirect_uris: ['https://client.example.com/cb', 'https://wrongsubdomain.example.com/forum/cb'],
-          subject_type: 'pairwise'
+          subject_type: 'pairwise',
         }).then((client) => {
           expect(client).not.to.be.ok;
         }, (err) => {
@@ -54,7 +54,7 @@ describe('pairwise features', function () {
       });
     });
 
-    context('sector_identifier_uri is provided', function () {
+    context('sector_identifier_uri is provided', () => {
       it('validates the sector from the provided uri', function () {
         nock('https://client.example.com')
           .get('/file_of_redirect_uris')
@@ -65,7 +65,7 @@ describe('pairwise features', function () {
           client_secret: 'secret',
           redirect_uris: ['https://client.example.com/cb', 'https://another.example.com/forum/cb'],
           sector_identifier_uri: 'https://client.example.com/file_of_redirect_uris',
-          subject_type: 'pairwise'
+          subject_type: 'pairwise',
         }).then((client) => {
           expect(client).to.be.ok;
           expect(client.sectorIdentifier).to.eq('client.example.com');
@@ -80,7 +80,7 @@ describe('pairwise features', function () {
           client_secret: 'secret',
           redirect_uris: ['https://client.example.com/cb', 'https://another.example.com/forum/cb'],
           sector_identifier_uri: 'http://client.example.com/file_of_redirect_uris',
-          subject_type: 'pairwise'
+          subject_type: 'pairwise',
         }).then((client) => {
           expect(client).not.to.be.ok;
         }, (err) => {
@@ -99,7 +99,7 @@ describe('pairwise features', function () {
           client_secret: 'secret',
           redirect_uris: ['https://client.example.com/cb', 'https://missing.example.com/forum/cb'],
           sector_identifier_uri: 'https://client.example.com/file_of_redirect_uris',
-          subject_type: 'pairwise'
+          subject_type: 'pairwise',
         }).then((client) => {
           expect(client).not.to.be.ok;
         }, (err) => {
@@ -119,7 +119,7 @@ describe('pairwise features', function () {
           client_secret: 'secret',
           redirect_uris: ['https://client.example.com/cb', 'https://missing.example.com/forum/cb'],
           sector_identifier_uri: 'https://client.example.com/file_of_redirect_uris',
-          subject_type: 'pairwise'
+          subject_type: 'pairwise',
         }).then((client) => {
           expect(client).not.to.be.ok;
         }, (err) => {
@@ -139,7 +139,7 @@ describe('pairwise features', function () {
           client_secret: 'secret',
           redirect_uris: ['https://client.example.com/cb', 'https://missing.example.com/forum/cb'],
           sector_identifier_uri: 'https://client.example.com/file_of_redirect_uris',
-          subject_type: 'pairwise'
+          subject_type: 'pairwise',
         }).then((client) => {
           expect(client).not.to.be.ok;
         }, (err) => {
@@ -153,7 +153,7 @@ describe('pairwise features', function () {
         nock('https://client.example.com')
           .get('/file_of_redirect_uris')
           .reply(302, 'redirecting', {
-            location: '/otherfile'
+            location: '/otherfile',
           });
 
         return i(this.provider).clientAdd({
@@ -161,7 +161,7 @@ describe('pairwise features', function () {
           client_secret: 'secret',
           redirect_uris: ['https://client.example.com/cb', 'https://missing.example.com/forum/cb'],
           sector_identifier_uri: 'https://client.example.com/file_of_redirect_uris',
-          subject_type: 'pairwise'
+          subject_type: 'pairwise',
         }).then((client) => {
           expect(client).not.to.be.ok;
         }, (err) => {
@@ -173,7 +173,7 @@ describe('pairwise features', function () {
     });
   });
 
-  describe('pairwise client Subject calls', function () {
+  describe('pairwise client Subject calls', () => {
     const clients = [];
 
     before(function () {
@@ -181,7 +181,7 @@ describe('pairwise features', function () {
         client_id: 'clientOne',
         client_secret: 'secret',
         redirect_uris: ['https://clientone.com/cb'],
-        subject_type: 'pairwise'
+        subject_type: 'pairwise',
       }).then((client) => {
         clients.push(client);
       });
@@ -192,7 +192,7 @@ describe('pairwise features', function () {
         client_id: 'clientTwo',
         client_secret: 'secret',
         redirect_uris: ['https://clienttwo.com/cb'],
-        subject_type: 'pairwise'
+        subject_type: 'pairwise',
       }).then((client) => {
         clients.push(client);
       });
@@ -202,7 +202,7 @@ describe('pairwise features', function () {
       return i(this.provider).clientAdd({
         client_id: 'clientThree',
         client_secret: 'secret',
-        redirect_uris: ['https://clientthree.com/cb']
+        redirect_uris: ['https://clientthree.com/cb'],
       }).then((client) => {
         clients.push(client);
       });

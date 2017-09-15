@@ -5,10 +5,10 @@ const { expect } = require('chai');
 const route = '/token/revocation';
 
 
-describe('revocation features', function () {
+describe('revocation features', () => {
   before(bootstrap(__dirname)); // this.agent, provider
 
-  describe('enriched discovery', function () {
+  describe('enriched discovery', () => {
     it('shows the url now', function () {
       return this.agent.get('/.well-known/openid-configuration')
         .expect(200)
@@ -19,7 +19,7 @@ describe('revocation features', function () {
     });
   });
 
-  describe(route, function () {
+  describe(route, () => {
     it('revokes access token [no hint]', function (done) {
       const at = new this.provider.AccessToken({
         accountId: 'accountId',
@@ -27,9 +27,7 @@ describe('revocation features', function () {
         scope: 'scope',
       });
 
-      const stub = sinon.stub(this.provider.AccessToken.prototype, 'destroy').callsFake(() => {
-        return Promise.resolve();
-      });
+      const stub = sinon.stub(this.provider.AccessToken.prototype, 'destroy').callsFake(() => Promise.resolve());
 
       at.save().then((token) => {
         this.agent.post(route)
@@ -53,9 +51,7 @@ describe('revocation features', function () {
         scope: 'scope',
       });
 
-      const stub = sinon.stub(this.provider.AccessToken.prototype, 'destroy').callsFake(() => {
-        return Promise.resolve();
-      });
+      const stub = sinon.stub(this.provider.AccessToken.prototype, 'destroy').callsFake(() => Promise.resolve());
 
       at.save().then((token) => {
         this.agent.post(route)
@@ -79,9 +75,7 @@ describe('revocation features', function () {
         scope: 'scope',
       });
 
-      const stub = sinon.stub(this.provider.AccessToken.prototype, 'destroy').callsFake(() => {
-        return Promise.resolve();
-      });
+      const stub = sinon.stub(this.provider.AccessToken.prototype, 'destroy').callsFake(() => Promise.resolve());
 
       at.save().then((token) => {
         this.agent.post(route)
@@ -105,9 +99,7 @@ describe('revocation features', function () {
         scope: 'scope',
       });
 
-      const stub = sinon.stub(this.provider.AccessToken.prototype, 'destroy').callsFake(() => {
-        return Promise.resolve();
-      });
+      const stub = sinon.stub(this.provider.AccessToken.prototype, 'destroy').callsFake(() => Promise.resolve());
 
       at.save().then((token) => {
         this.agent.post(route)
@@ -156,9 +148,7 @@ describe('revocation features', function () {
         scope: 'scope',
       });
 
-      const stub = sinon.stub(this.provider.RefreshToken.prototype, 'destroy').callsFake(() => {
-        return Promise.resolve();
-      });
+      const stub = sinon.stub(this.provider.RefreshToken.prototype, 'destroy').callsFake(() => Promise.resolve());
 
       rt.save().then((token) => {
         this.agent.post(route)
@@ -182,9 +172,7 @@ describe('revocation features', function () {
         scope: 'scope',
       });
 
-      const stub = sinon.stub(this.provider.RefreshToken.prototype, 'destroy').callsFake(() => {
-        return Promise.resolve();
-      });
+      const stub = sinon.stub(this.provider.RefreshToken.prototype, 'destroy').callsFake(() => Promise.resolve());
 
       rt.save().then((token) => {
         this.agent.post(route)
@@ -208,9 +196,7 @@ describe('revocation features', function () {
         scope: 'scope',
       });
 
-      const stub = sinon.stub(this.provider.RefreshToken.prototype, 'destroy').callsFake(() => {
-        return Promise.resolve();
-      });
+      const stub = sinon.stub(this.provider.RefreshToken.prototype, 'destroy').callsFake(() => Promise.resolve());
 
       rt.save().then((token) => {
         this.agent.post(route)
@@ -234,9 +220,7 @@ describe('revocation features', function () {
         scope: 'scope',
       });
 
-      const stub = sinon.stub(this.provider.RefreshToken.prototype, 'destroy').callsFake(() => {
-        return Promise.resolve();
-      });
+      const stub = sinon.stub(this.provider.RefreshToken.prototype, 'destroy').callsFake(() => Promise.resolve());
 
       rt.save().then((token) => {
         this.agent.post(route)
@@ -255,12 +239,10 @@ describe('revocation features', function () {
 
     it('revokes client credentials token [no hint]', function (done) {
       const rt = new this.provider.ClientCredentials({
-        clientId: 'client'
+        clientId: 'client',
       });
 
-      const stub = sinon.stub(this.provider.ClientCredentials.prototype, 'destroy').callsFake(() => {
-        return Promise.resolve();
-      });
+      const stub = sinon.stub(this.provider.ClientCredentials.prototype, 'destroy').callsFake(() => Promise.resolve());
 
       rt.save().then((token) => {
         this.agent.post(route)
@@ -279,12 +261,10 @@ describe('revocation features', function () {
 
     it('revokes client credentials token [correct hint]', function (done) {
       const rt = new this.provider.ClientCredentials({
-        clientId: 'client'
+        clientId: 'client',
       });
 
-      const stub = sinon.stub(this.provider.ClientCredentials.prototype, 'destroy').callsFake(() => {
-        return Promise.resolve();
-      });
+      const stub = sinon.stub(this.provider.ClientCredentials.prototype, 'destroy').callsFake(() => Promise.resolve());
 
       rt.save().then((token) => {
         this.agent.post(route)
@@ -303,12 +283,10 @@ describe('revocation features', function () {
 
     it('revokes client credentials token [wrong hint]', function (done) {
       const rt = new this.provider.ClientCredentials({
-        clientId: 'client'
+        clientId: 'client',
       });
 
-      const stub = sinon.stub(this.provider.ClientCredentials.prototype, 'destroy').callsFake(() => {
-        return Promise.resolve();
-      });
+      const stub = sinon.stub(this.provider.ClientCredentials.prototype, 'destroy').callsFake(() => Promise.resolve());
 
       rt.save().then((token) => {
         this.agent.post(route)
@@ -327,12 +305,10 @@ describe('revocation features', function () {
 
     it('revokes client credentials token [unrecognized hint]', function (done) {
       const rt = new this.provider.ClientCredentials({
-        clientId: 'client'
+        clientId: 'client',
       });
 
-      const stub = sinon.stub(this.provider.ClientCredentials.prototype, 'destroy').callsFake(() => {
-        return Promise.resolve();
-      });
+      const stub = sinon.stub(this.provider.ClientCredentials.prototype, 'destroy').callsFake(() => Promise.resolve());
 
       rt.save().then((token) => {
         this.agent.post(route)
@@ -365,7 +341,7 @@ describe('revocation features', function () {
       return this.agent.post(route)
         .auth('client', 'secret')
         .send({
-          token: 'dsahjdasdsa'
+          token: 'dsahjdasdsa',
         })
         .type('form')
         .expect('')
@@ -376,7 +352,7 @@ describe('revocation features', function () {
       return this.agent.post(route)
         .auth('client', 'secret')
         .send({
-          token: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiYWRtaW4iOnRydWV9.TJVA95OrM7E2cBab30RMHrHDcEfxjoYZgeFONFh7HgQ'
+          token: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiYWRtaW4iOnRydWV9.TJVA95OrM7E2cBab30RMHrHDcEfxjoYZgeFONFh7HgQ',
         })
         .type('form')
         .expect('')
@@ -399,7 +375,7 @@ describe('revocation features', function () {
           .expect((response) => {
             expect(response.body).to.eql({
               error: 'invalid_request',
-              error_description: 'this token does not belong to you'
+              error_description: 'this token does not belong to you',
             });
           })
           .end(done);

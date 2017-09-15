@@ -1,15 +1,15 @@
 const Provider = require('../../lib');
 const { expect } = require('chai');
 
-describe('default findById behavior', function () {
-  it('returns a promise', function () {
+describe('default findById behavior', () => {
+  it('returns a promise', () => {
     const provider = new Provider('http://localhost');
     const { Account } = provider;
 
     expect(Account.findById({}, 'id') instanceof Promise).to.be.true;
   });
 
-  it('resolves to an object with property and accountId property and claims function', function () {
+  it('resolves to an object with property and accountId property and claims function', () => {
     const provider = new Provider('http://localhost');
     const { Account } = provider;
 

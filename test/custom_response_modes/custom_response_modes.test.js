@@ -2,14 +2,14 @@ const { expect } = require('chai');
 const sinon = require('sinon');
 const bootstrap = require('../test_helper');
 
-describe('custom response modes', function () {
+describe('custom response modes', () => {
   before(bootstrap(__dirname)); // provider, agent, AuthorizationRequest
 
   before(function () { return this.login(); });
 
   it('allows for grant types to be added', function () {
     expect(() => {
-      this.provider.registerResponseMode('custom', function handler() {});
+      this.provider.registerResponseMode('custom', () => {});
     }).not.to.throw();
   });
 
@@ -20,7 +20,7 @@ describe('custom response modes', function () {
     const auth = new this.AuthorizationRequest({
       response_type: 'code',
       scope: 'openid',
-      response_mode: 'custom'
+      response_mode: 'custom',
     });
 
     return this.agent.get('/auth')
@@ -40,7 +40,7 @@ describe('custom response modes', function () {
       response_type: 'code',
       scope: 'openid',
       response_mode: 'custom',
-      prompt: 'none login' // causes invalid_request
+      prompt: 'none login', // causes invalid_request
     });
 
     return this.agent.get('/auth')
@@ -56,7 +56,7 @@ describe('custom response modes', function () {
     const auth = new this.AuthorizationRequest({
       response_type: 'code',
       scope: 'openid',
-      response_mode: 'foo'
+      response_mode: 'foo',
     });
 
     return this.agent.get('/auth')

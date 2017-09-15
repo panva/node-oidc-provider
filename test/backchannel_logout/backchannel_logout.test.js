@@ -6,7 +6,7 @@ const base64url = require('base64url');
 const nock = require('nock');
 const Provider = require('../../lib');
 
-describe('Back-Channel Logout 1.0', function () {
+describe('Back-Channel Logout 1.0', () => {
   before(bootstrap(__dirname));
 
   afterEach(nock.cleanAll);
@@ -15,19 +15,19 @@ describe('Back-Channel Logout 1.0', function () {
     if (client.backchannelLogout.restore) client.backchannelLogout.restore();
   });
 
-  describe('feature flag', function () {
-    it('checks sessionManagement is also enabled', function () {
+  describe('feature flag', () => {
+    it('checks sessionManagement is also enabled', () => {
       expect(() => {
         new Provider('http://localhost', { // eslint-disable-line no-new
           features: {
-            backchannelLogout: true
-          }
+            backchannelLogout: true,
+          },
         });
       }).to.throw('backchannelLogout is only available in conjuction with sessionManagement');
     });
   });
 
-  describe('Client#backchannelLogout', function () {
+  describe('Client#backchannelLogout', () => {
     it('triggers the call, does not return values', async function () {
       const client = await this.provider.Client.find('client');
 
@@ -59,7 +59,7 @@ describe('Back-Channel Logout 1.0', function () {
     });
   });
 
-  describe('discovery extension', function () {
+  describe('discovery extension', () => {
     it('extends the well known config', function () {
       return this.agent.get('/.well-known/openid-configuration')
         .expect((response) => {
@@ -69,7 +69,7 @@ describe('Back-Channel Logout 1.0', function () {
     });
   });
 
-  describe('end_session extension', function () {
+  describe('end_session extension', () => {
     beforeEach(function () { return this.login(); });
     afterEach(function () { return this.logout(); });
 
@@ -80,7 +80,7 @@ describe('Back-Channel Logout 1.0', function () {
           scope: 'openid',
           nonce: String(Math.random()),
           response_type: 'code id_token',
-          redirect_uri: 'https://client.example.com/cb'
+          redirect_uri: 'https://client.example.com/cb',
         })
         .expect(302)
         .expect((response) => {
@@ -102,7 +102,7 @@ describe('Back-Channel Logout 1.0', function () {
         .send({
           code: this.code,
           grant_type: 'authorization_code',
-          redirect_uri: 'https://client.example.com/cb'
+          redirect_uri: 'https://client.example.com/cb',
         })
         .expect(200)
         .expect((response) => {
@@ -118,7 +118,7 @@ describe('Back-Channel Logout 1.0', function () {
         .send({
           code: this.code,
           grant_type: 'authorization_code',
-          redirect_uri: 'https://client.example.com/cb'
+          redirect_uri: 'https://client.example.com/cb',
         })
         .expect(200)
         .end((error, acResponse) => {
@@ -128,7 +128,7 @@ describe('Back-Channel Logout 1.0', function () {
             .type('form')
             .send({
               refresh_token: acResponse.body.refresh_token,
-              grant_type: 'refresh_token'
+              grant_type: 'refresh_token',
             })
             .expect(200)
             .expect((rtResponse) => {

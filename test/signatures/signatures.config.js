@@ -22,5 +22,5 @@ module.exports = {
     grant_types: ['authorization_code'],
     id_token_signed_response_alg: 'HS256',
     redirect_uris: ['https://client.example.com/cb'],
-  }]
+  }],
 };

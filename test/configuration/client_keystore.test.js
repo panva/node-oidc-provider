@@ -10,16 +10,14 @@ const fail = () => { throw new Error('expected promise to be rejected'); };
 
 const endpoint = nock('https://client.example.com/');
 
-describe('client keystore refresh', function () {
+describe('client keystore refresh', () => {
   before(bootstrap(__dirname)); // provider
 
-  before(function () {
-    return keystore.generate('RSA', 1024).then(() => {
-      endpoint
-        .get('/jwks')
-        .reply(200, JSON.stringify(keystore.toJSON()));
-    });
-  });
+  before(() => keystore.generate('RSA', 1024).then(() => {
+    endpoint
+      .get('/jwks')
+      .reply(200, JSON.stringify(keystore.toJSON()));
+  }));
 
   before(function () {
     return i(this.provider).clientAdd({
@@ -100,7 +98,7 @@ describe('client keystore refresh', function () {
     });
   });
 
-  describe('caching', function () {
+  describe('caching', () => {
     it('uses expires caching header to determine stale states', async function () {
       const client = await this.provider.Client.find('client');
       await keystore.generate('RSA', 1024);
@@ -109,7 +107,7 @@ describe('client keystore refresh', function () {
       endpoint
         .get('/jwks')
         .reply(200, keystore.toJSON(), {
-          Expires: until.toUTCString()
+          Expires: until.toUTCString(),
         });
 
       const freshUntil = epochTime(until);
@@ -130,7 +128,7 @@ describe('client keystore refresh', function () {
         .get('/jwks')
         .reply(200, keystore.toJSON(), {
           Expires: until.toUTCString(),
-          'Cache-Control': 'private, max-age: 3600'
+          'Cache-Control': 'private, max-age: 3600',
         });
 
       const freshUntil = epochTime(until);
@@ -149,7 +147,7 @@ describe('client keystore refresh', function () {
       endpoint
         .get('/jwks')
         .reply(200, keystore.toJSON(), {
-          'Cache-Control': 'private, max-age=3600'
+          'Cache-Control': 'private, max-age=3600',
         });
 
       const freshUntil = epochTime() + 3600;
@@ -179,7 +177,7 @@ describe('client keystore refresh', function () {
     });
   });
 
-  describe('refreshing', function () {
+  describe('refreshing', () => {
     it('when a stale keystore is passed to JWT verification it gets refreshed', async function () {
       endpoint
         .get('/jwks')
@@ -191,7 +189,8 @@ describe('client keystore refresh', function () {
       client.keystore.freshUntil = epochTime() - 1;
       return JWT.verify(
         'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiYWRtaW4iOnRydWV9.TJVA95OrM7E2cBab30RMHrHDcEfxjoYZgeFONFh7HgQ'
-        , client.keystore).then(fail, () => {
+        , client.keystore,
+      ).then(fail, () => {
         expect(nock.isDone()).to.be.true;
       });
     });

@@ -4,7 +4,7 @@ const { expect } = require('chai');
 
 const route = '/token';
 
-describe('grant_type=client_credentials', function () {
+describe('grant_type=client_credentials', () => {
   before(bootstrap(__dirname)); // agent, provider
 
   it('provides a Bearer client credentials token', function () {
@@ -14,7 +14,7 @@ describe('grant_type=client_credentials', function () {
     return this.agent.post(route)
       .auth('client', 'secret')
       .send({
-        grant_type: 'client_credentials'
+        grant_type: 'client_credentials',
       })
       .type('form')
       .expect(200)

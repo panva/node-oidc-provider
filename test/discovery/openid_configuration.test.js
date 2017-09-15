@@ -5,7 +5,7 @@ const { expect } = require('chai');
 
 const route = '/.well-known/openid-configuration';
 
-describe(route, function () {
+describe(route, () => {
   before(bootstrap(__dirname)); // agent, provider, responses
 
   it('responds with json 200', function () {
@@ -25,7 +25,7 @@ describe(route, function () {
       });
   });
 
-  describe('with errors', function () {
+  describe('with errors', () => {
     before(function () {
       sinon.stub(this.provider, 'pathFor').throws(new InvalidRequestError());
     });
@@ -51,7 +51,7 @@ describe(route, function () {
     });
   });
 
-  describe('with exceptions', function () {
+  describe('with exceptions', () => {
     before(function () {
       sinon.stub(this.provider, 'pathFor').throws();
     });

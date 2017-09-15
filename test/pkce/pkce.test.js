@@ -3,10 +3,10 @@ const bootstrap = require('../test_helper');
 const { parse: parseUrl } = require('url');
 const { expect } = require('chai');
 
-describe('PKCE RFC7636', function () {
+describe('PKCE RFC7636', () => {
   before(bootstrap(__dirname)); // provider, agent, this.AuthorizationRequest, TestAdapter
 
-  describe('authorization', function () {
+  describe('authorization', () => {
     before(function () { return this.login(); });
 
     it('stores codeChallenge and codeChallengeMethod in the code', function () {
@@ -34,7 +34,7 @@ describe('PKCE RFC7636', function () {
       const auth = new this.AuthorizationRequest({
         response_type: 'code',
         scope: 'openid',
-        code_challenge: 'foobar'
+        code_challenge: 'foobar',
       });
 
       return this.agent.get('/auth')
@@ -79,7 +79,7 @@ describe('PKCE RFC7636', function () {
         .expect(auth.validateErrorDescription('not supported value of code_challenge_method'));
     });
 
-    describe('forcedForNative flag', function () {
+    describe('forcedForNative flag', () => {
       before(function () {
         i(this.provider).configuration('features.pkce').forcedForNative = true;
       });
@@ -129,7 +129,7 @@ describe('PKCE RFC7636', function () {
     });
   });
 
-  describe('token grant_type=authorization_code', function () {
+  describe('token grant_type=authorization_code', () => {
     it('passes with plain values', async function () {
       const authCode = new this.provider.AuthorizationCode({
         accountId: 'sub',
@@ -148,7 +148,7 @@ describe('PKCE RFC7636', function () {
           code,
           grant_type: 'authorization_code',
           redirect_uri: 'com.example.myapp:/localhost/cb',
-          code_verifier: 'plainFoobar'
+          code_verifier: 'plainFoobar',
         })
         .expect(200);
     });
@@ -171,7 +171,7 @@ describe('PKCE RFC7636', function () {
           code,
           grant_type: 'authorization_code',
           redirect_uri: 'com.example.myapp:/localhost/cb',
-          code_verifier: 'dBjftJeZ4CVP-mB92K27uhbUJU1p1r_wW1gFWFOEjXk'
+          code_verifier: 'dBjftJeZ4CVP-mB92K27uhbUJU1p1r_wW1gFWFOEjXk',
         })
         .expect(200);
     });
@@ -219,7 +219,7 @@ describe('PKCE RFC7636', function () {
           code,
           grant_type: 'authorization_code',
           redirect_uri: 'com.example.myapp:/localhost/cb',
-          code_verifier: 'plainFoobars'
+          code_verifier: 'plainFoobars',
         })
         .expect(400)
         .expect((response) => {
@@ -245,7 +245,7 @@ describe('PKCE RFC7636', function () {
           code,
           grant_type: 'authorization_code',
           redirect_uri: 'com.example.myapp:/localhost/cb',
-          code_verifier: 'invalidE9Melhoa2OwvFrEMTJguCHaoeK1t8URWbuGJSstw-cM'
+          code_verifier: 'invalidE9Melhoa2OwvFrEMTJguCHaoeK1t8URWbuGJSstw-cM',
         })
         .expect(400)
         .expect((response) => {

@@ -2,7 +2,7 @@ const bootstrap = require('../test_helper');
 
 const route = '/.well-known/webfinger';
 
-describe(route, function () {
+describe(route, () => {
   before(bootstrap(__dirname)); // agent, provider
   it('responds with jrd+json 200', function () {
     return this.agent.get(route)
@@ -13,16 +13,16 @@ describe(route, function () {
   it('returns the webfinger structure', function () {
     return this.agent.get(route)
       .query({
-        resource: 'acct:joe@example.com'
+        resource: 'acct:joe@example.com',
       })
       .expect(200, {
         subject: 'acct:joe@example.com',
         links: [
           {
             rel: 'http://openid.net/specs/connect/1.0/issuer',
-            href: this.provider.issuer
-          }
-        ]
+            href: this.provider.issuer,
+          },
+        ],
       });
   });
 });

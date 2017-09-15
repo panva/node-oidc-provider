@@ -17,14 +17,14 @@ function validateErrorDescription(description) {
   };
 }
 
-describe('registration features', function () {
+describe('registration features', () => {
   before(bootstrap(__dirname)); // agent, provider, TestAdapter
 
-  context('POST /reg', function () {
+  context('POST /reg', () => {
     it('generates the id, secret that does not expire and reg access token and returns the defaulted values', function () {
       return this.agent.post('/reg')
         .send({
-          redirect_uris: ['https://client.example.com/cb']
+          redirect_uris: ['https://client.example.com/cb'],
         })
         .expect(201)
         .expect((response) => {
@@ -36,7 +36,7 @@ describe('registration features', function () {
           expect(response.body).to.have.property('require_auth_time', false);
           expect(response.body).to.have.property('grant_types').and.eql(['authorization_code']);
           expect(response.body).to.have.property('response_types').and.eql(['code']);
-          expect(response.body).to.have.property('registration_client_uri', this.provider.issuer + '/reg/' + response.body.client_id); // eslint-disable-line prefer-template
+          expect(response.body).to.have.property('registration_client_uri', `${this.provider.issuer}/reg/${response.body.client_id}`);
         });
     });
 
@@ -46,7 +46,7 @@ describe('registration features', function () {
           token_endpoint_auth_method: 'none',
           redirect_uris: ['https://client.example.com/cb'],
           response_types: ['id_token'],
-          grant_types: ['implicit']
+          grant_types: ['implicit'],
         })
         .expect(201)
         .expect((response) => {
@@ -77,7 +77,7 @@ describe('registration features', function () {
           token_endpoint_auth_method: 'client_secret_jwt',
           redirect_uris: ['https://client.example.com/cb'],
           response_types: ['id_token'],
-          grant_types: ['implicit']
+          grant_types: ['implicit'],
         })
         .expect(201)
         .expect((response) => {
@@ -89,7 +89,7 @@ describe('registration features', function () {
     it('returns token-endpoint-like cache headers', function () {
       return this.agent.post('/reg')
         .send({
-          redirect_uris: ['https://client.example.com/cb']
+          redirect_uris: ['https://client.example.com/cb'],
         })
         .expect('pragma', 'no-cache')
         .expect('cache-control', 'no-cache, no-store');
@@ -103,7 +103,7 @@ describe('registration features', function () {
 
       return this.agent.post('/reg')
         .send({
-          redirect_uris: ['https://client.example.com/cb']
+          redirect_uris: ['https://client.example.com/cb'],
         })
         .expect(() => {
           expect(upsert.calledOnce).to.be.true;
@@ -131,7 +131,7 @@ describe('registration features', function () {
       return this.agent.post('/reg')
         .send({
           grant_types: ['this is clearly wrong'],
-          redirect_uris: ['https://client.example.com/cb']
+          redirect_uris: ['https://client.example.com/cb'],
         })
         .expect(400)
         .expect(validateError('invalid_client_metadata'))
@@ -151,18 +151,18 @@ describe('registration features', function () {
     it('only accepts application/json POSTs', function () {
       return this.agent.post('/reg')
         .send({
-          redirect_uris: ['https://client.example.com/cb']
+          redirect_uris: ['https://client.example.com/cb'],
         })
         .type('form')
         .expect(400)
         .expect({
           error: 'invalid_request',
-          error_description: 'only application/json content-type POST bodies are supported'
+          error_description: 'only application/json content-type POST bodies are supported',
         });
     });
 
-    describe('initial access tokens', function () {
-      describe('fix string one', function () {
+    describe('initial access tokens', () => {
+      describe('fix string one', () => {
         before(function () {
           const conf = i(this.provider).configuration();
           conf.features.registration = { initialAccessToken: 'foobar' };
@@ -175,10 +175,10 @@ describe('registration features', function () {
         it('allows reg calls with the access tokens as a Bearer token [query]', function () {
           return this.agent.post('/reg')
             .send({
-              redirect_uris: ['https://client.example.com/cb']
+              redirect_uris: ['https://client.example.com/cb'],
             })
             .query({
-              access_token: 'foobar'
+              access_token: 'foobar',
             })
             .expect(201);
         });
@@ -187,7 +187,7 @@ describe('registration features', function () {
           return this.agent.post('/reg')
             .send({
               redirect_uris: ['https://client.example.com/cb'],
-              access_token: 'foobar'
+              access_token: 'foobar',
             })
             .expect(201);
         });
@@ -196,7 +196,7 @@ describe('registration features', function () {
           return this.agent.post('/reg')
             .set('Authorization', 'Bearer foobar')
             .send({
-              redirect_uris: ['https://client.example.com/cb']
+              redirect_uris: ['https://client.example.com/cb'],
             })
             .expect(201);
         });
@@ -204,16 +204,16 @@ describe('registration features', function () {
         it('rejects calls with bad access token', function () {
           return this.agent.post('/reg')
             .send({
-              redirect_uris: ['https://client.example.com/cb']
+              redirect_uris: ['https://client.example.com/cb'],
             })
             .query({
-              access_token: 'foobarbaz'
+              access_token: 'foobarbaz',
             })
             .expect(401);
         });
       });
 
-      describe('using a model', function () {
+      describe('using a model', () => {
         before(function () {
           const conf = i(this.provider).configuration();
           conf.features.registration = { initialAccessToken: true };
@@ -235,7 +235,7 @@ describe('registration features', function () {
         it('allows the developers to insert new tokens with expiration', function () {
           const IAT = this.provider.InitialAccessToken;
           return new IAT({
-            expiresIn: 24 * 60 * 60
+            expiresIn: 24 * 60 * 60,
           }).save().then((v) => {
             const jti = v.substring(0, 48);
             const token = this.TestAdapter.for('InitialAccessToken').syncFind(jti);
@@ -246,10 +246,10 @@ describe('registration features', function () {
         it('allows reg calls with the access tokens as a Bearer token', function () {
           return this.agent.post('/reg')
             .send({
-              redirect_uris: ['https://client.example.com/cb']
+              redirect_uris: ['https://client.example.com/cb'],
             })
             .query({
-              access_token: this.token
+              access_token: this.token,
             })
             .expect(201);
         });
@@ -257,10 +257,10 @@ describe('registration features', function () {
         it('rejects calls with bad access token', function () {
           return this.agent.post('/reg')
             .send({
-              redirect_uris: ['https://client.example.com/cb']
+              redirect_uris: ['https://client.example.com/cb'],
             })
             .query({
-              access_token: 'foobarbaz'
+              access_token: 'foobarbaz',
             })
             .expect(401);
         });
@@ -268,10 +268,10 @@ describe('registration features', function () {
         it('rejects calls with not found access token', function () {
           return this.agent.post('/reg')
             .send({
-              redirect_uris: ['https://client.example.com/cb']
+              redirect_uris: ['https://client.example.com/cb'],
             })
             .query({
-              access_token: 'Loremipsumdolorsitametconsecteturadipisicingelitsed'
+              access_token: 'Loremipsumdolorsitametconsecteturadipisicingelitsed',
             })
             .expect(401);
         });
@@ -279,10 +279,10 @@ describe('registration features', function () {
         it('rejects calls with manipulated access token', function () {
           return this.agent.post('/reg')
             .send({
-              redirect_uris: ['https://client.example.com/cb']
+              redirect_uris: ['https://client.example.com/cb'],
             })
             .query({
-              access_token: this.token.slice(0, -1)
+              access_token: this.token.slice(0, -1),
             })
             .expect(401);
         });
@@ -290,11 +290,11 @@ describe('registration features', function () {
     });
   });
 
-  context('GET /reg/:clientId', function () {
+  context('GET /reg/:clientId', () => {
     before(function () {
       return this.agent.post('/reg')
         .send({
-          redirect_uris: ['https://client.example.com/cb']
+          redirect_uris: ['https://client.example.com/cb'],
         })
         .expect((response) => {
           this.clientId = response.body.client_id;
@@ -306,7 +306,7 @@ describe('registration features', function () {
     it('returns all available nonsecret metadata', function () {
       return this.agent.get(`/reg/${this.clientId}`)
         .query({
-          access_token: this.token
+          access_token: this.token,
         })
         .expect(200)
         .expect('content-type', /application\/json/)
@@ -319,14 +319,14 @@ describe('registration features', function () {
           expect(response.body).to.have.property('require_auth_time', false);
           expect(response.body).to.have.property('grant_types').and.eql(['authorization_code']);
           expect(response.body).to.have.property('response_types').and.eql(['code']);
-          expect(response.body).to.have.property('registration_client_uri', this.provider.issuer + '/reg/' + response.body.client_id); // eslint-disable-line prefer-template
+          expect(response.body).to.have.property('registration_client_uri', `${this.provider.issuer}/reg/${response.body.client_id}`);
         });
     });
 
     it('returns token-endpoint-like cache headers', function () {
       return this.agent.get(`/reg/${this.clientId}`)
         .query({
-          access_token: this.token
+          access_token: this.token,
         })
         .expect('pragma', 'no-cache')
         .expect('cache-control', 'no-cache, no-store');
@@ -335,7 +335,7 @@ describe('registration features', function () {
     it('validates client is a valid client', function () {
       return this.agent.get('/reg/thisDOesnotCompute')
         .query({
-          access_token: 'wahtever'
+          access_token: 'wahtever',
         })
         .expect(401)
         .expect(validateError('invalid_token'));
@@ -350,7 +350,7 @@ describe('registration features', function () {
     it('validates auth', function () {
       return this.agent.get(`/reg/${this.clientId}`)
         .query({
-          access_token: 'invalid token'
+          access_token: 'invalid token',
         })
         .expect(401);
     });
@@ -358,7 +358,7 @@ describe('registration features', function () {
     it('validates auth (notfoundtoken)', function () {
       return this.agent.get(`/reg/${this.clientId}`)
         .query({
-          access_token: 'Loremipsumdolorsitametconsecteturadipisicingelitsed'
+          access_token: 'Loremipsumdolorsitametconsecteturadipisicingelitsed',
         })
         .expect(401);
     });
@@ -366,7 +366,7 @@ describe('registration features', function () {
     it('accepts query', function () {
       return this.agent.get(`/reg/${this.clientId}`)
         .query({
-          access_token: this.token
+          access_token: this.token,
         })
         .expect(200);
     });
@@ -383,7 +383,7 @@ describe('registration features', function () {
 
       return this.agent.get('/reg/foobar')
         .query({
-          access_token: this.token
+          access_token: this.token,
         })
         .expect('pragma', 'no-cache')
         .expect('cache-control', 'no-cache, no-store')

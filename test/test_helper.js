@@ -29,7 +29,7 @@ const responses = {
   tokenAuthRejected: {
     error: 'invalid_client',
     error_description: 'client is invalid',
-  }
+  },
 };
 
 function readCookie(value) {
@@ -39,7 +39,7 @@ function readCookie(value) {
   return parsed[key];
 }
 
-const port = global.server.address().port;
+const { port } = global.server.address();
 
 module.exports = function testHelper(dir, basename, mountTo) {
   const conf = path.format({
@@ -94,54 +94,54 @@ module.exports = function testHelper(dir, basename, mountTo) {
     });
   }
 
-  function AuthorizationRequest(parameters) {
-    this.client_id = parameters.client_id || clients[0].client_id;
-    this.state = Math.random().toString();
-    this.nonce = Math.random().toString();
-    this.redirect_uri = parameters.redirect_uri || clients[0].redirect_uris[0];
+  class AuthorizationRequest {
+    constructor(parameters) {
+      this.client_id = parameters.client_id || clients[0].client_id;
+      this.state = Math.random().toString();
+      this.nonce = Math.random().toString();
+      this.redirect_uri = parameters.redirect_uri || clients[0].redirect_uris[0];
 
-    Object.assign(this, parameters);
+      Object.assign(this, parameters);
 
-    Object.defineProperty(this, 'validateClientLocation', {
-      value: (response) => {
-        const expected = parse(this.redirect_uri, true);
-        const actual = parse(response.headers.location, true);
-        ['protocol', 'host', 'pathname'].forEach((attr) => {
-          expect(actual[attr]).to.equal(expected[attr]);
-        });
-      },
-    });
+      Object.defineProperty(this, 'validateClientLocation', {
+        value: (response) => {
+          const expected = parse(this.redirect_uri, true);
+          const actual = parse(response.headers.location, true);
+          ['protocol', 'host', 'pathname'].forEach((attr) => {
+            expect(actual[attr]).to.equal(expected[attr]);
+          });
+        },
+      });
 
-    Object.defineProperty(this, 'validateState', {
-      value: (response) => {
-        const { query: { state } } = parse(response.headers.location, true);
-        expect(state).to.equal(this.state);
-      },
-    });
+      Object.defineProperty(this, 'validateState', {
+        value: (response) => {
+          const { query: { state } } = parse(response.headers.location, true);
+          expect(state).to.equal(this.state);
+        },
+      });
 
-    Object.defineProperty(this, 'validateInteractionRedirect', {
-      value: (response) => {
-        const { hostname, search, query } = parse(response.headers.location);
-        expect(hostname).to.be.null;
-        expect(search).to.be.null;
-        expect(query).to.be.null;
-        expect(response).to.have.nested.property('headers.set-cookie').that.is.an('array');
+      Object.defineProperty(this, 'validateInteractionRedirect', {
+        value: (response) => {
+          const { hostname, search, query } = parse(response.headers.location);
+          expect(hostname).to.be.null;
+          expect(search).to.be.null;
+          expect(query).to.be.null;
+          expect(response).to.have.nested.property('headers.set-cookie').that.is.an('array');
 
-        const grantid = readCookie(response.headers['set-cookie'][1]);
-        expect(readCookie(response.headers['set-cookie'][1])).to.equal(readCookie(response.headers['set-cookie'][2]));
+          const grantid = readCookie(response.headers['set-cookie'][1]);
+          expect(readCookie(response.headers['set-cookie'][1])).to.equal(readCookie(response.headers['set-cookie'][2]));
 
-        const interaction = TestAdapter.for('Session').syncFind(grantid);
+          const interaction = TestAdapter.for('Session').syncFind(grantid);
 
-        for (const attr in this) { // eslint-disable-line
-          if (this.hasOwnProperty(attr)) { // eslint-disable-line
-            expect(interaction.params).to.have.property(attr, this[attr]);
-          }
-        }
-      }
-    });
+          Object.entries(this).forEach(([key, value]) => {
+            expect(interaction.params).to.have.property(key, value);
+          });
+        },
+      });
+    }
   }
 
-  AuthorizationRequest.prototype.validateInteractionError = (expectedError, expectedReason) => {
+  AuthorizationRequest.prototype.validateInteractionError = (expectedError, expectedReason) => { // eslint-disable-line arrow-body-style, max-len
     return (response) => {
       const grantid = readCookie(response.headers['set-cookie'][1]);
       const { interaction: { error, reason } } = TestAdapter.for('Session').syncFind(grantid);
@@ -208,7 +208,9 @@ module.exports = function testHelper(dir, basename, mountTo) {
   }
 
   function wrap(opts) {
-    const { route, verb, auth, params } = opts; // eslint-disable-line no-shadow
+    const {
+      route, verb, auth, params,
+    } = opts;
     switch (verb) {
       case 'get':
         return agent
@@ -224,7 +226,7 @@ module.exports = function testHelper(dir, basename, mountTo) {
     }
   }
 
-  after(function () {
+  after(() => {
     global.server.removeAllListeners('request');
   });
 
@@ -238,7 +240,7 @@ module.exports = function testHelper(dir, basename, mountTo) {
       getSessionId,
       getSession,
       wrap,
-      TestAdapter
+      TestAdapter,
     });
 
     return new Promise((resolve, reject) => {

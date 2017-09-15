@@ -30,11 +30,11 @@ module.exports = {
   },
   cookies: {
     long: {
-      signed: false
+      signed: false,
     },
     short: {
-      signed: false
-    }
+      signed: false,
+    },
   },
-  pairwiseSalt: '0e8c4037aa8580400dc6dea12f281ea7070c76398cab60c5'
+  pairwiseSalt: '0e8c4037aa8580400dc6dea12f281ea7070c76398cab60c5',
 };

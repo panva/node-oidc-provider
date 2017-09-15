@@ -7,5 +7,5 @@ module.exports = {
     client_id: 'client',
     client_secret: 'secret',
     redirect_uris: ['https://client.example.com/cb'],
-  }
+  },
 };

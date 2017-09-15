@@ -6,17 +6,17 @@ const epochTime = require('../../../lib/helpers/epoch_time');
 
 const route = '/auth';
 
-describe('BASIC code', function () {
+describe('BASIC code', () => {
   before(bootstrap(__dirname)); // provider, agent, AuthorizationRequest, getSession, wrap
 
   ['get', 'post'].forEach((verb) => {
-    describe(`${verb} ${route} with session`, function () {
+    describe(`${verb} ${route} with session`, () => {
       before(function () { return this.login(); });
 
       it('responds with a code in search', function () {
         const auth = new this.AuthorizationRequest({
           response_type: 'code',
-          scope: 'openid'
+          scope: 'openid',
         });
 
         return this.wrap({ route, verb, auth })
@@ -30,7 +30,7 @@ describe('BASIC code', function () {
         const auth = new this.AuthorizationRequest({
           response_type: 'code',
           response_mode: 'fragment',
-          scope: 'openid'
+          scope: 'openid',
         });
 
         return this.wrap({ route, verb, auth })
@@ -46,7 +46,7 @@ describe('BASIC code', function () {
         this.provider.once('token.issued', spy);
         const auth = new this.AuthorizationRequest({
           response_type: 'code',
-          scope: 'openid and unsupported'
+          scope: 'openid and unsupported',
         });
 
         return this.wrap({ route, verb, auth })
@@ -62,7 +62,7 @@ describe('BASIC code', function () {
         this.provider.once('token.issued', spy);
         const auth = new this.AuthorizationRequest({
           response_type: 'code',
-          scope: 'openid offline_access'
+          scope: 'openid offline_access',
         });
 
         return this.wrap({ route, verb, auth })
@@ -74,7 +74,7 @@ describe('BASIC code', function () {
       });
     });
 
-    describe(`${verb} ${route} interactions`, function () {
+    describe(`${verb} ${route} interactions`, () => {
       beforeEach(function () { return this.login(); });
       after(function () { return this.logout(); });
 
@@ -85,7 +85,7 @@ describe('BASIC code', function () {
 
         const auth = new this.AuthorizationRequest({
           response_type: 'code',
-          scope: 'openid'
+          scope: 'openid',
         });
 
         return this.wrap({ route, verb, auth })
@@ -100,7 +100,7 @@ describe('BASIC code', function () {
 
         const auth = new this.AuthorizationRequest({
           response_type: 'code',
-          scope: 'openid'
+          scope: 'openid',
         });
 
         return this.wrap({ route, verb, auth })
@@ -129,7 +129,7 @@ describe('BASIC code', function () {
         const auth = new this.AuthorizationRequest({
           response_type: 'code',
           prompt: 'login',
-          scope: 'openid'
+          scope: 'openid',
         });
 
         return this.wrap({ route, verb, auth })
@@ -145,7 +145,7 @@ describe('BASIC code', function () {
         const auth = new this.AuthorizationRequest({
           response_type: 'code',
           max_age: '1800', // 30 minutes old session max
-          scope: 'openid'
+          scope: 'openid',
         });
 
         return this.wrap({ route, verb, auth })
@@ -163,7 +163,7 @@ describe('BASIC code', function () {
 
         const auth = new this.AuthorizationRequest({
           response_type: 'code',
-          scope: 'openid'
+          scope: 'openid',
         });
 
         return this.wrap({ route, verb, auth })
@@ -176,7 +176,7 @@ describe('BASIC code', function () {
       });
     });
 
-    describe(`${verb} ${route} errors`, function () {
+    describe(`${verb} ${route} errors`, () => {
       it('dupe parameters', function () {
         // fake a query like this scope=openid&scope=openid
         const spy = sinon.spy();
@@ -218,7 +218,7 @@ describe('BASIC code', function () {
         const auth = new this.AuthorizationRequest({
           response_type: 'code token',
           scope: 'openid',
-          response_mode: 'query'
+          response_mode: 'query',
         });
 
         return this.wrap({ route, verb, auth })
@@ -240,7 +240,7 @@ describe('BASIC code', function () {
           const auth = new this.AuthorizationRequest({
             response_type: 'code',
             scope: 'openid',
-            [param]: 'some'
+            [param]: 'some',
           });
 
           return this.agent.get(route)
@@ -256,7 +256,7 @@ describe('BASIC code', function () {
         });
       });
 
-      context('when client has more then one redirect_uri', function () {
+      context('when client has more then one redirect_uri', () => {
         before(async function () {
           const client = await this.provider.Client.find('client');
           client.redirectUris.push('https://someOtherUri.com');
@@ -273,7 +273,7 @@ describe('BASIC code', function () {
           this.provider.once('authorization.error', emitSpy);
           const auth = new this.AuthorizationRequest({
             response_type: 'code',
-            scope: 'openid'
+            scope: 'openid',
           });
           delete auth.redirect_uri;
 
@@ -299,7 +299,7 @@ describe('BASIC code', function () {
           this.provider.once('authorization.error', spy);
           const auth = new this.AuthorizationRequest({
             response_type: 'code',
-            scope: 'openid'
+            scope: 'openid',
           });
           delete auth[param];
 
@@ -323,7 +323,7 @@ describe('BASIC code', function () {
         const auth = new this.AuthorizationRequest({
           response_type: 'code',
           scope: 'openid',
-          prompt: 'unsupported'
+          prompt: 'unsupported',
         });
 
         return this.wrap({ route, verb, auth })
@@ -344,7 +344,7 @@ describe('BASIC code', function () {
         const auth = new this.AuthorizationRequest({
           response_type: 'code',
           scope: 'openid',
-          prompt: 'none login'
+          prompt: 'none login',
         });
 
         return this.wrap({ route, verb, auth })
@@ -364,7 +364,7 @@ describe('BASIC code', function () {
         this.provider.once('authorization.error', spy);
         const auth = new this.AuthorizationRequest({
           response_type: 'code',
-          scope: 'profile'
+          scope: 'profile',
         });
 
         return this.wrap({ route, verb, auth })
@@ -384,7 +384,7 @@ describe('BASIC code', function () {
         const renderSpy = sinon.spy(i(this.provider).configuration(), 'renderError');
         const auth = new this.AuthorizationRequest({
           response_type: 'code',
-          scope: 'openid'
+          scope: 'openid',
         });
         delete auth.client_id;
 
@@ -408,7 +408,7 @@ describe('BASIC code', function () {
         const auth = new this.AuthorizationRequest({
           response_type: 'code',
           scope: 'openid',
-          client_id: 'foobar'
+          client_id: 'foobar',
         });
 
         return this.agent.get(route)
@@ -430,7 +430,7 @@ describe('BASIC code', function () {
         const auth = new this.AuthorizationRequest({
           response_type: 'code',
           // scope: 'openid',
-          redirect_uri: 'https://attacker.example.com/foobar'
+          redirect_uri: 'https://attacker.example.com/foobar',
         });
 
         return this.agent.get(route)
@@ -451,7 +451,7 @@ describe('BASIC code', function () {
         this.provider.once('authorization.error', spy);
         const auth = new this.AuthorizationRequest({
           response_type: 'unsupported',
-          scope: 'openid'
+          scope: 'openid',
         });
 
         return this.wrap({ route, verb, auth })
@@ -472,7 +472,7 @@ describe('BASIC code', function () {
           this.provider.once('authorization.error', spy);
           const auth = new this.AuthorizationRequest({
             response_type: 'code',
-            scope: 'openid'
+            scope: 'openid',
           });
 
           return this.wrap({ route, verb, auth })
@@ -491,7 +491,7 @@ describe('BASIC code', function () {
         this.provider.once('authorization.error', spy);
         const auth = new this.AuthorizationRequest({
           response_type: 'id_token',
-          scope: 'openid'
+          scope: 'openid',
         });
 
         return this.wrap({ route, verb, auth })
@@ -514,7 +514,7 @@ describe('BASIC code', function () {
         const auth = new this.AuthorizationRequest({
           response_type: 'code',
           scope: 'openid',
-          redirect_uri: 'http://example.client.dev/notregistered'
+          redirect_uri: 'http://example.client.dev/notregistered',
         });
 
         return this.agent.get(route)
@@ -532,7 +532,7 @@ describe('BASIC code', function () {
           });
       });
 
-      describe('login state specific', function () {
+      describe('login state specific', () => {
         before(function () { return this.login(); });
 
         it('malformed id_token_hint', function () {
@@ -541,7 +541,7 @@ describe('BASIC code', function () {
           const auth = new this.AuthorizationRequest({
             response_type: 'code',
             scope: 'openid',
-            id_token_hint: 'invalid'
+            id_token_hint: 'invalid',
           });
 
           return this.wrap({ route, verb, auth })
@@ -557,7 +557,7 @@ describe('BASIC code', function () {
         });
       });
 
-      context('exception handling', function () {
+      context('exception handling', () => {
         before(function () {
           sinon.stub(this.provider.Client, 'find').returns(Promise.reject(new Error()));
         });
@@ -570,7 +570,7 @@ describe('BASIC code', function () {
           const auth = new this.AuthorizationRequest({
             response_type: 'code',
             prompt: 'none',
-            scope: 'openid'
+            scope: 'openid',
           });
 
           const spy = sinon.spy();

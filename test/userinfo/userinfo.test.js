@@ -2,7 +2,7 @@ const bootstrap = require('../test_helper');
 const { expect } = require('chai');
 const url = require('url');
 
-describe('userinfo /me', function () {
+describe('userinfo /me', () => {
   before(bootstrap(__dirname)); // this.provider, agent, this.AuthorizationRequest, wrap
 
   before(function () { return this.login(); });
@@ -10,7 +10,7 @@ describe('userinfo /me', function () {
   before(function () {
     const auth = new this.AuthorizationRequest({
       response_type: 'id_token token',
-      scope: 'openid email'
+      scope: 'openid email',
     });
 
     return this.wrap({ auth, verb: 'get', route: '/auth' })
@@ -29,7 +29,7 @@ describe('userinfo /me', function () {
   });
 
   it('validates a client is still valid for a found token', async function () {
-    const at = await new this.provider.AccessToken({ clientId: 'notfound', }).save();
+    const at = await new this.provider.AccessToken({ clientId: 'notfound' }).save();
     return this.agent.get('/me')
       .set('Authorization', `Bearer ${at}`)
       .expect(401)
@@ -47,7 +47,7 @@ describe('userinfo /me', function () {
   it('does allow for scopes to be shrunk', function () {
     return this.agent.get('/me')
       .query({
-        scope: 'openid'
+        scope: 'openid',
       })
       .set('Authorization', `Bearer ${this.access_token}`)
       .expect(200)
@@ -60,14 +60,14 @@ describe('userinfo /me', function () {
   it('does not allow for scopes to be extended', function () {
     return this.agent.get('/me')
       .query({
-        scope: 'openid profile'
+        scope: 'openid profile',
       })
       .set('Authorization', `Bearer ${this.access_token}`)
       .expect(400)
       .expect({ error: 'invalid_scope', scope: 'profile', error_description: 'access token missing requested scope' });
   });
 
-  describe('userinfo /me WWW-Authenticate header', function () {
+  describe('userinfo /me WWW-Authenticate header', () => {
     it('is set', function () {
       return this.agent.get('/me')
         .set('Authorization', 'Bearer ThisIsNotAValidToken')

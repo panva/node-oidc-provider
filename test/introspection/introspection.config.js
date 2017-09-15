@@ -15,7 +15,7 @@ module.exports = {
     client_id: 'client-pairwise',
     client_secret: 'secret',
     subject_type: 'pairwise',
-    redirect_uris: ['https://client.example.com/cb']
+    redirect_uris: ['https://client.example.com/cb'],
   }, {
     client_id: 'client-introspection',
     client_secret: 'secret',
@@ -27,6 +27,6 @@ module.exports = {
     token_endpoint_auth_method: 'none',
     redirect_uris: [],
     grant_types: [],
-    response_types: []
-  }]
+    response_types: [],
+  }],
 };

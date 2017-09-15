@@ -3,17 +3,17 @@ const { expect } = require('chai');
 
 const route = '/auth';
 
-describe('session management', function () {
+describe('session management', () => {
   before(bootstrap(__dirname)); // provider, agent, this.AuthorizationRequest, wrap
 
   ['get', 'post'].forEach((verb) => {
-    describe(`[session_management] ${verb} ${route} with session`, function () {
+    describe(`[session_management] ${verb} ${route} with session`, () => {
       before(function () { return this.login(); });
 
       it('provides session_state in the response', function () {
         const auth = new this.AuthorizationRequest({
           response_type: 'code',
-          scope: 'openid'
+          scope: 'openid',
         });
 
         return this.wrap({ route, verb, auth })
@@ -26,7 +26,7 @@ describe('session management', function () {
       it('sets a _state.clientId cookies', function () {
         const auth = new this.AuthorizationRequest({
           response_type: 'code',
-          scope: 'openid'
+          scope: 'openid',
         });
 
         return this.wrap({ route, verb, auth })
@@ -37,9 +37,9 @@ describe('session management', function () {
       });
     });
 
-    describe('[session_management] check_session_iframe', function () {
+    describe('[session_management] check_session_iframe', () => {
       before(function () {
-        this.provider.app.middleware.unshift(async function (ctx, next) {
+        this.provider.app.middleware.unshift(async (ctx, next) => {
           ctx.response.set('X-Frame-Options', 'SAMEORIGIN');
           ctx.response.set('Content-Security-Policy', "default-src 'none'; frame-ancestors 'self' example.com *.example.net; script-src 'self'; connect-src 'self'; img-src 'self'; style-src 'self';");
           await next();

@@ -8,13 +8,13 @@ expire.setDate(expire.getDate() + 1);
 
 const { expect } = require('chai');
 
-describe('devInteractions', function () {
-  context('renders login', function () {
+describe('devInteractions', () => {
+  context('renders login', () => {
     before(bootstrap(__dirname));
     before(function () {
       const auth = new this.AuthorizationRequest({
         response_type: 'code',
-        scope: 'openid'
+        scope: 'openid',
       });
 
       return this.agent.get('/auth')
@@ -33,7 +33,7 @@ describe('devInteractions', function () {
     });
   });
 
-  context('render interaction', function () {
+  context('render interaction', () => {
     before(bootstrap(__dirname));
     before(function () { return this.login(); });
     before(function () {
@@ -59,12 +59,12 @@ describe('devInteractions', function () {
     });
   });
 
-  context('submit login', function () {
+  context('submit login', () => {
     before(bootstrap(__dirname));
     before(function () {
       const auth = new this.AuthorizationRequest({
         response_type: 'code',
-        scope: 'openid'
+        scope: 'openid',
       });
 
       return this.agent.get('/auth')
@@ -86,7 +86,7 @@ describe('devInteractions', function () {
     });
   });
 
-  context('submit interaction', function () {
+  context('submit interaction', () => {
     before(bootstrap(__dirname));
     before(function () { return this.login(); });
     before(function () {
@@ -106,7 +106,7 @@ describe('devInteractions', function () {
     it('accepts the interaction and resumes auth', function () {
       return this.agent.post(`${this.url}/submit`)
         .send({
-          view: 'interaction'
+          view: 'interaction',
         })
         .type('form')
         .expect(302)
@@ -115,7 +115,7 @@ describe('devInteractions', function () {
   });
 });
 
-describe('resume after interaction', function () {
+describe('resume after interaction', () => {
   before(bootstrap(__dirname));
 
   before(function () {
@@ -138,14 +138,14 @@ describe('resume after interaction', function () {
 
     this.agent._saveCookies.bind(this.agent)({
       headers: {
-        'set-cookie': cookies
+        'set-cookie': cookies,
       },
     });
 
     return sess.save();
   }
 
-  context('general', function () {
+  context('general', () => {
     it('needs the results to be present, else renders an err', function () {
       return this.agent.get('/auth/resume')
         .expect(400)
@@ -153,11 +153,11 @@ describe('resume after interaction', function () {
     });
   });
 
-  context('login results', function () {
+  context('login results', () => {
     it('should redirect to client with error if interaction did not resolve in a session', function () {
       const auth = new this.AuthorizationRequest({
         response_type: 'code',
-        scope: 'openid'
+        scope: 'openid',
       });
 
       setup.call(this, auth);
@@ -173,14 +173,14 @@ describe('resume after interaction', function () {
     it('should process newly established permanent sessions', function () {
       const auth = new this.AuthorizationRequest({
         response_type: 'code',
-        scope: 'openid'
+        scope: 'openid',
       });
 
       setup.call(this, auth, {
         login: {
           account: uuid(),
-          remember: true
-        }
+          remember: true,
+        },
       });
 
       return this.agent.get('/auth/resume')
@@ -197,13 +197,13 @@ describe('resume after interaction', function () {
     it('should process newly established temporary sessions', function () {
       const auth = new this.AuthorizationRequest({
         response_type: 'code',
-        scope: 'openid'
+        scope: 'openid',
       });
 
       setup.call(this, auth, {
         login: {
-          account: uuid()
-        }
+          account: uuid(),
+        },
       });
 
       return this.agent.get('/auth/resume')
@@ -218,20 +218,20 @@ describe('resume after interaction', function () {
     });
   });
 
-  context('consent results', function () {
+  context('consent results', () => {
     it('when scope includes offline_access', function () {
       const auth = new this.AuthorizationRequest({
         response_type: 'code',
         prompt: 'consent',
-        scope: 'openid offline_access'
+        scope: 'openid offline_access',
       });
 
       setup.call(this, auth, {
         login: {
           account: uuid(),
-          remember: true
+          remember: true,
         },
-        consent: {}
+        consent: {},
       });
 
       let authorizationCode;
@@ -253,17 +253,17 @@ describe('resume after interaction', function () {
     it('should use the scope from resume cookie if provided', function () {
       const auth = new this.AuthorizationRequest({
         response_type: 'code',
-        scope: 'openid'
+        scope: 'openid',
       });
 
       setup.call(this, auth, {
         login: {
           account: uuid(),
-          remember: true
+          remember: true,
         },
         consent: {
-          scope: 'openid profile'
-        }
+          scope: 'openid profile',
+        },
       });
 
       let authorizationCode;
@@ -286,14 +286,14 @@ describe('resume after interaction', function () {
       const auth = new this.AuthorizationRequest({
         response_type: 'code',
         scope: 'openid',
-        prompt: 'consent'
+        prompt: 'consent',
       });
 
       setup.call(this, auth, {
         login: {
           account: uuid(),
-          remember: true
-        }
+          remember: true,
+        },
       });
 
       return this.agent.get('/auth/resume')
@@ -305,7 +305,7 @@ describe('resume after interaction', function () {
     });
   });
 
-  context('custom prompts', function () {
+  context('custom prompts', () => {
     before(function () { return this.login(); });
     after(function () { return this.logout(); });
 
@@ -313,7 +313,7 @@ describe('resume after interaction', function () {
       const auth = new this.AuthorizationRequest({
         response_type: 'code',
         scope: 'openid',
-        prompt: 'custom'
+        prompt: 'custom',
       });
 
       setup.call(this, auth);

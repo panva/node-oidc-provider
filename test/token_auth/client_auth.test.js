@@ -8,11 +8,11 @@ const { expect } = require('chai');
 
 const route = '/token';
 
-describe('client authentication options', function () {
+describe('client authentication options', () => {
   before(bootstrap(__dirname)); // agent, this.provider, responses
 
-  describe('discovery', function () {
-    it('pushes no algs when neither _jwt method is enabled', function () {
+  describe('discovery', () => {
+    it('pushes no algs when neither _jwt method is enabled', () => {
       const provider = new Provider('http://localhost', {
         tokenEndpointAuthMethods: [
           'none',
@@ -26,7 +26,7 @@ describe('client authentication options', function () {
       expect(i(provider).configuration('revocationEndpointAuthSigningAlgValues')).to.be.undefined;
     });
 
-    it('pushes only symmetric algs when client_secret_jwt is enabled', function () {
+    it('pushes only symmetric algs when client_secret_jwt is enabled', () => {
       const provider = new Provider('http://localhost', {
         tokenEndpointAuthMethods: [
           'none',
@@ -47,7 +47,7 @@ describe('client authentication options', function () {
       expect(i(provider).configuration('revocationEndpointAuthSigningAlgValues')).to.eql(algs);
     });
 
-    it('pushes only asymmetric algs when private_key_jwt is enabled', function () {
+    it('pushes only asymmetric algs when private_key_jwt is enabled', () => {
       const provider = new Provider('http://localhost', {
         tokenEndpointAuthMethods: [
           'none',
@@ -74,7 +74,7 @@ describe('client authentication options', function () {
       expect(i(provider).configuration('revocationEndpointAuthSigningAlgValues')).to.eql(algs);
     });
 
-    it('pushes all algs when both _jwt methods are enabled', function () {
+    it('pushes all algs when both _jwt methods are enabled', () => {
       const provider = new Provider('http://localhost', {
         tokenEndpointAuthMethods: [
           'none',
@@ -106,7 +106,7 @@ describe('client authentication options', function () {
     });
   });
 
-  describe('none auth', function () {
+  describe('none auth', () => {
     it('accepts the auth', function () {
       return this.agent.post(route)
         .send({
@@ -121,11 +121,11 @@ describe('client authentication options', function () {
     });
   });
 
-  describe('client_secret_basic auth', function () {
+  describe('client_secret_basic auth', () => {
     it('accepts the auth', function () {
       return this.agent.post(route)
         .send({
-          grant_type: 'implicit'
+          grant_type: 'implicit',
         })
         .type('form')
         .auth('client-basic', 'secret')
@@ -135,7 +135,7 @@ describe('client authentication options', function () {
     it('validates the Basic scheme format (parts)', function () {
       return this.agent.post(route)
         .send({
-          grant_type: 'implicit'
+          grant_type: 'implicit',
         })
         .type('form')
         .set('Authorization', 'Basic')
@@ -148,7 +148,7 @@ describe('client authentication options', function () {
     it('validates the Basic scheme format (Basic)', function () {
       return this.agent.post(route)
         .send({
-          grant_type: 'implicit'
+          grant_type: 'implicit',
         })
         .type('form')
         .set('Authorization', 'Bearer foo')
@@ -161,7 +161,7 @@ describe('client authentication options', function () {
     it('validates the Basic scheme format (no :)', function () {
       return this.agent.post(route)
         .send({
-          grant_type: 'implicit'
+          grant_type: 'implicit',
         })
         .type('form')
         .set('Authorization', 'Basic Zm9v')
@@ -174,7 +174,7 @@ describe('client authentication options', function () {
     it('rejects invalid secrets', function () {
       return this.agent.post(route)
         .send({
-          grant_type: 'implicit'
+          grant_type: 'implicit',
         })
         .type('form')
         .auth('client-basic', 'invalid secret')
@@ -184,7 +184,7 @@ describe('client authentication options', function () {
     it('requires the client_secret to be sent', function () {
       return this.agent.post(route)
         .send({
-          grant_type: 'implicit'
+          grant_type: 'implicit',
         })
         .type('form')
         .auth('client-basic', '')
@@ -195,13 +195,13 @@ describe('client authentication options', function () {
     });
   });
 
-  describe('client_secret_post auth', function () {
+  describe('client_secret_post auth', () => {
     it('accepts the auth', function () {
       return this.agent.post(route)
         .send({
           grant_type: 'implicit',
           client_id: 'client-post',
-          client_secret: 'secret'
+          client_secret: 'secret',
         })
         .type('form')
         .expect(this.responses.tokenAuthSucceeded);
@@ -212,7 +212,7 @@ describe('client authentication options', function () {
         .send({
           grant_type: 'implicit',
           client_id: 'client-post',
-          client_secret: 'invalid'
+          client_secret: 'invalid',
         })
         .type('form')
         .expect(this.responses.tokenAuthRejected);
@@ -223,7 +223,7 @@ describe('client authentication options', function () {
         .send({
           grant_type: 'implicit',
           client_id: 'client-post',
-          client_secret: ''
+          client_secret: '',
         })
         .type('form')
         .expect({
@@ -233,7 +233,7 @@ describe('client authentication options', function () {
     });
   });
 
-  describe('client_secret_jwt auth', function () {
+  describe('client_secret_jwt auth', () => {
     before(async function () {
       this.key = (await this.provider.Client.find('client-jwt-secret')).keystore.get();
     });
@@ -243,12 +243,12 @@ describe('client authentication options', function () {
         jti: uuid(),
         aud: this.provider.issuer + this.provider.pathFor('token'),
         sub: 'client-jwt-secret',
-        iss: 'client-jwt-secret'
+        iss: 'client-jwt-secret',
       }, this.key, 'HS256', { expiresIn: 60 }).then(assertion => this.agent.post(route)
         .send({
           client_assertion: assertion,
           grant_type: 'implicit',
-          client_assertion_type: 'urn:ietf:params:oauth:client-assertion-type:jwt-bearer'
+          client_assertion_type: 'urn:ietf:params:oauth:client-assertion-type:jwt-bearer',
         })
         .type('form')
         .expect(this.responses.tokenAuthSucceeded));
@@ -259,12 +259,12 @@ describe('client authentication options', function () {
         jti: uuid(),
         aud: [this.provider.issuer + this.provider.pathFor('token')],
         sub: 'client-jwt-secret',
-        iss: 'client-jwt-secret'
+        iss: 'client-jwt-secret',
       }, this.key, 'HS256', { expiresIn: 60 }).then(assertion => this.agent.post(route)
         .send({
           client_assertion: assertion,
           grant_type: 'implicit',
-          client_assertion_type: 'urn:ietf:params:oauth:client-assertion-type:jwt-bearer'
+          client_assertion_type: 'urn:ietf:params:oauth:client-assertion-type:jwt-bearer',
         })
         .type('form')
         .expect(this.responses.tokenAuthSucceeded));
@@ -276,7 +276,7 @@ describe('client authentication options', function () {
           client_id: 'client-jwt-secret',
           client_assertion: '.eyJzdWIiOiJjbGllbnQtand0LXNlY3JldCIsImFsZyI6IkhTMjU2In0.',
           grant_type: 'implicit',
-          client_assertion_type: 'urn:ietf:params:oauth:client-assertion-type:jwt-bearer'
+          client_assertion_type: 'urn:ietf:params:oauth:client-assertion-type:jwt-bearer',
         })
         .type('form')
         .expect({
@@ -291,14 +291,14 @@ describe('client authentication options', function () {
         aud: this.provider.issuer + this.provider.pathFor('token'),
         sub: 'client-jwt-secret',
         iss: 'client-jwt-secret',
-        exp: ''
+        exp: '',
       }, this.key, 'HS256', {
         // expiresIn: 60
       }).then(assertion => this.agent.post(route)
         .send({
           client_assertion: assertion,
           grant_type: 'implicit',
-          client_assertion_type: 'urn:ietf:params:oauth:client-assertion-type:jwt-bearer'
+          client_assertion_type: 'urn:ietf:params:oauth:client-assertion-type:jwt-bearer',
         })
         .type('form')
         .expect({
@@ -318,7 +318,7 @@ describe('client authentication options', function () {
         .send({
           client_assertion: assertion,
           grant_type: 'implicit',
-          client_assertion_type: 'urn:ietf:params:oauth:client-assertion-type:jwt-bearer'
+          client_assertion_type: 'urn:ietf:params:oauth:client-assertion-type:jwt-bearer',
         })
         .type('form')
         .expect({
@@ -334,12 +334,12 @@ describe('client authentication options', function () {
         sub: 'client-jwt-secret',
         iss: 'client-jwt-secret',
       }, this.key, 'HS256', {
-        expiresIn: 60
+        expiresIn: 60,
       }).then(assertion => this.agent.post(route)
         .send({
           client_assertion: assertion,
           grant_type: 'implicit',
-          client_assertion_type: 'urn:ietf:params:oauth:client-assertion-type:jwt-bearer'
+          client_assertion_type: 'urn:ietf:params:oauth:client-assertion-type:jwt-bearer',
         })
         .type('form')
         .expect({
@@ -355,12 +355,12 @@ describe('client authentication options', function () {
         sub: 'client-jwt-secret',
         // iss: 'client-jwt-secret',
       }, this.key, 'HS256', {
-        expiresIn: 60
+        expiresIn: 60,
       }).then(assertion => this.agent.post(route)
         .send({
           client_assertion: assertion,
           grant_type: 'implicit',
-          client_assertion_type: 'urn:ietf:params:oauth:client-assertion-type:jwt-bearer'
+          client_assertion_type: 'urn:ietf:params:oauth:client-assertion-type:jwt-bearer',
         })
         .type('form')
         .expect({
@@ -376,12 +376,12 @@ describe('client authentication options', function () {
         sub: 'client-jwt-secret',
         iss: 'not equal to clientid',
       }, this.key, 'HS256', {
-        expiresIn: 60
+        expiresIn: 60,
       }).then(assertion => this.agent.post(route)
         .send({
           client_assertion: assertion,
           grant_type: 'implicit',
-          client_assertion_type: 'urn:ietf:params:oauth:client-assertion-type:jwt-bearer'
+          client_assertion_type: 'urn:ietf:params:oauth:client-assertion-type:jwt-bearer',
         })
         .type('form')
         .expect({
@@ -398,12 +398,12 @@ describe('client authentication options', function () {
         sub: 'client-jwt-secret',
         iss: 'client-jwt-secret',
       }, this.key, 'HS256', {
-        expiresIn: 60
+        expiresIn: 60,
       }).then(assertion => this.agent.post(route)
         .send({
           client_assertion: assertion,
           grant_type: 'implicit',
-          client_assertion_type: 'urn:ietf:params:oauth:client-assertion-type:jwt-bearer'
+          client_assertion_type: 'urn:ietf:params:oauth:client-assertion-type:jwt-bearer',
         })
         .type('form')
         .expect({
@@ -420,12 +420,12 @@ describe('client authentication options', function () {
         sub: 'client-jwt-secret',
         iss: 'client-jwt-secret',
       }, this.key, 'HS256', {
-        expiresIn: 60
+        expiresIn: 60,
       }).then(assertion => this.agent.post(route)
         .send({
           client_assertion: assertion,
           grant_type: 'implicit',
-          client_assertion_type: 'urn:ietf:params:oauth:client-assertion-type:jwt-bearer'
+          client_assertion_type: 'urn:ietf:params:oauth:client-assertion-type:jwt-bearer',
         })
         .type('form')
         .expect({
@@ -439,13 +439,13 @@ describe('client authentication options', function () {
         jti: uuid(),
         aud: this.provider.issuer + this.provider.pathFor('token'),
         sub: 'client-jwt-secret',
-        iss: 'client-jwt-secret'
+        iss: 'client-jwt-secret',
       }, this.key, 'HS256', { expiresIn: 60 }).then(assertion => this.agent.post(route)
         .send({
           client_assertion: assertion,
           grant_type: 'implicit',
           client_id: 'mismatching-client-id',
-          client_assertion_type: 'urn:ietf:params:oauth:client-assertion-type:jwt-bearer'
+          client_assertion_type: 'urn:ietf:params:oauth:client-assertion-type:jwt-bearer',
         })
         .type('form')
         .expect({
@@ -459,7 +459,7 @@ describe('client authentication options', function () {
         .send({
           grant_type: 'implicit',
           client_id: 'client-jwt-secret',
-          client_assertion_type: 'urn:ietf:params:oauth:client-assertion-type:jwt-bearer'
+          client_assertion_type: 'urn:ietf:params:oauth:client-assertion-type:jwt-bearer',
         })
         .type('form')
         .expect({
@@ -473,9 +473,9 @@ describe('client authentication options', function () {
         jti: uuid(),
         aud: this.provider.issuer + this.provider.pathFor('token'),
         sub: 'client-jwt-secret',
-        iss: 'client-jwt-secret'
+        iss: 'client-jwt-secret',
       }, this.key, 'HS256', {
-        expiresIn: 60
+        expiresIn: 60,
       }).then(assertion => this.agent.post(route)
         .send({
           client_assertion: assertion,
@@ -494,14 +494,14 @@ describe('client authentication options', function () {
         jti: uuid(),
         aud: this.provider.issuer + this.provider.pathFor('token'),
         sub: 'client-jwt-secret',
-        iss: 'client-jwt-secret'
+        iss: 'client-jwt-secret',
       }, this.key, 'HS256', {
-        expiresIn: 60
+        expiresIn: 60,
       }).then(assertion => this.agent.post(route)
         .send({
           client_assertion: assertion,
           grant_type: 'implicit',
-          client_assertion_type: 'urn:ietf:mycustom'
+          client_assertion_type: 'urn:ietf:mycustom',
         })
         .type('form')
         .expect({
@@ -515,7 +515,7 @@ describe('client authentication options', function () {
         .send({
           client_assertion: 'this.notatall.valid',
           grant_type: 'implicit',
-          client_assertion_type: 'urn:ietf:params:oauth:client-assertion-type:jwt-bearer'
+          client_assertion_type: 'urn:ietf:params:oauth:client-assertion-type:jwt-bearer',
         })
         .type('form')
         .expect({
@@ -529,14 +529,14 @@ describe('client authentication options', function () {
         jti: uuid(),
         aud: this.provider.issuer + this.provider.pathFor('token'),
         sub: 'client-jwt-secret',
-        iss: 'client-jwt-secret'
+        iss: 'client-jwt-secret',
       }, this.key, 'HS256', {
-        expiresIn: -1
+        expiresIn: -1,
       }).then(assertion => this.agent.post(route)
         .send({
           client_assertion: assertion,
           grant_type: 'implicit',
-          client_assertion_type: 'urn:ietf:params:oauth:client-assertion-type:jwt-bearer'
+          client_assertion_type: 'urn:ietf:params:oauth:client-assertion-type:jwt-bearer',
         })
         .type('form')
         .expect({
@@ -545,50 +545,46 @@ describe('client authentication options', function () {
         }));
     });
 
-    describe('JTI uniqueness', function () {
+    describe('JTI uniqueness', () => {
       it('reused jtis must be rejected', function () {
         return JWT.sign({
           jti: uuid(),
           aud: this.provider.issuer + this.provider.pathFor('token'),
           sub: 'client-jwt-secret',
-          iss: 'client-jwt-secret'
+          iss: 'client-jwt-secret',
         }, this.key, 'HS256', {
-          expiresIn: 60
+          expiresIn: 60,
         })
-          .then((assertion) => {
-            return this.agent.post(route)
+          .then(assertion => this.agent.post(route)
+            .send({
+              client_assertion: assertion,
+              grant_type: 'authorization_code',
+              code: 'foobar',
+              redirect_uri: 'foobar',
+              client_assertion_type: 'urn:ietf:params:oauth:client-assertion-type:jwt-bearer',
+            })
+            .type('form')
+            .expect({
+              error: 'invalid_token',
+              error_description: 'invalid token provided',
+            })
+            .then(() => this.agent.post(route)
               .send({
                 client_assertion: assertion,
                 grant_type: 'authorization_code',
                 code: 'foobar',
                 redirect_uri: 'foobar',
-                client_assertion_type: 'urn:ietf:params:oauth:client-assertion-type:jwt-bearer'
+                client_assertion_type: 'urn:ietf:params:oauth:client-assertion-type:jwt-bearer',
               })
               .type('form')
               .expect({
-                error: 'invalid_token',
-                error_description: 'invalid token provided',
-              })
-              .then(() => {
-                return this.agent.post(route)
-                  .send({
-                    client_assertion: assertion,
-                    grant_type: 'authorization_code',
-                    code: 'foobar',
-                    redirect_uri: 'foobar',
-                    client_assertion_type: 'urn:ietf:params:oauth:client-assertion-type:jwt-bearer'
-                  })
-                  .type('form')
-                  .expect({
-                    error: 'invalid_request',
-                    error_description: 'jwt-bearer tokens must only be used once',
-                  });
-              });
-          });
+                error: 'invalid_request',
+                error_description: 'jwt-bearer tokens must only be used once',
+              })));
       });
     });
 
-    describe('when token_endpoint_auth_signing_alg is set on the client', function () {
+    describe('when token_endpoint_auth_signing_alg is set on the client', () => {
       before(async function () {
         (await this.provider.Client.find('client-jwt-secret')).tokenEndpointAuthSigningAlg = 'HS384';
       });
@@ -600,14 +596,14 @@ describe('client authentication options', function () {
           jti: uuid(),
           aud: this.provider.issuer + this.provider.pathFor('token'),
           sub: 'client-jwt-secret',
-          iss: 'client-jwt-secret'
+          iss: 'client-jwt-secret',
         }, this.key, 'HS256', {
-          expiresIn: 60
+          expiresIn: 60,
         }).then(assertion => this.agent.post(route)
           .send({
             client_assertion: assertion,
             grant_type: 'implicit',
-            client_assertion_type: 'urn:ietf:params:oauth:client-assertion-type:jwt-bearer'
+            client_assertion_type: 'urn:ietf:params:oauth:client-assertion-type:jwt-bearer',
           })
           .type('form')
           .expect({
@@ -618,28 +614,26 @@ describe('client authentication options', function () {
     });
   });
 
-  describe('private_key_jwt auth', function () {
+  describe('private_key_jwt auth', () => {
     let privateKey;
 
-    before(function () {
-      return jose.JWK.asKey(clientKey).then((key) => {
-        privateKey = key;
-      });
-    });
+    before(() => jose.JWK.asKey(clientKey).then((key) => {
+      privateKey = key;
+    }));
 
     it('accepts the auth', function () {
       return JWT.sign({
         jti: uuid(),
         aud: this.provider.issuer + this.provider.pathFor('token'),
         sub: 'client-jwt-key',
-        iss: 'client-jwt-key'
+        iss: 'client-jwt-key',
       }, privateKey, 'RS256', {
-        expiresIn: 60
+        expiresIn: 60,
       }).then(assertion => this.agent.post(route)
         .send({
           client_assertion: assertion,
           grant_type: 'implicit',
-          client_assertion_type: 'urn:ietf:params:oauth:client-assertion-type:jwt-bearer'
+          client_assertion_type: 'urn:ietf:params:oauth:client-assertion-type:jwt-bearer',
         })
         .type('form')
         .expect(this.responses.tokenAuthSucceeded));
