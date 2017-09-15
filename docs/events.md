@@ -31,6 +31,6 @@ parameters, loaded client or session.
 | end_session.error | (error, ctx) | ... whenever a handled error is encountered in the `end_session` endpoint. |
 | webfinger.error | (error, ctx) | ... whenever a handled error is encountered in the `webfinger` endpoint. |
 | token.issued | (token) | ... whenever a token is issued. All tokens extending `BaseToken` emit this event. token can be one of `AccessToken`, `AuthorizationCode`, `ClientCredentials`, `RefreshToken`, `InitialAccessToken`, `RegistrationAccessToken`. |
-| token.consumed | (token) | ... whenever a token (actually just AuthorizationCode) is consumed. |
+| token.consumed | (token) | ... whenever a token is consumed (AuthorizationCode or RefreshToken) |
 | token.revoked | (token) | ... whenever a token is about to be revoked. |
 | grant.revoked | (grantId) | ... whenever tokens resulting from a single grant are about to be revoked. `grantId` is uuid formatted string. Use this to cascade the token revocation in cases where your adapter cannot provide this functionality. |
