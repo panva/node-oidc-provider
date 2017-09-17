@@ -30,7 +30,7 @@ Yay for [SemVer](http://semver.org/).
 ### Version 1.15.13
 - [DIFF](https://github.com/panva/node-oidc-provider/compare/v1.15.12...v1.15.13)
 - fixed PBES2 encryption to use client_secret derived symmetrical key instead of its full octet value
-- removed bugged and never previously not working `A(128|192|256)GCMKW` symmetrical encryption algs
+- removed bugged and never previously working `A(128|192|256)GCMKW` symmetrical encryption algs
 
 ### Version 1.15.12
 - [DIFF](https://github.com/panva/node-oidc-provider/compare/v1.15.11...v1.15.12)
