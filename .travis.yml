@@ -6,6 +6,7 @@ addons:
     packages:
       - bc
 node_js:
+  - v4.0.0
   - lts/argon
   - lts/boron
   - stable
