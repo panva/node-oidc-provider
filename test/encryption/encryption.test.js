@@ -194,6 +194,36 @@ const route = '/auth';
           });
       });
 
+      it('accepts symmetrical encrypted request objects', async function () {
+        const client = await this.provider.Client.find('clientSymmetric');
+        return JWT.sign({
+          client_id: 'clientSymmetric',
+          response_type: 'id_token',
+          nonce: 'foobar',
+          redirect_uri: 'https://client.example.com/cb',
+        }, null, 'none', { issuer: 'client', audience: this.provider.issuer }).then(signed =>
+          JWT.encrypt(signed, client.keystore.get({ alg: 'A128KW' }), 'A128CBC-HS256', 'A128KW')).then(encrypted =>
+          this.wrap({
+            route,
+            verb,
+            auth: {
+              request: encrypted,
+              scope: 'openid',
+              client_id: 'clientSymmetric',
+              response_type: 'id_token',
+            },
+          })
+            .expect(302)
+            .expect((response) => {
+              const expected = parse('https://client.example.com/cb', true);
+              const actual = parse(response.headers.location.replace('#', '?'), true);
+              ['protocol', 'host', 'pathname'].forEach((attr) => {
+                expect(actual[attr]).to.equal(expected[attr]);
+              });
+              expect(actual.query).to.have.property('id_token');
+            }));
+      });
+
       it('symmetric encryption makes client secret mandatory', function () {
         expect(this.provider.Client.needsSecret({
           token_endpoint_auth_method: 'none',
