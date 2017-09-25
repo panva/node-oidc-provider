@@ -6,6 +6,7 @@ Yay for [SemVer](http://semver.org/).
 
 <!-- TOC START min:2 max:3 link:true update:true -->
   - [2.3.x](#23x)
+    - [2.3.2](#232)
     - [2.3.1](#231)
     - [2.3.0](#230)
   - [2.2.x](#22x)
@@ -36,6 +37,11 @@ Yay for [SemVer](http://semver.org/).
 <!-- TOC END -->
 
 ## 2.3.x
+### 2.3.2
+- [DIFF](https://github.com/panva/node-oidc-provider/compare/v2.3.1...v2.3.2)
+- fixed `interactionFinished`, `interactionDetails` and `Session#find` expecting an id retrieved
+  from a cookie. When not found will throw.
+
 ### 2.3.1
 - [DIFF](https://github.com/panva/node-oidc-provider/compare/v2.3.0...v2.3.1)
 - fixed `devInteractions` reported with the same grant `uuid`
