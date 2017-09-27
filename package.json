@@ -33,7 +33,7 @@
     "moment": "^2.14.1",
     "nock": "^9.0.2",
     "nyc": "^11.0.2",
-    "sinon": "^3.0.0",
+    "sinon": "^4.0.0",
     "supertest": "^3.0.0"
   },
   "main": "lib/index.js",
