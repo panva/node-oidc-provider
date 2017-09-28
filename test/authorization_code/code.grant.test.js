@@ -69,34 +69,6 @@ describe('grant_type=authorization_code', () => {
         .expect('cache-control', 'no-cache, no-store');
     });
 
-    it('handles internal token signature validation', function () {
-      sinon.stub(this.provider.AuthorizationCode, 'fromJWT').callsFake(() => {
-        throw new Error();
-      });
-
-      const spy = sinon.spy();
-      this.provider.once('grant.error', spy);
-
-      return this.agent.post(route)
-        .auth('client', 'secret')
-        .type('form')
-        .send({
-          code: this.ac,
-          grant_type: 'authorization_code',
-          redirect_uri: 'https://client.example.com/cb',
-        })
-        .expect(() => {
-          this.provider.AuthorizationCode.fromJWT.restore();
-        })
-        .expect(401)
-        .expect(() => {
-          expect(spy.calledOnce).to.be.true;
-        })
-        .expect((response) => {
-          expect(response.body).to.have.property('error', 'invalid_token');
-        });
-    });
-
     context('', () => {
       before(function () {
         this.prev = this.provider.AuthorizationCode.expiresIn;
@@ -324,26 +296,6 @@ describe('grant_type=authorization_code', () => {
         })
         .expect((response) => {
           expect(response.body).to.have.property('error', 'invalid_grant');
-        });
-    });
-
-    it('code being "valid format"', function () {
-      const spy = sinon.spy();
-      this.provider.once('grant.error', spy);
-      return this.agent.post(route)
-        .auth('client', 'secret')
-        .send({
-          grant_type: 'authorization_code',
-          redirect_uri: 'http://client.example.com',
-          code: 'not even close',
-        })
-        .type('form')
-        .expect(401)
-        .expect(() => {
-          expect(spy.calledOnce).to.be.true;
-        })
-        .expect((response) => {
-          expect(response.body).to.have.property('error', 'invalid_token');
         });
     });
   });

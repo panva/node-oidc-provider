@@ -565,8 +565,8 @@ describe('client authentication options', () => {
             })
             .type('form')
             .expect({
-              error: 'invalid_token',
-              error_description: 'invalid token provided',
+              error: 'invalid_grant',
+              error_description: 'grant request is invalid',
             })
             .then(() => this.agent.post(route)
               .send({
