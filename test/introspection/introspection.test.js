@@ -374,5 +374,26 @@ describe('introspection features', () => {
           expect(response.body).to.have.keys('active');
         });
     });
+
+    it('responds with active=false when token is expired', async function () {
+      const at = new this.provider.AccessToken({
+        accountId: 'accountId',
+        clientId: 'client',
+        scope: 'scope',
+        expiresIn: -1,
+      });
+
+      return this.agent.post(route)
+        .auth('client', 'secret')
+        .send({
+          token: await at.save(),
+        })
+        .type('form')
+        .expect(200)
+        .expect((response) => {
+          expect(response.body).to.have.property('active', false);
+          expect(response.body).to.have.keys('active');
+        });
+    });
   });
 });
