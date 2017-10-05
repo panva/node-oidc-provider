@@ -43,7 +43,7 @@ enabled by default, check the configuration section on how to enable them.
 - [RFC7636 - Proof Key for Code Exchange by OAuth Public Clients][pkce]
 - [RFC7009 - OAuth 2.0 Token Revocation][revocation]
 - [RFC7662 - OAuth 2.0 Token Introspection][introspection]
-- [OAuth 2.0 for Native Apps BCP][oauth-native-apps]
+- [RFC8252 - OAuth 2.0 for Native Apps BCP][oauth-native-apps]
 
 The following drafts/experimental specifications are implemented by oidc-provider.
 - [OpenID Connect Session Management 1.0 - draft 28][session-management]
@@ -141,5 +141,5 @@ See the list of available emitted [event names](/docs/events.md) and their descr
 [openid-client]: https://github.com/panva/node-openid-client
 [backchannel-logout]: http://openid.net/specs/openid-connect-backchannel-1_0-04.html
 [registration-management]: https://tools.ietf.org/html/rfc7592
-[oauth-native-apps]: https://tools.ietf.org/html/draft-ietf-oauth-native-apps
+[oauth-native-apps]: https://tools.ietf.org/html/rfc8252
 [debug-link]: https://github.com/visionmedia/debug
