@@ -375,7 +375,7 @@ describe('introspection features', () => {
         });
     });
 
-    it('responds with active=false when token is expired', async function () {
+    it('responds only with active=false when token is expired', async function () {
       const at = new this.provider.AccessToken({
         accountId: 'accountId',
         clientId: 'client',
