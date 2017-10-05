@@ -5,6 +5,7 @@ Yay for [SemVer](http://semver.org/).
 **Table of Contents**
 
 <!-- TOC START min:2 max:3 link:true update:true -->
+  - [2.4.0](#240)
   - [2.3.x](#23x)
     - [2.3.2](#232)
     - [2.3.1](#231)
@@ -35,6 +36,16 @@ Yay for [SemVer](http://semver.org/).
     - [1.0.x](#10x)
 
 <!-- TOC END -->
+
+## 2.4.0
+- [DIFF](https://github.com/panva/node-oidc-provider/compare/v2.3.2...v2.4.0)
+- added BaseToken public API, this API enables advanced users in search of features such as JWT-formatted
+  Bearer tokens or not being able to reconstruct client token values from a DB backup to overload
+  these methods and get those features.
+- fixed keystore initialize method to allow for servers only supporting authorization flow not needing
+  RS256 signature key
+- fixed token introspection disclosing details for expired but found tokens
+- fixed exception during token introspection auth `none` clients looking up non-existing tokens
 
 ## 2.3.x
 ### 2.3.2
