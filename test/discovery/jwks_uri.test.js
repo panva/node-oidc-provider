@@ -13,18 +13,21 @@ describe(route, () => {
         .expect('Content-Type', /application\/json/)
         .expect(200)
         .expect((res) => {
-          expect(res.body.keys[0]).to.have.all.keys(['kty', 'kid', 'e', 'n']);
-        });
-    });
-  });
+          let rsa;
+          let ec;
 
-  describe('EC keys', () => {
-    it('responds with json 200', function () {
-      return this.agent.get(route)
-        .expect('Content-Type', /application\/json/)
-        .expect(200)
-        .expect((res) => {
-          expect(res.body.keys[1]).to.have.all.keys(['kty', 'kid', 'crv', 'x', 'y']);
+          expect(res.body.keys.length).to.equal(2);
+
+          res.body.keys.forEach((key) => {
+            if (key.kty === 'RSA') rsa = key;
+            if (key.kty === 'EC') ec = key;
+          });
+
+          expect(rsa).to.be.ok;
+          expect(ec).to.be.ok;
+
+          expect(rsa).to.have.all.keys(['kty', 'kid', 'e', 'n']);
+          expect(ec).to.have.all.keys(['kty', 'kid', 'crv', 'x', 'y']);
         });
     });
   });

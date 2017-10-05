@@ -26,6 +26,10 @@ class TestAdapter {
     return [this.name, id].join(':');
   }
 
+  clear() { // eslint-disable-line class-methods-use-this
+    store.clear();
+  }
+
   destroy(id) {
     const key = this.key(id);
     const grantId = store.get(key) && store.get(key).grantId;

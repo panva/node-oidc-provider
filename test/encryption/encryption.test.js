@@ -109,7 +109,7 @@ const route = '/auth';
           response_type: 'code',
           redirect_uri: 'https://client.example.com/cb',
         }, null, 'none', { issuer: 'client', audience: this.provider.issuer }).then(signed =>
-          JWT.encrypt(signed, instance(this.provider).keystore.get(), 'A128CBC-HS256', 'RSA1_5')).then(encrypted =>
+          JWT.encrypt(signed, instance(this.provider).keystore.get({ kty: 'RSA' }), 'A128CBC-HS256', 'RSA1_5')).then(encrypted =>
           this.wrap({
             route,
             verb,
@@ -137,7 +137,7 @@ const route = '/auth';
           response_type: 'code',
           redirect_uri: 'https://client.example.com/cb',
         }, null, 'none', { issuer: 'client', audience: this.provider.issuer }).then(signed =>
-          JWT.encrypt(signed, instance(this.provider).keystore.get(), 'A128CBC-HS256', 'RSA-OAEP')).then(encrypted =>
+          JWT.encrypt(signed, instance(this.provider).keystore.get({ kty: 'RSA' }), 'A128CBC-HS256', 'RSA-OAEP')).then(encrypted =>
           this.wrap({
             route,
             verb,
