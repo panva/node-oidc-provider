@@ -653,7 +653,7 @@ Depending on your setup you should do the following
 [registration-management]: https://tools.ietf.org/html/rfc7592
 [registration]: http://openid.net/specs/openid-connect-registration-1_0.html
 [revocation]: https://tools.ietf.org/html/rfc7009
-[oauth-native-apps]: https://tools.ietf.org/html/draft-ietf-oauth-native-apps-07
+[oauth-native-apps]: https://tools.ietf.org/html/rfc8252
 [session-management]: http://openid.net/specs/openid-connect-session-1_0-28.html
 [got-library]: https://github.com/sindresorhus/got
 [password-grant]: https://tools.ietf.org/html/rfc6749#section-4.3
