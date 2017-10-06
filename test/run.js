@@ -2,7 +2,10 @@
 
 const { JWK: { createKeyStore } } = require('node-jose');
 const server = require('http').createServer().listen(0);
+const Mocha = require('mocha');
 
+const { utils: { lookupFiles } } = Mocha;
+const mocha = new Mocha();
 const NOOP = () => {};
 
 server.once('listening', () => {
@@ -17,7 +20,10 @@ server.once('listening', () => {
       console.info = NOOP;
       process.on('unhandledRejection', NOOP);
       process.on('rejectionHandled', NOOP);
-      require('../node_modules/.bin/_mocha'); // eslint-disable-line global-require
+
+      mocha.files = lookupFiles('test/**/*.test.js', ['js'], true);
+
+      mocha.run(process.exit);
     })
     .catch((error) => {
       console.error(error);
