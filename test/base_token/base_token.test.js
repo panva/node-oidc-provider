@@ -8,15 +8,18 @@ describe('BaseToken', () => {
 
   afterEach(function () {
     this.adapter.find.reset();
+    this.adapter.upsert.reset();
   });
 
   before(function () {
     this.adapter = this.TestAdapter.for('AccessToken');
     sinon.spy(this.adapter, 'find');
+    sinon.spy(this.adapter, 'upsert');
   });
 
   after(function () {
     this.adapter.find.restore();
+    this.adapter.upsert.restore();
   });
 
   it('handles expired tokens', async function () {
@@ -44,5 +47,22 @@ describe('BaseToken', () => {
     const stored = this.adapter.syncFind(jti);
     stored.consumed = true;
     expect(await this.provider.AccessToken.find(token)).to.have.property('consumed', true);
+  });
+
+  it('uses expiration for upsert from global settings if not specified in token values', async function () {
+    const token = await new this.provider.AccessToken({
+      grantId: 'foo',
+    }).save();
+    const jti = token.substring(0, 48);
+    expect(this.adapter.upsert.calledWith(jti, sinon.match({}), 3600));
+  });
+
+  it('uses expiration for upsert from token values', async function () {
+    const token = await new this.provider.AccessToken({
+      grantId: 'foo',
+      expiresIn: 60,
+    }).save();
+    const jti = token.substring(0, 48);
+    expect(this.adapter.upsert.calledWith(jti, sinon.match({}), 60));
   });
 });
