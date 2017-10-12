@@ -54,7 +54,7 @@ describe('BaseToken', () => {
       grantId: 'foo',
     }).save();
     const jti = token.substring(0, 48);
-    expect(this.adapter.upsert.calledWith(jti, sinon.match({}), 3600));
+    expect(this.adapter.upsert.calledWith(jti, sinon.match({}), 3600)).to.be.true;
   });
 
   it('uses expiration for upsert from token values', async function () {
@@ -63,6 +63,6 @@ describe('BaseToken', () => {
       expiresIn: 60,
     }).save();
     const jti = token.substring(0, 48);
-    expect(this.adapter.upsert.calledWith(jti, sinon.match({}), 60));
+    expect(this.adapter.upsert.calledWith(jti, sinon.match({}), 60)).to.be.true;
   });
 });
