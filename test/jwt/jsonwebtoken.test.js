@@ -236,7 +236,7 @@ describe('JSON Web Token (JWT) RFC7519 implementation', () => {
         .catch((err) => {
           expect(err).to.be.ok;
           expect(err).to.be.an.instanceOf(AssertionError);
-          expect(err).to.have.property('message').that.matches(/jwt audience invalid/);
+          expect(err).to.have.property('message', 'jwt audience missing pappa');
         });
     });
 
@@ -254,7 +254,7 @@ describe('JSON Web Token (JWT) RFC7519 implementation', () => {
         .catch((err) => {
           expect(err).to.be.ok;
           expect(err).to.be.an.instanceOf(AssertionError);
-          expect(err).to.have.property('message').that.matches(/jwt audience invalid/);
+          expect(err).to.have.property('message', 'jwt audience missing pappa');
         });
     });
 

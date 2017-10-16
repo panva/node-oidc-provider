@@ -1,6 +1,6 @@
 const bootstrap = require('../test_helper');
 const sinon = require('sinon');
-const { decode: base64url } = require('base64url');
+const base64url = require('base64url');
 const { parse: parseUrl } = require('url');
 const { expect } = require('chai');
 
@@ -73,7 +73,7 @@ describe('grant_type=refresh_token', () => {
         })
         .expect((response) => {
           expect(response.body).to.have.keys('access_token', 'id_token', 'expires_in', 'token_type', 'refresh_token');
-          const refreshIdToken = j(base64url(response.body.id_token.split('.')[1]));
+          const refreshIdToken = j(base64url.decode(response.body.id_token.split('.')[1]));
           expect(refreshIdToken).to.have.property('nonce', 'foobarnonce');
           expect(response.body).to.have.property('refresh_token').that.is.a('string');
         });
@@ -253,7 +253,7 @@ describe('grant_type=refresh_token', () => {
           })
           .expect((response) => {
             expect(response.body).to.have.keys('access_token', 'id_token', 'expires_in', 'token_type', 'refresh_token');
-            const refreshIdToken = j(base64url(response.body.id_token.split('.')[1]));
+            const refreshIdToken = j(base64url.decode(response.body.id_token.split('.')[1]));
             expect(refreshIdToken).to.have.property('nonce', 'foobarnonce');
             expect(response.body).to.have.property('refresh_token').not.equal(rt);
           });

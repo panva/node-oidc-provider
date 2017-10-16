@@ -1,6 +1,6 @@
 const store = new Map();
 const logins = new Map();
-const uuid = require('uuid');
+const uuid = require('uuid/v4');
 
 class Account {
   constructor(id) {

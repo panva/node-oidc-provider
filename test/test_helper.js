@@ -3,7 +3,7 @@
 process.env.NODE_ENV = process.env.NODE_ENV || 'test';
 
 const { agent: supertest } = require('supertest');
-const { v4: uuid } = require('uuid');
+const uuid = require('uuid/v4');
 const Provider = require('../lib');
 const { Account, TestAdapter } = require('./models');
 const { expect } = require('chai');

@@ -1,6 +1,6 @@
 /* eslint-disable no-underscore-dangle */
 
-const { v4: uuid } = require('uuid');
+const uuid = require('uuid/v4');
 const bootstrap = require('../test_helper');
 
 const expire = new Date();
