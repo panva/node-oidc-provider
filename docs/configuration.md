@@ -256,6 +256,13 @@ router.post('/interaction/:grant', async (ctx, next) => {
     // include it use when i.e. offline_access was not given, or user declined to provide address
     scope: 'space separated list of scopes',
   },
+  
+  // meta is a free object you may store alongside an authorization. It can be useful
+  // during the interactionCheck to verify information on the ongoing session.
+  meta: {
+    // object structure up-to-you
+  },
+
   ['custom prompt name resolved']: {},
 }
 ```
