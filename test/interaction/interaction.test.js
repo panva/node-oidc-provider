@@ -2,6 +2,7 @@
 
 const uuid = require('uuid/v4');
 const bootstrap = require('../test_helper');
+const config = require('./interaction.config.js');
 
 const expire = new Date();
 expire.setDate(expire.getDate() + 1);
@@ -302,6 +303,32 @@ describe('resume after interaction', () => {
         .expect(auth.validateClientLocation)
         .expect(auth.validateError('consent_required'))
         .expect(auth.validateErrorDescription('prompt consent was not resolved'));
+    });
+  });
+
+  context('meta results', () => {
+    it('should process and store meta-informations provided alongside login', function () {
+      const auth = new this.AuthorizationRequest({
+        response_type: 'code',
+        scope: 'openid',
+      });
+
+      setup.call(this, auth, {
+        login: {
+          account: uuid(),
+          remember: true,
+        },
+        meta: {
+          scope: 'openid',
+        },
+      });
+
+      return this.agent.get('/auth/resume')
+        .expect(() => {
+          const authorization = this.getSession().authorizations[config.client.client_id];
+          expect(authorization).to.have.property('meta');
+          expect(authorization.meta).to.have.property('scope');
+        });
     });
   });
 
