@@ -265,6 +265,16 @@ router.post('/interaction/:grant', async (ctx, next) => {
 
   ['custom prompt name resolved']: {},
 }
+
+// optionally, interactions can be primaturely exited with a an error by providing a result
+// object as follow:
+{
+  // an error field used as error code indicating a failure during the interaction
+  error: 'access_denied',
+
+  // an optional description for this error
+  error_description: 'Insufficient permissions: scope out of reach for this Account',
+}
 ```
 
 
