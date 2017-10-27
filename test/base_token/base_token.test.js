@@ -3,6 +3,8 @@ const { expect } = require('chai');
 const bootstrap = require('../test_helper');
 const base64url = require('base64url');
 
+const fail = () => { throw new Error('expected promise to be rejected'); };
+
 describe('BaseToken', () => {
   before(bootstrap(__dirname)); // provider
 
@@ -64,5 +66,14 @@ describe('BaseToken', () => {
     }).save();
     const jti = token.substring(0, 48);
     expect(this.adapter.upsert.calledWith(jti, sinon.match({}), 60)).to.be.true;
+  });
+
+  it('rethrows adapter#find errors', async function () {
+    this.adapter.find.restore();
+    const adapterThrow = new Error('adapter throw!');
+    sinon.stub(this.adapter, 'find').returns(Promise.reject(adapterThrow));
+    await this.provider.AccessToken.find('foobar').then(fail, (err) => {
+      expect(err).to.equal(adapterThrow);
+    });
   });
 });
