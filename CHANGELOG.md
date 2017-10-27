@@ -5,6 +5,7 @@ Yay for [SemVer](http://semver.org/).
 **Table of Contents**
 
 <!-- TOC START min:2 max:3 link:true update:true -->
+  - [2.5.0](#250)
   - [2.4.x](#24x)
     - [2.4.1](#241)
     - [2.4.0](#240)
@@ -38,6 +39,16 @@ Yay for [SemVer](http://semver.org/).
     - [1.0.x](#10x)
 
 <!-- TOC END -->
+
+## 2.5.0
+- [DIFF](https://github.com/panva/node-oidc-provider/compare/v2.4.1...v2.5.0)
+- added an option to return metadata alongside with interaction results, this metadata is then
+  retrievable i.e. during the interactionCheck call. #164, #165
+- added an option to return error instead of the standard interaction results, the provider
+  will take this error (and error_description when provided) and resolve the authorization request
+  with it. #167, #168
+- fixed `Token#find()` swallowing `adapter#find` errors
+- fixed introspection swallowing rethrown `adapter#find` errors
 
 ## 2.4.x
 ### 2.4.1
