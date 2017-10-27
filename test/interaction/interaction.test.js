@@ -350,6 +350,24 @@ describe('resume after interaction', () => {
         .expect(auth.validateErrorDescription(''))
     });
 
+    it('should abort an interaction when given an error result object (with state)', function () {
+      const auth = new this.AuthorizationRequest({
+        response_type: 'code',
+        scope: 'openid',
+        state: 'bf458-00aa3',
+      });
+
+      setup.call(this, auth, {
+        error: 'access_denied',
+      });
+
+      return this.agent.get('/auth/resume')
+        .expect(302)
+        .expect(auth.validateState)
+        .expect(auth.validateError('access_denied'))
+        .expect(auth.validateErrorDescription(''))
+    });
+
     it('should abort an interaction when given an error result object (with description)', function () {
       const auth = new this.AuthorizationRequest({
         response_type: 'code',
