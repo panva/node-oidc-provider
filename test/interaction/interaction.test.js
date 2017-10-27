@@ -325,9 +325,9 @@ describe('resume after interaction', () => {
 
       return this.agent.get('/auth/resume')
         .expect(() => {
-          const authorization = this.getSession().authorizations[config.client.client_id];
-          expect(authorization).to.have.property('meta');
-          expect(authorization.meta).to.have.property('scope');
+          const meta = this.getSession({ instantiate: true }).metaFor(config.client.client_id);
+          expect(meta).to.be.ok;
+          expect(meta).to.have.property('scope');
         });
     });
   });

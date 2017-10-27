@@ -196,10 +196,16 @@ module.exports = function testHelper(dir, basename, mountTo) {
     };
   };
 
-  function getSession() {
+  function getSession(opts = { instantiate: false }) {
     const { value: sessionId } = agent.jar.getCookie('_session', { path: '/' });
     const key = TestAdapter.for('Session').key(sessionId);
-    return TestAdapter.for('Session').get(key);
+    const raw = TestAdapter.for('Session').get(key);
+
+    if (opts.instantiate) {
+      return raw ? new provider.Session(sessionId, raw) : raw;
+    }
+
+    return raw;
   }
 
   function getSessionId() {

@@ -140,7 +140,7 @@ describe('Back-Channel Logout 1.0', () => {
     });
 
     it('triggers the backchannelLogout for visited clients', async function () {
-      const session = this.getSession(this.agent);
+      const session = this.getSession();
       session.logout = { secret: '123', postLogoutRedirectUri: '/' };
       const params = { logout: 'yes', xsrf: '123' };
       const client = await this.provider.Client.find('client');
@@ -162,7 +162,7 @@ describe('Back-Channel Logout 1.0', () => {
     });
 
     it('ignores the backchannelLogout when client does not support', async function () {
-      this.getSession(this.agent).logout = { secret: '123', postLogoutRedirectUri: '/' };
+      this.getSession().logout = { secret: '123', postLogoutRedirectUri: '/' };
       const params = { logout: 'yes', xsrf: '123' };
       const client = await this.provider.Client.find('client');
       delete client.backchannelLogoutUri;
