@@ -35,6 +35,7 @@ module.exports.config = {
   interactionUrl: function interactionUrl(ctx, interaction) { // eslint-disable-line no-unused-vars
     return `/interaction/${ctx.oidc.uuid}`;
   },
+  clientCacheDuration: 1 * 24 * 60 * 60, // 1 day in seconds,
   ttl: {
     AccessToken: 1 * 60 * 60, // 1 hour in seconds
     AuthorizationCode: 10 * 60, // 10 minutes in seconds
