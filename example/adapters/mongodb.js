@@ -63,6 +63,12 @@ class MongoAdapter {
       expiresAt = new Date(Date.now() + (expiresIn * 1000));
     }
 
+    // HEROKU EXAMPLE ONLY, do not use the following block unless you want to drop dynamic
+    //   registrations 24 hours after registration
+    if (this.name === 'client') {
+      expiresAt = new Date(Date.now() + (24 * 60 * 60 * 1000));
+    }
+
     const document = Object.assign(payload, expiresAt && { expiresAt });
 
     return this.coll().updateOne({ _id }, document, { upsert: true });
