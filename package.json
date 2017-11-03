@@ -28,7 +28,6 @@
     "koa-body": "^2.0.0",
     "koa-ejs": "^4.0.0",
     "koa-mount": "^3.0.0",
-    "koa-rewrite": "^2.1.0",
     "mocha": "^4.0.0",
     "moment": "^2.14.1",
     "nock": "^9.0.2",

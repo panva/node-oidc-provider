@@ -256,7 +256,7 @@ router.post('/interaction/:grant', async (ctx, next) => {
     // include it use when i.e. offline_access was not given, or user declined to provide address
     scope: 'space separated list of scopes',
   },
-  
+
   // meta is a free object you may store alongside an authorization. It can be useful
   // during the interactionCheck to verify information on the ongoing session.
   meta: {
@@ -640,7 +640,7 @@ expressApp.use(prefix, oidc.callback);
 const rewrite = require('koa-rewrite');
 const mount = require('koa-mount');
 const prefix = '/oidc';
-koaApp.use(rewrite('/.well-known/*', `${prefix}/.well-known/$1`));
+koaApp.use(rewrite('/.well-known/(.*)', `${prefix}/.well-known/$1`));
 koaApp.use(mount(prefix, oidc.app));
 ```
 
