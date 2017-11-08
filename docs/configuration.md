@@ -501,7 +501,7 @@ const configuration = { features: { pkce: { forcedForNative: true } } };
 ## Custom Grant Types
 oidc-provider comes with the basic grants implemented, but you can register your own grant types,
 for example to implement a [password grant type][password-grant]. You can check the standard
-grant factories [here](/lib/actions/token).
+grant factories [here](/lib/actions/grants).
 
 ```js
 const parameters = ['username', 'password'];
