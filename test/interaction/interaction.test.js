@@ -347,7 +347,7 @@ describe('resume after interaction', () => {
         .expect(302)
         .expect(auth.validateState)
         .expect(auth.validateError('access_denied'))
-        .expect(auth.validateErrorDescription(''))
+        .expect(auth.validateErrorDescription(''));
     });
 
     it('should abort an interaction when given an error result object (with state)', function () {
@@ -365,7 +365,7 @@ describe('resume after interaction', () => {
         .expect(302)
         .expect(auth.validateState)
         .expect(auth.validateError('access_denied'))
-        .expect(auth.validateErrorDescription(''))
+        .expect(auth.validateErrorDescription(''));
     });
 
     it('should abort an interaction when given an error result object (with description)', function () {
@@ -383,7 +383,7 @@ describe('resume after interaction', () => {
         .expect(302)
         .expect(auth.validateState)
         .expect(auth.validateError('access_denied'))
-        .expect(auth.validateErrorDescription('scope out of reach'))
+        .expect(auth.validateErrorDescription('scope out of reach'));
     });
   });
 
