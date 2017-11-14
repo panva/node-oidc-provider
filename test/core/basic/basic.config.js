@@ -16,7 +16,7 @@ module.exports = {
     client_id: 'client-native',
     client_secret: 'secret',
     grant_types: ['authorization_code'],
-    response_types: ['code'],
+    response_types: ['code', 'none'],
     redirect_uris: ['com.example.app:/cb'],
   }],
 };

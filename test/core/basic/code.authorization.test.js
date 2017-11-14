@@ -41,6 +41,22 @@ describe('BASIC code', () => {
           .expect(auth.validateClientLocation);
       });
 
+      it('allows native apps to do none auth check when already authorized', function () {
+        const auth = new this.AuthorizationRequest({
+          response_type: 'none',
+          prompt: 'none',
+          client_id: 'client-native',
+          redirect_uri: 'com.example.app:/cb',
+          scope: 'openid',
+        });
+
+        return this.wrap({ route, verb, auth })
+          .expect(302)
+          .expect(auth.validatePresence(['state']))
+          .expect(auth.validateState)
+          .expect(auth.validateClientLocation);
+      });
+
       it('ignores unsupported scopes', function () {
         const spy = sinon.spy();
         this.provider.once('token.issued', spy);
