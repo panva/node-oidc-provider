@@ -15,7 +15,7 @@ describe('default routing behavior', () => {
         });
     });
 
-    it('handles invalid verbs with 405 invalid request', function () {
+    it('handles invalid verbs with 501 invalid request', function () {
       return this.agent.trace('/.well-known/openid-configuration')
         .expect(501)
         .expect({
