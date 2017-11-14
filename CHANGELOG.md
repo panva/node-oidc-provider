@@ -5,7 +5,9 @@ Yay for [SemVer](http://semver.org/).
 **Table of Contents**
 
 <!-- TOC START min:2 max:3 link:true update:true -->
-  - [2.5.0](#250)
+  - [2.5.x](#25x)
+    - [2.5.1](#251)
+    - [2.5.0](#250)
   - [2.4.x](#24x)
     - [2.4.1](#241)
     - [2.4.0](#240)
@@ -40,7 +42,14 @@ Yay for [SemVer](http://semver.org/).
 
 <!-- TOC END -->
 
-## 2.5.0
+## 2.5.x
+### 2.5.1
+- [DIFF](https://github.com/panva/node-oidc-provider/compare/v2.5.0...v2.5.1)
+- fixed already authorized application_type=native prompt=none authorizations to be able to check
+  if the authorization is still present
+- bumped session management `jsSHA` cdn dependency version
+
+### 2.5.0
 - [DIFF](https://github.com/panva/node-oidc-provider/compare/v2.4.1...v2.5.0)
 - added an option to return metadata alongside with interaction results, this metadata is then
   retrievable i.e. during the interactionCheck call. #164, #165
