@@ -840,6 +840,7 @@ default value:
   "oauthNativeApps": true,
   "pkce": true,
   "backchannelLogout": false,
+  "frontchannelLogout": false,
   "claimsParameter": false,
   "clientCredentials": false,
   "encryption": false,
@@ -867,6 +868,50 @@ async findById(ctx, id, token) {
     accountId: id,
     async claims() { return { sub: id }; },
   };
+}
+```
+
+### frontchannelLogoutPendingSource
+
+HTML source rendered when there are pending front-channel logout iframes to be called to trigger RP logouts. It should handle waiting for the frames to be loaded as well as have a timeout mechanism in it.  
+affects: session management  
+
+default value:
+```js
+async frontchannelLogoutPendingSource(ctx, frames, postLogoutRedirectUri, timeout) {
+  ctx.body = `<!DOCTYPE html>
+<head>
+<title>Logout</title>
+<style>
+  iframe {
+    visibility: hidden;
+    position: absolute;
+    left: 0;
+    top: 0;
+    height:0;
+    width:0;
+    border: none;
+  }
+</style>
+</head>
+<body>
+${frames.join('')}
+<script>
+  var loaded = 0;
+  function redirect() {
+    window.location.replace("${postLogoutRedirectUri}");
+  }
+  function frameOnLoad() {
+    loaded += 1;
+    if (loaded === ${frames.length}) redirect();
+  }
+  Array.prototype.slice.call(document.querySelectorAll('iframe')).forEach(function (element) {
+    element.onload = frameOnLoad;
+  });
+  setTimeout(redirect, ${timeout});
+</script>
+</body>
+</html>`;
 }
 ```
 

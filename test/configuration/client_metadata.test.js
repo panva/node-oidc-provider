@@ -726,6 +726,26 @@ describe('Client metadata validation', () => {
         mustBeBoolean(this.title, configuration);
       });
     });
+
+    context('features.frontchannelLogout', () => {
+      const configuration = {
+        features: {
+          sessionManagement: true,
+          frontchannelLogout: true,
+        },
+      };
+      context('frontchannel_logout_uri', function () {
+        defaultsTo(this.title, undefined);
+        mustBeString(this.title, undefined, undefined, configuration);
+        mustBeUri(this.title, ['http', 'https'], configuration);
+      });
+
+      context('frontchannel_logout_session_required', function () {
+        defaultsTo(this.title, undefined);
+        defaultsTo(this.title, false, undefined, configuration);
+        mustBeBoolean(this.title, configuration);
+      });
+    });
   });
 
   context('jwks_uri', function () {
