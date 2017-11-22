@@ -51,7 +51,7 @@ describe('grant_type=authorization_code', () => {
           expect(spy.calledOnce).to.be.true;
         })
         .expect((response) => {
-          expect(response.body).to.have.keys('access_token', 'id_token', 'expires_in', 'token_type');
+          expect(response.body).to.have.keys('access_token', 'id_token', 'expires_in', 'token_type', 'scope');
           expect(response.body).not.to.have.key('refresh_token');
         });
     });

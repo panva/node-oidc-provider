@@ -72,7 +72,7 @@ describe('grant_type=refresh_token', () => {
           expect(spy.calledOnce).to.be.true;
         })
         .expect((response) => {
-          expect(response.body).to.have.keys('access_token', 'id_token', 'expires_in', 'token_type', 'refresh_token');
+          expect(response.body).to.have.keys('access_token', 'id_token', 'expires_in', 'token_type', 'refresh_token', 'scope');
           const refreshIdToken = j(base64url.decode(response.body.id_token.split('.')[1]));
           expect(refreshIdToken).to.have.property('nonce', 'foobarnonce');
           expect(response.body).to.have.property('refresh_token').that.is.a('string');
@@ -252,7 +252,7 @@ describe('grant_type=refresh_token', () => {
             expect(issueSpy.calledOnce).to.be.true;
           })
           .expect((response) => {
-            expect(response.body).to.have.keys('access_token', 'id_token', 'expires_in', 'token_type', 'refresh_token');
+            expect(response.body).to.have.keys('access_token', 'id_token', 'expires_in', 'token_type', 'refresh_token', 'scope');
             const refreshIdToken = j(base64url.decode(response.body.id_token.split('.')[1]));
             expect(refreshIdToken).to.have.property('nonce', 'foobarnonce');
             expect(response.body).to.have.property('refresh_token').not.equal(rt);
