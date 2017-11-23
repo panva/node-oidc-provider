@@ -5,6 +5,7 @@ Yay for [SemVer](http://semver.org/).
 **Table of Contents**
 
 <!-- TOC START min:2 max:3 link:true update:true -->
+  - [2.6.0](#260)
   - [2.5.x](#25x)
     - [2.5.1](#251)
     - [2.5.0](#250)
@@ -41,6 +42,11 @@ Yay for [SemVer](http://semver.org/).
     - [1.0.x](#10x)
 
 <!-- TOC END -->
+
+## 2.6.0
+- [DIFF](https://github.com/panva/node-oidc-provider/compare/v2.5.1...v2.6.0)
+- added `scope` to successful token (authorization_code, refresh_token) responses
+- updated dependencies (`got@8.x`, removed deprecated `buffer-equals-constant`)
 
 ## 2.5.x
 ### 2.5.1
