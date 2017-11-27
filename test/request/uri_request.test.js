@@ -134,12 +134,34 @@ describe('request Uri features', () => {
           expect(third).to.equal(fourth);
         });
 
-        it('respects provided max-age', async function () {
+        it('respects provided response max-age header', async function () {
           const cache = new RequestUriCache(this.provider);
           nock('https://client.example.com')
             .get('/cachedRequest')
             .reply(200, 'content24', {
               'Cache-Control': 'private, max-age=1',
+            })
+            .get('/cachedRequest')
+            .reply(200, 'content82');
+
+          const first = await cache.resolve('https://client.example.com/cachedRequest');
+          await new Promise((resolve) => {
+            setTimeout(() => {
+              resolve();
+            }, 1050);
+          });
+          const second = await cache.resolve('https://client.example.com/cachedRequest');
+
+          expect(first).to.equal('content24');
+          expect(second).to.equal('content82');
+        });
+
+        it('respects provided response expires header', async function () {
+          const cache = new RequestUriCache(this.provider);
+          nock('https://client.example.com')
+            .get('/cachedRequest')
+            .reply(200, 'content24', {
+              Expires: new Date(Date.now() + 1000).toGMTString(),
             })
             .get('/cachedRequest')
             .reply(200, 'content82');

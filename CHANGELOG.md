@@ -5,6 +5,7 @@ Yay for [SemVer](http://semver.org/).
 **Table of Contents**
 
 <!-- TOC START min:2 max:3 link:true update:true -->
+  - [2.7.0](#270)
   - [2.6.0](#260)
   - [2.5.x](#25x)
     - [2.5.1](#251)
@@ -42,6 +43,15 @@ Yay for [SemVer](http://semver.org/).
     - [1.0.x](#10x)
 
 <!-- TOC END -->
+
+## 2.7.0
+- [DIFF](https://github.com/panva/node-oidc-provider/compare/v2.6.0...v2.7.0)
+- adjusted the client schema to ignore extra properties for disabled features
+- fixed encrypted ID Tokens without a used alg (json payload) to have `cty` (content-type) `json`
+- fixed Registration 1.0 ignoring `null` value attributes, only Registration Management Protocol
+  update action ignores `null` values to clear them from a stored client now
+- fixed unsigned ID Tokens missing `*_hash` properties
+- `request_uri` response caching now also handles `expires` response headers
 
 ## 2.6.0
 - [DIFF](https://github.com/panva/node-oidc-provider/compare/v2.5.1...v2.6.0)

@@ -11,7 +11,7 @@ const fail = () => { throw new Error('expected promise to be rejected'); };
 const endpoint = nock('https://client.example.com/');
 
 describe('client keystore refresh', () => {
-  before(bootstrap(__dirname)); // provider
+  before(bootstrap(__dirname, 'client_keystore')); // provider
 
   before(() => keystore.generate('RSA', 1024).then(() => {
     endpoint

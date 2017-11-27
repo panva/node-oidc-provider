@@ -19,16 +19,20 @@ module.exports.config = {
       'nickname', 'picture', 'preferred_username', 'profile', 'updated_at', 'website', 'zoneinfo'],
   },
   features: {
-    devInteractions: false,
-    claimsParameter: true,
-    encryption: true,
-    introspection: true,
-    registration: true,
-    request: true,
-    requestUri: { requireRequestUriRegistration: false },
-    revocation: true,
-    sessionManagement: true,
-    backchannelLogout: true,
+    devInteractions: false, // defaults to true
+    // discovery: true, // defaults to true
+    // requestUri: true, // defaults to true
+    // oauthNativeApps: true, // defaults to true
+    // pkce: true, // defaults to true
+
+    backchannelLogout: true, // defaults to false
+    claimsParameter: true, // defaults to false
+    encryption: true, // defaults to false
+    introspection: true, // defaults to false
+    registration: true, // defaults to false
+    request: true, // defaults to false
+    revocation: true, // defaults to false
+    sessionManagement: true, // defaults to false
   },
   subjectTypes: ['public', 'pairwise'],
   pairwiseSalt: 'da1c442b365b563dfc121f285a11eedee5bbff7110d55c88',
