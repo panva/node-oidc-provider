@@ -5,19 +5,25 @@ const { expect } = require('chai');
 const JWT = require('../../lib/helpers/jwt');
 const epochTime = require('../../lib/helpers/epoch_time');
 const bootstrap = require('../test_helper');
+const assert = require('assert');
 
 const fail = () => { throw new Error('expected promise to be rejected'); };
 
 const endpoint = nock('https://client.example.com/');
 
-describe('client keystore refresh', () => {
-  before(bootstrap(__dirname, 'client_keystore')); // provider
+function setResponse(body = keystore.toJSON(), statusCode = 200, headers = {}) {
+  endpoint
+    .get('/jwks')
+    .reply(statusCode, typeof body === 'string' ? body : JSON.stringify(body), headers);
+  assert(!nock.isDone(), 'expected client\'s jwks_uri to be fetched');
+}
 
-  before(() => keystore.generate('RSA', 1024).then(() => {
-    endpoint
-      .get('/jwks')
-      .reply(200, JSON.stringify(keystore.toJSON()));
-  }));
+describe('client keystore refresh', () => {
+  afterEach(() => {
+    expect(nock.isDone()).to.be.true;
+  });
+
+  before(bootstrap(__dirname, 'client_keystore')); // provider
 
   before(function () {
     return i(this.provider).clientAdd({
@@ -32,40 +38,38 @@ describe('client keystore refresh', () => {
   });
 
   it('gets the jwks from the uri', async function () {
+    await keystore.generate('RSA', 1024);
+    setResponse();
+
     const client = await this.provider.Client.find('client');
+    await client.keystore.refresh();
+
     expect(client.keystore.get({ kty: 'RSA' })).to.be.ok;
   });
 
   it('adds new keys', async function () {
     const client = await this.provider.Client.find('client');
     await keystore.generate('RSA', 1024);
-    endpoint
-      .get('/jwks')
-      .reply(200, keystore.toJSON());
+    setResponse();
 
-    return client.keystore.refresh().then(() => {
-      expect(client.keystore.all({ kty: 'RSA' })).to.have.lengthOf(2);
-    });
+    await client.keystore.refresh();
+    expect(client.keystore.all({ kty: 'RSA' })).to.have.lengthOf(2);
   });
 
   it('removes not found keys', async function () {
-    endpoint
-      .get('/jwks')
-      .reply(200, '{"keys":[]}');
+    setResponse({ keys: [] });
 
     const client = await this.provider.Client.find('client');
-    return client.keystore.refresh().then(() => {
-      expect(client.keystore.get({ kty: 'RSA' })).not.to.be.ok;
-    });
+    await client.keystore.refresh();
+
+    expect(client.keystore.get({ kty: 'RSA' })).not.to.be.ok;
   });
 
   it('only accepts 200s', async function () {
-    endpoint
-      .get('/jwks')
-      .reply(302, '/somewhere');
+    setResponse('/somewhere', 302);
 
     const client = await this.provider.Client.find('client');
-    return client.keystore.refresh().then(fail, (err) => {
+    await client.keystore.refresh().then(fail, (err) => {
       expect(err).to.be.an('error');
       expect(err.message).to.match(/jwks_uri could not be refreshed/);
       expect(err.message).to.match(/unexpected jwks_uri statusCode, expected 200, got 302/);
@@ -73,12 +77,10 @@ describe('client keystore refresh', () => {
   });
 
   it('only accepts parseable json', async function () {
-    endpoint
-      .get('/jwks')
-      .reply(200, 'not json');
+    setResponse('not json');
 
     const client = await this.provider.Client.find('client');
-    return client.keystore.refresh().then(fail, (err) => {
+    await client.keystore.refresh().then(fail, (err) => {
       expect(err).to.be.an('error');
       expect(err.message).to.match(/jwks_uri could not be refreshed/);
       expect(err.message).to.match(/Unexpected token/);
@@ -86,12 +88,10 @@ describe('client keystore refresh', () => {
   });
 
   it('only accepts keys as array', async function () {
-    endpoint
-      .get('/jwks')
-      .reply(200, '{"keys": {}}');
+    setResponse({ keys: {} });
 
     const client = await this.provider.Client.find('client');
-    return client.keystore.refresh().then(fail, (err) => {
+    await client.keystore.refresh().then(fail, (err) => {
       expect(err).to.be.an('error');
       expect(err.message).to.match(/jwks_uri could not be refreshed/);
       expect(err.message).to.match(/invalid jwks_uri response/);
@@ -104,19 +104,16 @@ describe('client keystore refresh', () => {
       await keystore.generate('RSA', 1024);
       const until = moment().add(2, 'hours').toDate();
 
-      endpoint
-        .get('/jwks')
-        .reply(200, keystore.toJSON(), {
-          Expires: until.toUTCString(),
-        });
+      setResponse(undefined, undefined, {
+        Expires: until.toUTCString(),
+      });
 
       const freshUntil = epochTime(until);
 
-      return client.keystore.refresh().then(() => {
-        expect(client.keystore.fresh()).to.be.true;
-        expect(client.keystore.stale()).to.be.false;
-        expect(client.keystore.freshUntil).to.equal(freshUntil);
-      });
+      await client.keystore.refresh();
+      expect(client.keystore.fresh()).to.be.true;
+      expect(client.keystore.stale()).to.be.false;
+      expect(client.keystore.freshUntil).to.equal(freshUntil);
     });
 
     it('ignores the cache-control one when expires is provided', async function () {
@@ -124,93 +121,73 @@ describe('client keystore refresh', () => {
       await keystore.generate('RSA', 1024);
       const until = moment().add(2, 'hours').toDate();
 
-      endpoint
-        .get('/jwks')
-        .reply(200, keystore.toJSON(), {
-          Expires: until.toUTCString(),
-          'Cache-Control': 'private, max-age: 3600',
-        });
+      setResponse(undefined, undefined, {
+        Expires: until.toUTCString(),
+        'Cache-Control': 'private, max-age: 3600',
+      });
 
       const freshUntil = epochTime(until);
 
-      return client.keystore.refresh().then(() => {
-        expect(client.keystore.fresh()).to.be.true;
-        expect(client.keystore.stale()).to.be.false;
-        expect(client.keystore.freshUntil).to.equal(freshUntil);
-      });
+      await client.keystore.refresh();
+      expect(client.keystore.fresh()).to.be.true;
+      expect(client.keystore.stale()).to.be.false;
+      expect(client.keystore.freshUntil).to.equal(freshUntil);
     });
 
     it('uses the max-age if Cache-Control is missing', async function () {
       const client = await this.provider.Client.find('client');
       await keystore.generate('RSA', 1024);
 
-      endpoint
-        .get('/jwks')
-        .reply(200, keystore.toJSON(), {
-          'Cache-Control': 'private, max-age=3600',
-        });
+      setResponse(undefined, undefined, {
+        'Cache-Control': 'private, max-age=3600',
+      });
 
       const freshUntil = epochTime() + 3600;
 
-      return client.keystore.refresh().then(() => {
-        expect(client.keystore.fresh()).to.be.true;
-        expect(client.keystore.stale()).to.be.false;
-        expect(client.keystore.freshUntil).to.equal(freshUntil);
-      });
+      await client.keystore.refresh();
+      expect(client.keystore.fresh()).to.be.true;
+      expect(client.keystore.stale()).to.be.false;
+      expect(client.keystore.freshUntil).to.equal(freshUntil);
     });
 
     it('falls back to 1 minute throttle if no caching header is found', async function () {
       const client = await this.provider.Client.find('client');
       await keystore.generate('RSA', 1024);
 
-      endpoint
-        .get('/jwks')
-        .reply(200, keystore.toJSON());
+      setResponse();
 
       const freshUntil = epochTime() + 55;
 
-      return client.keystore.refresh().then(() => {
-        expect(client.keystore.fresh()).to.be.true;
-        expect(client.keystore.stale()).to.be.false;
-        expect(client.keystore.freshUntil).to.be.above(freshUntil);
-      });
+      await client.keystore.refresh();
+      expect(client.keystore.fresh()).to.be.true;
+      expect(client.keystore.stale()).to.be.false;
+      expect(client.keystore.freshUntil).to.be.above(freshUntil);
     });
   });
 
   describe('refreshing', () => {
     it('when a stale keystore is passed to JWT verification it gets refreshed', async function () {
-      endpoint
-        .get('/jwks')
-        .reply(200, keystore.toJSON());
-
-      expect(nock.isDone()).to.be.false;
+      setResponse();
 
       const client = await this.provider.Client.find('client');
       client.keystore.freshUntil = epochTime() - 1;
-      return JWT.verify(
+      await JWT.verify(
         'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiYWRtaW4iOnRydWV9.TJVA95OrM7E2cBab30RMHrHDcEfxjoYZgeFONFh7HgQ'
         , client.keystore,
-      ).then(fail, () => {
-        expect(nock.isDone()).to.be.true;
-      });
+      ).then(fail, () => {});
     });
 
     it('refreshes stale keystores before id_token encryption', async function () {
-      endpoint
-        .get('/jwks')
-        .reply(200, keystore.toJSON());
-
-      expect(nock.isDone()).to.be.false;
+      setResponse();
 
       const client = await this.provider.Client.find('client');
       client.keystore.freshUntil = epochTime() - 1;
+      expect(client.keystore.stale()).to.be.true;
 
       const { IdToken } = this.provider;
       const token = new IdToken({ foo: 'bar' });
 
-      return token.sign(client).then(() => {
-        expect(nock.isDone()).to.be.true;
-      });
+      await token.sign(client);
     });
   });
 });

@@ -56,7 +56,7 @@ describe('pairwise features', () => {
 
     context('sector_identifier_uri is provided', () => {
       it('validates the sector from the provided uri', function () {
-        nock('https://client.example.com')
+        nock('https://foobar.example.com')
           .get('/file_of_redirect_uris')
           .reply(200, j(['https://client.example.com/cb', 'https://another.example.com/forum/cb']));
 
@@ -64,11 +64,11 @@ describe('pairwise features', () => {
           client_id: 'client',
           client_secret: 'secret',
           redirect_uris: ['https://client.example.com/cb', 'https://another.example.com/forum/cb'],
-          sector_identifier_uri: 'https://client.example.com/file_of_redirect_uris',
+          sector_identifier_uri: 'https://foobar.example.com/file_of_redirect_uris',
           subject_type: 'pairwise',
         }).then((client) => {
           expect(client).to.be.ok;
-          expect(client.sectorIdentifier).to.eq('client.example.com');
+          expect(client.sectorIdentifier).to.eq('foobar.example.com');
         }, (err) => {
           expect(err).not.to.be.ok;
         });

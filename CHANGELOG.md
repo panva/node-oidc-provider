@@ -50,6 +50,7 @@ Yay for [SemVer](http://semver.org/).
 - fixed encrypted ID Tokens without a used alg (json payload) to have `cty` (content-type) `json`
 - fixed Registration 1.0 ignoring `null` value attributes, only Registration Management Protocol
   update action ignores `null` values to clear them from a stored client now
+- fixed clients with jwks_uri failing to be fetched blocking the initialize call
 - fixed unsigned ID Tokens missing `*_hash` properties
 - `request_uri` response caching now also handles `expires` response headers
 
