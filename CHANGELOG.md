@@ -5,7 +5,9 @@ Yay for [SemVer](http://semver.org/).
 **Table of Contents**
 
 <!-- TOC START min:2 max:3 link:true update:true -->
-  - [2.7.0](#270)
+  - [2.7.x](#27x)
+    - [2.7.1](#271)
+    - [2.7.0](#270)
   - [2.6.0](#260)
   - [2.5.x](#25x)
     - [2.5.1](#251)
@@ -44,7 +46,12 @@ Yay for [SemVer](http://semver.org/).
 
 <!-- TOC END -->
 
-## 2.7.0
+## 2.7.x
+### 2.7.1
+- [DIFF](https://github.com/panva/node-oidc-provider/compare/v2.7.0...v2.7.1)
+- reverted 2.7.0 null handling of client properties
+
+### 2.7.0
 - [DIFF](https://github.com/panva/node-oidc-provider/compare/v2.6.0...v2.7.0)
 - adjusted the client schema to ignore extra properties for disabled features
 - fixed encrypted ID Tokens without a used alg (json payload) to have `cty` (content-type) `json`
