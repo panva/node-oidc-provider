@@ -26,8 +26,6 @@ describe('client keystore refresh', () => {
   before(bootstrap(__dirname, 'client_keystore')); // provider
 
   before(async function () {
-    await keystore.generate('RSA', 1024);
-    setResponse();
     return i(this.provider).clientAdd({
       client_id: 'client',
       client_secret: 'secret',
@@ -40,6 +38,7 @@ describe('client keystore refresh', () => {
   });
 
   it('gets the jwks from the uri', async function () {
+    await keystore.generate('RSA', 1024);
     setResponse();
 
     const client = await this.provider.Client.find('client');
