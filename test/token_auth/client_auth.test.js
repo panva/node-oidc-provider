@@ -638,5 +638,25 @@ describe('client authentication options', () => {
         .type('form')
         .expect(this.responses.tokenAuthSucceeded));
     });
+
+    it('accepts client assertions issued within acceptable system clock skew', function () {
+      this.provider.CLOCK_TOLERANCE = 10;
+      return JWT.sign({
+        jti: uuid(),
+        aud: this.provider.issuer + this.provider.pathFor('token'),
+        sub: 'client-jwt-key',
+        iss: 'client-jwt-key',
+        iat: Math.ceil(Date.now() / 1000) + 5,
+      }, privateKey, 'RS256', {
+        expiresIn: 60,
+      }).then(assertion => this.agent.post(route)
+        .send({
+          client_assertion: assertion,
+          grant_type: 'implicit',
+          client_assertion_type: 'urn:ietf:params:oauth:client-assertion-type:jwt-bearer',
+        })
+        .type('form')
+        .expect(this.responses.tokenAuthSucceeded));
+    });
   });
 });

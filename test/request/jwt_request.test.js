@@ -29,6 +29,7 @@ describe('request parameter features', () => {
         return this.login();
       });
       after(function () {
+        this.provider.CLOCK_TOLERANCE = 0;
         return this.logout();
       });
 
@@ -114,6 +115,39 @@ describe('request parameter features', () => {
             expect(actual.query).to.have.property('code');
           }));
       });
+
+      it('can accept request objects issued within acceptable system clock skew', async function () {
+        const key = (await this.provider.Client.find('client-with-HS-sig')).keystore.get({
+          alg: 'HS256',
+        });
+        this.provider.CLOCK_TOLERANCE = 10;
+        return JWT.sign({
+          iat: Math.ceil(Date.now() / 1000) + 5,
+          client_id: 'client-with-HS-sig',
+          response_type: 'code',
+          redirect_uri: 'https://client.example.com/cb',
+        }, key, 'HS256', { issuer: 'client-with-HS-sig', audience: this.provider.issuer }).then(request => this.wrap({
+          agent: this.agent,
+          route,
+          verb,
+          auth: {
+            request,
+            scope: 'openid',
+            client_id: 'client-with-HS-sig',
+            response_type: 'code',
+          },
+        })
+          .expect(302)
+          .expect((response) => {
+            const expected = parse('https://client.example.com/cb', true);
+            const actual = parse(response.headers.location, true);
+            ['protocol', 'host', 'pathname'].forEach((attr) => {
+              expect(actual[attr]).to.equal(expected[attr]);
+            });
+            expect(actual.query).to.have.property('code');
+          }));
+      });
+
 
       it('works with signed by an actual HS', async function () {
         const key = (await this.provider.Client.find('client-with-HS-sig')).keystore.get({

@@ -115,6 +115,14 @@ describe('JSON Web Token (JWT) RFC7519 implementation', () => {
         }));
     });
 
+    it('nbf accepted within set clock tolerance', () => {
+      const key = keystore.get({ kty: 'oct' });
+      return JWT.sign({ data: true, nbf: epochTime() + 5 }, key, 'HS256')
+        .then(jwt => JWT.verify(jwt, key, {
+          clockTolerance: 10,
+        }));
+    });
+
     it('nbf invalid', () => {
       const key = keystore.get({ kty: 'oct' });
       return JWT.sign({ data: true, nbf: 'not a nbf' }, key, 'HS256')
@@ -153,6 +161,16 @@ describe('JSON Web Token (JWT) RFC7519 implementation', () => {
         }));
     });
 
+    it('iat accepted within set clock tolerance', () => {
+      const key = keystore.get({ kty: 'oct' });
+      return JWT.sign({ data: true, iat: epochTime() + 5 }, key, 'HS256', {
+        noTimestamp: true,
+      })
+        .then(jwt => JWT.verify(jwt, key, {
+          clockTolerance: 10,
+        }));
+    });
+
     it('iat invalid', () => {
       const key = keystore.get({ kty: 'oct' });
       return JWT.sign({ data: true, iat: 'not an iat' }, key, 'HS256', {
@@ -186,6 +204,14 @@ describe('JSON Web Token (JWT) RFC7519 implementation', () => {
       return JWT.sign({ data: true, exp: epochTime() - 3600 }, key, 'HS256')
         .then(jwt => JWT.verify(jwt, key, {
           ignoreExpiration: true,
+        }));
+    });
+
+    it('exp accepted within set clock tolerance', () => {
+      const key = keystore.get({ kty: 'oct' });
+      return JWT.sign({ data: true, exp: epochTime() - 5 }, key, 'HS256')
+        .then(jwt => JWT.verify(jwt, key, {
+          clockTolerance: 10,
         }));
     });
 
