@@ -67,7 +67,7 @@
     "test": "node ./test/run",
     "lint": "eslint lib example test",
     "lint-fix": "eslint lib example test --fix",
-    "heroku-postbuild": "npm install mongodb",
+    "heroku-postbuild": "npm install mongodb@^2.0.0",
     "update-configuration": "node ./docs/update-configuration && git add docs/configuration.md"
   },
   "pre-commit": [
