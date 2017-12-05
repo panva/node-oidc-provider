@@ -147,7 +147,7 @@ describe('request parameter features', () => {
             expect(actual.query).to.have.property('code');
           }));
       });
-      
+
 
       it('works with signed by an actual HS', async function () {
         const key = (await this.provider.Client.find('client-with-HS-sig')).keystore.get({
