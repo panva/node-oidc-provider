@@ -3,10 +3,10 @@
 const { createInterface: readline } = require('readline');
 const { createReadStream, writeFileSync, readFileSync } = require('fs');
 const values = require('../lib/helpers/defaults');
-const { get, capitalize } = require('lodash');
+const { get } = require('lodash');
 
 function capitalizeSentences(copy) {
-  return capitalize(copy).replace(/\. [a-z]/g, match => `. ${match.slice(-1).toUpperCase()}`);
+  return copy.replace(/\. [a-z]/g, match => `. ${match.slice(-1).toUpperCase()}`);
 }
 
 class Block {

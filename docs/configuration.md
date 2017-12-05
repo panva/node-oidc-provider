@@ -663,7 +663,7 @@ Depending on your setup you should do the following
 <!-- START CONF OPTIONS -->
 ### acrValues
 
-Array of strings, the authentication context class references that op supports. First one in the list will be the one used for authentication requests unless one was provided as part of an interaction result. Use a value with 'session' meaning as the first.  
+Array of strings, the Authentication Context Class References that OP supports. First one in the list will be the one used for authentication requests unless one was provided as part of an interaction result. Use a value with 'session' meaning as the first.  
 affects: discovery, ID Token acr claim values  
 
 default value:
@@ -673,7 +673,7 @@ default value:
 
 ### claims
 
-List of the claim names of the claims that the openid provider may be able to supply values for  
+List of the Claim Names of the Claims that the OpenID Provider MAY be able to supply values for.  
 affects: discovery, ID Token claim names, Userinfo claim names  
 
 default value:
@@ -690,7 +690,7 @@ default value:
 
 ### clientCacheDuration
 
-A {number} value (in seconds) describing how long a dynamically loaded should remain cached  
+A `Number` value (in seconds) describing how long a dynamically loaded should remain cached.  
 affects: adapter-backed client cache duration  
 
 default value:
@@ -700,8 +700,8 @@ Infinity
 
 ### clockTolerance
 
-A {number} value (in seconds) describing the allowed system clock skew  
-affects: JWT (ID token, client assertion) validations  
+A `Number` value (in seconds) describing the allowed system clock skew  
+affects: JWT (ID token, client assertion) validations.  
 
 default value:
 ```js
@@ -710,7 +710,7 @@ default value:
 
 ### cookies
 
-Options for https://github.com/pillarjs/cookies#cookiesset-name--value---options-- used by the op to keep track of various user-agent states  
+Options for https://github.com/pillarjs/cookies#cookiesset-name--value---options-- used by the OP to keep track of various User-Agent states.  
 affects: User-Agent sessions, passing of authorization details to interaction  
 
 default value:
@@ -748,7 +748,7 @@ default value:
 
 ### cookies.names
 
-Cookie names used by the op to store and transfer various states  
+Cookie names used by the OP to store and transfer various states.  
 affects: User-Agent session, Session Management states and interaction cookie names  
 
 default value:
@@ -825,7 +825,7 @@ default value:
 
 ### findById
 
-Helper used by the op to load your account and retrieve it's avaialble claims. The return value should be a promise and #claims() can return a promise too  
+Helper used by the OP to load your account and retrieve it's avaialble claims. The return value should be a Promise and #claims() can return a Promise too  
 affects: authorization, authorization_code and refresh_token grants, id token claims  
 
 default value:
@@ -842,7 +842,7 @@ async findById(ctx, id, token) {
 
 ### interactionCheck
 
-Helper used by the op as a final check whether the end-user should be sent to interaction or not, the default behavior is that every rp must be authorized per session and that native application clients always require end-user prompt to be confirmed. Return false if no interaction should be performed, return an object with relevant error, reason, etc. When interaction should be requested  
+Helper used by the OP as a final check whether the End-User should be sent to interaction or not, the default behavior is that every RP must be authorized per session and that native application clients always require End-User prompt to be confirmed. Return false if no interaction should be performed, return an object with relevant error, reason, etc. When interaction should be requested  
 affects: authorization interactions  
 
 default value:
@@ -867,7 +867,7 @@ async interactionCheck(ctx) {
 
 ### interactionUrl
 
-Helper used by the op to determine where to redirect user-agent for necessary interaction, can return both absolute and relative urls  
+Helper used by the OP to determine where to redirect User-Agent for necessary interaction, can return both absolute and relative urls  
 affects: authorization interactions  
 
 default value:
@@ -879,7 +879,7 @@ async interactionUrl(ctx, interaction) {
 
 ### introspectionEndpointAuthMethods
 
-List of client authentication methods supported by this op's introspection endpoint  
+List of Client Authentication methods supported by this OP's Introspection Endpoint  
 affects: discovery, client authentication for introspection, registration and registration management  
 
 default value:
@@ -895,7 +895,7 @@ default value:
 
 ### logoutSource
 
-Html source to which a logout form source is passed when session management renders a confirmation prompt for the user-agent.  
+HTML source to which a logout form source is passed when session management renders a confirmation prompt for the User-Agent.  
 affects: session management  
 
 default value:
@@ -928,7 +928,7 @@ Do you want to logout from OP too?
 
 ### pairwiseSalt
 
-Salt used by op when resolving pairwise id token and userinfo sub claim value  
+Salt used by OP when resolving pairwise ID Token and Userinfo sub claim value  
 affects: ID Token and Userinfo sub claim values  
 
 default value:
@@ -938,7 +938,7 @@ default value:
 
 ### postLogoutRedirectUri
 
-Url to which the op redirects the user-agent when no post_logout_redirect_uri is provided by the rp  
+URL to which the OP redirects the User-Agent when no post_logout_redirect_uri is provided by the RP  
 affects: session management  
 
 default value:
@@ -950,7 +950,7 @@ async postLogoutRedirectUri(ctx) {
 
 ### prompts
 
-List of the prompt values that the openid provider may be able to resolve  
+List of the prompt values that the OpenID Provider MAY be able to resolve  
 affects: authorization  
 
 default value:
@@ -964,7 +964,7 @@ default value:
 
 ### refreshTokenRotation
 
-Configures if and how the op rotates refresh tokens after they are used  
+Configures if and how the OP rotates refresh tokens after they are used  
 affects: refresh token rotation and adjacent revocation  
 
 default value:
@@ -974,7 +974,7 @@ default value:
 
 ### renderError
 
-Helper used by the op to present errors which are not meant to be 'forwarded' to the rp's redirect_uri  
+Helper used by the OP to present errors which are not meant to be 'forwarded' to the RP's redirect_uri  
 affects: presentation of errors encountered during authorization  
 
 default value:
@@ -995,7 +995,7 @@ async renderError(ctx, error) {
 
 ### responseTypes
 
-List of response_type values that op supports  
+List of response_type values that OP supports  
 affects: authorization, discovery, registration, registration management  
 
 default value:
@@ -1013,7 +1013,7 @@ default value:
 
 ### revocationEndpointAuthMethods
 
-List of client authentication methods supported by this op's revocation endpoint  
+List of Client Authentication methods supported by this OP's Revocation Endpoint  
 affects: discovery, client authentication for revocation, registration and registration management  
 
 default value:
@@ -1029,7 +1029,7 @@ default value:
 
 ### routes
 
-Routing values used by the op  
+Routing values used by the OP  
 affects: routing  
 
 default value:
@@ -1049,7 +1049,7 @@ default value:
 
 ### scopes
 
-List of the scope values that the op supports  
+List of the scope values that the OP supports  
 affects: discovery, authorization, ID Token claims, Userinfo claims  
 
 default value:
@@ -1062,7 +1062,7 @@ default value:
 
 ### subjectTypes
 
-List of the subject identifier types that this op supports. Valid types include 'pairwise' and 'public'.  
+List of the Subject Identifier types that this OP supports. Valid types include 'pairwise' and 'public'.  
 affects: discovery, registration, registration management, ID Token and Userinfo sub claim values  
 
 default value:
@@ -1074,7 +1074,7 @@ default value:
 
 ### tokenEndpointAuthMethods
 
-List of client authentication methods supported by this op's token endpoint  
+List of Client Authentication methods supported by this OP's Token Endpoint  
 affects: discovery, client authentication for token endpoint, registration and registration management  
 
 default value:
