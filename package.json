@@ -31,6 +31,7 @@
     "moment": "^2.14.1",
     "nock": "^9.0.2",
     "nyc": "^11.0.2",
+    "pre-commit": "^1.2.2",
     "sinon": "^4.0.0",
     "supertest": "^3.0.0"
   },
@@ -66,9 +67,14 @@
     "test": "node ./test/run",
     "lint": "eslint lib example test",
     "lint-fix": "eslint lib example test --fix",
-    "heroku-postbuild": "npm install mongodb"
+    "heroku-postbuild": "npm install mongodb",
+    "update-configuration": "node ./docs/update-configuration && git add docs/configuration.md"
   },
-  "version": "2.7.2",
+  "pre-commit": [
+    "update-configuration",
+    "test"
+  ],
+  "version": "2.8.0",
   "files": [
     "lib"
   ],

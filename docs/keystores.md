@@ -121,12 +121,11 @@ asKey(input, format).then(function(key) {
 Following action order is recommended when rotating signing certificates keys on a
 distributed deployment with rolling reloads in place.
 
-1. push new keys at the very end of the "keys" array in your JWKS
-  - this means the keys will become available for verification should they be encountered but not
-  yet used for signing
+1. push new keys at the very end of the "keys" array in your JWKS, this means the keys will become
+  available for verification should they be encountered but not yet used for signing
 2. reload all your processes
-3. move your new key to the very front of the "keys" array in your JWKS
-  - this means the key will be used for signing
+3. move your new key to the very front of the "keys" array in your JWKS, this means the key will be
+  used for signing
 4. reload all your processes
 
 [node-jose-library]: https://github.com/cisco/node-jose

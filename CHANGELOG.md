@@ -5,8 +5,8 @@ Yay for [SemVer](http://semver.org/).
 **Table of Contents**
 
 <!-- TOC START min:2 max:3 link:true update:true -->
+  - [2.8.0](#280)
   - [2.7.x](#27x)
-    - [2.7.3](#273)
     - [2.7.2](#272)
   - [2.6.0](#260)
   - [2.5.x](#25x)
@@ -46,12 +46,14 @@ Yay for [SemVer](http://semver.org/).
 
 <!-- TOC END -->
 
-## 2.7.x
-### 2.7.3
-- [DIFF](https://github.com/panva/node-oidc-provider/compare/v2.7.2...v2.7.3)
+## 2.8.0
+- [DIFF](https://github.com/panva/node-oidc-provider/compare/v2.7.2...v2.8.0)
+- added provider `clockTolerance` option
 - fixed clients with jwks_uri failing to be fetched blocking the initialize call
 - fixed successful client keystore refresh after failed verification to pass
+- bumped node-jose dependency
 
+## 2.7.x
 ### 2.7.2
 - [DIFF](https://github.com/panva/node-oidc-provider/compare/v2.6.0...v2.7.2)
 - adjusted the client schema to ignore extra properties for disabled features
@@ -115,7 +117,6 @@ Note: 2.7.0 and 2.7.1 yanked for the bugs they introduced
 - fixed PBES2 encryption to use client_secret derived symmetrical key instead of its full octet value
 - fixed `claims` parameter handling when part of a Request object as an object
 - removed bugged? and/or previously not working `A(128|192|256)GCMKW` symmetrical encryption algs
-- removed support for discontinued OAuth 2.0 Mix-Up Mitigation (was experimental)
 
 ## 2.2.x
 ### 2.2.1
@@ -136,7 +137,6 @@ Note: 2.7.0 and 2.7.1 yanked for the bugs they introduced
 - added `ctx.oidc.signed` with an array of parameter names which were received using a signed or
   encrypted request/Uri parameter.
 - `signed` array of strings is available in the short lived session for interactions
-- added optional support for [OAuth 2.0 Mix-Up Mitigation - draft 01](https://tools.ietf.org/html/draft-ietf-oauth-mix-up-mitigation-01)
 - added basic sequelize adapter example
 - fixed a bug where extraParams weren't recognized when part of a `request` or `request_uri` parameters
 - fixed a bug where client credential and refresh token adapter instances were used even if these
@@ -306,7 +306,7 @@ Note: 2.7.0 and 2.7.1 yanked for the bugs they introduced
 ### 1.4.x
 - fixed an issue for provider instances with upstream already parsing the request body
 - fixed custom uri scheme native clients hostname validations
-- added optional support for [OAuth 2.0 for Native Apps BCP - draft 06][https://tools.ietf.org/html/draft-ietf-oauth-native-apps-06]
+- added optional support for [OAuth 2.0 for Native Apps BCP - draft 06](https://tools.ietf.org/html/draft-ietf-oauth-native-apps-06)
   - enable with configuration `features.oauthNativeApps = true`;
 - offline_access scope is now ignored when consent prompt is missing instead of being rejected as invalid_request
 - unrecognized authentication requests scopes are now ignored instead of being rejected as invalid_request

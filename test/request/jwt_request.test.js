@@ -29,7 +29,7 @@ describe('request parameter features', () => {
         return this.login();
       });
       after(function () {
-        this.provider.CLOCK_TOLERANCE = 0;
+        i(this.provider).configuration().clockTolerance = 0;
         return this.logout();
       });
 
@@ -120,7 +120,7 @@ describe('request parameter features', () => {
         const key = (await this.provider.Client.find('client-with-HS-sig')).keystore.get({
           alg: 'HS256',
         });
-        this.provider.CLOCK_TOLERANCE = 10;
+        i(this.provider).configuration().clockTolerance = 10;
         return JWT.sign({
           iat: Math.ceil(Date.now() / 1000) + 5,
           client_id: 'client-with-HS-sig',

@@ -116,14 +116,6 @@ actions and i.e. emit metrics or that react to specific triggers. In some scenar
 change the defined behavior.  
 See the list of available emitted [event names](/docs/events.md) and their description.
 
-### Allow for system clock skew
-It is possible the OP or RP environment has a system clock skew, to set a clock tolerance (in seconds)
-
-```js
-oidc.CLOCK_TOLERANCE = 5; // to allow a 5 second skew
-```
-
-
 
 [travis-image]: https://img.shields.io/travis/panva/node-oidc-provider/master.svg?style=flat-square&maxAge=7200
 [travis-url]: https://travis-ci.org/panva/node-oidc-provider

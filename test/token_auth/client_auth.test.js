@@ -621,6 +621,10 @@ describe('client authentication options', () => {
       privateKey = key;
     }));
 
+    after(function () {
+      i(this.provider).configuration().clockTolerance = 0;
+    });
+
     it('accepts the auth', function () {
       return JWT.sign({
         jti: uuid(),
@@ -640,7 +644,7 @@ describe('client authentication options', () => {
     });
 
     it('accepts client assertions issued within acceptable system clock skew', function () {
-      this.provider.CLOCK_TOLERANCE = 10;
+      i(this.provider).configuration().clockTolerance = 10;
       return JWT.sign({
         jti: uuid(),
         aud: this.provider.issuer + this.provider.pathFor('token'),

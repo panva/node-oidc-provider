@@ -26,13 +26,13 @@ point to get an idea of what you should provide.
   - [Authentication Context Class Reference](#authentication-context-class-reference)
   - [Mounting oidc-provider](#mounting-oidc-provider)
   - [Trusting ssl offloading proxies](#trusting-ssl-offloading-proxies)
+  - [Configuration options](#configuration-options)
 
 <!-- TOC END -->
 
 ## Default configuration values
-Default values are available for all configuration options.
-[Default configuration][defaults] provides details on what the options mean and
-what part of the OP they affect.
+Default values are available for all configuration options. Available in [code][defaults] as well as
+in this [document](#configuration-options).
 
 
 ## Accounts
@@ -657,6 +657,490 @@ Depending on your setup you should do the following
 | standalone oidc-provider | `provider.app.proxy = true; ` |
 | oidc-provider mounted to a koa app | `yourKoaApp.proxy = true` |
 | oidc-provider mounted to an express app | `provider.app.proxy = true; ` |
+
+## Configuration options
+
+<!-- START CONF OPTIONS -->
+### acrValues
+
+Array of strings, the authentication context class references that op supports. First one in the list will be the one used for authentication requests unless one was provided as part of an interaction result. Use a value with 'session' meaning as the first.  
+affects: discovery, ID Token acr claim values  
+
+default value:
+```js
+[]
+```
+
+### claims
+
+List of the claim names of the claims that the openid provider may be able to supply values for  
+affects: discovery, ID Token claim names, Userinfo claim names  
+
+default value:
+```js
+{
+  "acr": null,
+  "auth_time": null,
+  "iss": null,
+  "openid": [
+    "sub"
+  ]
+}
+```
+
+### clientCacheDuration
+
+A {number} value (in seconds) describing how long a dynamically loaded should remain cached  
+affects: adapter-backed client cache duration  
+
+default value:
+```js
+Infinity
+```
+
+### clockTolerance
+
+A {number} value (in seconds) describing the allowed system clock skew  
+affects: JWT (ID token, client assertion) validations  
+
+default value:
+```js
+0
+```
+
+### cookies
+
+Options for https://github.com/pillarjs/cookies#cookiesset-name--value---options-- used by the op to keep track of various user-agent states  
+affects: User-Agent sessions, passing of authorization details to interaction  
+
+default value:
+```js
+{
+  "names": {
+    "session": "_session",
+    "interaction": "_grant",
+    "resume": "_grant",
+    "state": "_state"
+  },
+  "long": {
+    "httpOnly": true,
+    "maxAge": 31557600000
+  },
+  "short": {
+    "httpOnly": true,
+    "maxAge": 3600000
+  }
+}
+```
+
+### cookies.long
+
+Options for long-term cookies  
+affects: User-Agent session reference, Session Management states  
+
+default value:
+```js
+{
+  "httpOnly": true,
+  "maxAge": 31557600000
+}
+```
+
+### cookies.names
+
+Cookie names used by the op to store and transfer various states  
+affects: User-Agent session, Session Management states and interaction cookie names  
+
+default value:
+```js
+{
+  "session": "_session",
+  "interaction": "_grant",
+  "resume": "_grant",
+  "state": "_state"
+}
+```
+
+### cookies.short
+
+Options for short-term cookies  
+affects: passing of authorization details to interaction  
+
+default value:
+```js
+{
+  "httpOnly": true,
+  "maxAge": 3600000
+}
+```
+
+### discovery
+
+Pass additional properties to this object to extend the discovery document  
+affects: discovery  
+
+default value:
+```js
+{
+  "claim_types_supported": [
+    "normal"
+  ]
+}
+```
+
+### extraParams
+
+Pass an iterable object (i.e. Array or set of strings) to extend the parameters recognized by the authorization endpoint. These parameters are then available in ctx.oidc.params as well as passed via the `_grant` cookie to interaction  
+affects: authorization, interaction  
+
+default value:
+```js
+[]
+```
+
+### features
+
+Enable/disable features, see configuration.md for more details  
+default value:
+```js
+{
+  "devInteractions": true,
+  "discovery": true,
+  "requestUri": true,
+  "oauthNativeApps": true,
+  "pkce": true,
+  "backchannelLogout": false,
+  "claimsParameter": false,
+  "clientCredentials": false,
+  "encryption": false,
+  "introspection": false,
+  "alwaysIssueRefresh": false,
+  "registration": false,
+  "registrationManagement": false,
+  "request": false,
+  "revocation": false,
+  "sessionManagement": false
+}
+```
+
+### findById
+
+Helper used by the op to load your account and retrieve it's avaialble claims. The return value should be a promise and #claims() can return a promise too  
+affects: authorization, authorization_code and refresh_token grants, id token claims  
+
+default value:
+```js
+async findById(ctx, id, token) {
+  // token is a reference to the token used for which a given account is being loaded,
+  // is undefined in scenarios where claims are returned from authorization endpoint
+  return {
+    accountId: id,
+    async claims() { return { sub: id }; },
+  };
+}
+```
+
+### interactionCheck
+
+Helper used by the op as a final check whether the end-user should be sent to interaction or not, the default behavior is that every rp must be authorized per session and that native application clients always require end-user prompt to be confirmed. Return false if no interaction should be performed, return an object with relevant error, reason, etc. When interaction should be requested  
+affects: authorization interactions  
+
+default value:
+```js
+async interactionCheck(ctx) {
+  if (!ctx.oidc.session.sidFor(ctx.oidc.client.clientId)) {
+    return {
+      error: 'consent_required',
+      error_description: 'client not authorized for End-User session yet',
+      reason: 'client_not_authorized',
+    };
+  } else if (ctx.oidc.client.applicationType === 'native' && ctx.oidc.params.response_type !== 'none' && ctx._matchedRouteName !== 'resume') {
+    return {
+      error: 'interaction_required',
+      error_description: 'native clients require End-User interaction',
+      reason: 'native_client_prompt',
+    };
+  }
+  return false;
+}
+```
+
+### interactionUrl
+
+Helper used by the op to determine where to redirect user-agent for necessary interaction, can return both absolute and relative urls  
+affects: authorization interactions  
+
+default value:
+```js
+async interactionUrl(ctx, interaction) {
+  return `/interaction/${ctx.oidc.uuid}`;
+}
+```
+
+### introspectionEndpointAuthMethods
+
+List of client authentication methods supported by this op's introspection endpoint  
+affects: discovery, client authentication for introspection, registration and registration management  
+
+default value:
+```js
+[
+  "none",
+  "client_secret_basic",
+  "client_secret_jwt",
+  "client_secret_post",
+  "private_key_jwt"
+]
+```
+
+### logoutSource
+
+Html source to which a logout form source is passed when session management renders a confirmation prompt for the user-agent.  
+affects: session management  
+
+default value:
+```js
+async logoutSource(ctx, form) {
+  ctx.body = `<!DOCTYPE html>
+<head>
+<title>Logout</title>
+</head>
+<body>
+<script>
+  function logout() {
+    var form = document.forms[0];
+    var input = document.createElement('input');
+    input.type = 'hidden';
+    input.name = 'logout';
+    input.value = 'yes';
+    form.appendChild(input);
+    form.submit();
+  }
+</script>
+${form}
+Do you want to logout from OP too?
+<button onclick="logout()">Yes</button>
+<button onclick="document.forms[0].submit()">Please, don't!</button>
+</body>
+</html>`;
+}
+```
+
+### pairwiseSalt
+
+Salt used by op when resolving pairwise id token and userinfo sub claim value  
+affects: ID Token and Userinfo sub claim values  
+
+default value:
+```js
+""
+```
+
+### postLogoutRedirectUri
+
+Url to which the op redirects the user-agent when no post_logout_redirect_uri is provided by the rp  
+affects: session management  
+
+default value:
+```js
+async postLogoutRedirectUri(ctx) {
+  return ctx.origin;
+}
+```
+
+### prompts
+
+List of the prompt values that the openid provider may be able to resolve  
+affects: authorization  
+
+default value:
+```js
+[
+  "consent",
+  "login",
+  "none"
+]
+```
+
+### refreshTokenRotation
+
+Configures if and how the op rotates refresh tokens after they are used  
+affects: refresh token rotation and adjacent revocation  
+
+default value:
+```js
+"rotateAndConsume"
+```
+
+### renderError
+
+Helper used by the op to present errors which are not meant to be 'forwarded' to the rp's redirect_uri  
+affects: presentation of errors encountered during authorization  
+
+default value:
+```js
+async renderError(ctx, error) {
+  ctx.type = 'html';
+  ctx.body = `<!DOCTYPE html>
+<head>
+<title>oops! something went wrong</title>
+</head>
+<body>
+<h1>oops! something went wrong</h1>
+<pre>${JSON.stringify(error, null, 4)}</pre>
+</body>
+</html>`;
+}
+```
+
+### responseTypes
+
+List of response_type values that op supports  
+affects: authorization, discovery, registration, registration management  
+
+default value:
+```js
+[
+  "code id_token token",
+  "code id_token",
+  "code token",
+  "code",
+  "id_token token",
+  "id_token",
+  "none"
+]
+```
+
+### revocationEndpointAuthMethods
+
+List of client authentication methods supported by this op's revocation endpoint  
+affects: discovery, client authentication for revocation, registration and registration management  
+
+default value:
+```js
+[
+  "none",
+  "client_secret_basic",
+  "client_secret_jwt",
+  "client_secret_post",
+  "private_key_jwt"
+]
+```
+
+### routes
+
+Routing values used by the op  
+affects: routing  
+
+default value:
+```js
+{
+  "authorization": "/auth",
+  "certificates": "/certs",
+  "check_session": "/session/check",
+  "end_session": "/session/end",
+  "introspection": "/token/introspection",
+  "registration": "/reg",
+  "revocation": "/token/revocation",
+  "token": "/token",
+  "userinfo": "/me"
+}
+```
+
+### scopes
+
+List of the scope values that the op supports  
+affects: discovery, authorization, ID Token claims, Userinfo claims  
+
+default value:
+```js
+[
+  "openid",
+  "offline_access"
+]
+```
+
+### subjectTypes
+
+List of the subject identifier types that this op supports. Valid types include 'pairwise' and 'public'.  
+affects: discovery, registration, registration management, ID Token and Userinfo sub claim values  
+
+default value:
+```js
+[
+  "public"
+]
+```
+
+### tokenEndpointAuthMethods
+
+List of client authentication methods supported by this op's token endpoint  
+affects: discovery, client authentication for token endpoint, registration and registration management  
+
+default value:
+```js
+[
+  "none",
+  "client_secret_basic",
+  "client_secret_jwt",
+  "client_secret_post",
+  "private_key_jwt"
+]
+```
+
+### ttl
+
+Expirations (in seconds) for all token types  
+affects: tokens  
+
+default value:
+```js
+{
+  "AccessToken": 3600,
+  "AuthorizationCode": 600,
+  "ClientCredentials": 600,
+  "IdToken": 3600,
+  "RefreshToken": 1209600
+}
+```
+
+### uniqueness
+
+Function resolving whether a given value with expiration is presented first time  
+affects: client_secret_jwt and private_key_jwt client authentications  
+
+default value:
+```js
+async uniqueness(ctx, jti, expiresAt) {
+  if (cache.get(jti)) return false;
+  cache.set(jti, true, (expiresAt - epochTime()) * 1000);
+  return true;
+}
+```
+
+### unsupported
+
+Fine-tune the algorithms your provider should support by further omitting values from the respective discovery properties  
+affects: signing, encryption, discovery, client validation  
+
+default value:
+```js
+{
+  "idTokenEncryptionAlgValues": [],
+  "idTokenEncryptionEncValues": [],
+  "idTokenSigningAlgValues": [],
+  "requestObjectEncryptionAlgValues": [],
+  "requestObjectEncryptionEncValues": [],
+  "requestObjectSigningAlgValues": [],
+  "tokenEndpointAuthSigningAlgValues": [],
+  "introspectionEndpointAuthSigningAlgValues": [],
+  "revocationEndpointAuthSigningAlgValues": [],
+  "userinfoEncryptionAlgValues": [],
+  "userinfoEncryptionEncValues": [],
+  "userinfoSigningAlgValues": []
+}
+```
+<!-- END CONF OPTIONS -->
 
 [client-metadata]: http://openid.net/specs/openid-connect-registration-1_0.html#ClientMetadata
 [core-account-claims]: http://openid.net/specs/openid-connect-core-1_0.html#ScopeClaims
