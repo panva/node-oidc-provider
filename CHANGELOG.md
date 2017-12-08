@@ -27,6 +27,10 @@ Yay for [SemVer](http://semver.org/).
 <!-- TOC END -->
 
 ## Version 1.15.0
+### Version 1.15.14
+- [DIFF](https://github.com/panva/node-oidc-provider/compare/v1.15.13...v1.15.14)
+- changed grant_type requires to resolve oidc-provider loading through webpack
+
 ### Version 1.15.13
 - [DIFF](https://github.com/panva/node-oidc-provider/compare/v1.15.12...v1.15.13)
 - fixed PBES2 encryption to use client_secret derived symmetrical key instead of its full octet value
