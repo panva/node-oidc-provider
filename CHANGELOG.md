@@ -5,7 +5,9 @@ Yay for [SemVer](http://semver.org/).
 **Table of Contents**
 
 <!-- TOC START min:2 max:3 link:true update:true -->
-  - [2.8.0](#280)
+  - [2.8.x](#28x)
+    - [2.8.1](#281)
+    - [2.8.0](#280)
   - [2.7.x](#27x)
     - [2.7.2](#272)
   - [2.6.0](#260)
@@ -46,7 +48,12 @@ Yay for [SemVer](http://semver.org/).
 
 <!-- TOC END -->
 
-## 2.8.0
+## 2.8.x
+### 2.8.1
+- [DIFF](https://github.com/panva/node-oidc-provider/compare/v2.8.0...v2.8.1)
+- changed grant_type requires to resolve oidc-provider loading through webpack
+
+### 2.8.0
 - [DIFF](https://github.com/panva/node-oidc-provider/compare/v2.7.2...v2.8.0)
 - added provider `clockTolerance` option
 - fixed clients with jwks_uri failing to be fetched blocking the initialize call
