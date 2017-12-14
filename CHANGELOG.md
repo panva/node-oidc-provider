@@ -6,6 +6,7 @@ Yay for [SemVer](http://semver.org/).
 
 <!-- TOC START min:2 max:3 link:true update:true -->
   - [2.8.x](#28x)
+    - [2.8.3](#283)
     - [2.8.2](#282)
     - [2.8.0](#280)
   - [2.7.x](#27x)
@@ -49,6 +50,11 @@ Yay for [SemVer](http://semver.org/).
 <!-- TOC END -->
 
 ## 2.8.x
+### 2.8.3
+- [DIFF](https://github.com/panva/node-oidc-provider/compare/v2.8.2...v2.8.3)
+- fixed token expires_in to be based off an overloadable BaseToken expiration() instance method
+- fixed token introspection response for consumed tokens
+
 ### 2.8.2
 - [DIFF](https://github.com/panva/node-oidc-provider/compare/v2.8.0...v2.8.2)
 - changed grant_type requires to resolve oidc-provider loading through webpack
