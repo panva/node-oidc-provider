@@ -9,6 +9,7 @@
   "rules": {
     "import/no-extraneous-dependencies": [ "error", { "devDependencies": [ "**" ] } ],
     "func-names": "off",
-    "no-unused-expressions": "off"
+    "no-unused-expressions": "off",
+    "camelcase": "off"
   }
 }

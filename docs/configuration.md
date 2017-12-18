@@ -22,6 +22,7 @@ point to get an idea of what you should provide.
   - [Extending Discovery with Custom Properties](#extending-discovery-with-custom-properties)
   - [Configuring Routes](#configuring-routes)
   - [Fine-tuning supported algorithms](#fine-tuning-supported-algorithms)
+  - [HTTP Request Library / Proxy settings](#http-request-library--proxy-settings)
   - [Changing HTTP Request Defaults](#changing-http-request-defaults)
   - [Authentication Context Class Reference](#authentication-context-class-reference)
   - [Mounting oidc-provider](#mounting-oidc-provider)
@@ -586,9 +587,24 @@ client metadata is a union of
 If you wish to tune the algorithms further you may do so via the `unsupported` [configuration][defaults]
 property.
 
+## HTTP Request Library / Proxy settings
+By default oidc-provider uses the [got][got-library] module. Because of its lightweight nature of
+the provider will not use environment-defined http(s) proxies. In order to have them used you'll
+need to require and tell oidc-provider to use [request][request-library] instead.
+
+```sh
+# add request to your application package bundle
+npm install request@^2.0.0 --save
+```
+
+```js
+// tell oidc-provider to use request instead of got
+Provider.useRequest();
+```
+
 
 ## Changing HTTP Request Defaults
-On four occasions the OIDC Provider needs to venture out to he world wide webs to fetch or post
+On four occasions the OIDC Provider needs to venture out to the world wide webs to fetch or post
 to external resources, those are
 
 - fetching an authorization request by request_uri reference
@@ -596,7 +612,7 @@ to external resources, those are
 - validating pairwise client's relation to a sector (sector_identifier_uri client metadata)
 - posting to client's backchannel_logout_uri
 
-oidc-provider uses [got][got-library] for http requests with the following default request options
+oidc-provider uses these default options for http requests
 ```js
 const DEFAULT_HTTP_OPTIONS = {
   followRedirect: false,
@@ -1157,5 +1173,6 @@ default value:
 [oauth-native-apps]: https://tools.ietf.org/html/rfc8252
 [session-management]: http://openid.net/specs/openid-connect-session-1_0-28.html
 [got-library]: https://github.com/sindresorhus/got
+[request-library]: https://github.com/request/request
 [password-grant]: https://tools.ietf.org/html/rfc6749#section-4.3
 [defaults]: /lib/helpers/defaults.js
