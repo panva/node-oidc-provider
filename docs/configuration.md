@@ -540,8 +540,8 @@ provider.registerGrantType('password', function passwordGrantTypeFactory(provide
 
 ## Extending Authorization with Custom Parameters
 You can extend the whitelisted parameters of authorization/authentication endpoint beyond the
-defaults. These will be available in ctx.oidc.params as well as passed via the `_grant` cookie
-to the interaction.
+defaults. These will be available in ctx.oidc.params as well as passed to the interaction session
+object for you to read.
 ```js
 const oidc = new Provider('http://localhost:3000', {
   extraParams: ['utm_campaign', 'utm_medium', 'utm_source', 'utm_term'],
@@ -580,7 +580,7 @@ const oidc = new Provider('http://localhost:3000', {
 The lists of supported algorithms exposed via discovery and used when validating request objects and
 client metadata is a union of
 
-- all symmetrical algorithsm where they apply
+- all symmetrical algorithms where they apply
 - algorithms from the keystore you initialize the provider with
 
 If you wish to tune the algorithms further you may do so via the `unsupported` [configuration][defaults]
