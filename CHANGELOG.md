@@ -5,7 +5,9 @@ Yay for [SemVer](http://semver.org/).
 **Table of Contents**
 
 <!-- TOC START min:2 max:3 link:true update:true -->
-  - [2.9.0](#290)
+  - [2.9.x](#29x)
+    - [2.9.1](#291)
+    - [2.9.0](#290)
   - [2.8.x](#28x)
     - [2.8.3](#283)
     - [2.8.2](#282)
@@ -50,7 +52,12 @@ Yay for [SemVer](http://semver.org/).
 
 <!-- TOC END -->
 
-## 2.9.0
+## 2.9.x
+### 2.9.1
+- [DIFF](https://github.com/panva/node-oidc-provider/compare/v2.9.0...v2.9.1)
+- fixed `useRequest` to be a static method as documented
+
+### 2.9.0
 - [DIFF](https://github.com/panva/node-oidc-provider/compare/v2.8.3...v2.9.0)
 - added and documented the optional use of [request][request-library] instead of [got][got-library]
   for deployments requiring http(s) proxies to reach out to the internet wilderness
