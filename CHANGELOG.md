@@ -5,6 +5,7 @@ Yay for [SemVer](http://semver.org/).
 **Table of Contents**
 
 <!-- TOC START min:2 max:3 link:true update:true -->
+  - [2.9.0](#290)
   - [2.8.x](#28x)
     - [2.8.3](#283)
     - [2.8.2](#282)
@@ -48,6 +49,11 @@ Yay for [SemVer](http://semver.org/).
     - [1.0.x](#10x)
 
 <!-- TOC END -->
+
+## 2.9.0
+- [DIFF](https://github.com/panva/node-oidc-provider/compare/v2.8.3...v2.9.0)
+- added and documented the optional use of [request][request-library] instead of [got][got-library]
+  for deployments requiring http(s) proxies to reach out to the internet wilderness
 
 ## 2.8.x
 ### 2.8.3
@@ -368,3 +374,5 @@ Bugfixes:
 - client validation: http URI scheme is now forbidden for implicit web clients
 
 [debug-link]: https://github.com/visionmedia/debug
+[got-library]: https://github.com/sindresorhus/got
+[request-library]: https://github.com/request/request
