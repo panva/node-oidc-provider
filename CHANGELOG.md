@@ -6,6 +6,7 @@ Yay for [SemVer](http://semver.org/).
 
 <!-- TOC START min:2 max:3 link:true update:true -->
   - [2.9.x](#29x)
+    - [2.9.2](#292)
     - [2.9.1](#291)
     - [2.9.0](#290)
   - [2.8.x](#28x)
@@ -53,6 +54,11 @@ Yay for [SemVer](http://semver.org/).
 <!-- TOC END -->
 
 ## 2.9.x
+### 2.9.2
+- [DIFF](https://github.com/panva/node-oidc-provider/compare/v2.9.1...v2.9.2)
+- added used http verb to error debug messages
+- added a descriptive "method not allowed" error message
+
 ### 2.9.1
 - [DIFF](https://github.com/panva/node-oidc-provider/compare/v2.9.0...v2.9.1)
 - fixed `useRequest` to be a static method as documented
