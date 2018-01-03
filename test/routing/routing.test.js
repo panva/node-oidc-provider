@@ -11,7 +11,7 @@ describe('default routing behavior', () => {
         .expect(405)
         .expect({
           error: 'invalid_request',
-          error_description: 'method not allowed',
+          error_description: 'method POST not allowed on /.well-known/openid-configuration',
         });
     });
 
