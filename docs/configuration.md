@@ -687,6 +687,20 @@ default value:
 []
 ```
 
+### audiences
+
+Helper used by the OP to push additional audiences to issued ID Tokens and other signed responses. The return value should either be falsy to omit adding additional audiences or an array of strings to push.  
+affects: id token audiences, signed userinfo audiences  
+
+default value:
+```js
+async audiences(ctx, id, token) {
+  // token is a reference to the token used for which a given account is being loaded,
+  // is undefined in scenarios where claims are returned from authorization endpoint
+  return undefined;
+}
+```
+
 ### claims
 
 List of the Claim Names of the Claims that the OpenID Provider MAY be able to supply values for.  
@@ -841,7 +855,7 @@ default value:
 
 ### findById
 
-Helper used by the OP to load your account and retrieve it's avaialble claims. The return value should be a Promise and #claims() can return a Promise too  
+Helper used by the OP to load your account and retrieve it's available claims. The return value should be a Promise and #claims() can return a Promise too  
 affects: authorization, authorization_code and refresh_token grants, id token claims  
 
 default value:
