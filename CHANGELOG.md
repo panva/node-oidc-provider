@@ -5,6 +5,7 @@ Yay for [SemVer](http://semver.org/).
 **Table of Contents**
 
 <!-- TOC START min:2 max:3 link:true update:true -->
+  - [2.10.0](#2100)
   - [2.9.x](#29x)
     - [2.9.2](#292)
     - [2.9.1](#291)
@@ -52,6 +53,12 @@ Yay for [SemVer](http://semver.org/).
     - [1.0.x](#10x)
 
 <!-- TOC END -->
+
+## 2.10.0
+- [DIFF](https://github.com/panva/node-oidc-provider/compare/v2.9.2...v2.10.0)
+- added `audiences` helper function to allow for pushing additional audiences to issued ID Tokens,
+  this will additionally push an `azp` claim with the `client_id` value as per Core 1.0 spec defined
+  ID Token validations.
 
 ## 2.9.x
 ### 2.9.2
