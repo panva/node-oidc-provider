@@ -141,7 +141,7 @@ See the list of available emitted [event names](/docs/events.md) and their descr
 [heroku-example-client]: https://tranquil-reef-95185.herokuapp.com/client
 [openid-client]: https://github.com/panva/node-openid-client
 [backchannel-logout]: https://openid.net/specs/openid-connect-backchannel-1_0-04.html
-[frontchannel-logout]: https://openid.net/specs/openid-connect-frontchannel-1_0.html
+[frontchannel-logout]: https://openid.net/specs/openid-connect-frontchannel-1_0-02.html
 [registration-management]: https://tools.ietf.org/html/rfc7592
 [oauth-native-apps]: https://tools.ietf.org/html/rfc8252
 [debug-link]: https://github.com/visionmedia/debug

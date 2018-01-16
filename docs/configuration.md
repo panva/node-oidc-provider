@@ -1232,7 +1232,7 @@ default value:
 [core-jwt-parameters-url]: https://openid.net/specs/openid-connect-core-1_0.html#JWTRequests
 [aggregated-distributed-claims]: https://openid.net/specs/openid-connect-core-1_0.html#AggregatedDistributedClaims
 [backchannel-logout]: https://openid.net/specs/openid-connect-backchannel-1_0-04.html
-[frontchannel-logout]: https://openid.net/specs/openid-connect-frontchannel-1_0.html
+[frontchannel-logout]: https://openid.net/specs/openid-connect-frontchannel-1_0-02.html
 [pkce]: https://tools.ietf.org/html/rfc7636
 [introspection]: https://tools.ietf.org/html/rfc7662
 [registration-management]: https://tools.ietf.org/html/rfc7592
