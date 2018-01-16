@@ -48,6 +48,7 @@ enabled by default, check the configuration section on how to enable them.
 The following drafts/experimental specifications are implemented by oidc-provider.
 - [OpenID Connect Session Management 1.0 - draft 28][session-management]
 - [OpenID Connect Back-Channel Logout 1.0 - draft 04][backchannel-logout]
+- [OpenID Connect Front-Channel Logout 1.0 - draft 02][frontchannel-logout]
 - [RFC7592 - OAuth 2.0 Dynamic Client Registration Management Protocol (Update and Delete)][registration-management]
 
 Updates to draft and experimental specification versions are released as MINOR library versions,
@@ -124,13 +125,13 @@ See the list of available emitted [event names](/docs/events.md) and their descr
 [codecov-image]: https://img.shields.io/codecov/c/github/panva/node-oidc-provider/master.svg?style=flat-square&maxAge=7200
 [codecov-url]: https://codecov.io/gh/panva/node-oidc-provider
 [npm-url]: https://www.npmjs.com/package/oidc-provider
-[openid-certified-link]: http://openid.net/certification/
-[openid-connect]: http://openid.net/connect/
-[core]: http://openid.net/specs/openid-connect-core-1_0.html
-[discovery]: http://openid.net/specs/openid-connect-discovery-1_0.html
-[registration]: http://openid.net/specs/openid-connect-registration-1_0.html
-[session-management]: http://openid.net/specs/openid-connect-session-1_0-28.html
-[form-post]: http://openid.net/specs/oauth-v2-form-post-response-mode-1_0.html
+[openid-certified-link]: https://openid.net/certification/
+[openid-connect]: https://openid.net/connect/
+[core]: https://openid.net/specs/openid-connect-core-1_0.html
+[discovery]: https://openid.net/specs/openid-connect-discovery-1_0.html
+[registration]: https://openid.net/specs/openid-connect-registration-1_0.html
+[session-management]: https://openid.net/specs/openid-connect-session-1_0-28.html
+[form-post]: https://openid.net/specs/oauth-v2-form-post-response-mode-1_0.html
 [revocation]: https://tools.ietf.org/html/rfc7009
 [introspection]: https://tools.ietf.org/html/rfc7662
 [pkce]: https://tools.ietf.org/html/rfc7636
@@ -139,7 +140,8 @@ See the list of available emitted [event names](/docs/events.md) and their descr
 [heroku-example]: https://guarded-cliffs-8635.herokuapp.com/.well-known/openid-configuration
 [heroku-example-client]: https://tranquil-reef-95185.herokuapp.com/client
 [openid-client]: https://github.com/panva/node-openid-client
-[backchannel-logout]: http://openid.net/specs/openid-connect-backchannel-1_0-04.html
+[backchannel-logout]: https://openid.net/specs/openid-connect-backchannel-1_0-04.html
+[frontchannel-logout]: https://openid.net/specs/openid-connect-frontchannel-1_0.html
 [registration-management]: https://tools.ietf.org/html/rfc7592
 [oauth-native-apps]: https://tools.ietf.org/html/rfc8252
 [debug-link]: https://github.com/visionmedia/debug

@@ -288,6 +288,7 @@ deployment compact. The feature flags with their default values are
 | --- | --- |
 | devInteractions | yes (!!!) |
 | backchannelLogout | no |
+| frontchannelLogout | no |
 | claimsParameter | no |
 | clientCredentials | no |
 | discovery | yes |
@@ -444,6 +445,13 @@ const configuration = { features: { sessionManagement: { keepHeaders: true } } }
 Enables features described in [Back-Channel Logout 1.0 - draft 04][backchannel-logout].
 ```js
 const configuration = { features: { sessionManagement: true, backchannelLogout: Boolean[false] } };
+```
+
+
+**Front-Channel Logout features**  
+Enables features described in [Front-Channel Logout 1.0 - draft 02][frontchannel-logout].
+```js
+const configuration = { features: { sessionManagement: true, frontchannelLogout: Boolean[false] } };
 ```
 
 
@@ -1217,20 +1225,21 @@ default value:
 ```
 <!-- END CONF OPTIONS -->
 
-[client-metadata]: http://openid.net/specs/openid-connect-registration-1_0.html#ClientMetadata
-[core-account-claims]: http://openid.net/specs/openid-connect-core-1_0.html#ScopeClaims
-[core-offline-access]: http://openid.net/specs/openid-connect-core-1_0.html#OfflineAccess
-[core-claims-url]: http://openid.net/specs/openid-connect-core-1_0.html#ClaimsParameter
-[core-jwt-parameters-url]: http://openid.net/specs/openid-connect-core-1_0.html#JWTRequests
-[aggregated-distributed-claims]: http://openid.net/specs/openid-connect-core-1_0.html#AggregatedDistributedClaims
-[backchannel-logout]: http://openid.net/specs/openid-connect-backchannel-1_0-04.html
+[client-metadata]: https://openid.net/specs/openid-connect-registration-1_0.html#ClientMetadata
+[core-account-claims]: https://openid.net/specs/openid-connect-core-1_0.html#ScopeClaims
+[core-offline-access]: https://openid.net/specs/openid-connect-core-1_0.html#OfflineAccess
+[core-claims-url]: https://openid.net/specs/openid-connect-core-1_0.html#ClaimsParameter
+[core-jwt-parameters-url]: https://openid.net/specs/openid-connect-core-1_0.html#JWTRequests
+[aggregated-distributed-claims]: https://openid.net/specs/openid-connect-core-1_0.html#AggregatedDistributedClaims
+[backchannel-logout]: https://openid.net/specs/openid-connect-backchannel-1_0-04.html
+[frontchannel-logout]: https://openid.net/specs/openid-connect-frontchannel-1_0.html
 [pkce]: https://tools.ietf.org/html/rfc7636
 [introspection]: https://tools.ietf.org/html/rfc7662
 [registration-management]: https://tools.ietf.org/html/rfc7592
-[registration]: http://openid.net/specs/openid-connect-registration-1_0.html
+[registration]: https://openid.net/specs/openid-connect-registration-1_0.html
 [revocation]: https://tools.ietf.org/html/rfc7009
 [oauth-native-apps]: https://tools.ietf.org/html/rfc8252
-[session-management]: http://openid.net/specs/openid-connect-session-1_0-28.html
+[session-management]: https://openid.net/specs/openid-connect-session-1_0-28.html
 [got-library]: https://github.com/sindresorhus/got
 [request-library]: https://github.com/request/request
 [password-grant]: https://tools.ietf.org/html/rfc6749#section-4.3
