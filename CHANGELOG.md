@@ -5,6 +5,7 @@ Yay for [SemVer](http://semver.org/).
 **Table of Contents**
 
 <!-- TOC START min:2 max:3 link:true update:true -->
+  - [2.11.0](#2110)
   - [2.10.0](#2100)
   - [2.9.x](#29x)
     - [2.9.2](#292)
@@ -53,6 +54,15 @@ Yay for [SemVer](http://semver.org/).
     - [1.0.x](#10x)
 
 <!-- TOC END -->
+
+## 2.11.0
+- [DIFF](https://github.com/panva/node-oidc-provider/compare/v2.10.0...v2.11.0)
+- added optional support for draft02 of [Front-Channel Logout 1.0](http://openid.net/specs/openid-connect-frontchannel-1_0.html)
+  - enable with configuration `features.frontchannelLogout = true`;
+  - adds new client properties `frontchannel_logout_uri` and `frontchannel_logout_session_required`
+  - adds new discovery properties `frontchannel_logout_supported` and `frontchannel_logout_session_supported`
+  - added `frontchannelLogoutPendingSource` helper for customizing the pending frontchannel web page
+    HTML source
 
 ## 2.10.0
 - [DIFF](https://github.com/panva/node-oidc-provider/compare/v2.9.2...v2.10.0)
