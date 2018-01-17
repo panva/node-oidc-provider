@@ -1,5 +1,6 @@
 const bootstrap = require('../test_helper');
 const { expect } = require('chai');
+const { cloneDeep } = require('lodash');
 const { parse: parseUrl } = require('url');
 const url = require('url');
 const base64url = require('base64url');
@@ -100,13 +101,16 @@ describe('Front-Channel Logout 1.0', () => {
         });
     });
 
-    it('triggers the backchannelLogout for visited clients', async function () {
-      const session = this.getSession();
-      session.logout = { secret: '123', postLogoutRedirectUri: '/' };
+    it('triggers the frontchannelLogout for all visited clients [when global logout]', async function () {
+      let session = this.getSession();
+      session.logout = { secret: '123', clientId: 'client', postLogoutRedirectUri: '/' };
+      session = cloneDeep(session);
       const params = { logout: 'yes', xsrf: '123' };
 
-      const { sid } = session.authorizations.client;
       const client = await this.provider.Client.find('client');
+      const client2 = await this.provider.Client.find('second-client');
+
+      const FRAME = /<iframe src="([^"]+)"><\/iframe>/g;
 
       return this.agent.post('/session/end')
         .send(params)
@@ -114,17 +118,60 @@ describe('Front-Channel Logout 1.0', () => {
         .expect(200)
         .expect('content-type', /^text\/html;/)
         .expect(({ text: body }) => {
-          expect(body).to.match(new RegExp('<iframe src="(.+)"></iframe>'));
-          const { query, href } = url.parse(RegExp.$1, true);
-          expect(query).to.have.property('iss', this.provider.issuer);
-          expect(query).to.have.property('sid', sid);
-          expect(href.startsWith(`${client.frontchannelLogoutUri}?`)).to.be.true;
+          expect(body.match(FRAME)).to.have.length(2);
+
+          (() => {
+            const { sid } = session.authorizations.client;
+            const [, match] = FRAME.exec(body);
+            const { query, href } = url.parse(match, true);
+            expect(query).to.have.property('iss', this.provider.issuer);
+            expect(query).to.have.property('sid', sid);
+            expect(href.startsWith(`${client.frontchannelLogoutUri}?`)).to.be.true;
+          })();
+
+          (() => {
+            const { sid } = session.authorizations['second-client'];
+            const [, match] = FRAME.exec(body);
+            const { query, href } = url.parse(match, true);
+            expect(query).to.have.property('iss', this.provider.issuer);
+            expect(query).to.have.property('sid', sid);
+            expect(href.startsWith(`${client2.frontchannelLogoutUri}?`)).to.be.true;
+          })();
         });
     });
 
-    it('ignores the backchannelLogout when client does not support', async function () {
-      this.getSession().logout = { secret: '123', postLogoutRedirectUri: '/' };
-      const params = { logout: 'yes', xsrf: '123' };
+    it('still triggers the frontchannelLogout for the specific client [when no global logout]', async function () {
+      let session = this.getSession();
+      session.logout = { secret: '123', clientId: 'client', postLogoutRedirectUri: '/' };
+      session = cloneDeep(session);
+      const params = { xsrf: '123' };
+
+      const client = await this.provider.Client.find('client');
+
+      const FRAME = /<iframe src="([^"]+)"><\/iframe>/g;
+
+      return this.agent.post('/session/end')
+        .send(params)
+        .type('form')
+        .expect(200)
+        .expect('content-type', /^text\/html;/)
+        .expect(({ text: body }) => {
+          expect(body.match(FRAME)).to.have.length(1);
+
+          (() => {
+            const { sid } = session.authorizations.client;
+            const [, match] = FRAME.exec(body);
+            const { query, href } = url.parse(match, true);
+            expect(query).to.have.property('iss', this.provider.issuer);
+            expect(query).to.have.property('sid', sid);
+            expect(href.startsWith(`${client.frontchannelLogoutUri}?`)).to.be.true;
+          })();
+        });
+    });
+
+    it('ignores the frontchannelLogout when client does not support it', async function () {
+      this.getSession().logout = { secret: '123', clientId: 'client', postLogoutRedirectUri: '/' };
+      const params = { xsrf: '123' };
       const client = await this.provider.Client.find('client');
       delete client.frontchannelLogoutUri;
 
