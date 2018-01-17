@@ -34,3 +34,5 @@ parameters, loaded client or session.
 | token.consumed | (token) | ... whenever a token is consumed (AuthorizationCode or RefreshToken) |
 | token.revoked | (token) | ... whenever a token is about to be revoked. |
 | grant.revoked | (grantId) | ... whenever tokens resulting from a single grant are about to be revoked. `grantId` is uuid formatted string. Use this to cascade the token revocation in cases where your adapter cannot provide this functionality. |
+| backchannel.success | (client, accountId, sid, ctx) | ... whenever a client is successfully notified about logout through backchannel-logout features |
+| backchannel.error | (error, client, accountId, sid, ctx) | ... whenever an error is encountered for a client during backchannel-logout |
