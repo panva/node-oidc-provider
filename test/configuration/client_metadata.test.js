@@ -299,6 +299,12 @@ describe('Client metadata validation', () => {
       grant_types: ['implicit', 'authorization_code'],
       response_types: ['code id_token'],
     });
+    allows(this.title, ['https://localhost'], undefined, {
+      allow_unsafe_redirect_uris: true,
+      application_type: 'web',
+      grant_types: ['implicit', 'authorization_code'],
+      response_types: ['code id_token'],
+    });
     allows(this.title, ['http://localhost'], undefined, {
       application_type: 'web',
     });
@@ -344,6 +350,12 @@ describe('Client metadata validation', () => {
       },
     });
     rejects(this.title, ['http://foo/bar'], undefined, {
+      application_type: 'web',
+      grant_types: ['implicit'],
+      response_types: ['id_token'],
+    });
+    allows(this.title, ['http://foo/bar'], undefined, {
+      allow_unsafe_redirect_uris: true,
       application_type: 'web',
       grant_types: ['implicit'],
       response_types: ['id_token'],

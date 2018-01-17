@@ -106,6 +106,29 @@ const clients = [
 oidc.initialize({ clients }).then(fulfillmentHandler, rejectionHandler);
 ```
 
+If you use the "implicit" `grant_type` and the `application_type` "web" (default), then `redirect_uris` with the scheme 
+*http* or the host *localhost* are rejected by default. To enable unsafe `redirect_uris` you can set the configuration
+property `allow_unsafe_redirect_uris` to true. **Do not activate this behavior in production!**
+
+```js
+const oidc = new Provider('http://localhost:3000');
+const clients = [
+  {
+    allow_unsafe_redirect_uris: true, // Do not activate this behavior in production!
+    token_endpoint_auth_method: 'none',
+    client_id: 'mywebsite',
+    grant_types: ['implicit'],
+    response_types: ['id_token'],
+    redirect_uris: ['http://localhost/cb'],
+  },
+  {
+    // ...
+  },
+];
+
+oidc.initialize({ clients }).then(fulfillmentHandler, rejectionHandler);
+```
+
 **via Adapter**  
 Storing client metadata in your storage is recommended for distributed deployments. Also when you
 want to provide a client configuration GUI or plan on changing this data often. Clients get loaded
