@@ -5,7 +5,9 @@ Yay for [SemVer](http://semver.org/).
 **Table of Contents**
 
 <!-- TOC START min:2 max:3 link:true update:true -->
-  - [2.11.0](#2110)
+  - [2.11.x](#211x)
+    - [2.11.1](#2111)
+    - [2.11.0](#2110)
   - [2.10.0](#2100)
   - [2.9.x](#29x)
     - [2.9.2](#292)
