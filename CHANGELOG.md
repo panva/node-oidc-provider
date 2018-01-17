@@ -55,8 +55,16 @@ Yay for [SemVer](http://semver.org/).
 
 <!-- TOC END -->
 
-## 2.11.0
+## 2.11.x
+### 2.11.1
+- [DIFF](https://github.com/panva/node-oidc-provider/compare/v2.11.0...v2.11.1)
+- fixed a bug where non global logouts would not trigger back and front-channel logout features
+  for the one client that gets logged out.
+- added missing `backchannel.success` and `backchannel.error` events
+
+### 2.11.0
 - [DIFF](https://github.com/panva/node-oidc-provider/compare/v2.10.0...v2.11.0)
+- added no-cache headers to userinfo responses
 - added optional support for draft02 of [Front-Channel Logout 1.0](https://openid.net/specs/openid-connect-frontchannel-1_0-02.html)
   - enable with configuration `features.frontchannelLogout = true`;
   - adds new client properties `frontchannel_logout_uri` and `frontchannel_logout_session_required`
