@@ -2,6 +2,8 @@ require('../test_helper');
 const { expect } = require('chai');
 const Provider = require('../../lib');
 
+const fail = () => { throw new Error('expected promise to be rejected'); };
+
 describe('provider.Client', () => {
   describe('#cacheClear()', () => {
     before(function () {
@@ -28,6 +30,26 @@ describe('provider.Client', () => {
       expect(await this.provider.Client.find('client')).to.be.ok;
       this.provider.Client.cacheClear();
       expect(await this.provider.Client.find('client')).not.to.be.ok;
+    });
+
+    it('has a Schema class getter that can work its magic', async function () {
+      expect(this.provider.Client.Schema).to.be.ok;
+
+      const client = {
+        client_id: 'client',
+        token_endpoint_auth_method: 'none',
+        response_types: ['id_token'],
+        grant_types: ['implicit'],
+        redirect_uris: ['http://client.example.com/cb'],
+      };
+
+      await i(this.provider).clientAdd(client).then(fail, (err) => {
+        expect(err).to.be.an('error');
+        expect(err.message).to.eql('invalid_redirect_uri');
+      });
+
+      this.provider.Client.Schema.prototype.redirectUris = () => {};
+      await i(this.provider).clientAdd(client);
     });
   });
 });
