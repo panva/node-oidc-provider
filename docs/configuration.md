@@ -728,7 +728,7 @@ default value:
 
 ### clientCacheDuration
 
-A `Number` value (in seconds) describing how long a dynamically loaded should remain cached.  
+A `Number` value (in seconds) describing how long a dynamically loaded client should remain cached.  
 affects: adapter-backed client cache duration  
 
 default value:
