@@ -71,11 +71,12 @@ class MongoAdapter {
 
     const document = Object.assign(payload, expiresAt && { expiresAt });
 
-    return this.coll().updateOne({ _id }, document, { upsert: true });
+    return this.coll().updateOne({ _id }, { $set : document }, { upsert: true });
   }
 
-  static async connect() {
-    DB = await MongoClient.connect(process.env.MONGODB_URI);
+  static async connect(provider) {
+    var database = await MongoClient.connect(process.env.MONGODB_URI)
+    DB = database.db(process.env.MONGODB_DB_NAME);
   }
 }
 
