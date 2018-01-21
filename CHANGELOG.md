@@ -6,6 +6,7 @@ Yay for [SemVer](http://semver.org/).
 
 <!-- TOC START min:2 max:3 link:true update:true -->
   - [2.11.x](#211x)
+    - [2.11.2](#2112)
     - [2.11.1](#2111)
     - [2.11.0](#2110)
   - [2.10.0](#2100)
