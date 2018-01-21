@@ -56,8 +56,12 @@ Yay for [SemVer](http://semver.org/).
     - [1.0.x](#10x)
 
 <!-- TOC END -->
-
 ## 2.11.x
+### 2.11.2
+- [DIFF](https://github.com/panva/node-oidc-provider/compare/v2.11.1...v2.11.2)
+- aligned `oidc-provider:token` DEBUG format
+- exposed client validation schema prototype under `provider.Client.Schema`
+
 ### 2.11.1
 - [DIFF](https://github.com/panva/node-oidc-provider/compare/v2.11.0...v2.11.1)
 - fixed a bug where non global logouts would not trigger back and front-channel logout features
