@@ -75,7 +75,7 @@ class MongoAdapter {
   }
 
   static async connect(provider) {
-    const connection = await MongoClient.connect(process.env.MONGODB_URI)
+    const connection = await MongoClient.connect(process.env.MONGODB_URI);
     DB = connection.db(connection.s.options.dbName);
   }
 }
