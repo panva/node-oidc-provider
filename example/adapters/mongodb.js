@@ -74,7 +74,7 @@ class MongoAdapter {
     return this.coll().updateOne({ _id }, { $set: document }, { upsert: true });
   }
 
-  static async connect(provider) {
+  static async connect() {
     const connection = await MongoClient.connect(process.env.MONGODB_URI);
     DB = connection.db(connection.s.options.dbName);
   }
