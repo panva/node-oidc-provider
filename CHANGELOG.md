@@ -5,6 +5,7 @@ Yay for [SemVer](http://semver.org/).
 **Table of Contents**
 
 <!-- TOC START min:2 max:2 link:true update:true -->
+  - [2.12.0](#2120)
   - [2.11.x](#211x)
   - [2.10.0](#2100)
   - [2.9.x](#29x)
@@ -20,6 +21,11 @@ Yay for [SemVer](http://semver.org/).
   - [^1.0.0](#100)
 
 <!-- TOC END -->
+## 2.12.0
+- [DIFF](https://github.com/panva/node-oidc-provider/compare/v2.11.2...v2.12.0)
+- `findById` returned struct's `#claims()` method will is now called with two parameters (use and
+  scope) allowing to fine-tune the returned claims depending on the intended place for these claims.
+
 ## 2.11.x
 ### 2.11.2
 - [DIFF](https://github.com/panva/node-oidc-provider/compare/v2.11.1...v2.11.2)
