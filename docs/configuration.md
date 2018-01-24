@@ -870,11 +870,18 @@ affects: authorization, authorization_code and refresh_token grants, id token cl
 default value:
 ```js
 async findById(ctx, id, token) {
-  // token is a reference to the token used for which a given account is being loaded,
-  // is undefined in scenarios where claims are returned from authorization endpoint
+  // "token" is a reference to the token used for which a given account is being loaded,
+  //   is undefined in scenarios where claims are returned from authorization endpoint
   return {
     accountId: id,
-    async claims() { return { sub: id }; },
+    async claims(use, scope) {
+      // "use" can either be "id_token" or "userinfo", depending on where the specific claims are
+      //   intended to be put in
+      // "scope" is the intended scope, while oidc-provider will mask claims depending on the
+      //   scope automatically you might want to skip loading some claims from external resources
+      //   etc. based on this detail or not return them in id tokens but only userinfo and so on.
+      return { sub: id };
+    },
   };
 }
 ```
@@ -1112,7 +1119,7 @@ default value:
 
 ### routes
 
-Routing values used by the OP  
+Routing values used by the OP. Only provide routes starting with "/"  
 affects: routing  
 
 default value:
