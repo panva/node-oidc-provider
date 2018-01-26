@@ -82,7 +82,7 @@ Available [Client Metadata][client-metadata] is validated as defined by the spec
 
 Note: each oidc-provider caches the clients once they are loaded. When your adapter-stored client
 configuration changes you should either reload your processes or trigger a cache clear
-(`provider.Client.cacheClear()`).
+(`provider.Client.cacheClear()` or `provider.Client.cacheClear(id)`).
 
 **via Provider interface**  
 To add pre-established clients use the `initialize` method on a oidc-provider instance. This accepts

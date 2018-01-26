@@ -32,6 +32,54 @@ describe('provider.Client', () => {
       expect(await this.provider.Client.find('client')).not.to.be.ok;
     });
 
+    it('keeps the fixed client in cache given id', async function () {
+      expect(await this.provider.Client.find('fixed')).to.be.ok;
+      this.provider.Client.cacheClear('fixed');
+      expect(await this.provider.Client.find('fixed')).to.be.ok;
+    });
+
+    it('removes the adapter backed client from cache given id', async function () {
+      await i(this.provider).clientAdd({
+        client_id: 'client',
+        client_secret: 'secret',
+        redirect_uris: ['https://client.example.com/cb'],
+      });
+      expect(await this.provider.Client.find('client')).to.be.ok;
+      this.provider.Client.cacheClear('client');
+      expect(await this.provider.Client.find('client')).not.to.be.ok;
+    });
+
+    it('removes only wanted adapter backed client from cache', async function () {
+      await i(this.provider).clientAdd({
+        client_id: 'client',
+        client_secret: 'secret',
+        redirect_uris: ['https://client.example.com/cb'],
+      });
+      await i(this.provider).clientAdd({
+        client_id: 'clientStay',
+        client_secret: 'secret',
+        redirect_uris: ['https://client.example.com/cb'],
+      });
+      expect(await this.provider.Client.find('client')).to.be.ok;
+      expect(await this.provider.Client.find('clientStay')).to.be.ok;
+      this.provider.Client.cacheClear('client');
+      expect(await this.provider.Client.find('client')).not.to.be.ok;
+      expect(await this.provider.Client.find('clientStay')).to.be.ok;
+      this.provider.Client.cacheClear('clientStay');
+    });
+
+    it('leaves adapter backed clients intact in case of not found', async function () {
+      await i(this.provider).clientAdd({
+        client_id: 'client',
+        client_secret: 'secret',
+        redirect_uris: ['https://client.example.com/cb'],
+      });
+      expect(await this.provider.Client.find('client')).to.be.ok;
+      this.provider.Client.cacheClear('another');
+      expect(await this.provider.Client.find('client')).to.be.ok;
+      this.provider.Client.cacheClear('client');
+    });
+
     it('has a Schema class getter that can work its magic', async function () {
       expect(this.provider.Client.Schema).to.be.ok;
 
