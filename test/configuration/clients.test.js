@@ -38,7 +38,7 @@ describe('provider.Client', () => {
       expect(await this.provider.Client.find('fixed')).to.be.ok;
     });
 
-    it('removes the adapter backed client from chache given id', async function () {
+    it('removes the adapter backed client from cache given id', async function () {
       await i(this.provider).clientAdd({
         client_id: 'client',
         client_secret: 'secret',
@@ -49,7 +49,7 @@ describe('provider.Client', () => {
       expect(await this.provider.Client.find('client')).not.to.be.ok;
     });
 
-    it('removes only wanted adapter backed client from chache', async function () {
+    it('removes only wanted adapter backed client from cache', async function () {
       await i(this.provider).clientAdd({
         client_id: 'client',
         client_secret: 'secret',
