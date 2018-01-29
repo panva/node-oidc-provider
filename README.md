@@ -14,15 +14,12 @@ range. Updating from ^1.0.0? See the [CHANGELOG](/CHANGELOG.md)
 
 **Table of Contents**
 
-<!-- TOC START min:2 max:2 link:true update:true -->
   - [Implemented specs & features](#implemented-specs--features)
   - [Certification](#certification)
   - [Get started](#get-started)
   - [Configuration and Initialization](#configuration-and-initialization)
   - [Debugging](#debugging)
   - [Events](#events)
-
-<!-- TOC END -->
 
 ## Implemented specs & features
 
@@ -63,6 +60,21 @@ conforms to the OP Basic, OP Implicit, OP Hybrid, OP Config and OP Dynamic profi
 of the OpenID Connect™ protocol.
 
 [![build][conformance-image]][conformance-url]
+
+
+## Sponsor
+<table>
+  <tbody>
+    <tr>
+      <td>
+        <img alt="auth0-logo" src="https://avatars.githubusercontent.com/u/2824157?s=75&v=4" style="max-width:100%;">
+      </td>
+      <td colspan="2">
+        If you want to quickly add OpenID Connect authentication to Node.js apps, feel free to check out Auth0's Node.js SDK and free plan at <a href="https://auth0.com/overview?utm_source=GHsponsor&utm_medium=GHsponsor&utm_campaign=oidc-provider&utm_content=auth">auth0.com/overview</a>.
+      </td>
+    </tr>
+  </tbody>
+</table>
 
 
 ## Get started
