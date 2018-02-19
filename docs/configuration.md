@@ -25,6 +25,7 @@ point to get an idea of what you should provide.
   - [HTTP Request Library / Proxy settings](#http-request-library--proxy-settings)
   - [Changing HTTP Request Defaults](#changing-http-request-defaults)
   - [Authentication Context Class Reference](#authentication-context-class-reference)
+  - [Pre- and post-middlewares](#pre--and-post-middlewares)
   - [Mounting oidc-provider](#mounting-oidc-provider)
   - [Trusting ssl offloading proxies](#trusting-ssl-offloading-proxies)
   - [Configuration options](#configuration-options)
@@ -198,6 +199,7 @@ This session contains:
 
 - details of the interaction that is required
 - all authorization request parameters
+- current session account ID should there be one
 - the uuid of the authorization request
 - the url to redirect the user to once interaction is finished
 
@@ -213,7 +215,7 @@ packing the results. See them used in the [step-by-step](https://github.com/panv
 or [in-repo](/example/index.js) examples.
 
 
-**Provider#interactionDetails**
+**`#provider#interactionDetails(req)`**
 ```js
 // with express
 expressApp.get('/interaction/:grant', async (req, res) => {
@@ -228,7 +230,7 @@ router.get('/interaction/:grant', async (ctx, next) => {
 });
 ```
 
-**Provider#interactionFinished**
+**`#provider#interactionFinished(req, res, results)`**
 ```js
 // with express
 expressApp.post('/interaction/:grant/login', async (req, res) => {
@@ -278,6 +280,25 @@ router.post('/interaction/:grant', async (ctx, next) => {
   // an optional description for this error
   error_description: 'Insufficient permissions: scope out of reach for this Account',
 }
+```
+
+**`#provider#setSessionAccountId(req, id, [ts])`**
+Sometimes interactions need to be interrupted before finishing and need to be picked up later,
+when that happens but an End-User already authenticated you might want to tell the OP session
+about it, this will prevent subsequent interactions to start from scratch.
+
+```js
+// with express
+expressApp.post('/interaction/:grant/login', async (req, res) => {
+  await provider.setSessionAccountId(req, 'accountId');
+  // ...
+});
+
+// with koa
+router.post('/interaction/:grant/login', async (ctx, next) => {
+  await provider.setSessionAccountId(ctx.req, 'accountId');
+  // ...
+});
 ```
 
 
@@ -649,6 +670,22 @@ console.log('httpOptions %j', provider.defaultHttpOptions);
 Supply an array of string values to acrValues configuration option to set `acr_values_supported`.
 Passing an empty array disables the acr claim and removes `acr_values_supported` from discovery.
 
+## Pre- and post-middlewares
+You can push custom middleware to be executed before and after oidc-provider.
+
+```js
+provider.app.middleware.unshift(async (ctx, next) => {
+  // pre-processing
+  // you may target a specific action here by matching `ctx.path`
+  console.log('middleware pre', ctx.path);
+  await next();
+  // post-processing
+  // since internal route matching was already executed you may target a specific action here
+  // checking `ctx._matchedRouteName`, the unique route names used are "authorization", "token",  
+  // "discovery", "registration", "userinfo", "resume", "certificates", "webfinger",
+  // "client", "introspection", "revocation", "check_session" and "end_session"
+});
+```
 
 ## Mounting oidc-provider
 The following snippets show how a provider instance can be mounted to existing applications with a
