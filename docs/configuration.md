@@ -679,6 +679,7 @@ provider.app.middleware.unshift(async (ctx, next) => {
   // you may target a specific action here by matching `ctx.path`
   console.log('middleware pre', ctx.path);
   await next();
+  console.log('middleware post', ctx._matchedRouteName);
   // post-processing
   // since internal route matching was already executed you may target a specific action here
   // checking `ctx._matchedRouteName`, the unique route names used are "authorization", "token",  
