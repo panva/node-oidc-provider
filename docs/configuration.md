@@ -78,7 +78,9 @@ client_id is encountered. If you only wish to support clients that are initializ
 registration then make it so that your adapter resolves client find calls with a falsy value. (e.g.
 `return Promise.resolve()`).  
 
-Available [Client Metadata][client-metadata] is validated as defined by the specifications.
+Available [Client Metadata][client-metadata] is validated as defined by the specifications. This list
+is extended by other adjacent-specification related properties such as introspection and revocation 
+endpoint authentication, Session Management, Front and Back-Channel Logout, etc.
 
 Note: each oidc-provider caches the clients once they are loaded. When your adapter-stored client
 configuration changes you should either reload your processes or trigger a cache clear
@@ -397,7 +399,8 @@ Enables the use of Introspection endpoint as described in [RFC7662][introspectio
 tokens of type AccessToken, ClientCredentials and RefreshToken. When enabled the
 introspection_endpoint property of the discovery endpoint is published, otherwise the property
 is not sent. The use of this endpoint is covered by the same authz mechanism as the regular token
-endpoint.
+endpoint or `introspection_endpoint_auth_method` and `introspection_endpoint_auth_signing_alg` if
+defined on a client.
 ```js
 const configuration = { features: { introspection: Boolean[false] } };
 ```
@@ -413,7 +416,8 @@ Enables the use of Revocation endpoint as described in [RFC7009][revocation] for
 type AccessToken, ClientCredentials and RefreshToken. When enabled the
 revocation_endpoint property of the discovery endpoint is published, otherwise the property
 is not sent. The use of this endpoint is covered by the same authz mechanism as the regular token
-endpoint.
+endpoint or `revocation_endpoint_auth_method` and `revocation_endpoint_auth_signing_alg` if
+defined on a client.
 ```js
 const configuration = { features: { revocation: Boolean[false] } };
 ```
