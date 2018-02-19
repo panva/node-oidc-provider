@@ -80,7 +80,7 @@ registration then make it so that your adapter resolves client find calls with a
 `return Promise.resolve()`).  
 
 Available [Client Metadata][client-metadata] is validated as defined by the specifications. This list
-is extended by other adjacent-specification related properties such as introspection and revocation 
+is extended by other adjacent-specification related properties such as introspection and revocation
 endpoint authentication, Session Management, Front and Back-Channel Logout, etc.
 
 Note: each oidc-provider caches the clients once they are loaded. When your adapter-stored client
@@ -215,7 +215,7 @@ packing the results. See them used in the [step-by-step](https://github.com/panv
 or [in-repo](/example/index.js) examples.
 
 
-**`#provider#interactionDetails(req)`**
+**`#provider.interactionDetails(req)`**
 ```js
 // with express
 expressApp.get('/interaction/:grant', async (req, res) => {
@@ -230,7 +230,7 @@ router.get('/interaction/:grant', async (ctx, next) => {
 });
 ```
 
-**`#provider#interactionFinished(req, res, results)`**
+**`#provider.interactionFinished(req, res, results)`**
 ```js
 // with express
 expressApp.post('/interaction/:grant/login', async (req, res) => {
@@ -282,7 +282,7 @@ router.post('/interaction/:grant', async (ctx, next) => {
 }
 ```
 
-**`#provider#setSessionAccountId(req, id, [ts])`**
+**`#provider.setSessionAccountId(req, id, [ts])`**
 Sometimes interactions need to be interrupted before finishing and need to be picked up later,
 when that happens but an End-User already authenticated you might want to tell the OP session
 about it, this will prevent subsequent interactions to start from scratch.
