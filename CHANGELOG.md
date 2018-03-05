@@ -5,6 +5,7 @@ Yay for [SemVer](http://semver.org/).
 **Table of Contents**
 
 <!-- TOC START min:2 max:2 link:true update:true -->
+  - [2.14.0](#2140)
   - [2.13.x](#213x)
   - [2.12.0](#2120)
   - [2.11.x](#211x)
@@ -22,6 +23,13 @@ Yay for [SemVer](http://semver.org/).
   - [^1.0.0](#100)
 
 <!-- TOC END -->
+## 2.14.0
+- [DIFF](https://github.com/panva/node-oidc-provider/compare/v2.13.1...v2.14.0)
+- added current account id from OP session to interaction sessions
+- added `provider.setSessionAccountId(req, id, [ts])` helper for setting OP
+  session from other contexts, such as interrupted interactions or password
+  reset flows.
+
 ## 2.13.x
 ### 2.13.1
 - [DIFF](https://github.com/panva/node-oidc-provider/compare/v2.13.0...v2.13.1)
