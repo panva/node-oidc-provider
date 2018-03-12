@@ -1,3 +1,6 @@
+// You should read the Koa corresponding example (index.js in this directory) to
+// learn about many possible options.
+
 const Provider = require('../lib');
 const express = require('express'); // eslint-disable-line import/no-unresolved
 

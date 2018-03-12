@@ -27,7 +27,7 @@ point to get an idea of what you should provide.
   - [Authentication Context Class Reference](#authentication-context-class-reference)
   - [Pre- and post-middlewares](#pre--and-post-middlewares)
   - [Mounting oidc-provider](#mounting-oidc-provider)
-  - [Trusting ssl offloading proxies](#trusting-ssl-offloading-proxies)
+  - [Trusting SSL offloading proxies](#trusting-ssl-offloading-proxies)
   - [Configuration options](#configuration-options)
 
 <!-- TOC END -->
@@ -710,19 +710,41 @@ koaApp.use(rewrite('/.well-known/(.*)', `${prefix}/.well-known/$1`));
 koaApp.use(mount(prefix, oidc.app));
 ```
 
-## Trusting ssl offloading proxies
-Having a TLS offloading proxy in front of node.js running oidc-provider is the norm. As with
-any express/koa application you have to tell your app to trust `x-forwarded-proto` and `x-forwarded-for`
-headers commonly set by those proxies to let the downstream application know of the original protocol
-and ip.
+## Trusting SSL offloading proxies
 
-Depending on your setup you should do the following
+Having a SSL/TLS offloading proxy in front of Node.js running oidc-provider is
+the norm. To let the downstream application know of the original protocol and
+ip you have to tell your app to trust `x-forwarded-proto` and `x-forwarded-for`
+headers commonly set by those proxies (as with any express/koa application).
+This is needed for the `.well-known/openid-configuration` response to
+be correct (e.g. to have the right https URL endpoints).
+
+Depending on your setup you should do the following in your downstream
+application code
 
 | setup | example |
 |---|---|
 | standalone oidc-provider | `provider.app.proxy = true; ` |
 | oidc-provider mounted to a koa app | `yourKoaApp.proxy = true` |
 | oidc-provider mounted to an express app | `provider.app.proxy = true; ` |
+
+See http://koajs.com/#settings and the [example](/example/index.js).
+
+It is also necessary that the web server doing the proxyfication also passes
+those headers to the downstream application. Here is the need configuration
+for Nginx (assuming that the downstream application is listening on
+127.0.0.1:8009):
+
+    location / {
+      proxy_set_header X-NginX-Proxy true;
+      proxy_set_header X-Real-IP $remote_addr;
+      proxy_set_header Host $http_host;
+      proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+      proxy_set_header X-Forwarded-Proto $scheme;
+
+      proxy_pass http://127.0.0.1:8009;
+      proxy_redirect off;
+    }
 
 ## Configuration options
 
