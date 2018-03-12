@@ -71,6 +71,9 @@ class MongoAdapter {
 
     const document = Object.assign(payload, expiresAt && { expiresAt });
 
+    // the above does not work for _id sharded collections, use the one below
+    // const document = Object.assign(payload, { _id }, expiresAt && { expiresAt });
+
     return this.coll().updateOne({ _id }, { $set: document }, { upsert: true });
   }
 
