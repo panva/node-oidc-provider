@@ -5,7 +5,7 @@ Yay for [SemVer](http://semver.org/).
 **Table of Contents**
 
 <!-- TOC START min:2 max:2 link:true update:true -->
-  - [2.14.0](#2140)
+  - [2.14.x](#214x)
   - [2.13.x](#213x)
   - [2.12.0](#2120)
   - [2.11.x](#211x)
@@ -23,7 +23,14 @@ Yay for [SemVer](http://semver.org/).
   - [^1.0.0](#100)
 
 <!-- TOC END -->
-## 2.14.0
+## 2.14.x
+### 2.14.1
+- [DIFF](https://github.com/panva/node-oidc-provider/compare/v2.14.0...v2.14.1)
+- bumped minimal `debug` dependency version due to its found vulnerability in lesser versions
+- adjusted documentation on `refreshTokenRotation` configuration option
+- adjusted documentation on TLS offloading
+
+### 2.14.0
 - [DIFF](https://github.com/panva/node-oidc-provider/compare/v2.13.1...v2.14.0)
 - added current account id from OP session to interaction sessions
 - added `provider.setSessionAccountId(req, id, [ts])` helper for setting OP
