@@ -1120,7 +1120,7 @@ default value:
 
 ### refreshTokenRotation
 
-Configures if and how the OP rotates refresh tokens after they are used  
+Configures if and how the OP rotates refresh tokens after they are used. Supported values are 1) `"none"` when refresh tokens are not rotated and their initial expiration date is final or 2) `"rotateAndConsume"` when refresh tokens are rotated when used, current token is marked as consumed and new one is issued with new TTL, when a consumed refresh token is encountered an error is returned instead and the whole token chain (grant) is revoked.  
 affects: refresh token rotation and adjacent revocation  
 
 default value:
