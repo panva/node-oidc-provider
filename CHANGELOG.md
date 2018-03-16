@@ -50,7 +50,7 @@ Yay for [SemVer](http://semver.org/).
 
 ## 2.12.0
 - [DIFF](https://github.com/panva/node-oidc-provider/compare/v2.11.2...v2.12.0)
-- `findById` returned struct's `#claims()` method will is now called with two parameters (use and
+- `findById` returned struct's `#claims()` method is now called with two parameters (use and
   scope) allowing to fine-tune the returned claims depending on the intended place for these claims.
 
 ## 2.11.x
