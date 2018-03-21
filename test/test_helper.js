@@ -260,7 +260,7 @@ module.exports = function testHelper(dir, basename, mountTo) {
           app.use(mount(mountTo, provider.app));
           global.server.on('request', app.callback());
         } else {
-          global.server.on('request', provider.app.callback());
+          global.server.on('request', provider.callback);
         }
 
         agent = supertest(global.server);
