@@ -105,9 +105,16 @@ const clients = [{
 }];
 
 const oidc = new Provider('http://localhost:3000', configuration);
-oidc.initialize({ clients }).then(function () {
-  console.log(oidc.callback); // => express/nodejs style application callback (req, res)
-  console.log(oidc.app); // => koa2.x application
+
+(async () => {
+  await oidc.initialize({ clients });
+  // oidc.callback => express/nodejs style application callback (req, res)
+  // oidc.app => koa2.x application
+  oidc.listen(3000);
+  console.log('oidc-provider listening on port 3000, check http://localhost:3000/.well-known/openid-configuration');
+})().catch((err) => {
+  console.error(err);
+  process.exit(1);
 });
 ```
 

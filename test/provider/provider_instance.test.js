@@ -27,10 +27,13 @@ describe('provider instance', () => {
   describe('#initialize', () => {
     it('does not allow to be initialized twice', (done) => {
       const provider = new Provider('http://localhost');
-      provider.initialize().then(() => {
-        expect(() => { provider.initialize(); }).to.throw('already initialized');
-        done();
+      provider.initialize({ keystore: {} }).catch(() => {
+        provider.initialize().then(() => {
+          expect(() => { provider.initialize(); }).to.throw('already initialized');
+          done();
+        });
       });
+      expect(() => { provider.initialize(); }).to.throw('already initializing');
     });
   });
 

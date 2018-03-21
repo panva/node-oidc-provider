@@ -25,6 +25,7 @@ point to get an idea of what you should provide.
   - [HTTP Request Library / Proxy settings](#http-request-library--proxy-settings)
   - [Changing HTTP Request Defaults](#changing-http-request-defaults)
   - [Authentication Context Class Reference](#authentication-context-class-reference)
+  - [Registering module middlewares (helmet, ip-filters, rate-limiters, etc)](#registering-module-middlewares-helmet-ip-filters-rate-limiters-etc)
   - [Pre- and post-middlewares](#pre--and-post-middlewares)
   - [Mounting oidc-provider](#mounting-oidc-provider)
   - [Trusting TLS offloading proxies](#trusting-tls-offloading-proxies)
@@ -670,11 +671,30 @@ console.log('httpOptions %j', provider.defaultHttpOptions);
 Supply an array of string values to acrValues configuration option to set `acr_values_supported`.
 Passing an empty array disables the acr claim and removes `acr_values_supported` from discovery.
 
+
+## Registering module middlewares (helmet, ip-filters, rate-limiters, etc)
+When using `provider.app` or `provider.callback` as a mounted application in your own koa or express
+stack just follow the respective module's documentation. However, when using the `provider.app` Koa
+instance directly to register i.e. koa-helmet you must push the middleware at the front of the
+middleware stack.
+
+```js
+const helmet = require('koa-helmet');
+
+// Correct, pushes koa-helmet at the end of the middleware stack but BEFORE oidc-provider.
+provider.use(helmet());
+
+// Incorrect, pushes koa-helmet at the end of the middleware stack AFTER oidc-provider, not being
+// executed when errors are encountered or during actions that do not "await next()".
+provider.app.use(helmet());
+```
+
+
 ## Pre- and post-middlewares
 You can push custom middleware to be executed before and after oidc-provider.
 
 ```js
-provider.app.middleware.unshift(async (ctx, next) => {
+provider.use(async (ctx, next) => {
   // pre-processing
   // you may target a specific action here by matching `ctx.path`
   console.log('middleware pre', ctx.path);
@@ -724,9 +744,9 @@ application code
 
 | setup | example |
 |---|---|
-| standalone oidc-provider | `provider.app.proxy = true; ` |
+| standalone oidc-provider | `provider.proxy = true; ` |
 | oidc-provider mounted to a koa app | `yourKoaApp.proxy = true` |
-| oidc-provider mounted to an express app | `provider.app.proxy = true; ` |
+| oidc-provider mounted to an express app | `provider.proxy = true; ` |
 
 See http://koajs.com/#settings and the [example](/example/index.js).
 

@@ -39,7 +39,7 @@ describe('session management', () => {
 
     describe('[session_management] check_session_iframe', () => {
       before(function () {
-        this.provider.app.middleware.unshift(async (ctx, next) => {
+        this.provider.use(async (ctx, next) => {
           ctx.response.set('X-Frame-Options', 'SAMEORIGIN');
           ctx.response.set('Content-Security-Policy', "default-src 'none'; frame-ancestors 'self' example.com *.example.net; script-src 'self'; connect-src 'self'; img-src 'self'; style-src 'self';");
           await next();

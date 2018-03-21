@@ -32,14 +32,14 @@ provider.initialize({
     root: path.join(__dirname, 'views'),
   });
 
-  provider.app.keys = ['some secret key', 'and also the old one'];
+  provider.keys = ['some secret key', 'and also the old one'];
 
   if (process.env.NODE_ENV === 'production') {
-    provider.app.proxy = true;
+    provider.proxy = true;
     set(config, 'cookies.short.secure', true);
     set(config, 'cookies.long.secure', true);
 
-    provider.app.middleware.unshift(async (ctx, next) => {
+    provider.use(async (ctx, next) => {
       if (ctx.secure) {
         await next();
       } else if (ctx.method === 'GET' || ctx.method === 'HEAD') {
@@ -115,9 +115,9 @@ provider.initialize({
     await next();
   });
 
-  provider.app.use(router.routes());
+  provider.use(router.routes());
 })
-  .then(() => provider.app.listen(port))
+  .then(() => provider.listen(port))
   .catch((err) => {
     console.error(err);
     process.exit(1);
