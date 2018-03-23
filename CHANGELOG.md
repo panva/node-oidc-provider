@@ -5,6 +5,7 @@ Yay for [SemVer](http://semver.org/).
 **Table of Contents**
 
 <!-- TOC START min:2 max:2 link:true update:true -->
+  - [2.15.0](#2150)
   - [2.14.x](#214x)
   - [2.13.x](#213x)
   - [2.12.0](#2120)
@@ -23,6 +24,14 @@ Yay for [SemVer](http://semver.org/).
   - [^1.0.0](#100)
 
 <!-- TOC END -->
+## 2.15.0
+- [DIFF](https://github.com/panva/node-oidc-provider/compare/v2.14.1...v2.15.0)
+- add `provider.use((ctx, next) => {})` middleware support
+- add `provider.listen(port_or_socket)`
+- add attribute delegates `proxy`, `keys`, `env`, `subdomainOffset` from provider to the underlying
+  koa app
+- updated docs
+
 ## 2.14.x
 ### 2.14.1
 - [DIFF](https://github.com/panva/node-oidc-provider/compare/v2.14.0...v2.14.1)
