@@ -675,7 +675,7 @@ Passing an empty array disables the acr claim and removes `acr_values_supported`
 ## Registering module middlewares (helmet, ip-filters, rate-limiters, etc)
 When using `provider.app` or `provider.callback` as a mounted application in your own koa or express
 stack just follow the respective module's documentation. However, when using the `provider.app` Koa
-instance directly to register i.e. koa-helmet you must push the middleware at the front of the
+instance directly to register i.e. koa-helmet you must push the middleware at infront of oidc-provider in the
 middleware stack.
 
 ```js
