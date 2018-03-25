@@ -932,7 +932,13 @@ default value:
   "discovery": true,
   "requestUri": true,
   "oauthNativeApps": true,
-  "pkce": true,
+  "pkce": {
+    "forcedForNative": false,
+    "supportedMethods": [
+      "plain",
+      "S256"
+    ]
+  },
   "backchannelLogout": false,
   "frontchannelLogout": false,
   "claimsParameter": false,
