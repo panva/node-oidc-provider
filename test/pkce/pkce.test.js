@@ -322,33 +322,6 @@ describe('PKCE RFC7636', () => {
         i(this.provider).configuration('features.pkce').supportedMethods = ['plain', 'S256'];
       });
 
-      it('fails if plain is used', async function () {
-        const authCode = new this.provider.AuthorizationCode({
-          accountId: 'sub',
-          scope: 'openid',
-          clientId: 'client',
-          codeChallenge: 'plainFoobar',
-          codeChallengeMethod: 'plain',
-          redirectUri: 'com.example.myapp:/localhost/cb',
-        });
-        const code = await authCode.save();
-
-        return this.agent.post('/token')
-          .auth('client', 'secret')
-          .type('form')
-          .send({
-            code,
-            grant_type: 'authorization_code',
-            redirect_uri: 'com.example.myapp:/localhost/cb',
-            code_verifier: 'plainFoobar',
-          })
-          .expect(400)
-          .expect((response) => {
-            expect(response.body).to.have.property('error', 'invalid_grant');
-            expect(response.body).to.have.property('error_description', 'grant request is invalid');
-          });
-      });
-
       it('passes if S256 is used', async function () {
         const authCode = new this.provider.AuthorizationCode({
           accountId: 'sub',
