@@ -532,6 +532,11 @@ like so:
 const configuration = { features: { pkce: { forcedForNative: true } } };
 ```
 
+To fine-tune the supported methods:
+```js
+const configuration = { features: { pkce: { supportedMethods: ['plain', 'S256'] } } };
+```
+
 
 ## Custom Grant Types
 oidc-provider comes with the basic grants implemented, but you can register your own grant types,
@@ -932,13 +937,7 @@ default value:
   "discovery": true,
   "requestUri": true,
   "oauthNativeApps": true,
-  "pkce": {
-    "forcedForNative": false,
-    "supportedMethods": [
-      "plain",
-      "S256"
-    ]
-  },
+  "pkce": true,
   "backchannelLogout": false,
   "frontchannelLogout": false,
   "claimsParameter": false,
