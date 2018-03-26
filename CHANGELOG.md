@@ -5,6 +5,7 @@ Yay for [SemVer](http://semver.org/).
 **Table of Contents**
 
 <!-- TOC START min:2 max:2 link:true update:true -->
+  - [2.16.0](#2160)
   - [2.15.0](#2150)
   - [2.14.x](#214x)
   - [2.13.x](#213x)
@@ -24,6 +25,13 @@ Yay for [SemVer](http://semver.org/).
   - [^1.0.0](#100)
 
 <!-- TOC END -->
+## 2.16.0
+- [DIFF](https://github.com/panva/node-oidc-provider/compare/v2.15.0...v2.16.0)
+- supported PKCE code challenge methods are now configurable, use to i.e. disable `plain` for
+  stricter OIDC profiles and new deployments where legacy clients without `S256` support aren't
+  to be expected.
+- added configuration validations for subjectTypes and pkce supportedMethods
+
 ## 2.15.0
 - [DIFF](https://github.com/panva/node-oidc-provider/compare/v2.14.1...v2.15.0)
 - add `provider.use((ctx, next) => {})` middleware support
