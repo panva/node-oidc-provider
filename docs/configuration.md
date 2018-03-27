@@ -917,6 +917,14 @@ default value:
 }
 ```
 
+### extraClientMetadata
+
+Pass an iterable object (i.e. Array or set of strings) to extend the client metadata recognized by the provider.  
+default value:
+```js
+[]
+```
+
 ### extraParams
 
 Pass an iterable object (i.e. Array or set of strings) to extend the parameters recognized by the authorization endpoint. These parameters are then available in ctx.oidc.params as well as passed via the `_grant` cookie to interaction  
