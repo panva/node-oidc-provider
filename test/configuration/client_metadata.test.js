@@ -754,6 +754,21 @@ describe('Client metadata validation', () => {
     // more in client_keystore.test.js
   });
 
+  context('configuration.extraClientMetadata', () => {
+    const configuration = {
+      extraClientMetadata: ['recognised'],
+    };
+
+    it('only extraClientMetadata attributes must be present', () => addClient({
+      recognised: 'recognised value',
+      unrecognised: 'unrecognised',
+    }, configuration).then((client) => {
+      expect(client.metadata()).to.have.property('recognised');
+      expect(client.metadata().recognised).to.be.eql('recognised value');
+      expect(client.metadata()).not.to.have.property('unrecognised');
+    }));
+  });
+
   it('allows unrecognized properties but does not yield them back', () => addClient({
     unrecognized: true,
   }).then((client) => {
