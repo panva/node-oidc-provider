@@ -8,10 +8,6 @@ not dictate a fixed data models or persistence store, instead, you must provide 
 A generic in memory adapter is available to get you started as well as feature-less dev-only views
 to be able to get off the ground.
 
-Notice: ^2.0.0 oidc-provider only works with Node.JS >= 8.0.0 and introduces many breaking changes,
-for LTS/4 and LTS/6 use the [^1.0.0](https://github.com/panva/node-oidc-provider/tree/v1.x) semver
-range. Updating from ^1.0.0? See the [CHANGELOG](/CHANGELOG.md)
-
 **Table of Contents**
 
   - [Implemented specs & features](#implemented-specs--features)
