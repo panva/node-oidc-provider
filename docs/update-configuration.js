@@ -25,6 +25,7 @@ class Block {
 const props = [
   'description',
   'affects',
+  '@nodefault',
 ];
 
 (async () => {
@@ -96,30 +97,38 @@ const props = [
     if (blocks[block].affects) {
       append(`affects: ${blocks[block].affects.toString()}  \n\n`);
     }
-    append('default value:\n');
-    append('```js\n');
-    const value = get(values, block);
-    switch (typeof value) {
-      case 'number':
-        append(`${String(value)}`);
-        break;
-      case 'string':
-      case 'object':
-        append(`${JSON.stringify(value, null, 2)}`);
-        break;
-      case 'function':
-        append(String(value).split('\n').map((line) => {
-          if (line.includes('changeme')) return undefined;
-          if (line.startsWith('  ')) line = line.slice(2);
-          line = line.replace(/ \/\/ eslint-disable.+/, '');
-          return line;
-        }).filter(Boolean)
-          .join('\n'));
-        break;
-      default:
-        throw new Error('unexpected value type');
+    if (!('@nodefault' in blocks[block])) {
+      append('default value:\n');
+      append('```js\n');
+      const value = get(values, block);
+      switch (typeof value) {
+        case 'number':
+          append(`${String(value)}`);
+          break;
+        case 'string':
+        case 'object':
+          append(`${JSON.stringify(value, null, 2)}`);
+          break;
+        case 'function': {
+          let fixIndent;
+          append(String(value).split('\n').map((line, index) => {
+            if (index === 1) {
+              line.match(/^(\s+)\S+/);
+              fixIndent = RegExp.$1.length - 2;
+            }
+            if (line.includes('changeme')) return undefined;
+            if (line.startsWith(' ')) line = line.slice(fixIndent);
+            line = line.replace(/ \/\/ eslint-disable.+/, '');
+            return line;
+          }).filter(Boolean)
+            .join('\n'));
+          break;
+        }
+        default:
+          throw new Error('unexpected value type');
+      }
+      append('\n```\n');
     }
-    append('\n```\n');
   });
 
   const conf = readFileSync('./docs/configuration.md');

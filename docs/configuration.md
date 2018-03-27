@@ -843,25 +843,6 @@ default value:
 Options for https://github.com/pillarjs/cookies#cookiesset-name--value---options-- used by the OP to keep track of various User-Agent states.  
 affects: User-Agent sessions, passing of authorization details to interaction  
 
-default value:
-```js
-{
-  "names": {
-    "session": "_session",
-    "interaction": "_grant",
-    "resume": "_grant",
-    "state": "_state"
-  },
-  "long": {
-    "httpOnly": true,
-    "maxAge": 31557600000
-  },
-  "short": {
-    "httpOnly": true,
-    "maxAge": 3600000
-  }
-}
-```
 
 ### cookies.long
 
@@ -915,6 +896,34 @@ default value:
   "claim_types_supported": [
     "normal"
   ]
+}
+```
+
+### extraClientMetadata
+
+Allows for custom client metadata to be defined, validated, manipulated as well as for existing property validations to be extended  
+affects: clients, registration, registration management  
+
+
+### extraClientMetadata.properties
+
+Array of property names that clients will be allowed to have defined. Property names will have to strictly follow the ones defined here. However, on a Client instance property names will be snakeCased.  
+default value:
+```js
+[]
+```
+
+### extraClientMetadata.validator
+
+validator function that will be executed in order once for every property defined in `extraClientMetadata.properties`, regardless of its value or presence on the client metadata passed in. Must be synchronous, async validators or functions returning Promise will be rejected during runtime. To modify the current client metadata values (for current key or any other) just modify the passed in `metadata` argument.  
+default value:
+```js
+validator(key, value, metadata) {
+  // validations for key, value, other related metadata
+  // throw new Provider.InvalidClientMetadata() to reject the client metadata (see all errors on
+  //   Provider)
+  // metadata[key] = value; to assign values
+  // return not necessary, metadata is already a reference.
 }
 ```
 

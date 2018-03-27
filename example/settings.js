@@ -8,7 +8,10 @@ module.exports.config = {
   },
   discovery: {
     service_documentation: pkg.homepage,
-    version: pkg.version,
+    version: [
+      pkg.version,
+      process.env.HEROKU_SLUG_COMMIT ? process.env.HEROKU_SLUG_COMMIT.slice(0, 7) : undefined,
+    ].filter(Boolean).join('-'),
   },
   claims: {
     amr: null,
