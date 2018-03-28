@@ -28,7 +28,7 @@ describe('Back-Channel Logout 1.0', () => {
   });
 
   describe('Client#backchannelLogout', () => {
-    it('triggers the call, does not return values', async function () {
+    it('triggers the call', async function () {
       const client = await this.provider.Client.find('client');
 
       nock('https://client.example.com/')
@@ -43,19 +43,7 @@ describe('Back-Channel Logout 1.0', () => {
         .post('/backchannel_logout')
         .reply(204);
 
-      return client.backchannelLogout('subject').then((result) => {
-        expect(result).to.be.undefined;
-        expect(nock.isDone()).to.be.true;
-      });
-    });
-
-    it('does ignore request and sig errors', async function () {
-      const client = await this.provider.Client.find('client');
-
-      // not defining the nock scope makes the request part throw
-      return client.backchannelLogout('subject').catch(() => {
-        throw new Error('expected promise to be resolved');
-      });
+      return client.backchannelLogout('subject');
     });
   });
 

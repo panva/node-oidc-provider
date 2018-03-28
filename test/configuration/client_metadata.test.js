@@ -36,7 +36,7 @@ describe('Client metadata validation', () => {
 
   const fail = () => { throw new Error('expected promise to be rejected'); };
 
-  const mustBeString = (prop, values = [[], 123, true, false, {}, ''], meta, configuration) => {
+  const mustBeString = (prop, values = [[], 123, true, null, false, {}, ''], meta, configuration) => {
     values.forEach((value) => {
       let msg = util.format('must be a string, %j provided', value);
       if (meta) msg = util.format(`${msg}, [client %j]`, omit(meta, ['jwks.keys']));
@@ -77,7 +77,7 @@ describe('Client metadata validation', () => {
     });
   };
 
-  const mustBeArray = (prop, values = [{}, 'string', 123, true, false], configuration) => {
+  const mustBeArray = (prop, values = [{}, 'string', 123, true, null, false], configuration) => {
     values.forEach((value) => {
       let msg = util.format('must be a array, %j provided', value);
       if (configuration) msg = util.format(`${msg}, [provider %j]`, configuration);
@@ -95,7 +95,7 @@ describe('Client metadata validation', () => {
   };
 
   const mustBeBoolean = (prop, configuration) => {
-    [{}, 'string', 123, []].forEach((value) => {
+    [{}, 'string', 123, null, []].forEach((value) => {
       let msg = util.format('must be a boolean, %j provided', value);
       if (configuration) msg = util.format(`${msg}, [provider %j]`, configuration);
       it(msg, () => addClient({
