@@ -5,6 +5,7 @@ Yay for [SemVer](http://semver.org/).
 **Table of Contents**
 
 <!-- TOC START min:2 max:2 link:true update:true -->
+- [4.0.0](#400)
 - [3.0.x](#30x)
 - [2.18.x](#218x)
 - [2.17.0](#2170)
@@ -28,6 +29,46 @@ Yay for [SemVer](http://semver.org/).
 - [^1.0.0](#100)
 
 <!-- TOC END -->
+## 4.0.0
+- [DIFF]
+- **New configurations**
+  - LRU-cache sizes
+- **Session Changes**
+  - stored sessions now have an `exp` property allowing the provider to ignore expired but
+    still returned sessions
+    - TODO: migration to avoid losing all sessions
+- **Client Metadata**
+  - null property values are no longer ignored
+    - TODO: how to fix stored clients
+
+- **Other**
+  - `client.backchannelLogout` no longer suppresses any errors, instead rejects the promise
+  - token introspection endpoint no longer returns the wrong `token_type` claim - #189
+    - to continue the support of this non-standardized claim from introspection you may register the following middleware
+      ```js
+      provider.use(async function introspectionTokenType(ctx, next) {
+        await next();
+        if (ctx._matchedRouteName === 'introspection') {
+          const token = ctx.oidc.entities.AccessToken || ctx.oidc.entities.ClientCredentials || ctx.oidc.entities.RefreshToken;
+
+          switch (token && token.kind) {
+            case 'AccessToken':
+              ctx.body.token_type = 'access_token';
+              break;
+            case 'ClientCredentials':
+              ctx.body.token_type = 'client_credentials';
+              break;
+            case 'RefreshToken':
+              ctx.body.token_type = 'refresh_token';
+              break;
+          }
+        }
+      });
+      ```
+  - fetched `request_uri` contents are no longer cached for 15 minutes default, cache headers are
+    honoured and responses without one will fall off the LRU-Cache when this one is full
+  - fixed failed client `jwks_uri` fetch requests to throw `invalid_client_metadata` rather then `server_error`
+
 ## 3.0.x
 ### 3.0.3
 - [DIFF](https://github.com/panva/node-oidc-provider/compare/v3.0.2...v3.0.3)

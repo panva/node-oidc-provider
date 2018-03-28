@@ -391,6 +391,30 @@ describe('introspection features', () => {
         });
     });
 
+    it('does not allow to introspect the uninstrospectable (in case adapter is implemented wrong)', async function () {
+      sinon.stub(this.provider.AccessToken, 'find').callsFake(() => ({
+        isValid: true,
+        kind: 'AuthorizationCode',
+      }));
+
+      return this.agent.post(route)
+        .auth('client', 'secret')
+        .send({
+          token: 'foo',
+        })
+        .type('form')
+        .expect(200)
+        .expect((response) => {
+          expect(response.body).to.have.property('active', false);
+          expect(response.body).to.have.keys('active');
+          this.provider.AccessToken.find.restore();
+        })
+        .catch((err) => {
+          this.provider.AccessToken.find.restore();
+          throw err;
+        });
+    });
+
     describe('populates ctx.oidc.entities', () => {
       it('when introspecting an AccessToken', function (done) {
         this.provider.use(this.assertOnce((ctx) => {

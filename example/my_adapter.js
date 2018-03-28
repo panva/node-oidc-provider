@@ -57,10 +57,13 @@ class MyAdapter {
      * - account {string} the session account identifier
      * - authorizations {object} object with session authorized clients and their session identifiers
      * - loginTs {number} timestamp of user's authentication
+     * - exp {number} timestamp of the session's expiration
      *
      * Short-lived Interaction Session model payload contains the following properties:
+     * - accountId {string} current session account identifier
      * - returnTo {string} after resolving interactions send the user-agent to this url
      * - interaction {object} details on the interaction details (error, reason code and descriptions)
+     * - exp {number} timestamp of the session's expiration
      * - uuid {string} - uuid of the grant
      * - params {object} - parsed recognized parameters object
      * - signed {array} - array of parameter names (keys) that were received from a signed and/or

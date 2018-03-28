@@ -1,7 +1,7 @@
 const { clone } = require('lodash');
 const config = clone(require('../default.config'));
 
-config.features = { pkce: {}, introspection: true, revocation: true };
+config.features = { pkce: { supportedMethods: ['plain', 'S256'] }, introspection: true, revocation: true };
 config.interactionCheck = () => {};
 
 module.exports = {

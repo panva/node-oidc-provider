@@ -368,8 +368,30 @@ describe('revocation features', () => {
         });
     });
 
+    it('does not allow to revoke the unrevokable (in case adapter is implemented wrong)', async function () {
+      sinon.stub(this.provider.AccessToken, 'find').callsFake(() => ({
+        isValid: true,
+        kind: 'AuthorizationCode',
+      }));
+
+      return this.agent.post(route)
+        .auth('client', 'secret')
+        .send({
+          token: 'foo',
+        })
+        .type('form')
+        .expect(200)
+        .expect(() => {
+          this.provider.AccessToken.find.restore();
+        })
+        .catch((err) => {
+          this.provider.AccessToken.find.restore();
+          throw err;
+        });
+    });
+
     describe('populates ctx.oidc.entities', () => {
-      it('when introspecting an AccessToken', function (done) {
+      it('when revoking an AccessToken', function (done) {
         this.provider.use(this.assertOnce((ctx) => {
           expect(ctx.oidc.entities).to.have.keys('Client', 'AccessToken');
         }, done));
@@ -391,7 +413,7 @@ describe('revocation features', () => {
         })().catch(done);
       });
 
-      it('when introspecting a RefreshToken', function (done) {
+      it('when revoking a RefreshToken', function (done) {
         this.provider.use(this.assertOnce((ctx) => {
           expect(ctx.oidc.entities).to.have.keys('Client', 'RefreshToken');
         }, done));
@@ -411,7 +433,7 @@ describe('revocation features', () => {
         })().catch(done);
       });
 
-      it('when introspecting ClientCredentials', function (done) {
+      it('when revoking ClientCredentials', function (done) {
         this.provider.use(this.assertOnce((ctx) => {
           expect(ctx.oidc.entities).to.have.keys('Client', 'ClientCredentials');
         }, done));

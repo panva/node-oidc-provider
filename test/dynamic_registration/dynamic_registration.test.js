@@ -147,7 +147,7 @@ describe('registration features', () => {
         })
         .expect(400)
         .expect(validateError('invalid_client_metadata'))
-        .expect(validateErrorDescription(/grant_types/));
+        .expect(validateErrorDescription(/^grant_types can only contain members/));
     });
 
     it('validates the parameters to be valid and responds with redirect_uri errors', function () {
@@ -157,7 +157,7 @@ describe('registration features', () => {
         })
         .expect(400)
         .expect(validateError('invalid_redirect_uri'))
-        .expect(validateErrorDescription(/redirect_uris/));
+        .expect(validateErrorDescription(/^redirect_uris is mandatory property/));
     });
 
     it('only accepts application/json POSTs', function () {
