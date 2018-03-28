@@ -147,7 +147,7 @@ describe('BASIC code', () => {
           redirect_uri: 'com.example.app:/cb',
           scope,
           code_challenge: 'foo',
-          code_challenge_method: 'plain',
+          code_challenge_method: 'S256',
         });
 
         return this.wrap({ route, verb, auth })
