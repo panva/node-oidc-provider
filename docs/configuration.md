@@ -702,15 +702,16 @@ You can push custom middleware to be executed before and after oidc-provider.
 provider.use(async (ctx, next) => {
   // pre-processing
   // you may target a specific action here by matching `ctx.path`
-  console.log('middleware pre', ctx.path);
+  console.log('middleware pre', ctx.method, ctx.path);
   await next();
-  console.log('middleware post', ctx._matchedRouteName);
+  console.log('middleware post', ctx.method, ctx._matchedRouteName);
   // post-processing
   // since internal route matching was already executed you may target a specific action here
   // checking `ctx._matchedRouteName`, the unique route names used are "authorization", "token",  
   // "discovery", "registration", "userinfo", "resume", "certificates", "webfinger",
   // "client", "client_update", "client_delete", "introspection", "revocation",
-  // "check_session" and "end_session"
+  // "check_session" and "end_session". ctx.method === 'OPTIONS' is then useful for filtering out
+  // CORS Pre-flights
 });
 ```
 
