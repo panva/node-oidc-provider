@@ -709,7 +709,8 @@ provider.use(async (ctx, next) => {
   // since internal route matching was already executed you may target a specific action here
   // checking `ctx._matchedRouteName`, the unique route names used are "authorization", "token",  
   // "discovery", "registration", "userinfo", "resume", "certificates", "webfinger",
-  // "client", "introspection", "revocation", "check_session" and "end_session"
+  // "client", "client_update", "client_delete", "introspection", "revocation",
+  // "check_session" and "end_session"
 });
 ```
 
@@ -1035,7 +1036,10 @@ async interactionCheck(ctx) {
       error_description: 'client not authorized for End-User session yet',
       reason: 'client_not_authorized',
     };
-  } else if (ctx.oidc.client.applicationType === 'native' && ctx.oidc.params.response_type !== 'none' && ctx._matchedRouteName !== 'resume') {
+  } else if (
+    ctx.oidc.client.applicationType === 'native' &&
+    ctx.oidc.params.response_type !== 'none' &&
+    !ctx.oidc.result) { // TODO: in 3.x require consent to be passed in results
     return {
       error: 'interaction_required',
       error_description: 'native clients require End-User interaction',
