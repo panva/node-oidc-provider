@@ -5,6 +5,7 @@ Yay for [SemVer](http://semver.org/).
 **Table of Contents**
 
 <!-- TOC START min:2 max:2 link:true update:true -->
+  - [2.17.0](#2170)
   - [2.16.0](#2160)
   - [2.15.0](#2150)
   - [2.14.x](#214x)
@@ -25,6 +26,17 @@ Yay for [SemVer](http://semver.org/).
   - [^1.0.0](#100)
 
 <!-- TOC END -->
+## 2.17.0
+- [DIFF](https://github.com/panva/node-oidc-provider/compare/v2.16.0...v2.17.0)
+- fixed alternative verb routes to be named as well
+- fixed default `interactionCheck` passing `/resume` when users click cancel or just navigate back to
+  auth resume route
+- added `client_update` and `client_delete` as named routes
+- added `extraClientMetadata` configuration option that allows for custom client properties as well
+  as for additional validations for existing properties to be defined
+- when provider is configured with only `pairwise` subject type support then it is the
+  client default and does not have to be explicitly provided anymore
+
 ## 2.16.0
 - [DIFF](https://github.com/panva/node-oidc-provider/compare/v2.15.0...v2.16.0)
 - supported PKCE code challenge methods are now configurable, use to i.e. disable `plain` for
