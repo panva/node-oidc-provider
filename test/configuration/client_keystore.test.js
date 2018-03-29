@@ -147,7 +147,7 @@ describe('client keystore refresh', () => {
       await client.keystore.refresh();
       expect(client.keystore.fresh()).to.be.true;
       expect(client.keystore.stale()).to.be.false;
-      expect(client.keystore.freshUntil).to.equal(freshUntil);
+      expect(client.keystore.freshUntil).to.be.closeTo(freshUntil, 1);
     });
 
     it('falls back to 1 minute throttle if no caching header is found', async function () {
@@ -156,12 +156,12 @@ describe('client keystore refresh', () => {
 
       setResponse();
 
-      const freshUntil = epochTime() + 55;
+      const freshUntil = epochTime() + 60;
 
       await client.keystore.refresh();
       expect(client.keystore.fresh()).to.be.true;
       expect(client.keystore.stale()).to.be.false;
-      expect(client.keystore.freshUntil).to.be.above(freshUntil);
+      expect(client.keystore.freshUntil).to.be.closeTo(freshUntil, 1);
     });
   });
 
