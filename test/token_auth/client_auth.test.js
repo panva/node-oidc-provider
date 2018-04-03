@@ -450,7 +450,7 @@ describe('client authentication options', () => {
         .type('form')
         .expect({
           error: 'invalid_request',
-          error_description: 'subject of client_assertion must be the same as client_id',
+          error_description: 'subject of client_assertion must be the same as client_id provided in the body',
         }));
     });
 

@@ -5,6 +5,8 @@ const { expect } = require('chai');
 const epochTime = require('../../../lib/helpers/epoch_time');
 
 const route = '/auth';
+const response_type = 'code';
+const scope = 'openid';
 
 describe('BASIC code', () => {
   before(bootstrap(__dirname)); // provider, agent, AuthorizationRequest, getSession, wrap
@@ -15,8 +17,8 @@ describe('BASIC code', () => {
 
       it('responds with a code in search', function () {
         const auth = new this.AuthorizationRequest({
-          response_type: 'code',
-          scope: 'openid',
+          response_type,
+          scope,
         });
 
         return this.wrap({ route, verb, auth })
@@ -28,9 +30,9 @@ describe('BASIC code', () => {
 
       it('responds with a code in fragment', function () {
         const auth = new this.AuthorizationRequest({
-          response_type: 'code',
+          response_type,
           response_mode: 'fragment',
-          scope: 'openid',
+          scope,
         });
 
         return this.wrap({ route, verb, auth })
@@ -41,13 +43,26 @@ describe('BASIC code', () => {
           .expect(auth.validateClientLocation);
       });
 
+      it('populates ctx.oidc.entities', function (done) {
+        this.provider.use(this.assertOnce((ctx) => {
+          expect(ctx.oidc.entities).to.have.keys('AuthorizationCode', 'Client', 'Account');
+        }, done));
+
+        const auth = new this.AuthorizationRequest({
+          response_type,
+          scope,
+        });
+
+        this.wrap({ route, verb, auth }).end(() => {});
+      });
+
       it('allows native apps to do none auth check when already authorized', function () {
         const auth = new this.AuthorizationRequest({
           response_type: 'none',
           prompt: 'none',
           client_id: 'client-native',
           redirect_uri: 'com.example.app:/cb',
-          scope: 'openid',
+          scope,
         });
 
         return this.wrap({ route, verb, auth })
@@ -61,7 +76,7 @@ describe('BASIC code', () => {
         const spy = sinon.spy();
         this.provider.once('token.issued', spy);
         const auth = new this.AuthorizationRequest({
-          response_type: 'code',
+          response_type,
           scope: 'openid and unsupported',
         });
 
@@ -77,7 +92,7 @@ describe('BASIC code', () => {
         const spy = sinon.spy();
         this.provider.once('token.issued', spy);
         const auth = new this.AuthorizationRequest({
-          response_type: 'code',
+          response_type,
           scope: 'openid offline_access',
         });
 
@@ -100,8 +115,8 @@ describe('BASIC code', () => {
         delete session.account;
 
         const auth = new this.AuthorizationRequest({
-          response_type: 'code',
-          scope: 'openid',
+          response_type,
+          scope,
         });
 
         return this.wrap({ route, verb, auth })
@@ -115,8 +130,8 @@ describe('BASIC code', () => {
         session.authorizations = {};
 
         const auth = new this.AuthorizationRequest({
-          response_type: 'code',
-          scope: 'openid',
+          response_type,
+          scope,
         });
 
         return this.wrap({ route, verb, auth })
@@ -127,10 +142,10 @@ describe('BASIC code', () => {
 
       it('are required for native clients by default', function () {
         const auth = new this.AuthorizationRequest({
-          response_type: 'code',
+          response_type,
           client_id: 'client-native',
           redirect_uri: 'com.example.app:/cb',
-          scope: 'openid',
+          scope,
           code_challenge: 'foo',
           code_challenge_method: 'plain',
         });
@@ -143,9 +158,9 @@ describe('BASIC code', () => {
 
       it('login was requested by the client by prompt parameter', function () {
         const auth = new this.AuthorizationRequest({
-          response_type: 'code',
+          response_type,
           prompt: 'login',
-          scope: 'openid',
+          scope,
         });
 
         return this.wrap({ route, verb, auth })
@@ -159,9 +174,9 @@ describe('BASIC code', () => {
         session.loginTs = epochTime() - 3600; // an hour ago
 
         const auth = new this.AuthorizationRequest({
-          response_type: 'code',
+          response_type,
           max_age: '1800', // 30 minutes old session max
-          scope: 'openid',
+          scope,
         });
 
         return this.wrap({ route, verb, auth })
@@ -178,8 +193,8 @@ describe('BASIC code', () => {
         session.loginTs = epochTime() - 3600; // an hour ago
 
         const auth = new this.AuthorizationRequest({
-          response_type: 'code',
-          scope: 'openid',
+          response_type,
+          scope,
         });
 
         return this.wrap({ route, verb, auth })
@@ -198,8 +213,8 @@ describe('BASIC code', () => {
         const spy = sinon.spy();
         this.provider.once('authorization.error', spy);
         const auth = new this.AuthorizationRequest({
-          response_type: 'code',
-          scope: 'openid',
+          response_type,
+          scope,
         });
 
         const wrapped = ((data) => { // eslint-disable-line consistent-return
@@ -233,7 +248,7 @@ describe('BASIC code', () => {
         this.provider.once('authorization.error', spy);
         const auth = new this.AuthorizationRequest({
           response_type: 'code token',
-          scope: 'openid',
+          scope,
           response_mode: 'query',
         });
 
@@ -254,8 +269,8 @@ describe('BASIC code', () => {
           const spy = sinon.spy();
           this.provider.once('authorization.error', spy);
           const auth = new this.AuthorizationRequest({
-            response_type: 'code',
-            scope: 'openid',
+            response_type,
+            scope,
             [param]: 'some',
           });
 
@@ -288,8 +303,8 @@ describe('BASIC code', () => {
           const renderSpy = sinon.spy(i(this.provider).configuration(), 'renderError');
           this.provider.once('authorization.error', emitSpy);
           const auth = new this.AuthorizationRequest({
-            response_type: 'code',
-            scope: 'openid',
+            response_type,
+            scope,
           });
           delete auth.redirect_uri;
 
@@ -314,8 +329,8 @@ describe('BASIC code', () => {
           const spy = sinon.spy();
           this.provider.once('authorization.error', spy);
           const auth = new this.AuthorizationRequest({
-            response_type: 'code',
-            scope: 'openid',
+            response_type,
+            scope,
           });
           delete auth[param];
 
@@ -337,8 +352,8 @@ describe('BASIC code', () => {
         const spy = sinon.spy();
         this.provider.once('authorization.error', spy);
         const auth = new this.AuthorizationRequest({
-          response_type: 'code',
-          scope: 'openid',
+          response_type,
+          scope,
           prompt: 'unsupported',
         });
 
@@ -358,8 +373,8 @@ describe('BASIC code', () => {
         const spy = sinon.spy();
         this.provider.once('authorization.error', spy);
         const auth = new this.AuthorizationRequest({
-          response_type: 'code',
-          scope: 'openid',
+          response_type,
+          scope,
           prompt: 'none login',
         });
 
@@ -379,7 +394,7 @@ describe('BASIC code', () => {
         const spy = sinon.spy();
         this.provider.once('authorization.error', spy);
         const auth = new this.AuthorizationRequest({
-          response_type: 'code',
+          response_type,
           scope: 'profile',
         });
 
@@ -399,8 +414,8 @@ describe('BASIC code', () => {
       it('missing mandatory parameter client_id', function () {
         const renderSpy = sinon.spy(i(this.provider).configuration(), 'renderError');
         const auth = new this.AuthorizationRequest({
-          response_type: 'code',
-          scope: 'openid',
+          response_type,
+          scope,
         });
         delete auth.client_id;
 
@@ -422,8 +437,8 @@ describe('BASIC code', () => {
       it('unrecognized client_id provided', function () {
         const renderSpy = sinon.spy(i(this.provider).configuration(), 'renderError');
         const auth = new this.AuthorizationRequest({
-          response_type: 'code',
-          scope: 'openid',
+          response_type,
+          scope,
           client_id: 'foobar',
         });
 
@@ -444,8 +459,8 @@ describe('BASIC code', () => {
       it('validates redirect_uri ad acta even if other errors were encountered beforehand', function () {
         const renderSpy = sinon.spy(i(this.provider).configuration(), 'renderError');
         const auth = new this.AuthorizationRequest({
-          response_type: 'code',
-          // scope: 'openid',
+          response_type,
+          // scope,
           redirect_uri: 'https://attacker.example.com/foobar',
         });
 
@@ -467,7 +482,7 @@ describe('BASIC code', () => {
         this.provider.once('authorization.error', spy);
         const auth = new this.AuthorizationRequest({
           response_type: 'unsupported',
-          scope: 'openid',
+          scope,
         });
 
         return this.wrap({ route, verb, auth })
@@ -487,8 +502,8 @@ describe('BASIC code', () => {
           const spy = sinon.spy();
           this.provider.once('authorization.error', spy);
           const auth = new this.AuthorizationRequest({
-            response_type: 'code',
-            scope: 'openid',
+            response_type,
+            scope,
           });
 
           return this.wrap({ route, verb, auth })
@@ -507,7 +522,7 @@ describe('BASIC code', () => {
         this.provider.once('authorization.error', spy);
         const auth = new this.AuthorizationRequest({
           response_type: 'id_token',
-          scope: 'openid',
+          scope,
         });
 
         return this.wrap({ route, verb, auth })
@@ -528,8 +543,8 @@ describe('BASIC code', () => {
         const renderSpy = sinon.spy(i(this.provider).configuration(), 'renderError');
         this.provider.once('authorization.error', emitSpy);
         const auth = new this.AuthorizationRequest({
-          response_type: 'code',
-          scope: 'openid',
+          response_type,
+          scope,
           redirect_uri: 'http://example.client.dev/notregistered',
         });
 
@@ -555,8 +570,8 @@ describe('BASIC code', () => {
           const spy = sinon.spy();
           this.provider.once('authorization.error', spy);
           const auth = new this.AuthorizationRequest({
-            response_type: 'code',
-            scope: 'openid',
+            response_type,
+            scope,
             id_token_hint: 'invalid',
           });
 
@@ -584,9 +599,9 @@ describe('BASIC code', () => {
 
         it('responds with server_error redirect to redirect_uri', function () {
           const auth = new this.AuthorizationRequest({
-            response_type: 'code',
+            response_type,
             prompt: 'none',
-            scope: 'openid',
+            scope,
           });
 
           const spy = sinon.spy();

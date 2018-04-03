@@ -51,5 +51,17 @@ describe('custom token endpoint grant types', () => {
         .expect(201)
         .expect({ winner: 'Filip' });
     });
+
+    it('populates ctx.oidc.entities', function (done) {
+      this.provider.use(this.assertOnce((ctx) => {
+        expect(ctx.oidc.entities).to.have.keys('Client');
+      }, done));
+
+      this.agent.post('/token')
+        .auth('client', 'secret')
+        .send({ grant_type: 'lotto', name: 'Filip' })
+        .type('form')
+        .end(() => {});
+    });
   });
 });

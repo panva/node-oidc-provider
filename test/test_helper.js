@@ -236,6 +236,28 @@ module.exports = function testHelper(dir, basename, mountTo) {
     global.server.removeAllListeners('request');
   });
 
+  function assertOnce(fn, done, finished) {
+    let final;
+    let finish;
+    return async (ctx, next) => {
+      await next();
+      if (typeof finished === 'function') {
+        finish = finished(ctx);
+      } else if (!finish) {
+        finish = true;
+      }
+      if (!final && finish) {
+        final = true;
+        try {
+          await fn(ctx);
+          done();
+        } catch (err) {
+          done(err);
+        }
+      }
+    };
+  }
+
   return function () {
     Object.assign(this, {
       login,
@@ -243,6 +265,7 @@ module.exports = function testHelper(dir, basename, mountTo) {
       AuthorizationRequest,
       provider,
       responses,
+      assertOnce,
       getSessionId,
       getSession,
       wrap,

@@ -3,6 +3,8 @@ const sinon = require('sinon');
 const { expect } = require('chai');
 
 const route = '/auth';
+const response_type = 'id_token';
+const scope = 'openid';
 
 describe('IMPLICIT id_token', () => {
   before(bootstrap(__dirname)); // provider, agent, AuthorizationRequest, wrap
@@ -13,8 +15,8 @@ describe('IMPLICIT id_token', () => {
 
       it('responds with a id_token in fragment', function () {
         const auth = new this.AuthorizationRequest({
-          response_type: 'id_token',
-          scope: 'openid',
+          response_type,
+          scope,
         });
 
         return this.wrap({ route, verb, auth })
@@ -25,9 +27,22 @@ describe('IMPLICIT id_token', () => {
           .expect(auth.validateClientLocation);
       });
 
+      it('populates ctx.oidc.entities', function (done) {
+        this.provider.use(this.assertOnce((ctx) => {
+          expect(ctx.oidc.entities).to.have.keys('Client', 'Account');
+        }, done));
+
+        const auth = new this.AuthorizationRequest({
+          response_type,
+          scope,
+        });
+
+        this.wrap({ route, verb, auth }).end(() => {});
+      });
+
       it('ignores offline_access scope for non code-including response_types', function () {
         const auth = new this.AuthorizationRequest({
-          response_type: 'id_token',
+          response_type,
           scope: 'openid offline_access',
         });
 
@@ -45,8 +60,8 @@ describe('IMPLICIT id_token', () => {
         const spy = sinon.spy();
         this.provider.once('authorization.error', spy);
         const auth = new this.AuthorizationRequest({
-          response_type: 'code id_token',
-          scope: 'openid',
+          response_type,
+          scope,
           response_mode: 'query',
         });
 
@@ -66,8 +81,8 @@ describe('IMPLICIT id_token', () => {
         const spy = sinon.spy();
         this.provider.once('authorization.error', spy);
         const auth = new this.AuthorizationRequest({
-          response_type: 'id_token',
-          scope: 'openid',
+          response_type,
+          scope,
         });
         delete auth.nonce;
 

@@ -5,6 +5,7 @@ module.exports.config = {
   cookies: {
     long: { signed: true, maxAge: (1 * 24 * 60 * 60) * 1000 }, // 1 day in ms
     short: { signed: true },
+    keys: ['some secret key', 'and also the old rotated away some time ago', 'and one more'],
   },
   discovery: {
     service_documentation: pkg.homepage,

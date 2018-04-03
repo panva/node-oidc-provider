@@ -4,6 +4,7 @@ const { createInterface: readline } = require('readline');
 const { createReadStream, writeFileSync, readFileSync } = require('fs');
 const values = require('../lib/helpers/defaults');
 const { get } = require('lodash');
+const { inspect } = require('util');
 
 function capitalizeSentences(copy) {
   return copy.replace(/\. [a-z]/g, match => `. ${match.slice(-1).toUpperCase()}`);
@@ -25,6 +26,7 @@ class Block {
 const props = [
   'description',
   'affects',
+  'recommendation',
   '@nodefault',
 ];
 
@@ -92,22 +94,25 @@ const props = [
   Object.keys(blocks).sort().forEach((block) => {
     append(`\n### ${block}\n\n`);
     if (blocks[block].description) {
-      append(`${capitalizeSentences(blocks[block].description.toString())}  \n`);
+      append(`${capitalizeSentences(blocks[block].description.toString())}  \n\n`);
     }
-    if (blocks[block].affects) {
-      append(`affects: ${blocks[block].affects.toString()}  \n\n`);
-    }
+    ['affects', 'recommendation'].forEach((section) => {
+      if (blocks[block][section]) {
+        append(`${section}: ${blocks[block][section].toString()}  \n`);
+      }
+    });
     if (!('@nodefault' in blocks[block])) {
-      append('default value:\n');
+      append('\ndefault value:\n');
       append('```js\n');
       const value = get(values, block);
       switch (typeof value) {
+        case 'boolean':
         case 'number':
           append(`${String(value)}`);
           break;
         case 'string':
         case 'object':
-          append(`${JSON.stringify(value, null, 2)}`);
+          append(inspect(value));
           break;
         case 'function': {
           let fixIndent;
@@ -125,7 +130,7 @@ const props = [
           break;
         }
         default:
-          throw new Error('unexpected value type');
+          throw new Error(`unexpected value type ${typeof value}`);
       }
       append('\n```\n');
     }

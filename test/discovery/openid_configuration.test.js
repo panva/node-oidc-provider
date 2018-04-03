@@ -14,6 +14,14 @@ describe(route, () => {
       .expect(200);
   });
 
+  it('does not populate ctx.oidc.entities', function (done) {
+    this.provider.use(this.assertOnce((ctx) => {
+      expect(ctx.oidc.entities).to.be.empty;
+    }, done));
+
+    this.agent.get(route).end(() => {});
+  });
+
   it('is configurable with extra properties', function () {
     i(this.provider).configuration('discovery').service_documentation = 'https://docs.example.com';
     i(this.provider).configuration('discovery').authorization_endpoint = 'this will not be used';

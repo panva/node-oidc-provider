@@ -1,5 +1,4 @@
 const bootstrap = require('../test_helper');
-
 const { expect } = require('chai');
 
 const route = '/certs';
@@ -29,6 +28,14 @@ describe(route, () => {
           expect(rsa).to.have.all.keys(['kty', 'kid', 'e', 'n']);
           expect(ec).to.have.all.keys(['kty', 'kid', 'crv', 'x', 'y']);
         });
+    });
+
+    it('does not populate ctx.oidc.entities', function (done) {
+      this.provider.use(this.assertOnce((ctx) => {
+        expect(ctx.oidc.entities).to.be.empty;
+      }, done));
+
+      this.agent.get(route).end(() => {});
     });
   });
 });

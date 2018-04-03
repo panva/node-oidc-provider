@@ -55,6 +55,14 @@ describe('session management', () => {
             expect(response.headers['content-security-policy']).not.to.match(/frame-ancestors/);
           });
       });
+
+      it('does not populate ctx.oidc.entities', function (done) {
+        this.provider.use(this.assertOnce((ctx) => {
+          expect(ctx.oidc.entities).to.be.empty;
+        }, done));
+
+        this.agent.get('/session/check').end(() => {});
+      });
     });
   });
 });

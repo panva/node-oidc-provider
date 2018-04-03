@@ -32,8 +32,6 @@ provider.initialize({
     root: path.join(__dirname, 'views'),
   });
 
-  provider.keys = ['some secret key', 'and also the old one'];
-
   if (process.env.NODE_ENV === 'production') {
     provider.proxy = true;
     set(config, 'cookies.short.secure', true);

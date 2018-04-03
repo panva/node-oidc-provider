@@ -38,8 +38,6 @@ describe('OAuth 2.0 Dynamic Client Registration Management Protocol', () => {
 
     it('responds w/ 200 JSON and nocache headers', async function () {
       const client = await setup.call(this, {});
-      // changing the redirect_uris;
-      // console.log(client);
       return this.agent.put(`/reg/${client.client_id}`)
         .set('Authorization', `Bearer ${client.registration_access_token}`)
         .send(updateProperties(client, {
@@ -56,6 +54,19 @@ describe('OAuth 2.0 Dynamic Client Registration Management Protocol', () => {
           expect(res.body).to.have.property('client_id_issued_at', client.client_id_issued_at);
           expect(res.body.redirect_uris).to.eql(['https://client.example.com/foobar/cb']);
         });
+    });
+
+    it('populates ctx.oidc.entities', function (done) {
+      this.provider.use(this.assertOnce((ctx) => {
+        expect(ctx.oidc.entities).to.have.keys('Client', 'RegistrationAccessToken');
+      }, done, ctx => ctx.method === 'PUT'));
+
+      (async () => {
+        const client = await setup.call(this, {});
+        await this.agent.put(`/reg/${client.client_id}`)
+          .set('Authorization', `Bearer ${client.registration_access_token}`)
+          .send(updateProperties(client));
+      })().catch(done);
     });
 
     it('allows for properties to be deleted', async function () {
@@ -239,6 +250,21 @@ describe('OAuth 2.0 Dynamic Client Registration Management Protocol', () => {
           });
       });
 
+      it('populates ctx.oidc.entities with RotatedRegistrationAccessToken too', function (done) {
+        this.provider.use(this.assertOnce((ctx) => {
+          expect(ctx.oidc.entities).to.contain.keys('RotatedRegistrationAccessToken', 'RegistrationAccessToken');
+          expect(ctx.oidc.entities.RotatedRegistrationAccessToken)
+            .not.to.eql(ctx.oidc.entities.RegistrationAccessToken);
+        }, done, ctx => ctx.method === 'PUT'));
+
+        (async () => {
+          const client = await setup.call(this, {});
+          await this.agent.put(`/reg/${client.client_id}`)
+            .set('Authorization', `Bearer ${client.registration_access_token}`)
+            .send(updateProperties(client));
+        })().catch(done);
+      });
+
       it('issues and returns new RegistrationAccessToken', async function () {
         const client = await setup.call(this, {});
         const spy = sinon.spy();
@@ -267,6 +293,18 @@ describe('OAuth 2.0 Dynamic Client Registration Management Protocol', () => {
         .expect('cache-control', 'no-cache, no-store')
         .expect('') // empty body
         .expect(204);
+    });
+
+    it('populates ctx.oidc.entities', function (done) {
+      this.provider.use(this.assertOnce((ctx) => {
+        expect(ctx.oidc.entities).to.have.keys('Client', 'RegistrationAccessToken');
+      }, done, ctx => ctx.method === 'DELETE'));
+
+      (async () => {
+        const client = await setup.call(this, {});
+        await this.agent.del(`/reg/${client.client_id}`)
+          .set('Authorization', `Bearer ${client.registration_access_token}`);
+      })().catch(done);
     });
 
     it('emits an event', async function () {

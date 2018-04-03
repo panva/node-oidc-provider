@@ -7,7 +7,7 @@ point to get an idea of what you should provide.
 
 **Table of Contents**
 
-<!-- TOC START min:2 max:2 link:true update:true -->
+<!-- TOC START min:2 max:3 link:true update:true -->
   - [Default configuration values](#default-configuration-values)
   - [Accounts](#accounts)
   - [Clients](#clients)
@@ -28,8 +28,46 @@ point to get an idea of what you should provide.
   - [Registering module middlewares (helmet, ip-filters, rate-limiters, etc)](#registering-module-middlewares-helmet-ip-filters-rate-limiters-etc)
   - [Pre- and post-middlewares](#pre--and-post-middlewares)
   - [Mounting oidc-provider](#mounting-oidc-provider)
+    - [to an express application](#to-an-express-application)
+    - [to a koa application](#to-a-koa-application)
   - [Trusting TLS offloading proxies](#trusting-tls-offloading-proxies)
   - [Configuration options](#configuration-options)
+    - [acrValues](#acrvalues)
+    - [audiences](#audiences)
+    - [claims](#claims)
+    - [clientCacheDuration](#clientcacheduration)
+    - [clockTolerance](#clocktolerance)
+    - [cookies](#cookies)
+    - [cookies.keys](#cookieskeys)
+    - [cookies.long](#cookieslong)
+    - [cookies.names](#cookiesnames)
+    - [cookies.short](#cookiesshort)
+    - [discovery](#discovery)
+    - [extraClientMetadata](#extraclientmetadata)
+    - [extraClientMetadata.properties](#extraclientmetadataproperties)
+    - [extraClientMetadata.validator](#extraclientmetadatavalidator)
+    - [extraParams](#extraparams)
+    - [features](#features)
+    - [findById](#findbyid)
+    - [frontchannelLogoutPendingSource](#frontchannellogoutpendingsource)
+    - [interactionCheck](#interactioncheck)
+    - [interactionUrl](#interactionurl)
+    - [introspectionEndpointAuthMethods](#introspectionendpointauthmethods)
+    - [logoutSource](#logoutsource)
+    - [pairwiseSalt](#pairwisesalt)
+    - [postLogoutRedirectUri](#postlogoutredirecturi)
+    - [prompts](#prompts)
+    - [refreshTokenRotation](#refreshtokenrotation)
+    - [renderError](#rendererror)
+    - [responseTypes](#responsetypes)
+    - [revocationEndpointAuthMethods](#revocationendpointauthmethods)
+    - [routes](#routes)
+    - [scopes](#scopes)
+    - [subjectTypes](#subjecttypes)
+    - [tokenEndpointAuthMethods](#tokenendpointauthmethods)
+    - [ttl](#ttl)
+    - [uniqueness](#uniqueness)
+    - [unsupported](#unsupported)
 
 <!-- TOC END -->
 
@@ -781,6 +819,7 @@ location / {
 ### acrValues
 
 Array of strings, the Authentication Context Class References that OP supports. First one in the list will be the one used for authentication requests unless one was provided as part of an interaction result. Use a value with 'session' meaning as the first.  
+
 affects: discovery, ID Token acr claim values  
 
 default value:
@@ -791,6 +830,7 @@ default value:
 ### audiences
 
 Helper used by the OP to push additional audiences to issued ID Tokens and other signed responses. The return value should either be falsy to omit adding additional audiences or an array of strings to push.  
+
 affects: id token audiences, signed userinfo audiences  
 
 default value:
@@ -805,23 +845,18 @@ async audiences(ctx, id, token) {
 ### claims
 
 List of the Claim Names of the Claims that the OpenID Provider MAY be able to supply values for.  
+
 affects: discovery, ID Token claim names, Userinfo claim names  
 
 default value:
 ```js
-{
-  "acr": null,
-  "auth_time": null,
-  "iss": null,
-  "openid": [
-    "sub"
-  ]
-}
+{ acr: null, auth_time: null, iss: null, openid: [ 'sub' ] }
 ```
 
 ### clientCacheDuration
 
 A `Number` value (in seconds) describing how long a dynamically loaded client should remain cached.  
+
 affects: adapter-backed client cache duration  
 
 default value:
@@ -832,7 +867,9 @@ Infinity
 ### clockTolerance
 
 A `Number` value (in seconds) describing the allowed system clock skew  
+
 affects: JWT (ID token, client assertion) validations.  
+recommendation: Set to a reasonable value (60) to cover server-side client and oidc-provider server clock skew  
 
 default value:
 ```js
@@ -841,74 +878,87 @@ default value:
 
 ### cookies
 
-Options for https://github.com/pillarjs/cookies#cookiesset-name--value---options-- used by the OP to keep track of various User-Agent states.  
+Options for the [cookie module][module-cookies] used by the OP to keep track of various User-Agent states.  
+
 affects: User-Agent sessions, passing of authorization details to interaction  
 
+### cookies.keys
+
+[Keygrip][keygrip-module] Signing keys used for cookie signing to prevent tampering.  
+
+recommendation: Rotate regularly (by prepending new keys) with a reasonable interval and keep a reasonable history of keys to allow for returning user session cookies to still be valid and re-signed  
+
+default value:
+```js
+[]
+```
 
 ### cookies.long
 
 Options for long-term cookies  
+
 affects: User-Agent session reference, Session Management states  
+recommendation: set cookies.keys and cookies.long.signed = true  
 
 default value:
 ```js
-{
-  "httpOnly": true,
-  "maxAge": 31557600000
-}
+{ signed: undefined, httpOnly: true, maxAge: 31557600000 }
 ```
 
 ### cookies.names
 
 Cookie names used by the OP to store and transfer various states.  
+
 affects: User-Agent session, Session Management states and interaction cookie names  
 
 default value:
 ```js
-{
-  "session": "_session",
-  "interaction": "_grant",
-  "resume": "_grant",
-  "state": "_state"
-}
+{ session: '_session',
+  interaction: '_grant',
+  resume: '_grant',
+  state: '_state' }
 ```
 
 ### cookies.short
 
 Options for short-term cookies  
+
 affects: passing of authorization details to interaction  
+recommendation: set cookies.keys and cookies.short.signed = true  
 
 default value:
 ```js
-{
-  "httpOnly": true,
-  "maxAge": 3600000
-}
+{ signed: undefined, httpOnly: true, maxAge: 3600000 }
 ```
 
 ### discovery
 
 Pass additional properties to this object to extend the discovery document  
+
 affects: discovery  
 
 default value:
 ```js
-{
-  "claim_types_supported": [
-    "normal"
-  ]
-}
+{ claim_types_supported: [ 'normal' ],
+  claims_locales_supported: undefined,
+  display_values_supported: undefined,
+  op_policy_uri: undefined,
+  op_tos_uri: undefined,
+  service_documentation: undefined,
+  ui_locales_supported: undefined }
 ```
 
 ### extraClientMetadata
 
 Allows for custom client metadata to be defined, validated, manipulated as well as for existing property validations to be extended  
-affects: clients, registration, registration management  
 
+affects: clients, registration, registration management  
 
 ### extraClientMetadata.properties
 
 Array of property names that clients will be allowed to have defined. Property names will have to strictly follow the ones defined here. However, on a Client instance property names will be snakeCased.  
+
+
 default value:
 ```js
 []
@@ -917,6 +967,8 @@ default value:
 ### extraClientMetadata.validator
 
 validator function that will be executed in order once for every property defined in `extraClientMetadata.properties`, regardless of its value or presence on the client metadata passed in. Must be synchronous, async validators or functions returning Promise will be rejected during runtime. To modify the current client metadata values (for current key or any other) just modify the passed in `metadata` argument.  
+
+
 default value:
 ```js
 validator(key, value, metadata) {
@@ -930,7 +982,8 @@ validator(key, value, metadata) {
 
 ### extraParams
 
-Pass an iterable object (i.e. Array or set of strings) to extend the parameters recognized by the authorization endpoint. These parameters are then available in ctx.oidc.params as well as passed via the `_grant` cookie to interaction  
+Pass an iterable object (i.e. Array or set of strings) to extend the parameters recognized by the authorization endpoint. These parameters are then available in ctx.oidc.params as well as passed to interaction session details  
+
 affects: authorization, interaction  
 
 default value:
@@ -941,32 +994,33 @@ default value:
 ### features
 
 Enable/disable features, see configuration.md for more details  
+
+
 default value:
 ```js
-{
-  "devInteractions": true,
-  "discovery": true,
-  "requestUri": true,
-  "oauthNativeApps": true,
-  "pkce": true,
-  "backchannelLogout": false,
-  "frontchannelLogout": false,
-  "claimsParameter": false,
-  "clientCredentials": false,
-  "encryption": false,
-  "introspection": false,
-  "alwaysIssueRefresh": false,
-  "registration": false,
-  "registrationManagement": false,
-  "request": false,
-  "revocation": false,
-  "sessionManagement": false
-}
+{ devInteractions: true,
+  discovery: true,
+  requestUri: true,
+  oauthNativeApps: true,
+  pkce: true,
+  backchannelLogout: false,
+  frontchannelLogout: false,
+  claimsParameter: false,
+  clientCredentials: false,
+  encryption: false,
+  introspection: false,
+  alwaysIssueRefresh: false,
+  registration: false,
+  registrationManagement: false,
+  request: false,
+  revocation: false,
+  sessionManagement: false }
 ```
 
 ### findById
 
 Helper used by the OP to load your account and retrieve it's available claims. The return value should be a Promise and #claims() can return a Promise too  
+
 affects: authorization, authorization_code and refresh_token grants, id token claims  
 
 default value:
@@ -991,6 +1045,7 @@ async findById(ctx, id, token) {
 ### frontchannelLogoutPendingSource
 
 HTML source rendered when there are pending front-channel logout iframes to be called to trigger RP logouts. It should handle waiting for the frames to be loaded as well as have a timeout mechanism in it.  
+
 affects: session management  
 
 default value:
@@ -1035,6 +1090,7 @@ ${frames.join('')}
 ### interactionCheck
 
 Helper used by the OP as a final check whether the End-User should be sent to interaction or not, the default behavior is that every RP must be authorized per session and that native application clients always require End-User prompt to be confirmed. Return false if no interaction should be performed, return an object with relevant error, reason, etc. When interaction should be requested  
+
 affects: authorization interactions  
 
 default value:
@@ -1063,6 +1119,7 @@ async interactionCheck(ctx) {
 ### interactionUrl
 
 Helper used by the OP to determine where to redirect User-Agent for necessary interaction, can return both absolute and relative urls  
+
 affects: authorization interactions  
 
 default value:
@@ -1075,22 +1132,22 @@ async interactionUrl(ctx, interaction) {
 ### introspectionEndpointAuthMethods
 
 List of Client Authentication methods supported by this OP's Introspection Endpoint  
+
 affects: discovery, client authentication for introspection, registration and registration management  
 
 default value:
 ```js
-[
-  "none",
-  "client_secret_basic",
-  "client_secret_jwt",
-  "client_secret_post",
-  "private_key_jwt"
-]
+[ 'none',
+  'client_secret_basic',
+  'client_secret_jwt',
+  'client_secret_post',
+  'private_key_jwt' ]
 ```
 
 ### logoutSource
 
 HTML source to which a logout form source is passed when session management renders a confirmation prompt for the User-Agent.  
+
 affects: session management  
 
 default value:
@@ -1124,16 +1181,18 @@ Do you want to logout from OP too?
 ### pairwiseSalt
 
 Salt used by OP when resolving pairwise ID Token and Userinfo sub claim value  
+
 affects: ID Token and Userinfo sub claim values  
 
 default value:
 ```js
-""
+''
 ```
 
 ### postLogoutRedirectUri
 
 URL to which the OP redirects the User-Agent when no post_logout_redirect_uri is provided by the RP  
+
 affects: session management  
 
 default value:
@@ -1146,30 +1205,29 @@ async postLogoutRedirectUri(ctx) {
 ### prompts
 
 List of the prompt values that the OpenID Provider MAY be able to resolve  
+
 affects: authorization  
 
 default value:
 ```js
-[
-  "consent",
-  "login",
-  "none"
-]
+[ 'consent', 'login', 'none' ]
 ```
 
 ### refreshTokenRotation
 
 Configures if and how the OP rotates refresh tokens after they are used. Supported values are 1) `"none"` when refresh tokens are not rotated and their initial expiration date is final or 2) `"rotateAndConsume"` when refresh tokens are rotated when used, current token is marked as consumed and new one is issued with new TTL, when a consumed refresh token is encountered an error is returned instead and the whole token chain (grant) is revoked.  
+
 affects: refresh token rotation and adjacent revocation  
 
 default value:
 ```js
-"rotateAndConsume"
+'rotateAndConsume'
 ```
 
 ### renderError
 
 Helper used by the OP to present errors which are not meant to be 'forwarded' to the RP's redirect_uri  
+
 affects: presentation of errors encountered during authorization  
 
 default value:
@@ -1191,118 +1249,112 @@ async renderError(ctx, error) {
 ### responseTypes
 
 List of response_type values that OP supports  
+
 affects: authorization, discovery, registration, registration management  
 
 default value:
 ```js
-[
-  "code id_token token",
-  "code id_token",
-  "code token",
-  "code",
-  "id_token token",
-  "id_token",
-  "none"
-]
+[ 'code id_token token',
+  'code id_token',
+  'code token',
+  'code',
+  'id_token token',
+  'id_token',
+  'none' ]
 ```
 
 ### revocationEndpointAuthMethods
 
 List of Client Authentication methods supported by this OP's Revocation Endpoint  
+
 affects: discovery, client authentication for revocation, registration and registration management  
 
 default value:
 ```js
-[
-  "none",
-  "client_secret_basic",
-  "client_secret_jwt",
-  "client_secret_post",
-  "private_key_jwt"
-]
+[ 'none',
+  'client_secret_basic',
+  'client_secret_jwt',
+  'client_secret_post',
+  'private_key_jwt' ]
 ```
 
 ### routes
 
 Routing values used by the OP. Only provide routes starting with "/"  
+
 affects: routing  
 
 default value:
 ```js
-{
-  "authorization": "/auth",
-  "certificates": "/certs",
-  "check_session": "/session/check",
-  "end_session": "/session/end",
-  "introspection": "/token/introspection",
-  "registration": "/reg",
-  "revocation": "/token/revocation",
-  "token": "/token",
-  "userinfo": "/me"
-}
+{ authorization: '/auth',
+  certificates: '/certs',
+  check_session: '/session/check',
+  end_session: '/session/end',
+  introspection: '/token/introspection',
+  registration: '/reg',
+  revocation: '/token/revocation',
+  token: '/token',
+  userinfo: '/me' }
 ```
 
 ### scopes
 
 List of the scope values that the OP supports  
+
 affects: discovery, authorization, ID Token claims, Userinfo claims  
 
 default value:
 ```js
-[
-  "openid",
-  "offline_access"
-]
+[ 'openid', 'offline_access' ]
 ```
 
 ### subjectTypes
 
 List of the Subject Identifier types that this OP supports. Valid types include 'pairwise' and 'public'.  
+
 affects: discovery, registration, registration management, ID Token and Userinfo sub claim values  
 
 default value:
 ```js
-[
-  "public"
-]
+[ 'public' ]
 ```
 
 ### tokenEndpointAuthMethods
 
 List of Client Authentication methods supported by this OP's Token Endpoint  
+
 affects: discovery, client authentication for token endpoint, registration and registration management  
 
 default value:
 ```js
-[
-  "none",
-  "client_secret_basic",
-  "client_secret_jwt",
-  "client_secret_post",
-  "private_key_jwt"
-]
+[ 'none',
+  'client_secret_basic',
+  'client_secret_jwt',
+  'client_secret_post',
+  'private_key_jwt' ]
 ```
 
 ### ttl
 
 Expirations (in seconds) for all token types  
+
 affects: tokens  
 
 default value:
 ```js
-{
-  "AccessToken": 3600,
-  "AuthorizationCode": 600,
-  "ClientCredentials": 600,
-  "IdToken": 3600,
-  "RefreshToken": 1209600
-}
+{ AccessToken: 3600,
+  AuthorizationCode: 600,
+  ClientCredentials: 600,
+  IdToken: 3600,
+  RefreshToken: 1209600 }
 ```
 
 ### uniqueness
 
 Function resolving whether a given value with expiration is presented first time  
+
 affects: client_secret_jwt and private_key_jwt client authentications  
+recommendation: configure this option to use a shared store if client_secret_jwt and private_key_jwt are used  
 
 default value:
 ```js
@@ -1316,24 +1368,23 @@ async uniqueness(ctx, jti, expiresAt) {
 ### unsupported
 
 Fine-tune the algorithms your provider should support by further omitting values from the respective discovery properties  
+
 affects: signing, encryption, discovery, client validation  
 
 default value:
 ```js
-{
-  "idTokenEncryptionAlgValues": [],
-  "idTokenEncryptionEncValues": [],
-  "idTokenSigningAlgValues": [],
-  "requestObjectEncryptionAlgValues": [],
-  "requestObjectEncryptionEncValues": [],
-  "requestObjectSigningAlgValues": [],
-  "tokenEndpointAuthSigningAlgValues": [],
-  "introspectionEndpointAuthSigningAlgValues": [],
-  "revocationEndpointAuthSigningAlgValues": [],
-  "userinfoEncryptionAlgValues": [],
-  "userinfoEncryptionEncValues": [],
-  "userinfoSigningAlgValues": []
-}
+{ idTokenEncryptionAlgValues: [],
+  idTokenEncryptionEncValues: [],
+  idTokenSigningAlgValues: [],
+  requestObjectEncryptionAlgValues: [],
+  requestObjectEncryptionEncValues: [],
+  requestObjectSigningAlgValues: [],
+  tokenEndpointAuthSigningAlgValues: [],
+  introspectionEndpointAuthSigningAlgValues: [],
+  revocationEndpointAuthSigningAlgValues: [],
+  userinfoEncryptionAlgValues: [],
+  userinfoEncryptionEncValues: [],
+  userinfoSigningAlgValues: [] }
 ```
 <!-- END CONF OPTIONS -->
 
@@ -1356,3 +1407,5 @@ default value:
 [request-library]: https://github.com/request/request
 [password-grant]: https://tools.ietf.org/html/rfc6749#section-4.3
 [defaults]: /lib/helpers/defaults.js
+[cookie-module]: https://github.com/pillarjs/cookies#cookiesset-name--value---options--
+[keygrip-module]: https://www.npmjs.com/package/keygrip

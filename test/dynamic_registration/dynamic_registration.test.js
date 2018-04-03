@@ -40,6 +40,18 @@ describe('registration features', () => {
         });
     });
 
+    it('populates ctx.oidc.entities', function (done) {
+      this.provider.use(this.assertOnce((ctx) => {
+        expect(ctx.oidc.entities).to.have.keys('Client', 'RegistrationAccessToken');
+      }, done));
+
+      this.agent.post('/reg')
+        .send({
+          redirect_uris: ['https://client.example.com/cb'],
+        })
+        .end(() => {});
+    });
+
     it('omits the client_secret generation when it is not needed', function () {
       return this.agent.post('/reg')
         .send({
@@ -254,6 +266,21 @@ describe('registration features', () => {
             .expect(201);
         });
 
+        it('adds InitialAccessToken to ctx.oidc.entities', function (done) {
+          this.provider.use(this.assertOnce((ctx) => {
+            expect(ctx.oidc.entities).to.have.property('InitialAccessToken');
+          }, done));
+
+          this.agent.post('/reg')
+            .send({
+              redirect_uris: ['https://client.example.com/cb'],
+            })
+            .query({
+              access_token: this.token,
+            })
+            .end(() => {});
+        });
+
         it('rejects calls with bad access token', function () {
           return this.agent.post('/reg')
             .send({
@@ -321,6 +348,18 @@ describe('registration features', () => {
           expect(response.body).to.have.property('response_types').and.eql(['code']);
           expect(response.body).to.have.property('registration_client_uri', `${this.provider.issuer}/reg/${response.body.client_id}`);
         });
+    });
+
+    it('populates ctx.oidc.entities', function (done) {
+      this.provider.use(this.assertOnce((ctx) => {
+        expect(ctx.oidc.entities).to.have.keys('Client', 'RegistrationAccessToken');
+      }, done));
+
+      this.agent.get(`/reg/${this.clientId}`)
+        .query({
+          access_token: this.token,
+        })
+        .end(() => {});
     });
 
     it('returns token-endpoint-like cache headers', function () {
