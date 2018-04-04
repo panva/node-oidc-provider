@@ -1,3 +1,7 @@
+// Author: Marc-Aurèle Darche @madarche
+// For questions/suggestions/fixes related to this adapter create an
+// issue in this dedicated repository: https://github.com/madarche/contact
+
 /* eslint-disable class-methods-use-this */
 
 // This is the SQL used to create the schema in PostgreSQL:
