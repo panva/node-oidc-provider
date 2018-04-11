@@ -1,0 +1,4 @@
+---
+linters:
+  eslint:
+    fixer: true
