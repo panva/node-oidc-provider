@@ -321,21 +321,22 @@ router.post('/interaction/:grant', async (ctx, next) => {
 }
 ```
 
-**`#provider.setSessionAccountId(req, id, [ts])`**
+**`#provider.setProviderSession(req, res, id, [ts])`**
 Sometimes interactions need to be interrupted before finishing and need to be picked up later,
-when that happens but an End-User already authenticated you might want to tell the OP session
-about it, this will prevent subsequent interactions to start from scratch.
+or a session just needs to be established from outside the regular authorization request.
+`#provider.setProviderSession` will take care of setting the proper cookies and storing the
+updated/created session object.
 
 ```js
 // with express
 expressApp.post('/interaction/:grant/login', async (req, res) => {
-  await provider.setSessionAccountId(req, 'accountId');
+  await provider.setProviderSession(req, res, 'accountId');
   // ...
 });
 
 // with koa
 router.post('/interaction/:grant/login', async (ctx, next) => {
-  await provider.setSessionAccountId(ctx.req, 'accountId');
+  await provider.setProviderSession(ctx.req, ctx.res, 'accountId');
   // ...
 });
 ```

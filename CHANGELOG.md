@@ -31,6 +31,9 @@ Yay for [SemVer](http://semver.org/).
 - [DIFF](https://github.com/panva/node-oidc-provider/compare/v2.17.0...v2.18.0)
 - added `ctx.oidc.entities` with all loaded model/entity instances during a given request
 - added `cookies.keys` configuration option for KeyGrip key app passthrough
+- added `#provider.setProviderSession` for setting provider session from outside of a regular
+  context
+- deprecated `#provider.setSessionAccountId` in favor of `#provider.setProviderSession`
 - `ctx.oidc` refactored
 - configuration documentation format changes
 

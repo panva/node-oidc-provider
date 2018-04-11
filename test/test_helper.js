@@ -207,12 +207,12 @@ module.exports = function testHelper(dir, basename, mountTo) {
     };
   };
 
-  function getSession(opts = { instantiate: false }) {
+  function getSession({ instantiate } = { instantiate: false }) {
     const { value: sessionId } = agent.jar.getCookie('_session', { path: '/' });
     const key = TestAdapter.for('Session').key(sessionId);
     const raw = TestAdapter.for('Session').get(key);
 
-    if (opts.instantiate) {
+    if (instantiate) {
       return raw ? new provider.Session(sessionId, raw) : raw;
     }
 
