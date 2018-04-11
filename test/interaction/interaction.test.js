@@ -3,6 +3,7 @@
 const uuid = require('uuid/v4');
 const bootstrap = require('../test_helper');
 const config = require('./interaction.config.js');
+const KeyGrip = require('keygrip'); // eslint-disable-line import/no-extraneous-dependencies
 
 const expire = new Date();
 expire.setDate(expire.getDate() + 1);
@@ -127,9 +128,13 @@ describe('resume after interaction', () => {
     const cookies = [];
 
     const sess = new this.provider.Session('resume', {});
+    const keys = new KeyGrip(i(this.provider).configuration('cookies.keys'));
 
     if (grant) {
-      cookies.push(`_grant=resume; path=/auth/resume; expires=${expire.toGMTString()}; httponly`);
+      const cookie = `_grant=resume; path=/auth/resume; expires=${expire.toGMTString()}; httponly`;
+      cookies.push(cookie);
+      const [pre, ...post] = cookie.split(';');
+      cookies.push([`_grant.sig=${keys.sign(pre)}`, ...post].join(';'));
       Object.assign(sess, { params: grant });
     }
 
