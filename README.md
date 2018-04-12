@@ -110,7 +110,7 @@ const oidc = new Provider('http://localhost:3000', configuration);
   console.log('oidc-provider listening on port 3000, check http://localhost:3000/.well-known/openid-configuration');
 })().catch((err) => {
   console.error(err);
-  process.exit(1);
+  process.exitCode = 1;
 });
 ```
 
