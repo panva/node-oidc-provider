@@ -1,17 +1,17 @@
 const bootstrap = require('../test_helper');
 const { expect } = require('chai');
+const epochTime = require('../../lib/helpers/epoch_time');
 
-describe('provider.setProviderSession(req, res, id)', () => {
+describe('provider.setProviderSession', () => {
   before(bootstrap(__dirname, 'set_session'));
 
   beforeEach(function () { return this.logout(); });
 
-  it('sets the session id for a clear session', async function () {
+  it('sets the session id for a clear session with current timestamp', async function () {
     // simulates setting a fresh session (non existant) in another request
-    const ts = 1523457660;
     this.provider.use(async (ctx, next) => {
       if (ctx.path === '/login') {
-        await this.provider.setProviderSession(ctx.req, ctx.res, 'foo', ts);
+        await this.provider.setProviderSession(ctx.req, ctx.res, { account: 'foo' });
       }
       await next();
     });
@@ -34,7 +34,7 @@ describe('provider.setProviderSession(req, res, id)', () => {
       .expect(() => {
         const session = this.getSession();
         expect(session).to.have.property('account', 'foo');
-        expect(session).to.have.property('loginTs', ts);
+        expect(session).to.have.property('loginTs').that.is.closeTo(epochTime(), 1);
       });
   });
 
@@ -42,10 +42,10 @@ describe('provider.setProviderSession(req, res, id)', () => {
     // simulates setting a fresh session (non existant) in another request
     this.provider.use(async (ctx, next) => {
       if (ctx.path === '/login/foo') {
-        await this.provider.setProviderSession(ctx.req, ctx.res, 'foo');
+        await this.provider.setProviderSession(ctx.req, ctx.res, { account: 'foo' });
       }
       if (ctx.path === '/login/bar') {
-        await this.provider.setProviderSession(ctx.req, ctx.res, 'bar');
+        await this.provider.setProviderSession(ctx.req, ctx.res, { account: 'bar' });
       }
       await next();
     });
@@ -74,5 +74,66 @@ describe('provider.setProviderSession(req, res, id)', () => {
         expect(this.getSessionId()).to.eql(sessionId);
         expect(this.getSession()).to.have.property('account', 'bar');
       });
+  });
+
+  it('sets the already authorized clients', async function () {
+    // simulates setting a fresh session (non existant) in another request
+    this.provider.use(async (ctx, next) => {
+      if (ctx.path === '/login') {
+        await this.provider.setProviderSession(ctx.req, ctx.res, { account: 'foo', clients: ['foo', 'bar'] });
+      }
+      await next();
+    });
+
+    await this.agent.post('/login');
+
+    const session = this.getSession();
+    expect(session).to.have.nested.property('authorizations.foo').that.is.an('object');
+    expect(session).to.have.nested.property('authorizations.bar').that.is.an('object');
+  });
+
+  it('sets the session as persistent by default', async function () {
+    // simulates setting a fresh session (non existant) in another request
+    this.provider.use(async (ctx, next) => {
+      if (ctx.path === '/login') {
+        await this.provider.setProviderSession(ctx.req, ctx.res, { account: 'foo' });
+      }
+      await next();
+    });
+
+    await this.agent.post('/login');
+
+    const session = this.getSession();
+    expect(session).not.to.have.property('transient');
+  });
+
+  it('sets the session as transient when requested', async function () {
+    // simulates setting a fresh session (non existant) in another request
+    this.provider.use(async (ctx, next) => {
+      if (ctx.path === '/login') {
+        await this.provider.setProviderSession(ctx.req, ctx.res, { account: 'foo', remember: false });
+      }
+      await next();
+    });
+
+    await this.agent.post('/login');
+
+    const session = this.getSession();
+    expect(session).to.have.property('transient', true);
+  });
+
+  it("sets the session's loginTs", async function () {
+    // simulates setting a fresh session (non existant) in another request
+    const ts = 1523457660;
+    this.provider.use(async (ctx, next) => {
+      if (ctx.path === '/login') {
+        await this.provider.setProviderSession(ctx.req, ctx.res, { account: 'foo', ts });
+      }
+      await next();
+    });
+
+    await this.agent.post('/login');
+    const session = this.getSession();
+    expect(session).to.have.property('loginTs', ts);
   });
 });
