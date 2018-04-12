@@ -13,6 +13,7 @@ const Koa = require('koa');
 const querystring = require('querystring');
 const mount = require('koa-mount');
 const epochTime = require('../lib/helpers/epoch_time');
+const KeyGrip = require('keygrip'); // eslint-disable-line import/no-extraneous-dependencies
 global.instance = require('../lib/helpers/weak_cache');
 
 global.i = instance;
@@ -78,14 +79,24 @@ module.exports = function testHelper(dir, basename, mountTo) {
     const account = uuid();
     this.loggedInAccountId = account;
 
+    const keys = new KeyGrip(i(provider).configuration('cookies.keys'));
     const session = new (provider.Session)(sessionId, { loginTs, account });
-    const cookies = [`_session=${sessionId}; path=/; expires=${expire.toGMTString()}; httponly`];
+    const sessionCookie = `_session=${sessionId}; path=/; expires=${expire.toGMTString()}; httponly`;
+    const cookies = [
+      sessionCookie,
+    ];
+
+    let [pre, ...post] = sessionCookie.split(';');
+    cookies.push([`_session.sig=${keys.sign(pre)}`, ...post].join(';'));
 
     session.authorizations = {};
     clients.forEach((cl) => {
       session.authorizations[cl.client_id] = { sid: uuid() };
       if (i(provider).configuration('features.sessionManagement')) {
-        cookies.push(`_state.${cl.client_id}=${loginTs}; path=/; expires=${expire.toGMTString()};`);
+        const cookie = `_state.${cl.client_id}=${loginTs}; path=/; expires=${expire.toGMTString()}`;
+        cookies.push(cookie);
+        [pre, ...post] = cookie.split(';');
+        cookies.push([`_state.${cl.client_id}.sig=${keys.sign(pre)}`, ...post].join(';'));
       }
     });
 
@@ -128,8 +139,8 @@ module.exports = function testHelper(dir, basename, mountTo) {
           expect(query).to.be.null;
           expect(response).to.have.nested.property('headers.set-cookie').that.is.an('array');
 
-          const grantid = readCookie(response.headers['set-cookie'][1]);
-          expect(readCookie(response.headers['set-cookie'][1])).to.equal(readCookie(response.headers['set-cookie'][2]));
+          const grantid = readCookie(response.headers['set-cookie'][2]);
+          expect(readCookie(response.headers['set-cookie'][2])).to.equal(readCookie(response.headers['set-cookie'][4]));
 
           const interaction = TestAdapter.for('Session').syncFind(grantid);
 
@@ -143,7 +154,7 @@ module.exports = function testHelper(dir, basename, mountTo) {
 
   AuthorizationRequest.prototype.validateInteractionError = (expectedError, expectedReason) => { // eslint-disable-line arrow-body-style, max-len
     return (response) => {
-      const grantid = readCookie(response.headers['set-cookie'][1]);
+      const grantid = readCookie(response.headers['set-cookie'][2]);
       const { interaction: { error, reason } } = TestAdapter.for('Session').syncFind(grantid);
       expect(error).to.equal(expectedError);
       expect(reason).to.equal(expectedReason);
@@ -196,12 +207,12 @@ module.exports = function testHelper(dir, basename, mountTo) {
     };
   };
 
-  function getSession(opts = { instantiate: false }) {
+  function getSession({ instantiate } = { instantiate: false }) {
     const { value: sessionId } = agent.jar.getCookie('_session', { path: '/' });
     const key = TestAdapter.for('Session').key(sessionId);
     const raw = TestAdapter.for('Session').get(key);
 
-    if (opts.instantiate) {
+    if (instantiate) {
       return raw ? new provider.Session(sessionId, raw) : raw;
     }
 
@@ -236,6 +247,28 @@ module.exports = function testHelper(dir, basename, mountTo) {
     global.server.removeAllListeners('request');
   });
 
+  function assertOnce(fn, done, finished) {
+    let final;
+    let finish;
+    return async (ctx, next) => {
+      await next();
+      if (typeof finished === 'function') {
+        finish = finished(ctx);
+      } else if (!finish) {
+        finish = true;
+      }
+      if (!final && finish) {
+        final = true;
+        try {
+          await fn(ctx);
+          done();
+        } catch (err) {
+          done(err);
+        }
+      }
+    };
+  }
+
   return function () {
     Object.assign(this, {
       login,
@@ -243,6 +276,7 @@ module.exports = function testHelper(dir, basename, mountTo) {
       AuthorizationRequest,
       provider,
       responses,
+      assertOnce,
       getSessionId,
       getSession,
       wrap,

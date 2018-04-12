@@ -20,272 +20,246 @@ describe('introspection features', () => {
   });
 
   describe('/token/introspection', () => {
-    it('returns the properties for access token [no hint]', function (done) {
+    it('returns the properties for access token [no hint]', async function () {
       const at = new this.provider.AccessToken({
         accountId: 'accountId',
         clientId: 'client',
         scope: 'scope',
       });
 
-      at.save().then((token) => {
-        this.agent.post(route)
-          .auth('client', 'secret')
-          .send({
-            token,
-          })
-          .type('form')
-          .expect(200)
-          .expect((response) => {
-            expect(response.body).to.contain.keys('client_id', 'scope', 'sub');
-            expect(response.body.sub).to.equal('accountId');
-          })
-          .end(done);
-      });
+      const token = await at.save();
+      return this.agent.post(route)
+        .auth('client', 'secret')
+        .send({
+          token,
+        })
+        .type('form')
+        .expect(200)
+        .expect((response) => {
+          expect(response.body).to.contain.keys('client_id', 'scope', 'sub');
+          expect(response.body.sub).to.equal('accountId');
+        });
     });
 
-    it('returns the properties for access token [correct hint]', function (done) {
+    it('returns the properties for access token [correct hint]', async function () {
       const at = new this.provider.AccessToken({
         accountId: 'accountId',
         clientId: 'client',
         scope: 'scope',
       });
 
-      at.save().then((token) => {
-        this.agent.post(route)
-          .auth('client', 'secret')
-          .send({
-            token,
-            token_type_hint: 'access_token',
-          })
-          .type('form')
-          .expect(200)
-          .expect((response) => {
-            expect(response.body).to.contain.keys('client_id', 'scope', 'sub');
-            expect(response.body.sub).to.equal('accountId');
-          })
-          .end(done);
-      });
+      const token = await at.save();
+      return this.agent.post(route)
+        .auth('client', 'secret')
+        .send({
+          token,
+          token_type_hint: 'access_token',
+        })
+        .type('form')
+        .expect(200)
+        .expect((response) => {
+          expect(response.body).to.contain.keys('client_id', 'scope', 'sub');
+          expect(response.body.sub).to.equal('accountId');
+        });
     });
 
-    it('returns the properties for access token [wrong hint]', function (done) {
+    it('returns the properties for access token [wrong hint]', async function () {
       const at = new this.provider.AccessToken({
         accountId: 'accountId',
         clientId: 'client',
         scope: 'scope',
       });
 
-      at.save().then((token) => {
-        this.agent.post(route)
-          .auth('client', 'secret')
-          .send({
-            token,
-            token_type_hint: 'refresh_token',
-          })
-          .type('form')
-          .expect(200)
-          .expect((response) => {
-            expect(response.body).to.contain.keys('client_id', 'scope', 'sub');
-            expect(response.body.sub).to.equal('accountId');
-          })
-          .end(done);
-      });
+      const token = await at.save();
+      return this.agent.post(route)
+        .auth('client', 'secret')
+        .send({
+          token,
+          token_type_hint: 'refresh_token',
+        })
+        .type('form')
+        .expect(200)
+        .expect((response) => {
+          expect(response.body).to.contain.keys('client_id', 'scope', 'sub');
+          expect(response.body.sub).to.equal('accountId');
+        });
     });
 
-    it('returns the properties for access token [unrecognized hint]', function (done) {
+    it('returns the properties for access token [unrecognized hint]', async function () {
       const at = new this.provider.AccessToken({
         accountId: 'accountId',
         clientId: 'client',
         scope: 'scope',
       });
 
-      at.save().then((token) => {
-        this.agent.post(route)
-          .auth('client', 'secret')
-          .send({
-            token,
-            token_type_hint: 'foobar',
-          })
-          .type('form')
-          .expect(200)
-          .expect((response) => {
-            expect(response.body).to.contain.keys('client_id', 'scope', 'sub');
-            expect(response.body.sub).to.equal('accountId');
-          })
-          .end(done);
-      });
+      const token = await at.save();
+      return this.agent.post(route)
+        .auth('client', 'secret')
+        .send({
+          token,
+          token_type_hint: 'foobar',
+        })
+        .type('form')
+        .expect(200)
+        .expect((response) => {
+          expect(response.body).to.contain.keys('client_id', 'scope', 'sub');
+          expect(response.body.sub).to.equal('accountId');
+        });
     });
 
-    it('returns the properties for refresh token [no hint]', function (done) {
+    it('returns the properties for refresh token [no hint]', async function () {
       const rt = new this.provider.RefreshToken({
         accountId: 'accountId',
         clientId: 'client',
         scope: 'scope',
       });
 
-      rt.save().then((token) => {
-        this.agent.post(route)
-          .auth('client', 'secret')
-          .send({ token })
-          .type('form')
-          .expect(200)
-          .expect((response) => {
-            expect(response.body).to.contain.keys('client_id', 'scope', 'sub');
-          })
-          .end(done);
-      });
+      const token = await rt.save();
+      return this.agent.post(route)
+        .auth('client', 'secret')
+        .send({ token })
+        .type('form')
+        .expect(200)
+        .expect((response) => {
+          expect(response.body).to.contain.keys('client_id', 'scope', 'sub');
+        });
     });
 
-    it('returns the properties for refresh token [correct hint]', function (done) {
+    it('returns the properties for refresh token [correct hint]', async function () {
       const rt = new this.provider.RefreshToken({
         accountId: 'accountId',
         clientId: 'client',
         scope: 'scope',
       });
 
-      rt.save().then((token) => {
-        this.agent.post(route)
-          .auth('client', 'secret')
-          .send({ token, token_type_hint: 'refresh_token' })
-          .type('form')
-          .expect(200)
-          .expect((response) => {
-            expect(response.body).to.contain.keys('client_id', 'scope', 'sub');
-          })
-          .end(done);
-      });
+      const token = await rt.save();
+      return this.agent.post(route)
+        .auth('client', 'secret')
+        .send({ token, token_type_hint: 'refresh_token' })
+        .type('form')
+        .expect(200)
+        .expect((response) => {
+          expect(response.body).to.contain.keys('client_id', 'scope', 'sub');
+        });
     });
 
-    it('returns the properties for refresh token [wrong hint]', function (done) {
+    it('returns the properties for refresh token [wrong hint]', async function () {
       const rt = new this.provider.RefreshToken({
         accountId: 'accountId',
         clientId: 'client',
         scope: 'scope',
       });
 
-      rt.save().then((token) => {
-        this.agent.post(route)
-          .auth('client', 'secret')
-          .send({ token, token_type_hint: 'client_credentials' })
-          .type('form')
-          .expect(200)
-          .expect((response) => {
-            expect(response.body).to.contain.keys('client_id', 'scope', 'sub');
-          })
-          .end(done);
-      });
+      const token = await rt.save();
+      return this.agent.post(route)
+        .auth('client', 'secret')
+        .send({ token, token_type_hint: 'client_credentials' })
+        .type('form')
+        .expect(200)
+        .expect((response) => {
+          expect(response.body).to.contain.keys('client_id', 'scope', 'sub');
+        });
     });
 
-    it('returns the properties for refresh token [unrecognized hint]', function (done) {
+    it('returns the properties for refresh token [unrecognized hint]', async function () {
       const rt = new this.provider.RefreshToken({
         accountId: 'accountId',
         clientId: 'client',
         scope: 'scope',
       });
 
-      rt.save().then((token) => {
-        this.agent.post(route)
-          .auth('client', 'secret')
-          .send({ token, token_type_hint: 'foobar' })
-          .type('form')
-          .expect(200)
-          .expect((response) => {
-            expect(response.body).to.contain.keys('client_id', 'scope', 'sub');
-          })
-          .end(done);
-      });
+      const token = await rt.save();
+      return this.agent.post(route)
+        .auth('client', 'secret')
+        .send({ token, token_type_hint: 'foobar' })
+        .type('form')
+        .expect(200)
+        .expect((response) => {
+          expect(response.body).to.contain.keys('client_id', 'scope', 'sub');
+        });
     });
 
-    it('returns the properties for client credentials token [no hint]', function (done) {
+    it('returns the properties for client credentials token [no hint]', async function () {
       const rt = new this.provider.ClientCredentials({
         clientId: 'client',
       });
 
-      rt.save().then((token) => {
-        this.agent.post(route)
-          .auth('client', 'secret')
-          .send({ token })
-          .type('form')
-          .expect(200)
-          .expect((response) => {
-            expect(response.body).to.contain.keys('client_id');
-          })
-          .end(done);
-      });
+      const token = await rt.save();
+      return this.agent.post(route)
+        .auth('client', 'secret')
+        .send({ token })
+        .type('form')
+        .expect(200)
+        .expect((response) => {
+          expect(response.body).to.contain.keys('client_id');
+        });
     });
 
-    it('returns the properties for client credentials token [correct hint]', function (done) {
+    it('returns the properties for client credentials token [correct hint]', async function () {
       const rt = new this.provider.ClientCredentials({
         clientId: 'client',
       });
 
-      rt.save().then((token) => {
-        this.agent.post(route)
-          .auth('client', 'secret')
-          .send({ token, token_type_hint: 'client_credentials' })
-          .type('form')
-          .expect(200)
-          .expect((response) => {
-            expect(response.body).to.contain.keys('client_id');
-          })
-          .end(done);
-      });
+      const token = await rt.save();
+      return this.agent.post(route)
+        .auth('client', 'secret')
+        .send({ token, token_type_hint: 'client_credentials' })
+        .type('form')
+        .expect(200)
+        .expect((response) => {
+          expect(response.body).to.contain.keys('client_id');
+        });
     });
 
-    it('returns the properties for client credentials token [wrong hint]', function (done) {
+    it('returns the properties for client credentials token [wrong hint]', async function () {
       const rt = new this.provider.ClientCredentials({
         clientId: 'client',
       });
 
-      rt.save().then((token) => {
-        this.agent.post(route)
-          .auth('client', 'secret')
-          .send({ token, token_type_hint: 'access_token' })
-          .type('form')
-          .expect(200)
-          .expect((response) => {
-            expect(response.body).to.contain.keys('client_id');
-          })
-          .end(done);
-      });
+      const token = await rt.save();
+      return this.agent.post(route)
+        .auth('client', 'secret')
+        .send({ token, token_type_hint: 'access_token' })
+        .type('form')
+        .expect(200)
+        .expect((response) => {
+          expect(response.body).to.contain.keys('client_id');
+        });
     });
 
-    it('returns the properties for client credentials token [unrecognized hint]', function (done) {
+    it('returns the properties for client credentials token [unrecognized hint]', async function () {
       const rt = new this.provider.ClientCredentials({
         clientId: 'client',
       });
 
-      rt.save().then((token) => {
-        this.agent.post(route)
-          .auth('client', 'secret')
-          .send({ token, token_type_hint: 'foobar' })
-          .type('form')
-          .expect(200)
-          .expect((response) => {
-            expect(response.body).to.contain.keys('client_id');
-          })
-          .end(done);
-      });
+      const token = await rt.save();
+      return this.agent.post(route)
+        .auth('client', 'secret')
+        .send({ token, token_type_hint: 'foobar' })
+        .type('form')
+        .expect(200)
+        .expect((response) => {
+          expect(response.body).to.contain.keys('client_id');
+        });
     });
 
-    it('can be called by RS clients and uses the original subject_type', function (done) {
+    it('can be called by RS clients and uses the original subject_type', async function () {
       const rt = new this.provider.RefreshToken({
         accountId: 'accountId',
         clientId: 'client-pairwise',
         scope: 'scope',
       });
 
-      rt.save().then((token) => {
-        this.agent.post(route)
-          .auth('client-introspection', 'secret')
-          .send({ token })
-          .type('form')
-          .expect(200)
-          .expect((response) => {
-            expect(response.body).to.contain.keys('client_id', 'scope', 'sub');
-            expect(response.body.sub).not.to.equal('accountId');
-          })
-          .end(done);
-      });
+      const token = await rt.save();
+      return this.agent.post(route)
+        .auth('client-introspection', 'secret')
+        .send({ token })
+        .type('form')
+        .expect(200)
+        .expect((response) => {
+          expect(response.body).to.contain.keys('client_id', 'scope', 'sub');
+          expect(response.body.sub).not.to.equal('accountId');
+        });
     });
 
     it('returns token-endpoint-like cache headers', function () {
@@ -323,27 +297,25 @@ describe('introspection features', () => {
         });
     });
 
-    it('responds with active=false when client auth = none and token does not belong to it', function (done) {
+    it('responds with active=false when client auth = none and token does not belong to it', async function () {
       const at = new this.provider.AccessToken({
         accountId: 'accountId',
         clientId: 'client',
         scope: 'scope',
       });
 
-      at.save().then((token) => {
-        this.agent.post(route)
-          .send({
-            token,
-            client_id: 'client-none',
-          })
-          .type('form')
-          .expect(200)
-          .expect((response) => {
-            expect(response.body).to.have.property('active', false);
-            expect(response.body).to.have.keys('active');
-          })
-          .end(done);
-      });
+      const token = await at.save();
+      return this.agent.post(route)
+        .send({
+          token,
+          client_id: 'client-none',
+        })
+        .type('form')
+        .expect(200)
+        .expect((response) => {
+          expect(response.body).to.have.property('active', false);
+          expect(response.body).to.have.keys('active');
+        });
     });
 
     it('emits on (i.e. auth) error', function () {
@@ -417,6 +389,68 @@ describe('introspection features', () => {
           expect(response.body).to.have.property('active', false);
           expect(response.body).to.have.keys('active');
         });
+    });
+
+    describe('populates ctx.oidc.entities', () => {
+      it('when introspecting an AccessToken', function (done) {
+        this.provider.use(this.assertOnce((ctx) => {
+          expect(ctx.oidc.entities).to.have.keys('Client', 'AccessToken');
+        }, done));
+
+        (async () => {
+          const at = new this.provider.AccessToken({
+            accountId: 'accountId',
+            clientId: 'client',
+            scope: 'scope',
+          });
+
+          const token = await at.save();
+          await this.agent.post(route)
+            .auth('client', 'secret')
+            .send({
+              token,
+            })
+            .type('form');
+        })().catch(done);
+      });
+
+      it('when introspecting a RefreshToken', function (done) {
+        this.provider.use(this.assertOnce((ctx) => {
+          expect(ctx.oidc.entities).to.have.keys('Client', 'RefreshToken');
+        }, done));
+
+        (async () => {
+          const rt = new this.provider.RefreshToken({
+            accountId: 'accountId',
+            clientId: 'client',
+            scope: 'scope',
+          });
+
+          const token = await rt.save();
+          await this.agent.post(route)
+            .auth('client', 'secret')
+            .send({ token })
+            .type('form');
+        })().catch(done);
+      });
+
+      it('when introspecting ClientCredentials', function (done) {
+        this.provider.use(this.assertOnce((ctx) => {
+          expect(ctx.oidc.entities).to.have.keys('Client', 'ClientCredentials');
+        }, done));
+
+        (async () => {
+          const rt = new this.provider.ClientCredentials({
+            clientId: 'client',
+          });
+
+          const token = await rt.save();
+          await this.agent.post(route)
+            .auth('client', 'secret')
+            .send({ token })
+            .type('form');
+        })().catch(done);
+      });
     });
   });
 });

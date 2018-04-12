@@ -8,6 +8,8 @@ const { expect } = require('chai');
 const j = JSON.stringify;
 const route = '/auth';
 const expire = new Date();
+const KeyGrip = require('keygrip'); // eslint-disable-line import/no-extraneous-dependencies
+
 expire.setDate(expire.getDate() + 1);
 
 ['get', 'post'].forEach((verb) => {
@@ -175,9 +177,12 @@ expire.setDate(expire.getDate() + 1);
           const cookies = [];
 
           const sess = new this.provider.Session('resume', {});
-
+          const keys = new KeyGrip(i(this.provider).configuration('cookies.keys'));
           if (grant) {
-            cookies.push(`_grant=resume; path=/auth/resume; expires=${expire.toGMTString()}; httponly`);
+            const cookie = `_grant=resume; path=/auth/resume; expires=${expire.toGMTString()}; httponly`;
+            cookies.push(cookie);
+            const [pre, ...post] = cookie.split(';');
+            cookies.push([`_grant.sig=${keys.sign(pre)}`, ...post].join(';'));
             Object.assign(sess, { params: grant });
           }
 

@@ -21,6 +21,25 @@ describe('userinfo /me', () => {
       });
   });
 
+  it('returns 200 OK and user claims', function () {
+    return this.agent.get('/me')
+      .set('Authorization', `Bearer ${this.access_token}`)
+      .expect(200)
+      .expect((response) => {
+        expect(response.body).to.have.keys(['sub', 'email', 'email_verified']);
+      });
+  });
+
+  it('populates ctx.oidc.entities', function (done) {
+    this.provider.use(this.assertOnce((ctx) => {
+      expect(ctx.oidc.entities).to.have.keys('Client', 'AccessToken', 'Account');
+    }, done));
+
+    (async () => {
+      await this.agent.get('/me').set('Authorization', `Bearer ${this.access_token}`);
+    })().catch(done);
+  });
+
   it('validates access token is found', function () {
     return this.agent.get('/me')
       .set('Authorization', 'Bearer Loremipsumdolorsitametconsecteturadipisicingelitsed')

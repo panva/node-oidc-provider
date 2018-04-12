@@ -1,6 +1,9 @@
 const bootstrap = require('../../test_helper');
+const { expect } = require('chai');
 
 const route = '/auth';
+const response_type = 'none';
+const scope = 'openid';
 
 ['get', 'post'].forEach((verb) => {
   describe(`${verb} ${route} response_type=none`, () => {
@@ -11,8 +14,8 @@ const route = '/auth';
 
     it('responds with a state in search', function () {
       const auth = new this.AuthorizationRequest({
-        response_type: 'none',
-        scope: 'openid',
+        response_type,
+        scope,
       });
 
       return this.wrap({ route, verb, auth })
@@ -24,9 +27,9 @@ const route = '/auth';
 
     it('responds with a state in fragment', function () {
       const auth = new this.AuthorizationRequest({
-        response_type: 'none',
+        response_type,
         response_mode: 'fragment',
-        scope: 'openid',
+        scope,
       });
 
       return this.wrap({ route, verb, auth })
@@ -35,6 +38,19 @@ const route = '/auth';
         .expect(auth.validatePresence(['state']))
         .expect(auth.validateState)
         .expect(auth.validateClientLocation);
+    });
+
+    it('populates ctx.oidc.entities', function (done) {
+      this.provider.use(this.assertOnce((ctx) => {
+        expect(ctx.oidc.entities).to.have.keys('Client', 'Account');
+      }, done));
+
+      const auth = new this.AuthorizationRequest({
+        response_type,
+        scope,
+      });
+
+      this.wrap({ route, verb, auth }).end(() => {});
     });
   });
 });

@@ -3,6 +3,8 @@ const sinon = require('sinon');
 const { expect } = require('chai');
 
 const route = '/auth';
+const response_type = 'code token';
+const scope = 'openid';
 
 describe('HYBRID code+token', () => {
   before(bootstrap(__dirname)); // provider, agent, AuthorizationRequest, wrap
@@ -13,8 +15,8 @@ describe('HYBRID code+token', () => {
 
       it('responds with a access_token and code in fragment', function () {
         const auth = new this.AuthorizationRequest({
-          response_type: 'code token',
-          scope: 'openid',
+          response_type,
+          scope,
         });
 
         return this.wrap({ route, verb, auth })
@@ -25,12 +27,25 @@ describe('HYBRID code+token', () => {
           .expect(auth.validateClientLocation);
       });
 
+      it('populates ctx.oidc.entities', function (done) {
+        this.provider.use(this.assertOnce((ctx) => {
+          expect(ctx.oidc.entities).to.have.keys('Client', 'Account', 'AuthorizationCode', 'AccessToken');
+        }, done));
+
+        const auth = new this.AuthorizationRequest({
+          response_type,
+          scope,
+        });
+
+        this.wrap({ route, verb, auth }).end(() => {});
+      });
+
       it('ignores the scope offline_access unless prompt consent is present', function () {
         const spy = sinon.spy();
         this.provider.once('token.issued', spy);
 
         const auth = new this.AuthorizationRequest({
-          response_type: 'code token',
+          response_type,
           scope: 'openid offline_access',
         });
 
@@ -49,8 +64,8 @@ describe('HYBRID code+token', () => {
         const spy = sinon.spy();
         this.provider.once('authorization.error', spy);
         const auth = new this.AuthorizationRequest({
-          response_type: 'code token',
-          scope: 'openid',
+          response_type,
+          scope,
           response_mode: 'query',
         });
 

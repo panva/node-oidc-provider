@@ -5,6 +5,8 @@ const base64url = require('base64url');
 const { expect } = require('chai');
 
 const route = '/auth';
+const response_type = 'id_token token';
+const scope = 'openid';
 
 describe('IMPLICIT id_token+token', () => {
   before(bootstrap(__dirname)); // provider, agent, AuthorizationRequest, wrap
@@ -15,8 +17,8 @@ describe('IMPLICIT id_token+token', () => {
 
       it('responds with a id_token in fragment', function () {
         const auth = new this.AuthorizationRequest({
-          response_type: 'id_token token',
-          scope: 'openid',
+          response_type,
+          scope,
         });
 
         return this.wrap({ route, verb, auth })
@@ -27,9 +29,22 @@ describe('IMPLICIT id_token+token', () => {
           .expect(auth.validateClientLocation);
       });
 
+      it('populates ctx.oidc.entities', function (done) {
+        this.provider.use(this.assertOnce((ctx) => {
+          expect(ctx.oidc.entities).to.have.keys('Client', 'Account', 'AccessToken');
+        }, done));
+
+        const auth = new this.AuthorizationRequest({
+          response_type,
+          scope,
+        });
+
+        this.wrap({ route, verb, auth }).end(() => {});
+      });
+
       it('ignores offline_access scope for non code-including response_types', function () {
         const auth = new this.AuthorizationRequest({
-          response_type: 'id_token token',
+          response_type,
           scope: 'openid offline_access',
         });
 
@@ -55,8 +70,8 @@ describe('IMPLICIT id_token+token', () => {
         const spy = sinon.spy();
         this.provider.once('authorization.error', spy);
         const auth = new this.AuthorizationRequest({
-          response_type: 'code token',
-          scope: 'openid',
+          response_type,
+          scope,
           response_mode: 'query',
         });
 
@@ -76,8 +91,8 @@ describe('IMPLICIT id_token+token', () => {
         const spy = sinon.spy();
         this.provider.once('authorization.error', spy);
         const auth = new this.AuthorizationRequest({
-          response_type: 'id_token token',
-          scope: 'openid',
+          response_type,
+          scope,
         });
         delete auth.nonce;
 

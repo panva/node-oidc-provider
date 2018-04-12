@@ -79,6 +79,22 @@ describe('grant_type=refresh_token', () => {
         });
     });
 
+    it('populates ctx.oidc.entities', function (done) {
+      this.provider.use(this.assertOnce((ctx) => {
+        expect(ctx.oidc.entities).to.have.keys('Account', 'Client', 'AccessToken', 'RotatedRefreshToken', 'RefreshToken');
+        expect(ctx.oidc.entities.RotatedRefreshToken).not.to.eql(ctx.oidc.entities.RefreshToken);
+      }, done));
+
+      this.agent.post(route)
+        .auth('client', 'secret')
+        .send({
+          refresh_token: this.rt,
+          grant_type: 'refresh_token',
+        })
+        .type('form')
+        .end(() => {});
+    });
+
 
     describe('validates', () => {
       context('', () => {

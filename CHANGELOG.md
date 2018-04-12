@@ -5,6 +5,7 @@ Yay for [SemVer](http://semver.org/).
 **Table of Contents**
 
 <!-- TOC START min:2 max:2 link:true update:true -->
+  - [2.18.0](#2180)
   - [2.17.0](#2170)
   - [2.16.0](#2160)
   - [2.15.0](#2150)
@@ -26,6 +27,13 @@ Yay for [SemVer](http://semver.org/).
   - [^1.0.0](#100)
 
 <!-- TOC END -->
+## 2.18.0
+- [DIFF](https://github.com/panva/node-oidc-provider/compare/v2.17.0...v2.18.0)
+- added `ctx.oidc.entities` with all loaded model/entity instances during a given request
+- added `cookies.keys` configuration option for KeyGrip key app passthrough
+- added `#provider.setProviderSession` for setting provider session from outside of a regular context
+- deprecated `#provider.setSessionAccountId` in favor of `#provider.setProviderSession`
+
 ## 2.17.0
 - [DIFF](https://github.com/panva/node-oidc-provider/compare/v2.16.0...v2.17.0)
 - fixed alternative verb routes to be named as well

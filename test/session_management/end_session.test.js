@@ -60,6 +60,21 @@ describe('[session_management]', () => {
           });
       });
 
+      it('populates ctx.oidc.entities', function (done) {
+        this.provider.use(this.assertOnce((ctx) => {
+          expect(ctx.oidc.entities).to.have.keys('Client');
+        }, done));
+
+        const params = {
+          id_token_hint: this.idToken,
+          post_logout_redirect_uri: 'https://client.example.com/logout/cb',
+        };
+
+        this.agent.get(route)
+          .query(params)
+          .end(() => {});
+      });
+
       it('also forwards the state if provided', function () {
         const params = {
           id_token_hint: this.idToken,
@@ -175,6 +190,19 @@ describe('[session_management]', () => {
         .expect(400)
         .expect(/"error":"invalid_request"/)
         .expect(/"error_description":"xsrf token invalid"/);
+    });
+
+    it('populates ctx.oidc.entities', function (done) {
+      this.provider.use(this.assertOnce((ctx) => {
+        expect(ctx.oidc.entities).to.have.keys('Client');
+      }, done));
+
+      this.getSession().logout = { secret: '123', postLogoutRedirectUri: '/', clientId: 'client' };
+
+      this.agent.post('/session/end')
+        .send({ xsrf: '123', logout: 'yes' })
+        .type('form')
+        .end(() => {});
     });
 
     it('destroys complete session if user wants to', function () {
