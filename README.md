@@ -139,8 +139,8 @@ See the list of available emitted [event names](/docs/events.md) and their descr
 [conformance-url]: https://github.com/panva/oidc-provider-conformance-tests
 [codecov-image]: https://img.shields.io/codecov/c/github/panva/node-oidc-provider/master.svg?style=flat-square&maxAge=7200
 [codecov-url]: https://codecov.io/gh/panva/node-oidc-provider
-[snyk-image]: https://snyk.io/test/github/panva/node-oidc-provider/badge.svg?style=flat-square
-[snyk-url]: https://snyk.io/test/github/panva/node-oidc-provider
+[snyk-image]: https://snyk.io/test/npm/oidc-provider/badge.svg?style=flat-square
+[snyk-url]: https://snyk.io/test/npm/oidc-provider
 [npm-url]: https://www.npmjs.com/package/oidc-provider
 [openid-certified-link]: https://openid.net/certification/
 [openid-connect]: https://openid.net/connect/
