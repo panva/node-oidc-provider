@@ -1,6 +1,6 @@
 # oidc-provider
 
-[![build][travis-image]][travis-url] [![codecov][codecov-image]][codecov-url]
+[![build][travis-image]][travis-url] [![codecov][codecov-image]][codecov-url] [![snyk][snyk-image]][snyk-url]
 
 oidc-provider is an OpenID Provider implementation of [OpenID Connect][openid-connect]. It allows to
 export a complete mountable or standalone OpenID Provider implementation. This implementation does
@@ -139,6 +139,8 @@ See the list of available emitted [event names](/docs/events.md) and their descr
 [conformance-url]: https://github.com/panva/oidc-provider-conformance-tests
 [codecov-image]: https://img.shields.io/codecov/c/github/panva/node-oidc-provider/master.svg?style=flat-square&maxAge=7200
 [codecov-url]: https://codecov.io/gh/panva/node-oidc-provider
+[snyk-image]: https://snyk.io/test/github/panva/node-oidc-provider/badge.svg?style=flat-square
+[snyk-url]: https://snyk.io/test/github/panva/node-oidc-provider
 [npm-url]: https://www.npmjs.com/package/oidc-provider
 [openid-certified-link]: https://openid.net/certification/
 [openid-connect]: https://openid.net/connect/
