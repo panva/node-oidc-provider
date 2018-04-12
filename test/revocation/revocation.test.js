@@ -115,7 +115,7 @@ describe('revocation features', () => {
         scope: 'scope',
       });
 
-      sinon.stub(this.provider.AccessToken, 'find').returns(Promise.reject(new Error('Error')));
+      sinon.stub(this.provider.AccessToken, 'find').callsFake(async () => { throw new Error(); });
 
       const token = await at.save();
       return this.agent.post(route)

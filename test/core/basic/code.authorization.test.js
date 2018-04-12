@@ -590,7 +590,7 @@ describe('BASIC code', () => {
 
       context('exception handling', () => {
         before(function () {
-          sinon.stub(this.provider.Client, 'find').returns(Promise.reject(new Error()));
+          sinon.stub(this.provider.Client, 'find').callsFake(async () => { throw new Error(); });
         });
 
         after(function () {

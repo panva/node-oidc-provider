@@ -18,15 +18,17 @@ server.once('listening', () => {
   ])
     .then(() => {
       console.info = NOOP;
-      process.on('unhandledRejection', NOOP);
-      process.on('rejectionHandled', NOOP);
+      console.warn = NOOP;
 
       mocha.files = lookupFiles('test/**/*.test.js', ['js'], true);
 
-      mocha.run(process.exit);
+      mocha.run(() => {
+        server.close();
+      });
     })
     .catch((error) => {
       console.error(error);
-      process.exit(1);
+      server.close();
+      process.exitCode = 1;
     });
 });

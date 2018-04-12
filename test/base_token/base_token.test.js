@@ -9,8 +9,8 @@ describe('BaseToken', () => {
   before(bootstrap(__dirname)); // provider
 
   afterEach(function () {
-    this.adapter.find.reset();
-    this.adapter.upsert.reset();
+    this.adapter.find.resetHistory();
+    this.adapter.upsert.resetHistory();
   });
 
   before(function () {

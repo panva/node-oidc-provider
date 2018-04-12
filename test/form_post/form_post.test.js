@@ -52,7 +52,7 @@ describe('/auth', () => {
 
         context('[exception]', () => {
           before(function () {
-            sinon.stub(this.provider.Client, 'find').returns(Promise.reject(new Error()));
+            sinon.stub(this.provider.Client, 'find').callsFake(async () => { throw new Error(); });
           });
 
           after(function () {
