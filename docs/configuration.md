@@ -77,9 +77,10 @@ in this [document](#configuration-options).
 
 
 ## Accounts
+
 oidc-provider needs to be able to find an account and once found the account needs to have an
 `accountId` property as well as `claims()` function returning an object with claims that correspond
-to the claims your issuer supports. Tell oidc-provider how to find your account by an ID.  
+to the claims your issuer supports. Tell oidc-provider how to find your account by an ID.
 `#claims()` can also return a Promise later resolved / rejected.
 
 ```js
@@ -87,7 +88,7 @@ const oidc = new Provider('http://localhost:3000', {
   async findById(ctx, id) {
     return {
       accountId: id,
-      async claims() { return { sub: id }; },
+      async claims(use, scope) { return { sub: id }; },
     };
   }
 });
