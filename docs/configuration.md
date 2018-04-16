@@ -1173,7 +1173,7 @@ async logoutSource(ctx, form) {
 <body>
 <script>
   function logout() {
-    var form = document.forms[0];
+    var form = document.getElementById('op.logoutForm');
     var input = document.createElement('input');
     input.type = 'hidden';
     input.name = 'logout';
@@ -1185,7 +1185,7 @@ async logoutSource(ctx, form) {
 ${form}
 Do you want to logout from OP too?
 <button onclick="logout()">Yes</button>
-<button onclick="document.forms[0].submit()">Please, don't!</button>
+<button onclick="document.getElementById('op.logoutForm').submit()">Please, don't!</button>
 </body>
 </html>`;
 }
