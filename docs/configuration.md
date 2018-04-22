@@ -854,9 +854,14 @@ affects: id token audiences, signed userinfo audiences
 
 default value:
 ```js
-async audiences(ctx, id, token) {
-  // token is a reference to the token used for which a given account is being loaded,
-  // is undefined in scenarios where claims are returned from authorization endpoint
+async audiences(ctx, sub, token, use, scope) {
+  // @param ctx   - koa request context
+  // @param sub   - account identifier (subject)
+  // @param token - a reference to the token used for which a given account is being loaded,
+  //   is undefined in scenarios where claims are returned from authorization endpoint
+  // @param use   - can either be "id_token" or "userinfo", depending on
+  //   where the specific audiences are intended to be put in
+  // @param scope - scope from either the request or related token
   return undefined;
 }
 ```
@@ -1044,19 +1049,21 @@ affects: authorization, authorization_code and refresh_token grants, id token cl
 
 default value:
 ```js
-async findById(ctx, id, token) {
-  // "token" is a reference to the token used for which a given account is being loaded,
+async findById(ctx, sub, token) {
+  // @param ctx   - koa request context
+  // @param sub   - account identifier (subject)
+  // @param token - is a reference to the token used for which a given account is being loaded,
   //   is undefined in scenarios where claims are returned from authorization endpoint
   return {
-    accountId: id,
-    // @param use - can either be "id_token" or "userinfo", depending on
-    //   where the specific claims are intended to be put in.
+    accountId: sub,
+    // @param use   - can either be "id_token" or "userinfo", depending on
+    //   where the specific claims are intended to be put in
     // @param scope - the intended scope, while oidc-provider will mask
     //   claims depending on the scope automatically you might want to skip
     //   loading some claims from external resources etc. based on this detail
-    //   or not return them in id tokens but only userinfo and so on.
+    //   or not return them in id tokens but only userinfo and so on
     async claims(use, scope) {
-      return { sub: id };
+      return { sub };
     },
   };
 }
