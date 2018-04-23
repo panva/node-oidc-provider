@@ -74,6 +74,19 @@ Yay for [SemVer](http://semver.org/).
     cases an `access_token`, this is useful for pushing additional audiences to an Access Token,
     these are now returned by token introspection and can be used when serializing an Access Token
     as a JWT
+  - the provider will no longer use the first value from `acrValues` to denote a "session" like acr.
+    In cases where acr is requested as a voluntary claim and no result is available this claim will
+    not be returned.
+    - to continue the support of the removed behaviour you can change the OIDCContext acr getter
+      ```js
+      const _ = require('lodash');
+      const sessionAcr = '...';
+      Object.defineProperty(provider.OIDCContext.prototype, 'acr', {
+        get() {
+          return _.get(this, 'result.login.acr', sessionAcr);
+        },
+      });
+      ```
 
 ## 3.0.x
 ### 3.0.3
