@@ -1,6 +1,7 @@
 /* eslint-disable no-underscore-dangle */
 
 const bootstrap = require('../test_helper');
+const { get } = require('lodash');
 const { parse: parseLocation } = require('url');
 const { decode: decodeJWT } = require('../../lib/helpers/jwt');
 const { expect } = require('chai');
@@ -66,7 +67,15 @@ expire.setDate(expire.getDate() + 1);
         delete client.defaultAcrValues;
       });
 
-      it('should include the acr claim now', function () {
+      it('(pre 3.x behavior backfill) should include the acr claim now', function () {
+        const descriptor = Object.getOwnPropertyDescriptor(this.provider.OIDCContext.prototype, 'acr');
+
+        Object.defineProperty(this.provider.OIDCContext.prototype, 'acr', {
+          get() {
+            return get(this, 'result.login.acr', 'session');
+          },
+        });
+
         const auth = new this.AuthorizationRequest({
           response_type: 'id_token token',
           scope: 'openid',
@@ -79,6 +88,11 @@ expire.setDate(expire.getDate() + 1);
             const { query: { id_token } } = parseLocation(response.headers.location, true);
             const { payload } = decodeJWT(id_token);
             expect(payload).to.contain.keys('acr');
+            Object.defineProperty(this.provider.OIDCContext.prototype, 'acr', descriptor);
+          })
+          .catch((err) => {
+            Object.defineProperty(this.provider.OIDCContext.prototype, 'acr', descriptor);
+            throw err;
           });
       });
     });
