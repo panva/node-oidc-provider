@@ -71,7 +71,11 @@ describe(route, () => {
     it('handles exceptions with json 500', function () {
       return this.agent.get(route)
         .expect('Content-Type', /application\/json/)
-        .expect(500, this.responses.serverErrorBody);
+        .expect(500)
+        .expect({
+          error: 'server_error',
+          error_description: 'oops something went wrong',
+        });
     });
 
     it('emits server_error on exceptions', function () {
