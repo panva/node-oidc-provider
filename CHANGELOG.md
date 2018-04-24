@@ -41,6 +41,33 @@ Yay for [SemVer](http://semver.org/).
   - null property values are no longer ignored
     - TODO: how to fix stored clients
 
+- **Client Authentication**
+  - Errors related to authentication details parsing and format are now `400 Bad Request` and
+    `invalid_request`. Errors related to actual authentication check are now `401 Unauthorized` and
+    `invalid_client` with no details in the description.
+    This means that errors related to client authentication will no longer leak details back to the
+    client, instead the provider may be configured to get these errors from e.g.
+    `provider.on('grant.error')` and provide the errors to clients out of bands.
+    ```js
+    function handleClientAuthErrors(err, { headers: { authorization }, oidc: { body, client } }) {
+      if (err.statusCode === 401 && err.message === 'invalid_client') {
+        // save error details out-of-bands for the client developers, `authorization`, `body`, `client`
+        // are just some details available, you can dig in ctx object for more.
+        console.log(err);
+      }
+    }
+    provider.on('grant.error', handleClientAuthErrors);
+    provider.on('introspection.error', handleClientAuthErrors);
+    provider.on('revocation.error', handleClientAuthErrors);
+    ```
+  - added `WWW-Authenticate` response header to token endpoints when 401 is returned and Authorization
+    scheme was used to authenticate and changed client authentication related errors to be `401 Unauthorized`
+  - fixed several issues with token client authentication related to `client_id` lookup, it is no longer
+    possible to:
+    - submit multiple authentication mechanisms
+    - send Authorization header to identify a `none` authentication method client
+    - send both Authorization header and client_secret or client_assertion in the body
+
 - **Other**
   - `client.backchannelLogout` no longer suppresses any errors, instead rejects the promise
   - token introspection endpoint no longer returns the wrong `token_type` claim - #189

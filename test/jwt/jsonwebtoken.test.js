@@ -11,12 +11,28 @@ describe('JSON Web Token (JWT) RFC7519 implementation', () => {
     .then(() => keystore.generate('RSA', 512))
     .then(() => keystore.generate('EC', 'P-256')));
 
-  it('signs and validates with none', () => JWT.sign({ data: true }, null, 'none')
+  it('signs and decodes with none', () => JWT.sign({ data: true }, null, 'none')
     .then(jwt => JWT.decode(jwt))
     .then((decoded) => {
       expect(decoded.header).not.to.have.property('kid');
       expect(decoded.header).to.have.property('alg', 'none');
       expect(decoded.payload).to.contain({ data: true });
+    }));
+
+  it('does not verify none', () => JWT.sign({ data: true }, null, 'none')
+    .then(jwt => JWT.verify(jwt))
+    .then((valid) => {
+      expect(valid).not.to.be.ok;
+    }, (err) => {
+      expect(err).to.be.ok;
+    }));
+
+  it('does not verify none with a key', () => JWT.sign({ data: true }, null, 'none')
+    .then(jwt => JWT.verify(jwt, keystore.get()))
+    .then((valid) => {
+      expect(valid).not.to.be.ok;
+    }, (err) => {
+      expect(err).to.be.ok;
     }));
 
   it('signs and validates with oct', () => {
