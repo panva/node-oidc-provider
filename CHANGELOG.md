@@ -39,7 +39,27 @@ Yay for [SemVer](http://semver.org/).
     - TODO: migration to avoid losing all sessions
 - **Client Metadata**
   - null property values are no longer ignored
-    - TODO: how to fix stored clients
+    - clients pushed through `#initialize()` must not submit properties with null values
+    - clients stored via an adapter must be updated in your storage not to have null or
+      null-deserialized values, alternatively you can update your adapter not to return these
+      properties back to the provider
+      ```js
+      const _ = require('lodash');
+      // your adapter implementation
+      class MyAdapter {
+        // ...
+        async find(id) {
+          // load entity properties and then drop the null properties if its a Client adapter instance
+          // this is implementation specific
+          const data = await DB.query(...);
+          if (this.name === 'Client') {
+            return _.omitBy(data, _.isNull);
+          }
+          return data;
+        }
+        // ...
+      }
+      ```
 
 - **Client Authentication**
   - Errors related to authentication details parsing and format are now `400 Bad Request` and
@@ -69,6 +89,8 @@ Yay for [SemVer](http://semver.org/).
     - send both Authorization header and client_secret or client_assertion in the body
 
 - **Other**
+  - `features.pkce` now only enables `S256` by default, this is sufficient for most deployments. If
+    `plain` is needed enable pkce with `{ features: { pkce: { supportedMethods: ['plain', 'S256'] } }`.
   - `client.backchannelLogout` no longer suppresses any errors, instead rejects the promise
   - token introspection endpoint no longer returns the wrong `token_type` claim - #189
     - to continue the support of this non-standardized claim from introspection you may register the following middleware
