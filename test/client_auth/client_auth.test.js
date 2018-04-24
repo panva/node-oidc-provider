@@ -3,10 +3,25 @@ const bootstrap = require('../test_helper');
 const clientKey = require('../client.sig.key');
 const uuid = require('uuid/v4');
 const jose = require('node-jose');
+const sinon = require('sinon');
 const JWT = require('../../lib/helpers/jwt');
 const { expect } = require('chai');
 
 const route = '/token';
+
+const tokenAuthSucceeded = {
+  error: 'restricted_grant_type',
+  error_description: 'requested grant type is restricted to this client',
+};
+
+const tokenAuthRejected = {
+  error: 'invalid_client',
+  error_description: 'client authentication failed',
+};
+
+function errorDetail(spy) {
+  return spy.args[0][0].error_detail;
+}
 
 describe('client authentication options', () => {
   before(bootstrap(__dirname)); // agent, this.provider, responses
@@ -106,18 +121,48 @@ describe('client authentication options', () => {
     });
   });
 
-  describe('none auth', () => {
-    it('accepts the auth', function () {
+  it('expects auth to be provided', function () {
+    return this.agent.post(route)
+      .send({})
+      .type('form')
+      .expect(400)
+      .expect({
+        error: 'invalid_request',
+        error_description: 'no client authentication mechanism provided',
+      });
+  });
+
+  describe('none "auth"', () => {
+    it('accepts the "auth"', function () {
       return this.agent.post(route)
         .send({
           grant_type: 'implicit',
           client_id: 'client-none',
         })
         .type('form')
+        .expect(400)
         .expect({
           error: 'invalid_request',
           error_description: 'implicit is not a grant resolved with a token endpoint call',
         });
+    });
+
+    it('rejects the "auth" if secret was also provided', function () {
+      const spy = sinon.spy();
+      this.provider.once('grant.error', spy);
+      return this.agent.post(route)
+        .send({
+          grant_type: 'implicit',
+          client_id: 'client-none',
+          client_secret: 'foobar',
+        })
+        .type('form')
+        .expect(() => {
+          expect(spy.calledOnce).to.be.true;
+          expect(errorDetail(spy)).to.equal('unexpected client_secret provided for token_endpoint_auth_method=none client request');
+        })
+        .expect(401)
+        .expect(tokenAuthRejected);
     });
   });
 
@@ -129,7 +174,33 @@ describe('client authentication options', () => {
         })
         .type('form')
         .auth('client-basic', 'secret')
-        .expect(this.responses.tokenAuthSucceeded);
+        .expect(tokenAuthSucceeded);
+    });
+
+    it('accepts the auth even with id in the body', function () {
+      return this.agent.post(route)
+        .send({
+          grant_type: 'implicit',
+          client_id: 'client-basic',
+        })
+        .type('form')
+        .auth('client-basic', 'secret')
+        .expect(tokenAuthSucceeded);
+    });
+
+    it('rejects the auth when body id differs', function () {
+      return this.agent.post(route)
+        .send({
+          grant_type: 'implicit',
+          client_id: 'client-basic-other',
+        })
+        .type('form')
+        .auth('client-basic', 'secret')
+        .expect(400)
+        .expect({
+          error: 'invalid_request',
+          error_description: 'mismatch in body and authorization client ids',
+        });
     });
 
     it('accepts the auth (https://tools.ietf.org/html/rfc6749#appendix-B)', function () {
@@ -172,6 +243,7 @@ describe('client authentication options', () => {
         })
         .type('form')
         .set('Authorization', 'Basic')
+        .expect(400)
         .expect({
           error: 'invalid_request',
           error_description: 'invalid authorization header value format',
@@ -185,6 +257,7 @@ describe('client authentication options', () => {
         })
         .type('form')
         .auth('foo', { type: 'bearer' })
+        .expect(400)
         .expect({
           error: 'invalid_request',
           error_description: 'invalid authorization header value format',
@@ -198,6 +271,7 @@ describe('client authentication options', () => {
         })
         .type('form')
         .set('Authorization', 'Basic Zm9v')
+        .expect(400)
         .expect({
           error: 'invalid_request',
           error_description: 'invalid authorization header value format',
@@ -205,26 +279,68 @@ describe('client authentication options', () => {
     });
 
     it('rejects invalid secrets', function () {
+      const spy = sinon.spy();
+      this.provider.once('grant.error', spy);
       return this.agent.post(route)
         .send({
           grant_type: 'implicit',
         })
         .type('form')
         .auth('client-basic', 'invalid secret')
-        .expect(this.responses.tokenAuthRejected);
+        .expect(() => {
+          expect(spy.calledOnce).to.be.true;
+          expect(errorDetail(spy)).to.equal('invalid secret provided');
+        })
+        .expect(401)
+        .expect(tokenAuthRejected);
+    });
+
+    it('rejects double auth', function () {
+      return this.agent.post(route)
+        .send({
+          grant_type: 'implicit',
+          client_id: 'client-basic',
+          client_secret: 'secret',
+        })
+        .type('form')
+        .auth('client-basic', 'invalid secret')
+        .expect(400)
+        .expect({
+          error: 'invalid_request',
+          error_description: 'client authentication must only be provided using one mechanism',
+        });
+    });
+
+    it('rejects double auth (no client_id in body)', function () {
+      return this.agent.post(route)
+        .send({
+          grant_type: 'implicit',
+          client_secret: 'secret',
+        })
+        .type('form')
+        .auth('client-basic', 'invalid secret')
+        .expect(400)
+        .expect({
+          error: 'invalid_request',
+          error_description: 'client authentication must only be provided using one mechanism',
+        });
     });
 
     it('requires the client_secret to be sent', function () {
+      const spy = sinon.spy();
+      this.provider.once('grant.error', spy);
       return this.agent.post(route)
         .send({
           grant_type: 'implicit',
         })
         .type('form')
         .auth('client-basic', '')
-        .expect({
-          error: 'invalid_request',
-          error_description: 'client_secret must be provided in the Authorization header',
-        });
+        .expect(() => {
+          expect(spy.calledOnce).to.be.true;
+          expect(errorDetail(spy)).to.equal('client_secret must be provided in the Authorization header');
+        })
+        .expect(401)
+        .expect(tokenAuthRejected);
     });
   });
 
@@ -237,10 +353,12 @@ describe('client authentication options', () => {
           client_secret: 'secret',
         })
         .type('form')
-        .expect(this.responses.tokenAuthSucceeded);
+        .expect(tokenAuthSucceeded);
     });
 
-    it('rejects the auth', function () {
+    it('rejects invalid secrets', function () {
+      const spy = sinon.spy();
+      this.provider.once('grant.error', spy);
       return this.agent.post(route)
         .send({
           grant_type: 'implicit',
@@ -248,10 +366,17 @@ describe('client authentication options', () => {
           client_secret: 'invalid',
         })
         .type('form')
-        .expect(this.responses.tokenAuthRejected);
+        .expect(() => {
+          expect(spy.calledOnce).to.be.true;
+          expect(errorDetail(spy)).to.equal('invalid secret provided');
+        })
+        .expect(401)
+        .expect(tokenAuthRejected);
     });
 
     it('requires the client_secret to be sent', function () {
+      const spy = sinon.spy();
+      this.provider.once('grant.error', spy);
       return this.agent.post(route)
         .send({
           grant_type: 'implicit',
@@ -259,10 +384,12 @@ describe('client authentication options', () => {
           client_secret: '',
         })
         .type('form')
-        .expect({
-          error: 'invalid_request',
-          error_description: 'client_secret must be provided in the body',
-        });
+        .expect(() => {
+          expect(spy.calledOnce).to.be.true;
+          expect(errorDetail(spy)).to.equal('client_secret must be provided in the body');
+        })
+        .expect(401)
+        .expect(tokenAuthRejected);
     });
   });
 
@@ -284,7 +411,73 @@ describe('client authentication options', () => {
           client_assertion_type: 'urn:ietf:params:oauth:client-assertion-type:jwt-bearer',
         })
         .type('form')
-        .expect(this.responses.tokenAuthSucceeded));
+        .expect(tokenAuthSucceeded));
+    });
+
+    it('rejects the auth if this is actually a none-client', function () {
+      const spy = sinon.spy();
+      this.provider.once('grant.error', spy);
+      return JWT.sign({
+        jti: uuid(),
+        aud: this.provider.issuer + this.provider.pathFor('token'),
+        sub: 'client-none',
+        iss: 'client-none',
+      }, this.key, 'HS256', { expiresIn: 60 }).then(assertion => this.agent.post(route)
+        .send({
+          client_id: 'client-none',
+          client_assertion: assertion,
+          grant_type: 'implicit',
+          client_assertion_type: 'urn:ietf:params:oauth:client-assertion-type:jwt-bearer',
+        })
+        .type('form')
+        .expect(401)
+        .expect(tokenAuthRejected)
+        .expect(() => {
+          expect(spy.calledOnce).to.be.true;
+          expect(errorDetail(spy)).to.equal('the registered client token_endpoint_auth_method does not match the provided auth mechanism');
+        }));
+    });
+
+    it('rejects the auth if authorization header is also present', function () {
+      return JWT.sign({
+        jti: uuid(),
+        aud: this.provider.issuer + this.provider.pathFor('token'),
+        sub: 'client-jwt-secret',
+        iss: 'client-jwt-secret',
+      }, this.key, 'HS256', { expiresIn: 60 }).then(assertion => this.agent.post(route)
+        .auth('client-basic', 'secret')
+        .send({
+          client_assertion: assertion,
+          grant_type: 'implicit',
+          client_assertion_type: 'urn:ietf:params:oauth:client-assertion-type:jwt-bearer',
+        })
+        .type('form')
+        .expect(400)
+        .expect({
+          error: 'invalid_request',
+          error_description: 'client authentication must only be provided using one mechanism',
+        }));
+    });
+
+    it('rejects the auth if client secret is also present', function () {
+      return JWT.sign({
+        jti: uuid(),
+        aud: this.provider.issuer + this.provider.pathFor('token'),
+        sub: 'client-jwt-secret',
+        iss: 'client-jwt-secret',
+      }, this.key, 'HS256', { expiresIn: 60 }).then(assertion => this.agent.post(route)
+        .send({
+          client_assertion: assertion,
+          grant_type: 'implicit',
+          client_assertion_type: 'urn:ietf:params:oauth:client-assertion-type:jwt-bearer',
+          client_secret: 'foo',
+        })
+        .type('form')
+        .expect(400)
+        .expect({
+          error: 'invalid_request',
+          error_description: 'client authentication must only be provided using one mechanism',
+        }));
     });
 
     it('accepts the auth when aud is an array', function () {
@@ -300,7 +493,7 @@ describe('client authentication options', () => {
           client_assertion_type: 'urn:ietf:params:oauth:client-assertion-type:jwt-bearer',
         })
         .type('form')
-        .expect(this.responses.tokenAuthSucceeded));
+        .expect(tokenAuthSucceeded));
     });
 
     it('rejects malformed assertions', function () {
@@ -312,13 +505,16 @@ describe('client authentication options', () => {
           client_assertion_type: 'urn:ietf:params:oauth:client-assertion-type:jwt-bearer',
         })
         .type('form')
+        .expect(400)
         .expect({
           error: 'invalid_request',
-          error_description: 'client_assertion could not be decoded',
+          error_description: 'invalid client_assertion format',
         });
     });
 
     it('exp must be set', function () {
+      const spy = sinon.spy();
+      this.provider.once('grant.error', spy);
       return JWT.sign({
         jti: uuid(),
         aud: this.provider.issuer + this.provider.pathFor('token'),
@@ -334,13 +530,17 @@ describe('client authentication options', () => {
           client_assertion_type: 'urn:ietf:params:oauth:client-assertion-type:jwt-bearer',
         })
         .type('form')
-        .expect({
-          error: 'invalid_request',
-          error_description: 'expiration must be specified in the client_assertion JWT',
+        .expect(401)
+        .expect(tokenAuthRejected)
+        .expect(() => {
+          expect(spy.calledOnce).to.be.true;
+          expect(errorDetail(spy)).to.equal('expiration must be specified in the client_assertion JWT');
         }));
     });
 
     it('aud must be set', function () {
+      const spy = sinon.spy();
+      this.provider.once('grant.error', spy);
       return JWT.sign({
         jti: uuid(),
         sub: 'client-jwt-secret',
@@ -354,13 +554,17 @@ describe('client authentication options', () => {
           client_assertion_type: 'urn:ietf:params:oauth:client-assertion-type:jwt-bearer',
         })
         .type('form')
-        .expect({
-          error: 'invalid_request',
-          error_description: 'aud (JWT audience) must be provided in the client_assertion JWT',
+        .expect(401)
+        .expect(tokenAuthRejected)
+        .expect(() => {
+          expect(spy.calledOnce).to.be.true;
+          expect(errorDetail(spy)).to.equal('aud (JWT audience) must be provided in the client_assertion JWT');
         }));
     });
 
     it('jti must be set', function () {
+      const spy = sinon.spy();
+      this.provider.once('grant.error', spy);
       return JWT.sign({
         // jti: uuid(),
         aud: this.provider.issuer + this.provider.pathFor('token'),
@@ -375,13 +579,17 @@ describe('client authentication options', () => {
           client_assertion_type: 'urn:ietf:params:oauth:client-assertion-type:jwt-bearer',
         })
         .type('form')
-        .expect({
-          error: 'invalid_request',
-          error_description: 'unique jti (JWT ID) must be provided in the client_assertion JWT',
+        .expect(401)
+        .expect(tokenAuthRejected)
+        .expect(() => {
+          expect(spy.calledOnce).to.be.true;
+          expect(errorDetail(spy)).to.equal('unique jti (JWT ID) must be provided in the client_assertion JWT');
         }));
     });
 
     it('iss must be set', function () {
+      const spy = sinon.spy();
+      this.provider.once('grant.error', spy);
       return JWT.sign({
         jti: uuid(),
         aud: this.provider.issuer + this.provider.pathFor('token'),
@@ -396,13 +604,17 @@ describe('client authentication options', () => {
           client_assertion_type: 'urn:ietf:params:oauth:client-assertion-type:jwt-bearer',
         })
         .type('form')
-        .expect({
-          error: 'invalid_request',
-          error_description: 'iss (JWT issuer) must be provided in the client_assertion JWT',
+        .expect(401)
+        .expect(tokenAuthRejected)
+        .expect(() => {
+          expect(spy.calledOnce).to.be.true;
+          expect(errorDetail(spy)).to.equal('iss (JWT issuer) must be provided in the client_assertion JWT');
         }));
     });
 
     it('iss must be the client id', function () {
+      const spy = sinon.spy();
+      this.provider.once('grant.error', spy);
       return JWT.sign({
         jti: uuid(),
         aud: this.provider.issuer + this.provider.pathFor('token'),
@@ -417,13 +629,17 @@ describe('client authentication options', () => {
           client_assertion_type: 'urn:ietf:params:oauth:client-assertion-type:jwt-bearer',
         })
         .type('form')
-        .expect({
-          error: 'invalid_request',
-          error_description: 'issuer (iss) must be the client id',
+        .expect(401)
+        .expect(tokenAuthRejected)
+        .expect(() => {
+          expect(spy.calledOnce).to.be.true;
+          expect(errorDetail(spy)).to.equal('issuer (iss) must be the client id');
         }));
     });
 
     it('audience as array must contain the token endpoint', function () {
+      const spy = sinon.spy();
+      this.provider.once('grant.error', spy);
       return JWT.sign({
         jti: uuid(),
         // aud: this.provider.issuer + this.provider.pathFor('token'),
@@ -439,13 +655,17 @@ describe('client authentication options', () => {
           client_assertion_type: 'urn:ietf:params:oauth:client-assertion-type:jwt-bearer',
         })
         .type('form')
-        .expect({
-          error: 'invalid_request',
-          error_description: 'list of audience (aud) must include the endpoint url',
+        .expect(401)
+        .expect(tokenAuthRejected)
+        .expect(() => {
+          expect(spy.calledOnce).to.be.true;
+          expect(errorDetail(spy)).to.equal('list of audience (aud) must include the endpoint url');
         }));
     });
 
     it('audience as single entry must be the token endpoint', function () {
+      const spy = sinon.spy();
+      this.provider.once('grant.error', spy);
       return JWT.sign({
         jti: uuid(),
         // aud: this.provider.issuer + this.provider.pathFor('token'),
@@ -461,9 +681,11 @@ describe('client authentication options', () => {
           client_assertion_type: 'urn:ietf:params:oauth:client-assertion-type:jwt-bearer',
         })
         .type('form')
-        .expect({
-          error: 'invalid_request',
-          error_description: 'audience (aud) must equal the endpoint url',
+        .expect(401)
+        .expect(tokenAuthRejected)
+        .expect(() => {
+          expect(spy.calledOnce).to.be.true;
+          expect(errorDetail(spy)).to.equal('audience (aud) must equal the endpoint url');
         }));
     });
 
@@ -481,24 +703,11 @@ describe('client authentication options', () => {
           client_assertion_type: 'urn:ietf:params:oauth:client-assertion-type:jwt-bearer',
         })
         .type('form')
+        .expect(400)
         .expect({
           error: 'invalid_request',
           error_description: 'subject of client_assertion must be the same as client_id provided in the body',
         }));
-    });
-
-    it('requires client_assertion', function () {
-      return this.agent.post(route)
-        .send({
-          grant_type: 'implicit',
-          client_id: 'client-jwt-secret',
-          client_assertion_type: 'urn:ietf:params:oauth:client-assertion-type:jwt-bearer',
-        })
-        .type('form')
-        .expect({
-          error: 'invalid_request',
-          error_description: 'client_assertion must be provided',
-        });
     });
 
     it('requires client_assertion_type', function () {
@@ -516,9 +725,10 @@ describe('client authentication options', () => {
         // client_assertion_type: 'urn:ietf:params:oauth:client-assertion-type:jwt-bearer'
         })
         .type('form')
+        .expect(400)
         .expect({
           error: 'invalid_request',
-          error_description: 'client_assertion_type must have value urn:ietf:params:oauth:client-assertion-type:jwt-bearer',
+          error_description: 'client_assertion_type must be provided',
         }));
     });
 
@@ -537,6 +747,7 @@ describe('client authentication options', () => {
           client_assertion_type: 'urn:ietf:mycustom',
         })
         .type('form')
+        .expect(400)
         .expect({
           error: 'invalid_request',
           error_description: 'client_assertion_type must have value urn:ietf:params:oauth:client-assertion-type:jwt-bearer',
@@ -551,13 +762,16 @@ describe('client authentication options', () => {
           client_assertion_type: 'urn:ietf:params:oauth:client-assertion-type:jwt-bearer',
         })
         .type('form')
+        .expect(400)
         .expect({
           error: 'invalid_request',
-          error_description: 'invalid client_assertion',
+          error_description: 'invalid client_assertion format',
         });
     });
 
-    it('rejects invalid jwts', function () {
+    it('rejects valid format and signature but expired/invalid jwts', function () {
+      const spy = sinon.spy();
+      this.provider.once('grant.error', spy);
       return JWT.sign({
         jti: uuid(),
         aud: this.provider.issuer + this.provider.pathFor('token'),
@@ -572,14 +786,17 @@ describe('client authentication options', () => {
           client_assertion_type: 'urn:ietf:params:oauth:client-assertion-type:jwt-bearer',
         })
         .type('form')
-        .expect({
-          error: 'invalid_client',
-          error_description: 'client is invalid',
+        .expect(401)
+        .expect(tokenAuthRejected)
+        .expect(() => {
+          expect(spy.calledOnce).to.be.true;
+          expect(errorDetail(spy)).to.equal('jwt expired');
         }));
     });
 
     describe('JTI uniqueness', () => {
       it('reused jtis must be rejected', function () {
+        const spy = sinon.spy();
         return JWT.sign({
           jti: uuid(),
           aud: this.provider.issuer + this.provider.pathFor('token'),
@@ -591,28 +808,26 @@ describe('client authentication options', () => {
           .then(assertion => this.agent.post(route)
             .send({
               client_assertion: assertion,
-              grant_type: 'authorization_code',
-              code: 'foobar',
-              redirect_uri: 'foobar',
+              grant_type: 'implicit',
               client_assertion_type: 'urn:ietf:params:oauth:client-assertion-type:jwt-bearer',
             })
             .type('form')
-            .expect({
-              error: 'invalid_grant',
-              error_description: 'grant request is invalid',
+            .expect(tokenAuthSucceeded)
+            .then(() => {
+              this.provider.once('grant.error', spy);
             })
             .then(() => this.agent.post(route)
               .send({
                 client_assertion: assertion,
-                grant_type: 'authorization_code',
-                code: 'foobar',
-                redirect_uri: 'foobar',
+                grant_type: 'implicit',
                 client_assertion_type: 'urn:ietf:params:oauth:client-assertion-type:jwt-bearer',
               })
               .type('form')
-              .expect({
-                error: 'invalid_request',
-                error_description: 'jwt-bearer tokens must only be used once',
+              .expect(401)
+              .expect(tokenAuthRejected)
+              .expect(() => {
+                expect(spy.calledOnce).to.be.true;
+                expect(errorDetail(spy)).to.equal('jwt-bearer tokens must only be used once');
               })));
       });
     });
@@ -625,6 +840,8 @@ describe('client authentication options', () => {
         delete (await this.provider.Client.find('client-jwt-secret')).tokenEndpointAuthSigningAlg;
       });
       it('rejects signatures with different algorithm', function () {
+        const spy = sinon.spy();
+        this.provider.once('grant.error', spy);
         return JWT.sign({
           jti: uuid(),
           aud: this.provider.issuer + this.provider.pathFor('token'),
@@ -639,9 +856,11 @@ describe('client authentication options', () => {
             client_assertion_type: 'urn:ietf:params:oauth:client-assertion-type:jwt-bearer',
           })
           .type('form')
-          .expect({
-            error: 'invalid_request',
-            error_description: 'alg mismatch',
+          .expect(401)
+          .expect(tokenAuthRejected)
+          .expect(() => {
+            expect(spy.calledOnce).to.be.true;
+            expect(errorDetail(spy)).to.equal('alg mismatch');
           }));
       });
     });
@@ -673,7 +892,7 @@ describe('client authentication options', () => {
           client_assertion_type: 'urn:ietf:params:oauth:client-assertion-type:jwt-bearer',
         })
         .type('form')
-        .expect(this.responses.tokenAuthSucceeded));
+        .expect(tokenAuthSucceeded));
     });
 
     it('accepts client assertions issued within acceptable system clock skew', function () {
@@ -693,7 +912,7 @@ describe('client authentication options', () => {
           client_assertion_type: 'urn:ietf:params:oauth:client-assertion-type:jwt-bearer',
         })
         .type('form')
-        .expect(this.responses.tokenAuthSucceeded));
+        .expect(tokenAuthSucceeded));
     });
   });
 });

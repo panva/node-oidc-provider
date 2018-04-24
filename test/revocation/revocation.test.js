@@ -362,7 +362,7 @@ describe('revocation features', () => {
         .auth('invalid', 'auth')
         .send({})
         .type('form')
-        .expect(400)
+        .expect(401)
         .expect(() => {
           expect(spy.calledOnce).to.be.true;
         });

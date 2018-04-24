@@ -1132,7 +1132,7 @@ async interactionCheck(ctx) {
   } else if (
     ctx.oidc.client.applicationType === 'native' &&
     ctx.oidc.params.response_type !== 'none' &&
-    !ctx.oidc.result) { // TODO: in 3.x require consent to be passed in results
+    !ctx.oidc.result) {
     return {
       error: 'interaction_required',
       error_description: 'native clients require End-User interaction',

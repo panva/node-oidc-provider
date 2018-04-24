@@ -16,7 +16,8 @@ describe(route, () => {
       .query({
         resource: 'acct:joe@example.com',
       })
-      .expect(200, {
+      .expect(200)
+      .expect({
         subject: 'acct:joe@example.com',
         links: [
           {

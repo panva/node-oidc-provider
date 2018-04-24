@@ -18,21 +18,6 @@ global.instance = require('../lib/helpers/weak_cache');
 
 global.i = instance;
 
-const responses = {
-  serverErrorBody: {
-    error: 'server_error',
-    error_description: 'oops something went wrong',
-  },
-  tokenAuthSucceeded: {
-    error: 'restricted_grant_type',
-    error_description: 'requested grant type is restricted to this client',
-  },
-  tokenAuthRejected: {
-    error: 'invalid_client',
-    error_description: 'client is invalid',
-  },
-};
-
 function readCookie(value) {
   expect(value).to.exist;
   const parsed = querystring.parse(value, '; ');
@@ -275,7 +260,6 @@ module.exports = function testHelper(dir, basename, mountTo) {
       logout,
       AuthorizationRequest,
       provider,
-      responses,
       assertOnce,
       getSessionId,
       getSession,
