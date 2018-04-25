@@ -88,6 +88,7 @@ Yay for [SemVer](http://semver.org/).
     - send both Authorization header and client_secret or client_assertion in the body
 
 - **Other**
+  - bumped the semantic version of every dependency to the latest as of release
   - `features.pkce` now only enables `S256` by default, this is sufficient for most deployments. If
     `plain` is needed enable pkce with `{ features: { pkce: { supportedMethods: ['plain', 'S256'] } }`.
   - `client.backchannelLogout` no longer suppresses any errors, instead rejects the promise
