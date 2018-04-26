@@ -5,6 +5,7 @@ Yay for [SemVer](http://semver.org/).
 **Table of Contents**
 
 <!-- TOC START min:2 max:2 link:true update:true -->
+  - [2.18.1](#2181)
   - [2.18.0](#2180)
   - [2.17.0](#2170)
   - [2.16.0](#2160)
@@ -27,6 +28,11 @@ Yay for [SemVer](http://semver.org/).
   - [^1.0.0](#100)
 
 <!-- TOC END -->
+## 2.18.1
+- [DIFF](https://github.com/panva/node-oidc-provider/compare/v2.18.0...v2.18.1)
+- fixed client_secret_basic client auth for non-ascii characters according to
+  https://tools.ietf.org/html/rfc6749#section-2.3.1
+
 ## 2.18.0
 - [DIFF](https://github.com/panva/node-oidc-provider/compare/v2.17.0...v2.18.0)
 - added `ctx.oidc.entities` with all loaded model/entity instances during a given request
