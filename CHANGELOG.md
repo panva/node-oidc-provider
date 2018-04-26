@@ -6,7 +6,11 @@ Yay for [SemVer](http://semver.org/).
 
 <!-- TOC START min:2 max:2 link:true update:true -->
 - [4.0.0](#400)
+<<<<<<< HEAD
 - [3.0.x](#30x)
+=======
+- [3.0.0](#300)
+>>>>>>> update CHANGELOG.md, move optional redirect_uri handler up the middleware chain
 - [2.18.x](#218x)
 - [2.17.0](#2170)
 - [2.16.0](#2160)
@@ -88,7 +92,10 @@ Yay for [SemVer](http://semver.org/).
     - send both Authorization header and client_secret or client_assertion in the body
 
 - **Other**
+  - moved middleware handling missing optionally `redirect_uri` parameter case right after loading
+    the client
   - bumped the semantic version of every dependency to the latest as of release
+  - console outputs requiring attention are now colorized if in a TTY
   - `features.pkce` now only enables `S256` by default, this is sufficient for most deployments. If
     `plain` is needed enable pkce with `{ features: { pkce: { supportedMethods: ['plain', 'S256'] } }`.
   - `client.backchannelLogout` no longer suppresses any errors, instead rejects the promise
@@ -193,9 +200,9 @@ Yay for [SemVer](http://semver.org/).
 
 ## 2.15.0
 - 2018-03-23 [DIFF](https://github.com/panva/node-oidc-provider/compare/v2.14.1...v2.15.0)
-- add `provider.use((ctx, next) => {})` middleware support
-- add `provider.listen(port_or_socket)`
-- add attribute delegates `proxy`, `keys`, `env`, `subdomainOffset` from provider to the underlying
+- added `provider.use((ctx, next) => {})` middleware support
+- added `provider.listen(port_or_socket)`
+- added attribute delegates `proxy`, `keys`, `env`, `subdomainOffset` from provider to the underlying
   koa app
 - updated docs
 
