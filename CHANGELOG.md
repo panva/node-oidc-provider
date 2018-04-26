@@ -5,35 +5,35 @@ Yay for [SemVer](http://semver.org/).
 **Table of Contents**
 
 <!-- TOC START min:2 max:2 link:true update:true -->
-  - [2.18.1](#2181)
-  - [2.18.0](#2180)
-  - [2.17.0](#2170)
-  - [2.16.0](#2160)
-  - [2.15.0](#2150)
-  - [2.14.x](#214x)
-  - [2.13.x](#213x)
-  - [2.12.0](#2120)
-  - [2.11.x](#211x)
-  - [2.10.0](#2100)
-  - [2.9.x](#29x)
-  - [2.8.x](#28x)
-  - [2.7.x](#27x)
-  - [2.6.0](#260)
-  - [2.5.x](#25x)
-  - [2.4.x](#24x)
-  - [2.3.x](#23x)
-  - [2.2.x](#22x)
-  - [2.1.0](#210)
-  - [2.0.x](#20x)
-  - [^1.0.0](#100)
+- [2.18.x](#218x)
+- [2.17.0](#2170)
+- [2.16.0](#2160)
+- [2.15.0](#2150)
+- [2.14.x](#214x)
+- [2.13.x](#213x)
+- [2.12.0](#2120)
+- [2.11.x](#211x)
+- [2.10.0](#2100)
+- [2.9.x](#29x)
+- [2.8.x](#28x)
+- [2.7.x](#27x)
+- [2.6.0](#260)
+- [2.5.x](#25x)
+- [2.4.x](#24x)
+- [2.3.x](#23x)
+- [2.2.x](#22x)
+- [2.1.0](#210)
+- [2.0.x](#20x)
+- [^1.0.0](#100)
 
 <!-- TOC END -->
-## 2.18.1
+## 2.18.x
+### 2.18.1
 - [DIFF](https://github.com/panva/node-oidc-provider/compare/v2.18.0...v2.18.1)
 - fixed client_secret_basic client auth for non-ascii characters according to
   https://tools.ietf.org/html/rfc6749#section-2.3.1
 
-## 2.18.0
+### 2.18.0
 - [DIFF](https://github.com/panva/node-oidc-provider/compare/v2.17.0...v2.18.0)
 - added `ctx.oidc.entities` with all loaded model/entity instances during a given request
 - added `cookies.keys` configuration option for KeyGrip key app passthrough
