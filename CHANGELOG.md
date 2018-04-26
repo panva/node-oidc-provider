@@ -119,10 +119,10 @@ Yay for [SemVer](http://semver.org/).
   - fixed failed client `jwks_uri` fetch requests to throw `invalid_client_metadata` rather then `server_error`
   - added `aud` to the introspection response if a token has one
   - `audiences` helper gets called with additional parameters `use` and `scope`
-  - `audiences` helper `use` parameter is now in addition to existing id_token and signed userinfo
-    cases an `access_token`, this is useful for pushing additional audiences to an Access Token,
-    these are now returned by token introspection and can be used when serializing an Access Token
-    as a JWT
+  - `audiences` helper `use` parameter is now in addition to existing `id_token` and signed `userinfo`
+    cases `client_credentials` and `access_token`, this is useful for pushing additional audiences
+    to an Access Token, these are now returned by token introspection and can be used when serializing
+    an Access Token as a JWT
   - the provider will no longer use the first value from `acrValues` to denote a "session" like acr.
     In cases where acr is requested as a voluntary claim and no result is available this claim will
     not be returned.
