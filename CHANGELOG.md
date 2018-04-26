@@ -95,7 +95,6 @@ Yay for [SemVer](http://semver.org/).
   - moved middleware handling missing optionally `redirect_uri` parameter case right after loading
     the client
   - bumped the semantic version of every dependency to the latest as of release
-  - console outputs requiring attention are now colorized if in a TTY
   - `features.pkce` now only enables `S256` by default, this is sufficient for most deployments. If
     `plain` is needed enable pkce with `{ features: { pkce: { supportedMethods: ['plain', 'S256'] } }`.
   - `client.backchannelLogout` no longer suppresses any errors, instead rejects the promise

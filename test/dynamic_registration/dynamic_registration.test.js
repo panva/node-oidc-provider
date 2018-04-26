@@ -206,7 +206,7 @@ describe('registration features', () => {
 
         it('allows reg calls with the access tokens as a Bearer token [header]', function () {
           return this.agent.post('/reg')
-            .set('Authorization', 'Bearer foobar')
+            .auth('foobar', { type: 'bearer' })
             .send({
               redirect_uris: ['https://client.example.com/cb'],
             })
@@ -412,7 +412,7 @@ describe('registration features', () => {
 
     it('accepts header', function () {
       return this.agent.get(`/reg/${this.clientId}`)
-        .set('Authorization', `Bearer ${this.token}`)
+        .auth(this.token, { type: 'bearer' })
         .expect(200);
     });
 
