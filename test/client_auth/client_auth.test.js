@@ -210,7 +210,7 @@ describe('client authentication options', () => {
         })
         .type('form')
         .auth('+%25%26%2B%C2%A3%E2%82%AC', '+%25%26%2B%C2%A3%E2%82%AC')
-        .expect(this.responses.tokenAuthSucceeded);
+        .expect(tokenAuthSucceeded);
     });
 
     it('accepts the auth (https://tools.ietf.org/html/rfc6749#appendix-B again)', function () {
@@ -220,7 +220,7 @@ describe('client authentication options', () => {
         })
         .type('form')
         .auth('an%3Aidentifier', 'some+secure+%26+non-standard+secret')
-        .expect(this.responses.tokenAuthSucceeded);
+        .expect(tokenAuthSucceeded);
     });
 
     it('accepts the auth (https://tools.ietf.org/html/rfc6749#appendix-B)', function () {

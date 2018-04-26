@@ -39,7 +39,7 @@ describe('OAuth 2.0 Dynamic Client Registration Management Protocol', () => {
     it('responds w/ 200 JSON and nocache headers', async function () {
       const client = await setup.call(this, {});
       return this.agent.put(`/reg/${client.client_id}`)
-        .set('Authorization', `Bearer ${client.registration_access_token}`)
+        .auth(client.registration_access_token, { type: 'bearer' })
         .send(updateProperties(client, {
           redirect_uris: ['https://client.example.com/foobar/cb'],
         }))
@@ -64,7 +64,7 @@ describe('OAuth 2.0 Dynamic Client Registration Management Protocol', () => {
       (async () => {
         const client = await setup.call(this, {});
         await this.agent.put(`/reg/${client.client_id}`)
-          .set('Authorization', `Bearer ${client.registration_access_token}`)
+          .auth(client.registration_access_token, { type: 'bearer' })
           .send(updateProperties(client));
       })().catch(done);
     });
@@ -74,7 +74,7 @@ describe('OAuth 2.0 Dynamic Client Registration Management Protocol', () => {
       // removing userinfo_signed_response_alg and having it defaulted
       // console.log(client);
       return this.agent.put(`/reg/${client.client_id}`)
-        .set('Authorization', `Bearer ${client.registration_access_token}`)
+        .auth(client.registration_access_token, { type: 'bearer' })
         .send(updateProperties(client, {
           userinfo_signed_response_alg: null,
         }))
@@ -89,7 +89,7 @@ describe('OAuth 2.0 Dynamic Client Registration Management Protocol', () => {
       // removing userinfo_signed_response_alg and having it defaulted
       // console.log(client);
       return this.agent.put(`/reg/${client.client_id}`)
-        .set('Authorization', `Bearer ${client.registration_access_token}`)
+        .auth(client.registration_access_token, { type: 'bearer' })
         .send(updateProperties(client, {
           userinfo_signed_response_alg: undefined,
         }))
@@ -108,7 +108,7 @@ describe('OAuth 2.0 Dynamic Client Registration Management Protocol', () => {
       // console.log(client);
       expect(client).not.to.have.property('client_secret');
       return this.agent.put(`/reg/${client.client_id}`)
-        .set('Authorization', `Bearer ${client.registration_access_token}`)
+        .auth(client.registration_access_token, { type: 'bearer' })
         .send(updateProperties(client, {
           response_types: ['code'],
           grant_types: ['authorization_code'],
@@ -127,7 +127,7 @@ describe('OAuth 2.0 Dynamic Client Registration Management Protocol', () => {
       this.provider.once('registration_update.success', spy);
 
       return this.agent.put(`/reg/${client.client_id}`)
-        .set('Authorization', `Bearer ${client.registration_access_token}`)
+        .auth(client.registration_access_token, { type: 'bearer' })
         .send(updateProperties(client))
         .expect(200)
         .expect(() => {
@@ -139,7 +139,7 @@ describe('OAuth 2.0 Dynamic Client Registration Management Protocol', () => {
       const client = await setup.call(this, {});
       // changing the redirect_uris;
       return this.agent.put(`/reg/${client.client_id}`)
-        .set('Authorization', `Bearer ${client.registration_access_token}`)
+        .auth(client.registration_access_token, { type: 'bearer' })
         .send(updateProperties(client, {
           redirect_uris: ['https://client.example.com/foobar/cb'],
           registration_access_token: 'foobar',
@@ -157,7 +157,7 @@ describe('OAuth 2.0 Dynamic Client Registration Management Protocol', () => {
       const client = await setup.call(this, {});
       // changing the redirect_uris;
       return this.agent.put(`/reg/${client.client_id}`)
-        .set('Authorization', `Bearer ${client.registration_access_token}`)
+        .auth(client.registration_access_token, { type: 'bearer' })
         .send(updateProperties(client, {
           redirect_uris: ['https://client.example.com/foobar/cb'],
           registration_client_uri: 'foobar',
@@ -175,7 +175,7 @@ describe('OAuth 2.0 Dynamic Client Registration Management Protocol', () => {
       const client = await setup.call(this, {});
       // changing the redirect_uris;
       return this.agent.put(`/reg/${client.client_id}`)
-        .set('Authorization', `Bearer ${client.registration_access_token}`)
+        .auth(client.registration_access_token, { type: 'bearer' })
         .send(updateProperties(client, {
           redirect_uris: ['https://client.example.com/foobar/cb'],
           client_secret_expires_at: 'foobar',
@@ -193,7 +193,7 @@ describe('OAuth 2.0 Dynamic Client Registration Management Protocol', () => {
       const client = await setup.call(this, {});
       // changing the redirect_uris;
       return this.agent.put(`/reg/${client.client_id}`)
-        .set('Authorization', `Bearer ${client.registration_access_token}`)
+        .auth(client.registration_access_token, { type: 'bearer' })
         .send(updateProperties(client, {
           redirect_uris: ['https://client.example.com/foobar/cb'],
           client_id_issued_at: 'foobar',
@@ -212,7 +212,7 @@ describe('OAuth 2.0 Dynamic Client Registration Management Protocol', () => {
       const bearer = await rat.save();
       const client = await this.provider.Client.find('client');
       return this.agent.put('/reg/client')
-        .set('Authorization', `Bearer ${bearer}`)
+        .auth(bearer, { type: 'bearer' })
         .send(updateProperties(client.metadata(), {
           redirect_uris: ['https://client.example.com/foobar/cb'],
         }))
@@ -242,7 +242,7 @@ describe('OAuth 2.0 Dynamic Client Registration Management Protocol', () => {
         this.provider.once('token.revoked', spy);
 
         return this.agent.put(`/reg/${client.client_id}`)
-          .set('Authorization', `Bearer ${client.registration_access_token}`)
+          .auth(client.registration_access_token, { type: 'bearer' })
           .send(updateProperties(client))
           .expect(200)
           .expect(() => {
@@ -260,7 +260,7 @@ describe('OAuth 2.0 Dynamic Client Registration Management Protocol', () => {
         (async () => {
           const client = await setup.call(this, {});
           await this.agent.put(`/reg/${client.client_id}`)
-            .set('Authorization', `Bearer ${client.registration_access_token}`)
+            .auth(client.registration_access_token, { type: 'bearer' })
             .send(updateProperties(client));
         })().catch(done);
       });
@@ -271,7 +271,7 @@ describe('OAuth 2.0 Dynamic Client Registration Management Protocol', () => {
         this.provider.once('token.issued', spy);
 
         return this.agent.put(`/reg/${client.client_id}`)
-          .set('Authorization', `Bearer ${client.registration_access_token}`)
+          .auth(client.registration_access_token, { type: 'bearer' })
           .send(updateProperties(client))
           .expect(200)
           .expect((response) => {
@@ -288,7 +288,7 @@ describe('OAuth 2.0 Dynamic Client Registration Management Protocol', () => {
     it('responds w/ empty 204 and nocache headers', async function () {
       const client = await setup.call(this, {});
       return this.agent.del(`/reg/${client.client_id}`)
-        .set('Authorization', `Bearer ${client.registration_access_token}`)
+        .auth(client.registration_access_token, { type: 'bearer' })
         .expect('pragma', 'no-cache')
         .expect('cache-control', 'no-cache, no-store')
         .expect('') // empty body
@@ -303,7 +303,7 @@ describe('OAuth 2.0 Dynamic Client Registration Management Protocol', () => {
       (async () => {
         const client = await setup.call(this, {});
         await this.agent.del(`/reg/${client.client_id}`)
-          .set('Authorization', `Bearer ${client.registration_access_token}`);
+          .auth(client.registration_access_token, { type: 'bearer' });
       })().catch(done);
     });
 
@@ -313,7 +313,7 @@ describe('OAuth 2.0 Dynamic Client Registration Management Protocol', () => {
       this.provider.once('registration_delete.success', spy);
 
       return this.agent.del(`/reg/${client.client_id}`)
-        .set('Authorization', `Bearer ${client.registration_access_token}`)
+        .auth(client.registration_access_token, { type: 'bearer' })
         .expect(204)
         .expect(() => {
           expect(spy.calledOnce).to.be.true;
@@ -324,7 +324,7 @@ describe('OAuth 2.0 Dynamic Client Registration Management Protocol', () => {
       const rat = new (this.provider.RegistrationAccessToken)({ clientId: 'client' });
       const bearer = await rat.save();
       return this.agent.del('/reg/client')
-        .set('Authorization', `Bearer ${bearer}`)
+        .auth(bearer, { type: 'bearer' })
         .expect(403)
         .expect((response) => {
           expect(response.body).to.eql({
