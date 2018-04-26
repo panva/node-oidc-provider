@@ -16,6 +16,16 @@ module.exports = {
     client_secret: 'secret',
     redirect_uris: ['https://client.example.com/cb'],
   }, {
+    token_endpoint_auth_method: 'client_secret_basic',
+    client_id: 'an:identifier',
+    client_secret: 'some secure & non-standard secret',
+    redirect_uris: ['https://client.example.com/cb'],
+  }, {
+    token_endpoint_auth_method: 'client_secret_basic',
+    client_id: ' %&+£€',
+    client_secret: ' %&+£€',
+    redirect_uris: ['https://client.example.com/cb'],
+  }, {
     token_endpoint_auth_method: 'client_secret_post',
     client_id: 'client-post',
     client_secret: 'secret',

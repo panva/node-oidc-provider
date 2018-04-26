@@ -132,6 +132,26 @@ describe('client authentication options', () => {
         .expect(this.responses.tokenAuthSucceeded);
     });
 
+    it('accepts the auth (https://tools.ietf.org/html/rfc6749#appendix-B)', function () {
+      return this.agent.post(route)
+        .send({
+          grant_type: 'implicit',
+        })
+        .type('form')
+        .auth('+%25%26%2B%C2%A3%E2%82%AC', '+%25%26%2B%C2%A3%E2%82%AC')
+        .expect(this.responses.tokenAuthSucceeded);
+    });
+
+    it('accepts the auth (https://tools.ietf.org/html/rfc6749#appendix-B again)', function () {
+      return this.agent.post(route)
+        .send({
+          grant_type: 'implicit',
+        })
+        .type('form')
+        .auth('an%3Aidentifier', 'some+secure+%26+non-standard+secret')
+        .expect(this.responses.tokenAuthSucceeded);
+    });
+
     it('validates the Basic scheme format (parts)', function () {
       return this.agent.post(route)
         .send({
@@ -151,7 +171,7 @@ describe('client authentication options', () => {
           grant_type: 'implicit',
         })
         .type('form')
-        .set('Authorization', 'Bearer foo')
+        .auth('foo', { type: 'bearer' })
         .expect({
           error: 'invalid_request',
           error_description: 'invalid authorization header value format',
