@@ -1,19 +1,23 @@
 // Author: Marc-Aurèle Darche @madarche
 // For questions/suggestions/fixes related to this adapter create an
 // issue in this dedicated repository: https://github.com/madarche/contact
+//
+// Developed and tested with the following dependencies:
+// bookshelf@0.13.3
+// knex@0.14.6
 
 /* eslint-disable class-methods-use-this */
 
 // This is the SQL used to create the schema in PostgreSQL:
 //
-// CREATE TABLE record
+// create table record
 // (
-//   id text PRIMARY KEY,
-//   grantId text,
+//   id text primary key,
+//   name text not null,
 //   data jsonb,
-//   created_at TIMESTAMP NOT NULL DEFAULT localtimestamp,
-//   updated_at TIMESTAMP NOT NULL DEFAULT localtimestamp,
-//   expires_at TIMESTAMP
+//   created_at timestamp not null default localtimestamp,
+//   updated_at timestamp not null default localtimestamp,
+//   expires_at timestamp
 // );
 
 const knexCreate = require('knex'); // eslint-disable-line import/no-unresolved
@@ -57,15 +61,16 @@ class BookshelfPostgresqlAdapter {
   /**
    * Updates or Creates an instance of an oidc-provider model.
    *
-   * @return {Promise} Promise fulfilled when the operation succeeded. Rejected with error when
-   * encountered.
+   * @return {Promise} Promise fulfilled when the operation succeeded. Rejected with error
+   *   when encountered.
    * @param {string} id Identifier that oidc-provider will use to reference
-   * this model instance for future operations.
+   *   this model instance for future operations.
    * @param {object} payload Object with all properties intended for storage.
    * @param {expiresIn} integer Number of seconds intended for this model to be stored.
    */
   async upsert(id, payload, expiresIn) {
     const updateData = {
+      name: this.name,
       data: payload,
     };
 
@@ -104,18 +109,19 @@ class BookshelfPostgresqlAdapter {
       if (grant) {
         await grant.set({ data }).save();
       } else {
-        await new Record().save({ id: grantId, data });
+        await new Record().save({ id: grantId, name: 'Grant', data });
       }
     }
   }
 
   /**
-     * Returns previously stored instance of an oidc-provider model.
-     *
-     * @return {Promise} Promise fulfilled with either Object (when found and not dropped yet due to
-     *     expiration) or falsy value when not found anymore. Rejected with error when encountered.
-     * @param {string} id Identifier of oidc-provider model
-     */
+   * Returns previously stored instance of an oidc-provider model.
+   *
+   * @return {Promise} Promise fulfilled with either Object (when found and
+   *   not dropped yet due to expiration) or falsy value when not found
+   *   anymore. Rejected with error when encountered.
+   * @param {string} id Identifier of oidc-provider model
+   */
   async find(id) {
     return new Record()
       .where('id', id)
@@ -126,7 +132,8 @@ class BookshelfPostgresqlAdapter {
         }
 
         // Deleting the record if expired
-        if (new Date(record.expires_at) >= Date.now()) {
+        if (record.get('expires_at') &&
+                    record.get('expires_at') <= new Date()) {
           return record.destroy()
             .then(() => null);
         }
@@ -136,12 +143,12 @@ class BookshelfPostgresqlAdapter {
   }
 
   /**
-   * Marks a stored oidc-provider model as consumed (not yet expired
-   * though!). Future finds for this id should be fulfilled with an object
-   * containing additional property named "consumed".
+   * Marks a stored oidc-provider model as consumed (not yet expired though!).
+   * Future finds for this id should be fulfilled with an object containing
+   * additional property named "consumed".
    *
-   * @return {Promise} Promise fulfilled when the operation succeeded. Rejected with error when
-   *     encountered.
+   * @return {Promise} Promise fulfilled when the operation
+   *   succeeded. Rejected with error when encountered.
    * @param {string} id Identifier of oidc-provider model
    */
   async consume(id) {
@@ -158,37 +165,61 @@ class BookshelfPostgresqlAdapter {
    * related models. Future finds for this id should be fulfilled with falsy
    * values.
    *
-   * @return {Promise} Promise fulfilled when the operation
-   *     succeeded. Rejected with error when encountered.
+   * @return {Promise} Promise fulfilled when the operation succeeded. Rejected with error
+   *   when encountered.
    * @param {string} id Identifier of oidc-provider model
    */
   async destroy(id) {
     const record = await new Record()
       .where('id', id)
       .fetch();
-    const grantId = record && record.get('data').grantId;
-
     if (record) {
-      await record.destroy();
-    }
+      const grantId = record.get('data') && record.get('data').grantId;
 
-    if (grantId) {
-      const tokens = await new Record()
-        .where('id', grantId)
-        .fetchAll();
-      await tokens.invokeThen('destroy');
+      await record.destroy();
+
+      if (grantId) {
+        const grant = await new Record()
+          .where('id', grantId)
+          .fetch();
+        const tokenIds = grant.get('data');
+        const tokens = await new Record()
+          .query((qb) => {
+            qb.whereIn('id', tokenIds);
+          })
+          .fetchAll();
+        await tokens.invokeThen('destroy', { require: false });
+      }
     }
   }
 
   /**
-   * A one time hook called when initializing the Provider instance, use to establish necessary
-   * connections if applicable, afterwards only new instances will initialized.
+   * Commodity method, but not required by the oidc-provider framework.
    *
-   * @return {Promise} Promise fulfilled when the operation
-   *     succeeded. Rejected with error when encountered.
+   * Returns all the records of this oidc-provider model.
+   *
+   * @return {Promise} Promise fulfilled when the operation succeeded. Rejected with error
+   *   when encountered.
+   */
+  async getAll() {
+    return new Record()
+      .where('name', this.name)
+      .orderBy('updated_at', 'desc')
+      .fetchAll();
+  }
+
+  /**
+   * A one time hook called when initializing the Provider instance, use to
+   * establish necessary connections if applicable, afterwards only new
+   * instances will initialized.
+   *
+   * @return {Promise} Promise fulfilled when the operation succeeded. Rejected with error
+   *   when encountered.
    * @param {Provider} provider Provider instance for which the connection is needed
    */
   static connect(provider) { // eslint-disable-line no-unused-vars
+    return bookshelf.knex(Record.prototype.tableName)
+      .select(bookshelf.knex.raw('1'));
   }
 }
 
