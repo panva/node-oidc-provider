@@ -539,9 +539,14 @@ Enables features described in [Dynamic Client Registration 1.0][registration].
 const configuration = { features: { registration: Boolean[false] } };
 ```
 
-To provide your own factory to get a new clientId:
+To provide your own factory to get a new client_id:
 ```js
 const configuration = { features: { registration: { idFactory: () => randomValue() } } };
+```
+
+To provide your own factory to get a random client_secret:
+```js
+const configuration = { features: { registration: { secretFactory: () => randomValue() } } };
 ```
 
 To enable a fixed Initial Access Token for the registration POST call configure registration to be
