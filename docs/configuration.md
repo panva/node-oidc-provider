@@ -926,7 +926,10 @@ recommendation: set cookies.keys and cookies.long.signed = true
 
 default value:
 ```js
-{ signed: undefined, httpOnly: true, maxAge: 31557600000 }
+{ secure: undefined,
+  signed: undefined,
+  httpOnly: true,
+  maxAge: 31557600000 }
 ```
 
 ### cookies.names
@@ -952,7 +955,10 @@ recommendation: set cookies.keys and cookies.short.signed = true
 
 default value:
 ```js
-{ signed: undefined, httpOnly: true, maxAge: 3600000 }
+{ secure: undefined,
+  signed: undefined,
+  httpOnly: true,
+  maxAge: 3600000 }
 ```
 
 ### discovery
