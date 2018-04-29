@@ -204,12 +204,12 @@ The parameter accepts an array of scope names.
 
 ## Persistence
 The provided example and any new instance of oidc-provider will use the basic in-memory adapter for
-storing issued tokens, codes, user sessions and dynamically registered clients. This is fine for as
+storing issued tokens, codes, user sessions and dynamically registered clients. This is fine as
 long as you develop, configure and generally just play around since every time you restart your
 process all information will be lost. As soon as you cannot live with this limitation you will be
-required to provide an adapter constructor for oidc-provider to use. This constructor will be called
-for every model accessed the first time it is needed. A static `connect` method is called if
-present during the initialize phase.
+required to provide your own custom adapter constructor for oidc-provider to
+use. This constructor will be called for every model accessed the first time it
+is needed. A static `connect` method is called if present during the initialize phase.
 
 ```js
 const MyAdapter = require('./my_adapter');
@@ -221,9 +221,11 @@ oidc.initialize({
 
 The API oidc-provider expects is documented [here](/example/my_adapter.js). For reference see the
 [memory adapter](/lib/adapters/memory_adapter.js) and [redis](/example/adapters/redis.js) or
-[mongodb](/example/adapters/mongodb.js) adapters. There's also a simple test
-[[redis](/example/adapters/redis_test.js),[mongodb](/example/adapters/mongodb_test.js)] you can use to
-check your own implementation.
+[mongodb](/example/adapters/mongodb.js) adapters. There's also a simple
+[adapter conformance test](/lib/adapter_test.js) that can be used to check your
+own adapter implementation, (with already written tests for the
+[redis](/example/adapters/redis_test.js) and the
+[mongodb](/example/adapters/mongodb_test.js) implementations).
 
 
 ## Interaction
