@@ -4,8 +4,8 @@
 
 oidc-provider is an OpenID Provider implementation of [OpenID Connect][openid-connect]. It allows to
 export a complete mountable or standalone OpenID Provider implementation. This implementation does
-not dictate a fixed data models or persistence store, instead, you must provide adapters for these.
-A generic in memory adapter is available to get you started as well as feature-less dev-only views
+not dictate a fixed data model or persistence store, instead, you must provide adapters for these.
+A generic in-memory adapter is available to get you started as well as feature-less dev-only views
 to be able to get off the ground.
 
 **Table of Contents**
@@ -117,8 +117,8 @@ const oidc = new Provider('http://localhost:3000', configuration);
 
 ## Debugging
 oidc-provider uses the [debug][debug-link] module internally to log information about various states
-of authentication requests, errors and grants. To see all these set the DEBUG environment variable
-to oidc-provider:* when launching your app.
+of authentication requests, errors and grants. To see all these set the `DEBUG` environment variable
+to `oidc-provider:*` when launching your app.
 
 There is no filter on what is included in the debug output, since it may end-user Personally
 identifiable information or client credentials it's use is only advised for debugging, not regular

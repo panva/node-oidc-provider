@@ -51,7 +51,7 @@ class BookshelfPostgresqlAdapter {
    *
    * @constructor
    * @param {string} name Name of the oidc-provider model. One of "Session", "AccessToken",
-   * "AuthorizationCode", "RefreshToken", "ClientCredentials" or "Client", "InitialAccessToken",
+   * "AuthorizationCode", "RefreshToken", "ClientCredentials", "Client", "InitialAccessToken",
    * "RegistrationAccessToken"
    */
   constructor(name) {
