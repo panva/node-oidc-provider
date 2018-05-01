@@ -4,22 +4,19 @@ const { TestAdapter } = require('../models');
 const { AdapterTest } = Provider;
 
 describe('AdapterTest', () => {
-  it('passes with the default MemoryAdapter', () => {
+  it('passes with the default MemoryAdapter', async () => {
     const provider = new Provider('http://localhost');
-
-    return provider.initialize().then(() => {
-      const test = new AdapterTest(provider);
-      return test.execute();
-    });
+    await provider.initialize();
+    const test = new AdapterTest(provider);
+    await test.execute();
   });
 
-  it('passes with the TestAdapter', () => {
+  it('passes with the TestAdapter', async () => {
     const provider = new Provider('http://localhost');
-    return provider.initialize({
+    await provider.initialize({
       adapter: TestAdapter,
-    }).then(() => {
-      const test = new AdapterTest(provider);
-      return test.execute();
     });
+    const test = new AdapterTest(provider);
+    await test.execute();
   });
 });
