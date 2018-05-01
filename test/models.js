@@ -9,6 +9,7 @@ class TestAdapter {
   constructor(name) {
     this.name = name;
     if (store.has(name)) return store.get(name);
+    // ID-less model, only needed for tests
     store.set(name, this);
     this.store = store;
   }
@@ -38,8 +39,8 @@ class TestAdapter {
 
     if (grantId) {
       const grantKey = grantKeyFor(grantId);
-
       store.get(grantKey).forEach(token => store.delete(token));
+      store.delete(grantKey);
     }
 
     return Promise.resolve();
