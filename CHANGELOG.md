@@ -6,11 +6,7 @@ Yay for [SemVer](http://semver.org/).
 
 <!-- TOC START min:2 max:2 link:true update:true -->
 - [4.0.0](#400)
-<<<<<<< HEAD
 - [3.0.x](#30x)
-=======
-- [3.0.0](#300)
->>>>>>> update CHANGELOG.md, move optional redirect_uri handler up the middleware chain
 - [2.18.x](#218x)
 - [2.17.0](#2170)
 - [2.16.0](#2160)
@@ -34,6 +30,7 @@ Yay for [SemVer](http://semver.org/).
 <!-- TOC END -->
 ## 4.0.0
 - [DIFF]
+- A minimal version of node lts/carbon is required (>=8.9.0)
 - **New configurations**
   - LRU-cache sizes
 - **Session Changes**

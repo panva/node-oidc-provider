@@ -2,7 +2,6 @@ language: node_js
 dist: trusty
 sudo: false
 node_js:
-  - v8.0.0
   - lts/carbon
   - stable
 script:
