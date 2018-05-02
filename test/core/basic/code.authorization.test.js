@@ -540,7 +540,7 @@ describe('BASIC code', () => {
           .expect(auth.validateState)
           .expect(auth.validateClientLocation)
           .expect(auth.validateError('unsupported_response_type'))
-          .expect(auth.validateErrorDescription('response_type not supported. (unsupported)'));
+          .expect(auth.validateErrorDescription('unsupported response_type requested'));
       });
 
       if (verb === 'post') {
