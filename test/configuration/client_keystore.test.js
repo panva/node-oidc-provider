@@ -71,8 +71,9 @@ describe('client keystore refresh', () => {
     const client = await this.provider.Client.find('client');
     await client.keystore.refresh().then(fail, (err) => {
       expect(err).to.be.an('error');
-      expect(err.message).to.match(/jwks_uri could not be refreshed/);
-      expect(err.message).to.match(/unexpected jwks_uri statusCode, expected 200, got 302/);
+      expect(err.message).to.equal('invalid_client_metadata');
+      expect(err.error_description).to.match(/jwks_uri could not be refreshed/);
+      expect(err.error_description).to.match(/unexpected jwks_uri statusCode, expected 200, got 302/);
     });
   });
 
@@ -82,8 +83,9 @@ describe('client keystore refresh', () => {
     const client = await this.provider.Client.find('client');
     await client.keystore.refresh().then(fail, (err) => {
       expect(err).to.be.an('error');
-      expect(err.message).to.match(/jwks_uri could not be refreshed/);
-      expect(err.message).to.match(/Unexpected token/);
+      expect(err.message).to.equal('invalid_client_metadata');
+      expect(err.error_description).to.match(/jwks_uri could not be refreshed/);
+      expect(err.error_description).to.match(/Unexpected token/);
     });
   });
 
@@ -93,8 +95,9 @@ describe('client keystore refresh', () => {
     const client = await this.provider.Client.find('client');
     await client.keystore.refresh().then(fail, (err) => {
       expect(err).to.be.an('error');
-      expect(err.message).to.match(/jwks_uri could not be refreshed/);
-      expect(err.message).to.match(/invalid jwks_uri response/);
+      expect(err.message).to.equal('invalid_client_metadata');
+      expect(err.error_description).to.match(/jwks_uri could not be refreshed/);
+      expect(err.error_description).to.match(/invalid jwks_uri response/);
     });
   });
 

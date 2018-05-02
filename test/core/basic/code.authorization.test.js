@@ -147,7 +147,7 @@ describe('BASIC code', () => {
           redirect_uri: 'com.example.app:/cb',
           scope,
           code_challenge: 'foo',
-          code_challenge_method: 'plain',
+          code_challenge_method: 'S256',
         });
 
         return this.wrap({ route, verb, auth })
@@ -455,26 +455,72 @@ describe('BASIC code', () => {
           });
       });
 
-      // section-4.1.2.1 RFC6749
-      it('validates redirect_uri ad acta even if other errors were encountered beforehand', function () {
-        const renderSpy = sinon.spy(i(this.provider).configuration(), 'renderError');
-        const auth = new this.AuthorizationRequest({
-          response_type,
-          // scope,
-          redirect_uri: 'https://attacker.example.com/foobar',
+      describe('section-4.1.2.1 RFC6749', () => {
+        it('validates redirect_uri ad acta [regular error]', function () {
+          const renderSpy = sinon.spy(i(this.provider).configuration(), 'renderError');
+          const spy = sinon.spy();
+          this.provider.on('authorization.error', spy);
+          const auth = new this.AuthorizationRequest({
+            response_type,
+            // scope,
+            redirect_uri: 'https://attacker.example.com/foobar',
+          });
+
+          return this.agent.get(route)
+            .query(auth)
+            .expect(() => {
+              this.provider.removeAllListeners('authorization.error');
+              renderSpy.restore();
+            })
+            .expect(() => {
+              expect(spy.calledTwice).to.be.true;
+            })
+            .expect(() => {
+              expect(spy.firstCall.calledWithMatch({ message: 'invalid_request' })).to.be.true;
+              expect(spy.secondCall.calledWithMatch({ message: 'redirect_uri_mismatch' })).to.be.true;
+            })
+            .expect(() => {
+              expect(renderSpy.calledOnce).to.be.true;
+              const renderArgs = renderSpy.args[0][1];
+              expect(renderArgs).to.have.property('error', 'redirect_uri_mismatch');
+            });
         });
 
-        return this.agent.get(route)
-          .query(auth)
-          .expect(() => {
-            renderSpy.restore();
-          })
-          .expect(400)
-          .expect(() => {
-            expect(renderSpy.calledOnce).to.be.true;
-            const renderArgs = renderSpy.args[0][1];
-            expect(renderArgs).to.have.property('error', 'redirect_uri_mismatch');
+        it('validates redirect_uri ad acta [server error]', function () {
+          const renderSpy = sinon.spy(i(this.provider).configuration(), 'renderError');
+          const authErrorSpy = sinon.spy();
+          const serverErrorSpy = sinon.spy();
+          this.provider.on('authorization.error', authErrorSpy);
+          this.provider.on('server_error', serverErrorSpy);
+          sinon.stub(i(this.provider).responseModes, 'has').callsFake(() => { throw new Error('foobar'); });
+          const auth = new this.AuthorizationRequest({
+            response_type,
+            scope,
+            redirect_uri: 'https://attacker.example.com/foobar',
           });
+
+          return this.agent.get(route)
+            .query(auth)
+            .expect(() => {
+              i(this.provider).responseModes.has.restore();
+              this.provider.removeAllListeners('authorization.error');
+              this.provider.removeAllListeners('server_error');
+              renderSpy.restore();
+            })
+            .expect(() => {
+              expect(serverErrorSpy.calledOnce).to.be.true;
+              expect(authErrorSpy.calledOnce).to.be.true;
+            })
+            .expect(() => {
+              expect(serverErrorSpy.calledWithMatch({ message: 'foobar' })).to.be.true;
+              expect(authErrorSpy.calledWithMatch({ message: 'redirect_uri_mismatch' })).to.be.true;
+            })
+            .expect(() => {
+              expect(renderSpy.calledOnce).to.be.true;
+              const renderArgs = renderSpy.args[0][1];
+              expect(renderArgs).to.have.property('error', 'redirect_uri_mismatch');
+            });
+        });
       });
 
       it('unsupported response_type', function () {
@@ -494,7 +540,7 @@ describe('BASIC code', () => {
           .expect(auth.validateState)
           .expect(auth.validateClientLocation)
           .expect(auth.validateError('unsupported_response_type'))
-          .expect(auth.validateErrorDescription('response_type not supported. (unsupported)'));
+          .expect(auth.validateErrorDescription('unsupported response_type requested'));
       });
 
       if (verb === 'post') {

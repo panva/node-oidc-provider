@@ -23,7 +23,7 @@ describe('userinfo /me', () => {
 
   it('returns 200 OK and user claims', function () {
     return this.agent.get('/me')
-      .set('Authorization', `Bearer ${this.access_token}`)
+      .auth(this.access_token, { type: 'bearer' })
       .expect(200)
       .expect((response) => {
         expect(response.body).to.have.keys(['sub', 'email', 'email_verified']);
@@ -36,13 +36,13 @@ describe('userinfo /me', () => {
     }, done));
 
     (async () => {
-      await this.agent.get('/me').set('Authorization', `Bearer ${this.access_token}`);
+      await this.agent.get('/me').auth(this.access_token, { type: 'bearer' });
     })().catch(done);
   });
 
   it('validates access token is found', function () {
     return this.agent.get('/me')
-      .set('Authorization', 'Bearer Loremipsumdolorsitametconsecteturadipisicingelitsed')
+      .auth('Loremipsumdolorsitametconsecteturadipisicingelitsed', { type: 'bearer' })
       .expect(401)
       .expect({ error: 'invalid_token', error_description: 'invalid token provided' });
   });
@@ -50,7 +50,7 @@ describe('userinfo /me', () => {
   it('validates a client is still valid for a found token', async function () {
     const at = await new this.provider.AccessToken({ clientId: 'notfound' }).save();
     return this.agent.get('/me')
-      .set('Authorization', `Bearer ${at}`)
+      .auth(at, { type: 'bearer' })
       .expect(401)
       .expect({ error: 'invalid_token', error_description: 'invalid token provided' });
   });
@@ -58,7 +58,7 @@ describe('userinfo /me', () => {
   it('validates an account still valid for a found token', async function () {
     const at = await new this.provider.AccessToken({ clientId: 'client', accountId: 'notfound' }).save();
     return this.agent.get('/me')
-      .set('Authorization', `Bearer ${at}`)
+      .auth(at, { type: 'bearer' })
       .expect(401)
       .expect({ error: 'invalid_token', error_description: 'invalid token provided' });
   });
@@ -68,7 +68,7 @@ describe('userinfo /me', () => {
       .query({
         scope: 'openid',
       })
-      .set('Authorization', `Bearer ${this.access_token}`)
+      .auth(this.access_token, { type: 'bearer' })
       .expect(200)
       .expect((response) => {
         expect(response.body).to.have.keys(['sub']);
@@ -81,7 +81,7 @@ describe('userinfo /me', () => {
       .query({
         scope: 'openid profile',
       })
-      .set('Authorization', `Bearer ${this.access_token}`)
+      .auth(this.access_token, { type: 'bearer' })
       .expect(400)
       .expect({ error: 'invalid_scope', scope: 'profile', error_description: 'access token missing requested scope' });
   });
@@ -89,7 +89,7 @@ describe('userinfo /me', () => {
   describe('userinfo /me WWW-Authenticate header', () => {
     it('is set', function () {
       return this.agent.get('/me')
-        .set('Authorization', 'Bearer ThisIsNotAValidToken')
+        .auth('ThisIsNotAValidToken', { type: 'bearer' })
         .expect(401)
         .expect('WWW-Authenticate', new RegExp(`^Bearer realm="${this.provider.issuer}"`))
         .expect('WWW-Authenticate', /error="invalid_token"/);
