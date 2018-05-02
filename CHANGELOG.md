@@ -5,7 +5,8 @@ Yay for [SemVer](http://semver.org/).
 **Table of Contents**
 
 <!-- TOC START min:2 max:2 link:true update:true -->
-- [2.18.x](#218x)
+- [3.0.0](#300)
+- [2.18.0](#2180)
 - [2.17.0](#2170)
 - [2.16.0](#2160)
 - [2.15.0](#2150)
@@ -27,11 +28,19 @@ Yay for [SemVer](http://semver.org/).
 - [^1.0.0](#100)
 
 <!-- TOC END -->
+## 3.0.0
+- [DIFF](https://github.com/panva/node-oidc-provider/compare/v2.18.0...v3.0.0)
+- fixed `client_secret_basic` requiring the username and password tokens to be `x-www-form-urlencoded`
+  according to https://tools.ietf.org/html/rfc6749#section-2.3.1
+  - NOTE: Although technically a fix, this is a breaking change for clients with client secrets that
+    need to be encoded according to the standard and don't currently do so. A proper way of submitting
+    client_id and client_secret using `client_secret_basic` is
+    `Authorization: base64(formEncode(client_id):formEncode(client_secret))`. This is only becoming
+    apparent for client ids and secrets with special characters that need encoding.
+
 ## 2.18.x
-### 2.18.1
-- [DIFF](https://github.com/panva/node-oidc-provider/compare/v2.18.0...v2.18.1)
-- fixed client_secret_basic client auth for non-ascii characters according to
-  https://tools.ietf.org/html/rfc6749#section-2.3.1
+### 2.18.2
+- re-released 2.18.0 as 2.18.2 following deprecation of 2.18.1
 
 ### 2.18.0
 - [DIFF](https://github.com/panva/node-oidc-provider/compare/v2.17.0...v2.18.0)

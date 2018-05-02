@@ -152,6 +152,19 @@ describe('client authentication options', () => {
         .expect(this.responses.tokenAuthSucceeded);
     });
 
+    it('accepts the auth (https://tools.ietf.org/html/rfc6749#appendix-B)', function () {
+      return this.agent.post(route)
+        .send({
+          grant_type: 'implicit',
+        })
+        .type('form')
+        .auth('foo with %', 'foo with $')
+        .expect({
+          error: 'invalid_request',
+          error_description: 'client_id and client_secret are not properly encoded',
+        });
+    });
+
     it('validates the Basic scheme format (parts)', function () {
       return this.agent.post(route)
         .send({
