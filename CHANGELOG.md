@@ -31,6 +31,7 @@ Yay for [SemVer](http://semver.org/).
 
 ## 4.0.0
 - [DIFF]
+- A minimal version of node lts/carbon is required (>=8.9.0)
 - **New configurations**
   - LRU-cache sizes
 - **Session Changes**
