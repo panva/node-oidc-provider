@@ -73,11 +73,11 @@
     "nock": "^9.2.5",
     "nyc": "^11.7.1",
     "pre-commit": "^1.2.2",
-    "sinon": "^4.5.0",
+    "sinon": "^5.0.3",
     "supertest": "^3.0.0"
   },
   "engines": {
-    "node": ">=8.0.0"
+    "node": ">=8.9.0"
   },
   "nyc": {
     "reporter": [
