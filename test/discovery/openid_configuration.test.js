@@ -1,6 +1,6 @@
 const bootstrap = require('../test_helper');
 const sinon = require('sinon');
-const { InvalidRequestError } = require('../../lib/helpers/errors');
+const { InvalidRequest } = require('../../lib/helpers/errors');
 const { expect } = require('chai');
 
 const route = '/.well-known/openid-configuration';
@@ -35,7 +35,7 @@ describe(route, () => {
 
   describe('with errors', () => {
     before(function () {
-      sinon.stub(this.provider, 'pathFor').throws(new InvalidRequestError());
+      sinon.stub(this.provider, 'pathFor').throws(new InvalidRequest());
     });
 
     after(function () {
