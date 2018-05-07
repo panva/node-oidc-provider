@@ -518,8 +518,26 @@ To disable removing frame-ancestors from Content-Security-Policy and X-Frame-Opt
 const configuration = { features: { sessionManagement: { keepHeaders: true } } };
 ```
 
+To calculate session state, oidc-provider uses the client's host (extracted from
+the `redirect_uri`). The `minDomainAtoms` configuration param can be used to select how
+many domain atoms will be used in the calculation. Setting the value of the param to 1
+would only use the domain's TLD, if set to 2 it will use the domain's TLD and second
+level domain i.e.
 
-**Back-Channel Logout features**  
+| redirect_uri              | minDomainAtoms| Value used for session state calculation  |
+| :------------------------ |:-------------:| -----------------------------------------:|
+| `https://qux.foo.bar.com` |       1       |                             `https://com` |
+| `https://qux.foo.bar.com` |       2       |                         `https://bar.com` |
+| `https://qux.foo.bar.com` |       3       |                     `https://foo.bar.com` |
+
+This can be useful for when a client uses multiple subdomains dynamically. To set the
+value
+```js
+const configuration = { features: { sessionManagement: { minDomainAtoms: 2 } } };
+```
+
+
+**Back-Channel Logout features**
 Enables features described in [Back-Channel Logout 1.0 - draft 04][backchannel-logout].
 ```js
 const configuration = { features: { sessionManagement: true, backchannelLogout: Boolean[false] } };

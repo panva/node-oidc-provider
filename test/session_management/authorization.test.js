@@ -1,5 +1,9 @@
 const bootstrap = require('../test_helper');
+const sinon = require('sinon');
+const crypto = require('crypto');
 const { expect } = require('chai');
+const { URL } = require('url');
+const { config, client } = require('./session_management.config.js');
 
 const route = '/auth';
 
@@ -62,6 +66,99 @@ describe('session management', () => {
         }, done));
 
         this.agent.get('/session/check').end(() => {});
+      });
+    });
+  });
+
+  describe('[session_management] session_state calculation', () => {
+    function expected(url, salt) {
+      const textToHash = `client ${url} 1525771507 ${salt}`;
+      return crypto.createHash('sha256').update(textToHash).digest('hex');
+    }
+
+    before(function () {
+      this.clock = sinon.useFakeTimers(new Date(1525771507000));
+      return this.login();
+    });
+
+    after(function () {
+      this.clock.restore();
+    });
+
+    it('calculates session_state using redirect_uri', function () {
+      const auth = new this.AuthorizationRequest({
+        response_type: 'code',
+        scope: 'openid',
+      });
+
+      return this.agent.get('/auth').query(auth)
+        .expect((response) => {
+          const redirectUrl = new URL(response.headers.location);
+          const sessionState = redirectUrl.searchParams.get('session_state');
+          const [sessionStr, salt] = sessionState.split('.');
+          expect(sessionStr).to.equal(expected('https://client.example.com', salt));
+        });
+    });
+
+    it('calculates session_state using redirect_uri with port', async () => {
+      const { redirect_uris } = client;
+      client.redirect_uris = ['https://client.example.com:8080/cb'];
+      await bootstrap(__dirname).call(this);
+      await this.login();
+      const auth = new this.AuthorizationRequest({
+        response_type: 'code',
+        scope: 'openid',
+      });
+
+      return this.agent.get('/auth').query(auth)
+        .expect((response) => {
+          client.redirect_uris = redirect_uris;
+          const redirectUrl = new URL(response.headers.location);
+          const sessionState = redirectUrl.searchParams.get('session_state');
+          const [sessionStr, salt] = sessionState.split('.');
+          expect(sessionStr).to.equal(expected('https://client.example.com:8080', salt));
+        });
+    });
+
+    context('when minDomainAtoms', () => {
+      it('calculates session_state using redirect_uri', async () => {
+        const { features: { sessionManagement } } = config;
+        config.features.sessionManagement = { minDomainAtoms: 2 };
+        await bootstrap(__dirname).call(this);
+        await this.login();
+        const auth = new this.AuthorizationRequest({
+          response_type: 'code',
+          scope: 'openid',
+        });
+
+        return this.agent.get('/auth').query(auth)
+          .expect((response) => {
+            config.features.sessionManagement = sessionManagement;
+            const redirectUrl = new URL(response.headers.location);
+            const sessionState = redirectUrl.searchParams.get('session_state');
+            const [sessionStr, salt] = sessionState.split('.');
+            expect(sessionStr).to.equal(expected('https://example.com', salt));
+          });
+      });
+
+      it('fallbacks to full uri when domain has less atoms', async () => {
+        const { features: { sessionManagement } } = config;
+        config.features.sessionManagement = { minDomainAtoms: 42 };
+        await bootstrap(__dirname).call(this);
+        await this.login();
+        const auth = new this.AuthorizationRequest({
+          response_type: 'code',
+          scope: 'openid',
+        });
+
+        return this.agent.get('/auth').query(auth)
+          .expect((response) => {
+            config.features.sessionManagement = sessionManagement;
+            const redirectUrl = new URL(response.headers.location);
+            const sessionState = redirectUrl.searchParams.get('session_state');
+            const [sessionStr, salt] = sessionState.split('.');
+            expect(sessionStr).to.equal(expected('https://client.example.com', salt));
+          });
       });
     });
   });
