@@ -91,8 +91,7 @@ Yay for [SemVer](http://semver.org/).
 - **Other**
   - moved middleware handling missing optionally `redirect_uri` parameter case right after loading
     the client
-  - `renderError` helper signature changed to (ctx, out, error), out being the object that SHOULD be
-    displayed to the End-User, error being the original error object
+  - `renderError` helper is now called with a third argument that's the actual Error instance.
   - bumped the semantic version of every dependency to the latest as of release
   - `features.pkce` now only enables `S256` by default, this is sufficient for most deployments. If
     `plain` is needed enable pkce with `{ features: { pkce: { supportedMethods: ['plain', 'S256'] } }`.
