@@ -3,6 +3,11 @@ const sinon = require('sinon');
 const querystring = require('querystring');
 const { expect } = require('chai');
 const epochTime = require('../../../lib/helpers/epoch_time');
+const {
+  InvalidRequest,
+  InvalidClient,
+  RedirectUriMismatch,
+} = require('../../../lib/helpers/errors');
 
 const route = '/auth';
 const response_type = 'code';
@@ -317,9 +322,10 @@ describe('BASIC code', () => {
             .expect(() => {
               expect(emitSpy.calledOnce).to.be.true;
               expect(renderSpy.calledOnce).to.be.true;
-              const renderArgs = renderSpy.args[0][1];
-              expect(renderArgs).to.have.property('error', 'invalid_request');
-              expect(renderArgs).to.have.property('error_description', 'missing required parameter(s) redirect_uri');
+              const renderArgs = renderSpy.args[0];
+              expect(renderArgs[1]).to.have.property('error', 'invalid_request');
+              expect(renderArgs[1]).to.have.property('error_description', 'missing required parameter(s) redirect_uri');
+              expect(renderArgs[2]).to.be.an.instanceof(InvalidRequest);
             });
         });
       });
@@ -427,9 +433,10 @@ describe('BASIC code', () => {
           .expect(400)
           .expect(() => {
             expect(renderSpy.calledOnce).to.be.true;
-            const renderArgs = renderSpy.args[0][1];
-            expect(renderArgs).to.have.property('error', 'invalid_request');
-            expect(renderArgs).to.have.property('error_description', 'missing required parameter client_id');
+            const renderArgs = renderSpy.args[0];
+            expect(renderArgs[1]).to.have.property('error', 'invalid_request');
+            expect(renderArgs[1]).to.have.property('error_description', 'missing required parameter client_id');
+            expect(renderArgs[2]).to.be.an.instanceof(InvalidRequest);
           });
       });
 
@@ -450,8 +457,9 @@ describe('BASIC code', () => {
           .expect(400)
           .expect(() => {
             expect(renderSpy.calledOnce).to.be.true;
-            const renderArgs = renderSpy.args[0][1];
-            expect(renderArgs).to.have.property('error', 'invalid_client');
+            const renderArgs = renderSpy.args[0];
+            expect(renderArgs[1]).to.have.property('error', 'invalid_client');
+            expect(renderArgs[2]).to.be.an.instanceof(InvalidClient);
           });
       });
 
@@ -481,8 +489,9 @@ describe('BASIC code', () => {
             })
             .expect(() => {
               expect(renderSpy.calledOnce).to.be.true;
-              const renderArgs = renderSpy.args[0][1];
-              expect(renderArgs).to.have.property('error', 'redirect_uri_mismatch');
+              const renderArgs = renderSpy.args[0];
+              expect(renderArgs[1]).to.have.property('error', 'redirect_uri_mismatch');
+              expect(renderArgs[2]).to.be.an.instanceof(RedirectUriMismatch);
             });
         });
 
@@ -517,8 +526,9 @@ describe('BASIC code', () => {
             })
             .expect(() => {
               expect(renderSpy.calledOnce).to.be.true;
-              const renderArgs = renderSpy.args[0][1];
-              expect(renderArgs).to.have.property('error', 'redirect_uri_mismatch');
+              const renderArgs = renderSpy.args[0];
+              expect(renderArgs[1]).to.have.property('error', 'redirect_uri_mismatch');
+              expect(renderArgs[2]).to.be.an.instanceof(RedirectUriMismatch);
             });
         });
       });
@@ -603,9 +613,10 @@ describe('BASIC code', () => {
           .expect(() => {
             expect(emitSpy.calledOnce).to.be.true;
             expect(renderSpy.calledOnce).to.be.true;
-            const renderArgs = renderSpy.args[0][1];
-            expect(renderArgs).to.have.property('error', 'redirect_uri_mismatch');
-            expect(renderArgs).to.have.property('error_description', 'redirect_uri did not match any client\'s registered redirect_uris');
+            const renderArgs = renderSpy.args[0];
+            expect(renderArgs[1]).to.have.property('error', 'redirect_uri_mismatch');
+            expect(renderArgs[1]).to.have.property('error_description', 'redirect_uri did not match any client\'s registered redirect_uris');
+            expect(renderArgs[2]).to.be.an.instanceof(RedirectUriMismatch);
           });
       });
 
