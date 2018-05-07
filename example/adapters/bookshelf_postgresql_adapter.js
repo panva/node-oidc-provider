@@ -2,7 +2,12 @@
 // For questions/suggestions/fixes related to this adapter create an
 // issue in this dedicated repository: https://github.com/madarche/contact
 //
-// Developed and tested with the following dependencies:
+// Developed and tested with the following software:
+//
+// Persistent storage:
+// PostgreSQL >= 9.4 (for the jsonb datatype)
+//
+// NPM dependencies:
 // bookshelf@0.13.3
 // knex@0.14.6
 
@@ -83,7 +88,10 @@ class BookshelfPostgresqlAdapter {
       await record.set(updateData).save();
     } else {
       updateData.id = id;
-      record = await new Record().save(updateData);
+      // It's needed to specify method: 'insert' because we pass an id to
+      // the constructor. isNew is true when there is no id. ORM work
+      // better when there is no specified id.
+      record = await new Record(updateData).save({}, { method: 'insert' });
     }
 
     const { grantId } = payload;
@@ -109,7 +117,10 @@ class BookshelfPostgresqlAdapter {
       if (grant) {
         await grant.set({ data }).save();
       } else {
-        await new Record().save({ id: grantId, name: 'Grant', data });
+        // It's needed to specify method: 'insert' because we pass an id to
+        // the constructor. isNew is true when there is no id. ORM work
+        // better when there is no specified id.
+        await new Record({ id: grantId, name: 'Grant', data }).save({}, { method: 'insert' });
       }
     }
   }
@@ -123,23 +134,16 @@ class BookshelfPostgresqlAdapter {
    * @param {string} id Identifier of oidc-provider model
    */
   async find(id) {
-    return new Record()
+    await this.purgeExpired();
+
+    const record = await new Record()
       .where('id', id)
-      .fetch()
-      .then((record) => {
-        if (!record) {
-          return null;
-        }
+      .fetch();
+    if (!record) {
+      return null;
+    }
 
-        // Deleting the record if expired
-        if (record.get('expires_at') &&
-                    record.get('expires_at') <= new Date()) {
-          return record.destroy()
-            .then(() => null);
-        }
-
-        return record.get('data');
-      });
+    return record.get('data');
   }
 
   /**
@@ -189,14 +193,32 @@ class BookshelfPostgresqlAdapter {
           })
           .fetchAll();
         await tokens.invokeThen('destroy', { require: false });
+        await grant.destroy({ require: false });
       }
     }
   }
 
   /**
+   * Purges all the expired records of this oidc-provider model.
+   *
    * Commodity method, but not required by the oidc-provider framework.
    *
+   * @return {Promise} Promise fulfilled when the operation succeeded. Rejected with error
+   *   when encountered.
+   */
+  async purgeExpired() {
+    const records = await new Record()
+      .query((qb) => {
+        qb.where('expires_at', '<=', new Date());
+      })
+      .fetchAll();
+    await records.invokeThen('destroy', { require: false });
+  }
+
+  /**
    * Returns all the records of this oidc-provider model.
+   *
+   * Commodity method, but not required by the oidc-provider framework.
    *
    * @return {Promise} Promise fulfilled when the operation succeeded. Rejected with error
    *   when encountered.
@@ -220,6 +242,35 @@ class BookshelfPostgresqlAdapter {
   static connect(provider) { // eslint-disable-line no-unused-vars
     return bookshelf.knex(Record.prototype.tableName)
       .select(bookshelf.knex.raw('1'));
+  }
+
+  /**
+   * Destroys all records
+   *
+   * Commodity method, but not required by the oidc-provider framework.
+   *
+   * @return {Promise} Promise fulfilled when the operation succeeded. Rejected with error
+   *   when encountered.
+   */
+  static async clear() {
+    await new Record()
+    // Using a where() clause that is always true
+      .where('id', '!=', 0)
+      .destroy({ require: false });
+  }
+
+  /**
+   * Returns the number of all records
+   *
+   * Commodity method, but not required by the oidc-provider framework.
+   *
+   * @return {Promise} Promise fulfilled when the operation succeeded. Rejected with error
+   *   when encountered.
+   */
+  static async size() {
+    const records = await new Record()
+      .fetchAll();
+    return records.size();
   }
 }
 
