@@ -518,6 +518,11 @@ To disable removing frame-ancestors from Content-Security-Policy and X-Frame-Opt
 const configuration = { features: { sessionManagement: { keepHeaders: true } } };
 ```
 
+In order for the Session Managmenet feature to work, the UA must support Third-Party cookies.
+OIDC-provider checks if this feature is enabled using an [iframe][third-party-cookies-git]
+and testing, but you should use your own pages when you go live. To do so, set the
+`cookies.thirdPartyCheckUrl` to a link for the start page. Remember this should be
+hosted under a **different domain**). See [this][third-party-cookies-so] for more info.
 
 **Back-Channel Logout features**  
 Enables features described in [Back-Channel Logout 1.0 - draft 04][backchannel-logout].
@@ -1442,3 +1447,5 @@ default value:
 [defaults]: /lib/helpers/defaults.js
 [cookie-module]: https://github.com/pillarjs/cookies#cookiesset-name--value---options--
 [keygrip-module]: https://www.npmjs.com/package/keygrip
+[third-party-cookies-git]: https://github.com/mindmup/3rdpartycookiecheck
+[third-party-cookies-so]: https://stackoverflow.com/questions/3550790/check-if-third-party-cookies-are-enabled/7104048#7104048
