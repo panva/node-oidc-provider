@@ -518,11 +518,11 @@ To disable removing frame-ancestors from Content-Security-Policy and X-Frame-Opt
 const configuration = { features: { sessionManagement: { keepHeaders: true } } };
 ```
 
-In order for the Session Managmenet feature to work, the UA must support Third-Party cookies.
-OIDC-provider checks if this feature is enabled using an [iframe][third-party-cookies-git]
-and testing, but you should use your own pages when you go live. To do so, set the
-`cookies.thirdPartyCheckUrl` to a link for the start page. Remember this should be
-hosted under a **different domain**). See [this][third-party-cookies-so] for more info.
+In order for the Session Managmenet feature to work, the User-Agent must allow access to Third-Party 
+cookies. oidc-provider checks if this feature is enabled using a [CDN hosted](https://rawgit.com/)
+[iframe][third-party-cookies-git]. It is recommended to host these helper pages on your own
+(on a different domain from the one you host oidc-provider on). Once hosted, set the
+`cookies.thirdPartyCheckUrl` to an absolute URL for the start page. See [this][third-party-cookies-so] for more info.
 
 **Back-Channel Logout features**  
 Enables features described in [Back-Channel Logout 1.0 - draft 04][backchannel-logout].
