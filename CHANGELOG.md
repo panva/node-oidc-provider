@@ -92,6 +92,7 @@ Yay for [SemVer](http://semver.org/).
   - added `cookies.thirdPartyCheckUrl` option and a warning to host it
   - moved middleware handling missing optionally `redirect_uri` parameter case right after loading
     the client
+  - removed the non-spec covered `rt_hash` ID Token claim
   - `renderError` helper is now called with a third argument that's the actual Error instance.
   - bumped the semantic version of every dependency to the latest as of release
   - `features.pkce` now only enables `S256` by default, this is sufficient for most deployments. If
