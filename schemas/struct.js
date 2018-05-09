@@ -17,6 +17,9 @@ const struct = superstruct({
       }
       return true;
     },
+    webUri(v) {
+      return validUrl.isWebUri(v);
+    },
     email(v) {
       return /.+@.+\..+/.exec(v);
     },

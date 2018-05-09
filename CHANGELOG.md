@@ -89,6 +89,7 @@ Yay for [SemVer](http://semver.org/).
     - send both Authorization header and client_secret or client_assertion in the body
 
 - **Other**
+  - added `cookies.thirdPartyCheckUrl` option and a warning to host it
   - moved middleware handling missing optionally `redirect_uri` parameter case right after loading
     the client
   - `renderError` helper is now called with a third argument that's the actual Error instance.

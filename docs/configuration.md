@@ -967,6 +967,17 @@ default value:
   maxAge: 3600000 }
 ```
 
+### cookies.thirdPartyCheckUrl
+
+URL for 3rd party cookies support check helper  
+
+affects: sessionManagement feature   
+
+default value:
+```js
+'https://cdn.rawgit.com/panva/3rdpartycookiecheck/92fead3f/start.html'
+```
+
 ### discovery
 
 Pass additional properties to this object to extend the discovery document  

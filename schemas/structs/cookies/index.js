@@ -7,11 +7,13 @@ const {
     keys,
     long,
     short,
+    thirdPartyCheckUrl,
   },
 } = require('../../../lib/helpers/defaults');
 
 module.exports = struct.interface({
   names,
+  thirdPartyCheckUrl: 'string & webUri',
   long: options(long),
   short: options(short),
   keys: ['string'],
@@ -20,4 +22,5 @@ module.exports = struct.interface({
   short: {},
   long: {},
   keys,
+  thirdPartyCheckUrl,
 });
