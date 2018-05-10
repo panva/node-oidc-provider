@@ -42,6 +42,7 @@ point to get an idea of what you should provide.
   - [cookies.long](#cookieslong)
   - [cookies.names](#cookiesnames)
   - [cookies.short](#cookiesshort)
+  - [cookies.thirdPartyCheckUrl](#cookiesthirdpartycheckurl)
   - [discovery](#discovery)
   - [extraClientMetadata](#extraclientmetadata)
   - [extraClientMetadata.properties](#extraclientmetadataproperties)
@@ -518,8 +519,8 @@ To disable removing frame-ancestors from Content-Security-Policy and X-Frame-Opt
 const configuration = { features: { sessionManagement: { keepHeaders: true } } };
 ```
 
-In order for the Session Management features to avoid endless "changed" events, the User-Agent 
-must allow access to Third-Party cookies. oidc-provider checks if this is enabled 
+In order for the Session Management features to avoid endless "changed" events, the User-Agent
+must allow access to Third-Party cookies. oidc-provider checks if this is enabled
 using a [CDN hosted](https://rawgit.com/) [iframe][third-party-cookies-git].
 It is recommended to host these helper pages on your own
 (on a different domain from the one you host oidc-provider on). Once hosted, set the
@@ -611,10 +612,11 @@ const parameters = ['username', 'password'];
 
 provider.registerGrantType('password', function passwordGrantTypeFactory(providerInstance) {
   return async function passwordGrantType(ctx, next) {
-    if (ctx.oidc.params.username === 'foo' && ctx.oidc.params.password === 'bar') {
+    let account;
+    if ((account = Account.authenticate(ctx.oidc.params.username, ctx.oidc.params.password))) {
       const AccessToken = providerInstance.AccessToken;
       const at = new AccessToken({
-        accountId: 'foo',
+        accountId: account.id,
         clientId: ctx.oidc.client.clientId,
         grantId: ctx.oidc.uuid,
       });
