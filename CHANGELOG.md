@@ -5,8 +5,8 @@ Yay for [SemVer](http://semver.org/).
 **Table of Contents**
 
 <!-- TOC START min:2 max:2 link:true update:true -->
-- [3.0.0](#300)
-- [2.18.0](#2180)
+- [3.0.x](#30x)
+- [2.18.x](#218x)
 - [2.17.0](#2170)
 - [2.16.0](#2160)
 - [2.15.0](#2150)
@@ -28,7 +28,12 @@ Yay for [SemVer](http://semver.org/).
 - [^1.0.0](#100)
 
 <!-- TOC END -->
-## 3.0.0
+## 3.0.x
+### 3.0.1
+- [DIFF](https://github.com/panva/node-oidc-provider/compare/v3.0.0...v3.0.1)
+- dependency tree updates
+
+### 3.0.0
 - [DIFF](https://github.com/panva/node-oidc-provider/compare/v2.18.0...v3.0.0)
 - fixed `client_secret_basic` requiring the username and password tokens to be `x-www-form-urlencoded`
   according to https://tools.ietf.org/html/rfc6749#section-2.3.1
