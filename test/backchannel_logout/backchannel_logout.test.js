@@ -2,7 +2,7 @@ const bootstrap = require('../test_helper');
 const sinon = require('sinon');
 const { expect } = require('chai');
 const { parse: parseUrl } = require('url');
-const base64url = require('base64url');
+const base64url = require('base64-url');
 const nock = require('nock');
 const Provider = require('../../lib');
 

@@ -1,7 +1,7 @@
 const sinon = require('sinon');
 const { expect } = require('chai');
 const bootstrap = require('../test_helper');
-const base64url = require('base64url');
+const base64url = require('base64-url');
 
 const fail = () => { throw new Error('expected promise to be rejected'); };
 
@@ -32,7 +32,7 @@ describe('BaseToken', () => {
     const stored = this.adapter.syncFind(jti);
     const payload = JSON.parse(base64url.decode(stored.payload));
     payload.exp = 0;
-    stored.payload = base64url(JSON.stringify(payload));
+    stored.payload = base64url.encode(JSON.stringify(payload));
     expect(await this.provider.AccessToken.find(token)).to.be.undefined;
   });
 

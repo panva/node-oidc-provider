@@ -4,7 +4,7 @@ const uuid = require('uuid/v4');
 const { decode } = require('../../lib/helpers/jwt');
 const epochTime = require('../../lib/helpers/epoch_time');
 const { expect } = require('chai');
-const base64url = require('base64url');
+const base64url = require('base64-url');
 
 describe('signatures', () => {
   before(bootstrap(__dirname)); // this.provider, agent, this.AuthorizationRequest, wrap
@@ -136,7 +136,7 @@ describe('signatures', () => {
       const parts = this.idToken.split('.');
       const payload = JSON.parse(base64url.decode(parts[1]));
       payload.iss = 'foobar';
-      parts[1] = base64url(JSON.stringify(payload));
+      parts[1] = base64url.encode(JSON.stringify(payload));
       this.idToken = parts.join('.');
       const auth = new this.AuthorizationRequest({
         response_type: 'code',

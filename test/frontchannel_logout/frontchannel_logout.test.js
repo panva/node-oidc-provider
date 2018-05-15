@@ -3,7 +3,7 @@ const { expect } = require('chai');
 const { cloneDeep } = require('lodash');
 const { parse: parseUrl } = require('url');
 const url = require('url');
-const base64url = require('base64url');
+const base64url = require('base64-url');
 const Provider = require('../../lib');
 
 describe('Front-Channel Logout 1.0', () => {
