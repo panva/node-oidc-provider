@@ -122,7 +122,6 @@ Yay for [SemVer](http://semver.org/).
       ```
   - fetched `request_uri` contents are no longer cached for 15 minutes default, cache headers are
     honoured and responses without one will fall off the LRU-Cache when this one is full
-  - fixed failed client `jwks_uri` fetch requests to throw `invalid_client_metadata` rather then `server_error`
   - added `aud` to the introspection response if a token has one
   - `audiences` helper gets called with additional parameters `use` and `scope`
   - `audiences` helper `use` parameter is now in addition to existing `id_token` and signed `userinfo`
