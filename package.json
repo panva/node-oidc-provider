@@ -44,7 +44,7 @@
     "lint"
   ],
   "dependencies": {
-    "base64-url": "^2.2.0",
+    "base64url": "^3.0.0",
     "debug": "^3.1.0",
     "delegates": "^1.0.0",
     "ejs": "^2.6.1",

@@ -1,7 +1,7 @@
 const bootstrap = require('../../test_helper');
 const url = require('url');
 const sinon = require('sinon');
-const base64url = require('base64-url');
+const base64url = require('base64url');
 const { expect } = require('chai');
 
 const route = '/auth';

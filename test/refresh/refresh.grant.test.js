@@ -1,6 +1,6 @@
 const bootstrap = require('../test_helper');
 const sinon = require('sinon');
-const base64url = require('base64-url');
+const base64url = require('base64url');
 const { parse: parseUrl } = require('url');
 const { expect } = require('chai');
 

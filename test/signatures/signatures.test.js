@@ -4,7 +4,7 @@ const uuid = require('uuid/v4');
 const { decode } = require('../../lib/helpers/jwt');
 const epochTime = require('../../lib/helpers/epoch_time');
 const { expect } = require('chai');
-const base64url = require('base64-url');
+const base64url = require('base64url');
 
 describe('signatures', () => {
   before(bootstrap(__dirname)); // this.provider, agent, this.AuthorizationRequest, wrap

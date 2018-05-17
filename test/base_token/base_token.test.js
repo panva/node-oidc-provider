@@ -1,7 +1,7 @@
 const sinon = require('sinon');
 const { expect } = require('chai');
 const bootstrap = require('../test_helper');
-const base64url = require('base64-url');
+const base64url = require('base64url');
 
 const fail = () => { throw new Error('expected promise to be rejected'); };
 

@@ -1,7 +1,7 @@
 const bootstrap = require('../test_helper');
 const { expect } = require('chai');
 const sinon = require('sinon');
-const base64url = require('base64-url');
+const base64url = require('base64url');
 
 function validateError(error) {
   const assert = error.exec ? 'match' : 'equal';
