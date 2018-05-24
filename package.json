@@ -58,7 +58,6 @@
     "node-jose": "^1.0.0",
     "oidc-token-hash": "^3.0.1",
     "raw-body": "^2.3.3",
-    "superstruct": "^0.5.4",
     "uuid": "^3.2.1"
   },
   "devDependencies": {
