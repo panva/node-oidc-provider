@@ -67,7 +67,7 @@ expire.setDate(expire.getDate() + 1);
         delete client.defaultAcrValues;
       });
 
-      it('(pre 3.x behavior backfill) should include the acr claim now', function () {
+      it('(pre 4.x behavior backfill) should include the acr claim now', function () {
         const descriptor = Object.getOwnPropertyDescriptor(this.provider.OIDCContext.prototype, 'acr');
 
         Object.defineProperty(this.provider.OIDCContext.prototype, 'acr', {
