@@ -937,7 +937,7 @@ default value:
 { secure: undefined,
   signed: undefined,
   httpOnly: true,
-  maxAge: 31557600000 }
+  maxAge: 1209600000 }
 ```
 
 ### cookies.names
@@ -966,7 +966,7 @@ default value:
 { secure: undefined,
   signed: undefined,
   httpOnly: true,
-  maxAge: 3600000 }
+  maxAge: 600000 }
 ```
 
 ### cookies.thirdPartyCheckUrl
