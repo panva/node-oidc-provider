@@ -89,6 +89,7 @@ Yay for [SemVer](http://semver.org/).
     - send both Authorization header and client_secret or client_assertion in the body
 
 - **Other**
+  - `node-jose` dependency bumped to major ^1.0.0 - fixes `A\d{3}GCMKW` symmetrical encryption support
   - added `cookies.thirdPartyCheckUrl` option and a warning to host it
   - moved middleware handling missing optionally `redirect_uri` parameter case right after loading
     the client
