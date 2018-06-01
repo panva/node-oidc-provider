@@ -29,7 +29,7 @@ Yay for [SemVer](http://semver.org/).
 
 <!-- TOC END -->
 ## 4.0.0
-- Unreleased [DIFF](https://github.com/panva/node-oidc-provider/compare/v3.0.3...master)
+- 2018-06-01 [DIFF](https://github.com/panva/node-oidc-provider/compare/v3.0.3...v4.0.0)
 
 ### Breaking changes
 - minimal version of node lts/carbon is required (>=8.9.0)
