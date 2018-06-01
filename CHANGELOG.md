@@ -111,6 +111,7 @@ Yay for [SemVer](http://semver.org/).
     ```
 - fetched `request_uri` contents are no longer cached for 15 minutes default, cache headers are
   honoured and responses without one will fall off the LRU-Cache when this one is full
+- default configuration values for `cookies.short.maxAge` and `cookies.long.maxAge` changed
 - `audiences` is now in addition to existing `id_token` and signed `userinfo`
   cases called for `client_credentials` and `access_token`, this is useful for pushing additional audiences
   to an Access Token, these are now returned by token introspection and can be used when serializing
