@@ -29,38 +29,32 @@ Yay for [SemVer](http://semver.org/).
 
 <!-- TOC END -->
 ## 4.0.0
-- [DIFF]
-- A minimal version of node lts/carbon is required (>=8.9.0)
-- **New configurations**
-  - LRU-cache sizes
-- **Session Changes**
-  - stored sessions now have an `exp` property allowing the provider to ignore expired but
-    still returned sessions
-    - TODO: migration to avoid losing all sessions
-- **Client Metadata**
-  - null property values are no longer ignored
-    - clients pushed through `#initialize()` must not submit properties with null values
-    - clients stored via an adapter must be updated in your storage not to have null or
-      null-deserialized values, alternatively you can update your adapter not to return these
-      properties back to the provider
-      ```js
-      const _ = require('lodash');
-      // your adapter implementation
-      class MyAdapter {
-        // ...
-        async find(id) {
-          // load entity properties and then drop the null properties if its a Client adapter instance
-          // this is implementation specific
-          const data = await DB.query(...);
-          if (this.name === 'Client') {
-            return _.omitBy(data, _.isNull);
-          }
-          return data;
-        }
-        // ...
-      }
-      ```
+- Unreleased [DIFF](https://github.com/panva/node-oidc-provider/compare/v3.0.3...master)
 
+### Breaking changes
+- minimal version of node lts/carbon is required (>=8.9.0)
+- **Client Metadata** - null property values are no longer ignored
+  - clients pushed through `#initialize()` must not submit properties with null values
+  - clients stored via an adapter must be updated in your storage not to have null or
+  null-deserialized values, alternatively you can update your adapter not to return these
+  properties back to the provider
+  ```js
+  const _ = require('lodash');
+  // your adapter implementation
+  class MyAdapter {
+    // ...
+    async find(id) {
+      // load entity properties and then drop the null properties if its a Client adapter instance
+      // this is implementation specific
+      const data = await DB.query(...);
+      if (this.name === 'Client') {
+        return _.omitBy(data, _.isNull);
+      }
+      return data;
+    }
+    // ...
+  }
+  ```
 - **Client Authentication**
   - Errors related to authentication details parsing and format are now `400 Bad Request` and
     `invalid_request`. Errors related to actual authentication check are now `401 Unauthorized` and
@@ -70,7 +64,7 @@ Yay for [SemVer](http://semver.org/).
     `provider.on('grant.error')` and provide the errors to clients out of bands.
     ```js
     function handleClientAuthErrors(err, { headers: { authorization }, oidc: { body, client } }) {
-      if (err.statusCode === 401 && err.message === 'invalid_client') {
+      if (err instanceof Provider.InvalidClientAuth) {
         // save error details out-of-bands for the client developers, `authorization`, `body`, `client`
         // are just some details available, you can dig in ctx object for more.
         console.log(err);
@@ -87,61 +81,68 @@ Yay for [SemVer](http://semver.org/).
     - submit multiple authentication mechanisms
     - send Authorization header to identify a `none` authentication method client
     - send both Authorization header and client_secret or client_assertion in the body
+- all error classes the provider emits/throws are now exported in `Provider.errors[class]` instead of
+  `Provider[class]` and the class names are no longer suffixed by `Error`. See `console.log(Provider.errors)`
+- removed the non-spec `rt_hash` ID Token claim
+- `features.pkce` now only enables `S256` by default, this is sufficient for most deployments. If
+  `plain` is needed enable pkce with `{ features: { pkce: { supportedMethods: ['plain', 'S256'] } }`.
+- `client.backchannelLogout` no longer suppresses any errors, instead rejects the promise
+- token introspection endpoint no longer returns the wrong `token_type` claim - #189
+  - to continue the support of this non-standardized claim from introspection you may register the following middleware
+    ```js
+    provider.use(async function introspectionTokenType(ctx, next) {
+      await next();
+      if (ctx._matchedRouteName === 'introspection') {
+        const token = ctx.oidc.entities.AccessToken || ctx.oidc.entities.ClientCredentials || ctx.oidc.entities.RefreshToken;
 
-- **Other**
-  - `node-jose` dependency bumped to major ^1.0.0 - fixes `A\d{3}GCMKW` symmetrical encryption support
-  - added `cookies.thirdPartyCheckUrl` option and a warning to host it
-  - moved middleware handling missing optionally `redirect_uri` parameter case right after loading
-    the client
-  - removed the non-spec covered `rt_hash` ID Token claim
-  - `renderError` helper is now called with a third argument that's the actual Error instance.
-  - bumped the semantic version of every dependency to the latest as of release
-  - `features.pkce` now only enables `S256` by default, this is sufficient for most deployments. If
-    `plain` is needed enable pkce with `{ features: { pkce: { supportedMethods: ['plain', 'S256'] } }`.
-  - `client.backchannelLogout` no longer suppresses any errors, instead rejects the promise
-  - token introspection endpoint no longer returns the wrong `token_type` claim - #189
-    - to continue the support of this non-standardized claim from introspection you may register the following middleware
-      ```js
-      provider.use(async function introspectionTokenType(ctx, next) {
-        await next();
-        if (ctx._matchedRouteName === 'introspection') {
-          const token = ctx.oidc.entities.AccessToken || ctx.oidc.entities.ClientCredentials || ctx.oidc.entities.RefreshToken;
-
-          switch (token && token.kind) {
-            case 'AccessToken':
-              ctx.body.token_type = 'access_token';
-              break;
-            case 'ClientCredentials':
-              ctx.body.token_type = 'client_credentials';
-              break;
-            case 'RefreshToken':
-              ctx.body.token_type = 'refresh_token';
-              break;
-          }
+        switch (token && token.kind) {
+          case 'AccessToken':
+            ctx.body.token_type = 'access_token';
+            break;
+          case 'ClientCredentials':
+            ctx.body.token_type = 'client_credentials';
+            break;
+          case 'RefreshToken':
+            ctx.body.token_type = 'refresh_token';
+            break;
         }
-      });
-      ```
-  - fetched `request_uri` contents are no longer cached for 15 minutes default, cache headers are
-    honoured and responses without one will fall off the LRU-Cache when this one is full
-  - added `aud` to the introspection response if a token has one
-  - `audiences` helper gets called with additional parameters `use` and `scope`
-  - `audiences` helper `use` parameter is now in addition to existing `id_token` and signed `userinfo`
-    cases `client_credentials` and `access_token`, this is useful for pushing additional audiences
-    to an Access Token, these are now returned by token introspection and can be used when serializing
-    an Access Token as a JWT
-  - the provider will no longer use the first value from `acrValues` to denote a "session" like acr.
-    In cases where acr is requested as a voluntary claim and no result is available this claim will
-    not be returned.
-    - to continue the support of the removed behaviour you can change the OIDCContext acr getter
-      ```js
-      const _ = require('lodash');
-      const sessionAcr = '...';
-      Object.defineProperty(provider.OIDCContext.prototype, 'acr', {
-        get() {
-          return _.get(this, 'result.login.acr', sessionAcr);
-        },
-      });
-      ```
+      }
+    });
+    ```
+- fetched `request_uri` contents are no longer cached for 15 minutes default, cache headers are
+  honoured and responses without one will fall off the LRU-Cache when this one is full
+- `audiences` is now in addition to existing `id_token` and signed `userinfo`
+  cases called for `client_credentials` and `access_token`, this is useful for pushing additional audiences
+  to an Access Token, these are now returned by token introspection and can be used when serializing
+  an Access Token as a JWT
+- the provider will no longer use the first value from `acrValues` to denote a "session" like acr.
+  In cases where acr is requested as a voluntary claim and no result is available this claim will
+  not be returned.
+  - to continue the support of the removed behaviour you can change the OIDCContext acr getter
+    ```js
+    const _ = require('lodash');
+    const sessionAcr = '...';
+    Object.defineProperty(provider.OIDCContext.prototype, 'acr', {
+      get() {
+        return _.get(this, 'result.login.acr', sessionAcr);
+      },
+    });
+    ```
+
+### Enhancements
+- **Session Changes**
+  - stored sessions now have an `exp` property allowing the provider to ignore expired but
+    still returned sessions
+    - existing sessions without this property will be accepted and the exp property will be added
+      with the next save
+- bumped the semantic version of every dependency to the latest as of release
+- added `aud` to the introspection response if a token has one
+- `audiences` helper gets called with additional parameters `use` and `scope`
+- `renderError` helper is now called with a third argument that's the actual Error instance.
+- `node-jose` dependency bumped to major ^1.0.0 - fixes `A\d{3}GCMKW` symmetrical encryption support
+- added `cookies.thirdPartyCheckUrl` option and a warning to host it
+- moved middleware handling missing optionally `redirect_uri` parameter case right after loading
+  the client
 
 ## 3.0.x
 ### 3.0.3
