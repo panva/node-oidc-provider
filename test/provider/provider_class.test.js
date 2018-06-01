@@ -9,6 +9,7 @@ describe('Provider', () => {
       expect(Provider[method]).to.equal(JWK[method]);
     });
     expect(Provider.errors).to.have.keys([
+      'AccessDenied',
       'InvalidClient',
       'InvalidClientAuth',
       'InvalidClientMetadata',
@@ -24,6 +25,7 @@ describe('Provider', () => {
       'RequestUriNotSupported',
       'RestrictedGrantType',
       'RestrictedResponseType',
+      'TemporarilyUnavailable',
       'UnauthorizedClient',
       'UnsupportedGrantType',
       'UnsupportedResponseMode',

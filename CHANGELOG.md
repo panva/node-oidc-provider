@@ -31,8 +31,10 @@ Yay for [SemVer](http://semver.org/).
 <!-- TOC END -->
 
 ## Unreleased
-- fix non-spec errors `restricted_response_type` and `restricted_grant_type` to be `unauthorized_client`
-  instead
+- fixes non-spec errors `restricted_response_type` and `restricted_grant_type` to be UnauthorizedClient
+  (`unauthorized_client`) instead as specified in RFC6749
+- adds AccessDenied (`access_denied`) and TemporarilyUnavailable (`temporarily_unavailable`) errors
+  to the list of exported errors
 
 ## 4.0.1
 - 2018-06-01 [DIFF](https://github.com/panva/node-oidc-provider/compare/v3.0.3...v4.0.1)
