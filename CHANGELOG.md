@@ -128,6 +128,8 @@ Yay for [SemVer](http://semver.org/).
       },
     });
     ```
+  - removed deprecated `#provider.setSessionAccountId()` helper method. Use `#provider.setProviderSession()`
+    instead
 
 ### Enhancements
 - **Session Changes**
