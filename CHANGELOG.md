@@ -5,6 +5,7 @@ Yay for [SemVer](http://semver.org/).
 **Table of Contents**
 
 <!-- TOC START min:2 max:2 link:true update:true -->
+- [Unreleased](#unreleased)
 - [4.0.1](#401)
 - [3.0.x](#30x)
 - [2.18.x](#218x)
@@ -28,6 +29,11 @@ Yay for [SemVer](http://semver.org/).
 - [2.0.x](#20x)
 
 <!-- TOC END -->
+
+## Unreleased
+- fix non-spec errors `restricted_response_type` and `restricted_grant_type` to be `unauthorized_client`
+  instead
+
 ## 4.0.1
 - 2018-06-01 [DIFF](https://github.com/panva/node-oidc-provider/compare/v3.0.3...v4.0.1)
 
