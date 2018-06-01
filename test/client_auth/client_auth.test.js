@@ -10,7 +10,7 @@ const { expect } = require('chai');
 const route = '/token';
 
 const tokenAuthSucceeded = {
-  error: 'restricted_grant_type',
+  error: 'unauthorized_client',
   error_description: 'requested grant type is restricted to this client',
 };
 
