@@ -5,7 +5,7 @@ Yay for [SemVer](http://semver.org/).
 **Table of Contents**
 
 <!-- TOC START min:2 max:2 link:true update:true -->
-- [4.0.0](#400)
+- [4.0.1](#401)
 - [3.0.x](#30x)
 - [2.18.x](#218x)
 - [2.17.0](#2170)
@@ -28,8 +28,8 @@ Yay for [SemVer](http://semver.org/).
 - [2.0.x](#20x)
 
 <!-- TOC END -->
-## 4.0.0
-- 2018-06-01 [DIFF](https://github.com/panva/node-oidc-provider/compare/v3.0.3...v4.0.0)
+## 4.0.1
+- 2018-06-01 [DIFF](https://github.com/panva/node-oidc-provider/compare/v3.0.3...v4.0.1)
 
 ### Breaking changes
 - minimal version of node lts/carbon is required (>=8.9.0)
