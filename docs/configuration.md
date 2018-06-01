@@ -8,66 +8,67 @@ point to get an idea of what you should provide.
 **Table of Contents**
 
 <!-- TOC START min:2 max:3 link:true update:true -->
-  - [Default configuration values](#default-configuration-values)
-  - [Accounts](#accounts)
-  - [Clients](#clients)
-  - [Certificates](#certificates)
-  - [Configuring available claims](#configuring-available-claims)
-  - [Configuring available scopes](#configuring-available-scopes)
-  - [Persistence](#persistence)
-  - [Interaction](#interaction)
-  - [Enable/Disable optional oidc-provider features](#enabledisable-optional-oidc-provider-features)
-  - [Custom Grant Types](#custom-grant-types)
-  - [Extending Authorization with Custom Parameters](#extending-authorization-with-custom-parameters)
-  - [Extending Discovery with Custom Properties](#extending-discovery-with-custom-properties)
-  - [Configuring Routes](#configuring-routes)
-  - [Fine-tuning supported algorithms](#fine-tuning-supported-algorithms)
-  - [HTTP Request Library / Proxy settings](#http-request-library--proxy-settings)
-  - [Changing HTTP Request Defaults](#changing-http-request-defaults)
-  - [Authentication Context Class Reference](#authentication-context-class-reference)
-  - [Registering module middlewares (helmet, ip-filters, rate-limiters, etc)](#registering-module-middlewares-helmet-ip-filters-rate-limiters-etc)
-  - [Pre- and post-middlewares](#pre--and-post-middlewares)
-  - [Mounting oidc-provider](#mounting-oidc-provider)
-    - [to an express application](#to-an-express-application)
-    - [to a koa application](#to-a-koa-application)
-  - [Trusting TLS offloading proxies](#trusting-tls-offloading-proxies)
-  - [Configuration options](#configuration-options)
-    - [acrValues](#acrvalues)
-    - [audiences](#audiences)
-    - [claims](#claims)
-    - [clientCacheDuration](#clientcacheduration)
-    - [clockTolerance](#clocktolerance)
-    - [cookies](#cookies)
-    - [cookies.keys](#cookieskeys)
-    - [cookies.long](#cookieslong)
-    - [cookies.names](#cookiesnames)
-    - [cookies.short](#cookiesshort)
-    - [discovery](#discovery)
-    - [extraClientMetadata](#extraclientmetadata)
-    - [extraClientMetadata.properties](#extraclientmetadataproperties)
-    - [extraClientMetadata.validator](#extraclientmetadatavalidator)
-    - [extraParams](#extraparams)
-    - [features](#features)
-    - [findById](#findbyid)
-    - [frontchannelLogoutPendingSource](#frontchannellogoutpendingsource)
-    - [interactionCheck](#interactioncheck)
-    - [interactionUrl](#interactionurl)
-    - [introspectionEndpointAuthMethods](#introspectionendpointauthmethods)
-    - [logoutSource](#logoutsource)
-    - [pairwiseSalt](#pairwisesalt)
-    - [postLogoutRedirectUri](#postlogoutredirecturi)
-    - [prompts](#prompts)
-    - [refreshTokenRotation](#refreshtokenrotation)
-    - [renderError](#rendererror)
-    - [responseTypes](#responsetypes)
-    - [revocationEndpointAuthMethods](#revocationendpointauthmethods)
-    - [routes](#routes)
-    - [scopes](#scopes)
-    - [subjectTypes](#subjecttypes)
-    - [tokenEndpointAuthMethods](#tokenendpointauthmethods)
-    - [ttl](#ttl)
-    - [uniqueness](#uniqueness)
-    - [unsupported](#unsupported)
+- [Default configuration values](#default-configuration-values)
+- [Accounts](#accounts)
+- [Clients](#clients)
+- [Certificates](#certificates)
+- [Configuring available claims](#configuring-available-claims)
+- [Configuring available scopes](#configuring-available-scopes)
+- [Persistence](#persistence)
+- [Interaction](#interaction)
+- [Enable/Disable optional oidc-provider features](#enabledisable-optional-oidc-provider-features)
+- [Custom Grant Types](#custom-grant-types)
+- [Extending Authorization with Custom Parameters](#extending-authorization-with-custom-parameters)
+- [Extending Discovery with Custom Properties](#extending-discovery-with-custom-properties)
+- [Configuring Routes](#configuring-routes)
+- [Fine-tuning supported algorithms](#fine-tuning-supported-algorithms)
+- [HTTP Request Library / Proxy settings](#http-request-library--proxy-settings)
+- [Changing HTTP Request Defaults](#changing-http-request-defaults)
+- [Authentication Context Class Reference](#authentication-context-class-reference)
+- [Registering module middlewares (helmet, ip-filters, rate-limiters, etc)](#registering-module-middlewares-helmet-ip-filters-rate-limiters-etc)
+- [Pre- and post-middlewares](#pre--and-post-middlewares)
+- [Mounting oidc-provider](#mounting-oidc-provider)
+  - [to an express application](#to-an-express-application)
+  - [to a koa application](#to-a-koa-application)
+- [Trusting TLS offloading proxies](#trusting-tls-offloading-proxies)
+- [Configuration options](#configuration-options)
+  - [acrValues](#acrvalues)
+  - [audiences](#audiences)
+  - [claims](#claims)
+  - [clientCacheDuration](#clientcacheduration)
+  - [clockTolerance](#clocktolerance)
+  - [cookies](#cookies)
+  - [cookies.keys](#cookieskeys)
+  - [cookies.long](#cookieslong)
+  - [cookies.names](#cookiesnames)
+  - [cookies.short](#cookiesshort)
+  - [cookies.thirdPartyCheckUrl](#cookiesthirdpartycheckurl)
+  - [discovery](#discovery)
+  - [extraClientMetadata](#extraclientmetadata)
+  - [extraClientMetadata.properties](#extraclientmetadataproperties)
+  - [extraClientMetadata.validator](#extraclientmetadatavalidator)
+  - [extraParams](#extraparams)
+  - [features](#features)
+  - [findById](#findbyid)
+  - [frontchannelLogoutPendingSource](#frontchannellogoutpendingsource)
+  - [interactionCheck](#interactioncheck)
+  - [interactionUrl](#interactionurl)
+  - [introspectionEndpointAuthMethods](#introspectionendpointauthmethods)
+  - [logoutSource](#logoutsource)
+  - [pairwiseSalt](#pairwisesalt)
+  - [postLogoutRedirectUri](#postlogoutredirecturi)
+  - [prompts](#prompts)
+  - [refreshTokenRotation](#refreshtokenrotation)
+  - [renderError](#rendererror)
+  - [responseTypes](#responsetypes)
+  - [revocationEndpointAuthMethods](#revocationendpointauthmethods)
+  - [routes](#routes)
+  - [scopes](#scopes)
+  - [subjectTypes](#subjecttypes)
+  - [tokenEndpointAuthMethods](#tokenendpointauthmethods)
+  - [ttl](#ttl)
+  - [uniqueness](#uniqueness)
+  - [unsupported](#unsupported)
 
 <!-- TOC END -->
 
@@ -518,6 +519,12 @@ To disable removing frame-ancestors from Content-Security-Policy and X-Frame-Opt
 const configuration = { features: { sessionManagement: { keepHeaders: true } } };
 ```
 
+In order for the Session Management features to avoid endless "changed" events, the User-Agent
+must allow access to Third-Party cookies. oidc-provider checks if this is enabled
+using a [CDN hosted](https://rawgit.com/) [iframe][third-party-cookies-git].
+It is recommended to host these helper pages on your own
+(on a different domain from the one you host oidc-provider on). Once hosted, set the
+`cookies.thirdPartyCheckUrl` to an absolute URL for the start page. See [this][third-party-cookies-so] for more info.
 
 **Back-Channel Logout features**  
 Enables features described in [Back-Channel Logout 1.0 - draft 04][backchannel-logout].
@@ -605,10 +612,11 @@ const parameters = ['username', 'password'];
 
 provider.registerGrantType('password', function passwordGrantTypeFactory(providerInstance) {
   return async function passwordGrantType(ctx, next) {
-    if (ctx.oidc.params.username === 'foo' && ctx.oidc.params.password === 'bar') {
+    let account;
+    if ((account = Account.authenticate(ctx.oidc.params.username, ctx.oidc.params.password))) {
       const AccessToken = providerInstance.AccessToken;
       const at = new AccessToken({
-        accountId: 'foo',
+        accountId: account.id,
         clientId: ctx.oidc.client.clientId,
         grantId: ctx.oidc.uuid,
       });
@@ -854,9 +862,14 @@ affects: id token audiences, signed userinfo audiences
 
 default value:
 ```js
-async audiences(ctx, id, token) {
-  // token is a reference to the token used for which a given account is being loaded,
-  // is undefined in scenarios where claims are returned from authorization endpoint
+async audiences(ctx, sub, token, use, scope) {
+  // @param ctx   - koa request context
+  // @param sub   - account identifier (subject)
+  // @param token - a reference to the token used for which a given account is being loaded,
+  //   is undefined in scenarios where claims are returned from authorization endpoint
+  // @param use   - can be one of "id_token", "userinfo", "access_token" depending on where the
+  //   specific audiences are intended to be put in
+  // @param scope - scope from either the request or related token
   return undefined;
 }
 ```
@@ -921,7 +934,10 @@ recommendation: set cookies.keys and cookies.long.signed = true
 
 default value:
 ```js
-{ signed: undefined, httpOnly: true, maxAge: 31557600000 }
+{ secure: undefined,
+  signed: undefined,
+  httpOnly: true,
+  maxAge: 1209600000 }
 ```
 
 ### cookies.names
@@ -947,7 +963,21 @@ recommendation: set cookies.keys and cookies.short.signed = true
 
 default value:
 ```js
-{ signed: undefined, httpOnly: true, maxAge: 3600000 }
+{ secure: undefined,
+  signed: undefined,
+  httpOnly: true,
+  maxAge: 600000 }
+```
+
+### cookies.thirdPartyCheckUrl
+
+URL for 3rd party cookies support check helper  
+
+affects: sessionManagement feature   
+
+default value:
+```js
+'https://cdn.rawgit.com/panva/3rdpartycookiecheck/92fead3f/start.html'
 ```
 
 ### discovery
@@ -1044,19 +1074,21 @@ affects: authorization, authorization_code and refresh_token grants, id token cl
 
 default value:
 ```js
-async findById(ctx, id, token) {
-  // "token" is a reference to the token used for which a given account is being loaded,
+async findById(ctx, sub, token) {
+  // @param ctx   - koa request context
+  // @param sub   - account identifier (subject)
+  // @param token - is a reference to the token used for which a given account is being loaded,
   //   is undefined in scenarios where claims are returned from authorization endpoint
   return {
-    accountId: id,
-    // @param use - can either be "id_token" or "userinfo", depending on
-    //   where the specific claims are intended to be put in.
+    accountId: sub,
+    // @param use   - can either be "id_token" or "userinfo", depending on
+    //   where the specific claims are intended to be put in
     // @param scope - the intended scope, while oidc-provider will mask
     //   claims depending on the scope automatically you might want to skip
     //   loading some claims from external resources etc. based on this detail
-    //   or not return them in id tokens but only userinfo and so on.
+    //   or not return them in id tokens but only userinfo and so on
     async claims(use, scope) {
-      return { sub: id };
+      return { sub };
     },
   };
 }
@@ -1125,7 +1157,7 @@ async interactionCheck(ctx) {
   } else if (
     ctx.oidc.client.applicationType === 'native' &&
     ctx.oidc.params.response_type !== 'none' &&
-    !ctx.oidc.result) { // TODO: in 3.x require consent to be passed in results
+    !ctx.oidc.result) {
     return {
       error: 'interaction_required',
       error_description: 'native clients require End-User interaction',
@@ -1252,7 +1284,7 @@ affects: presentation of errors encountered during authorization
 
 default value:
 ```js
-async renderError(ctx, error) {
+async renderError(ctx, out, error) {
   ctx.type = 'html';
   ctx.body = `<!DOCTYPE html>
 <head>
@@ -1260,7 +1292,7 @@ async renderError(ctx, error) {
 </head>
 <body>
 <h1>oops! something went wrong</h1>
-<pre>${JSON.stringify(error, null, 4)}</pre>
+<pre>${JSON.stringify(out, null, 4)}</pre>
 </body>
 </html>`;
 }
@@ -1429,3 +1461,5 @@ default value:
 [defaults]: /lib/helpers/defaults.js
 [cookie-module]: https://github.com/pillarjs/cookies#cookiesset-name--value---options--
 [keygrip-module]: https://www.npmjs.com/package/keygrip
+[third-party-cookies-git]: https://github.com/mindmup/3rdpartycookiecheck
+[third-party-cookies-so]: https://stackoverflow.com/questions/3550790/check-if-third-party-cookies-are-enabled/7104048#7104048

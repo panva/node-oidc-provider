@@ -47,7 +47,7 @@ const route = '/auth';
 
       it('responds with an encrypted userinfo JWT', function (done) {
         this.agent.get('/me')
-          .set('Authorization', `Bearer ${this.access_token}`)
+          .auth(this.access_token, { type: 'bearer' })
           .expect(200)
           .expect('content-type', /application\/jwt/)
           .expect((response) => {
@@ -79,7 +79,7 @@ const route = '/auth';
 
         it('also handles nested encrypted and signed userinfo JWT', function (done) {
           this.agent.get('/me')
-            .set('Authorization', `Bearer ${this.access_token}`)
+            .auth(this.access_token, { type: 'bearer' })
             .expect(200)
             .expect('content-type', /application\/jwt/)
             .expect((response) => {

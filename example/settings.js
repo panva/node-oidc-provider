@@ -1,7 +1,7 @@
 const pkg = require('../package.json');
 
 module.exports.config = {
-  acrValues: ['session', 'urn:mace:incommon:iap:bronze'],
+  acrValues: ['urn:mace:incommon:iap:bronze'],
   cookies: {
     long: { signed: true, maxAge: (1 * 24 * 60 * 60) * 1000 }, // 1 day in ms
     short: { signed: true },

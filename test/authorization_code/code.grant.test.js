@@ -345,22 +345,6 @@ describe('grant_type=authorization_code', () => {
       this.provider.Client.find.restore();
     });
 
-    it('handles errors', function () {
-      const spy = sinon.spy();
-      this.provider.once('grant.error', spy);
-
-      return this.agent.post(route)
-        .send({})
-        .type('form')
-        .expect(400)
-        .expect(() => {
-          expect(spy.calledOnce).to.be.true;
-        })
-        .expect((response) => {
-          expect(response.body).not.to.have.property('error', 'server_error');
-        });
-    });
-
     it('handles exceptions', function () {
       const spy = sinon.spy();
       this.provider.once('server_error', spy);

@@ -1,6 +1,6 @@
 const bootstrap = require('../test_helper');
 const sinon = require('sinon');
-const { InvalidRequestError } = require('../../lib/helpers/errors');
+const { InvalidRequest } = require('../../lib/helpers/errors');
 const { expect } = require('chai');
 
 const route = '/.well-known/openid-configuration';
@@ -35,7 +35,7 @@ describe(route, () => {
 
   describe('with errors', () => {
     before(function () {
-      sinon.stub(this.provider, 'pathFor').throws(new InvalidRequestError());
+      sinon.stub(this.provider, 'pathFor').throws(new InvalidRequest());
     });
 
     after(function () {
@@ -71,7 +71,11 @@ describe(route, () => {
     it('handles exceptions with json 500', function () {
       return this.agent.get(route)
         .expect('Content-Type', /application\/json/)
-        .expect(500, this.responses.serverErrorBody);
+        .expect(500)
+        .expect({
+          error: 'server_error',
+          error_description: 'oops something went wrong',
+        });
     });
 
     it('emits server_error on exceptions', function () {

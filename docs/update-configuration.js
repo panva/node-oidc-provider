@@ -124,6 +124,7 @@ const props = [
             if (line.includes('changeme')) return undefined;
             if (line.startsWith(' ')) line = line.slice(fixIndent);
             line = line.replace(/ \/\/ eslint-disable.+/, '');
+            line = line.replace(/ \/\/ TODO.+/, '');
             return line;
           }).filter(Boolean)
             .join('\n'));

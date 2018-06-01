@@ -36,7 +36,7 @@ describe('providing Bearer token', () => {
 
     it('bad Authorization header format (more then two parts)', function () {
       return this.agent.get('/me')
-        .set('Authorization', 'Bearer some three')
+        .auth('some three', { type: 'bearer' })
         .expect(400)
         .expect((response) => {
           expect(response.body.error).to.equal('invalid_request');

@@ -41,7 +41,7 @@ describe('audiences helper', () => {
 
   it('pushes audiences to signed userinfo responses', function () {
     return this.agent.get('/me')
-      .set('Authorization', `Bearer ${this.access_token}`)
+      .auth(this.access_token, { type: 'bearer' })
       .expect(200)
       .expect('content-type', 'application/jwt; charset=utf-8')
       .expect((response) => {

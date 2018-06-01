@@ -3,6 +3,7 @@ const sinon = require('sinon');
 const { parse: parseUrl } = require('url');
 const { expect } = require('chai');
 const JWT = require('../../lib/helpers/jwt');
+const { InvalidRequest } = require('../../lib/helpers/errors');
 
 const route = '/session/end';
 
@@ -118,31 +119,60 @@ describe('[session_management]', () => {
     });
 
     it('validates post_logout_redirect_uri allowed on client', function () {
+      const emitSpy = sinon.spy();
+      const renderSpy = sinon.spy(i(this.provider).configuration(), 'renderError');
+      this.provider.once('end_session.error', emitSpy);
       const params = {
         id_token_hint: this.idToken,
         post_logout_redirect_uri: 'https://client.example.com/callback/logout',
       };
 
       return this.agent.get(route)
+        .set('Accept', 'text/html')
         .query(params)
+        .expect(() => {
+          renderSpy.restore();
+        })
         .expect(400)
-        .expect(/"error":"invalid_request"/)
-        .expect(/"error_description":"post_logout_redirect_uri not registered"/);
+        .expect(() => {
+          expect(emitSpy.calledOnce).to.be.true;
+          expect(renderSpy.calledOnce).to.be.true;
+          const renderArgs = renderSpy.args[0];
+          expect(renderArgs[1]).to.have.property('error', 'invalid_request');
+          expect(renderArgs[1]).to.have.property('error_description', 'post_logout_redirect_uri not registered');
+          expect(renderArgs[2]).to.be.an.instanceof(InvalidRequest);
+        });
     });
 
     it('rejects invalid JWTs', function () {
+      const emitSpy = sinon.spy();
+      const renderSpy = sinon.spy(i(this.provider).configuration(), 'renderError');
+      this.provider.once('end_session.error', emitSpy);
       const params = {
         id_token_hint: 'not.a.jwt',
       };
 
       return this.agent.get(route)
+        .set('Accept', 'text/html')
         .query(params)
+        .expect(() => {
+          renderSpy.restore();
+        })
         .expect(400)
-        .expect(/"error":"invalid_request"/)
-        .expect(/"error_description":"could not decode id_token_hint/);
+        .expect(() => {
+          expect(emitSpy.calledOnce).to.be.true;
+          expect(renderSpy.calledOnce).to.be.true;
+          const renderArgs = renderSpy.args[0];
+          expect(renderArgs[1]).to.have.property('error', 'invalid_request');
+          expect(renderArgs[1]).to.have.property('error_description').that.matches(/could not decode id_token_hint/);
+          expect(renderArgs[2]).to.be.an.instanceof(InvalidRequest);
+        });
     });
 
     it('rejects JWTs with unrecognized client', async function () {
+      const emitSpy = sinon.spy();
+      const renderSpy = sinon.spy(i(this.provider).configuration(), 'renderError');
+      this.provider.once('end_session.error', emitSpy);
       const params = {
         id_token_hint: await JWT.sign({
           aud: 'nonexistant',
@@ -150,13 +180,27 @@ describe('[session_management]', () => {
       };
 
       return this.agent.get(route)
+        .set('Accept', 'text/html')
         .query(params)
+        .expect(() => {
+          renderSpy.restore();
+        })
         .expect(400)
-        .expect(/"error":"invalid_request"/)
-        .expect(/"error_description":"could not validate id_token_hint \(invalid_client\)/);
+        .expect(() => {
+          expect(emitSpy.calledOnce).to.be.true;
+          expect(renderSpy.calledOnce).to.be.true;
+          const renderArgs = renderSpy.args[0];
+          expect(renderArgs[1]).to.have.property('error', 'invalid_request');
+          expect(renderArgs[1]).to.have.property('error_description', 'could not validate id_token_hint (invalid_client)');
+          expect(renderArgs[2]).to.be.an.instanceof(InvalidRequest);
+        });
     });
 
+    // TODO: look into the `Cannot read property 'jwksUri' of undefined` here
     it('rejects JWTs with bad signatures', async function () {
+      const emitSpy = sinon.spy();
+      const renderSpy = sinon.spy(i(this.provider).configuration(), 'renderError');
+      this.provider.once('end_session.error', emitSpy);
       const params = {
         id_token_hint: await JWT.sign({
           aud: 'client',
@@ -164,32 +208,68 @@ describe('[session_management]', () => {
       };
 
       return this.agent.get(route)
+        .set('Accept', 'text/html')
         .query(params)
+        .expect(() => {
+          renderSpy.restore();
+        })
         .expect(400)
-        .expect(/"error":"invalid_request"/)
-        .expect(/"error_description":"could not validate id_token_hint/);
+        .expect(() => {
+          expect(emitSpy.calledOnce).to.be.true;
+          expect(renderSpy.calledOnce).to.be.true;
+          const renderArgs = renderSpy.args[0];
+          expect(renderArgs[1]).to.have.property('error', 'invalid_request');
+          expect(renderArgs[1]).to.have.property('error_description').and.matches(/could not validate id_token_hint/);
+          expect(renderArgs[2]).to.be.an.instanceof(InvalidRequest);
+        });
     });
   });
 
   describe('POST end_session', () => {
     it('checks session.logout is set', function () {
+      const emitSpy = sinon.spy();
+      const renderSpy = sinon.spy(i(this.provider).configuration(), 'renderError');
+      this.provider.once('end_session.error', emitSpy);
       return this.agent.post('/session/end')
+        .set('Accept', 'text/html')
         .send({})
         .type('form')
+        .expect(() => {
+          renderSpy.restore();
+        })
         .expect(400)
-        .expect(/"error":"invalid_request"/)
-        .expect(/"error_description":"could not find logout details"/);
+        .expect(() => {
+          expect(emitSpy.calledOnce).to.be.true;
+          expect(renderSpy.calledOnce).to.be.true;
+          const renderArgs = renderSpy.args[0];
+          expect(renderArgs[1]).to.have.property('error', 'invalid_request');
+          expect(renderArgs[1]).to.have.property('error_description', 'could not find logout details');
+          expect(renderArgs[2]).to.be.an.instanceof(InvalidRequest);
+        });
     });
 
     it('checks session.logout.secret (xsrf is right)', function () {
+      const emitSpy = sinon.spy();
+      const renderSpy = sinon.spy(i(this.provider).configuration(), 'renderError');
+      this.provider.once('end_session.error', emitSpy);
       this.getSession().logout = { secret: '123' };
 
       return this.agent.post('/session/end')
+        .set('Accept', 'text/html')
         .send({ xsrf: 'not right' })
         .type('form')
+        .expect(() => {
+          renderSpy.restore();
+        })
         .expect(400)
-        .expect(/"error":"invalid_request"/)
-        .expect(/"error_description":"xsrf token invalid"/);
+        .expect(() => {
+          expect(emitSpy.calledOnce).to.be.true;
+          expect(renderSpy.calledOnce).to.be.true;
+          const renderArgs = renderSpy.args[0];
+          expect(renderArgs[1]).to.have.property('error', 'invalid_request');
+          expect(renderArgs[1]).to.have.property('error_description', 'xsrf token invalid');
+          expect(renderArgs[2]).to.be.an.instanceof(InvalidRequest);
+        });
     });
 
     it('populates ctx.oidc.entities', function (done) {
