@@ -3,7 +3,7 @@
 **Notice: Follow the best practices for distributing private keying material and secrets!**
 
 oidc-provider uses the brilliant [node-jose][node-jose-library] for everything JW(S|E|K) related.
-oidc-provider expects to either receive a a jose.JWK.KeyStore object or a JWKS formatted javascript
+oidc-provider expects to either receive a jose.JWK.KeyStore object or a JWKS formatted javascript
 object with the private keys during `#initialize()` call.
 
 **Table of Contents**
