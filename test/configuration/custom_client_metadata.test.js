@@ -3,6 +3,7 @@
 const Provider = require('../../lib');
 const { expect } = require('chai');
 const sinon = require('sinon');
+const { InvalidClientMetadata } = require('../../lib/helpers/errors');
 
 const fail = () => { throw new Error('expected promise to be rejected'); };
 
@@ -126,7 +127,6 @@ describe('extraClientMetadata configuration', () => {
   });
 
   it('should re-throw errors', async () => {
-    const { InvalidClientMetadata } = Provider;
     const provider = new Provider('http://localhost:3000', {
       extraClientMetadata: {
         properties: ['client_description'],
