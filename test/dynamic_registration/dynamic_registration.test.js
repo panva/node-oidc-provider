@@ -218,10 +218,10 @@ describe('registration features', () => {
             .send({
               redirect_uris: ['https://client.example.com/cb'],
             })
-            .query({
-              access_token: 'foobarbaz',
-            })
-            .expect(401);
+            .auth('foobarbaz', { type: 'bearer' })
+            .expect(401)
+            .expect('WWW-Authenticate', new RegExp(`^Bearer realm="${this.provider.issuer}"`))
+            .expect('WWW-Authenticate', /error="invalid_token"/);
         });
       });
 
@@ -255,13 +255,31 @@ describe('registration features', () => {
           });
         });
 
-        it('allows reg calls with the access tokens as a Bearer token', function () {
+        it('allows reg calls with the access tokens as a Bearer token [query]', function () {
           return this.agent.post('/reg')
             .send({
               redirect_uris: ['https://client.example.com/cb'],
             })
             .query({
               access_token: this.token,
+            })
+            .expect(201);
+        });
+
+        it('allows reg calls with the access tokens as a Bearer token [post]', function () {
+          return this.agent.post('/reg')
+            .send({
+              redirect_uris: ['https://client.example.com/cb'],
+              access_token: this.token,
+            })
+            .expect(201);
+        });
+
+        it('allows reg calls with the access tokens as a Bearer token [header]', function () {
+          return this.agent.post('/reg')
+            .auth(this.token, { type: 'bearer' })
+            .send({
+              redirect_uris: ['https://client.example.com/cb'],
             })
             .expect(201);
         });
@@ -275,9 +293,7 @@ describe('registration features', () => {
             .send({
               redirect_uris: ['https://client.example.com/cb'],
             })
-            .query({
-              access_token: this.token,
-            })
+            .auth(this.token, { type: 'bearer' })
             .end(() => {});
         });
 
@@ -286,9 +302,7 @@ describe('registration features', () => {
             .send({
               redirect_uris: ['https://client.example.com/cb'],
             })
-            .query({
-              access_token: 'foobarbaz',
-            })
+            .auth('foobarbaz', { type: 'bearer' })
             .expect(401);
         });
 
@@ -297,9 +311,7 @@ describe('registration features', () => {
             .send({
               redirect_uris: ['https://client.example.com/cb'],
             })
-            .query({
-              access_token: 'Loremipsumdolorsitametconsecteturadipisicingelitsed',
-            })
+            .auth('Loremipsumdolorsitametconsecteturadipisicingelitsed', { type: 'bearer' })
             .expect(401);
         });
 
@@ -308,9 +320,7 @@ describe('registration features', () => {
             .send({
               redirect_uris: ['https://client.example.com/cb'],
             })
-            .query({
-              access_token: this.token.slice(0, -1),
-            })
+            .auth(this.token.slice(0, -1), { type: 'bearer' })
             .expect(401);
         });
       });
@@ -332,9 +342,7 @@ describe('registration features', () => {
 
     it('returns all available nonsecret metadata', function () {
       return this.agent.get(`/reg/${this.clientId}`)
-        .query({
-          access_token: this.token,
-        })
+        .auth(this.token, { type: 'bearer' })
         .expect(200)
         .expect('content-type', /application\/json/)
         .expect((response) => {
@@ -356,28 +364,24 @@ describe('registration features', () => {
       }, done));
 
       this.agent.get(`/reg/${this.clientId}`)
-        .query({
-          access_token: this.token,
-        })
+        .auth(this.token, { type: 'bearer' })
         .end(() => {});
     });
 
     it('returns token-endpoint-like cache headers', function () {
       return this.agent.get(`/reg/${this.clientId}`)
-        .query({
-          access_token: this.token,
-        })
+        .auth(this.token, { type: 'bearer' })
         .expect('pragma', 'no-cache')
         .expect('cache-control', 'no-cache, no-store');
     });
 
     it('validates client is a valid client', function () {
       return this.agent.get('/reg/thisDOesnotCompute')
-        .query({
-          access_token: 'wahtever',
-        })
+        .auth('wahtever', { type: 'bearer' })
         .expect(401)
-        .expect(validateError('invalid_token'));
+        .expect(validateError('invalid_token'))
+        .expect('WWW-Authenticate', new RegExp(`^Bearer realm="${this.provider.issuer}"`))
+        .expect('WWW-Authenticate', /error="invalid_token"/);
     });
 
     it('validates auth presence', function () {
@@ -388,25 +392,19 @@ describe('registration features', () => {
 
     it('validates auth', function () {
       return this.agent.get(`/reg/${this.clientId}`)
-        .query({
-          access_token: 'invalid token',
-        })
+        .auth('invalidtoken', { type: 'bearer' })
         .expect(401);
     });
 
     it('validates auth (notfoundtoken)', function () {
       return this.agent.get(`/reg/${this.clientId}`)
-        .query({
-          access_token: 'Loremipsumdolorsitametconsecteturadipisicingelitsed',
-        })
+        .auth('Loremipsumdolorsitametconsecteturadipisicingelitsed', { type: 'bearer' })
         .expect(401);
     });
 
     it('accepts query', function () {
       return this.agent.get(`/reg/${this.clientId}`)
-        .query({
-          access_token: this.token,
-        })
+        .auth(this.token, { type: 'bearer' })
         .expect(200);
     });
 
@@ -421,9 +419,7 @@ describe('registration features', () => {
       this.provider.once('token.revoked', spy);
 
       return this.agent.get('/reg/foobar')
-        .query({
-          access_token: this.token,
-        })
+        .auth(this.token, { type: 'bearer' })
         .expect('pragma', 'no-cache')
         .expect('cache-control', 'no-cache, no-store')
         .expect(401)

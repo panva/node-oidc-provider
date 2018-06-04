@@ -56,6 +56,15 @@ describe('OAuth 2.0 Dynamic Client Registration Management Protocol', () => {
         });
     });
 
+    it('rejects calls with bad registration access token', async function () {
+      const client = await setup.call(this, {});
+      return this.agent.put(`/reg/${client.client_id}`)
+        .auth('foobarbaz', { type: 'bearer' })
+        .expect(401)
+        .expect('WWW-Authenticate', new RegExp(`^Bearer realm="${this.provider.issuer}"`))
+        .expect('WWW-Authenticate', /error="invalid_token"/);
+    });
+
     it('populates ctx.oidc.entities', function (done) {
       this.provider.use(this.assertOnce((ctx) => {
         expect(ctx.oidc.entities).to.have.keys('Client', 'RegistrationAccessToken');
@@ -318,6 +327,15 @@ describe('OAuth 2.0 Dynamic Client Registration Management Protocol', () => {
         .expect(() => {
           expect(spy.calledOnce).to.be.true;
         });
+    });
+
+    it('rejects calls with bad registration access token', async function () {
+      const client = await setup.call(this, {});
+      return this.agent.del(`/reg/${client.client_id}`)
+        .auth('foobarbaz', { type: 'bearer' })
+        .expect(401)
+        .expect('WWW-Authenticate', new RegExp(`^Bearer realm="${this.provider.issuer}"`))
+        .expect('WWW-Authenticate', /error="invalid_token"/);
     });
 
     it('cannot delete non-dynamic clients', async function () {

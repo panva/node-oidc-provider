@@ -35,6 +35,7 @@ Yay for [SemVer](http://semver.org/).
   (`unauthorized_client`) instead as specified in RFC6749
 - adds AccessDenied (`access_denied`) and TemporarilyUnavailable (`temporarily_unavailable`) errors
   to the list of exported errors
+- added `WWW-Authenticate` response header to Bearer auth scheme endpoints when 401 is returned
 
 ## 4.0.1
 - 2018-06-01 [DIFF](https://github.com/panva/node-oidc-provider/compare/v3.0.3...v4.0.1)

@@ -86,8 +86,8 @@ describe('userinfo /me', () => {
       .expect({ error: 'invalid_scope', scope: 'profile', error_description: 'access token missing requested scope' });
   });
 
-  describe('userinfo /me WWW-Authenticate header', () => {
-    it('is set', function () {
+  describe('WWW-Authenticate response header', () => {
+    it('is set when 401', function () {
       return this.agent.get('/me')
         .auth('ThisIsNotAValidToken', { type: 'bearer' })
         .expect(401)
