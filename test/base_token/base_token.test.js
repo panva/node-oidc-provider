@@ -32,7 +32,7 @@ describe('BaseToken', () => {
     const stored = this.adapter.syncFind(jti);
     const payload = JSON.parse(base64url.decode(stored.payload));
     payload.exp = 0;
-    stored.payload = base64url.encode(JSON.stringify(payload));
+    stored.payload = base64url(JSON.stringify(payload));
     expect(await this.provider.AccessToken.find(token)).to.be.undefined;
   });
 
