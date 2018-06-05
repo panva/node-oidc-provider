@@ -1,9 +1,10 @@
 /* eslint-disable no-underscore-dangle */
 
 const uuid = require('uuid/v4');
+const KeyGrip = require('keygrip'); // eslint-disable-line import/no-extraneous-dependencies
 const bootstrap = require('../test_helper');
 const config = require('./interaction.config.js');
-const KeyGrip = require('keygrip'); // eslint-disable-line import/no-extraneous-dependencies
+const epochTime = require('../../lib/helpers/epoch_time');
 
 const expire = new Date();
 expire.setDate(expire.getDate() + 1);
@@ -139,6 +140,9 @@ describe('resume after interaction', () => {
     }
 
     if (result) {
+      if (result.login && !result.login.ts) {
+        Object.assign(result.login, { ts: epochTime() });
+      }
       Object.assign(sess, { result });
     }
 
@@ -194,7 +198,7 @@ describe('resume after interaction', () => {
         .expect('set-cookie', /expires/) // expect a permanent cookie
         .expect(auth.validateState)
         .expect(auth.validateClientLocation)
-        .expect(auth.validatePresence(['code', 'state']))
+        .expect(auth.validatePresence(['code', 'state', 'session_state']))
         .expect(() => {
           expect(this.getSession()).to.be.ok.and.not.have.property('transient');
         });
@@ -215,9 +219,10 @@ describe('resume after interaction', () => {
       return this.agent.get('/auth/resume')
         .expect(302)
         .expect(auth.validateState)
-        .expect('set-cookie', /^_session=((?!expires).)+,/) // expect a transient session cookie
+        .expect('set-cookie', /_session=((?!expires).)+,/) // expect a transient session cookie
+        .expect('set-cookie', /_state\.client=((?!expires).)+,/) // expect a transient session cookie
         .expect(auth.validateClientLocation)
-        .expect(auth.validatePresence(['code', 'state']))
+        .expect(auth.validatePresence(['code', 'state', 'session_state']))
         .expect(() => {
           expect(this.getSession()).to.be.ok.and.have.property('transient');
         });

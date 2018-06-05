@@ -1,6 +1,8 @@
 const { clone } = require('lodash');
 const config = clone(require('../default.config'));
 
+config.features = { sessionManagement: true };
+
 module.exports = {
   config,
   client: {
