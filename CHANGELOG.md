@@ -5,8 +5,7 @@ Yay for [SemVer](http://semver.org/).
 **Table of Contents**
 
 <!-- TOC START min:2 max:2 link:true update:true -->
-- [Unreleased](#unreleased)
-- [4.0.1](#401)
+- [4.0.x](#40x)
 - [3.0.x](#30x)
 - [2.18.x](#218x)
 - [2.17.0](#2170)
@@ -30,17 +29,20 @@ Yay for [SemVer](http://semver.org/).
 
 <!-- TOC END -->
 
-## Unreleased
-- fixes non-spec errors `restricted_response_type` and `restricted_grant_type` to be UnauthorizedClient
+## 4.0.x
+### 4.0.2
+- 2018-06-05 [DIFF](https://github.com/panva/node-oidc-provider/compare/v3.0.3...v4.0.1)
+- fixed non-spec errors `restricted_response_type` and `restricted_grant_type` to be UnauthorizedClient
   (`unauthorized_client`) instead as specified in RFC6749
-- adds AccessDenied (`access_denied`) and TemporarilyUnavailable (`temporarily_unavailable`) errors
-  to the list of exported errors
-- added `WWW-Authenticate` response header to Bearer auth scheme endpoints when 401 is returned
+- fixed missing `WWW-Authenticate` response header in Bearer auth scheme endpoints when 401 is
+  returned (was missing from `registration_endpoint`, `registration_client_uri`)
+- fixed `#session.save()` when `cookies.*.maxAge` is set to `0` to not add the `exp` claim - #289
+- fixed the `remember=false` option to apply to client session state cookies too
 
-## 4.0.1
+### 4.0.1
 - 2018-06-01 [DIFF](https://github.com/panva/node-oidc-provider/compare/v3.0.3...v4.0.1)
 
-### Breaking changes
+#### Breaking changes
 - minimal version of node lts/carbon is required (>=8.9.0)
 - **Client Metadata** - null property values are no longer ignored
   - clients pushed through `#initialize()` must not submit properties with null values
@@ -141,7 +143,7 @@ Yay for [SemVer](http://semver.org/).
   - removed deprecated `#provider.setSessionAccountId()` helper method. Use `#provider.setProviderSession()`
     instead
 
-### Enhancements
+#### Enhancements
 - **Session Changes**
   - stored sessions now have an `exp` property allowing the provider to ignore expired but
     still returned sessions
