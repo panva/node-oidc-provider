@@ -31,7 +31,7 @@ Yay for [SemVer](http://semver.org/).
 
 ## 4.0.x
 ### 4.0.2
-- 2018-06-05 [DIFF](https://github.com/panva/node-oidc-provider/compare/v3.0.3...v4.0.1)
+- 2018-06-05 [DIFF](https://github.com/panva/node-oidc-provider/compare/v4.0.1...v4.0.2)
 - fixed non-spec errors `restricted_response_type` and `restricted_grant_type` to be UnauthorizedClient
   (`unauthorized_client`) instead as specified in RFC6749
 - fixed missing `WWW-Authenticate` response header in Bearer auth scheme endpoints when 401 is
