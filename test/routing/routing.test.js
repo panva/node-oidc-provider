@@ -1,5 +1,4 @@
 const bootstrap = require('../test_helper');
-const { forEach } = require('lodash');
 const { expect } = require('chai');
 
 describe('default routing behavior', () => {
@@ -42,7 +41,7 @@ describe('default routing behavior', () => {
       return this.agent.get('/oidc/.well-known/openid-configuration')
         .expect(200)
         .expect((res) => {
-          forEach(res.body, (value) => {
+          Object.values(res.body).forEach((value) => {
             if (value.startsWith && value.startsWith('http')) {
               expect(value).to.match(new RegExp('^http://127.0.0.1:\\d{5}/oidc'));
             }
