@@ -601,7 +601,7 @@ describe('BASIC code', () => {
         const auth = new this.AuthorizationRequest({
           response_type,
           scope,
-          redirect_uri: 'http://example.client.dev/notregistered',
+          redirect_uri: 'https://client.example.com/cb/not/registered',
         });
 
         return this.agent.get(route)

@@ -62,7 +62,22 @@ describe('OAuth 2.0 for Native Apps Best Current Practice features', () => {
     });
 
     describe('Loopback Interface Redirection', () => {
-      it('allows http protocol localhost loopback uris', function () {
+      it('catches invalid urls being passed in', function () {
+        return i(this.provider).clientAdd({
+          application_type: 'native',
+          client_id: 'native-custom',
+          grant_types: ['implicit'],
+          response_types: ['id_token'],
+          token_endpoint_auth_method: 'none',
+          redirect_uris: ['http://127.0.0.1:2355/op/callback'],
+        }).then((client) => {
+          expect(client.redirectUriAllowed('http:')).to.be.false;
+          expect(client.redirectUriAllowed('http://127.0.0.')).to.be.false;
+          expect(client.redirectUriAllowed('http://127.0.0.1::')).to.be.false;
+        });
+      });
+
+      it('allows http protocol localhost loopback uris (when registered with a random port)', function () {
         return i(this.provider).clientAdd({
           application_type: 'native',
           client_id: 'native-custom',
@@ -80,7 +95,25 @@ describe('OAuth 2.0 for Native Apps Best Current Practice features', () => {
         });
       });
 
-      it('allows http protocol IPv4 loopback uris', function () {
+      it('allows http protocol localhost loopback uris (when registered without a port)', function () {
+        return i(this.provider).clientAdd({
+          application_type: 'native',
+          client_id: 'native-custom',
+          grant_types: ['implicit'],
+          response_types: ['id_token'],
+          token_endpoint_auth_method: 'none',
+          redirect_uris: ['http://localhost/op/callback'],
+        }).then((client) => {
+          expect(client.redirectUris).to.contain('http://localhost/op/callback');
+          expect(client.redirectUriAllowed('http://localhost/op/callback')).to.be.true;
+          expect(client.redirectUriAllowed('http://localhost:80/op/callback')).to.be.true;
+          expect(client.redirectUriAllowed('http://localhost:443/op/callback')).to.be.true;
+          expect(client.redirectUriAllowed('http://localhost:2355/op/callback')).to.be.true;
+          expect(client.redirectUriAllowed('http://localhost:8888/op/callback')).to.be.true;
+        });
+      });
+
+      it('allows http protocol IPv4 loopback uris (when registered with a random port)', function () {
         return i(this.provider).clientAdd({
           application_type: 'native',
           client_id: 'native-custom',
@@ -98,7 +131,25 @@ describe('OAuth 2.0 for Native Apps Best Current Practice features', () => {
         });
       });
 
-      it('allows http protocol IPv6 loopback uris', function () {
+      it('allows http protocol IPv4 loopback uris (when registered without a port)', function () {
+        return i(this.provider).clientAdd({
+          application_type: 'native',
+          client_id: 'native-custom',
+          grant_types: ['implicit'],
+          response_types: ['id_token'],
+          token_endpoint_auth_method: 'none',
+          redirect_uris: ['http://127.0.0.1/op/callback'],
+        }).then((client) => {
+          expect(client.redirectUris).to.contain('http://127.0.0.1/op/callback');
+          expect(client.redirectUriAllowed('http://127.0.0.1/op/callback')).to.be.true;
+          expect(client.redirectUriAllowed('http://127.0.0.1:80/op/callback')).to.be.true;
+          expect(client.redirectUriAllowed('http://127.0.0.1:443/op/callback')).to.be.true;
+          expect(client.redirectUriAllowed('http://127.0.0.1:2355/op/callback')).to.be.true;
+          expect(client.redirectUriAllowed('http://127.0.0.1:8888/op/callback')).to.be.true;
+        });
+      });
+
+      it('allows http protocol IPv6 loopback uris (when registered with a random port)', function () {
         return i(this.provider).clientAdd({
           application_type: 'native',
           client_id: 'native-custom',
@@ -106,6 +157,24 @@ describe('OAuth 2.0 for Native Apps Best Current Practice features', () => {
           response_types: ['id_token'],
           token_endpoint_auth_method: 'none',
           redirect_uris: ['http://[::1]:2355/op/callback'],
+        }).then((client) => {
+          expect(client.redirectUris).to.contain('http://[::1]/op/callback');
+          expect(client.redirectUriAllowed('http://[::1]/op/callback')).to.be.true;
+          expect(client.redirectUriAllowed('http://[::1]:80/op/callback')).to.be.true;
+          expect(client.redirectUriAllowed('http://[::1]:443/op/callback')).to.be.true;
+          expect(client.redirectUriAllowed('http://[::1]:2355/op/callback')).to.be.true;
+          expect(client.redirectUriAllowed('http://[::1]:8888/op/callback')).to.be.true;
+        });
+      });
+
+      it('allows http protocol IPv6 loopback uris (when registered without a port)', function () {
+        return i(this.provider).clientAdd({
+          application_type: 'native',
+          client_id: 'native-custom',
+          grant_types: ['implicit'],
+          response_types: ['id_token'],
+          token_endpoint_auth_method: 'none',
+          redirect_uris: ['http://[::1]/op/callback'],
         }).then((client) => {
           expect(client.redirectUris).to.contain('http://[::1]/op/callback');
           expect(client.redirectUriAllowed('http://[::1]/op/callback')).to.be.true;
