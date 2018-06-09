@@ -31,7 +31,7 @@ Yay for [SemVer](http://semver.org/).
 
 ## 4.0.x
 ### 4.0.3
-- 2018-06-08 [DIFF](https://github.com/panva/node-oidc-provider/compare/v4.0.2...v4.0.3)
+- 2018-06-09 [DIFF](https://github.com/panva/node-oidc-provider/compare/v4.0.2...v4.0.3)
 - fixed token endpoint `grant_type=refresh_token` scope parameter related bugs
   - a rotated refresh token will retain the original scope, its only the access and id token that
     has the requested scope as specified in section 6 of RFC6749
