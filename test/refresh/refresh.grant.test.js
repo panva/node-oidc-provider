@@ -55,10 +55,16 @@ describe('grant_type=refresh_token', () => {
         });
     });
 
+    afterEach(function () {
+      this.provider.removeAllListeners('token.issued');
+      this.provider.removeAllListeners('grant.revoked');
+      this.provider.removeAllListeners('token.revoked');
+    });
+
     it('returns the right stuff', function () {
       const { rt } = this;
       const spy = sinon.spy();
-      this.provider.once('grant.success', spy);
+      this.provider.on('grant.success', spy);
 
       return this.agent.post(route)
         .auth('client', 'secret')
@@ -81,8 +87,7 @@ describe('grant_type=refresh_token', () => {
 
     it('populates ctx.oidc.entities', function (done) {
       this.provider.use(this.assertOnce((ctx) => {
-        expect(ctx.oidc.entities).to.have.keys('Account', 'Client', 'AccessToken', 'RotatedRefreshToken', 'RefreshToken');
-        expect(ctx.oidc.entities.RotatedRefreshToken).not.to.eql(ctx.oidc.entities.RefreshToken);
+        expect(ctx.oidc.entities).to.have.keys('Account', 'Client', 'AccessToken', 'RefreshToken');
       }, done));
 
       this.agent.post(route)
@@ -111,7 +116,7 @@ describe('grant_type=refresh_token', () => {
           const { rt } = this;
           setTimeout(() => {
             const spy = sinon.spy();
-            this.provider.once('grant.error', spy);
+            this.provider.on('grant.error', spy);
 
             return this.agent.post(route)
               .auth('client', 'secret')
@@ -136,7 +141,7 @@ describe('grant_type=refresh_token', () => {
       it('validates that token belongs to client', function () {
         const { rt } = this;
         const spy = sinon.spy();
-        this.provider.once('grant.error', spy);
+        this.provider.on('grant.error', spy);
 
         return this.agent.post(route)
           .auth('client2', 'secret')
@@ -158,7 +163,7 @@ describe('grant_type=refresh_token', () => {
       it('scopes are not getting extended', function () {
         const { rt } = this;
         const spy = sinon.spy();
-        this.provider.once('grant.error', spy);
+        this.provider.on('grant.error', spy);
 
         return this.agent.post(route)
           .auth('client', 'secret')
@@ -176,12 +181,54 @@ describe('grant_type=refresh_token', () => {
           });
       });
 
+      it('scopes can get slimmer', function () {
+        const { rt } = this;
+        const spy = sinon.spy();
+        this.provider.on('token.issued', spy);
+
+        return this.agent.post(route)
+          .auth('client', 'secret')
+          .send({
+            refresh_token: rt,
+            grant_type: 'refresh_token',
+            scope: 'openid',
+          })
+          .type('form')
+          .expect(200)
+          .expect(({ body }) => {
+            expect(spy.firstCall.args[0]).to.have.property('kind', 'AccessToken');
+            expect(spy.firstCall.args[0]).to.have.property('scope', 'openid');
+            expect(body).to.have.property('scope', 'openid');
+          });
+      });
+
+      it('scopes can get slimmer but openid is still required', function () {
+        const { rt } = this;
+        const spy = sinon.spy();
+        this.provider.on('grant.error', spy);
+
+        return this.agent.post(route)
+          .auth('client', 'secret')
+          .send({
+            refresh_token: rt,
+            grant_type: 'refresh_token',
+            scope: 'profile',
+          })
+          .type('form')
+          .expect(400)
+          .expect((response) => {
+            expect(response.body).to.have.property('error', 'invalid_scope');
+            expect(response.body).to.have.property('error_description', 'openid is required scope');
+            expect(response.body).to.have.property('scope', 'profile');
+          });
+      });
+
       it('validates account is still there', function () {
         const { rt } = this;
         sinon.stub(this.provider.Account, 'findById').callsFake(() => Promise.resolve());
 
         const spy = sinon.spy();
-        this.provider.once('grant.error', spy);
+        this.provider.on('grant.error', spy);
 
         return this.agent.post(route)
           .auth('client', 'secret')
@@ -221,7 +268,7 @@ describe('grant_type=refresh_token', () => {
 
     it('code being "found"', function () {
       const spy = sinon.spy();
-      this.provider.once('grant.error', spy);
+      this.provider.on('grant.error', spy);
       return this.agent.post(route)
         .auth('client', 'secret')
         .send({
@@ -248,12 +295,28 @@ describe('grant_type=refresh_token', () => {
         i(this.provider).configuration().refreshTokenRotation = 'none';
       });
 
+      it('populates ctx.oidc.entities', function (done) {
+        this.provider.use(this.assertOnce((ctx) => {
+          expect(ctx.oidc.entities).to.have.keys('Account', 'Client', 'AccessToken', 'RotatedRefreshToken', 'RefreshToken');
+          expect(ctx.oidc.entities.RotatedRefreshToken).not.to.eql(ctx.oidc.entities.RefreshToken);
+        }, done));
+
+        this.agent.post(route)
+          .auth('client', 'secret')
+          .send({
+            refresh_token: this.rt,
+            grant_type: 'refresh_token',
+          })
+          .type('form')
+          .end(() => {});
+      });
+
       it('issues a new refresh token and consumes the old one', function () {
         const { rt } = this;
         const consumeSpy = sinon.spy();
         const issueSpy = sinon.spy();
-        this.provider.once('token.consumed', consumeSpy);
-        this.provider.once('token.issued', issueSpy);
+        this.provider.on('token.consumed', consumeSpy);
+        this.provider.on('token.issued', issueSpy);
 
         return this.agent.post(route)
           .auth('client', 'secret')
@@ -265,7 +328,7 @@ describe('grant_type=refresh_token', () => {
           .expect(200)
           .expect(() => {
             expect(consumeSpy.calledOnce).to.be.true;
-            expect(issueSpy.calledOnce).to.be.true;
+            expect(issueSpy.calledTwice).to.be.true;
           })
           .expect((response) => {
             expect(response.body).to.have.keys('access_token', 'id_token', 'expires_in', 'token_type', 'refresh_token', 'scope');
@@ -275,13 +338,61 @@ describe('grant_type=refresh_token', () => {
           });
       });
 
+      it('the new refresh token has identical scope to the old one', function () {
+        const { rt } = this;
+        const consumeSpy = sinon.spy();
+        const issueSpy = sinon.spy();
+        this.provider.on('token.consumed', consumeSpy);
+        this.provider.on('token.issued', issueSpy);
+
+        return this.agent.post(route)
+          .auth('client', 'secret')
+          .send({
+            refresh_token: rt,
+            grant_type: 'refresh_token',
+          })
+          .type('form')
+          .expect(200)
+          .expect(() => {
+            expect(consumeSpy.calledOnce).to.be.true;
+            expect(issueSpy.calledTwice).to.be.true;
+            expect(consumeSpy.firstCall.args[0]).to.have.property('scope', 'openid email');
+            expect(issueSpy.firstCall.args[0]).to.have.property('scope', 'openid email');
+          });
+      });
+
+      it('the new refresh token has identical scope to the old one even if the access token is requested with less scopes', function () {
+        const { rt } = this;
+        const consumeSpy = sinon.spy();
+        const issueSpy = sinon.spy();
+        this.provider.on('token.consumed', consumeSpy);
+        this.provider.on('token.issued', issueSpy);
+
+        return this.agent.post(route)
+          .auth('client', 'secret')
+          .send({
+            refresh_token: rt,
+            scope: 'openid',
+            grant_type: 'refresh_token',
+          })
+          .type('form')
+          .expect(200)
+          .expect(() => {
+            expect(consumeSpy.calledOnce).to.be.true;
+            expect(issueSpy.calledTwice).to.be.true;
+            expect(consumeSpy.firstCall.args[0]).to.have.property('scope', 'openid email');
+            expect(issueSpy.firstCall.args[0]).to.have.property('scope', 'openid email');
+            expect(issueSpy.secondCall.args[0]).to.have.property('scope', 'openid');
+          });
+      });
+
       it('revokes the complete grant if the old token is used again', function () {
         const { rt } = this;
 
         const grantRevokeSpy = sinon.spy();
         const tokenRevokeSpy = sinon.spy();
-        this.provider.once('grant.revoked', grantRevokeSpy);
-        this.provider.once('token.revoked', tokenRevokeSpy);
+        this.provider.on('grant.revoked', grantRevokeSpy);
+        this.provider.on('token.revoked', tokenRevokeSpy);
 
         return Promise.all([
           this.agent.post(route)
