@@ -882,7 +882,11 @@ affects: discovery, ID Token claim names, Userinfo claim names
 
 default value:
 ```js
-{ acr: null, auth_time: null, iss: null, openid: [ 'sub' ] }
+{ acr: null,
+  sid: null,
+  auth_time: null,
+  iss: null,
+  openid: [ 'sub' ] }
 ```
 
 ### clientCacheDuration
