@@ -3,7 +3,7 @@
 const uuid = require('uuid/v4');
 const KeyGrip = require('keygrip'); // eslint-disable-line import/no-extraneous-dependencies
 const bootstrap = require('../test_helper');
-const config = require('./interaction.config.js');
+const config = require('./interaction.config');
 const epochTime = require('../../lib/helpers/epoch_time');
 
 const expire = new Date();
@@ -121,10 +121,6 @@ describe('devInteractions', () => {
 describe('resume after interaction', () => {
   before(bootstrap(__dirname));
 
-  before(function () {
-    i(this.provider).configuration('prompts').push('custom');
-  });
-
   function setup(grant, result) {
     const cookies = [];
 
@@ -156,7 +152,7 @@ describe('resume after interaction', () => {
   }
 
   context('general', () => {
-    it('needs the results to be present, else renders an err', function () {
+    it('needs the resume cookie to be present, else renders an err', function () {
       return this.agent.get('/auth/resume')
         .expect(400)
         .expect(/authorization request has expired/);

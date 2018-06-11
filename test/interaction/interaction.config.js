@@ -3,6 +3,8 @@ const config = clone(require('../default.config'));
 
 config.features = { sessionManagement: true };
 
+config.prompts = ['consent', 'login', 'none', 'custom'];
+
 module.exports = {
   config,
   client: {
