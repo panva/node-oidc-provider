@@ -241,12 +241,15 @@ describe('registration features', () => {
         });
 
         it('allows the developers to insert new tokens with no expiration', function () {
-          return new (this.provider.InitialAccessToken)().save();
+          return new this.provider.InitialAccessToken().save().then((v) => {
+            const jti = v.substring(0, 48);
+            const token = this.TestAdapter.for('InitialAccessToken').syncFind(jti);
+            expect(JSON.parse(base64url.decode(token.payload))).not.to.have.property('exp');
+          });
         });
 
         it('allows the developers to insert new tokens with expiration', function () {
-          const IAT = this.provider.InitialAccessToken;
-          return new IAT({
+          return new this.provider.InitialAccessToken({
             expiresIn: 24 * 60 * 60,
           }).save().then((v) => {
             const jti = v.substring(0, 48);
