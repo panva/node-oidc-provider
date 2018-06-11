@@ -148,7 +148,7 @@ describe('PKCE RFC7636', () => {
           .query(auth)
           .expect(auth.validatePresence(['error', 'error_description', 'state']))
           .expect(auth.validateError('invalid_request'))
-          .expect(auth.validateErrorDescription('not supported value of code_challenge_method'));
+          .expect(auth.validateErrorDescription('plain code_challenge_method fallback disabled, code_challenge_method must be provided'));
       });
 
       it('fails when client uses plain method', function () {
