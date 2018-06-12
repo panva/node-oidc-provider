@@ -132,6 +132,17 @@ describe('client authentication options', () => {
       });
   });
 
+  it('rejects when no client is found', function () {
+    return this.agent.post(route)
+      .send({
+        grant_type: 'implicit',
+        client_id: 'client-not-found',
+      })
+      .type('form')
+      .expect(401)
+      .expect(tokenAuthRejected);
+  });
+
   describe('none "auth"', () => {
     it('accepts the "auth"', function () {
       return this.agent.post(route)

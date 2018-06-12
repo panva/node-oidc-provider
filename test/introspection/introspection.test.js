@@ -323,7 +323,7 @@ describe('introspection features', () => {
       this.provider.once('introspection.error', spy);
 
       return this.agent.post(route)
-        .auth('invalid', 'auth')
+        .auth('client', 'invalid')
         .send({})
         .type('form')
         .expect(401)

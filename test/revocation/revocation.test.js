@@ -359,7 +359,7 @@ describe('revocation features', () => {
       this.provider.once('revocation.error', spy);
 
       return this.agent.post(route)
-        .auth('invalid', 'auth')
+        .auth('client', 'invalid')
         .send({})
         .type('form')
         .expect(401)
