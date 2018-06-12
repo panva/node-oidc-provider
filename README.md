@@ -1,6 +1,7 @@
 # oidc-provider
 
 [![build][travis-image]][travis-url] [![codecov][codecov-image]][codecov-url]
+[![FOSSA Status](https://app.fossa.io/api/projects/git%2Bgithub.com%2Fpanva%2Fnode-oidc-provider.svg?type=shield)](https://app.fossa.io/projects/git%2Bgithub.com%2Fpanva%2Fnode-oidc-provider?ref=badge_shield)
 
 oidc-provider is an OpenID Provider implementation of [OpenID Connect][openid-connect]. It allows to
 export a complete mountable or standalone OpenID Provider implementation. This implementation does
@@ -163,3 +164,7 @@ See the list of available emitted [event names](/docs/events.md) and their descr
 [registration-management]: https://tools.ietf.org/html/rfc7592
 [oauth-native-apps]: https://tools.ietf.org/html/rfc8252
 [debug-link]: https://github.com/visionmedia/debug
+
+
+## License
+[![FOSSA Status](https://app.fossa.io/api/projects/git%2Bgithub.com%2Fpanva%2Fnode-oidc-provider.svg?type=large)](https://app.fossa.io/projects/git%2Bgithub.com%2Fpanva%2Fnode-oidc-provider?ref=badge_large)
