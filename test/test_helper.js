@@ -14,9 +14,9 @@ const querystring = require('querystring');
 const mount = require('koa-mount');
 const epochTime = require('../lib/helpers/epoch_time');
 const KeyGrip = require('keygrip'); // eslint-disable-line import/no-extraneous-dependencies
-global.instance = require('../lib/helpers/weak_cache');
-
-global.i = instance;
+const { formats: { default: FORMAT } } = require('../lib/helpers/defaults');
+const base64url = require('base64url');
+global.i = require('../lib/helpers/weak_cache');
 
 function readCookie(value) {
   expect(value).to.exist;
@@ -37,7 +37,6 @@ module.exports = function testHelper(dir, basename, mountTo) {
   if (!config.findById) config.findById = Account.findById;
 
   const provider = new Provider(`http://127.0.0.1:${port}${mountTo || ''}`, config);
-  provider.defaultHttpOptions = { timeout: 50 };
 
   let agent;
 
@@ -254,6 +253,19 @@ module.exports = function testHelper(dir, basename, mountTo) {
     };
   }
 
+  function getTokenJti(token) {
+    switch (FORMAT) {
+      case 'legacy':
+        return token.substring(0, 48);
+      case 'jwt':
+        return JSON.parse(base64url.decode(token.split('.')[1])).jti;
+      case 'opaque':
+        return token;
+      default:
+        throw new Error(`invalid format specified (${FORMAT})`);
+    }
+  }
+
   return function () {
     Object.assign(this, {
       login,
@@ -265,6 +277,7 @@ module.exports = function testHelper(dir, basename, mountTo) {
       getSession,
       wrap,
       TestAdapter,
+      getTokenJti,
     });
 
     return new Promise((resolve, reject) => {

@@ -1,6 +1,7 @@
 const bootstrap = require('../test_helper');
 const { expect } = require('chai');
 const url = require('url');
+const sinon = require('sinon');
 
 describe('userinfo /me', () => {
   before(bootstrap(__dirname)); // this.provider, agent, this.AuthorizationRequest, wrap
@@ -48,9 +49,13 @@ describe('userinfo /me', () => {
   });
 
   it('validates a client is still valid for a found token', async function () {
-    const at = await new this.provider.AccessToken({ clientId: 'notfound' }).save();
+    const at = await new this.provider.AccessToken({ clientId: 'client' }).save();
+    sinon.stub(this.provider.Client, 'find').callsFake(async () => undefined);
     return this.agent.get('/me')
       .auth(at, { type: 'bearer' })
+      .expect(() => {
+        this.provider.Client.find.restore();
+      })
       .expect(401)
       .expect({ error: 'invalid_token', error_description: 'invalid token provided' });
   });

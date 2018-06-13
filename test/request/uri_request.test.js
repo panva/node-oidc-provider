@@ -5,11 +5,14 @@ const sinon = require('sinon');
 const nock = require('nock');
 const { expect } = require('chai');
 const { parse } = require('url');
+const timekeeper = require('timekeeper');
 
 const route = '/auth';
 
 describe('request Uri features', () => {
   before(bootstrap(__dirname)); // provider, agent, wrap
+
+  afterEach(() => timekeeper.reset());
 
   describe('configuration features.requestUri', () => {
     it('extends discovery', function () {
@@ -139,17 +142,13 @@ describe('request Uri features', () => {
           nock('https://client.example.com')
             .get('/cachedRequest')
             .reply(200, 'content24', {
-              'Cache-Control': 'private, max-age=1',
+              'Cache-Control': 'private, max-age=5',
             })
             .get('/cachedRequest')
             .reply(200, 'content82');
 
           const first = await cache.resolve('https://client.example.com/cachedRequest');
-          await new Promise((resolve) => {
-            setTimeout(() => {
-              resolve();
-            }, 1050);
-          });
+          timekeeper.travel(Date.now() + (10 * 1000));
           const second = await cache.resolve('https://client.example.com/cachedRequest');
 
           expect(first).to.equal('content24');
@@ -161,17 +160,13 @@ describe('request Uri features', () => {
           nock('https://client.example.com')
             .get('/cachedRequest')
             .reply(200, 'content24', {
-              Expires: new Date(Date.now() + 1000).toGMTString(),
+              Expires: new Date(Date.now() + (5 * 1000)).toGMTString(),
             })
             .get('/cachedRequest')
             .reply(200, 'content82');
 
           const first = await cache.resolve('https://client.example.com/cachedRequest');
-          await new Promise((resolve) => {
-            setTimeout(() => {
-              resolve();
-            }, 1050);
-          });
+          timekeeper.travel(Date.now() + (10 * 1000));
           const second = await cache.resolve('https://client.example.com/cachedRequest');
 
           expect(first).to.equal('content24');

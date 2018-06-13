@@ -1056,13 +1056,13 @@ default value:
   requestUri: true,
   oauthNativeApps: true,
   pkce: true,
+  alwaysIssueRefresh: false,
   backchannelLogout: false,
-  frontchannelLogout: false,
   claimsParameter: false,
   clientCredentials: false,
   encryption: false,
+  frontchannelLogout: false,
   introspection: false,
-  alwaysIssueRefresh: false,
   registration: false,
   registrationManagement: false,
   request: false,
@@ -1096,6 +1096,24 @@ async findById(ctx, sub, token) {
     },
   };
 }
+```
+
+### formats
+
+TODO  
+
+affects: properties passed to adapters for token types, issued token formats  
+recommendation: set default to `opaque` if you're still developing your application, `legacy` will not be the default in the major versions coming forward. It is not recommended to set `jwt` as default, if you need it, it's most likely just for Access Tokens.  
+
+default value:
+```js
+{ default: 'legacy',
+  AccessToken: undefined,
+  AuthorizationCode: undefined,
+  RefreshToken: undefined,
+  ClientCredentials: undefined,
+  InitialAccessToken: undefined,
+  RegistrationAccessToken: undefined }
 ```
 
 ### frontchannelLogoutPendingSource

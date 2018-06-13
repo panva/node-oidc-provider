@@ -3,6 +3,7 @@ const sinon = require('sinon');
 const { parse: parseUrl } = require('url');
 const { expect } = require('chai');
 const epochTime = require('../../lib/helpers/epoch_time');
+const timekeeper = require('timekeeper');
 
 const route = '/token';
 
@@ -12,6 +13,8 @@ function errorDetail(spy) {
 
 describe('grant_type=authorization_code', () => {
   before(bootstrap(__dirname));
+
+  afterEach(() => timekeeper.reset());
 
   context('with real tokens', () => {
     before(function () { return this.login(); });
@@ -28,7 +31,7 @@ describe('grant_type=authorization_code', () => {
         .expect(302)
         .expect((response) => {
           const { query: { code } } = parseUrl(response.headers.location, true);
-          const jti = code.substring(0, 48);
+          const jti = this.getTokenJti(code);
           this.code = this.TestAdapter.for('AuthorizationCode').syncFind(jti);
           this.ac = code;
         });
@@ -78,14 +81,14 @@ describe('grant_type=authorization_code', () => {
       }, done));
 
       (async () => {
-        const code = await this.provider.AuthorizationCode.find(this.ac);
-        code.scope = 'openid offline_access'; // eslint-disable-line no-param-reassign
-        const ac = await code.save();
+        this.TestAdapter.for('AuthorizationCode').syncUpdate(this.getTokenJti(this.ac), {
+          scope: 'openid offline_access',
+        });
         await this.agent.post(route)
           .auth('client', 'secret')
           .type('form')
           .send({
-            code: ac,
+            code: this.ac,
             grant_type: 'authorization_code',
             redirect_uri: 'https://client.example.com/cb',
           });
@@ -108,36 +111,34 @@ describe('grant_type=authorization_code', () => {
     context('', () => {
       before(function () {
         this.prev = this.provider.AuthorizationCode.expiresIn;
-        i(this.provider).configuration('ttl').AuthorizationCode = 1;
+        i(this.provider).configuration('ttl').AuthorizationCode = 5;
       });
 
       after(function () {
         i(this.provider).configuration('ttl').AuthorizationCode = this.prev;
       });
 
-      it('validates code is not expired', function (done) {
-        setTimeout(() => {
-          const spy = sinon.spy();
-          this.provider.once('grant.error', spy);
+      it('validates code is not expired', function () {
+        timekeeper.travel(Date.now() + (10 * 1000));
+        const spy = sinon.spy();
+        this.provider.once('grant.error', spy);
 
-          return this.agent.post(route)
-            .auth('client', 'secret')
-            .send({
-              code: this.ac,
-              grant_type: 'authorization_code',
-              redirect_uri: 'https://client.example.com/cb',
-            })
-            .type('form')
-            .expect(400)
-            .expect(() => {
-              expect(spy.calledOnce).to.be.true;
-              expect(errorDetail(spy)).to.equal('authorization code is expired');
-            })
-            .expect((response) => {
-              expect(response.body).to.have.property('error', 'invalid_grant');
-            })
-            .end(done);
-        }, 1000);
+        return this.agent.post(route)
+          .auth('client', 'secret')
+          .send({
+            code: this.ac,
+            grant_type: 'authorization_code',
+            redirect_uri: 'https://client.example.com/cb',
+          })
+          .type('form')
+          .expect(400)
+          .expect(() => {
+            expect(spy.calledOnce).to.be.true;
+            expect(errorDetail(spy)).to.equal('authorization code is expired');
+          })
+          .expect((response) => {
+            expect(response.body).to.have.property('error', 'invalid_grant');
+          });
       });
     });
 

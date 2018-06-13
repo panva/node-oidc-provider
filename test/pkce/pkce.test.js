@@ -1,4 +1,3 @@
-const base64url = require('base64url');
 const bootstrap = require('../test_helper');
 const { parse: parseUrl } = require('url');
 const { expect } = require('chai');
@@ -21,12 +20,10 @@ describe('PKCE RFC7636', () => {
         .query(auth)
         .expect((response) => {
           const { query: { code } } = parseUrl(response.headers.location, true);
-          const jti = code.substring(0, 48);
-          const stored = this.TestAdapter.for('AuthorizationCode').syncFind(jti);
-          const payload = JSON.parse(base64url.decode(stored.payload));
-
-          expect(payload).to.have.property('codeChallengeMethod', 'plain');
-          expect(payload).to.have.property('codeChallenge', 'foobar');
+          const jti = this.getTokenJti(code);
+          const stored = this.TestAdapter.for('AuthorizationCode').syncFind(jti, { payload: true });
+          expect(stored).to.have.property('codeChallengeMethod', 'plain');
+          expect(stored).to.have.property('codeChallenge', 'foobar');
         });
     });
 
@@ -41,12 +38,11 @@ describe('PKCE RFC7636', () => {
         .query(auth)
         .expect((response) => {
           const { query: { code } } = parseUrl(response.headers.location, true);
-          const jti = code.substring(0, 48);
-          const stored = this.TestAdapter.for('AuthorizationCode').syncFind(jti);
-          const payload = JSON.parse(base64url.decode(stored.payload));
+          const jti = this.getTokenJti(code);
+          const stored = this.TestAdapter.for('AuthorizationCode').syncFind(jti, { payload: true });
 
-          expect(payload).to.have.property('codeChallengeMethod', 'plain');
-          expect(payload).to.have.property('codeChallenge', 'foobar');
+          expect(stored).to.have.property('codeChallengeMethod', 'plain');
+          expect(stored).to.have.property('codeChallenge', 'foobar');
         });
     });
 
@@ -178,12 +174,11 @@ describe('PKCE RFC7636', () => {
           .query(auth)
           .expect((response) => {
             const { query: { code } } = parseUrl(response.headers.location, true);
-            const jti = code.substring(0, 48);
-            const stored = this.TestAdapter.for('AuthorizationCode').syncFind(jti);
-            const payload = JSON.parse(base64url.decode(stored.payload));
+            const jti = this.getTokenJti(code);
+            const stored = this.TestAdapter.for('AuthorizationCode').syncFind(jti, { payload: true });
 
-            expect(payload).to.have.property('codeChallengeMethod', 'S256');
-            expect(payload).to.have.property('codeChallenge', 'E9Melhoa2OwvFrEMTJguCHaoeK1t8URWbuGJSstw-cM');
+            expect(stored).to.have.property('codeChallengeMethod', 'S256');
+            expect(stored).to.have.property('codeChallenge', 'E9Melhoa2OwvFrEMTJguCHaoeK1t8URWbuGJSstw-cM');
           });
       });
     });

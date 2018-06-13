@@ -5,9 +5,16 @@ config.features = { revocation: true, clientCredentials: true };
 
 module.exports = {
   config,
-  client: {
-    client_id: 'client',
-    client_secret: 'secret',
-    redirect_uris: ['https://client.example.com/cb'],
-  },
+  clients: [
+    {
+      client_id: 'client',
+      client_secret: 'secret',
+      redirect_uris: ['https://client.example.com/cb'],
+    },
+    {
+      client_id: 'client2',
+      client_secret: 'secret',
+      redirect_uris: ['https://client2.example.com/cb'],
+    },
+  ],
 };
