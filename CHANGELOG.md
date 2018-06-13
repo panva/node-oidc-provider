@@ -5,6 +5,7 @@ Yay for [SemVer](http://semver.org/).
 **Table of Contents**
 
 <!-- TOC START min:2 max:2 link:true update:true -->
+- [Unreleased](#unreleased)
 - [4.0.x](#40x)
 - [3.0.x](#30x)
 - [2.18.x](#218x)
@@ -28,6 +29,12 @@ Yay for [SemVer](http://semver.org/).
 - [2.0.x](#20x)
 
 <!-- TOC END -->
+
+## Unreleased
+- [DIFF](https://github.com/panva/node-oidc-provider/compare/v4.0.3...master)
+- fixed edge cases where client and provider signing keys would be used for encryption and vice versa
+- adjusted error_description to be more descriptive when PKCE plain value fallback is not possible
+  due to the plain method not being supported
 
 ## 4.0.x
 ### 4.0.3
