@@ -38,3 +38,7 @@ package-lock.json
 
 # TODOs
 TODO*.md
+
+# Test DB files
+dump.rdb
+db.sqlite
