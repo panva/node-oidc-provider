@@ -395,12 +395,15 @@ const configuration = { features: { devInteractions: Boolean[true] } };
 
 
 **Discovery**  
-Exposes `/.well-known/webfinger` and `/.well-known/openid-configuration` endpoints. Contents of the
-latter reflect your actual configuration, i.e. available claims, features and so on.
+Exposes `/.well-known/webfinger`, `/.well-known/openid-configuration` and
+`/.well-known/oauth-authorization-server` endpoints. Contents of the latter two are the same and
+reflect your actual configuration, i.e. available claims, features and so on.
+
 ```js
 const configuration = { features: { discovery: Boolean[true] } };
 ```
-WebFinger always returns positive results and links to this issuer, it is not resolving the resources
+
+WebFinger always returns positive results and links to the issuer, it is not resolving the resources
 in any way.
 
 **Authorization `claims` parameter**  
@@ -691,6 +694,7 @@ client metadata is a union of
 If you wish to tune the algorithms further you may do so via the `unsupported` [configuration][defaults]
 property.
 
+
 ## HTTP Request Library / Proxy settings
 By default oidc-provider uses the [got][got-library] module. Because of its lightweight nature of
 the provider will not use environment-defined http(s) proxies. In order to have them used you'll
@@ -780,27 +784,30 @@ provider.use(async (ctx, next) => {
 });
 ```
 
+
 ## Mounting oidc-provider
 The following snippets show how a provider instance can be mounted to existing applications with a
-path prefix. As shown it is recommended to rewrite the well-known uri calls so that they get handled
-by the provider.
+path prefix. The following examples also handle conform `/.well-known/oauth-authorization-server`
+discovery when issuer has a path component according to
+[OAuth 2.0 Authorization Server Metadata - draft 10][oauth2-metadata-draft] using rewrite packages.
 
 ### to an express application
 ```js
 const rewrite = require('express-urlrewrite');
-const prefix = '/oidc';
-expressApp.use(rewrite('/.well-known/*', `${prefix}/.well-known/$1`));
-expressApp.use(prefix, oidc.callback);
+const prefix = 'oidc';
+expressApp.use(rewrite(`/.well-known/oauth-authorization-server/${prefix}`, `/${prefix}/.well-known/oauth-authorization-server`));
+expressApp.use(`/${prefix}`, oidc.callback);
 ```
 
 ### to a koa application
 ```js
 const rewrite = require('koa-rewrite');
 const mount = require('koa-mount');
-const prefix = '/oidc';
-koaApp.use(rewrite('/.well-known/(.*)', `${prefix}/.well-known/$1`));
-koaApp.use(mount(prefix, oidc.app));
+const prefix = 'oidc';
+koaApp.use(rewrite(`/.well-known/oauth-authorization-server/${prefix}`, `/${prefix}/.well-known/oauth-authorization-server`));
+koaApp.use(mount(`/${prefix}`, oidc.app));
 ```
+
 
 ## Trusting TLS offloading proxies
 
@@ -839,6 +846,7 @@ location / {
   proxy_redirect off;
 }
 ```
+
 
 ## Configuration options
 
@@ -1467,3 +1475,4 @@ default value:
 [keygrip-module]: https://www.npmjs.com/package/keygrip
 [third-party-cookies-git]: https://github.com/mindmup/3rdpartycookiecheck
 [third-party-cookies-so]: https://stackoverflow.com/questions/3550790/check-if-third-party-cookies-are-enabled/7104048#7104048
+[oauth2-metadata-draft]: https://tools.ietf.org/html/draft-ietf-oauth-discovery-10
