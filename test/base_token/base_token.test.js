@@ -105,6 +105,17 @@ describe('BaseToken', () => {
     expect(third).to.equal(second);
   });
 
+  it('consumed token save saves consumed', async function () {
+    let token = new this.provider.AuthorizationCode({
+      grantId: 'foo',
+      consumed: true,
+    });
+    const first = await token.save();
+
+    token = await this.provider.AuthorizationCode.find(first);
+    expect(token.consumed).to.be.true;
+  });
+
   it('rethrows adapter#find errors', async function () {
     this.adapter.find.restore();
     const adapterThrow = new Error('adapter throw!');
