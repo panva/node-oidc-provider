@@ -260,10 +260,7 @@ describe('Client metadata validation', () => {
   });
 
   [
-    'client_uri',
-    'logo_uri',
-    'policy_uri',
-    'tos_uri',
+    'client_uri', 'logo_uri', 'policy_uri', 'tos_uri',
   ].forEach((prop) => {
     context(prop, function () {
       mustBeString(this.title);
@@ -436,10 +433,7 @@ describe('Client metadata validation', () => {
       mustBeString(this.title, undefined, undefined, configuration);
 
       [
-        'client_secret_basic',
-        'client_secret_jwt',
-        'client_secret_post',
-        'private_key_jwt',
+        'client_secret_basic', 'client_secret_jwt', 'client_secret_post', 'private_key_jwt',
       ].forEach((value) => {
         switch (value) {
           case 'private_key_jwt':
@@ -501,22 +495,11 @@ describe('Client metadata validation', () => {
         expect(err.message).to.equal('invalid_client_metadata');
         expect(err.error_description).to.equal('id_token_encrypted_response_alg is mandatory property');
       }));
-      ['RSA-OAEP',
-        'RSA-OAEP-256',
-        'RSA1_5',
-        'ECDH-ES',
-        'ECDH-ES+A128KW',
-        'ECDH-ES+A192KW',
-        'ECDH-ES+A256KW',
-        'A128GCMKW',
-        'A192GCMKW',
-        'A256GCMKW',
-        'A128KW',
-        'A192KW',
-        'A256KW',
-        'PBES2-HS256+A128KW',
-        'PBES2-HS384+A192KW',
-        'PBES2-HS512+A256KW'].forEach((value) => {
+      [
+        'RSA-OAEP', 'RSA-OAEP-256', 'RSA1_5', 'ECDH-ES', 'ECDH-ES+A128KW', 'ECDH-ES+A192KW',
+        'ECDH-ES+A256KW', 'A128GCMKW', 'A192GCMKW', 'A256GCMKW', 'A128KW', 'A192KW', 'A256KW',
+        'PBES2-HS256+A128KW', 'PBES2-HS384+A192KW', 'PBES2-HS512+A256KW',
+      ].forEach((value) => {
         allows(this.title, value, {
           jwks: { keys: [sigKey] },
         }, configuration);
@@ -535,12 +518,7 @@ describe('Client metadata validation', () => {
         jwks: { keys: [sigKey] },
       }, configuration);
       [
-        'A128CBC-HS256',
-        'A128GCM',
-        'A192CBC-HS384',
-        'A192GCM',
-        'A256CBC-HS512',
-        'A256GCM',
+        'A128CBC-HS256', 'A128GCM', 'A192CBC-HS384', 'A192GCM', 'A256CBC-HS512', 'A256GCM',
       ].forEach((value) => {
         allows(this.title, value, {
           id_token_encrypted_response_alg: 'RSA1_5',
@@ -566,22 +544,9 @@ describe('Client metadata validation', () => {
         expect(err.error_description).to.equal('userinfo_encrypted_response_alg is mandatory property');
       }));
       [
-        'RSA-OAEP',
-        'RSA-OAEP-256',
-        'RSA1_5',
-        'ECDH-ES',
-        'ECDH-ES+A128KW',
-        'ECDH-ES+A192KW',
-        'ECDH-ES+A256KW',
-        'A128GCMKW',
-        'A192GCMKW',
-        'A256GCMKW',
-        'A128KW',
-        'A192KW',
-        'A256KW',
-        'PBES2-HS256+A128KW',
-        'PBES2-HS384+A192KW',
-        'PBES2-HS512+A256KW',
+        'RSA-OAEP', 'RSA-OAEP-256', 'RSA1_5', 'ECDH-ES', 'ECDH-ES+A128KW', 'ECDH-ES+A192KW',
+        'ECDH-ES+A256KW', 'A128GCMKW', 'A192GCMKW', 'A256GCMKW', 'A128KW', 'A192KW', 'A256KW',
+        'PBES2-HS256+A128KW', 'PBES2-HS384+A192KW', 'PBES2-HS512+A256KW',
       ].forEach((value) => {
         allows(this.title, value, {
           jwks: { keys: [sigKey] },
@@ -602,12 +567,7 @@ describe('Client metadata validation', () => {
         jwks: { keys: [sigKey] },
       }, configuration);
       [
-        'A128CBC-HS256',
-        'A128GCM',
-        'A192CBC-HS384',
-        'A192GCM',
-        'A256CBC-HS512',
-        'A256GCM',
+        'A128CBC-HS256', 'A128GCM', 'A192CBC-HS384', 'A192GCM', 'A256CBC-HS512', 'A256GCM',
       ].forEach((value) => {
         allows(this.title, value, {
           userinfo_encrypted_response_alg: 'RSA1_5',
@@ -634,12 +594,7 @@ describe('Client metadata validation', () => {
         expect(err.error_description).to.equal('request_object_encryption_alg is mandatory property');
       }));
       [
-        'RSA-OAEP',
-        'RSA-OAEP-256',
-        'RSA1_5',
-        'ECDH-ES',
-        'ECDH-ES+A128KW',
-        'ECDH-ES+A192KW',
+        'RSA-OAEP', 'RSA-OAEP-256', 'RSA1_5', 'ECDH-ES', 'ECDH-ES+A128KW', 'ECDH-ES+A192KW',
         'ECDH-ES+A256KW',
       ].forEach((value) => {
         allows(this.title, value, undefined, configuration);
@@ -657,12 +612,7 @@ describe('Client metadata validation', () => {
         request_object_encryption_alg: 'RSA1_5',
       }, configuration);
       [
-        'A128CBC-HS256',
-        'A128GCM',
-        'A192CBC-HS384',
-        'A192GCM',
-        'A256CBC-HS512',
-        'A256GCM',
+        'A128CBC-HS256', 'A128GCM', 'A192CBC-HS384', 'A192GCM', 'A256CBC-HS512', 'A256GCM',
       ].forEach((value) => {
         allows(this.title, value, {
           request_object_encryption_alg: 'RSA1_5',

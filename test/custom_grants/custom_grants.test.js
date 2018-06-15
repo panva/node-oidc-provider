@@ -46,10 +46,10 @@ describe('custom token endpoint grant types', () => {
     it('clients can start using it', function () {
       return this.agent.post('/token')
         .auth('client', 'secret')
-        .send({ grant_type: 'lotto', name: 'Filip' })
+        .send({ grant_type: 'lotto', name: 'John Doe' })
         .type('form')
         .expect(201)
-        .expect({ winner: 'Filip' });
+        .expect({ winner: 'John Doe' });
     });
 
     it('populates ctx.oidc.entities', function (done) {
@@ -59,7 +59,7 @@ describe('custom token endpoint grant types', () => {
 
       this.agent.post('/token')
         .auth('client', 'secret')
-        .send({ grant_type: 'lotto', name: 'Filip' })
+        .send({ grant_type: 'lotto', name: 'John Doe' })
         .type('form')
         .end(() => {});
     });
