@@ -352,8 +352,13 @@ describe('Client metadata validation', () => {
 
   context('request_object_signing_alg', function () {
     mustBeString(this.title);
-    // TODO: it('allows one of');
-    // TODO: it('rejects other than');
+    [
+      'none', 'HS256', 'HS384', 'HS512', 'RS256', 'RS384', 'RS512',
+      'PS256', 'PS384', 'PS512', 'ES256', 'ES384', 'ES512',
+    ].forEach((alg) => {
+      allows(this.title, alg, { jwks: { keys: [sigKey] } });
+    });
+    rejects(this.title, 'not-an-alg');
   });
 
   context('request_uris', function () {
