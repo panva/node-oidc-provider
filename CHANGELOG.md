@@ -33,6 +33,8 @@ Yay for [SemVer](http://semver.org/).
 ## Unreleased
 - [DIFF](https://github.com/panva/node-oidc-provider/compare/v4.0.3...master)
 - fixed edge cases where client and provider signing keys would be used for encryption and vice versa
+- fixed client `request_object_signing_alg` and `contact` validations
+- fixed `defaultHttpOptions` to be as documented
 - adjusted error_description to be more descriptive when PKCE plain value fallback is not possible
   due to the plain method not being supported
 
