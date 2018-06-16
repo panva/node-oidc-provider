@@ -4,7 +4,8 @@ Yay for [SemVer](http://semver.org/).
 
 **Table of Contents**
 
-<!-- TOC START min:2 max:2 link:true update:true -->
+<!-- TOC depthFrom:2 depthTo:2 withLinks:1 updateOnSave:1 orderedList:0 -->
+
 - [Unreleased](#unreleased)
 - [4.0.x](#40x)
 - [3.0.x](#30x)
@@ -28,7 +29,7 @@ Yay for [SemVer](http://semver.org/).
 - [2.1.0](#210)
 - [2.0.x](#20x)
 
-<!-- TOC END -->
+<!-- /TOC -->
 
 ## Unreleased
 - [DIFF](https://github.com/panva/node-oidc-provider/compare/v4.0.3...master)
@@ -37,7 +38,7 @@ Yay for [SemVer](http://semver.org/).
 
 Added `formats` configuration option. This option allows to configure the token storage and value
 formats. The different values change how a token value is generated as well as what properties get
-sent to the adapter for storage. Defined three formats:
+sent to the adapter for storage. Three formats are defined:
 
 - `legacy` is the current and default format until next major release. no changes in the format sent
   to adapter
@@ -48,10 +49,11 @@ sent to the adapter for storage. Defined three formats:
   property `jwt`. The signing algorithm for these tokens uses the client's
   `id_token_signed_response_alg` value and falls back to `RS256` for tokens with no relation to a
   client or when the client's alg is `none`
-- this feature uses the previously defined public token API of `[klass].prototype.getValueAndPayload,
+
+This feature uses the previously defined public token API of `[klass].prototype.getValueAndPayload,
 [klass].prototype.constructor.getTokenId, [klass].prototype.constructor.verify` and adds a new one
-`[klass].prototype.constructor.generateTokenId`. See the inline comment docs for more detail on those
-- further format ideas and suggestions are welcome
+`[klass].prototype.constructor.generateTokenId`. See the inline comment docs for more detail on those.
+Further format ideas and suggestions are welcome.
 
 **Fixes**
 - fixed edge cases where client and provider signing keys would be used for encryption and vice versa

@@ -18,6 +18,9 @@ class Block {
       while (buffer.indexOf('*') === 0 || buffer.indexOf(' ') === 0) {
         buffer = buffer.slice(1);
       }
+      if (buffer.indexOf('-') === 0) {
+        buffer = Buffer.concat([Buffer.from('\n'), buffer]);
+      }
       this[this.active] = Buffer.concat([this[this.active], Buffer.from(' '), buffer]);
     }
   }

@@ -71,7 +71,7 @@ class MyAdapter {
      *
      * when `jwt`
      * - same as `opaque` with the addition of
-     * - jwt {string} the jwt value returned to the client
+     * - jwt {string} - the jwt value returned to the client
      *
      * Hint2: in order to fulfill all OAuth2.0 behaviors in regards to invalidating and expiring
      * potentially misused or sniffed tokens you should keep track of all tokens that belong to the
