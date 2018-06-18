@@ -61,6 +61,7 @@ Further format ideas and suggestions are welcome.
 - fixed `defaultHttpOptions` to be as documented
 - adjusted error_description to be more descriptive when PKCE plain value fallback is not possible
   due to the plain method not being supported
+- fixed `audiences` helper results to assert that an array of strings is returned
 
 ## 4.0.x
 ### 4.0.3
