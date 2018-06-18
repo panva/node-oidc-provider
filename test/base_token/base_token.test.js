@@ -134,6 +134,7 @@ describe('mixed formats for tokens', () => {
       this.provider.BaseToken, this.provider.AccessToken,
       this.provider.RefreshToken, this.provider.AuthorizationCode,
     ];
+
     const generateTokenId = models.map(m => m.generateTokenId);
     const getTokenId = models.map(m => m.getTokenId);
     const verify = models.map(m => m.getTokenId);
