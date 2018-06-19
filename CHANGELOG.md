@@ -32,9 +32,20 @@ Yay for [SemVer](http://semver.org/).
 
 ## Unreleased
 - [DIFF](https://github.com/panva/node-oidc-provider/compare/v4.0.3...master)
+
+
+**New Features**
+Added `conformIdTokenClaims` feature toggle.
+
+This toggle makes the OP only include End-User claims in the ID Token as defined by Core 1.0 section
+5.4 - when the response_type is id_token or unless requested using the claims parameter.
+
+**Fixes**
 - fixed edge cases where client and provider signing keys would be used for encryption and vice versa
+- fixed an end_session server error in case where session.authorizations is missing - #295
 - adjusted error_description to be more descriptive when PKCE plain value fallback is not possible
   due to the plain method not being supported
+
 
 ## 4.0.x
 ### 4.0.3

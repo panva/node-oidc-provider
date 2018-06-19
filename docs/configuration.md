@@ -1474,7 +1474,7 @@ default value:
 
 [client-metadata]: https://openid.net/specs/openid-connect-registration-1_0.html#ClientMetadata
 [core-account-claims]: https://openid.net/specs/openid-connect-core-1_0.html#ScopeClaims
-[core-scopes]: http://openid.net/specs/openid-connect-core-1_0.html#ScopeClaims
+[core-scopes]: https://openid.net/specs/openid-connect-core-1_0.html#ScopeClaims
 [core-offline-access]: https://openid.net/specs/openid-connect-core-1_0.html#OfflineAccess
 [core-claims]: https://openid.net/specs/openid-connect-core-1_0.html#ClaimsParameter
 [core-jwt-parameters]: https://openid.net/specs/openid-connect-core-1_0.html#JWTRequests
