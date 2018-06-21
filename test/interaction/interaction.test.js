@@ -5,16 +5,54 @@ const KeyGrip = require('keygrip'); // eslint-disable-line import/no-extraneous-
 const bootstrap = require('../test_helper');
 const config = require('./interaction.config');
 const epochTime = require('../../lib/helpers/epoch_time');
+const sinon = require('sinon');
+const { expect } = require('chai');
 
 const expire = new Date();
 expire.setDate(expire.getDate() + 1);
+const expired = new Date(0);
+const fail = () => { throw new Error('expected promise to be rejected'); };
 
-const { expect } = require('chai');
+function handlesInteractionSessionErrors() {
+  it('"handles" not found interaction session id cookie', async function () {
+    const cookies = [
+      `_grant=; path=${this.url}; expires=${expired.toGMTString()}; httponly`,
+      `_grant.sig=; path=${this.url}; expires=${expired.toGMTString()}; httponly`,
+    ];
+    this.agent._saveCookies.bind(this.agent)({ headers: { 'set-cookie': cookies } });
+
+    sinon.spy(this.provider, 'interactionDetails');
+
+    await this.agent.get(this.url).expect(400);
+    await this.provider.interactionDetails.getCall(0).returnValue.then(fail, (err) => {
+      expect(err.name).to.eql('SessionNotFound');
+      expect(err.error_description).to.eql('interaction session id cookie not found');
+    });
+  });
+
+  it('"handles" not found interaction session', async function () {
+    sinon.stub(this.provider.Session, 'find').resolves();
+
+    sinon.spy(this.provider, 'interactionDetails');
+
+    await this.agent.get(this.url).expect(400);
+    await this.provider.interactionDetails.getCall(0).returnValue.then(fail, (err) => {
+      expect(err.name).to.eql('SessionNotFound');
+      expect(err.error_description).to.eql('interaction session not found');
+    });
+  });
+}
 
 describe('devInteractions', () => {
-  context('renders login', () => {
-    before(bootstrap(__dirname));
-    before(function () {
+  before(bootstrap(__dirname));
+  afterEach(function () {
+    if (this.provider.Session.find.restore) this.provider.Session.find.restore();
+    if (this.provider.interactionDetails.restore) this.provider.interactionDetails.restore();
+    if (this.provider.interactionFinished.restore) this.provider.interactionFinished.restore();
+  });
+  context('render login', () => {
+    beforeEach(function () { return this.logout(); });
+    beforeEach(function () {
       const auth = new this.AuthorizationRequest({
         response_type: 'code',
         scope: 'openid',
@@ -34,12 +72,14 @@ describe('devInteractions', () => {
         .expect(new RegExp('name="view" value="login"'))
         .expect(/Sign-in/);
     });
+
+    handlesInteractionSessionErrors();
   });
 
   context('render interaction', () => {
-    before(bootstrap(__dirname));
-    before(function () { return this.login(); });
-    before(function () {
+    beforeEach(function () { return this.logout(); });
+    beforeEach(function () { return this.login(); });
+    beforeEach(function () {
       const auth = new this.AuthorizationRequest({
         response_type: 'code',
         scope: 'openid',
@@ -60,11 +100,13 @@ describe('devInteractions', () => {
         .expect(new RegExp('name="view" value="interaction"'))
         .expect(/Authorize/);
     });
+
+    handlesInteractionSessionErrors();
   });
 
   context('submit login', () => {
-    before(bootstrap(__dirname));
-    before(function () {
+    beforeEach(function () { return this.logout(); });
+    beforeEach(function () {
       const auth = new this.AuthorizationRequest({
         response_type: 'code',
         scope: 'openid',
@@ -87,12 +129,14 @@ describe('devInteractions', () => {
         .expect(302)
         .expect('location', new RegExp(this.url.replace('interaction', 'auth')));
     });
+
+    handlesInteractionSessionErrors();
   });
 
   context('submit interaction', () => {
-    before(bootstrap(__dirname));
-    before(function () { return this.login(); });
-    before(function () {
+    beforeEach(function () { return this.logout(); });
+    beforeEach(function () { return this.login(); });
+    beforeEach(function () {
       const auth = new this.AuthorizationRequest({
         response_type: 'code',
         scope: 'openid',
@@ -115,31 +159,42 @@ describe('devInteractions', () => {
         .expect(302)
         .expect('location', new RegExp(this.url.replace('interaction', 'auth')));
     });
+
+    handlesInteractionSessionErrors();
   });
 });
 
 describe('resume after interaction', () => {
   before(bootstrap(__dirname));
 
+  afterEach(function () {
+    if (this.provider.Session.find.restore) this.provider.Session.find.restore();
+  });
+
   function setup(grant, result) {
     const cookies = [];
 
-    const sess = new this.provider.Session('resume', {});
+    const interaction = new this.provider.Session('resume', {});
+    const session = new this.provider.Session('sess', {});
     const keys = new KeyGrip(i(this.provider).configuration('cookies.keys'));
 
-    if (grant) {
-      const cookie = `_grant=resume; path=/auth/resume; expires=${expire.toGMTString()}; httponly`;
-      cookies.push(cookie);
-      const [pre, ...post] = cookie.split(';');
-      cookies.push([`_grant.sig=${keys.sign(pre)}`, ...post].join(';'));
-      Object.assign(sess, { params: grant });
-    }
+    expect(grant).to.be.ok;
+
+    const cookie = `_grant=resume; path=/auth/resume; expires=${expire.toGMTString()}; httponly`;
+    cookies.push(cookie);
+    let [pre, ...post] = cookie.split(';');
+    cookies.push([`_grant.sig=${keys.sign(pre)}`, ...post].join(';'));
+    Object.assign(interaction, { params: grant });
+
+    const sessionCookie = `_session=sess; path=/; expires=${expire.toGMTString()}; httponly`;
+    [pre, ...post] = sessionCookie.split(';');
+    cookies.push([`_session.sig=${keys.sign(pre)}`, ...post].join(';'));
 
     if (result) {
       if (result.login && !result.login.ts) {
         Object.assign(result.login, { ts: epochTime() });
       }
-      Object.assign(sess, { result });
+      Object.assign(interaction, { result });
     }
 
     this.agent._saveCookies.bind(this.agent)({
@@ -148,7 +203,10 @@ describe('resume after interaction', () => {
       },
     });
 
-    return sess.save();
+    return Promise.all([
+      interaction.save(),
+      session.save(),
+    ]);
   }
 
   context('general', () => {
@@ -156,6 +214,21 @@ describe('resume after interaction', () => {
       return this.agent.get('/auth/resume')
         .expect(400)
         .expect(/authorization request has expired/);
+    });
+
+    it('needs to find the session to resume', function () {
+      const auth = new this.AuthorizationRequest({
+        response_type: 'code',
+        scope: 'openid',
+      });
+
+      setup.call(this, auth);
+
+      sinon.stub(this.provider.Session, 'find').resolves();
+
+      return this.agent.get('/auth/resume')
+        .expect(400)
+        .expect(/interaction session not found/);
     });
   });
 
@@ -404,7 +477,12 @@ describe('resume after interaction', () => {
         prompt: 'custom',
       });
 
-      setup.call(this, auth);
+      setup.call(this, auth, {
+        login: {
+          account: uuid(),
+          remember: true,
+        },
+      });
 
       return this.agent.get('/auth/resume')
         .expect(302)

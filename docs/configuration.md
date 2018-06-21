@@ -360,6 +360,7 @@ deployment compact. The feature flags with their default values are
 | frontchannelLogout | no |
 | claimsParameter | no |
 | clientCredentials | no |
+| conformIdTokenClaims | no |
 | discovery | yes |
 | encryption | no |
 | introspection | no |
@@ -396,11 +397,37 @@ WebFinger always returns positive results and links to this issuer, it is not re
 in any way.
 
 **Authorization `claims` parameter**  
-Enables the use and validations of `claims` parameter as described in [Core 1.0][core-claims-url]
+Enables the use and validations of `claims` parameter as described in
+[Core 1.0 - 5.5. Requesting Claims using the "claims" Request Parameter][core-claims]
 and sets the discovery endpoint property `claims_parameter_supported` to true.
 ```js
 const configuration = { features: { claimsParameter: Boolean[false] } };
 ```
+
+**ID Token only contains End-User claims when response_type=id_token**  
+[Core 1.0 - 5.4. Requesting Claims using Scope Values][core-scopes]
+defines that claims requested using the `scope` parameter are returned from the UserInfo Endpoint
+unless the `response_type=id_token`.
+
+> The Claims requested by the profile, email, address, and phone scope values are returned from the
+> UserInfo Endpoint, as described in Section 5.3.2, when a response_type value is used that results
+> in an Access Token being issued. However, when no Access Token is issued (which is the case for
+> the response_type value id_token), the resulting Claims are returned in the ID Token.
+
+To enable/disable this conform behaviour
+```js
+const configuration = { features: { conformIdTokenClaims: Boolean[false] } };
+```
+
+The conform/non-conform behaviour results in the following results
+
+| flag value | request params | authorization_endpoint ID Token (if issued) | token_endpoint ID Token (if issued) |
+|---|---|---|---|
+| false | `response_type=` _any_<br/><br/> `scope=openid email` | ✅ `sub`<br/> ✅ `email`<br/> ✅ `email_verified` | ✅ `sub`<br/> ✅ `email`<br/> ✅ `email_verified` |
+| true | `response_type=` _any but_ `id_token`<br/><br/> `scope=openid email` | ✅ `sub`<br/> ❌ `email`<br/> ❌ `email_verified` | ✅ `sub`<br/> ❌ `email`<br/> ❌ `email_verified` |
+| true | `response_type=` _any but_ `id_token`<br/><br/> `scope=openid email`<br/><br/> `claims={"id_token":{"email":null}}` | ✅ `sub`<br/> ✅ `email`<br/> ❌ `email_verified` | ✅ `sub`<br/> ✅ `email`<br/> ❌ `email_verified` |
+| true | `response_type=id_token`<br/><br/> `scope=openid email` | ✅ `sub`<br/> ✅ `email`<br/> ✅ `email_verified` | _n/a_ |
+
 
 **Token endpoint `client_credentials` grant**  
 Enables `grant_type=client_credentials` to be used on the token endpoint. Note: client still has to
@@ -412,7 +439,7 @@ const configuration = { features: { clientCredentials: Boolean[false] } };
 ```
 
 **Encryption features**  
-Enables clients to receive encrypted userinfo responses, encrypted ID Tokens and to send encrypted
+Enables clients to receive encrypted UserInfo responses, encrypted ID Tokens and to send encrypted
 request parameters to authorization.
 ```js
 const configuration = { features: { encryption: Boolean[false] } };
@@ -420,14 +447,14 @@ const configuration = { features: { encryption: Boolean[false] } };
 
 
 **Offline access - Refresh Tokens**  
-The use of Refresh Tokens (offline access) as described in [Core 1.0 Offline Access][core-offline-access]
+The use of Refresh Tokens (offline access) as described in [Core 1.0 - 11. Offline Access][core-offline-access]
 does not require any feature flag as Refresh Tokens will be issued by the authorization_code grant
 automatically in case the authentication request included offline_access scope and consent prompt and
 the client in question has the refresh_token grant configured.
 
 **Refresh Tokens beyond the spec scope**  
-  > The use of Refresh Tokens is not exclusive to the offline_access use case. The Authorization
-  > Server MAY grant Refresh Tokens in other contexts that are beyond the scope of this specification.
+> The use of Refresh Tokens is not exclusive to the offline_access use case. The Authorization
+> Server MAY grant Refresh Tokens in other contexts that are beyond the scope of this specification.
 
 Provide `alwaysIssueRefresh` feature flag to have your provider instance issue Refresh Tokens even
 if offline_access scope is not requested. The client still has to have refresh_token grant
@@ -440,7 +467,7 @@ const configuration = { features: { alwaysIssueRefresh: Boolean[false] } };
 
 **Authorization `request` parameter**  
 Enables the use and validations of `request` parameter as described in
-[Core 1.0][core-jwt-parameters-url] and sets the discovery endpoint property
+[Core 1.0][core-jwt-parameters] and sets the discovery endpoint property
 `request_parameter_supported` to true.
 
 ```js
@@ -450,7 +477,7 @@ const configuration = { features: { request: Boolean[false] } };
 
 **Authorization `request_uri` parameter**  
 Enables the use and validations of `request_uri` parameter as described in
-[Core 1.0][core-jwt-parameters-url] and sets the discovery endpoint property
+[Core 1.0][core-jwt-parameters] and sets the discovery endpoint property
 `request_uri_parameter_supported` and `require_request_uri_registration` to true.
 ```js
 const configuration = { features: { requestUri: Boolean[true] } };
@@ -869,7 +896,7 @@ default value:
 
 Helper used by the OP to push additional audiences to issued ID, Access and ClientCredentials Tokens as well as other signed responses. The return value should either be falsy to omit adding additional audiences or an array of strings to push.  
 
-affects: id token audiences, access token audiences, client credential audiences, signed userinfo audiences  
+affects: ID Token audiences, access token audiences, client credential audiences, signed UserInfo audiences  
 
 default value:
 ```js
@@ -1072,6 +1099,7 @@ default value:
   backchannelLogout: false,
   claimsParameter: false,
   clientCredentials: false,
+  conformIdTokenClaims: false,
   encryption: false,
   frontchannelLogout: false,
   introspection: false,
@@ -1086,7 +1114,7 @@ default value:
 
 Helper used by the OP to load an account and retrieve its available claims. The return value should be a Promise and #claims() can return a Promise too  
 
-affects: authorization, authorization_code and refresh_token grants, id token claims  
+affects: authorization, authorization_code and refresh_token grants, ID Token claims  
 
 default value:
 ```js
@@ -1102,7 +1130,7 @@ async findById(ctx, sub, token) {
     // @param scope - the intended scope, while oidc-provider will mask
     //   claims depending on the scope automatically you might want to skip
     //   loading some claims from external resources etc. based on this detail
-    //   or not return them in id tokens but only userinfo and so on
+    //   or not return them in ID Tokens but only UserInfo and so on
     async claims(use, scope) {
       return { sub };
     },
@@ -1143,17 +1171,7 @@ async frontchannelLogoutPendingSource(ctx, frames, postLogoutRedirectUri, timeou
   ctx.body = `<!DOCTYPE html>
 <head>
 <title>Logout</title>
-<style>
-  iframe {
-    visibility: hidden;
-    position: absolute;
-    left: 0;
-    top: 0;
-    height:0;
-    width:0;
-    border: none;
-  }
-</style>
+<style>/* css and html classes omitted for brevity, see lib/helpers/defaults.js */</style>
 </head>
 <body>
 ${frames.join('')}
@@ -1328,10 +1346,13 @@ async renderError(ctx, out, error) {
   ctx.body = `<!DOCTYPE html>
 <head>
 <title>oops! something went wrong</title>
+<style>/* css and html classes omitted for brevity, see lib/helpers/defaults.js */</style>
 </head>
 <body>
-<h1>oops! something went wrong</h1>
-<pre>${JSON.stringify(out, null, 4)}</pre>
+<div>
+  <h1>oops! something went wrong</h1>
+  ${Object.entries(out).map(([key, value]) => `<pre><strong>${key}</strong>: ${value}</pre>`).join('')}
+</div>
 </body>
 </html>`;
 }
@@ -1483,10 +1504,11 @@ default value:
 
 [client-metadata]: https://openid.net/specs/openid-connect-registration-1_0.html#ClientMetadata
 [core-account-claims]: https://openid.net/specs/openid-connect-core-1_0.html#ScopeClaims
+[core-scopes]: https://openid.net/specs/openid-connect-core-1_0.html#ScopeClaims
 [core-offline-access]: https://openid.net/specs/openid-connect-core-1_0.html#OfflineAccess
-[core-claims-url]: https://openid.net/specs/openid-connect-core-1_0.html#ClaimsParameter
-[core-jwt-parameters-url]: https://openid.net/specs/openid-connect-core-1_0.html#JWTRequests
-[aggregated-distributed-claims]: https://openid.net/specs/openid-connect-core-1_0.html#AggregatedDistributedClaims
+[core-claims]: https://openid.net/specs/openid-connect-core-1_0.html#ClaimsParameter
+[core-jwt-parameters]: https://openid.net/specs/openid-connect-core-1_0.html#JWTRequests
+[core-aggregated-distributed-claims]: https://openid.net/specs/openid-connect-core-1_0.html#AggregatedDistributedClaims
 [backchannel-logout]: https://openid.net/specs/openid-connect-backchannel-1_0-04.html
 [frontchannel-logout]: https://openid.net/specs/openid-connect-frontchannel-1_0-02.html
 [pkce]: https://tools.ietf.org/html/rfc7636

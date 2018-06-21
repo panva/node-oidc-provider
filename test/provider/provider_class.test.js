@@ -19,6 +19,7 @@ describe('Provider', () => {
       'InvalidRequestUri',
       'InvalidScope',
       'InvalidToken',
+      'SessionNotFound',
       'RedirectUriMismatch',
       'RegistrationNotSupported',
       'RequestNotSupported',

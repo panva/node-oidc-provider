@@ -362,5 +362,22 @@ describe('[session_management]', () => {
           expect(response.headers['set-cookie']).to.contain('_state.client=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT; domain=.oidc.dev; httponly');
         });
     });
+
+    it('handles a no existing session state', async function () {
+      Object.assign(this.getSession(), {
+        logout: {
+          secret: '123', postLogoutRedirectUri: '/', clientId: 'client', state: 'foobar',
+        },
+        authorizations: undefined,
+      });
+
+      return this.agent.post('/session/end')
+        .send({ xsrf: '123' })
+        .type('form')
+        .expect(() => {
+          delete i(this.provider).configuration().cookies.long.domain;
+        })
+        .expect(302);
+    });
   });
 });

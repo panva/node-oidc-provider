@@ -34,7 +34,8 @@ Yay for [SemVer](http://semver.org/).
 ## Unreleased
 - [DIFF](https://github.com/panva/node-oidc-provider/compare/v4.0.3...master)
 
-**New Features**
+
+**New Feature - Storage Formats**
 
 Added `formats` configuration option. This option allows to configure the token storage and value
 formats. The different values change how a token value is generated as well as what properties get
@@ -55,13 +56,26 @@ This feature uses the previously defined public token API of `[klass].prototype.
 `[klass].prototype.constructor.generateTokenId`. See the inline comment docs for more detail on those.
 Further format ideas and suggestions are welcome.
 
+
+**New Feature - `conformIdTokenClaims` feature toggle**
+Added `conformIdTokenClaims` feature toggle.
+
+This toggle makes the OP only include End-User claims in the ID Token as defined by Core 1.0 section
+5.4 - when the response_type is id_token or unless requested using the claims parameter.
+
+
 **Fixes**
 - fixed edge cases where client and provider signing keys would be used for encryption and vice versa
 - fixed client `request_object_signing_alg` and `contact` validations
 - fixed `defaultHttpOptions` to be as documented
+- fixed an end_session server error in case where session.authorizations is missing - #295
 - adjusted error_description to be more descriptive when PKCE plain value fallback is not possible
   due to the plain method not being supported
 - fixed `audiences` helper results to assert that an array of strings is returned
+- fixed issues with interaction sessions and the back button, assertions are now in place and both
+  resume endpoint and interaction helpers will now reject with SessionNotFound named error, which
+  is essentially just InvalidRequest with a more descriptive name.
+
 
 ## 4.0.x
 ### 4.0.3
