@@ -36,7 +36,7 @@ describe('distributed and aggregated claims', () => {
   context('id_token', () => {
     it('should return _claim_names and _claim_sources members', function () {
       const auth = new this.AuthorizationRequest({
-        response_type: 'id_token token',
+        response_type: 'id_token',
         scope: 'openid profile',
       });
 
@@ -59,7 +59,7 @@ describe('distributed and aggregated claims', () => {
 
     it('does not return the members if these claims arent requested at all', function () {
       const auth = new this.AuthorizationRequest({
-        response_type: 'id_token token',
+        response_type: 'id_token',
         scope: 'openid',
       });
 
