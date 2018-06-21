@@ -40,9 +40,10 @@ describe('session exp handling', () => {
     expect(this.TestAdapter.for('Session').destroy.called).to.be.false;
   });
 
-  it('calls delete on exp-format expired encountered sessions', async function () {
+  it('calls delete on exp-format expired encountered sessions and generates a new session id', async function () {
     await this.login();
     const session = this.getSession();
+    const oldSessionId = this.getSessionId();
     session.exp = epochTime();
 
     sinon.spy(this.TestAdapter.for('Session'), 'destroy');
@@ -58,6 +59,10 @@ describe('session exp handling', () => {
       .expect(auth.validateInteractionError('login_required', 'no_session'));
 
     expect(this.TestAdapter.for('Session').destroy.called).to.be.true;
+
+    const newSessionId = this.getSessionId();
+    expect(newSessionId).to.be.ok;
+    expect(newSessionId).not.to.equal(oldSessionId);
   });
 
   describe('clockTolerance', () => {
@@ -87,11 +92,12 @@ describe('session exp handling', () => {
       expect(this.TestAdapter.for('Session').destroy.called).to.be.false;
     });
 
-    it('calls delete on exp-format expired encountered sessions', async function () {
+    it('calls delete on exp-format expired encountered sessions and generates a new session id', async function () {
       await this.login();
       const session = this.getSession();
       i(this.provider).configuration().clockTolerance = 10;
       session.exp = epochTime() - 10;
+      const oldSessionId = this.getSessionId();
 
       sinon.spy(this.TestAdapter.for('Session'), 'destroy');
 
@@ -106,6 +112,10 @@ describe('session exp handling', () => {
         .expect(auth.validateInteractionError('login_required', 'no_session'));
 
       expect(this.TestAdapter.for('Session').destroy.called).to.be.true;
+
+      const newSessionId = this.getSessionId();
+      expect(newSessionId).to.be.ok;
+      expect(newSessionId).not.to.equal(oldSessionId);
     });
   });
 });
