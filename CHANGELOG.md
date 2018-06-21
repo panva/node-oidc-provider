@@ -35,6 +35,9 @@ Yay for [SemVer](http://semver.org/).
 - fixed edge cases where client and provider signing keys would be used for encryption and vice versa
 - adjusted error_description to be more descriptive when PKCE plain value fallback is not possible
   due to the plain method not being supported
+- fixed issues with interaction sessions and the back button, assertions are now in place and both
+  resume endpoint and interaction helpers will now reject with SessionNotFound named error, which
+  is essentially just InvalidRequest with a more descriptive name.
 
 ## 4.0.x
 ### 4.0.3
