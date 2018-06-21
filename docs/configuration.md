@@ -1110,17 +1110,7 @@ async frontchannelLogoutPendingSource(ctx, frames, postLogoutRedirectUri, timeou
   ctx.body = `<!DOCTYPE html>
 <head>
 <title>Logout</title>
-<style>
-  iframe {
-    visibility: hidden;
-    position: absolute;
-    left: 0;
-    top: 0;
-    height:0;
-    width:0;
-    border: none;
-  }
-</style>
+<style>/* css and html classes omitted for brevity, see lib/helpers/defaults.js */</style>
 </head>
 <body>
 ${frames.join('')}
@@ -1293,10 +1283,13 @@ async renderError(ctx, out, error) {
   ctx.body = `<!DOCTYPE html>
 <head>
 <title>oops! something went wrong</title>
+<style>/* css and html classes omitted for brevity, see lib/helpers/defaults.js */</style>
 </head>
 <body>
-<h1>oops! something went wrong</h1>
-<pre>${JSON.stringify(out, null, 4)}</pre>
+<div>
+  <h1>oops! something went wrong</h1>
+  ${Object.entries(out).map(([key, value]) => `<pre><strong>${key}</strong>: ${value}</pre>`).join('')}
+</div>
 </body>
 </html>`;
 }

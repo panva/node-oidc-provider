@@ -7,6 +7,7 @@ const bodyParser = require('koa-body');
 const querystring = require('querystring');
 const Router = require('koa-router');
 const render = require('koa-ejs');
+const { renderError } = require('../lib/helpers/defaults'); // make your own, you'll need it anyway
 
 const port = process.env.PORT || 3000;
 
@@ -18,6 +19,7 @@ const issuer = process.env.ISSUER || 'http://localhost:3000';
 config.findById = Account.findById;
 
 const provider = new Provider(issuer, config);
+const { errors: { SessionNotFound } } = Provider;
 
 provider.defaultHttpOptions = { timeout: 15000 };
 
@@ -53,6 +55,20 @@ provider.initialize({
   }
 
   const router = new Router();
+
+  router.use(async (ctx, next) => {
+    try {
+      await next();
+    } catch (err) {
+      if (err instanceof SessionNotFound) {
+        ctx.status = err.status;
+        const { message: error, error_description } = err; // eslint-disable-line camelcase
+        renderError(ctx, { error, error_description }, err);
+      } else {
+        throw err;
+      }
+    }
+  });
 
   router.get('/interaction/:grant', async (ctx, next) => {
     const details = await provider.interactionDetails(ctx.req);

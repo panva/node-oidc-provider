@@ -18,6 +18,9 @@ class Block {
       while (buffer.indexOf('*') === 0 || buffer.indexOf(' ') === 0) {
         buffer = buffer.slice(1);
       }
+      if (buffer.indexOf('-') === 0) {
+        buffer = Buffer.concat([Buffer.from('\n'), buffer]);
+      }
       this[this.active] = Buffer.concat([this[this.active], Buffer.from(' '), buffer]);
     }
   }
@@ -116,6 +119,7 @@ const props = [
           break;
         case 'function': {
           let fixIndent;
+          let mute = false;
           append(String(value).split('\n').map((line, index) => {
             if (index === 1) {
               line.match(/^(\s+)\S+/);
@@ -125,6 +129,15 @@ const props = [
             if (line.startsWith(' ')) line = line.slice(fixIndent);
             line = line.replace(/ \/\/ eslint-disable.+/, '');
             line = line.replace(/ \/\/ TODO.+/, '');
+            line = line.replace(/ class="[ \-\w]+ ?"/, '');
+            if (line.includes('<style>')) {
+              mute = true;
+              return '<style>/* css and html classes omitted for brevity, see lib/helpers/defaults.js */</style>';
+            } else if (line.includes('</style>')) {
+              mute = false;
+              return undefined;
+            }
+            if (mute) return undefined;
             return line;
           }).filter(Boolean)
             .join('\n'));
