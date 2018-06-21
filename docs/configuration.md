@@ -1,13 +1,14 @@
 # Configuration
 
-oidc-provider allows to be extended and configured in various ways to fit a variety of uses. You
-SHOULD tell your instance how to find your user accounts, where to store and retrieve persisted data
-from and where your user-interaction happens. The [example](/example) application is a good starting
-point to get an idea of what you should provide.
+oidc-provider allows to be extended and configured in various ways to fit a variety of use cases. You
+will have to configure your instance with how to find your user accounts, where to store and retrieve
+persisted data from and where your end-user interactions happen. The [example](/example) application
+is a good starting point to get an idea of what you should provide.
 
 **Table of Contents**
 
-<!-- TOC START min:2 max:3 link:true update:true -->
+<!-- TOC depthFrom:2 depthTo:3 withLinks:1 updateOnSave:1 orderedList:2 -->
+
 - [Default configuration values](#default-configuration-values)
 - [Accounts](#accounts)
 - [Clients](#clients)
@@ -28,49 +29,51 @@ point to get an idea of what you should provide.
 - [Registering module middlewares (helmet, ip-filters, rate-limiters, etc)](#registering-module-middlewares-helmet-ip-filters-rate-limiters-etc)
 - [Pre- and post-middlewares](#pre--and-post-middlewares)
 - [Mounting oidc-provider](#mounting-oidc-provider)
-  - [to an express application](#to-an-express-application)
-  - [to a koa application](#to-a-koa-application)
+	- [to an express application](#to-an-express-application)
+	- [to a koa application](#to-a-koa-application)
 - [Trusting TLS offloading proxies](#trusting-tls-offloading-proxies)
+- [Aggregated and Distributed claims](#aggregated-and-distributed-claims)
 - [Configuration options](#configuration-options)
-  - [acrValues](#acrvalues)
-  - [audiences](#audiences)
-  - [claims](#claims)
-  - [clientCacheDuration](#clientcacheduration)
-  - [clockTolerance](#clocktolerance)
-  - [cookies](#cookies)
-  - [cookies.keys](#cookieskeys)
-  - [cookies.long](#cookieslong)
-  - [cookies.names](#cookiesnames)
-  - [cookies.short](#cookiesshort)
-  - [cookies.thirdPartyCheckUrl](#cookiesthirdpartycheckurl)
-  - [discovery](#discovery)
-  - [extraClientMetadata](#extraclientmetadata)
-  - [extraClientMetadata.properties](#extraclientmetadataproperties)
-  - [extraClientMetadata.validator](#extraclientmetadatavalidator)
-  - [extraParams](#extraparams)
-  - [features](#features)
-  - [findById](#findbyid)
-  - [frontchannelLogoutPendingSource](#frontchannellogoutpendingsource)
-  - [interactionCheck](#interactioncheck)
-  - [interactionUrl](#interactionurl)
-  - [introspectionEndpointAuthMethods](#introspectionendpointauthmethods)
-  - [logoutSource](#logoutsource)
-  - [pairwiseSalt](#pairwisesalt)
-  - [postLogoutRedirectUri](#postlogoutredirecturi)
-  - [prompts](#prompts)
-  - [refreshTokenRotation](#refreshtokenrotation)
-  - [renderError](#rendererror)
-  - [responseTypes](#responsetypes)
-  - [revocationEndpointAuthMethods](#revocationendpointauthmethods)
-  - [routes](#routes)
-  - [scopes](#scopes)
-  - [subjectTypes](#subjecttypes)
-  - [tokenEndpointAuthMethods](#tokenendpointauthmethods)
-  - [ttl](#ttl)
-  - [uniqueness](#uniqueness)
-  - [unsupported](#unsupported)
+	- [acrValues](#acrvalues)
+	- [audiences](#audiences)
+	- [claims](#claims)
+	- [clientCacheDuration](#clientcacheduration)
+	- [clockTolerance](#clocktolerance)
+	- [cookies](#cookies)
+	- [cookies.keys](#cookieskeys)
+	- [cookies.long](#cookieslong)
+	- [cookies.names](#cookiesnames)
+	- [cookies.short](#cookiesshort)
+	- [cookies.thirdPartyCheckUrl](#cookiesthirdpartycheckurl)
+	- [discovery](#discovery)
+	- [extraClientMetadata](#extraclientmetadata)
+	- [extraClientMetadata.properties](#extraclientmetadataproperties)
+	- [extraClientMetadata.validator](#extraclientmetadatavalidator)
+	- [extraParams](#extraparams)
+	- [features](#features)
+	- [findById](#findbyid)
+	- [formats](#formats)
+	- [frontchannelLogoutPendingSource](#frontchannellogoutpendingsource)
+	- [interactionCheck](#interactioncheck)
+	- [interactionUrl](#interactionurl)
+	- [introspectionEndpointAuthMethods](#introspectionendpointauthmethods)
+	- [logoutSource](#logoutsource)
+	- [pairwiseSalt](#pairwisesalt)
+	- [postLogoutRedirectUri](#postlogoutredirecturi)
+	- [prompts](#prompts)
+	- [refreshTokenRotation](#refreshtokenrotation)
+	- [renderError](#rendererror)
+	- [responseTypes](#responsetypes)
+	- [revocationEndpointAuthMethods](#revocationendpointauthmethods)
+	- [routes](#routes)
+	- [scopes](#scopes)
+	- [subjectTypes](#subjecttypes)
+	- [tokenEndpointAuthMethods](#tokenendpointauthmethods)
+	- [ttl](#ttl)
+	- [uniqueness](#uniqueness)
+	- [unsupported](#unsupported)
 
-<!-- TOC END -->
+<!-- /TOC -->
 
 ## Default configuration values
 Default values are available for all configuration options. Available in [code][defaults] as well as
@@ -86,28 +89,12 @@ to the claims your issuer supports. Tell oidc-provider how to find your account 
 
 ```js
 const oidc = new Provider('http://localhost:3000', {
+  formats: { default: 'opaque' },
   async findById(ctx, id) {
     return {
       accountId: id,
       async claims(use, scope) { return { sub: id }; },
     };
-  }
-});
-```
-
-**Aggregated and Distributed claims**  
-Returning aggregated and distributed claims is as easy as having your Account#claims method return
-the two necessary members `_claim_sources` and `_claim_names` with the
-[expected][core-aggregated-distributed-claims] properties. oidc-provider will include only the
-sources for claims that are part of the request scope, omitting the ones that the RP did not request
-and leaving out the entire `_claim_sources` and `_claim_sources` if they bear no requested claims.
-
-Note: to make sure the RPs can expect these claims you should configure your discovery to return
-the respective claim types via the `claim_types_supported` property.
-```js
-const oidc = new Provider('http://localhost:3000', {
-  discovery: {
-    claim_types_supported: ['normal', 'aggregated', 'distributed']
   }
 });
 ```
@@ -126,14 +113,17 @@ endpoint authentication, Session Management, Front and Back-Channel Logout, etc.
 
 Note: each oidc-provider caches the clients once they are loaded. When your adapter-stored client
 configuration changes you should either reload your processes or trigger a cache clear
-(`provider.Client.cacheClear()` or `provider.Client.cacheClear(id)`).
+(`provider.Client.cacheClear()` to clear the complete cache or `provider.Client.cacheClear(id)` to
+clear a specific client instance from cache).
 
 **via Provider interface**  
 To add pre-established clients use the `initialize` method on a oidc-provider instance. This accepts
 a clients array with metadata objects and rejects when the client metadata would be invalid.
 
 ```js
-const oidc = new Provider('http://localhost:3000');
+const provider = new Provider('http://localhost:3000', {
+  formats: { default: 'opaque' },
+});
 const clients = [
   {
     token_endpoint_auth_method: 'none',
@@ -147,7 +137,7 @@ const clients = [
   },
 ];
 
-oidc.initialize({ clients }).then(fulfillmentHandler, rejectionHandler);
+provider.initialize({ clients }).then(fulfillmentHandler, rejectionHandler);
 ```
 
 **via Adapter**  
@@ -166,11 +156,12 @@ See [Certificates](/docs/keystores.md).
 
 ## Configuring available claims
 The `claims` configuration parameter can be used to define which claims fall under what scope
-as well as to expose additional claims that are available to RPs via the claims authorization
+as well as to expose additional claims that are available to RPs via the `claims` authorization
 parameter. The configuration value uses the following scheme:
 
 ```js
 new Provider('http://localhost:3000', {
+  formats: { default: 'opaque' },
   claims: {
     [scope name]: ['claim name', 'claim name'],
     // or
@@ -188,6 +179,7 @@ To follow the [Core-defined scope-to-claim mapping][core-account-claims] use:
 
 ```js
 new Provider('http://localhost:3000', {
+  formats: { default: 'opaque' },
   claims: {
     address: ['address'],
     email: ['email', 'email_verified'],
@@ -210,13 +202,15 @@ long as you develop, configure and generally just play around since every time y
 process all information will be lost. As soon as you cannot live with this limitation you will be
 required to provide your own custom adapter constructor for oidc-provider to
 use. This constructor will be called for every model accessed the first time it
-is needed. A static `connect` method is called if present during the initialize phase.
+is needed. A static `connect` method is called if present during the `provider.initialize()` call.
 
 ```js
 const MyAdapter = require('./my_adapter');
-const oidc = new Provider('http://localhost:3000');
-oidc.initialize({
-  adapter: MyAdapter
+const provider = new Provider('http://localhost:3000', {
+  formats: { default: 'opaque' },
+});
+provider.initialize({
+  adapter: MyAdapter,
 });
 ```
 
@@ -236,7 +230,7 @@ those in, here is how oidc-provider allows you to do so:
 When oidc-provider cannot fulfill the authorization request for any of the possible reasons (missing
 user session, requested ACR not fulfilled, prompt requested, ...) it will resolve an `interactionUrl`
 (configurable) and redirect the User-Agent to that url. Before doing so it will save a short-lived
-session and its identifier dumped into a cookie scoped to the resolved interaction path.
+session and dump its identifier into a cookie scoped to the resolved interaction path.
 
 This session contains:
 
@@ -277,14 +271,12 @@ router.get('/interaction/:grant', async (ctx, next) => {
 ```js
 // with express
 expressApp.post('/interaction/:grant/login', async (req, res) => {
-  await provider.interactionFinished(req, res, results); // result object below
-  // ...
+  return provider.interactionFinished(req, res, results); // result object below
 });
 
 // with koa
 router.post('/interaction/:grant', async (ctx, next) => {
-  await provider.interactionFinished(ctx.req, ctx.res, results); // result object below
-  // ...
+  return provider.interactionFinished(ctx.req, ctx.res, results); // result object below
 });
 
 // results should be an object with some or all the following properties
@@ -527,8 +519,8 @@ const configuration = { features: { revocation: Boolean[false] } };
 
 **OAuth 2.0 Native Apps Best Current Practice**
 Changes `redirect_uris` validations for clients with application_type `native` to those defined in
-[OAuth 2.0 for Native Apps][oauth-native-apps]. If pkce is not enabled it will be enabled
-automatically so that AppAuth SDKs work out of the box. (🤞)
+[OAuth 2.0 for Native Apps][oauth-native-apps]. If PKCE is not enabled it will be force-enabled
+automatically.
 ```js
 const configuration = { features: { oauthNativeApps: Boolean[true] } };
 ```
@@ -546,7 +538,7 @@ To disable removing frame-ancestors from Content-Security-Policy and X-Frame-Opt
 const configuration = { features: { sessionManagement: { keepHeaders: true } } };
 ```
 
-In order for the Session Management features to avoid endless "changed" events, the User-Agent
+In order for the Session Management features to avoid endless `"changed"` events, the User-Agent
 must allow access to Third-Party cookies. oidc-provider checks if this is enabled
 using a [CDN hosted](https://rawgit.com/) [iframe][third-party-cookies-git].
 It is recommended to host these helper pages on your own
@@ -573,12 +565,12 @@ Enables features described in [Dynamic Client Registration 1.0][registration].
 const configuration = { features: { registration: Boolean[false] } };
 ```
 
-To provide your own factory to get a new client_id:
+To provide your own client_id value factory:
 ```js
 const configuration = { features: { registration: { idFactory: () => randomValue() } } };
 ```
 
-To provide your own factory to get a random client_secret:
+To provide your own client_secret value factory:
 ```js
 const configuration = { features: { registration: { secretFactory: () => randomValue() } } };
 ```
@@ -594,7 +586,7 @@ registration to be an object like so:
 ```js
 const configuration = { features: { registration: { initialAccessToken: true } } };
 
-// adding a token and retrieving it's value
+// adding a token and retrieving its value
 new (provider.InitialAccessToken)({}).save().then(console.log);
 ```
 
@@ -671,11 +663,12 @@ provider.registerGrantType('password', function passwordGrantTypeFactory(provide
 
 
 ## Extending Authorization with Custom Parameters
-You can extend the whitelisted parameters of authorization/authentication endpoint beyond the
-defaults. These will be available in ctx.oidc.params as well as passed to the interaction session
+You can extend the whitelisted parameters of authorization endpoint beyond the defaults. These will
+be available in `ctx.oidc.params` as well as passed to the interaction session
 object for you to read.
 ```js
 const oidc = new Provider('http://localhost:3000', {
+  formats: { default: 'opaque' },
   extraParams: ['utm_campaign', 'utm_medium', 'utm_source', 'utm_term'],
 });
 ```
@@ -685,10 +678,11 @@ const oidc = new Provider('http://localhost:3000', {
 You can extend the returned discovery properties beyond the defaults
 ```js
 const oidc = new Provider('http://localhost:3000', {
+  formats: { default: 'opaque' },
   discovery: {
     service_documentation: 'http://server.example.com/connect/service_documentation.html',
     ui_locales_supported: ['en-US', 'en-GB', 'en-CA', 'fr-FR', 'fr-CA'],
-    version: '3.1'
+    version: '3.1',
   }
 });
 ```
@@ -700,9 +694,10 @@ See the specific routes in [default configuration][defaults].
 
 ```js
 const oidc = new Provider('http://localhost:3000', {
+  formats: { default: 'opaque' },
   routes: {
     authorization: '/authz',
-    certificates: '/jwks'
+    certificates: '/jwks.json',
   }
 });
 ```
@@ -764,6 +759,7 @@ Confirm your httpOptions by
 console.log('httpOptions %j', provider.defaultHttpOptions);
 ```
 
+
 ## Authentication Context Class Reference
 Supply an array of string values to acrValues configuration option to set `acr_values_supported`.
 Passing an empty array disables the acr claim and removes `acr_values_supported` from discovery.
@@ -809,23 +805,18 @@ provider.use(async (ctx, next) => {
 
 ## Mounting oidc-provider
 The following snippets show how a provider instance can be mounted to existing applications with a
-path prefix. As shown it is recommended to rewrite the well-known uri calls so that they get handled
-by the provider.
+path prefix.
 
 ### to an express application
 ```js
-const rewrite = require('express-urlrewrite');
 const prefix = '/oidc';
-expressApp.use(rewrite('/.well-known/*', `${prefix}/.well-known/$1`));
 expressApp.use(prefix, oidc.callback);
 ```
 
 ### to a koa application
 ```js
-const rewrite = require('koa-rewrite');
 const mount = require('koa-mount');
 const prefix = '/oidc';
-koaApp.use(rewrite('/.well-known/(.*)', `${prefix}/.well-known/$1`));
 koaApp.use(mount(prefix, oidc.app));
 ```
 
@@ -867,12 +858,32 @@ location / {
 }
 ```
 
+
+## Aggregated and Distributed claims
+Returning aggregated and distributed claims is as easy as having your Account#claims method return
+the two necessary members `_claim_sources` and `_claim_names` with the
+[expected][aggregated-distributed-claims] properties. oidc-provider will include only the
+sources for claims that are part of the request scope, omitting the ones that the RP did not request
+and leaving out the entire `_claim_sources` and `_claim_sources` if they bear no requested claims.
+
+Note: to make sure the RPs can expect these claims you should configure your discovery to return
+the respective claim types via the `claim_types_supported` property.
+```js
+const oidc = new Provider('http://localhost:3000', {
+  formats: { default: 'opaque' },
+  discovery: {
+    claim_types_supported: ['normal', 'aggregated', 'distributed']
+  }
+});
+```
+
+
 ## Configuration options
 
 <!-- START CONF OPTIONS -->
 ### acrValues
 
-Array of strings, the Authentication Context Class References that OP supports. First one in the list will be the one used for authentication requests unless one was provided as part of an interaction result. Use a value with 'session' meaning as the first.  
+Array of strings, the Authentication Context Class References that OP supports.  
 
 affects: discovery, ID Token acr claim values  
 
@@ -883,9 +894,9 @@ default value:
 
 ### audiences
 
-Helper used by the OP to push additional audiences to issued ID Tokens and other signed responses. The return value should either be falsy to omit adding additional audiences or an array of strings to push.  
+Helper used by the OP to push additional audiences to issued ID, Access and ClientCredentials Tokens as well as other signed responses. The return value should either be falsy to omit adding additional audiences or an array of strings to push.  
 
-affects: ID Token audiences, signed UserInfo audiences  
+affects: ID Token audiences, access token audiences, client credential audiences, signed UserInfo audiences  
 
 default value:
 ```js
@@ -921,6 +932,7 @@ default value:
 A `Number` value (in seconds) describing how long a dynamically loaded client should remain cached.  
 
 affects: adapter-backed client cache duration  
+recommendation: do not set to a low value or completely disable this, client properties are validated upon loading up and this may be potentially an expensive operation, sometimes even requesting resources from the network (i.e. client jwks_uri, sector_identifier_uri etc).  
 
 default value:
 ```js
@@ -931,7 +943,7 @@ Infinity
 
 A `Number` value (in seconds) describing the allowed system clock skew  
 
-affects: JWT (ID token, client assertion) validations.  
+affects: JWT (ID token, client assertion) and Token expiration validations  
 recommendation: Set to a reasonable value (60) to cover server-side client and oidc-provider server clock skew  
 
 default value:
@@ -1053,8 +1065,8 @@ default value:
 ```js
 validator(key, value, metadata) {
   // validations for key, value, other related metadata
-  // throw new Provider.InvalidClientMetadata() to reject the client metadata (see all errors on
-  //   Provider)
+  // throw new Provider.errors.InvalidClientMetadata() to reject the client metadata (see all
+  //   errors on Provider.errors)
   // metadata[key] = value; to assign values
   // return not necessary, metadata is already a reference.
 }
@@ -1062,7 +1074,7 @@ validator(key, value, metadata) {
 
 ### extraParams
 
-Pass an iterable object (i.e. Array or set of strings) to extend the parameters recognized by the authorization endpoint. These parameters are then available in ctx.oidc.params as well as passed to interaction session details  
+Pass an iterable object (i.e. Array or set of strings) to extend the parameters recognised by the authorization endpoint. These parameters are then available in `ctx.oidc.params` as well as passed to interaction session details  
 
 affects: authorization, interaction  
 
@@ -1083,14 +1095,14 @@ default value:
   requestUri: true,
   oauthNativeApps: true,
   pkce: true,
+  alwaysIssueRefresh: false,
   backchannelLogout: false,
-  frontchannelLogout: false,
   claimsParameter: false,
   clientCredentials: false,
   conformIdTokenClaims: false,
   encryption: false,
+  frontchannelLogout: false,
   introspection: false,
-  alwaysIssueRefresh: false,
   registration: false,
   registrationManagement: false,
   request: false,
@@ -1100,7 +1112,7 @@ default value:
 
 ### findById
 
-Helper used by the OP to load your account and retrieve it's available claims. The return value should be a Promise and #claims() can return a Promise too  
+Helper used by the OP to load an account and retrieve its available claims. The return value should be a Promise and #claims() can return a Promise too  
 
 affects: authorization, authorization_code and refresh_token grants, ID Token claims  
 
@@ -1124,6 +1136,27 @@ async findById(ctx, sub, token) {
     },
   };
 }
+```
+
+### formats
+
+This option allows to configure the token storage and value formats. The different values change how a token value is generated as well as what properties get sent to the adapter for storage. Three formats are defined, see the expected [Adapter API](/example/my_adapter.js) for each format's specifics.  
+- `legacy` is the current and default format until next major release. No changes in the format sent to adapter. 
+- `opaque` formatted tokens have a different value then `legacy` and in addition store what was in legacy format encoded under `payload` as root properties, this makes analysing the data in your storage way easier 
+- `jwt` formatted tokens are issued as JWTs and stored the same as `opaque` only with additional property `jwt`. The signing algorithm for these tokens uses the client's `id_token_signed_response_alg` value and falls back to `RS256` for tokens with no relation to a client or when the client's alg is `none`  
+
+affects: properties passed to adapters for token types, issued token formats  
+recommendation: set default to `opaque` if you're still developing your application, `legacy` will not be the default in the major versions coming forward. It is not recommended to set `jwt` as default, if you need it, it's most likely just for Access Tokens.  
+
+default value:
+```js
+{ default: 'legacy',
+  AccessToken: undefined,
+  AuthorizationCode: undefined,
+  RefreshToken: undefined,
+  ClientCredentials: undefined,
+  InitialAccessToken: undefined,
+  RegistrationAccessToken: undefined }
 ```
 
 ### frontchannelLogoutPendingSource
@@ -1289,7 +1322,9 @@ default value:
 
 ### refreshTokenRotation
 
-Configures if and how the OP rotates refresh tokens after they are used. Supported values are 1) `"none"` when refresh tokens are not rotated and their initial expiration date is final or 2) `"rotateAndConsume"` when refresh tokens are rotated when used, current token is marked as consumed and new one is issued with new TTL, when a consumed refresh token is encountered an error is returned instead and the whole token chain (grant) is revoked.  
+Configures if and how the OP rotates refresh tokens after they are used. Supported values are 
+- `none` when refresh tokens are not rotated and their initial expiration date is final or 
+- `rotateAndConsume` when refresh tokens are rotated when used, current token is marked as consumed and new one is issued with new TTL, when a consumed refresh token is encountered an error is returned instead and the whole token chain (grant) is revoked  
 
 affects: refresh token rotation and adjacent revocation  
 
@@ -1300,9 +1335,9 @@ default value:
 
 ### renderError
 
-Helper used by the OP to present errors which are not meant to be 'forwarded' to the RP's redirect_uri  
+Helper used by the OP to present errors to the User-Agent  
 
-affects: presentation of errors encountered during authorization  
+affects: presentation of errors encountered during End-User flows  
 
 default value:
 ```js
@@ -1387,7 +1422,9 @@ default value:
 
 ### subjectTypes
 
-List of the Subject Identifier types that this OP supports. Valid types include 'pairwise' and 'public'.  
+List of the Subject Identifier types that this OP supports. Valid types are 
+- `public` 
+- `pairwise`  
 
 affects: discovery, registration, registration management, ID Token and Userinfo sub claim values  
 

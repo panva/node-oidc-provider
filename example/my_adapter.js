@@ -35,23 +35,50 @@ class MyAdapter {
      *
      * When this is one of AccessToken, AuthorizationCode, RefreshToken, ClientCredentials,
      * InitialAccessToken or RegistrationAccessToken the payload will contain the following
-     * properties:
-     * - grantId {string} the original id assigned to a grant (authorization request)
+     * properties depending on the used `formats` value for the given token (or default).
+     *
+     * when `legacy`
+     * - grantId {string} grant identifier, tokens with the same value belong together
      * - header {string} oidc-provider tokens are themselves JWTs, this is the header part of the token
      * - payload {string} second part of the token
      * - signature {string} the signature of the token
      *
-     * Hint: you can JSON.parse(base64decode( ... )) the header and payload to get the token
-     * properties and store them too, they may be helpful for getting insights on your usage.
+     * Hint for legacy format: you can JSON.parse(base64decode( ... )) the header and payload to get
+     * the token properties and store them too, they may be helpful for getting insights on your usage.
      * Modifying any of header, payload or signature values will result in the token being invalid,
      * remember that oidc-provider will do a JWT signature check of both the received and stored
      * token to detect potential manipulation.
+     *
+     * when `opaque`
+     * - jti {string} unique identifier of the token
+     * - kind {string} token class name
+     * - exp {number} - timestamp of the token's expiration
+     * - iat {number} - timestamp of the token's creation
+     * - iss {string} - issuer identifier, useful in multi-provider instance apps
+     * - accountId {string} - account identifier the token belongs to
+     * - clientId {string} client identifier the token belongs to
+     * - aud {array of strings} array of audiences the token is intended for
+     * - authTime {number} timestamp of the end-user's authentication
+     * - claims {object} requested claims (see claims parameter in OIDC Core 1.0)
+     * - codeChallenge {string} - client provided PKCE code_challenge value
+     * - codeChallengeMethod {string} - client provided PKCE code_challenge_method value
+     * - grantId {string} - grant identifier, tokens with the same value belong together
+     * - nonce {string} - random nonce from an authorization request
+     * - redirectUri {string} - redirect_uri value from an authorization request
+     * - scope {string} - scope value from on authorization request
+     * - sid {string} - session identifier the token comes from
+     *
+     *
+     * when `jwt`
+     * - same as `opaque` with the addition of
+     * - jwt {string} - the jwt value returned to the client
      *
      * Hint2: in order to fulfill all OAuth2.0 behaviors in regards to invalidating and expiring
      * potentially misused or sniffed tokens you should keep track of all tokens that belong to the
      * same grantId.
      *
-     * Client model will only use this when registered through Dynamic Registration features.
+     * Client model will only use this when registered through Dynamic Registration features and
+     * will contain all client properties.
      *
      * OIDC Session model payload contains the following properties:
      * - account {string} the session account identifier
@@ -67,7 +94,7 @@ class MyAdapter {
      * - uuid {string} - uuid of the grant
      * - params {object} - parsed recognized parameters object
      * - signed {array} - array of parameter names (keys) that were received from a signed and/or
-     *                    encrypted request/_uri object
+     *                    symmetrically encrypted request/_uri object
      * - result {object} - interaction results object is expected here
      *
      */
@@ -89,7 +116,8 @@ class MyAdapter {
   /**
    *
    * Mark a stored oidc-provider model as consumed (not yet expired though!). Future finds for this
-   * id should be fulfilled with an object containing additional property named "consumed".
+   * id should be fulfilled with an object containing additional property named "consumed" with a
+   * truthy value (timestamp, date, boolean, etc).
    *
    * @return {Promise} Promise fulfilled when the operation succeeded. Rejected with error when
    * encountered.

@@ -1,7 +1,6 @@
 const bootstrap = require('../test_helper');
 const { expect } = require('chai');
 const sinon = require('sinon');
-const base64url = require('base64url');
 
 function validateError(error) {
   const assert = error.exec ? 'match' : 'equal';
@@ -242,9 +241,9 @@ describe('registration features', () => {
 
         it('allows the developers to insert new tokens with no expiration', function () {
           return new this.provider.InitialAccessToken().save().then((v) => {
-            const jti = v.substring(0, 48);
-            const token = this.TestAdapter.for('InitialAccessToken').syncFind(jti);
-            expect(JSON.parse(base64url.decode(token.payload))).not.to.have.property('exp');
+            const jti = this.getTokenJti(v);
+            const token = this.TestAdapter.for('InitialAccessToken').syncFind(jti, { payload: true });
+            expect(token).not.to.have.property('exp');
           });
         });
 
@@ -252,9 +251,9 @@ describe('registration features', () => {
           return new this.provider.InitialAccessToken({
             expiresIn: 24 * 60 * 60,
           }).save().then((v) => {
-            const jti = v.substring(0, 48);
-            const token = this.TestAdapter.for('InitialAccessToken').syncFind(jti);
-            expect(JSON.parse(base64url.decode(token.payload))).to.have.property('exp');
+            const jti = this.getTokenJti(v);
+            const token = this.TestAdapter.for('InitialAccessToken').syncFind(jti, { payload: true });
+            expect(token).to.have.property('exp');
           });
         });
 

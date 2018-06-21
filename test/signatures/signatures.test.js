@@ -5,6 +5,7 @@ const { decode } = require('../../lib/helpers/jwt');
 const epochTime = require('../../lib/helpers/epoch_time');
 const { expect } = require('chai');
 const base64url = require('base64url');
+const { formats: { default: FORMAT } } = require('../../lib/helpers/defaults');
 
 describe('signatures', () => {
   before(bootstrap(__dirname)); // this.provider, agent, this.AuthorizationRequest, wrap
@@ -104,6 +105,7 @@ describe('signatures', () => {
         .expect(200)
         .expect((response) => {
           this.idToken = response.body.id_token;
+          this.accessToken = response.body.access_token;
         });
     });
 
@@ -113,6 +115,15 @@ describe('signatures', () => {
       expect(components[2]).to.equal('');
       expect(decode(this.idToken)).to.have.nested.property('header.alg', 'none');
     });
+
+    if (FORMAT === 'jwt') {
+      it('but the access token remains signed with RS256', function () {
+        const components = this.accessToken.split('.');
+        expect(components).to.have.lengthOf(3);
+        expect(components[2]).not.to.equal('');
+        expect(decode(this.accessToken)).to.have.nested.property('header.alg', 'RS256');
+      });
+    }
 
     it('the unsigned token can be used as id_token_hint', function () {
       const auth = new this.AuthorizationRequest({

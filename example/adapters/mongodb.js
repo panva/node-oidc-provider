@@ -3,13 +3,23 @@ const { snakeCase } = require('lodash');
 
 let DB;
 
+const grantable = [
+  'access_token',
+  'authorization_code',
+  'refresh_token',
+];
+
 class CollectionSet extends Set {
   add(name) {
     const nu = this.has(name);
     super.add(name);
     if (!nu) {
       DB.collection(name).createIndexes([
-        { key: { grantId: 1 } },
+        ...(grantable.includes(name) ?
+          [{
+            key: { grantId: 1 },
+            partialFilterExpression: { grantId: { $exists: true } },
+          }] : []),
         { key: { expiresAt: 1 }, expireAfterSeconds: 0 },
       ]).catch(console.error); // eslint-disable-line no-console
     }
@@ -22,38 +32,6 @@ class MongoAdapter {
   constructor(name) {
     this.name = snakeCase(name);
     collections.add(this.name);
-  }
-
-  coll(name) {
-    return this.constructor.coll(name || this.name);
-  }
-
-  static coll(name) {
-    return DB.collection(name);
-  }
-
-  destroy(id) {
-    return this.coll().findOneAndDelete({ _id: id })
-      .then((found) => {
-        if (found.value && found.value.grantId) {
-          const promises = [];
-
-          collections.forEach((name) => {
-            promises.push(this.coll(name).deleteMany({ grantId: found.value.grantId }));
-          });
-
-          return Promise.all(promises);
-        }
-        return undefined;
-      });
-  }
-
-  consume(id) {
-    return this.coll().findOneAndUpdate({ _id: id }, { $currentDate: { consumed: true } });
-  }
-
-  find(id) {
-    return this.coll().find({ _id: id }).limit(1).next();
   }
 
   upsert(_id, payload, expiresIn) {
@@ -69,12 +47,47 @@ class MongoAdapter {
       expiresAt = new Date(Date.now() + (24 * 60 * 60 * 1000));
     }
 
-    const document = Object.assign(payload, expiresAt && { expiresAt });
+    return this.coll().updateOne({ _id }, {
+      $set: {
+        _id,
+        ...payload,
+        ...(expiresAt ? { expiresAt } : undefined),
+      },
+    }, { upsert: true });
+  }
 
-    // the above does not work for _id sharded collections, use the one below
-    // const document = Object.assign(payload, { _id }, expiresAt && { expiresAt });
+  find(_id) {
+    return this.coll().find({ _id }).limit(1).next();
+  }
 
-    return this.coll().updateOne({ _id }, { $set: document }, { upsert: true });
+  destroy(_id) {
+    return this.coll().findOneAndDelete({ _id })
+      .then((found) => {
+        if (found.value && found.value.grantId) {
+          const promises = [];
+
+          collections.forEach((name) => {
+            if (grantable.includes(name)) {
+              promises.push(this.coll(name).deleteMany({ grantId: found.value.grantId }));
+            }
+          });
+
+          return Promise.all(promises);
+        }
+        return undefined;
+      });
+  }
+
+  consume(_id) {
+    return this.coll().findOneAndUpdate({ _id }, { $currentDate: { consumed: true } });
+  }
+
+  coll(name) {
+    return this.constructor.coll(name || this.name);
+  }
+
+  static coll(name) {
+    return DB.collection(name);
   }
 
   static async connect() {

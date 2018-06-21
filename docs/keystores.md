@@ -8,14 +8,15 @@ object with the private keys during `#initialize()` call.
 
 **Table of Contents**
 
-<!-- TOC START min:2 max:2 link:true update:true -->
-  - [Certificates Keystore (jwks_uri)](#certificates-keystore-jwks_uri)
-  - [Generating new keys](#generating-new-keys)
-  - [Generating all keys for all features](#generating-all-keys-for-all-features)
-  - [Transforming existing keys from other formats](#transforming-existing-keys-from-other-formats)
-  - [Signing Key Rotation](#signing-key-rotation)
+<!-- TOC depthFrom:2 depthTo:3 withLinks:1 updateOnSave:1 orderedList:0 -->
 
-<!-- TOC END -->
+- [Certificates Keystore (jwks_uri)](#certificates-keystore-jwks_uri)
+- [Generating new keys](#generating-new-keys)
+- [Generating all keys for all features](#generating-all-keys-for-all-features)
+- [Transforming existing keys from other formats](#transforming-existing-keys-from-other-formats)
+- [Signing Key Rotation](#signing-key-rotation)
+
+<!-- /TOC -->
 
 ## Certificates Keystore (jwks_uri)
 To configure your Provider instance with your own signing and encryption keys you will need at the

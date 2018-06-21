@@ -25,6 +25,8 @@
 //   expires_at timestamp
 // );
 
+// TODO: @madarche adapt for new storage formats support (opaque and jwt)
+
 const knexCreate = require('knex'); // eslint-disable-line import/no-unresolved
 const bookshelfCreate = require('bookshelf'); // eslint-disable-line import/no-unresolved
 

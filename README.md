@@ -13,12 +13,16 @@ introduces various breaking changes. See the CHANGELOG for a complete list of de
 
 **Table of Contents**
 
-  - [Implemented specs & features](#implemented-specs--features)
-  - [Certification](#certification)
-  - [Get started](#get-started)
-  - [Configuration and Initialization](#configuration-and-initialization)
-  - [Debugging](#debugging)
-  - [Events](#events)
+<!-- TOC depthFrom:2 depthTo:3 withLinks:1 updateOnSave:1 orderedList:0 -->
+
+- [Implemented specs & features](#implemented-specs--features)
+- [Certification](#certification)
+- [Get started](#get-started)
+- [Configuration and Initialization](#configuration-and-initialization)
+- [Debugging](#debugging)
+- [Events](#events)
+
+<!-- /TOC -->
 
 ## Implemented specs & features
 
@@ -61,7 +65,7 @@ of the OpenID Connect™ protocol.
 [![build][conformance-image]][conformance-url]
 
 
-## Sponsor
+<h2>Sponsor</h2>
 <table>
   <tbody>
     <tr>

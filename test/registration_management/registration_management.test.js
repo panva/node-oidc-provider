@@ -287,7 +287,7 @@ describe('OAuth 2.0 Dynamic Client Registration Management Protocol', () => {
             expect(spy.calledOnce).to.be.true;
             const args = spy.firstCall.args[0];
             expect(args.clientId).to.equal(client.client_id);
-            expect(response.body.registration_access_token.substring(0, 48)).to.equal(args.jti);
+            expect(this.getTokenJti(response.body.registration_access_token)).to.equal(args.jti);
           });
       });
     });

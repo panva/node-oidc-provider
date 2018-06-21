@@ -1,7 +1,6 @@
 const bootstrap = require('../../test_helper');
 const url = require('url');
 const sinon = require('sinon');
-const base64url = require('base64url');
 const { expect } = require('chai');
 
 const route = '/auth';
@@ -56,11 +55,10 @@ describe('IMPLICIT id_token+token', () => {
           .expect(auth.validateClientLocation)
           .then((response) => {
             const { query: { access_token } } = url.parse(response.headers.location, true);
-            const jti = access_token.substring(0, 48);
-            const stored = this.TestAdapter.for('AccessToken').syncFind(jti);
-            const payload = JSON.parse(base64url.decode(stored.payload));
+            const jti = this.getTokenJti(access_token);
+            const stored = this.TestAdapter.for('AccessToken').syncFind(jti, { payload: true });
 
-            expect(payload).to.have.property('scope', 'openid');
+            expect(stored).to.have.property('scope', 'openid');
           });
       });
     });

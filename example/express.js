@@ -6,7 +6,9 @@ const express = require('express'); // eslint-disable-line import/no-unresolved
 
 const app = express();
 
-const provider = new Provider('http://localhost:3000/op');
+const provider = new Provider('http://localhost:3000/op', {
+  formats: { default: 'opaque' },
+});
 
 provider.initialize().then(() => {
   app.use('/op', provider.callback);

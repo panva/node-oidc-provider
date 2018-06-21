@@ -3,6 +3,7 @@ const sinon = require('sinon');
 const base64url = require('base64url');
 const { parse: parseUrl } = require('url');
 const { expect } = require('chai');
+const timekeeper = require('timekeeper');
 
 const fail = () => { throw new Error('expected promise to be rejected'); };
 const j = JSON.parse;
@@ -14,6 +15,8 @@ function errorDetail(spy) {
 
 describe('grant_type=refresh_token', () => {
   before(bootstrap(__dirname)); // agent, provider, this.TestAdapter
+
+  afterEach(() => timekeeper.reset());
 
   context('with real tokens', () => {
     before(function () { return this.login(); });
@@ -47,7 +50,7 @@ describe('grant_type=refresh_token', () => {
             .expect(200)
             .expect((response) => {
               expect(response.body).to.have.property('refresh_token');
-              const jti = response.body.refresh_token.substring(0, 48);
+              const jti = this.getTokenJti(response.body.refresh_token);
               this.refreshToken = this.TestAdapter.for('RefreshToken').syncFind(jti);
               this.rt = response.body.refresh_token;
             })
@@ -105,36 +108,34 @@ describe('grant_type=refresh_token', () => {
       context('', () => {
         before(function () {
           this.prev = this.provider.RefreshToken.expiresIn;
-          i(this.provider).configuration('ttl').RefreshToken = 1;
+          i(this.provider).configuration('ttl').RefreshToken = 5;
         });
 
         after(function () {
           i(this.provider).configuration('ttl').RefreshToken = this.prev;
         });
 
-        it('validates code is not expired', function (done) {
+        it('validates code is not expired', function () {
+          timekeeper.travel(Date.now() + (10 * 1000));
           const { rt } = this;
-          setTimeout(() => {
-            const spy = sinon.spy();
-            this.provider.on('grant.error', spy);
+          const spy = sinon.spy();
+          this.provider.on('grant.error', spy);
 
-            return this.agent.post(route)
-              .auth('client', 'secret')
-              .send({
-                refresh_token: rt,
-                grant_type: 'refresh_token',
-              })
-              .type('form')
-              .expect(400)
-              .expect(() => {
-                expect(spy.calledOnce).to.be.true;
-                expect(errorDetail(spy)).to.equal('refresh token is expired');
-              })
-              .expect((response) => {
-                expect(response.body).to.have.property('error', 'invalid_grant');
-              })
-              .end(done);
-          }, 1000);
+          return this.agent.post(route)
+            .auth('client', 'secret')
+            .send({
+              refresh_token: rt,
+              grant_type: 'refresh_token',
+            })
+            .type('form')
+            .expect(400)
+            .expect(() => {
+              expect(spy.calledOnce).to.be.true;
+              expect(errorDetail(spy)).to.equal('refresh token is expired');
+            })
+            .expect((response) => {
+              expect(response.body).to.have.property('error', 'invalid_grant');
+            });
         });
       });
 

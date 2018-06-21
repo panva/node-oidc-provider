@@ -40,6 +40,10 @@ module.exports.config = {
     revocation: true, // defaults to false
     sessionManagement: true, // defaults to false
   },
+  formats: {
+    default: 'opaque',
+    AccessToken: 'jwt',
+  },
   subjectTypes: ['public', 'pairwise'],
   pairwiseSalt: 'da1c442b365b563dfc121f285a11eedee5bbff7110d55c88',
   interactionUrl: function interactionUrl(ctx, interaction) { // eslint-disable-line no-unused-vars
@@ -49,7 +53,6 @@ module.exports.config = {
   ttl: {
     AccessToken: 1 * 60 * 60, // 1 hour in seconds
     AuthorizationCode: 10 * 60, // 10 minutes in seconds
-    ClientCredentials: 10 * 60, // 10 minutes in seconds
     IdToken: 1 * 60 * 60, // 1 hour in seconds
     RefreshToken: 1 * 24 * 60 * 60, // 1 day in seconds
 

@@ -1,5 +1,8 @@
-const store = new Map();
+const base64url = require('base64url');
 const epochTime = require('../lib/helpers/epoch_time');
+const { formats: { default: FORMAT } } = require('../lib/helpers/defaults');
+
+const store = new Map();
 
 function grantKeyFor(id) {
   return ['grant', id].join(':');
@@ -33,7 +36,9 @@ class TestAdapter {
 
   destroy(id) {
     const key = this.key(id);
-    const grantId = store.get(key) && store.get(key).grantId;
+
+    const found = this.get(key);
+    const grantId = found && found.grantId;
 
     store.delete(key);
 
@@ -51,8 +56,30 @@ class TestAdapter {
     return Promise.resolve();
   }
 
-  syncFind(id) {
-    return store.get(this.key(id));
+  syncFind(id, { payload = false } = {}) {
+    const found = store.get(this.key(id));
+    if (payload && FORMAT === 'legacy') {
+      return JSON.parse(base64url.decode(found.payload));
+    }
+    return found;
+  }
+
+  syncUpdate(id, update) {
+    const found = store.get(this.key(id));
+    switch (FORMAT) {
+      case 'legacy': {
+        const payload = JSON.parse(base64url.decode(found.payload));
+        Object.assign(payload, update);
+        found.payload = base64url(JSON.stringify(payload));
+        break;
+      }
+      case 'jwt':
+      case 'opaque':
+        Object.assign(found, update);
+        break;
+      default:
+        throw new Error(`invalid format specified (${FORMAT})`);
+    }
   }
 
   find(id) {
