@@ -1,6 +1,8 @@
-const bootstrap = require('../test_helper');
 const { parse: parseUrl } = require('url');
+
 const { expect } = require('chai');
+
+const bootstrap = require('../test_helper');
 
 describe('PKCE RFC7636', () => {
   before(bootstrap(__dirname));

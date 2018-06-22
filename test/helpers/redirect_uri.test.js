@@ -1,4 +1,5 @@
 const { expect } = require('chai');
+
 const redirectUri = require('../../lib/helpers/redirect_uri');
 
 describe('redirectUri helper', () => {

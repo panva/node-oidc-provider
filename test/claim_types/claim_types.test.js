@@ -1,9 +1,11 @@
 /* eslint-disable no-underscore-dangle */
 
-const bootstrap = require('../test_helper');
 const { parse: parseLocation } = require('url');
-const { decode: decodeJWT } = require('../../lib/helpers/jwt');
+
 const { expect } = require('chai');
+
+const bootstrap = require('../test_helper');
+const { decode: decodeJWT } = require('../../lib/helpers/jwt');
 
 describe('distributed and aggregated claims', () => {
   before(bootstrap(__dirname));

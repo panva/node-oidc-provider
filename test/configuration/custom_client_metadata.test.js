@@ -1,8 +1,9 @@
 /* eslint-disable no-param-reassign */
 
-const Provider = require('../../lib');
 const { expect } = require('chai');
 const sinon = require('sinon');
+
+const Provider = require('../../lib');
 const { InvalidClientMetadata } = require('../../lib/helpers/errors');
 
 const fail = () => { throw new Error('expected promise to be rejected'); };

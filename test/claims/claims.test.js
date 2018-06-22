@@ -1,15 +1,17 @@
 /* eslint-disable no-underscore-dangle */
 
-const bootstrap = require('../test_helper');
-const { get } = require('lodash');
 const { parse: parseLocation } = require('url');
-const { decode: decodeJWT } = require('../../lib/helpers/jwt');
+
+const { get } = require('lodash');
 const { expect } = require('chai');
+const KeyGrip = require('keygrip'); // eslint-disable-line import/no-extraneous-dependencies
+
+const { decode: decodeJWT } = require('../../lib/helpers/jwt');
+const bootstrap = require('../test_helper');
 
 const j = JSON.stringify;
 const route = '/auth';
 const expire = new Date();
-const KeyGrip = require('keygrip'); // eslint-disable-line import/no-extraneous-dependencies
 
 expire.setDate(expire.getDate() + 1);
 

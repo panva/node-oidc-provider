@@ -1,5 +1,6 @@
-const bootstrap = require('../test_helper');
 const { expect } = require('chai');
+
+const bootstrap = require('../test_helper');
 
 describe('Client#add', () => {
   before(bootstrap(__dirname));

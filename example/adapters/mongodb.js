@@ -15,8 +15,8 @@ class CollectionSet extends Set {
     super.add(name);
     if (!nu) {
       DB.collection(name).createIndexes([
-        ...(grantable.includes(name) ?
-          [{
+        ...(grantable.includes(name)
+          ? [{
             key: { grantId: 1 },
             partialFilterExpression: { grantId: { $exists: true } },
           }] : []),

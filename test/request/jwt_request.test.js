@@ -1,12 +1,10 @@
-const bootstrap = require('../test_helper');
-const JWT = require('../../lib/helpers/jwt');
+const { parse } = require('url');
+
 const sinon = require('sinon');
-const {
-  expect,
-} = require('chai');
-const {
-  parse,
-} = require('url');
+const { expect } = require('chai');
+
+const JWT = require('../../lib/helpers/jwt');
+const bootstrap = require('../test_helper');
 
 const route = '/auth';
 
@@ -147,7 +145,6 @@ describe('request parameter features', () => {
             expect(actual.query).to.have.property('code');
           }));
       });
-
 
       it('works with signed by an actual HS', async function () {
         const key = (await this.provider.Client.find('client-with-HS-sig')).keystore.get({
@@ -353,7 +350,6 @@ describe('request parameter features', () => {
             );
           }));
       });
-
 
       it('bad signatures will be rejected', async function () {
         const spy = sinon.spy();

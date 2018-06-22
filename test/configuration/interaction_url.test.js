@@ -1,6 +1,6 @@
-require('../test_helper');
-const Provider = require('../../lib');
 const { expect } = require('chai');
+
+const Provider = require('../../lib');
 
 describe('pathFor related behaviors', () => {
   it('throws an Error when invalid route path is requested', () => new Provider('http://localhost').initialize().then((provider) => {

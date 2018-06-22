@@ -1,6 +1,7 @@
-const Provider = require('../../lib');
 const { expect } = require('chai');
 const sinon = require('sinon');
+
+const Provider = require('../../lib');
 
 describe('provider instance', () => {
   context('when in non test environment', () => {

@@ -1,4 +1,5 @@
 const base64url = require('base64url');
+
 const epochTime = require('../lib/helpers/epoch_time');
 const { formats: { default: FORMAT } } = require('../lib/helpers/defaults');
 

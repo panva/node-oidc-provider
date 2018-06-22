@@ -43,9 +43,9 @@ class RedisAdapter {
   }
 
   async find(id) {
-    const data = grantable.includes(this.name) ?
-      await client.hgetall(this.key(id)) :
-      await client.get(this.key(id));
+    const data = grantable.includes(this.name)
+      ? await client.hgetall(this.key(id))
+      : await client.get(this.key(id));
 
     if (isEmpty(data)) {
       return undefined;

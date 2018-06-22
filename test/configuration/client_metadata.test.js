@@ -1,7 +1,9 @@
-const Provider = require('../../lib');
+const util = require('util');
+
 const { expect } = require('chai');
 const { camelCase, omit } = require('lodash');
-const util = require('util');
+
+const Provider = require('../../lib');
 
 const sigKey = global.keystore.get().toJSON(true);
 
@@ -471,7 +473,6 @@ describe('Client metadata validation', () => {
       }, configuration));
     });
   });
-
 
   context('userinfo_signed_response_alg', function () {
     defaultsTo(this.title, undefined);

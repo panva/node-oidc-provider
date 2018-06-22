@@ -1,7 +1,9 @@
-const bootstrap = require('../../test_helper');
-const sinon = require('sinon');
 const querystring = require('querystring');
+
+const sinon = require('sinon');
 const { expect } = require('chai');
+
+const bootstrap = require('../../test_helper');
 const epochTime = require('../../../lib/helpers/epoch_time');
 const {
   InvalidRequest,

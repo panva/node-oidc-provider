@@ -3,6 +3,7 @@
 /* eslint-disable no-console */
 
 const Provider = require('../../lib');
+
 const SequelizeAdapter = require('./sequelize');
 
 const { AdapterTest } = Provider;

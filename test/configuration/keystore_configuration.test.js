@@ -2,6 +2,7 @@
 
 const jose = require('node-jose');
 const { expect } = require('chai');
+
 const Provider = require('../../lib');
 
 const fail = () => { throw new Error('expected promise to be rejected'); };

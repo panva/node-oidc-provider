@@ -1,4 +1,5 @@
 const { clone } = require('lodash');
+
 const config = clone(require('../default.config'));
 
 config.findById = (ctx, id) => {

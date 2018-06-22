@@ -1,8 +1,9 @@
 /* eslint-disable no-console */
 
+const { createServer } = require('http');
+
 const { JWK: { createKeyStore } } = require('node-jose');
 const Mocha = require('mocha');
-const { createServer } = require('http');
 const { all: clearRequireCache } = require('clear-module');
 
 const FORMAT_REGEXP = /^--format=(\w+)$/;

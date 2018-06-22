@@ -1,9 +1,9 @@
-const bootstrap = require('../test_helper');
 const sinon = require('sinon');
 const { expect } = require('chai');
 
-const route = '/token/revocation';
+const bootstrap = require('../test_helper');
 
+const route = '/token/revocation';
 
 describe('revocation features', () => {
   before(bootstrap(__dirname));

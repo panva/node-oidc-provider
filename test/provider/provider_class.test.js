@@ -1,6 +1,7 @@
-const Provider = require('../../lib');
 const { expect } = require('chai');
 const { JWK } = require('node-jose');
+
+const Provider = require('../../lib');
 
 describe('Provider', () => {
   it('also exports errors and key related helpers from node-jose', () => {

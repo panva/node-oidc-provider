@@ -1,9 +1,10 @@
-const bootstrap = require('../test_helper');
+const { parse: parseUrl } = require('url');
+
 const { expect } = require('chai');
 const { cloneDeep } = require('lodash');
-const { parse: parseUrl } = require('url');
-const url = require('url');
 const base64url = require('base64url');
+
+const bootstrap = require('../test_helper');
 const Provider = require('../../lib');
 
 describe('Front-Channel Logout 1.0', () => {
@@ -123,7 +124,7 @@ describe('Front-Channel Logout 1.0', () => {
           (() => {
             const { sid } = session.authorizations.client;
             const [, match] = FRAME.exec(body);
-            const { query, href } = url.parse(match, true);
+            const { query, href } = parseUrl(match, true);
             expect(query).to.have.property('iss', this.provider.issuer);
             expect(query).to.have.property('sid', sid);
             expect(href.startsWith(`${client.frontchannelLogoutUri}?`)).to.be.true;
@@ -132,7 +133,7 @@ describe('Front-Channel Logout 1.0', () => {
           (() => {
             const { sid } = session.authorizations['second-client'];
             const [, match] = FRAME.exec(body);
-            const { query, href } = url.parse(match, true);
+            const { query, href } = parseUrl(match, true);
             expect(query).to.have.property('iss', this.provider.issuer);
             expect(query).to.have.property('sid', sid);
             expect(href.startsWith(`${client2.frontchannelLogoutUri}?`)).to.be.true;
@@ -161,7 +162,7 @@ describe('Front-Channel Logout 1.0', () => {
           (() => {
             const { sid } = session.authorizations.client;
             const [, match] = FRAME.exec(body);
-            const { query, href } = url.parse(match, true);
+            const { query, href } = parseUrl(match, true);
             expect(query).to.have.property('iss', this.provider.issuer);
             expect(query).to.have.property('sid', sid);
             expect(href.startsWith(`${client.frontchannelLogoutUri}?`)).to.be.true;

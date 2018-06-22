@@ -1,9 +1,11 @@
-const bootstrap = require('../test_helper');
+const { parse: parseUrl } = require('url');
+
 const sinon = require('sinon');
 const base64url = require('base64url');
-const { parse: parseUrl } = require('url');
 const { expect } = require('chai');
 const timekeeper = require('timekeeper');
+
+const bootstrap = require('../test_helper');
 
 const fail = () => { throw new Error('expected promise to be rejected'); };
 const j = JSON.parse;
@@ -102,7 +104,6 @@ describe('grant_type=refresh_token', () => {
         .type('form')
         .end(() => {});
     });
-
 
     describe('validates', () => {
       context('', () => {

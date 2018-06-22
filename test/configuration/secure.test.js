@@ -1,5 +1,6 @@
 const sinon = require('sinon');
 const { expect } = require('chai');
+
 const bootstrap = require('../test_helper');
 
 describe('x-forwarded-proto trust, detection and warnings', () => {

@@ -1,5 +1,6 @@
 require('../test_helper');
 const { expect } = require('chai');
+
 const Provider = require('../../lib');
 
 const fail = () => { throw new Error('expected promise to be rejected'); };

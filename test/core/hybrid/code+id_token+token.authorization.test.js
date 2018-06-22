@@ -1,6 +1,7 @@
-const bootstrap = require('../../test_helper');
 const sinon = require('sinon');
 const { expect } = require('chai');
+
+const bootstrap = require('../../test_helper');
 
 const route = '/auth';
 const response_type = 'code id_token token';

@@ -1,6 +1,8 @@
-const bootstrap = require('../test_helper');
 const url = require('url');
+
 const { expect } = require('chai');
+
+const bootstrap = require('../test_helper');
 const JWT = require('../../lib/helpers/jwt');
 
 const route = '/auth';

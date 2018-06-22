@@ -1,7 +1,9 @@
-const JWT = require('../../lib/helpers/jwt');
-const { expect } = require('chai');
 const { AssertionError } = require('assert');
+
+const { expect } = require('chai');
 const jose = require('node-jose');
+
+const JWT = require('../../lib/helpers/jwt');
 const epochTime = require('../../lib/helpers/epoch_time');
 
 const keystore = jose.JWK.createKeyStore();

@@ -2,20 +2,24 @@
 
 process.env.NODE_ENV = process.env.NODE_ENV || 'test';
 
-const { agent: supertest } = require('supertest');
-const uuid = require('uuid/v4');
-const Provider = require('../lib');
-const { Account, TestAdapter } = require('./models');
-const { expect } = require('chai');
 const { parse } = require('url');
 const path = require('path');
-const Koa = require('koa');
 const querystring = require('querystring');
+
+const { agent: supertest } = require('supertest');
+const uuid = require('uuid/v4');
+const { expect } = require('chai');
+const Koa = require('koa');
 const mount = require('koa-mount');
-const epochTime = require('../lib/helpers/epoch_time');
-const KeyGrip = require('keygrip'); // eslint-disable-line import/no-extraneous-dependencies
-const { formats: { default: FORMAT } } = require('../lib/helpers/defaults');
 const base64url = require('base64url');
+const KeyGrip = require('keygrip'); // eslint-disable-line import/no-extraneous-dependencies
+
+const epochTime = require('../lib/helpers/epoch_time');
+const { formats: { default: FORMAT } } = require('../lib/helpers/defaults');
+const Provider = require('../lib');
+
+const { Account, TestAdapter } = require('./models');
+
 global.i = require('../lib/helpers/weak_cache');
 
 function readCookie(value) {

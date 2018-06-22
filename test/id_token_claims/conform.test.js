@@ -1,7 +1,8 @@
 /* eslint-disable prefer-const */
 
-const { expect } = require('chai');
 const { parse: parseUrl } = require('url');
+
+const { expect } = require('chai');
 
 const bootstrap = require('../test_helper');
 const { decode: decodeJWT } = require('../../lib/helpers/jwt');

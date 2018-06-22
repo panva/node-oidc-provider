@@ -1,7 +1,9 @@
 /* eslint-disable no-new */
 
 const assert = require('assert');
+
 const { expect } = require('chai');
+
 const Provider = require('../../lib');
 
 describe('Provider issuer configuration', () => {

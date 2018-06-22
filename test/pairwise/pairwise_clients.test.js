@@ -1,11 +1,11 @@
-const bootstrap = require('../test_helper');
-const getMask = require('../../lib/helpers/claims');
 const { map, uniq } = require('lodash');
 const { expect } = require('chai');
 const nock = require('nock');
 
-const j = JSON.stringify;
+const getMask = require('../../lib/helpers/claims');
+const bootstrap = require('../test_helper');
 
+const j = JSON.stringify;
 
 describe('pairwise features', () => {
   before(bootstrap(__dirname));

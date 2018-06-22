@@ -1,4 +1,5 @@
 const { expect } = require('chai');
+
 const Provider = require('../../lib');
 
 describe('Provider configuration', () => {

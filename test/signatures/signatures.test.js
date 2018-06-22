@@ -1,10 +1,12 @@
-const bootstrap = require('../test_helper');
 const { parse: parseLocation } = require('url');
+
 const uuid = require('uuid/v4');
-const { decode } = require('../../lib/helpers/jwt');
-const epochTime = require('../../lib/helpers/epoch_time');
 const { expect } = require('chai');
 const base64url = require('base64url');
+
+const bootstrap = require('../test_helper');
+const { decode } = require('../../lib/helpers/jwt');
+const epochTime = require('../../lib/helpers/epoch_time');
 const { formats: { default: FORMAT } } = require('../../lib/helpers/defaults');
 
 describe('signatures', () => {
@@ -156,7 +158,6 @@ describe('signatures', () => {
         id_token_hint: this.idToken,
       });
       auth.client_id = 'client-sig-none';
-
 
       return this.wrap({ auth, route: '/auth', verb: 'get' })
         .expect(302)

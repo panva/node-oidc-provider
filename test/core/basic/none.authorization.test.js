@@ -1,5 +1,6 @@
-const bootstrap = require('../../test_helper');
 const { expect } = require('chai');
+
+const bootstrap = require('../../test_helper');
 
 const route = '/auth';
 const response_type = 'none';

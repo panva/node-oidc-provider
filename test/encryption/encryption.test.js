@@ -1,11 +1,14 @@
-const bootstrap = require('../test_helper');
-const { expect } = require('chai');
 const { parse } = require('url');
 const url = require('url');
+
+const { expect } = require('chai');
 const base64url = require('base64url');
 const jose = require('node-jose');
-const { privKey } = require('./encryption.config');
+
+const bootstrap = require('../test_helper');
 const JWT = require('../../lib/helpers/jwt');
+
+const { privKey } = require('./encryption.config');
 
 const route = '/auth';
 
@@ -108,27 +111,25 @@ const route = '/auth';
           client_id: 'client',
           response_type: 'code',
           redirect_uri: 'https://client.example.com/cb',
-        }, null, 'none', { issuer: 'client', audience: this.provider.issuer }).then(signed =>
-          JWT.encrypt(signed, i(this.provider).keystore.get({ kty: 'RSA' }), 'A128CBC-HS256', 'RSA1_5')).then(encrypted =>
-          this.wrap({
-            route,
-            verb,
-            auth: {
-              request: encrypted,
-              scope: 'openid',
-              client_id: 'client',
-              response_type: 'code',
-            },
-          })
-            .expect(302)
-            .expect((response) => {
-              const expected = parse('https://client.example.com/cb', true);
-              const actual = parse(response.headers.location, true);
-              ['protocol', 'host', 'pathname'].forEach((attr) => {
-                expect(actual[attr]).to.equal(expected[attr]);
-              });
-              expect(actual.query).to.have.property('code');
-            }));
+        }, null, 'none', { issuer: 'client', audience: this.provider.issuer }).then(signed => JWT.encrypt(signed, i(this.provider).keystore.get({ kty: 'RSA' }), 'A128CBC-HS256', 'RSA1_5')).then(encrypted => this.wrap({
+          route,
+          verb,
+          auth: {
+            request: encrypted,
+            scope: 'openid',
+            client_id: 'client',
+            response_type: 'code',
+          },
+        })
+          .expect(302)
+          .expect((response) => {
+            const expected = parse('https://client.example.com/cb', true);
+            const actual = parse(response.headers.location, true);
+            ['protocol', 'host', 'pathname'].forEach((attr) => {
+              expect(actual[attr]).to.equal(expected[attr]);
+            });
+            expect(actual.query).to.have.property('code');
+          }));
       });
 
       it('handles enc unsupported algs and encs', function () {
@@ -136,23 +137,21 @@ const route = '/auth';
           client_id: 'client',
           response_type: 'code',
           redirect_uri: 'https://client.example.com/cb',
-        }, null, 'none', { issuer: 'client', audience: this.provider.issuer }).then(signed =>
-          JWT.encrypt(signed, i(this.provider).keystore.get({ kty: 'RSA' }), 'A128CBC-HS256', 'RSA-OAEP')).then(encrypted =>
-          this.wrap({
-            route,
-            verb,
-            auth: {
-              request: encrypted,
-              scope: 'openid',
-              client_id: 'client',
-              response_type: 'code',
-            },
-          })
-            .expect((response) => {
-              const { query } = url.parse(response.headers.location, true);
-              expect(query).to.have.property('error', 'invalid_request_object');
-              expect(query).to.have.property('error_description').contains('unsupported encrypted request alg');
-            }));
+        }, null, 'none', { issuer: 'client', audience: this.provider.issuer }).then(signed => JWT.encrypt(signed, i(this.provider).keystore.get({ kty: 'RSA' }), 'A128CBC-HS256', 'RSA-OAEP')).then(encrypted => this.wrap({
+          route,
+          verb,
+          auth: {
+            request: encrypted,
+            scope: 'openid',
+            client_id: 'client',
+            response_type: 'code',
+          },
+        })
+          .expect((response) => {
+            const { query } = url.parse(response.headers.location, true);
+            expect(query).to.have.property('error', 'invalid_request_object');
+            expect(query).to.have.property('error_description').contains('unsupported encrypted request alg');
+          }));
       });
     });
 
@@ -201,27 +200,25 @@ const route = '/auth';
           response_type: 'id_token',
           nonce: 'foobar',
           redirect_uri: 'https://client.example.com/cb',
-        }, null, 'none', { issuer: 'client', audience: this.provider.issuer }).then(signed =>
-          JWT.encrypt(signed, client.keystore.get({ alg: 'A128KW' }), 'A128CBC-HS256', 'A128KW')).then(encrypted =>
-          this.wrap({
-            route,
-            verb,
-            auth: {
-              request: encrypted,
-              scope: 'openid',
-              client_id: 'clientSymmetric',
-              response_type: 'id_token',
-            },
-          })
-            .expect(302)
-            .expect((response) => {
-              const expected = parse('https://client.example.com/cb', true);
-              const actual = parse(response.headers.location.replace('#', '?'), true);
-              ['protocol', 'host', 'pathname'].forEach((attr) => {
-                expect(actual[attr]).to.equal(expected[attr]);
-              });
-              expect(actual.query).to.have.property('id_token');
-            }));
+        }, null, 'none', { issuer: 'client', audience: this.provider.issuer }).then(signed => JWT.encrypt(signed, client.keystore.get({ alg: 'A128KW' }), 'A128CBC-HS256', 'A128KW')).then(encrypted => this.wrap({
+          route,
+          verb,
+          auth: {
+            request: encrypted,
+            scope: 'openid',
+            client_id: 'clientSymmetric',
+            response_type: 'id_token',
+          },
+        })
+          .expect(302)
+          .expect((response) => {
+            const expected = parse('https://client.example.com/cb', true);
+            const actual = parse(response.headers.location.replace('#', '?'), true);
+            ['protocol', 'host', 'pathname'].forEach((attr) => {
+              expect(actual[attr]).to.equal(expected[attr]);
+            });
+            expect(actual.query).to.have.property('id_token');
+          }));
       });
 
       it('symmetric encryption makes client secret mandatory', function () {

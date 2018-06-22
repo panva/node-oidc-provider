@@ -1,5 +1,6 @@
-const bootstrap = require('../test_helper');
 const { expect } = require('chai');
+
+const bootstrap = require('../test_helper');
 const epochTime = require('../../lib/helpers/epoch_time');
 
 describe('provider.setProviderSession', () => {

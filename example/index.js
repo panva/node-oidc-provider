@@ -1,12 +1,14 @@
 /* eslint-disable no-console */
 
-const Provider = require('../lib');
 const path = require('path');
+const querystring = require('querystring');
+
 const { set } = require('lodash');
 const bodyParser = require('koa-body');
-const querystring = require('querystring');
 const Router = require('koa-router');
 const render = require('koa-ejs');
+
+const Provider = require('../lib');
 const { renderError } = require('../lib/helpers/defaults'); // make your own, you'll need it anyway
 
 const port = process.env.PORT || 3000;

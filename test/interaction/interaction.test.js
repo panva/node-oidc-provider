@@ -1,12 +1,14 @@
 /* eslint-disable no-underscore-dangle */
 
+const { expect } = require('chai');
 const uuid = require('uuid/v4');
 const KeyGrip = require('keygrip'); // eslint-disable-line import/no-extraneous-dependencies
-const bootstrap = require('../test_helper');
-const config = require('./interaction.config');
-const epochTime = require('../../lib/helpers/epoch_time');
 const sinon = require('sinon');
-const { expect } = require('chai');
+
+const bootstrap = require('../test_helper');
+const epochTime = require('../../lib/helpers/epoch_time');
+
+const config = require('./interaction.config');
 
 const expire = new Date();
 expire.setDate(expire.getDate() + 1);

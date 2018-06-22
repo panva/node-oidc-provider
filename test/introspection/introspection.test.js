@@ -1,9 +1,9 @@
-const bootstrap = require('../test_helper');
 const sinon = require('sinon');
 const { expect } = require('chai');
 
-const route = '/token/introspection';
+const bootstrap = require('../test_helper');
 
+const route = '/token/introspection';
 
 describe('introspection features', () => {
   before(bootstrap(__dirname));

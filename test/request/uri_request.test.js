@@ -1,11 +1,13 @@
-const bootstrap = require('../test_helper');
-const RequestUriCache = require('../../lib/helpers/request_uri_cache');
-const JWT = require('../../lib/helpers/jwt');
+const { parse } = require('url');
+
 const sinon = require('sinon');
 const nock = require('nock');
 const { expect } = require('chai');
-const { parse } = require('url');
 const timekeeper = require('timekeeper');
+
+const JWT = require('../../lib/helpers/jwt');
+const RequestUriCache = require('../../lib/helpers/request_uri_cache');
+const bootstrap = require('../test_helper');
 
 const route = '/auth';
 
@@ -591,7 +593,6 @@ describe('request Uri features', () => {
             });
         });
       });
-
 
       it('bad signatures will be rejected', async function () {
         const spy = sinon.spy();

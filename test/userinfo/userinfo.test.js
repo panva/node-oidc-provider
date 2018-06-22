@@ -1,7 +1,9 @@
-const bootstrap = require('../test_helper');
-const { expect } = require('chai');
 const url = require('url');
+
+const { expect } = require('chai');
 const sinon = require('sinon');
+
+const bootstrap = require('../test_helper');
 
 describe('userinfo /me', () => {
   before(bootstrap(__dirname));

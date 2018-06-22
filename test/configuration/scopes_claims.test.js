@@ -1,5 +1,6 @@
-const Provider = require('../../lib');
 const { expect } = require('chai');
+
+const Provider = require('../../lib');
 
 describe('custom claims', () => {
   it('allows for claims to be added under openid scope using array syntax', () => {

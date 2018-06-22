@@ -1209,10 +1209,10 @@ async interactionCheck(ctx) {
       error_description: 'client not authorized for End-User session yet',
       reason: 'client_not_authorized',
     };
-  } else if (
-    ctx.oidc.client.applicationType === 'native' &&
-    ctx.oidc.params.response_type !== 'none' &&
-    !ctx.oidc.result) {
+  } if (
+    ctx.oidc.client.applicationType === 'native'
+    && ctx.oidc.params.response_type !== 'none'
+    && !ctx.oidc.result) {
     return {
       error: 'interaction_required',
       error_description: 'native clients require End-User interaction',

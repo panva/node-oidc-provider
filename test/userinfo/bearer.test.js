@@ -1,5 +1,6 @@
-const bootstrap = require('../test_helper');
 const { expect } = require('chai');
+
+const bootstrap = require('../test_helper');
 
 describe('providing Bearer token', () => {
   before(bootstrap(__dirname));

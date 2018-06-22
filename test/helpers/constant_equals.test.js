@@ -1,4 +1,5 @@
 const { expect } = require('chai');
+
 const constantEquals = require('../../lib/helpers/constant_equals');
 
 describe('constantEquals', () => {

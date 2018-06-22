@@ -1,9 +1,11 @@
-const bootstrap = require('../test_helper');
-const sinon = require('sinon');
 const { parse: parseUrl } = require('url');
+
+const sinon = require('sinon');
 const { expect } = require('chai');
-const epochTime = require('../../lib/helpers/epoch_time');
 const timekeeper = require('timekeeper');
+
+const epochTime = require('../../lib/helpers/epoch_time');
+const bootstrap = require('../test_helper');
 
 const route = '/token';
 
@@ -141,7 +143,6 @@ describe('grant_type=authorization_code', () => {
           });
       });
     });
-
 
     it('validates code is not already used', function () {
       const spy = sinon.spy();

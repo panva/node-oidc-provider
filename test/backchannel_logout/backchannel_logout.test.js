@@ -1,9 +1,11 @@
-const bootstrap = require('../test_helper');
+const { parse: parseUrl } = require('url');
+
 const sinon = require('sinon');
 const { expect } = require('chai');
-const { parse: parseUrl } = require('url');
 const base64url = require('base64url');
 const nock = require('nock');
+
+const bootstrap = require('../test_helper');
 const Provider = require('../../lib');
 
 describe('Back-Channel Logout 1.0', () => {

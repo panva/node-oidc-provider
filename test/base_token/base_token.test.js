@@ -1,8 +1,9 @@
 const sinon = require('sinon');
 const { expect } = require('chai');
-const bootstrap = require('../test_helper');
 const timekeeper = require('timekeeper');
 const { uniq } = require('lodash');
+
+const bootstrap = require('../test_helper');
 
 const fail = () => { throw new Error('expected promise to be rejected'); };
 

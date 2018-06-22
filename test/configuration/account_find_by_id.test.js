@@ -1,5 +1,6 @@
-const Provider = require('../../lib');
 const { expect } = require('chai');
+
+const Provider = require('../../lib');
 
 describe('default findById behavior', () => {
   it('returns a promise', () => {

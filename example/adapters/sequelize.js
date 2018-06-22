@@ -39,7 +39,6 @@ const models = [
   return map;
 }, new Map());
 
-
 class SequelizeAdapter {
   constructor(name) {
     this.model = models.get(name);

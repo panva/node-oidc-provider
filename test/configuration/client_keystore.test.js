@@ -1,11 +1,13 @@
+const assert = require('assert');
+
 const keystore = require('node-jose').JWK.createKeyStore();
 const moment = require('moment');
 const nock = require('nock');
 const { expect } = require('chai');
+
 const JWT = require('../../lib/helpers/jwt');
 const epochTime = require('../../lib/helpers/epoch_time');
 const bootstrap = require('../test_helper');
-const assert = require('assert');
 
 const fail = () => { throw new Error('expected promise to be rejected'); };
 
@@ -175,8 +177,8 @@ describe('client keystore refresh', () => {
       const client = await this.provider.Client.find('client');
       client.keystore.freshUntil = epochTime() - 1;
       await JWT.verify(
-        'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiYWRtaW4iOnRydWV9.TJVA95OrM7E2cBab30RMHrHDcEfxjoYZgeFONFh7HgQ'
-        , client.keystore,
+        'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiYWRtaW4iOnRydWV9.TJVA95OrM7E2cBab30RMHrHDcEfxjoYZgeFONFh7HgQ',
+        client.keystore,
       ).then(fail, () => {});
     });
 

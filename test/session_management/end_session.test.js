@@ -1,7 +1,9 @@
-const bootstrap = require('../test_helper');
-const sinon = require('sinon');
 const { parse: parseUrl } = require('url');
+
+const sinon = require('sinon');
 const { expect } = require('chai');
+
+const bootstrap = require('../test_helper');
 const JWT = require('../../lib/helpers/jwt');
 const { InvalidRequest } = require('../../lib/helpers/errors');
 

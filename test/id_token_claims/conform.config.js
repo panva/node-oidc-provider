@@ -1,4 +1,5 @@
 const { clone } = require('lodash');
+
 const config = clone(require('../default.config'));
 
 config.features = { conformIdTokenClaims: true, claimsParameter: true, alwaysIssueRefresh: true };

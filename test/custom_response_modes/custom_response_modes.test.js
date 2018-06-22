@@ -1,5 +1,6 @@
 const { expect } = require('chai');
 const sinon = require('sinon');
+
 const bootstrap = require('../test_helper');
 
 describe('custom response modes', () => {
