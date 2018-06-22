@@ -6,7 +6,7 @@ Yay for [SemVer](http://semver.org/).
 
 <!-- TOC depthFrom:2 depthTo:2 withLinks:1 updateOnSave:1 orderedList:0 -->
 
-- [Unreleased](#unreleased)
+- [4.1.0](#410)
 - [4.0.x](#40x)
 - [3.0.x](#30x)
 - [2.18.x](#218x)
