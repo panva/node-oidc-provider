@@ -31,9 +31,8 @@ Yay for [SemVer](http://semver.org/).
 
 <!-- /TOC -->
 
-## Unreleased
-- [DIFF](https://github.com/panva/node-oidc-provider/compare/v4.0.3...master)
-
+## 4.1.0
+- 2018-06-22 [DIFF](https://github.com/panva/node-oidc-provider/compare/v4.0.3...v4.1.0)
 
 **New Feature - Storage Formats**
 
