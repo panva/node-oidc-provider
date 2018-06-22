@@ -5,7 +5,7 @@ const sinon = require('sinon');
 const route = '/auth';
 
 describe('/auth', () => {
-  before(bootstrap(__dirname)); // provider, agent, this.AuthorizationRequest, wrap
+  before(bootstrap(__dirname));
 
   ['get', 'post'].forEach((verb) => {
     describe(`${verb} response_mode=form_post`, () => {

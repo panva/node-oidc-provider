@@ -7,7 +7,7 @@ const scope = 'openid';
 
 ['get', 'post'].forEach((verb) => {
   describe(`${verb} ${route} response_type=none`, () => {
-    before(bootstrap(__dirname)); // provider, agent, AuthorizationRequest, wrap
+    before(bootstrap(__dirname));
 
     before(function () { return this.login(); });
     after(function () { return this.logout(); });

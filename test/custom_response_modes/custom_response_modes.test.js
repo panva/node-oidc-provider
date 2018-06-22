@@ -3,7 +3,7 @@ const sinon = require('sinon');
 const bootstrap = require('../test_helper');
 
 describe('custom response modes', () => {
-  before(bootstrap(__dirname)); // provider, agent, AuthorizationRequest
+  before(bootstrap(__dirname));
 
   before(function () { return this.login(); });
 

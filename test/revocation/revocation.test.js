@@ -6,7 +6,7 @@ const route = '/token/revocation';
 
 
 describe('revocation features', () => {
-  before(bootstrap(__dirname)); // this.agent, provider
+  before(bootstrap(__dirname));
 
   describe('enriched discovery', () => {
     it('shows the url now', function () {

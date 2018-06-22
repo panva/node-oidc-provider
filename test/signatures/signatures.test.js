@@ -8,7 +8,7 @@ const base64url = require('base64url');
 const { formats: { default: FORMAT } } = require('../../lib/helpers/defaults');
 
 describe('signatures', () => {
-  before(bootstrap(__dirname)); // this.provider, agent, this.AuthorizationRequest, wrap
+  before(bootstrap(__dirname));
 
   describe('token hashes in id_token', () => {
     before(async function () {

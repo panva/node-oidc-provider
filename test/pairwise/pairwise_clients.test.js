@@ -8,7 +8,7 @@ const j = JSON.stringify;
 
 
 describe('pairwise features', () => {
-  before(bootstrap(__dirname)); // provider
+  before(bootstrap(__dirname));
 
   describe('pairwise client configuration', () => {
     beforeEach(nock.cleanAll);

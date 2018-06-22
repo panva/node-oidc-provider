@@ -17,7 +17,7 @@ function validateErrorDescription(description) {
 }
 
 describe('registration features', () => {
-  before(bootstrap(__dirname)); // agent, provider, TestAdapter
+  before(bootstrap(__dirname));
 
   context('POST /reg', () => {
     it('generates the id, secret that does not expire and reg access token and returns the defaulted values', function () {

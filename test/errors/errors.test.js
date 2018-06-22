@@ -1,7 +1,7 @@
 const bootstrap = require('../test_helper');
 
 describe('default error behavior', () => {
-  before(bootstrap(__dirname)); // agent
+  before(bootstrap(__dirname));
 
   it('responds with json when no Accept header', function () {
     return this.agent.post('/me')

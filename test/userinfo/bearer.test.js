@@ -2,7 +2,7 @@ const bootstrap = require('../test_helper');
 const { expect } = require('chai');
 
 describe('providing Bearer token', () => {
-  before(bootstrap(__dirname)); // agent
+  before(bootstrap(__dirname));
   context('invalid requests', () => {
     it('nothing provided', function () {
       return this.agent.get('/me')

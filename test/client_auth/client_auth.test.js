@@ -24,7 +24,7 @@ function errorDetail(spy) {
 }
 
 describe('client authentication options', () => {
-  before(bootstrap(__dirname)); // agent, this.provider, responses
+  before(bootstrap(__dirname));
 
   describe('discovery', () => {
     it('pushes no algs when neither _jwt method is enabled', () => {

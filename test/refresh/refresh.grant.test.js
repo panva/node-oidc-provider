@@ -14,7 +14,7 @@ function errorDetail(spy) {
 }
 
 describe('grant_type=refresh_token', () => {
-  before(bootstrap(__dirname)); // agent, provider, this.TestAdapter
+  before(bootstrap(__dirname));
 
   afterEach(() => timekeeper.reset());
 

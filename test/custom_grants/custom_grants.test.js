@@ -2,7 +2,7 @@ const { expect } = require('chai');
 const bootstrap = require('../test_helper');
 
 describe('custom token endpoint grant types', () => {
-  before(bootstrap(__dirname)); // provider, agent
+  before(bootstrap(__dirname));
 
   it('allows for grant types to be added', function () {
     expect(() => {

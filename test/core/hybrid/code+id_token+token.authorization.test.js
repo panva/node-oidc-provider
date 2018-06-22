@@ -7,7 +7,7 @@ const response_type = 'code id_token token';
 const scope = 'openid';
 
 describe('HYBRID code+id_token+token', () => {
-  before(bootstrap(__dirname)); // provider, agent, AuthorizationRequest, wrap
+  before(bootstrap(__dirname));
 
   ['get', 'post'].forEach((verb) => {
     describe(`${verb} ${route} with session`, () => {

@@ -4,7 +4,7 @@ const { expect } = require('chai');
 const route = '/.well-known/webfinger';
 
 describe(route, () => {
-  before(bootstrap(__dirname)); // agent, provider
+  before(bootstrap(__dirname));
   it('responds with jrd+json 200', function () {
     return this.agent.get(route)
       .expect('Content-Type', /application\/jrd\+json/)

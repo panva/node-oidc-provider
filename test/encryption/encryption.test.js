@@ -11,7 +11,7 @@ const route = '/auth';
 
 ['get', 'post'].forEach((verb) => {
   describe(`[encryption] IMPLICIT id_token+token ${verb} ${route}`, () => {
-    before(bootstrap(__dirname)); // provider, this.agent, AuthorizationRequest, wrap
+    before(bootstrap(__dirname));
 
     before(function () {
       return jose.JWK.asKeyStore(privKey).then((keystore) => { this.keystore = keystore; });

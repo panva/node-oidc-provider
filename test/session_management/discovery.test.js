@@ -2,7 +2,7 @@ const bootstrap = require('../test_helper');
 const { expect } = require('chai');
 
 describe('configuration features.encryption', () => {
-  before(bootstrap(__dirname)); // agent
+  before(bootstrap(__dirname));
 
   it('extends discovery', function () {
     return this.agent.get('/.well-known/openid-configuration')

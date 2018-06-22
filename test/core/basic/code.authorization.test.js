@@ -14,7 +14,7 @@ const response_type = 'code';
 const scope = 'openid';
 
 describe('BASIC code', () => {
-  before(bootstrap(__dirname)); // provider, agent, AuthorizationRequest, getSession, wrap
+  before(bootstrap(__dirname));
 
   ['get', 'post'].forEach((verb) => {
     describe(`${verb} ${route} with session`, () => {

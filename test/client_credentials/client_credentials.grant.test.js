@@ -5,7 +5,7 @@ const { expect } = require('chai');
 const route = '/token';
 
 describe('grant_type=client_credentials', () => {
-  before(bootstrap(__dirname)); // agent, provider
+  before(bootstrap(__dirname));
 
   it('provides a Bearer client credentials token', function () {
     const spy = sinon.spy();

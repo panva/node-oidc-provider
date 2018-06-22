@@ -4,7 +4,7 @@ const { expect } = require('chai');
 const fail = () => { throw new Error('expected promise to be rejected'); };
 
 describe('OAuth 2.0 for Native Apps Best Current Practice features', () => {
-  before(bootstrap(__dirname)); // provider
+  before(bootstrap(__dirname));
 
   describe('changed native client validations', () => {
     describe('Private-use URI Scheme Redirection', () => {

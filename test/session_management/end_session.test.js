@@ -8,7 +8,7 @@ const { InvalidRequest } = require('../../lib/helpers/errors');
 const route = '/session/end';
 
 describe('[session_management]', () => {
-  before(bootstrap(__dirname)); // this.provider, agent, getSession, getSessionId, this.TestAdapter
+  before(bootstrap(__dirname));
 
   beforeEach(function () { return this.login(); });
   afterEach(function () { return this.logout(); });

@@ -4,7 +4,7 @@ const { expect } = require('chai');
 const route = '/auth';
 
 describe('session management', () => {
-  before(bootstrap(__dirname)); // provider, agent, this.AuthorizationRequest, wrap
+  before(bootstrap(__dirname));
 
   ['get', 'post'].forEach((verb) => {
     describe(`[session_management] ${verb} ${route} with session`, () => {

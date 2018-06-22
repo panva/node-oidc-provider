@@ -5,7 +5,7 @@ const { expect } = require('chai');
 const Provider = require('../../lib');
 
 describe('OAuth 2.0 Dynamic Client Registration Management Protocol', () => {
-  before(bootstrap(__dirname)); // provider, agent
+  before(bootstrap(__dirname));
 
   // setup does not have the provider;
 

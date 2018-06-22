@@ -4,7 +4,7 @@ const url = require('url');
 const sinon = require('sinon');
 
 describe('userinfo /me', () => {
-  before(bootstrap(__dirname)); // this.provider, agent, this.AuthorizationRequest, wrap
+  before(bootstrap(__dirname));
 
   before(function () { return this.login(); });
 

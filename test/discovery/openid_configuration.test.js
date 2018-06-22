@@ -6,7 +6,7 @@ const { expect } = require('chai');
 const route = '/.well-known/openid-configuration';
 
 describe(route, () => {
-  before(bootstrap(__dirname)); // agent, provider, responses
+  before(bootstrap(__dirname));
 
   it('responds with json 200', function () {
     return this.agent.get(route)

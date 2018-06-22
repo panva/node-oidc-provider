@@ -15,7 +15,7 @@ expire.setDate(expire.getDate() + 1);
 
 ['get', 'post'].forEach((verb) => {
   describe(`claimsParameter via ${verb} ${route}`, () => {
-    before(bootstrap(__dirname)); // provider, AuthorizationRequest, getSession, wrap
+    before(bootstrap(__dirname));
 
     describe('specify id_token', () => {
       before(function () { return this.login(); });

@@ -6,7 +6,7 @@ const { decode: decodeJWT } = require('../../lib/helpers/jwt');
 const { expect } = require('chai');
 
 describe('distributed and aggregated claims', () => {
-  before(bootstrap(__dirname)); // provider, agent, AuthorizationRequest, wrap
+  before(bootstrap(__dirname));
   before(function () {
     const { Account } = this.provider;
     Account.findById = (ctx, id) => Promise.resolve({

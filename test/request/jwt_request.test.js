@@ -11,7 +11,7 @@ const {
 const route = '/auth';
 
 describe('request parameter features', () => {
-  before(bootstrap(__dirname)); // provider, agent, wrap
+  before(bootstrap(__dirname));
 
   describe('configuration features.requestUri', () => {
     it('extends discovery', function () {

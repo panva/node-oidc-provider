@@ -4,7 +4,7 @@ const { expect } = require('chai');
 const route = '/certs';
 
 describe(route, () => {
-  before(bootstrap(__dirname)); // agent
+  before(bootstrap(__dirname));
 
   describe('when populated with signing keys', () => {
     it('responds with json 200', function () {

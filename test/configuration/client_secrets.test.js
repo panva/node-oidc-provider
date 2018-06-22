@@ -2,7 +2,7 @@ const bootstrap = require('../test_helper');
 const { expect } = require('chai');
 
 describe('Client#add', () => {
-  before(bootstrap(__dirname)); // provider
+  before(bootstrap(__dirname));
 
   it('client secret is mandatory if even one of the authz needs it', function () {
     expect(this.provider.Client.needsSecret({

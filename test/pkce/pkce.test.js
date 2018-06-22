@@ -3,7 +3,7 @@ const { parse: parseUrl } = require('url');
 const { expect } = require('chai');
 
 describe('PKCE RFC7636', () => {
-  before(bootstrap(__dirname)); // provider, agent, this.AuthorizationRequest, TestAdapter
+  before(bootstrap(__dirname));
 
   describe('authorization', () => {
     before(function () { return this.login(); });

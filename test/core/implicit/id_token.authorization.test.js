@@ -7,7 +7,7 @@ const response_type = 'id_token';
 const scope = 'openid';
 
 describe('IMPLICIT id_token', () => {
-  before(bootstrap(__dirname)); // provider, agent, AuthorizationRequest, wrap
+  before(bootstrap(__dirname));
 
   ['get', 'post'].forEach((verb) => {
     describe(`IMPLICIT id_token ${verb} ${route} with session`, () => {

@@ -6,7 +6,7 @@ const route = '/token/introspection';
 
 
 describe('introspection features', () => {
-  before(bootstrap(__dirname)); // agent, provider
+  before(bootstrap(__dirname));
 
   describe('enriched discovery', () => {
     it('shows the url now', function () {

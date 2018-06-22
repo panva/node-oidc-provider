@@ -10,7 +10,7 @@ const timekeeper = require('timekeeper');
 const route = '/auth';
 
 describe('request Uri features', () => {
-  before(bootstrap(__dirname)); // provider, agent, wrap
+  before(bootstrap(__dirname));
 
   afterEach(() => timekeeper.reset());
 
