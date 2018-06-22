@@ -27,16 +27,13 @@ function readCookie(value) {
 
 const { port } = global.server.address();
 
-module.exports = function testHelper(dir, basename, mountTo) {
-  const conf = path.format({
-    dir,
-    base: `${basename || path.basename(dir)}.config.js`,
-  });
+module.exports = function testHelper(dir, { config: base = path.basename(dir), mountTo = '', protocol = 'http:' } = {}) {
+  const conf = path.format({ dir, base: `${base}.config.js` });
   let { config, client, clients } = require(conf); // eslint-disable-line
   if (client && !clients) { clients = [client]; }
   if (!config.findById) config.findById = Account.findById;
 
-  const provider = new Provider(`http://127.0.0.1:${port}${mountTo || ''}`, config);
+  const provider = new Provider(`${protocol}//127.0.0.1:${port}${mountTo}`, config);
 
   let agent;
 

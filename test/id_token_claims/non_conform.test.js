@@ -11,7 +11,7 @@ const scope = 'openid email';
 const client_id = 'client';
 
 describe('features.conformIdTokenClaims=false', () => {
-  before(bootstrap(__dirname, 'non_conform'));
+  before(bootstrap(__dirname, { config: 'non_conform' }));
   before(function () { return this.login(); });
 
   [

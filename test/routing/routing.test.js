@@ -3,7 +3,7 @@ const { expect } = require('chai');
 
 describe('default routing behavior', () => {
   describe('without mounting', () => {
-    before(bootstrap(__dirname)); // agent
+    before(bootstrap(__dirname));
 
     it('handles invalid verbs with 405 invalid request', function () {
       return this.agent.post('/.well-known/openid-configuration')
@@ -35,7 +35,7 @@ describe('default routing behavior', () => {
   });
 
   describe('when mounted', () => {
-    before(bootstrap(__dirname, undefined, '/oidc'));
+    before(bootstrap(__dirname, { mountTo: '/oidc' }));
 
     it('handles being prefixed', function () {
       return this.agent.get('/oidc/.well-known/openid-configuration')

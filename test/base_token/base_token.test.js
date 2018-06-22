@@ -7,7 +7,7 @@ const { uniq } = require('lodash');
 const fail = () => { throw new Error('expected promise to be rejected'); };
 
 describe('BaseToken', () => {
-  before(bootstrap(__dirname)); // provider
+  before(bootstrap(__dirname));
 
   afterEach(function () {
     this.adapter.find.resetHistory();
@@ -127,7 +127,7 @@ describe('BaseToken', () => {
 });
 
 describe('mixed formats for tokens', () => {
-  before(bootstrap(__dirname, 'base_token_mixed_formats')); // provider
+  before(bootstrap(__dirname, { config: 'base_token_mixed_formats' }));
 
   it('allows for formats to differ per token type', async function () {
     const models = [

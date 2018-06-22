@@ -7,7 +7,7 @@ const route = '/auth';
 const verb = 'get';
 
 describe('audiences helper', () => {
-  before(bootstrap(__dirname, 'audiences')); // provider, agent, AuthorizationRequest, wrap
+  before(bootstrap(__dirname, { config: 'audiences' }));
   before(function () { return this.login(); });
   before(async function () {
     const auth = new this.AuthorizationRequest({

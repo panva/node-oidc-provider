@@ -23,7 +23,7 @@ describe('client keystore refresh', () => {
     expect(nock.isDone()).to.be.true;
   });
 
-  before(bootstrap(__dirname, 'client_keystore')); // provider
+  before(bootstrap(__dirname, { config: 'client_keystore' }));
 
   before(async function () {
     return i(this.provider).clientAdd({

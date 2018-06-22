@@ -3,7 +3,7 @@ const { expect } = require('chai');
 const epochTime = require('../../lib/helpers/epoch_time');
 
 describe('provider.setProviderSession', () => {
-  before(bootstrap(__dirname, 'set_session'));
+  before(bootstrap(__dirname, { config: 'set_session' }));
 
   beforeEach(function () { return this.logout(); });
 
