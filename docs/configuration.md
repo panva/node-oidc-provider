@@ -1262,24 +1262,31 @@ default value:
 async logoutSource(ctx, form) {
   ctx.body = `<!DOCTYPE html>
 <head>
-<title>Logout</title>
+<title>Logout Request</title>
+<style>/* css and html classes omitted for brevity, see lib/helpers/defaults.js */</style>
 </head>
 <body>
-<script>
-  function logout() {
-    var form = document.getElementById('op.logoutForm');
-    var input = document.createElement('input');
-    input.type = 'hidden';
-    input.name = 'logout';
-    input.value = 'yes';
-    form.appendChild(input);
-    form.submit();
-  }
-</script>
-${form}
-Do you want to logout from OP too?
-<button onclick="logout()">Yes</button>
-<button onclick="document.getElementById('op.logoutForm').submit()">Please, don't!</button>
+<div>
+  <h1>Do you want to sign-out from ${ctx.host}?</h1>
+  <script>
+    function logout() {
+      var form = document.getElementById('op.logoutForm');
+      var input = document.createElement('input');
+      input.type = 'hidden';
+      input.name = 'logout';
+      input.value = 'yes';
+      form.appendChild(input);
+      form.submit();
+    }
+    function rpLogoutOnly() {
+      var form = document.getElementById('op.logoutForm');
+      form.submit();
+    }
+  </script>
+  ${form}
+  <button onclick="logout()">Yes, sign me out</button>
+  <button onclick="rpLogoutOnly()">No, stay signed in</button>
+</div>
 </body>
 </html>`;
 }
