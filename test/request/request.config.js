@@ -7,12 +7,15 @@ config.features = {
   requestUri: { requireRequestUriRegistration: false },
   claimsParameter: true,
 };
+config.unsupported = {
+  requestObjectSigningAlgValues: ['HS384'],
+};
 
 module.exports = {
   config,
   clients: [{
     client_id: 'client',
-    client_secret: 'secret',
+    client_secret: 'its48bytes_____________________________________!',
     redirect_uris: ['https://client.example.com/cb'],
   }, {
     client_id: 'client-with-HS-sig',

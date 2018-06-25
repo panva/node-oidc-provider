@@ -594,6 +594,41 @@ describe('request Uri features', () => {
         });
       });
 
+      it('unsupported algs must not be used', async function () {
+        const spy = sinon.spy();
+        this.provider.once('authorization.error', spy);
+        const key = (await this.provider.Client.find('client')).keystore.get({
+          alg: 'HS384',
+        });
+        return JWT.sign({
+          client_id: 'client',
+          response_type: 'code',
+          redirect_uri: 'https://client.example.com/cb',
+        }, key, 'HS384', { issuer: 'client', audience: this.provider.issuer }).then((request) => {
+          nock('https://client.example.com')
+            .get('/request')
+            .reply(200, request);
+
+          return this.wrap({
+            agent: this.agent,
+            route,
+            verb,
+            auth: {
+              request_uri: `https://client.example.com/request#${Math.random()}`,
+              scope: 'openid',
+              client_id: 'client',
+              response_type: 'code',
+            },
+          })
+            .expect(302)
+            .expect(() => {
+              expect(spy.calledOnce).to.be.true;
+              expect(spy.args[0][0]).to.have.property('message', 'invalid_request_object');
+              expect(spy.args[0][0]).to.have.property('error_description', 'unsupported signed request alg');
+            });
+        });
+      });
+
       it('bad signatures will be rejected', async function () {
         const spy = sinon.spy();
         this.provider.once('authorization.error', spy);
