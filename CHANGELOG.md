@@ -6,7 +6,7 @@ Yay for [SemVer](http://semver.org/).
 
 <!-- TOC depthFrom:2 depthTo:2 withLinks:1 updateOnSave:1 orderedList:0 -->
 
-- [4.1.0](#410)
+- [4.1.x](#41x)
 - [4.0.x](#40x)
 - [3.0.x](#30x)
 - [2.18.x](#218x)
@@ -31,7 +31,13 @@ Yay for [SemVer](http://semver.org/).
 
 <!-- /TOC -->
 
-## 4.1.0
+## 4.1.x
+### 4.1.1
+- 2018-06-25 [DIFF](https://github.com/panva/node-oidc-provider/compare/v4.1.0...v4.1.1)
+- fixed missing `sub` claim from tokens when using the `jwt` format
+- chores (lint, tests, refactors, default error and logout screen styles)
+
+### 4.1.0
 - 2018-06-22 [DIFF](https://github.com/panva/node-oidc-provider/compare/v4.0.3...v4.1.0)
 
 **New Feature - Storage Formats**
