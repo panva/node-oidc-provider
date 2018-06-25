@@ -5,6 +5,7 @@ const config = clone(require('../default.config'));
 config.features = { request: true, encryption: true };
 config.unsupported = {
   requestObjectEncryptionAlgValues: ['RSA-OAEP'],
+  requestObjectEncryptionEncValues: ['A192CBC-HS384'],
 };
 
 const privKey = {

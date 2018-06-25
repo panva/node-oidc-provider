@@ -132,7 +132,7 @@ const route = '/auth';
           }));
       });
 
-      it('handles enc unsupported algs and encs', function () {
+      it('handles enc unsupported algs', function () {
         return JWT.sign({
           client_id: 'client',
           response_type: 'code',
@@ -151,6 +151,28 @@ const route = '/auth';
             const { query } = url.parse(response.headers.location, true);
             expect(query).to.have.property('error', 'invalid_request_object');
             expect(query).to.have.property('error_description').contains('unsupported encrypted request alg');
+          }));
+      });
+
+      it('handles enc unsupported encs', function () {
+        return JWT.sign({
+          client_id: 'client',
+          response_type: 'code',
+          redirect_uri: 'https://client.example.com/cb',
+        }, null, 'none', { issuer: 'client', audience: this.provider.issuer }).then(signed => JWT.encrypt(signed, i(this.provider).keystore.get({ kty: 'RSA' }), 'A192CBC-HS384', 'RSA1_5')).then(encrypted => this.wrap({
+          route,
+          verb,
+          auth: {
+            request: encrypted,
+            scope: 'openid',
+            client_id: 'client',
+            response_type: 'code',
+          },
+        })
+          .expect((response) => {
+            const { query } = url.parse(response.headers.location, true);
+            expect(query).to.have.property('error', 'invalid_request_object');
+            expect(query).to.have.property('error_description').contains('unsupported encrypted request enc');
           }));
       });
     });
