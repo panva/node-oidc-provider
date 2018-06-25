@@ -386,6 +386,38 @@ describe('request Uri features', () => {
           });
       });
 
+      it('request and request_uri cannot be used together', function () {
+        const spy = sinon.spy();
+        this.provider.once('authorization.error', spy);
+
+        return JWT.sign({
+          client_id: 'client',
+          response_type: 'code',
+          request: 'request inception',
+          redirect_uri: 'https://client.example.com/cb',
+        }, null, 'none', { issuer: 'client', audience: this.provider.issuer }).then(request => this.wrap({
+          agent: this.agent,
+          route,
+          verb,
+          auth: {
+            request,
+            request_uri: `https://client.example.com/request#${Math.random()}`,
+            scope: 'openid',
+            client_id: 'client',
+            response_type: 'code',
+          },
+        })
+          .expect(302)
+          .expect(() => {
+            expect(spy.calledOnce).to.be.true;
+            expect(spy.args[0][0]).to.have.property('message', 'invalid_request');
+            expect(spy.args[0][0]).to.have.property(
+              'error_description',
+              'request and request_uri parameters MUST NOT be used together',
+            );
+          }));
+      });
+
       it('doesnt allow request inception', function () {
         const spy = sinon.spy();
         this.provider.once('authorization.error', spy);
