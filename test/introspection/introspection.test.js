@@ -369,14 +369,14 @@ describe('introspection features', () => {
     });
 
     it('responds only with active=false when token is already consumed', async function () {
-      const at = new this.provider.AccessToken({
+      const rt = new this.provider.RefreshToken({
         accountId: 'accountId',
         clientId: 'client',
         scope: 'scope',
       });
 
-      const token = await at.save();
-      await at.consume();
+      const token = await rt.save();
+      await rt.consume();
 
       return this.agent.post(route)
         .auth('client', 'secret')
