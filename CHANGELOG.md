@@ -32,6 +32,11 @@ Yay for [SemVer](http://semver.org/).
 <!-- /TOC -->
 
 ## 4.1.x
+### 4.1.2
+- 2018-06-26 [DIFF](https://github.com/panva/node-oidc-provider/compare/v4.1.1...v4.1.2)
+- fixed missing `sid` claim in access tokens
+- fixed non-consumable tokens having `consumed` stored and `#consume()` instance method
+
 ### 4.1.1
 - 2018-06-25 [DIFF](https://github.com/panva/node-oidc-provider/compare/v4.1.0...v4.1.1)
 - fixed missing `sub` claim from tokens when using the `jwt` format
