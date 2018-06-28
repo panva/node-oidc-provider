@@ -5,6 +5,17 @@ const { expect } = require('chai');
 const bootstrap = require('../test_helper');
 const Provider = require('../../lib');
 
+function failWith(code, error, error_description) {
+  return ({ status, body, headers: { 'www-authenticate': wwwAuth } }) => {
+    const { provider: { issuer } } = this;
+    expect(status).to.eql(code);
+    expect(body).to.have.property('error', error);
+    expect(body).to.have.property('error_description', error_description);
+    expect(wwwAuth).to.match(new RegExp(`^Bearer realm="${issuer}"`));
+    expect(wwwAuth).to.match(new RegExp(`error="${error}"`));
+  };
+}
+
 describe('OAuth 2.0 Dynamic Client Registration Management Protocol', () => {
   before(bootstrap(__dirname));
 
@@ -61,9 +72,7 @@ describe('OAuth 2.0 Dynamic Client Registration Management Protocol', () => {
       const client = await setup.call(this, {});
       return this.agent.put(`/reg/${client.client_id}`)
         .auth('foobarbaz', { type: 'bearer' })
-        .expect(401)
-        .expect('WWW-Authenticate', new RegExp(`^Bearer realm="${this.provider.issuer}"`))
-        .expect('WWW-Authenticate', /error="invalid_token"/);
+        .expect(failWith.call(this, 401, 'invalid_token', 'invalid token provided'));
     });
 
     it('populates ctx.oidc.entities', function (done) {
@@ -103,13 +112,7 @@ describe('OAuth 2.0 Dynamic Client Registration Management Protocol', () => {
         .send(updateProperties(client, {
           userinfo_signed_response_alg: undefined,
         }))
-        .expect(400)
-        .expect((res) => {
-          expect(res.body).to.eql({
-            error: 'invalid_request',
-            error_description: 'userinfo_signed_response_alg must be provided',
-          });
-        });
+        .expect(failWith.call(this, 400, 'invalid_request', 'userinfo_signed_response_alg must be provided'));
     });
 
     it('provides a secret if suddently needed', async function () {
@@ -154,13 +157,7 @@ describe('OAuth 2.0 Dynamic Client Registration Management Protocol', () => {
           redirect_uris: ['https://client.example.com/foobar/cb'],
           registration_access_token: 'foobar',
         }))
-        .expect(400)
-        .expect((response) => {
-          expect(response.body).to.eql({
-            error: 'invalid_request',
-            error_description: 'request MUST NOT include the "registration_access_token" field',
-          });
-        });
+        .expect(failWith.call(this, 400, 'invalid_request', 'request MUST NOT include the registration_access_token field'));
     });
 
     it('must not contain registration_client_uri', async function () {
@@ -172,13 +169,7 @@ describe('OAuth 2.0 Dynamic Client Registration Management Protocol', () => {
           redirect_uris: ['https://client.example.com/foobar/cb'],
           registration_client_uri: 'foobar',
         }))
-        .expect(400)
-        .expect((response) => {
-          expect(response.body).to.eql({
-            error: 'invalid_request',
-            error_description: 'request MUST NOT include the "registration_client_uri" field',
-          });
-        });
+        .expect(failWith.call(this, 400, 'invalid_request', 'request MUST NOT include the registration_client_uri field'));
     });
 
     it('must not contain client_secret_expires_at', async function () {
@@ -190,13 +181,7 @@ describe('OAuth 2.0 Dynamic Client Registration Management Protocol', () => {
           redirect_uris: ['https://client.example.com/foobar/cb'],
           client_secret_expires_at: 'foobar',
         }))
-        .expect(400)
-        .expect((response) => {
-          expect(response.body).to.eql({
-            error: 'invalid_request',
-            error_description: 'request MUST NOT include the "client_secret_expires_at" field',
-          });
-        });
+        .expect(failWith.call(this, 400, 'invalid_request', 'request MUST NOT include the client_secret_expires_at field'));
     });
 
     it('must not contain client_id_issued_at', async function () {
@@ -208,13 +193,7 @@ describe('OAuth 2.0 Dynamic Client Registration Management Protocol', () => {
           redirect_uris: ['https://client.example.com/foobar/cb'],
           client_id_issued_at: 'foobar',
         }))
-        .expect(400)
-        .expect((response) => {
-          expect(response.body).to.eql({
-            error: 'invalid_request',
-            error_description: 'request MUST NOT include the "client_id_issued_at" field',
-          });
-        });
+        .expect(failWith.call(this, 400, 'invalid_request', 'request MUST NOT include the client_id_issued_at field'));
     });
 
     it('cannot update non-dynamic clients', async function () {
@@ -226,13 +205,7 @@ describe('OAuth 2.0 Dynamic Client Registration Management Protocol', () => {
         .send(updateProperties(client.metadata(), {
           redirect_uris: ['https://client.example.com/foobar/cb'],
         }))
-        .expect(403)
-        .expect((response) => {
-          expect(response.body).to.eql({
-            error: 'invalid_request',
-            error_description: 'this client is not allowed to update its records',
-          });
-        });
+        .expect(failWith.call(this, 403, 'invalid_request', 'this client is not allowed to update its records'));
     });
 
     describe('rotateRegistrationAccessToken', () => {
@@ -334,9 +307,7 @@ describe('OAuth 2.0 Dynamic Client Registration Management Protocol', () => {
       const client = await setup.call(this, {});
       return this.agent.del(`/reg/${client.client_id}`)
         .auth('foobarbaz', { type: 'bearer' })
-        .expect(401)
-        .expect('WWW-Authenticate', new RegExp(`^Bearer realm="${this.provider.issuer}"`))
-        .expect('WWW-Authenticate', /error="invalid_token"/);
+        .expect(failWith.call(this, 401, 'invalid_token', 'invalid token provided'));
     });
 
     it('cannot delete non-dynamic clients', async function () {
@@ -344,13 +315,7 @@ describe('OAuth 2.0 Dynamic Client Registration Management Protocol', () => {
       const bearer = await rat.save();
       return this.agent.del('/reg/client')
         .auth(bearer, { type: 'bearer' })
-        .expect(403)
-        .expect((response) => {
-          expect(response.body).to.eql({
-            error: 'invalid_request',
-            error_description: 'this client is not allowed to delete itself',
-          });
-        });
+        .expect(failWith.call(this, 403, 'invalid_request', 'this client is not allowed to delete itself'));
     });
   });
 });
