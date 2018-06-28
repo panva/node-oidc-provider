@@ -32,6 +32,10 @@ Yay for [SemVer](http://semver.org/).
 <!-- /TOC -->
 
 ## 4.1.x
+### 4.1.3
+- 2018-06-28 [DIFF](https://github.com/panva/node-oidc-provider/compare/v4.1.2...v4.1.3)
+- fixed `www-authenticate` header uses in bearer token endpoints according to Core 1.0 and RFC6750
+
 ### 4.1.2
 - 2018-06-26 [DIFF](https://github.com/panva/node-oidc-provider/compare/v4.1.1...v4.1.2)
 - fixed missing `sid` claim in access tokens
