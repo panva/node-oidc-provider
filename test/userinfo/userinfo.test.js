@@ -5,18 +5,6 @@ const sinon = require('sinon');
 
 const bootstrap = require('../test_helper');
 
-function failWith(code, error, error_description, scope) {
-  return ({ status, body, headers: { 'www-authenticate': wwwAuth } }) => {
-    const { provider: { issuer } } = this;
-    expect(status).to.eql(code);
-    expect(body).to.have.property('error', error);
-    expect(body).to.have.property('error_description', error_description);
-    expect(wwwAuth).to.match(new RegExp(`^Bearer realm="${issuer}"`));
-    expect(wwwAuth).to.match(new RegExp(`error="${error}"`));
-    if (scope) expect(wwwAuth).to.match(new RegExp(`scope="${scope}"`));
-  };
-}
-
 describe('userinfo /me', () => {
   before(bootstrap(__dirname));
 
@@ -58,7 +46,12 @@ describe('userinfo /me', () => {
   it('validates access token is found', function () {
     return this.agent.get('/me')
       .auth('Loremipsumdolorsitametconsecteturadipisicingelitsed', { type: 'bearer' })
-      .expect(failWith.call(this, 401, 'invalid_token', 'invalid token provided'));
+      .expect(this.failWith(401, 'invalid_token', 'invalid token provided'));
+  });
+
+  it('validates access token is provided', function () {
+    return this.agent.get('/me')
+      .expect(this.failWith(400, 'invalid_request', 'no bearer auth mechanism provided'));
   });
 
   it('validates a client is still valid for a found token', async function () {
@@ -69,14 +62,14 @@ describe('userinfo /me', () => {
       .expect(() => {
         this.provider.Client.find.restore();
       })
-      .expect(failWith.call(this, 401, 'invalid_token', 'invalid token provided'));
+      .expect(this.failWith(401, 'invalid_token', 'invalid token provided'));
   });
 
   it('validates an account still valid for a found token', async function () {
     const at = await new this.provider.AccessToken({ clientId: 'client', accountId: 'notfound' }).save();
     return this.agent.get('/me')
       .auth(at, { type: 'bearer' })
-      .expect(failWith.call(this, 401, 'invalid_token', 'invalid token provided'));
+      .expect(this.failWith(401, 'invalid_token', 'invalid token provided'));
   });
 
   it('does allow for scopes to be shrunk', function () {
@@ -98,6 +91,6 @@ describe('userinfo /me', () => {
         scope: 'openid profile',
       })
       .auth(this.access_token, { type: 'bearer' })
-      .expect(failWith.call(this, 400, 'invalid_scope', 'access token missing requested scope', 'profile'));
+      .expect(this.failWith(400, 'invalid_scope', 'access token missing requested scope', 'profile'));
   });
 });

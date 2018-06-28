@@ -267,6 +267,25 @@ module.exports = function testHelper(dir, { config: base = path.basename(dir), m
     }
   }
 
+  function failWith(code, error, error_description, scope) {
+    return ({ status, body, headers: { 'www-authenticate': wwwAuth } }) => {
+      const { provider: { issuer } } = this;
+      expect(status).to.eql(code);
+      expect(body).to.have.property('error', error);
+      expect(body).to.have.property('error_description', error_description);
+      expect(wwwAuth).to.match(new RegExp(`^Bearer realm="${issuer}"`));
+      let assert = expect(wwwAuth);
+      if (error_description === 'no bearer auth mechanism provided') {
+        assert = assert.not.to;
+      } else {
+        assert = assert.to;
+      }
+      assert.match(new RegExp(`error="${error}"`));
+      assert.match(new RegExp(`error_description="${error_description.replace(/[-/\\^$*+?.()|[\]{}]/g, '\\$&')}"`));
+      if (scope) assert.match(new RegExp(`scope="${scope}"`));
+    };
+  }
+
   return function () {
     Object.assign(this, {
       login,
@@ -275,6 +294,7 @@ module.exports = function testHelper(dir, { config: base = path.basename(dir), m
       provider,
       assertOnce,
       getSessionId,
+      failWith,
       getSession,
       wrap,
       TestAdapter,

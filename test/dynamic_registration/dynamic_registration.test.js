@@ -3,17 +3,6 @@ const sinon = require('sinon');
 
 const bootstrap = require('../test_helper');
 
-function failWith(code, error, error_description) {
-  return ({ status, body, headers: { 'www-authenticate': wwwAuth } }) => {
-    const { provider: { issuer } } = this;
-    expect(status).to.eql(code);
-    expect(body).to.have.property('error', error);
-    expect(body).to.have.property('error_description').and[error_description.exec ? 'match' : 'equal'](error_description);
-    expect(wwwAuth).to.match(new RegExp(`^Bearer realm="${issuer}"`));
-    expect(wwwAuth).to.match(new RegExp(`error="${error}"`));
-  };
-}
-
 describe('registration features', () => {
   before(bootstrap(__dirname));
 
@@ -142,7 +131,7 @@ describe('registration features', () => {
           grant_types: ['this is clearly wrong'],
           redirect_uris: ['https://client.example.com/cb'],
         })
-        .expect(failWith.call(this, 400, 'invalid_client_metadata', /^grant_types can only contain members/));
+        .expect(this.failWith(400, 'invalid_client_metadata', 'grant_types can only contain members [implicit,authorization_code,refresh_token]'));
     });
 
     it('validates the parameters to be valid and responds with redirect_uri errors', function () {
@@ -150,7 +139,7 @@ describe('registration features', () => {
         .send({
         // redirect_uris missing here
         })
-        .expect(failWith.call(this, 400, 'invalid_redirect_uri', /^redirect_uris is mandatory property/));
+        .expect(this.failWith(400, 'invalid_redirect_uri', 'redirect_uris is mandatory property'));
     });
 
     it('only accepts application/json POSTs', function () {
@@ -159,7 +148,7 @@ describe('registration features', () => {
           redirect_uris: ['https://client.example.com/cb'],
         })
         .type('form')
-        .expect(failWith.call(this, 400, 'invalid_request', 'only application/json content-type POST bodies are supported'));
+        .expect(this.failWith(400, 'invalid_request', 'only application/json content-type POST bodies are supported'));
     });
 
     describe('initial access tokens', () => {
@@ -208,7 +197,7 @@ describe('registration features', () => {
               redirect_uris: ['https://client.example.com/cb'],
             })
             .auth('foobarbaz', { type: 'bearer' })
-            .expect(failWith.call(this, 401, 'invalid_token', 'invalid token provided'));
+            .expect(this.failWith(401, 'invalid_token', 'invalid token provided'));
         });
       });
 
@@ -293,7 +282,7 @@ describe('registration features', () => {
               redirect_uris: ['https://client.example.com/cb'],
             })
             .auth('foobarbaz', { type: 'bearer' })
-            .expect(failWith.call(this, 401, 'invalid_token', 'invalid token provided'));
+            .expect(this.failWith(401, 'invalid_token', 'invalid token provided'));
         });
 
         it('rejects calls with not found access token', function () {
@@ -302,7 +291,7 @@ describe('registration features', () => {
               redirect_uris: ['https://client.example.com/cb'],
             })
             .auth('Loremipsumdolorsitametconsecteturadipisicingelitsed', { type: 'bearer' })
-            .expect(failWith.call(this, 401, 'invalid_token', 'invalid token provided'));
+            .expect(this.failWith(401, 'invalid_token', 'invalid token provided'));
         });
 
         it('rejects calls with manipulated access token', function () {
@@ -311,7 +300,7 @@ describe('registration features', () => {
               redirect_uris: ['https://client.example.com/cb'],
             })
             .auth(this.token.slice(0, -1), { type: 'bearer' })
-            .expect(failWith.call(this, 401, 'invalid_token', 'invalid token provided'));
+            .expect(this.failWith(401, 'invalid_token', 'invalid token provided'));
         });
       });
     });
@@ -368,24 +357,24 @@ describe('registration features', () => {
     it('validates client is a valid client', function () {
       return this.agent.get('/reg/thisDOesnotCompute')
         .auth('wahtever', { type: 'bearer' })
-        .expect(failWith.call(this, 401, 'invalid_token', 'invalid token provided'));
+        .expect(this.failWith(401, 'invalid_token', 'invalid token provided'));
     });
 
     it('validates auth presence', function () {
       return this.agent.get(`/reg/${this.clientId}`)
-        .expect(failWith.call(this, 400, 'invalid_request', 'no bearer token provided'));
+        .expect(this.failWith(400, 'invalid_request', 'no bearer auth mechanism provided'));
     });
 
     it('validates auth', function () {
       return this.agent.get(`/reg/${this.clientId}`)
         .auth('invalidtoken', { type: 'bearer' })
-        .expect(failWith.call(this, 401, 'invalid_token', 'invalid token provided'));
+        .expect(this.failWith(401, 'invalid_token', 'invalid token provided'));
     });
 
     it('validates auth (notfoundtoken)', function () {
       return this.agent.get(`/reg/${this.clientId}`)
         .auth('Loremipsumdolorsitametconsecteturadipisicingelitsed', { type: 'bearer' })
-        .expect(failWith.call(this, 401, 'invalid_token', 'invalid token provided'));
+        .expect(this.failWith(401, 'invalid_token', 'invalid token provided'));
     });
 
     it('accepts query', function () {
@@ -408,7 +397,7 @@ describe('registration features', () => {
         .auth(this.token, { type: 'bearer' })
         .expect('pragma', 'no-cache')
         .expect('cache-control', 'no-cache, no-store')
-        .expect(failWith.call(this, 401, 'invalid_token', 'invalid token provided'))
+        .expect(this.failWith(401, 'invalid_token', 'invalid token provided'))
         .expect(() => {
           expect(spy.calledOnce).to.be.true;
           expect(spy.firstCall.args[0].constructor.name).to.equal('RegistrationAccessToken');
