@@ -636,7 +636,7 @@ const allowedDuplicateParameters = [];
 provider.registerGrantType('password', function passwordGrantTypeFactory(providerInstance) {
   return async function passwordGrantType(ctx, next) {
     let account;
-    if ((account = Account.authenticate(ctx.oidc.params.username, ctx.oidc.params.password))) {
+    if ((account = await Account.authenticate(ctx.oidc.params.username, ctx.oidc.params.password))) {
       const AccessToken = providerInstance.AccessToken;
       const at = new AccessToken({
         accountId: account.id,
