@@ -326,7 +326,7 @@ describe('BASIC code', () => {
               expect(renderSpy.calledOnce).to.be.true;
               const renderArgs = renderSpy.args[0];
               expect(renderArgs[1]).to.have.property('error', 'invalid_request');
-              expect(renderArgs[1]).to.have.property('error_description', 'missing required parameter(s) redirect_uri');
+              expect(renderArgs[1]).to.have.property('error_description', 'missing required parameter(s) (redirect_uri)');
               expect(renderArgs[2]).to.be.an.instanceof(InvalidRequest);
             });
         });
@@ -352,7 +352,7 @@ describe('BASIC code', () => {
             .expect(auth.validateState)
             .expect(auth.validateClientLocation)
             .expect(auth.validateError('invalid_request'))
-            .expect(auth.validateErrorDescription(`missing required parameter(s) ${param}`));
+            .expect(auth.validateErrorDescription(`missing required parameter(s) (${param})`));
         });
       });
 
