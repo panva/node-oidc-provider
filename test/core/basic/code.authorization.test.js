@@ -247,7 +247,7 @@ describe('BASIC code', () => {
           .expect(auth.validateState)
           .expect(auth.validateClientLocation)
           .expect(auth.validateError('invalid_request'))
-          .expect(auth.validateErrorDescription('parameters must not be provided twice. scope'));
+          .expect(auth.validateErrorDescription('parameters must not be provided twice. (scope)'));
       });
 
       it('disallowed response mode', function () {

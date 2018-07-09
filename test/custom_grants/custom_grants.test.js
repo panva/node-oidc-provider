@@ -1,38 +1,34 @@
+const querystring = require('querystring');
+
 const { expect } = require('chai');
 
 const bootstrap = require('../test_helper');
 
+function register(provider, grantType, params, options) {
+  provider.registerGrantType(grantType, (passedProvider) => {
+    expect(passedProvider).to.equal(provider);
+    return async function (ctx, next) {
+      ctx.body = { winner: ctx.oidc.params.name };
+      await next();
+    };
+  }, params, options);
+}
+
 describe('custom token endpoint grant types', () => {
   before(bootstrap(__dirname));
-
-  it('allows for grant types to be added', function () {
-    expect(() => {
-      this.provider.registerGrantType('lotto', (passedProvider) => {
-        expect(passedProvider).to.equal(this.provider);
-        return async function (ctx, next) {
-          ctx.body = { winner: ctx.oidc.params.name };
-          ctx.status = 201;
-          await next();
-        };
-      }, ['name']);
-    }).not.to.throw();
-
+  before('allows for grant types to be added', function () {
+    register(this.provider, 'lotto', ['name']);
     expect(i(this.provider).configuration('grantTypes').has('lotto')).to.be.true;
   });
 
   it('does not need to be passed extra parameters', function () {
-    expect(() => {
-      this.provider.registerGrantType('lotto-2', () => async function () {}); // eslint-disable-line no-empty-function
-    }).not.to.throw();
-
+    register(this.provider, 'lotto-2');
     expect(i(this.provider).configuration('grantTypes').has('lotto-2')).to.be.true;
   });
 
   it('can be passed null or a string', function () {
-    expect(() => {
-      this.provider.registerGrantType('lotto-3', () => async function () {}, null); // eslint-disable-line no-empty-function
-      this.provider.registerGrantType('lotto-4', () => async function () {}, 'name'); // eslint-disable-line no-empty-function
-    }).not.to.throw();
+    register(this.provider, 'lotto-3', null);
+    register(this.provider, 'lotto-4', 'name');
 
     expect(i(this.provider).configuration('grantTypes').has('lotto-3')).to.be.true;
     expect(i(this.provider).configuration('grantTypes').has('lotto-4')).to.be.true;
@@ -44,12 +40,64 @@ describe('custom token endpoint grant types', () => {
       client.grantTypes.push('lotto');
     });
 
+    describe('rejectDupes behavior', () => {
+      const data = `${querystring.stringify({ grant_type: 'lotto', name: 'John Doe' })}&name=FooBar`;
+      it('by default reject dupes', function () {
+        return this.agent.post('/token')
+          .auth('client', 'secret')
+          .send(data)
+          .type('form')
+          .expect(400)
+          .expect({
+            error: 'invalid_request',
+            error_description: 'parameters must not be provided twice. (name)',
+          });
+      });
+
+      // see OAuth 2.0 Token Exchange - audience and resource
+      it('can be exempt params from being dupe-checked', function () {
+        register(this.provider, 'lotto', ['name'], { allowDupes: ['name'] });
+        return this.agent.post('/token')
+          .auth('client', 'secret')
+          .send(data)
+          .type('form')
+          .expect(200)
+          .expect({ winner: ['John Doe', 'FooBar'] });
+      });
+
+      it('can be exempt params from being dupe-checked but still checks other params', function () {
+        register(this.provider, 'lotto', ['name', 'foo'], { allowDupes: ['name'] });
+        return this.agent.post('/token')
+          .auth('client', 'secret')
+          .send(`${data}&foo=bar&foo=bar`)
+          .type('form')
+          .expect(400)
+          .expect({
+            error: 'invalid_request',
+            error_description: 'parameters must not be provided twice. (foo)',
+          });
+      });
+
+      it('can be exempt params from being dupe-checked (except for grant_type)', function () {
+        register(this.provider, 'lotto', ['name'], { allowDupes: ['name'] });
+        return this.agent.post('/token')
+          .auth('client', 'secret')
+          .send(`${data}&grant_type=lotto`)
+          .type('form')
+          .expect(400)
+          .expect({
+            error: 'invalid_request',
+            error_description: 'parameters must not be provided twice. (grant_type)',
+          });
+      });
+    });
+
     it('clients can start using it', function () {
       return this.agent.post('/token')
         .auth('client', 'secret')
         .send({ grant_type: 'lotto', name: 'John Doe' })
         .type('form')
-        .expect(201)
+        .expect(200)
         .expect({ winner: 'John Doe' });
     });
 

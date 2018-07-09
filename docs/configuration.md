@@ -623,11 +623,15 @@ const configuration = { features: { pkce: { supportedMethods: ['plain', 'S256'] 
 
 ## Custom Grant Types
 oidc-provider comes with the basic grants implemented, but you can register your own grant types,
-for example to implement a [password grant type][password-grant]. You can check the standard
-grant factories [here](/lib/actions/grants).
+for example to implement a [password grant type][password-grant] or
+[OAuth 2.0 Token Exchange][token-exchange]. You can check the standard grant factories
+[here](/lib/actions/grants).
 
 ```js
 const parameters = ['username', 'password'];
+
+// For OAuth 2.0 Token Exchange you can specify allowedDuplicateParameters as ['audience', 'resource']
+const allowedDuplicateParameters = [];
 
 provider.registerGrantType('password', function passwordGrantTypeFactory(providerInstance) {
   return async function passwordGrantType(ctx, next) {
@@ -658,7 +662,7 @@ provider.registerGrantType('password', function passwordGrantTypeFactory(provide
 
     await next();
   };
-}, parameters);
+}, parameters, allowedDuplicateParameters);
 ```
 
 
@@ -1528,6 +1532,7 @@ default value:
 [got-library]: https://github.com/sindresorhus/got
 [request-library]: https://github.com/request/request
 [password-grant]: https://tools.ietf.org/html/rfc6749#section-4.3
+[token-exchange]: https://tools.ietf.org/html/draft-ietf-oauth-token-exchange
 [defaults]: /lib/helpers/defaults.js
 [cookie-module]: https://github.com/pillarjs/cookies#cookiesset-name--value---options--
 [keygrip-module]: https://www.npmjs.com/package/keygrip
