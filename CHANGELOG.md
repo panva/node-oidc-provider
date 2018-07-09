@@ -6,6 +6,7 @@ Yay for [SemVer](http://semver.org/).
 
 <!-- TOC depthFrom:2 depthTo:2 withLinks:1 updateOnSave:1 orderedList:0 -->
 
+- [Unreleased](#unreleased)
 - [4.1.x](#41x)
 - [4.0.x](#40x)
 - [3.0.x](#30x)
@@ -30,6 +31,11 @@ Yay for [SemVer](http://semver.org/).
 - [2.0.x](#20x)
 
 <!-- /TOC -->
+
+## Unreleased
+- [DIFF](https://github.com/panva/node-oidc-provider/compare/v4.1.3...master)
+- `#provider.registerGrantType()` also accepts additional parameter to indicate parameters for which
+  duplicates are allowed (e.g. `audience` and `resource` in OAuth 2.0 Token Exchange)
 
 ## 4.1.x
 ### 4.1.3
