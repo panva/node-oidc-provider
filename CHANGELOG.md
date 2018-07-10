@@ -36,6 +36,8 @@ Yay for [SemVer](http://semver.org/).
 - [DIFF](https://github.com/panva/node-oidc-provider/compare/v4.1.3...master)
 - `#provider.registerGrantType()` also accepts additional parameter to indicate parameters for which
   duplicates are allowed (e.g. `audience` and `resource` in OAuth 2.0 Token Exchange)
+- fixed parameters coming from Request Objects to be always used as strings
+- fixed upstream body parser params to be always strings (unless json)
 
 ## 4.1.x
 ### 4.1.3
