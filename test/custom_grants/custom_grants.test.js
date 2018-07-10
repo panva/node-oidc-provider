@@ -17,7 +17,7 @@ function register(provider, grantType, params, options) {
 describe('custom token endpoint grant types', () => {
   before(bootstrap(__dirname));
   before('allows for grant types to be added', function () {
-    register(this.provider, 'lotto', ['name']);
+    register(this.provider, 'lotto', 'name');
     expect(i(this.provider).configuration('grantTypes').has('lotto')).to.be.true;
   });
 
@@ -56,7 +56,7 @@ describe('custom token endpoint grant types', () => {
 
       // see OAuth 2.0 Token Exchange - audience and resource
       it('can be exempt params from being dupe-checked', function () {
-        register(this.provider, 'lotto', ['name'], { allowDupes: ['name'] });
+        register(this.provider, 'lotto', 'name', ['name']);
         return this.agent.post('/token')
           .auth('client', 'secret')
           .send(data)
@@ -66,7 +66,7 @@ describe('custom token endpoint grant types', () => {
       });
 
       it('can be exempt params from being dupe-checked but still checks other params', function () {
-        register(this.provider, 'lotto', ['name', 'foo'], { allowDupes: ['name'] });
+        register(this.provider, 'lotto', new Set(['name', 'foo']), new Set(['name']));
         return this.agent.post('/token')
           .auth('client', 'secret')
           .send(`${data}&foo=bar&foo=bar`)
@@ -79,7 +79,7 @@ describe('custom token endpoint grant types', () => {
       });
 
       it('can be exempt params from being dupe-checked (except for grant_type)', function () {
-        register(this.provider, 'lotto', ['name'], { allowDupes: ['name'] });
+        register(this.provider, 'lotto', 'name', 'name');
         return this.agent.post('/token')
           .auth('client', 'secret')
           .send(`${data}&grant_type=lotto`)
