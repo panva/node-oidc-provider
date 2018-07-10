@@ -58,12 +58,15 @@ describe('request parameter features', () => {
           }));
       });
 
-      it('can contain claims parameter as JSON', function () {
-        return JWT.sign({
+      it('can contain max_age parameter as a number and it (and other params too) will be forced as string', async function () {
+        const spy = sinon.spy();
+        this.provider.once('authorization.success', spy);
+
+        await JWT.sign({
           client_id: 'client',
           response_type: 'code',
           redirect_uri: 'https://client.example.com/cb',
-          claims: JSON.stringify({ id_token: { email: null } }),
+          max_age: 300,
         }, null, 'none', { issuer: 'client', audience: this.provider.issuer }).then(request => this.wrap({
           agent: this.agent,
           route,
@@ -84,10 +87,54 @@ describe('request parameter features', () => {
             });
             expect(actual.query).to.have.property('code');
           }));
+
+        expect(
+          spy.calledWithMatch({ oidc: { params: { max_age: sinon.match.string } } }),
+        ).to.be.true;
       });
 
-      it('can contain claims parameter as object', function () {
-        return JWT.sign({
+      it('can contain claims parameter as JSON', async function () {
+        const spy = sinon.spy();
+        this.provider.once('authorization.success', spy);
+        const claims = JSON.stringify({ id_token: { email: null } });
+
+        await JWT.sign({
+          client_id: 'client',
+          response_type: 'code',
+          redirect_uri: 'https://client.example.com/cb',
+          claims,
+        }, null, 'none', { issuer: 'client', audience: this.provider.issuer }).then(request => this.wrap({
+          agent: this.agent,
+          route,
+          verb,
+          auth: {
+            request,
+            scope: 'openid',
+            client_id: 'client',
+            response_type: 'code',
+          },
+        })
+          .expect(302)
+          .expect((response) => {
+            const expected = parse('https://client.example.com/cb', true);
+            const actual = parse(response.headers.location, true);
+            ['protocol', 'host', 'pathname'].forEach((attr) => {
+              expect(actual[attr]).to.equal(expected[attr]);
+            });
+            expect(actual.query).to.have.property('code');
+          }));
+
+        expect(
+          spy.calledWithMatch({ oidc: { params: { claims } } }),
+        ).to.be.true;
+      });
+
+      it('can contain claims parameter as object', async function () {
+        const spy = sinon.spy();
+        this.provider.once('authorization.success', spy);
+        const claims = { id_token: { email: null } };
+
+        await JWT.sign({
           client_id: 'client',
           response_type: 'code',
           redirect_uri: 'https://client.example.com/cb',
@@ -112,6 +159,10 @@ describe('request parameter features', () => {
             });
             expect(actual.query).to.have.property('code');
           }));
+
+        expect(
+          spy.calledWithMatch({ oidc: { params: { claims: JSON.stringify(claims) } } }),
+        ).to.be.true;
       });
 
       it('can accept request objects issued within acceptable system clock skew', async function () {
