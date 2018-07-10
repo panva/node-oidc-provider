@@ -1,3 +1,12 @@
+/**
+ * @file Google Cloud Datastore adapter
+ * For questions/suggestions/fixes related to this adapter create an
+ * issue in this dedicated repository: https://github.com/cymarechal/node-oidc-provider
+ *
+ * @author Cyril Maréchal - @cymarechal
+ * @requires NPM:@google-cloud/datastore
+ */
+
 const Datastore = require('@google-cloud/datastore');
 
 let DB;
