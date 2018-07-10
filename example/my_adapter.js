@@ -26,7 +26,7 @@ class MyAdapter {
    * @param {string} id Identifier that oidc-provider will use to reference this model instance for
    * future operations.
    * @param {object} payload Object with all properties intended for storage.
-   * @param {expiresIn} integer Number of seconds intended for this model to be stored.
+   * @param {integer} expiresIn Number of seconds intended for this model to be stored.
    *
    */
   async upsert(id, payload, expiresIn) {
