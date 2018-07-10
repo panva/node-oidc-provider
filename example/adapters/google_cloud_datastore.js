@@ -7,7 +7,7 @@
  * @requires NPM:@google-cloud/datastore
  */
 
-const Datastore = require('@google-cloud/datastore');
+const Datastore = require('@google-cloud/datastore'); // eslint-disable-line import/no-unresolved
 
 let DB;
 
