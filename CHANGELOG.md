@@ -38,6 +38,7 @@ Yay for [SemVer](http://semver.org/).
   duplicates are allowed (e.g. `audience` and `resource` in OAuth 2.0 Token Exchange)
 - fixed parameters coming from Request Objects to be always used as strings
 - fixed upstream body parser params to be always strings (unless json)
+- fixed parameters coming multiple times still being used in error handlers (e.g. state)
 
 ## 4.1.x
 ### 4.1.3

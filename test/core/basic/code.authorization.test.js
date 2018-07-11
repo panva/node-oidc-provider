@@ -215,13 +215,14 @@ describe('BASIC code', () => {
     });
 
     describe(`${verb} ${route} errors`, () => {
-      it('dupe parameters', function () {
-        // fake a query like this scope=openid&scope=openid
+      it('dupe parameters are rejected and ignored in further processing', function () {
+        // fake a query like this state=foo&state=foo
         const spy = sinon.spy();
         this.provider.once('authorization.error', spy);
         const auth = new this.AuthorizationRequest({
           response_type,
           scope,
+          state: 'foo',
         });
 
         const wrapped = ((data) => { // eslint-disable-line consistent-return
@@ -229,11 +230,11 @@ describe('BASIC code', () => {
             case 'get':
               return this.agent
                 .get(route)
-                .query(`${data}&scope=openid`);
+                .query(`${data}&state=foo`);
             case 'post':
               return this.agent
                 .post(route)
-                .send(`${data}&scope=openid`)
+                .send(`${data}&state=foo`)
                 .type('form');
             default:
           }
@@ -243,11 +244,11 @@ describe('BASIC code', () => {
           .expect(() => {
             expect(spy.calledOnce).to.be.true;
           })
-          .expect(auth.validatePresence(['error', 'error_description', 'state']))
-          .expect(auth.validateState)
+          .expect(auth.validatePresence(['error', 'error_description'])) // notice state is not expected
+          // .expect(auth.validateState) // notice state is not expected
           .expect(auth.validateClientLocation)
           .expect(auth.validateError('invalid_request'))
-          .expect(auth.validateErrorDescription('parameters must not be provided twice. (scope)'));
+          .expect(auth.validateErrorDescription('parameters must not be provided twice. (state)'));
       });
 
       it('disallowed response mode', function () {
