@@ -39,6 +39,7 @@ Yay for [SemVer](http://semver.org/).
 - fixed parameters coming from Request Objects to be always used as strings
 - fixed upstream body parser params to be always strings (unless json)
 - fixed parameters coming multiple times still being used in error handlers (e.g. state)
+- fixed form post values not being html escaped
 
 ## 4.1.x
 ### 4.1.3
