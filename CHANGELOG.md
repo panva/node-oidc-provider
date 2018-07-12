@@ -6,7 +6,7 @@ Yay for [SemVer](http://semver.org/).
 
 <!-- TOC depthFrom:2 depthTo:2 withLinks:1 updateOnSave:1 orderedList:0 -->
 
-- [Unreleased](#unreleased)
+- [4.2.0](#420)
 - [4.1.x](#41x)
 - [4.0.x](#40x)
 - [3.0.x](#30x)
@@ -32,8 +32,8 @@ Yay for [SemVer](http://semver.org/).
 
 <!-- /TOC -->
 
-## Unreleased
-- [DIFF](https://github.com/panva/node-oidc-provider/compare/v4.1.3...master)
+## 4.2.0
+- 2018-07-12 [DIFF](https://github.com/panva/node-oidc-provider/compare/v4.1.3...v4.2.0)
 
 **New Feature - OAuth 2.0 Web Message Response Mode**
 
