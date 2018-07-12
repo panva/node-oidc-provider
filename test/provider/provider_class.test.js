@@ -32,6 +32,7 @@ describe('Provider', () => {
       'UnsupportedGrantType',
       'UnsupportedResponseMode',
       'UnsupportedResponseType',
+      'WebMessageUriMismatch',
     ]);
   });
 });

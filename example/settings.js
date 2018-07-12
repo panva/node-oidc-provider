@@ -39,6 +39,7 @@ module.exports.config = {
     request: true, // defaults to false
     revocation: true, // defaults to false
     sessionManagement: true, // defaults to false
+    webMessageResponseMode: true, // defaults to false
   },
   formats: {
     default: 'opaque',

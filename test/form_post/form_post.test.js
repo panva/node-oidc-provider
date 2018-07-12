@@ -52,12 +52,12 @@ describe('/auth', () => {
         });
 
         context('[exception]', () => {
-          before(function () {
-            sinon.stub(this.provider.Client, 'find').callsFake(async () => { throw new Error(); });
+          before(async function () {
+            sinon.stub(this.provider.Session.prototype, 'accountId').throws();
           });
 
-          after(function () {
-            this.provider.Client.find.restore();
+          after(async function () {
+            this.provider.Session.prototype.accountId.restore();
           });
 
           it('responds by rendering a self-submitting form with the exception', function () {

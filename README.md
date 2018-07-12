@@ -50,6 +50,7 @@ The following drafts/experimental specifications are implemented by oidc-provide
 - [OpenID Connect Back-Channel Logout 1.0 - draft 04][backchannel-logout]
 - [OpenID Connect Front-Channel Logout 1.0 - draft 02][frontchannel-logout]
 - [RFC7592 - OAuth 2.0 Dynamic Client Registration Management Protocol (Update and Delete)][registration-management]
+- [OAuth 2.0 Web Message Response Mode][wmrm]
 
 Updates to draft and experimental specification versions are released as MINOR library versions,
 if you utilize these specification implementations consider using the tilde `~` operator in your
@@ -167,3 +168,4 @@ See the list of available emitted [event names](/docs/events.md) and their descr
 [registration-management]: https://tools.ietf.org/html/rfc7592
 [oauth-native-apps]: https://tools.ietf.org/html/rfc8252
 [debug-link]: https://github.com/visionmedia/debug
+[wmrm]: https://tools.ietf.org/html/draft-sakimura-oauth-wmrm-00

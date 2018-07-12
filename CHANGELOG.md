@@ -34,13 +34,41 @@ Yay for [SemVer](http://semver.org/).
 
 ## Unreleased
 - [DIFF](https://github.com/panva/node-oidc-provider/compare/v4.1.3...master)
+
+**New Feature - OAuth 2.0 Web Message Response Mode**
+
+Based on [OAuth 2.0 Web Message Response Mode](https://tools.ietf.org/html/draft-sakimura-oauth-wmrm-00)
+response_mode=web_message is a new response mode that uses HTML5 Web Messaging instead of a redirect
+for the Authorization Response from the Authorization Endpoint. It defines two modes: simple mode
+and relay mode. Relay mode can be used to protect the response by confining it within the origins of
+a resource server and preventing it from being read by the client.
+
+This is released as an experimental/draft feature so as with the others it is disabled by default and
+breaking changes to this feature will be released as MINOR releases. When using Web Message Response
+Mode be sure to lock down `oidc-provider` in your package.json with the tilde `~` operator and pay
+close attention to this changelog when updates are released.
+
+To enable configure:
+```js
+const configuration = { features: { webMessageResponseMode: true } };
+```
+Note: Although a general advise to use a `helmet`([express](https://www.npmjs.com/package/helmet),
+[koa](https://www.npmjs.com/package/koa-helmet)) it is especially advised for your interaction views
+routes if Web Message Response Mode is available on your deployment.
+
+**Enhancements**
+- added no-cache headers to the authorization endpoint
+- `#provider.setProviderSession()` now returns the created session object
 - `#provider.registerGrantType()` also accepts additional parameter to indicate parameters for which
   duplicates are allowed (e.g. `audience` and `resource` in OAuth 2.0 Token Exchange)
+
+**Fixes**
+- fixed some edge cases where authorization error responses would still reach the redirect_uri even
+  when it could not have been validated
 - fixed parameters coming from Request Objects to be always used as strings
 - fixed upstream body parser params to be always strings (unless json)
 - fixed parameters coming multiple times still being used in error handlers (e.g. state)
 - fixed form post values not being html escaped
-- fixed `#provider.setProviderSession()` to return the created session object
 
 ## 4.1.x
 ### 4.1.3

@@ -49,7 +49,7 @@ describe('Back-Channel Logout 1.0', () => {
     });
   });
 
-  describe('discovery extension', () => {
+  describe('discovery', () => {
     it('extends the well known config', function () {
       return this.agent.get('/.well-known/openid-configuration')
         .expect((response) => {

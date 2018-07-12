@@ -7,6 +7,7 @@ const { set } = require('lodash');
 const bodyParser = require('koa-body');
 const Router = require('koa-router');
 const render = require('koa-ejs');
+const helmet = require('koa-helmet');
 
 const Provider = require('../lib');
 const { renderError } = require('../lib/helpers/defaults'); // make your own, you'll need it anyway
@@ -24,6 +25,7 @@ const provider = new Provider(issuer, config);
 const { errors: { SessionNotFound } } = Provider;
 
 provider.defaultHttpOptions = { timeout: 15000 };
+provider.use(helmet());
 
 provider.initialize({
   adapter: process.env.MONGODB_URI ? require('./adapters/mongodb') : undefined, // eslint-disable-line global-require

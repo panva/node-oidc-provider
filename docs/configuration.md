@@ -355,24 +355,25 @@ deployment compact. The feature flags with their default values are
 
 | feature flag | enabled by default? |
 | --- | --- |
-| devInteractions | yes (!!!) |
+| alwaysIssueRefresh | no |
 | backchannelLogout | no |
-| frontchannelLogout | no |
 | claimsParameter | no |
 | clientCredentials | no |
 | conformIdTokenClaims | no |
+| devInteractions | yes (!!!) |
 | discovery | yes |
 | encryption | no |
+| frontchannelLogout | no |
 | introspection | no |
-| alwaysIssueRefresh | no |
+| oauthNativeApps | yes (forces pkce on with forcedForNative) |
+| pkce | yes |
 | registration | no |
 | registrationManagement | no |
 | request | no |
 | requestUri | yes |
 | revocation | no |
-| oauthNativeApps | yes (forces pkce on with forcedForNative) |
 | sessionManagement | no |
-| pkce | yes |
+| webMessageResponseMode | no |
 
 **Development quick-start interactions**  
 Development-ONLY out of the box interaction views bundled with the library allow you to skip the
@@ -619,6 +620,15 @@ To fine-tune the supported methods:
 ```js
 const configuration = { features: { pkce: { supportedMethods: ['plain', 'S256'] } } };
 ```
+
+**Web Message Response Mode**  
+Enables [OAuth 2.0 Web Message Response Mode][wmrm]
+```js
+const configuration = { features: { webMessageResponseMode: Boolean[false] } };
+```
+Note: Although a general advise to use a `helmet`([express](https://www.npmjs.com/package/helmet),
+[koa](https://www.npmjs.com/package/koa-helmet)) it is especially advised for your interaction views
+routes if Web Message Response Mode is available on your deployment.
 
 
 ## Custom Grant Types
@@ -1111,7 +1121,8 @@ default value:
   registrationManagement: false,
   request: false,
   revocation: false,
-  sessionManagement: false }
+  sessionManagement: false,
+  webMessageResponseMode: false }
 ```
 
 ### findById
@@ -1538,3 +1549,4 @@ default value:
 [keygrip-module]: https://www.npmjs.com/package/keygrip
 [third-party-cookies-git]: https://github.com/mindmup/3rdpartycookiecheck
 [third-party-cookies-so]: https://stackoverflow.com/questions/3550790/check-if-third-party-cookies-are-enabled/7104048#7104048
+[wmrm]: https://tools.ietf.org/html/draft-sakimura-oauth-wmrm-00
