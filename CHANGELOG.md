@@ -6,7 +6,7 @@ Yay for [SemVer](http://semver.org/).
 
 <!-- TOC depthFrom:2 depthTo:2 withLinks:1 updateOnSave:1 orderedList:0 -->
 
-- [4.2.0](#420)
+- [4.2.x](#42x)
 - [4.1.x](#41x)
 - [4.0.x](#40x)
 - [3.0.x](#30x)
@@ -32,7 +32,12 @@ Yay for [SemVer](http://semver.org/).
 
 <!-- /TOC -->
 
-## 4.2.0
+## 4.2.x
+### 4.2.1
+- 2018-07-13 [DIFF](https://github.com/panva/node-oidc-provider/compare/v4.2.0...v4.2.1)
+- fixed form_post regression for response types including `token` from 4.2.0
+
+### 4.2.0
 - 2018-07-12 [DIFF](https://github.com/panva/node-oidc-provider/compare/v4.1.3...v4.2.0)
 
 **New Feature - OAuth 2.0 Web Message Response Mode**
