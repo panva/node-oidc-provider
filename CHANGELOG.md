@@ -33,6 +33,10 @@ Yay for [SemVer](http://semver.org/).
 <!-- /TOC -->
 
 ## 4.2.x
+### 4.2.2
+- 2018-07-13 [DIFF](https://github.com/panva/node-oidc-provider/compare/v4.2.1...v4.2.2)
+- fixed `expiresIn` sent to adapter#upsert when interaction session are saved using interactionFinished()
+
 ### 4.2.1
 - 2018-07-13 [DIFF](https://github.com/panva/node-oidc-provider/compare/v4.2.0...v4.2.1)
 - fixed form_post regression for response types including `token` from 4.2.0
