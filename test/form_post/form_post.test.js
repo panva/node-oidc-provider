@@ -14,9 +14,9 @@ describe('/auth', () => {
         before(function () { return this.login(); });
         after(function () { return this.logout(); });
 
-        it('responds by rendering a self-submitting form with the code', function () {
+        it('responds by rendering a self-submitting form with the response', function () {
           const auth = new this.AuthorizationRequest({
-            response_type: 'code',
+            response_type: 'code id_token token',
             response_mode: 'form_post',
             scope: 'openid',
           });
