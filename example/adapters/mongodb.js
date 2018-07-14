@@ -3,11 +3,12 @@ const { snakeCase } = require('lodash');
 
 let DB;
 
-const grantable = [
+const grantable = new Set([
   'access_token',
   'authorization_code',
   'refresh_token',
-];
+  'device_code',
+]);
 
 class CollectionSet extends Set {
   add(name) {
@@ -15,10 +16,15 @@ class CollectionSet extends Set {
     super.add(name);
     if (!nu) {
       DB.collection(name).createIndexes([
-        ...(grantable.includes(name)
+        ...(grantable.has(name)
           ? [{
             key: { grantId: 1 },
             partialFilterExpression: { grantId: { $exists: true } },
+          }] : []),
+        ...(name === 'device_code'
+          ? [{
+            key: { userCode: 1 },
+            partialFilterExpression: { userCode: { $exists: true } },
           }] : []),
         { key: { expiresAt: 1 }, expireAfterSeconds: 0 },
       ]).catch(console.error); // eslint-disable-line no-console
@@ -60,6 +66,10 @@ class MongoAdapter {
     return this.coll().find({ _id }).limit(1).next();
   }
 
+  findByUserCode(userCode) {
+    return this.coll().find({ userCode }).limit(1).next();
+  }
+
   destroy(_id) {
     return this.coll().findOneAndDelete({ _id })
       .then((found) => {
@@ -67,7 +77,7 @@ class MongoAdapter {
           const promises = [];
 
           collections.forEach((name) => {
-            if (grantable.includes(name)) {
+            if (grantable.has(name)) {
               promises.push(this.coll(name).deleteMany({ grantId: found.value.grantId }));
             }
           });
@@ -91,7 +101,9 @@ class MongoAdapter {
   }
 
   static async connect() {
-    const connection = await MongoClient.connect(process.env.MONGODB_URI);
+    const connection = await MongoClient.connect(process.env.MONGODB_URI, {
+      useNewUrlParser: true,
+    });
     DB = connection.db(connection.s.options.dbName);
   }
 }

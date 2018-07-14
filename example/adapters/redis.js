@@ -5,14 +5,19 @@ const client = new Redis(process.env.REDIS_URL, {
   keyPrefix: 'oidc:',
 });
 
-const grantable = [
+const grantable = new Set([
   'AccessToken',
   'AuthorizationCode',
   'RefreshToken',
-];
+  'DeviceCode',
+]);
 
 function grantKeyFor(id) {
   return `grant:${id}`;
+}
+
+function userCodeKeyFor(userCode) {
+  return `userCode:${userCode}`;
 }
 
 class RedisAdapter {
@@ -22,13 +27,13 @@ class RedisAdapter {
 
   upsert(id, payload, expiresIn) {
     const key = this.key(id);
-    const store = grantable.includes(this.name) ? {
+    const store = grantable.has(this.name) ? {
       dump: JSON.stringify(payload),
       ...(payload.grantId ? { grantId: payload.grantId } : undefined),
     } : JSON.stringify(payload);
 
     const multi = client.multi();
-    multi[grantable.includes(this.name) ? 'hmset' : 'set'](key, store);
+    multi[grantable.has(this.name) ? 'hmset' : 'set'](key, store);
 
     if (expiresIn) {
       multi.expire(key, expiresIn);
@@ -39,11 +44,17 @@ class RedisAdapter {
       multi.rpush(grantKey, key);
     }
 
+    if (payload.userCode) {
+      const userCodeKey = userCodeKeyFor(payload.userCode);
+      multi.set(userCodeKey, id);
+      multi.expire(userCodeKey, expiresIn);
+    }
+
     return multi.exec();
   }
 
   async find(id) {
-    const data = grantable.includes(this.name)
+    const data = grantable.has(this.name)
       ? await client.hgetall(this.key(id))
       : await client.get(this.key(id));
 
@@ -61,16 +72,18 @@ class RedisAdapter {
     };
   }
 
+  async findByUserCode(userCode) {
+    const id = await client.get(userCodeKeyFor(userCode));
+    return this.find(id);
+  }
+
   async destroy(id) {
     const key = this.key(id);
-    const deletions = [];
-    if (grantable.includes(this.name)) {
-      const grantId = await client.hget(key, 'grantId');
-      const tokens = await client.lrange(grantKeyFor(grantId), 0, -1);
-      tokens.forEach(token => deletions.push(client.del(token)));
-      deletions.push(client.del(grantKeyFor(grantId)));
-    }
+    const grantId = await client.hget(key, 'grantId');
+    const tokens = await client.lrange(grantKeyFor(grantId), 0, -1);
+    const deletions = tokens.map(token => client.del(token));
     deletions.push(client.del(key));
+    deletions.push(client.del(grantKeyFor(grantId)));
     await deletions;
   }
 
