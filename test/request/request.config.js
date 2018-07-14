@@ -6,6 +6,7 @@ config.features = {
   request: true,
   requestUri: { requireRequestUriRegistration: false },
   claimsParameter: true,
+  deviceCode: true,
 };
 config.unsupported = {
   requestObjectSigningAlgValues: ['HS384'],
@@ -16,11 +17,13 @@ module.exports = {
   clients: [{
     client_id: 'client',
     client_secret: 'its48bytes_____________________________________!',
+    grant_types: ['urn:ietf:params:oauth:grant-type:device_code', 'authorization_code'],
     redirect_uris: ['https://client.example.com/cb'],
   }, {
     client_id: 'client-with-HS-sig',
     client_secret: 'atleast32byteslongforHS256mmkay?',
     request_object_signing_alg: 'HS256',
+    grant_types: ['urn:ietf:params:oauth:grant-type:device_code', 'authorization_code'],
     redirect_uris: ['https://client.example.com/cb'],
   }],
 };

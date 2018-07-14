@@ -148,7 +148,11 @@ describe('registration features', () => {
           redirect_uris: ['https://client.example.com/cb'],
         })
         .type('form')
-        .expect(this.failWith(400, 'invalid_request', 'only application/json content-type POST bodies are supported'));
+        .expect(400)
+        .expect({
+          error: 'invalid_request',
+          error_description: 'only application/json content-type bodies are supported on POST /reg',
+        });
     });
 
     describe('initial access tokens', () => {

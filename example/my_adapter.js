@@ -10,7 +10,7 @@ class MyAdapter {
    * @constructor
    * @param {string} name Name of the oidc-provider model. One of "Session", "AccessToken",
    * "AuthorizationCode", "RefreshToken", "ClientCredentials", "Client", "InitialAccessToken",
-   * "RegistrationAccessToken"
+   * "RegistrationAccessToken", "DeviceCode"
    *
    */
   constructor(name) {
@@ -67,6 +67,13 @@ class MyAdapter {
      * - redirectUri {string} - redirect_uri value from an authorization request
      * - scope {string} - scope value from on authorization request
      * - sid {string} - session identifier the token comes from
+     * - params {object} - [DeviceCode only] an object with the authorization request parameters
+     *     as requested by the client with device_authorization_endpoint
+     * - deviceInfo {object} - [DeviceCode only] an object with details about the
+     *     device_authorization_endpoint request
+     * - error {string} - [DeviceCode only] - error from authnz to be returned to the polling client
+     * - errorDescription {string} - [DeviceCode only] - error_description from authnz to be returned
+     *     to the polling client
      *
      *
      * when `jwt`
@@ -110,6 +117,20 @@ class MyAdapter {
    *
    */
   async find(id) {
+
+  }
+
+  /**
+   *
+   * Return previously stored instance of DeviceCode. You only need this method for the deviceCode
+   * feature
+   *
+   * @return {Promise} Promise fulfilled with either Object (when found and not dropped yet due to
+   * expiration) or falsy value when not found anymore. Rejected with error when encountered.
+   * @param {string} userCode the user_code value associated with a DeviceCode instance
+   *
+   */
+  async findByUserCode(userCode) {
 
   }
 

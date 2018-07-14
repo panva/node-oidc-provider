@@ -220,7 +220,7 @@ This toggle makes the OP only include End-User claims in the ID Token as defined
     ```js
     provider.use(async function introspectionTokenType(ctx, next) {
       await next();
-      if (ctx._matchedRouteName === 'introspection') {
+      if (ctx.oidc.route === 'introspection') {
         const token = ctx.oidc.entities.AccessToken || ctx.oidc.entities.ClientCredentials || ctx.oidc.entities.RefreshToken;
 
         switch (token && token.kind) {

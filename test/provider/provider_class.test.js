@@ -11,6 +11,8 @@ describe('Provider', () => {
     });
     expect(Provider.errors).to.have.keys([
       'AccessDenied',
+      'AuthorizationPending',
+      'ExpiredToken',
       'InvalidClient',
       'InvalidClientAuth',
       'InvalidClientMetadata',
@@ -27,6 +29,7 @@ describe('Provider', () => {
       'RequestUriNotSupported',
       'RestrictedGrantType',
       'RestrictedResponseType',
+      'SlowDown',
       'TemporarilyUnavailable',
       'UnauthorizedClient',
       'UnsupportedGrantType',

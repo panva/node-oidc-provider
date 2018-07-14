@@ -45,6 +45,7 @@ is a good starting point to get an idea of what you should provide.
 	- [cookies.names](#cookiesnames)
 	- [cookies.short](#cookiesshort)
 	- [cookies.thirdPartyCheckUrl](#cookiesthirdpartycheckurl)
+	- [deviceCodeSuccess](#devicecodesuccess)
 	- [discovery](#discovery)
 	- [extraClientMetadata](#extraclientmetadata)
 	- [extraClientMetadata.properties](#extraclientmetadataproperties)
@@ -72,6 +73,8 @@ is a good starting point to get an idea of what you should provide.
 	- [ttl](#ttl)
 	- [uniqueness](#uniqueness)
 	- [unsupported](#unsupported)
+	- [userCodeConfirmSource](#usercodeconfirmsource)
+	- [userCodeInputSource](#usercodeinputsource)
 
 <!-- /TOC -->
 
@@ -802,18 +805,38 @@ You can push custom middleware to be executed before and after oidc-provider.
 
 ```js
 provider.use(async (ctx, next) => {
-  // pre-processing
-  // you may target a specific action here by matching `ctx.path`
+  /** pre-processing
+   * you may target a specific action here by matching `ctx.path`
+   */
   console.log('middleware pre', ctx.method, ctx.path);
+
   await next();
-  console.log('middleware post', ctx.method, ctx._matchedRouteName);
-  // post-processing
-  // since internal route matching was already executed you may target a specific action here
-  // checking `ctx._matchedRouteName`, the unique route names used are "authorization", "token",  
-  // "discovery", "registration", "userinfo", "resume", "certificates", "webfinger",
-  // "client", "client_update", "client_delete", "introspection", "revocation",
-  // "check_session" and "end_session". ctx.method === 'OPTIONS' is then useful for filtering out
-  // CORS Pre-flights
+  /** post-processing
+   * since internal route matching was already executed you may target a specific action here
+   * checking `ctx.oidc.route`, the unique route names used are
+   *
+   * `authorization`
+   * `certificates`
+   * `client_delete`
+   * `client_update`
+   * `code_verification`
+   * `device_authorization`
+   * `device_resume`
+   * `end_session`
+   * `introspection`
+   * `registration`
+   * `resume`
+   * `revocation`
+   * `token`
+   * `userinfo`
+   * `webfinger`
+   * `check_session`
+   * `client`
+   * `discovery`
+   *
+   * ctx.method === 'OPTIONS' is then useful for filtering out CORS Pre-flights
+   */
+   console.log('middleware post', ctx.method, ctx.oidc.route);
 });
 ```
 
@@ -1040,6 +1063,34 @@ default value:
 'https://cdn.rawgit.com/panva/3rdpartycookiecheck/92fead3f/start.html'
 ```
 
+### deviceCodeSuccess
+
+HTML source rendered when device code feature renders a success page for the User-Agent.  
+
+affects: device code success page  
+
+default value:
+```js
+async deviceCodeSuccess(ctx) {
+  // @param ctx - koa request context
+  const {
+    clientId, clientName, clientUri, initiateLoginUri, logoUri, policyUri, tosUri,
+  } = ctx.oidc.client;
+  ctx.body = `<!DOCTYPE html>
+<head>
+<title>Sign-in Success</title>
+<style>/* css and html classes omitted for brevity, see lib/helpers/defaults.js */</style>
+</head>
+<body>
+<div>
+  <h1>Sign-in Success</h1>
+  <p>Your login ${clientName ? `with ${clientName}` : ''} was successful, you can now close this page.</p>
+</div>
+</body>
+</html>`;
+}
+```
+
 ### discovery
 
 Pass additional properties to this object to extend the discovery document  
@@ -1091,9 +1142,9 @@ validator(key, value, metadata) {
 
 ### extraParams
 
-Pass an iterable object (i.e. Array or set of strings) to extend the parameters recognised by the authorization endpoint. These parameters are then available in `ctx.oidc.params` as well as passed to interaction session details  
+Pass an iterable object (i.e. Array or set of strings) to extend the parameters recognised by the authorization and device authorization endpoints. These parameters are then available in `ctx.oidc.params` as well as passed to interaction session details  
 
-affects: authorization, interaction  
+affects: authorization, device_authorization, interaction  
 
 default value:
 ```js
@@ -1117,6 +1168,7 @@ default value:
   claimsParameter: false,
   clientCredentials: false,
   conformIdTokenClaims: false,
+  deviceCode: false,
   encryption: false,
   frontchannelLogout: false,
   introspection: false,
@@ -1172,6 +1224,7 @@ default value:
   AccessToken: undefined,
   AuthorizationCode: undefined,
   RefreshToken: undefined,
+  DeviceCode: undefined,
   ClientCredentials: undefined,
   InitialAccessToken: undefined,
   RegistrationAccessToken: undefined }
@@ -1271,13 +1324,16 @@ default value:
 
 ### logoutSource
 
-HTML source to which a logout form source is passed when session management renders a confirmation prompt for the User-Agent.  
+HTML source rendered when when session management feature renders a confirmation prompt for the User-Agent.  
 
 affects: session management  
 
 default value:
 ```js
 async logoutSource(ctx, form) {
+  // @param ctx - koa request context
+  // @param form - form source (id="op.logoutForm") to be embedded in the page and submitted by
+  //   the End-User
   ctx.body = `<!DOCTYPE html>
 <head>
 <title>Logout Request</title>
@@ -1426,12 +1482,14 @@ default value:
 { authorization: '/auth',
   certificates: '/certs',
   check_session: '/session/check',
+  device_authorization: '/device/auth',
   end_session: '/session/end',
   introspection: '/token/introspection',
   registration: '/reg',
   revocation: '/token/revocation',
   token: '/token',
-  userinfo: '/me' }
+  userinfo: '/me',
+  code_verification: '/device' }
 ```
 
 ### scopes
@@ -1484,6 +1542,7 @@ default value:
 { AccessToken: 3600,
   AuthorizationCode: 600,
   ClientCredentials: 600,
+  DeviceCode: 600,
   IdToken: 3600,
   RefreshToken: 1209600 }
 ```
@@ -1524,6 +1583,85 @@ default value:
   userinfoEncryptionAlgValues: [],
   userinfoEncryptionEncValues: [],
   userinfoSigningAlgValues: [] }
+```
+
+### userCodeConfirmSource
+
+HTML source rendered when device code feature renders an a confirmation prompt for ther User-Agent.  
+
+affects: device code authorization confirmation  
+
+default value:
+```js
+async userCodeConfirmSource(ctx, form, client, deviceInfo) {
+  // @param ctx - koa request context
+  // @param form - form source (id="op.deviceConfirmForm") to be embedded in the page and
+  //   submitted by the End-User.
+  // @param deviceInfo - device information from the device_authorization_endpoint call
+  const {
+    clientId, clientName, clientUri, logoUri, policyUri, tosUri,
+  } = ctx.oidc.client;
+  ctx.body = `<!DOCTYPE html>
+<head>
+<title>Device Login Confirmation</title>
+<style>/* css and html classes omitted for brevity, see lib/helpers/defaults.js */</style>
+</head>
+<body>
+<div>
+  <h1>Confirm Device</h1>
+  <p>
+    You are about to authorize a <code>${clientName || clientId}</code> device client on IP <code>${deviceInfo.ip}</code>, identified by <code>${deviceInfo.userAgent}</code>
+    <br/><br/>
+    If you did not initiate this action and/or are unaware of such device in your possession please close this window.
+  </p>
+  ${form}
+  <button autofocus type="submit" form="op.deviceConfirmForm">Continue</button>
+  <div>
+    <a href="">[ Cancel ]</a>
+  </div>
+</div>
+</body>
+</html>`;
+}
+```
+
+### userCodeInputSource
+
+HTML source rendered when device code feature renders an input prompt for the User-Agent.  
+
+affects: device code input  
+
+default value:
+```js
+async userCodeInputSource(ctx, form, out, err) {
+  // @param ctx - koa request context
+  // @param form - form source (id="op.deviceInputForm") to be embedded in the page and submitted
+  //   by the End-User.
+  // @param out - if an error is returned the out object contains details that are fit to be
+  //   rendered, i.e. does not include internal error messages
+  // @param err - error object with an optional userCode property passed when the form is being
+  //   re-rendered due to code missing/invalid/expired
+  let msg;
+  if (err && (err.userCode || err.name === 'NoCodeError')) {
+    msg = '<p>The code you entered is incorrect. Try again</p>';
+  } else if (err) {
+    msg = '<p>There was an error processing your request</p>';
+  }
+  ctx.body = `<!DOCTYPE html>
+<head>
+<title>Sign-in</title>
+<style>/* css and html classes omitted for brevity, see lib/helpers/defaults.js */</style>
+</head>
+<body>
+<div>
+  <h1>Sign-in</h1>
+  ${msg}
+  ${form}
+  <button type="submit" form="op.deviceInputForm">Continue</button>
+</div>
+</body>
+</html>`;
+}
 ```
 <!-- END CONF OPTIONS -->
 

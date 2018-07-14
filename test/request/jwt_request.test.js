@@ -6,8 +6,6 @@ const { expect } = require('chai');
 const JWT = require('../../lib/helpers/jwt');
 const bootstrap = require('../test_helper');
 
-const route = '/auth';
-
 describe('request parameter features', () => {
   before(bootstrap(__dirname));
 
@@ -21,7 +19,23 @@ describe('request parameter features', () => {
     });
   });
 
-  ['get', 'post'].forEach((verb) => {
+  function redirectSuccess(response) {
+    const expected = parse('https://client.example.com/cb', true);
+    const actual = parse(response.headers.location, true);
+    ['protocol', 'host', 'pathname'].forEach((attr) => {
+      expect(actual[attr]).to.equal(expected[attr]);
+    });
+    expect(actual.query).to.have.property('code');
+  }
+  function httpSuccess({ body }) {
+    expect(body).to.contain.key('device_code');
+  }
+
+  [
+    ['/auth', 'get', 'authorization.error', 302, 302, redirectSuccess, 'authorization.success'],
+    ['/auth', 'post', 'authorization.error', 302, 302, redirectSuccess, 'authorization.success'],
+    ['/device/auth', 'post', 'device_authorization.error', 200, 400, httpSuccess, 'device_authorization.success'],
+  ].forEach(([route, verb, errorEvt, successCode, errorCode, successFnCheck, successEvt]) => {
     describe(`${route} ${verb} passing request parameters as JWTs`, () => {
       before(function () {
         return this.login();
@@ -47,20 +61,13 @@ describe('request parameter features', () => {
             response_type: 'code',
           },
         })
-          .expect(302)
-          .expect((response) => {
-            const expected = parse('https://client.example.com/cb', true);
-            const actual = parse(response.headers.location, true);
-            ['protocol', 'host', 'pathname'].forEach((attr) => {
-              expect(actual[attr]).to.equal(expected[attr]);
-            });
-            expect(actual.query).to.have.property('code');
-          }));
+          .expect(successCode)
+          .expect(successFnCheck));
       });
 
       it('can contain max_age parameter as a number and it (and other params too) will be forced as string', async function () {
         const spy = sinon.spy();
-        this.provider.once('authorization.success', spy);
+        this.provider.once(successEvt, spy);
 
         await JWT.sign({
           client_id: 'client',
@@ -78,15 +85,8 @@ describe('request parameter features', () => {
             response_type: 'code',
           },
         })
-          .expect(302)
-          .expect((response) => {
-            const expected = parse('https://client.example.com/cb', true);
-            const actual = parse(response.headers.location, true);
-            ['protocol', 'host', 'pathname'].forEach((attr) => {
-              expect(actual[attr]).to.equal(expected[attr]);
-            });
-            expect(actual.query).to.have.property('code');
-          }));
+          .expect(successCode)
+          .expect(successFnCheck));
 
         expect(
           spy.calledWithMatch({ oidc: { params: { max_age: sinon.match.string } } }),
@@ -95,7 +95,7 @@ describe('request parameter features', () => {
 
       it('can contain claims parameter as JSON', async function () {
         const spy = sinon.spy();
-        this.provider.once('authorization.success', spy);
+        this.provider.once(successEvt, spy);
         const claims = JSON.stringify({ id_token: { email: null } });
 
         await JWT.sign({
@@ -114,15 +114,8 @@ describe('request parameter features', () => {
             response_type: 'code',
           },
         })
-          .expect(302)
-          .expect((response) => {
-            const expected = parse('https://client.example.com/cb', true);
-            const actual = parse(response.headers.location, true);
-            ['protocol', 'host', 'pathname'].forEach((attr) => {
-              expect(actual[attr]).to.equal(expected[attr]);
-            });
-            expect(actual.query).to.have.property('code');
-          }));
+          .expect(successCode)
+          .expect(successFnCheck));
 
         expect(
           spy.calledWithMatch({ oidc: { params: { claims } } }),
@@ -131,7 +124,7 @@ describe('request parameter features', () => {
 
       it('can contain claims parameter as object', async function () {
         const spy = sinon.spy();
-        this.provider.once('authorization.success', spy);
+        this.provider.once(successEvt, spy);
         const claims = { id_token: { email: null } };
 
         await JWT.sign({
@@ -150,15 +143,8 @@ describe('request parameter features', () => {
             response_type: 'code',
           },
         })
-          .expect(302)
-          .expect((response) => {
-            const expected = parse('https://client.example.com/cb', true);
-            const actual = parse(response.headers.location, true);
-            ['protocol', 'host', 'pathname'].forEach((attr) => {
-              expect(actual[attr]).to.equal(expected[attr]);
-            });
-            expect(actual.query).to.have.property('code');
-          }));
+          .expect(successCode)
+          .expect(successFnCheck));
 
         expect(
           spy.calledWithMatch({ oidc: { params: { claims: JSON.stringify(claims) } } }),
@@ -186,15 +172,8 @@ describe('request parameter features', () => {
             response_type: 'code',
           },
         })
-          .expect(302)
-          .expect((response) => {
-            const expected = parse('https://client.example.com/cb', true);
-            const actual = parse(response.headers.location, true);
-            ['protocol', 'host', 'pathname'].forEach((attr) => {
-              expect(actual[attr]).to.equal(expected[attr]);
-            });
-            expect(actual.query).to.have.property('code');
-          }));
+          .expect(successCode)
+          .expect(successFnCheck));
       });
 
       it('works with signed by an actual HS', async function () {
@@ -216,20 +195,13 @@ describe('request parameter features', () => {
             response_type: 'code',
           },
         })
-          .expect(302)
-          .expect((response) => {
-            const expected = parse('https://client.example.com/cb', true);
-            const actual = parse(response.headers.location, true);
-            ['protocol', 'host', 'pathname'].forEach((attr) => {
-              expect(actual[attr]).to.equal(expected[attr]);
-            });
-            expect(actual.query).to.have.property('code');
-          }));
+          .expect(successCode)
+          .expect(successFnCheck));
       });
 
       it('doesnt allow request inception', function () {
         const spy = sinon.spy();
-        this.provider.once('authorization.error', spy);
+        this.provider.once(errorEvt, spy);
 
         return JWT.sign({
           client_id: 'client',
@@ -247,7 +219,7 @@ describe('request parameter features', () => {
             response_type: 'code',
           },
         })
-          .expect(302)
+          .expect(errorCode)
           .expect(() => {
             expect(spy.calledOnce).to.be.true;
             expect(spy.args[0][0]).to.have.property('message', 'invalid_request_object');
@@ -260,7 +232,7 @@ describe('request parameter features', () => {
 
       it('doesnt allow requestUri inception', function () {
         const spy = sinon.spy();
-        this.provider.once('authorization.error', spy);
+        this.provider.once(errorEvt, spy);
 
         return JWT.sign({
           client_id: 'client',
@@ -278,7 +250,7 @@ describe('request parameter features', () => {
             response_type: 'code',
           },
         })
-          .expect(302)
+          .expect(errorCode)
           .expect(() => {
             expect(spy.calledOnce).to.be.true;
             expect(spy.args[0][0]).to.have.property('message', 'invalid_request_object');
@@ -289,39 +261,41 @@ describe('request parameter features', () => {
           }));
       });
 
-      it('doesnt allow response_type to differ', function () {
-        const spy = sinon.spy();
-        this.provider.once('authorization.error', spy);
+      if (route !== '/device/auth') {
+        it('doesnt allow response_type to differ', function () {
+          const spy = sinon.spy();
+          this.provider.once(errorEvt, spy);
 
-        return JWT.sign({
-          client_id: 'client',
-          response_type: 'id_token',
-          redirect_uri: 'https://client.example.com/cb',
-        }, null, 'none', { issuer: 'client', audience: this.provider.issuer }).then(request => this.wrap({
-          agent: this.agent,
-          route,
-          verb,
-          auth: {
-            request,
-            scope: 'openid',
+          return JWT.sign({
             client_id: 'client',
-            response_type: 'code',
-          },
-        })
-          .expect(302)
-          .expect(() => {
-            expect(spy.calledOnce).to.be.true;
-            expect(spy.args[0][0]).to.have.property('message', 'invalid_request_object');
-            expect(spy.args[0][0]).to.have.property(
-              'error_description',
-              'request response_type must equal the one in request parameters',
-            );
-          }));
-      });
+            response_type: 'id_token',
+            redirect_uri: 'https://client.example.com/cb',
+          }, null, 'none', { issuer: 'client', audience: this.provider.issuer }).then(request => this.wrap({
+            agent: this.agent,
+            route,
+            verb,
+            auth: {
+              request,
+              scope: 'openid',
+              client_id: 'client',
+              response_type: 'code',
+            },
+          })
+            .expect(errorCode)
+            .expect(() => {
+              expect(spy.calledOnce).to.be.true;
+              expect(spy.args[0][0]).to.have.property('message', 'invalid_request_object');
+              expect(spy.args[0][0]).to.have.property(
+                'error_description',
+                'request response_type must equal the one in request parameters',
+              );
+            }));
+        });
+      }
 
       it('doesnt allow client_id to differ', function () {
         const spy = sinon.spy();
-        this.provider.once('authorization.error', spy);
+        this.provider.once(errorEvt, spy);
 
         return JWT.sign({
           client_id: 'client2',
@@ -338,7 +312,7 @@ describe('request parameter features', () => {
             response_type: 'code',
           },
         })
-          .expect(302)
+          .expect(errorCode)
           .expect(() => {
             expect(spy.calledOnce).to.be.true;
             expect(spy.args[0][0]).to.have.property('message', 'invalid_request_object');
@@ -351,7 +325,7 @@ describe('request parameter features', () => {
 
       it('handles invalid signed looklike jwts', function () {
         const spy = sinon.spy();
-        this.provider.once('authorization.error', spy);
+        this.provider.once(errorEvt, spy);
 
         return this.wrap({
           agent: this.agent,
@@ -364,7 +338,7 @@ describe('request parameter features', () => {
             response_type: 'code',
           },
         })
-          .expect(302)
+          .expect(errorCode)
           .expect(() => {
             expect(spy.calledOnce).to.be.true;
             expect(spy.args[0][0]).to.have.property('message', 'invalid_request_object');
@@ -374,7 +348,7 @@ describe('request parameter features', () => {
 
       it('doesnt allow clients with predefined alg to bypass this alg', function () {
         const spy = sinon.spy();
-        this.provider.once('authorization.error', spy);
+        this.provider.once(errorEvt, spy);
 
         return JWT.sign({
           client_id: 'client-with-HS-sig',
@@ -391,7 +365,7 @@ describe('request parameter features', () => {
             response_type: 'code',
           },
         })
-          .expect(302)
+          .expect(errorCode)
           .expect(() => {
             expect(spy.calledOnce).to.be.true;
             expect(spy.args[0][0]).to.have.property('message', 'invalid_request_object');
@@ -404,7 +378,7 @@ describe('request parameter features', () => {
 
       it('unsupported algs must not be used', async function () {
         const spy = sinon.spy();
-        this.provider.once('authorization.error', spy);
+        this.provider.once(errorEvt, spy);
         const key = (await this.provider.Client.find('client')).keystore.get({
           alg: 'HS384',
         });
@@ -423,7 +397,7 @@ describe('request parameter features', () => {
             response_type: 'code',
           },
         })
-          .expect(302)
+          .expect(errorCode)
           .expect(() => {
             expect(spy.calledOnce).to.be.true;
             expect(spy.args[0][0]).to.have.property('message', 'invalid_request_object');
@@ -433,7 +407,7 @@ describe('request parameter features', () => {
 
       it('bad signatures will be rejected', async function () {
         const spy = sinon.spy();
-        this.provider.once('authorization.error', spy);
+        this.provider.once(errorEvt, spy);
 
         const key = (await this.provider.Client.find('client-with-HS-sig')).keystore.get({
           alg: 'HS256',
@@ -453,7 +427,7 @@ describe('request parameter features', () => {
             response_type: 'code',
           },
         })
-          .expect(302)
+          .expect(errorCode)
           .expect(() => {
             expect(spy.calledOnce).to.be.true;
             expect(spy.args[0][0]).to.have.property('message', 'invalid_request_object');
@@ -481,15 +455,8 @@ describe('request parameter features', () => {
             response_type: 'code',
           },
         })
-          .expect(302)
-          .expect((response) => {
-            const expected = parse('https://client.example.com/cb', true);
-            const actual = parse(response.headers.location, true);
-            ['protocol', 'host', 'pathname'].forEach((attr) => {
-              expect(actual[attr]).to.equal(expected[attr]);
-            });
-            expect(actual.query).to.have.property('code');
-          }));
+          .expect(successCode)
+          .expect(successFnCheck));
       });
     });
   });

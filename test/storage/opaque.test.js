@@ -22,17 +22,23 @@ if (FORMAT === 'opaque') {
     const codeChallenge = 'codeChallenge';
     const codeChallengeMethod = 'codeChallengeMethod';
     const aud = [clientId, 'foo'];
+    const error = 'access_denied';
+    const errorDescription = 'resource owner denied access';
+    const params = { foo: 'bar' };
+    const userCode = '1384-3217';
+    const deviceInfo = { foo: 'bar' };
 
     /* eslint-disable object-property-newline */
     const fullPayload = {
       accountId, claims, clientId, grantId, scope, sid, consumed, acr, amr, authTime, nonce,
-      redirectUri, codeChallenge, codeChallengeMethod, aud,
+      redirectUri, codeChallenge, codeChallengeMethod, aud, error, errorDescription, params,
+      userCode, deviceInfo,
     };
     /* eslint-enable object-property-newline */
 
     afterEach(function () {
       [
-        'AuthorizationCode', 'AccessToken', 'RefreshToken', 'ClientCredentials', 'InitialAccessToken', 'RegistrationAccessToken',
+        'AuthorizationCode', 'AccessToken', 'RefreshToken', 'ClientCredentials', 'InitialAccessToken', 'RegistrationAccessToken', 'DeviceCode',
       ].forEach((model) => {
         if (this.TestAdapter.for(model).upsert.restore) {
           this.TestAdapter.for(model).upsert.restore();
@@ -88,6 +94,39 @@ if (FORMAT === 'opaque') {
         jti: upsert.getCall(0).args[0],
         iat: number,
         exp: number,
+      });
+    });
+
+    it('for DeviceCode', async function () {
+      const kind = 'DeviceCode';
+      const upsert = spy(this.TestAdapter.for('DeviceCode'), 'upsert');
+      const token = new this.provider.DeviceCode(fullPayload);
+      await token.save();
+
+      assert.calledWith(upsert, string, {
+        accountId,
+        acr,
+        amr,
+        authTime,
+        claims,
+        clientId,
+        codeChallenge,
+        codeChallengeMethod,
+        consumed,
+        error,
+        errorDescription,
+        exp: number,
+        grantId,
+        iat: number,
+        iss: this.provider.issuer,
+        jti: upsert.getCall(0).args[0],
+        kind,
+        nonce,
+        params,
+        scope,
+        sid,
+        userCode,
+        deviceInfo,
       });
     });
 

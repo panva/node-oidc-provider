@@ -9,6 +9,10 @@ function grantKeyFor(id) {
   return ['grant', id].join(':');
 }
 
+function userCodeKeyFor(userCode) {
+  return ['userCode', userCode].join(':');
+}
+
 class TestAdapter {
   constructor(name) {
     this.name = name;
@@ -87,10 +91,15 @@ class TestAdapter {
     return Promise.resolve(this.syncFind(id));
   }
 
+  findByUserCode(userCode) {
+    const id = store.get(userCodeKeyFor(userCode));
+    return this.find(id);
+  }
+
   upsert(id, payload, expiresIn) {
     const key = this.key(id);
 
-    const { grantId } = payload;
+    const { grantId, userCode } = payload;
     if (grantId) {
       const grantKey = grantKeyFor(grantId);
       const grant = store.get(grantKey);
@@ -99,6 +108,10 @@ class TestAdapter {
       } else {
         grant.push(key);
       }
+    }
+
+    if (userCode) {
+      store.set(userCodeKeyFor(userCode), id, expiresIn * 1000);
     }
 
     store.set(key, payload, expiresIn * 1000);

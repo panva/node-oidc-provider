@@ -11,7 +11,7 @@ const client = {
 
 describe('AdapterTest', () => {
   it('passes with the default MemoryAdapter', async () => {
-    const provider = new Provider('http://localhost');
+    const provider = new Provider('http://localhost', { features: { deviceCode: true } });
     await provider.initialize({
       clients: [client],
     });
@@ -20,7 +20,7 @@ describe('AdapterTest', () => {
   });
 
   it('passes with the TestAdapter', async () => {
-    const provider = new Provider('http://localhost');
+    const provider = new Provider('http://localhost', { features: { deviceCode: true } });
     await provider.initialize({
       clients: [client],
       adapter: TestAdapter,

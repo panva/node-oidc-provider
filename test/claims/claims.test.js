@@ -242,6 +242,7 @@ expire.setDate(expire.getDate() + 1);
           it('none of multiple authentication context class references requested are met', function () {
             const auth = new this.AuthorizationRequest({
               response_type: 'id_token',
+              response_mode: 'fragment',
               scope: 'openid',
               prompt: 'none',
               claims: j({
@@ -272,6 +273,7 @@ expire.setDate(expire.getDate() + 1);
           it('single requested authentication context class reference is not met', function () {
             const auth = new this.AuthorizationRequest({
               response_type: 'id_token',
+              response_mode: 'fragment',
               scope: 'openid',
               prompt: 'none',
               claims: j({
