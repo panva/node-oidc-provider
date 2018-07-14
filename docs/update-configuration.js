@@ -135,7 +135,8 @@ const props = [
             if (line.includes('<style>')) {
               mute = true;
               return '<style>/* css and html classes omitted for brevity, see lib/helpers/defaults.js */</style>';
-            } else if (line.includes('</style>')) {
+            }
+            if (line.includes('</style>')) {
               mute = false;
               return undefined;
             }
