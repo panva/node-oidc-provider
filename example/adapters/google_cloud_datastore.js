@@ -11,11 +11,12 @@ const Datastore = require('@google-cloud/datastore'); // eslint-disable-line imp
 
 let DB;
 
-const grantable = [
+const grantable = new Set([
   'AccessToken',
   'AuthorizationCode',
   'RefreshToken',
-];
+  'DeviceCode',
+]);
 
 class Adapter {
   constructor(name) {
@@ -56,7 +57,7 @@ class Adapter {
   }
 
   async destroy(id) {
-    if (grantable.includes(this.name)) {
+    if (grantable.has(this.name)) {
       await this.find(id).then(({ grantId }) => (
         Promise.all(grantable.map((name) => {
           const query = DB.createQuery(name).filter('grantId', '=', grantId);

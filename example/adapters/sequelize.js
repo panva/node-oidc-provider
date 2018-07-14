@@ -12,17 +12,19 @@ const sequelize = new Sequelize('database', 'username', 'password', {
   storage: 'db.sqlite',
 });
 
-const grantable = [
+const grantable = new Set([
   'AccessToken',
   'AuthorizationCode',
   'RefreshToken',
-];
+  'DeviceCode',
+]);
 
 const models = [
   'Session',
   'AccessToken',
   'AuthorizationCode',
   'RefreshToken',
+  'DeviceCode',
   'ClientCredentials',
   'Client',
   'InitialAccessToken',
@@ -31,6 +33,7 @@ const models = [
   map.set(name, sequelize.define(name, {
     id: { type: Sequelize.STRING, primaryKey: true },
     grantId: { type: Sequelize.UUIDV4 },
+    userCode: { type: Sequelize.UUIDV4 },
     data: { type: Sequelize.JSON },
     expiresAt: { type: Sequelize.DATE },
     consumedAt: { type: Sequelize.DATE },
@@ -50,6 +53,7 @@ class SequelizeAdapter {
       id,
       data,
       ...(data.grantId ? { grantId: data.grantId } : undefined),
+      ...(data.userCode ? { userCode: data.userCode } : undefined),
       ...(expiresIn ? { expiresAt: new Date(Date.now() + (expiresIn * 1000)) } : undefined),
     });
   }
@@ -64,8 +68,18 @@ class SequelizeAdapter {
     });
   }
 
+  async findByUserCode(userCode) {
+    return this.model.findOne({ where: { userCode } }).then((found) => {
+      if (!found) return undefined;
+      return {
+        ...found.data,
+        ...(found.consumedAt ? { consumed: true } : undefined),
+      };
+    });
+  }
+
   async destroy(id) {
-    if (grantable.includes(this.name)) {
+    if (grantable.has(this.name)) {
       return this.model.findByPrimary(id).then((({ grantId }) => (
         Promise.all(grantable.map(name => models.get(name).destroy({ where: { grantId } })))
       )));
