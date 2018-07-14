@@ -63,6 +63,7 @@ class TestAdapter {
 
   syncFind(id, { payload = false } = {}) {
     const found = store.get(this.key(id));
+    if (!found) return undefined;
     if (payload && FORMAT === 'legacy') {
       return JSON.parse(base64url.decode(found.payload));
     }
@@ -71,6 +72,7 @@ class TestAdapter {
 
   syncUpdate(id, update) {
     const found = store.get(this.key(id));
+    if (!found) return;
     switch (FORMAT) {
       case 'legacy': {
         const payload = JSON.parse(base64url.decode(found.payload));

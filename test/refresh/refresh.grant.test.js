@@ -53,7 +53,8 @@ describe('grant_type=refresh_token', () => {
             .expect((response) => {
               expect(response.body).to.have.property('refresh_token');
               const jti = this.getTokenJti(response.body.refresh_token);
-              this.refreshToken = this.TestAdapter.for('RefreshToken').syncFind(jti);
+              this.refreshToken = this.TestAdapter.for('RefreshToken').syncFind(jti, { payload: true });
+              expect(this.refreshToken).to.have.property('gty', 'authorization_code');
               this.rt = response.body.refresh_token;
             })
             .end(done);
@@ -82,17 +83,19 @@ describe('grant_type=refresh_token', () => {
         .expect(() => {
           expect(spy.calledOnce).to.be.true;
         })
-        .expect((response) => {
-          expect(response.body).to.have.keys('access_token', 'id_token', 'expires_in', 'token_type', 'refresh_token', 'scope');
-          const refreshIdToken = j(base64url.decode(response.body.id_token.split('.')[1]));
+        .expect(({ body }) => {
+          expect(body).to.have.keys('access_token', 'id_token', 'expires_in', 'token_type', 'refresh_token', 'scope');
+          const refreshIdToken = j(base64url.decode(body.id_token.split('.')[1]));
           expect(refreshIdToken).to.have.property('nonce', 'foobarnonce');
-          expect(response.body).to.have.property('refresh_token').that.is.a('string');
+          expect(body).to.have.property('refresh_token').that.is.a('string');
         });
     });
 
     it('populates ctx.oidc.entities', function (done) {
       this.provider.use(this.assertOnce((ctx) => {
         expect(ctx.oidc.entities).to.have.keys('Account', 'Client', 'AccessToken', 'RefreshToken');
+        expect(ctx.oidc.entities.RefreshToken).to.have.property('gty', 'authorization_code');
+        expect(ctx.oidc.entities.AccessToken).to.have.property('gty', 'authorization_code refresh_token');
       }, done));
 
       this.agent.post(route)
@@ -301,6 +304,9 @@ describe('grant_type=refresh_token', () => {
         this.provider.use(this.assertOnce((ctx) => {
           expect(ctx.oidc.entities).to.have.keys('Account', 'Client', 'AccessToken', 'RotatedRefreshToken', 'RefreshToken');
           expect(ctx.oidc.entities.RotatedRefreshToken).not.to.eql(ctx.oidc.entities.RefreshToken);
+          expect(ctx.oidc.entities.RotatedRefreshToken).to.have.property('gty', 'authorization_code');
+          expect(ctx.oidc.entities.RefreshToken).to.have.property('gty', 'authorization_code refresh_token');
+          expect(ctx.oidc.entities.AccessToken).to.have.property('gty', 'authorization_code refresh_token');
         }, done));
 
         this.agent.post(route)

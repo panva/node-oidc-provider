@@ -96,6 +96,7 @@ module.exports = function testHelper(dir, { config: base = path.basename(dir), m
       this.state = Math.random().toString();
       this.nonce = Math.random().toString();
       this.redirect_uri = parameters.redirect_uri || clients[0].redirect_uris[0];
+      this.res = {};
 
       Object.assign(this, parameters);
 
@@ -130,6 +131,7 @@ module.exports = function testHelper(dir, { config: base = path.basename(dir), m
           const interaction = TestAdapter.for('Session').syncFind(grantid);
 
           Object.entries(this).forEach(([key, value]) => {
+            if (key === 'res') return;
             expect(interaction.params).to.have.property(key, value);
           });
         },
@@ -167,6 +169,9 @@ module.exports = function testHelper(dir, { config: base = path.basename(dir), m
       } else {
         expect(query).to.contain.keys(keys);
       }
+      keys.forEach((key) => {
+        this.res[key] = query[key];
+      });
     };
   };
 
