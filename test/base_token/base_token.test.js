@@ -117,11 +117,23 @@ describe('BaseToken', () => {
     expect(token.consumed).to.be.true;
   });
 
-  it('rethrows adapter#find errors', async function () {
+  it('rethrows adapter#find errors (any token)', async function () {
     this.adapter.find.restore();
     const adapterThrow = new Error('adapter throw!');
     sinon.stub(this.adapter, 'find').callsFake(async () => { throw adapterThrow; });
     await this.provider.AccessToken.find('.eyJqdGkiOiJ6d1FXa2pBUzhQZks1WEUyTTEyTTcifQ.').then(fail, (err) => {
+      expect(err).to.equal(adapterThrow);
+    });
+  });
+
+  it('rethrows adapter#findByUserCode errors (Device Code)', async function () {
+    const adapterThrow = new Error('adapter throw!');
+    sinon.stub(this.TestAdapter.for('DeviceCode'), 'findByUserCode').callsFake(async () => { throw adapterThrow; });
+    await this.provider.DeviceCode.findByUserCode('123-456-789').then(() => {
+      this.TestAdapter.for('DeviceCode').findByUserCode.restore();
+      fail();
+    }, (err) => {
+      this.TestAdapter.for('DeviceCode').findByUserCode.restore();
       expect(err).to.equal(adapterThrow);
     });
   });

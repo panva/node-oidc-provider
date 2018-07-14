@@ -254,6 +254,7 @@ describe('resume after interaction', () => {
     it('should process newly established permanent sessions', function () {
       const auth = new this.AuthorizationRequest({
         response_type: 'code',
+        response_mode: 'query',
         scope: 'openid',
       });
 
@@ -278,6 +279,7 @@ describe('resume after interaction', () => {
     it('should process newly established temporary sessions', function () {
       const auth = new this.AuthorizationRequest({
         response_type: 'code',
+        response_mode: 'query',
         scope: 'openid',
       });
 
@@ -391,6 +393,7 @@ describe('resume after interaction', () => {
     it('should process and store meta-informations provided alongside login', function () {
       const auth = new this.AuthorizationRequest({
         response_type: 'code',
+        response_mode: 'fragment',
         scope: 'openid',
       });
 

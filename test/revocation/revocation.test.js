@@ -23,6 +23,7 @@ describe('revocation features', () => {
     it('revokes access token [no hint]', async function () {
       const at = new this.provider.AccessToken({
         accountId: 'accountId',
+        grantId: 'foo',
         clientId: 'client',
         scope: 'scope',
       });
@@ -45,6 +46,7 @@ describe('revocation features', () => {
     it('revokes access token [correct hint]', async function () {
       const at = new this.provider.AccessToken({
         accountId: 'accountId',
+        grantId: 'foo',
         clientId: 'client',
         scope: 'scope',
       });
@@ -67,6 +69,7 @@ describe('revocation features', () => {
     it('revokes access token [wrong hint]', async function () {
       const at = new this.provider.AccessToken({
         accountId: 'accountId',
+        grantId: 'foo',
         clientId: 'client',
         scope: 'scope',
       });
@@ -89,6 +92,7 @@ describe('revocation features', () => {
     it('revokes access token [unrecognized hint]', async function () {
       const at = new this.provider.AccessToken({
         accountId: 'accountId',
+        grantId: 'foo',
         clientId: 'client',
         scope: 'scope',
       });
@@ -111,6 +115,7 @@ describe('revocation features', () => {
     it('propagates exceptions on find', async function () {
       const at = new this.provider.AccessToken({
         accountId: 'accountId',
+        grantId: 'foo',
         clientId: 'client',
         scope: 'scope',
       });
@@ -134,6 +139,7 @@ describe('revocation features', () => {
     it('revokes refresh token [no hint]', async function () {
       const rt = new this.provider.RefreshToken({
         accountId: 'accountId',
+        grantId: 'foo',
         clientId: 'client',
         scope: 'scope',
       });
@@ -156,6 +162,7 @@ describe('revocation features', () => {
     it('revokes refresh token [correct hint]', async function () {
       const rt = new this.provider.RefreshToken({
         accountId: 'accountId',
+        grantId: 'foo',
         clientId: 'client',
         scope: 'scope',
       });
@@ -178,6 +185,7 @@ describe('revocation features', () => {
     it('revokes refresh token [wrong hint]', async function () {
       const rt = new this.provider.RefreshToken({
         accountId: 'accountId',
+        grantId: 'foo',
         clientId: 'client',
         scope: 'scope',
       });
@@ -200,6 +208,7 @@ describe('revocation features', () => {
     it('revokes refresh token [unrecognized hint]', async function () {
       const rt = new this.provider.RefreshToken({
         accountId: 'accountId',
+        grantId: 'foo',
         clientId: 'client',
         scope: 'scope',
       });
@@ -336,6 +345,7 @@ describe('revocation features', () => {
     it('does not revoke tokens of other clients', async function () {
       const at = new this.provider.AccessToken({
         accountId: 'accountId',
+        grantId: 'foo',
         clientId: 'client2',
         scope: 'scope',
       });

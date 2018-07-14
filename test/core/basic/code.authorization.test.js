@@ -375,7 +375,7 @@ describe('BASIC code', () => {
           .expect(auth.validateState)
           .expect(auth.validateClientLocation)
           .expect(auth.validateError('invalid_request'))
-          .expect(auth.validateErrorDescription('invalid prompt value(s) provided. (unsupported)'));
+          .expect(auth.validateErrorDescription('invalid prompt value provided'));
       });
 
       it('bad prompt combination', function () {
@@ -438,7 +438,7 @@ describe('BASIC code', () => {
             expect(renderSpy.calledOnce).to.be.true;
             const renderArgs = renderSpy.args[0];
             expect(renderArgs[1]).to.have.property('error', 'invalid_request');
-            expect(renderArgs[1]).to.have.property('error_description', 'missing required parameter client_id');
+            expect(renderArgs[1]).to.have.property('error_description', 'missing required parameter(s) (client_id)');
             expect(renderArgs[2]).to.be.an.instanceof(InvalidRequest);
           });
       });
@@ -568,7 +568,7 @@ describe('BASIC code', () => {
           return this.wrap({ route, verb, auth })
             .type('json')
             .expect(400)
-            .expect(/only application\/x-www-form-urlencoded content-type POST bodies are supported/)
+            .expect(/only application\/x-www-form-urlencoded content-type bodies are supported on POST \/auth/)
             .expect(/invalid_request/)
             .expect(() => {
               expect(spy.calledOnce).to.be.true;
