@@ -652,6 +652,7 @@ provider.registerGrantType('password', function passwordGrantTypeFactory(provide
     if ((account = await Account.authenticate(ctx.oidc.params.username, ctx.oidc.params.password))) {
       const AccessToken = providerInstance.AccessToken;
       const at = new AccessToken({
+				gty: 'password',
         accountId: account.id,
         clientId: ctx.oidc.client.clientId,
         grantId: ctx.oidc.uuid,
@@ -1211,8 +1212,8 @@ async findById(ctx, sub, token) {
 ### formats
 
 This option allows to configure the token storage and value formats. The different values change how a token value is generated as well as what properties get sent to the adapter for storage. Three formats are defined, see the expected [Adapter API](/example/my_adapter.js) for each format's specifics.  
-- `legacy` is the current and default format until next major release. No changes in the format sent to adapter. 
-- `opaque` formatted tokens have a different value then `legacy` and in addition store what was in legacy format encoded under `payload` as root properties, this makes analysing the data in your storage way easier 
+- `legacy` is the current and default format until next major release. No changes in the format sent to adapter.
+- `opaque` formatted tokens have a different value then `legacy` and in addition store what was in legacy format encoded under `payload` as root properties, this makes analysing the data in your storage way easier
 - `jwt` formatted tokens are issued as JWTs and stored the same as `opaque` only with additional property `jwt`. The signing algorithm for these tokens uses the client's `id_token_signed_response_alg` value and falls back to `RS256` for tokens with no relation to a client or when the client's alg is `none`  
 
 affects: properties passed to adapters for token types, issued token formats  
@@ -1403,8 +1404,8 @@ default value:
 
 ### refreshTokenRotation
 
-Configures if and how the OP rotates refresh tokens after they are used. Supported values are 
-- `none` when refresh tokens are not rotated and their initial expiration date is final or 
+Configures if and how the OP rotates refresh tokens after they are used. Supported values are
+- `none` when refresh tokens are not rotated and their initial expiration date is final or
 - `rotateAndConsume` when refresh tokens are rotated when used, current token is marked as consumed and new one is issued with new TTL, when a consumed refresh token is encountered an error is returned instead and the whole token chain (grant) is revoked  
 
 affects: refresh token rotation and adjacent revocation  
@@ -1505,8 +1506,8 @@ default value:
 
 ### subjectTypes
 
-List of the Subject Identifier types that this OP supports. Valid types are 
-- `public` 
+List of the Subject Identifier types that this OP supports. Valid types are
+- `public`
 - `pairwise`  
 
 affects: discovery, registration, registration management, ID Token and Userinfo sub claim values  

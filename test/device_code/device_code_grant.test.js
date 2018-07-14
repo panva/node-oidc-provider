@@ -79,6 +79,7 @@ describe('grant_type=urn:ietf:params:oauth:grant-type:device_code', () => {
     this.provider.use(this.assertOnce((ctx) => {
       expect(ctx.body.refresh_token).to.be.undefined;
       expect(ctx.oidc.entities).to.have.keys('Account', 'Client', 'DeviceCode', 'AccessToken');
+      expect(ctx.oidc.entities.AccessToken).to.have.property('gty', 'device_code');
     }, done));
 
     const deviceCode = new this.provider.DeviceCode({
@@ -101,6 +102,8 @@ describe('grant_type=urn:ietf:params:oauth:grant-type:device_code', () => {
   it('populates ctx.oidc.entities (w/ offline_access)', function (done) {
     this.provider.use(this.assertOnce((ctx) => {
       expect(ctx.oidc.entities).to.have.keys('Account', 'Client', 'DeviceCode', 'AccessToken', 'RefreshToken');
+      expect(ctx.oidc.entities.AccessToken).to.have.property('gty', 'device_code');
+      expect(ctx.oidc.entities.RefreshToken).to.have.property('gty', 'device_code');
     }, done));
 
     const deviceCode = new this.provider.DeviceCode({

@@ -28,6 +28,7 @@ if (FORMAT === 'legacy') {
     const codeChallenge = 'codeChallenge';
     const codeChallengeMethod = 'codeChallengeMethod';
     const aud = [clientId, 'foo'];
+    const gty = 'foo';
     const error = 'access_denied';
     const errorDescription = 'resource owner denied access';
     const params = { foo: 'bar' };
@@ -38,7 +39,7 @@ if (FORMAT === 'legacy') {
     const fullPayload = {
       accountId, claims, clientId, grantId, scope, sid, consumed, acr, amr, authTime, nonce,
       redirectUri, codeChallenge, codeChallengeMethod, aud, error, errorDescription, params,
-      userCode, deviceInfo,
+      userCode, deviceInfo, gty,
     };
     /* eslint-enable object-property-newline */
 
@@ -70,15 +71,16 @@ if (FORMAT === 'legacy') {
       expect(exp).to.be.a('number');
       expect(payload).to.eql({
         accountId,
+        aud,
         claims,
         clientId,
-        aud,
         grantId,
-        scope,
-        sid,
-        kind,
+        gty,
         iss: this.provider.issuer,
         jti: upsert.getCall(0).args[0],
+        kind,
+        scope,
+        sid,
       });
     });
 
@@ -89,8 +91,8 @@ if (FORMAT === 'legacy') {
       await token.save();
 
       assert.calledWith(upsert, string, {
-        grantId,
         consumed,
+        grantId,
         header: string,
         payload: string,
         signature: string,
@@ -100,22 +102,22 @@ if (FORMAT === 'legacy') {
       expect(iat).to.be.a('number');
       expect(exp).to.be.a('number');
       expect(payload).to.eql({
+        accountId,
         acr,
-        codeChallenge,
-        codeChallengeMethod,
         amr,
         authTime,
-        accountId,
         claims,
         clientId,
+        codeChallenge,
+        codeChallengeMethod,
         grantId,
-        scope,
-        nonce,
-        redirectUri,
-        sid,
-        kind,
         iss: this.provider.issuer,
         jti: upsert.getCall(0).args[0],
+        kind,
+        nonce,
+        redirectUri,
+        scope,
+        sid,
       });
     });
 
@@ -126,8 +128,8 @@ if (FORMAT === 'legacy') {
       await token.save();
 
       assert.calledWith(upsert, string, {
-        grantId,
         consumed,
+        grantId,
         header: string,
         payload: string,
         signature: string,
@@ -144,12 +146,13 @@ if (FORMAT === 'legacy') {
         claims,
         clientId,
         grantId,
+        gty,
+        iss: this.provider.issuer,
+        jti: upsert.getCall(0).args[0],
+        kind,
         nonce,
         scope,
         sid,
-        kind,
-        iss: this.provider.issuer,
-        jti: upsert.getCall(0).args[0],
       });
     });
 
@@ -160,24 +163,18 @@ if (FORMAT === 'legacy') {
       await token.save();
 
       assert.calledWith(upsert, string, {
-        grantId,
-        userCode,
         consumed,
+        grantId,
         header: string,
         payload: string,
         signature: string,
+        userCode,
       });
 
       const { iat, exp, ...payload } = decode(upsert.getCall(0).args[1].payload);
       expect(iat).to.be.a('number');
       expect(exp).to.be.a('number');
       expect(payload).to.eql({
-        kind,
-        nonce,
-        params,
-        scope,
-        sid,
-        userCode,
         accountId,
         acr,
         amr,
@@ -186,12 +183,19 @@ if (FORMAT === 'legacy') {
         clientId,
         codeChallenge,
         codeChallengeMethod,
+        deviceInfo,
         error,
         errorDescription,
         grantId,
-        deviceInfo,
+        gty,
         iss: this.provider.issuer,
         jti: upsert.getCall(0).args[0],
+        kind,
+        nonce,
+        params,
+        scope,
+        sid,
+        userCode,
       });
     });
 
@@ -211,12 +215,12 @@ if (FORMAT === 'legacy') {
       expect(iat).to.be.a('number');
       expect(exp).to.be.a('number');
       expect(payload).to.eql({
-        clientId,
-        scope,
         aud,
-        kind,
+        clientId,
         iss: this.provider.issuer,
         jti: upsert.getCall(0).args[0],
+        kind,
+        scope,
       });
     });
 
@@ -239,9 +243,9 @@ if (FORMAT === 'legacy') {
       expect(iat).to.be.a('number');
       expect(exp).to.be.a('number');
       expect(payload).to.eql({
-        kind,
         iss: this.provider.issuer,
         jti: upsert.getCall(0).args[0],
+        kind,
       });
     });
 
@@ -265,9 +269,9 @@ if (FORMAT === 'legacy') {
       expect(exp).to.be.a('number');
       expect(payload).to.eql({
         clientId,
-        kind,
         iss: this.provider.issuer,
         jti: upsert.getCall(0).args[0],
+        kind,
       });
     });
   });

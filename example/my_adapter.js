@@ -67,6 +67,9 @@ class MyAdapter {
      * - redirectUri {string} - redirect_uri value from an authorization request
      * - scope {string} - scope value from on authorization request
      * - sid {string} - session identifier the token comes from
+     * - gty {string} - [AccessToken, RefreshToken only] space delimited grant values, indicating
+     *     the grant type(s) they originate from (implicit, authorization_code, refresh_token or
+     *     device_code) the original one is always first, second is refresh_token if refreshed
      * - params {object} - [DeviceCode only] an object with the authorization request parameters
      *     as requested by the client with device_authorization_endpoint
      * - deviceInfo {object} - [DeviceCode only] an object with details about the

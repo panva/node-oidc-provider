@@ -14,18 +14,20 @@ describe('HYBRID code+id_token+token', () => {
     describe(`${verb} ${route} with session`, () => {
       before(function () { return this.login(); });
 
-      it('responds with a access_token and code in fragment', function () {
+      it('responds with a id_token, access_token and code in fragment', async function () {
         const auth = new this.AuthorizationRequest({
           response_type,
           scope,
         });
 
-        return this.wrap({ route, verb, auth })
+        await this.wrap({ route, verb, auth })
           .expect(302)
           .expect(auth.validateFragment)
           .expect(auth.validatePresence(['code', 'id_token', 'state', 'access_token', 'expires_in', 'token_type']))
           .expect(auth.validateState)
           .expect(auth.validateClientLocation);
+
+        expect(await this.provider.AccessToken.find(auth.res.access_token)).to.have.property('gty', 'implicit');
       });
 
       it('populates ctx.oidc.entities', function (done) {
