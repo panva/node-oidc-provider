@@ -46,8 +46,15 @@ describe('provider instance', () => {
       });
     });
 
-    it('returns the route for prefixed issuers', () => {
+    it('returns the route for prefixed issuers (1/2)', () => {
       const provider = new Provider('http://localhost/op/2.0');
+      return provider.initialize({}).then(() => {
+        expect(provider.urlFor('authorization')).to.equal('http://localhost/op/2.0/auth');
+      });
+    });
+
+    it('returns the route for prefixed issuers (2/2)', () => {
+      const provider = new Provider('http://localhost/op/2.0/');
       return provider.initialize({}).then(() => {
         expect(provider.urlFor('authorization')).to.equal('http://localhost/op/2.0/auth');
       });
