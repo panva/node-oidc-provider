@@ -76,7 +76,7 @@ describe('BaseToken', () => {
     });
     const value = await token.save();
     const jti = this.getTokenJti(value);
-    timekeeper.travel(Date.now() + (60 * 1000));
+    timekeeper.travel(((Date.now() / 1000 | 0) + 60) * 1000); // eslint-disable-line no-bitwise
     token = await this.provider.AccessToken.find(value);
     await token.save();
     expect(this.adapter.upsert.calledWith(jti, sinon.match({}), 3600)).to.be.true;
