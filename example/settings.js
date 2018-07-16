@@ -32,6 +32,7 @@ module.exports.config = {
     backchannelLogout: true, // defaults to false
     claimsParameter: true, // defaults to false
     conformIdTokenClaims: true, // defaults to false
+    deviceCode: true, // defaults to false
     encryption: true, // defaults to false
     frontchannelLogout: true, // defaults to false
     introspection: true, // defaults to false
@@ -55,6 +56,7 @@ module.exports.config = {
     AccessToken: 1 * 60 * 60, // 1 hour in seconds
     AuthorizationCode: 10 * 60, // 10 minutes in seconds
     IdToken: 1 * 60 * 60, // 1 hour in seconds
+    DeviceCode: 10 * 60, // 10 minutes in seconds
     RefreshToken: 1 * 24 * 60 * 60, // 1 day in seconds
 
     // HEROKU EXAMPLE ONLY, do not use the following expiration unless you want to drop dynamic
