@@ -823,12 +823,15 @@ path prefix.
 
 ### to an express application
 ```js
+// assumes express ^4.0.0
 const prefix = '/oidc';
 expressApp.use(prefix, oidc.callback);
 ```
 
 ### to a koa application
 ```js
+// assumes koa ^2.0.0
+// assumes koa-router ^7.0.0
 const mount = require('koa-mount');
 const prefix = '/oidc';
 koaApp.use(mount(prefix, oidc.app));
