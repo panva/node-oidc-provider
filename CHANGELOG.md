@@ -2,6 +2,16 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+<a name="4.3.1"></a>
+## [4.3.1](https://github.com/panva/node-oidc-provider/compare/v4.3.0...v4.3.1) (2018-07-17)
+
+
+### Bug Fixes
+
+* device_authorization  w/ offline_access scope ([19a85ac](https://github.com/panva/node-oidc-provider/commit/19a85ac))
+
+
+
 <a name="4.3.0"></a>
 # [4.3.0](https://github.com/panva/node-oidc-provider/compare/v4.2.2...v4.3.0) (2018-07-16)
 
