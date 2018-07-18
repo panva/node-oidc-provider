@@ -1,37 +1,37 @@
-# oidc-provider CHANGELOG
+# Change Log
 
-Yay for [SemVer](http://semver.org/).
+All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
-**Table of Contents**
+<a name="4.3.1"></a>
+## [4.3.1](https://github.com/panva/node-oidc-provider/compare/v4.3.0...v4.3.1) (2018-07-17)
 
-<!-- TOC depthFrom:2 depthTo:2 withLinks:1 updateOnSave:1 orderedList:0 -->
 
-- [4.2.x](#42x)
-- [4.1.x](#41x)
-- [4.0.x](#40x)
-- [3.0.x](#30x)
-- [2.18.x](#218x)
-- [2.17.0](#2170)
-- [2.16.0](#2160)
-- [2.15.0](#2150)
-- [2.14.x](#214x)
-- [2.13.x](#213x)
-- [2.12.0](#2120)
-- [2.11.x](#211x)
-- [2.10.0](#2100)
-- [2.9.x](#29x)
-- [2.8.x](#28x)
-- [2.7.x](#27x)
-- [2.6.0](#260)
-- [2.5.x](#25x)
-- [2.4.x](#24x)
-- [2.3.x](#23x)
-- [2.2.x](#22x)
-- [2.1.0](#210)
-- [2.0.x](#20x)
+### Bug Fixes
 
-<!-- /TOC -->
+* device_authorization  w/ offline_access scope ([19a85ac](https://github.com/panva/node-oidc-provider/commit/19a85ac))
 
+
+
+<a name="4.3.0"></a>
+# [4.3.0](https://github.com/panva/node-oidc-provider/compare/v4.2.2...v4.3.0) (2018-07-16)
+
+
+### Bug Fixes
+
+* allow for pkce to be disabled ([3aca2c8](https://github.com/panva/node-oidc-provider/commit/3aca2c8))
+* debug revocation after yield ([bf4c012](https://github.com/panva/node-oidc-provider/commit/bf4c012))
+* pathFor returns a valid route for issuers with terminating "/" ([9e4b1a0](https://github.com/panva/node-oidc-provider/commit/9e4b1a0)), closes [#315](https://github.com/panva/node-oidc-provider/issues/315)
+
+
+### Features
+
+* add Device Flow experimental/draft feature ([461a8e3](https://github.com/panva/node-oidc-provider/commit/461a8e3))
+* add gty storage claim for access and refresh token ([a492a5e](https://github.com/panva/node-oidc-provider/commit/a492a5e))
+* change the requests's uuid to a previous value of grantId ([28673e2](https://github.com/panva/node-oidc-provider/commit/28673e2))
+
+
+
+# Pre standard-version Change Log
 ## 4.2.x
 ### 4.2.2
 - 2018-07-13 [DIFF](https://github.com/panva/node-oidc-provider/compare/v4.2.1...v4.2.2)
@@ -192,7 +192,7 @@ This toggle makes the OP only include End-User claims in the ID Token as defined
     `provider.on('grant.error')` and provide the errors to clients out of bands.
     ```js
     function handleClientAuthErrors(err, { headers: { authorization }, oidc: { body, client } }) {
-      if (err instanceof Provider.InvalidClientAuth) {
+      if (err instanceof Provider.errors.InvalidClientAuth) {
         // save error details out-of-bands for the client developers, `authorization`, `body`, `client`
         // are just some details available, you can dig in ctx object for more.
         console.log(err);
@@ -220,7 +220,7 @@ This toggle makes the OP only include End-User claims in the ID Token as defined
     ```js
     provider.use(async function introspectionTokenType(ctx, next) {
       await next();
-      if (ctx._matchedRouteName === 'introspection') {
+      if (ctx.oidc.route === 'introspection') {
         const token = ctx.oidc.entities.AccessToken || ctx.oidc.entities.ClientCredentials || ctx.oidc.entities.RefreshToken;
 
         switch (token && token.kind) {

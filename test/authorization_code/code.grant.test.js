@@ -64,6 +64,7 @@ describe('grant_type=authorization_code', () => {
     it('populates ctx.oidc.entities (no offline_access)', function (done) {
       this.provider.use(this.assertOnce((ctx) => {
         expect(ctx.oidc.entities).to.have.keys('Account', 'Client', 'AuthorizationCode', 'AccessToken');
+        expect(ctx.oidc.entities.AccessToken).to.have.property('gty', 'authorization_code');
       }, done));
 
       this.agent.post(route)
@@ -80,21 +81,22 @@ describe('grant_type=authorization_code', () => {
     it('populates ctx.oidc.entities (w/ offline_access)', function (done) {
       this.provider.use(this.assertOnce((ctx) => {
         expect(ctx.oidc.entities).to.have.keys('Account', 'Client', 'AuthorizationCode', 'AccessToken', 'RefreshToken');
+        expect(ctx.oidc.entities.AccessToken).to.have.property('gty', 'authorization_code');
+        expect(ctx.oidc.entities.RefreshToken).to.have.property('gty', 'authorization_code');
       }, done));
 
-      (async () => {
-        this.TestAdapter.for('AuthorizationCode').syncUpdate(this.getTokenJti(this.ac), {
-          scope: 'openid offline_access',
-        });
-        await this.agent.post(route)
-          .auth('client', 'secret')
-          .type('form')
-          .send({
-            code: this.ac,
-            grant_type: 'authorization_code',
-            redirect_uri: 'https://client.example.com/cb',
-          });
-      })().catch(done);
+      this.TestAdapter.for('AuthorizationCode').syncUpdate(this.getTokenJti(this.ac), {
+        scope: 'openid offline_access',
+      });
+      this.agent.post(route)
+        .auth('client', 'secret')
+        .type('form')
+        .send({
+          code: this.ac,
+          grant_type: 'authorization_code',
+          redirect_uri: 'https://client.example.com/cb',
+        })
+        .end(() => {});
     });
 
     it('returns token-endpoint-like cache headers', function () {

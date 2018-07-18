@@ -28,17 +28,24 @@ if (FORMAT === 'jwt') {
     const codeChallenge = 'codeChallenge';
     const codeChallengeMethod = 'codeChallengeMethod';
     const aud = [clientId, 'foo'];
+    const gty = 'foo';
+    const error = 'access_denied';
+    const errorDescription = 'resource owner denied access';
+    const params = { foo: 'bar' };
+    const userCode = '1384-3217';
+    const deviceInfo = { foo: 'bar' };
 
     /* eslint-disable object-property-newline */
     const fullPayload = {
       accountId, claims, clientId, grantId, scope, sid, consumed, acr, amr, authTime, nonce,
-      redirectUri, codeChallenge, codeChallengeMethod, aud,
+      redirectUri, codeChallenge, codeChallengeMethod, aud, error, errorDescription, params,
+      userCode, deviceInfo, gty,
     };
     /* eslint-enable object-property-newline */
 
     afterEach(function () {
       [
-        'AuthorizationCode', 'AccessToken', 'RefreshToken', 'ClientCredentials', 'InitialAccessToken', 'RegistrationAccessToken',
+        'AuthorizationCode', 'AccessToken', 'RefreshToken', 'ClientCredentials', 'InitialAccessToken', 'RegistrationAccessToken', 'DeviceCode',
       ].forEach((model) => {
         if (this.TestAdapter.for(model).upsert.restore) {
           this.TestAdapter.for(model).upsert.restore();
@@ -53,32 +60,33 @@ if (FORMAT === 'jwt') {
       const jwt = await token.save();
 
       assert.calledWith(upsert, string, {
-        jwt: string,
-        grantId,
         accountId,
+        aud,
         claims,
         clientId,
-        aud,
-        scope,
-        sid,
-        kind,
+        exp: number,
+        grantId,
+        gty,
+        iat: number,
         iss: this.provider.issuer,
         jti: upsert.getCall(0).args[0],
-        iat: number,
-        exp: number,
+        jwt: string,
+        kind,
+        scope,
+        sid,
       });
 
       const { iat, jti, exp } = upsert.getCall(0).args[1];
       const payload = decode(jwt.split('.')[1]);
       expect(payload).to.eql({
-        iat,
-        jti,
-        exp,
-        sub: accountId,
-        azp: clientId,
         aud,
-        scope,
+        azp: clientId,
+        exp,
+        iat,
         iss: this.provider.issuer,
+        jti,
+        scope,
+        sub: accountId,
       });
     });
 
@@ -89,38 +97,38 @@ if (FORMAT === 'jwt') {
       const jwt = await token.save();
 
       assert.calledWith(upsert, string, {
-        jwt: string,
-        grantId,
-        consumed,
+        accountId,
         acr,
-        codeChallenge,
-        codeChallengeMethod,
         amr,
         authTime,
-        accountId,
         claims,
         clientId,
-        scope,
-        nonce,
-        redirectUri,
-        sid,
-        kind,
+        codeChallenge,
+        codeChallengeMethod,
+        consumed,
+        exp: number,
+        grantId,
+        iat: number,
         iss: this.provider.issuer,
         jti: upsert.getCall(0).args[0],
-        iat: number,
-        exp: number,
+        jwt: string,
+        kind,
+        nonce,
+        redirectUri,
+        scope,
+        sid,
       });
 
       const { iat, jti, exp } = upsert.getCall(0).args[1];
       const payload = decode(jwt.split('.')[1]);
       expect(payload).to.eql({
-        iat,
-        jti,
-        exp,
-        sub: accountId,
         aud: clientId,
-        scope,
+        exp,
+        iat,
         iss: this.provider.issuer,
+        jti,
+        scope,
+        sub: accountId,
       });
     });
 
@@ -131,35 +139,71 @@ if (FORMAT === 'jwt') {
       const jwt = await token.save();
 
       assert.calledWith(upsert, string, {
-        jwt: string,
-        grantId,
-        consumed,
         accountId,
         acr,
         amr,
         authTime,
         claims,
         clientId,
+        consumed,
+        exp: number,
+        grantId,
+        gty,
+        iat: number,
+        iss: this.provider.issuer,
+        jti: upsert.getCall(0).args[0],
+        jwt: string,
+        kind,
         nonce,
         scope,
         sid,
-        kind,
-        iss: this.provider.issuer,
-        jti: upsert.getCall(0).args[0],
-        iat: number,
-        exp: number,
       });
 
       const { iat, jti, exp } = upsert.getCall(0).args[1];
       const payload = decode(jwt.split('.')[1]);
       expect(payload).to.eql({
-        iat,
-        jti,
-        exp,
-        sub: accountId,
         aud: clientId,
-        scope,
+        exp,
+        iat,
         iss: this.provider.issuer,
+        jti,
+        scope,
+        sub: accountId,
+      });
+    });
+
+    it('for DeviceCode', async function () {
+      const kind = 'DeviceCode';
+      const upsert = spy(this.TestAdapter.for('DeviceCode'), 'upsert');
+      const token = new this.provider.DeviceCode(fullPayload);
+      const jwt = await token.save();
+
+      assert.calledWith(upsert, string, {
+        accountId,
+        acr,
+        amr,
+        authTime,
+        claims,
+        clientId,
+        codeChallenge,
+        codeChallengeMethod,
+        consumed,
+        deviceInfo,
+        error,
+        errorDescription,
+        exp: number,
+        grantId,
+        gty,
+        iat: number,
+        iss: this.provider.issuer,
+        jti: upsert.getCall(0).args[0],
+        jwt,
+        kind,
+        nonce,
+        params,
+        scope,
+        sid,
+        userCode,
       });
     });
 
@@ -170,27 +214,27 @@ if (FORMAT === 'jwt') {
       const jwt = await token.save();
 
       assert.calledWith(upsert, string, {
-        jwt: string,
-        clientId,
-        scope,
         aud,
-        kind,
+        clientId,
+        exp: number,
+        iat: number,
         iss: this.provider.issuer,
         jti: upsert.getCall(0).args[0],
-        iat: number,
-        exp: number,
+        jwt: string,
+        kind,
+        scope,
       });
 
       const { iat, jti, exp } = upsert.getCall(0).args[1];
       const payload = decode(jwt.split('.')[1]);
       expect(payload).to.eql({
-        iat,
-        jti,
-        exp,
-        azp: clientId,
         aud,
-        scope,
+        azp: clientId,
+        exp,
+        iat,
         iss: this.provider.issuer,
+        jti,
+        scope,
       });
     });
 
@@ -204,21 +248,21 @@ if (FORMAT === 'jwt') {
       const jwt = await token.save();
 
       assert.calledWith(upsert, string, {
-        jwt: string,
-        kind,
+        exp: number,
+        iat: number,
         iss: this.provider.issuer,
         jti: upsert.getCall(0).args[0],
-        iat: number,
-        exp: number,
+        jwt: string,
+        kind,
       });
 
       const { iat, jti, exp } = upsert.getCall(0).args[1];
       const payload = decode(jwt.split('.')[1]);
       expect(payload).to.eql({
-        iat,
-        jti,
         exp,
+        iat,
         iss: this.provider.issuer,
+        jti,
       });
     });
 
@@ -232,23 +276,23 @@ if (FORMAT === 'jwt') {
       const jwt = await token.save();
 
       assert.calledWith(upsert, string, {
-        jwt: string,
         clientId,
-        kind,
+        exp: number,
+        iat: number,
         iss: this.provider.issuer,
         jti: upsert.getCall(0).args[0],
-        iat: number,
-        exp: number,
+        jwt: string,
+        kind,
       });
 
       const { iat, jti, exp } = upsert.getCall(0).args[1];
       const payload = decode(jwt.split('.')[1]);
       expect(payload).to.eql({
-        iat,
-        jti,
-        exp,
         aud: clientId,
+        exp,
+        iat,
         iss: this.provider.issuer,
+        jti,
       });
     });
   });

@@ -1,10 +1,12 @@
 /* eslint-disable no-param-reassign */
 
 const { createInterface: readline } = require('readline');
-const { createReadStream, writeFileSync, readFileSync } = require('fs');
-const values = require('../lib/helpers/defaults');
-const { get } = require('lodash');
 const { inspect } = require('util');
+const { createReadStream, writeFileSync, readFileSync } = require('fs');
+
+const { get } = require('lodash');
+
+const values = require('../lib/helpers/defaults');
 
 function capitalizeSentences(copy) {
   return copy.replace(/\. [a-z]/g, match => `. ${match.slice(-1).toUpperCase()}`);
@@ -133,7 +135,8 @@ const props = [
             if (line.includes('<style>')) {
               mute = true;
               return '<style>/* css and html classes omitted for brevity, see lib/helpers/defaults.js */</style>';
-            } else if (line.includes('</style>')) {
+            }
+            if (line.includes('</style>')) {
               mute = false;
               return undefined;
             }

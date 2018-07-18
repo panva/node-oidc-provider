@@ -9,6 +9,10 @@ function grantKeyFor(id) {
   return ['grant', id].join(':');
 }
 
+function userCodeKeyFor(userCode) {
+  return ['userCode', userCode].join(':');
+}
+
 class TestAdapter {
   constructor(name) {
     this.name = name;
@@ -59,6 +63,7 @@ class TestAdapter {
 
   syncFind(id, { payload = false } = {}) {
     const found = store.get(this.key(id));
+    if (!found) return undefined;
     if (payload && FORMAT === 'legacy') {
       return JSON.parse(base64url.decode(found.payload));
     }
@@ -67,6 +72,7 @@ class TestAdapter {
 
   syncUpdate(id, update) {
     const found = store.get(this.key(id));
+    if (!found) return;
     switch (FORMAT) {
       case 'legacy': {
         const payload = JSON.parse(base64url.decode(found.payload));
@@ -87,10 +93,15 @@ class TestAdapter {
     return Promise.resolve(this.syncFind(id));
   }
 
+  findByUserCode(userCode) {
+    const id = store.get(userCodeKeyFor(userCode));
+    return this.find(id);
+  }
+
   upsert(id, payload, expiresIn) {
     const key = this.key(id);
 
-    const { grantId } = payload;
+    const { grantId, userCode } = payload;
     if (grantId) {
       const grantKey = grantKeyFor(grantId);
       const grant = store.get(grantKey);
@@ -99,6 +110,10 @@ class TestAdapter {
       } else {
         grant.push(key);
       }
+    }
+
+    if (userCode) {
+      store.set(userCodeKeyFor(userCode), id, expiresIn * 1000);
     }
 
     store.set(key, payload, expiresIn * 1000);
