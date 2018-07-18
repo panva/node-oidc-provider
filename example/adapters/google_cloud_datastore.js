@@ -11,12 +11,12 @@ const Datastore = require('@google-cloud/datastore'); // eslint-disable-line imp
 
 let DB;
 
-const grantable = new Set([
+const grantable = [
   'AccessToken',
   'AuthorizationCode',
   'RefreshToken',
   'DeviceCode',
-]);
+];
 
 class Adapter {
   constructor(name) {
@@ -29,7 +29,9 @@ class Adapter {
       data: {
         id,
         ...payload,
-        ...(expiresIn ? { expiresAt: new Date(Date.now() + (expiresIn * 1000)) } : undefined),
+        ...(expiresIn ? {
+          expiresAt: (new Date(Date.now() + (expiresIn * 1000))).toISOString(),
+        } : undefined),
       },
     });
   }
@@ -38,7 +40,12 @@ class Adapter {
     return DB.get(DB.key([this.name, id]))
       .then((data) => {
         const entity = data[0];
-        if (entity && entity.expiresAt > Date.now()) {
+        if (entity && !entity.expiresAt) {
+          return entity;
+        } if (
+          entity && entity.expiresAt
+          && (new Date(entity.expiresAt)).getTime() > Date.now()
+        ) {
           return entity;
         }
 
@@ -57,7 +64,7 @@ class Adapter {
   }
 
   async destroy(id) {
-    if (grantable.has(this.name)) {
+    if (grantable.includes(this.name)) {
       await this.find(id).then(({ grantId }) => (
         Promise.all(grantable.map((name) => {
           const query = DB.createQuery(name).filter('grantId', '=', grantId);
