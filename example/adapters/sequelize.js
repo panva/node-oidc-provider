@@ -81,7 +81,9 @@ class SequelizeAdapter {
   async destroy(id) {
     if (grantable.has(this.name)) {
       return this.model.findByPrimary(id).then((({ grantId }) => (
-        Promise.all(grantable.map(name => models.get(name).destroy({ where: { grantId } })))
+        Promise.all(
+          Array.from(grantable).map(name => models.get(name).destroy({ where: { grantId } })),
+        )
       )));
     }
 
