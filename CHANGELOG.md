@@ -192,7 +192,7 @@ This toggle makes the OP only include End-User claims in the ID Token as defined
     `provider.on('grant.error')` and provide the errors to clients out of bands.
     ```js
     function handleClientAuthErrors(err, { headers: { authorization }, oidc: { body, client } }) {
-      if (err instanceof Provider.InvalidClientAuth) {
+      if (err instanceof Provider.errors.InvalidClientAuth) {
         // save error details out-of-bands for the client developers, `authorization`, `body`, `client`
         // are just some details available, you can dig in ctx object for more.
         console.log(err);
