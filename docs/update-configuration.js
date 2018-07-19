@@ -15,15 +15,18 @@ function capitalizeSentences(copy) {
 class Block {
   write(buffer) {
     if (!this[this.active]) {
-      this[this.active] = buffer;
+      this[this.active] = [buffer];
     } else {
       while (buffer.indexOf('*') === 0 || buffer.indexOf(' ') === 0) {
         buffer = buffer.slice(1);
       }
       if (buffer.indexOf('-') === 0) {
-        buffer = Buffer.concat([Buffer.from('\n'), buffer]);
+        const last = this[this.active].pop();
+        this[this.active].push(Buffer.concat([last, Buffer.from('\n')]));
       }
-      this[this.active] = Buffer.concat([this[this.active], Buffer.from(' '), buffer]);
+      if (buffer.length) {
+        this[this.active].push(buffer);
+      }
     }
   }
 }
@@ -99,11 +102,11 @@ const props = [
   Object.keys(blocks).sort().forEach((block) => {
     append(`\n### ${block}\n\n`);
     if (blocks[block].description) {
-      append(`${capitalizeSentences(blocks[block].description.toString())}  \n\n`);
+      append(`${capitalizeSentences(blocks[block].description.join(' '))}  \n\n`);
     }
-    ['affects', 'recommendation'].forEach((section) => {
-      if (blocks[block][section]) {
-        append(`${section}: ${blocks[block][section].toString()}  \n`);
+    ['affects', 'recommendation'].forEach((option) => {
+      if (blocks[block][option]) {
+        append(`${option}: ${blocks[block][option].join(' ')}  \n`);
       }
     });
     if (!('@nodefault' in blocks[block])) {
@@ -162,4 +165,7 @@ const props = [
   const post = conf.slice(conf.indexOf(comEnd));
 
   writeFileSync('./docs/configuration.md', Buffer.concat([pre, mid, post]));
-})();
+})().catch((err) => {
+  console.error(err); // eslint-disable-line no-console
+  process.exitCode = 1;
+});

@@ -633,6 +633,20 @@ Note: Although a general advise to use a `helmet`([express](https://www.npmjs.co
 [koa](https://www.npmjs.com/package/koa-helmet)) it is especially advised for your interaction views
 routes if Web Message Response Mode is available on your deployment.
 
+**Device Flow for Browserless and Input Constrained Devices**  
+Enables [OAuth 2.0 Device Flow for Browserless and Input Constrained Devices][device-flow]
+```js
+const configuration = { features: { deviceCode: Boolean[false] } };
+```
+
+To change the user code charset and mask:
+```js
+// default values are `BCDFGHJKLMNPQRSTVWXZ` and `****-****` for 20^8 entropy as recommended per the spec
+// changing to 10^9 alternative might look like this
+const configuration = { features: { deviceCode: { charset: '0123456789', mask: '***-***-***' } } };
+```
+
+
 
 ## Custom Grant Types
 oidc-provider comes with the basic grants implemented, but you can register your own grant types,
@@ -1057,7 +1071,7 @@ default value:
 
 URL for 3rd party cookies support check helper  
 
-affects: sessionManagement feature   
+affects: sessionManagement feature  
 
 default value:
 ```js
@@ -1211,10 +1225,10 @@ async findById(ctx, sub, token) {
 
 ### formats
 
-This option allows to configure the token storage and value formats. The different values change how a token value is generated as well as what properties get sent to the adapter for storage. Three formats are defined, see the expected [Adapter API](/example/my_adapter.js) for each format's specifics.  
-- `legacy` is the current and default format until next major release. No changes in the format sent to adapter.
-- `opaque` formatted tokens have a different value then `legacy` and in addition store what was in legacy format encoded under `payload` as root properties, this makes analysing the data in your storage way easier
-- `jwt` formatted tokens are issued as JWTs and stored the same as `opaque` only with additional property `jwt`. The signing algorithm for these tokens uses the client's `id_token_signed_response_alg` value and falls back to `RS256` for tokens with no relation to a client or when the client's alg is `none`  
+This option allows to configure the token storage and value formats. The different values change how a token value is generated as well as what properties get sent to the adapter for storage. Three formats are defined, see the expected [Adapter API](/example/my_adapter.js) for each format's specifics.
+ - `legacy` is the current and default format until next major release. No changes in the format sent to adapter
+ - `opaque` formatted tokens have a different value then `legacy` and in addition store what was in legacy format encoded under `payload` as root properties, this makes analysing the data in your storage way easier
+ - `jwt` formatted tokens are issued as JWTs and stored the same as `opaque` only with additional property `jwt`. The signing algorithm for these tokens uses the client's `id_token_signed_response_alg` value and falls back to `RS256` for tokens with no relation to a client or when the client's alg is `none`  
 
 affects: properties passed to adapters for token types, issued token formats  
 recommendation: set default to `opaque` if you're still developing your application, `legacy` will not be the default in the major versions coming forward. It is not recommended to set `jwt` as default, if you need it, it's most likely just for Access Tokens.  
@@ -1405,8 +1419,8 @@ default value:
 ### refreshTokenRotation
 
 Configures if and how the OP rotates refresh tokens after they are used. Supported values are
-- `none` when refresh tokens are not rotated and their initial expiration date is final or
-- `rotateAndConsume` when refresh tokens are rotated when used, current token is marked as consumed and new one is issued with new TTL, when a consumed refresh token is encountered an error is returned instead and the whole token chain (grant) is revoked  
+ - `none` refresh tokens are not rotated and their initial expiration date is final
+ - `rotateAndConsume` when refresh tokens are rotated when used, current token is marked as consumed and new one is issued with new TTL, when a consumed refresh token is encountered an error is returned instead and the whole token chain (grant) is revoked  
 
 affects: refresh token rotation and adjacent revocation  
 
@@ -1507,8 +1521,8 @@ default value:
 ### subjectTypes
 
 List of the Subject Identifier types that this OP supports. Valid types are
-- `public`
-- `pairwise`  
+ - `public`
+ - `pairwise`  
 
 affects: discovery, registration, registration management, ID Token and Userinfo sub claim values  
 
@@ -1692,3 +1706,4 @@ async userCodeInputSource(ctx, form, out, err) {
 [third-party-cookies-git]: https://github.com/mindmup/3rdpartycookiecheck
 [third-party-cookies-so]: https://stackoverflow.com/questions/3550790/check-if-third-party-cookies-are-enabled/7104048#7104048
 [wmrm]: https://tools.ietf.org/html/draft-sakimura-oauth-wmrm-00
+[device-flow]: https://tools.ietf.org/html/draft-ietf-oauth-device-flow-11
