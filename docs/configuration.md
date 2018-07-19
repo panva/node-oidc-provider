@@ -940,9 +940,9 @@ const oidc = new Provider('http://localhost:3000', {
 
 Array of strings, the Authentication Context Class References that OP supports.  
 
-affects: discovery, ID Token acr claim values  
+_**affects**_: discovery, ID Token acr claim values  
 
-default value:
+_**default value**_:
 ```js
 []
 ```
@@ -951,9 +951,9 @@ default value:
 
 Helper used by the OP to push additional audiences to issued ID, Access and ClientCredentials Tokens as well as other signed responses. The return value should either be falsy to omit adding additional audiences or an array of strings to push.  
 
-affects: ID Token audiences, access token audiences, client credential audiences, signed UserInfo audiences  
+_**affects**_: ID Token audiences, access token audiences, client credential audiences, signed UserInfo audiences  
 
-default value:
+_**default value**_:
 ```js
 async audiences(ctx, sub, token, use, scope) {
   // @param ctx   - koa request context
@@ -971,9 +971,9 @@ async audiences(ctx, sub, token, use, scope) {
 
 List of the Claim Names of the Claims that the OpenID Provider MAY be able to supply values for.  
 
-affects: discovery, ID Token claim names, Userinfo claim names  
+_**affects**_: discovery, ID Token claim names, Userinfo claim names  
 
-default value:
+_**default value**_:
 ```js
 { acr: null,
   sid: null,
@@ -986,10 +986,10 @@ default value:
 
 A `Number` value (in seconds) describing how long a dynamically loaded client should remain cached.  
 
-affects: adapter-backed client cache duration  
-recommendation: do not set to a low value or completely disable this, client properties are validated upon loading up and this may be potentially an expensive operation, sometimes even requesting resources from the network (i.e. client jwks_uri, sector_identifier_uri etc).  
+_**affects**_: adapter-backed client cache duration  
+_**recommendation**_: do not set to a low value or completely disable this, client properties are validated upon loading up and this may be potentially an expensive operation, sometimes even requesting resources from the network (i.e. client jwks_uri, sector_identifier_uri etc).  
 
-default value:
+_**default value**_:
 ```js
 Infinity
 ```
@@ -998,10 +998,10 @@ Infinity
 
 A `Number` value (in seconds) describing the allowed system clock skew  
 
-affects: JWT (ID token, client assertion) and Token expiration validations  
-recommendation: Set to a reasonable value (60) to cover server-side client and oidc-provider server clock skew  
+_**affects**_: JWT (ID token, client assertion) and Token expiration validations  
+_**recommendation**_: Set to a reasonable value (60) to cover server-side client and oidc-provider server clock skew  
 
-default value:
+_**default value**_:
 ```js
 0
 ```
@@ -1010,15 +1010,15 @@ default value:
 
 Options for the [cookie module][module-cookies] used by the OP to keep track of various User-Agent states.  
 
-affects: User-Agent sessions, passing of authorization details to interaction  
+_**affects**_: User-Agent sessions, passing of authorization details to interaction  
 
 ### cookies.keys
 
 [Keygrip][keygrip-module] Signing keys used for cookie signing to prevent tampering.  
 
-recommendation: Rotate regularly (by prepending new keys) with a reasonable interval and keep a reasonable history of keys to allow for returning user session cookies to still be valid and re-signed  
+_**recommendation**_: Rotate regularly (by prepending new keys) with a reasonable interval and keep a reasonable history of keys to allow for returning user session cookies to still be valid and re-signed  
 
-default value:
+_**default value**_:
 ```js
 []
 ```
@@ -1027,10 +1027,10 @@ default value:
 
 Options for long-term cookies  
 
-affects: User-Agent session reference, Session Management states  
-recommendation: set cookies.keys and cookies.long.signed = true  
+_**affects**_: User-Agent session reference, Session Management states  
+_**recommendation**_: set cookies.keys and cookies.long.signed = true  
 
-default value:
+_**default value**_:
 ```js
 { secure: undefined,
   signed: undefined,
@@ -1042,9 +1042,9 @@ default value:
 
 Cookie names used by the OP to store and transfer various states.  
 
-affects: User-Agent session, Session Management states and interaction cookie names  
+_**affects**_: User-Agent session, Session Management states and interaction cookie names  
 
-default value:
+_**default value**_:
 ```js
 { session: '_session',
   interaction: '_grant',
@@ -1056,10 +1056,10 @@ default value:
 
 Options for short-term cookies  
 
-affects: passing of authorization details to interaction  
-recommendation: set cookies.keys and cookies.short.signed = true  
+_**affects**_: passing of authorization details to interaction  
+_**recommendation**_: set cookies.keys and cookies.short.signed = true  
 
-default value:
+_**default value**_:
 ```js
 { secure: undefined,
   signed: undefined,
@@ -1071,9 +1071,9 @@ default value:
 
 URL for 3rd party cookies support check helper  
 
-affects: sessionManagement feature  
+_**affects**_: sessionManagement feature  
 
-default value:
+_**default value**_:
 ```js
 'https://cdn.rawgit.com/panva/3rdpartycookiecheck/92fead3f/start.html'
 ```
@@ -1082,9 +1082,9 @@ default value:
 
 HTML source rendered when device code feature renders a success page for the User-Agent.  
 
-affects: device code success page  
+_**affects**_: device code success page  
 
-default value:
+_**default value**_:
 ```js
 async deviceCodeSuccess(ctx) {
   // @param ctx - koa request context
@@ -1110,9 +1110,9 @@ async deviceCodeSuccess(ctx) {
 
 Pass additional properties to this object to extend the discovery document  
 
-affects: discovery  
+_**affects**_: discovery  
 
-default value:
+_**default value**_:
 ```js
 { claim_types_supported: [ 'normal' ],
   claims_locales_supported: undefined,
@@ -1127,14 +1127,14 @@ default value:
 
 Allows for custom client metadata to be defined, validated, manipulated as well as for existing property validations to be extended  
 
-affects: clients, registration, registration management  
+_**affects**_: clients, registration, registration management  
 
 ### extraClientMetadata.properties
 
 Array of property names that clients will be allowed to have defined. Property names will have to strictly follow the ones defined here. However, on a Client instance property names will be snakeCased.  
 
 
-default value:
+_**default value**_:
 ```js
 []
 ```
@@ -1144,7 +1144,7 @@ default value:
 validator function that will be executed in order once for every property defined in `extraClientMetadata.properties`, regardless of its value or presence on the client metadata passed in. Must be synchronous, async validators or functions returning Promise will be rejected during runtime. To modify the current client metadata values (for current key or any other) just modify the passed in `metadata` argument.  
 
 
-default value:
+_**default value**_:
 ```js
 validator(key, value, metadata) {
   // validations for key, value, other related metadata
@@ -1159,9 +1159,9 @@ validator(key, value, metadata) {
 
 Pass an iterable object (i.e. Array or set of strings) to extend the parameters recognised by the authorization and device authorization endpoints. These parameters are then available in `ctx.oidc.params` as well as passed to interaction session details  
 
-affects: authorization, device_authorization, interaction  
+_**affects**_: authorization, device_authorization, interaction  
 
-default value:
+_**default value**_:
 ```js
 []
 ```
@@ -1171,7 +1171,7 @@ default value:
 Enable/disable features, see configuration.md for more details  
 
 
-default value:
+_**default value**_:
 ```js
 { devInteractions: true,
   discovery: true,
@@ -1199,9 +1199,9 @@ default value:
 
 Helper used by the OP to load an account and retrieve its available claims. The return value should be a Promise and #claims() can return a Promise too  
 
-affects: authorization, authorization_code and refresh_token grants, ID Token claims  
+_**affects**_: authorization, authorization_code and refresh_token grants, ID Token claims  
 
-default value:
+_**default value**_:
 ```js
 async findById(ctx, sub, token) {
   // @param ctx   - koa request context
@@ -1226,14 +1226,14 @@ async findById(ctx, sub, token) {
 ### formats
 
 This option allows to configure the token storage and value formats. The different values change how a token value is generated as well as what properties get sent to the adapter for storage. Three formats are defined, see the expected [Adapter API](/example/my_adapter.js) for each format's specifics.
- - `legacy` is the current and default format until next major release. No changes in the format sent to adapter
+ - `legacy` is the current and default format until next major release. No changes in the format sent to adapter.
  - `opaque` formatted tokens have a different value then `legacy` and in addition store what was in legacy format encoded under `payload` as root properties, this makes analysing the data in your storage way easier
  - `jwt` formatted tokens are issued as JWTs and stored the same as `opaque` only with additional property `jwt`. The signing algorithm for these tokens uses the client's `id_token_signed_response_alg` value and falls back to `RS256` for tokens with no relation to a client or when the client's alg is `none`  
 
-affects: properties passed to adapters for token types, issued token formats  
-recommendation: set default to `opaque` if you're still developing your application, `legacy` will not be the default in the major versions coming forward. It is not recommended to set `jwt` as default, if you need it, it's most likely just for Access Tokens.  
+_**affects**_: properties passed to adapters for token types, issued token formats  
+_**recommendation**_: set default to `opaque` if you're still developing your application, `legacy` will not be the default in the major versions coming forward. It is not recommended to set `jwt` as default, if you need it, it's most likely just for Access Tokens.  
 
-default value:
+_**default value**_:
 ```js
 { default: 'legacy',
   AccessToken: undefined,
@@ -1249,9 +1249,9 @@ default value:
 
 HTML source rendered when there are pending front-channel logout iframes to be called to trigger RP logouts. It should handle waiting for the frames to be loaded as well as have a timeout mechanism in it.  
 
-affects: session management  
+_**affects**_: session management  
 
-default value:
+_**default value**_:
 ```js
 async frontchannelLogoutPendingSource(ctx, frames, postLogoutRedirectUri, timeout) {
   ctx.body = `<!DOCTYPE html>
@@ -1284,9 +1284,9 @@ ${frames.join('')}
 
 Helper used by the OP as a final check whether the End-User should be sent to interaction or not, the default behavior is that every RP must be authorized per session and that native application clients always require End-User prompt to be confirmed. Return false if no interaction should be performed, return an object with relevant error, reason, etc. When interaction should be requested  
 
-affects: authorization interactions  
+_**affects**_: authorization interactions  
 
-default value:
+_**default value**_:
 ```js
 async interactionCheck(ctx) {
   if (!ctx.oidc.session.sidFor(ctx.oidc.client.clientId)) {
@@ -1313,9 +1313,9 @@ async interactionCheck(ctx) {
 
 Helper used by the OP to determine where to redirect User-Agent for necessary interaction, can return both absolute and relative urls  
 
-affects: authorization interactions  
+_**affects**_: authorization interactions  
 
-default value:
+_**default value**_:
 ```js
 async interactionUrl(ctx, interaction) {
   return `/interaction/${ctx.oidc.uuid}`;
@@ -1326,9 +1326,9 @@ async interactionUrl(ctx, interaction) {
 
 List of Client Authentication methods supported by this OP's Introspection Endpoint  
 
-affects: discovery, client authentication for introspection, registration and registration management  
+_**affects**_: discovery, client authentication for introspection, registration and registration management  
 
-default value:
+_**default value**_:
 ```js
 [ 'none',
   'client_secret_basic',
@@ -1341,9 +1341,9 @@ default value:
 
 HTML source rendered when when session management feature renders a confirmation prompt for the User-Agent.  
 
-affects: session management  
+_**affects**_: session management  
 
-default value:
+_**default value**_:
 ```js
 async logoutSource(ctx, form) {
   // @param ctx - koa request context
@@ -1385,9 +1385,9 @@ async logoutSource(ctx, form) {
 
 Salt used by OP when resolving pairwise ID Token and Userinfo sub claim value  
 
-affects: ID Token and Userinfo sub claim values  
+_**affects**_: ID Token and Userinfo sub claim values  
 
-default value:
+_**default value**_:
 ```js
 ''
 ```
@@ -1396,9 +1396,9 @@ default value:
 
 URL to which the OP redirects the User-Agent when no post_logout_redirect_uri is provided by the RP  
 
-affects: session management  
+_**affects**_: session management  
 
-default value:
+_**default value**_:
 ```js
 async postLogoutRedirectUri(ctx) {
   return ctx.origin;
@@ -1409,9 +1409,9 @@ async postLogoutRedirectUri(ctx) {
 
 List of the prompt values that the OpenID Provider MAY be able to resolve  
 
-affects: authorization  
+_**affects**_: authorization  
 
-default value:
+_**default value**_:
 ```js
 [ 'consent', 'login', 'none' ]
 ```
@@ -1422,9 +1422,9 @@ Configures if and how the OP rotates refresh tokens after they are used. Support
  - `none` refresh tokens are not rotated and their initial expiration date is final
  - `rotateAndConsume` when refresh tokens are rotated when used, current token is marked as consumed and new one is issued with new TTL, when a consumed refresh token is encountered an error is returned instead and the whole token chain (grant) is revoked  
 
-affects: refresh token rotation and adjacent revocation  
+_**affects**_: refresh token rotation and adjacent revocation  
 
-default value:
+_**default value**_:
 ```js
 'rotateAndConsume'
 ```
@@ -1433,9 +1433,9 @@ default value:
 
 Helper used by the OP to present errors to the User-Agent  
 
-affects: presentation of errors encountered during End-User flows  
+_**affects**_: presentation of errors encountered during End-User flows  
 
-default value:
+_**default value**_:
 ```js
 async renderError(ctx, out, error) {
   ctx.type = 'html';
@@ -1458,9 +1458,9 @@ async renderError(ctx, out, error) {
 
 List of response_type values that OP supports  
 
-affects: authorization, discovery, registration, registration management  
+_**affects**_: authorization, discovery, registration, registration management  
 
-default value:
+_**default value**_:
 ```js
 [ 'code id_token token',
   'code id_token',
@@ -1475,9 +1475,9 @@ default value:
 
 List of Client Authentication methods supported by this OP's Revocation Endpoint  
 
-affects: discovery, client authentication for revocation, registration and registration management  
+_**affects**_: discovery, client authentication for revocation, registration and registration management  
 
-default value:
+_**default value**_:
 ```js
 [ 'none',
   'client_secret_basic',
@@ -1490,9 +1490,9 @@ default value:
 
 Routing values used by the OP. Only provide routes starting with "/"  
 
-affects: routing  
+_**affects**_: routing  
 
-default value:
+_**default value**_:
 ```js
 { authorization: '/auth',
   certificates: '/certs',
@@ -1511,9 +1511,9 @@ default value:
 
 List of the scope values that the OP supports  
 
-affects: discovery, authorization, ID Token claims, Userinfo claims  
+_**affects**_: discovery, authorization, ID Token claims, Userinfo claims  
 
-default value:
+_**default value**_:
 ```js
 [ 'openid', 'offline_access' ]
 ```
@@ -1524,9 +1524,9 @@ List of the Subject Identifier types that this OP supports. Valid types are
  - `public`
  - `pairwise`  
 
-affects: discovery, registration, registration management, ID Token and Userinfo sub claim values  
+_**affects**_: discovery, registration, registration management, ID Token and Userinfo sub claim values  
 
-default value:
+_**default value**_:
 ```js
 [ 'public' ]
 ```
@@ -1535,9 +1535,9 @@ default value:
 
 List of Client Authentication methods supported by this OP's Token Endpoint  
 
-affects: discovery, client authentication for token endpoint, registration and registration management  
+_**affects**_: discovery, client authentication for token endpoint, registration and registration management  
 
-default value:
+_**default value**_:
 ```js
 [ 'none',
   'client_secret_basic',
@@ -1550,9 +1550,9 @@ default value:
 
 Expirations (in seconds) for all token types  
 
-affects: tokens  
+_**affects**_: tokens  
 
-default value:
+_**default value**_:
 ```js
 { AccessToken: 3600,
   AuthorizationCode: 600,
@@ -1566,10 +1566,10 @@ default value:
 
 Function resolving whether a given value with expiration is presented first time  
 
-affects: client_secret_jwt and private_key_jwt client authentications  
-recommendation: configure this option to use a shared store if client_secret_jwt and private_key_jwt are used  
+_**affects**_: client_secret_jwt and private_key_jwt client authentications  
+_**recommendation**_: configure this option to use a shared store if client_secret_jwt and private_key_jwt are used  
 
-default value:
+_**default value**_:
 ```js
 async uniqueness(ctx, jti, expiresAt) {
   if (cache.get(jti)) return false;
@@ -1582,9 +1582,9 @@ async uniqueness(ctx, jti, expiresAt) {
 
 Fine-tune the algorithms your provider should support by further omitting values from the respective discovery properties  
 
-affects: signing, encryption, discovery, client validation  
+_**affects**_: signing, encryption, discovery, client validation  
 
-default value:
+_**default value**_:
 ```js
 { idTokenEncryptionAlgValues: [],
   idTokenEncryptionEncValues: [],
@@ -1604,9 +1604,9 @@ default value:
 
 HTML source rendered when device code feature renders an a confirmation prompt for ther User-Agent.  
 
-affects: device code authorization confirmation  
+_**affects**_: device code authorization confirmation  
 
-default value:
+_**default value**_:
 ```js
 async userCodeConfirmSource(ctx, form, client, deviceInfo) {
   // @param ctx - koa request context
@@ -1644,9 +1644,9 @@ async userCodeConfirmSource(ctx, form, client, deviceInfo) {
 
 HTML source rendered when device code feature renders an input prompt for the User-Agent.  
 
-affects: device code input  
+_**affects**_: device code input  
 
-default value:
+_**default value**_:
 ```js
 async userCodeInputSource(ctx, form, out, err) {
   // @param ctx - koa request context

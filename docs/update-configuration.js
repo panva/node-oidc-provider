@@ -106,11 +106,11 @@ const props = [
     }
     ['affects', 'recommendation'].forEach((option) => {
       if (blocks[block][option]) {
-        append(`${option}: ${blocks[block][option].join(' ')}  \n`);
+        append(`_**${option}**_: ${blocks[block][option].join(' ')}  \n`);
       }
     });
     if (!('@nodefault' in blocks[block])) {
-      append('\ndefault value:\n');
+      append('\n_**default value**_:\n');
       append('```js\n');
       const value = get(values, block);
       switch (typeof value) {
