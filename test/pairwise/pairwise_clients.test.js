@@ -52,6 +52,23 @@ describe('pairwise features', () => {
           expect(err.error_description).to.eq('sector_identifier_uri is required when using multiple hosts in your redirect_uris');
         });
       });
+
+      it('fails to validate when no redirect_uris are provided', function () {
+        return i(this.provider).clientAdd({
+          client_id: 'client',
+          client_secret: 'secret',
+          redirect_uris: [],
+          grant_types: [],
+          response_types: [],
+          subject_type: 'pairwise',
+        }).then((client) => {
+          expect(client).not.to.be.ok;
+        }, (err) => {
+          expect(err).to.be.ok;
+          expect(err.message).to.eq('invalid_client_metadata');
+          expect(err.error_description).to.eq('sector_identifier_uri is required when redirect_uris hosts are not available');
+        });
+      });
     });
 
     context('sector_identifier_uri is provided', () => {
