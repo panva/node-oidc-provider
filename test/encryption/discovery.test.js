@@ -16,6 +16,8 @@ describe('configuration features.encryption', () => {
           'request_object_encryption_enc_values_supported',
           'userinfo_encryption_alg_values_supported',
           'userinfo_encryption_enc_values_supported',
+          'introspection_encryption_alg_values_supported',
+          'introspection_encryption_enc_values_supported',
         );
       });
   });

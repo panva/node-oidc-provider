@@ -28,6 +28,7 @@ describe('Client#add', () => {
     'request_object_signing_alg',
     'token_endpoint_auth_signing_alg',
     'userinfo_signed_response_alg',
+    'introspection_signed_response_alg',
   ].forEach((metadata) => {
     context(`configuring ${metadata} when secrets are not long enough`, () => {
       it('validates the secret length (HS256)', function () {

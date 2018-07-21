@@ -368,6 +368,7 @@ deployment compact. The feature flags with their default values are
 | encryption | no |
 | frontchannelLogout | no |
 | introspection | no |
+| jwtIntrospection | no |
 | oauthNativeApps | yes (forces pkce on with forcedForNative) |
 | pkce | yes |
 | registration | no |
@@ -499,6 +500,7 @@ introspection_endpoint property of the discovery endpoint is published, otherwis
 is not sent. The use of this endpoint is covered by the same authz mechanism as the regular token
 endpoint or `introspection_endpoint_auth_method` and `introspection_endpoint_auth_signing_alg` if
 defined on a client.
+
 ```js
 const configuration = { features: { introspection: Boolean[false] } };
 ```
@@ -507,6 +509,14 @@ This feature is a recommended way for Resource Servers to validate presented Bea
 the token endpoint access must be authorized it is recommended to setup a client for the RS to
 use. This client should be unusable for standard authorization flow, to set up such a client provide
 grant_types, response_types and redirect_uris as empty arrays.
+
+**JWT Response for OAuth Token Introspection**
+Enables additional JSON Web Token responses for OAuth 2.0 Token Introspection as defined by
+[JWT Response for OAuth Token Introspection - draft 01][jwt-introspection]
+
+```js
+const configuration = { features: { introspection: true, jwtIntrospection: Boolean[false] } };
+```
 
 
 **Revocation endpoint**  
@@ -1187,6 +1197,7 @@ _**default value**_:
   encryption: false,
   frontchannelLogout: false,
   introspection: false,
+  jwtIntrospection: false,
   registration: false,
   registrationManagement: false,
   request: false,
@@ -1597,7 +1608,10 @@ _**default value**_:
   revocationEndpointAuthSigningAlgValues: [],
   userinfoEncryptionAlgValues: [],
   userinfoEncryptionEncValues: [],
-  userinfoSigningAlgValues: [] }
+  userinfoSigningAlgValues: [],
+  introspectionEncryptionAlgValues: [],
+  introspectionEncryptionEncValues: [],
+  introspectionSigningAlgValues: [] }
 ```
 
 ### userCodeConfirmSource
@@ -1707,3 +1721,4 @@ async userCodeInputSource(ctx, form, out, err) {
 [third-party-cookies-so]: https://stackoverflow.com/questions/3550790/check-if-third-party-cookies-are-enabled/7104048#7104048
 [wmrm]: https://tools.ietf.org/html/draft-sakimura-oauth-wmrm-00
 [device-flow]: https://tools.ietf.org/html/draft-ietf-oauth-device-flow-11
+[jwt-introspection]: https://tools.ietf.org/html/draft-lodderstedt-oauth-jwt-introspection-response-01

@@ -14,7 +14,7 @@ describe('introspection features', () => {
         .expect(200)
         .expect((response) => {
           expect(response.body).to.have.property('introspection_endpoint').and.matches(/token\/introspect/);
-          expect(response.body).not.to.have.property('token_introspection_endpoint');
+          expect(response.body).not.to.have.property('introspection_endpoint_signing_alg_values_supported');
         });
     });
   });

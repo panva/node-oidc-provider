@@ -501,8 +501,18 @@ describe('Client metadata validation', () => {
     rejects(this.title, 'not-an-alg');
   });
 
+  context('introspection_signed_response_alg', function () {
+    const configuration = { features: { introspection: true, jwtIntrospection: true } };
+    defaultsTo(this.title, undefined, undefined, configuration);
+    mustBeString(this.title, undefined, undefined, configuration);
+    allows(this.title, 'HS256', undefined, configuration);
+    rejects(this.title, 'not-an-alg', undefined, undefined, configuration);
+  });
+
   context('features.encryption', () => {
-    const configuration = { features: { encryption: true } };
+    const configuration = {
+      features: { encryption: true, introspection: true, jwtIntrospection: true },
+    };
 
     context('id_token_encrypted_response_alg', function () {
       defaultsTo(this.title, undefined);
@@ -600,6 +610,55 @@ describe('Client metadata validation', () => {
         jwks: { keys: [sigKey] },
       }, configuration);
     });
+
+    context('introspection_encrypted_response_alg', function () {
+      defaultsTo(this.title, undefined);
+      defaultsTo(this.title, undefined, undefined, configuration);
+      mustBeString(this.title, undefined, {
+        jwks: { keys: [sigKey] },
+      }, configuration);
+      it('is required when introspection_encrypted_response_enc is also provided', () => addClient({
+        introspection_encrypted_response_enc: 'whatever',
+      }, configuration).then(fail, (err) => {
+        expect(err.message).to.equal('invalid_client_metadata');
+        expect(err.error_description).to.equal('introspection_encrypted_response_alg is mandatory property');
+      }));
+      [
+        'RSA-OAEP', 'RSA-OAEP-256', 'RSA1_5', 'ECDH-ES', 'ECDH-ES+A128KW', 'ECDH-ES+A192KW',
+        'ECDH-ES+A256KW', 'A128GCMKW', 'A192GCMKW', 'A256GCMKW', 'A128KW', 'A192KW', 'A256KW',
+        'PBES2-HS256+A128KW', 'PBES2-HS384+A192KW', 'PBES2-HS512+A256KW',
+      ].forEach((value) => {
+        allows(this.title, value, {
+          jwks: { keys: [sigKey] },
+        }, configuration);
+      });
+      rejects(this.title, 'not-an-alg', undefined, undefined, configuration);
+    });
+
+    context('introspection_encrypted_response_enc', function () {
+      defaultsTo(this.title, undefined);
+      defaultsTo(this.title, undefined, undefined, configuration);
+      defaultsTo(this.title, 'A128CBC-HS256', {
+        introspection_encrypted_response_alg: 'RSA1_5',
+        jwks: { keys: [sigKey] },
+      }, configuration);
+      mustBeString(this.title, undefined, {
+        introspection_encrypted_response_alg: 'RSA1_5',
+        jwks: { keys: [sigKey] },
+      }, configuration);
+      [
+        'A128CBC-HS256', 'A128GCM', 'A192CBC-HS384', 'A192GCM', 'A256CBC-HS512', 'A256GCM',
+      ].forEach((value) => {
+        allows(this.title, value, {
+          introspection_encrypted_response_alg: 'RSA1_5',
+          jwks: { keys: [sigKey] },
+        }, configuration);
+      });
+      rejects(this.title, 'not-an-enc', undefined, {
+        introspection_encrypted_response_alg: 'RSA1_5',
+        jwks: { keys: [sigKey] },
+      }, configuration);
+    });
   });
 
   describe('features.encryption & features.request', () => {
@@ -646,20 +705,42 @@ describe('Client metadata validation', () => {
   });
 
   context('jwks', function () {
+    const configuration = {
+      features: {
+        introspection: true, jwtIntrospection: true, revocation: true, encryption: true,
+      },
+    };
+
     rejects(this.title, 'string', 'jwks must be a JWK Set');
     rejects(this.title, {}, 'jwks must be a JWK Set');
     rejects(this.title, 1, 'jwks must be a JWK Set');
     rejects(this.title, 0, 'jwks must be a JWK Set');
     rejects(this.title, true, 'jwks must be a JWK Set');
     rejects(this.title, { keys: [] }, 'jwks.keys must not be empty');
-    rejects(this.title, undefined, 'jwks or jwks_uri is mandatory for this client', {
-      token_endpoint_auth_method: 'private_key_jwt',
+    ['introspection', 'revocation', 'token'].forEach((endpoint) => {
+      rejects(this.title, undefined, 'jwks or jwks_uri is mandatory for this client', {
+        [`${endpoint}_endpoint_auth_method`]: 'private_key_jwt',
+      }, configuration);
     });
     rejects(this.title, undefined, 'jwks or jwks_uri is mandatory for this client', {
       request_object_signing_alg: 'RS256',
     });
     rejects(this.title, undefined, 'jwks or jwks_uri is mandatory for this client', {
       request_object_signing_alg: 'ES384',
+    });
+    [
+      'id_token_encrypted_response_alg',
+      'userinfo_encrypted_response_alg',
+      'introspection_encrypted_response_alg',
+    ].forEach((prop) => {
+      [
+        'RSA-OAEP', 'RSA-OAEP-256', 'RSA1_5',
+        'ECDH-ES', 'ECDH-ES+A128KW', 'ECDH-ES+A192KW', 'ECDH-ES+A256KW',
+      ].forEach((alg) => {
+        rejects(this.title, undefined, 'jwks or jwks_uri is mandatory for this client', {
+          [prop]: alg,
+        }, configuration);
+      });
     });
     rejects(this.title, { keys: ['something'] }, 'jwks and jwks_uri must not be used at the same time', {
       jwks_uri: 'https://client.example.com/jwks',

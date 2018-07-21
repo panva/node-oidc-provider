@@ -36,6 +36,7 @@ module.exports.config = {
     encryption: true, // defaults to false
     frontchannelLogout: true, // defaults to false
     introspection: true, // defaults to false
+    jwtIntrospection: true, // defaults to false
     registration: true, // defaults to false
     request: true, // defaults to false
     revocation: true, // defaults to false
