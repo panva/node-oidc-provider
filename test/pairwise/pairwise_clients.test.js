@@ -120,6 +120,26 @@ describe('pairwise features', () => {
         });
       });
 
+      it('validates the response is a json', function () {
+        nock('https://client.example.com')
+          .get('/file_of_redirect_uris')
+          .reply(200, '{ not a valid json');
+
+        return i(this.provider).clientAdd({
+          client_id: 'client',
+          client_secret: 'secret',
+          redirect_uris: ['https://client.example.com/cb', 'https://missing.example.com/forum/cb'],
+          sector_identifier_uri: 'https://client.example.com/file_of_redirect_uris',
+          subject_type: 'pairwise',
+        }).then((client) => {
+          expect(client).not.to.be.ok;
+        }, (err) => {
+          expect(err).to.be.ok;
+          expect(err.message).to.eq('invalid_client_metadata');
+          expect(err.error_description).to.eq('sector_identifier_uri must return a valid JSON');
+        });
+      });
+
       it('validates only accepts json array responses', function () {
         nock('https://client.example.com')
           .get('/file_of_redirect_uris')
