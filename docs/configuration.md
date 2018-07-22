@@ -510,7 +510,7 @@ the token endpoint access must be authorized it is recommended to setup a client
 use. This client should be unusable for standard authorization flow, to set up such a client provide
 grant_types, response_types and redirect_uris as empty arrays.
 
-**JWT Response for OAuth Token Introspection**
+**JWT Response for OAuth Token Introspection**  
 Enables additional JSON Web Token responses for OAuth 2.0 Token Introspection as defined by
 [JWT Response for OAuth Token Introspection - draft 01][jwt-introspection]
 
