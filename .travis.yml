@@ -9,3 +9,8 @@ script:
 after_script:
   - npm install codecov
   - ./node_modules/.bin/codecov
+jobs:
+  include:
+    - stage: Lint
+      script: npm run lint
+      node_js: lts/carbon
