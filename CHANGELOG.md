@@ -2,6 +2,16 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+<a name="4.4.0"></a>
+# [4.4.0](https://github.com/panva/node-oidc-provider/compare/v4.3.2...v4.4.0) (2018-07-22)
+
+
+### Features
+
+* JWT Response for OAuth Token Introspection ([72142fd](https://github.com/panva/node-oidc-provider/commit/72142fd))
+
+
+
 <a name="4.3.2"></a>
 ## [4.3.2](https://github.com/panva/node-oidc-provider/compare/v4.3.1...v4.3.2) (2018-07-21)
 
