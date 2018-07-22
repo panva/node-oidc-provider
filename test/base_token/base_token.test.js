@@ -76,11 +76,27 @@ describe('BaseToken', () => {
     });
     const value = await token.save();
     const jti = this.getTokenJti(value);
+    sinon.assert.calledWith(
+      this.adapter.upsert.getCall(0),
+      jti,
+      sinon.match({}),
+      sinon.match((ttl) => {
+        expect(ttl).to.be.closeTo(3600, 1);
+        return true;
+      }),
+    );
     timekeeper.travel(((Date.now() / 1000 | 0) + 60) * 1000); // eslint-disable-line no-bitwise
     token = await this.provider.AccessToken.find(value);
     await token.save();
-    expect(this.adapter.upsert.calledWith(jti, sinon.match({}), 3600)).to.be.true;
-    expect(this.adapter.upsert.calledWith(jti, sinon.match({}), 3540)).to.be.true;
+    sinon.assert.calledWith(
+      this.adapter.upsert.getCall(1),
+      jti,
+      sinon.match({}),
+      sinon.match((ttl) => {
+        expect(ttl).to.be.closeTo(3540, 1);
+        return true;
+      }),
+    );
   });
 
   it('additional save does not change the token value', async function () {
