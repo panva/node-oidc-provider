@@ -84,7 +84,7 @@ class RedisAdapter {
     const deletions = tokens.map(token => client.del(token));
     deletions.push(client.del(key));
     deletions.push(client.del(grantKeyFor(grantId)));
-    await deletions;
+    await Promise.all(deletions);
   }
 
   consume(id) {
