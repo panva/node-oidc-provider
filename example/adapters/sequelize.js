@@ -49,7 +49,7 @@ class SequelizeAdapter {
   }
 
   async upsert(id, data, expiresIn) {
-    return this.model.upsert({
+    await this.model.upsert({
       id,
       data,
       ...(data.grantId ? { grantId: data.grantId } : undefined),
@@ -80,18 +80,19 @@ class SequelizeAdapter {
 
   async destroy(id) {
     if (grantable.has(this.name)) {
-      return this.model.findByPrimary(id).then((({ grantId }) => (
-        Promise.all(
-          Array.from(grantable).map(name => models.get(name).destroy({ where: { grantId } })),
-        )
-      )));
+      const { grantId } = await this.model.findByPrimary(id);
+      const promises = [];
+      grantable.forEach((name) => {
+        promises.push(models.get(name).destroy({ where: { grantId } }));
+      });
+      await Promise.all(promises);
+    } else {
+      await this.model.destroy({ where: { id } });
     }
-
-    return this.model.destroy({ where: { id } });
   }
 
   async consume(id) {
-    return this.model.update({ consumedAt: new Date() }, { where: { id } });
+    await this.model.update({ consumedAt: new Date() }, { where: { id } });
   }
 
   static async connect() {

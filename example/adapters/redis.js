@@ -25,7 +25,7 @@ class RedisAdapter {
     this.name = name;
   }
 
-  upsert(id, payload, expiresIn) {
+  async upsert(id, payload, expiresIn) {
     const key = this.key(id);
     const store = grantable.has(this.name) ? {
       dump: JSON.stringify(payload),
@@ -50,7 +50,7 @@ class RedisAdapter {
       multi.expire(userCodeKey, expiresIn);
     }
 
-    return multi.exec();
+    await multi.exec();
   }
 
   async find(id) {
@@ -87,8 +87,8 @@ class RedisAdapter {
     await Promise.all(deletions);
   }
 
-  consume(id) {
-    return client.hset(this.key(id), 'consumed', Math.floor(Date.now() / 1000));
+  async consume(id) {
+    await client.hset(this.key(id), 'consumed', Math.floor(Date.now() / 1000));
   }
 
   key(id) {

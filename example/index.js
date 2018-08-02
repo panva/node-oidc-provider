@@ -28,7 +28,7 @@ provider.defaultHttpOptions = { timeout: 15000 };
 provider.use(helmet());
 
 provider.initialize({
-  adapter: process.env.MONGODB_URI ? require('./adapters/mongodb') : undefined, // eslint-disable-line global-require
+  adapter: process.env.MONGODB_URI ? require('./heroku_mongo_adapter') : undefined, // eslint-disable-line global-require
   clients,
   keystore: { keys: certificates },
 }).then(() => {
