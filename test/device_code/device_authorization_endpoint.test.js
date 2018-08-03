@@ -2,6 +2,7 @@ const sinon = require('sinon');
 const { expect } = require('chai');
 
 const bootstrap = require('../test_helper');
+const { normalize } = require('../../lib/helpers/user_codes');
 
 const route = '/device/auth';
 
@@ -327,7 +328,7 @@ describe('device_authorization_endpoint', () => {
     const dc = await this.provider.DeviceCode.find(response.device_code);
     expect(dc).to.be.ok;
     expect(dc).to.have.property('clientId', 'client');
-    expect(dc).to.have.property('userCode').that.is.a('string').and.equals(response.user_code);
+    expect(dc).to.have.property('userCode').that.is.a('string').and.equals(normalize(response.user_code));
     expect(dc).to.have.property('params').that.is.an('object');
     expect(dc.params).to.have.property('client_id', 'client');
     expect(dc.params).to.have.property('scope', 'openid');

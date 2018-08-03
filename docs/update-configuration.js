@@ -135,6 +135,9 @@ const props = [
             line = line.replace(/ \/\/ eslint-disable.+/, '');
             line = line.replace(/ \/\/ TODO.+/, '');
             line = line.replace(/ class="[ \-\w]+ ?"/, '');
+            if (line.includes('<meta ')) {
+              return undefined;
+            }
             if (line.includes('<style>')) {
               mute = true;
               return '<style>/* css and html classes omitted for brevity, see lib/helpers/defaults.js */</style>';

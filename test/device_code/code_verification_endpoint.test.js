@@ -19,7 +19,7 @@ describe('GET code_verification endpoint', () => {
           const { device: { secret } } = this.getSession();
           expect(secret).to.be.a('string');
         })
-        .expect(/<form id="op\.deviceInputForm" method="post" action="\/device">/);
+        .expect(/<form id="op\.deviceInputForm" novalidate method="post" action="\/device">/);
     });
   });
 
@@ -82,14 +82,14 @@ describe('POST code_verification endpoint w/o verification', () => {
 
     await new this.provider.DeviceCode({
       clientId: 'client',
-      userCode: 'foo-code',
+      userCode: 'FOOCODE',
       deviceInfo,
     }).save();
 
     await this.agent.post(route)
       .send({
         xsrf,
-        user_code: 'foo-code',
+        user_code: 'FOO-CODE',
       })
       .type('form')
       .expect(200)
@@ -111,7 +111,7 @@ describe('POST code_verification endpoint w/o verification', () => {
       .send({ xsrf })
       .type('form')
       .expect(200)
-      .expect(/<form id="op\.deviceInputForm" method="post" action="\/device">/)
+      .expect(/<form id="op\.deviceInputForm" novalidate method="post" action="\/device">/)
       .expect(/<p class="red">The code you entered is incorrect\. Try again<\/p>/);
 
     expect(spy.calledOnce).to.be.true;
@@ -131,11 +131,11 @@ describe('POST code_verification endpoint w/o verification', () => {
     await this.agent.post(route)
       .send({
         xsrf,
-        user_code: 'foo-not-found',
+        user_code: 'FOO-NOT-FOUND',
       })
       .type('form')
       .expect(200)
-      .expect(/<form id="op\.deviceInputForm" method="post" action="\/device">/)
+      .expect(/<form id="op\.deviceInputForm" novalidate method="post" action="\/device">/)
       .expect(/<p class="red">The code you entered is incorrect\. Try again<\/p>/);
 
     expect(spy.calledOnce).to.be.true;
@@ -152,18 +152,18 @@ describe('POST code_verification endpoint w/o verification', () => {
     this.provider.once('code_verification.error', errSpy);
     const spy = sinon.spy(i(this.provider).configuration(), 'userCodeInputSource');
     await new this.provider.DeviceCode({
-      userCode: 'foo-expired',
+      userCode: 'FOOEXPIRED',
     }).save();
 
     timekeeper.travel(Date.now() + (((10 * 60) + 10) * 1000));
     await this.agent.post(route)
       .send({
         xsrf,
-        user_code: 'foo-expired',
+        user_code: 'FOO-EXPIRED',
       })
       .type('form')
       .expect(200)
-      .expect(/<form id="op\.deviceInputForm" method="post" action="\/device">/)
+      .expect(/<form id="op\.deviceInputForm" novalidate method="post" action="\/device">/)
       .expect(/<p class="red">The code you entered is incorrect\. Try again<\/p>/);
 
     expect(spy.calledOnce).to.be.true;
@@ -180,18 +180,18 @@ describe('POST code_verification endpoint w/o verification', () => {
     this.provider.once('code_verification.error', errSpy);
     const spy = sinon.spy(i(this.provider).configuration(), 'userCodeInputSource');
     await new this.provider.DeviceCode({
-      userCode: 'foo-consumed',
+      userCode: 'FOOCONSUMED',
       accountId: 'account',
     }).save();
 
     await this.agent.post(route)
       .send({
         xsrf,
-        user_code: 'foo-consumed',
+        user_code: 'FOO-CONSUMED',
       })
       .type('form')
       .expect(200)
-      .expect(/<form id="op\.deviceInputForm" method="post" action="\/device">/)
+      .expect(/<form id="op\.deviceInputForm" novalidate method="post" action="\/device">/)
       .expect(/<p class="red">The code you entered is incorrect\. Try again<\/p>/);
 
     expect(spy.calledOnce).to.be.true;
@@ -208,7 +208,7 @@ describe('POST code_verification endpoint w/o verification', () => {
     this.provider.once('code_verification.error', errSpy);
     const spy = sinon.spy(i(this.provider).configuration(), 'userCodeInputSource');
     await new this.provider.DeviceCode({
-      userCode: 'foo-not-found-client',
+      userCode: 'FOONOTFOUNDCLIENT',
       clientId: 'client',
     }).save();
 
@@ -216,11 +216,11 @@ describe('POST code_verification endpoint w/o verification', () => {
     await this.agent.post(route)
       .send({
         xsrf,
-        user_code: 'foo-not-found-client',
+        user_code: 'FOO-NOT-FOUND-CLIENT',
       })
       .type('form')
       .expect(400)
-      .expect(/<form id="op\.deviceInputForm" method="post" action="\/device">/)
+      .expect(/<form id="op\.deviceInputForm" novalidate method="post" action="\/device">/)
       .expect(/<p class="red">There was an error processing your request<\/p>/);
 
     expect(spy.calledOnce).to.be.true;
@@ -237,18 +237,18 @@ describe('POST code_verification endpoint w/o verification', () => {
     this.provider.once('code_verification.error', errSpy);
     const spy = sinon.spy(i(this.provider).configuration(), 'userCodeInputSource');
     await new this.provider.DeviceCode({
-      userCode: 'foo-csrf-1',
+      userCode: 'FOOCSRF1',
     }).save();
 
     delete this.getSession().device;
     await this.agent.post(route)
       .send({
         xsrf,
-        user_code: 'foo-csrf-1',
+        user_code: 'FOO-CSRF-1',
       })
       .type('form')
       .expect(400)
-      .expect(/<form id="op\.deviceInputForm" method="post" action="\/device">/)
+      .expect(/<form id="op\.deviceInputForm" novalidate method="post" action="\/device">/)
       .expect(/<p class="red">There was an error processing your request<\/p>/);
 
     expect(spy.calledOnce).to.be.true;
@@ -266,17 +266,17 @@ describe('POST code_verification endpoint w/o verification', () => {
     this.provider.once('code_verification.error', errSpy);
     const spy = sinon.spy(i(this.provider).configuration(), 'userCodeInputSource');
     await new this.provider.DeviceCode({
-      userCode: 'foo-csrf-2',
+      userCode: 'FOOCSRF2',
     }).save();
 
     await this.agent.post(route)
       .send({
         xsrf: 'invalid-csrf',
-        user_code: 'foo-csrf-foo',
+        user_code: 'FOO-CSRF-FOO',
       })
       .type('form')
       .expect(400)
-      .expect(/<form id="op\.deviceInputForm" method="post" action="\/device">/)
+      .expect(/<form id="op\.deviceInputForm" novalidate method="post" action="\/device">/)
       .expect(/<p class="red">There was an error processing your request<\/p>/);
 
     expect(spy.calledOnce).to.be.true;
@@ -294,6 +294,11 @@ describe('POST code_verification endpoint w/ verification', () => {
   before(bootstrap(__dirname)); // agent
   before(function () { return this.login(); });
   afterEach(() => timekeeper.reset());
+  afterEach(function () {
+    if (i(this.provider).configuration('deviceCodeSuccess').restore) {
+      i(this.provider).configuration('deviceCodeSuccess').restore();
+    }
+  });
 
   const xsrf = 'foo';
 
@@ -301,12 +306,12 @@ describe('POST code_verification endpoint w/ verification', () => {
     this.getSession().device = { secret: xsrf };
   });
 
-  it('renders a confirmation and assigns ', async function () {
+  it('renders a confirmation and assigns', async function () {
     const spy = sinon.spy(i(this.provider).configuration(), 'deviceCodeSuccess');
 
     let code = await new this.provider.DeviceCode({
       clientId: 'client',
-      userCode: 'foo',
+      userCode: 'FOO',
       params: {
         client_id: 'client',
         claims: JSON.stringify({ userinfo: { email: null } }),
@@ -317,7 +322,39 @@ describe('POST code_verification endpoint w/ verification', () => {
       .send({
         xsrf,
         confirm: 'yes',
-        user_code: 'foo',
+        user_code: 'FOO',
+      })
+      .type('form')
+      .expect(200);
+
+    code = await this.provider.DeviceCode.find(code);
+
+    const session = this.getSession();
+
+    expect(code).to.have.property('accountId', session.account);
+    expect(code).to.have.property('authTime', session.loginTs);
+    expect(code).to.have.property('claims').that.eqls({ userinfo: { email: null } });
+
+    expect(spy.calledOnce).to.be.true;
+  });
+
+  it('allows for punctuation to be included and characters to be downcased', async function () {
+    const spy = sinon.spy(i(this.provider).configuration(), 'deviceCodeSuccess');
+
+    let code = await new this.provider.DeviceCode({
+      clientId: 'client',
+      userCode: 'FOOBAR',
+      params: {
+        client_id: 'client',
+        claims: JSON.stringify({ userinfo: { email: null } }),
+      },
+    }).save();
+
+    await this.agent.post(route)
+      .send({
+        xsrf,
+        confirm: 'yes',
+        user_code: 'f o o b a r',
       })
       .type('form')
       .expect(200);

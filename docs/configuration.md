@@ -649,13 +649,6 @@ Enables [OAuth 2.0 Device Flow for Browserless and Input Constrained Devices][de
 const configuration = { features: { deviceCode: Boolean[false] } };
 ```
 
-To change the user code charset and mask:
-```js
-// default values are `BCDFGHJKLMNPQRSTVWXZ` and `****-****` for 20^8 entropy as recommended per the spec
-// changing to 10^9 alternative might look like this
-const configuration = { features: { deviceCode: { charset: '0123456789', mask: '***-***-***' } } };
-```
-
 
 
 ## Custom Grant Types

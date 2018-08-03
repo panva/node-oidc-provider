@@ -6,7 +6,7 @@ const sinon = require('sinon');
 
 const bootstrap = require('../test_helper');
 const epochTime = require('../../lib/helpers/epoch_time');
-const generateUserCode = require('../../lib/helpers/generate_user_code');
+const { generate } = require('../../lib/helpers/user_codes');
 
 const { any } = sinon.match;
 
@@ -22,7 +22,7 @@ describe('device interaction resume /device/:user_code/:grant/', () => {
 
   beforeEach(() => {
     grantId = uuid();
-    userCode = generateUserCode('0123456789', '****-****');
+    userCode = generate('base-20', '***-***-***');
     path = `/device/${userCode}/${grantId}`;
   });
 
@@ -101,7 +101,7 @@ describe('device interaction resume /device/:user_code/:grant/', () => {
       await this.agent.get(path)
         .accept('text/html')
         .expect(400)
-        .expect(/<form id="op\.deviceInputForm" method="post" action="\/device">/)
+        .expect(/<form id="op\.deviceInputForm" novalidate method="post" action="\/device">/)
         .expect(/<p class="red">There was an error processing your request<\/p>/);
 
       expect(spy.calledOnce).to.be.true;
@@ -127,7 +127,7 @@ describe('device interaction resume /device/:user_code/:grant/', () => {
       await this.agent.get(path)
         .accept('text/html')
         .expect(400)
-        .expect(/<form id="op\.deviceInputForm" method="post" action="\/device">/)
+        .expect(/<form id="op\.deviceInputForm" novalidate method="post" action="\/device">/)
         .expect(/<p class="red">There was an error processing your request<\/p>/);
 
       expect(spy.calledOnce).to.be.true;
@@ -153,7 +153,7 @@ describe('device interaction resume /device/:user_code/:grant/', () => {
       await this.agent.get(path)
         .accept('text/html')
         .expect(200)
-        .expect(/<form id="op\.deviceInputForm" method="post" action="\/device">/)
+        .expect(/<form id="op\.deviceInputForm" novalidate method="post" action="\/device">/)
         .expect(/<p class="red">There was an error processing your request<\/p>/);
 
       expect(spy.calledOnce).to.be.true;
@@ -179,7 +179,7 @@ describe('device interaction resume /device/:user_code/:grant/', () => {
       await this.agent.get(path)
         .accept('text/html')
         .expect(200)
-        .expect(/<form id="op\.deviceInputForm" method="post" action="\/device">/)
+        .expect(/<form id="op\.deviceInputForm" novalidate method="post" action="\/device">/)
         .expect(/<p class="red">There was an error processing your request<\/p>/);
 
       expect(spy.calledOnce).to.be.true;
@@ -205,7 +205,7 @@ describe('device interaction resume /device/:user_code/:grant/', () => {
       await this.agent.get(path)
         .accept('text/html')
         .expect(200)
-        .expect(/<form id="op\.deviceInputForm" method="post" action="\/device">/)
+        .expect(/<form id="op\.deviceInputForm" novalidate method="post" action="\/device">/)
         .expect(/<p class="red">There was an error processing your request<\/p>/);
 
       expect(spy.calledOnce).to.be.true;
@@ -231,7 +231,7 @@ describe('device interaction resume /device/:user_code/:grant/', () => {
       await this.agent.get(path)
         .accept('text/html')
         .expect(200)
-        .expect(/<form id="op\.deviceInputForm" method="post" action="\/device">/)
+        .expect(/<form id="op\.deviceInputForm" novalidate method="post" action="\/device">/)
         .expect(/<p class="red">There was an error processing your request<\/p>/);
 
       expect(spy.calledOnce).to.be.true;
@@ -257,7 +257,7 @@ describe('device interaction resume /device/:user_code/:grant/', () => {
       await this.agent.get(path)
         .accept('text/html')
         .expect(400)
-        .expect(/<form id="op\.deviceInputForm" method="post" action="\/device">/)
+        .expect(/<form id="op\.deviceInputForm" novalidate method="post" action="\/device">/)
         .expect(/<p class="red">There was an error processing your request<\/p>/);
 
       expect(spy.calledOnce).to.be.true;
@@ -281,7 +281,7 @@ describe('device interaction resume /device/:user_code/:grant/', () => {
       await this.agent.get(path)
         .accept('text/html')
         .expect(400)
-        .expect(/<form id="op\.deviceInputForm" method="post" action="\/device">/)
+        .expect(/<form id="op\.deviceInputForm" novalidate method="post" action="\/device">/)
         .expect(/<p class="red">There was an error processing your request<\/p>/);
 
       expect(spy.calledOnce).to.be.true;
@@ -414,7 +414,7 @@ describe('device interaction resume /device/:user_code/:grant/', () => {
       await this.agent.get(path)
         .accept('text/html')
         .expect(400)
-        .expect(/<form id="op\.deviceInputForm" method="post" action="\/device">/)
+        .expect(/<form id="op\.deviceInputForm" novalidate method="post" action="\/device">/)
         .expect(/<p class="red">There was an error processing your request<\/p>/);
 
       expect(spy.calledOnce).to.be.true;
@@ -440,7 +440,7 @@ describe('device interaction resume /device/:user_code/:grant/', () => {
       await this.agent.get(path)
         .accept('text/html')
         .expect(400)
-        .expect(/<form id="op\.deviceInputForm" method="post" action="\/device">/)
+        .expect(/<form id="op\.deviceInputForm" novalidate method="post" action="\/device">/)
         .expect(/<p class="red">There was an error processing your request<\/p>/);
 
       expect(spy.calledOnce).to.be.true;
