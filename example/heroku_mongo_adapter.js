@@ -8,7 +8,7 @@ class HerokuExampleAdapter extends MongoAdapter {
       expiresIn = 24 * 60 * 60 * 1000; // eslint-disable-line no-param-reassign
     }
 
-    return super(_id, payload, expiresIn);
+    return super.upsert(_id, payload, expiresIn);
   }
 }
 
