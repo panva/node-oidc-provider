@@ -51,7 +51,7 @@ The following drafts/experimental specifications are implemented by oidc-provide
 - [OpenID Connect Front-Channel Logout 1.0 - draft 02][frontchannel-logout]
 - [RFC7592 - OAuth 2.0 Dynamic Client Registration Management Protocol (Update and Delete)][registration-management]
 - [OAuth 2.0 Web Message Response Mode - draft 00][wmrm]
-- [OAuth 2.0 Device Flow for Browserless and Input Constrained Devices - draft 11][device-flow]
+- [OAuth 2.0 Device Flow for Browserless and Input Constrained Devices - draft 12][device-flow]
 - [JWT Response for OAuth Token Introspection - draft 01][jwt-introspection]
 
 Updates to draft and experimental specification versions are released as MINOR library versions,
@@ -171,5 +171,5 @@ See the list of available emitted [event names](/docs/events.md) and their descr
 [oauth-native-apps]: https://tools.ietf.org/html/rfc8252
 [debug-link]: https://github.com/visionmedia/debug
 [wmrm]: https://tools.ietf.org/html/draft-sakimura-oauth-wmrm-00
-[device-flow]: https://tools.ietf.org/html/draft-ietf-oauth-device-flow-11
+[device-flow]: https://tools.ietf.org/html/draft-ietf-oauth-device-flow-12
 [jwt-introspection]: https://tools.ietf.org/html/draft-lodderstedt-oauth-jwt-introspection-response-01

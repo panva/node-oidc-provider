@@ -1715,5 +1715,5 @@ async userCodeInputSource(ctx, form, out, err) {
 [third-party-cookies-git]: https://github.com/mindmup/3rdpartycookiecheck
 [third-party-cookies-so]: https://stackoverflow.com/questions/3550790/check-if-third-party-cookies-are-enabled/7104048#7104048
 [wmrm]: https://tools.ietf.org/html/draft-sakimura-oauth-wmrm-00
-[device-flow]: https://tools.ietf.org/html/draft-ietf-oauth-device-flow-11
+[device-flow]: https://tools.ietf.org/html/draft-ietf-oauth-device-flow-12
 [jwt-introspection]: https://tools.ietf.org/html/draft-lodderstedt-oauth-jwt-introspection-response-01
