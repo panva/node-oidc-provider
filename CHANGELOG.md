@@ -2,6 +2,21 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+<a name="4.5.0"></a>
+# [4.5.0](https://github.com/panva/node-oidc-provider/compare/v4.4.0...v4.5.0) (2018-08-03)
+
+
+### Bug Fixes
+
+* message displayed on blank /device ([86541df](https://github.com/panva/node-oidc-provider/commit/86541df))
+
+
+### Features
+
+* update device flow to draft-12 ([e00fa52](https://github.com/panva/node-oidc-provider/commit/e00fa52))
+
+
+
 <a name="4.4.0"></a>
 # [4.4.0](https://github.com/panva/node-oidc-provider/compare/v4.3.2...v4.4.0) (2018-07-22)
 
