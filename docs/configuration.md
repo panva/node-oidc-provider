@@ -1675,6 +1675,8 @@ async userCodeInputSource(ctx, form, out, err) {
     msg = '<p>The code you entered is incorrect. Try again</p>';
   } else if (err) {
     msg = '<p>There was an error processing your request</p>';
+  } else {
+    msg = '<p>Enter the code displayed on your device</p>';
   }
   ctx.body = `<!DOCTYPE html>
 <head>
