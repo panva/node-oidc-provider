@@ -849,6 +849,7 @@ provider.use(async (ctx, next) => {
    * `userinfo`
    * `webfinger`
    * `check_session`
+   * `check_session_origin`
    * `client`
    * `discovery`
    *

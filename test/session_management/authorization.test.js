@@ -37,33 +37,5 @@ describe('session management', () => {
           });
       });
     });
-
-    describe('[session_management] check_session_iframe', () => {
-      before(function () {
-        this.provider.use(async (ctx, next) => {
-          ctx.response.set('X-Frame-Options', 'SAMEORIGIN');
-          ctx.response.set('Content-Security-Policy', "default-src 'none'; frame-ancestors 'self' example.com *.example.net; script-src 'self'; connect-src 'self'; img-src 'self'; style-src 'self';");
-          await next();
-        });
-      });
-
-      it('responds with frameable html', function () {
-        return this.agent.get('/session/check')
-          .expect(200)
-          .expect('content-type', /text\/html/)
-          .expect((response) => {
-            expect(response.headers['x-frame-options']).not.to.be.ok;
-            expect(response.headers['content-security-policy']).not.to.match(/frame-ancestors/);
-          });
-      });
-
-      it('does not populate ctx.oidc.entities', function (done) {
-        this.provider.use(this.assertOnce((ctx) => {
-          expect(ctx.oidc.entities).to.be.empty;
-        }, done));
-
-        this.agent.get('/session/check').end(() => {});
-      });
-    });
   });
 });
