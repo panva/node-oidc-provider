@@ -778,7 +778,7 @@ oidc-provider uses these default options for http requests
 const DEFAULT_HTTP_OPTIONS = {
   followRedirect: false,
   headers: { 'User-Agent': `${pkg.name}/${pkg.version} (${this.issuer})` },
-  retries: 0,
+  retry: 0,
   timeout: 1500,
 };
 ```
