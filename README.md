@@ -69,18 +69,8 @@ of the OpenID Connect™ protocol.
 
 
 <h2>Sponsor</h2>
-<table>
-  <tbody>
-    <tr>
-      <td>
-        <img alt="auth0-logo" src="https://avatars.githubusercontent.com/u/2824157?s=75&v=4" style="max-width:100%;">
-      </td>
-      <td colspan="2">
-        If you want to quickly add OpenID Connect authentication to Node.js apps, feel free to check out Auth0's Node.js SDK and free plan at <a href="https://auth0.com/overview?utm_source=GHsponsor&utm_medium=GHsponsor&utm_campaign=oidc-provider&utm_content=auth">auth0.com/overview</a>.
-      </td>
-    </tr>
-  </tbody>
-</table>
+
+[<img width="65" height="65" align="left" src="https://avatars.githubusercontent.com/u/2824157?s=75&v=4" alt="auth0-logo">][sponsor-auth0] If you want to quickly add OpenID Connect authentication to Node.js apps, feel free to check out Auth0's Node.js SDK and free plan at [auth0.com/overview][sponsor-auth0].<br><br>
 
 
 ## Get started
@@ -173,3 +163,4 @@ See the list of available emitted [event names](/docs/events.md) and their descr
 [wmrm]: https://tools.ietf.org/html/draft-sakimura-oauth-wmrm-00
 [device-flow]: https://tools.ietf.org/html/draft-ietf-oauth-device-flow-12
 [jwt-introspection]: https://tools.ietf.org/html/draft-lodderstedt-oauth-jwt-introspection-response-01
+[sponsor-auth0]: https://auth0.com/overview?utm_source=GHsponsor&utm_medium=GHsponsor&utm_campaign=oidc-provider&utm_content=auth
