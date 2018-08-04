@@ -58,6 +58,8 @@ Updates to draft and experimental specification versions are released as MINOR l
 if you utilize these specification implementations consider using the tilde `~` operator in your
 package.json since breaking changes may be introduced as part of these version updates.
 
+Missing a feature? - If it wasn't already discussed before, [ask for it][suggest-feature].  
+Found a bug? - [report it][bug].
 
 ## Certification
 [<img width="184" height="96" align="right" src="https://cdn.rawgit.com/panva/node-oidc-provider/acd3ebf2/OpenID_Certified.png" alt="OpenID Certification">][openid-certified-link]  
@@ -164,3 +166,5 @@ See the list of available emitted [event names](/docs/events.md) and their descr
 [device-flow]: https://tools.ietf.org/html/draft-ietf-oauth-device-flow-12
 [jwt-introspection]: https://tools.ietf.org/html/draft-lodderstedt-oauth-jwt-introspection-response-01
 [sponsor-auth0]: https://auth0.com/overview?utm_source=GHsponsor&utm_medium=GHsponsor&utm_campaign=oidc-provider&utm_content=auth
+[suggest-feature]: https://github.com/panva/node-oidc-provider/issues/new?template=feature-request.md
+[bug]: https://github.com/panva/node-oidc-provider/issues/new?template=bug-report.md
