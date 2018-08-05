@@ -503,7 +503,7 @@ describe('Client metadata validation', () => {
 
   context('introspection_signed_response_alg', function () {
     const configuration = { features: { introspection: true, jwtIntrospection: true } };
-    defaultsTo(this.title, undefined, undefined, configuration);
+    defaultsTo(this.title, 'RS256', undefined, configuration);
     mustBeString(this.title, undefined, undefined, configuration);
     allows(this.title, 'HS256', undefined, configuration);
     rejects(this.title, 'not-an-alg', undefined, undefined, configuration);
