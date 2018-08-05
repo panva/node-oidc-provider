@@ -512,9 +512,8 @@ grant_types, response_types and redirect_uris as empty arrays.
 
 **JWT Response for OAuth Token Introspection**  
 Enables additional JSON Web Token responses for OAuth 2.0 Token Introspection as defined by
-[JWT Response for OAuth Token Introspection - draft 01][jwt-introspection]
+[JWT Response for OAuth Token Introspection - draft 00][jwt-introspection]
 
-```js
 const configuration = { features: { introspection: true, jwtIntrospection: Boolean[false] } };
 ```
 
@@ -1717,4 +1716,4 @@ async userCodeInputSource(ctx, form, out, err) {
 [third-party-cookies-so]: https://stackoverflow.com/questions/3550790/check-if-third-party-cookies-are-enabled/7104048#7104048
 [wmrm]: https://tools.ietf.org/html/draft-sakimura-oauth-wmrm-00
 [device-flow]: https://tools.ietf.org/html/draft-ietf-oauth-device-flow-12
-[jwt-introspection]: https://tools.ietf.org/html/draft-lodderstedt-oauth-jwt-introspection-response-01
+[jwt-introspection]: https://tools.ietf.org/html/draft-ietf-oauth-jwt-introspection-response-00
