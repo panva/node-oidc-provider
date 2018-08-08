@@ -1,5 +1,5 @@
 {
-  "name": "oidc-provider",
+  "name": "@astro-my/oidc-provider-astro",
   "version": "4.5.0",
   "description": "OpenID Provider (OP) implementation for Node.js OpenID Connect servers.",
   "keywords": [
@@ -22,14 +22,13 @@
     "provider",
     "server"
   ],
-  "homepage": "https://github.com/panva/node-oidc-provider",
+  "homepage": "https://github.com/stephen1706/node-oidc-provider",
   "license": "MIT",
   "author": "Filip Skokan <panva.ip@gmail.com>",
   "files": [
     "lib"
   ],
   "main": "lib/index.js",
-  "repository": "panva/node-oidc-provider",
   "scripts": {
     "commitmsg": "commitlint -E GIT_PARAMS",
     "coverage": "nyc node ./test/run",
