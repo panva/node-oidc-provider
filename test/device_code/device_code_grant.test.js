@@ -12,8 +12,8 @@ function errorDetail(spy) {
   return spy.args[0][0].error_detail;
 }
 
-describe('grant_type=urn:ietf:params:oauth:grant-type:device_code w/ conformIdTokenClaims', () => {
-  before(bootstrap(__dirname, { config: 'device_code_conform' }));
+describe('grant_type=urn:ietf:params:oauth:grant-type:device_code w/ conformIdTokenClaims=false', () => {
+  before(bootstrap(__dirname, { config: 'device_code_non_conform' })); // agent
 
   it('returns the right stuff', async function () {
     const spy = sinon.spy();
@@ -39,7 +39,7 @@ describe('grant_type=urn:ietf:params:oauth:grant-type:device_code w/ conformIdTo
       })
       .expect((response) => {
         expect(response.body).to.have.keys('access_token', 'id_token', 'expires_in', 'token_type', 'scope', 'refresh_token');
-        expect(JSON.parse(base64url.decode(response.body.id_token.split('.')[1]))).not.to.have.property('given_name');
+        expect(JSON.parse(base64url.decode(response.body.id_token.split('.')[1]))).to.have.property('given_name');
       });
   });
 });
@@ -71,7 +71,7 @@ describe('grant_type=urn:ietf:params:oauth:grant-type:device_code', () => {
       })
       .expect((response) => {
         expect(response.body).to.have.keys('access_token', 'id_token', 'expires_in', 'token_type', 'scope', 'refresh_token');
-        expect(JSON.parse(base64url.decode(response.body.id_token.split('.')[1]))).to.have.property('given_name');
+        expect(JSON.parse(base64url.decode(response.body.id_token.split('.')[1]))).not.to.have.property('given_name');
       });
   });
 
