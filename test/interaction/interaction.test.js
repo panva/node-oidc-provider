@@ -334,38 +334,6 @@ describe('resume after interaction', () => {
         });
     });
 
-    it('should use the scope from resume cookie if provided', function () {
-      const auth = new this.AuthorizationRequest({
-        response_type: 'code',
-        scope: 'openid',
-      });
-
-      setup.call(this, auth, {
-        login: {
-          account: uuid(),
-          remember: true,
-        },
-        consent: {
-          scope: 'openid profile',
-        },
-      });
-
-      let authorizationCode;
-
-      this.provider.once('token.issued', (code) => {
-        authorizationCode = code;
-      });
-
-      return this.agent.get('/auth/resume')
-        .expect(() => {
-          this.provider.removeAllListeners('token.issued');
-        })
-        .expect(() => {
-          expect(authorizationCode).to.be.ok;
-          expect(authorizationCode).to.have.property('scope', 'openid profile');
-        });
-    });
-
     it('if not resolved returns consent_required error', function () {
       const auth = new this.AuthorizationRequest({
         response_type: 'code',
