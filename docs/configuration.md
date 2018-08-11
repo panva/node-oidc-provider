@@ -747,7 +747,7 @@ Enable/disable features.
   backchannelLogout: false,
   claimsParameter: false,
   clientCredentials: false,
-  conformIdTokenClaims: false,
+  conformIdTokenClaims: true,
   deviceCode: false,
   encryption: false,
   frontchannelLogout: false,
