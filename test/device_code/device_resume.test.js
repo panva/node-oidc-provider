@@ -371,33 +371,6 @@ describe('device interaction resume /device/:user_code/:grant/', () => {
       expect(code).to.have.property('scope', 'openid offline_access');
     });
 
-    it('should use the scope from resume cookie if provided', async function () {
-      const spy = sinon.spy(i(this.provider).configuration(), 'deviceCodeSuccess');
-
-      setup.call(this, {
-        scope: 'openid offline_access',
-      }, {
-        login: {
-          account: uuid(),
-          remember: true,
-        },
-        consent: {
-          scope: 'openid',
-        },
-      });
-
-      await this.agent.get(path)
-        .accept('text/html')
-        .expect(() => {
-          expect(spy.calledOnce).to.be.true;
-        })
-        .expect(200);
-
-      const code = await this.provider.DeviceCode.findByUserCode(userCode);
-      expect(code).to.have.property('accountId');
-      expect(code).to.have.property('scope', 'openid');
-    });
-
     it('if not resolved returns consent_required error', async function () {
       const spy = sinon.spy(i(this.provider).configuration(), 'userCodeInputSource');
 
