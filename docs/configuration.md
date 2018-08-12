@@ -1138,7 +1138,7 @@ _**default value**_:
 
 ### audiences
 
-Helper used by the OP to push additional audiences to issued ID, Access and ClientCredentials Tokens as well as other signed responses. The return value should either be falsy to omit adding additional audiences or an array of strings to push.  
+Helper used by the OP to push additional audiences to issued ID, Access and ClientCredentials Tokens as well as other signed responses (e.g. Userinfo). The return value should either be falsy to omit adding additional audiences or an array of strings to push.  
 
 _**affects**_: ID Token audiences, access token audiences, client credential audiences, signed UserInfo audiences  
 <details>
@@ -1146,14 +1146,13 @@ _**affects**_: ID Token audiences, access token audiences, client credential aud
   <br>
 
 ```js
-async audiences(ctx, sub, token, use, scope) {
+async audiences(ctx, sub, token, use) {
   // @param ctx   - koa request context
   // @param sub   - account identifier (subject)
-  // @param token - a reference to the token used for which a given account is being loaded,
-  //   is undefined in scenarios where claims are returned from authorization endpoint
-  // @param use   - can be one of "id_token", "userinfo", "access_token" depending on where the
-  //   specific audiences are intended to be put in
-  // @param scope - scope from either the request or related token
+  // @param token - the token to which these additional audiences will be assed to. It is
+  //   undefined when the audiences are pushed to a JWT userinfo response
+  // @param use   - can be one of "id_token", "userinfo", "access_token" or "client_credentials"
+  //   depending on where the specific audiences are intended to be put in
   return undefined;
 }
 ```
