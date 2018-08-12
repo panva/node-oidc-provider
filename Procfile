@@ -1,1 +1,1 @@
-web: node example/index.js
+web: node example/standalone.js
