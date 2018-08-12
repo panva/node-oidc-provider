@@ -55,6 +55,7 @@ class MyAdapter {
      * when `opaque`
      * - jti {string} unique identifier of the token
      * - kind {string} token class name
+     * - format {string} the format used for the token storage and representation
      * - exp {number} - timestamp of the token's expiration
      * - iat {number} - timestamp of the token's creation
      * - iss {string} - issuer identifier, useful in multi-provider instance apps
