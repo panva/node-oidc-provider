@@ -33,7 +33,7 @@ module.exports = (provider) => {
         client,
         details,
         title: 'Sign-in',
-        debug: querystring.stringify(details.params, ',<br/>', ' = ', {
+        params: querystring.stringify(details.params, ',<br/>', ' = ', {
           encodeURIComponent: value => value,
         }),
         interaction: querystring.stringify(details.interaction, ',<br/>', ' = ', {
@@ -45,7 +45,7 @@ module.exports = (provider) => {
         client,
         details,
         title: 'Authorize',
-        debug: querystring.stringify(details.params, ',<br/>', ' = ', {
+        params: querystring.stringify(details.params, ',<br/>', ' = ', {
           encodeURIComponent: value => value,
         }),
         interaction: querystring.stringify(details.interaction, ',<br/>', ' = ', {
