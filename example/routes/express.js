@@ -1,6 +1,6 @@
 const querystring = require('querystring');
 
-const { urlencoded } = require('express');
+const { urlencoded } = require('express'); // eslint-disable-line import/no-unresolved
 
 const Account = require('../support/account');
 

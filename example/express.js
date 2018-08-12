@@ -4,7 +4,7 @@ const path = require('path');
 const url = require('url');
 
 const { set } = require('lodash');
-const express = require('express');
+const express = require('express'); // eslint-disable-line import/no-unresolved
 const helmet = require('helmet');
 
 const Provider = require('../lib'); // require('oidc-provider');
