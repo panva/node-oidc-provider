@@ -1,7 +1,6 @@
 const sinon = require('sinon');
 const { expect } = require('chai');
 const timekeeper = require('timekeeper');
-const { uniq } = require('lodash');
 
 const bootstrap = require('../test_helper');
 
@@ -152,26 +151,5 @@ describe('BaseToken', () => {
       this.TestAdapter.for('DeviceCode').findByUserCode.restore();
       expect(err).to.equal(adapterThrow);
     });
-  });
-});
-
-describe('mixed formats for tokens', () => {
-  before(bootstrap(__dirname, { config: 'base_token_mixed_formats' }));
-
-  it('allows for formats to differ per token type', async function () {
-    const models = [
-      this.provider.BaseToken, this.provider.AccessToken,
-      this.provider.RefreshToken, this.provider.AuthorizationCode,
-    ];
-
-    const generateTokenId = models.map(m => m.generateTokenId);
-    const getTokenId = models.map(m => m.getTokenId);
-    const verify = models.map(m => m.getTokenId);
-    const getValueAndPayload = models.map(m => m.prototype.getValueAndPayload);
-
-    expect(uniq(generateTokenId)).to.have.lengthOf(3);
-    expect(uniq(getTokenId)).to.have.lengthOf(3);
-    expect(uniq(verify)).to.have.lengthOf(3);
-    expect(uniq(getValueAndPayload)).to.have.lengthOf(3);
   });
 });

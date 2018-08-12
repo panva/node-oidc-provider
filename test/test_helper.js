@@ -281,15 +281,25 @@ module.exports = function testHelper(dir, { config: base = path.basename(dir), m
   }
 
   function getTokenJti(token) {
+    const jwt = () => JSON.parse(base64url.decode(token.split('.')[1])).jti;
+    const opaque = () => token;
     switch (FORMAT) {
       case 'legacy':
         return token.substring(0, 48);
       case 'jwt':
-        return JSON.parse(base64url.decode(token.split('.')[1])).jti;
+        return jwt();
       case 'opaque':
-        return token;
+        return opaque();
       default:
-        throw new Error(`invalid format specified (${FORMAT})`);
+        if (typeof FORMAT === 'function') {
+          try {
+            return jwt();
+          } catch (err) {
+            return opaque();
+          }
+        } else {
+          throw new Error(`invalid format specified (${FORMAT})`);
+        }
     }
   }
 

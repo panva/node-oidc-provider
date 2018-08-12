@@ -73,19 +73,12 @@ class TestAdapter {
   syncUpdate(id, update) {
     const found = store.get(this.key(id));
     if (!found) return;
-    switch (FORMAT) {
-      case 'legacy': {
-        const payload = JSON.parse(base64url.decode(found.payload));
-        Object.assign(payload, update);
-        found.payload = base64url(JSON.stringify(payload));
-        break;
-      }
-      case 'jwt':
-      case 'opaque':
-        Object.assign(found, update);
-        break;
-      default:
-        throw new Error(`invalid format specified (${FORMAT})`);
+    if (FORMAT === 'legacy') {
+      const payload = JSON.parse(base64url.decode(found.payload));
+      Object.assign(payload, update);
+      found.payload = base64url(JSON.stringify(payload));
+    } else {
+      Object.assign(found, update);
     }
   }
 
