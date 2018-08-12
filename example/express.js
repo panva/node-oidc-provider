@@ -11,7 +11,7 @@ const Provider = require('../lib'); // require('oidc-provider');
 
 const Account = require('./support/account');
 const { provider: providerConfiguration, clients, keys } = require('./support/configuration');
-const { express: routes } = require('./routes');
+const routes = require('./routes/express');
 
 const { PORT = 3000, ISSUER = `http://localhost:${PORT}`, TIMEOUT } = process.env;
 providerConfiguration.findById = Account.findById;
