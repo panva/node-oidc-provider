@@ -10,7 +10,7 @@ const Provider = require('../lib'); // require('oidc-provider');
 
 const Account = require('./support/account');
 const { provider: providerConfiguration, clients, keys } = require('./support/configuration');
-const { koa: routes } = require('./routes');
+const routes = require('./routes/koa');
 
 const { PORT = 3000, ISSUER = `http://localhost:${PORT}`, TIMEOUT } = process.env;
 providerConfiguration.findById = Account.findById;
