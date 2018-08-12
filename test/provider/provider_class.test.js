@@ -27,8 +27,6 @@ describe('Provider', () => {
       'RegistrationNotSupported',
       'RequestNotSupported',
       'RequestUriNotSupported',
-      'RestrictedGrantType',
-      'RestrictedResponseType',
       'SlowDown',
       'TemporarilyUnavailable',
       'UnauthorizedClient',
