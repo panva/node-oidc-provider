@@ -76,14 +76,15 @@ of the OpenID Connect™ protocol.
 
 
 ## Get started
-You may follow an example [step by step setup][example-repo] (recommended), or run and experiment with an
-example server that's part of the repo (if you can follow the structure, if not check the step by step).
+You may check the [example folder](/example) or follow a [step by step example][example-repo] to see
+which of those fits your desired application setup.
 
-The example bundled in this repo's codebase is available for you to experiment with [here][heroku-example].
-Dynamic Registration is open, you can literally register any
-client you want there.  
-An example client using this provider is available [here][heroku-example-client]
-(uses [openid-client][openid-client]).
+The examples bundled in this repo's codebase are available for you to experiment with
+[here][heroku-example]. Dynamic Registration is open, you can literally register any client you want
+there.   An example client using this provider is available [here][heroku-example-client] (uses
+[openid-client][openid-client]).
+
+Also be sure to check the available configuration docs section.
 
 
 ## Configuration and Initialization
@@ -104,13 +105,21 @@ const clients = [{
 
 const oidc = new Provider('http://localhost:3000', configuration);
 
+let server;
 (async () => {
   await oidc.initialize({ clients });
-  // oidc.callback => express/nodejs style application callback (req, res)
-  // oidc.app => koa2.x application
-  oidc.listen(3000);
-  console.log('oidc-provider listening on port 3000, check http://localhost:3000/.well-known/openid-configuration');
+  // express/nodejs style application callback (req, res, next) for use with express apps, see ./examples/express.js
+  oidc.callback
+
+  // koa application for use with koa apps, see ./examples/koa.js
+  oidc.app
+
+  // or just expose a server standalone, see ./examples/standalone.js
+  server = oidc.listen(3000, () => {
+    console.log('oidc-provider listening on port 3000, check http://localhost:3000/.well-known/openid-configuration');
+  });
 })().catch((err) => {
+  if (server && server.listening) server.close();
   console.error(err);
   process.exitCode = 1;
 });

@@ -1,64 +1,14 @@
-/* eslint-disable no-console */
-
-const path = require('path');
 const querystring = require('querystring');
 
-const { set } = require('lodash');
 const bodyParser = require('koa-body');
 const Router = require('koa-router');
-const render = require('koa-ejs');
-const helmet = require('koa-helmet');
 
-const Provider = require('../lib');
-const { renderError } = require('../lib/helpers/defaults'); // make your own, you'll need it anyway
+const { renderError } = require('../../lib/helpers/defaults'); // make your own, you'll need it anyway
+const Account = require('../support/account');
 
-const port = process.env.PORT || 3000;
-
-const Account = require('./account');
-const { config, clients, certificates } = require('./settings');
-
-const issuer = process.env.ISSUER || 'http://localhost:3000';
-
-config.findById = Account.findById;
-
-const provider = new Provider(issuer, config);
-const { errors: { SessionNotFound } } = Provider;
-
-provider.defaultHttpOptions = { timeout: 15000 };
-provider.use(helmet());
-
-provider.initialize({
-  adapter: process.env.MONGODB_URI ? require('./heroku_mongo_adapter') : undefined, // eslint-disable-line global-require
-  clients,
-  keystore: { keys: certificates },
-}).then(() => {
-  render(provider.app, {
-    cache: false,
-    layout: '_layout',
-    root: path.join(__dirname, 'views'),
-  });
-
-  if (process.env.NODE_ENV === 'production') {
-    provider.proxy = true;
-    set(config, 'cookies.short.secure', true);
-    set(config, 'cookies.long.secure', true);
-
-    provider.use(async (ctx, next) => {
-      if (ctx.secure) {
-        await next();
-      } else if (ctx.method === 'GET' || ctx.method === 'HEAD') {
-        ctx.redirect(ctx.href.replace(/^http:\/\//i, 'https://'));
-      } else {
-        ctx.body = {
-          error: 'invalid_request',
-          error_description: 'do yourself a favor and only use https',
-        };
-        ctx.status = 400;
-      }
-    });
-  }
-
+module.exports = (provider) => {
   const router = new Router();
+  const { constructor: { errors: { SessionNotFound } } } = provider;
 
   router.use(async (ctx, next) => {
     try {
@@ -107,7 +57,10 @@ provider.initialize({
     await next();
   });
 
-  const body = bodyParser();
+  const body = bodyParser({
+    text: false,
+    json: false,
+  });
 
   router.post('/interaction/:grant/confirm', body, async (ctx, next) => {
     const result = { consent: {} };
@@ -133,10 +86,5 @@ provider.initialize({
     await next();
   });
 
-  provider.use(router.routes());
-})
-  .then(() => provider.listen(port))
-  .catch((err) => {
-    console.error(err);
-    process.exitCode = 1;
-  });
+  return router;
+};

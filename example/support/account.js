@@ -49,12 +49,12 @@ class Account {
     };
   }
 
-  static findByLogin(login) {
+  static async findByLogin(login) {
     if (!logins.get(login)) {
       logins.set(login, new Account());
     }
 
-    return Promise.resolve(logins.get(login));
+    return logins.get(login);
   }
 
   static async findById(ctx, id, token) { // eslint-disable-line no-unused-vars

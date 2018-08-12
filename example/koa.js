@@ -1,29 +1,53 @@
 /* eslint-disable no-console */
 
 const path = require('path');
-const url = require('url');
 
 const { set } = require('lodash');
-const express = require('express');
-const helmet = require('helmet');
+const Koa = require('koa');
+const render = require('koa-ejs');
+const helmet = require('koa-helmet');
+const mount = require('koa-mount');
 
 const Provider = require('../lib'); // require('oidc-provider');
 
 const Account = require('./support/account');
 const { provider: providerConfiguration, clients, keys } = require('./support/configuration');
-const { express: routes } = require('./routes');
+const { koa: routes } = require('./routes');
 
 const { PORT = 3000, ISSUER = `http://localhost:${PORT}`, TIMEOUT } = process.env;
 providerConfiguration.findById = Account.findById;
 
-const app = express();
+const app = new Koa();
 app.use(helmet());
+render(app, {
+  cache: false,
+  viewExt: 'ejs',
+  layout: '_layout',
+  root: path.join(__dirname, 'views'),
+});
 
-app.set('views', path.join(__dirname, 'views'));
-app.set('view engine', 'ejs');
+if (process.env.NODE_ENV === 'production') {
+  app.keys = providerConfiguration.cookies.keys;
+  app.proxy = true;
+  set(providerConfiguration, 'cookies.short.secure', true);
+  set(providerConfiguration, 'cookies.long.secure', true);
+
+  app.use(async (ctx, next) => {
+    if (ctx.secure) {
+      await next();
+    } else if (ctx.method === 'GET' || ctx.method === 'HEAD') {
+      ctx.redirect(ctx.href.replace(/^http:\/\//i, 'https://'));
+    } else {
+      ctx.body = {
+        error: 'invalid_request',
+        error_description: 'do yourself a favor and only use https',
+      };
+      ctx.status = 400;
+    }
+  });
+}
 
 const provider = new Provider(ISSUER, providerConfiguration);
-
 if (TIMEOUT) {
   provider.defaultHttpOptions = { timeout: TIMEOUT };
 }
@@ -35,33 +59,8 @@ let server;
     clients,
     keystore: { keys },
   });
-
-  if (process.env.NODE_ENV === 'production') {
-    app.enable('trust proxy');
-    provider.proxy = true;
-    set(providerConfiguration, 'cookies.short.secure', true);
-    set(providerConfiguration, 'cookies.long.secure', true);
-
-    app.use((req, res, next) => {
-      if (req.secure) {
-        next();
-      } else if (req.method === 'GET' || req.method === 'HEAD') {
-        res.redirect(url.format({
-          protocol: 'https',
-          host: req.get('host'),
-          pathname: req.originalUrl,
-        }));
-      } else {
-        res.status(400).json({
-          error: 'invalid_request',
-          error_description: 'do yourself a favor and only use https',
-        });
-      }
-    });
-  }
-
-  routes(app, provider);
-  app.use(provider.callback);
+  app.use(routes(provider).routes());
+  app.use(mount(provider.app));
   server = app.listen(PORT, () => {
     console.log(`application is listening on port ${PORT}, check it's /.well-known/openid-configuration`);
   });
