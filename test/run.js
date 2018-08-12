@@ -5,6 +5,7 @@ const { createServer } = require('http');
 const { JWK: { createKeyStore } } = require('node-jose');
 const Mocha = require('mocha');
 const { all: clearRequireCache } = require('clear-module');
+const { sample } = require('lodash');
 
 const FORMAT_REGEXP = /^--format=(\w+)$/;
 const formats = [];
@@ -15,9 +16,10 @@ process.argv.forEach((arg) => {
 });
 
 if (!formats.length) {
-  formats.push('legacy');
   formats.push('opaque');
   formats.push('jwt');
+  formats.push('dynamic');
+  formats.push('legacy');
 }
 const passed = [];
 
@@ -54,7 +56,7 @@ async function run() {
 
     mocha.run((failures) => {
       if (!failures) {
-        passed.push(`Suite passed with ${this.format} format`);
+        passed.push(`Suite passed with ${typeof this.format === 'string' ? this.format : 'dynamic'} format`);
         global.server.close(resolve);
       } else {
         reject(new SuiteFailedError(`Suite failed with ${this.format} format`));
@@ -68,9 +70,10 @@ async function run() {
     global.keystore.generate('RSA', 1024),
     global.keystore.generate('EC', 'P-256'),
   ]);
-  if (formats.includes('legacy')) await run.call({ format: 'legacy' });
   if (formats.includes('opaque')) await run.call({ format: 'opaque' });
   if (formats.includes('jwt')) await run.call({ format: 'jwt' });
+  if (formats.includes('dynamic')) await run.call({ format: () => sample(['opaque', 'jwt']) });
+  if (formats.includes('legacy')) await run.call({ format: 'legacy' });
   passed.forEach(pass => console.log('\x1b[32m%s\x1b[0m', pass));
 })()
   .catch((error) => {
