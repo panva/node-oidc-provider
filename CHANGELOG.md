@@ -2,6 +2,20 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+<a name="4.6.0"></a>
+# [4.6.0](https://github.com/panva/node-oidc-provider/compare/v4.5.0...v4.6.0) (2018-08-13)
+
+
+### Features
+
+* add client meta to setProviderSession ([1174c76](https://github.com/panva/node-oidc-provider/commit/1174c76)), closes [#352](https://github.com/panva/node-oidc-provider/issues/352)
+* check session client Origin check ([6c27f10](https://github.com/panva/node-oidc-provider/commit/6c27f10))
+* option to set interactionResult without redirecting to resume right away ([6aeedf2](https://github.com/panva/node-oidc-provider/commit/6aeedf2)), closes [#350](https://github.com/panva/node-oidc-provider/issues/350)
+* session management client helper is now inline with other helpers ([96802df](https://github.com/panva/node-oidc-provider/commit/96802df))
+* update JWT Response for OAuth Token Introspection draft ([039ab90](https://github.com/panva/node-oidc-provider/commit/039ab90))
+
+
+
 <a name="4.5.0"></a>
 # [4.5.0](https://github.com/panva/node-oidc-provider/compare/v4.4.0...v4.5.0) (2018-08-03)
 
