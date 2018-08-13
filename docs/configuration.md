@@ -321,9 +321,9 @@ router.post('/interaction/:grant', async (ctx, next) => {
 ```
 
 **`#provider.interactionResult`**
-Unlike `#provider.interactionFinished` redirect uri is returned instead of immediate http redirect.
-It should be used when custom response handling is needed e.g. making AJAX login where redirect uri 
-is expected to be available in the response.
+Unlike `#provider.interactionFinished` authorization request resume uri is returned instead of 
+immediate http redirect. It should be used when custom response handling is needed e.g. making AJAX 
+login where redirect information is expected to be available in the response.
 
 ```js
 // with express
