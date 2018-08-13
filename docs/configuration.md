@@ -320,6 +320,27 @@ router.post('/interaction/:grant', async (ctx, next) => {
 }
 ```
 
+**`#provider.interactionResult`**
+Unlike `#provider.interactionFinished` authorization request resume uri is returned instead of 
+immediate http redirect. It should be used when custom response handling is needed e.g. making AJAX 
+login where redirect information is expected to be available in the response.
+
+```js
+// with express
+expressApp.post('/interaction/:grant/login', async (req, res) => {
+  const redirectTo = await provider.interactionResult(req, res, results);
+  
+  res.send({ redirectTo });
+});
+
+// with koa
+router.post('/interaction/:grant', async (ctx, next) => {
+  const redirectTo = await provider.interactionResult(ctx.req, ctx.res, results);
+  
+  res.send({ redirectTo });
+});
+```
+
 **`#provider.setProviderSession`**
 Sometimes interactions need to be interrupted before finishing and need to be picked up later,
 or a session just needs to be established from outside the regular authorization request.
