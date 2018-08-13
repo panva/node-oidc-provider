@@ -354,19 +354,22 @@ async setProviderSession(req, res, {
   ts = epochTime(), // [optional] login timestamp, defaults to current timestamp
   remember = true, // [optional] set the session as persistent, defaults to true
   clients = [], // [optional] array of client id strings to pre-authorize in the updated session
+  meta: { // [optional] object with keys being client_ids present in clients with their respective meta
+    [client_id]: {},
+  }
 } = {})
 ```
 
 ```js
 // with express
 expressApp.post('/interaction/:grant/login', async (req, res) => {
-  await provider.setProviderSession(req, res, { account: 'accountId' });
+  await provider.setProviderSession(req, res, { account: 'accountId' }, { [client_id]: { key: 'value' } });
   // ...
 });
 
 // with koa
 router.post('/interaction/:grant/login', async (ctx, next) => {
-  await provider.setProviderSession(ctx.req, ctx.res, { account: 'accountId' });
+  await provider.setProviderSession(req, res, { account: 'accountId' }, { [client_id]: { key: 'value' } });
   // ...
 });
 ```
