@@ -354,6 +354,9 @@ async setProviderSession(req, res, {
   ts = epochTime(), // [optional] login timestamp, defaults to current timestamp
   remember = true, // [optional] set the session as persistent, defaults to true
   clients = [], // [optional] array of client id strings to pre-authorize in the updated session
+  meta: { // [optional] object with keys being client_ids present in clients with their respective meta
+    [client_id]: {},
+  }
 } = {})
 ```
 

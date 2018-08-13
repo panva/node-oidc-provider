@@ -137,4 +137,42 @@ describe('provider.setProviderSession', () => {
     const session = this.getSession();
     expect(session).to.have.property('loginTs', ts);
   });
+
+  it("sets the session's meta", async function () {
+    const meta = {
+      mywebsite: { error: 'password-expired' },
+    };
+
+    // simulates setting a fresh session (non existant) in another request
+    this.provider.use(async (ctx, next) => {
+      if (ctx.path === '/login') {
+        await this.provider.setProviderSession(ctx.req, ctx.res, { account: 'foo', clients: ['mywebsite'], meta });
+      }
+      await next();
+    });
+
+    await this.agent.post('/login');
+    const session = this.getSession();
+    expect(session).to.have.nested.property('authorizations.mywebsite').that.is.an('object');
+  });
+
+  it("setting the session's meta fails when client not found in clients array", async function () {
+    const meta = {
+      'client-1': { error: 'password-expired' },
+    };
+
+    // simulates setting a fresh session (non existant) in another request
+    this.provider.use(async (ctx, next) => {
+      if (ctx.path === '/login') {
+        await this.provider.setProviderSession(ctx.req, ctx.res, { account: 'foo', meta });
+      }
+      await next();
+    });
+
+    try {
+      await this.agent.post('/login');
+    } catch (err) {
+      expect(err.message).to.have.property('message', 'meta client_id must be in clients');
+    }
+  });
 });
