@@ -369,7 +369,7 @@ expressApp.post('/interaction/:grant/login', async (req, res) => {
 
 // with koa
 router.post('/interaction/:grant/login', async (ctx, next) => {
-  await provider.setProviderSession(req, res, { account: 'accountId' });
+  await provider.setProviderSession(ctx.req, ctx.res, { account: 'accountId' });
   // ...
 });
 ```
