@@ -1,6 +1,6 @@
 {
   "name": "@astro-my/oidc-provider-astro",
-  "version": "4.5.8",
+  "version": "4.5.9",
   "description": "OpenID Provider (OP) implementation for Node.js OpenID Connect servers.",
   "keywords": [
     "auth",
