@@ -3,7 +3,7 @@ const { expect } = require('chai');
 const bootstrap = require('../test_helper');
 const epochTime = require('../../lib/helpers/epoch_time');
 
-describe('provider.setProviderSession', () => {
+describe.only('provider.setProviderSession', () => {
   before(bootstrap(__dirname, { config: 'set_session' }));
 
   beforeEach(function () { return this.logout(); });
@@ -136,5 +136,23 @@ describe('provider.setProviderSession', () => {
     await this.agent.post('/login');
     const session = this.getSession();
     expect(session).to.have.property('loginTs', ts);
+  });
+
+  it("sets the session's meta", async function () {
+    const meta = {
+      'client-1': { error: 'password-expired' },
+    };
+
+    // simulates setting a fresh session (non existant) in another request
+    this.provider.use(async (ctx, next) => {
+      if (ctx.path === '/login') {
+        await this.provider.setProviderSession(ctx.req, ctx.res, { account: 'foo', meta });
+      }
+      await next();
+    });
+
+    await this.agent.post('/login');
+    const session = this.getSession();
+    expect(session).to.have.property('meta', meta);
   });
 });
