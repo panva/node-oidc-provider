@@ -337,7 +337,7 @@ expressApp.post('/interaction/:grant/login', async (req, res) => {
 router.post('/interaction/:grant', async (ctx, next) => {
   const redirectTo = await provider.interactionResult(ctx.req, ctx.res, results);
   
-  res.send({ redirectTo });
+  ctx.body = { redirectTo };
 });
 ```
 
