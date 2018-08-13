@@ -49,7 +49,7 @@ if (process.env.NODE_ENV === 'production') {
 
 const provider = new Provider(ISSUER, providerConfiguration);
 if (TIMEOUT) {
-  provider.defaultHttpOptions = { timeout: TIMEOUT };
+  provider.defaultHttpOptions = { timeout: parseInt(TIMEOUT, 10) };
 }
 
 let server;

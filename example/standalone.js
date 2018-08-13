@@ -18,7 +18,7 @@ providerConfiguration.findById = Account.findById;
 const provider = new Provider(ISSUER, providerConfiguration);
 
 if (TIMEOUT) {
-  provider.defaultHttpOptions = { timeout: TIMEOUT };
+  provider.defaultHttpOptions = { timeout: parseInt(TIMEOUT, 10) };
 }
 
 provider.use(helmet());
