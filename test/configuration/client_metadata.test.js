@@ -96,9 +96,10 @@ describe('Client metadata validation', () => {
     });
   };
 
-  const mustBeBoolean = (prop, configuration) => {
+  const mustBeBoolean = (prop, meta, configuration) => {
     [{}, 'string', 123, null, []].forEach((value) => {
       let msg = util.format('must be a boolean, %j provided', value);
+      if (meta) msg = util.format(`${msg}, [client %j]`, omit(meta, ['jwks.keys']));
       if (configuration) msg = util.format(`${msg}, [provider %j]`, configuration);
       it(msg, () => addClient({
         [prop]: value,
@@ -524,7 +525,7 @@ describe('Client metadata validation', () => {
         id_token_encrypted_response_enc: 'whatever',
       }, configuration).then(fail, (err) => {
         expect(err.message).to.equal('invalid_client_metadata');
-        expect(err.error_description).to.equal('id_token_encrypted_response_alg is mandatory property');
+        expect(err.error_description).to.equal('id_token_encrypted_response_alg is mandatory property when id_token_encrypted_response_enc is provided');
       }));
       [
         'RSA-OAEP', 'RSA-OAEP-256', 'RSA1_5', 'ECDH-ES', 'ECDH-ES+A128KW', 'ECDH-ES+A192KW',
@@ -572,7 +573,7 @@ describe('Client metadata validation', () => {
         userinfo_encrypted_response_enc: 'whatever',
       }, configuration).then(fail, (err) => {
         expect(err.message).to.equal('invalid_client_metadata');
-        expect(err.error_description).to.equal('userinfo_encrypted_response_alg is mandatory property');
+        expect(err.error_description).to.equal('userinfo_encrypted_response_alg is mandatory property when userinfo_encrypted_response_enc is provided');
       }));
       [
         'RSA-OAEP', 'RSA-OAEP-256', 'RSA1_5', 'ECDH-ES', 'ECDH-ES+A128KW', 'ECDH-ES+A192KW',
@@ -621,7 +622,7 @@ describe('Client metadata validation', () => {
         introspection_encrypted_response_enc: 'whatever',
       }, configuration).then(fail, (err) => {
         expect(err.message).to.equal('invalid_client_metadata');
-        expect(err.error_description).to.equal('introspection_encrypted_response_alg is mandatory property');
+        expect(err.error_description).to.equal('introspection_encrypted_response_alg is mandatory property when introspection_encrypted_response_enc is provided');
       }));
       [
         'RSA-OAEP', 'RSA-OAEP-256', 'RSA1_5', 'ECDH-ES', 'ECDH-ES+A128KW', 'ECDH-ES+A192KW',
@@ -671,7 +672,7 @@ describe('Client metadata validation', () => {
         request_object_encryption_enc: 'whatever',
       }, configuration).then(fail, (err) => {
         expect(err.message).to.equal('invalid_client_metadata');
-        expect(err.error_description).to.equal('request_object_encryption_alg is mandatory property');
+        expect(err.error_description).to.equal('request_object_encryption_alg is mandatory property when request_object_encryption_enc is provided');
       }));
       [
         'RSA-OAEP', 'RSA-OAEP-256', 'RSA1_5', 'ECDH-ES', 'ECDH-ES+A128KW', 'ECDH-ES+A192KW',
@@ -781,7 +782,7 @@ describe('Client metadata validation', () => {
       context('backchannel_logout_session_required', function () {
         defaultsTo(this.title, undefined);
         defaultsTo(this.title, false, undefined, configuration);
-        mustBeBoolean(this.title, configuration);
+        mustBeBoolean(this.title, undefined, configuration);
       });
     });
 
@@ -801,7 +802,7 @@ describe('Client metadata validation', () => {
       context('frontchannel_logout_session_required', function () {
         defaultsTo(this.title, undefined);
         defaultsTo(this.title, false, undefined, configuration);
-        mustBeBoolean(this.title, configuration);
+        mustBeBoolean(this.title, undefined, configuration);
       });
     });
   });
