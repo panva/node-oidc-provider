@@ -363,13 +363,13 @@ async setProviderSession(req, res, {
 ```js
 // with express
 expressApp.post('/interaction/:grant/login', async (req, res) => {
-  await provider.setProviderSession(req, res, { account: 'accountId' }, { [client_id]: { key: 'value' } });
+  await provider.setProviderSession(req, res, { account: 'accountId' });
   // ...
 });
 
 // with koa
 router.post('/interaction/:grant/login', async (ctx, next) => {
-  await provider.setProviderSession(req, res, { account: 'accountId' }, { [client_id]: { key: 'value' } });
+  await provider.setProviderSession(req, res, { account: 'accountId' });
   // ...
 });
 ```
