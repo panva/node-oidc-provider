@@ -79,15 +79,16 @@ class RedisAdapter {
 
   async destroy(id) {
     const key = this.key(id);
-    const deletions = [];
     if (grantable.has(this.name)) {
+      const multi = client.multi();
       const grantId = await client.hget(key, 'grantId');
       const tokens = await client.lrange(grantKeyFor(grantId), 0, -1);
-      tokens.forEach(token => deletions.push(client.del(token)));
-      deletions.push(client.del(grantKeyFor(grantId)));
+      tokens.forEach(token => multi.del(token));
+      multi.del(grantKeyFor(grantId));
+      await multi.exec();
+    } else {
+      await client.del(key);
     }
-    deletions.push(client.del(key));
-    await Promise.all(deletions);
   }
 
   async consume(id) {
