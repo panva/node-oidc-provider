@@ -198,7 +198,6 @@ describe('[session_management]', () => {
         });
     });
 
-    // TODO: look into the `Cannot read property 'jwksUri' of undefined` here
     it('rejects JWTs with bad signatures', async function () {
       const emitSpy = sinon.spy();
       const renderSpy = sinon.spy(i(this.provider).configuration(), 'renderError');
