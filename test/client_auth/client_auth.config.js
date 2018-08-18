@@ -33,11 +33,10 @@ module.exports = {
   }, {
     token_endpoint_auth_method: 'client_secret_jwt',
     client_id: 'client-jwt-secret',
-    client_secret: 'atleast32byteslongforHS256mmkay?',
+    client_secret: 'its64bytes_____________________________________________________!',
     redirect_uris: ['https://client.example.com/cb'],
   }, {
     client_id: 'client-jwt-key',
-    client_secret: 'whateverwontbeusedanyway',
     redirect_uris: ['https://client.example.com/cb'],
     token_endpoint_auth_method: 'private_key_jwt',
     jwks: {
