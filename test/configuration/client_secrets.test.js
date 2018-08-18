@@ -3,7 +3,7 @@ const { expect } = require('chai');
 const bootstrap = require('../test_helper');
 
 describe('Client#add', () => {
-  before(bootstrap(__dirname));
+  before(bootstrap(__dirname, { config: 'client_secrets' }));
 
   it('client secret is mandatory if even one of the authz needs it', function () {
     expect(this.provider.Client.needsSecret({
@@ -23,10 +23,31 @@ describe('Client#add', () => {
     })).to.be.true;
   });
 
+  ['token', 'introspection', 'revocation'].forEach((endpoint) => {
+    context(`configuring ${endpoint}_endpoint_auth_method=client_secret_jwt without ${endpoint}_endpoint_auth_signing_alg`, () => {
+      it('validates the secret is long enough to support the top available alg bitsize', function () {
+        return i(this.provider).clientAdd({
+          client_id: `${Math.random()}`,
+          client_secret: 'not64bytes_____________________________________________________',
+          redirect_uris: ['https://client.example.com/cb'],
+          [`${endpoint}_endpoint_auth_method`]: 'client_secret_jwt',
+        }).then((client) => {
+          expect(client).not.to.be.ok;
+        }, (err) => {
+          expect(err).to.be.ok;
+          expect(err).to.have.property('message', 'invalid_client_metadata');
+          expect(err).to.have.property('error_description', 'insufficient client_secret length (need at least 512 bits, got 504)');
+        });
+      });
+    });
+  });
+
   [
     'id_token_signed_response_alg',
     'request_object_signing_alg',
     'token_endpoint_auth_signing_alg',
+    'revocation_endpoint_auth_signing_alg',
+    'introspection_endpoint_auth_signing_alg',
     'userinfo_signed_response_alg',
     'introspection_signed_response_alg',
   ].forEach((metadata) => {
@@ -42,7 +63,7 @@ describe('Client#add', () => {
         }, (err) => {
           expect(err).to.be.ok;
           expect(err).to.have.property('message', 'invalid_client_metadata');
-          expect(err).to.have.property('error_description', 'insufficient client_secret length');
+          expect(err).to.have.property('error_description', 'insufficient client_secret length (need at least 256 bits, got 248)');
         });
       });
 
@@ -57,7 +78,7 @@ describe('Client#add', () => {
         }, (err) => {
           expect(err).to.be.ok;
           expect(err).to.have.property('message', 'invalid_client_metadata');
-          expect(err).to.have.property('error_description', 'insufficient client_secret length');
+          expect(err).to.have.property('error_description', 'insufficient client_secret length (need at least 384 bits, got 376)');
         });
       });
 
@@ -72,7 +93,7 @@ describe('Client#add', () => {
         }, (err) => {
           expect(err).to.be.ok;
           expect(err).to.have.property('message', 'invalid_client_metadata');
-          expect(err).to.have.property('error_description', 'insufficient client_secret length');
+          expect(err).to.have.property('error_description', 'insufficient client_secret length (need at least 512 bits, got 504)');
         });
       });
     });
