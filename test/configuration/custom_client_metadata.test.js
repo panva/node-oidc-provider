@@ -49,10 +49,11 @@ describe('extraClientMetadata configuration', () => {
     expect(calls[5].calledWith('foo_bar', 'three')).to.be.true;
 
     const client = await provider.Client.find('client-2');
-    expect(client).to.have.property('fooBar');
+    expect(client).to.have.property('foo_bar');
+    expect(client.metadata()).to.have.property('foo_bar');
   });
 
-  it('can be used assign standard properties depending on the value of a custom one', async () => {
+  it('can be used to assign standard properties depending on the value of a custom one', async () => {
     const provider = new Provider('http://localhost:3000', {
       extraClientMetadata: {
         properties: ['foo'],
