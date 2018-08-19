@@ -103,17 +103,5 @@ module.exports.keys = [
     kty: 'EC',
     x: 'FWZ9rSkLt6Dx9E3pxLybhdM6xgR5obGsj5_pqmnz5J4',
     y: '_n8G69C-A2Xl4xUW2lF0i8ZGZnk_KPYrhv4GbTGu5G4',
-  }, {
-    crv: 'P-384',
-    d: 'qdPGmba6NZMJYCF1UGOfHCKbc0CBtGss0zPVegBdw0sky6H7FamJcckfwItfS0HT',
-    kty: 'EC',
-    x: 'ij8LkaIQ-QkODmWucHJ7PWEtnnqlyd-iQU6fZcLoEEh-ScWULv4ggleNCWHdULtZ',
-    y: 'tTq_5IMhNcPR6L4W7T0ATPofr0wNRpHOZEIcTLk6DBqb5o0ZLo3g0r1ZUxNdAU3W',
-  }, {
-    crv: 'P-521',
-    d: 'P9pF8q_vq97UloR9C4d05mGeCN3cQ4AP9p3kMubrAVuzUieeNFLEjRseWmXftsk4sVFxnM9Roxt5Sy1fN5VgeWc',
-    kty: 'EC',
-    x: 'AamstoAouLxrWi6WHt903QR7NMpK4NszB5mNEFqLqaCxRXhPwrq_BG5R-7UP41cUIF38TQCePJpGLnoC5amCJNy3',
-    y: 'AUguNqeqkhVSrmolR58H4J26S58XinSN3kcnoIl75iHMKRMJDXBI9J4lBHALVn6i0zc9N9ucQAb8kmOXfObga_9J',
   },
 ];

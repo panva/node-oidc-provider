@@ -15,7 +15,6 @@ describe('client.requestUris', () => {
       clients: [{
         client_id: 'client',
         client_secret: 'secret',
-        id_token_signed_response_alg: 'none',
         redirect_uris: ['https://client.example.com/cb'],
       }],
     }).then(() => provider.Client.find('client'))
@@ -37,7 +36,6 @@ describe('client.requestUris', () => {
       clients: [{
         client_id: 'client',
         client_secret: 'secret',
-        id_token_signed_response_alg: 'none',
         redirect_uris: ['https://client.example.com/cb'],
       }],
     }).then(() => provider.Client.find('client'))

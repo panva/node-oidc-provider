@@ -2,11 +2,13 @@ const uuid = require('uuid/v4');
 const jose = require('node-jose');
 const sinon = require('sinon');
 const { expect } = require('chai');
+const { cloneDeep } = require('lodash');
 
 const Provider = require('../../lib');
 const bootstrap = require('../test_helper');
 const clientKey = require('../client.sig.key');
 const JWT = require('../../lib/helpers/jwt');
+const { JWA } = require('../../lib/consts');
 
 const route = '/token';
 
@@ -50,6 +52,7 @@ describe('client authentication options', () => {
           'client_secret_jwt',
           'client_secret_post',
         ],
+        whitelistedJWA: cloneDeep(JWA),
       });
 
       const algs = [
@@ -71,6 +74,7 @@ describe('client authentication options', () => {
           'client_secret_post',
           'private_key_jwt',
         ],
+        whitelistedJWA: cloneDeep(JWA),
       });
 
       const algs = [
@@ -99,6 +103,7 @@ describe('client authentication options', () => {
           'client_secret_post',
           'private_key_jwt',
         ],
+        whitelistedJWA: cloneDeep(JWA),
       });
 
       const algs = [
