@@ -1,6 +1,6 @@
-const { clone } = require('lodash');
+const { cloneDeep, pull } = require('lodash');
 
-const config = clone(require('../default.config'));
+const config = cloneDeep(require('../default.config'));
 
 config.features = {
   request: true,
@@ -8,9 +8,8 @@ config.features = {
   claimsParameter: true,
   deviceCode: true,
 };
-config.unsupported = {
-  requestObjectSigningAlgValues: ['HS384'],
-};
+
+pull(config.whitelistedJWA.requestObjectSigningAlgValues, 'HS384');
 
 module.exports = {
   config,

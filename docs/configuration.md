@@ -7,7 +7,6 @@ is a good starting point to get an idea of what you should provide.
 
 **Table of Contents**
 
-<!-- TOC START min:2 max:3 link:true update:true -->
 - [Basic configuration example](#basic-configuration-example)
 - [Default configuration values](#default-configuration-values)
 - [Accounts](#accounts)
@@ -91,11 +90,9 @@ is a good starting point to get an idea of what you should provide.
   - [tokenEndpointAuthMethods](#tokenendpointauthmethods)
   - [ttl](#ttl)
   - [uniqueness](#uniqueness)
-  - [unsupported](#unsupported)
   - [userCodeConfirmSource](#usercodeconfirmsource)
   - [userCodeInputSource](#usercodeinputsource)
-
-<!-- TOC END -->
+  - [whitelistedJWA](#whitelistedjwa)
 
 
 
@@ -1877,36 +1874,6 @@ async uniqueness(ctx, jti, expiresAt) {
 }
 ```
 
-### unsupported
-
-Fine-tune the algorithms your provider should support by further omitting values from the respective discovery properties  
-
-_**affects**_: signing, encryption, discovery, client validation  
-<details>
-  <summary><em><strong>default value</strong></em> (Click to expand)</summary>
-  <br>
-
-```js
-{ idTokenEncryptionAlgValues: [],
-  idTokenEncryptionEncValues: [],
-  idTokenSigningAlgValues: [],
-  requestObjectEncryptionAlgValues: [],
-  requestObjectEncryptionEncValues: [],
-  requestObjectSigningAlgValues: [],
-  tokenEndpointAuthSigningAlgValues: [],
-  introspectionEndpointAuthSigningAlgValues: [],
-  revocationEndpointAuthSigningAlgValues: [],
-  userinfoEncryptionAlgValues: [],
-  userinfoEncryptionEncValues: [],
-  userinfoSigningAlgValues: [],
-  introspectionEncryptionAlgValues: [],
-  introspectionEncryptionEncValues: [],
-  introspectionSigningAlgValues: [] }
-```
-
-</details>
-
-
 ### userCodeConfirmSource
 
 HTML source rendered when device code feature renders an a confirmation prompt for ther User-Agent.  
@@ -1997,6 +1964,444 @@ async userCodeInputSource(ctx, form, out, err) {
 
 </details>
 
+
+### whitelistedJWA
+
+Fine-tune the algorithms your provider will support by declaring algorithm values for each respective JWA use  
+
+_**affects**_: signing, encryption, discovery, client validation  
+_**recommendation**_: Only allow JWA algs that are necessary. The current defaults are based on recommendations from the [JWA specification](https://tools.ietf.org/html/rfc7518) + enables RSASSA-PSS based on current guidance in FAPI. "none" JWT algs are disabled by default but available if you need them.  
+
+### whitelistedJWA.idTokenEncryptionAlgValues
+
+JWA algorithms the provider supports to wrap keys for ID Token encryption   
+  
+
+<details>
+  <summary><em><strong>default value</strong></em> (Click to expand)</summary>
+  <br>
+
+```js
+[ 'A128KW',
+  'A256KW',
+  'ECDH-ES',
+  'ECDH-ES+A128KW',
+  'ECDH-ES+A256KW',
+  'RSA-OAEP' ]
+```
+
+</details>
+
+<details>
+  <summary>(Click to expand) Supported values list
+</summary>
+  <br>
+
+```js
+[
+  // asymmetric RSAES based
+  'RSA-OAEP', 'RSA1_5',
+  // asymmetric ECDH-ES based
+  'ECDH-ES', 'ECDH-ES+A128KW', 'ECDH-ES+A192KW', 'ECDH-ES+A256KW',
+  // symmetric AES
+  'A128KW', 'A192KW', 'A256KW',
+  // symmetric AES GCM based
+  'A128GCMKW', 'A192GCMKW', 'A256GCMKW',
+  // symmetric PBES2 + AES
+  'PBES2-HS256+A128KW', 'PBES2-HS384+A192KW', 'PBES2-HS512+A256KW',
+]
+```
+</details>
+
+### whitelistedJWA.idTokenEncryptionEncValues
+
+JWA algorithms the provider supports to encrypt ID Tokens with   
+  
+
+
+_**default value**_:
+```js
+[ 'A128CBC-HS256', 'A128GCM', 'A256CBC-HS512', 'A256GCM' ]
+```
+<details>
+  <summary>(Click to expand) Supported values list
+</summary>
+  <br>
+
+```js
+[
+  'A128CBC-HS256', 'A128GCM', 'A192CBC-HS384', 'A192GCM', 'A256CBC-HS512', 'A256GCM',
+]
+```
+</details>
+
+### whitelistedJWA.idTokenSigningAlgValues
+
+JWA algorithms the provider supports to sign ID Tokens with   
+  
+
+
+_**default value**_:
+```js
+[ 'HS256', 'RS256', 'PS256', 'ES256' ]
+```
+<details>
+  <summary>(Click to expand) Supported values list
+</summary>
+  <br>
+
+```js
+[
+  'none',
+  'HS256', 'HS384', 'HS512',
+  'RS256', 'RS384', 'RS512',
+  'PS256', 'PS384', 'PS512',
+  'ES256', 'ES384', 'ES512',
+]
+```
+</details>
+
+### whitelistedJWA.introspectionEncryptionAlgValues
+
+JWA algorithms the provider supports to wrap keys for JWT Introspection response encryption   
+  
+
+<details>
+  <summary><em><strong>default value</strong></em> (Click to expand)</summary>
+  <br>
+
+```js
+[ 'A128KW',
+  'A256KW',
+  'ECDH-ES',
+  'ECDH-ES+A128KW',
+  'ECDH-ES+A256KW',
+  'RSA-OAEP' ]
+```
+
+</details>
+
+<details>
+  <summary>(Click to expand) Supported values list
+</summary>
+  <br>
+
+```js
+[
+  // asymmetric RSAES based
+  'RSA-OAEP', 'RSA1_5',
+  // asymmetric ECDH-ES based
+  'ECDH-ES', 'ECDH-ES+A128KW', 'ECDH-ES+A192KW', 'ECDH-ES+A256KW',
+  // symmetric AES
+  'A128KW', 'A192KW', 'A256KW',
+  // symmetric AES GCM based
+  'A128GCMKW', 'A192GCMKW', 'A256GCMKW',
+  // symmetric PBES2 + AES
+  'PBES2-HS256+A128KW', 'PBES2-HS384+A192KW', 'PBES2-HS512+A256KW',
+]
+```
+</details>
+
+### whitelistedJWA.introspectionEncryptionEncValues
+
+JWA algorithms the provider supports to encrypt JWT Introspection responses with   
+  
+
+
+_**default value**_:
+```js
+[ 'A128CBC-HS256', 'A128GCM', 'A256CBC-HS512', 'A256GCM' ]
+```
+<details>
+  <summary>(Click to expand) Supported values list
+</summary>
+  <br>
+
+```js
+[
+  'A128CBC-HS256', 'A128GCM', 'A192CBC-HS384', 'A192GCM', 'A256CBC-HS512', 'A256GCM',
+]
+```
+</details>
+
+### whitelistedJWA.introspectionEndpointAuthSigningAlgValues
+
+JWA algorithms the provider supports on the introspection endpoint   
+  
+
+
+_**default value**_:
+```js
+[ 'HS256', 'RS256', 'PS256', 'ES256' ]
+```
+<details>
+  <summary>(Click to expand) Supported values list
+</summary>
+  <br>
+
+```js
+[
+  'HS256', 'HS384', 'HS512',
+  'RS256', 'RS384', 'RS512',
+  'PS256', 'PS384', 'PS512',
+  'ES256', 'ES384', 'ES512',
+]
+```
+</details>
+
+### whitelistedJWA.introspectionSigningAlgValues
+
+JWA algorithms the provider supports to sign JWT Introspection responses with   
+  
+
+
+_**default value**_:
+```js
+[ 'HS256', 'RS256', 'PS256', 'ES256' ]
+```
+<details>
+  <summary>(Click to expand) Supported values list
+</summary>
+  <br>
+
+```js
+[
+  'none',
+  'HS256', 'HS384', 'HS512',
+  'RS256', 'RS384', 'RS512',
+  'PS256', 'PS384', 'PS512',
+  'ES256', 'ES384', 'ES512',
+]
+```
+</details>
+
+### whitelistedJWA.requestObjectEncryptionAlgValues
+
+JWA algorithms the provider supports to receive encrypted Request Object keys wrapped with   
+  
+
+<details>
+  <summary><em><strong>default value</strong></em> (Click to expand)</summary>
+  <br>
+
+```js
+[ 'A128KW',
+  'A256KW',
+  'ECDH-ES',
+  'ECDH-ES+A128KW',
+  'ECDH-ES+A256KW',
+  'RSA-OAEP' ]
+```
+
+</details>
+
+<details>
+  <summary>(Click to expand) Supported values list
+</summary>
+  <br>
+
+```js
+[
+  // asymmetric RSAES based
+  'RSA-OAEP', 'RSA1_5',
+  // asymmetric ECDH-ES based
+  'ECDH-ES', 'ECDH-ES+A128KW', 'ECDH-ES+A192KW', 'ECDH-ES+A256KW',
+  // symmetric AES
+  'A128KW', 'A192KW', 'A256KW',
+  // symmetric AES GCM based
+  'A128GCMKW', 'A192GCMKW', 'A256GCMKW',
+  // symmetric PBES2 + AES
+  'PBES2-HS256+A128KW', 'PBES2-HS384+A192KW', 'PBES2-HS512+A256KW',
+]
+```
+</details>
+
+### whitelistedJWA.requestObjectEncryptionEncValues
+
+JWA algorithms the provider supports decrypt Request Objects with encryption   
+  
+
+
+_**default value**_:
+```js
+[ 'A128CBC-HS256', 'A128GCM', 'A256CBC-HS512', 'A256GCM' ]
+```
+<details>
+  <summary>(Click to expand) Supported values list
+</summary>
+  <br>
+
+```js
+[
+  'A128CBC-HS256', 'A128GCM', 'A192CBC-HS384', 'A192GCM', 'A256CBC-HS512', 'A256GCM',
+]
+```
+</details>
+
+### whitelistedJWA.requestObjectSigningAlgValues
+
+JWA algorithms the provider supports to receive Request Objects with   
+  
+
+
+_**default value**_:
+```js
+[ 'HS256', 'RS256', 'PS256', 'ES256' ]
+```
+<details>
+  <summary>(Click to expand) Supported values list
+</summary>
+  <br>
+
+```js
+[
+  'none',
+  'HS256', 'HS384', 'HS512',
+  'RS256', 'RS384', 'RS512',
+  'PS256', 'PS384', 'PS512',
+  'ES256', 'ES384', 'ES512',
+]
+```
+</details>
+
+### whitelistedJWA.revocationEndpointAuthSigningAlgValues
+
+JWA algorithms the provider supports on the revocation endpoint   
+  
+
+
+_**default value**_:
+```js
+[ 'HS256', 'RS256', 'PS256', 'ES256' ]
+```
+<details>
+  <summary>(Click to expand) Supported values list
+</summary>
+  <br>
+
+```js
+[
+  'HS256', 'HS384', 'HS512',
+  'RS256', 'RS384', 'RS512',
+  'PS256', 'PS384', 'PS512',
+  'ES256', 'ES384', 'ES512',
+]
+```
+</details>
+
+### whitelistedJWA.tokenEndpointAuthSigningAlgValues
+
+JWA algorithms the provider supports on the token endpoint   
+  
+
+
+_**default value**_:
+```js
+[ 'HS256', 'RS256', 'PS256', 'ES256' ]
+```
+<details>
+  <summary>(Click to expand) Supported values list
+</summary>
+  <br>
+
+```js
+[
+  'HS256', 'HS384', 'HS512',
+  'RS256', 'RS384', 'RS512',
+  'PS256', 'PS384', 'PS512',
+  'ES256', 'ES384', 'ES512',
+]
+```
+</details>
+
+### whitelistedJWA.userinfoEncryptionAlgValues
+
+JWA algorithms the provider supports to wrap keys for UserInfo Response encryption   
+  
+
+<details>
+  <summary><em><strong>default value</strong></em> (Click to expand)</summary>
+  <br>
+
+```js
+[ 'A128KW',
+  'A256KW',
+  'ECDH-ES',
+  'ECDH-ES+A128KW',
+  'ECDH-ES+A256KW',
+  'RSA-OAEP' ]
+```
+
+</details>
+
+<details>
+  <summary>(Click to expand) Supported values list
+</summary>
+  <br>
+
+```js
+[
+  // asymmetric RSAES based
+  'RSA-OAEP', 'RSA1_5',
+  // asymmetric ECDH-ES based
+  'ECDH-ES', 'ECDH-ES+A128KW', 'ECDH-ES+A192KW', 'ECDH-ES+A256KW',
+  // symmetric AES
+  'A128KW', 'A192KW', 'A256KW',
+  // symmetric AES GCM based
+  'A128GCMKW', 'A192GCMKW', 'A256GCMKW',
+  // symmetric PBES2 + AES
+  'PBES2-HS256+A128KW', 'PBES2-HS384+A192KW', 'PBES2-HS512+A256KW',
+]
+```
+</details>
+
+### whitelistedJWA.userinfoEncryptionEncValues
+
+JWA algorithms the provider supports to encrypt UserInfo responses with   
+  
+
+
+_**default value**_:
+```js
+[ 'A128CBC-HS256', 'A128GCM', 'A256CBC-HS512', 'A256GCM' ]
+```
+<details>
+  <summary>(Click to expand) Supported values list
+</summary>
+  <br>
+
+```js
+[
+  'A128CBC-HS256', 'A128GCM', 'A192CBC-HS384', 'A192GCM', 'A256CBC-HS512', 'A256GCM',
+]
+```
+</details>
+
+### whitelistedJWA.userinfoSigningAlgValues
+
+JWA algorithms the provider supports to sign UserInfo responses with   
+  
+
+
+_**default value**_:
+```js
+[ 'HS256', 'RS256', 'PS256', 'ES256' ]
+```
+<details>
+  <summary>(Click to expand) Supported values list
+</summary>
+  <br>
+
+```js
+[
+  'none',
+  'HS256', 'HS384', 'HS512',
+  'RS256', 'RS384', 'RS512',
+  'PS256', 'PS384', 'PS512',
+  'ES256', 'ES384', 'ES512',
+]
+```
+</details>
 <!-- END CONF OPTIONS -->
 
 [client-metadata]: https://openid.net/specs/openid-connect-registration-1_0.html#ClientMetadata

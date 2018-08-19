@@ -41,8 +41,8 @@ describe('configuration.keystore', () => {
         'code token',
         'token',
       ],
-      unsupported: {
-        idTokenSigningAlgValues: ['HS256', 'HS384', 'HS512'],
+      whitelistedJWA: {
+        idTokenSigningAlgValues: ['none'],
       },
     });
 
