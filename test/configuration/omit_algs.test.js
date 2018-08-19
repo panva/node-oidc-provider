@@ -10,11 +10,41 @@ const client = {
   redirect_uris: ['https://client.example.com/cb'],
 };
 
-describe('Provider declaring unsupported algorithms', () => {
+describe('Provider declaring supported algorithms', () => {
+  it('validates the configuration properties', () => {
+    expect(() => {
+      new Provider('https://op.example.com', { // eslint-disable-line no-new
+        whitelistedJWA: {
+          invalidProperty: ['HS256', 'RS256'],
+        },
+      });
+    }).to.throw('invalid property whitelistedJWA.invalidProperty provided');
+  });
+
+  it('validates an array is provided', () => {
+    expect(() => {
+      new Provider('https://op.example.com', { // eslint-disable-line no-new
+        whitelistedJWA: {
+          idTokenSigningAlgValues: new Set(['HS256', 'RS256']),
+        },
+      });
+    }).to.throw('invalid type for whitelistedJWA.idTokenSigningAlgValues provided, expected Array');
+  });
+
+  it('validates only implemented algs are provided', () => {
+    expect(() => {
+      new Provider('https://op.example.com', { // eslint-disable-line no-new
+        whitelistedJWA: {
+          tokenEndpointAuthSigningAlgValues: ['none'],
+        },
+      });
+    }).to.throw('unsupported whitelistedJWA.tokenEndpointAuthSigningAlgValues algorithm provided');
+  });
+
   it('idTokenSigningAlgValues', () => {
     const provider = new Provider('https://op.example.com', {
-      unsupported: {
-        idTokenSigningAlgValues: ['none', 'HS384', 'HS512', 'RS384', 'RS512', 'PS256', 'PS384', 'PS512'],
+      whitelistedJWA: {
+        idTokenSigningAlgValues: ['HS256', 'RS256'],
       },
     });
 

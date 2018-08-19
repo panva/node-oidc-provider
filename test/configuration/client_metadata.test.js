@@ -1,16 +1,22 @@
 const util = require('util');
 
 const { expect } = require('chai');
-const { camelCase, omit } = require('lodash');
+const {
+  camelCase, omit, pull, cloneDeep,
+} = require('lodash');
 
 const Provider = require('../../lib');
+const { whitelistedJWA } = require('../default.config');
 
 const sigKey = global.keystore.get().toJSON(true);
+const { InvalidClientMetadata } = Provider.errors;
 
 describe('Client metadata validation', () => {
   let DefaultProvider;
   before(() => {
-    DefaultProvider = new Provider('http://localhost');
+    DefaultProvider = new Provider('http://localhost', {
+      whitelistedJWA: cloneDeep(whitelistedJWA),
+    });
 
     return DefaultProvider.initialize({
       keystore: global.keystore,
@@ -20,7 +26,7 @@ describe('Client metadata validation', () => {
   function addClient(meta, configuration) {
     let prom;
     if (configuration) {
-      const provider = new Provider('http://localhost', Object.assign(configuration));
+      const provider = new Provider('http://localhost', Object.assign({}, { whitelistedJWA }, configuration));
 
       prom = provider.initialize({
         keystore: global.keystore,
@@ -153,6 +159,10 @@ describe('Client metadata validation', () => {
       [prop]: value,
     }), configuration).then((client) => {
       expect(client.metadata()[prop]).to.eql(value);
+    }, (err) => {
+      if (err instanceof InvalidClientMetadata) {
+        throw new Error(`InvalidClientMetadata received ${err.message} ${err.error_description}`);
+      }
     }));
   };
 
@@ -485,11 +495,12 @@ describe('Client metadata validation', () => {
         [endpointAuthMethodProperty]: 'client_secret_jwt',
       }, configuration);
 
+      const confProperty = `${camelCase(endpointAuthSigningAlgProperty)}Values`;
       rejects(this.title, 'RS384', new RegExp(`^${endpointAuthSigningAlgProperty} must be one of`), {
         [endpointAuthMethodProperty]: 'client_secret_jwt',
       }, Object.assign({}, {
-        unsupported: {
-          [`${camelCase(endpointAuthSigningAlgProperty)}Values`]: ['RS384'],
+        whitelistedJWA: {
+          [confProperty]: pull(cloneDeep(whitelistedJWA[confProperty]), 'RS384'),
         },
       }, configuration));
     });
@@ -528,7 +539,7 @@ describe('Client metadata validation', () => {
         expect(err.error_description).to.equal('id_token_encrypted_response_alg is mandatory property when id_token_encrypted_response_enc is provided');
       }));
       [
-        'RSA-OAEP', 'RSA-OAEP-256', 'RSA1_5', 'ECDH-ES', 'ECDH-ES+A128KW', 'ECDH-ES+A192KW',
+        'RSA-OAEP', 'RSA1_5', 'ECDH-ES', 'ECDH-ES+A128KW', 'ECDH-ES+A192KW',
         'ECDH-ES+A256KW', 'A128GCMKW', 'A192GCMKW', 'A256GCMKW', 'A128KW', 'A192KW', 'A256KW',
         'PBES2-HS256+A128KW', 'PBES2-HS384+A192KW', 'PBES2-HS512+A256KW',
       ].forEach((value) => {
@@ -576,7 +587,7 @@ describe('Client metadata validation', () => {
         expect(err.error_description).to.equal('userinfo_encrypted_response_alg is mandatory property when userinfo_encrypted_response_enc is provided');
       }));
       [
-        'RSA-OAEP', 'RSA-OAEP-256', 'RSA1_5', 'ECDH-ES', 'ECDH-ES+A128KW', 'ECDH-ES+A192KW',
+        'RSA-OAEP', 'RSA1_5', 'ECDH-ES', 'ECDH-ES+A128KW', 'ECDH-ES+A192KW',
         'ECDH-ES+A256KW', 'A128GCMKW', 'A192GCMKW', 'A256GCMKW', 'A128KW', 'A192KW', 'A256KW',
         'PBES2-HS256+A128KW', 'PBES2-HS384+A192KW', 'PBES2-HS512+A256KW',
       ].forEach((value) => {
@@ -625,7 +636,7 @@ describe('Client metadata validation', () => {
         expect(err.error_description).to.equal('introspection_encrypted_response_alg is mandatory property when introspection_encrypted_response_enc is provided');
       }));
       [
-        'RSA-OAEP', 'RSA-OAEP-256', 'RSA1_5', 'ECDH-ES', 'ECDH-ES+A128KW', 'ECDH-ES+A192KW',
+        'RSA-OAEP', 'RSA1_5', 'ECDH-ES', 'ECDH-ES+A128KW', 'ECDH-ES+A192KW',
         'ECDH-ES+A256KW', 'A128GCMKW', 'A192GCMKW', 'A256GCMKW', 'A128KW', 'A192KW', 'A256KW',
         'PBES2-HS256+A128KW', 'PBES2-HS384+A192KW', 'PBES2-HS512+A256KW',
       ].forEach((value) => {
@@ -675,8 +686,7 @@ describe('Client metadata validation', () => {
         expect(err.error_description).to.equal('request_object_encryption_alg is mandatory property when request_object_encryption_enc is provided');
       }));
       [
-        'RSA-OAEP', 'RSA-OAEP-256', 'RSA1_5', 'ECDH-ES', 'ECDH-ES+A128KW', 'ECDH-ES+A192KW',
-        'ECDH-ES+A256KW',
+        'RSA-OAEP', 'RSA1_5', 'ECDH-ES', 'ECDH-ES+A128KW', 'ECDH-ES+A192KW', 'ECDH-ES+A256KW',
       ].forEach((value) => {
         allows(this.title, value, undefined, configuration);
       });
@@ -735,7 +745,7 @@ describe('Client metadata validation', () => {
       'introspection_encrypted_response_alg',
     ].forEach((prop) => {
       [
-        'RSA-OAEP', 'RSA-OAEP-256', 'RSA1_5',
+        'RSA-OAEP', 'RSA1_5',
         'ECDH-ES', 'ECDH-ES+A128KW', 'ECDH-ES+A192KW', 'ECDH-ES+A256KW',
       ].forEach((alg) => {
         rejects(this.title, undefined, 'jwks or jwks_uri is mandatory for this client', {

@@ -1,3 +1,7 @@
+const { cloneDeep } = require('lodash');
+
+const { JWA } = require('../lib/consts');
+
 module.exports = {
   claims: {
     address: {
@@ -38,4 +42,5 @@ module.exports = {
     keys: ['foo'],
   },
   pairwiseSalt: '0e8c4037aa8580400dc6dea12f281ea7070c76398cab60c5',
+  whitelistedJWA: cloneDeep(JWA),
 };

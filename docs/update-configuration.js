@@ -95,7 +95,11 @@ const props = [
       }
 
       const next = props.find((prop) => {
-        if (strLine.substring(2, 2 + prop.length) === prop) {
+        if (
+          prop.startsWith('@')
+            ? strLine.substring(2, 2 + prop.length) === prop
+            : strLine.substring(2, 2 + prop.length + 1) === `${prop}:`
+        ) {
           let override;
           if (prop === 'example' && option.example) {
             const i = Math.max(...Object.keys(option)

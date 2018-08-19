@@ -1,14 +1,13 @@
-const { clone } = require('lodash');
+const { cloneDeep, pull } = require('lodash');
 
-const config = clone(require('../default.config'));
+const config = cloneDeep(require('../default.config'));
 
 config.features = {
   request: true, encryption: true, introspection: true, jwtIntrospection: true,
 };
-config.unsupported = {
-  requestObjectEncryptionAlgValues: ['RSA-OAEP'],
-  requestObjectEncryptionEncValues: ['A192CBC-HS384'],
-};
+
+pull(config.whitelistedJWA.requestObjectEncryptionAlgValues, 'RSA-OAEP');
+pull(config.whitelistedJWA.requestObjectEncryptionEncValues, 'A192CBC-HS384');
 
 const privKey = {
   keys: [{
