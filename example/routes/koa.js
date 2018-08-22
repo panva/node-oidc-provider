@@ -11,6 +11,8 @@ module.exports = (provider) => {
   const { constructor: { errors: { SessionNotFound } } } = provider;
 
   router.use(async (ctx, next) => {
+    ctx.set('Pragma', 'no-cache');
+    ctx.set('Cache-Control', 'no-cache, no-store');
     try {
       await next();
     } catch (err) {

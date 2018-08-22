@@ -24,7 +24,13 @@ module.exports = (app, provider) => {
     next();
   });
 
-  app.get('/interaction/:grant', async (req, res, next) => {
+  function setNoCache(req, res, next) {
+    res.set('Pragma', 'no-cache');
+    res.set('Cache-Control', 'no-cache, no-store');
+    next();
+  }
+
+  app.get('/interaction/:grant', setNoCache, async (req, res, next) => {
     try {
       const details = await provider.interactionDetails(req);
       const client = await provider.Client.find(details.params.client_id);
@@ -58,7 +64,7 @@ module.exports = (app, provider) => {
     }
   });
 
-  app.post('/interaction/:grant/confirm', body, async (req, res, next) => {
+  app.post('/interaction/:grant/confirm', setNoCache, body, async (req, res, next) => {
     try {
       const result = { consent: {} };
       await provider.interactionFinished(req, res, result);
@@ -67,7 +73,7 @@ module.exports = (app, provider) => {
     }
   });
 
-  app.post('/interaction/:grant/login', body, async (req, res, next) => {
+  app.post('/interaction/:grant/login', setNoCache, body, async (req, res, next) => {
     try {
       const account = await Account.findByLogin(req.body.login);
 
