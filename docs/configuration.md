@@ -321,22 +321,22 @@ router.post('/interaction/:grant', async (ctx, next) => {
 ```
 
 **`#provider.interactionResult`**
-Unlike `#provider.interactionFinished` authorization request resume uri is returned instead of 
-immediate http redirect. It should be used when custom response handling is needed e.g. making AJAX 
+Unlike `#provider.interactionFinished` authorization request resume uri is returned instead of
+immediate http redirect. It should be used when custom response handling is needed e.g. making AJAX
 login where redirect information is expected to be available in the response.
 
 ```js
 // with express
 expressApp.post('/interaction/:grant/login', async (req, res) => {
   const redirectTo = await provider.interactionResult(req, res, results);
-  
+
   res.send({ redirectTo });
 });
 
 // with koa
 router.post('/interaction/:grant', async (ctx, next) => {
   const redirectTo = await provider.interactionResult(ctx.req, ctx.res, results);
-  
+
   ctx.body = { redirectTo };
 });
 ```
@@ -536,7 +536,7 @@ grant_types, response_types and redirect_uris as empty arrays.
 
 **JWT Response for OAuth Token Introspection**  
 Enables additional JSON Web Token responses for OAuth 2.0 Token Introspection as defined by
-[JWT Response for OAuth Token Introspection - draft 00][jwt-introspection]
+[JWT Response for OAuth Token Introspection - draft 01][jwt-introspection]
 
 const configuration = { features: { introspection: true, jwtIntrospection: Boolean[false] } };
 ```
@@ -1740,4 +1740,4 @@ async userCodeInputSource(ctx, form, out, err) {
 [third-party-cookies-so]: https://stackoverflow.com/questions/3550790/check-if-third-party-cookies-are-enabled/7104048#7104048
 [wmrm]: https://tools.ietf.org/html/draft-sakimura-oauth-wmrm-00
 [device-flow]: https://tools.ietf.org/html/draft-ietf-oauth-device-flow-12
-[jwt-introspection]: https://tools.ietf.org/html/draft-ietf-oauth-jwt-introspection-response-00
+[jwt-introspection]: https://tools.ietf.org/html/draft-ietf-oauth-jwt-introspection-response-01

@@ -52,7 +52,7 @@ The following drafts/experimental specifications are implemented by oidc-provide
 - [RFC7592 - OAuth 2.0 Dynamic Client Registration Management Protocol (Update and Delete)][registration-management]
 - [OAuth 2.0 Web Message Response Mode - draft 00][wmrm]
 - [OAuth 2.0 Device Flow for Browserless and Input Constrained Devices - draft 12][device-flow]
-- [JWT Response for OAuth Token Introspection - draft 00][jwt-introspection]
+- [JWT Response for OAuth Token Introspection - draft 01][jwt-introspection]
 
 Updates to draft and experimental specification versions are released as MINOR library versions,
 if you utilize these specification implementations consider using the tilde `~` operator in your
@@ -173,7 +173,7 @@ See the list of available emitted [event names](/docs/events.md) and their descr
 [debug-link]: https://github.com/visionmedia/debug
 [wmrm]: https://tools.ietf.org/html/draft-sakimura-oauth-wmrm-00
 [device-flow]: https://tools.ietf.org/html/draft-ietf-oauth-device-flow-12
-[jwt-introspection]: https://tools.ietf.org/html/draft-ietf-oauth-jwt-introspection-response-00
+[jwt-introspection]: https://tools.ietf.org/html/draft-ietf-oauth-jwt-introspection-response-01
 [sponsor-auth0]: https://auth0.com/overview?utm_source=GHsponsor&utm_medium=GHsponsor&utm_campaign=oidc-provider&utm_content=auth
 [suggest-feature]: https://github.com/panva/node-oidc-provider/issues/new?template=feature-request.md
 [bug]: https://github.com/panva/node-oidc-provider/issues/new?template=bug-report.md
