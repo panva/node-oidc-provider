@@ -13,7 +13,13 @@ const client_id = 'client';
 
 describe('features.conformIdTokenClaims=true', () => {
   before(bootstrap(__dirname, { config: 'conform' }));
-  before(function () { return this.login(); });
+  before(function () {
+    return this.login({
+      scope,
+      claims: JSON.stringify({ id_token: { gender: null, email: null } }),
+      rejectedClaims: ['email_verified'],
+    });
+  });
 
   [
     'code id_token token', 'code id_token', 'code token', 'code', 'id_token token', 'id_token',
@@ -23,7 +29,7 @@ describe('features.conformIdTokenClaims=true', () => {
         const client = await this.provider.Client.find('client');
 
         const claims = JSON.stringify({
-          id_token: { gender: null, email: null },
+          id_token: { gender: null, email: null, email_verified: null },
           ...(response_type !== 'id_token' ? { userinfo: { gender: null } } : undefined),
         });
 
@@ -86,7 +92,8 @@ describe('features.conformIdTokenClaims=true', () => {
       if (response_type === 'id_token') {
         it('authorization endpoint id_token has scope requested claims', function () {
           const { payload } = decodeJWT(this.authorization.id_token);
-          expect(payload).to.contain.keys('gender', 'email', 'email_verified');
+          expect(payload).to.contain.keys('gender', 'email');
+          expect(payload).not.to.contain.keys('email_verified');
         });
       } else if (response_type.includes('id_token')) {
         it('authorization endpoint id_token does not have scope requested claims', function () {
@@ -98,12 +105,14 @@ describe('features.conformIdTokenClaims=true', () => {
 
       if (response_type !== 'id_token') {
         it('userinfo has scope requested claims', function () {
-          expect(this.userinfo).to.contain.keys('email', 'email_verified', 'gender');
+          expect(this.userinfo).to.contain.keys('email', 'gender');
+          expect(this.userinfo).not.to.contain.keys('email_verified');
         });
 
         it('signed userinfo has scope requested claims', function () {
           const { payload } = decodeJWT(this.userinfoSigned);
-          expect(payload).to.contain.keys('email', 'email_verified', 'gender');
+          expect(payload).to.contain.keys('email', 'gender');
+          expect(payload).not.to.contain.keys('email_verified');
         });
       }
 

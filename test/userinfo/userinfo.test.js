@@ -8,7 +8,7 @@ const bootstrap = require('../test_helper');
 describe('userinfo /me', () => {
   before(bootstrap(__dirname));
 
-  before(function () { return this.login(); });
+  before(function () { return this.login({ scope: 'openid email', rejectedClaims: ['email_verified'] }); });
 
   before(function () {
     const auth = new this.AuthorizationRequest({
@@ -24,12 +24,13 @@ describe('userinfo /me', () => {
       });
   });
 
-  it('returns 200 OK and user claims', function () {
+  it('returns 200 OK and user claims except the rejected ones', function () {
     return this.agent.get('/me')
       .auth(this.access_token, { type: 'bearer' })
       .expect(200)
       .expect((response) => {
-        expect(response.body).to.have.keys(['sub', 'email', 'email_verified']);
+        expect(response.body).to.have.keys(['sub', 'email']);
+        expect(response.body).not.to.have.keys(['email_verified']);
       });
   });
 

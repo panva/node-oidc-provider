@@ -270,19 +270,19 @@ router.get('/interaction/:grant', async (ctx, next) => {
 });
 ```
 
-**`#provider.interactionFinished(req, res, results)`**
+**`#provider.interactionFinished(req, res, result)`**
 ```js
 // with express
 expressApp.post('/interaction/:grant/login', async (req, res) => {
-  return provider.interactionFinished(req, res, results); // result object below
+  return provider.interactionFinished(req, res, result); // result object below
 });
 
 // with koa
 router.post('/interaction/:grant', async (ctx, next) => {
-  return provider.interactionFinished(ctx.req, ctx.res, results); // result object below
+  return provider.interactionFinished(ctx.req, ctx.res, result); // result object below
 });
 
-// results should be an object with some or all the following properties
+// result should be an object with some or all the following properties
 {
   // authentication/login prompt got resolved, omit if no authentication happened, i.e. the user
   // cancelled
@@ -295,9 +295,8 @@ router.post('/interaction/:grant', async (ctx, next) => {
 
   // consent was given by the user to the client for this session
   consent: {
-    // use the scope property if you wish to remove/add scopes from the request, otherwise don't
-    // include it use when i.e. offline_access was not given, or user declined to provide address
-    scope: 'space separated list of scopes',
+    rejectedScopes: [], // array of strings, scope names the end-user has not granted
+    rejectedClaims: [], // array of strings, claim names the end-user has not granted
   },
 
   // meta is a free object you may store alongside an authorization. It can be useful
@@ -328,14 +327,14 @@ login where redirect information is expected to be available in the response.
 ```js
 // with express
 expressApp.post('/interaction/:grant/login', async (req, res) => {
-  const redirectTo = await provider.interactionResult(req, res, results);
+  const redirectTo = await provider.interactionResult(req, res, result);
 
   res.send({ redirectTo });
 });
 
 // with koa
 router.post('/interaction/:grant', async (ctx, next) => {
-  const redirectTo = await provider.interactionResult(ctx.req, ctx.res, results);
+  const redirectTo = await provider.interactionResult(ctx.req, ctx.res, result);
 
   ctx.body = { redirectTo };
 });
@@ -1232,19 +1231,23 @@ _**affects**_: authorization, authorization_code and refresh_token grants, ID To
 _**default value**_:
 ```js
 async findById(ctx, sub, token) {
-  // @param ctx   - koa request context
-  // @param sub   - account identifier (subject)
+  // @param ctx - koa request context
+  // @param sub {string} - account identifier (subject)
   // @param token - is a reference to the token used for which a given account is being loaded,
   //   is undefined in scenarios where claims are returned from authorization endpoint
   return {
     accountId: sub,
-    // @param use   - can either be "id_token" or "userinfo", depending on
+    // @param use {string} - can either be "id_token" or "userinfo", depending on
     //   where the specific claims are intended to be put in
-    // @param scope - the intended scope, while oidc-provider will mask
+    // @param scope {string} - the intended scope, while oidc-provider will mask
     //   claims depending on the scope automatically you might want to skip
-    //   loading some claims from external resources etc. based on this detail
-    //   or not return them in ID Tokens but only UserInfo and so on
-    async claims(use, scope) {
+    //   loading some claims from external resources or through db projection etc. based on this
+    //   detail or not return them in ID Tokens but only UserInfo and so on
+    // @param claims {object} - the part of the claims authorization parameter for either
+    //   "id_token" or "userinfo" (depends on the "use" param)
+    // @param rejected {Array[String]} - claim names that were rejected by the end-user, you might
+    //   want to skip loading some claims from external resources or through db projection
+    async claims(use, scope, claims, rejected) {
       return { sub };
     },
   };
@@ -1323,7 +1326,8 @@ async interactionCheck(ctx) {
       error_description: 'client not authorized for End-User session yet',
       reason: 'client_not_authorized',
     };
-  } if (
+  }
+  if (
     ctx.oidc.client.applicationType === 'native'
     && ctx.oidc.params.response_type !== 'none'
     && !ctx.oidc.result) {
@@ -1332,6 +1336,26 @@ async interactionCheck(ctx) {
       error_description: 'native clients require End-User interaction',
       reason: 'native_client_prompt',
     };
+  }
+  const promptedScopes = ctx.oidc.session.promptedScopesFor(ctx.oidc.client.clientId);
+  for (const scope of ctx.oidc.requestParamScopes) {
+    if (!promptedScopes.has(scope)) {
+      return {
+        error: 'consent_required',
+        error_description: 'requested scopes not granted by End-User',
+        reason: 'scopes_missing',
+      };
+    }
+  }
+  const promptedClaims = ctx.oidc.session.promptedClaimsFor(ctx.oidc.client.clientId);
+  for (const claim of ctx.oidc.requestParamClaims) {
+    if (!promptedClaims.has(claim) && !['sub', 'sid', 'auth_time', 'acr', 'amr', 'iss'].includes(claim)) {
+      return {
+        error: 'consent_required',
+        error_description: 'requested claims not granted by End-User',
+        reason: 'claims_missing',
+      };
+    }
   }
   return false;
 }

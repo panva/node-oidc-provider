@@ -32,7 +32,7 @@ describe('distributed and aggregated claims', () => {
     });
   });
 
-  before(function () { return this.login(); });
+  before(function () { return this.login({ scope: 'openid profile' }); });
   after(function () { return this.logout(); });
 
   context('id_token', () => {

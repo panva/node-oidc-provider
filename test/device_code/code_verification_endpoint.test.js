@@ -292,7 +292,12 @@ describe('POST code_verification endpoint w/o verification', () => {
 
 describe('POST code_verification endpoint w/ verification', () => {
   before(bootstrap(__dirname)); // agent
-  before(function () { return this.login(); });
+  before(function () {
+    return this.login({
+      scope: 'openid email',
+      rejectedClaims: ['email_verified'],
+    });
+  });
   afterEach(() => timekeeper.reset());
   afterEach(function () {
     if (i(this.provider).configuration('deviceCodeSuccess').restore) {
@@ -313,6 +318,7 @@ describe('POST code_verification endpoint w/ verification', () => {
       clientId: 'client',
       userCode: 'FOO',
       params: {
+        scope: 'openid email',
         client_id: 'client',
         claims: JSON.stringify({ userinfo: { email: null } }),
       },
@@ -333,7 +339,8 @@ describe('POST code_verification endpoint w/ verification', () => {
 
     expect(code).to.have.property('accountId', session.account);
     expect(code).to.have.property('authTime', session.loginTs);
-    expect(code).to.have.property('claims').that.eqls({ userinfo: { email: null } });
+    expect(code).to.have.property('scope', 'openid email');
+    expect(code).to.have.property('claims').that.eqls({ userinfo: { email: null }, rejected: ['email_verified'] });
 
     expect(spy.calledOnce).to.be.true;
   });
@@ -345,6 +352,7 @@ describe('POST code_verification endpoint w/ verification', () => {
       clientId: 'client',
       userCode: 'FOOBAR',
       params: {
+        scope: 'openid email',
         client_id: 'client',
         claims: JSON.stringify({ userinfo: { email: null } }),
       },
@@ -365,7 +373,8 @@ describe('POST code_verification endpoint w/ verification', () => {
 
     expect(code).to.have.property('accountId', session.account);
     expect(code).to.have.property('authTime', session.loginTs);
-    expect(code).to.have.property('claims').that.eqls({ userinfo: { email: null } });
+    expect(code).to.have.property('scope', 'openid email');
+    expect(code).to.have.property('claims').that.eqls({ userinfo: { email: null }, rejected: ['email_verified'] });
 
     expect(spy.calledOnce).to.be.true;
   });
