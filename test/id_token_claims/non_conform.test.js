@@ -13,7 +13,12 @@ const client_id = 'client';
 
 describe('features.conformIdTokenClaims=false', () => {
   before(bootstrap(__dirname, { config: 'non_conform' }));
-  before(function () { return this.login(); });
+  before(function () {
+    return this.login({
+      scope,
+      rejectedClaims: ['email_verified'],
+    });
+  });
 
   [
     'code id_token token', 'code id_token', 'code token', 'code', 'id_token token', 'id_token',
@@ -80,30 +85,35 @@ describe('features.conformIdTokenClaims=false', () => {
       if (response_type.includes('id_token')) {
         it('authorization endpoint id_token has scope requested claims', function () {
           const { payload } = decodeJWT(this.authorization.id_token);
-          expect(payload).to.contain.keys('email', 'email_verified');
+          expect(payload).to.contain.keys('email');
+          expect(payload).not.to.contain.keys('email_verified');
         });
       }
 
       if (response_type !== 'id_token') {
         it('userinfo has scope requested claims', function () {
-          expect(this.userinfo).to.contain.keys('email', 'email_verified');
+          expect(this.userinfo).to.contain.keys('email');
+          expect(this.userinfo).not.to.contain.keys('email_verified');
         });
 
         it('signed userinfo has scope requested claims', function () {
           const { payload } = decodeJWT(this.userinfoSigned);
-          expect(payload).to.contain.keys('email', 'email_verified');
+          expect(payload).to.contain.keys('email');
+          expect(payload).not.to.contain.keys('email_verified');
         });
       }
 
       if (response_type.includes('code')) {
         it('token endpoint id_token has scope requested claims', function () {
           const { payload } = decodeJWT(this.token.id_token);
-          expect(payload).to.contain.keys('email', 'email_verified');
+          expect(payload).to.contain.keys('email');
+          expect(payload).not.to.contain.keys('email_verified');
         });
 
         it('refreshed id_token has scope requested claims', function () {
           const { payload } = decodeJWT(this.refresh.id_token);
-          expect(payload).to.contain.keys('email', 'email_verified');
+          expect(payload).to.contain.keys('email');
+          expect(payload).not.to.contain.keys('email_verified');
         });
       }
     });

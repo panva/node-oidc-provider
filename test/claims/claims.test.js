@@ -9,7 +9,6 @@ const KeyGrip = require('keygrip'); // eslint-disable-line import/no-extraneous-
 const { decode: decodeJWT } = require('../../lib/helpers/jwt');
 const bootstrap = require('../test_helper');
 
-const j = JSON.stringify;
 const route = '/auth';
 const expire = new Date();
 
@@ -20,26 +19,32 @@ expire.setDate(expire.getDate() + 1);
     before(bootstrap(__dirname));
 
     describe('specify id_token', () => {
-      before(function () { return this.login(); });
+      before(function () {
+        return this.login({
+          claims: {
+            id_token: {
+              email: null,
+              middle_name: {},
+            },
+          },
+        });
+      });
       after(function () { return this.logout(); });
 
       it('should return individual claims requested', function () {
         const auth = new this.AuthorizationRequest({
           response_type: 'id_token token',
           scope: 'openid',
-          claims: j({
+          claims: {
             id_token: {
-              email: null, // returned
-              family_name: { essential: true }, // returned
-              gender: { essential: false }, // returned
-              given_name: { value: 'John' }, // returned
-              locale: { values: ['en-US', 'en-GB'] }, // returned
-              middle_name: {}, // not returned
+              email: null,
+              middle_name: {},
+
               preferred_username: 'not returned',
               picture: 1, // not returned
               website: true, // not returned
             },
-          }),
+          },
         });
 
         return this.wrap({ route, verb, auth })
@@ -49,8 +54,8 @@ expire.setDate(expire.getDate() + 1);
           .expect((response) => {
             const { query: { id_token } } = parseLocation(response.headers.location, true);
             const { payload } = decodeJWT(id_token);
-            expect(payload).to.contain.keys('email', 'family_name', 'gender', 'given_name', 'locale');
-            expect(payload).not.to.have.keys('middle_name', 'preferred_username', 'picture', 'website');
+            expect(payload).to.contain.keys('email', 'middle_name');
+            expect(payload).not.to.have.keys('preferred_username', 'picture', 'website');
           });
       });
     });
@@ -74,7 +79,7 @@ expire.setDate(expire.getDate() + 1);
 
         Object.defineProperty(this.provider.OIDCContext.prototype, 'acr', {
           get() {
-            return get(this, 'result.login.acr', 'session');
+            return get(this, 'result.login.acr', '0');
           },
         });
 
@@ -100,23 +105,32 @@ expire.setDate(expire.getDate() + 1);
     });
 
     describe('specify userinfo', () => {
-      before(function () { return this.login(); });
+      before(function () {
+        return this.login({
+          claims: {
+            id_token: {
+              email: null,
+              middle_name: {},
+            },
+          },
+        });
+      });
       after(function () { return this.logout(); });
 
       it('should return individual claims requested', function (done) {
         const auth = new this.AuthorizationRequest({
           response_type: 'id_token token',
           scope: 'openid',
-          claims: j({
+          claims: {
             userinfo: {
-              email: null, // returned
-              family_name: { essential: true }, // returned
-              gender: { essential: false }, // returned
-              given_name: { value: 'John' }, // returned
-              locale: { values: ['en-US', 'en-GB'] }, // returned
-              middle_name: {}, // not returned
+              email: null,
+              middle_name: {},
+
+              preferred_username: 'not returned',
+              picture: 1, // not returned
+              website: true, // not returned
             },
-          }),
+          },
         });
 
         this.wrap({ route, verb, auth })
@@ -133,9 +147,9 @@ expire.setDate(expire.getDate() + 1);
               .get('/me')
               .query({ access_token })
               .expect(200)
-              .expect((userinfo) => {
-                expect(userinfo.body).to.contain.keys('email', 'family_name', 'gender', 'given_name', 'locale');
-                expect(userinfo.body).not.to.have.key('middle_name');
+              .expect(({ body }) => {
+                expect(body).to.contain.keys('email', 'middle_name');
+                expect(body).not.to.have.keys('preferred_username', 'picture', 'website');
               })
               .end(done);
           });
@@ -143,21 +157,32 @@ expire.setDate(expire.getDate() + 1);
     });
 
     describe('specify both id_token and userinfo', () => {
-      before(function () { return this.login(); });
-      after(function () { return this.logout(); });
-
-      it('should return individual claims requested', function (done) {
-        const auth = new this.AuthorizationRequest({
-          response_type: 'id_token token',
-          scope: 'openid',
-          claims: j({
+      before(function () {
+        return this.login({
+          claims: {
             id_token: {
               email: null,
             },
             userinfo: {
               given_name: null,
             },
-          }),
+          },
+        });
+      });
+      after(function () { return this.logout(); });
+
+      it('should return individual claims requested', function (done) {
+        const auth = new this.AuthorizationRequest({
+          response_type: 'id_token token',
+          scope: 'openid',
+          claims: {
+            id_token: {
+              email: null,
+            },
+            userinfo: {
+              given_name: null,
+            },
+          },
         });
 
         this.wrap({ route, verb, auth })
@@ -221,13 +246,13 @@ expire.setDate(expire.getDate() + 1);
             response_type: 'id_token',
             scope: 'openid',
             prompt: 'none',
-            claims: j({
+            claims: {
               id_token: {
                 sub: {
                   value: session.account,
                 },
               },
-            }),
+            },
           });
 
           return this.wrap({ route, verb, auth })
@@ -245,14 +270,14 @@ expire.setDate(expire.getDate() + 1);
               response_mode: 'fragment',
               scope: 'openid',
               prompt: 'none',
-              claims: j({
+              claims: {
                 id_token: {
                   acr: {
                     essential: true,
                     values: ['1', '2'],
                   },
                 },
-              }),
+              },
             });
 
             setup.call(this, auth, {
@@ -276,14 +301,14 @@ expire.setDate(expire.getDate() + 1);
               response_mode: 'fragment',
               scope: 'openid',
               prompt: 'none',
-              claims: j({
+              claims: {
                 id_token: {
                   acr: {
                     essential: true,
                     value: '1',
                   },
                 },
-              }),
+              },
             });
 
             setup.call(this, auth, {
@@ -309,13 +334,13 @@ expire.setDate(expire.getDate() + 1);
             response_type: 'id_token',
             scope: 'openid',
             prompt: 'none',
-            claims: j({
+            claims: {
               id_token: {
                 sub: {
                   value: 'iexpectthisid',
                 },
               },
-            }),
+            },
           });
 
           return this.wrap({ route, verb, auth })
@@ -333,14 +358,14 @@ expire.setDate(expire.getDate() + 1);
             response_type: 'id_token',
             scope: 'openid',
             prompt: 'none',
-            claims: j({
+            claims: {
               id_token: {
                 acr: {
                   essential: true,
                   values: ['1', '2'],
                 },
               },
-            }),
+            },
           });
 
           return this.wrap({ route, verb, auth })
@@ -358,14 +383,14 @@ expire.setDate(expire.getDate() + 1);
             response_type: 'id_token',
             scope: 'openid',
             prompt: 'none',
-            claims: j({
+            claims: {
               id_token: {
                 acr: {
                   essential: true,
                   value: '1',
                 },
               },
-            }),
+            },
           });
 
           return this.wrap({ route, verb, auth })
@@ -376,6 +401,26 @@ expire.setDate(expire.getDate() + 1);
             .expect(auth.validateClientLocation)
             .expect(auth.validateError('login_required'))
             .expect(auth.validateErrorDescription('requested ACR could not be obtained'));
+        });
+
+        it('additional claims are requested', function () {
+          const auth = new this.AuthorizationRequest({
+            response_type: 'id_token',
+            scope: 'openid',
+            prompt: 'none',
+            claims: {
+              id_token: { family_name: null },
+            },
+          });
+
+          return this.wrap({ route, verb, auth })
+            .expect(302)
+            .expect(auth.validateFragment)
+            .expect(auth.validatePresence(['error', 'error_description', 'state']))
+            .expect(auth.validateState)
+            .expect(auth.validateClientLocation)
+            .expect(auth.validateError('consent_required'))
+            .expect(auth.validateErrorDescription('requested claims not granted by End-User'));
         });
 
         it('id_token_hint belongs to a user that is not currently logged in', async function () {

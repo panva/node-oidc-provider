@@ -387,6 +387,205 @@ describe('resume after interaction', () => {
         .expect(auth.validateError('consent_required'))
         .expect(auth.validateErrorDescription('prompt consent was not resolved'));
     });
+
+    describe('rejectedScopes', () => {
+      it('allows for scopes to be rejected', function () {
+        const auth = new this.AuthorizationRequest({
+          response_type: 'code',
+          scope: 'openid profile',
+        });
+
+        setup.call(this, auth, {
+          login: {
+            account: uuid(),
+            remember: true,
+          },
+          consent: {
+            rejectedScopes: ['profile'],
+          },
+        });
+
+        let authorizationCode;
+
+        this.provider.once('token.issued', (code) => {
+          authorizationCode = code;
+        });
+
+        return this.agent.get('/auth/resume')
+          .expect(() => {
+            this.provider.removeAllListeners('token.issued');
+          })
+          .expect(() => {
+            expect(authorizationCode).to.be.ok;
+            expect(authorizationCode).to.have.property('scope', 'openid');
+          });
+      });
+
+      it('cannot reject openid scope', async function () {
+        const spy = sinon.spy();
+        this.provider.once('server_error', spy);
+
+        const auth = new this.AuthorizationRequest({
+          response_type: 'code',
+          scope: 'openid',
+          prompt: 'consent',
+        });
+
+        setup.call(this, auth, {
+          login: {
+            account: uuid(),
+            remember: true,
+          },
+          consent: {
+            rejectedScopes: ['openid'],
+          },
+        });
+
+        await this.agent.get('/auth/resume')
+          .expect(302)
+          .expect(auth.validateState)
+          .expect(auth.validateClientLocation)
+          .expect(auth.validateError('server_error'));
+
+        expect(spy).to.have.property('calledOnce', true);
+        const error = spy.firstCall.args[0];
+        expect(error).to.be.an.instanceof(Error);
+        expect(error).to.have.property('message', 'openid cannot be rejected');
+      });
+
+      it('must be passed as Set or Array', async function () {
+        const spy = sinon.spy();
+        this.provider.once('server_error', spy);
+
+        const auth = new this.AuthorizationRequest({
+          response_type: 'code',
+          scope: 'openid',
+          prompt: 'consent',
+        });
+
+        setup.call(this, auth, {
+          login: {
+            account: uuid(),
+            remember: true,
+          },
+          consent: {
+            rejectedScopes: 'openid',
+          },
+        });
+
+        await this.agent.get('/auth/resume')
+          .expect(302)
+          .expect(auth.validateState)
+          .expect(auth.validateClientLocation)
+          .expect(auth.validateError('server_error'));
+
+        expect(spy).to.have.property('calledOnce', true);
+        const error = spy.firstCall.args[0];
+        expect(error).to.be.an.instanceof(Error);
+        expect(error).to.have.property('message', 'expected Array or Set');
+      });
+    });
+
+    describe('rejectedClaims', () => {
+      it('allows for claims to be rejected', function () {
+        const auth = new this.AuthorizationRequest({
+          response_type: 'code',
+          scope: 'openid profile',
+        });
+
+        setup.call(this, auth, {
+          login: {
+            account: uuid(),
+            remember: true,
+          },
+          consent: {
+            rejectedClaims: ['nickname'],
+          },
+        });
+
+        let authorizationCode;
+
+        this.provider.once('token.issued', (code) => {
+          authorizationCode = code;
+        });
+
+        return this.agent.get('/auth/resume')
+          .expect(() => {
+            this.provider.removeAllListeners('token.issued');
+          })
+          .expect(() => {
+            expect(authorizationCode).to.be.ok;
+            expect(authorizationCode).to.have.property('scope', 'openid profile');
+            expect(authorizationCode).to.have.deep.property('claims', { rejected: ['nickname'] });
+          });
+      });
+
+      ['sub', 'sid', 'auth_time', 'acr', 'amr', 'iss'].forEach((claim) => {
+        it(`cannot reject ${claim} claim`, async function () {
+          const spy = sinon.spy();
+          this.provider.once('server_error', spy);
+
+          const auth = new this.AuthorizationRequest({
+            response_type: 'code',
+            scope: 'openid',
+            prompt: 'consent',
+          });
+
+          setup.call(this, auth, {
+            login: {
+              account: uuid(),
+              remember: true,
+            },
+            consent: {
+              rejectedClaims: [claim],
+            },
+          });
+
+          await this.agent.get('/auth/resume')
+            .expect(302)
+            .expect(auth.validateState)
+            .expect(auth.validateClientLocation)
+            .expect(auth.validateError('server_error'));
+
+          expect(spy).to.have.property('calledOnce', true);
+          const error = spy.firstCall.args[0];
+          expect(error).to.be.an.instanceof(Error);
+          expect(error).to.have.property('message', `${claim} cannot be rejected`);
+        });
+      });
+
+      it('must be passed as Set or Array', async function () {
+        const spy = sinon.spy();
+        this.provider.once('server_error', spy);
+
+        const auth = new this.AuthorizationRequest({
+          response_type: 'code',
+          scope: 'openid',
+          prompt: 'consent',
+        });
+
+        setup.call(this, auth, {
+          login: {
+            account: uuid(),
+            remember: true,
+          },
+          consent: {
+            rejectedClaims: 'email',
+          },
+        });
+
+        await this.agent.get('/auth/resume')
+          .expect(302)
+          .expect(auth.validateState)
+          .expect(auth.validateClientLocation)
+          .expect(auth.validateError('server_error'));
+
+        expect(spy).to.have.property('calledOnce', true);
+        const error = spy.firstCall.args[0];
+        expect(error).to.be.an.instanceof(Error);
+        expect(error).to.have.property('message', 'expected Array or Set');
+      });
+    });
   });
 
   context('meta results', () => {

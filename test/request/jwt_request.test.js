@@ -38,7 +38,9 @@ describe('request parameter features', () => {
   ].forEach(([route, verb, errorEvt, successCode, errorCode, successFnCheck, successEvt]) => {
     describe(`${route} ${verb} passing request parameters as JWTs`, () => {
       before(function () {
-        return this.login();
+        return this.login({
+          claims: { id_token: { email: null } },
+        });
       });
       after(function () {
         i(this.provider).configuration().clockTolerance = 0;

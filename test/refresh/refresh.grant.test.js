@@ -21,7 +21,7 @@ describe('grant_type=refresh_token', () => {
   afterEach(() => timekeeper.reset());
 
   context('with real tokens', () => {
-    before(function () { return this.login(); });
+    before(function () { return this.login({ scope: 'openid email' }); });
     after(function () { return this.logout(); });
 
     beforeEach(function (done) {

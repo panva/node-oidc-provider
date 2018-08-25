@@ -56,7 +56,9 @@ module.exports = function testHelper(dir, { config: base = path.basename(dir), m
     return agent._saveCookies.bind(agent)({ headers: { 'set-cookie': cookies } });
   }
 
-  function login() {
+  function login({
+    scope = 'openid', claims, rejectedScopes = [], rejectedClaims = [],
+  } = {}) {
     const sessionId = uuid();
     const loginTs = epochTime();
     const expire = new Date();
@@ -76,9 +78,23 @@ module.exports = function testHelper(dir, { config: base = path.basename(dir), m
 
     session.authorizations = {};
     clients.forEach((cl) => {
-      session.authorizations[cl.client_id] = { sid: uuid() };
+      const ctx = new provider.OIDCContext({});
+      ctx.params = { scope, claims };
+
+      if (ctx.params.claims && typeof ctx.params.claims !== 'string') {
+        ctx.params.claims = JSON.stringify(ctx.params.claims);
+      }
+
+      session.authorizations[cl.client_id] = {
+        sid: uuid(),
+        promptedScopes: scope.split(' '),
+        promptedClaims: Array.from(ctx.requestParamClaims),
+        rejectedScopes,
+        rejectedClaims,
+      };
+
       if (i(provider).configuration('features.sessionManagement')) {
-        const cookie = `_state.${cl.client_id}=${loginTs}; path=/; expires=${expire.toGMTString()}`;
+        const cookie = `_state.${cl.client_id}=${session.stateFor(cl.client_id)}; path=/; expires=${expire.toGMTString()}`;
         cookies.push(cookie);
         [pre, ...post] = cookie.split(';');
         cookies.push([`_state.${cl.client_id}.sig=${keys.sign(pre)}`, ...post].join(';'));
@@ -97,6 +113,10 @@ module.exports = function testHelper(dir, { config: base = path.basename(dir), m
       this.nonce = Math.random().toString();
       this.redirect_uri = parameters.redirect_uri || clients[0].redirect_uris[0];
       this.res = {};
+
+      if (parameters.claims && typeof parameters.claims !== 'string') {
+        parameters.claims = JSON.stringify(parameters.claims); // eslint-disable-line no-param-reassign, max-len
+      }
 
       Object.assign(this, parameters);
 

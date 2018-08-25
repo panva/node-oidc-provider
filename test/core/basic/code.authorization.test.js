@@ -147,6 +147,18 @@ describe('BASIC code', () => {
           .expect(auth.validateInteractionError('consent_required', 'client_not_authorized'));
       });
 
+      it('additional scopes are requested', function () {
+        const auth = new this.AuthorizationRequest({
+          response_type,
+          scope: 'openid email',
+        });
+
+        return this.wrap({ route, verb, auth })
+          .expect(302)
+          .expect(auth.validateInteractionRedirect)
+          .expect(auth.validateInteractionError('consent_required', 'scopes_missing'));
+      });
+
       it('are required for native clients by default', function () {
         const auth = new this.AuthorizationRequest({
           response_type,
