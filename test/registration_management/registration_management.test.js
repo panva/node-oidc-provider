@@ -98,6 +98,16 @@ describe('OAuth 2.0 Dynamic Client Registration Management Protocol', () => {
         });
     });
 
+    it('allows for properties to be deleted (not client_secret tho)', async function () {
+      const client = await setup.call(this, {});
+      return this.agent.put(`/reg/${client.client_id}`)
+        .auth(client.registration_access_token, { type: 'bearer' })
+        .send(updateProperties(client, {
+          client_secret: null,
+        }))
+        .expect(this.failWith(400, 'invalid_request', "provided client_secret does not match the authenticated client's one"));
+    });
+
     it('must contain all previous properties', async function () {
       const client = await setup.call(this, { userinfo_signed_response_alg: 'RS256' });
       // removing userinfo_signed_response_alg and having it defaulted
