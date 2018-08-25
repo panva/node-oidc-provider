@@ -43,6 +43,7 @@ is a good starting point to get an idea of what you should provide.
   - [features.frontchannelLogout](#featuresfrontchannellogout)
   - [features.introspection](#featuresintrospection)
   - [features.jwtIntrospection](#featuresjwtintrospection)
+  - [features.jwtResponseModes](#featuresjwtresponsemodes)
   - [features.oauthNativeApps](#featuresoauthnativeapps)
   - [features.pkce](#featurespkce)
   - [features.registration](#featuresregistration)
@@ -750,6 +751,7 @@ Enable/disable features.
   frontchannelLogout: false,
   introspection: false,
   jwtIntrospection: false,
+  jwtResponseModes: false,
   registration: false,
   registrationManagement: false,
   request: false,
@@ -875,6 +877,19 @@ false
 [draft-ietf-oauth-jwt-introspection-response-00](https://tools.ietf.org/html/draft-ietf-oauth-jwt-introspection-response-00) - JWT Response for OAuth Token Introspection  
 
 Enables JWT responses for Token Introspection features   
+  
+
+
+_**default value**_:
+```js
+false
+```
+
+### features.jwtResponseModes
+
+[openid-financial-api-jarm-wd-01](https://openid.net/specs/openid-financial-api-jarm-wd-01.html) - JWT Secured Authorization Response Mode (JARM)  
+
+Enables JWT Secured Authorization Responses   
   
 
 
@@ -1971,6 +1986,94 @@ Fine-tune the algorithms your provider will support by declaring algorithm value
 
 _**affects**_: signing, encryption, discovery, client validation  
 _**recommendation**_: Only allow JWA algs that are necessary. The current defaults are based on recommendations from the [JWA specification](https://tools.ietf.org/html/rfc7518) + enables RSASSA-PSS based on current guidance in FAPI. "none" JWT algs are disabled by default but available if you need them.  
+
+### whitelistedJWA.authorizationEncryptionAlgValues
+
+JWA algorithms the provider supports to wrap keys for JWT Authorization response encryption   
+  
+
+<details>
+  <summary><em><strong>default value</strong></em> (Click to expand)</summary>
+  <br>
+
+```js
+[ 'A128KW',
+  'A256KW',
+  'ECDH-ES',
+  'ECDH-ES+A128KW',
+  'ECDH-ES+A256KW',
+  'RSA-OAEP' ]
+```
+
+</details>
+
+<details>
+  <summary>(Click to expand) Supported values list
+</summary>
+  <br>
+
+```js
+[
+  // asymmetric RSAES based
+  'RSA-OAEP', 'RSA1_5',
+  // asymmetric ECDH-ES based
+  'ECDH-ES', 'ECDH-ES+A128KW', 'ECDH-ES+A192KW', 'ECDH-ES+A256KW',
+  // symmetric AES
+  'A128KW', 'A192KW', 'A256KW',
+  // symmetric AES GCM based
+  'A128GCMKW', 'A192GCMKW', 'A256GCMKW',
+  // symmetric PBES2 + AES
+  'PBES2-HS256+A128KW', 'PBES2-HS384+A192KW', 'PBES2-HS512+A256KW',
+]
+```
+</details>
+
+### whitelistedJWA.authorizationEncryptionEncValues
+
+JWA algorithms the provider supports to encrypt JWT Authorization Responses with   
+  
+
+
+_**default value**_:
+```js
+[ 'A128CBC-HS256', 'A128GCM', 'A256CBC-HS512', 'A256GCM' ]
+```
+<details>
+  <summary>(Click to expand) Supported values list
+</summary>
+  <br>
+
+```js
+[
+  'A128CBC-HS256', 'A128GCM', 'A192CBC-HS384', 'A192GCM', 'A256CBC-HS512', 'A256GCM',
+]
+```
+</details>
+
+### whitelistedJWA.authorizationSigningAlgValues
+
+JWA algorithms the provider supports to sign JWT Authorization Responses with   
+  
+
+
+_**default value**_:
+```js
+[ 'HS256', 'RS256', 'PS256', 'ES256' ]
+```
+<details>
+  <summary>(Click to expand) Supported values list
+</summary>
+  <br>
+
+```js
+[
+  'HS256', 'HS384', 'HS512',
+  'RS256', 'RS384', 'RS512',
+  'PS256', 'PS384', 'PS512',
+  'ES256', 'ES384', 'ES512',
+]
+```
+</details>
 
 ### whitelistedJWA.idTokenEncryptionAlgValues
 

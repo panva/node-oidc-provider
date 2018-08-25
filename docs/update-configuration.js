@@ -142,7 +142,7 @@ const props = [
 
   function expand(what) {
     const lines = what.split('\n').length;
-    what = '```js\n' + what + '\n```\n';
+    what = `\`\`\`js\n${what}\n\`\`\`\n`;
     if (lines > 5) {
       return `<details>\n  <summary><em><strong>default value</strong></em> (Click to expand)</summary>\n  <br>\n\n${what}\n</details>\n\n`;
     }
