@@ -56,12 +56,21 @@ class MongoAdapter {
       expiresAt = new Date(Date.now() + (expiresIn * 1000));
     }
 
+    const unset = Object.entries(payload).reduce((acc, [key, value]) => {
+      if (value === undefined) {
+        acc[key] = '';
+        delete payload[key]; // eslint-disable-line no-param-reassign
+      }
+      return acc;
+    }, {});
+
     await this.coll().updateOne({ _id }, {
       $set: {
         _id,
         ...payload,
         ...(expiresAt ? { expiresAt } : undefined),
       },
+      ...(Object.keys(unset).length ? { $unset: unset } : undefined),
     }, { upsert: true });
   }
 
