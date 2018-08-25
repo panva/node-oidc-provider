@@ -41,6 +41,7 @@ module.exports.provider = {
     revocation: true, // defaults to false
     sessionManagement: true, // defaults to false
     webMessageResponseMode: true, // defaults to false
+    jwtResponseModes: true, // defaults to false
   },
   formats: {
     default: 'opaque',
