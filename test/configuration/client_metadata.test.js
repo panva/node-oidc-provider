@@ -521,9 +521,20 @@ describe('Client metadata validation', () => {
     rejects(this.title, 'not-an-alg', undefined, undefined, configuration);
   });
 
+  context('authorization_signed_response_alg', function () {
+    const configuration = { features: { jwtResponseModes: true } };
+    defaultsTo(this.title, 'RS256', undefined, configuration);
+    mustBeString(this.title, undefined, undefined, configuration);
+    allows(this.title, 'HS256', undefined, configuration);
+    rejects(this.title, 'not-an-alg', undefined, undefined, configuration);
+    rejects(this.title, 'none', undefined, undefined, configuration);
+  });
+
   context('features.encryption', () => {
     const configuration = {
-      features: { encryption: true, introspection: true, jwtIntrospection: true },
+      features: {
+        encryption: true, introspection: true, jwtIntrospection: true, jwtResponseModes: true,
+      },
     };
 
     context('id_token_encrypted_response_alg', function () {
@@ -668,6 +679,55 @@ describe('Client metadata validation', () => {
       });
       rejects(this.title, 'not-an-enc', undefined, {
         introspection_encrypted_response_alg: 'RSA1_5',
+        jwks: { keys: [sigKey] },
+      }, configuration);
+    });
+
+    context('authorization_encrypted_response_alg', function () {
+      defaultsTo(this.title, undefined);
+      defaultsTo(this.title, undefined, undefined, configuration);
+      mustBeString(this.title, undefined, {
+        jwks: { keys: [sigKey] },
+      }, configuration);
+      it('is required when authorization_encrypted_response_enc is also provided', () => addClient({
+        authorization_encrypted_response_enc: 'whatever',
+      }, configuration).then(fail, (err) => {
+        expect(err.message).to.equal('invalid_client_metadata');
+        expect(err.error_description).to.equal('authorization_encrypted_response_alg is mandatory property when authorization_encrypted_response_enc is provided');
+      }));
+      [
+        'RSA-OAEP', 'RSA1_5', 'ECDH-ES', 'ECDH-ES+A128KW', 'ECDH-ES+A192KW',
+        'ECDH-ES+A256KW', 'A128GCMKW', 'A192GCMKW', 'A256GCMKW', 'A128KW', 'A192KW', 'A256KW',
+        'PBES2-HS256+A128KW', 'PBES2-HS384+A192KW', 'PBES2-HS512+A256KW',
+      ].forEach((value) => {
+        allows(this.title, value, {
+          jwks: { keys: [sigKey] },
+        }, configuration);
+      });
+      rejects(this.title, 'not-an-alg', undefined, undefined, configuration);
+    });
+
+    context('authorization_encrypted_response_enc', function () {
+      defaultsTo(this.title, undefined);
+      defaultsTo(this.title, undefined, undefined, configuration);
+      defaultsTo(this.title, 'A128CBC-HS256', {
+        authorization_encrypted_response_alg: 'RSA1_5',
+        jwks: { keys: [sigKey] },
+      }, configuration);
+      mustBeString(this.title, undefined, {
+        authorization_encrypted_response_alg: 'RSA1_5',
+        jwks: { keys: [sigKey] },
+      }, configuration);
+      [
+        'A128CBC-HS256', 'A128GCM', 'A192CBC-HS384', 'A192GCM', 'A256CBC-HS512', 'A256GCM',
+      ].forEach((value) => {
+        allows(this.title, value, {
+          authorization_encrypted_response_alg: 'RSA1_5',
+          jwks: { keys: [sigKey] },
+        }, configuration);
+      });
+      rejects(this.title, 'not-an-enc', undefined, {
+        authorization_encrypted_response_alg: 'RSA1_5',
         jwks: { keys: [sigKey] },
       }, configuration);
     });
