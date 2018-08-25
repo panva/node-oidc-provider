@@ -205,6 +205,18 @@ if (FORMAT === 'jwt') {
         sid,
         userCode,
       });
+
+      const { iat, jti, exp } = upsert.getCall(0).args[1];
+      const payload = decode(jwt.split('.')[1]);
+      expect(payload).to.eql({
+        aud: clientId,
+        exp,
+        iat,
+        iss: this.provider.issuer,
+        jti,
+        scope,
+        sub: accountId,
+      });
     });
 
     it('for ClientCredentials', async function () {
