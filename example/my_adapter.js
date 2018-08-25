@@ -40,19 +40,7 @@ class MyAdapter {
      * Note: This list is not exhaustive and properties may be added in the future, it is highly
      * recommended to use a schema that allows for this.
      *
-     * when `legacy`
-     * - grantId {string} grant identifier, tokens with the same value belong together
-     * - header {string} oidc-provider tokens are themselves JWTs, this is the header part of the token
-     * - payload {string} second part of the token
-     * - signature {string} the signature of the token
-     *
-     * Hint for legacy format: you can JSON.parse(base64decode( ... )) the header and payload to get
-     * the token properties and store them too, they may be helpful for getting insights on your usage.
-     * Modifying any of header, payload or signature values will result in the token being invalid,
-     * remember that oidc-provider will do a JWT signature check of both the received and stored
-     * token to detect potential manipulation.
-     *
-     * when `opaque`
+     * when `opaque` (default)
      * - jti {string} unique identifier of the token
      * - kind {string} token class name
      * - format {string} the format used for the token storage and representation

@@ -154,7 +154,6 @@ to the claims your issuer supports. Tell oidc-provider how to find your account 
 
 ```js
 const oidc = new Provider('http://localhost:3000', {
-  formats: { default: 'opaque' },
   async findById(ctx, id) {
     return {
       accountId: id,
@@ -186,9 +185,7 @@ To add pre-established clients use the `initialize` method on a oidc-provider in
 a clients array with metadata objects and rejects when the client metadata would be invalid.
 
 ```js
-const provider = new Provider('http://localhost:3000', {
-  formats: { default: 'opaque' },
-});
+const provider = new Provider('http://localhost:3000');
 const clients = [
   {
     token_endpoint_auth_method: 'none',
@@ -226,7 +223,6 @@ parameter. The configuration value uses the following scheme:
 
 ```js
 new Provider('http://localhost:3000', {
-  formats: { default: 'opaque' },
   claims: {
     [scope name]: ['claim name', 'claim name'],
     // or
@@ -244,7 +240,6 @@ To follow the [Core-defined scope-to-claim mapping][core-account-claims] use:
 
 ```js
 new Provider('http://localhost:3000', {
-  formats: { default: 'opaque' },
   claims: {
     address: ['address'],
     email: ['email', 'email_verified'],
@@ -272,9 +267,7 @@ is needed. A static `connect` method is called if present during the `provider.i
 
 ```js
 const MyAdapter = require('./my_adapter');
-const provider = new Provider('http://localhost:3000', {
-  formats: { default: 'opaque' },
-});
+const provider = new Provider('http://localhost:3000');
 provider.initialize({
   adapter: MyAdapter,
 });
@@ -489,7 +482,6 @@ be available in `ctx.oidc.params` as well as passed to the interaction session
 object for you to read.
 ```js
 const oidc = new Provider('http://localhost:3000', {
-  formats: { default: 'opaque' },
   extraParams: ['utm_campaign', 'utm_medium', 'utm_source', 'utm_term'],
 });
 ```
@@ -499,7 +491,6 @@ const oidc = new Provider('http://localhost:3000', {
 You can extend the returned discovery properties beyond the defaults
 ```js
 const oidc = new Provider('http://localhost:3000', {
-  formats: { default: 'opaque' },
   discovery: {
     service_documentation: 'http://server.example.com/connect/service_documentation.html',
     ui_locales_supported: ['en-US', 'en-GB', 'en-CA', 'fr-FR', 'fr-CA'],
@@ -515,7 +506,6 @@ See the specific routes in [default configuration][defaults].
 
 ```js
 const oidc = new Provider('http://localhost:3000', {
-  formats: { default: 'opaque' },
   routes: {
     authorization: '/authz',
     certificates: '/jwks.json',
@@ -715,7 +705,6 @@ Note: to make sure the RPs can expect these claims you should configure your dis
 the respective claim types via the `claim_types_supported` property.
 ```js
 const oidc = new Provider('http://localhost:3000', {
-  formats: { default: 'opaque' },
   discovery: {
     claim_types_supported: ['normal', 'aggregated', 'distributed']
   }
@@ -1451,19 +1440,18 @@ async findById(ctx, sub, token) {
 
 ### formats
 
-This option allows to configure the token storage and value formats. The different values change how a token value is generated as well as what properties get sent to the adapter for storage. Three formats are defined, see the expected [Adapter API](/example/my_adapter.js) for each format's specifics.   
- - `legacy` is the current and default format until next major release. No changes in the format sent to adapter.
- - `opaque` formatted tokens have a different value then `legacy` and in addition store what was in legacy format encoded under `payload` as root properties, this makes analysing the data in your storage way easier
+This option allows to configure the token storage and value formats. The different values change how a token value is generated as well as what properties get sent to the adapter for storage. Multiple formats are defined, see the expected [Adapter API](/example/my_adapter.js) for each format's specifics.
+ - `opaque` (default) formatted tokens store every property as a root property in your adapter
  - `jwt` formatted tokens are issued as JWTs and stored the same as `opaque` only with additional property `jwt`. The signing algorithm for these tokens uses the client's `id_token_signed_response_alg` value and falls back to `RS256` for tokens with no relation to a client or when the client's alg is `none`  
 
 _**affects**_: properties passed to adapters for token types, issued token formats  
-_**recommendation**_: set default to `opaque` if you're still developing your application, `legacy` will not be the default in the major versions coming forward. It is not recommended to set `jwt` as default, if you need it, it's most likely just for Access Tokens.  
+_**recommendation**_: It is not recommended to set `jwt` as default, if you need it, it's most likely just for Access Tokens.  
 <details>
   <summary><em><strong>default value</strong></em> (Click to expand)</summary>
   <br>
 
 ```js
-{ default: 'legacy',
+{ default: 'opaque',
   AccessToken: undefined,
   AuthorizationCode: undefined,
   RefreshToken: undefined,
@@ -1476,18 +1464,6 @@ _**recommendation**_: set default to `opaque` if you're still developing your ap
 </details>
 
 <details>
-  <summary>(Click to expand) [RECOMMENDED] If you're starting from scratch</summary>
-  <br>
-
-
-Do yourself a favour and disable the deprecated legacy format.
-  
-
-```js
-{ default: 'opaque' }
-```
-</details>
-<details>
   <summary>(Click to expand) To enable JWT Access Tokens</summary>
   <br>
 
@@ -1497,6 +1473,38 @@ Configure `formats`:
 
 ```js
 { default: 'opaque', AccessToken: 'jwt' }
+```
+</details>
+<details>
+  <summary>(Click to expand) To dynamically decide on the format used, e.g. if it is intended for more audiences</summary>
+  <br>
+
+
+Configure `formats`:
+  
+
+```js
+{
+  default: 'opaque',
+  AccessToken(token) {
+    if (Array.isArray(token.aud)) {
+      return 'jwt';
+    }
+    return 'opaque';
+  }
+}
+```
+</details>
+<details>
+  <summary>(Click to expand) To enable the legacy format (only recommended for legacy deployments)</summary>
+  <br>
+
+
+Configure `formats`:
+  
+
+```js
+{ default: 'legacy' }
 ```
 </details>
 
