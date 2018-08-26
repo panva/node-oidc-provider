@@ -2,6 +2,23 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+<a name="4.7.0"></a>
+# [4.7.0](https://github.com/panva/node-oidc-provider/compare/v4.6.0...v4.7.0) (2018-08-26)
+
+
+### Bug Fixes
+
+* conform claims param parsing ([c553a92](https://github.com/panva/node-oidc-provider/commit/c553a92))
+* set session params as undefined instead of delete ([a872091](https://github.com/panva/node-oidc-provider/commit/a872091))
+
+
+### Features
+
+* accepted scope and rejected claim tracking ([b4c2655](https://github.com/panva/node-oidc-provider/commit/b4c2655))
+* session_state changes ([f64d040](https://github.com/panva/node-oidc-provider/commit/f64d040))
+
+
+
 <a name="4.6.0"></a>
 # [4.6.0](https://github.com/panva/node-oidc-provider/compare/v4.5.0...v4.6.0) (2018-08-13)
 
