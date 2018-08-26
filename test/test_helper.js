@@ -109,9 +109,10 @@ module.exports = function testHelper(dir, { config: base = path.basename(dir), m
   class AuthorizationRequest {
     constructor(parameters) {
       this.client_id = parameters.client_id || clients[0].client_id;
+      const c = clients.find(cl => cl.client_id === this.client_id);
       this.state = Math.random().toString();
       this.nonce = Math.random().toString();
-      this.redirect_uri = parameters.redirect_uri || clients[0].redirect_uris[0];
+      this.redirect_uri = parameters.redirect_uri || (c && c.redirect_uris[0]);
       this.res = {};
 
       if (parameters.claims && typeof parameters.claims !== 'string') {
