@@ -111,15 +111,16 @@ describe('grant_type=refresh_token', () => {
     describe('validates', () => {
       context('', () => {
         before(function () {
-          this.prev = this.provider.RefreshToken.expiresIn;
-          i(this.provider).configuration('ttl').RefreshToken = 5;
+          const ttl = i(this.provider).configuration('ttl');
+          this.prev = ttl.RefreshToken;
+          ttl.RefreshToken = 5;
         });
 
         after(function () {
           i(this.provider).configuration('ttl').RefreshToken = this.prev;
         });
 
-        it('validates code is not expired', function () {
+        it('validates the refresh token is not expired', function () {
           timekeeper.travel(Date.now() + (10 * 1000));
           const { rt } = this;
           const spy = sinon.spy();
