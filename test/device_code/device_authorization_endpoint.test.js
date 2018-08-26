@@ -321,7 +321,7 @@ describe('device_authorization_endpoint', () => {
         ]);
         expect(body.verification_uri_complete).to.equal(`${body.verification_uri}?user_code=${body.user_code}`);
         expect(body).to.have.property('verification_uri').that.matches(/\/device$/);
-        expect(body).to.have.property('expires_in', this.provider.DeviceCode.expiresIn);
+        expect(body).to.have.property('expires_in', 600);
         response = body;
       });
 

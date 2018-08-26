@@ -368,8 +368,9 @@ describe('grant_type=urn:ietf:params:oauth:grant-type:device_code', () => {
 
     context('', () => {
       before(function () {
-        this.prev = this.provider.DeviceCode.expiresIn;
-        i(this.provider).configuration('ttl').DeviceCode = 0;
+        const ttl = i(this.provider).configuration('ttl');
+        this.prev = ttl.DeviceCode;
+        ttl.DeviceCode = 0;
       });
 
       after(function () {
