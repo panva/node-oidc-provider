@@ -114,8 +114,9 @@ describe('grant_type=authorization_code', () => {
 
     context('', () => {
       before(function () {
-        this.prev = this.provider.AuthorizationCode.expiresIn;
-        i(this.provider).configuration('ttl').AuthorizationCode = 5;
+        const ttl = i(this.provider).configuration('ttl');
+        this.prev = ttl.AuthorizationCode;
+        ttl.AuthorizationCode = 5;
       });
 
       after(function () {

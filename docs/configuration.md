@@ -450,16 +450,15 @@ provider.registerGrantType('password', function passwordGrantTypeFactory(provide
       const at = new AccessToken({
 				gty: 'password',
         accountId: account.id,
-        clientId: ctx.oidc.client.clientId,
+        client: ctx.oidc.client,
         grantId: ctx.oidc.uuid,
       });
 
       const accessToken = await at.save();
-      const expiresIn = AccessToken.expiresIn;
 
       ctx.body = {
         access_token: accessToken,
-        expires_in: expiresIn,
+        expires_in: at.expiration,
         token_type: 'Bearer',
       };
     } else {
@@ -1862,7 +1861,7 @@ _**default value**_:
 
 ### ttl
 
-Expirations (in seconds) for all token types  
+Expirations (in seconds, or dynamically returned value) for all token types  
 
 _**affects**_: tokens  
 <details>
@@ -1880,6 +1879,27 @@ _**affects**_: tokens
 
 </details>
 
+<details>
+  <summary>(Click to expand) To resolve a ttl on runtime for each new token</summary>
+  <br>
+
+
+Configure `ttl` for a given token type with a function like so, this must return a value, not a Promise.
+  
+
+```js
+{
+  ttl: {
+    AccessToken(token, client) {
+      // return a Number (in seconds) for the given token (first argument), the associated client is
+      // passed as a second argument
+      // Tip: if the values are entirely client based memoize the results
+      return resolveTTLfor(token, client);
+    },
+  },
+}
+```
+</details>
 
 ### uniqueness
 
