@@ -1,3 +1,5 @@
+const { parse } = require('url');
+
 const { expect } = require('chai');
 
 const bootstrap = require('../test_helper');
@@ -9,32 +11,125 @@ describe('session management', () => {
 
   ['get', 'post'].forEach((verb) => {
     describe(`[session_management] ${verb} ${route} with session`, () => {
-      before(function () { return this.login(); });
+      describe('success responses', () => {
+        before(function () { return this.login(); });
+        it('provides session_state in the response', async function () {
+          const auth = new this.AuthorizationRequest({
+            response_type: 'code',
+            scope: 'openid',
+          });
 
-      it('provides session_state in the response', function () {
-        const auth = new this.AuthorizationRequest({
-          response_type: 'code',
-          scope: 'openid',
+          let sessionState;
+          await this.wrap({ route, verb, auth })
+            .expect(302)
+            .expect(auth.validatePresence(['code', 'state', 'session_state']))
+            .expect(auth.validateState)
+            .expect(auth.validateClientLocation)
+            .expect(({ headers: { location } }) => {
+              sessionState = parse(location, true).query.session_state;
+            });
+
+          await this.wrap({ route, verb, auth })
+            .expect(302)
+            .expect(auth.validatePresence(['code', 'state', 'session_state']))
+            .expect(auth.validateState)
+            .expect(auth.validateClientLocation)
+            .expect(({ headers: { location } }) => {
+              expect(parse(location, true).query.session_state).to.equal(sessionState);
+            });
         });
 
-        return this.wrap({ route, verb, auth })
-          .expect(302)
-          .expect(auth.validatePresence(['session_state'], false))
-          .expect(auth.validateState)
-          .expect(auth.validateClientLocation);
+        it('omits the session_state for native applications', function () {
+          const auth = new this.AuthorizationRequest({
+            client_id: 'client-native-claimed',
+            response_type: 'code',
+            scope: 'openid',
+            code_challenge_method: 'S256',
+            code_challenge: 'foobar',
+          });
+
+          return this.wrap({ route, verb, auth })
+            .expect(302)
+            .expect(auth.validatePresence(['code', 'state']))
+            .expect(auth.validateState)
+            .expect(auth.validateClientLocation);
+        });
+
+        it('sets a _state.clientId cookies', function () {
+          const auth = new this.AuthorizationRequest({
+            response_type: 'code',
+            scope: 'openid',
+          });
+
+          return this.wrap({ route, verb, auth })
+            .expect(() => {
+              const state = this.agent.jar.getCookie('_state.client', { path: '/' });
+              expect(state).to.be.ok;
+            });
+        });
       });
 
-      it('sets a _state.clientId cookies', function () {
-        const auth = new this.AuthorizationRequest({
-          response_type: 'code',
-          scope: 'openid',
+      describe('error responses', () => {
+        before(function () { return this.logout(); });
+
+        it('provides salted session_state in the response', async function () {
+          const auth = new this.AuthorizationRequest({
+            prompt: 'none',
+            response_type: 'code',
+            scope: 'openid',
+          });
+
+          let sessionState;
+          await this.wrap({ route, verb, auth })
+            .expect(302)
+            .expect(auth.validatePresence(['error', 'error_description', 'session_state', 'state']))
+            .expect(auth.validateState)
+            .expect(auth.validateClientLocation)
+            .expect(({ headers: { location } }) => {
+              sessionState = parse(location, true).query.session_state;
+              expect(sessionState).to.contain('.');
+            });
+
+          await this.wrap({ route, verb, auth })
+            .expect(302)
+            .expect(auth.validatePresence(['error', 'error_description', 'session_state', 'state']))
+            .expect(auth.validateState)
+            .expect(auth.validateClientLocation)
+            .expect(({ headers: { location } }) => {
+              expect(parse(location, true).query.session_state).not.to.equal(sessionState);
+            });
         });
 
-        return this.wrap({ route, verb, auth })
-          .expect(() => {
-            const state = this.agent.jar.getCookie('_state.client', { path: '/' });
-            expect(state).to.be.ok;
+        it('omits the session_state for native applications', function () {
+          const auth = new this.AuthorizationRequest({
+            prompt: 'none',
+            client_id: 'client-native-claimed',
+            response_type: 'code',
+            scope: 'openid',
+            code_challenge_method: 'S256',
+            code_challenge: 'foobar',
           });
+
+          return this.wrap({ route, verb, auth })
+            .expect(302)
+            .expect(auth.validatePresence(['error', 'error_description', 'state']))
+            .expect(auth.validateState)
+            .expect(auth.validateClientLocation);
+        });
+
+        it('sets a _state.clientId cookies', function () {
+          const auth = new this.AuthorizationRequest({
+            prompt: 'none',
+            response_type: 'code',
+            scope: 'openid',
+          });
+
+          return this.wrap({ route, verb, auth })
+            .expect(() => {
+              const state = this.agent.jar.getCookie('_state.client', { path: '/' });
+              expect(state).to.be.ok;
+            });
+        });
       });
     });
   });
