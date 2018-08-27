@@ -2,6 +2,16 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+<a name="4.7.1"></a>
+## [4.7.1](https://github.com/panva/node-oidc-provider/compare/v4.7.0...v4.7.1) (2018-08-27)
+
+
+### Bug Fixes
+
+* check_session regression fix ([32975d9](https://github.com/panva/node-oidc-provider/commit/32975d9))
+
+
+
 <a name="4.7.0"></a>
 # [4.7.0](https://github.com/panva/node-oidc-provider/compare/v4.6.0...v4.7.0) (2018-08-26)
 
