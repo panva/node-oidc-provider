@@ -195,9 +195,10 @@ new Provider('http://localhost:3000', {
 ```
 
 ## Configuring available scopes
-Use the `scopes` configuration parameter to extend or reduce the default scope names that are
-available. This list is extended by all scope names detected in the claims parameter as well.
-The parameter accepts an array of scope names.
+Use the `scopes` configuration parameter to configure the scope values that you wish to support.
+This list is extended by all scope names detected in the claims parameter as well.
+
+Use the `dynamicScopes` configuration parameter to configure dynamic scope values.
 
 ## Persistence
 The provided example and any new instance of oidc-provider will use the basic in-memory adapter for
