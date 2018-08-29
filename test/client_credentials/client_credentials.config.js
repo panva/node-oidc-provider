@@ -3,6 +3,7 @@ const { clone } = require('lodash');
 const config = clone(require('../default.config'));
 
 config.features = { clientCredentials: true };
+config.scopes = ['api:read'];
 
 module.exports = {
   config,

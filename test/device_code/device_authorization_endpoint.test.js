@@ -7,7 +7,7 @@ const { normalize } = require('../../lib/helpers/user_codes');
 const route = '/device/auth';
 
 describe('device_authorization_endpoint', () => {
-  before(bootstrap(__dirname)); // agent
+  before(bootstrap(__dirname));
 
   it('rejects other than application/x-www-form-urlencoded', function () {
     const spy = sinon.spy();

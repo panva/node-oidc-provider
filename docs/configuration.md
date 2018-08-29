@@ -47,6 +47,7 @@ is a good starting point to get an idea of what you should provide.
 	- [cookies.thirdPartyCheckUrl](#cookiesthirdpartycheckurl)
 	- [deviceCodeSuccess](#devicecodesuccess)
 	- [discovery](#discovery)
+	- [dynamicScopes](#dynamicscopes)
 	- [extraClientMetadata](#extraclientmetadata)
 	- [extraClientMetadata.properties](#extraclientmetadataproperties)
 	- [extraClientMetadata.validator](#extraclientmetadatavalidator)
@@ -1147,6 +1148,17 @@ _**default value**_:
   op_tos_uri: undefined,
   service_documentation: undefined,
   ui_locales_supported: undefined }
+```
+
+### dynamicScopes
+
+List of the dynamic scope values that the OP supports. These must be regular expressions that the OP will check string scope values, that aren't in the static list, against.  
+
+_**affects**_: discovery, authorization, ID Token claims, Userinfo claims  
+
+_**default value**_:
+```js
+[]
 ```
 
 ### extraClientMetadata

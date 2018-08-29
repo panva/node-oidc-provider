@@ -8,7 +8,7 @@ const { any } = sinon.match;
 const route = '/device';
 
 describe('GET code_verification endpoint', () => {
-  before(bootstrap(__dirname)); // agent
+  before(bootstrap(__dirname));
 
   describe('when accessed without user_code in query (verification_uri)', () => {
     it('renders 200 OK end-user form with csrf', function () {
@@ -51,7 +51,7 @@ describe('GET code_verification endpoint', () => {
 });
 
 describe('POST code_verification endpoint w/o verification', () => {
-  before(bootstrap(__dirname)); // agent
+  before(bootstrap(__dirname));
   before(function () { return this.login(); });
   afterEach(() => timekeeper.reset());
 
@@ -291,7 +291,7 @@ describe('POST code_verification endpoint w/o verification', () => {
 });
 
 describe('POST code_verification endpoint w/ verification', () => {
-  before(bootstrap(__dirname)); // agent
+  before(bootstrap(__dirname));
   before(function () {
     return this.login({
       scope: 'openid email',

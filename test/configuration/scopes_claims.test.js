@@ -10,7 +10,7 @@ describe('custom claims', () => {
       },
     });
 
-    expect(i(provider).configuration('claims.openid')).to.eql({
+    expect(i(provider).configuration('claims').get('openid')).to.eql({
       sub: null,
       foo: null,
     });
@@ -23,7 +23,7 @@ describe('custom claims', () => {
       },
     });
 
-    expect(i(provider).configuration('claims.openid')).to.eql({
+    expect(i(provider).configuration('claims').get('openid')).to.eql({
       sub: null,
       foo: null,
     });

@@ -13,7 +13,7 @@ function errorDetail(spy) {
 }
 
 describe('grant_type=urn:ietf:params:oauth:grant-type:device_code w/ conformIdTokenClaims', () => {
-  before(bootstrap(__dirname, { config: 'device_code_conform' })); // agent
+  before(bootstrap(__dirname, { config: 'device_code_conform' }));
 
   it('returns the right stuff', async function () {
     const spy = sinon.spy();
@@ -45,7 +45,7 @@ describe('grant_type=urn:ietf:params:oauth:grant-type:device_code w/ conformIdTo
 });
 
 describe('grant_type=urn:ietf:params:oauth:grant-type:device_code', () => {
-  before(bootstrap(__dirname)); // agent
+  before(bootstrap(__dirname));
 
   it('returns the right stuff', async function () {
     const spy = sinon.spy();

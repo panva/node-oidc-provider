@@ -16,6 +16,7 @@ describe('grant_type=client_credentials', () => {
       .auth('client', 'secret')
       .send({
         grant_type: 'client_credentials',
+        scope: 'api:read',
       })
       .type('form')
       .expect(200)
@@ -23,8 +24,32 @@ describe('grant_type=client_credentials', () => {
         expect(spy.calledOnce).to.be.true;
       })
       .expect((response) => {
-        expect(response.body).to.have.keys('access_token', 'expires_in', 'token_type');
+        expect(response.body).to.have.keys('access_token', 'expires_in', 'token_type', 'scope');
       });
+  });
+
+  it('ignores unsupported scopes', async function () {
+    const spy = sinon.spy();
+    this.provider.once('token.issued', spy);
+
+    await this.agent.post(route)
+      .auth('client', 'secret')
+      .send({
+        grant_type: 'client_credentials',
+        scope: 'api:read api:write',
+      })
+      .type('form')
+      .expect(200)
+      .expect(() => {
+        expect(spy.calledOnce).to.be.true;
+      })
+      .expect((response) => {
+        expect(response.body).to.have.keys('access_token', 'expires_in', 'token_type', 'scope');
+      });
+
+    const [[token]] = spy.args;
+
+    expect(token).to.have.property('scope', 'api:read');
   });
 
   it('populates ctx.oidc.entities', function (done) {
@@ -36,6 +61,7 @@ describe('grant_type=client_credentials', () => {
       .auth('client', 'secret')
       .send({
         grant_type: 'client_credentials',
+        scope: 'api:read',
       })
       .type('form')
       .end(() => {});

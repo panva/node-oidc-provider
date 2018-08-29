@@ -4,7 +4,7 @@ const Provider = require('../../lib');
 const bootstrap = require('../test_helper');
 
 describe('configuration features.deviceCode', () => {
-  before(bootstrap(__dirname)); // agent
+  before(bootstrap(__dirname));
 
   it('can only be configured with digits and base-20 charset', () => {
     expect(() => {
