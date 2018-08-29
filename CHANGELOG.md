@@ -2,6 +2,16 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+<a name="4.8.0"></a>
+# [4.8.0](https://github.com/panva/node-oidc-provider/compare/v4.7.1...v4.8.0) (2018-08-29)
+
+
+### Features
+
+* add dynamic scope value support ([caa8f0e](https://github.com/panva/node-oidc-provider/commit/caa8f0e))
+
+
+
 <a name="4.7.1"></a>
 ## [4.7.1](https://github.com/panva/node-oidc-provider/compare/v4.7.0...v4.7.1) (2018-08-27)
 
