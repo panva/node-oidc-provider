@@ -7,8 +7,8 @@ is a good starting point to get an idea of what you should provide.
 
 **Table of Contents**
 
-<!-- TOC depthFrom:2 depthTo:3 withLinks:1 updateOnSave:1 orderedList:2 -->
-
+<!-- TOC START min:2 max:3 link:true update:true -->
+- [Basic configuration example](#basic-configuration-example)
 - [Default configuration values](#default-configuration-values)
 - [Accounts](#accounts)
 - [Clients](#clients)
@@ -17,7 +17,6 @@ is a good starting point to get an idea of what you should provide.
 - [Configuring available scopes](#configuring-available-scopes)
 - [Persistence](#persistence)
 - [Interaction](#interaction)
-- [Enable/Disable optional oidc-provider features](#enabledisable-optional-oidc-provider-features)
 - [Custom Grant Types](#custom-grant-types)
 - [Extending Authorization with Custom Parameters](#extending-authorization-with-custom-parameters)
 - [Extending Discovery with Custom Properties](#extending-discovery-with-custom-properties)
@@ -29,55 +28,119 @@ is a good starting point to get an idea of what you should provide.
 - [Registering module middlewares (helmet, ip-filters, rate-limiters, etc)](#registering-module-middlewares-helmet-ip-filters-rate-limiters-etc)
 - [Pre- and post-middlewares](#pre--and-post-middlewares)
 - [Mounting oidc-provider](#mounting-oidc-provider)
-	- [to an express application](#to-an-express-application)
-	- [to a koa application](#to-a-koa-application)
+  - [to an express application](#to-an-express-application)
+  - [to a koa application](#to-a-koa-application)
 - [Trusting TLS offloading proxies](#trusting-tls-offloading-proxies)
 - [Aggregated and Distributed claims](#aggregated-and-distributed-claims)
 - [Configuration options](#configuration-options)
-	- [acrValues](#acrvalues)
-	- [audiences](#audiences)
-	- [claims](#claims)
-	- [clientCacheDuration](#clientcacheduration)
-	- [clockTolerance](#clocktolerance)
-	- [cookies](#cookies)
-	- [cookies.keys](#cookieskeys)
-	- [cookies.long](#cookieslong)
-	- [cookies.names](#cookiesnames)
-	- [cookies.short](#cookiesshort)
-	- [cookies.thirdPartyCheckUrl](#cookiesthirdpartycheckurl)
-	- [deviceCodeSuccess](#devicecodesuccess)
-	- [discovery](#discovery)
-	- [dynamicScopes](#dynamicscopes)
-	- [extraClientMetadata](#extraclientmetadata)
-	- [extraClientMetadata.properties](#extraclientmetadataproperties)
-	- [extraClientMetadata.validator](#extraclientmetadatavalidator)
-	- [extraParams](#extraparams)
-	- [features](#features)
-	- [findById](#findbyid)
-	- [formats](#formats)
-	- [frontchannelLogoutPendingSource](#frontchannellogoutpendingsource)
-	- [interactionCheck](#interactioncheck)
-	- [interactionUrl](#interactionurl)
-	- [introspectionEndpointAuthMethods](#introspectionendpointauthmethods)
-	- [logoutSource](#logoutsource)
-	- [pairwiseSalt](#pairwisesalt)
-	- [postLogoutRedirectUri](#postlogoutredirecturi)
-	- [prompts](#prompts)
-	- [refreshTokenRotation](#refreshtokenrotation)
-	- [renderError](#rendererror)
-	- [responseTypes](#responsetypes)
-	- [revocationEndpointAuthMethods](#revocationendpointauthmethods)
-	- [routes](#routes)
-	- [scopes](#scopes)
-	- [subjectTypes](#subjecttypes)
-	- [tokenEndpointAuthMethods](#tokenendpointauthmethods)
-	- [ttl](#ttl)
-	- [uniqueness](#uniqueness)
-	- [unsupported](#unsupported)
-	- [userCodeConfirmSource](#usercodeconfirmsource)
-	- [userCodeInputSource](#usercodeinputsource)
+  - [features](#features)
+  - [features.backchannelLogout](#featuresbackchannellogout)
+  - [features.claimsParameter](#featuresclaimsparameter)
+  - [features.clientCredentials](#featuresclientcredentials)
+  - [features.devInteractions](#featuresdevinteractions)
+  - [features.deviceCode](#featuresdevicecode)
+  - [features.discovery](#featuresdiscovery)
+  - [features.encryption](#featuresencryption)
+  - [features.frontchannelLogout](#featuresfrontchannellogout)
+  - [features.introspection](#featuresintrospection)
+  - [features.jwtIntrospection](#featuresjwtintrospection)
+  - [features.oauthNativeApps](#featuresoauthnativeapps)
+  - [features.pkce](#featurespkce)
+  - [features.registration](#featuresregistration)
+  - [features.registrationManagement](#featuresregistrationmanagement)
+  - [features.request](#featuresrequest)
+  - [features.requestUri](#featuresrequesturi)
+  - [features.revocation](#featuresrevocation)
+  - [features.sessionManagement](#featuressessionmanagement)
+  - [features.webMessageResponseMode](#featureswebmessageresponsemode)
+  - [acrValues](#acrvalues)
+  - [audiences](#audiences)
+  - [claims](#claims)
+  - [clientCacheDuration](#clientcacheduration)
+  - [clockTolerance](#clocktolerance)
+  - [cookies](#cookies)
+  - [cookies.keys](#cookieskeys)
+  - [cookies.long](#cookieslong)
+  - [cookies.names](#cookiesnames)
+  - [cookies.short](#cookiesshort)
+  - [cookies.thirdPartyCheckUrl](#cookiesthirdpartycheckurl)
+  - [deviceCodeSuccess](#devicecodesuccess)
+  - [discovery](#discovery)
+  - [dynamicScopes](#dynamicscopes)
+  - [extraClientMetadata](#extraclientmetadata)
+  - [extraClientMetadata.properties](#extraclientmetadataproperties)
+  - [extraClientMetadata.validator](#extraclientmetadatavalidator)
+  - [extraParams](#extraparams)
+  - [findById](#findbyid)
+  - [formats](#formats)
+  - [frontchannelLogoutPendingSource](#frontchannellogoutpendingsource)
+  - [interactionCheck](#interactioncheck)
+  - [interactionUrl](#interactionurl)
+  - [introspectionEndpointAuthMethods](#introspectionendpointauthmethods)
+  - [logoutSource](#logoutsource)
+  - [pairwiseSalt](#pairwisesalt)
+  - [postLogoutRedirectUri](#postlogoutredirecturi)
+  - [prompts](#prompts)
+  - [refreshTokenRotation](#refreshtokenrotation)
+  - [renderError](#rendererror)
+  - [responseTypes](#responsetypes)
+  - [revocationEndpointAuthMethods](#revocationendpointauthmethods)
+  - [routes](#routes)
+  - [scopes](#scopes)
+  - [subjectTypes](#subjecttypes)
+  - [tokenEndpointAuthMethods](#tokenendpointauthmethods)
+  - [ttl](#ttl)
+  - [uniqueness](#uniqueness)
+  - [unsupported](#unsupported)
+  - [userCodeConfirmSource](#usercodeconfirmsource)
+  - [userCodeInputSource](#usercodeinputsource)
 
-<!-- /TOC -->
+<!-- TOC END -->
+
+
+
+## Basic configuration example
+
+```js
+const Provider = require('oidc-provider');
+const configuration = {
+  // ... see the available options in Configuration options section
+  features: {
+    discovery: true,
+    registration: { initialAccessToken: true },
+  },
+  format: { default: 'opaque' },
+  // ...
+};
+const clients = [{
+  client_id: 'foo',
+  client_secret: 'bar',
+  redirect_uris: ['http://lvh.me:8080/cb'],
+  // + other client properties
+}];
+
+const oidc = new Provider('http://localhost:3000', configuration);
+
+let server;
+(async () => {
+  await oidc.initialize({ clients });
+  // express/nodejs style application callback (req, res, next) for use with express apps, see /examples/express.js
+  oidc.callback
+
+  // koa application for use with koa apps, see /examples/koa.js
+  oidc.app
+
+  // or just expose a server standalone, see /examples/standalone.js
+  server = oidc.listen(3000, () => {
+    console.log('oidc-provider listening on port 3000, check http://localhost:3000/.well-known/openid-configuration');
+  });
+})().catch((err) => {
+  if (server && server.listening) server.close();
+  console.error(err);
+  process.exitCode = 1;
+});
+```
+
 
 ## Default configuration values
 Default values are available for all configuration options. Available in [code][defaults] as well as
@@ -376,305 +439,6 @@ router.post('/interaction/:grant/login', async (ctx, next) => {
 ```
 
 
-## Enable/Disable optional oidc-provider features
-
-There are many features defined in OIDC which are optional and can be omitted to keep your
-deployment compact. The feature flags with their default values are
-
-| feature flag | enabled by default? |
-| --- | --- |
-| alwaysIssueRefresh | no |
-| backchannelLogout | no |
-| claimsParameter | no |
-| clientCredentials | no |
-| conformIdTokenClaims | no |
-| devInteractions | yes (!!!) |
-| discovery | yes |
-| encryption | no |
-| frontchannelLogout | no |
-| introspection | no |
-| jwtIntrospection | no |
-| oauthNativeApps | yes (forces pkce on with forcedForNative) |
-| pkce | yes |
-| registration | no |
-| registrationManagement | no |
-| request | no |
-| requestUri | yes |
-| revocation | no |
-| sessionManagement | no |
-| webMessageResponseMode | no |
-
-**Development quick-start interactions**  
-Development-ONLY out of the box interaction views bundled with the library allow you to skip the
-boring frontend part while experimenting with oidc-provider. Enter any username (will be used as sub
-claim value) and any password to proceed.
-
-Be sure to disable and replace this feature with your actual frontend flows and End-User
-authentication flows as soon as possible. These views are not meant to ever be seen by actual users.
-
-```js
-const configuration = { features: { devInteractions: Boolean[true] } };
-```
-
-
-**Discovery**  
-Exposes `/.well-known/webfinger` and `/.well-known/openid-configuration` endpoints. Contents of the
-latter reflect your actual configuration, i.e. available claims, features and so on.
-```js
-const configuration = { features: { discovery: Boolean[true] } };
-```
-WebFinger always returns positive results and links to this issuer, it is not resolving the resources
-in any way.
-
-**Authorization `claims` parameter**  
-Enables the use and validations of `claims` parameter as described in
-[Core 1.0 - 5.5. Requesting Claims using the "claims" Request Parameter][core-claims]
-and sets the discovery endpoint property `claims_parameter_supported` to true.
-```js
-const configuration = { features: { claimsParameter: Boolean[false] } };
-```
-
-**ID Token only contains End-User claims when response_type=id_token**  
-[Core 1.0 - 5.4. Requesting Claims using Scope Values][core-scopes]
-defines that claims requested using the `scope` parameter are returned from the UserInfo Endpoint
-unless the `response_type=id_token`.
-
-> The Claims requested by the profile, email, address, and phone scope values are returned from the
-> UserInfo Endpoint, as described in Section 5.3.2, when a response_type value is used that results
-> in an Access Token being issued. However, when no Access Token is issued (which is the case for
-> the response_type value id_token), the resulting Claims are returned in the ID Token.
-
-To enable/disable this conform behaviour
-```js
-const configuration = { features: { conformIdTokenClaims: Boolean[false] } };
-```
-
-The conform/non-conform behaviour results in the following results
-
-| flag value | request params | authorization_endpoint ID Token (if issued) | token_endpoint ID Token (if issued) |
-|---|---|---|---|
-| false | `response_type=` _any_<br/><br/> `scope=openid email` | ✅ `sub`<br/> ✅ `email`<br/> ✅ `email_verified` | ✅ `sub`<br/> ✅ `email`<br/> ✅ `email_verified` |
-| true | `response_type=` _any but_ `id_token`<br/><br/> `scope=openid email` | ✅ `sub`<br/> ❌ `email`<br/> ❌ `email_verified` | ✅ `sub`<br/> ❌ `email`<br/> ❌ `email_verified` |
-| true | `response_type=` _any but_ `id_token`<br/><br/> `scope=openid email`<br/><br/> `claims={"id_token":{"email":null}}` | ✅ `sub`<br/> ✅ `email`<br/> ❌ `email_verified` | ✅ `sub`<br/> ✅ `email`<br/> ❌ `email_verified` |
-| true | `response_type=id_token`<br/><br/> `scope=openid email` | ✅ `sub`<br/> ✅ `email`<br/> ✅ `email_verified` | _n/a_ |
-
-
-**Token endpoint `client_credentials` grant**  
-Enables `grant_type=client_credentials` to be used on the token endpoint. Note: client still has to
-be allowed this grant.  
-Hint: allowing this grant together with token introspection and revocation is an easy and elegant
-way to allow authorized access to some less sensitive backend actions.
-```js
-const configuration = { features: { clientCredentials: Boolean[false] } };
-```
-
-**Encryption features**  
-Enables clients to receive encrypted UserInfo responses, encrypted ID Tokens and to send encrypted
-request parameters to authorization.
-```js
-const configuration = { features: { encryption: Boolean[false] } };
-```
-
-
-**Offline access - Refresh Tokens**  
-The use of Refresh Tokens (offline access) as described in [Core 1.0 - 11. Offline Access][core-offline-access]
-does not require any feature flag as Refresh Tokens will be issued by the authorization_code grant
-automatically in case the authentication request included offline_access scope and consent prompt and
-the client in question has the refresh_token grant configured.
-
-**Refresh Tokens beyond the spec scope**  
-> The use of Refresh Tokens is not exclusive to the offline_access use case. The Authorization
-> Server MAY grant Refresh Tokens in other contexts that are beyond the scope of this specification.
-
-Provide `alwaysIssueRefresh` feature flag to have your provider instance issue Refresh Tokens even
-if offline_access scope is not requested. The client still has to have refresh_token grant
-configured, else no Refresh Token will be issued since the client couldn't finish the grant anyway.
-
-```js
-const configuration = { features: { alwaysIssueRefresh: Boolean[false] } };
-```
-
-
-**Authorization `request` parameter**  
-Enables the use and validations of `request` parameter as described in
-[Core 1.0][core-jwt-parameters] and sets the discovery endpoint property
-`request_parameter_supported` to true.
-
-```js
-const configuration = { features: { request: Boolean[false] } };
-```
-
-
-**Authorization `request_uri` parameter**  
-Enables the use and validations of `request_uri` parameter as described in
-[Core 1.0][core-jwt-parameters] and sets the discovery endpoint property
-`request_uri_parameter_supported` and `require_request_uri_registration` to true.
-```js
-const configuration = { features: { requestUri: Boolean[true] } };
-```
-
-To disable require_request_uri_registration configure requestUri as an object like so:
-```js
-const configuration = { features: { requestUri: { requireRequestUriRegistration: false } } };
-```
-
-**Introspection endpoint**  
-Enables the use of Introspection endpoint as described in [RFC7662][introspection] for
-tokens of type AccessToken, ClientCredentials and RefreshToken. When enabled the
-introspection_endpoint property of the discovery endpoint is published, otherwise the property
-is not sent. The use of this endpoint is covered by the same authz mechanism as the regular token
-endpoint or `introspection_endpoint_auth_method` and `introspection_endpoint_auth_signing_alg` if
-defined on a client.
-
-```js
-const configuration = { features: { introspection: Boolean[false] } };
-```
-
-This feature is a recommended way for Resource Servers to validate presented Bearer tokens, since
-the token endpoint access must be authorized it is recommended to setup a client for the RS to
-use. This client should be unusable for standard authorization flow, to set up such a client provide
-grant_types, response_types and redirect_uris as empty arrays.
-
-**JWT Response for OAuth Token Introspection**  
-Enables additional JSON Web Token responses for OAuth 2.0 Token Introspection as defined by
-[JWT Response for OAuth Token Introspection - draft 01][jwt-introspection]
-
-const configuration = { features: { introspection: true, jwtIntrospection: Boolean[false] } };
-```
-
-
-**Revocation endpoint**  
-Enables the use of Revocation endpoint as described in [RFC7009][revocation] for tokens of
-type AccessToken, ClientCredentials and RefreshToken. When enabled the
-revocation_endpoint property of the discovery endpoint is published, otherwise the property
-is not sent. The use of this endpoint is covered by the same authz mechanism as the regular token
-endpoint or `revocation_endpoint_auth_method` and `revocation_endpoint_auth_signing_alg` if
-defined on a client.
-```js
-const configuration = { features: { revocation: Boolean[false] } };
-```
-
-
-**OAuth 2.0 Native Apps Best Current Practice**
-Changes `redirect_uris` validations for clients with application_type `native` to those defined in
-[OAuth 2.0 for Native Apps][oauth-native-apps]. If PKCE is not enabled it will be force-enabled
-automatically.
-```js
-const configuration = { features: { oauthNativeApps: Boolean[true] } };
-```
-
-
-**Session management features**  
-Enables features described in [Session Management 1.0 - draft 28][session-management].
-```js
-const configuration = { features: { sessionManagement: Boolean[false] } };
-```
-
-To disable removing frame-ancestors from Content-Security-Policy and X-Frame-Options in
-`check_session_iframe` calls because you know what you're doing with them, set:
-```js
-const configuration = { features: { sessionManagement: { keepHeaders: true } } };
-```
-
-In order for the Session Management features to avoid endless `"changed"` events, the User-Agent
-must allow access to Third-Party cookies. oidc-provider checks if this is enabled
-using a [CDN hosted](https://rawgit.com/) [iframe][third-party-cookies-git].
-It is recommended to host these helper pages on your own
-(on a different domain from the one you host oidc-provider on). Once hosted, set the
-`cookies.thirdPartyCheckUrl` to an absolute URL for the start page. See [this][third-party-cookies-so] for more info.
-
-**Back-Channel Logout features**  
-Enables features described in [Back-Channel Logout 1.0 - draft 04][backchannel-logout].
-```js
-const configuration = { features: { sessionManagement: true, backchannelLogout: Boolean[false] } };
-```
-
-
-**Front-Channel Logout features**  
-Enables features described in [Front-Channel Logout 1.0 - draft 02][frontchannel-logout].
-```js
-const configuration = { features: { sessionManagement: true, frontchannelLogout: Boolean[false] } };
-```
-
-
-**Dynamic registration features**  
-Enables features described in [Dynamic Client Registration 1.0][registration].
-```js
-const configuration = { features: { registration: Boolean[false] } };
-```
-
-To provide your own client_id value factory:
-```js
-const configuration = { features: { registration: { idFactory: () => randomValue() } } };
-```
-
-To provide your own client_secret value factory:
-```js
-const configuration = { features: { registration: { secretFactory: () => randomValue() } } };
-```
-
-To enable a fixed Initial Access Token for the registration POST call configure registration to be
-an object like so:
-```js
-const configuration = { features: { registration: { initialAccessToken: 'tokenValue' } } };
-```
-
-To enable a Initial Access Token lookup from your storage (via an Adapter of course) configure
-registration to be an object like so:
-```js
-const configuration = { features: { registration: { initialAccessToken: true } } };
-
-// adding a token and retrieving its value
-new (provider.InitialAccessToken)({}).save().then(console.log);
-```
-
-**Dynamic registration management features**  
-Enables Update and Delete features described in
-[OAuth 2.0 Dynamic Client Registration Management Protocol][registration-management].
-```js
-const configuration = { features: { registration: true, registrationManagement: Boolean[false] } };
-```
-
-To have your provider discard the used and issue new RegistrationAccessToken with a successful update
-configure registrationManagement as an object like so:
-```js
-const configuration = { features: { ..., registrationManagement: { rotateRegistrationAccessToken: true } } };
-```
-
-**PKCE**  
-Enables [RFC7636 - Proof Key for Code Exchange by OAuth Public Clients][pkce]
-```js
-const configuration = { features: { pkce: Boolean[true] } };
-```
-
-To have native clients using code or hybrid flow forced to use pkce configure pkce as an object
-like so:
-```js
-const configuration = { features: { pkce: { forcedForNative: true } } };
-```
-
-To fine-tune the supported methods:
-```js
-const configuration = { features: { pkce: { supportedMethods: ['plain', 'S256'] } } };
-```
-
-**Web Message Response Mode**  
-Enables [OAuth 2.0 Web Message Response Mode][wmrm]
-```js
-const configuration = { features: { webMessageResponseMode: Boolean[false] } };
-```
-Note: Although a general advise to use a `helmet`([express](https://www.npmjs.com/package/helmet),
-[koa](https://www.npmjs.com/package/koa-helmet)) it is especially advised for your interaction views
-routes if Web Message Response Mode is available on your deployment.
-
-**Device Flow for Browserless and Input Constrained Devices**  
-Enables [OAuth 2.0 Device Flow for Browserless and Input Constrained Devices][device-flow]
-```js
-const configuration = { features: { deviceCode: Boolean[false] } };
-```
-
-
-
 ## Custom Grant Types
 oidc-provider comes with the basic grants implemented, but you can register your own grant types,
 for example to implement a [password grant type][password-grant] or
@@ -963,7 +727,404 @@ const oidc = new Provider('http://localhost:3000', {
 
 ## Configuration options
 
+<!-- DO NOT EDIT, COMMIT OR STAGE CHANGES BELOW THIS LINE -->
 <!-- START CONF OPTIONS -->
+### features
+
+Enable/disable features.  
+
+<details>
+  <summary><em><strong>default value</strong></em> (Click to expand)</summary>
+  <br>
+
+```js
+{ devInteractions: true,
+  discovery: true,
+  requestUri: true,
+  oauthNativeApps: true,
+  pkce: true,
+  alwaysIssueRefresh: false,
+  backchannelLogout: false,
+  claimsParameter: false,
+  clientCredentials: false,
+  conformIdTokenClaims: false,
+  deviceCode: false,
+  encryption: false,
+  frontchannelLogout: false,
+  introspection: false,
+  jwtIntrospection: false,
+  registration: false,
+  registrationManagement: false,
+  request: false,
+  revocation: false,
+  sessionManagement: false,
+  webMessageResponseMode: false }
+```
+
+</details>
+
+
+### features.backchannelLogout
+
+[Back-Channel Logout 1.0 - draft 04](https://openid.net/specs/openid-connect-backchannel-1_0-04.html)  
+
+Enables Back-Channel Logout features.   
+  
+
+
+_**default value**_:
+```js
+false
+```
+
+### features.claimsParameter
+
+[Core 1.0](https://openid.net/specs/openid-connect-core-1_0.html#rfc.section.5.5) - Requesting Claims using the "claims" Request Parameter  
+
+Enables the use and validations of `claims` parameter as described in the specification.   
+  
+
+
+_**default value**_:
+```js
+false
+```
+
+### features.clientCredentials
+
+[RFC6749](https://tools.ietf.org/html/rfc6749#section-1.3.4) - Client Credentials  
+
+Enables `grant_type=client_credentials` to be used on the token endpoint.  
+
+
+_**default value**_:
+```js
+false
+```
+
+### features.devInteractions
+
+Development-ONLY out of the box interaction views bundled with the library allow you to skip the boring frontend part while experimenting with oidc-provider. Enter any username (will be used as sub claim value) and any password to proceed.   
+ Be sure to disable and replace this feature with your actual frontend flows and End-User authentication flows as soon as possible. These views are not meant to ever be seen by actual users.  
+
+
+_**default value**_:
+```js
+true
+```
+
+### features.deviceCode
+
+[draft-ietf-oauth-device-flow-12](https://tools.ietf.org/html/draft-ietf-oauth-device-flow-12) - Device Flow for Browserless and Input Constrained Devices  
+
+Enables Device Flow features  
+
+
+_**default value**_:
+```js
+false
+```
+
+### features.discovery
+
+[Discovery 1.0](https://openid.net/specs/openid-connect-discovery-1_0.html)  
+
+Exposes `/.well-known/webfinger` and `/.well-known/openid-configuration` endpoints. Contents of the latter reflect your actual configuration, i.e. Available claims, features and so on.   
+ WebFinger always returns positive results and links to this issuer, it is not resolving the resources in any way.  
+
+
+_**default value**_:
+```js
+true
+```
+
+### features.encryption
+
+Enables encryption features such as receiving encrypted UserInfo responses, encrypted ID Tokens and allow receiving encrypted Request Objects.  
+
+
+_**default value**_:
+```js
+false
+```
+
+### features.frontchannelLogout
+
+[Front-Channel Logout 1.0 - draft 02](https://openid.net/specs/openid-connect-frontchannel-1_0-02.html)  
+
+Enables Front-Channel Logout features  
+
+
+_**default value**_:
+```js
+false
+```
+
+### features.introspection
+
+[RFC7662](https://tools.ietf.org/html/rfc7662) - OAuth 2.0 Token Introspection  
+
+Enables Token Introspection features   
+  
+
+
+_**default value**_:
+```js
+false
+```
+
+### features.jwtIntrospection
+
+[draft-ietf-oauth-jwt-introspection-response-00](https://tools.ietf.org/html/draft-ietf-oauth-jwt-introspection-response-00) - JWT Response for OAuth Token Introspection  
+
+Enables JWT responses for Token Introspection features   
+  
+
+
+_**default value**_:
+```js
+false
+```
+
+### features.oauthNativeApps
+
+[RFC8252](https://tools.ietf.org/html/rfc8252) - OAuth 2.0 Native Apps Best Current Practice  
+
+Changes `redirect_uris` validations for clients with application_type `native` to those defined in the RFC. If PKCE is not enabled it will be force-enabled automatically.  
+
+
+_**default value**_:
+```js
+true
+```
+
+### features.pkce
+
+[RFC7636](https://tools.ietf.org/html/rfc7636) - Proof Key for Code Exchange by OAuth Public Clients  
+
+Enables PKCE.   
+   
+  
+
+
+_**default value**_:
+```js
+true
+```
+<details>
+  <summary>(Click to expand) To force native clients to use PKCE</summary>
+  <br>
+
+
+Configure `features.pkce` with an object like so instead of a Boolean value.
+  
+
+```js
+{ forcedForNative: true }
+```
+</details>
+<details>
+  <summary>(Click to expand) To fine-tune the supported code challenge methods</summary>
+  <br>
+
+
+Configure `features.pkce` with an object like so instead of a Boolean value.
+  
+
+```js
+{ supportedMethods: ['plain', 'S256'] }
+```
+</details>
+
+### features.registration
+
+[Dynamic Client Registration 1.0](https://openid.net/specs/openid-connect-registration-1_0.html)  
+
+Enables Dynamic Client Registration, by default with no Initial Access Token.   
+  
+
+
+_**default value**_:
+```js
+false
+```
+<details>
+  <summary>(Click to expand) To enable a fixed Initial Access Token for the registration POST call</summary>
+  <br>
+
+
+Configure `features.registration` to be an object like so:
+  
+
+```js
+{ initialAccessToken: 'tokenValue' }
+```
+</details>
+<details>
+  <summary>(Click to expand) To provide your own client_id value generator:
+</summary>
+  <br>
+
+```js
+{ idFactory: () => randomValue() }
+```
+</details>
+<details>
+  <summary>(Click to expand) To provide your own client_secret value generator:
+</summary>
+  <br>
+
+```js
+{ secretFactory: () => randomValue() }
+```
+</details>
+<details>
+  <summary>(Click to expand) To enable a Initial Access Token lookup from your Adapter's store</summary>
+  <br>
+
+
+Configure `features.registration` to be an object like so:
+  
+
+```js
+{ initialAccessToken: true }
+```
+</details>
+<details>
+  <summary>(Click to expand) To add an Initial Access Token and retrive its value
+</summary>
+  <br>
+
+```js
+new (provider.InitialAccessToken)({}).save().then(console.log);
+```
+</details>
+
+### features.registrationManagement
+
+[OAuth 2.0 Dynamic Client Registration Management Protocol](https://tools.ietf.org/html/rfc7592)  
+
+Enables Update and Delete features described in the RFC, by default with no rotating Registration Access Token.   
+  
+
+
+_**default value**_:
+```js
+false
+```
+<details>
+  <summary>(Click to expand) To have your provider rotate the Registration Access Token with a successful update</summary>
+  <br>
+
+
+Configure `features.registrationManagement` as an object like so:
+  
+
+```js
+{ rotateRegistrationAccessToken: true }
+```
+The provider will discard the current Registration Access Token with a successful update and issue a new one, returning it to the client with the Registration Update Response.  
+
+
+</details>
+
+### features.request
+
+[Core 1.0](https://openid.net/specs/openid-connect-core-1_0.html#rfc.section.6.1) - Passing a Request Object by Value  
+
+Enables the use and validations of `request` parameter  
+
+
+_**default value**_:
+```js
+false
+```
+
+### features.requestUri
+
+[Core 1.0](https://openid.net/specs/openid-connect-core-1_0.html#rfc.section.6.2) - Passing a Request Object by Reference  
+
+Enables the use and validations of `request_uri` parameter   
+  
+
+
+_**default value**_:
+```js
+true
+```
+<details>
+  <summary>(Click to expand) To disable request_uri pre-registration</summary>
+  <br>
+
+
+Configure `features.requestUri` with an object like so instead of a Boolean value.
+  
+
+```js
+{ requireRequestUriRegistration: false }
+```
+</details>
+
+### features.revocation
+
+[RFC7009](https://tools.ietf.org/html/rfc7009) - OAuth 2.0 Token Revocation  
+
+Enables Token Revocation   
+  
+
+
+_**default value**_:
+```js
+false
+```
+
+### features.sessionManagement
+
+[Session Management 1.0 - draft 28](https://openid.net/specs/openid-connect-session-1_0-28.html)  
+
+Enables Session Management features.   
+  
+
+
+_**default value**_:
+```js
+false
+```
+<details>
+  <summary>(Click to expand) [RECOMMENDED] To avoid endless "changed" events when Third-Party Cookies are disabled</summary>
+  <br>
+
+
+The User-Agent must allow access to the provider cookies from a third-party context when the OP frame is embedded. Oidc-provider checks if this is enabled using a [CDN hosted](https://rawgit.com/) [iframe][third-party-cookies-git]. It is recommended to host these helper pages on your own (on a different domain from the one you host oidc-provider on). Once hosted, set the `cookies.thirdPartyCheckUrl` to an absolute URL for the start page. See [this][third-party-cookies-so] for more info. Note: This is still just a best-effort solution and is in no way bulletproof. Currently there's no better way to check if access to third party cookies has been blocked or the cookies are just missing. (ITP2.0 Storage Access API is also not an option)  
+
+
+</details>
+<details>
+  <summary>(Click to expand) To disable removing frame-ancestors from Content-Security-Policy and X-Frame-Options</summary>
+  <br>
+
+
+Only do this if you know what you're doing either in a followup middleware or your app server, otherwise you shouldn't have the need to touch this option. Configure `features.sessionManagement` as an object like so:
+  
+
+```js
+{ keepHeaders: true }
+```
+</details>
+
+### features.webMessageResponseMode
+
+[draft-sakimura-oauth-wmrm-00](https://tools.ietf.org/html/draft-sakimura-oauth-wmrm-00) - OAuth 2.0 Web Message Response Mode  
+
+Enables `web_message` response mode.   
+ Note: Although a general advise to use a `helmet` ([express](https://www.npmjs.com/package/helmet), [koa](https://www.npmjs.com/package/koa-helmet)) it is especially advised for your interaction views routes if Web Message Response Mode is available on your deployment.  
+
+
+_**default value**_:
+```js
+false
+```
+
 ### acrValues
 
 Array of strings, the Authentication Context Class References that OP supports.  
@@ -980,8 +1141,10 @@ _**default value**_:
 Helper used by the OP to push additional audiences to issued ID, Access and ClientCredentials Tokens as well as other signed responses. The return value should either be falsy to omit adding additional audiences or an array of strings to push.  
 
 _**affects**_: ID Token audiences, access token audiences, client credential audiences, signed UserInfo audiences  
+<details>
+  <summary><em><strong>default value</strong></em> (Click to expand)</summary>
+  <br>
 
-_**default value**_:
 ```js
 async audiences(ctx, sub, token, use, scope) {
   // @param ctx   - koa request context
@@ -994,6 +1157,9 @@ async audiences(ctx, sub, token, use, scope) {
   return undefined;
 }
 ```
+
+</details>
+
 
 ### claims
 
@@ -1036,7 +1202,7 @@ _**default value**_:
 
 ### cookies
 
-Options for the [cookie module][module-cookies] used by the OP to keep track of various User-Agent states.  
+Options for the [cookie module](https://github.com/pillarjs/cookies#cookiesset-name--value---options--) used by the OP to keep track of various User-Agent states.  
 
 _**affects**_: User-Agent sessions, passing of authorization details to interaction  
 
@@ -1111,8 +1277,10 @@ _**default value**_:
 HTML source rendered when device code feature renders a success page for the User-Agent.  
 
 _**affects**_: device code success page  
+<details>
+  <summary><em><strong>default value</strong></em> (Click to expand)</summary>
+  <br>
 
-_**default value**_:
 ```js
 async deviceCodeSuccess(ctx) {
   // @param ctx - koa request context
@@ -1134,13 +1302,18 @@ async deviceCodeSuccess(ctx) {
 }
 ```
 
+</details>
+
+
 ### discovery
 
 Pass additional properties to this object to extend the discovery document  
 
 _**affects**_: discovery  
+<details>
+  <summary><em><strong>default value</strong></em> (Click to expand)</summary>
+  <br>
 
-_**default value**_:
 ```js
 { claim_types_supported: [ 'normal' ],
   claims_locales_supported: undefined,
@@ -1150,6 +1323,9 @@ _**default value**_:
   service_documentation: undefined,
   ui_locales_supported: undefined }
 ```
+
+</details>
+
 
 ### dynamicScopes
 
@@ -1161,6 +1337,21 @@ _**default value**_:
 ```js
 []
 ```
+<details>
+  <summary>(Click to expand) Example: To enable a dynamic scope values like `write:{hex id}` and `read:{hex id}`</summary>
+  <br>
+
+
+Configure `dynamicScopes` like so:
+  
+
+```js
+[
+  /^write:[a-fA-F0-9]{2,}$/,
+  /^read:[a-fA-F0-9]{2,}$/,
+]
+```
+</details>
 
 ### extraClientMetadata
 
@@ -1182,8 +1373,10 @@ _**default value**_:
 
 validator function that will be executed in order once for every property defined in `extraClientMetadata.properties`, regardless of its value or presence on the client metadata passed in. Must be synchronous, async validators or functions returning Promise will be rejected during runtime. To modify the current client metadata values (for current key or any other) just modify the passed in `metadata` argument.  
 
+<details>
+  <summary><em><strong>default value</strong></em> (Click to expand)</summary>
+  <br>
 
-_**default value**_:
 ```js
 validator(key, value, metadata) {
   // validations for key, value, other related metadata
@@ -1194,9 +1387,12 @@ validator(key, value, metadata) {
 }
 ```
 
+</details>
+
+
 ### extraParams
 
-Pass an iterable object (i.e. Array or set of strings) to extend the parameters recognised by the authorization and device authorization endpoints. These parameters are then available in `ctx.oidc.params` as well as passed to interaction session details  
+Pass an iterable object (i.e. Array or Set of strings) to extend the parameters recognised by the authorization and device authorization endpoints. These parameters are then available in `ctx.oidc.params` as well as passed to interaction session details  
 
 _**affects**_: authorization, device_authorization, interaction  
 
@@ -1205,43 +1401,15 @@ _**default value**_:
 []
 ```
 
-### features
-
-Enable/disable features, see configuration.md for more details  
-
-
-_**default value**_:
-```js
-{ devInteractions: true,
-  discovery: true,
-  requestUri: true,
-  oauthNativeApps: true,
-  pkce: true,
-  alwaysIssueRefresh: false,
-  backchannelLogout: false,
-  claimsParameter: false,
-  clientCredentials: false,
-  conformIdTokenClaims: false,
-  deviceCode: false,
-  encryption: false,
-  frontchannelLogout: false,
-  introspection: false,
-  jwtIntrospection: false,
-  registration: false,
-  registrationManagement: false,
-  request: false,
-  revocation: false,
-  sessionManagement: false,
-  webMessageResponseMode: false }
-```
-
 ### findById
 
 Helper used by the OP to load an account and retrieve its available claims. The return value should be a Promise and #claims() can return a Promise too  
 
 _**affects**_: authorization, authorization_code and refresh_token grants, ID Token claims  
+<details>
+  <summary><em><strong>default value</strong></em> (Click to expand)</summary>
+  <br>
 
-_**default value**_:
 ```js
 async findById(ctx, sub, token) {
   // @param ctx - koa request context
@@ -1267,17 +1435,22 @@ async findById(ctx, sub, token) {
 }
 ```
 
+</details>
+
+
 ### formats
 
-This option allows to configure the token storage and value formats. The different values change how a token value is generated as well as what properties get sent to the adapter for storage. Three formats are defined, see the expected [Adapter API](/example/my_adapter.js) for each format's specifics.
+This option allows to configure the token storage and value formats. The different values change how a token value is generated as well as what properties get sent to the adapter for storage. Three formats are defined, see the expected [Adapter API](/example/my_adapter.js) for each format's specifics.   
  - `legacy` is the current and default format until next major release. No changes in the format sent to adapter.
  - `opaque` formatted tokens have a different value then `legacy` and in addition store what was in legacy format encoded under `payload` as root properties, this makes analysing the data in your storage way easier
  - `jwt` formatted tokens are issued as JWTs and stored the same as `opaque` only with additional property `jwt`. The signing algorithm for these tokens uses the client's `id_token_signed_response_alg` value and falls back to `RS256` for tokens with no relation to a client or when the client's alg is `none`  
 
 _**affects**_: properties passed to adapters for token types, issued token formats  
 _**recommendation**_: set default to `opaque` if you're still developing your application, `legacy` will not be the default in the major versions coming forward. It is not recommended to set `jwt` as default, if you need it, it's most likely just for Access Tokens.  
+<details>
+  <summary><em><strong>default value</strong></em> (Click to expand)</summary>
+  <br>
 
-_**default value**_:
 ```js
 { default: 'legacy',
   AccessToken: undefined,
@@ -1289,13 +1462,42 @@ _**default value**_:
   RegistrationAccessToken: undefined }
 ```
 
+</details>
+
+<details>
+  <summary>(Click to expand) [RECOMMENDED] If you're starting from scratch</summary>
+  <br>
+
+
+Do yourself a favour and disable the deprecated legacy format.
+  
+
+```js
+{ default: 'opaque' }
+```
+</details>
+<details>
+  <summary>(Click to expand) To enable JWT Access Tokens</summary>
+  <br>
+
+
+Configure `formats`:
+  
+
+```js
+{ default: 'opaque', AccessToken: 'jwt' }
+```
+</details>
+
 ### frontchannelLogoutPendingSource
 
 HTML source rendered when there are pending front-channel logout iframes to be called to trigger RP logouts. It should handle waiting for the frames to be loaded as well as have a timeout mechanism in it.  
 
 _**affects**_: session management  
+<details>
+  <summary><em><strong>default value</strong></em> (Click to expand)</summary>
+  <br>
 
-_**default value**_:
 ```js
 async frontchannelLogoutPendingSource(ctx, frames, postLogoutRedirectUri, timeout) {
   ctx.body = `<!DOCTYPE html>
@@ -1324,13 +1526,18 @@ ${frames.join('')}
 }
 ```
 
+</details>
+
+
 ### interactionCheck
 
 Helper used by the OP as a final check whether the End-User should be sent to interaction or not, the default behavior is that every RP must be authorized per session and that native application clients always require End-User prompt to be confirmed. Return false if no interaction should be performed, return an object with relevant error, reason, etc. When interaction should be requested  
 
 _**affects**_: authorization interactions  
+<details>
+  <summary><em><strong>default value</strong></em> (Click to expand)</summary>
+  <br>
 
-_**default value**_:
 ```js
 async interactionCheck(ctx) {
   if (!ctx.oidc.session.sidFor(ctx.oidc.client.clientId)) {
@@ -1374,6 +1581,9 @@ async interactionCheck(ctx) {
 }
 ```
 
+</details>
+
+
 ### interactionUrl
 
 Helper used by the OP to determine where to redirect User-Agent for necessary interaction, can return both absolute and relative urls  
@@ -1407,8 +1617,10 @@ _**default value**_:
 HTML source rendered when when session management feature renders a confirmation prompt for the User-Agent.  
 
 _**affects**_: session management  
+<details>
+  <summary><em><strong>default value</strong></em> (Click to expand)</summary>
+  <br>
 
-_**default value**_:
 ```js
 async logoutSource(ctx, form) {
   // @param ctx - koa request context
@@ -1445,6 +1657,9 @@ async logoutSource(ctx, form) {
 </html>`;
 }
 ```
+
+</details>
+
 
 ### pairwiseSalt
 
@@ -1499,8 +1714,10 @@ _**default value**_:
 Helper used by the OP to present errors to the User-Agent  
 
 _**affects**_: presentation of errors encountered during End-User flows  
+<details>
+  <summary><em><strong>default value</strong></em> (Click to expand)</summary>
+  <br>
 
-_**default value**_:
 ```js
 async renderError(ctx, out, error) {
   ctx.type = 'html';
@@ -1519,13 +1736,18 @@ async renderError(ctx, out, error) {
 }
 ```
 
+</details>
+
+
 ### responseTypes
 
 List of response_type values that OP supports  
 
 _**affects**_: authorization, discovery, registration, registration management  
+<details>
+  <summary><em><strong>default value</strong></em> (Click to expand)</summary>
+  <br>
 
-_**default value**_:
 ```js
 [ 'code id_token token',
   'code id_token',
@@ -1535,6 +1757,9 @@ _**default value**_:
   'id_token',
   'none' ]
 ```
+
+</details>
+
 
 ### revocationEndpointAuthMethods
 
@@ -1556,8 +1781,10 @@ _**default value**_:
 Routing values used by the OP. Only provide routes starting with "/"  
 
 _**affects**_: routing  
+<details>
+  <summary><em><strong>default value</strong></em> (Click to expand)</summary>
+  <br>
 
-_**default value**_:
 ```js
 { authorization: '/auth',
   certificates: '/certs',
@@ -1571,6 +1798,9 @@ _**default value**_:
   userinfo: '/me',
   code_verification: '/device' }
 ```
+
+</details>
+
 
 ### scopes
 
@@ -1616,8 +1846,10 @@ _**default value**_:
 Expirations (in seconds) for all token types  
 
 _**affects**_: tokens  
+<details>
+  <summary><em><strong>default value</strong></em> (Click to expand)</summary>
+  <br>
 
-_**default value**_:
 ```js
 { AccessToken: 3600,
   AuthorizationCode: 600,
@@ -1626,6 +1858,9 @@ _**default value**_:
   IdToken: 3600,
   RefreshToken: 1209600 }
 ```
+
+</details>
+
 
 ### uniqueness
 
@@ -1648,8 +1883,10 @@ async uniqueness(ctx, jti, expiresAt) {
 Fine-tune the algorithms your provider should support by further omitting values from the respective discovery properties  
 
 _**affects**_: signing, encryption, discovery, client validation  
+<details>
+  <summary><em><strong>default value</strong></em> (Click to expand)</summary>
+  <br>
 
-_**default value**_:
 ```js
 { idTokenEncryptionAlgValues: [],
   idTokenEncryptionEncValues: [],
@@ -1668,13 +1905,18 @@ _**default value**_:
   introspectionSigningAlgValues: [] }
 ```
 
+</details>
+
+
 ### userCodeConfirmSource
 
 HTML source rendered when device code feature renders an a confirmation prompt for ther User-Agent.  
 
 _**affects**_: device code authorization confirmation  
+<details>
+  <summary><em><strong>default value</strong></em> (Click to expand)</summary>
+  <br>
 
-_**default value**_:
 ```js
 async userCodeConfirmSource(ctx, form, client, deviceInfo) {
   // @param ctx - koa request context
@@ -1708,13 +1950,18 @@ async userCodeConfirmSource(ctx, form, client, deviceInfo) {
 }
 ```
 
+</details>
+
+
 ### userCodeInputSource
 
 HTML source rendered when device code feature renders an input prompt for the User-Agent.  
 
 _**affects**_: device code input  
+<details>
+  <summary><em><strong>default value</strong></em> (Click to expand)</summary>
+  <br>
 
-_**default value**_:
 ```js
 async userCodeInputSource(ctx, form, out, err) {
   // @param ctx - koa request context
@@ -1748,23 +1995,16 @@ async userCodeInputSource(ctx, form, out, err) {
 </html>`;
 }
 ```
+
+</details>
+
 <!-- END CONF OPTIONS -->
 
 [client-metadata]: https://openid.net/specs/openid-connect-registration-1_0.html#ClientMetadata
 [core-account-claims]: https://openid.net/specs/openid-connect-core-1_0.html#ScopeClaims
-[core-scopes]: https://openid.net/specs/openid-connect-core-1_0.html#ScopeClaims
 [core-offline-access]: https://openid.net/specs/openid-connect-core-1_0.html#OfflineAccess
-[core-claims]: https://openid.net/specs/openid-connect-core-1_0.html#ClaimsParameter
 [core-jwt-parameters]: https://openid.net/specs/openid-connect-core-1_0.html#JWTRequests
-[core-aggregated-distributed-claims]: https://openid.net/specs/openid-connect-core-1_0.html#AggregatedDistributedClaims
-[backchannel-logout]: https://openid.net/specs/openid-connect-backchannel-1_0-04.html
-[frontchannel-logout]: https://openid.net/specs/openid-connect-frontchannel-1_0-02.html
-[pkce]: https://tools.ietf.org/html/rfc7636
-[introspection]: https://tools.ietf.org/html/rfc7662
-[registration-management]: https://tools.ietf.org/html/rfc7592
-[registration]: https://openid.net/specs/openid-connect-registration-1_0.html
 [revocation]: https://tools.ietf.org/html/rfc7009
-[oauth-native-apps]: https://tools.ietf.org/html/rfc8252
 [session-management]: https://openid.net/specs/openid-connect-session-1_0-28.html
 [got-library]: https://github.com/sindresorhus/got
 [request-library]: https://github.com/request/request
@@ -1775,6 +2015,3 @@ async userCodeInputSource(ctx, form, out, err) {
 [keygrip-module]: https://www.npmjs.com/package/keygrip
 [third-party-cookies-git]: https://github.com/mindmup/3rdpartycookiecheck
 [third-party-cookies-so]: https://stackoverflow.com/questions/3550790/check-if-third-party-cookies-are-enabled/7104048#7104048
-[wmrm]: https://tools.ietf.org/html/draft-sakimura-oauth-wmrm-00
-[device-flow]: https://tools.ietf.org/html/draft-ietf-oauth-device-flow-12
-[jwt-introspection]: https://tools.ietf.org/html/draft-ietf-oauth-jwt-introspection-response-01

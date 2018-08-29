@@ -20,12 +20,24 @@ class Block {
       while (buffer.indexOf('*') === 0 || buffer.indexOf(' ') === 0) {
         buffer = buffer.slice(1);
       }
-      if (buffer.indexOf('-') === 0) {
-        const last = this[this.active].pop();
-        this[this.active].push(Buffer.concat([last, Buffer.from('\n')]));
+
+      if (buffer.indexOf('@indent@') === 0) {
+        buffer = buffer.slice(10);
       }
+
+      if (buffer.indexOf('-') === 0 || buffer.indexOf('```') !== -1 || buffer.indexOf('|') === 0) {
+        const last = this[this.active].pop();
+        if (last.toString().endsWith('\n')) {
+          this[this.active].push(last);
+        } else {
+          this[this.active].push(Buffer.concat([last, Buffer.from('\n')]));
+        }
+      }
+
       if (buffer.length) {
         this[this.active].push(buffer);
+      } else if (this.active === 'description') {
+        this[this.active].push(Buffer.from('  \n'));
       }
     }
   }
@@ -34,8 +46,11 @@ class Block {
 const props = [
   'description',
   'affects',
+  'title',
   'recommendation',
+  'example',
   '@nodefault',
+  '@skip',
 ];
 
 (async () => {
@@ -45,10 +60,25 @@ const props = [
     let nextIsOption;
     let inBlock;
     let option;
+    let inTicks;
 
     read.on('line', (line) => {
-      const strLine = line.trim();
+      let strLine = line.trim();
+
+      if (strLine.endsWith('```js')) {
+        inTicks = true;
+      }
+
+      if (strLine.endsWith('```')) {
+        inTicks = false;
+      }
+
+      if (inTicks) {
+        strLine = `@indent@${strLine}\n`;
+      }
+
       line = Buffer.from(strLine);
+
 
       if (strLine.startsWith('/*')) {
         inBlock = true;
@@ -66,7 +96,14 @@ const props = [
 
       const next = props.find((prop) => {
         if (strLine.substring(2, 2 + prop.length) === prop) {
-          option.active = prop;
+          let override;
+          if (prop === 'example' && option.example) {
+            const i = Math.max(...Object.keys(option)
+              .filter(p => p.startsWith('example'))
+              .map(e => parseInt(e.slice(-1), 10) || 0));
+            override = `example${i + 1}`;
+          }
+          option.active = override || prop;
           option.write(line.slice(prop.length + 4));
           return true;
         }
@@ -99,33 +136,72 @@ const props = [
     mid = Buffer.concat([mid, Buffer.from(what)]);
   }
 
-  Object.keys(blocks).sort().forEach((block) => {
-    append(`\n### ${block}\n\n`);
-    if (blocks[block].description) {
-      append(`${capitalizeSentences(blocks[block].description.join(' '))}  \n\n`);
+  function expand(what) {
+    const lines = what.split('\n').length;
+    what = '```js\n' + what + '\n```\n';
+    if (lines > 5) {
+      return `<details>\n  <summary><em><strong>default value</strong></em> (Click to expand)</summary>\n  <br>\n\n${what}\n</details>\n\n`;
     }
+
+    append('\n_**default value**_:\n');
+    return what;
+  }
+
+  let count = 0;
+  const configuration = Object.keys(blocks).sort().reduce((acc, key) => {
+    if (!key) return acc;
+    if (key.startsWith('features')) {
+      count += 1;
+      acc.unshift(key);
+    } else {
+      acc.push(key);
+    }
+    return acc;
+  }, []);
+
+  const features = configuration.splice(0, count).sort();
+  for (const block of [...features, ...configuration]) { // eslint-disable-line no-restricted-syntax
+    const section = blocks[block];
+
+    if ('@skip' in section) {
+      continue; // eslint-disable-line no-continue
+    }
+
+    append(`\n### ${block}\n\n`);
+    if (section.title) {
+      append(`${section.title}  \n\n`);
+    }
+
+    if (section.description) {
+      append(`${capitalizeSentences(section.description.join(' '))}  \n\n`);
+    }
+
     ['affects', 'recommendation'].forEach((option) => {
-      if (blocks[block][option]) {
-        append(`_**${option}**_: ${blocks[block][option].join(' ')}  \n`);
+      if (section[option]) {
+        append(`_**${option}**_: ${section[option].join(' ')}  \n`);
       }
     });
-    if (!('@nodefault' in blocks[block])) {
-      append('\n_**default value**_:\n');
-      append('```js\n');
+
+    if (!('@nodefault' in section)) {
       const value = get(values, block);
       switch (typeof value) {
         case 'boolean':
         case 'number':
+          append('\n_**default value**_:\n');
+          append('```js\n');
           append(`${String(value)}`);
+          append('\n```\n');
           break;
         case 'string':
-        case 'object':
-          append(inspect(value));
+        case 'object': {
+          const output = inspect(value);
+          append(expand(output));
           break;
+        }
         case 'function': {
           let fixIndent;
           let mute = false;
-          append(String(value).split('\n').map((line, index) => {
+          append(expand(String(value).split('\n').map((line, index) => {
             if (index === 1) {
               line.match(/^(\s+)\S+/);
               fixIndent = RegExp.$1.length - 2;
@@ -149,15 +225,52 @@ const props = [
             if (mute) return undefined;
             return line;
           }).filter(Boolean)
-            .join('\n'));
+            .join('\n')));
           break;
         }
         default:
-          throw new Error(`unexpected value type ${typeof value}`);
+          throw new Error(`unexpected value type ${typeof value} for ${block}`);
       }
-      append('\n```\n');
     }
-  });
+
+    Object.keys(section).filter(p => p.startsWith('example')).forEach((prop) => {
+      const [title, ...content] = section[prop];
+      append(`<details>\n  <summary>(Click to expand) ${title}</summary>\n  <br>\n\n`);
+
+      const parts = [];
+      let incode;
+      for (const line of content) { // eslint-disable-line no-restricted-syntax
+        const backticks = line.indexOf('```') !== -1;
+        if (incode) {
+          parts[parts.length - 1].push(line);
+          if (backticks) {
+            incode = false;
+          }
+          continue; // eslint-disable-line no-continue
+        }
+
+        if (backticks) {
+          incode = true;
+          parts.push([line]);
+        } else {
+          parts.push(line);
+        }
+      }
+
+      while (parts.length) {
+        const until = parts.findIndex(p => Array.isArray(p));
+        if (until === 0) {
+          const lines = parts.shift();
+          lines.forEach(append);
+        } else {
+          const lines = parts.splice(0, until === -1 ? parts.length : until);
+          append(`\n${capitalizeSentences(lines.join(' '))}  \n\n`);
+        }
+      }
+
+      append('\n</details>\n');
+    });
+  }
 
   const conf = readFileSync('./docs/configuration.md');
 
