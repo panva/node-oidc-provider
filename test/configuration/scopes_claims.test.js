@@ -30,16 +30,23 @@ describe('custom claims', () => {
   });
 
   it('detects new scopes from claims definition', () => {
-    const provider = new Provider('https://op.example.com', {
-      claims: {
-        insurance: ['company_name', 'coverage'],
-        payment: {
-          preferred_method: null,
-        },
+    const foo = /^foo:\d+$/;
+    const bar = /^bar:\d+$/;
+    const claims = new Map(Object.entries({
+      insurance: ['company_name', 'coverage'],
+      payment: {
+        preferred_method: null,
       },
+    }));
+    claims.set(foo, ['foo']);
+    claims.set(foo, { bar: null });
+
+    const provider = new Provider('https://op.example.com', {
+      claims,
     });
 
     expect(i(provider).configuration('scopes')).to.contain('insurance', 'payment');
+    expect(i(provider).configuration('dynamicScopes')).to.contain(foo, bar);
   });
 
   it('removes the acr claim if no acrs are configured', () => {
