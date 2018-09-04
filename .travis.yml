@@ -4,6 +4,8 @@ sudo: false
 node_js:
   - lts/carbon
   - stable
+install:
+  - travis_retry npm install
 script:
   - npm run coverage
 after_script:
