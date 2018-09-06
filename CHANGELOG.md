@@ -2,6 +2,17 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+<a name="4.8.1"></a>
+## [4.8.1](https://github.com/panva/node-oidc-provider/compare/v4.8.0...v4.8.1) (2018-09-06)
+
+
+### Bug Fixes
+
+* claim definition also detects dynamic scopes ([d8c8170](https://github.com/panva/node-oidc-provider/commit/d8c8170))
+* custom registered grants do not get overriden by defaults ([d4185f9](https://github.com/panva/node-oidc-provider/commit/d4185f9)), closes [#349](https://github.com/panva/node-oidc-provider/issues/349)
+
+
+
 <a name="4.8.0"></a>
 # [4.8.0](https://github.com/panva/node-oidc-provider/compare/v4.7.1...v4.8.0) (2018-08-29)
 
