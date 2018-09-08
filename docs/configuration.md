@@ -63,7 +63,6 @@ is a good starting point to get an idea of what you should provide.
   - [cookies.long](#cookieslong)
   - [cookies.names](#cookiesnames)
   - [cookies.short](#cookiesshort)
-  - [cookies.thirdPartyCheckUrl](#cookiesthirdpartycheckurl)
   - [deviceFlowSuccess](#devicecodesuccess)
   - [discovery](#discovery)
   - [dynamicScopes](#dynamicscopes)
@@ -1095,9 +1094,12 @@ false
   <br>
 
 
-The User-Agent must allow access to the provider cookies from a third-party context when the OP frame is embedded. Oidc-provider checks if this is enabled using a [CDN hosted](https://rawgit.com/) [iframe][third-party-cookies-git]. It is recommended to host these helper pages on your own (on a different domain from the one you host oidc-provider on). Once hosted, set the `cookies.thirdPartyCheckUrl` to an absolute URL for the start page. See [this][third-party-cookies-so] for more info. Note: This is still just a best-effort solution and is in no way bulletproof. Currently there's no better way to check if access to third party cookies has been blocked or the cookies are just missing. (ITP2.0 Storage Access API is also not an option)  
+The User-Agent must allow access to the provider cookies from a third-party context when the OP frame is embedded. Oidc-provider checks if this is enabled using a [CDN hosted](https://rawgit.com/) [iframe][third-party-cookies-git]. It is recommended to host these helper pages on your own (on a different domain from the one you host oidc-provider on). Once hosted, set the `features.sessionManagement.thirdPartyCheckUrl` to an absolute URL for the start page. See [this][third-party-cookies-so] for more info. Note: This is still just a best-effort solution and is in no way bulletproof. Currently there's no better way to check if access to third party cookies has been blocked or the cookies are just missing. (ITP2.0 Storage Access API is also not an option) Configure `features.sessionManagement` as an object like so:
+  
 
-
+```js
+{ thirdPartyCheckUrl: 'https://your-location.example.com/start.html' },
+```
 </details>
 <details>
   <summary>(Click to expand) To disable removing frame-ancestors from Content-Security-Policy and X-Frame-Options</summary>
@@ -1258,17 +1260,6 @@ _**default value**_:
   signed: undefined,
   httpOnly: true,
   maxAge: 600000 }
-```
-
-### cookies.thirdPartyCheckUrl
-
-URL for 3rd party cookies support check helper  
-
-_**affects**_: sessionManagement feature  
-
-_**default value**_:
-```js
-'https://cdn.rawgit.com/panva/3rdpartycookiecheck/92fead3f/start.html'
 ```
 
 ### deviceFlowSuccess
