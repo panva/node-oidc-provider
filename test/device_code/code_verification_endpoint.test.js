@@ -300,8 +300,8 @@ describe('POST code_verification endpoint w/ verification', () => {
   });
   afterEach(() => timekeeper.reset());
   afterEach(function () {
-    if (i(this.provider).configuration('deviceCodeSuccess').restore) {
-      i(this.provider).configuration('deviceCodeSuccess').restore();
+    if (i(this.provider).configuration('deviceFlowSuccess').restore) {
+      i(this.provider).configuration('deviceFlowSuccess').restore();
     }
   });
 
@@ -312,7 +312,7 @@ describe('POST code_verification endpoint w/ verification', () => {
   });
 
   it('renders a confirmation and assigns', async function () {
-    const spy = sinon.spy(i(this.provider).configuration(), 'deviceCodeSuccess');
+    const spy = sinon.spy(i(this.provider).configuration(), 'deviceFlowSuccess');
 
     let code = await new this.provider.DeviceCode({
       clientId: 'client',
@@ -346,7 +346,7 @@ describe('POST code_verification endpoint w/ verification', () => {
   });
 
   it('allows for punctuation to be included and characters to be downcased', async function () {
-    const spy = sinon.spy(i(this.provider).configuration(), 'deviceCodeSuccess');
+    const spy = sinon.spy(i(this.provider).configuration(), 'deviceFlowSuccess');
 
     let code = await new this.provider.DeviceCode({
       clientId: 'client',

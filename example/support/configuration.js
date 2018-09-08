@@ -31,7 +31,7 @@ module.exports.provider = {
 
     backchannelLogout: true, // defaults to false
     claimsParameter: true, // defaults to false
-    deviceCode: true, // defaults to false
+    deviceFlow: true, // defaults to false
     encryption: true, // defaults to false
     frontchannelLogout: true, // defaults to false
     introspection: true, // defaults to false
