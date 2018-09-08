@@ -119,7 +119,7 @@ class MyAdapter {
 
   /**
    *
-   * Return previously stored instance of DeviceCode. You only need this method for the deviceCode
+   * Return previously stored instance of DeviceCode. You only need this method for the deviceFlow
    * feature
    *
    * @return {Promise} Promise fulfilled with either Object (when found and not dropped yet due to

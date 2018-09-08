@@ -36,8 +36,8 @@ describe('device interaction resume /device/:user_code/:grant/', () => {
     if (this.provider.DeviceCode.findByUserCode.restore) {
       this.provider.DeviceCode.findByUserCode.restore();
     }
-    if (i(this.provider).configuration().deviceCodeSuccess.restore) {
-      i(this.provider).configuration().deviceCodeSuccess.restore();
+    if (i(this.provider).configuration().deviceFlowSuccess.restore) {
+      i(this.provider).configuration().deviceFlowSuccess.restore();
     }
     if (i(this.provider).configuration().userCodeInputSource.restore) {
       i(this.provider).configuration().userCodeInputSource.restore();
@@ -293,7 +293,7 @@ describe('device interaction resume /device/:user_code/:grant/', () => {
     });
 
     it('should process newly established permanent sessions', async function () {
-      const spy = sinon.spy(i(this.provider).configuration(), 'deviceCodeSuccess');
+      const spy = sinon.spy(i(this.provider).configuration(), 'deviceFlowSuccess');
 
       setup.call(this, {
         scope: 'openid',
@@ -320,7 +320,7 @@ describe('device interaction resume /device/:user_code/:grant/', () => {
     });
 
     it('should process newly established temporary sessions', async function () {
-      const spy = sinon.spy(i(this.provider).configuration(), 'deviceCodeSuccess');
+      const spy = sinon.spy(i(this.provider).configuration(), 'deviceFlowSuccess');
 
       setup.call(this, {
         scope: 'openid',
@@ -347,7 +347,7 @@ describe('device interaction resume /device/:user_code/:grant/', () => {
 
   context('consent results', () => {
     it('when scope includes offline_access', async function () {
-      const spy = sinon.spy(i(this.provider).configuration(), 'deviceCodeSuccess');
+      const spy = sinon.spy(i(this.provider).configuration(), 'deviceFlowSuccess');
 
       setup.call(this, {
         scope: 'openid offline_access',

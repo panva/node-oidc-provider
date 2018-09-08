@@ -4,7 +4,7 @@ const config = cloneDeep(require('../default.config'));
 
 config.features = {
   clientCredentials: true,
-  deviceCode: true,
+  deviceFlow: true,
   alwaysIssueRefresh: true,
 };
 
