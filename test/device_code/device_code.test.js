@@ -3,14 +3,14 @@ const { expect } = require('chai');
 const Provider = require('../../lib');
 const bootstrap = require('../test_helper');
 
-describe('configuration features.deviceCode', () => {
+describe('configuration features.deviceFlow', () => {
   before(bootstrap(__dirname));
 
   it('can only be configured with digits and base-20 charset', () => {
     expect(() => {
       new Provider('http://localhost', { // eslint-disable-line no-new
         features: {
-          deviceCode: {
+          deviceFlow: {
             charset: 'digits',
           },
         },
@@ -19,7 +19,7 @@ describe('configuration features.deviceCode', () => {
     expect(() => {
       new Provider('http://localhost', { // eslint-disable-line no-new
         features: {
-          deviceCode: {
+          deviceFlow: {
             charset: 'base-20',
           },
         },
@@ -28,7 +28,7 @@ describe('configuration features.deviceCode', () => {
     expect(() => {
       new Provider('http://localhost', { // eslint-disable-line no-new
         features: {
-          deviceCode: {
+          deviceFlow: {
             charset: 'foo',
           },
         },
@@ -40,7 +40,7 @@ describe('configuration features.deviceCode', () => {
     expect(() => {
       new Provider('http://localhost', { // eslint-disable-line no-new
         features: {
-          deviceCode: {
+          deviceFlow: {
             mask: '*** *** ***',
           },
         },
@@ -49,7 +49,7 @@ describe('configuration features.deviceCode', () => {
     expect(() => {
       new Provider('http://localhost', { // eslint-disable-line no-new
         features: {
-          deviceCode: {
+          deviceFlow: {
             mask: '***-***-***',
           },
         },
@@ -58,7 +58,7 @@ describe('configuration features.deviceCode', () => {
     expect(() => {
       new Provider('http://localhost', { // eslint-disable-line no-new
         features: {
-          deviceCode: {
+          deviceFlow: {
             mask: '***.***.***',
           },
         },

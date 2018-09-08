@@ -37,7 +37,7 @@ is a good starting point to get an idea of what you should provide.
   - [features.claimsParameter](#featuresclaimsparameter)
   - [features.clientCredentials](#featuresclientcredentials)
   - [features.devInteractions](#featuresdevinteractions)
-  - [features.deviceCode](#featuresdevicecode)
+  - [features.deviceFlow](#featuresdevicecode)
   - [features.discovery](#featuresdiscovery)
   - [features.encryption](#featuresencryption)
   - [features.frontchannelLogout](#featuresfrontchannellogout)
@@ -64,7 +64,7 @@ is a good starting point to get an idea of what you should provide.
   - [cookies.names](#cookiesnames)
   - [cookies.short](#cookiesshort)
   - [cookies.thirdPartyCheckUrl](#cookiesthirdpartycheckurl)
-  - [deviceCodeSuccess](#devicecodesuccess)
+  - [deviceFlowSuccess](#devicecodesuccess)
   - [discovery](#discovery)
   - [dynamicScopes](#dynamicscopes)
   - [extraClientMetadata](#extraclientmetadata)
@@ -734,7 +734,7 @@ Enable/disable features.
   claimsParameter: false,
   clientCredentials: false,
   conformIdTokenClaims: true,
-  deviceCode: false,
+  deviceFlow: false,
   encryption: false,
   frontchannelLogout: false,
   introspection: false,
@@ -800,7 +800,7 @@ _**default value**_:
 true
 ```
 
-### features.deviceCode
+### features.deviceFlow
 
 [draft-ietf-oauth-device-flow-12](https://tools.ietf.org/html/draft-ietf-oauth-device-flow-12) - Device Flow for Browserless and Input Constrained Devices  
 
@@ -1271,7 +1271,7 @@ _**default value**_:
 'https://cdn.rawgit.com/panva/3rdpartycookiecheck/92fead3f/start.html'
 ```
 
-### deviceCodeSuccess
+### deviceFlowSuccess
 
 HTML source rendered when device code feature renders a success page for the User-Agent.  
 
@@ -1281,7 +1281,7 @@ _**affects**_: device code success page
   <br>
 
 ```js
-async deviceCodeSuccess(ctx) {
+async deviceFlowSuccess(ctx) {
   // @param ctx - koa request context
   const {
     clientId, clientName, clientUri, initiateLoginUri, logoUri, policyUri, tosUri,
