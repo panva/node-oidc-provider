@@ -251,6 +251,26 @@ describe('introspection features', () => {
         });
     });
 
+    it('can be called by pairwise clients', async function () {
+      const rt = new this.provider.RefreshToken({
+        accountId: 'accountId',
+        grantId: 'foo',
+        clientId: 'client-pairwise',
+        scope: 'scope',
+      });
+
+      const token = await rt.save();
+      return this.agent.post(route)
+        .auth('client-pairwise', 'secret')
+        .send({ token })
+        .type('form')
+        .expect(200)
+        .expect((response) => {
+          expect(response.body).to.contain.keys('client_id', 'scope', 'sub');
+          expect(response.body.sub).not.to.equal('accountId');
+        });
+    });
+
     it('can be called by RS clients and uses the original subject_type', async function () {
       const rt = new this.provider.RefreshToken({
         accountId: 'accountId',

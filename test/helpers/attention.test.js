@@ -28,7 +28,7 @@ describe('attention helper', () => {
     it('has a working method warn with color', () => {
       const f = function () { attention.warn('a message'); };
       const stderr = captureConsoleWarn(f, true);
-      expect(stderr).to.equal('\x1b[33;1mWARNING: a message\x1b[0m\n');
+      expect(stderr).to.equal('\x1b[31;1mWARNING: a message\x1b[0m\n');
     });
   });
 });

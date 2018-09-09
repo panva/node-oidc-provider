@@ -3,7 +3,6 @@ const { clone } = require('lodash');
 const config = clone(require('../default.config'));
 
 config.subjectTypes = ['public', 'pairwise'];
-config.pairwiseSalt = 'foobar';
 config.features = {
   introspection: true, encryption: true, clientCredentials: true,
 };

@@ -1,3 +1,5 @@
+const crypto = require('crypto');
+
 const pkg = require('../../package.json');
 
 module.exports.provider = {
@@ -48,7 +50,13 @@ module.exports.provider = {
     AccessToken: 'jwt',
   },
   subjectTypes: ['public', 'pairwise'],
-  pairwiseSalt: 'da1c442b365b563dfc121f285a11eedee5bbff7110d55c88',
+  pairwiseIdentifier(accountId, { sectorIdentifier }) {
+    return crypto.createHash('sha256')
+      .update(sectorIdentifier)
+      .update(accountId)
+      .update('da1c442b365b563dfc121f285a11eedee5bbff7110d55c88')
+      .digest('hex');
+  },
   interactionUrl: function interactionUrl(ctx, interaction) { // eslint-disable-line no-unused-vars
     return `/interaction/${ctx.oidc.uuid}`;
   },

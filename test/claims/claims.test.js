@@ -240,9 +240,10 @@ expire.setDate(expire.getDate() + 1);
           return sess.save();
         }
 
-        it('session subject value differs from the one requested', function () {
+        it('session subject value differs from the one requested [1/2]', function () {
           const session = this.getSession();
           const auth = new this.AuthorizationRequest({
+            client_id: 'client',
             response_type: 'id_token',
             scope: 'openid',
             prompt: 'none',
@@ -250,6 +251,30 @@ expire.setDate(expire.getDate() + 1);
               id_token: {
                 sub: {
                   value: session.account,
+                },
+              },
+            },
+          });
+
+          return this.wrap({ route, verb, auth })
+            .expect(302)
+            .expect(auth.validateFragment)
+            .expect(auth.validatePresence(['id_token', 'state']))
+            .expect(auth.validateState)
+            .expect(auth.validateClientLocation);
+        });
+
+        it('session subject value differs from the one requested [2/2]', function () {
+          const session = this.getSession();
+          const auth = new this.AuthorizationRequest({
+            client_id: 'client-pairwise',
+            response_type: 'id_token',
+            scope: 'openid',
+            prompt: 'none',
+            claims: {
+              id_token: {
+                sub: {
+                  value: `${session.account}-pairwise`,
                 },
               },
             },
@@ -329,8 +354,9 @@ expire.setDate(expire.getDate() + 1);
       });
 
       context('are not met', () => {
-        it('session subject value differs from the one requested', function () {
+        it('session subject value differs from the one requested [1/2]', function () {
           const auth = new this.AuthorizationRequest({
+            client_id: 'client',
             response_type: 'id_token',
             scope: 'openid',
             prompt: 'none',
@@ -338,6 +364,31 @@ expire.setDate(expire.getDate() + 1);
               id_token: {
                 sub: {
                   value: 'iexpectthisid',
+                },
+              },
+            },
+          });
+
+          return this.wrap({ route, verb, auth })
+            .expect(302)
+            .expect(auth.validateFragment)
+            .expect(auth.validatePresence(['error', 'error_description', 'state']))
+            .expect(auth.validateState)
+            .expect(auth.validateClientLocation)
+            .expect(auth.validateError('login_required'))
+            .expect(auth.validateErrorDescription('requested subject could not be obtained'));
+        });
+
+        it('session subject value differs from the one requested [2/2]', function () {
+          const auth = new this.AuthorizationRequest({
+            client_id: 'client-pairwise',
+            response_type: 'id_token',
+            scope: 'openid',
+            prompt: 'none',
+            claims: {
+              id_token: {
+                sub: {
+                  value: 'iexpectthisid-pairwise',
                 },
               },
             },
@@ -423,7 +474,7 @@ expire.setDate(expire.getDate() + 1);
             .expect(auth.validateErrorDescription('requested claims not granted by End-User'));
         });
 
-        it('id_token_hint belongs to a user that is not currently logged in', async function () {
+        it('id_token_hint belongs to a user that is not currently logged in [1/2]', async function () {
           const client = await this.provider.Client.find('client');
           const { IdToken } = this.provider;
           const idToken = new IdToken({
@@ -450,7 +501,35 @@ expire.setDate(expire.getDate() + 1);
             .expect(auth.validateErrorDescription('id_token_hint and authenticated subject do not match'));
         });
 
-        it('id_token_hint belongs to a user that is currently logged in', async function () {
+        it('id_token_hint belongs to a user that is not currently logged in [2/2]', async function () {
+          const client = await this.provider.Client.find('client-pairwise');
+          const { IdToken } = this.provider;
+          const idToken = new IdToken({
+            sub: 'not-the-droid-you-are-looking-for',
+          }, client);
+
+          idToken.scope = 'openid';
+          const hint = await idToken.sign();
+
+          const auth = new this.AuthorizationRequest({
+            client_id: 'client-pairwise',
+            response_type: 'id_token',
+            scope: 'openid',
+            prompt: 'none',
+            id_token_hint: hint,
+          });
+
+          return this.wrap({ route, verb, auth })
+            .expect(302)
+            .expect(auth.validateFragment)
+            .expect(auth.validatePresence(['error', 'error_description', 'state']))
+            .expect(auth.validateState)
+            .expect(auth.validateClientLocation)
+            .expect(auth.validateError('login_required'))
+            .expect(auth.validateErrorDescription('id_token_hint and authenticated subject do not match'));
+        });
+
+        it('id_token_hint belongs to a user that is currently logged in [1/2]', async function () {
           const session = this.getSession();
           const client = await this.provider.Client.find('client');
           const { IdToken } = this.provider;
@@ -462,6 +541,33 @@ expire.setDate(expire.getDate() + 1);
           const hint = await idToken.sign();
 
           const auth = new this.AuthorizationRequest({
+            response_type: 'id_token',
+            scope: 'openid',
+            prompt: 'none',
+            id_token_hint: hint,
+          });
+
+          return this.wrap({ route, verb, auth })
+            .expect(302)
+            .expect(auth.validateFragment)
+            .expect(auth.validatePresence(['id_token', 'state']))
+            .expect(auth.validateState)
+            .expect(auth.validateClientLocation);
+        });
+
+        it('id_token_hint belongs to a user that is currently logged in [2/2]', async function () {
+          const session = this.getSession();
+          const client = await this.provider.Client.find('client-pairwise');
+          const { IdToken } = this.provider;
+          const idToken = new IdToken({
+            sub: session.account,
+          }, client);
+
+          idToken.scope = 'openid';
+          const hint = await idToken.sign();
+
+          const auth = new this.AuthorizationRequest({
+            client_id: 'client-pairwise',
             response_type: 'id_token',
             scope: 'openid',
             prompt: 'none',

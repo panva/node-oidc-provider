@@ -77,7 +77,7 @@ is a good starting point to get an idea of what you should provide.
   - [interactionUrl](#interactionurl)
   - [introspectionEndpointAuthMethods](#introspectionendpointauthmethods)
   - [logoutSource](#logoutsource)
-  - [pairwiseSalt](#pairwisesalt)
+  - [pairwiseIdentifier](#pairwiseidentifier)
   - [postLogoutRedirectUri](#postlogoutredirecturi)
   - [prompts](#prompts)
   - [refreshTokenRotation](#refreshtokenrotation)
@@ -1094,7 +1094,7 @@ false
   <br>
 
 
-The User-Agent must allow access to the provider cookies from a third-party context when the OP frame is embedded. Oidc-provider checks if this is enabled using a [CDN hosted](https://rawgit.com/) [iframe][third-party-cookies-git]. It is recommended to host these helper pages on your own (on a different domain from the one you host oidc-provider on). Once hosted, set the `features.sessionManagement.thirdPartyCheckUrl` to an absolute URL for the start page. See [this][third-party-cookies-so] for more info. Note: This is still just a best-effort solution and is in no way bulletproof. Currently there's no better way to check if access to third party cookies has been blocked or the cookies are just missing. (ITP2.0 Storage Access API is also not an option) Configure `features.sessionManagement` as an object like so:
+The User-Agent must allow access to the provider cookies from a third-party context when the OP frame is embedded. Oidc-provider checks if this is enabled using a [CDN hosted](https://rawgit.com/) [iframe][third-party-cookies-git]. It is recommended to host these helper pages on your own (on a different domain from the one you host oidc-provider on). Once hosted, set the `features.sessionManagement.thirdPartyCheckUrl` to an absolute URL for the start page. See [this][third-party-cookies-so] for more info. Note: This is still just a best-effort solution and is in no way bulletproof. Currently there's no better way to check if access to third party cookies has been blocked or the cookies are just missing. (Safari's ITP 2.0 Storage Access API also cannot be used) Configure `features.sessionManagement` as an object like so:
   
 
 ```js
@@ -1670,16 +1670,28 @@ async logoutSource(ctx, form) {
 </details>
 
 
-### pairwiseSalt
+### pairwiseIdentifier
 
-Salt used by OP when resolving pairwise ID Token and Userinfo sub claim value  
+Function used by the OP when resolving pairwise ID Token and Userinfo sub claim values. See [Core 1.0](https://openid.net/specs/openid-connect-core-1_0.html#rfc.section.8.1)  
 
-_**affects**_: ID Token and Userinfo sub claim values  
+_**affects**_: pairwise ID Token and Userinfo sub claim values  
+_**recommendation**_: Since this might be called several times in one request with the same arguments consider using memoization or otherwise caching the result based on account and client ids.  
+<details>
+  <summary><em><strong>default value</strong></em> (Click to expand)</summary>
+  <br>
 
-_**default value**_:
 ```js
-''
+async pairwiseIdentifier(accountId, client) {
+  return crypto.createHash('sha256')
+    .update(client.sectorIdentifier)
+    .update(accountId)
+    .update(os.hostname()) // put your own unique salt here, or implement other mechanism
+    .digest('hex');
+}
 ```
+
+</details>
+
 
 ### postLogoutRedirectUri
 
