@@ -444,7 +444,7 @@ describe('Client metadata validation', () => {
 
   context('subject_type', function () {
     defaultsTo(this.title, 'public');
-    defaultsTo(this.title, 'pairwise', undefined, { subjectTypes: ['pairwise'], pairwiseSalt: 'foo' });
+    defaultsTo(this.title, 'pairwise', undefined, { subjectTypes: ['pairwise'] });
     mustBeString(this.title);
     allows(this.title, 'public');
     rejects(this.title, 'not-a-type');

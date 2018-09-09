@@ -244,11 +244,14 @@ describe('pairwise features', () => {
       });
     });
 
-    it('returns different subs', function () {
-      const subs = map(clients, (client) => {
-        const { sub } = new this.provider.Claims({ sub: 'accountId' }, client).scope('openid').result();
+    it('returns different subs', async function () {
+      const subs = await Promise.all(map(clients, async (client) => {
+        const claims = new this.provider.Claims({ sub: 'accountId' }, client);
+        claims.scope('openid');
+
+        const { sub } = await claims.result();
         return sub;
-      });
+      }));
 
       expect(subs).to.have.lengthOf(3);
       expect(uniq(subs)).to.have.lengthOf(3);

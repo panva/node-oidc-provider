@@ -37,41 +37,4 @@ describe('Provider configuration', () => {
       });
     }).to.throw('subjectTypes must be an array');
   });
-
-  it('validates pairwiseSalt presence when pairwise is configured', () => {
-    const throws = [
-      () => {
-        new Provider('http://localhost:3000', { // eslint-disable-line no-new
-          subjectTypes: ['pairwise'],
-        });
-      },
-      () => {
-        new Provider('http://localhost:3000', { // eslint-disable-line no-new
-          subjectTypes: ['public', 'pairwise'],
-        });
-      },
-    ];
-
-    const notThrows = [
-      () => {
-        new Provider('http://localhost:3000', { // eslint-disable-line no-new
-          subjectTypes: ['public'],
-          pairwiseSalt: 'may be provided',
-        });
-      },
-      () => {
-        new Provider('http://localhost:3000', { // eslint-disable-line no-new
-          subjectTypes: ['public'],
-        });
-      },
-    ];
-
-    throws.forEach((fn) => {
-      expect(fn).to.throw(/pairwiseSalt must be configured/);
-    });
-
-    notThrows.forEach((fn) => {
-      expect(fn).not.to.throw();
-    });
-  });
 });
