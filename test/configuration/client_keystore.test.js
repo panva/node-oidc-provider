@@ -190,9 +190,9 @@ describe('client keystore refresh', () => {
       expect(client.keystore.stale()).to.be.true;
 
       const { IdToken } = this.provider;
-      const token = new IdToken({ foo: 'bar' });
+      const token = new IdToken({ foo: 'bar' }, client);
 
-      await token.sign(client);
+      await token.sign();
     });
   });
 });
