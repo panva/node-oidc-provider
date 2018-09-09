@@ -428,10 +428,10 @@ expire.setDate(expire.getDate() + 1);
           const { IdToken } = this.provider;
           const idToken = new IdToken({
             sub: 'not-the-droid-you-are-looking-for',
-          });
+          }, client);
 
           idToken.scope = 'openid';
-          const hint = await idToken.sign(client);
+          const hint = await idToken.sign();
 
           const auth = new this.AuthorizationRequest({
             response_type: 'id_token',
@@ -456,10 +456,10 @@ expire.setDate(expire.getDate() + 1);
           const { IdToken } = this.provider;
           const idToken = new IdToken({
             sub: session.account,
-          });
+          }, client);
 
           idToken.scope = 'openid';
-          const hint = await idToken.sign(client);
+          const hint = await idToken.sign();
 
           const auth = new this.AuthorizationRequest({
             response_type: 'id_token',

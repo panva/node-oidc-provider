@@ -2,7 +2,6 @@ const { map, uniq } = require('lodash');
 const { expect } = require('chai');
 const nock = require('nock');
 
-const getMask = require('../../lib/helpers/claims');
 const bootstrap = require('../test_helper');
 
 const j = JSON.stringify;
@@ -246,10 +245,8 @@ describe('pairwise features', () => {
     });
 
     it('returns different subs', function () {
-      const Claims = getMask(i(this.provider).configuration());
-
       const subs = map(clients, (client) => {
-        const { sub } = new Claims({ sub: 'accountId' }, client.sectorIdentifier).scope('openid').result();
+        const { sub } = new this.provider.Claims({ sub: 'accountId' }, client).scope('openid').result();
         return sub;
       });
 
