@@ -42,6 +42,8 @@ class RedisAdapter {
     if (payload.grantId) {
       const grantKey = grantKeyFor(payload.grantId);
       multi.rpush(grantKey, key);
+      // if you're seeing grant key lists growing out of acceptable proportions consider using LTRIM
+      // here to trim the list to an appropriate length
       const ttl = await client.ttl(grantKey);
       if (expiresIn > ttl) {
         multi.expire(grantKey, expiresIn);
