@@ -42,6 +42,10 @@ class RedisAdapter {
     if (payload.grantId) {
       const grantKey = grantKeyFor(payload.grantId);
       multi.rpush(grantKey, key);
+      const ttl = await client.ttl(grantKey);
+      if (expiresIn > ttl) {
+        multi.expire(grantKey, expiresIn);
+      }
     }
 
     if (payload.userCode) {
