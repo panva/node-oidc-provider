@@ -37,7 +37,7 @@ class MyAdapter {
      * InitialAccessToken or RegistrationAccessToken the payload will contain the following
      * properties depending on the used `formats` value for the given token (or default).
      *
-     * Note: This is list is not exhaustive and properties may be added in the future, it is highly
+     * Note: This list is not exhaustive and properties may be added in the future, it is highly
      * recommended to use a schema that allows for this.
      *
      * when `legacy`
