@@ -16,12 +16,12 @@ describe('custom response modes', () => {
 
   it('is used for success authorization results', function () {
     const spy = sinon.spy();
-    this.provider.registerResponseMode('custom', spy);
+    this.provider.registerResponseMode('custom2', spy);
 
     const auth = new this.AuthorizationRequest({
       response_type: 'code',
       scope: 'openid',
-      response_mode: 'custom',
+      response_mode: 'custom2',
     });
 
     return this.agent.get('/auth')
@@ -35,12 +35,12 @@ describe('custom response modes', () => {
 
   it('is used for error authorization results', function () {
     const spy = sinon.spy();
-    this.provider.registerResponseMode('custom', spy);
+    this.provider.registerResponseMode('custom3', spy);
 
     const auth = new this.AuthorizationRequest({
       response_type: 'code',
       scope: 'openid',
-      response_mode: 'custom',
+      response_mode: 'custom3',
       prompt: 'none login', // causes invalid_request
     });
 
