@@ -2,6 +2,17 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+<a name="4.8.2"></a>
+## [4.8.2](https://github.com/panva/node-oidc-provider/compare/v4.8.1...v4.8.2) (2018-09-16)
+
+
+### Bug Fixes
+
+* do not overwrite custom response mode implementations with defaults ([7f7ea79](https://github.com/panva/node-oidc-provider/commit/7f7ea79)), closes [#365](https://github.com/panva/node-oidc-provider/issues/365)
+* remove unnecessary catchall in fallback session save ([3bfb8f0](https://github.com/panva/node-oidc-provider/commit/3bfb8f0)), closes [#363](https://github.com/panva/node-oidc-provider/issues/363)
+
+
+
 <a name="4.8.1"></a>
 ## [4.8.1](https://github.com/panva/node-oidc-provider/compare/v4.8.0...v4.8.1) (2018-09-06)
 
