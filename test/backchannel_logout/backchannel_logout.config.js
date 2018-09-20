@@ -2,7 +2,7 @@ const { clone } = require('lodash');
 
 const config = clone(require('../default.config'));
 
-config.features = { sessionManagement: true, backchannelLogout: true, alwaysIssueRefresh: true };
+config.features = { backchannelLogout: true, alwaysIssueRefresh: true };
 
 module.exports = {
   config,

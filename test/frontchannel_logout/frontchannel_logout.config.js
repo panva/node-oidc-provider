@@ -2,7 +2,7 @@ const { clone } = require('lodash');
 
 const config = clone(require('../default.config'));
 
-config.features = { sessionManagement: true, frontchannelLogout: true, alwaysIssueRefresh: true };
+config.features = { frontchannelLogout: true, alwaysIssueRefresh: true };
 
 module.exports = {
   config,
