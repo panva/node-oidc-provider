@@ -5,27 +5,15 @@ const { cloneDeep } = require('lodash');
 const base64url = require('base64url');
 
 const bootstrap = require('../test_helper');
-const Provider = require('../../lib');
 
 describe('Front-Channel Logout 1.0', () => {
   before(bootstrap(__dirname));
-
-  describe('feature flag', () => {
-    it('checks sessionManagement is also enabled', () => {
-      expect(() => {
-        new Provider('http://localhost', { // eslint-disable-line no-new
-          features: {
-            frontchannelLogout: true,
-          },
-        });
-      }).to.throw('frontchannelLogout is only available in conjuction with sessionManagement');
-    });
-  });
 
   describe('discovery', () => {
     it('extends the well known config', function () {
       return this.agent.get('/.well-known/openid-configuration')
         .expect((response) => {
+          expect(response.body).to.have.property('end_session_endpoint');
           expect(response.body).to.have.property('frontchannel_logout_supported', true);
           expect(response.body).to.have.property('frontchannel_logout_session_supported', true);
         });
