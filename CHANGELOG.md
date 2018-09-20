@@ -2,6 +2,16 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+<a name="4.8.3"></a>
+## [4.8.3](https://github.com/panva/node-oidc-provider/compare/v4.8.2...v4.8.3) (2018-09-20)
+
+
+### Bug Fixes
+
+* reference correct param names in `features.webMessageResponseMode` ([e495c6b](https://github.com/panva/node-oidc-provider/commit/e495c6b))
+
+
+
 <a name="4.8.2"></a>
 ## [4.8.2](https://github.com/panva/node-oidc-provider/compare/v4.8.1...v4.8.2) (2018-09-16)
 
