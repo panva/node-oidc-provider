@@ -2,6 +2,10 @@ const { cloneDeep } = require('lodash');
 
 const config = cloneDeep(require('../default.config'));
 const clientKey = require('../client.sig.key');
+const mtlsKeys = require('../jwks/jwks.json');
+
+const rsaKeys = cloneDeep(mtlsKeys);
+rsaKeys.keys.splice(0, 1);
 
 config.tokenEndpointAuthMethods = [
   'none',
@@ -10,6 +14,7 @@ config.tokenEndpointAuthMethods = [
   'private_key_jwt',
   'client_secret_jwt',
   'tls_client_auth',
+  'self_signed_tls_client_auth',
 ];
 
 module.exports = {
@@ -54,9 +59,24 @@ module.exports = {
       keys: [clientKey],
     },
   }, {
-    client_id: 'client-pki-tls',
+    client_id: 'client-pki-mtls',
     redirect_uris: ['https://client.example.com/cb'],
     token_endpoint_auth_method: 'tls_client_auth',
     tls_client_auth_subject_dn: 'foobar',
+  }, {
+    client_id: 'client-self-signed-mtls',
+    redirect_uris: ['https://client.example.com/cb'],
+    token_endpoint_auth_method: 'self_signed_tls_client_auth',
+    jwks: mtlsKeys,
+  }, {
+    client_id: 'client-self-signed-mtls-rsa',
+    redirect_uris: ['https://client.example.com/cb'],
+    token_endpoint_auth_method: 'self_signed_tls_client_auth',
+    jwks: rsaKeys,
+  }, {
+    client_id: 'client-self-signed-mtls-jwks_uri',
+    redirect_uris: ['https://client.example.com/cb'],
+    token_endpoint_auth_method: 'self_signed_tls_client_auth',
+    jwks_uri: 'https://client.example.com/jwks',
   }],
 };

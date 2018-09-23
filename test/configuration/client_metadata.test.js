@@ -7,6 +7,7 @@ const {
 
 const Provider = require('../../lib');
 const { whitelistedJWA } = require('../default.config');
+const mtlsKeys = require('../jwks/jwks.json');
 
 const sigKey = global.keystore.get().toJSON(true);
 const { InvalidClientMetadata } = Provider.errors;
@@ -814,6 +815,19 @@ describe('Client metadata validation', () => {
     rejects(this.title, undefined, 'jwks or jwks_uri is mandatory for this client', {
       request_object_signing_alg: 'ES384',
     });
+
+    const invalidx5c = cloneDeep(mtlsKeys);
+    invalidx5c.keys[0].x5c = true;
+    rejects(this.title, invalidx5c, 'when provided, JWK x5c must be non-empty an array');
+
+    const emptyx5c = cloneDeep(mtlsKeys);
+    emptyx5c.keys[0].x5c = [];
+    rejects(this.title, emptyx5c, 'when provided, JWK x5c must be non-empty an array');
+
+    const invalidCert = cloneDeep(mtlsKeys);
+    invalidCert.keys[0].x5c = ['foobar'];
+    rejects(this.title, invalidCert, 'invalid x5c provided');
+
     [
       'id_token_encrypted_response_alg',
       'userinfo_encrypted_response_alg',
