@@ -1164,7 +1164,7 @@ async audiences(ctx, sub, token, use) {
 
 ### claims
 
-List of the Claim Names of the Claims that the OpenID Provider MAY be able to supply values for.  
+Array of the Claim Names of the Claims that the OpenID Provider MAY be able to supply values for.  
 
 _**affects**_: discovery, ID Token claim names, Userinfo claim names  
 
@@ -1319,7 +1319,7 @@ _**affects**_: discovery
 
 ### dynamicScopes
 
-List of the dynamic scope values that the OP supports. These must be regular expressions that the OP will check string scope values, that aren't in the static list, against.  
+Array of the dynamic scope values that the OP supports. These must be regular expressions that the OP will check string scope values, that aren't in the static list, against.  
 
 _**affects**_: discovery, authorization, ID Token claims, Userinfo claims  
 
@@ -1608,7 +1608,7 @@ async interactionUrl(ctx, interaction) {
 
 ### introspectionEndpointAuthMethods
 
-List of Client Authentication methods supported by this OP's Introspection Endpoint  
+Array of Client Authentication methods supported by this OP's Introspection Endpoint. If no configuration value is provided the same values as for tokenEndpointAuthMethods will be used. Supported values list is the same as for tokenEndpointAuthMethods  
 
 _**affects**_: discovery, client authentication for introspection, registration and registration management  
 
@@ -1708,7 +1708,7 @@ async postLogoutRedirectUri(ctx) {
 
 ### prompts
 
-List of the prompt values that the OpenID Provider MAY be able to resolve  
+Array of the prompt values that the OpenID Provider MAY be able to resolve  
 
 _**affects**_: authorization  
 
@@ -1762,7 +1762,7 @@ async renderError(ctx, out, error) {
 
 ### responseTypes
 
-List of response_type values that OP supports  
+Array of response_type values that OP supports  
 
 _**affects**_: authorization, discovery, registration, registration management  
 <details>
@@ -1784,7 +1784,7 @@ _**affects**_: authorization, discovery, registration, registration management
 
 ### revocationEndpointAuthMethods
 
-List of Client Authentication methods supported by this OP's Revocation Endpoint  
+Array of Client Authentication methods supported by this OP's Revocation Endpoint. If no configuration value is provided the same values as for tokenEndpointAuthMethods will be used. Supported values list is the same as for tokenEndpointAuthMethods  
 
 _**affects**_: discovery, client authentication for revocation, registration and registration management  
 
@@ -1825,7 +1825,7 @@ _**affects**_: routing
 
 ### scopes
 
-List of the scope values that the OP supports  
+Array of the scope values that the OP supports  
 
 _**affects**_: discovery, authorization, ID Token claims, Userinfo claims  
 
@@ -1836,7 +1836,7 @@ _**default value**_:
 
 ### subjectTypes
 
-List of the Subject Identifier types that this OP supports. Valid types are
+Array of the Subject Identifier types that this OP supports. Valid types are
  - `public`
  - `pairwise`  
 
@@ -1849,7 +1849,7 @@ _**default value**_:
 
 ### tokenEndpointAuthMethods
 
-List of Client Authentication methods supported by this OP's Token Endpoint  
+Array of Client Authentication methods supported by this OP's Token Endpoint  
 
 _**affects**_: discovery, client authentication for token endpoint, registration and registration management  
 
@@ -1861,6 +1861,41 @@ _**default value**_:
   'client_secret_post',
   'private_key_jwt' ]
 ```
+<details>
+  <summary>(Click to expand) Supported values list
+</summary>
+  <br>
+
+```js
+[
+  'none',
+  'client_secret_basic', 'client_secret_post',
+  'client_secret_jwt', 'private_key_jwt',
+  'tls_client_auth',
+]
+```
+</details>
+<details>
+  <summary>(Click to expand) Setting up tls_client_auth</summary>
+  <br>
+
+
+To enable `tls_client_auth` the provider expects `x-ssl-client-verify` and `x-ssl-client-s-dn` headers to be presented by your TLS-offloading proxy with the variable values set by these proxies. An important aspect is to sanitize the inbound request headers at the proxy. <br/><br/> The most common openssl based proxies are Apache and NGINX, with those you're looking to use <br/><br/> __`SSLVerifyClient` (Apache) / `ssl_verify_client` (NGINX)__ `require` - if you only support tls_client_auth, `optional` if you also support additional non-MTLS based authentication methods, `optional_no_ca` - if you also support additional non-MTLS based authentication methods AND self_signed_tls_client_auth (not implemented yet) <br/><br/> __`SSLCACertificateFile` or `SSLCACertificatePath` (Apache) / `ssl_client_certificate` (NGINX)__ with the values pointing to your accepted CA Certificates <br/><br/> Set the proxy request headers with variables set as a result of enabling MTLS
+  
+
+```nginx
+# NGINX
+proxy_set_header x-ssl-client-verify $ssl_client_verify;
+proxy_set_header x-ssl-client-s-dn $ssl_client_s_dn;
+```
+```apache
+# Apache
+RequestHeader set x-ssl-client-verify  ""
+RequestHeader set x-ssl-client-verify "%{SSL_CLIENT_VERIFY}s"
+RequestHeader set x-ssl-client-s-dn  ""
+RequestHeader set x-ssl-client-s-dn "%{SSL_CLIENT_S_DN}s"
+```
+</details>
 
 ### ttl
 

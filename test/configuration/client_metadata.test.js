@@ -455,18 +455,29 @@ describe('Client metadata validation', () => {
     'introspection_endpoint_auth_method',
     'revocation_endpoint_auth_method',
   ].forEach((endpointAuthMethodProperty) => {
-    let configuration;
+    const configuration = {
+      [`${endpointAuthMethodProperty.split('_')[0]}EndpointAuthMethods`]: [
+        'none',
+        'client_secret_basic',
+        'client_secret_post',
+        'private_key_jwt',
+        'client_secret_jwt',
+        'tls_client_auth',
+      ],
+    };
+
     if (!endpointAuthMethodProperty.startsWith('token')) {
-      configuration = {
+      Object.assign(configuration, {
         features: { [endpointAuthMethodProperty.split('_')[0]]: true },
-      };
+      });
     }
+
     context(endpointAuthMethodProperty, function () {
       defaultsTo(this.title, 'client_secret_basic', undefined, configuration);
       mustBeString(this.title, undefined, undefined, configuration);
 
       [
-        'client_secret_basic', 'client_secret_jwt', 'client_secret_post', 'private_key_jwt',
+        'client_secret_basic', 'client_secret_jwt', 'client_secret_post', 'private_key_jwt', 'tls_client_auth',
       ].forEach((value) => {
         switch (value) {
           case 'private_key_jwt':
@@ -474,7 +485,11 @@ describe('Client metadata validation', () => {
               jwks: { keys: [sigKey] },
             }, configuration);
             break;
-          case 'none':
+          case 'tls_client_auth':
+            allows(this.title, value, {
+              tls_client_auth_subject_dn: 'foo',
+            }, configuration);
+            rejects(this.title, value, 'tls_client_auth_subject_dn must be provided for tls_client_auth', undefined, configuration);
             break;
           default: {
             allows(this.title, value, undefined, configuration);
