@@ -34,12 +34,14 @@ if (FORMAT === 'jwt') {
     const params = { foo: 'bar' };
     const userCode = '1384-3217';
     const deviceInfo = { foo: 'bar' };
+    const s256 = '_gPMqAT8BELhXwBa2nIT0OvdWtQCiF_g09nAyHhgCe0';
 
     /* eslint-disable object-property-newline */
     const fullPayload = {
       accountId, claims, clientId, grantId, scope, sid, consumed, acr, amr, authTime, nonce,
       redirectUri, codeChallenge, codeChallengeMethod, aud, error, errorDescription, params,
       userCode, deviceInfo, gty,
+      'x5t#S256': s256,
     };
     /* eslint-enable object-property-newline */
 
@@ -74,6 +76,7 @@ if (FORMAT === 'jwt') {
         kind,
         scope,
         sid,
+        'x5t#S256': s256,
       });
 
       const { iat, jti, exp } = upsert.getCall(0).args[1];
@@ -87,6 +90,9 @@ if (FORMAT === 'jwt') {
         jti,
         scope,
         sub: accountId,
+        cnf: {
+          'x5t#S256': s256,
+        },
       });
     });
 
@@ -235,6 +241,7 @@ if (FORMAT === 'jwt') {
         jwt: string,
         kind,
         scope,
+        'x5t#S256': s256,
       });
 
       const { iat, jti, exp } = upsert.getCall(0).args[1];
@@ -247,6 +254,9 @@ if (FORMAT === 'jwt') {
         iss: this.provider.issuer,
         jti,
         scope,
+        cnf: {
+          'x5t#S256': s256,
+        },
       });
     });
 

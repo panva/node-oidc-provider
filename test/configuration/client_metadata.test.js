@@ -833,6 +833,20 @@ describe('Client metadata validation', () => {
     });
   });
 
+  context('features.certificateBoundAccessTokens', () => {
+    context('tls_client_certificate_bound_access_tokens', function () {
+      const configuration = {
+        features: {
+          certificateBoundAccessTokens: true,
+        },
+      };
+
+      defaultsTo(this.title, false, undefined, configuration);
+      defaultsTo(this.title, undefined);
+      mustBeBoolean(this.title, undefined, configuration);
+    });
+  });
+
   context('features.sessionManagement', () => {
     context('post_logout_redirect_uris', function () {
       const configuration = {
