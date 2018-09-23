@@ -6,7 +6,7 @@ const { expect } = require('chai');
 
 const bootstrap = require('../test_helper');
 
-const crt = readFileSync('./test/client.crt').toString();
+const crt = readFileSync('./test/jwks/client.crt').toString();
 const expectedS256 = 'eXvgMeO-8uLw0FGYkJefOXSFHOnbbcfv95rIYCPsbpo';
 
 describe('features.certificateBoundAccessTokens', () => {

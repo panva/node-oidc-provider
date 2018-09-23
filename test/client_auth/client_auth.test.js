@@ -1,3 +1,6 @@
+const { readFileSync } = require('fs');
+
+const nock = require('nock');
 const uuid = require('uuid/v4');
 const jose = require('node-jose');
 const sinon = require('sinon');
@@ -9,6 +12,10 @@ const bootstrap = require('../test_helper');
 const clientKey = require('../client.sig.key');
 const JWT = require('../../lib/helpers/jwt');
 const { JWA } = require('../../lib/consts');
+const mtlsKeys = require('../jwks/jwks.json');
+
+const rsacrt = readFileSync('test/jwks/rsa.crt').toString();
+const eccrt = readFileSync('test/jwks/ec.crt').toString();
 
 const route = '/token';
 
@@ -939,35 +946,95 @@ describe('client authentication options', () => {
         .set('x-ssl-client-verify', 'SUCCESS')
         .set('x-ssl-client-s-dn', 'foobar')
         .send({
-          client_id: 'client-pki-tls',
+          client_id: 'client-pki-mtls',
           grant_type: 'implicit',
         })
         .type('form')
         .expect(tokenAuthSucceeded);
     });
 
-    it('fails the auth the auth when ssl-client-verify is not SUCCESS', function () {
+    it('fails the auth when ssl-client-verify is not SUCCESS', function () {
       return this.agent.post(route)
         .set('x-ssl-client-verify', 'FAILED: self signed certificate')
         .set('x-ssl-client-s-dn', 'foobar')
         .send({
-          client_id: 'client-pki-tls',
+          client_id: 'client-pki-mtls',
           grant_type: 'implicit',
         })
         .type('form')
         .expect(tokenAuthRejected);
     });
 
-    it('fails the auth the auth when ssl-client-s-dn does not match', function () {
+    it('fails the auth when ssl-client-s-dn does not match', function () {
       return this.agent.post(route)
         .set('x-ssl-client-verify', 'SUCCESS')
         .set('x-ssl-client-s-dn', 'foobarbaz')
         .send({
-          client_id: 'client-pki-tls',
+          client_id: 'client-pki-mtls',
           grant_type: 'implicit',
         })
         .type('form')
         .expect(tokenAuthRejected);
+    });
+  });
+
+  describe('self_signed_tls_client_auth auth', () => {
+    it('accepts the auth [1/2]', function () {
+      return this.agent.post(route)
+        .set('x-ssl-client-cert', rsacrt.replace(/\n/g, ''))
+        .send({
+          client_id: 'client-self-signed-mtls',
+          grant_type: 'implicit',
+        })
+        .type('form')
+        .expect(tokenAuthSucceeded);
+    });
+
+    it('accepts the auth [2/2]', function () {
+      return this.agent.post(route)
+        .set('x-ssl-client-cert', eccrt.replace(/\n/g, ''))
+        .send({
+          client_id: 'client-self-signed-mtls',
+          grant_type: 'implicit',
+        })
+        .type('form')
+        .expect(tokenAuthSucceeded);
+    });
+
+    it('fails the auth when x-ssl-client-cert is not passed by the proxy', function () {
+      return this.agent.post(route)
+        .send({
+          client_id: 'client-self-signed-mtls',
+          grant_type: 'implicit',
+        })
+        .type('form')
+        .expect(tokenAuthRejected);
+    });
+
+    it('fails the auth when x-ssl-client-cert does not match the registered ones', function () {
+      return this.agent.post(route)
+        .set('x-ssl-client-cert', eccrt.replace(/\n/g, ''))
+        .send({
+          client_id: 'client-self-signed-mtls-rsa',
+          grant_type: 'implicit',
+        })
+        .type('form')
+        .expect(tokenAuthRejected);
+    });
+
+    it('handles rotation of stale jwks', function () {
+      nock('https://client.example.com/')
+        .get('/jwks')
+        .reply(200, JSON.stringify(mtlsKeys));
+
+      return this.agent.post(route)
+        .set('x-ssl-client-cert', rsacrt.replace(/\n/g, ''))
+        .send({
+          client_id: 'client-self-signed-mtls-jwks_uri',
+          grant_type: 'implicit',
+        })
+        .type('form')
+        .expect(tokenAuthSucceeded);
     });
   });
 });
