@@ -28,12 +28,14 @@ if (FORMAT === 'opaque') {
     const params = { foo: 'bar' };
     const userCode = '1384-3217';
     const deviceInfo = { foo: 'bar' };
+    const s256 = '_gPMqAT8BELhXwBa2nIT0OvdWtQCiF_g09nAyHhgCe0';
 
     /* eslint-disable object-property-newline */
     const fullPayload = {
       accountId, claims, clientId, grantId, scope, sid, consumed, acr, amr, authTime, nonce,
       redirectUri, codeChallenge, codeChallengeMethod, aud, error, errorDescription, params,
       userCode, deviceInfo, gty,
+      'x5t#S256': s256,
     };
     /* eslint-enable object-property-newline */
 
@@ -67,6 +69,7 @@ if (FORMAT === 'opaque') {
         kind,
         scope,
         sid,
+        'x5t#S256': s256,
       });
     });
 
@@ -175,6 +178,7 @@ if (FORMAT === 'opaque') {
         jti: upsert.getCall(0).args[0],
         kind,
         scope,
+        'x5t#S256': s256,
       });
     });
 
