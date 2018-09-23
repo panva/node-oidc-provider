@@ -781,7 +781,7 @@ false
   <br>
 
 
-To enable Certificate Bound Access Tokens the provider expects `x-ssl-client-cert` header to be presented by your TLS-offloading proxy with the variable value set by this proxy. An important aspect is to sanitize the inbound request header at the proxy. <br/><br/> The most common openssl based proxies are Apache and NGINX, with those you're looking to use <br/><br/> __`SSLVerifyClient` (Apache) / `ssl_verify_client` (NGINX)__ with the appropriate configuration value that matches your setup requirements. <br/><br/> Set the proxy request header with variable set as a result of enabling MTLS
+To enable Certificate Bound Access Tokens the provider expects your TLS-offloading proxy to handle the client certificate validation, parsing, handling, etc. Once set up you are expected to forward `x-ssl-client-cert` header with variable values set by this proxy. An important aspect is to sanitize the inbound request headers at the proxy. <br/><br/> The most common openssl based proxies are Apache and NGINX, with those you're looking to use <br/><br/> __`SSLVerifyClient` (Apache) / `ssl_verify_client` (NGINX)__ with the appropriate configuration value that matches your setup requirements. <br/><br/> Set the proxy request header with variable set as a result of enabling MTLS
   
 
 ```nginx
@@ -793,7 +793,7 @@ proxy_set_header x-ssl-client-cert $ssl_client_cert;
 RequestHeader set x-ssl-client-cert  ""
 RequestHeader set x-ssl-client-cert "%{SSL_CLIENT_CERT}s"
 ```
-You should also consider hosting the token and userinfo endpoints on a separate host name or port in order to prevent unintended impact on the TLS behaviour of your other endpoints, e.g. Discovery or the authorization endpoint and changing the discovery values for these with a post-middleware since you need MTLS to issue tokens (token_endpoint) and userinfo will now act as a Resource Server supporting Certificate Bound Access Tokens and therefore needs to handle client certificates.
+You should also consider hosting the endpoints supporting client authentication, on a separate host name or port in order to prevent unintended impact on the TLS behaviour of your other endpoints, e.g. Discovery or the authorization endpoint and changing the discovery values for them with a post-middleware. When doing that be sure to remove the client provided headers of the same name on the non-MTLS enabled host name / port in your proxy setup.
   
 
 ```js
@@ -1915,31 +1915,34 @@ _**default value**_:
   'none',
   'client_secret_basic', 'client_secret_post',
   'client_secret_jwt', 'private_key_jwt',
-  'tls_client_auth',
+  'tls_client_auth', 'self_signed_tls_client_auth',
 ]
 ```
 </details>
 <details>
-  <summary>(Click to expand) Setting up the environment for tls_client_auth</summary>
+  <summary>(Click to expand) Setting up the environment for tls_client_auth and self_signed_tls_client_auth</summary>
   <br>
 
 
-To enable `tls_client_auth` the provider expects `x-ssl-client-verify` and `x-ssl-client-s-dn` headers to be presented by your TLS-offloading proxy with the variable values set by these proxies. An important aspect is to sanitize the inbound request headers at the proxy. <br/><br/> The most common openssl based proxies are Apache and NGINX, with those you're looking to use <br/><br/> __`SSLVerifyClient` (Apache) / `ssl_verify_client` (NGINX)__ with the appropriate configuration value that matches your setup requirements. <br/><br/> __`SSLCACertificateFile` or `SSLCACertificatePath` (Apache) / `ssl_client_certificate` (NGINX)__ with the values pointing to your accepted CA Certificates. <br/><br/> Set the proxy request headers with variables set as a result of enabling MTLS
+To enable MTLS based authentication methods the provider expects your TLS-offloading proxy to handle the client certificate validation, parsing, handling, etc. Once set up you are expected to forward `x-ssl-client-verify`, `x-ssl-client-s-dn` and `x-ssl-client-cert` headers with variable values set by this proxy. An important aspect is to sanitize the inbound request headers at the proxy. <br/><br/> The most common openssl based proxies are Apache and NGINX, with those you're looking to use <br/><br/> __`SSLVerifyClient` (Apache) / `ssl_verify_client` (NGINX)__ with the appropriate configuration value that matches your setup requirements. <br/><br/> __`SSLCACertificateFile` or `SSLCACertificatePath` (Apache) / `ssl_client_certificate` (NGINX)__ with the values pointing to your accepted CA Certificates. <br/><br/> Set the proxy request headers with variables set as a result of enabling MTLS
   
 
 ```nginx
 # NGINX
+proxy_set_header x-ssl-client-cert $ssl_client_cert;
 proxy_set_header x-ssl-client-verify $ssl_client_verify;
 proxy_set_header x-ssl-client-s-dn $ssl_client_s_dn;
 ```
 ```apache
 # Apache
+RequestHeader set x-ssl-client-cert  ""
+RequestHeader set x-ssl-client-cert "%{SSL_CLIENT_CERT}s"
 RequestHeader set x-ssl-client-verify  ""
 RequestHeader set x-ssl-client-verify "%{SSL_CLIENT_VERIFY}s"
 RequestHeader set x-ssl-client-s-dn  ""
 RequestHeader set x-ssl-client-s-dn "%{SSL_CLIENT_S_DN}s"
 ```
-You should also consider hosting the endpoints supporting client authentication, on a separate host name or port in order to prevent unintended impact on the TLS behaviour of your other endpoints, e.g. Discovery or the authorization endpoint and changing the discovery values for them with a post-middleware.
+You should also consider hosting the endpoints supporting client authentication, on a separate host name or port in order to prevent unintended impact on the TLS behaviour of your other endpoints, e.g. Discovery or the authorization endpoint and changing the discovery values for them with a post-middleware. When doing that be sure to remove the client provided headers of the same name on the non-MTLS enabled host name / port in your proxy setup.
   
 
 ```js
