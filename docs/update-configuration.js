@@ -65,7 +65,7 @@ const props = [
     read.on('line', (line) => {
       let strLine = line.trim();
 
-      if (strLine.endsWith('```js')) {
+      if (strLine.endsWith('```js') || strLine.endsWith('```apache') || strLine.endsWith('```nginx')) {
         inTicks = true;
       }
 
