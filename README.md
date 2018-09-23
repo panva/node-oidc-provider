@@ -52,6 +52,7 @@ The following drafts/experimental specifications are implemented by oidc-provide
 - [RFC7592 - OAuth 2.0 Dynamic Client Registration Management Protocol (Update and Delete)][registration-management]
 - [OAuth 2.0 Web Message Response Mode - draft 00][wmrm]
 - [OAuth 2.0 Device Flow for Browserless and Input Constrained Devices - draft 12][device-flow]
+- [OAuth 2.0 Mutual TLS Client Authentication and Certificate Bound Access Tokens - draft 11][mtls]
 - [JWT Response for OAuth Token Introspection - draft 01][jwt-introspection]
 
 Updates to draft and experimental specification versions are released as MINOR library versions,
