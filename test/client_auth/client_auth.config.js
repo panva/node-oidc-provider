@@ -1,5 +1,16 @@
-const config = require('../default.config');
+const { cloneDeep } = require('lodash');
+
+const config = cloneDeep(require('../default.config'));
 const clientKey = require('../client.sig.key');
+
+config.tokenEndpointAuthMethods = [
+  'none',
+  'client_secret_basic',
+  'client_secret_post',
+  'private_key_jwt',
+  'client_secret_jwt',
+  'tls_client_auth',
+];
 
 module.exports = {
   config,
@@ -42,5 +53,10 @@ module.exports = {
     jwks: {
       keys: [clientKey],
     },
+  }, {
+    client_id: 'client-pki-tls',
+    redirect_uris: ['https://client.example.com/cb'],
+    token_endpoint_auth_method: 'tls_client_auth',
+    tls_client_auth_subject_dn: 'foobar',
   }],
 };

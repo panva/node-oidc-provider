@@ -932,4 +932,42 @@ describe('client authentication options', () => {
         .expect(tokenAuthSucceeded));
     });
   });
+
+  describe('tls_client_auth auth', () => {
+    it('accepts the auth', function () {
+      return this.agent.post(route)
+        .set('x-ssl-client-verify', 'SUCCESS')
+        .set('x-ssl-client-s-dn', 'foobar')
+        .send({
+          client_id: 'client-pki-tls',
+          grant_type: 'implicit',
+        })
+        .type('form')
+        .expect(tokenAuthSucceeded);
+    });
+
+    it('fails the auth the auth when ssl-client-verify is not SUCCESS', function () {
+      return this.agent.post(route)
+        .set('x-ssl-client-verify', 'FAILED: self signed certificate')
+        .set('x-ssl-client-s-dn', 'foobar')
+        .send({
+          client_id: 'client-pki-tls',
+          grant_type: 'implicit',
+        })
+        .type('form')
+        .expect(tokenAuthRejected);
+    });
+
+    it('fails the auth the auth when ssl-client-s-dn does not match', function () {
+      return this.agent.post(route)
+        .set('x-ssl-client-verify', 'SUCCESS')
+        .set('x-ssl-client-s-dn', 'foobarbaz')
+        .send({
+          client_id: 'client-pki-tls',
+          grant_type: 'implicit',
+        })
+        .type('form')
+        .expect(tokenAuthRejected);
+    });
+  });
 });
