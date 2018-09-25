@@ -793,7 +793,7 @@ proxy_set_header x-ssl-client-cert $ssl_client_cert;
 RequestHeader set x-ssl-client-cert  ""
 RequestHeader set x-ssl-client-cert "%{SSL_CLIENT_CERT}s"
 ```
-You should also consider hosting the endpoints supporting client authentication, on a separate host name or port in order to prevent unintended impact on the TLS behaviour of your other endpoints, e.g. Discovery or the authorization endpoint and changing the discovery values for them with a post-middleware. When doing that be sure to remove the client provided headers of the same name on the non-MTLS enabled host name / port in your proxy setup.
+You should also consider hosting the endpoints supporting client authentication, on a separate host name or port in order to prevent unintended impact on the TLS behaviour of your other endpoints, e.g. Discovery or the authorization endpoint and changing the discovery values for them with a post-middleware.
   
 
 ```js
@@ -805,6 +805,9 @@ provider.use(async (ctx, next) => {
   }
 });
 ```
+When doing that be sure to remove the client provided headers of the same name on the non-MTLS enabled host name / port in your proxy setup or block the routes for these there completely.  
+
+
 </details>
 
 ### features.claimsParameter
@@ -1942,7 +1945,7 @@ RequestHeader set x-ssl-client-verify "%{SSL_CLIENT_VERIFY}s"
 RequestHeader set x-ssl-client-s-dn  ""
 RequestHeader set x-ssl-client-s-dn "%{SSL_CLIENT_S_DN}s"
 ```
-You should also consider hosting the endpoints supporting client authentication, on a separate host name or port in order to prevent unintended impact on the TLS behaviour of your other endpoints, e.g. Discovery or the authorization endpoint and changing the discovery values for them with a post-middleware. When doing that be sure to remove the client provided headers of the same name on the non-MTLS enabled host name / port in your proxy setup.
+You should also consider hosting the endpoints supporting client authentication, on a separate host name or port in order to prevent unintended impact on the TLS behaviour of your other endpoints, e.g. Discovery or the authorization endpoint and changing the discovery values for them with a post-middleware.
   
 
 ```js
@@ -1955,6 +1958,9 @@ provider.use(async (ctx, next) => {
   }
 });
 ```
+When doing that be sure to remove the client provided headers of the same name on the non-MTLS enabled host name / port in your proxy setup or block the routes for these there completely.  
+
+
 </details>
 
 ### ttl
