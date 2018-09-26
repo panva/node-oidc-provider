@@ -2,6 +2,105 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+<a name="5.0.0"></a>
+# [5.0.0](https://github.com/panva/node-oidc-provider/compare/v4.8.3...v5.0.0) (2018-09-26)
+
+
+### Bug Fixes
+
+* change conformIdTokenClaims default value to true ([ef40f6d](https://github.com/panva/node-oidc-provider/commit/ef40f6d))
+* devInteractions also have no-cache headers, doesn't set acr ([9d7a032](https://github.com/panva/node-oidc-provider/commit/9d7a032))
+* ensure non-whitelisted JWA algs cannot be used by _jwt client auth ([186de0d](https://github.com/panva/node-oidc-provider/commit/186de0d))
+* extraClientMetadata.properties keys do not get transformed ([837beca](https://github.com/panva/node-oidc-provider/commit/837beca))
+* fixed 500 in client update checking client_secret equality ([bad6348](https://github.com/panva/node-oidc-provider/commit/bad6348))
+* remove deprecated passing of scope with consent results ([35f13bc](https://github.com/panva/node-oidc-provider/commit/35f13bc))
+* remove deprecated Session.find upsert behaviour ([73e07bd](https://github.com/panva/node-oidc-provider/commit/73e07bd))
+* remove deprecated unused exported errors ([fc3f509](https://github.com/panva/node-oidc-provider/commit/fc3f509))
+* remove got 8 > 9(retries > retry) option re-assign behaviour ([db31d32](https://github.com/panva/node-oidc-provider/commit/db31d32))
+* secretFactory is now used in client update ([0923f52](https://github.com/panva/node-oidc-provider/commit/0923f52))
+* validate secret length for client_secret_jwt with no alg specified ([ab64268](https://github.com/panva/node-oidc-provider/commit/ab64268))
+
+
+### Code Refactoring
+
+* IdToken constructor and `#sign()` method changes ([bb4269f](https://github.com/panva/node-oidc-provider/commit/bb4269f))
+* moved thirdPartyCheckUrl under features.sessionManagement ([c3f84b2](https://github.com/panva/node-oidc-provider/commit/c3f84b2))
+* renamed deviceCode feature to deviceFlow ([cd57d77](https://github.com/panva/node-oidc-provider/commit/cd57d77))
+
+
+### Features
+
+* add self_signed_tls_client_auth client authentication method ([9a1f0a3](https://github.com/panva/node-oidc-provider/commit/9a1f0a3))
+* add tls_client_auth client authentication method ([ce2bf66](https://github.com/panva/node-oidc-provider/commit/ce2bf66))
+* allow custom mechanisms for handling pairwise identifiers ([57ce6d7](https://github.com/panva/node-oidc-provider/commit/57ce6d7))
+* back and front-channel can be enabled without sessionManagement ([8cb37ff](https://github.com/panva/node-oidc-provider/commit/8cb37ff))
+* dynamic token expiration ([6788b83](https://github.com/panva/node-oidc-provider/commit/6788b83))
+* enable Certificate Bound Access Tokens ([f43d820](https://github.com/panva/node-oidc-provider/commit/f43d820))
+* enable explicit whitelist of JWA algorithms ([0604e08](https://github.com/panva/node-oidc-provider/commit/0604e08))
+* enable token storage and representation format to be dynamic ([8487bd8](https://github.com/panva/node-oidc-provider/commit/8487bd8))
+* invalid_token errors now have a detail to aid in debugging or logs ([b8324b7](https://github.com/panva/node-oidc-provider/commit/b8324b7))
+* JWT Secured Authorization Response Mode for OAuth 2.0 (JARM) ([c759415](https://github.com/panva/node-oidc-provider/commit/c759415))
+* opaque is the default adapter format now ([75e7a3f](https://github.com/panva/node-oidc-provider/commit/75e7a3f))
+* unify audiences helper function signature ([fd38600](https://github.com/panva/node-oidc-provider/commit/fd38600))
+
+
+### BREAKING CHANGES
+
+* the configuration option `pairwiseSalt` is replaced
+with `pairwiseIdentifier` async helper function. This allows for
+different means of generating the pairwise identifier to be implemented,
+such as the ones mentioned in [Core 1.0](https://openid.net/specs/openid-connect-core-1_0.html#rfc.section.8.1)
+* Passing `scope` to interaction result's `consent`
+property is no longer supported
+* `cookies.thirdPartyCheckUrl` is now configured
+with `features.sessionManagement.thirdPartyCheckUrl` instead
+* `features.deviceCode` is now `features.deviceFlow` and `deviceCodeSuccess` helper function is now
+`deviceFlowSuccess`
+* In order for dynamic token expiration to be able to
+pass a client instance to the helpers it is now better to pass a
+`client` property being the client instance to a new token instance
+rather then a `clientId`. When passing a client the `clientId` will be
+set automatically.
+* the default adapter format is now set to opaque,
+the legacy "legacy" value is still available for legacy deployments but
+cannot be combined with the new dynamic format feature option and is
+considered deprecated and will be removed in the next major release.
+* the `default` enabled JWA algorithms have changed. See
+the new `whitelistedJWA` configuration option to re-enable the ones you
+need.
+* the configuration `unsupported` property is removed,
+use the configuration `whitelistedJWA` object instead. This isn't a 1:1
+renaming of a configuration value, while the `unsupported` option was
+essentually a blacklist the `whitelistedJWA` as the name suggests is a
+whitelist.
+* the `RSA-OAEP-256` key wrapping algorithm has been
+removed and is not configurable since it's not supported natively in
+nodejs.
+* IdToken constructor now requires the client instance
+to be passed in as a second argument. IdToken instance `.sign()` now
+takes just one argument with the options.
+* when a symmetrical endpoint authentication signing alg
+is not specified the secret will be validated such that it can be used
+with all available HS bit lengths
+* audience helper `token` argument will no longer be
+a reference to other tokens than the one to which the audiences will be
+pushed.
+* audience helper `scope` argument is no longer available
+* `generateTokenId` format method is now a prototype method instead of a class one
+* the http request option `retries` will no longer
+be transformed into `retry`, see `got@^9.0.0` package for the `retry`
+options
+* exported errors `RestrictedGrantType` and
+`RestrictedResponseType` are no longer available
+* Session.find default upsert behaviour is changed to
+return a new empty session instead
+* change conformIdTokenClaims default value to true
+* custom client metadata properties will not get
+transformed between snake_case and camelCase anymore to allow for
+namespaced metadata properties such as `custom://metadata`
+
+
+
 <a name="4.8.3"></a>
 ## [4.8.3](https://github.com/panva/node-oidc-provider/compare/v4.8.2...v4.8.3) (2018-09-20)
 
