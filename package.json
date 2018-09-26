@@ -31,7 +31,6 @@
   ],
   "main": "lib/index.js",
   "scripts": {
-    "commitmsg": "commitlint -E GIT_PARAMS",
     "coverage": "nyc node ./test/run",
     "heroku-postbuild": "npm install mongodb@^3.0.0",
     "lint": "eslint lib example test",
@@ -41,7 +40,7 @@
   "dependencies": {
     "@koa/cors": "^2.2.2",
     "base64url": "^3.0.0",
-    "debug": "^3.2.5",
+    "debug": "^4.0.1",
     "delegates": "^1.0.0",
     "ejs": "^2.6.1",
     "got": "^9.2.2",
@@ -60,16 +59,16 @@
   "devDependencies": {
     "@commitlint/cli": "^7.1.2",
     "@commitlint/config-conventional": "^7.1.2",
-    "chai": "^4.1.2",
+    "chai": "^4.2.0",
     "clear-module": "^3.0.0",
     "eslint": "^5.6.0",
     "eslint-config-airbnb-base": "^13.1.0",
     "eslint-plugin-import": "^2.14.0",
-    "husky": "^0.14.3",
+    "husky": "^1.0.0",
     "koa-body": "^4.0.4",
     "koa-ejs": "^4.1.2",
     "koa-helmet": "^4.0.0",
-    "koa-mount": "^3.0.0",
+    "koa-mount": "^4.0.0",
     "mocha": "^5.2.0",
     "moment": "^2.22.2",
     "nock": "^10.0.0",
@@ -91,5 +90,10 @@
       "lcov",
       "text-summary"
     ]
+  },
+  "husky": {
+    "hooks": {
+      "commit-msg": "commitlint -E HUSKY_GIT_PARAMS"
+    }
   }
 }
