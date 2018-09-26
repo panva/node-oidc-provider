@@ -2,7 +2,14 @@ const crypto = require('crypto');
 
 const pkg = require('../../package.json');
 
-module.exports.provider = {
+let HEROKU_EXAMPLE_CONFIGURATION;
+try {
+  HEROKU_EXAMPLE_CONFIGURATION = JSON.parse(process.env.HEROKU_EXAMPLE_CONFIGURATION);
+} catch (err) {
+  HEROKU_EXAMPLE_CONFIGURATION = {};
+}
+
+module.exports.provider = Object.assign({
   acrValues: ['urn:mace:incommon:iap:bronze'],
   cookies: {
     long: { signed: true, maxAge: (1 * 24 * 60 * 60) * 1000 }, // 1 day in ms
@@ -72,7 +79,7 @@ module.exports.provider = {
     //   registrations 24 hours after registration
     RegistrationAccessToken: 1 * 24 * 60 * 60, // 1 day in seconds
   },
-};
+}, HEROKU_EXAMPLE_CONFIGURATION);
 
 module.exports.clients = [
   // {
