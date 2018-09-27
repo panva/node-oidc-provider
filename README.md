@@ -178,3 +178,4 @@ See the list of available emitted [event names](/docs/events.md) and their descr
 [sponsor-auth0]: https://auth0.com/overview?utm_source=GHsponsor&utm_medium=GHsponsor&utm_campaign=oidc-provider&utm_content=auth
 [suggest-feature]: https://github.com/panva/node-oidc-provider/issues/new?template=feature-request.md
 [bug]: https://github.com/panva/node-oidc-provider/issues/new?template=bug-report.md
+[mtls]: https://tools.ietf.org/html/draft-ietf-oauth-mtls-11
