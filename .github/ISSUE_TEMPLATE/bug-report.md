@@ -38,6 +38,7 @@ Add any other context about the problem here.
  - [ ] the bug is happening on latest oidc-provider too.
  - [ ] i have tried DEBUG (see readme.md) and can see the issue is with the provider and not my code.
  - [ ] i have searched the issues tracker on github for similar issues and couldn't find anything related.
+ - [ ] i have searched the [FAQ](https://github.com/panva/node-oidc-provider/wiki/FAQ) and couldn't find anything related.
 
 **Logs**
 <!-- run the server with DEBUG=oidc-provider:* and paste the formatted logs or a gist link here -->
