@@ -8,9 +8,6 @@ not dictate a fixed data model or persistence store, instead, you must provide a
 A generic in-memory adapter is available to get you started as well as feature-less dev-only views
 to be able to get off the ground.
 
-**NOTICE:** oidc-provider ^4.0.0 drops support for Node.js versions less than lts/carbon(8.9.0) and
-introduces various breaking changes. See the CHANGELOG for a complete list of deprecations and changes.
-
 **Table of Contents**
 
 <!-- TOC depthFrom:2 depthTo:3 withLinks:1 updateOnSave:1 orderedList:0 -->
