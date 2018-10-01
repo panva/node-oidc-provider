@@ -1588,7 +1588,12 @@ ${frames.join('')}
 
 ### interactionCheck
 
-Helper used by the OP as a final check whether the End-User should be sent to interaction or not, the default behavior is that every RP must be authorized per session and that native application clients always require End-User prompt to be confirmed. Return false if no interaction should be performed, return an object with relevant error, reason, etc. When interaction should be requested  
+Helper used by the OP as a final check whether the End-User should be sent to interaction or not. Return false if no interaction should be performed, return an object with relevant error, reason, etc. When interaction should be requested.   
+ The default BCP behavior that is implemented, one that you SHOULD carry over to your own function should you choose to overwrite it, is that   
+ - every client requires interaction the first time it's encountered in a session
+ - native clients always require End-User prompt
+ - consent is required every time when scopes or claims weren't accepted by the end-user yet   
+  
 
 _**affects**_: authorization interactions  
 <details>
@@ -1640,6 +1645,20 @@ async interactionCheck(ctx) {
 
 </details>
 
+<details>
+  <summary>(Click to expand) when bypassing the BCP checks put forth by the default implementation</summary>
+  <br>
+
+
+You will have to do some of the actions an interaction resume would do automatically upon interaction success yourself, you would do these inside the interactionCheck helper.
+ - `ctx.oidc.session.sidFor(ctx.oidc.client.clientId, randomValue);`
+ - `ctx.oidc.session.rejectedClaimsFor(ctx.oidc.client.clientId, rejectedClaims);`
+ - `ctx.oidc.session.rejectedScopesFor(ctx.oidc.client.clientId, rejectedScopes);`
+ - `ctx.oidc.session.promptedScopesFor(ctx.oidc.client.clientId, ctx.oidc.requestParamScopes);`
+ - `ctx.oidc.session.promptedClaimsFor(ctx.oidc.client.clientId, ctx.oidc.requestParamClaims);`  
+
+
+</details>
 
 ### interactionUrl
 
