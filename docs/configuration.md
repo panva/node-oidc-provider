@@ -34,6 +34,7 @@ is a good starting point to get an idea of what you should provide.
 - [Configuration options](#configuration-options)
   - [features](#features)
   - [features.backchannelLogout](#featuresbackchannellogout)
+  - [features.certificateBoundAccessTokens](#featurescertificateboundaccesstokens)
   - [features.claimsParameter](#featuresclaimsparameter)
   - [features.clientCredentials](#featuresclientcredentials)
   - [features.devInteractions](#featuresdevinteractions)
