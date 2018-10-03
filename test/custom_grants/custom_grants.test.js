@@ -16,6 +16,7 @@ function register(provider, grantType, params, options) {
 
 describe('custom token endpoint grant types', () => {
   before(bootstrap(__dirname));
+
   before('allows for grant types to be added', function () {
     register(this.provider, 'lotto', 'name');
     expect(i(this.provider).configuration('grantTypes').has('lotto')).to.be.true;
