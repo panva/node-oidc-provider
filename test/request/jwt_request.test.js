@@ -264,6 +264,34 @@ describe('request parameter features', () => {
       });
 
       if (route !== '/device/auth') {
+        it('can contain resource parameter as an Array', async function () {
+          const spy = sinon.spy();
+          this.provider.once(successEvt, spy);
+
+          await JWT.sign({
+            client_id: 'client',
+            response_type: 'code',
+            redirect_uri: 'https://client.example.com/cb',
+            resource: ['https://rp.example.com/api'],
+          }, null, 'none', { issuer: 'client', audience: this.provider.issuer }).then(request => this.wrap({
+            agent: this.agent,
+            route,
+            verb,
+            auth: {
+              request,
+              scope: 'openid',
+              client_id: 'client',
+              response_type: 'code',
+            },
+          })
+            .expect(successCode)
+            .expect(successFnCheck));
+
+          expect(
+            spy.calledWithMatch({ oidc: { params: { resource: ['https://rp.example.com/api'] } } }),
+          ).to.be.true;
+        });
+
         it('doesnt allow response_type to differ', function () {
           const spy = sinon.spy();
           this.provider.once(errorEvt, spy);
