@@ -7,6 +7,7 @@ config.features = {
   requestUri: { requireRequestUriRegistration: false },
   claimsParameter: true,
   deviceFlow: true,
+  resourceIndicators: true,
 };
 
 pull(config.whitelistedJWA.requestObjectSigningAlgValues, 'HS384');

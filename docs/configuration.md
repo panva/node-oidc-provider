@@ -51,6 +51,7 @@ is a good starting point to get an idea of what you should provide.
   - [features.registrationManagement](#featuresregistrationmanagement)
   - [features.request](#featuresrequest)
   - [features.requestUri](#featuresrequesturi)
+  - [features.resourceIndicators](#featuresresourceindicators)
   - [features.revocation](#featuresrevocation)
   - [features.sessionManagement](#featuressessionmanagement)
   - [features.webMessageResponseMode](#featureswebmessageresponsemode)
@@ -743,6 +744,7 @@ Enable/disable features.
   jwtResponseModes: false,
   registration: false,
   registrationManagement: false,
+  resourceIndicators: false,
   request: false,
   revocation: false,
   sessionManagement: false,
@@ -1109,6 +1111,63 @@ Configure `features.requestUri` with an object like so instead of a Boolean valu
 
 ```js
 { requireRequestUriRegistration: false }
+```
+</details>
+
+### features.resourceIndicators
+
+[draft-ietf-oauth-resource-indicators-00](https://tools.ietf.org/html/draft-ietf-oauth-resource-indicators-00) - Resource Indicators for OAuth 2.0  
+
+Enables the use and validations of `resource` parameter for the authorization and token endpoints. In order for the feature to be any useful you must also use the `audiences` helper function to further validate/whitelist the resource(s) and push them down to issued access tokens.   
+  
+
+
+_**default value**_:
+```js
+false
+```
+<details>
+  <summary>(Click to expand) Example use with audiences and dynamic AccessToken format</summary>
+  <br>
+
+
+This example will
+ - throw when multiple resources are requested (per spec at the OPs discretion)
+ - throw based on an OP policy
+ - push resources down to the audience of access tokens
+  
+
+```js
+// const { InvalidResource } = Provider.errors;
+// resourceAllowedForClient is the custom OP policy
+{
+  // ...
+  async audiences(ctx, sub, token, use) {
+    const { resource } = ctx.oidc.params;
+    if (resource && use === 'access_token') {
+      if (Array.isArray(resource)) {
+        throw new InvalidResource('multiple "resource" parameters are not allowed');
+      }
+      const { client } = ctx.oidc;
+      const allowed = await resourceAllowedForClient(resource, client.clientId);
+      if (!allowed) {
+        throw new InvalidResource('unauthorized "resource" requested');
+      }
+      return [resource];
+    }
+    return undefined;
+  },
+  formats: {
+    default: 'opaque',
+    AccessToken(token) {
+      if (Array.isArray(token.aud)) {
+        return 'jwt';
+      }
+      return 'opaque';
+    }
+  },
+  // ...
+}
 ```
 </details>
 

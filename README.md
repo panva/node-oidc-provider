@@ -43,14 +43,15 @@ enabled by default, check the configuration section on how to enable them.
 - [RFC8252 - OAuth 2.0 for Native Apps BCP][oauth-native-apps]
 
 The following drafts/experimental specifications are implemented by oidc-provider.
-- [OpenID Connect Session Management 1.0 - draft 28][session-management]
-- [OpenID Connect Back-Channel Logout 1.0 - draft 04][backchannel-logout]
-- [OpenID Connect Front-Channel Logout 1.0 - draft 02][frontchannel-logout]
-- [RFC7592 - OAuth 2.0 Dynamic Client Registration Management Protocol (Update and Delete)][registration-management]
-- [OAuth 2.0 Web Message Response Mode - draft 00][wmrm]
+- [JWT Response for OAuth Token Introspection - draft 01][jwt-introspection]
 - [OAuth 2.0 Device Flow for Browserless and Input Constrained Devices - draft 12][device-flow]
 - [OAuth 2.0 Mutual TLS Client Authentication and Certificate Bound Access Tokens - draft 11][mtls]
-- [JWT Response for OAuth Token Introspection - draft 01][jwt-introspection]
+- [OAuth 2.0 Resource Indicators - draft 00][resource-indicators]
+- [OAuth 2.0 Web Message Response Mode - draft 00][wmrm]
+- [OpenID Connect Back-Channel Logout 1.0 - draft 04][backchannel-logout]
+- [OpenID Connect Front-Channel Logout 1.0 - draft 02][frontchannel-logout]
+- [OpenID Connect Session Management 1.0 - draft 28][session-management]
+- [RFC7592 - OAuth 2.0 Dynamic Client Registration Management Protocol (Update and Delete)][registration-management]
 
 Updates to draft and experimental specification versions are released as MINOR library versions,
 if you utilize these specification implementations consider using the tilde `~` operator in your
@@ -176,3 +177,4 @@ See the list of available emitted [event names](/docs/events.md) and their descr
 [suggest-feature]: https://github.com/panva/node-oidc-provider/issues/new?template=feature-request.md
 [bug]: https://github.com/panva/node-oidc-provider/issues/new?template=bug-report.md
 [mtls]: https://tools.ietf.org/html/draft-ietf-oauth-mtls-11
+[resource-indicators]: https://tools.ietf.org/html/draft-ietf-oauth-resource-indicators-00

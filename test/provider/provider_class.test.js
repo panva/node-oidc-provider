@@ -20,6 +20,7 @@ describe('Provider', () => {
       'InvalidRequest',
       'InvalidRequestObject',
       'InvalidRequestUri',
+      'InvalidResource',
       'InvalidScope',
       'InvalidToken',
       'RedirectUriMismatch',
