@@ -44,6 +44,7 @@ enabled by default, check the configuration section on how to enable them.
 
 The following drafts/experimental specifications are implemented by oidc-provider.
 - [JWT Response for OAuth Token Introspection - draft 01][jwt-introspection]
+- [JWT Secured Authorization Response Mode for OAuth 2.0 (JARM) - draft 01][jarm]
 - [OAuth 2.0 Device Flow for Browserless and Input Constrained Devices - draft 12][device-flow]
 - [OAuth 2.0 Mutual TLS Client Authentication and Certificate Bound Access Tokens - draft 11][mtls]
 - [OAuth 2.0 Resource Indicators - draft 00][resource-indicators]
@@ -178,3 +179,4 @@ See the list of available emitted [event names](/docs/events.md) and their descr
 [bug]: https://github.com/panva/node-oidc-provider/issues/new?template=bug-report.md
 [mtls]: https://tools.ietf.org/html/draft-ietf-oauth-mtls-11
 [resource-indicators]: https://tools.ietf.org/html/draft-ietf-oauth-resource-indicators-00
+[jarm]: https://openid.net/specs/openid-financial-api-jarm-wd-01.html
