@@ -515,14 +515,13 @@ const oidc = new Provider('http://localhost:3000', {
 
 
 ## Fine-tuning supported algorithms
-The lists of supported algorithms exposed via discovery and used when validating request objects and
-client metadata is a union of
-
-- all symmetrical algorithms where they apply
-- algorithms from the keystore you initialize the provider with
-
-If you wish to tune the algorithms further you may do so via the `unsupported` [configuration][defaults]
+The supported JWA algorithms are configured with the [whitelistedJWA](#whitelistedjwa) configuration
 property.
+
+- whitelisted symmetric algorithms are available all the time
+- whitelisted asymmetric algorithms are available when the provider is initialized with keystore
+  including keys that support those JWAs
+
 
 ## HTTP Request Library / Proxy settings
 By default oidc-provider uses the [got][got-library] module. Because of its lightweight nature of
