@@ -868,6 +868,27 @@ describe('Client metadata validation', () => {
           sessionManagement: true,
         },
       };
+
+      defaultsTo(this.title, [], undefined, configuration);
+      defaultsTo(this.title, undefined);
+      mustBeArray(this.title, undefined, configuration);
+
+      rejects(this.title, [123], /must only contain strings$/, undefined, configuration);
+      allows(this.title, ['http://a-web-uri'], undefined, configuration);
+      allows(this.title, ['https://a-web-uri'], undefined, configuration);
+      allows(this.title, ['any-custom-scheme://not-a-web-uri'], undefined, configuration);
+      rejects(this.title, ['not a uri'], /must only contain uris$/, undefined, configuration);
+    });
+  });
+
+  context('features.backchannelLogout', () => {
+    const configuration = {
+      features: {
+        backchannelLogout: true,
+      },
+    };
+
+    context('post_logout_redirect_uris', function () {
       defaultsTo(this.title, [], undefined, configuration);
       defaultsTo(this.title, undefined);
       mustBeArray(this.title, undefined, configuration);
@@ -879,44 +900,48 @@ describe('Client metadata validation', () => {
       rejects(this.title, ['not a uri'], /must only contain uris$/, undefined, configuration);
     });
 
-    context('features.backchannelLogout', () => {
-      const configuration = {
-        features: {
-          sessionManagement: true,
-          backchannelLogout: true,
-        },
-      };
-      context('backchannel_logout_uri', function () {
-        defaultsTo(this.title, undefined);
-        mustBeString(this.title, undefined, undefined, configuration);
-        mustBeUri(this.title, ['http', 'https'], configuration);
-      });
-
-      context('backchannel_logout_session_required', function () {
-        defaultsTo(this.title, undefined);
-        defaultsTo(this.title, false, undefined, configuration);
-        mustBeBoolean(this.title, undefined, configuration);
-      });
+    context('backchannel_logout_uri', function () {
+      defaultsTo(this.title, undefined);
+      mustBeString(this.title, undefined, undefined, configuration);
+      mustBeUri(this.title, ['http', 'https'], configuration);
     });
 
-    context('features.frontchannelLogout', () => {
-      const configuration = {
-        features: {
-          sessionManagement: true,
-          frontchannelLogout: true,
-        },
-      };
-      context('frontchannel_logout_uri', function () {
-        defaultsTo(this.title, undefined);
-        mustBeString(this.title, undefined, undefined, configuration);
-        mustBeUri(this.title, ['http', 'https'], configuration);
-      });
+    context('backchannel_logout_session_required', function () {
+      defaultsTo(this.title, undefined);
+      defaultsTo(this.title, false, undefined, configuration);
+      mustBeBoolean(this.title, undefined, configuration);
+    });
+  });
 
-      context('frontchannel_logout_session_required', function () {
-        defaultsTo(this.title, undefined);
-        defaultsTo(this.title, false, undefined, configuration);
-        mustBeBoolean(this.title, undefined, configuration);
-      });
+  context('features.frontchannelLogout', () => {
+    const configuration = {
+      features: {
+        frontchannelLogout: true,
+      },
+    };
+
+    context('post_logout_redirect_uris', function () {
+      defaultsTo(this.title, [], undefined, configuration);
+      defaultsTo(this.title, undefined);
+      mustBeArray(this.title, undefined, configuration);
+
+      rejects(this.title, [123], /must only contain strings$/, undefined, configuration);
+      allows(this.title, ['http://a-web-uri'], undefined, configuration);
+      allows(this.title, ['https://a-web-uri'], undefined, configuration);
+      allows(this.title, ['any-custom-scheme://not-a-web-uri'], undefined, configuration);
+      rejects(this.title, ['not a uri'], /must only contain uris$/, undefined, configuration);
+    });
+
+    context('frontchannel_logout_uri', function () {
+      defaultsTo(this.title, undefined);
+      mustBeString(this.title, undefined, undefined, configuration);
+      mustBeUri(this.title, ['http', 'https'], configuration);
+    });
+
+    context('frontchannel_logout_session_required', function () {
+      defaultsTo(this.title, undefined);
+      defaultsTo(this.title, false, undefined, configuration);
+      mustBeBoolean(this.title, undefined, configuration);
     });
   });
 
