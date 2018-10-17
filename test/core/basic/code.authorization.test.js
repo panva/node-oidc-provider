@@ -204,6 +204,19 @@ describe('BASIC code', () => {
           .expect(auth.validateInteractionError('login_required', 'max_age'));
       });
 
+      it('custom interactions can be requested', function () {
+        const auth = new this.AuthorizationRequest({
+          response_type,
+          scope,
+          custom: 'foo',
+        });
+
+        return this.wrap({ route, verb, auth })
+          .expect(302)
+          .expect(auth.validateInteractionRedirect)
+          .expect(auth.validateInteractionError('error_foo', 'reason_foo'));
+      });
+
       it('session is too old for this client', async function () {
         const client = await this.provider.Client.find('client');
         client.defaultMaxAge = 1800;

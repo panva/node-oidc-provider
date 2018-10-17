@@ -12,7 +12,9 @@ describe('Provider', () => {
     expect(Provider.errors).to.have.keys([
       'AccessDenied',
       'AuthorizationPending',
+      'ConsentRequired',
       'ExpiredToken',
+      'InteractionRequired',
       'InvalidClient',
       'InvalidClientAuth',
       'InvalidClientMetadata',
@@ -23,6 +25,7 @@ describe('Provider', () => {
       'InvalidResource',
       'InvalidScope',
       'InvalidToken',
+      'LoginRequired',
       'RedirectUriMismatch',
       'RegistrationNotSupported',
       'RequestNotSupported',
