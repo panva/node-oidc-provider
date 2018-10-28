@@ -164,15 +164,17 @@ describe('provider.setProviderSession', () => {
     // simulates setting a fresh session (non existant) in another request
     this.provider.use(async (ctx, next) => {
       if (ctx.path === '/login') {
-        await this.provider.setProviderSession(ctx.req, ctx.res, { account: 'foo', meta });
+        try {
+          await this.provider.setProviderSession(ctx.req, ctx.res, { account: 'foo', meta });
+          throw new Error('expected failure in this.provider.setProviderSession');
+        } catch (err) {
+          expect(err).to.have.property('message', 'meta client_id must be in clients');
+        }
       }
+
       await next();
     });
 
-    try {
-      await this.agent.post('/login');
-    } catch (err) {
-      expect(err.message).to.have.property('message', 'meta client_id must be in clients');
-    }
+    await this.agent.post('/login');
   });
 });
