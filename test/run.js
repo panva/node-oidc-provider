@@ -49,7 +49,7 @@ async function run() {
     mocha.files = files;
 
     if (process.env.CI) {
-      // mocha.retries(1);
+      mocha.retries(1); // retry flaky time comparison tests
       mocha.forbidOnly(); // force suite fail on encountered only test
       mocha.forbidPending(); // force suite fail on encountered skip test
     }
