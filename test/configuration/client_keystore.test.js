@@ -34,28 +34,28 @@ describe('client keystore refresh', () => {
       redirect_uris: ['https://client.example.com/cb'],
       jwks_uri: 'https://client.example.com/jwks',
       id_token_signed_response_alg: 'none',
-      id_token_encrypted_response_alg: 'RSA1_5',
+      id_token_encrypted_response_alg: 'ECDH-ES+A128KW',
       id_token_encrypted_response_enc: 'A128CBC-HS256',
     });
   });
 
   it('gets the jwks from the uri', async function () {
-    await keystore.generate('RSA', 1024);
+    await keystore.generate('EC', 'P-256');
     setResponse();
 
     const client = await this.provider.Client.find('client');
     await client.keystore.refresh();
 
-    expect(client.keystore.get({ kty: 'RSA' })).to.be.ok;
+    expect(client.keystore.get({ kty: 'EC' })).to.be.ok;
   });
 
   it('adds new keys', async function () {
     const client = await this.provider.Client.find('client');
-    await keystore.generate('RSA', 1024);
+    await keystore.generate('EC', 'P-256');
     setResponse();
 
     await client.keystore.refresh();
-    expect(client.keystore.all({ kty: 'RSA' })).to.have.lengthOf(2);
+    expect(client.keystore.all({ kty: 'EC' })).to.have.lengthOf(2);
   });
 
   it('removes not found keys', async function () {
@@ -64,7 +64,7 @@ describe('client keystore refresh', () => {
     const client = await this.provider.Client.find('client');
     await client.keystore.refresh();
 
-    expect(client.keystore.get({ kty: 'RSA' })).not.to.be.ok;
+    expect(client.keystore.get({ kty: 'EC' })).not.to.be.ok;
   });
 
   it('only accepts 200s', async function () {
@@ -106,7 +106,7 @@ describe('client keystore refresh', () => {
   describe('caching', () => {
     it('uses expires caching header to determine stale states', async function () {
       const client = await this.provider.Client.find('client');
-      await keystore.generate('RSA', 1024);
+      await keystore.generate('EC', 'P-256');
       const until = moment().add(2, 'hours').toDate();
 
       setResponse(undefined, undefined, {
@@ -123,7 +123,7 @@ describe('client keystore refresh', () => {
 
     it('ignores the cache-control one when expires is provided', async function () {
       const client = await this.provider.Client.find('client');
-      await keystore.generate('RSA', 1024);
+      await keystore.generate('EC', 'P-256');
       const until = moment().add(2, 'hours').toDate();
 
       setResponse(undefined, undefined, {
@@ -141,7 +141,7 @@ describe('client keystore refresh', () => {
 
     it('uses the max-age if Cache-Control is missing', async function () {
       const client = await this.provider.Client.find('client');
-      await keystore.generate('RSA', 1024);
+      await keystore.generate('EC', 'P-256');
 
       setResponse(undefined, undefined, {
         'Cache-Control': 'private, max-age=3600',
@@ -157,7 +157,7 @@ describe('client keystore refresh', () => {
 
     it('falls back to 1 minute throttle if no caching header is found', async function () {
       const client = await this.provider.Client.find('client');
-      await keystore.generate('RSA', 1024);
+      await keystore.generate('EC', 'P-256');
 
       setResponse();
 
