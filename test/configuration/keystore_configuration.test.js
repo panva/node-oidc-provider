@@ -12,19 +12,19 @@ describe('configuration.keystore', () => {
     this.keystore = jose.JWK.createKeyStore();
   });
 
-  it('must contain at least one RS256 signing key', function () {
+  it('must contain at least one RS256 signing key', async function () {
     const provider = new Provider('http://localhost');
 
-    return provider.initialize({ keystore: this.keystore }).then(fail, (err) => {
+    await provider.initialize({ keystore: this.keystore }).then(fail, (err) => {
       expect(err.message).to.equal('RS256 signing must be supported but no viable key was provided');
-    }).then(() => this.keystore.generate('RSA', 256)).then(() => {
-      provider.initialize({ keystore: this.keystore });
     });
+    await this.keystore.add(global.keystore.get({ kty: 'RSA' }));
+    await provider.initialize({ keystore: this.keystore });
   });
 
   it('must only contain EC and RS keys', async function () {
     const provider = new Provider('http://localhost');
-    await this.keystore.generate('RSA', 256);
+    await this.keystore.add(global.keystore.get({ kty: 'RSA' }));
 
     return this.keystore.generate('oct', 256)
       .then(() => provider.initialize({ keystore: this.keystore }))

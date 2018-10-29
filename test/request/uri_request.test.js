@@ -3,7 +3,6 @@ const { parse } = require('url');
 const sinon = require('sinon');
 const nock = require('nock');
 const { expect } = require('chai');
-const timekeeper = require('timekeeper');
 
 const JWT = require('../../lib/helpers/jwt');
 const RequestUriCache = require('../../lib/helpers/request_uri_cache');
@@ -11,8 +10,6 @@ const bootstrap = require('../test_helper');
 
 describe('request Uri features', () => {
   before(bootstrap(__dirname));
-
-  afterEach(() => timekeeper.reset());
 
   describe('configuration features.requestUri', () => {
     it('extends discovery', function () {
@@ -145,16 +142,12 @@ describe('request Uri features', () => {
             .get('/cachedRequest')
             .reply(200, 'content24', {
               'Cache-Control': 'private, max-age=5',
-            })
-            .get('/cachedRequest')
-            .reply(200, 'content82');
+            });
 
-          const first = await cache.resolve('https://client.example.com/cachedRequest');
-          timekeeper.travel(Date.now() + (10 * 1000));
-          const second = await cache.resolve('https://client.example.com/cachedRequest');
-
-          expect(first).to.equal('content24');
-          expect(second).to.equal('content82');
+          await cache.resolve('https://client.example.com/cachedRequest');
+          const dump = cache.cache.dump();
+          expect(dump).to.have.lengthOf(1);
+          expect((dump[0].e - Date.now()) / 1000 | 0).to.be.within(4, 5); // eslint-disable-line no-bitwise, max-len
         });
 
         it('respects provided response expires header', async function () {
@@ -163,16 +156,12 @@ describe('request Uri features', () => {
             .get('/cachedRequest')
             .reply(200, 'content24', {
               Expires: new Date(Date.now() + (5 * 1000)).toGMTString(),
-            })
-            .get('/cachedRequest')
-            .reply(200, 'content82');
+            });
 
-          const first = await cache.resolve('https://client.example.com/cachedRequest');
-          timekeeper.travel(Date.now() + (10 * 1000));
-          const second = await cache.resolve('https://client.example.com/cachedRequest');
-
-          expect(first).to.equal('content24');
-          expect(second).to.equal('content82');
+          await cache.resolve('https://client.example.com/cachedRequest');
+          const dump = cache.cache.dump();
+          expect(dump).to.have.lengthOf(1);
+          expect((dump[0].e - Date.now()) / 1000 | 0).to.be.within(4, 5); // eslint-disable-line no-bitwise, max-len
         });
       });
 
@@ -671,21 +660,13 @@ describe('request Uri features', () => {
       nock('https://client.example.com')
         .get('/cachedRequest')
         .reply(200, 'content24', {
-          'Cache-Control': 'private, max-age=1',
-        })
-        .get('/cachedRequest')
-        .reply(200, 'content82');
+          'Cache-Control': 'private, max-age=5',
+        });
 
-      const first = await cache.resolve('https://client.example.com/cachedRequest');
-      await new Promise((resolve) => {
-        setTimeout(() => {
-          resolve();
-        }, 1050);
-      });
-      const second = await cache.resolve('https://client.example.com/cachedRequest');
-
-      expect(first).to.equal('content24');
-      expect(second).to.equal('content82');
+      await cache.resolve('https://client.example.com/cachedRequest');
+      const dump = cache.cache.dump();
+      expect(dump).to.have.lengthOf(1);
+      expect((dump[0].e - Date.now()) / 1000 | 0).to.be.within(4, 5); // eslint-disable-line no-bitwise, max-len
     });
 
     it('respects provided response expires header', async function () {
@@ -693,21 +674,13 @@ describe('request Uri features', () => {
       nock('https://client.example.com')
         .get('/cachedRequest')
         .reply(200, 'content24', {
-          Expires: new Date(Date.now() + 1000).toGMTString(),
-        })
-        .get('/cachedRequest')
-        .reply(200, 'content82');
+          Expires: new Date(Date.now() + (5 * 1000)).toGMTString(),
+        });
 
-      const first = await cache.resolve('https://client.example.com/cachedRequest');
-      await new Promise((resolve) => {
-        setTimeout(() => {
-          resolve();
-        }, 1050);
-      });
-      const second = await cache.resolve('https://client.example.com/cachedRequest');
-
-      expect(first).to.equal('content24');
-      expect(second).to.equal('content82');
+      await cache.resolve('https://client.example.com/cachedRequest');
+      const dump = cache.cache.dump();
+      expect(dump).to.have.lengthOf(1);
+      expect((dump[0].e - Date.now()) / 1000 | 0).to.be.within(4, 5); // eslint-disable-line no-bitwise, max-len
     });
   });
 });
