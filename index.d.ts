@@ -53,18 +53,58 @@ declare module "oidc-provider" {
     | "ES512";
 
   interface IClient {
-    applicationType?: "web" | "native";
+    application_type?: "web" | "native";
+    authorization_encrypted_response_alg?: EncryptionAlgValue;
+    authorization_encrypted_response_enc?: EncryptionEncValue;
+    authorization_signed_response_alg?: SigningAlgValue;
+    backchannel_logout_session_required?: boolean;
+    backchannel_logout_uri?: string;
+    client_id: string;
+    client_id_issued_at?: number;
+    client_name?: string;
+    client_secret?: string;
+    client_secret_expires_at?: number;
+    client_uri?: string;
+    contacts?: string[];
+    default_acr_values?: string[];
+    default_max_age?: number;
+    frontchannel_logout_session_required?: boolean;
+    frontchannel_logout_uri?: string;
     grant_types: string[];
-    id_token_signed_response_alg?: string;
+    id_token_encrypted_response_alg?: EncryptionAlgValue;
+    id_token_encrypted_response_enc?: EncryptionEncValue;
+    id_token_signed_response_alg?: SigningAlgValue;
+    initiate_login_uri?: string;
+    introspection_encrypted_response_alg?: EncryptionAlgValue;
+    introspection_encrypted_response_enc?: EncryptionEncValue;
+    introspection_endpoint_auth_method?: AuthMethod;
+    introspection_endpoint_auth_signing_alg?: SigningAlgValue;
+    introspection_signed_response_alg?: SigningAlgValue;
+    jwks?: { keys: object[] };
+    jwks_uri?: string;
+    logo_uri?: string;
+    policy_uri?: string;
+    post_logout_redirect_uris?: string[];
+    request_object_encryption_alg?: EncryptionAlgValue;
+    request_object_encryption_enc?: EncryptionEncValue;
+    request_object_signing_alg?: SigningAlgValue;
+    redirect_uris: string[];
+    request_uris?: string[];
     require_auth_time?: boolean;
     response_types: string[];
+    revocation_endpoint_auth_method?: AuthMethod;
+    revocation_endpoint_auth_signing_alg?: SigningAlgValue;
+    sector_identifier_uri?: string;
     subject_type?: SubjectType;
+    tls_client_auth_subject_dn?: string;
+    tls_client_certificate_bound_access_tokens?: boolean;
     token_endpoint_auth_method?: AuthMethod;
-    request_uris?: string[];
-    client_id: string;
-    client_secret?: string;
-    redirect_uris: string[];
-    introspection_endpoint_auth_method?: string;
+    token_endpoint_auth_signing_alg?: SigningAlgValue;
+    tos_uri?: string;
+    userinfo_encrypted_response_alg?: EncryptionAlgValue;
+    userinfo_encrypted_response_enc?: EncryptionEncValue;
+    userinfo_signed_response_alg?: SigningAlgValue;
+    web_message_uris?: string[];
   }
 
   interface IAdapter {
