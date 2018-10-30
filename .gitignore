@@ -43,5 +43,3 @@ TODO*.md
 dump.rdb
 db.sqlite
 
-# Typescript generated files
-dist
