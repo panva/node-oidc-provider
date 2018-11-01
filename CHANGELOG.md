@@ -2,6 +2,24 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+<a name="5.2.0"></a>
+# [5.2.0](https://github.com/panva/node-oidc-provider/compare/v5.1.2...v5.2.0) (2018-11-01)
+
+
+### Draft Features
+
+* sessionManagement feature doesn't set a default thirdPartyCheckUrl anymore ([0015c38](https://github.com/panva/node-oidc-provider/commit/0015c38))
+
+With the sunset of https://rawgit.com i'm not going to look for a replacement CDN that hosts github
+content using the right content-type. This addition to sessionManagement is a gimmick helping only
+in a small % of cases anyway.
+
+Note: Updates to draft and experimental specification versions are released as MINOR library versions,
+if you utilize these specification implementations consider using the tilde `~` operator in your
+package.json since breaking changes such as this one may be introduced as part of these version updates.
+
+
+
 <a name="5.1.2"></a>
 ## [5.1.2](https://github.com/panva/node-oidc-provider/compare/v5.1.0...v5.1.2) (2018-10-23)
 
