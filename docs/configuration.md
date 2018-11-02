@@ -377,23 +377,24 @@ router.post('/interaction/:grant', async (ctx, next) => {
 ```
 
 **`#provider.interactionResult`**
-Unlike `#provider.interactionFinished` authorization request resume uri is returned instead of
-immediate http redirect. It should be used when custom response handling is needed e.g. making AJAX
+Unlike `#provider.interactionFinished` will redirect to the resume uri immediately,
+the `#provider.interactionResult` will return the entire interaction result which 
+includes the resume uri. It is useful when custom response handling is needed e.g. making AJAX
 login where redirect information is expected to be available in the response.
 
 ```js
 // with express
 expressApp.post('/interaction/:grant/login', async (req, res) => {
-  const redirectTo = await provider.interactionResult(req, res, result);
+  const interaction = await provider.interactionResult(req, res, result);
 
-  res.send({ redirectTo });
+  res.send({ interaction.returnTo });
 });
 
 // with koa
 router.post('/interaction/:grant', async (ctx, next) => {
-  const redirectTo = await provider.interactionResult(ctx.req, ctx.res, result);
+  const interaction = await provider.interactionResult(ctx.req, ctx.res, result);
 
-  ctx.body = { redirectTo };
+  ctx.body = { interaction.returnTo };
 });
 ```
 
