@@ -1,56 +1,18 @@
 declare module "oidc-provider" {
-  import { Request, Response, Handler } from "express";
+  import {Request, Response, Handler} from "express";
   import Koa = require("koa");
   import Router = require("koa-router");
-  import { IncomingMessage, ServerResponse } from "http";
+  import {IncomingMessage, ServerResponse} from "http";
+  import {Http2ServerRequest, Http2ServerResponse} from "http2";
   import EventEmitter = require("events");
-  import { JWK } from "node-jose";
+  import {JWK} from "node-jose";
 
   type SubjectType = "public" | "parwise";
-  type AuthMethod =
-    | "none"
-    | "client_secret_basic"
-    | "client_secret_post"
-    | "client_secret_jwt"
-    | "private_key_jwt"
-    | "tls_client_auth"
-    | "self_signed_tls_client_auth";
-  type EncryptionAlgValue =
-    | "RSA-OAEP"
-    | "RSA1_5"
-    | "ECDH-ES"
-    | "ECDH-ES+A128KW"
-    | "ECDH-ES+A192KW"
-    | "ECDH-ES+A256KW"
-    | "A128KW"
-    | "A192KW"
-    | "A256KW"
-    | "A128GCMKW"
-    | "A192GCMKW"
-    | "A256GCMKW"
-    | "PBES2-HS256+A128KW"
-    | "PBES2-HS384+A192KW"
-    | "PBES2-HS512+A256KW";
-  type EncryptionEncValue =
-    | "A128CBC-HS256"
-    | "A128GCM"
-    | "A192CBC-HS384"
-    | "A192GCM"
-    | "A256CBC-HS512"
-    | "A256GCM";
-  type SigningAlgValue =
-    | "HS256"
-    | "HS384"
-    | "HS512"
-    | "RS256"
-    | "RS384"
-    | "RS512"
-    | "PS256"
-    | "PS384"
-    | "PS512"
-    | "ES256"
-    | "ES384"
-    | "ES512";
+  type AuthMethod = |"none" | "client_secret_basic" | "client_secret_post" | "client_secret_jwt" | "private_key_jwt" | "tls_client_auth" | "self_signed_tls_client_auth";
+  type EncryptionAlgValue = |"RSA-OAEP" | "RSA1_5" | "ECDH-ES" | "ECDH-ES+A128KW" | "ECDH-ES+A192KW" | "ECDH-ES+A256KW" | "A128KW" | "A192KW" | "A256KW" | "A128GCMKW" | "A192GCMKW" | "A256GCMKW" | "PBES2-HS256+A128KW" | "PBES2-HS384+A192KW" | "PBES2-HS512+A256KW";
+  type EncryptionEncValue = |"A128CBC-HS256" | "A128GCM" | "A192CBC-HS384" | "A192GCM" | "A256CBC-HS512" | "A256GCM";
+  type SigningAlgValue = |"HS256" | "HS384" | "HS512" | "RS256" | "RS384" | "RS512" | "PS256" | "PS384" | "PS512" | "ES256" | "ES384" | "ES512";
+  type OptionalSigningAlgValue = SigningAlgValue | "none";
 
   interface IClient {
     application_type?: "web" | "native";
@@ -59,18 +21,15 @@ declare module "oidc-provider" {
     authorization_signed_response_alg?: SigningAlgValue;
     backchannel_logout_session_required?: boolean;
     backchannel_logout_uri?: string;
-    client_id: string;
-    client_id_issued_at?: number;
+    client_id : string;
     client_name?: string;
     client_secret?: string;
-    client_secret_expires_at?: number;
-    client_uri?: string;
     contacts?: string[];
     default_acr_values?: string[];
     default_max_age?: number;
     frontchannel_logout_session_required?: boolean;
     frontchannel_logout_uri?: string;
-    grant_types: string[];
+    grant_types : string[];
     id_token_encrypted_response_alg?: EncryptionAlgValue;
     id_token_encrypted_response_enc?: EncryptionEncValue;
     id_token_signed_response_alg?: SigningAlgValue;
@@ -80,7 +39,9 @@ declare module "oidc-provider" {
     introspection_endpoint_auth_method?: AuthMethod;
     introspection_endpoint_auth_signing_alg?: SigningAlgValue;
     introspection_signed_response_alg?: SigningAlgValue;
-    jwks?: { keys: object[] };
+    jwks?: {
+      keys: object[]
+    };
     jwks_uri?: string;
     logo_uri?: string;
     policy_uri?: string;
@@ -88,10 +49,10 @@ declare module "oidc-provider" {
     request_object_encryption_alg?: EncryptionAlgValue;
     request_object_encryption_enc?: EncryptionEncValue;
     request_object_signing_alg?: SigningAlgValue;
-    redirect_uris: string[];
+    redirect_uris : string[];
     request_uris?: string[];
     require_auth_time?: boolean;
-    response_types: string[];
+    response_types : string[];
     revocation_endpoint_auth_method?: AuthMethod;
     revocation_endpoint_auth_signing_alg?: SigningAlgValue;
     sector_identifier_uri?: string;
@@ -108,32 +69,32 @@ declare module "oidc-provider" {
   }
 
   interface IAdapter {
-    upsert: (id: string, payload: object, expiresIn: number) => Promise<void>;
-    find: (id: string) => Promise<object>;
-    findByUserCode: (userCode: string) => Promise<object>;
-    consume: (id: string) => Promise<void>;
-    destroy: (id: string) => Promise<void>;
-    connect?: (provider: Provider) => Promise<void>;
+    upsert : (id : string, payload : object, expiresIn : number) => Promise < void >;
+    find : (id : string) => Promise < object >;
+    findByUserCode : (userCode : string) => Promise < object >;
+    consume : (id : string) => Promise < void >;
+    destroy : (id : string) => Promise < void >;
+    connect?: (provider : Provider) => Promise < void >;
   }
 
   interface IKeystore {
-    keys: object[];
+    keys : object[];
   }
 
   interface ISession {
-    _id: string;
-    accountId: string | null;
-    expiresAt: Date;
-    save(time: number): Promise<void>;
-    sidFor(client_id: string): boolean;
-    login: {};
-    interaction: {
+    _id : string;
+    accountId : string | null;
+    expiresAt : Date;
+    save(time : number) : Promise < void >;
+    sidFor(client_id : string) : boolean;
+    login : {};
+    interaction : {
       error?: "login_required";
       error_description: string;
       reason: "no_session" | "consent_prompt" | "client_not_authorized";
       reason_description: string;
     };
-    params: {
+    params : {
       client_id: string;
       redirect_uri: string;
       response_mode: "query";
@@ -142,10 +103,10 @@ declare module "oidc-provider" {
       scope: "openid";
       state: string;
     };
-    returnTo: string;
-    signed: null;
-    uuid: string;
-    id: string;
+    returnTo : string;
+    signed : null;
+    uuid : string;
+    id : string;
   }
 
   interface IConfigurationFeatures {
@@ -182,14 +143,12 @@ declare module "oidc-provider" {
     maxAge?: number;
   }
 
-  type InteractionResult =
-    | boolean
-    | {
-        error: string;
-        error_description: string;
-        reason: string;
-        reason_description: string;
-      };
+  type InteractionResult = |boolean | {
+    error: string;
+    error_description: string;
+    reason: string;
+    reason_description: string;
+  };
 
   interface IRoutes {
     authorization?: string;
@@ -208,12 +167,7 @@ declare module "oidc-provider" {
   interface IConfiguration {
     features?: IConfigurationFeatures;
     acrValues?: string[];
-    audiences?: (
-      ctx: Koa.Context,
-      sub: string,
-      token: string,
-      use: "id_token" | "userinfo" | "access_token" | "client_credentials"
-    ) => string[] | boolean;
+    audiences?: (ctx : Koa.Context, sub : string, token : string, use : "id_token" | "userinfo" | "access_token" | "client_credentials") => string[] | boolean;
     claims?: object;
     clientCacheDuration?: number;
     clockTolerance?: number;
@@ -223,52 +177,38 @@ declare module "oidc-provider" {
       names?: object;
       short?: ICookieOptions;
     };
-    deviceFlowSuccess?: (ctx: Koa.Context) => void;
+    deviceFlowSuccess?: (ctx : Koa.Context) => void;
     discovery?: object;
     dynamicScopes?: string[];
     extraClientMetadata?: {
       properties?: string[];
-      validator?: (key: string, value: string, metadata: object) => void;
+      validator?: (key : string, value : string, metadata : object) => void;
     };
     extraParams?: string[];
-    findById?: (
-      ctx: Koa.Context,
-      sub: string,
-      token: string
-    ) => Promise<{
+    findById?: (ctx : Koa.Context, sub : string, token : string) => Promise < {
       accountId: string;
-      claims: (
-        use: string,
-        scope: string,
-        claims: object,
-        rejected: string[]
-      ) => Promise<object> | object;
-    }>;
+      claims: (use : string, scope : string, claims : object, rejected : string[]) => Promise < object > | object;
+    } >;
     formats?: {
       default?: string;
-      AccessToken?: string | ((token: string) => string);
-      AuthorizationCode?: string | ((token: string) => string);
-      RefreshToken?: string | ((token: string) => string);
-      DeviceCode?: string | ((token: string) => string);
-      ClientCredentials?: string | ((token: string) => string);
-      InitialAccessToken?: string | ((token: string) => string);
-      RegistrationAccessToken?: string | ((token: string) => string);
+      AccessToken?: string | ((token : string) => string);
+      AuthorizationCode?: string | ((token : string) => string);
+      RefreshToken?: string | ((token : string) => string);
+      DeviceCode?: string | ((token : string) => string);
+      ClientCredentials?: string | ((token : string) => string);
+      InitialAccessToken?: string | ((token : string) => string);
+      RegistrationAccessToken?: string | ((token : string) => string);
     };
-    frontchannelLogoutPendingSource?: (
-      ctx: Koa.Context,
-      frames: string[],
-      postLogoutRedirectUri: string,
-      timeout: number
-    ) => void;
-    interactionCheck?: (ctx: Koa.Context) => InteractionResult;
-    interactionUrl?: (ctx: Koa.Context, interaction: InteractionResult) => void;
+    frontchannelLogoutPendingSource?: (ctx : Koa.Context, frames : string[], postLogoutRedirectUri : string, timeout : number) => void;
+    interactionCheck?: (ctx : Koa.Context) => InteractionResult;
+    interactionUrl?: (ctx : Koa.Context, interaction : InteractionResult) => void;
     introspectionEndpointAuthMethods?: AuthMethod[];
-    logoutSource?: (ctx: Koa.Context, form: string) => void;
-    pairwiseIdentifier?: (accountId: string, client: object) => string;
-    postLogoutRedirectUri?: (ctx: Koa.Context) => string;
+    logoutSource?: (ctx : Koa.Context, form : string) => void;
+    pairwiseIdentifier?: (accountId : string, client : object) => string;
+    postLogoutRedirectUri?: (ctx : Koa.Context) => string;
     prompts?: string[];
     refreshTokenRotation?: "rotateAndConsume" | "none";
-    renderError?: (ctx: Koa.Context, out: object, error: Error) => void;
+    renderError?: (ctx : Koa.Context, out : object, error : Error) => void;
     responseTypes?: string[];
     revocationEndpointAuthMethods?: AuthMethod[];
     routes?: IRoutes;
@@ -283,73 +223,58 @@ declare module "oidc-provider" {
       IdToken?: number;
       RefreshToken?: number;
     };
-    uniqueness?: (ctx: Koa.Context, jti: string, expiresAt: number) => boolean;
-    userCodeConfirmSource?: (
-      ctx: Koa.Context,
-      form: string,
-      client: object,
-      deviceInfo: object
-    ) => void;
-    userCodeInputSource?: (ctx: Koa.Context, form: string, out: object, err: Error) => void;
+    uniqueness?: (ctx : Koa.Context, jti : string, expiresAt : number) => boolean;
+    userCodeConfirmSource?: (ctx : Koa.Context, form : string, client : object, deviceInfo : object) => void;
+    userCodeInputSource?: (ctx : Koa.Context, form : string, out : object, err : Error) => void;
     whitelistedJWA?: {
       authorizationEncryptionAlgValues?: EncryptionAlgValue[];
       authorizationEncryptionEncValues?: EncryptionEncValue[];
       authorizationSigningAlgValues?: SigningAlgValue[];
       idTokenEncryptionAlgValues?: EncryptionAlgValue[];
       idTokenEncryptionEncValues?: EncryptionEncValue[];
-      idTokenSigningAlgValues?: SigningAlgValue[];
+      idTokenSigningAlgValues?: OptionalSigningAlgValue[];
       introspectionEncryptionAlgValues?: EncryptionAlgValue[];
       introspectionEncryptionEncValues?: EncryptionEncValue[];
       introspectionEndpointAuthSigningAlgValues?: SigningAlgValue[];
-      introspectionSigningAlgValues?: SigningAlgValue[];
+      introspectionSigningAlgValues?: OptionalSigningAlgValue[];
       requestObjectEncryptionAlgValues?: EncryptionAlgValue[];
       requestObjectEncryptionEncValues?: EncryptionEncValue[];
-      requestObjectSigningAlgValues?: SigningAlgValue[];
+      requestObjectSigningAlgValues?: OptionalSigningAlgValue[];
       revocationEndpointAuthSigningAlgValues?: SigningAlgValue[];
       tokenEndpointAuthSigningAlgValues?: SigningAlgValue[];
       userinfoEncryptionAlgValues?: EncryptionAlgValue[];
       userinfoEncryptionEncValues?: EncryptionEncValue[];
-      userinfoSigningAlgValues?: SigningAlgValue[];
+      userinfoSigningAlgValues?: OptionalSigningAlgValue[];
     };
   }
 
   class Provider extends EventEmitter {
-    app: Koa;
+    app : Koa;
 
-    domain: {};
+    proxy : boolean;
 
-    proxy: boolean;
+    constructor(url : string, config?: IConfiguration);
 
-    constructor(url: string, config?: IConfiguration);
-
-    initialize(config: {
-      adapter?: new (name: string) => IAdapter;
+    initialize(config : {
+      adapter?: new(name : string) => IAdapter;
       clients?: IClient[];
       keystore?: unknown;
-    }): Promise<this>;
+    }) : Promise < this >;
 
-    interactionDetails(ctx: IncomingMessage): Promise<ISession>;
+    interactionDetails(ctx : IncomingMessage | Http2ServerRequest) : Promise < ISession >;
 
-    setProviderSession(req: IncomingMessage, res: ServerResponse, {}): Promise<ISession>;
+    setProviderSession(req : IncomingMessage | Http2ServerRequest, res : ServerResponse | Http2ServerResponse, {}) : Promise < ISession >;
 
-    interactionFinished(req: IncomingMessage, res: ServerResponse, {}): Promise<void>;
+    interactionFinished(req : IncomingMessage | Http2ServerRequest, res : ServerResponse | Http2ServerResponse, {}) : Promise < void >;
 
-    callback: Handler;
-    listen(port: string | number): void;
+    callback : Handler;
+    listen(port : string | number) : void;
 
-    Client: IClient;
+    export const createKeyStore : JWK.createKeyStore;
+    export const asKeyStore : JWK.asKeyStore;
+    export const asKey : JWK.asKey;
 
-    session: ISession;
-
-    params: {
-      response_type: "none";
-    };
-    result: boolean;
   }
-
-  export const createKeyStore: JWK.createKeyStore;
-  export const asKeyStore: JWK.asKeyStore;
-  export const asKey: JWK.asKey;
 
   export default Provider;
 }
