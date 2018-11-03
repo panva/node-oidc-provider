@@ -62,7 +62,7 @@ Missing a feature? - If it wasn't already discussed before, [ask for it][suggest
 Found a bug? - [report it][bug].
 
 ## Certification
-[<img width="184" height="96" align="right" src="https://cdn.rawgit.com/panva/node-oidc-provider/acd3ebf2/OpenID_Certified.png" alt="OpenID Certification">][openid-certified-link]  
+[<img width="184" height="96" align="right" src="https://cdn.jsdelivr.net/gh/panva/node-oidc-provider@acd3ebf2f5ebbb5605463cb681a1fb2ab9742ace/OpenID_Certified.png" alt="OpenID Certification">][openid-certified-link]  
 Filip Skokan has [certified][openid-certified-link] that [oidc-provider][npm-url]
 conforms to the OP Basic, OP Implicit, OP Hybrid, OP Config, OP Dynamic and OP Form Post profiles
 of the OpenID Connect™ protocol.
@@ -74,6 +74,11 @@ of the OpenID Connect™ protocol.
 
 [<img width="65" height="65" align="left" src="https://avatars.githubusercontent.com/u/2824157?s=75&v=4" alt="auth0-logo">][sponsor-auth0] If you want to quickly add OpenID Connect authentication to Node.js apps, feel free to check out Auth0's Node.js SDK and free plan at [auth0.com/overview][sponsor-auth0].<br><br>
 
+<h2>Support</h2>
+
+[<img src="https://c5.patreon.com/external/logo/become_a_patron_button@2x.png" width="160" align="right">][support-patreon]
+If you or your business use oidc-provider, please consider becoming a [Patron][support-patreon] so I can continue maintaining it and adding new features carefree. You may also donate one-time via [PayPal][support-paypal].
+[<img src="https://cdn.jsdelivr.net/gh/gregoiresgt/payment-icons@183140a5ff8f39b5a19d59ebeb2c77f03c3a24d3/Assets/Payment/PayPal/Paypal@2x.png" width="100" align="right">][support-paypal]
 
 ## Get started
 You may check the [example folder](/example) or follow a [step by step example][example-repo] to see
@@ -180,3 +185,5 @@ See the list of available emitted [event names](/docs/events.md) and their descr
 [mtls]: https://tools.ietf.org/html/draft-ietf-oauth-mtls-11
 [resource-indicators]: https://tools.ietf.org/html/draft-ietf-oauth-resource-indicators-00
 [jarm]: https://openid.net/specs/openid-financial-api-jarm-wd-01.html
+[support-patreon]: https://www.patreon.com/panva
+[support-paypal]: https://www.paypal.me/panva
