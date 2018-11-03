@@ -1,11 +1,9 @@
 declare module "oidc-provider" {
-  import {Request, Response, Handler} from "express";
+  import {Handler} from "express";
   import Koa = require("koa");
-  import Router = require("koa-router");
   import {IncomingMessage, ServerResponse} from "http";
   import {Http2ServerRequest, Http2ServerResponse} from "http2";
   import EventEmitter = require("events");
-  import {JWK} from "node-jose";
 
   type SubjectType = "public" | "parwise";
   type AuthMethod = |"none" | "client_secret_basic" | "client_secret_post" | "client_secret_jwt" | "private_key_jwt" | "tls_client_auth" | "self_signed_tls_client_auth";
@@ -13,6 +11,39 @@ declare module "oidc-provider" {
   type EncryptionEncValue = |"A128CBC-HS256" | "A128GCM" | "A192CBC-HS384" | "A192GCM" | "A256CBC-HS512" | "A256GCM";
   type SigningAlgValue = |"HS256" | "HS384" | "HS512" | "RS256" | "RS384" | "RS512" | "PS256" | "PS384" | "PS512" | "ES256" | "ES384" | "ES512";
   type OptionalSigningAlgValue = SigningAlgValue | "none";
+  type Use = "sig" | "enc";
+
+  interface IRsaKeyBasic {
+    kty : 'RSA';
+    e : string;
+    n : string;
+    use?: Use;
+    kid?: string;
+    alg?: string;
+  }
+
+  interface IEcKeyBasic {
+    kty : 'EC';
+    crv : string;
+    x : string;
+    y : string;
+    use?: Use;
+    kid?: string;
+    alg?: string;
+  }
+
+  interface IRsaKey extends IRsaKeyBasic {
+    d : string;
+    dp : string;
+    dq : string;
+    p : string;
+    q : string;
+    qi : string;
+  }
+
+  interface IEcKey extends IEcKeyBasic {
+    d : string;
+  }
 
   interface IClient {
     application_type?: "web" | "native";
@@ -40,7 +71,7 @@ declare module "oidc-provider" {
     introspection_endpoint_auth_signing_alg?: SigningAlgValue;
     introspection_signed_response_alg?: SigningAlgValue;
     jwks?: {
-      keys: object[]
+      keys: (IRsaKeyBasic | IEcKeyBasic)[]
     };
     jwks_uri?: string;
     logo_uri?: string;
@@ -78,7 +109,7 @@ declare module "oidc-provider" {
   }
 
   interface IKeystore {
-    keys : object[];
+    keys : (IRsaKey | IEcKey)[];
   }
 
   interface ISession {
@@ -258,7 +289,7 @@ declare module "oidc-provider" {
     initialize(config : {
       adapter?: new(name : string) => IAdapter;
       clients?: IClient[];
-      keystore?: unknown;
+      keystore?: IKeystore;
     }) : Promise < this >;
 
     interactionDetails(ctx : IncomingMessage | Http2ServerRequest) : Promise < ISession >;
@@ -269,11 +300,6 @@ declare module "oidc-provider" {
 
     callback : Handler;
     listen(port : string | number) : void;
-
-    export const createKeyStore : JWK.createKeyStore;
-    export const asKeyStore : JWK.asKeyStore;
-    export const asKey : JWK.asKey;
-
   }
 
   export default Provider;
