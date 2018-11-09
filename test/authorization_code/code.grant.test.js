@@ -18,7 +18,7 @@ describe('grant_type=authorization_code', () => {
 
   afterEach(() => timekeeper.reset());
 
-  context('with real tokens', () => {
+  context('with real tokens (1/2) - more than two redirect_uris registered', () => {
     before(function () { return this.login(); });
     after(function () { return this.logout(); });
 
@@ -273,6 +273,251 @@ describe('grant_type=authorization_code', () => {
     });
   });
 
+  context('with real tokens (2/2) - one redirect_uri registered', () => {
+    before(function () { return this.login(); });
+    after(function () { return this.logout(); });
+
+    beforeEach(function () {
+      return this.agent.get('/auth')
+        .query({
+          client_id: 'client2',
+          scope: 'openid',
+          response_type: 'code',
+        })
+        .expect(302)
+        .expect((response) => {
+          const { query: { code } } = parseUrl(response.headers.location, true);
+          const jti = this.getTokenJti(code);
+          this.code = this.TestAdapter.for('AuthorizationCode').syncFind(jti);
+          this.ac = code;
+        });
+    });
+
+    it('returns the right stuff', function () {
+      const spy = sinon.spy();
+      this.provider.once('grant.success', spy);
+
+      return this.agent.post(route)
+        .auth('client2', 'secret')
+        .type('form')
+        .send({
+          code: this.ac,
+          grant_type: 'authorization_code',
+        })
+        .expect(200)
+        .expect(() => {
+          expect(spy.calledOnce).to.be.true;
+        })
+        .expect((response) => {
+          expect(response.body).to.have.keys('access_token', 'id_token', 'expires_in', 'token_type', 'scope');
+          expect(response.body).not.to.have.key('refresh_token');
+        });
+    });
+
+    it('populates ctx.oidc.entities (no offline_access)', function (done) {
+      this.provider.use(this.assertOnce((ctx) => {
+        expect(ctx.oidc.entities).to.have.keys('Account', 'Client', 'AuthorizationCode', 'AccessToken');
+        expect(ctx.oidc.entities.AccessToken).to.have.property('gty', 'authorization_code');
+      }, done));
+
+      this.agent.post(route)
+        .auth('client2', 'secret')
+        .type('form')
+        .send({
+          code: this.ac,
+          grant_type: 'authorization_code',
+        })
+        .end(() => {});
+    });
+
+    it('populates ctx.oidc.entities (w/ offline_access)', function (done) {
+      this.provider.use(this.assertOnce((ctx) => {
+        expect(ctx.oidc.entities).to.have.keys('Account', 'Client', 'AuthorizationCode', 'AccessToken', 'RefreshToken');
+        expect(ctx.oidc.entities.AccessToken).to.have.property('gty', 'authorization_code');
+        expect(ctx.oidc.entities.RefreshToken).to.have.property('gty', 'authorization_code');
+      }, done));
+
+      this.TestAdapter.for('AuthorizationCode').syncUpdate(this.getTokenJti(this.ac), {
+        scope: 'openid offline_access',
+      });
+      this.agent.post(route)
+        .auth('client2', 'secret')
+        .type('form')
+        .send({
+          code: this.ac,
+          grant_type: 'authorization_code',
+        })
+        .end(() => {});
+    });
+
+    it('returns token-endpoint-like cache headers', function () {
+      return this.agent.post(route)
+        .auth('client2', 'secret')
+        .type('form')
+        .send({
+          code: this.ac,
+          grant_type: 'authorization_code',
+        })
+        .expect('pragma', 'no-cache')
+        .expect('cache-control', 'no-cache, no-store');
+    });
+
+    context('', () => {
+      before(function () {
+        const ttl = i(this.provider).configuration('ttl');
+        this.prev = ttl.AuthorizationCode;
+        ttl.AuthorizationCode = 5;
+      });
+
+      after(function () {
+        i(this.provider).configuration('ttl').AuthorizationCode = this.prev;
+      });
+
+      it('validates code is not expired', function () {
+        timekeeper.travel(Date.now() + (10 * 1000));
+        const spy = sinon.spy();
+        this.provider.once('grant.error', spy);
+
+        return this.agent.post(route)
+          .auth('client2', 'secret')
+          .send({
+            code: this.ac,
+            grant_type: 'authorization_code',
+          })
+          .type('form')
+          .expect(400)
+          .expect(() => {
+            expect(spy.calledOnce).to.be.true;
+            expect(errorDetail(spy)).to.equal('authorization code is expired');
+          })
+          .expect((response) => {
+            expect(response.body).to.have.property('error', 'invalid_grant');
+          });
+      });
+    });
+
+    it('validates code is not already used', function () {
+      const spy = sinon.spy();
+      this.provider.once('grant.error', spy);
+
+      this.code.consumed = epochTime();
+
+      return this.agent.post(route)
+        .auth('client2', 'secret')
+        .send({
+          code: this.ac,
+          grant_type: 'authorization_code',
+        })
+        .type('form')
+        .expect(400)
+        .expect(() => {
+          expect(spy.calledOnce).to.be.true;
+          expect(errorDetail(spy)).to.equal('authorization code already consumed');
+        })
+        .expect((response) => {
+          expect(response.body).to.have.property('error', 'invalid_grant');
+        });
+    });
+
+    it('consumes the code', function () {
+      return this.agent.post(route)
+        .auth('client2', 'secret')
+        .send({
+          code: this.ac,
+          grant_type: 'authorization_code',
+        })
+        .type('form')
+        .expect(() => {
+          expect(this.code).to.have.property('consumed').and.be.most(epochTime());
+        })
+        .expect(200);
+    });
+
+    it('validates code belongs to client', function () {
+      const spy = sinon.spy();
+      this.provider.once('grant.error', spy);
+
+      return this.agent.post(route)
+        .auth('client', 'secret')
+        .send({
+          code: this.ac,
+          grant_type: 'authorization_code',
+          redirect_uri: 'https://client.example.com/cb3',
+        })
+        .type('form')
+        .expect(400)
+        .expect(() => {
+          expect(spy.calledOnce).to.be.true;
+          expect(errorDetail(spy)).to.equal('authorization code client mismatch');
+        })
+        .expect((response) => {
+          expect(response.body).to.have.property('error', 'invalid_grant');
+        });
+    });
+
+    it('validates a grant type is supported', function () {
+      return this.agent.post(route)
+        .auth('client2', 'secret')
+        .send({
+          code: this.ac,
+          grant_type: 'foobar',
+        })
+        .type('form')
+        .expect(400)
+        .expect((response) => {
+          expect(response.body).to.have.property('error', 'unsupported_grant_type');
+        });
+    });
+
+    it('validates used redirect_uri (should it be provided)', function () {
+      const spy = sinon.spy();
+      this.provider.once('grant.error', spy);
+
+      return this.agent.post(route)
+        .auth('client2', 'secret')
+        .send({
+          code: this.ac,
+          grant_type: 'authorization_code',
+          redirect_uri: 'https://client.example.com/cb?thensome',
+        })
+        .type('form')
+        .expect(400)
+        .expect(() => {
+          expect(spy.calledOnce).to.be.true;
+          expect(errorDetail(spy)).to.equal('authorization code redirect_uri mismatch');
+        })
+        .expect((response) => {
+          expect(response.body).to.have.property('error', 'invalid_grant');
+        });
+    });
+
+    it('validates account is still there', function () {
+      sinon.stub(this.provider.Account, 'findById').callsFake(() => Promise.resolve());
+
+      const spy = sinon.spy();
+      this.provider.once('grant.error', spy);
+
+      return this.agent.post(route)
+        .auth('client2', 'secret')
+        .send({
+          code: this.ac,
+          grant_type: 'authorization_code',
+        })
+        .type('form')
+        .expect(() => {
+          this.provider.Account.findById.restore();
+        })
+        .expect(400)
+        .expect(() => {
+          expect(spy.calledOnce).to.be.true;
+          expect(errorDetail(spy)).to.equal('authorization code invalid (referenced account not found)');
+        })
+        .expect((response) => {
+          expect(response.body).to.have.property('error', 'invalid_grant');
+        });
+    });
+  });
+
   describe('validates', () => {
     it('grant_type presence', function () {
       return this.agent.post(route)
@@ -303,7 +548,7 @@ describe('grant_type=authorization_code', () => {
         });
     });
 
-    it('redirect_uri presence', function () {
+    it('redirect_uri presence (more then one registered)', function () {
       return this.agent.post(route)
         .auth('client', 'secret')
         .send({
