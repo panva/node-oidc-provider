@@ -768,7 +768,7 @@ false
 
 ### features.certificateBoundAccessTokens
 
-[draft-ietf-oauth-mtls-11](https://tools.ietf.org/html/draft-ietf-oauth-mtls-11) - OAuth 2.0 Mutual TLS Client Authentication and Certificate Bound Access Tokens  
+[draft-ietf-oauth-mtls-12](https://tools.ietf.org/html/draft-ietf-oauth-mtls-12) - OAuth 2.0 Mutual TLS Client Authentication and Certificate Bound Access Tokens  
 
 Enables Certificate Bound Access Tokens. Clients may be registered with `tls_client_certificate_bound_access_tokens` to indicate intention to receive mutual TLS client certificate bound access tokens.   
   
@@ -1200,7 +1200,7 @@ false
   <br>
 
 
-The User-Agent must allow access to the provider cookies from a third-party context when the OP frame is embedded. Oidc-provider checks if this is enabled using a [CDN hosted](https://rawgit.com/) [iframe][third-party-cookies-git]. It is recommended to host these helper pages on your own (on a different domain from the one you host oidc-provider on). Once hosted, set the `features.sessionManagement.thirdPartyCheckUrl` to an absolute URL for the start page. See [this][third-party-cookies-so] for more info. Note: This is still just a best-effort solution and is in no way bulletproof. Currently there's no better way to check if access to third party cookies has been blocked or the cookies are just missing. (Safari's ITP 2.0 Storage Access API also cannot be used) Configure `features.sessionManagement` as an object like so:
+The User-Agent must allow access to the provider cookies from a third-party context when the OP frame is embedded. Oidc-provider can check if third-party cookie access is enabled using a CDN hosted [iframe][third-party-cookies-git]. It is recommended to host these helper pages on your own (on a different domain from the one you host oidc-provider on). Once hosted, set the `features.sessionManagement.thirdPartyCheckUrl` to an absolute URL for the start page. See [this][third-party-cookies-so] for more info. Note: This is still just a best-effort solution and is in no way bulletproof. Currently there's no better way to check if access to third party cookies has been blocked or the cookies are just missing. (Safari's ITP 2.0 Storage Access API also cannot be used) Configure `features.sessionManagement` as an object like so:
   
 
 ```js
