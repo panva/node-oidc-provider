@@ -10,7 +10,7 @@ const { sample } = require('lodash');
 const FORMAT_REGEXP = /^--format=(\w+)$/;
 const formats = [];
 process.argv.forEach((arg) => {
-  if (FORMAT_REGEXP.exec(arg)) {
+  if (FORMAT_REGEXP.test(arg)) {
     formats.push(RegExp.$1);
   }
 });
