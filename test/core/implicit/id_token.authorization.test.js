@@ -1,3 +1,5 @@
+const querystring = require('querystring');
+
 const sinon = require('sinon');
 const { expect } = require('chai');
 
@@ -71,11 +73,47 @@ describe('IMPLICIT id_token', () => {
           .expect(() => {
             expect(spy.calledOnce).to.be.true;
           })
+          // .expect(auth.validateFragment) // response mode will be honoured for error response
           .expect(auth.validatePresence(['error', 'error_description', 'state']))
           .expect(auth.validateState)
           .expect(auth.validateClientLocation)
           .expect(auth.validateError('invalid_request'))
           .expect(auth.validateErrorDescription('response_mode not allowed for this response_type'));
+      });
+
+      it('response mode provided twice', function () {
+        const spy = sinon.spy();
+        this.provider.once('authorization.error', spy);
+        const auth = new this.AuthorizationRequest({
+          response_type,
+          scope,
+          response_mode: 'fragment',
+        });
+
+        const wrapped = ((data) => { // eslint-disable-line consistent-return
+          switch (verb) {
+            case 'get':
+              return this.agent
+                .get(route)
+                .query(`${data}&response_mode=fragment`);
+            case 'post':
+              return this.agent
+                .post(route)
+                .send(`${data}&response_mode=fragment`)
+                .type('form');
+            default:
+          }
+        })(querystring.stringify(auth));
+
+        return wrapped.expect(302)
+          .expect(() => {
+            expect(spy.calledOnce).to.be.true;
+          })
+          .expect(auth.validateFragment) // mode will still be figured out from the response_type
+          .expect(auth.validatePresence(['error', 'error_description', 'state']))
+          .expect(auth.validateClientLocation)
+          .expect(auth.validateError('invalid_request'))
+          .expect(auth.validateErrorDescription('parameters must not be provided twice. (response_mode)'));
       });
 
       it('missing mandatory parameter nonce', function () {

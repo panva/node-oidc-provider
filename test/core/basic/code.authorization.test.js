@@ -276,6 +276,78 @@ describe('BASIC code', () => {
           .expect(auth.validateErrorDescription('parameters must not be provided twice. (state)'));
       });
 
+      it('invalid response mode (not validated yet)', function () {
+        // fake a query like this state=foo&state=foo to trigger
+        // a validation error prior to validating response mode
+        const spy = sinon.spy();
+        this.provider.once('authorization.error', spy);
+        const auth = new this.AuthorizationRequest({
+          response_type,
+          scope,
+          state: 'foo',
+          response_mode: 'foo',
+        });
+
+        const wrapped = ((data) => { // eslint-disable-line consistent-return
+          switch (verb) {
+            case 'get':
+              return this.agent
+                .get(route)
+                .query(`${data}&state=bar`);
+            case 'post':
+              return this.agent
+                .post(route)
+                .send(`${data}&state=bar`)
+                .type('form');
+            default:
+          }
+        })(querystring.stringify(auth));
+
+        return wrapped.expect(302)
+          .expect(() => {
+            expect(spy.calledOnce).to.be.true;
+          })
+          .expect(auth.validatePresence(['error', 'error_description'])) // notice state is not expected
+          // .expect(auth.validateState) // notice state is not expected
+          .expect(auth.validateClientLocation)
+          .expect(auth.validateError('invalid_request'))
+          .expect(auth.validateErrorDescription('parameters must not be provided twice. (state)'));
+      });
+
+      it('response mode provided twice', function () {
+        const spy = sinon.spy();
+        this.provider.once('authorization.error', spy);
+        const auth = new this.AuthorizationRequest({
+          response_type,
+          scope,
+          response_mode: 'query',
+        });
+
+        const wrapped = ((data) => { // eslint-disable-line consistent-return
+          switch (verb) {
+            case 'get':
+              return this.agent
+                .get(route)
+                .query(`${data}&response_mode=query`);
+            case 'post':
+              return this.agent
+                .post(route)
+                .send(`${data}&response_mode=query`)
+                .type('form');
+            default:
+          }
+        })(querystring.stringify(auth));
+
+        return wrapped.expect(302)
+          .expect(() => {
+            expect(spy.calledOnce).to.be.true;
+          })
+          .expect(auth.validatePresence(['error', 'error_description', 'state']))
+          .expect(auth.validateClientLocation)
+          .expect(auth.validateError('invalid_request'))
+          .expect(auth.validateErrorDescription('parameters must not be provided twice. (response_mode)'));
+      });
+
       it('disallowed response mode', function () {
         const spy = sinon.spy();
         this.provider.once('authorization.error', spy);
@@ -533,6 +605,7 @@ describe('BASIC code', () => {
           const auth = new this.AuthorizationRequest({
             response_type,
             scope,
+            response_mode: 'fragment',
             redirect_uri: 'https://attacker.example.com/foobar',
           });
 
