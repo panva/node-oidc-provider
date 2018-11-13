@@ -7,6 +7,7 @@ config.features = {
   request: false,
   claimsParameter: true,
   requestUri: false,
+  resourceIndicators: true,
 };
 
 config.extraParams = [

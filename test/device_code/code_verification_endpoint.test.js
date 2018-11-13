@@ -321,6 +321,7 @@ describe('POST code_verification endpoint w/ verification', () => {
         scope: 'openid email',
         client_id: 'client',
         claims: JSON.stringify({ userinfo: { email: null } }),
+        resource: 'urn:foo:bar',
       },
     }).save();
 
@@ -341,6 +342,7 @@ describe('POST code_verification endpoint w/ verification', () => {
     expect(code).to.have.property('authTime', session.loginTs);
     expect(code).to.have.property('scope', 'openid email');
     expect(code).to.have.property('claims').that.eqls({ userinfo: { email: null }, rejected: ['email_verified'] });
+    expect(code).to.have.property('resource', 'urn:foo:bar');
 
     expect(spy.calledOnce).to.be.true;
   });

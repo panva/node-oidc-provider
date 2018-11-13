@@ -22,7 +22,7 @@ describe('Provider', () => {
       'InvalidRequest',
       'InvalidRequestObject',
       'InvalidRequestUri',
-      'InvalidResource',
+      'InvalidTarget',
       'InvalidScope',
       'InvalidToken',
       'LoginRequired',

@@ -1115,9 +1115,9 @@ Configure `features.requestUri` with an object like so instead of a Boolean valu
 
 ### features.resourceIndicators
 
-[draft-ietf-oauth-resource-indicators-00](https://tools.ietf.org/html/draft-ietf-oauth-resource-indicators-00) - Resource Indicators for OAuth 2.0  
+[draft-ietf-oauth-resource-indicators-01](https://tools.ietf.org/html/draft-ietf-oauth-resource-indicators-01) - Resource Indicators for OAuth 2.0  
 
-Enables the use and validations of `resource` parameter for the authorization and token endpoints. In order for the feature to be any useful you must also use the `audiences` helper function to further validate/whitelist the resource(s) and push them down to issued access tokens.   
+Enables the use of `resource` parameter for the authorization and token endpoints. In order for the feature to be any useful you must also use the `audiences` helper function to validate the resource(s) and transform it to jwt's token audience.   
   
 
 
@@ -1126,35 +1126,47 @@ _**default value**_:
 false
 ```
 <details>
-  <summary>(Click to expand) Example use with audiences and dynamic AccessToken format</summary>
+  <summary>(Click to expand) Example use</summary>
   <br>
 
 
 This example will
- - throw when multiple resources are requested (per spec at the OPs discretion)
- - throw based on an OP policy
- - push resources down to the audience of access tokens
+ - throw based on an OP policy when unrecognized or unauthorized resources are requested
+ - transform resources to audience and push them down to the audience of access tokens
+ - take both, the parameter and previously granted resources into consideration
   
 
 ```js
-// const { InvalidResource } = Provider.errors;
-// resourceAllowedForClient is the custom OP policy
+// const { InvalidTarget } = Provider.errors;
+// `resourceAllowedForClient` is the custom OP policy
+// `transform` is mapping the resource values to actual aud values
 {
   // ...
-  async audiences(ctx, sub, token, use) {
-    const { resource } = ctx.oidc.params;
-    if (resource && use === 'access_token') {
-      if (Array.isArray(resource)) {
-        throw new InvalidResource('multiple "resource" parameters are not allowed');
+  async function audiences(ctx, sub, token, use) {
+    if (use === 'access_token') {
+      const { oidc: { route, client, params: { resource: resourceParam } } } = ctx;
+      let grantedResource;
+      if (route === 'token') {
+        const { oidc: { params: { grant_type } } } = ctx;
+        switch (grant_type) {
+          case 'authorization_code':
+            grantedResource = ctx.oidc.entities.AuthorizationCode.resource;
+            break;
+          case 'refresh_token':
+            grantedResource = ctx.oidc.entities.RefreshToken.resource;
+            break;
+          case 'urn:ietf:params:oauth:grant-type:device_code':
+            grantedResource = ctx.oidc.entities.DeviceCode.resource;
+            break;
+          default:
+        }
       }
-      const { client } = ctx.oidc;
-      const allowed = await resourceAllowedForClient(resource, client.clientId);
+      const allowed = await resourceAllowedForClient(resourceParam, grantedResource, client);
       if (!allowed) {
         throw new InvalidResource('unauthorized "resource" requested');
       }
-      return [resource];
+      return transform(resourceParam, grantedResource); // => array of validated and transformed string audiences
     }
-    return undefined;
   },
   formats: {
     default: 'opaque',
