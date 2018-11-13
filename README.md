@@ -47,7 +47,7 @@ The following drafts/experimental specifications are implemented by oidc-provide
 - [JWT Secured Authorization Response Mode for OAuth 2.0 (JARM) - draft 01][jarm]
 - [OAuth 2.0 Device Flow for Browserless and Input Constrained Devices - draft 12][device-flow]
 - [OAuth 2.0 Mutual TLS Client Authentication and Certificate Bound Access Tokens - draft 12][mtls]
-- [OAuth 2.0 Resource Indicators - draft 00][resource-indicators]
+- [OAuth 2.0 Resource Indicators - draft 01][resource-indicators]
 - [OAuth 2.0 Web Message Response Mode - draft 00][wmrm]
 - [OpenID Connect Back-Channel Logout 1.0 - draft 04][backchannel-logout]
 - [OpenID Connect Front-Channel Logout 1.0 - draft 02][frontchannel-logout]
@@ -183,7 +183,7 @@ See the list of available emitted [event names](/docs/events.md) and their descr
 [suggest-feature]: https://github.com/panva/node-oidc-provider/issues/new?template=feature-request.md
 [bug]: https://github.com/panva/node-oidc-provider/issues/new?template=bug-report.md
 [mtls]: https://tools.ietf.org/html/draft-ietf-oauth-mtls-12
-[resource-indicators]: https://tools.ietf.org/html/draft-ietf-oauth-resource-indicators-00
+[resource-indicators]: https://tools.ietf.org/html/draft-ietf-oauth-resource-indicators-01
 [jarm]: https://openid.net/specs/openid-financial-api-jarm-wd-01.html
 [support-patreon]: https://www.patreon.com/panva
 [support-paypal]: https://www.paypal.me/panva

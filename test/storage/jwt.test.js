@@ -35,12 +35,13 @@ if (FORMAT === 'jwt') {
     const userCode = '1384-3217';
     const deviceInfo = { foo: 'bar' };
     const s256 = '_gPMqAT8BELhXwBa2nIT0OvdWtQCiF_g09nAyHhgCe0';
+    const resource = 'urn:foo:bar';
 
     /* eslint-disable object-property-newline */
     const fullPayload = {
       accountId, claims, clientId, grantId, scope, sid, consumed, acr, amr, authTime, nonce,
       redirectUri, codeChallenge, codeChallengeMethod, aud, error, errorDescription, params,
-      userCode, deviceInfo, gty,
+      userCode, deviceInfo, gty, resource,
       'x5t#S256': s256,
     };
     /* eslint-enable object-property-newline */
@@ -121,6 +122,7 @@ if (FORMAT === 'jwt') {
         kind,
         nonce,
         redirectUri,
+        resource,
         scope,
         sid,
       });
@@ -161,6 +163,7 @@ if (FORMAT === 'jwt') {
         jwt: string,
         kind,
         nonce,
+        resource,
         scope,
         sid,
       });
@@ -207,6 +210,7 @@ if (FORMAT === 'jwt') {
         kind,
         nonce,
         params,
+        resource,
         scope,
         sid,
         userCode,
