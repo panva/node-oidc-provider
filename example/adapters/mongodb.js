@@ -10,6 +10,15 @@ const grantable = new Set([
   'device_code',
 ]);
 
+function cleanupReturn(res) {
+  if (res) {
+    delete res._id; // eslint-disable-line no-underscore-dangle
+    delete res.expiresAt;
+  }
+
+  return res;
+}
+
 class CollectionSet extends Set {
   add(name) {
     const nu = this.has(name);
@@ -75,11 +84,13 @@ class MongoAdapter {
   }
 
   async find(_id) {
-    return this.coll().find({ _id }).limit(1).next();
+    return this.coll().find({ _id }).limit(1).next()
+      .then(cleanupReturn);
   }
 
   async findByUserCode(userCode) {
-    return this.coll().find({ userCode }).limit(1).next();
+    return this.coll().find({ userCode }).limit(1).next()
+      .then(cleanupReturn);
   }
 
   async destroy(_id) {
