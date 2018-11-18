@@ -310,6 +310,7 @@ describe('[session_management]', () => {
       const adapter = this.TestAdapter.for('Session');
       sinon.spy(adapter, 'destroy');
       let session = this.getSession();
+      const oldId = this.getSessionId();
       session.logout = { secret: '123', postLogoutRedirectUri: '/', clientId: 'client' };
 
       expect(session.authorizations.client).to.be.ok;
@@ -323,7 +324,8 @@ describe('[session_management]', () => {
           expect(response.headers['set-cookie']).to.contain('_state.client=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT; httponly');
           expect(session.authorizations.client).to.be.undefined;
           expect(session.logout).to.be.undefined;
-          expect(adapter.destroy.called).to.be.false;
+          expect(this.getSessionId()).not.to.eql(oldId);
+          expect(adapter.destroy.calledOnceWith(oldId)).to.be.true;
         });
     });
 
