@@ -36,12 +36,13 @@ if (FORMAT === 'jwt') {
     const deviceInfo = { foo: 'bar' };
     const s256 = '_gPMqAT8BELhXwBa2nIT0OvdWtQCiF_g09nAyHhgCe0';
     const resource = 'urn:foo:bar';
+    const policies = ['foo'];
 
     /* eslint-disable object-property-newline */
     const fullPayload = {
       accountId, claims, clientId, grantId, scope, sid, consumed, acr, amr, authTime, nonce,
       redirectUri, codeChallenge, codeChallengeMethod, aud, error, errorDescription, params,
-      userCode, deviceInfo, gty, resource,
+      userCode, deviceInfo, gty, resource, policies,
       'x5t#S256': s256,
     };
     /* eslint-enable object-property-newline */
@@ -280,6 +281,7 @@ if (FORMAT === 'jwt') {
         jti: upsert.getCall(0).args[0],
         jwt: string,
         kind,
+        policies,
       });
 
       const { iat, jti, exp } = upsert.getCall(0).args[1];
@@ -303,6 +305,7 @@ if (FORMAT === 'jwt') {
 
       assert.calledWith(upsert, string, {
         clientId,
+        policies,
         exp: number,
         iat: number,
         iss: this.provider.issuer,
