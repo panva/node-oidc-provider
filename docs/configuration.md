@@ -1047,6 +1047,50 @@ Configure `features.registration` to be an object like so:
 new (provider.InitialAccessToken)({}).save().then(console.log);
 ```
 </details>
+<details>
+  <summary>(Click to expand) To define registration and registration management policies</summary>
+  <br>
+
+
+Policies are sync/async functions that are assigned to an Initial Access Token that run before the regular client property validations are run. Multiple policies may be assigned to an Initial Access Token and by default the same policies will transfer over to the Registration Access Token. A policy may throw / reject and it may modify the properties object. To define policy functions configure `features.registration` to be an object like so:
+  
+
+```js
+{
+  initialAccessToken: true, // to enable adapter-backed initial access tokens
+  policies: {
+    'my-policy': function (ctx, properties) {
+      // @param ctx - koa request context
+      // @param properties - the client properties which are about to be validated
+      // example of setting a default
+      if (!('client_name' in properties)) {
+        properties.client_name = generateRandomClientName();
+      }
+      // example of forcing a value
+      properties.userinfo_signed_response_alg = 'RS256';
+      // example of throwing a validation error
+      if (someCondition(ctx, properties)) {
+        throw new Provider.errors.InvalidClientMetadata('validation error message');
+      }
+    },
+    'my-policy-2': async function (ctx, properties) {},
+  },
+}
+```
+An Initial Access Token with those policies being executed (one by one in that order) is created like so
+  
+
+```js
+new (provider.InitialAccessToken)({ policies: ['my-policy', 'my-policy-2'] }).save().then(console.log);
+```
+Note: referenced policies must always be present when encountered on a token, an AssertionError will be thrown inside the request context if it's not, resulting in a 500 Server Error. Note: the same policies will be assigned to the Registration Access Token after a successful validation. If you wish to assign different policies to the Registration Access Token
+  
+
+```js
+// inside your final ran policy
+ctx.oidc.entities.RegistrationAccessToken.policies = ['update-policy'];
+```
+</details>
 
 ### features.registrationManagement
 

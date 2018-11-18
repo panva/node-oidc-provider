@@ -1,4 +1,14 @@
-const config = require('../default.config');
+const { clone } = require('lodash');
+
+const config = clone(require('../default.config'));
+
+config.features = {};
+config.features.registration = {
+  initialAccessToken: true,
+  policies: {
+    foo() {},
+  },
+};
 
 module.exports = {
   config,
