@@ -39,44 +39,6 @@ describe('provider.setProviderSession', () => {
       });
   });
 
-  it('sets the session id for an existing session', async function () {
-    // simulates setting a fresh session (non existant) in another request
-    this.provider.use(async (ctx, next) => {
-      if (ctx.path === '/login/foo') {
-        await this.provider.setProviderSession(ctx.req, ctx.res, { account: 'foo' });
-      }
-      if (ctx.path === '/login/bar') {
-        await this.provider.setProviderSession(ctx.req, ctx.res, { account: 'bar' });
-      }
-      await next();
-    });
-
-    const auth = new this.AuthorizationRequest({
-      response_type: 'code',
-      scope: 'openid',
-    });
-
-    await this.wrap({ route: '/auth', verb: 'get', auth })
-      .expect(302)
-      .expect(auth.validateInteractionRedirect)
-      .expect(auth.validateInteractionError('login_required', 'no_session'));
-
-    const sessionId = this.getSessionId();
-
-    await this.agent.post('/login/foo');
-    expect(this.getSession()).to.have.property('account', 'foo');
-    await this.agent.post('/login/bar');
-
-    return this.wrap({ route: '/auth', verb: 'get', auth })
-      .expect(302)
-      .expect(auth.validateInteractionRedirect)
-      .expect(auth.validateInteractionError('consent_required', 'client_not_authorized'))
-      .expect(() => {
-        expect(this.getSessionId()).to.eql(sessionId);
-        expect(this.getSession()).to.have.property('account', 'bar');
-      });
-  });
-
   it('sets the already authorized clients', async function () {
     // simulates setting a fresh session (non existant) in another request
     this.provider.use(async (ctx, next) => {
@@ -104,6 +66,9 @@ describe('provider.setProviderSession', () => {
 
     await this.agent.post('/login');
 
+    const { expiration_date } = this.agent.jar.getCookie('_session', { path: '/' });
+    expect(expiration_date).not.to.eql(Infinity);
+
     const session = this.getSession();
     expect(session).not.to.have.property('transient');
   });
@@ -118,6 +83,9 @@ describe('provider.setProviderSession', () => {
     });
 
     await this.agent.post('/login');
+
+    const { expiration_date } = this.agent.jar.getCookie('_session', { path: '/' });
+    expect(expiration_date).to.eql(Infinity);
 
     const session = this.getSession();
     expect(session).to.have.property('transient', true);

@@ -146,8 +146,8 @@ module.exports = function testHelper(dir, { config: base = path.basename(dir), m
           expect(query).to.be.null;
           expect(response).to.have.nested.property('headers.set-cookie').that.is.an('array');
 
-          const grantid = readCookie(response.headers['set-cookie'][2]);
-          expect(readCookie(response.headers['set-cookie'][2])).to.equal(readCookie(response.headers['set-cookie'][4]));
+          const grantid = readCookie(response.headers['set-cookie'][0]);
+          expect(readCookie(response.headers['set-cookie'][0])).to.equal(readCookie(response.headers['set-cookie'][2]));
 
           const interaction = TestAdapter.for('Session').syncFind(grantid);
 
@@ -162,7 +162,7 @@ module.exports = function testHelper(dir, { config: base = path.basename(dir), m
 
   AuthorizationRequest.prototype.validateInteractionError = (expectedError, expectedReason) => { // eslint-disable-line arrow-body-style, max-len
     return (response) => {
-      const grantid = readCookie(response.headers['set-cookie'][2]);
+      const grantid = readCookie(response.headers['set-cookie'][0]);
       const { interaction: { error, reason } } = TestAdapter.for('Session').syncFind(grantid);
       expect(error).to.equal(expectedError);
       expect(reason).to.equal(expectedReason);
@@ -231,7 +231,7 @@ module.exports = function testHelper(dir, { config: base = path.basename(dir), m
   }
 
   function getSessionId() {
-    const { value: sessionId } = agent.jar.getCookie('_session', { path: '/' });
+    const { value: sessionId } = agent.jar.getCookie('_session', { path: '/' }) || {};
     return sessionId;
   }
 
