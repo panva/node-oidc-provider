@@ -2,6 +2,16 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+<a name="5.4.2"></a>
+## [5.4.2](https://github.com/panva/node-oidc-provider/compare/v5.4.1...v5.4.2) (2018-11-19)
+
+
+### Bug Fixes
+
+* ignore *_endpoint_auth_signing_alg client metadata when _jwt auth is not allowed ([d0346a8](https://github.com/panva/node-oidc-provider/commit/d0346a8))
+
+
+
 <a name="5.4.1"></a>
 ## [5.4.1](https://github.com/panva/node-oidc-provider/compare/v5.4.0...v5.4.1) (2018-11-19)
 
