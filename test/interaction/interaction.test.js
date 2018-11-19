@@ -263,6 +263,7 @@ describe('resume after interaction', () => {
           account: uuid(),
           remember: true,
         },
+        consent: {},
       });
 
       return this.agent.get('/auth/resume')
@@ -287,6 +288,7 @@ describe('resume after interaction', () => {
         login: {
           account: uuid(),
         },
+        consent: {},
       });
 
       return this.agent.get('/auth/resume')
