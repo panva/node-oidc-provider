@@ -28,6 +28,20 @@ describe('HYBRID code+token', () => {
           .expect(auth.validateClientLocation);
       });
 
+      it('handles mixed up response_type order', function () {
+        const auth = new this.AuthorizationRequest({
+          response_type: 'token code',
+          scope,
+        });
+
+        return this.wrap({ route, verb, auth })
+          .expect(302)
+          .expect(auth.validateFragment)
+          .expect(auth.validatePresence(['code', 'state', 'access_token', 'expires_in', 'token_type']))
+          .expect(auth.validateState)
+          .expect(auth.validateClientLocation);
+      });
+
       it('populates ctx.oidc.entities', function (done) {
         this.provider.use(this.assertOnce((ctx) => {
           expect(ctx.oidc.entities).to.have.keys('Client', 'Account', 'AuthorizationCode', 'AccessToken');

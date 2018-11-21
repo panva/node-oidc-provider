@@ -32,6 +32,22 @@ describe('IMPLICIT id_token+token', () => {
         expect(await this.provider.AccessToken.find(auth.res.access_token)).to.have.property('gty', 'implicit');
       });
 
+      it('handles mixed up response_type order', async function () {
+        const auth = new this.AuthorizationRequest({
+          response_type: 'token id_token',
+          scope,
+        });
+
+        await this.wrap({ route, verb, auth })
+          .expect(302)
+          .expect(auth.validateFragment)
+          .expect(auth.validatePresence(['id_token', 'state', 'access_token', 'expires_in', 'token_type']))
+          .expect(auth.validateState)
+          .expect(auth.validateClientLocation);
+
+        expect(await this.provider.AccessToken.find(auth.res.access_token)).to.have.property('gty', 'implicit');
+      });
+
       it('populates ctx.oidc.entities', function (done) {
         this.provider.use(this.assertOnce((ctx) => {
           expect(ctx.oidc.entities).to.have.keys('Client', 'Account', 'AccessToken');

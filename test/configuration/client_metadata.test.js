@@ -152,15 +152,15 @@ describe('Client metadata validation', () => {
     });
   };
 
-  const allows = (prop, value, meta, configuration) => {
+  const allows = (prop, value, meta, configuration, assertion = (client) => {
+    expect(client.metadata()[prop]).to.eql(value);
+  }) => {
     let msg = util.format('passes %j', value);
     if (meta) msg = util.format(`${msg}, [client %j]`, omit(meta, ['jwks.keys']));
     if (configuration) msg = util.format(`${msg}, [provider %j]`, configuration);
     it(msg, () => addClient(Object.assign({}, meta, {
       [prop]: value,
-    }), configuration).then((client) => {
-      expect(client.metadata()[prop]).to.eql(value);
-    }, (err) => {
+    }), configuration).then(assertion, (err) => {
       if (err instanceof InvalidClientMetadata) {
         throw new Error(`InvalidClientMetadata received ${err.message} ${err.error_description}`);
       }
@@ -430,6 +430,11 @@ describe('Client metadata validation', () => {
     });
     allows(this.title, responseTypes, {
       grant_types: ['implicit', 'authorization_code'],
+    });
+    allows(this.title, ['token id_token'], { // mixed up order
+      grant_types: ['implicit'],
+    }, undefined, (client) => {
+      expect(client.metadata().response_types).to.eql(['id_token token']);
     });
 
     rejects(this.title, [123], /must only contain strings$/);
