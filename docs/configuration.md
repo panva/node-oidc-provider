@@ -1255,6 +1255,21 @@ _**default value**_:
 ```js
 []
 ```
+<details>
+  <summary>(Click to expand) FAQ: return acr/amr from session</summary>
+  <br>
+
+
+To return the acr and/or amr from the established session rather then values from a this given authorization request overload the OIDCContext.
+  
+
+```js
+Object.defineProperties(provider.OIDCContext.prototype, {
+  acr: { get() { return this.session.acr; } },
+  amr: { get() { return this.session.amr; } },
+});
+```
+</details>
 
 ### audiences
 
@@ -1918,6 +1933,23 @@ _**affects**_: authorization, discovery, registration, registration management
 
 </details>
 
+<details>
+  <summary>(Click to expand) Supported values list</summary>
+  <br>
+
+
+These are values defined in [Core 1.0](https://openid.net/specs/openid-connect-core-1_0.html#Authentication) and [OAuth 2.0 Multiple Response Type Encoding Practices](https://openid.net/specs/oauth-v2-multiple-response-types-1_0.html)
+  
+
+```js
+[
+  'code',
+  'id_token', 'id_token token',
+  'code id_token', 'code token', 'code id_token token',
+  'none',
+]
+```
+</details>
 
 ### revocationEndpointAuthMethods
 
