@@ -260,9 +260,10 @@ describe('JSON Web Token (JWT) RFC7519 implementation', () => {
       const key = keystore.get({ kty: 'oct' });
       return JWT.sign({ data: true }, key, 'HS256', {
         audience: ['client', 'momma'],
+        authorizedParty: 'client',
       })
         .then(jwt => JWT.verify(jwt, key, {
-          audience: 'momma',
+          audience: 'client',
         }));
     });
 
@@ -272,7 +273,7 @@ describe('JSON Web Token (JWT) RFC7519 implementation', () => {
         audience: 'client',
       })
         .then(jwt => JWT.verify(jwt, key, {
-          audience: ['pappa'],
+          audience: 'pappa',
         }))
         .then((valid) => {
           expect(valid).not.to.be.ok;

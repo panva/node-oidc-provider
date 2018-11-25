@@ -27,7 +27,7 @@ if (FORMAT === 'jwt') {
     const redirectUri = 'https://rp.example.com/cb';
     const codeChallenge = 'codeChallenge';
     const codeChallengeMethod = 'codeChallengeMethod';
-    const aud = [clientId, 'foo'];
+    const aud = ['foo', 'bar'];
     const gty = 'foo';
     const error = 'access_denied';
     const errorDescription = 'resource owner denied access';
