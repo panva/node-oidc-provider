@@ -54,7 +54,7 @@ describe('client keystore refresh', () => {
     await keystore.generate('EC', 'P-256');
     setResponse();
 
-    await client.keystore.refresh();
+    await client.keystore.refresh(true);
     expect(client.keystore.all({ kty: 'EC' })).to.have.lengthOf(2);
   });
 
@@ -62,7 +62,7 @@ describe('client keystore refresh', () => {
     setResponse({ keys: [] });
 
     const client = await this.provider.Client.find('client');
-    await client.keystore.refresh();
+    await client.keystore.refresh(true);
 
     expect(client.keystore.get({ kty: 'EC' })).not.to.be.ok;
   });
@@ -71,7 +71,7 @@ describe('client keystore refresh', () => {
     setResponse('/somewhere', 302);
 
     const client = await this.provider.Client.find('client');
-    await client.keystore.refresh().then(fail, (err) => {
+    await client.keystore.refresh(true).then(fail, (err) => {
       expect(err).to.be.an('error');
       expect(err.message).to.equal('invalid_client_metadata');
       expect(err.error_description).to.match(/jwks_uri could not be refreshed/);
@@ -83,7 +83,7 @@ describe('client keystore refresh', () => {
     setResponse('not json');
 
     const client = await this.provider.Client.find('client');
-    await client.keystore.refresh().then(fail, (err) => {
+    await client.keystore.refresh(true).then(fail, (err) => {
       expect(err).to.be.an('error');
       expect(err.message).to.equal('invalid_client_metadata');
       expect(err.error_description).to.match(/jwks_uri could not be refreshed/);
@@ -95,7 +95,7 @@ describe('client keystore refresh', () => {
     setResponse({ keys: {} });
 
     const client = await this.provider.Client.find('client');
-    await client.keystore.refresh().then(fail, (err) => {
+    await client.keystore.refresh(true).then(fail, (err) => {
       expect(err).to.be.an('error');
       expect(err.message).to.equal('invalid_client_metadata');
       expect(err.error_description).to.match(/jwks_uri could not be refreshed/);
@@ -115,7 +115,7 @@ describe('client keystore refresh', () => {
 
       const freshUntil = epochTime(until);
 
-      await client.keystore.refresh();
+      await client.keystore.refresh(true);
       expect(client.keystore.fresh()).to.be.true;
       expect(client.keystore.stale()).to.be.false;
       expect(client.keystore.freshUntil).to.equal(freshUntil);
@@ -133,7 +133,7 @@ describe('client keystore refresh', () => {
 
       const freshUntil = epochTime(until);
 
-      await client.keystore.refresh();
+      await client.keystore.refresh(true);
       expect(client.keystore.fresh()).to.be.true;
       expect(client.keystore.stale()).to.be.false;
       expect(client.keystore.freshUntil).to.equal(freshUntil);
@@ -149,7 +149,7 @@ describe('client keystore refresh', () => {
 
       const freshUntil = epochTime() + 3600;
 
-      await client.keystore.refresh();
+      await client.keystore.refresh(true);
       expect(client.keystore.fresh()).to.be.true;
       expect(client.keystore.stale()).to.be.false;
       expect(client.keystore.freshUntil).to.be.closeTo(freshUntil, 1);
@@ -163,7 +163,7 @@ describe('client keystore refresh', () => {
 
       const freshUntil = epochTime() + 60;
 
-      await client.keystore.refresh();
+      await client.keystore.refresh(true);
       expect(client.keystore.fresh()).to.be.true;
       expect(client.keystore.stale()).to.be.false;
       expect(client.keystore.freshUntil).to.be.closeTo(freshUntil, 1);
