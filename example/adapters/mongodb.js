@@ -100,6 +100,9 @@ class MongoAdapter {
 
       collections.forEach((name) => {
         if (grantable.has(name)) {
+          promises.push(
+            this.coll(name).then(coll => coll.deleteMany({ grantId: found.value.grantId })),
+          );
           promises.push(this.coll(name).deleteMany({ grantId: found.value.grantId }));
         }
       });
