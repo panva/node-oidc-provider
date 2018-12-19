@@ -3,6 +3,7 @@ const assert = require('assert');
 const keystore = require('node-jose').JWK.createKeyStore();
 const moment = require('moment');
 const nock = require('nock');
+const sinon = require('sinon');
 const { expect } = require('chai');
 
 const JWT = require('../../lib/helpers/jwt');
@@ -39,6 +40,11 @@ describe('client keystore refresh', () => {
     });
   });
 
+  afterEach(async function () {
+    const client = await this.provider.Client.find('client');
+    if (client.keystore.fresh.restore) client.keystore.fresh.restore();
+  });
+
   it('gets the jwks from the uri', async function () {
     await keystore.generate('EC', 'P-256');
     setResponse();
@@ -54,6 +60,7 @@ describe('client keystore refresh', () => {
     await keystore.generate('EC', 'P-256');
     setResponse();
 
+    sinon.stub(client.keystore, 'fresh').returns(false);
     await client.keystore.refresh();
     expect(client.keystore.all({ kty: 'EC' })).to.have.lengthOf(2);
   });
@@ -62,6 +69,7 @@ describe('client keystore refresh', () => {
     setResponse({ keys: [] });
 
     const client = await this.provider.Client.find('client');
+    sinon.stub(client.keystore, 'fresh').returns(false);
     await client.keystore.refresh();
 
     expect(client.keystore.get({ kty: 'EC' })).not.to.be.ok;
@@ -71,6 +79,7 @@ describe('client keystore refresh', () => {
     setResponse('/somewhere', 302);
 
     const client = await this.provider.Client.find('client');
+    sinon.stub(client.keystore, 'fresh').returns(false);
     await client.keystore.refresh().then(fail, (err) => {
       expect(err).to.be.an('error');
       expect(err.message).to.equal('invalid_client_metadata');
@@ -83,6 +92,7 @@ describe('client keystore refresh', () => {
     setResponse('not json');
 
     const client = await this.provider.Client.find('client');
+    sinon.stub(client.keystore, 'fresh').returns(false);
     await client.keystore.refresh().then(fail, (err) => {
       expect(err).to.be.an('error');
       expect(err.message).to.equal('invalid_client_metadata');
@@ -95,6 +105,7 @@ describe('client keystore refresh', () => {
     setResponse({ keys: {} });
 
     const client = await this.provider.Client.find('client');
+    sinon.stub(client.keystore, 'fresh').returns(false);
     await client.keystore.refresh().then(fail, (err) => {
       expect(err).to.be.an('error');
       expect(err.message).to.equal('invalid_client_metadata');
@@ -115,6 +126,10 @@ describe('client keystore refresh', () => {
 
       const freshUntil = epochTime(until);
 
+      sinon.stub(client.keystore, 'fresh').callsFake(function () {
+        this.fresh.restore();
+        return false;
+      });
       await client.keystore.refresh();
       expect(client.keystore.fresh()).to.be.true;
       expect(client.keystore.stale()).to.be.false;
@@ -133,6 +148,10 @@ describe('client keystore refresh', () => {
 
       const freshUntil = epochTime(until);
 
+      sinon.stub(client.keystore, 'fresh').callsFake(function () {
+        this.fresh.restore();
+        return false;
+      });
       await client.keystore.refresh();
       expect(client.keystore.fresh()).to.be.true;
       expect(client.keystore.stale()).to.be.false;
@@ -149,6 +168,10 @@ describe('client keystore refresh', () => {
 
       const freshUntil = epochTime() + 3600;
 
+      sinon.stub(client.keystore, 'fresh').callsFake(function () {
+        this.fresh.restore();
+        return false;
+      });
       await client.keystore.refresh();
       expect(client.keystore.fresh()).to.be.true;
       expect(client.keystore.stale()).to.be.false;
@@ -163,6 +186,10 @@ describe('client keystore refresh', () => {
 
       const freshUntil = epochTime() + 60;
 
+      sinon.stub(client.keystore, 'fresh').callsFake(function () {
+        this.fresh.restore();
+        return false;
+      });
       await client.keystore.refresh();
       expect(client.keystore.fresh()).to.be.true;
       expect(client.keystore.stale()).to.be.false;
