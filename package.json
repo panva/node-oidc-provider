@@ -1,6 +1,6 @@
 {
   "name": "oidc-provider",
-  "version": "5.5.2",
+  "version": "5.5.3",
   "description": "OpenID Provider (OP) implementation for Node.js OpenID Connect servers.",
   "keywords": [
     "auth",
