@@ -1,7 +1,7 @@
 const querystring = require('querystring');
 
 const bodyParser = require('koa-body');
-const Router = require('koa-router');
+const Router = require('koa-trie-router');
 
 const { renderError } = require('../../lib/helpers/defaults'); // make your own, you'll need it anyway
 const Account = require('../support/account');
