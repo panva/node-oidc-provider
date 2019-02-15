@@ -2,6 +2,15 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+<a name="5.5.4"></a>
+## [5.5.4](https://github.com/panva/node-oidc-provider/compare/v5.5.3...v5.5.4) (2019-02-15)
+
+
+### Refactored
+
+* removed koa-router in favor of koa-trie-router ([7f8d0cc](https://github.com/panva/node-oidc-provider/commit/7f8d0cc)), closes [#436](https://github.com/panva/node-oidc-provider/issues/436)
+
+
 <a name="5.5.3"></a>
 ## [5.5.3](https://github.com/panva/node-oidc-provider/compare/v5.5.2...v5.5.3) (2019-01-22)
 
