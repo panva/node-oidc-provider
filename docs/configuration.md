@@ -648,7 +648,6 @@ expressApp.use(prefix, oidc.callback);
 ### to a koa application
 ```js
 // assumes koa ^2.0.0
-// assumes koa-router ^7.0.0
 const mount = require('koa-mount');
 const prefix = '/oidc';
 koaApp.use(mount(prefix, oidc.app));
@@ -1209,7 +1208,9 @@ This example will
       if (!allowed) {
         throw new InvalidResource('unauthorized "resource" requested');
       }
-      return transform(resourceParam, grantedResource); // => array of validated and transformed string audiences
+      // => array of validated and transformed string audiences or undefined if no audiences
+      //    are to be listed
+      return transform(resourceParam, grantedResource);
     }
   },
   formats: {
