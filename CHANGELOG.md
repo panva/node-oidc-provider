@@ -8,7 +8,7 @@ All notable changes to this project will be documented in this file. See [standa
 
 ### Refactored
 
-* removed koa-router in favor of koa-trie-router ([7f8d0cc](https://github.com/panva/node-oidc-provider/commit/7f8d0cc)), closes [#436](https://github.com/panva/node-oidc-provider/issues/436)
+* removed koa-router in favor of koa-trie-router ([fe812e0](https://github.com/panva/node-oidc-provider/commit/fe812e0)), closes [#436](https://github.com/panva/node-oidc-provider/issues/436)
 
 
 <a name="5.5.3"></a>
