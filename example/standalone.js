@@ -56,7 +56,7 @@ let server;
     layout: '_layout',
     root: path.join(__dirname, 'views'),
   });
-  provider.use(routes(provider).middleware());
+  provider.use(routes(provider).routes());
   server = provider.listen(PORT, () => {
     console.log(`application is listening on port ${PORT}, check it's /.well-known/openid-configuration`);
   });

@@ -6,31 +6,33 @@ describe('default routing behavior', () => {
   describe('without mounting', () => {
     before(bootstrap(__dirname));
 
-    it('handles invalid verbs with 405 invalid request', function () {
+    it('handles unhandled verbs to known routes', function () {
       return this.agent.post('/.well-known/openid-configuration')
-        .expect(405)
+        .expect(404)
+        .expect('content-type', /application\/json/)
         .expect({
           error: 'invalid_request',
-          error_description: 'method POST not allowed on /.well-known/openid-configuration',
+          error_description: 'unrecognized route or not allowed method (POST on /.well-known/openid-configuration)',
         });
     });
 
-    it('handles invalid verbs with 501 invalid request', function () {
-      return this.agent.trace('/.well-known/openid-configuration')
-        .expect(501)
-        .expect({
-          error: 'invalid_request',
-          error_description: 'not implemented',
-        });
-    });
-
-    it('handles unrecognized routes with 404 json response', function () {
+    it('handles unknown routes', function () {
       return this.agent.get('/foobar')
         .expect(404)
         .expect('content-type', /application\/json/)
         .expect({
           error: 'invalid_request',
-          error_description: 'unrecognized route',
+          error_description: 'unrecognized route or not allowed method (GET on /foobar)',
+        });
+    });
+
+    it('handles unhandled verbs unhandled unknown routes', function () {
+      return this.agent.trace('/foobar')
+        .expect(404)
+        .expect('content-type', /application\/json/)
+        .expect({
+          error: 'invalid_request',
+          error_description: 'unrecognized route or not allowed method (TRACE on /foobar)',
         });
     });
   });
@@ -50,13 +52,13 @@ describe('default routing behavior', () => {
         });
     });
 
-    it('handles unrecognized routes with 404 json response', function () {
+    it('handles unrecognized route or not allowed methods with 404 json response', function () {
       return this.agent.get('/oidc/foobar')
         .expect(404)
         .expect('content-type', /application\/json/)
         .expect({
           error: 'invalid_request',
-          error_description: 'unrecognized route',
+          error_description: 'unrecognized route or not allowed method (GET on /foobar)',
         });
     });
 
