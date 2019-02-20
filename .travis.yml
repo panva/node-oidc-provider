@@ -11,17 +11,17 @@ jobs:
       script: npm run lint
       node_js: stable
       after_script: skip
-    - stage: heroku deploy
-      if: branch = master AND type = push
-      install: skip
-      script: skip
-      after_script: skip
-      deploy:
-        provider: heroku
-        app: guarded-cliffs-8635
-        api_key: $HEROKU_AUTH_TOKEN
-    - stage: conformance build
-      if: branch = master AND type = push
-      install: npm install got@^9.0.0 --no-save
-      script: node test/trigger_conformance_build.js
-      after_script: skip
+    # - stage: heroku deploy
+    #   if: branch = master AND type = push
+    #   install: skip
+    #   script: skip
+    #   after_script: skip
+    #   deploy:
+    #     provider: heroku
+    #     app: guarded-cliffs-8635
+    #     api_key: $HEROKU_AUTH_TOKEN
+    # - stage: conformance build
+    #   if: branch = master AND type = push
+    #   install: npm install got@^9.0.0 --no-save
+    #   script: node test/trigger_conformance_build.js
+    #   after_script: skip
