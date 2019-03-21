@@ -4,21 +4,76 @@ const sinon = require('sinon');
 const Provider = require('../../lib');
 
 describe('provider instance', () => {
-  context('when in non test environment', () => {
+  context('draft/experimental spec warnings', () => {
     /* eslint-disable no-console */
     before(() => {
-      delete process.env.NODE_ENV;
       sinon.stub(console, 'info').callsFake(() => {});
     });
+
     after(() => {
-      process.env.NODE_ENV = 'test';
       console.info.restore();
+    });
+
+    afterEach(() => {
+      console.info.resetHistory();
     });
 
     it('it warns when draft/experimental specs are enabled', () => {
       new Provider('http://localhost', { // eslint-disable-line no-new
-        features: { sessionManagement: true },
+        features: { sessionManagement: { enabled: true } },
       });
+
+      expect(console.info.called).to.be.true;
+    });
+
+    it('it is silent when a version is acknowledged', () => {
+      new Provider('http://localhost', { // eslint-disable-line no-new
+        features: { sessionManagement: { enabled: true, ack: 28 } },
+      });
+
+      expect(console.info.called).to.be.false;
+    });
+
+    it('it is silent when a version is acknowledged where the draft is backwards compatible with a previous draft', () => {
+      new Provider('http://localhost', { // eslint-disable-line no-new
+        features: { resourceIndicators: { enabled: true, ack: 2 } },
+      });
+
+      expect(console.info.called).to.be.false;
+    });
+
+    it('throws when an acked feature has breaking changes since', () => {
+      expect(() => {
+        new Provider('http://localhost', { // eslint-disable-line no-new
+          features: { sessionManagement: { enabled: true, ack: 27 } },
+        });
+      }).to.throw('An unacknowledged version of a draft feature is included in this oidc-provider version.');
+      expect(console.info.called).to.be.true;
+      console.info.resetHistory();
+
+      expect(() => {
+        const tokenEndpointAuthMethods = [
+          'self_signed_tls_client_auth',
+        ];
+        tokenEndpointAuthMethods.ack = 0;
+
+        new Provider('http://localhost', { // eslint-disable-line no-new
+          tokenEndpointAuthMethods,
+        });
+      }).to.throw('An unacknowledged version of a draft feature is included in this oidc-provider version.');
+      expect(console.info.called).to.be.true;
+      console.info.resetHistory();
+
+      expect(() => {
+        const tokenEndpointAuthMethods = [
+          'tls_client_auth',
+        ];
+        tokenEndpointAuthMethods.ack = 0;
+
+        new Provider('http://localhost', { // eslint-disable-line no-new
+          tokenEndpointAuthMethods,
+        });
+      }).to.throw('An unacknowledged version of a draft feature is included in this oidc-provider version.');
 
       expect(console.info.called).to.be.true;
     });
@@ -63,7 +118,7 @@ describe('provider instance', () => {
     it('passes the options', () => {
       const provider = new Provider('http://localhost');
       return provider.initialize({}).then(() => {
-        expect(provider.urlFor('resume', { grant: 'foo' })).to.equal('http://localhost/auth/foo');
+        expect(provider.urlFor('resume', { uid: 'foo' })).to.equal('http://localhost/auth/foo');
       });
     });
   });

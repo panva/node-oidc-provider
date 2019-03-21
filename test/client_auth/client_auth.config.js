@@ -1,9 +1,14 @@
 const { cloneDeep } = require('lodash');
 
 const config = cloneDeep(require('../default.config'));
-const clientKey = require('../client.sig.key');
+const {
+  e, n, kid, kty, use,
+} = require('../client.sig.key');
 const mtlsKeys = require('../jwks/jwks.json');
 
+const clientKey = {
+  e, n, kid, kty, use,
+};
 const rsaKeys = cloneDeep(mtlsKeys);
 rsaKeys.keys.splice(0, 1);
 

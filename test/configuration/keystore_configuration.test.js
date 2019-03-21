@@ -1,6 +1,6 @@
 /* eslint-disable no-new */
 
-const jose = require('node-jose');
+const jose = require('@panva/jose');
 const { expect } = require('chai');
 
 const Provider = require('../../lib');
@@ -9,7 +9,7 @@ const fail = () => { throw new Error('expected promise to be rejected'); };
 
 describe('configuration.keystore', () => {
   beforeEach(function () {
-    this.keystore = jose.JWK.createKeyStore();
+    this.keystore = new jose.JWKS.KeyStore();
   });
 
   it('must contain at least one RS256 signing key', async function () {
@@ -28,6 +28,16 @@ describe('configuration.keystore', () => {
 
     return this.keystore.generate('oct', 256)
       .then(() => provider.initialize({ keystore: this.keystore }))
+      .then(fail, (err) => {
+        expect(err.message).to.equal('only private RSA or EC keys should be part of keystore configuration');
+      });
+  });
+
+  it('must only contain private keys', async function () {
+    const provider = new Provider('http://localhost');
+    await this.keystore.add(global.keystore.get({ kty: 'RSA' }));
+
+    return provider.initialize({ keystore: { keys: [this.keystore.get().toJWK()] } })
       .then(fail, (err) => {
         expect(err.message).to.equal('only private RSA or EC keys should be part of keystore configuration');
       });

@@ -4,7 +4,9 @@ const config = clone(require('../default.config'));
 
 config.subjectTypes = ['public', 'pairwise'];
 config.features = {
-  introspection: true, encryption: true, clientCredentials: true,
+  introspection: { enabled: true },
+  encryption: { enabled: true },
+  clientCredentials: { enabled: true },
 };
 
 module.exports = {

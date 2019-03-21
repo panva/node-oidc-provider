@@ -15,7 +15,7 @@ describe('body parser', () => {
   describe('application/x-www-form-urlencoded', () => {
     it('uses the upstream parser albeit reluctantly', async () => {
       const provider = new Provider('http://localhost:3000', {
-        features: { clientCredentials: true },
+        features: { clientCredentials: { enabled: true } },
       });
       await provider.initialize({
         clients: [{
@@ -47,7 +47,7 @@ describe('body parser', () => {
 
     it('removes all qs magic', async () => {
       const provider = new Provider('http://localhost:3000', {
-        features: { clientCredentials: true },
+        features: { clientCredentials: { enabled: true } },
       });
       const spy = sinon.spy();
       provider.once('grant.success', spy);
@@ -88,7 +88,7 @@ describe('body parser', () => {
   describe('application/json', () => {
     it('uses the upstream parser albeit reluctantly', async () => {
       const provider = new Provider('http://localhost:3000', {
-        features: { registration: true },
+        features: { registration: { enabled: true } },
       });
       await provider.initialize();
       const app = new Koa();
@@ -109,7 +109,7 @@ describe('body parser', () => {
 
     it('handles parsing errors', async () => {
       const provider = new Provider('http://localhost:3000', {
-        features: { registration: true },
+        features: { registration: { enabled: true } },
       });
       await provider.initialize();
 

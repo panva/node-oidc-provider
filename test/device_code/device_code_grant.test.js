@@ -9,7 +9,7 @@ const route = '/token';
 const grant_type = 'urn:ietf:params:oauth:grant-type:device_code';
 
 function errorDetail(spy) {
-  return spy.args[0][0].error_detail;
+  return spy.args[0][1].error_detail;
 }
 
 describe('grant_type=urn:ietf:params:oauth:grant-type:device_code w/ conformIdTokenClaims=false', () => {
@@ -308,11 +308,11 @@ describe('grant_type=urn:ietf:params:oauth:grant-type:device_code', () => {
 
       describe('only S256 is supported', () => {
         before(function () {
-          i(this.provider).configuration('features.pkce').supportedMethods = ['S256'];
+          i(this.provider).configuration().pkceMethods = ['S256'];
         });
 
         after(function () {
-          i(this.provider).configuration('features.pkce').supportedMethods = ['plain', 'S256'];
+          i(this.provider).configuration().pkceMethods = ['plain', 'S256'];
         });
 
         it('passes if S256 is used', async function () {

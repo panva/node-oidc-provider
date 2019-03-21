@@ -2,7 +2,9 @@ const { clone } = require('lodash');
 
 const config = clone(require('../default.config'));
 
-config.features = { frontchannelLogout: true, alwaysIssueRefresh: true };
+config.features = {
+  frontchannelLogout: { enabled: true },
+};
 
 module.exports = {
   config,
@@ -13,6 +15,7 @@ module.exports = {
     grant_types: ['implicit', 'authorization_code', 'refresh_token'],
     redirect_uris: ['https://client.example.com/cb'],
     frontchannel_logout_uri: 'https://client.example.com/frontchannel_logout',
+    frontchannel_logout_session_required: true,
   }, {
     client_id: 'second-client',
     client_secret: 'secret',
@@ -20,5 +23,6 @@ module.exports = {
     grant_types: ['implicit', 'authorization_code', 'refresh_token'],
     redirect_uris: ['https://second-client.example.com/cb'],
     frontchannel_logout_uri: 'https://second-client.example.com/frontchannel_logout',
+    frontchannel_logout_session_required: true,
   }],
 };

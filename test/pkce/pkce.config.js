@@ -2,30 +2,37 @@ const { clone } = require('lodash');
 
 const config = clone(require('../default.config'));
 
-config.features = { pkce: { supportedMethods: ['plain', 'S256'] }, introspection: true, revocation: true };
-config.interactionCheck = () => {};
+config.features = {
+  introspection: { enabled: true },
+  revocation: { enabled: true },
+};
+config.pkceMethods = ['plain', 'S256'];
 
 module.exports = {
   config,
   clients: [{
-    application_type: 'native',
     client_id: 'clientPost',
     token_endpoint_auth_method: 'client_secret_post',
     client_secret: 'secret',
     grant_types: ['authorization_code', 'implicit', 'refresh_token'],
     response_types: ['code', 'id_token', 'code id_token'],
-    redirect_uris: ['com.example.myapp:/localhost/cb'],
+    redirect_uris: ['https://rp.example.com/cb'],
   }, {
-    application_type: 'native',
     client_id: 'client',
     client_secret: 'secret',
     grant_types: ['authorization_code', 'refresh_token'],
-    redirect_uris: ['com.example.myapp:/localhost/cb'],
+    redirect_uris: ['https://rp.example.com/cb'],
   }, {
-    application_type: 'native',
     token_endpoint_auth_method: 'none',
     client_id: 'clientNone',
     grant_types: ['authorization_code', 'refresh_token'],
-    redirect_uris: ['com.example.myapp:/localhost/cb'],
+    redirect_uris: ['https://rp.example.com/cb'],
+  }, {
+    response_types: ['code', 'code id_token', 'id_token'],
+    application_type: 'native',
+    token_endpoint_auth_method: 'none',
+    client_id: 'native',
+    grant_types: ['authorization_code', 'refresh_token', 'implicit'],
+    redirect_uris: ['https://rp.example.com/cb'],
   }],
 };

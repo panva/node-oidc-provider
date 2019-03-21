@@ -3,9 +3,8 @@ const { cloneDeep } = require('lodash');
 const config = cloneDeep(require('../default.config'));
 
 config.features = {
-  clientCredentials: true,
-  deviceFlow: true,
-  alwaysIssueRefresh: true,
+  clientCredentials: { enabled: true },
+  deviceFlow: { enabled: true },
 };
 
 module.exports = {

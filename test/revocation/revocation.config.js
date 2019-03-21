@@ -2,7 +2,7 @@ const { clone } = require('lodash');
 
 const config = clone(require('../default.config'));
 
-config.features = { revocation: true, clientCredentials: true };
+config.features = { revocation: { enabled: true }, clientCredentials: { enabled: true } };
 
 module.exports = {
   config,

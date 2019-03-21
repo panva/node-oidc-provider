@@ -1,12 +1,12 @@
 const { readFileSync } = require('fs');
 
 const nock = require('nock');
-const uuid = require('uuid/v4');
-const jose = require('node-jose');
+const jose = require('@panva/jose');
 const sinon = require('sinon');
 const { expect } = require('chai');
 const { cloneDeep } = require('lodash');
 
+const nanoid = require('../../lib/helpers/nanoid');
 const Provider = require('../../lib');
 const bootstrap = require('../test_helper');
 const clientKey = require('../client.sig.key');
@@ -30,7 +30,7 @@ const tokenAuthRejected = {
 };
 
 function errorDetail(spy) {
-  return spy.args[0][0].error_detail;
+  return spy.args[0][1].error_detail;
 }
 
 describe('client authentication options', () => {
@@ -256,7 +256,7 @@ describe('client authentication options', () => {
         .auth('foo with %', 'foo with $')
         .expect({
           error: 'invalid_request',
-          error_description: 'client_id and client_secret are not properly encoded',
+          error_description: 'client_id and client_secret in the authorization header are not properly encoded',
         });
     });
 
@@ -424,7 +424,7 @@ describe('client authentication options', () => {
 
     it('accepts the auth', function () {
       return JWT.sign({
-        jti: uuid(),
+        jti: nanoid(),
         aud: this.provider.issuer + this.provider.pathFor('token'),
         sub: 'client-jwt-secret',
         iss: 'client-jwt-secret',
@@ -442,7 +442,7 @@ describe('client authentication options', () => {
       const spy = sinon.spy();
       this.provider.once('grant.error', spy);
       return JWT.sign({
-        jti: uuid(),
+        jti: nanoid(),
         aud: this.provider.issuer + this.provider.pathFor('token'),
         sub: 'client-none',
         iss: 'client-none',
@@ -464,7 +464,7 @@ describe('client authentication options', () => {
 
     it('rejects the auth if authorization header is also present', function () {
       return JWT.sign({
-        jti: uuid(),
+        jti: nanoid(),
         aud: this.provider.issuer + this.provider.pathFor('token'),
         sub: 'client-jwt-secret',
         iss: 'client-jwt-secret',
@@ -485,7 +485,7 @@ describe('client authentication options', () => {
 
     it('rejects the auth if client secret is also present', function () {
       return JWT.sign({
-        jti: uuid(),
+        jti: nanoid(),
         aud: this.provider.issuer + this.provider.pathFor('token'),
         sub: 'client-jwt-secret',
         iss: 'client-jwt-secret',
@@ -506,7 +506,7 @@ describe('client authentication options', () => {
 
     it('accepts the auth when aud is an array', function () {
       return JWT.sign({
-        jti: uuid(),
+        jti: nanoid(),
         aud: [this.provider.issuer + this.provider.pathFor('token')],
         sub: 'client-jwt-secret',
         iss: 'client-jwt-secret',
@@ -540,7 +540,7 @@ describe('client authentication options', () => {
       const spy = sinon.spy();
       this.provider.once('grant.error', spy);
       return JWT.sign({
-        jti: uuid(),
+        jti: nanoid(),
         aud: this.provider.issuer + this.provider.pathFor('token'),
         sub: 'client-jwt-secret',
         iss: 'client-jwt-secret',
@@ -566,7 +566,7 @@ describe('client authentication options', () => {
       const spy = sinon.spy();
       this.provider.once('grant.error', spy);
       return JWT.sign({
-        jti: uuid(),
+        jti: nanoid(),
         sub: 'client-jwt-secret',
         iss: 'client-jwt-secret',
       }, this.key, 'HS256', {
@@ -590,7 +590,7 @@ describe('client authentication options', () => {
       const spy = sinon.spy();
       this.provider.once('grant.error', spy);
       return JWT.sign({
-        // jti: uuid(),
+        // jti: nanoid(),
         aud: this.provider.issuer + this.provider.pathFor('token'),
         sub: 'client-jwt-secret',
         iss: 'client-jwt-secret',
@@ -615,7 +615,7 @@ describe('client authentication options', () => {
       const spy = sinon.spy();
       this.provider.once('grant.error', spy);
       return JWT.sign({
-        jti: uuid(),
+        jti: nanoid(),
         aud: this.provider.issuer + this.provider.pathFor('token'),
         sub: 'client-jwt-secret',
         // iss: 'client-jwt-secret',
@@ -640,7 +640,7 @@ describe('client authentication options', () => {
       const spy = sinon.spy();
       this.provider.once('grant.error', spy);
       return JWT.sign({
-        jti: uuid(),
+        jti: nanoid(),
         aud: this.provider.issuer + this.provider.pathFor('token'),
         sub: 'client-jwt-secret',
         iss: 'not equal to clientid',
@@ -665,7 +665,7 @@ describe('client authentication options', () => {
       const spy = sinon.spy();
       this.provider.once('grant.error', spy);
       return JWT.sign({
-        jti: uuid(),
+        jti: nanoid(),
         // aud: this.provider.issuer + this.provider.pathFor('token'),
         aud: ['misses the token endpoint'],
         sub: 'client-jwt-secret',
@@ -691,7 +691,7 @@ describe('client authentication options', () => {
       const spy = sinon.spy();
       this.provider.once('grant.error', spy);
       return JWT.sign({
-        jti: uuid(),
+        jti: nanoid(),
         // aud: this.provider.issuer + this.provider.pathFor('token'),
         aud: 'not the token endpoint',
         sub: 'client-jwt-secret',
@@ -715,7 +715,7 @@ describe('client authentication options', () => {
 
     it('checks for mismatch in client_assertion client_id and body client_id', function () {
       return JWT.sign({
-        jti: uuid(),
+        jti: nanoid(),
         aud: this.provider.issuer + this.provider.pathFor('token'),
         sub: 'client-jwt-secret',
         iss: 'client-jwt-secret',
@@ -736,7 +736,7 @@ describe('client authentication options', () => {
 
     it('requires client_assertion_type', function () {
       return JWT.sign({
-        jti: uuid(),
+        jti: nanoid(),
         aud: this.provider.issuer + this.provider.pathFor('token'),
         sub: 'client-jwt-secret',
         iss: 'client-jwt-secret',
@@ -758,7 +758,7 @@ describe('client authentication options', () => {
 
     it('requires client_assertion_type of specific value', function () {
       return JWT.sign({
-        jti: uuid(),
+        jti: nanoid(),
         aud: this.provider.issuer + this.provider.pathFor('token'),
         sub: 'client-jwt-secret',
         iss: 'client-jwt-secret',
@@ -797,7 +797,7 @@ describe('client authentication options', () => {
       const spy = sinon.spy();
       this.provider.once('grant.error', spy);
       return JWT.sign({
-        jti: uuid(),
+        jti: nanoid(),
         aud: this.provider.issuer + this.provider.pathFor('token'),
         sub: 'client-jwt-secret',
         iss: 'client-jwt-secret',
@@ -822,7 +822,7 @@ describe('client authentication options', () => {
       it('reused jtis must be rejected', function () {
         const spy = sinon.spy();
         return JWT.sign({
-          jti: uuid(),
+          jti: nanoid(),
           aud: this.provider.issuer + this.provider.pathFor('token'),
           sub: 'client-jwt-secret',
           iss: 'client-jwt-secret',
@@ -867,7 +867,7 @@ describe('client authentication options', () => {
         const spy = sinon.spy();
         this.provider.once('grant.error', spy);
         return JWT.sign({
-          jti: uuid(),
+          jti: nanoid(),
           aud: this.provider.issuer + this.provider.pathFor('token'),
           sub: 'client-jwt-secret',
           iss: 'client-jwt-secret',
@@ -893,9 +893,9 @@ describe('client authentication options', () => {
   describe('private_key_jwt auth', () => {
     let privateKey;
 
-    before(() => jose.JWK.asKey(clientKey).then((key) => {
-      privateKey = key;
-    }));
+    before(() => {
+      privateKey = jose.JWK.importKey(clientKey);
+    });
 
     after(function () {
       i(this.provider).configuration().clockTolerance = 0;
@@ -903,7 +903,7 @@ describe('client authentication options', () => {
 
     it('accepts the auth', function () {
       return JWT.sign({
-        jti: uuid(),
+        jti: nanoid(),
         aud: this.provider.issuer + this.provider.pathFor('token'),
         sub: 'client-jwt-key',
         iss: 'client-jwt-key',
@@ -922,7 +922,7 @@ describe('client authentication options', () => {
     it('accepts client assertions issued within acceptable system clock skew', function () {
       i(this.provider).configuration().clockTolerance = 10;
       return JWT.sign({
-        jti: uuid(),
+        jti: nanoid(),
         aud: this.provider.issuer + this.provider.pathFor('token'),
         sub: 'client-jwt-key',
         iss: 'client-jwt-key',

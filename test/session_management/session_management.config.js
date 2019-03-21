@@ -2,8 +2,7 @@ const { clone } = require('lodash');
 
 const config = clone(require('../default.config'));
 
-config.features = { sessionManagement: true };
-config.interactionCheck = () => {};
+config.features = { sessionManagement: { enabled: true } };
 
 module.exports = {
   config,

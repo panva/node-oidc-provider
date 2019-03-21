@@ -11,18 +11,27 @@ describe('dynamic scopes', () => {
   before(bootstrap(__dirname));
   before(function () { return this.login({ scope }); });
 
-  it('do not show up in discovery', function () {
+  it('show up in discovery if they have a label', function () {
     return this.agent.get('/.well-known/openid-configuration')
       .expect(200)
       .expect(({ body }) => {
-        expect(body).to.have.property('scopes_supported').to.eql(['openid', 'offline_access', 'address', 'email', 'phone', 'profile']);
+        expect(body).to.have.property('scopes_supported').to.eql([
+          'openid',
+          'offline_access',
+          'address',
+          'email',
+          'phone',
+          'profile',
+          'sign:{hex}',
+          // read:{hex} is missing
+        ]);
       });
   });
 
   describe('client credentials', () => {
     it('allows dynamic scopes to be requested and returned by client credentials', async function () {
       const spy = sinon.spy();
-      this.provider.once('token.issued', spy);
+      this.provider.once('client_credentials.saved', spy);
 
       await this.agent.post('/token')
         .send({
@@ -43,9 +52,32 @@ describe('dynamic scopes', () => {
   });
 
   describe('authorization', () => {
+    it('validates whitelisted dynamic scopes', function () {
+      const spy = sinon.spy();
+      this.provider.once('authorization.error', spy);
+      const auth = new this.AuthorizationRequest({
+        client_id: 'client-limited-scope',
+        response_type: 'code',
+        scope: 'openid foobar sign:F0F0F0', // foobar is ignored, sign:{hex} is not whitelisted
+      });
+
+      return this.wrap({ route: '/auth', verb: 'get', auth })
+        .expect(302)
+        .expect(() => {
+          expect(spy.calledOnce).to.be.true;
+        })
+        .expect(auth.validatePresence(['error', 'error_description', 'state', 'scope']))
+        .expect(auth.validateState)
+        .expect(auth.validateClientLocation)
+        .expect(auth.validateError('invalid_scope'))
+        .expect(auth.validateScope('sign:F0F0F0'))
+        .expect(auth.validateErrorDescription('requested scope is not whitelisted'));
+    });
+
     it('allows dynamic scopes to be requested and added to token scopes', async function () {
       const spy = sinon.spy();
-      this.provider.on('token.issued', spy);
+      this.provider.once('authorization_code.saved', spy);
+      this.provider.once('access_token.saved', spy);
 
       const auth = new this.AuthorizationRequest({
         response_type: 'code token',
@@ -63,7 +95,8 @@ describe('dynamic scopes', () => {
           ({ query: { access_token: accessToken } } = url.parse(location, true));
         })
         .catch((err) => {
-          this.provider.removeAllListeners('token.issued');
+          this.provider.removeAllListeners('authorization_code.saved');
+          this.provider.removeAllListeners('access_token.saved');
           throw err;
         });
 

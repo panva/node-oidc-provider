@@ -2,6 +2,179 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+<a name="6.0.0-alpha.0"></a>
+# [6.0.0-alpha.0](https://github.com/panva/node-oidc-provider/compare/v5.5.5...v6.0.0-alpha.0) (2019-03-23)
+
+### Features
+- it is now possible to issue Refresh Tokens without the offline_access scope, these refresh tokens
+  and all access tokens issued from it will be unusable when the session they're tied to gets
+  removed or its subject changes
+  - Session now has a `uid` property which persists throughout the cookie identifier rotations and
+    its value is stored in the related tokens as `sessionUid`, it is based on this value that the
+    provider will perform session lookups to ensure that session bound tokens are still considered
+    valid
+  - by default a session bound grant is one without offline_access, this can be changed, or
+    completely disabled to restore previous behaviour with a new `expiresWithSession` helper
+- `issueRefreshToken` configuration helper has been added, it allows to define specific client and
+  context based policy about whether a refresh token should be issued or not to a client
+- `formats.extraJwtAccessTokenClaims` configuration option added, this async function will be called
+  whenever a JWT format AccessToken or ClientCredentials is being created
+- Updated Device Flow draft implementation - draft 15 now requires the same client authentication
+  mechanism to be present at the device_authorization_endpoint
+- interactions will now be requested multiple times if the authorization request context cannot be
+  resolved yet. This means you can now resolve one prompt at a time. When you load the interaction
+  details (using `provider.interactionDetails()`), in addition to `details.params` containing the
+  complete parsed authorization parameters object, you now also have access to `details.prompt`
+  containing an object with the prompt details.
+  - `details.prompt.name` has the name prompt, e.g. `login`
+  - `details.prompt.reasons` has an array of reasons the prompt is being requested, e.g. `["max_age"]`
+  - `details.prompt.details` contains is an object of details you might need to resolve the prompt
+  - `details.session` is an object containing details about the OP session as-is at the moment
+    of requesting interaction
+    - `details.session.uid` is the internal session's uid
+    - `details.session.cookie` is the session cookie value
+    - `details.session.acr` is the current session's acr if there's one
+    - `details.session.amr` is the current session's amr if there's one
+    - `details.session.accountId`
+- interactions results `consent.rejectedScopes` and `consent.rejectedClaims` will no longer
+  replace the existing values, the rejected scopes and claims will accumulate instead, the same
+  happens with what's assumed accepted (that is everything thats been requested and wasn't rejected)
+- `end_session_endpoint` now accepts a POST with the parameters being in the body of the request,
+  this is so that clients avoid URL length limits and exposing PII in the URL. See
+  [OIDC Issues tracker](https://bitbucket.org/openid/connect/issues/1056/use-of-id_token-in-rp-initiated-logout-as)
+- Updated OAuth 2.0 Mutual TLS Client Authentication and Certificate-Bound Access Tokens draft
+  implementation - draft 13
+  - client's `certificate_bound_access_tokens`, now also binds the Refresh Token if the client is
+    using "none" endpoint auth method
+  - SAN based client properties are now recognized, they are not however, supported and will throw
+    when presented
+- Updated Device Flow draft implementation - draft 15
+  - the same client authentication as for token_endpoint is now used at the device_authorization_endpoint
+  - once a user code passes the device confirmation prompt it cannot be used again
+- `end_session_endpoint` is now always available, it is not bound to any of the session or logout
+  specification features
+- clients may now have a `scope` property, when set authorization requests for this client
+  must stay within those whitelisted scopes
+- `end_session_endpoint` will now drop session-bound tokens for the clients/grants encountered
+  in the session
+- when the existing session's subject (end-user identifier) differs from one inside interaction
+  results the provider will bounce the user agent through the end_session_endpoint to perform a
+  "clean" logout - drop the session, perform front and back-channel logout notifications (if
+  enabled) and revoke grants (if bound to session)
+- end session endpoint will now revoke tokens bound to the user-agent session by grantId for the
+  clients that have had their authorization removed
+- `rotateRefreshToken` configuration added, it can be a function to allow for client and context
+  based policy for deciding whether refresh token should rotated or not
+- the provider can now process non-openid authorization requests
+  - requests without an `openid` scope or `scope` parameter altogether will be processed as plain
+    OAuth2.0 authorization requests
+  - this has a few exceptions:
+    - response types that include id_token still require the `openid` scope
+    - use of openid feature related parameters such as `claims`, `acr_values`, `id_token_hint` and
+      `max_age` still require the `openid` scope
+    - use of openid feature related client attributes such as `default_acr_values`,
+      `default_max_age`, `require_auth_time` still require the `openid` scope
+  - use of the `userinfo_endpoint` is only possible with access tokens that have the `openid` scope
+  - note: the scope claim in JWT access tokens will be missing if the parameter was missing as well,
+    dtto for the scope property in your persitent storage
+- authorization parameter `max_age=0` now behaves like `prompt=login` (dtto client's
+  `default_max_age=0`)
+- every model now has its own `saved` and `destroyed` event emitted by the provider, sessions and
+  interactions too, the convention is `{snake_cased_model_name}.{saved|destroyed}`
+- `urn:` request_uri support added, provided that one overloads
+  `provider.Client.prototype.requestUriAllowed` and `provider.requestUriCache.resolveUrn`
+- `http:` request_uris are now allowed under the assumption that the request object it yields is
+  verifiable (signed and/or symmetrically encrypted)
+- added `invalid_software_statement` and `unapproved_software_statement` exported errors
+
+
+### Bug Fixes
+
+- subsequent authorization requests for the same combination of client, end-user and sessionUid will
+  all have the same `grantId` value now
+- `PKCE` is no longer forced for `grant_type=urn:ietf:params:oauth:grant-type:device_code`
+- response_type `code token` no longer requires nonce parameter to be present. See
+  [OIDC Core 1.0 Errata 2 changeset](https://bitbucket.org/openid/connect/commits/31240ed1f177b16b589b54c3795ea0187fa5b85e)
+- provider no longer reject client registration when the `jwks.keys` is empty
+- provider now rejects client's `jwks` and `jwks_uri` if they contain private key material. See
+  [OIDC Core 1.0 Errata 2 changeset](https://bitbucket.org/openid/connect/commits/f91efe0f583d9e8a96a7717f454e1822041feb14)
+- Client will no longer be looked up twice during failed authorization due to client not being found
+- `max_age` parameter is now validated to be a non-negative safe integer
+- PBES2 symmetric encryption now correctly uses the `client_secret` value rather then its SHA digest
+- client secrets no longer need to have minimal length to support HS signing
+- established session acr/amr is now available for any authorization request, not just the one it
+  was established with
+
+### BREAKING CHANGES
+- Node.js version >= 11.8.0 is now required, it is expected oidc-provider v6.0.0 will release after
+  node v12.0.0 and that will be the required version
+- all exported JWK related methods have been removed
+- JWT Access Token can now only be signed using the provider's asymmetric keys, client's HS will no
+  longer be used
+- `sid` ID Token claim is now only returned when the client requests it using the `claims` parameter
+  or has the appropriate back/front channel logout uris enabled and front/backchannel_logout_session_required
+  set to true
+- the provider now uses `@panva/jose` module instead `node-jose`, this module brings in improvements
+  in JWS/JWE performance due to it's use of `KeyObject` API introduced in Node.js v11.6.0
+- clients with `request_object_signing_alg` set must now always provide a request object,
+  authorization requests will fail with `invalid_request` when `request` or `request_uri` is missing
+  for such clients
+- adapter changes to accomodate new functionality
+  - it is no longer desired to drop all related tokens when `#destroy` is called
+  - Session adapter instance expects to have a `findByUid` method which resolves with the same data
+    as `find` does only the reference is the session's `uid` property. This is only needed when
+    utilizing the new session-bound tokens
+  - AccessToken, RefreshToken, AuthorizationCode & DeviceCode adapter instances expect to have
+    `revokeByGrantId` method which accepts a string parameter `grantId` and revokes all tokens
+    with its matching value in the `grantId` property
+- only `AccessToken` and `ClientCredentials` may have a format. All other tokens are now forced to
+  be opaque
+- `clientCacheDuration` configuration option has been removed
+- `token.*` events are no longer emitted, instead each token has its own event, sessions and
+  interactions too, the convention is `snake_cased_model_name.*`
+- `features.pkce` and `features.oauthNativeApps` are now not configurable and always in effect, pkce
+  is always forced on native clients
+- `iss` is no longer pushed to token/model storage payloads
+- `features.sessionManagement.thirdPartyCheckUrl` has been removed
+- `features.alwaysIssueRefresh` has been removed
+- `features.refreshTokenRotation` has been renamed to `features.rotateRefreshToken` and its values
+  are now true/false or a function that returns true/false when a refresh token should or should not
+  be rotated
+- `features.conformIdTokenClaims` is not a feature anymore, it's just `conformIdTokenClaims` in the
+  configuration object's root
+- revoking an Access Token via the `revocation_endpoint` will not revoke the whole grant any more
+- default `interaction` cookie name value changed from `_grant` to `_interaction`
+- default `resume` cookie name value changed from `_grant` to `_interaction_resume`
+- all references to `ctx.oidc.uuid` are now `ctx.oidc.uid` and the format is now a random string,
+  not a uuid
+- nearly all emitted events have had their arguments shuffled and/or changed to allow for `ctx` to
+  be first
+- nearly all helper functions have had their arguments shuffled and/or changed to allow for `ctx` to
+  be the first amongst them (oh yeah, `ctx` has been added almost everywhere)
+- all configuration `features` are no longer booleans, they're objects with all their relevant
+  configuration in the `defaults.js` file and `docs/README.md`. Old configuration format is not
+  accepted anymore
+- some configuration properties that only relate to a specific features were moved from the root
+  level to the feature's configuration level and have been renamed, these are
+  - `deviceFlowSuccess` -> `features.deviceFlow.successSource`
+  - `frontchannelLogoutPendingSource` -> `features.frontchannelLogout.logoutPendingSource`
+  - `userCodeConfirmSource` -> `features.deviceFlow.userCodeConfirmSource`
+  - `userCodeInputSource` -> `features.deviceFlow.userCodeInputSource`
+- Session model has been split to Session and Interaction
+- interaction login result now defaults to `remember: true`
+- `legacy` storage format has been removed
+- adding additional audiences through the `audiences` helper to signed userinfo or ID Tokens has
+  been removed (it remains for the rest of the use cases)
+- the `.well-known/webfinger` endpoint that always returned success is removed
+- default `deviceFlow.deviceInfo` `userAgent` property is now `ua`
+
+### Other changes / deprecations
+
+- example mongo and redis adapters revised
+- example redis with ReJSON module adapter added
+- example unmaintained adapters removed
+
+
 <a name="5.5.5"></a>
 ## [5.5.5](https://github.com/panva/node-oidc-provider/compare/v5.5.4...v5.5.5) (2019-02-20)
 

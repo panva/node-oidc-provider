@@ -25,6 +25,7 @@ describe('client registration policies', () => {
         new Provider('http://localhost', { // eslint-disable-line no-new
           features: {
             registration: {
+              enabled: true,
               policies: { foo() { } },
             },
           },
@@ -36,7 +37,7 @@ describe('client registration policies', () => {
   describe('Registration & InitialAccessToken', () => {
     it('allows policies to run to be stored on an InitialAccessToken', async function () {
       const spy = sinon.spy();
-      this.provider.once('token.issued', spy);
+      this.provider.once('initial_access_token.saved', spy);
       const value = await new this.provider.InitialAccessToken({ policies: ['empty-policy'] }).save();
 
       expect(spy.called).to.be.true;
@@ -120,7 +121,7 @@ describe('client registration policies', () => {
       const value = await new this.provider.InitialAccessToken({ policies: ['empty-policy'] }).save();
 
       const spy = sinon.spy();
-      this.provider.once('token.issued', spy);
+      this.provider.once('registration_access_token.saved', spy);
 
       await this.agent.post('/reg')
         .auth(value, { type: 'bearer' })
@@ -139,7 +140,7 @@ describe('client registration policies', () => {
       const value = await new this.provider.InitialAccessToken({ policies: ['change-rat-policy'] }).save();
 
       const spy = sinon.spy();
-      this.provider.once('token.issued', spy);
+      this.provider.once('registration_access_token.saved', spy);
 
       await this.agent.post('/reg')
         .auth(value, { type: 'bearer' })
@@ -333,7 +334,7 @@ describe('client registration policies', () => {
         });
 
         const spy = sinon.spy();
-        this.provider.once('token.issued', spy);
+        this.provider.once('registration_access_token.saved', spy);
 
         let value;
         await this.agent.put(this.url)

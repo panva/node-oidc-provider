@@ -3,9 +3,9 @@ const { clone } = require('lodash');
 const config = clone(require('../default.config'));
 
 config.subjectTypes = ['pairwise', 'public'];
-config.features = { claimsParameter: true };
+config.features = { claimsParameter: { enabled: true } };
 config.acrValues = ['0', '1', '2'];
-config.pairwiseIdentifier = sub => `${sub}-pairwise`;
+config.pairwiseIdentifier = (ctx, sub) => `${sub}-pairwise`;
 
 module.exports = {
   config,

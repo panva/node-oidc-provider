@@ -76,7 +76,7 @@ describe('IMPLICIT id_token+token', () => {
           .then((response) => {
             const { query: { access_token } } = url.parse(response.headers.location, true);
             const jti = this.getTokenJti(access_token);
-            const stored = this.TestAdapter.for('AccessToken').syncFind(jti, { payload: true });
+            const stored = this.TestAdapter.for('AccessToken').syncFind(jti);
 
             expect(stored).to.have.property('scope', 'openid');
           });

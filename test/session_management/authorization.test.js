@@ -39,20 +39,22 @@ describe('session management', () => {
             });
         });
 
-        it('omits the session_state for native applications', function () {
-          const auth = new this.AuthorizationRequest({
-            client_id: 'client-native-claimed',
-            response_type: 'code',
-            scope: 'openid',
-            code_challenge_method: 'S256',
-            code_challenge: 'foobar',
-          });
+        bootstrap.passInteractionChecks('native_client_prompt', () => {
+          it('doesn\'t omit the session_state for native applications', function () {
+            const auth = new this.AuthorizationRequest({
+              client_id: 'client-native-claimed',
+              response_type: 'code',
+              scope: 'openid',
+              code_challenge_method: 'S256',
+              code_challenge: 'foobar',
+            });
 
-          return this.wrap({ route, verb, auth })
-            .expect(302)
-            .expect(auth.validatePresence(['code', 'state']))
-            .expect(auth.validateState)
-            .expect(auth.validateClientLocation);
+            return this.wrap({ route, verb, auth })
+              .expect(302)
+              .expect(auth.validatePresence(['code', 'state', 'session_state']))
+              .expect(auth.validateState)
+              .expect(auth.validateClientLocation);
+          });
         });
 
         it('sets a _state.clientId cookies', function () {
@@ -100,7 +102,7 @@ describe('session management', () => {
             });
         });
 
-        it('omits the session_state for native applications', function () {
+        it('doesn\'t omit the session_state for native applications', function () {
           const auth = new this.AuthorizationRequest({
             prompt: 'none',
             client_id: 'client-native-claimed',
@@ -112,7 +114,7 @@ describe('session management', () => {
 
           return this.wrap({ route, verb, auth })
             .expect(302)
-            .expect(auth.validatePresence(['error', 'error_description', 'state']))
+            .expect(auth.validatePresence(['error', 'error_description', 'state', 'session_state']))
             .expect(auth.validateState)
             .expect(auth.validateClientLocation);
         });

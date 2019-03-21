@@ -3,7 +3,9 @@ const { clone } = require('lodash');
 const config = clone(require('../default.config'));
 
 config.features = {
-  introspection: true, jwtIntrospection: true, encryption: true,
+  introspection: { enabled: true },
+  jwtIntrospection: { enabled: true },
+  encryption: { enabled: true },
 };
 
 module.exports = {

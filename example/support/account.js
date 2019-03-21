@@ -1,10 +1,10 @@
 const store = new Map();
 const logins = new Map();
-const uuid = require('uuid/v4');
+const nanoid = require('nanoid');
 
 class Account {
   constructor(id) {
-    this.accountId = id || uuid();
+    this.accountId = id || nanoid();
     store.set(this.accountId, this);
   }
 
@@ -41,7 +41,7 @@ class Account {
       phone_number: '+49 000 000000',
       phone_number_verified: false,
       picture: 'http://lorempixel.com/400/200/',
-      preferred_username: 'Jdawg',
+      preferred_username: 'johnny',
       profile: 'https://johnswebsite.com',
       updated_at: 1454704946,
       website: 'http://example.com',
@@ -51,7 +51,7 @@ class Account {
 
   static async findByLogin(login) {
     if (!logins.get(login)) {
-      logins.set(login, new Account());
+      logins.set(login, new Account(login));
     }
 
     return logins.get(login);

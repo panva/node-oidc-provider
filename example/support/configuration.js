@@ -32,32 +32,33 @@ module.exports.provider = Object.assign({
       'nickname', 'picture', 'preferred_username', 'profile', 'updated_at', 'website', 'zoneinfo'],
   },
   features: {
-    devInteractions: false, // defaults to true
-    // discovery: true, // defaults to true
-    // requestUri: true, // defaults to true
-    // oauthNativeApps: true, // defaults to true
-    // pkce: true, // defaults to true
+    devInteractions: { enabled: false }, // defaults to true
+    // discovery: { enabled: true }, // defaults to true
+    // requestUri: { enabled: true }, // defaults to true
 
-    backchannelLogout: true, // defaults to false
-    claimsParameter: true, // defaults to false
-    deviceFlow: true, // defaults to false
-    encryption: true, // defaults to false
-    frontchannelLogout: true, // defaults to false
-    introspection: true, // defaults to false
-    jwtIntrospection: true, // defaults to false
-    registration: true, // defaults to false
-    request: true, // defaults to false
-    revocation: true, // defaults to false
-    sessionManagement: true, // defaults to false
-    webMessageResponseMode: true, // defaults to false
-    jwtResponseModes: true, // defaults to false
+    backchannelLogout: { enabled: true }, // defaults to false
+    claimsParameter: { enabled: true }, // defaults to false
+    deviceFlow: { enabled: true }, // defaults to false
+    encryption: { enabled: true }, // defaults to false
+    frontchannelLogout: { enabled: true }, // defaults to false
+    introspection: { enabled: true }, // defaults to false
+    jwtIntrospection: { enabled: true }, // defaults to false
+    registration: { enabled: true }, // defaults to false
+    request: { enabled: true }, // defaults to false
+    revocation: { enabled: true }, // defaults to false
+    sessionManagement: { enabled: true }, // defaults to false
+    webMessageResponseMode: { enabled: true }, // defaults to false
+    jwtResponseModes: { enabled: true }, // defaults to false
   },
   formats: {
-    default: 'opaque',
+    extraJwtAccessTokenClaims(ctx, token) { // eslint-disable-line no-unused-vars
+      return { 'urn:oidc-provider:example:foo': 'bar' };
+    },
     AccessToken: 'jwt',
+    // ClientCredentials: 'jwt', not enabled
   },
   subjectTypes: ['public', 'pairwise'],
-  pairwiseIdentifier(accountId, { sectorIdentifier }) {
+  pairwiseIdentifier(ctx, accountId, { sectorIdentifier }) {
     return crypto.createHash('sha256')
       .update(sectorIdentifier)
       .update(accountId)
@@ -65,9 +66,8 @@ module.exports.provider = Object.assign({
       .digest('hex');
   },
   interactionUrl: function interactionUrl(ctx, interaction) { // eslint-disable-line no-unused-vars
-    return `/interaction/${ctx.oidc.uuid}`;
+    return `/interaction/${ctx.oidc.uid}`;
   },
-  clientCacheDuration: 1 * 24 * 60 * 60, // 1 day in seconds,
   ttl: {
     AccessToken: 1 * 60 * 60, // 1 hour in seconds
     AuthorizationCode: 10 * 60, // 10 minutes in seconds

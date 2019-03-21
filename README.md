@@ -8,9 +8,21 @@ not dictate a fixed data model or persistence store, instead, you must provide a
 A generic in-memory adapter is available to get you started as well as feature-less dev-only views
 to be able to get off the ground.
 
-**Table of Contents**
+## v6.0.0 alpha notice
 
-<!-- TOC depthFrom:2 depthTo:3 withLinks:1 updateOnSave:1 orderedList:0 -->
+v6.0.0 is now available in alpha release on npm and master branch, please head over to
+[#419](https://github.com/panva/node-oidc-provider/issues/419) to provide feedback.
+
+I'm looking for early adopter feedback and pointers to missing changelog entries as well as
+misunderstood changes. Throughout the v6.0.0 prerelease line the changelog will be extended and
+especially interaction documentation will be provided.
+
+The minimal node version for this alpha is v11.8.0 and v6.0.0 will release as stable sometime after
+v12.0.0 lands in April 2019.
+
+See [v5.x](https://github.com/panva/node-oidc-provider/tree/v5.x) for the last v5.x release and docs.
+
+**Table of Contents**
 
 - [Implemented specs & features](#implemented-specs--features)
 - [Certification](#certification)
@@ -18,8 +30,6 @@ to be able to get off the ground.
 - [Configuration and Initialization](#configuration-and-initialization)
 - [Debugging](#debugging)
 - [Events](#events)
-
-<!-- /TOC -->
 
 ## Implemented specs & features
 
@@ -43,11 +53,11 @@ enabled by default, check the configuration section on how to enable them.
 - [RFC8252 - OAuth 2.0 for Native Apps BCP][oauth-native-apps]
 
 The following drafts/experimental specifications are implemented by oidc-provider.
-- [JWT Response for OAuth Token Introspection - draft 01][jwt-introspection]
-- [JWT Secured Authorization Response Mode for OAuth 2.0 (JARM) - draft 01][jarm]
-- [OAuth 2.0 Device Flow for Browserless and Input Constrained Devices - draft 12][device-flow]
+- [JWT Response for OAuth Token Introspection - draft 02][jwt-introspection]
+- [JWT Secured Authorization Response Mode for OAuth 2.0 (JARM) - draft 02][jarm]
+- [OAuth 2.0 Device Authorization Grant - draft 15][device-flow]
 - [OAuth 2.0 Mutual TLS Client Authentication and Certificate Bound Access Tokens - draft 12][mtls]
-- [OAuth 2.0 Resource Indicators - draft 01][resource-indicators]
+- [OAuth 2.0 Resource Indicators - draft 02][resource-indicators]
 - [OAuth 2.0 Web Message Response Mode - draft 00][wmrm]
 - [OpenID Connect Back-Channel Logout 1.0 - draft 04][backchannel-logout]
 - [OpenID Connect Front-Channel Logout 1.0 - draft 02][frontchannel-logout]
@@ -56,7 +66,9 @@ The following drafts/experimental specifications are implemented by oidc-provide
 
 Updates to draft and experimental specification versions are released as MINOR library versions,
 if you utilize these specification implementations consider using the tilde `~` operator in your
-package.json since breaking changes may be introduced as part of these version updates.
+package.json since breaking changes may be introduced as part of these version updates. Alternatively
+[acknowledge](https://github.com/panva/node-oidc-provider/tree/master/docs#features) the version and
+be notified of breaking changes as part of your CI.
 
 Missing a feature? - If it wasn't already discussed before, [ask for it][suggest-feature].  
 Found a bug? - [report it][bug].
@@ -70,11 +82,11 @@ of the OpenID Connect™ protocol.
 [![build][conformance-image]][conformance-url]
 
 
-<h2>Sponsor</h2>
+## Sponsor
 
 [<img width="65" height="65" align="left" src="https://avatars.githubusercontent.com/u/2824157?s=75&v=4" alt="auth0-logo">][sponsor-auth0] If you want to quickly add OpenID Connect authentication to Node.js apps, feel free to check out Auth0's Node.js SDK and free plan at [auth0.com/overview][sponsor-auth0].<br><br>
 
-<h2>Support</h2>
+## Support
 
 [<img src="https://c5.patreon.com/external/logo/become_a_patron_button@2x.png" width="160" align="right">][support-patreon]
 If you or your business use oidc-provider, please consider becoming a [Patron][support-patreon] so I can continue maintaining it and adding new features carefree. You may also donate one-time via [PayPal][support-paypal].
@@ -94,12 +106,12 @@ Also be sure to check the available configuration docs section.
 
 ## Configuration and Initialization
 oidc-provider allows to be extended and configured in various ways to fit a variety of uses. See
-the [available configuration](/docs/configuration.md).
+the [available configuration](/docs).
 
 ```js
 const Provider = require('oidc-provider');
 const configuration = {
-  // ... see available options /docs/configuration.md
+  // ... see available options /docs
 };
 const clients = [{
   client_id: 'foo',
@@ -137,7 +149,7 @@ of authentication requests, errors and grants. To see all these set the `DEBUG` 
 to `oidc-provider:*` when launching your app.
 
 There is no filter on what is included in the debug output, since it may end-user Personally
-identifiable information or client credentials it's use is only advised for debugging, not regular
+identifiable information or client credentials its use is only advised for debugging, not regular
 logging. Use emitted events to cherry pick the one's of interest to your flows and form your own
 logs aware of what should and should not be a part of a logged message.
 
@@ -166,7 +178,6 @@ See the list of available emitted [event names](/docs/events.md) and their descr
 [revocation]: https://tools.ietf.org/html/rfc7009
 [introspection]: https://tools.ietf.org/html/rfc7662
 [pkce]: https://tools.ietf.org/html/rfc7636
-[node-jose]: https://github.com/cisco/node-jose
 [example-repo]: https://github.com/panva/node-oidc-provider-example
 [heroku-example]: https://guarded-cliffs-8635.herokuapp.com/.well-known/openid-configuration
 [heroku-example-client]: https://tranquil-reef-95185.herokuapp.com/client
@@ -177,13 +188,13 @@ See the list of available emitted [event names](/docs/events.md) and their descr
 [oauth-native-apps]: https://tools.ietf.org/html/rfc8252
 [debug-link]: https://github.com/visionmedia/debug
 [wmrm]: https://tools.ietf.org/html/draft-sakimura-oauth-wmrm-00
-[device-flow]: https://tools.ietf.org/html/draft-ietf-oauth-device-flow-12
-[jwt-introspection]: https://tools.ietf.org/html/draft-ietf-oauth-jwt-introspection-response-01
+[device-flow]: https://tools.ietf.org/html/draft-ietf-oauth-device-flow-15
+[jwt-introspection]: https://tools.ietf.org/html/draft-ietf-oauth-jwt-introspection-response-02
 [sponsor-auth0]: https://auth0.com/overview?utm_source=GHsponsor&utm_medium=GHsponsor&utm_campaign=oidc-provider&utm_content=auth
 [suggest-feature]: https://github.com/panva/node-oidc-provider/issues/new?template=feature-request.md
 [bug]: https://github.com/panva/node-oidc-provider/issues/new?template=bug-report.md
 [mtls]: https://tools.ietf.org/html/draft-ietf-oauth-mtls-12
-[resource-indicators]: https://tools.ietf.org/html/draft-ietf-oauth-resource-indicators-01
-[jarm]: https://openid.net/specs/openid-financial-api-jarm-wd-01.html
+[resource-indicators]: https://tools.ietf.org/html/draft-ietf-oauth-resource-indicators-02
+[jarm]: https://openid.net/specs/openid-financial-api-jarm-wd-02.html
 [support-patreon]: https://www.patreon.com/panva
 [support-paypal]: https://www.paypal.me/panva

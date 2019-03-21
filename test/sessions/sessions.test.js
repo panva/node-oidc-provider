@@ -19,29 +19,7 @@ describe('session exp handling', () => {
   });
   afterEach(function () { return this.logout(); });
 
-  it('adds exp to legacy sessions when encountered', async function () {
-    await this.login();
-
-    const auth = new this.AuthorizationRequest({
-      response_type,
-      scope,
-    });
-
-    delete this.getSession().exp;
-
-    sinon.spy(this.TestAdapter.for('Session'), 'destroy');
-
-    await this.wrap({ route, verb, auth })
-      .expect(302)
-      .expect(auth.validatePresence(['code', 'state']))
-      .expect(auth.validateState)
-      .expect(auth.validateClientLocation);
-
-    expect(this.getSession().exp).to.be.ok;
-    expect(this.TestAdapter.for('Session').destroy.called).to.be.false;
-  });
-
-  it('calls delete on exp-format expired encountered sessions and generates a new session id', async function () {
+  it('generates a new session id when an expired session is found by the adapter', async function () {
     await this.login();
     const session = this.getSession();
     const oldSessionId = this.getSessionId();
@@ -57,9 +35,7 @@ describe('session exp handling', () => {
     await this.wrap({ route, verb, auth })
       .expect(302)
       .expect(auth.validateInteractionRedirect)
-      .expect(auth.validateInteractionError('login_required', 'no_session'));
-
-    expect(this.TestAdapter.for('Session').destroy.called).to.be.true;
+      .expect(auth.validateInteraction('login', 'no_session'));
 
     const newSessionId = this.getSessionId();
     expect(newSessionId).to.be.ok;
@@ -93,7 +69,7 @@ describe('session exp handling', () => {
       expect(this.TestAdapter.for('Session').destroy.called).to.be.false;
     });
 
-    it('calls delete on exp-format expired encountered sessions and generates a new session id', async function () {
+    it('generates a new session id when an expired session is found by the adapter', async function () {
       await this.login();
       const session = this.getSession();
       i(this.provider).configuration().clockTolerance = 10;
@@ -110,9 +86,7 @@ describe('session exp handling', () => {
       await this.wrap({ route, verb, auth })
         .expect(302)
         .expect(auth.validateInteractionRedirect)
-        .expect(auth.validateInteractionError('login_required', 'no_session'));
-
-      expect(this.TestAdapter.for('Session').destroy.called).to.be.true;
+        .expect(auth.validateInteraction('login', 'no_session'));
 
       const newSessionId = this.getSessionId();
       expect(newSessionId).to.be.ok;

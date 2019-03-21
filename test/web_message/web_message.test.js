@@ -148,8 +148,8 @@ describe('configuration features.webMessageResponseMode', () => {
             expect(spy.calledTwice).to.be.true;
           })
           .expect(() => {
-            expect(spy.firstCall.calledWithMatch({ message: 'invalid_request' })).to.be.true;
-            expect(spy.secondCall.calledWithMatch({ message: 'web_message_uri_mismatch' })).to.be.true;
+            expect(spy.firstCall.calledWithMatch({}, { message: 'invalid_request' })).to.be.true;
+            expect(spy.secondCall.calledWithMatch({}, { message: 'web_message_uri_mismatch' })).to.be.true;
           })
           .expect(() => {
             expect(renderSpy.calledOnce).to.be.true;
@@ -186,8 +186,8 @@ describe('configuration features.webMessageResponseMode', () => {
             expect(authErrorSpy.calledOnce).to.be.true;
           })
           .expect(() => {
-            expect(serverErrorSpy.calledWithMatch({ message: 'foobar' })).to.be.true;
-            expect(authErrorSpy.calledWithMatch({ message: 'web_message_uri_mismatch' })).to.be.true;
+            expect(serverErrorSpy.calledWithMatch({}, { message: 'foobar' })).to.be.true;
+            expect(authErrorSpy.calledWithMatch({}, { message: 'web_message_uri_mismatch' })).to.be.true;
           })
           .expect(() => {
             expect(renderSpy.calledOnce).to.be.true;

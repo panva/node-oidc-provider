@@ -1,28 +1,34 @@
-const { clone } = require('lodash');
+const { cloneDeep } = require('lodash');
 
-const config = clone(require('../default.config'));
-const { interactionCheck } = require('../../lib/helpers/defaults');
+const config = cloneDeep(require('../default.config'));
+const { Check, Prompt, DEFAULT } = require('../../lib/helpers/interaction');
 
-config.extraParams = ['custom'];
-config.features = { sessionManagement: true };
+config.extraParams = ['triggerCustomFail', 'triggerUnrequestable'];
+config.features = { sessionManagement: { enabled: true } };
 
 config.prompts = ['consent', 'login', 'none', 'custom'];
-config.interactionCheck = async (ctx) => {
-  let interaction = await interactionCheck(ctx);
+config.interactions = cloneDeep(DEFAULT);
 
-  if (!interaction) {
-    if (ctx.oidc.params.custom) {
-      interaction = {
-        error: 'error_foo',
-        error_description: 'error_description_foo',
-        reason: 'reason_foo',
-        reason_description: 'reason_description_foo.',
-      };
+const check = new Check(
+  'reason_foo',
+  'error_description_foo',
+  'error_foo',
+  (ctx) => {
+    if (ctx.oidc.params.triggerCustomFail) {
+      return true;
     }
-  }
+    return false;
+  },
+);
 
-  return interaction;
-};
+config.interactions[0].checks.push(check);
+config.interactions.push(new Prompt({ name: 'custom', requestable: true }));
+config.interactions.unshift(new Prompt({ name: 'unrequestable', requestable: false }, new Check('un_foo', 'un_foo_desc', 'un_foo_err', (ctx) => {
+  if (ctx.oidc.params.triggerUnrequestable && (!ctx.oidc.result || !('foo' in ctx.oidc.result))) {
+    return true;
+  }
+  return false;
+})));
 
 module.exports = {
   config,

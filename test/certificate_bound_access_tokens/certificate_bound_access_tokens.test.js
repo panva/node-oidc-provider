@@ -61,10 +61,8 @@ describe('features.certificateBoundAccessTokens', () => {
       const token = await at.save();
 
       await this.agent.post('/token/introspection')
-        .send({
-          token,
-          client_id: 'client',
-        })
+        .auth('client', 'secret')
+        .send({ token })
         .type('form')
         .expect(200)
         .expect(({ body }) => {
@@ -77,10 +75,8 @@ describe('features.certificateBoundAccessTokens', () => {
   describe('urn:ietf:params:oauth:grant-type:device_code', () => {
     beforeEach(async function () {
       await this.agent.post('/device/auth')
-        .send({
-          client_id: 'client',
-          scope: 'openid',
-        })
+        .auth('client', 'secret')
+        .send({ scope: 'openid' })
         .type('form')
         .expect(200)
         .expect(({ body: { device_code: dc } }) => {
@@ -98,8 +94,8 @@ describe('features.certificateBoundAccessTokens', () => {
       this.provider.once('grant.success', spy);
 
       await this.agent.post('/token')
+        .auth('client', 'secret')
         .send({
-          client_id: 'client',
           grant_type: 'urn:ietf:params:oauth:grant-type:device_code',
           device_code: this.dc,
         })
@@ -112,13 +108,13 @@ describe('features.certificateBoundAccessTokens', () => {
       expect(AccessToken).to.have.property('x5t#S256', expectedS256);
     });
 
-    it('verifies the request made over MTLS', async function () {
+    it('verifies the request made with mutual-TLS', async function () {
       const spy = sinon.spy();
       this.provider.once('grant.error', spy);
 
       await this.agent.post('/token')
+        .auth('client', 'secret')
         .send({
-          client_id: 'client',
           grant_type: 'urn:ietf:params:oauth:grant-type:device_code',
           device_code: this.dc,
         })
@@ -127,17 +123,138 @@ describe('features.certificateBoundAccessTokens', () => {
         .expect({ error: 'invalid_grant', error_description: 'grant request is invalid' });
 
       expect(spy).to.have.property('calledOnce', true);
-      expect(spy.args[0][0]).to.have.property('error_detail', 'MTLS client certificate missing');
+      expect(spy.args[0][1]).to.have.property('error_detail', 'mutual TLS client certificate missing');
     });
   });
 
   describe('authorization flow', () => {
     before(function () { return this.login(); });
+    bootstrap.skipConsent();
 
     beforeEach(async function () {
       const auth = new this.AuthorizationRequest({
         response_type: 'code',
-        scope: 'openid',
+        scope: 'openid offline_access',
+        prompt: 'consent',
+      });
+
+      await this.wrap({ route: '/auth', verb: 'get', auth })
+        .expect(302)
+        .expect(auth.validateClientLocation)
+        .expect(({ headers: { location } }) => {
+          const { query: { code } } = url.parse(location, true);
+          this.code = code;
+        });
+    });
+
+    describe('authorization_code', () => {
+      it('binds the access token to the certificate', async function () {
+        const spy = sinon.spy();
+        this.provider.once('grant.success', spy);
+
+        await this.agent.post('/token')
+          .auth('client', 'secret')
+          .send({
+            grant_type: 'authorization_code',
+            code: this.code,
+            redirect_uri: 'https://client.example.com/cb',
+          })
+          .type('form')
+          .set('x-ssl-client-cert', crt.replace(/\n/g, ''))
+          .expect(200);
+
+        expect(spy).to.have.property('calledOnce', true);
+        const { oidc: { entities: { AccessToken, RefreshToken } } } = spy.args[0][0];
+        expect(AccessToken).to.have.property('x5t#S256', expectedS256);
+        expect(RefreshToken).not.to.have.property('x5t#S256');
+      });
+
+      it('verifies the request made with mutual-TLS', async function () {
+        const spy = sinon.spy();
+        this.provider.once('grant.error', spy);
+
+        await this.agent.post('/token')
+          .auth('client', 'secret')
+          .send({
+            grant_type: 'authorization_code',
+            code: this.code,
+            redirect_uri: 'https://client.example.com/cb',
+          })
+          .type('form')
+          .expect(400)
+          .expect({ error: 'invalid_grant', error_description: 'grant request is invalid' });
+
+        expect(spy).to.have.property('calledOnce', true);
+        expect(spy.args[0][1]).to.have.property('error_detail', 'mutual TLS client certificate missing');
+      });
+    });
+
+    describe('refresh_token', () => {
+      beforeEach(async function () {
+        await this.agent.post('/token')
+          .auth('client', 'secret')
+          .send({
+            grant_type: 'authorization_code',
+            code: this.code,
+            redirect_uri: 'https://client.example.com/cb',
+          })
+          .type('form')
+          .set('x-ssl-client-cert', crt.replace(/\n/g, ''))
+          .expect(({ body }) => {
+            this.rt = body.refresh_token;
+          });
+      });
+
+      it('binds the access token to the certificate', async function () {
+        const spy = sinon.spy();
+        this.provider.once('grant.success', spy);
+
+        await this.agent.post('/token')
+          .auth('client', 'secret')
+          .send({
+            grant_type: 'refresh_token',
+            refresh_token: this.rt,
+          })
+          .type('form')
+          .set('x-ssl-client-cert', crt.replace(/\n/g, ''))
+          .expect(200);
+
+        expect(spy).to.have.property('calledOnce', true);
+        const { oidc: { entities: { AccessToken, RefreshToken } } } = spy.args[0][0];
+        expect(AccessToken).to.have.property('x5t#S256', expectedS256);
+        expect(RefreshToken).to.have.property('x5t#S256', undefined);
+      });
+
+      it('verifies the request made with mutual-TLS', async function () {
+        const spy = sinon.spy();
+        this.provider.once('grant.error', spy);
+
+        await this.agent.post('/token')
+          .auth('client', 'secret')
+          .send({
+            grant_type: 'refresh_token',
+            refresh_token: this.rt,
+          })
+          .type('form')
+          .expect(400)
+          .expect({ error: 'invalid_grant', error_description: 'grant request is invalid' });
+
+        expect(spy).to.have.property('calledOnce', true);
+        expect(spy.args[0][1]).to.have.property('error_detail', 'mutual TLS client certificate missing');
+      });
+    });
+  });
+
+  describe('authorization flow (public client)', () => {
+    before(function () { return this.login(); });
+    bootstrap.skipConsent();
+
+    beforeEach(async function () {
+      const auth = new this.AuthorizationRequest({
+        client_id: 'client-none',
+        response_type: 'code',
+        scope: 'openid offline_access',
+        prompt: 'consent',
       });
 
       await this.wrap({ route: '/auth', verb: 'get', auth })
@@ -156,7 +273,7 @@ describe('features.certificateBoundAccessTokens', () => {
 
         await this.agent.post('/token')
           .send({
-            client_id: 'client',
+            client_id: 'client-none',
             grant_type: 'authorization_code',
             code: this.code,
             redirect_uri: 'https://client.example.com/cb',
@@ -166,17 +283,18 @@ describe('features.certificateBoundAccessTokens', () => {
           .expect(200);
 
         expect(spy).to.have.property('calledOnce', true);
-        const { oidc: { entities: { AccessToken } } } = spy.args[0][0];
+        const { oidc: { entities: { AccessToken, RefreshToken } } } = spy.args[0][0];
         expect(AccessToken).to.have.property('x5t#S256', expectedS256);
+        expect(RefreshToken).to.have.property('x5t#S256', expectedS256);
       });
 
-      it('verifies the request made over MTLS', async function () {
+      it('verifies the request made with mutual-TLS', async function () {
         const spy = sinon.spy();
         this.provider.once('grant.error', spy);
 
         await this.agent.post('/token')
           .send({
-            client_id: 'client',
+            client_id: 'client-none',
             grant_type: 'authorization_code',
             code: this.code,
             redirect_uri: 'https://client.example.com/cb',
@@ -186,7 +304,7 @@ describe('features.certificateBoundAccessTokens', () => {
           .expect({ error: 'invalid_grant', error_description: 'grant request is invalid' });
 
         expect(spy).to.have.property('calledOnce', true);
-        expect(spy.args[0][0]).to.have.property('error_detail', 'MTLS client certificate missing');
+        expect(spy.args[0][1]).to.have.property('error_detail', 'mutual TLS client certificate missing');
       });
     });
 
@@ -194,7 +312,7 @@ describe('features.certificateBoundAccessTokens', () => {
       beforeEach(async function () {
         await this.agent.post('/token')
           .send({
-            client_id: 'client',
+            client_id: 'client-none',
             grant_type: 'authorization_code',
             code: this.code,
             redirect_uri: 'https://client.example.com/cb',
@@ -212,7 +330,7 @@ describe('features.certificateBoundAccessTokens', () => {
 
         await this.agent.post('/token')
           .send({
-            client_id: 'client',
+            client_id: 'client-none',
             grant_type: 'refresh_token',
             refresh_token: this.rt,
           })
@@ -221,17 +339,18 @@ describe('features.certificateBoundAccessTokens', () => {
           .expect(200);
 
         expect(spy).to.have.property('calledOnce', true);
-        const { oidc: { entities: { AccessToken } } } = spy.args[0][0];
+        const { oidc: { entities: { AccessToken, RefreshToken } } } = spy.args[0][0];
         expect(AccessToken).to.have.property('x5t#S256', expectedS256);
+        expect(RefreshToken).to.have.property('x5t#S256', expectedS256);
       });
 
-      it('verifies the request made over MTLS', async function () {
+      it('verifies the request made with mutual-TLS', async function () {
         const spy = sinon.spy();
         this.provider.once('grant.error', spy);
 
         await this.agent.post('/token')
+          .auth('client', 'secret')
           .send({
-            client_id: 'client',
             grant_type: 'refresh_token',
             refresh_token: this.rt,
           })
@@ -240,7 +359,26 @@ describe('features.certificateBoundAccessTokens', () => {
           .expect({ error: 'invalid_grant', error_description: 'grant request is invalid' });
 
         expect(spy).to.have.property('calledOnce', true);
-        expect(spy.args[0][0]).to.have.property('error_detail', 'MTLS client certificate missing');
+        expect(spy.args[0][1]).to.have.property('error_detail', 'mutual TLS client certificate missing');
+      });
+
+      it('verifies the request made with mutual-TLS using the same cert', async function () {
+        const spy = sinon.spy();
+        this.provider.once('grant.error', spy);
+
+        await this.agent.post('/token')
+          .auth('client', 'secret')
+          .send({
+            grant_type: 'refresh_token',
+            refresh_token: this.rt,
+          })
+          .set('x-ssl-client-cert', 'foo')
+          .type('form')
+          .expect(400)
+          .expect({ error: 'invalid_grant', error_description: 'grant request is invalid' });
+
+        expect(spy).to.have.property('calledOnce', true);
+        expect(spy.args[0][1]).to.have.property('error_detail', 'failed x5t#S256 verification');
       });
     });
   });
@@ -251,10 +389,8 @@ describe('features.certificateBoundAccessTokens', () => {
       this.provider.once('grant.success', spy);
 
       await this.agent.post('/token')
-        .send({
-          grant_type: 'client_credentials',
-          client_id: 'client',
-        })
+        .auth('client', 'secret')
+        .send({ grant_type: 'client_credentials' })
         .set('x-ssl-client-cert', crt.replace(/\n/g, ''))
         .type('form')
         .expect(200);
@@ -264,21 +400,19 @@ describe('features.certificateBoundAccessTokens', () => {
       expect(ClientCredentials).to.have.property('x5t#S256', expectedS256);
     });
 
-    it('verifies the request was made over MTLS', async function () {
+    it('verifies the request was made with mutual-TLS', async function () {
       const spy = sinon.spy();
       this.provider.once('grant.error', spy);
 
       await this.agent.post('/token')
-        .send({
-          grant_type: 'client_credentials',
-          client_id: 'client',
-        })
+        .auth('client', 'secret')
+        .send({ grant_type: 'client_credentials' })
         .type('form')
         .expect(400)
         .expect({ error: 'invalid_grant', error_description: 'grant request is invalid' });
 
       expect(spy).to.have.property('calledOnce', true);
-      expect(spy.args[0][0]).to.have.property('error_detail', 'MTLS client certificate missing');
+      expect(spy.args[0][1]).to.have.property('error_detail', 'mutual TLS client certificate missing');
     });
   });
 });

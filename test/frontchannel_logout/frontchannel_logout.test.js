@@ -24,11 +24,14 @@ describe('Front-Channel Logout 1.0', () => {
     beforeEach(function () { return this.login(); });
     afterEach(function () { return this.logout(); });
 
+    bootstrap.skipConsent();
+
     beforeEach(function () {
       return this.agent.get('/auth')
         .query({
           client_id: 'client',
-          scope: 'openid',
+          scope: 'openid offline_access',
+          prompt: 'consent',
           nonce: String(Math.random()),
           response_type: 'code id_token',
           redirect_uri: 'https://client.example.com/cb',
@@ -92,7 +95,7 @@ describe('Front-Channel Logout 1.0', () => {
 
     it('triggers the frontchannelLogout for all visited clients [when global logout]', async function () {
       let session = this.getSession();
-      session.logout = { secret: '123', clientId: 'client', postLogoutRedirectUri: '/' };
+      session.state = { secret: '123', clientId: 'client', postLogoutRedirectUri: '/' };
       session = cloneDeep(session);
       const params = { logout: 'yes', xsrf: '123' };
 
@@ -101,7 +104,7 @@ describe('Front-Channel Logout 1.0', () => {
 
       const FRAME = /<iframe src="([^"]+)"><\/iframe>/g;
 
-      return this.agent.post('/session/end')
+      return this.agent.post('/session/end/confirm')
         .send(params)
         .type('form')
         .expect(200)
@@ -131,7 +134,7 @@ describe('Front-Channel Logout 1.0', () => {
 
     it('still triggers the frontchannelLogout for the specific client [when no global logout]', async function () {
       let session = this.getSession();
-      session.logout = { secret: '123', clientId: 'client', postLogoutRedirectUri: '/' };
+      session.state = { secret: '123', clientId: 'client', postLogoutRedirectUri: '/' };
       session = cloneDeep(session);
       const params = { xsrf: '123' };
 
@@ -139,7 +142,7 @@ describe('Front-Channel Logout 1.0', () => {
 
       const FRAME = /<iframe src="([^"]+)"><\/iframe>/g;
 
-      return this.agent.post('/session/end')
+      return this.agent.post('/session/end/confirm')
         .send(params)
         .type('form')
         .expect(200)
@@ -159,12 +162,12 @@ describe('Front-Channel Logout 1.0', () => {
     });
 
     it('ignores the frontchannelLogout when client does not support it', async function () {
-      this.getSession().logout = { secret: '123', clientId: 'client', postLogoutRedirectUri: '/' };
+      this.getSession().state = { secret: '123', clientId: 'client', postLogoutRedirectUri: '/' };
       const params = { xsrf: '123' };
       const client = await this.provider.Client.find('client');
       delete client.frontchannelLogoutUri;
 
-      return this.agent.post('/session/end')
+      return this.agent.post('/session/end/confirm')
         .send(params)
         .type('form')
         .expect(302);

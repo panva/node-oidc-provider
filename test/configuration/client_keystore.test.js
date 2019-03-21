@@ -1,11 +1,13 @@
 const assert = require('assert');
 
-const keystore = require('node-jose').JWK.createKeyStore();
+const jose = require('@panva/jose');
 const moment = require('moment');
 const nock = require('nock');
 const sinon = require('sinon');
 const { expect } = require('chai');
+const { cloneDeep } = require('lodash');
 
+const mtlsKeys = require('../jwks/jwks.json');
 const JWT = require('../../lib/helpers/jwt');
 const epochTime = require('../../lib/helpers/epoch_time');
 const bootstrap = require('../test_helper');
@@ -13,14 +15,19 @@ const bootstrap = require('../test_helper');
 const fail = () => { throw new Error('expected promise to be rejected'); };
 
 const endpoint = nock('https://client.example.com/');
+const keystore = new jose.JWKS.KeyStore();
 
-function setResponse(body = keystore.toJSON(), statusCode = 200, headers = {}) {
+const invalidx5c = cloneDeep(mtlsKeys);
+invalidx5c.keys[0].x5c = true;
+
+function setResponse(body = keystore.toJWKS(), statusCode = 200, headers = {}) {
   endpoint
     .get('/jwks')
     .reply(statusCode, typeof body === 'string' ? body : JSON.stringify(body), headers);
   assert(!nock.isDone(), 'expected client\'s jwks_uri to be fetched');
 }
 
+// NOTE: these tests are to be run sequentially, picking one random won't pass
 describe('client keystore refresh', () => {
   afterEach(() => {
     expect(nock.isDone()).to.be.true;
@@ -37,7 +44,7 @@ describe('client keystore refresh', () => {
       id_token_signed_response_alg: 'none',
       id_token_encrypted_response_alg: 'ECDH-ES+A128KW',
       id_token_encrypted_response_enc: 'A128CBC-HS256',
-    });
+    }, { static: true });
   });
 
   afterEach(async function () {
@@ -53,6 +60,19 @@ describe('client keystore refresh', () => {
     await client.keystore.refresh();
 
     expect(client.keystore.get({ kty: 'EC' })).to.be.ok;
+  });
+
+  it('fails when private keys are encountered', async function () {
+    setResponse(keystore.toJWKS(true));
+
+    const client = await this.provider.Client.find('client');
+    sinon.stub(client.keystore, 'fresh').returns(false);
+    await client.keystore.refresh().then(fail, (err) => {
+      expect(err).to.be.an('error');
+      expect(err.message).to.equal('invalid_client_metadata');
+      expect(err.error_description).to.match(/jwks_uri could not be refreshed/);
+      expect(err.error_description).to.match(/jwks_uri must not contain private keys/);
+    });
   });
 
   it('adds new keys', async function () {
@@ -111,6 +131,19 @@ describe('client keystore refresh', () => {
       expect(err.message).to.equal('invalid_client_metadata');
       expect(err.error_description).to.match(/jwks_uri could not be refreshed/);
       expect(err.error_description).to.match(/invalid jwks_uri response/);
+    });
+  });
+
+  it('does x5c validation', async function () {
+    setResponse(invalidx5c);
+
+    const client = await this.provider.Client.find('client');
+    sinon.stub(client.keystore, 'fresh').returns(false);
+    await client.keystore.refresh().then(fail, (err) => {
+      expect(err).to.be.an('error');
+      expect(err.message).to.equal('invalid_client_metadata');
+      expect(err.error_description).to.match(/jwks_uri could not be refreshed/);
+      expect(err.error_description).to.match(/when provided, JWK x5c must be non-empty an array/);
     });
   });
 
@@ -198,13 +231,13 @@ describe('client keystore refresh', () => {
   });
 
   describe('refreshing', () => {
-    it('when a stale keystore is passed to JWT verification it gets refreshed', async function () {
+    it('when a stale keystore is passed to JWT verification it gets refreshed when verification fails', async function () {
       setResponse();
 
       const client = await this.provider.Client.find('client');
       client.keystore.freshUntil = epochTime() - 1;
       await JWT.verify(
-        'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiYWRtaW4iOnRydWV9.TJVA95OrM7E2cBab30RMHrHDcEfxjoYZgeFONFh7HgQ',
+        'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiYWRtaW4iOnRydWV9.TJVA95OrM7E2cBab30RMHrHDcEfxjoYZgeFONFh7HgA',
         client.keystore,
       ).then(fail, () => {});
     });
@@ -217,7 +250,7 @@ describe('client keystore refresh', () => {
       expect(client.keystore.stale()).to.be.true;
 
       const { IdToken } = this.provider;
-      const token = new IdToken({ foo: 'bar' }, client);
+      const token = new IdToken({ foo: 'bar' }, { client, ctx: undefined });
 
       await token.sign();
     });

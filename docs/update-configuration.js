@@ -45,7 +45,6 @@ class Block {
 
 const props = [
   'description',
-  'affects',
   'title',
   'recommendation',
   'example',
@@ -141,11 +140,7 @@ const props = [
   }
 
   function expand(what) {
-    const lines = what.split('\n').length;
     what = `\`\`\`js\n${what}\n\`\`\`\n`;
-    if (lines > 5) {
-      return `<details>\n  <summary><em><strong>default value</strong></em> (Click to expand)</summary>\n  <br>\n\n${what}\n</details>\n\n`;
-    }
 
     append('\n_**default value**_:\n');
     return what;
@@ -164,6 +159,8 @@ const props = [
   }, []);
 
   const features = configuration.splice(0, count).sort();
+  let hidden;
+  let prev;
   for (const block of [...features, ...configuration]) { // eslint-disable-line no-restricted-syntax
     const section = blocks[block];
 
@@ -171,7 +168,31 @@ const props = [
       continue; // eslint-disable-line no-continue
     }
 
-    append(`\n### ${block}\n\n`);
+    let heading;
+    let headingTitle;
+    if (block.startsWith('features.')) {
+      const parts = block.split('.');
+      heading = '#'.repeat(parts.length + 1);
+      if (parts.length > 2) {
+        headingTitle = parts[parts.length - 1];
+      } else {
+        headingTitle = block;
+      }
+    } else {
+      heading = '###';
+      headingTitle = block;
+    }
+
+    if (heading.length > 3 && !hidden) {
+      hidden = true;
+      append(`<details>\n  <summary>(Click to expand) ${prev} options details</summary>\n  <br>\n\n`);
+    } else if (hidden && heading.length === 3) {
+      hidden = false;
+      append('\n</details>\n');
+    }
+    prev = block;
+
+    append(`\n${heading} ${headingTitle}\n\n`);
     if (section.title) {
       append(`${section.title}  \n\n`);
     }
@@ -180,7 +201,7 @@ const props = [
       append(`${capitalizeSentences(section.description.join(' '))}  \n\n`);
     }
 
-    ['affects', 'recommendation'].forEach((option) => {
+    ['recommendation'].forEach((option) => {
       if (section[option]) {
         append(`_**${option}**_: ${section[option].join(' ')}  \n`);
       }
@@ -197,9 +218,17 @@ const props = [
           append('\n```\n');
           break;
         case 'string':
+        case 'undefined':
         case 'object': {
-          const output = inspect(value);
-          append(expand(output));
+          let output;
+          if (block === 'interactions') {
+            output = readFileSync('./docs/checks.txt');
+          }
+          output = output || inspect(value, { depth: null, breakLength: Infinity, compact: false });
+          append(expand(output).split('\n').map((line) => {
+            line = line.replace(/(\[(?:Async)?Function: \w+\],)/, '$1 // see expanded details below');
+            return line;
+          }).join('\n'));
           break;
         }
         case 'function': {
@@ -234,7 +263,7 @@ const props = [
           break;
         }
         default:
-          throw new Error(`unexpected value type ${typeof value} for ${block}`);
+          throw new TypeError(`unexpected value type ${typeof value} for ${block}`);
       }
     }
 
@@ -277,7 +306,7 @@ const props = [
     });
   }
 
-  const conf = readFileSync('./docs/configuration.md');
+  const conf = readFileSync('./docs/README.md');
 
   const comStart = '<!-- START CONF OPTIONS -->';
   const comEnd = '<!-- END CONF OPTIONS -->';
@@ -285,7 +314,7 @@ const props = [
   const pre = conf.slice(0, conf.indexOf(comStart) + comStart.length);
   const post = conf.slice(conf.indexOf(comEnd));
 
-  writeFileSync('./docs/configuration.md', Buffer.concat([pre, mid, post]));
+  writeFileSync('./docs/README.md', Buffer.concat([pre, mid, post]));
 })().catch((err) => {
   console.error(err); // eslint-disable-line no-console
   process.exitCode = 1;

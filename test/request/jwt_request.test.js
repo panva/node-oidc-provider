@@ -67,6 +67,32 @@ describe('request parameter features', () => {
           .expect(successFnCheck));
       });
 
+      it('fails to process a request without request', function () {
+        const spy = sinon.spy();
+        this.provider.once(errorEvt, spy);
+
+        return this.wrap({
+          agent: this.agent,
+          route,
+          verb,
+          auth: {
+            scope: 'openid',
+            client_id: 'client-with-HS-sig',
+            response_type: 'code',
+            redirect_uri: 'https://client.example.com/cb',
+          },
+        })
+          .expect(errorCode)
+          .expect(() => {
+            expect(spy.calledOnce).to.be.true;
+            expect(spy.args[0][1]).to.have.property('message', 'invalid_request');
+            expect(spy.args[0][1]).to.have.property(
+              'error_description',
+              'request or request_uri must be provided for this client',
+            );
+          });
+      });
+
       it('can contain max_age parameter as a number and it (and other params too) will be forced as string', async function () {
         const spy = sinon.spy();
         this.provider.once(successEvt, spy);
@@ -224,8 +250,8 @@ describe('request parameter features', () => {
           .expect(errorCode)
           .expect(() => {
             expect(spy.calledOnce).to.be.true;
-            expect(spy.args[0][0]).to.have.property('message', 'invalid_request_object');
-            expect(spy.args[0][0]).to.have.property(
+            expect(spy.args[0][1]).to.have.property('message', 'invalid_request_object');
+            expect(spy.args[0][1]).to.have.property(
               'error_description',
               'request object must not contain request or request_uri properties',
             );
@@ -255,8 +281,8 @@ describe('request parameter features', () => {
           .expect(errorCode)
           .expect(() => {
             expect(spy.calledOnce).to.be.true;
-            expect(spy.args[0][0]).to.have.property('message', 'invalid_request_object');
-            expect(spy.args[0][0]).to.have.property(
+            expect(spy.args[0][1]).to.have.property('message', 'invalid_request_object');
+            expect(spy.args[0][1]).to.have.property(
               'error_description',
               'request object must not contain request or request_uri properties',
             );
@@ -314,8 +340,8 @@ describe('request parameter features', () => {
             .expect(errorCode)
             .expect(() => {
               expect(spy.calledOnce).to.be.true;
-              expect(spy.args[0][0]).to.have.property('message', 'invalid_request_object');
-              expect(spy.args[0][0]).to.have.property(
+              expect(spy.args[0][1]).to.have.property('message', 'invalid_request_object');
+              expect(spy.args[0][1]).to.have.property(
                 'error_description',
                 'request response_type must equal the one in request parameters',
               );
@@ -345,8 +371,8 @@ describe('request parameter features', () => {
           .expect(errorCode)
           .expect(() => {
             expect(spy.calledOnce).to.be.true;
-            expect(spy.args[0][0]).to.have.property('message', 'invalid_request_object');
-            expect(spy.args[0][0]).to.have.property(
+            expect(spy.args[0][1]).to.have.property('message', 'invalid_request_object');
+            expect(spy.args[0][1]).to.have.property(
               'error_description',
               'request client_id must equal the one in request parameters',
             );
@@ -371,8 +397,8 @@ describe('request parameter features', () => {
           .expect(errorCode)
           .expect(() => {
             expect(spy.calledOnce).to.be.true;
-            expect(spy.args[0][0]).to.have.property('message', 'invalid_request_object');
-            expect(spy.args[0][0]).to.have.property('error_description').and.matches(/could not parse request object as valid JWT/);
+            expect(spy.args[0][1]).to.have.property('message', 'invalid_request_object');
+            expect(spy.args[0][1]).to.have.property('error_description').and.matches(/could not parse request object/);
           });
       });
 
@@ -398,8 +424,8 @@ describe('request parameter features', () => {
           .expect(errorCode)
           .expect(() => {
             expect(spy.calledOnce).to.be.true;
-            expect(spy.args[0][0]).to.have.property('message', 'invalid_request_object');
-            expect(spy.args[0][0]).to.have.property(
+            expect(spy.args[0][1]).to.have.property('message', 'invalid_request_object');
+            expect(spy.args[0][1]).to.have.property(
               'error_description',
               'the preregistered alg must be used in request or request_uri',
             );
@@ -430,8 +456,8 @@ describe('request parameter features', () => {
           .expect(errorCode)
           .expect(() => {
             expect(spy.calledOnce).to.be.true;
-            expect(spy.args[0][0]).to.have.property('message', 'invalid_request_object');
-            expect(spy.args[0][0]).to.have.property('error_description', 'unsupported signed request alg');
+            expect(spy.args[0][1]).to.have.property('message', 'invalid_request_object');
+            expect(spy.args[0][1]).to.have.property('error_description', 'unsupported signed request alg');
           }));
       });
 
@@ -460,8 +486,8 @@ describe('request parameter features', () => {
           .expect(errorCode)
           .expect(() => {
             expect(spy.calledOnce).to.be.true;
-            expect(spy.args[0][0]).to.have.property('message', 'invalid_request_object');
-            expect(spy.args[0][0]).to.have.property('error_description').that.matches(/could not validate request object/);
+            expect(spy.args[0][1]).to.have.property('message', 'invalid_request_object');
+            expect(spy.args[0][1]).to.have.property('error_description').that.matches(/could not validate request object/);
           }));
       });
 

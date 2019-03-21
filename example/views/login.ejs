@@ -1,9 +1,6 @@
-<form autocomplete="off" action="/interaction/<%= details.uuid %>/login" method="post">
-  <input type="hidden" name="uuid" value="<%= details.uuid %>"/>
-  <input required type="text" name="login" placeholder="Enter any login" <% if (!details.params.login_hint) { %>autofocus="on"<% } else { %> value="<%= details.params.login_hint %>" <% } %>>
-  <input required type="password" name="password" placeholder="and password" <% if (details.params.login_hint) { %>autofocus="on"<% } %>>
-
-  <label><input type="checkbox" name="remember" value="yes" checked="yes">Stay signed in</label>
+<form autocomplete="off" action="/interaction/<%= uid %>/login" method="post">
+  <input required type="text" name="login" placeholder="Enter any login" <% if (!params.login_hint) { %>autofocus="on"<% } else { %> value="<%= params.login_hint %>" <% } %>>
+  <input required type="password" name="password" placeholder="and password" <% if (params.login_hint) { %>autofocus="on"<% } %>>
 
   <button type="submit" class="login login-submit">Sign-in</button>
 </form>

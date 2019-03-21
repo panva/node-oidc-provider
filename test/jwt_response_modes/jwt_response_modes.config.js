@@ -2,7 +2,11 @@ const { clone } = require('lodash');
 
 const config = clone(require('../default.config'));
 
-config.features = { encryption: true, webMessageResponseMode: true, jwtResponseModes: true };
+config.features = {
+  encryption: { enabled: true },
+  webMessageResponseMode: { enabled: true },
+  jwtResponseModes: { enabled: true },
+};
 
 module.exports = {
   config,

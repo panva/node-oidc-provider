@@ -1,4 +1,5 @@
 const { spy, match: { string, number }, assert } = require('sinon');
+const { expect } = require('chai');
 
 const { formats: { default: FORMAT } } = require('../../lib/helpers/defaults');
 const epochTime = require('../../lib/helpers/epoch_time');
@@ -28,16 +29,21 @@ if (FORMAT === 'opaque') {
     const params = { foo: 'bar' };
     const userCode = '1384-3217';
     const deviceInfo = { foo: 'bar' };
+    const inFlight = true;
     const s256 = '_gPMqAT8BELhXwBa2nIT0OvdWtQCiF_g09nAyHhgCe0';
     const resource = 'urn:foo:bar';
     const policies = ['foo'];
+    const sessionUid = 'foo';
+    const expiresWithSession = false;
+
+    // TODO: add Session and Interaction
 
     /* eslint-disable object-property-newline */
     const fullPayload = {
       accountId, claims, clientId, grantId, scope, sid, consumed, acr, amr, authTime, nonce,
       redirectUri, codeChallenge, codeChallengeMethod, aud, error, errorDescription, params,
-      userCode, deviceInfo, gty, resource, policies,
-      'x5t#S256': s256,
+      userCode, deviceInfo, gty, resource, policies, sessionUid, expiresWithSession,
+      'x5t#S256': s256, inFlight,
     };
     /* eslint-enable object-property-newline */
 
@@ -57,6 +63,7 @@ if (FORMAT === 'opaque') {
       const token = new this.provider.AccessToken(fullPayload);
       await token.save();
 
+      expect(upsert.getCall(0).args[0]).to.have.lengthOf(43);
       assert.calledWith(upsert, string, {
         accountId,
         aud,
@@ -66,12 +73,13 @@ if (FORMAT === 'opaque') {
         grantId,
         gty,
         iat: number,
-        iss: this.provider.issuer,
         jti: upsert.getCall(0).args[0],
         kind,
         scope,
         sid,
         'x5t#S256': s256,
+        sessionUid,
+        expiresWithSession,
       });
     });
 
@@ -81,6 +89,7 @@ if (FORMAT === 'opaque') {
       const token = new this.provider.AuthorizationCode(fullPayload);
       await token.save();
 
+      expect(upsert.getCall(0).args[0]).to.have.lengthOf(43);
       assert.calledWith(upsert, string, {
         accountId,
         acr,
@@ -94,7 +103,6 @@ if (FORMAT === 'opaque') {
         exp: number,
         grantId,
         iat: number,
-        iss: this.provider.issuer,
         jti: upsert.getCall(0).args[0],
         kind,
         nonce,
@@ -102,6 +110,8 @@ if (FORMAT === 'opaque') {
         resource,
         scope,
         sid,
+        sessionUid,
+        expiresWithSession,
       });
     });
 
@@ -111,6 +121,7 @@ if (FORMAT === 'opaque') {
       const token = new this.provider.DeviceCode(fullPayload);
       await token.save();
 
+      expect(upsert.getCall(0).args[0]).to.have.lengthOf(43);
       assert.calledWith(upsert, string, {
         accountId,
         acr,
@@ -128,7 +139,6 @@ if (FORMAT === 'opaque') {
         grantId,
         gty,
         iat: number,
-        iss: this.provider.issuer,
         jti: upsert.getCall(0).args[0],
         kind,
         nonce,
@@ -137,6 +147,9 @@ if (FORMAT === 'opaque') {
         scope,
         sid,
         userCode,
+        sessionUid,
+        expiresWithSession,
+        inFlight,
       });
     });
 
@@ -146,6 +159,7 @@ if (FORMAT === 'opaque') {
       const token = new this.provider.RefreshToken(fullPayload);
       await token.save();
 
+      expect(upsert.getCall(0).args[0]).to.have.lengthOf(43);
       assert.calledWith(upsert, string, {
         accountId,
         acr,
@@ -158,13 +172,15 @@ if (FORMAT === 'opaque') {
         grantId,
         gty,
         iat: number,
-        iss: this.provider.issuer,
         jti: upsert.getCall(0).args[0],
         kind,
         nonce,
         resource,
         scope,
         sid,
+        'x5t#S256': s256,
+        sessionUid,
+        expiresWithSession,
       });
     });
 
@@ -174,12 +190,12 @@ if (FORMAT === 'opaque') {
       const token = new this.provider.ClientCredentials(fullPayload);
       await token.save();
 
+      expect(upsert.getCall(0).args[0]).to.have.lengthOf(43);
       assert.calledWith(upsert, string, {
         aud,
         clientId,
         exp: number,
         iat: number,
-        iss: this.provider.issuer,
         jti: upsert.getCall(0).args[0],
         kind,
         scope,
@@ -196,10 +212,10 @@ if (FORMAT === 'opaque') {
       });
       await token.save();
 
+      expect(upsert.getCall(0).args[0]).to.have.lengthOf(43);
       assert.calledWith(upsert, string, {
         exp: number,
         iat: number,
-        iss: this.provider.issuer,
         jti: upsert.getCall(0).args[0],
         kind,
         policies,
@@ -215,11 +231,11 @@ if (FORMAT === 'opaque') {
       });
       await token.save();
 
+      expect(upsert.getCall(0).args[0]).to.have.lengthOf(43);
       assert.calledWith(upsert, string, {
         clientId,
         kind,
         policies,
-        iss: this.provider.issuer,
         jti: upsert.getCall(0).args[0],
         iat: number,
         exp: number,

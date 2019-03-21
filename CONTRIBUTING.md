@@ -27,8 +27,8 @@ times.
 - _[When updating defaults.js]_
   - Follow the block comment convention
   - Run `node ./docs/update-configuration.js` and include the resulting updates in your PR
-- _[When updating configuration.md]_
-  - Do not edit or update the `## Configuration options` section, it's generated from inline
+- _[When updating docs/README.md]_
+  - Do not edit or update the `## Configuration options` section, it is generated from inline
     comments of defaults.js
 
 [coc]: https://github.com/panva/node-oidc-provider/blob/master/CODE_OF_CONDUCT.md

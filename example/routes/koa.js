@@ -1,10 +1,22 @@
 const querystring = require('querystring');
+const { inspect } = require('util');
 
+const _ = require('lodash');
 const bodyParser = require('koa-body');
 const Router = require('koa-router');
 
 const { renderError } = require('../../lib/helpers/defaults'); // make your own, you'll need it anyway
 const Account = require('../support/account');
+
+const keys = new Set();
+const debug = obj => querystring.stringify(Object.entries(obj).reduce((acc, [key, value]) => {
+  keys.add(key);
+  if (_.isEmpty(value)) return acc;
+  acc[key] = inspect(value, { depth: null });
+  return acc;
+}, {}), '<br/>', ': ', {
+  encodeURIComponent(value) { return keys.has(value) ? `<strong>${value}</strong>` : value; },
+});
 
 module.exports = (provider) => {
   const router = new Router();
@@ -26,33 +38,36 @@ module.exports = (provider) => {
     }
   });
 
-  router.get('/interaction/:grant', async (ctx, next) => {
-    const details = await provider.interactionDetails(ctx.req);
-    const client = await provider.Client.find(details.params.client_id);
-
-    if (details.interaction.error === 'login_required') {
+  router.get('/interaction/:uid', async (ctx, next) => {
+    const {
+      uid, prompt, params, session,
+    } = await provider.interactionDetails(ctx.req);
+    const client = await provider.Client.find(params.client_id);
+    if (prompt.name === 'login') {
       await ctx.render('login', {
         client,
-        details,
+        uid,
+        details: prompt.details,
+        params,
         title: 'Sign-in',
-        params: querystring.stringify(details.params, ',<br/>', ' = ', {
-          encodeURIComponent: value => value,
-        }),
-        interaction: querystring.stringify(details.interaction, ',<br/>', ' = ', {
-          encodeURIComponent: value => value,
-        }),
+        session: session ? debug(session) : undefined,
+        dbg: {
+          params: debug(params),
+          prompt: debug(prompt),
+        },
       });
     } else {
       await ctx.render('interaction', {
         client,
-        details,
+        uid,
+        details: prompt.details,
+        params,
         title: 'Authorize',
-        params: querystring.stringify(details.params, ',<br/>', ' = ', {
-          encodeURIComponent: value => value,
-        }),
-        interaction: querystring.stringify(details.interaction, ',<br/>', ' = ', {
-          encodeURIComponent: value => value,
-        }),
+        session: session ? debug(session) : undefined,
+        dbg: {
+          params: debug(params),
+          prompt: debug(prompt),
+        },
       });
     }
 
@@ -64,13 +79,7 @@ module.exports = (provider) => {
     json: false,
   });
 
-  router.post('/interaction/:grant/confirm', body, async (ctx, next) => {
-    const result = { consent: {} };
-    await provider.interactionFinished(ctx.req, ctx.res, result);
-    await next();
-  });
-
-  router.post('/interaction/:grant/login', body, async (ctx, next) => {
+  router.post('/interaction/:uid/login', body, async (ctx) => {
     const account = await Account.findByLogin(ctx.request.body.login);
 
     const result = {
@@ -78,14 +87,31 @@ module.exports = (provider) => {
         account: account.accountId,
         acr: 'urn:mace:incommon:iap:bronze',
         amr: ['pwd'],
-        remember: !!ctx.request.body.remember,
         ts: Math.floor(Date.now() / 1000),
       },
-      consent: {},
     };
 
-    await provider.interactionFinished(ctx.req, ctx.res, result);
-    await next();
+    return provider.interactionFinished(ctx.req, ctx.res, result, {
+      mergeWithLastSubmission: false,
+    });
+  });
+
+  router.post('/interaction/:uid/confirm', body, async (ctx) => {
+    const result = { consent: {} };
+    return provider.interactionFinished(ctx.req, ctx.res, result, {
+      mergeWithLastSubmission: true,
+    });
+  });
+
+  router.get('/interaction/:uid/abort', async (ctx) => {
+    const result = {
+      error: 'access_denied',
+      error_description: 'End-User aborted interaction',
+    };
+
+    return provider.interactionFinished(ctx.req, ctx.res, result, {
+      mergeWithLastSubmission: false,
+    });
   });
 
   return router;
