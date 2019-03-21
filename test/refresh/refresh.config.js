@@ -2,8 +2,7 @@ const { clone } = require('lodash');
 
 const config = clone(require('../default.config'));
 
-config.features = { alwaysIssueRefresh: true };
-config.refreshTokenRotation = 'none';
+config.rotateRefreshToken = false;
 
 module.exports = {
   config,

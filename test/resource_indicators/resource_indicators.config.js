@@ -7,11 +7,10 @@ const { errors: { InvalidTarget } } = require('../../lib');
 
 config.whitelistedJWA.requestObjectSigningAlgValues = ['none'];
 config.features = {
-  request: true,
-  clientCredentials: true,
-  deviceFlow: true,
-  alwaysIssueRefresh: true,
-  resourceIndicators: true,
+  request: { enabled: true },
+  clientCredentials: { enabled: true },
+  deviceFlow: { enabled: true },
+  resourceIndicators: { enabled: true },
 };
 
 config.audiences = ({ oidc: { params, route, entities } }, sub, token, use) => {

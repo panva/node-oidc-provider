@@ -58,7 +58,7 @@ let server;
   });
   provider.use(routes(provider).routes());
   server = provider.listen(PORT, () => {
-    console.log(`application is listening on port ${PORT}, check it's /.well-known/openid-configuration`);
+    console.log(`application is listening on port ${PORT}, check its /.well-known/openid-configuration`);
   });
 })().catch((err) => {
   if (server && server.listening) server.close();

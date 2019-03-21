@@ -3,8 +3,9 @@ const { clone } = require('lodash');
 const config = clone(require('../default.config'));
 
 config.features = {
-  registrationManagement: true,
+  registrationManagement: { enabled: true },
   registration: {
+    enabled: true,
     initialAccessToken: true,
     policies: {
       'empty-policy': () => {},

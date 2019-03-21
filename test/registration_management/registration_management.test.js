@@ -24,7 +24,7 @@ describe('OAuth 2.0 Dynamic Client Registration Management Protocol', () => {
       expect(() => {
         new Provider('http://localhost', { // eslint-disable-line no-new
           features: {
-            registrationManagement: true,
+            registrationManagement: { enabled: true },
           },
         });
       }).to.throw('registrationManagement is only available in conjuction with registration');
@@ -85,8 +85,6 @@ describe('OAuth 2.0 Dynamic Client Registration Management Protocol', () => {
 
     it('allows for properties to be deleted', async function () {
       const client = await setup.call(this, { userinfo_signed_response_alg: 'RS256' });
-      // removing userinfo_signed_response_alg and having it defaulted
-      // console.log(client);
       return this.agent.put(`/reg/${client.client_id}`)
         .auth(client.registration_access_token, { type: 'bearer' })
         .send(updateProperties(client, {
@@ -110,8 +108,6 @@ describe('OAuth 2.0 Dynamic Client Registration Management Protocol', () => {
 
     it('must contain all previous properties', async function () {
       const client = await setup.call(this, { userinfo_signed_response_alg: 'RS256' });
-      // removing userinfo_signed_response_alg and having it defaulted
-      // console.log(client);
       return this.agent.put(`/reg/${client.client_id}`)
         .auth(client.registration_access_token, { type: 'bearer' })
         .send(updateProperties(client, {
@@ -122,8 +118,6 @@ describe('OAuth 2.0 Dynamic Client Registration Management Protocol', () => {
 
     it('provides a secret if suddently needed', async function () {
       const client = await setup.call(this, { token_endpoint_auth_method: 'none', response_types: ['id_token'], grant_types: ['implicit'] });
-      // removing userinfo_signed_response_alg and having it defaulted
-      // console.log(client);
       expect(client).not.to.have.property('client_secret');
       return this.agent.put(`/reg/${client.client_id}`)
         .auth(client.registration_access_token, { type: 'bearer' })
@@ -216,18 +210,20 @@ describe('OAuth 2.0 Dynamic Client Registration Management Protocol', () => {
     describe('rotateRegistrationAccessToken', () => {
       before(function () {
         const conf = i(this.provider).configuration();
-        conf.features.registrationManagement = { rotateRegistrationAccessToken: true };
+        conf.features.registrationManagement = {
+          enabled: true, rotateRegistrationAccessToken: true,
+        };
       });
 
       after(function () {
         const conf = i(this.provider).configuration();
-        conf.features.registrationManagement = true;
+        conf.features.registrationManagement = { enabled: true };
       });
 
       it('destroys the old RegistrationAccessToken', async function () {
         const client = await setup.call(this, {});
         const spy = sinon.spy();
-        this.provider.once('token.revoked', spy);
+        this.provider.once('registration_access_token.destroyed', spy);
 
         return this.agent.put(`/reg/${client.client_id}`)
           .auth(client.registration_access_token, { type: 'bearer' })
@@ -256,7 +252,7 @@ describe('OAuth 2.0 Dynamic Client Registration Management Protocol', () => {
       it('issues and returns new RegistrationAccessToken', async function () {
         const client = await setup.call(this, {});
         const spy = sinon.spy();
-        this.provider.once('token.issued', spy);
+        this.provider.once('registration_access_token.saved', spy);
 
         return this.agent.put(`/reg/${client.client_id}`)
           .auth(client.registration_access_token, { type: 'bearer' })

@@ -1,10 +1,10 @@
 /* eslint-disable no-underscore-dangle */
 
 const { expect } = require('chai');
-const uuid = require('uuid/v4');
 const KeyGrip = require('keygrip'); // eslint-disable-line import/no-extraneous-dependencies
 const sinon = require('sinon');
 
+const nanoid = require('../../lib/helpers/nanoid');
 const bootstrap = require('../test_helper');
 const epochTime = require('../../lib/helpers/epoch_time');
 
@@ -18,8 +18,8 @@ const fail = () => { throw new Error('expected promise to be rejected'); };
 function handlesInteractionSessionErrors() {
   it('"handles" not found interaction session id cookie', async function () {
     const cookies = [
-      `_grant=; path=${this.url}; expires=${expired.toGMTString()}; httponly`,
-      `_grant.sig=; path=${this.url}; expires=${expired.toGMTString()}; httponly`,
+      `_interaction=; path=${this.url}; expires=${expired.toGMTString()}; httponly`,
+      `_interaction.sig=; path=${this.url}; expires=${expired.toGMTString()}; httponly`,
     ];
     this.agent._saveCookies.bind(this.agent)({ headers: { 'set-cookie': cookies } });
 
@@ -33,7 +33,7 @@ function handlesInteractionSessionErrors() {
   });
 
   it('"handles" not found interaction session', async function () {
-    sinon.stub(this.provider.Session, 'find').resolves();
+    sinon.stub(this.provider.Interaction, 'find').resolves();
 
     sinon.spy(this.provider, 'interactionDetails');
 
@@ -48,10 +48,19 @@ function handlesInteractionSessionErrors() {
 describe('devInteractions', () => {
   before(bootstrap(__dirname));
   afterEach(function () {
-    if (this.provider.Session.find.restore) this.provider.Session.find.restore();
-    if (this.provider.interactionDetails.restore) this.provider.interactionDetails.restore();
-    if (this.provider.interactionFinished.restore) this.provider.interactionFinished.restore();
+    if (this.provider.Interaction.find.restore) {
+      this.provider.Interaction.find.restore();
+    }
+
+    if (this.provider.interactionDetails.restore) {
+      this.provider.interactionDetails.restore();
+    }
+
+    if (this.provider.interactionFinished.restore) {
+      this.provider.interactionFinished.restore();
+    }
   });
+
   context('render login', () => {
     beforeEach(function () { return this.logout(); });
     beforeEach(function () {
@@ -70,8 +79,8 @@ describe('devInteractions', () => {
     it('with a form', function () {
       return this.agent.get(this.url)
         .expect(200)
-        .expect(new RegExp(`action="${this.url}/submit"`))
-        .expect(new RegExp('name="view" value="login"'))
+        .expect(new RegExp(`action="${this.url}"`))
+        .expect(new RegExp('name="prompt" value="login"'))
         .expect(/Sign-in/);
     });
 
@@ -98,12 +107,62 @@ describe('devInteractions', () => {
     it('with a form', function () {
       return this.agent.get(this.url)
         .expect(200)
-        .expect(new RegExp(`action="${this.url}/submit"`))
-        .expect(new RegExp('name="view" value="interaction"'))
+        .expect(new RegExp(`action="${this.url}"`))
+        .expect(new RegExp('name="prompt" value="consent"'))
         .expect(/Authorize/);
     });
 
     handlesInteractionSessionErrors();
+  });
+
+  context('when unimplemented prompt is requested', () => {
+    beforeEach(function () { return this.logout(); });
+
+    it('throws a 501', async function () {
+      const auth = new this.AuthorizationRequest({
+        response_type: 'code',
+        scope: 'openid',
+      });
+
+      const url = await this.agent.get('/auth')
+        .query(auth)
+        .then(response => response.headers.location);
+
+      const interaction = this.TestAdapter.for('Interaction').syncFind(url.split('/')[2]);
+      interaction.prompt.name = 'notimplemented';
+
+      return this.agent.get(url).expect(501);
+    });
+  });
+
+  context('navigate to abort', () => {
+    before(function () { return this.logout(); });
+
+    it('should abort an interaction with an error', async function () {
+      const auth = new this.AuthorizationRequest({
+        response_type: 'code',
+        scope: 'openid',
+      });
+
+      await this.agent.get('/auth')
+        .query(auth)
+        .then((response) => {
+          this.url = response.headers.location;
+        });
+
+      await this.agent.get(`${this.url}/abort`)
+        .expect(302)
+        .expect(({ headers: { location } }) => {
+          this.location = location;
+        });
+
+      return this.agent.get(this.url.replace('interaction', 'auth'))
+        .expect(302)
+        .expect(auth.validateState)
+        .expect(auth.validateClientLocation)
+        .expect(auth.validateError('access_denied'))
+        .expect(auth.validateErrorDescription('End-User aborted interaction'));
+    });
   });
 
   context('submit login', () => {
@@ -122,9 +181,9 @@ describe('devInteractions', () => {
     });
 
     it('accepts the login and resumes auth', function () {
-      return this.agent.post(`${this.url}/submit`)
+      return this.agent.post(`${this.url}`)
         .send({
-          view: 'login',
+          prompt: 'login',
           login: 'foobar',
         })
         .type('form')
@@ -153,9 +212,9 @@ describe('devInteractions', () => {
     });
 
     it('accepts the interaction and resumes auth', function () {
-      return this.agent.post(`${this.url}/submit`)
+      return this.agent.post(`${this.url}`)
         .send({
-          view: 'interaction',
+          prompt: 'consent',
         })
         .type('form')
         .expect(302)
@@ -170,25 +229,28 @@ describe('resume after interaction', () => {
   before(bootstrap(__dirname));
 
   afterEach(function () {
-    if (this.provider.Session.find.restore) this.provider.Session.find.restore();
+    if (this.provider.Interaction.find.restore) {
+      this.provider.Interaction.find.restore();
+    }
   });
 
-  function setup(grant, result) {
+  function setup(grant, result, sessionData) {
     const cookies = [];
 
-    const interaction = new this.provider.Session('resume', {});
-    const session = new this.provider.Session('sess', {});
+    const interaction = new this.provider.Interaction('resume', {});
+    const session = new this.provider.Session({ jti: 'sess', ...sessionData });
     const keys = new KeyGrip(i(this.provider).configuration('cookies.keys'));
 
     expect(grant).to.be.ok;
 
-    const cookie = `_grant=resume; path=/auth/resume; expires=${expire.toGMTString()}; httponly`;
+    const cookie = `_interaction_resume=resume; path=/auth/resume; expires=${expire.toGMTString()}; httponly`;
     cookies.push(cookie);
     let [pre, ...post] = cookie.split(';');
-    cookies.push([`_grant.sig=${keys.sign(pre)}`, ...post].join(';'));
+    cookies.push([`_interaction_resume.sig=${keys.sign(pre)}`, ...post].join(';'));
     Object.assign(interaction, { params: grant });
 
     const sessionCookie = `_session=sess; path=/; expires=${expire.toGMTString()}; httponly`;
+    cookies.push(sessionCookie);
     [pre, ...post] = sessionCookie.split(';');
     cookies.push([`_session.sig=${keys.sign(pre)}`, ...post].join(';'));
 
@@ -218,15 +280,15 @@ describe('resume after interaction', () => {
         .expect(/authorization request has expired/);
     });
 
-    it('needs to find the session to resume', function () {
+    it('needs to find the session to resume', async function () {
       const auth = new this.AuthorizationRequest({
         response_type: 'code',
         scope: 'openid',
       });
 
-      setup.call(this, auth);
+      await setup.call(this, auth);
 
-      sinon.stub(this.provider.Session, 'find').resolves();
+      sinon.stub(this.provider.Interaction, 'find').resolves();
 
       return this.agent.get('/auth/resume')
         .expect(400)
@@ -235,32 +297,41 @@ describe('resume after interaction', () => {
   });
 
   context('login results', () => {
-    it('should redirect to client with error if interaction did not resolve in a session', function () {
-      const auth = new this.AuthorizationRequest({
-        response_type: 'code',
-        scope: 'openid',
-      });
-
-      setup.call(this, auth);
-
-      return this.agent.get('/auth/resume')
-        .expect(302)
-        .expect(auth.validateState)
-        .expect(auth.validateClientLocation)
-        .expect(auth.validateError('login_required'))
-        .expect(auth.validateErrorDescription('End-User authentication is required'));
-    });
-
-    it('should process newly established permanent sessions', function () {
+    it('should process newly established permanent sessions (default)', async function () {
       const auth = new this.AuthorizationRequest({
         response_type: 'code',
         response_mode: 'query',
         scope: 'openid',
       });
 
-      setup.call(this, auth, {
+      await setup.call(this, auth, {
         login: {
-          account: uuid(),
+          account: nanoid(),
+        },
+        consent: {},
+      });
+
+      return this.agent.get('/auth/resume')
+        .expect(302)
+        .expect('set-cookie', /expires/) // expect a permanent cookie
+        .expect(auth.validateState)
+        .expect(auth.validateClientLocation)
+        .expect(auth.validatePresence(['code', 'state', 'session_state']))
+        .expect(() => {
+          expect(this.getSession()).to.be.ok.and.not.have.property('transient');
+        });
+    });
+
+    it('should process newly established permanent sessions (explicit)', async function () {
+      const auth = new this.AuthorizationRequest({
+        response_type: 'code',
+        response_mode: 'query',
+        scope: 'openid',
+      });
+
+      await setup.call(this, auth, {
+        login: {
+          account: nanoid(),
           remember: true,
         },
         consent: {},
@@ -277,16 +348,17 @@ describe('resume after interaction', () => {
         });
     });
 
-    it('should process newly established temporary sessions', function () {
+    it('should process newly established temporary sessions', async function () {
       const auth = new this.AuthorizationRequest({
         response_type: 'code',
         response_mode: 'query',
         scope: 'openid',
       });
 
-      setup.call(this, auth, {
+      await setup.call(this, auth, {
         login: {
-          account: uuid(),
+          account: nanoid(),
+          remember: false,
         },
         consent: {},
       });
@@ -302,19 +374,52 @@ describe('resume after interaction', () => {
           expect(this.getSession()).to.be.ok.and.have.property('transient');
         });
     });
+
+    it('should trigger logout when the session subject changes', async function () {
+      const auth = new this.AuthorizationRequest({
+        response_type: 'code',
+        response_mode: 'query',
+        scope: 'openid',
+      });
+
+      await setup.call(this, auth, {
+        login: {
+          account: nanoid(),
+        },
+        consent: {},
+      }, {
+        account: nanoid(),
+      });
+
+      await this.agent.get('/auth/resume')
+        .expect(200)
+        .expect('content-type', 'text/html; charset=utf-8')
+        .expect(/<body onload="javascript:document\.forms\[0]\.submit\(\)"/)
+        .expect(/<input type="hidden" name="logout" value="yes"\/>/)
+        .expect(({ text }) => {
+          const { state } = this.getSession();
+          expect(state).to.have.property('clientId', 'client');
+          expect(state).to.have.property('postLogoutRedirectUri').that.matches(/\/auth\/resume$/);
+          expect(text).to.match(new RegExp(`input type="hidden" name="xsrf" value="${state.secret}"`));
+        })
+        .expect(/<form method="post" action=".+\/session\/end\/confirm">/);
+
+      expect(await this.provider.Interaction.find('resume')).to.be.ok;
+    });
   });
 
   context('consent results', () => {
-    it('when scope includes offline_access', function () {
+    it('when scope includes offline_access', async function () {
       const auth = new this.AuthorizationRequest({
         response_type: 'code',
+        response_mode: 'query',
         prompt: 'consent',
         scope: 'openid offline_access',
       });
 
-      setup.call(this, auth, {
+      await setup.call(this, auth, {
         login: {
-          account: uuid(),
+          account: nanoid(),
           remember: true,
         },
         consent: {},
@@ -322,53 +427,49 @@ describe('resume after interaction', () => {
 
       let authorizationCode;
 
-      this.provider.once('token.issued', (code) => {
+      this.provider.once('authorization_code.saved', (code) => {
         authorizationCode = code;
       });
 
       return this.agent.get('/auth/resume')
-        .expect(() => {
-          this.provider.removeAllListeners('token.issued');
-        })
         .expect(() => {
           expect(authorizationCode).to.be.ok;
           expect(authorizationCode).to.have.property('scope', 'openid offline_access');
         });
     });
 
-    it('if not resolved returns consent_required error', function () {
-      const auth = new this.AuthorizationRequest({
-        response_type: 'code',
-        scope: 'openid',
-        prompt: 'consent',
-      });
-
-      setup.call(this, auth, {
-        login: {
-          account: uuid(),
-          remember: true,
-        },
-      });
-
-      return this.agent.get('/auth/resume')
-        .expect(302)
-        .expect(auth.validateState)
-        .expect(auth.validateClientLocation)
-        .expect(auth.validateError('consent_required'))
-        .expect(auth.validateErrorDescription('prompt consent was not resolved'));
-    });
-
     describe('custom interaction errors', () => {
-      it('custom interactions can fail too', function () {
+      describe('when prompt=none', () => {
+        before(function () { return this.login(); });
+        after(function () { return this.logout(); });
+        it('custom interactions can fail too (prompt none)', async function () {
+          const auth = new this.AuthorizationRequest({
+            response_type: 'code',
+            scope: 'openid',
+            triggerCustomFail: 'foo',
+            prompt: 'none',
+          });
+
+          return this.agent.get('/auth')
+            .query(auth)
+            .expect(302)
+            .expect(auth.validateState)
+            .expect(auth.validateClientLocation)
+            .expect(auth.validateError('error_foo'))
+            .expect(auth.validateErrorDescription('error_description_foo'));
+        });
+      });
+
+      it('custom interactions can fail too', async function () {
         const auth = new this.AuthorizationRequest({
           response_type: 'code',
           scope: 'openid',
-          custom: 'foo',
+          triggerCustomFail: 'foo',
         });
 
-        setup.call(this, auth, {
+        await setup.call(this, auth, {
           login: {
-            account: uuid(),
+            account: nanoid(),
             remember: true,
           },
           consent: {},
@@ -376,23 +477,22 @@ describe('resume after interaction', () => {
 
         return this.agent.get('/auth/resume')
           .expect(302)
-          .expect(auth.validateState)
-          .expect(auth.validateClientLocation)
-          .expect(auth.validateError('error_foo'))
-          .expect(auth.validateErrorDescription('error_description_foo'));
+          .expect(auth.validateInteractionRedirect)
+          .expect(auth.validateInteraction('login', 'reason_foo'));
       });
     });
 
     describe('rejectedScopes', () => {
-      it('allows for scopes to be rejected', function () {
+      it('allows for scopes to be rejected', async function () {
         const auth = new this.AuthorizationRequest({
           response_type: 'code',
+          response_mode: 'query',
           scope: 'openid profile',
         });
 
-        setup.call(this, auth, {
+        await setup.call(this, auth, {
           login: {
-            account: uuid(),
+            account: nanoid(),
             remember: true,
           },
           consent: {
@@ -402,17 +502,99 @@ describe('resume after interaction', () => {
 
         let authorizationCode;
 
-        this.provider.once('token.issued', (code) => {
+        this.provider.once('authorization_code.saved', (code) => {
           authorizationCode = code;
         });
 
         return this.agent.get('/auth/resume')
           .expect(() => {
-            this.provider.removeAllListeners('token.issued');
-          })
-          .expect(() => {
             expect(authorizationCode).to.be.ok;
             expect(authorizationCode).to.have.property('scope', 'openid');
+          });
+      });
+
+      it('prompted & rejected scopes can be accumulated over time', async function () {
+        const auth = new this.AuthorizationRequest({
+          response_type: 'code',
+          response_mode: 'query',
+          scope: 'openid profile email',
+        });
+
+        await setup.call(this, auth, {
+          consent: {
+            rejectedScopes: ['email'],
+          },
+        }, {
+          account: nanoid(),
+          authorizations: {
+            client: {
+              sid: 'foo',
+              grantId: 'foo',
+              rejectedScopes: ['profile'],
+              promptedScopes: ['openid', 'profile'],
+            },
+          },
+        });
+
+        let authorizationCode;
+        let session;
+        this.provider.once('authorization_code.saved', (code) => {
+          authorizationCode = code;
+        });
+        this.provider.once('session.saved', (code) => {
+          session = code;
+        });
+
+        return this.agent.get('/auth/resume')
+          .expect(() => {
+            expect(session).to.be.ok;
+            expect(session).to.have.nested.deep.property('authorizations.client.promptedScopes', ['openid', 'profile', 'email']);
+            expect(session).to.have.nested.deep.property('authorizations.client.rejectedScopes', ['profile', 'email']);
+            expect(authorizationCode).to.be.ok;
+            expect(authorizationCode).to.have.property('scope', 'openid');
+          });
+      });
+
+      it('existing rejected scopes can be replaced', async function () {
+        const auth = new this.AuthorizationRequest({
+          response_type: 'code',
+          response_mode: 'query',
+          scope: 'openid profile email',
+        });
+
+        await setup.call(this, auth, {
+          consent: {
+            rejectedScopes: [],
+            replace: true,
+          },
+        }, {
+          account: nanoid(),
+          authorizations: {
+            client: {
+              sid: 'foo',
+              grantId: 'foo',
+              rejectedScopes: ['profile'],
+              promptedScopes: ['openid', 'profile'],
+            },
+          },
+        });
+
+        let authorizationCode;
+        let session;
+        this.provider.once('authorization_code.saved', (code) => {
+          authorizationCode = code;
+        });
+        this.provider.once('session.saved', (code) => {
+          session = code;
+        });
+
+        return this.agent.get('/auth/resume')
+          .expect(() => {
+            expect(session).to.be.ok;
+            expect(session).to.have.nested.deep.property('authorizations.client.promptedScopes', ['openid', 'profile', 'email']);
+            expect(session).to.have.nested.deep.property('authorizations.client.rejectedScopes', []);
+            expect(authorizationCode).to.be.ok;
+            expect(authorizationCode).to.have.property('scope', 'openid profile email');
           });
       });
 
@@ -422,13 +604,14 @@ describe('resume after interaction', () => {
 
         const auth = new this.AuthorizationRequest({
           response_type: 'code',
+          response_mode: 'query',
           scope: 'openid',
           prompt: 'consent',
         });
 
-        setup.call(this, auth, {
+        await setup.call(this, auth, {
           login: {
-            account: uuid(),
+            account: nanoid(),
             remember: true,
           },
           consent: {
@@ -443,7 +626,7 @@ describe('resume after interaction', () => {
           .expect(auth.validateError('server_error'));
 
         expect(spy).to.have.property('calledOnce', true);
-        const error = spy.firstCall.args[0];
+        const error = spy.firstCall.args[1];
         expect(error).to.be.an.instanceof(Error);
         expect(error).to.have.property('message', 'openid cannot be rejected');
       });
@@ -458,9 +641,9 @@ describe('resume after interaction', () => {
           prompt: 'consent',
         });
 
-        setup.call(this, auth, {
+        await setup.call(this, auth, {
           login: {
-            account: uuid(),
+            account: nanoid(),
             remember: true,
           },
           consent: {
@@ -475,22 +658,22 @@ describe('resume after interaction', () => {
           .expect(auth.validateError('server_error'));
 
         expect(spy).to.have.property('calledOnce', true);
-        const error = spy.firstCall.args[0];
+        const error = spy.firstCall.args[1];
         expect(error).to.be.an.instanceof(Error);
         expect(error).to.have.property('message', 'expected Array or Set');
       });
     });
 
     describe('rejectedClaims', () => {
-      it('allows for claims to be rejected', function () {
+      it('allows for claims to be rejected', async function () {
         const auth = new this.AuthorizationRequest({
           response_type: 'code',
           scope: 'openid profile',
         });
 
-        setup.call(this, auth, {
+        await setup.call(this, auth, {
           login: {
-            account: uuid(),
+            account: nanoid(),
             remember: true,
           },
           consent: {
@@ -500,18 +683,101 @@ describe('resume after interaction', () => {
 
         let authorizationCode;
 
-        this.provider.once('token.issued', (code) => {
+        this.provider.once('authorization_code.saved', (code) => {
           authorizationCode = code;
         });
 
         return this.agent.get('/auth/resume')
           .expect(() => {
-            this.provider.removeAllListeners('token.issued');
-          })
-          .expect(() => {
             expect(authorizationCode).to.be.ok;
             expect(authorizationCode).to.have.property('scope', 'openid profile');
             expect(authorizationCode).to.have.deep.property('claims', { rejected: ['nickname'] });
+          });
+      });
+
+      it('prompted & rejected claims can be accumulated over time', async function () {
+        const auth = new this.AuthorizationRequest({
+          response_type: 'code',
+          response_mode: 'query',
+          scope: 'openid profile email',
+        });
+
+        await setup.call(this, auth, {
+          consent: {
+            rejectedClaims: ['email'],
+          },
+        }, {
+          account: nanoid(),
+          authorizations: {
+            client: {
+              sid: 'foo',
+              grantId: 'foo',
+              rejectedClaims: ['nickname'],
+              promptedClaims: ['nickname'],
+            },
+          },
+        });
+
+        let authorizationCode;
+        let session;
+
+        this.provider.once('authorization_code.saved', (code) => {
+          authorizationCode = code;
+        });
+        this.provider.once('session.saved', (code) => {
+          session = code;
+        });
+
+        return this.agent.get('/auth/resume')
+          .expect(() => {
+            expect(session).to.be.ok;
+            expect(session).to.have.nested.deep.property('authorizations.client.rejectedClaims', ['nickname', 'email']);
+            expect(authorizationCode).to.be.ok;
+            expect(authorizationCode).to.have.property('scope', 'openid profile email');
+            expect(authorizationCode).to.have.deep.property('claims', { rejected: ['nickname', 'email'] });
+          });
+      });
+
+      it('existing rejected claims can be replaced', async function () {
+        const auth = new this.AuthorizationRequest({
+          response_type: 'code',
+          response_mode: 'query',
+          scope: 'openid profile email',
+        });
+
+        await setup.call(this, auth, {
+          consent: {
+            rejectedClaims: [],
+            replace: true,
+          },
+        }, {
+          account: nanoid(),
+          authorizations: {
+            client: {
+              sid: 'foo',
+              grantId: 'foo',
+              rejectedClaims: ['nickname'],
+            },
+          },
+        });
+
+        let authorizationCode;
+        let session;
+
+        this.provider.once('authorization_code.saved', (code) => {
+          authorizationCode = code;
+        });
+        this.provider.once('session.saved', (code) => {
+          session = code;
+        });
+
+        return this.agent.get('/auth/resume')
+          .expect(() => {
+            expect(session).to.be.ok;
+            expect(session).to.have.nested.deep.property('authorizations.client.rejectedClaims', []);
+            expect(authorizationCode).to.be.ok;
+            expect(authorizationCode).to.have.property('scope', 'openid profile email');
+            expect(authorizationCode).to.have.deep.property('claims', { rejected: [] });
           });
       });
 
@@ -526,9 +792,9 @@ describe('resume after interaction', () => {
             prompt: 'consent',
           });
 
-          setup.call(this, auth, {
+          await setup.call(this, auth, {
             login: {
-              account: uuid(),
+              account: nanoid(),
               remember: true,
             },
             consent: {
@@ -543,7 +809,7 @@ describe('resume after interaction', () => {
             .expect(auth.validateError('server_error'));
 
           expect(spy).to.have.property('calledOnce', true);
-          const error = spy.firstCall.args[0];
+          const error = spy.firstCall.args[1];
           expect(error).to.be.an.instanceof(Error);
           expect(error).to.have.property('message', `${claim} cannot be rejected`);
         });
@@ -559,9 +825,9 @@ describe('resume after interaction', () => {
           prompt: 'consent',
         });
 
-        setup.call(this, auth, {
+        await setup.call(this, auth, {
           login: {
-            account: uuid(),
+            account: nanoid(),
             remember: true,
           },
           consent: {
@@ -576,7 +842,7 @@ describe('resume after interaction', () => {
           .expect(auth.validateError('server_error'));
 
         expect(spy).to.have.property('calledOnce', true);
-        const error = spy.firstCall.args[0];
+        const error = spy.firstCall.args[1];
         expect(error).to.be.an.instanceof(Error);
         expect(error).to.have.property('message', 'expected Array or Set');
       });
@@ -584,16 +850,16 @@ describe('resume after interaction', () => {
   });
 
   context('meta results', () => {
-    it('should process and store meta-informations provided alongside login', function () {
+    it('should process and store meta-informations provided alongside login', async function () {
       const auth = new this.AuthorizationRequest({
         response_type: 'code',
         response_mode: 'fragment',
         scope: 'openid',
       });
 
-      setup.call(this, auth, {
+      await setup.call(this, auth, {
         login: {
-          account: uuid(),
+          account: nanoid(),
           remember: true,
         },
         meta: {
@@ -603,7 +869,8 @@ describe('resume after interaction', () => {
 
       return this.agent.get('/auth/resume')
         .expect(() => {
-          const meta = this.getSession({ instantiate: true }).metaFor(config.client.client_id);
+          const session = this.getSession({ instantiate: true });
+          const meta = session.metaFor(config.client.client_id);
           expect(meta).to.be.ok;
           expect(meta).to.have.property('scope');
         });
@@ -611,13 +878,13 @@ describe('resume after interaction', () => {
   });
 
   context('interaction errors', () => {
-    it('should abort an interaction when given an error result object (no description)', function () {
+    it('should abort an interaction when given an error result object (no description)', async function () {
       const auth = new this.AuthorizationRequest({
         response_type: 'code',
         scope: 'openid',
       });
 
-      setup.call(this, auth, {
+      await setup.call(this, auth, {
         error: 'access_denied',
       });
 
@@ -628,14 +895,14 @@ describe('resume after interaction', () => {
         .expect(auth.validateErrorDescription(''));
     });
 
-    it('should abort an interaction when given an error result object (with state)', function () {
+    it('should abort an interaction when given an error result object (with state)', async function () {
       const auth = new this.AuthorizationRequest({
         response_type: 'code',
         scope: 'openid',
         state: 'bf458-00aa3',
       });
 
-      setup.call(this, auth, {
+      await setup.call(this, auth, {
         error: 'access_denied',
       });
 
@@ -646,13 +913,13 @@ describe('resume after interaction', () => {
         .expect(auth.validateErrorDescription(''));
     });
 
-    it('should abort an interaction when given an error result object (with description)', function () {
+    it('should abort an interaction when given an error result object (with description)', async function () {
       const auth = new this.AuthorizationRequest({
         response_type: 'code',
         scope: 'openid',
       });
 
-      setup.call(this, auth, {
+      await setup.call(this, auth, {
         error: 'access_denied',
         error_description: 'scope out of reach',
       });
@@ -664,13 +931,13 @@ describe('resume after interaction', () => {
         .expect(auth.validateErrorDescription('scope out of reach'));
     });
 
-    it('should abort an interaction when given an error result object (custom error)', function () {
+    it('should abort an interaction when given an error result object (custom error)', async function () {
       const auth = new this.AuthorizationRequest({
         response_type: 'code',
         scope: 'openid',
       });
 
-      setup.call(this, auth, {
+      await setup.call(this, auth, {
         error: 'custom_foo',
         error_description: 'custom_foobar',
       });
@@ -683,30 +950,68 @@ describe('resume after interaction', () => {
     });
   });
 
-  context('custom prompts', () => {
+  context('custom requestable prompts', () => {
     before(function () { return this.login(); });
     after(function () { return this.logout(); });
 
-    it('should fail if they are not resolved', function () {
+    it('should fail if they are not resolved', async function () {
       const auth = new this.AuthorizationRequest({
         response_type: 'code',
         scope: 'openid',
         prompt: 'custom',
       });
 
-      setup.call(this, auth, {
+      await setup.call(this, auth, {
         login: {
-          account: uuid(),
+          account: nanoid(),
           remember: true,
         },
+        consent: {},
       });
 
       return this.agent.get('/auth/resume')
         .expect(302)
-        .expect(auth.validateState)
-        .expect(auth.validateClientLocation)
-        .expect(auth.validateError('interaction_required'))
-        .expect(auth.validateErrorDescription('prompt custom was not resolved'));
+        .expect(auth.validateInteractionRedirect)
+        .expect(auth.validateInteraction('custom', 'custom_prompt'));
+    });
+  });
+
+  context('custom unrequestable prompts', () => {
+    it('should prompt interaction', async function () {
+      const auth = new this.AuthorizationRequest({
+        response_type: 'code',
+        triggerUnrequestable: 'foo',
+        response_mode: 'query',
+        scope: 'openid',
+      });
+
+      return this.agent.get('/auth')
+        .query(auth)
+        .expect(302)
+        .expect(auth.validateInteractionRedirect)
+        .expect(auth.validateInteraction('unrequestable', 'un_foo'));
+    });
+
+    it('should fail if they are not satisfied', async function () {
+      const auth = new this.AuthorizationRequest({
+        response_type: 'code',
+        triggerUnrequestable: 'foo',
+        response_mode: 'query',
+        scope: 'openid',
+      });
+
+      await setup.call(this, auth, {
+        login: {
+          account: nanoid(),
+          remember: true,
+        },
+        consent: {},
+      });
+
+      return this.agent.get('/auth/resume')
+        .expect(302)
+        .expect(auth.validateInteractionRedirect)
+        .expect(auth.validateInteraction('unrequestable', 'un_foo'));
     });
   });
 });

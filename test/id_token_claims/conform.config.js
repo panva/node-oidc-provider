@@ -2,7 +2,9 @@ const { clone } = require('lodash');
 
 const config = clone(require('../default.config'));
 
-config.features = { conformIdTokenClaims: true, claimsParameter: true, alwaysIssueRefresh: true };
+config.features = {
+  claimsParameter: { enabled: true },
+};
 
 module.exports = {
   config,

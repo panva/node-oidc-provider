@@ -24,7 +24,7 @@ describe('jwtIntrospection features', () => {
       expect(() => {
         new Provider('http://localhost', { // eslint-disable-line no-new
           features: {
-            jwtIntrospection: true,
+            jwtIntrospection: { enabled: true },
           },
         });
       }).to.throw('jwtIntrospection is only available in conjuction with introspection');

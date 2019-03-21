@@ -2,7 +2,6 @@
 
 const { createServer } = require('http');
 
-const { JWK: { createKeyStore } } = require('node-jose');
 const Mocha = require('mocha');
 const { all: clearRequireCache } = require('clear-module');
 const { sample } = require('lodash');
@@ -19,12 +18,10 @@ if (!formats.length) {
   formats.push('opaque');
   formats.push('jwt');
   formats.push('dynamic');
-  formats.push('legacy');
 }
 const passed = [];
 
 const { utils: { lookupFiles } } = Mocha;
-global.keystore = createKeyStore();
 const files = lookupFiles('test/**/*.test.js', ['js'], true);
 class SuiteFailedError extends Error {}
 
@@ -38,6 +35,12 @@ console.warn = function (...args) {
 
 async function run() {
   clearRequireCache();
+  const jose = require('@panva/jose'); // eslint-disable-line global-require
+  global.keystore = new jose.JWKS.KeyStore();
+  await Promise.all([
+    global.keystore.generate('RSA', 2048),
+    global.keystore.generate('EC', 'P-256'),
+  ]);
   const DEFAULTS = require('../lib/helpers/defaults'); // eslint-disable-line global-require
   DEFAULTS.formats.default = this.format;
   await new Promise((resolve) => {
@@ -47,6 +50,7 @@ async function run() {
   await new Promise((resolve, reject) => {
     const mocha = new Mocha();
     mocha.files = files;
+    // mocha.bail()
 
     if (process.env.CI) {
       mocha.retries(1); // retry flaky time comparison tests
@@ -66,14 +70,9 @@ async function run() {
 }
 
 (async () => {
-  await Promise.all([
-    global.keystore.generate('RSA', 1024),
-    global.keystore.generate('EC', 'P-256'),
-  ]);
   if (formats.includes('opaque')) await run.call({ format: 'opaque' });
   if (formats.includes('jwt')) await run.call({ format: 'jwt' });
   if (formats.includes('dynamic')) await run.call({ format: () => sample(['opaque', 'jwt']) });
-  if (formats.includes('legacy')) await run.call({ format: 'legacy' });
   passed.forEach(pass => console.log('\x1b[32m%s\x1b[0m', pass));
 })()
   .catch((error) => {

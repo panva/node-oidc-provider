@@ -2,7 +2,10 @@ const { clone } = require('lodash');
 
 const config = clone(require('../default.config'));
 
-config.features = { registrationManagement: true, registration: true };
+config.features = {
+  registrationManagement: { enabled: true },
+  registration: { enabled: true },
+};
 
 module.exports = {
   config,

@@ -59,14 +59,14 @@ describe('device_authorization_endpoint', () => {
           client_id: 'not-found-client',
         })
         .type('form')
-        .expect(400)
+        .expect(401)
         .expect('content-type', /application\/json/)
         .expect(() => {
           expect(spy.calledOnce).to.be.true;
         })
         .expect({
           error: 'invalid_client',
-          error_description: 'client is invalid',
+          error_description: 'client authentication failed',
         });
     });
   });
@@ -157,47 +157,6 @@ describe('device_authorization_endpoint', () => {
           error_description: 'parameters must not be provided twice. (scope)',
         });
     });
-
-    it('makes sure scope is provided', function () {
-      const spy = sinon.spy();
-      this.provider.once('device_authorization.error', spy);
-
-      return this.agent.post(route)
-        .send({
-          client_id: 'client',
-        })
-        .type('form')
-        .expect(400)
-        .expect('content-type', /application\/json/)
-        .expect(() => {
-          expect(spy.calledOnce).to.be.true;
-        })
-        .expect({
-          error: 'invalid_request',
-          error_description: 'missing required parameter(s) (scope)',
-        });
-    });
-
-    it('makes sure openid is provided as a scope', function () {
-      const spy = sinon.spy();
-      this.provider.once('device_authorization.error', spy);
-
-      return this.agent.post(route)
-        .send({
-          client_id: 'client',
-          scope: 'profile',
-        })
-        .type('form')
-        .expect(400)
-        .expect('content-type', /application\/json/)
-        .expect(() => {
-          expect(spy.calledOnce).to.be.true;
-        })
-        .expect({
-          error: 'invalid_request',
-          error_description: 'openid is required scope',
-        });
-    });
   });
 
   describe('pkce', () => {
@@ -244,46 +203,6 @@ describe('device_authorization_endpoint', () => {
           error: 'invalid_request',
           error_description: 'code_challenge must be provided with code_challenge_method',
         });
-    });
-
-    describe('forcedForNative flag', () => {
-      afterEach(function () {
-        i(this.provider).configuration('features.pkce').forcedForNative = false;
-      });
-
-      it('forces native clients using code flow to use pkce', function () {
-        const spy = sinon.spy();
-        this.provider.once('device_authorization.error', spy);
-
-        return this.agent.post(route)
-          .send({
-            client_id: 'client',
-            scope: 'openid',
-          })
-          .type('form')
-          .expect(400)
-          .expect('content-type', /application\/json/)
-          .expect(() => {
-            expect(spy.calledOnce).to.be.true;
-          })
-          .expect({
-            error: 'invalid_request',
-            error_description: 'PKCE must be provided for native clients',
-          });
-      });
-
-      it('when false pkce is optional', function () {
-        i(this.provider).configuration('features.pkce').forcedForNative = false;
-
-        return this.agent.post(route)
-          .send({
-            client_id: 'client',
-            scope: 'openid',
-          })
-          .type('form')
-          .expect(200)
-          .expect('content-type', /application\/json/);
-      });
     });
   });
 
@@ -338,6 +257,23 @@ describe('device_authorization_endpoint', () => {
     expect(dc.params).not.to.have.property('response_type');
     expect(dc.params).not.to.have.property('state');
     expect(dc.params).not.to.have.property('response_mode');
+  });
+
+  it('handles regular client auth', function () {
+    return this.agent.post(route)
+      .auth('client-basic-auth', 'secret')
+      .type('form')
+      .expect(200)
+      .expect('content-type', /application\/json/)
+      .expect(({ body }) => {
+        expect(body).to.have.keys([
+          'device_code',
+          'user_code',
+          'verification_uri',
+          'verification_uri_complete',
+          'expires_in',
+        ]);
+      });
   });
 
   it('populates ctx.oidc.entities', function (done) {

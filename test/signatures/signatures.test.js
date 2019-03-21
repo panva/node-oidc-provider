@@ -1,9 +1,9 @@
 const { parse: parseLocation } = require('url');
 
-const uuid = require('uuid/v4');
 const { expect } = require('chai');
 const base64url = require('base64url');
 
+const nanoid = require('../../lib/helpers/nanoid');
 const bootstrap = require('../test_helper');
 const { decode } = require('../../lib/helpers/jwt');
 const epochTime = require('../../lib/helpers/epoch_time');
@@ -91,7 +91,7 @@ describe('signatures', () => {
         acr: i(this.provider).configuration('acrValues[0]'),
         authTime: epochTime(),
         clientId: 'client-sig-none',
-        grantId: uuid(),
+        grantId: nanoid(),
         redirectUri: 'https://client.example.com/cb',
         scope: 'openid',
       });
@@ -178,7 +178,7 @@ describe('signatures', () => {
         acr: i(this.provider).configuration('acrValues[0]'),
         authTime: epochTime(),
         clientId: 'client-sig-HS256',
-        grantId: uuid(),
+        grantId: nanoid(),
         redirectUri: 'https://client.example.com/cb',
         scope: 'openid',
       });

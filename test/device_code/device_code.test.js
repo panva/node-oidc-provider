@@ -11,6 +11,7 @@ describe('configuration features.deviceFlow', () => {
       new Provider('http://localhost', { // eslint-disable-line no-new
         features: {
           deviceFlow: {
+            enabled: true,
             charset: 'digits',
           },
         },
@@ -20,6 +21,7 @@ describe('configuration features.deviceFlow', () => {
       new Provider('http://localhost', { // eslint-disable-line no-new
         features: {
           deviceFlow: {
+            enabled: true,
             charset: 'base-20',
           },
         },
@@ -29,6 +31,7 @@ describe('configuration features.deviceFlow', () => {
       new Provider('http://localhost', { // eslint-disable-line no-new
         features: {
           deviceFlow: {
+            enabled: true,
             charset: 'foo',
           },
         },
@@ -41,6 +44,7 @@ describe('configuration features.deviceFlow', () => {
       new Provider('http://localhost', { // eslint-disable-line no-new
         features: {
           deviceFlow: {
+            enabled: true,
             mask: '*** *** ***',
           },
         },
@@ -50,6 +54,7 @@ describe('configuration features.deviceFlow', () => {
       new Provider('http://localhost', { // eslint-disable-line no-new
         features: {
           deviceFlow: {
+            enabled: true,
             mask: '***-***-***',
           },
         },
@@ -59,6 +64,7 @@ describe('configuration features.deviceFlow', () => {
       new Provider('http://localhost', { // eslint-disable-line no-new
         features: {
           deviceFlow: {
+            enabled: true,
             mask: '***.***.***',
           },
         },

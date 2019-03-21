@@ -1,17 +1,27 @@
 const { AssertionError } = require('assert');
 
 const { expect } = require('chai');
-const jose = require('node-jose');
+const jose = require('@panva/jose');
 
 const JWT = require('../../lib/helpers/jwt');
 const epochTime = require('../../lib/helpers/epoch_time');
 
-const keystore = jose.JWK.createKeyStore();
+const keystore = new jose.JWKS.KeyStore();
 
 describe('JSON Web Token (JWT) RFC7519 implementation', () => {
   before(() => keystore.generate('oct', 256)
     .then(() => keystore.add(global.keystore.get({ kty: 'RSA' })))
     .then(() => keystore.add(global.keystore.get({ kty: 'EC' }))));
+
+  describe('.decode()', () => {
+    it('doesnt decode non strings or non buffers', () => {
+      expect(() => JWT.decode({})).to.throw(TypeError);
+    });
+
+    it('only handles length 3', () => {
+      expect(() => JWT.decode('foo.bar.baz.')).to.throw(TypeError);
+    });
+  });
 
   it('signs and decodes with none', () => JWT.sign({ data: true }, null, 'none')
     .then(jwt => JWT.decode(jwt))

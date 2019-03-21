@@ -3,7 +3,7 @@ const url = require('url');
 
 const { expect } = require('chai');
 const base64url = require('base64url');
-const jose = require('node-jose');
+const jose = require('@panva/jose');
 
 const bootstrap = require('../test_helper');
 const JWT = require('../../lib/helpers/jwt');
@@ -17,7 +17,7 @@ const route = '/auth';
     before(bootstrap(__dirname));
 
     before(function () {
-      return jose.JWK.asKeyStore(privKey).then((keystore) => { this.keystore = keystore; });
+      this.keystore = jose.JWKS.KeyStore.fromJWKS(privKey);
     });
     before(function () { return this.login(); });
 
@@ -41,11 +41,10 @@ const route = '/auth';
         expect(this.id_token).to.be.ok;
         expect(this.id_token.split('.')).to.have.lengthOf(5);
 
-        return jose.JWE.createDecrypt(this.keystore).decrypt(this.id_token).then((result) => {
-          expect(result.payload).to.be.ok;
-          expect(result.payload.toString().split('.')).to.have.lengthOf(3);
-          expect(JWT.decode(result.payload)).to.be.ok;
-        });
+        const result = jose.JWE.decrypt(this.id_token, this.keystore);
+        expect(result).to.be.ok;
+        expect(result.toString().split('.')).to.have.lengthOf(3);
+        expect(JWT.decode(result)).to.be.ok;
       });
 
       it('responds with an encrypted userinfo JWT', function (done) {
@@ -58,14 +57,10 @@ const route = '/auth';
           })
           .end((err, response) => {
             if (err) throw err;
-            jose.JWE.createDecrypt(this.keystore)
-              .decrypt(response.text)
-              .then((result) => {
-                expect(result.payload).to.be.ok;
-
-                expect(JSON.parse(result.payload)).to.have.keys('sub');
-              })
-              .then(done, done);
+            const result = jose.JWE.decrypt(response.text, this.keystore);
+            expect(result).to.be.ok;
+            expect(JSON.parse(result)).to.have.keys('sub');
+            done();
           });
       });
 
@@ -90,16 +85,13 @@ const route = '/auth';
             })
             .end((err, response) => {
               if (err) throw err;
-              jose.JWE.createDecrypt(this.keystore)
-                .decrypt(response.text)
-                .then((result) => {
-                  expect(result.payload).to.be.ok;
-                  expect(result.payload.toString().split('.')).to.have.lengthOf(3);
-                  const decode = JWT.decode(result.payload);
-                  expect(decode).to.be.ok;
-                  expect(decode.payload).to.have.property('exp').above(Date.now() / 1000);
-                })
-                .then(done, done);
+              const result = jose.JWE.decrypt(response.text, this.keystore);
+              expect(result).to.be.ok;
+              expect(result.toString().split('.')).to.have.lengthOf(3);
+              const decode = JWT.decode(result);
+              expect(decode).to.be.ok;
+              expect(decode.payload).to.have.property('exp').above(Date.now() / 1000);
+              done();
             });
         });
       });
@@ -111,7 +103,7 @@ const route = '/auth';
           client_id: 'client',
           response_type: 'code',
           redirect_uri: 'https://client.example.com/cb',
-        }, null, 'none', { issuer: 'client', audience: this.provider.issuer }).then(signed => JWT.encrypt(signed, i(this.provider).keystore.get({ kty: 'RSA' }), 'A128CBC-HS256', 'RSA1_5')).then(encrypted => this.wrap({
+        }, null, 'none', { issuer: 'client', audience: this.provider.issuer }).then(signed => JWT.encrypt(signed, i(this.provider).keystore.get({ kty: 'RSA' }), { enc: 'A128CBC-HS256', alg: 'RSA1_5' })).then(encrypted => this.wrap({
           route,
           verb,
           auth: {
@@ -137,7 +129,7 @@ const route = '/auth';
           client_id: 'client',
           response_type: 'code',
           redirect_uri: 'https://client.example.com/cb',
-        }, null, 'none', { issuer: 'client', audience: this.provider.issuer }).then(signed => JWT.encrypt(signed, i(this.provider).keystore.get({ kty: 'RSA' }), 'A128CBC-HS256', 'RSA-OAEP')).then(encrypted => this.wrap({
+        }, null, 'none', { issuer: 'client', audience: this.provider.issuer }).then(signed => JWT.encrypt(signed, i(this.provider).keystore.get({ kty: 'RSA' }), { enc: 'A128CBC-HS256', alg: 'RSA-OAEP' })).then(encrypted => this.wrap({
           route,
           verb,
           auth: {
@@ -159,7 +151,7 @@ const route = '/auth';
           client_id: 'client',
           response_type: 'code',
           redirect_uri: 'https://client.example.com/cb',
-        }, null, 'none', { issuer: 'client', audience: this.provider.issuer }).then(signed => JWT.encrypt(signed, i(this.provider).keystore.get({ kty: 'RSA' }), 'A192CBC-HS384', 'RSA1_5')).then(encrypted => this.wrap({
+        }, null, 'none', { issuer: 'client', audience: this.provider.issuer }).then(signed => JWT.encrypt(signed, i(this.provider).keystore.get({ kty: 'RSA' }), { enc: 'A192CBC-HS384', alg: 'RSA1_5' })).then(encrypted => this.wrap({
           route,
           verb,
           auth: {
@@ -222,7 +214,7 @@ const route = '/auth';
           response_type: 'id_token',
           nonce: 'foobar',
           redirect_uri: 'https://client.example.com/cb',
-        }, null, 'none', { issuer: 'client', audience: this.provider.issuer }).then(signed => JWT.encrypt(signed, client.keystore.get({ alg: 'A128KW' }), 'A128CBC-HS256', 'A128KW')).then(encrypted => this.wrap({
+        }, null, 'none', { issuer: 'client', audience: this.provider.issuer }).then(signed => JWT.encrypt(signed, client.keystore.get({ alg: 'A128KW' }), { enc: 'A128CBC-HS256', alg: 'A128KW' })).then(encrypted => this.wrap({
           route,
           verb,
           auth: {
@@ -250,7 +242,7 @@ const route = '/auth';
         })).to.be.true;
       });
 
-      it('responds encrypted with i.e. PBES2 derived key', function () {
+      it('responds encrypted with i.e. PBES2 password encrypted key', function () {
         expect(this.id_token).to.be.ok;
         expect(this.id_token.split('.')).to.have.lengthOf(5);
         expect(JSON.parse(base64url.decode(this.id_token.split('.')[0]))).to.have.property('alg', 'PBES2-HS384+A192KW');

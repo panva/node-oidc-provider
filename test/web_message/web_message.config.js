@@ -2,7 +2,7 @@ const { clone } = require('lodash');
 
 const config = clone(require('../default.config'));
 
-config.features = { webMessageResponseMode: true };
+config.features = { webMessageResponseMode: { enabled: true } };
 
 module.exports = {
   config,

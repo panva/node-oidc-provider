@@ -23,7 +23,7 @@ describe('PKCE RFC7636', () => {
         .expect((response) => {
           const { query: { code } } = parseUrl(response.headers.location, true);
           const jti = this.getTokenJti(code);
-          const stored = this.TestAdapter.for('AuthorizationCode').syncFind(jti, { payload: true });
+          const stored = this.TestAdapter.for('AuthorizationCode').syncFind(jti);
           expect(stored).to.have.property('codeChallengeMethod', 'plain');
           expect(stored).to.have.property('codeChallenge', 'foobar');
         });
@@ -41,7 +41,7 @@ describe('PKCE RFC7636', () => {
         .expect((response) => {
           const { query: { code } } = parseUrl(response.headers.location, true);
           const jti = this.getTokenJti(code);
-          const stored = this.TestAdapter.for('AuthorizationCode').syncFind(jti, { payload: true });
+          const stored = this.TestAdapter.for('AuthorizationCode').syncFind(jti);
 
           expect(stored).to.have.property('codeChallengeMethod', 'plain');
           expect(stored).to.have.property('codeChallenge', 'foobar');
@@ -77,46 +77,41 @@ describe('PKCE RFC7636', () => {
         .expect(auth.validateErrorDescription('not supported value of code_challenge_method'));
     });
 
-    describe('forcedForNative flag', () => {
-      before(function () {
-        i(this.provider).configuration('features.pkce').forcedForNative = true;
+    it('forces native clients using code flow to use pkce', function () {
+      const auth = new this.AuthorizationRequest({
+        response_type: 'code',
+        scope: 'openid',
+        client_id: 'native',
       });
 
-      after(function () {
-        i(this.provider).configuration('features.pkce').forcedForNative = false;
+      return this.agent.get('/auth')
+        .query(auth)
+        .expect(auth.validatePresence(['error', 'error_description', 'state']))
+        .expect(auth.validateError('invalid_request'))
+        .expect(auth.validateErrorDescription('PKCE must be used by native clients'));
+    });
+
+    it('forces native clients using hybrid flow to use pkce', function () {
+      const auth = new this.AuthorizationRequest({
+        response_type: 'code id_token',
+        scope: 'openid',
+        client_id: 'native',
       });
 
-      it('forces native clients using code flow to use pkce', function () {
-        const auth = new this.AuthorizationRequest({
-          response_type: 'code',
-          scope: 'openid',
-        });
+      return this.agent.get('/auth')
+        .query(auth)
+        .expect(auth.validateFragment)
+        .expect(auth.validatePresence(['error', 'error_description', 'state']))
+        .expect(auth.validateError('invalid_request'))
+        .expect(auth.validateErrorDescription('PKCE must be used by native clients'));
+    });
 
-        return this.agent.get('/auth')
-          .query(auth)
-          .expect(auth.validatePresence(['error', 'error_description', 'state']))
-          .expect(auth.validateError('invalid_request'))
-          .expect(auth.validateErrorDescription('PKCE must be provided for native clients'));
-      });
-
-      it('forces native clients using hybrid flow to use pkce', function () {
-        const auth = new this.AuthorizationRequest({
-          response_type: 'code id_token',
-          scope: 'openid',
-        });
-
-        return this.agent.get('/auth')
-          .query(auth)
-          .expect(auth.validateFragment)
-          .expect(auth.validatePresence(['error', 'error_description', 'state']))
-          .expect(auth.validateError('invalid_request'))
-          .expect(auth.validateErrorDescription('PKCE must be provided for native clients'));
-      });
-
+    bootstrap.passInteractionChecks('native_client_prompt', () => {
       it('is not in effect for implicit flows', function () {
         const auth = new this.AuthorizationRequest({
           response_type: 'id_token',
           scope: 'openid',
+          client_id: 'native',
         });
 
         return this.agent.get('/auth')
@@ -128,11 +123,11 @@ describe('PKCE RFC7636', () => {
 
     describe('only S256 is supported', () => {
       before(function () {
-        i(this.provider).configuration('features.pkce').supportedMethods = ['S256'];
+        i(this.provider).configuration().pkceMethods = ['S256'];
       });
 
       after(function () {
-        i(this.provider).configuration('features.pkce').supportedMethods = ['plain', 'S256'];
+        i(this.provider).configuration().pkceMethods = ['plain', 'S256'];
       });
 
       it('fails when client does not provide challenge method', function () {
@@ -177,7 +172,7 @@ describe('PKCE RFC7636', () => {
           .expect((response) => {
             const { query: { code } } = parseUrl(response.headers.location, true);
             const jti = this.getTokenJti(code);
-            const stored = this.TestAdapter.for('AuthorizationCode').syncFind(jti, { payload: true });
+            const stored = this.TestAdapter.for('AuthorizationCode').syncFind(jti);
 
             expect(stored).to.have.property('codeChallengeMethod', 'S256');
             expect(stored).to.have.property('codeChallenge', 'E9Melhoa2OwvFrEMTJguCHaoeK1t8URWbuGJSstw-cM');
@@ -312,11 +307,11 @@ describe('PKCE RFC7636', () => {
 
     describe('only S256 is supported', () => {
       before(function () {
-        i(this.provider).configuration('features.pkce').supportedMethods = ['S256'];
+        i(this.provider).configuration().pkceMethods = ['S256'];
       });
 
       after(function () {
-        i(this.provider).configuration('features.pkce').supportedMethods = ['plain', 'S256'];
+        i(this.provider).configuration().pkceMethods = ['plain', 'S256'];
       });
 
       it('passes if S256 is used', async function () {

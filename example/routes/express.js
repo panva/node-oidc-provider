@@ -1,10 +1,22 @@
 const querystring = require('querystring');
+const { inspect } = require('util');
 
+const _ = require('lodash');
 const { urlencoded } = require('express'); // eslint-disable-line import/no-unresolved
 
 const Account = require('../support/account');
 
 const body = urlencoded({ extended: false });
+
+const keys = new Set();
+const debug = obj => querystring.stringify(Object.entries(obj).reduce((acc, [key, value]) => {
+  keys.add(key);
+  if (_.isEmpty(value)) return acc;
+  acc[key] = inspect(value, { depth: null });
+  return acc;
+}, {}), '<br/>', ': ', {
+  encodeURIComponent(value) { return keys.has(value) ? `<strong>${value}</strong>` : value; },
+});
 
 module.exports = (app, provider) => {
   const { constructor: { errors: { SessionNotFound } } } = provider;
@@ -30,50 +42,47 @@ module.exports = (app, provider) => {
     next();
   }
 
-  app.get('/interaction/:grant', setNoCache, async (req, res, next) => {
+  app.get('/interaction/:uid', setNoCache, async (req, res, next) => {
     try {
-      const details = await provider.interactionDetails(req);
-      const client = await provider.Client.find(details.params.client_id);
+      const {
+        uid, prompt, params, session,
+      } = await provider.interactionDetails(req);
 
-      if (details.interaction.error === 'login_required') {
+      const client = await provider.Client.find(params.client_id);
+
+      if (prompt.name === 'login') {
         return res.render('login', {
           client,
-          details,
+          uid,
+          details: prompt.details,
+          params,
           title: 'Sign-in',
-          params: querystring.stringify(details.params, ',<br/>', ' = ', {
-            encodeURIComponent: value => value,
-          }),
-          interaction: querystring.stringify(details.interaction, ',<br/>', ' = ', {
-            encodeURIComponent: value => value,
-          }),
+          session: session ? debug(session) : undefined,
+          dbg: {
+            params: debug(params),
+            prompt: debug(prompt),
+          },
         });
       }
+
       return res.render('interaction', {
         client,
-        details,
+        uid,
+        details: prompt.details,
+        params,
         title: 'Authorize',
-        params: querystring.stringify(details.params, ',<br/>', ' = ', {
-          encodeURIComponent: value => value,
-        }),
-        interaction: querystring.stringify(details.interaction, ',<br/>', ' = ', {
-          encodeURIComponent: value => value,
-        }),
+        session: session ? debug(session) : undefined,
+        dbg: {
+          params: debug(params),
+          prompt: debug(prompt),
+        },
       });
     } catch (err) {
       return next(err);
     }
   });
 
-  app.post('/interaction/:grant/confirm', setNoCache, body, async (req, res, next) => {
-    try {
-      const result = { consent: {} };
-      await provider.interactionFinished(req, res, result);
-    } catch (err) {
-      next(err);
-    }
-  });
-
-  app.post('/interaction/:grant/login', setNoCache, body, async (req, res, next) => {
+  app.post('/interaction/:uid/login', setNoCache, body, async (req, res, next) => {
     try {
       const account = await Account.findByLogin(req.body.login);
 
@@ -82,13 +91,32 @@ module.exports = (app, provider) => {
           account: account.accountId,
           acr: 'urn:mace:incommon:iap:bronze',
           amr: ['pwd'],
-          remember: !!req.body.remember,
           ts: Math.floor(Date.now() / 1000),
         },
-        consent: {},
       };
 
-      await provider.interactionFinished(req, res, result);
+      await provider.interactionFinished(req, res, result, { mergeWithLastSubmission: false });
+    } catch (err) {
+      next(err);
+    }
+  });
+
+  app.post('/interaction/:uid/confirm', setNoCache, body, async (req, res, next) => {
+    try {
+      const result = { consent: {} };
+      await provider.interactionFinished(req, res, result, { mergeWithLastSubmission: true });
+    } catch (err) {
+      next(err);
+    }
+  });
+
+  app.get('/interaction/:uid/abort', setNoCache, async (req, res, next) => {
+    try {
+      const result = {
+        error: 'access_denied',
+        error_description: 'End-User aborted interaction',
+      };
+      await provider.interactionFinished(req, res, result, { mergeWithLastSubmission: false });
     } catch (err) {
       next(err);
     }

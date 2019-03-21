@@ -2,21 +2,16 @@
 
 **Notice: Follow the best practices for distributing private keying material and secrets!**
 
-oidc-provider uses the brilliant [node-jose][node-jose-library] for everything JW(S|E|K) related.
-oidc-provider expects to either receive a jose.JWK.KeyStore object or a JWKS formatted javascript
+oidc-provider uses the [@panva/jose][jose-library] for everything JW(S|E|K) related.
+oidc-provider expects to either receive a jose.JWKS.KeyStore object or a JWKS formatted javascript
 object with the private keys during `#initialize()` call.
 
 **Table of Contents**
 
-<!-- TOC depthFrom:2 depthTo:3 withLinks:1 updateOnSave:1 orderedList:0 -->
-
 - [Certificates Keystore (jwks_uri)](#certificates-keystore-jwks_uri)
 - [Generating new keys](#generating-new-keys)
 - [Generating all keys for all features](#generating-all-keys-for-all-features)
-- [Transforming existing keys from other formats](#transforming-existing-keys-from-other-formats)
 - [Signing Key Rotation](#signing-key-rotation)
-
-<!-- /TOC -->
 
 ## Certificates Keystore (jwks_uri)
 To configure your Provider instance with your own signing and encryption keys you will need at the
@@ -41,19 +36,18 @@ provider.initialize({ keystore }).then(() => { /* your app is ready */ });
 
 
 ## Generating new keys
-Refer to this snippet to generate a new random key using node-jose and get the JWK representation
+Refer to this snippet to generate a new random key using @panva/jose and get the JWK representation
 of it. In this snippet a the required RS256 sig key is generated and a full JWKS is printed to the
 console.
 
 ```js
-const { createKeyStore } = require('oidc-provider');
-const keystore = createKeyStore();
-keystore.generate('RSA', 2048, {
+const { JWKS: { KeyStore } } = require('@panva/jose');
+const keystore = new KeyStore();
+keystore.generateSync('RSA', 2048, {
   alg: 'RS256',
   use: 'sig',
-}).then(function () {
-  console.log('this is the full private JWKS:\n', keystore.toJSON(true));
 });
+console.log('this is the full private JWKS:\n', keystore.toJWKS(true));
 ```
 
 ## Generating all keys for all features
@@ -61,60 +55,23 @@ This script generates a sig/enc pair of private keys for all supported algorithm
 you enable encryption features on your provider instance.
 
 ```js
-const { createKeyStore } = require('oidc-provider');
-const keystore = createKeyStore();
+const { JWKS: { KeyStore } } = require('@panva/jose');
+const keystore = new KeyStore();
 Promise.all([
   keystore.generate('RSA', 2048, {
-    kid: 'sig-rs-0',
     use: 'sig',
   }),
   keystore.generate('RSA', 2048, {
-    kid: 'enc-rs-0',
     use: 'enc',
   }),
   keystore.generate('EC', 'P-256', {
-    kid: 'sig-ec2-0',
     use: 'sig',
   }),
   keystore.generate('EC', 'P-256', {
-    kid: 'enc-ec2-0',
-    use: 'enc',
-  }),
-  keystore.generate('EC', 'P-384', {
-    kid: 'sig-ec3-0',
-    use: 'sig',
-  }),
-  keystore.generate('EC', 'P-384', {
-    kid: 'enc-ec3-0',
-    use: 'enc',
-  }),
-  keystore.generate('EC', 'P-521', {
-    kid: 'sig-ec5-0',
-    use: 'sig',
-  }),
-  keystore.generate('EC', 'P-521', {
-    kid: 'enc-ec5-0',
     use: 'enc',
   })
 ]).then(function () {
-  console.log('my JWKS:\n', keystore.toJSON(true));
-});
-```
-
-## Transforming existing keys from other formats
-```js
-const { asKey } = require('oidc-provider');
-// where input is either a:
-// *  String serialization of a JSON JWK/(base64-encoded) PEM/(binary-encoded) DER
-// *  Buffer of a JSON JWK/(base64-encoded) PEM/(binary-encoded) DER
-
-// format is either a:
-// * 'pkcs8' for a DER encoded (unencrypted!) PKCS8 private key
-// * 'spki'  for a DER encoded SPKI public key
-// * 'x509'  for a DER encoded PKIX X.509 certificate
-// * 'pem'   for a PEM encoded of PKCS8 / SPKI / PKIX
-asKey(input, format).then(function(key) {
-  console.log('my key in private JWK format:\n', key.toJSON(true));
+  console.log('my JWKS:\n', keystore.toJWKS(true));
 });
 ```
 
@@ -129,5 +86,5 @@ distributed deployment with rolling reloads in place.
   used for signing
 4. reload all your processes
 
-[node-jose-library]: https://github.com/cisco/node-jose
+[jose-library]: https://github.com/panva/jose
 [jose-jwk]: https://tools.ietf.org/html/rfc7517

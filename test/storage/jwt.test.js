@@ -34,16 +34,21 @@ if (FORMAT === 'jwt') {
     const params = { foo: 'bar' };
     const userCode = '1384-3217';
     const deviceInfo = { foo: 'bar' };
+    const inFlight = true;
     const s256 = '_gPMqAT8BELhXwBa2nIT0OvdWtQCiF_g09nAyHhgCe0';
     const resource = 'urn:foo:bar';
     const policies = ['foo'];
+    const sessionUid = 'foo';
+    const expiresWithSession = false;
+
+    // TODO: add Session and Interaction
 
     /* eslint-disable object-property-newline */
     const fullPayload = {
       accountId, claims, clientId, grantId, scope, sid, consumed, acr, amr, authTime, nonce,
       redirectUri, codeChallenge, codeChallengeMethod, aud, error, errorDescription, params,
-      userCode, deviceInfo, gty, resource, policies,
-      'x5t#S256': s256,
+      userCode, deviceInfo, gty, resource, policies, sessionUid, expiresWithSession,
+      'x5t#S256': s256, inFlight,
     };
     /* eslint-enable object-property-newline */
 
@@ -72,13 +77,14 @@ if (FORMAT === 'jwt') {
         grantId,
         gty,
         iat: number,
-        iss: this.provider.issuer,
         jti: upsert.getCall(0).args[0],
         jwt: string,
         kind,
         scope,
         sid,
         'x5t#S256': s256,
+        sessionUid,
+        expiresWithSession,
       });
 
       const { iat, jti, exp } = upsert.getCall(0).args[1];
@@ -117,7 +123,6 @@ if (FORMAT === 'jwt') {
         exp: number,
         grantId,
         iat: number,
-        iss: this.provider.issuer,
         jti: upsert.getCall(0).args[0],
         jwt: string,
         kind,
@@ -126,6 +131,8 @@ if (FORMAT === 'jwt') {
         resource,
         scope,
         sid,
+        sessionUid,
+        expiresWithSession,
       });
 
       const { iat, jti, exp } = upsert.getCall(0).args[1];
@@ -159,7 +166,6 @@ if (FORMAT === 'jwt') {
         grantId,
         gty,
         iat: number,
-        iss: this.provider.issuer,
         jti: upsert.getCall(0).args[0],
         jwt: string,
         kind,
@@ -167,6 +173,9 @@ if (FORMAT === 'jwt') {
         resource,
         scope,
         sid,
+        'x5t#S256': s256,
+        sessionUid,
+        expiresWithSession,
       });
 
       const { iat, jti, exp } = upsert.getCall(0).args[1];
@@ -179,6 +188,9 @@ if (FORMAT === 'jwt') {
         jti,
         scope,
         sub: accountId,
+        cnf: {
+          'x5t#S256': s256,
+        },
       });
     });
 
@@ -205,7 +217,6 @@ if (FORMAT === 'jwt') {
         grantId,
         gty,
         iat: number,
-        iss: this.provider.issuer,
         jti: upsert.getCall(0).args[0],
         jwt,
         kind,
@@ -215,6 +226,9 @@ if (FORMAT === 'jwt') {
         scope,
         sid,
         userCode,
+        sessionUid,
+        expiresWithSession,
+        inFlight,
       });
 
       const { iat, jti, exp } = upsert.getCall(0).args[1];
@@ -241,7 +255,6 @@ if (FORMAT === 'jwt') {
         clientId,
         exp: number,
         iat: number,
-        iss: this.provider.issuer,
         jti: upsert.getCall(0).args[0],
         jwt: string,
         kind,
@@ -277,7 +290,6 @@ if (FORMAT === 'jwt') {
       assert.calledWith(upsert, string, {
         exp: number,
         iat: number,
-        iss: this.provider.issuer,
         jti: upsert.getCall(0).args[0],
         jwt: string,
         kind,
@@ -308,7 +320,6 @@ if (FORMAT === 'jwt') {
         policies,
         exp: number,
         iat: number,
-        iss: this.provider.issuer,
         jti: upsert.getCall(0).args[0],
         jwt: string,
         kind,

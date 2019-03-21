@@ -57,7 +57,8 @@ describe('HYBRID code+token', () => {
 
       it('ignores the scope offline_access unless prompt consent is present', function () {
         const spy = sinon.spy();
-        this.provider.once('token.issued', spy);
+        this.provider.once('authorization_code.saved', spy);
+        this.provider.once('access_token.saved', spy);
 
         const auth = new this.AuthorizationRequest({
           response_type,
@@ -70,6 +71,7 @@ describe('HYBRID code+token', () => {
           .expect(auth.validateClientLocation)
           .expect(() => {
             expect(spy.firstCall.args[0]).to.have.property('scope').and.not.include('offline_access');
+            expect(spy.secondCall.args[0]).to.have.property('scope').and.not.include('offline_access');
           });
       });
     });

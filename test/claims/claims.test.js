@@ -217,13 +217,13 @@ expire.setDate(expire.getDate() + 1);
         function setup(grant, result) {
           const cookies = [];
 
-          const sess = new this.provider.Session('resume', {});
+          const sess = new this.provider.Interaction('resume', {});
           const keys = new KeyGrip(i(this.provider).configuration('cookies.keys'));
           if (grant) {
-            const cookie = `_grant=resume; path=/auth/resume; expires=${expire.toGMTString()}; httponly`;
+            const cookie = `_interaction_resume=resume; path=/auth/resume; expires=${expire.toGMTString()}; httponly`;
             cookies.push(cookie);
             const [pre, ...post] = cookie.split(';');
-            cookies.push([`_grant.sig=${keys.sign(pre)}`, ...post].join(';'));
+            cookies.push([`_interaction_resume.sig=${keys.sign(pre)}`, ...post].join(';'));
             Object.assign(sess, { params: grant });
           }
 
@@ -354,7 +354,7 @@ expire.setDate(expire.getDate() + 1);
       });
 
       context('are not met', () => {
-        it('session subject value differs from the one requested [1/2]', function () {
+        it('session subject value differs from the one requested [1/3]', function () {
           const auth = new this.AuthorizationRequest({
             client_id: 'client',
             response_type: 'id_token',
@@ -379,7 +379,7 @@ expire.setDate(expire.getDate() + 1);
             .expect(auth.validateErrorDescription('requested subject could not be obtained'));
         });
 
-        it('session subject value differs from the one requested [2/2]', function () {
+        it('session subject value differs from the one requested [2/3]', function () {
           const auth = new this.AuthorizationRequest({
             client_id: 'client-pairwise',
             response_type: 'id_token',
@@ -404,7 +404,28 @@ expire.setDate(expire.getDate() + 1);
             .expect(auth.validateErrorDescription('requested subject could not be obtained'));
         });
 
-        it('none of multiple authentication context class references requested are met', function () {
+        it('session subject value differs from the one requested [3/3]', function () {
+          this.logout();
+          const auth = new this.AuthorizationRequest({
+            client_id: 'client-pairwise',
+            response_type: 'id_token',
+            scope: 'openid',
+            claims: {
+              id_token: {
+                sub: {
+                  value: 'iexpectthisid-pairwise',
+                },
+              },
+            },
+          });
+
+          return this.wrap({ route, verb, auth })
+            .expect(302)
+            .expect(auth.validateInteractionRedirect)
+            .expect(auth.validateInteraction('login', 'claims_id_token_sub_value', 'no_session'));
+        });
+
+        it('none of multiple authentication context class references requested are met (1/2)', function () {
           const auth = new this.AuthorizationRequest({
             response_type: 'id_token',
             scope: 'openid',
@@ -427,6 +448,31 @@ expire.setDate(expire.getDate() + 1);
             .expect(auth.validateClientLocation)
             .expect(auth.validateError('login_required'))
             .expect(auth.validateErrorDescription('none of the requested ACRs could not be obtained'));
+        });
+
+        it('none of multiple authentication context class references requested are met (2/2)', function () {
+          const auth = new this.AuthorizationRequest({
+            response_type: 'id_token',
+            scope: 'openid',
+            prompt: 'none',
+            claims: {
+              id_token: {
+                acr: {
+                  essential: true,
+                  values: 'foo',
+                },
+              },
+            },
+          });
+
+          return this.wrap({ route, verb, auth })
+            .expect(302)
+            .expect(auth.validateFragment)
+            .expect(auth.validatePresence(['error', 'error_description', 'state']))
+            .expect(auth.validateState)
+            .expect(auth.validateClientLocation)
+            .expect(auth.validateError('invalid_request'))
+            .expect(auth.validateErrorDescription('invalid claims.id_token.acr.values type'));
         });
 
         it('single requested authentication context class reference is not met', function () {
@@ -474,12 +520,12 @@ expire.setDate(expire.getDate() + 1);
             .expect(auth.validateErrorDescription('requested claims not granted by End-User'));
         });
 
-        it('id_token_hint belongs to a user that is not currently logged in [1/2]', async function () {
+        it('id_token_hint belongs to a user that is not currently logged in [1/3]', async function () {
           const client = await this.provider.Client.find('client');
           const { IdToken } = this.provider;
           const idToken = new IdToken({
             sub: 'not-the-droid-you-are-looking-for',
-          }, client);
+          }, { client, ctx: undefined });
 
           idToken.scope = 'openid';
           const hint = await idToken.sign();
@@ -501,12 +547,12 @@ expire.setDate(expire.getDate() + 1);
             .expect(auth.validateErrorDescription('id_token_hint and authenticated subject do not match'));
         });
 
-        it('id_token_hint belongs to a user that is not currently logged in [2/2]', async function () {
+        it('id_token_hint belongs to a user that is not currently logged in [2/3]', async function () {
           const client = await this.provider.Client.find('client-pairwise');
           const { IdToken } = this.provider;
           const idToken = new IdToken({
             sub: 'not-the-droid-you-are-looking-for',
-          }, client);
+          }, { client, ctx: undefined });
 
           idToken.scope = 'openid';
           const hint = await idToken.sign();
@@ -529,13 +575,35 @@ expire.setDate(expire.getDate() + 1);
             .expect(auth.validateErrorDescription('id_token_hint and authenticated subject do not match'));
         });
 
+        it('id_token_hint belongs to a user that is not currently logged in [3/3]', async function () {
+          this.logout();
+          const client = await this.provider.Client.find('client-pairwise');
+          const { IdToken } = this.provider;
+          const idToken = new IdToken({
+            sub: 'not-the-droid-you-are-looking-for',
+          }, { client, ctx: undefined });
+
+          idToken.scope = 'openid';
+          const hint = await idToken.sign();
+
+          const auth = new this.AuthorizationRequest({
+            client_id: 'client-pairwise',
+            response_type: 'id_token',
+            scope: 'openid',
+            id_token_hint: hint,
+          });
+
+          return this.wrap({ route, verb, auth })
+            .expect(302)
+            .expect(auth.validateInteractionRedirect)
+            .expect(auth.validateInteraction('login', 'id_token_hint', 'no_session'));
+        });
+
         it('id_token_hint belongs to a user that is currently logged in [1/2]', async function () {
           const session = this.getSession();
           const client = await this.provider.Client.find('client');
           const { IdToken } = this.provider;
-          const idToken = new IdToken({
-            sub: session.account,
-          }, client);
+          const idToken = new IdToken({ sub: session.account }, { client, ctx: undefined });
 
           idToken.scope = 'openid';
           const hint = await idToken.sign();
@@ -559,9 +627,7 @@ expire.setDate(expire.getDate() + 1);
           const session = this.getSession();
           const client = await this.provider.Client.find('client-pairwise');
           const { IdToken } = this.provider;
-          const idToken = new IdToken({
-            sub: session.account,
-          }, client);
+          const idToken = new IdToken({ sub: session.account }, { client, ctx: undefined });
 
           idToken.scope = 'openid';
           const hint = await idToken.sign();

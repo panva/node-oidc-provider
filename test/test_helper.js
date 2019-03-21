@@ -6,14 +6,16 @@ const { parse } = require('url');
 const path = require('path');
 const querystring = require('querystring');
 
+const _ = require('lodash');
+const sinon = require('sinon');
 const { agent: supertest } = require('supertest');
-const uuid = require('uuid/v4');
 const { expect } = require('chai');
 const Koa = require('koa');
 const mount = require('koa-mount');
 const base64url = require('base64url');
 const KeyGrip = require('keygrip'); // eslint-disable-line import/no-extraneous-dependencies
 
+const nanoid = require('../lib/helpers/nanoid');
 const epochTime = require('../lib/helpers/epoch_time');
 const { formats: { default: FORMAT } } = require('../lib/helpers/defaults');
 const Provider = require('../lib');
@@ -21,6 +23,28 @@ const Provider = require('../lib');
 const { Account, TestAdapter } = require('./models');
 
 global.i = require('../lib/helpers/weak_cache');
+
+Object.defineProperties(Provider.prototype, {
+  enable: {
+    value(feature, options = {}) {
+      const config = i(this).configuration(`features.${feature}`);
+      if (!config) {
+        throw new Error(`invalid feature: ${feature}`);
+      }
+
+      Object.keys(options).forEach((key) => {
+        if (!(key in config)) {
+          throw new Error(`invalid option: ${key}`);
+        }
+      });
+
+      config.enabled = true;
+      Object.assign(config, options);
+
+      return this;
+    },
+  },
+});
 
 function readCookie(value) {
   expect(value).to.exist;
@@ -59,19 +83,17 @@ module.exports = function testHelper(dir, { config: base = path.basename(dir), m
   function login({
     scope = 'openid', claims, rejectedScopes = [], rejectedClaims = [],
   } = {}) {
-    const sessionId = uuid();
+    const sessionId = nanoid();
     const loginTs = epochTime();
     const expire = new Date();
     expire.setDate(expire.getDate() + 1);
-    const account = uuid();
+    const account = nanoid();
     this.loggedInAccountId = account;
 
     const keys = new KeyGrip(i(provider).configuration('cookies.keys'));
-    const session = new (provider.Session)(sessionId, { loginTs, account });
+    const session = new (provider.Session)({ jti: sessionId, loginTs, account });
     const sessionCookie = `_session=${sessionId}; path=/; expires=${expire.toGMTString()}; httponly`;
-    const cookies = [
-      sessionCookie,
-    ];
+    const cookies = [sessionCookie];
 
     let [pre, ...post] = sessionCookie.split(';');
     cookies.push([`_session.sig=${keys.sign(pre)}`, ...post].join(';'));
@@ -86,14 +108,15 @@ module.exports = function testHelper(dir, { config: base = path.basename(dir), m
       }
 
       session.authorizations[cl.client_id] = {
-        sid: uuid(),
+        sid: nanoid(),
+        grantId: nanoid(),
         promptedScopes: scope.split(' '),
-        promptedClaims: Array.from(ctx.requestParamClaims),
+        promptedClaims: [...ctx.requestParamClaims],
         rejectedScopes,
         rejectedClaims,
       };
 
-      if (i(provider).configuration('features.sessionManagement')) {
+      if (i(provider).configuration('features.sessionManagement.enabled')) {
         const cookie = `_state.${cl.client_id}=${session.stateFor(cl.client_id)}; path=/; expires=${expire.toGMTString()}`;
         cookies.push(cookie);
         [pre, ...post] = cookie.split(';');
@@ -111,7 +134,6 @@ module.exports = function testHelper(dir, { config: base = path.basename(dir), m
       this.client_id = parameters.client_id || clients[0].client_id;
       const c = clients.find(cl => cl.client_id === this.client_id);
       this.state = Math.random().toString();
-      this.nonce = Math.random().toString();
       this.redirect_uri = parameters.redirect_uri || (c && c.redirect_uris[0]);
       this.res = {};
 
@@ -120,6 +142,10 @@ module.exports = function testHelper(dir, { config: base = path.basename(dir), m
       }
 
       Object.assign(this, parameters);
+
+      if (this.response_type && this.response_type.includes('id_token')) {
+        this.nonce = Math.random().toString();
+      }
 
       Object.defineProperty(this, 'validateClientLocation', {
         value: (response) => {
@@ -149,23 +175,28 @@ module.exports = function testHelper(dir, { config: base = path.basename(dir), m
           const grantid = readCookie(response.headers['set-cookie'][0]);
           expect(readCookie(response.headers['set-cookie'][0])).to.equal(readCookie(response.headers['set-cookie'][2]));
 
-          const interaction = TestAdapter.for('Session').syncFind(grantid);
+          const interaction = TestAdapter.for('Interaction').syncFind(grantid);
 
           Object.entries(this).forEach(([key, value]) => {
             if (key === 'res') return;
-            expect(interaction.params).to.have.property(key, value);
+            if (key === 'max_age' && value === 0) {
+              expect(interaction.params).not.to.have.property('max_age');
+              expect(interaction.params).to.have.property('prompt').that.contains('login');
+            } else {
+              expect(interaction.params).to.have.property(key, value);
+            }
           });
         },
       });
     }
   }
 
-  AuthorizationRequest.prototype.validateInteractionError = (expectedError, expectedReason) => { // eslint-disable-line arrow-body-style, max-len
+  AuthorizationRequest.prototype.validateInteraction = (eName, ...eReasons) => { // eslint-disable-line arrow-body-style, max-len
     return (response) => {
       const grantid = readCookie(response.headers['set-cookie'][0]);
-      const { interaction: { error, reason } } = TestAdapter.for('Session').syncFind(grantid);
-      expect(error).to.equal(expectedError);
-      expect(reason).to.equal(expectedReason);
+      const { prompt: { name, reasons } } = TestAdapter.for('Interaction').syncFind(grantid);
+      expect(name).to.equal(eName);
+      expect(reasons).to.contain.members(eReasons);
     };
   };
 
@@ -182,6 +213,7 @@ module.exports = function testHelper(dir, { config: base = path.basename(dir), m
     } else {
       absolute = all;
     }
+
 
     return (response) => {
       const { query } = parse(response.headers.location, true);
@@ -207,6 +239,17 @@ module.exports = function testHelper(dir, { config: base = path.basename(dir), m
     };
   };
 
+  AuthorizationRequest.prototype.validateScope = function (expected) {
+    return (response) => {
+      const { query: { scope } } = parse(response.headers.location, true);
+      if (expected.exec) {
+        expect(scope).to.match(expected);
+      } else {
+        expect(scope).to.equal(expected);
+      }
+    };
+  };
+
   AuthorizationRequest.prototype.validateErrorDescription = function (expected) {
     return (response) => {
       const { query: { error_description } } = parse(response.headers.location, true);
@@ -220,11 +263,10 @@ module.exports = function testHelper(dir, { config: base = path.basename(dir), m
 
   function getSession({ instantiate } = { instantiate: false }) {
     const { value: sessionId } = agent.jar.getCookie('_session', { path: '/' });
-    const key = TestAdapter.for('Session').key(sessionId);
-    const raw = TestAdapter.for('Session').get(key);
+    const raw = TestAdapter.for('Session').syncFind(sessionId);
 
     if (instantiate) {
-      return raw ? new provider.Session(sessionId, raw) : raw;
+      return new provider.Session(raw);
     }
 
     return raw;
@@ -284,8 +326,6 @@ module.exports = function testHelper(dir, { config: base = path.basename(dir), m
     const jwt = () => JSON.parse(base64url.decode(token.split('.')[1])).jti;
     const opaque = () => token;
     switch (FORMAT) {
-      case 'legacy':
-        return token.substring(0, 48);
       case 'jwt':
         return jwt();
       case 'opaque':
@@ -324,17 +364,17 @@ module.exports = function testHelper(dir, { config: base = path.basename(dir), m
 
   return function () {
     Object.assign(this, {
-      login,
-      logout,
-      AuthorizationRequest,
-      provider,
       assertOnce,
-      getSessionId,
+      AuthorizationRequest,
       failWith,
       getSession,
-      wrap,
-      TestAdapter,
+      getSessionId,
       getTokenJti,
+      login,
+      logout,
+      provider,
+      TestAdapter,
+      wrap,
     });
 
     return new Promise((resolve, reject) => {
@@ -359,4 +399,47 @@ module.exports = function testHelper(dir, { config: base = path.basename(dir), m
       throw err;
     });
   };
+};
+
+module.exports.passInteractionChecks = (...reasons) => {
+  const cb = reasons.pop();
+
+  const stubs = [];
+
+  context('', () => {
+    before(function () {
+      const { interactions } = i(this.provider).configuration();
+
+      const iChecks = _.flattenDeep([interactions.map(i => i.checks)]);
+
+      iChecks
+        .filter(check => reasons.includes(check.reason))
+        .forEach((check) => {
+          stubs.push(sinon.stub(check, 'check').returns(false));
+        });
+    });
+
+    after(() => {
+      stubs.forEach(stub => stub.restore());
+    });
+
+    cb();
+  });
+};
+
+module.exports.skipConsent = () => {
+  const stubs = [];
+
+  before(function () {
+    stubs.push(sinon.stub(this.provider.OIDCContext.prototype, 'promptPending').returns(false));
+    stubs.push(sinon.stub(this.provider.OIDCContext.prototype, 'requestParamScopes').get(() => new Set()));
+    stubs.push(sinon.stub(this.provider.OIDCContext.prototype, 'requestParamClaims').get(() => new Set()));
+    stubs.push(sinon.stub(this.provider.OIDCContext.prototype, 'acceptedScope').callsFake(function () {
+      return this.params.scope;
+    }));
+  });
+
+  after(() => {
+    stubs.forEach(stub => stub.restore());
+  });
 };

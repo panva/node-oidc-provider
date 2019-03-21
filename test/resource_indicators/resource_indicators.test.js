@@ -33,7 +33,7 @@ describe('features.resourceIndicators', () => {
         const jti = this.getTokenJti(deviceCode);
 
         expect(
-          adapter.syncFind(jti, { payload: true }),
+          adapter.syncFind(jti),
         ).to.have.nested.property('params.resource', 'https://client.example.com/api');
 
         adapter.syncUpdate(jti, {
@@ -43,7 +43,7 @@ describe('features.resourceIndicators', () => {
         });
 
         const spy = sinon.spy();
-        this.provider.once('token.issued', spy);
+        this.provider.once('access_token.saved', spy);
 
         await this.agent.post('/token')
           .send({
@@ -75,7 +75,7 @@ describe('features.resourceIndicators', () => {
         const jti = this.getTokenJti(deviceCode);
 
         expect(
-          adapter.syncFind(jti, { payload: true }),
+          adapter.syncFind(jti),
         ).to.have.nested.property('params.resource', 'urn:foo:bar');
 
         adapter.syncUpdate(jti, {
@@ -85,7 +85,7 @@ describe('features.resourceIndicators', () => {
         });
 
         const spy = sinon.spy();
-        this.provider.once('token.issued', spy);
+        this.provider.once('access_token.saved', spy);
 
         await this.agent.post('/token')
           .send({
@@ -116,7 +116,7 @@ describe('features.resourceIndicators', () => {
         const jti = this.getTokenJti(deviceCode);
 
         expect(
-          adapter.syncFind(jti, { payload: true }),
+          adapter.syncFind(jti),
         ).to.have.deep.nested.property('params.resource', ['https://client.example.com/api', 'https://rs.example.com']);
 
         adapter.syncUpdate(jti, {
@@ -126,7 +126,7 @@ describe('features.resourceIndicators', () => {
         });
 
         const spy = sinon.spy();
-        this.provider.once('token.issued', spy);
+        this.provider.once('access_token.saved', spy);
 
         await this.agent.post('/token')
           .send({
@@ -159,7 +159,7 @@ describe('features.resourceIndicators', () => {
         const jti = this.getTokenJti(deviceCode);
 
         expect(
-          adapter.syncFind(jti, { payload: true }),
+          adapter.syncFind(jti),
         ).to.have.nested.property('params.resource', 'http://client.example.com/api');
 
         adapter.syncUpdate(jti, {
@@ -204,7 +204,7 @@ describe('features.resourceIndicators', () => {
 
       it('allows for single resource to be requested (1/2)', async function () {
         const spy = sinon.spy();
-        this.provider.once('token.issued', spy);
+        this.provider.once('access_token.saved', spy);
 
         await this.agent.post('/token')
           .send({
@@ -222,7 +222,7 @@ describe('features.resourceIndicators', () => {
 
       it('allows for single resource to be requested (2/2)', async function () {
         const spy = sinon.spy();
-        this.provider.once('token.issued', spy);
+        this.provider.once('access_token.saved', spy);
 
         await this.agent.post('/token')
           .send({
@@ -240,7 +240,7 @@ describe('features.resourceIndicators', () => {
 
       it('allows for multiple resources to be requested', async function () {
         const spy = sinon.spy();
-        this.provider.once('token.issued', spy);
+        this.provider.once('access_token.saved', spy);
 
         await this.agent.post('/token')
           .send(`${stringify({
@@ -277,7 +277,7 @@ describe('features.resourceIndicators', () => {
   describe('client_credentials', () => {
     it('allows for single resource to be requested (1/2)', async function () {
       const spy = sinon.spy();
-      this.provider.once('token.issued', spy);
+      this.provider.once('client_credentials.saved', spy);
 
       await this.agent.post('/token')
         .send({
@@ -294,7 +294,7 @@ describe('features.resourceIndicators', () => {
 
     it('allows for single resource to be requested (2/2)', async function () {
       const spy = sinon.spy();
-      this.provider.once('token.issued', spy);
+      this.provider.once('client_credentials.saved', spy);
 
       await this.agent.post('/token')
         .send({
@@ -311,7 +311,7 @@ describe('features.resourceIndicators', () => {
 
     it('allows for multiple resources to be requested', async function () {
       const spy = sinon.spy();
-      this.provider.once('token.issued', spy);
+      this.provider.once('client_credentials.saved', spy);
 
       await this.agent.post('/token')
         .send(`${stringify({
@@ -432,13 +432,16 @@ describe('features.resourceIndicators', () => {
     });
 
     describe('token endpoint', () => {
+      bootstrap.skipConsent();
+
       it('allows for single resource to be requested (1/2)', async function () {
         let spy = sinon.spy();
         this.provider.once('grant.success', spy);
 
         const auth = new this.AuthorizationRequest({
           response_type: 'code',
-          scope: 'openid',
+          scope: 'openid offline_access',
+          prompt: 'consent',
           resource: 'https://client.example.com/api',
         });
 
@@ -495,7 +498,8 @@ describe('features.resourceIndicators', () => {
 
         const auth = new this.AuthorizationRequest({
           response_type: 'code',
-          scope: 'openid',
+          scope: 'openid offline_access',
+          prompt: 'consent',
           resource: 'urn:foo:bar',
         });
 
@@ -552,7 +556,8 @@ describe('features.resourceIndicators', () => {
 
         const auth = new this.AuthorizationRequest({
           response_type: 'code',
-          scope: 'openid',
+          scope: 'openid offline_access',
+          prompt: 'consent',
           resource: ['https://client.example.com/api', 'https://rs.example.com'],
         });
 

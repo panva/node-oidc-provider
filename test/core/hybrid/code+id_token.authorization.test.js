@@ -55,22 +55,45 @@ describe('HYBRID code+id_token', () => {
         this.wrap({ route, verb, auth }).end(() => {});
       });
 
-      it('ignores the scope offline_access unless prompt consent is present', function () {
-        const spy = sinon.spy();
-        this.provider.once('token.issued', spy);
+      describe('ignoring the offline_access scope', () => {
+        bootstrap.skipConsent();
 
-        const auth = new this.AuthorizationRequest({
-          response_type,
-          scope: 'openid offline_access',
+        it('ignores the scope offline_access unless prompt consent is present', function () {
+          const spy = sinon.spy();
+          this.provider.once('authorization_code.saved', spy);
+
+          const auth = new this.AuthorizationRequest({
+            response_type,
+            scope: 'openid offline_access',
+          });
+
+          return this.wrap({ route, verb, auth })
+            .expect(302)
+            .expect(auth.validateFragment)
+            .expect(auth.validateClientLocation)
+            .expect(() => {
+              expect(spy.firstCall.args[0]).to.have.property('scope').and.not.include('offline_access');
+            });
         });
 
-        return this.wrap({ route, verb, auth })
-          .expect(302)
-          .expect(auth.validateFragment)
-          .expect(auth.validateClientLocation)
-          .expect(() => {
-            expect(spy.firstCall.args[0]).to.have.property('scope').and.not.include('offline_access');
+        it('ignores the scope offline_access unless the client can do refresh_token exchange', function () {
+          const spy = sinon.spy();
+          this.provider.once('authorization_code.saved', spy);
+
+          const auth = new this.AuthorizationRequest({
+            client_id: 'client-no-refresh',
+            response_type,
+            scope: 'openid offline_access',
           });
+
+          return this.wrap({ route, verb, auth })
+            .expect(302)
+            .expect(auth.validateFragment)
+            .expect(auth.validateClientLocation)
+            .expect(() => {
+              expect(spy.firstCall.args[0]).to.have.property('scope').and.not.include('offline_access');
+            });
+        });
       });
     });
 

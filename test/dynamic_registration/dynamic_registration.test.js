@@ -106,8 +106,8 @@ describe('registration features', () => {
         .expect(() => {
           expect(upsert.calledOnce).to.be.true;
           expect(spy.calledOnce).to.be.true;
-          expect(spy.firstCall.args[0].constructor.name).to.equal('Client');
-          expect(spy.firstCall.args[1]).to.have.property('oidc');
+          expect(spy.firstCall.args[0]).to.have.property('oidc');
+          expect(spy.firstCall.args[1].constructor.name).to.equal('Client');
         });
     });
 
@@ -158,12 +158,11 @@ describe('registration features', () => {
     describe('initial access tokens', () => {
       describe('fix string one', () => {
         before(function () {
-          const conf = i(this.provider).configuration();
-          conf.features.registration = { initialAccessToken: 'foobar' };
+          this.provider.enable('registration', { initialAccessToken: 'foobar' });
         });
+
         after(function () {
-          const conf = i(this.provider).configuration();
-          conf.features.registration = true;
+          this.provider.enable('registration', { initialAccessToken: undefined });
         });
 
         it('allows reg calls with the access tokens as a Bearer token [query]', function () {
@@ -207,23 +206,22 @@ describe('registration features', () => {
 
       describe('using a model', () => {
         before(function () {
-          const conf = i(this.provider).configuration();
-          conf.features.registration = { initialAccessToken: true };
+          this.provider.enable('registration', { initialAccessToken: true });
 
           const iat = new (this.provider.InitialAccessToken)({});
           return iat.save().then((value) => {
             this.token = value;
           });
         });
+
         after(function () {
-          const conf = i(this.provider).configuration();
-          conf.features.registration = true;
+          this.provider.enable('registration', { initialAccessToken: undefined });
         });
 
         it('allows the developers to insert new tokens with no expiration', function () {
           return new this.provider.InitialAccessToken().save().then((v) => {
             const jti = this.getTokenJti(v);
-            const token = this.TestAdapter.for('InitialAccessToken').syncFind(jti, { payload: true });
+            const token = this.TestAdapter.for('InitialAccessToken').syncFind(jti);
             expect(token).not.to.have.property('exp');
           });
         });
@@ -233,7 +231,7 @@ describe('registration features', () => {
             expiresIn: 24 * 60 * 60,
           }).save().then((v) => {
             const jti = this.getTokenJti(v);
-            const token = this.TestAdapter.for('InitialAccessToken').syncFind(jti, { payload: true });
+            const token = this.TestAdapter.for('InitialAccessToken').syncFind(jti);
             expect(token).to.have.property('exp');
           });
         });
@@ -395,7 +393,7 @@ describe('registration features', () => {
 
     it('invalidates registration_access_token if used on the wrong client', function () {
       const spy = sinon.spy();
-      this.provider.once('token.revoked', spy);
+      this.provider.once('registration_access_token.destroyed', spy);
 
       return this.agent.get('/reg/foobar')
         .auth(this.token, { type: 'bearer' })

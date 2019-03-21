@@ -81,7 +81,7 @@ describe('BASIC code', () => {
 
       it('ignores unsupported scopes', function () {
         const spy = sinon.spy();
-        this.provider.once('token.issued', spy);
+        this.provider.once('authorization_code.saved', spy);
         const auth = new this.AuthorizationRequest({
           response_type,
           scope: 'openid and unsupported',
@@ -95,20 +95,42 @@ describe('BASIC code', () => {
           });
       });
 
-      it('ignores the scope offline_access unless prompt consent is present', function () {
-        const spy = sinon.spy();
-        this.provider.once('token.issued', spy);
-        const auth = new this.AuthorizationRequest({
-          response_type,
-          scope: 'openid offline_access',
+      describe('ignoring the offline_access scope', () => {
+        bootstrap.skipConsent();
+
+        it('ignores the scope offline_access unless prompt consent is present', function () {
+          const spy = sinon.spy();
+          this.provider.once('authorization_code.saved', spy);
+          const auth = new this.AuthorizationRequest({
+            response_type,
+            scope: 'openid offline_access',
+          });
+
+          return this.wrap({ route, verb, auth })
+            .expect(302)
+            .expect(auth.validateClientLocation)
+            .expect(() => {
+              expect(spy.firstCall.args[0]).to.have.property('scope').and.not.include('offline_access');
+            });
         });
 
-        return this.wrap({ route, verb, auth })
-          .expect(302)
-          .expect(auth.validateClientLocation)
-          .expect(() => {
-            expect(spy.firstCall.args[0]).to.have.property('scope').and.not.include('offline_access');
+        it('ignores the scope offline_access unless the client can do refresh_token exchange', function () {
+          const spy = sinon.spy();
+          this.provider.once('authorization_code.saved', spy);
+          const auth = new this.AuthorizationRequest({
+            client_id: 'client-no-refresh',
+            response_type,
+            prompt: 'consent',
+            scope: 'openid offline_access',
           });
+
+          return this.wrap({ route, verb, auth })
+            .expect(302)
+            .expect(auth.validateClientLocation)
+            .expect(() => {
+              expect(spy.firstCall.args[0]).to.have.property('scope').and.not.include('offline_access');
+            });
+        });
       });
     });
 
@@ -129,7 +151,7 @@ describe('BASIC code', () => {
         return this.wrap({ route, verb, auth })
           .expect(302)
           .expect(auth.validateInteractionRedirect)
-          .expect(auth.validateInteractionError('login_required', 'no_session'));
+          .expect(auth.validateInteraction('login', 'no_session'));
       });
 
       it('client not authorized in session yet', function () {
@@ -144,7 +166,7 @@ describe('BASIC code', () => {
         return this.wrap({ route, verb, auth })
           .expect(302)
           .expect(auth.validateInteractionRedirect)
-          .expect(auth.validateInteractionError('consent_required', 'client_not_authorized'));
+          .expect(auth.validateInteraction('consent', 'client_not_authorized'));
       });
 
       it('additional scopes are requested', function () {
@@ -156,7 +178,7 @@ describe('BASIC code', () => {
         return this.wrap({ route, verb, auth })
           .expect(302)
           .expect(auth.validateInteractionRedirect)
-          .expect(auth.validateInteractionError('consent_required', 'scopes_missing'));
+          .expect(auth.validateInteraction('consent', 'scopes_missing'));
       });
 
       it('are required for native clients by default', function () {
@@ -172,7 +194,7 @@ describe('BASIC code', () => {
         return this.wrap({ route, verb, auth })
           .expect(302)
           .expect(auth.validateInteractionRedirect)
-          .expect(auth.validateInteractionError('interaction_required', 'native_client_prompt'));
+          .expect(auth.validateInteraction('consent', 'native_client_prompt'));
       });
 
       it('login was requested by the client by prompt parameter', function () {
@@ -185,10 +207,38 @@ describe('BASIC code', () => {
         return this.wrap({ route, verb, auth })
           .expect(302)
           .expect(auth.validateInteractionRedirect)
-          .expect(auth.validateInteractionError('login_required', 'login_prompt'));
+          .expect(auth.validateInteraction('login', 'login_prompt'));
       });
 
-      it('session is too old for this authorization request', function () {
+      it('login was requested by the client by max_age=0', function () {
+        const auth = new this.AuthorizationRequest({
+          response_type,
+          max_age: 0,
+          scope,
+        });
+
+        return this.wrap({ route, verb, auth })
+          .expect(302)
+          .expect(auth.validateInteractionRedirect)
+          .expect(auth.validateInteraction('login', 'login_prompt'));
+      });
+
+      it('interaction check no session & max_age combo', function () {
+        this.logout();
+
+        const auth = new this.AuthorizationRequest({
+          response_type,
+          max_age: '1800', // 30 minutes old session max
+          scope,
+        });
+
+        return this.wrap({ route, verb, auth })
+          .expect(302)
+          .expect(auth.validateInteractionRedirect)
+          .expect(auth.validateInteraction('login', 'max_age', 'no_session'));
+      });
+
+      it('session is too old for this authorization request (1/2)', function () {
         const session = this.getSession();
         session.loginTs = epochTime() - 3600; // an hour ago
 
@@ -201,20 +251,36 @@ describe('BASIC code', () => {
         return this.wrap({ route, verb, auth })
           .expect(302)
           .expect(auth.validateInteractionRedirect)
-          .expect(auth.validateInteractionError('login_required', 'max_age'));
+          .expect(auth.validateInteraction('login', 'max_age'));
+      });
+
+      it('session is too old for this authorization request (2/2)', function () {
+        const session = this.getSession();
+        delete session.loginTs;
+
+        const auth = new this.AuthorizationRequest({
+          response_type,
+          max_age: '1800', // 30 minutes old session max
+          scope,
+        });
+
+        return this.wrap({ route, verb, auth })
+          .expect(302)
+          .expect(auth.validateInteractionRedirect)
+          .expect(auth.validateInteraction('login', 'max_age'));
       });
 
       it('custom interactions can be requested', function () {
         const auth = new this.AuthorizationRequest({
           response_type,
           scope,
-          custom: 'foo',
+          triggerCustomFail: 'foo',
         });
 
         return this.wrap({ route, verb, auth })
           .expect(302)
           .expect(auth.validateInteractionRedirect)
-          .expect(auth.validateInteractionError('error_foo', 'reason_foo'));
+          .expect(auth.validateInteraction('login', 'reason_foo'));
       });
 
       it('session is too old for this client', async function () {
@@ -235,7 +301,7 @@ describe('BASIC code', () => {
           })
           .expect(302)
           .expect(auth.validateInteractionRedirect)
-          .expect(auth.validateInteractionError('login_required', 'max_age'));
+          .expect(auth.validateInteraction('login', 'max_age'));
       });
     });
 
@@ -348,6 +414,28 @@ describe('BASIC code', () => {
           .expect(auth.validateErrorDescription('parameters must not be provided twice. (response_mode)'));
       });
 
+      it('unregistered scope requested', function () {
+        const spy = sinon.spy();
+        this.provider.once('authorization.error', spy);
+        const auth = new this.AuthorizationRequest({
+          client_id: 'client-limited-scope',
+          response_type: 'code',
+          scope: 'openid foobar offline_access', // foobar is ignored, offline_access is not whitelisted
+        });
+
+        return this.wrap({ route, verb, auth })
+          .expect(302)
+          .expect(() => {
+            expect(spy.calledOnce).to.be.true;
+          })
+          .expect(auth.validatePresence(['error', 'error_description', 'state', 'scope']))
+          .expect(auth.validateState)
+          .expect(auth.validateClientLocation)
+          .expect(auth.validateError('invalid_scope'))
+          .expect(auth.validateScope('offline_access'))
+          .expect(auth.validateErrorDescription('requested scope is not whitelisted'));
+      });
+
       it('disallowed response mode', function () {
         const spy = sinon.spy();
         this.provider.once('authorization.error', spy);
@@ -430,28 +518,25 @@ describe('BASIC code', () => {
         });
       });
 
-      ['response_type', 'scope'].forEach((param) => {
-        it(`missing mandatory parameter ${param}`, function () {
-          const spy = sinon.spy();
-          this.provider.once('authorization.error', spy);
-          const auth = new this.AuthorizationRequest({
-            response_type,
-            scope,
-          });
-          delete auth[param];
-
-          return this.agent.get(route)
-            .query(auth)
-            .expect(302)
-            .expect(() => {
-              expect(spy.calledOnce).to.be.true;
-            })
-            .expect(auth.validatePresence(['error', 'error_description', 'state']))
-            .expect(auth.validateState)
-            .expect(auth.validateClientLocation)
-            .expect(auth.validateError('invalid_request'))
-            .expect(auth.validateErrorDescription(`missing required parameter(s) (${param})`));
+      it('missing mandatory parameter response_type', function () {
+        const spy = sinon.spy();
+        this.provider.once('authorization.error', spy);
+        const auth = new this.AuthorizationRequest({
+          scope,
         });
+        delete auth.response_type;
+
+        return this.agent.get(route)
+          .query(auth)
+          .expect(302)
+          .expect(() => {
+            expect(spy.calledOnce).to.be.true;
+          })
+          .expect(auth.validatePresence(['error', 'error_description', 'state']))
+          .expect(auth.validateState)
+          .expect(auth.validateClientLocation)
+          .expect(auth.validateError('invalid_request'))
+          .expect(auth.validateErrorDescription('missing required parameter(s) (response_type)'));
       });
 
       it('unsupported prompt', function () {
@@ -461,6 +546,27 @@ describe('BASIC code', () => {
           response_type,
           scope,
           prompt: 'unsupported',
+        });
+
+        return this.wrap({ route, verb, auth })
+          .expect(302)
+          .expect(() => {
+            expect(spy.calledOnce).to.be.true;
+          })
+          .expect(auth.validatePresence(['error', 'error_description', 'state']))
+          .expect(auth.validateState)
+          .expect(auth.validateClientLocation)
+          .expect(auth.validateError('invalid_request'))
+          .expect(auth.validateErrorDescription('invalid prompt value provided'));
+      });
+
+      it('supported but not requestable prompt', function () {
+        const spy = sinon.spy();
+        this.provider.once('authorization.error', spy);
+        const auth = new this.AuthorizationRequest({
+          response_type,
+          scope,
+          prompt: 'unrequestable',
         });
 
         return this.wrap({ route, verb, auth })
@@ -494,26 +600,6 @@ describe('BASIC code', () => {
           .expect(auth.validateClientLocation)
           .expect(auth.validateError('invalid_request'))
           .expect(auth.validateErrorDescription('prompt none must only be used alone'));
-      });
-
-      it('missing openid scope', function () {
-        const spy = sinon.spy();
-        this.provider.once('authorization.error', spy);
-        const auth = new this.AuthorizationRequest({
-          response_type,
-          scope: 'profile',
-        });
-
-        return this.wrap({ route, verb, auth })
-          .expect(302)
-          .expect(() => {
-            expect(spy.calledOnce).to.be.true;
-          })
-          .expect(auth.validatePresence(['error', 'error_description', 'state']))
-          .expect(auth.validateState)
-          .expect(auth.validateClientLocation)
-          .expect(auth.validateError('invalid_request'))
-          .expect(auth.validateErrorDescription('openid is required scope'));
       });
 
       // section-4.1.2.1 RFC6749
@@ -570,7 +656,8 @@ describe('BASIC code', () => {
           this.provider.on('authorization.error', spy);
           const auth = new this.AuthorizationRequest({
             response_type,
-            // scope,
+            // scope, => 'openid' required when id_token_hint is provided
+            id_token_hint: 'foo',
             redirect_uri: 'https://attacker.example.com/foobar',
           });
 
@@ -584,8 +671,8 @@ describe('BASIC code', () => {
               expect(spy.calledTwice).to.be.true;
             })
             .expect(() => {
-              expect(spy.firstCall.calledWithMatch({ message: 'invalid_request' })).to.be.true;
-              expect(spy.secondCall.calledWithMatch({ message: 'redirect_uri_mismatch' })).to.be.true;
+              expect(spy.firstCall.calledWithMatch({}, { message: 'invalid_request' })).to.be.true;
+              expect(spy.secondCall.calledWithMatch({}, { message: 'redirect_uri_mismatch' })).to.be.true;
             })
             .expect(() => {
               expect(renderSpy.calledOnce).to.be.true;
@@ -622,8 +709,8 @@ describe('BASIC code', () => {
               expect(authErrorSpy.calledOnce).to.be.true;
             })
             .expect(() => {
-              expect(serverErrorSpy.calledWithMatch({ message: 'foobar' })).to.be.true;
-              expect(authErrorSpy.calledWithMatch({ message: 'redirect_uri_mismatch' })).to.be.true;
+              expect(serverErrorSpy.calledWithMatch({}, { message: 'foobar' })).to.be.true;
+              expect(authErrorSpy.calledWithMatch({}, { message: 'redirect_uri_mismatch' })).to.be.true;
             })
             .expect(() => {
               expect(renderSpy.calledOnce).to.be.true;
@@ -652,6 +739,48 @@ describe('BASIC code', () => {
           .expect(auth.validateClientLocation)
           .expect(auth.validateError('unsupported_response_type'))
           .expect(auth.validateErrorDescription('unsupported response_type requested'));
+      });
+
+      it('invalid max_age (negative)', function () {
+        const spy = sinon.spy();
+        this.provider.once('authorization.error', spy);
+        const auth = new this.AuthorizationRequest({
+          response_type,
+          scope: 'openid',
+          max_age: -1,
+        });
+
+        return this.wrap({ route, verb, auth })
+          .expect(302)
+          .expect(() => {
+            expect(spy.calledOnce).to.be.true;
+          })
+          .expect(auth.validatePresence(['error', 'error_description', 'state']))
+          .expect(auth.validateState)
+          .expect(auth.validateClientLocation)
+          .expect(auth.validateError('invalid_request'))
+          .expect(auth.validateErrorDescription('invalid max_age parameter value'));
+      });
+
+      it('invalid max_age (MAX_SAFE_INTEGER)', function () {
+        const spy = sinon.spy();
+        this.provider.once('authorization.error', spy);
+        const auth = new this.AuthorizationRequest({
+          response_type,
+          scope: 'openid',
+          max_age: Number.MAX_SAFE_INTEGER + 1,
+        });
+
+        return this.wrap({ route, verb, auth })
+          .expect(302)
+          .expect(() => {
+            expect(spy.calledOnce).to.be.true;
+          })
+          .expect(auth.validatePresence(['error', 'error_description', 'state']))
+          .expect(auth.validateState)
+          .expect(auth.validateClientLocation)
+          .expect(auth.validateError('invalid_request'))
+          .expect(auth.validateErrorDescription('invalid max_age parameter value'));
       });
 
       if (verb === 'post') {

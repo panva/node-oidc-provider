@@ -1,0 +1,286 @@
+[
+  Prompt {
+    name: 'login',
+    requestable: true,
+    details: (ctx) => {
+      const { oidc } = ctx;
+
+      return {
+        ...(oidc.params.max_age === undefined ? { max_age: oidc.params.max_age } : undefined),
+        ...(oidc.params.login_hint === undefined ? { login_hint: oidc.params.login_hint } : undefined),
+        ...(oidc.params.id_token_hint === undefined ? { id_token_hint: oidc.params.id_token_hint } : undefined),
+      };
+    },
+    checks: [
+      Check {
+        reason: 'login_prompt',
+        description: 'login prompt was not resolved',
+        error: 'login_required',
+        details: () => {},
+        check: (ctx) => {
+          const { oidc } = ctx;
+          if (oidc.prompts.has(name) && oidc.promptPending(name)) {
+            return true;
+          }
+
+          return false;
+        }
+      },
+      Check {
+        reason: 'no_session',
+        description: 'End-User authentication is required',
+        error: 'login_required',
+        details: () => {},
+        check: (ctx) => {
+          const { oidc } = ctx;
+          if (oidc.session.accountId()) {
+            return false;
+          }
+
+          return true;
+        }
+      },
+      Check {
+        reason: 'max_age',
+        description: 'End-User authentication could not be obtained',
+        error: 'login_required',
+        details: () => {},
+        check: (ctx) => {
+          const { oidc } = ctx;
+          if (oidc.params.max_age === undefined) {
+            return false;
+          }
+
+          if (!oidc.session.accountId()) {
+            return true;
+          }
+
+          if (oidc.session.past(oidc.params.max_age)) {
+            return true;
+          }
+
+          return false;
+        }
+      },
+      Check {
+        reason: 'id_token_hint',
+        description: 'id_token_hint and authenticated subject do not match',
+        error: 'login_required',
+        details: () => {},
+        check: async (ctx) => {
+          const { oidc } = ctx;
+          const hint = oidc.params.id_token_hint;
+          if (hint === undefined) {
+            return false;
+          }
+
+          let payload;
+          try {
+            ({ payload } = await oidc.provider.IdToken.validate(hint, oidc.client));
+          } catch (err) {
+            throw new errors.InvalidRequest(`could not validate id_token_hint (${err.message})`);
+          }
+
+          let sub = oidc.session.accountId();
+          if (sub === undefined) {
+            return true;
+          }
+
+          if (oidc.client.sectorIdentifier) {
+            sub = await instance(oidc.provider).configuration('pairwiseIdentifier')(ctx, sub, oidc.client);
+          }
+
+          if (payload.sub !== sub) {
+            return true;
+          }
+
+          return false;
+        }
+      },
+      Check {
+        reason: 'claims_id_token_sub_value',
+        description: 'requested subject could not be obtained',
+        error: 'login_required',
+        details: ({ oidc }) => ({ sub: oidc.claims.id_token.sub }),
+        check: async (ctx) => {
+          const { oidc } = ctx;
+          if (!has(oidc.claims, 'id_token.sub.value')) {
+            return false;
+          }
+
+          let sub = oidc.session.accountId();
+          if (sub === undefined) {
+            return true;
+          }
+
+          if (oidc.client.sectorIdentifier) {
+            sub = await instance(oidc.provider).configuration('pairwiseIdentifier')(ctx, sub, oidc.client);
+          }
+
+          if (oidc.claims.id_token.sub.value !== sub) {
+            return true;
+          }
+
+          return false;
+        }
+      },
+      Check {
+        reason: 'essential_acrs',
+        description: 'none of the requested ACRs could not be obtained',
+        error: 'login_required',
+        details: ({ oidc }) => ({ acr: oidc.claims.id_token.acr }),
+        check: (ctx) => {
+          const { oidc } = ctx;
+          const request = get(oidc.claims, 'id_token.acr', {});
+
+          if (!request || !request.essential || !request.values) {
+            return false;
+          }
+
+          if (!Array.isArray(oidc.claims.id_token.acr.values)) {
+            throw new errors.InvalidRequest('invalid claims.id_token.acr.values type');
+          }
+
+          if (request.values.includes(oidc.acr)) {
+            return false;
+          }
+
+          return true;
+        }
+      },
+      Check {
+        reason: 'essential_acr',
+        description: 'requested ACR could not be obtained',
+        error: 'login_required',
+        details: ({ oidc }) => ({ acr: oidc.claims.id_token.acr }),
+        check: (ctx) => {
+          const { oidc } = ctx;
+          const request = get(oidc.claims, 'id_token.acr', {});
+
+          if (!request || !request.essential || !request.value) {
+            return false;
+          }
+
+          if (request.value === oidc.acr) {
+            return false;
+          }
+
+          return true;
+        }
+      }
+    ]
+  },
+  Prompt {
+    name: 'consent',
+    requestable: true,
+    details: (ctx) => {
+      const { oidc } = ctx;
+
+      const acceptedScopes = oidc.session.acceptedScopesFor(oidc.params.client_id);
+      const rejectedScopes = oidc.session.rejectedScopesFor(oidc.params.client_id);
+      const acceptedClaims = oidc.session.acceptedClaimsFor(oidc.params.client_id);
+      const rejectedClaims = oidc.session.rejectedClaimsFor(oidc.params.client_id);
+
+      const details = {
+        scopes: {
+          new: [...oidc.requestParamScopes]
+            .filter(x => !acceptedScopes.has(x) && !rejectedScopes.has(x)),
+          accepted: [...acceptedScopes],
+          rejected: [...rejectedScopes],
+        },
+        claims: {
+          new: [...oidc.requestParamClaims]
+            .filter(x => !acceptedClaims.has(x) && !rejectedClaims.has(x)),
+          accepted: [...acceptedClaims],
+          rejected: [...rejectedClaims],
+        },
+      };
+
+      return omitBy(details, val => val === undefined);
+    },
+    checks: [
+      Check {
+        reason: 'consent_prompt',
+        description: 'consent prompt was not resolved',
+        error: 'consent_required',
+        details: () => {},
+        check: (ctx) => {
+          const { oidc } = ctx;
+          if (oidc.prompts.has(name) && oidc.promptPending(name)) {
+            return true;
+          }
+
+          return false;
+        }
+      },
+      Check {
+        reason: 'client_not_authorized',
+        description: 'client not authorized for End-User session yet',
+        error: 'interaction_required',
+        details: () => {},
+        check: (ctx) => {
+          const { oidc } = ctx;
+          if (oidc.session.sidFor(oidc.client.clientId)) {
+            return false;
+          }
+
+          return true;
+        }
+      },
+      Check {
+        reason: 'native_client_prompt',
+        description: 'native clients require End-User interaction',
+        error: 'interaction_required',
+        details: () => {},
+        check: (ctx) => {
+          const { oidc } = ctx;
+          if (
+            oidc.client.applicationType === 'native'
+            && oidc.params.response_type !== 'none'
+            && (!oidc.result || !('consent' in oidc.result))
+          ) {
+            return true;
+          }
+
+          return false;
+        }
+      },
+      Check {
+        reason: 'scopes_missing',
+        description: 'requested scopes not granted by End-User',
+        error: 'consent_required',
+        details: () => {},
+        check: (ctx) => {
+          const { oidc } = ctx;
+          const promptedScopes = oidc.session.promptedScopesFor(oidc.client.clientId);
+
+          for (const scope of oidc.requestParamScopes) { // eslint-disable-line no-restricted-syntax
+            if (!promptedScopes.has(scope)) {
+              return true;
+            }
+          }
+
+          return false;
+        }
+      },
+      Check {
+        reason: 'claims_missing',
+        description: 'requested claims not granted by End-User',
+        error: 'consent_required',
+        details: () => {},
+        check: (ctx) => {
+          const { oidc } = ctx;
+          const promptedClaims = oidc.session.promptedClaimsFor(oidc.client.clientId);
+
+          for (const claim of oidc.requestParamClaims) { // eslint-disable-line no-restricted-syntax
+            if (!promptedClaims.has(claim) && !['sub', 'sid', 'auth_time', 'acr', 'amr', 'iss'].includes(claim)) {
+              return true;
+            }
+          }
+
+          return false;
+        }
+      }
+    ]
+  }
+]

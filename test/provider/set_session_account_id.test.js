@@ -31,7 +31,7 @@ describe('provider.setProviderSession', () => {
     return this.wrap({ route: '/auth', verb: 'get', auth })
       .expect(302)
       .expect(auth.validateInteractionRedirect)
-      .expect(auth.validateInteractionError('consent_required', 'client_not_authorized'))
+      .expect(auth.validateInteraction('consent', 'client_not_authorized'))
       .expect(() => {
         const session = this.getSession();
         expect(session).to.have.property('account', 'foo');
@@ -50,9 +50,15 @@ describe('provider.setProviderSession', () => {
 
     await this.agent.post('/login');
 
-    const session = this.getSession();
+    const session = this.getSession({ instantiate: true });
     expect(session).to.have.nested.property('authorizations.foo').that.is.an('object');
     expect(session).to.have.nested.property('authorizations.bar').that.is.an('object');
+    expect(session.sidFor('foo')).to.be.ok;
+    expect(session.sidFor('bar')).to.be.ok;
+    expect(session.acceptedScopesFor('foo')).to.be.empty;
+    expect(session.acceptedScopesFor('bar')).to.be.empty;
+    expect(session.acceptedClaimsFor('foo')).to.be.empty;
+    expect(session.acceptedClaimsFor('bar')).to.be.empty;
   });
 
   it('sets the session as persistent by default', async function () {

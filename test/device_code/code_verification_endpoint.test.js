@@ -16,7 +16,7 @@ describe('GET code_verification endpoint', () => {
         .expect(200)
         .expect('content-type', 'text/html; charset=utf-8')
         .expect(() => {
-          const { device: { secret } } = this.getSession();
+          const { state: { secret } } = this.getSession();
           expect(secret).to.be.a('string');
         })
         .expect(/<form id="op\.deviceInputForm" novalidate method="post" action="\/device">/);
@@ -33,7 +33,7 @@ describe('GET code_verification endpoint', () => {
         .expect('content-type', 'text/html; charset=utf-8')
         .expect(/<body onload="javascript:document\.forms\[0]\.submit\(\)"/)
         .expect(({ text }) => {
-          ({ device: { secret } } = this.getSession());
+          ({ state: { secret } } = this.getSession());
           expect(text).to.match(new RegExp(`input type="hidden" name="xsrf" value="${secret}"`));
         })
         .expect(/<form method="post" action="\/device">/)
@@ -58,15 +58,15 @@ describe('POST code_verification endpoint w/o verification', () => {
   const xsrf = 'foo';
 
   beforeEach(function () {
-    this.getSession().device = { secret: xsrf };
+    this.getSession().state = { secret: xsrf };
   });
   afterEach(function () {
     this.provider.removeAllListeners('code_verification.error');
     try {
-      i(this.provider).configuration().userCodeInputSource.restore();
+      i(this.provider).configuration('features.deviceFlow').userCodeInputSource.restore();
     } catch (err) {}
     try {
-      i(this.provider).configuration().userCodeConfirmSource.restore();
+      i(this.provider).configuration('features.deviceFlow').userCodeConfirmSource.restore();
     } catch (err) {}
     try {
       this.provider.Client.find.restore();
@@ -74,10 +74,10 @@ describe('POST code_verification endpoint w/o verification', () => {
   });
 
   it('renders a confirmation page', async function () {
-    const spy = sinon.spy(i(this.provider).configuration(), 'userCodeConfirmSource');
+    const spy = sinon.spy(i(this.provider).configuration('features.deviceFlow'), 'userCodeConfirmSource');
     const deviceInfo = {
       ip: '127.0.0.1',
-      userAgent: 'foo',
+      ua: 'foo',
     };
 
     await new this.provider.DeviceCode({
@@ -105,7 +105,7 @@ describe('POST code_verification endpoint w/o verification', () => {
   it('re-renders on no submitted code', async function () {
     const errSpy = sinon.spy();
     this.provider.once('code_verification.error', errSpy);
-    const spy = sinon.spy(i(this.provider).configuration(), 'userCodeInputSource');
+    const spy = sinon.spy(i(this.provider).configuration('features.deviceFlow'), 'userCodeInputSource');
 
     await this.agent.post(route)
       .send({ xsrf })
@@ -126,7 +126,7 @@ describe('POST code_verification endpoint w/o verification', () => {
   it('re-renders on not found code', async function () {
     const errSpy = sinon.spy();
     this.provider.once('code_verification.error', errSpy);
-    const spy = sinon.spy(i(this.provider).configuration(), 'userCodeInputSource');
+    const spy = sinon.spy(i(this.provider).configuration('features.deviceFlow'), 'userCodeInputSource');
 
     await this.agent.post(route)
       .send({
@@ -150,7 +150,7 @@ describe('POST code_verification endpoint w/o verification', () => {
   it('re-renders on found but expired code', async function () {
     const errSpy = sinon.spy();
     this.provider.once('code_verification.error', errSpy);
-    const spy = sinon.spy(i(this.provider).configuration(), 'userCodeInputSource');
+    const spy = sinon.spy(i(this.provider).configuration('features.deviceFlow'), 'userCodeInputSource');
     await new this.provider.DeviceCode({
       userCode: 'FOOEXPIRED',
     }).save();
@@ -178,7 +178,7 @@ describe('POST code_verification endpoint w/o verification', () => {
   it('re-renders on found but already user code', async function () {
     const errSpy = sinon.spy();
     this.provider.once('code_verification.error', errSpy);
-    const spy = sinon.spy(i(this.provider).configuration(), 'userCodeInputSource');
+    const spy = sinon.spy(i(this.provider).configuration('features.deviceFlow'), 'userCodeInputSource');
     await new this.provider.DeviceCode({
       userCode: 'FOOCONSUMED',
       accountId: 'account',
@@ -206,7 +206,7 @@ describe('POST code_verification endpoint w/o verification', () => {
   it('re-renders on invalid client', async function () {
     const errSpy = sinon.spy();
     this.provider.once('code_verification.error', errSpy);
-    const spy = sinon.spy(i(this.provider).configuration(), 'userCodeInputSource');
+    const spy = sinon.spy(i(this.provider).configuration('features.deviceFlow'), 'userCodeInputSource');
     await new this.provider.DeviceCode({
       userCode: 'FOONOTFOUNDCLIENT',
       clientId: 'client',
@@ -232,15 +232,15 @@ describe('POST code_verification endpoint w/o verification', () => {
     expect(errSpy.calledOnce).to.be.true;
   });
 
-  it('re-renders on !ctx.oidc.session.device', async function () {
+  it('re-renders on !ctx.oidc.session.state', async function () {
     const errSpy = sinon.spy();
     this.provider.once('code_verification.error', errSpy);
-    const spy = sinon.spy(i(this.provider).configuration(), 'userCodeInputSource');
+    const spy = sinon.spy(i(this.provider).configuration('features.deviceFlow'), 'userCodeInputSource');
     await new this.provider.DeviceCode({
       userCode: 'FOOCSRF1',
     }).save();
 
-    delete this.getSession().device;
+    delete this.getSession().state;
     await this.agent.post(route)
       .send({
         xsrf,
@@ -264,7 +264,7 @@ describe('POST code_verification endpoint w/o verification', () => {
   it('re-renders on invalid csrf', async function () {
     const errSpy = sinon.spy();
     this.provider.once('code_verification.error', errSpy);
-    const spy = sinon.spy(i(this.provider).configuration(), 'userCodeInputSource');
+    const spy = sinon.spy(i(this.provider).configuration('features.deviceFlow'), 'userCodeInputSource');
     await new this.provider.DeviceCode({
       userCode: 'FOOCSRF2',
     }).save();
@@ -300,84 +300,180 @@ describe('POST code_verification endpoint w/ verification', () => {
   });
   afterEach(() => timekeeper.reset());
   afterEach(function () {
-    if (i(this.provider).configuration('deviceFlowSuccess').restore) {
-      i(this.provider).configuration('deviceFlowSuccess').restore();
+    if (i(this.provider).configuration('features.deviceFlow.successSource').restore) {
+      i(this.provider).configuration('features.deviceFlow.successSource').restore();
     }
   });
 
   const xsrf = 'foo';
 
   beforeEach(function () {
-    this.getSession().device = { secret: xsrf };
+    this.getSession().state = { secret: xsrf };
   });
 
-  it('renders a confirmation and assigns', async function () {
-    const spy = sinon.spy(i(this.provider).configuration(), 'deviceFlowSuccess');
+  bootstrap.passInteractionChecks('native_client_prompt', 'claims_missing', () => {
+    it('accepts an abort command', async function () {
+      const spy = sinon.spy(i(this.provider).configuration('features.deviceFlow'), 'userCodeInputSource');
 
-    let code = await new this.provider.DeviceCode({
-      clientId: 'client',
-      userCode: 'FOO',
-      params: {
-        scope: 'openid email',
-        client_id: 'client',
-        claims: JSON.stringify({ userinfo: { email: null } }),
-        resource: 'urn:foo:bar',
-      },
-    }).save();
+      let code = await new this.provider.DeviceCode({
+        grantId: this.getSession({ instantiate: true }).grantIdFor('client'),
+        clientId: 'client',
+        userCode: 'FOO',
+        params: {
+          scope: 'openid email',
+          client_id: 'client',
+          claims: JSON.stringify({ userinfo: { email: null } }),
+          resource: 'urn:foo:bar',
+        },
+      }).save();
 
-    await this.agent.post(route)
-      .send({
-        xsrf,
-        confirm: 'yes',
-        user_code: 'FOO',
-      })
-      .type('form')
-      .expect(200);
+      await this.agent.post(route)
+        .send({
+          xsrf,
+          abort: 'yes',
+          user_code: 'FOO',
+        })
+        .type('form')
+        .expect(200)
+        .expect(/The Sign-in request was interrupted/);
 
-    code = await this.provider.DeviceCode.find(code);
+      code = await this.provider.DeviceCode.find(code);
 
-    const session = this.getSession();
+      expect(code).not.to.have.property('accountId');
+      expect(code).to.have.property('error', 'access_denied');
+      expect(code).to.have.property('errorDescription', 'End-User aborted interaction');
 
-    expect(code).to.have.property('accountId', session.account);
-    expect(code).to.have.property('authTime', session.loginTs);
-    expect(code).to.have.property('scope', 'openid email');
-    expect(code).to.have.property('claims').that.eqls({ userinfo: { email: null }, rejected: ['email_verified'] });
-    expect(code).to.have.property('resource', 'urn:foo:bar');
+      expect(spy.calledOnce).to.be.true;
+    });
 
-    expect(spy.calledOnce).to.be.true;
-  });
+    it('renders a confirmation and assigns', async function () {
+      const spy = sinon.spy(i(this.provider).configuration('features.deviceFlow'), 'successSource');
 
-  it('allows for punctuation to be included and characters to be downcased', async function () {
-    const spy = sinon.spy(i(this.provider).configuration(), 'deviceFlowSuccess');
+      let code = await new this.provider.DeviceCode({
+        grantId: this.getSession({ instantiate: true }).grantIdFor('client'),
+        clientId: 'client',
+        userCode: 'FOO',
+        params: {
+          scope: 'openid email',
+          client_id: 'client',
+          claims: JSON.stringify({ userinfo: { email: null } }),
+          resource: 'urn:foo:bar',
+        },
+      }).save();
 
-    let code = await new this.provider.DeviceCode({
-      clientId: 'client',
-      userCode: 'FOOBAR',
-      params: {
-        scope: 'openid email',
-        client_id: 'client',
-        claims: JSON.stringify({ userinfo: { email: null } }),
-      },
-    }).save();
+      await this.agent.post(route)
+        .send({
+          xsrf,
+          confirm: 'yes',
+          user_code: 'FOO',
+        })
+        .type('form')
+        .expect(200);
 
-    await this.agent.post(route)
-      .send({
-        xsrf,
-        confirm: 'yes',
-        user_code: 'f o o b a r',
-      })
-      .type('form')
-      .expect(200);
+      code = await this.provider.DeviceCode.find(code);
 
-    code = await this.provider.DeviceCode.find(code);
+      const session = this.getSession();
 
-    const session = this.getSession();
+      expect(code).not.to.have.property('sid');
+      expect(code).to.have.property('accountId', session.account);
+      expect(code).to.have.property('authTime', session.loginTs);
+      expect(code).to.have.property('scope', 'openid email');
+      expect(code).to.have.property('claims').that.eqls({ userinfo: { email: null }, rejected: ['email_verified'] });
+      expect(code).to.have.property('resource', 'urn:foo:bar');
 
-    expect(code).to.have.property('accountId', session.account);
-    expect(code).to.have.property('authTime', session.loginTs);
-    expect(code).to.have.property('scope', 'openid email');
-    expect(code).to.have.property('claims').that.eqls({ userinfo: { email: null }, rejected: ['email_verified'] });
+      expect(spy.calledOnce).to.be.true;
+    });
 
-    expect(spy.calledOnce).to.be.true;
+    it('renders a confirmation and assigns (incl. sid because of client configuration)', async function () {
+      const spy = sinon.spy(i(this.provider).configuration('features.deviceFlow'), 'successSource');
+
+      let code = await new this.provider.DeviceCode({
+        grantId: this.getSession({ instantiate: true }).grantIdFor('client-backchannel'),
+        clientId: 'client-backchannel',
+        userCode: 'FOO',
+        params: {
+          scope: 'openid',
+          client_id: 'client-backchannel',
+        },
+      }).save();
+
+      await this.agent.post(route)
+        .send({
+          xsrf,
+          confirm: 'yes',
+          user_code: 'FOO',
+        })
+        .type('form')
+        .expect(200);
+
+      code = await this.provider.DeviceCode.find(code);
+
+      expect(code).to.have.property('sid');
+      expect(spy.calledOnce).to.be.true;
+    });
+
+    it('renders a confirmation and assigns (incl. sid because of claims)', async function () {
+      const spy = sinon.spy(i(this.provider).configuration('features.deviceFlow'), 'successSource');
+
+      let code = await new this.provider.DeviceCode({
+        grantId: this.getSession({ instantiate: true }).grantIdFor('client'),
+        clientId: 'client',
+        userCode: 'FOO',
+        params: {
+          scope: 'openid',
+          client_id: 'client',
+          claims: JSON.stringify({ id_token: { sid: null } }),
+        },
+      }).save();
+
+      await this.agent.post(route)
+        .send({
+          xsrf,
+          confirm: 'yes',
+          user_code: 'FOO',
+        })
+        .type('form')
+        .expect(200);
+
+      code = await this.provider.DeviceCode.find(code);
+
+      expect(code).to.have.property('sid');
+      expect(spy.calledOnce).to.be.true;
+    });
+
+    it('allows for punctuation to be included and characters to be downcased', async function () {
+      const spy = sinon.spy(i(this.provider).configuration('features.deviceFlow'), 'successSource');
+
+      let code = await new this.provider.DeviceCode({
+        grantId: this.getSession({ instantiate: true }).grantIdFor('client'),
+        clientId: 'client',
+        userCode: 'FOOBAR',
+        params: {
+          scope: 'openid email',
+          client_id: 'client',
+          claims: JSON.stringify({ userinfo: { email: null } }),
+        },
+      }).save();
+
+      await this.agent.post(route)
+        .send({
+          xsrf,
+          confirm: 'yes',
+          user_code: 'f o o b a r',
+        })
+        .type('form')
+        .expect(200);
+
+      code = await this.provider.DeviceCode.find(code);
+
+      const session = this.getSession();
+
+      expect(code).to.have.property('accountId', session.account);
+      expect(code).to.have.property('authTime', session.loginTs);
+      expect(code).to.have.property('scope', 'openid email');
+      expect(code).to.have.property('claims').that.eqls({ userinfo: { email: null }, rejected: ['email_verified'] });
+
+      expect(spy.calledOnce).to.be.true;
+    });
   });
 });

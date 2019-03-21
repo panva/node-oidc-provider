@@ -10,13 +10,19 @@ const bootstrap = require('../test_helper');
 const route = '/token';
 
 function errorDetail(spy) {
-  return spy.args[0][0].error_detail;
+  return spy.args[0][1].error_detail;
 }
 
 describe('grant_type=authorization_code', () => {
   before(bootstrap(__dirname));
 
   afterEach(() => timekeeper.reset());
+
+  afterEach(function () {
+    this.provider.removeAllListeners('grant.success');
+    this.provider.removeAllListeners('grant.error');
+    this.provider.removeAllListeners('server_error');
+  });
 
   context('with real tokens (1/2) - more than two redirect_uris registered', () => {
     before(function () { return this.login(); });
@@ -41,7 +47,7 @@ describe('grant_type=authorization_code', () => {
 
     it('returns the right stuff', function () {
       const spy = sinon.spy();
-      this.provider.once('grant.success', spy);
+      this.provider.on('grant.success', spy);
 
       return this.agent.post(route)
         .auth('client', 'secret')
@@ -85,6 +91,7 @@ describe('grant_type=authorization_code', () => {
         expect(ctx.oidc.entities.RefreshToken).to.have.property('gty', 'authorization_code');
       }, done));
 
+      this.getSession().authorizations.client.promptedScopes.push('offline_access');
       this.TestAdapter.for('AuthorizationCode').syncUpdate(this.getTokenJti(this.ac), {
         scope: 'openid offline_access',
       });
@@ -126,7 +133,7 @@ describe('grant_type=authorization_code', () => {
       it('validates code is not expired', function () {
         timekeeper.travel(Date.now() + (10 * 1000));
         const spy = sinon.spy();
-        this.provider.once('grant.error', spy);
+        this.provider.on('grant.error', spy);
 
         return this.agent.post(route)
           .auth('client', 'secret')
@@ -148,8 +155,12 @@ describe('grant_type=authorization_code', () => {
     });
 
     it('validates code is not already used', function () {
-      const spy = sinon.spy();
-      this.provider.once('grant.error', spy);
+      const grantErrorSpy = sinon.spy();
+      const grantRevokeSpy = sinon.spy();
+      const tokenDestroySpy = sinon.spy();
+      this.provider.on('grant.error', grantErrorSpy);
+      this.provider.on('grant.revoked', grantRevokeSpy);
+      this.provider.on('authorization_code.destroyed', tokenDestroySpy);
 
       this.code.consumed = epochTime();
 
@@ -163,8 +174,10 @@ describe('grant_type=authorization_code', () => {
         .type('form')
         .expect(400)
         .expect(() => {
-          expect(spy.calledOnce).to.be.true;
-          expect(errorDetail(spy)).to.equal('authorization code already consumed');
+          expect(grantRevokeSpy.calledOnce).to.be.true;
+          expect(tokenDestroySpy.calledOnce).to.be.true;
+          expect(grantErrorSpy.calledOnce).to.be.true;
+          expect(errorDetail(grantErrorSpy)).to.equal('authorization code already consumed');
         })
         .expect((response) => {
           expect(response.body).to.have.property('error', 'invalid_grant');
@@ -188,7 +201,7 @@ describe('grant_type=authorization_code', () => {
 
     it('validates code belongs to client', function () {
       const spy = sinon.spy();
-      this.provider.once('grant.error', spy);
+      this.provider.on('grant.error', spy);
 
       return this.agent.post(route)
         .auth('client2', 'secret')
@@ -225,7 +238,7 @@ describe('grant_type=authorization_code', () => {
 
     it('validates used redirect_uri', function () {
       const spy = sinon.spy();
-      this.provider.once('grant.error', spy);
+      this.provider.on('grant.error', spy);
 
       return this.agent.post(route)
         .auth('client', 'secret')
@@ -249,7 +262,7 @@ describe('grant_type=authorization_code', () => {
       sinon.stub(this.provider.Account, 'findById').callsFake(() => Promise.resolve());
 
       const spy = sinon.spy();
-      this.provider.once('grant.error', spy);
+      this.provider.on('grant.error', spy);
 
       return this.agent.post(route)
         .auth('client', 'secret')
@@ -295,7 +308,7 @@ describe('grant_type=authorization_code', () => {
 
     it('returns the right stuff', function () {
       const spy = sinon.spy();
-      this.provider.once('grant.success', spy);
+      this.provider.on('grant.success', spy);
 
       return this.agent.post(route)
         .auth('client2', 'secret')
@@ -337,6 +350,7 @@ describe('grant_type=authorization_code', () => {
         expect(ctx.oidc.entities.RefreshToken).to.have.property('gty', 'authorization_code');
       }, done));
 
+      this.getSession().authorizations.client2.promptedScopes.push('offline_access');
       this.TestAdapter.for('AuthorizationCode').syncUpdate(this.getTokenJti(this.ac), {
         scope: 'openid offline_access',
       });
@@ -376,7 +390,7 @@ describe('grant_type=authorization_code', () => {
       it('validates code is not expired', function () {
         timekeeper.travel(Date.now() + (10 * 1000));
         const spy = sinon.spy();
-        this.provider.once('grant.error', spy);
+        this.provider.on('grant.error', spy);
 
         return this.agent.post(route)
           .auth('client2', 'secret')
@@ -397,8 +411,12 @@ describe('grant_type=authorization_code', () => {
     });
 
     it('validates code is not already used', function () {
-      const spy = sinon.spy();
-      this.provider.once('grant.error', spy);
+      const grantErrorSpy = sinon.spy();
+      const grantRevokeSpy = sinon.spy();
+      const tokenDestroySpy = sinon.spy();
+      this.provider.on('grant.error', grantErrorSpy);
+      this.provider.on('grant.revoked', grantRevokeSpy);
+      this.provider.on('authorization_code.destroyed', tokenDestroySpy);
 
       this.code.consumed = epochTime();
 
@@ -411,8 +429,10 @@ describe('grant_type=authorization_code', () => {
         .type('form')
         .expect(400)
         .expect(() => {
-          expect(spy.calledOnce).to.be.true;
-          expect(errorDetail(spy)).to.equal('authorization code already consumed');
+          expect(grantRevokeSpy.calledOnce).to.be.true;
+          expect(tokenDestroySpy.calledOnce).to.be.true;
+          expect(grantErrorSpy.calledOnce).to.be.true;
+          expect(errorDetail(grantErrorSpy)).to.equal('authorization code already consumed');
         })
         .expect((response) => {
           expect(response.body).to.have.property('error', 'invalid_grant');
@@ -435,7 +455,7 @@ describe('grant_type=authorization_code', () => {
 
     it('validates code belongs to client', function () {
       const spy = sinon.spy();
-      this.provider.once('grant.error', spy);
+      this.provider.on('grant.error', spy);
 
       return this.agent.post(route)
         .auth('client', 'secret')
@@ -471,7 +491,7 @@ describe('grant_type=authorization_code', () => {
 
     it('validates used redirect_uri (should it be provided)', function () {
       const spy = sinon.spy();
-      this.provider.once('grant.error', spy);
+      this.provider.on('grant.error', spy);
 
       return this.agent.post(route)
         .auth('client2', 'secret')
@@ -495,7 +515,7 @@ describe('grant_type=authorization_code', () => {
       sinon.stub(this.provider.Account, 'findById').callsFake(() => Promise.resolve());
 
       const spy = sinon.spy();
-      this.provider.once('grant.error', spy);
+      this.provider.on('grant.error', spy);
 
       return this.agent.post(route)
         .auth('client2', 'secret')
@@ -566,7 +586,7 @@ describe('grant_type=authorization_code', () => {
 
     it('code being "found"', function () {
       const spy = sinon.spy();
-      this.provider.once('grant.error', spy);
+      this.provider.on('grant.error', spy);
       return this.agent.post(route)
         .auth('client', 'secret')
         .send({
@@ -597,7 +617,7 @@ describe('grant_type=authorization_code', () => {
 
     it('handles exceptions', function () {
       const spy = sinon.spy();
-      this.provider.once('server_error', spy);
+      this.provider.on('server_error', spy);
 
       return this.agent.post(route)
         .auth('client', 'secret')

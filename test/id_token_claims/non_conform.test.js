@@ -8,10 +8,10 @@ const bootstrap = require('../test_helper');
 const { decode: decodeJWT } = require('../../lib/helpers/jwt');
 
 const redirect_uri = 'https://client.example.com/cb';
-const scope = 'openid email';
+const scope = 'openid email offline_access';
 const client_id = 'client';
 
-describe('features.conformIdTokenClaims=false', () => {
+describe('configuration conformIdTokenClaims=false', () => {
   before(bootstrap(__dirname, { config: 'non_conform' }));
   before(function () {
     return this.login({
@@ -20,13 +20,15 @@ describe('features.conformIdTokenClaims=false', () => {
     });
   });
 
+  bootstrap.skipConsent();
+
   [
     'code id_token token', 'code id_token', 'code token', 'code', 'id_token token', 'id_token',
   ].forEach((response_type) => {
     describe(`response_type=${response_type}`, () => {
       before(async function () {
         const client = await this.provider.Client.find('client');
-        const auth = new this.AuthorizationRequest({ response_type, scope });
+        const auth = new this.AuthorizationRequest({ response_type, scope, prompt: 'consent' });
 
         let id_token;
         let refresh_token;

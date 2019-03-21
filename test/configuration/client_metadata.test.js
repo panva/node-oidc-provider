@@ -9,8 +9,9 @@ const Provider = require('../../lib');
 const { whitelistedJWA } = require('../default.config');
 const mtlsKeys = require('../jwks/jwks.json');
 
-const sigKey = global.keystore.get().toJSON(true);
-const { InvalidClientMetadata } = Provider.errors;
+const sigKey = global.keystore.get().toJWK();
+const privateKey = global.keystore.get().toJWK(true);
+const { DYNAMIC_SCOPE_LABEL, errors: { InvalidClientMetadata } } = Provider;
 
 describe('Client metadata validation', () => {
   let DefaultProvider;
@@ -239,7 +240,8 @@ describe('Client metadata validation', () => {
 
   context('default_max_age', function () {
     allows(this.title, 5);
-    rejects(this.title, 0);
+    allows(this.title, 0);
+    rejects(this.title, Number.MAX_SAFE_INTEGER + 1);
     rejects(this.title, -1);
     rejects(this.title, true);
     rejects(this.title, 'string');
@@ -287,6 +289,26 @@ describe('Client metadata validation', () => {
     mustBeUri(this.title, ['https']);
   });
 
+  context('scope', function () {
+    const SIGN = /^sign:[a-fA-F0-9]{2,}$/;
+    SIGN[DYNAMIC_SCOPE_LABEL] = 'sign:{hex}';
+
+    mustBeString(this.title);
+    allows(this.title, undefined);
+    allows(this.title, 'openid');
+    allows(this.title, 'offline_access');
+    allows(this.title, 'openid offline_access');
+    allows(this.title, 'openid profile', undefined, { scopes: ['profile'] });
+    allows(this.title, 'openid profile', undefined, { claims: { profile: ['given_name'] } });
+    allows(this.title, 'profile', undefined, { scopes: ['profile'] });
+    allows(this.title, 'profile', undefined, { claims: { profile: ['given_name'] } });
+    allows(this.title, 'openid sign:{hex}', undefined, { dynamicScopes: [SIGN] });
+    allows(this.title, 'openid sign:{hex}', undefined, { claims: new Map([[SIGN, ['given_name']]]) });
+    allows(this.title, 'sign:{hex}', undefined, { dynamicScopes: [SIGN] });
+    allows(this.title, 'sign:{hex}', undefined, { claims: new Map([[SIGN, ['given_name']]]) });
+    rejects(this.title, 'foo', /must only contain supported scopes/);
+  });
+
   context('redirect_uris', function () {
     isRequired(this.title);
     mustBeArray(this.title, [{}, 'string', 123, true]);
@@ -302,7 +324,7 @@ describe('Client metadata validation', () => {
     rejects(this.title, ['https://some#whatever'], undefined, {
       application_type: 'web',
     });
-    rejects(this.title, ['web-custom-scheme://some'], undefined, {
+    rejects(this.title, ['no-dot-reverse-notation:/some'], undefined, {
       application_type: 'web',
     });
     rejects(this.title, ['https://localhost'], undefined, {
@@ -313,46 +335,11 @@ describe('Client metadata validation', () => {
     allows(this.title, ['http://localhost'], undefined, {
       application_type: 'web',
     });
-    allows(this.title, ['http://localhost'], {
-      application_type: 'native',
-    }, {
-      features: {
-        oauthNativeApps: false,
-      },
-    });
-    allows(this.title, ['native://localhost'], {
-      application_type: 'native',
-    }, {
-      features: {
-        oauthNativeApps: false,
-      },
-    });
     rejects(this.title, ['http://some'], undefined, {
-      application_type: 'native',
-    });
-    rejects(this.title, ['http://some'], undefined, {
-      application_type: 'native',
-    }, {
-      features: {
-        oauthNativeApps: false,
-      },
-    });
-    rejects(this.title, ['not-a-uri'], undefined, {
       application_type: 'native',
     });
     rejects(this.title, ['not-a-uri'], undefined, {
       application_type: 'native',
-    }, {
-      features: {
-        oauthNativeApps: false,
-      },
-    });
-    rejects(this.title, ['https://localhost/foo/bar'], undefined, {
-      application_type: 'native',
-    }, {
-      features: {
-        oauthNativeApps: false,
-      },
     });
     rejects(this.title, ['http://foo/bar'], undefined, {
       application_type: 'web',
@@ -375,27 +362,29 @@ describe('Client metadata validation', () => {
   context('request_uris', function () {
     defaultsTo(this.title, [], undefined, {
       features: {
-        requestUri: true,
+        requestUri: { enabled: true },
       },
     });
     defaultsTo(this.title, undefined, undefined, {
       features: {
         requestUri: {
-          requireRequestUriRegistration: false,
+          enabled: true,
+          requireUriRegistration: false,
         },
       },
     });
     mustBeArray(this.title);
 
     allows(this.title, ['https://a-web-uri']);
+    allows(this.title, ['http://a-web-uri'], /must only contain https uris$/);
     rejects(this.title, [123], /must only contain strings$/);
-    rejects(this.title, ['not a uri'], /must only contain https uris$/);
-    rejects(this.title, ['custom-scheme://not-a-web-uri'], /must only contain https uris$/);
-    rejects(this.title, ['http://a-web-uri'], /must only contain https uris$/);
+    rejects(this.title, ['not a uri'], /request_uris must only contain web uris$/);
+    rejects(this.title, ['custom-scheme://not-a-web-uri'], /request_uris must only contain web uris$/);
+    rejects(this.title, ['urn:example'], /request_uris must only contain web uris$/);
   });
 
   context('web_message_uris', function () {
-    const configuration = { features: { webMessageResponseMode: true } };
+    const configuration = { features: { webMessageResponseMode: { enabled: true } } };
     defaultsTo(this.title, [], undefined, configuration);
     mustBeArray(this.title, undefined, configuration);
 
@@ -456,6 +445,17 @@ describe('Client metadata validation', () => {
     rejects(this.title, 'not-a-type');
   });
 
+  context('post_logout_redirect_uris', function () {
+    defaultsTo(this.title, [], undefined);
+    mustBeArray(this.title, undefined);
+
+    rejects(this.title, [123], /must only contain strings$/, undefined);
+    allows(this.title, ['http://a-web-uri'], undefined);
+    allows(this.title, ['https://a-web-uri'], undefined);
+    allows(this.title, ['any-custom-scheme://not-a-web-uri'], undefined);
+    rejects(this.title, ['not a uri'], /must only contain uris$/, undefined);
+  });
+
   [
     'token_endpoint_auth_method',
     'introspection_endpoint_auth_method',
@@ -474,7 +474,7 @@ describe('Client metadata validation', () => {
 
     if (!endpointAuthMethodProperty.startsWith('token')) {
       Object.assign(configuration, {
-        features: { [endpointAuthMethodProperty.split('_')[0]]: true },
+        features: { [endpointAuthMethodProperty.split('_')[0]]: { enabled: true } },
       });
     }
 
@@ -494,6 +494,18 @@ describe('Client metadata validation', () => {
           case 'tls_client_auth':
             allows(this.title, value, {
               tls_client_auth_subject_dn: 'foo',
+            }, configuration);
+            rejects(this.title, value, 'tls_client_auth_san_dns is not supported', {
+              tls_client_auth_san_dns: 'foo',
+            }, configuration);
+            rejects(this.title, value, 'tls_client_auth_san_uri is not supported', {
+              tls_client_auth_san_uri: 'foo',
+            }, configuration);
+            rejects(this.title, value, 'tls_client_auth_san_ip is not supported', {
+              tls_client_auth_san_ip: 'foo',
+            }, configuration);
+            rejects(this.title, value, 'tls_client_auth_san_email is not supported', {
+              tls_client_auth_san_email: 'foo',
             }, configuration);
             rejects(this.title, value, 'tls_client_auth_subject_dn must be provided for tls_client_auth', undefined, configuration);
             break;
@@ -535,7 +547,12 @@ describe('Client metadata validation', () => {
   });
 
   context('introspection_signed_response_alg', function () {
-    const configuration = { features: { introspection: true, jwtIntrospection: true } };
+    const configuration = {
+      features: {
+        introspection: { enabled: true },
+        jwtIntrospection: { enabled: true },
+      },
+    };
     defaultsTo(this.title, 'RS256', undefined, configuration);
     mustBeString(this.title, undefined, undefined, configuration);
     allows(this.title, 'HS256', undefined, configuration);
@@ -543,7 +560,7 @@ describe('Client metadata validation', () => {
   });
 
   context('authorization_signed_response_alg', function () {
-    const configuration = { features: { jwtResponseModes: true } };
+    const configuration = { features: { jwtResponseModes: { enabled: true } } };
     defaultsTo(this.title, 'RS256', undefined, configuration);
     mustBeString(this.title, undefined, undefined, configuration);
     allows(this.title, 'HS256', undefined, configuration);
@@ -554,7 +571,10 @@ describe('Client metadata validation', () => {
   context('features.encryption', () => {
     const configuration = {
       features: {
-        encryption: true, introspection: true, jwtIntrospection: true, jwtResponseModes: true,
+        encryption: { enabled: true },
+        introspection: { enabled: true },
+        jwtIntrospection: { enabled: true },
+        jwtResponseModes: { enabled: true },
       },
     };
 
@@ -755,7 +775,12 @@ describe('Client metadata validation', () => {
   });
 
   describe('features.encryption & features.request', () => {
-    const configuration = { features: { encryption: true, request: true } };
+    const configuration = {
+      features: {
+        encryption: { enabled: true },
+        request: { enabled: true },
+      },
+    };
     context('request_object_encryption_alg', function () {
       defaultsTo(this.title, undefined);
       defaultsTo(this.title, undefined, undefined, configuration);
@@ -799,7 +824,10 @@ describe('Client metadata validation', () => {
   context('jwks', function () {
     const configuration = {
       features: {
-        introspection: true, jwtIntrospection: true, revocation: true, encryption: true,
+        introspection: { enabled: true },
+        jwtIntrospection: { enabled: true },
+        revocation: { enabled: true },
+        encryption: { enabled: true },
       },
     };
 
@@ -808,7 +836,8 @@ describe('Client metadata validation', () => {
     rejects(this.title, 1, 'jwks must be a JWK Set');
     rejects(this.title, 0, 'jwks must be a JWK Set');
     rejects(this.title, true, 'jwks must be a JWK Set');
-    rejects(this.title, { keys: [] }, 'jwks.keys must not be empty');
+    rejects(this.title, { keys: [privateKey] }, 'jwks must not contain private keys');
+    allows(this.title, { keys: [] }, 'jwks.keys must not be empty');
     ['introspection', 'revocation', 'token'].forEach((endpoint) => {
       rejects(this.title, undefined, 'jwks or jwks_uri is mandatory for this client', {
         [`${endpoint}_endpoint_auth_method`]: 'private_key_jwt',
@@ -856,7 +885,7 @@ describe('Client metadata validation', () => {
     context('tls_client_certificate_bound_access_tokens', function () {
       const configuration = {
         features: {
-          certificateBoundAccessTokens: true,
+          certificateBoundAccessTokens: { enabled: true },
         },
       };
 
@@ -866,44 +895,12 @@ describe('Client metadata validation', () => {
     });
   });
 
-  context('features.sessionManagement', () => {
-    context('post_logout_redirect_uris', function () {
-      const configuration = {
-        features: {
-          sessionManagement: true,
-        },
-      };
-
-      defaultsTo(this.title, [], undefined, configuration);
-      defaultsTo(this.title, undefined);
-      mustBeArray(this.title, undefined, configuration);
-
-      rejects(this.title, [123], /must only contain strings$/, undefined, configuration);
-      allows(this.title, ['http://a-web-uri'], undefined, configuration);
-      allows(this.title, ['https://a-web-uri'], undefined, configuration);
-      allows(this.title, ['any-custom-scheme://not-a-web-uri'], undefined, configuration);
-      rejects(this.title, ['not a uri'], /must only contain uris$/, undefined, configuration);
-    });
-  });
-
   context('features.backchannelLogout', () => {
     const configuration = {
       features: {
-        backchannelLogout: true,
+        backchannelLogout: { enabled: true },
       },
     };
-
-    context('post_logout_redirect_uris', function () {
-      defaultsTo(this.title, [], undefined, configuration);
-      defaultsTo(this.title, undefined);
-      mustBeArray(this.title, undefined, configuration);
-
-      rejects(this.title, [123], /must only contain strings$/, undefined, configuration);
-      allows(this.title, ['http://a-web-uri'], undefined, configuration);
-      allows(this.title, ['https://a-web-uri'], undefined, configuration);
-      allows(this.title, ['any-custom-scheme://not-a-web-uri'], undefined, configuration);
-      rejects(this.title, ['not a uri'], /must only contain uris$/, undefined, configuration);
-    });
 
     context('backchannel_logout_uri', function () {
       defaultsTo(this.title, undefined);
@@ -921,21 +918,9 @@ describe('Client metadata validation', () => {
   context('features.frontchannelLogout', () => {
     const configuration = {
       features: {
-        frontchannelLogout: true,
+        frontchannelLogout: { enabled: true },
       },
     };
-
-    context('post_logout_redirect_uris', function () {
-      defaultsTo(this.title, [], undefined, configuration);
-      defaultsTo(this.title, undefined);
-      mustBeArray(this.title, undefined, configuration);
-
-      rejects(this.title, [123], /must only contain strings$/, undefined, configuration);
-      allows(this.title, ['http://a-web-uri'], undefined, configuration);
-      allows(this.title, ['https://a-web-uri'], undefined, configuration);
-      allows(this.title, ['any-custom-scheme://not-a-web-uri'], undefined, configuration);
-      rejects(this.title, ['not a uri'], /must only contain uris$/, undefined, configuration);
-    });
 
     context('frontchannel_logout_uri', function () {
       defaultsTo(this.title, undefined);
@@ -981,7 +966,7 @@ describe('Client metadata validation', () => {
     response_types: [],
     grant_types: ['client_credentials'],
   }, {
-    features: { clientCredentials: true },
+    features: { clientCredentials: { enabled: true } },
   }).then((client) => {
     expect(client.grantTypes).not.to.be.empty;
     expect(client.responseTypes).to.be.empty;
