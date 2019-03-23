@@ -13,8 +13,10 @@ to be able to get off the ground.
 v6.0.0-alpha.0 is now available on npm and master branch, please head over to
 [#419](https://github.com/panva/node-oidc-provider/issues/419) to provide feedback.
 
-I'm looking for early adopter feedback and pointers to missing changelog entries as well as
-misunderstood changes. Throughout the v6.0.0 prerelease line the changelog will be extended and
+I'm looking for early adopter feedback and pointers to missing
+[changelog](https://github.com/panva/node-oidc-provider/blob/master/CHANGELOG.md) entries as well as
+misunderstood changes. Throughout the v6.0.0 prerelease line the
+[changelog](https://github.com/panva/node-oidc-provider/blob/master/CHANGELOG.md) will be extended and
 especially interaction documentation will be provided.
 
 The minimal node version for this alpha is v11.8.0 and v6.0.0 will release as stable sometime after
