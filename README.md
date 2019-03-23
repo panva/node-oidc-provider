@@ -10,7 +10,7 @@ to be able to get off the ground.
 
 ## v6.0.0 alpha notice
 
-v6.0.0 is now available in alpha release on npm and master branch, please head over to
+v6.0.0-alpha.0 is now available on npm and master branch, please head over to
 [#419](https://github.com/panva/node-oidc-provider/issues/419) to provide feedback.
 
 I'm looking for early adopter feedback and pointers to missing changelog entries as well as
@@ -19,6 +19,10 @@ especially interaction documentation will be provided.
 
 The minimal node version for this alpha is v11.8.0 and v6.0.0 will release as stable sometime after
 v12.0.0 lands in April 2019.
+
+```console
+npm i oidc-provider@alpha
+```
 
 See [v5.x](https://github.com/panva/node-oidc-provider/tree/v5.x) for the last v5.x release and docs.
 
