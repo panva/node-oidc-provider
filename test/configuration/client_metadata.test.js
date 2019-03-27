@@ -598,6 +598,16 @@ describe('Client metadata validation', () => {
         allows(this.title, value, {
           jwks: { keys: [sigKey] },
         }, configuration);
+        if (value === 'ECDH-ES') {
+          rejects(this.title, value, 'A192CBC-HS384 is not possible with ECDH-ES', {
+            id_token_encrypted_response_enc: 'A192CBC-HS384',
+            jwks: { keys: [sigKey] },
+          }, configuration);
+          rejects(this.title, value, 'A256CBC-HS512 is not possible with ECDH-ES', {
+            id_token_encrypted_response_enc: 'A256CBC-HS512',
+            jwks: { keys: [sigKey] },
+          }, configuration);
+        }
       });
       rejects(this.title, 'not-an-alg', undefined, undefined, configuration);
     });
@@ -646,6 +656,16 @@ describe('Client metadata validation', () => {
         allows(this.title, value, {
           jwks: { keys: [sigKey] },
         }, configuration);
+        if (value === 'ECDH-ES') {
+          rejects(this.title, value, 'A192CBC-HS384 is not possible with ECDH-ES', {
+            userinfo_encrypted_response_enc: 'A192CBC-HS384',
+            jwks: { keys: [sigKey] },
+          }, configuration);
+          rejects(this.title, value, 'A256CBC-HS512 is not possible with ECDH-ES', {
+            userinfo_encrypted_response_enc: 'A256CBC-HS512',
+            jwks: { keys: [sigKey] },
+          }, configuration);
+        }
       });
       rejects(this.title, 'not-an-alg', undefined, undefined, configuration);
     });
@@ -695,6 +715,16 @@ describe('Client metadata validation', () => {
         allows(this.title, value, {
           jwks: { keys: [sigKey] },
         }, configuration);
+        if (value === 'ECDH-ES') {
+          rejects(this.title, value, 'A192CBC-HS384 is not possible with ECDH-ES', {
+            introspection_encrypted_response_enc: 'A192CBC-HS384',
+            jwks: { keys: [sigKey] },
+          }, configuration);
+          rejects(this.title, value, 'A256CBC-HS512 is not possible with ECDH-ES', {
+            introspection_encrypted_response_enc: 'A256CBC-HS512',
+            jwks: { keys: [sigKey] },
+          }, configuration);
+        }
       });
       rejects(this.title, 'not-an-alg', undefined, undefined, configuration);
     });
@@ -744,6 +774,16 @@ describe('Client metadata validation', () => {
         allows(this.title, value, {
           jwks: { keys: [sigKey] },
         }, configuration);
+        if (value === 'ECDH-ES') {
+          rejects(this.title, value, 'A192CBC-HS384 is not possible with ECDH-ES', {
+            authorization_encrypted_response_enc: 'A192CBC-HS384',
+            jwks: { keys: [sigKey] },
+          }, configuration);
+          rejects(this.title, value, 'A256CBC-HS512 is not possible with ECDH-ES', {
+            authorization_encrypted_response_enc: 'A256CBC-HS512',
+            jwks: { keys: [sigKey] },
+          }, configuration);
+        }
       });
       rejects(this.title, 'not-an-alg', undefined, undefined, configuration);
     });
@@ -792,9 +832,21 @@ describe('Client metadata validation', () => {
         expect(err.error_description).to.equal('request_object_encryption_alg is mandatory property when request_object_encryption_enc is provided');
       }));
       [
-        'RSA-OAEP', 'RSA1_5', 'ECDH-ES', 'ECDH-ES+A128KW', 'ECDH-ES+A192KW', 'ECDH-ES+A256KW',
+        'RSA-OAEP', 'RSA1_5', 'ECDH-ES', 'ECDH-ES+A128KW', 'ECDH-ES+A192KW',
+        'ECDH-ES+A256KW', 'A128GCMKW', 'A192GCMKW', 'A256GCMKW', 'A128KW', 'A192KW', 'A256KW',
+        'PBES2-HS256+A128KW', 'PBES2-HS384+A192KW', 'PBES2-HS512+A256KW',
       ].forEach((value) => {
         allows(this.title, value, undefined, configuration);
+        if (value === 'ECDH-ES') {
+          rejects(this.title, value, 'A192CBC-HS384 is not possible with ECDH-ES', {
+            request_object_encryption_enc: 'A192CBC-HS384',
+            jwks: { keys: [sigKey] },
+          }, configuration);
+          rejects(this.title, value, 'A256CBC-HS512 is not possible with ECDH-ES', {
+            request_object_encryption_enc: 'A256CBC-HS512',
+            jwks: { keys: [sigKey] },
+          }, configuration);
+        }
       });
       rejects(this.title, 'not-an-alg', undefined, undefined, configuration);
     });
