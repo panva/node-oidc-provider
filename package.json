@@ -40,7 +40,7 @@
   },
   "dependencies": {
     "@koa/cors": "^3.0.0",
-    "@panva/jose": "^0.11.2",
+    "@panva/jose": "^0.11.3",
     "base64url": "^3.0.1",
     "debug": "^4.1.1",
     "ejs": "^2.6.1",
@@ -73,7 +73,7 @@
     "moment": "^2.24.0",
     "nock": "^10.0.6",
     "nyc": "^13.3.0",
-    "sinon": "^7.3.0",
+    "sinon": "^7.3.1",
     "supertest": "^4.0.2",
     "timekeeper": "^2.2.0"
   },
