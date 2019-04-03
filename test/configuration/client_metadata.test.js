@@ -524,18 +524,30 @@ describe('Client metadata validation', () => {
 
     const endpointAuthSigningAlgProperty = endpointAuthMethodProperty.replace('_method', '_signing_alg');
     context(endpointAuthSigningAlgProperty, function () {
-      allows(this.title, 'RS256', {
-        [endpointAuthMethodProperty]: 'client_secret_jwt',
-      }, configuration);
+      Object.entries({
+        client_secret_jwt: ['HS', 'RS'],
+        private_key_jwt: ['RS', 'HS', { jwks: { keys: [sigKey] } }],
+      }).forEach(([method, [accepted, rejected, additional]]) => {
+        allows(this.title, `${accepted}256`, {
+          [endpointAuthMethodProperty]: method,
+          ...additional,
+        }, configuration);
 
-      const confProperty = `${camelCase(endpointAuthSigningAlgProperty)}Values`;
-      rejects(this.title, 'RS384', new RegExp(`^${endpointAuthSigningAlgProperty} must be one of`), {
-        [endpointAuthMethodProperty]: 'client_secret_jwt',
-      }, Object.assign({}, {
-        whitelistedJWA: {
-          [confProperty]: pull(cloneDeep(whitelistedJWA[confProperty]), 'RS384'),
-        },
-      }, configuration));
+        rejects(this.title, `${rejected}256`, new RegExp(`^${endpointAuthSigningAlgProperty} must be one of`), {
+          [endpointAuthMethodProperty]: method,
+          ...additional,
+        }, configuration);
+
+        const confProperty = `${camelCase(endpointAuthSigningAlgProperty)}Values`;
+        rejects(this.title, `${accepted}384`, new RegExp(`^${endpointAuthSigningAlgProperty} must be one of`), {
+          [endpointAuthMethodProperty]: method,
+          ...additional,
+        }, Object.assign({}, {
+          whitelistedJWA: {
+            [confProperty]: pull(cloneDeep(whitelistedJWA[confProperty]), `${accepted}384`),
+          },
+        }, configuration));
+      });
     });
   });
 
