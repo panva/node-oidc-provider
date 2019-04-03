@@ -101,6 +101,7 @@ describe('Front-Channel Logout 1.0', () => {
 
       const client = await this.provider.Client.find('client');
       const client2 = await this.provider.Client.find('second-client');
+      const client3 = await this.provider.Client.find('no-nothing');
 
       const FRAME = /<iframe src="([^"]+)"><\/iframe>/g;
 
@@ -110,7 +111,7 @@ describe('Front-Channel Logout 1.0', () => {
         .expect(200)
         .expect('content-type', /^text\/html;/)
         .expect(({ text: body }) => {
-          expect(body.match(FRAME)).to.have.length(2);
+          expect(body.match(FRAME)).to.have.length(3);
 
           (() => {
             const { sid } = session.authorizations.client;
@@ -128,6 +129,14 @@ describe('Front-Channel Logout 1.0', () => {
             expect(query).to.have.property('iss', this.provider.issuer);
             expect(query).to.have.property('sid', sid);
             expect(href.startsWith(`${client2.frontchannelLogoutUri}?`)).to.be.true;
+          })();
+
+          (() => {
+            const [, match] = FRAME.exec(body);
+            const { query, href } = parseUrl(match, true);
+            expect(query).not.to.have.property('iss');
+            expect(query).not.to.have.property('sid');
+            expect(href).to.equal(client3.frontchannelLogoutUri);
           })();
         });
     });

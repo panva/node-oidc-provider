@@ -22,5 +22,13 @@ module.exports = {
     redirect_uris: ['https://second-client.example.com/cb'],
     backchannel_logout_uri: 'https://second-client.example.com/backchannel_logout',
     backchannel_logout_session_required: true,
+  }, {
+    client_id: 'no-sid',
+    client_secret: 'secret',
+    response_types: ['code id_token'],
+    grant_types: ['implicit', 'authorization_code', 'refresh_token'],
+    redirect_uris: ['https://second-client.example.com/cb'],
+    backchannel_logout_uri: 'https://no-sid.example.com/backchannel_logout',
+    // backchannel_logout_session_required: false,
   }],
 };

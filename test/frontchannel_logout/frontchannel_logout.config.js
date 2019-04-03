@@ -24,5 +24,13 @@ module.exports = {
     redirect_uris: ['https://second-client.example.com/cb'],
     frontchannel_logout_uri: 'https://second-client.example.com/frontchannel_logout',
     frontchannel_logout_session_required: true,
+  }, {
+    client_id: 'no-nothing',
+    client_secret: 'secret',
+    response_types: ['code id_token'],
+    grant_types: ['implicit', 'authorization_code', 'refresh_token'],
+    redirect_uris: ['https://no-nothing.example.com/cb'],
+    frontchannel_logout_uri: 'https://no-nothing.example.com/frontchannel_logout',
+    // frontchannel_logout_session_required: false,
   }],
 };
