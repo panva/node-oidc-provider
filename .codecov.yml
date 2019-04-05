@@ -1,0 +1,9 @@
+coverage:
+  status:
+    project: no
+    patch: yes
+    changes: yes
+
+comment:
+  layout: diff
+  behavior: once
