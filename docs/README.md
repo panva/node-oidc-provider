@@ -2387,7 +2387,7 @@ async logoutSource(ctx, form) {
     }
   </script>
   ${form}
-  <button onclick="logout()">Yes, sign me out</button>
+  <button autofocus onclick="logout()">Yes, sign me out</button>
   <button onclick="rpLogoutOnly()">No, stay signed in</button>
 </div>
 </body>
@@ -2428,8 +2428,7 @@ _**default value**_:
 
 ### postLogoutRedirectUri
 
-URL to which the OP redirects the User-Agent when no post_logout_redirect_uri or id_token_hint is provided by the RP   
-  
+URL to which the OP redirects the User-Agent when no post_logout_redirect_uri and id_token_hint is provided by the RP  
 
 
 _**default value**_:
@@ -2438,42 +2437,6 @@ async postLogoutRedirectUri(ctx) {
   return ctx.origin;
 }
 ```
-<details>
-  <summary>(Click to expand) validating post_logout_redirect_uri without id_token_hint</summary>
-  <br>
-
-
-Session Management 1.0 [lacks](https://bitbucket.org/openid/connect/issues/1032/rp-initiated-logout-proposal-for-client_id) the client_id parameter, despite use-cases being there it is not part of the specification, its absence means the provider cannot efficiently load a client to validate a post_logout_redirect_uri. Here's how to add support for a custom client_id parameter so that your clients without id_token_hint can use post_logout_redirect_uri. __Note:__ It is still the best recommended approach to send in the id_token_hint if client has access to it.
-  
-
-```js
-async postLogoutRedirectUri(ctx) {
-  let client
-  let clientId
-  let providedPostLogoutRedirectUri
-  if (ctx.method === 'GET') {
-    clientId = ctx.query.client_id
-    providedPostLogoutRedirectUri = ctx.query.post_logout_redirect_uri
-  } else {
-    clientId = ctx.oidc.body.client_id
-    providedPostLogoutRedirectUri = ctx.oidc.body.post_logout_redirect_uri
-  }
-  if (typeof clientId !== 'undefined') {
-    client = await ctx.oidc.provider.Client.find(clientId);
-    if (!client) {
-      throw new InvalidClient('provided client_id is invalid');
-    }
-  }
-  if (client && typeof providedPostLogoutRedirectUri !== 'undefined') {
-    if (!client.postLogoutRedirectUriAllowed(providedPostLogoutRedirectUri)) {
-      throw new InvalidRequest('post_logout_redirect_uri not registered');
-    }
-    return providedPostLogoutRedirectUri;
-  }
-  return ctx.origin; // or any other static value to redirect users to afterwards
-}
-```
-</details>
 
 ### renderError
 
