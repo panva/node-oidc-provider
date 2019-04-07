@@ -209,7 +209,7 @@ describe('configuration features.webMessageResponseMode', () => {
         this.provider.once('authorization.error', spy);
 
         await this.wrap({ route, auth, verb: 'get' })
-          .expect(200)
+          .expect(400)
           .expect('pragma', 'no-cache')
           .expect('cache-control', 'no-cache, no-store')
           .expect('content-type', 'text/html; charset=utf-8')
@@ -248,7 +248,7 @@ describe('configuration features.webMessageResponseMode', () => {
           this.provider.once('server_error', spy);
 
           await this.wrap({ route, auth, verb: 'get' })
-            .expect(200)
+            .expect(500)
             .expect('pragma', 'no-cache')
             .expect('cache-control', 'no-cache, no-store')
             .expect('content-type', 'text/html; charset=utf-8')

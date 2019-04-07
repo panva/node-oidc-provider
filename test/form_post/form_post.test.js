@@ -42,7 +42,7 @@ describe('/auth', () => {
           this.provider.once('authorization.error', spy);
 
           return this.wrap({ route, verb, auth })
-            .expect(200)
+            .expect(400)
             .expect(() => {
               expect(spy.called).to.be.true;
             })
@@ -72,7 +72,7 @@ describe('/auth', () => {
             this.provider.once('server_error', spy);
 
             return this.wrap({ route, verb, auth })
-              .expect(200)
+              .expect(500)
               .expect(() => {
                 expect(spy.called).to.be.true;
               })
