@@ -519,19 +519,10 @@ property.
 
 
 ## HTTP Request Library / Proxy settings
-By default oidc-provider uses the [got][got-library] module. Because of its lightweight nature of
+oidc-provider uses the [got][got-library] module. Because of its lightweight nature of
 the provider will not use environment-defined http(s) proxies. In order to have them used you'll
-need to require and tell oidc-provider to use [request][request-library] instead.
-
-```sh
-# add request to your application package bundle
-npm install request@^2.0.0 --save
-```
-
-```js
-// tell oidc-provider to use request instead of got
-Provider.useRequest();
-```
+need to follow got's [README](https://github.com/sindresorhus/got#proxies) and use e.g.
+[`global-tunnel`](https://github.com/np-maintain/global-tunnel)
 
 
 ## Changing HTTP Request Defaults
