@@ -10,7 +10,7 @@ class MyAdapter {
    * @constructor
    * @param {string} name Name of the oidc-provider model. One of "Session", "AccessToken",
    * "AuthorizationCode", "RefreshToken", "ClientCredentials", "Client", "InitialAccessToken",
-   * "RegistrationAccessToken", "DeviceCode" or "Interaction"
+   * "RegistrationAccessToken", "DeviceCode", "Interaction" or "ReplayDetection"
    *
    */
   constructor(name) {
@@ -106,7 +106,7 @@ class MyAdapter {
      *
      * Short-lived Interaction model payload contains the following properties:
      * - jti {string} - unique identifier of the interaction session
-     * - kind {string} "Interaction" fixed string value
+     * - kind {string} - "Interaction" fixed string value
      * - exp {number} - timestamp of the interaction's expiration
      * - iat {number} - timestamp of the interaction's creation
      * - uid {number} - the uid of the authorizing client's established session
@@ -122,6 +122,12 @@ class MyAdapter {
      * - session.amr {string[]} - existing amr of the session Interaction belongs to
      * - session.accountId {string} - existing account id from the seession Interaction belongs to
      *
+     * Replay prevention ReplayDetection model contains the following properties:
+     * - jti {string} - unique identifier of the replay object
+     * - kind {string} - "ReplayDetection" fixed string value
+     * - exp {number} - timestamp of the replay object cache expiration
+     * - iat {number} - timestamp of the replay object cache's creation
+     * - replay {object} - the object replay prevention is calculated from
      */
   }
 
