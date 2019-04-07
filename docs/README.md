@@ -100,7 +100,6 @@ If you or your business use oidc-provider, please consider becoming a [Patron][s
   - [subjectTypes](#subjecttypes)
   - [tokenEndpointAuthMethods](#tokenendpointauthmethods)
   - [ttl](#ttl)
-  - [uniqueness](#uniqueness)
   - [whitelistedJWA](#whitelistedjwa)
 
 
@@ -2691,21 +2690,6 @@ Configure `ttl` for a given token type with a function like so, this must return
 }
 ```
 </details>
-
-### uniqueness
-
-Function resolving whether a given value with expiration is presented first time  
-
-_**recommendation**_: configure this option to use a shared store if client_secret_jwt and private_key_jwt are used  
-
-_**default value**_:
-```js
-async uniqueness(ctx, jti, expiresAt) {
-  if (cache.get(jti)) return false;
-  cache.set(jti, true, (expiresAt - epochTime()) * 1000);
-  return true;
-}
-```
 
 ### whitelistedJWA
 

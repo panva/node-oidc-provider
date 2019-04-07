@@ -851,7 +851,7 @@ describe('client authentication options', () => {
               .expect(tokenAuthRejected)
               .expect(() => {
                 expect(spy.calledOnce).to.be.true;
-                expect(errorDetail(spy)).to.equal('jwt-bearer tokens must only be used once');
+                expect(errorDetail(spy)).to.equal('client assertion tokens must only be used once');
               })));
       });
     });
