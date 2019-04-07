@@ -35,7 +35,7 @@ describe('request parameter features', () => {
     ['/auth', 'get', 'authorization.error', 302, 302, redirectSuccess, 'authorization.success'],
     ['/auth', 'post', 'authorization.error', 302, 302, redirectSuccess, 'authorization.success'],
     ['/device/auth', 'post', 'device_authorization.error', 200, 400, httpSuccess, 'device_authorization.success'],
-  ].forEach(([route, verb, errorEvt, successCode, errorCode, successFnCheck, successEvt]) => {
+  ].forEach(([route, verb, errorEvt, successCode, errorCode, successFnCheck, successEvt], index) => {
     describe(`${route} ${verb} passing request parameters as JWTs`, () => {
       before(function () {
         return this.login({
@@ -204,7 +204,7 @@ describe('request parameter features', () => {
           .expect(successFnCheck));
       });
 
-      it('works with signed by an actual HS', async function () {
+      it('works with signed by an actual DSA', async function () {
         const key = (await this.provider.Client.find('client-with-HS-sig')).keystore.get({
           alg: 'HS256',
         });
@@ -225,6 +225,53 @@ describe('request parameter features', () => {
         })
           .expect(successCode)
           .expect(successFnCheck));
+      });
+
+      it('supports optional replay prevention', async function () {
+        const key = (await this.provider.Client.find('client-with-HS-sig')).keystore.get({
+          alg: 'HS256',
+        });
+
+        const request = await JWT.sign({
+          response_type: 'code',
+          redirect_uri: 'https://client.example.com/cb',
+          jti: `very-random-and-collision-resistant-${index}`,
+        }, key, 'HS256', { issuer: 'client-with-HS-sig', audience: this.provider.issuer, expiresIn: 30 });
+
+        await this.wrap({
+          agent: this.agent,
+          route,
+          verb,
+          auth: {
+            request,
+            scope: 'openid',
+            client_id: 'client-with-HS-sig',
+            response_type: 'code',
+          },
+        })
+          .expect(successCode)
+          .expect(successFnCheck);
+
+        const spy = sinon.spy();
+        this.provider.once(errorEvt, spy);
+
+        await this.wrap({
+          agent: this.agent,
+          route,
+          verb,
+          auth: {
+            request,
+            scope: 'openid',
+            client_id: 'client-with-HS-sig',
+            response_type: 'code',
+          },
+        })
+          .expect(errorCode)
+          .expect(() => {
+            expect(spy.calledOnce).to.be.true;
+            expect(spy.args[0][1]).to.have.property('message', 'invalid_request_object');
+            expect(spy.args[0][1]).to.have.property('error_description').that.matches(/request replay detected/);
+          });
       });
 
       it('doesnt allow request inception', function () {
