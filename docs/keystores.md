@@ -18,7 +18,7 @@ To configure your Provider instance with your own signing and encryption keys yo
 very least a private RSA key in JSON Web Key (JWK) format. Since every provider MUST support RS256
 signed ID Tokens a 'quick-start development only' keystore is used during `#initialize()` unless you
 provide your own keystore. You can provide a private JWKS formatted javascript object or a
-jose.JWK.KeyStore object, either way works, with the same result.
+jose.JWKS.KeyStore object, either way works, with the same result.
 
 ```js
 provider.initialize({
