@@ -1624,6 +1624,18 @@ _**default value**_:
 }
 ```
 
+### clientBasedCORS
+
+Array of the Claim Names of the Claims that the OpenID Provider MAY be able to supply values for.  
+
+
+_**default value**_:
+```js
+clientBasedCORS(ctx, origin, client) {
+  return true;
+}
+```
+
 ### clockTolerance
 
 A `Number` value (in seconds) describing the allowed system clock skew for validating client-provided JWTs, e.g. Request objects and otherwise comparing timestamps  
