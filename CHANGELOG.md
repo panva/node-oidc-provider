@@ -2,6 +2,44 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+# [6.0.0-alpha.1](https://github.com/panva/node-oidc-provider/compare/v6.0.0-alpha.0...v6.0.0-alpha.1) (2019-04-16)
+
+
+### Bug Fixes
+
+* _jwt client auth method alg no longer mixes up (a)symmetrical ([1771655](https://github.com/panva/node-oidc-provider/commit/1771655))
+* acceptedClaimsFor filtering out claims not scopes ([fd8f886](https://github.com/panva/node-oidc-provider/commit/fd8f886))
+* allow all incoming headers for CORS requests ([3d2c8e4](https://github.com/panva/node-oidc-provider/commit/3d2c8e4))
+* client key agreement with ECDH-ES is not possible in two cases ([5c39f6e](https://github.com/panva/node-oidc-provider/commit/5c39f6e))
+* fail logout when post_logout_redirect_uri is not actionable ([b3a50ac](https://github.com/panva/node-oidc-provider/commit/b3a50ac))
+* html-rendered response modes now honour 400 and 500 status codes ([9771581](https://github.com/panva/node-oidc-provider/commit/9771581))
+* session required client properties control the iss & sid return ([ab08cbe](https://github.com/panva/node-oidc-provider/commit/ab08cbe))
+
+
+### Code Refactoring
+
+* remove request/request http client handling and methods ([683e6c2](https://github.com/panva/node-oidc-provider/commit/683e6c2))
+
+
+### Features
+
+* enable client-based CORS origin whitelisting ([8b4fd9e](https://github.com/panva/node-oidc-provider/commit/8b4fd9e))
+* passthrough cors middleware if pre-existing headers are present ([6ec09ef](https://github.com/panva/node-oidc-provider/commit/6ec09ef)), closes [#447](https://github.com/panva/node-oidc-provider/issues/447)
+* replay prevention for client assertions is now built in ([a22d6ce](https://github.com/panva/node-oidc-provider/commit/a22d6ce))
+* request objects are now one-time use if they have iss, jti and exp ([1dc44dd](https://github.com/panva/node-oidc-provider/commit/1dc44dd))
+
+
+### BREAKING CHANGES
+
+* Due to request's maintenance mode and inevitable
+deprecation (see https://github.com/request/request/issues/3142)
+the option to switch the provider to use request has been removed.
+* end_session_endpoint will now throw an error when
+clients provide post_logout_redirect_uri but fail to provide an
+id_token_hint. See https://bitbucket.org/openid/connect/issues/1032
+
+
+
 <a name="6.0.0-alpha.0"></a>
 # [6.0.0-alpha.0](https://github.com/panva/node-oidc-provider/compare/v5.5.5...v6.0.0-alpha.0) (2019-03-23)
 
