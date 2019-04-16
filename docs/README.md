@@ -518,9 +518,9 @@ property.
 
 
 ## HTTP Request Library / Proxy settings
-oidc-provider uses the [got][got-library] module. Because of its lightweight nature of
-the provider will not use environment-defined http(s) proxies. In order to have them used you'll
-need to follow got's [README](https://github.com/sindresorhus/got#proxies) and use e.g.
+oidc-provider uses the [got][got-library] module. Because of its lightweight nature the provider
+will not use environment-defined http(s) proxies. In order to have them used you'll need to follow
+got's [README](https://github.com/sindresorhus/got#proxies) and use e.g.
 [`global-tunnel`](https://github.com/np-maintain/global-tunnel)
 
 
@@ -1626,7 +1626,7 @@ _**default value**_:
 
 ### clientBasedCORS
 
-Array of the Claim Names of the Claims that the OpenID Provider MAY be able to supply values for.  
+Helper function used to check whether a given CORS request should be allowed based on the request's client.  
 
 
 _**default value**_:
