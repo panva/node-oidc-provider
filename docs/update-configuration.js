@@ -25,7 +25,7 @@ class Block {
         buffer = buffer.slice(10);
       }
 
-      if (buffer.indexOf('-') === 0 || buffer.indexOf('```') !== -1 || buffer.indexOf('|') === 0) {
+      if (buffer.indexOf('-') === 0 || /^\d+\./.exec(buffer) || buffer.indexOf('```') !== -1 || buffer.indexOf('|') === 0) {
         const last = this[this.active].pop();
         if (last.toString().endsWith('\n')) {
           this[this.active].push(last);
@@ -146,11 +146,11 @@ const props = [
     return what;
   }
 
-  let count = 0;
+  let featuresIdx = 0;
   const configuration = Object.keys(blocks).sort().reduce((acc, key) => {
     if (!key) return acc;
     if (key.startsWith('features')) {
-      count += 1;
+      featuresIdx += 1;
       acc.unshift(key);
     } else {
       acc.push(key);
@@ -158,10 +158,17 @@ const props = [
     return acc;
   }, []);
 
-  const features = configuration.splice(0, count).sort();
+  const features = configuration.splice(0, featuresIdx).sort();
+  const clientsIdx = configuration.findIndex(x => x === 'clients');
+  const clients = configuration.splice(clientsIdx, 1);
+  const adapterIdx = configuration.findIndex(x => x === 'adapter');
+  const adapter = configuration.splice(adapterIdx, 1);
+  const jwksIdx = configuration.findIndex(x => x === 'jwks');
+  const jwks = configuration.splice(jwksIdx, 1);
+
   let hidden;
   let prev;
-  for (const block of [...features, ...configuration]) { // eslint-disable-line no-restricted-syntax
+  for (const block of [...adapter, ...clients, ...jwks, ...features, ...configuration]) { // eslint-disable-line no-restricted-syntax, max-len
     const section = blocks[block];
 
     if ('@skip' in section) {
@@ -224,7 +231,7 @@ const props = [
           if (block === 'interactions') {
             output = readFileSync('./docs/checks.txt');
           }
-          output = output || inspect(value, { depth: null, breakLength: Infinity, compact: false });
+          output = output || inspect(value, { compact: false, sorted: true });
           append(expand(output).split('\n').map((line) => {
             line = line.replace(/(\[(?:Async)?Function: \w+\],)/, '$1 // see expanded details below');
             return line;

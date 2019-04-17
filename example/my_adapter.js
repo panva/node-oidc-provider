@@ -219,21 +219,6 @@ class MyAdapter {
   async revokeByGrantId(grantId) {
 
   }
-
-
-  /**
-   *
-   * A one time hook called when initializing the Provider instance, use to establish necessary
-   * connections if applicable, afterwards only new instances will initialized.
-   *
-   * @return {Promise} Promise fulfilled when the operation succeeded. Rejected with error when
-   * encountered.
-   * @param {Provider} provider Provider instance for which the connection is needed
-   *
-   */
-  static async connect(provider) {
-
-  }
 }
 
 module.exports = MyAdapter;

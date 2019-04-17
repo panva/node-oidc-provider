@@ -153,7 +153,7 @@ id_token_hint. See https://bitbucket.org/openid/connect/issues/1032
   or has the appropriate back/front channel logout uris enabled and front/backchannel_logout_session_required
   set to true
 - the provider now uses `@panva/jose` module instead `node-jose`, this module brings in improvements
-  in JWS/JWE performance due to it's use of `KeyObject` API introduced in Node.js v11.6.0
+  in JWS/JWE performance due to its use of `KeyObject` API introduced in Node.js v11.6.0
 - clients with `request_object_signing_alg` set must now always provide a request object,
   authorization requests will fail with `invalid_request` when `request` or `request_uri` is missing
   for such clients
@@ -167,7 +167,9 @@ id_token_hint. See https://bitbucket.org/openid/connect/issues/1032
     with its matching value in the `grantId` property
 - only `AccessToken` and `ClientCredentials` may have a format. All other tokens are now forced to
   be opaque
-- `clientCacheDuration` configuration option has been removed
+- `clientCacheDuration` configuration option and `provider.Client.cacheClear` method have been
+  removed, the provider now handles everything internally and Client objects are re-instantiated
+  automatically if the client's configuration changes.
 - `token.*` events are no longer emitted, instead each token has its own event, sessions and
   interactions too, the convention is `snake_cased_model_name.*`
 - `features.pkce` and `features.oauthNativeApps` are now not configurable and always in effect, pkce
@@ -178,7 +180,7 @@ id_token_hint. See https://bitbucket.org/openid/connect/issues/1032
 - `features.refreshTokenRotation` has been renamed to `features.rotateRefreshToken` and its values
   are now true/false or a function that returns true/false when a refresh token should or should not
   be rotated
-- `features.conformIdTokenClaims` is not a feature anymore, it's just `conformIdTokenClaims` in the
+- `features.conformIdTokenClaims` is not a feature anymore, it is just `conformIdTokenClaims` in the
   configuration object's root
 - revoking an Access Token via the `revocation_endpoint` will not revoke the whole grant any more
 - default `interaction` cookie name value changed from `_grant` to `_interaction`
@@ -453,7 +455,7 @@ renaming of a configuration value, while the `unsupported` option was
 essentually a blacklist the `whitelistedJWA` as the name suggests is a
 whitelist.
 * the `RSA-OAEP-256` key wrapping algorithm has been
-removed and is not configurable since it's not supported natively in
+removed and is not configurable since it is not supported natively in
 nodejs.
 * IdToken constructor now requires the client instance
 to be passed in as a second argument. IdToken instance `.sign()` now

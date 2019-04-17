@@ -16,8 +16,6 @@ describe('body parser', () => {
     it('uses the upstream parser albeit reluctantly', async () => {
       const provider = new Provider('http://localhost:3000', {
         features: { clientCredentials: { enabled: true } },
-      });
-      await provider.initialize({
         clients: [{
           client_id: 'client',
           client_secret: 'secret',
@@ -48,10 +46,6 @@ describe('body parser', () => {
     it('removes all qs magic', async () => {
       const provider = new Provider('http://localhost:3000', {
         features: { clientCredentials: { enabled: true } },
-      });
-      const spy = sinon.spy();
-      provider.once('grant.success', spy);
-      await provider.initialize({
         clients: [{
           client_id: 'client',
           client_secret: 'secret',
@@ -61,6 +55,8 @@ describe('body parser', () => {
           token_endpoint_auth_method: 'client_secret_post',
         }],
       });
+      const spy = sinon.spy();
+      provider.once('grant.success', spy);
       const app = new Koa();
 
       app.use(upstreamParser());
@@ -90,7 +86,6 @@ describe('body parser', () => {
       const provider = new Provider('http://localhost:3000', {
         features: { registration: { enabled: true } },
       });
-      await provider.initialize();
       const app = new Koa();
 
       app.use(upstreamParser());
@@ -111,7 +106,6 @@ describe('body parser', () => {
       const provider = new Provider('http://localhost:3000', {
         features: { registration: { enabled: true } },
       });
-      await provider.initialize();
 
       global.server.on('request', provider.app.callback());
 

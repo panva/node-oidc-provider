@@ -17,31 +17,24 @@ describe('Client metadata validation', () => {
   let DefaultProvider;
   before(() => {
     DefaultProvider = new Provider('http://localhost', {
+      jwks: global.keystore.toJWKS(true),
       whitelistedJWA: cloneDeep(whitelistedJWA),
-    });
-
-    return DefaultProvider.initialize({
-      keystore: global.keystore,
     });
   });
 
   function addClient(meta, configuration) {
-    let prom;
+    let provider;
     if (configuration) {
-      const provider = new Provider('http://localhost', Object.assign({}, { whitelistedJWA }, configuration));
-
-      prom = provider.initialize({
-        keystore: global.keystore,
-      }).then(() => provider);
+      provider = new Provider('http://localhost', Object.assign({ jwks: global.keystore.toJWKS(true) }, { whitelistedJWA }, configuration));
     } else {
-      prom = Promise.resolve(DefaultProvider);
+      provider = DefaultProvider;
     }
 
-    return prom.then(provider => i(provider).clientAdd(Object.assign({
+    return i(provider).clientAdd(Object.assign({
       client_id: 'client',
       client_secret: 'its64bytes_____________________________________________________!',
       redirect_uris: ['https://client.example.com/cb'],
-    }, meta)));
+    }, meta));
   }
 
   const fail = () => { throw new Error('expected promise to be rejected'); };

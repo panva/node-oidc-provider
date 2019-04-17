@@ -80,46 +80,25 @@ describe('provider instance', () => {
     /* eslint-enable */
   });
 
-  describe('#initialize', () => {
-    it('does not allow to be initialized twice', (done) => {
-      const provider = new Provider('http://localhost');
-      provider.initialize({ keystore: {} }).catch(() => {
-        provider.initialize().then(() => {
-          expect(() => { provider.initialize(); }).to.throw('already initialized');
-          done();
-        });
-      });
-      expect(() => { provider.initialize(); }).to.throw('already initializing');
-    });
-  });
-
   describe('#urlFor', () => {
     it('returns the route for unprefixed issuers', () => {
       const provider = new Provider('http://localhost');
-      return provider.initialize({}).then(() => {
-        expect(provider.urlFor('authorization')).to.equal('http://localhost/auth');
-      });
+      expect(provider.urlFor('authorization')).to.equal('http://localhost/auth');
     });
 
     it('returns the route for prefixed issuers (1/2)', () => {
       const provider = new Provider('http://localhost/op/2.0');
-      return provider.initialize({}).then(() => {
-        expect(provider.urlFor('authorization')).to.equal('http://localhost/op/2.0/auth');
-      });
+      expect(provider.urlFor('authorization')).to.equal('http://localhost/op/2.0/auth');
     });
 
     it('returns the route for prefixed issuers (2/2)', () => {
       const provider = new Provider('http://localhost/op/2.0/');
-      return provider.initialize({}).then(() => {
-        expect(provider.urlFor('authorization')).to.equal('http://localhost/op/2.0/auth');
-      });
+      expect(provider.urlFor('authorization')).to.equal('http://localhost/op/2.0/auth');
     });
 
     it('passes the options', () => {
       const provider = new Provider('http://localhost');
-      return provider.initialize({}).then(() => {
-        expect(provider.urlFor('resume', { uid: 'foo' })).to.equal('http://localhost/auth/foo');
-      });
+      expect(provider.urlFor('resume', { uid: 'foo' })).to.equal('http://localhost/auth/foo');
     });
   });
 
