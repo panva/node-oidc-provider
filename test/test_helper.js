@@ -61,7 +61,12 @@ module.exports = function testHelper(dir, { config: base = path.basename(dir), m
   if (client && !clients) { clients = [client]; }
   if (!config.findById) config.findById = Account.findById;
 
-  const provider = new Provider(`${protocol}//127.0.0.1:${port}${mountTo}`, config);
+  const provider = new Provider(`${protocol}//127.0.0.1:${port}${mountTo}`, {
+    clients,
+    jwks: global.keystore.toJWKS(true),
+    adapter: TestAdapter,
+    ...config,
+  });
 
   let agent;
 
@@ -378,11 +383,7 @@ module.exports = function testHelper(dir, { config: base = path.basename(dir), m
     });
 
     return new Promise((resolve, reject) => {
-      provider.initialize({
-        clients,
-        adapter: TestAdapter,
-        keystore: global.keystore,
-      }).then(() => {
+      Promise.resolve().then(() => {
         if (mountTo) {
           const app = new Koa();
           app.use(mount(mountTo, provider.app));

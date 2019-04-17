@@ -24,49 +24,41 @@ If you or your business use oidc-provider, please consider becoming a [Patron][s
 - [Basic configuration example](#basic-configuration-example)
 - [Default configuration values](#default-configuration-values)
 - [Accounts](#accounts)
-- [Clients](#clients)
-- [Certificates](#certificates)
-- [Configuring available claims](#configuring-available-claims)
-- [Configuring available scopes](#configuring-available-scopes)
-- [Persistence](#persistence)
-- [Interaction](#interaction)
+- [User flows](#user-flows)
 - [Custom Grant Types](#custom-grant-types)
-- [Extending Authorization with Custom Parameters](#extending-authorization-with-custom-parameters)
-- [Extending Discovery with Custom Properties](#extending-discovery-with-custom-properties)
-- [Configuring Routes](#configuring-routes)
-- [Fine-tuning supported algorithms](#fine-tuning-supported-algorithms)
 - [HTTP Request Library / Proxy settings](#http-request-library--proxy-settings)
 - [Changing HTTP Request Defaults](#changing-http-request-defaults)
-- [Authentication Context Class Reference](#authentication-context-class-reference)
 - [Registering module middlewares (helmet, ip-filters, rate-limiters, etc)](#registering-module-middlewares-helmet-ip-filters-rate-limiters-etc)
 - [Pre- and post-middlewares](#pre--and-post-middlewares)
 - [Mounting oidc-provider](#mounting-oidc-provider)
   - [to an express application](#to-an-express-application)
   - [to a koa application](#to-a-koa-application)
 - [Trusting TLS offloading proxies](#trusting-tls-offloading-proxies)
-- [Aggregated and Distributed claims](#aggregated-and-distributed-claims)
 - [Configuration options](#configuration-options)
+  - [adapter](#adapter)
+  - [clients](#clients)
+  - [jwks](#jwks)
   - [features](#features)
-  - [features.backchannelLogout](#featuresbackchannellogout)
-  - [features.certificateBoundAccessTokens](#featurescertificateboundaccesstokens)
-  - [features.claimsParameter](#featuresclaimsparameter)
-  - [features.clientCredentials](#featuresclientcredentials)
-  - [features.devInteractions](#featuresdevinteractions)
-  - [features.deviceFlow](#featuresdeviceflow)
-  - [features.discovery](#featuresdiscovery)
-  - [features.encryption](#featuresencryption)
-  - [features.frontchannelLogout](#featuresfrontchannellogout)
-  - [features.introspection](#featuresintrospection)
-  - [features.jwtIntrospection](#featuresjwtintrospection)
-  - [features.jwtResponseModes](#featuresjwtresponsemodes)
-  - [features.registration](#featuresregistration)
-  - [features.registrationManagement](#featuresregistrationmanagement)
-  - [features.request](#featuresrequest)
-  - [features.requestUri](#featuresrequesturi)
-  - [features.resourceIndicators](#featuresresourceindicators)
-  - [features.revocation](#featuresrevocation)
-  - [features.sessionManagement](#featuressessionmanagement)
-  - [features.webMessageResponseMode](#featureswebmessageresponsemode)
+    - [backchannelLogout](#featuresbackchannellogout)
+    - [certificateBoundAccessTokens](#featurescertificateboundaccesstokens)
+    - [claimsParameter](#featuresclaimsparameter)
+    - [clientCredentials](#featuresclientcredentials)
+    - [devInteractions](#featuresdevinteractions)
+    - [deviceFlow](#featuresdeviceflow)
+    - [discovery](#featuresdiscovery)
+    - [encryption](#featuresencryption)
+    - [frontchannelLogout](#featuresfrontchannellogout)
+    - [introspection](#featuresintrospection)
+    - [jwtIntrospection](#featuresjwtintrospection)
+    - [jwtResponseModes](#featuresjwtresponsemodes)
+    - [registration](#featuresregistration)
+    - [registrationManagement](#featuresregistrationmanagement)
+    - [request](#featuresrequest)
+    - [requestUri](#featuresrequesturi)
+    - [resourceIndicators](#featuresresourceindicators)
+    - [revocation](#featuresrevocation)
+    - [sessionManagement](#featuressessionmanagement)
+    - [webMessageResponseMode](#featureswebmessageresponsemode)
   - [acrValues](#acrvalues)
   - [audiences](#audiences)
   - [claims](#claims)
@@ -74,10 +66,6 @@ If you or your business use oidc-provider, please consider becoming a [Patron][s
   - [clockTolerance](#clocktolerance)
   - [conformIdTokenClaims](#conformidtokenclaims)
   - [cookies](#cookies)
-  - [cookies.keys](#cookieskeys)
-  - [cookies.long](#cookieslong)
-  - [cookies.names](#cookiesnames)
-  - [cookies.short](#cookiesshort)
   - [discovery](#discovery)
   - [dynamicScopes](#dynamicscopes)
   - [expiresWithSession](#expireswithsession)
@@ -85,18 +73,18 @@ If you or your business use oidc-provider, please consider becoming a [Patron][s
   - [extraParams](#extraparams)
   - [findById](#findbyid)
   - [formats](#formats)
-  - [interactionUrl](#interactionurl)
   - [interactions](#interactions)
+  - [interactionUrl](#interactionurl)
   - [introspectionEndpointAuthMethods](#introspectionendpointauthmethods)
   - [issueRefreshToken](#issuerefreshtoken)
   - [logoutSource](#logoutsource)
   - [pairwiseIdentifier](#pairwiseidentifier)
-  - [postLogoutRedirectUri](#postlogoutredirecturi)
   - [pkceMethods](#pkcemethods)
-  - [rotateRefreshToken](#rotaterefreshtoken)
+  - [postLogoutRedirectUri](#postlogoutredirecturi)
   - [renderError](#rendererror)
   - [responseTypes](#responsetypes)
   - [revocationEndpointAuthMethods](#revocationendpointauthmethods)
+  - [rotateRefreshToken](#rotaterefreshtoken)
   - [routes](#routes)
   - [scopes](#scopes)
   - [subjectTypes](#subjecttypes)
@@ -113,38 +101,32 @@ const Provider = require('oidc-provider');
 const configuration = {
   // ... see the available options in Configuration options section
   features: {
-    discovery: true,
-    registration: { initialAccessToken: true },
+    introspection: { enabled: true },
+    revocation: { enabled: true },
   },
-  format: { default: 'opaque' },
+  formats: {
+    AccessToken: 'jwt',
+  },
+  clients: [{
+    client_id: 'foo',
+    client_secret: 'bar',
+    redirect_uris: ['http://lvh.me:8080/cb'],
+    // + other client properties
+  }],
   // ...
 };
-const clients = [{
-  client_id: 'foo',
-  client_secret: 'bar',
-  redirect_uris: ['http://lvh.me:8080/cb'],
-  // + other client properties
-}];
 
 const oidc = new Provider('http://localhost:3000', configuration);
 
-let server;
-(async () => {
-  await oidc.initialize({ clients });
-  // express/nodejs style application callback (req, res, next) for use with express apps, see /examples/express.js
-  oidc.callback
+// express/nodejs style application callback (req, res, next) for use with express apps, see /examples/express.js
+oidc.callback
 
-  // koa application for use with koa apps, see /examples/koa.js
-  oidc.app
+// koa application for use with koa apps, see /examples/koa.js
+oidc.app
 
-  // or just expose a server standalone, see /examples/standalone.js
-  server = oidc.listen(3000, () => {
-    console.log('oidc-provider listening on port 3000, check http://localhost:3000/.well-known/openid-configuration');
-  });
-})().catch((err) => {
-  if (server && server.listening) server.close();
-  console.error(err);
-  process.exitCode = 1;
+// or just expose a server standalone, see /examples/standalone.js
+const server = oidc.listen(3000, () => {
+  console.log('oidc-provider listening on port 3000, check http://localhost:3000/.well-known/openid-configuration');
 });
 ```
 
@@ -173,114 +155,7 @@ const oidc = new Provider('http://localhost:3000', {
 ```
 
 
-## Clients
-Clients can be passed to your provider instance during the `initialize` call or left to be loaded
-via your provided Adapter. oidc-provider will use the adapter's `find` method when a non-cached
-client_id is encountered. If you only wish to support clients that are initialized and no dynamic
-registration then make it so that your adapter resolves client find calls with a falsy value. (e.g.
-`return Promise.resolve()`).  
-
-Available [Client Metadata][client-metadata] is validated as defined by the specifications. This list
-is extended by other adjacent-specification related properties such as introspection and revocation
-endpoint authentication, Session Management, Front and Back-Channel Logout, etc.
-
-**via Provider interface**  
-To add pre-established clients use the `initialize` method on a oidc-provider instance. This accepts
-a clients array with metadata objects and rejects when the client metadata would be invalid.
-
-```js
-const provider = new Provider('http://localhost:3000');
-const clients = [
-  {
-    token_endpoint_auth_method: 'none',
-    client_id: 'mywebsite',
-    grant_types: ['implicit'],
-    response_types: ['id_token'],
-    redirect_uris: ['https://client.example.com/cb'],
-  },
-  {
-    // ...
-  },
-];
-
-provider.initialize({ clients }).then(fulfillmentHandler, rejectionHandler);
-```
-
-**via Adapter**  
-Storing client metadata in your storage is recommended for distributed deployments. Also when you
-want to provide a client configuration GUI or plan on changing this data often. Clients get loaded
-*! and validated !* when they are first needed, any metadata validation error encountered during
-this first load will be thrown and handled like any other context specific errors.
-
-Note: Make sure your adapter returns an object with the correct property value types as if they were
-submitted via dynamic registration.
-
-
-## Certificates
-See [Certificates](/docs/keystores.md).
-
-
-## Configuring available claims
-The `claims` configuration parameter can be used to define which claims fall under what scope
-as well as to expose additional claims that are available to RPs via the `claims` authorization
-parameter. The configuration value uses the following scheme:
-
-```js
-new Provider('http://localhost:3000', {
-  claims: {
-    [scope name]: ['claim name', 'claim name'],
-    // or
-    [scope name]: {
-      [claim name]: null,
-    },
-    // or (for standalone claims) - only requestable via claims parameter
-    //   (when features.claimsParameter is true)
-    [standalone claim name]: null
-  }
-});
-```
-
-To follow the [Core-defined scope-to-claim mapping][core-account-claims] use:
-
-```js
-new Provider('http://localhost:3000', {
-  claims: {
-    address: ['address'],
-    email: ['email', 'email_verified'],
-    phone: ['phone_number', 'phone_number_verified'],
-    profile: ['birthdate', 'family_name', 'gender', 'given_name', 'locale', 'middle_name', 'name',
-      'nickname', 'picture', 'preferred_username', 'profile', 'updated_at', 'website', 'zoneinfo'],
-  },
-});
-```
-
-## Configuring available scopes
-Use the `scopes` configuration parameter to configure the scope values that you wish to support.
-This list is extended by all scope names detected in the claims parameter as well.
-
-Use the `dynamicScopes` configuration parameter to configure dynamic scope values.
-
-## Persistence
-The provided example and any new instance of oidc-provider will use the basic in-memory adapter for
-storing issued tokens, codes, user sessions and dynamically registered clients. This is fine as
-long as you develop, configure and generally just play around since every time you restart your
-process all information will be lost. As soon as you cannot live with this limitation you will be
-required to provide your own custom adapter constructor for oidc-provider to
-use. This constructor will be called for every model accessed the first time it
-is needed. A static `connect` method is called if present during the `provider.initialize()` call.
-
-```js
-const MyAdapter = require('./my_adapter');
-const provider = new Provider('http://localhost:3000');
-provider.initialize({ adapter: MyAdapter });
-```
-
-The API oidc-provider expects is documented [here](/example/my_adapter.js). For reference see the
-[memory adapter](/lib/adapters/memory_adapter.js) and [redis](/example/adapters/redis.js) or
-[mongodb](/example/adapters/mongodb.js) adapters.
-
-
-## Interaction
+## User flows
 Since oidc-provider only comes with feature-less views and interaction handlers it is up to you to fill
 those in, here is how oidc-provider allows you to do so:
 
@@ -430,9 +305,8 @@ router.post('/interaction/:uid/login', async (ctx, next) => {
 
 ## Custom Grant Types
 oidc-provider comes with the basic grants implemented, but you can register your own grant types,
-for example to implement a [password grant type][password-grant] or
-[OAuth 2.0 Token Exchange][token-exchange]. You can check the standard grant factories
-[here](/lib/actions/grants).
+for example to implement a [OAuth 2.0 Token Exchange][token-exchange]. You can check the standard
+grant factories [here](/lib/actions/grants).
 
 ```js
 const parameters = ['username', 'password'];
@@ -470,53 +344,6 @@ provider.registerGrantType('password', function passwordGrantTypeFactory(provide
   };
 }, parameters, allowedDuplicateParameters);
 ```
-
-
-## Extending Authorization with Custom Parameters
-You can extend the whitelisted parameters of authorization endpoint beyond the defaults. These will
-be available in `ctx.oidc.params` as well as passed to the interaction session
-object for you to read.
-```js
-const oidc = new Provider('http://localhost:3000', {
-  extraParams: ['utm_campaign', 'utm_medium', 'utm_source', 'utm_term'],
-});
-```
-
-
-## Extending Discovery with Custom Properties
-You can extend the returned discovery properties beyond the defaults
-```js
-const oidc = new Provider('http://localhost:3000', {
-  discovery: {
-    service_documentation: 'http://server.example.com/connect/service_documentation.html',
-    ui_locales_supported: ['en-US', 'en-GB', 'en-CA', 'fr-FR', 'fr-CA'],
-    version: '3.1',
-  }
-});
-```
-
-
-## Configuring Routes
-You can change the default routes by providing a routes object to the oidc-provider constructor.
-See the specific routes in [default configuration][defaults].
-
-```js
-const oidc = new Provider('http://localhost:3000', {
-  routes: {
-    authorization: '/authz',
-    certificates: '/jwks.json',
-  }
-});
-```
-
-
-## Fine-tuning supported algorithms
-The supported JWA algorithms are configured with the [whitelistedJWA](#whitelistedjwa) configuration
-property.
-
-- whitelisted symmetric algorithms are available all the time
-- whitelisted asymmetric algorithms are available when the provider is initialized with keystore
-  including keys that support those JWAs
 
 
 ## HTTP Request Library / Proxy settings
@@ -557,11 +384,6 @@ console.log('httpOptions %j', provider.defaultHttpOptions);
 ```
 
 
-## Authentication Context Class Reference
-Supply an array of string values to acrValues configuration option to set `acr_values_supported`.
-Passing an empty array disables the acr claim and removes `acr_values_supported` from discovery.
-
-
 ## Registering module middlewares (helmet, ip-filters, rate-limiters, etc)
 When using `provider.app` or `provider.callback` as a mounted application in your own koa or express
 stack just follow the respective module's documentation. However, when using the `provider.app` Koa
@@ -588,7 +410,7 @@ provider.use(async (ctx, next) => {
   /** pre-processing
    * you may target a specific action here by matching `ctx.path`
    */
-  console.log('middleware pre', ctx.method, ctx.path);
+  console.log('pre middleware', ctx.method, ctx.path);
 
   await next();
   /** post-processing
@@ -597,27 +419,25 @@ provider.use(async (ctx, next) => {
    *
    * `authorization`
    * `certificates`
+   * `check_session_origin`
+   * `check_session`
    * `client_delete`
    * `client_update`
+   * `client`
    * `code_verification`
    * `device_authorization`
    * `device_resume`
+   * `discovery`
    * `end_session`
+   * `end_session_confirm`
    * `introspection`
    * `registration`
    * `resume`
    * `revocation`
    * `token`
    * `userinfo`
-   * `webfinger`
-   * `check_session`
-   * `check_session_origin`
-   * `client`
-   * `discovery`
-   *
-   * ctx.method === 'OPTIONS' is then useful for filtering out CORS Pre-flights
    */
-   console.log('middleware post', ctx.method, ctx.oidc.route);
+   console.log('post middleware', ctx.method, ctx.oidc.route);
 });
 ```
 
@@ -679,31 +499,157 @@ location / {
 ```
 
 
-## Aggregated and Distributed claims
-Returning aggregated and distributed claims is as easy as having your Account#claims method return
-the two necessary members `_claim_sources` and `_claim_names` with the
-[expected][aggregated-distributed-claims] properties. oidc-provider will include only the
-sources for claims that are part of the request scope, omitting the ones that the RP did not request
-and leaving out the entire `_claim_sources` and `_claim_sources` if they bear no requested claims.
-
-Note: to make sure the RPs can expect these claims you should configure your discovery to return
-the respective claim types via the `claim_types_supported` property.
-```js
-const oidc = new Provider('http://localhost:3000', {
-  discovery: {
-    claim_types_supported: ['normal', 'aggregated', 'distributed']
-  }
-});
-```
-
-
 ## Configuration options
 
 <!-- DO NOT EDIT, COMMIT OR STAGE CHANGES BELOW THIS LINE -->
 <!-- START CONF OPTIONS -->
+### adapter
+
+The provided example and any new instance of oidc-provider will use the basic in-memory adapter for storing issued tokens, codes, user sessions, dynamically registered clients, etc. This is fine as long as you develop, configure and generally just play around since every time you restart your process all information will be lost. As soon as you cannot live with this limitation you will be required to provide your own custom adapter constructor for oidc-provider to use. This constructor will be called for every model accessed the first time it is needed. The API oidc-provider expects is documented [here](/example/my_adapter.js).   
+  
+
+<details>
+  <summary>(Click to expand) MongoDB adapter implementation</summary>
+  <br>
+
+
+See [/example/adapters/mongodb.js](/example/adapters/mongodb.js)  
+
+
+</details>
+<details>
+  <summary>(Click to expand) Redis adapter implementation</summary>
+  <br>
+
+
+See [/example/adapters/redis.js](/example/adapters/redis.js)  
+
+
+</details>
+<details>
+  <summary>(Click to expand) Redis w/ ReJSON adapter implementation</summary>
+  <br>
+
+
+See [/example/adapters/redis_rejson.js](/example/adapters/redis_rejson.js)  
+
+
+</details>
+<details>
+  <summary>(Click to expand) Default in-memory adapter implementation</summary>
+  <br>
+
+
+See [/lib/adapters/memory_adapter.js](/lib/adapters/memory_adapter.js)  
+
+
+</details>
+
+### clients
+
+Array of objects representing client metadata. These clients are referred to as static, they don't expire, never reload, are always available. If the client metadata in this array is invalid the Provider instantiation will fail with an error. In addition to these clients the provider will use your adapter's `find` method when a non-cached client_id is encountered. If you only wish to support statically configured clients and no dynamic registration then make it so that your adapter resolves client find calls with a falsy value (e.g. `return Promise.resolve()`) and don't take unnecessary DB trips.   
+ Client's metadata is validated as defined by the respective specification they've been defined in.   
+  
+
+
+_**default value**_:
+```js
+[]
+```
+<details>
+  <summary>(Click to expand) Available Metadata</summary>
+  <br>
+
+
+application_type, client_id, client_name, client_secret, client_uri, contacts, default_acr_values, default_max_age, grant_types, id_token_signed_response_alg, initiate_login_uri, jwks, jwks_uri, logo_uri, policy_uri, post_logout_redirect_uris, redirect_uris, require_auth_time, response_types, scope, sector_identifier_uri, subject_type, token_endpoint_auth_method, tos_uri, userinfo_signed_response_alg <br/><br/>The following metadata is available but may not be recognized depending on your provider's configuration.<br/><br/> authorization_encrypted_response_alg, authorization_encrypted_response_enc, authorization_signed_response_alg, backchannel_logout_session_required, backchannel_logout_uri, frontchannel_logout_session_required, frontchannel_logout_uri, id_token_encrypted_response_alg, id_token_encrypted_response_enc, introspection_encrypted_response_alg, introspection_encrypted_response_enc, introspection_endpoint_auth_method, introspection_endpoint_auth_signing_alg, introspection_signed_response_alg, request_object_encryption_alg, request_object_encryption_enc, request_object_signing_alg, request_uris, revocation_endpoint_auth_method, revocation_endpoint_auth_signing_alg, tls_client_auth_san_dns, tls_client_auth_san_email, tls_client_auth_san_ip, tls_client_auth_san_uri, tls_client_auth_subject_dn, tls_client_certificate_bound_access_tokens, token_endpoint_auth_signing_alg, userinfo_encrypted_response_alg, userinfo_encrypted_response_enc, web_message_uris  
+
+
+</details>
+
+### jwks
+
+JSON Web Key Set used by the provider for signing and encryption. The object must be in [JWK Set format](https://tools.ietf.org/html/rfc7517#section-5). All provided keys must be private keys. **Note:** Be sure to follow best practices for distributing private keying material and secrets for your respective target deployment environment.   
+   
+ Supported key types are:   
+ - RSA
+ - EC (P-256, P-384 and P-521 curves)   
+  
+
+_**recommendation**_: Provider key rotation The following action order is recommended when rotating signing keys on a distributed deployment with rolling reloads in place.
+ 1. push new keys at the very end of the "keys" array in your JWKS, this means the keys will become available for verification should they be encountered but not yet used for signing
+ 2. reload all your processes
+ 3. move your new key to the very front of the "keys" array in your JWKS, this means the key will be used for signing after reload
+ 4. reload all your processes  
+
+_**default value**_:
+```js
+{
+  keys: [
+    {
+      alg: 'RS256',
+      d: 'VEZOsY07JTFzGTqv6cC2Y32vsfChind2I_TTuvV225_-0zrSej3XLRg8iE_u0-3GSgiGi4WImmTwmEgLo4Qp3uEcxCYbt4NMJC7fwT2i3dfRZjtZ4yJwFl0SIj8TgfQ8ptwZbFZUlcHGXZIr4nL8GXyQT0CK8wy4COfmymHrrUoyfZA154ql_OsoiupSUCRcKVvZj2JHL2KILsq_sh_l7g2dqAN8D7jYfJ58MkqlknBMa2-zi5I0-1JUOwztVNml_zGrp27UbEU60RqV3GHjoqwI6m01U7K0a8Q_SQAKYGqgepbAYOA-P4_TLl5KC4-WWBZu_rVfwgSENwWNEhw8oQ',
+      dp: 'E1Y-SN4bQqX7kP-bNgZ_gEv-pixJ5F_EGocHKfS56jtzRqQdTurrk4jIVpI-ZITA88lWAHxjD-OaoJUh9Jupd_lwD5Si80PyVxOMI2xaGQiF0lbKJfD38Sh8frRpgelZVaK_gm834B6SLfxKdNsP04DsJqGKktODF_fZeaGFPH0',
+      dq: 'F90JPxevQYOlAgEH0TUt1-3_hyxY6cfPRU2HQBaahyWrtCWpaOzenKZnvGFZdg-BuLVKjCchq3G_70OLE-XDP_ol0UTJmDTT-WyuJQdEMpt_WFF9yJGoeIu8yohfeLatU-67ukjghJ0s9CBzNE_LrGEV6Cup3FXywpSYZAV3iqc',
+      e: 'AQAB',
+      kid: 'keystore-CHANGE-ME',
+      kty: 'RSA',
+      n: 'xwQ72P9z9OYshiQ-ntDYaPnnfwG6u9JAdLMZ5o0dmjlcyrvwQRdoFIKPnO65Q8mh6F_LDSxjxa2Yzo_wdjhbPZLjfUJXgCzm54cClXzT5twzo7lzoAfaJlkTsoZc2HFWqmcri0BuzmTFLZx2Q7wYBm0pXHmQKF0V-C1O6NWfd4mfBhbM-I1tHYSpAMgarSm22WDMDx-WWI7TEzy2QhaBVaENW9BKaKkJklocAZCxk18WhR0fckIGiWiSM5FcU1PY2jfGsTmX505Ub7P5Dz75Ygqrutd5tFrcqyPAtPTFDk8X1InxkkUwpP3nFU5o50DGhwQolGYKPGtQ-ZtmbOfcWQ',
+      p: '5wC6nY6Ev5FqcLPCqn9fC6R9KUuBej6NaAVOKW7GXiOJAq2WrileGKfMc9kIny20zW3uWkRLm-O-3Yzze1zFpxmqvsvCxZ5ERVZ6leiNXSu3tez71ZZwp0O9gys4knjrI-9w46l_vFuRtjL6XEeFfHEZFaNJpz-lcnb3w0okrbM',
+      q: '3I1qeEDslZFB8iNfpKAdWtz_Wzm6-jayT_V6aIvhvMj5mnU-Xpj75zLPQSGa9wunMlOoZW9w1wDO1FVuDhwzeOJaTm-Ds0MezeC4U6nVGyyDHb4CUA3ml2tzt4yLrqGYMT7XbADSvuWYADHw79OFjEi4T3s3tJymhaBvy1ulv8M',
+      qi: 'wSbXte9PcPtr788e713KHQ4waE26CzoXx-JNOgN0iqJMN6C4_XJEX-cSvCZDf4rh7xpXN6SGLVd5ibIyDJi7bbi5EQ5AXjazPbLBjRthcGXsIuZ3AtQyR0CEWNSdM7EyM5TRdyZQ9kftfz9nI03guW3iKKASETqX2vh0Z8XRjyU',
+      use: 'sig'
+    }
+  ]
+}
+```
+<details>
+  <summary>(Click to expand) Generating keys
+</summary>
+  <br>
+
+```js
+const { JWKS: { KeyStore } } = require('@panva/jose');
+const keystore = new KeyStore();
+keystore.generateSync('RSA', 2048, {
+  alg: 'RS256',
+  use: 'sig',
+});
+console.log('this is the full private JWKS:\n', keystore.toJWKS(true));
+```
+</details>
+<details>
+  <summary>(Click to expand) Generating keys for both signing and encryption</summary>
+  <br>
+
+
+Re-using the same keys for both encryption and signing is discouraged so it is best to generate one with `{ "use": "sig" }` and another with { "use": "enc" }, e.g.
+  
+
+```js
+const { JWKS: { KeyStore } } = require('@panva/jose');
+const keystore = new KeyStore();
+Promise.all([
+  keystore.generate('RSA', 2048, {
+    use: 'sig',
+  }),
+  keystore.generate('RSA', 2048, {
+    use: 'enc',
+  }),
+  keystore.generate('EC', 'P-256', {
+    use: 'sig',
+  }),
+  keystore.generate('EC', 'P-256', {
+    use: 'enc',
+  })
+]).then(function () {
+  console.log('this is the full private JWKS:\n', keystore.toJWKS(true));
+});
+```
+</details>
+
 ### features
 
-Enable/disable features. Some features are still either based on draft or experimental RFCs. Enabling those will produce a warning in your console and you must be aware that breaking changes may occur between draft implementations and that those will be published as minor versions of oidc-provider. See the example below on how to acknowledge the specification is a draft (this will remove the warning log) and ensure the provider instance will fail to initialize if a new version of oidc-provider bundles newer version of the RFC with breaking changes in it.   
+Enable/disable features. Some features are still either based on draft or experimental RFCs. Enabling those will produce a warning in your console and you must be aware that breaking changes may occur between draft implementations and that those will be published as minor versions of oidc-provider. See the example below on how to acknowledge the specification is a draft (this will remove the warning log) and ensure the provider instance will fail to instantiate if a new version of oidc-provider bundles newer version of the RFC with breaking changes in it.   
   
 
 <details>
@@ -864,13 +810,13 @@ Enables Device Authorization Grant
 _**default value**_:
 ```js
 {
-  enabled: false,
   charset: 'base-20',
-  mask: '****-****',
   deviceInfo: [Function: deviceInfo], // see expanded details below
-  userCodeInputSource: [AsyncFunction: userCodeInputSource], // see expanded details below
+  enabled: false,
+  mask: '****-****',
+  successSource: [AsyncFunction: successSource], // see expanded details below
   userCodeConfirmSource: [AsyncFunction: userCodeConfirmSource], // see expanded details below
-  successSource: [AsyncFunction: successSource]
+  userCodeInputSource: [AsyncFunction: userCodeInputSource]
 }
 ```
 <details>
@@ -1177,9 +1123,9 @@ _**default value**_:
 ```js
 {
   enabled: false,
+  idFactory: [Function: idFactory], // see expanded details below
   initialAccessToken: false,
   policies: undefined,
-  idFactory: [Function: idFactory], // see expanded details below
   secretFactory: [Function: secretFactory]
 }
 ```
@@ -1617,12 +1563,12 @@ _**default value**_:
 ```js
 {
   acr: null,
-  sid: null,
   auth_time: null,
   iss: null,
   openid: [
     'sub'
-  ]
+  ],
+  sid: null
 }
 ```
 
@@ -1687,11 +1633,11 @@ _**recommendation**_: set cookies.keys and cookies.long.signed = true
 _**default value**_:
 ```js
 {
-  secure: undefined,
-  signed: undefined,
   httpOnly: true,
   maxAge: 1209600000,
-  overwrite: true
+  overwrite: true,
+  secure: undefined,
+  signed: undefined
 }
 ```
 
@@ -1703,9 +1649,9 @@ Cookie names used by the OP to store and transfer various states.
 _**default value**_:
 ```js
 {
-  session: '_session',
   interaction: '_interaction',
   resume: '_interaction_resume',
+  session: '_session',
   state: '_state'
 }
 ```
@@ -1719,11 +1665,11 @@ _**recommendation**_: set cookies.keys and cookies.short.signed = true
 _**default value**_:
 ```js
 {
-  secure: undefined,
-  signed: undefined,
   httpOnly: true,
   maxAge: 600000,
-  overwrite: true
+  overwrite: true,
+  secure: undefined,
+  signed: undefined
 }
 ```
 
@@ -1913,9 +1859,9 @@ This option allows to configure the token storage and value formats. The differe
 _**default value**_:
 ```js
 {
-  extraJwtAccessTokenClaims: [AsyncFunction: extraJwtAccessTokenClaims], // see expanded details below
   AccessToken: undefined,
-  ClientCredentials: undefined
+  ClientCredentials: undefined,
+  extraJwtAccessTokenClaims: [AsyncFunction: extraJwtAccessTokenClaims]
 }
 ```
 <details>
@@ -2558,14 +2504,14 @@ _**default value**_:
   authorization: '/auth',
   certificates: '/certs',
   check_session: '/session/check',
+  code_verification: '/device',
   device_authorization: '/device/auth',
   end_session: '/session/end',
   introspection: '/token/introspection',
   registration: '/reg',
   revocation: '/token/revocation',
   token: '/token',
-  userinfo: '/me',
-  code_verification: '/device'
+  userinfo: '/me'
 }
 ```
 
@@ -3281,18 +3227,9 @@ _**default value**_:
 </details>
 <!-- END CONF OPTIONS -->
 
-[client-metadata]: https://openid.net/specs/openid-connect-registration-1_0.html#ClientMetadata
-[core-account-claims]: https://openid.net/specs/openid-connect-core-1_0.html#ScopeClaims
-[core-offline-access]: https://openid.net/specs/openid-connect-core-1_0.html#OfflineAccess
-[core-jwt-parameters]: https://openid.net/specs/openid-connect-core-1_0.html#JWTRequests
-[revocation]: https://tools.ietf.org/html/rfc7009
-[session-management]: https://openid.net/specs/openid-connect-session-1_0-28.html
 [got-library]: https://github.com/sindresorhus/got
-[request-library]: https://github.com/request/request
-[password-grant]: https://tools.ietf.org/html/rfc6749#section-4.3
 [token-exchange]: https://tools.ietf.org/html/draft-ietf-oauth-token-exchange
 [defaults]: /lib/helpers/defaults.js
-[cookie-module]: https://github.com/pillarjs/cookies#cookiesset-name--value---options--
 [keygrip-module]: https://www.npmjs.com/package/keygrip
 [support-patreon]: https://www.patreon.com/panva
 [support-paypal]: https://www.paypal.me/panva

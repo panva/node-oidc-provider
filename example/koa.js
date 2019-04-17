@@ -11,11 +11,11 @@ const mount = require('koa-mount');
 const Provider = require('../lib'); // require('oidc-provider');
 
 const Account = require('./support/account');
-const { provider: providerConfiguration, clients, keys } = require('./support/configuration');
+const configuration = require('./support/configuration');
 const routes = require('./routes/koa');
 
 const { PORT = 3000, ISSUER = `http://localhost:${PORT}`, TIMEOUT } = process.env;
-providerConfiguration.findById = Account.findById;
+configuration.findById = Account.findById;
 
 const app = new Koa();
 app.use(helmet());
@@ -27,10 +27,10 @@ render(app, {
 });
 
 if (process.env.NODE_ENV === 'production') {
-  app.keys = providerConfiguration.cookies.keys;
+  app.keys = configuration.cookies.keys;
   app.proxy = true;
-  set(providerConfiguration, 'cookies.short.secure', true);
-  set(providerConfiguration, 'cookies.long.secure', true);
+  set(configuration, 'cookies.short.secure', true);
+  set(configuration, 'cookies.long.secure', true);
 
   app.use(async (ctx, next) => {
     if (ctx.secure) {
@@ -47,18 +47,22 @@ if (process.env.NODE_ENV === 'production') {
   });
 }
 
-const provider = new Provider(ISSUER, providerConfiguration);
-if (TIMEOUT) {
-  provider.defaultHttpOptions = { timeout: parseInt(TIMEOUT, 10) };
-}
-
 let server;
 (async () => {
-  await provider.initialize({
-    adapter: process.env.MONGODB_URI ? require('./support/heroku_mongo_adapter') : undefined, // eslint-disable-line global-require
-    clients,
-    keystore: { keys },
-  });
+  let adapter;
+  if (process.env.MONGODB_URI) {
+    adapter = require('./support/heroku_mongo_adapter'); // eslint-disable-line global-require
+    await adapter.connect();
+  }
+
+  const provider = new Provider(ISSUER, { adapter, ...configuration });
+
+  if (TIMEOUT) {
+    provider.defaultHttpOptions = { timeout: parseInt(TIMEOUT, 10) };
+  }
+
+  provider.use(helmet());
+
   app.use(routes(provider).routes());
   app.use(mount(provider.app));
   server = app.listen(PORT, () => {

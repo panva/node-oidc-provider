@@ -47,22 +47,11 @@ describe('Provider declaring supported algorithms', () => {
       whitelistedJWA: {
         idTokenSigningAlgValues: ['HS256', 'RS256'],
       },
-    });
-
-    expect(i(provider).configuration('idTokenSigningAlgValues')).to.eql(['HS256']);
-
-    return provider.initialize({
-      clients: [
-        Object.assign({
-          id_token_signed_response_alg: 'HS384',
-        }, client),
-      ],
-      keystore: {
+      jwks: {
         keys: [jose.JWK.generateSync('RSA').toJWK(true)],
       },
-    }).then(fail, (err) => {
-      expect(i(provider).configuration('idTokenSigningAlgValues')).to.eql(['HS256', 'RS256']);
-      expect(err).to.have.property('error_description').matches(/^id_token_signed_response_alg/);
     });
+
+    expect(i(provider).configuration('idTokenSigningAlgValues')).to.eql(['HS256', 'RS256']);
   });
 });

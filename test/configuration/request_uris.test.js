@@ -9,15 +9,14 @@ describe('client.requestUris', () => {
       features: {
         requestUri: { enabled: true, requireUriRegistration: true },
       },
-    });
-
-    return provider.initialize({
       clients: [{
         client_id: 'client',
         client_secret: 'secret',
         redirect_uris: ['https://client.example.com/cb'],
       }],
-    }).then(() => provider.Client.find('client'))
+    });
+
+    return provider.Client.find('client')
       .then((client) => {
         expect(client).to.have.property('requestUris').that.is.an('array');
         expect(client.requestUris).to.be.empty;
@@ -30,15 +29,14 @@ describe('client.requestUris', () => {
       features: {
         requestUri: { enabled: true, requireUriRegistration: false },
       },
-    });
-
-    return provider.initialize({
       clients: [{
         client_id: 'client',
         client_secret: 'secret',
         redirect_uris: ['https://client.example.com/cb'],
       }],
-    }).then(() => provider.Client.find('client'))
+    });
+
+    return provider.Client.find('client')
       .then(client => expect(client.requestUris).to.be.undefined);
   });
 });

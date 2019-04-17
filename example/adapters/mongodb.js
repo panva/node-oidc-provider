@@ -119,6 +119,8 @@ class MongoAdapter {
     return DB.collection(name);
   }
 
+  // This is not part of the required or supported API, all initialization should happen before
+  // you pass the adapter to `new Provider`
   static async connect() {
     const connection = await MongoClient.connect(process.env.MONGODB_URI, {
       useNewUrlParser: true,

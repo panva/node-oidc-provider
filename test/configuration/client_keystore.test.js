@@ -36,7 +36,7 @@ describe('client keystore refresh', () => {
   before(bootstrap(__dirname, { config: 'client_keystore' }));
 
   before(async function () {
-    return i(this.provider).clientAdd({
+    return i(this.provider).clientAddStatic({
       client_id: 'client',
       client_secret: 'secret',
       redirect_uris: ['https://client.example.com/cb'],
@@ -44,7 +44,7 @@ describe('client keystore refresh', () => {
       id_token_signed_response_alg: 'none',
       id_token_encrypted_response_alg: 'ECDH-ES+A128KW',
       id_token_encrypted_response_enc: 'A128CBC-HS256',
-    }, { static: true });
+    });
   });
 
   afterEach(async function () {
