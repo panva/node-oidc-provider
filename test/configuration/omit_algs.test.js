@@ -3,14 +3,6 @@ const jose = require('@panva/jose');
 
 const Provider = require('../../lib');
 
-const fail = () => { throw new Error('expected promise to be rejected'); };
-
-const client = {
-  client_id: 'foo',
-  client_secret: 'atleast32byteslongforHS256mmkay?',
-  redirect_uris: ['https://client.example.com/cb'],
-};
-
 describe('Provider declaring supported algorithms', () => {
   it('validates the configuration properties', () => {
     expect(() => {
