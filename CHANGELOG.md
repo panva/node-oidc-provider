@@ -2,6 +2,35 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+# [6.0.0-alpha.2](https://github.com/panva/node-oidc-provider/compare/v6.0.0-alpha.1...v6.0.0-alpha.2) (2019-04-18)
+
+
+### Bug Fixes
+
+* device flow - mark codes as already used at the right time ([7b913fd](https://github.com/panva/node-oidc-provider/commit/7b913fd))
+
+
+### Code Refactoring
+
+* remove provider.initialize() ([ec71ed0](https://github.com/panva/node-oidc-provider/commit/ec71ed0))
+
+
+### BREAKING CHANGES
+
+* `provider.initialize()` has been removed.
+* what was previously passed to `initialize()` as
+`keystore` must now be passed as configuration property (as `jwks` and
+it must be a JWKS formatted object, no longer a KeyStore instance.
+* what was previously passed to `initialize()` as
+`clients` must now be passed as configuration property (as `clients`)
+and may not contain `sector_identifier_uri`,
+* what was previously passed to `initialize()` as
+`adapter` must now be passed as configuration property (as `adapter`).
+* provider will no longer call `adapter`'s `connect`
+method.
+
+
+
 # [6.0.0-alpha.1](https://github.com/panva/node-oidc-provider/compare/v6.0.0-alpha.0...v6.0.0-alpha.1) (2019-04-16)
 
 
