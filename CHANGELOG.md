@@ -19,7 +19,7 @@ All notable changes to this project will be documented in this file. See [standa
 
 * `provider.initialize()` has been removed.
 * what was previously passed to `initialize()` as
-`keystore` must now be passed as configuration property (as `jwks` and
+`keystore` must now be passed as configuration property (as `jwks`) and
 it must be a JWKS formatted object, no longer a KeyStore instance.
 * what was previously passed to `initialize()` as
 `clients` must now be passed as configuration property (as `clients`)

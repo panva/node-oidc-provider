@@ -9,9 +9,9 @@ loaded client or session.
 |---|---|---|
 | `access_token.destroyed` | `(token)` | ... whenever an access token is destroyed |
 | `access_token.saved` | `(token)` | ... whenever an access token is saved |
-| `authorization_code.consumed` | `(token)` | ... whenever an authorization code is consumed |
-| `authorization_code.destroyed` | `(token)` | ... whenever an authorization code is destroyed |
-| `authorization_code.saved` | `(token)` | ... whenever an authorization code is saved |
+| `authorization_code.consumed` | `(code)` | ... whenever an authorization code is consumed |
+| `authorization_code.destroyed` | `(code)` | ... whenever an authorization code is destroyed |
+| `authorization_code.saved` | `(code)` | ... whenever an authorization code is saved |
 | `authorization.accepted` | `(ctx)` | ... with every syntactically correct authorization request pending resolving |
 | `authorization.error` | `(ctx, error)` | ... whenever a handled error is encountered in the `authorization` endpoint |
 | `authorization.success` | `(ctx)` | ... with every successfully completed authorization request |
@@ -22,9 +22,9 @@ loaded client or session.
 | `check_session.error` | `(ctx, error)` | ... whenever a handled error is encountered in the `check_session` endpoint |
 | `client_credentials.destroyed` | `(token)` | ... whenever client credentials token is destroyed |
 | `client_credentials.saved` | `(token)` | ... whenever client credentials token is saved |
-| `device_code.consumed` | `(token)` | ... whenever a device code is consumed |
-| `device_code.destroyed` | `(token)` | ... whenever a device code is destroyed |
-| `device_code.saved` | `(token)` | ... whenever a device code is saved |
+| `device_code.consumed` | `(code)` | ... whenever a device code is consumed |
+| `device_code.destroyed` | `(code)` | ... whenever a device code is destroyed |
+| `device_code.saved` | `(code)` | ... whenever a device code is saved |
 | `discovery.error` | `(ctx, error)` | ... whenever a handled error is encountered in the `discovery` endpoint |
 | `end_session.error` | `(ctx, error)` | ... whenever a handled error is encountered in the `end_session` endpoint |
 | `end_session.success` | `(ctx)` | ... with every success end session request |
@@ -33,9 +33,9 @@ loaded client or session.
 | `grant.success` | `(ctx)` | ... with every successful grant request. Useful i.e. for collecting metrics or triggering any action you need to execute after succeeded grant |
 | `initial_access_token.destroyed` | `(token)` | ... whenever inital access token is destroyed |
 | `initial_access_token.saved` | `(token)` | ... whenever inital access token is saved |
-| `interaction.destroyed` | `(token)` | ... whenever interaction session is destroyed |
+| `interaction.destroyed` | `(interaction)` | ... whenever interaction session is destroyed |
 | `interaction.ended` | `(ctx)` | ... whenever interaction has been resolved and the authorization request continues being processed |
-| `interaction.saved` | `(token)` | ... whenever interaction session is saved |
+| `interaction.saved` | `(interaction)` | ... whenever interaction session is saved |
 | `interaction.started` | `(ctx, interaction)` | ... whenever interaction is being requested from the end-user |
 | `introspection.error` | `(ctx, error)` | ... whenever a handled error is encountered in the `introspection` endpoint |
 | `refresh_token.consumed` | `(token)` | ... whenever a refresh token is consumed |
@@ -50,8 +50,10 @@ loaded client or session.
 | `registration_read.error` | `(ctx, error)` | ... whenever a handled error is encountered in the GET `registration` endpoint |
 | `registration_update.error` | `(ctx, error)` | ... whenever a handled error is encountered in the PUT `registration` endpoint |
 | `registration_update.success` | `(ctx, client)` | ... with every successful update client registration request |
+| `replay_detection.destroyed` | `(replay)` | ... whenever replay detection document is destroyed |
+| `replay_detection.saved` | `(replay)` | ... whenever replay detection document is saved |
 | `revocation.error` | `(ctx, error)` | ... whenever a handled error is encountered in the `revocation` endpoint |
 | `server_error` | `(ctx, error)` | ... whenever an exception is thrown or promise rejected from   either the Provider or your provided  adapters. If it comes from the library you should probably report it |
-| `session.destroyed` | `(token)` | ... whenever session is destroyed |
-| `session.saved` | `(token)` | ... whenever session is saved |
+| `session.destroyed` | `(session)` | ... whenever session is destroyed |
+| `session.saved` | `(session)` | ... whenever session is saved |
 | `userinfo.error` | `(ctx, error)` | ... whenever a handled error is encountered in the `userinfo` endpoint |
