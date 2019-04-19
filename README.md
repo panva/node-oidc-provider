@@ -34,6 +34,7 @@ See [v5.x](https://github.com/panva/node-oidc-provider/tree/v5.x) for the last v
 - [Certification](#certification)
 - [Get started](#get-started)
 - [Configuration](#configuration)
+- [Recipes](#recipes)
 - [Debugging](#debugging)
 - [Events](#events)
 
@@ -139,6 +140,10 @@ const server = oidc.listen(3000, () => {
   console.log('oidc-provider listening on port 3000, check http://localhost:3000/.well-known/openid-configuration');
 });
 ```
+
+
+## Recipes
+Collection of useful configurations use cases are available over at [recipes](/recipes).
 
 
 ## Debugging
