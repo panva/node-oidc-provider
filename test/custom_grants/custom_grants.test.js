@@ -5,12 +5,8 @@ const { expect } = require('chai');
 const bootstrap = require('../test_helper');
 
 function register(provider, grantType, params, options) {
-  provider.registerGrantType(grantType, (passedProvider) => {
-    expect(passedProvider).to.equal(provider);
-    return async function (ctx, next) {
-      ctx.body = { winner: ctx.oidc.params.name };
-      await next();
-    };
+  provider.registerGrantType(grantType, (ctx) => {
+    ctx.body = { winner: ctx.oidc.params.name };
   }, params, options);
 }
 

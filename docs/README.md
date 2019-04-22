@@ -305,44 +305,31 @@ router.post('/interaction/:uid/login', async (ctx, next) => {
 
 ## Custom Grant Types
 oidc-provider comes with the basic grants implemented, but you can register your own grant types,
-for example to implement a [OAuth 2.0 Token Exchange][token-exchange]. You can check the standard
+for example to implement an [OAuth 2.0 Token Exchange][token-exchange]. You can check the standard
 grant factories [here](/lib/actions/grants).
 
+**Note: Since custom grant types are registered after instantiating a Provider instance they can
+only be used by clients loaded by an adapter, statically configured clients will throw
+InvalidClientMetadata errors.**
+
 ```js
-const parameters = ['username', 'password'];
+const parameters = [
+  'audience', 'resource', 'scope', 'requested_token_type',
+  'subject_token', 'subject_token_type',
+  'actor_token', 'actor_token_type'
+];
+const allowedDuplicateParameters = ['audience', 'resource'];
+const grantType = 'urn:ietf:params:oauth:grant-type:token-exchange';
 
-// For OAuth 2.0 Token Exchange you can specify allowedDuplicateParameters as ['audience', 'resource']
-const allowedDuplicateParameters = [];
+async function tokenExchangeHandler(ctx, next) {
+  // ctx.oidc.params holds the parsed parameters
+  // ctx.oidc.client has the authenticated client
 
-provider.registerGrantType('password', function passwordGrantTypeFactory(providerInstance) {
-  return async function passwordGrantType(ctx, next) {
-    let account;
-    if ((account = await Account.authenticate(ctx.oidc.params.username, ctx.oidc.params.password))) {
-      const AccessToken = providerInstance.AccessToken;
-      const at = new AccessToken({
-        gty: 'password',
-        accountId: account.id,
-        client: ctx.oidc.client,
-      });
+  // your grant implementation
+  // see /lib/actions/grants for references on how to instantiate and issue tokens
+}
 
-      const accessToken = await at.save();
-
-      ctx.body = {
-        access_token: accessToken,
-        expires_in: at.expiration,
-        token_type: 'Bearer',
-      };
-    } else {
-      ctx.body = {
-        error: 'invalid_grant',
-        error_description: 'invalid credentials provided',
-      };
-      ctx.status = 400;
-    }
-
-    await next();
-  };
-}, parameters, allowedDuplicateParameters);
+provider.registerGrantType(grantType, tokenExchangeHandler, parameters, allowedDuplicateParameters);
 ```
 
 
