@@ -627,7 +627,10 @@ Promise.all([
   }),
   keystore.generate('EC', 'P-256', {
     use: 'enc',
-  })
+  }),
+  keystore.generate('OKP', 'Ed25519', {
+    use: 'sig',
+  }),
 ]).then(function () {
   console.log('this is the full private JWKS:\n', keystore.toJWKS(true));
 });
@@ -2721,7 +2724,8 @@ _**default value**_:
   'HS256',
   'RS256',
   'PS256',
-  'ES256'
+  'ES256',
+  'EdDSA'
 ]
 ```
 <details>
@@ -2735,6 +2739,7 @@ _**default value**_:
   'RS256', 'RS384', 'RS512',
   'PS256', 'PS384', 'PS512',
   'ES256', 'ES384', 'ES512',
+  'EdDSA',
 ]
 ```
 </details>
@@ -2816,7 +2821,8 @@ _**default value**_:
   'HS256',
   'RS256',
   'PS256',
-  'ES256'
+  'ES256',
+  'EdDSA'
 ]
 ```
 <details>
@@ -2831,6 +2837,7 @@ _**default value**_:
   'RS256', 'RS384', 'RS512',
   'PS256', 'PS384', 'PS512',
   'ES256', 'ES384', 'ES512',
+  'EdDSA',
 ]
 ```
 </details>
@@ -2912,7 +2919,8 @@ _**default value**_:
   'HS256',
   'RS256',
   'PS256',
-  'ES256'
+  'ES256',
+  'EdDSA'
 ]
 ```
 <details>
@@ -2926,6 +2934,7 @@ _**default value**_:
   'RS256', 'RS384', 'RS512',
   'PS256', 'PS384', 'PS512',
   'ES256', 'ES384', 'ES512',
+  'EdDSA',
 ]
 ```
 </details>
@@ -2942,7 +2951,8 @@ _**default value**_:
   'HS256',
   'RS256',
   'PS256',
-  'ES256'
+  'ES256',
+  'EdDSA'
 ]
 ```
 <details>
@@ -2957,6 +2967,7 @@ _**default value**_:
   'RS256', 'RS384', 'RS512',
   'PS256', 'PS384', 'PS512',
   'ES256', 'ES384', 'ES512',
+  'EdDSA',
 ]
 ```
 </details>
@@ -3038,7 +3049,8 @@ _**default value**_:
   'HS256',
   'RS256',
   'PS256',
-  'ES256'
+  'ES256',
+  'EdDSA'
 ]
 ```
 <details>
@@ -3053,6 +3065,7 @@ _**default value**_:
   'RS256', 'RS384', 'RS512',
   'PS256', 'PS384', 'PS512',
   'ES256', 'ES384', 'ES512',
+  'EdDSA',
 ]
 ```
 </details>
@@ -3069,7 +3082,8 @@ _**default value**_:
   'HS256',
   'RS256',
   'PS256',
-  'ES256'
+  'ES256',
+  'EdDSA'
 ]
 ```
 <details>
@@ -3083,6 +3097,7 @@ _**default value**_:
   'RS256', 'RS384', 'RS512',
   'PS256', 'PS384', 'PS512',
   'ES256', 'ES384', 'ES512',
+  'EdDSA',
 ]
 ```
 </details>
@@ -3099,7 +3114,8 @@ _**default value**_:
   'HS256',
   'RS256',
   'PS256',
-  'ES256'
+  'ES256',
+  'EdDSA'
 ]
 ```
 <details>
@@ -3113,6 +3129,7 @@ _**default value**_:
   'RS256', 'RS384', 'RS512',
   'PS256', 'PS384', 'PS512',
   'ES256', 'ES384', 'ES512',
+  'EdDSA',
 ]
 ```
 </details>
@@ -3194,7 +3211,8 @@ _**default value**_:
   'HS256',
   'RS256',
   'PS256',
-  'ES256'
+  'ES256',
+  'EdDSA'
 ]
 ```
 <details>
@@ -3209,6 +3227,7 @@ _**default value**_:
   'RS256', 'RS384', 'RS512',
   'PS256', 'PS384', 'PS512',
   'ES256', 'ES384', 'ES512',
+  'EdDSA',
 ]
 ```
 </details>

@@ -50,13 +50,11 @@ module.exports = Object.assign({
     encryption: { enabled: true }, // defaults to false
     frontchannelLogout: { enabled: true }, // defaults to false
     introspection: { enabled: true }, // defaults to false
-    jwtIntrospection: { enabled: true }, // defaults to false
     registration: { enabled: true }, // defaults to false
     request: { enabled: true }, // defaults to false
     revocation: { enabled: true }, // defaults to false
     sessionManagement: { enabled: true }, // defaults to false
     webMessageResponseMode: { enabled: true }, // defaults to false
-    jwtResponseModes: { enabled: true }, // defaults to false
   },
   formats: {
     extraJwtAccessTokenClaims(ctx, token) { // eslint-disable-line no-unused-vars
@@ -103,6 +101,12 @@ module.exports = Object.assign({
         use: 'enc',
         x: 'Eb3RtGgBGOEz33yu46aha_RU6pyBaYNlu6SawlWGGHQ',
         y: 'tUncttzF6Ud4Abfn1N2A1Rz2MBbJSdI0zuKS28BNb-U',
+      }, {
+        crv: 'Ed25519',
+        d: 'vxd-I9I5Tl76C2q7wkKteBqM0fYLa0Ev6C6CqjfFP5Q',
+        kty: 'OKP',
+        use: 'sig',
+        x: 'lDkysGJKRmJeUp8ncTyGraHPHHiIfdxSajxGm7Srla8',
       },
     ],
   },

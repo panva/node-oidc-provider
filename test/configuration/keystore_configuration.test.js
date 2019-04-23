@@ -27,7 +27,7 @@ describe('configuration.jwks', () => {
 
     expect(() => {
       new Provider('http://localhost', { jwks: this.keystore.toJWKS(true) });
-    }).to.throw('only private RSA or EC keys should be part of keystore configuration');
+    }).to.throw('only private RSA, EC or OKP keys should be part of keystore configuration');
   });
 
   it('must only contain private keys', async function () {
@@ -35,7 +35,7 @@ describe('configuration.jwks', () => {
 
     expect(() => {
       new Provider('http://localhost', { jwks: { keys: [this.keystore.get().toJWK()] } });
-    }).to.throw('only private RSA or EC keys should be part of keystore configuration');
+    }).to.throw('only private RSA, EC or OKP keys should be part of keystore configuration');
   });
 
   it('allows to instantiate without RS256 if ID Tokens only come from the token_endpoint', function () {

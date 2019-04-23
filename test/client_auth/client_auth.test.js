@@ -94,6 +94,7 @@ describe('client authentication options', () => {
         'ES256',
         'ES384',
         'ES512',
+        'EdDSA',
       ];
 
       expect(i(provider).configuration('tokenEndpointAuthSigningAlgValues')).to.eql(algs);
@@ -126,6 +127,7 @@ describe('client authentication options', () => {
         'ES256',
         'ES384',
         'ES512',
+        'EdDSA',
       ];
 
       expect(i(provider).configuration('tokenEndpointAuthSigningAlgValues')).to.eql(algs);

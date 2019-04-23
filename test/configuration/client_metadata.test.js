@@ -345,7 +345,7 @@ describe('Client metadata validation', () => {
     mustBeString(this.title);
     [
       'none', 'HS256', 'HS384', 'HS512', 'RS256', 'RS384', 'RS512',
-      'PS256', 'PS384', 'PS512', 'ES256', 'ES384', 'ES512',
+      'PS256', 'PS384', 'PS512', 'ES256', 'ES384', 'ES512', 'EdDSA',
     ].forEach((alg) => {
       allows(this.title, alg, { jwks: { keys: [sigKey] } });
     });
