@@ -1,7 +1,8 @@
 language: node_js
 node_js:
-  - 11.8.0 # min
+  - 12.0.0 # min
   - stable
+before_script: npx patch-package
 script: npm run coverage
 after_script: npx codecov
 jobs:
@@ -10,11 +11,13 @@ jobs:
       script: npm run lint
       node_js: stable
       after_script: skip
+      before_script: skip
     - stage: heroku deploy
       if: branch = master AND type = push
       install: skip
       script: skip
       after_script: skip
+      before_script: skip
       deploy:
         provider: heroku
         app: guarded-cliffs-8635
@@ -24,3 +27,4 @@ jobs:
       install: npm install got@^9.0.0 --no-save
       script: node test/trigger_conformance_build.js
       after_script: skip
+      before_script: skip
