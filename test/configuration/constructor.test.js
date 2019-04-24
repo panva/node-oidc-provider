@@ -5,6 +5,25 @@ const { expect } = require('chai');
 const Provider = require('../../lib');
 
 describe('Provider configuration', () => {
+  describe('clients', () => {
+    it('may not contain sector_identifier_uri', () => {
+      expect(() => {
+        new Provider('http://localhost:3000', {
+          clients: [
+            {
+              client_id: 'foo',
+              client_secret: 'bar',
+              redirect_uris: ['https://rp.example.com/cb'],
+              sector_identifier_uri: 'https://rp.example.com/sector',
+              subject_type: 'pairwise',
+            },
+          ],
+          subjectTypes: ['pairwise', 'public'],
+        });
+      }).to.throw('statically configured clients may not have sector_identifier_uri');
+    });
+  });
+
   describe('acrValues', () => {
     it('only accepts arrays and sets', () => {
       new Provider('http://localhost:3000', { acrValues: ['bronze', 'silver'] });
