@@ -80,7 +80,7 @@ If you or your business use oidc-provider, please consider becoming a [Patron][s
   - [logoutSource](#logoutsource)
   - [pairwiseIdentifier](#pairwiseidentifier)
   - [pkceMethods](#pkcemethods)
-  - [postLogoutRedirectUri](#postlogoutredirecturi)
+  - [postLogoutSuccessSource](#postlogoutsuccesssource)
   - [renderError](#rendererror)
   - [responseTypes](#responsetypes)
   - [revocationEndpointAuthMethods](#revocationendpointauthmethods)
@@ -417,6 +417,7 @@ provider.use(async (ctx, next) => {
    * `discovery`
    * `end_session`
    * `end_session_confirm`
+   * `end_session_success`
    * `introspection`
    * `registration`
    * `resume`
@@ -871,7 +872,7 @@ head>
 ody>
 <div>
   <h1>Sign-in Success</h1>
-  <p>Your login ${clientName ? `with ${clientName}` : ''} was successful, you can now close this page.</p>
+  <p>Your sign-in ${clientName ? `with ${clientName}` : ''} was successful, you can now close this page.</p>
 </div>
 body>
 html>`;
@@ -2294,7 +2295,7 @@ async issueRefreshToken(ctx, client, code) {
 
 ### logoutSource
 
-HTML source rendered when when session management feature renders a confirmation prompt for the User-Agent.  
+HTML source rendered when session management feature renders a confirmation prompt for the User-Agent.  
 
 
 _**default value**_:
@@ -2366,15 +2367,31 @@ _**default value**_:
 ]
 ```
 
-### postLogoutRedirectUri
+### postLogoutSuccessSource
 
-URL to which the OP redirects the User-Agent when no post_logout_redirect_uri and id_token_hint is provided by the RP  
+HTML source rendered when session management feature concludes a logout but there was no `post_logout_redirect_uri` provided by the client.  
 
 
 _**default value**_:
 ```js
-async postLogoutRedirectUri(ctx) {
-  return ctx.origin;
+async postLogoutSuccessSource(ctx) {
+  // @param ctx - koa request context
+  const {
+    clientId, clientName, clientUri, initiateLoginUri, logoUri, policyUri, tosUri,
+  } = ctx.oidc.client || {}; // client is defined if the user chose to stay logged in with the OP
+  const display = clientName || clientId;
+  ctx.body = `<!DOCTYPE html>
+<head>
+<title>Sign-out Success</title>
+<style>/* css and html classes omitted for brevity, see lib/helpers/defaults.js */</style>
+</head>
+<body>
+<div>
+  <h1>Sign-out Success</h1>
+  <p>Your sign-out ${display ? `with ${display}` : ''} was successful.</p>
+</div>
+</body>
+</html>`;
 }
 ```
 

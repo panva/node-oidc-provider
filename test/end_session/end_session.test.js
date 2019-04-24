@@ -5,7 +5,7 @@ const { expect } = require('chai');
 
 const bootstrap = require('../test_helper');
 const JWT = require('../../lib/helpers/jwt');
-const { InvalidRequest } = require('../../lib/helpers/errors');
+const { InvalidClient, InvalidRequest } = require('../../lib/helpers/errors');
 
 const route = '/session/end';
 
@@ -93,14 +93,14 @@ describe('logout endpoint', () => {
             });
         });
 
-        it('can omit the post_logout_redirect_uri and uses the provider one', function () {
+        it('can omit the post_logout_redirect_uri and uses the default one', function () {
           const params = { id_token_hint: this.idToken };
 
           return this.wrap({ route, verb, params })
             .expect(200)
             .expect(() => {
               const { state: { postLogoutRedirectUri } } = this.getSession();
-              expect(postLogoutRedirectUri).to.equal(this.provider.issuer);
+              expect(postLogoutRedirectUri).to.equal(`${this.provider.issuer}/session/end/success`);
             });
         });
       });
@@ -311,10 +311,11 @@ describe('logout endpoint', () => {
         .send({ xsrf: '123', logout: 'yes' })
         .type('form')
         .expect(302)
-        .expect(() => {
+        .expect((response) => {
           expect(adapter.destroy.called).to.be.true;
           expect(adapter.upsert.called).not.to.be.true;
           expect(adapter.destroy.withArgs(sessionId).calledOnce).to.be.true;
+          expect(parseUrl(response.headers.location, true).query).not.to.have.property('client_id');
         });
     });
 
@@ -331,12 +332,13 @@ describe('logout endpoint', () => {
         .send({ xsrf: '123' })
         .type('form')
         .expect(302)
-        .expect(() => {
+        .expect((response) => {
           session = this.getSession();
           expect(session.authorizations.client).to.be.undefined;
           expect(session.state).to.be.undefined;
           expect(this.getSessionId()).not.to.eql(oldId);
           expect(adapter.destroy.calledOnceWith(oldId)).to.be.true;
+          expect(parseUrl(response.headers.location, true).query.client_id).to.eql('client');
         });
     });
 
@@ -372,6 +374,57 @@ describe('logout endpoint', () => {
           delete i(this.provider).configuration().cookies.long.domain;
         })
         .expect(302);
+    });
+  });
+
+  describe('GET end_session_success', () => {
+    it('calls the postLogoutSuccessSource helper', function () {
+      const renderSpy = sinon.spy(i(this.provider).configuration(), 'postLogoutSuccessSource');
+      return this.agent.get('/session/end/success')
+        .set('Accept', 'text/html')
+        .expect(() => {
+          renderSpy.restore();
+        })
+        .expect(200)
+        .expect(() => {
+          expect(renderSpy.calledOnce).to.be.true;
+          const [ctx] = renderSpy.args[0];
+          expect(ctx.oidc.client).to.be.undefined;
+        });
+    });
+
+    it('has the client loaded when present', function () {
+      const renderSpy = sinon.spy(i(this.provider).configuration(), 'postLogoutSuccessSource');
+      return this.agent.get('/session/end/success?client_id=client')
+        .set('Accept', 'text/html')
+        .expect(() => {
+          renderSpy.restore();
+        })
+        .expect(200)
+        .expect(() => {
+          expect(renderSpy.calledOnce).to.be.true;
+          const [ctx] = renderSpy.args[0];
+          expect(ctx.oidc.client).to.be.ok;
+        });
+    });
+
+    it('throws when the client is not found', function () {
+      const emitSpy = sinon.spy();
+      const renderSpy = sinon.spy(i(this.provider).configuration(), 'renderError');
+      this.provider.once('end_session_success.error', emitSpy);
+      return this.agent.get('/session/end/success?client_id=foobar')
+        .set('Accept', 'text/html')
+        .expect(() => {
+          renderSpy.restore();
+        })
+        .expect(400)
+        .expect(() => {
+          expect(emitSpy.calledOnce).to.be.true;
+          expect(renderSpy.calledOnce).to.be.true;
+          const renderArgs = renderSpy.args[0];
+          expect(renderArgs[1]).to.have.property('error', 'invalid_client');
+          expect(renderArgs[2]).to.be.an.instanceof(InvalidClient);
+        });
     });
   });
 });
