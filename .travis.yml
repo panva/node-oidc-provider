@@ -1,33 +1,33 @@
 matrix:
   allow_failures:
-    - name: "Test Suite - Nightly build"
-    - name: "Linter"
-    - name: "Test Suite - Windows"
+    - name: 'Test Suite - Nightly build'
+    - name: 'Linter'
+    - name: 'Test Suite - Windows'
   include:
     - name: Linter
       language: node_js
       node_js: stable
       before_script: npx patch-package
       script: npm run lint
-    - name: "Test Suite + coverage - 12.0.0" #min
+    - name: 'Test Suite + coverage - 12.0.0' #min
       language: node_js
       node_js: 12.0.0
       before_script: npx patch-package
       script: npm run coverage
       after_script: npx codecov
-    - name: "Test Suite + coverage - stable"
+    - name: 'Test Suite + coverage - stable'
       language: node_js
       node_js: stable
       before_script: npx patch-package
       script: npm run coverage
       after_script: npx codecov
-    - name: "Test Suite - Windows"
+    - name: 'Test Suite - Windows'
       language: node_js
       os: windows
       before_script: npx patch-package
       script: npm test
       node_js: node
-    - name: "Test Suite - Nightly build"
+    - name: 'Test Suite - Nightly build'
       language: minimal
       env: NVM_NODEJS_ORG_MIRROR=https://nodejs.org/download/nightly/
       install:
@@ -39,11 +39,15 @@ matrix:
       if: branch = master AND type = push
       install: skip
       script: skip
+      env:
+        - secure: 'TfNAnhc2ThIH/dvkrkHK6jygfnyzrf776TTdM7Dgwph0sbCowuMJjhZsJono1A3OU74Lj+yRIHZ7fvttcY/eDcfZ+CpKlbqteVvlYSAaSpFyx619E+vIksVOx3gWjwSENDqfv6vWjYbqdO/nAD3QmT1/VIfhaeaQ6CKaA12UoGUagbjx6CNdarshvltO9bAk5MguY96UBoax0rQueQoKtRFtZAytYFfadRYd0GLrNyk2IobY2y+9DtpzmyrkcCJZcPKQBbnm5Y0Dyt42Q8Yf2sIHhBP2DHrImWiUF2Jy+dxK5Jb/mZPrJ2Rl0CLCJCMpWRRptc8ATTQ7ma2qOZZeI5z4Vik7glfK6ws1GkEBoszOF1a39p3dLeZU/+EOHb6DGmutp1pZBQabqlxOUrzfHCvUDVMbKMe33c5sgJd4DAVS2viO9P1FwX0mt0VaMfwItC1Hr4xw6qPeZjHzz/A1U6A8ySWV9gg76iuVX+m4sTtYCElNxIwuV9LlW32TxBA8hbOM1tlqpNgb29uUwnmgZJkh2Xzqn2WrC8mN4HuGOzxXmCmGqlPulFRguEDJ2WbPMuy0P4u0pPptRaa6j8O8wOI9RsqVFXcxQo9T+57CgEOBTiSykq3UeGvAHoExHUIFbLFQ0gQeFMrtsJpKm8j6n0e/G0k4RB58wON4zaz12K8='
       deploy:
         provider: heroku
         app: guarded-cliffs-8635
         api_key: $HEROKU_AUTH_TOKEN
     - stage: conformance build
       if: branch = master AND type = push
+      env:
+        - secure: 'B8CvuOXq0U1vkYlyhEimuPbum3+HoaD/00QOrRqXF59dfy8cNuRkEBbTY9/O9Vu8GBc41j9TVQ1WkOvx8KoEmoZYVMLM2cdZf4oFq+vnw60u1hprO8aWYJWsH4lIpuPYtH+brEYuxrENN6L5M6ELGQSNPzYavperQo2Rm7riiB0tiQCb6JjzPFRIi87LjRH76JwoHoNS1Cv+rBCmcur87H21POoFWu3fs4+cQLk7BIfz8H8uy3UoG6QqYiEwczxvr8QDccr0PXZvIdrRQWbrFhD67BOysN14BW5ClSPq/2fIgAWIWSA3gt5GX/mhl94tM/JbL6SCZG6+/A36xwSZpSQIQcYAavoQl2Rk7ZyEMP6m2MIhqTaCbjKv5byT/47H4JFmtLTKDooWXmchcgYa+v1UNuzsmGLio0uJQE0yVsSHTWH/SQ8xKiZytWB1FBReev4KRVFim6URt7hixKw9MS6zmcGIwseKAUpxuRu1n3iUd+Pj3iS/smsZSa8ECMKWpQR83oHhAugUa2EE8JkDnX6/1pksQ6AW/DNzI2Nvyl+8qQ+cjGGD0P3SnFV2XxmJNRVoOyXS6/s6lhuUYVnmx8R5qI7uFWtJHP2v+yVtRGzTmk4li5fUNfz+nNlih8CmHNitJTqm/Q9XxTTIz7ARSjUDBKvCTKc/vnbI30PKjcs='
       install: npm install got@^9.0.0 --no-save
       script: node test/trigger_conformance_build.js
