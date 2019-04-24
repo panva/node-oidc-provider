@@ -983,7 +983,7 @@ describe('client authentication options', () => {
   describe('self_signed_tls_client_auth auth', () => {
     it('accepts the auth [1/2]', function () {
       return this.agent.post(route)
-        .set('x-ssl-client-cert', rsacrt.replace(/\n/g, ''))
+        .set('x-ssl-client-cert', rsacrt.replace(RegExp('\\r?\\n', 'g'), ''))
         .send({
           client_id: 'client-self-signed-mtls',
           grant_type: 'implicit',
@@ -994,7 +994,7 @@ describe('client authentication options', () => {
 
     it('accepts the auth [2/2]', function () {
       return this.agent.post(route)
-        .set('x-ssl-client-cert', eccrt.replace(/\n/g, ''))
+        .set('x-ssl-client-cert', eccrt.replace(RegExp('\\r?\\n', 'g'), ''))
         .send({
           client_id: 'client-self-signed-mtls',
           grant_type: 'implicit',
@@ -1015,7 +1015,7 @@ describe('client authentication options', () => {
 
     it('fails the auth when x-ssl-client-cert does not match the registered ones', function () {
       return this.agent.post(route)
-        .set('x-ssl-client-cert', eccrt.replace(/\n/g, ''))
+        .set('x-ssl-client-cert', eccrt.replace(RegExp('\\r?\\n', 'g'), ''))
         .send({
           client_id: 'client-self-signed-mtls-rsa',
           grant_type: 'implicit',
@@ -1030,7 +1030,7 @@ describe('client authentication options', () => {
         .reply(200, JSON.stringify(mtlsKeys));
 
       return this.agent.post(route)
-        .set('x-ssl-client-cert', rsacrt.replace(/\n/g, ''))
+        .set('x-ssl-client-cert', rsacrt.replace(RegExp('\\r?\\n', 'g'), ''))
         .send({
           client_id: 'client-self-signed-mtls-jwks_uri',
           grant_type: 'implicit',

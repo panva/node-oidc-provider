@@ -44,7 +44,7 @@ describe('features.certificateBoundAccessTokens', () => {
 
       await this.agent.get('/me')
         .auth(bearer, { type: 'bearer' })
-        .set('x-ssl-client-cert', crt.replace(/\n/g, ''))
+        .set('x-ssl-client-cert', crt.replace(RegExp('\\r?\\n', 'g'), ''))
         .expect(200);
     });
   });
@@ -100,7 +100,7 @@ describe('features.certificateBoundAccessTokens', () => {
           device_code: this.dc,
         })
         .type('form')
-        .set('x-ssl-client-cert', crt.replace(/\n/g, ''))
+        .set('x-ssl-client-cert', crt.replace(RegExp('\\r?\\n', 'g'), ''))
         .expect(200);
 
       expect(spy).to.have.property('calledOnce', true);
@@ -160,7 +160,7 @@ describe('features.certificateBoundAccessTokens', () => {
             redirect_uri: 'https://client.example.com/cb',
           })
           .type('form')
-          .set('x-ssl-client-cert', crt.replace(/\n/g, ''))
+          .set('x-ssl-client-cert', crt.replace(RegExp('\\r?\\n', 'g'), ''))
           .expect(200);
 
         expect(spy).to.have.property('calledOnce', true);
@@ -199,7 +199,7 @@ describe('features.certificateBoundAccessTokens', () => {
             redirect_uri: 'https://client.example.com/cb',
           })
           .type('form')
-          .set('x-ssl-client-cert', crt.replace(/\n/g, ''))
+          .set('x-ssl-client-cert', crt.replace(RegExp('\\r?\\n', 'g'), ''))
           .expect(({ body }) => {
             this.rt = body.refresh_token;
           });
@@ -216,7 +216,7 @@ describe('features.certificateBoundAccessTokens', () => {
             refresh_token: this.rt,
           })
           .type('form')
-          .set('x-ssl-client-cert', crt.replace(/\n/g, ''))
+          .set('x-ssl-client-cert', crt.replace(RegExp('\\r?\\n', 'g'), ''))
           .expect(200);
 
         expect(spy).to.have.property('calledOnce', true);
@@ -279,7 +279,7 @@ describe('features.certificateBoundAccessTokens', () => {
             redirect_uri: 'https://client.example.com/cb',
           })
           .type('form')
-          .set('x-ssl-client-cert', crt.replace(/\n/g, ''))
+          .set('x-ssl-client-cert', crt.replace(RegExp('\\r?\\n', 'g'), ''))
           .expect(200);
 
         expect(spy).to.have.property('calledOnce', true);
@@ -318,7 +318,7 @@ describe('features.certificateBoundAccessTokens', () => {
             redirect_uri: 'https://client.example.com/cb',
           })
           .type('form')
-          .set('x-ssl-client-cert', crt.replace(/\n/g, ''))
+          .set('x-ssl-client-cert', crt.replace(RegExp('\\r?\\n', 'g'), ''))
           .expect(({ body }) => {
             this.rt = body.refresh_token;
           });
@@ -335,7 +335,7 @@ describe('features.certificateBoundAccessTokens', () => {
             refresh_token: this.rt,
           })
           .type('form')
-          .set('x-ssl-client-cert', crt.replace(/\n/g, ''))
+          .set('x-ssl-client-cert', crt.replace(RegExp('\\r?\\n', 'g'), ''))
           .expect(200);
 
         expect(spy).to.have.property('calledOnce', true);
@@ -391,7 +391,7 @@ describe('features.certificateBoundAccessTokens', () => {
       await this.agent.post('/token')
         .auth('client', 'secret')
         .send({ grant_type: 'client_credentials' })
-        .set('x-ssl-client-cert', crt.replace(/\n/g, ''))
+        .set('x-ssl-client-cert', crt.replace(RegExp('\\r?\\n', 'g'), ''))
         .type('form')
         .expect(200);
 
