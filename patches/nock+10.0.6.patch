@@ -4,7 +4,7 @@ index 4e51125..32be9f7 100644
 +++ b/node_modules/nock/lib/request_overrider.js
 @@ -151,6 +151,14 @@ function RequestOverrider(req, options, interceptors, remove, cb) {
    };
-
+ 
    req.end = function(buffer, encoding, callback) {
 +    if (typeof buffer === 'function') {
 +      buffer = undefined;
