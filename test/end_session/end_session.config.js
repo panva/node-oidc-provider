@@ -1,4 +1,6 @@
-const config = require('../default.config');
+const { cloneDeep } = require('lodash');
+
+const config = cloneDeep(require('../default.config'));
 
 module.exports = {
   config,
