@@ -21,6 +21,17 @@ describe('configuration.jwks', () => {
     return new Provider('http://localhost', { jwks: this.keystore.toJWKS(true) });
   });
 
+  it('must be a valid JWKS object', async function () {
+    expect(() => {
+      new Provider('http://localhost', {
+        jwks: [],
+      });
+    }).to.throw('keystore must be a JSON Web Key Set formatted object');
+
+    await this.keystore.add(global.keystore.get({ kty: 'RSA' }));
+    return new Provider('http://localhost', { jwks: this.keystore.toJWKS(true) });
+  });
+
   it('must only contain EC and RS keys', async function () {
     await this.keystore.add(global.keystore.get({ kty: 'RSA' }));
     await this.keystore.generate('oct', 256);

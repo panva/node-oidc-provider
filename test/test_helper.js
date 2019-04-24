@@ -368,6 +368,7 @@ module.exports = function testHelper(dir, { config: base = path.basename(dir), m
   }
 
   return function () {
+    TestAdapter.clear();
     Object.assign(this, {
       assertOnce,
       AuthorizationRequest,

@@ -26,6 +26,10 @@ class TestAdapter extends MemoryAdapter {
     return this.constructor.for(key);
   }
 
+  static clear() {
+    map.clear();
+  }
+
   clear() { // eslint-disable-line class-methods-use-this
     map.clear();
   }

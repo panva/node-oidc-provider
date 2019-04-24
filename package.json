@@ -28,7 +28,8 @@
   "author": "Filip Skokan <panva.ip@gmail.com>",
   "files": [
     "lib",
-    "docs/*.md"
+    "docs/*.md",
+    "recipes/*.md"
   ],
   "main": "lib/index.js",
   "scripts": {

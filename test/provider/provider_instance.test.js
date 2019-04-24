@@ -80,6 +80,18 @@ describe('provider instance', () => {
     /* eslint-enable */
   });
 
+  describe('provider.Client#find', () => {
+    it('ignores non-string inputs', async () => {
+      const provider = new Provider('http://localhost');
+      expect(await provider.Client.find([])).to.be.undefined;
+      expect(await provider.Client.find(Buffer)).to.be.undefined;
+      expect(await provider.Client.find({})).to.be.undefined;
+      expect(await provider.Client.find(true)).to.be.undefined;
+      expect(await provider.Client.find(undefined)).to.be.undefined;
+      expect(await provider.Client.find(64)).to.be.undefined;
+    });
+  });
+
   describe('#urlFor', () => {
     it('returns the route for unprefixed issuers', () => {
       const provider = new Provider('http://localhost');
