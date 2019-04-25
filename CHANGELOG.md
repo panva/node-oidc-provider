@@ -2,6 +2,33 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+# [6.0.0-alpha.3](https://github.com/panva/node-oidc-provider/compare/v6.0.0-alpha.2...v6.0.0-alpha.3) (2019-04-25)
+
+
+### Code Refactoring
+
+* provider.registerGrantType accepts the handler directly ([e822918](https://github.com/panva/node-oidc-provider/commit/e822918))
+
+
+### Features
+
+* added EdDSA support ([2cdb0a2](https://github.com/panva/node-oidc-provider/commit/2cdb0a2))
+* added postLogoutSuccessSource helper for logouts without redirects ([a979af8](https://github.com/panva/node-oidc-provider/commit/a979af8))
+
+
+### BREAKING CHANGES
+
+* `postLogoutRedirectUri` configuration option is removed
+in favour of `postLogoutSuccessSource`. This is used to render a success
+page out of the box rather then redirecting nowhere.
+* node.js minimal version is now v12.0.0 due to its added
+EdDSA support (crypto.sign, crypto.verify and EdDSA key objects)
+* since provider is now available on `ctx.oidc.provider`
+the registerGrantType now expects the second argument to be the handler
+directly
+
+
+
 # [6.0.0-alpha.2](https://github.com/panva/node-oidc-provider/compare/v6.0.0-alpha.1...v6.0.0-alpha.2) (2019-04-18)
 
 
