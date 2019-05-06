@@ -560,6 +560,7 @@ JSON Web Key Set used by the provider for signing and encryption. The object mus
    
  Supported key types are:   
  - RSA
+ - OKP (Ed25519 and Ed448 curves)
  - EC (P-256, P-384 and P-521 curves)   
   
 
