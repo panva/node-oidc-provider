@@ -259,7 +259,7 @@ describe('grant_type=authorization_code', () => {
     });
 
     it('validates account is still there', function () {
-      sinon.stub(this.provider.Account, 'findById').callsFake(() => Promise.resolve());
+      sinon.stub(this.provider.Account, 'findAccount').callsFake(() => Promise.resolve());
 
       const spy = sinon.spy();
       this.provider.on('grant.error', spy);
@@ -273,7 +273,7 @@ describe('grant_type=authorization_code', () => {
         })
         .type('form')
         .expect(() => {
-          this.provider.Account.findById.restore();
+          this.provider.Account.findAccount.restore();
         })
         .expect(400)
         .expect(() => {
@@ -512,7 +512,7 @@ describe('grant_type=authorization_code', () => {
     });
 
     it('validates account is still there', function () {
-      sinon.stub(this.provider.Account, 'findById').callsFake(() => Promise.resolve());
+      sinon.stub(this.provider.Account, 'findAccount').callsFake(() => Promise.resolve());
 
       const spy = sinon.spy();
       this.provider.on('grant.error', spy);
@@ -525,7 +525,7 @@ describe('grant_type=authorization_code', () => {
         })
         .type('form')
         .expect(() => {
-          this.provider.Account.findById.restore();
+          this.provider.Account.findAccount.restore();
         })
         .expect(400)
         .expect(() => {

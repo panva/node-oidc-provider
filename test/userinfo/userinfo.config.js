@@ -2,7 +2,7 @@ const { clone } = require('lodash');
 
 const config = clone(require('../default.config'));
 
-config.findById = (ctx, id) => {
+config.findAccount = (ctx, id) => {
   if (id === 'notfound') return undefined;
   return {
     accountId: id,

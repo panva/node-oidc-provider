@@ -160,7 +160,7 @@ describe('grant_type=urn:ietf:params:oauth:grant-type:device_code', () => {
     });
 
     it('validates account is still there', async function () {
-      sinon.stub(this.provider.Account, 'findById').callsFake(() => Promise.resolve());
+      sinon.stub(this.provider.Account, 'findAccount').callsFake(() => Promise.resolve());
 
       const spy = sinon.spy();
       this.provider.once('grant.error', spy);
@@ -180,7 +180,7 @@ describe('grant_type=urn:ietf:params:oauth:grant-type:device_code', () => {
         })
         .type('form')
         .expect(() => {
-          this.provider.Account.findById.restore();
+          this.provider.Account.findAccount.restore();
         })
         .expect(400)
         .expect(() => {

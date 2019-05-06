@@ -59,7 +59,7 @@ module.exports = function testHelper(dir, { config: base = path.basename(dir), m
   const conf = path.format({ dir, base: `${base}.config.js` });
   let { config, client, clients } = require(conf); // eslint-disable-line
   if (client && !clients) { clients = [client]; }
-  if (!config.findById) config.findById = Account.findById;
+  if (!config.findAccount) config.findAccount = Account.findAccount;
 
   const provider = new Provider(`${protocol}//127.0.0.1:${port}${mountTo}`, {
     clients,
@@ -129,7 +129,7 @@ module.exports = function testHelper(dir, { config: base = path.basename(dir), m
       }
     });
 
-    return Account.findById({}, account).then(session.save()).then(() => {
+    return Account.findAccount({}, account).then(session.save()).then(() => {
       agent._saveCookies.bind(agent)({ headers: { 'set-cookie': cookies } });
     });
   }

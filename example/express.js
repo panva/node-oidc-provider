@@ -14,7 +14,7 @@ const configuration = require('./support/configuration');
 const routes = require('./routes/express');
 
 const { PORT = 3000, ISSUER = `http://localhost:${PORT}`, TIMEOUT } = process.env;
-configuration.findById = Account.findById;
+configuration.findAccount = Account.findAccount;
 
 const app = express();
 app.use(helmet());
