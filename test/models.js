@@ -87,7 +87,7 @@ class Account {
     };
   }
 
-  static async findById(ctx, id) {
+  static async findAccount(ctx, id) {
     let acc = testStorage.get(`Account:${id}`);
     if (!acc) {
       acc = new Account(id);

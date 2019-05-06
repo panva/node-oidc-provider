@@ -165,10 +165,12 @@ const props = [
   const adapter = configuration.splice(adapterIdx, 1);
   const jwksIdx = configuration.findIndex(x => x === 'jwks');
   const jwks = configuration.splice(jwksIdx, 1);
+  const findAccountIdx = configuration.findIndex(x => x === 'findAccount');
+  const findAccount = configuration.splice(findAccountIdx, 1);
 
   let hidden;
   let prev;
-  for (const block of [...adapter, ...clients, ...jwks, ...features, ...configuration]) { // eslint-disable-line no-restricted-syntax, max-len
+  for (const block of [...adapter, ...clients, ...findAccount, ...jwks, ...features, ...configuration]) { // eslint-disable-line no-restricted-syntax, max-len
     const section = blocks[block];
 
     if ('@skip' in section) {

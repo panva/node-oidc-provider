@@ -232,7 +232,7 @@ describe('grant_type=refresh_token', () => {
 
     it('validates account is still there', function () {
       const { rt } = this;
-      sinon.stub(this.provider.Account, 'findById').callsFake(() => Promise.resolve());
+      sinon.stub(this.provider.Account, 'findAccount').callsFake(() => Promise.resolve());
 
       const spy = sinon.spy();
       this.provider.on('grant.error', spy);
@@ -245,7 +245,7 @@ describe('grant_type=refresh_token', () => {
         })
         .type('form')
         .expect(() => {
-          this.provider.Account.findById.restore();
+          this.provider.Account.findAccount.restore();
         })
         .expect(400)
         .expect(() => {

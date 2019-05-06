@@ -13,7 +13,7 @@ const configuration = require('./support/configuration');
 const routes = require('./routes/koa');
 
 const { PORT = 3000, ISSUER = `http://localhost:${PORT}`, TIMEOUT } = process.env;
-configuration.findById = Account.findById;
+configuration.findAccount = Account.findAccount;
 
 let server;
 

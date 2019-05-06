@@ -37,6 +37,7 @@ If you or your business use oidc-provider, please consider becoming a [Patron][s
 - [Configuration options](#configuration-options)
   - [adapter](#adapter)
   - [clients](#clients)
+  - [findAccount](#findaccount)
   - [jwks](#jwks)
   - [features](#features)
     - [backchannelLogout](#featuresbackchannellogout)
@@ -71,7 +72,6 @@ If you or your business use oidc-provider, please consider becoming a [Patron][s
   - [expiresWithSession](#expireswithsession)
   - [extraClientMetadata](#extraclientmetadata)
   - [extraParams](#extraparams)
-  - [findById](#findbyid)
   - [formats](#formats)
   - [interactions](#interactions)
   - [interactionUrl](#interactionurl)
@@ -145,7 +145,7 @@ to the claims your issuer supports. Tell oidc-provider how to find your account 
 
 ```js
 const oidc = new Provider('http://localhost:3000', {
-  async findById(ctx, id) {
+  async findAccount(ctx, id) {
     return {
       accountId: id,
       async claims(use, scope) { return { sub: id }; },
@@ -553,6 +553,37 @@ application_type, client_id, client_name, client_secret, client_uri, contacts, d
 
 
 </details>
+
+### findAccount
+
+Helper used by the OP to load an account and retrieve its available claims. The return value should be a Promise and #claims() can return a Promise too  
+
+
+_**default value**_:
+```js
+async findAccount(ctx, sub, token) {
+  // @param ctx - koa request context
+  // @param sub {string} - account identifier (subject)
+  // @param token - is a reference to the token used for which a given account is being loaded,
+  //   is undefined in scenarios where claims are returned from authorization endpoint
+  return {
+    accountId: sub,
+    // @param use {string} - can either be "id_token" or "userinfo", depending on
+    //   where the specific claims are intended to be put in
+    // @param scope {string} - the intended scope, while oidc-provider will mask
+    //   claims depending on the scope automatically you might want to skip
+    //   loading some claims from external resources or through db projection etc. based on this
+    //   detail or not return them in ID Tokens but only UserInfo and so on
+    // @param claims {object} - the part of the claims authorization parameter for either
+    //   "id_token" or "userinfo" (depends on the "use" param)
+    // @param rejected {Array[String]} - claim names that were rejected by the end-user, you might
+    //   want to skip loading some claims from external resources or through db projection
+    async claims(use, scope, claims, rejected) {
+      return { sub };
+    },
+  };
+}
+```
 
 ### jwks
 
@@ -1806,37 +1837,6 @@ Pass an iterable object (i.e. Array or Set of strings) to extend the parameters 
 _**default value**_:
 ```js
 []
-```
-
-### findById
-
-Helper used by the OP to load an account and retrieve its available claims. The return value should be a Promise and #claims() can return a Promise too  
-
-
-_**default value**_:
-```js
-async findById(ctx, sub, token) {
-  // @param ctx - koa request context
-  // @param sub {string} - account identifier (subject)
-  // @param token - is a reference to the token used for which a given account is being loaded,
-  //   is undefined in scenarios where claims are returned from authorization endpoint
-  return {
-    accountId: sub,
-    // @param use {string} - can either be "id_token" or "userinfo", depending on
-    //   where the specific claims are intended to be put in
-    // @param scope {string} - the intended scope, while oidc-provider will mask
-    //   claims depending on the scope automatically you might want to skip
-    //   loading some claims from external resources or through db projection etc. based on this
-    //   detail or not return them in ID Tokens but only UserInfo and so on
-    // @param claims {object} - the part of the claims authorization parameter for either
-    //   "id_token" or "userinfo" (depends on the "use" param)
-    // @param rejected {Array[String]} - claim names that were rejected by the end-user, you might
-    //   want to skip loading some claims from external resources or through db projection
-    async claims(use, scope, claims, rejected) {
-      return { sub };
-    },
-  };
-}
 ```
 
 ### formats

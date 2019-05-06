@@ -11,7 +11,7 @@ describe('distributed and aggregated claims', () => {
   before(bootstrap(__dirname));
   before(function () {
     const { Account } = this.provider;
-    Account.findById = (ctx, id) => Promise.resolve({
+    Account.findAccount = (ctx, id) => Promise.resolve({
       accountId: id,
       claims() {
         return {
