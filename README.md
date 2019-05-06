@@ -21,6 +21,8 @@ especially interaction documentation will be provided.
 
 The minimal node version for this alpha is v12.0.0 and v6.0.0 will release as stable sometime after
 v12.0.0 lands in April 2019.
+**WARNING: Node.js 12 or higher is required for oidc-provider@6 and above.** For older Node.js
+versions use [oidc-provider@5](https://github.com/panva/oidc-provider/tree/v5.x).
 
 ```console
 npm i oidc-provider@alpha
