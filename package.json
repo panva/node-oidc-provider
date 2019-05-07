@@ -41,7 +41,7 @@
   },
   "dependencies": {
     "@koa/cors": "^3.0.0",
-    "@panva/jose": "^1.0.0",
+    "@panva/jose": "^1.0.1",
     "base64url": "^3.0.1",
     "debug": "^4.1.1",
     "ejs": "^2.6.1",
@@ -57,14 +57,14 @@
     "raw-body": "^2.4.0"
   },
   "devDependencies": {
-    "@commitlint/cli": "^7.5.2",
-    "@commitlint/config-conventional": "^7.5.0",
+    "@commitlint/cli": "^7.6.0",
+    "@commitlint/config-conventional": "^7.6.0",
     "chai": "^4.2.0",
     "clear-module": "^3.2.0",
     "eslint": "^5.15.3",
     "eslint-config-airbnb-base": "^13.1.0",
     "eslint-plugin-import": "^2.17.2",
-    "husky": "^2.1.0",
+    "husky": "^2.2.0",
     "koa-body": "^4.1.0",
     "koa-ejs": "^4.2.0",
     "koa-helmet": "^4.1.0",
@@ -73,7 +73,7 @@
     "mocha": "^6.1.4",
     "moment": "^2.24.0",
     "nock": "^10.0.6",
-    "nyc": "^14.0.0",
+    "nyc": "^14.1.0",
     "sinon": "^7.3.2",
     "supertest": "^4.0.2",
     "timekeeper": "^2.2.0"
