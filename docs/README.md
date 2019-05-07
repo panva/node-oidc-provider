@@ -595,7 +595,7 @@ JSON Web Key Set used by the provider for signing and encryption. The object mus
  - EC (P-256, P-384 and P-521 curves)   
   
 
-_**recommendation**_: Provider key rotation The following action order is recommended when rotating signing keys on a distributed deployment with rolling reloads in place.
+_**recommendation**_: **Provider key rotation** - The following action order is recommended when rotating signing keys on a distributed deployment with rolling reloads in place.
  1. push new keys at the very end of the "keys" array in your JWKS, this means the keys will become available for verification should they be encountered but not yet used for signing
  2. reload all your processes
  3. move your new key to the very front of the "keys" array in your JWKS, this means the key will be used for signing after reload
@@ -764,15 +764,40 @@ proxy_set_header x-ssl-client-cert $ssl_client_cert;
 RequestHeader set x-ssl-client-cert  ""
 RequestHeader set x-ssl-client-cert "%{SSL_CLIENT_CERT}s"
 ```
-You should also consider hosting the endpoints supporting client authentication, on a separate host name or port in order to prevent unintended impact on the TLS behaviour of your other endpoints, e.g. Discovery or the authorization endpoint and changing the discovery values for them with a post-middleware.
+You should also consider hosting the endpoints supporting client authentication, on a separate host name or port in order to prevent unintended impact on the TLS behaviour of your other endpoints, e.g. Discovery or the authorization endpoint, by updating the discovery response to add [draft-ietf-oauth-mtls-12](https://tools.ietf.org/html/draft-ietf-oauth-mtls-12) specified `mtls_endpoint_aliases`.
   
 
 ```js
 provider.use(async (ctx, next) => {
   await next();
-  if (ctx.oidc.route === 'discovery' && ctx.method === 'GET' && ctx.status === 200) {
-    ctx.body.userinfo_endpoint = '...';
-    ctx.body.token_endpoint = '...';
+  if (ctx.oidc.route === 'discovery') {
+    ctx.body.mtls_endpoint_aliases = {};
+    const endpointAuthMethodKeys = [
+      'token_endpoint_auth_methods_supported',
+      'introspection_endpoint_auth_methods_supported',
+      'revocation_endpoint_auth_methods_supported',
+    ];
+    // splits `*_endpoint_auth_methods_supported` into two namespaces (mutual-TLS and regular);
+    endpointAuthMethodKeys.forEach((key) => {
+      if (ctx.body[key]) {
+        ctx.body.mtls_endpoint_aliases[key] = ctx.body[key].filter(k => k.endsWith('tls_client_auth'));
+        ctx.body[key] = ctx.body[key].filter(k => !ctx.body.mtls_endpoint_aliases[key].includes(k));
+      }
+    });
+    const mtlsEndpoints = [
+      'userinfo_endpoint',
+      'token_endpoint',
+      'introspection_endpoint',
+      'revocation_endpoint',
+      'device_authorization_endpoint',
+    ];
+    // aliases endpoints accepting client certificates in `mtls_endpoint_aliases`
+    const mtlsOrigin = 'https://mtls.op.example.com';
+    mtlsEndpoints.forEach((key) => {
+      if (ctx.body[key]) {
+        ctx.body.mtls_endpoint_aliases[key] = `${mtlsOrigin}${url.parse(ctx.body[key]).pathname}`;
+      }
+    });
   }
 });
 ```
@@ -1611,7 +1636,7 @@ clientBasedCORS(ctx, origin, client) {
 
 A `Number` value (in seconds) describing the allowed system clock skew for validating client-provided JWTs, e.g. Request objects and otherwise comparing timestamps  
 
-_**recommendation**_: Only set this to a reasonable value when needed to cover server-side client and oidc-provider server clock skew. More than 5 minutes (if needed) is probably a sign something else is wrong  
+_**recommendation**_: Only set this to a reasonable value when needed to cover server-side client and oidc-provider server clock skew. More than 5 minutes (if needed) is probably a sign something else is wrong.  
 
 _**default value**_:
 ```js
@@ -1727,7 +1752,7 @@ _**default value**_:
 []
 ```
 <details>
-  <summary>(Click to expand) Example: To enable a dynamic scope values like `api:write:{hex id}` and `api:read:{hex id}`</summary>
+  <summary>(Click to expand) To enable a dynamic scope values like `api:write:{hex id}` and `api:read:{hex id}`</summary>
   <br>
 
 
@@ -2275,22 +2300,13 @@ async issueRefreshToken(ctx, client, code) {
   <br>
 
 
-Configure `issueRefreshToken` like so, this is how the removed `alwaysIssueRefresh` feature worked
+Configure `issueRefreshToken` like so
   
 
 ```js
 async issueRefreshToken(ctx, client, code) {
   return client.grantTypes.includes('refresh_token');
 }
-example: To only issue a refresh token if a client has the grant whitelisted and it is offline_access
-Configure `issueRefreshToken` like so
-```js
-
-async issueRefreshToken(ctx, client, code) {
-   return client.grantTypes.includes('refresh_token');
- }
-  
-
 ```
 </details>
 
@@ -2602,16 +2618,40 @@ RequestHeader set x-ssl-client-verify "%{SSL_CLIENT_VERIFY}s"
 RequestHeader set x-ssl-client-s-dn  ""
 RequestHeader set x-ssl-client-s-dn "%{SSL_CLIENT_S_DN}s"
 ```
-You should also consider hosting the endpoints supporting client authentication, on a separate host name or port in order to prevent unintended impact on the TLS behaviour of your other endpoints, e.g. Discovery or the authorization endpoint and changing the discovery values for them with a post-middleware.
+You should also consider hosting the endpoints supporting client authentication, on a separate host name or port in order to prevent unintended impact on the TLS behaviour of your other endpoints, e.g. Discovery or the authorization endpoint, by updating the discovery response to add [draft-ietf-oauth-mtls-12](https://tools.ietf.org/html/draft-ietf-oauth-mtls-12) specified `mtls_endpoint_aliases`.
   
 
 ```js
 provider.use(async (ctx, next) => {
   await next();
-  if (ctx.oidc.route === 'discovery' && ctx.method === 'GET' && ctx.status === 200) {
-    ctx.body.token_endpoint = '...';
-    ctx.body.introspection_endpoint = '...';
-    ctx.body.revocation_endpoint = '...';
+  if (ctx.oidc.route === 'discovery') {
+    ctx.body.mtls_endpoint_aliases = {};
+    const endpointAuthMethodKeys = [
+      'token_endpoint_auth_methods_supported',
+      'introspection_endpoint_auth_methods_supported',
+      'revocation_endpoint_auth_methods_supported',
+    ];
+    // splits `*_endpoint_auth_methods_supported` into two namespaces (mutual-TLS and regular);
+    endpointAuthMethodKeys.forEach((key) => {
+      if (ctx.body[key]) {
+        ctx.body.mtls_endpoint_aliases[key] = ctx.body[key].filter(k => k.endsWith('tls_client_auth'));
+        ctx.body[key] = ctx.body[key].filter(k => !ctx.body.mtls_endpoint_aliases[key].includes(k));
+      }
+    });
+    const mtlsEndpoints = [
+      'userinfo_endpoint',
+      'token_endpoint',
+      'introspection_endpoint',
+      'revocation_endpoint',
+      'device_authorization_endpoint',
+    ];
+    // aliases endpoints accepting client certificates in `mtls_endpoint_aliases`
+    const mtlsOrigin = 'https://mtls.op.example.com';
+    mtlsEndpoints.forEach((key) => {
+      if (ctx.body[key]) {
+        ctx.body.mtls_endpoint_aliases[key] = `${mtlsOrigin}${url.parse(ctx.body[key]).pathname}`;
+      }
+    });
   }
 });
 ```
