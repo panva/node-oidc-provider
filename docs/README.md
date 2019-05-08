@@ -642,7 +642,7 @@ console.log('this is the full private JWKS:\n', keystore.toJWKS(true));
   <br>
 
 
-Re-using the same keys for both encryption and signing is discouraged so it is best to generate one with `{ "use": "sig" }` and another with { "use": "enc" }, e.g.
+Re-using the same keys for both encryption and signing is discouraged so it is best to generate one with `{ use: 'sig' }` and another with `{ use: 'enc' }`, e.g.
   
 
 ```js
