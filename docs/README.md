@@ -968,21 +968,10 @@ ody>
     <br/><br/>
     <small>If you did not initiate this action, the code does not match or are unaware of such device in your possession please close this window or click abort.</small>
   </p>
-  <script>
-    function abort() {
-      var form = document.getElementById('op.deviceConfirmForm');
-      var input = document.createElement('input');
-      input.type = 'hidden';
-      input.name = 'abort';
-      input.value = 'yes';
-      form.appendChild(input);
-      form.submit();
-    }
-  </script>
   ${form}
   <button autofocus type="submit" form="op.deviceConfirmForm">Continue</button>
   <div>
-    <a onclick="abort(); return false;" href="">[ Abort ]</a>
+    <button type="submit" form="op.deviceConfirmForm" value="yes" name="abort">[ Abort ]</button>
   </div>
 </div>
 body>
@@ -1101,13 +1090,19 @@ ${frames.join('')}
   }
   function frameOnLoad() {
     loaded += 1;
-    if (loaded === ${frames.length}) redirect();
+    if (loaded === ${frames.length}) {
+      redirect();
+    }
   }
   Array.prototype.slice.call(document.querySelectorAll('iframe')).forEach(function (element) {
     element.onload = frameOnLoad;
   });
   setTimeout(redirect, ${timeout});
 </script>
+<noscript>
+  Your browser does not support JavaScript or you've disabled it.<br/>
+  <a href="${postLogoutRedirectUri}">Continue</a>
+</noscript>
 body>
 html>`;
 }
@@ -2329,24 +2324,9 @@ async logoutSource(ctx, form) {
 <body>
 <div>
   <h1>Do you want to sign-out from ${ctx.host}?</h1>
-  <script>
-    function logout() {
-      var form = document.getElementById('op.logoutForm');
-      var input = document.createElement('input');
-      input.type = 'hidden';
-      input.name = 'logout';
-      input.value = 'yes';
-      form.appendChild(input);
-      form.submit();
-    }
-    function rpLogoutOnly() {
-      var form = document.getElementById('op.logoutForm');
-      form.submit();
-    }
-  </script>
   ${form}
-  <button autofocus onclick="logout()">Yes, sign me out</button>
-  <button onclick="rpLogoutOnly()">No, stay signed in</button>
+  <button autofocus type="submit" form="op.logoutForm" value="yes" name="logout">Yes, sign me out</button>
+  <button type="submit" form="op.logoutForm">No, stay signed in</button>
 </div>
 </body>
 </html>`;
