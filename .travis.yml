@@ -6,24 +6,20 @@ matrix:
     - name: Linter
       language: node_js
       node_js: stable
-      before_script: npx patch-package
       script: npm run lint
     - name: 'Test Suite + coverage - 12.0.0' #min
       language: node_js
       node_js: 12.0.0
-      before_script: npx patch-package
       script: npm run coverage
       after_script: npx codecov
     - name: 'Test Suite + coverage - stable'
       language: node_js
       node_js: stable
-      before_script: npx patch-package
       script: npm run coverage
       after_script: npx codecov
     - name: 'Test Suite - Windows'
       language: node_js
       os: windows
-      before_script: npx patch-package
       script: npm test
       node_js: node
     - name: 'Test Suite - Nightly build'
@@ -32,7 +28,6 @@ matrix:
       install:
         - nvm i node
         - npm i
-      before_script: npx patch-package
       script: npm test
     - stage: heroku deploy
       if: branch = master AND type = push
