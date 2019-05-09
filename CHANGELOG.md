@@ -2,6 +2,25 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+# [6.0.0-alpha.4](https://github.com/panva/node-oidc-provider/compare/v6.0.0-alpha.3...v6.0.0-alpha.4) (2019-05-09)
+
+
+### Bug Fixes
+
+* rendered OP views are no longer dead ends with javascript disabled ([c2f17d7](https://github.com/panva/node-oidc-provider/commit/c2f17d7))
+
+
+### Code Refactoring
+
+* rename findById to findAccount to follow the helper convention ([43f5ecc](https://github.com/panva/node-oidc-provider/commit/43f5ecc))
+
+
+### BREAKING CHANGES
+
+* findById helper was renamed to findAccount
+
+
+
 # [6.0.0-alpha.3](https://github.com/panva/node-oidc-provider/compare/v6.0.0-alpha.2...v6.0.0-alpha.3) (2019-04-25)
 
 
