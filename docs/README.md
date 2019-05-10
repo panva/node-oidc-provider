@@ -1678,7 +1678,8 @@ _**default value**_:
 {
   httpOnly: true,
   maxAge: 1209600000,
-  overwrite: true
+  overwrite: true,
+  sameSite: 'none'
 }
 ```
 
@@ -1708,7 +1709,8 @@ _**default value**_:
 {
   httpOnly: true,
   maxAge: 600000,
-  overwrite: true
+  overwrite: true,
+  sameSite: 'lax'
 }
 ```
 
