@@ -46,7 +46,7 @@ describe('session management', () => {
               response_type: 'code',
               scope: 'openid',
               code_challenge_method: 'S256',
-              code_challenge: 'foobar',
+              code_challenge: 'E9Melhoa2OwvFrEMTJguCHaoeK1t8URWbuGJSstw-cM',
             });
 
             return this.wrap({ route, verb, auth })
@@ -109,7 +109,7 @@ describe('session management', () => {
             response_type: 'code',
             scope: 'openid',
             code_challenge_method: 'S256',
-            code_challenge: 'foobar',
+            code_challenge: 'E9Melhoa2OwvFrEMTJguCHaoeK1t8URWbuGJSstw-cM',
           });
 
           return this.wrap({ route, verb, auth })
