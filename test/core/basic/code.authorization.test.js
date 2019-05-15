@@ -187,7 +187,7 @@ describe('BASIC code', () => {
           client_id: 'client-native',
           redirect_uri: 'com.example.app:/cb',
           scope,
-          code_challenge: 'foo',
+          code_challenge: 'E9Melhoa2OwvFrEMTJguCHaoeK1t8URWbuGJSstw-cM',
           code_challenge_method: 'S256',
         });
 

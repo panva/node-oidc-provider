@@ -159,53 +159,6 @@ describe('device_authorization_endpoint', () => {
     });
   });
 
-  describe('pkce', () => {
-    it('checks for PKCE methods', function () {
-      const spy = sinon.spy();
-      this.provider.once('device_authorization.error', spy);
-
-      return this.agent.post(route)
-        .send({
-          client_id: 'client',
-          scope: 'openid',
-          code_challenge: 'foobar',
-          code_challenge_method: 'bar',
-        })
-        .type('form')
-        .expect(400)
-        .expect('content-type', /application\/json/)
-        .expect(() => {
-          expect(spy.calledOnce).to.be.true;
-        })
-        .expect({
-          error: 'invalid_request',
-          error_description: 'not supported value of code_challenge_method',
-        });
-    });
-
-    it('checks that codeChallenge is provided if codeChallengeMethod was', function () {
-      const spy = sinon.spy();
-      this.provider.once('device_authorization.error', spy);
-
-      return this.agent.post(route)
-        .send({
-          client_id: 'client',
-          scope: 'openid',
-          code_challenge_method: 'S256',
-        })
-        .type('form')
-        .expect(400)
-        .expect('content-type', /application\/json/)
-        .expect(() => {
-          expect(spy.calledOnce).to.be.true;
-        })
-        .expect({
-          error: 'invalid_request',
-          error_description: 'code_challenge must be provided with code_challenge_method',
-        });
-    });
-  });
-
   it('responds with json 200', async function () {
     const spy = sinon.spy();
     this.provider.once('device_authorization.success', spy);
