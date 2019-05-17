@@ -64,6 +64,7 @@ If you or your business use oidc-provider, please consider becoming a [Patron][s
   - [audiences](#audiences)
   - [claims](#claims)
   - [clientBasedCORS](#clientbasedcors)
+  - [clientDefaults](#clientdefaults)
   - [clockTolerance](#clocktolerance)
   - [conformIdTokenClaims](#conformidtokenclaims)
   - [cookies](#cookies)
@@ -1626,6 +1627,55 @@ clientBasedCORS(ctx, origin, client) {
   return true;
 }
 ```
+
+### clientDefaults
+
+Default client metadata to be assigned when unspecified by the client metadata, e.g. During Dynamic Client Registration or for statically configured clients. The default value does not represent all default values, but merely copies its subset. You can provide any used client metadata property in this object.   
+  
+
+
+_**default value**_:
+```js
+{
+  grant_types: [
+    'authorization_code'
+  ],
+  id_token_signed_response_alg: 'RS256',
+  response_types: [
+    'code'
+  ],
+  token_endpoint_auth_method: 'client_secret_basic'
+}
+```
+<details>
+  <summary>(Click to expand) Changing the default client token_endpoint_auth_method</summary>
+  <br>
+
+
+To change the default client token_endpoint_auth_method configure `clientDefaults` to be an object like so:
+  
+
+```js
+{
+  token_endpoint_auth_method: 'client_secret_post'
+}
+```
+</details>
+<details>
+  <summary>(Click to expand) Changing the default client response type to `code id_token`</summary>
+  <br>
+
+
+To change the default client response_types configure `clientDefaults` to be an object like so:
+  
+
+```js
+{
+  response_types: ['code id_token'],
+  grant_types: ['authorization_code', 'implicit'],
+}
+```
+</details>
 
 ### clockTolerance
 
