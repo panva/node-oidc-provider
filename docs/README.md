@@ -2582,7 +2582,7 @@ _**default value**_:
 
 ### subjectTypes
 
-Array of the Subject Identifier types that this OP supports. Valid types are
+Array of the Subject Identifier types that this OP supports. When only `pairwise` is supported it becomes the default `subject_type` client metadata value. Valid types are
  - `public`
  - `pairwise`  
 
