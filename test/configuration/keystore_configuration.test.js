@@ -10,17 +10,6 @@ describe('configuration.jwks', () => {
     this.keystore = new jose.JWKS.KeyStore();
   });
 
-  it('must contain at least one RS256 signing key', async function () {
-    expect(() => {
-      new Provider('http://localhost', {
-        jwks: this.keystore.toJWKS(true),
-      });
-    }).to.throw('RS256 signing must be supported but no viable key was provided');
-
-    await this.keystore.add(global.keystore.get({ kty: 'RSA' }));
-    return new Provider('http://localhost', { jwks: this.keystore.toJWKS(true) });
-  });
-
   it('must be a valid JWKS object', async function () {
     expect(() => {
       new Provider('http://localhost', {
