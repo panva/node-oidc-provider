@@ -528,7 +528,7 @@ expire.setDate(expire.getDate() + 1);
           }, { client, ctx: undefined });
 
           idToken.scope = 'openid';
-          const hint = await idToken.sign();
+          const hint = await idToken.issue();
 
           const auth = new this.AuthorizationRequest({
             response_type: 'id_token',
@@ -555,7 +555,7 @@ expire.setDate(expire.getDate() + 1);
           }, { client, ctx: undefined });
 
           idToken.scope = 'openid';
-          const hint = await idToken.sign();
+          const hint = await idToken.issue();
 
           const auth = new this.AuthorizationRequest({
             client_id: 'client-pairwise',
@@ -584,7 +584,7 @@ expire.setDate(expire.getDate() + 1);
           }, { client, ctx: undefined });
 
           idToken.scope = 'openid';
-          const hint = await idToken.sign();
+          const hint = await idToken.issue();
 
           const auth = new this.AuthorizationRequest({
             client_id: 'client-pairwise',
@@ -606,7 +606,7 @@ expire.setDate(expire.getDate() + 1);
           const idToken = new IdToken({ sub: session.account }, { client, ctx: undefined });
 
           idToken.scope = 'openid';
-          const hint = await idToken.sign();
+          const hint = await idToken.issue();
 
           const auth = new this.AuthorizationRequest({
             response_type: 'id_token',
@@ -630,7 +630,7 @@ expire.setDate(expire.getDate() + 1);
           const idToken = new IdToken({ sub: session.account }, { client, ctx: undefined });
 
           idToken.scope = 'openid';
-          const hint = await idToken.sign();
+          const hint = await idToken.issue();
 
           const auth = new this.AuthorizationRequest({
             client_id: 'client-pairwise',

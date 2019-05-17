@@ -252,7 +252,7 @@ describe('client keystore refresh', () => {
       const { IdToken } = this.provider;
       const token = new IdToken({ foo: 'bar' }, { client, ctx: undefined });
 
-      await token.sign();
+      await token.issue();
     });
   });
 });
