@@ -65,7 +65,7 @@ describe('logout endpoint', () => {
 
         it('populates ctx.oidc.entities', function (done) {
           this.provider.use(this.assertOnce((ctx) => {
-            expect(ctx.oidc.entities).to.have.keys('Client');
+            expect(ctx.oidc.entities).to.have.keys('Client', 'IdTokenHint');
           }, done));
 
           const params = {
