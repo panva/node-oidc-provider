@@ -1029,4 +1029,28 @@ describe('Client metadata validation', () => {
     expect(client.responseTypes).to.be.empty;
     expect(client.redirectUris).to.be.empty;
   }));
+
+  context('clientDefaults configuration option allows for default client metadata to be changed', () => {
+    defaultsTo('token_endpoint_auth_method', 'client_secret_post', undefined, {
+      clientDefaults: {
+        token_endpoint_auth_method: 'client_secret_post',
+      },
+    });
+    defaultsTo('id_token_signed_response_alg', 'PS256', undefined, {
+      clientDefaults: {
+        id_token_signed_response_alg: 'PS256',
+      },
+    });
+    defaultsTo('grant_types', ['authorization_code', 'refresh_token'], undefined, {
+      clientDefaults: {
+        grant_types: ['authorization_code', 'refresh_token'],
+      },
+    });
+    defaultsTo('response_types', ['code id_token'], undefined, {
+      clientDefaults: {
+        response_types: ['code id_token'],
+        grant_types: ['authorization_code', 'implicit'],
+      },
+    });
+  });
 });
