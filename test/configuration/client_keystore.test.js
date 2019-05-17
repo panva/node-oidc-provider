@@ -104,7 +104,7 @@ describe('client keystore refresh', () => {
       expect(err).to.be.an('error');
       expect(err.message).to.equal('invalid_client_metadata');
       expect(err.error_description).to.match(/jwks_uri could not be refreshed/);
-      expect(err.error_description).to.match(/unexpected jwks_uri statusCode, expected 200, got 302/);
+      expect(err.error_description).to.match(/unexpected jwks_uri response status code, expected 200 OK, got 302 Found/);
     });
   });
 

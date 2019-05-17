@@ -9,6 +9,13 @@ try {
   HEROKU_EXAMPLE_CONFIGURATION = {};
 }
 
+if (process.env.TIMEOUT) {
+  HEROKU_EXAMPLE_CONFIGURATION.httpOptions = (gotOptions) => {
+    gotOptions.timeout = parseInt(process.env.TIMEOUT, 10); // eslint-disable-line no-param-reassign
+    return gotOptions;
+  };
+}
+
 module.exports = Object.assign({
   acrValues: ['urn:mace:incommon:iap:bronze'],
   clients: [

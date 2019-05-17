@@ -152,7 +152,7 @@ describe('pairwise features', () => {
         }, (err) => {
           expect(err).to.be.ok;
           expect(err.message).to.eq('invalid_client_metadata');
-          expect(err.error_description).to.eq('sector_identifier_uri must return a valid JSON');
+          expect(err.error_description).to.eq('could not load sector_identifier_uri (Unexpected token n in JSON at position 2 in "https://client.example.com:443/file_of_redirect_uris": \n{ not a valid json...)');
         });
       });
 
@@ -192,7 +192,7 @@ describe('pairwise features', () => {
         }, (err) => {
           expect(err).to.be.ok;
           expect(err.message).to.eq('invalid_client_metadata');
-          expect(err.error_description).to.eq('could not load sector_identifier_uri (Response code 500 (Internal Server Error))');
+          expect(err.error_description).to.eq('unexpected sector_identifier_uri response status code, expected 200 OK, got 500 Internal Server Error');
         });
       });
 
@@ -214,7 +214,7 @@ describe('pairwise features', () => {
         }, (err) => {
           expect(err).to.be.ok;
           expect(err.message).to.eq('invalid_client_metadata');
-          expect(err.error_description).to.eq('unexpected sector_identifier_uri statusCode, expected 200, got 302');
+          expect(err.error_description).to.eq('unexpected sector_identifier_uri response status code, expected 200 OK, got 302 Found');
         });
       });
     });

@@ -14,7 +14,7 @@ const Account = require('./support/account');
 const configuration = require('./support/configuration');
 const routes = require('./routes/koa');
 
-const { PORT = 3000, ISSUER = `http://localhost:${PORT}`, TIMEOUT } = process.env;
+const { PORT = 3000, ISSUER = `http://localhost:${PORT}` } = process.env;
 configuration.findAccount = Account.findAccount;
 
 const app = new Koa();
@@ -56,10 +56,6 @@ let server;
   }
 
   const provider = new Provider(ISSUER, { adapter, ...configuration });
-
-  if (TIMEOUT) {
-    provider.defaultHttpOptions = { timeout: parseInt(TIMEOUT, 10) };
-  }
 
   provider.use(helmet());
 

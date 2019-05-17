@@ -79,7 +79,7 @@ const props = [
       line = Buffer.from(strLine);
 
 
-      if (strLine.startsWith('/*')) {
+      if (strLine.startsWith('/*') && !strLine.includes('eslint') && !strLine.includes('istanbul')) {
         inBlock = true;
         nextIsOption = true;
         return;
@@ -252,6 +252,12 @@ const props = [
             if (line.includes('mustChange')) return undefined;
             if (line.startsWith(' ')) line = line.slice(fixIndent);
             line = line.replace(/ \/\/ eslint-disable.+/, '');
+            if (line.includes('/* eslint-disable')) {
+              return undefined;
+            }
+            if (line.includes('/* eslint-enable')) {
+              return undefined;
+            }
             line = line.replace(/ \/\/ TODO.+/, '');
             line = line.replace(/ class="[ \-\w]+ ?"/, '');
             if (line.includes('<meta ')) {

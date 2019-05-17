@@ -26,8 +26,6 @@ If you or your business use oidc-provider, please consider becoming a [Patron][s
 - [Accounts](#accounts)
 - [User flows](#user-flows)
 - [Custom Grant Types](#custom-grant-types)
-- [HTTP Request Library / Proxy settings](#http-request-library--proxy-settings)
-- [Changing HTTP Request Defaults](#changing-http-request-defaults)
 - [Registering module middlewares (helmet, ip-filters, rate-limiters, etc)](#registering-module-middlewares-helmet-ip-filters-rate-limiters-etc)
 - [Pre- and post-middlewares](#pre--and-post-middlewares)
 - [Mounting oidc-provider](#mounting-oidc-provider)
@@ -331,44 +329,6 @@ async function tokenExchangeHandler(ctx, next) {
 }
 
 provider.registerGrantType(grantType, tokenExchangeHandler, parameters, allowedDuplicateParameters);
-```
-
-
-## HTTP Request Library / Proxy settings
-oidc-provider uses the [got][got-library] module. Because of its lightweight nature the provider
-will not use environment-defined http(s) proxies. In order to have them used you'll need to follow
-got's [README](https://github.com/sindresorhus/got#proxies) and use e.g.
-[`global-tunnel`](https://github.com/np-maintain/global-tunnel)
-
-
-## Changing HTTP Request Defaults
-On four occasions the OIDC Provider needs to venture out to the world wide webs to fetch or post
-to external resources, those are
-
-- fetching an authorization request by request_uri reference
-- fetching and refreshing client's referenced asymmetric keys (jwks_uri client metadata)
-- validating pairwise client's relation to a sector (sector_identifier_uri client metadata)
-- posting to client's backchannel_logout_uri
-
-oidc-provider uses these default options for http requests
-```js
-const DEFAULT_HTTP_OPTIONS = {
-  followRedirect: false,
-  headers: { 'User-Agent': `${pkg.name}/${pkg.version} (${this.issuer})` },
-  retry: 0,
-  timeout: 2500,
-};
-```
-
-Setting `defaultHttpOptions` on `Provider` instance merges your passed options with these defaults,
-for example you can add your own headers, change the user-agent used or change the timeout setting
-```js
-provider.defaultHttpOptions = { timeout: 2500, headers: { 'X-Your-Header': '<whatever>' } };
-```
-
-Confirm your httpOptions by
-```js
-console.log('httpOptions %j', provider.defaultHttpOptions);
 ```
 
 
@@ -1076,7 +1036,7 @@ HTML source rendered when there are pending front-channel logout iframes to be c
 
 _**default value**_:
 ```js
-async logoutPendingSource(ctx, frames, postLogoutRedirectUri, timeout) {
+async logoutPendingSource(ctx, frames, postLogoutRedirectUri) {
   ctx.body = `<!DOCTYPE html>
 ead>
 <title>Logout</title>
@@ -1098,7 +1058,7 @@ ${frames.join('')}
   Array.prototype.slice.call(document.querySelectorAll('iframe')).forEach(function (element) {
     element.onload = frameOnLoad;
   });
-  setTimeout(redirect, ${timeout});
+  setTimeout(redirect, 2500);
 </script>
 <noscript>
   Your browser does not support JavaScript or you've disabled it.<br/>
@@ -1983,6 +1943,40 @@ async extraJwtAccessTokenClaims(ctx, token) {
     }
   }
 }
+```
+</details>
+
+### httpOptions
+
+Helper called whenever the provider calls an external HTTP(S) resource. Use to change the [got](https://github.com/sindresorhus/got/tree/v9.6.0) library's request options as they happen. This can be used to e.g. Change the request timeout option or to configure the global agent to use HTTP_PROXY and HTTPS_PROXY environment variables.   
+  
+
+
+_**default value**_:
+```js
+httpOptions(options) {
+  options.followRedirect = false;
+  options.headers['User-Agent'] = 'oidc-provider/${VERSION} (${ISSUER_IDENTIFIER})';
+  options.retry = 0;
+  options.throwHttpErrors = false;
+  options.timeout = 2500;
+  return options;
+}
+```
+<details>
+  <summary>(Click to expand) To change the request's timeout</summary>
+  <br>
+
+
+To change all request's timeout configure the httpOptions as a function like so: ``js
+ {
+   httpOptions(options) {
+     options.timeout = 5000;
+     return options;
+   }
+ }
+  
+
 ```
 </details>
 

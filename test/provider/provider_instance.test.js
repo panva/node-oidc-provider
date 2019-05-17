@@ -113,28 +113,4 @@ describe('provider instance', () => {
       expect(provider.urlFor('resume', { uid: 'foo' })).to.equal('http://localhost/auth/foo');
     });
   });
-
-  describe('provider#defaultHttpOptions=', () => {
-    it('can be set to follow redirects', () => {
-      const provider = new Provider('http://localhost');
-      provider.defaultHttpOptions = { followRedirect: true };
-      expect(provider.defaultHttpOptions).to.have.property('followRedirect', true);
-    });
-
-    it('can be set to send more headers by default', () => {
-      const provider = new Provider('http://localhost');
-      expect(provider.defaultHttpOptions).to.have.nested.property('headers.User-Agent')
-        .to.match(/^oidc-provider.+\(http:\/\/localhost\)/);
-      provider.defaultHttpOptions = { headers: { 'X-Meta-Id': 'meta meta' } };
-      expect(provider.defaultHttpOptions).to.have.nested.property('headers.User-Agent')
-        .to.match(/^oidc-provider.+\(http:\/\/localhost\)/);
-      expect(provider.defaultHttpOptions).to.have.nested.property('headers.X-Meta-Id', 'meta meta');
-    });
-
-    it('can overwrite the timeout', () => {
-      const provider = new Provider('http://localhost');
-      provider.defaultHttpOptions = { timeout: 2500 };
-      expect(provider.defaultHttpOptions).to.have.property('timeout', 2500);
-    });
-  });
 });

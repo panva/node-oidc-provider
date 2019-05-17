@@ -302,54 +302,6 @@ describe('request Uri features', () => {
         });
       });
 
-      context('caching of the request_uris', () => {
-        it('caches the uris', async function () {
-          const cache = new RequestUriCache(this.provider);
-          nock('https://client.example.com')
-            .get('/cachedRequest')
-            .reply(200, 'content')
-            .get('/cachedRequest')
-            .reply(200, 'content2');
-
-          const first = await cache.resolveWebUri('https://client.example.com/cachedRequest#1');
-          const second = await cache.resolveWebUri('https://client.example.com/cachedRequest#1');
-          const third = await cache.resolveWebUri('https://client.example.com/cachedRequest#2');
-          const fourth = await cache.resolveWebUri('https://client.example.com/cachedRequest#2');
-
-          expect(first).to.equal(second);
-          expect(first).not.to.equal(third);
-          expect(third).to.equal(fourth);
-        });
-
-        it('respects provided response max-age header', async function () {
-          const cache = new RequestUriCache(this.provider);
-          nock('https://client.example.com')
-            .get('/cachedRequest')
-            .reply(200, 'content24', {
-              'Cache-Control': 'private, max-age=5',
-            });
-
-          await cache.resolveWebUri('https://client.example.com/cachedRequest');
-          const dump = cache.cache.dump();
-          expect(dump).to.have.lengthOf(1);
-          expect((dump[0].e - Date.now()) / 1000 | 0).to.be.within(4, 5); // eslint-disable-line no-bitwise, max-len
-        });
-
-        it('respects provided response expires header', async function () {
-          const cache = new RequestUriCache(this.provider);
-          nock('https://client.example.com')
-            .get('/cachedRequest')
-            .reply(200, 'content24', {
-              Expires: new Date(Date.now() + (5 * 1000)).toGMTString(),
-            });
-
-          await cache.resolveWebUri('https://client.example.com/cachedRequest');
-          const dump = cache.cache.dump();
-          expect(dump).to.have.lengthOf(1);
-          expect((dump[0].e - Date.now()) / 1000 | 0).to.be.within(4, 5); // eslint-disable-line no-bitwise, max-len
-        });
-      });
-
       context('when client has requestUris set', () => {
         before(async function () {
           (await this.provider.Client.find('client')).requestUris = ['https://thisoneisallowed.com'];
@@ -461,7 +413,7 @@ describe('request Uri features', () => {
           .expect(() => {
             expect(spy.calledOnce).to.be.true;
             expect(spy.args[0][1]).to.have.property('message', 'invalid_request_uri');
-            expect(spy.args[0][1]).to.have.property('error_description', 'could not load or parse request_uri (Response code 500 (Internal Server Error))');
+            expect(spy.args[0][1]).to.have.property('error_description', 'could not load or parse request_uri (unexpected request_uri response status code, expected 200 OK, got 500 Internal Server Error)');
           });
       });
 
@@ -490,7 +442,7 @@ describe('request Uri features', () => {
           .expect(() => {
             expect(spy.calledOnce).to.be.true;
             expect(spy.args[0][1]).to.have.property('message', 'invalid_request_uri');
-            expect(spy.args[0][1]).to.have.property('error_description').and.matches(/expected 200, got 302/);
+            expect(spy.args[0][1]).to.have.property('error_description').and.matches(/expected 200 OK, got 302 Found/);
           });
       });
 
