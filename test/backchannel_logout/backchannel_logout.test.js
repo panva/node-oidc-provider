@@ -31,7 +31,7 @@ describe('Back-Channel Logout 1.0', () => {
           expect(decoded).to.have.property('sid', 'foo');
         })
         .post('/backchannel_logout')
-        .reply(204);
+        .reply(200);
 
       return client.backchannelLogout('subject', 'foo');
     });
@@ -50,7 +50,7 @@ describe('Back-Channel Logout 1.0', () => {
           expect(decoded).not.to.have.property('sid');
         })
         .post('/backchannel_logout')
-        .reply(204);
+        .reply(200);
 
       return client.backchannelLogout('subject', 'foo');
     });
@@ -154,7 +154,7 @@ describe('Back-Channel Logout 1.0', () => {
 
       nock('https://client.example.com/')
         .post('/backchannel_logout')
-        .reply(204);
+        .reply(200);
 
       const successSpy = sinon.spy();
       this.provider.once('backchannel.success', successSpy);
