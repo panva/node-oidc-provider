@@ -12,10 +12,10 @@
 
 ## `redirect_uri`
 
-Install the `wildcards` package.
+Install the `wildcard` package.
 
 ```console
-npm i wildcard
+npm i wildcard@^1.1.2
 ```
 
 Update whatever file holds your provider, e.g. `index.js` where the provider instance Client
