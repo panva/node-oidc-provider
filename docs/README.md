@@ -180,7 +180,7 @@ interaction session object.
 
 The Provider instance comes with helpers that aid with getting interaction details as well as
 packing the results. See them used in the [step-by-step](https://github.com/panva/node-oidc-provider-example)
-or [in-repo](/example/index.js) examples.
+or [in-repo](/example) examples.
 
 
 **`#provider.interactionDetails(req)`**
@@ -653,7 +653,7 @@ new Provider('http://localhost:3000', {
 // NOTICE: The following draft features are enabled and their implemented version not acknowledged
 // NOTICE:   - OAuth 2.0 Web Message Response Mode - draft 00 (This is an Individual draft. URL: https://tools.ietf.org/html/draft-sakimura-oauth-wmrm-00)
 // NOTICE: Breaking changes between draft version updates may occur and these will be published as MINOR semver oidc-provider updates.
-// NOTICE: You may disable this notice and these potentially breaking updates by acknowledging the current draft version. See https://github.com/panva/node-oidc-provider/tree/master/docs#features
+// NOTICE: You may disable this notice and these potentially breaking updates by acknowledging the current draft version. See https://github.com/panva/node-oidc-provider/tree/master/docs/README.md#features
 new Provider('http://localhost:3000', {
   features: {
     webMessageResponseMode: {

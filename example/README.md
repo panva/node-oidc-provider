@@ -11,8 +11,8 @@ See the following examples
 
 Further resources
 
-- [Configuration](/docs)
-- [Mounting to a path](/docs#mounting-oidc-provider)
+- [Configuration](/docs/README.md)
+- [Mounting to a path](/docs/README.md#mounting-oidc-provider)
 
 Useful to know oidc-provider dependencies
 - [Koa](https://koajs.com/) - web framework oidc-provider uses internally

@@ -76,7 +76,7 @@ The following drafts/experimental specifications are implemented by oidc-provide
 Updates to draft and experimental specification versions are released as MINOR library versions,
 if you utilize these specification implementations consider using the tilde `~` operator in your
 package.json since breaking changes may be introduced as part of these version updates. Alternatively
-[acknowledge](https://github.com/panva/node-oidc-provider/tree/master/docs#features) the version and
+[acknowledge](https://github.com/panva/node-oidc-provider/tree/master/docs/README.md#features) the version and
 be notified of breaking changes as part of your CI.
 
 Missing a feature? - If it wasn't already discussed before, [ask for it][suggest-feature].  
@@ -115,7 +115,7 @@ Also be sure to check the available configuration docs section.
 
 ## Configuration
 oidc-provider allows to be extended and configured in various ways to fit a variety of uses. See
-the [available configuration](/docs).
+the [available configuration](/docs/README.md).
 
 ```js
 const Provider = require('oidc-provider');
