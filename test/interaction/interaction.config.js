@@ -6,7 +6,6 @@ const { Check, Prompt, DEFAULT } = require('../../lib/helpers/interaction');
 config.extraParams = ['triggerCustomFail', 'triggerUnrequestable'];
 config.features = { sessionManagement: { enabled: true } };
 
-config.prompts = ['consent', 'login', 'none', 'custom'];
 config.interactions = cloneDeep(DEFAULT);
 
 const check = new Check(
