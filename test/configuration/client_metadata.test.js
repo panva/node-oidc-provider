@@ -909,15 +909,15 @@ describe('Client metadata validation', () => {
 
     const invalidx5c = cloneDeep(mtlsKeys);
     invalidx5c.keys[0].x5c = true;
-    rejects(this.title, invalidx5c, 'when provided, JWK x5c must be non-empty an array');
+    rejects(this.title, invalidx5c, 'invalid x5c provided (when provided, x5c must be a non-empty array)');
 
     const emptyx5c = cloneDeep(mtlsKeys);
     emptyx5c.keys[0].x5c = [];
-    rejects(this.title, emptyx5c, 'when provided, JWK x5c must be non-empty an array');
+    rejects(this.title, emptyx5c, 'invalid x5c provided (when provided, x5c must be a non-empty array)');
 
     const invalidCert = cloneDeep(mtlsKeys);
     invalidCert.keys[0].x5c = ['foobar'];
-    rejects(this.title, invalidCert, 'invalid x5c provided');
+    rejects(this.title, invalidCert, 'invalid x5c provided (import failed)');
 
     [
       'id_token_encrypted_response_alg',
