@@ -557,7 +557,7 @@ describe('BASIC code', () => {
           .expect(auth.validateState)
           .expect(auth.validateClientLocation)
           .expect(auth.validateError('invalid_request'))
-          .expect(auth.validateErrorDescription('invalid prompt value provided'));
+          .expect(auth.validateErrorDescription('unsupported prompt value requested'));
       });
 
       it('supported but not requestable prompt', function () {
@@ -578,7 +578,7 @@ describe('BASIC code', () => {
           .expect(auth.validateState)
           .expect(auth.validateClientLocation)
           .expect(auth.validateError('invalid_request'))
-          .expect(auth.validateErrorDescription('invalid prompt value provided'));
+          .expect(auth.validateErrorDescription('unsupported prompt value requested'));
       });
 
       it('bad prompt combination', function () {
