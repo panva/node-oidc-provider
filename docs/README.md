@@ -44,7 +44,6 @@ If you or your business use oidc-provider, please consider becoming a [Patron][s
     - [clientCredentials](#featuresclientcredentials)
     - [devInteractions](#featuresdevinteractions)
     - [deviceFlow](#featuresdeviceflow)
-    - [discovery](#featuresdiscovery)
     - [encryption](#featuresencryption)
     - [frontchannelLogout](#featuresfrontchannellogout)
     - [introspection](#featuresintrospection)
@@ -984,20 +983,6 @@ html>`;
 ```
 
 </details>
-
-### features.discovery
-
-[Discovery 1.0](https://openid.net/specs/openid-connect-discovery-1_0.html)  
-
-Exposes `/.well-known/openid-configuration` endpoint with your provider's actual configuration, i.e. Available claims, features and so on.  
-
-
-_**default value**_:
-```js
-{
-  enabled: true
-}
-```
 
 ### features.encryption
 
