@@ -72,6 +72,7 @@ If you or your business use oidc-provider, please consider becoming a [Patron][s
   - [extraClientMetadata](#extraclientmetadata)
   - [extraParams](#extraparams)
   - [formats](#formats)
+  - [httpOptions](#httpoptions)
   - [interactions](#interactions)
   - [interactionUrl](#interactionurl)
   - [introspectionEndpointAuthMethods](#introspectionendpointauthmethods)
