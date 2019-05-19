@@ -114,7 +114,7 @@ describe('device_authorization_endpoint', () => {
         })
         .expect({
           error: 'invalid_request',
-          error_description: 'invalid prompt value provided',
+          error_description: 'unsupported prompt value requested',
         });
     });
 
