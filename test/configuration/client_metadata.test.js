@@ -325,7 +325,7 @@ describe('Client metadata validation', () => {
       grant_types: ['implicit', 'authorization_code'],
       response_types: ['code id_token'],
     });
-    allows(this.title, ['http://localhost'], undefined, {
+    allows(this.title, ['http://localhost'], {
       application_type: 'web',
     });
     rejects(this.title, ['http://some'], undefined, {
