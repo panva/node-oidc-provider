@@ -2,6 +2,34 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+# [6.0.0-alpha.6](https://github.com/panva/node-oidc-provider/compare/v6.0.0-alpha.5...v6.0.0-alpha.6) (2019-05-21)
+
+
+### Bug Fixes
+
+* check sameSite cookie option for none case-insensitive ([523d1b2](https://github.com/panva/node-oidc-provider/commit/523d1b2))
+* handle client jwks x5c when kty is OKP, use client jwks key_ops ([f052f6b](https://github.com/panva/node-oidc-provider/commit/f052f6b))
+
+
+### Features
+
+* add per-request http options helper function configuration ([4aee414](https://github.com/panva/node-oidc-provider/commit/4aee414))
+* discovery must now always be enabled ([5c3c0c7](https://github.com/panva/node-oidc-provider/commit/5c3c0c7))
+
+
+### BREAKING CHANGES
+
+* removed features.discovery and it is now always-on, no
+point in disabling discovery, ever.
+* logoutPendingSource no longer receives a `timeout`
+argument
+* `provider.defaultHttpOptions` setter was removed, use
+the new `httpOptions` configuration helper function instead
+* provider now asserts that client's
+`backchannel_logout_uri` returns a 200 OK response as per specification.
+
+
+
 # [6.0.0-alpha.5](https://github.com/panva/node-oidc-provider/compare/v6.0.0-alpha.4...v6.0.0-alpha.5) (2019-05-17)
 
 
