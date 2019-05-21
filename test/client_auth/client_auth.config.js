@@ -21,6 +21,7 @@ config.tokenEndpointAuthMethods = [
   'tls_client_auth',
   'self_signed_tls_client_auth',
 ];
+config.features = { introspection: { enabled: true } };
 
 module.exports = {
   config,

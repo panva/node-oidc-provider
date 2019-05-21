@@ -24,6 +24,10 @@ const tokenAuthSucceeded = {
   error_description: 'requested grant type is restricted to this client',
 };
 
+const introspectionAuthSucceeded = {
+  active: false,
+};
+
 const tokenAuthRejected = {
   error: 'invalid_client',
   error_description: 'client authentication failed',
@@ -440,6 +444,104 @@ describe('client authentication options', () => {
         .expect(tokenAuthSucceeded));
     });
 
+    describe('audience', () => {
+      it('accepts the auth (issuer as aud)', function () {
+        return JWT.sign({
+          jti: nanoid(),
+          aud: this.provider.issuer,
+          sub: 'client-jwt-secret',
+          iss: 'client-jwt-secret',
+        }, this.key, 'HS256', { expiresIn: 60 }).then(assertion => this.agent.post(route)
+          .send({
+            client_assertion: assertion,
+            grant_type: 'implicit',
+            client_assertion_type: 'urn:ietf:params:oauth:client-assertion-type:jwt-bearer',
+          })
+          .type('form')
+          .expect(tokenAuthSucceeded));
+      });
+
+      it('accepts the auth (endpoint URL as aud)', function () {
+        return JWT.sign({
+          jti: nanoid(),
+          aud: this.provider.issuer + this.provider.pathFor('introspection'),
+          sub: 'client-jwt-secret',
+          iss: 'client-jwt-secret',
+        }, this.key, 'HS256', { expiresIn: 60 }).then(assertion => this.agent.post('/token/introspection')
+          .send({
+            client_assertion: assertion,
+            token: 'foo',
+            client_assertion_type: 'urn:ietf:params:oauth:client-assertion-type:jwt-bearer',
+          })
+          .type('form')
+          .expect(introspectionAuthSucceeded));
+      });
+
+      it('accepts the auth (token endpoint URL as aud)', function () {
+        return JWT.sign({
+          jti: nanoid(),
+          aud: this.provider.issuer + this.provider.pathFor('token'),
+          sub: 'client-jwt-secret',
+          iss: 'client-jwt-secret',
+        }, this.key, 'HS256', { expiresIn: 60 }).then(assertion => this.agent.post('/token/introspection')
+          .send({
+            client_assertion: assertion,
+            token: 'foo',
+            client_assertion_type: 'urn:ietf:params:oauth:client-assertion-type:jwt-bearer',
+          })
+          .type('form')
+          .expect(introspectionAuthSucceeded));
+      });
+
+      it('accepts the auth (issuer as [aud])', function () {
+        return JWT.sign({
+          jti: nanoid(),
+          aud: [this.provider.issuer],
+          sub: 'client-jwt-secret',
+          iss: 'client-jwt-secret',
+        }, this.key, 'HS256', { expiresIn: 60 }).then(assertion => this.agent.post(route)
+          .send({
+            client_assertion: assertion,
+            grant_type: 'implicit',
+            client_assertion_type: 'urn:ietf:params:oauth:client-assertion-type:jwt-bearer',
+          })
+          .type('form')
+          .expect(tokenAuthSucceeded));
+      });
+
+      it('accepts the auth (endpoint URL as [aud])', function () {
+        return JWT.sign({
+          jti: nanoid(),
+          aud: [this.provider.issuer + this.provider.pathFor('introspection')],
+          sub: 'client-jwt-secret',
+          iss: 'client-jwt-secret',
+        }, this.key, 'HS256', { expiresIn: 60 }).then(assertion => this.agent.post('/token/introspection')
+          .send({
+            client_assertion: assertion,
+            token: 'foo',
+            client_assertion_type: 'urn:ietf:params:oauth:client-assertion-type:jwt-bearer',
+          })
+          .type('form')
+          .expect(introspectionAuthSucceeded));
+      });
+
+      it('accepts the auth (token endpoint URL as [aud])', function () {
+        return JWT.sign({
+          jti: nanoid(),
+          aud: [this.provider.issuer + this.provider.pathFor('token')],
+          sub: 'client-jwt-secret',
+          iss: 'client-jwt-secret',
+        }, this.key, 'HS256', { expiresIn: 60 }).then(assertion => this.agent.post('/token/introspection')
+          .send({
+            client_assertion: assertion,
+            token: 'foo',
+            client_assertion_type: 'urn:ietf:params:oauth:client-assertion-type:jwt-bearer',
+          })
+          .type('form')
+          .expect(introspectionAuthSucceeded));
+      });
+    });
+
     it('rejects the auth if this is actually a none-client', function () {
       const spy = sinon.spy();
       this.provider.once('grant.error', spy);
@@ -685,7 +787,7 @@ describe('client authentication options', () => {
         .expect(tokenAuthRejected)
         .expect(() => {
           expect(spy.calledOnce).to.be.true;
-          expect(errorDetail(spy)).to.equal('list of audience (aud) must include the endpoint url');
+          expect(errorDetail(spy)).to.equal('list of audience (aud) must include the endpoint url, issuer identifier or token endpoint url');
         }));
     });
 
@@ -711,7 +813,7 @@ describe('client authentication options', () => {
         .expect(tokenAuthRejected)
         .expect(() => {
           expect(spy.calledOnce).to.be.true;
-          expect(errorDetail(spy)).to.equal('audience (aud) must equal the endpoint url');
+          expect(errorDetail(spy)).to.equal('audience (aud) must equal the endpoint url, issuer identifier or token endpoint url');
         }));
     });
 
