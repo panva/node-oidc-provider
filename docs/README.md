@@ -722,7 +722,7 @@ proxy_set_header x-ssl-client-cert $ssl_client_cert;
 ```
 ```apache
 # Apache
-RequestHeader set x-ssl-client-cert  ""
+RequestHeader set x-ssl-client-cert ""
 RequestHeader set x-ssl-client-cert "%{SSL_CLIENT_CERT}s"
 ```
 You should also consider hosting the endpoints supporting client authentication, on a separate host name or port in order to prevent unintended impact on the TLS behaviour of your other endpoints, e.g. Discovery or the authorization endpoint, by updating the discovery response to add [draft-ietf-oauth-mtls-12](https://tools.ietf.org/html/draft-ietf-oauth-mtls-12) specified `mtls_endpoint_aliases`.
@@ -1758,7 +1758,7 @@ Configure `dynamicScopes` like so:
 
 ### expiresWithSession
 
-Helper used by the OP to decide whether the given authorization code/ device code or implicit returned access token be bound to the user session. This will be applied to  all tokens issued from the authorization / device code in the future. When tokens are session-bound the session will be loaded by its `uid` every time the token is encountered. Session bound tokens will effectively get revoked if the end-user logs out.  
+Helper used by the OP to decide whether the given authorization code/ device code or implicit returned access token be bound to the user session. This will be applied to all tokens issued from the authorization / device code in the future. When tokens are session-bound the session will be loaded by its `uid` every time the token is encountered. Session bound tokens will effectively get revoked if the end-user logs out.  
 
 
 _**default value**_:
@@ -2619,11 +2619,11 @@ proxy_set_header x-ssl-client-s-dn $ssl_client_s_dn;
 ```
 ```apache
 # Apache
-RequestHeader set x-ssl-client-cert  ""
+RequestHeader set x-ssl-client-cert ""
 RequestHeader set x-ssl-client-cert "%{SSL_CLIENT_CERT}s"
-RequestHeader set x-ssl-client-verify  ""
+RequestHeader set x-ssl-client-verify ""
 RequestHeader set x-ssl-client-verify "%{SSL_CLIENT_VERIFY}s"
-RequestHeader set x-ssl-client-s-dn  ""
+RequestHeader set x-ssl-client-s-dn ""
 RequestHeader set x-ssl-client-s-dn "%{SSL_CLIENT_S_DN}s"
 ```
 You should also consider hosting the endpoints supporting client authentication, on a separate host name or port in order to prevent unintended impact on the TLS behaviour of your other endpoints, e.g. Discovery or the authorization endpoint, by updating the discovery response to add [draft-ietf-oauth-mtls-12](https://tools.ietf.org/html/draft-ietf-oauth-mtls-12) specified `mtls_endpoint_aliases`.
