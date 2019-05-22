@@ -3,18 +3,18 @@
  */
 const Redis = require('ioredis'); // eslint-disable-line import/no-unresolved
 
-const client = new Redis(process.env.REDIS_URL, { keyPrefix: 'oidc:' });
+const client = new Redis(process.env.REDIS_URL);
 
 function grantKeyFor(id) {
-  return `grant:${id}`;
+  return `oidc:grant:${id}`;
 }
 
 function userCodeKeyFor(userCode) {
-  return `userCode:${userCode}`;
+  return `oidc:userCode:${userCode}`;
 }
 
 function uidKeyFor(uid) {
-  return `uid:${uid}`;
+  return `oidc:uid:${uid}`;
 }
 
 class RedisAdapter {
@@ -94,7 +94,7 @@ class RedisAdapter {
   }
 
   key(id) {
-    return `${this.name}:${id}`;
+    return `oidc:${this.name}:${id}`;
   }
 }
 
