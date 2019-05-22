@@ -1,3 +1,4 @@
+// npm i ioredis@^4.0.0
 const Redis = require('ioredis'); // eslint-disable-line import/no-unresolved
 const { isEmpty } = require('lodash');
 

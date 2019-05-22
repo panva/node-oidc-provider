@@ -1,6 +1,8 @@
 /*
  * requires Redis ReJSON plugin (https://oss.redislabs.com/rejson/)
  */
+
+// npm i ioredis@^4.0.0
 const Redis = require('ioredis'); // eslint-disable-line import/no-unresolved
 
 const client = new Redis(process.env.REDIS_URL);
