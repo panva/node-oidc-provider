@@ -233,37 +233,27 @@ module.exports = function testHelper(dir, { config: base = path.basename(dir), m
     };
   };
 
-  AuthorizationRequest.prototype.validateError = function (expected) {
+  AuthorizationRequest.prototype.validateResponseParameter = function (parameter, expected) {
     return (response) => {
-      const { query: { error } } = parse(response.headers.location, true);
+      const { query: { [parameter]: value } } = parse(response.headers.location, true);
       if (expected.exec) {
-        expect(error).to.match(expected);
+        expect(value).to.match(expected);
       } else {
-        expect(error).to.equal(expected);
+        expect(value).to.equal(expected);
       }
     };
+  };
+
+  AuthorizationRequest.prototype.validateError = function (expected) {
+    return this.validateResponseParameter('error', expected);
   };
 
   AuthorizationRequest.prototype.validateScope = function (expected) {
-    return (response) => {
-      const { query: { scope } } = parse(response.headers.location, true);
-      if (expected.exec) {
-        expect(scope).to.match(expected);
-      } else {
-        expect(scope).to.equal(expected);
-      }
-    };
+    return this.validateResponseParameter('scope', expected);
   };
 
   AuthorizationRequest.prototype.validateErrorDescription = function (expected) {
-    return (response) => {
-      const { query: { error_description } } = parse(response.headers.location, true);
-      if (expected.exec) {
-        expect(error_description).to.match(expected);
-      } else {
-        expect(error_description).to.equal(expected);
-      }
-    };
+    return this.validateResponseParameter('error_description', expected);
   };
 
   function getSession({ instantiate } = { instantiate: false }) {
