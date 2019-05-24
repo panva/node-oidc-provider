@@ -105,6 +105,30 @@ describe('HYBRID code+id_token+token', () => {
       });
     });
 
+    describe(`${verb} ${route} with the scope not being fulfilled`, () => {
+      before(function () {
+        return this.login({
+          scope: 'openid profile email',
+          rejectedScopes: ['email'],
+        });
+      });
+
+      it('responds with an extra parameter scope', async function () {
+        const auth = new this.AuthorizationRequest({
+          response_type,
+          scope: 'openid profile email',
+        });
+
+        await this.wrap({ route, verb, auth })
+          .expect(302)
+          .expect(auth.validateFragment)
+          .expect(auth.validatePresence(['code', 'id_token', 'state', 'access_token', 'expires_in', 'token_type', 'scope']))
+          .expect(auth.validateState)
+          .expect(auth.validateClientLocation)
+          .expect(auth.validateResponseParameter('scope', 'openid profile'));
+      });
+    });
+
     describe(`${verb} ${route} errors`, () => {
       it('disallowed response mode', function () {
         const spy = sinon.spy();
