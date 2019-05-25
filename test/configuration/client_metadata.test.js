@@ -893,7 +893,7 @@ describe('Client metadata validation', () => {
     rejects(this.title, 1, 'jwks must be a JWK Set');
     rejects(this.title, 0, 'jwks must be a JWK Set');
     rejects(this.title, true, 'jwks must be a JWK Set');
-    rejects(this.title, { keys: [privateKey] }, 'jwks must not contain private keys');
+    rejects(this.title, { keys: [privateKey] }, 'invalid jwks (jwks must not contain private keys)');
     allows(this.title, { keys: [] }, 'jwks.keys must not be empty');
     ['introspection', 'revocation', 'token'].forEach((endpoint) => {
       rejects(this.title, undefined, 'jwks or jwks_uri is mandatory for this client', {
@@ -909,15 +909,15 @@ describe('Client metadata validation', () => {
 
     const invalidx5c = cloneDeep(mtlsKeys);
     invalidx5c.keys[0].x5c = true;
-    rejects(this.title, invalidx5c, 'invalid x5c provided (when provided, x5c must be a non-empty array)');
+    rejects(this.title, invalidx5c, 'invalid jwks (`x5c` must be an array of one or more PKIX certificates when provided)');
 
     const emptyx5c = cloneDeep(mtlsKeys);
     emptyx5c.keys[0].x5c = [];
-    rejects(this.title, emptyx5c, 'invalid x5c provided (when provided, x5c must be a non-empty array)');
+    rejects(this.title, emptyx5c, 'invalid jwks (`x5c` must be an array of one or more PKIX certificates when provided)');
 
     const invalidCert = cloneDeep(mtlsKeys);
     invalidCert.keys[0].x5c = ['foobar'];
-    rejects(this.title, invalidCert, 'invalid x5c provided (import failed)');
+    rejects(this.title, invalidCert, 'invalid jwks (`x5c` member at index 0 is not a valid base64-encoded DER PKIX certificate)');
 
     [
       'id_token_encrypted_response_alg',

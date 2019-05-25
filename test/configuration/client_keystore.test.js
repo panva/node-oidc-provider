@@ -143,7 +143,7 @@ describe('client keystore refresh', () => {
       expect(err).to.be.an('error');
       expect(err.message).to.equal('invalid_client_metadata');
       expect(err.error_description).to.match(/jwks_uri could not be refreshed/);
-      expect(err.error_description).to.match(/when provided, x5c must be a non-empty array/);
+      expect(err.error_description).to.match(/must be an array of one or more PKIX certificates when provided/);
     });
   });
 
