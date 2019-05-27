@@ -1,3 +1,5 @@
+/* eslint-disable no-console, max-len, camelcase, no-unused-vars */
+const { strict: assert } = require('assert');
 const querystring = require('querystring');
 const { inspect } = require('util');
 
@@ -30,7 +32,7 @@ module.exports = (provider) => {
     } catch (err) {
       if (err instanceof SessionNotFound) {
         ctx.status = err.status;
-        const { message: error, error_description } = err; // eslint-disable-line camelcase
+        const { message: error, error_description } = err;
         renderError(ctx, { error, error_description }, err);
       } else {
         throw err;
@@ -74,12 +76,11 @@ module.exports = (provider) => {
     await next();
   });
 
-  const body = bodyParser({
-    text: false,
-    json: false,
-  });
+  const body = bodyParser({ text: false, json: false });
 
   router.post('/interaction/:uid/login', body, async (ctx) => {
+    const { prompt: { name } } = await provider.interactionDetails(ctx.req);
+    assert.equal(name, 'login');
     const account = await Account.findByLogin(ctx.request.body.login);
 
     const result = {
@@ -97,7 +98,25 @@ module.exports = (provider) => {
   });
 
   router.post('/interaction/:uid/confirm', body, async (ctx) => {
-    const result = { consent: {} };
+    const { prompt: { name, details } } = await provider.interactionDetails(ctx.req);
+    assert.equal(name, 'consent');
+
+    const consent = {};
+
+    // any scopes you do not wish to grant go in here
+    //   otherwise details.scopes.new.concat(details.scopes.accepted) will be granted
+    consent.rejectedScopes = [];
+
+    // any claims you do not wish to grant go in here
+    //   otherwise all claims mapped to granted scopes
+    //   and details.claims.new.concat(details.claims.accepted) will be granted
+    consent.rejectedClaims = [];
+
+    // replace = false means previously rejected scopes and claims remain rejected
+    // changing this to true will remove those rejections in favour of just what you rejected above
+    consent.replace = false;
+
+    const result = { consent };
     return provider.interactionFinished(ctx.req, ctx.res, result, {
       mergeWithLastSubmission: true,
     });

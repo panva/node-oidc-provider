@@ -1,3 +1,5 @@
+/* eslint-disable no-console, max-len, camelcase, no-unused-vars */
+const { strict: assert } = require('assert');
 const querystring = require('querystring');
 const { inspect } = require('util');
 
@@ -84,6 +86,8 @@ module.exports = (app, provider) => {
 
   app.post('/interaction/:uid/login', setNoCache, body, async (req, res, next) => {
     try {
+      const { prompt: { name } } = await provider.interactionDetails(req);
+      assert.equal(name, 'login');
       const account = await Account.findByLogin(req.body.login);
 
       const result = {
@@ -103,7 +107,25 @@ module.exports = (app, provider) => {
 
   app.post('/interaction/:uid/confirm', setNoCache, body, async (req, res, next) => {
     try {
-      const result = { consent: {} };
+      const { prompt: { name, details } } = await provider.interactionDetails(req);
+      assert.equal(name, 'consent');
+
+      const consent = {};
+
+      // any scopes you do not wish to grant go in here
+      //   otherwise details.scopes.new.concat(details.scopes.accepted) will be granted
+      consent.rejectedScopes = [];
+
+      // any claims you do not wish to grant go in here
+      //   otherwise all claims mapped to granted scopes
+      //   and details.claims.new.concat(details.claims.accepted) will be granted
+      consent.rejectedClaims = [];
+
+      // replace = false means previously rejected scopes and claims remain rejected
+      // changing this to true will remove those rejections in favour of just what you rejected above
+      consent.replace = false;
+
+      const result = { consent };
       await provider.interactionFinished(req, res, result, { mergeWithLastSubmission: true });
     } catch (err) {
       next(err);
