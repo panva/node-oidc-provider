@@ -1954,15 +1954,16 @@ httpOptions(options) {
   <br>
 
 
-To change all request's timeout configure the httpOptions as a function like so: ``js
+To change all request's timeout configure the httpOptions as a function like so:
+  
+
+```js
  {
    httpOptions(options) {
      options.timeout = 5000;
      return options;
    }
  }
-  
-
 ```
 </details>
 
