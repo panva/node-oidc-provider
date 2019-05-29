@@ -14,7 +14,7 @@ describe('jwtIntrospection features', () => {
       return this.agent.get('/.well-known/openid-configuration')
         .expect(200)
         .expect((response) => {
-          expect(response.body).to.have.property('introspection_endpoint_signing_alg_values_supported');
+          expect(response.body).to.have.property('introspection_signing_alg_values_supported');
         });
     });
   });
