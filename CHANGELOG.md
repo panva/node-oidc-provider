@@ -2,6 +2,19 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+# [6.0.0-alpha.7](https://github.com/panva/node-oidc-provider/compare/v6.0.0-alpha.6...v6.0.0-alpha.7) (2019-05-29)
+
+
+### Bug Fixes
+
+* add scope to implicit responses when different from request ([71b2e7e](https://github.com/panva/node-oidc-provider/commit/71b2e7e))
+* expose correct discovery metadata jwt introspection signing algs ([cf4e442](https://github.com/panva/node-oidc-provider/commit/cf4e442)), closes [#475](https://github.com/panva/node-oidc-provider/issues/475)
+* hide disabled features from discovery ([967c829](https://github.com/panva/node-oidc-provider/commit/967c829))
+* jwt client assertion audience now also accepts issuer and token url ([38706e7](https://github.com/panva/node-oidc-provider/commit/38706e7))
+* use fixed scope to claim mapping over dynamic ones ([03a6130](https://github.com/panva/node-oidc-provider/commit/03a6130)), closes [#466](https://github.com/panva/node-oidc-provider/issues/466)
+
+
+
 # [6.0.0-alpha.6](https://github.com/panva/node-oidc-provider/compare/v6.0.0-alpha.5...v6.0.0-alpha.6) (2019-05-21)
 
 
