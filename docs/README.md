@@ -2320,16 +2320,19 @@ async issueRefreshToken(ctx, client, code) {
 }
 ```
 <details>
-  <summary>(Click to expand) To always issue a refresh token if a client has the grant whitelisted</summary>
+  <summary>(Click to expand) To always issue a refresh tokens ...</summary>
   <br>
 
 
-Configure `issueRefreshToken` like so
+...if a client has the grant whitelisted and scope includes offline_access or the client is a public web client doing code flow. Configure `issueRefreshToken` like so
   
 
 ```js
 async issueRefreshToken(ctx, client, code) {
-  return client.grantTypes.includes('refresh_token');
+  if (!client.grantTypes.includes('refresh_token')) {
+    return false;
+  }
+  return code.scopes.has('offline_access') || (client.applicationType === 'web' && client.tokenEndpointAuthMethod === 'none');
 }
 ```
 </details>
