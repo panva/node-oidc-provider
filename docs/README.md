@@ -696,7 +696,7 @@ _**default value**_:
 
 ### features.certificateBoundAccessTokens
 
-[draft-ietf-oauth-mtls-12](https://tools.ietf.org/html/draft-ietf-oauth-mtls-12) - OAuth 2.0 Mutual TLS Client Authentication and Certificate Bound Access Tokens  
+[draft-ietf-oauth-mtls-14](https://tools.ietf.org/html/draft-ietf-oauth-mtls-14) - OAuth 2.0 Mutual TLS Client Authentication and Certificate Bound Access Tokens  
 
 Enables Certificate Bound Access Tokens. Clients may be registered with `tls_client_certificate_bound_access_tokens` to indicate intention to receive mutual TLS client certificate bound access tokens.   
   
@@ -725,7 +725,7 @@ proxy_set_header x-ssl-client-cert $ssl_client_cert;
 RequestHeader set x-ssl-client-cert ""
 RequestHeader set x-ssl-client-cert "%{SSL_CLIENT_CERT}s"
 ```
-You should also consider hosting the endpoints supporting client authentication, on a separate host name or port in order to prevent unintended impact on the TLS behaviour of your other endpoints, e.g. Discovery or the authorization endpoint, by updating the discovery response to add [draft-ietf-oauth-mtls-12](https://tools.ietf.org/html/draft-ietf-oauth-mtls-12) specified `mtls_endpoint_aliases`.
+You should also consider hosting the endpoints supporting client authentication, on a separate host name or port in order to prevent unintended impact on the TLS behaviour of your other endpoints, e.g. Discovery or the authorization endpoint, by updating the discovery response to add [draft-ietf-oauth-mtls-14](https://tools.ietf.org/html/draft-ietf-oauth-mtls-14) specified `mtls_endpoint_aliases`.
   
 
 ```js
@@ -1074,7 +1074,7 @@ _**default value**_:
 
 ### features.jwtIntrospection
 
-[draft-ietf-oauth-jwt-introspection-response-02](https://tools.ietf.org/html/draft-ietf-oauth-jwt-introspection-response-02) - JWT Response for OAuth Token Introspection  
+[draft-ietf-oauth-jwt-introspection-response-03](https://tools.ietf.org/html/draft-ietf-oauth-jwt-introspection-response-03) - JWT Response for OAuth Token Introspection  
 
 Enables JWT responses for Token Introspection features   
   
@@ -2630,7 +2630,7 @@ RequestHeader set x-ssl-client-verify "%{SSL_CLIENT_VERIFY}s"
 RequestHeader set x-ssl-client-s-dn ""
 RequestHeader set x-ssl-client-s-dn "%{SSL_CLIENT_S_DN}s"
 ```
-You should also consider hosting the endpoints supporting client authentication, on a separate host name or port in order to prevent unintended impact on the TLS behaviour of your other endpoints, e.g. Discovery or the authorization endpoint, by updating the discovery response to add [draft-ietf-oauth-mtls-12](https://tools.ietf.org/html/draft-ietf-oauth-mtls-12) specified `mtls_endpoint_aliases`.
+You should also consider hosting the endpoints supporting client authentication, on a separate host name or port in order to prevent unintended impact on the TLS behaviour of your other endpoints, e.g. Discovery or the authorization endpoint, by updating the discovery response to add [draft-ietf-oauth-mtls-14](https://tools.ietf.org/html/draft-ietf-oauth-mtls-14) specified `mtls_endpoint_aliases`.
   
 
 ```js
