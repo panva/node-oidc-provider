@@ -62,7 +62,7 @@ enabled by default, check the configuration section on how to enable them.
 - [RFC8252 - OAuth 2.0 for Native Apps BCP][oauth-native-apps]
 
 The following drafts/experimental specifications are implemented by oidc-provider.
-- [JWT Response for OAuth Token Introspection - draft 02][jwt-introspection]
+- [JWT Response for OAuth Token Introspection - draft 03][jwt-introspection]
 - [JWT Secured Authorization Response Mode for OAuth 2.0 (JARM) - draft 02][jarm]
 - [OAuth 2.0 Device Authorization Grant - draft 15][device-flow]
 - [OAuth 2.0 Mutual TLS Client Authentication and Certificate Bound Access Tokens - draft 12][mtls]
@@ -194,11 +194,11 @@ See the list of available emitted [event names](/docs/events.md) and their descr
 [debug-link]: https://github.com/visionmedia/debug
 [wmrm]: https://tools.ietf.org/html/draft-sakimura-oauth-wmrm-00
 [device-flow]: https://tools.ietf.org/html/draft-ietf-oauth-device-flow-15
-[jwt-introspection]: https://tools.ietf.org/html/draft-ietf-oauth-jwt-introspection-response-02
+[jwt-introspection]: https://tools.ietf.org/html/draft-ietf-oauth-jwt-introspection-response-03
 [sponsor-auth0]: https://auth0.com/overview?utm_source=GHsponsor&utm_medium=GHsponsor&utm_campaign=oidc-provider&utm_content=auth
 [suggest-feature]: https://github.com/panva/node-oidc-provider/issues/new?template=feature-request.md
 [bug]: https://github.com/panva/node-oidc-provider/issues/new?template=bug-report.md
-[mtls]: https://tools.ietf.org/html/draft-ietf-oauth-mtls-12
+[mtls]: https://tools.ietf.org/html/draft-ietf-oauth-mtls-14
 [resource-indicators]: https://tools.ietf.org/html/draft-ietf-oauth-resource-indicators-02
 [jarm]: https://openid.net/specs/openid-financial-api-jarm-wd-02.html
 [support-patreon]: https://www.patreon.com/panva

@@ -51,17 +51,17 @@ module.exports = Object.assign({
     // discovery: { enabled: true }, // defaults to true
     // requestUri: { enabled: true }, // defaults to true
 
-    backchannelLogout: { enabled: true }, // defaults to false
+    backchannelLogout: { enabled: true, ack: 4 }, // defaults to false
     claimsParameter: { enabled: true }, // defaults to false
-    deviceFlow: { enabled: true }, // defaults to false
+    deviceFlow: { enabled: true, ack: 15 }, // defaults to false
     encryption: { enabled: true }, // defaults to false
-    frontchannelLogout: { enabled: true }, // defaults to false
+    frontchannelLogout: { enabled: true, ack: 2 }, // defaults to false
     introspection: { enabled: true }, // defaults to false
     registration: { enabled: true }, // defaults to false
     request: { enabled: true }, // defaults to false
     revocation: { enabled: true }, // defaults to false
-    sessionManagement: { enabled: true }, // defaults to false
-    webMessageResponseMode: { enabled: true }, // defaults to false
+    sessionManagement: { enabled: true, ack: 28 }, // defaults to false
+    webMessageResponseMode: { enabled: true, ack: 0 }, // defaults to false
   },
   formats: {
     extraJwtAccessTokenClaims(ctx, token) { // eslint-disable-line no-unused-vars
