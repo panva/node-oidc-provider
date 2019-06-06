@@ -2,6 +2,29 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+# [6.0.0-alpha.8](https://github.com/panva/node-oidc-provider/compare/v6.0.0-alpha.7...v6.0.0-alpha.8) (2019-06-06)
+
+
+### Bug Fixes
+
+* base accepted scope off the accepted scopes, not param scopes ([ccec5d3](https://github.com/panva/node-oidc-provider/commit/ccec5d3))
+* do not send empty error_descriptions with some responses ([663fadc](https://github.com/panva/node-oidc-provider/commit/663fadc))
+* enable debugging session bound tokens not being returned ([cc66876](https://github.com/panva/node-oidc-provider/commit/cc66876))
+
+
+### Features
+
+* default refresh token rotation policy changed ([7310765](https://github.com/panva/node-oidc-provider/commit/7310765))
+
+
+### BREAKING CHANGES
+
+* default `rotateRefreshToken` configuration value
+is now a function with a described policy that follows
+[OAuth 2.0 Security Best Current Practice](https://tools.ietf.org/html/draft-ietf-oauth-security-topics-12)
+
+
+
 # [6.0.0-alpha.7](https://github.com/panva/node-oidc-provider/compare/v6.0.0-alpha.6...v6.0.0-alpha.7) (2019-05-29)
 
 
