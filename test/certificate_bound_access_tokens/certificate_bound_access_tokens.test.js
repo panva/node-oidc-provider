@@ -222,7 +222,7 @@ describe('features.certificateBoundAccessTokens', () => {
         expect(spy).to.have.property('calledOnce', true);
         const { oidc: { entities: { AccessToken, RefreshToken } } } = spy.args[0][0];
         expect(AccessToken).to.have.property('x5t#S256', expectedS256);
-        expect(RefreshToken).to.have.property('x5t#S256', undefined);
+        expect(RefreshToken['x5t#S256']).to.be.undefined;
       });
 
       it('verifies the request made with mutual-TLS', async function () {

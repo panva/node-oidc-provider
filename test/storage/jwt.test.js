@@ -40,6 +40,8 @@ if (FORMAT === 'jwt') {
     const policies = ['foo'];
     const sessionUid = 'foo';
     const expiresWithSession = false;
+    const iiat = epochTime();
+    const rotations = 1;
 
     // TODO: add Session and Interaction
 
@@ -48,7 +50,7 @@ if (FORMAT === 'jwt') {
       accountId, claims, clientId, grantId, scope, sid, consumed, acr, amr, authTime, nonce,
       redirectUri, codeChallenge, codeChallengeMethod, aud, error, errorDescription, params,
       userCode, deviceInfo, gty, resource, policies, sessionUid, expiresWithSession,
-      'x5t#S256': s256, inFlight,
+      'x5t#S256': s256, inFlight, iiat, rotations,
     };
     /* eslint-enable object-property-newline */
 
@@ -157,6 +159,8 @@ if (FORMAT === 'jwt') {
       assert.calledWith(upsert, string, {
         accountId,
         acr,
+        iiat,
+        rotations,
         amr,
         authTime,
         claims,

@@ -60,6 +60,8 @@ class MyAdapter {
      * - nonce {string} - random nonce from an authorization request
      * - redirectUri {string} - redirect_uri value from an authorization request
      * - resource {string} - granted or requested resource indicator value (auth code, device code, refresh token)
+     * - rotations {number} - [RefreshToken only] - number of times the refresh token was rotated
+     * - iiat {number} - [RefreshToken only] - the very first (initial) issued at before rotations
      * - acr {string} - authentication context class reference value
      * - amr {string[]} - Authentication methods references
      * - scope {string} - scope value from an authorization request, rejected scopes are removed
