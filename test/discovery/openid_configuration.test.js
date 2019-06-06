@@ -75,7 +75,7 @@ describe(route, () => {
         .expect(500)
         .expect({
           error: 'server_error',
-          error_description: 'oops something went wrong',
+          error_description: 'oops! something went wrong',
         });
     });
 

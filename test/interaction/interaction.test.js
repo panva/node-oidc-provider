@@ -891,8 +891,8 @@ describe('resume after interaction', () => {
       return this.agent.get('/auth/resume')
         .expect(302)
         .expect(auth.validateState)
-        .expect(auth.validateError('access_denied'))
-        .expect(auth.validateErrorDescription(''));
+        .expect(auth.validatePresence(['error', 'state', 'session_state']))
+        .expect(auth.validateError('access_denied'));
     });
 
     it('should abort an interaction when given an error result object (with state)', async function () {
@@ -909,8 +909,8 @@ describe('resume after interaction', () => {
       return this.agent.get('/auth/resume')
         .expect(302)
         .expect(auth.validateState)
-        .expect(auth.validateError('access_denied'))
-        .expect(auth.validateErrorDescription(''));
+        .expect(auth.validatePresence(['error', 'state', 'session_state']))
+        .expect(auth.validateError('access_denied'));
     });
 
     it('should abort an interaction when given an error result object (with description)', async function () {

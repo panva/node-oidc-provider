@@ -903,7 +903,7 @@ describe('BASIC code', () => {
             .expect(auth.validateState)
             .expect(auth.validateClientLocation)
             .expect(auth.validateError('server_error'))
-            .expect(auth.validateErrorDescription('oops something went wrong'));
+            .expect(auth.validateErrorDescription('oops! something went wrong'));
         });
       });
     });

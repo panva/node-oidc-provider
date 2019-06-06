@@ -259,7 +259,7 @@ describe('configuration features.webMessageResponseMode', () => {
             .expect(() => {
               expect(spy.called).to.be.true;
             })
-            .expect(/var data = ({[a-zA-Z0-9"{} ,-_]+});/);
+            .expect(/var data = ({[a-zA-Z0-9"!{} ,-_]+});/);
 
           const { response } = JSON.parse(RegExp.$1);
           expect(response).to.have.property('error', 'server_error');

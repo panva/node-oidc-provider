@@ -633,7 +633,7 @@ describe('grant_type=authorization_code', () => {
         })
         .expect((response) => {
           expect(response.body).to.have.property('error', 'server_error');
-          expect(response.body).to.have.property('error_description', 'oops something went wrong');
+          expect(response.body).to.have.property('error_description', 'oops! something went wrong');
         });
     });
   });
