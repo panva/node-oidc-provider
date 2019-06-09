@@ -2506,6 +2506,7 @@ Configures if and how the OP rotates refresh tokens after they are used. Support
  - `false` refresh tokens are not rotated and their initial expiration date is final
  - `true` refresh tokens are rotated when used, current token is marked as consumed and new one is issued with new TTL, when a consumed refresh token is encountered an error is returned instead and the whole token chain (grant) is revoked
  - `function` returning true/false, true when rotation should occur, false when it shouldn't   
+ <br/><br/>   
  The default configuration value puts forth a sensible refresh token rotation policy
  - only allows refresh tokens to be rotated (have their TTL prolonged by issuing a new one) for one year
  - otherwise always rotate public client tokens
