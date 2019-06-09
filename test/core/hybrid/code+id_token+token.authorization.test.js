@@ -23,7 +23,7 @@ describe('HYBRID code+id_token+token', () => {
         await this.wrap({ route, verb, auth })
           .expect(302)
           .expect(auth.validateFragment)
-          .expect(auth.validatePresence(['code', 'id_token', 'state', 'access_token', 'expires_in', 'token_type']))
+          .expect(auth.validatePresence(['code', 'id_token', 'state', 'access_token', 'expires_in', 'token_type', 'scope']))
           .expect(auth.validateState)
           .expect(auth.validateClientLocation);
 
@@ -39,7 +39,7 @@ describe('HYBRID code+id_token+token', () => {
         await this.wrap({ route, verb, auth })
           .expect(302)
           .expect(auth.validateFragment)
-          .expect(auth.validatePresence(['code', 'id_token', 'state', 'access_token', 'expires_in', 'token_type']))
+          .expect(auth.validatePresence(['code', 'id_token', 'state', 'access_token', 'expires_in', 'token_type', 'scope']))
           .expect(auth.validateState)
           .expect(auth.validateClientLocation);
 

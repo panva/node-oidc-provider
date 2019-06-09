@@ -136,7 +136,7 @@ expire.setDate(expire.getDate() + 1);
         this.wrap({ route, verb, auth })
           .expect(302)
           .expect(auth.validateFragment)
-          .expect(auth.validatePresence(['access_token'], false))
+          .expect(auth.validatePresence(['access_token', 'scope'], false))
           .end((err, response) => {
             if (err) {
               return done(err);
@@ -188,7 +188,7 @@ expire.setDate(expire.getDate() + 1);
         this.wrap({ route, verb, auth })
           .expect(302)
           .expect(auth.validateFragment)
-          .expect(auth.validatePresence(['id_token', 'access_token'], false))
+          .expect(auth.validatePresence(['id_token', 'access_token', 'scope'], false))
           .expect((response) => {
             const { query: { id_token } } = parseLocation(response.headers.location, true);
             const { payload } = decodeJWT(id_token);

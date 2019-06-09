@@ -88,7 +88,7 @@ describe('dynamic scopes', () => {
       await this.wrap({ route: '/auth', verb: 'get', auth })
         .expect(302)
         .expect(auth.validateFragment)
-        .expect(auth.validatePresence(['code', 'state', 'access_token', 'expires_in', 'token_type']))
+        .expect(auth.validatePresence(['code', 'state', 'access_token', 'expires_in', 'token_type', 'scope']))
         .expect(auth.validateState)
         .expect(auth.validateClientLocation)
         .expect(({ headers: { location } }) => {
