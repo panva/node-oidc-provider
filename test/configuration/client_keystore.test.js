@@ -71,7 +71,7 @@ describe('client keystore refresh', () => {
       expect(err).to.be.an('error');
       expect(err.message).to.equal('invalid_client_metadata');
       expect(err.error_description).to.match(/jwks_uri could not be refreshed/);
-      expect(err.error_description).to.match(/jwks_uri must not contain private keys/);
+      expect(err.error_description).to.match(/jwks_uri must not contain private or symmetric keys/);
     });
   });
 

@@ -893,7 +893,7 @@ describe('Client metadata validation', () => {
     rejects(this.title, 1, 'jwks must be a JWK Set');
     rejects(this.title, 0, 'jwks must be a JWK Set');
     rejects(this.title, true, 'jwks must be a JWK Set');
-    rejects(this.title, { keys: [privateKey] }, 'invalid jwks (jwks must not contain private keys)');
+    rejects(this.title, { keys: [privateKey] }, 'invalid jwks (jwks must not contain private or symmetric keys)');
     allows(this.title, { keys: [] }, 'jwks.keys must not be empty');
     ['introspection', 'revocation', 'token'].forEach((endpoint) => {
       rejects(this.title, undefined, 'jwks or jwks_uri is mandatory for this client', {
