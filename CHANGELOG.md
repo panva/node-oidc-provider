@@ -311,7 +311,6 @@ id_token_hint. See https://bitbucket.org/openid/connect/issues/1032
   [OIDC Core 1.0 Errata 2 changeset](https://bitbucket.org/openid/connect/commits/f91efe0f583d9e8a96a7717f454e1822041feb14)
 - Client will no longer be looked up twice during failed authorization due to client not being found
 - `max_age` parameter is now validated to be a non-negative safe integer
-- PBES2 symmetric encryption now correctly uses the `client_secret` value rather then its SHA digest
 - client secrets no longer need to have minimal length to support HS signing
 - established session acr/amr is now available for any authorization request, not just the one it
   was established with

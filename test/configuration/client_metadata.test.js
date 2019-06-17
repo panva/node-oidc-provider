@@ -893,7 +893,9 @@ describe('Client metadata validation', () => {
     rejects(this.title, 1, 'jwks must be a JWK Set');
     rejects(this.title, 0, 'jwks must be a JWK Set');
     rejects(this.title, true, 'jwks must be a JWK Set');
-    rejects(this.title, { keys: [privateKey] }, 'invalid jwks (jwks must not contain private or symmetric keys)');
+    rejects(this.title, { keys: [privateKey] }, 'jwks must not contain private or symmetric keys (found in keys member index 0)');
+    rejects(this.title, { keys: [{ k: '6vl9Rlk88HO8onFHq0ZvTtga68vkUr-bRZ2Hvxu-rAw', kty: 'oct' }] }, 'jwks must not contain private or symmetric keys (found in keys member index 0)');
+    rejects(this.title, { keys: [{ kty: 'oct', kid: 'jf1nb1YotqxK9viWsXMsngnTCmO2r3w_moVIPtaf8wU' }] }, 'jwks must not contain private or symmetric keys (found in keys member index 0)');
     allows(this.title, { keys: [] }, 'jwks.keys must not be empty');
     ['introspection', 'revocation', 'token'].forEach((endpoint) => {
       rejects(this.title, undefined, 'jwks or jwks_uri is mandatory for this client', {
@@ -909,15 +911,15 @@ describe('Client metadata validation', () => {
 
     const invalidx5c = cloneDeep(mtlsKeys);
     invalidx5c.keys[0].x5c = true;
-    rejects(this.title, invalidx5c, 'invalid jwks (`x5c` must be an array of one or more PKIX certificates when provided)');
+    rejects(this.title, invalidx5c, 'jwks keys member index 0 is not a valid EC JWK (`x5c` must be an array of one or more PKIX certificates when provided)');
 
     const emptyx5c = cloneDeep(mtlsKeys);
     emptyx5c.keys[0].x5c = [];
-    rejects(this.title, emptyx5c, 'invalid jwks (`x5c` must be an array of one or more PKIX certificates when provided)');
+    rejects(this.title, emptyx5c, 'jwks keys member index 0 is not a valid EC JWK (`x5c` must be an array of one or more PKIX certificates when provided)');
 
     const invalidCert = cloneDeep(mtlsKeys);
     invalidCert.keys[0].x5c = ['foobar'];
-    rejects(this.title, invalidCert, 'invalid jwks (`x5c` member at index 0 is not a valid base64-encoded DER PKIX certificate)');
+    rejects(this.title, invalidCert, 'jwks keys member index 0 is not a valid EC JWK (`x5c` member at index 0 is not a valid base64-encoded DER PKIX certificate)');
 
     [
       'id_token_encrypted_response_alg',

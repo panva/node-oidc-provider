@@ -130,7 +130,7 @@ describe('client keystore refresh', () => {
       expect(err).to.be.an('error');
       expect(err.message).to.equal('invalid_client_metadata');
       expect(err.error_description).to.match(/jwks_uri could not be refreshed/);
-      expect(err.error_description).to.match(/invalid jwks_uri response/);
+      expect(err.error_description).to.match(/response was not a valid JSON Web Key Set/);
     });
   });
 
