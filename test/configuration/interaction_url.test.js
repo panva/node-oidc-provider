@@ -16,12 +16,12 @@ describe('pathFor related behaviors', () => {
       },
     });
 
-    const interactionUrl = await i(provider).configuration('interactionUrl')({
+    const url = await i(provider).configuration('interactions.url')({
       oidc: {
         uid: 'foobar',
       },
     });
 
-    expect(interactionUrl).to.equal('/interaction/foobar');
+    expect(url).to.equal('/interaction/foobar');
   });
 });

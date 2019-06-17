@@ -73,7 +73,6 @@ If you or your business use oidc-provider, please consider becoming a [Patron][s
   - [formats](#formats)
   - [httpOptions](#httpoptions)
   - [interactions](#interactions)
-  - [interactionUrl](#interactionurl)
   - [introspectionEndpointAuthMethods](#introspectionendpointauthmethods)
   - [issueRefreshToken](#issuerefreshtoken)
   - [logoutSource](#logoutsource)
@@ -1967,21 +1966,14 @@ To change all request's timeout configure the httpOptions as a function like so:
 ```
 </details>
 
-### interactionUrl
-
-Helper used by the OP to determine where to redirect User-Agent for necessary interaction, can return both absolute and relative urls  
-
-
-_**default value**_:
-```js
-async interactionUrl(ctx, interaction) {
-  return `/interaction/${ctx.oidc.uid}`;
-}
-```
-
 ### interactions
 
-structure of Prompts and their checks formed by Prompt and Check class instances. The default you can modify and the classes are available under `Provider.interaction`.   
+TODO  
+
+
+### interactions.policy
+
+structure of Prompts and their checks formed by Prompt and Check class instances. The default you can modify and the classes are available under `Provider.interactionPolicy`.   
   
 
 
@@ -2044,7 +2036,7 @@ _**default value**_:
             return true;
           }
 
-          if (oidc.session.past(oidc.params.max_age)) {
+          if (oidc.session.past(oidc.params.max_age) && (!ctx.oidc.result || !ctx.oidc.result.login)) {
             return true;
           }
 
@@ -2281,7 +2273,7 @@ _**default value**_:
   <br>
 
 ```js
-const { interaction: { Prompt, Check, DEFAULT } } = require('oidc-provider');
+const { interactionPolicy: { Prompt, Check, DEFAULT } } = require('oidc-provider');
 // DEFAULT.get(name) => returns a Prompt instance by its name
 // DEFAULT.remove(name) => removes a Prompt instance by its name
 // DEFAULT.add(prompt, index) => adds a Prompt instance to a specific index, default is to last index
@@ -2290,6 +2282,18 @@ const { interaction: { Prompt, Check, DEFAULT } } = require('oidc-provider');
 // prompt.checks.add(check, index) => adds a Check instance to a specific index, default is to last index
 ```
 </details>
+
+### interactions.url
+
+Helper used by the OP to determine where to redirect User-Agent for necessary interaction, can return both absolute and relative urls.  
+
+
+_**default value**_:
+```js
+async url(ctx, interaction) {
+  return `/interaction/${ctx.oidc.uid}`;
+}
+```
 
 ### introspectionEndpointAuthMethods
 

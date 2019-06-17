@@ -1,12 +1,12 @@
 const { cloneDeep } = require('lodash');
 
 const config = cloneDeep(require('../../default.config'));
-const { Prompt, Check, DEFAULT } = require('../../../lib/helpers/interaction');
+const { Prompt, Check, DEFAULT } = require('../../../lib/helpers/interaction_policy');
 
 config.extraParams = ['triggerCustomFail'];
 config.features = { requestUri: { enabled: false } };
 
-config.interactions = cloneDeep(DEFAULT);
+config.interactions = { policy: cloneDeep(DEFAULT) };
 
 const check = new Check(
   'reason_foo',
@@ -20,8 +20,8 @@ const check = new Check(
   },
 );
 
-config.interactions[0].checks.push(check);
-config.interactions.push(new Prompt({ name: 'unrequestable', requestable: false }));
+config.interactions.policy[0].checks.push(check);
+config.interactions.policy.push(new Prompt({ name: 'unrequestable', requestable: false }));
 
 module.exports = {
   config,

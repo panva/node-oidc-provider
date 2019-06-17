@@ -6,7 +6,6 @@ const { parse } = require('url');
 const path = require('path');
 const querystring = require('querystring');
 
-const _ = require('lodash');
 const sinon = require('sinon');
 const { agent: supertest } = require('supertest');
 const { expect } = require('chai');
@@ -400,9 +399,9 @@ module.exports.passInteractionChecks = (...reasons) => {
 
   context('', () => {
     before(function () {
-      const { interactions } = i(this.provider).configuration();
+      const { policy } = i(this.provider).configuration('interactions');
 
-      const iChecks = _.flattenDeep([interactions.map(i => i.checks)]);
+      const iChecks = [policy.map(i => i.checks)].flat(Infinity);
 
       iChecks
         .filter(check => reasons.includes(check.reason))

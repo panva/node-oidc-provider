@@ -55,7 +55,7 @@
             return true;
           }
 
-          if (oidc.session.past(oidc.params.max_age)) {
+          if (oidc.session.past(oidc.params.max_age) && (!ctx.oidc.result || !ctx.oidc.result.login)) {
             return true;
           }
 

@@ -1,12 +1,12 @@
 const { cloneDeep } = require('lodash');
 
 const config = cloneDeep(require('../default.config'));
-const { Check, Prompt, DEFAULT } = require('../../lib/helpers/interaction');
+const { Check, Prompt, DEFAULT } = require('../../lib/helpers/interaction_policy');
 
 config.extraParams = ['triggerCustomFail', 'triggerUnrequestable'];
 config.features = { sessionManagement: { enabled: true } };
 
-config.interactions = cloneDeep(DEFAULT);
+config.interactions = { policy: cloneDeep(DEFAULT) };
 
 const check = new Check(
   'reason_foo',
@@ -20,9 +20,9 @@ const check = new Check(
   },
 );
 
-config.interactions[0].checks.push(check);
-config.interactions.push(new Prompt({ name: 'custom', requestable: true }));
-config.interactions.unshift(new Prompt({ name: 'unrequestable', requestable: false }, new Check('un_foo', 'un_foo_desc', 'un_foo_err', (ctx) => {
+config.interactions.policy[0].checks.push(check);
+config.interactions.policy.push(new Prompt({ name: 'custom', requestable: true }));
+config.interactions.policy.unshift(new Prompt({ name: 'unrequestable', requestable: false }, new Check('un_foo', 'un_foo_desc', 'un_foo_err', (ctx) => {
   if (ctx.oidc.params.triggerUnrequestable && (!ctx.oidc.result || !('foo' in ctx.oidc.result))) {
     return true;
   }
