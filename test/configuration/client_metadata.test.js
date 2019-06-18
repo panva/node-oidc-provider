@@ -1038,6 +1038,22 @@ describe('Client metadata validation', () => {
         token_endpoint_auth_method: 'client_secret_post',
       },
     });
+    defaultsTo('introspection_endpoint_auth_method', 'client_secret_post', undefined, {
+      features: {
+        introspection: { enabled: true },
+      },
+      clientDefaults: {
+        token_endpoint_auth_method: 'client_secret_post',
+      },
+    });
+    defaultsTo('introspection_endpoint_auth_signing_alg', 'HS384', { token_endpoint_auth_method: 'client_secret_jwt' }, {
+      features: {
+        introspection: { enabled: true },
+      },
+      clientDefaults: {
+        token_endpoint_auth_signing_alg: 'HS384',
+      },
+    });
     defaultsTo('id_token_signed_response_alg', 'PS256', undefined, {
       clientDefaults: {
         id_token_signed_response_alg: 'PS256',
