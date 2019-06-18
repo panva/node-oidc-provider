@@ -2,6 +2,35 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+# [6.0.0-alpha.9](https://github.com/panva/node-oidc-provider/compare/v6.0.0-alpha.8...v6.0.0-alpha.9) (2019-06-18)
+
+
+### Bug Fixes
+
+* also reject client jwks/jwks_uri symmetric keys ([df18f62](https://github.com/panva/node-oidc-provider/commit/df18f62)), closes [#481](https://github.com/panva/node-oidc-provider/issues/481)
+* avoid sending "samesite=none" to webkit browsers due to their bug ([9c6e05b](https://github.com/panva/node-oidc-provider/commit/9c6e05b))
+* correctly use the secret value, not its SHA digest, for PBES2-* ([43256ba](https://github.com/panva/node-oidc-provider/commit/43256ba))
+* handle invalid interaction policies with access_denied ([1b6104c](https://github.com/panva/node-oidc-provider/commit/1b6104c))
+
+
+### Features
+
+* always return scope with token implicit response ([ea7b394](https://github.com/panva/node-oidc-provider/commit/ea7b394))
+
+
+### BREAKING CHANGES
+
+* PBES2-* Content Encryption Key encryption now correctly
+uses the  `client_secret` value rather than its SHA digest.
+* when neither interactions nor custom middlewares result
+in the authorization chain having an account identifier the server will
+now resolve the request with access_denied error.
+* when neither interactions nor custom middlewares result
+in the authorization chain having resolved an accepted scope the server
+will now resolve the request with access_denied error.
+
+
+
 # [6.0.0-alpha.8](https://github.com/panva/node-oidc-provider/compare/v6.0.0-alpha.7...v6.0.0-alpha.8) (2019-06-06)
 
 
