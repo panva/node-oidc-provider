@@ -338,16 +338,41 @@ describe('request parameter features', () => {
           }));
       });
 
-      if (route !== '/device/auth') {
-        it('can contain resource parameter as an Array', async function () {
-          const spy = sinon.spy();
-          this.provider.once(successEvt, spy);
+      it('can contain resource parameter as an Array', async function () {
+        const spy = sinon.spy();
+        this.provider.once(successEvt, spy);
 
-          await JWT.sign({
+        await JWT.sign({
+          client_id: 'client',
+          response_type: 'code',
+          redirect_uri: 'https://client.example.com/cb',
+          resource: ['https://rp.example.com/api'],
+        }, null, 'none', { issuer: 'client', audience: this.provider.issuer }).then(request => this.wrap({
+          agent: this.agent,
+          route,
+          verb,
+          auth: {
+            request,
+            scope: 'openid',
             client_id: 'client',
             response_type: 'code',
+          },
+        })
+          .expect(successCode)
+          .expect(successFnCheck));
+
+        expect(
+          spy.calledWithMatch({ oidc: { params: { resource: ['https://rp.example.com/api'] } } }),
+        ).to.be.true;
+      });
+
+      if (route !== '/device/auth') {
+        it('may contain a response_mode and it will be honoured', function () {
+          return JWT.sign({
+            client_id: 'client',
+            response_type: 'code',
+            response_mode: 'fragment',
             redirect_uri: 'https://client.example.com/cb',
-            resource: ['https://rp.example.com/api'],
           }, null, 'none', { issuer: 'client', audience: this.provider.issuer }).then(request => this.wrap({
             agent: this.agent,
             route,
@@ -359,12 +384,40 @@ describe('request parameter features', () => {
               response_type: 'code',
             },
           })
+            .expect(this.AuthorizationRequest.prototype.validateFragment)
             .expect(successCode)
             .expect(successFnCheck));
+        });
 
-          expect(
-            spy.calledWithMatch({ oidc: { params: { resource: ['https://rp.example.com/api'] } } }),
-          ).to.be.true;
+        it('re-checks the response mode from the request', function () {
+          const spy = sinon.spy();
+          this.provider.once(errorEvt, spy);
+
+          return JWT.sign({
+            client_id: 'client2',
+            response_type: 'code',
+            redirect_uri: 'https://client.example.com/cb',
+            response_mode: 'foo',
+          }, null, 'none', { issuer: 'client2', audience: this.provider.issuer }).then(request => this.wrap({
+            agent: this.agent,
+            route,
+            verb,
+            auth: {
+              request,
+              scope: 'openid',
+              client_id: 'client',
+              response_type: 'code',
+            },
+          })
+            .expect(errorCode)
+            .expect(() => {
+              expect(spy.calledOnce).to.be.true;
+              expect(spy.args[0][1]).to.have.property('message', 'unsupported_response_mode');
+              expect(spy.args[0][1]).to.have.property(
+                'error_description',
+                'unsupported response_mode requested',
+              );
+            }));
         });
 
         it('doesnt allow response_type to differ', function () {
@@ -393,6 +446,38 @@ describe('request parameter features', () => {
               expect(spy.args[0][1]).to.have.property(
                 'error_description',
                 'request response_type must equal the one in request parameters',
+              );
+            }));
+        });
+
+        it('uses the state from the request even if its validations will fail', function () {
+          const spy = sinon.spy();
+          this.provider.once(errorEvt, spy);
+
+          return JWT.sign({
+            client_id: 'client2',
+            response_type: 'code',
+            redirect_uri: 'https://client.example.com/cb',
+            state: 'foobar',
+          }, null, 'none', { issuer: 'client2', audience: this.provider.issuer }).then(request => this.wrap({
+            agent: this.agent,
+            route,
+            verb,
+            auth: {
+              request,
+              scope: 'openid',
+              client_id: 'client',
+              response_type: 'code',
+            },
+          })
+            .expect(this.AuthorizationRequest.prototype.validateResponseParameter.call({}, 'state', 'foobar'))
+            .expect(errorCode)
+            .expect(() => {
+              expect(spy.calledOnce).to.be.true;
+              expect(spy.args[0][1]).to.have.property('message', 'invalid_request_object');
+              expect(spy.args[0][1]).to.have.property(
+                'error_description',
+                'request client_id must equal the one in request parameters',
               );
             }));
         });
@@ -537,6 +622,37 @@ describe('request parameter features', () => {
             expect(spy.calledOnce).to.be.true;
             expect(spy.args[0][1]).to.have.property('message', 'invalid_request_object');
             expect(spy.args[0][1]).to.have.property('error_description').that.matches(/could not validate request object/);
+          }));
+      });
+
+      it('rejects "registration" parameter part of the request object', function () {
+        const spy = sinon.spy();
+        this.provider.once(errorEvt, spy);
+
+        return JWT.sign({
+          client_id: 'client',
+          response_type: 'code',
+          redirect_uri: 'https://client.example.com/cb',
+          registration: 'foo',
+        }, null, 'none', { issuer: 'client', audience: this.provider.issuer }).then(request => this.wrap({
+          agent: this.agent,
+          route,
+          verb,
+          auth: {
+            request,
+            scope: 'openid',
+            client_id: 'client',
+            response_type: 'code',
+          },
+        })
+          .expect(errorCode)
+          .expect(() => {
+            expect(spy.calledOnce).to.be.true;
+            expect(spy.args[0][1]).to.have.property('message', 'registration_not_supported');
+            expect(spy.args[0][1]).to.have.property(
+              'error_description',
+              'registration parameter provided but not supported',
+            );
           }));
       });
 
