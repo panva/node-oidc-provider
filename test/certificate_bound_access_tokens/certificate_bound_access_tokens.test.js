@@ -108,11 +108,8 @@ describe('features.certificateBoundAccessTokens', () => {
       expect(AccessToken).to.have.property('x5t#S256', expectedS256);
     });
 
-    it('verifies the request made with mutual-TLS', async function () {
-      const spy = sinon.spy();
-      this.provider.once('grant.error', spy);
-
-      await this.agent.post('/token')
+    it('verifies the request made with mutual-TLS', function () {
+      return this.agent.post('/token')
         .auth('client', 'secret')
         .send({
           grant_type: 'urn:ietf:params:oauth:grant-type:device_code',
@@ -120,10 +117,7 @@ describe('features.certificateBoundAccessTokens', () => {
         })
         .type('form')
         .expect(400)
-        .expect({ error: 'invalid_grant', error_description: 'grant request is invalid' });
-
-      expect(spy).to.have.property('calledOnce', true);
-      expect(spy.args[0][1]).to.have.property('error_detail', 'mutual TLS client certificate missing');
+        .expect({ error: 'invalid_request', error_description: 'mutual TLS client certificate not provided' });
     });
   });
 
@@ -169,11 +163,8 @@ describe('features.certificateBoundAccessTokens', () => {
         expect(RefreshToken).not.to.have.property('x5t#S256');
       });
 
-      it('verifies the request made with mutual-TLS', async function () {
-        const spy = sinon.spy();
-        this.provider.once('grant.error', spy);
-
-        await this.agent.post('/token')
+      it('verifies the request made with mutual-TLS', function () {
+        return this.agent.post('/token')
           .auth('client', 'secret')
           .send({
             grant_type: 'authorization_code',
@@ -182,10 +173,7 @@ describe('features.certificateBoundAccessTokens', () => {
           })
           .type('form')
           .expect(400)
-          .expect({ error: 'invalid_grant', error_description: 'grant request is invalid' });
-
-        expect(spy).to.have.property('calledOnce', true);
-        expect(spy.args[0][1]).to.have.property('error_detail', 'mutual TLS client certificate missing');
+          .expect({ error: 'invalid_request', error_description: 'mutual TLS client certificate not provided' });
       });
     });
 
@@ -225,11 +213,8 @@ describe('features.certificateBoundAccessTokens', () => {
         expect(RefreshToken['x5t#S256']).to.be.undefined;
       });
 
-      it('verifies the request made with mutual-TLS', async function () {
-        const spy = sinon.spy();
-        this.provider.once('grant.error', spy);
-
-        await this.agent.post('/token')
+      it('verifies the request made with mutual-TLS', function () {
+        return this.agent.post('/token')
           .auth('client', 'secret')
           .send({
             grant_type: 'refresh_token',
@@ -237,10 +222,7 @@ describe('features.certificateBoundAccessTokens', () => {
           })
           .type('form')
           .expect(400)
-          .expect({ error: 'invalid_grant', error_description: 'grant request is invalid' });
-
-        expect(spy).to.have.property('calledOnce', true);
-        expect(spy.args[0][1]).to.have.property('error_detail', 'mutual TLS client certificate missing');
+          .expect({ error: 'invalid_request', error_description: 'mutual TLS client certificate not provided' });
       });
     });
   });
@@ -288,11 +270,8 @@ describe('features.certificateBoundAccessTokens', () => {
         expect(RefreshToken).to.have.property('x5t#S256', expectedS256);
       });
 
-      it('verifies the request made with mutual-TLS', async function () {
-        const spy = sinon.spy();
-        this.provider.once('grant.error', spy);
-
-        await this.agent.post('/token')
+      it('verifies the request made with mutual-TLS', function () {
+        return this.agent.post('/token')
           .send({
             client_id: 'client-none',
             grant_type: 'authorization_code',
@@ -301,10 +280,7 @@ describe('features.certificateBoundAccessTokens', () => {
           })
           .type('form')
           .expect(400)
-          .expect({ error: 'invalid_grant', error_description: 'grant request is invalid' });
-
-        expect(spy).to.have.property('calledOnce', true);
-        expect(spy.args[0][1]).to.have.property('error_detail', 'mutual TLS client certificate missing');
+          .expect({ error: 'invalid_request', error_description: 'mutual TLS client certificate not provided' });
       });
     });
 
@@ -344,11 +320,8 @@ describe('features.certificateBoundAccessTokens', () => {
         expect(RefreshToken).to.have.property('x5t#S256', expectedS256);
       });
 
-      it('verifies the request made with mutual-TLS', async function () {
-        const spy = sinon.spy();
-        this.provider.once('grant.error', spy);
-
-        await this.agent.post('/token')
+      it('verifies the request made with mutual-TLS', function () {
+        return this.agent.post('/token')
           .auth('client', 'secret')
           .send({
             grant_type: 'refresh_token',
@@ -356,10 +329,7 @@ describe('features.certificateBoundAccessTokens', () => {
           })
           .type('form')
           .expect(400)
-          .expect({ error: 'invalid_grant', error_description: 'grant request is invalid' });
-
-        expect(spy).to.have.property('calledOnce', true);
-        expect(spy.args[0][1]).to.have.property('error_detail', 'mutual TLS client certificate missing');
+          .expect({ error: 'invalid_request', error_description: 'mutual TLS client certificate not provided' });
       });
 
       it('verifies the request made with mutual-TLS using the same cert', async function () {
@@ -400,19 +370,13 @@ describe('features.certificateBoundAccessTokens', () => {
       expect(ClientCredentials).to.have.property('x5t#S256', expectedS256);
     });
 
-    it('verifies the request was made with mutual-TLS', async function () {
-      const spy = sinon.spy();
-      this.provider.once('grant.error', spy);
-
-      await this.agent.post('/token')
+    it('verifies the request was made with mutual-TLS', function () {
+      return this.agent.post('/token')
         .auth('client', 'secret')
         .send({ grant_type: 'client_credentials' })
         .type('form')
         .expect(400)
-        .expect({ error: 'invalid_grant', error_description: 'grant request is invalid' });
-
-      expect(spy).to.have.property('calledOnce', true);
-      expect(spy.args[0][1]).to.have.property('error_detail', 'mutual TLS client certificate missing');
+        .expect({ error: 'invalid_request', error_description: 'mutual TLS client certificate not provided' });
     });
   });
 });
