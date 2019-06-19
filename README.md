@@ -105,10 +105,10 @@ If you or your business use oidc-provider, please consider becoming a [Patron][s
 You may check the [example folder](/example) or follow a [step by step example][example-repo] to see
 which of those fits your desired application setup.
 
-The examples bundled in this repo's codebase are available for you to experiment with
-[here][heroku-example]. Dynamic Registration is open, you can literally register any client you want
-there.   An example client using this provider is available [here][heroku-example-client] (uses
-[openid-client][openid-client]).
+A feature-rich example configuration of oidc-provider is available for you to experiment with
+[here][heroku-example]. Dynamic Client Registration is open, you can literally register any client
+you want there. An example client using this provider is available [here][heroku-example-client]
+(uses [openid-client][openid-client]).
 
 Also be sure to check the available configuration docs section.
 
@@ -184,7 +184,7 @@ See the list of available emitted [event names](/docs/events.md) and their descr
 [introspection]: https://tools.ietf.org/html/rfc7662
 [pkce]: https://tools.ietf.org/html/rfc7636
 [example-repo]: https://github.com/panva/node-oidc-provider-example
-[heroku-example]: https://guarded-cliffs-8635.herokuapp.com/.well-known/openid-configuration
+[heroku-example]: https://op.panva.cz/.well-known/openid-configuration
 [heroku-example-client]: https://tranquil-reef-95185.herokuapp.com/client
 [openid-client]: https://github.com/panva/node-openid-client
 [backchannel-logout]: https://openid.net/specs/openid-connect-backchannel-1_0-04.html

@@ -86,8 +86,6 @@ module.exports = (provider) => {
     const result = {
       login: {
         account: account.accountId,
-        acr: 'urn:mace:incommon:iap:bronze',
-        amr: ['pwd'],
         ts: Math.floor(Date.now() / 1000),
       },
     };

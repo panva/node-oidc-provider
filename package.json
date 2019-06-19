@@ -35,8 +35,8 @@
   "scripts": {
     "coverage": "nyc node ./test/run",
     "heroku-postbuild": "npm install mongodb@^3.0.0",
-    "lint": "eslint lib example test",
-    "lint-fix": "eslint lib example test --fix",
+    "lint": "eslint lib example certification test",
+    "lint-fix": "eslint lib example certification test --fix",
     "test": "node ./test/run"
   },
   "dependencies": {

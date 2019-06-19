@@ -26,7 +26,7 @@ let server;
 (async () => {
   let adapter;
   if (process.env.MONGODB_URI) {
-    adapter = require('./support/heroku_mongo_adapter'); // eslint-disable-line global-require
+    adapter = require('./adapters/mongodb'); // eslint-disable-line global-require
     await adapter.connect();
   }
 
