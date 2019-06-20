@@ -1,8 +1,9 @@
 # Wildcard support
 
 - built for version: ^6.0.0
-- no guarantees this is bug-free
-- if you get caught using this in production you'll go to jail
+- no guarantees this is bug-free, no support will be provided for this, you've been warned, you're on
+your own
+- if you get caught allowing wildcards production you'll suffer the consequences
 
 > ⚠️ This violates both the OpenID Connect specification and OAuth 2.0 Security Best Current
 > Practice and opens up your Relying Parties as Open Redirectors during many documented OAuth 2.0
@@ -12,10 +13,11 @@
 
 ## `redirect_uri`
 
-Install the `wildcard` package.
+Install the `wildcard` and `psl` packages.
 
 ```console
 npm i wildcard@^1.1.2
+npm i psl@^1.1.33
 ```
 
 Update whatever file holds your provider, e.g. `index.js` where the provider instance Client
@@ -26,19 +28,56 @@ const net = require('net');
 const { URL } = require('url');
 
 const wildcard = require('wildcard');
+const psl = require('psl');
+const { InvalidClientMetadata } = Provider.errors;
 
-const provider = new Provider(/* your configuration */);
+// defining `redirect_uris` as custom client metadata enables to run additional validations
+// here some conditions are applied for "using" wildcards
 
+const provider = new Provider(/* your issuer identifier */, {
+  extraClientMetadata: {
+    properties: ['redirect_uris'],
+    validator(key, value, metadata) {
+      if (key === 'redirect_uris') {
+        for (const redirectUri of value) {
+          if (redirectUri.includes('*')) {
+            const { hostname, href } = new URL(redirectUri);
+
+            if (href.split('*').length !== 2) {
+              throw new InvalidClientMetadata('redirect_uris with a wildcard may only contain a single one');
+            }
+
+            if (!hostname.includes('*')) {
+              throw new InvalidClientMetadata('redirect_uris may only have a wildcard in the hostname');
+            }
+
+            if (false /* TODO check the hostname is not an IP with an asterisk */) {
+              throw new InvalidClientMetadata('redirect_uris with a wildcard must not have an IP as hostname');
+            }
+
+            const test = hostname.replace('*', 'test');
+
+            // checks that the wildcard is for a full subdomain e.g. *.panva.cz, not *suffix.panva.cz
+            if (!wildcard(hostname, test)) {
+              throw new InvalidClientMetadata('redirect_uris with a wildcard must only match the whole subdomain');
+            }
+
+            if (!psl.get(hostname.split('*.')[1])) {
+              throw new InvalidClientMetadata('redirect_uris with a wildcard must not match an eTLD+1 of a known public suffix domain');
+            }
+          }
+        }
+      }
+    },
+  },
+});
+
+// redirectUriAllowed on a client prototype checks whether a redirect_uri is allowed or not
 const { redirectUriAllowed } = provider.Client.prototype;
 
 const hasWildcardHost = (redirectUri) => {
-  const { hostname, href } = new URL(redirectUri);
-
-  // TODO: in addition to this you should not allow wildcard to be the eTLD+1 and/or known
-  // multi-tenant hosting such as *.herokuapp.com
-
-  // only one asterisk and in the hostname that is not an IP address
-  return !net.isIP(hostname) && href.split('*').length === 2 && hostname.includes('*');
+  const { hostname } = new URL(redirectUri);
+  return hostname.includes('*');
 };
 
 const wildcardMatches = (redirectUri, wildcardUri) => !!wildcard(wildcardUri, redirectUri);
@@ -52,15 +91,7 @@ provider.Client.prototype.redirectUriAllowed = function wildcardRedirectUriAllow
 
 ## `post_logout_redirect_uris`
 
-Same as the above with the same recommendation not to use this in any other environment other than
-development.
-
-```js
-const { postLogoutRedirectUriAllowed } = provider.Client.prototype;
-
-provider.Client.prototype.postLogoutRedirectUriAllowed = function wildcardPostLogoutRedirectUriAllowed(logoutUri) {
-  if (postLogoutRedirectUriAllowed.call(this, logoutUri)) return true;
-  const wildcardUris = this.postLogoutRedirectUris.filter(hasWildcardHost);
-  return wildcardUris.some(wildcardMatches.bind(undefined, logoutUri));
-};
-```
+Similar to the above with the same recommendation not to use this in any other environment other
+than development, the only things that change are metadata property names (`post_logout_redirect_uris`),
+client property on which the whitelist is (`postLogoutRedirectUris`) and the client method called
+`postLogoutRedirectUriAllowed`.
