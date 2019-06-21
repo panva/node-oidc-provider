@@ -998,7 +998,7 @@ describe('client authentication options', () => {
     let privateKey;
 
     before(() => {
-      privateKey = jose.JWK.importKey(clientKey);
+      privateKey = jose.JWK.asKey(clientKey);
     });
 
     after(function () {

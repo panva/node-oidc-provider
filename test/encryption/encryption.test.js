@@ -17,7 +17,7 @@ const route = '/auth';
     before(bootstrap(__dirname));
 
     before(function () {
-      this.keystore = jose.JWKS.KeyStore.fromJWKS(privKey);
+      this.keystore = jose.JWKS.asKeyStore(privKey);
     });
     before(function () { return this.login(); });
 
