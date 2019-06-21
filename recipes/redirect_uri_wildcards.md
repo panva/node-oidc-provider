@@ -3,7 +3,7 @@
 - built for version: ^6.0.0
 - no guarantees this is bug-free, no support will be provided for this, you've been warned, you're on
 your own
-- if you get caught allowing wildcards production you'll suffer the consequences
+- if you get caught allowing wildcards in production you'll suffer the consequences
 
 > ⚠️ This violates both the OpenID Connect specification and OAuth 2.0 Security Best Current
 > Practice and opens up your Relying Parties as Open Redirectors during many documented OAuth 2.0
@@ -11,7 +11,7 @@ your own
 > for any production deployment.**
 
 
-## `redirect_uri`
+## `redirect_uris`
 
 Install the `wildcard` and `psl` packages.
 
@@ -94,4 +94,4 @@ provider.Client.prototype.redirectUriAllowed = function wildcardRedirectUriAllow
 Similar to the above with the same recommendation not to use this in any other environment other
 than development, the only things that change are metadata property names (`post_logout_redirect_uris`),
 client property on which the whitelist is (`postLogoutRedirectUris`) and the client method called
-`postLogoutRedirectUriAllowed`.
+(`postLogoutRedirectUriAllowed`).
