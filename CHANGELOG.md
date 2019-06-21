@@ -2,6 +2,18 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+# [6.0.0-alpha.10](https://github.com/panva/node-oidc-provider/compare/v6.0.0-alpha.9...v6.0.0-alpha.10) (2019-06-21)
+
+
+### Bug Fixes
+
+* break endless login loop with too short max_age values ([66c7968](https://github.com/panva/node-oidc-provider/commit/66c7968))
+* clientDefaults is now used in resolving defaults of some edge props ([e7bcfd2](https://github.com/panva/node-oidc-provider/commit/e7bcfd2))
+* ensure runtime @panva/jose dependency ^1.3.0 ([8d633cb](https://github.com/panva/node-oidc-provider/commit/8d633cb))
+* request object processing order related and general fixes ([9fd3fba](https://github.com/panva/node-oidc-provider/commit/9fd3fba))
+
+
+
 # [6.0.0-alpha.9](https://github.com/panva/node-oidc-provider/compare/v6.0.0-alpha.8...v6.0.0-alpha.9) (2019-06-18)
 
 
