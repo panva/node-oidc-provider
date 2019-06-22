@@ -5,7 +5,7 @@ const path = require('path');
 const { set } = require('lodash');
 const render = require('koa-ejs');
 const helmet = require('koa-helmet');
-const openid = require('openid-client');
+const openid = require('openid-client'); // eslint-disable-line import/no-unresolved
 
 const Provider = require('../lib'); // require('oidc-provider');
 const Account = require('../example/support/account');
