@@ -42,13 +42,14 @@ If you or your business use oidc-provider, please consider becoming a [Patron][s
     - [certificateBoundAccessTokens](#featurescertificateboundaccesstokens)
     - [claimsParameter](#featuresclaimsparameter)
     - [clientCredentials](#featuresclientcredentials)
-    - [devInteractions](#featuresdevinteractions)
     - [deviceFlow](#featuresdeviceflow)
+    - [devInteractions](#featuresdevinteractions)
     - [encryption](#featuresencryption)
     - [frontchannelLogout](#featuresfrontchannellogout)
     - [introspection](#featuresintrospection)
     - [jwtIntrospection](#featuresjwtintrospection)
     - [jwtResponseModes](#featuresjwtresponsemodes)
+    - [jwtUserinfo](#featuresjwtuserinfo)
     - [registration](#featuresregistration)
     - [registrationManagement](#featuresregistrationmanagement)
     - [request](#featuresrequest)
@@ -56,6 +57,7 @@ If you or your business use oidc-provider, please consider becoming a [Patron][s
     - [resourceIndicators](#featuresresourceindicators)
     - [revocation](#featuresrevocation)
     - [sessionManagement](#featuressessionmanagement)
+    - [userinfo](#featuresuserinfo)
     - [webMessageResponseMode](#featureswebmessageresponsemode)
   - [acrValues](#acrvalues)
   - [audiences](#audiences)
@@ -744,7 +746,7 @@ When doing that be sure to remove the client provided headers of the same name o
 
 ### features.claimsParameter
 
-[Core 1.0](https://openid.net/specs/openid-connect-core-1_0.html#rfc.section.5.5) - Requesting Claims using the "claims" Request Parameter  
+[Core 1.0](https://openid.net/specs/openid-connect-core-1_0.html#ClaimsParameter) - Requesting Claims using the "claims" Request Parameter  
 
 Enables the use and validations of `claims` parameter as described in the specification.   
   
@@ -788,7 +790,7 @@ _**default value**_:
 
 [draft-ietf-oauth-device-flow-15](https://tools.ietf.org/html/draft-ietf-oauth-device-flow-15) - OAuth 2.0 Device Authorization Grant  
 
-Enables Device Authorization Grant  
+Enables Device Authorization Grant (Device Flow)  
 
 
 _**default value**_:
@@ -1077,6 +1079,20 @@ _**default value**_:
 }
 ```
 
+### features.jwtUserinfo
+
+[Core 1.0](https://openid.net/specs/openid-connect-core-1_0.html#UserInfo) - JWT UserInfo Endpoint Responses  
+
+Enables the userinfo to optionally return signed and/or encrypted JWTs, also enables the relevant client metadata for setting up signing and/or encryption  
+
+
+_**default value**_:
+```js
+{
+  enabled: true
+}
+```
+
 ### features.registration
 
 [Dynamic Client Registration 1.0](https://openid.net/specs/openid-connect-registration-1_0.html)  
@@ -1314,7 +1330,7 @@ false
 
 ### features.request
 
-[Core 1.0](https://openid.net/specs/openid-connect-core-1_0.html#rfc.section.6.1) - Passing a Request Object by Value  
+[Core 1.0](https://openid.net/specs/openid-connect-core-1_0.html#RequestObject) - Passing a Request Object by Value  
 
 Enables the use and validations of `request` parameter  
 
@@ -1328,7 +1344,7 @@ _**default value**_:
 
 ### features.requestUri
 
-[Core 1.0](https://openid.net/specs/openid-connect-core-1_0.html#rfc.section.6.2) - Passing a Request Object by Reference  
+[Core 1.0](https://openid.net/specs/openid-connect-core-1_0.html#RequestUriParameter) - Passing a Request Object by Reference  
 
 Enables the use and validations of `request_uri` parameter  
 
@@ -1477,6 +1493,20 @@ false
 
 </details>
 
+### features.userinfo
+
+[Core 1.0](https://openid.net/specs/openid-connect-core-1_0.html#UserInfo) - UserInfo Endpoint  
+
+Enables the userinfo endpoint.  
+
+
+_**default value**_:
+```js
+{
+  enabled: true
+}
+```
+
 ### features.webMessageResponseMode
 
 [draft-sakimura-oauth-wmrm-00](https://tools.ietf.org/html/draft-sakimura-oauth-wmrm-00) - OAuth 2.0 Web Message Response Mode  
@@ -1613,7 +1643,7 @@ _**default value**_:
 
 ID Token only contains End-User claims when the requested `response_type` is `id_token`  
 
-[Core 1.0 - 5.4. Requesting Claims using Scope Values](https://openid.net/specs/openid-connect-core-1_0.html#rfc.section.5.4) defines that claims requested using the `scope` parameter are only returned from the UserInfo Endpoint unless the `response_type` is `id_token`. This is the default oidc-provider behaviour, you can turn this behaviour off and return End-User claims with all ID Tokens by providing this configuration as `false`.   
+[Core 1.0 - Requesting Claims using Scope Values](https://openid.net/specs/openid-connect-core-1_0.html#ScopeClaims) defines that claims requested using the `scope` parameter are only returned from the UserInfo Endpoint unless the `response_type` is `id_token`. This is the default oidc-provider behaviour, you can turn this behaviour off and return End-User claims with all ID Tokens by providing this configuration as `false`.   
   
 
 
@@ -2384,7 +2414,7 @@ async logoutSource(ctx, form) {
 
 ### pairwiseIdentifier
 
-Function used by the OP when resolving pairwise ID Token and Userinfo sub claim values. See [Core 1.0](https://openid.net/specs/openid-connect-core-1_0.html#rfc.section.8.1)  
+Function used by the OP when resolving pairwise ID Token and Userinfo sub claim values. See [Core 1.0](https://openid.net/specs/openid-connect-core-1_0.html#PairwiseAlg)  
 
 _**recommendation**_: Since this might be called several times in one request with the same arguments consider using memoization or otherwise caching the result based on account and client ids.  
 

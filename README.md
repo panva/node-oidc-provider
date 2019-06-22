@@ -2,11 +2,8 @@
 
 [![build][travis-image]][travis-url] [![codecov][codecov-image]][codecov-url]
 
-oidc-provider is an OpenID Provider implementation of [OpenID Connect][openid-connect]. It allows to
-export a complete mountable or standalone OpenID Provider implementation. This implementation does
-not dictate a fixed data model or persistence store, instead, you must provide adapters for these.
-A generic in-memory adapter is available to get you started as well as feature-less dev-only views
-to be able to get off the ground.
+oidc-provider is an OAuth 2.0 Authorization Server with [OpenID Connect][openid-connect] and many
+additional features and standards implemented.
 
 ## v6.0.0 beta notice
 
@@ -44,16 +41,16 @@ See [v5.x](https://github.com/panva/node-oidc-provider/tree/v5.x) for the last v
 The following specifications are implemented by oidc-provider. Note that not all features are
 enabled by default, check the configuration section on how to enable them.
 
-- [OpenID Connect Core 1.0][core]
+- [RFC6749 - OAuth 2.0][oauth2] & [OpenID Connect Core 1.0][core]
   - Authorization (Authorization Code Flow, Implicit Flow, Hybrid Flow)
   - UserInfo Endpoint and ID Tokens including Signing and Encryption
-  - Passing a Request Object by Value or Reference including Signing and Encryption
+  - Passing a Request Object by Value or Reference including Signing and Encryption (JAR - JWT Secured Authorization Request)
   - Public and Pairwise Subject Identifier Types
   - Offline Access / Refresh Token Grant
   - Client Credentials Grant
   - Client Authentication incl. client_secret_jwt and private_key_jwt methods
 - [OpenID Connect Discovery 1.0][discovery]
-- [OpenID Connect Dynamic Client Registration 1.0][registration]
+- [OpenID Connect Dynamic Client Registration 1.0][registration] and [RFC7591 - OAuth 2.0 Dynamic Client Registration Protocol][oauth2-registration]
 - [OAuth 2.0 Form Post Response Mode][form-post]
 - [RFC7636 - Proof Key for Code Exchange by OAuth Public Clients][pkce]
 - [RFC7009 - OAuth 2.0 Token Revocation][revocation]
@@ -63,7 +60,7 @@ enabled by default, check the configuration section on how to enable them.
 The following drafts/experimental specifications are implemented by oidc-provider.
 - [JWT Response for OAuth Token Introspection - draft 03][jwt-introspection]
 - [JWT Secured Authorization Response Mode for OAuth 2.0 (JARM) - draft 02][jarm]
-- [OAuth 2.0 Device Authorization Grant - draft 15][device-flow]
+- [OAuth 2.0 Device Authorization Grant (Device Flow) - draft 15][device-flow]
 - [OAuth 2.0 Mutual TLS Client Authentication and Certificate Bound Access Tokens - draft 12][mtls]
 - [OAuth 2.0 Resource Indicators - draft 02][resource-indicators]
 - [OAuth 2.0 Web Message Response Mode - draft 00][wmrm]
@@ -176,9 +173,12 @@ See the list of available emitted [event names](/docs/events.md) and their descr
 [openid-connect]: https://openid.net/connect/
 [core]: https://openid.net/specs/openid-connect-core-1_0.html
 [discovery]: https://openid.net/specs/openid-connect-discovery-1_0.html
+[oauth2-registration]: https://tools.ietf.org/html/rfc7591
 [registration]: https://openid.net/specs/openid-connect-registration-1_0.html
 [session-management]: https://openid.net/specs/openid-connect-session-1_0-28.html
 [form-post]: https://openid.net/specs/oauth-v2-form-post-response-mode-1_0.html
+[oauth2]: https://tools.ietf.org/html/rfc6749
+[oauth2-bearer]: https://tools.ietf.org/html/rfc6750
 [revocation]: https://tools.ietf.org/html/rfc7009
 [introspection]: https://tools.ietf.org/html/rfc7662
 [pkce]: https://tools.ietf.org/html/rfc7636

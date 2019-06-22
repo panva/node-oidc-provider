@@ -91,6 +91,10 @@ let server;
         if (ctx.oidc && ctx.oidc.route === 'discovery') {
           ctx.body.mtls_endpoint_aliases = {};
           ['token', 'introspection', 'revocation', 'userinfo', 'device_authorization'].forEach((endpoint) => {
+            if (!ctx.body[`${endpoint}_endpoint`]) {
+              return;
+            }
+
             ctx.body.mtls_endpoint_aliases[`${endpoint}_endpoint`] = ctx.body[`${endpoint}_endpoint`].replace('https://', 'https://mtls.');
             if (ctx.body[`${endpoint}_endpoint_auth_methods_supported`]) {
               const methods = new Set(ctx.body[`${endpoint}_endpoint_auth_methods_supported`]);

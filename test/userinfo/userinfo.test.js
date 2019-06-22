@@ -3,6 +3,7 @@ const url = require('url');
 const { expect } = require('chai');
 const sinon = require('sinon');
 
+const Provider = require('../../lib');
 const bootstrap = require('../test_helper');
 
 describe('userinfo /me', () => {
@@ -22,6 +23,17 @@ describe('userinfo /me', () => {
         const { query } = url.parse(response.headers.location, true);
         this.access_token = query.access_token;
       });
+  });
+
+  it('can only be enabled with introspection', () => {
+    expect(() => {
+      new Provider('http://localhost', { // eslint-disable-line no-new
+        features: {
+          jwtUserinfo: { enabled: true },
+          userinfo: { enabled: false },
+        },
+      });
+    }).to.throw('jwtUserinfo is only available in conjuction with userinfo');
   });
 
   it('returns 200 OK and user claims except the rejected ones', function () {
