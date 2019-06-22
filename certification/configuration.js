@@ -105,6 +105,7 @@ module.exports = {
       },
     ],
   },
+  responseTypes: ['code id_token token', 'code id_token', 'code token', 'code', 'id_token token', 'id_token', 'none'],
   subjectTypes: ['public', 'pairwise'],
   pairwiseIdentifier(ctx, accountId, { sectorIdentifier }) {
     return crypto.createHash('sha256')

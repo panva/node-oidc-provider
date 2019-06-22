@@ -41,5 +41,14 @@ module.exports = {
     },
     keys: ['foo'],
   },
+  responseTypes: [
+    'code id_token token',
+    'code id_token',
+    'code token',
+    'code',
+    'id_token token',
+    'id_token',
+    'none',
+  ],
   whitelistedJWA: cloneDeep(JWA),
 };

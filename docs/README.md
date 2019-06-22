@@ -2489,18 +2489,15 @@ async renderError(ctx, out, error) {
 
 ### responseTypes
 
-Array of response_type values that OP supports   
+Array of response_type values that OP supports. The default omits all response types that result in access tokens being issued by the authorization endpoint directly as per [OAuth 2.0 Security Best Current Practice](https://tools.ietf.org/html/draft-ietf-oauth-security-topics-12#section-3.1.2) You can still enable them if you need to.   
   
 
 
 _**default value**_:
 ```js
 [
-  'code id_token token',
   'code id_token',
-  'code token',
   'code',
-  'id_token token',
   'id_token',
   'none'
 ]

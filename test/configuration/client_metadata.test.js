@@ -406,16 +406,23 @@ describe('Client metadata validation', () => {
     mustBeArray(this.title);
     const responseTypes = ['code id_token token', 'code id_token', 'code token', 'code', 'id_token token', 'id_token', 'none'];
     responseTypes.forEach((value) => {
+      const grants = [];
+      if (value.includes('token')) {
+        grants.push('implicit');
+      }
+      if (value.includes('code')) {
+        grants.push('authorization_code');
+      }
       allows(this.title, [value], {
-        grant_types: ['implicit', 'authorization_code'],
-      });
+        grant_types: grants,
+      }, { responseTypes });
     });
     allows(this.title, responseTypes, {
       grant_types: ['implicit', 'authorization_code'],
-    });
+    }, { responseTypes });
     allows(this.title, ['token id_token'], { // mixed up order
       grant_types: ['implicit'],
-    }, undefined, (client) => {
+    }, { responseTypes }, (client) => {
       expect(client.metadata().response_types).to.eql(['id_token token']);
     });
 
