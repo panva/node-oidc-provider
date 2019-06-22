@@ -3,6 +3,15 @@ const crypto = require('crypto');
 const pkg = require('../package.json');
 
 const timeout = parseInt(process.env.TIMEOUT, 10);
+const tokenEndpointAuthMethods = [
+  'none',
+  'client_secret_basic',
+  'client_secret_jwt',
+  'client_secret_post',
+  'private_key_jwt',
+  'self_signed_tls_client_auth',
+];
+tokenEndpointAuthMethods.ack = 14;
 
 module.exports = {
   acrValues: ['urn:mace:incommon:iap:bronze'],
@@ -115,14 +124,7 @@ module.exports = {
     RefreshToken: 1 * 24 * 60 * 60,
     RegistrationAccessToken: 1 * 24 * 60 * 60,
   },
-  tokenEndpointAuthMethods: [
-    'none',
-    'client_secret_basic',
-    'client_secret_jwt',
-    'client_secret_post',
-    'private_key_jwt',
-    'self_signed_tls_client_auth',
-  ],
+  tokenEndpointAuthMethods,
   httpOptions(gotOptions) {
     gotOptions.timeout = timeout; // eslint-disable-line no-param-reassign
     return gotOptions;

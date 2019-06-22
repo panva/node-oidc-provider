@@ -1,0 +1,45 @@
+<html>
+  <head>
+    <title>Fragment Federated Callback Repost Form</title>
+  </head>
+  <body>
+    <script type="text/javascript">
+    function parseQuery(queryString) {
+      var query = {};
+      var pairs = (queryString[0] === '?' ? queryString.substr(1) : queryString).split('&');
+      for (var i = 0; i < pairs.length; i++) {
+          var pair = pairs[i].split('=');
+          query[decodeURIComponent(pair[0])] = decodeURIComponent(pair[1] || '');
+      }
+      return query;
+    }
+
+    var fields = parseQuery(window.location.hash.substring(1));
+    fields.provider = '<%= provider %>'
+    var uid = fields.state.split('|')[0]
+
+    var form = document.createElement('form');
+    form.method = 'POST';
+    form.action = '/interaction/' + uid + '/federated';
+    Object.keys(fields).forEach((key) => {
+      if (key) { // empty fragment will yield {"":""};
+        var input = document.createElement('input');
+        input.type = 'hidden';
+        input.name = key;
+        input.value = fields[key];
+        form.appendChild(input);
+      }
+    });
+    document.body.appendChild(form);
+
+    try {
+      var url = window.location.href.slice(0, -Math.max(window.location.hash.length, 1));
+      window.history.replaceState({}, window.document.title, url);
+    } catch(err) {
+      window.location.hash = "";
+    }
+
+    form.submit();
+    </script>
+  </body>
+</html>

@@ -5,6 +5,7 @@ const path = require('path');
 const { set } = require('lodash');
 const render = require('koa-ejs');
 const helmet = require('koa-helmet');
+const openid = require('openid-client');
 
 const Provider = require('../lib'); // require('oidc-provider');
 const Account = require('../example/support/account');
@@ -26,6 +27,15 @@ let server;
 
   const provider = new Provider(ISSUER, { adapter, ...configuration });
 
+  const google = await openid.Issuer.discover('https://accounts.google.com/.well-known/openid-configuration');
+  const googleClient = new google.Client({
+    client_id: '949818858744-le83ut7jjknooi7dk24oec6iq8n84pl8.apps.googleusercontent.com',
+    response_types: ['id_token'],
+    redirect_uris: [`${ISSUER}/interaction/callback/google`],
+    grant_types: ['implicit'],
+  });
+  provider.app.context.google = googleClient;
+
   // don't wanna re-bundle the interactions so just insert the login amr and acr as static whenever
   // login is submitted, usually you would submit them from your interaction
   const { interactionFinished } = provider;
@@ -34,7 +44,7 @@ let server;
     if (login) {
       Object.assign(args[2].login, {
         acr: 'urn:mace:incommon:iap:bronze',
-        amr: ['pwd'],
+        amr: login.account.startsWith('google.') ? ['google'] : ['pwd'],
       });
     }
 
@@ -42,6 +52,16 @@ let server;
   };
 
   provider.use(helmet());
+  provider.use((ctx, next) => {
+    if (ctx.path !== '/.well-known/oauth-authorization-server') {
+      return next();
+    }
+
+    ctx.path = '/.well-known/openid-configuration';
+    return next().then(() => {
+      ctx.path = '/.well-known/oauth-authorization-server';
+    });
+  });
 
   if (process.env.NODE_ENV === 'production') {
     provider.proxy = true;

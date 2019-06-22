@@ -1,6 +1,7 @@
 /* eslint-disable no-console, max-len, camelcase, no-unused-vars */
 const { strict: assert } = require('assert');
 const querystring = require('querystring');
+const crypto = require('crypto');
 const { inspect } = require('util');
 
 const _ = require('lodash');
@@ -52,6 +53,7 @@ module.exports = (provider) => {
         details: prompt.details,
         params,
         title: 'Sign-in',
+        google: ctx.google,
         session: session ? debug(session) : undefined,
         dbg: {
           params: debug(params),
@@ -76,11 +78,16 @@ module.exports = (provider) => {
     await next();
   });
 
-  const body = bodyParser({ text: false, json: false });
+  const body = bodyParser({
+    text: false, json: false, patchNode: true, patchKoa: true,
+  });
+
+  router.get('/interaction/callback/google', ctx => ctx.render('repost', { provider: 'google', layout: false }));
 
   router.post('/interaction/:uid/login', body, async (ctx) => {
     const { prompt: { name } } = await provider.interactionDetails(ctx.req);
     assert.equal(name, 'login');
+
     const account = await Account.findByLogin(ctx.request.body.login);
 
     const result = {
@@ -93,6 +100,50 @@ module.exports = (provider) => {
     return provider.interactionFinished(ctx.req, ctx.res, result, {
       mergeWithLastSubmission: false,
     });
+  });
+
+  router.post('/interaction/:uid/federated', body, async (ctx) => {
+    const { prompt: { name } } = await provider.interactionDetails(ctx.req);
+    assert.equal(name, 'login');
+
+    const path = `/interaction/${ctx.params.uid}/federated`;
+    const callbackParams = ctx.google.callbackParams(ctx.req);
+
+    switch (ctx.request.body.provider) {
+      case 'google': {
+        if (Object.keys(callbackParams).length) {
+          const state = ctx.cookies.get('google.state');
+          ctx.cookies.set('google.state', null, { path });
+          const nonce = ctx.cookies.get('google.nonce');
+          ctx.cookies.set('google.nonce', null, { path });
+
+          const tokenset = await ctx.google.callback(undefined, callbackParams, { state, nonce, response_type: 'id_token' });
+          const account = await Account.findByFederated('google', tokenset.claims());
+
+          const result = {
+            login: {
+              account: account.accountId,
+              ts: Math.floor(Date.now() / 1000),
+            },
+          };
+          return provider.interactionFinished(ctx.req, ctx.res, result, {
+            mergeWithLastSubmission: false,
+          });
+        }
+
+        const state = `${ctx.params.uid}|${crypto.randomBytes(32).toString('hex')}`;
+        const nonce = crypto.randomBytes(32).toString('hex');
+
+        ctx.cookies.set('google.state', state, { path, sameSite: 'strict' });
+        ctx.cookies.set('google.nonce', nonce, { path, sameSite: 'strict' });
+
+        return ctx.redirect(ctx.google.authorizationUrl({
+          state, nonce, scope: 'openid email profile',
+        }));
+      }
+      default:
+        return undefined;
+    }
   });
 
   router.post('/interaction/:uid/confirm', body, async (ctx) => {
