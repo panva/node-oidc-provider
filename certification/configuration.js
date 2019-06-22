@@ -1,6 +1,14 @@
 const crypto = require('crypto');
 
 const pkg = require('../package.json');
+const whitelistedJWA = JSON.parse(JSON.stringify(require('../lib/helpers/defaults').whitelistedJWA));
+
+/* OIDC certification suite tests with these */
+whitelistedJWA.idTokenSigningAlgValues.push('none');
+whitelistedJWA.requestObjectSigningAlgValues.push('none');
+whitelistedJWA.idTokenEncryptionAlgValues.push('RSA1_5');
+whitelistedJWA.requestObjectEncryptionAlgValues.push('RSA1_5');
+whitelistedJWA.userinfoEncryptionAlgValues.push('RSA1_5');
 
 const timeout = parseInt(process.env.TIMEOUT, 10);
 const tokenEndpointAuthMethods = [
@@ -132,35 +140,5 @@ module.exports = {
     gotOptions.timeout = timeout || gotOptions.timeout; // eslint-disable-line no-param-reassign
     return gotOptions;
   },
-  whitelistedJWA: {
-    idTokenSigningAlgValues: ['none', 'HS256', 'RS256', 'PS256', 'ES256', 'EdDSA'],
-    requestObjectSigningAlgValues: ['none', 'HS256', 'RS256', 'PS256', 'ES256', 'EdDSA'],
-    idTokenEncryptionAlgValues: [
-      'RSA1_5',
-      'A128KW',
-      'A256KW',
-      'ECDH-ES',
-      'ECDH-ES+A128KW',
-      'ECDH-ES+A256KW',
-      'RSA-OAEP',
-    ],
-    requestObjectEncryptionAlgValues: [
-      'RSA1_5',
-      'A128KW',
-      'A256KW',
-      'ECDH-ES',
-      'ECDH-ES+A128KW',
-      'ECDH-ES+A256KW',
-      'RSA-OAEP',
-    ],
-    userinfoEncryptionAlgValues: [
-      'RSA1_5',
-      'A128KW',
-      'A256KW',
-      'ECDH-ES',
-      'ECDH-ES+A128KW',
-      'ECDH-ES+A256KW',
-      'RSA-OAEP',
-    ],
-  },
+  whitelistedJWA,
 };
