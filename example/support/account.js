@@ -5,7 +5,7 @@ const nanoid = require('nanoid');
 class Account {
   constructor(id, profile) {
     this.accountId = id || nanoid();
-    this.profile = profile || {};
+    this.profile = profile;
     store.set(this.accountId, this);
   }
 
