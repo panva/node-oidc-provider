@@ -72,6 +72,8 @@ let server;
       if (ctx.secure) {
         const orig = ctx.get;
 
+        // this instance uses caddy as a webserver, caddy is escaping the cert values when passing
+        // them as headers
         ctx.get = function get(header) {
           const value = orig.call(ctx, header);
 

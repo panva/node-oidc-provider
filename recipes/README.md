@@ -21,6 +21,7 @@ If you or your business use oidc-provider, please consider becoming a [Patron][s
 - [Client-based CORS origins](client_based_origins.md)
 - [Decentralized claims](decentralized_claims.md)
 - [Redirect URI wilcards](redirect_uri_wildcards.md)
+- [mTLS with Caddy webserver](mtls_with_caddy.md)
 - ... got something worthy of being here? Submit a PR with a new recipe to help others.
 
 [support-patreon]: https://www.patreon.com/panva
