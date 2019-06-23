@@ -9,7 +9,7 @@ might want to restrict the call's origins.
 
 These endpoints have CORS enabled from all origins all the time, no real reason to restrict it:
 
-- certificates (`jwks_uri`)
+- jwks (`jwks_uri`)
 - discovery (`/.well-known/openid-configuration`)
 
 These endpoints have CORS enabled from all origins by default:

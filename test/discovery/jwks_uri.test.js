@@ -2,7 +2,7 @@ const { expect } = require('chai');
 
 const bootstrap = require('../test_helper');
 
-const route = '/certs';
+const route = '/jwks';
 
 describe(route, () => {
   before(bootstrap(__dirname));

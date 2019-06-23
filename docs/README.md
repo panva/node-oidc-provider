@@ -366,7 +366,7 @@ provider.use(async (ctx, next) => {
    * checking `ctx.oidc.route`, the unique route names used are
    *
    * `authorization`
-   * `certificates`
+   * `jwks`
    * `check_session_origin`
    * `check_session`
    * `client_delete`
@@ -2540,12 +2540,12 @@ _**default value**_:
 ```js
 {
   authorization: '/auth',
-  certificates: '/certs',
   check_session: '/session/check',
   code_verification: '/device',
   device_authorization: '/device/auth',
   end_session: '/session/end',
   introspection: '/token/introspection',
+  jwks: '/jwks',
   registration: '/reg',
   revocation: '/token/revocation',
   token: '/token',

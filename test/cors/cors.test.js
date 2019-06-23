@@ -87,14 +87,14 @@ describe('CORS setup', () => {
   });
 
   it('jwks_uri has cors open', async function () {
-    const { status, headers } = await req.call(this, 'get', '/certs', 'https://example.com');
+    const { status, headers } = await req.call(this, 'get', '/jwks', 'https://example.com');
     expect(status).to.eql(200);
     expect(headers[Vary]).to.eql('Origin');
     expect(headers[ACAOrigin]).to.eql('https://example.com');
   });
 
   it('jwks_uri preflights have cors open', async function () {
-    const { status, headers } = await preflight.call(this, 'GET', '/certs', 'https://example.com');
+    const { status, headers } = await preflight.call(this, 'GET', '/jwks', 'https://example.com');
     expect(status).to.eql(204);
     expect(headers[Vary]).to.eql('Origin');
     expect(headers[ACAOrigin]).to.eql('https://example.com');
