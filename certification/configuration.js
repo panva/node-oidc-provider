@@ -113,8 +113,10 @@ module.exports = {
       .update('da1c442b365b563dfc121f285a11eedee5bbff7110d55c88')
       .digest('hex');
   },
-  interactionUrl: function interactionUrl(ctx) {
-    return `/interaction/${ctx.oidc.uid}`;
+  interactions: {
+    url(ctx) {
+      return `/interaction/${ctx.oidc.uid}`;
+    },
   },
   ttl: {
     AccessToken: 1 * 60 * 60,

@@ -62,8 +62,10 @@ module.exports = {
       },
     ],
   },
-  interactionUrl: function interactionUrl(ctx, interaction) { // eslint-disable-line no-unused-vars
-    return `/interaction/${ctx.oidc.uid}`;
+  interactions: {
+    url(ctx, interaction) { // eslint-disable-line no-unused-vars
+      return `/interaction/${ctx.oidc.uid}`;
+    },
   },
   ttl: {
     AccessToken: 1 * 60 * 60, // 1 hour in seconds
