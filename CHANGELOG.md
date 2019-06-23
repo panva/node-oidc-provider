@@ -2,6 +2,35 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+# [6.0.0-beta.0](https://github.com/panva/node-oidc-provider/compare/v6.0.0-alpha.10...v6.0.0-beta.0) (2019-06-23)
+
+
+### Code Refactoring
+
+* change certificates to jwks ([a75e478](https://github.com/panva/node-oidc-provider/commit/a75e478))
+* consolidate interaction policy and url configuration ([5c0ba04](https://github.com/panva/node-oidc-provider/commit/5c0ba04))
+* merge interactions and interactionUrl configuration ([1193719](https://github.com/panva/node-oidc-provider/commit/1193719))
+
+
+### BREAKING CHANGES
+
+* `interactionUrl` is now `interactions.url`
+* `interactions` is now `interactions.policy`
+* default `interactionPolicy` export changed
+* `interactionUrl` configuration option is now
+`interactions.url`, `interactions` configuration option is now
+`interactions.policy`
+* the route name for jwks_uri is now `jwks` (was
+`certificates`). If you're upgrading and use a custom path for
+`certificates` make sure to use the `routes.jwks` now to configure the
+path
+* the default path for route `jwks` (certificates) is now
+`/jwks`. If you're upgrading and want to (you probably do) keep using
+the old path, make sure to configure `routes.jwks` with the old value
+`/certs`
+
+
+
 # [6.0.0-alpha.10](https://github.com/panva/node-oidc-provider/compare/v6.0.0-alpha.9...v6.0.0-alpha.10) (2019-06-21)
 
 
