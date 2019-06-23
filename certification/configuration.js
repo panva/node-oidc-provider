@@ -126,7 +126,7 @@ module.exports = {
   },
   tokenEndpointAuthMethods,
   httpOptions(gotOptions) {
-    gotOptions.timeout = timeout; // eslint-disable-line no-param-reassign
+    gotOptions.timeout = timeout || gotOptions.timeout; // eslint-disable-line no-param-reassign
     return gotOptions;
   },
   whitelistedJWA: {
