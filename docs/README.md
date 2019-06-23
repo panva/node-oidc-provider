@@ -25,19 +25,19 @@ If you or your business use oidc-provider, please consider becoming a [Patron][s
 - [Default configuration values](#default-configuration-values)
 - [Accounts](#accounts)
 - [User flows](#user-flows)
-- [Custom Grant Types](#custom-grant-types)
+- [Custom Grant Types ❗](#custom-grant-types)
 - [Registering module middlewares (helmet, ip-filters, rate-limiters, etc)](#registering-module-middlewares-helmet-ip-filters-rate-limiters-etc)
-- [Pre- and post-middlewares](#pre--and-post-middlewares)
+- [Pre- and post-middlewares ❗](#pre--and-post-middlewares)
 - [Mounting oidc-provider](#mounting-oidc-provider)
   - [to an express application](#to-an-express-application)
   - [to a koa application](#to-a-koa-application)
-- [Trusting TLS offloading proxies](#trusting-tls-offloading-proxies)
+- [Trusting TLS offloading proxies ❗](#trusting-tls-offloading-proxies)
 - [Configuration options](#configuration-options)
-  - [adapter](#adapter)
-  - [clients](#clients)
-  - [findAccount](#findaccount)
-  - [jwks](#jwks)
-  - [features](#features)
+  - [adapter ❗](#adapter)
+  - [clients ❗](#clients)
+  - [findAccount ❗](#findaccount)
+  - [jwks ❗](#jwks)
+  - [features ❗](#features)
     - [backchannelLogout](#featuresbackchannellogout)
     - [certificateBoundAccessTokens](#featurescertificateboundaccesstokens)
     - [claimsParameter](#featuresclaimsparameter)
@@ -59,11 +59,11 @@ If you or your business use oidc-provider, please consider becoming a [Patron][s
     - [webMessageResponseMode](#featureswebmessageresponsemode)
   - [acrValues](#acrvalues)
   - [audiences](#audiences)
-  - [claims](#claims)
+  - [claims ❗](#claims)
   - [clientBasedCORS](#clientbasedcors)
   - [clientDefaults](#clientdefaults)
   - [clockTolerance](#clocktolerance)
-  - [conformIdTokenClaims](#conformidtokenclaims)
+  - [conformIdTokenClaims ❗](#conformidtokenclaims)
   - [cookies](#cookies)
   - [discovery](#discovery)
   - [dynamicScopes](#dynamicscopes)
@@ -72,8 +72,7 @@ If you or your business use oidc-provider, please consider becoming a [Patron][s
   - [extraParams](#extraparams)
   - [formats](#formats)
   - [httpOptions](#httpoptions)
-  - [interactions](#interactions)
-  - [introspectionEndpointAuthMethods](#introspectionendpointauthmethods)
+  - [interactions ❗](#interactions)
   - [issueRefreshToken](#issuerefreshtoken)
   - [logoutSource](#logoutsource)
   - [pairwiseIdentifier](#pairwiseidentifier)
@@ -81,13 +80,12 @@ If you or your business use oidc-provider, please consider becoming a [Patron][s
   - [postLogoutSuccessSource](#postlogoutsuccesssource)
   - [renderError](#rendererror)
   - [responseTypes](#responsetypes)
-  - [revocationEndpointAuthMethods](#revocationendpointauthmethods)
   - [rotateRefreshToken](#rotaterefreshtoken)
   - [routes](#routes)
   - [scopes](#scopes)
   - [subjectTypes](#subjecttypes)
   - [tokenEndpointAuthMethods](#tokenendpointauthmethods)
-  - [ttl](#ttl)
+  - [ttl ❗](#ttl)
   - [whitelistedJWA](#whitelistedjwa)
 
 
@@ -1968,12 +1966,13 @@ To change all request's timeout configure the httpOptions as a function like so:
 
 ### interactions
 
-TODO  
+Holds the configuration for interaction policy and url to send end-users to when the policy decides to require interaction.   
+  
 
 
 ### interactions.policy
 
-structure of Prompts and their checks formed by Prompt and Check class instances. The default you can modify and the classes are available under `Provider.interactionPolicy`.   
+structure of Prompts and their checks formed by Prompt and Check class instances. The default you can get a fresh instance for and the classes are available under `Provider.interactionPolicy`.   
   
 
 
@@ -2268,18 +2267,54 @@ _**default value**_:
 
 ```
 <details>
-  <summary>(Click to expand) configuring prompts
+  <summary>(Click to expand) default interaction policy description</summary>
+  <br>
+
+
+The default interaction policy consists of two available prompts, login and consent <br/><br/>
+ - `login` does the following checks:
+ - no_session - checks that there's an established session, a authenticated end-user
+ - max_age - processes the max_age parameter (when the session's auth_time is too old it requires login)
+ - id_token_hint - processes the id_token_hint parameter (when the end-user sub differs it requires login)
+ - claims_id_token_sub_value - processes the claims parameter `sub` (when the `claims` parameter requested sub differs it requires login)
+ - essential_acrs - processes the claims parameter `acr` (when the current acr is not amongst the `claims` parameter essential `acr.values` it requires login)
+ - essential_acr - processes the claims parameter `acr` (when the current acr is not equal to the `claims` parameter essential `acr.value` it requires login) <br/><br/>
+ - `consent` does the following checks:
+ - client_not_authorized - every client needs to go through a consent once per end-user session
+ - native_client_prompt - native clients always require re-consent
+ - scopes_missing - when requested scope includes scope values previously not requested it requests consent
+ - claims_missing - when requested claims parameter includes claims previously not requested it requests consent <br/><br/> These checks are the best practice for various privacy and security reasons.  
+
+
+</details>
+<details>
+  <summary>(Click to expand) disabling default checks</summary>
+  <br>
+
+
+You may be required to skip (silently accept) some of the consent checks, while it is discouraged there are valid reasons to do that, for instance in some first-party scenarios or going with pre-existing, previously granted, consents. Definitely do not just remove the checks, remove and add ones that do the same operation with the exception of those scenarios you want to skip and in those you'll have to call some of the methods ran by the `returnTo` / `resume` flow by default to ensure smooth operation.
+ - `ctx.oidc.session.ensureClientContainer(clientId<string>)` ensures the client namespace in the session is set up
+ - `ctx.oidc.session.promptedScopesFor(clientId<string>, scopes<Set|Array>)` - the scopes that were already prompted before hand
+ - `ctx.oidc.session.promptedClaimsFor(clientId<string>, claims<Set|Array>)`- the claims that were already prompted before hand
+ - `ctx.oidc.session.rejectedScopesFor(clientId<string>, scopes<Set|Array>)` - the scopes that were already prompted before hand but were rejected
+ - `ctx.oidc.session.rejectedClaimsFor(clientId<string>, claims<Set|Array>)` - the claims that were already prompted before hand but were rejected  
+
+
+</details>
+<details>
+  <summary>(Click to expand) modifying the default interaction policy
 </summary>
   <br>
 
 ```js
-const { interactionPolicy: { Prompt, Check, DEFAULT } } = require('oidc-provider');
-// DEFAULT.get(name) => returns a Prompt instance by its name
-// DEFAULT.remove(name) => removes a Prompt instance by its name
-// DEFAULT.add(prompt, index) => adds a Prompt instance to a specific index, default is to last index
+const { interactionPolicy: { Prompt, Check, base } } = require('oidc-provider');
+const basePolicy = base()
+// basePolicy.get(name) => returns a Prompt instance by its name
+// basePolicy.remove(name) => removes a Prompt instance by its name
+// basePolicy.add(prompt, index) => adds a Prompt instance to a specific index, default is add the prompt as the last one
 // prompt.checks.get(reason) => returns a Check instance by its reason
 // prompt.checks.remove(reason) => removes a Check instance by its reason
-// prompt.checks.add(check, index) => adds a Check instance to a specific index, default is to last index
+// prompt.checks.add(check, index) => adds a Check instance to a specific index, default is add the check as the last one
 ```
 </details>
 

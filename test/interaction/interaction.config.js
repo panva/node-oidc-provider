@@ -1,12 +1,12 @@
 const { cloneDeep } = require('lodash');
 
 const config = cloneDeep(require('../default.config'));
-const { Check, Prompt, DEFAULT } = require('../../lib/helpers/interaction_policy');
+const { Check, Prompt, base } = require('../../lib/helpers/interaction_policy');
 
 config.extraParams = ['triggerCustomFail', 'triggerUnrequestable'];
 config.features = { sessionManagement: { enabled: true } };
 
-config.interactions = { policy: cloneDeep(DEFAULT) };
+const policy = base();
 
 const check = new Check(
   'reason_foo',
@@ -20,14 +20,16 @@ const check = new Check(
   },
 );
 
-config.interactions.policy[0].checks.push(check);
-config.interactions.policy.push(new Prompt({ name: 'custom', requestable: true }));
-config.interactions.policy.unshift(new Prompt({ name: 'unrequestable', requestable: false }, new Check('un_foo', 'un_foo_desc', 'un_foo_err', (ctx) => {
+policy.get('login').checks.add(check);
+policy.add(new Prompt({ name: 'custom', requestable: true }));
+policy.add(new Prompt({ name: 'unrequestable', requestable: false }, new Check('un_foo', 'un_foo_desc', 'un_foo_err', (ctx) => {
   if (ctx.oidc.params.triggerUnrequestable && (!ctx.oidc.result || !('foo' in ctx.oidc.result))) {
     return true;
   }
   return false;
-})));
+})), 0);
+
+config.interactions = { policy };
 
 module.exports = {
   config,
