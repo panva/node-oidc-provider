@@ -752,6 +752,38 @@ expire.setDate(expire.getDate() + 1);
           .expect(auth.validateErrorDescription('claims.id_token should be an object'));
       });
 
+      describe('when userinfo is disabled', () => {
+        before(function () {
+          i(this.provider).configuration('features').userinfo.enabled = false;
+        });
+
+        after(function () {
+          i(this.provider).configuration('features').userinfo.enabled = false;
+        });
+
+        it('should not accept userinfo as a property', function () {
+          const auth = new this.AuthorizationRequest({
+            response_type: 'id_token token',
+            scope: 'openid',
+            claims: {
+              userinfo: {
+                email: null,
+                middle_name: {},
+              },
+            },
+          });
+
+          return this.wrap({ route, verb, auth })
+            .expect(302)
+            .expect(auth.validateFragment)
+            .expect(auth.validatePresence(['error', 'error_description', 'state']))
+            .expect(auth.validateState)
+            .expect(auth.validateClientLocation)
+            .expect(auth.validateError('invalid_request'))
+            .expect(auth.validateErrorDescription('claims.userinfo should not be used since userinfo endpoint is not supported'));
+        });
+      });
+
       it('should check that userinfo claims are not specified for id_token requests', function () {
         const auth = new this.AuthorizationRequest({
           response_type: 'id_token',

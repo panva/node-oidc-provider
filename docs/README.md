@@ -2573,6 +2573,7 @@ rotateRefreshToken(ctx) {
   const { RefreshToken: refreshToken, Client: client } = ctx.oidc.entities;
   // cap the maximum amount of time a refresh token can be
   // rotated for up to 1 year, afterwards its TTL is final
+  /* istanbul ignore if */
   if (refreshToken.totalLifetime() >= 365.25 * 24 * 60 * 60) {
     return false;
   }
