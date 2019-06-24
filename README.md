@@ -5,26 +5,12 @@
 oidc-provider is an OAuth 2.0 Authorization Server with [OpenID Connect][openid-connect] and many
 additional features and standards implemented.
 
-## v6.0.0 beta notice
+## v6.x release notice
 
-v6.0.0-beta.x is now available on npm and master branch, please head over to
-[#419](https://github.com/panva/node-oidc-provider/issues/419) to provide feedback.
+v6.x is now available on npm and this repo's master branch.
 
-I'm looking for early adopter feedback and pointers to missing
-[changelog](https://github.com/panva/node-oidc-provider/blob/master/CHANGELOG.md) entries as well as
-misunderstood changes. Throughout the v6.0.0 prerelease line the
-[changelog](https://github.com/panva/node-oidc-provider/blob/master/CHANGELOG.md) will be extended and
-especially interaction documentation will be provided.
-
-The minimal node version for this beta is v12.0.0 and
 **WARNING: Node.js 12 or higher is required for oidc-provider@6 and above.** For older Node.js
 versions use [oidc-provider@5](https://github.com/panva/node-oidc-provider/tree/v5.x).
-
-```console
-npm i oidc-provider@beta
-```
-
-See [v5.x](https://github.com/panva/node-oidc-provider/tree/v5.x) for the last v5.x release and docs.
 
 **Table of Contents**
 
