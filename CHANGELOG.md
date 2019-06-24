@@ -2,6 +2,36 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+# [6.0.0-beta.1](https://github.com/panva/node-oidc-provider/compare/v6.0.0-beta.0...v6.0.0-beta.1) (2019-06-24)
+
+
+### Code Refactoring
+
+* disable "token" including response types defaults ([78e4ebb](https://github.com/panva/node-oidc-provider/commit/78e4ebb))
+
+
+### Features
+
+* add extraAccessTokenClaims configuration option ([25915ef](https://github.com/panva/node-oidc-provider/commit/25915ef))
+* add options to disable userinfo and userinfo jwt responses ([3620aed](https://github.com/panva/node-oidc-provider/commit/3620aed))
+* add v2.public PASETOs as an available issued token format ([7b149cf](https://github.com/panva/node-oidc-provider/commit/7b149cf))
+
+
+### BREAKING CHANGES
+
+* `formats.extraJwtAccessTokenClaims` was removed in
+favour of just `extraAccessTokenClaims`. This new option takes the same
+parameters and now works for all token formats (opaque, jwt and newly
+added paseto). In addition to adding the extra claims you return to the
+jwt or paseto token value itself it also adds these as top level claims
+to token introspection responses.
+* the default enabled response types now omit all that
+result in access tokens being issued by the authorization endpoint
+and delivered via a fragment. If you're upgrading just configure
+`responseTypes` to include the ones you need for legacy purposes.
+
+
+
 # [6.0.0-beta.0](https://github.com/panva/node-oidc-provider/compare/v6.0.0-alpha.10...v6.0.0-beta.0) (2019-06-23)
 
 
