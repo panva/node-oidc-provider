@@ -31,6 +31,10 @@ describe('extraClientMetadata configuration', () => {
         },
       ],
     });
+
+    await provider.Client.find('client-1');
+    await provider.Client.find('client-2');
+
     const calls = validator.getCalls();
 
     expect(calls.length).to.eql(6);
@@ -96,7 +100,7 @@ describe('extraClientMetadata configuration', () => {
 
   it('can be used to add validations to existing standard properties', async () => {
     const validator = sinon.spy();
-    new Provider('http://localhost:3000', { // eslint-disable-line no-new
+    const provider = new Provider('http://localhost:3000', { // eslint-disable-line no-new
       extraClientMetadata: {
         properties: ['client_name'],
         validator,
@@ -110,13 +114,15 @@ describe('extraClientMetadata configuration', () => {
       ],
     });
 
+    await provider.Client.find('client');
+
     expect(validator.calledOnce).to.be.true;
     expect(validator.calledWith('client_name', undefined)).to.be.true;
   });
 
-  it('should re-throw errors', async () => {
+  it('should throw regular errors during #find()', async () => {
     try {
-      new Provider('http://localhost:3000', { // eslint-disable-line no-new
+      const provider = new Provider('http://localhost:3000', { // eslint-disable-line no-new
         extraClientMetadata: {
           properties: ['client_description'],
           validator() {
@@ -132,6 +138,9 @@ describe('extraClientMetadata configuration', () => {
           },
         ],
       });
+
+      await provider.Client.find('client');
+
       throw new Error('expected a throw from the above');
     } catch (err) {
       expect(err).to.have.property('message', 'invalid_client_metadata');

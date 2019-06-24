@@ -101,6 +101,17 @@ describe('pairwise features', () => {
         });
       });
 
+      it('validates the sector from the provided uri for static clients too', function () {
+        nock('https://foobar.example.com')
+          .get('/file_of_redirect_uris')
+          .reply(200, j(['https://client.example.com/cb', 'https://another.example.com/forum/cb']));
+
+        return this.provider.Client.find('client-static-with-sector').then((client) => {
+          expect(client).to.be.ok;
+          expect(client.sectorIdentifier).to.eq('foobar.example.com');
+        });
+      });
+
       it('must be an https uri', function () {
         return i(this.provider).clientAdd({
           client_id: 'client',

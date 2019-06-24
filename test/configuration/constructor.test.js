@@ -6,21 +6,29 @@ const Provider = require('../../lib');
 
 describe('Provider configuration', () => {
   describe('clients', () => {
-    it('may not contain sector_identifier_uri', () => {
+    it('may contain static clients when these have at least the client_id', () => {
+      expect(() => {
+        new Provider('http://localhost:3000', {
+          clients: [null],
+        });
+      }).to.throw(Error).with.property('error_description', 'client_id is mandatory property for statically configured clients');
       expect(() => {
         new Provider('http://localhost:3000', {
           clients: [
-            {
-              client_id: 'foo',
-              client_secret: 'bar',
-              redirect_uris: ['https://rp.example.com/cb'],
-              sector_identifier_uri: 'https://rp.example.com/sector',
-              subject_type: 'pairwise',
-            },
+            {},
           ],
-          subjectTypes: ['pairwise', 'public'],
         });
-      }).to.throw('statically configured clients may not have sector_identifier_uri');
+      }).to.throw(Error).with.property('error_description', 'client_id is mandatory property for statically configured clients');
+    });
+    it('client_id must be unique amongst the static clients', () => {
+      expect(() => {
+        new Provider('http://localhost:3000', {
+          clients: [
+            { client_id: 'foo' },
+            { client_id: 'foo' },
+          ],
+        });
+      }).to.throw(Error).with.property('error_description', 'client_id must be unique for statically configured clients');
     });
   });
 
