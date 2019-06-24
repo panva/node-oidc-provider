@@ -1268,7 +1268,7 @@ helper generating random client secrets during dynamic client registration
 _**default value**_:
 ```js
 secretFactory() {
-  return base64url(crypto.randomBytes(64)); // 512 base64url random bits
+  return base64url.encodeBuffer(crypto.randomBytes(64)); // 512 base64url random bits
 }
 ```
 
