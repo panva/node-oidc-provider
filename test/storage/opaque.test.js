@@ -37,6 +37,7 @@ if (FORMAT === 'opaque') {
     const expiresWithSession = false;
     const iiat = epochTime();
     const rotations = 1;
+    const extra = { foo: 'bar' };
 
     // TODO: add Session and Interaction
 
@@ -45,7 +46,7 @@ if (FORMAT === 'opaque') {
       accountId, claims, clientId, grantId, scope, sid, consumed, acr, amr, authTime, nonce,
       redirectUri, codeChallenge, codeChallengeMethod, aud, error, errorDescription, params,
       userCode, deviceInfo, gty, resource, policies, sessionUid, expiresWithSession,
-      'x5t#S256': s256, inFlight, iiat, rotations,
+      'x5t#S256': s256, inFlight, iiat, rotations, extra,
     };
     /* eslint-enable object-property-newline */
 
@@ -82,6 +83,7 @@ if (FORMAT === 'opaque') {
         'x5t#S256': s256,
         sessionUid,
         expiresWithSession,
+        extra,
       });
     });
 
@@ -204,6 +206,7 @@ if (FORMAT === 'opaque') {
         kind,
         scope,
         'x5t#S256': s256,
+        extra,
       });
     });
 

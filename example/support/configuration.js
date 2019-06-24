@@ -26,10 +26,10 @@ module.exports = {
     introspection: { enabled: true }, // defaults to false
     revocation: { enabled: true }, // defaults to false
   },
+  extraAccessTokenClaims(ctx, token) { // eslint-disable-line no-unused-vars
+    return { 'urn:oidc-provider:example:foo': 'bar' };
+  },
   formats: {
-    extraJwtAccessTokenClaims(ctx, token) { // eslint-disable-line no-unused-vars
-      return { 'urn:oidc-provider:example:foo': 'bar' };
-    },
     AccessToken: 'jwt',
     // ClientCredentials: 'jwt', not enabled
   },

@@ -60,10 +60,10 @@ module.exports = {
     sessionManagement: { enabled: true, ack: 28 },
     webMessageResponseMode: { enabled: true, ack: 0 },
   },
+  extraAccessTokenClaims() {
+    return { 'urn:oidc-provider:example:foo': 'bar' };
+  },
   formats: {
-    extraJwtAccessTokenClaims() {
-      return { 'urn:oidc-provider:example:foo': 'bar' };
-    },
     AccessToken: 'jwt',
   },
   jwks: {

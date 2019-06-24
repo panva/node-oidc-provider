@@ -52,6 +52,7 @@ class MyAdapter {
      * - authTime {number} - timestamp of the end-user's authentication
      * - claims {object} - claims parameter (see claims in OIDC Core 1.0), rejected claims
      *     are, in addition, pushed in as an Array of Strings in the `rejected` property.
+     * - extra {object} - extra claims returned by the extraAccessTokenClaims helper
      * - codeChallenge {string} - client provided PKCE code_challenge value
      * - codeChallengeMethod {string} - client provided PKCE code_challenge_method value
      * - sessionUid {string} - uid of a session this token stems from
@@ -86,7 +87,11 @@ class MyAdapter {
      *
      * when `jwt`
      * - same as `opaque` with the addition of
-     * - jwt {string} - the jwt value returned to the client
+     * - jwt {string} - the JWT value returned to the client
+     *
+     * when `paseto`
+     * - same as `opaque` with the addition of
+     * - paseto {string} - the PASETO value returned to the client
      *
      * Client model will only use this when registered through Dynamic Registration features and
      * will contain all client properties.

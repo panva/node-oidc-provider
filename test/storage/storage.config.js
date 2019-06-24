@@ -2,6 +2,7 @@ const { clone } = require('lodash');
 
 const config = clone(require('../default.config'));
 
+config.extraAccessTokenClaims = () => ({ foo: 'bar' });
 config.features = {};
 config.features.registration = {
   initialAccessToken: true,

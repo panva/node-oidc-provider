@@ -1773,6 +1773,34 @@ async expiresWithSession(ctx, token) {
 }
 ```
 
+### extraAccessTokenClaims
+
+helper function used by the OP to get additional access token claims when it is being issued. These claims will be available in your storage under property `extra`, returned by introspection as top level claims and pushed into `jwt` and `paseto` formatted tokens as top level claims as well. Returned claims may not overwrite other top level claims.   
+  
+
+
+_**default value**_:
+```js
+async extraAccessTokenClaims(ctx, token) {
+  return undefined;
+}
+```
+<details>
+  <summary>(Click to expand) To push additional claims to an Access Token
+</summary>
+  <br>
+
+```js
+{
+  extraAccessTokenClaims(ctx, token) {
+    return {
+      'urn:oidc-provider:example:foo': 'bar',
+    };
+  }
+}
+```
+</details>
+
 ### extraClientMetadata
 
 Allows for custom client metadata to be defined, validated, manipulated as well as for existing property validations to be extended  
@@ -1860,9 +1888,9 @@ _**default value**_:
 
 ### formats
 
-This option allows to configure the token storage and value formats. The different values change how a client-facing token value is generated as well as what properties get sent to the adapter for storage.
+This option allows to configure the token serialization format. The different values change how a client-facing token value is generated as well as what properties get sent to the adapter for storage.
  - `opaque` (default) formatted tokens store every property as a root property in your adapter
- - `jwt` formatted tokens are issued as JWTs and stored the same as `opaque` only with additional property `jwt`. The signing algorithm for these tokens uses the client's `id_token_signed_response_alg` value and falls back to `RS256` for tokens with no relation to a client or when the client's alg is `none`
+ - `jwt` formatted tokens are issued as JWTs and stored the same as `opaque` only with additional property `jwt`. The signing algorithm for these tokens uses the client's `id_token_signed_response_alg` value and falls back to `RS256` for tokens with no relation to a client, when the client's alg is `none` or `HS***`
  - `paseto` formatted tokens are issued as v2.public PASETOs and stored the same as `opaque` only with additional property `paseto`. The server must have an `OKP Ed25519` key available to sign with else it will throw a server error. PASETOs are also allowed to only have a single audience, if the token's "aud" resolves with more than one the server will throw a server error.
  - the value may also be a function dynamically determining the format (returning either `jwt`, `paseto` or `opaque` depending on the token itself)   
   
@@ -1872,8 +1900,7 @@ _**default value**_:
 ```js
 {
   AccessToken: undefined,
-  ClientCredentials: undefined,
-  extraJwtAccessTokenClaims: [AsyncFunction: extraJwtAccessTokenClaims]
+  ClientCredentials: undefined
 }
 ```
 <details>
@@ -1915,36 +1942,6 @@ Configure `formats`:
       return 'jwt';
     }
     return 'opaque';
-  }
-}
-```
-</details>
-
-### formats.extraJwtAccessTokenClaims
-
-helper function used by the OP to get additional JWT formatted token claims when it is being created  
-
-
-_**default value**_:
-```js
-async extraJwtAccessTokenClaims(ctx, token) {
-  return undefined;
-}
-```
-<details>
-  <summary>(Click to expand) To push additional claims to a JWT format Access Token
-</summary>
-  <br>
-
-```js
-{
-  formats: {
-    AccessToken: 'jwt',
-    async extraJwtAccessTokenClaims(ctx, token) {
-      return {
-        preferred_username: 'johnny',
-      };
-    }
   }
 }
 ```
