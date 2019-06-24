@@ -16,6 +16,7 @@ describe('body parser', () => {
     it('uses the upstream parser albeit reluctantly', async () => {
       const provider = new Provider('http://localhost:3000', {
         features: { clientCredentials: { enabled: true } },
+        jwks: global.keystore.toJWKS(true),
         clients: [{
           client_id: 'client',
           client_secret: 'secret',
@@ -46,6 +47,7 @@ describe('body parser', () => {
     it('removes all qs magic', async () => {
       const provider = new Provider('http://localhost:3000', {
         features: { clientCredentials: { enabled: true } },
+        jwks: global.keystore.toJWKS(true),
         clients: [{
           client_id: 'client',
           client_secret: 'secret',
@@ -84,6 +86,7 @@ describe('body parser', () => {
   describe('application/json', () => {
     it('uses the upstream parser albeit reluctantly', async () => {
       const provider = new Provider('http://localhost:3000', {
+        jwks: global.keystore.toJWKS(true),
         features: { registration: { enabled: true } },
       });
       const app = new Koa();
@@ -104,6 +107,7 @@ describe('body parser', () => {
 
     it('handles parsing errors', async () => {
       const provider = new Provider('http://localhost:3000', {
+        jwks: global.keystore.toJWKS(true),
         features: { registration: { enabled: true } },
       });
 

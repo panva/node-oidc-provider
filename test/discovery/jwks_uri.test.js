@@ -15,19 +15,23 @@ describe(route, () => {
         .expect((res) => {
           let rsa;
           let ec;
+          let okp;
 
-          expect(res.body.keys.length).to.equal(2);
+          expect(res.body.keys.length).to.equal(3);
 
           res.body.keys.forEach((key) => {
             if (key.kty === 'RSA') rsa = key;
             if (key.kty === 'EC') ec = key;
+            if (key.kty === 'OKP') okp = key;
           });
 
           expect(rsa).to.be.ok;
           expect(ec).to.be.ok;
+          expect(okp).to.be.ok;
 
           expect(rsa).to.have.all.keys(['kty', 'kid', 'e', 'n']);
           expect(ec).to.have.all.keys(['kty', 'kid', 'crv', 'x', 'y']);
+          expect(okp).to.have.all.keys(['kty', 'kid', 'crv', 'x']);
         });
     });
 

@@ -2,7 +2,7 @@ const { clone } = require('lodash');
 
 const config = clone(require('../default.config'));
 
-config.audiences = () => ['foo', 'bar'];
+config.audiences = () => ['foo'];
 
 module.exports = {
   config,

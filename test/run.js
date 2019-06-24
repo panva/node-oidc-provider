@@ -17,6 +17,7 @@ process.argv.forEach((arg) => {
 if (!formats.length) {
   formats.push('opaque');
   formats.push('jwt');
+  formats.push('paseto');
   formats.push('dynamic');
 }
 const passed = [];
@@ -40,6 +41,7 @@ async function run() {
   await Promise.all([
     global.keystore.generate('RSA', 2048),
     global.keystore.generate('EC', 'P-256'),
+    global.keystore.generate('OKP', 'Ed25519'),
   ]);
   const DEFAULTS = require('../lib/helpers/defaults'); // eslint-disable-line global-require
   DEFAULTS.formats.default = this.format;
@@ -72,7 +74,8 @@ async function run() {
 (async () => {
   if (formats.includes('opaque')) await run.call({ format: 'opaque' });
   if (formats.includes('jwt')) await run.call({ format: 'jwt' });
-  if (formats.includes('dynamic')) await run.call({ format: () => sample(['opaque', 'jwt']) });
+  if (formats.includes('paseto')) await run.call({ format: 'paseto' });
+  if (formats.includes('dynamic')) await run.call({ format: () => sample(['opaque', 'jwt', 'paseto']) });
   passed.forEach(pass => console.log('\x1b[32m%s\x1b[0m', pass));
 })()
   .catch((error) => {

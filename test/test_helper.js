@@ -318,8 +318,11 @@ module.exports = function testHelper(dir, { config: base = path.basename(dir), m
 
   function getTokenJti(token) {
     const jwt = () => JSON.parse(base64url.decode(token.split('.')[1])).jti;
+    const paseto = () => JSON.parse(base64url.toBuffer(token.split('.')[2]).slice(0, -64)).jti;
     const opaque = () => token;
     switch (FORMAT) {
+      case 'paseto':
+        return paseto();
       case 'jwt':
         return jwt();
       case 'opaque':
@@ -328,12 +331,16 @@ module.exports = function testHelper(dir, { config: base = path.basename(dir), m
         if (typeof FORMAT === 'function') {
           try {
             return jwt();
-          } catch (err) {
-            return opaque();
-          }
-        } else {
-          throw new Error(`invalid format specified (${FORMAT})`);
+          } catch (err) {}
+
+          try {
+            return paseto();
+          } catch (err) {}
+
+          return opaque();
         }
+
+        throw new Error(`invalid format specified (${FORMAT})`);
     }
   }
 

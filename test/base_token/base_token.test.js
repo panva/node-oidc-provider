@@ -44,11 +44,6 @@ describe('BaseToken', () => {
     }
   });
 
-  it('returns undefined for not found tokens', async function () {
-    expect(await this.provider.RefreshToken.find('.eyJqdGkiOiJ6d1FXa2pBUzhQZks1WEUyTTEyTTcifQ.')).to.be.undefined;
-    expect(this.adapter.find.calledOnce).to.be.true;
-  });
-
   it('assigns returned consumed prop', async function () {
     const token = await new this.provider.RefreshToken({
       grantId: 'foo',
@@ -137,15 +132,6 @@ describe('BaseToken', () => {
 
     token = await this.provider.AuthorizationCode.find(first);
     expect(token.consumed).to.be.true;
-  });
-
-  it('rethrows adapter#find errors (any token)', async function () {
-    this.adapter.find.restore();
-    const adapterThrow = new Error('adapter throw!');
-    sinon.stub(this.adapter, 'find').callsFake(async () => { throw adapterThrow; });
-    await this.provider.RefreshToken.find('.eyJqdGkiOiJ6d1FXa2pBUzhQZks1WEUyTTEyTTcifQ.').then(fail, (err) => {
-      expect(err).to.equal(adapterThrow);
-    });
   });
 
   it('rethrows adapter#find errors from session bound tokens looking up the session', async function () {
