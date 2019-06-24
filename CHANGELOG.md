@@ -2,6 +2,15 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [5.5.6](https://github.com/panva/node-oidc-provider/compare/v5.5.5...v5.5.6) (2019-06-24)
+
+
+### Bug Fixes
+
+* use fixed scope to claim mapping over dynamic ones ([046f99a](https://github.com/panva/node-oidc-provider/commit/046f99a))
+
+
+
 <a name="5.5.5"></a>
 ## [5.5.5](https://github.com/panva/node-oidc-provider/compare/v5.5.4...v5.5.5) (2019-02-20)
 
