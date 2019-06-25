@@ -425,7 +425,7 @@ describe('client authentication options', () => {
 
   describe('client_secret_jwt auth', () => {
     before(async function () {
-      this.key = (await this.provider.Client.find('client-jwt-secret')).keystore.get();
+      this.key = (await this.provider.Client.find('client-jwt-secret')).keystore.get({ alg: 'HS256' });
     });
 
     it('accepts the auth', function () {

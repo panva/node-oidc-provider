@@ -732,7 +732,7 @@ nodejs.
 * IdToken constructor now requires the client instance
 to be passed in as a second argument. IdToken instance `.sign()` now
 takes just one argument with the options.
-* when a symmetrical endpoint authentication signing alg
+* when a symmetric endpoint authentication signing alg
 is not specified the secret will be validated such that it can be used
 with all available HS bit lengths
 * audience helper `token` argument will no longer be

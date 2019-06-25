@@ -2803,12 +2803,12 @@ _**default value**_:
   'RSA-OAEP', 'RSA1_5',
   // asymmetric ECDH-ES based
   'ECDH-ES', 'ECDH-ES+A128KW', 'ECDH-ES+A192KW', 'ECDH-ES+A256KW',
-  // symmetric AES
-  'A128KW', 'A192KW', 'A256KW',
-  // symmetric AES GCM based
-  'A128GCMKW', 'A192GCMKW', 'A256GCMKW',
+  // symmetric AES key wrapping
+  'A128KW', 'A192KW', 'A256KW', 'A128GCMKW', 'A192GCMKW', 'A256GCMKW',
   // symmetric PBES2 + AES
   'PBES2-HS256+A128KW', 'PBES2-HS384+A192KW', 'PBES2-HS512+A256KW',
+  // direct encryption
+  'dir',
 ]
 ```
 </details>
@@ -2900,12 +2900,12 @@ _**default value**_:
   'RSA-OAEP', 'RSA1_5',
   // asymmetric ECDH-ES based
   'ECDH-ES', 'ECDH-ES+A128KW', 'ECDH-ES+A192KW', 'ECDH-ES+A256KW',
-  // symmetric AES
-  'A128KW', 'A192KW', 'A256KW',
-  // symmetric AES GCM based
-  'A128GCMKW', 'A192GCMKW', 'A256GCMKW',
+  // symmetric AES key wrapping
+  'A128KW', 'A192KW', 'A256KW', 'A128GCMKW', 'A192GCMKW', 'A256GCMKW',
   // symmetric PBES2 + AES
   'PBES2-HS256+A128KW', 'PBES2-HS384+A192KW', 'PBES2-HS512+A256KW',
+  // direct encryption
+  'dir',
 ]
 ```
 </details>
@@ -2998,12 +2998,12 @@ _**default value**_:
   'RSA-OAEP', 'RSA1_5',
   // asymmetric ECDH-ES based
   'ECDH-ES', 'ECDH-ES+A128KW', 'ECDH-ES+A192KW', 'ECDH-ES+A256KW',
-  // symmetric AES
-  'A128KW', 'A192KW', 'A256KW',
-  // symmetric AES GCM based
-  'A128GCMKW', 'A192GCMKW', 'A256GCMKW',
+  // symmetric AES key wrapping
+  'A128KW', 'A192KW', 'A256KW', 'A128GCMKW', 'A192GCMKW', 'A256GCMKW',
   // symmetric PBES2 + AES
   'PBES2-HS256+A128KW', 'PBES2-HS384+A192KW', 'PBES2-HS512+A256KW',
+  // direct encryption
+  'dir',
 ]
 ```
 </details>
@@ -3128,12 +3128,12 @@ _**default value**_:
   'RSA-OAEP', 'RSA1_5',
   // asymmetric ECDH-ES based
   'ECDH-ES', 'ECDH-ES+A128KW', 'ECDH-ES+A192KW', 'ECDH-ES+A256KW',
-  // symmetric AES
-  'A128KW', 'A192KW', 'A256KW',
-  // symmetric AES GCM based
-  'A128GCMKW', 'A192GCMKW', 'A256GCMKW',
+  // symmetric AES key wrapping
+  'A128KW', 'A192KW', 'A256KW', 'A128GCMKW', 'A192GCMKW', 'A256GCMKW',
   // symmetric PBES2 + AES
   'PBES2-HS256+A128KW', 'PBES2-HS384+A192KW', 'PBES2-HS512+A256KW',
+  // direct encryption
+  'dir',
 ]
 ```
 </details>
@@ -3290,12 +3290,12 @@ _**default value**_:
   'RSA-OAEP', 'RSA1_5',
   // asymmetric ECDH-ES based
   'ECDH-ES', 'ECDH-ES+A128KW', 'ECDH-ES+A192KW', 'ECDH-ES+A256KW',
-  // symmetric AES
-  'A128KW', 'A192KW', 'A256KW',
-  // symmetric AES GCM based
-  'A128GCMKW', 'A192GCMKW', 'A256GCMKW',
+  // symmetric AES key wrapping
+  'A128KW', 'A192KW', 'A256KW', 'A128GCMKW', 'A192GCMKW', 'A256GCMKW',
   // symmetric PBES2 + AES
   'PBES2-HS256+A128KW', 'PBES2-HS384+A192KW', 'PBES2-HS512+A256KW',
+  // direct encryption
+  'dir',
 ]
 ```
 </details>

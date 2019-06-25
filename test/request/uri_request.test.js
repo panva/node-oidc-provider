@@ -1,5 +1,6 @@
 const { parse } = require('url');
 
+const jose = require('@panva/jose');
 const sinon = require('sinon');
 const nock = require('nock');
 const { expect } = require('chai');
@@ -656,9 +657,8 @@ describe('request Uri features', () => {
       it('unsupported algs must not be used', async function () {
         const spy = sinon.spy();
         this.provider.once(error, spy);
-        const key = (await this.provider.Client.find('client')).keystore.get({
-          alg: 'HS384',
-        });
+        const secret = (await this.provider.Client.find('client')).clientSecret;
+        const key = jose.JWK.asKey(secret);
 
         const request = await JWT.sign({
           client_id: 'client',
