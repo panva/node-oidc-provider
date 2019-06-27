@@ -46,36 +46,64 @@ module.exports = (provider) => {
       uid, prompt, params, session,
     } = await provider.interactionDetails(ctx.req);
     const client = await provider.Client.find(params.client_id);
-    if (prompt.name === 'login') {
-      await ctx.render('login', {
-        client,
-        uid,
-        details: prompt.details,
-        params,
-        title: 'Sign-in',
-        google: ctx.google,
-        session: session ? debug(session) : undefined,
-        dbg: {
-          params: debug(params),
-          prompt: debug(prompt),
-        },
-      });
-    } else {
-      await ctx.render('interaction', {
-        client,
-        uid,
-        details: prompt.details,
-        params,
-        title: 'Authorize',
-        session: session ? debug(session) : undefined,
-        dbg: {
-          params: debug(params),
-          prompt: debug(prompt),
-        },
-      });
-    }
 
-    await next();
+    switch (prompt.name) {
+      case 'select_account': {
+        if (!session) {
+          return provider.interactionFinished(ctx.req, ctx.res, {
+            select_account: {},
+          }, { mergeWithLastSubmission: false });
+        }
+
+        const account = await provider.Account.findAccount(ctx, session.accountId);
+        const { email } = await account.claims('prompt', 'email', { email: null }, []);
+
+        return ctx.render('select_account', {
+          client,
+          uid,
+          email,
+          details: prompt.details,
+          params,
+          title: 'Sign-in',
+          session: session ? debug(session) : undefined,
+          dbg: {
+            params: debug(params),
+            prompt: debug(prompt),
+          },
+        });
+      }
+      case 'login': {
+        return ctx.render('login', {
+          client,
+          uid,
+          details: prompt.details,
+          params,
+          title: 'Sign-in',
+          google: ctx.google,
+          session: session ? debug(session) : undefined,
+          dbg: {
+            params: debug(params),
+            prompt: debug(prompt),
+          },
+        });
+      }
+      case 'consent': {
+        return ctx.render('interaction', {
+          client,
+          uid,
+          details: prompt.details,
+          params,
+          title: 'Authorize',
+          session: session ? debug(session) : undefined,
+          dbg: {
+            params: debug(params),
+            prompt: debug(prompt),
+          },
+        });
+      }
+      default:
+        return next();
+    }
   });
 
   const body = bodyParser({
@@ -144,6 +172,28 @@ module.exports = (provider) => {
       default:
         return undefined;
     }
+  });
+
+  router.post('/interaction/:uid/continue', body, async (ctx) => {
+    const interaction = await provider.interactionDetails(ctx.req);
+    const { prompt: { name, details } } = interaction;
+    assert.equal(name, 'select_account');
+
+    if (ctx.request.body.switch) {
+      if (interaction.params.prompt) {
+        const prompts = new Set(interaction.params.prompt.split(' '));
+        prompts.add('login');
+        interaction.params.prompt = [...prompts].join(' ');
+      } else {
+        interaction.params.prompt = 'logout';
+      }
+      await interaction.save();
+    }
+
+    const result = { select_account: {} };
+    return provider.interactionFinished(ctx.req, ctx.res, result, {
+      mergeWithLastSubmission: false,
+    });
   });
 
   router.post('/interaction/:uid/confirm', body, async (ctx) => {

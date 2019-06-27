@@ -32,8 +32,6 @@ let server;
 
   const provider = new Provider(ISSUER, { adapter, ...configuration });
 
-  provider.use(helmet());
-
   if (process.env.NODE_ENV === 'production') {
     app.enable('trust proxy');
     provider.proxy = true;

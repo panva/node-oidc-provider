@@ -2,6 +2,7 @@ const crypto = require('crypto');
 
 const pkg = require('../package.json');
 const whitelistedJWA = JSON.parse(JSON.stringify(require('../lib/helpers/defaults').whitelistedJWA));
+const { interactionPolicy: { Prompt, base: policy } } = require('../lib');
 
 /* OIDC certification suite tests with these */
 whitelistedJWA.idTokenSigningAlgValues.push('none');
@@ -21,7 +22,20 @@ const tokenEndpointAuthMethods = [
 ];
 tokenEndpointAuthMethods.ack = 14;
 
+const interactions = policy();
+const selectAccount = new Prompt({
+  name: 'select_account',
+  requestable: true,
+});
+interactions.add(selectAccount, 0);
+
 module.exports = {
+  interactions: {
+    policy: interactions,
+    url(ctx) {
+      return `/interaction/${ctx.oidc.uid}`;
+    },
+  },
   acrValues: ['urn:mace:incommon:iap:bronze'],
   cookies: {
     long: { signed: true, maxAge: (1 * 24 * 60 * 60) * 1000 }, // 1 day in ms
@@ -121,11 +135,6 @@ module.exports = {
       .update(accountId)
       .update('da1c442b365b563dfc121f285a11eedee5bbff7110d55c88')
       .digest('hex');
-  },
-  interactions: {
-    url(ctx) {
-      return `/interaction/${ctx.oidc.uid}`;
-    },
   },
   ttl: {
     AccessToken: 1 * 60 * 60,

@@ -1,0 +1,7 @@
+<form autocomplete="off" action="/interaction/<%= uid %>/continue" method="post">
+  <button autofocus type="submit" class="login login-submit">Continue as <%= email %></button>
+</form>
+<form autocomplete="off" action="/interaction/<%= uid %>/continue" method="post">
+  <input type="hidden" name="switch" value="true">
+  <button type="submit" class="login">Switch account</button>
+</form>

@@ -52,33 +52,60 @@ module.exports = (app, provider) => {
 
       const client = await provider.Client.find(params.client_id);
 
-      if (prompt.name === 'login') {
-        return res.render('login', {
-          client,
-          uid,
-          details: prompt.details,
-          params,
-          title: 'Sign-in',
-          session: session ? debug(session) : undefined,
-          dbg: {
-            params: debug(params),
-            prompt: debug(prompt),
-          },
-        });
-      }
+      switch (prompt.name) {
+        case 'select_account': {
+          if (!session) {
+            return provider.interactionFinished(req, res, { select_account: {} }, { mergeWithLastSubmission: false });
+          }
 
-      return res.render('interaction', {
-        client,
-        uid,
-        details: prompt.details,
-        params,
-        title: 'Authorize',
-        session: session ? debug(session) : undefined,
-        dbg: {
-          params: debug(params),
-          prompt: debug(prompt),
-        },
-      });
+          const account = await provider.Account.findAccount(undefined, session.accountId);
+          const { email } = await account.claims('prompt', 'email', { email: null }, []);
+
+          return res.render('select_account', {
+            client,
+            uid,
+            email,
+            details: prompt.details,
+            params,
+            title: 'Sign-in',
+            session: session ? debug(session) : undefined,
+            dbg: {
+              params: debug(params),
+              prompt: debug(prompt),
+            },
+          });
+        }
+        case 'login': {
+          return res.render('login', {
+            client,
+            uid,
+            details: prompt.details,
+            params,
+            title: 'Sign-in',
+            session: session ? debug(session) : undefined,
+            dbg: {
+              params: debug(params),
+              prompt: debug(prompt),
+            },
+          });
+        }
+        case 'consent': {
+          return res.render('interaction', {
+            client,
+            uid,
+            details: prompt.details,
+            params,
+            title: 'Authorize',
+            session: session ? debug(session) : undefined,
+            dbg: {
+              params: debug(params),
+              prompt: debug(prompt),
+            },
+          });
+        }
+        default:
+          return undefined;
+      }
     } catch (err) {
       return next(err);
     }
@@ -97,6 +124,30 @@ module.exports = (app, provider) => {
         },
       };
 
+      await provider.interactionFinished(req, res, result, { mergeWithLastSubmission: false });
+    } catch (err) {
+      next(err);
+    }
+  });
+
+  app.post('/interaction/:uid/continue', setNoCache, body, async (req, res, next) => {
+    try {
+      const interaction = await provider.interactionDetails(req);
+      const { prompt: { name, details } } = interaction;
+      assert.equal(name, 'select_account');
+
+      if (req.body.switch) {
+        if (interaction.params.prompt) {
+          const prompts = new Set(interaction.params.prompt.split(' '));
+          prompts.add('login');
+          interaction.params.prompt = [...prompts].join(' ');
+        } else {
+          interaction.params.prompt = 'logout';
+        }
+        await interaction.save();
+      }
+
+      const result = { select_account: {} };
       await provider.interactionFinished(req, res, result, { mergeWithLastSubmission: false });
     } catch (err) {
       next(err);

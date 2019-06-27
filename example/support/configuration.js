@@ -1,3 +1,17 @@
+const { interactionPolicy: { Prompt, base: policy } } = require('../../lib'); // require('oidc-provider');
+
+// copies the default policy, already has login and consent prompt policies
+const interactions = policy();
+
+// create a requestable prompt with no implicit checks
+const selectAccount = new Prompt({
+  name: 'select_account',
+  requestable: true,
+});
+
+// add to index 0, order goes select_account > login > consent
+interactions.add(selectAccount, 0);
+
 module.exports = {
   clients: [
     // {
@@ -7,6 +21,12 @@ module.exports = {
     //   redirect_uris: ['http://sso-client.dev/providers/7/open_id', 'http://sso-client.dev/providers/8/open_id'],
     // }
   ],
+  interactions: {
+    policy: interactions,
+    url(ctx, interaction) { // eslint-disable-line no-unused-vars
+      return `/interaction/${ctx.oidc.uid}`;
+    },
+  },
   cookies: {
     long: { signed: true, maxAge: (1 * 24 * 60 * 60) * 1000 }, // 1 day in ms
     short: { signed: true },
@@ -61,11 +81,6 @@ module.exports = {
         x: 'lDkysGJKRmJeUp8ncTyGraHPHHiIfdxSajxGm7Srla8',
       },
     ],
-  },
-  interactions: {
-    url(ctx, interaction) { // eslint-disable-line no-unused-vars
-      return `/interaction/${ctx.oidc.uid}`;
-    },
   },
   ttl: {
     AccessToken: 1 * 60 * 60, // 1 hour in seconds
