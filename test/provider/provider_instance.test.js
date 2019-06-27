@@ -92,6 +92,46 @@ describe('provider instance', () => {
     });
   });
 
+  describe('provider.Client keystore lazy behaviour', () => {
+    it('instantiates keystore and its HS derived keys lazily', async () => {
+      const provider = new Provider('http://localhost', {
+        clients: [{
+          client_id: 'foo',
+          client_secret: 'foobar',
+          redirect_uris: ['https://rp.example.com'],
+          token_endpoint_auth_method: 'client_secret_jwt',
+          token_endpoint_auth_signing_alg: 'HS256',
+          id_token_encrypted_response_alg: 'dir',
+          id_token_encrypted_response_enc: 'A128CBC-HS256',
+        }],
+        features: {
+          encryption: { enabled: true },
+          request: { enabled: false },
+          requestUri: { enabled: false },
+        },
+        whitelistedJWA: {
+          idTokenEncryptionAlgValues: ['dir'],
+        },
+      });
+
+      const client = await provider.Client.find('foo');
+      let lazy = i(client).lazyAlgs;
+      expect(lazy).to.be.ok;
+      expect(lazy.size).to.eql(2);
+      expect(client.keystore.size).to.eql(0);
+      expect([...lazy]).to.eql(['HS256', 'A128CBC-HS256']);
+      expect(client.keystore.get()).to.be.undefined;
+      expect(client.keystore.get({ alg: 'HS256' })).to.be.ok;
+      expect(client.keystore.size).to.eql(1);
+      expect(lazy.size).to.eql(1);
+      expect(client.keystore.get({ alg: 'A128CBC-HS256' })).to.be.ok;
+      expect(client.keystore.size).to.eql(2);
+      expect(lazy.size).to.eql(0);
+      lazy = i(client).lazyAlgs;
+      expect(lazy).to.be.undefined;
+    });
+  });
+
   describe('#urlFor', () => {
     it('returns the route for unprefixed issuers', () => {
       const provider = new Provider('http://localhost');

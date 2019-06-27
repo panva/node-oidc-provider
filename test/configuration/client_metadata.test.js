@@ -915,6 +915,9 @@ describe('Client metadata validation', () => {
       },
     };
 
+    [false, Boolean, 'foo', 123, null, { kty: null }, { kty: '' }].forEach((value) => {
+      rejects(this.title, { keys: [value] }, 'jwks keys member index 0 is not a valid JWK');
+    });
     rejects(this.title, 'string', 'jwks must be a JWK Set');
     rejects(this.title, {}, 'jwks must be a JWK Set');
     rejects(this.title, 1, 'jwks must be a JWK Set');
@@ -923,7 +926,8 @@ describe('Client metadata validation', () => {
     rejects(this.title, { keys: [privateKey] }, 'jwks must not contain private or symmetric keys (found in keys member index 0)');
     rejects(this.title, { keys: [{ k: '6vl9Rlk88HO8onFHq0ZvTtga68vkUr-bRZ2Hvxu-rAw', kty: 'oct' }] }, 'jwks must not contain private or symmetric keys (found in keys member index 0)');
     rejects(this.title, { keys: [{ kty: 'oct', kid: 'jf1nb1YotqxK9viWsXMsngnTCmO2r3w_moVIPtaf8wU' }] }, 'jwks must not contain private or symmetric keys (found in keys member index 0)');
-    allows(this.title, { keys: [] }, 'jwks.keys must not be empty');
+    allows(this.title, { keys: [{ kty: 'unrecognized' }] });
+    allows(this.title, { keys: [] });
     ['introspection', 'revocation', 'token'].forEach((endpoint) => {
       rejects(this.title, undefined, 'jwks or jwks_uri is mandatory for this client', {
         [`${endpoint}_endpoint_auth_method`]: 'private_key_jwt',

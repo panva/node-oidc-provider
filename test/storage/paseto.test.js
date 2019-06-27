@@ -352,5 +352,20 @@ if (FORMAT === 'paseto') {
         jti,
       });
     });
+
+    describe('paseto when keys are missing', () => {
+      before(bootstrap(__dirname, { config: 'noed25519' }));
+
+      it('throws an Error', async function () {
+        const token = new this.provider.AccessToken(fullPayload);
+        try {
+          await token.save();
+          throw new Error('expected to fail');
+        } catch (err) {
+          expect(err).to.be.an('error');
+          expect(err.message).to.equal('No Ed25519 signing key found to sign the PASETO formatted token with');
+        }
+      });
+    });
   });
 }
