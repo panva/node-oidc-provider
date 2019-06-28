@@ -38,7 +38,7 @@ enabled by default, check the configuration section on how to enable them.
 - [OpenID Connect Discovery 1.0][discovery]
 - [OpenID Connect Dynamic Client Registration 1.0][registration] and [RFC7591 - OAuth 2.0 Dynamic Client Registration Protocol][oauth2-registration]
 - [OAuth 2.0 Form Post Response Mode][form-post]
-- [RFC7636 - Proof Key for Code Exchange by OAuth Public Clients][pkce]
+- [RFC7636 - Proof Key for Code Exchange][pkce]
 - [RFC7009 - OAuth 2.0 Token Revocation][revocation]
 - [RFC7662 - OAuth 2.0 Token Introspection][introspection]
 - [RFC8252 - OAuth 2.0 for Native Apps BCP][oauth-native-apps]

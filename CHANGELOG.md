@@ -31,7 +31,7 @@ releases with breaking changes in them.
 > and is controlled by a new `issueRefreshToken` configuration policy.
 >
 > By default all tokens that do not have `offline_access` scope are now
-> handled is invalid or expired when the session they came from is gone,
+> handled as invalid or expired when the session they came from is gone,
 > i.e. when the end-user logs out or a shorter-lived session simply expires
 > due to inactivity. This behaviour is controled by a new `expiresWithSession`
 > configuration policy.
