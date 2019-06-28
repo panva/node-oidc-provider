@@ -1,15 +1,8 @@
 const crypto = require('crypto');
 
 const pkg = require('../package.json');
-const whitelistedJWA = JSON.parse(JSON.stringify(require('../lib/helpers/defaults').whitelistedJWA));
+const whitelistedJWA = JSON.parse(JSON.stringify(require('../lib/consts/jwa')));
 const { interactionPolicy: { Prompt, base: policy } } = require('../lib');
-
-/* OIDC certification suite tests with these */
-whitelistedJWA.idTokenSigningAlgValues.push('none');
-whitelistedJWA.requestObjectSigningAlgValues.push('none');
-whitelistedJWA.idTokenEncryptionAlgValues.push('RSA1_5');
-whitelistedJWA.requestObjectEncryptionAlgValues.push('RSA1_5');
-whitelistedJWA.userinfoEncryptionAlgValues.push('RSA1_5');
 
 const timeout = parseInt(process.env.TIMEOUT, 10);
 const tokenEndpointAuthMethods = [
