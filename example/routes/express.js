@@ -118,6 +118,7 @@ module.exports = (app, provider) => {
       const account = await Account.findByLogin(req.body.login);
 
       const result = {
+        select_account: {}, // make sure its skipped by the interaction policy since we just logged in
         login: {
           account: account.accountId,
           ts: Math.floor(Date.now() / 1000),

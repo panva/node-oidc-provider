@@ -119,6 +119,7 @@ module.exports = (provider) => {
     const account = await Account.findByLogin(ctx.request.body.login);
 
     const result = {
+      select_account: {}, // make sure its skipped by the interaction policy since we just logged in
       login: {
         account: account.accountId,
         ts: Math.floor(Date.now() / 1000),
@@ -149,6 +150,7 @@ module.exports = (provider) => {
           const account = await Account.findByFederated('google', tokenset.claims());
 
           const result = {
+            select_account: {}, // make sure its skipped by the interaction policy since we just logged in
             login: {
               account: account.accountId,
               ts: Math.floor(Date.now() / 1000),
