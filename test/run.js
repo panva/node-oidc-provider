@@ -52,7 +52,8 @@ async function run() {
   await new Promise((resolve, reject) => {
     const mocha = new Mocha();
     mocha.files = files;
-    // mocha.bail()
+    mocha.reporter('min');
+    // mocha.bail();
 
     if (process.env.CI) {
       mocha.retries(1); // retry flaky time comparison tests
