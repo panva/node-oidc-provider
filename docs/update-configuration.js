@@ -258,6 +258,9 @@ const props = [
             if (line.includes('/* eslint-enable')) {
               return undefined;
             }
+            if (line.includes('/* istanbul ignore')) {
+              return undefined;
+            }
             line = line.replace(/ \/\/ TODO.+/, '');
             line = line.replace(/ class="[ \-\w]+ ?"/, '');
             if (line.includes('<meta ')) {
