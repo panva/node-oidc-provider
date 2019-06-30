@@ -259,10 +259,63 @@ describe('encryption', () => {
             }));
         });
 
-        it('responds encrypted with i.e. PBES2 password encrypted key', function () {
+        it('responds encrypted with i.e. PBES2 password derived key id_token', function () {
           expect(this.id_token).to.be.ok;
           expect(this.id_token.split('.')).to.have.lengthOf(5);
           expect(JSON.parse(base64url.decode(this.id_token.split('.')[0]))).to.have.property('alg', 'PBES2-HS384+A192KW');
+        });
+      });
+
+      describe('direct key agreement symmetric encryption', () => {
+        before(function () {
+          const auth = new this.AuthorizationRequest({
+            response_type: 'id_token',
+            scope: 'openid',
+            client_id: 'clientSymmetric-dir',
+          });
+
+          return this.wrap({ route, verb, auth })
+            .expect(auth.validateFragment)
+            .expect((response) => {
+              const { query } = url.parse(response.headers.location, true);
+              this.id_token = query.id_token;
+            });
+        });
+
+        it('accepts symmetric (dir) encrypted request objects', async function () {
+          const client = await this.provider.Client.find('clientSymmetric');
+          return JWT.sign({
+            client_id: 'clientSymmetric-dir',
+            response_type: 'id_token',
+            nonce: 'foobar',
+            redirect_uri: 'https://client.example.com/cb',
+          }, null, 'none', { issuer: 'clientSymmetric-dir', audience: this.provider.issuer }).then(signed => JWT.encrypt(signed, client.keystore.get({ alg: 'A128CBC-HS256' }), { enc: 'A128CBC-HS256', alg: 'dir' })).then(encrypted => this.wrap({
+            route,
+            verb,
+            auth: {
+              request: encrypted,
+              scope: 'openid',
+              client_id: 'clientSymmetric-dir',
+              response_type: 'id_token',
+            },
+          })
+            .expect(302)
+            .expect((response) => {
+              const expected = parse('https://client.example.com/cb', true);
+              const actual = parse(response.headers.location.replace('#', '?'), true);
+              ['protocol', 'host', 'pathname'].forEach((attr) => {
+                expect(actual[attr]).to.equal(expected[attr]);
+              });
+              expect(actual.query).to.have.property('id_token');
+            }));
+        });
+
+        it('responds encrypted with i.e. PBES2 password derived key id_token', function () {
+          expect(this.id_token).to.be.ok;
+          expect(this.id_token.split('.')).to.have.lengthOf(5);
+          const header = JSON.parse(base64url.decode(this.id_token.split('.')[0]));
+          expect(header).to.have.property('alg', 'dir');
+          expect(header).to.have.property('enc', 'A128CBC-HS256');
         });
       });
     });

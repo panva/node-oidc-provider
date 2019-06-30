@@ -135,6 +135,57 @@ describe('BASIC code', () => {
     });
 
     describe(`${verb} ${route} interactions`, () => {
+      before(function () { return this.logout(); });
+      before(function () {
+        this.policy = i(this.provider).configuration('interactions').policy;
+        i(this.provider).configuration('interactions').policy = [];
+      });
+
+      after(function () {
+        i(this.provider).configuration('interactions').policy = this.policy;
+      });
+
+      it('no account id was resolved and no interactions requested', async function () {
+        const spy = sinon.spy();
+        this.provider.on('authorization.error', spy);
+
+        const auth = new this.AuthorizationRequest({
+          response_type,
+          scope,
+        });
+
+        await this.wrap({ route, verb, auth })
+          .expect(302)
+          .expect(auth.validateClientLocation)
+          .expect(auth.validatePresence(['error', 'state']))
+          .expect(auth.validateError('access_denied'));
+
+        expect(spy.calledOnce).to.be.true;
+        expect(spy.args[0][1]).to.have.property('error_detail', 'request resolved without requesting interactions but no account id was resolved');
+      });
+
+      it('no scope was resolved and no interactions requested', async function () {
+        await this.login();
+        const spy = sinon.spy();
+        this.provider.on('authorization.error', spy);
+
+        const auth = new this.AuthorizationRequest({
+          response_type,
+          // scope,
+        });
+
+        await this.wrap({ route, verb, auth })
+          .expect(302)
+          .expect(auth.validateClientLocation)
+          .expect(auth.validatePresence(['error', 'state']))
+          .expect(auth.validateError('access_denied'));
+
+        expect(spy.calledOnce).to.be.true;
+        expect(spy.args[0][1]).to.have.property('error_detail', 'request resolved without requesting interactions but scope was granted');
+      });
+    });
+
+    describe(`${verb} ${route} interactions`, () => {
       beforeEach(function () { return this.login(); });
       after(function () { return this.logout(); });
 

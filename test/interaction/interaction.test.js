@@ -322,6 +322,32 @@ describe('resume after interaction', () => {
         });
     });
 
+    it('should not set samesite=none to webkit based browsers for now', async function () {
+      const auth = new this.AuthorizationRequest({
+        response_type: 'code',
+        response_mode: 'query',
+        scope: 'openid',
+      });
+
+      await setup.call(this, auth, {
+        login: {
+          account: nanoid(),
+        },
+        consent: {},
+      });
+
+      return this.agent.get('/auth/resume')
+        .set('user-agent', 'webkit')
+        .expect(302)
+        .expect('set-cookie', /^((?!samesite=none).)+$/)
+        .expect(auth.validateState)
+        .expect(auth.validateClientLocation)
+        .expect(auth.validatePresence(['code', 'state', 'session_state']))
+        .expect(() => {
+          expect(this.getSession()).to.be.ok.and.not.have.property('transient');
+        });
+    });
+
     it('should process newly established permanent sessions (explicit)', async function () {
       const auth = new this.AuthorizationRequest({
         response_type: 'code',

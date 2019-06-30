@@ -366,65 +366,6 @@ describe('requests without the openid scope', () => {
     });
   });
 
-  describe('response_types and flows that work when scope parameter is missing entirely and no scope was defaulted by the AS policy', () => {
-    const scope = undefined;
-    describe('when scope is not provided', () => {
-      before(function () { return this.login({ scope }); });
-      after(function () { return this.logout(); });
-
-      describe('response_type=code', () => {
-        const response_type = 'code';
-        it('gets access_denied from the authorization endpoint', async function () {
-          const auth = new this.AuthorizationRequest({
-            response_type,
-            scope,
-          });
-
-          await this.wrap({ route: '/auth', verb: 'get', auth })
-            .expect(302)
-            .expect(auth.validateClientLocation)
-            .expect(auth.validatePresence(['error', 'state']))
-            .expect(auth.validateError('access_denied'));
-        });
-      });
-
-      describe('response_type=token', () => {
-        const response_type = 'token';
-
-        it('gets access_denied from the authorization endpoint', async function () {
-          const auth = new this.AuthorizationRequest({
-            response_type,
-            scope,
-          });
-
-          await this.wrap({ route: '/auth', verb: 'get', auth })
-            .expect(302)
-            .expect(auth.validateFragment)
-            .expect(auth.validateClientLocation)
-            .expect(auth.validatePresence(['error', 'state']))
-            .expect(auth.validateError('access_denied'));
-        });
-      });
-
-      describe('response_type=none', () => {
-        const response_type = 'none';
-
-        it('gets access_denied from the authorization endpoint', async function () {
-          const auth = new this.AuthorizationRequest({
-            response_type,
-            scope,
-          });
-
-          await this.wrap({ route: '/auth', verb: 'get', auth })
-            .expect(302)
-            .expect(auth.validateClientLocation)
-            .expect(auth.validatePresence(['error', 'state']))
-            .expect(auth.validateError('access_denied'));
-        });
-      });
-    });
-  });
-
   describe('response_types that require openid scope', () => {
     ['code id_token token', 'code id_token', 'id_token token', 'id_token'].forEach((response_type) => {
       it(`scope must be present when requesting ${response_type}`, async function () {

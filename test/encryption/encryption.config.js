@@ -49,5 +49,13 @@ module.exports = {
       grant_types: ['implicit'],
       id_token_encrypted_response_alg: 'PBES2-HS384+A192KW',
     },
+    {
+      client_id: 'clientSymmetric-dir',
+      client_secret: 'secret',
+      redirect_uris: ['https://client.example.com/cb'],
+      response_types: ['id_token'],
+      grant_types: ['implicit'],
+      id_token_encrypted_response_alg: 'dir',
+    },
   ],
 };
