@@ -84,7 +84,7 @@ describe('features.certificateBoundAccessTokens', () => {
         });
 
       this.TestAdapter.for('DeviceCode').syncUpdate(this.getTokenJti(this.dc), {
-        scope: 'openid',
+        scope: 'openid offline_access',
         accountId: 'account',
       });
     });
@@ -104,8 +104,9 @@ describe('features.certificateBoundAccessTokens', () => {
         .expect(200);
 
       expect(spy).to.have.property('calledOnce', true);
-      const { oidc: { entities: { AccessToken } } } = spy.args[0][0];
+      const { oidc: { entities: { AccessToken, RefreshToken } } } = spy.args[0][0];
       expect(AccessToken).to.have.property('x5t#S256', expectedS256);
+      expect(RefreshToken).not.to.have.property('x5t#S256');
     });
 
     it('verifies the request made with mutual-TLS', function () {
@@ -118,6 +119,31 @@ describe('features.certificateBoundAccessTokens', () => {
         .type('form')
         .expect(400)
         .expect({ error: 'invalid_request', error_description: 'mutual TLS client certificate not provided' });
+    });
+
+    it('binds the refresh token to the certificate for public clients', async function () {
+      const spy = sinon.spy();
+      this.provider.once('grant.success', spy);
+
+      // changes the code to client-none and
+      this.TestAdapter.for('DeviceCode').syncUpdate(this.getTokenJti(this.dc), {
+        clientId: 'client-none',
+      });
+
+      await this.agent.post('/token')
+        .send({
+          client_id: 'client-none',
+          grant_type: 'urn:ietf:params:oauth:grant-type:device_code',
+          device_code: this.dc,
+        })
+        .type('form')
+        .set('x-ssl-client-cert', crt.replace(RegExp('\\r?\\n', 'g'), ''))
+        .expect(200);
+
+      expect(spy).to.have.property('calledOnce', true);
+      const { oidc: { entities: { AccessToken, RefreshToken } } } = spy.args[0][0];
+      expect(AccessToken).to.have.property('x5t#S256', expectedS256);
+      expect(RefreshToken).to.have.property('x5t#S256', expectedS256);
     });
   });
 

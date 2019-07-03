@@ -30,6 +30,7 @@ module.exports = {
       client_id: 'client-none',
       grant_types: [
         'authorization_code',
+        'urn:ietf:params:oauth:grant-type:device_code',
         'refresh_token',
       ],
       response_types: ['code'],

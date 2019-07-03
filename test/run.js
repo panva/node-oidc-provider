@@ -52,10 +52,9 @@ async function run() {
   await new Promise((resolve, reject) => {
     const mocha = new Mocha();
     mocha.files = files;
-    mocha.reporter('min');
-    // mocha.bail();
 
     if (process.env.CI) {
+      mocha.reporter('min');
       mocha.retries(1); // retry flaky time comparison tests
       mocha.forbidOnly(); // force suite fail on encountered only test
       mocha.forbidPending(); // force suite fail on encountered skip test
