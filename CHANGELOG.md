@@ -2,6 +2,15 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [6.0.2](https://github.com/panva/node-oidc-provider/compare/v6.0.1...v6.0.2) (2019-07-03)
+
+
+### Bug Fixes
+
+* device flow refresh tokens for public clients are now be certificate bound as well ([904ad2d](https://github.com/panva/node-oidc-provider/commit/904ad2d))
+
+
+
 ## [6.0.1](https://github.com/panva/node-oidc-provider/compare/v6.0.0...v6.0.1) (2019-06-29)
 
 
