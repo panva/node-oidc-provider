@@ -2,6 +2,15 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [6.0.3](https://github.com/panva/node-oidc-provider/compare/v6.0.2...v6.0.3) (2019-07-04)
+
+
+### Bug Fixes
+
+* default renderError page escapes error props inherited from params ([6aedbab](https://github.com/panva/node-oidc-provider/commit/6aedbab)), closes [#489](https://github.com/panva/node-oidc-provider/issues/489)
+
+
+
 ## [6.0.2](https://github.com/panva/node-oidc-provider/compare/v6.0.1...v6.0.2) (2019-07-03)
 
 
