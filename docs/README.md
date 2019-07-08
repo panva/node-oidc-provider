@@ -44,6 +44,7 @@ If you or your business use oidc-provider, please consider becoming a [Patron][s
     - [clientCredentials](#featuresclientcredentials)
     - [deviceFlow](#featuresdeviceflow)
     - [devInteractions](#featuresdevinteractions)
+    - [dPoP](#featuresdpop)
     - [encryption](#featuresencryption)
     - [frontchannelLogout](#featuresfrontchannellogout)
     - [introspection](#featuresintrospection)
@@ -770,6 +771,21 @@ _**default value**_:
 ```js
 {
   enabled: false
+}
+```
+
+### features.dPoP
+
+[draft-fett-oauth-dpop-02](https://tools.ietf.org/html/draft-fett-oauth-dpop-02) - OAuth 2.0 Demonstration of Proof-of-Possession at the Application Layer  
+
+Enables `DPoP` - mechanism for sender-constraining tokens via a proof-of-possession mechanism on the application level  
+
+
+_**default value**_:
+```js
+{
+  enabled: false,
+  iatTolerance: 60
 }
 ```
 
@@ -1630,7 +1646,7 @@ To change the default client response_types configure `clientDefaults` to be an 
 
 ### clockTolerance
 
-A `Number` value (in seconds) describing the allowed system clock skew for validating client-provided JWTs, e.g. Request objects and otherwise comparing timestamps  
+A `Number` value (in seconds) describing the allowed system clock skew for validating client-provided JWTs, e.g. Request objects, DPoP Proofs and otherwise comparing timestamps  
 
 _**recommendation**_: Only set this to a reasonable value when needed to cover server-side client and oidc-provider server clock skew. More than 5 minutes (if needed) is probably a sign something else is wrong.  
 
@@ -2563,7 +2579,7 @@ Configures if and how the OP rotates refresh tokens after they are used. Support
  <br/><br/>   
  The default configuration value puts forth a sensible refresh token rotation policy
  - only allows refresh tokens to be rotated (have their TTL prolonged by issuing a new one) for one year
- - otherwise always rotate public client tokens
+ - otherwise always rotate public client tokens that are not sender-constrained
  - otherwise only rotate tokens if they're being used close to their expiration (>= 70% TTL passed)  
 
 
@@ -2576,8 +2592,8 @@ rotateRefreshToken(ctx) {
   if (refreshToken.totalLifetime() >= 365.25 * 24 * 60 * 60) {
     return false;
   }
-  // rotate public client refresh tokens
-  if (client.tokenEndpointAuthMethod === 'none') {
+  // rotate non sender-constrained public client refresh tokens
+  if (client.tokenEndpointAuthMethod === 'none' && !refreshToken.isSenderConstrained()) {
     return true;
   }
   // rotate if the token is nearing expiration (it's beyond 70% of its lifetime)
@@ -2863,6 +2879,36 @@ _**default value**_:
 ```js
 [
   'HS256', 'HS384', 'HS512',
+  'RS256', 'RS384', 'RS512',
+  'PS256', 'PS384', 'PS512',
+  'ES256', 'ES384', 'ES512',
+  'EdDSA',
+]
+```
+</details>
+
+### whitelistedJWA.dPoPSigningAlgValues
+
+JWA algorithms the provider supports to verify DPoP Proof JWTs with   
+  
+
+
+_**default value**_:
+```js
+[
+  'RS256',
+  'PS256',
+  'ES256',
+  'EdDSA'
+]
+```
+<details>
+  <summary>(Click to expand) Supported values list
+</summary>
+  <br>
+
+```js
+[
   'RS256', 'RS384', 'RS512',
   'PS256', 'PS384', 'PS512',
   'ES256', 'ES384', 'ES512',

@@ -52,7 +52,7 @@ if (FORMAT === 'paseto') {
       accountId, claims, clientId, grantId, scope, sid, consumed, acr, amr, authTime, nonce,
       redirectUri, codeChallenge, codeChallengeMethod, aud, error, errorDescription, params,
       userCode, deviceInfo, gty, resource, policies, sessionUid, expiresWithSession,
-      'x5t#S256': s256, inFlight, iiat, rotations, extra,
+      'x5t#S256': s256, inFlight, iiat, rotations, extra, 'jkt#S256': s256,
     };
     /* eslint-enable object-property-newline */
 
@@ -87,6 +87,7 @@ if (FORMAT === 'paseto') {
         scope,
         sid,
         'x5t#S256': s256,
+        'jkt#S256': s256,
         sessionUid,
         expiresWithSession,
         extra,
@@ -107,6 +108,7 @@ if (FORMAT === 'paseto') {
         sub: accountId,
         cnf: {
           'x5t#S256': s256,
+          'jkt#S256': s256,
         },
       });
     });
@@ -184,6 +186,7 @@ if (FORMAT === 'paseto') {
         scope,
         sid,
         'x5t#S256': s256,
+        'jkt#S256': s256,
         sessionUid,
         expiresWithSession,
       });
@@ -201,6 +204,7 @@ if (FORMAT === 'paseto') {
         sub: accountId,
         cnf: {
           'x5t#S256': s256,
+          'jkt#S256': s256,
         },
       });
     });
@@ -272,6 +276,7 @@ if (FORMAT === 'paseto') {
         kind,
         scope,
         'x5t#S256': s256,
+        'jkt#S256': s256,
         extra,
       });
 
@@ -289,6 +294,7 @@ if (FORMAT === 'paseto') {
         scope,
         cnf: {
           'x5t#S256': s256,
+          'jkt#S256': s256,
         },
       });
     });

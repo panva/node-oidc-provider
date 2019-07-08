@@ -3,7 +3,7 @@ const { clone } = require('lodash');
 const config = clone(require('../default.config'));
 
 config.features = {
-  certificateBoundAccessTokens: { enabled: true },
+  dPoP: { enabled: true },
   clientCredentials: { enabled: true },
   introspection: { enabled: true },
   deviceFlow: { enabled: true },
@@ -23,7 +23,6 @@ module.exports = {
       ],
       response_types: ['code'],
       redirect_uris: ['https://client.example.com/cb'],
-      tls_client_certificate_bound_access_tokens: true,
     },
     {
       client_id: 'client-none',
@@ -35,7 +34,6 @@ module.exports = {
       response_types: ['code'],
       redirect_uris: ['https://client.example.com/cb'],
       token_endpoint_auth_method: 'none',
-      tls_client_certificate_bound_access_tokens: true,
     },
   ],
 };

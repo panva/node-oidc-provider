@@ -364,7 +364,7 @@ describe('registration features', () => {
 
     it('validates auth presence', function () {
       return this.agent.get(`/reg/${this.clientId}`)
-        .expect(this.failWith(400, 'invalid_request', 'no bearer auth mechanism provided'));
+        .expect(this.failWith(400, 'invalid_request', 'no auth mechanism provided'));
     });
 
     it('validates auth', function () {

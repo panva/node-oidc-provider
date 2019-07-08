@@ -23,6 +23,16 @@ const selectAccount = new Prompt({
 interactions.add(selectAccount, 0);
 
 module.exports = {
+  clients: [
+    {
+      client_id: 'dpop-heroku',
+      token_endpoint_auth_method: 'none',
+      scope: 'openid offline_access',
+      grant_types: ['authorization_code', 'refresh_token'],
+      response_types: ['code'],
+      redirect_uris: ['https://murmuring-journey-60982.herokuapp.com/cb'],
+    },
+  ],
   interactions: {
     policy: interactions,
     url(ctx) {
@@ -56,6 +66,7 @@ module.exports = {
     certificateBoundAccessTokens: { enabled: true, ack: 14 },
     claimsParameter: { enabled: true },
     deviceFlow: { enabled: true, ack: 15 },
+    dPoP: { enabled: true, ack: 'id-02' },
     encryption: { enabled: true },
     frontchannelLogout: { enabled: true, ack: 2 },
     introspection: { enabled: true },
@@ -65,7 +76,7 @@ module.exports = {
     request: { enabled: true },
     revocation: { enabled: true },
     sessionManagement: { enabled: true, ack: 28 },
-    webMessageResponseMode: { enabled: true, ack: 0 },
+    webMessageResponseMode: { enabled: true, ack: 'id-00' },
   },
   extraAccessTokenClaims() {
     return { 'urn:oidc-provider:example:foo': 'bar' };
@@ -141,6 +152,13 @@ module.exports = {
   httpOptions(gotOptions) {
     gotOptions.timeout = timeout || gotOptions.timeout; // eslint-disable-line no-param-reassign
     return gotOptions;
+  },
+  async issueRefreshToken(ctx, client, code) {
+    if (!client.grantTypes.includes('refresh_token')) {
+      return false;
+    }
+
+    return code.scopes.has('offline_access') || (client.applicationType === 'web' && client.tokenEndpointAuthMethod === 'none');
   },
   whitelistedJWA,
 };

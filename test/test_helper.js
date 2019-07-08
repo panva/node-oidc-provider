@@ -352,7 +352,7 @@ module.exports = function testHelper(dir, { config: base = path.basename(dir), m
       expect(body).to.have.property('error_description', error_description);
       expect(wwwAuth).to.match(new RegExp(`^Bearer realm="${issuer}"`));
       let assert = expect(wwwAuth);
-      if (error_description === 'no bearer auth mechanism provided') {
+      if (error_description === 'no auth mechanism provided') {
         assert = assert.not.to;
       } else {
         assert = assert.to;

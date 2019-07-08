@@ -29,7 +29,7 @@ describe('features.certificateBoundAccessTokens', () => {
         clientId: 'client',
         scope: 'openid',
       });
-      at.setS256Thumbprint(crt);
+      at.setThumbprint('x5t', crt);
 
       const bearer = await at.save();
 
@@ -56,7 +56,7 @@ describe('features.certificateBoundAccessTokens', () => {
         clientId: 'client',
         scope: 'openid',
       });
-      at.setS256Thumbprint(crt);
+      at.setThumbprint('x5t', crt);
 
       const token = await at.save();
 
@@ -67,6 +67,7 @@ describe('features.certificateBoundAccessTokens', () => {
         .expect(200)
         .expect(({ body }) => {
           expect(body).to.have.property('cnf');
+          expect(body).to.have.property('token_type', 'Bearer');
           expect(body.cnf).to.have.property('x5t#S256');
         });
     });
