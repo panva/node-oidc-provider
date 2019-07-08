@@ -406,5 +406,13 @@ describe('registration features', () => {
           expect(spy.firstCall.args[0].clientId).to.equal(this.clientId);
         });
     });
+
+    it('cannot read non-dynamic clients', async function () {
+      const rat = new (this.provider.RegistrationAccessToken)({ clientId: 'client' });
+      const bearer = await rat.save();
+      return this.agent.get('/reg/client')
+        .auth(bearer, { type: 'bearer' })
+        .expect(this.failWith(403, 'invalid_request', 'client does not have permission to read its record'));
+    });
   });
 });

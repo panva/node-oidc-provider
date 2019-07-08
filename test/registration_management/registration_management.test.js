@@ -204,7 +204,7 @@ describe('OAuth 2.0 Dynamic Client Registration Management Protocol', () => {
         .send(updateProperties(client.metadata(), {
           redirect_uris: ['https://client.example.com/foobar/cb'],
         }))
-        .expect(this.failWith(403, 'invalid_request', 'this client is not allowed to update its records'));
+        .expect(this.failWith(403, 'invalid_request', 'client does not have permission to update its record'));
     });
 
     describe('rotateRegistrationAccessToken', () => {
@@ -322,7 +322,7 @@ describe('OAuth 2.0 Dynamic Client Registration Management Protocol', () => {
       const bearer = await rat.save();
       return this.agent.del('/reg/client')
         .auth(bearer, { type: 'bearer' })
-        .expect(this.failWith(403, 'invalid_request', 'this client is not allowed to delete itself'));
+        .expect(this.failWith(403, 'invalid_request', 'client does not have permission to delete its record'));
     });
   });
 });
