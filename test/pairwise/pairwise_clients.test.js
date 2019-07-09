@@ -163,7 +163,7 @@ describe('pairwise features', () => {
         }, (err) => {
           expect(err).to.be.ok;
           expect(err.message).to.eq('invalid_client_metadata');
-          expect(err.error_description).to.eq('could not load sector_identifier_uri (Unexpected token n in JSON at position 2 in "https://client.example.com:443/file_of_redirect_uris": \n{ not a valid json...)');
+          expect(err.error_description).to.eq('could not load sector_identifier_uri (Unexpected token n in JSON at position 2 in "https://client.example.com/file_of_redirect_uris": \n{ not a valid json...)');
         });
       });
 
