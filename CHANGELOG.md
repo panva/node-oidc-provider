@@ -2,6 +2,22 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+# [6.1.0](https://github.com/panva/node-oidc-provider/compare/v6.0.3...v6.1.0) (2019-07-10)
+
+
+### Bug Fixes
+
+* authorization header scheme is checked case-insensitive ([773ec52](https://github.com/panva/node-oidc-provider/commit/773ec52))
+* block static client registration read action (edgiest of cases) ([18db430](https://github.com/panva/node-oidc-provider/commit/18db430))
+* update dependencies, plug reported lodash vulnerability ([a2cdfd0](https://github.com/panva/node-oidc-provider/commit/a2cdfd0))
+
+
+### Features
+
+* add experimental support for DPoP ([61edb8c](https://github.com/panva/node-oidc-provider/commit/61edb8c))
+
+
+
 ## [6.0.3](https://github.com/panva/node-oidc-provider/compare/v6.0.2...v6.0.3) (2019-07-04)
 
 
