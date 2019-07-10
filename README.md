@@ -46,10 +46,11 @@ enabled by default, check the configuration section on how to enable them.
 The following drafts/experimental specifications are implemented by oidc-provider.
 - [JWT Response for OAuth Token Introspection - draft 03][jwt-introspection]
 - [JWT Secured Authorization Response Mode for OAuth 2.0 (JARM) - draft 02][jarm]
+- [OAuth 2.0 Demonstration of Proof-of-Possession at the Application Layer - individual draft 02][dpop]
 - [OAuth 2.0 Device Authorization Grant (Device Flow) - draft 15][device-flow]
-- [OAuth 2.0 Mutual TLS Client Authentication and Certificate Bound Access Tokens - draft 12][mtls]
+- [OAuth 2.0 Mutual TLS Client Authentication and Certificate Bound Access Tokens - draft 15][mtls]
 - [OAuth 2.0 Resource Indicators - draft 02][resource-indicators]
-- [OAuth 2.0 Web Message Response Mode - draft 00][wmrm]
+- [OAuth 2.0 Web Message Response Mode - individual draft 00][wmrm]
 - [OpenID Connect Back-Channel Logout 1.0 - draft 04][backchannel-logout]
 - [OpenID Connect Front-Channel Logout 1.0 - draft 02][frontchannel-logout]
 - [OpenID Connect Session Management 1.0 - draft 28][session-management]
@@ -183,7 +184,8 @@ See the list of available emitted [event names](/docs/events.md) and their descr
 [sponsor-auth0]: https://auth0.com/overview?utm_source=GHsponsor&utm_medium=GHsponsor&utm_campaign=oidc-provider&utm_content=auth
 [suggest-feature]: https://github.com/panva/node-oidc-provider/issues/new?template=feature-request.md
 [bug]: https://github.com/panva/node-oidc-provider/issues/new?template=bug-report.md
-[mtls]: https://tools.ietf.org/html/draft-ietf-oauth-mtls-14
+[mtls]: https://tools.ietf.org/html/draft-ietf-oauth-mtls-15
+[dpop]: https://tools.ietf.org/html/draft-fett-oauth-dpop-02
 [resource-indicators]: https://tools.ietf.org/html/draft-ietf-oauth-resource-indicators-02
 [jarm]: https://openid.net/specs/openid-financial-api-jarm-wd-02.html
 [support-patreon]: https://www.patreon.com/panva

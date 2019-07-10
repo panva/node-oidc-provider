@@ -13,7 +13,7 @@ const tokenEndpointAuthMethods = [
   'private_key_jwt',
   'self_signed_tls_client_auth',
 ];
-tokenEndpointAuthMethods.ack = 14;
+tokenEndpointAuthMethods.ack = 15;
 
 const interactions = policy();
 const selectAccount = new Prompt({
@@ -63,7 +63,7 @@ module.exports = {
   features: {
     devInteractions: { enabled: false },
     backchannelLogout: { enabled: true, ack: 4 },
-    certificateBoundAccessTokens: { enabled: true, ack: 14 },
+    certificateBoundAccessTokens: { enabled: true, ack: 15 },
     claimsParameter: { enabled: true },
     deviceFlow: { enabled: true, ack: 15 },
     dPoP: { enabled: true, ack: 'id-02' },

@@ -308,7 +308,7 @@ in the authorization chain having resolved an accepted scope the server
 will now resolve the request with access_denied error.
 * default `rotateRefreshToken` configuration value
 is now a function with a described policy that follows
-[OAuth 2.0 Security Best Current Practice](https://tools.ietf.org/html/draft-ietf-oauth-security-topics-12)
+[OAuth 2.0 Security Best Current Practice](https://tools.ietf.org/html/draft-ietf-oauth-security-topics-13)
 * removed features.discovery and it is now always-on, no
 point in disabling discovery, ever.
 * logoutPendingSource no longer receives a `timeout`
