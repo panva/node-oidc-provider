@@ -4,7 +4,7 @@ const { createInterface: readline } = require('readline');
 const { inspect } = require('util');
 const { createReadStream, writeFileSync, readFileSync } = require('fs');
 
-const { get } = require('lodash');
+const { get, words } = require('lodash');
 
 const values = require('../lib/helpers/defaults');
 
@@ -287,6 +287,7 @@ const props = [
 
     Object.keys(section).filter(p => p.startsWith('example')).forEach((prop) => {
       const [title, ...content] = section[prop];
+      append(`<a name="${words(`${headingTitle} ${title}`).map(w => w.toLowerCase()).join('-')}"></a>`.replace('\n', ''));
       append(`<details>\n  <summary>(Click to expand) ${title}</summary>\n  <br>\n\n`);
 
       const parts = [];

@@ -457,7 +457,7 @@ location / {
 The provided example and any new instance of oidc-provider will use the basic in-memory adapter for storing issued tokens, codes, user sessions, dynamically registered clients, etc. This is fine as long as you develop, configure and generally just play around since every time you restart your process all information will be lost. As soon as you cannot live with this limitation you will be required to provide your own custom adapter constructor for oidc-provider to use. This constructor will be called for every model accessed the first time it is needed. The API oidc-provider expects is documented [here](/example/my_adapter.js).   
   
 
-<details>
+<a name="adapter-mongo-db-adapter-implementation"></a><details>
   <summary>(Click to expand) MongoDB adapter implementation</summary>
   <br>
 
@@ -466,7 +466,7 @@ See [/example/adapters/mongodb.js](/example/adapters/mongodb.js)
 
 
 </details>
-<details>
+<a name="adapter-redis-adapter-implementation"></a><details>
   <summary>(Click to expand) Redis adapter implementation</summary>
   <br>
 
@@ -475,7 +475,7 @@ See [/example/adapters/redis.js](/example/adapters/redis.js)
 
 
 </details>
-<details>
+<a name="adapter-redis-w-re-json-adapter-implementation"></a><details>
   <summary>(Click to expand) Redis w/ ReJSON adapter implementation</summary>
   <br>
 
@@ -484,7 +484,7 @@ See [/example/adapters/redis_rejson.js](/example/adapters/redis_rejson.js)
 
 
 </details>
-<details>
+<a name="adapter-default-in-memory-adapter-implementation"></a><details>
   <summary>(Click to expand) Default in-memory adapter implementation</summary>
   <br>
 
@@ -505,7 +505,7 @@ _**default value**_:
 ```js
 []
 ```
-<details>
+<a name="clients-available-metadata"></a><details>
   <summary>(Click to expand) Available Metadata</summary>
   <br>
 
@@ -561,7 +561,7 @@ _**recommendation**_: **Provider key rotation** - The following action order is 
  2. reload all your processes
  3. move your new key to the very front of the "keys" array in your JWKS, this means the key will be used for signing after reload
  4. reload all your processes  
-<details>
+<a name="jwks-generating-keys"></a><details>
   <summary>(Click to expand) Generating keys
 </summary>
   <br>
@@ -576,7 +576,7 @@ keystore.generateSync('RSA', 2048, {
 console.log('this is the full private JWKS:\n', keystore.toJWKS(true));
 ```
 </details>
-<details>
+<a name="jwks-generating-keys-for-both-signing-and-encryption"></a><details>
   <summary>(Click to expand) Generating keys for both signing and encryption</summary>
   <br>
 
@@ -614,7 +614,7 @@ Promise.all([
 Enable/disable features. Some features are still either based on draft or experimental RFCs. Enabling those will produce a warning in your console and you must be aware that breaking changes may occur between draft implementations and that those will be published as minor versions of oidc-provider. See the example below on how to acknowledge the specification is a draft (this will remove the warning log) and ensure the provider instance will fail to instantiate if a new version of oidc-provider bundles newer version of the RFC with breaking changes in it.   
   
 
-<details>
+<a name="features-acknowledging-a-draft-experimental-feature"></a><details>
   <summary>(Click to expand) Acknowledging a draft / experimental feature
 </summary>
   <br>
@@ -686,7 +686,7 @@ _**default value**_:
   enabled: false
 }
 ```
-<details>
+<a name="features-certificate-bound-access-tokens-setting-up-the-environment-for-certificate-bound-access-tokens"></a><details>
   <summary>(Click to expand) Setting up the environment for Certificate Bound Access Tokens</summary>
   <br>
 
@@ -1155,7 +1155,7 @@ _**default value**_:
 ```js
 false
 ```
-<details>
+<a name="initial-access-token-to-add-an-adapter-backed-initial-access-token-and-retrive-its-value"></a><details>
   <summary>(Click to expand) To add an adapter backed initial access token and retrive its value
 </summary>
   <br>
@@ -1175,7 +1175,7 @@ _**default value**_:
 ```js
 undefined
 ```
-<details>
+<a name="policies-to-define-registration-and-registration-management-policies"></a><details>
   <summary>(Click to expand) To define registration and registration management policies</summary>
   <br>
 
@@ -1220,7 +1220,7 @@ Note: referenced policies must always be present when encountered on a token, an
 ctx.oidc.entities.RegistrationAccessToken.policies = ['update-policy'];
 ```
 </details>
-<details>
+<a name="policies-using-initial-access-token-policies-for-software-statement-dynamic-client-registration-property"></a><details>
   <summary>(Click to expand) Using Initial Access Token policies for software_statement dynamic client registration property</summary>
   <br>
 
@@ -1321,7 +1321,7 @@ _**default value**_:
 ```js
 false
 ```
-<details>
+<a name="rotate-registration-access-token-function-use"></a><details>
   <summary>(Click to expand) function use
 </summary>
   <br>
@@ -1403,7 +1403,7 @@ _**default value**_:
   enabled: false
 }
 ```
-<details>
+<a name="features-resource-indicators-example-use"></a><details>
   <summary>(Click to expand) Example use</summary>
   <br>
 
@@ -1614,7 +1614,7 @@ _**default value**_:
   token_endpoint_auth_method: 'client_secret_basic'
 }
 ```
-<details>
+<a name="client-defaults-changing-the-default-client-token-endpoint-auth-method"></a><details>
   <summary>(Click to expand) Changing the default client token_endpoint_auth_method</summary>
   <br>
 
@@ -1628,7 +1628,7 @@ To change the default client token_endpoint_auth_method configure `clientDefault
 }
 ```
 </details>
-<details>
+<a name="client-defaults-changing-the-default-client-response-type-to-code-id-token"></a><details>
   <summary>(Click to expand) Changing the default client response type to `code id_token`</summary>
   <br>
 
@@ -1761,7 +1761,7 @@ _**default value**_:
 ```js
 []
 ```
-<details>
+<a name="dynamic-scopes-to-enable-a-dynamic-scope-values-like-api-write-hex-id-and-api-read-hex-id"></a><details>
   <summary>(Click to expand) To enable a dynamic scope values like `api:write:{hex id}` and `api:read:{hex id}`</summary>
   <br>
 
@@ -1801,7 +1801,7 @@ async extraAccessTokenClaims(ctx, token) {
   return undefined;
 }
 ```
-<details>
+<a name="extra-access-token-claims-to-push-additional-claims-to-an-access-token"></a><details>
   <summary>(Click to expand) To push additional claims to an Access Token
 </summary>
   <br>
@@ -1848,7 +1848,7 @@ validator(key, value, metadata) {
   // return not necessary, metadata is already a reference.
 }
 ```
-<details>
+<a name="extra-client-metadata-validator-using-extra-client-metadata-to-allow-software-statement-dynamic-client-registration-property"></a><details>
   <summary>(Click to expand) Using extraClientMetadata to allow software_statement dynamic client registration property
 </summary>
   <br>
@@ -1919,7 +1919,7 @@ _**default value**_:
   ClientCredentials: undefined
 }
 ```
-<details>
+<a name="formats-to-enable-jwt-access-tokens"></a><details>
   <summary>(Click to expand) To enable JWT Access Tokens</summary>
   <br>
 
@@ -1931,7 +1931,7 @@ Configure `formats`:
 { AccessToken: 'jwt' }
 ```
 </details>
-<details>
+<a name="formats-to-enable-paseto-v-2-public-access-tokens"></a><details>
   <summary>(Click to expand) To enable PASETO v2.public Access Tokens</summary>
   <br>
 
@@ -1943,7 +1943,7 @@ Configure `formats`:
 { AccessToken: 'paseto' }
 ```
 </details>
-<details>
+<a name="formats-to-dynamically-decide-on-the-format-used-e-g-only-if-it-is-intended-for-more-audiences"></a><details>
   <summary>(Click to expand) To dynamically decide on the format used, e.g. only if it is intended for more audiences</summary>
   <br>
 
@@ -1980,7 +1980,7 @@ httpOptions(options) {
   return options;
 }
 ```
-<details>
+<a name="http-options-to-change-the-request's-timeout"></a><details>
   <summary>(Click to expand) To change the request's timeout</summary>
   <br>
 
@@ -2300,7 +2300,7 @@ _**default value**_:
 ]
 
 ```
-<details>
+<a name="interactions-policy-default-interaction-policy-description"></a><details>
   <summary>(Click to expand) default interaction policy description</summary>
   <br>
 
@@ -2321,7 +2321,7 @@ The default interaction policy consists of two available prompts, login and cons
 
 
 </details>
-<details>
+<a name="interactions-policy-disabling-default-checks"></a><details>
   <summary>(Click to expand) disabling default checks</summary>
   <br>
 
@@ -2335,7 +2335,7 @@ You may be required to skip (silently accept) some of the consent checks, while 
 
 
 </details>
-<details>
+<a name="interactions-policy-modifying-the-default-interaction-policy"></a><details>
   <summary>(Click to expand) modifying the default interaction policy
 </summary>
   <br>
@@ -2392,7 +2392,7 @@ async issueRefreshToken(ctx, client, code) {
   return client.grantTypes.includes('refresh_token') && code.scopes.has('offline_access');
 }
 ```
-<details>
+<a name="issue-refresh-token-to-always-issue-a-refresh-tokens"></a><details>
   <summary>(Click to expand) To always issue a refresh tokens ...</summary>
   <br>
 
@@ -2536,7 +2536,7 @@ _**default value**_:
   'none'
 ]
 ```
-<details>
+<a name="response-types-supported-values-list"></a><details>
   <summary>(Click to expand) Supported values list</summary>
   <br>
 
@@ -2665,7 +2665,7 @@ _**default value**_:
   'private_key_jwt'
 ]
 ```
-<details>
+<a name="token-endpoint-auth-methods-supported-values-list"></a><details>
   <summary>(Click to expand) Supported values list
 </summary>
   <br>
@@ -2679,7 +2679,7 @@ _**default value**_:
 ]
 ```
 </details>
-<details>
+<a name="token-endpoint-auth-methods-setting-up-the-environment-for-tls-client-auth-and-self-signed-tls-client-auth"></a><details>
   <summary>(Click to expand) Setting up the environment for tls_client_auth and self_signed_tls_client_auth</summary>
   <br>
 
@@ -2762,7 +2762,7 @@ _**default value**_:
   RefreshToken: 1209600
 }
 ```
-<details>
+<a name="ttl-to-resolve-a-ttl-on-runtime-for-each-new-token"></a><details>
   <summary>(Click to expand) To resolve a ttl on runtime for each new token</summary>
   <br>
 
@@ -2807,7 +2807,7 @@ _**default value**_:
   'RSA-OAEP'
 ]
 ```
-<details>
+<a name="whitelisted-jwa-authorization-encryption-alg-values-supported-values-list"></a><details>
   <summary>(Click to expand) Supported values list
 </summary>
   <br>
@@ -2843,7 +2843,7 @@ _**default value**_:
   'A256GCM'
 ]
 ```
-<details>
+<a name="whitelisted-jwa-authorization-encryption-enc-values-supported-values-list"></a><details>
   <summary>(Click to expand) Supported values list
 </summary>
   <br>
@@ -2871,7 +2871,7 @@ _**default value**_:
   'EdDSA'
 ]
 ```
-<details>
+<a name="whitelisted-jwa-authorization-signing-alg-values-supported-values-list"></a><details>
   <summary>(Click to expand) Supported values list
 </summary>
   <br>
@@ -2902,7 +2902,7 @@ _**default value**_:
   'EdDSA'
 ]
 ```
-<details>
+<a name="whitelisted-jwa-d-po-p-signing-alg-values-supported-values-list"></a><details>
   <summary>(Click to expand) Supported values list
 </summary>
   <br>
@@ -2934,7 +2934,7 @@ _**default value**_:
   'RSA-OAEP'
 ]
 ```
-<details>
+<a name="whitelisted-jwa-id-token-encryption-alg-values-supported-values-list"></a><details>
   <summary>(Click to expand) Supported values list
 </summary>
   <br>
@@ -2970,7 +2970,7 @@ _**default value**_:
   'A256GCM'
 ]
 ```
-<details>
+<a name="whitelisted-jwa-id-token-encryption-enc-values-supported-values-list"></a><details>
   <summary>(Click to expand) Supported values list
 </summary>
   <br>
@@ -2998,7 +2998,7 @@ _**default value**_:
   'EdDSA'
 ]
 ```
-<details>
+<a name="whitelisted-jwa-id-token-signing-alg-values-supported-values-list"></a><details>
   <summary>(Click to expand) Supported values list
 </summary>
   <br>
@@ -3032,7 +3032,7 @@ _**default value**_:
   'RSA-OAEP'
 ]
 ```
-<details>
+<a name="whitelisted-jwa-introspection-encryption-alg-values-supported-values-list"></a><details>
   <summary>(Click to expand) Supported values list
 </summary>
   <br>
@@ -3068,7 +3068,7 @@ _**default value**_:
   'A256GCM'
 ]
 ```
-<details>
+<a name="whitelisted-jwa-introspection-encryption-enc-values-supported-values-list"></a><details>
   <summary>(Click to expand) Supported values list
 </summary>
   <br>
@@ -3096,7 +3096,7 @@ _**default value**_:
   'EdDSA'
 ]
 ```
-<details>
+<a name="whitelisted-jwa-introspection-endpoint-auth-signing-alg-values-supported-values-list"></a><details>
   <summary>(Click to expand) Supported values list
 </summary>
   <br>
@@ -3128,7 +3128,7 @@ _**default value**_:
   'EdDSA'
 ]
 ```
-<details>
+<a name="whitelisted-jwa-introspection-signing-alg-values-supported-values-list"></a><details>
   <summary>(Click to expand) Supported values list
 </summary>
   <br>
@@ -3162,7 +3162,7 @@ _**default value**_:
   'RSA-OAEP'
 ]
 ```
-<details>
+<a name="whitelisted-jwa-request-object-encryption-alg-values-supported-values-list"></a><details>
   <summary>(Click to expand) Supported values list
 </summary>
   <br>
@@ -3198,7 +3198,7 @@ _**default value**_:
   'A256GCM'
 ]
 ```
-<details>
+<a name="whitelisted-jwa-request-object-encryption-enc-values-supported-values-list"></a><details>
   <summary>(Click to expand) Supported values list
 </summary>
   <br>
@@ -3226,7 +3226,7 @@ _**default value**_:
   'EdDSA'
 ]
 ```
-<details>
+<a name="whitelisted-jwa-request-object-signing-alg-values-supported-values-list"></a><details>
   <summary>(Click to expand) Supported values list
 </summary>
   <br>
@@ -3259,7 +3259,7 @@ _**default value**_:
   'EdDSA'
 ]
 ```
-<details>
+<a name="whitelisted-jwa-revocation-endpoint-auth-signing-alg-values-supported-values-list"></a><details>
   <summary>(Click to expand) Supported values list
 </summary>
   <br>
@@ -3291,7 +3291,7 @@ _**default value**_:
   'EdDSA'
 ]
 ```
-<details>
+<a name="whitelisted-jwa-token-endpoint-auth-signing-alg-values-supported-values-list"></a><details>
   <summary>(Click to expand) Supported values list
 </summary>
   <br>
@@ -3324,7 +3324,7 @@ _**default value**_:
   'RSA-OAEP'
 ]
 ```
-<details>
+<a name="whitelisted-jwa-userinfo-encryption-alg-values-supported-values-list"></a><details>
   <summary>(Click to expand) Supported values list
 </summary>
   <br>
@@ -3360,7 +3360,7 @@ _**default value**_:
   'A256GCM'
 ]
 ```
-<details>
+<a name="whitelisted-jwa-userinfo-encryption-enc-values-supported-values-list"></a><details>
   <summary>(Click to expand) Supported values list
 </summary>
   <br>
@@ -3388,7 +3388,7 @@ _**default value**_:
   'EdDSA'
 ]
 ```
-<details>
+<a name="whitelisted-jwa-userinfo-signing-alg-values-supported-values-list"></a><details>
   <summary>(Click to expand) Supported values list
 </summary>
   <br>
