@@ -307,10 +307,6 @@ oidc-provider comes with the basic grants implemented, but you can register your
 for example to implement an [OAuth 2.0 Token Exchange][token-exchange]. You can check the standard
 grant factories [here](/lib/actions/grants).
 
-**Note: Since custom grant types are registered after instantiating a Provider instance they can
-only be used by clients loaded by an adapter, statically configured clients will throw
-InvalidClientMetadata errors.**
-
 ```js
 const parameters = [
   'audience', 'resource', 'scope', 'requested_token_type',
@@ -366,20 +362,27 @@ provider.use(async (ctx, next) => {
    * checking `ctx.oidc.route`, the unique route names used are
    *
    * `authorization`
-   * `jwks`
    * `check_session_origin`
    * `check_session`
    * `client_delete`
    * `client_update`
    * `client`
    * `code_verification`
+   * `cors.device_authorization`
+   * `cors.discovery`
+   * `cors.introspection`
+   * `cors.jwks`
+   * `cors.revocation`
+   * `cors.token`
+   * `cors.userinfo`
    * `device_authorization`
    * `device_resume`
    * `discovery`
-   * `end_session`
    * `end_session_confirm`
    * `end_session_success`
+   * `end_session`
    * `introspection`
+   * `jwks`
    * `registration`
    * `resume`
    * `revocation`
@@ -561,6 +564,7 @@ _**recommendation**_: **Provider key rotation** - The following action order is 
  2. reload all your processes
  3. move your new key to the very front of the "keys" array in your JWKS, this means the key will be used for signing after reload
  4. reload all your processes  
+
 <a name="jwks-generating-keys"></a><details>
   <summary>(Click to expand) Generating keys
 </summary>
@@ -1346,7 +1350,7 @@ false
 
 ### features.request
 
-[Core 1.0](https://openid.net/specs/openid-connect-core-1_0.html#RequestObject) - Passing a Request Object by Value  
+[Core 1.0](https://openid.net/specs/openid-connect-core-1_0.html#RequestObject) and [JWT Secured Authorization Request (JAR)](https://tools.ietf.org/html/draft-ietf-oauth-jwsreq-19) - Passing a Request Object by Value  
 
 Enables the use and validations of `request` parameter  
 
@@ -1360,7 +1364,7 @@ _**default value**_:
 
 ### features.requestUri
 
-[Core 1.0](https://openid.net/specs/openid-connect-core-1_0.html#RequestUriParameter) - Passing a Request Object by Reference  
+[Core 1.0](https://openid.net/specs/openid-connect-core-1_0.html#RequestUriParameter) and [JWT Secured Authorization Request (JAR)](https://tools.ietf.org/html/draft-ietf-oauth-jwsreq-19) - Passing a Request Object by Reference  
 
 Enables the use and validations of `request_uri` parameter  
 
@@ -1501,6 +1505,7 @@ _**default value**_:
 Enables/Disables removing frame-ancestors from Content-Security-Policy and X-Frame-Options headers.  
 
 _**recommendation**_: Only enable this if you know what you're doing either in a followup middleware or your app server, otherwise you shouldn't have the need to touch this option.  
+
 
 _**default value**_:
 ```js
@@ -1650,6 +1655,7 @@ A `Number` value (in seconds) describing the allowed system clock skew for valid
 
 _**recommendation**_: Only set this to a reasonable value when needed to cover server-side client and oidc-provider server clock skew. More than 5 minutes (if needed) is probably a sign something else is wrong.  
 
+
 _**default value**_:
 ```js
 0
@@ -1679,6 +1685,7 @@ Options for the [cookie module](https://github.com/pillarjs/cookies#cookiesset-n
 
 _**recommendation**_: Rotate regularly (by prepending new keys) with a reasonable interval and keep a reasonable history of keys to allow for returning user session cookies to still be valid and re-signed  
 
+
 _**default value**_:
 ```js
 []
@@ -1689,6 +1696,7 @@ _**default value**_:
 Options for long-term cookies  
 
 _**recommendation**_: set cookies.keys and cookies.long.signed = true  
+
 
 _**default value**_:
 ```js
@@ -1720,6 +1728,7 @@ _**default value**_:
 Options for short-term cookies  
 
 _**recommendation**_: set cookies.keys and cookies.short.signed = true  
+
 
 _**default value**_:
 ```js
@@ -2444,6 +2453,7 @@ Function used by the OP when resolving pairwise ID Token and Userinfo sub claim 
 
 _**recommendation**_: Since this might be called several times in one request with the same arguments consider using memoization or otherwise caching the result based on account and client ids.  
 
+
 _**default value**_:
 ```js
 async pairwiseIdentifier(ctx, accountId, client) {
@@ -2751,6 +2761,7 @@ Expirations (in seconds, or dynamically returned value) for all token types
 
 _**recommendation**_: Do not set token TTLs longer then they absolutely have to be, the shorter the TTL, the better. Rather than setting crazy high Refresh Token TTL look into `rotateRefreshToken` configuration option which is set up in way that when refresh tokens are regularly used they will have their TTL refreshed (via rotation). This is inline with the [OAuth 2.0 Security Best Current Practice](https://tools.ietf.org/html/draft-ietf-oauth-security-topics-13)  
 
+
 _**default value**_:
 ```js
 {
@@ -2789,6 +2800,7 @@ Configure `ttl` for a given token type with a function like so, this must return
 Fine-tune the algorithms your provider will support by declaring algorithm values for each respective JWA use  
 
 _**recommendation**_: Only allow JWA algs that are necessary. The current defaults are based on recommendations from the [JWA specification](https://tools.ietf.org/html/rfc7518) + enables RSASSA-PSS based on current guidance in FAPI. "none" JWT algs are disabled by default but available if you need them.  
+
 
 ### whitelistedJWA.authorizationEncryptionAlgValues
 

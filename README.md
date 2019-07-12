@@ -30,7 +30,7 @@ enabled by default, check the configuration section on how to enable them.
 - [RFC6749 - OAuth 2.0][oauth2] & [OpenID Connect Core 1.0][core]
   - Authorization (Authorization Code Flow, Implicit Flow, Hybrid Flow)
   - UserInfo Endpoint and ID Tokens including Signing and Encryption
-  - Passing a Request Object by Value or Reference including Signing and Encryption (JAR - JWT Secured Authorization Request)
+  - Passing a Request Object by Value or Reference including Signing and Encryption
   - Public and Pairwise Subject Identifier Types
   - Offline Access / Refresh Token Grant
   - Client Credentials Grant
@@ -38,25 +38,26 @@ enabled by default, check the configuration section on how to enable them.
 - [OpenID Connect Discovery 1.0][discovery]
 - [OpenID Connect Dynamic Client Registration 1.0][registration] and [RFC7591 - OAuth 2.0 Dynamic Client Registration Protocol][oauth2-registration]
 - [OAuth 2.0 Form Post Response Mode][form-post]
-- [RFC7636 - Proof Key for Code Exchange][pkce]
+- [RFC7636 - Proof Key for Code Exchange (PKCE)][pkce]
 - [RFC7009 - OAuth 2.0 Token Revocation][revocation]
 - [RFC7662 - OAuth 2.0 Token Introspection][introspection]
-- [RFC8252 - OAuth 2.0 for Native Apps BCP][oauth-native-apps]
+- [RFC8252 - OAuth 2.0 for Native Apps BCP (AppAuth)][oauth-native-apps]
+- [RFC7592 - OAuth 2.0 Dynamic Client Registration Management Protocol][registration-management]
 
-The following drafts/experimental specifications are implemented by oidc-provider.
+The following draft specifications are implemented by oidc-provider.
 - [JWT Response for OAuth Token Introspection - draft 03][jwt-introspection]
 - [JWT Secured Authorization Response Mode for OAuth 2.0 (JARM) - draft 02][jarm]
-- [OAuth 2.0 Demonstration of Proof-of-Possession at the Application Layer - individual draft 02][dpop]
+- [OAuth 2.0 Demonstration of Proof-of-Possession at the Application Layer (DPoP) - individual draft 02][dpop]
 - [OAuth 2.0 Device Authorization Grant (Device Flow) - draft 15][device-flow]
-- [OAuth 2.0 Mutual TLS Client Authentication and Certificate Bound Access Tokens - draft 15][mtls]
+- [OAuth 2.0 JWT Secured Authorization Request (JAR)][jar]
+- [OAuth 2.0 Mutual TLS Client Authentication and Certificate Bound Access Tokens (MTLS) - draft 15][mtls]
 - [OAuth 2.0 Resource Indicators - draft 02][resource-indicators]
 - [OAuth 2.0 Web Message Response Mode - individual draft 00][wmrm]
 - [OpenID Connect Back-Channel Logout 1.0 - draft 04][backchannel-logout]
 - [OpenID Connect Front-Channel Logout 1.0 - draft 02][frontchannel-logout]
 - [OpenID Connect Session Management 1.0 - draft 28][session-management]
-- [RFC7592 - OAuth 2.0 Dynamic Client Registration Management Protocol (Update and Delete)][registration-management]
 
-Updates to draft and experimental specification versions are released as MINOR library versions,
+Updates to draft specification versions are released as MINOR library versions,
 if you utilize these specification implementations consider using the tilde `~` operator in your
 package.json since breaking changes may be introduced as part of these version updates. Alternatively
 [acknowledge](https://github.com/panva/node-oidc-provider/tree/master/docs/README.md#features) the version and
@@ -179,6 +180,7 @@ See the list of available emitted [event names](/docs/events.md) and their descr
 [oauth-native-apps]: https://tools.ietf.org/html/rfc8252
 [debug-link]: https://github.com/visionmedia/debug
 [wmrm]: https://tools.ietf.org/html/draft-sakimura-oauth-wmrm-00
+[jar]: https://tools.ietf.org/html/draft-ietf-oauth-jwsreq-19
 [device-flow]: https://tools.ietf.org/html/draft-ietf-oauth-device-flow-15
 [jwt-introspection]: https://tools.ietf.org/html/draft-ietf-oauth-jwt-introspection-response-03
 [sponsor-auth0]: https://auth0.com/overview?utm_source=GHsponsor&utm_medium=GHsponsor&utm_campaign=oidc-provider&utm_content=auth

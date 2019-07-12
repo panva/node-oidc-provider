@@ -212,7 +212,7 @@ const props = [
 
     ['recommendation'].forEach((option) => {
       if (section[option]) {
-        append(`_**${option}**_: ${section[option].join(' ')}  \n`);
+        append(`_**${option}**_: ${section[option].join(' ')}  \n\n`);
       }
     });
 
