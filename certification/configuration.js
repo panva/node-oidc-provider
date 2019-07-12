@@ -3,6 +3,7 @@ const crypto = require('crypto');
 const pkg = require('../package.json');
 const whitelistedJWA = JSON.parse(JSON.stringify(require('../lib/consts/jwa')));
 const { interactionPolicy: { Prompt, base: policy } } = require('../lib');
+const { InvalidClientMetadata } = require('../lib/helpers/errors');
 
 const timeout = parseInt(process.env.TIMEOUT, 10);
 const tokenEndpointAuthMethods = [
@@ -13,7 +14,6 @@ const tokenEndpointAuthMethods = [
   'private_key_jwt',
   'self_signed_tls_client_auth',
 ];
-tokenEndpointAuthMethods.ack = 15;
 
 const interactions = policy();
 const selectAccount = new Prompt({
@@ -63,7 +63,24 @@ module.exports = {
   features: {
     devInteractions: { enabled: false },
     backchannelLogout: { enabled: true, ack: 4 },
-    certificateBoundAccessTokens: { enabled: true, ack: 15 },
+    mTLS: {
+      enabled: true,
+      certificateBoundAccessTokens: true,
+      selfSignedTlsClientAuth: true,
+      ack: '15-rc.1',
+      getCertificate(ctx) {
+        return unescape(ctx.get('x-ssl-client-cert').replace(/\+/g, ' '));
+      },
+      certificateAuthorized(ctx) {
+        return ctx.get('x-ssl-client-verify') === 'SUCCESS';
+      },
+      certificateSubjectMatches(ctx, property, expected) {
+        if (property !== 'tls_client_auth_subject_dn') {
+          throw new InvalidClientMetadata(`${property} is not supported by this deployment`);
+        }
+        return ctx.get('x-ssl-client-s-dn') === expected;
+      },
+    },
     claimsParameter: { enabled: true },
     deviceFlow: { enabled: true, ack: 15 },
     dPoP: { enabled: true, ack: 'id-02' },

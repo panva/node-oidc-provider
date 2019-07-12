@@ -135,7 +135,7 @@ describe('Provider configuration', () => {
     it(`validates configuration ${prop} members`, () => {
       expect(() => {
         new Provider('http://localhost:3000', { [prop]: ['foo'] });
-      }).to.throw(`only supported ${prop} are [none,client_secret_basic,client_secret_jwt,client_secret_post,private_key_jwt,tls_client_auth,self_signed_tls_client_auth]`);
+      }).to.throw(`only supported ${prop} are [none,client_secret_basic,client_secret_jwt,client_secret_post,private_key_jwt]`);
     });
   });
 

@@ -25,7 +25,10 @@ describe('Client metadata validation', () => {
   function addClient(meta, configuration) {
     let provider;
     if (configuration) {
-      provider = new Provider('http://localhost', Object.assign({ jwks: global.keystore.toJWKS(true) }, { whitelistedJWA }, configuration));
+      provider = new Provider('http://localhost', Object.assign({
+        jwks: global.keystore.toJWKS(true),
+        whitelistedJWA: cloneDeep(whitelistedJWA),
+      }, configuration));
     } else {
       provider = DefaultProvider;
     }
@@ -470,12 +473,11 @@ describe('Client metadata validation', () => {
         'client_secret_jwt',
         'tls_client_auth',
       ],
+      features: { mTLS: { enabled: true, selfSignedTlsClientAuth: true, tlsClientAuth: true } },
     };
 
     if (!endpointAuthMethodProperty.startsWith('token')) {
-      Object.assign(configuration, {
-        features: { [endpointAuthMethodProperty.split('_')[0]]: { enabled: true } },
-      });
+      Object.assign(configuration.features, { [endpointAuthMethodProperty.split('_')[0]]: { enabled: true } });
     }
 
     context(endpointAuthMethodProperty, function () {
@@ -495,19 +497,23 @@ describe('Client metadata validation', () => {
             allows(this.title, value, {
               tls_client_auth_subject_dn: 'foo',
             }, configuration);
-            rejects(this.title, value, 'tls_client_auth_san_dns is not supported', {
+            allows(this.title, value, {
               tls_client_auth_san_dns: 'foo',
             }, configuration);
-            rejects(this.title, value, 'tls_client_auth_san_uri is not supported', {
+            allows(this.title, value, {
               tls_client_auth_san_uri: 'foo',
             }, configuration);
-            rejects(this.title, value, 'tls_client_auth_san_ip is not supported', {
+            allows(this.title, value, {
               tls_client_auth_san_ip: 'foo',
             }, configuration);
-            rejects(this.title, value, 'tls_client_auth_san_email is not supported', {
+            allows(this.title, value, {
               tls_client_auth_san_email: 'foo',
             }, configuration);
-            rejects(this.title, value, 'tls_client_auth_subject_dn must be provided for tls_client_auth', undefined, configuration);
+            rejects(this.title, value, 'tls_client_auth requires one of the certificate subject value parameters', undefined, configuration);
+            rejects(this.title, value, 'only one tls_client_auth certificate subject value must be provided', {
+              tls_client_auth_san_ip: 'foo',
+              tls_client_auth_san_email: 'foo',
+            }, configuration);
             break;
           default: {
             allows(this.title, value, undefined, configuration);
@@ -971,11 +977,11 @@ describe('Client metadata validation', () => {
     });
   });
 
-  context('features.certificateBoundAccessTokens', () => {
+  context('features.mTLS.certificateBoundAccessTokens', () => {
     context('tls_client_certificate_bound_access_tokens', function () {
       const configuration = {
         features: {
-          certificateBoundAccessTokens: { enabled: true },
+          mTLS: { enabled: true, certificateBoundAccessTokens: true },
         },
       };
 
@@ -1024,6 +1030,96 @@ describe('Client metadata validation', () => {
       mustBeBoolean(this.title, undefined, configuration);
     });
   });
+
+  {
+    const configuration = {
+      features: {
+        mTLS: { enabled: true, tlsClientAuth: true },
+        revocation: { enabled: true },
+        introspection: { enabled: true },
+      },
+      tokenEndpointAuthMethods: ['tls_client_auth', 'client_secret_basic'],
+    };
+    context('tls_client_auth_subject_dn', function () {
+      mustBeString(this.title, undefined, undefined, configuration);
+      allows(this.title, 'foo', {
+        token_endpoint_auth_method: 'tls_client_auth',
+      }, configuration);
+      allows(this.title, 'foo', {
+        revocation_endpoint_auth_method: 'tls_client_auth',
+      }, configuration);
+      allows(this.title, 'foo', {
+        introspection_endpoint_auth_method: 'tls_client_auth',
+      }, configuration);
+      allows(this.title, 'foo', undefined, configuration, (client) => {
+        expect(client.metadata()[this.title]).to.eql(undefined);
+      });
+    });
+
+    context('tls_client_auth_san_dns', function () {
+      mustBeString(this.title, undefined, undefined, configuration);
+      allows(this.title, 'foo', {
+        token_endpoint_auth_method: 'tls_client_auth',
+      }, configuration);
+      allows(this.title, 'foo', {
+        revocation_endpoint_auth_method: 'tls_client_auth',
+      }, configuration);
+      allows(this.title, 'foo', {
+        introspection_endpoint_auth_method: 'tls_client_auth',
+      }, configuration);
+      allows(this.title, 'foo', undefined, configuration, (client) => {
+        expect(client.metadata()[this.title]).to.eql(undefined);
+      });
+    });
+
+    context('tls_client_auth_san_uri', function () {
+      mustBeString(this.title, undefined, undefined, configuration);
+      allows(this.title, 'foo', {
+        token_endpoint_auth_method: 'tls_client_auth',
+      }, configuration);
+      allows(this.title, 'foo', {
+        revocation_endpoint_auth_method: 'tls_client_auth',
+      }, configuration);
+      allows(this.title, 'foo', {
+        introspection_endpoint_auth_method: 'tls_client_auth',
+      }, configuration);
+      allows(this.title, 'foo', undefined, configuration, (client) => {
+        expect(client.metadata()[this.title]).to.eql(undefined);
+      });
+    });
+
+    context('tls_client_auth_san_ip', function () {
+      mustBeString(this.title, undefined, undefined, configuration);
+      allows(this.title, 'foo', {
+        token_endpoint_auth_method: 'tls_client_auth',
+      }, configuration);
+      allows(this.title, 'foo', {
+        revocation_endpoint_auth_method: 'tls_client_auth',
+      }, configuration);
+      allows(this.title, 'foo', {
+        introspection_endpoint_auth_method: 'tls_client_auth',
+      }, configuration);
+      allows(this.title, 'foo', undefined, configuration, (client) => {
+        expect(client.metadata()[this.title]).to.eql(undefined);
+      });
+    });
+
+    context('tls_client_auth_san_email', function () {
+      mustBeString(this.title, undefined, undefined, configuration);
+      allows(this.title, 'foo', {
+        token_endpoint_auth_method: 'tls_client_auth',
+      }, configuration);
+      allows(this.title, 'foo', {
+        revocation_endpoint_auth_method: 'tls_client_auth',
+      }, configuration);
+      allows(this.title, 'foo', {
+        introspection_endpoint_auth_method: 'tls_client_auth',
+      }, configuration);
+      allows(this.title, 'foo', undefined, configuration, (client) => {
+        expect(client.metadata()[this.title]).to.eql(undefined);
+      });
+    });
+  }
 
   context('jwks_uri', function () {
     mustBeString(this.title);

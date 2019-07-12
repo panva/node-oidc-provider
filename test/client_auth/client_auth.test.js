@@ -1047,8 +1047,9 @@ describe('client authentication options', () => {
   describe('tls_client_auth auth', () => {
     it('accepts the auth', function () {
       return this.agent.post(route)
+        .set('x-ssl-client-cert', rsacrt.replace(RegExp('\\r?\\n', 'g'), ''))
         .set('x-ssl-client-verify', 'SUCCESS')
-        .set('x-ssl-client-s-dn', 'foobar')
+        .set('x-ssl-client-san-dns', 'rp.example.com')
         .send({
           client_id: 'client-pki-mtls',
           grant_type: 'implicit',
@@ -1057,10 +1058,8 @@ describe('client authentication options', () => {
         .expect(tokenAuthSucceeded);
     });
 
-    it('fails the auth when ssl-client-verify is not SUCCESS', function () {
+    it('fails the auth when getCertificate() does not return a cert', function () {
       return this.agent.post(route)
-        .set('x-ssl-client-verify', 'FAILED: self signed certificate')
-        .set('x-ssl-client-s-dn', 'foobar')
         .send({
           client_id: 'client-pki-mtls',
           grant_type: 'implicit',
@@ -1069,10 +1068,24 @@ describe('client authentication options', () => {
         .expect(tokenAuthRejected);
     });
 
-    it('fails the auth when ssl-client-s-dn does not match', function () {
+    it('fails the auth when certificateAuthorized() fails', function () {
       return this.agent.post(route)
+        .set('x-ssl-client-cert', rsacrt.replace(RegExp('\\r?\\n', 'g'), ''))
+        .set('x-ssl-client-verify', 'FAILED: self signed certificate')
+        .set('x-ssl-client-san-dns', 'rp.example.com')
+        .send({
+          client_id: 'client-pki-mtls',
+          grant_type: 'implicit',
+        })
+        .type('form')
+        .expect(tokenAuthRejected);
+    });
+
+    it('fails the auth when certificateSubjectMatches() return false', function () {
+      return this.agent.post(route)
+        .set('x-ssl-client-cert', rsacrt.replace(RegExp('\\r?\\n', 'g'), ''))
         .set('x-ssl-client-verify', 'SUCCESS')
-        .set('x-ssl-client-s-dn', 'foobarbaz')
+        .set('x-ssl-client-san-dns', 'foobarbaz')
         .send({
           client_id: 'client-pki-mtls',
           grant_type: 'implicit',

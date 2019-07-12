@@ -39,7 +39,6 @@ If you or your business use oidc-provider, please consider becoming a [Patron][s
   - [jwks ❗](#jwks)
   - [features ❗](#features)
     - [backchannelLogout](#featuresbackchannellogout)
-    - [certificateBoundAccessTokens](#featurescertificateboundaccesstokens)
     - [claimsParameter](#featuresclaimsparameter)
     - [clientCredentials](#featuresclientcredentials)
     - [deviceFlow](#featuresdeviceflow)
@@ -51,6 +50,7 @@ If you or your business use oidc-provider, please consider becoming a [Patron][s
     - [jwtIntrospection](#featuresjwtintrospection)
     - [jwtResponseModes](#featuresjwtresponsemodes)
     - [jwtUserinfo](#featuresjwtuserinfo)
+    - [mTLS](#featuresmtls)
     - [registration](#featuresregistration)
     - [registrationManagement](#featuresregistrationmanagement)
     - [request](#featuresrequest)
@@ -676,79 +676,6 @@ _**default value**_:
 }
 ```
 
-### features.certificateBoundAccessTokens
-
-[draft-ietf-oauth-mtls-15](https://tools.ietf.org/html/draft-ietf-oauth-mtls-15) - OAuth 2.0 Mutual TLS Client Authentication and Certificate Bound Access Tokens  
-
-Enables Certificate Bound Access Tokens. Clients may be registered with `tls_client_certificate_bound_access_tokens` to indicate intention to receive mutual TLS client certificate bound access tokens.   
-  
-
-
-_**default value**_:
-```js
-{
-  enabled: false
-}
-```
-<a name="features-certificate-bound-access-tokens-setting-up-the-environment-for-certificate-bound-access-tokens"></a><details>
-  <summary>(Click to expand) Setting up the environment for Certificate Bound Access Tokens</summary>
-  <br>
-
-
-To enable Certificate Bound Access Tokens the provider expects your TLS-offloading proxy to handle the client certificate validation, parsing, handling, etc. Once set up you are expected to forward `x-ssl-client-cert` header with variable values set by this proxy. An important aspect is to sanitize the inbound request headers at the proxy. <br/><br/> The most common openssl based proxies are Apache and NGINX, with those you're looking to use <br/><br/> __`SSLVerifyClient` (Apache) / `ssl_verify_client` (NGINX)__ with the appropriate configuration value that matches your setup requirements. <br/><br/> Set the proxy request header with variable set as a result of enabling mutual TLS
-  
-
-```nginx
-# NGINX
-proxy_set_header x-ssl-client-cert $ssl_client_cert;
-```
-```apache
-# Apache
-RequestHeader set x-ssl-client-cert ""
-RequestHeader set x-ssl-client-cert "%{SSL_CLIENT_CERT}s"
-```
-You should also consider hosting the endpoints supporting client authentication, on a separate host name or port in order to prevent unintended impact on the TLS behaviour of your other endpoints, e.g. Discovery or the authorization endpoint, by updating the discovery response to add [draft-ietf-oauth-mtls-15](https://tools.ietf.org/html/draft-ietf-oauth-mtls-15) specified `mtls_endpoint_aliases`.
-  
-
-```js
-provider.use(async (ctx, next) => {
-  await next();
-  if (ctx.oidc.route === 'discovery') {
-    ctx.body.mtls_endpoint_aliases = {};
-    const endpointAuthMethodKeys = [
-      'token_endpoint_auth_methods_supported',
-      'introspection_endpoint_auth_methods_supported',
-      'revocation_endpoint_auth_methods_supported',
-    ];
-    // splits `*_endpoint_auth_methods_supported` into two namespaces (mutual-TLS and regular);
-    endpointAuthMethodKeys.forEach((key) => {
-      if (ctx.body[key]) {
-        ctx.body.mtls_endpoint_aliases[key] = ctx.body[key].filter(k => k.endsWith('tls_client_auth'));
-        ctx.body[key] = ctx.body[key].filter(k => !ctx.body.mtls_endpoint_aliases[key].includes(k));
-      }
-    });
-    const mtlsEndpoints = [
-      'userinfo_endpoint',
-      'token_endpoint',
-      'introspection_endpoint',
-      'revocation_endpoint',
-      'device_authorization_endpoint',
-    ];
-    // aliases endpoints accepting client certificates in `mtls_endpoint_aliases`
-    const mtlsOrigin = 'https://mtls.op.example.com';
-    mtlsEndpoints.forEach((key) => {
-      if (ctx.body[key]) {
-        ctx.body.mtls_endpoint_aliases[key] = `${mtlsOrigin}${url.parse(ctx.body[key]).pathname}`;
-      }
-    });
-  }
-});
-```
-When doing that be sure to remove the client provided headers of the same name on the non-mutual TLS enabled host name / port in your proxy setup or block the routes for these there completely.  
-
-
-</details>
-
 ### features.claimsParameter
 
 [Core 1.0](https://openid.net/specs/openid-connect-core-1_0.html#ClaimsParameter) - Requesting Claims using the "claims" Request Parameter  
@@ -1112,6 +1039,153 @@ _**default value**_:
   enabled: true
 }
 ```
+
+### features.mTLS
+
+[draft-ietf-oauth-mtls-15](https://tools.ietf.org/html/draft-ietf-oauth-mtls-15) - OAuth 2.0 Mutual TLS Client Authentication and Certificate Bound Access Tokens  
+
+Enables specific features from the Mutual TLS specification. The three main features have their own specific setting in this feature's configuration object and you must provide helpers for resolving some of the functions which are deployment-specific.   
+  
+
+
+_**default value**_:
+```js
+{
+  certificateAuthorized: [Function: certificateAuthorized], // see expanded details below
+  certificateBoundAccessTokens: false,
+  certificateSubjectMatches: [Function: certificateSubjectMatches], // see expanded details below
+  enabled: false,
+  getCertificate: [Function: getCertificate], // see expanded details below
+  selfSignedTlsClientAuth: false,
+  tlsClientAuth: false
+}
+```
+<details>
+  <summary>(Click to expand) features.mTLS options details</summary>
+  <br>
+
+
+#### certificateAuthorized
+
+Helper used by the OP to determine if the client certificate is verified and comes from a trusted CA for the client. Should return true/false. Only used for `tls_client_auth` client authentication method.   
+  
+
+<a name="certificate-authorized-when-behind-a-tls-terminating-proxy-nginx-apache"></a><details>
+  <summary>(Click to expand) When behind a TLS terminating proxy (nginx/apache)</summary>
+  <br>
+
+
+When behind a TLS terminating proxy it is common that this detail be passed to the application as a sanitized header. This returns the chosen header value provided by nginx's `$ssl_client_verify` or apache's `%{SSL_CLIENT_VERIFY}s`
+  
+
+```js
+function certificateAuthorized(ctx) {
+  return ctx.get('x-ssl-client-verify') === 'SUCCESS';
+}
+```
+</details>
+<a name="certificate-authorized-when-using-node's-https-create-server"></a><details>
+  <summary>(Click to expand) When using node's `https.createServer`
+</summary>
+  <br>
+
+```js
+function certificateAuthorized(ctx) {
+  return ctx.socket.authorized;
+}
+```
+</details>
+
+#### certificateBoundAccessTokens
+
+Enables section 3 & 4 Mutual TLS Client Certificate-Bound Tokens  
+
+
+_**default value**_:
+```js
+false
+```
+
+#### certificateSubjectMatches
+
+Helper used by the OP to determine if the client certificate subject matches the registered client property. Only used for `tls_client_auth` client authentication method.   
+  
+
+<a name="certificate-subject-matches-when-behind-a-tls-terminating-proxy-nginx-apache"></a><details>
+  <summary>(Click to expand) When behind a TLS terminating proxy (nginx/apache)</summary>
+  <br>
+
+
+TLS terminating proxies can pass a header with the Subject DN pretty easily, for Nginx this would be `$ssl_client_s_dn`, for apache `%{SSL_CLIENT_S_DN}s`.
+  
+
+```js
+function certificateSubjectMatches(ctx, property, expected) {
+  switch (property) {
+    case 'tls_client_auth_subject_dn':
+      return ctx.get('x-ssl-client-s-dn') === expected;
+    default:
+      throw new Error(`${property} certificate subject matching not implemented`);
+  }
+}
+```
+</details>
+
+#### getCertificate
+
+Helper used by the OP to retrieve the PEM-formatted client certificate   
+  
+
+<a name="get-certificate-when-behind-a-tls-terminating-proxy-nginx-apache"></a><details>
+  <summary>(Click to expand) When behind a TLS terminating proxy (nginx/apache)</summary>
+  <br>
+
+
+When behind a TLS terminating proxy it is common that the certificate be passed to the application as a sanitized header. This returns the chosen header value provided by nginx's `$ssl_client_cert` or apache's `%{SSL_CLIENT_CERT}s`
+  
+
+```js
+function getCertificate(ctx) {
+  return ctx.get('x-ssl-client-cert');
+}
+```
+</details>
+<a name="get-certificate-when-using-node's-https-create-server"></a><details>
+  <summary>(Click to expand) When using node's `https.createServer`
+</summary>
+  <br>
+
+```js
+function getCertificate(ctx) {
+  const peerCertificate = ctx.socket.getPeerCertificate();
+  if (peerCertificate.raw) {
+    return `-----BEGIN CERTIFICATE-----\n${peerCertificate.raw.toString('base64')}\n-----END CERTIFICATE-----`;
+  }
+}
+```
+</details>
+
+#### selfSignedTlsClientAuth
+
+Enables section 2.2. Self-Signed Certificate Mutual TLS client authentication Method  
+
+
+_**default value**_:
+```js
+false
+```
+
+#### tlsClientAuth
+
+Enables section 2.1. PKI Mutual TLS client authentication method  
+
+
+_**default value**_:
+```js
+false
+```
+
+</details>
 
 ### features.registration
 
@@ -2685,73 +2759,9 @@ _**default value**_:
   'none',
   'client_secret_basic', 'client_secret_post',
   'client_secret_jwt', 'private_key_jwt',
-  'tls_client_auth', 'self_signed_tls_client_auth',
+  'tls_client_auth', 'self_signed_tls_client_auth', // these methods are only available when features.mTLS is configured
 ]
 ```
-</details>
-<a name="token-endpoint-auth-methods-setting-up-the-environment-for-tls-client-auth-and-self-signed-tls-client-auth"></a><details>
-  <summary>(Click to expand) Setting up the environment for tls_client_auth and self_signed_tls_client_auth</summary>
-  <br>
-
-
-To enable mutual TLS based authentication methods the provider expects your TLS-offloading proxy to handle the client certificate validation, parsing, handling, etc. Once set up you are expected to forward `x-ssl-client-verify`, `x-ssl-client-s-dn` and `x-ssl-client-cert` headers with variable values set by this proxy. An important aspect is to sanitize the inbound request headers at the proxy. <br/><br/> The most common openssl based proxies are Apache and NGINX, with those you're looking to use <br/><br/> __`SSLVerifyClient` (Apache) / `ssl_verify_client` (NGINX)__ with the appropriate configuration value that matches your setup requirements. <br/><br/> __`SSLCACertificateFile` or `SSLCACertificatePath` (Apache) / `ssl_client_certificate` (NGINX)__ with the values pointing to your accepted CA Certificates. <br/><br/> Set the proxy request headers with variables set as a result of enabling mutual TLS
-  
-
-```nginx
-# NGINX
-proxy_set_header x-ssl-client-cert $ssl_client_cert;
-proxy_set_header x-ssl-client-verify $ssl_client_verify;
-proxy_set_header x-ssl-client-s-dn $ssl_client_s_dn;
-```
-```apache
-# Apache
-RequestHeader set x-ssl-client-cert ""
-RequestHeader set x-ssl-client-cert "%{SSL_CLIENT_CERT}s"
-RequestHeader set x-ssl-client-verify ""
-RequestHeader set x-ssl-client-verify "%{SSL_CLIENT_VERIFY}s"
-RequestHeader set x-ssl-client-s-dn ""
-RequestHeader set x-ssl-client-s-dn "%{SSL_CLIENT_S_DN}s"
-```
-You should also consider hosting the endpoints supporting client authentication, on a separate host name or port in order to prevent unintended impact on the TLS behaviour of your other endpoints, e.g. Discovery or the authorization endpoint, by updating the discovery response to add [draft-ietf-oauth-mtls-15](https://tools.ietf.org/html/draft-ietf-oauth-mtls-15) specified `mtls_endpoint_aliases`.
-  
-
-```js
-provider.use(async (ctx, next) => {
-  await next();
-  if (ctx.oidc.route === 'discovery') {
-    ctx.body.mtls_endpoint_aliases = {};
-    const endpointAuthMethodKeys = [
-      'token_endpoint_auth_methods_supported',
-      'introspection_endpoint_auth_methods_supported',
-      'revocation_endpoint_auth_methods_supported',
-    ];
-    // splits `*_endpoint_auth_methods_supported` into two namespaces (mutual-TLS and regular);
-    endpointAuthMethodKeys.forEach((key) => {
-      if (ctx.body[key]) {
-        ctx.body.mtls_endpoint_aliases[key] = ctx.body[key].filter(k => k.endsWith('tls_client_auth'));
-        ctx.body[key] = ctx.body[key].filter(k => !ctx.body.mtls_endpoint_aliases[key].includes(k));
-      }
-    });
-    const mtlsEndpoints = [
-      'userinfo_endpoint',
-      'token_endpoint',
-      'introspection_endpoint',
-      'revocation_endpoint',
-      'device_authorization_endpoint',
-    ];
-    // aliases endpoints accepting client certificates in `mtls_endpoint_aliases`
-    const mtlsOrigin = 'https://mtls.op.example.com';
-    mtlsEndpoints.forEach((key) => {
-      if (ctx.body[key]) {
-        ctx.body.mtls_endpoint_aliases[key] = `${mtlsOrigin}${url.parse(ctx.body[key]).pathname}`;
-      }
-    });
-  }
-});
-```
-When doing that be sure to remove the client provided headers of the same name on the non-mutual TLS enabled host name / port in your proxy setup or block the routes for these there completely.  
-
-
 </details>
 
 ### ttl

@@ -72,20 +72,6 @@ let server;
 
     provider.use(async (ctx, next) => {
       if (ctx.secure) {
-        const orig = ctx.get;
-
-        // this instance uses caddy as a webserver, caddy is escaping the cert values when passing
-        // them as headers
-        ctx.get = function get(header) {
-          const value = orig.call(ctx, header);
-
-          if (header.toLowerCase() === 'x-ssl-client-cert') {
-            return unescape(value.replace(/\+/g, ' '));
-          }
-
-          return value;
-        };
-
         await next();
 
         if (ctx.oidc && ctx.oidc.route === 'discovery') {
@@ -96,12 +82,6 @@ let server;
             }
 
             ctx.body.mtls_endpoint_aliases[`${endpoint}_endpoint`] = ctx.body[`${endpoint}_endpoint`].replace('https://', 'https://mtls.');
-            if (ctx.body[`${endpoint}_endpoint_auth_methods_supported`]) {
-              const methods = new Set(ctx.body[`${endpoint}_endpoint_auth_methods_supported`]);
-              methods.delete('self_signed_tls_client_auth');
-              ctx.body[`${endpoint}_endpoint_auth_methods_supported`] = [...methods];
-              ctx.body.mtls_endpoint_aliases[`${endpoint}_endpoint_auth_methods_supported`] = ['self_signed_tls_client_auth'];
-            }
           });
         }
       } else if (ctx.method === 'GET' || ctx.method === 'HEAD') {

@@ -21,7 +21,23 @@ config.tokenEndpointAuthMethods = [
   'tls_client_auth',
   'self_signed_tls_client_auth',
 ];
-config.features = { introspection: { enabled: true } };
+config.features = {
+  introspection: { enabled: true },
+  mTLS: {
+    enabled: true,
+    selfSignedTlsClientAuth: true,
+    tlsClientAuth: true,
+    getCertificate(ctx) {
+      return ctx.get('x-ssl-client-cert');
+    },
+    certificateAuthorized(ctx) {
+      return ctx.get('x-ssl-client-verify') === 'SUCCESS';
+    },
+    certificateSubjectMatches(ctx, key, expected) {
+      return key === 'tls_client_auth_san_dns' && ctx.get('x-ssl-client-san-dns') === expected;
+    },
+  },
+};
 
 module.exports = {
   config,
@@ -68,7 +84,7 @@ module.exports = {
     client_id: 'client-pki-mtls',
     redirect_uris: ['https://client.example.com/cb'],
     token_endpoint_auth_method: 'tls_client_auth',
-    tls_client_auth_subject_dn: 'foobar',
+    tls_client_auth_san_dns: 'rp.example.com',
   }, {
     client_id: 'client-self-signed-mtls',
     redirect_uris: ['https://client.example.com/cb'],

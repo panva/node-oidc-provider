@@ -3,7 +3,13 @@ const { clone } = require('lodash');
 const config = clone(require('../default.config'));
 
 config.features = {
-  certificateBoundAccessTokens: { enabled: true },
+  mTLS: {
+    enabled: true,
+    certificateBoundAccessTokens: true,
+    getCertificate(ctx) {
+      return ctx.get('x-ssl-client-cert');
+    },
+  },
   clientCredentials: { enabled: true },
   introspection: { enabled: true },
   deviceFlow: { enabled: true },

@@ -3,6 +3,16 @@ const { expect } = require('chai');
 const Configuration = require('../../lib/helpers/configuration');
 
 describe('Provider configuration', () => {
+  it('checks that a feature configuration property is valid', () => {
+    expect(() => {
+      new Configuration({ // eslint-disable-line no-new
+        features: {
+          foo: {},
+        },
+      });
+    }).to.throw('Unknown feature configuration: foo');
+  });
+
   // TODO: remove once https://github.com/pillarjs/cookies/issues/109 lands
   it('removes the none cookie options', () => {
     ['none', 'NONE'].forEach((opt) => {

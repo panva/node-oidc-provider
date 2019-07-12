@@ -49,33 +49,6 @@ describe('provider instance', () => {
         });
       }).to.throw('An unacknowledged version of a draft feature is included in this oidc-provider version.');
       expect(console.info.called).to.be.true;
-      console.info.resetHistory();
-
-      expect(() => {
-        const tokenEndpointAuthMethods = [
-          'self_signed_tls_client_auth',
-        ];
-        tokenEndpointAuthMethods.ack = 0;
-
-        new Provider('http://localhost', { // eslint-disable-line no-new
-          tokenEndpointAuthMethods,
-        });
-      }).to.throw('An unacknowledged version of a draft feature is included in this oidc-provider version.');
-      expect(console.info.called).to.be.true;
-      console.info.resetHistory();
-
-      expect(() => {
-        const tokenEndpointAuthMethods = [
-          'tls_client_auth',
-        ];
-        tokenEndpointAuthMethods.ack = 0;
-
-        new Provider('http://localhost', { // eslint-disable-line no-new
-          tokenEndpointAuthMethods,
-        });
-      }).to.throw('An unacknowledged version of a draft feature is included in this oidc-provider version.');
-
-      expect(console.info.called).to.be.true;
     });
     /* eslint-enable */
   });
