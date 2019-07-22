@@ -1469,7 +1469,7 @@ true
 
 ### features.resourceIndicators
 
-[draft-ietf-oauth-resource-indicators-03](https://tools.ietf.org/html/draft-ietf-oauth-resource-indicators-03) - Resource Indicators for OAuth 2.0  
+[draft-ietf-oauth-resource-indicators-04](https://tools.ietf.org/html/draft-ietf-oauth-resource-indicators-04) - Resource Indicators for OAuth 2.0  
 
 Enables the use of `resource` parameter for the authorization and token endpoints. In order for the feature to be any useful you must also use the `audiences` helper function to validate the resource(s) and transform it to the token audience.   
   

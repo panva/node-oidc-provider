@@ -45,13 +45,13 @@ enabled by default, check the configuration section on how to enable them.
 - [RFC7592 - OAuth 2.0 Dynamic Client Registration Management Protocol][registration-management]
 
 The following draft specifications are implemented by oidc-provider.
-- [JWT Response for OAuth Token Introspection - draft 03][jwt-introspection]
+- [JWT Response for OAuth Token Introspection - draft 04][jwt-introspection]
 - [JWT Secured Authorization Response Mode for OAuth 2.0 (JARM) - draft 02][jarm]
 - [OAuth 2.0 Demonstration of Proof-of-Possession at the Application Layer (DPoP) - individual draft 02][dpop]
 - [OAuth 2.0 Device Authorization Grant (Device Flow) - draft 15][device-flow]
 - [OAuth 2.0 JWT Secured Authorization Request (JAR)][jar]
 - [OAuth 2.0 Mutual TLS Client Authentication and Certificate Bound Access Tokens (MTLS) - draft 15][mtls]
-- [OAuth 2.0 Resource Indicators - draft 03][resource-indicators]
+- [OAuth 2.0 Resource Indicators - draft 04][resource-indicators]
 - [OAuth 2.0 Web Message Response Mode - individual draft 00][wmrm]
 - [OpenID Connect Back-Channel Logout 1.0 - draft 04][backchannel-logout]
 - [OpenID Connect Front-Channel Logout 1.0 - draft 02][frontchannel-logout]
@@ -182,13 +182,13 @@ See the list of available emitted [event names](/docs/events.md) and their descr
 [wmrm]: https://tools.ietf.org/html/draft-sakimura-oauth-wmrm-00
 [jar]: https://tools.ietf.org/html/draft-ietf-oauth-jwsreq-19
 [device-flow]: https://tools.ietf.org/html/draft-ietf-oauth-device-flow-15
-[jwt-introspection]: https://tools.ietf.org/html/draft-ietf-oauth-jwt-introspection-response-03
+[jwt-introspection]: https://tools.ietf.org/html/draft-ietf-oauth-jwt-introspection-response-04
 [sponsor-auth0]: https://auth0.com/overview?utm_source=GHsponsor&utm_medium=GHsponsor&utm_campaign=oidc-provider&utm_content=auth
 [suggest-feature]: https://github.com/panva/node-oidc-provider/issues/new?template=feature-request.md
 [bug]: https://github.com/panva/node-oidc-provider/issues/new?template=bug-report.md
 [mtls]: https://tools.ietf.org/html/draft-ietf-oauth-mtls-15
 [dpop]: https://tools.ietf.org/html/draft-fett-oauth-dpop-02
-[resource-indicators]: https://tools.ietf.org/html/draft-ietf-oauth-resource-indicators-03
+[resource-indicators]: https://tools.ietf.org/html/draft-ietf-oauth-resource-indicators-04
 [jarm]: https://openid.net/specs/openid-financial-api-jarm-wd-02.html
 [support-patreon]: https://www.patreon.com/panva
 [support-paypal]: https://www.paypal.me/panva
