@@ -2,6 +2,16 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [6.2.1](https://github.com/panva/node-oidc-provider/compare/v6.2.0...v6.2.1) (2019-07-25)
+
+
+### Bug Fixes
+
+* bump dependencies and compatible draft versions ([97738e3](https://github.com/panva/node-oidc-provider/commit/97738e3))
+* revert missing mTLS cert errors to invalid_grant ([afac459](https://github.com/panva/node-oidc-provider/commit/afac459))
+
+
+
 # [6.2.0](https://github.com/panva/node-oidc-provider/compare/v6.1.2...v6.2.0) (2019-07-21)
 
 
