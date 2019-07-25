@@ -65,7 +65,7 @@ describe('OAuth 2.0 Dynamic Client Registration Management Protocol', () => {
     it('rejects calls with no registration access token', async function () {
       const client = await setup.call(this, {});
       return this.agent.put(`/reg/${client.client_id}`)
-        .expect(this.failWith(400, 'invalid_request', 'no auth mechanism provided'));
+        .expect(this.failWith(400, 'invalid_request', 'no access token provided'));
     });
 
     it('populates ctx.oidc.entities', function (done) {
@@ -312,7 +312,7 @@ describe('OAuth 2.0 Dynamic Client Registration Management Protocol', () => {
     it('rejects calls with no registration access token', async function () {
       const client = await setup.call(this, {});
       return this.agent.del(`/reg/${client.client_id}`)
-        .expect(this.failWith(400, 'invalid_request', 'no auth mechanism provided'));
+        .expect(this.failWith(400, 'invalid_request', 'no access token provided'));
     });
 
     it('cannot delete non-dynamic clients', async function () {

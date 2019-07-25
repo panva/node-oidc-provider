@@ -133,21 +133,21 @@ module.exports = function testHelper(dir, { config: base = path.basename(dir), m
   }
 
   class AuthorizationRequest {
-    constructor(parameters) {
-      this.client_id = parameters.client_id || clients[0].client_id;
-      const c = clients.find((cl) => cl.client_id === this.client_id);
-      this.state = Math.random().toString();
-      this.redirect_uri = parameters.redirect_uri || (c && c.redirect_uris[0]);
-      this.res = {};
-
+    constructor(parameters = {}) {
       if (parameters.claims && typeof parameters.claims !== 'string') {
         parameters.claims = JSON.stringify(parameters.claims); // eslint-disable-line no-param-reassign, max-len
       }
 
       Object.assign(this, parameters);
 
+      this.client_id = parameters.client_id || clients[0].client_id;
+      const c = clients.find((cl) => cl.client_id === this.client_id);
+      this.state = 'state' in parameters ? parameters.state : Math.random().toString();
+      this.redirect_uri = 'redirect_uri' in parameters ? parameters.redirect_uri : parameters.redirect_uri || (c && c.redirect_uris[0]);
+      this.res = {};
+
       if (this.response_type && this.response_type.includes('id_token')) {
-        this.nonce = Math.random().toString();
+        this.nonce = 'nonce' in parameters ? parameters.nonce : Math.random().toString();
       }
 
       Object.defineProperty(this, 'validateClientLocation', {
@@ -182,6 +182,8 @@ module.exports = function testHelper(dir, { config: base = path.basename(dir), m
 
           Object.entries(this).forEach(([key, value]) => {
             if (key === 'res') return;
+            if (key === 'request') return;
+            if (key === 'request_uri') return;
             if (key === 'max_age' && value === 0) {
               expect(interaction.params).not.to.have.property('max_age');
               expect(interaction.params).to.have.property('prompt').that.contains('login');
@@ -338,7 +340,7 @@ module.exports = function testHelper(dir, { config: base = path.basename(dir), m
       expect(body).to.have.property('error_description', error_description);
       expect(wwwAuth).to.match(new RegExp(`^Bearer realm="${issuer}"`));
       let assert = expect(wwwAuth);
-      if (error_description === 'no auth mechanism provided') {
+      if (error_description === 'no access token provided') {
         assert = assert.not.to;
       } else {
         assert = assert.to;

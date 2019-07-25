@@ -64,7 +64,7 @@ describe('userinfo /me', () => {
 
   it('validates access token is provided', function () {
     return this.agent.get('/me')
-      .expect(this.failWith(400, 'invalid_request', 'no auth mechanism provided'));
+      .expect(this.failWith(400, 'invalid_request', 'no access token provided'));
   });
 
   it('validates a client is still valid for a found token', async function () {

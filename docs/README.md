@@ -45,6 +45,7 @@ If you or your business use oidc-provider, please consider becoming a [Patron][s
     - [devInteractions](#featuresdevinteractions)
     - [dPoP](#featuresdpop)
     - [encryption](#featuresencryption)
+    - [fapiRW](#fapi)
     - [frontchannelLogout](#featuresfrontchannellogout)
     - [ietfJWTAccessTokenProfile](#featuresietfjwtaccesstokenprofile)
     - [introspection](#featuresintrospection)
@@ -912,6 +913,23 @@ html>`;
 ### features.encryption
 
 Enables encryption features such as receiving encrypted UserInfo responses, encrypted ID Tokens and allow receiving encrypted Request Objects.  
+
+
+_**default value**_:
+```js
+{
+  enabled: false
+}
+```
+
+### features.fapiRW
+
+[Financial-grade API - Part 2: Read and Write API Security Profile](https://openid.net/specs/openid-financial-api-part-2-ID2.html)  
+
+Enables extra behaviours defined in FAPI Part 1 & 2 that cannot be achieved by other configuration options, namely:   
+ - request object "exp" claim is required
+ - request object must contain all parameters that are also sent as regular parameters
+ - userinfo endpoint becomes a FAPI resource, echoing back the x-fapi-interaction-id header and disabling query string as a mechanism for providing access tokens  
 
 
 _**default value**_:

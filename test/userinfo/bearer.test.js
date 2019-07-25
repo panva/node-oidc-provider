@@ -5,7 +5,7 @@ describe('providing Bearer token', () => {
   context('invalid requests', () => {
     it('nothing provided', function () {
       return this.agent.get('/me')
-        .expect(this.failWith(400, 'invalid_request', 'no auth mechanism provided'));
+        .expect(this.failWith(400, 'invalid_request', 'no access token provided'));
     });
 
     it('provided twice', function () {
