@@ -91,7 +91,7 @@ describe('request parameter features', () => {
             expect(spy.args[0][1]).to.have.property('message', 'invalid_request');
             expect(spy.args[0][1]).to.have.property(
               'error_description',
-              'request or request_uri must be provided for this client',
+              'request object must be used by this client',
             );
           });
       });

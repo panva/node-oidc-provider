@@ -238,7 +238,7 @@ describe('request Uri features', () => {
               expect(spy.args[0][1]).to.have.property('message', 'invalid_request_uri');
               expect(spy.args[0][1]).to.have.property(
                 'error_description',
-                'not registered request_uri provided',
+                'provided request_uri is not whitelisted',
               );
             });
         });
@@ -385,7 +385,7 @@ describe('request Uri features', () => {
               expect(spy.args[0][1]).to.have.property('message', 'invalid_request_uri');
               expect(spy.args[0][1]).to.have.property(
                 'error_description',
-                'not registered request_uri provided',
+                'provided request_uri is not whitelisted',
               );
             });
         });
