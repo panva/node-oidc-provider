@@ -2,6 +2,16 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [6.2.2](https://github.com/panva/node-oidc-provider/compare/v6.2.1...v6.2.2) (2019-08-02)
+
+
+### Bug Fixes
+
+* do not assign the defaulted to response_mode to params ([18867ad](https://github.com/panva/node-oidc-provider/commit/18867ad))
+* dynamic format gets a ctx as a first argument as documented ([f62eb4b](https://github.com/panva/node-oidc-provider/commit/f62eb4b))
+
+
+
 ## [6.2.1](https://github.com/panva/node-oidc-provider/compare/v6.2.0...v6.2.1) (2019-07-25)
 
 
