@@ -1527,7 +1527,6 @@ This example will
     }
   },
   formats: {
-    default: 'opaque',
     AccessToken(ctx, token) {
       if (Array.isArray(token.aud)) {
         return 'jwt';
