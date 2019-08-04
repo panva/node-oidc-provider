@@ -196,6 +196,18 @@ describe('features.resourceIndicators', () => {
         });
       }
 
+      it('runs the allowedPolicy helper to determine whether a resource can be used', function () {
+        return this.agent.post('/device/auth')
+          .send({
+            client_id: 'client',
+            scope: 'openid',
+            resource: 'urn:example:bad',
+          })
+          .type('form')
+          .expect(400)
+          .expect({ error: 'invalid_target', error_description: 'requested resource or resources are not permitted' });
+      });
+
       it('allows for arbitrary validations to be in place in the audiences helper', async function () {
         let deviceCode;
         await this.agent.post('/device/auth')
@@ -335,6 +347,22 @@ describe('features.resourceIndicators', () => {
         });
       }
 
+      it('runs the allowedPolicy helper to determine whether a resource can be used', function () {
+        return this.agent.post('/token')
+          .send({
+            client_id: 'client',
+            device_code: this.dc,
+            grant_type: 'urn:ietf:params:oauth:grant-type:device_code',
+            resource: 'urn:example:bad',
+          })
+          .type('form')
+          .expect(400)
+          .expect({
+            error: 'invalid_target',
+            error_description: 'requested resource or resources are not permitted',
+          });
+      });
+
       it('allows for arbitrary validations to be in place in the audiences helper', async function () {
         await this.agent.post('/token')
           .send({
@@ -428,6 +456,21 @@ describe('features.resourceIndicators', () => {
         expect(error).to.have.property('message', 'only a single audience ("aud") value is permitted for this token type');
       });
     }
+
+    it('runs the allowedPolicy helper to determine whether a resource can be used', function () {
+      return this.agent.post('/token')
+        .send({
+          client_id: 'client',
+          grant_type: 'client_credentials',
+          resource: 'urn:example:bad',
+        })
+        .type('form')
+        .expect(400)
+        .expect({
+          error: 'invalid_target',
+          error_description: 'requested resource or resources are not permitted',
+        });
+    });
 
     it('allows for arbitrary validations to be in place in the audiences helper', async function () {
       await this.agent.post('/token')
@@ -540,10 +583,24 @@ describe('features.resourceIndicators', () => {
         });
       }
 
-      it('allows for arbitrary validations to be in place in the audiences helper', async function () {
-        const spy = sinon.spy();
-        this.provider.once('authorization.success', spy);
+      it('runs the allowedPolicy helper to determine whether a resource can be used', async function () {
+        const auth = new this.AuthorizationRequest({
+          response_type: 'id_token token',
+          scope: 'openid',
+          resource: 'urn:example:bad',
+        });
 
+        await this.wrap({ route: '/auth', verb: 'get', auth })
+          .expect(302)
+          .expect(auth.validateFragment)
+          .expect(auth.validatePresence(['error', 'error_description', 'state']))
+          .expect(auth.validateState)
+          .expect(auth.validateClientLocation)
+          .expect(auth.validateError('invalid_target'))
+          .expect(auth.validateErrorDescription('requested resource or resources are not permitted'));
+      });
+
+      it('allows for arbitrary validations to be in place in the audiences helper', async function () {
         const auth = new this.AuthorizationRequest({
           response_type: 'id_token token',
           scope: 'openid',
@@ -783,10 +840,39 @@ describe('features.resourceIndicators', () => {
         });
       }
 
-      it('allows for arbitrary validations to be in place in the audiences helper', async function () {
-        const spy = sinon.spy();
-        this.provider.once('grant.success', spy);
+      it('runs the allowedPolicy helper to determine whether a resource can be used', async function () {
+        const auth = new this.AuthorizationRequest({
+          response_type: 'code',
+          scope: 'openid',
+        });
 
+        let code;
+        await this.wrap({ route: '/auth', verb: 'get', auth })
+          .expect(302)
+          .expect(auth.validatePresence(['code', 'state']))
+          .expect(auth.validateState)
+          .expect(auth.validateClientLocation)
+          .expect(({ headers: { location } }) => {
+            ({ query: { code } } = url.parse(location, true));
+          });
+
+        await this.agent.post('/token')
+          .send({
+            code,
+            client_id: 'client',
+            grant_type: 'authorization_code',
+            redirect_uri: 'https://client.example.com/cb',
+            resource: 'urn:example:bad',
+          })
+          .type('form')
+          .expect(400)
+          .expect({
+            error: 'invalid_target',
+            error_description: 'requested resource or resources are not permitted',
+          });
+      });
+
+      it('allows for arbitrary validations to be in place in the audiences helper (1/2)', async function () {
         const auth = new this.AuthorizationRequest({
           response_type: 'code',
           scope: 'openid',
@@ -809,6 +895,38 @@ describe('features.resourceIndicators', () => {
             client_id: 'client',
             grant_type: 'authorization_code',
             redirect_uri: 'https://client.example.com/cb',
+          })
+          .type('form')
+          .expect(400)
+          .expect({
+            error: 'invalid_target',
+            error_description: 'resources must be https URIs or URNs',
+          });
+      });
+
+      it('allows for arbitrary validations to be in place in the audiences helper (2/2)', async function () {
+        const auth = new this.AuthorizationRequest({
+          response_type: 'code',
+          scope: 'openid',
+        });
+
+        let code;
+        await this.wrap({ route: '/auth', verb: 'get', auth })
+          .expect(302)
+          .expect(auth.validatePresence(['code', 'state']))
+          .expect(auth.validateState)
+          .expect(auth.validateClientLocation)
+          .expect(({ headers: { location } }) => {
+            ({ query: { code } } = url.parse(location, true));
+          });
+
+        await this.agent.post('/token')
+          .send({
+            code,
+            client_id: 'client',
+            grant_type: 'authorization_code',
+            redirect_uri: 'https://client.example.com/cb',
+            resource: 'http://client.example.com/api',
           })
           .type('form')
           .expect(400)

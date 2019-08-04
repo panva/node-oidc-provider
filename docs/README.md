@@ -1478,6 +1478,7 @@ Enables the use of `resource` parameter for the authorization and token endpoint
 _**default value**_:
 ```js
 {
+  allowedPolicy: [AsyncFunction: allowedPolicy], // see expanded details below
   enabled: false
 }
 ```
@@ -1534,6 +1535,27 @@ This example will
   // ...
 }
 ```
+</details>
+<details>
+  <summary>(Click to expand) features.resourceIndicators options details</summary>
+  <br>
+
+
+#### allowedPolicy
+
+Helper used by the provider to check if a request parameter should be processed, e.g. If it is whitelisted for a given client.   
+  
+
+_**recommendation**_: Only allow pre-registered resource values, to pre-register these you shall use the `extraClientMetadata` configuration option to define a custom metadata and use that to implement your policy using this helper.  
+
+
+_**default value**_:
+```js
+async allowedPolicy(ctx, resources, client) {
+  return true;
+}
+```
+
 </details>
 
 ### features.revocation

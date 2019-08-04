@@ -1,3 +1,4 @@
+const { strict: assert } = require('assert');
 const { URL } = require('url');
 
 const { cloneDeep } = require('lodash');
@@ -10,7 +11,18 @@ config.features = {
   request: { enabled: true },
   clientCredentials: { enabled: true },
   deviceFlow: { enabled: true },
-  resourceIndicators: { enabled: true },
+  resourceIndicators: {
+    enabled: true,
+    allowedPolicy(ctx, resources, client) {
+      assert(Array.isArray(resources));
+      assert(client instanceof ctx.oidc.provider.Client);
+      if (resources.includes('urn:example:bad')) {
+        return false;
+      }
+
+      return true;
+    },
+  },
 };
 
 config.audiences = ({ oidc: { params, route, entities } }, sub, token, use) => {
