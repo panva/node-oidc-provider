@@ -1,6 +1,6 @@
 /* eslint-disable no-new */
 
-const assert = require('assert');
+const { strict: assert } = require('assert');
 
 const { expect } = require('chai');
 

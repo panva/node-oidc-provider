@@ -1,4 +1,4 @@
-const assert = require('assert');
+const { strict: assert } = require('assert');
 
 const jose = require('@panva/jose');
 const moment = require('moment');
