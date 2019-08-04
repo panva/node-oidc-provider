@@ -1998,7 +1998,8 @@ _**default value**_:
 ```js
 {
   AccessToken: undefined,
-  ClientCredentials: undefined
+  ClientCredentials: undefined,
+  jwtAccessTokenSigningAlg: [AsyncFunction: jwtAccessTokenSigningAlg]
 }
 ```
 <a name="formats-to-enable-jwt-access-tokens"></a><details>
@@ -2044,6 +2045,21 @@ Configure `formats`:
 }
 ```
 </details>
+
+### formats.jwtAccessTokenSigningAlg
+
+helper used by the provider to resolve a JWT Access Token signing algorithm. The resolved algorithm must be an asymmetric one supported by the provider's keys in jwks.  
+
+
+_**default value**_:
+```js
+async jwtAccessTokenSigningAlg(ctx, token, client) {
+  if (client && client.idTokenSignedResponseAlg !== 'none' && !client.idTokenSignedResponseAlg.startsWith('HS')) {
+    return client.idTokenSignedResponseAlg;
+  }
+  return 'RS256';
+}
+```
 
 ### httpOptions
 

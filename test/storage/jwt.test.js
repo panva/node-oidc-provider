@@ -350,5 +350,35 @@ if (FORMAT === 'jwt') {
         jti,
       });
     });
+
+    describe('invalid signing alg resolved', () => {
+      before(bootstrap(__dirname));
+
+      ['none', 'HS256', 'HS384', 'HS512'].forEach((alg) => {
+        it(`throws an Error when ${alg} is resolved`, async function () {
+          i(this.provider).configuration('formats').jwtAccessTokenSigningAlg = async () => alg;
+          const token = new this.provider.AccessToken(fullPayload);
+          try {
+            await token.save();
+            throw new Error('expected to fail');
+          } catch (err) {
+            expect(err).to.be.an('error');
+            expect(err.message).to.equal('JWT Access Tokens may not use JWA HMAC algorithms or "none"');
+          }
+        });
+      });
+
+      it('throws an Error when unsupported provider keystore alg is resolved', async function () {
+        i(this.provider).configuration('formats').jwtAccessTokenSigningAlg = async () => 'ES384';
+        const token = new this.provider.AccessToken(fullPayload);
+        try {
+          await token.save();
+          throw new Error('expected to fail');
+        } catch (err) {
+          expect(err).to.be.an('error');
+          expect(err.message).to.equal('invalid alg resolved for JWT Access Token signature, the alg must be an asymmetric one that the provider has in its keystore');
+        }
+      });
+    });
   });
 }
