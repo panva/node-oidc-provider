@@ -2,6 +2,15 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+# [6.3.0](https://github.com/panva/node-oidc-provider/compare/v6.2.2...v6.3.0) (2019-08-04)
+
+
+### Features
+
+* new option for resolving JWT Access Token signing algorithm ([28e85ef](https://github.com/panva/node-oidc-provider/commit/28e85ef))
+
+
+
 ## [6.2.2](https://github.com/panva/node-oidc-provider/compare/v6.2.1...v6.2.2) (2019-08-02)
 
 
