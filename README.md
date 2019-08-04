@@ -45,6 +45,7 @@ enabled by default, check the configuration section on how to enable them.
 - [RFC7592 - OAuth 2.0 Dynamic Client Registration Management Protocol][registration-management]
 
 The following draft specifications are implemented by oidc-provider.
+- [JSON Web Token (JWT) Profile for OAuth 2.0 Access Tokens - draft 02][jwt-at]
 - [JWT Response for OAuth Token Introspection - draft 05][jwt-introspection]
 - [JWT Secured Authorization Response Mode for OAuth 2.0 (JARM) - draft 02][jarm]
 - [OAuth 2.0 Demonstration of Proof-of-Possession at the Application Layer (DPoP) - individual draft 02][dpop]
@@ -190,5 +191,6 @@ See the list of available emitted [event names](/docs/events.md) and their descr
 [dpop]: https://tools.ietf.org/html/draft-fett-oauth-dpop-02
 [resource-indicators]: https://tools.ietf.org/html/draft-ietf-oauth-resource-indicators-05
 [jarm]: https://openid.net/specs/openid-financial-api-jarm-wd-02.html
+[jwt-at]: https://tools.ietf.org/html/draft-ietf-oauth-access-token-jwt-02
 [support-patreon]: https://www.patreon.com/panva
 [support-paypal]: https://www.paypal.me/panva

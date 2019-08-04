@@ -6,7 +6,7 @@ const Mocha = require('mocha');
 const { all: clearRequireCache } = require('clear-module');
 const { sample } = require('lodash');
 
-const FORMAT_REGEXP = /^--format=(\w+)$/;
+const FORMAT_REGEXP = /^--format=([\w-]+)$/;
 const formats = [];
 process.argv.forEach((arg) => {
   if (FORMAT_REGEXP.test(arg)) {
@@ -17,6 +17,7 @@ process.argv.forEach((arg) => {
 if (!formats.length) {
   formats.push('opaque');
   formats.push('jwt');
+  formats.push('jwt-ietf');
   formats.push('paseto');
   formats.push('dynamic');
 }
@@ -44,6 +45,10 @@ async function run() {
     global.keystore.generate('OKP', 'Ed25519'),
   ]);
   const DEFAULTS = require('../lib/helpers/defaults'); // eslint-disable-line global-require
+  if (this.format === 'jwt-ietf' || typeof this.format === 'function') {
+    DEFAULTS.features.ietfJWTAccessTokenProfile.enabled = true;
+    DEFAULTS.features.ietfJWTAccessTokenProfile.ack = 2;
+  }
   DEFAULTS.formats.default = this.format;
   await new Promise((resolve) => {
     global.server = createServer().listen(0);
@@ -74,8 +79,9 @@ async function run() {
 (async () => {
   if (formats.includes('opaque')) await run.call({ format: 'opaque' });
   if (formats.includes('jwt')) await run.call({ format: 'jwt' });
+  if (formats.includes('jwt-ietf')) await run.call({ format: 'jwt-ietf' });
   if (formats.includes('paseto')) await run.call({ format: 'paseto' });
-  if (formats.includes('dynamic')) await run.call({ format: () => sample(['opaque', 'jwt', 'paseto']) });
+  if (formats.includes('dynamic')) await run.call({ format: () => sample(['opaque', 'jwt', 'jwt-ietf', 'paseto']) });
   passed.forEach(pass => console.log('\x1b[32m%s\x1b[0m', pass));
 })()
   .catch((error) => {

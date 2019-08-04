@@ -10,8 +10,8 @@ function decode(b64urljson) {
   return JSON.parse(base64url.decode(b64urljson));
 }
 
-if (FORMAT === 'jwt') {
-  describe('jwt storage', () => {
+if (FORMAT === 'jwt-ietf') {
+  describe('jwt-ietf storage', () => {
     before(bootstrap(__dirname));
     const accountId = 'account';
     const claims = {};
@@ -27,7 +27,7 @@ if (FORMAT === 'jwt') {
     const redirectUri = 'https://rp.example.com/cb';
     const codeChallenge = 'codeChallenge';
     const codeChallengeMethod = 'codeChallengeMethod';
-    const aud = ['foo', 'bar'];
+    const aud = 'foo';
     const gty = 'foo';
     const error = 'access_denied';
     const errorDescription = 'resource owner denied access';
@@ -81,7 +81,7 @@ if (FORMAT === 'jwt') {
         gty,
         iat: number,
         jti: upsert.getCall(0).args[0],
-        jwt: string,
+        'jwt-ietf': string,
         kind,
         scope,
         sid,
@@ -94,12 +94,12 @@ if (FORMAT === 'jwt') {
 
       const { iat, jti, exp } = upsert.getCall(0).args[1];
       const header = decode(jwt.split('.')[0]);
-      expect(header).to.have.property('typ', 'JWT');
+      expect(header).to.have.property('typ', 'at+jwt');
       const payload = decode(jwt.split('.')[1]);
       expect(payload).to.eql({
         ...extra,
         aud,
-        azp: clientId,
+        client_id: clientId,
         exp,
         iat,
         iss: this.provider.issuer,
@@ -133,7 +133,7 @@ if (FORMAT === 'jwt') {
         grantId,
         iat: number,
         jti: upsert.getCall(0).args[0],
-        jwt: string,
+        'jwt-ietf': string,
         kind,
         nonce,
         redirectUri,
@@ -146,10 +146,11 @@ if (FORMAT === 'jwt') {
 
       const { iat, jti, exp } = upsert.getCall(0).args[1];
       const header = decode(jwt.split('.')[0]);
-      expect(header).to.have.property('typ', 'JWT');
+      expect(header).to.have.property('typ', 'at+jwt');
       const payload = decode(jwt.split('.')[1]);
       expect(payload).to.eql({
         aud: clientId,
+        client_id: clientId,
         exp,
         iat,
         iss: this.provider.issuer,
@@ -180,7 +181,7 @@ if (FORMAT === 'jwt') {
         gty,
         iat: number,
         jti: upsert.getCall(0).args[0],
-        jwt: string,
+        'jwt-ietf': string,
         kind,
         nonce,
         resource,
@@ -194,10 +195,11 @@ if (FORMAT === 'jwt') {
 
       const { iat, jti, exp } = upsert.getCall(0).args[1];
       const header = decode(jwt.split('.')[0]);
-      expect(header).to.have.property('typ', 'JWT');
+      expect(header).to.have.property('typ', 'at+jwt');
       const payload = decode(jwt.split('.')[1]);
       expect(payload).to.eql({
         aud: clientId,
+        client_id: clientId,
         exp,
         iat,
         iss: this.provider.issuer,
@@ -235,7 +237,7 @@ if (FORMAT === 'jwt') {
         gty,
         iat: number,
         jti: upsert.getCall(0).args[0],
-        jwt: string,
+        'jwt-ietf': string,
         kind,
         nonce,
         params,
@@ -250,10 +252,11 @@ if (FORMAT === 'jwt') {
 
       const { iat, jti, exp } = upsert.getCall(0).args[1];
       const header = decode(jwt.split('.')[0]);
-      expect(header).to.have.property('typ', 'JWT');
+      expect(header).to.have.property('typ', 'at+jwt');
       const payload = decode(jwt.split('.')[1]);
       expect(payload).to.eql({
         aud: clientId,
+        client_id: clientId,
         exp,
         iat,
         iss: this.provider.issuer,
@@ -275,7 +278,7 @@ if (FORMAT === 'jwt') {
         exp: number,
         iat: number,
         jti: upsert.getCall(0).args[0],
-        jwt: string,
+        'jwt-ietf': string,
         kind,
         scope,
         'x5t#S256': s256,
@@ -285,12 +288,13 @@ if (FORMAT === 'jwt') {
 
       const { iat, jti, exp } = upsert.getCall(0).args[1];
       const header = decode(jwt.split('.')[0]);
-      expect(header).to.have.property('typ', 'JWT');
+      expect(header).to.have.property('typ', 'at+jwt');
       const payload = decode(jwt.split('.')[1]);
       expect(payload).to.eql({
         ...extra,
         aud,
-        azp: clientId,
+        client_id: clientId,
+        sub: clientId,
         exp,
         iat,
         iss: this.provider.issuer,
@@ -316,14 +320,14 @@ if (FORMAT === 'jwt') {
         exp: number,
         iat: number,
         jti: upsert.getCall(0).args[0],
-        jwt: string,
+        'jwt-ietf': string,
         kind,
         policies,
       });
 
       const { iat, jti, exp } = upsert.getCall(0).args[1];
       const header = decode(jwt.split('.')[0]);
-      expect(header).to.have.property('typ', 'JWT');
+      expect(header).to.have.property('typ', 'at+jwt');
       const payload = decode(jwt.split('.')[1]);
       expect(payload).to.eql({
         exp,
@@ -348,16 +352,18 @@ if (FORMAT === 'jwt') {
         exp: number,
         iat: number,
         jti: upsert.getCall(0).args[0],
-        jwt: string,
+        'jwt-ietf': string,
         kind,
       });
 
       const { iat, jti, exp } = upsert.getCall(0).args[1];
       const header = decode(jwt.split('.')[0]);
-      expect(header).to.have.property('typ', 'JWT');
+      expect(header).to.have.property('typ', 'at+jwt');
       const payload = decode(jwt.split('.')[1]);
       expect(payload).to.eql({
         aud: clientId,
+        client_id: clientId,
+        sub: clientId,
         exp,
         iat,
         iss: this.provider.issuer,

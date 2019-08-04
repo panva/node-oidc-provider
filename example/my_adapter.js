@@ -68,8 +68,10 @@ class MyAdapter {
      * - scope {string} - scope value from an authorization request, rejected scopes are removed
      *     from the value
      * - sid {string} - session identifier the token comes from
-     * - x5t#S256 {string} - X.509 Certificate SHA-256 Thumbprint of a certificate bound access or
+     * - 'x5t#S256' {string} - X.509 Certificate SHA-256 Thumbprint of a certificate bound access or
      *     refresh token
+     * - 'jkt#S256' {string} - JWK SHA-256 Thumbprint (according to [RFC7638]) of a DPoP bound
+     *     access or refresh token
      * - gty {string} - [AccessToken, RefreshToken only] space delimited grant values, indicating
      *     the grant type(s) they originate from (implicit, authorization_code, refresh_token or
      *     device_code) the original one is always first, second is refresh_token if refreshed
@@ -88,6 +90,10 @@ class MyAdapter {
      * when `jwt`
      * - same as `opaque` with the addition of
      * - jwt {string} - the JWT value returned to the client
+     *
+     * when `jwt-ietf`
+     * - same as `opaque` with the addition of
+     * - 'jwt-ietf' {string} - the JWT value returned to the client
      *
      * when `paseto`
      * - same as `opaque` with the addition of

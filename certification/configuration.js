@@ -61,8 +61,9 @@ module.exports = {
       'nickname', 'picture', 'preferred_username', 'profile', 'updated_at', 'website', 'zoneinfo'],
   },
   features: {
-    devInteractions: { enabled: false },
     backchannelLogout: { enabled: true, ack: 4 },
+    devInteractions: { enabled: false },
+    ietfJWTAccessTokenProfile: { enabled: true, ack: 2 },
     mTLS: {
       enabled: true,
       certificateBoundAccessTokens: true,
@@ -99,7 +100,7 @@ module.exports = {
     return { 'urn:oidc-provider:example:foo': 'bar' };
   },
   formats: {
-    AccessToken: 'jwt',
+    AccessToken: 'jwt-ietf',
   },
   jwks: {
     keys: [

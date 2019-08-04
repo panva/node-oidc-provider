@@ -324,6 +324,7 @@ module.exports = function testHelper(dir, { config: base = path.basename(dir), m
       case 'paseto':
         return paseto();
       case 'jwt':
+      case 'jwt-ietf':
         return jwt();
       case 'opaque':
         return opaque();
@@ -340,7 +341,7 @@ module.exports = function testHelper(dir, { config: base = path.basename(dir), m
           return opaque();
         }
 
-        throw new Error(`invalid format specified (${FORMAT})`);
+        throw new Error(`unsupported format specified (${FORMAT})`);
     }
   }
 
