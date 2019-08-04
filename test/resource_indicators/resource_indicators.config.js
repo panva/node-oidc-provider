@@ -52,7 +52,7 @@ config.audiences = ({ oidc: { params, route, entities } }, sub, token, use) => {
       }
     });
 
-    return resources;
+    return resources.length === 1 ? resources[0] : resources;
   }
 
   return undefined;

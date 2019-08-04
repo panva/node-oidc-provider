@@ -1471,7 +1471,7 @@ true
 
 [draft-ietf-oauth-resource-indicators-05](https://tools.ietf.org/html/draft-ietf-oauth-resource-indicators-05) - Resource Indicators for OAuth 2.0  
 
-Enables the use of `resource` parameter for the authorization and token endpoints. In order for the feature to be any useful you must also use the `audiences` helper function to validate the resource(s) and transform it to the token audience.   
+Enables the use of `resource` parameter for the authorization and token endpoints. In order for the feature to be any useful you must also use the `audiences` helper function to validate the resource(s) and transform it to the Access Token audience.   
   
 
 
@@ -1528,10 +1528,7 @@ This example will
   },
   formats: {
     AccessToken(ctx, token) {
-      if (Array.isArray(token.aud)) {
-        return 'jwt';
-      }
-      return 'opaque';
+      return token.aud ? 'jwt' : 'opaque';
     }
   },
   // ...
@@ -1628,7 +1625,7 @@ _**default value**_:
 
 ### audiences
 
-Helper used by the OP to push additional audiences to issued Access and ClientCredentials Tokens. The return value should either be falsy to omit adding additional audiences or an array of strings to push.  
+Helper used by the OP to set an audience to issued Access Tokens. The return value should either be falsy use the default audience (client) or an array of string aud values, or a single string aud value.  
 
 
 _**default value**_:
@@ -2026,21 +2023,18 @@ Configure `formats`:
 { AccessToken: 'paseto' }
 ```
 </details>
-<a name="formats-to-dynamically-decide-on-the-format-used-e-g-only-if-it-is-intended-for-more-audiences"></a><details>
-  <summary>(Click to expand) To dynamically decide on the format used, e.g. only if it is intended for more audiences</summary>
+<a name="formats-to-dynamically-decide-on-the-format-used-e-g-only-if-it-is-intended-for-a-resource"></a><details>
+  <summary>(Click to expand) To dynamically decide on the format used, e.g. only if it is intended for a resource</summary>
   <br>
 
 
-Configure `formats`:
+server Configure `formats`:
   
 
 ```js
 {
   AccessToken(ctx, token) {
-    if (Array.isArray(token.aud)) {
-      return 'jwt';
-    }
-    return 'opaque';
+    return token.aud ? 'jwt' : 'opaque';
   }
 }
 ```
