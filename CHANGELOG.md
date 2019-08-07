@@ -2,6 +2,23 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+# [6.4.0](https://github.com/panva/node-oidc-provider/compare/v6.3.0...v6.4.0) (2019-08-07)
+
+
+### Bug Fixes
+
+* paseto formatted access token audience is a single string ([1fd45f5](https://github.com/panva/node-oidc-provider/commit/1fd45f5))
+* properly check if resourceIndicators is enabled ([bbcdca2](https://github.com/panva/node-oidc-provider/commit/bbcdca2))
+
+
+### Features
+
+* added a helper for validating provided resource indicator values ([a97ffdc](https://github.com/panva/node-oidc-provider/commit/a97ffdc)), closes [#487](https://github.com/panva/node-oidc-provider/issues/487)
+* allow audiences helper to return a single string audience ([4c7a3a8](https://github.com/panva/node-oidc-provider/commit/4c7a3a8))
+* draft implementation of IETF JWT Access Token profile ([e690462](https://github.com/panva/node-oidc-provider/commit/e690462))
+
+
+
 # [6.3.0](https://github.com/panva/node-oidc-provider/compare/v6.2.2...v6.3.0) (2019-08-04)
 
 
