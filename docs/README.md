@@ -1503,15 +1503,14 @@ _**default value**_:
   <br>
 
 
-This example will
- - throw based on an OP policy when unrecognized or unauthorized resources are requested
- - transform resources to audience and push them down to the audience of access tokens
- - take both, the parameter and previously granted resources into consideration
+This example
+ - will transform resources to audience and push them down to the audience of access tokens
+ - will take both, the parameter and previously granted resources into consideration
+ - assumes resource parameters are validated using `features.resourceIndicators.allowedPolicy`
   
 
 ```js
 // const { InvalidTarget } = Provider.errors;
-// `resourceAllowedForClient` is the custom OP policy
 // `transform` is mapping the resource values to actual aud values
 {
   // ...
@@ -1533,10 +1532,6 @@ This example will
             break;
           default:
         }
-      }
-      const allowed = await resourceAllowedForClient(resourceParam, grantedResource, client);
-      if (!allowed) {
-        throw new InvalidResource('unauthorized "resource" requested');
       }
       // => array of validated and transformed string audiences or undefined if no audiences
       //    are to be listed
