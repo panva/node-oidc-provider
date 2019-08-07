@@ -88,19 +88,10 @@ module.exports = {
     encryption: { enabled: true },
     frontchannelLogout: { enabled: true, ack: 2 },
     introspection: { enabled: true },
-    jwtIntrospection: { enabled: true, ack: 3 },
-    jwtResponseModes: { enabled: true, ack: 2 },
     registration: { enabled: true },
     request: { enabled: true },
     revocation: { enabled: true },
     sessionManagement: { enabled: true, ack: 28 },
-    webMessageResponseMode: { enabled: true, ack: 'id-00' },
-  },
-  extraAccessTokenClaims() {
-    return { 'urn:oidc-provider:example:foo': 'bar' };
-  },
-  formats: {
-    AccessToken: 'jwt-ietf',
   },
   jwks: {
     keys: [
