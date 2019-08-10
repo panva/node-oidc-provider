@@ -11,12 +11,10 @@ describe('OAuth 2.0 Dynamic Client Registration Management Protocol', () => {
   // setup does not have the provider;
 
   function setup(meta) {
-    const props = Object.assign({
-      redirect_uris: ['https://client.example.com/cb'],
-    }, meta);
+    const props = { redirect_uris: ['https://client.example.com/cb'], ...meta };
 
     return this.agent.post('/reg').send(props).expect(201)
-      .then(res => res.body);
+      .then((res) => res.body);
   }
 
   describe('feature flag', () => {
@@ -73,7 +71,7 @@ describe('OAuth 2.0 Dynamic Client Registration Management Protocol', () => {
     it('populates ctx.oidc.entities', function (done) {
       this.provider.use(this.assertOnce((ctx) => {
         expect(ctx.oidc.entities).to.have.keys('Client', 'RegistrationAccessToken');
-      }, done, ctx => ctx.method === 'PUT'));
+      }, done, (ctx) => ctx.method === 'PUT'));
 
       (async () => {
         const client = await setup.call(this, {});
@@ -239,7 +237,7 @@ describe('OAuth 2.0 Dynamic Client Registration Management Protocol', () => {
           expect(ctx.oidc.entities).to.contain.keys('RotatedRegistrationAccessToken', 'RegistrationAccessToken');
           expect(ctx.oidc.entities.RotatedRegistrationAccessToken)
             .not.to.eql(ctx.oidc.entities.RegistrationAccessToken);
-        }, done, ctx => ctx.method === 'PUT'));
+        }, done, (ctx) => ctx.method === 'PUT'));
 
         (async () => {
           const client = await setup.call(this, {});
@@ -282,7 +280,7 @@ describe('OAuth 2.0 Dynamic Client Registration Management Protocol', () => {
     it('populates ctx.oidc.entities', function (done) {
       this.provider.use(this.assertOnce((ctx) => {
         expect(ctx.oidc.entities).to.have.keys('Client', 'RegistrationAccessToken');
-      }, done, ctx => ctx.method === 'DELETE'));
+      }, done, (ctx) => ctx.method === 'DELETE'));
 
       (async () => {
         const client = await setup.call(this, {});

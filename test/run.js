@@ -82,10 +82,10 @@ async function run() {
   if (formats.includes('jwt-ietf')) await run.call({ format: 'jwt-ietf' });
   if (formats.includes('paseto')) await run.call({ format: 'paseto' });
   if (formats.includes('dynamic')) await run.call({ format: () => sample(['opaque', 'jwt', 'jwt-ietf', 'paseto']) });
-  passed.forEach(pass => console.log('\x1b[32m%s\x1b[0m', pass));
+  passed.forEach((pass) => console.log('\x1b[32m%s\x1b[0m', pass));
 })()
   .catch((error) => {
-    passed.forEach(pass => console.log('\x1b[32m%s\x1b[0m', pass));
+    passed.forEach((pass) => console.log('\x1b[32m%s\x1b[0m', pass));
     if (error instanceof SuiteFailedError) {
       console.log('\x1b[31m%s\x1b[0m', error.message);
     } else {

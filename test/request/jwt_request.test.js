@@ -55,7 +55,7 @@ describe('request parameter features', () => {
           client_id: 'client',
           response_type: 'code',
           redirect_uri: 'https://client.example.com/cb',
-        }, null, 'none', { issuer: 'client', audience: this.provider.issuer }).then(request => this.wrap({
+        }, null, 'none', { issuer: 'client', audience: this.provider.issuer }).then((request) => this.wrap({
           agent: this.agent,
           route,
           verb,
@@ -105,7 +105,7 @@ describe('request parameter features', () => {
           response_type: 'code',
           redirect_uri: 'https://client.example.com/cb',
           max_age: 300,
-        }, null, 'none', { issuer: 'client', audience: this.provider.issuer }).then(request => this.wrap({
+        }, null, 'none', { issuer: 'client', audience: this.provider.issuer }).then((request) => this.wrap({
           agent: this.agent,
           route,
           verb,
@@ -134,7 +134,7 @@ describe('request parameter features', () => {
           response_type: 'code',
           redirect_uri: 'https://client.example.com/cb',
           claims,
-        }, null, 'none', { issuer: 'client', audience: this.provider.issuer }).then(request => this.wrap({
+        }, null, 'none', { issuer: 'client', audience: this.provider.issuer }).then((request) => this.wrap({
           agent: this.agent,
           route,
           verb,
@@ -163,7 +163,7 @@ describe('request parameter features', () => {
           response_type: 'code',
           redirect_uri: 'https://client.example.com/cb',
           claims: { id_token: { email: null } },
-        }, null, 'none', { issuer: 'client', audience: this.provider.issuer }).then(request => this.wrap({
+        }, null, 'none', { issuer: 'client', audience: this.provider.issuer }).then((request) => this.wrap({
           agent: this.agent,
           route,
           verb,
@@ -192,7 +192,7 @@ describe('request parameter features', () => {
           client_id: 'client-with-HS-sig',
           response_type: 'code',
           redirect_uri: 'https://client.example.com/cb',
-        }, key, 'HS256', { issuer: 'client-with-HS-sig', audience: this.provider.issuer }).then(request => this.wrap({
+        }, key, 'HS256', { issuer: 'client-with-HS-sig', audience: this.provider.issuer }).then((request) => this.wrap({
           agent: this.agent,
           route,
           verb,
@@ -215,7 +215,7 @@ describe('request parameter features', () => {
           client_id: 'client-with-HS-sig',
           response_type: 'code',
           redirect_uri: 'https://client.example.com/cb',
-        }, key, 'HS256', { issuer: 'client-with-HS-sig', audience: this.provider.issuer }).then(request => this.wrap({
+        }, key, 'HS256', { issuer: 'client-with-HS-sig', audience: this.provider.issuer }).then((request) => this.wrap({
           agent: this.agent,
           route,
           verb,
@@ -286,7 +286,7 @@ describe('request parameter features', () => {
           response_type: 'code',
           request: 'request inception',
           redirect_uri: 'https://client.example.com/cb',
-        }, null, 'none', { issuer: 'client', audience: this.provider.issuer }).then(request => this.wrap({
+        }, null, 'none', { issuer: 'client', audience: this.provider.issuer }).then((request) => this.wrap({
           agent: this.agent,
           route,
           verb,
@@ -317,7 +317,7 @@ describe('request parameter features', () => {
           response_type: 'code',
           request_uri: 'request uri inception',
           redirect_uri: 'https://client.example.com/cb',
-        }, null, 'none', { issuer: 'client', audience: this.provider.issuer }).then(request => this.wrap({
+        }, null, 'none', { issuer: 'client', audience: this.provider.issuer }).then((request) => this.wrap({
           agent: this.agent,
           route,
           verb,
@@ -348,7 +348,7 @@ describe('request parameter features', () => {
           response_type: 'code',
           redirect_uri: 'https://client.example.com/cb',
           resource: ['https://rp.example.com/api'],
-        }, null, 'none', { issuer: 'client', audience: this.provider.issuer }).then(request => this.wrap({
+        }, null, 'none', { issuer: 'client', audience: this.provider.issuer }).then((request) => this.wrap({
           agent: this.agent,
           route,
           verb,
@@ -374,7 +374,7 @@ describe('request parameter features', () => {
             response_type: 'code',
             response_mode: 'fragment',
             redirect_uri: 'https://client.example.com/cb',
-          }, null, 'none', { issuer: 'client', audience: this.provider.issuer }).then(request => this.wrap({
+          }, null, 'none', { issuer: 'client', audience: this.provider.issuer }).then((request) => this.wrap({
             agent: this.agent,
             route,
             verb,
@@ -399,7 +399,7 @@ describe('request parameter features', () => {
             response_type: 'code',
             redirect_uri: 'https://client.example.com/cb',
             response_mode: 'foo',
-          }, null, 'none', { issuer: 'client2', audience: this.provider.issuer }).then(request => this.wrap({
+          }, null, 'none', { issuer: 'client2', audience: this.provider.issuer }).then((request) => this.wrap({
             agent: this.agent,
             route,
             verb,
@@ -429,7 +429,7 @@ describe('request parameter features', () => {
             client_id: 'client',
             response_type: 'id_token',
             redirect_uri: 'https://client.example.com/cb',
-          }, null, 'none', { issuer: 'client', audience: this.provider.issuer }).then(request => this.wrap({
+          }, null, 'none', { issuer: 'client', audience: this.provider.issuer }).then((request) => this.wrap({
             agent: this.agent,
             route,
             verb,
@@ -460,7 +460,7 @@ describe('request parameter features', () => {
             response_type: 'code',
             redirect_uri: 'https://client.example.com/cb',
             state: 'foobar',
-          }, null, 'none', { issuer: 'client2', audience: this.provider.issuer }).then(request => this.wrap({
+          }, null, 'none', { issuer: 'client2', audience: this.provider.issuer }).then((request) => this.wrap({
             agent: this.agent,
             route,
             verb,
@@ -492,7 +492,7 @@ describe('request parameter features', () => {
           client_id: 'client2',
           response_type: 'code',
           redirect_uri: 'https://client.example.com/cb',
-        }, null, 'none', { issuer: 'client2', audience: this.provider.issuer }).then(request => this.wrap({
+        }, null, 'none', { issuer: 'client2', audience: this.provider.issuer }).then((request) => this.wrap({
           agent: this.agent,
           route,
           verb,
@@ -545,7 +545,7 @@ describe('request parameter features', () => {
           client_id: 'client-with-HS-sig',
           response_type: 'code',
           redirect_uri: 'https://client.example.com/cb',
-        }, null, 'none', { issuer: 'client-with-HS-sig', audience: this.provider.issuer }).then(request => this.wrap({
+        }, null, 'none', { issuer: 'client-with-HS-sig', audience: this.provider.issuer }).then((request) => this.wrap({
           agent: this.agent,
           route,
           verb,
@@ -577,7 +577,7 @@ describe('request parameter features', () => {
           client_id: 'client',
           response_type: 'code',
           redirect_uri: 'https://client.example.com/cb',
-        }, key, 'HS384', { issuer: 'client', audience: this.provider.issuer }).then(request => this.wrap({
+        }, key, 'HS384', { issuer: 'client', audience: this.provider.issuer }).then((request) => this.wrap({
           agent: this.agent,
           route,
           verb,
@@ -607,7 +607,7 @@ describe('request parameter features', () => {
           client_id: 'client',
           response_type: 'code',
           redirect_uri: 'https://client.example.com/cb',
-        }, key, 'HS256', { issuer: 'client', audience: this.provider.issuer }).then(request => this.wrap({
+        }, key, 'HS256', { issuer: 'client', audience: this.provider.issuer }).then((request) => this.wrap({
           agent: this.agent,
           route,
           verb,
@@ -635,7 +635,7 @@ describe('request parameter features', () => {
           response_type: 'code',
           redirect_uri: 'https://client.example.com/cb',
           registration: 'foo',
-        }, null, 'none', { issuer: 'client', audience: this.provider.issuer }).then(request => this.wrap({
+        }, null, 'none', { issuer: 'client', audience: this.provider.issuer }).then((request) => this.wrap({
           agent: this.agent,
           route,
           verb,
@@ -666,7 +666,7 @@ describe('request parameter features', () => {
           unrecognized: true,
           response_type: 'code',
           redirect_uri: 'https://client.example.com/cb',
-        }, key, 'HS256', { issuer: 'client-with-HS-sig', audience: this.provider.issuer }).then(request => this.wrap({
+        }, key, 'HS256', { issuer: 'client-with-HS-sig', audience: this.provider.issuer }).then((request) => this.wrap({
           agent: this.agent,
           route,
           verb,

@@ -25,19 +25,21 @@ describe('Client metadata validation', () => {
   function addClient(meta, configuration) {
     let provider;
     if (configuration) {
-      provider = new Provider('http://localhost', Object.assign({
+      provider = new Provider('http://localhost', ({
         jwks: global.keystore.toJWKS(true),
         whitelistedJWA: cloneDeep(whitelistedJWA),
-      }, configuration));
+        ...configuration,
+      }));
     } else {
       provider = DefaultProvider;
     }
 
-    return i(provider).clientAdd(Object.assign({
+    return i(provider).clientAdd({
       client_id: 'client',
       client_secret: 'its64bytes_____________________________________________________!',
       redirect_uris: ['https://client.example.com/cb'],
-    }, meta));
+      ...meta,
+    });
   }
 
   const fail = () => { throw new Error('expected promise to be rejected'); };
@@ -47,9 +49,7 @@ describe('Client metadata validation', () => {
       let msg = util.format('must be a string, %j provided', value);
       if (meta) msg = util.format(`${msg}, [client %j]`, omit(meta, ['jwks.keys']));
       if (configuration) msg = util.format(`${msg}, [provider %j]`, configuration);
-      it(msg, () => addClient(Object.assign({}, meta, {
-        [prop]: value,
-      }), configuration).then(fail, (err) => {
+      it(msg, () => addClient({ ...meta, [prop]: value }, configuration).then(fail, (err) => {
         if (prop === 'redirect_uris') {
           expect(err.message).to.equal('invalid_redirect_uri');
         } else {
@@ -155,9 +155,7 @@ describe('Client metadata validation', () => {
     let msg = util.format('passes %j', value);
     if (meta) msg = util.format(`${msg}, [client %j]`, omit(meta, ['jwks.keys']));
     if (configuration) msg = util.format(`${msg}, [provider %j]`, configuration);
-    it(msg, () => addClient(Object.assign({}, meta, {
-      [prop]: value,
-    }), configuration).then(assertion, (err) => {
+    it(msg, () => addClient({ ...meta, [prop]: value }, configuration).then(assertion, (err) => {
       if (err instanceof InvalidClientMetadata) {
         throw new Error(`InvalidClientMetadata received ${err.message} ${err.error_description}`);
       }
@@ -168,9 +166,7 @@ describe('Client metadata validation', () => {
     let msg = util.format('rejects %j', value);
     if (meta) msg = util.format(`${msg}, [client %j]`, omit(meta, ['jwks.keys']));
     if (configuration) msg = util.format(`${msg}, [provider %j]`, configuration);
-    it(msg, () => addClient(Object.assign({}, meta, {
-      [prop]: value,
-    }), configuration).then(fail, (err) => {
+    it(msg, () => addClient({ ...meta, [prop]: value }, configuration).then(fail, (err) => {
       if (prop === 'redirect_uris') {
         expect(err.message).to.equal('invalid_redirect_uri');
       } else {
@@ -548,11 +544,12 @@ describe('Client metadata validation', () => {
         rejects(this.title, `${accepted}384`, new RegExp(`^${endpointAuthSigningAlgProperty} must be one of`), {
           [endpointAuthMethodProperty]: method,
           ...additional,
-        }, Object.assign({}, {
+        }, {
           whitelistedJWA: {
             [confProperty]: pull(cloneDeep(whitelistedJWA[confProperty]), `${accepted}384`),
           },
-        }, configuration));
+          ...configuration,
+        });
       });
     });
   });

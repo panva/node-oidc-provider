@@ -136,7 +136,7 @@ module.exports = function testHelper(dir, { config: base = path.basename(dir), m
   class AuthorizationRequest {
     constructor(parameters) {
       this.client_id = parameters.client_id || clients[0].client_id;
-      const c = clients.find(cl => cl.client_id === this.client_id);
+      const c = clients.find((cl) => cl.client_id === this.client_id);
       this.state = Math.random().toString();
       this.redirect_uri = parameters.redirect_uri || (c && c.redirect_uris[0]);
       this.res = {};
@@ -409,17 +409,17 @@ module.exports.passInteractionChecks = (...reasons) => {
     before(function () {
       const { policy } = i(this.provider).configuration('interactions');
 
-      const iChecks = [policy.map(i => i.checks)].flat(Infinity);
+      const iChecks = [policy.map((i) => i.checks)].flat(Infinity);
 
       iChecks
-        .filter(check => reasons.includes(check.reason))
+        .filter((check) => reasons.includes(check.reason))
         .forEach((check) => {
           stubs.push(sinon.stub(check, 'check').returns(false));
         });
     });
 
     after(() => {
-      stubs.forEach(stub => stub.restore());
+      stubs.forEach((stub) => stub.restore());
     });
 
     cb();
@@ -439,6 +439,6 @@ module.exports.skipConsent = () => {
   });
 
   after(() => {
-    stubs.forEach(stub => stub.restore());
+    stubs.forEach((stub) => stub.restore());
   });
 };

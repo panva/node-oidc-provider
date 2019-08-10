@@ -1,3 +1,5 @@
+/* eslint-disable max-classes-per-file */
+
 const map = new Map();
 
 map.del = function (...args) {

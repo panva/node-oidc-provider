@@ -434,7 +434,7 @@ describe('client authentication options', () => {
         aud: this.provider.issuer + this.provider.pathFor('token'),
         sub: 'client-jwt-secret',
         iss: 'client-jwt-secret',
-      }, this.key, 'HS256', { expiresIn: 60 }).then(assertion => this.agent.post(route)
+      }, this.key, 'HS256', { expiresIn: 60 }).then((assertion) => this.agent.post(route)
         .send({
           client_assertion: assertion,
           grant_type: 'implicit',
@@ -451,7 +451,7 @@ describe('client authentication options', () => {
           aud: this.provider.issuer,
           sub: 'client-jwt-secret',
           iss: 'client-jwt-secret',
-        }, this.key, 'HS256', { expiresIn: 60 }).then(assertion => this.agent.post(route)
+        }, this.key, 'HS256', { expiresIn: 60 }).then((assertion) => this.agent.post(route)
           .send({
             client_assertion: assertion,
             grant_type: 'implicit',
@@ -467,7 +467,7 @@ describe('client authentication options', () => {
           aud: this.provider.issuer + this.provider.pathFor('introspection'),
           sub: 'client-jwt-secret',
           iss: 'client-jwt-secret',
-        }, this.key, 'HS256', { expiresIn: 60 }).then(assertion => this.agent.post('/token/introspection')
+        }, this.key, 'HS256', { expiresIn: 60 }).then((assertion) => this.agent.post('/token/introspection')
           .send({
             client_assertion: assertion,
             token: 'foo',
@@ -483,7 +483,7 @@ describe('client authentication options', () => {
           aud: this.provider.issuer + this.provider.pathFor('token'),
           sub: 'client-jwt-secret',
           iss: 'client-jwt-secret',
-        }, this.key, 'HS256', { expiresIn: 60 }).then(assertion => this.agent.post('/token/introspection')
+        }, this.key, 'HS256', { expiresIn: 60 }).then((assertion) => this.agent.post('/token/introspection')
           .send({
             client_assertion: assertion,
             token: 'foo',
@@ -499,7 +499,7 @@ describe('client authentication options', () => {
           aud: [this.provider.issuer],
           sub: 'client-jwt-secret',
           iss: 'client-jwt-secret',
-        }, this.key, 'HS256', { expiresIn: 60 }).then(assertion => this.agent.post(route)
+        }, this.key, 'HS256', { expiresIn: 60 }).then((assertion) => this.agent.post(route)
           .send({
             client_assertion: assertion,
             grant_type: 'implicit',
@@ -515,7 +515,7 @@ describe('client authentication options', () => {
           aud: [this.provider.issuer + this.provider.pathFor('introspection')],
           sub: 'client-jwt-secret',
           iss: 'client-jwt-secret',
-        }, this.key, 'HS256', { expiresIn: 60 }).then(assertion => this.agent.post('/token/introspection')
+        }, this.key, 'HS256', { expiresIn: 60 }).then((assertion) => this.agent.post('/token/introspection')
           .send({
             client_assertion: assertion,
             token: 'foo',
@@ -531,7 +531,7 @@ describe('client authentication options', () => {
           aud: [this.provider.issuer + this.provider.pathFor('token')],
           sub: 'client-jwt-secret',
           iss: 'client-jwt-secret',
-        }, this.key, 'HS256', { expiresIn: 60 }).then(assertion => this.agent.post('/token/introspection')
+        }, this.key, 'HS256', { expiresIn: 60 }).then((assertion) => this.agent.post('/token/introspection')
           .send({
             client_assertion: assertion,
             token: 'foo',
@@ -550,7 +550,7 @@ describe('client authentication options', () => {
         aud: this.provider.issuer + this.provider.pathFor('token'),
         sub: 'client-none',
         iss: 'client-none',
-      }, this.key, 'HS256', { expiresIn: 60 }).then(assertion => this.agent.post(route)
+      }, this.key, 'HS256', { expiresIn: 60 }).then((assertion) => this.agent.post(route)
         .send({
           client_id: 'client-none',
           client_assertion: assertion,
@@ -572,7 +572,7 @@ describe('client authentication options', () => {
         aud: this.provider.issuer + this.provider.pathFor('token'),
         sub: 'client-jwt-secret',
         iss: 'client-jwt-secret',
-      }, this.key, 'HS256', { expiresIn: 60 }).then(assertion => this.agent.post(route)
+      }, this.key, 'HS256', { expiresIn: 60 }).then((assertion) => this.agent.post(route)
         .auth('client-basic', 'secret')
         .send({
           client_assertion: assertion,
@@ -593,7 +593,7 @@ describe('client authentication options', () => {
         aud: this.provider.issuer + this.provider.pathFor('token'),
         sub: 'client-jwt-secret',
         iss: 'client-jwt-secret',
-      }, this.key, 'HS256', { expiresIn: 60 }).then(assertion => this.agent.post(route)
+      }, this.key, 'HS256', { expiresIn: 60 }).then((assertion) => this.agent.post(route)
         .send({
           client_assertion: assertion,
           grant_type: 'implicit',
@@ -614,7 +614,7 @@ describe('client authentication options', () => {
         aud: [this.provider.issuer + this.provider.pathFor('token')],
         sub: 'client-jwt-secret',
         iss: 'client-jwt-secret',
-      }, this.key, 'HS256', { expiresIn: 60 }).then(assertion => this.agent.post(route)
+      }, this.key, 'HS256', { expiresIn: 60 }).then((assertion) => this.agent.post(route)
         .send({
           client_assertion: assertion,
           grant_type: 'implicit',
@@ -651,7 +651,7 @@ describe('client authentication options', () => {
         exp: '',
       }, this.key, 'HS256', {
         // expiresIn: 60
-      }).then(assertion => this.agent.post(route)
+      }).then((assertion) => this.agent.post(route)
         .send({
           client_assertion: assertion,
           grant_type: 'implicit',
@@ -675,7 +675,7 @@ describe('client authentication options', () => {
         iss: 'client-jwt-secret',
       }, this.key, 'HS256', {
         expiresIn: 60,
-      }).then(assertion => this.agent.post(route)
+      }).then((assertion) => this.agent.post(route)
         .send({
           client_assertion: assertion,
           grant_type: 'implicit',
@@ -700,7 +700,7 @@ describe('client authentication options', () => {
         iss: 'client-jwt-secret',
       }, this.key, 'HS256', {
         expiresIn: 60,
-      }).then(assertion => this.agent.post(route)
+      }).then((assertion) => this.agent.post(route)
         .send({
           client_assertion: assertion,
           grant_type: 'implicit',
@@ -725,7 +725,7 @@ describe('client authentication options', () => {
         // iss: 'client-jwt-secret',
       }, this.key, 'HS256', {
         expiresIn: 60,
-      }).then(assertion => this.agent.post(route)
+      }).then((assertion) => this.agent.post(route)
         .send({
           client_assertion: assertion,
           grant_type: 'implicit',
@@ -750,7 +750,7 @@ describe('client authentication options', () => {
         iss: 'not equal to clientid',
       }, this.key, 'HS256', {
         expiresIn: 60,
-      }).then(assertion => this.agent.post(route)
+      }).then((assertion) => this.agent.post(route)
         .send({
           client_assertion: assertion,
           grant_type: 'implicit',
@@ -776,7 +776,7 @@ describe('client authentication options', () => {
         iss: 'client-jwt-secret',
       }, this.key, 'HS256', {
         expiresIn: 60,
-      }).then(assertion => this.agent.post(route)
+      }).then((assertion) => this.agent.post(route)
         .send({
           client_assertion: assertion,
           grant_type: 'implicit',
@@ -802,7 +802,7 @@ describe('client authentication options', () => {
         iss: 'client-jwt-secret',
       }, this.key, 'HS256', {
         expiresIn: 60,
-      }).then(assertion => this.agent.post(route)
+      }).then((assertion) => this.agent.post(route)
         .send({
           client_assertion: assertion,
           grant_type: 'implicit',
@@ -823,7 +823,7 @@ describe('client authentication options', () => {
         aud: this.provider.issuer + this.provider.pathFor('token'),
         sub: 'client-jwt-secret',
         iss: 'client-jwt-secret',
-      }, this.key, 'HS256', { expiresIn: 60 }).then(assertion => this.agent.post(route)
+      }, this.key, 'HS256', { expiresIn: 60 }).then((assertion) => this.agent.post(route)
         .send({
           client_assertion: assertion,
           grant_type: 'implicit',
@@ -846,7 +846,7 @@ describe('client authentication options', () => {
         iss: 'client-jwt-secret',
       }, this.key, 'HS256', {
         expiresIn: 60,
-      }).then(assertion => this.agent.post(route)
+      }).then((assertion) => this.agent.post(route)
         .send({
           client_assertion: assertion,
           grant_type: 'implicit',
@@ -868,7 +868,7 @@ describe('client authentication options', () => {
         iss: 'client-jwt-secret',
       }, this.key, 'HS256', {
         expiresIn: 60,
-      }).then(assertion => this.agent.post(route)
+      }).then((assertion) => this.agent.post(route)
         .send({
           client_assertion: assertion,
           grant_type: 'implicit',
@@ -907,7 +907,7 @@ describe('client authentication options', () => {
         iss: 'client-jwt-secret',
       }, this.key, 'HS256', {
         expiresIn: -1,
-      }).then(assertion => this.agent.post(route)
+      }).then((assertion) => this.agent.post(route)
         .send({
           client_assertion: assertion,
           grant_type: 'implicit',
@@ -933,7 +933,7 @@ describe('client authentication options', () => {
         }, this.key, 'HS256', {
           expiresIn: 60,
         })
-          .then(assertion => this.agent.post(route)
+          .then((assertion) => this.agent.post(route)
             .send({
               client_assertion: assertion,
               grant_type: 'implicit',
@@ -977,7 +977,7 @@ describe('client authentication options', () => {
           iss: 'client-jwt-secret',
         }, this.key, 'HS256', {
           expiresIn: 60,
-        }).then(assertion => this.agent.post(route)
+        }).then((assertion) => this.agent.post(route)
           .send({
             client_assertion: assertion,
             grant_type: 'implicit',
@@ -1013,7 +1013,7 @@ describe('client authentication options', () => {
         iss: 'client-jwt-key',
       }, privateKey, 'RS256', {
         expiresIn: 60,
-      }).then(assertion => this.agent.post(route)
+      }).then((assertion) => this.agent.post(route)
         .send({
           client_assertion: assertion,
           grant_type: 'implicit',
@@ -1033,7 +1033,7 @@ describe('client authentication options', () => {
         iat: Math.ceil(Date.now() / 1000) + 5,
       }, privateKey, 'RS256', {
         expiresIn: 60,
-      }).then(assertion => this.agent.post(route)
+      }).then((assertion) => this.agent.post(route)
         .send({
           client_assertion: assertion,
           grant_type: 'implicit',

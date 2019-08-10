@@ -127,7 +127,7 @@ describe('encryption', () => {
             client_id: 'client',
             response_type: 'code',
             redirect_uri: 'https://client.example.com/cb',
-          }, null, 'none', { issuer: 'client', audience: this.provider.issuer }).then(signed => JWT.encrypt(signed, i(this.provider).keystore.get({ kty: 'RSA' }), { enc: 'A128CBC-HS256', alg: 'RSA1_5' })).then(encrypted => this.wrap({
+          }, null, 'none', { issuer: 'client', audience: this.provider.issuer }).then((signed) => JWT.encrypt(signed, i(this.provider).keystore.get({ kty: 'RSA' }), { enc: 'A128CBC-HS256', alg: 'RSA1_5' })).then((encrypted) => this.wrap({
             route,
             verb,
             auth: {
@@ -153,7 +153,7 @@ describe('encryption', () => {
             client_id: 'client',
             response_type: 'code',
             redirect_uri: 'https://client.example.com/cb',
-          }, null, 'none', { issuer: 'client', audience: this.provider.issuer }).then(signed => JWT.encrypt(signed, i(this.provider).keystore.get({ kty: 'RSA' }), { enc: 'A128CBC-HS256', alg: 'RSA-OAEP' })).then(encrypted => this.wrap({
+          }, null, 'none', { issuer: 'client', audience: this.provider.issuer }).then((signed) => JWT.encrypt(signed, i(this.provider).keystore.get({ kty: 'RSA' }), { enc: 'A128CBC-HS256', alg: 'RSA-OAEP' })).then((encrypted) => this.wrap({
             route,
             verb,
             auth: {
@@ -175,7 +175,7 @@ describe('encryption', () => {
             client_id: 'client',
             response_type: 'code',
             redirect_uri: 'https://client.example.com/cb',
-          }, null, 'none', { issuer: 'client', audience: this.provider.issuer }).then(signed => JWT.encrypt(signed, i(this.provider).keystore.get({ kty: 'RSA' }), { enc: 'A192CBC-HS384', alg: 'RSA1_5' })).then(encrypted => this.wrap({
+          }, null, 'none', { issuer: 'client', audience: this.provider.issuer }).then((signed) => JWT.encrypt(signed, i(this.provider).keystore.get({ kty: 'RSA' }), { enc: 'A192CBC-HS384', alg: 'RSA1_5' })).then((encrypted) => this.wrap({
             route,
             verb,
             auth: {
@@ -238,7 +238,7 @@ describe('encryption', () => {
             response_type: 'id_token',
             nonce: 'foobar',
             redirect_uri: 'https://client.example.com/cb',
-          }, null, 'none', { issuer: 'clientSymmetric', audience: this.provider.issuer }).then(signed => JWT.encrypt(signed, client.keystore.get({ alg: 'A128KW' }), { enc: 'A128CBC-HS256', alg: 'A128KW' })).then(encrypted => this.wrap({
+          }, null, 'none', { issuer: 'clientSymmetric', audience: this.provider.issuer }).then((signed) => JWT.encrypt(signed, client.keystore.get({ alg: 'A128KW' }), { enc: 'A128CBC-HS256', alg: 'A128KW' })).then((encrypted) => this.wrap({
             route,
             verb,
             auth: {
@@ -289,7 +289,7 @@ describe('encryption', () => {
             response_type: 'id_token',
             nonce: 'foobar',
             redirect_uri: 'https://client.example.com/cb',
-          }, null, 'none', { issuer: 'clientSymmetric-dir', audience: this.provider.issuer }).then(signed => JWT.encrypt(signed, client.keystore.get({ alg: 'A128CBC-HS256' }), { enc: 'A128CBC-HS256', alg: 'dir' })).then(encrypted => this.wrap({
+          }, null, 'none', { issuer: 'clientSymmetric-dir', audience: this.provider.issuer }).then((signed) => JWT.encrypt(signed, client.keystore.get({ alg: 'A128CBC-HS256' }), { enc: 'A128CBC-HS256', alg: 'dir' })).then((encrypted) => this.wrap({
             route,
             verb,
             auth: {

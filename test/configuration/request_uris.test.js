@@ -37,6 +37,6 @@ describe('client.requestUris', () => {
     });
 
     return provider.Client.find('client')
-      .then(client => expect(client.requestUris).to.be.undefined);
+      .then((client) => expect(client.requestUris).to.be.undefined);
   });
 });

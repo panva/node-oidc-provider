@@ -126,7 +126,7 @@ describe('devInteractions', () => {
 
       const url = await this.agent.get('/auth')
         .query(auth)
-        .then(response => response.headers.location);
+        .then((response) => response.headers.location);
 
       const interaction = this.TestAdapter.for('Interaction').syncFind(url.split('/')[2]);
       interaction.prompt.name = 'notimplemented';

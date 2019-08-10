@@ -12,7 +12,7 @@ const { renderError } = require('../../lib/helpers/defaults'); // make your own,
 const Account = require('../support/account');
 
 const keys = new Set();
-const debug = obj => querystring.stringify(Object.entries(obj).reduce((acc, [key, value]) => {
+const debug = (obj) => querystring.stringify(Object.entries(obj).reduce((acc, [key, value]) => {
   keys.add(key);
   if (_.isEmpty(value)) return acc;
   acc[key] = inspect(value, { depth: null });
@@ -110,7 +110,7 @@ module.exports = (provider) => {
     text: false, json: false, patchNode: true, patchKoa: true,
   });
 
-  router.get('/interaction/callback/google', ctx => ctx.render('repost', { provider: 'google', layout: false }));
+  router.get('/interaction/callback/google', (ctx) => ctx.render('repost', { provider: 'google', layout: false }));
 
   router.post('/interaction/:uid/login', body, async (ctx) => {
     const { prompt: { name } } = await provider.interactionDetails(ctx.req);
