@@ -1083,7 +1083,7 @@ _**default value**_:
 
 #### certificateAuthorized
 
-Helper used by the OP to determine if the client certificate is verified and comes from a trusted CA for the client. Should return true/false. Only used for `tls_client_auth` client authentication method.   
+Helper used by the OP to determine if the client certificate, used in the request, is verified and comes from a trusted CA for the client. Should return true/false. Only used for `tls_client_auth` client authentication method.   
   
 
 <a name="certificate-authorized-when-behind-a-tls-terminating-proxy-nginx-apache"></a><details>
@@ -1124,7 +1124,7 @@ false
 
 #### certificateSubjectMatches
 
-Helper used by the OP to determine if the client certificate subject matches the registered client property. Only used for `tls_client_auth` client authentication method.   
+Helper used by the OP to determine if the client certificate, used in the request, subject matches the registered client property. Only used for `tls_client_auth` client authentication method.   
   
 
 <a name="certificate-subject-matches-when-behind-a-tls-terminating-proxy-nginx-apache"></a><details>
@@ -1149,7 +1149,7 @@ function certificateSubjectMatches(ctx, property, expected) {
 
 #### getCertificate
 
-Helper used by the OP to retrieve the PEM-formatted client certificate   
+Helper used by the OP to retrieve the PEM-formatted client certificate used in the request.   
   
 
 <a name="get-certificate-when-behind-a-tls-terminating-proxy-nginx-apache"></a><details>
