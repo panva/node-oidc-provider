@@ -94,6 +94,14 @@ let server;
         ctx.status = 400;
       }
     });
+
+    provider.use(async (ctx, next) => {
+      await next();
+      if (ctx.oidc.route === 'device_authorization' && ctx.status === 200) {
+        ctx.body.verification_uri = ctx.body.verification_uri.replace('https://mtls.', 'https://');
+        ctx.body.verification_uri_complete = ctx.body.verification_uri_complete.replace('https://mtls.', 'https://');
+      }
+    });
   }
   render(provider.app, {
     cache: false,
