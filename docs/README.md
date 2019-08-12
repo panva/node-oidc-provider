@@ -2543,25 +2543,32 @@ HTML source rendered when session management feature renders a confirmation prom
 
 _**default value**_:
 ```js
-async logoutSource(ctx, form) {
+async logoutSource(ctx, action, secret) {
   // @param ctx - koa request context
-  // @param form - form source (id="op.logoutForm") to be embedded in the page and submitted by
+  // @param action - URL for the confirmation form to which it must submit
+  // @param secret - XSRF token to be included in the form
   //   the End-User
+  shouldChange('logoutSource', 'customize the look of the logout page');
   ctx.body = `<!DOCTYPE html>
 <head>
-<title>Logout Request</title>
-<style>/* css and html classes omitted for brevity, see lib/helpers/defaults.js */</style>
+  <meta charset="utf-8">
+  <title>Logout Request</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  <style>
+  @import url(https://fonts.googleapis.com/css?family=Roboto:400,100);button,h1{text-align:center}h1{font-weight:100;font-size:1.3em}body{font-family:Roboto,sans-serif;margin-top:25px;margin-bottom:25px}.container{padding:0 40px 10px;width:274px;background-color:#F7F7F7;margin:0 auto 10px;border-radius:2px;box-shadow:0 2px 2px rgba(0,0,0,.3);overflow:hidden}button{font-size:14px;font-family:Arial,sans-serif;font-weight:700;height:36px;padding:0 8px;width:100%;display:block;margin-bottom:10px;position:relative;border:0;color:#fff;text-shadow:0 1px rgba(0,0,0,.1);background-color:#4d90fe;cursor:pointer}button:hover{border:0;text-shadow:0 1px rgba(0,0,0,.3);background-color:#357ae8}
+  </style>
 </head>
 <body>
-<div>
-  <h1>Do you want to sign-out from ${ctx.host}?</h1>
-  ${form}
-  <button autofocus type="submit" form="op.logoutForm" value="yes" name="logout">Yes, sign me out</button>
-  <button type="submit" form="op.logoutForm">No, stay signed in</button>
-</div>
+  <div class="container">
+    <h1>Do you want to sign-out from ${ctx.host}?</h1>
+    <form id="op.logoutForm" method="post" action="${action}"><input type="hidden" name="xsrf" value="${secret}"/></form>
+    <button autofocus type="submit" form="op.logoutForm" value="yes" name="logout">Yes, sign me out</button>
+    <button type="submit" form="op.logoutForm">No, stay signed in</button>
+  </div>
 </body>
 </html>`;
-}
+},
 ```
 
 ### pairwiseIdentifier
