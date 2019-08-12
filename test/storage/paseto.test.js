@@ -58,7 +58,7 @@ if (FORMAT === 'paseto') {
 
     afterEach(function () {
       [
-        'AuthorizationCode', 'AccessToken', 'RefreshToken', 'ClientCredentials', 'InitialAccessToken', 'RegistrationAccessToken', 'DeviceCode',
+        'AccessToken', 'ClientCredentials',
       ].forEach((model) => {
         if (this.TestAdapter.for(model).upsert.restore) {
           this.TestAdapter.for(model).upsert.restore();
@@ -98,7 +98,7 @@ if (FORMAT === 'paseto') {
       expect(payload).to.eql({
         ...extra,
         aud,
-        azp: clientId,
+        client_id: clientId,
         kid,
         exp: new Date(exp * 1000).toISOString(),
         iat: new Date(iat * 1000).toISOString(),
@@ -110,153 +110,6 @@ if (FORMAT === 'paseto') {
           'x5t#S256': s256,
           'jkt#S256': s256,
         },
-      });
-    });
-
-    it('for AuthorizationCode', async function () {
-      const kind = 'AuthorizationCode';
-      const upsert = spy(this.TestAdapter.for('AuthorizationCode'), 'upsert');
-      const token = new this.provider.AuthorizationCode(fullPayload);
-      const paseto = await token.save();
-
-      assert.calledWith(upsert, string, {
-        accountId,
-        acr,
-        amr,
-        authTime,
-        claims,
-        clientId,
-        codeChallenge,
-        codeChallengeMethod,
-        consumed,
-        exp: number,
-        grantId,
-        iat: number,
-        jti: upsert.getCall(0).args[0],
-        paseto: string,
-        kind,
-        nonce,
-        redirectUri,
-        resource,
-        scope,
-        sid,
-        sessionUid,
-        expiresWithSession,
-      });
-
-      const { iat, jti, exp } = upsert.getCall(0).args[1];
-      const payload = decode(paseto);
-      expect(payload).to.eql({
-        aud: clientId,
-        kid,
-        exp: new Date(exp * 1000).toISOString(),
-        iat: new Date(iat * 1000).toISOString(),
-        iss: this.provider.issuer,
-        jti,
-        scope,
-        sub: accountId,
-      });
-    });
-
-    it('for RefreshToken', async function () {
-      const kind = 'RefreshToken';
-      const upsert = spy(this.TestAdapter.for('RefreshToken'), 'upsert');
-      const token = new this.provider.RefreshToken(fullPayload);
-      const paseto = await token.save();
-
-      assert.calledWith(upsert, string, {
-        accountId,
-        acr,
-        iiat,
-        rotations,
-        amr,
-        authTime,
-        claims,
-        clientId,
-        consumed,
-        exp: number,
-        grantId,
-        gty,
-        iat: number,
-        jti: upsert.getCall(0).args[0],
-        paseto: string,
-        kind,
-        nonce,
-        resource,
-        scope,
-        sid,
-        'x5t#S256': s256,
-        'jkt#S256': s256,
-        sessionUid,
-        expiresWithSession,
-      });
-
-      const { iat, jti, exp } = upsert.getCall(0).args[1];
-      const payload = decode(paseto);
-      expect(payload).to.eql({
-        aud: clientId,
-        kid,
-        exp: new Date(exp * 1000).toISOString(),
-        iat: new Date(iat * 1000).toISOString(),
-        iss: this.provider.issuer,
-        jti,
-        scope,
-        sub: accountId,
-        cnf: {
-          'x5t#S256': s256,
-          'jkt#S256': s256,
-        },
-      });
-    });
-
-    it('for DeviceCode', async function () {
-      const kind = 'DeviceCode';
-      const upsert = spy(this.TestAdapter.for('DeviceCode'), 'upsert');
-      const token = new this.provider.DeviceCode(fullPayload);
-      const paseto = await token.save();
-
-      assert.calledWith(upsert, string, {
-        accountId,
-        acr,
-        amr,
-        authTime,
-        claims,
-        clientId,
-        codeChallenge,
-        codeChallengeMethod,
-        consumed,
-        deviceInfo,
-        error,
-        errorDescription,
-        exp: number,
-        grantId,
-        gty,
-        iat: number,
-        jti: upsert.getCall(0).args[0],
-        paseto,
-        kind,
-        nonce,
-        params,
-        resource,
-        scope,
-        sid,
-        userCode,
-        sessionUid,
-        expiresWithSession,
-        inFlight,
-      });
-
-      const { iat, jti, exp } = upsert.getCall(0).args[1];
-      const payload = decode(paseto);
-      expect(payload).to.eql({
-        aud: clientId,
-        kid,
-        exp: new Date(exp * 1000).toISOString(),
-        iat: new Date(iat * 1000).toISOString(),
-        iss: this.provider.issuer,
-        jti,
-        scope,
-        sub: accountId,
       });
     });
 
@@ -285,77 +138,18 @@ if (FORMAT === 'paseto') {
       expect(payload).to.eql({
         ...extra,
         aud,
-        azp: clientId,
+        client_id: clientId,
         kid,
         exp: new Date(exp * 1000).toISOString(),
         iat: new Date(iat * 1000).toISOString(),
         iss: this.provider.issuer,
         jti,
+        sub: clientId,
         scope,
         cnf: {
           'x5t#S256': s256,
           'jkt#S256': s256,
         },
-      });
-    });
-
-    it('for InitialAccessToken', async function () {
-      const kind = 'InitialAccessToken';
-      const upsert = spy(this.TestAdapter.for('InitialAccessToken'), 'upsert');
-      const token = new this.provider.InitialAccessToken({
-        expiresIn: 100,
-        ...fullPayload,
-      });
-      const paseto = await token.save();
-
-      assert.calledWith(upsert, string, {
-        exp: number,
-        iat: number,
-        jti: upsert.getCall(0).args[0],
-        paseto: string,
-        kind,
-        policies,
-      });
-
-      const { iat, jti, exp } = upsert.getCall(0).args[1];
-      const payload = decode(paseto);
-      expect(payload).to.eql({
-        kid,
-        exp: new Date(exp * 1000).toISOString(),
-        iat: new Date(iat * 1000).toISOString(),
-        iss: this.provider.issuer,
-        jti,
-      });
-    });
-
-    it('for RegistrationAccessToken', async function () {
-      const kind = 'RegistrationAccessToken';
-      const upsert = spy(this.TestAdapter.for('RegistrationAccessToken'), 'upsert');
-      const token = new this.provider.RegistrationAccessToken({
-        expiresIn: 100,
-        ...fullPayload,
-      });
-      const paseto = await token.save();
-
-      assert.calledWith(upsert, string, {
-        clientId,
-        policies,
-        exp: number,
-        iat: number,
-        jti: upsert.getCall(0).args[0],
-        paseto: string,
-        kind,
-      });
-
-      const { iat, jti, exp } = upsert.getCall(0).args[1];
-      const payload = decode(paseto);
-      expect(payload).to.eql({
-        aud: clientId,
-        kid,
-        exp: new Date(exp * 1000).toISOString(),
-        iat: new Date(iat * 1000).toISOString(),
-        iss: this.provider.issuer,
-        jti,
       });
     });
 
