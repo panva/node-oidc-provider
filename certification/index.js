@@ -74,15 +74,26 @@ let server;
       if (ctx.secure) {
         await next();
 
-        if (ctx.oidc && ctx.oidc.route === 'discovery') {
-          ctx.body.mtls_endpoint_aliases = {};
-          ['token', 'introspection', 'revocation', 'userinfo', 'device_authorization'].forEach((endpoint) => {
-            if (!ctx.body[`${endpoint}_endpoint`]) {
-              return;
-            }
+        switch (ctx.oidc && ctx.oidc.route) {
+          case 'discovery': {
+            ctx.body.mtls_endpoint_aliases = {};
+            ['token', 'introspection', 'revocation', 'userinfo', 'device_authorization'].forEach((endpoint) => {
+              if (!ctx.body[`${endpoint}_endpoint`]) {
+                return;
+              }
 
-            ctx.body.mtls_endpoint_aliases[`${endpoint}_endpoint`] = ctx.body[`${endpoint}_endpoint`].replace('https://', 'https://mtls.');
-          });
+              ctx.body.mtls_endpoint_aliases[`${endpoint}_endpoint`] = ctx.body[`${endpoint}_endpoint`].replace('https://', 'https://mtls.');
+            });
+            break;
+          }
+          case 'device_authorization': {
+            if (ctx.stats === 200) {
+              ctx.body.verification_uri = ctx.body.verification_uri.replace('https://mtls.', 'https://');
+              ctx.body.verification_uri_complete = ctx.body.verification_uri_complete.replace('https://mtls.', 'https://');
+            }
+            break;
+          }
+          default:
         }
       } else if (ctx.method === 'GET' || ctx.method === 'HEAD') {
         ctx.redirect(ctx.href.replace(/^http:\/\//i, 'https://'));
@@ -94,15 +105,8 @@ let server;
         ctx.status = 400;
       }
     });
-
-    provider.use(async (ctx, next) => {
-      await next();
-      if (ctx.oidc && ctx.oidc.route === 'device_authorization' && ctx.status === 200) {
-        ctx.body.verification_uri = ctx.body.verification_uri.replace('https://mtls.', 'https://');
-        ctx.body.verification_uri_complete = ctx.body.verification_uri_complete.replace('https://mtls.', 'https://');
-      }
-    });
   }
+
   render(provider.app, {
     cache: false,
     viewExt: 'ejs',
