@@ -31,19 +31,13 @@ jobs:
           - ubuntu-latest
           - windows-latest
           - macOS-latest
-        format:
-          - opaque
-          - jwt
-          - jwt-ietf
-          - paseto
-          - dynamic
     steps:
       - uses: actions/checkout@master
       - uses: actions/setup-node@v1
         with:
           node-version: ${{ matrix.node-version }}
       - run: npm install
-      - run: npm run coverage -- --format=${{ matrix.format }}
+      - run: npm run coverage
         env:
           CI: true
       - env:
@@ -118,3 +112,4 @@ jobs:
           ruby-version: 2.x
       - run: gem install dpl
       - run: dpl --provider=heroku --strategy=git --api-key=${{ secrets.HEROKU_AUTH_TOKEN }} --app=radiant-refuge-93411
+        if: github.event_name == 'push' && github.ref == 'refs/heads/master' && github.repository == 'panva/node-oidc-provider'
