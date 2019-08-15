@@ -49,7 +49,8 @@ async function run() {
     DEFAULTS.features.ietfJWTAccessTokenProfile.enabled = true;
     DEFAULTS.features.ietfJWTAccessTokenProfile.ack = 2;
   }
-  DEFAULTS.formats.default = this.format;
+  DEFAULTS.formats.AccessToken = this.format;
+  DEFAULTS.formats.ClientCredentials = this.format;
   await new Promise((resolve) => {
     global.server = createServer().listen(0);
     global.server.once('listening', resolve);
@@ -58,7 +59,7 @@ async function run() {
     const mocha = new Mocha();
     mocha.files = files;
 
-    if (process.env.CI) {
+    if ('CI' in process.env) {
       mocha.reporter('min');
       mocha.retries(1); // retry flaky time comparison tests
       mocha.forbidOnly(); // force suite fail on encountered only test

@@ -1,7 +1,7 @@
 const { clone } = require('lodash');
 
 const config = clone(require('../default.config'));
-const { formats: { default: FORMAT } } = require('../../lib/helpers/defaults');
+const { formats: { AccessToken: FORMAT } } = require('../../lib/helpers/defaults');
 
 config.formats = {
   default: FORMAT,

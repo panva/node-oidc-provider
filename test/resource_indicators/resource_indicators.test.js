@@ -5,7 +5,7 @@ const { expect } = require('chai');
 const sinon = require('sinon');
 
 const bootstrap = require('../test_helper');
-const { formats: { default: FORMAT } } = require('../../lib/helpers/defaults');
+const { formats: { AccessToken: FORMAT } } = require('../../lib/helpers/defaults');
 
 const allowMultiple = ['opaque', 'jwt'].includes(FORMAT);
 

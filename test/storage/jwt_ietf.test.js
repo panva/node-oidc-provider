@@ -2,7 +2,7 @@ const { spy, match: { string, number }, assert } = require('sinon');
 const { expect } = require('chai');
 const base64url = require('base64url');
 
-const { formats: { default: FORMAT } } = require('../../lib/helpers/defaults');
+const { formats: { AccessToken: FORMAT } } = require('../../lib/helpers/defaults');
 const epochTime = require('../../lib/helpers/epoch_time');
 const bootstrap = require('../test_helper');
 

@@ -2028,8 +2028,8 @@ This option allows to configure the token serialization format. The different va
 _**default value**_:
 ```js
 {
-  AccessToken: undefined,
-  ClientCredentials: undefined,
+  AccessToken: 'opaque',
+  ClientCredentials: 'opaque',
   jwtAccessTokenSigningAlg: [AsyncFunction: jwtAccessTokenSigningAlg]
 }
 ```

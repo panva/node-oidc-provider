@@ -16,7 +16,6 @@ const KeyGrip = require('keygrip'); // eslint-disable-line import/no-extraneous-
 
 const nanoid = require('../lib/helpers/nanoid');
 const epochTime = require('../lib/helpers/epoch_time');
-const { formats: { default: FORMAT } } = require('../lib/helpers/defaults');
 const Provider = require('../lib');
 
 const { Account, TestAdapter } = require('./models');
@@ -316,33 +315,19 @@ module.exports = function testHelper(dir, { config: base = path.basename(dir), m
     };
   }
 
+  const jwt = (token) => JSON.parse(base64url.decode(token.split('.')[1])).jti;
+  const paseto = (token) => JSON.parse(base64url.toBuffer(token.split('.')[2]).slice(0, -64)).jti;
+
   function getTokenJti(token) {
-    const jwt = () => JSON.parse(base64url.decode(token.split('.')[1])).jti;
-    const paseto = () => JSON.parse(base64url.toBuffer(token.split('.')[2]).slice(0, -64)).jti;
-    const opaque = () => token;
-    switch (FORMAT) {
-      case 'paseto':
-        return paseto();
-      case 'jwt':
-      case 'jwt-ietf':
-        return jwt();
-      case 'opaque':
-        return opaque();
-      default:
-        if (typeof FORMAT === 'function') {
-          try {
-            return jwt();
-          } catch (err) {}
+    try {
+      return jwt(token);
+    } catch (err) {}
 
-          try {
-            return paseto();
-          } catch (err) {}
+    try {
+      return paseto(token);
+    } catch (err) {}
 
-          return opaque();
-        }
-
-        throw new Error(`unsupported format specified (${FORMAT})`);
-    }
+    return token; // opaque
   }
 
   function failWith(code, error, error_description, scope) {

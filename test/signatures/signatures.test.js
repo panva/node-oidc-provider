@@ -7,7 +7,7 @@ const nanoid = require('../../lib/helpers/nanoid');
 const bootstrap = require('../test_helper');
 const { decode } = require('../../lib/helpers/jwt');
 const epochTime = require('../../lib/helpers/epoch_time');
-const { formats: { default: FORMAT } } = require('../../lib/helpers/defaults');
+const { formats: { AccessToken: FORMAT } } = require('../../lib/helpers/defaults');
 
 describe('signatures', () => {
   before(bootstrap(__dirname));
