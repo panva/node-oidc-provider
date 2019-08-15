@@ -1,0 +1,120 @@
+name: Continuous Integration
+
+on:
+  push:
+  pull_request:
+  schedule:
+    - cron:  0 9 * * 1-5
+
+jobs:
+  lint:
+    name: Lint
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@master
+      - uses: actions/setup-node@v1
+        with:
+          node-version: 12
+      - run: npm install
+      - run: npm run lint
+
+  test:
+    name: Node Tests + Coverage
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        node-version:
+          - 12.0.0
+          - 12
+        os:
+          - ubuntu-latest
+          - windows-latest
+          - macOS-latest
+        format:
+          - opaque
+          - jwt
+          - jwt-ietf
+          - paseto
+          - dynamic
+    steps:
+      - uses: actions/checkout@master
+      - uses: actions/setup-node@v1
+        with:
+          node-version: ${{ matrix.node-version }}
+      - run: npm install
+      - run: npm run coverage -- --format=${{ matrix.format }}
+        env:
+          CI: true
+      - env:
+          CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
+        run: npx codecov
+
+  test-nightly:
+    name: Node Nightly Tests + Coverage
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@master
+      - name: npm run coverage
+        env:
+          CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
+          CI: true
+        run: |
+          curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.34.0/install.sh | bash
+          export NVM_DIR=~/.nvm
+          source ~/.nvm/nvm.sh
+          NVM_NODEJS_ORG_MIRROR=https://nodejs.org/download/nightly/ nvm install node
+          npm install
+          npm run coverage
+          npx codecov
+
+  oidc-conformance:
+    runs-on: ubuntu-latest
+    needs:
+      - test
+    strategy:
+      fail-fast: false
+      matrix:
+        script:
+          - code
+          - id_token
+          - id_token+token
+          - code+id_token
+          - code+id_token+token
+          - code+token
+    steps:
+      - run: |
+          docker pull panvafs/oidc-certification-op-ci
+          docker run -d -p "60000-60010:60000-60010" panvafs/oidc-certification-op-ci
+          while ! curl -sk https://127.0.0.1:60000 >/dev/null; do sleep 2; done
+      - uses: actions/checkout@master
+      - uses: actions/setup-node@v1
+        with:
+          node-version: 12
+      - run: npm install
+      - run: node certification/docker &
+        env:
+          ISSUER: https://172.17.0.1:3000
+          NODE_TLS_REJECT_UNAUTHORIZED: 0
+      - run: git clone https://github.com/panva/oidc-provider-conformance-tests.git
+      - env:
+          ISSUER: https://172.17.0.1:3000
+          NODE_TLS_REJECT_UNAUTHORIZED: 0
+          TEST_HOSTNAME: 127.0.0.1
+        run: |
+            cd oidc-provider-conformance-tests
+            git checkout local-certification
+            npm install
+            npm run ${{ matrix.script }}
+
+  example-deploy:
+    runs-on: ubuntu-latest
+    needs:
+      - oidc-conformance
+    steps:
+      - uses: actions/checkout@master
+      - uses: actions/setup-ruby@v1
+        with:
+          ruby-version: 2.x
+      - run: gem install dpl
+      - run: dpl --provider=heroku --strategy=git --api-key=${{ secrets.HEROKU_AUTH_TOKEN }} --app=radiant-refuge-93411

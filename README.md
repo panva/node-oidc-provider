@@ -1,6 +1,6 @@
 # oidc-provider
 
-[![build][travis-image]][travis-url] [![codecov][codecov-image]][codecov-url]
+![build][actions-image] [![codecov][codecov-image]][codecov-url]
 
 oidc-provider is an OAuth 2.0 Authorization Server with [OpenID Connect][openid-connect] and many
 additional features and standards implemented.
@@ -72,8 +72,6 @@ Found a bug? - [report it][bug].
 Filip Skokan has [certified][openid-certified-link] that [oidc-provider][npm-url]
 conforms to the OP Basic, OP Implicit, OP Hybrid, OP Config, OP Dynamic and OP Form Post profiles
 of the OpenID Connect™ protocol.
-
-[![build][conformance-image]][conformance-url]
 
 
 ## Sponsor
@@ -151,10 +149,7 @@ change the defined behavior.
 See the list of available emitted [event names](/docs/events.md) and their description.
 
 
-[travis-image]: https://api.travis-ci.com/panva/node-oidc-provider.svg?branch=master
-[travis-url]: https://travis-ci.com/panva/node-oidc-provider
-[conformance-image]: https://api.travis-ci.com/panva/oidc-provider-conformance-tests.svg?branch=master
-[conformance-url]: https://github.com/panva/oidc-provider-conformance-tests
+[actions-image]: https://action-badges.now.sh/panva/node-oidc-provider
 [codecov-image]: https://img.shields.io/codecov/c/github/panva/node-oidc-provider/master.svg
 [codecov-url]: https://codecov.io/gh/panva/node-oidc-provider
 [npm-url]: https://www.npmjs.com/package/oidc-provider
