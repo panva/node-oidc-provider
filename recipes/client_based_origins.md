@@ -36,11 +36,13 @@ const { errors: { InvalidClientMetadata } } = Provider;
 
 const corsProp = 'urn:custom:client:allowed-cors-origins';
 const isOrigin = (value) => {
-  if (typeof value !== 'string') return false;
+  if (typeof value !== 'string') {
+    return false;
+  }
   try {
-    const { href, origin } = new URL(value);
+    const { origin } = new URL(value);
     // Origin: <scheme> "://" <hostname> [ ":" <port> ]
-    return href === origin;
+    return value === origin;
   } catch (err) {
     return false;
   }
