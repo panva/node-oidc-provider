@@ -61,14 +61,13 @@ module.exports = {
       'nickname', 'picture', 'preferred_username', 'profile', 'updated_at', 'website', 'zoneinfo'],
   },
   features: {
-    backchannelLogout: { enabled: true, ack: 4 },
+    backchannelLogout: { enabled: true },
     devInteractions: { enabled: false },
-    ietfJWTAccessTokenProfile: { enabled: true, ack: 2 },
+    ietfJWTAccessTokenProfile: { enabled: true },
     mTLS: {
       enabled: true,
       certificateBoundAccessTokens: true,
       selfSignedTlsClientAuth: true,
-      ack: '15-rc.1',
       getCertificate(ctx) {
         return unescape(ctx.get('x-ssl-client-cert').replace(/\+/g, ' '));
       },
@@ -84,14 +83,14 @@ module.exports = {
     },
     claimsParameter: { enabled: true },
     deviceFlow: { enabled: true },
-    dPoP: { enabled: true, ack: 'id-02' },
+    dPoP: { enabled: true },
     encryption: { enabled: true },
-    frontchannelLogout: { enabled: true, ack: 2 },
+    frontchannelLogout: { enabled: true },
     introspection: { enabled: true },
     registration: { enabled: true },
     request: { enabled: true },
     revocation: { enabled: true },
-    sessionManagement: { enabled: true, ack: 28 },
+    sessionManagement: { enabled: true },
   },
   jwks: {
     keys: [
