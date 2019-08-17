@@ -33,16 +33,16 @@ enabled by default, check the configuration section on how to enable them.
 - [OAuth 2.0 Form Post Response Mode][form-post]
 - [RFC7636 - Proof Key for Code Exchange (PKCE)][pkce]
 - [RFC7009 - OAuth 2.0 Token Revocation][revocation]
+- [RFC7592 - OAuth 2.0 Dynamic Client Registration Management Protocol][registration-management]
 - [RFC7662 - OAuth 2.0 Token Introspection][introspection]
 - [RFC8252 - OAuth 2.0 for Native Apps BCP (AppAuth)][oauth-native-apps]
-- [RFC7592 - OAuth 2.0 Dynamic Client Registration Management Protocol][registration-management]
+- [RFC8628 - OAuth 2.0 Device Authorization Grant (Device Flow)][device-flow]
 
 The following draft specifications are implemented by oidc-provider.
 - [JSON Web Token (JWT) Profile for OAuth 2.0 Access Tokens - draft 02][jwt-at]
 - [JWT Response for OAuth Token Introspection - draft 05][jwt-introspection]
 - [JWT Secured Authorization Response Mode for OAuth 2.0 (JARM) - draft 02][jarm]
 - [OAuth 2.0 Demonstration of Proof-of-Possession at the Application Layer (DPoP) - individual draft 02][dpop]
-- [OAuth 2.0 Device Authorization Grant (Device Flow) - draft 15][device-flow]
 - [OAuth 2.0 JWT Secured Authorization Request (JAR)][jar]
 - [OAuth 2.0 Mutual TLS Client Authentication and Certificate Bound Access Tokens (MTLS) - draft 15][mtls]
 - [OAuth 2.0 Resource Indicators - draft 05][resource-indicators]
@@ -168,7 +168,7 @@ See the list of available emitted [event names](/docs/events.md) and their descr
 [debug-link]: https://github.com/visionmedia/debug
 [wmrm]: https://tools.ietf.org/html/draft-sakimura-oauth-wmrm-00
 [jar]: https://tools.ietf.org/html/draft-ietf-oauth-jwsreq-19
-[device-flow]: https://tools.ietf.org/html/draft-ietf-oauth-device-flow-15
+[device-flow]: https://tools.ietf.org/html/rfc8628
 [jwt-introspection]: https://tools.ietf.org/html/draft-ietf-oauth-jwt-introspection-response-05
 [sponsor-auth0]: https://auth0.com/overview?utm_source=GHsponsor&utm_medium=GHsponsor&utm_campaign=oidc-provider&utm_content=auth
 [suggest-feature]: https://github.com/panva/node-oidc-provider/issues/new?template=feature-request.md

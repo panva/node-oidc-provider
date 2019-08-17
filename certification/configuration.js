@@ -83,7 +83,7 @@ module.exports = {
       },
     },
     claimsParameter: { enabled: true },
-    deviceFlow: { enabled: true, ack: 15 },
+    deviceFlow: { enabled: true },
     dPoP: { enabled: true, ack: 'id-02' },
     encryption: { enabled: true },
     frontchannelLogout: { enabled: true, ack: 2 },

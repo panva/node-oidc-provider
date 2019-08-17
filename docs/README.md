@@ -736,7 +736,7 @@ _**default value**_:
 
 ### features.deviceFlow
 
-[draft-ietf-oauth-device-flow-15](https://tools.ietf.org/html/draft-ietf-oauth-device-flow-15) - OAuth 2.0 Device Authorization Grant  
+[RFC8628](https://tools.ietf.org/html/rfc8628) - OAuth 2.0 Device Authorization Grant  
 
 Enables Device Authorization Grant (Device Flow)  
 

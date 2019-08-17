@@ -42,7 +42,7 @@ module.exports = {
   features: {
     devInteractions: { enabled: false }, // defaults to true
 
-    deviceFlow: { enabled: true, ack: 15 }, // defaults to false
+    deviceFlow: { enabled: true }, // defaults to false
     introspection: { enabled: true }, // defaults to false
     revocation: { enabled: true }, // defaults to false
   },
