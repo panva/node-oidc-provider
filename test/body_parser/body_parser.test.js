@@ -78,7 +78,7 @@ describe('body parser', () => {
         .expect(200);
 
       expect(
-        spy.calledWithMatch({ oidc: { params: { scope: '' } } }),
+        spy.calledWithMatch({ oidc: { params: { scope: undefined } } }),
       ).to.be.true;
     });
   });
