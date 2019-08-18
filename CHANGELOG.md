@@ -2,6 +2,16 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [6.4.2](https://github.com/panva/node-oidc-provider/compare/v6.4.1...v6.4.2) (2019-08-18)
+
+
+### Bug Fixes
+
+* make structured token's end-user "sub" pairwise if configured ([24a08c2](https://github.com/panva/node-oidc-provider/commit/24a08c2))
+* use correct postLogoutRedirectUri for resume's logout when mounted ([a72b27d](https://github.com/panva/node-oidc-provider/commit/a72b27d))
+
+
+
 ## [6.4.1](https://github.com/panva/node-oidc-provider/compare/v6.4.0...v6.4.1) (2019-08-13)
 
 
