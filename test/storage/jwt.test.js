@@ -113,6 +113,55 @@ if (FORMAT === 'jwt') {
       });
     });
 
+    it('for pairwise AccessToken', async function () {
+      const kind = 'AccessToken';
+      const upsert = spy(this.TestAdapter.for('AccessToken'), 'upsert');
+      const client = await this.provider.Client.find('pairwise');
+      const token = new this.provider.AccessToken({ client, ...fullPayload });
+      const jwt = await token.save();
+
+      assert.calledWith(upsert, string, {
+        accountId,
+        aud,
+        claims,
+        clientId: 'pairwise',
+        exp: number,
+        grantId,
+        gty,
+        iat: number,
+        jti: upsert.getCall(0).args[0],
+        jwt: string,
+        kind,
+        scope,
+        sid,
+        'x5t#S256': s256,
+        'jkt#S256': s256,
+        sessionUid,
+        expiresWithSession,
+        extra,
+      });
+
+      const { iat, jti, exp } = upsert.getCall(0).args[1];
+      const header = decode(jwt.split('.')[0]);
+      expect(header).to.have.property('typ', 'JWT');
+      const payload = decode(jwt.split('.')[1]);
+      expect(payload).to.eql({
+        ...extra,
+        aud,
+        azp: 'pairwise',
+        exp,
+        iat,
+        iss: this.provider.issuer,
+        jti,
+        scope,
+        sub: 'pairwise-sub',
+        cnf: {
+          'x5t#S256': s256,
+          'jkt#S256': s256,
+        },
+      });
+    });
+
     it('for ClientCredentials', async function () {
       const kind = 'ClientCredentials';
       const upsert = spy(this.TestAdapter.for('ClientCredentials'), 'upsert');
