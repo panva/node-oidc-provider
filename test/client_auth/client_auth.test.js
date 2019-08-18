@@ -189,7 +189,7 @@ describe('client authentication options', () => {
         .type('form')
         .expect(() => {
           expect(spy.calledOnce).to.be.true;
-          expect(errorDetail(spy)).to.equal('unexpected client_secret provided for token_endpoint_auth_method=none client request');
+          expect(errorDetail(spy)).to.equal('the registered client token_endpoint_auth_method does not match the provided auth mechanism');
         })
         .expect(401)
         .expect(tokenAuthRejected);
@@ -204,6 +204,16 @@ describe('client authentication options', () => {
         })
         .type('form')
         .auth('client-basic', 'secret')
+        .expect(tokenAuthSucceeded);
+    });
+
+    it('accepts the auth (but client configured with post)', function () {
+      return this.agent.post(route)
+        .send({
+          grant_type: 'implicit',
+        })
+        .type('form')
+        .auth('client-post', 'secret')
         .expect(tokenAuthSucceeded);
     });
 
@@ -253,7 +263,7 @@ describe('client authentication options', () => {
         .expect(tokenAuthSucceeded);
     });
 
-    it('accepts the auth (https://tools.ietf.org/html/rfc6749#appendix-B)', function () {
+    it('rejects improperly encoded headers', function () {
       return this.agent.post(route)
         .send({
           grant_type: 'implicit',
@@ -357,20 +367,17 @@ describe('client authentication options', () => {
     });
 
     it('requires the client_secret to be sent', function () {
-      const spy = sinon.spy();
-      this.provider.once('grant.error', spy);
       return this.agent.post(route)
         .send({
           grant_type: 'implicit',
         })
         .type('form')
         .auth('client-basic', '')
-        .expect(() => {
-          expect(spy.calledOnce).to.be.true;
-          expect(errorDetail(spy)).to.equal('client_secret must be provided in the Authorization header');
-        })
-        .expect(401)
-        .expect(tokenAuthRejected);
+        .expect(400)
+        .expect({
+          error: 'invalid_request',
+          error_description: 'client_secret must be provided in the Authorization header',
+        });
     });
   });
 
@@ -380,6 +387,17 @@ describe('client authentication options', () => {
         .send({
           grant_type: 'implicit',
           client_id: 'client-post',
+          client_secret: 'secret',
+        })
+        .type('form')
+        .expect(tokenAuthSucceeded);
+    });
+
+    it('accepts the auth (but client configured with basic)', function () {
+      return this.agent.post(route)
+        .send({
+          grant_type: 'implicit',
+          client_id: 'client-basic',
           client_secret: 'secret',
         })
         .type('form')
@@ -416,7 +434,7 @@ describe('client authentication options', () => {
         .type('form')
         .expect(() => {
           expect(spy.calledOnce).to.be.true;
-          expect(errorDetail(spy)).to.equal('client_secret must be provided in the body');
+          expect(errorDetail(spy)).to.equal('the registered client token_endpoint_auth_method does not match the provided auth mechanism');
         })
         .expect(401)
         .expect(tokenAuthRejected);
