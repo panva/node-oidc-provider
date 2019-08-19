@@ -1,16 +1,9 @@
 # oidc-provider
 
-[![codecov][codecov-image]][codecov-url]
+![build][actions-image] [![codecov][codecov-image]][codecov-url]
 
 oidc-provider is an OAuth 2.0 Authorization Server with [OpenID Connect][openid-connect] and many
 additional features and standards implemented.
-
-## v6.x release notice
-
-v6.x is now available on npm and this repo's master branch.
-
-**WARNING: Node.js 12 or higher is required for oidc-provider@6 and above.** For older Node.js
-versions use [oidc-provider@5](https://github.com/panva/node-oidc-provider/tree/v5.x).
 
 **Table of Contents**
 
@@ -80,9 +73,7 @@ of the OpenID Connect™ protocol.
 
 ## Support
 
-[<img src="https://c5.patreon.com/external/logo/become_a_patron_button@2x.png" width="160" align="right">][support-patreon]
-If you or your business use oidc-provider, please consider becoming a [Patron][support-patreon] so I can continue maintaining it and adding new features carefree. You may also donate one-time via [PayPal][support-paypal].
-[<img src="https://cdn.jsdelivr.net/gh/gregoiresgt/payment-icons@183140a5ff8f39b5a19d59ebeb2c77f03c3a24d3/Assets/Payment/PayPal/Paypal@2x.png" width="100" align="right">][support-paypal]
+If you or your business use oidc-provider, please consider becoming a [sponsor][support-sponsor] so I can continue maintaining it and adding new features carefree.
 
 ## Get started
 You may check the [example folder](/example) or follow a [step by step example][example-repo] to see
@@ -149,6 +140,7 @@ change the defined behavior.
 See the list of available emitted [event names](/docs/events.md) and their description.
 
 
+[actions-image]: https://github.com/panva/node-oidc-provider/workflows/Continuous%20Integration/badge.svg
 [codecov-image]: https://img.shields.io/codecov/c/github/panva/node-oidc-provider/master.svg
 [codecov-url]: https://codecov.io/gh/panva/node-oidc-provider
 [npm-url]: https://www.npmjs.com/package/oidc-provider
@@ -186,5 +178,4 @@ See the list of available emitted [event names](/docs/events.md) and their descr
 [resource-indicators]: https://tools.ietf.org/html/draft-ietf-oauth-resource-indicators-05
 [jarm]: https://openid.net/specs/openid-financial-api-jarm-wd-02.html
 [jwt-at]: https://tools.ietf.org/html/draft-ietf-oauth-access-token-jwt-02
-[support-patreon]: https://www.patreon.com/panva
-[support-paypal]: https://www.paypal.me/panva
+[support-sponsor]: https://github.com/users/panva/sponsorship
