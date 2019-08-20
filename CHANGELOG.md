@@ -2,6 +2,23 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+# [6.5.0](https://github.com/panva/node-oidc-provider/compare/v6.4.2...v6.5.0) (2019-08-20)
+
+
+### Bug Fixes
+
+* empty params are handled as if they were not provided at all ([a9e0f8c](https://github.com/panva/node-oidc-provider/commit/a9e0f8c))
+
+
+### Features
+
+* basic and post client auth methods are now interchangeable ([a019fc9](https://github.com/panva/node-oidc-provider/commit/a019fc9))
+* enable RSA-OAEP-256 when node runtime supports it ([cfada87](https://github.com/panva/node-oidc-provider/commit/cfada87))
+* new experimental support for FAPI RW Security Profile added ([0c69553](https://github.com/panva/node-oidc-provider/commit/0c69553))
+* RFC8628 has been published, device flow is now a stable feature ([98a3bd4](https://github.com/panva/node-oidc-provider/commit/98a3bd4))
+
+
+
 ## [6.4.2](https://github.com/panva/node-oidc-provider/compare/v6.4.1...v6.4.2) (2019-08-18)
 
 
