@@ -9,6 +9,10 @@ const Provider = require('../../lib');
 const { whitelistedJWA } = require('../default.config');
 const mtlsKeys = require('../jwks/jwks.json');
 
+const [major, minor] = process.version.substr(1).split('.').map((x) => parseInt(x, 10));
+
+const OAEP256 = major > 12 || (major === 12 && minor >= 9);
+
 const sigKey = global.keystore.get().toJWK();
 const privateKey = global.keystore.get().toJWK(true);
 const { DYNAMIC_SCOPE_LABEL, errors: { InvalidClientMetadata } } = Provider;
@@ -607,10 +611,10 @@ describe('Client metadata validation', () => {
       }));
       allows(this.title, 'dir', undefined, configuration);
       [
-        'RSA-OAEP', 'RSA1_5', 'ECDH-ES', 'ECDH-ES+A128KW', 'ECDH-ES+A192KW',
+        'RSA-OAEP', OAEP256 ? 'RSA-OAEP-256' : false, 'RSA1_5', 'ECDH-ES', 'ECDH-ES+A128KW', 'ECDH-ES+A192KW',
         'ECDH-ES+A256KW', 'A128GCMKW', 'A192GCMKW', 'A256GCMKW', 'A128KW', 'A192KW', 'A256KW',
         'PBES2-HS256+A128KW', 'PBES2-HS384+A192KW', 'PBES2-HS512+A256KW',
-      ].forEach((value) => {
+      ].filter(Boolean).forEach((value) => {
         allows(this.title, value, {
           jwks: { keys: [sigKey] },
         }, configuration);
@@ -669,10 +673,10 @@ describe('Client metadata validation', () => {
       }));
       allows(this.title, 'dir', undefined, configuration);
       [
-        'RSA-OAEP', 'RSA1_5', 'ECDH-ES', 'ECDH-ES+A128KW', 'ECDH-ES+A192KW',
+        'RSA-OAEP', OAEP256 ? 'RSA-OAEP-256' : false, 'RSA1_5', 'ECDH-ES', 'ECDH-ES+A128KW', 'ECDH-ES+A192KW',
         'ECDH-ES+A256KW', 'A128GCMKW', 'A192GCMKW', 'A256GCMKW', 'A128KW', 'A192KW', 'A256KW',
         'PBES2-HS256+A128KW', 'PBES2-HS384+A192KW', 'PBES2-HS512+A256KW',
-      ].forEach((value) => {
+      ].filter(Boolean).forEach((value) => {
         allows(this.title, value, {
           jwks: { keys: [sigKey] },
         }, configuration);
@@ -732,10 +736,10 @@ describe('Client metadata validation', () => {
       }));
       allows(this.title, 'dir', undefined, configuration);
       [
-        'RSA-OAEP', 'RSA1_5', 'ECDH-ES', 'ECDH-ES+A128KW', 'ECDH-ES+A192KW',
+        'RSA-OAEP', OAEP256 ? 'RSA-OAEP-256' : false, 'RSA1_5', 'ECDH-ES', 'ECDH-ES+A128KW', 'ECDH-ES+A192KW',
         'ECDH-ES+A256KW', 'A128GCMKW', 'A192GCMKW', 'A256GCMKW', 'A128KW', 'A192KW', 'A256KW',
         'PBES2-HS256+A128KW', 'PBES2-HS384+A192KW', 'PBES2-HS512+A256KW',
-      ].forEach((value) => {
+      ].filter(Boolean).forEach((value) => {
         allows(this.title, value, {
           jwks: { keys: [sigKey] },
         }, configuration);
@@ -795,10 +799,10 @@ describe('Client metadata validation', () => {
       }));
       allows(this.title, 'dir', undefined, configuration);
       [
-        'RSA-OAEP', 'RSA1_5', 'ECDH-ES', 'ECDH-ES+A128KW', 'ECDH-ES+A192KW',
+        'RSA-OAEP', OAEP256 ? 'RSA-OAEP-256' : false, 'RSA1_5', 'ECDH-ES', 'ECDH-ES+A128KW', 'ECDH-ES+A192KW',
         'ECDH-ES+A256KW', 'A128GCMKW', 'A192GCMKW', 'A256GCMKW', 'A128KW', 'A192KW', 'A256KW',
         'PBES2-HS256+A128KW', 'PBES2-HS384+A192KW', 'PBES2-HS512+A256KW',
-      ].forEach((value) => {
+      ].filter(Boolean).forEach((value) => {
         allows(this.title, value, {
           jwks: { keys: [sigKey] },
         }, configuration);
@@ -864,10 +868,10 @@ describe('Client metadata validation', () => {
       }));
       allows(this.title, 'dir', undefined, configuration);
       [
-        'RSA-OAEP', 'RSA1_5', 'ECDH-ES', 'ECDH-ES+A128KW', 'ECDH-ES+A192KW',
+        'RSA-OAEP', OAEP256 ? 'RSA-OAEP-256' : false, 'RSA1_5', 'ECDH-ES', 'ECDH-ES+A128KW', 'ECDH-ES+A192KW',
         'ECDH-ES+A256KW', 'A128GCMKW', 'A192GCMKW', 'A256GCMKW', 'A128KW', 'A192KW', 'A256KW',
         'PBES2-HS256+A128KW', 'PBES2-HS384+A192KW', 'PBES2-HS512+A256KW',
-      ].forEach((value) => {
+      ].filter(Boolean).forEach((value) => {
         allows(this.title, value, undefined, configuration);
         if (value === 'ECDH-ES') {
           rejects(this.title, value, 'A192CBC-HS384 is not possible with ECDH-ES', {
