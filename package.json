@@ -42,6 +42,7 @@
   "dependencies": {
     "@koa/cors": "^3.0.0",
     "@panva/jose": "^1.7.0",
+    "bowser": "^2.5.3",
     "debug": "^4.1.1",
     "ejs": "^2.6.2",
     "got": "^9.6.0",
