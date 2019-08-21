@@ -7,3 +7,8 @@ coverage:
     project: no
     patch: yes
     changes: yes
+
+ignore:
+  - package.json
+  - **/*.md
+  - **/*.yml
