@@ -7,6 +7,7 @@ const sinon = require('sinon');
 const { expect } = require('chai');
 const { cloneDeep } = require('lodash');
 
+const runtimeSupport = require('../../lib/helpers/runtime_support');
 const mtlsKeys = require('../jwks/jwks.json');
 const JWT = require('../../lib/helpers/jwt');
 const epochTime = require('../../lib/helpers/epoch_time');
@@ -134,18 +135,20 @@ describe('client keystore refresh', () => {
     });
   });
 
-  it('does x5c validation', async function () {
-    setResponse(invalidx5c);
+  if (runtimeSupport.KeyObject) {
+    it('does x5c validation', async function () {
+      setResponse(invalidx5c);
 
-    const client = await this.provider.Client.find('client');
-    sinon.stub(client.keystore, 'fresh').returns(false);
-    await client.keystore.refresh().then(fail, (err) => {
-      expect(err).to.be.an('error');
-      expect(err.message).to.equal('invalid_client_metadata');
-      expect(err.error_description).to.match(/jwks_uri could not be refreshed/);
-      expect(err.error_description).to.match(/must be an array of one or more PKIX certificates when provided/);
+      const client = await this.provider.Client.find('client');
+      sinon.stub(client.keystore, 'fresh').returns(false);
+      await client.keystore.refresh().then(fail, (err) => {
+        expect(err).to.be.an('error');
+        expect(err.message).to.equal('invalid_client_metadata');
+        expect(err.error_description).to.match(/jwks_uri could not be refreshed/);
+        expect(err.error_description).to.match(/must be an array of one or more PKIX certificates when provided/);
+      });
     });
-  });
+  }
 
   describe('caching', () => {
     it('uses expires caching header to determine stale states', async function () {

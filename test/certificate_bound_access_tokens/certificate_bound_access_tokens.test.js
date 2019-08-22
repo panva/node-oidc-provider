@@ -1,15 +1,18 @@
+
 const { readFileSync } = require('fs');
 const url = require('url');
 
 const sinon = require('sinon');
 const { expect } = require('chai');
 
+const runtimeSupport = require('../../lib/helpers/runtime_support');
 const bootstrap = require('../test_helper');
 
 const crt = readFileSync('./test/jwks/client.crt').toString();
 const expectedS256 = 'eXvgMeO-8uLw0FGYkJefOXSFHOnbbcfv95rIYCPsbpo';
 
 describe('features.mTLS.certificateBoundAccessTokens', () => {
+  if (!runtimeSupport.KeyObject) return;
   before(bootstrap(__dirname));
 
   describe('discovery', () => {

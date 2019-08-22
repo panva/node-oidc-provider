@@ -9,16 +9,17 @@ const epochTime = require('../../lib/helpers/epoch_time');
 const bootstrap = require('../test_helper');
 const base64url = require('../../lib/helpers/base64url');
 
-const expectedS256 = 'ddwVMj8tN6mUqrex9ItF58o2OhI79TjsfyPQFRZYcYk';
+const expectedS256 = 'ZjEgWN6HnCZRssL1jRQHiJi6vlWXolM5Zba8FQBYONg';
 
 describe('features.dPoP', () => {
   before(bootstrap(__dirname));
   before(async function () {
     this.jwk = JWK.asKey({
-      crv: 'Ed25519',
-      x: 'VAi4KexGlBsRTPhixCQf5tX6i5i5B9nYTFhO5oks6Vs',
-      d: 'UzvkzKX3TFjbUsh6JCkOZVUN5zZOOLOWEADJah3E3ZY',
-      kty: 'OKP',
+      crv: 'P-256',
+      x: '1_Dz3o3_V5CpuzQ78gImNb2QIKjBfREXwBQxjyO0xig',
+      y: 'YMSWnnBjNeMvfL9nZtYSyxGKZtPFG28jJwjjk06716o',
+      d: 'IHFCcQXeUew9o_7jAIj2t6GEoJpgrOC9L_pQGlvRpto',
+      kty: 'EC',
     });
   });
   before(function () {
@@ -181,7 +182,7 @@ describe('features.dPoP', () => {
       expect(spy).to.have.property('calledOnce', true);
       expect(spy.args[0][1]).to.have.property('error_detail', 'DPoP Token Replay detected');
 
-      const anotherJWK = JWK.generateSync('OKP');
+      const anotherJWK = JWK.generateSync('EC');
 
       spy = sinon.spy();
       this.provider.once('userinfo.error', spy);
@@ -460,7 +461,7 @@ describe('features.dPoP', () => {
         const spy = sinon.spy();
         this.provider.once('grant.error', spy);
 
-        const anotherJWK = JWK.generateSync('OKP');
+        const anotherJWK = JWK.generateSync('EC');
         await this.agent.post('/token')
           .send({
             client_id: 'client-none',

@@ -7,6 +7,7 @@ const path = require('path');
 const querystring = require('querystring');
 
 const sinon = require('sinon');
+const { flatten } = require('lodash');
 const { agent: supertest } = require('supertest');
 const { expect } = require('chai');
 const Koa = require('koa');
@@ -396,7 +397,7 @@ module.exports.passInteractionChecks = (...reasons) => {
     before(function () {
       const { policy } = i(this.provider).configuration('interactions');
 
-      const iChecks = [policy.map((i) => i.checks)].flat(Infinity);
+      const iChecks = flatten(policy.map((i) => i.checks));
 
       iChecks
         .filter((check) => reasons.includes(check.reason))

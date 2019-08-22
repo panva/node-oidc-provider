@@ -17,7 +17,7 @@ describe(route, () => {
           let ec;
           let okp;
 
-          expect(res.body.keys.length).to.equal(3);
+          expect(res.body.keys.length).to.equal(global.keystore.size);
 
           res.body.keys.forEach((key) => {
             if (key.kty === 'RSA') rsa = key;
@@ -27,11 +27,11 @@ describe(route, () => {
 
           expect(rsa).to.be.ok;
           expect(ec).to.be.ok;
-          expect(okp).to.be.ok;
+          if (okp) expect(okp).to.be.ok;
 
           expect(rsa).to.have.all.keys(['kty', 'kid', 'e', 'n']);
           expect(ec).to.have.all.keys(['kty', 'kid', 'crv', 'x', 'y']);
-          expect(okp).to.have.all.keys(['kty', 'kid', 'crv', 'x']);
+          if (okp) expect(okp).to.have.all.keys(['kty', 'kid', 'crv', 'x']);
         });
     });
 

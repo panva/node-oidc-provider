@@ -6,6 +6,8 @@ const Mocha = require('mocha');
 const { all: clearRequireCache } = require('clear-module');
 const { sample } = require('lodash');
 
+const runtimeSupport = require('../lib/helpers/runtime_support');
+
 const FORMAT_REGEXP = /^--format=([\w-]+)$/;
 const formats = [];
 process.argv.forEach((arg) => {
@@ -18,7 +20,9 @@ if (!formats.length) {
   formats.push('opaque');
   formats.push('jwt');
   formats.push('jwt-ietf');
-  formats.push('paseto');
+  if (runtimeSupport.EdDSA) {
+    formats.push('paseto');
+  }
   formats.push('dynamic');
 }
 const passed = [];
@@ -42,7 +46,7 @@ async function run() {
   await Promise.all([
     global.keystore.generate('RSA', 2048),
     global.keystore.generate('EC', 'P-256'),
-    global.keystore.generate('OKP', 'Ed25519'),
+    runtimeSupport.EdDSA ? global.keystore.generate('OKP', 'Ed25519') : undefined,
   ]);
   const DEFAULTS = require('../lib/helpers/defaults'); // eslint-disable-line global-require
   if (this.format === 'jwt-ietf' || typeof this.format === 'function') {
@@ -82,7 +86,7 @@ async function run() {
   if (formats.includes('jwt')) await run.call({ format: 'jwt' });
   if (formats.includes('jwt-ietf')) await run.call({ format: 'jwt-ietf' });
   if (formats.includes('paseto')) await run.call({ format: 'paseto' });
-  if (formats.includes('dynamic')) await run.call({ format: () => sample(['opaque', 'jwt', 'jwt-ietf', 'paseto']) });
+  if (formats.includes('dynamic')) await run.call({ format: () => sample(['opaque', 'jwt', 'jwt-ietf', runtimeSupport.EdDSA ? 'paseto' : undefined].filter(Boolean)) });
   passed.forEach((pass) => console.log('\x1b[32m%s\x1b[0m', pass));
 })()
   .catch((error) => {

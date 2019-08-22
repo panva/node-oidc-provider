@@ -9,7 +9,7 @@ const { get, words } = require('lodash');
 const values = require('../lib/helpers/defaults');
 
 function capitalizeSentences(copy) {
-  return copy.replace(/\. [a-z]/g, match => `. ${match.slice(-1).toUpperCase()}`);
+  return copy.replace(/\. [a-z]/g, (match) => `. ${match.slice(-1).toUpperCase()}`);
 }
 
 class Block {
@@ -102,8 +102,8 @@ const props = [
           let override;
           if (prop === 'example' && option.example) {
             const i = Math.max(...Object.keys(option)
-              .filter(p => p.startsWith('example'))
-              .map(e => parseInt(e.slice(-1), 10) || 0));
+              .filter((p) => p.startsWith('example'))
+              .map((e) => parseInt(e.slice(-1), 10) || 0));
             override = `example${i + 1}`;
           }
           option.active = override || prop;
@@ -159,13 +159,13 @@ const props = [
   }, []);
 
   const features = configuration.splice(0, featuresIdx).sort();
-  const clientsIdx = configuration.findIndex(x => x === 'clients');
+  const clientsIdx = configuration.findIndex((x) => x === 'clients');
   const clients = configuration.splice(clientsIdx, 1);
-  const adapterIdx = configuration.findIndex(x => x === 'adapter');
+  const adapterIdx = configuration.findIndex((x) => x === 'adapter');
   const adapter = configuration.splice(adapterIdx, 1);
-  const jwksIdx = configuration.findIndex(x => x === 'jwks');
+  const jwksIdx = configuration.findIndex((x) => x === 'jwks');
   const jwks = configuration.splice(jwksIdx, 1);
-  const findAccountIdx = configuration.findIndex(x => x === 'findAccount');
+  const findAccountIdx = configuration.findIndex((x) => x === 'findAccount');
   const findAccount = configuration.splice(findAccountIdx, 1);
 
   let hidden;
@@ -285,9 +285,9 @@ const props = [
       }
     }
 
-    Object.keys(section).filter(p => p.startsWith('example')).forEach((prop) => {
+    Object.keys(section).filter((p) => p.startsWith('example')).forEach((prop) => {
       const [title, ...content] = section[prop];
-      append(`<a name="${words(`${headingTitle} ${title}`).map(w => w.toLowerCase()).join('-')}"></a>`.replace('\n', ''));
+      append(`<a name="${words(`${headingTitle} ${title}`).map((w) => w.toLowerCase()).join('-')}"></a>`.replace('\n', ''));
       append(`<details>\n  <summary>(Click to expand) ${title}</summary>\n  <br>\n\n`);
 
       const parts = [];
@@ -311,7 +311,7 @@ const props = [
       }
 
       while (parts.length) {
-        const until = parts.findIndex(p => Array.isArray(p));
+        const until = parts.findIndex((p) => Array.isArray(p));
         if (until === 0) {
           const lines = parts.shift();
           lines.forEach(append);
