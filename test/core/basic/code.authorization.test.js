@@ -896,7 +896,7 @@ describe('BASIC code', () => {
             expect(renderSpy.calledOnce).to.be.true;
             const renderArgs = renderSpy.args[0];
             expect(renderArgs[1]).to.have.property('error', 'redirect_uri_mismatch');
-            expect(renderArgs[1]).to.have.property('error_description', 'redirect_uri did not match any client\'s registered redirect_uris');
+            expect(renderArgs[1]).to.have.property('error_description', 'redirect_uri did not match any of the client\'s registered redirect_uris');
             expect(renderArgs[2]).to.be.an.instanceof(RedirectUriMismatch);
           });
       });

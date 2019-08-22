@@ -41,7 +41,7 @@
   },
   "dependencies": {
     "@koa/cors": "^3.0.0",
-    "@panva/jose": "^1.7.0",
+    "@panva/jose": "^1.8.0",
     "bowser": "^2.5.3",
     "debug": "^4.1.1",
     "ejs": "^2.6.2",
@@ -74,7 +74,7 @@
     "koa-router": "^7.4.0",
     "mocha": "^6.2.0",
     "moment": "^2.24.0",
-    "nock": "^11.0.0",
+    "nock": "^11.3.1",
     "nyc": "^14.1.1",
     "sinon": "^7.4.1",
     "supertest": "^4.0.2",
