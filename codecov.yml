@@ -1,12 +1,12 @@
+coverage:
+  status:
+    project: off
+    patch: off
+    changes: off
+
 comment:
   layout: diff
   behavior: once
-
-coverage:
-  status:
-    project: no
-    patch: yes
-    changes: yes
 
 ignore:
   - package.json
