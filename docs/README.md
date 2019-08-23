@@ -1078,7 +1078,7 @@ _**default value**_:
 
 [draft-ietf-oauth-mtls-15](https://tools.ietf.org/html/draft-ietf-oauth-mtls-15) - OAuth 2.0 Mutual TLS Client Authentication and Certificate Bound Access Tokens  
 
-Enables specific features from the Mutual TLS specification. The three main features have their own specific setting in this feature's configuration object and you must provide helpers for resolving some of the functions which are deployment-specific. This feature is only supported in node runtime >= 12.0.0**   
+Enables specific features from the Mutual TLS specification. The three main features have their own specific setting in this feature's configuration object and you must provide helpers for resolving some of the functions which are deployment-specific. Note: **This feature is only supported in node runtime >= 12.0.0**   
   
 
 
