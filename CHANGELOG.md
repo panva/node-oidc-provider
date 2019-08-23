@@ -2,6 +2,20 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+# [6.6.0](https://github.com/panva/node-oidc-provider/compare/v6.5.0...v6.6.0) (2019-08-23)
+
+
+### Bug Fixes
+
+* properly apply samesite=none for non-webkit browsers ([ec2ffc6](https://github.com/panva/node-oidc-provider/commit/ec2ffc6))
+
+
+### Features
+
+* added Node.js lts/dubnium support ([52e914c](https://github.com/panva/node-oidc-provider/commit/52e914c))
+
+
+
 # [6.5.0](https://github.com/panva/node-oidc-provider/compare/v6.4.2...v6.5.0) (2019-08-20)
 
 
