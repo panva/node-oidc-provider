@@ -1,4 +1,4 @@
-const { cloneDeep } = require('lodash');
+const cloneDeep = require('lodash/cloneDeep');
 
 const config = cloneDeep(require('../default.config'));
 const { Check, Prompt, base } = require('../../lib/helpers/interaction_policy');

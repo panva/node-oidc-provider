@@ -7,7 +7,7 @@ const path = require('path');
 const querystring = require('querystring');
 
 const sinon = require('sinon');
-const { flatten } = require('lodash');
+const flatten = require('lodash/flatten');
 const { agent: supertest } = require('supertest');
 const { expect } = require('chai');
 const Koa = require('koa');

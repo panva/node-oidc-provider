@@ -4,7 +4,7 @@ const nock = require('nock');
 const jose = require('@panva/jose');
 const sinon = require('sinon');
 const { expect } = require('chai');
-const { cloneDeep } = require('lodash');
+const cloneDeep = require('lodash/cloneDeep');
 
 const runtimeSupport = require('../../lib/helpers/runtime_support');
 const nanoid = require('../../lib/helpers/nanoid');

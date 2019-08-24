@@ -2,7 +2,7 @@
 
 const { parse: parseLocation } = require('url');
 
-const { get } = require('lodash');
+const get = require('lodash/get');
 const { expect } = require('chai');
 const KeyGrip = require('keygrip'); // eslint-disable-line import/no-extraneous-dependencies
 

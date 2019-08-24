@@ -4,7 +4,7 @@ const querystring = require('querystring');
 const crypto = require('crypto');
 const { inspect } = require('util');
 
-const _ = require('lodash');
+const isEmpty = require('lodash/isEmpty');
 const bodyParser = require('koa-body');
 const Router = require('koa-router');
 
@@ -14,7 +14,7 @@ const Account = require('../support/account');
 const keys = new Set();
 const debug = (obj) => querystring.stringify(Object.entries(obj).reduce((acc, [key, value]) => {
   keys.add(key);
-  if (_.isEmpty(value)) return acc;
+  if (isEmpty(value)) return acc;
   acc[key] = inspect(value, { depth: null });
   return acc;
 }, {}), '<br/>', ': ', {

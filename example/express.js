@@ -3,7 +3,7 @@
 const path = require('path');
 const url = require('url');
 
-const { set } = require('lodash');
+const set = require('lodash/set');
 const express = require('express'); // eslint-disable-line import/no-unresolved
 const helmet = require('helmet');
 

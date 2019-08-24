@@ -1,4 +1,4 @@
-const { clone } = require('lodash');
+const clone = require('lodash/clone');
 
 const config = clone(require('../default.config'));
 const { formats: { AccessToken: FORMAT } } = require('../../lib/helpers/defaults');

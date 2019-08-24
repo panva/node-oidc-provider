@@ -4,7 +4,7 @@ const { createServer } = require('http');
 
 const Mocha = require('mocha');
 const { all: clearRequireCache } = require('clear-module');
-const { sample } = require('lodash');
+const sample = require('lodash/sample');
 
 const runtimeSupport = require('../lib/helpers/runtime_support');
 

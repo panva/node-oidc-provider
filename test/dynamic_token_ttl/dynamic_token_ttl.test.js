@@ -2,7 +2,7 @@ const url = require('url');
 
 const { expect } = require('chai');
 const sinon = require('sinon');
-const { cloneDeep } = require('lodash');
+const cloneDeep = require('lodash/cloneDeep');
 
 const bootstrap = require('../test_helper');
 const JWT = require('../../lib/helpers/jwt');

@@ -2,7 +2,7 @@ const { parse: parseUrl } = require('url');
 
 const sinon = require('sinon');
 const { expect } = require('chai');
-const { snakeCase } = require('lodash');
+const snakeCase = require('lodash/snakeCase');
 
 const bootstrap = require('../test_helper');
 

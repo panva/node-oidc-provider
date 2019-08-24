@@ -1,6 +1,6 @@
 // npm i ioredis@^4.0.0
 const Redis = require('ioredis'); // eslint-disable-line import/no-unresolved
-const { isEmpty } = require('lodash');
+const isEmpty = require('lodash/isEmpty');
 
 const client = new Redis(process.env.REDIS_URL, { keyPrefix: 'oidc:' });
 

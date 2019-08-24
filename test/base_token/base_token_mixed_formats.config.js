@@ -1,4 +1,6 @@
-const { clone, sample, shuffle } = require('lodash');
+const clone = require('lodash/clone');
+const sample = require('lodash/sample');
+const shuffle = require('lodash/shuffle');
 
 const config = clone(require('../default.config'));
 const { formats: { AccessToken: FORMAT } } = require('../../lib/helpers/defaults');

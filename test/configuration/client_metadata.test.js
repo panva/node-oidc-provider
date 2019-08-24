@@ -1,9 +1,10 @@
 const util = require('util');
 
 const { expect } = require('chai');
-const {
-  camelCase, omit, pull, cloneDeep,
-} = require('lodash');
+const camelCase = require('lodash/camelCase');
+const omit = require('lodash/omit');
+const pull = require('lodash/pull');
+const cloneDeep = require('lodash/cloneDeep');
 
 const runtimeSupport = require('../../lib/helpers/runtime_support');
 const Provider = require('../../lib');

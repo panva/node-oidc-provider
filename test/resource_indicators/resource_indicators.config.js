@@ -1,7 +1,7 @@
 const { strict: assert } = require('assert');
 const { URL } = require('url');
 
-const { cloneDeep } = require('lodash');
+const cloneDeep = require('lodash/cloneDeep');
 
 const config = cloneDeep(require('../default.config'));
 const { errors: { InvalidTarget } } = require('../../lib');

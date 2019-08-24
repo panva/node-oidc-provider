@@ -2,7 +2,7 @@
 
 // npm i mongodb@^3.0.0
 const { MongoClient } = require('mongodb'); // eslint-disable-line import/no-unresolved
-const { snakeCase } = require('lodash');
+const snakeCase = require('lodash/snakeCase');
 
 let DB;
 

@@ -4,7 +4,8 @@ const { createInterface: readline } = require('readline');
 const { inspect } = require('util');
 const { createReadStream, writeFileSync, readFileSync } = require('fs');
 
-const { get, words } = require('lodash');
+const get = require('lodash/get');
+const words = require('lodash/words');
 
 const values = require('../lib/helpers/defaults');
 

@@ -2,7 +2,7 @@
 
 const path = require('path');
 
-const { set } = require('lodash');
+const set = require('lodash/set');
 const Koa = require('koa');
 const render = require('koa-ejs');
 const helmet = require('koa-helmet');

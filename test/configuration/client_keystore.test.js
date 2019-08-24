@@ -5,7 +5,7 @@ const moment = require('moment');
 const nock = require('nock');
 const sinon = require('sinon');
 const { expect } = require('chai');
-const { cloneDeep } = require('lodash');
+const cloneDeep = require('lodash/cloneDeep');
 
 const runtimeSupport = require('../../lib/helpers/runtime_support');
 const mtlsKeys = require('../jwks/jwks.json');

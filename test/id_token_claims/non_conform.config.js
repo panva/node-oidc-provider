@@ -1,4 +1,4 @@
-const { clone } = require('lodash');
+const clone = require('lodash/clone');
 
 const setup = clone(require('./conform.config'));
 

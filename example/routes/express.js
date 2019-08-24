@@ -3,7 +3,7 @@ const { strict: assert } = require('assert');
 const querystring = require('querystring');
 const { inspect } = require('util');
 
-const _ = require('lodash');
+const isEmpty = require('lodash/isEmpty');
 const { urlencoded } = require('express'); // eslint-disable-line import/no-unresolved
 
 const Account = require('../support/account');
@@ -13,7 +13,7 @@ const body = urlencoded({ extended: false });
 const keys = new Set();
 const debug = (obj) => querystring.stringify(Object.entries(obj).reduce((acc, [key, value]) => {
   keys.add(key);
-  if (_.isEmpty(value)) return acc;
+  if (isEmpty(value)) return acc;
   acc[key] = inspect(value, { depth: null });
   return acc;
 }, {}), '<br/>', ': ', {

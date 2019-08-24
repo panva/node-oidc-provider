@@ -1,4 +1,5 @@
-const { cloneDeep, pull } = require('lodash');
+const cloneDeep = require('lodash/cloneDeep');
+const pull = require('lodash/pull');
 
 const config = cloneDeep(require('../default.config'));
 

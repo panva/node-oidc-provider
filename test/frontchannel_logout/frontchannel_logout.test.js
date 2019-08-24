@@ -1,7 +1,7 @@
 const { parse: parseUrl } = require('url');
 
 const { expect } = require('chai');
-const { cloneDeep } = require('lodash');
+const cloneDeep = require('lodash/cloneDeep');
 const base64url = require('base64url');
 
 const bootstrap = require('../test_helper');

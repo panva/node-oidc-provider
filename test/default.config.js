@@ -1,4 +1,4 @@
-const { cloneDeep } = require('lodash');
+const cloneDeep = require('lodash/cloneDeep');
 
 const { JWA } = require('../lib/consts');
 

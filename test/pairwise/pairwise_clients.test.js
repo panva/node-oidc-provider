@@ -1,4 +1,5 @@
-const { map, uniq } = require('lodash');
+const map = require('lodash/map');
+const uniq = require('lodash/uniq');
 const { expect } = require('chai');
 const nock = require('nock');
 
