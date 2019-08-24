@@ -12,6 +12,7 @@
     "connect",
     "dynamic",
     "express",
+    "fapi",
     "hybrid",
     "identity",
     "implicit",

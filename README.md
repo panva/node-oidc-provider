@@ -63,8 +63,16 @@ Found a bug? - [report it][bug].
 ## Certification
 [<img width="184" height="96" align="right" src="https://cdn.jsdelivr.net/gh/panva/node-oidc-provider@acd3ebf2f5ebbb5605463cb681a1fb2ab9742ace/OpenID_Certified.png" alt="OpenID Certification">][openid-certified-link]  
 Filip Skokan has [certified][openid-certified-link] that [oidc-provider][npm-url]
-conforms to the OP Basic, OP Implicit, OP Hybrid, OP Config, OP Dynamic and OP Form Post profiles
-of the OpenID Connect™ protocol.
+conforms to the following profiles of the OpenID Connect™ protocol
+
+- [OP Basic](https://openid.net/wordpress-content/uploads/2017/01/FilipSkokan_oidc-provider_OP-Basic-02-Jan-2017.zip)
+- [OP Implicit](https://openid.net/wordpress-content/uploads/2017/01/FilipSkokan_oidc-provider_OP-Implicit-02-Jan-2017.zip)
+- [OP Hybrid](https://openid.net/wordpress-content/uploads/2017/01/FilipSkokan_oidc-provider_OP-Hybrid-02-Jan-2017.zip)
+- [OP Config](https://openid.net/wordpress-content/uploads/2017/01/FilipSkokan_oidc-provider_OP-Config-02-Jan-2017.zip)
+- [OP Dynamic](https://openid.net/wordpress-content/uploads/2017/01/FilipSkokan_oidc-provider_OP-Dynamic-02-Jan-2017.zip)
+- [OP Form Post](https://openid.net/wordpress-content/uploads/2018/06/FilipSkokan_oidc-provider_OP-FormPost-25-Jun-2018.zip)
+- [OP FAPI R/W w/ MTLS](https://openid.net/wordpress-content/uploads/2019/08/FilipSkokan_oidc-provider_OP-FAPI-RW-mtls-20-Aug-2019.zip)
+- [OP FAPI R/W w/ Private Key](httpsm://openid.net/wordpress-content/uploads/2019/08/FilipSkokan_oidc-provider_OP-FAPI-RW-private_key_jwt-20-Aug-2019.zip)
 
 
 ## Sponsor
