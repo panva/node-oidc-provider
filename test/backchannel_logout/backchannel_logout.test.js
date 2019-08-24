@@ -32,7 +32,7 @@ describe('Back-Channel Logout 1.0', () => {
           expect(decoded).to.have.property('sub', 'subject');
           expect(decoded).to.have.property('sid', 'foo');
         })
-        .post('/backchannel_logout')
+        .post('/backchannel_logout', () => true)
         .reply(200);
 
       return client.backchannelLogout('subject', 'foo');
@@ -51,7 +51,7 @@ describe('Back-Channel Logout 1.0', () => {
         .filteringRequestBody((body) => {
           expect(body).to.match(/^logout_token=(([\w-]+\.?){3})&foo=bar$/);
         })
-        .post('/backchannel_logout')
+        .post('/backchannel_logout', () => true)
         .reply(200);
 
       return client.backchannelLogout('subject', 'foo').then(() => {
@@ -72,7 +72,7 @@ describe('Back-Channel Logout 1.0', () => {
           expect(decoded).to.have.property('sub', 'subject');
           expect(decoded).not.to.have.property('sid');
         })
-        .post('/backchannel_logout')
+        .post('/backchannel_logout', () => true)
         .reply(200);
 
       return client.backchannelLogout('subject', 'foo');
