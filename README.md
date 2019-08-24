@@ -72,7 +72,7 @@ conforms to the following profiles of the OpenID Connect™ protocol
 - [OP Dynamic](https://openid.net/wordpress-content/uploads/2017/01/FilipSkokan_oidc-provider_OP-Dynamic-02-Jan-2017.zip)
 - [OP Form Post](https://openid.net/wordpress-content/uploads/2018/06/FilipSkokan_oidc-provider_OP-FormPost-25-Jun-2018.zip)
 - [OP FAPI R/W w/ MTLS](https://openid.net/wordpress-content/uploads/2019/08/FilipSkokan_oidc-provider_OP-FAPI-RW-mtls-20-Aug-2019.zip)
-- [OP FAPI R/W w/ Private Key](httpsm://openid.net/wordpress-content/uploads/2019/08/FilipSkokan_oidc-provider_OP-FAPI-RW-private_key_jwt-20-Aug-2019.zip)
+- [OP FAPI R/W w/ Private Key](https://openid.net/wordpress-content/uploads/2019/08/FilipSkokan_oidc-provider_OP-FAPI-RW-private_key_jwt-20-Aug-2019.zip)
 
 
 ## Sponsor
