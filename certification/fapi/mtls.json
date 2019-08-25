@@ -1,0 +1,199 @@
+{
+    "alias": "mtls",
+    "server": {
+        "discoveryUrl": "https://fapi.panva.cz/.well-known/openid-configuration"
+    },
+    "client": {
+        "client_id": "mtls-one",
+        "scope": "openid offline_access",
+        "jwks": {
+            "keys": [
+                {
+                    "e": "AQAB",
+                    "n": "xBJ1vPOR6ftkO5figrSjzsHzyFTiyrIYMoFiAFwvM-UypwNTfamwdgb6Q6VlCnV62Lgc1nDR_zx8Kyb1-NgBxnlwmSQ0l87kR_d-P34zEB0xSarqD-K84lJUSX0_qcCXLr4MYBiyOcYMzag-4GWaf_S1ZuTnV1NaaEL4lHpfocFeXok9a9XznuSzol5C8Kd5AS5ahq7UTxSCGvttKpL5xYeWXJ0Zjpptr3AJyOzmjXNq0ix1W75BbmPJjBMfK7bYatHUMsstVHLnYt3CwiNsfD8dKkBVKlh-C4DWo-1WY5VNTTxPC47Ejy2rGbDLJ9MLdtn6Pr-WyW2mdzd0EKjNFQ",
+                    "d": "quAXoet3373KFbGBoz2AgOFA7vcji1j4g5OEcCHmtUhrA2h_q8Vl1wavtqJ-00WdISAbabt7GACDiivzM8I0kd8mBSCrgR26jwmfCgCWydVXLgd44w1MZcUwVbeE8xC38PGJ4XnEYVs7r0OQQInrwtXl_d1BzDYFVVYAQ43-p_1SGASfHv052IJjPKgePFoeheT1xVNS1fCZTSWmFEVPXhbY_LQpnm8DwkR5-hmX-oSjjaJHQoHh4OP8uJ25YAwoMs3-7QOardbEu_DsseeWoQ1MRjnovDWxsxCWa-XTMIPrwF4zP4y-WbtVFILFH7e5fo2WLd5vYSxjOJkiW3TSJQ",
+                    "p": "4ZNvp0u6vXQAf7IGESuhu3u4cD6K8iJ6BT-O64yHJzc17e9lt-p89GasTtkgeEH_lr-XxScVBYndi_8vaqsA47bkIoWVvcXq7C4jkv0bPelpaI_KPGfoZC1etR102-dS1ZufxzwSo64drw-HPuwaIkXvmpK4MBI9jEYoOHh9KR8",
+                    "q": "3oRU_iCWvKOGHlR9BmcBysVGmkvBwj8XLTJGfxJkm3M9utLSg0uNo7vW0Zm88KdzdeaRBt6ltZAG3hBL0mHNwC0hYRv5fzO7yczWFLPXbUNVqC5OLI-wTL7-ikx040lL9IRRtgub47-9IvxxaGaIRzsFwa-15D7TCE7K8BydH0s",
+                    "dp": "ivnkC2VL2tcyS3op5MBF95Vk77qIrl9xX_RloFfHGPEaB8q7l5EfhRAQzs9VAuJejsjhv7SxbeUfmtYQp55NgP44FdDJjc73SqWugyvvcbhxmdslFQxLkBSnydwpGCav0Sz9RqmLLk7iuO1PPQQHoeAGm-wTEILcaqT6uLf7HK8",
+                    "dq": "TpZaFi6YTiNKuOeKCHrUzTKDTvc2hU4W92VsNHDgi25V_Od8ZdaHPa6Xngs4CZ56TseRrOVxjQBDDKagwLq-GgNWaJ-irGQvDISFj2Y8zWAcnntMLLzKvTAvYdTC64r1gnRBD5RmCDetqu-RdhfQRaf4zoEqMmRlz-dUER1p-KU",
+                    "qi": "ITLsaxLewCPcaJOYKRW9HeApKVIqYlQuYj7wShPq3NiEy_KqgIc-2WXYMfMF6oDoiXYMrP6AVsqWfb4us9StvauAr17yp1kf1ffpazy71gD9VqwZBFQUgBwVw1agEFfv2cFD_z3Os-5to3ZGH0Eq5QQYsoDMN_UkjOx5SvyN2_A",
+                    "kty": "RSA",
+                    "kid": "rxZogVFbs1tz36D4tmlW0yEHUTfD_mxyF3RSWBe5eHI",
+                    "alg": "PS256",
+                    "use": "sig",
+                    "x5c": [
+                        "MIIC4DCCAcgCCQDuBF1vmG5mlDANBgkqhkiG9w0BAQsFADAyMQswCQYDVQQGEwJDWjEPMA0GA1UEBwwGUHJhZ3VlMRIwEAYDVQQDDAlwa210bHNvbmUwHhcNMTkwNjE4MTIzMTA2WhcNMjAwNjE3MTIzMTA2WjAyMQswCQYDVQQGEwJDWjEPMA0GA1UEBwwGUHJhZ3VlMRIwEAYDVQQDDAlwa210bHNvbmUwggEiMA0GCSqGSIb3DQEBAQUAA4IBDwAwggEKAoIBAQDEEnW885Hp+2Q7l+KCtKPOwfPIVOLKshgygWIAXC8z5TKnA1N9qbB2BvpDpWUKdXrYuBzWcNH/PHwrJvX42AHGeXCZJDSXzuRH934/fjMQHTFJquoP4rziUlRJfT+pwJcuvgxgGLI5xgzNqD7gZZp/9LVm5OdXU1poQviUel+hwV5eiT1r1fOe5LOiXkLwp3kBLlqGrtRPFIIa+20qkvnFh5ZcnRmOmm2vcAnI7OaNc2rSLHVbvkFuY8mMEx8rtthq0dQyyy1Ucudi3cLCI2x8Px0qQFUqWH4LgNaj7VZjlU1NPE8LjsSPLasZsMsn0wt22fo+v5bJbaZ3N3QQqM0VAgMBAAEwDQYJKoZIhvcNAQELBQADggEBAFGKYDieCWZ63Fx9jMhtlPlHUgkR6bmKqGwvZuVAe9Zz+sHvbVtTk/4AEOjSozksxf070O1PnK3zY0SuZynhKJnTaFouN45iMnnNQS6XMKd9Tm5WpSRbxfaOeuIZybvOmNy0nuxkvqcE5fXIyr9bDCO9WEArQIQqjGJ93zKJpV2nT9Q7heTK430z7Hp3+XxwGXoKsLW/jebr3ryWTMEv8ouEbXeCz2OH6Oup8UIwXDyjYxwhwS5FAcRQdh4KnhHOLGYVAuVR3wPewtrTioYznFdfwtDHGd9fZVxrXPlVqCksj0CTnPf7UgXtjm2hTfkwHHtW2BegWR/q3+q9gs7uehc="
+                    ],
+                    "x5t": "0kFgi4-EyhgGy_GBL-YBKAczzRM",
+                    "x5t#S256": "E-TFTHXRZVsBSvZ5p5mc7ZZMle2Urpv9yr9PdGcOqXQ"
+                }
+            ]
+        }
+    },
+    "mtls": {
+        "cert": "-----BEGIN CERTIFICATE-----\nMIIC4DCCAcgCCQDuBF1vmG5mlDANBgkqhkiG9w0BAQsFADAyMQswCQYDVQQGEwJD\nWjEPMA0GA1UEBwwGUHJhZ3VlMRIwEAYDVQQDDAlwa210bHNvbmUwHhcNMTkwNjE4\nMTIzMTA2WhcNMjAwNjE3MTIzMTA2WjAyMQswCQYDVQQGEwJDWjEPMA0GA1UEBwwG\nUHJhZ3VlMRIwEAYDVQQDDAlwa210bHNvbmUwggEiMA0GCSqGSIb3DQEBAQUAA4IB\nDwAwggEKAoIBAQDEEnW885Hp+2Q7l+KCtKPOwfPIVOLKshgygWIAXC8z5TKnA1N9\nqbB2BvpDpWUKdXrYuBzWcNH/PHwrJvX42AHGeXCZJDSXzuRH934/fjMQHTFJquoP\n4rziUlRJfT+pwJcuvgxgGLI5xgzNqD7gZZp/9LVm5OdXU1poQviUel+hwV5eiT1r\n1fOe5LOiXkLwp3kBLlqGrtRPFIIa+20qkvnFh5ZcnRmOmm2vcAnI7OaNc2rSLHVb\nvkFuY8mMEx8rtthq0dQyyy1Ucudi3cLCI2x8Px0qQFUqWH4LgNaj7VZjlU1NPE8L\njsSPLasZsMsn0wt22fo+v5bJbaZ3N3QQqM0VAgMBAAEwDQYJKoZIhvcNAQELBQAD\nggEBAFGKYDieCWZ63Fx9jMhtlPlHUgkR6bmKqGwvZuVAe9Zz+sHvbVtTk/4AEOjS\nozksxf070O1PnK3zY0SuZynhKJnTaFouN45iMnnNQS6XMKd9Tm5WpSRbxfaOeuIZ\nybvOmNy0nuxkvqcE5fXIyr9bDCO9WEArQIQqjGJ93zKJpV2nT9Q7heTK430z7Hp3\n+XxwGXoKsLW/jebr3ryWTMEv8ouEbXeCz2OH6Oup8UIwXDyjYxwhwS5FAcRQdh4K\nnhHOLGYVAuVR3wPewtrTioYznFdfwtDHGd9fZVxrXPlVqCksj0CTnPf7UgXtjm2h\nTfkwHHtW2BegWR/q3+q9gs7uehc=\n-----END CERTIFICATE-----\n",
+        "key": "-----BEGIN PRIVATE KEY-----\nMIIEvgIBADANBgkqhkiG9w0BAQEFAASCBKgwggSkAgEAAoIBAQDEEnW885Hp+2Q7\nl+KCtKPOwfPIVOLKshgygWIAXC8z5TKnA1N9qbB2BvpDpWUKdXrYuBzWcNH/PHwr\nJvX42AHGeXCZJDSXzuRH934/fjMQHTFJquoP4rziUlRJfT+pwJcuvgxgGLI5xgzN\nqD7gZZp/9LVm5OdXU1poQviUel+hwV5eiT1r1fOe5LOiXkLwp3kBLlqGrtRPFIIa\n+20qkvnFh5ZcnRmOmm2vcAnI7OaNc2rSLHVbvkFuY8mMEx8rtthq0dQyyy1Ucudi\n3cLCI2x8Px0qQFUqWH4LgNaj7VZjlU1NPE8LjsSPLasZsMsn0wt22fo+v5bJbaZ3\nN3QQqM0VAgMBAAECggEBAKrgF6Hrd9+9yhWxgaM9gIDhQO73I4tY+IOThHAh5rVI\nawNof6vFZdcGr7aiftNFnSEgG2m7exgAg4or8zPCNJHfJgUgq4Eduo8JnwoAlsnV\nVy4HeOMNTGXFMFW3hPMQt/DxieF5xGFbO69DkECJ68LV5f3dQcw2BVVWAEON/qf9\nUhgEnx79OdiCYzyoHjxaHoXk9cVTUtXwmU0lphRFT14W2Py0KZ5vA8JEefoZl/qE\no42iR0KB4eDj/LiduWAMKDLN/u0Dmq3WxLvw7LHnlqENTEY56Lw1sbMQlmvl0zCD\n68BeMz+Mvlm7VRSCxR+3uX6Nli3eb2EsYziZIlt00iUCgYEA4ZNvp0u6vXQAf7IG\nESuhu3u4cD6K8iJ6BT+O64yHJzc17e9lt+p89GasTtkgeEH/lr+XxScVBYndi/8v\naqsA47bkIoWVvcXq7C4jkv0bPelpaI/KPGfoZC1etR102+dS1ZufxzwSo64drw+H\nPuwaIkXvmpK4MBI9jEYoOHh9KR8CgYEA3oRU/iCWvKOGHlR9BmcBysVGmkvBwj8X\nLTJGfxJkm3M9utLSg0uNo7vW0Zm88KdzdeaRBt6ltZAG3hBL0mHNwC0hYRv5fzO7\nyczWFLPXbUNVqC5OLI+wTL7+ikx040lL9IRRtgub47+9IvxxaGaIRzsFwa+15D7T\nCE7K8BydH0sCgYEAivnkC2VL2tcyS3op5MBF95Vk77qIrl9xX/RloFfHGPEaB8q7\nl5EfhRAQzs9VAuJejsjhv7SxbeUfmtYQp55NgP44FdDJjc73SqWugyvvcbhxmdsl\nFQxLkBSnydwpGCav0Sz9RqmLLk7iuO1PPQQHoeAGm+wTEILcaqT6uLf7HK8CgYBO\nlloWLphOI0q454oIetTNMoNO9zaFThb3ZWw0cOCLblX853xl1oc9rpeeCzgJnnpO\nx5Gs5XGNAEMMpqDAur4aA1Zon6KsZC8MhIWPZjzNYByee0wsvMq9MC9h1MLrivWC\ndEEPlGYIN62q75F2F9BFp/jOgSoyZGXP51QRHWn4pQKBgCEy7GsS3sAj3GiTmCkV\nvR3gKSlSKmJULmI+8EoT6tzYhMvyqoCHPtll2DHzBeqA6Il2DKz+gFbKln2+LrPU\nrb2rgK9e8qdZH9X36Ws8u9YA/VasGQRUFIAcFcNWoBBX79nBQ/89zrPubaN2Rh9B\nKuUEGLKAzDf1JIzseUr8jdvw\n-----END PRIVATE KEY-----\n"
+    },
+    "client2": {
+        "client_id": "mtls-two",
+        "scope": "openid",
+        "jwks": {
+            "keys": [
+                {
+                    "e": "AQAB",
+                    "n": "4alQGjLL5whE8w7SsHysWQtY8CDoSMlKfMaftqDfqScLaj9FKZC5U1ezA_eB2Ui9593_YbBumqaUUBhgCdk4TsNTfc5QK-0pPWB-hrbt22Eg70usGio1aMRq65i38rqBG79zw6jFrjoxNzE_xtZ8FAYCBCmAK_IYs2PHVBNGdqlryhWSY-nrYwlxKaY17sJUrrB1sP7Y_3jzDMTACTDz4cyXoegC-4lCgYrCcrD7mlq0vZ7XT8b_T0uNLL-nGU-MKMZhOraUwpAMWm16gNuUoCTsijo574PgTzZa7nC6h8NxK1q8WEy_fXB6oXsTuiuBWrKVt_tZLlnd32OApvs5Ew",
+                    "d": "SlRt2SNQPJphs7n3NkDquC3frsD4IjmDepQmOY7F_T6qKOYMTwOnt8cUZUMal0q5mu1p2HC4DeK-yZ8tyzCstmzqTG8vwzhMNDZblt4cfP2CTrAbUUcD7q18FnxoYuCB9HTcmd82tgve-DIVstYlaqcL9PkCifcloblFB_GNbToEdiHqRNbHvVZLMYGYsShkiyFVL61h5zkFgQCBv-kR5u3AWGGGtlhZ3dvU7-i0P7n4dKseQyyd9v_QcW4iW8b3f6izn4plQNcPbb4o0iAdhpnjYxCOwxc8TGZvHul_RYnlFGuiKUXSV_r_t_dEppsKM4moJ8n6qzsoZf6czR5NwQ",
+                    "p": "_supybPbDRLiAWtiYxGSGIVV41UTvV5LrKjd2qCslOPF_iYOP1wyTFOjUWjBHWqaaPCYMpK4NIdnDUuCQ5K8Nz8FaIWkdUksDXJYO3FZR-dBzulkyKwNZQE-1VwT7MYlIih695zaYdtnIRw0cN6oYW5bheDYdE13SzcLK3XGMqE",
+                    "q": "4rpkthJwjk-brxKVuDIxUVXiwbArdbQLn1UXBdl54Mn4C5ntMy50BofGaqxx6WZoGUATNwD5w7Sf1KsxCMIObLr6xNVNpUnI766VaV69WYiFdB3N8BBi3L4Jmb1hLXIyX2WITTHY2w5UKOYwD6pKCa5FldqArm5slJCpmtffQzM",
+                    "dp": "ApnXoNx6JvcDYZpUBcjfIeryhoCO1AcLZLbQlPPA70An_EEtMg5h4Q-VgjY8im1VKC8Ujqeaw8aCEcush74Ot82n43pBxIS7s2NwbSLqE2bT8CXHxpijBl3t40WuWmNna6LYJoDuZcNUmSztiB1twJjczFAQRZeo2Ra1wXrRTCE",
+                    "dq": "jpFaZsrtj-8rHEl5b9vP-y8gaV7X1Smj7UraMUlxRBJ8MP9Xkklxl_GkqMtKzdMhPk92Ra4NYCyiHF6RdMphu6lPqpneO0NMYLrNJPb35ebc1Akxx_Tl1ZyB-PSGuMcIOchkjvX7QLOf5B_qtM8Fw1ScWQCOziCNklXs8Hsx3tU",
+                    "qi": "Z_CBJI5NGWkGZjkLM4fqq8U2hFM9Y5IHsn9Y8vvst3-mCqcFhTS7TcYUY00qdiFXAJjiwhfGFOoc0q-AWluiUxB-b6FWRu73XhqkKxgBehE9i3QCrcitMufSkXKydLonfh7_PeUpB63LmMjtyLdMlGAIorVbtD1xAn2WaYuEb5Q",
+                    "kty": "RSA",
+                    "kid": "LJuZnTrnhtSbpcjnu4pq3Xvrmzy6sI_fUOd7L7Bh9to",
+                    "alg": "PS256",
+                    "use": "sig",
+                    "x5c": [
+                        "MIIC4DCCAcgCCQDO8JBSH914NDANBgkqhkiG9w0BAQsFADAyMQswCQYDVQQGEwJDWjEPMA0GA1UEBwwGUHJhZ3VlMRIwEAYDVQQDDAlwa210bHN0d28wHhcNMTkwNjE4MTIzMjAxWhcNMjAwNjE3MTIzMjAxWjAyMQswCQYDVQQGEwJDWjEPMA0GA1UEBwwGUHJhZ3VlMRIwEAYDVQQDDAlwa210bHN0d28wggEiMA0GCSqGSIb3DQEBAQUAA4IBDwAwggEKAoIBAQDhqVAaMsvnCETzDtKwfKxZC1jwIOhIyUp8xp+2oN+pJwtqP0UpkLlTV7MD94HZSL3n3f9hsG6appRQGGAJ2ThOw1N9zlAr7Sk9YH6Gtu3bYSDvS6waKjVoxGrrmLfyuoEbv3PDqMWuOjE3MT/G1nwUBgIEKYAr8hizY8dUE0Z2qWvKFZJj6etjCXEppjXuwlSusHWw/tj/ePMMxMAJMPPhzJeh6AL7iUKBisJysPuaWrS9ntdPxv9PS40sv6cZT4woxmE6tpTCkAxabXqA25SgJOyKOjnvg+BPNlrucLqHw3ErWrxYTL99cHqhexO6K4FaspW3+1kuWd3fY4Cm+zkTAgMBAAEwDQYJKoZIhvcNAQELBQADggEBALsB6MGWke5vS1TB3Z+NJkC29bEIb3XGC9WaxRovH0jqaaua2AfAF7VZzUyWS/+r6hvWOtqUVy7YF1ThnEJXuXJG9ra2B2+F5RYNCtrVj6Bi+zDTSJ4IvQfrF0XBKwwOdRu7VJpAxvweA/3woKl6Cjfy20ZupPH9mxr1R78BMKgEtdFsiLwbB7MOdDbTLsrUcEcupXv+gZek22upQKrAk/XFP067KIqKmCEhDidxhP251SloUaruv9cHEx0aDKol9eR465FAiBLvg2N7qJHCKlWdn99SgN4Y3kINsuFR7Tj4QIJZNubOjV0YeOgnAWzRJlZD89KZAQgjj4Z215QeLxA="
+                    ],
+                    "x5t": "xkIW9nPvLhxD6vTqlVtV-PpZjOs",
+                    "x5t#S256": "B_QzvtQ9biL043xj_ADE7e9MUdWwbdAr3W3W7JHbK9c"
+                }
+            ]
+        }
+    },
+    "mtls2": {
+        "cert": "-----BEGIN CERTIFICATE-----\nMIIC4DCCAcgCCQDO8JBSH914NDANBgkqhkiG9w0BAQsFADAyMQswCQYDVQQGEwJD\nWjEPMA0GA1UEBwwGUHJhZ3VlMRIwEAYDVQQDDAlwa210bHN0d28wHhcNMTkwNjE4\nMTIzMjAxWhcNMjAwNjE3MTIzMjAxWjAyMQswCQYDVQQGEwJDWjEPMA0GA1UEBwwG\nUHJhZ3VlMRIwEAYDVQQDDAlwa210bHN0d28wggEiMA0GCSqGSIb3DQEBAQUAA4IB\nDwAwggEKAoIBAQDhqVAaMsvnCETzDtKwfKxZC1jwIOhIyUp8xp+2oN+pJwtqP0Up\nkLlTV7MD94HZSL3n3f9hsG6appRQGGAJ2ThOw1N9zlAr7Sk9YH6Gtu3bYSDvS6wa\nKjVoxGrrmLfyuoEbv3PDqMWuOjE3MT/G1nwUBgIEKYAr8hizY8dUE0Z2qWvKFZJj\n6etjCXEppjXuwlSusHWw/tj/ePMMxMAJMPPhzJeh6AL7iUKBisJysPuaWrS9ntdP\nxv9PS40sv6cZT4woxmE6tpTCkAxabXqA25SgJOyKOjnvg+BPNlrucLqHw3ErWrxY\nTL99cHqhexO6K4FaspW3+1kuWd3fY4Cm+zkTAgMBAAEwDQYJKoZIhvcNAQELBQAD\nggEBALsB6MGWke5vS1TB3Z+NJkC29bEIb3XGC9WaxRovH0jqaaua2AfAF7VZzUyW\nS/+r6hvWOtqUVy7YF1ThnEJXuXJG9ra2B2+F5RYNCtrVj6Bi+zDTSJ4IvQfrF0XB\nKwwOdRu7VJpAxvweA/3woKl6Cjfy20ZupPH9mxr1R78BMKgEtdFsiLwbB7MOdDbT\nLsrUcEcupXv+gZek22upQKrAk/XFP067KIqKmCEhDidxhP251SloUaruv9cHEx0a\nDKol9eR465FAiBLvg2N7qJHCKlWdn99SgN4Y3kINsuFR7Tj4QIJZNubOjV0YeOgn\nAWzRJlZD89KZAQgjj4Z215QeLxA=\n-----END CERTIFICATE-----\n",
+        "key": "-----BEGIN PRIVATE KEY-----\nMIIEvQIBADANBgkqhkiG9w0BAQEFAASCBKcwggSjAgEAAoIBAQDhqVAaMsvnCETz\nDtKwfKxZC1jwIOhIyUp8xp+2oN+pJwtqP0UpkLlTV7MD94HZSL3n3f9hsG6appRQ\nGGAJ2ThOw1N9zlAr7Sk9YH6Gtu3bYSDvS6waKjVoxGrrmLfyuoEbv3PDqMWuOjE3\nMT/G1nwUBgIEKYAr8hizY8dUE0Z2qWvKFZJj6etjCXEppjXuwlSusHWw/tj/ePMM\nxMAJMPPhzJeh6AL7iUKBisJysPuaWrS9ntdPxv9PS40sv6cZT4woxmE6tpTCkAxa\nbXqA25SgJOyKOjnvg+BPNlrucLqHw3ErWrxYTL99cHqhexO6K4FaspW3+1kuWd3f\nY4Cm+zkTAgMBAAECggEASlRt2SNQPJphs7n3NkDquC3frsD4IjmDepQmOY7F/T6q\nKOYMTwOnt8cUZUMal0q5mu1p2HC4DeK+yZ8tyzCstmzqTG8vwzhMNDZblt4cfP2C\nTrAbUUcD7q18FnxoYuCB9HTcmd82tgve+DIVstYlaqcL9PkCifcloblFB/GNbToE\ndiHqRNbHvVZLMYGYsShkiyFVL61h5zkFgQCBv+kR5u3AWGGGtlhZ3dvU7+i0P7n4\ndKseQyyd9v/QcW4iW8b3f6izn4plQNcPbb4o0iAdhpnjYxCOwxc8TGZvHul/RYnl\nFGuiKUXSV/r/t/dEppsKM4moJ8n6qzsoZf6czR5NwQKBgQD+y6nJs9sNEuIBa2Jj\nEZIYhVXjVRO9XkusqN3aoKyU48X+Jg4/XDJMU6NRaMEdappo8Jgykrg0h2cNS4JD\nkrw3PwVohaR1SSwNclg7cVlH50HO6WTIrA1lAT7VXBPsxiUiKHr3nNph22chHDRw\n3qhhbluF4Nh0TXdLNwsrdcYyoQKBgQDiumS2EnCOT5uvEpW4MjFRVeLBsCt1tAuf\nVRcF2XngyfgLme0zLnQGh8ZqrHHpZmgZQBM3APnDtJ/UqzEIwg5suvrE1U2lScjv\nrpVpXr1ZiIV0Hc3wEGLcvgmZvWEtcjJfZYhNMdjbDlQo5jAPqkoJrkWV2oCubmyU\nkKma199DMwKBgAKZ16Dceib3A2GaVAXI3yHq8oaAjtQHC2S20JTzwO9AJ/xBLTIO\nYeEPlYI2PIptVSgvFI6nmsPGghHLrIe+DrfNp+N6QcSEu7NjcG0i6hNm0/Alx8aY\nowZd7eNFrlpjZ2ui2CaA7mXDVJks7YgdbcCY3MxQEEWXqNkWtcF60UwhAoGBAI6R\nWmbK7Y/vKxxJeW/bz/svIGle19Upo+1K2jFJcUQSfDD/V5JJcZfxpKjLSs3TIT5P\ndkWuDWAsohxekXTKYbupT6qZ3jtDTGC6zST29+Xm3NQJMcf05dWcgfj0hrjHCDnI\nZI71+0Czn+Qf6rTPBcNUnFkAjs4gjZJV7PB7Md7VAoGAZ/CBJI5NGWkGZjkLM4fq\nq8U2hFM9Y5IHsn9Y8vvst3+mCqcFhTS7TcYUY00qdiFXAJjiwhfGFOoc0q+AWlui\nUxB+b6FWRu73XhqkKxgBehE9i3QCrcitMufSkXKydLonfh7/PeUpB63LmMjtyLdM\nlGAIorVbtD1xAn2WaYuEb5Q=\n-----END PRIVATE KEY-----\n  \n"
+    },
+    "resource": {
+        "resourceUrl": "https://mtls.fapi.panva.cz/accounts",
+        "institution_id": "xxxxx"
+    },
+    "browser": [
+        {
+            "match": "https://fapi.panva.cz/auth*",
+            "tasks": [
+                {
+                    "task": "Login",
+                    "optional": true,
+                    "match": "https://fapi.panva.cz/interaction*",
+                    "commands": [
+                        [
+                            "text",
+                            "name",
+                            "login",
+                            "foo"
+                        ],
+                        [
+                            "text",
+                            "name",
+                            "password",
+                            "bar"
+                        ],
+                        [
+                            "click",
+                            "class",
+                            "login-submit"
+                        ]
+                    ]
+                },
+                {
+                    "task": "Consent",
+                    "optional": true,
+                    "match": "https://fapi.panva.cz/interaction*",
+                    "commands": [
+                        [
+                            "click",
+                            "class",
+                            "login-submit"
+                        ]
+                    ]
+                },
+                {
+                    "task": "Verify Complete",
+                    "match": "https://*/test/a/mtls/callback*",
+                    "commands": [
+                        [
+                            "wait",
+                            "id",
+                            "submission_complete",
+                            10
+                        ]
+                    ]
+                }
+            ]
+        }
+    ],
+    "override": {
+        "fapi-rw-id2-ensure-redirect-uri-in-authorization-request": {
+            "browser": [
+                {
+                    "comment": "expect an immediate error page",
+                    "match": "https://fapi.panva.cz/auth*",
+                    "tasks": [
+                        {
+                            "task": "Expect redirect uri mismatch error page",
+                            "match": "https://fapi.panva.cz/auth*",
+                            "commands": [
+                                [
+                                    "wait",
+                                    "xpath",
+                                    "//*",
+                                    10,
+                                    "oops! something went wrong",
+                                    "update-image-placeholder"
+                                ]
+                            ]
+                        }
+                    ]
+                }
+            ]
+        },
+        "fapi-rw-id2-ensure-registered-redirect-uri": {
+            "browser": [
+                {
+                    "comment": "expect an immediate error page",
+                    "match": "https://fapi.panva.cz/auth*",
+                    "tasks": [
+                        {
+                            "task": "Expect redirect uri mismatch error page",
+                            "match": "https://fapi.panva.cz/auth*",
+                            "commands": [
+                                [
+                                    "wait",
+                                    "xpath",
+                                    "//*",
+                                    10,
+                                    "oops! something went wrong",
+                                    "update-image-placeholder"
+                                ]
+                            ]
+                        }
+                    ]
+                }
+            ]
+        },
+        "fapi-rw-id2-user-rejects-authentication": {
+            "browser": [
+                {
+                    "comment": "Rejects interaction",
+                    "match": "https://fapi.panva.cz/auth*",
+                    "tasks": [
+                        {
+                            "task": "Clicks cancel",
+                            "match": "https://fapi.panva.cz/interaction*",
+                            "commands": [
+                                [
+                                    "click",
+                                    "xpath",
+                                    "//*/a"
+                                ]
+                            ]
+                        }
+                    ]
+                }
+            ]
+        }
+    },
+    "description": "oidc-provider MTLS"
+}
