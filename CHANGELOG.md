@@ -2,6 +2,15 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [6.6.1](https://github.com/panva/node-oidc-provider/compare/v6.6.0...v6.6.1) (2019-08-25)
+
+
+### Bug Fixes
+
+* extend interactionDetails to allow (req, res) ([e1d69cf](https://github.com/panva/node-oidc-provider/commit/e1d69cf)), closes [#517](https://github.com/panva/node-oidc-provider/issues/517)
+
+
+
 # [6.6.0](https://github.com/panva/node-oidc-provider/compare/v6.5.0...v6.6.0) (2019-08-23)
 
 
