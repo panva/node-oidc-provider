@@ -63,7 +63,6 @@ module.exports = {
   features: {
     backchannelLogout: { enabled: true },
     devInteractions: { enabled: false },
-    ietfJWTAccessTokenProfile: { enabled: true },
     mTLS: {
       enabled: true,
       certificateBoundAccessTokens: true,

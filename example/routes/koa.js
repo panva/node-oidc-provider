@@ -44,7 +44,7 @@ module.exports = (provider) => {
   router.get('/interaction/:uid', async (ctx, next) => {
     const {
       uid, prompt, params, session,
-    } = await provider.interactionDetails(ctx.req);
+    } = await provider.interactionDetails(ctx.req, ctx.res);
     const client = await provider.Client.find(params.client_id);
 
     switch (prompt.name) {
@@ -113,7 +113,7 @@ module.exports = (provider) => {
   router.get('/interaction/callback/google', (ctx) => ctx.render('repost', { provider: 'google', layout: false }));
 
   router.post('/interaction/:uid/login', body, async (ctx) => {
-    const { prompt: { name } } = await provider.interactionDetails(ctx.req);
+    const { prompt: { name } } = await provider.interactionDetails(ctx.req, ctx.res);
     assert.equal(name, 'login');
 
     const account = await Account.findByLogin(ctx.request.body.login);
@@ -132,7 +132,7 @@ module.exports = (provider) => {
   });
 
   router.post('/interaction/:uid/federated', body, async (ctx) => {
-    const { prompt: { name } } = await provider.interactionDetails(ctx.req);
+    const { prompt: { name } } = await provider.interactionDetails(ctx.req, ctx.res);
     assert.equal(name, 'login');
 
     const path = `/interaction/${ctx.params.uid}/federated`;
@@ -177,7 +177,7 @@ module.exports = (provider) => {
   });
 
   router.post('/interaction/:uid/continue', body, async (ctx) => {
-    const interaction = await provider.interactionDetails(ctx.req);
+    const interaction = await provider.interactionDetails(ctx.req, ctx.res);
     const { prompt: { name, details } } = interaction;
     assert.equal(name, 'select_account');
 
@@ -199,7 +199,7 @@ module.exports = (provider) => {
   });
 
   router.post('/interaction/:uid/confirm', body, async (ctx) => {
-    const { prompt: { name, details } } = await provider.interactionDetails(ctx.req);
+    const { prompt: { name, details } } = await provider.interactionDetails(ctx.req, ctx.res);
     assert.equal(name, 'consent');
 
     const consent = {};

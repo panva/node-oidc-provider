@@ -48,7 +48,7 @@ module.exports = (app, provider) => {
     try {
       const {
         uid, prompt, params, session,
-      } = await provider.interactionDetails(req);
+      } = await provider.interactionDetails(req, res);
 
       const client = await provider.Client.find(params.client_id);
 
@@ -113,7 +113,7 @@ module.exports = (app, provider) => {
 
   app.post('/interaction/:uid/login', setNoCache, body, async (req, res, next) => {
     try {
-      const { prompt: { name } } = await provider.interactionDetails(req);
+      const { prompt: { name } } = await provider.interactionDetails(req, res);
       assert.equal(name, 'login');
       const account = await Account.findByLogin(req.body.login);
 
@@ -133,7 +133,7 @@ module.exports = (app, provider) => {
 
   app.post('/interaction/:uid/continue', setNoCache, body, async (req, res, next) => {
     try {
-      const interaction = await provider.interactionDetails(req);
+      const interaction = await provider.interactionDetails(req, res);
       const { prompt: { name, details } } = interaction;
       assert.equal(name, 'select_account');
 
@@ -157,7 +157,7 @@ module.exports = (app, provider) => {
 
   app.post('/interaction/:uid/confirm', setNoCache, body, async (req, res, next) => {
     try {
-      const { prompt: { name, details } } = await provider.interactionDetails(req);
+      const { prompt: { name, details } } = await provider.interactionDetails(req, res);
       assert.equal(name, 'consent');
 
       const consent = {};

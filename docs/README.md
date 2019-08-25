@@ -185,17 +185,17 @@ packing the results. See them used in the [step-by-step](https://github.com/panv
 or [in-repo](/example) examples.
 
 
-**`#provider.interactionDetails(req)`**
+**`#provider.interactionDetails(req, res)`**
 ```js
 // with express
 expressApp.get('/interaction/:uid', async (req, res) => {
-  const details = await provider.interactionDetails(req);
+  const details = await provider.interactionDetails(req, res);
   // ...
 });
 
 // with koa
 router.get('/interaction/:uid', async (ctx, next) => {
-  const details = await provider.interactionDetails(ctx.req);
+  const details = await provider.interactionDetails(ctx.req, ctx.res);
   // ...
 });
 ```
