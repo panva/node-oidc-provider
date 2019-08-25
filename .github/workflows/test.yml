@@ -127,6 +127,7 @@ jobs:
       - deploy
     strategy:
       fail-fast: false
+      max-parallel: 1
       matrix:
         profile:
           - planName: fapi-rw-id2-test-plan

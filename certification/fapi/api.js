@@ -22,7 +22,7 @@ class API {
       },
       json: true,
       retry: 0,
-      timeout: 5000,
+      timeout: 10000,
     });
 
     this.get = get;
