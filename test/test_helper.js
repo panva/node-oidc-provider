@@ -104,7 +104,7 @@ module.exports = function testHelper(dir, { config: base = path.basename(dir), m
 
     session.authorizations = {};
     clients.forEach((cl) => {
-      const ctx = new provider.OIDCContext({});
+      const ctx = new provider.OIDCContext({ req: { socket: {} }, res: {} });
       ctx.params = { scope, claims };
 
       if (ctx.params.claims && typeof ctx.params.claims !== 'string') {
