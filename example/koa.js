@@ -27,7 +27,6 @@ render(app, {
 });
 
 if (process.env.NODE_ENV === 'production') {
-  app.keys = configuration.cookies.keys;
   app.proxy = true;
   set(configuration, 'cookies.short.secure', true);
   set(configuration, 'cookies.long.secure', true);
