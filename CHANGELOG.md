@@ -2,6 +2,15 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [6.6.2](https://github.com/panva/node-oidc-provider/compare/v6.6.1...v6.6.2) (2019-08-26)
+
+
+### Bug Fixes
+
+* do not use mounted app's ctx.cookies ([ce0c06d](https://github.com/panva/node-oidc-provider/commit/ce0c06d)), closes [#517](https://github.com/panva/node-oidc-provider/issues/517)
+
+
+
 ## [6.6.1](https://github.com/panva/node-oidc-provider/compare/v6.6.0...v6.6.1) (2019-08-25)
 
 
