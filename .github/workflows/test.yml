@@ -66,8 +66,6 @@ jobs:
 
   oidc-conformance:
     runs-on: ubuntu-latest
-    needs:
-      - test
     strategy:
       fail-fast: false
       matrix:
@@ -105,8 +103,6 @@ jobs:
 
   fapi-conformance:
     runs-on: ubuntu-latest
-    needs:
-      - test
     steps:
       - uses: actions/checkout@master
       - env:
@@ -154,6 +150,7 @@ jobs:
   deploy:
     runs-on: ubuntu-latest
     needs:
+      - test
       - oidc-conformance
       - fapi-conformance
     strategy:

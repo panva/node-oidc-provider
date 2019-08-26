@@ -126,6 +126,10 @@ const fapi = new Server(ISSUER, {
       certificateBoundAccessTokens: true,
       selfSignedTlsClientAuth: true,
       getCertificate(ctx) {
+        if (SUITE_BASE_URL === OFFICIAL_CERTIFICATION) {
+          return unescape(ctx.get('x-ssl-client-cert').replace(/\+/g, ' '));
+        }
+
         const peerCertificate = ctx.socket.getPeerCertificate();
         if (peerCertificate.raw) {
           return `-----BEGIN CERTIFICATE-----\n${peerCertificate.raw.toString('base64').match(/.{1,64}/g).join('\n')}\n-----END CERTIFICATE-----`;
