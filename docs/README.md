@@ -1032,7 +1032,7 @@ _**default value**_:
 
 ### features.jwtIntrospection
 
-[draft-ietf-oauth-jwt-introspection-response-05](https://tools.ietf.org/html/draft-ietf-oauth-jwt-introspection-response-05) - JWT Response for OAuth Token Introspection  
+[draft-ietf-oauth-jwt-introspection-response-06](https://tools.ietf.org/html/draft-ietf-oauth-jwt-introspection-response-06) - JWT Response for OAuth Token Introspection  
 
 Enables JWT responses for Token Introspection features   
   
