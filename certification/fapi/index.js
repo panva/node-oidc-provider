@@ -1,12 +1,15 @@
 const { readFileSync } = require('fs');
 const path = require('path');
+const https = require('https');
 
 const jose = require('@panva/jose');
 const helmet = require('koa-helmet');
+const pem = require('https-pem');
 
 const Server = require('../../lib'); // require('oidc-provider');
 
-const { PORT = 3000, ISSUER = `http://localhost:${PORT}` } = process.env;
+const OFFICIAL_CERTIFICATION = 'https://www.certification.openid.net';
+const { PORT = 3000, ISSUER = `http://localhost:${PORT}`, SUITE_BASE_URL = OFFICIAL_CERTIFICATION } = process.env;
 
 const ALGS = ['PS256', 'ES256', 'EdDSA'];
 const tokenEndpointAuthMethods = ['private_key_jwt', 'self_signed_tls_client_auth'];
@@ -62,8 +65,8 @@ const fapi = new Server(ISSUER, {
     {
       client_id: 'pkjwt-one',
       redirect_uris: [
-        'https://www.certification.openid.net/test/a/pkjwt/callback',
-        'https://www.certification.openid.net/test/a/pkjwt/callback?dummy1=lorem&dummy2=ipsum',
+        `${SUITE_BASE_URL}/test/a/pkjwt/callback`,
+        `${SUITE_BASE_URL}/test/a/pkjwt/callback?dummy1=lorem&dummy2=ipsum`,
       ],
       token_endpoint_auth_method: 'private_key_jwt',
       jwks: {
@@ -73,8 +76,8 @@ const fapi = new Server(ISSUER, {
     {
       client_id: 'pkjwt-two',
       redirect_uris: [
-        'https://www.certification.openid.net/test/a/pkjwt/callback',
-        'https://www.certification.openid.net/test/a/pkjwt/callback?dummy1=lorem&dummy2=ipsum',
+        `${SUITE_BASE_URL}/test/a/pkjwt/callback`,
+        `${SUITE_BASE_URL}/test/a/pkjwt/callback?dummy1=lorem&dummy2=ipsum`,
       ],
       token_endpoint_auth_method: 'private_key_jwt',
       jwks: {
@@ -84,8 +87,8 @@ const fapi = new Server(ISSUER, {
     {
       client_id: 'mtls-one',
       redirect_uris: [
-        'https://www.certification.openid.net/test/a/mtls/callback',
-        'https://www.certification.openid.net/test/a/mtls/callback?dummy1=lorem&dummy2=ipsum',
+        `${SUITE_BASE_URL}/test/a/mtls/callback`,
+        `${SUITE_BASE_URL}/test/a/mtls/callback?dummy1=lorem&dummy2=ipsum`,
       ],
       token_endpoint_auth_method: 'self_signed_tls_client_auth',
       jwks: {
@@ -95,8 +98,8 @@ const fapi = new Server(ISSUER, {
     {
       client_id: 'mtls-two',
       redirect_uris: [
-        'https://www.certification.openid.net/test/a/mtls/callback',
-        'https://www.certification.openid.net/test/a/mtls/callback?dummy1=lorem&dummy2=ipsum',
+        `${SUITE_BASE_URL}/test/a/mtls/callback`,
+        `${SUITE_BASE_URL}/test/a/mtls/callback?dummy1=lorem&dummy2=ipsum`,
       ],
       token_endpoint_auth_method: 'self_signed_tls_client_auth',
       jwks: {
@@ -123,7 +126,11 @@ const fapi = new Server(ISSUER, {
       certificateBoundAccessTokens: true,
       selfSignedTlsClientAuth: true,
       getCertificate(ctx) {
-        return unescape(ctx.get('x-ssl-client-cert').replace(/\+/g, ' '));
+        const peerCertificate = ctx.socket.getPeerCertificate();
+        if (peerCertificate.raw) {
+          return `-----BEGIN CERTIFICATE-----\n${peerCertificate.raw.toString('base64').match(/.{1,64}/g).join('\n')}\n-----END CERTIFICATE-----`;
+        }
+        return undefined;
       },
     },
     claimsParameter: { enabled: true },
@@ -187,4 +194,14 @@ if (process.env.NODE_ENV === 'production') {
   });
 }
 
-fapi.listen(PORT);
+if (SUITE_BASE_URL === OFFICIAL_CERTIFICATION) {
+  fapi.listen(PORT);
+} else {
+  const server = https.createServer({
+    requestCert: true,
+    rejectUnauthorized: false,
+    ...pem,
+  }, fapi.callback);
+
+  server.listen(PORT);
+}

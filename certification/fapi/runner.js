@@ -12,8 +12,8 @@ const {
   PLAN_NAME,
   VARIANT,
 } = process.env;
+
 (async () => {
-  assert(SUITE_ACCESS_TOKEN, 'process.env.SUITE_ACCESS_TOKEN missing');
   assert(PLAN_NAME, 'process.env.PLAN_NAME missing');
   assert(CONFIGURATION, 'process.env.CONFIGURATION missing');
 

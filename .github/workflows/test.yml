@@ -103,10 +103,65 @@ jobs:
             npm install
             npm run ${{ matrix.script }}
 
-  example-deploy:
+  fapi-conformance:
+    runs-on: ubuntu-latest
+    needs:
+      - test
+    steps:
+      - uses: actions/checkout@master
+      - env:
+          MAVEN_CACHE: ./m2
+        run: |
+          git clone https://gitlab.com/openid/conformance-suite.git
+          cd conformance-suite
+          git checkout release-v3.2.3
+          sed -i -e 's/localhost/localhost.emobix.co.uk/g' src/main/resources/application.properties
+          docker-compose -f builder-compose.yml run builder
+          docker-compose -f docker-compose-dev.yml up -d
+          while ! curl -skfail https://localhost.emobix.co.uk:8443/api/runner/available >/dev/null; do sleep 2; done
+      - uses: actions/setup-node@v1
+        with:
+          node-version: 12
+      - run: npm install
+      - run: node certification/fapi &
+        env:
+          ISSUER: https://172.17.0.1:3000
+          NODE_TLS_REJECT_UNAUTHORIZED: 0
+          SUITE_BASE_URL: https://localhost.emobix.co.uk:8443
+          NODE_OPTIONS: --tls-cipher-list="ECDHE-ECDSA-AES128-GCM-SHA256 ECDHE-ECDSA-AES256-GCM-SHA384 ECDHE-RSA-AES128-GCM-SHA256 ECDHE-RSA-AES256-GCM-SHA384"
+      - run: |
+          sed -i -e 's/mtls.fapi.panva.cz/172.17.0.1:3000/g' certification/fapi/mtls.json
+          sed -i -e 's/fapi.panva.cz/172.17.0.1:3000/g' certification/fapi/mtls.json
+          sed -i -e 's/mtls.fapi.panva.cz/172.17.0.1:3000/g' certification/fapi/pkjwt.json
+          sed -i -e 's/fapi.panva.cz/172.17.0.1:3000/g' certification/fapi/pkjwt.json
+      - name: Run private_key_jwt variant
+        run: node certification/fapi/runner
+        env:
+          PLAN_NAME: fapi-rw-id2-test-plan
+          VARIANT: private_key_jwt
+          CONFIGURATION: ./certification/fapi/pkjwt.json
+          SUITE_BASE_URL: https://localhost.emobix.co.uk:8443
+          NODE_TLS_REJECT_UNAUTHORIZED: 0
+      - name: Run mtls variant
+        run: node certification/fapi/runner
+        env:
+          PLAN_NAME: fapi-rw-id2-test-plan
+          VARIANT: mtls
+          CONFIGURATION: ./certification/fapi/mtls.json
+          SUITE_BASE_URL: https://localhost.emobix.co.uk:8443
+          NODE_TLS_REJECT_UNAUTHORIZED: 0
+
+  deploy:
     runs-on: ubuntu-latest
     needs:
       - oidc-conformance
+      - fapi-conformance
+    strategy:
+      fail-fast: false
+      matrix:
+        app:
+          - radiant-refuge-93411
+          - powerful-cove-31049
     steps:
       - uses: actions/checkout@master
       - uses: actions/setup-ruby@v1
@@ -114,47 +169,4 @@ jobs:
           ruby-version: 2.x
       - run: gem install dpl
       - if: github.event_name == 'push' && github.ref == 'refs/heads/master' && github.repository == 'panva/node-oidc-provider'
-        run: dpl --provider=heroku --strategy=git --api-key=${{ secrets.HEROKU_AUTH_TOKEN }} --app=radiant-refuge-93411
-
-  # fapi-deploy:
-  #   runs-on: ubuntu-latest
-  #   needs:
-  #     - test
-  #   steps:
-  #     - uses: actions/checkout@master
-  #     - uses: actions/setup-ruby@v1
-  #       with:
-  #         ruby-version: 2.x
-  #     - run: gem install dpl
-  #     - if: github.event_name == 'push' && github.ref == 'refs/heads/master' && github.repository == 'panva/node-oidc-provider'
-  #       run: dpl --provider=heroku --strategy=git --api-key=${{ secrets.HEROKU_AUTH_TOKEN }} --app=powerful-cove-31049
-  #
-  # fapi-conformance:
-  #   runs-on: ubuntu-latest
-  #   needs:
-  #     - fapi-deploy
-  #   strategy:
-  #     fail-fast: false
-  #     max-parallel: 1
-  #     matrix:
-  #       profile:
-  #         - planName: fapi-rw-id2-test-plan
-  #           variant: private_key_jwt
-  #           configuration: ./certification/fapi/pkjwt.json
-  #         - planName: fapi-rw-id2-test-plan
-  #           variant: mtls
-  #           configuration: ./certification/fapi/mtls.json
-  #   steps:
-  #     - uses: actions/checkout@master
-  #     - uses: actions/setup-node@v1
-  #       with:
-  #         node-version: 12
-  #     - run: npm install
-  #     - name: Run ${{ matrix.profile.variant }} variant
-  #       if: github.event_name == 'push' && github.ref == 'refs/heads/master' && github.repository == 'panva/node-oidc-provider'
-  #       run: node certification/fapi/runner
-  #       env:
-  #         SUITE_ACCESS_TOKEN: ${{ secrets.FAPI_ACCESS_TOKEN }}
-  #         PLAN_NAME: ${{ matrix.profile.planName }}
-  #         VARIANT: ${{ matrix.profile.variant }}
-  #         CONFIGURATION: ${{ matrix.profile.configuration }}
+        run: dpl --provider=heroku --strategy=git --api-key=${{ secrets.HEROKU_AUTH_TOKEN }} --app=${{ matrix.app }}

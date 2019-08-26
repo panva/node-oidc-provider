@@ -11,13 +11,12 @@ const FINISHED = new Set(['FINISHED']);
 class API {
   constructor({ baseUrl, bearerToken } = {}) {
     assert(baseUrl, 'argument property "baseUrl" missing');
-    assert(baseUrl, 'argument property "bearerToken" missing');
 
     const { get, post } = Got.extend({
       baseUrl,
       followRedirect: false,
       headers: {
-        authorization: `bearer ${bearerToken}`,
+        ...(bearerToken ? { authorization: `bearer ${bearerToken}` } : undefined),
         'content-type': 'application/json',
       },
       json: true,
@@ -103,6 +102,7 @@ class API {
       }
 
       if (status === 'INTERRUPTED') {
+        debug(await this.getTestLog({ moduleId }));
         throw new Error(`module id ${moduleId} is ${status}`);
       }
 
