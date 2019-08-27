@@ -927,8 +927,8 @@ _**default value**_:
 [Financial-grade API - Part 2: Read and Write API Security Profile](https://openid.net/specs/openid-financial-api-part-2-ID2.html)  
 
 Enables extra behaviours defined in FAPI Part 1 & 2 that cannot be achieved by other configuration options, namely:   
- - request object "exp" claim is required
- - request object must contain all parameters that are also sent as regular parameters
+ - Request Object "exp" claim is required
+ - Request Object must contain all parameters that are also sent as regular parameters
  - userinfo endpoint becomes a FAPI resource, echoing back the x-fapi-interaction-id header and disabling query string as a mechanism for providing access tokens  
 
 
@@ -1772,7 +1772,7 @@ To change the default client response_types configure `clientDefaults` to be an 
 
 ### clockTolerance
 
-A `Number` value (in seconds) describing the allowed system clock skew for validating client-provided JWTs, e.g. Request objects, DPoP Proofs and otherwise comparing timestamps  
+A `Number` value (in seconds) describing the allowed system clock skew for validating client-provided JWTs, e.g. Request Objects, DPoP Proofs and otherwise comparing timestamps  
 
 _**recommendation**_: Only set this to a reasonable value when needed to cover server-side client and oidc-provider server clock skew. More than 5 minutes (if needed) is probably a sign something else is wrong.  
 

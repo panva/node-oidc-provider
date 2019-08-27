@@ -174,7 +174,7 @@ describe('request Uri features', () => {
             expect(spy.args[0][1]).to.have.property('message', 'invalid_request_object');
             expect(spy.args[0][1]).to.have.property(
               'error_description',
-              'request object from unsecure request_uri must be signed and/or symmetrically encrypted',
+              'Request Object from unsecure request_uri must be signed and/or symmetrically encrypted',
             );
           });
       });
@@ -513,7 +513,7 @@ describe('request Uri features', () => {
             expect(spy.args[0][1]).to.have.property('message', 'invalid_request_object');
             expect(spy.args[0][1]).to.have.property(
               'error_description',
-              'request object must not contain request or request_uri properties',
+              'Request Object must not contain request or request_uri properties',
             );
           });
       });
@@ -550,7 +550,7 @@ describe('request Uri features', () => {
             expect(spy.args[0][1]).to.have.property('message', 'invalid_request_object');
             expect(spy.args[0][1]).to.have.property(
               'error_description',
-              'request object must not contain request or request_uri properties',
+              'Request Object must not contain request or request_uri properties',
             );
           });
       });
@@ -614,7 +614,7 @@ describe('request Uri features', () => {
           .expect(() => {
             expect(spy.calledOnce).to.be.true;
             expect(spy.args[0][1]).to.have.property('message', 'invalid_request_object');
-            expect(spy.args[0][1]).to.have.property('error_description').and.matches(/could not parse request object/);
+            expect(spy.args[0][1]).to.have.property('error_description').and.matches(/could not parse Request Object/);
           });
       });
 
@@ -719,7 +719,7 @@ describe('request Uri features', () => {
           .expect(() => {
             expect(spy.calledOnce).to.be.true;
             expect(spy.args[0][1]).to.have.property('message', 'invalid_request_object');
-            expect(spy.args[0][1]).to.have.property('error_description').that.matches(/could not validate request object/);
+            expect(spy.args[0][1]).to.have.property('error_description').that.matches(/could not validate Request Object/);
           });
       });
     });

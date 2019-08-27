@@ -3,6 +3,7 @@ const url = require('url');
 
 const { expect } = require('chai');
 const base64url = require('base64url');
+const sinon = require('sinon');
 const jose = require('@panva/jose');
 
 const bootstrap = require('../test_helper');
@@ -121,7 +122,7 @@ describe('encryption', () => {
         });
       });
 
-      describe('authorization request object encryption', () => {
+      describe('authorization Request Object encryption', () => {
         it('works with signed by none', function () {
           return JWT.sign({
             client_id: 'client',
@@ -146,6 +147,62 @@ describe('encryption', () => {
               });
               expect(actual.query).to.have.property('code');
             }));
+        });
+
+        describe('JAR only request', () => {
+          it('works without any other params if client_id is replicated in the header', function () {
+            return JWT.sign({
+              client_id: 'client',
+              response_type: 'code',
+              redirect_uri: 'https://client.example.com/cb',
+              scope: 'openid',
+            }, null, 'none', { issuer: 'client', audience: this.provider.issuer }).then((signed) => jose.JWE.encrypt(signed, i(this.provider).keystore.get({ kty: 'RSA' }), { enc: 'A128CBC-HS256', alg: 'RSA1_5', client_id: 'client' })).then((encrypted) => this.wrap({
+              route,
+              verb,
+              auth: {
+                request: encrypted,
+              },
+            })
+              .expect(302)
+              .expect((response) => {
+                const expected = url.parse('https://client.example.com/cb', true);
+                const actual = url.parse(response.headers.location, true);
+                ['protocol', 'host', 'pathname'].forEach((attr) => {
+                  expect(actual[attr]).to.equal(expected[attr]);
+                });
+                expect(actual.query).to.have.property('code');
+              }));
+          });
+
+          it('handles invalid JWE', function () {
+            const spy = sinon.spy();
+            this.provider.once('authorization.error', spy);
+
+            return JWT.sign({
+              client_id: 'client',
+              response_type: 'code',
+              redirect_uri: 'https://client.example.com/cb',
+              scope: 'openid',
+            }, null, 'none', { issuer: 'client', audience: this.provider.issuer }).then((signed) => jose.JWE.encrypt(signed, i(this.provider).keystore.get({ kty: 'RSA' }), { enc: 'A128CBC-HS256', alg: 'RSA1_5', client_id: 'client' })).then((encrypted) => this.wrap({
+              route,
+              verb,
+              auth: {
+                request: encrypted.split('.').map((part, i) => {
+                  if (i === 0) {
+                    return 'foo';
+                  }
+
+                  return part;
+                }).join('.'),
+              },
+            })
+              .expect(400)
+              .expect(() => {
+                expect(spy.calledOnce).to.be.true;
+                expect(spy.args[0][1]).to.have.property('message', 'invalid_request_object');
+                expect(spy.args[0][1]).to.have.property('error_description', 'Request Object is not a valid JWE');
+              }));
+          });
         });
 
         it('handles enc unsupported algs', function () {
@@ -231,7 +288,7 @@ describe('encryption', () => {
             });
         });
 
-        it('accepts symmetric encrypted request objects', async function () {
+        it('accepts symmetric encrypted Request Objects', async function () {
           const client = await this.provider.Client.find('clientSymmetric');
           return JWT.sign({
             client_id: 'clientSymmetric',
@@ -282,7 +339,7 @@ describe('encryption', () => {
             });
         });
 
-        it('accepts symmetric (dir) encrypted request objects', async function () {
+        it('accepts symmetric (dir) encrypted Request Objects', async function () {
           const client = await this.provider.Client.find('clientSymmetric');
           return JWT.sign({
             client_id: 'clientSymmetric-dir',

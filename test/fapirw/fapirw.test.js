@@ -68,7 +68,7 @@ describe('Financial-grade API - Part 2: Read and Write API Security Profile beha
         .expect(auth.validateClientLocation);
     });
 
-    it('requires exp to be provided in the request object', function () {
+    it('requires exp to be provided in the Request Object', function () {
       const request = `${base64url.encode(JSON.stringify({ alg: 'none' }))}.${base64url.encode(JSON.stringify({
         client_id: 'client',
         scope: 'openid',
@@ -96,10 +96,10 @@ describe('Financial-grade API - Part 2: Read and Write API Security Profile beha
         .expect(auth.validateState)
         .expect(auth.validateClientLocation)
         .expect(auth.validateError('invalid_request_object'))
-        .expect(auth.validateErrorDescription('request object is missing the "exp" claim'));
+        .expect(auth.validateErrorDescription('Request Object is missing the "exp" claim'));
     });
 
-    it('requires all parameters to be present inside the signed request object', function () {
+    it('requires all parameters to be present inside the signed Request Object', function () {
       const request = `${base64url.encode(JSON.stringify({ alg: 'none' }))}.${base64url.encode(JSON.stringify({
         client_id: 'client',
         scope: 'openid',
@@ -127,7 +127,7 @@ describe('Financial-grade API - Part 2: Read and Write API Security Profile beha
         .expect(auth.validateState)
         .expect(auth.validateClientLocation)
         .expect(auth.validateError('invalid_request_object'))
-        .expect(auth.validateErrorDescription('all parameters shall be present inside the signed request object (missing: nonce, redirect_uri, state)'));
+        .expect(auth.validateErrorDescription('all parameters shall be present inside the signed Request Object (missing: nonce, redirect_uri, state)'));
     });
   });
 });
