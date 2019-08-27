@@ -154,7 +154,7 @@ describe('device_authorization_endpoint', () => {
         })
         .expect({
           error: 'invalid_request',
-          error_description: 'parameters must not be provided twice. (scope)',
+          error_description: "'scope' parameter must not be provided twice",
         });
     });
   });

@@ -47,7 +47,7 @@ describe('custom token endpoint grant types', () => {
           .expect(400)
           .expect({
             error: 'invalid_request',
-            error_description: 'parameters must not be provided twice. (name)',
+            error_description: "'name' parameter must not be provided twice",
           });
       });
 
@@ -71,7 +71,7 @@ describe('custom token endpoint grant types', () => {
           .expect(400)
           .expect({
             error: 'invalid_request',
-            error_description: 'parameters must not be provided twice. (foo)',
+            error_description: "'foo' parameter must not be provided twice",
           });
       });
 
@@ -84,7 +84,7 @@ describe('custom token endpoint grant types', () => {
           .expect(400)
           .expect({
             error: 'invalid_request',
-            error_description: 'parameters must not be provided twice. (grant_type)',
+            error_description: "'grant_type' parameter must not be provided twice",
           });
       });
     });

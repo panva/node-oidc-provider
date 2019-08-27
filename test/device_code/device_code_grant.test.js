@@ -135,7 +135,7 @@ describe('grant_type=urn:ietf:params:oauth:grant-type:device_code', () => {
         .expect('content-type', /application\/json/)
         .expect({
           error: 'invalid_request',
-          error_description: 'missing required parameter(s) (device_code)',
+          error_description: "missing required parameter 'device_code'",
         });
     });
 

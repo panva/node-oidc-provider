@@ -127,7 +127,7 @@ describe('Financial-grade API - Part 2: Read and Write API Security Profile beha
         .expect(auth.validateState)
         .expect(auth.validateClientLocation)
         .expect(auth.validateError('invalid_request_object'))
-        .expect(auth.validateErrorDescription('all parameters shall be present inside the signed Request Object (missing: nonce, redirect_uri, state)'));
+        .expect(auth.validateErrorDescription("missing parameters 'nonce', 'redirect_uri', and 'state' in the Request Object"));
     });
   });
 });

@@ -308,7 +308,7 @@ describe('introspection features', () => {
         .expect(400)
         .expect((response) => {
           expect(response.body).to.have.property('error', 'invalid_request');
-          expect(response.body).to.have.property('error_description').and.matches(/missing required parameter.+\(token\)/);
+          expect(response.body).to.have.property('error_description', "missing required parameter 'token'");
         });
     });
 

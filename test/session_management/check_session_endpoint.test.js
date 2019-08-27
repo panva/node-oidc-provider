@@ -57,21 +57,21 @@ describe('check_session_endpoint origin check', () => {
       .expect(400)
       .expect({
         error: 'invalid_request',
-        error_description: 'missing required parameter(s) (origin)',
+        error_description: "missing required parameter 'origin'",
       });
     await this.agent.post('/session/check')
       .send({ origin: 'https://client.example.com' })
       .expect(400)
       .expect({
         error: 'invalid_request',
-        error_description: 'missing required parameter(s) (client_id)',
+        error_description: "missing required parameter 'client_id'",
       });
     await this.agent.post('/session/check')
       .send({})
       .expect(400)
       .expect({
         error: 'invalid_request',
-        error_description: 'missing required parameter(s) (origin,client_id)',
+        error_description: "missing required parameters 'origin' and 'client_id'",
       });
   });
 

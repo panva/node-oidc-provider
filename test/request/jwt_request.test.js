@@ -141,7 +141,7 @@ describe('request parameter features', () => {
               expect(spy.args[0][1]).to.have.property('message', 'invalid_request');
               expect(spy.args[0][1]).to.have.property(
                 'error_description',
-                route !== '/device/auth' ? 'missing required parameter(s) (client_id)' : 'no client authentication mechanism provided',
+                route !== '/device/auth' ? "missing required parameter 'client_id'" : 'no client authentication mechanism provided',
               );
             }));
         });
@@ -169,7 +169,7 @@ describe('request parameter features', () => {
               expect(spy.args[0][1]).to.have.property('message', 'invalid_request');
               expect(spy.args[0][1]).to.have.property(
                 'error_description',
-                route !== '/device/auth' ? 'missing required parameter(s) (client_id)' : 'no client authentication mechanism provided',
+                route !== '/device/auth' ? "missing required parameter 'client_id'" : 'no client authentication mechanism provided',
               );
             }));
         });
@@ -197,7 +197,7 @@ describe('request parameter features', () => {
               expect(spy.args[0][1]).to.have.property('message', 'invalid_request');
               expect(spy.args[0][1]).to.have.property(
                 'error_description',
-                route !== '/device/auth' ? 'missing required parameter(s) (client_id)' : 'no client authentication mechanism provided',
+                route !== '/device/auth' ? "missing required parameter 'client_id'" : 'no client authentication mechanism provided',
               );
             }));
         });

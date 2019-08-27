@@ -171,7 +171,7 @@ describe('HYBRID code+id_token+token', () => {
           .expect(auth.validateState)
           .expect(auth.validateClientLocation)
           .expect(auth.validateError('invalid_request'))
-          .expect(auth.validateErrorDescription('missing required parameter(s) (nonce)'));
+          .expect(auth.validateErrorDescription("missing required parameter 'nonce'"));
       });
     });
   });

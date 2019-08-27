@@ -113,7 +113,7 @@ describe('IMPLICIT id_token', () => {
           .expect(auth.validatePresence(['error', 'error_description', 'state']))
           .expect(auth.validateClientLocation)
           .expect(auth.validateError('invalid_request'))
-          .expect(auth.validateErrorDescription('parameters must not be provided twice. (response_mode)'));
+          .expect(auth.validateErrorDescription("'response_mode' parameter must not be provided twice"));
       });
 
       it('missing mandatory parameter nonce', function () {
@@ -136,7 +136,7 @@ describe('IMPLICIT id_token', () => {
           .expect(auth.validateState)
           .expect(auth.validateClientLocation)
           .expect(auth.validateError('invalid_request'))
-          .expect(auth.validateErrorDescription('missing required parameter(s) (nonce)'));
+          .expect(auth.validateErrorDescription("missing required parameter 'nonce'"));
       });
     });
   });

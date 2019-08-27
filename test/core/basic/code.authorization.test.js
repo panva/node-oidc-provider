@@ -372,11 +372,11 @@ describe('BASIC code', () => {
             case 'get':
               return this.agent
                 .get(route)
-                .query(`${data}&state=foo`);
+                .query(`${data}&state=foo&scope=openid&response_type=${response_type}`);
             case 'post':
               return this.agent
                 .post(route)
-                .send(`${data}&state=foo`)
+                .send(`${data}&state=foo&scope=openid&response_type=${response_type}`)
                 .type('form');
             default:
           }
@@ -390,7 +390,7 @@ describe('BASIC code', () => {
           // .expect(auth.validateState) // notice state is not expected
           .expect(auth.validateClientLocation)
           .expect(auth.validateError('invalid_request'))
-          .expect(auth.validateErrorDescription('parameters must not be provided twice. (state)'));
+          .expect(auth.validateErrorDescription("'response_type', 'scope', and 'state' parameters must not be provided twice"));
       });
 
       it('invalid response mode (not validated yet)', function () {
@@ -428,7 +428,7 @@ describe('BASIC code', () => {
           // .expect(auth.validateState) // notice state is not expected
           .expect(auth.validateClientLocation)
           .expect(auth.validateError('invalid_request'))
-          .expect(auth.validateErrorDescription('parameters must not be provided twice. (state)'));
+          .expect(auth.validateErrorDescription("'state' parameter must not be provided twice"));
       });
 
       it('response mode provided twice', function () {
@@ -462,7 +462,7 @@ describe('BASIC code', () => {
           .expect(auth.validatePresence(['error', 'error_description', 'state']))
           .expect(auth.validateClientLocation)
           .expect(auth.validateError('invalid_request'))
-          .expect(auth.validateErrorDescription('parameters must not be provided twice. (response_mode)'));
+          .expect(auth.validateErrorDescription("'response_mode' parameter must not be provided twice"));
       });
 
       it('unregistered scope requested', function () {
@@ -563,7 +563,7 @@ describe('BASIC code', () => {
               expect(renderSpy.calledOnce).to.be.true;
               const renderArgs = renderSpy.args[0];
               expect(renderArgs[1]).to.have.property('error', 'invalid_request');
-              expect(renderArgs[1]).to.have.property('error_description', 'missing required parameter(s) (redirect_uri)');
+              expect(renderArgs[1]).to.have.property('error_description', 'missing required parameter \'redirect_uri\'');
               expect(renderArgs[2]).to.be.an.instanceof(InvalidRequest);
             });
         });
@@ -587,7 +587,7 @@ describe('BASIC code', () => {
           .expect(auth.validateState)
           .expect(auth.validateClientLocation)
           .expect(auth.validateError('invalid_request'))
-          .expect(auth.validateErrorDescription('missing required parameter(s) (response_type)'));
+          .expect(auth.validateErrorDescription('missing required parameter \'response_type\''));
       });
 
       it('unsupported prompt', function () {
@@ -672,7 +672,7 @@ describe('BASIC code', () => {
             expect(renderSpy.calledOnce).to.be.true;
             const renderArgs = renderSpy.args[0];
             expect(renderArgs[1]).to.have.property('error', 'invalid_request');
-            expect(renderArgs[1]).to.have.property('error_description', 'missing required parameter(s) (client_id)');
+            expect(renderArgs[1]).to.have.property('error_description', 'missing required parameter \'client_id\'');
             expect(renderArgs[2]).to.be.an.instanceof(InvalidRequest);
           });
       });
