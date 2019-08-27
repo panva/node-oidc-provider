@@ -1921,7 +1921,7 @@ async expiresWithSession(ctx, token) {
 
 ### extraAccessTokenClaims
 
-helper function used by the OP to get additional access token claims when it is being issued. These claims will be available in your storage under property `extra`, returned by introspection as top level claims and pushed into `jwt` and `paseto` formatted tokens as top level claims as well. Returned claims may not overwrite other top level claims.   
+helper function used by the OP to get additional access token claims when it is being issued. These claims will be available in your storage under property `extra`, returned by introspection as top level claims and pushed into `jwt`, `jwt-ietf` and `paseto` formatted tokens as top level claims as well. Returned claims may not overwrite other top level claims.   
   
 
 
