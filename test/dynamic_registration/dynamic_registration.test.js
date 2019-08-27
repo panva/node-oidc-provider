@@ -53,6 +53,23 @@ describe('registration features', () => {
         });
     });
 
+    it('omits the client_secret generation when it is not needed and in doing so ignores provided client_secret and client_secret_expires_at', function () {
+      return this.agent.post('/reg')
+        .send({
+          token_endpoint_auth_method: 'none',
+          redirect_uris: ['https://client.example.com/cb'],
+          response_types: ['id_token'],
+          grant_types: ['implicit'],
+          client_secret: 'foo',
+          client_secret_expires_at: 123,
+        })
+        .expect(201)
+        .expect((response) => {
+          expect(response.body).not.to.have.property('client_secret');
+          expect(response.body).not.to.have.property('client_secret_expires_at');
+        });
+    });
+
     it('issues the client_secret when needed for sig', function () {
       return this.agent.post('/reg')
         .send({
