@@ -15,7 +15,9 @@ describe('Back-Channel Logout 1.0', () => {
   afterEach(nock.cleanAll);
   afterEach(async function () {
     const client = await this.provider.Client.find('client');
-    if (client.backchannelLogout.restore) client.backchannelLogout.restore();
+    if (client.backchannelLogout.restore) {
+      client.backchannelLogout.restore();
+    }
   });
 
   describe('Client#backchannelLogout', () => {

@@ -104,5 +104,16 @@ module.exports = {
     redirect_uris: ['https://client.example.com/cb'],
     token_endpoint_auth_method: 'self_signed_tls_client_auth',
     jwks_uri: 'https://client.example.com/jwks',
+  }, {
+    client_id: 'secret-expired-basic',
+    client_secret: 'secret',
+    redirect_uris: ['https://client.example.com/cb'],
+    client_secret_expires_at: 1,
+  }, {
+    client_id: 'secret-expired-jwt',
+    client_secret: 'secret',
+    token_endpoint_auth_method: 'client_secret_jwt',
+    redirect_uris: ['https://client.example.com/cb'],
+    client_secret_expires_at: 1,
   }],
 };

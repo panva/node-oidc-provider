@@ -1970,12 +1970,16 @@ validator function that will be executed in order once for every property define
 
 _**default value**_:
 ```js
-validator(key, value, metadata) {
+validator(key, value, metadata, ctx) {
+  // @param key - the client metadata property name
+  // @param value - the property value
+  // @param metadata - the current accumulated client metadata
+  // @param ctx - koa request context (only provided when a client is being constructed during
+  //              Client Registration Request or Client Update Request
   // validations for key, value, other related metadata
-  // throw new Provider.errors.InvalidClientMetadata() to reject the client metadata (see all
-  //   errors on Provider.errors)
-  // metadata[key] = value; to assign values
-  // return not necessary, metadata is already a reference.
+  // throw new Provider.errors.InvalidClientMetadata() to reject the client metadata
+  // metadata[key] = value; to (re)assign metadata values
+  // return not necessary, metadata is already a reference
 }
 ```
 <a name="extra-client-metadata-validator-using-extra-client-metadata-to-allow-software-statement-dynamic-client-registration-property"></a><details>
@@ -2227,17 +2231,11 @@ _**default value**_:
         details: () => {},
         check: async (ctx) => {
           const { oidc } = ctx;
-          const hint = oidc.params.id_token_hint;
-          if (hint === undefined) {
+          if (oidc.entities.IdTokenHint === undefined) {
             return false;
           }
 
-          let payload;
-          try {
-            ({ payload } = await oidc.provider.IdToken.validate(hint, oidc.client));
-          } catch (err) {
-            throw new errors.InvalidRequest(`could not validate id_token_hint (${err.message})`);
-          }
+          const { payload } = oidc.entities.IdTokenHint;
 
           let sub = oidc.session.accountId();
           if (sub === undefined) {

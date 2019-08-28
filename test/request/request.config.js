@@ -28,5 +28,13 @@ module.exports = {
     request_object_signing_alg: 'HS256',
     grant_types: ['urn:ietf:params:oauth:grant-type:device_code', 'authorization_code'],
     redirect_uris: ['https://client.example.com/cb'],
+  }, {
+    client_id: 'client-with-HS-sig-expired',
+    client_secret_expires_at: 1,
+    token_endpoint_auth_method: 'none',
+    client_secret: 'atleast32byteslongforHS256mmkay?',
+    request_object_signing_alg: 'HS256',
+    grant_types: ['urn:ietf:params:oauth:grant-type:device_code', 'authorization_code'],
+    redirect_uris: ['https://client.example.com/cb'],
   }],
 };

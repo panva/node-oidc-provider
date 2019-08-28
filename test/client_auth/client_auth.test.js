@@ -380,6 +380,20 @@ describe('client authentication options', () => {
           error_description: 'client_secret must be provided in the Authorization header',
         });
     });
+
+    it('rejects expired secrets', function () {
+      return this.agent.post(route)
+        .send({
+          grant_type: 'implicit',
+        })
+        .type('form')
+        .auth('secret-expired-basic', 'secret')
+        .expect(400)
+        .expect({
+          error: 'invalid_client',
+          error_description: 'could not authenticate the client - its client secret is expired',
+        });
+    });
   });
 
   describe('client_secret_post auth', () => {
@@ -439,6 +453,21 @@ describe('client authentication options', () => {
         })
         .expect(401)
         .expect(tokenAuthRejected);
+    });
+
+    it('rejects expired secrets', function () {
+      return this.agent.post(route)
+        .send({
+          grant_type: 'implicit',
+          client_id: 'secret-expired-basic',
+          client_secret: 'secret',
+        })
+        .type('form')
+        .expect(400)
+        .expect({
+          error: 'invalid_client',
+          error_description: 'could not authenticate the client - its client secret is expired',
+        });
     });
   });
 
@@ -938,6 +967,29 @@ describe('client authentication options', () => {
         .expect(() => {
           expect(spy.calledOnce).to.be.true;
           expect(errorDetail(spy)).to.equal('jwt expired');
+        }));
+    });
+
+    it('rejects assertions when the secret is expired', async function () {
+      const key = (await this.provider.Client.find('secret-expired-jwt')).keystore.get({ alg: 'HS256' });
+      return JWT.sign({
+        jti: nanoid(),
+        aud: this.provider.issuer + this.provider.pathFor('token'),
+        sub: 'secret-expired-jwt',
+        iss: 'secret-expired-jwt',
+      }, key, 'HS256', {
+        expiresIn: -1,
+      }).then((assertion) => this.agent.post(route)
+        .send({
+          client_assertion: assertion,
+          grant_type: 'implicit',
+          client_assertion_type: 'urn:ietf:params:oauth:client-assertion-type:jwt-bearer',
+        })
+        .type('form')
+        .expect(400)
+        .expect({
+          error: 'invalid_client',
+          error_description: 'could not authenticate the client - its client secret used for the client_assertion is expired',
         }));
     });
 

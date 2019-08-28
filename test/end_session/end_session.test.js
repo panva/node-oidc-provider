@@ -63,6 +63,58 @@ describe('logout endpoint', () => {
             });
         });
 
+        describe('expired client secrets', () => {
+          after(async function () {
+            const client = await this.provider.Client.find('client-hmac');
+            client.clientSecretExpiresAt = 0;
+          });
+
+          it('rejects HMAC hints if the secret is expired', async function () {
+            const client = await this.provider.Client.find('client-hmac');
+
+            let idToken;
+
+            await this.agent.get('/auth')
+              .query({
+                client_id: 'client-hmac',
+                scope: 'openid',
+                nonce: String(Math.random()),
+                response_type: 'id_token',
+                redirect_uri: 'https://client.example.com/cb',
+              })
+              .expect(302)
+              .expect((response) => {
+                ({ query: { id_token: idToken } } = parseUrl(response.headers.location.replace('#', '?'), true));
+              });
+
+            client.clientSecretExpiresAt = 1;
+
+            const params = {
+              id_token_hint: idToken,
+              post_logout_redirect_uri: 'https://client.example.com/logout/cb',
+            };
+
+            const emitSpy = sinon.spy();
+            const renderSpy = sinon.spy(i(this.provider).configuration(), 'renderError');
+            this.provider.once('end_session.error', emitSpy);
+
+            return this.wrap({ route, verb, params })
+              .set('Accept', 'text/html')
+              .expect(() => {
+                renderSpy.restore();
+              })
+              .expect(400)
+              .expect(() => {
+                expect(emitSpy.calledOnce).to.be.true;
+                expect(renderSpy.calledOnce).to.be.true;
+                const renderArgs = renderSpy.args[0];
+                expect(renderArgs[1]).to.have.property('error', 'invalid_client');
+                expect(renderArgs[1]).to.have.property('error_description', 'client secret is expired - cannot validate ID Token Hint');
+                expect(renderArgs[2]).to.be.an.instanceof(InvalidClient);
+              });
+          });
+        });
+
         it('populates ctx.oidc.entities', function (done) {
           this.provider.use(this.assertOnce((ctx) => {
             expect(ctx.oidc.entities).to.have.keys('Client', 'IdTokenHint');
@@ -203,9 +255,9 @@ describe('logout endpoint', () => {
             expect(emitSpy.calledOnce).to.be.true;
             expect(renderSpy.calledOnce).to.be.true;
             const renderArgs = renderSpy.args[0];
-            expect(renderArgs[1]).to.have.property('error', 'invalid_request');
-            expect(renderArgs[1]).to.have.property('error_description', 'could not validate id_token_hint (invalid_client)');
-            expect(renderArgs[2]).to.be.an.instanceof(InvalidRequest);
+            expect(renderArgs[1]).to.have.property('error', 'invalid_client');
+            expect(renderArgs[1]).to.have.property('error_description', 'unrecognized id_token_hint audience');
+            expect(renderArgs[2]).to.be.an.instanceof(InvalidClient);
           });
       });
 

@@ -255,7 +255,7 @@ describe('client keystore refresh', () => {
       const { IdToken } = this.provider;
       const token = new IdToken({ foo: 'bar' }, { client, ctx: undefined });
 
-      await token.issue();
+      await token.issue({ use: 'idtoken' });
     });
   });
 });

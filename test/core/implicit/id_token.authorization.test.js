@@ -1,4 +1,5 @@
 const querystring = require('querystring');
+const url = require('url');
 
 const sinon = require('sinon');
 const { expect } = require('chai');
@@ -59,6 +60,8 @@ describe('IMPLICIT id_token', () => {
     });
 
     describe(`IMPLICIT id_token ${verb} ${route} errors`, () => {
+      before(function () { return this.login(); });
+
       it('disallowed response mode', function () {
         const spy = sinon.spy();
         this.provider.once('authorization.error', spy);
@@ -79,6 +82,72 @@ describe('IMPLICIT id_token', () => {
           .expect(auth.validateClientLocation)
           .expect(auth.validateError('invalid_request'))
           .expect(auth.validateErrorDescription('response_mode not allowed for this response_type'));
+      });
+
+      it('HMAC ID Token Hint with expired secret errors', async function () {
+        const client = await this.provider.Client.find('client-expired-secret');
+        client.clientSecretExpiresAt = 0;
+
+        let auth = new this.AuthorizationRequest({
+          client_id: 'client-expired-secret',
+          response_type,
+          scope,
+        });
+
+        let idTokenHint;
+        await this.wrap({ route, verb, auth })
+          .expect(302)
+          .expect(auth.validateFragment)
+          .expect(auth.validatePresence(['id_token', 'state']))
+          .expect((response) => {
+            const { query } = url.parse(response.headers.location.replace('#', '?'), true);
+            idTokenHint = query.id_token;
+          });
+
+        client.clientSecretExpiresAt = 1;
+
+        const spy = sinon.spy();
+        this.provider.once('authorization.error', spy);
+        auth = new this.AuthorizationRequest({
+          client_id: 'client-expired-secret',
+          response_type,
+          id_token_hint: idTokenHint,
+          scope,
+        });
+
+        return this.wrap({ route, verb, auth })
+          .expect(302)
+          .expect(() => {
+            expect(spy.calledOnce).to.be.true;
+          })
+          .expect(auth.validateFragment) // response mode will be honoured for error response
+          .expect(auth.validatePresence(['error', 'error_description', 'state']))
+          .expect(auth.validateState)
+          .expect(auth.validateClientLocation)
+          .expect(auth.validateError('invalid_client'))
+          .expect(auth.validateErrorDescription('client secret is expired - cannot validate ID Token Hint'));
+      });
+
+      it('HMAC ID Token with expired secret errors', function () {
+        const spy = sinon.spy();
+        this.provider.once('authorization.error', spy);
+        const auth = new this.AuthorizationRequest({
+          client_id: 'client-expired-secret',
+          response_type,
+          scope,
+        });
+
+        return this.wrap({ route, verb, auth })
+          .expect(302)
+          .expect(() => {
+            expect(spy.calledOnce).to.be.true;
+          })
+          .expect(auth.validateFragment) // response mode will be honoured for error response
+          .expect(auth.validatePresence(['error', 'error_description', 'state']))
+          .expect(auth.validateState)
+          .expect(auth.validateClientLocation)
+          .expect(auth.validateError('invalid_client'))
+          .expect(auth.validateErrorDescription('client secret is expired - cannot issue an ID Token (HS256)'));
       });
 
       it('response mode provided twice', function () {

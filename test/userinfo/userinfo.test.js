@@ -25,7 +25,7 @@ describe('userinfo /me', () => {
       });
   });
 
-  it('can only be enabled with introspection', () => {
+  it('jwtUserinfo can only be enabled with userinfo', () => {
     expect(() => {
       new Provider('http://localhost', { // eslint-disable-line no-new
         features: {

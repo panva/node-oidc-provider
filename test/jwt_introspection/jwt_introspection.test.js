@@ -66,6 +66,31 @@ describe('jwtIntrospection features', () => {
         });
     });
 
+    it('errors when secret is expired for HMAC alg', async function () {
+      const at = new this.provider.AccessToken({
+        accountId: 'accountId',
+        grantId: 'foo',
+        clientId: 'client-HS-expired',
+        scope: 'scope',
+      });
+
+      const token = await at.save();
+
+      return this.agent.post(route)
+        .send({
+          client_id: 'client-HS-expired',
+          token,
+        })
+        .type('form')
+        .accept('application/jwt')
+        .expect(400)
+        .expect('content-type', 'application/json; charset=utf-8')
+        .expect({
+          error: 'invalid_client',
+          error_description: 'client secret is expired - cannot respond with HS256 JWT Introspection response',
+        });
+    });
+
     it('non-authenticated without accept: application/jwt fails', async function () {
       const at = new this.provider.AccessToken({
         accountId: 'accountId',

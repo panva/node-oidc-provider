@@ -1,4 +1,3 @@
-const { parse } = require('url');
 const url = require('url');
 
 const { expect } = require('chai');
@@ -46,6 +45,24 @@ describe('encryption', () => {
 
   ['get', 'post'].forEach((verb) => {
     describe(`[encryption] IMPLICIT id_token+token ${verb} ${route}`, () => {
+      describe('expired secret id token response', () => {
+        it('errors out with a specific message', function () {
+          const auth = new this.AuthorizationRequest({
+            response_type: 'id_token',
+            client_id: 'clientSymmetric-expired',
+            scope: 'openid',
+          });
+
+          return this.wrap({ route, verb, auth }).expect(302)
+            .expect(auth.validateFragment)
+            .expect(auth.validatePresence(['error', 'error_description', 'state']))
+            .expect(auth.validateState)
+            .expect(auth.validateClientLocation)
+            .expect(auth.validateError('invalid_client'))
+            .expect(auth.validateErrorDescription('client secret is expired - cannot issue an encrypted ID Token (PBES2-HS384+A192KW)'));
+        });
+      });
+
       describe('encrypted authorization results', () => {
         before(function () {
           const auth = new this.AuthorizationRequest({
@@ -120,6 +137,54 @@ describe('encryption', () => {
               });
           });
         });
+
+        describe('userinfo signed - expired client secret', () => {
+          before(async function () {
+            const client = await this.provider.Client.find('client');
+            client.userinfoSignedResponseAlg = 'HS256';
+            client.clientSecretExpiresAt = 1;
+          });
+
+          after(async function () {
+            const client = await this.provider.Client.find('client');
+            client.userinfoSignedResponseAlg = undefined;
+            client.clientSecretExpiresAt = 0;
+          });
+
+          it('errors with a specific message', function () {
+            return this.agent.get('/me')
+              .auth(this.access_token, { type: 'bearer' })
+              .expect(400)
+              .expect({
+                error: 'invalid_client',
+                error_description: 'client secret is expired - cannot respond with HS256 JWT UserInfo response',
+              });
+          });
+        });
+
+        describe('userinfo symmetric encrypted - expired client secret', () => {
+          before(async function () {
+            const client = await this.provider.Client.find('client');
+            client.clientSecretExpiresAt = 1;
+            client.userinfoEncryptedResponseAlg = 'dir';
+          });
+
+          after(async function () {
+            const client = await this.provider.Client.find('client');
+            client.clientSecretExpiresAt = 0;
+            client.userinfoEncryptedResponseAlg = 'RSA1_5';
+          });
+
+          it('errors with a specific message', function () {
+            return this.agent.get('/me')
+              .auth(this.access_token, { type: 'bearer' })
+              .expect(400)
+              .expect({
+                error: 'invalid_client',
+                error_description: 'client secret is expired - cannot respond with dir encrypted JWT UserInfo response',
+              });
+          });
+        });
       });
 
       describe('authorization Request Object encryption', () => {
@@ -140,8 +205,8 @@ describe('encryption', () => {
           })
             .expect(302)
             .expect((response) => {
-              const expected = parse('https://client.example.com/cb', true);
-              const actual = parse(response.headers.location, true);
+              const expected = url.parse('https://client.example.com/cb', true);
+              const actual = url.parse(response.headers.location, true);
               ['protocol', 'host', 'pathname'].forEach((attr) => {
                 expect(actual[attr]).to.equal(expected[attr]);
               });
@@ -307,12 +372,37 @@ describe('encryption', () => {
           })
             .expect(302)
             .expect((response) => {
-              const expected = parse('https://client.example.com/cb', true);
-              const actual = parse(response.headers.location.replace('#', '?'), true);
+              const expected = url.parse('https://client.example.com/cb', true);
+              const actual = url.parse(response.headers.location.replace('#', '?'), true);
               ['protocol', 'host', 'pathname'].forEach((attr) => {
                 expect(actual[attr]).to.equal(expected[attr]);
               });
               expect(actual.query).to.have.property('id_token');
+            }));
+        });
+
+        it('rejects symmetric encrypted request objects when secret is expired', async function () {
+          const client = await this.provider.Client.find('clientSymmetric-expired');
+          return JWT.sign({
+            client_id: 'clientSymmetric-expired',
+            response_type: 'id_token',
+            nonce: 'foobar',
+          }, null, 'none', { issuer: 'clientSymmetric-expired', audience: this.provider.issuer }).then((signed) => JWT.encrypt(signed, client.keystore.get({ alg: 'A128KW' }), { enc: 'A128CBC-HS256', alg: 'A128KW' })).then((encrypted) => this.wrap({
+            route,
+            verb,
+            auth: {
+              redirect_uri: 'https://client.example.com/cb',
+              request: encrypted,
+              scope: 'openid',
+              client_id: 'clientSymmetric-expired',
+              response_type: 'id_token',
+            },
+          })
+            .expect(302)
+            .expect((response) => {
+              const { query } = url.parse(response.headers.location.replace('#', '?'), true);
+              expect(query).to.have.property('error', 'invalid_request_object');
+              expect(query).to.have.property('error_description', 'could not decrypt the Request Object - the client secret used for its encryption is expired');
             }));
         });
 
@@ -358,12 +448,37 @@ describe('encryption', () => {
           })
             .expect(302)
             .expect((response) => {
-              const expected = parse('https://client.example.com/cb', true);
-              const actual = parse(response.headers.location.replace('#', '?'), true);
+              const expected = url.parse('https://client.example.com/cb', true);
+              const actual = url.parse(response.headers.location.replace('#', '?'), true);
               ['protocol', 'host', 'pathname'].forEach((attr) => {
                 expect(actual[attr]).to.equal(expected[attr]);
               });
               expect(actual.query).to.have.property('id_token');
+            }));
+        });
+
+        it('rejects symmetric (dir) encrypted request objects when secret is expired', async function () {
+          const client = await this.provider.Client.find('clientSymmetric');
+          return JWT.sign({
+            client_id: 'clientSymmetric-expired',
+            response_type: 'id_token',
+            nonce: 'foobar',
+          }, null, 'none', { issuer: 'clientSymmetric-expired', audience: this.provider.issuer }).then((signed) => JWT.encrypt(signed, client.keystore.get({ alg: 'A128CBC-HS256' }), { enc: 'A128CBC-HS256', alg: 'dir' })).then((encrypted) => this.wrap({
+            route,
+            verb,
+            auth: {
+              redirect_uri: 'https://client.example.com/cb',
+              request: encrypted,
+              scope: 'openid',
+              client_id: 'clientSymmetric-expired',
+              response_type: 'id_token',
+            },
+          })
+            .expect(302)
+            .expect((response) => {
+              const { query } = url.parse(response.headers.location.replace('#', '?'), true);
+              expect(query).to.have.property('error', 'invalid_request_object');
+              expect(query).to.have.property('error_description', 'could not decrypt the Request Object - the client secret used for its encryption is expired');
             }));
         });
 

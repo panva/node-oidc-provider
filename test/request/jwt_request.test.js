@@ -363,6 +363,40 @@ describe('request parameter features', () => {
           .expect(successFnCheck));
       });
 
+      it('rejects HMAC based requests when signed with an expired secret', async function () {
+        const key = (await this.provider.Client.find('client-with-HS-sig-expired')).keystore.get({
+          alg: 'HS256',
+        });
+
+        const spy = sinon.spy();
+        this.provider.once(errorEvt, spy);
+
+        return JWT.sign({
+          client_id: 'client-with-HS-sig-expired',
+          response_type: 'code',
+          redirect_uri: 'https://client.example.com/cb',
+        }, key, 'HS256', { issuer: 'client-with-HS-sig-expired', audience: this.provider.issuer }).then((request) => this.wrap({
+          agent: this.agent,
+          route,
+          verb,
+          auth: {
+            request,
+            scope: 'openid',
+            client_id: 'client-with-HS-sig-expired',
+            response_type: 'code',
+          },
+        })
+          .expect(errorCode)
+          .expect(() => {
+            expect(spy.calledOnce).to.be.true;
+            expect(spy.args[0][1]).to.have.property('message', 'invalid_request_object');
+            expect(spy.args[0][1]).to.have.property(
+              'error_description',
+              'could not validate the Request Object - the client secret used for its signature is expired',
+            );
+          }));
+      });
+
       it('supports optional replay prevention', async function () {
         const key = (await this.provider.Client.find('client-with-HS-sig')).keystore.get({
           alg: 'HS256',

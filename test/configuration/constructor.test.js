@@ -28,7 +28,7 @@ describe('Provider configuration', () => {
             { client_id: 'foo' },
           ],
         });
-      }).to.throw(Error).with.property('error_description', 'client_id must be unique for statically configured clients');
+      }).to.throw(Error).with.property('error_description', 'client_id must be unique amongst statically configured clients');
     });
   });
 
