@@ -55,8 +55,7 @@ If you or your business use oidc-provider, please consider becoming a [Patron][s
     - [mTLS](#featuresmtls)
     - [registration](#featuresregistration)
     - [registrationManagement](#featuresregistrationmanagement)
-    - [request](#featuresrequest)
-    - [requestUri](#featuresrequesturi)
+    - [requestObjects](#featuresrequestobjects)
     - [resourceIndicators](#featuresresourceindicators)
     - [revocation](#featuresrevocation)
     - [sessionManagement](#featuressessionmanagement)
@@ -637,7 +636,7 @@ new Provider('http://localhost:3000', {
 // NOTICE: The following draft features are enabled and their implemented version not acknowledged
 // NOTICE:   - OAuth 2.0 Web Message Response Mode - draft 00 (This is an Individual draft. URL: https://tools.ietf.org/html/draft-sakimura-oauth-wmrm-00)
 // NOTICE: Breaking changes between draft version updates may occur and these will be published as MINOR semver oidc-provider updates.
-// NOTICE: You may disable this notice and these potentially breaking updates by acknowledging the current draft version. See https://github.com/panva/node-oidc-provider/tree/master/docs/README.md#features
+// NOTICE: You may disable this notice and these potentially breaking updates by acknowledging the current draft version. See https://github.com/panva/node-oidc-provider/tree/v6.6.2/docs/README.md#features
 new Provider('http://localhost:3000', {
   features: {
     webMessageResponseMode: {
@@ -1456,42 +1455,87 @@ false
 
 </details>
 
-### features.request
+### features.requestObjects
 
-[Core 1.0](https://openid.net/specs/openid-connect-core-1_0.html#RequestObject) and [JWT Secured Authorization Request (JAR)](https://tools.ietf.org/html/draft-ietf-oauth-jwsreq-19) - Passing a Request Object by Value  
+[Core 1.0](https://openid.net/specs/openid-connect-core-1_0.html#RequestObject) and [JWT Secured Authorization Request (JAR)](https://tools.ietf.org/html/draft-ietf-oauth-jwsreq-19) - Request Object  
 
-Enables the use and validations of `request` parameter  
-
-
-_**default value**_:
-```js
-{
-  enabled: false
-}
-```
-
-### features.requestUri
-
-[Core 1.0](https://openid.net/specs/openid-connect-core-1_0.html#RequestUriParameter) and [JWT Secured Authorization Request (JAR)](https://tools.ietf.org/html/draft-ietf-oauth-jwsreq-19) - Passing a Request Object by Reference  
-
-Enables the use and validations of `request_uri` parameter  
+Enables the use and validations of the `request` and/or `request_uri` parameters.  
 
 
 _**default value**_:
 ```js
 {
-  enabled: true,
+  mergingStrategy: {
+    name: 'lax',
+    whitelist: [
+      'code_challenge',
+      'nonce',
+      'state'
+    ]
+  },
+  request: false,
+  requestUri: true,
   requireUriRegistration: true
 }
 ```
 <details>
-  <summary>(Click to expand) features.requestUri options details</summary>
+  <summary>(Click to expand) features.requestObjects options details</summary>
   <br>
 
 
+#### mergingStrategy.name
+
+defines the provider's strategy when it comes to using regular OAuth 2.0 parameters that are present. Parameters inside the Request Object are ALWAYS used, this option controls whether to combine those with the regular ones or not.   
+ Supported values are:   
+ - 'lax' (default) This is the behaviour expected by OIDC Core 1.0 - all parameters that are not present in the Resource Object are used when resolving the authorization request.
+ - 'strict' This is the behaviour expected by FAPI or JAR, all parameters outside of the Request Object are ignored.
+ - 'whitelist' During this strategy only parameters in the configured whitelist are used. This means that pre-signed Request Objects could be used multiple times while the per-transaction whitelisted parameters can be provided using regular OAuth 2.0 syntax.   
+  
+
+
+_**default value**_:
+```js
+'lax'
+```
+
+#### mergingStrategy.whitelist
+
+This whitelist is only used when the 'mergingStrategy.name' value is 'whitelist'.   
+  
+
+
+_**default value**_:
+```js
+[
+  'code_challenge',
+  'nonce',
+  'state'
+]
+```
+
+#### request
+
+Enables the use and validations of the `request` parameter.  
+
+
+_**default value**_:
+```js
+false
+```
+
+#### requestUri
+
+Enables the use and validations of the `request_uri` parameter.  
+
+
+_**default value**_:
+```js
+true
+```
+
 #### requireUriRegistration
 
-makes request_uri pre-registration mandatory/optional  
+Makes request_uri pre-registration mandatory (true) or optional (false).  
 
 
 _**default value**_:

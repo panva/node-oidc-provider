@@ -24,11 +24,11 @@ describe('request Uri features', () => {
 
     context('requireUriRegistration', () => {
       before(function () {
-        this.provider.enable('requestUri', { requireUriRegistration: true });
+        this.provider.enable('requestObjects', { requestUri: true, requireUriRegistration: true });
       });
 
       after(function () {
-        this.provider.enable('requestUri', { requireUriRegistration: false });
+        this.provider.enable('requestObjects', { requestUri: true, requireUriRegistration: false });
       });
 
       it('extends discovery', function () {
@@ -174,7 +174,7 @@ describe('request Uri features', () => {
             expect(spy.args[0][1]).to.have.property('message', 'invalid_request_object');
             expect(spy.args[0][1]).to.have.property(
               'error_description',
-              'Request Object from unsecure request_uri must be signed and/or symmetrically encrypted',
+              'Request Object from insecure request_uri must be signed and/or symmetrically encrypted',
             );
           });
       });

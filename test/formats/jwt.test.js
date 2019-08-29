@@ -1,3 +1,5 @@
+/* eslint-disable no-param-reassign */
+
 const { spy, match: { string, number }, assert } = require('sinon');
 const { expect } = require('chai');
 const base64url = require('base64url');
@@ -6,12 +8,12 @@ const { formats: { AccessToken: FORMAT } } = require('../../lib/helpers/defaults
 const epochTime = require('../../lib/helpers/epoch_time');
 const bootstrap = require('../test_helper');
 
-function decode(paseto) {
-  return JSON.parse(base64url.toBuffer(paseto.split('.')[2]).slice(0, -64));
+function decode(b64urljson) {
+  return JSON.parse(base64url.decode(b64urljson));
 }
 
-if (FORMAT === 'paseto') {
-  describe('paseto storage', () => {
+if (FORMAT === 'jwt') {
+  describe('jwt storage', () => {
     before(bootstrap(__dirname));
     const accountId = 'account';
     const claims = {};
@@ -27,7 +29,7 @@ if (FORMAT === 'paseto') {
     const redirectUri = 'https://rp.example.com/cb';
     const codeChallenge = 'codeChallenge';
     const codeChallengeMethod = 'codeChallengeMethod';
-    const aud = 'foo';
+    const aud = ['foo', 'bar'];
     const gty = 'foo';
     const error = 'access_denied';
     const errorDescription = 'resource owner denied access';
@@ -43,7 +45,6 @@ if (FORMAT === 'paseto') {
     const iiat = epochTime();
     const rotations = 1;
     const extra = { foo: 'bar' };
-    const { kid } = global.keystore.get({ kty: 'OKP' });
 
     // TODO: add Session and Interaction
 
@@ -70,7 +71,7 @@ if (FORMAT === 'paseto') {
       const kind = 'AccessToken';
       const upsert = spy(this.TestAdapter.for('AccessToken'), 'upsert');
       const token = new this.provider.AccessToken(fullPayload);
-      const paseto = await token.save();
+      const jwt = await token.save();
 
       assert.calledWith(upsert, string, {
         accountId,
@@ -82,7 +83,7 @@ if (FORMAT === 'paseto') {
         gty,
         iat: number,
         jti: upsert.getCall(0).args[0],
-        paseto: string,
+        jwt: string,
         kind,
         scope,
         sid,
@@ -94,14 +95,15 @@ if (FORMAT === 'paseto') {
       });
 
       const { iat, jti, exp } = upsert.getCall(0).args[1];
-      const payload = decode(paseto);
+      const header = decode(jwt.split('.')[0]);
+      expect(header).to.have.property('typ', 'JWT');
+      const payload = decode(jwt.split('.')[1]);
       expect(payload).to.eql({
         ...extra,
         aud,
-        client_id: clientId,
-        kid,
-        exp: new Date(exp * 1000).toISOString(),
-        iat: new Date(iat * 1000).toISOString(),
+        azp: clientId,
+        exp,
+        iat,
         iss: this.provider.issuer,
         jti,
         scope,
@@ -118,7 +120,7 @@ if (FORMAT === 'paseto') {
       const upsert = spy(this.TestAdapter.for('AccessToken'), 'upsert');
       const client = await this.provider.Client.find('pairwise');
       const token = new this.provider.AccessToken({ client, ...fullPayload });
-      const paseto = await token.save();
+      const jwt = await token.save();
 
       assert.calledWith(upsert, string, {
         accountId,
@@ -130,7 +132,7 @@ if (FORMAT === 'paseto') {
         gty,
         iat: number,
         jti: upsert.getCall(0).args[0],
-        paseto: string,
+        jwt: string,
         kind,
         scope,
         sid,
@@ -142,14 +144,15 @@ if (FORMAT === 'paseto') {
       });
 
       const { iat, jti, exp } = upsert.getCall(0).args[1];
-      const payload = decode(paseto);
+      const header = decode(jwt.split('.')[0]);
+      expect(header).to.have.property('typ', 'JWT');
+      const payload = decode(jwt.split('.')[1]);
       expect(payload).to.eql({
         ...extra,
         aud,
-        client_id: 'pairwise',
-        kid,
-        exp: new Date(exp * 1000).toISOString(),
-        iat: new Date(iat * 1000).toISOString(),
+        azp: 'pairwise',
+        exp,
+        iat,
         iss: this.provider.issuer,
         jti,
         scope,
@@ -165,7 +168,7 @@ if (FORMAT === 'paseto') {
       const kind = 'ClientCredentials';
       const upsert = spy(this.TestAdapter.for('ClientCredentials'), 'upsert');
       const token = new this.provider.ClientCredentials(fullPayload);
-      const paseto = await token.save();
+      const jwt = await token.save();
 
       assert.calledWith(upsert, string, {
         aud,
@@ -173,7 +176,7 @@ if (FORMAT === 'paseto') {
         exp: number,
         iat: number,
         jti: upsert.getCall(0).args[0],
-        paseto: string,
+        jwt: string,
         kind,
         scope,
         'x5t#S256': s256,
@@ -182,17 +185,17 @@ if (FORMAT === 'paseto') {
       });
 
       const { iat, jti, exp } = upsert.getCall(0).args[1];
-      const payload = decode(paseto);
+      const header = decode(jwt.split('.')[0]);
+      expect(header).to.have.property('typ', 'JWT');
+      const payload = decode(jwt.split('.')[1]);
       expect(payload).to.eql({
         ...extra,
         aud,
-        client_id: clientId,
-        kid,
-        exp: new Date(exp * 1000).toISOString(),
-        iat: new Date(iat * 1000).toISOString(),
+        azp: clientId,
+        exp,
+        iat,
         iss: this.provider.issuer,
         jti,
-        sub: clientId,
         scope,
         cnf: {
           'x5t#S256': s256,
@@ -201,17 +204,53 @@ if (FORMAT === 'paseto') {
       });
     });
 
-    describe('paseto when keys are missing', () => {
-      before(bootstrap(__dirname, { config: 'noed25519' }));
+    describe('customizers', () => {
+      afterEach(function () {
+        i(this.provider).configuration('formats.customizers').jwt = undefined;
+      });
 
-      it('throws an Error', async function () {
+      it('allows the payload to be extended', async function () {
+        const accessToken = new this.provider.AccessToken(fullPayload);
+        i(this.provider).configuration('formats.customizers').jwt = (ctx, token, jwt) => {
+          expect(token).to.equal(accessToken);
+          expect(jwt).to.have.property('payload');
+          expect(jwt).to.have.property('header', undefined);
+          jwt.header = { customized: true };
+          jwt.payload.customized = true;
+        };
+
+        const jwt = await accessToken.save();
+        const header = decode(jwt.split('.')[0]);
+        expect(header).to.have.property('customized', true);
+        const payload = decode(jwt.split('.')[1]);
+        expect(payload).to.have.property('customized', true);
+      });
+    });
+
+    describe('invalid signing alg resolved', () => {
+      ['none', 'HS256', 'HS384', 'HS512'].forEach((alg) => {
+        it(`throws an Error when ${alg} is resolved`, async function () {
+          i(this.provider).configuration('formats').jwtAccessTokenSigningAlg = async () => alg;
+          const token = new this.provider.AccessToken(fullPayload);
+          try {
+            await token.save();
+            throw new Error('expected to fail');
+          } catch (err) {
+            expect(err).to.be.an('error');
+            expect(err.message).to.equal('JWT Access Tokens may not use JWA HMAC algorithms or "none"');
+          }
+        });
+      });
+
+      it('throws an Error when unsupported provider keystore alg is resolved', async function () {
+        i(this.provider).configuration('formats').jwtAccessTokenSigningAlg = async () => 'ES384';
         const token = new this.provider.AccessToken(fullPayload);
         try {
           await token.save();
           throw new Error('expected to fail');
         } catch (err) {
           expect(err).to.be.an('error');
-          expect(err.message).to.equal('No Ed25519 signing key found to sign the PASETO formatted token with');
+          expect(err.message).to.equal('invalid alg resolved for JWT Access Token signature, the alg must be an asymmetric one that the provider has in its keystore');
         }
       });
     });

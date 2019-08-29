@@ -1,3 +1,5 @@
+/* eslint-disable no-param-reassign */
+
 const { spy, match: { string, number }, assert } = require('sinon');
 const { expect } = require('chai');
 const base64url = require('base64url');
@@ -203,9 +205,30 @@ if (FORMAT === 'jwt-ietf') {
       });
     });
 
-    describe('invalid signing alg resolved', () => {
-      before(bootstrap(__dirname));
+    describe('customizers', () => {
+      afterEach(function () {
+        i(this.provider).configuration('formats.customizers')['jwt-ietf'] = undefined;
+      });
 
+      it('allows the payload to be extended', async function () {
+        const accessToken = new this.provider.AccessToken(fullPayload);
+        i(this.provider).configuration('formats.customizers')['jwt-ietf'] = (ctx, token, jwt) => {
+          expect(token).to.equal(accessToken);
+          expect(jwt).to.have.property('payload');
+          expect(jwt).to.have.property('header', undefined);
+          jwt.header = { customized: true };
+          jwt.payload.customized = true;
+        };
+
+        const jwt = await accessToken.save();
+        const header = decode(jwt.split('.')[0]);
+        expect(header).to.have.property('customized', true);
+        const payload = decode(jwt.split('.')[1]);
+        expect(payload).to.have.property('customized', true);
+      });
+    });
+
+    describe('invalid signing alg resolved', () => {
       ['none', 'HS256', 'HS384', 'HS512'].forEach((alg) => {
         it(`throws an Error when ${alg} is resolved`, async function () {
           i(this.provider).configuration('formats').jwtAccessTokenSigningAlg = async () => alg;

@@ -4,11 +4,44 @@ const jose = require('@panva/jose');
 const sinon = require('sinon');
 const { expect } = require('chai');
 
+const Provider = require('../../lib');
 const JWT = require('../../lib/helpers/jwt');
 const bootstrap = require('../test_helper');
 
 describe('request parameter features', () => {
   before(bootstrap(__dirname));
+
+  describe('merging strategies', () => {
+    ['lax', 'strict', 'whitelist'].forEach((value) => {
+      it(`${value} is an allowed strategy name`, () => {
+        expect(() => {
+          new Provider('http://localhost:3000', { // eslint-disable-line no-new
+            features: {
+              requestObjects: {
+                mergingStrategy: {
+                  name: value,
+                },
+              },
+            },
+          });
+        }).not.to.throw();
+      });
+    });
+
+    it('throws on unsupported strategy names', () => {
+      expect(() => {
+        new Provider('http://localhost:3000', { // eslint-disable-line no-new
+          features: {
+            requestObjects: {
+              mergingStrategy: {
+                name: 'foobar',
+              },
+            },
+          },
+        });
+      }).to.throw(TypeError, "'mergingStrategy.name' must be one of 'lax', 'strict', or 'whitelist'");
+    });
+  });
 
   describe('configuration features.requestUri', () => {
     it('extends discovery', function () {
@@ -48,6 +81,146 @@ describe('request parameter features', () => {
       after(function () {
         i(this.provider).configuration().clockTolerance = 0;
         return this.logout();
+      });
+
+      describe('merging strategies', () => {
+        beforeEach(function () {
+          const ro = i(this.provider).configuration().features.requestObjects;
+          this.orig = {
+            mergingStrategy: ro.mergingStrategy.name,
+            whitelist: [...ro.mergingStrategy.whitelist],
+          };
+        });
+
+        afterEach(function () {
+          const ro = i(this.provider).configuration().features.requestObjects;
+          ro.mergingStrategy.name = this.orig.mergingStrategy;
+          ro.mergingStrategy.whitelist = new Set(this.orig.whitelist);
+        });
+
+        describe('strict', () => {
+          it('does not use anything from the OAuth 2.0 parameters', async function () {
+            i(this.provider).configuration().features.requestObjects.mergingStrategy.name = 'strict';
+
+            const spy = sinon.spy();
+            this.provider.once('authorization.success', spy);
+
+            if (successCode === 200) {
+              this.provider.once('device_authorization.success', ({ oidc }) => {
+                this.provider.emit('authorization.success', { oidc: { params: oidc.entities.DeviceCode.params } });
+              });
+            }
+
+            await JWT.sign({
+              client_id: 'client',
+              response_type: 'code',
+              redirect_uri: 'https://client.example.com/cb',
+              scope: 'openid',
+            }, null, 'none', { issuer: 'client', audience: this.provider.issuer }).then((request) => this.wrap({
+              agent: this.agent,
+              route,
+              verb,
+              auth: {
+                request,
+                ui_locales: 'foo',
+                ...(successCode === 200 ? {
+                  client_id: 'client',
+                } : undefined),
+              },
+            })
+              .expect(successCode)
+              .expect(successFnCheck)
+              .expect(() => {
+                expect(spy.calledOnce).to.be.true;
+                expect(spy.args[0][0].oidc.params.ui_locales).to.eq(undefined);
+              }));
+          });
+        });
+
+        describe('lax', () => {
+          it('uses anything not found in the Request Object', async function () {
+            i(this.provider).configuration().features.requestObjects.mergingStrategy.name = 'lax';
+
+            const spy = sinon.spy();
+            this.provider.once('authorization.success', spy);
+
+            if (successCode === 200) {
+              this.provider.once('device_authorization.success', ({ oidc }) => {
+                this.provider.emit('authorization.success', { oidc: { params: oidc.entities.DeviceCode.params } });
+              });
+            }
+
+            await JWT.sign({
+              client_id: 'client',
+              response_type: 'code',
+              redirect_uri: 'https://client.example.com/cb',
+              scope: 'openid',
+            }, null, 'none', { issuer: 'client', audience: this.provider.issuer }).then((request) => this.wrap({
+              agent: this.agent,
+              route,
+              verb,
+              auth: {
+                request,
+                ui_locales: 'foo',
+                ...(successCode === 200 ? {
+                  client_id: 'client',
+                } : undefined),
+              },
+            })
+              .expect(successCode)
+              .expect(successFnCheck)
+              .expect(() => {
+                expect(spy.calledOnce).to.be.true;
+                expect(spy.args[0][0].oidc.params.ui_locales).to.eq('foo');
+              }));
+          });
+        });
+
+        describe('whitelist', () => {
+          it('uses anything not found in the Request Object', async function () {
+            i(this.provider).configuration()
+              .features.requestObjects.mergingStrategy.name = 'whitelist';
+            i(this.provider).configuration()
+              .features.requestObjects.mergingStrategy.whitelist = new Set([
+                'ui_locales',
+              ]);
+
+            const spy = sinon.spy();
+            this.provider.once('authorization.success', spy);
+
+            if (successCode === 200) {
+              this.provider.once('device_authorization.success', ({ oidc }) => {
+                this.provider.emit('authorization.success', { oidc: { params: oidc.entities.DeviceCode.params } });
+              });
+            }
+
+            await JWT.sign({
+              client_id: 'client',
+              response_type: 'code',
+              redirect_uri: 'https://client.example.com/cb',
+              scope: 'openid',
+            }, null, 'none', { issuer: 'client', audience: this.provider.issuer }).then((request) => this.wrap({
+              agent: this.agent,
+              route,
+              verb,
+              auth: {
+                request,
+                ui_locales: 'foo',
+                claims_locales: 'foo',
+                ...(successCode === 200 ? {
+                  client_id: 'client',
+                } : undefined),
+              },
+            })
+              .expect(successCode)
+              .expect(successFnCheck)
+              .expect(() => {
+                expect(spy.calledOnce).to.be.true;
+                expect(spy.args[0][0].oidc.params.ui_locales).to.eq('foo');
+                expect(spy.args[0][0].oidc.params.claims_locales).to.eq(undefined);
+              }));
+          });
+        });
       });
 
       it('works with signed by none', function () {
