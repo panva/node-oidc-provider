@@ -2096,6 +2096,11 @@ _**default value**_:
 {
   AccessToken: 'opaque',
   ClientCredentials: 'opaque',
+  customizers: {
+    'jwt-ietf': undefined,
+    jwt: undefined,
+    paseto: undefined
+  },
   jwtAccessTokenSigningAlg: [AsyncFunction: jwtAccessTokenSigningAlg]
 }
 ```
@@ -2135,6 +2140,99 @@ server Configure `formats`:
 {
   AccessToken(ctx, token) {
     return token.aud ? 'jwt' : 'opaque';
+  }
+}
+```
+</details>
+
+### formats.customizers
+
+helper function used by the OP before signing a structured Access Token of a given type, such as a JWT or PASETO one. Customizing here only changes the structured Access Token, not your storage, introspection or anything else. For such extras use [`extraAccessTokenClaims`](#extraaccesstokenclaims) instead.   
+  
+
+
+_**default value**_:
+```js
+{
+  'jwt-ietf': undefined,
+  jwt: undefined,
+  paseto: undefined
+}
+```
+<a name="formats-customizers-to-push-additional-claims-to-a-jwt-format-access-token-payload"></a><details>
+  <summary>(Click to expand) To push additional claims to a `jwt` format Access Token payload
+</summary>
+  <br>
+
+```js
+{
+  customizers: {
+    jwt(ctx, token, jwt) {
+      jwt.payload.foo = 'bar';
+    }
+  }
+}
+```
+</details>
+<a name="formats-customizers-to-push-additional-headers-to-a-jwt-format-access-token"></a><details>
+  <summary>(Click to expand) To push additional headers to a `jwt` format Access Token
+</summary>
+  <br>
+
+```js
+{
+  customizers: {
+    jwt(ctx, token, jwt) {
+      jwt.header = { foo: 'bar' };
+    }
+  }
+}
+```
+</details>
+<a name="formats-customizers-to-push-additional-claims-to-a-jwt-ietf-format-access-token-payload"></a><details>
+  <summary>(Click to expand) To push additional claims to a `jwt-ietf` format Access Token payload
+</summary>
+  <br>
+
+```js
+{
+  customizers: {
+    ['jwt-ietf'](ctx, token, jwt) {
+      jwt.payload.foo = 'bar';
+    }
+  }
+}
+```
+</details>
+<a name="formats-customizers-to-push-additional-headers-to-a-jwt-ietf-format-access-token"></a><details>
+  <summary>(Click to expand) To push additional headers to a `jwt-ietf` format Access Token
+</summary>
+  <br>
+
+```js
+{
+  customizers: {
+    ['jwt-ietf'](ctx, token, jwt) {
+      jwt.header = { foo: 'bar' };
+    }
+  }
+}
+```
+</details>
+<a name="formats-customizers-to-push-a-payload-and-a-footer-to-a-paseto-structured-access-token"></a><details>
+  <summary>(Click to expand) To push a payload and a footer to a PASETO structured access token
+</summary>
+  <br>
+
+```js
+{
+  customizers: {
+    paseto(ctx, token, structuredToken) {
+      structuredToken.payload.foo = 'bar';
+      structuredToken.footer = 'foo'
+      structuredToken.footer = Buffer.from('foo')
+      structuredToken.footer = { foo: 'bar' } // will get stringified
+    }
   }
 }
 ```

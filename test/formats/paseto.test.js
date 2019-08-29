@@ -1,19 +1,17 @@
 /* eslint-disable no-param-reassign */
 
+const { createPublicKey } = require('crypto');
+
 const { spy, match: { string, number }, assert } = require('sinon');
 const { expect } = require('chai');
-const base64url = require('base64url');
-const pasetoLib = require('paseto');
 
 const { formats: { AccessToken: FORMAT } } = require('../../lib/helpers/defaults');
 const epochTime = require('../../lib/helpers/epoch_time');
 const bootstrap = require('../test_helper');
 
-function decode(paseto) {
-  return JSON.parse(base64url.toBuffer(paseto.split('.')[2]).slice(0, -64));
-}
-
 if (FORMAT === 'paseto') {
+  const pasetoLib = require('paseto'); // eslint-disable-line global-require
+  const key = createPublicKey(global.keystore.get({ kty: 'OKP' }).toPEM(false));
   describe('paseto storage', () => {
     before(bootstrap(__dirname));
     const accountId = 'account';
@@ -97,7 +95,7 @@ if (FORMAT === 'paseto') {
       });
 
       const { iat, jti, exp } = upsert.getCall(0).args[1];
-      const payload = decode(paseto);
+      const payload = await pasetoLib.V2.verify(paseto, key);
       expect(payload).to.eql({
         ...extra,
         aud,
@@ -145,7 +143,7 @@ if (FORMAT === 'paseto') {
       });
 
       const { iat, jti, exp } = upsert.getCall(0).args[1];
-      const payload = decode(paseto);
+      const payload = await pasetoLib.V2.verify(paseto, key);
       expect(payload).to.eql({
         ...extra,
         aud,
@@ -185,7 +183,7 @@ if (FORMAT === 'paseto') {
       });
 
       const { iat, jti, exp } = upsert.getCall(0).args[1];
-      const payload = decode(paseto);
+      const payload = await pasetoLib.V2.verify(paseto, key);
       expect(payload).to.eql({
         ...extra,
         aud,
@@ -218,7 +216,7 @@ if (FORMAT === 'paseto') {
         };
 
         let paseto = await accessToken.save();
-        const { payload } = pasetoLib.decode(paseto);
+        const { payload } = await pasetoLib.V2.verify(paseto, key, { complete: true });
         expect(payload).to.have.property('customized', true);
 
         i(this.provider).configuration('formats.customizers').paseto = (ctx, token, t) => {
@@ -227,7 +225,7 @@ if (FORMAT === 'paseto') {
         };
 
         paseto = await accessToken.save();
-        let { footer } = pasetoLib.decode(paseto);
+        let { footer } = await pasetoLib.V2.verify(paseto, key, { complete: true });
         expect(footer).to.be.instanceOf(Buffer);
         expect(JSON.parse(footer)).to.have.property('customized', true);
 
@@ -236,7 +234,7 @@ if (FORMAT === 'paseto') {
         };
 
         paseto = await accessToken.save();
-        ({ footer } = pasetoLib.decode(paseto));
+        ({ footer } = await pasetoLib.V2.verify(paseto, key, { complete: true }));
         expect(footer).to.be.instanceOf(Buffer);
         expect(footer.toString()).to.eql('foobar');
 
@@ -245,7 +243,7 @@ if (FORMAT === 'paseto') {
         };
 
         paseto = await accessToken.save();
-        ({ footer } = pasetoLib.decode(paseto));
+        ({ footer } = await pasetoLib.V2.verify(paseto, key, { complete: true }));
         expect(footer).to.be.instanceOf(Buffer);
         expect(footer.toString()).to.eql('foobarbaz');
       });
