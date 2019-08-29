@@ -521,7 +521,7 @@ application_type, client_id, client_name, client_secret, client_uri, contacts, d
 
 ### findAccount
 
-Helper used by the OP to load an account and retrieve its available claims. The return value should be a Promise and #claims() can return a Promise too  
+Function used to load an account and retrieve its available claims. The return value should be a Promise and #claims() can return a Promise too  
 
 
 _**default value**_:
@@ -772,7 +772,7 @@ _**default value**_:
 
 #### deviceInfo
 
-Helper function used to extract details from the device authorization endpoint request. This is then available during the end-user confirm screen and is supposed to aid the user confirm that the particular authorization initiated by the user from a device in his possession  
+Function used to extract details from the device authorization endpoint request. This is then available during the end-user confirm screen and is supposed to aid the user confirm that the particular authorization initiated by the user from a device in his possession  
 
 
 _**default value**_:
@@ -1077,7 +1077,7 @@ _**default value**_:
 
 [draft-ietf-oauth-mtls-17](https://tools.ietf.org/html/draft-ietf-oauth-mtls-17) - OAuth 2.0 Mutual TLS Client Authentication and Certificate Bound Access Tokens  
 
-Enables specific features from the Mutual TLS specification. The three main features have their own specific setting in this feature's configuration object and you must provide helpers for resolving some of the functions which are deployment-specific. Note: **This feature is only supported in node runtime >= 12.0.0**   
+Enables specific features from the Mutual TLS specification. The three main features have their own specific setting in this feature's configuration object and you must provide functions for resolving some of the functions which are deployment-specific. Note: **This feature is only supported in node runtime >= 12.0.0**   
   
 
 
@@ -1100,7 +1100,7 @@ _**default value**_:
 
 #### certificateAuthorized
 
-Helper used by the OP to determine if the client certificate, used in the request, is verified and comes from a trusted CA for the client. Should return true/false. Only used for `tls_client_auth` client authentication method.   
+Function used to determine if the client certificate, used in the request, is verified and comes from a trusted CA for the client. Should return true/false. Only used for `tls_client_auth` client authentication method.   
   
 
 <a name="certificate-authorized-when-behind-a-tls-terminating-proxy-nginx-apache"></a><details>
@@ -1141,7 +1141,7 @@ false
 
 #### certificateSubjectMatches
 
-Helper used by the OP to determine if the client certificate, used in the request, subject matches the registered client property. Only used for `tls_client_auth` client authentication method.   
+Function used to determine if the client certificate, used in the request, subject matches the registered client property. Only used for `tls_client_auth` client authentication method.   
   
 
 <a name="certificate-subject-matches-when-behind-a-tls-terminating-proxy-nginx-apache"></a><details>
@@ -1166,7 +1166,7 @@ function certificateSubjectMatches(ctx, property, expected) {
 
 #### getCertificate
 
-Helper used by the OP to retrieve the PEM-formatted client certificate used in the request.   
+Function used to retrieve the PEM-formatted client certificate used in the request.   
   
 
 <a name="get-certificate-when-behind-a-tls-terminating-proxy-nginx-apache"></a><details>
@@ -1244,7 +1244,7 @@ _**default value**_:
 
 #### idFactory
 
-helper generating random client identifiers during dynamic client registration  
+Function used to generate random client identifiers during dynamic client registration  
 
 
 _**default value**_:
@@ -1389,7 +1389,7 @@ new (provider.InitialAccessToken)({ policies: ['softwareStatement'] }).save().th
 
 #### secretFactory
 
-helper generating random client secrets during dynamic client registration  
+Function used to generate random client secrets during dynamic client registration  
 
 
 _**default value**_:
@@ -1549,7 +1549,7 @@ true
 
 [draft-ietf-oauth-resource-indicators-05](https://tools.ietf.org/html/draft-ietf-oauth-resource-indicators-05) - Resource Indicators for OAuth 2.0  
 
-Enables the use of `resource` parameter for the authorization and token endpoints. In order for the feature to be any useful you must also use the `audiences` helper function to validate the resource(s) and transform it to the Access Token audience.   
+Enables the use of `resource` parameter for the authorization and token endpoints. In order for the feature to be any useful you must also use the `audiences` function to validate the resource(s) and transform it to the Access Token audience.   
   
 
 
@@ -1616,10 +1616,10 @@ This example
 
 #### allowedPolicy
 
-Helper used by the provider to check if a request parameter should be processed, e.g. If it is whitelisted for a given client.   
+Function used to check if a request parameter should be processed, e.g. If it is whitelisted for a given client.   
   
 
-_**recommendation**_: Only allow pre-registered resource values, to pre-register these you shall use the `extraClientMetadata` configuration option to define a custom metadata and use that to implement your policy using this helper.  
+_**recommendation**_: Only allow pre-registered resource values, to pre-register these you shall use the `extraClientMetadata` configuration option to define a custom metadata and use that to implement your policy using this function.  
 
 
 _**default value**_:
@@ -1720,7 +1720,7 @@ _**default value**_:
 
 ### audiences
 
-Helper used by the OP to set an audience to issued Access Tokens. The return value should either be falsy use the default audience (client) or an array of string aud values, or a single string aud value.  
+Function used to set an audience to issued Access Tokens. The return value should either be falsy use the default audience (client) or an array of string aud values, or a single string aud value.  
 
 
 _**default value**_:
@@ -1755,7 +1755,7 @@ _**default value**_:
 
 ### clientBasedCORS
 
-Helper function used to check whether a given CORS request should be allowed based on the request's client.  
+Function used to check whether a given CORS request should be allowed based on the request's client.  
 
 
 _**default value**_:
@@ -1841,7 +1841,7 @@ true
 
 ### cookies
 
-Options for the [cookie module](https://github.com/pillarjs/cookies#cookiesset-name--value---options--) used by the OP to keep track of various User-Agent states.  
+Options for the [cookie module](https://github.com/pillarjs/cookies#cookiesset-name--value---options--) used to keep track of various User-Agent states.  
 
 
 ### cookies.keys
@@ -1875,7 +1875,7 @@ _**default value**_:
 
 ### cookies.names
 
-Cookie names used by the OP to store and transfer various states.  
+Cookie names used to store and transfer various states.  
 
 
 _**default value**_:
@@ -1953,7 +1953,7 @@ Configure `dynamicScopes` like so:
 
 ### expiresWithSession
 
-Helper used by the OP to decide whether the given authorization code/ device code or implicit returned access token be bound to the user session. This will be applied to all tokens issued from the authorization / device code in the future. When tokens are session-bound the session will be loaded by its `uid` every time the token is encountered. Session bound tokens will effectively get revoked if the end-user logs out.  
+Function used to decide whether the given authorization code/ device code or implicit returned access token be bound to the user session. This will be applied to all tokens issued from the authorization / device code in the future. When tokens are session-bound the session will be loaded by its `uid` every time the token is encountered. Session bound tokens will effectively get revoked if the end-user logs out.  
 
 
 _**default value**_:
@@ -1965,7 +1965,7 @@ async expiresWithSession(ctx, token) {
 
 ### extraAccessTokenClaims
 
-helper function used by the OP to get additional access token claims when it is being issued. These claims will be available in your storage under property `extra`, returned by introspection as top level claims and pushed into `jwt`, `jwt-ietf` and `paseto` formatted tokens as top level claims as well. Returned claims may not overwrite other top level claims.   
+Function used to get additional access token claims when it is being issued. These claims will be available in your storage under property `extra`, returned by introspection as top level claims and pushed into `jwt`, `jwt-ietf` and `paseto` formatted tokens as top level claims as well. Returned claims may not overwrite other top level claims.   
   
 
 
@@ -2147,7 +2147,7 @@ server Configure `formats`:
 
 ### formats.customizers
 
-helper function used by the OP before signing a structured Access Token of a given type, such as a JWT or PASETO one. Customizing here only changes the structured Access Token, not your storage, introspection or anything else. For such extras use [`extraAccessTokenClaims`](#extraaccesstokenclaims) instead.   
+Functions used before signing a structured Access Token of a given type, such as a JWT or PASETO one. Customizing here only changes the structured Access Token, not your storage, introspection or anything else. For such extras use [`extraAccessTokenClaims`](#extraaccesstokenclaims) instead.   
   
 
 
@@ -2240,7 +2240,7 @@ _**default value**_:
 
 ### formats.jwtAccessTokenSigningAlg
 
-helper used by the provider to resolve a JWT Access Token signing algorithm. The resolved algorithm must be an asymmetric one supported by the provider's keys in jwks.  
+Function used to resolve a JWT Access Token signing algorithm. The resolved algorithm must be an asymmetric one supported by the provider's keys in jwks.  
 
 
 _**default value**_:
@@ -2255,7 +2255,7 @@ async jwtAccessTokenSigningAlg(ctx, token, client) {
 
 ### httpOptions
 
-Helper called whenever the provider calls an external HTTP(S) resource. Use to change the [got](https://github.com/sindresorhus/got/tree/v9.6.0) library's request options as they happen. This can be used to e.g. Change the request timeout option or to configure the global agent to use HTTP_PROXY and HTTPS_PROXY environment variables.   
+Function called whenever calls to an external HTTP(S) resource are being made. Use this to change the [got](https://github.com/sindresorhus/got/tree/v9.6.0) library's request options as these requests are being made. This can be used to e.g. Change the request timeout option or to configure the global agent to use HTTP_PROXY and HTTPS_PROXY environment variables.   
   
 
 
@@ -2638,7 +2638,7 @@ const basePolicy = base()
 
 ### interactions.url
 
-Helper used by the OP to determine where to redirect User-Agent for necessary interaction, can return both absolute and relative urls.  
+Function used to determine where to redirect User-Agent for necessary interaction, can return both absolute and relative urls.  
 
 
 _**default value**_:
@@ -2666,7 +2666,7 @@ _**default value**_:
 
 ### issueRefreshToken
 
-Helper used by the OP to decide whether a refresh token will be issued or not   
+Function used to decide whether a refresh token will be issued or not   
   
 
 
@@ -2784,7 +2784,7 @@ async postLogoutSuccessSource(ctx) {
 
 ### renderError
 
-Helper used by the OP to present errors to the User-Agent  
+Function used to present errors to the User-Agent  
 
 
 _**default value**_:
