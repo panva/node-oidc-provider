@@ -89,6 +89,7 @@ module.exports = {
     registration: { enabled: true },
     request: { enabled: true },
     jwtResponseModes: { enabled: true },
+    pushedRequestObjects: { enabled: true },
     requestObjects: {
       request: true,
       requestUri: true,
