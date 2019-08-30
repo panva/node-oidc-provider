@@ -53,6 +53,7 @@ If you or your business use oidc-provider, please consider becoming a [Patron][s
     - [jwtResponseModes](#featuresjwtresponsemodes)
     - [jwtUserinfo](#featuresjwtuserinfo)
     - [mTLS](#featuresmtls)
+    - [pushedRequestObjects](#featurespushedrequestobjects)
     - [registration](#featuresregistration)
     - [registrationManagement](#featuresregistrationmanagement)
     - [requestObjects](#featuresrequestobjects)
@@ -1219,6 +1220,21 @@ false
 ```
 
 </details>
+
+### features.pushedRequestObjects
+
+[openid-financial-api-pushed-request-object-37426f5](https://bitbucket.org/openid/fapi/src/37426f5/Financial_API_Pushed_Request_Object.md) - Pushed Request Object  
+
+Enables the use `request_object_endpoint` defined by the Pushed Request Object draft.   
+  
+
+
+_**default value**_:
+```js
+{
+  enabled: false
+}
+```
 
 ### features.registration
 
@@ -2902,6 +2918,7 @@ _**default value**_:
   introspection: '/token/introspection',
   jwks: '/jwks',
   registration: '/reg',
+  request_object: '/request',
   revocation: '/token/revocation',
   token: '/token',
   userinfo: '/me'

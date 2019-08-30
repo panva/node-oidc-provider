@@ -38,6 +38,12 @@ loaded client or session.
 | `interaction.saved` | `(interaction)` | ... whenever interaction session is saved |
 | `interaction.started` | `(ctx, interaction)` | ... whenever interaction is being requested from the end-user |
 | `introspection.error` | `(ctx, error)` | ... whenever a handled error is encountered in the `introspection` endpoint |
+| `replay_detection.destroyed` | `(token)` | ... whenever a replay detection object is destroyed |
+| `replay_detection.saved` | `(token)` | ... whenever a replay detection object is saved |
+| `request_object.error` | `(ctx, error)` | ... whenever a handled error is encountered in the POST `request_object` endpoint |
+| `request_object.success` | `(ctx, client)` | ... with every successful request object endpoint response |
+| `request_object.destroyed` | `(token)` | ... whenever a pushed request object is destroyed |
+| `request_object.saved` | `(token)` | ... whenever a pushed request object is saved |
 | `refresh_token.consumed` | `(token)` | ... whenever a refresh token is consumed |
 | `refresh_token.destroyed` | `(token)` | ... whenever a refresh token is destroyed |
 | `refresh_token.saved` | `(token)` | ... whenever a refresh token is saved |

@@ -141,7 +141,7 @@ module.exports = function testHelper(dir, { config: base = path.basename(dir), m
 
       Object.assign(this, parameters);
 
-      this.client_id = parameters.client_id || clients[0].client_id;
+      this.client_id = 'client_id' in parameters ? parameters.client_id : clients[0].client_id;
       const c = clients.find((cl) => cl.client_id === this.client_id);
       this.state = 'state' in parameters ? parameters.state : Math.random().toString();
       this.redirect_uri = 'redirect_uri' in parameters ? parameters.redirect_uri : parameters.redirect_uri || (c && c.redirect_uris[0]);

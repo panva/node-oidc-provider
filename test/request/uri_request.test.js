@@ -11,6 +11,7 @@ const bootstrap = require('../test_helper');
 
 describe('request Uri features', () => {
   before(bootstrap(__dirname));
+  beforeEach(nock.cleanAll);
 
   describe('configuration features.requestUri', () => {
     it('extends discovery', function () {
