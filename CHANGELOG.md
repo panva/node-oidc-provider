@@ -2,6 +2,26 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+# [6.7.0](https://github.com/panva/node-oidc-provider/compare/v6.6.2...v6.7.0) (2019-08-30)
+
+
+### Bug Fixes
+
+* correct ssl offloading proxy documentation url in console warning ([b871e99](https://github.com/panva/node-oidc-provider/commit/b871e99))
+* handle server_error on expired unsigned request objects ([7172a85](https://github.com/panva/node-oidc-provider/commit/7172a85))
+* ignore secret and expiration timestamp on dynamic create edge case ([d532fb2](https://github.com/panva/node-oidc-provider/commit/d532fb2))
+
+
+### Features
+
+* allow authorization requests with only a Request Object ([e3fa143](https://github.com/panva/node-oidc-provider/commit/e3fa143))
+* allow structured access token customizations ([4be3bb2](https://github.com/panva/node-oidc-provider/commit/4be3bb2)), closes [#520](https://github.com/panva/node-oidc-provider/issues/520)
+* experimental support for pushed request objects ([4ac3905](https://github.com/panva/node-oidc-provider/commit/4ac3905))
+* strategies for parameter merging Request Object <> OAuth 2.0 ([3ad1744](https://github.com/panva/node-oidc-provider/commit/3ad1744))
+* support non-0 expiring client secrets (client_secret_expires_at) ([02877f6](https://github.com/panva/node-oidc-provider/commit/02877f6))
+
+
+
 ## [6.6.2](https://github.com/panva/node-oidc-provider/compare/v6.6.1...v6.6.2) (2019-08-26)
 
 
