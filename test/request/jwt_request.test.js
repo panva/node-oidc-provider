@@ -484,6 +484,37 @@ describe('request parameter features', () => {
         });
       }
 
+      it('handles JWT claim assertions', function () {
+        const spy = sinon.spy();
+        this.provider.once(errorEvt, spy);
+
+        return JWT.sign({
+          client_id: 'client',
+          response_type: 'code',
+          redirect_uri: 'https://client.example.com/cb',
+          exp: 1,
+        }, null, 'none', { issuer: 'client', audience: this.provider.issuer }).then((request) => this.wrap({
+          agent: this.agent,
+          route,
+          verb,
+          auth: {
+            request,
+            scope: 'openid',
+            client_id: 'client',
+            response_type: 'code',
+          },
+        })
+          .expect(errorCode)
+          .expect(() => {
+            expect(spy.calledOnce).to.be.true;
+            expect(spy.args[0][1]).to.have.property('message', 'invalid_request_object');
+            expect(spy.args[0][1]).to.have.property(
+              'error_description',
+              'Request Object claims are invalid (jwt expired)',
+            );
+          }));
+      });
+
       it('doesnt allow client_id to differ', function () {
         const spy = sinon.spy();
         this.provider.once(errorEvt, spy);
