@@ -88,6 +88,14 @@ module.exports = {
     introspection: { enabled: true },
     registration: { enabled: true },
     request: { enabled: true },
+    jwtResponseModes: { enabled: true },
+    requestObjects: {
+      request: true,
+      requestUri: true,
+      mergingStrategy: {
+        name: 'whitelist',
+      },
+    },
     revocation: { enabled: true },
     sessionManagement: { enabled: true },
   },
