@@ -11,9 +11,7 @@ is a good starting point to get an idea of what you should provide.
 
 ## Support
 
-[<img src="https://c5.patreon.com/external/logo/become_a_patron_button@2x.png" width="160" align="right">][support-patreon]
-If you or your business use oidc-provider, please consider becoming a [Patron][support-patreon] so I can continue maintaining it and adding new features carefree. You may also donate one-time via [PayPal][support-paypal].
-[<img src="https://cdn.jsdelivr.net/gh/gregoiresgt/payment-icons@183140a5ff8f39b5a19d59ebeb2c77f03c3a24d3/Assets/Payment/PayPal/Paypal@2x.png" width="100" align="right">][support-paypal]
+If you or your business use oidc-provider, please consider becoming a [sponsor][support-sponsor] so I can continue maintaining it and adding new features carefree.
 
 <br>
 
@@ -1736,7 +1734,11 @@ _**default value**_:
 
 ### audiences
 
-Function used to set an audience to issued Access Tokens. The return value should either be falsy use the default audience (client) or an array of string aud values, or a single string aud value.  
+Function used to set an audience to issued Access Tokens. The return value should be either:   
+ - falsy (no audience, implicitly the client is the only allowed audience of the token)
+ - a single string `aud` value (e.g. Such as the Resource Server indicated by the resource parameter)
+ - array of string `aud` values (it is supported but NOT RECOMMENDED, consider it DEPRECATED)   
+  
 
 
 _**default value**_:
@@ -1746,7 +1748,7 @@ async audiences(ctx, sub, token, use) {
   // @param sub   - account identifier (subject)
   // @param token - the token to which these additional audiences will be passed to
   // @param use   - can be one of "access_token" or "client_credentials"
-  //   depending on where the specific audiences are intended to be put in
+  //   depending on where the specific audience is intended to be allowed
   return undefined;
 }
 ```
@@ -3650,6 +3652,5 @@ _**default value**_:
 [token-exchange]: https://tools.ietf.org/html/draft-ietf-oauth-token-exchange
 [defaults]: /lib/helpers/defaults.js
 [keygrip-module]: https://www.npmjs.com/package/keygrip
-[support-patreon]: https://www.patreon.com/panva
-[support-paypal]: https://www.paypal.me/panva
+[support-sponsor]: https://github.com/users/panva/sponsorship
 [sponsor-auth0]: https://auth0.com/overview?utm_source=GHsponsor&utm_medium=GHsponsor&utm_campaign=oidc-provider&utm_content=auth
