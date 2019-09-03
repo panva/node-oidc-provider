@@ -70,14 +70,29 @@ describe('Pushed Request Object', () => {
         })
         .expect(201)
         .expect(({ body }) => {
-          expect(body).to.have.keys('aud', 'exp', 'iss', 'request_uri');
-          expect(body).to.have.property('aud', 'client');
-          expect(body).to.have.property('exp').and.is.a('number').above(Math.floor(Date.now() / 1000));
-          expect(body).to.have.property('iss', this.provider.issuer);
+          expect(body).to.have.keys('expires_in', 'request_uri');
+          expect(body).to.have.property('expires_in', 300);
           expect(body).to.have.property('request_uri').and.match(/^urn:ietf:params:oauth:request_uri:(.+)$/);
         });
 
       expect(spy).to.have.property('calledOnce', true);
+    });
+
+    it('requires the request object client_id to equal the authenticated client one', async function () {
+      return this.agent.post(route)
+        .auth('client', 'secret')
+        .type('form')
+        .send({
+          request: await JWT.sign({
+            response_type: 'code',
+            client_id: 'client-foo',
+          }, this.key, 'HS256'),
+        })
+        .expect(400)
+        .expect({
+          error: 'invalid_request_object',
+          error_description: "request client_id must equal the authenticated client's client_id",
+        });
     });
 
     it('remaps request validation errors to be related to the request object', async function () {
