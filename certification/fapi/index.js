@@ -142,8 +142,14 @@ const fapi = new Server(ISSUER, {
     jwtIntrospection: { enabled: true },
     jwtResponseModes: { enabled: true },
     pushedRequestObjects: { enabled: true },
-    request: { enabled: true },
-    requestUri: { enabled: true, requireUriRegistration: true },
+    requestObjects: {
+      request: true,
+      requestUri: true,
+      requireUriRegistration: true,
+      mergingStrategy: {
+        name: 'strict',
+      },
+    },
     revocation: { enabled: true },
   },
   responseTypes: ['code id_token'],
