@@ -2,6 +2,16 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+# [6.8.0](https://github.com/panva/node-oidc-provider/compare/v6.7.0...v6.8.0) (2019-09-06)
+
+
+### Features
+
+* update fapiRW draft feature ([8b927fc](https://github.com/panva/node-oidc-provider/commit/8b927fc))
+* update pushed request objects to b6cd952 ([43fa8aa](https://github.com/panva/node-oidc-provider/commit/43fa8aa))
+
+
+
 # [6.7.0](https://github.com/panva/node-oidc-provider/compare/v6.6.2...v6.7.0) (2019-08-30)
 
 
