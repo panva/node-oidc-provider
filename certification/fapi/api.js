@@ -7,6 +7,7 @@ const ms = require('ms');
 const debug = require('./debug');
 
 const FINISHED = new Set(['FINISHED']);
+const RESULTS = new Set(['REVIEW', 'PASSED']);
 
 class API {
   constructor({ baseUrl, bearerToken } = {}) {
@@ -86,19 +87,21 @@ class API {
     return response;
   }
 
-  async waitForState({ moduleId, states = FINISHED, timeout = ms('4m') } = {}) {
+  async waitForState({ moduleId, timeout = ms('4m') } = {}) {
     assert(moduleId, 'argument property "moduleId" missing');
     assert(moduleId, 'argument property "states" missing');
-    assert(states instanceof Set, 'argument property "states" must be a Set instance');
     assert(moduleId, 'argument property "timeout" missing');
 
     const timeoutAt = Date.now() + timeout;
 
     while (Date.now() < timeoutAt) {
-      const { status } = await this.getModuleInfo({ moduleId });
+      const { status, result } = await this.getModuleInfo({ moduleId });
       debug('module id %s status is %s', moduleId, status);
-      if (states.has(status)) {
-        return status;
+      if (FINISHED.has(status)) {
+        if (!RESULTS.has(result)) {
+          throw new Error(`module id ${moduleId} is ${status} but ${result}`);
+        }
+        return [status, result];
       }
 
       if (status === 'INTERRUPTED') {
@@ -110,7 +113,7 @@ class API {
     }
 
     debug(`module id ${moduleId} expected state timeout`);
-    throw new Error(`Timed out waiting for test module ${moduleId} to be in one of states: ${[...states].join(', ')}`);
+    throw new Error(`Timed out waiting for test module ${moduleId} to be in one of states: ${[...FINISHED].join(', ')}`);
   }
 }
 

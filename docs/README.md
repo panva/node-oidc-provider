@@ -925,9 +925,9 @@ _**default value**_:
 [Financial-grade API - Part 2: Read and Write API Security Profile](https://openid.net/specs/openid-financial-api-part-2-ID2.html)  
 
 Enables extra behaviours defined in FAPI Part 1 & 2 that cannot be achieved by other configuration options, namely:   
- - Request Object "exp" claim is required
- - Request Object must contain all parameters that are also sent as regular parameters
- - userinfo endpoint becomes a FAPI resource, echoing back the x-fapi-interaction-id header and disabling query string as a mechanism for providing access tokens  
+ - Request Object `exp` claim is REQUIRED
+ - `userinfo_endpoint` becomes a FAPI resource, echoing back the x-fapi-interaction-id header and disabling query string as a mechanism for providing access tokens   
+  
 
 
 _**default value**_:
@@ -936,6 +936,27 @@ _**default value**_:
   enabled: false
 }
 ```
+<a name="features-fapi-rw-other-configuration-needed-to-reach-fapi-levels"></a><details>
+  <summary>(Click to expand) other configuration needed to reach FAPI levels
+</summary>
+  <br>
+
+
+- `clientDefaults` for setting different default client `token_endpoint_auth_method`
+ - `clientDefaults` for setting different default client `id_token_signed_response_alg`
+ - `clientDefaults` for setting different default client `response_types`
+ - `clientDefaults` for setting client `tls_client_certificate_bound_access_tokens` to true
+ - `features.mTLS` and enable `certificateBoundAccessTokens`
+ - `features.mTLS` and enable `selfSignedTlsClientAuth` and/or `tlsClientAuth`
+ - `features.claimsParameter`
+ - `features.requestObjects` and enable `request` and/or `request_uri`
+ - `features.requestObjects.mergingStrategy.name` set to `strict`
+ - `whitelistedJWA`
+ - (optional) `features.pushedRequestObjects`
+ - (optional) `features.jwtResponseModes`  
+
+
+</details>
 
 ### features.frontchannelLogout
 

@@ -173,6 +173,30 @@
                 }
             ]
         },
+        "fapi-rw-id2-ensure-request-object-without-redirect-uri-fails": {
+            "browser": [
+                {
+                    "comment": "expect an immediate error page",
+                    "match": "https://fapi.panva.cz/auth*",
+                    "tasks": [
+                        {
+                            "task": "Expect redirect_uri missing error page",
+                            "match": "https://fapi.panva.cz/auth*",
+                            "commands": [
+                                [
+                                    "wait",
+                                    "xpath",
+                                    "//*",
+                                    10,
+                                    "oops! something went wrong",
+                                    "update-image-placeholder"
+                                ]
+                            ]
+                        }
+                    ]
+                }
+            ]
+        },
         "fapi-rw-id2-user-rejects-authentication": {
             "browser": [
                 {

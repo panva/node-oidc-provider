@@ -4,7 +4,10 @@ const config = clone(require('../default.config'));
 
 config.features = {
   fapiRW: { enabled: true },
-  request: { enabled: true },
+  requestObjects: {
+    request: true,
+    mergingStrategy: { name: 'strict' },
+  },
 };
 config.whitelistedJWA = {
   requestObjectSigningAlgValues: ['none'],
