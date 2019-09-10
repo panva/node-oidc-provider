@@ -123,7 +123,7 @@ class MyAdapter {
      * - kind {string} - "Interaction" fixed string value
      * - exp {number} - timestamp of the interaction's expiration
      * - iat {number} - timestamp of the interaction's creation
-     * - uid {number} - the uid of the authorizing client's established session
+     * - uid {string} - the uid of the authorizing client's established session
      * - returnTo {string} - after resolving interactions send the user-agent to this url
      * - params {object} - parsed recognized parameters object
      * - lastSubmission {object} - previous interaction result submission
@@ -141,7 +141,6 @@ class MyAdapter {
      * - kind {string} - "ReplayDetection" fixed string value
      * - exp {number} - timestamp of the replay object cache expiration
      * - iat {number} - timestamp of the replay object cache's creation
-     * - replay {object} - the object replay prevention is calculated from
      */
   }
 
