@@ -14,7 +14,7 @@ import * as Koa from 'koa';
 export {};
 
 export type RetryFunction = (retry: number, error: Error) => number;
-export type FindAccount = (ctx: KoaContextWithOIDC, sub: string, token: object) => Account;
+export type FindAccount = (ctx: KoaContextWithOIDC, sub: string, token: BaseToken) => Promise<Account> | Account;
 export type TokenFormat = 'opaque' | 'jwt' | 'jwt-ietf' | 'paseto';
 
 export type AccessTokenFormatFunction = (ctx: KoaContextWithOIDC, token: AccessToken) => TokenFormat;
@@ -67,9 +67,9 @@ export interface HttpRequestOptions extends tls.SecureContextOptions {
   [key: string]: unknown;
 }
 
-export interface ClientMetadata {
-  client_id: string;
-  redirect_uris: string[];
+export interface AnyClientMetadata {
+  client_id?: string;
+  redirect_uris?: string[];
   grant_types?: string[];
   response_types?: ResponseType[];
 
@@ -82,7 +82,7 @@ export interface ClientMetadata {
   contacts?: string[];
   default_acr_values?: string[];
   default_max_age?: number;
-  id_token_signed_response_alg?: string;
+  id_token_signed_response_alg?: SigningAlgorithmWithNone;
   initiate_login_uri?: string;
   jwks_uri?: string;
   jwks?: jose.JSONWebKeySet;
@@ -101,34 +101,39 @@ export interface ClientMetadata {
   tls_client_auth_san_uri?: string;
   tls_client_auth_san_ip?: string;
   tls_client_auth_san_email?: string;
-  token_endpoint_auth_signing_alg?: string;
-  userinfo_signed_response_alg?: string;
+  token_endpoint_auth_signing_alg?: SigningAlgorithm;
+  userinfo_signed_response_alg?: SigningAlgorithmWithNone;
   introspection_endpoint_auth_method?: ClientAuthMethod;
-  introspection_endpoint_auth_signing_alg?: string;
-  introspection_signed_response_alg?: string;
-  introspection_encrypted_response_alg?: string;
-  introspection_encrypted_response_enc?: string;
+  introspection_endpoint_auth_signing_alg?: SigningAlgorithm;
+  introspection_signed_response_alg?: SigningAlgorithmWithNone;
+  introspection_encrypted_response_alg?: EncryptionAlgValues;
+  introspection_encrypted_response_enc?: EncryptionEncValues;
   revocation_endpoint_auth_method?: ClientAuthMethod;
-  revocation_endpoint_auth_signing_alg?: string;
+  revocation_endpoint_auth_signing_alg?: SigningAlgorithm;
   backchannel_logout_session_required?: boolean;
   backchannel_logout_uri?: string;
   frontchannel_logout_session_required?: boolean;
   frontchannel_logout_uri?: string;
-  request_object_signing_alg?: string;
-  request_object_encryption_alg?: string;
-  request_object_encryption_enc?: string;
+  request_object_signing_alg?: SigningAlgorithmWithNone;
+  request_object_encryption_alg?: EncryptionAlgValues;
+  request_object_encryption_enc?: EncryptionEncValues;
   request_uris?: string[];
-  id_token_encrypted_response_alg?: string;
-  id_token_encrypted_response_enc?: string;
-  userinfo_encrypted_response_alg?: string;
-  userinfo_encrypted_response_enc?: string;
-  authorization_signed_response_alg?: string;
-  authorization_encrypted_response_alg?: string;
-  authorization_encrypted_response_enc?: string;
+  id_token_encrypted_response_alg?: EncryptionAlgValues;
+  id_token_encrypted_response_enc?: EncryptionEncValues;
+  userinfo_encrypted_response_alg?: EncryptionAlgValues;
+  userinfo_encrypted_response_enc?: EncryptionEncValues;
+  authorization_signed_response_alg?: SigningAlgorithm;
+  authorization_encrypted_response_alg?: EncryptionAlgValues;
+  authorization_encrypted_response_enc?: EncryptionEncValues;
   web_message_uris?: string[];
   tls_client_certificate_bound_access_tokens?: boolean;
 
   [key: string]: unknown;
+}
+
+export interface ClientMetadata extends AnyClientMetadata {
+  client_id: string;
+  redirect_uris: string[];
 }
 
 export type ResponseType = 'code' | 'id_token' | 'code id_token' | 'code token' | 'code id_token token' | 'none';
@@ -284,7 +289,7 @@ declare class BaseToken {
 
   static IN_PAYLOAD: string[];
 
-  static find(jti: string, options?: { ignoreExpiration?: boolean }): Promise<BaseToken>;
+  static find(jti: string, options?: { ignoreExpiration?: boolean }): Promise<BaseToken | undefined>;
   save(): Promise<string>;
 
   readonly adapter: Adapter;
@@ -304,7 +309,7 @@ declare class RequestObject extends BaseToken {
   readonly kind: 'RequestObject';
   request: string;
 
-  static find(jti: string, options?: { ignoreExpiration?: boolean }): Promise<RequestObject>;
+  static find(jti: string, options?: { ignoreExpiration?: boolean }): Promise<RequestObject | undefined>;
 }
 
 declare class RefreshToken extends BaseToken {
@@ -351,7 +356,7 @@ declare class RefreshToken extends BaseToken {
   isSenderConstrained(): boolean;
   consume(): Promise<void>;
 
-  static find(jti: string, options?: { ignoreExpiration?: boolean }): Promise<RefreshToken>;
+  static find(jti: string, options?: { ignoreExpiration?: boolean }): Promise<RefreshToken | undefined>;
 }
 
 declare class AuthorizationCode extends BaseToken {
@@ -399,7 +404,7 @@ declare class AuthorizationCode extends BaseToken {
 
   consume(): Promise<void>;
 
-  static find(jti: string, options?: { ignoreExpiration?: boolean }): Promise<RefreshToken>;
+  static find(jti: string, options?: { ignoreExpiration?: boolean }): Promise<AuthorizationCode | undefined>;
 }
 
 declare class DeviceCode extends BaseToken {
@@ -437,7 +442,7 @@ declare class DeviceCode extends BaseToken {
 
   consume(): Promise<void>;
 
-  static find(jti: string, options?: { ignoreExpiration?: boolean }): Promise<DeviceCode>;
+  static find(jti: string, options?: { ignoreExpiration?: boolean }): Promise<DeviceCode | undefined>;
 }
 
 declare class ClientCredentials extends BaseToken {
@@ -457,6 +462,8 @@ declare class ClientCredentials extends BaseToken {
 
   setAudiences(audience: string | string[]): void;
   isSenderConstrained(): boolean;
+
+  static find(jti: string, options?: { ignoreExpiration?: boolean }): Promise<ClientCredentials | undefined>;
 }
 
 declare class InitialAccessToken extends BaseToken {
@@ -469,14 +476,14 @@ declare class InitialAccessToken extends BaseToken {
   clientId: undefined;
   policies?: string[];
 
-  static find(jti: string, options?: { ignoreExpiration?: boolean }): Promise<InitialAccessToken>;
+  static find(jti: string, options?: { ignoreExpiration?: boolean }): Promise<InitialAccessToken | undefined>;
 }
 
 declare class RegistrationAccessToken extends BaseToken {
   readonly kind: 'RegistrationAccessToken';
   policies?: string[];
 
-  static find(jti: string, options?: { ignoreExpiration?: boolean }): Promise<RegistrationAccessToken>;
+  static find(jti: string, options?: { ignoreExpiration?: boolean }): Promise<RegistrationAccessToken | undefined>;
 }
 
 declare class AccessToken extends BaseToken {
@@ -513,7 +520,7 @@ declare class AccessToken extends BaseToken {
   setAudiences(audience: string | string[]): void;
   isSenderConstrained(): boolean;
 
-  static find(jti: string, options?: { ignoreExpiration?: boolean }): Promise<AccessToken>;
+  static find(jti: string, options?: { ignoreExpiration?: boolean }): Promise<AccessToken | undefined>;
 }
 
 declare class IdToken {
@@ -552,6 +559,7 @@ declare class Client {
 
   metadata(): ClientMetadata;
 
+  readonly clientId: string;
   readonly keystore: ClientKeystore;
 
   readonlyclientId: string;
@@ -617,7 +625,7 @@ declare class Client {
 
   [key: string]: unknown;
 
-  static find(id: string): Promise<Client>;
+  static find(id: string): Promise<Client | undefined>;
 }
 
 declare class OIDCContext {
@@ -650,7 +658,11 @@ declare class OIDCContext {
   readonly requestParamClaims: Set<string>;
   readonly requestParamScopes: Set<string>;
   readonly prompts: Set<string>;
+  readonly result?: InteractionResults;
 
+  readonly webMessageUriCheckPerformed?: boolean;
+  readonly redirectUriCheckPerformed?: boolean;
+  readonly signed?: string[];
   readonly registrationAccessToken?: RegistrationAccessToken;
   readonly deviceCode?: DeviceCode;
   readonly accessToken?: AccessToken;
@@ -658,6 +670,8 @@ declare class OIDCContext {
   readonly client?: Client;
   readonly acr: string;
   readonly amr: string[];
+  readonly body?: AnyObject;
+  readonly params?: AnyObject;
 
   acceptedScope(): string[] | void;
   resolvedClaims(): ClaimsWithRejects;
@@ -781,7 +795,7 @@ export interface Configuration {
 
   clients?: ClientMetadata[];
 
-  clientDefaults?: ClientMetadata;
+  clientDefaults?: AnyClientMetadata;
 
   clockTolerance?: number;
 
@@ -794,9 +808,9 @@ export interface Configuration {
       resume?: string;
       state?: string;
     };
-    long?: cookies.SetOption,
-    short?: cookies.SetOption,
-    keys?: string[] | Buffer[];
+    long?: cookies.SetOption;
+    short?: cookies.SetOption;
+    keys?: Array<string | Buffer>;
   };
 
   discovery?: AnyObject;
@@ -840,7 +854,7 @@ export interface Configuration {
       charset?: 'base-20' | 'digits';
       mask?: string;
       deviceInfo?: (ctx: KoaContextWithOIDC) => AnyObject;
-      userCodeInputSource?: (ctx: KoaContextWithOIDC, form: string, out: ErrorOut, err: errors.OIDCProviderError | Error) => Promise<void> | void;
+      userCodeInputSource?: (ctx: KoaContextWithOIDC, form: string, out?: ErrorOut, err?: errors.OIDCProviderError | Error) => Promise<void> | void;
       userCodeConfirmSource?: (ctx: KoaContextWithOIDC, form: string, client: Client, deviceInfo: AnyObject, userCode: string) => Promise<void> | void;
       successSource?: (ctx: KoaContextWithOIDC) => Promise<void> | void;
     };
@@ -892,7 +906,7 @@ export interface Configuration {
     frontchannelLogout?: {
       enabled?: boolean;
       ack?: number | string;
-      logoutPendingSource?: (ctx: KoaContextWithOIDC, frames: string[], postLogoutRedirectUri: string) => Promise<void>;
+      logoutPendingSource?: (ctx: KoaContextWithOIDC, frames: string[], postLogoutRedirectUri?: string) => Promise<void>;
     };
   };
 
@@ -901,7 +915,8 @@ export interface Configuration {
   formats?: {
     AccessToken?: AccessTokenFormatFunction | TokenFormat;
     ClientCredentials?: ClientCredentialsFormatFunction | TokenFormat;
-    jwtAccessTokenSigningAlg?: (ctx: KoaContextWithOIDC, token: AccessToken | ClientCredentials, client: Client) => string;
+    // TODO: can't seem to get a pass on async when | AsymmetricSigningAlgoritm is also possible return;
+    jwtAccessTokenSigningAlg?: (ctx: KoaContextWithOIDC, token: AccessToken | ClientCredentials, client: Client) => Promise<AsymmetricSigningAlgoritm>;
     customizers?: {
       jwt?: (ctx: KoaContextWithOIDC, token: AccessToken | ClientCredentials, parts: JWTStructured) => JWTStructured;
       'jwt-ietf'?: (ctx: KoaContextWithOIDC, token: AccessToken | ClientCredentials, parts: JWTStructured) => JWTStructured;
@@ -957,6 +972,7 @@ export interface Configuration {
     DeviceCode?: DeviceCodeTTLFunction | number;
     IdToken?: IdTokenTTLFunction | number;
     RefreshToken?: RefreshTokenTTLFunction | number;
+    [key: string]: unknown;
   };
 
   extraClientMetadata?: {
@@ -967,7 +983,7 @@ export interface Configuration {
 
   postLogoutSuccessSource?: (ctx: KoaContextWithOIDC) => void;
 
-  rotateRefreshToken?: (ctx: KoaContextWithOIDC) => void;
+  rotateRefreshToken?: (ctx: KoaContextWithOIDC) => Promise<boolean> | boolean;
 
   logoutSource?: (ctx: KoaContextWithOIDC, form: string) => void;
 
@@ -975,41 +991,46 @@ export interface Configuration {
 
   interactions?: {
     policy?: interactionPolicy.Prompt[];
-    url?: (ctx: KoaContextWithOIDC, interaction: Interaction) => Promise<void> | void;
+    url?: (ctx: KoaContextWithOIDC, interaction: Interaction) => Promise<string> | string;
   };
 
-  audiences?: (ctx: KoaContextWithOIDC, sub: string, token: AccessToken | ClientCredentials, use: 'access_token' | 'client_credentials') => false | string | string[];
+  audiences?: (
+    ctx: KoaContextWithOIDC,
+    sub: string,
+    token: AccessToken | ClientCredentials,
+    use: 'access_token' | 'client_credentials'
+  ) => Promise<false | string | string[]> | false | string | string[];
 
   findAccount?: FindAccount;
 
   whitelistedJWA?: {
     authorizationEncryptionAlgValues?: EncryptionAlgValues[];
     authorizationEncryptionEncValues?: EncryptionEncValues[];
-    authorizationSigningAlgValues?: SigningAlgorithms[];
-    dPoPSigningAlgValues?: AsymmetricSigningAlgoritms[];
+    authorizationSigningAlgValues?: SigningAlgorithm[];
+    dPoPSigningAlgValues?: AsymmetricSigningAlgoritm[];
     idTokenEncryptionAlgValues?: EncryptionAlgValues[];
     idTokenEncryptionEncValues?: EncryptionEncValues[];
-    idTokenSigningAlgValues?: SigningAlgorithmsWithNone[];
+    idTokenSigningAlgValues?: SigningAlgorithmWithNone[];
     introspectionEncryptionAlgValues?: EncryptionAlgValues[];
     introspectionEncryptionEncValues?: EncryptionEncValues[];
-    introspectionEndpointAuthSigningAlgValues?: SigningAlgorithms[];
-    introspectionSigningAlgValues?: SigningAlgorithmsWithNone[];
+    introspectionEndpointAuthSigningAlgValues?: SigningAlgorithm[];
+    introspectionSigningAlgValues?: SigningAlgorithmWithNone[];
     requestObjectEncryptionAlgValues?: EncryptionAlgValues[];
     requestObjectEncryptionEncValues?: EncryptionEncValues[];
-    requestObjectSigningAlgValues?: SigningAlgorithmsWithNone[];
-    revocationEndpointAuthSigningAlgValues?: SigningAlgorithms[];
-    tokenEndpointAuthSigningAlgValues?: SigningAlgorithms[];
+    requestObjectSigningAlgValues?: SigningAlgorithmWithNone[];
+    revocationEndpointAuthSigningAlgValues?: SigningAlgorithm[];
+    tokenEndpointAuthSigningAlgValues?: SigningAlgorithm[];
     userinfoEncryptionAlgValues?: EncryptionAlgValues[];
     userinfoEncryptionEncValues?: EncryptionEncValues[];
-    userinfoSigningAlgValues?: SigningAlgorithmsWithNone[];
+    userinfoSigningAlgValues?: SigningAlgorithmWithNone[];
   };
 }
 
 export type NoneAlg = 'none';
-export type AsymmetricSigningAlgoritms = 'PS256' | 'PS384' | 'PS512' | 'ES256' | 'ES384' | 'ES512' | 'EdDSA' | 'RS256' | 'RS384' | 'RS512';
-export type SymmetricSigningAlgorithms = 'HS256' | 'HS384' | 'HS512';
-export type SigningAlgorithms = AsymmetricSigningAlgoritms | SymmetricSigningAlgorithms;
-export type SigningAlgorithmsWithNone = AsymmetricSigningAlgoritms | SymmetricSigningAlgorithms | NoneAlg;
+export type AsymmetricSigningAlgoritm = 'PS256' | 'PS384' | 'PS512' | 'ES256' | 'ES384' | 'ES512' | 'EdDSA' | 'RS256' | 'RS384' | 'RS512';
+export type SymmetricSigningAlgorithm = 'HS256' | 'HS384' | 'HS512';
+export type SigningAlgorithm = AsymmetricSigningAlgoritm | SymmetricSigningAlgorithm;
+export type SigningAlgorithmWithNone = AsymmetricSigningAlgoritm | SymmetricSigningAlgorithm | NoneAlg;
 export type EncryptionAlgValues = 'RSA-OAEP' | 'RSA-OAEP-256' | 'RSA1_5' | 'ECDH-ES' |
   'ECDH-ES+A128KW' | 'ECDH-ES+A192KW' | 'ECDH-ES+A256KW' | 'A128KW' | 'A192KW' | 'A256KW' |
   'A128GCMKW' | 'A192GCMKW' | 'A256GCMKW' | 'PBES2-HS256+A128KW' | 'PBES2-HS384+A192KW' |
@@ -1039,6 +1060,7 @@ export interface InteractionResults {
 export class Provider extends events.EventEmitter {
   constructor(issuer: string, configuration?: Configuration);
 
+  readonly issuer: string;
   readonly app: Koa;
   readonly callback: (req: http.IncomingMessage | http2.Http2ServerRequest, res: http.ServerResponse | http2.Http2ServerResponse) => void;
 
@@ -1423,6 +1445,7 @@ export namespace interactionPolicy {
   function base(): DefaultPolicy;
 }
 
+// TODO: constructors
 export namespace errors {
   class OIDCProviderError extends Error {
     error: string;
