@@ -70,8 +70,9 @@ const provider = new Provider('https://op.example.com', {
     },
   },
   extraParams: ['foo', 'bar', 'baz'],
-  extraAccessTokenClaims(ctx, token) {
+  async extraAccessTokenClaims(ctx, token) {
     ctx.oidc.issuer.substring(0);
+    token.jti.substring(0);
 
     return { foo: 'bar' };
   },
@@ -247,7 +248,9 @@ const provider = new Provider('https://op.example.com', {
   },
   async audiences(ctx, sub, token, use) {
     ctx.oidc.issuer.substring(0);
-    sub.substring(0);
+    if (sub) {
+      sub.substring(0);
+    }
     token.iat.toFixed();
     use.substring(0);
     return 'foo';

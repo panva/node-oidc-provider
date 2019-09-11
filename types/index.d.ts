@@ -997,7 +997,7 @@ export interface Configuration {
 
   audiences?: (
     ctx: KoaContextWithOIDC,
-    sub: string,
+    sub: string | undefined,
     token: AccessToken | ClientCredentials,
     use: 'access_token' | 'client_credentials'
   ) => Promise<false | string | string[]> | false | string | string[];
