@@ -227,7 +227,9 @@ const provider = new Provider('https://op.example.com', {
   async findAccount(ctx, sub, token) {
     ctx.oidc.issuer.substring(0);
     sub.substring(0);
-    token.iat.toFixed();
+    if (token) {
+      token.iat.toFixed();
+    }
 
     return {
       accountId: sub,

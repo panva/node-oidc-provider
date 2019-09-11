@@ -911,7 +911,7 @@ export interface Configuration {
     };
   };
 
-  extraAccessTokenClaims?: (ctx: KoaContextWithOIDC, token: AccessToken | ClientCredentials) => Promise<object> | object | Promise<void> | void;
+  extraAccessTokenClaims?: (ctx: KoaContextWithOIDC, token: AccessToken | ClientCredentials) => Promise<AnyObject> | AnyObject | Promise<void> | void;
 
   formats?: {
     AccessToken?: AccessTokenFormatFunction | TokenFormat;
