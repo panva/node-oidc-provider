@@ -668,6 +668,7 @@ declare class OIDCContext {
   readonly accessToken?: AccessToken;
   readonly account?: Account;
   readonly client?: Client;
+  readonly session?: Session;
   readonly acr: string;
   readonly amr: string[];
   readonly body?: AnyObject;
