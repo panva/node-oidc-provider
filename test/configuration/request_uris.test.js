@@ -1,6 +1,6 @@
 const { expect } = require('chai');
 
-const Provider = require('../../lib');
+const { Provider } = require('../../lib');
 
 describe('client.requestUris', () => {
   it('defaults to empty array when registration of them is a must', () => {

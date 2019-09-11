@@ -3,7 +3,7 @@
 const jose = require('@panva/jose');
 const { expect } = require('chai');
 
-const Provider = require('../../lib');
+const { Provider } = require('../../lib');
 
 describe('configuration.jwks', () => {
   beforeEach(function () {

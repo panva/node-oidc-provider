@@ -2,7 +2,7 @@
 
 const { expect } = require('chai');
 
-const Provider = require('../../lib');
+const { Provider } = require('../../lib');
 
 describe('Provider configuration', () => {
   describe('clients', () => {

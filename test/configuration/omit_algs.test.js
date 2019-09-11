@@ -1,7 +1,7 @@
 const { expect } = require('chai');
 const jose = require('@panva/jose');
 
-const Provider = require('../../lib');
+const { Provider } = require('../../lib');
 
 describe('Provider declaring supported algorithms', () => {
   it('validates the configuration properties', () => {

@@ -1,6 +1,6 @@
 const { expect } = require('chai');
 
-const Provider = require('../../lib');
+const { Provider } = require('../../lib');
 
 describe('Provider configuration', () => {
   it('validates subjectTypes members', () => {

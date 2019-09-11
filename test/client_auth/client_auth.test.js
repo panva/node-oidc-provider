@@ -8,7 +8,7 @@ const cloneDeep = require('lodash/cloneDeep');
 
 const runtimeSupport = require('../../lib/helpers/runtime_support');
 const nanoid = require('../../lib/helpers/nanoid');
-const Provider = require('../../lib');
+const { Provider } = require('../../lib');
 const bootstrap = require('../test_helper');
 const clientKey = require('../client.sig.key');
 const JWT = require('../../lib/helpers/jwt');

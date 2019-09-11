@@ -4,7 +4,7 @@ const jose = require('@panva/jose');
 const sinon = require('sinon');
 const { expect } = require('chai');
 
-const Provider = require('../../lib');
+const { Provider } = require('../../lib');
 const JWT = require('../../lib/helpers/jwt');
 const bootstrap = require('../test_helper');
 

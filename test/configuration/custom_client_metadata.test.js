@@ -3,7 +3,7 @@
 const { expect } = require('chai');
 const sinon = require('sinon');
 
-const Provider = require('../../lib');
+const { Provider } = require('../../lib');
 const { InvalidClientMetadata } = require('../../lib/helpers/errors');
 
 describe('extraClientMetadata configuration', () => {

@@ -8,7 +8,7 @@ const render = require('koa-ejs');
 const helmet = require('koa-helmet');
 const mount = require('koa-mount');
 
-const Provider = require('../lib'); // require('oidc-provider');
+const { Provider } = require('../lib'); // require('oidc-provider');
 
 const Account = require('./support/account');
 const configuration = require('./support/configuration');

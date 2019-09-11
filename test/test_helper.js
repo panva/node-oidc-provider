@@ -17,7 +17,7 @@ const KeyGrip = require('keygrip'); // eslint-disable-line import/no-extraneous-
 
 const nanoid = require('../lib/helpers/nanoid');
 const epochTime = require('../lib/helpers/epoch_time');
-const Provider = require('../lib');
+const { Provider } = require('../lib');
 
 const { Account, TestAdapter } = require('./models');
 

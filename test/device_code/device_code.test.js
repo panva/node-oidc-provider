@@ -1,6 +1,6 @@
 const { expect } = require('chai');
 
-const Provider = require('../../lib');
+const { Provider } = require('../../lib');
 const bootstrap = require('../test_helper');
 
 describe('configuration features.deviceFlow', () => {
