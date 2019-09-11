@@ -14,7 +14,7 @@ import * as Koa from 'koa';
 export {};
 
 export type RetryFunction = (retry: number, error: Error) => number;
-export type FindAccount = (ctx: KoaContextWithOIDC, sub: string, token: BaseToken) => Promise<Account> | Account;
+export type FindAccount = (ctx: KoaContextWithOIDC, sub: string, token?: AuthorizationCode | AccessToken | DeviceCode) => Promise<Account> | Account;
 export type TokenFormat = 'opaque' | 'jwt' | 'jwt-ietf' | 'paseto';
 
 export type AccessTokenFormatFunction = (ctx: KoaContextWithOIDC, token: AccessToken) => TokenFormat;
