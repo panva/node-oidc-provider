@@ -1446,9 +1446,9 @@ export namespace interactionPolicy {
   function base(): DefaultPolicy;
 }
 
-// TODO: constructors
 export namespace errors {
   class OIDCProviderError extends Error {
+    constructor(status: number, message: string);
     error: string;
     error_description?: string;
     error_detail?: string;
@@ -1456,34 +1456,92 @@ export namespace errors {
     statusCode: number;
     status: number;
   }
-  class AccessDenied extends OIDCProviderError {}
-  class AuthorizationPending extends OIDCProviderError {}
-  class ConsentRequired extends OIDCProviderError {}
-  class ExpiredToken extends OIDCProviderError {}
-  class InteractionRequired extends OIDCProviderError {}
-  class InvalidClient extends OIDCProviderError {}
-  class InvalidClientAuth extends OIDCProviderError {}
-  class InvalidClientMetadata extends OIDCProviderError {}
-  class InvalidGrant extends OIDCProviderError {}
-  class InvalidRequest extends OIDCProviderError {}
-  class InvalidRequestObject extends OIDCProviderError {}
-  class InvalidRequestUri extends OIDCProviderError {}
-  class InvalidScope extends OIDCProviderError {}
-  class InvalidSoftwareStatement extends OIDCProviderError {}
-  class InvalidTarget extends OIDCProviderError {}
-  class InvalidToken extends OIDCProviderError {}
-  class LoginRequired extends OIDCProviderError {}
-  class RedirectUriMismatch extends OIDCProviderError {}
-  class RegistrationNotSupported extends OIDCProviderError {}
-  class RequestNotSupported extends OIDCProviderError {}
-  class RequestUriNotSupported extends OIDCProviderError {}
-  class SessionNotFound extends OIDCProviderError {}
-  class SlowDown extends OIDCProviderError {}
-  class TemporarilyUnavailable extends OIDCProviderError {}
-  class UnapprovedSoftwareStatement extends OIDCProviderError {}
-  class UnauthorizedClient extends OIDCProviderError {}
-  class UnsupportedGrantType extends OIDCProviderError {}
-  class UnsupportedResponseMode extends OIDCProviderError {}
-  class UnsupportedResponseType extends OIDCProviderError {}
-  class WebMessageUriMismatch extends OIDCProviderError {}
+  class AccessDenied extends OIDCProviderError {
+    constructor(description?: string, detail?: string);
+  }
+  class AuthorizationPending extends OIDCProviderError {
+    constructor(description?: string, detail?: string);
+  }
+  class ConsentRequired extends OIDCProviderError {
+    constructor(description?: string, detail?: string);
+  }
+  class ExpiredToken extends OIDCProviderError {
+    constructor(description?: string, detail?: string);
+  }
+  class InteractionRequired extends OIDCProviderError {
+    constructor(description?: string, detail?: string);
+  }
+  class InvalidClient extends OIDCProviderError {
+    constructor(description?: string, detail?: string);
+  }
+  class InvalidClientAuth extends OIDCProviderError {
+    constructor(detail: string);
+  }
+  class InvalidClientMetadata extends OIDCProviderError {
+    constructor(description: string);
+  }
+  class InvalidGrant extends OIDCProviderError {
+    constructor(detail: string);
+  }
+  class InvalidRequest extends OIDCProviderError {
+    constructor(description: string, code?: number);
+  }
+  class SessionNotFound extends InvalidRequest {}
+  class InvalidRequestObject extends OIDCProviderError {
+    constructor(description?: string, detail?: string);
+  }
+  class InvalidRequestUri extends OIDCProviderError {
+    constructor(description?: string, detail?: string);
+  }
+  class InvalidScope extends OIDCProviderError {
+    constructor(description: string, scope: string);
+  }
+  class InvalidSoftwareStatement extends OIDCProviderError {
+    constructor(description?: string, detail?: string);
+  }
+  class InvalidTarget extends OIDCProviderError {
+    constructor(description?: string, detail?: string);
+  }
+  class InvalidToken extends OIDCProviderError {
+    constructor(detail: string);
+  }
+  class LoginRequired extends OIDCProviderError {
+    constructor(description?: string, detail?: string);
+  }
+  class RedirectUriMismatch extends OIDCProviderError {
+    constructor(description?: string, detail?: string);
+  }
+  class RegistrationNotSupported extends OIDCProviderError {
+    constructor(description?: string, detail?: string);
+  }
+  class RequestNotSupported extends OIDCProviderError {
+    constructor(description?: string, detail?: string);
+  }
+  class RequestUriNotSupported extends OIDCProviderError {
+    constructor(description?: string, detail?: string);
+  }
+  class SlowDown extends OIDCProviderError {
+    constructor(description?: string, detail?: string);
+  }
+  class TemporarilyUnavailable extends OIDCProviderError {
+    constructor(description?: string, detail?: string);
+  }
+  class UnapprovedSoftwareStatement extends OIDCProviderError {
+    constructor(description?: string, detail?: string);
+  }
+  class UnauthorizedClient extends OIDCProviderError {
+    constructor(description?: string, detail?: string);
+  }
+  class UnsupportedGrantType extends OIDCProviderError {
+    constructor(description?: string, detail?: string);
+  }
+  class UnsupportedResponseMode extends OIDCProviderError {
+    constructor(description?: string, detail?: string);
+  }
+  class UnsupportedResponseType extends OIDCProviderError {
+    constructor(description?: string, detail?: string);
+  }
+  class WebMessageUriMismatch extends OIDCProviderError {
+    constructor(description?: string, detail?: string);
+  }
 }
