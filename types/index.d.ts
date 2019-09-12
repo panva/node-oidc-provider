@@ -136,7 +136,7 @@ export interface ClientMetadata extends AnyClientMetadata {
   redirect_uris: string[];
 }
 
-export type ResponseType = 'code' | 'id_token' | 'code id_token' | 'code token' | 'code id_token token' | 'none';
+export type ResponseType = 'code' | 'id_token' | 'code id_token' | 'id_token token' | 'code token' | 'code id_token token' | 'none';
 export type PKCEMethods = 'S256' | 'plain';
 export type SubjectTypes = 'public' | 'pairwise';
 export type ClientAuthMethod = 'client_secret_basic' | 'client_secret_post' | 'client_secret_jwt' | 'private_key_jwt' | 'tls_client_auth' | 'self_signed_tls_client_auth' | 'none';
