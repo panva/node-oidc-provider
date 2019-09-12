@@ -460,6 +460,22 @@ provider.on('access_token.saved', (accessToken) => {
   accessToken.jti.substring(0);
 });
 
+provider.registerGrantType('urn:example', async (ctx, next) => {
+  ctx.oidc.route.substring(0);
+  return next();
+}, ['foo', 'bar'], ['foo']);
+
+provider.use((ctx, next) => {
+  ctx.href.substring(0);
+  return next();
+});
+
+provider.use(async (ctx, next) => {
+  ctx.href.substring(0);
+  await next();
+  //
+});
+
 (async () => {
   const client = await provider.Client.find('foo');
   if (client) {
