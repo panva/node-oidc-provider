@@ -1110,6 +1110,9 @@ export class Provider extends events.EventEmitter {
     }
   ): Promise<Session>;
 
+  registerGrantType(name: string, handler: (ctx: KoaContextWithOIDC, next: Function) => Promise<void> | void, params?: string | string[] | Set<string>, dupes?: string | string[] | Set<string>): void;
+  use(middleware: (ctx: Koa.Context, next: Function) => Promise<void> | void): void;
+
   // tslint:disable:unified-signatures
   addListener(event: string, listener: (...args: any[]) => void): this;
   addListener(event: 'access_token.destroyed', listener: (accessToken: AccessToken) => void): this;
