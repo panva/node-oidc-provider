@@ -2,6 +2,15 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+# [6.9.0](https://github.com/panva/node-oidc-provider/compare/v6.8.0...v6.9.0) (2019-09-17)
+
+
+### Features
+
+* added TypeScript definitions ([#530](https://github.com/panva/node-oidc-provider/issues/530)) ([5adf5a8](https://github.com/panva/node-oidc-provider/commit/5adf5a8))
+
+
+
 # [6.8.0](https://github.com/panva/node-oidc-provider/compare/v6.7.0...v6.8.0) (2019-09-06)
 
 
