@@ -3,7 +3,7 @@ const sinon = require('sinon');
 
 const JWT = require('../../lib/helpers/jwt');
 const bootstrap = require('../test_helper');
-const Provider = require('../../lib');
+const { Provider } = require('../../lib');
 
 describe('Pushed Request Object', () => {
   before(bootstrap(__dirname));

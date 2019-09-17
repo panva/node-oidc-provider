@@ -7,7 +7,7 @@ const pull = require('lodash/pull');
 const cloneDeep = require('lodash/cloneDeep');
 
 const runtimeSupport = require('../../lib/helpers/runtime_support');
-const Provider = require('../../lib');
+const { Provider } = require('../../lib');
 const { whitelistedJWA } = require('../default.config');
 const mtlsKeys = require('../jwks/jwks.json');
 

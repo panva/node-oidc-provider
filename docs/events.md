@@ -56,8 +56,6 @@ loaded client or session.
 | `registration_read.error` | `(ctx, error)` | ... whenever a handled error is encountered in the GET `registration` endpoint |
 | `registration_update.error` | `(ctx, error)` | ... whenever a handled error is encountered in the PUT `registration` endpoint |
 | `registration_update.success` | `(ctx, client)` | ... with every successful update client registration request |
-| `replay_detection.destroyed` | `(replay)` | ... whenever replay detection document is destroyed |
-| `replay_detection.saved` | `(replay)` | ... whenever replay detection document is saved |
 | `revocation.error` | `(ctx, error)` | ... whenever a handled error is encountered in the `revocation` endpoint |
 | `server_error` | `(ctx, error)` | ... whenever an exception is thrown or promise rejected from   either the Provider or your provided  adapters. If it comes from the library you should probably report it |
 | `session.destroyed` | `(session)` | ... whenever session is destroyed |

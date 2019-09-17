@@ -6,7 +6,7 @@ const jose = require('@panva/jose');
 const helmet = require('koa-helmet');
 const pem = require('https-pem');
 
-const Server = require('../../lib'); // require('oidc-provider');
+const { Provider } = require('../../lib'); // require('oidc-provider');
 
 const OFFICIAL_CERTIFICATION = 'https://www.certification.openid.net';
 const { PORT = 3000, ISSUER = `http://localhost:${PORT}`, SUITE_BASE_URL = OFFICIAL_CERTIFICATION } = process.env;
@@ -21,7 +21,7 @@ const JWK_PKJWTTWO = jose.JWK.asKey(readFileSync(path.join(__dirname, 'pkjwttwo.
 const JWK_MTLSONE = jose.JWK.asKey(readFileSync(path.join(__dirname, 'mtlsone.key')), { x5c: [normalize(readFileSync(path.join(__dirname, 'mtlsone.crt')))], alg: 'PS256', use: 'sig' }).toJWK();
 const JWK_MTLSTWO = jose.JWK.asKey(readFileSync(path.join(__dirname, 'mtlstwo.key')), { x5c: [normalize(readFileSync(path.join(__dirname, 'mtlstwo.crt')))], alg: 'PS256', use: 'sig' }).toJWK();
 
-const fapi = new Server(ISSUER, {
+const fapi = new Provider(ISSUER, {
   acrValues: ['urn:mace:incommon:iap:silver'],
   routes: {
     userinfo: '/accounts',

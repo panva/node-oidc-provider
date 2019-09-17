@@ -7,7 +7,7 @@ const set = require('lodash/set');
 const express = require('express'); // eslint-disable-line import/no-unresolved
 const helmet = require('helmet');
 
-const Provider = require('../lib'); // require('oidc-provider');
+const { Provider } = require('../lib'); // require('oidc-provider');
 
 const Account = require('./support/account');
 const configuration = require('./support/configuration');

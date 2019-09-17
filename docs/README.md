@@ -96,7 +96,7 @@ If you or your business use oidc-provider, please consider becoming a [sponsor][
 ## Basic configuration example
 
 ```js
-const Provider = require('oidc-provider');
+const { Provider } = require('oidc-provider');
 const configuration = {
   // ... see the available options in Configuration options section
   features: {

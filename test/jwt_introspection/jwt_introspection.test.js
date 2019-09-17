@@ -2,7 +2,7 @@ const { expect } = require('chai');
 
 const bootstrap = require('../test_helper');
 const JWT = require('../../lib/helpers/jwt');
-const Provider = require('../../lib');
+const { Provider } = require('../../lib');
 
 const route = '/token/introspection';
 

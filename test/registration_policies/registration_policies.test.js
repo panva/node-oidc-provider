@@ -6,7 +6,7 @@ const sinon = require('sinon');
 const { expect } = require('chai');
 
 const bootstrap = require('../test_helper');
-const Provider = require('../../lib');
+const { Provider } = require('../../lib');
 
 const fail = () => { throw new Error('expected promise to be rejected'); };
 

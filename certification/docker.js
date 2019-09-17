@@ -6,7 +6,7 @@ const https = require('https');
 const pem = require('https-pem');
 const render = require('koa-ejs');
 
-const Provider = require('../lib'); // require('oidc-provider');
+const { Provider } = require('../lib'); // require('oidc-provider');
 const Account = require('../example/support/account');
 const routes = require('../example/routes/koa');
 

@@ -1,6 +1,6 @@
 const { expect } = require('chai');
 
-const Provider = require('../../lib');
+const { Provider } = require('../../lib');
 
 describe('response_types Provider configuration', () => {
   it('fixes common issues', () => {

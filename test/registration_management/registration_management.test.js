@@ -3,7 +3,7 @@ const sinon = require('sinon');
 const { expect } = require('chai');
 
 const bootstrap = require('../test_helper');
-const Provider = require('../../lib');
+const { Provider } = require('../../lib');
 
 describe('OAuth 2.0 Dynamic Client Registration Management Protocol', () => {
   before(bootstrap(__dirname));

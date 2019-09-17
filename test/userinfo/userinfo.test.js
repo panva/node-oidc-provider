@@ -3,7 +3,7 @@ const url = require('url');
 const { expect } = require('chai');
 const sinon = require('sinon');
 
-const Provider = require('../../lib');
+const { Provider } = require('../../lib');
 const bootstrap = require('../test_helper');
 
 describe('userinfo /me', () => {

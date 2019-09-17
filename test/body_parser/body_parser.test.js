@@ -5,7 +5,7 @@ const upstreamParser = require('koa-body');
 const sinon = require('sinon');
 const { expect } = require('chai');
 
-const Provider = require('../../lib');
+const { Provider } = require('../../lib');
 
 describe('body parser', () => {
   afterEach(() => {
