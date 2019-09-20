@@ -1087,24 +1087,13 @@ export class Provider extends events.EventEmitter {
 
   readonly issuer: string;
   readonly app: Koa;
-  readonly callback: (req: http.IncomingMessage | http2.Http2ServerRequest, res: http.ServerResponse | http2.Http2ServerResponse) => void;
+  readonly callback: Koa['callback'];
 
-  env?: string;
-  proxy?: boolean;
+  env?: Koa['env'];
+  proxy?: Koa['proxy'];
   subdomainOffset?: number;
-  keys?: string[] | Buffer[];
-
-  // tslint:disable:unified-signatures
-  listen(port?: number, hostname?: string, backlog?: number, listeningListener?: () => void): this;
-  listen(port?: number, hostname?: string, listeningListener?: () => void): this;
-  listen(port?: number, backlog?: number, listeningListener?: () => void): this;
-  listen(port?: number, listeningListener?: () => void): this;
-  listen(path: string, backlog?: number, listeningListener?: () => void): this;
-  listen(path: string, listeningListener?: () => void): this;
-  listen(options: net.ListenOptions, listeningListener?: () => void): this;
-  listen(handle: any, backlog?: number, listeningListener?: () => void): this;
-  listen(handle: any, listeningListener?: () => void): this;
-  // tslint:enable:unified-signatures
+  keys?: Koa['keys'];
+  listen: Koa['listen'];
 
   interactionResult(
     req: http.IncomingMessage | http2.Http2ServerRequest,
@@ -1140,7 +1129,7 @@ export class Provider extends events.EventEmitter {
     params?: string | string[] | Set<string>,
     dupes?: string | string[] | Set<string>
   ): void;
-  use(middleware: (ctx: Koa.Context, next: () => Promise<void>) => Promise<void> | void): void;
+  use: Koa['use'];
 
   // tslint:disable:unified-signatures
   addListener(event: string, listener: (...args: any[]) => void): this;
