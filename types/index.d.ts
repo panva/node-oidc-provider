@@ -28,7 +28,7 @@ export type IdTokenTTLFunction = (ctx: KoaContextWithOIDC, idToken: IdToken, cli
 export type RefreshTokenTTLFunction = (ctx: KoaContextWithOIDC, refreshToken: RefreshToken, client: Client) => number;
 
 export interface AnyObject {
-  [key: string]: unknown;
+  [key: string]: any;
 }
 
 /**
