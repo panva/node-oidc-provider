@@ -173,7 +173,7 @@ export interface ClientAuthorizationState {
   promptedScopes?: string[];
 }
 
-export class Interaction {
+export class Interaction extends BaseModel {
   readonly kind: 'Interaction';
   iat: number;
   exp: number;
@@ -196,10 +196,10 @@ export class Interaction {
   uid: string;
   lastSubmission?: InteractionResults;
 
-  save(ttl?: number): Promise<void>;
+  save(ttl?: number): Promise<string>;
 }
 
-export class Session {
+export class Session extends BaseModel {
   readonly kind: 'Session';
   iat: number;
   exp: number;
@@ -247,10 +247,10 @@ export class Session {
   rejectedClaimsFor(clientId: string): Set<string>;
   rejectedClaimsFor(clientId: string, claims: string[], replace?: boolean): void;
 
-  save(ttl?: number): Promise<void>;
+  save(ttl?: number): Promise<string>;
   destroy(): Promise<void>;
   resetIdentifier(): void;
-  static find(cookieId: string): Promise<Session | undefined>;
+  static find<T>(this: { new (...args: any[]): T }, cookieId: string): Promise<T | undefined>;
   static findByUid(uid: string): Promise<Session | undefined>;
   static get(ctx: Koa.Context): Promise<Session>;
 }
@@ -270,7 +270,46 @@ declare class PASETOStructured {
   payload: AnyObject;
 }
 
-declare class BaseToken {
+interface BaseModel {
+  jti: string;
+  kind: string;
+  iat?: number;
+  exp?: number;
+}
+
+declare class BaseModel {
+  get adapter(): Adapter;
+
+  save(ttl?: number): Promise<string>;
+  destroy(): Promise<void>;
+  emit(eventName: string): void;
+
+  static get adapter(): Adapter;
+
+  static get IN_PAYLOAD(): string[];
+
+  static find<T>(
+    this: { new (...args: any[]): T },
+    id: string,
+    options?: object
+  ): Promise<T | undefined>;
+
+  /* ----- maxin from has_format ----- */
+  // see https://github.com/panva/node-oidc-provider/blob/master/lib/models/mixins/has_format.js
+
+  generateTokenId(): string;
+  getValueAndPayload(): [string, object];
+  getTokenId(token: string): string;
+  verify<Payload>(
+    token: string,
+    payload: Payload,
+    args: { ignoreExpiration: boolean; foundByReference: boolean }
+  ): Payload;
+
+  // ---------------------------------------- //
+}
+
+declare class BaseToken extends BaseModel {
   iat: number;
   exp?: number;
   jti: string;
@@ -289,7 +328,7 @@ declare class BaseToken {
 
   static IN_PAYLOAD: string[];
 
-  static find(jti: string, options?: { ignoreExpiration?: boolean }): Promise<BaseToken | undefined>;
+  static find<T>(this: { new (...args: any[]): T }, jti: string, options?: { ignoreExpiration?: boolean }): Promise<T | undefined>;
   save(): Promise<string>;
 
   readonly adapter: Adapter;
@@ -308,8 +347,6 @@ declare class RequestObject extends BaseToken {
   constructor(properties: { request: string });
   readonly kind: 'RequestObject';
   request: string;
-
-  static find(jti: string, options?: { ignoreExpiration?: boolean }): Promise<RequestObject | undefined>;
 }
 
 declare class RefreshToken extends BaseToken {
@@ -355,8 +392,6 @@ declare class RefreshToken extends BaseToken {
   totalLifetime(): number;
   isSenderConstrained(): boolean;
   consume(): Promise<void>;
-
-  static find(jti: string, options?: { ignoreExpiration?: boolean }): Promise<RefreshToken | undefined>;
 }
 
 declare class AuthorizationCode extends BaseToken {
@@ -403,8 +438,6 @@ declare class AuthorizationCode extends BaseToken {
   gty?: string;
 
   consume(): Promise<void>;
-
-  static find(jti: string, options?: { ignoreExpiration?: boolean }): Promise<AuthorizationCode | undefined>;
 }
 
 declare class DeviceCode extends BaseToken {
@@ -441,8 +474,6 @@ declare class DeviceCode extends BaseToken {
   consumed: any;
 
   consume(): Promise<void>;
-
-  static find(jti: string, options?: { ignoreExpiration?: boolean }): Promise<DeviceCode | undefined>;
 }
 
 declare class ClientCredentials extends BaseToken {
@@ -462,8 +493,6 @@ declare class ClientCredentials extends BaseToken {
 
   setAudiences(audience: string | string[]): void;
   isSenderConstrained(): boolean;
-
-  static find(jti: string, options?: { ignoreExpiration?: boolean }): Promise<ClientCredentials | undefined>;
 }
 
 declare class InitialAccessToken extends BaseToken {
@@ -475,15 +504,11 @@ declare class InitialAccessToken extends BaseToken {
   readonly kind: 'InitialAccessToken';
   clientId: undefined;
   policies?: string[];
-
-  static find(jti: string, options?: { ignoreExpiration?: boolean }): Promise<InitialAccessToken | undefined>;
 }
 
 declare class RegistrationAccessToken extends BaseToken {
   readonly kind: 'RegistrationAccessToken';
   policies?: string[];
-
-  static find(jti: string, options?: { ignoreExpiration?: boolean }): Promise<RegistrationAccessToken | undefined>;
 }
 
 declare class AccessToken extends BaseToken {
@@ -519,8 +544,6 @@ declare class AccessToken extends BaseToken {
 
   setAudiences(audience: string | string[]): void;
   isSenderConstrained(): boolean;
-
-  static find(jti: string, options?: { ignoreExpiration?: boolean }): Promise<AccessToken | undefined>;
 }
 
 declare class IdToken {
