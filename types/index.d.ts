@@ -173,7 +173,7 @@ export interface ClientAuthorizationState {
   promptedScopes?: string[];
 }
 
-export class Interaction extends BaseModel {
+declare class Interaction extends BaseModel {
   readonly kind: 'Interaction';
   iat: number;
   exp: number;
@@ -199,7 +199,7 @@ export class Interaction extends BaseModel {
   save(ttl?: number): Promise<string>;
 }
 
-export class Session extends BaseModel {
+declare class Session extends BaseModel {
   readonly kind: 'Session';
   iat: number;
   exp: number;
@@ -570,27 +570,7 @@ declare class ClientKeystore {
   toJWKS(private?: boolean): jose.JSONWebKeySet;
 }
 
-interface Schema extends ClientMetadata {
-  [key: string]: unknown;
-}
-declare class Schema {
-  required(): void;
-  booleans(): void;
-  whens(): void;
-  arrays(): void;
-  strings(): void;
-  normalizeResponseTypes(): void;
-  enums(): void;
-  webUris(): void;
-  scopes(): void;
-  postLogoutRedirectUris(): void;
-  redirectUris(): void;
-  webMessageUris(): void;
-  normalizeNativeAppUris(): void;
-  checkContacts(): void;
-}
-
-export class Client {
+declare class Client {
   responseTypeAllowed(type: ResponseType): boolean;
   grantTypeAllowed(type: string): boolean;
   redirectUriAllowed(redirectUri: string): boolean;
@@ -669,10 +649,6 @@ export class Client {
   [key: string]: unknown;
 
   static find(id: string): Promise<Client | undefined>;
-
-  static needsSecret(metadata: ClientMetadata): boolean;
-
-  static Schema: typeof Schema;
 }
 
 declare class OIDCContext {
