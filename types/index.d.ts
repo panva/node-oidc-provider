@@ -293,20 +293,6 @@ declare class BaseModel {
     id: string,
     options?: object
   ): Promise<T | undefined>;
-
-  /* ----- maxin from has_format ----- */
-  // see https://github.com/panva/node-oidc-provider/blob/master/lib/models/mixins/has_format.js
-
-  generateTokenId(): string;
-  getValueAndPayload(): [string, object];
-  getTokenId(token: string): string;
-  verify<Payload>(
-    token: string,
-    payload: Payload,
-    args: { ignoreExpiration: boolean; foundByReference: boolean }
-  ): Payload;
-
-  // ---------------------------------------- //
 }
 
 declare class BaseToken extends BaseModel {
