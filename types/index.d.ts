@@ -280,7 +280,7 @@ declare class BaseToken {
   readonly format?: string;
   readonly scopes: Set<string>;
 
-  ttlPercentagePassed(): boolean;
+  ttlPercentagePassed(): number;
 
   readonly isValid: boolean;
   readonly isExpired: boolean;
