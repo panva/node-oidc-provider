@@ -1423,7 +1423,7 @@ export class Provider extends events.EventEmitter {
 
 export default Provider;
 
-export class DefaultPolicy extends Array<interactionPolicy.Prompt> {
+declare class DefaultPolicy extends Array<interactionPolicy.Prompt> {
   get(name: string): interactionPolicy.Prompt;
   remove(name: string): void;
   clear(): void;
