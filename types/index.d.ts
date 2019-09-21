@@ -28,7 +28,7 @@ export type IdTokenTTLFunction = (ctx: KoaContextWithOIDC, idToken: IdToken, cli
 export type RefreshTokenTTLFunction = (ctx: KoaContextWithOIDC, refreshToken: RefreshToken, client: Client) => number;
 
 export interface AnyObject {
-  [key: string]: unknown;
+  [key: string]: any;
 }
 
 /**
@@ -173,7 +173,7 @@ export interface ClientAuthorizationState {
   promptedScopes?: string[];
 }
 
-declare class Interaction {
+declare class Interaction extends BaseModel {
   readonly kind: 'Interaction';
   iat: number;
   exp: number;
@@ -196,10 +196,10 @@ declare class Interaction {
   uid: string;
   lastSubmission?: InteractionResults;
 
-  save(ttl?: number): Promise<void>;
+  save(ttl?: number): Promise<string>;
 }
 
-declare class Session {
+declare class Session extends BaseModel {
   readonly kind: 'Session';
   iat: number;
   exp: number;
@@ -247,10 +247,10 @@ declare class Session {
   rejectedClaimsFor(clientId: string): Set<string>;
   rejectedClaimsFor(clientId: string, claims: string[], replace?: boolean): void;
 
-  save(ttl?: number): Promise<void>;
+  save(ttl?: number): Promise<string>;
   destroy(): Promise<void>;
   resetIdentifier(): void;
-  static find(cookieId: string): Promise<Session | undefined>;
+  static find<T>(this: { new (...args: any[]): T }, cookieId: string): Promise<T | undefined>;
   static findByUid(uid: string): Promise<Session | undefined>;
   static get(ctx: Koa.Context): Promise<Session>;
 }
@@ -270,7 +270,32 @@ declare class PASETOStructured {
   payload: AnyObject;
 }
 
-declare class BaseToken {
+interface BaseModel {
+  jti: string;
+  kind: string;
+  iat?: number;
+  exp?: number;
+}
+
+declare class BaseModel {
+  get adapter(): Adapter;
+
+  save(ttl?: number): Promise<string>;
+  destroy(): Promise<void>;
+  emit(eventName: string): void;
+
+  static get adapter(): Adapter;
+
+  static get IN_PAYLOAD(): string[];
+
+  static find<T>(
+    this: { new (...args: any[]): T },
+    id: string,
+    options?: object
+  ): Promise<T | undefined>;
+}
+
+declare class BaseToken extends BaseModel {
   iat: number;
   exp?: number;
   jti: string;
@@ -280,7 +305,7 @@ declare class BaseToken {
   readonly format?: string;
   readonly scopes: Set<string>;
 
-  ttlPercentagePassed(): boolean;
+  ttlPercentagePassed(): number;
 
   readonly isValid: boolean;
   readonly isExpired: boolean;
@@ -289,7 +314,7 @@ declare class BaseToken {
 
   static IN_PAYLOAD: string[];
 
-  static find(jti: string, options?: { ignoreExpiration?: boolean }): Promise<BaseToken | undefined>;
+  static find<T>(this: { new (...args: any[]): T }, jti: string, options?: { ignoreExpiration?: boolean }): Promise<T | undefined>;
   save(): Promise<string>;
 
   readonly adapter: Adapter;
@@ -308,8 +333,6 @@ declare class PushedAuthorizationRequest extends BaseToken {
   constructor(properties: { request: string });
   readonly kind: 'PushedAuthorizationRequest';
   request: string;
-
-  static find(jti: string, options?: { ignoreExpiration?: boolean }): Promise<PushedAuthorizationRequest | undefined>;
 }
 
 declare class RefreshToken extends BaseToken {
@@ -355,8 +378,6 @@ declare class RefreshToken extends BaseToken {
   totalLifetime(): number;
   isSenderConstrained(): boolean;
   consume(): Promise<void>;
-
-  static find(jti: string, options?: { ignoreExpiration?: boolean }): Promise<RefreshToken | undefined>;
 }
 
 declare class AuthorizationCode extends BaseToken {
@@ -403,8 +424,6 @@ declare class AuthorizationCode extends BaseToken {
   gty?: string;
 
   consume(): Promise<void>;
-
-  static find(jti: string, options?: { ignoreExpiration?: boolean }): Promise<AuthorizationCode | undefined>;
 }
 
 declare class DeviceCode extends BaseToken {
@@ -441,8 +460,6 @@ declare class DeviceCode extends BaseToken {
   consumed: any;
 
   consume(): Promise<void>;
-
-  static find(jti: string, options?: { ignoreExpiration?: boolean }): Promise<DeviceCode | undefined>;
 }
 
 declare class ClientCredentials extends BaseToken {
@@ -462,8 +479,6 @@ declare class ClientCredentials extends BaseToken {
 
   setAudiences(audience: string | string[]): void;
   isSenderConstrained(): boolean;
-
-  static find(jti: string, options?: { ignoreExpiration?: boolean }): Promise<ClientCredentials | undefined>;
 }
 
 declare class InitialAccessToken extends BaseToken {
@@ -475,15 +490,11 @@ declare class InitialAccessToken extends BaseToken {
   readonly kind: 'InitialAccessToken';
   clientId: undefined;
   policies?: string[];
-
-  static find(jti: string, options?: { ignoreExpiration?: boolean }): Promise<InitialAccessToken | undefined>;
 }
 
 declare class RegistrationAccessToken extends BaseToken {
   readonly kind: 'RegistrationAccessToken';
   policies?: string[];
-
-  static find(jti: string, options?: { ignoreExpiration?: boolean }): Promise<RegistrationAccessToken | undefined>;
 }
 
 declare class AccessToken extends BaseToken {
@@ -519,8 +530,6 @@ declare class AccessToken extends BaseToken {
 
   setAudiences(audience: string | string[]): void;
   isSenderConstrained(): boolean;
-
-  static find(jti: string, options?: { ignoreExpiration?: boolean }): Promise<AccessToken | undefined>;
 }
 
 declare class IdToken {
@@ -1063,24 +1072,13 @@ export class Provider extends events.EventEmitter {
 
   readonly issuer: string;
   readonly app: Koa;
-  readonly callback: (req: http.IncomingMessage | http2.Http2ServerRequest, res: http.ServerResponse | http2.Http2ServerResponse) => void;
+  readonly callback: Koa['callback'];
 
-  env?: string;
-  proxy?: boolean;
+  env?: Koa['env'];
+  proxy?: Koa['proxy'];
   subdomainOffset?: number;
-  keys?: string[] | Buffer[];
-
-  // tslint:disable:unified-signatures
-  listen(port?: number, hostname?: string, backlog?: number, listeningListener?: () => void): this;
-  listen(port?: number, hostname?: string, listeningListener?: () => void): this;
-  listen(port?: number, backlog?: number, listeningListener?: () => void): this;
-  listen(port?: number, listeningListener?: () => void): this;
-  listen(path: string, backlog?: number, listeningListener?: () => void): this;
-  listen(path: string, listeningListener?: () => void): this;
-  listen(options: net.ListenOptions, listeningListener?: () => void): this;
-  listen(handle: any, backlog?: number, listeningListener?: () => void): this;
-  listen(handle: any, listeningListener?: () => void): this;
-  // tslint:enable:unified-signatures
+  keys?: Koa['keys'];
+  listen: Koa['listen'];
 
   interactionResult(
     req: http.IncomingMessage | http2.Http2ServerRequest,
@@ -1116,7 +1114,7 @@ export class Provider extends events.EventEmitter {
     params?: string | string[] | Set<string>,
     dupes?: string | string[] | Set<string>
   ): void;
-  use(middleware: (ctx: Koa.Context, next: () => Promise<void>) => Promise<void> | void): void;
+  use: Koa['use'];
 
   // tslint:disable:unified-signatures
   addListener(event: string, listener: (...args: any[]) => void): this;
