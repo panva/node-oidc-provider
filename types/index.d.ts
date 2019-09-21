@@ -304,12 +304,12 @@ declare class ReplayDetection {
   static readonly adapter: Adapter;
 }
 
-declare class RequestObject extends BaseToken {
+declare class PushedAuthorizationRequest extends BaseToken {
   constructor(properties: { request: string });
-  readonly kind: 'RequestObject';
+  readonly kind: 'PushedAuthorizationRequest';
   request: string;
 
-  static find(jti: string, options?: { ignoreExpiration?: boolean }): Promise<RequestObject | undefined>;
+  static find(jti: string, options?: { ignoreExpiration?: boolean }): Promise<PushedAuthorizationRequest | undefined>;
 }
 
 declare class RefreshToken extends BaseToken {
@@ -642,7 +642,7 @@ declare class OIDCContext {
     readonly InitialAccessToken?: InitialAccessToken;
     readonly RefreshToken?: RefreshToken;
     readonly RegistrationAccessToken?: RegistrationAccessToken;
-    readonly RequestObject?: RequestObject;
+    readonly PushedAuthorizationRequest?: PushedAuthorizationRequest;
     readonly RotatedRefreshToken?: RefreshToken;
     readonly RotatedRegistrationAccessToken?: RegistrationAccessToken;
     readonly [key: string]: unknown;
@@ -885,7 +885,7 @@ export interface Configuration {
 
     jwtResponseModes?: { enabled?: boolean, ack?: number | string },
 
-    pushedRequestObjects?: { enabled?: boolean, ack?: number | string },
+    pushedAuthorizationRequests?: { enabled?: boolean, ack?: number | string },
 
     mTLS?: {
       enabled?: boolean;
@@ -949,7 +949,7 @@ export interface Configuration {
     revocation?: string;
     token?: string;
     userinfo?: string;
-    request_object?: string;
+    pushed_authorization_request?: string;
   };
 
   scopes?: string[];
@@ -1136,8 +1136,8 @@ export class Provider extends events.EventEmitter {
   addListener(event: 'session.saved', listener: (session: Session) => void): this;
   addListener(event: 'replay_detection.destroyed', listener: (replayDetection: ReplayDetection) => void): this;
   addListener(event: 'replay_detection.saved', listener: (replayDetection: ReplayDetection) => void): this;
-  addListener(event: 'request_object.destroyed', listener: (requestObject: RequestObject) => void): this;
-  addListener(event: 'request_object.saved', listener: (requestObject: RequestObject) => void): this;
+  addListener(event: 'pushed_authorization_request.destroyed', listener: (pushedAuthorizationRequest: PushedAuthorizationRequest) => void): this;
+  addListener(event: 'pushed_authorization_request.saved', listener: (pushedAuthorizationRequest: PushedAuthorizationRequest) => void): this;
   addListener(event: 'registration_access_token.destroyed', listener: (registrationAccessToken: RegistrationAccessToken) => void): this;
   addListener(event: 'registration_access_token.saved', listener: (registrationAccessToken: RegistrationAccessToken) => void): this;
   addListener(event: 'refresh_token.destroyed', listener: (refreshToken: RefreshToken) => void): this;
@@ -1155,8 +1155,8 @@ export class Provider extends events.EventEmitter {
   addListener(event: 'grant.revoked', listener: (ctx: KoaContextWithOIDC, grantId: string) => void): this;
   addListener(event: 'backchannel.success', listener: (ctx: KoaContextWithOIDC, client: Client, accountId: string, sid: string) => void): this;
   addListener(event: 'backchannel.error', listener: (ctx: KoaContextWithOIDC, err: Error, client: Client, accountId: string, sid: string) => void): this;
-  addListener(event: 'request_object.success', listener: (ctx: KoaContextWithOIDC) => void): this;
-  addListener(event: 'request_object.error', listener: (ctx: KoaContextWithOIDC, err: errors.OIDCProviderError) => void): this;
+  addListener(event: 'pushed_authorization_request.success', listener: (ctx: KoaContextWithOIDC) => void): this;
+  addListener(event: 'pushed_authorization_request.error', listener: (ctx: KoaContextWithOIDC, err: errors.OIDCProviderError) => void): this;
   addListener(event: 'registration_update.success', listener: (ctx: KoaContextWithOIDC, client: Client) => void): this;
   addListener(event: 'registration_update.error', listener: (ctx: KoaContextWithOIDC, err: errors.OIDCProviderError) => void): this;
   addListener(event: 'registration_delete.success', listener: (ctx: KoaContextWithOIDC, client: Client) => void): this;
@@ -1190,8 +1190,8 @@ export class Provider extends events.EventEmitter {
   on(event: 'session.saved', listener: (session: Session) => void): this;
   on(event: 'replay_detection.destroyed', listener: (replayDetection: ReplayDetection) => void): this;
   on(event: 'replay_detection.saved', listener: (replayDetection: ReplayDetection) => void): this;
-  on(event: 'request_object.destroyed', listener: (requestObject: RequestObject) => void): this;
-  on(event: 'request_object.saved', listener: (requestObject: RequestObject) => void): this;
+  on(event: 'pushed_authorization_request.destroyed', listener: (pushedAuthorizationRequest: PushedAuthorizationRequest) => void): this;
+  on(event: 'pushed_authorization_request.saved', listener: (pushedAuthorizationRequest: PushedAuthorizationRequest) => void): this;
   on(event: 'registration_access_token.destroyed', listener: (registrationAccessToken: RegistrationAccessToken) => void): this;
   on(event: 'registration_access_token.saved', listener: (registrationAccessToken: RegistrationAccessToken) => void): this;
   on(event: 'refresh_token.destroyed', listener: (refreshToken: RefreshToken) => void): this;
@@ -1209,8 +1209,8 @@ export class Provider extends events.EventEmitter {
   on(event: 'grant.revoked', listener: (ctx: KoaContextWithOIDC, grantId: string) => void): this;
   on(event: 'backchannel.success', listener: (ctx: KoaContextWithOIDC, client: Client, accountId: string, sid: string) => void): this;
   on(event: 'backchannel.error', listener: (ctx: KoaContextWithOIDC, err: Error, client: Client, accountId: string, sid: string) => void): this;
-  on(event: 'request_object.success', listener: (ctx: KoaContextWithOIDC) => void): this;
-  on(event: 'request_object.error', listener: (ctx: KoaContextWithOIDC, err: errors.OIDCProviderError) => void): this;
+  on(event: 'pushed_authorization_request.success', listener: (ctx: KoaContextWithOIDC) => void): this;
+  on(event: 'pushed_authorization_request.error', listener: (ctx: KoaContextWithOIDC, err: errors.OIDCProviderError) => void): this;
   on(event: 'registration_update.success', listener: (ctx: KoaContextWithOIDC, client: Client) => void): this;
   on(event: 'registration_update.error', listener: (ctx: KoaContextWithOIDC, err: errors.OIDCProviderError) => void): this;
   on(event: 'registration_delete.success', listener: (ctx: KoaContextWithOIDC, client: Client) => void): this;
@@ -1244,8 +1244,8 @@ export class Provider extends events.EventEmitter {
   once(event: 'session.saved', listener: (session: Session) => void): this;
   once(event: 'replay_detection.destroyed', listener: (replayDetection: ReplayDetection) => void): this;
   once(event: 'replay_detection.saved', listener: (replayDetection: ReplayDetection) => void): this;
-  once(event: 'request_object.destroyed', listener: (requestObject: RequestObject) => void): this;
-  once(event: 'request_object.saved', listener: (requestObject: RequestObject) => void): this;
+  once(event: 'pushed_authorization_request.destroyed', listener: (pushedAuthorizationRequest: PushedAuthorizationRequest) => void): this;
+  once(event: 'pushed_authorization_request.saved', listener: (pushedAuthorizationRequest: PushedAuthorizationRequest) => void): this;
   once(event: 'registration_access_token.destroyed', listener: (registrationAccessToken: RegistrationAccessToken) => void): this;
   once(event: 'registration_access_token.saved', listener: (registrationAccessToken: RegistrationAccessToken) => void): this;
   once(event: 'refresh_token.destroyed', listener: (refreshToken: RefreshToken) => void): this;
@@ -1263,8 +1263,8 @@ export class Provider extends events.EventEmitter {
   once(event: 'grant.revoked', listener: (ctx: KoaContextWithOIDC, grantId: string) => void): this;
   once(event: 'backchannel.success', listener: (ctx: KoaContextWithOIDC, client: Client, accountId: string, sid: string) => void): this;
   once(event: 'backchannel.error', listener: (ctx: KoaContextWithOIDC, err: Error, client: Client, accountId: string, sid: string) => void): this;
-  once(event: 'request_object.success', listener: (ctx: KoaContextWithOIDC) => void): this;
-  once(event: 'request_object.error', listener: (ctx: KoaContextWithOIDC, err: errors.OIDCProviderError) => void): this;
+  once(event: 'pushed_authorization_request.success', listener: (ctx: KoaContextWithOIDC) => void): this;
+  once(event: 'pushed_authorization_request.error', listener: (ctx: KoaContextWithOIDC, err: errors.OIDCProviderError) => void): this;
   once(event: 'registration_update.success', listener: (ctx: KoaContextWithOIDC, client: Client) => void): this;
   once(event: 'registration_update.error', listener: (ctx: KoaContextWithOIDC, err: errors.OIDCProviderError) => void): this;
   once(event: 'registration_delete.success', listener: (ctx: KoaContextWithOIDC, client: Client) => void): this;
@@ -1298,8 +1298,8 @@ export class Provider extends events.EventEmitter {
   prependListener(event: 'session.saved', listener: (session: Session) => void): this;
   prependListener(event: 'replay_detection.destroyed', listener: (replayDetection: ReplayDetection) => void): this;
   prependListener(event: 'replay_detection.saved', listener: (replayDetection: ReplayDetection) => void): this;
-  prependListener(event: 'request_object.destroyed', listener: (requestObject: RequestObject) => void): this;
-  prependListener(event: 'request_object.saved', listener: (requestObject: RequestObject) => void): this;
+  prependListener(event: 'pushed_authorization_request.destroyed', listener: (pushedAuthorizationRequest: PushedAuthorizationRequest) => void): this;
+  prependListener(event: 'pushed_authorization_request.saved', listener: (pushedAuthorizationRequest: PushedAuthorizationRequest) => void): this;
   prependListener(event: 'registration_access_token.destroyed', listener: (registrationAccessToken: RegistrationAccessToken) => void): this;
   prependListener(event: 'registration_access_token.saved', listener: (registrationAccessToken: RegistrationAccessToken) => void): this;
   prependListener(event: 'refresh_token.destroyed', listener: (refreshToken: RefreshToken) => void): this;
@@ -1317,8 +1317,8 @@ export class Provider extends events.EventEmitter {
   prependListener(event: 'grant.revoked', listener: (ctx: KoaContextWithOIDC, grantId: string) => void): this;
   prependListener(event: 'backchannel.success', listener: (ctx: KoaContextWithOIDC, client: Client, accountId: string, sid: string) => void): this;
   prependListener(event: 'backchannel.error', listener: (ctx: KoaContextWithOIDC, err: Error, client: Client, accountId: string, sid: string) => void): this;
-  prependListener(event: 'request_object.success', listener: (ctx: KoaContextWithOIDC) => void): this;
-  prependListener(event: 'request_object.error', listener: (ctx: KoaContextWithOIDC, err: errors.OIDCProviderError) => void): this;
+  prependListener(event: 'pushed_authorization_request.success', listener: (ctx: KoaContextWithOIDC) => void): this;
+  prependListener(event: 'pushed_authorization_request.error', listener: (ctx: KoaContextWithOIDC, err: errors.OIDCProviderError) => void): this;
   prependListener(event: 'registration_update.success', listener: (ctx: KoaContextWithOIDC, client: Client) => void): this;
   prependListener(event: 'registration_update.error', listener: (ctx: KoaContextWithOIDC, err: errors.OIDCProviderError) => void): this;
   prependListener(event: 'registration_delete.success', listener: (ctx: KoaContextWithOIDC, client: Client) => void): this;
@@ -1352,8 +1352,8 @@ export class Provider extends events.EventEmitter {
   prependOnceListener(event: 'session.saved', listener: (session: Session) => void): this;
   prependOnceListener(event: 'replay_detection.destroyed', listener: (replayDetection: ReplayDetection) => void): this;
   prependOnceListener(event: 'replay_detection.saved', listener: (replayDetection: ReplayDetection) => void): this;
-  prependOnceListener(event: 'request_object.destroyed', listener: (requestObject: RequestObject) => void): this;
-  prependOnceListener(event: 'request_object.saved', listener: (requestObject: RequestObject) => void): this;
+  prependOnceListener(event: 'pushed_authorization_request.destroyed', listener: (pushedAuthorizationRequest: PushedAuthorizationRequest) => void): this;
+  prependOnceListener(event: 'pushed_authorization_request.saved', listener: (pushedAuthorizationRequest: PushedAuthorizationRequest) => void): this;
   prependOnceListener(event: 'registration_access_token.destroyed', listener: (registrationAccessToken: RegistrationAccessToken) => void): this;
   prependOnceListener(event: 'registration_access_token.saved', listener: (registrationAccessToken: RegistrationAccessToken) => void): this;
   prependOnceListener(event: 'refresh_token.destroyed', listener: (refreshToken: RefreshToken) => void): this;
@@ -1371,8 +1371,8 @@ export class Provider extends events.EventEmitter {
   prependOnceListener(event: 'grant.revoked', listener: (ctx: KoaContextWithOIDC, grantId: string) => void): this;
   prependOnceListener(event: 'backchannel.success', listener: (ctx: KoaContextWithOIDC, client: Client, accountId: string, sid: string) => void): this;
   prependOnceListener(event: 'backchannel.error', listener: (ctx: KoaContextWithOIDC, err: Error, client: Client, accountId: string, sid: string) => void): this;
-  prependOnceListener(event: 'request_object.success', listener: (ctx: KoaContextWithOIDC) => void): this;
-  prependOnceListener(event: 'request_object.error', listener: (ctx: KoaContextWithOIDC, err: errors.OIDCProviderError) => void): this;
+  prependOnceListener(event: 'pushed_authorization_request.success', listener: (ctx: KoaContextWithOIDC) => void): this;
+  prependOnceListener(event: 'pushed_authorization_request.error', listener: (ctx: KoaContextWithOIDC, err: errors.OIDCProviderError) => void): this;
   prependOnceListener(event: 'registration_update.success', listener: (ctx: KoaContextWithOIDC, client: Client) => void): this;
   prependOnceListener(event: 'registration_update.error', listener: (ctx: KoaContextWithOIDC, err: errors.OIDCProviderError) => void): this;
   prependOnceListener(event: 'registration_delete.success', listener: (ctx: KoaContextWithOIDC, client: Client) => void): this;
@@ -1396,7 +1396,7 @@ export class Provider extends events.EventEmitter {
   readonly RefreshToken: typeof RefreshToken;
   readonly AuthorizationCode: typeof AuthorizationCode;
   readonly RegistrationAccessToken: typeof RegistrationAccessToken;
-  readonly RequestObject: typeof RequestObject;
+  readonly PushedAuthorizationRequest: typeof PushedAuthorizationRequest;
   readonly ClientCredentials: typeof ClientCredentials;
   readonly DeviceCode: typeof DeviceCode;
   readonly BaseToken: typeof BaseToken;

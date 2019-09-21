@@ -8,7 +8,7 @@ const { errors: { InvalidTarget } } = require('../../lib');
 
 config.whitelistedJWA.requestObjectSigningAlgValues = ['none'];
 config.features = {
-  request: { enabled: true },
+  requestObjects: { request: true },
   clientCredentials: { enabled: true },
   deviceFlow: { enabled: true },
   resourceIndicators: {

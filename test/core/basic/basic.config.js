@@ -4,7 +4,7 @@ const config = cloneDeep(require('../../default.config'));
 const { Prompt, Check, base } = require('../../../lib/helpers/interaction_policy');
 
 config.extraParams = ['triggerCustomFail'];
-config.features = { requestUri: { enabled: false } };
+config.features = { requestObjects: { requestUri: false } };
 
 const policy = base();
 

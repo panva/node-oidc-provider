@@ -88,7 +88,7 @@ module.exports = {
     introspection: { enabled: true },
     registration: { enabled: true },
     jwtResponseModes: { enabled: true },
-    pushedRequestObjects: { enabled: true },
+    pushedAuthorizationRequests: { enabled: true },
     requestObjects: {
       request: true,
       requestUri: true,

@@ -5,9 +5,8 @@ const config = clone(require('../default.config'));
 config.features = {
   deviceFlow: { enabled: true },
   backchannelLogout: { enabled: true },
-  request: { enabled: false },
   claimsParameter: { enabled: true },
-  requestUri: { enabled: false },
+  requestObjects: { request: false, requestUri: false },
   resourceIndicators: { enabled: true },
 };
 

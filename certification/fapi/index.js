@@ -141,7 +141,7 @@ const fapi = new Provider(ISSUER, {
     introspection: { enabled: true },
     jwtIntrospection: { enabled: true },
     jwtResponseModes: { enabled: true },
-    pushedRequestObjects: { enabled: true },
+    pushedAuthorizationRequests: { enabled: true },
     requestObjects: {
       request: true,
       requestUri: true,
@@ -184,7 +184,7 @@ if (process.env.NODE_ENV === 'production') {
 
       switch (ctx.oidc && ctx.oidc.route) {
         case 'discovery': {
-          ['token', 'introspection', 'revocation', 'userinfo', 'request_object'].forEach((endpoint) => {
+          ['token', 'introspection', 'revocation', 'userinfo', 'pushed_authorization_request'].forEach((endpoint) => {
             if (ctx.body[`${endpoint}_endpoint`].startsWith(ISSUER)) {
               ctx.body[`${endpoint}_endpoint`] = ctx.body[`${endpoint}_endpoint`].replace('https://', 'https://mtls.');
             }

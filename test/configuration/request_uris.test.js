@@ -7,7 +7,7 @@ describe('client.requestUris', () => {
     const provider = new Provider('http://localhost:3000', {
       subjectTypes: ['public'],
       features: {
-        requestUri: { enabled: true, requireUriRegistration: true },
+        requestObjects: { requestUri: true, requireUriRegistration: true },
       },
       clients: [{
         client_id: 'client',
@@ -27,7 +27,7 @@ describe('client.requestUris', () => {
     const provider = new Provider('http://localhost:3000', {
       subjectTypes: ['public'],
       features: {
-        requestUri: { enabled: true, requireUriRegistration: false },
+        requestObjects: { requestUri: true, requireUriRegistration: false },
       },
       clients: [{
         client_id: 'client',

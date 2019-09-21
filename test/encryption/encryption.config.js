@@ -5,7 +5,7 @@ const jose = require('@panva/jose');
 const config = cloneDeep(require('../default.config'));
 
 config.features = {
-  request: { enabled: true },
+  requestObjects: { request: true },
   encryption: { enabled: true },
   introspection: { enabled: true },
   jwtIntrospection: { enabled: true },

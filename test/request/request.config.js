@@ -4,8 +4,11 @@ const pull = require('lodash/pull');
 const config = cloneDeep(require('../default.config'));
 
 config.features = {
-  request: { enabled: true },
-  requestUri: { requireUriRegistration: false },
+  requestObjects: {
+    request: true,
+    requestUri: true,
+    requireUriRegistration: false,
+  },
   claimsParameter: { enabled: true },
   deviceFlow: { enabled: true },
   resourceIndicators: { enabled: true },

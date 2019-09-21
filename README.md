@@ -45,6 +45,7 @@ The following draft specifications are implemented by oidc-provider.
 - [OAuth 2.0 Demonstration of Proof-of-Possession at the Application Layer (DPoP) - individual draft 02][dpop]
 - [OAuth 2.0 JWT Secured Authorization Request (JAR)][jar]
 - [OAuth 2.0 Mutual TLS Client Authentication and Certificate Bound Access Tokens (MTLS) - draft 17][mtls]
+- [OAuth 2.0 Pushed Authorization Requests - draft 00][par]
 - [OAuth 2.0 Resource Indicators - draft 07][resource-indicators]
 - [OAuth 2.0 Web Message Response Mode - individual draft 00][wmrm]
 - [OpenID Connect Back-Channel Logout 1.0 - draft 04][backchannel-logout]
@@ -214,3 +215,4 @@ See the list of available emitted [event names](/docs/events.md) and their descr
 [jarm]: https://openid.net/specs/openid-financial-api-jarm-wd-02.html
 [jwt-at]: https://tools.ietf.org/html/draft-ietf-oauth-access-token-jwt-02
 [support-sponsor]: https://github.com/users/panva/sponsorship
+[par]: https://tools.ietf.org/html/draft-lodderstedt-oauth-par-00

@@ -166,7 +166,7 @@ const provider = new Provider('https://op.example.com', {
     revocation: '/token/revocation',
     token: '/token',
     userinfo: '/me',
-    request_object: '/request',
+    pushed_authorization_request: '/request',
   },
   scopes: ['foo', 'bar'],
   dynamicScopes: [
@@ -281,7 +281,7 @@ const provider = new Provider('https://op.example.com', {
     sessionManagement: { enabled: false, ack: 2, keepHeaders: false },
     jwtIntrospection: { enabled: false, ack: 2 },
     jwtResponseModes: { enabled: false, ack: 2 },
-    pushedRequestObjects: { enabled: false, ack: 2 },
+    pushedAuthorizationRequests: { enabled: false, ack: 2 },
     registration: {
       enabled: true,
       initialAccessToken: true,
