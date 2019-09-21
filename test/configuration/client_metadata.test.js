@@ -356,13 +356,13 @@ describe('Client metadata validation', () => {
   context('request_uris', function () {
     defaultsTo(this.title, [], undefined, {
       features: {
-        requestUri: { enabled: true },
+        requestObjects: { requestUri: true },
       },
     });
     defaultsTo(this.title, undefined, undefined, {
       features: {
-        requestUri: {
-          enabled: true,
+        requestObjects: {
+          requestUri: true,
           requireUriRegistration: false,
         },
       },
@@ -857,7 +857,7 @@ describe('Client metadata validation', () => {
     const configuration = {
       features: {
         encryption: { enabled: true },
-        request: { enabled: true },
+        requestObjects: { request: true },
       },
     };
     context('request_object_encryption_alg', function () {

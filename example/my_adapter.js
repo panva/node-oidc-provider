@@ -10,7 +10,7 @@ class MyAdapter {
    * @constructor
    * @param {string} name Name of the oidc-provider model. One of "Session", "AccessToken",
    * "AuthorizationCode", "RefreshToken", "ClientCredentials", "Client", "InitialAccessToken",
-   * "RegistrationAccessToken", "DeviceCode", "Interaction", "ReplayDetection", or "RequestObject"
+   * "RegistrationAccessToken", "DeviceCode", "Interaction", "ReplayDetection", or "PushedAuthorizationRequest"
    *
    */
   constructor(name) {
@@ -85,7 +85,7 @@ class MyAdapter {
      * - errorDescription {string} - [DeviceCode only] - error_description from authnz to be returned
      *     to the polling client
      * - policies {string[]} - [InitialAccessToken, RegistrationAccessToken only] array of policies
-     * - request {string} - [RequestObject only] Pushed Request Object value
+     * - request {string} - [PushedAuthorizationRequest only] Pushed Request Object value
      *
      *
      * when `jwt`

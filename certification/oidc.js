@@ -77,7 +77,7 @@ let server;
         switch (ctx.oidc && ctx.oidc.route) {
           case 'discovery': {
             ctx.body.mtls_endpoint_aliases = {};
-            ['token', 'introspection', 'revocation', 'userinfo', 'device_authorization', 'request_object'].forEach((endpoint) => {
+            ['token', 'introspection', 'revocation', 'userinfo', 'device_authorization', 'pushed_authorization_request'].forEach((endpoint) => {
               if (!ctx.body[`${endpoint}_endpoint`]) {
                 return;
               }

@@ -51,7 +51,7 @@ If you or your business use oidc-provider, please consider becoming a [sponsor][
     - [jwtResponseModes](#featuresjwtresponsemodes)
     - [jwtUserinfo](#featuresjwtuserinfo)
     - [mTLS](#featuresmtls)
-    - [pushedRequestObjects](#featurespushedrequestobjects)
+    - [pushedAuthorizationRequests](#featurespushedauthorizationrequests)
     - [registration](#featuresregistration)
     - [registrationManagement](#featuresregistrationmanagement)
     - [requestObjects](#featuresrequestobjects)
@@ -952,7 +952,7 @@ _**default value**_:
  - `features.requestObjects` and enable `request` and/or `request_uri`
  - `features.requestObjects.mergingStrategy.name` set to `strict`
  - `whitelistedJWA`
- - (optional) `features.pushedRequestObjects`
+ - (optional) `features.pushedAuthorizationRequest`
  - (optional) `features.jwtResponseModes`  
 
 
@@ -1240,11 +1240,11 @@ false
 
 </details>
 
-### features.pushedRequestObjects
+### features.pushedAuthorizationRequests
 
-[openid-financial-api-pushed-request-object-37426f5](https://bitbucket.org/openid/fapi/src/37426f5/Financial_API_Pushed_Request_Object.md) - Pushed Request Object  
+[draft-lodderstedt-oauth-par-00](https://tools.ietf.org/html/draft-lodderstedt-oauth-par-00) - OAuth 2.0 Pushed Authorization Requests  
 
-Enables the use `request_object_endpoint` defined by the Pushed Request Object draft.   
+Enables the use `pushed_authorization_request_endpoint` defined by the Pushed Authorization Requests draft.   
   
 
 
@@ -2940,8 +2940,8 @@ _**default value**_:
   end_session: '/session/end',
   introspection: '/token/introspection',
   jwks: '/jwks',
+  pushed_authorization_request: '/request',
   registration: '/reg',
-  request_object: '/request',
   revocation: '/token/revocation',
   token: '/token',
   userinfo: '/me'

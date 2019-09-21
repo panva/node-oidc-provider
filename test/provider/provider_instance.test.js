@@ -79,8 +79,10 @@ describe('provider instance', () => {
         }],
         features: {
           encryption: { enabled: true },
-          request: { enabled: false },
-          requestUri: { enabled: false },
+          requestObjects: {
+            request: false,
+            requestUri: false,
+          },
         },
         whitelistedJWA: {
           idTokenEncryptionAlgValues: ['dir'],
