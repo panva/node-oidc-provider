@@ -98,6 +98,7 @@ class API {
       const { status, result } = await this.getModuleInfo({ moduleId });
       debug('module id %s status is %s', moduleId, status);
       if (FINISHED.has(status)) {
+        if (!status || !result) continue; // eslint-disable-line no-continue
         if (!RESULTS.has(result)) {
           throw new Error(`module id ${moduleId} is ${status} but ${result}`);
         }

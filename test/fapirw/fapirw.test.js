@@ -31,6 +31,57 @@ describe('Financial-grade API - Part 2: Read and Write API Security Profile beha
     });
   });
 
+  describe('FAPI Mode Authorization Request', () => {
+    beforeEach(function () { return this.login(); });
+    afterEach(function () { return this.logout(); });
+
+    it('requires jwt response mode to be used when id token is not issued by authorization endpoint', function () {
+      const auth = new this.AuthorizationRequest({
+        scope: 'openid',
+        client_id: 'client',
+        response_type: 'code',
+        nonce: 'foo', // TODO: see oidc_required.js
+      });
+
+      return this.wrap({
+        agent: this.agent,
+        route: '/auth',
+        verb: 'get',
+        auth,
+      })
+        .expect(302)
+        .expect(auth.validateClientLocation)
+        .expect(auth.validateError('invalid_request'))
+        .expect(auth.validateErrorDescription('response_mode not allowed for this response_type in FAPI mode'));
+    });
+
+    it('requires jwt response mode to be used when id token is not issued by authorization endpoint (JAR)', function () {
+      const request = `${base64url.encode(JSON.stringify({ alg: 'none' }))}.${base64url.encode(JSON.stringify({
+        scope: 'openid',
+        client_id: 'client',
+        response_type: 'code',
+        nonce: 'foo', // TODO: see oidc_required.js
+        exp: epochTime() + 60,
+      }))}.`;
+
+      const auth = new this.AuthorizationRequest({
+        request,
+        state: undefined,
+      });
+
+      return this.wrap({
+        agent: this.agent,
+        route: '/auth',
+        verb: 'get',
+        auth,
+      })
+        .expect(302)
+        .expect(auth.validateClientLocation)
+        .expect(auth.validateError('invalid_request'))
+        .expect(auth.validateErrorDescription('response_mode not allowed for this response_type in FAPI mode'));
+    });
+  });
+
   describe('Request Object', () => {
     beforeEach(function () { return this.login(); });
     afterEach(function () { return this.logout(); });
@@ -39,7 +90,7 @@ describe('Financial-grade API - Part 2: Read and Write API Security Profile beha
       const request = `${base64url.encode(JSON.stringify({ alg: 'none' }))}.${base64url.encode(JSON.stringify({
         client_id: 'client',
         scope: 'openid',
-        response_type: 'id_token',
+        response_type: 'code id_token',
         nonce: 'foo',
         redirect_uri: 'https://client.example.com/cb',
         state: 'foo',
@@ -50,7 +101,7 @@ describe('Financial-grade API - Part 2: Read and Write API Security Profile beha
         request,
         scope: 'openid',
         client_id: 'client',
-        response_type: 'id_token',
+        response_type: 'code id_token',
         nonce: 'foo',
         state: 'foo',
       });
@@ -63,8 +114,7 @@ describe('Financial-grade API - Part 2: Read and Write API Security Profile beha
       })
         .expect(302)
         .expect(auth.validateFragment)
-        .expect(auth.validatePresence(['id_token', 'state']))
-        .expect(auth.validateState)
+        .expect(auth.validatePresence(['id_token', 'code', 'state']))
         .expect(auth.validateClientLocation);
     });
 
@@ -72,7 +122,7 @@ describe('Financial-grade API - Part 2: Read and Write API Security Profile beha
       const request = `${base64url.encode(JSON.stringify({ alg: 'none' }))}.${base64url.encode(JSON.stringify({
         client_id: 'client',
         scope: 'openid',
-        response_type: 'id_token',
+        response_type: 'code id_token',
         nonce: 'foo',
       }))}.`;
 
@@ -80,7 +130,7 @@ describe('Financial-grade API - Part 2: Read and Write API Security Profile beha
         request,
         scope: 'openid',
         client_id: 'client',
-        response_type: 'id_token',
+        response_type: 'code id_token',
         nonce: 'foo',
       });
 
@@ -93,7 +143,6 @@ describe('Financial-grade API - Part 2: Read and Write API Security Profile beha
         .expect(302)
         .expect(auth.validateFragment)
         .expect(auth.validatePresence(['error', 'error_description', 'state']))
-        .expect(auth.validateState)
         .expect(auth.validateClientLocation)
         .expect(auth.validateError('invalid_request_object'))
         .expect(auth.validateErrorDescription('Request Object is missing the "exp" claim'));

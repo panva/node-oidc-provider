@@ -1,5 +1,5 @@
 {
-    "alias": "pkjwt",
+    "alias": "oidc-provider-pkjwt",
     "server": {
         "discoveryUrl": "https://fapi.panva.cz/.well-known/openid-configuration"
     },
@@ -31,7 +31,7 @@
     },
     "client2": {
         "client_id": "pkjwt-two",
-        "scope": "openid",
+        "scope": "openid offline_access",
         "jwks": {
             "keys": [
                 {
@@ -101,7 +101,7 @@
                 },
                 {
                     "task": "Verify Complete",
-                    "match": "https://*/test/a/pkjwt/callback*",
+                    "match": "https://*/test/a/oidc-provider-pkjwt/callback*",
                     "commands": [
                         [
                             "wait",

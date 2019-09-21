@@ -127,6 +127,22 @@ jobs:
           CONFIGURATION: ./certification/fapi/mtls.json
           SUITE_BASE_URL: https://localhost.emobix.co.uk:8443
           NODE_TLS_REJECT_UNAUTHORIZED: 0
+      # - name: Run private_key_jwt-jarm variant
+      #   run: node certification/fapi/runner
+      #   env:
+      #     PLAN_NAME: fapi-rw-id2-test-plan
+      #     VARIANT: private_key_jwt-jarm
+      #     CONFIGURATION: ./certification/fapi/pkjwt.json
+      #     SUITE_BASE_URL: https://localhost.emobix.co.uk:8443
+      #     NODE_TLS_REJECT_UNAUTHORIZED: 0
+      # - name: Run mtls-jarm variant
+      #   run: node certification/fapi/runner
+      #   env:
+      #     PLAN_NAME: fapi-rw-id2-test-plan
+      #     VARIANT: mtls-jarm
+      #     CONFIGURATION: ./certification/fapi/mtls.json
+      #     SUITE_BASE_URL: https://localhost.emobix.co.uk:8443
+      #     NODE_TLS_REJECT_UNAUTHORIZED: 0
 
   deploy:
     runs-on: ubuntu-latest

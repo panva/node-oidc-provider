@@ -1,5 +1,5 @@
 {
-    "alias": "mtls",
+    "alias": "oidc-provider-mtls",
     "server": {
         "discoveryUrl": "https://fapi.panva.cz/.well-known/openid-configuration"
     },
@@ -36,7 +36,7 @@
     },
     "client2": {
         "client_id": "mtls-two",
-        "scope": "openid",
+        "scope": "openid offline_access",
         "jwks": {
             "keys": [
                 {
@@ -111,7 +111,7 @@
                 },
                 {
                     "task": "Verify Complete",
-                    "match": "https://*/test/a/mtls/callback*",
+                    "match": "https://*/test/a/oidc-provider-mtls/callback*",
                     "commands": [
                         [
                             "wait",

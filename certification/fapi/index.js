@@ -64,9 +64,13 @@ const fapi = new Provider(ISSUER, {
   clients: [
     {
       client_id: 'pkjwt-one',
+      response_types: ['code', 'code id_token'],
+      grant_types: ['implicit', 'authorization_code', 'refresh_token'],
       redirect_uris: [
-        `${SUITE_BASE_URL}/test/a/pkjwt/callback`,
-        `${SUITE_BASE_URL}/test/a/pkjwt/callback?dummy1=lorem&dummy2=ipsum`,
+        `${SUITE_BASE_URL}/test/a/oidc-provider-pkjwt/callback`,
+        'https://staging.certification.openid.net/test/a/oidc-provider-pkjwt/callback',
+        `${SUITE_BASE_URL}/test/a/oidc-provider-pkjwt/callback?dummy1=lorem&dummy2=ipsum`,
+        'https://staging.certification.openid.net/test/a/oidc-provider-pkjwt/callback?dummy1=lorem&dummy2=ipsum',
       ],
       token_endpoint_auth_method: 'private_key_jwt',
       jwks: {
@@ -75,9 +79,13 @@ const fapi = new Provider(ISSUER, {
     },
     {
       client_id: 'pkjwt-two',
+      response_types: ['code', 'code id_token'],
+      grant_types: ['implicit', 'authorization_code', 'refresh_token'],
       redirect_uris: [
-        `${SUITE_BASE_URL}/test/a/pkjwt/callback`,
-        `${SUITE_BASE_URL}/test/a/pkjwt/callback?dummy1=lorem&dummy2=ipsum`,
+        `${SUITE_BASE_URL}/test/a/oidc-provider-pkjwt/callback`,
+        'https://staging.certification.openid.net/test/a/oidc-provider-pkjwt/callback',
+        `${SUITE_BASE_URL}/test/a/oidc-provider-pkjwt/callback?dummy1=lorem&dummy2=ipsum`,
+        'https://staging.certification.openid.net/test/a/oidc-provider-pkjwt/callback?dummy1=lorem&dummy2=ipsum',
       ],
       token_endpoint_auth_method: 'private_key_jwt',
       jwks: {
@@ -86,9 +94,13 @@ const fapi = new Provider(ISSUER, {
     },
     {
       client_id: 'mtls-one',
+      response_types: ['code', 'code id_token'],
+      grant_types: ['implicit', 'authorization_code', 'refresh_token'],
       redirect_uris: [
-        `${SUITE_BASE_URL}/test/a/mtls/callback`,
-        `${SUITE_BASE_URL}/test/a/mtls/callback?dummy1=lorem&dummy2=ipsum`,
+        `${SUITE_BASE_URL}/test/a/oidc-provider-mtls/callback`,
+        'https://staging.certification.openid.net/test/a/oidc-provider-mtls/callback',
+        `${SUITE_BASE_URL}/test/a/oidc-provider-mtls/callback?dummy1=lorem&dummy2=ipsum`,
+        'https://staging.certification.openid.net/test/a/oidc-provider-mtls/callback?dummy1=lorem&dummy2=ipsum',
       ],
       token_endpoint_auth_method: 'self_signed_tls_client_auth',
       jwks: {
@@ -97,9 +109,13 @@ const fapi = new Provider(ISSUER, {
     },
     {
       client_id: 'mtls-two',
+      response_types: ['code', 'code id_token'],
+      grant_types: ['implicit', 'authorization_code', 'refresh_token'],
       redirect_uris: [
-        `${SUITE_BASE_URL}/test/a/mtls/callback`,
-        `${SUITE_BASE_URL}/test/a/mtls/callback?dummy1=lorem&dummy2=ipsum`,
+        `${SUITE_BASE_URL}/test/a/oidc-provider-mtls/callback`,
+        'https://staging.certification.openid.net/test/a/oidc-provider-mtls/callback',
+        `${SUITE_BASE_URL}/test/a/oidc-provider-mtls/callback?dummy1=lorem&dummy2=ipsum`,
+        'https://staging.certification.openid.net/test/a/oidc-provider-mtls/callback?dummy1=lorem&dummy2=ipsum',
       ],
       token_endpoint_auth_method: 'self_signed_tls_client_auth',
       jwks: {
@@ -152,7 +168,7 @@ const fapi = new Provider(ISSUER, {
     },
     revocation: { enabled: true },
   },
-  responseTypes: ['code id_token'],
+  responseTypes: ['code id_token', 'code'],
   tokenEndpointAuthMethods,
   whitelistedJWA: {
     authorizationSigningAlgValues: ALGS,
