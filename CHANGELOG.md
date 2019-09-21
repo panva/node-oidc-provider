@@ -2,6 +2,21 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+# [6.10.0](https://github.com/panva/node-oidc-provider/compare/v6.9.0...v6.10.0) (2019-09-21)
+
+
+### Bug Fixes
+
+* **typescript:** add missing definitions ([#533](https://github.com/panva/node-oidc-provider/issues/533)) ([c663417](https://github.com/panva/node-oidc-provider/commit/c663417))
+
+
+### Features
+
+* update FAPI RW behaviours ([a7ed27a](https://github.com/panva/node-oidc-provider/commit/a7ed27a))
+* update pushed authorization requests draft ([aaf5740](https://github.com/panva/node-oidc-provider/commit/aaf5740))
+
+
+
 # [6.9.0](https://github.com/panva/node-oidc-provider/compare/v6.8.0...v6.9.0) (2019-09-17)
 
 
