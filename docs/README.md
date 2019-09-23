@@ -3021,7 +3021,18 @@ _**default value**_:
   ClientCredentials: 600,
   DeviceCode: 600,
   IdToken: 3600,
-  RefreshToken: 1209600
+  RefreshToken: function (ctx, token, client) {
+    if (
+      ctx && ctx.oidc.entities.RotatedRefreshToken
+      && client.applicationType === 'web'
+      && client.tokenEndpointAuthMethod === 'none'
+      && !token.isSenderConstrained()
+    ) {
+      // Non-Sender Constrained SPA RefreshTokens do not have infinite expiration through rotation
+      return ctx.oidc.entities.RotatedRefreshToken.remainingTTL;
+    }
+  
+    return 14 * 24 * 60 * 60; // 14 days in seconds}
 }
 ```
 <a name="ttl-to-resolve-a-ttl-on-runtime-for-each-new-token"></a><details>

@@ -10,6 +10,13 @@ const words = require('lodash/words');
 const docs = require('../lib/helpers/docs');
 const values = require('../lib/helpers/defaults');
 
+values.ttl.RefreshToken[inspect.custom] = () => (
+  values.ttl.RefreshToken.toString()
+    .replace('RefreshToken(', 'function (')
+    .replace(/ {6}/g, '  ')
+    .replace(/\s+}$/, '}')
+);
+
 function capitalizeSentences(copy) {
   return copy.replace(/\. [a-z]/g, (match) => `. ${match.slice(-1).toUpperCase()}`);
 }

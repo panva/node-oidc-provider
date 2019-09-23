@@ -190,11 +190,6 @@ module.exports = {
       .digest('hex');
   },
   ttl: {
-    AccessToken: 1 * 60 * 60,
-    AuthorizationCode: 10 * 60,
-    IdToken: 1 * 60 * 60,
-    DeviceCode: 10 * 60,
-    RefreshToken: 1 * 24 * 60 * 60,
     RegistrationAccessToken: 1 * 24 * 60 * 60,
   },
   tokenEndpointAuthMethods,
