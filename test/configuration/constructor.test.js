@@ -127,6 +127,26 @@ describe('Provider configuration', () => {
       throws.forEach((fn) => {
         expect(fn).to.throw('ttl.AccessToken must be a positive integer or a regular function returning one');
       });
+
+      let okay = [
+        () => { new Provider('http://localhost:3000', { ttl: { default: 1 } }); },
+        () => { new Provider('http://localhost:3000', { ttl: { default: Number.MAX_SAFE_INTEGER } }); },
+        () => { new Provider('http://localhost:3000', { ttl: { default() { return 600; } } }); },
+      ];
+
+      okay.forEach((fn) => {
+        expect(fn).not.to.throw();
+      });
+
+      okay = [
+        () => { new Provider('http://localhost:3000', { ttl: { AccessToken: 1 } }); },
+        () => { new Provider('http://localhost:3000', { ttl: { AccessToken: Number.MAX_SAFE_INTEGER } }); },
+        () => { new Provider('http://localhost:3000', { ttl: { AccessToken() { return 600; } } }); },
+      ];
+
+      okay.forEach((fn) => {
+        expect(fn).not.to.throw();
+      });
     });
   });
 

@@ -20,12 +20,7 @@ export type TokenFormat = 'opaque' | 'jwt' | 'jwt-ietf' | 'paseto';
 export type AccessTokenFormatFunction = (ctx: KoaContextWithOIDC, token: AccessToken) => TokenFormat;
 export type ClientCredentialsFormatFunction = (ctx: KoaContextWithOIDC, token: ClientCredentials) => TokenFormat;
 
-export type AccessTokenTTLFunction = (ctx: KoaContextWithOIDC, accessToken: AccessToken, client: Client) => number;
-export type AuthorizationCodeTTLFunction = (ctx: KoaContextWithOIDC, authorizationCode: AuthorizationCode, client: Client) => number;
-export type ClientCredentialsTTLFunction = (ctx: KoaContextWithOIDC, clientCredentials: ClientCredentials, client: Client) => number;
-export type DeviceCodeTTLFunction = (ctx: KoaContextWithOIDC, deviceCode: DeviceCode, client: Client) => number;
-export type IdTokenTTLFunction = (ctx: KoaContextWithOIDC, idToken: IdToken, client: Client) => number;
-export type RefreshTokenTTLFunction = (ctx: KoaContextWithOIDC, refreshToken: RefreshToken, client: Client) => number;
+export type TTLFunction<T> = (ctx: KoaContextWithOIDC, token: T, client: Client) => number;
 
 export interface AnyObject {
   [key: string]: any;
@@ -976,13 +971,14 @@ export interface Configuration {
   revocationEndpointAuthMethods?: ClientAuthMethod[];
 
   ttl?: {
-    AccessToken?: AccessTokenTTLFunction | number;
-    AuthorizationCode?: AuthorizationCodeTTLFunction | number;
-    ClientCredentials?: ClientCredentialsTTLFunction | number;
-    DeviceCode?: DeviceCodeTTLFunction | number;
-    IdToken?: IdTokenTTLFunction | number;
-    RefreshToken?: RefreshTokenTTLFunction | number;
-    [key: string]: unknown;
+    AccessToken?: TTLFunction<AccessToken> | number;
+    AuthorizationCode?: TTLFunction<AuthorizationCode> | number;
+    ClientCredentials?: TTLFunction<ClientCredentials> | number;
+    DeviceCode?: TTLFunction<DeviceCode> | number;
+    IdToken?: TTLFunction<IdToken> | number;
+    RefreshToken?: TTLFunction<RefreshToken> | number;
+
+    [key: string]: any;
   };
 
   extraClientMetadata?: {
