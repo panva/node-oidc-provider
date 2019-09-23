@@ -59,7 +59,7 @@ export interface HttpRequestOptions extends tls.SecureContextOptions {
     https: https.Agent,
   };
 
-  [key: string]: unknown;
+  [key: string]: any;
 }
 
 export interface AnyClientMetadata {
@@ -123,7 +123,7 @@ export interface AnyClientMetadata {
   web_message_uris?: string[];
   tls_client_certificate_bound_access_tokens?: boolean;
 
-  [key: string]: unknown;
+  [key: string]: any;
 }
 
 export interface ClientMetadata extends AnyClientMetadata {
@@ -141,7 +141,7 @@ export interface ClaimsParameterMember {
   value?: string;
   values?: string[];
 
-  [key: string]: unknown;
+  [key: string]: any;
 }
 
 export interface ClaimsParameter {
@@ -273,15 +273,15 @@ interface BaseModel {
 }
 
 declare class BaseModel {
-  get adapter(): Adapter;
+  readonly adapter: Adapter;
 
   save(ttl?: number): Promise<string>;
   destroy(): Promise<void>;
   emit(eventName: string): void;
 
-  static get adapter(): Adapter;
+  static readonly adapter: Adapter;
 
-  static get IN_PAYLOAD(): string[];
+  static IN_PAYLOAD: string[];
 
   static find<T>(
     this: { new (...args: any[]): T },
@@ -348,7 +348,7 @@ declare class RefreshToken extends BaseToken {
     'jkt#S256'?: string;
     grantId: string;
     gty: string;
-    [key: string]: unknown;
+    [key: string]: any;
   });
   readonly kind: 'RefreshToken';
   rotations?: number;
@@ -396,7 +396,7 @@ declare class AuthorizationCode extends BaseToken {
     'jkt#S256'?: string;
     grantId: string;
     gty: string;
-    [key: string]: unknown;
+    [key: string]: any;
   });
   readonly kind: 'AuthorizationCode';
   redirectUri?: string;
@@ -428,7 +428,7 @@ declare class DeviceCode extends BaseToken {
     grantId: string;
     client: Client;
     deviceInfo: AnyObject;
-    [key: string]: unknown;
+    [key: string]: any;
   });
   readonly kind: 'DeviceCode';
   error?: string;
@@ -462,7 +462,7 @@ declare class ClientCredentials extends BaseToken {
     client: Client;
     resource?: string | string[];
     scope: string;
-    [key: string]: unknown;
+    [key: string]: any;
   });
   readonly kind: 'ClientCredentials';
   scope?: string;
@@ -480,7 +480,7 @@ declare class InitialAccessToken extends BaseToken {
   constructor(properties?: {
     expiresIn?: number;
     policies?: string[];
-    [key: string]: unknown;
+    [key: string]: any;
   });
   readonly kind: 'InitialAccessToken';
   clientId: undefined;
@@ -506,7 +506,7 @@ declare class AccessToken extends BaseToken {
     'jkt#S256'?: string;
     grantId: string;
     gty: string;
-    [key: string]: unknown;
+    [key: string]: any;
   });
   readonly kind: 'AccessToken';
   accountId: string;
@@ -627,7 +627,7 @@ declare class Client {
   readonly webMessageUris?: string[];
   readonly tlsClientCertificateBoundAccessTokens?: boolean;
 
-  [key: string]: unknown;
+  [key: string]: any;
 
   static find(id: string): Promise<Client | undefined>;
 }
@@ -649,7 +649,7 @@ declare class OIDCContext {
     readonly PushedAuthorizationRequest?: PushedAuthorizationRequest;
     readonly RotatedRefreshToken?: RefreshToken;
     readonly RotatedRegistrationAccessToken?: RegistrationAccessToken;
-    readonly [key: string]: unknown;
+    readonly [key: string]: any;
   };
   readonly claims: ClaimsParameter;
   readonly issuer: string;
@@ -695,7 +695,7 @@ export type TLSClientAuthProperty = 'tls_client_auth_subject_dn' | 'tls_client_a
 export interface AccountClaims {
   sub: string;
 
-  [key: string]: unknown;
+  [key: string]: any;
 }
 
 export interface Account {
@@ -1060,7 +1060,7 @@ export interface InteractionResults {
 
   meta?: AnyObject;
 
-  [key: string]: unknown;
+  [key: string]: any;
 }
 
 export class Provider extends events.EventEmitter {
