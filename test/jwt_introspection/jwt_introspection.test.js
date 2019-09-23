@@ -1,4 +1,5 @@
 const { expect } = require('chai');
+const timekeeper = require('timekeeper');
 
 const bootstrap = require('../test_helper');
 const JWT = require('../../lib/helpers/jwt');
@@ -8,6 +9,8 @@ const route = '/token/introspection';
 
 describe('jwtIntrospection features', () => {
   before(bootstrap(__dirname));
+
+  afterEach(() => timekeeper.reset());
 
   describe('enriched discovery', () => {
     it('shows the url now', function () {
@@ -31,6 +34,8 @@ describe('jwtIntrospection features', () => {
     });
 
     it('returns the response as jwt', async function () {
+      const now = Date.now();
+      timekeeper.freeze(now);
       const at = new this.provider.AccessToken({
         accountId: 'accountId',
         grantId: 'foo',
@@ -39,6 +44,7 @@ describe('jwtIntrospection features', () => {
       });
 
       let json;
+      let iat;
       const token = await at.save();
       await this.agent.post(route)
         .auth('client-signed', 'secret')
@@ -49,8 +55,10 @@ describe('jwtIntrospection features', () => {
         .expect(200)
         .expect('content-type', 'application/json; charset=utf-8')
         .expect(({ body }) => {
-          json = body;
+          ({ iat, ...json } = body);
         });
+
+      timekeeper.travel(now + (10 * 1000));
 
       return this.agent.post(route)
         .auth('client-signed', 'secret')
@@ -62,7 +70,10 @@ describe('jwtIntrospection features', () => {
         .expect(200)
         .expect('content-type', 'application/jwt; charset=utf-8')
         .expect(({ text }) => {
-          expect(JWT.decode(text).payload).to.eql(json);
+          const { payload: { iat: jwtIat, ...payload }, header } = JWT.decode(text);
+          expect(payload).to.eql(json);
+          expect(jwtIat).to.eql(iat + 10);
+          expect(header).to.have.property('typ', 'token-introspection+jwt');
         });
     });
 
@@ -95,14 +106,14 @@ describe('jwtIntrospection features', () => {
       const at = new this.provider.AccessToken({
         accountId: 'accountId',
         grantId: 'foo',
-        clientId: 'client-encrypted-none',
+        clientId: 'client-encrypted',
         scope: 'scope',
       });
 
       const token = await at.save();
       await this.agent.post(route)
         .send({
-          client_id: 'client-encrypted-none',
+          client_id: 'client-encrypted',
           token,
         })
         .type('form')
@@ -115,7 +126,7 @@ describe('jwtIntrospection features', () => {
 
       return this.agent.post(route)
         .send({
-          client_id: 'client-encrypted-none',
+          client_id: 'client-encrypted',
           token,
         })
         .type('form')
