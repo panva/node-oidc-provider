@@ -12,7 +12,7 @@ All notable changes to this project will be documented in this file. See [standa
 
 ### Features
 
-* default refresh token TTL policy for SPAs follows the updated BCP ([d6a2a34](https://github.com/panva/node-oidc-provider/commit/d6a2a34)), closes [/tools.ietf.org/html/draft-ietf-oauth-browser-based-apps-04#section-8](https://github.com//tools.ietf.org/html/draft-ietf-oauth-browser-based-apps-04/issues/section-8)
+* default refresh token TTL policy for SPAs follows the updated BCP ([d6a2a34](https://github.com/panva/node-oidc-provider/commit/d6a2a34))
 * update JWT Response for OAuth Token Introspection to draft 08 ([5f917e2](https://github.com/panva/node-oidc-provider/commit/5f917e2))
 
 
