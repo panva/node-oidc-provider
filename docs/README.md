@@ -3032,7 +3032,8 @@ _**default value**_:
       return ctx.oidc.entities.RotatedRefreshToken.remainingTTL;
     }
   
-    return 14 * 24 * 60 * 60; // 14 days in seconds}
+    return 14 * 24 * 60 * 60; // 14 days in seconds
+  }
 }
 ```
 <a name="ttl-to-resolve-a-ttl-on-runtime-for-each-new-token"></a><details>

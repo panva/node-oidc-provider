@@ -14,7 +14,7 @@ values.ttl.RefreshToken[inspect.custom] = () => (
   values.ttl.RefreshToken.toString()
     .replace('RefreshToken(', 'function (')
     .replace(/ {6}/g, '  ')
-    .replace(/\s+}$/, '}')
+    .replace(/\s+}$/, '\n}')
 );
 
 function capitalizeSentences(copy) {
