@@ -2,6 +2,15 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [6.11.1](https://github.com/panva/node-oidc-provider/compare/v6.11.0...v6.11.1) (2019-09-24)
+
+
+### Bug Fixes
+
+* **typescript:** provider.callback getter type regression fixed ([5cea116](https://github.com/panva/node-oidc-provider/commit/5cea116)), closes [#534](https://github.com/panva/node-oidc-provider/issues/534)
+
+
+
 # [6.11.0](https://github.com/panva/node-oidc-provider/compare/v6.10.0...v6.11.0) (2019-09-24)
 
 
