@@ -2,6 +2,21 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+# [6.11.0](https://github.com/panva/node-oidc-provider/compare/v6.10.0...v6.11.0) (2019-09-24)
+
+
+### Bug Fixes
+
+* token TTL being a helper function is now accepted ([a930355](https://github.com/panva/node-oidc-provider/commit/a930355))
+
+
+### Features
+
+* default refresh token TTL policy for SPAs follows the updated BCP ([d6a2a34](https://github.com/panva/node-oidc-provider/commit/d6a2a34)), closes [/tools.ietf.org/html/draft-ietf-oauth-browser-based-apps-04#section-8](https://github.com//tools.ietf.org/html/draft-ietf-oauth-browser-based-apps-04/issues/section-8)
+* update JWT Response for OAuth Token Introspection to draft 08 ([5f917e2](https://github.com/panva/node-oidc-provider/commit/5f917e2))
+
+
+
 # [6.10.0](https://github.com/panva/node-oidc-provider/compare/v6.9.0...v6.10.0) (2019-09-21)
 
 
