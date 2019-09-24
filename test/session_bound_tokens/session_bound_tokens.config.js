@@ -3,7 +3,7 @@ const clone = require('lodash/clone');
 const config = clone(require('../default.config'));
 
 config.features = { deviceFlow: { enabled: true } };
-config.issueRefreshToken = (ctx, client) => client.grantTypes.includes('refresh_token');
+config.issueRefreshToken = (ctx, client) => client.grantTypeAllowed('refresh_token');
 
 module.exports = {
   config,

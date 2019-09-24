@@ -2712,7 +2712,7 @@ Function used to decide whether a refresh token will be issued or not
 _**default value**_:
 ```js
 async issueRefreshToken(ctx, client, code) {
-  return client.grantTypes.includes('refresh_token') && code.scopes.has('offline_access');
+  return client.grantTypeAllowed('refresh_token') && code.scopes.has('offline_access');
 }
 ```
 <a name="issue-refresh-token-to-always-issue-a-refresh-tokens"></a><details>
@@ -2725,7 +2725,7 @@ async issueRefreshToken(ctx, client, code) {
 
 ```js
 async issueRefreshToken(ctx, client, code) {
-  if (!client.grantTypes.includes('refresh_token')) {
+  if (!client.grantTypeAllowed('refresh_token')) {
     return false;
   }
   return code.scopes.has('offline_access') || (client.applicationType === 'web' && client.tokenEndpointAuthMethod === 'none');

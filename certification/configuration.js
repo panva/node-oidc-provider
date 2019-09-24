@@ -198,7 +198,7 @@ module.exports = {
     return gotOptions;
   },
   async issueRefreshToken(ctx, client, code) {
-    if (!client.grantTypes.includes('refresh_token')) {
+    if (!client.grantTypeAllowed('refresh_token')) {
       return false;
     }
 
