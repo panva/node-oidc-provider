@@ -165,7 +165,7 @@ describe('grant_type=refresh_token', () => {
         });
     });
 
-    it('scopes are not getting extended', function () {
+    it('scopes are not getting extended (single)', function () {
       const { rt } = this;
       const spy = sinon.spy();
       this.provider.on('grant.error', spy);
@@ -183,6 +183,27 @@ describe('grant_type=refresh_token', () => {
           expect(response.body).to.have.property('error', 'invalid_scope');
           expect(response.body).to.have.property('error_description', 'refresh token missing requested scope');
           expect(response.body).to.have.property('scope', 'profile');
+        });
+    });
+
+    it('scopes are not getting extended (multiple)', function () {
+      const { rt } = this;
+      const spy = sinon.spy();
+      this.provider.on('grant.error', spy);
+
+      return this.agent.post(route)
+        .auth('client', 'secret')
+        .send({
+          refresh_token: rt,
+          grant_type: 'refresh_token',
+          scope: 'openid profile address',
+        })
+        .type('form')
+        .expect(400)
+        .expect((response) => {
+          expect(response.body).to.have.property('error', 'invalid_scope');
+          expect(response.body).to.have.property('error_description', 'refresh token missing requested scopes');
+          expect(response.body).to.have.property('scope', 'profile address');
         });
     });
 
