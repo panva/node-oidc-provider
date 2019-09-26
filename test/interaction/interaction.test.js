@@ -322,66 +322,6 @@ describe('resume after interaction', () => {
         });
     });
 
-    // WebKit treats unrecognized (yet) "None" value as "Strict" instead
-    // https://bugs.webkit.org/show_bug.cgi?id=198181
-    // TODO: remove when no longer needed
-    Object.entries({
-      // Blink
-      'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_14_6) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/76.0.3809.100 Safari/537.36': true,
-      'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/74.0.3729.169 Safari/537.36': true,
-      'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/44.0.2403.157 Safari/537.36': true,
-      'Mozilla/5.0 (X11; OpenBSD i386) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/36.0.1985.125 Safari/537.36': true,
-      'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_14_5) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/74.0.3729.169 Safari/537.36': true,
-      'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/64.0.3282.140 Safari/537.36 Edge/18.17763': true,
-      'Mozilla/5.0 (Windows NT 6.2; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/52.0.2743.116 Safari/537.36 Edge/15.9200': true,
-
-      // Gecko
-      'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:66.0) Gecko/20100101 Firefox/66.0': true,
-      'Mozilla/5.0 (Windows; U; Windows NT 5.1; en-US; rv:1.7.10) Gecko/20050716 Firefox/1.0.6': true,
-
-      // Trident
-      'Mozilla/5.0 (Windows NT 6.1; WOW64; Trident/7.0; rv:11.0) like Gecko': true,
-      'Mozilla/5.0 (compatible; MSIE 10.0; Windows NT 6.2)': true,
-      'Mozilla/5.0 (compatible; MSIE 10.0; Windows NT 6.1; Trident/6.0)': true,
-
-      // WebKit
-      'Mozilla/5.0 (iPhone; CPU iPhone OS 10_3 like Mac OS X) AppleWebKit/602.1.50 (KHTML, like Gecko) CriOS/56.0.2924.75 Mobile/14E5239e Safari/602.1': false,
-      'Mozilla/5.0 (iPhone; CPU iPhone OS 10_3 like Mac OS X) AppleWebKit/603.1.23 (KHTML, like Gecko) Version/10.0 Mobile/14E5239e Safari/602.1': false,
-      'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_10_4) AppleWebKit/600.7.12 (KHTML, like Gecko) Version/8.0.7 Safari/600.7.12': false,
-      'Mozilla/5.0 (iPhone; CPU iPhone OS 12_2 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Mobile/15E148': false,
-      'Mozilla/5.0 (iPad; CPU OS 12_2 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Mobile/15E148': false,
-      'Mozilla/5.0 (Linux; U; Android 2.2) AppleWebKit/533.1 (KHTML, like Gecko) Version/4.0 Mobile Safari/533.1': false,
-      'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_14_5) AppleWebKit/605.1.15 (KHTML, like Gecko)': false,
-      'Mozilla/5.0 (Linux; Android 4.0.4; Galaxy Nexus Build/IMM76B) AppleWebKit/535.19 (KHTML, like Gecko) Chrome/18.0.1025.133 Mobile Safari/535.19': false,
-      'Mozilla/5.0 (Linux; Android 4.2.1; en-us; Nexus 5 Build/JOP40D) AppleWebKit/535.19 (KHTML, like Gecko; googleweblight) Chrome/38.0.1025.166 Mobile Safari/535.19': false,
-    }).forEach(([ua, samesite], i, { length }) => {
-      it(`should not set samesite=none to webkit based browsers for now (${i + 1}/${length})`, async function () {
-        const auth = new this.AuthorizationRequest({
-          response_type: 'code',
-          response_mode: 'query',
-          scope: 'openid',
-        });
-
-        await setup.call(this, auth, {
-          login: {
-            account: nanoid(),
-          },
-          consent: {},
-        });
-
-        return this.agent.get('/auth/resume')
-          .set('user-agent', ua)
-          .expect(302)
-          .expect('set-cookie', samesite ? /samesite=none/ : /^((?!samesite=none).)+$/)
-          .expect(auth.validateState)
-          .expect(auth.validateClientLocation)
-          .expect(auth.validatePresence(['code', 'state', 'session_state']))
-          .expect(() => {
-            expect(this.getSession()).to.be.ok.and.not.have.property('transient');
-          });
-      });
-    });
-
     it('should process newly established permanent sessions (explicit)', async function () {
       const auth = new this.AuthorizationRequest({
         response_type: 'code',
