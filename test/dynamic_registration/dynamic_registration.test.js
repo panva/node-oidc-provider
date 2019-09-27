@@ -53,8 +53,8 @@ describe('registration features', () => {
         });
     });
 
-    it('omits the client_secret generation when it is not needed and in doing so ignores provided client_secret and client_secret_expires_at', function () {
-      return this.agent.post('/reg')
+    it('omits the client_secret generation when it is not needed and in doing so ignores provided client_secret and client_secret_expires_at', async function () {
+      const { body: { client_id } } = await this.agent.post('/reg')
         .send({
           token_endpoint_auth_method: 'none',
           redirect_uris: ['https://client.example.com/cb'],
@@ -68,6 +68,11 @@ describe('registration features', () => {
           expect(response.body).not.to.have.property('client_secret');
           expect(response.body).not.to.have.property('client_secret_expires_at');
         });
+
+      const client = await this.provider.Client.find(client_id);
+
+      expect(client).not.to.have.property('clientSecret');
+      expect(client).not.to.have.property('clientSecretExpiresAt');
     });
 
     it('issues the client_secret when needed for sig', function () {
