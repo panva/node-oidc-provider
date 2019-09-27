@@ -73,12 +73,16 @@ module.exports = function testHelper(dir, { config: base = path.basename(dir), m
     const expire = new Date(0);
     const cookies = [
       `_session=; path=/; expires=${expire.toGMTString()}; httponly`,
+      `_session.legacy=; path=/; expires=${expire.toGMTString()}; httponly`,
       `_session.sig=; path=/; expires=${expire.toGMTString()}; httponly`,
+      `_session.legacy.sig=; path=/; expires=${expire.toGMTString()}; httponly`,
     ];
 
     clients.forEach((cl) => {
       cookies.push(`_state.${cl.client_id}=; path=/; expires=${expire.toGMTString()}; httponly`);
       cookies.push(`_state.${cl.client_id}.sig=; path=/; expires=${expire.toGMTString()}; httponly`);
+      cookies.push(`_state.${cl.client_id}.legacy=; path=/; expires=${expire.toGMTString()}; httponly`);
+      cookies.push(`_state.${cl.client_id}.legacy.sig=; path=/; expires=${expire.toGMTString()}; httponly`);
     });
 
     return agent._saveCookies.bind(agent)({ headers: { 'set-cookie': cookies } });

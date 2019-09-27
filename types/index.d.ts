@@ -8,7 +8,6 @@ import * as net from 'net';
 import * as tls from 'tls';
 
 import * as jose from '@panva/jose';
-import * as cookies from 'cookies';
 import * as Koa from 'koa';
 
 export {};
@@ -787,6 +786,17 @@ export interface AdapterConstructor {
   new(name: string): Adapter;
 }
 
+export interface CookiesSetOptions {
+  maxAge?: number;
+  path?: string;
+  domain?: string;
+  secure?: boolean;
+  httpOnly?: boolean;
+  sameSite?: 'strict' | 'lax' | 'none';
+  signed?: boolean;
+  overwrite?: boolean;
+}
+
 export interface Configuration {
   acrValues?: string[] | Set<string>;
 
@@ -813,8 +823,8 @@ export interface Configuration {
       resume?: string;
       state?: string;
     };
-    long?: cookies.SetOption;
-    short?: cookies.SetOption;
+    long?: CookiesSetOptions;
+    short?: CookiesSetOptions;
     keys?: Array<string | Buffer>;
   };
 

@@ -50,6 +50,7 @@ describe('[session_management]', () => {
         .expect(302)
         .expect((response) => {
           expect(response.headers['set-cookie']).to.contain('_state.client=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT; samesite=none; httponly');
+          expect(response.headers['set-cookie']).to.contain('_state.client.legacy=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT; httponly');
           expect(adapter.destroy.called).to.be.true;
           expect(adapter.upsert.called).not.to.be.true;
           expect(adapter.destroy.withArgs(sessionId).calledOnce).to.be.true;
@@ -72,6 +73,7 @@ describe('[session_management]', () => {
         .expect((response) => {
           session = this.getSession();
           expect(response.headers['set-cookie']).to.contain('_state.client=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT; samesite=none; httponly');
+          expect(response.headers['set-cookie']).to.contain('_state.client.legacy=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT; httponly');
           expect(session.authorizations.client).to.be.undefined;
           expect(session.state).to.be.undefined;
           expect(this.getSessionId()).not.to.eql(oldId);
@@ -93,6 +95,7 @@ describe('[session_management]', () => {
         .expect(302)
         .expect((response) => {
           expect(response.headers['set-cookie']).to.contain('_state.client=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT; domain=.oidc.dev; samesite=none; httponly');
+          expect(response.headers['set-cookie']).to.contain('_state.client.legacy=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT; domain=.oidc.dev; httponly');
         });
     });
 
@@ -113,6 +116,7 @@ describe('[session_management]', () => {
         .expect('location', '/?state=foobar')
         .expect((response) => {
           expect(response.headers['set-cookie']).to.contain('_state.client=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT; domain=.oidc.dev; samesite=none; httponly');
+          expect(response.headers['set-cookie']).to.contain('_state.client.legacy=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT; domain=.oidc.dev; httponly');
         });
     });
 

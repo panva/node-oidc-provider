@@ -53,6 +53,10 @@ const provider = new Provider('https://op.example.com', {
     names: {
       session: '_foo',
     },
+    long: {
+      sameSite: 'none',
+      secure: true,
+    },
     short: {
       httpOnly: true,
       sameSite: 'lax',
