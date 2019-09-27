@@ -91,7 +91,7 @@ jobs:
         run: |
           git clone https://gitlab.com/openid/conformance-suite.git
           cd conformance-suite
-          git checkout release-v3.2.6
+          git checkout release-v3.2.7
           sed -i -e 's/localhost/localhost.emobix.co.uk/g' src/main/resources/application.properties
           docker-compose -f builder-compose.yml run builder
           docker-compose -f docker-compose-dev.yml up -d
