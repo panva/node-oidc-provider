@@ -2,6 +2,15 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [6.12.1](https://github.com/panva/node-oidc-provider/compare/v6.12.0...v6.12.1) (2019-09-27)
+
+
+### Bug Fixes
+
+* fixed session management state fallback cookie name ([91b0dea](https://github.com/panva/node-oidc-provider/commit/91b0dea))
+
+
+
 # [6.12.0](https://github.com/panva/node-oidc-provider/compare/v6.11.1...v6.12.0) (2019-09-27)
 
 
