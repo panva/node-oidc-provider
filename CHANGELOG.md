@@ -2,6 +2,15 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [6.12.2](https://github.com/panva/node-oidc-provider/compare/v6.12.1...v6.12.2) (2019-09-28)
+
+
+### Bug Fixes
+
+* do not send empty secret to adapter in a DCR edge case ([af9ecd9](https://github.com/panva/node-oidc-provider/commit/af9ecd9))
+
+
+
 ## [6.12.1](https://github.com/panva/node-oidc-provider/compare/v6.12.0...v6.12.1) (2019-09-27)
 
 
