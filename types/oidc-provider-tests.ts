@@ -11,10 +11,18 @@ const provider = new Provider('https://op.example.com', {
       this.name = name;
     }
 
-    async upsert(id: string, payload: object, expiresIn: number) {}
-    async consume(id: string) {}
-    async destroy(id: string) {}
-    async revokeByGrantId(grantId: string) {}
+    async upsert(id: string, payload: object, expiresIn: number) {
+      return undefined;
+    }
+    async consume(id: string) {
+      return undefined;
+    }
+    async destroy(id: string) {
+      return undefined;
+    }
+    async revokeByGrantId(grantId: string) {
+      return undefined;
+    }
 
     async find(id: string) {
       return {};
@@ -280,12 +288,12 @@ const provider = new Provider('https://op.example.com', {
     introspection: { enabled: false },
     userinfo: { enabled: false },
     jwtUserinfo: { enabled: false },
-    webMessageResponseMode: { enabled: false, ack: 2 },
+    webMessageResponseMode: { enabled: false, ack: 'id-00' },
     revocation: { enabled: false },
-    sessionManagement: { enabled: false, ack: 2, keepHeaders: false },
-    jwtIntrospection: { enabled: false, ack: 2 },
+    sessionManagement: { enabled: false, ack: 28, keepHeaders: false },
+    jwtIntrospection: { enabled: false, ack: 8 },
     jwtResponseModes: { enabled: false, ack: 2 },
-    pushedAuthorizationRequests: { enabled: false, ack: 2 },
+    pushedAuthorizationRequests: { enabled: false, ack: 0 },
     registration: {
       enabled: true,
       initialAccessToken: true,
@@ -311,7 +319,7 @@ const provider = new Provider('https://op.example.com', {
     },
     resourceIndicators: {
       enabled: true,
-      ack: 2,
+      ack: 7,
       async allowedPolicy(ctx, resources, client) {
         ctx.oidc.issuer.substring(0);
         if (Array.isArray(resources)) {
@@ -332,11 +340,11 @@ const provider = new Provider('https://op.example.com', {
       },
     },
     encryption: { enabled: false },
-    fapiRW: { enabled: false, ack: 2 },
+    fapiRW: { enabled: false, ack: 'id02-rev.3' },
     clientCredentials: { enabled: false },
-    backchannelLogout: { enabled: false, ack: 2 },
+    backchannelLogout: { enabled: false, ack: 4 },
     ietfJWTAccessTokenProfile: { enabled: false, ack: 2 },
-    dPoP: { enabled: false, ack: 2, iatTolerance: 120 },
+    dPoP: { enabled: false, ack: 'id-02', iatTolerance: 120 },
     frontchannelLogout: {
       ack: 2,
       enabled: false,
@@ -346,6 +354,7 @@ const provider = new Provider('https://op.example.com', {
         if (postLogoutRedirectUri) {
           postLogoutRedirectUri.substring(0);
         }
+        return undefined;
       }
     },
     deviceFlow: {
@@ -365,6 +374,7 @@ const provider = new Provider('https://op.example.com', {
         if (err) {
           err.message.substring(0);
         }
+        return undefined;
       },
       async userCodeConfirmSource(ctx, form, client, deviceInfo, userCode) {
         ctx.oidc.issuer.substring(0);
@@ -372,9 +382,11 @@ const provider = new Provider('https://op.example.com', {
         client.clientId.substring(0);
         JSON.stringify(deviceInfo.foo);
         userCode.substring(0);
+        return undefined;
       },
       async successSource(ctx) {
         ctx.oidc.issuer.substring(0);
+        return undefined;
       }
     },
     mTLS: {
@@ -382,7 +394,7 @@ const provider = new Provider('https://op.example.com', {
       certificateBoundAccessTokens: true,
       selfSignedTlsClientAuth: true,
       tlsClientAuth: true,
-      ack: 2,
+      ack: 17,
       getCertificate(ctx) {
         ctx.oidc.issuer.substring(0);
         return 'foo';

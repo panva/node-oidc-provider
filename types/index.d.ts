@@ -1,4 +1,5 @@
 /// <reference types="node" />
+// TypeScript Version: 3.6
 
 import * as events from 'events';
 import * as http from 'http';
@@ -210,40 +211,40 @@ declare class Session extends BaseModel {
     [clientId: string]: ClientAuthorizationState;
   };
 
-  accountId(): string | void;
-  authTime(): string | void;
+  accountId(): string | undefined;
+  authTime(): string | undefined;
   past(age: number): boolean;
 
-  ensureClientContainer(clientId: string): void;
+  ensureClientContainer(clientId: string): undefined;
   loginAccount(details: {
     account: string;
     acr?: string;
     amr?: string[];
     loginTs?: number;
     transient?: boolean;
-  }): void;
-  authorizationFor(clientId: string): ClientAuthorizationState | void;
+  }): undefined;
+  authorizationFor(clientId: string): ClientAuthorizationState | undefined;
   stateFor(clientId: string): string;
   sidFor(clientId: string): string;
-  sidFor(clientId: string, value: string): void;
+  sidFor(clientId: string, value: string): undefined;
   grantIdFor(clientId: string): string;
-  grantIdFor(clientId: string, value: string): void;
-  metaFor(clientId: string): AnyObject | void;
-  metaFor(clientId: string, value: string): void;
+  grantIdFor(clientId: string, value: string): undefined;
+  metaFor(clientId: string): AnyObject | undefined;
+  metaFor(clientId: string, value: string): undefined;
   acceptedScopesFor(clientId: string): Set<string>;
   acceptedClaimsFor(clientId: string): Set<string>;
   promptedScopesFor(clientId: string): Set<string>;
-  promptedScopesFor(clientId: string, scopes: string[]): void;
+  promptedScopesFor(clientId: string, scopes: string[]): undefined;
   promptedClaimsFor(clientId: string): Set<string>;
-  promptedClaimsFor(clientId: string, claims: string[]): void;
+  promptedClaimsFor(clientId: string, claims: string[]): undefined;
   rejectedScopesFor(clientId: string): Set<string>;
-  rejectedScopesFor(clientId: string, scopes: string[], replace?: boolean): void;
+  rejectedScopesFor(clientId: string, scopes: string[], replace?: boolean): undefined;
   rejectedClaimsFor(clientId: string): Set<string>;
-  rejectedClaimsFor(clientId: string, claims: string[], replace?: boolean): void;
+  rejectedClaimsFor(clientId: string, claims: string[], replace?: boolean): undefined;
 
   save(ttl?: number): Promise<string>;
-  destroy(): Promise<void>;
-  resetIdentifier(): void;
+  destroy(): Promise<undefined>;
+  resetIdentifier(): undefined;
   static find<T>(this: { new (...args: any[]): T }, cookieId: string): Promise<T | undefined>;
   static findByUid(uid: string): Promise<Session | undefined>;
   static get(ctx: Koa.Context): Promise<Session>;
@@ -275,7 +276,7 @@ declare class BaseModel {
   readonly adapter: Adapter;
 
   save(ttl?: number): Promise<string>;
-  destroy(): Promise<void>;
+  destroy(): Promise<undefined>;
   emit(eventName: string): void;
 
   static readonly adapter: Adapter;
@@ -371,7 +372,7 @@ declare class RefreshToken extends BaseToken {
 
   totalLifetime(): number;
   isSenderConstrained(): boolean;
-  consume(): Promise<void>;
+  consume(): Promise<undefined>;
 }
 
 declare class AuthorizationCode extends BaseToken {
@@ -417,7 +418,7 @@ declare class AuthorizationCode extends BaseToken {
   grantId?: string;
   gty?: string;
 
-  consume(): Promise<void>;
+  consume(): Promise<undefined>;
 }
 
 declare class DeviceCode extends BaseToken {
@@ -453,7 +454,7 @@ declare class DeviceCode extends BaseToken {
   gty: string;
   consumed: any;
 
-  consume(): Promise<void>;
+  consume(): Promise<undefined>;
 }
 
 declare class ClientCredentials extends BaseToken {
@@ -543,7 +544,7 @@ declare class IdToken {
 declare class ClientKeystore {
   fresh(): boolean;
   stale(): boolean;
-  refresh(): Promise<void>;
+  refresh(): Promise<undefined>;
   readonly size: number;
   all(parameters?: jose.JWKS.KeyQuery): jose.JWK.Key[];
   get(parameters?: jose.JWKS.KeyQuery): jose.JWK.Key;
@@ -677,7 +678,7 @@ declare class OIDCContext {
   readonly body?: AnyObject;
   readonly params?: AnyObject;
 
-  acceptedScope(): string[] | void;
+  acceptedScope(): string[] | undefined;
   resolvedClaims(): ClaimsWithRejects;
 
   getAccessToken(opts?: { acceptDPoP?: boolean, acceptQueryParam?: boolean }): string;
@@ -773,13 +774,13 @@ export interface AdapterPayload {
 }
 
 export interface Adapter {
-  upsert(id: string, payload: AdapterPayload, expiresIn: number): Promise<void>;
+  upsert(id: string, payload: AdapterPayload, expiresIn: number): Promise<undefined>;
   find(id: string): Promise<AdapterPayload | undefined>;
   findByUserCode(userCode: string): Promise<AdapterPayload | undefined>;
   findByUid(uid: string): Promise<AdapterPayload | undefined>;
-  consume(id: string): Promise<void>;
-  destroy(id: string): Promise<void>;
-  revokeByGrantId(grantId: string): Promise<void>;
+  consume(id: string): Promise<undefined>;
+  destroy(id: string): Promise<undefined>;
+  revokeByGrantId(grantId: string): Promise<undefined>;
 }
 
 export interface AdapterConstructor {
@@ -869,9 +870,9 @@ export interface Configuration {
       charset?: 'base-20' | 'digits';
       mask?: string;
       deviceInfo?: (ctx: KoaContextWithOIDC) => AnyObject;
-      userCodeInputSource?: (ctx: KoaContextWithOIDC, form: string, out?: ErrorOut, err?: errors.OIDCProviderError | Error) => Promise<void> | void;
-      userCodeConfirmSource?: (ctx: KoaContextWithOIDC, form: string, client: Client, deviceInfo: AnyObject, userCode: string) => Promise<void> | void;
-      successSource?: (ctx: KoaContextWithOIDC) => Promise<void> | void;
+      userCodeInputSource?: (ctx: KoaContextWithOIDC, form: string, out?: ErrorOut, err?: errors.OIDCProviderError | Error) => Promise<undefined> | undefined;
+      userCodeConfirmSource?: (ctx: KoaContextWithOIDC, form: string, client: Client, deviceInfo: AnyObject, userCode: string) => Promise<undefined> | undefined;
+      successSource?: (ctx: KoaContextWithOIDC) => Promise<undefined> | undefined;
     };
 
     requestObjects?: {
@@ -883,27 +884,27 @@ export interface Configuration {
         whitelist?: string[] | Set<string>;
       };
     };
-    dPoP?: { enabled?: boolean, iatTolerance?: number, ack?: number | string },
+    dPoP?: { enabled?: boolean, iatTolerance?: number, ack?: 'id-02' },
 
-    sessionManagement?: { enabled?: boolean, keepHeaders?: boolean, ack?: number | string },
+    sessionManagement?: { enabled?: boolean, keepHeaders?: boolean, ack?: 28 },
 
-    backchannelLogout?: { enabled?: boolean, ack?: number | string },
+    backchannelLogout?: { enabled?: boolean, ack?: 4 },
 
-    ietfJWTAccessTokenProfile?: { enabled?: boolean, ack?: number | string },
+    ietfJWTAccessTokenProfile?: { enabled?: boolean, ack?: 2 },
 
-    fapiRW?: { enabled?: boolean, ack?: number | string },
+    fapiRW?: { enabled?: boolean, ack?: 'id02-rev.3' },
 
-    webMessageResponseMode?: { enabled?: boolean, ack?: number | string },
+    webMessageResponseMode?: { enabled?: boolean, ack?: 'id-00' },
 
-    jwtIntrospection?: { enabled?: boolean, ack?: number | string },
+    jwtIntrospection?: { enabled?: boolean, ack?: 8 },
 
-    jwtResponseModes?: { enabled?: boolean, ack?: number | string },
+    jwtResponseModes?: { enabled?: boolean, ack?: 1 | 2 },
 
-    pushedAuthorizationRequests?: { enabled?: boolean, ack?: number | string },
+    pushedAuthorizationRequests?: { enabled?: boolean, ack?: 0 },
 
     mTLS?: {
       enabled?: boolean;
-      ack?: number | string;
+      ack?: '15-rc.1' | 16 | 17;
       certificateBoundAccessTokens?: boolean;
       selfSignedTlsClientAuth?: boolean;
       tlsClientAuth?: boolean;
@@ -914,18 +915,18 @@ export interface Configuration {
 
     resourceIndicators?: {
       enabled?: boolean;
-      ack?: number | string;
+      ack?: 2 | 3 | 4 | 5 | 6 | 7;
       allowedPolicy?: (ctx: KoaContextWithOIDC, resources: string | string[], client: Client) => Promise<boolean> | boolean;
     };
 
     frontchannelLogout?: {
       enabled?: boolean;
-      ack?: number | string;
-      logoutPendingSource?: (ctx: KoaContextWithOIDC, frames: string[], postLogoutRedirectUri?: string) => Promise<void>;
+      ack?: 2;
+      logoutPendingSource?: (ctx: KoaContextWithOIDC, frames: string[], postLogoutRedirectUri?: string) => Promise<undefined>;
     };
   };
 
-  extraAccessTokenClaims?: (ctx: KoaContextWithOIDC, token: AccessToken | ClientCredentials) => Promise<AnyObject> | AnyObject | Promise<void> | void;
+  extraAccessTokenClaims?: (ctx: KoaContextWithOIDC, token: AccessToken | ClientCredentials) => Promise<AnyObject> | AnyObject | Promise<undefined> | undefined;
 
   formats?: {
     AccessToken?: AccessTokenFormatFunction | TokenFormat;
@@ -1098,7 +1099,7 @@ export class Provider extends events.EventEmitter {
     res: http.ServerResponse | http2.Http2ServerResponse,
     result: InteractionResults,
     options?: { mergeWithLastSubmission?: boolean }
-  ): Promise<void>;
+  ): Promise<undefined>;
 
   interactionDetails(req: http.IncomingMessage | http2.Http2ServerRequest, res: http.ServerResponse | http2.Http2ServerResponse): Promise<Interaction>;
 
@@ -1116,7 +1117,7 @@ export class Provider extends events.EventEmitter {
 
   registerGrantType(
     name: string,
-    handler: (ctx: KoaContextWithOIDC, next: () => Promise<void>) => Promise<void> | void,
+    handler: (ctx: KoaContextWithOIDC, next: () => Promise<undefined>) => Promise<undefined> | undefined,
     params?: string | string[] | Set<string>,
     dupes?: string | string[] | Set<string>
   ): void;
