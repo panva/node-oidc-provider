@@ -2,6 +2,16 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [6.12.3](https://github.com/panva/node-oidc-provider/compare/v6.12.2...v6.12.3) (2019-10-01)
+
+
+### Bug Fixes
+
+* use updated jose package ([ee17022](https://github.com/panva/node-oidc-provider/commit/ee17022))
+* **typescript:** fix void/undefined inconsistencies and ts lint ([96c9415](https://github.com/panva/node-oidc-provider/commit/96c9415))
+
+
+
 ## [6.12.2](https://github.com/panva/node-oidc-provider/compare/v6.12.1...v6.12.2) (2019-09-28)
 
 
