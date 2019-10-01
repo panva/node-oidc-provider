@@ -571,7 +571,7 @@ _**recommendation**_: **Provider key rotation** - The following action order is 
   <br>
 
 ```js
-const { JWKS: { KeyStore } } = require('@panva/jose');
+const { JWKS: { KeyStore } } = require('jose');
 const keystore = new KeyStore();
 keystore.generateSync('RSA', 2048, {
   alg: 'RS256',
@@ -589,7 +589,7 @@ Re-using the same keys for both encryption and signing is discouraged so it is b
   
 
 ```js
-const { JWKS: { KeyStore } } = require('@panva/jose');
+const { JWKS: { KeyStore } } = require('jose');
 const keystore = new KeyStore();
 Promise.all([
   keystore.generate('RSA', 2048, {

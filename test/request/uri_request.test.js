@@ -1,6 +1,6 @@
 const { parse } = require('url');
 
-const jose = require('@panva/jose');
+const jose = require('jose');
 const sinon = require('sinon');
 const nock = require('nock');
 const { expect } = require('chai');

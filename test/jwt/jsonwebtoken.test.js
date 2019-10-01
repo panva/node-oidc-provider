@@ -1,7 +1,7 @@
 const { AssertionError } = require('assert');
 
 const { expect } = require('chai');
-const jose = require('@panva/jose');
+const jose = require('jose');
 
 const JWT = require('../../lib/helpers/jwt');
 const epochTime = require('../../lib/helpers/epoch_time');

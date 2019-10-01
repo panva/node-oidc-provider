@@ -1,7 +1,7 @@
 const { readFileSync } = require('fs');
 
 const nock = require('nock');
-const jose = require('@panva/jose');
+const jose = require('jose');
 const sinon = require('sinon');
 const { expect } = require('chai');
 const cloneDeep = require('lodash/cloneDeep');

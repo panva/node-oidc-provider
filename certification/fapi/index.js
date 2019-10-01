@@ -2,7 +2,7 @@ const { readFileSync } = require('fs');
 const path = require('path');
 const https = require('https');
 
-const jose = require('@panva/jose');
+const jose = require('jose');
 const helmet = require('koa-helmet');
 const pem = require('https-pem');
 

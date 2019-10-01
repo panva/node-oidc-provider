@@ -16,4 +16,4 @@ Further resources
 
 Useful to know oidc-provider dependencies
 - [Koa](https://koajs.com/) - web framework oidc-provider uses internally
-- [@panva/jose](https://github.com/panva/jose) - everything JOSE
+- [jose](https://github.com/panva/jose) - everything JOSE

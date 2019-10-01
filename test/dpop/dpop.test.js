@@ -2,7 +2,7 @@ const url = require('url');
 
 const sinon = require('sinon');
 const { expect } = require('chai');
-const { JWK, JWT } = require('@panva/jose');
+const { JWK, JWT } = require('jose');
 
 const nanoid = require('../../lib/helpers/nanoid');
 const epochTime = require('../../lib/helpers/epoch_time');

@@ -1,6 +1,6 @@
 const cloneDeep = require('lodash/cloneDeep');
 const pull = require('lodash/pull');
-const jose = require('@panva/jose');
+const jose = require('jose');
 
 const config = cloneDeep(require('../default.config'));
 

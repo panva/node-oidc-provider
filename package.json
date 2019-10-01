@@ -42,12 +42,12 @@
   },
   "dependencies": {
     "@koa/cors": "^3.0.0",
-    "@panva/jose": "^1.9.2",
     "@types/koa": "^2.0.50",
     "@types/node": "^12.7.8",
     "debug": "^4.1.1",
     "ejs": "^2.7.1",
     "got": "^9.6.0",
+    "jose": "^1.10.0",
     "jsesc": "^2.5.2",
     "keygrip": "^1.1.0",
     "koa": "^2.8.2",

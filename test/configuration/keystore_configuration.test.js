@@ -1,6 +1,6 @@
 /* eslint-disable no-new */
 
-const jose = require('@panva/jose');
+const jose = require('jose');
 const { expect } = require('chai');
 
 const { Provider } = require('../../lib');

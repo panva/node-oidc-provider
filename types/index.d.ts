@@ -10,7 +10,7 @@ import * as https from 'https';
 import * as net from 'net';
 import * as tls from 'tls';
 
-import * as jose from '@panva/jose';
+import * as jose from 'jose';
 import * as Koa from 'koa';
 
 export {};

@@ -3,7 +3,7 @@ const url = require('url');
 const { expect } = require('chai');
 const base64url = require('base64url');
 const sinon = require('sinon');
-const jose = require('@panva/jose');
+const jose = require('jose');
 
 const bootstrap = require('../test_helper');
 const JWT = require('../../lib/helpers/jwt');
