@@ -145,6 +145,7 @@ jobs:
           NODE_TLS_REJECT_UNAUTHORIZED: 0
 
   deploy:
+    if: github.event_name == 'push' && github.ref == 'refs/heads/master' && github.repository == 'panva/node-oidc-provider'
     runs-on: ubuntu-latest
     needs:
       - test
@@ -162,5 +163,4 @@ jobs:
         with:
           ruby-version: 2.x
       - run: gem install dpl
-      - if: github.event_name == 'push' && github.ref == 'refs/heads/master' && github.repository == 'panva/node-oidc-provider'
-        run: dpl --provider=heroku --strategy=git --api-key=${{ secrets.HEROKU_AUTH_TOKEN }} --app=${{ matrix.app }}
+      - run: dpl --provider=heroku --strategy=git --api-key=${{ secrets.HEROKU_AUTH_TOKEN }} --app=${{ matrix.app }}
