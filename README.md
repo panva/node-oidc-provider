@@ -66,15 +66,8 @@ Found a bug? - [report it][bug].
 Filip Skokan has [certified][openid-certified-link] that [oidc-provider][npm-url]
 conforms to the following profiles of the OpenID Connect™ protocol
 
-- [OP Basic](https://openid.net/wordpress-content/uploads/2017/01/FilipSkokan_oidc-provider_OP-Basic-02-Jan-2017.zip)
-- [OP Implicit](https://openid.net/wordpress-content/uploads/2017/01/FilipSkokan_oidc-provider_OP-Implicit-02-Jan-2017.zip)
-- [OP Hybrid](https://openid.net/wordpress-content/uploads/2017/01/FilipSkokan_oidc-provider_OP-Hybrid-02-Jan-2017.zip)
-- [OP Config](https://openid.net/wordpress-content/uploads/2017/01/FilipSkokan_oidc-provider_OP-Config-02-Jan-2017.zip)
-- [OP Dynamic](https://openid.net/wordpress-content/uploads/2017/01/FilipSkokan_oidc-provider_OP-Dynamic-02-Jan-2017.zip)
-- [OP Form Post](https://openid.net/wordpress-content/uploads/2018/06/FilipSkokan_oidc-provider_OP-FormPost-25-Jun-2018.zip)
-- [OP FAPI R/W w/ MTLS](https://openid.net/wordpress-content/uploads/2019/08/FilipSkokan_oidc-provider_OP-FAPI-RW-mtls-20-Aug-2019.zip)
-- [OP FAPI R/W w/ Private Key](https://openid.net/wordpress-content/uploads/2019/08/FilipSkokan_oidc-provider_OP-FAPI-RW-private_key_jwt-20-Aug-2019.zip)
-
+- OP [Basic](https://openid.net/wordpress-content/uploads/2017/01/FilipSkokan_oidc-provider_OP-Basic-02-Jan-2017.zip), [Implicit](https://openid.net/wordpress-content/uploads/2017/01/FilipSkokan_oidc-provider_OP-Implicit-02-Jan-2017.zip), [Hybrid](https://openid.net/wordpress-content/uploads/2017/01/FilipSkokan_oidc-provider_OP-Hybrid-02-Jan-2017.zip), [Config](https://openid.net/wordpress-content/uploads/2017/01/FilipSkokan_oidc-provider_OP-Config-02-Jan-2017.zip), [Dynamic](https://openid.net/wordpress-content/uploads/2017/01/FilipSkokan_oidc-provider_OP-Dynamic-02-Jan-2017.zip), [Form Post](https://openid.net/wordpress-content/uploads/2018/06/FilipSkokan_oidc-provider_OP-FormPost-25-Jun-2018.zip), and [3rd Party-Init](https://openid.net/wordpress-content/uploads/2019/10/FilipSkokan_oidc-provider_OP-3rd-party-23-Sep-2019.zip)
+- OP FAPI R/W [MTLS](https://openid.net/wordpress-content/uploads/2019/08/FilipSkokan_oidc-provider_OP-FAPI-RW-mtls-20-Aug-2019.zip) and [Private Key](https://openid.net/wordpress-content/uploads/2019/08/FilipSkokan_oidc-provider_OP-FAPI-RW-private_key_jwt-20-Aug-2019.zip)
 
 ## Sponsor
 
