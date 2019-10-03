@@ -10,7 +10,7 @@ additional features and standards implemented.
 - [Implemented specs & features](#implemented-specs--features)
 - [Certification](#certification)
 - [Get started](#get-started)
-- [Configuration](#configuration)
+- [Documentation & Configuration](#documentation--configuration)
 - [Recipes](#recipes)
 - [Debugging](#debugging)
 - [Events](#events)
@@ -88,10 +88,10 @@ you want there. An example client using this provider is available [here][heroku
 
 Also be sure to check the available configuration docs section.
 
+## [Documentation](/docs/README.md) & Configuration
 
-## Configuration
 oidc-provider allows to be extended and configured in various ways to fit a variety of uses. See
-the [available configuration](/docs/README.md).
+the [documentation](/docs/README.md).
 
 ```js
 const { Provider } = require('oidc-provider');
