@@ -2,6 +2,15 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [6.12.4](https://github.com/panva/node-oidc-provider/compare/v6.12.3...v6.12.4) (2019-10-03)
+
+
+### Bug Fixes
+
+* **typescript:** revert void/undefined changes from 6.12.3 ([e0bbaae](https://github.com/panva/node-oidc-provider/commit/e0bbaae)), closes [#541](https://github.com/panva/node-oidc-provider/issues/541)
+
+
+
 ## [6.12.3](https://github.com/panva/node-oidc-provider/compare/v6.12.2...v6.12.3) (2019-10-01)
 
 
