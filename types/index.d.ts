@@ -213,40 +213,40 @@ declare class Session extends BaseModel {
     [clientId: string]: ClientAuthorizationState;
   };
 
-  accountId(): string | undefined;
-  authTime(): string | undefined;
+  accountId(): string | void;
+  authTime(): string | void;
   past(age: number): boolean;
 
-  ensureClientContainer(clientId: string): undefined;
+  ensureClientContainer(clientId: string): void;
   loginAccount(details: {
     account: string;
     acr?: string;
     amr?: string[];
     loginTs?: number;
     transient?: boolean;
-  }): undefined;
-  authorizationFor(clientId: string): ClientAuthorizationState | undefined;
+  }): void;
+  authorizationFor(clientId: string): ClientAuthorizationState | void;
   stateFor(clientId: string): string;
   sidFor(clientId: string): string;
-  sidFor(clientId: string, value: string): undefined;
+  sidFor(clientId: string, value: string): void;
   grantIdFor(clientId: string): string;
-  grantIdFor(clientId: string, value: string): undefined;
-  metaFor(clientId: string): AnyObject | undefined;
-  metaFor(clientId: string, value: string): undefined;
+  grantIdFor(clientId: string, value: string): void;
+  metaFor(clientId: string): AnyObject | void;
+  metaFor(clientId: string, value: string): void;
   acceptedScopesFor(clientId: string): Set<string>;
   acceptedClaimsFor(clientId: string): Set<string>;
   promptedScopesFor(clientId: string): Set<string>;
-  promptedScopesFor(clientId: string, scopes: string[]): undefined;
+  promptedScopesFor(clientId: string, scopes: string[]): void;
   promptedClaimsFor(clientId: string): Set<string>;
-  promptedClaimsFor(clientId: string, claims: string[]): undefined;
+  promptedClaimsFor(clientId: string, claims: string[]): void;
   rejectedScopesFor(clientId: string): Set<string>;
-  rejectedScopesFor(clientId: string, scopes: string[], replace?: boolean): undefined;
+  rejectedScopesFor(clientId: string, scopes: string[], replace?: boolean): void;
   rejectedClaimsFor(clientId: string): Set<string>;
-  rejectedClaimsFor(clientId: string, claims: string[], replace?: boolean): undefined;
+  rejectedClaimsFor(clientId: string, claims: string[], replace?: boolean): void;
 
   save(ttl?: number): Promise<string>;
-  destroy(): Promise<undefined>;
-  resetIdentifier(): undefined;
+  destroy(): Promise<void>;
+  resetIdentifier(): void;
   static find<T>(this: { new (...args: any[]): T }, cookieId: string): Promise<T | undefined>;
   static findByUid(uid: string): Promise<Session | undefined>;
   static get(ctx: Koa.Context): Promise<Session>;
@@ -278,7 +278,7 @@ declare class BaseModel {
   readonly adapter: Adapter;
 
   save(ttl?: number): Promise<string>;
-  destroy(): Promise<undefined>;
+  destroy(): Promise<void>;
   emit(eventName: string): void;
 
   static readonly adapter: Adapter;
@@ -374,7 +374,7 @@ declare class RefreshToken extends BaseToken {
 
   totalLifetime(): number;
   isSenderConstrained(): boolean;
-  consume(): Promise<undefined>;
+  consume(): Promise<void>;
 }
 
 declare class AuthorizationCode extends BaseToken {
@@ -420,7 +420,7 @@ declare class AuthorizationCode extends BaseToken {
   grantId?: string;
   gty?: string;
 
-  consume(): Promise<undefined>;
+  consume(): Promise<void>;
 }
 
 declare class DeviceCode extends BaseToken {
@@ -456,7 +456,7 @@ declare class DeviceCode extends BaseToken {
   gty: string;
   consumed: any;
 
-  consume(): Promise<undefined>;
+  consume(): Promise<void>;
 }
 
 declare class ClientCredentials extends BaseToken {
@@ -546,7 +546,7 @@ declare class IdToken {
 declare class ClientKeystore {
   fresh(): boolean;
   stale(): boolean;
-  refresh(): Promise<undefined>;
+  refresh(): Promise<void>;
   readonly size: number;
   all(parameters?: jose.JWKS.KeyQuery): jose.JWK.Key[];
   get(parameters?: jose.JWKS.KeyQuery): jose.JWK.Key;
@@ -680,7 +680,7 @@ declare class OIDCContext {
   readonly body?: AnyObject;
   readonly params?: AnyObject;
 
-  acceptedScope(): string[] | undefined;
+  acceptedScope(): string[] | void;
   resolvedClaims(): ClaimsWithRejects;
 
   getAccessToken(opts?: { acceptDPoP?: boolean, acceptQueryParam?: boolean }): string;
@@ -776,13 +776,13 @@ export interface AdapterPayload {
 }
 
 export interface Adapter {
-  upsert(id: string, payload: AdapterPayload, expiresIn: number): Promise<undefined>;
-  find(id: string): Promise<AdapterPayload | undefined>;
-  findByUserCode(userCode: string): Promise<AdapterPayload | undefined>;
-  findByUid(uid: string): Promise<AdapterPayload | undefined>;
-  consume(id: string): Promise<undefined>;
-  destroy(id: string): Promise<undefined>;
-  revokeByGrantId(grantId: string): Promise<undefined>;
+  upsert(id: string, payload: AdapterPayload, expiresIn: number): Promise<undefined | void>;
+  find(id: string): Promise<AdapterPayload | undefined | void>;
+  findByUserCode(userCode: string): Promise<AdapterPayload | undefined | void>;
+  findByUid(uid: string): Promise<AdapterPayload | undefined | void>;
+  consume(id: string): Promise<undefined | void>;
+  destroy(id: string): Promise<undefined | void>;
+  revokeByGrantId(grantId: string): Promise<undefined | void>;
 }
 
 export interface AdapterConstructor {
@@ -856,7 +856,7 @@ export interface Configuration {
       enabled?: boolean;
       initialAccessToken?: boolean | string;
       policies?: {
-        [key: string]: (ctx: KoaContextWithOIDC, metadata: ClientMetadata) => void;
+        [key: string]: (ctx: KoaContextWithOIDC, metadata: ClientMetadata) => void | undefined;
       };
       idFactory?: () => string;
       secretFactory?: () => string;
@@ -872,9 +872,9 @@ export interface Configuration {
       charset?: 'base-20' | 'digits';
       mask?: string;
       deviceInfo?: (ctx: KoaContextWithOIDC) => AnyObject;
-      userCodeInputSource?: (ctx: KoaContextWithOIDC, form: string, out?: ErrorOut, err?: errors.OIDCProviderError | Error) => Promise<undefined> | undefined;
-      userCodeConfirmSource?: (ctx: KoaContextWithOIDC, form: string, client: Client, deviceInfo: AnyObject, userCode: string) => Promise<undefined> | undefined;
-      successSource?: (ctx: KoaContextWithOIDC) => Promise<undefined> | undefined;
+      userCodeInputSource?: (ctx: KoaContextWithOIDC, form: string, out?: ErrorOut, err?: errors.OIDCProviderError | Error) => Promise<void | undefined> | void | undefined;
+      userCodeConfirmSource?: (ctx: KoaContextWithOIDC, form: string, client: Client, deviceInfo: AnyObject, userCode: string) => Promise<void | undefined> | void | undefined;
+      successSource?: (ctx: KoaContextWithOIDC) => Promise<void | undefined> | void | undefined;
     };
 
     requestObjects?: {
@@ -924,11 +924,11 @@ export interface Configuration {
     frontchannelLogout?: {
       enabled?: boolean;
       ack?: 2;
-      logoutPendingSource?: (ctx: KoaContextWithOIDC, frames: string[], postLogoutRedirectUri?: string) => Promise<undefined>;
+      logoutPendingSource?: (ctx: KoaContextWithOIDC, frames: string[], postLogoutRedirectUri?: string) => Promise<void | undefined> | void | undefined;
     };
   };
 
-  extraAccessTokenClaims?: (ctx: KoaContextWithOIDC, token: AccessToken | ClientCredentials) => Promise<AnyObject> | AnyObject | Promise<undefined> | undefined;
+  extraAccessTokenClaims?: (ctx: KoaContextWithOIDC, token: AccessToken | ClientCredentials) => Promise<AnyObject> | AnyObject | Promise<void | undefined> | void | undefined;
 
   formats?: {
     AccessToken?: AccessTokenFormatFunction | TokenFormat;
@@ -997,16 +997,16 @@ export interface Configuration {
   extraClientMetadata?: {
     properties?: string[];
 
-    validator?: (key: string, value: any, metadata: ClientMetadata, ctx: KoaContextWithOIDC) => void;
+    validator?: (key: string, value: any, metadata: ClientMetadata, ctx: KoaContextWithOIDC) => void | undefined;
   };
 
-  postLogoutSuccessSource?: (ctx: KoaContextWithOIDC) => void;
+  postLogoutSuccessSource?: (ctx: KoaContextWithOIDC) => Promise<void | undefined> | void | undefined;
 
   rotateRefreshToken?: (ctx: KoaContextWithOIDC) => Promise<boolean> | boolean;
 
-  logoutSource?: (ctx: KoaContextWithOIDC, form: string) => void;
+  logoutSource?: (ctx: KoaContextWithOIDC, form: string) => Promise<void | undefined> | void | undefined;
 
-  renderError?: (ctx: KoaContextWithOIDC, out: ErrorOut, error: errors.OIDCProviderError | Error) => void;
+  renderError?: (ctx: KoaContextWithOIDC, out: ErrorOut, error: errors.OIDCProviderError | Error) => Promise<void | undefined> | void | undefined;
 
   interactions?: {
     policy?: interactionPolicy.Prompt[];
@@ -1101,7 +1101,7 @@ export class Provider extends events.EventEmitter {
     res: http.ServerResponse | http2.Http2ServerResponse,
     result: InteractionResults,
     options?: { mergeWithLastSubmission?: boolean }
-  ): Promise<undefined>;
+  ): Promise<void>;
 
   interactionDetails(req: http.IncomingMessage | http2.Http2ServerRequest, res: http.ServerResponse | http2.Http2ServerResponse): Promise<Interaction>;
 
@@ -1119,7 +1119,7 @@ export class Provider extends events.EventEmitter {
 
   registerGrantType(
     name: string,
-    handler: (ctx: KoaContextWithOIDC, next: () => Promise<undefined>) => Promise<undefined> | undefined,
+    handler: (ctx: KoaContextWithOIDC, next: () => Promise<void>) => Promise<void> | void,
     params?: string | string[] | Set<string>,
     dupes?: string | string[] | Set<string>
   ): void;

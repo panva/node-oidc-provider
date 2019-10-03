@@ -11,18 +11,10 @@ const provider = new Provider('https://op.example.com', {
       this.name = name;
     }
 
-    async upsert(id: string, payload: object, expiresIn: number) {
-      return undefined;
-    }
-    async consume(id: string) {
-      return undefined;
-    }
-    async destroy(id: string) {
-      return undefined;
-    }
-    async revokeByGrantId(grantId: string) {
-      return undefined;
-    }
+    async upsert(id: string, payload: object, expiresIn: number) {}
+    async consume(id: string) {}
+    async destroy(id: string) {}
+    async revokeByGrantId(grantId: string) {}
 
     async find(id: string) {
       return {};
@@ -354,7 +346,6 @@ const provider = new Provider('https://op.example.com', {
         if (postLogoutRedirectUri) {
           postLogoutRedirectUri.substring(0);
         }
-        return undefined;
       }
     },
     deviceFlow: {
@@ -374,7 +365,6 @@ const provider = new Provider('https://op.example.com', {
         if (err) {
           err.message.substring(0);
         }
-        return undefined;
       },
       async userCodeConfirmSource(ctx, form, client, deviceInfo, userCode) {
         ctx.oidc.issuer.substring(0);
@@ -382,11 +372,9 @@ const provider = new Provider('https://op.example.com', {
         client.clientId.substring(0);
         JSON.stringify(deviceInfo.foo);
         userCode.substring(0);
-        return undefined;
       },
       async successSource(ctx) {
         ctx.oidc.issuer.substring(0);
-        return undefined;
       }
     },
     mTLS: {
