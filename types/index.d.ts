@@ -635,6 +635,7 @@ declare class Client {
 }
 
 declare class OIDCContext {
+  constructor(ctx: Koa.Context);
   readonly route: string;
   uid: string;
   readonly entities: {
