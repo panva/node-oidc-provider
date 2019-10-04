@@ -2,6 +2,15 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [6.12.5](https://github.com/panva/node-oidc-provider/compare/v6.12.4...v6.12.5) (2019-10-04)
+
+
+### Bug Fixes
+
+* add missing constructor to index.d.ts ([#542](https://github.com/panva/node-oidc-provider/issues/542)) ([a5621a4](https://github.com/panva/node-oidc-provider/commit/a5621a4))
+
+
+
 ## [6.12.4](https://github.com/panva/node-oidc-provider/compare/v6.12.3...v6.12.4) (2019-10-03)
 
 
