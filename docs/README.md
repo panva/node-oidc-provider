@@ -171,8 +171,8 @@ This session contains:
 - the uid of the authorization request
 - the url to redirect the user to once interaction is finished
 
-oidc-provider expects that you resolve all future interactions in one go and only then redirect the
-User-Agent back with the results
+oidc-provider expects that you resolve the prompt interaction and then redirect the User-Agent back
+with the results.
 
 Once the required interactions are finished you are expected to redirect back to the authorization
 endpoint, affixed by the uid of the original request and the interaction results stored in the
