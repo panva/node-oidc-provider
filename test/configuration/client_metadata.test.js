@@ -315,7 +315,8 @@ describe('Client metadata validation', () => {
     allows(this.title, ['https://some'], {
       application_type: 'web',
     });
-    rejects(this.title, ['https://some#whatever'], undefined, {
+    rejects(this.title, ['https://rp.example.com#'], /redirect_uris must not contain fragments$/);
+    rejects(this.title, ['https://rp.example.com#whatever'], /redirect_uris must not contain fragments$/, {
       application_type: 'web',
     });
     rejects(this.title, ['no-dot-reverse-notation:/some'], undefined, {
