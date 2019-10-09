@@ -2,12 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
-## [6.12.6](https://github.com/panva/node-oidc-provider/compare/v6.12.5...v6.12.6) (2019-10-09)
+## [6.12.7](https://github.com/panva/node-oidc-provider/compare/v6.12.5...v6.12.7) (2019-10-09)
 
 
 ### Bug Fixes
 
 * forbid redirect_uri with an empty fragment component ([ca196a0](https://github.com/panva/node-oidc-provider/commit/ca196a0))
+* v6.12.6 native app uris regression fixed ([fd56ef6](https://github.com/panva/node-oidc-provider/commit/fd56ef6))
 
 
 
