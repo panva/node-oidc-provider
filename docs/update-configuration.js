@@ -17,6 +17,8 @@ values.ttl.RefreshToken[inspect.custom] = () => (
     .replace(/\s+}$/, '\n}')
 );
 
+values.interactions.policy[inspect.custom] = () => readFileSync('./docs/checks.txt').toString();
+
 function capitalizeSentences(copy) {
   return copy.replace(/\. [a-z]/g, (match) => `. ${match.slice(-1).toUpperCase()}`);
 }
@@ -242,11 +244,7 @@ const props = [
         case 'string':
         case 'undefined':
         case 'object': {
-          let output;
-          if (block === 'interactions.policy') {
-            output = readFileSync('./docs/checks.txt');
-          }
-          output = output || inspect(value, { compact: false, sorted: true });
+          const output = inspect(value, { compact: false, sorted: true });
           append(expand(output).split('\n').map((line) => {
             line = line.replace(/(\[(?:Async)?Function: \w+\],)/, '$1 // see expanded details below');
             return line;
