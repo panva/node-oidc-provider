@@ -1,3 +1,4 @@
+/* eslint-env mocha */
 /* eslint-disable no-await-in-loop */
 const { strict: assert } = require('assert');
 const fs = require('fs');
@@ -33,14 +34,16 @@ const {
   debug('modules to test %O', MODULES);
 
   for (const moduleName of MODULES) { // eslint-disable-line no-restricted-syntax
-    debug('\n\nRunning test module: %s', moduleName);
-    const { id: moduleId } = await runner.createTestFromPlan({ plan: PLAN_ID, test: moduleName });
-    debug('Created test module, new id: %s', moduleId);
-    debug('%s/log-detail.html?log=%s', SUITE_BASE_URL, moduleId);
-    await runner.waitForState({ moduleId });
+    it(moduleName, async () => {
+      debug('\n\nRunning test module: %s', moduleName);
+      const { id: moduleId } = await runner.createTestFromPlan({ plan: PLAN_ID, test: moduleName });
+      debug('Created test module, new id: %s', moduleId);
+      debug('%s/log-detail.html?log=%s', SUITE_BASE_URL, moduleId);
+      await runner.waitForState({ moduleId });
+    });
   }
 
-  debug('\n\nFinished');
+  run();
 })().catch((err) => {
   process.exitCode = 1;
   debug(err);

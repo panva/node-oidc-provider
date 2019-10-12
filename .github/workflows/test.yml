@@ -118,7 +118,7 @@ jobs:
           sed -i -e 's/mtls.fapi.panva.cz/172.17.0.1:3000/g' certification/fapi/pkjwt.json
           sed -i -e 's/fapi.panva.cz/172.17.0.1:3000/g' certification/fapi/pkjwt.json
       - name: Run private_key_jwt variant
-        run: node certification/fapi/runner
+        run: npx mocha --delay --timeout 0 --retries 2 certification/fapi/runner
         env:
           PLAN_NAME: fapi-rw-id2-test-plan
           VARIANT: private_key_jwt
@@ -126,7 +126,7 @@ jobs:
           SUITE_BASE_URL: https://localhost.emobix.co.uk:8443
           NODE_TLS_REJECT_UNAUTHORIZED: 0
       - name: Run mtls variant
-        run: node certification/fapi/runner
+        run: npx mocha --delay --timeout 0 --retries 2 certification/fapi/runner
         env:
           PLAN_NAME: fapi-rw-id2-test-plan
           VARIANT: mtls
@@ -134,7 +134,7 @@ jobs:
           SUITE_BASE_URL: https://localhost.emobix.co.uk:8443
           NODE_TLS_REJECT_UNAUTHORIZED: 0
       - name: Run private_key_jwt-jarm variant
-        run: node certification/fapi/runner
+        run: npx mocha --delay --timeout 0 --retries 2 certification/fapi/runner
         env:
           PLAN_NAME: fapi-rw-id2-test-plan
           VARIANT: private_key_jwt-jarm
@@ -142,7 +142,7 @@ jobs:
           SUITE_BASE_URL: https://localhost.emobix.co.uk:8443
           NODE_TLS_REJECT_UNAUTHORIZED: 0
       - name: Run mtls-jarm variant
-        run: node certification/fapi/runner
+        run: npx mocha --delay --timeout 0 --retries 2 certification/fapi/runner
         env:
           PLAN_NAME: fapi-rw-id2-test-plan
           VARIANT: mtls-jarm
