@@ -79,7 +79,7 @@ describe('devInteractions', () => {
     it('with a form', function () {
       return this.agent.get(this.url)
         .expect(200)
-        .expect(new RegExp(`action="${this.url}"`))
+        .expect(new RegExp(`action="${this.provider.issuer}${this.url}"`))
         .expect(new RegExp('name="prompt" value="login"'))
         .expect(/Sign-in/);
     });
@@ -107,7 +107,7 @@ describe('devInteractions', () => {
     it('with a form', function () {
       return this.agent.get(this.url)
         .expect(200)
-        .expect(new RegExp(`action="${this.url}"`))
+        .expect(new RegExp(`action="${this.provider.issuer}${this.url}"`))
         .expect(new RegExp('name="prompt" value="consent"'))
         .expect(/Authorize/);
     });
