@@ -2,6 +2,15 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [6.12.8](https://github.com/panva/node-oidc-provider/compare/v6.12.7...v6.12.8) (2019-10-14)
+
+
+### Bug Fixes
+
+* **typescript:** add missing OIDCContext cookies property ([0c04af6](https://github.com/panva/node-oidc-provider/commit/0c04af6))
+
+
+
 ## [6.12.7](https://github.com/panva/node-oidc-provider/compare/v6.12.5...v6.12.7) (2019-10-09)
 
 
