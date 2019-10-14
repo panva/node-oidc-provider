@@ -638,6 +638,12 @@ declare class OIDCContext {
   constructor(ctx: Koa.Context);
   readonly route: string;
   uid: string;
+
+  readonly cookies: {
+    get(name: string, opts?: { signed?: boolean }): string | undefined;
+    set(name: string, value: string | null, opts?: CookiesSetOptions): undefined;
+  };
+
   readonly entities: {
     readonly AccessToken?: AccessToken;
     readonly Account?: Account;

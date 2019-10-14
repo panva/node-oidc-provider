@@ -232,7 +232,7 @@ const provider = new Provider('https://op.example.com', {
   async findAccount(ctx, sub, token) {
     ctx.oidc.issuer.substring(0);
     sub.substring(0);
-    if (token) {
+    if (token !== undefined) {
       token.iat.toFixed();
     }
 
@@ -252,7 +252,7 @@ const provider = new Provider('https://op.example.com', {
   },
   async audiences(ctx, sub, token, use) {
     ctx.oidc.issuer.substring(0);
-    if (sub) {
+    if (sub !== undefined) {
       sub.substring(0);
     }
     token.iat.toFixed();
@@ -359,10 +359,10 @@ const provider = new Provider('https://op.example.com', {
       async userCodeInputSource(ctx, form, out, err) {
         ctx.oidc.issuer.substring(0);
         form.substring(0);
-        if (out) {
+        if (out !== undefined) {
           out.error;
         }
-        if (err) {
+        if (err !== undefined) {
           err.message.substring(0);
         }
       },
@@ -469,6 +469,15 @@ provider.registerGrantType('urn:example', async (ctx, next) => {
   return next();
 }, ['foo', 'bar'], ['foo']);
 
+provider.on('authorization.accepted', (ctx) => {
+  const value = ctx.oidc.cookies.get('key');
+  if (value !== undefined) {
+    value.substring(0);
+  }
+
+  ctx.oidc.cookies.set('key', 'value', { signed: true, sameSite: 'strict' });
+});
+
 provider.use((ctx, next) => {
   ctx.href.substring(0);
   return next();
@@ -482,11 +491,11 @@ provider.use(async (ctx, next) => {
 
 (async () => {
   const client = await provider.Client.find('foo');
-  if (client) {
+  if (client !== undefined) {
     client.clientId.substring(0);
   }
   const accessToken = await provider.AccessToken.find('foo');
-  if (accessToken) {
+  if (accessToken !== undefined) {
     accessToken.jti.substring(0);
   }
 })();
