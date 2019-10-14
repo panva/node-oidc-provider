@@ -2,6 +2,15 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [6.12.9](https://github.com/panva/node-oidc-provider/compare/v6.12.8...v6.12.9) (2019-10-14)
+
+
+### Bug Fixes
+
+* mounted devInteractions now honour the mount path ([8fb8af5](https://github.com/panva/node-oidc-provider/commit/8fb8af5)), closes [#549](https://github.com/panva/node-oidc-provider/issues/549) [#548](https://github.com/panva/node-oidc-provider/issues/548)
+
+
+
 ## [6.12.8](https://github.com/panva/node-oidc-provider/compare/v6.12.7...v6.12.8) (2019-10-14)
 
 
