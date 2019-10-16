@@ -290,7 +290,7 @@ const provider = new Provider('https://op.example.com', {
       enabled: true,
       initialAccessToken: true,
       policies: {
-        foo(ctx, metadata) {
+        async foo(ctx, metadata) {
           ctx.oidc.issuer.substring(0);
           metadata.client_id.substring(0);
         }

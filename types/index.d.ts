@@ -863,7 +863,7 @@ export interface Configuration {
       enabled?: boolean;
       initialAccessToken?: boolean | string;
       policies?: {
-        [key: string]: (ctx: KoaContextWithOIDC, metadata: ClientMetadata) => void | undefined;
+        [key: string]: (ctx: KoaContextWithOIDC, metadata: ClientMetadata) => Promise<void | undefined> | void | undefined;
       };
       idFactory?: () => string;
       secretFactory?: () => string;
