@@ -708,7 +708,7 @@ _**default value**_:
 
 ### features.dPoP
 
-[draft-fett-oauth-dpop-02](https://tools.ietf.org/html/draft-fett-oauth-dpop-02) - OAuth 2.0 Demonstration of Proof-of-Possession at the Application Layer  
+[draft-fett-oauth-dpop-03](https://tools.ietf.org/html/draft-fett-oauth-dpop-03) - OAuth 2.0 Demonstration of Proof-of-Possession at the Application Layer  
 
 Enables `DPoP` - mechanism for sender-constraining tokens via a proof-of-possession mechanism on the application level  
 

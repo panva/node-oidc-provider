@@ -336,7 +336,7 @@ const provider = new Provider('https://op.example.com', {
     clientCredentials: { enabled: false },
     backchannelLogout: { enabled: false, ack: 4 },
     ietfJWTAccessTokenProfile: { enabled: false, ack: 2 },
-    dPoP: { enabled: false, ack: 'id-02', iatTolerance: 120 },
+    dPoP: { enabled: false, ack: 'id-03', iatTolerance: 120 },
     frontchannelLogout: {
       ack: 2,
       enabled: false,

@@ -53,7 +53,7 @@ if (FORMAT === 'jwt') {
       accountId, claims, clientId, grantId, scope, sid, consumed, acr, amr, authTime, nonce,
       redirectUri, codeChallenge, codeChallengeMethod, aud, error, errorDescription, params,
       userCode, deviceInfo, gty, resource, policies, sessionUid, expiresWithSession,
-      'x5t#S256': s256, inFlight, iiat, rotations, extra, 'jkt#S256': s256,
+      'x5t#S256': s256, inFlight, iiat, rotations, extra, jkt: s256,
     };
     /* eslint-enable object-property-newline */
 
@@ -88,7 +88,7 @@ if (FORMAT === 'jwt') {
         scope,
         sid,
         'x5t#S256': s256,
-        'jkt#S256': s256,
+        jkt: s256,
         sessionUid,
         expiresWithSession,
         extra,
@@ -110,7 +110,7 @@ if (FORMAT === 'jwt') {
         sub: accountId,
         cnf: {
           'x5t#S256': s256,
-          'jkt#S256': s256,
+          jkt: s256,
         },
       });
     });
@@ -137,7 +137,7 @@ if (FORMAT === 'jwt') {
         scope,
         sid,
         'x5t#S256': s256,
-        'jkt#S256': s256,
+        jkt: s256,
         sessionUid,
         expiresWithSession,
         extra,
@@ -159,7 +159,7 @@ if (FORMAT === 'jwt') {
         sub: 'pairwise-sub',
         cnf: {
           'x5t#S256': s256,
-          'jkt#S256': s256,
+          jkt: s256,
         },
       });
     });
@@ -180,7 +180,7 @@ if (FORMAT === 'jwt') {
         kind,
         scope,
         'x5t#S256': s256,
-        'jkt#S256': s256,
+        jkt: s256,
         extra,
       });
 
@@ -199,7 +199,7 @@ if (FORMAT === 'jwt') {
         scope,
         cnf: {
           'x5t#S256': s256,
-          'jkt#S256': s256,
+          jkt: s256,
         },
       });
     });

@@ -23,7 +23,7 @@ describe('features.dPoP', () => {
     });
   });
   before(function () {
-    this.proof = (uri, method, jwk = this.jwk) => JWT.sign({ http_uri: uri, http_method: method, jti: nanoid() }, jwk, { kid: false, header: { typ: 'dpop+jwt', jwk: JWK.asKey(jwk) } });
+    this.proof = (uri, method, jwk = this.jwk) => JWT.sign({ htu: uri, htm: method, jti: nanoid() }, jwk, { kid: false, header: { typ: 'dpop+jwt', jwk: JWK.asKey(jwk) } });
   });
 
   it('validates the way DPoP Proof JWT is provided', async function () {
@@ -125,20 +125,20 @@ describe('features.dPoP', () => {
     }
 
     await this.agent.get('/me') // eslint-disable-line no-await-in-loop
-      .set('DPoP', JWT.sign({ jti: 'foo', http_method: 'POST' }, key, { kid: false, header: { typ: 'dpop+jwt', jwk: key } }))
+      .set('DPoP', JWT.sign({ jti: 'foo', htm: 'POST' }, key, { kid: false, header: { typ: 'dpop+jwt', jwk: key } }))
       .set('Authorization', 'DPoP foo')
       .expect(400)
-      .expect({ error: 'invalid_request', error_description: 'invalid DPoP Proof JWT (http_method mismatch)' });
+      .expect({ error: 'invalid_request', error_description: 'invalid DPoP Proof JWT (htm mismatch)' });
 
     await this.agent.get('/me') // eslint-disable-line no-await-in-loop
-      .set('DPoP', JWT.sign({ jti: 'foo', http_method: 'GET', http_uri: 'foo' }, key, { kid: false, header: { typ: 'dpop+jwt', jwk: key } }))
+      .set('DPoP', JWT.sign({ jti: 'foo', htm: 'GET', htu: 'foo' }, key, { kid: false, header: { typ: 'dpop+jwt', jwk: key } }))
       .set('Authorization', 'DPoP foo')
       .expect(400)
-      .expect({ error: 'invalid_request', error_description: 'invalid DPoP Proof JWT (http_uri mismatch)' });
+      .expect({ error: 'invalid_request', error_description: 'invalid DPoP Proof JWT (htu mismatch)' });
 
     await this.agent.get('/me') // eslint-disable-line no-await-in-loop
       .set('DPoP', JWT.sign({
-        jti: 'foo', http_method: 'GET', http_uri: `${this.provider.issuer}/me`, iat: epochTime() - 61,
+        jti: 'foo', htm: 'GET', htu: `${this.provider.issuer}/me`, iat: epochTime() - 61,
       }, key, { kid: false, iat: false, header: { typ: 'dpop+jwt', jwk: key } }))
       .set('Authorization', 'DPoP foo')
       .expect(400)
@@ -146,7 +146,7 @@ describe('features.dPoP', () => {
 
     await this.agent.get('/me') // eslint-disable-line no-await-in-loop
       .set('DPoP', JWT.sign({
-        jti: 'foo', http_method: 'GET', http_uri: `${this.provider.issuer}/me`,
+        jti: 'foo', htm: 'GET', htu: `${this.provider.issuer}/me`,
       }, key, { kid: false, header: { typ: 'dpop+jwt', jwk: await JWK.generate('EC') } }))
       .set('Authorization', 'DPoP foo')
       .expect(400)
@@ -194,7 +194,7 @@ describe('features.dPoP', () => {
         .expect(401);
 
       expect(spy).to.have.property('calledOnce', true);
-      expect(spy.args[0][1]).to.have.property('error_detail', 'failed jkt#S256 verification');
+      expect(spy.args[0][1]).to.have.property('error_detail', 'failed jkt verification');
 
       spy = sinon.spy();
       this.provider.once('userinfo.error', spy);
@@ -205,7 +205,7 @@ describe('features.dPoP', () => {
         .expect(401);
 
       expect(spy).to.have.property('calledOnce', true);
-      expect(spy.args[0][1]).to.have.property('error_detail', 'failed jkt#S256 verification');
+      expect(spy.args[0][1]).to.have.property('error_detail', 'failed jkt verification');
     });
   });
 
@@ -228,7 +228,7 @@ describe('features.dPoP', () => {
         .expect(({ body }) => {
           expect(body).to.have.property('cnf');
           expect(body).to.have.property('token_type', 'DPoP');
-          expect(body.cnf).to.have.property('jkt#S256');
+          expect(body.cnf).to.have.property('jkt');
         });
     });
   });
@@ -266,8 +266,8 @@ describe('features.dPoP', () => {
 
       expect(spy).to.have.property('calledOnce', true);
       const { oidc: { entities: { AccessToken, RefreshToken } } } = spy.args[0][0];
-      expect(AccessToken).to.have.property('jkt#S256', expectedS256);
-      expect(RefreshToken).not.to.have.property('jkt#S256');
+      expect(AccessToken).to.have.property('jkt', expectedS256);
+      expect(RefreshToken).not.to.have.property('jkt');
     });
 
     it('binds the refresh token to the jwk for public clients', async function () {
@@ -291,8 +291,8 @@ describe('features.dPoP', () => {
 
       expect(spy).to.have.property('calledOnce', true);
       const { oidc: { entities: { AccessToken, RefreshToken } } } = spy.args[0][0];
-      expect(AccessToken).to.have.property('jkt#S256', expectedS256);
-      expect(RefreshToken).to.have.property('jkt#S256', expectedS256);
+      expect(AccessToken).to.have.property('jkt', expectedS256);
+      expect(RefreshToken).to.have.property('jkt', expectedS256);
     });
   });
 
@@ -334,8 +334,8 @@ describe('features.dPoP', () => {
 
         expect(spy).to.have.property('calledOnce', true);
         const { oidc: { entities: { AccessToken, RefreshToken } } } = spy.args[0][0];
-        expect(AccessToken).to.have.property('jkt#S256', expectedS256);
-        expect(RefreshToken).not.to.have.property('jkt#S256');
+        expect(AccessToken).to.have.property('jkt', expectedS256);
+        expect(RefreshToken).not.to.have.property('jkt');
       });
     });
 
@@ -371,8 +371,8 @@ describe('features.dPoP', () => {
 
         expect(spy).to.have.property('calledOnce', true);
         const { oidc: { entities: { AccessToken, RefreshToken } } } = spy.args[0][0];
-        expect(AccessToken).to.have.property('jkt#S256', expectedS256);
-        expect(RefreshToken['jkt#S256']).to.be.undefined;
+        expect(AccessToken).to.have.property('jkt', expectedS256);
+        expect(RefreshToken.jkt).to.be.undefined;
       });
     });
   });
@@ -416,8 +416,8 @@ describe('features.dPoP', () => {
 
         expect(spy).to.have.property('calledOnce', true);
         const { oidc: { entities: { AccessToken, RefreshToken } } } = spy.args[0][0];
-        expect(AccessToken).to.have.property('jkt#S256', expectedS256);
-        expect(RefreshToken).to.have.property('jkt#S256', expectedS256);
+        expect(AccessToken).to.have.property('jkt', expectedS256);
+        expect(RefreshToken).to.have.property('jkt', expectedS256);
       });
     });
 
@@ -453,8 +453,8 @@ describe('features.dPoP', () => {
 
         expect(spy).to.have.property('calledOnce', true);
         const { oidc: { entities: { AccessToken, RefreshToken } } } = spy.args[0][0];
-        expect(AccessToken).to.have.property('jkt#S256', expectedS256);
-        expect(RefreshToken).to.have.property('jkt#S256', expectedS256);
+        expect(AccessToken).to.have.property('jkt', expectedS256);
+        expect(RefreshToken).to.have.property('jkt', expectedS256);
       });
 
       it('verifies the request made with the same cert jwk', async function () {
@@ -474,7 +474,7 @@ describe('features.dPoP', () => {
           .expect({ error: 'invalid_grant', error_description: 'grant request is invalid' });
 
         expect(spy).to.have.property('calledOnce', true);
-        expect(spy.args[0][1]).to.have.property('error_detail', 'failed jkt#S256 verification');
+        expect(spy.args[0][1]).to.have.property('error_detail', 'failed jkt verification');
       });
     });
   });
@@ -493,7 +493,7 @@ describe('features.dPoP', () => {
 
       expect(spy).to.have.property('calledOnce', true);
       const { oidc: { entities: { ClientCredentials } } } = spy.args[0][0];
-      expect(ClientCredentials).to.have.property('jkt#S256', expectedS256);
+      expect(ClientCredentials).to.have.property('jkt', expectedS256);
     });
   });
 });

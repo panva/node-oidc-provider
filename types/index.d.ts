@@ -347,7 +347,7 @@ declare class RefreshToken extends BaseToken {
     sessionUid?: string;
     expiresWithSession?: boolean;
     'x5t#S256'?: string;
-    'jkt#S256'?: string;
+    jkt?: string;
     grantId: string;
     gty: string;
     [key: string]: any;
@@ -367,7 +367,7 @@ declare class RefreshToken extends BaseToken {
   sessionUid?: string;
   expiresWithSession?: boolean;
   'x5t#S256'?: string;
-  'jkt#S256'?: string;
+  jkt?: string;
   grantId?: string;
   gty?: string;
   consumed: any;
@@ -395,7 +395,7 @@ declare class AuthorizationCode extends BaseToken {
     sessionUid?: string;
     expiresWithSession?: boolean;
     'x5t#S256'?: string;
-    'jkt#S256'?: string;
+    jkt?: string;
     grantId: string;
     gty: string;
     [key: string]: any;
@@ -416,7 +416,7 @@ declare class AuthorizationCode extends BaseToken {
   sessionUid?: string;
   expiresWithSession?: boolean;
   'x5t#S256'?: string;
-  'jkt#S256'?: string;
+  jkt?: string;
   grantId?: string;
   gty?: string;
 
@@ -475,7 +475,7 @@ declare class ClientCredentials extends BaseToken {
   aud: string | string[];
   readonly tokenType: string;
   'x5t#S256'?: string;
-  'jkt#S256'?: string;
+  jkt?: string;
 
   setAudiences(audience: string | string[]): void;
   isSenderConstrained(): boolean;
@@ -508,7 +508,7 @@ declare class AccessToken extends BaseToken {
     sessionUid?: string;
     expiresWithSession?: boolean;
     'x5t#S256'?: string;
-    'jkt#S256'?: string;
+    jkt?: string;
     grantId: string;
     gty: string;
     [key: string]: any;
@@ -526,7 +526,7 @@ declare class AccessToken extends BaseToken {
   expiresWithSession?: boolean;
   readonly tokenType: string;
   'x5t#S256'?: string;
-  'jkt#S256'?: string;
+  jkt?: string;
 
   setAudiences(audience: string | string[]): void;
   isSenderConstrained(): boolean;
@@ -780,7 +780,7 @@ export interface AdapterPayload {
   transient?: boolean;
   uid?: string;
   userCode?: string;
-  'jkt#S256'?: string;
+  jkt?: string;
   'jwt-ietf'?: string;
   'x5t#S256'?: string;
 }
@@ -896,7 +896,7 @@ export interface Configuration {
         whitelist?: string[] | Set<string>;
       };
     };
-    dPoP?: { enabled?: boolean, iatTolerance?: number, ack?: 'id-02' },
+    dPoP?: { enabled?: boolean, iatTolerance?: number, ack?: 'id-03' },
 
     sessionManagement?: { enabled?: boolean, keepHeaders?: boolean, ack?: 28 },
 

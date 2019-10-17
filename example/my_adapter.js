@@ -70,7 +70,7 @@ class MyAdapter {
      * - sid {string} - session identifier the token comes from
      * - 'x5t#S256' {string} - X.509 Certificate SHA-256 Thumbprint of a certificate bound access or
      *     refresh token
-     * - 'jkt#S256' {string} - JWK SHA-256 Thumbprint (according to [RFC7638]) of a DPoP bound
+     * - 'jkt' {string} - JWK SHA-256 Thumbprint (according to [RFC7638]) of a DPoP bound
      *     access or refresh token
      * - gty {string} - [AccessToken, RefreshToken only] space delimited grant values, indicating
      *     the grant type(s) they originate from (implicit, authorization_code, refresh_token or
