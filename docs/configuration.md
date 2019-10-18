@@ -14,5 +14,5 @@ If you or your business use oidc-provider, please consider becoming a [sponsor][
 
 **⚠️ If you're landing here you're likely looking for [v5.x documentation](https://github.com/panva/node-oidc-provider/blob/v5.x/docs/configuration.md).**
 
-[support-sponsor]: https://github.com/users/panva/sponsorship
+[support-sponsor]: https://github.com/sponsors/panva
 [sponsor-auth0]: https://auth0.com/overview?utm_source=GHsponsor&utm_medium=GHsponsor&utm_campaign=oidc-provider&utm_content=auth

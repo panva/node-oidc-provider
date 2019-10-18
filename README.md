@@ -207,5 +207,5 @@ See the list of available emitted [event names](/docs/events.md) and their descr
 [resource-indicators]: https://tools.ietf.org/html/draft-ietf-oauth-resource-indicators-07
 [jarm]: https://openid.net/specs/openid-financial-api-jarm-wd-02.html
 [jwt-at]: https://tools.ietf.org/html/draft-ietf-oauth-access-token-jwt-02
-[support-sponsor]: https://github.com/users/panva/sponsorship
+[support-sponsor]: https://github.com/sponsors/panva
 [par]: https://tools.ietf.org/html/draft-lodderstedt-oauth-par-00

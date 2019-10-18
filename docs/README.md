@@ -3686,5 +3686,5 @@ _**default value**_:
 [token-exchange]: https://tools.ietf.org/html/draft-ietf-oauth-token-exchange
 [defaults]: /lib/helpers/defaults.js
 [keygrip-module]: https://www.npmjs.com/package/keygrip
-[support-sponsor]: https://github.com/users/panva/sponsorship
+[support-sponsor]: https://github.com/sponsors/panva
 [sponsor-auth0]: https://auth0.com/overview?utm_source=GHsponsor&utm_medium=GHsponsor&utm_campaign=oidc-provider&utm_content=auth

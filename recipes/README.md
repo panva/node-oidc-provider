@@ -21,5 +21,5 @@ If you or your business use oidc-provider, please consider becoming a [sponsor][
 - [Redirect URI wilcards](redirect_uri_wildcards.md)
 - ... got something worthy of being here? Submit a PR with a new recipe to help others.
 
-[support-sponsor]: https://github.com/users/panva/sponsorship
+[support-sponsor]: https://github.com/sponsors/panva
 [sponsor-auth0]: https://auth0.com/overview?utm_source=GHsponsor&utm_medium=GHsponsor&utm_campaign=oidc-provider&utm_content=auth
