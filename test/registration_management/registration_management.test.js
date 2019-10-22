@@ -267,14 +267,18 @@ describe('OAuth 2.0 Dynamic Client Registration Management Protocol', () => {
   });
 
   describe('Client Delete Request', () => {
-    it('responds w/ empty 204 and nocache headers', async function () {
+    it('responds w/ empty 204 and nocache headers and removes the registration access token', async function () {
       const client = await setup.call(this, {});
-      return this.agent.del(`/reg/${client.client_id}`)
+      await this.agent.del(`/reg/${client.client_id}`)
         .auth(client.registration_access_token, { type: 'bearer' })
         .expect('pragma', 'no-cache')
         .expect('cache-control', 'no-cache, no-store')
         .expect('') // empty body
         .expect(204);
+
+      expect(
+        await this.provider.RegistrationAccessToken.find(client.registration_access_token),
+      ).to.be.undefined;
     });
 
     it('populates ctx.oidc.entities', function (done) {
