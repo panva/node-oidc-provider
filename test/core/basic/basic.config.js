@@ -5,6 +5,7 @@ const { Prompt, Check, base } = require('../../../lib/helpers/interaction_policy
 
 config.extraParams = ['triggerCustomFail'];
 config.features = { requestObjects: { requestUri: false } };
+config.responseTypes = ['id_token', 'code', 'none'];
 
 const policy = base();
 

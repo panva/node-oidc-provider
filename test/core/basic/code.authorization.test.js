@@ -875,6 +875,28 @@ describe('BASIC code', () => {
           .expect(auth.validateErrorDescription('response_type not allowed for this client'));
       });
 
+      it('unsupported response type validation runs before oidc required params', function () {
+        const spy = sinon.spy();
+        this.provider.once('authorization.error', spy);
+        const auth = new this.AuthorizationRequest({
+          response_type: 'id_token token',
+          nonce: undefined,
+          scope,
+        });
+
+        return this.wrap({ route, verb, auth })
+          .expect(302)
+          .expect(() => {
+            expect(spy.calledOnce).to.be.true;
+          })
+          .expect(auth.validateFragment)
+          .expect(auth.validatePresence(['error', 'error_description', 'state']))
+          .expect(auth.validateState)
+          .expect(auth.validateClientLocation)
+          .expect(auth.validateError('unsupported_response_type'))
+          .expect(auth.validateErrorDescription('unsupported response_type requested'));
+      });
+
       it('redirect_uri mismatch', function () {
         const emitSpy = sinon.spy();
         const renderSpy = sinon.spy(i(this.provider).configuration(), 'renderError');
