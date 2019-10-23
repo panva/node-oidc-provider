@@ -83,7 +83,9 @@ const hasWildcardHost = (redirectUri) => {
 const wildcardMatches = (redirectUri, wildcardUri) => !!wildcard(wildcardUri, redirectUri);
 
 provider.Client.prototype.redirectUriAllowed = function wildcardRedirectUriAllowed(redirectUri) {
-  if (redirectUriAllowed.call(this, redirectUri)) return true;
+  if (!redirectUri.includes('*')) {
+    return redirectUriAllowed.call(this, redirectUri);
+  }
   const wildcardUris = this.redirectUris.filter(hasWildcardHost);
   return wildcardUris.some(wildcardMatches.bind(undefined, redirectUri));
 };
