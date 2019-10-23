@@ -1,7 +1,5 @@
 # oidc-provider
 
-![build][actions-image] [![codecov][codecov-image]][codecov-url]
-
 oidc-provider is an OAuth 2.0 Authorization Server with [OpenID Connect][openid-connect] and many
 additional features and standards implemented.
 
@@ -169,9 +167,6 @@ change the defined behavior.
 See the list of available emitted [event names](/docs/events.md) and their description.
 
 
-[actions-image]: https://github.com/panva/node-oidc-provider/workflows/Continuous%20Integration/badge.svg
-[codecov-image]: https://img.shields.io/codecov/c/github/panva/node-oidc-provider/master.svg
-[codecov-url]: https://codecov.io/gh/panva/node-oidc-provider
 [npm-url]: https://www.npmjs.com/package/oidc-provider
 [openid-certified-link]: https://openid.net/certification/
 [openid-connect]: https://openid.net/connect/
