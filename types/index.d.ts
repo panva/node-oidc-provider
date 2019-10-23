@@ -432,6 +432,9 @@ declare class DeviceCode extends BaseToken {
     deviceInfo: AnyObject;
     [key: string]: any;
   });
+
+  static findByUserCode(userCode: string, options?: { ignoreExpiration?: boolean }): Promise<DeviceCode | undefined>;
+
   readonly kind: 'DeviceCode';
   error?: string;
   errorDescription?: string;
