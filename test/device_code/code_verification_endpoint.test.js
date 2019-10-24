@@ -19,7 +19,7 @@ describe('GET code_verification endpoint', () => {
           const { state: { secret } } = this.getSession();
           expect(secret).to.be.a('string');
         })
-        .expect(/<form id="op\.deviceInputForm" novalidate method="post" action="\/device">/);
+        .expect(/<form id="op\.deviceInputForm" novalidate method="post" action="http:\/\/127\.0\.0\.1:\d+\/device">/);
     });
   });
 
@@ -36,7 +36,7 @@ describe('GET code_verification endpoint', () => {
           ({ state: { secret } } = this.getSession());
           expect(text).to.match(new RegExp(`input type="hidden" name="xsrf" value="${secret}"`));
         })
-        .expect(/<form method="post" action="\/device">/)
+        .expect(/<form method="post" action="http:\/\/127\.0\.0\.1:\d+\/device">/)
         .expect(/<input type="hidden" name="user_code" value="123-456-789"\/>/);
     });
 
@@ -46,6 +46,24 @@ describe('GET code_verification endpoint', () => {
         .expect(200)
         .expect('content-type', 'text/html; charset=utf-8')
         .expect(/<input type="hidden" name="user_code" value="&amp;&lt;&gt;&quot;&#39;123-456-789"\/>/);
+    });
+  });
+});
+
+describe('GET code_verification endpoint when mounted', () => {
+  const mountTo = '/oidc';
+  before(bootstrap(__dirname, { mountTo }));
+
+  describe('when accessed without user_code in query (verification_uri)', () => {
+    it('renders 200 OK end-user form with csrf', function () {
+      return this.agent.get(`${mountTo}${route}`)
+        .expect(200)
+        .expect('content-type', 'text/html; charset=utf-8')
+        .expect(() => {
+          const { state: { secret } } = this.getSession();
+          expect(secret).to.be.a('string');
+        })
+        .expect(/<form id="op\.deviceInputForm" novalidate method="post" action="http:\/\/127\.0\.0\.1:\d+\/oidc\/device">/);
     });
   });
 });
@@ -93,7 +111,7 @@ describe('POST code_verification endpoint w/o verification', () => {
       })
       .type('form')
       .expect(200)
-      .expect(/<form id="op\.deviceConfirmForm" method="post" action="\/device">/);
+      .expect(/<form id="op\.deviceConfirmForm" method="post" action="http:\/\/127\.0\.0\.1:\d+\/device">/);
 
     expect(spy.calledOnce).to.be.true;
     sinon.assert.calledWithMatch(spy, any, any, sinon.match((client) => {
@@ -111,7 +129,7 @@ describe('POST code_verification endpoint w/o verification', () => {
       .send({ xsrf })
       .type('form')
       .expect(200)
-      .expect(/<form id="op\.deviceInputForm" novalidate method="post" action="\/device">/)
+      .expect(/<form id="op\.deviceInputForm" novalidate method="post" action="http:\/\/127\.0\.0\.1:\d+\/device">/)
       .expect(/<p class="red">The code you entered is incorrect\. Try again<\/p>/);
 
     expect(spy.calledOnce).to.be.true;
@@ -135,7 +153,7 @@ describe('POST code_verification endpoint w/o verification', () => {
       })
       .type('form')
       .expect(200)
-      .expect(/<form id="op\.deviceInputForm" novalidate method="post" action="\/device">/)
+      .expect(/<form id="op\.deviceInputForm" novalidate method="post" action="http:\/\/127\.0\.0\.1:\d+\/device">/)
       .expect(/<p class="red">The code you entered is incorrect\. Try again<\/p>/);
 
     expect(spy.calledOnce).to.be.true;
@@ -163,7 +181,7 @@ describe('POST code_verification endpoint w/o verification', () => {
       })
       .type('form')
       .expect(200)
-      .expect(/<form id="op\.deviceInputForm" novalidate method="post" action="\/device">/)
+      .expect(/<form id="op\.deviceInputForm" novalidate method="post" action="http:\/\/127\.0\.0\.1:\d+\/device">/)
       .expect(/<p class="red">The code you entered is incorrect\. Try again<\/p>/);
 
     expect(spy.calledOnce).to.be.true;
@@ -191,7 +209,7 @@ describe('POST code_verification endpoint w/o verification', () => {
       })
       .type('form')
       .expect(200)
-      .expect(/<form id="op\.deviceInputForm" novalidate method="post" action="\/device">/)
+      .expect(/<form id="op\.deviceInputForm" novalidate method="post" action="http:\/\/127\.0\.0\.1:\d+\/device">/)
       .expect(/<p class="red">The code you entered is incorrect\. Try again<\/p>/);
 
     expect(spy.calledOnce).to.be.true;
@@ -220,7 +238,7 @@ describe('POST code_verification endpoint w/o verification', () => {
       })
       .type('form')
       .expect(400)
-      .expect(/<form id="op\.deviceInputForm" novalidate method="post" action="\/device">/)
+      .expect(/<form id="op\.deviceInputForm" novalidate method="post" action="http:\/\/127\.0\.0\.1:\d+\/device">/)
       .expect(/<p class="red">There was an error processing your request<\/p>/);
 
     expect(spy.calledOnce).to.be.true;
@@ -248,7 +266,7 @@ describe('POST code_verification endpoint w/o verification', () => {
       })
       .type('form')
       .expect(400)
-      .expect(/<form id="op\.deviceInputForm" novalidate method="post" action="\/device">/)
+      .expect(/<form id="op\.deviceInputForm" novalidate method="post" action="http:\/\/127\.0\.0\.1:\d+\/device">/)
       .expect(/<p class="red">There was an error processing your request<\/p>/);
 
     expect(spy.calledOnce).to.be.true;
@@ -276,7 +294,7 @@ describe('POST code_verification endpoint w/o verification', () => {
       })
       .type('form')
       .expect(400)
-      .expect(/<form id="op\.deviceInputForm" novalidate method="post" action="\/device">/)
+      .expect(/<form id="op\.deviceInputForm" novalidate method="post" action="http:\/\/127\.0\.0\.1:\d+\/device">/)
       .expect(/<p class="red">There was an error processing your request<\/p>/);
 
     expect(spy.calledOnce).to.be.true;

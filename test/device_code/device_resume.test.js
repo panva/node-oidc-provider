@@ -123,7 +123,7 @@ describe('device interaction resume /device/:user_code/:uid/', () => {
         await this.agent.get(path)
           .accept('text/html')
           .expect(400)
-          .expect(/<form id="op\.deviceInputForm" novalidate method="post" action="\/device">/)
+          .expect(/<form id="op\.deviceInputForm" novalidate method="post" action="http:\/\/127\.0\.0\.1:\d+\/device">/)
           .expect(/<p class="red">There was an error processing your request<\/p>/);
 
         expect(spy.calledOnce).to.be.true;
@@ -149,7 +149,7 @@ describe('device interaction resume /device/:user_code/:uid/', () => {
         await this.agent.get(path)
           .accept('text/html')
           .expect(400)
-          .expect(/<form id="op\.deviceInputForm" novalidate method="post" action="\/device">/)
+          .expect(/<form id="op\.deviceInputForm" novalidate method="post" action="http:\/\/127\.0\.0\.1:\d+\/device">/)
           .expect(/<p class="red">There was an error processing your request<\/p>/);
 
         expect(spy.calledOnce).to.be.true;
@@ -175,7 +175,7 @@ describe('device interaction resume /device/:user_code/:uid/', () => {
         await this.agent.get(path)
           .accept('text/html')
           .expect(200)
-          .expect(/<form id="op\.deviceInputForm" novalidate method="post" action="\/device">/)
+          .expect(/<form id="op\.deviceInputForm" novalidate method="post" action="http:\/\/127\.0\.0\.1:\d+\/device">/)
           .expect(/<p class="red">There was an error processing your request<\/p>/);
 
         expect(spy.calledOnce).to.be.true;
@@ -201,7 +201,7 @@ describe('device interaction resume /device/:user_code/:uid/', () => {
         await this.agent.get(path)
           .accept('text/html')
           .expect(200)
-          .expect(/<form id="op\.deviceInputForm" novalidate method="post" action="\/device">/)
+          .expect(/<form id="op\.deviceInputForm" novalidate method="post" action="http:\/\/127\.0\.0\.1:\d+\/device">/)
           .expect(/<p class="red">There was an error processing your request<\/p>/);
 
         expect(spy.calledOnce).to.be.true;
@@ -227,7 +227,7 @@ describe('device interaction resume /device/:user_code/:uid/', () => {
         await this.agent.get(path)
           .accept('text/html')
           .expect(200)
-          .expect(/<form id="op\.deviceInputForm" novalidate method="post" action="\/device">/)
+          .expect(/<form id="op\.deviceInputForm" novalidate method="post" action="http:\/\/127\.0\.0\.1:\d+\/device">/)
           .expect(/<p class="red">There was an error processing your request<\/p>/);
 
         expect(spy.calledOnce).to.be.true;
@@ -253,7 +253,7 @@ describe('device interaction resume /device/:user_code/:uid/', () => {
         await this.agent.get(path)
           .accept('text/html')
           .expect(200)
-          .expect(/<form id="op\.deviceInputForm" novalidate method="post" action="\/device">/)
+          .expect(/<form id="op\.deviceInputForm" novalidate method="post" action="http:\/\/127\.0\.0\.1:\d+\/device">/)
           .expect(/<p class="red">There was an error processing your request<\/p>/);
 
         expect(spy.calledOnce).to.be.true;
@@ -279,7 +279,7 @@ describe('device interaction resume /device/:user_code/:uid/', () => {
         await this.agent.get(path)
           .accept('text/html')
           .expect(400)
-          .expect(/<form id="op\.deviceInputForm" novalidate method="post" action="\/device">/)
+          .expect(/<form id="op\.deviceInputForm" novalidate method="post" action="http:\/\/127\.0\.0\.1:\d+\/device">/)
           .expect(/<p class="red">There was an error processing your request<\/p>/);
 
         expect(spy.calledOnce).to.be.true;
@@ -446,7 +446,7 @@ describe('device interaction resume /device/:user_code/:uid/', () => {
 
         await this.agent.get(path)
           .accept('text/html')
-          .expect(/<form id="op\.deviceInputForm" novalidate method="post" action="\/device">/)
+          .expect(/<form id="op\.deviceInputForm" novalidate method="post" action="http:\/\/127\.0\.0\.1:\d+\/device">/)
           .expect(/<p class="red">The Sign-in request was interrupted<\/p>/);
 
         expect(spy.calledOnce).to.be.true;
