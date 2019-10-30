@@ -28,7 +28,6 @@ jobs:
     name: Node Tests + Coverage
     runs-on: ${{ matrix.os }}
     strategy:
-      fail-fast: false
       matrix:
         node-version:
           - 10.13.0
@@ -57,7 +56,6 @@ jobs:
   oidc-conformance:
     runs-on: ubuntu-latest
     strategy:
-      fail-fast: false
       matrix:
         script:
           - code
@@ -161,7 +159,6 @@ jobs:
       - oidc-conformance
       - fapi-conformance
     strategy:
-      fail-fast: false
       matrix:
         app:
           - radiant-refuge-93411
