@@ -1555,7 +1555,7 @@ export namespace errors {
   class LoginRequired extends OIDCProviderError {
     constructor(description?: string, detail?: string);
   }
-  class RedirectUriMismatch extends OIDCProviderError {
+  class InvalidRedirectUri extends OIDCProviderError {
     constructor(description?: string, detail?: string);
   }
   class RegistrationNotSupported extends OIDCProviderError {

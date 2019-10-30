@@ -396,7 +396,7 @@ describe('Pushed Request Object', () => {
               })
               .expect(400)
               .expect({
-                error: 'redirect_uri_mismatch',
+                error: 'invalid_redirect_uri',
                 error_description: "redirect_uri did not match any of the client's registered redirect_uris",
               });
           });

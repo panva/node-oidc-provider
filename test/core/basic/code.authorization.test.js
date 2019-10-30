@@ -8,7 +8,7 @@ const epochTime = require('../../../lib/helpers/epoch_time');
 const {
   InvalidRequest,
   InvalidClient,
-  RedirectUriMismatch,
+  InvalidRedirectUri,
 } = require('../../../lib/helpers/errors');
 
 const route = '/auth';
@@ -723,13 +723,13 @@ describe('BASIC code', () => {
             })
             .expect(() => {
               expect(spy.firstCall.calledWithMatch({}, { message: 'invalid_request' })).to.be.true;
-              expect(spy.secondCall.calledWithMatch({}, { message: 'redirect_uri_mismatch' })).to.be.true;
+              expect(spy.secondCall.calledWithMatch({}, { message: 'invalid_redirect_uri' })).to.be.true;
             })
             .expect(() => {
               expect(renderSpy.calledOnce).to.be.true;
               const renderArgs = renderSpy.args[0];
-              expect(renderArgs[1]).to.have.property('error', 'redirect_uri_mismatch');
-              expect(renderArgs[2]).to.be.an.instanceof(RedirectUriMismatch);
+              expect(renderArgs[1]).to.have.property('error', 'invalid_redirect_uri');
+              expect(renderArgs[2]).to.be.an.instanceof(InvalidRedirectUri);
             });
         });
 
@@ -761,13 +761,13 @@ describe('BASIC code', () => {
             })
             .expect(() => {
               expect(serverErrorSpy.calledWithMatch({}, { message: 'foobar' })).to.be.true;
-              expect(authErrorSpy.calledWithMatch({}, { message: 'redirect_uri_mismatch' })).to.be.true;
+              expect(authErrorSpy.calledWithMatch({}, { message: 'invalid_redirect_uri' })).to.be.true;
             })
             .expect(() => {
               expect(renderSpy.calledOnce).to.be.true;
               const renderArgs = renderSpy.args[0];
-              expect(renderArgs[1]).to.have.property('error', 'redirect_uri_mismatch');
-              expect(renderArgs[2]).to.be.an.instanceof(RedirectUriMismatch);
+              expect(renderArgs[1]).to.have.property('error', 'invalid_redirect_uri');
+              expect(renderArgs[2]).to.be.an.instanceof(InvalidRedirectUri);
             });
         });
       });
@@ -917,9 +917,9 @@ describe('BASIC code', () => {
             expect(emitSpy.calledOnce).to.be.true;
             expect(renderSpy.calledOnce).to.be.true;
             const renderArgs = renderSpy.args[0];
-            expect(renderArgs[1]).to.have.property('error', 'redirect_uri_mismatch');
+            expect(renderArgs[1]).to.have.property('error', 'invalid_redirect_uri');
             expect(renderArgs[1]).to.have.property('error_description', 'redirect_uri did not match any of the client\'s registered redirect_uris');
-            expect(renderArgs[2]).to.be.an.instanceof(RedirectUriMismatch);
+            expect(renderArgs[2]).to.be.an.instanceof(InvalidRedirectUri);
           });
       });
 
