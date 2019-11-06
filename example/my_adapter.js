@@ -175,10 +175,7 @@ class MyAdapter {
 
   /**
    *
-   * Return previously stored instance of Session by its uid reference property. You only
-   * need this method when issuing tokens bound to the end-user session. When a token is encountered
-   * that is bound to the session it will attempt to load the session by the stored reference on the
-   * token.
+   * Return previously stored instance of Session by its uid reference property.
    *
    * @return {Promise} Promise fulfilled with the stored session object (when found and not
    * dropped yet due to expiration) or falsy value when not found anymore. Rejected with error
