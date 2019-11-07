@@ -57,7 +57,7 @@
     "lru-cache": "^5.1.1",
     "nanoid": "^2.1.6",
     "object-hash": "^2.0.0",
-    "oidc-token-hash": "^3.0.2",
+    "oidc-token-hash": "^4.0.0",
     "raw-body": "^2.4.1"
   },
   "devDependencies": {
