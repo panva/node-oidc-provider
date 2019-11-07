@@ -2,6 +2,21 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+# [6.14.0](https://github.com/panva/node-oidc-provider/compare/v6.13.0...v6.14.0) (2019-11-07)
+
+
+### Bug Fixes
+
+* autosubmit logout when there's no accountId in the session ([c6b1770](https://github.com/panva/node-oidc-provider/commit/c6b1770e68224b7463c1fa5c64199f0cd38131af)), closes [#566](https://github.com/panva/node-oidc-provider/issues/566)
+* omit *_hash ID Token claims if signed with "none" (code flow only) ([5c540c0](https://github.com/panva/node-oidc-provider/commit/5c540c06ae11bb5ae62eb6f14b7cac66d09f2fa5))
+
+
+### Features
+
+* add interaction<>session consistency checks ([018255e](https://github.com/panva/node-oidc-provider/commit/018255ed3547667464f1f2837561db593c33bfe8))
+
+
+
 # [6.13.0](https://github.com/panva/node-oidc-provider/compare/v6.12.13...v6.13.0) (2019-10-31)
 
 
