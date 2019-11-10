@@ -2,6 +2,15 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [6.14.2](https://github.com/panva/node-oidc-provider/compare/v6.14.1...v6.14.2) (2019-11-10)
+
+
+### Bug Fixes
+
+* ignore httpOnly and domain configuration options for resume cookies ([952d68e](https://github.com/panva/node-oidc-provider/commit/952d68e3ea559b9b391c17d84573d7fad250f456)), closes [#574](https://github.com/panva/node-oidc-provider/issues/574)
+
+
+
 ## [6.14.1](https://github.com/panva/node-oidc-provider/compare/v6.14.0...v6.14.1) (2019-11-07)
 
 
