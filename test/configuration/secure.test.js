@@ -48,7 +48,11 @@ describe('x-forwarded-proto trust, detection and warnings', () => {
   context('when trusted', () => {
     before(bootstrap(__dirname, { protocol: 'https:' }));
     it('is trusted when proxy=true is set on the koa app', async function () {
-      this.provider.app.proxy = true;
+      if (this.app) {
+        this.app.proxy = true;
+      } else {
+        this.provider.app.proxy = true;
+      }
       await this.agent.get('/.well-known/openid-configuration', acceptUnauthorized)
         .set('x-forwarded-proto', 'https')
         .expect(200)

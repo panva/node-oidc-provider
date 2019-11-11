@@ -70,6 +70,7 @@
     "eslint": "^6.6.0",
     "eslint-config-airbnb-base": "^14.0.0",
     "eslint-plugin-import": "^2.18.2",
+    "express": "^4.17.1",
     "https-pem": "^2.0.0",
     "husky": "^3.0.9",
     "koa-body": "^4.1.1",

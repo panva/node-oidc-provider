@@ -42,14 +42,14 @@ describe('features.dPoP', () => {
       .expect({ error: 'invalid_request', error_description: '`DPoP` header not provided' });
 
     await this.agent.post('/me')
-      .set('DPoP', this.proof(`${this.provider.issuer}/me`, 'POST'))
+      .set('DPoP', this.proof(`${this.provider.issuer}${this.suitePath('/me')}`, 'POST'))
       .send({ access_token: dpop })
       .type('form')
       .expect(400)
       .expect({ error: 'invalid_request', error_description: '`DPoP` tokens must be provided via an authorization header' });
 
     await this.agent.get('/me')
-      .set('DPoP', this.proof(`${this.provider.issuer}/me`, 'GET'))
+      .set('DPoP', this.proof(`${this.provider.issuer}${this.suitePath('/me')}`, 'GET'))
       .set('Authorization', `Bearer ${dpop}`)
       .expect(400)
       .expect({ error: 'invalid_request', error_description: 'authorization header scheme must be `DPoP` when DPoP is used' });
@@ -138,7 +138,7 @@ describe('features.dPoP', () => {
 
     await this.agent.get('/me') // eslint-disable-line no-await-in-loop
       .set('DPoP', JWT.sign({
-        jti: 'foo', htm: 'GET', htu: `${this.provider.issuer}/me`, iat: epochTime() - 61,
+        jti: 'foo', htm: 'GET', htu: `${this.provider.issuer}${this.suitePath('/me')}`, iat: epochTime() - 61,
       }, key, { kid: false, iat: false, header: { typ: 'dpop+jwt', jwk: key } }))
       .set('Authorization', 'DPoP foo')
       .expect(400)
@@ -146,7 +146,7 @@ describe('features.dPoP', () => {
 
     await this.agent.get('/me') // eslint-disable-line no-await-in-loop
       .set('DPoP', JWT.sign({
-        jti: 'foo', htm: 'GET', htu: `${this.provider.issuer}/me`,
+        jti: 'foo', htm: 'GET', htu: `${this.provider.issuer}${this.suitePath('/me')}`,
       }, key, { kid: false, header: { typ: 'dpop+jwt', jwk: await JWK.generate('EC') } }))
       .set('Authorization', 'DPoP foo')
       .expect(400)
@@ -163,7 +163,7 @@ describe('features.dPoP', () => {
       at.setThumbprint('jkt', this.jwk);
 
       const dpop = await at.save();
-      const proof = this.proof(`${this.provider.issuer}/me`, 'GET');
+      const proof = this.proof(`${this.provider.issuer}${this.suitePath('/me')}`, 'GET');
 
       await this.agent.get('/me')
         .set('Authorization', `DPoP ${dpop}`)
@@ -189,7 +189,7 @@ describe('features.dPoP', () => {
 
       await this.agent.get('/me')
         .set('Authorization', `DPoP ${dpop}`)
-        .set('DPoP', this.proof(`${this.provider.issuer}/me`, 'GET', anotherJWK))
+        .set('DPoP', this.proof(`${this.provider.issuer}${this.suitePath('/me')}`, 'GET', anotherJWK))
         .expect({ error: 'invalid_token', error_description: 'invalid token provided' })
         .expect(401);
 
@@ -261,7 +261,7 @@ describe('features.dPoP', () => {
           device_code: this.dc,
         })
         .type('form')
-        .set('DPoP', this.proof(`${this.provider.issuer}/token`, 'POST'))
+        .set('DPoP', this.proof(`${this.provider.issuer}${this.suitePath('/token')}`, 'POST'))
         .expect(200);
 
       expect(spy).to.have.property('calledOnce', true);
@@ -286,7 +286,7 @@ describe('features.dPoP', () => {
           device_code: this.dc,
         })
         .type('form')
-        .set('DPoP', this.proof(`${this.provider.issuer}/token`, 'POST'))
+        .set('DPoP', this.proof(`${this.provider.issuer}${this.suitePath('/token')}`, 'POST'))
         .expect(200);
 
       expect(spy).to.have.property('calledOnce', true);
@@ -329,7 +329,7 @@ describe('features.dPoP', () => {
             redirect_uri: 'https://client.example.com/cb',
           })
           .type('form')
-          .set('DPoP', this.proof(`${this.provider.issuer}/token`, 'POST'))
+          .set('DPoP', this.proof(`${this.provider.issuer}${this.suitePath('/token')}`, 'POST'))
           .expect(200);
 
         expect(spy).to.have.property('calledOnce', true);
@@ -349,7 +349,7 @@ describe('features.dPoP', () => {
             redirect_uri: 'https://client.example.com/cb',
           })
           .type('form')
-          .set('DPoP', this.proof(`${this.provider.issuer}/token`, 'POST'))
+          .set('DPoP', this.proof(`${this.provider.issuer}${this.suitePath('/token')}`, 'POST'))
           .expect(({ body }) => {
             this.rt = body.refresh_token;
           });
@@ -366,7 +366,7 @@ describe('features.dPoP', () => {
             refresh_token: this.rt,
           })
           .type('form')
-          .set('DPoP', this.proof(`${this.provider.issuer}/token`, 'POST'))
+          .set('DPoP', this.proof(`${this.provider.issuer}${this.suitePath('/token')}`, 'POST'))
           .expect(200);
 
         expect(spy).to.have.property('calledOnce', true);
@@ -411,7 +411,7 @@ describe('features.dPoP', () => {
             redirect_uri: 'https://client.example.com/cb',
           })
           .type('form')
-          .set('DPoP', this.proof(`${this.provider.issuer}/token`, 'POST'))
+          .set('DPoP', this.proof(`${this.provider.issuer}${this.suitePath('/token')}`, 'POST'))
           .expect(200);
 
         expect(spy).to.have.property('calledOnce', true);
@@ -431,7 +431,7 @@ describe('features.dPoP', () => {
             redirect_uri: 'https://client.example.com/cb',
           })
           .type('form')
-          .set('DPoP', this.proof(`${this.provider.issuer}/token`, 'POST'))
+          .set('DPoP', this.proof(`${this.provider.issuer}${this.suitePath('/token')}`, 'POST'))
           .expect(({ body }) => {
             this.rt = body.refresh_token;
           });
@@ -448,7 +448,7 @@ describe('features.dPoP', () => {
             refresh_token: this.rt,
           })
           .type('form')
-          .set('DPoP', this.proof(`${this.provider.issuer}/token`, 'POST'))
+          .set('DPoP', this.proof(`${this.provider.issuer}${this.suitePath('/token')}`, 'POST'))
           .expect(200);
 
         expect(spy).to.have.property('calledOnce', true);
@@ -468,7 +468,7 @@ describe('features.dPoP', () => {
             grant_type: 'refresh_token',
             refresh_token: this.rt,
           })
-          .set('DPoP', this.proof(`${this.provider.issuer}/token`, 'POST', anotherJWK))
+          .set('DPoP', this.proof(`${this.provider.issuer}${this.suitePath('/token')}`, 'POST', anotherJWK))
           .type('form')
           .expect(400)
           .expect({ error: 'invalid_grant', error_description: 'grant request is invalid' });
@@ -487,7 +487,7 @@ describe('features.dPoP', () => {
       await this.agent.post('/token')
         .auth('client', 'secret')
         .send({ grant_type: 'client_credentials' })
-        .set('DPoP', this.proof(`${this.provider.issuer}/token`, 'POST'))
+        .set('DPoP', this.proof(`${this.provider.issuer}${this.suitePath('/token')}`, 'POST'))
         .type('form')
         .expect(200);
 

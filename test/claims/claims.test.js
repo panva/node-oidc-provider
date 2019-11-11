@@ -220,7 +220,7 @@ expire.setDate(expire.getDate() + 1);
           const sess = new this.provider.Interaction('resume', {});
           const keys = new KeyGrip(i(this.provider).configuration('cookies.keys'));
           if (grant) {
-            const cookie = `_interaction_resume=resume; path=/auth/resume; expires=${expire.toGMTString()}; httponly`;
+            const cookie = `_interaction_resume=resume; path=${this.suitePath('/auth/resume')}; expires=${expire.toGMTString()}; httponly`;
             cookies.push(cookie);
             const [pre, ...post] = cookie.split(';');
             cookies.push([`_interaction_resume.sig=${keys.sign(pre)}`, ...post].join(';'));

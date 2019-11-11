@@ -22,10 +22,10 @@ describe('logout endpoint', () => {
               const { state } = this.getSession();
 
               expect(state.secret).to.be.ok;
-              expect(state.postLogoutRedirectUri).to.equal(`${this.provider.issuer}/session/end/success`);
+              expect(state.postLogoutRedirectUri).to.equal(`${this.provider.issuer}${this.suitePath('/session/end/success')}`);
 
               expect(body).to.include(`input type="hidden" name="xsrf" value="${state.secret}"`);
-              expect(body).to.include(`form method="post" action="${this.provider.issuer}/session/end/confirm"`);
+              expect(body).to.include(`form method="post" action="${this.provider.issuer}${this.suitePath('/session/end/confirm')}"`);
             });
         });
       });
@@ -173,7 +173,7 @@ describe('logout endpoint', () => {
               .expect(200)
               .expect(() => {
                 const { state: { postLogoutRedirectUri } } = this.getSession();
-                expect(postLogoutRedirectUri).to.equal(`${this.provider.issuer}/session/end/success`);
+                expect(postLogoutRedirectUri).to.equal(`${this.provider.issuer}${this.suitePath('/session/end/success')}`);
               });
           });
         });

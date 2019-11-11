@@ -22,7 +22,7 @@ describe('registration features', () => {
           expect(response.body).to.have.property('require_auth_time', false);
           expect(response.body).to.have.property('grant_types').and.eql(['authorization_code']);
           expect(response.body).to.have.property('response_types').and.eql(['code']);
-          expect(response.body).to.have.property('registration_client_uri', `${this.provider.issuer}/reg/${response.body.client_id}`);
+          expect(response.body).to.have.property('registration_client_uri', `${this.provider.issuer}${this.suitePath(`/reg/${response.body.client_id}`)}`);
         });
     });
 
@@ -357,7 +357,7 @@ describe('registration features', () => {
           expect(response.body).to.have.property('require_auth_time', false);
           expect(response.body).to.have.property('grant_types').and.eql(['authorization_code']);
           expect(response.body).to.have.property('response_types').and.eql(['code']);
-          expect(response.body).to.have.property('registration_client_uri', `${this.provider.issuer}/reg/${response.body.client_id}`);
+          expect(response.body).to.have.property('registration_client_uri', `${this.provider.issuer}${this.suitePath(`/reg/${response.body.client_id}`)}`);
         });
     });
 

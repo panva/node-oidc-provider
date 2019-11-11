@@ -11,7 +11,8 @@ const flatten = require('lodash/flatten');
 const { agent: supertest } = require('supertest');
 const { expect } = require('chai');
 const Koa = require('koa');
-const mount = require('koa-mount');
+const Express = require('express');
+const koaMount = require('koa-mount');
 const base64url = require('base64url');
 const KeyGrip = require('keygrip'); // eslint-disable-line import/no-extraneous-dependencies
 
@@ -54,13 +55,26 @@ function readCookie(value) {
 
 const { port } = global.server.address();
 
-module.exports = function testHelper(dir, { config: base = path.basename(dir), mountTo = '', protocol = 'http:' } = {}) {
+module.exports = function testHelper(dir, {
+  config: base = path.basename(dir),
+  protocol = 'http:',
+  mountVia = process.env.MOUNT_VIA,
+  mountTo = mountVia ? process.env.MOUNT_TO || '/' : '/',
+} = {}) {
   const conf = path.format({ dir, base: `${base}.config.js` });
   let { config, client, clients } = require(conf); // eslint-disable-line
-  if (client && !clients) { clients = [client]; }
-  if (!config.findAccount) config.findAccount = Account.findAccount;
 
-  const provider = new Provider(`${protocol}//127.0.0.1:${port}${mountTo}`, {
+  if (client && !clients) {
+    clients = [client];
+  }
+
+  if (!config.findAccount) {
+    config.findAccount = Account.findAccount;
+  }
+
+  const issuerIdentifier = `${protocol}//127.0.0.1:${port}`;
+
+  const provider = new Provider(issuerIdentifier, {
     clients,
     jwks: global.keystore.toJWKS(true),
     adapter: TestAdapter,
@@ -372,23 +386,42 @@ module.exports = function testHelper(dir, { config: base = path.basename(dir), m
       wrap,
     });
 
-    return new Promise((resolve, reject) => {
-      Promise.resolve().then(() => {
-        if (mountTo) {
-          const app = new Koa();
-          app.use(mount(mountTo, provider.app));
-          global.server.on('request', app.callback());
-        } else {
-          global.server.on('request', provider.callback);
-        }
+    if (!mountVia) {
+      global.server.on('request', provider.callback);
+    } else if (mountVia === 'koa') {
+      const app = new Koa();
+      app.use(koaMount(mountTo, provider.app));
+      global.server.on('request', app.callback());
+      this.app = app;
+    } else if (mountVia === 'express') {
+      const app = new Express();
+      app.use(mountTo, provider.callback);
+      global.server.on('request', app);
+    }
 
-        agent = supertest(global.server);
-        this.agent = agent;
-      }, reject).then(resolve);
-    }).catch((err) => {
-      console.error(err); // eslint-disable-line no-console
-      throw err;
-    });
+    agent = supertest(global.server);
+
+    if (mountTo !== '/') {
+      ['get', 'post', 'put', 'del', 'options', 'trace'].forEach((method) => {
+        const orig = agent[method];
+        agent[method] = function (route, ...args) {
+          if (route.startsWith(`${mountTo}/`)) {
+            return orig.call(this, route, ...args);
+          }
+          return orig.call(this, `${mountTo}${route}`, ...args);
+        };
+      });
+    }
+
+    this.suitePath = (unprefixed) => {
+      if (mountTo === '/') {
+        return unprefixed;
+      }
+
+      return `${mountTo}${unprefixed}`;
+    };
+
+    this.agent = agent;
   };
 };
 

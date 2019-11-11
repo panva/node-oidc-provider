@@ -9,10 +9,16 @@ const sample = require('lodash/sample');
 const runtimeSupport = require('../lib/helpers/runtime_support');
 
 const FORMAT_REGEXP = /^--format=([\w-]+)$/;
+const MOUNT_REGEXP = /^--mount$/;
+let mount = false;
+
 const formats = [];
 process.argv.forEach((arg) => {
   if (FORMAT_REGEXP.test(arg)) {
     formats.push(RegExp.$1);
+  }
+  if (MOUNT_REGEXP.test(arg)) {
+    mount = true;
   }
 });
 
@@ -39,7 +45,7 @@ console.warn = function (...args) {
   if (!args[0].includes('WARNING: ')) warn.apply(this, args);
 };
 
-async function run() {
+async function singleRun() {
   clearRequireCache();
   const jose = require('jose'); // eslint-disable-line global-require
   global.keystore = new jose.JWKS.KeyStore();
@@ -55,6 +61,10 @@ async function run() {
   }
   DEFAULTS.formats.AccessToken = this.format;
   DEFAULTS.formats.ClientCredentials = this.format;
+
+  process.env.MOUNT_VIA = this.mountVia || '';
+  process.env.MOUNT_TO = this.mountTo || '/';
+
   await new Promise((resolve) => {
     global.server = createServer().listen(0);
     global.server.once('listening', resolve);
@@ -70,23 +80,51 @@ async function run() {
       mocha.forbidPending(); // force suite fail on encountered skip test
     }
 
+    const format = typeof this.format === 'string' ? this.format : 'dynamic';
+
+    const mountAddendum = this.mountVia ? ` mounted using ${this.mountVia === 'koa' ? 'koa-mount' : 'express'} to ${this.mountTo}` : '';
+    console.log('\x1b[32m%s\x1b[0m', `Running suite with ${format}${mountAddendum}`);
+
     mocha.run((failures) => {
       if (!failures) {
-        passed.push(`Suite passed with ${typeof this.format === 'string' ? this.format : 'dynamic'} format`);
+        passed.push(`Suite passed with ${format} format${mountAddendum}`);
         global.server.close(resolve);
       } else {
-        reject(new SuiteFailedError(`Suite failed with ${this.format} format`));
+        reject(new SuiteFailedError(`Suite failed with ${format} format${mountAddendum}`));
       }
     });
   });
 }
 
+function run() {
+  let promise = singleRun.call(this);
+
+  if ('CI' in process.env || mount) {
+    promise = promise.then(() => singleRun.call({ ...this, mountTo: '/', mountVia: 'koa' }));
+    promise = promise.then(() => singleRun.call({ ...this, mountTo: '/', mountVia: 'express' }));
+    promise = promise.then(() => singleRun.call({ ...this, mountTo: '/oidc', mountVia: 'koa' }));
+    promise = promise.then(() => singleRun.call({ ...this, mountTo: '/oidc', mountVia: 'express' }));
+  }
+
+  return promise;
+}
+
 (async () => {
-  if (formats.includes('opaque')) await run.call({ format: 'opaque' });
-  if (formats.includes('jwt')) await run.call({ format: 'jwt' });
-  if (formats.includes('jwt-ietf')) await run.call({ format: 'jwt-ietf' });
-  if (formats.includes('paseto')) await run.call({ format: 'paseto' });
-  if (formats.includes('dynamic')) await run.call({ format: () => sample(['opaque', 'jwt', 'jwt-ietf', runtimeSupport.EdDSA ? 'paseto' : undefined].filter(Boolean)) });
+  if (formats.includes('opaque')) {
+    await run.call({ format: 'opaque' });
+  }
+  if (formats.includes('jwt')) {
+    await run.call({ format: 'jwt' });
+  }
+  if (formats.includes('jwt-ietf')) {
+    await run.call({ format: 'jwt-ietf' });
+  }
+  if (formats.includes('paseto')) {
+    await run.call({ format: 'paseto' });
+  }
+  if (formats.includes('dynamic')) {
+    await run.call({ format: () => sample(['opaque', 'jwt', 'jwt-ietf', runtimeSupport.EdDSA ? 'paseto' : undefined].filter(Boolean)) });
+  }
   passed.forEach((pass) => console.log('\x1b[32m%s\x1b[0m', pass));
 })()
   .catch((error) => {

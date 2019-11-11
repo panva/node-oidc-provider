@@ -149,7 +149,9 @@ describe('devInteractions', () => {
         .query(auth)
         .then((response) => response.headers.location);
 
-      const interaction = this.TestAdapter.for('Interaction').syncFind(url.split('/')[2]);
+      const split = url.split('/');
+      const uid = split[split.length - 1];
+      const interaction = this.TestAdapter.for('Interaction').syncFind(uid);
       interaction.prompt.name = 'notimplemented';
 
       return this.agent.get(url).expect(501);
@@ -342,7 +344,7 @@ describe('resume after consent', () => {
 
     expect(grant).to.be.ok;
 
-    const cookie = `_interaction_resume=resume; path=/auth/resume; expires=${expire.toGMTString()}; httponly`;
+    const cookie = `_interaction_resume=resume; path=${this.suitePath('/auth/resume')}; expires=${expire.toGMTString()}; httponly`;
     cookies.push(cookie);
     let [pre, ...post] = cookie.split(';');
     cookies.push([`_interaction_resume.sig=${keys.sign(pre)}`, ...post].join(';'));
