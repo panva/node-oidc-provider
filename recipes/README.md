@@ -18,7 +18,7 @@ If you or your business use oidc-provider, please consider becoming a [sponsor][
 - [Claim configuration](claim_configuration.md)
 - [Client-based CORS origins](client_based_origins.md)
 - [Decentralized claims](decentralized_claims.md)
-- [Redirect URI wilcards](redirect_uri_wildcards.md)
+- [Redirect URI wildcards](redirect_uri_wildcards.md)
 - ... got something worthy of being here? Submit a PR with a new recipe to help others.
 
 [support-sponsor]: https://github.com/sponsors/panva
