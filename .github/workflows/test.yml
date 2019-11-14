@@ -21,7 +21,7 @@ jobs:
       - uses: actions/setup-node@v1
         with:
           node-version: 12
-      - run: npx npm-install-retry
+      - run: npx panva/npm-install-retry
       - run: npm run lint
 
   test:
@@ -45,7 +45,7 @@ jobs:
       - uses: actions/setup-node@v1
         with:
           node-version: ${{ matrix.node-version }}
-      - run: npx npm-install-retry
+      - run: npx panva/npm-install-retry
       - run: npm run coverage
         env:
           CI: true
@@ -73,7 +73,7 @@ jobs:
       - uses: actions/setup-node@v1
         with:
           node-version: 12
-      - run: npx npm-install-retry
+      - run: npx panva/npm-install-retry
       - run: node certification/docker &
         env:
           ISSUER: https://172.17.0.1:3000
@@ -86,7 +86,7 @@ jobs:
         run: |
             cd oidc-provider-conformance-tests
             git checkout local-certification
-            npx npm-install-retry
+            npx panva/npm-install-retry
             npm run ${{ matrix.script }}
 
   fapi-conformance:
@@ -106,7 +106,7 @@ jobs:
       - uses: actions/setup-node@v1
         with:
           node-version: 12
-      - run: npx npm-install-retry
+      - run: npx panva/npm-install-retry
       - run: node certification/fapi &
         env:
           ISSUER: https://172.17.0.1:3000
