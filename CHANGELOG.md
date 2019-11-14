@@ -2,6 +2,21 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+# [6.15.0](https://github.com/panva/node-oidc-provider/compare/v6.14.2...v6.15.0) (2019-11-14)
+
+
+### Bug Fixes
+
+* regression introduced in 58f7348 ([4738a8b](https://github.com/panva/node-oidc-provider/commit/4738a8b68c2cbc6c15a1352d2c22ebba7bda839a))
+
+
+### Features
+
+* add jwsreq Accept value to request_uri resolver ([cec4016](https://github.com/panva/node-oidc-provider/commit/cec4016e001d510e2ca861b4fa4f833d7ddb10a4))
+* expose client schema invalidate(err, code) to enable customization ([d672ee8](https://github.com/panva/node-oidc-provider/commit/d672ee83b2daccfc5ca6f59ca996425ed4e410f5))
+
+
+
 ## [6.14.2](https://github.com/panva/node-oidc-provider/compare/v6.14.1...v6.14.2) (2019-11-10)
 
 
