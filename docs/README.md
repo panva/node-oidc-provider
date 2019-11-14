@@ -715,7 +715,7 @@ _**default value**_:
 
 [draft-fett-oauth-dpop-03](https://tools.ietf.org/html/draft-fett-oauth-dpop-03) - OAuth 2.0 Demonstration of Proof-of-Possession at the Application Layer  
 
-Enables `DPoP` - mechanism for sender-constraining tokens via a proof-of-possession mechanism on the application level  
+Enables `DPoP` - mechanism for sender-constraining tokens via a proof-of-possession mechanism on the application level. Example browser DPoP Token generation [here](https://gist.github.com/panva/555a29644eed956ca73831b19fa06a6f).  
 
 
 _**default value**_:
