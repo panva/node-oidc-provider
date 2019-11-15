@@ -2,6 +2,15 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [6.15.2](https://github.com/panva/node-oidc-provider/compare/v6.15.1...v6.15.2) (2019-11-15)
+
+
+### Bug Fixes
+
+* ensure BaseModel descendants have an exp property ([22cc547](https://github.com/panva/node-oidc-provider/commit/22cc547ffb45503cf2fc4357958325e0f5ed4b2f)), closes [#580](https://github.com/panva/node-oidc-provider/issues/580)
+
+
+
 ## [6.15.1](https://github.com/panva/node-oidc-provider/compare/v6.15.0...v6.15.1) (2019-11-14)
 
 
