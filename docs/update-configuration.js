@@ -246,7 +246,7 @@ const props = [
         case 'object': {
           const output = inspect(value, { compact: false, sorted: true });
           append(expand(output).split('\n').map((line) => {
-            line = line.replace(/(\[(?:Async)?Function: \w+\],)/, '$1 // see expanded details below');
+            line = line.replace(/(\[(?:Async)?Function: \w+\],?)/, '$1 // see expanded details below');
             return line;
           }).join('\n'));
           break;

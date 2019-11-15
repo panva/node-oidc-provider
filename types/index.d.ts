@@ -897,7 +897,7 @@ export interface Configuration {
     };
     dPoP?: { enabled?: boolean, iatTolerance?: number, ack?: 'id-03' },
 
-    sessionManagement?: { enabled?: boolean, keepHeaders?: boolean, ack?: 28 },
+    sessionManagement?: { enabled?: boolean, keepHeaders?: boolean, ack?: 28, scriptNonce?: (ctx: KoaContextWithOIDC) => string },
 
     backchannelLogout?: { enabled?: boolean, ack?: 4 },
 
@@ -905,7 +905,7 @@ export interface Configuration {
 
     fapiRW?: { enabled?: boolean, ack?: 'id02-rev.3' },
 
-    webMessageResponseMode?: { enabled?: boolean, ack?: 'id-00' },
+    webMessageResponseMode?: { enabled?: boolean, ack?: 'id-00', scriptNonce?: (ctx: KoaContextWithOIDC) => string },
 
     jwtIntrospection?: { enabled?: boolean, ack?: 8 },
 

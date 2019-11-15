@@ -755,7 +755,7 @@ _**default value**_:
   mask: '****-****',
   successSource: [AsyncFunction: successSource], // see expanded details below
   userCodeConfirmSource: [AsyncFunction: userCodeConfirmSource], // see expanded details below
-  userCodeInputSource: [AsyncFunction: userCodeInputSource]
+  userCodeInputSource: [AsyncFunction: userCodeInputSource] // see expanded details below
 }
 ```
 <details>
@@ -975,7 +975,7 @@ _**default value**_:
 ```js
 {
   enabled: false,
-  logoutPendingSource: [AsyncFunction: logoutPendingSource]
+  logoutPendingSource: [AsyncFunction: logoutPendingSource] // see expanded details below
 }
 ```
 <details>
@@ -1275,7 +1275,7 @@ _**default value**_:
   idFactory: [Function: idFactory], // see expanded details below
   initialAccessToken: false,
   policies: undefined,
-  secretFactory: [Function: secretFactory]
+  secretFactory: [Function: secretFactory] // see expanded details below
 }
 ```
 <details>
@@ -1698,7 +1698,8 @@ _**default value**_:
 ```js
 {
   enabled: false,
-  keepHeaders: false
+  keepHeaders: false,
+  scriptNonce: [Function: scriptNonce] // see expanded details below
 }
 ```
 <details>
@@ -1716,6 +1717,18 @@ _**recommendation**_: Only enable this if you know what you're doing either in a
 _**default value**_:
 ```js
 false
+```
+
+#### scriptNonce
+
+When using `nonce-{random}` CSP policy use this helper function to resolve a nonce to add to the <script> tags in the `check_session_iframe` html source.  
+
+
+_**default value**_:
+```js
+scriptNonce(ctx) {
+  return undefined;
+}
 ```
 
 </details>
@@ -1745,9 +1758,28 @@ Enables `web_message` response mode.
 _**default value**_:
 ```js
 {
-  enabled: false
+  enabled: false,
+  scriptNonce: [Function: scriptNonce] // see expanded details below
 }
 ```
+<details>
+  <summary>(Click to expand) features.webMessageResponseMode options details</summary>
+  <br>
+
+
+#### scriptNonce
+
+When using `nonce-{random}` CSP policy use this helper function to resolve a nonce to add to the <script> tag in the rendered web_message response mode html source  
+
+
+_**default value**_:
+```js
+scriptNonce(ctx) {
+  return undefined;
+}
+```
+
+</details>
 
 ### acrValues
 
@@ -2146,7 +2178,7 @@ _**default value**_:
     jwt: undefined,
     paseto: undefined
   },
-  jwtAccessTokenSigningAlg: [AsyncFunction: jwtAccessTokenSigningAlg]
+  jwtAccessTokenSigningAlg: [AsyncFunction: jwtAccessTokenSigningAlg] // see expanded details below
 }
 ```
 <a name="formats-to-enable-jwt-access-tokens"></a><details>
