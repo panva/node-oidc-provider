@@ -531,7 +531,7 @@ Function used to load an account and retrieve its available claims. The return v
 
 _**default value**_:
 ```js
-async findAccount(ctx, sub, token) {
+async function findAccount(ctx, sub, token) {
   // @param ctx - koa request context
   // @param sub {string} - account identifier (subject)
   // @param token - is a reference to the token used for which a given account is being loaded,
@@ -782,7 +782,7 @@ Function used to extract details from the device authorization endpoint request.
 
 _**default value**_:
 ```js
-deviceInfo(ctx) {
+function deviceInfo(ctx) {
   return {
     ip: ctx.ip,
     ua: ctx.get('user-agent'),
@@ -807,7 +807,7 @@ HTML source rendered when device code feature renders a success page for the Use
 
 _**default value**_:
 ```js
-async successSource(ctx) {
+async function successSource(ctx) {
   // @param ctx - koa request context
   const {
     clientId, clientName, clientUri, initiateLoginUri, logoUri, policyUri, tosUri,
@@ -834,7 +834,7 @@ HTML source rendered when device code feature renders an a confirmation prompt f
 
 _**default value**_:
 ```js
-async userCodeConfirmSource(ctx, form, client, deviceInfo, userCode) {
+async function userCodeConfirmSource(ctx, form, client, deviceInfo, userCode) {
   // @param ctx - koa request context
   // @param form - form source (id="op.deviceConfirmForm") to be embedded in the page and
   //   submitted by the End-User.
@@ -877,7 +877,7 @@ HTML source rendered when device code feature renders an input prompt for the Us
 
 _**default value**_:
 ```js
-async userCodeInputSource(ctx, form, out, err) {
+async function userCodeInputSource(ctx, form, out, err) {
   // @param ctx - koa request context
   // @param form - form source (id="op.deviceInputForm") to be embedded in the page and submitted
   //   by the End-User.
@@ -990,7 +990,7 @@ HTML source rendered when there are pending front-channel logout iframes to be c
 
 _**default value**_:
 ```js
-async logoutPendingSource(ctx, frames, postLogoutRedirectUri) {
+async function logoutPendingSource(ctx, frames, postLogoutRedirectUri) {
   ctx.body = `<!DOCTYPE html>
 ead>
 <title>Logout</title>
@@ -1290,7 +1290,7 @@ Function used to generate random client identifiers during dynamic client regist
 
 _**default value**_:
 ```js
-idFactory() {
+function idFactory() {
   return nanoid();
 }
 ```
@@ -1435,7 +1435,7 @@ Function used to generate random client secrets during dynamic client registrati
 
 _**default value**_:
 ```js
-secretFactory() {
+function secretFactory() {
   return base64url.encodeBuffer(crypto.randomBytes(64)); // 512 base64url random bits
 }
 ```
@@ -1665,7 +1665,7 @@ _**recommendation**_: Only allow pre-registered resource values, to pre-register
 
 _**default value**_:
 ```js
-async allowedPolicy(ctx, resources, client) {
+async function allowedPolicy(ctx, resources, client) {
   return true;
 }
 ```
@@ -1726,7 +1726,7 @@ When using `nonce-{random}` CSP policy use this helper function to resolve a non
 
 _**default value**_:
 ```js
-scriptNonce(ctx) {
+function scriptNonce(ctx) {
   return undefined;
 }
 ```
@@ -1774,7 +1774,7 @@ When using `nonce-{random}` CSP policy use this helper function to resolve a non
 
 _**default value**_:
 ```js
-scriptNonce(ctx) {
+function scriptNonce(ctx) {
   return undefined;
 }
 ```
@@ -1802,7 +1802,7 @@ Function used to set an audience to issued Access Tokens. The return value shoul
 
 _**default value**_:
 ```js
-async audiences(ctx, sub, token, use) {
+async function audiences(ctx, sub, token, use) {
   // @param ctx   - koa request context
   // @param sub   - account identifier (subject)
   // @param token - the token to which these additional audiences will be passed to
@@ -1837,7 +1837,7 @@ Function used to check whether a given CORS request should be allowed based on t
 
 _**default value**_:
 ```js
-clientBasedCORS(ctx, origin, client) {
+function clientBasedCORS(ctx, origin, client) {
   return true;
 }
 ```
@@ -2035,7 +2035,7 @@ Function used to decide whether the given authorization code/ device code or imp
 
 _**default value**_:
 ```js
-async expiresWithSession(ctx, token) {
+async function expiresWithSession(ctx, token) {
   return !token.scopes.has('offline_access');
 }
 ```
@@ -2048,7 +2048,7 @@ Function used to get additional access token claims when it is being issued. The
 
 _**default value**_:
 ```js
-async extraAccessTokenClaims(ctx, token) {
+async function extraAccessTokenClaims(ctx, token) {
   return undefined;
 }
 ```
@@ -2091,7 +2091,7 @@ validator function that will be executed in order once for every property define
 
 _**default value**_:
 ```js
-validator(key, value, metadata, ctx) {
+function validator(key, value, metadata, ctx) {
   // @param key - the client metadata property name
   // @param value - the property value
   // @param metadata - the current accumulated client metadata
@@ -2322,7 +2322,7 @@ Function used to resolve a JWT Access Token signing algorithm. The resolved algo
 
 _**default value**_:
 ```js
-async jwtAccessTokenSigningAlg(ctx, token, client) {
+async function jwtAccessTokenSigningAlg(ctx, token, client) {
   if (client && client.idTokenSignedResponseAlg !== 'none' && !client.idTokenSignedResponseAlg.startsWith('HS')) {
     return client.idTokenSignedResponseAlg;
   }
@@ -2338,7 +2338,7 @@ Function called whenever calls to an external HTTP(S) resource are being made. U
 
 _**default value**_:
 ```js
-httpOptions(options) {
+function httpOptions(options) {
   options.followRedirect = false;
   options.headers['User-Agent'] = 'oidc-provider/${VERSION} (${ISSUER_IDENTIFIER})';
   options.retry = 0;
@@ -2720,7 +2720,7 @@ Function used to determine where to redirect User-Agent for necessary interactio
 
 _**default value**_:
 ```js
-async url(ctx, interaction) {
+async function url(ctx, interaction) {
   return `/interaction/${ctx.oidc.uid}`;
 }
 ```
@@ -2749,7 +2749,7 @@ Function used to decide whether a refresh token will be issued or not
 
 _**default value**_:
 ```js
-async issueRefreshToken(ctx, client, code) {
+async function issueRefreshToken(ctx, client, code) {
   return client.grantTypeAllowed('refresh_token') && code.scopes.has('offline_access');
 }
 ```
@@ -2778,7 +2778,7 @@ HTML source rendered when session management feature renders a confirmation prom
 
 _**default value**_:
 ```js
-async logoutSource(ctx, form) {
+async function logoutSource(ctx, form) {
   // @param ctx - koa request context
   // @param form - form source (id="op.logoutForm") to be embedded in the page and submitted by
   //   the End-User
@@ -2808,7 +2808,7 @@ _**recommendation**_: Since this might be called several times in one request wi
 
 _**default value**_:
 ```js
-async pairwiseIdentifier(ctx, accountId, client) {
+async function pairwiseIdentifier(ctx, accountId, client) {
   return crypto.createHash('sha256')
     .update(client.sectorIdentifier)
     .update(accountId)
@@ -2838,7 +2838,7 @@ HTML source rendered when session management feature concludes a logout but ther
 
 _**default value**_:
 ```js
-async postLogoutSuccessSource(ctx) {
+async function postLogoutSuccessSource(ctx) {
   // @param ctx - koa request context
   const {
     clientId, clientName, clientUri, initiateLoginUri, logoUri, policyUri, tosUri,
@@ -2866,7 +2866,7 @@ Function used to present errors to the User-Agent
 
 _**default value**_:
 ```js
-async renderError(ctx, out, error) {
+async function renderError(ctx, out, error) {
   ctx.type = 'html';
   ctx.body = `<!DOCTYPE html>
 <head>
@@ -2947,7 +2947,7 @@ Configures if and how the OP rotates refresh tokens after they are used. Support
 
 _**default value**_:
 ```js
-rotateRefreshToken(ctx) {
+function rotateRefreshToken(ctx) {
   const { RefreshToken: refreshToken, Client: client } = ctx.oidc.entities;
   // cap the maximum amount of time a refresh token can be
   // rotated for up to 1 year, afterwards its TTL is final
@@ -3059,7 +3059,7 @@ _**default value**_:
   ClientCredentials: 600,
   DeviceCode: 600,
   IdToken: 3600,
-  RefreshToken: function (ctx, token, client) {
+  RefreshToken: function RefreshToken(ctx, token, client) {
     if (
       ctx && ctx.oidc.entities.RotatedRefreshToken
       && client.applicationType === 'web'

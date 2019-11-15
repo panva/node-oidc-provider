@@ -12,7 +12,6 @@ const values = require('../lib/helpers/defaults');
 
 values.ttl.RefreshToken[inspect.custom] = () => (
   values.ttl.RefreshToken.toString()
-    .replace('RefreshToken(', 'function (')
     .replace(/ {6}/g, '  ')
     .replace(/\s+}$/, '\n}')
 );
