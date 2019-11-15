@@ -100,6 +100,7 @@ jobs:
           cd conformance-suite
           git checkout release-v3.2.7
           sed -i -e 's/localhost/localhost.emobix.co.uk/g' src/main/resources/application.properties
+          sed -i -e 's/-B/-B -DskipTests=true/g' builder-compose.yml
           docker-compose -f builder-compose.yml run builder
           docker-compose -f docker-compose-dev.yml up -d
           while ! curl -skfail https://localhost.emobix.co.uk:8443/api/runner/available >/dev/null; do sleep 2; done
