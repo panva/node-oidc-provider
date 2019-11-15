@@ -6,6 +6,9 @@ map.del = function (...args) {
   this.delete(...args);
 };
 
+const { expect } = require('chai');
+
+const epochTime = require('../lib/helpers/epoch_time');
 const MemoryAdapter = require('../lib/adapters/memory_adapter');
 
 MemoryAdapter.setStorage(map);
@@ -44,6 +47,15 @@ class TestAdapter extends MemoryAdapter {
     const found = map.get(this.key(id));
     if (!found) return;
     Object.assign(found, update);
+  }
+
+  async upsert(id, payload, expiresIn) {
+    if (this.model !== 'RegistrationAccessToken' && this.model !== 'InitialAccessToken' && this.model !== 'Client') {
+      expect(payload).to.have.property('exp').that.is.a('number').and.is.finite;
+      expect(payload.exp).to.be.closeTo(expiresIn + epochTime(), 1);
+    }
+
+    return super.upsert(id, payload, expiresIn);
   }
 }
 
