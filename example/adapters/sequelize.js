@@ -70,7 +70,7 @@ class SequelizeAdapter {
   }
 
   async findByUid(uid) {
-    const found=await this.model.findOne({where: {data:{uid}}});
+    const found = await this.model.findOne({ where: { data: { uid } } });
     if (!found) return undefined;
     return {
       ...found.data,
@@ -79,16 +79,14 @@ class SequelizeAdapter {
   }
 
   async destroy(id) {
-    await this.model.destroy({ where: { id } });    
+    await this.model.destroy({ where: { id } });
   }
 
   async consume(id) {
     const found = await this.model.findByPk(id);
-    if (!found)
-      return undefined;
+    if (!found) return undefined;
     await found.update({ consumedAt: new Date() });
-    if (!found)
-      return undefined;
+    if (!found) return undefined;
     return {
       ...found.data,
       consumedAt: found.consumedAt,
