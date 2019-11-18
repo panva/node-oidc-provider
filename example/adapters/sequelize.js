@@ -12,13 +12,6 @@ const sequelize = new Sequelize('database', 'username', 'password', {
   storage: 'db.sqlite',
 });
 
-const grantable = new Set([
-  'AccessToken',
-  'AuthorizationCode',
-  'RefreshToken',
-  'DeviceCode',
-]);
-
 const models = [
   'Session',
   'AccessToken',
@@ -49,50 +42,70 @@ class SequelizeAdapter {
   }
 
   async upsert(id, data, expiresIn) {
-    await this.model.upsert({
-      id,
-      data,
-      ...(data.grantId ? { grantId: data.grantId } : undefined),
-      ...(data.userCode ? { userCode: data.userCode } : undefined),
-      ...(expiresIn ? { expiresAt: new Date(Date.now() + (expiresIn * 1000)) } : undefined),
-    });
-  }
-
-  async find(id) {
-    return this.model.findByPrimary(id).then((found) => {
-      if (!found) return undefined;
-      return {
-        ...found.data,
-        ...(found.consumedAt ? { consumed: true } : undefined),
-      };
-    });
-  }
-
-  async findByUserCode(userCode) {
-    return this.model.findOne({ where: { userCode } }).then((found) => {
-      if (!found) return undefined;
-      return {
-        ...found.data,
-        ...(found.consumedAt ? { consumed: true } : undefined),
-      };
-    });
-  }
-
-  async destroy(id) {
-    if (grantable.has(this.name)) {
-      const { grantId } = await this.model.findByPrimary(id);
-      const promises = [];
-      grantable.forEach((name) => {
-        promises.push(models.get(name).destroy({ where: { grantId } }));
+    try {
+      await this.model.upsert({
+        id,
+        data,
+        ...(data.grantId ? { grantId: data.grantId } : undefined),
+        ...(data.userCode ? { userCode: data.userCode } : undefined),
+        ...(expiresIn ? { expiresAt: new Date(Date.now() + (expiresIn * 1000)) } : undefined),
       });
-      await Promise.all(promises);
-    } else {
-      await this.model.destroy({ where: { id } });
+    } catch (error) {
+      throw error
     }
   }
 
+  async find(id) {
+    try {
+      const found = await this.model.findByPk(id);
+      if (!found) return undefined;
+      return {
+        ...found.data,
+        ...(found.consumedAt ? { consumed: true } : undefined),
+      };      
+    } catch (error) {
+      throw error
+    }
+  }
+
+  async findByUserCode(userCode) {
+    try {
+      const found = await this.model.findOne({ where: { userCode } });
+      if (!found) return undefined;
+      return {
+        ...found.data,
+        ...(found.consumedAt ? { consumed: true } : undefined),
+      };  
+    } catch (error) {
+      throw error
+    }
+  }
+
+  async destroy(id) {
+    try {
+      await this.model.destroy({ where: { id } });
+    } catch (error) {
+      throw error
+    }    
+  }
+
   async consume(id) {
-    await this.model.update({ consumedAt: new Date() }, { where: { id } });
+    try {
+      await this.model.update({ consumedAt: new Date() }, { where: { id } });
+    } catch (error) {
+      throw error
+    }
+  }
+
+  //  AccessToken, RefreshToken, AuthorizationCode & DeviceCode adapter instances expect to have
+  //  `revokeByGrantId` method which accepts a string parameter `grantId` and revokes all tokens
+  //  with its matching value in the `grantId` property
+  async revokeByGrantId(grantId) {
+    try {
+      await this.model.destroy({ where: { grantId } });
+    } catch (error) {
+      throw error;
+    }
   }
 
   static async connect() {
