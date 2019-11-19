@@ -97,14 +97,7 @@ class SequelizeAdapter {
   }
 
   async consume(id) {
-    const found = await this.model.findByPk(id);
-    if (!found) return undefined;
-    await found.update({ consumedAt: new Date() });
-    if (!found) return undefined;
-    return {
-      ...found.data,
-      consumedAt: found.consumedAt,
-    };
+    await this.model.update({ consumedAt: new Date() }, { where: { id } });
   }
 
   async revokeByGrantId(grantId) {
