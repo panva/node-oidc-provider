@@ -6,6 +6,7 @@
  * for DeviceCode model. uid should be additionaly indexed for Session model.
 */
 
+// npm i sequelize@^5.21.2
 const Sequelize = require('sequelize'); // eslint-disable-line import/no-unresolved
 
 const sequelize = new Sequelize('databaseName', 'username', 'password', {
