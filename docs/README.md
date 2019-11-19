@@ -1248,7 +1248,7 @@ false
 
 ### features.pushedAuthorizationRequests
 
-[draft-lodderstedt-oauth-par-00](https://tools.ietf.org/html/draft-lodderstedt-oauth-par-00) - OAuth 2.0 Pushed Authorization Requests  
+[draft-lodderstedt-oauth-par-01](https://tools.ietf.org/html/draft-lodderstedt-oauth-par-01) - OAuth 2.0 Pushed Authorization Requests  
 
 Enables the use `pushed_authorization_request_endpoint` defined by the Pushed Authorization Requests draft.   
   

@@ -845,21 +845,37 @@ export interface Configuration {
   extraParams?: string[];
 
   features?: {
-    devInteractions?: { enabled?: boolean };
+    devInteractions?: {
+      enabled?: boolean
+    };
 
-    claimsParameter?: { enabled?: boolean };
+    claimsParameter?: {
+      enabled?: boolean
+    };
 
-    clientCredentials?: { enabled?: boolean };
+    clientCredentials?: {
+      enabled?: boolean
+    };
 
-    introspection?: { enabled?: boolean };
+    introspection?: {
+      enabled?: boolean
+    };
 
-    revocation?: { enabled?: boolean };
+    revocation?: {
+      enabled?: boolean
+    };
 
-    userinfo?: { enabled?: boolean };
+    userinfo?: {
+      enabled?: boolean
+    };
 
-    jwtUserinfo?: { enabled?: boolean };
+    jwtUserinfo?: {
+      enabled?: boolean
+    };
 
-    encryption?: { enabled?: boolean };
+    encryption?: {
+      enabled?: boolean
+    };
 
     registration?: {
       enabled?: boolean;
@@ -895,27 +911,59 @@ export interface Configuration {
         whitelist?: string[] | Set<string>;
       };
     };
-    dPoP?: { enabled?: boolean, iatTolerance?: number, ack?: 'id-03' },
 
-    sessionManagement?: { enabled?: boolean, keepHeaders?: boolean, ack?: 28, scriptNonce?: (ctx: KoaContextWithOIDC) => string },
+    dPoP?: {
+      enabled?: boolean,
+      iatTolerance?: number,
+      ack?: 'id-03' | 'individual-draft-03'
+    },
 
-    backchannelLogout?: { enabled?: boolean, ack?: 4 },
+    sessionManagement?: {
+      enabled?: boolean,
+      keepHeaders?: boolean,
+      ack?: 28 | 'draft-28',
+      scriptNonce?: (ctx: KoaContextWithOIDC) => string
+    },
 
-    ietfJWTAccessTokenProfile?: { enabled?: boolean, ack?: 2 },
+    backchannelLogout?: {
+      enabled?: boolean,
+      ack?: 4 | 'draft-04'
+    },
 
-    fapiRW?: { enabled?: boolean, ack?: 'id02-rev.3' },
+    ietfJWTAccessTokenProfile?: {
+      enabled?: boolean,
+      ack?: 2 | 'draft-02'
+    },
 
-    webMessageResponseMode?: { enabled?: boolean, ack?: 'id-00', scriptNonce?: (ctx: KoaContextWithOIDC) => string },
+    fapiRW?: {
+      enabled?: boolean,
+      ack?: 'id02-rev.3' | 'implementers-draft-02'
+    },
 
-    jwtIntrospection?: { enabled?: boolean, ack?: 8 },
+    webMessageResponseMode?: {
+      enabled?: boolean,
+      ack?: 'id-00' | 'individual-draft-00',
+      scriptNonce?: (ctx: KoaContextWithOIDC) => string
+    },
 
-    jwtResponseModes?: { enabled?: boolean, ack?: 1 | 2 },
+    jwtIntrospection?: {
+      enabled?: boolean,
+      ack?: 8 | 'draft-08'
+    },
 
-    pushedAuthorizationRequests?: { enabled?: boolean, ack?: 0 },
+    jwtResponseModes?: {
+      enabled?: boolean,
+      ack?: 1 | 2 | 'draft-02'
+    },
+
+    pushedAuthorizationRequests?: {
+      enabled?: boolean,
+      ack?: 0 | 'individual-draft-01'
+    },
 
     mTLS?: {
       enabled?: boolean;
-      ack?: '15-rc.1' | 16 | 17;
+      ack?: '15-rc.1' | 16 | 17 | 'draft-17';
       certificateBoundAccessTokens?: boolean;
       selfSignedTlsClientAuth?: boolean;
       tlsClientAuth?: boolean;
@@ -926,13 +974,13 @@ export interface Configuration {
 
     resourceIndicators?: {
       enabled?: boolean;
-      ack?: 2 | 3 | 4 | 5 | 6 | 7;
+      ack?: 2 | 3 | 4 | 5 | 6 | 7 | 'draft-07';
       allowedPolicy?: (ctx: KoaContextWithOIDC, resources: string | string[], client: Client) => Promise<boolean> | boolean;
     };
 
     frontchannelLogout?: {
       enabled?: boolean;
-      ack?: 2;
+      ack?: 2 | 'draft-02';
       logoutPendingSource?: (ctx: KoaContextWithOIDC, frames: string[], postLogoutRedirectUri?: string) => Promise<void | undefined> | void | undefined;
     };
   };
