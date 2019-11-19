@@ -2070,12 +2070,12 @@ async function extraAccessTokenClaims(ctx, token) {
 
 ### extraClientMetadata
 
-Allows for custom client metadata to be defined, validated, manipulated as well as for existing property validations to be extended  
+Allows for custom client metadata to be defined, validated, manipulated as well as for existing property validations to be extended. Existing properties are snakeCased on a Client instance (e.g. `client.redirectUris`), new properties (defined by this configuration) will be avaialable with their names verbatim (e.g. `client['urn:example:client:my-property']`)  
 
 
 ### extraClientMetadata.properties
 
-Array of property names that clients will be allowed to have defined. Property names will have to strictly follow the ones defined here. However, on a Client instance property names will be snakeCased.  
+Array of property names that clients will be allowed to have defined.  
 
 
 _**default value**_:
