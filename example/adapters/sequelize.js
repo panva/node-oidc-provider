@@ -78,7 +78,7 @@ class SequelizeAdapter {
     if (!found) return undefined;
     return {
       ...found.data,
-      ...(found.consumedAt ? { consumedAt: Date.now() } : undefined),
+      ...(found.consumedAt ? { consumed: true } : undefined),
     };
   }
 
