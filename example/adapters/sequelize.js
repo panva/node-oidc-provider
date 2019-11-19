@@ -1,8 +1,9 @@
 /*
  * This is a very rough-edged example, the idea is to still work with the fact that oidc-provider
- * has a rather "dynamic" schema. This example uses sequelize with sqlite, and all dynamic data
+ * has a rather "dynamic" schema. This example uses sequelize with postgresql, and all dynamic data
  * uses JSON fields. id is set to be the primary key, grantId should be additionaly indexed for
- * models where these fields are set.
+ * models where these fields are set (grantId-able models). userCode should be additionaly indexed
+ * for DeviceCode model. uid should be additionaly indexed for Session model.
 */
 
 const Sequelize = require('sequelize'); // eslint-disable-line import/no-unresolved
@@ -11,6 +12,13 @@ const sequelize = new Sequelize('databaseName', 'username', 'password', {
   host: 'databaseHost',
   dialect: 'postgres',
 });
+
+const grantable = new Set([
+  'AccessToken',
+  'AuthorizationCode',
+  'RefreshToken',
+  'DeviceCode',
+]);
 
 const models = [
   'Session',
@@ -22,11 +30,15 @@ const models = [
   'Client',
   'InitialAccessToken',
   'RegistrationAccessToken',
+  'Interaction',
+  'ReplayDetection',
+  'PushedAuthorizationRequest',
 ].reduce((map, name) => {
   map.set(name, sequelize.define(name, {
     id: { type: Sequelize.STRING, primaryKey: true },
-    grantId: { type: Sequelize.STRING },
-    userCode: { type: Sequelize.STRING },
+    ...(grantable.has(name) ? { grantId: { type: Sequelize.STRING } } : undefined),
+    ...(name === 'DeviceCode' ? { userCode: { type: Sequelize.STRING } } : undefined),
+    ...(name === 'Session' ? { uid: { type: Sequelize.STRING } } : undefined),
     data: { type: Sequelize.JSONB },
     expiresAt: { type: Sequelize.DATE },
     consumedAt: { type: Sequelize.DATE },
@@ -47,6 +59,7 @@ class SequelizeAdapter {
       data,
       ...(data.grantId ? { grantId: data.grantId } : undefined),
       ...(data.userCode ? { userCode: data.userCode } : undefined),
+      ...(data.uid ? { uid: data.uid } : undefined),
       ...(expiresIn ? { expiresAt: new Date(Date.now() + (expiresIn * 1000)) } : undefined),
     });
   }
@@ -70,7 +83,7 @@ class SequelizeAdapter {
   }
 
   async findByUid(uid) {
-    const found = await this.model.findOne({ where: { data: { uid } } });
+    const found = await this.model.findOne({ where: { uid } });
     if (!found) return undefined;
     return {
       ...found.data,
