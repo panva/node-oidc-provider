@@ -171,12 +171,6 @@ module.exports = {
         kty: 'OKP',
         use: 'sig',
         x: 'lDkysGJKRmJeUp8ncTyGraHPHHiIfdxSajxGm7Srla8',
-      }, {
-        crv: 'Ed448',
-        d: '1dlYYuxIZytq_AyQxiMAL6CaxveKKE-AZJQJhBOAwAZjsjrvQ3K1McqGjri5_AxM6cOCtVyT-GrR',
-        kty: 'OKP',
-        use: 'sig',
-        x: 'BG1zKFg6A_Rzix4pA08oYN5xHqhKIiREXZ59NZoA8p3xhgjh-tm8nc-6udtiL5ZNhWDbnRSq4jQA',
       },
     ],
   },
