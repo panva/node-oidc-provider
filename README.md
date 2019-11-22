@@ -44,7 +44,7 @@ The following draft specifications are implemented by oidc-provider.
 - [OAuth 2.0 JWT Secured Authorization Request (JAR)][jar]
 - [OAuth 2.0 Mutual TLS Client Authentication and Certificate Bound Access Tokens (MTLS) - draft 17][mtls]
 - [OAuth 2.0 Pushed Authorization Requests - draft 01][par]
-- [OAuth 2.0 Resource Indicators - draft 07][resource-indicators]
+- [OAuth 2.0 Resource Indicators - draft 08][resource-indicators]
 - [OAuth 2.0 Web Message Response Mode - individual draft 00][wmrm]
 - [OpenID Connect Back-Channel Logout 1.0 - draft 04][backchannel-logout]
 - [OpenID Connect Front-Channel Logout 1.0 - draft 02][frontchannel-logout]
@@ -200,7 +200,7 @@ See the list of available emitted [event names](/docs/events.md) and their descr
 [bug]: https://github.com/panva/node-oidc-provider/issues/new?template=bug-report.md
 [mtls]: https://tools.ietf.org/html/draft-ietf-oauth-mtls-17
 [dpop]: https://tools.ietf.org/html/draft-fett-oauth-dpop-03
-[resource-indicators]: https://tools.ietf.org/html/draft-ietf-oauth-resource-indicators-07
+[resource-indicators]: https://tools.ietf.org/html/draft-ietf-oauth-resource-indicators-08
 [jarm]: https://openid.net/specs/openid-financial-api-jarm-wd-02.html
 [jwt-at]: https://tools.ietf.org/html/draft-ietf-oauth-access-token-jwt-02
 [support-sponsor]: https://github.com/sponsors/panva
