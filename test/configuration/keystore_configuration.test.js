@@ -4,6 +4,7 @@ const jose = require('jose');
 const { expect } = require('chai');
 
 const { Provider } = require('../../lib');
+const { EdDSA, shake256 } = require('../../lib/helpers/runtime_support');
 
 describe('configuration.jwks', () => {
   beforeEach(function () {
@@ -52,4 +53,22 @@ describe('configuration.jwks', () => {
       jwks: this.keystore.toJWKS(true),
     });
   });
+
+  if (EdDSA) {
+    it('only enables Ed448 in Node.js >= 12.8.0', async () => {
+      const ks = new jose.JWKS.KeyStore();
+      ks.add(global.keystore.get({ alg: 'RS256' }));
+      await ks.generate('OKP', 'Ed448');
+
+      if (shake256) {
+        expect(() => {
+          new Provider('http://localhost', { jwks: ks.toJWKS(true) });
+        }).not.to.throw();
+      } else {
+        expect(() => {
+          new Provider('http://localhost', { jwks: ks.toJWKS(true) });
+        }).to.throw('Ed448 keys are only fully supported to sign ID Tokens with in node runtime >= 12.8.0');
+      }
+    });
+  }
 });
