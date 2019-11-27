@@ -1,0 +1,24 @@
+{
+  "name": "migrations",
+  "main": "dist/index.js",
+  "description": "Cloud Functions for Firebase",
+  "scripts": {
+    "migrate": "env-cmd -f .env node_modules/.bin/sequelize db:migrate",
+    "undo:migrate": "env-cmd -f .env node_modules/.bin/sequelize db:migrate:undo:all",
+    "seed": "env-cmd -f .env node_modules/.bin/sequelize db:seed:all",
+    "undo:seed": "env-cmd -f .env node_modules/.bin/sequelize db:seed:undo:all",
+    "wipe": "npm-run-all undo:migrate migrate seed"
+  },
+  "engines": {
+    "node": "10"
+  },
+  "dependencies": {
+    "pg": "^7.12.1",
+    "sequelize": "^5.18.1"
+  },
+  "devDependencies": {
+    "env-cmd": "^10.0.1",
+    "npm-run-all": "^4.1.5",
+    "sequelize-cli": "^5.5.1"
+  }
+}
