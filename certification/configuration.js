@@ -87,6 +87,7 @@ module.exports = {
     frontchannelLogout: { enabled: true },
     introspection: { enabled: true },
     registration: { enabled: true },
+    registrationManagement: { enabled: true, rotateRegistrationAccessToken: true },
     jwtResponseModes: { enabled: true },
     pushedAuthorizationRequests: { enabled: true },
     requestObjects: {
