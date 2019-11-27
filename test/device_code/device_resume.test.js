@@ -1,7 +1,7 @@
 /* eslint-disable no-underscore-dangle */
 const { expect } = require('chai');
 const KeyGrip = require('keygrip'); // eslint-disable-line import/no-extraneous-dependencies
-const sinon = require('sinon');
+const sinon = require('sinon').createSandbox();
 
 const nanoid = require('../../lib/helpers/nanoid');
 const bootstrap = require('../test_helper');
@@ -26,26 +26,7 @@ describe('device interaction resume /device/:user_code/:uid/', () => {
     path = this.suitePath(`/device/${userCode}/${grantId}`);
   });
 
-  afterEach(function () {
-    if (this.provider.Session.find.restore) {
-      this.provider.Session.find.restore();
-    }
-    if (this.provider.Interaction.find.restore) {
-      this.provider.Interaction.find.restore();
-    }
-    if (this.provider.interactionDetails.restore) {
-      this.provider.interactionDetails.restore();
-    }
-    if (this.provider.DeviceCode.findByUserCode.restore) {
-      this.provider.DeviceCode.findByUserCode.restore();
-    }
-    if (i(this.provider).configuration('features.deviceFlow').successSource.restore) {
-      i(this.provider).configuration('features.deviceFlow').successSource.restore();
-    }
-    if (i(this.provider).configuration('features.deviceFlow').userCodeInputSource.restore) {
-      i(this.provider).configuration('features.deviceFlow').userCodeInputSource.restore();
-    }
-  });
+  afterEach(sinon.restore);
 
   function setup(auth, result, sessionData) {
     expect(auth).to.be.ok;

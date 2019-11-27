@@ -1,4 +1,4 @@
-const sinon = require('sinon');
+const sinon = require('sinon').createSandbox();
 const { expect } = require('chai');
 const timekeeper = require('timekeeper');
 
@@ -9,22 +9,14 @@ const fail = () => { throw new Error('expected promise to be rejected'); };
 describe('BaseToken', () => {
   before(bootstrap(__dirname));
 
-  afterEach(function () {
-    this.adapter.find.resetHistory();
-    this.adapter.upsert.resetHistory();
-    timekeeper.reset();
-  });
-
   beforeEach(function () {
     this.adapter = this.TestAdapter.for('AccessToken');
     sinon.spy(this.adapter, 'find');
     sinon.spy(this.adapter, 'upsert');
   });
 
-  afterEach(function () {
-    this.adapter.find.restore();
-    this.adapter.upsert.restore();
-  });
+  afterEach(timekeeper.reset);
+  afterEach(sinon.restore);
 
   it('handles expired tokens', async function () {
     const token = await new this.provider.AccessToken({

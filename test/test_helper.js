@@ -428,7 +428,7 @@ module.exports = function testHelper(dir, {
 module.exports.passInteractionChecks = (...reasons) => {
   const cb = reasons.pop();
 
-  const stubs = [];
+  const sandbox = sinon.createSandbox();
 
   context('', () => {
     before(function () {
@@ -439,31 +439,27 @@ module.exports.passInteractionChecks = (...reasons) => {
       iChecks
         .filter((check) => reasons.includes(check.reason))
         .forEach((check) => {
-          stubs.push(sinon.stub(check, 'check').returns(false));
+          sandbox.stub(check, 'check').returns(false);
         });
     });
 
-    after(() => {
-      stubs.forEach((stub) => stub.restore());
-    });
+    after(sandbox.restore);
 
     cb();
   });
 };
 
 module.exports.skipConsent = () => {
-  const stubs = [];
+  const sandbox = sinon.createSandbox();
 
   before(function () {
-    stubs.push(sinon.stub(this.provider.OIDCContext.prototype, 'promptPending').returns(false));
-    stubs.push(sinon.stub(this.provider.OIDCContext.prototype, 'requestParamScopes').get(() => new Set()));
-    stubs.push(sinon.stub(this.provider.OIDCContext.prototype, 'requestParamClaims').get(() => new Set()));
-    stubs.push(sinon.stub(this.provider.OIDCContext.prototype, 'acceptedScope').callsFake(function () {
+    sandbox.stub(this.provider.OIDCContext.prototype, 'promptPending').returns(false);
+    sandbox.stub(this.provider.OIDCContext.prototype, 'requestParamScopes').get(() => new Set());
+    sandbox.stub(this.provider.OIDCContext.prototype, 'requestParamClaims').get(() => new Set());
+    sandbox.stub(this.provider.OIDCContext.prototype, 'acceptedScope').callsFake(function () {
       return this.params.scope;
-    }));
+    });
   });
 
-  after(() => {
-    stubs.forEach((stub) => stub.restore());
-  });
+  after(sandbox.restore);
 };

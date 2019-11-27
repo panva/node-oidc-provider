@@ -1,6 +1,6 @@
 const { parse: parseUrl } = require('url');
 
-const sinon = require('sinon');
+const sinon = require('sinon').createSandbox();
 const { expect } = require('chai');
 
 const bootstrap = require('../test_helper');
@@ -10,14 +10,7 @@ describe('[session_management]', () => {
 
   beforeEach(function () { return this.login(); });
   afterEach(function () { return this.logout(); });
-  afterEach(function () {
-    if (this.TestAdapter.for('Session').destroy.restore) {
-      this.TestAdapter.for('Session').destroy.restore();
-    }
-    if (this.TestAdapter.for('Session').upsert.restore) {
-      this.TestAdapter.for('Session').upsert.restore();
-    }
-  });
+  afterEach(sinon.restore);
 
   beforeEach(function () {
     return this.agent.get('/auth')

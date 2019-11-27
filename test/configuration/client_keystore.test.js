@@ -3,7 +3,7 @@ const { strict: assert } = require('assert');
 const jose = require('jose');
 const moment = require('moment');
 const nock = require('nock');
-const sinon = require('sinon');
+const sinon = require('sinon').createSandbox();
 const { expect } = require('chai');
 const cloneDeep = require('lodash/cloneDeep');
 
@@ -48,10 +48,7 @@ describe('client keystore refresh', () => {
     });
   });
 
-  afterEach(async function () {
-    const client = await this.provider.Client.find('client');
-    if (client.keystore.fresh.restore) client.keystore.fresh.restore();
-  });
+  afterEach(sinon.restore);
 
   it('gets the jwks from the uri', async function () {
     await keystore.generate('EC', 'P-256');

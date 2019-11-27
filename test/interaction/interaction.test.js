@@ -2,7 +2,7 @@
 
 const { expect } = require('chai');
 const KeyGrip = require('keygrip'); // eslint-disable-line import/no-extraneous-dependencies
-const sinon = require('sinon');
+const sinon = require('sinon').createSandbox();
 
 const nanoid = require('../../lib/helpers/nanoid');
 const bootstrap = require('../test_helper');
@@ -47,19 +47,7 @@ function handlesInteractionSessionErrors() {
 
 describe('devInteractions', () => {
   before(bootstrap(__dirname));
-  afterEach(function () {
-    if (this.provider.Interaction.find.restore) {
-      this.provider.Interaction.find.restore();
-    }
-
-    if (this.provider.interactionDetails.restore) {
-      this.provider.interactionDetails.restore();
-    }
-
-    if (this.provider.interactionFinished.restore) {
-      this.provider.interactionFinished.restore();
-    }
-  });
+  afterEach(sinon.restore);
 
   context('render login', () => {
     beforeEach(function () { return this.logout(); });
@@ -328,12 +316,7 @@ describe('devInteractions', () => {
 
 describe('resume after consent', () => {
   before(bootstrap(__dirname));
-
-  afterEach(function () {
-    if (this.provider.Interaction.find.restore) {
-      this.provider.Interaction.find.restore();
-    }
-  });
+  afterEach(sinon.restore);
 
   function setup(grant, result, sessionData) {
     const cookies = [];

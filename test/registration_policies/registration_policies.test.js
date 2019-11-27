@@ -2,7 +2,7 @@
 
 const url = require('url');
 
-const sinon = require('sinon');
+const sinon = require('sinon').createSandbox();
 const { expect } = require('chai');
 
 const bootstrap = require('../test_helper');
@@ -12,12 +12,7 @@ const fail = () => { throw new Error('expected promise to be rejected'); };
 
 describe('client registration policies', () => {
   before(bootstrap(__dirname));
-
-  beforeEach(function () {
-    Object.entries(i(this.provider).configuration('features.registration.policies')).forEach(([, value]) => {
-      if (value.restore) value.restore();
-    });
-  });
+  beforeEach(sinon.restore);
 
   describe('configuration', () => {
     it('must only be enabled in conjuction with adapter-backed initial access tokens', () => {

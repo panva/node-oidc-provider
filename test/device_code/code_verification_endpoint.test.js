@@ -1,4 +1,4 @@
-const sinon = require('sinon');
+const sinon = require('sinon').createSandbox();
 const { expect } = require('chai');
 const timekeeper = require('timekeeper');
 
@@ -63,15 +63,7 @@ describe('POST code_verification endpoint w/o verification', () => {
 
   afterEach(function () {
     this.provider.removeAllListeners('code_verification.error');
-    try {
-      i(this.provider).configuration('features.deviceFlow').userCodeInputSource.restore();
-    } catch (err) {}
-    try {
-      i(this.provider).configuration('features.deviceFlow').userCodeConfirmSource.restore();
-    } catch (err) {}
-    try {
-      this.provider.Client.find.restore();
-    } catch (err) {}
+    sinon.restore();
   });
 
   it('renders a confirmation page', async function () {
@@ -299,12 +291,8 @@ describe('POST code_verification endpoint w/ verification', () => {
       rejectedClaims: ['email_verified'],
     });
   });
-  afterEach(() => timekeeper.reset());
-  afterEach(function () {
-    if (i(this.provider).configuration('features.deviceFlow.successSource').restore) {
-      i(this.provider).configuration('features.deviceFlow.successSource').restore();
-    }
-  });
+  afterEach(timekeeper.reset);
+  afterEach(sinon.restore);
 
   const xsrf = 'foo';
 

@@ -1,6 +1,6 @@
 const { parse: parseUrl } = require('url');
 
-const sinon = require('sinon');
+const sinon = require('sinon').createSandbox();
 const { expect } = require('chai');
 const timekeeper = require('timekeeper');
 
@@ -610,10 +610,7 @@ describe('grant_type=authorization_code', () => {
     before(function () {
       sinon.stub(this.provider.Client, 'find').callsFake(async () => { throw new Error(); });
     });
-
-    after(function () {
-      this.provider.Client.find.restore();
-    });
+    after(sinon.restore);
 
     it('handles exceptions', function () {
       const spy = sinon.spy();

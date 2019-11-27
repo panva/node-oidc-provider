@@ -1,6 +1,6 @@
 const { parse: parseUrl } = require('url');
 
-const sinon = require('sinon');
+const sinon = require('sinon').createSandbox();
 const { expect } = require('chai');
 const base64url = require('base64url');
 const nock = require('nock');
@@ -13,12 +13,7 @@ describe('Back-Channel Logout 1.0', () => {
   before(bootstrap(__dirname));
 
   afterEach(nock.cleanAll);
-  afterEach(async function () {
-    const client = await this.provider.Client.find('client');
-    if (client.backchannelLogout.restore) {
-      client.backchannelLogout.restore();
-    }
-  });
+  afterEach(sinon.restore);
 
   describe('Client#backchannelLogout', () => {
     it('triggers the call', async function () {

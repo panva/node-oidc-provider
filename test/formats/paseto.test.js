@@ -2,12 +2,14 @@
 
 const { createPublicKey } = require('crypto');
 
-const { spy, match: { string, number }, assert } = require('sinon');
+const sinon = require('sinon').createSandbox();
 const { expect } = require('chai');
 
 const { formats: { AccessToken: FORMAT } } = require('../../lib/helpers/defaults');
 const epochTime = require('../../lib/helpers/epoch_time');
 const bootstrap = require('../test_helper');
+
+const { spy, match: { string, number }, assert } = sinon;
 
 if (FORMAT === 'paseto') {
   const pasetoLib = require('paseto'); // eslint-disable-line global-require
@@ -57,15 +59,7 @@ if (FORMAT === 'paseto') {
     };
     /* eslint-enable object-property-newline */
 
-    afterEach(function () {
-      [
-        'AccessToken', 'ClientCredentials',
-      ].forEach((model) => {
-        if (this.TestAdapter.for(model).upsert.restore) {
-          this.TestAdapter.for(model).upsert.restore();
-        }
-      });
-    });
+    afterEach(sinon.restore);
 
     it('for AccessToken', async function () {
       const kind = 'AccessToken';

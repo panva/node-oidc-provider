@@ -1,5 +1,5 @@
 const { expect } = require('chai');
-const sinon = require('sinon');
+const sinon = require('sinon').createSandbox();
 
 const bootstrap = require('../test_helper');
 const { InvalidRequest } = require('../../lib/helpers/errors');
@@ -39,9 +39,7 @@ describe(route, () => {
       sinon.stub(this.provider, 'pathFor').throws(new InvalidRequest());
     });
 
-    after(function () {
-      this.provider.pathFor.restore();
-    });
+    after(sinon.restore);
 
     it('handles errors with json and corresponding status', function () {
       return this.agent.get(route)
@@ -65,9 +63,7 @@ describe(route, () => {
       sinon.stub(this.provider, 'pathFor').throws();
     });
 
-    after(function () {
-      this.provider.pathFor.restore();
-    });
+    after(sinon.restore);
 
     it('handles exceptions with json 500', function () {
       return this.agent.get(route)

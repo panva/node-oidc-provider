@@ -1,7 +1,7 @@
 const { parse } = require('url');
 
 const jose = require('jose');
-const sinon = require('sinon');
+const sinon = require('sinon').createSandbox();
 const nock = require('nock');
 const { expect } = require('chai');
 
@@ -207,14 +207,7 @@ describe('request Uri features', () => {
       });
 
       describe('urn support', () => {
-        afterEach(function () {
-          if (this.provider.Client.prototype.requestUriAllowed.restore) {
-            this.provider.Client.prototype.requestUriAllowed.restore();
-          }
-          if (this.provider.requestUriCache.resolveUrn.restore) {
-            this.provider.requestUriCache.resolveUrn.restore();
-          }
-        });
+        afterEach(sinon.restore);
 
         it('urn cannot be registered and will fail on client#requestUriAllowed()', function () {
           const spy = sinon.spy();

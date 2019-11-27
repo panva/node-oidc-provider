@@ -1,6 +1,6 @@
 const { parse: parseUrl } = require('url');
 
-const sinon = require('sinon');
+const sinon = require('sinon').createSandbox();
 const { expect } = require('chai');
 
 const bootstrap = require('../test_helper');
@@ -35,14 +35,7 @@ describe('logout endpoint', () => {
   describe('when logged in', () => {
     beforeEach(function () { return this.login(); });
     afterEach(function () { return this.logout(); });
-    afterEach(function () {
-      if (this.TestAdapter.for('Session').destroy.restore) {
-        this.TestAdapter.for('Session').destroy.restore();
-      }
-      if (this.TestAdapter.for('Session').upsert.restore) {
-        this.TestAdapter.for('Session').upsert.restore();
-      }
-    });
+    afterEach(sinon.restore);
 
     beforeEach(function () {
       return this.agent.get('/auth')
@@ -189,9 +182,6 @@ describe('logout endpoint', () => {
           return this.agent.get(route)
             .set('Accept', 'text/html')
             .query(params)
-            .expect(() => {
-              renderSpy.restore();
-            })
             .expect(400)
             .expect(() => {
               expect(emitSpy.calledOnce).to.be.true;
@@ -215,9 +205,6 @@ describe('logout endpoint', () => {
           return this.agent.get(route)
             .set('Accept', 'text/html')
             .query(params)
-            .expect(() => {
-              renderSpy.restore();
-            })
             .expect(400)
             .expect(() => {
               expect(emitSpy.calledOnce).to.be.true;
@@ -240,9 +227,6 @@ describe('logout endpoint', () => {
           return this.agent.get(route)
             .set('Accept', 'text/html')
             .query(params)
-            .expect(() => {
-              renderSpy.restore();
-            })
             .expect(400)
             .expect(() => {
               expect(emitSpy.calledOnce).to.be.true;
@@ -268,9 +252,6 @@ describe('logout endpoint', () => {
           return this.agent.get(route)
             .set('Accept', 'text/html')
             .query(params)
-            .expect(() => {
-              renderSpy.restore();
-            })
             .expect(400)
             .expect(() => {
               expect(emitSpy.calledOnce).to.be.true;
@@ -296,9 +277,6 @@ describe('logout endpoint', () => {
           return this.agent.get(route)
             .set('Accept', 'text/html')
             .query(params)
-            .expect(() => {
-              renderSpy.restore();
-            })
             .expect(400)
             .expect(() => {
               expect(emitSpy.calledOnce).to.be.true;
@@ -321,9 +299,6 @@ describe('logout endpoint', () => {
           .set('Accept', 'text/html')
           .send({})
           .type('form')
-          .expect(() => {
-            renderSpy.restore();
-          })
           .expect(400)
           .expect(() => {
             expect(emitSpy.calledOnce).to.be.true;
@@ -345,9 +320,6 @@ describe('logout endpoint', () => {
           .set('Accept', 'text/html')
           .send({ xsrf: 'not right' })
           .type('form')
-          .expect(() => {
-            renderSpy.restore();
-          })
           .expect(400)
           .expect(() => {
             expect(emitSpy.calledOnce).to.be.true;
@@ -455,9 +427,6 @@ describe('logout endpoint', () => {
         const renderSpy = sinon.spy(i(this.provider).configuration(), 'postLogoutSuccessSource');
         return this.agent.get('/session/end/success')
           .set('Accept', 'text/html')
-          .expect(() => {
-            renderSpy.restore();
-          })
           .expect(200)
           .expect(() => {
             expect(renderSpy.calledOnce).to.be.true;
@@ -470,9 +439,6 @@ describe('logout endpoint', () => {
         const renderSpy = sinon.spy(i(this.provider).configuration(), 'postLogoutSuccessSource');
         return this.agent.get('/session/end/success?client_id=client')
           .set('Accept', 'text/html')
-          .expect(() => {
-            renderSpy.restore();
-          })
           .expect(200)
           .expect(() => {
             expect(renderSpy.calledOnce).to.be.true;
@@ -487,9 +453,6 @@ describe('logout endpoint', () => {
         this.provider.once('end_session_success.error', emitSpy);
         return this.agent.get('/session/end/success?client_id=foobar')
           .set('Accept', 'text/html')
-          .expect(() => {
-            renderSpy.restore();
-          })
           .expect(400)
           .expect(() => {
             expect(emitSpy.calledOnce).to.be.true;
