@@ -208,7 +208,7 @@ const props = [
 
     if (heading.length > 3 && !hidden) {
       hidden = true;
-      append(`<details>\n  <summary>(Click to expand) ${prev} options details</summary>\n  <br>\n\n`);
+      append(`\n<details><summary>(Click to expand) ${prev} options details</summary><br>\n\n`);
     } else if (hidden && heading.length === 3) {
       hidden = false;
       append('\n</details>\n');
@@ -297,8 +297,8 @@ const props = [
 
     Object.keys(section).filter((p) => p.startsWith('example')).forEach((prop) => {
       const [title, ...content] = section[prop];
-      append(`<a name="${words(`${headingTitle} ${title}`).map((w) => w.toLowerCase()).join('-')}"></a>`.replace('\n', ''));
-      append(`<details>\n  <summary>(Click to expand) ${title}</summary>\n  <br>\n\n`);
+      append(`<a id="${words(`${headingTitle} ${title}`).map((w) => w.toLowerCase()).join('-')}"></a>`.replace('\n', ''));
+      append(`<details><summary>(Click to expand) ${title}</summary><br>\n\n`);
 
       const parts = [];
       let incode;
