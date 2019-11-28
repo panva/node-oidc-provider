@@ -64,6 +64,8 @@ describe('BaseToken', () => {
   });
 
   it('resaves tokens with their actual remaining ttl passed to expiration', async function () {
+    this.retries(1);
+
     let token = new this.provider.AccessToken({
       grantId: 'foo',
     });

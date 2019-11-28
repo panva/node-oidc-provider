@@ -192,6 +192,8 @@ describe('client keystore refresh', () => {
     });
 
     it('uses the max-age if Cache-Control is missing', async function () {
+      this.retries(1);
+
       const client = await this.provider.Client.find('client');
       await keystore.generate('EC', 'P-256');
 
@@ -212,6 +214,8 @@ describe('client keystore refresh', () => {
     });
 
     it('falls back to 1 minute throttle if no caching header is found', async function () {
+      this.retries(1);
+
       const client = await this.provider.Client.find('client');
       await keystore.generate('EC', 'P-256');
 

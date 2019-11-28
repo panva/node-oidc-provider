@@ -9,6 +9,8 @@ describe('provider.setProviderSession', () => {
   beforeEach(function () { return this.logout(); });
 
   it('sets the session id for a clear session with current timestamp', async function () {
+    this.retries(1);
+
     // simulates setting a fresh session (non existant) in another request
     this.provider.use(async (ctx, next) => {
       if (ctx.path === '/login') {
