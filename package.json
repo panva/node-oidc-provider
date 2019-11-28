@@ -37,6 +37,7 @@
   "main": "lib/index.js",
   "types": "types/index.d.ts",
   "scripts": {
+    "ci": "node ./test/ci",
     "coverage": "nyc node ./test/run",
     "heroku-postbuild": "npm install mongodb@^3.0.0 openid-client@^3.0.0",
     "lint": "eslint lib example certification test && dtslint types",

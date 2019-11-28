@@ -66,6 +66,7 @@ module.exports = function testHelper(dir, {
   mountTo = mountVia ? process.env.MOUNT_TO || '/' : '/',
 } = {}) {
   after(() => {
+    TestAdapter.clear();
     global.server.removeAllListeners('request');
   });
 
@@ -372,7 +373,6 @@ module.exports = function testHelper(dir, {
       };
     }
 
-    TestAdapter.clear();
     Object.assign(this, {
       assertOnce,
       AuthorizationRequest,
