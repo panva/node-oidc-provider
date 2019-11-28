@@ -753,6 +753,8 @@ describe('request Uri features', () => {
     });
 
     it('respects provided response expires header', async function () {
+      this.retries(1);
+
       const cache = new RequestUriCache(this.provider);
       nock('https://client.example.com')
         .get('/cachedRequest')
