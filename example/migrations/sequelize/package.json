@@ -1,7 +1,6 @@
 {
   "name": "migrations",
-  "main": "dist/index.js",
-  "description": "Cloud Functions for Firebase",
+  "description": "Sequelize migrations",
   "scripts": {
     "migrate": "env-cmd -f .env node_modules/.bin/sequelize db:migrate",
     "undo:migrate": "env-cmd -f .env node_modules/.bin/sequelize db:migrate:undo:all",
@@ -10,7 +9,7 @@
     "wipe": "npm-run-all undo:migrate migrate seed"
   },
   "engines": {
-    "node": "10"
+    "node": ">=10"
   },
   "dependencies": {
     "pg": "^7.12.1",
