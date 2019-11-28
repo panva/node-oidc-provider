@@ -12,6 +12,7 @@ const { agent: supertest } = require('supertest');
 const { expect } = require('chai');
 const Koa = require('koa');
 const Express = require('express');
+const Connect = require('connect');
 const koaMount = require('koa-mount');
 const base64url = require('base64url');
 const KeyGrip = require('keygrip'); // eslint-disable-line import/no-extraneous-dependencies
@@ -395,6 +396,10 @@ module.exports = function testHelper(dir, {
       this.app = app;
     } else if (mountVia === 'express') {
       const app = new Express();
+      app.use(mountTo, provider.callback);
+      global.server.on('request', app);
+    } else if (mountVia === 'connect') {
+      const app = new Connect();
       app.use(mountTo, provider.callback);
       global.server.on('request', app);
     }

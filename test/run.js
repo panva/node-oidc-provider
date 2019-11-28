@@ -75,14 +75,13 @@ async function singleRun() {
 
     if ('CI' in process.env) {
       mocha.reporter('min');
-      mocha.retries(1); // retry flaky time comparison tests
       mocha.forbidOnly(); // force suite fail on encountered only test
       mocha.forbidPending(); // force suite fail on encountered skip test
     }
 
     const format = typeof this.format === 'string' ? this.format : 'dynamic';
 
-    const mountAddendum = this.mountVia ? ` mounted using ${this.mountVia === 'koa' ? 'koa-mount' : 'express'} to ${this.mountTo}` : '';
+    const mountAddendum = this.mountVia ? ` mounted using ${this.mountVia === 'koa' ? 'koa-mount' : this.mountVia} to ${this.mountTo}` : '';
     console.log('\x1b[32m%s\x1b[0m', `Running suite with ${format}${mountAddendum}`);
 
     mocha.run((failures) => {
@@ -101,9 +100,11 @@ function run() {
 
   if ('CI' in process.env || mount) {
     promise = promise.then(() => singleRun.call({ ...this, mountTo: '/', mountVia: 'koa' }));
-    promise = promise.then(() => singleRun.call({ ...this, mountTo: '/', mountVia: 'express' }));
     promise = promise.then(() => singleRun.call({ ...this, mountTo: '/oidc', mountVia: 'koa' }));
+    promise = promise.then(() => singleRun.call({ ...this, mountTo: '/', mountVia: 'express' }));
     promise = promise.then(() => singleRun.call({ ...this, mountTo: '/oidc', mountVia: 'express' }));
+    promise = promise.then(() => singleRun.call({ ...this, mountTo: '/', mountVia: 'connect' }));
+    promise = promise.then(() => singleRun.call({ ...this, mountTo: '/oidc', mountVia: 'connect' }));
   }
 
   return promise;
