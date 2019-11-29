@@ -3,7 +3,8 @@
  * has a rather "dynamic" schema. This example uses sequelize with postgresql, and all dynamic data
  * uses JSON fields. id is set to be the primary key, grantId should be additionaly indexed for
  * models where these fields are set (grantId-able models). userCode should be additionaly indexed
- * for DeviceCode model. uid should be additionaly indexed for Session model.
+ * for DeviceCode model. uid should be additionaly indexed for Session model. For sequelize
+ * migrations @see https://github.com/Rogger794/node-oidc-provider/tree/examples/example/migrations/sequelize
 */
 
 // npm i sequelize@^5.21.2
