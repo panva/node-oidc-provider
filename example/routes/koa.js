@@ -135,39 +135,42 @@ module.exports = (provider) => {
     assert.equal(name, 'login');
 
     const path = `/interaction/${ctx.params.uid}/federated`;
-    const callbackParams = ctx.google.callbackParams(ctx.req);
 
     switch (ctx.request.body.provider) {
       case 'google': {
-        if (Object.keys(callbackParams).length) {
-          const state = ctx.cookies.get('google.state');
-          ctx.cookies.set('google.state', null, { path });
-          const nonce = ctx.cookies.get('google.nonce');
-          ctx.cookies.set('google.nonce', null, { path });
+        const callbackParams = ctx.google.callbackParams(ctx.req);
 
-          const tokenset = await ctx.google.callback(undefined, callbackParams, { state, nonce, response_type: 'id_token' });
-          const account = await Account.findByFederated('google', tokenset.claims());
+        // init
+        if (!Object.keys(callbackParams).length) {
+          const state = `${ctx.params.uid}|${crypto.randomBytes(32).toString('hex')}`;
+          const nonce = crypto.randomBytes(32).toString('hex');
 
-          const result = {
-            select_account: {}, // make sure its skipped by the interaction policy since we just logged in
-            login: {
-              account: account.accountId,
-            },
-          };
-          return provider.interactionFinished(ctx.req, ctx.res, result, {
-            mergeWithLastSubmission: false,
-          });
+          ctx.cookies.set('google.state', state, { path, sameSite: 'strict' });
+          ctx.cookies.set('google.nonce', nonce, { path, sameSite: 'strict' });
+
+          return ctx.redirect(ctx.google.authorizationUrl({
+            state, nonce, scope: 'openid email profile',
+          }));
         }
 
-        const state = `${ctx.params.uid}|${crypto.randomBytes(32).toString('hex')}`;
-        const nonce = crypto.randomBytes(32).toString('hex');
+        // callback
+        const state = ctx.cookies.get('google.state');
+        ctx.cookies.set('google.state', null, { path });
+        const nonce = ctx.cookies.get('google.nonce');
+        ctx.cookies.set('google.nonce', null, { path });
 
-        ctx.cookies.set('google.state', state, { path, sameSite: 'strict' });
-        ctx.cookies.set('google.nonce', nonce, { path, sameSite: 'strict' });
+        const tokenset = await ctx.google.callback(undefined, callbackParams, { state, nonce, response_type: 'id_token' });
+        const account = await Account.findByFederated('google', tokenset.claims());
 
-        return ctx.redirect(ctx.google.authorizationUrl({
-          state, nonce, scope: 'openid email profile',
-        }));
+        const result = {
+          select_account: {}, // make sure its skipped by the interaction policy since we just logged in
+          login: {
+            account: account.accountId,
+          },
+        };
+        return provider.interactionFinished(ctx.req, ctx.res, result, {
+          mergeWithLastSubmission: false,
+        });
       }
       default:
         return undefined;
