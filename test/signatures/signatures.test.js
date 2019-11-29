@@ -44,31 +44,31 @@ describe('signatures', () => {
             expect(payload.at_hash).to.have.lengthOf(43);
           });
       });
-    }
 
-    if (EdDSA && shake256) {
-      it('responds with a access_token and code (half of shake256(m, 114) Ed448)', async function () {
-        this.client.idTokenSignedResponseAlg = 'EdDSA';
-        const key = i(this.provider).keystore.get({ alg: 'EdDSA' });
-        i(this.provider).keystore.remove(key);
-        await i(this.provider).keystore.generate('OKP', 'Ed448');
-        await i(this.provider).keystore.generate('OKP', 'Ed25519');
-        const auth = new this.AuthorizationRequest({
-          response_type: 'code id_token token',
-          scope: 'openid',
-        });
-
-        return this.wrap({ auth, verb: 'get', route: '/auth' })
-          .expect(302)
-          .expect(auth.validateFragment)
-          .expect(auth.validateClientLocation)
-          .expect((response) => {
-            const { query: { id_token } } = parseLocation(response.headers.location, true);
-            const { payload } = decode(id_token);
-            expect(payload).to.contain.keys('at_hash', 'c_hash');
-            expect(payload.at_hash).to.have.lengthOf(76);
+      if (shake256) {
+        it('responds with a access_token and code (half of shake256(m, 114) Ed448)', async function () {
+          this.client.idTokenSignedResponseAlg = 'EdDSA';
+          const key = i(this.provider).keystore.get({ alg: 'EdDSA' });
+          i(this.provider).keystore.remove(key);
+          await i(this.provider).keystore.generate('OKP', 'Ed448');
+          await i(this.provider).keystore.generate('OKP', 'Ed25519');
+          const auth = new this.AuthorizationRequest({
+            response_type: 'code id_token token',
+            scope: 'openid',
           });
-      });
+
+          return this.wrap({ auth, verb: 'get', route: '/auth' })
+            .expect(302)
+            .expect(auth.validateFragment)
+            .expect(auth.validateClientLocation)
+            .expect((response) => {
+              const { query: { id_token } } = parseLocation(response.headers.location, true);
+              const { payload } = decode(id_token);
+              expect(payload).to.contain.keys('at_hash', 'c_hash');
+              expect(payload.at_hash).to.have.lengthOf(76);
+            });
+        });
+      }
     }
 
     it('responds with a access_token and code (half of sha512)', function () {
