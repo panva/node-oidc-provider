@@ -84,4 +84,6 @@ function cartesian(...arg) {
   }
 
   await report();
-})();
+})().catch(() => {
+  process.exitCode = 1;
+});
