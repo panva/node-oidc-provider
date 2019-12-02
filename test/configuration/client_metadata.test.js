@@ -2,6 +2,7 @@ const util = require('util');
 
 const { expect } = require('chai');
 const camelCase = require('lodash/camelCase');
+const merge = require('lodash/merge');
 const omit = require('lodash/omit');
 const pull = require('lodash/pull');
 const cloneDeep = require('lodash/cloneDeep');
@@ -21,17 +22,18 @@ describe('Client metadata validation', () => {
     DefaultProvider = new Provider('http://localhost', {
       jwks: global.keystore.toJWKS(true),
       whitelistedJWA: cloneDeep(whitelistedJWA),
+      features: { secp256k1: { enabled: true } },
     });
   });
 
   function addClient(meta, configuration) {
     let provider;
     if (configuration) {
-      provider = new Provider('http://localhost', ({
+      provider = new Provider('http://localhost', merge({
         jwks: global.keystore.toJWKS(true),
         whitelistedJWA: cloneDeep(whitelistedJWA),
-        ...configuration,
-      }));
+        features: { secp256k1: { enabled: true } },
+      }, configuration));
     } else {
       provider = DefaultProvider;
     }

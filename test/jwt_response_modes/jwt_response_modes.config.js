@@ -1,12 +1,13 @@
-const clone = require('lodash/clone');
+const cloneDeep = require('lodash/cloneDeep');
+const merge = require('lodash/merge');
 
-const config = clone(require('../default.config'));
+const config = cloneDeep(require('../default.config'));
 
-config.features = {
+merge(config.features, {
   encryption: { enabled: true },
   webMessageResponseMode: { enabled: true },
   jwtResponseModes: { enabled: true },
-};
+});
 
 module.exports = {
   config,

@@ -1,10 +1,11 @@
 const cloneDeep = require('lodash/cloneDeep');
+const merge = require('lodash/merge');
 
 const config = cloneDeep(require('../../default.config'));
 const { Prompt, Check, base } = require('../../../lib/helpers/interaction_policy');
 
 config.extraParams = ['triggerCustomFail'];
-config.features = { requestObjects: { requestUri: false } };
+merge(config.features, { requestObjects: { requestUri: false } });
 config.responseTypes = ['id_token', 'code', 'none'];
 
 const policy = base();

@@ -2,12 +2,13 @@ const { strict: assert } = require('assert');
 const { URL } = require('url');
 
 const cloneDeep = require('lodash/cloneDeep');
+const merge = require('lodash/merge');
 
 const config = cloneDeep(require('../default.config'));
 const { errors: { InvalidTarget } } = require('../../lib');
 
 config.whitelistedJWA.requestObjectSigningAlgValues = ['none'];
-config.features = {
+merge(config.features, {
   requestObjects: { request: true },
   clientCredentials: { enabled: true },
   deviceFlow: { enabled: true },
@@ -23,7 +24,7 @@ config.features = {
       return true;
     },
   },
-};
+});
 
 config.audiences = ({ oidc: { params, route, entities } }, sub, token, use) => {
   if (['access_token', 'client_credentials'].includes(use)) {

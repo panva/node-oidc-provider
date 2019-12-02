@@ -1,14 +1,15 @@
-const clone = require('lodash/clone');
+const cloneDeep = require('lodash/cloneDeep');
+const merge = require('lodash/merge');
 
-const config = clone(require('../default.config'));
+const config = cloneDeep(require('../default.config'));
 
-config.features = {
+merge(config.features, {
   deviceFlow: { enabled: true },
   backchannelLogout: { enabled: true },
   claimsParameter: { enabled: true },
   requestObjects: { request: false, requestUri: false },
   resourceIndicators: { enabled: true },
-};
+});
 
 config.extraParams = [
   'extra',

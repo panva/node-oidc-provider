@@ -1,11 +1,12 @@
-const clone = require('lodash/clone');
+const cloneDeep = require('lodash/cloneDeep');
+const merge = require('lodash/merge');
 
-const config = clone(require('../default.config'));
+const config = cloneDeep(require('../default.config'));
 const { DYNAMIC_SCOPE_LABEL } = require('../../lib/consts');
 
-config.features = {
+merge(config.features, {
   clientCredentials: { enabled: true },
-};
+});
 
 const SIGN = /^sign:[a-fA-F0-9]{2,}$/;
 SIGN[DYNAMIC_SCOPE_LABEL] = 'sign:{hex}';

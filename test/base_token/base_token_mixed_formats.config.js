@@ -1,8 +1,8 @@
-const clone = require('lodash/clone');
+const cloneDeep = require('lodash/cloneDeep');
 const sample = require('lodash/sample');
 const shuffle = require('lodash/shuffle');
 
-const config = clone(require('../default.config'));
+const config = cloneDeep(require('../default.config'));
 const { formats: { AccessToken: FORMAT } } = require('../../lib/helpers/defaults');
 
 const [AccessToken, RefreshToken, AuthorizationCode] = shuffle(['opaque', 'jwt', 'jwt-ietf', 'paseto', () => sample(['opaque', 'jwt', 'jwt-ietf', 'paseto'])]);

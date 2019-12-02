@@ -1,9 +1,10 @@
-const clone = require('lodash/clone');
+const cloneDeep = require('lodash/cloneDeep');
+const merge = require('lodash/merge');
 
-const config = clone(require('../default.config'));
+const config = cloneDeep(require('../default.config'));
 
 config.subjectTypes = ['pairwise', 'public'];
-config.features = { claimsParameter: { enabled: true } };
+merge(config.features, { claimsParameter: { enabled: true } });
 config.acrValues = ['0', '1', '2'];
 config.pairwiseIdentifier = (ctx, sub) => `${sub}-pairwise`;
 

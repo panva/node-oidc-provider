@@ -1,6 +1,6 @@
-const clone = require('lodash/clone');
+const cloneDeep = require('lodash/cloneDeep');
 
-const setup = clone(require('./conform.config'));
+const setup = cloneDeep(require('./conform.config'));
 
 setup.config.conformIdTokenClaims = false;
 

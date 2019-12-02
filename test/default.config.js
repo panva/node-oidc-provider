@@ -50,5 +50,8 @@ module.exports = {
     'id_token',
     'none',
   ],
+  features: {
+    secp256k1: { enabled: true, ack: 'draft-03' },
+  },
   whitelistedJWA: cloneDeep(JWA),
 };

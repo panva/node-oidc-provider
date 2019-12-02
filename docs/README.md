@@ -560,7 +560,7 @@ JSON Web Key Set used by the provider for signing and encryption. The object mus
  Supported key types are:   
  - RSA
  - OKP (Ed25519 and Ed448 curves)
- - EC (P-256, P-384 and P-521 curves)   
+ - EC (P-256, secp256k1, P-384, and P-521 curves)   
   
 
 _**recommendation**_: **Provider key rotation** - The following action order is recommended when rotating signing keys on a distributed deployment with rolling reloads in place.
@@ -1628,6 +1628,20 @@ async function allowedPolicy(ctx, resources, client) {
 
 Enables Token Revocation   
   
+
+
+_**default value**_:
+```js
+{
+  enabled: false
+}
+```
+
+### features.secp256k1
+
+[html/draft-ietf-cose-webauthn-algorithms-03](https://tools.ietf.org/html/html/draft-ietf-cose-webauthn-algorithms-03) - Support for secp256k1 EC curve  
+
+Enables the use of ES256K algorithm in `whitelistedJWA` configuration as well as having an EC JWK with secp256k1 curve in the provider keystore.  
 
 
 _**default value**_:
@@ -3094,7 +3108,7 @@ _**default value**_:
   'HS256', 'HS384', 'HS512',
   'RS256', 'RS384', 'RS512',
   'PS256', 'PS384', 'PS512',
-  'ES256', 'ES384', 'ES512',
+  'ES256', 'ES256K', ES384', 'ES512',
   'EdDSA', // (note: EdDSA is only supported in node runtime >= 12.0.0)
 ]
 ```
@@ -3122,7 +3136,7 @@ _**default value**_:
 [
   'RS256', 'RS384', 'RS512',
   'PS256', 'PS384', 'PS512',
-  'ES256', 'ES384', 'ES512',
+  'ES256', 'ES256K', ES384', 'ES512',
   'EdDSA', // (note: EdDSA is only supported in node runtime >= 12.0.0)
 ]
 ```
@@ -3214,7 +3228,7 @@ _**default value**_:
   'HS256', 'HS384', 'HS512',
   'RS256', 'RS384', 'RS512',
   'PS256', 'PS384', 'PS512',
-  'ES256', 'ES384', 'ES512',
+  'ES256', 'ES256K', ES384', 'ES512',
   'EdDSA', // (note: EdDSA is only supported in node runtime >= 12.0.0)
 ]
 ```
@@ -3305,7 +3319,7 @@ _**default value**_:
   'HS256', 'HS384', 'HS512',
   'RS256', 'RS384', 'RS512',
   'PS256', 'PS384', 'PS512',
-  'ES256', 'ES384', 'ES512',
+  'ES256', 'ES256K', ES384', 'ES512',
   'EdDSA', // (note: EdDSA is only supported in node runtime >= 12.0.0)
 ]
 ```
@@ -3336,7 +3350,7 @@ _**default value**_:
   'HS256', 'HS384', 'HS512',
   'RS256', 'RS384', 'RS512',
   'PS256', 'PS384', 'PS512',
-  'ES256', 'ES384', 'ES512',
+  'ES256', 'ES256K', ES384', 'ES512',
   'EdDSA', // (note: EdDSA is only supported in node runtime >= 12.0.0)
 ]
 ```
@@ -3428,7 +3442,7 @@ _**default value**_:
   'HS256', 'HS384', 'HS512',
   'RS256', 'RS384', 'RS512',
   'PS256', 'PS384', 'PS512',
-  'ES256', 'ES384', 'ES512',
+  'ES256', 'ES256K', ES384', 'ES512',
   'EdDSA', // (note: EdDSA is only supported in node runtime >= 12.0.0)
 ]
 ```
@@ -3458,7 +3472,7 @@ _**default value**_:
   'HS256', 'HS384', 'HS512',
   'RS256', 'RS384', 'RS512',
   'PS256', 'PS384', 'PS512',
-  'ES256', 'ES384', 'ES512',
+  'ES256', 'ES256K', ES384', 'ES512',
   'EdDSA', // (note: EdDSA is only supported in node runtime >= 12.0.0)
 ]
 ```
@@ -3488,7 +3502,7 @@ _**default value**_:
   'HS256', 'HS384', 'HS512',
   'RS256', 'RS384', 'RS512',
   'PS256', 'PS384', 'PS512',
-  'ES256', 'ES384', 'ES512',
+  'ES256', 'ES256K', ES384', 'ES512',
   'EdDSA', // (note: EdDSA is only supported in node runtime >= 12.0.0)
 ]
 ```
@@ -3580,7 +3594,7 @@ _**default value**_:
   'HS256', 'HS384', 'HS512',
   'RS256', 'RS384', 'RS512',
   'PS256', 'PS384', 'PS512',
-  'ES256', 'ES384', 'ES512',
+  'ES256', 'ES256K', ES384', 'ES512',
   'EdDSA', // (note: EdDSA is only supported in node runtime >= 12.0.0)
 ]
 ```

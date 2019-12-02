@@ -1,9 +1,10 @@
 const cloneDeep = require('lodash/cloneDeep');
 const pull = require('lodash/pull');
+const merge = require('lodash/merge');
 
 const config = cloneDeep(require('../default.config'));
 
-config.features = {
+merge(config.features, {
   requestObjects: {
     request: true,
     requestUri: true,
@@ -12,7 +13,7 @@ config.features = {
   claimsParameter: { enabled: true },
   deviceFlow: { enabled: true },
   resourceIndicators: { enabled: true },
-};
+});
 
 pull(config.whitelistedJWA.requestObjectSigningAlgValues, 'HS384');
 

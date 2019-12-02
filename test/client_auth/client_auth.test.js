@@ -64,6 +64,9 @@ describe('client authentication options', () => {
           'client_secret_jwt',
           'client_secret_post',
         ],
+        features: {
+          secp256k1: { enabled: true },
+        },
         whitelistedJWA: cloneDeep(JWA),
       });
 
@@ -86,6 +89,9 @@ describe('client authentication options', () => {
           'client_secret_post',
           'private_key_jwt',
         ],
+        features: {
+          secp256k1: { enabled: true },
+        },
         whitelistedJWA: cloneDeep(JWA),
       });
 
@@ -97,6 +103,7 @@ describe('client authentication options', () => {
         'PS384',
         'PS512',
         'ES256',
+        'ES256K',
         'ES384',
         'ES512',
         runtimeSupport.EdDSA ? 'EdDSA' : false,
@@ -116,6 +123,9 @@ describe('client authentication options', () => {
           'client_secret_post',
           'private_key_jwt',
         ],
+        features: {
+          secp256k1: { enabled: true },
+        },
         whitelistedJWA: cloneDeep(JWA),
       });
 
@@ -130,6 +140,7 @@ describe('client authentication options', () => {
         'PS384',
         'PS512',
         'ES256',
+        'ES256K',
         'ES384',
         'ES512',
         runtimeSupport.EdDSA ? 'EdDSA' : false,

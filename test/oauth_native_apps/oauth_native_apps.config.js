@@ -1,6 +1,6 @@
-const clone = require('lodash/clone');
+const cloneDeep = require('lodash/cloneDeep');
 
-const config = clone(require('../default.config'));
+const config = cloneDeep(require('../default.config'));
 
 module.exports = {
   config,

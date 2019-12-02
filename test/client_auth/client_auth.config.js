@@ -1,4 +1,5 @@
 const cloneDeep = require('lodash/cloneDeep');
+const merge = require('lodash/merge');
 
 const config = cloneDeep(require('../default.config'));
 const {
@@ -25,7 +26,7 @@ config.tokenEndpointAuthMethods = [
     'self_signed_tls_client_auth',
   ] : []),
 ];
-config.features = {
+merge(config.features, {
   introspection: { enabled: true },
   mTLS: {
     enabled: runtimeSupport.KeyObject,
@@ -41,7 +42,7 @@ config.features = {
       return key === 'tls_client_auth_san_dns' && ctx.get('x-ssl-client-san-dns') === expected;
     },
   },
-};
+});
 
 module.exports = {
   config,

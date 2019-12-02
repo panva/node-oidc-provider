@@ -918,6 +918,11 @@ export interface Configuration {
       ack?: 'id-03' | 'individual-draft-03'
     },
 
+    secp256k1?: {
+      enabled?: boolean,
+      ack?: 'draft-03'
+    },
+
     sessionManagement?: {
       enabled?: boolean,
       keepHeaders?: boolean,

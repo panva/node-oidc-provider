@@ -1,10 +1,11 @@
 const cloneDeep = require('lodash/cloneDeep');
+const merge = require('lodash/merge');
 
 const config = cloneDeep(require('../default.config'));
 const { Check, Prompt, base } = require('../../lib/helpers/interaction_policy');
 
 config.extraParams = ['triggerCustomFail', 'triggerUnrequestable'];
-config.features = { sessionManagement: { enabled: true } };
+merge(config.features, { sessionManagement: { enabled: true } });
 
 const policy = base();
 

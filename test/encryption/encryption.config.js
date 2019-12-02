@@ -1,15 +1,16 @@
 const cloneDeep = require('lodash/cloneDeep');
+const merge = require('lodash/merge');
 const pull = require('lodash/pull');
 const jose = require('jose');
 
 const config = cloneDeep(require('../default.config'));
 
-config.features = {
+merge(config.features, {
   requestObjects: { request: true },
   encryption: { enabled: true },
   introspection: { enabled: true },
   jwtIntrospection: { enabled: true },
-};
+});
 
 pull(config.whitelistedJWA.requestObjectEncryptionAlgValues, 'RSA-OAEP');
 pull(config.whitelistedJWA.requestObjectEncryptionEncValues, 'A192CBC-HS384');
