@@ -87,7 +87,7 @@ describe('OAuth 2.0 for Native Apps Best Current Practice features', () => {
           token_endpoint_auth_method: 'none',
           redirect_uris: ['http://localhost:2355/op/callback'],
         }).then((client) => {
-          expect(client.redirectUris).to.contain('http://localhost/op/callback');
+          expect(client.redirectUris).to.contain('http://localhost:2355/op/callback');
           expect(client.redirectUriAllowed('http://localhost/op/callback')).to.be.true;
           expect(client.redirectUriAllowed('http://localhost:80/op/callback')).to.be.true;
           expect(client.redirectUriAllowed('http://localhost:443/op/callback')).to.be.true;
@@ -123,7 +123,7 @@ describe('OAuth 2.0 for Native Apps Best Current Practice features', () => {
           token_endpoint_auth_method: 'none',
           redirect_uris: ['http://127.0.0.1:2355/op/callback'],
         }).then((client) => {
-          expect(client.redirectUris).to.contain('http://127.0.0.1/op/callback');
+          expect(client.redirectUris).to.contain('http://127.0.0.1:2355/op/callback');
           expect(client.redirectUriAllowed('http://127.0.0.1/op/callback')).to.be.true;
           expect(client.redirectUriAllowed('http://127.0.0.1:80/op/callback')).to.be.true;
           expect(client.redirectUriAllowed('http://127.0.0.1:443/op/callback')).to.be.true;
@@ -159,7 +159,7 @@ describe('OAuth 2.0 for Native Apps Best Current Practice features', () => {
           token_endpoint_auth_method: 'none',
           redirect_uris: ['http://[::1]:2355/op/callback'],
         }).then((client) => {
-          expect(client.redirectUris).to.contain('http://[::1]/op/callback');
+          expect(client.redirectUris).to.contain('http://[::1]:2355/op/callback');
           expect(client.redirectUriAllowed('http://[::1]/op/callback')).to.be.true;
           expect(client.redirectUriAllowed('http://[::1]:80/op/callback')).to.be.true;
           expect(client.redirectUriAllowed('http://[::1]:443/op/callback')).to.be.true;
