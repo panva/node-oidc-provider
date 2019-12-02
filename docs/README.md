@@ -432,6 +432,7 @@ location / {
   - [requestObjects](#featuresrequestobjects)
   - [resourceIndicators](#featuresresourceindicators)
   - [revocation](#featuresrevocation)
+  - [secp256k1](#featuressecp256k1)
   - [sessionManagement](#featuressessionmanagement)
   - [userinfo](#featuresuserinfo)
   - [webMessageResponseMode](#featureswebmessageresponsemode)
