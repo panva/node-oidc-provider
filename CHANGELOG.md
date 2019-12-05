@@ -2,6 +2,15 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [6.17.1](https://github.com/panva/node-oidc-provider/compare/v6.17.0...v6.17.1) (2019-12-05)
+
+
+### Bug Fixes
+
+* registered native loopback redirect_uris do not get normalized ([96e035f](https://github.com/panva/node-oidc-provider/commit/96e035fca7b504b8bdb6323b33ae58b5220938ce))
+
+
+
 # [6.17.0](https://github.com/panva/node-oidc-provider/compare/v6.16.1...v6.17.0) (2019-12-02)
 
 
