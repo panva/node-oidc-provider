@@ -1014,6 +1014,7 @@ describe('Client metadata validation', () => {
       defaultsTo(this.title, undefined);
       mustBeString(this.title, undefined, undefined, configuration);
       mustBeUri(this.title, ['http', 'https'], configuration);
+      rejects(this.title, 'https://rp.example.com/bcl', 'id_token_signed_response_alg must not be "none" when backchannel_logout_uri is used', { id_token_signed_response_alg: 'none' }, configuration);
     });
 
     context('backchannel_logout_session_required', function () {
