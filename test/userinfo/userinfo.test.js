@@ -36,8 +36,18 @@ describe('userinfo /me', () => {
     }).to.throw('jwtUserinfo is only available in conjuction with userinfo');
   });
 
-  it('returns 200 OK and user claims except the rejected ones', function () {
+  it('[get] returns 200 OK and user claims except the rejected ones', function () {
     return this.agent.get('/me')
+      .auth(this.access_token, { type: 'bearer' })
+      .expect(200)
+      .expect((response) => {
+        expect(response.body).to.have.keys(['sub', 'email']);
+        expect(response.body).not.to.have.keys(['email_verified']);
+      });
+  });
+
+  it('[post] returns 200 OK and user claims except the rejected ones', function () {
+    return this.agent.post('/me')
       .auth(this.access_token, { type: 'bearer' })
       .expect(200)
       .expect((response) => {

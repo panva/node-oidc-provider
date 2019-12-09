@@ -44,5 +44,10 @@ describe('providing Bearer token', () => {
         .send('access_token=')
         .expect(this.failWith(400, 'invalid_request', 'no access token provided'));
     });
+
+    it('empty body w/ auth header', function () {
+      return this.agent.post('/me')
+        .expect(this.failWith(400, 'invalid_request', 'no access token provided'));
+    });
   });
 });
