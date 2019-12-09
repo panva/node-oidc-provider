@@ -167,5 +167,5 @@ jobs:
       - uses: actions/setup-ruby@v1
         with:
           ruby-version: 2.x
-      - run: gem install dpl
-      - run: dpl --provider=heroku --strategy=git --api-key=${{ secrets.HEROKU_AUTH_TOKEN }} --app=${{ matrix.app }}
+      - run: gem install dpl-heroku -v 1.10.14
+      - run: dpl --provider=heroku --strategy=api --api-key=${{ secrets.HEROKU_AUTH_TOKEN }} --app=${{ matrix.app }}
