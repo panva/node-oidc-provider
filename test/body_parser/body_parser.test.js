@@ -118,7 +118,7 @@ describe('body parser', () => {
         .send('not a json')
         .type('json')
         .expect(400)
-        .expect('{"error":"invalid_request","error_description":"couldnt parse the request body"}');
+        .expect('{"error":"invalid_request","error_description":"failed to parse the request body"}');
     });
   });
 });
