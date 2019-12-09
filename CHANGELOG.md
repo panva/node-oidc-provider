@@ -2,6 +2,15 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [6.17.3](https://github.com/panva/node-oidc-provider/compare/v6.17.2...v6.17.3) (2019-12-09)
+
+
+### Bug Fixes
+
+* allow empty body without content-type on userinfo ([d5148ad](https://github.com/panva/node-oidc-provider/commit/d5148ad6149672cf93851f0e0e6d72ddedd09ec3))
+
+
+
 ## [6.17.2](https://github.com/panva/node-oidc-provider/compare/v6.17.1...v6.17.2) (2019-12-07)
 
 
