@@ -12,4 +12,21 @@ describe('Provider configuration', () => {
       });
     }).to.throw('Unknown feature configuration: foo');
   });
+
+  it('checks that a feature configuration is not a boolean', () => {
+    expect(() => {
+      new Configuration({ // eslint-disable-line no-new
+        features: {
+          devInteractions: false,
+        },
+      });
+    }).to.throw('features are no longer enabled/disabled with a boolean value, please see the docs');
+    expect(() => {
+      new Configuration({ // eslint-disable-line no-new
+        features: {
+          devInteractions: true,
+        },
+      });
+    }).to.throw('features are no longer enabled/disabled with a boolean value, please see the docs');
+  });
 });
