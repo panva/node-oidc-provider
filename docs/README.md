@@ -418,6 +418,7 @@ application code
 | oidc-provider mounted to a `connect` application | `provider.proxy = true` |
 | oidc-provider mounted to a `koa` application | `yourKoaApp.proxy = true` |
 | oidc-provider mounted to a `fastify` application | `provider.proxy = true` |
+| oidc-provider mounted to a `hapi` application | `provider.proxy = true` |
 
 It is also necessary that the web server doing the offloading also passes
 those headers to the downstream application. Here is a common configuration
