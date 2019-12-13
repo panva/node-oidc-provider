@@ -49,38 +49,17 @@ function report() {
   });
 }
 
-function cartesian(...arg) {
-  const r = [];
-  const max = arg.length - 1;
-
-  function helper(arr, i) {
-    for (let j = 0, l = arg[i].length; j < l; j++) {
-      const a = arr.slice(0);
-      a.push(arg[i][j]);
-      if (i === max) r.push(a);
-      else helper(a, i + 1);
-    }
-  }
-  helper([], 0);
-  return r;
-}
-
 (async () => {
   const formats = ['opaque', 'jwt', 'jwt-ietf', runtimeSupport.EdDSA ? 'paseto' : '', 'dynamic'].filter(Boolean);
-  const matrix = [
-    ['koa', 'express', 'connect'],
-    ['/', '/oidc'],
-  ];
 
   for (const format of formats) {
     await pass({ format });
   }
 
-  for (const format of formats) {
-    const runs = cartesian(...matrix);
-    for (const [mountVia, mountTo] of runs) {
-      await pass({ format, mountVia, mountTo });
-    }
+  const mountTo = '/oidc';
+
+  for (const mountVia of ['koa', 'express', 'connect', 'fastify']) {
+    await pass({ format: 'dynamic', mountVia, mountTo });
   }
 
   await report();

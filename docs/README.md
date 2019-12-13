@@ -354,9 +354,17 @@ connectApp.use(prefix, oidc.callback);
 ### to a `koa` application
 ```js
 // assumes koa ^2.0.0
+// assumes koa-mount ^4.0.0
 const mount = require('koa-mount');
 const prefix = '/oidc';
 koaApp.use(mount(prefix, oidc.app));
+```
+
+### to a `fastify` application
+```js
+// assumes fastify ^2.0.0
+const prefix = '/oidc';
+fastifyApp.use(prefix, oidc.callback);
 ```
 
 Note: when the issuer identifier does not include the path prefix you should take care of rewriting
@@ -382,6 +390,7 @@ application code
 | oidc-provider mounted to an `express` application | `provider.proxy = true` |
 | oidc-provider mounted to a `connect` application | `provider.proxy = true` |
 | oidc-provider mounted to a `koa` application | `yourKoaApp.proxy = true` |
+| oidc-provider mounted to a `fastify` application | `provider.proxy = true` |
 
 It is also necessary that the web server doing the offloading also passes
 those headers to the downstream application. Here is a common configuration

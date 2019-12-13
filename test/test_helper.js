@@ -5,6 +5,7 @@ process.env.NODE_ENV = process.env.NODE_ENV || 'test';
 const { parse } = require('url');
 const path = require('path');
 const querystring = require('querystring');
+const { createServer } = require('http');
 
 const sinon = require('sinon');
 const flatten = require('lodash/flatten');
@@ -13,6 +14,7 @@ const { expect } = require('chai');
 const Koa = require('koa');
 const Express = require('express');
 const Connect = require('connect');
+const Fastify = require('fastify');
 const koaMount = require('koa-mount');
 const base64url = require('base64url');
 const KeyGrip = require('keygrip'); // eslint-disable-line import/no-extraneous-dependencies
@@ -65,12 +67,15 @@ module.exports = function testHelper(dir, {
   mountVia = process.env.MOUNT_VIA,
   mountTo = mountVia ? process.env.MOUNT_TO || '/' : '/',
 } = {}) {
-  after(() => {
+  const afterPromises = [];
+
+  after(async () => {
     TestAdapter.clear();
     global.server.removeAllListeners('request');
+    await Promise.all(afterPromises.map((x) => x()));
   });
 
-  return function () {
+  return async function () {
     const conf = path.format({ dir, base: `${base}.config.js` });
     let { config, client, clients } = require(conf); // eslint-disable-line
 
@@ -402,6 +407,17 @@ module.exports = function testHelper(dir, {
       const app = new Connect();
       app.use(mountTo, provider.callback);
       global.server.on('request', app);
+    } else if (mountVia === 'fastify') {
+      const app = new Fastify();
+      app.use(mountTo, provider.callback);
+      await new Promise((resolve) => global.server.close(resolve));
+      await app.listen(port);
+      global.server = app.server;
+      afterPromises.push(async () => {
+        await app.close();
+        global.server = createServer().listen(port);
+        await new Promise((resolve) => global.server.once('listening', resolve));
+      });
     }
 
     agent = supertest(global.server);
