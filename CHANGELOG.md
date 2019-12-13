@@ -2,6 +2,15 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [6.17.4](https://github.com/panva/node-oidc-provider/compare/v6.17.3...v6.17.4) (2019-12-13)
+
+
+### Bug Fixes
+
+* properly handle routes ending with a trailing slash ([c4b06de](https://github.com/panva/node-oidc-provider/commit/c4b06de8911b18319f2a94a560c498ffdea864f8))
+
+
+
 ## [6.17.3](https://github.com/panva/node-oidc-provider/compare/v6.17.2...v6.17.3) (2019-12-09)
 
 
