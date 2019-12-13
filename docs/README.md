@@ -26,9 +26,11 @@ If you or your business use oidc-provider, please consider becoming a [sponsor][
 - [Registering module middlewares (helmet, ip-filters, rate-limiters, etc)](#registering-module-middlewares-helmet-ip-filters-rate-limiters-etc)
 - [Pre- and post-middlewares ❗](#pre--and-post-middlewares)
 - [Mounting oidc-provider](#mounting-oidc-provider)
-  - [to an express application](#to-an-express-application)
   - [to a connect application](#to-a-connect-application)
+  - [to a fastify application](#to-a-fastify-application)
+  - [to a hapi application](#to-a-hapi-application)
   - [to a koa application](#to-a-koa-application)
+  - [to an express application](#to-an-express-application)
 - [Trusting TLS offloading proxies ❗](#trusting-tls-offloading-proxies)
 - [Configuration options ❗](#configuration-options)
 - [FAQ ❗](#faq)
@@ -337,18 +339,50 @@ provider.use(async (ctx, next) => {
 The following snippets show how a provider instance can be mounted to existing applications with a
 path prefix.
 
+### to a `connect` application
+```js
+// assumes connect ^3.0.0
+const prefix = '/oidc';
+connectApp.use(prefix, oidc.callback);
+```
+
+### to a `fastify` application
+```js
+// assumes fastify ^2.0.0
+const prefix = '/oidc';
+fastifyApp.use(prefix, oidc.callback);
+```
+
+### to a `hapi` application
+```js
+// assumes @hapi/hapi ^18.0.0
+const prefix = '/oidc';
+server.route({
+  path: `${prefix}/{any*}`,
+  method: '*',
+  config: { payload: { output: 'stream', parse: false } },
+  async handler({ raw: { req, res } }, h) {
+    req.originalUrl = req.url;
+    req.url = req.url.replace(prefix, '');
+
+    await new Promise((resolve) => {
+      res.on('finish', resolve);
+      provider.callback(req, res);
+    });
+
+    req.url = req.url.replace('/', prefix);
+    delete req.originalUrl;
+
+    return res.finished ? h.abandon : h.continue;
+  }
+});
+```
+
 ### to an `express` application
 ```js
 // assumes express ^4.0.0
 const prefix = '/oidc';
 expressApp.use(prefix, oidc.callback);
-```
-
-### to a `connect` application
-```js
-// assumes express ^3.0.0
-const prefix = '/oidc';
-connectApp.use(prefix, oidc.callback);
 ```
 
 ### to a `koa` application
@@ -358,13 +392,6 @@ connectApp.use(prefix, oidc.callback);
 const mount = require('koa-mount');
 const prefix = '/oidc';
 koaApp.use(mount(prefix, oidc.app));
-```
-
-### to a `fastify` application
-```js
-// assumes fastify ^2.0.0
-const prefix = '/oidc';
-fastifyApp.use(prefix, oidc.callback);
 ```
 
 Note: when the issuer identifier does not include the path prefix you should take care of rewriting

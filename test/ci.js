@@ -58,7 +58,7 @@ function report() {
 
   const mountTo = '/oidc';
 
-  for (const mountVia of ['koa', 'express', 'connect', 'fastify']) {
+  for (const mountVia of ['connect', 'express', 'fastify', 'hapi', 'koa']) {
     await pass({ format: 'dynamic', mountVia, mountTo });
   }
 

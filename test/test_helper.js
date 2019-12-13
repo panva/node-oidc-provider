@@ -11,13 +11,14 @@ const sinon = require('sinon');
 const flatten = require('lodash/flatten');
 const { agent: supertest } = require('supertest');
 const { expect } = require('chai');
-const Koa = require('koa');
-const Express = require('express');
-const Connect = require('connect');
-const Fastify = require('fastify');
 const koaMount = require('koa-mount');
 const base64url = require('base64url');
 const KeyGrip = require('keygrip'); // eslint-disable-line import/no-extraneous-dependencies
+const Connect = require('connect');
+const Express = require('express');
+const Fastify = require('fastify');
+const Hapi = require('@hapi/hapi');
+const Koa = require('koa');
 
 const nanoid = require('../lib/helpers/nanoid');
 const epochTime = require('../lib/helpers/epoch_time');
@@ -392,32 +393,72 @@ module.exports = function testHelper(dir, {
       wrap,
     });
 
-    if (!mountVia) {
-      global.server.on('request', provider.callback);
-    } else if (mountVia === 'koa') {
-      const app = new Koa();
-      app.use(koaMount(mountTo, provider.app));
-      global.server.on('request', app.callback());
-      this.app = app;
-    } else if (mountVia === 'express') {
-      const app = new Express();
-      app.use(mountTo, provider.callback);
-      global.server.on('request', app);
-    } else if (mountVia === 'connect') {
-      const app = new Connect();
-      app.use(mountTo, provider.callback);
-      global.server.on('request', app);
-    } else if (mountVia === 'fastify') {
-      const app = new Fastify();
-      app.use(mountTo, provider.callback);
-      await new Promise((resolve) => global.server.close(resolve));
-      await app.listen(port);
-      global.server = app.server;
-      afterPromises.push(async () => {
-        await app.close();
-        global.server = createServer().listen(port);
-        await new Promise((resolve) => global.server.once('listening', resolve));
-      });
+    switch (mountVia) {
+      case 'koa': {
+        const app = new Koa();
+        app.use(koaMount(mountTo, provider.app));
+        global.server.on('request', app.callback());
+        this.app = app;
+        break;
+      }
+      case 'express': {
+        const app = new Express();
+        app.use(mountTo, provider.callback);
+        global.server.on('request', app);
+        break;
+      }
+      case 'connect': {
+        const app = new Connect();
+        app.use(mountTo, provider.callback);
+        global.server.on('request', app);
+        break;
+      }
+      case 'fastify': {
+        const app = new Fastify();
+        app.use(mountTo, provider.callback);
+        await new Promise((resolve) => global.server.close(resolve));
+        await app.listen(port);
+        global.server = app.server;
+        afterPromises.push(async () => {
+          await app.close();
+          global.server = createServer().listen(port);
+          await new Promise((resolve) => global.server.once('listening', resolve));
+        });
+        break;
+      }
+      case 'hapi': {
+        const app = new Hapi.Server({ port });
+        app.route({
+          path: `${mountTo}/{any*}`,
+          method: '*',
+          config: { payload: { output: 'stream', parse: false } },
+          async handler({ raw: { req, res } }, h) {
+            req.originalUrl = req.url;
+            req.url = req.url.replace(mountTo, '');
+
+            await new Promise((resolve) => {
+              res.on('finish', resolve);
+              provider.callback(req, res);
+            });
+
+            req.url = req.url.replace('/', mountTo);
+            delete req.originalUrl;
+
+            return res.finished ? h.abandon : h.continue;
+          },
+        });
+        await new Promise((resolve) => global.server.close(resolve));
+        await app.start();
+        global.server = app.listener;
+        afterPromises.push(async () => {
+          await app.stop();
+          global.server = createServer().listen(port);
+          await new Promise((resolve) => global.server.once('listening', resolve));
+        });
+        break;
+      }
+      default:
+        global.server.on('request', provider.callback);
     }
 
     agent = supertest(global.server);

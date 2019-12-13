@@ -90,8 +90,9 @@ Also be sure to check the available configuration docs section.
 
 ## [Documentation](/docs/README.md) & Configuration
 
-oidc-provider allows to be extended and configured in various ways to fit a variety of uses. See
-the [documentation](/docs/README.md).
+oidc-provider can be mounted to existing connect, express, fastify, hapi, or koa applications, see
+[how](/docs/README.md#mounting-oidc-provider). The provider allows to be extended and configured in
+various ways to fit a variety of uses. See the [documentation](/docs/README.md).
 
 ```js
 const { Provider } = require('oidc-provider');
