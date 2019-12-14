@@ -428,6 +428,7 @@ module.exports = function testHelper(dir, {
       }
       case 'hapi': {
         const app = new Hapi.Server({ port });
+        const { callback } = provider;
         app.route({
           path: `${mountTo}/{any*}`,
           method: '*',
@@ -438,7 +439,7 @@ module.exports = function testHelper(dir, {
 
             await new Promise((resolve) => {
               res.on('finish', resolve);
-              provider.callback(req, res);
+              callback.call(provider, req, res);
             });
 
             req.url = req.url.replace('/', mountTo);
