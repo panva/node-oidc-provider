@@ -357,7 +357,8 @@ fastifyApp.use(prefix, oidc.callback);
 ```js
 // assumes @hapi/hapi ^18.0.0
 const prefix = '/oidc';
-server.route({
+const { callback } = oidc;
+hapiApp.route({
   path: `${prefix}/{any*}`,
   method: '*',
   config: { payload: { output: 'stream', parse: false } },
@@ -367,7 +368,7 @@ server.route({
 
     await new Promise((resolve) => {
       res.on('finish', resolve);
-      provider.callback(req, res);
+      callback.call(oidc, req, res);
     });
 
     req.url = req.url.replace('/', prefix);
