@@ -712,6 +712,7 @@ export interface AccountClaims {
 export interface Account {
   accountId: string;
   claims: (use: string, scope: string, claims: { [key: string]: null | ClaimsParameterMember }, rejected: string[]) => Promise<AccountClaims> | AccountClaims;
+  [key: string]: any;
 }
 
 export type RotateRegistrationAccessTokenFunction = (ctx: KoaContextWithOIDC) => Promise<boolean> | boolean;
