@@ -2,6 +2,15 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [6.17.6](https://github.com/panva/node-oidc-provider/compare/v6.17.5...v6.17.6) (2019-12-17)
+
+
+### Bug Fixes
+
+* skip JWT validating iat is in the past when exp is present ([a7dd855](https://github.com/panva/node-oidc-provider/commit/a7dd85560774c098b15f1aedf7e4dfcc9bc498c1))
+
+
+
 ## [6.17.5](https://github.com/panva/node-oidc-provider/compare/v6.17.4...v6.17.5) (2019-12-16)
 
 
