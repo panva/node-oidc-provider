@@ -1041,7 +1041,7 @@ html>`;
 
 ### features.ietfJWTAccessTokenProfile
 
-[draft-ietf-oauth-access-token-jwt-02](https://tools.ietf.org/html/draft-ietf-oauth-access-token-jwt-02) - JSON Web Token (JWT) Profile for OAuth 2.0 Access Tokens  
+[draft-ietf-oauth-access-token-jwt-03](https://tools.ietf.org/html/draft-ietf-oauth-access-token-jwt-03) - JSON Web Token (JWT) Profile for OAuth 2.0 Access Tokens  
 
 Enables the use of `jwt-ietf` JWT Access Token format   
   

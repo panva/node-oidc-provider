@@ -938,7 +938,7 @@ export interface Configuration {
 
     ietfJWTAccessTokenProfile?: {
       enabled?: boolean,
-      ack?: 2 | 'draft-02'
+      ack?: 2 | 'draft-02' | 'draft-03'
     },
 
     fapiRW?: {
