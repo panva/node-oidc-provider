@@ -16,8 +16,9 @@ import * as Koa from 'koa';
 
 export {};
 
+export type CanBePromise<T> = Promise<T> | T;
 export type RetryFunction = (retry: number, error: Error) => number;
-export type FindAccount = (ctx: KoaContextWithOIDC, sub: string, token?: AuthorizationCode | AccessToken | DeviceCode) => Promise<Account> | Account;
+export type FindAccount = (ctx: KoaContextWithOIDC, sub: string, token?: AuthorizationCode | AccessToken | DeviceCode) => CanBePromise<Account>;
 export type TokenFormat = 'opaque' | 'jwt' | 'jwt-ietf' | 'paseto';
 
 export type AccessTokenFormatFunction = (ctx: KoaContextWithOIDC, token: AccessToken) => TokenFormat;
@@ -711,11 +712,11 @@ export interface AccountClaims {
 
 export interface Account {
   accountId: string;
-  claims: (use: string, scope: string, claims: { [key: string]: null | ClaimsParameterMember }, rejected: string[]) => Promise<AccountClaims> | AccountClaims;
+  claims: (use: string, scope: string, claims: { [key: string]: null | ClaimsParameterMember }, rejected: string[]) => CanBePromise<AccountClaims>;
   [key: string]: any;
 }
 
-export type RotateRegistrationAccessTokenFunction = (ctx: KoaContextWithOIDC) => Promise<boolean> | boolean;
+export type RotateRegistrationAccessTokenFunction = (ctx: KoaContextWithOIDC) => CanBePromise<boolean>;
 
 export interface ErrorOut {
   error: string;
@@ -882,7 +883,7 @@ export interface Configuration {
       enabled?: boolean;
       initialAccessToken?: boolean | string;
       policies?: {
-        [key: string]: (ctx: KoaContextWithOIDC, metadata: ClientMetadata) => Promise<void | undefined> | void | undefined;
+        [key: string]: (ctx: KoaContextWithOIDC, metadata: ClientMetadata) => CanBePromise<void | undefined>;
       };
       idFactory?: () => string;
       secretFactory?: () => string;
@@ -898,9 +899,9 @@ export interface Configuration {
       charset?: 'base-20' | 'digits';
       mask?: string;
       deviceInfo?: (ctx: KoaContextWithOIDC) => AnyObject;
-      userCodeInputSource?: (ctx: KoaContextWithOIDC, form: string, out?: ErrorOut, err?: errors.OIDCProviderError | Error) => Promise<void | undefined> | void | undefined;
-      userCodeConfirmSource?: (ctx: KoaContextWithOIDC, form: string, client: Client, deviceInfo: AnyObject, userCode: string) => Promise<void | undefined> | void | undefined;
-      successSource?: (ctx: KoaContextWithOIDC) => Promise<void | undefined> | void | undefined;
+      userCodeInputSource?: (ctx: KoaContextWithOIDC, form: string, out?: ErrorOut, err?: errors.OIDCProviderError | Error) => CanBePromise<void | undefined>;
+      userCodeConfirmSource?: (ctx: KoaContextWithOIDC, form: string, client: Client, deviceInfo: AnyObject, userCode: string) => CanBePromise<void | undefined>;
+      successSource?: (ctx: KoaContextWithOIDC) => CanBePromise<void | undefined>;
     };
 
     requestObjects?: {
@@ -981,23 +982,22 @@ export interface Configuration {
     resourceIndicators?: {
       enabled?: boolean;
       ack?: 2 | 3 | 4 | 5 | 6 | 7 | 'draft-07';
-      allowedPolicy?: (ctx: KoaContextWithOIDC, resources: string | string[], client: Client) => Promise<boolean> | boolean;
+      allowedPolicy?: (ctx: KoaContextWithOIDC, resources: string | string[], client: Client) => CanBePromise<boolean>;
     };
 
     frontchannelLogout?: {
       enabled?: boolean;
       ack?: 2 | 'draft-02';
-      logoutPendingSource?: (ctx: KoaContextWithOIDC, frames: string[], postLogoutRedirectUri?: string) => Promise<void | undefined> | void | undefined;
+      logoutPendingSource?: (ctx: KoaContextWithOIDC, frames: string[], postLogoutRedirectUri?: string) => CanBePromise<void | undefined>;
     };
   };
 
-  extraAccessTokenClaims?: (ctx: KoaContextWithOIDC, token: AccessToken | ClientCredentials) => Promise<AnyObject> | AnyObject | Promise<void | undefined> | void | undefined;
+  extraAccessTokenClaims?: (ctx: KoaContextWithOIDC, token: AccessToken | ClientCredentials) => CanBePromise<AnyObject | void | undefined> ;
 
   formats?: {
     AccessToken?: AccessTokenFormatFunction | TokenFormat;
     ClientCredentials?: ClientCredentialsFormatFunction | TokenFormat;
-    // TODO: can't seem to get a pass on async when | AsymmetricSigningAlgoritm is also possible return;
-    jwtAccessTokenSigningAlg?: (ctx: KoaContextWithOIDC, token: AccessToken | ClientCredentials, client: Client) => Promise<AsymmetricSigningAlgoritm>;
+    jwtAccessTokenSigningAlg?: (ctx: KoaContextWithOIDC, token: AccessToken | ClientCredentials, client: Client) => CanBePromise<AsymmetricSigningAlgoritm>;
     customizers?: {
       jwt?: (ctx: KoaContextWithOIDC, token: AccessToken | ClientCredentials, parts: JWTStructured) => Promise<JWTStructured> | JWTStructured;
       'jwt-ietf'?: (ctx: KoaContextWithOIDC, token: AccessToken | ClientCredentials, parts: JWTStructured) => Promise<JWTStructured> | JWTStructured;
@@ -1007,9 +1007,9 @@ export interface Configuration {
 
   httpOptions?: (options: HttpRequestOptions) => HttpRequestOptions;
 
-  expiresWithSession?: (ctx: KoaContextWithOIDC, token: AccessToken | AuthorizationCode | DeviceCode) => Promise<boolean> | boolean;
+  expiresWithSession?: (ctx: KoaContextWithOIDC, token: AccessToken | AuthorizationCode | DeviceCode) => CanBePromise<boolean>;
 
-  issueRefreshToken?: (ctx: KoaContextWithOIDC, client: Client, code: AuthorizationCode | DeviceCode) => Promise<boolean> | boolean;
+  issueRefreshToken?: (ctx: KoaContextWithOIDC, client: Client, code: AuthorizationCode | DeviceCode) => CanBePromise<boolean>;
 
   jwks?: jose.JSONWebKeySet;
 
@@ -1038,7 +1038,7 @@ export interface Configuration {
 
   subjectTypes?: SubjectTypes[];
 
-  pairwiseIdentifier?: (ctx: KoaContextWithOIDC, accountId: string, client: Client) => Promise<string> | string;
+  pairwiseIdentifier?: (ctx: KoaContextWithOIDC, accountId: string, client: Client) => CanBePromise<string>;
 
   tokenEndpointAuthMethods?: ClientAuthMethod[];
 
@@ -1063,17 +1063,17 @@ export interface Configuration {
     validator?: (key: string, value: any, metadata: ClientMetadata, ctx: KoaContextWithOIDC) => void | undefined;
   };
 
-  postLogoutSuccessSource?: (ctx: KoaContextWithOIDC) => Promise<void | undefined> | void | undefined;
+  postLogoutSuccessSource?: (ctx: KoaContextWithOIDC) => CanBePromise<void | undefined>;
 
-  rotateRefreshToken?: ((ctx: KoaContextWithOIDC) => Promise<boolean> | boolean) | boolean;
+  rotateRefreshToken?: ((ctx: KoaContextWithOIDC) => CanBePromise<boolean>) | boolean;
 
-  logoutSource?: (ctx: KoaContextWithOIDC, form: string) => Promise<void | undefined> | void | undefined;
+  logoutSource?: (ctx: KoaContextWithOIDC, form: string) => CanBePromise<void | undefined>;
 
-  renderError?: (ctx: KoaContextWithOIDC, out: ErrorOut, error: errors.OIDCProviderError | Error) => Promise<void | undefined> | void | undefined;
+  renderError?: (ctx: KoaContextWithOIDC, out: ErrorOut, error: errors.OIDCProviderError | Error) => CanBePromise<void | undefined>;
 
   interactions?: {
     policy?: interactionPolicy.Prompt[];
-    url?: (ctx: KoaContextWithOIDC, interaction: Interaction) => Promise<string> | string;
+    url?: (ctx: KoaContextWithOIDC, interaction: Interaction) => CanBePromise<string>;
   };
 
   audiences?: (
@@ -1081,7 +1081,7 @@ export interface Configuration {
     sub: string | undefined,
     token: AccessToken | ClientCredentials,
     use: 'access_token' | 'client_credentials'
-  ) => Promise<false | string | string[]> | false | string | string[];
+  ) => CanBePromise<false | string | string[]>;
 
   findAccount?: FindAccount;
 
@@ -1184,7 +1184,7 @@ export class Provider extends events.EventEmitter {
 
   registerGrantType(
     name: string,
-    handler: (ctx: KoaContextWithOIDC, next: () => Promise<void>) => Promise<void> | void,
+    handler: (ctx: KoaContextWithOIDC, next: () => Promise<void>) => CanBePromise<void>,
     params?: string | string[] | Set<string>,
     dupes?: string | string[] | Set<string>
   ): void;
@@ -1496,26 +1496,26 @@ export namespace interactionPolicy {
       reason: string,
       description: string,
       error: string,
-      check: (ctx: KoaContextWithOIDC) => Promise<boolean> | boolean,
-      details?: (ctx: KoaContextWithOIDC) => Promise<AnyObject> | AnyObject
+      check: (ctx: KoaContextWithOIDC) => CanBePromise<boolean>,
+      details?: (ctx: KoaContextWithOIDC) => CanBePromise<AnyObject>
     );
     constructor(
       reason: string,
       description: string,
-      check: (ctx: KoaContextWithOIDC) => Promise<boolean> | boolean,
-      details?: (ctx: KoaContextWithOIDC) => Promise<AnyObject> | AnyObject
+      check: (ctx: KoaContextWithOIDC) => CanBePromise<boolean>,
+      details?: (ctx: KoaContextWithOIDC) => CanBePromise<AnyObject>
     );
 
     reason: string;
     description: string;
     error: string;
-    details: (ctx: KoaContextWithOIDC) => Promise<AnyObject> | AnyObject;
-    check: (ctx: KoaContextWithOIDC) => Promise<boolean> | boolean;
+    details: (ctx: KoaContextWithOIDC) => CanBePromise<AnyObject>;
+    check: (ctx: KoaContextWithOIDC) => CanBePromise<boolean>;
   }
 
   class Prompt {
     constructor(info: { name: string, requestable?: boolean }, ...checks: Check[]);
-    constructor(info: { name: string, requestable?: boolean }, details: (ctx: KoaContextWithOIDC) => Promise<AnyObject> | AnyObject, ...checks: Check[]);
+    constructor(info: { name: string, requestable?: boolean }, details: (ctx: KoaContextWithOIDC) => CanBePromise<AnyObject>, ...checks: Check[]);
 
     name: string;
     requestable: boolean;

@@ -1,11 +1,14 @@
 // tslint:disable-next-line:no-relative-import-in-test
-import { Provider, interactionPolicy } from './index.d';
+import { Provider, interactionPolicy, AsymmetricSigningAlgoritm } from './index.d';
 
 new Provider('https://op.example.com');
 
 new Provider('https://op.example.com', {
   rotateRefreshToken: true,
   formats: {
+    jwtAccessTokenSigningAlg() {
+      return 'ES384';
+    },
     customizers: {
       async jwt(ctx, token, parts) {
         ctx.oidc.issuer.substring(0);
@@ -119,7 +122,7 @@ const provider = new Provider('https://op.example.com', {
       clientCredentials.iat.toFixed();
       return 'opaque';
     },
-    async jwtAccessTokenSigningAlg(ctx, token, client) {
+    async jwtAccessTokenSigningAlg(ctx, token, client): Promise<AsymmetricSigningAlgoritm> {
       ctx.oidc.issuer.substring(0);
       token.iat.toFixed();
       client.clientId.substring(0);
