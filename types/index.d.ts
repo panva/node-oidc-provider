@@ -999,9 +999,9 @@ export interface Configuration {
     // TODO: can't seem to get a pass on async when | AsymmetricSigningAlgoritm is also possible return;
     jwtAccessTokenSigningAlg?: (ctx: KoaContextWithOIDC, token: AccessToken | ClientCredentials, client: Client) => Promise<AsymmetricSigningAlgoritm>;
     customizers?: {
-      jwt?: (ctx: KoaContextWithOIDC, token: AccessToken | ClientCredentials, parts: JWTStructured) => JWTStructured;
-      'jwt-ietf'?: (ctx: KoaContextWithOIDC, token: AccessToken | ClientCredentials, parts: JWTStructured) => JWTStructured;
-      paseto?: (ctx: KoaContextWithOIDC, token: AccessToken | ClientCredentials, parts: PASETOStructured) => PASETOStructured;
+      jwt?: (ctx: KoaContextWithOIDC, token: AccessToken | ClientCredentials, parts: JWTStructured) => Promise<JWTStructured> | JWTStructured;
+      'jwt-ietf'?: (ctx: KoaContextWithOIDC, token: AccessToken | ClientCredentials, parts: JWTStructured) => Promise<JWTStructured> | JWTStructured;
+      paseto?: (ctx: KoaContextWithOIDC, token: AccessToken | ClientCredentials, parts: PASETOStructured) => Promise<PASETOStructured> | PASETOStructured;
     };
   };
 
@@ -1065,7 +1065,7 @@ export interface Configuration {
 
   postLogoutSuccessSource?: (ctx: KoaContextWithOIDC) => Promise<void | undefined> | void | undefined;
 
-  rotateRefreshToken?: (ctx: KoaContextWithOIDC) => Promise<boolean> | boolean;
+  rotateRefreshToken?: ((ctx: KoaContextWithOIDC) => Promise<boolean> | boolean) | boolean;
 
   logoutSource?: (ctx: KoaContextWithOIDC, form: string) => Promise<void | undefined> | void | undefined;
 
@@ -1109,7 +1109,7 @@ export interface Configuration {
 }
 
 export type NoneAlg = 'none';
-export type AsymmetricSigningAlgoritm = 'PS256' | 'PS384' | 'PS512' | 'ES256' | 'ES384' | 'ES512' | 'EdDSA' | 'RS256' | 'RS384' | 'RS512';
+export type AsymmetricSigningAlgoritm = 'PS256' | 'PS384' | 'PS512' | 'ES256' | 'ES256K' | 'ES384' | 'ES512' | 'EdDSA' | 'RS256' | 'RS384' | 'RS512';
 export type SymmetricSigningAlgorithm = 'HS256' | 'HS384' | 'HS512';
 export type SigningAlgorithm = AsymmetricSigningAlgoritm | SymmetricSigningAlgorithm;
 export type SigningAlgorithmWithNone = AsymmetricSigningAlgoritm | SymmetricSigningAlgorithm | NoneAlg;
