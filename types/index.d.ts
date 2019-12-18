@@ -1065,7 +1065,7 @@ export interface Configuration {
 
   postLogoutSuccessSource?: (ctx: KoaContextWithOIDC) => Promise<void | undefined> | void | undefined;
 
-  rotateRefreshToken?: boolean | (ctx: KoaContextWithOIDC) => Promise<boolean> | boolean;
+  rotateRefreshToken?: boolean | ((ctx: KoaContextWithOIDC) => Promise<boolean> | boolean);
 
   logoutSource?: (ctx: KoaContextWithOIDC, form: string) => Promise<void | undefined> | void | undefined;
 
