@@ -872,7 +872,7 @@ describe('BASIC code', () => {
           .expect(auth.validateState)
           .expect(auth.validateClientLocation)
           .expect(auth.validateError('unauthorized_client'))
-          .expect(auth.validateErrorDescription('response_type not allowed for this client'));
+          .expect(auth.validateErrorDescription('requested response_type is not allowed for this client'));
       });
 
       it('unsupported response type validation runs before oidc required params', function () {

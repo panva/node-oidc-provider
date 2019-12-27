@@ -43,7 +43,7 @@ describe('device_authorization_endpoint', () => {
         .expect('content-type', /application\/json/)
         .expect({
           error: 'unauthorized_client',
-          error_description: 'urn:ietf:params:oauth:grant-type:device_code not allowed for this client',
+          error_description: 'urn:ietf:params:oauth:grant-type:device_code is not allowed for this client',
         })
         .expect(() => {
           expect(spy.calledOnce).to.be.true;

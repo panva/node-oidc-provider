@@ -22,7 +22,7 @@ const route = '/token';
 
 const tokenAuthSucceeded = {
   error: 'unauthorized_client',
-  error_description: 'requested grant type is restricted to this client',
+  error_description: 'requested grant type is not allowed for this client',
 };
 
 const introspectionAuthSucceeded = {
