@@ -191,7 +191,7 @@ describe('Client metadata validation', () => {
     allows(this.title, 'native', {
       redirect_uris: ['com.example.myapp:/localhost/redirect'],
     });
-    rejects(this.title, 'foobar', 'application_type must be one of [native,web]');
+    rejects(this.title, 'foobar', "application_type must be 'native' or 'web'");
   });
 
   context('client_id', function () {
@@ -230,8 +230,10 @@ describe('Client metadata validation', () => {
     });
     allows(this.title, acrValues, undefined, { acrValues });
     rejects(this.title, [123], /must only contain strings$/);
-    rejects(this.title, ['not a member']);
-    rejects(this.title, ['not a member', '1']);
+    rejects(this.title, ['not a member'], 'default_acr_values must be empty (no values are allowed)');
+    rejects(this.title, ['not a member', '1', 'default_acr_values must be empty (no values are allowed)']);
+    rejects(this.title, ['not a member'], "default_acr_values can only contain '0', '1', or '2'", undefined, { acrValues });
+    rejects(this.title, ['not a member', '1'], "default_acr_values can only contain '0', '1', or '2'", undefined, { acrValues });
   });
 
   context('default_max_age', function () {
@@ -488,6 +490,10 @@ describe('Client metadata validation', () => {
     context(endpointAuthMethodProperty, function () {
       defaultsTo(this.title, 'client_secret_basic', undefined, configuration);
       mustBeString(this.title, undefined, undefined, configuration);
+      rejects(this.title, 'foo', `${endpointAuthMethodProperty} must not be provided (no values are allowed)`, undefined, {
+        ...configuration,
+        [`${endpointAuthMethodProperty.split('_')[0]}EndpointAuthMethods`]: [],
+      });
 
       [
         'client_secret_basic', 'client_secret_jwt', 'client_secret_post', 'private_key_jwt', 'tls_client_auth',
@@ -546,13 +552,13 @@ describe('Client metadata validation', () => {
           ...additional,
         }, configuration);
 
-        rejects(this.title, `${rejected}256`, new RegExp(`^${endpointAuthSigningAlgProperty} must be one of`), {
+        rejects(this.title, `${rejected}256`, new RegExp(`^${endpointAuthSigningAlgProperty} must be`), {
           [endpointAuthMethodProperty]: method,
           ...additional,
         }, configuration);
 
         const confProperty = `${camelCase(endpointAuthSigningAlgProperty)}Values`;
-        rejects(this.title, `${accepted}384`, new RegExp(`^${endpointAuthSigningAlgProperty} must be one of`), {
+        rejects(this.title, `${accepted}384`, new RegExp(`^${endpointAuthSigningAlgProperty} must be`), {
           [endpointAuthMethodProperty]: method,
           ...additional,
         }, {

@@ -39,7 +39,7 @@ describe('request parameter features', () => {
             },
           },
         });
-      }).to.throw(TypeError, "'mergingStrategy.name' must be one of 'lax', 'strict', or 'whitelist'");
+      }).to.throw(TypeError, "'mergingStrategy.name' must be 'lax', 'strict', or 'whitelist'");
     });
   });
 

@@ -153,7 +153,7 @@ describe('registration features', () => {
           grant_types: ['this is clearly wrong'],
           redirect_uris: ['https://client.example.com/cb'],
         })
-        .expect(this.failWith(400, 'invalid_client_metadata', 'grant_types can only contain members [implicit,authorization_code,refresh_token]'));
+        .expect(this.failWith(400, 'invalid_client_metadata', "grant_types can only contain 'implicit', 'authorization_code', or 'refresh_token'"));
     });
 
     it('validates the parameters to be valid and responds with redirect_uri errors', function () {
