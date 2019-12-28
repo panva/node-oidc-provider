@@ -2,6 +2,15 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [6.17.7](https://github.com/panva/node-oidc-provider/compare/v6.17.6...v6.17.7) (2019-12-28)
+
+
+### Bug Fixes
+
+* **typescript:** rotateRefreshToken boolean, ES256K, async customizers ([22ab1e3](https://github.com/panva/node-oidc-provider/commit/22ab1e3925419956256634e535f15fe3efea9471))
+
+
+
 ## [6.17.6](https://github.com/panva/node-oidc-provider/compare/v6.17.5...v6.17.6) (2019-12-17)
 
 
