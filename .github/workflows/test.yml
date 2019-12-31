@@ -3,11 +3,9 @@ name: Continuous Integration
 on:
   push:
     paths-ignore:
-      - '**.yml'
       - '**.md'
   pull_request:
     paths-ignore:
-      - '**.yml'
       - '**.md'
   schedule:
     - cron:  0 9 * * 1-5
@@ -96,7 +94,7 @@ jobs:
         run: |
           git clone https://gitlab.com/openid/conformance-suite.git
           cd conformance-suite
-          git checkout release-v3.2.7
+          git checkout release-v3.3.0
           sed -i -e 's/localhost/localhost.emobix.co.uk/g' src/main/resources/application.properties
           sed -i -e 's/-B/-B -DskipTests=true/g' builder-compose.yml
           docker-compose -f builder-compose.yml run builder
@@ -121,7 +119,7 @@ jobs:
         run: npx mocha --delay --timeout 0 --retries 2 certification/fapi/runner
         env:
           PLAN_NAME: fapi-rw-id2-test-plan
-          VARIANT: private_key_jwt
+          VARIANT: '{"client_auth_type":"private_key_jwt","fapi_profile":"plain_fapi","fapi_response_mode":"plain_response"}'
           CONFIGURATION: ./certification/fapi/pkjwt.json
           SUITE_BASE_URL: https://localhost.emobix.co.uk:8443
           NODE_TLS_REJECT_UNAUTHORIZED: 0
@@ -129,7 +127,7 @@ jobs:
         run: npx mocha --delay --timeout 0 --retries 2 certification/fapi/runner
         env:
           PLAN_NAME: fapi-rw-id2-test-plan
-          VARIANT: mtls
+          VARIANT: '{"client_auth_type":"mtls","fapi_profile":"plain_fapi","fapi_response_mode":"plain_response"}'
           CONFIGURATION: ./certification/fapi/mtls.json
           SUITE_BASE_URL: https://localhost.emobix.co.uk:8443
           NODE_TLS_REJECT_UNAUTHORIZED: 0
@@ -137,7 +135,7 @@ jobs:
         run: npx mocha --delay --timeout 0 --retries 2 certification/fapi/runner
         env:
           PLAN_NAME: fapi-rw-id2-test-plan
-          VARIANT: private_key_jwt-jarm
+          VARIANT: '{"client_auth_type":"private_key_jwt","fapi_profile":"plain_fapi","fapi_response_mode":"jarm"}'
           CONFIGURATION: ./certification/fapi/pkjwt.json
           SUITE_BASE_URL: https://localhost.emobix.co.uk:8443
           NODE_TLS_REJECT_UNAUTHORIZED: 0
@@ -145,7 +143,7 @@ jobs:
         run: npx mocha --delay --timeout 0 --retries 2 certification/fapi/runner
         env:
           PLAN_NAME: fapi-rw-id2-test-plan
-          VARIANT: mtls-jarm
+          VARIANT: '{"client_auth_type":"mtls","fapi_profile":"plain_fapi","fapi_response_mode":"jarm"}'
           CONFIGURATION: ./certification/fapi/mtls.json
           SUITE_BASE_URL: https://localhost.emobix.co.uk:8443
           NODE_TLS_REJECT_UNAUTHORIZED: 0
