@@ -1,5 +1,6 @@
 const { expect } = require('chai');
 const sinon = require('sinon');
+const jose = require('jose');
 
 const JWT = require('../../lib/helpers/jwt');
 const bootstrap = require('../test_helper');
@@ -80,22 +81,28 @@ describe('Pushed Request Object', () => {
         expect(spy).to.have.property('calledOnce', true);
       });
 
-      it('forbids other parameters to be present when passing a JAR request', async function () {
-        return this.agent.post(route)
+      it('ignores regular parameters when passing a JAR request', async function () {
+        const spy = sinon.spy();
+        this.provider.once('pushed_authorization_request.saved', spy);
+
+        await this.agent.post(route)
           .auth('client', 'secret')
           .type('form')
           .send({
-            response_type: 'code',
+            nonce: 'foo',
+            response_type: 'code token',
             request: await JWT.sign({
               response_type: 'code',
               client_id: 'client',
             }, this.key, 'HS256'),
           })
-          .expect(400)
-          .expect({
-            error: 'invalid_request',
-            error_description: '`request` parameter must not be combined with other parameters at the pushed_authorization_request_endpoint',
-          });
+          .expect(201);
+
+        expect(spy).to.have.property('calledOnce', true);
+        const { request } = spy.args[0][0];
+        const payload = jose.JWT.decode(request);
+        expect(payload).not.to.have.property('nonce');
+        expect(payload).to.have.property('response_type', 'code');
       });
 
       it('requires the registered request object signing alg be used', async function () {
