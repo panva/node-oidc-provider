@@ -142,7 +142,7 @@ describe('features.dPoP', () => {
       }, key, { kid: false, iat: false, header: { typ: 'dpop+jwt', jwk: key } }))
       .set('Authorization', 'DPoP foo')
       .expect(400)
-      .expect({ error: 'invalid_request', error_description: 'invalid DPoP Proof JWT (failed claim check (maxTokenAge exceeded))' });
+      .expect({ error: 'invalid_request', error_description: 'invalid DPoP Proof JWT (failed claim check ("iat" claim timestamp check failed (too far in the past)))' });
 
     await this.agent.get('/me') // eslint-disable-line no-await-in-loop
       .set('DPoP', JWT.sign({
