@@ -82,13 +82,15 @@
                             "text",
                             "name",
                             "login",
-                            "foo"
+                            "foo",
+                            "optional"
                         ],
                         [
                             "text",
                             "name",
                             "password",
-                            "bar"
+                            "bar",
+                            "optional"
                         ],
                         [
                             "click",
