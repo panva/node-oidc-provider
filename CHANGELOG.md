@@ -2,6 +2,15 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [6.18.1](https://github.com/panva/node-oidc-provider/compare/v6.18.0...v6.18.1) (2020-01-07)
+
+
+### Bug Fixes
+
+* fix client secret based algorithm keys for clients with jwks ([75d82a0](https://github.com/panva/node-oidc-provider/commit/75d82a0402194393058a2973bce286f1571323d7))
+
+
+
 # [6.18.0](https://github.com/panva/node-oidc-provider/compare/v6.17.7...v6.18.0) (2019-12-31)
 
 
