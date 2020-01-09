@@ -3,6 +3,8 @@ const merge = require('lodash/merge');
 
 const config = cloneDeep(require('../default.config'));
 
+config.whitelistedJWA.requestObjectSigningAlgValues = config.whitelistedJWA.requestObjectSigningAlgValues.filter((alg) => alg !== 'none');
+
 merge(config.features, {
   pushedAuthorizationRequests: { enabled: true },
 });
