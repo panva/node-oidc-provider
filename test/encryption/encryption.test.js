@@ -239,6 +239,30 @@ describe('encryption', () => {
               }));
           });
 
+          it('works without any other params if iss is replicated in the header', function () {
+            return JWT.sign({
+              client_id: 'client',
+              response_type: 'code',
+              redirect_uri: 'https://client.example.com/cb',
+              scope: 'openid',
+            }, null, 'none', { issuer: 'client', audience: this.provider.issuer }).then((signed) => jose.JWE.encrypt(signed, i(this.provider).keystore.get({ kty: 'RSA' }), { enc: 'A128CBC-HS256', alg: 'RSA1_5', iss: 'client' })).then((encrypted) => this.wrap({
+              route,
+              verb,
+              auth: {
+                request: encrypted,
+              },
+            })
+              .expect(302)
+              .expect((response) => {
+                const expected = url.parse('https://client.example.com/cb', true);
+                const actual = url.parse(response.headers.location, true);
+                ['protocol', 'host', 'pathname'].forEach((attr) => {
+                  expect(actual[attr]).to.equal(expected[attr]);
+                });
+                expect(actual.query).to.have.property('code');
+              }));
+          });
+
           it('handles invalid JWE', function () {
             const spy = sinon.spy();
             this.provider.once('authorization.error', spy);
