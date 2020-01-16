@@ -321,8 +321,11 @@ describe('resume after consent', () => {
   function setup(grant, result, sessionData) {
     const cookies = [];
 
-    const interaction = new this.provider.Interaction('resume', {});
     const session = new this.provider.Session({ jti: 'sess', ...sessionData });
+    const interaction = new this.provider.Interaction('resume', {
+      params: grant,
+      session,
+    });
     const keys = new KeyGrip(i(this.provider).configuration('cookies.keys'));
 
     expect(grant).to.be.ok;
@@ -331,7 +334,6 @@ describe('resume after consent', () => {
     cookies.push(cookie);
     let [pre, ...post] = cookie.split(';');
     cookies.push([`_interaction_resume.sig=${keys.sign(pre)}`, ...post].join(';'));
-    Object.assign(interaction, { params: grant });
 
     const sessionCookie = `_session=sess; path=/; expires=${expire.toGMTString()}; httponly`;
     cookies.push(sessionCookie);
@@ -475,13 +477,15 @@ describe('resume after consent', () => {
         account: nanoid(),
       });
 
+      let state;
+
       await this.agent.get('/auth/resume')
         .expect(200)
         .expect('content-type', 'text/html; charset=utf-8')
         .expect(/<body onload="javascript:document\.forms\[0]\.submit\(\)"/)
         .expect(/<input type="hidden" name="logout" value="yes"\/>/)
         .expect(({ text }) => {
-          const { state } = this.getSession();
+          ({ state } = this.getSession());
           expect(state).to.have.property('clientId', 'client');
           expect(state).to.have.property('postLogoutRedirectUri').that.matches(/\/auth\/resume$/);
           expect(text).to.match(new RegExp(`input type="hidden" name="xsrf" value="${state.secret}"`));
@@ -489,6 +493,20 @@ describe('resume after consent', () => {
         .expect(/<form method="post" action=".+\/session\/end\/confirm">/);
 
       expect(await this.provider.Interaction.find('resume')).to.be.ok;
+
+      await this.agent.post('/session/end/confirm')
+        .send({
+          xsrf: state.secret,
+          logout: 'yes',
+        })
+        .type('form')
+        .expect(302)
+        .expect('location', /\/auth\/resume$/);
+
+      await this.agent.get('/auth/resume')
+        .expect(302)
+        .expect(auth.validateState)
+        .expect(auth.validateClientLocation);
     });
   });
 

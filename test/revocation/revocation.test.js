@@ -409,6 +409,7 @@ describe('revocation features', () => {
         (async () => {
           const at = new this.provider.AccessToken({
             accountId: 'accountId',
+            grantId: 'foo',
             clientId: 'client',
             scope: 'scope',
           });
@@ -431,6 +432,7 @@ describe('revocation features', () => {
         (async () => {
           const rt = new this.provider.RefreshToken({
             accountId: 'accountId',
+            grantId: 'foo',
             clientId: 'client',
             scope: 'scope',
           });

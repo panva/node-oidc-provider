@@ -38,8 +38,8 @@ describe('device interaction resume /device/:user_code/:uid/', () => {
       ...auth,
     };
 
-    const interaction = new this.provider.Interaction(grantId, {});
     const session = new this.provider.Session({ jti: 'sess', ...sessionData });
+    const interaction = new this.provider.Interaction(grantId, { session });
     const keys = new KeyGrip(i(this.provider).configuration('cookies.keys'));
     const code = new this.provider.DeviceCode({
       params,
@@ -370,13 +370,15 @@ describe('device interaction resume /device/:user_code/:uid/', () => {
           account: nanoid(),
         });
 
+        let state;
+
         await this.agent.get(path)
           .expect(200)
           .expect('content-type', 'text/html; charset=utf-8')
           .expect(/<body onload="javascript:document\.forms\[0]\.submit\(\)"/)
           .expect(/<input type="hidden" name="logout" value="yes"\/>/)
           .expect(({ text }) => {
-            const { state } = this.getSession();
+            ({ state } = this.getSession());
             expect(state).to.have.property('clientId', 'client');
             expect(state).to.have.property('postLogoutRedirectUri').that.matches(new RegExp(`${path}$`));
             expect(text).to.match(new RegExp(`input type="hidden" name="xsrf" value="${state.secret}"`));
@@ -384,6 +386,18 @@ describe('device interaction resume /device/:user_code/:uid/', () => {
           .expect(/<form method="post" action=".+\/session\/end\/confirm">/);
 
         expect(await this.provider.Interaction.find(grantId)).to.be.ok;
+
+        await this.agent.post('/session/end/confirm')
+          .send({
+            xsrf: state.secret,
+            logout: 'yes',
+          })
+          .type('form')
+          .expect(302)
+          .expect('location', state.postLogoutRedirectUri);
+
+        await this.agent.get(state.postLogoutRedirectUri.replace(this.provider.issuer, ''))
+          .expect(200);
       });
     });
 

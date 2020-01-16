@@ -2,6 +2,7 @@ const { parse: parseUrl } = require('url');
 
 const sinon = require('sinon').createSandbox();
 const { expect } = require('chai');
+const timekeeper = require('timekeeper');
 
 const bootstrap = require('../test_helper');
 const JWT = require('../../lib/helpers/jwt');
@@ -11,6 +12,7 @@ const route = '/session/end';
 
 describe('logout endpoint', () => {
   before(bootstrap(__dirname));
+  afterEach(() => timekeeper.reset());
 
   describe('when logged out', () => {
     ['get', 'post'].forEach((verb) => {
@@ -61,6 +63,21 @@ describe('logout endpoint', () => {
           });
           after(async function () {
             (await this.provider.Client.find('client')).postLogoutRedirectUris = [];
+          });
+
+          it('even when expired', function () {
+            timekeeper.travel(Date.now() + ((3600 + 10) * 1000));
+            const params = {
+              id_token_hint: this.idToken,
+              post_logout_redirect_uri: 'https://client.example.com/logout/cb',
+            };
+
+            return this.wrap({ route, verb, params })
+              .expect(200)
+              .expect(() => {
+                const { state: { postLogoutRedirectUri } } = this.getSession();
+                expect(postLogoutRedirectUri).to.equal('https://client.example.com/logout/cb');
+              });
           });
 
           it('allows to redirect there', function () {

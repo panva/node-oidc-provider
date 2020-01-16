@@ -176,7 +176,7 @@ declare class Interaction extends BaseModel {
   readonly kind: 'Interaction';
   iat: number;
   exp: number;
-  session?: {
+  session?: Session | {
     accountId: string;
     cookie: string;
     jti?: string;
