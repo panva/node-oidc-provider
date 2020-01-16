@@ -2,6 +2,16 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [6.18.2](https://github.com/panva/node-oidc-provider/compare/v6.18.1...v6.18.2) (2020-01-16)
+
+
+### Bug Fixes
+
+* number of default should-change notices using a wrong property ([8e51724](https://github.com/panva/node-oidc-provider/commit/8e5172481181e9b113d7bca20654b9dc230b6d1b))
+* principal-change triggered logout fixes ([fa860cf](https://github.com/panva/node-oidc-provider/commit/fa860cfbdaaf3ca9ab46117d1d2673593724f3f3)), closes [#628](https://github.com/panva/node-oidc-provider/issues/628) [#600](https://github.com/panva/node-oidc-provider/issues/600)
+
+
+
 ## [6.18.1](https://github.com/panva/node-oidc-provider/compare/v6.18.0...v6.18.1) (2020-01-07)
 
 

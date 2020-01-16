@@ -1,6 +1,6 @@
 {
   "name": "oidc-provider",
-  "version": "6.18.1",
+  "version": "6.18.2",
   "description": "OAuth 2.0 Authorization Server implementation for Node.js with OpenID Connect",
   "keywords": [
     "auth",
