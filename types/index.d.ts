@@ -567,6 +567,7 @@ declare class Client {
   requestUriAllowed(requestUri: string): boolean;
   postLogoutRedirectUriAllowed(postLogoutRedirectUri: string): boolean;
   includeSid(): boolean;
+  compareClientSecret(actual: string): CanBePromise<boolean>;
 
   metadata(): ClientMetadata;
 
