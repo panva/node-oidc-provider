@@ -1377,7 +1377,7 @@ Support modules:
   
 
 ```js
-const { verify } = require('jsonwebtoken');
+const { JWT: { verify }, JWK } = require('jose');
 const {
   errors: { InvalidSoftwareStatement, UnapprovedSoftwareStatement, InvalidClientMetadata },
 } = require('oidc-provider');
@@ -1394,14 +1394,15 @@ features.registration configuration:
      if (!('software_statement' in metadata)) {
        throw new InvalidClientMetadata('software_statement must be provided');
      }
-     const softwareStatementKey = await loadKeyForThisPolicy();
+     const softwareStatementKey = JWK.asKey(await loadKeyForThisPolicy());
      const statement = metadata.software_statement;
      let payload;
      try {
        payload = verify(value, softwareStatementKey, {
-         algorithms: ['RS256'],
+         algorithms: ['PS256'],
          issuer: 'Software Statement Issuer',
        });
+       // additional custom validation function
        if (!approvedStatement(value, payload)) {
          throw new UnapprovedSoftwareStatement('software_statement not approved for use');
        }
@@ -2100,11 +2101,11 @@ function validator(key, value, metadata, ctx) {
 </summary><br>
 
 ```js
-const { verify } = require('jsonwebtoken');
+const { JWT: { verify }, JWK } = require('jose');
 const {
   errors: { InvalidSoftwareStatement, UnapprovedSoftwareStatement },
 } = require('oidc-provider');
-const softwareStatementKey = require('path/to/public/key');
+const softwareStatementKey = JWK.asKey(require('path/to/public/key'))
 {
   extraClientMetadata: {
     properties: ['software_statement'],
@@ -2117,9 +2118,10 @@ const softwareStatementKey = require('path/to/public/key');
         try {
           // extraClientMetadata.validator must be sync :sadface:
           payload = verify(value, softwareStatementKey, {
-            algorithms: ['RS256'],
+            algorithms: ['PS256'],
             issuer: 'Software Statement Issuer',
           });
+          // additional custom validation function
           if (!approvedStatement(value, payload)) {
             throw new UnapprovedSoftwareStatement('software_statement not approved for use');
           }
