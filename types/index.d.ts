@@ -886,8 +886,8 @@ export interface Configuration {
       policies?: {
         [key: string]: (ctx: KoaContextWithOIDC, metadata: ClientMetadata) => CanBePromise<void | undefined>;
       };
-      idFactory?: () => string;
-      secretFactory?: () => string;
+      idFactory?: (ctx: KoaContextWithOIDC) => string;
+      secretFactory?: (ctx: KoaContextWithOIDC) => string;
     };
 
     registrationManagement?: {

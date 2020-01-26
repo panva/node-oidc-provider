@@ -1292,7 +1292,7 @@ Function used to generate random client identifiers during dynamic client regist
 
 _**default value**_:
 ```js
-function idFactory() {
+function idFactory(ctx) {
   return nanoid();
 }
 ```
@@ -1432,7 +1432,7 @@ Function used to generate random client secrets during dynamic client registrati
 
 _**default value**_:
 ```js
-function secretFactory() {
+function secretFactory(ctx) {
   return base64url.encodeBuffer(crypto.randomBytes(64)); // 512 base64url random bits
 }
 ```
