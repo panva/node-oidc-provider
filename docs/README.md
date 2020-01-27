@@ -244,8 +244,8 @@ router.post('/interaction/:uid/login', async (ctx, next) => {
 
 ## Custom Grant Types
 oidc-provider comes with the basic grants implemented, but you can register your own grant types,
-for example to implement an [OAuth 2.0 Token Exchange][token-exchange]. You can check the standard
-grant factories [here](/lib/actions/grants).
+for example to implement an [OAuth 2.0 Token Exchange](https://tools.ietf.org/html/rfc8693). You can
+check the standard grant factories [here](/lib/actions/grants).
 
 ```js
 const parameters = [
@@ -3149,7 +3149,7 @@ _**default value**_:
   'HS256', 'HS384', 'HS512',
   'RS256', 'RS384', 'RS512',
   'PS256', 'PS384', 'PS512',
-  'ES256', 'ES256K', ES384', 'ES512',
+  'ES256', 'ES256K', 'ES384', 'ES512',
   'EdDSA', // (note: EdDSA is only supported in node runtime >= 12.0.0)
 ]
 ```
@@ -3177,7 +3177,7 @@ _**default value**_:
 [
   'RS256', 'RS384', 'RS512',
   'PS256', 'PS384', 'PS512',
-  'ES256', 'ES256K', ES384', 'ES512',
+  'ES256', 'ES256K', 'ES384', 'ES512',
   'EdDSA', // (note: EdDSA is only supported in node runtime >= 12.0.0)
 ]
 ```
@@ -3269,7 +3269,7 @@ _**default value**_:
   'HS256', 'HS384', 'HS512',
   'RS256', 'RS384', 'RS512',
   'PS256', 'PS384', 'PS512',
-  'ES256', 'ES256K', ES384', 'ES512',
+  'ES256', 'ES256K', 'ES384', 'ES512',
   'EdDSA', // (note: EdDSA is only supported in node runtime >= 12.0.0)
 ]
 ```
@@ -3360,7 +3360,7 @@ _**default value**_:
   'HS256', 'HS384', 'HS512',
   'RS256', 'RS384', 'RS512',
   'PS256', 'PS384', 'PS512',
-  'ES256', 'ES256K', ES384', 'ES512',
+  'ES256', 'ES256K', 'ES384', 'ES512',
   'EdDSA', // (note: EdDSA is only supported in node runtime >= 12.0.0)
 ]
 ```
@@ -3391,7 +3391,7 @@ _**default value**_:
   'HS256', 'HS384', 'HS512',
   'RS256', 'RS384', 'RS512',
   'PS256', 'PS384', 'PS512',
-  'ES256', 'ES256K', ES384', 'ES512',
+  'ES256', 'ES256K', 'ES384', 'ES512',
   'EdDSA', // (note: EdDSA is only supported in node runtime >= 12.0.0)
 ]
 ```
@@ -3483,7 +3483,7 @@ _**default value**_:
   'HS256', 'HS384', 'HS512',
   'RS256', 'RS384', 'RS512',
   'PS256', 'PS384', 'PS512',
-  'ES256', 'ES256K', ES384', 'ES512',
+  'ES256', 'ES256K', 'ES384', 'ES512',
   'EdDSA', // (note: EdDSA is only supported in node runtime >= 12.0.0)
 ]
 ```
@@ -3513,7 +3513,7 @@ _**default value**_:
   'HS256', 'HS384', 'HS512',
   'RS256', 'RS384', 'RS512',
   'PS256', 'PS384', 'PS512',
-  'ES256', 'ES256K', ES384', 'ES512',
+  'ES256', 'ES256K', 'ES384', 'ES512',
   'EdDSA', // (note: EdDSA is only supported in node runtime >= 12.0.0)
 ]
 ```
@@ -3543,7 +3543,7 @@ _**default value**_:
   'HS256', 'HS384', 'HS512',
   'RS256', 'RS384', 'RS512',
   'PS256', 'PS384', 'PS512',
-  'ES256', 'ES256K', ES384', 'ES512',
+  'ES256', 'ES256K', 'ES384', 'ES512',
   'EdDSA', // (note: EdDSA is only supported in node runtime >= 12.0.0)
 ]
 ```
@@ -3635,7 +3635,7 @@ _**default value**_:
   'HS256', 'HS384', 'HS512',
   'RS256', 'RS384', 'RS512',
   'PS256', 'PS384', 'PS512',
-  'ES256', 'ES256K', ES384', 'ES512',
+  'ES256', 'ES256K', 'ES384', 'ES512',
   'EdDSA', // (note: EdDSA is only supported in node runtime >= 12.0.0)
 ]
 ```
@@ -3772,8 +3772,5 @@ because they are required properties, but they can be empty...
 ```
 
 
-[got-library]: https://github.com/sindresorhus/got
-[token-exchange]: https://tools.ietf.org/html/rfc8693
-[defaults]: /lib/helpers/defaults.js
 [support-sponsor]: https://github.com/sponsors/panva
 [sponsor-auth0]: https://auth0.com/overview?utm_source=GHsponsor&utm_medium=GHsponsor&utm_campaign=oidc-provider&utm_content=auth
