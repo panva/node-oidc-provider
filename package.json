@@ -1,5 +1,5 @@
 {
-  "name": "oidc-provider",
+  "name": "@banno/oidc-provider",
   "version": "5.5.5",
   "description": "OpenID Provider (OP) implementation for Node.js OpenID Connect servers.",
   "keywords": [
@@ -22,8 +22,8 @@
     "provider",
     "server"
   ],
-  "homepage": "https://github.com/panva/node-oidc-provider",
-  "repository": "panva/node-oidc-provider",
+  "homepage": "https://github.com/banno/node-oidc-provider",
+  "repository": "banno/node-oidc-provider",
   "license": "MIT",
   "author": "Filip Skokan <panva.ip@gmail.com>",
   "files": [
