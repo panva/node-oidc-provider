@@ -3773,7 +3773,7 @@ because they are required properties, but they can be empty...
 
 
 [got-library]: https://github.com/sindresorhus/got
-[token-exchange]: https://tools.ietf.org/html/draft-ietf-oauth-token-exchange
+[token-exchange]: https://tools.ietf.org/html/rfc8693
 [defaults]: /lib/helpers/defaults.js
 [support-sponsor]: https://github.com/sponsors/panva
 [sponsor-auth0]: https://auth0.com/overview?utm_source=GHsponsor&utm_medium=GHsponsor&utm_campaign=oidc-provider&utm_content=auth
