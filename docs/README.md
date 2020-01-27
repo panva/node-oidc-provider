@@ -1679,7 +1679,7 @@ _**default value**_:
 
 ### features.secp256k1
 
-[html/draft-ietf-cose-webauthn-algorithms-03](https://tools.ietf.org/html/html/draft-ietf-cose-webauthn-algorithms-03) - Support for secp256k1 EC curve  
+[html/draft-ietf-cose-webauthn-algorithms-04](https://tools.ietf.org/html/html/draft-ietf-cose-webauthn-algorithms-04) - Support for secp256k1 EC curve  
 
 Enables the use of ES256K algorithm in `whitelistedJWA` configuration as well as having an EC JWK with secp256k1 curve in the provider keystore.  
 
