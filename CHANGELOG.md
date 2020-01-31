@@ -2,6 +2,15 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+# [6.20.0](https://github.com/panva/node-oidc-provider/compare/v6.19.2...v6.20.0) (2020-01-31)
+
+
+### Features
+
+* allow koa context argument in idFactory and secretFactory ([76aa942](https://github.com/panva/node-oidc-provider/commit/76aa94277653cc62933726680deb28261377d9bd)), closes [#455](https://github.com/panva/node-oidc-provider/issues/455)
+
+
+
 ## [6.19.2](https://github.com/panva/node-oidc-provider/compare/v6.19.1...v6.19.2) (2020-01-25)
 
 
