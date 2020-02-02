@@ -7,6 +7,7 @@ const { createReadStream, writeFileSync, readFileSync } = require('fs');
 const get = require('lodash/get');
 const words = require('lodash/words');
 
+const docs = require('../lib/helpers/docs');
 const values = require('../lib/helpers/defaults');
 
 values.ttl.RefreshToken[inspect.custom] = () => (
@@ -32,6 +33,10 @@ class Block {
 
       if (buffer.indexOf('@indent@') === 0) {
         buffer = buffer.slice(10);
+      }
+
+      if (buffer.indexOf('##DOCS') !== -1) {
+        buffer = Buffer.from(buffer.toString().replace(/##DOCS\/(.+)##/g, () => docs(RegExp.$1)));
       }
 
       if (buffer.indexOf('-') === 0 || /^\d+\./.exec(buffer) || buffer.indexOf('```') !== -1 || buffer.indexOf('|') === 0) {
