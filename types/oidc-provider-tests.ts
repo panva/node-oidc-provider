@@ -514,6 +514,12 @@ provider.on('authorization.accepted', (ctx) => {
   ctx.oidc.cookies.set('key', 'value', { signed: true, sameSite: 'strict' });
 });
 
+provider.on('interaction.started', (ctx, prompt) => {
+  ctx.oidc.route.substring(0);
+  prompt.name.substring(0);
+  prompt.reasons.pop();
+});
+
 provider.use((ctx, next) => {
   ctx.href.substring(0);
   return next();

@@ -172,6 +172,12 @@ export interface ClientAuthorizationState {
   promptedScopes?: string[];
 }
 
+export interface PromptDetail {
+  name: 'login' | 'consent' | string;
+  reasons: string[];
+  details: AnyObject;
+}
+
 declare class Interaction extends BaseModel {
   readonly kind: 'Interaction';
   iat: number;
@@ -184,11 +190,7 @@ declare class Interaction extends BaseModel {
     amr?: string[];
   };
   params: AnyObject;
-  prompt: {
-    name: 'login' | 'consent' | string;
-    reasons: string[];
-    details: AnyObject;
-  };
+  prompt: PromptDetail;
   result: InteractionResults;
   returnTo: string;
   signed?: string[];
@@ -1223,7 +1225,7 @@ export class Provider extends events.EventEmitter {
   addListener(event: 'end_session.error', listener: (ctx: KoaContextWithOIDC, err: errors.OIDCProviderError) => void): this;
   addListener(event: 'grant.success', listener: (ctx: KoaContextWithOIDC) => void): this;
   addListener(event: 'interaction.ended', listener: (ctx: KoaContextWithOIDC) => void): this;
-  addListener(event: 'interaction.started', listener: (ctx: KoaContextWithOIDC, interaction: Interaction) => void): this;
+  addListener(event: 'interaction.started', listener: (ctx: KoaContextWithOIDC, interaction: PromptDetail) => void): this;
   addListener(event: 'grant.error', listener: (ctx: KoaContextWithOIDC, err: errors.OIDCProviderError) => void): this;
   addListener(event: 'grant.revoked', listener: (ctx: KoaContextWithOIDC, grantId: string) => void): this;
   addListener(event: 'backchannel.success', listener: (ctx: KoaContextWithOIDC, client: Client, accountId: string, sid: string) => void): this;
@@ -1277,7 +1279,7 @@ export class Provider extends events.EventEmitter {
   on(event: 'end_session.error', listener: (ctx: KoaContextWithOIDC, err: errors.OIDCProviderError) => void): this;
   on(event: 'grant.success', listener: (ctx: KoaContextWithOIDC) => void): this;
   on(event: 'interaction.ended', listener: (ctx: KoaContextWithOIDC) => void): this;
-  on(event: 'interaction.started', listener: (ctx: KoaContextWithOIDC, interaction: Interaction) => void): this;
+  on(event: 'interaction.started', listener: (ctx: KoaContextWithOIDC, interaction: PromptDetail) => void): this;
   on(event: 'grant.error', listener: (ctx: KoaContextWithOIDC, err: errors.OIDCProviderError) => void): this;
   on(event: 'grant.revoked', listener: (ctx: KoaContextWithOIDC, grantId: string) => void): this;
   on(event: 'backchannel.success', listener: (ctx: KoaContextWithOIDC, client: Client, accountId: string, sid: string) => void): this;
@@ -1331,7 +1333,7 @@ export class Provider extends events.EventEmitter {
   once(event: 'end_session.error', listener: (ctx: KoaContextWithOIDC, err: errors.OIDCProviderError) => void): this;
   once(event: 'grant.success', listener: (ctx: KoaContextWithOIDC) => void): this;
   once(event: 'interaction.ended', listener: (ctx: KoaContextWithOIDC) => void): this;
-  once(event: 'interaction.started', listener: (ctx: KoaContextWithOIDC, interaction: Interaction) => void): this;
+  once(event: 'interaction.started', listener: (ctx: KoaContextWithOIDC, interaction: PromptDetail) => void): this;
   once(event: 'grant.error', listener: (ctx: KoaContextWithOIDC, err: errors.OIDCProviderError) => void): this;
   once(event: 'grant.revoked', listener: (ctx: KoaContextWithOIDC, grantId: string) => void): this;
   once(event: 'backchannel.success', listener: (ctx: KoaContextWithOIDC, client: Client, accountId: string, sid: string) => void): this;
@@ -1385,7 +1387,7 @@ export class Provider extends events.EventEmitter {
   prependListener(event: 'end_session.error', listener: (ctx: KoaContextWithOIDC, err: errors.OIDCProviderError) => void): this;
   prependListener(event: 'grant.success', listener: (ctx: KoaContextWithOIDC) => void): this;
   prependListener(event: 'interaction.ended', listener: (ctx: KoaContextWithOIDC) => void): this;
-  prependListener(event: 'interaction.started', listener: (ctx: KoaContextWithOIDC, interaction: Interaction) => void): this;
+  prependListener(event: 'interaction.started', listener: (ctx: KoaContextWithOIDC, interaction: PromptDetail) => void): this;
   prependListener(event: 'grant.error', listener: (ctx: KoaContextWithOIDC, err: errors.OIDCProviderError) => void): this;
   prependListener(event: 'grant.revoked', listener: (ctx: KoaContextWithOIDC, grantId: string) => void): this;
   prependListener(event: 'backchannel.success', listener: (ctx: KoaContextWithOIDC, client: Client, accountId: string, sid: string) => void): this;
@@ -1439,7 +1441,7 @@ export class Provider extends events.EventEmitter {
   prependOnceListener(event: 'end_session.error', listener: (ctx: KoaContextWithOIDC, err: errors.OIDCProviderError) => void): this;
   prependOnceListener(event: 'grant.success', listener: (ctx: KoaContextWithOIDC) => void): this;
   prependOnceListener(event: 'interaction.ended', listener: (ctx: KoaContextWithOIDC) => void): this;
-  prependOnceListener(event: 'interaction.started', listener: (ctx: KoaContextWithOIDC, interaction: Interaction) => void): this;
+  prependOnceListener(event: 'interaction.started', listener: (ctx: KoaContextWithOIDC, interaction: PromptDetail) => void): this;
   prependOnceListener(event: 'grant.error', listener: (ctx: KoaContextWithOIDC, err: errors.OIDCProviderError) => void): this;
   prependOnceListener(event: 'grant.revoked', listener: (ctx: KoaContextWithOIDC, grantId: string) => void): this;
   prependOnceListener(event: 'backchannel.success', listener: (ctx: KoaContextWithOIDC, client: Client, accountId: string, sid: string) => void): this;

@@ -36,7 +36,7 @@ loaded client or session.
 | `interaction.destroyed` | `(interaction)` | ... whenever interaction session is destroyed |
 | `interaction.ended` | `(ctx)` | ... whenever interaction has been resolved and the authorization request continues being processed |
 | `interaction.saved` | `(interaction)` | ... whenever interaction session is saved |
-| `interaction.started` | `(ctx, interaction)` | ... whenever interaction is being requested from the end-user |
+| `interaction.started` | `(ctx, prompt)` | ... whenever interaction is being requested from the end-user |
 | `introspection.error` | `(ctx, error)` | ... whenever a handled error is encountered in the `introspection` endpoint |
 | `replay_detection.destroyed` | `(token)` | ... whenever a replay detection object is destroyed |
 | `replay_detection.saved` | `(token)` | ... whenever a replay detection object is saved |
