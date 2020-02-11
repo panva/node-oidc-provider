@@ -49,7 +49,6 @@
   "dependencies": {
     "@koa/cors": "^3.0.0",
     "@types/koa": "^2.11.0",
-    "@types/node": "^12.12.26",
     "debug": "^4.1.1",
     "ejs": "^3.0.1",
     "got": "^9.6.0",
