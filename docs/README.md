@@ -1166,7 +1166,7 @@ function certificateAuthorized(ctx) {
 
 #### certificateBoundAccessTokens
 
-Enables section 3 & 4 Mutual TLS Client Certificate-Bound Tokens  
+Enables section 3 & 4 Mutual TLS Client Certificate-Bound Tokens by exposing the client's `tls_client_certificate_bound_access_tokens` metadata property.  
 
 
 _**default value**_:
@@ -1229,7 +1229,7 @@ function getCertificate(ctx) {
 
 #### selfSignedTlsClientAuth
 
-Enables section 2.2. Self-Signed Certificate Mutual TLS client authentication Method  
+Enables section 2.2. Self-Signed Certificate Mutual TLS client authentication method `self_signed_tls_client_auth` for use in the server's `tokenEndpointAuthMethods`, `introspectionEndpointAuthMethods`, and `revocationEndpointAuthMethods` configuration options.  
 
 
 _**default value**_:
@@ -1239,7 +1239,7 @@ false
 
 #### tlsClientAuth
 
-Enables section 2.1. PKI Mutual TLS client authentication method  
+Enables section 2.1. PKI Mutual TLS client authentication method `tls_client_auth` for use in the server's `tokenEndpointAuthMethods`, `introspectionEndpointAuthMethods`, and `revocationEndpointAuthMethods` configuration options.  
 
 
 _**default value**_:
