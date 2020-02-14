@@ -2,6 +2,15 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [6.20.3](https://github.com/panva/node-oidc-provider/compare/v6.20.2...v6.20.3) (2020-02-14)
+
+
+### Bug Fixes
+
+* allow opt-in refresh_token grant without offline_access as in 5.x ([b67a3a6](https://github.com/panva/node-oidc-provider/commit/b67a3a686efa6847d47a6ed18009958ab3b7bc3b)), closes [#647](https://github.com/panva/node-oidc-provider/issues/647)
+
+
+
 ## [6.20.2](https://github.com/panva/node-oidc-provider/compare/v6.20.1...v6.20.2) (2020-02-11)
 
 
