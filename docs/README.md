@@ -830,17 +830,17 @@ async function successSource(ctx) {
     clientId, clientName, clientUri, initiateLoginUri, logoUri, policyUri, tosUri,
   } = ctx.oidc.client;
   ctx.body = `<!DOCTYPE html>
-ead>
-<title>Sign-in Success</title>
-<style>/* css and html classes omitted for brevity, see lib/helpers/defaults.js */</style>
-head>
-ody>
-<div>
-  <h1>Sign-in Success</h1>
-  <p>Your sign-in ${clientName ? `with ${clientName}` : ''} was successful, you can now close this page.</p>
-</div>
-body>
-html>`;
+    <head>
+      <title>Sign-in Success</title>
+      <style>/* css and html classes omitted for brevity, see lib/helpers/defaults.js */</style>
+    </head>
+    <body>
+      <div>
+        <h1>Sign-in Success</h1>
+        <p>Your sign-in ${clientName ? `with ${clientName}` : ''} was successful, you can now close this page.</p>
+      </div>
+    </body>
+    </html>`;
 }
 ```
 
@@ -861,29 +861,29 @@ async function userCodeConfirmSource(ctx, form, client, deviceInfo, userCode) {
     clientId, clientName, clientUri, logoUri, policyUri, tosUri,
   } = ctx.oidc.client;
   ctx.body = `<!DOCTYPE html>
-ead>
-<title>Device Login Confirmation</title>
-<style>/* css and html classes omitted for brevity, see lib/helpers/defaults.js */</style>
-head>
-ody>
-<div>
-  <h1>Confirm Device</h1>
-  <p>
-    <strong>${clientName || clientId}</strong>
-    <br/><br/>
-    The following code should be displayed on your device<br/><br/>
-    <code>${userCode}</code>
-    <br/><br/>
-    <small>If you did not initiate this action, the code does not match or are unaware of such device in your possession please close this window or click abort.</small>
-  </p>
-  ${form}
-  <button autofocus type="submit" form="op.deviceConfirmForm">Continue</button>
-  <div>
-    <button type="submit" form="op.deviceConfirmForm" value="yes" name="abort">[ Abort ]</button>
-  </div>
-</div>
-body>
-html>`;
+    <head>
+      <title>Device Login Confirmation</title>
+      <style>/* css and html classes omitted for brevity, see lib/helpers/defaults.js */</style>
+    </head>
+    <body>
+      <div>
+        <h1>Confirm Device</h1>
+        <p>
+          <strong>${clientName || clientId}</strong>
+          <br/><br/>
+          The following code should be displayed on your device<br/><br/>
+          <code>${userCode}</code>
+          <br/><br/>
+          <small>If you did not initiate this action, the code does not match or are unaware of such device in your possession please close this window or click abort.</small>
+        </p>
+        ${form}
+        <button autofocus type="submit" form="op.deviceConfirmForm">Continue</button>
+        <div>
+          <button type="submit" form="op.deviceConfirmForm" value="yes" name="abort">[ Abort ]</button>
+        </div>
+      </div>
+    </body>
+    </html>`;
 }
 ```
 
@@ -913,19 +913,19 @@ async function userCodeInputSource(ctx, form, out, err) {
     msg = '<p>Enter the code displayed on your device</p>';
   }
   ctx.body = `<!DOCTYPE html>
-ead>
-<title>Sign-in</title>
-<style>/* css and html classes omitted for brevity, see lib/helpers/defaults.js */</style>
-head>
-ody>
-<div>
-  <h1>Sign-in</h1>
-  ${msg}
-  ${form}
-  <button type="submit" form="op.deviceInputForm">Continue</button>
-</div>
-body>
-html>`;
+    <head>
+      <title>Sign-in</title>
+      <style>/* css and html classes omitted for brevity, see lib/helpers/defaults.js */</style>
+    </head>
+    <body>
+      <div>
+        <h1>Sign-in</h1>
+        ${msg}
+        ${form}
+        <button type="submit" form="op.deviceInputForm">Continue</button>
+      </div>
+    </body>
+    </html>`;
 }
 ```
 
@@ -1006,34 +1006,34 @@ _**default value**_:
 ```js
 async function logoutPendingSource(ctx, frames, postLogoutRedirectUri) {
   ctx.body = `<!DOCTYPE html>
-ead>
-<title>Logout</title>
-<style>/* css and html classes omitted for brevity, see lib/helpers/defaults.js */</style>
-head>
-ody>
-${frames.join('')}
-<script>
-  var loaded = 0;
-  function redirect() {
-    window.location.replace("${postLogoutRedirectUri}");
-  }
-  function frameOnLoad() {
-    loaded += 1;
-    if (loaded === ${frames.length}) {
-      redirect();
-    }
-  }
-  Array.prototype.slice.call(document.querySelectorAll('iframe')).forEach(function (element) {
-    element.onload = frameOnLoad;
-  });
-  setTimeout(redirect, 2500);
-</script>
-<noscript>
-  Your browser does not support JavaScript or you've disabled it.<br/>
-  <a href="${postLogoutRedirectUri}">Continue</a>
-</noscript>
-body>
-html>`;
+    <head>
+      <title>Logout</title>
+      <style>/* css and html classes omitted for brevity, see lib/helpers/defaults.js */</style>
+    </head>
+    <body>
+      ${frames.join('')}
+      <script>
+        var loaded = 0;
+        function redirect() {
+          window.location.replace("${postLogoutRedirectUri}");
+        }
+        function frameOnLoad() {
+          loaded += 1;
+          if (loaded === ${frames.length}) {
+            redirect();
+          }
+        }
+        Array.prototype.slice.call(document.querySelectorAll('iframe')).forEach(function (element) {
+          element.onload = frameOnLoad;
+        });
+        setTimeout(redirect, 2500);
+      </script>
+      <noscript>
+        Your browser does not support JavaScript or you've disabled it.<br/>
+        <a href="${postLogoutRedirectUri}">Continue</a>
+      </noscript>
+    </body>
+    </html>`;
 }
 ```
 
@@ -2750,19 +2750,19 @@ async function logoutSource(ctx, form) {
   // @param form - form source (id="op.logoutForm") to be embedded in the page and submitted by
   //   the End-User
   ctx.body = `<!DOCTYPE html>
-<head>
-<title>Logout Request</title>
-<style>/* css and html classes omitted for brevity, see lib/helpers/defaults.js */</style>
-</head>
-<body>
-<div>
-  <h1>Do you want to sign-out from ${ctx.host}?</h1>
-  ${form}
-  <button autofocus type="submit" form="op.logoutForm" value="yes" name="logout">Yes, sign me out</button>
-  <button type="submit" form="op.logoutForm">No, stay signed in</button>
-</div>
-</body>
-</html>`;
+    <head>
+      <title>Logout Request</title>
+      <style>/* css and html classes omitted for brevity, see lib/helpers/defaults.js */</style>
+    </head>
+    <body>
+      <div>
+        <h1>Do you want to sign-out from ${ctx.host}?</h1>
+        ${form}
+        <button autofocus type="submit" form="op.logoutForm" value="yes" name="logout">Yes, sign me out</button>
+        <button type="submit" form="op.logoutForm">No, stay signed in</button>
+      </div>
+    </body>
+    </html>`;
 }
 ```
 
@@ -2812,17 +2812,17 @@ async function postLogoutSuccessSource(ctx) {
   } = ctx.oidc.client || {}; // client is defined if the user chose to stay logged in with the OP
   const display = clientName || clientId;
   ctx.body = `<!DOCTYPE html>
-<head>
-<title>Sign-out Success</title>
-<style>/* css and html classes omitted for brevity, see lib/helpers/defaults.js */</style>
-</head>
-<body>
-<div>
-  <h1>Sign-out Success</h1>
-  <p>Your sign-out ${display ? `with ${display}` : ''} was successful.</p>
-</div>
-</body>
-</html>`;
+    <head>
+      <title>Sign-out Success</title>
+      <style>/* css and html classes omitted for brevity, see lib/helpers/defaults.js */</style>
+    </head>
+    <body>
+      <div>
+        <h1>Sign-out Success</h1>
+        <p>Your sign-out ${display ? `with ${display}` : ''} was successful.</p>
+      </div>
+    </body>
+    </html>`;
 }
 ```
 
@@ -2836,17 +2836,17 @@ _**default value**_:
 async function renderError(ctx, out, error) {
   ctx.type = 'html';
   ctx.body = `<!DOCTYPE html>
-<head>
-<title>oops! something went wrong</title>
-<style>/* css and html classes omitted for brevity, see lib/helpers/defaults.js */</style>
-</head>
-<body>
-<div>
-  <h1>oops! something went wrong</h1>
-  ${Object.entries(out).map(([key, value]) => `<pre><strong>${key}</strong>: ${htmlSafe(value)}</pre>`).join('')}
-</div>
-</body>
-</html>`;
+    <head>
+      <title>oops! something went wrong</title>
+      <style>/* css and html classes omitted for brevity, see lib/helpers/defaults.js */</style>
+    </head>
+    <body>
+      <div>
+        <h1>oops! something went wrong</h1>
+        ${Object.entries(out).map(([key, value]) => `<pre><strong>${key}</strong>: ${htmlSafe(value)}</pre>`).join('')}
+      </div>
+    </body>
+    </html>`;
 }
 ```
 

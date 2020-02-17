@@ -260,7 +260,9 @@ const props = [
             }
             if (line.includes('shouldChange')) return undefined;
             if (line.includes('mustChange')) return undefined;
-            if (line.startsWith(' ')) line = line.slice(fixIndent);
+            if (line.startsWith(' ')) {
+              line = line.replace(new RegExp(`^( {0,${fixIndent}})`), '');
+            }
             line = line.replace(/ \/\/ eslint-disable.+/, '');
             if (line.includes('/* eslint-disable')) {
               return undefined;
@@ -278,7 +280,8 @@ const props = [
             }
             if (line.includes('<style>')) {
               mute = true;
-              return '<style>/* css and html classes omitted for brevity, see lib/helpers/defaults.js */</style>';
+              line.match(/^(\s+)/);
+              return `${' '.repeat(Math.max(fixIndent, RegExp.$1.length))}<style>/* css and html classes omitted for brevity, see lib/helpers/defaults.js */</style>`;
             }
             if (line.includes('</style>')) {
               mute = false;
