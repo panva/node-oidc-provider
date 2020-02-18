@@ -1116,7 +1116,7 @@ export type AsymmetricSigningAlgoritm = 'PS256' | 'PS384' | 'PS512' | 'ES256' | 
 export type SymmetricSigningAlgorithm = 'HS256' | 'HS384' | 'HS512';
 export type SigningAlgorithm = AsymmetricSigningAlgoritm | SymmetricSigningAlgorithm;
 export type SigningAlgorithmWithNone = AsymmetricSigningAlgoritm | SymmetricSigningAlgorithm | NoneAlg;
-export type EncryptionAlgValues = 'RSA-OAEP' | 'RSA-OAEP-256' | 'RSA1_5' | 'ECDH-ES' |
+export type EncryptionAlgValues = 'RSA-OAEP' | 'RSA-OAEP-256' | 'RSA-OAEP-384' | 'RSA-OAEP-512' | 'RSA1_5' | 'ECDH-ES' |
   'ECDH-ES+A128KW' | 'ECDH-ES+A192KW' | 'ECDH-ES+A256KW' | 'A128KW' | 'A192KW' | 'A256KW' |
   'A128GCMKW' | 'A192GCMKW' | 'A256GCMKW' | 'PBES2-HS256+A128KW' | 'PBES2-HS384+A192KW' |
   'PBES2-HS512+A256KW' | 'dir';

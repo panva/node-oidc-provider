@@ -3086,8 +3086,8 @@ _**default value**_:
 
 ```js
 [
-  // asymmetric RSAES based (note: RSA-OAEP-256 is only supported in node runtime >= 12.9.0)
-  'RSA-OAEP', 'RSA-OAEP-256', 'RSA1_5',
+  // asymmetric RSAES based (note: RSA-OAEP-* is only supported in node runtime >= 12.9.0)
+  'RSA-OAEP', 'RSA-OAEP-256', 'RSA-OAEP-384', 'RSA-OAEP-512', 'RSA1_5',
   // asymmetric ECDH-ES based
   'ECDH-ES', 'ECDH-ES+A128KW', 'ECDH-ES+A192KW', 'ECDH-ES+A256KW',
   // symmetric AES key wrapping
@@ -3205,8 +3205,8 @@ _**default value**_:
 
 ```js
 [
-  // asymmetric RSAES based (note: RSA-OAEP-256 is only supported in node runtime >= 12.9.0)
-  'RSA-OAEP', 'RSA-OAEP-256', 'RSA1_5',
+  // asymmetric RSAES based (note: RSA-OAEP-* is only supported in node runtime >= 12.9.0)
+  'RSA-OAEP', 'RSA-OAEP-256', 'RSA-OAEP-384', 'RSA-OAEP-512', 'RSA1_5',
   // asymmetric ECDH-ES based
   'ECDH-ES', 'ECDH-ES+A128KW', 'ECDH-ES+A192KW', 'ECDH-ES+A256KW',
   // symmetric AES key wrapping
@@ -3297,8 +3297,8 @@ _**default value**_:
 
 ```js
 [
-  // asymmetric RSAES based (note: RSA-OAEP-256 is only supported in node runtime >= 12.9.0)
-  'RSA-OAEP', 'RSA-OAEP-256', 'RSA1_5',
+  // asymmetric RSAES based (note: RSA-OAEP-* is only supported in node runtime >= 12.9.0)
+  'RSA-OAEP', 'RSA-OAEP-256', 'RSA-OAEP-384', 'RSA-OAEP-512', 'RSA1_5',
   // asymmetric ECDH-ES based
   'ECDH-ES', 'ECDH-ES+A128KW', 'ECDH-ES+A192KW', 'ECDH-ES+A256KW',
   // symmetric AES key wrapping
@@ -3419,8 +3419,8 @@ _**default value**_:
 
 ```js
 [
-  // asymmetric RSAES based (note: RSA-OAEP-256 is only supported in node runtime >= 12.9.0)
-  'RSA-OAEP', 'RSA-OAEP-256', 'RSA1_5',
+  // asymmetric RSAES based (note: RSA-OAEP-* is only supported in node runtime >= 12.9.0)
+  'RSA-OAEP', 'RSA-OAEP-256', 'RSA-OAEP-384', 'RSA-OAEP-512', 'RSA1_5',
   // asymmetric ECDH-ES based
   'ECDH-ES', 'ECDH-ES+A128KW', 'ECDH-ES+A192KW', 'ECDH-ES+A256KW',
   // symmetric AES key wrapping
@@ -3571,8 +3571,8 @@ _**default value**_:
 
 ```js
 [
-  // asymmetric RSAES based (note: RSA-OAEP-256 is only supported in node runtime >= 12.9.0)
-  'RSA-OAEP', 'RSA-OAEP-256', 'RSA1_5',
+  // asymmetric RSAES based (note: RSA-OAEP-* is only supported in node runtime >= 12.9.0)
+  'RSA-OAEP', 'RSA-OAEP-256', 'RSA-OAEP-384', 'RSA-OAEP-512', 'RSA1_5',
   // asymmetric ECDH-ES based
   'ECDH-ES', 'ECDH-ES+A128KW', 'ECDH-ES+A192KW', 'ECDH-ES+A256KW',
   // symmetric AES key wrapping
