@@ -925,7 +925,7 @@ export interface Configuration {
 
     secp256k1?: {
       enabled?: boolean,
-      ack?: 'draft-03' | 'draft-04'
+      ack?: 'draft-03' | 'draft-04' | 'draft-05'
     },
 
     sessionManagement?: {
