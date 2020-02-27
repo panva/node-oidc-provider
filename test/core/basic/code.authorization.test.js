@@ -52,7 +52,7 @@ describe('BASIC code', () => {
 
       it('populates ctx.oidc.entities', function (done) {
         this.provider.use(this.assertOnce((ctx) => {
-          expect(ctx.oidc.entities).to.have.keys('AuthorizationCode', 'Client', 'Account');
+          expect(ctx.oidc.entities).to.have.keys('AuthorizationCode', 'Client', 'Account', 'Session');
         }, done));
 
         const auth = new this.AuthorizationRequest({

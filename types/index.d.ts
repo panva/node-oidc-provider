@@ -661,11 +661,13 @@ declare class OIDCContext {
     readonly DeviceCode?: DeviceCode;
     readonly IdTokenHint?: { header: AnyObject, payload: AnyObject };
     readonly InitialAccessToken?: InitialAccessToken;
+    readonly Interaction?: Interaction;
+    readonly PushedAuthorizationRequest?: PushedAuthorizationRequest;
     readonly RefreshToken?: RefreshToken;
     readonly RegistrationAccessToken?: RegistrationAccessToken;
-    readonly PushedAuthorizationRequest?: PushedAuthorizationRequest;
     readonly RotatedRefreshToken?: RefreshToken;
     readonly RotatedRegistrationAccessToken?: RegistrationAccessToken;
+    readonly Session?: Session;
     readonly [key: string]: any;
   };
   readonly claims: ClaimsParameter;

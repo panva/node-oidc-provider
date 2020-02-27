@@ -44,7 +44,7 @@ describe('HYBRID code+id_token', () => {
 
       it('populates ctx.oidc.entities', function (done) {
         this.provider.use(this.assertOnce((ctx) => {
-          expect(ctx.oidc.entities).to.have.keys('Client', 'Account', 'AuthorizationCode');
+          expect(ctx.oidc.entities).to.have.keys('Client', 'Account', 'AuthorizationCode', 'Session');
         }, done));
 
         const auth = new this.AuthorizationRequest({
