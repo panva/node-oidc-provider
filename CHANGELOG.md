@@ -7,7 +7,7 @@ All notable changes to this project will be documented in this file. See [standa
 
 ### Bug Fixes
 
-* check that session account is a string ([e1eb211](https://github.com/panva/node-oidc-provider/commit/e1eb211618a2f9f2470d8cad00660805c7dc88a2)), closes [#660](https://github.com/panva/node-oidc-provider/issues/660) [#655](https://github.com/panva/node-oidc-provider/issues/655)
+* check that session account is a string ([e1eb211](https://github.com/panva/node-oidc-provider/commit/e1eb211618a2f9f2470d8cad00660805c7dc88a2)), closes [#650](https://github.com/panva/node-oidc-provider/issues/650) [#655](https://github.com/panva/node-oidc-provider/issues/655)
 
 
 
