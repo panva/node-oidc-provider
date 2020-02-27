@@ -183,6 +183,7 @@ describe('devInteractions', () => {
         response_type: 'code',
         scope: 'openid',
       });
+      this.auth = auth;
 
       return this.agent.get('/auth')
         .query(auth)
@@ -207,6 +208,35 @@ describe('devInteractions', () => {
 
       await this.agent.get(new URL(location).pathname)
         .expect(302);
+    });
+
+    it('checks that the account is a non empty string', async function () {
+      let location;
+      const spy = sinon.spy();
+      this.provider.once('server_error', spy);
+
+      await this.agent.post(`${this.url}`)
+        .send({
+          prompt: 'login',
+          login: '',
+        })
+        .type('form')
+        .expect(302)
+        .expect('location', new RegExp(this.url.replace('interaction', 'auth')))
+        .expect(({ headers }) => {
+          ({ location } = headers);
+        });
+
+      await this.agent.get(new URL(location).pathname)
+        .expect(302)
+        .expect(this.auth.validateState)
+        .expect(this.auth.validateClientLocation)
+        .expect(this.auth.validateError('server_error'));
+
+      expect(spy).to.have.property('calledOnce', true);
+      const error = spy.firstCall.args[1];
+      expect(error).to.be.an.instanceof(TypeError);
+      expect(error).to.have.property('message', 'account must be a non-empty string, got: string');
     });
 
     handlesInteractionSessionErrors();
