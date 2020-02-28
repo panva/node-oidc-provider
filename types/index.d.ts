@@ -701,7 +701,7 @@ declare class OIDCContext {
   getAccessToken(opts?: { acceptDPoP?: boolean, acceptQueryParam?: boolean }): string;
 }
 
-export type KoaContextWithOIDC = Koa.ParameterizedContext<{oidc: OIDCContext}>;
+export type KoaContextWithOIDC = Koa.ParameterizedContext<{}, { oidc: OIDCContext }>;
 
 export const DYNAMIC_SCOPE_LABEL: symbol;
 
