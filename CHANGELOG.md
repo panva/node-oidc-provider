@@ -2,6 +2,15 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [6.22.1](https://github.com/panva/node-oidc-provider/compare/v6.22.0...v6.22.1) (2020-02-28)
+
+
+### Bug Fixes
+
+* **typescript:** correct KoaContextWithOIDC definition, take 2 ([84d32fc](https://github.com/panva/node-oidc-provider/commit/84d32fc1addd88c0198c66dba4d720bc1b8c1c71)), closes [#659](https://github.com/panva/node-oidc-provider/issues/659)
+
+
+
 # [6.22.0](https://github.com/panva/node-oidc-provider/compare/v6.21.1...v6.22.0) (2020-02-28)
 
 
