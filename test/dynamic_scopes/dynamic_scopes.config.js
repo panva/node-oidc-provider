@@ -33,5 +33,9 @@ module.exports = {
     token_endpoint_auth_method: 'none',
     redirect_uris: ['https://client.example.com/cb'],
     scope: 'openid',
+    grant_types: [
+      'authorization_code',
+      'client_credentials',
+    ],
   }],
 };

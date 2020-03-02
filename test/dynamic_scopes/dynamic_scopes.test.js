@@ -49,6 +49,24 @@ describe('dynamic scopes', () => {
 
       expect(token).to.have.property('scope', 'sign:70616e7661');
     });
+
+    it('validates whitelisted dynamic scopes', async function () {
+      const spy = sinon.spy();
+      this.provider.once('authorization.error', spy);
+      await this.agent.post('/token')
+        .send({
+          client_id: 'client-limited-scope',
+          grant_type: 'client_credentials',
+          scope: 'openid foobar sign:F0F0F0', // foobar is ignored, sign:{hex} is not whitelisted
+        })
+        .type('form')
+        .expect(400)
+        .expect({
+          error: 'invalid_scope',
+          error_description: 'requested scope is not whitelisted',
+          scope: 'sign:F0F0F0',
+        });
+    });
   });
 
   describe('authorization', () => {

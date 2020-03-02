@@ -36,7 +36,7 @@ describe('grant_type=client_credentials', () => {
       .auth('client', 'secret')
       .send({
         grant_type: 'client_credentials',
-        scope: 'api:read api:write',
+        scope: 'api:read api:admin',
       })
       .type('form')
       .expect(200)
@@ -50,6 +50,22 @@ describe('grant_type=client_credentials', () => {
     const [[token]] = spy.args;
 
     expect(token).to.have.property('scope', 'api:read');
+  });
+
+  it('checks clients scope whitelist', async function () {
+    return this.agent.post(route)
+      .auth('client', 'secret')
+      .send({
+        grant_type: 'client_credentials',
+        scope: 'api:read api:write',
+      })
+      .type('form')
+      .expect(400)
+      .expect({
+        error: 'invalid_scope',
+        error_description: 'requested scope is not whitelisted',
+        scope: 'api:write',
+      });
   });
 
   it('populates ctx.oidc.entities', function (done) {
