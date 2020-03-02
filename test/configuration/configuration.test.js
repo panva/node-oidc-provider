@@ -13,6 +13,19 @@ describe('Provider configuration', () => {
     }).to.throw('Unknown feature configuration: foo');
   });
 
+  it('checks that a stable feature does not have an ack', () => {
+    expect(() => {
+      new Configuration({ // eslint-disable-line no-new
+        features: {
+          deviceFlow: {
+            enabled: true,
+            ack: 'draft-01',
+          },
+        },
+      });
+    }).to.throw("deviceFlow feature is now stable, the ack draft-01 is no longer valid. Check the stable feature's configuration for any breaking changes.");
+  });
+
   it('checks that a feature configuration is not a boolean', () => {
     expect(() => {
       new Configuration({ // eslint-disable-line no-new
