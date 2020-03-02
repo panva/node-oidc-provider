@@ -424,7 +424,6 @@ const provider = new Provider('https://op.example.com', {
       certificateBoundAccessTokens: true,
       selfSignedTlsClientAuth: true,
       tlsClientAuth: true,
-      ack: 17,
       getCertificate(ctx) {
         ctx.oidc.issuer.substring(0);
         return 'foo';

@@ -1115,7 +1115,7 @@ _**default value**_:
 
 ### features.mTLS
 
-[draft-ietf-oauth-mtls-17](https://tools.ietf.org/html/draft-ietf-oauth-mtls-17) - OAuth 2.0 Mutual TLS Client Authentication and Certificate Bound Access Tokens  
+[RFC 8705](https://tools.ietf.org/html/rfc8705) - OAuth 2.0 Mutual TLS Client Authentication and Certificate Bound Access Tokens  
 
 Enables specific features from the Mutual TLS specification. The three main features have their own specific setting in this feature's configuration object and you must provide functions for resolving some of the functions which are deployment-specific. Note: **This feature is only supported in node runtime >= 12.0.0**   
   
