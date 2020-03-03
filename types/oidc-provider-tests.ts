@@ -1,5 +1,5 @@
 // tslint:disable-next-line:no-relative-import-in-test
-import { Provider, interactionPolicy, AsymmetricSigningAlgoritm } from './index.d';
+import { Provider, interactionPolicy, AsymmetricSigningAlgoritm, Adapter } from './index.d';
 
 new Provider('https://op.example.com');
 
@@ -40,7 +40,7 @@ new Provider('https://op.example.com', {
 
 const provider = new Provider('https://op.example.com', {
   acrValues: ['urn:example:bronze'],
-  adapter: class Adapter {
+  adapter: class ProviderAdapter implements Adapter {
     name: string;
     constructor(name: string) {
       this.name = name;
@@ -52,13 +52,19 @@ const provider = new Provider('https://op.example.com', {
     async revokeByGrantId(grantId: string) {}
 
     async find(id: string) {
-      return {};
+      return {
+        consumed: false
+      };
     }
     async findByUserCode(userCode: string) {
-      return {};
+      return {
+        consumed: false
+      };
     }
     async findByUid(uid: string) {
-      return {};
+      return {
+        consumed: false
+      };
     }
   },
   claims: {

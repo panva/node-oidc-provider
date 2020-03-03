@@ -796,11 +796,15 @@ export interface AdapterPayload {
   'x5t#S256'?: string;
 }
 
+export interface AdapterModel extends AdapterPayload {
+  consumed?: boolean;
+}
+
 export interface Adapter {
   upsert(id: string, payload: AdapterPayload, expiresIn: number): Promise<undefined | void>;
-  find(id: string): Promise<AdapterPayload | undefined | void>;
-  findByUserCode(userCode: string): Promise<AdapterPayload | undefined | void>;
-  findByUid(uid: string): Promise<AdapterPayload | undefined | void>;
+  find(id: string): Promise<AdapterModel | undefined | void>;
+  findByUserCode(userCode: string): Promise<AdapterModel | undefined | void>;
+  findByUid(uid: string): Promise<AdapterModel | undefined | void>;
   consume(id: string): Promise<undefined | void>;
   destroy(id: string): Promise<undefined | void>;
   revokeByGrantId(grantId: string): Promise<undefined | void>;
