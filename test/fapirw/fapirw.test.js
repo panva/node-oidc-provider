@@ -13,7 +13,11 @@ describe('Financial-grade API - Part 2: Read and Write API Security Profile beha
     });
 
     it('does not allow query string bearer token', async function () {
-      const at = await new this.provider.AccessToken({ clientId: 'client', accountId: 'account', scope: 'openid' }).save();
+      const at = await new this.provider.AccessToken({
+        client: await this.provider.Client.find('client'),
+        accountId: 'account',
+        scope: 'openid',
+      }).save();
       await this.agent.get('/me')
         .query({ access_token: at })
         .expect(this.failWith(400, 'invalid_request', 'access tokens must not be provided via query parameter'));

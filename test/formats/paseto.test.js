@@ -52,7 +52,7 @@ if (FORMAT === 'paseto') {
 
     /* eslint-disable object-property-newline */
     const fullPayload = {
-      accountId, claims, clientId, grantId, scope, sid, consumed, acr, amr, authTime, nonce,
+      accountId, claims, grantId, scope, sid, consumed, acr, amr, authTime, nonce,
       redirectUri, codeChallenge, codeChallengeMethod, aud, error, errorDescription, params,
       userCode, deviceInfo, gty, resource, policies, sessionUid, expiresWithSession,
       'x5t#S256': s256, inFlight, iiat, rotations, extra, jkt: s256,
@@ -64,7 +64,8 @@ if (FORMAT === 'paseto') {
     it('for AccessToken', async function () {
       const kind = 'AccessToken';
       const upsert = spy(this.TestAdapter.for('AccessToken'), 'upsert');
-      const token = new this.provider.AccessToken(fullPayload);
+      const client = await this.provider.Client.find(clientId);
+      const token = new this.provider.AccessToken({ client, ...fullPayload });
       const paseto = await token.save();
 
       assert.calledWith(upsert, string, {
@@ -159,7 +160,8 @@ if (FORMAT === 'paseto') {
     it('for ClientCredentials', async function () {
       const kind = 'ClientCredentials';
       const upsert = spy(this.TestAdapter.for('ClientCredentials'), 'upsert');
-      const token = new this.provider.ClientCredentials(fullPayload);
+      const client = await this.provider.Client.find(clientId);
+      const token = new this.provider.ClientCredentials({ client, ...fullPayload });
       const paseto = await token.save();
 
       assert.calledWith(upsert, string, {
@@ -202,7 +204,8 @@ if (FORMAT === 'paseto') {
       });
 
       it('allows the payload to be extended', async function () {
-        const accessToken = new this.provider.AccessToken(fullPayload);
+        const client = await this.provider.Client.find(clientId);
+        const accessToken = new this.provider.AccessToken({ client, ...fullPayload });
         i(this.provider).configuration('formats.customizers').paseto = (ctx, token, paseto) => {
           expect(token).to.equal(accessToken);
           expect(paseto).to.have.property('payload');
@@ -247,7 +250,8 @@ if (FORMAT === 'paseto') {
       before(bootstrap(__dirname, { config: 'noed25519' }));
 
       it('throws an Error', async function () {
-        const token = new this.provider.AccessToken(fullPayload);
+        const client = await this.provider.Client.find(clientId);
+        const token = new this.provider.AccessToken({ client, ...fullPayload });
         try {
           await token.save();
           throw new Error('expected to fail');

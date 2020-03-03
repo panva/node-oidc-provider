@@ -39,7 +39,7 @@ describe('jwtIntrospection features', () => {
       const at = new this.provider.AccessToken({
         accountId: 'accountId',
         grantId: 'foo',
-        clientId: 'client-signed',
+        client: await this.provider.Client.find('client-signed'),
         scope: 'scope',
       });
 
@@ -115,7 +115,7 @@ describe('jwtIntrospection features', () => {
       const at = new this.provider.AccessToken({
         accountId: 'accountId',
         grantId: 'foo',
-        clientId: 'client-HS-expired',
+        client: await this.provider.Client.find('client-HS-expired'),
         scope: 'scope',
       });
 
@@ -140,7 +140,7 @@ describe('jwtIntrospection features', () => {
       const at = new this.provider.AccessToken({
         accountId: 'accountId',
         grantId: 'foo',
-        clientId: 'client-encrypted',
+        client: await this.provider.Client.find('client-encrypted'),
         scope: 'scope',
       });
 

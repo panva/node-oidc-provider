@@ -24,7 +24,7 @@ describe('revocation features', () => {
       const at = new this.provider.AccessToken({
         accountId: 'accountId',
         grantId: 'foo',
-        clientId: 'client',
+        client: await this.provider.Client.find('client'),
         scope: 'scope',
       });
 
@@ -47,7 +47,7 @@ describe('revocation features', () => {
       const at = new this.provider.AccessToken({
         accountId: 'accountId',
         grantId: 'foo',
-        clientId: 'client',
+        client: await this.provider.Client.find('client'),
         scope: 'scope',
       });
 
@@ -70,7 +70,7 @@ describe('revocation features', () => {
       const at = new this.provider.AccessToken({
         accountId: 'accountId',
         grantId: 'foo',
-        clientId: 'client',
+        client: await this.provider.Client.find('client'),
         scope: 'scope',
       });
 
@@ -93,7 +93,7 @@ describe('revocation features', () => {
       const at = new this.provider.AccessToken({
         accountId: 'accountId',
         grantId: 'foo',
-        clientId: 'client',
+        client: await this.provider.Client.find('client'),
         scope: 'scope',
       });
 
@@ -116,7 +116,7 @@ describe('revocation features', () => {
       const at = new this.provider.AccessToken({
         accountId: 'accountId',
         grantId: 'foo',
-        clientId: 'client',
+        client: await this.provider.Client.find('client'),
         scope: 'scope',
       });
 
@@ -140,7 +140,7 @@ describe('revocation features', () => {
       const rt = new this.provider.RefreshToken({
         accountId: 'accountId',
         grantId: 'foo',
-        clientId: 'client',
+        client: await this.provider.Client.find('client'),
         scope: 'scope',
       });
 
@@ -163,7 +163,7 @@ describe('revocation features', () => {
       const rt = new this.provider.RefreshToken({
         accountId: 'accountId',
         grantId: 'foo',
-        clientId: 'client',
+        client: await this.provider.Client.find('client'),
         scope: 'scope',
       });
 
@@ -186,7 +186,7 @@ describe('revocation features', () => {
       const rt = new this.provider.RefreshToken({
         accountId: 'accountId',
         grantId: 'foo',
-        clientId: 'client',
+        client: await this.provider.Client.find('client'),
         scope: 'scope',
       });
 
@@ -209,7 +209,7 @@ describe('revocation features', () => {
       const rt = new this.provider.RefreshToken({
         accountId: 'accountId',
         grantId: 'foo',
-        clientId: 'client',
+        client: await this.provider.Client.find('client'),
         scope: 'scope',
       });
 
@@ -230,7 +230,7 @@ describe('revocation features', () => {
 
     it('revokes client credentials token [no hint]', async function () {
       const rt = new this.provider.ClientCredentials({
-        clientId: 'client',
+        client: await this.provider.Client.find('client'),
       });
 
       const stub = sinon.stub(this.provider.ClientCredentials.prototype, 'destroy').callsFake(() => Promise.resolve());
@@ -250,7 +250,7 @@ describe('revocation features', () => {
 
     it('revokes client credentials token [correct hint]', async function () {
       const rt = new this.provider.ClientCredentials({
-        clientId: 'client',
+        client: await this.provider.Client.find('client'),
       });
 
       const stub = sinon.stub(this.provider.ClientCredentials.prototype, 'destroy').callsFake(() => Promise.resolve());
@@ -270,7 +270,7 @@ describe('revocation features', () => {
 
     it('revokes client credentials token [wrong hint]', async function () {
       const rt = new this.provider.ClientCredentials({
-        clientId: 'client',
+        client: await this.provider.Client.find('client'),
       });
 
       const stub = sinon.stub(this.provider.ClientCredentials.prototype, 'destroy').callsFake(() => Promise.resolve());
@@ -290,7 +290,7 @@ describe('revocation features', () => {
 
     it('revokes client credentials token [unrecognized hint]', async function () {
       const rt = new this.provider.ClientCredentials({
-        clientId: 'client',
+        client: await this.provider.Client.find('client'),
       });
 
       const stub = sinon.stub(this.provider.ClientCredentials.prototype, 'destroy').callsFake(() => Promise.resolve());
@@ -346,7 +346,7 @@ describe('revocation features', () => {
       const at = new this.provider.AccessToken({
         accountId: 'accountId',
         grantId: 'foo',
-        clientId: 'client2',
+        client: await this.provider.Client.find('client2'),
         scope: 'scope',
       });
 
@@ -410,7 +410,7 @@ describe('revocation features', () => {
           const at = new this.provider.AccessToken({
             accountId: 'accountId',
             grantId: 'foo',
-            clientId: 'client',
+            client: await this.provider.Client.find('client'),
             scope: 'scope',
           });
 
@@ -433,7 +433,7 @@ describe('revocation features', () => {
           const rt = new this.provider.RefreshToken({
             accountId: 'accountId',
             grantId: 'foo',
-            clientId: 'client',
+            client: await this.provider.Client.find('client'),
             scope: 'scope',
           });
 
@@ -452,7 +452,7 @@ describe('revocation features', () => {
 
         (async () => {
           const rt = new this.provider.ClientCredentials({
-            clientId: 'client',
+            client: await this.provider.Client.find('client'),
           });
 
           const token = await rt.save();

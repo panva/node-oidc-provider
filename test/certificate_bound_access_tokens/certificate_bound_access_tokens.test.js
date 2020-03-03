@@ -26,7 +26,7 @@ describe('features.mTLS.certificateBoundAccessTokens', () => {
     it('acts like an RS checking the thumbprint now', async function () {
       const at = new this.provider.AccessToken({
         accountId: 'account',
-        clientId: 'client',
+        client: await this.provider.Client.find('client'),
         scope: 'openid',
       });
       at.setThumbprint('x5t', crt);
@@ -53,7 +53,7 @@ describe('features.mTLS.certificateBoundAccessTokens', () => {
     it('exposes cnf now', async function () {
       const at = new this.provider.AccessToken({
         accountId: 'account',
-        clientId: 'client',
+        client: await this.provider.Client.find('client'),
         scope: 'openid',
       });
       at.setThumbprint('x5t', crt);

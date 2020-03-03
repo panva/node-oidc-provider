@@ -37,7 +37,7 @@ describe('features.dPoP', () => {
   it('validates the way DPoP Proof JWT is provided', async function () {
     const at = new this.provider.AccessToken({
       accountId: 'account',
-      clientId: 'client',
+      client: await this.provider.Client.find('client'),
       scope: 'openid',
     });
     at.setThumbprint('jkt', this.jwk);
@@ -185,7 +185,7 @@ describe('features.dPoP', () => {
     it('acts like an RS checking the DPoP Proof and thumbprint now', async function () {
       const at = new this.provider.AccessToken({
         accountId: 'account',
-        clientId: 'client',
+        client: await this.provider.Client.find('client'),
         scope: 'openid',
       });
       at.setThumbprint('jkt', this.jwk);
@@ -241,7 +241,7 @@ describe('features.dPoP', () => {
     it('exposes cnf and DPoP token type now', async function () {
       const at = new this.provider.AccessToken({
         accountId: 'account',
-        clientId: 'client',
+        client: await this.provider.Client.find('client'),
         scope: 'openid',
       });
       at.setThumbprint('jkt', this.jwk);

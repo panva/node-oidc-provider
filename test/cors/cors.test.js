@@ -36,7 +36,7 @@ describe('CORS setup', () => {
     const at = new this.provider.AccessToken({
       accountId: 'accountId',
       grantId: 'foo',
-      clientId: 'client',
+      client: await this.provider.Client.find('client'),
       scope: 'openid',
     });
 

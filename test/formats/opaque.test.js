@@ -45,7 +45,7 @@ if (FORMAT === 'opaque') {
 
     /* eslint-disable object-property-newline */
     const fullPayload = {
-      accountId, claims, clientId, grantId, scope, sid, consumed, acr, amr, authTime, nonce,
+      accountId, claims, grantId, scope, sid, consumed, acr, amr, authTime, nonce,
       redirectUri, codeChallenge, codeChallengeMethod, aud, error, errorDescription, params,
       userCode, deviceInfo, gty, resource, policies, sessionUid, expiresWithSession,
       'x5t#S256': s256, inFlight, iiat, rotations, extra, jkt: s256,
@@ -57,7 +57,8 @@ if (FORMAT === 'opaque') {
     it('for AccessToken', async function () {
       const kind = 'AccessToken';
       const upsert = spy(this.TestAdapter.for('AccessToken'), 'upsert');
-      const token = new this.provider.AccessToken(fullPayload);
+      const client = await this.provider.Client.find(clientId);
+      const token = new this.provider.AccessToken({ client, ...fullPayload });
       await token.save();
 
       expect(upsert.getCall(0).args[0]).to.have.lengthOf(43);
@@ -85,7 +86,8 @@ if (FORMAT === 'opaque') {
     it('for AuthorizationCode', async function () {
       const kind = 'AuthorizationCode';
       const upsert = spy(this.TestAdapter.for('AuthorizationCode'), 'upsert');
-      const token = new this.provider.AuthorizationCode(fullPayload);
+      const client = await this.provider.Client.find(clientId);
+      const token = new this.provider.AuthorizationCode({ client, ...fullPayload });
       await token.save();
 
       expect(upsert.getCall(0).args[0]).to.have.lengthOf(43);
@@ -117,7 +119,8 @@ if (FORMAT === 'opaque') {
     it('for DeviceCode', async function () {
       const kind = 'DeviceCode';
       const upsert = spy(this.TestAdapter.for('DeviceCode'), 'upsert');
-      const token = new this.provider.DeviceCode(fullPayload);
+      const client = await this.provider.Client.find(clientId);
+      const token = new this.provider.DeviceCode({ client, ...fullPayload });
       await token.save();
 
       expect(upsert.getCall(0).args[0]).to.have.lengthOf(43);
@@ -155,7 +158,8 @@ if (FORMAT === 'opaque') {
     it('for RefreshToken', async function () {
       const kind = 'RefreshToken';
       const upsert = spy(this.TestAdapter.for('RefreshToken'), 'upsert');
-      const token = new this.provider.RefreshToken(fullPayload);
+      const client = await this.provider.Client.find(clientId);
+      const token = new this.provider.RefreshToken({ client, ...fullPayload });
       await token.save();
 
       expect(upsert.getCall(0).args[0]).to.have.lengthOf(43);
@@ -189,7 +193,8 @@ if (FORMAT === 'opaque') {
     it('for ClientCredentials', async function () {
       const kind = 'ClientCredentials';
       const upsert = spy(this.TestAdapter.for('ClientCredentials'), 'upsert');
-      const token = new this.provider.ClientCredentials(fullPayload);
+      const client = await this.provider.Client.find(clientId);
+      const token = new this.provider.ClientCredentials({ client, ...fullPayload });
       await token.save();
 
       expect(upsert.getCall(0).args[0]).to.have.lengthOf(43);
@@ -229,7 +234,9 @@ if (FORMAT === 'opaque') {
     it('for RegistrationAccessToken', async function () {
       const kind = 'RegistrationAccessToken';
       const upsert = spy(this.TestAdapter.for('RegistrationAccessToken'), 'upsert');
+      const client = await this.provider.Client.find(clientId);
       const token = new this.provider.RegistrationAccessToken({
+        client,
         expiresIn: 100,
         ...fullPayload,
       });

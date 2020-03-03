@@ -64,7 +64,8 @@ if (FORMAT === 'jwt-ietf') {
     it('for AccessToken', async function () {
       const kind = 'AccessToken';
       const upsert = spy(this.TestAdapter.for('AccessToken'), 'upsert');
-      const token = new this.provider.AccessToken(fullPayload);
+      const client = await this.provider.Client.find(clientId);
+      const token = new this.provider.AccessToken({ client, ...fullPayload });
       const jwt = await token.save();
 
       assert.calledWith(upsert, string, {
@@ -161,7 +162,8 @@ if (FORMAT === 'jwt-ietf') {
     it('for ClientCredentials', async function () {
       const kind = 'ClientCredentials';
       const upsert = spy(this.TestAdapter.for('ClientCredentials'), 'upsert');
-      const token = new this.provider.ClientCredentials(fullPayload);
+      const client = await this.provider.Client.find(clientId);
+      const token = new this.provider.ClientCredentials({ client, ...fullPayload });
       const jwt = await token.save();
 
       assert.calledWith(upsert, string, {
@@ -205,7 +207,8 @@ if (FORMAT === 'jwt-ietf') {
       });
 
       it('allows the payload to be extended', async function () {
-        const accessToken = new this.provider.AccessToken(fullPayload);
+        const client = await this.provider.Client.find(clientId);
+        const accessToken = new this.provider.AccessToken({ client, ...fullPayload });
         i(this.provider).configuration('formats.customizers')['jwt-ietf'] = (ctx, token, jwt) => {
           expect(token).to.equal(accessToken);
           expect(jwt).to.have.property('payload');
@@ -226,7 +229,8 @@ if (FORMAT === 'jwt-ietf') {
       ['none', 'HS256', 'HS384', 'HS512'].forEach((alg) => {
         it(`throws an Error when ${alg} is resolved`, async function () {
           i(this.provider).configuration('formats').jwtAccessTokenSigningAlg = async () => alg;
-          const token = new this.provider.AccessToken(fullPayload);
+          const client = await this.provider.Client.find(clientId);
+          const token = new this.provider.AccessToken({ client, ...fullPayload });
           try {
             await token.save();
             throw new Error('expected to fail');
@@ -239,7 +243,8 @@ if (FORMAT === 'jwt-ietf') {
 
       it('throws an Error when unsupported provider keystore alg is resolved', async function () {
         i(this.provider).configuration('formats').jwtAccessTokenSigningAlg = async () => 'ES384';
-        const token = new this.provider.AccessToken(fullPayload);
+        const client = await this.provider.Client.find(clientId);
+        const token = new this.provider.AccessToken({ client, ...fullPayload });
         try {
           await token.save();
           throw new Error('expected to fail');

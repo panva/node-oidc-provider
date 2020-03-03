@@ -78,7 +78,9 @@ describe('userinfo /me', () => {
   });
 
   it('validates a client is still valid for a found token', async function () {
-    const at = await new this.provider.AccessToken({ clientId: 'client' }).save();
+    const at = await new this.provider.AccessToken({
+      client: await this.provider.Client.find('client'),
+    }).save();
     sinon.stub(this.provider.Client, 'find').callsFake(async () => undefined);
     return this.agent.get('/me')
       .auth(at, { type: 'bearer' })
@@ -89,7 +91,10 @@ describe('userinfo /me', () => {
   });
 
   it('validates an account still valid for a found token', async function () {
-    const at = await new this.provider.AccessToken({ clientId: 'client', accountId: 'notfound' }).save();
+    const at = await new this.provider.AccessToken({
+      client: await this.provider.Client.find('client'),
+      accountId: 'notfound',
+    }).save();
     return this.agent.get('/me')
       .auth(at, { type: 'bearer' })
       .expect(this.failWith(401, 'invalid_token', 'invalid token provided'));
