@@ -1575,7 +1575,8 @@ _**default value**_:
     whitelist: [
       'code_challenge',
       'nonce',
-      'state'
+      'state',
+      'prompt'
     ]
   },
   request: false,
@@ -1614,7 +1615,8 @@ _**default value**_:
 [
   'code_challenge',
   'nonce',
-  'state'
+  'state',
+  'prompt'
 ]
 ```
 

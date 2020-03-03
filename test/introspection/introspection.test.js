@@ -3,7 +3,7 @@ const { expect } = require('chai');
 
 const bootstrap = require('../test_helper');
 
-const { formats: { AccessToken: FORMAT } } = require('../../lib/helpers/defaults');
+const { formats: { AccessToken: FORMAT } } = global.TEST_CONFIGURATION_DEFAULTS;
 
 const route = '/token/introspection';
 
