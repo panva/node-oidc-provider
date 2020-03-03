@@ -1,8 +1,6 @@
 /* eslint-disable no-restricted-syntax, max-len, no-await-in-loop, no-plusplus */
 const { spawn } = require('child_process');
 
-const runtimeSupport = require('../lib/helpers/runtime_support');
-
 let first = true;
 
 function pass({ format, mountTo, mountVia } = {}) {
@@ -50,7 +48,7 @@ function report() {
 }
 
 (async () => {
-  const formats = ['opaque', 'jwt', 'jwt-ietf', runtimeSupport.EdDSA ? 'paseto' : '', 'dynamic'].filter(Boolean);
+  const formats = ['opaque', 'jwt', 'jwt-ietf', 'paseto', 'dynamic'];
 
   for (const format of formats) {
     await pass({ format });

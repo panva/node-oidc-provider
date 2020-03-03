@@ -7,8 +7,6 @@ const lookupFiles = require('mocha/lib/cli/lookup-files');
 const { all: clearRequireCache } = require('clear-module');
 const sample = require('lodash/sample');
 
-const runtimeSupport = require('../lib/helpers/runtime_support');
-
 const FORMAT_REGEXP = /^--format=([\w-]+)$/;
 
 const formats = [];
@@ -22,9 +20,7 @@ if (!formats.length) {
   formats.push('opaque');
   formats.push('jwt');
   formats.push('jwt-ietf');
-  if (runtimeSupport.EdDSA) {
-    formats.push('paseto');
-  }
+  formats.push('paseto');
   formats.push('dynamic');
 }
 const passed = [];
@@ -47,7 +43,7 @@ async function singleRun() {
   await Promise.all([
     global.keystore.generate('RSA', 2048),
     global.keystore.generate('EC', 'P-256'),
-    runtimeSupport.EdDSA ? global.keystore.generate('OKP', 'Ed25519') : undefined,
+    global.keystore.generate('OKP', 'Ed25519'),
   ]);
   global.TEST_CONFIGURATION_DEFAULTS = {};
   if (this.format === 'jwt-ietf' || typeof this.format === 'function') {
@@ -113,7 +109,7 @@ async function singleRun() {
     await singleRun.call({ format: 'paseto' });
   }
   if (formats.includes('dynamic')) {
-    await singleRun.call({ format: () => sample(['opaque', 'jwt', 'jwt-ietf', runtimeSupport.EdDSA ? 'paseto' : undefined].filter(Boolean)) });
+    await singleRun.call({ format: () => sample(['opaque', 'jwt', 'jwt-ietf', 'paseto']) });
   }
   passed.forEach((pass) => console.log('\x1b[32m%s\x1b[0m', pass));
 })()

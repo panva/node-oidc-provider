@@ -2,7 +2,7 @@
 const { strict: assert } = require('assert');
 const { createWriteStream } = require('fs');
 
-const Got = require('got');
+const Got = require('got'); // TODO: upgrade got
 const ms = require('ms');
 
 const debug = require('./debug');

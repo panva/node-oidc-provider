@@ -1,6 +1,6 @@
 /* eslint-disable no-console, no-await-in-loop, no-loop-func */
 
-const got = require('got');
+const got = require('got'); // TODO: upgrade got
 
 const {
   TRAVIS_BUILD_NUMBER,

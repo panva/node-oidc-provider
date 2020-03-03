@@ -6,7 +6,6 @@ const {
   e, n, kid, kty, use,
 } = require('../client.sig.key');
 const mtlsKeys = require('../jwks/jwks.json');
-const runtimeSupport = require('../../lib/helpers/runtime_support');
 
 const clientKey = {
   e, n, kid, kty, use,
@@ -20,15 +19,13 @@ config.tokenEndpointAuthMethods = [
   'client_secret_post',
   'private_key_jwt',
   'client_secret_jwt',
-  ...(runtimeSupport.KeyObject ? [
-    'tls_client_auth',
-    'self_signed_tls_client_auth',
-  ] : []),
+  'tls_client_auth',
+  'self_signed_tls_client_auth',
 ];
 merge(config.features, {
   introspection: { enabled: true },
   mTLS: {
-    enabled: runtimeSupport.KeyObject,
+    enabled: true,
     selfSignedTlsClientAuth: true,
     tlsClientAuth: true,
     getCertificate(ctx) {

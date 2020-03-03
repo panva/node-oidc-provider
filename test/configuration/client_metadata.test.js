@@ -7,7 +7,6 @@ const omit = require('lodash/omit');
 const pull = require('lodash/pull');
 const cloneDeep = require('lodash/cloneDeep');
 
-const runtimeSupport = require('../../lib/helpers/runtime_support');
 const { Provider } = require('../../lib');
 const { whitelistedJWA } = require('../default.config');
 const mtlsKeys = require('../jwks/jwks.json');
@@ -372,8 +371,8 @@ describe('Client metadata validation', () => {
     mustBeString(this.title);
     [
       'none', 'HS256', 'HS384', 'HS512', 'RS256', 'RS384', 'RS512',
-      'PS256', 'PS384', 'PS512', 'ES256', 'ES384', 'ES512', runtimeSupport.EdDSA ? 'EdDSA' : false,
-    ].filter(Boolean).forEach((alg) => {
+      'PS256', 'PS384', 'PS512', 'ES256', 'ES384', 'ES512', 'EdDSA',
+    ].forEach((alg) => {
       allows(this.title, alg, { jwks: { keys: [sigKey] } });
     });
     rejects(this.title, 'not-an-alg');
@@ -496,11 +495,11 @@ describe('Client metadata validation', () => {
         'client_secret_post',
         'private_key_jwt',
         'client_secret_jwt',
-        runtimeSupport.KeyObject ? 'tls_client_auth' : false,
-      ].filter(Boolean),
+        'tls_client_auth',
+      ],
       features: {
         mTLS: {
-          enabled: runtimeSupport.KeyObject, selfSignedTlsClientAuth: true, tlsClientAuth: true,
+          enabled: true, selfSignedTlsClientAuth: true, tlsClientAuth: true,
         },
       },
     };
@@ -527,28 +526,26 @@ describe('Client metadata validation', () => {
             }, configuration);
             break;
           case 'tls_client_auth':
-            if (runtimeSupport.KeyObject) {
-              allows(this.title, value, {
-                tls_client_auth_subject_dn: 'foo',
-              }, configuration);
-              allows(this.title, value, {
-                tls_client_auth_san_dns: 'foo',
-              }, configuration);
-              allows(this.title, value, {
-                tls_client_auth_san_uri: 'foo',
-              }, configuration);
-              allows(this.title, value, {
-                tls_client_auth_san_ip: 'foo',
-              }, configuration);
-              allows(this.title, value, {
-                tls_client_auth_san_email: 'foo',
-              }, configuration);
-              rejects(this.title, value, 'tls_client_auth requires one of the certificate subject value parameters', undefined, configuration);
-              rejects(this.title, value, 'only one tls_client_auth certificate subject value must be provided', {
-                tls_client_auth_san_ip: 'foo',
-                tls_client_auth_san_email: 'foo',
-              }, configuration);
-            }
+            allows(this.title, value, {
+              tls_client_auth_subject_dn: 'foo',
+            }, configuration);
+            allows(this.title, value, {
+              tls_client_auth_san_dns: 'foo',
+            }, configuration);
+            allows(this.title, value, {
+              tls_client_auth_san_uri: 'foo',
+            }, configuration);
+            allows(this.title, value, {
+              tls_client_auth_san_ip: 'foo',
+            }, configuration);
+            allows(this.title, value, {
+              tls_client_auth_san_email: 'foo',
+            }, configuration);
+            rejects(this.title, value, 'tls_client_auth requires one of the certificate subject value parameters', undefined, configuration);
+            rejects(this.title, value, 'only one tls_client_auth certificate subject value must be provided', {
+              tls_client_auth_san_ip: 'foo',
+              tls_client_auth_san_email: 'foo',
+            }, configuration);
             break;
           default: {
             allows(this.title, value, undefined, configuration);
@@ -646,10 +643,10 @@ describe('Client metadata validation', () => {
       }));
       allows(this.title, 'dir', undefined, configuration);
       [
-        'RSA-OAEP', ...(runtimeSupport.oaepHash ? ['RSA-OAEP-256', 'RSA-OAEP-384', 'RSA-OAEP-512'] : []), 'RSA1_5', 'ECDH-ES', 'ECDH-ES+A128KW', 'ECDH-ES+A192KW',
+        'RSA-OAEP', 'RSA-OAEP-256', 'RSA-OAEP-384', 'RSA-OAEP-512', 'RSA1_5', 'ECDH-ES', 'ECDH-ES+A128KW', 'ECDH-ES+A192KW',
         'ECDH-ES+A256KW', 'A128GCMKW', 'A192GCMKW', 'A256GCMKW', 'A128KW', 'A192KW', 'A256KW',
         'PBES2-HS256+A128KW', 'PBES2-HS384+A192KW', 'PBES2-HS512+A256KW',
-      ].filter(Boolean).forEach((value) => {
+      ].forEach((value) => {
         allows(this.title, value, {
           jwks: { keys: [sigKey] },
         }, configuration);
@@ -698,10 +695,10 @@ describe('Client metadata validation', () => {
       }));
       allows(this.title, 'dir', undefined, configuration);
       [
-        'RSA-OAEP', ...(runtimeSupport.oaepHash ? ['RSA-OAEP-256', 'RSA-OAEP-384', 'RSA-OAEP-512'] : []), 'RSA1_5', 'ECDH-ES', 'ECDH-ES+A128KW', 'ECDH-ES+A192KW',
+        'RSA-OAEP', 'RSA-OAEP-256', 'RSA-OAEP-384', 'RSA-OAEP-512', 'RSA1_5', 'ECDH-ES', 'ECDH-ES+A128KW', 'ECDH-ES+A192KW',
         'ECDH-ES+A256KW', 'A128GCMKW', 'A192GCMKW', 'A256GCMKW', 'A128KW', 'A192KW', 'A256KW',
         'PBES2-HS256+A128KW', 'PBES2-HS384+A192KW', 'PBES2-HS512+A256KW',
-      ].filter(Boolean).forEach((value) => {
+      ].forEach((value) => {
         allows(this.title, value, {
           jwks: { keys: [sigKey] },
         }, configuration);
@@ -751,10 +748,10 @@ describe('Client metadata validation', () => {
       }));
       allows(this.title, 'dir', undefined, configuration);
       [
-        'RSA-OAEP', ...(runtimeSupport.oaepHash ? ['RSA-OAEP-256', 'RSA-OAEP-384', 'RSA-OAEP-512'] : []), 'RSA1_5', 'ECDH-ES', 'ECDH-ES+A128KW', 'ECDH-ES+A192KW',
+        'RSA-OAEP', 'RSA-OAEP-256', 'RSA-OAEP-384', 'RSA-OAEP-512', 'RSA1_5', 'ECDH-ES', 'ECDH-ES+A128KW', 'ECDH-ES+A192KW',
         'ECDH-ES+A256KW', 'A128GCMKW', 'A192GCMKW', 'A256GCMKW', 'A128KW', 'A192KW', 'A256KW',
         'PBES2-HS256+A128KW', 'PBES2-HS384+A192KW', 'PBES2-HS512+A256KW',
-      ].filter(Boolean).forEach((value) => {
+      ].forEach((value) => {
         allows(this.title, value, {
           jwks: { keys: [sigKey] },
         }, configuration);
@@ -804,10 +801,10 @@ describe('Client metadata validation', () => {
       }));
       allows(this.title, 'dir', undefined, configuration);
       [
-        'RSA-OAEP', ...(runtimeSupport.oaepHash ? ['RSA-OAEP-256', 'RSA-OAEP-384', 'RSA-OAEP-512'] : []), 'RSA1_5', 'ECDH-ES', 'ECDH-ES+A128KW', 'ECDH-ES+A192KW',
+        'RSA-OAEP', 'RSA-OAEP-256', 'RSA-OAEP-384', 'RSA-OAEP-512', 'RSA1_5', 'ECDH-ES', 'ECDH-ES+A128KW', 'ECDH-ES+A192KW',
         'ECDH-ES+A256KW', 'A128GCMKW', 'A192GCMKW', 'A256GCMKW', 'A128KW', 'A192KW', 'A256KW',
         'PBES2-HS256+A128KW', 'PBES2-HS384+A192KW', 'PBES2-HS512+A256KW',
-      ].filter(Boolean).forEach((value) => {
+      ].forEach((value) => {
         allows(this.title, value, {
           jwks: { keys: [sigKey] },
         }, configuration);
@@ -863,10 +860,10 @@ describe('Client metadata validation', () => {
       }));
       allows(this.title, 'dir', undefined, configuration);
       [
-        'RSA-OAEP', ...(runtimeSupport.oaepHash ? ['RSA-OAEP-256', 'RSA-OAEP-384', 'RSA-OAEP-512'] : []), 'RSA1_5', 'ECDH-ES', 'ECDH-ES+A128KW', 'ECDH-ES+A192KW',
+        'RSA-OAEP', 'RSA-OAEP-256', 'RSA-OAEP-384', 'RSA-OAEP-512', 'RSA1_5', 'ECDH-ES', 'ECDH-ES+A128KW', 'ECDH-ES+A192KW',
         'ECDH-ES+A256KW', 'A128GCMKW', 'A192GCMKW', 'A256GCMKW', 'A128KW', 'A192KW', 'A256KW',
         'PBES2-HS256+A128KW', 'PBES2-HS384+A192KW', 'PBES2-HS512+A256KW',
-      ].filter(Boolean).forEach((value) => {
+      ].forEach((value) => {
         allows(this.title, value, undefined, configuration);
       });
       rejects(this.title, 'not-an-alg', undefined, undefined, configuration);
@@ -956,19 +953,17 @@ describe('Client metadata validation', () => {
       request_object_signing_alg: 'ES384',
     });
 
-    if (runtimeSupport.KeyObject) {
-      const invalidx5c = cloneDeep(mtlsKeys);
-      invalidx5c.keys[0].x5c = true;
-      rejects(this.title, invalidx5c, 'jwks keys member index 0 is not a valid EC JWK (`x5c` must be an array of one or more PKIX certificates when provided)');
+    const invalidx5c = cloneDeep(mtlsKeys);
+    invalidx5c.keys[0].x5c = true;
+    rejects(this.title, invalidx5c, 'jwks keys member index 0 is not a valid EC JWK (`x5c` must be an array of one or more PKIX certificates when provided)');
 
-      const emptyx5c = cloneDeep(mtlsKeys);
-      emptyx5c.keys[0].x5c = [];
-      rejects(this.title, emptyx5c, 'jwks keys member index 0 is not a valid EC JWK (`x5c` must be an array of one or more PKIX certificates when provided)');
+    const emptyx5c = cloneDeep(mtlsKeys);
+    emptyx5c.keys[0].x5c = [];
+    rejects(this.title, emptyx5c, 'jwks keys member index 0 is not a valid EC JWK (`x5c` must be an array of one or more PKIX certificates when provided)');
 
-      const invalidCert = cloneDeep(mtlsKeys);
-      invalidCert.keys[0].x5c = ['foobar'];
-      rejects(this.title, invalidCert, 'jwks keys member index 0 is not a valid EC JWK (`x5c` member at index 0 is not a valid base64-encoded DER PKIX certificate)');
-    }
+    const invalidCert = cloneDeep(mtlsKeys);
+    invalidCert.keys[0].x5c = ['foobar'];
+    rejects(this.title, invalidCert, 'jwks keys member index 0 is not a valid EC JWK (`x5c` member at index 0 is not a valid base64-encoded DER PKIX certificate)');
 
     [
       'id_token_encrypted_response_alg',
@@ -989,21 +984,19 @@ describe('Client metadata validation', () => {
     });
   });
 
-  if (runtimeSupport.KeyObject) {
-    context('features.mTLS.certificateBoundAccessTokens', () => {
-      context('tls_client_certificate_bound_access_tokens', function () {
-        const configuration = {
-          features: {
-            mTLS: { enabled: true, certificateBoundAccessTokens: true },
-          },
-        };
+  context('features.mTLS.certificateBoundAccessTokens', () => {
+    context('tls_client_certificate_bound_access_tokens', function () {
+      const configuration = {
+        features: {
+          mTLS: { enabled: true, certificateBoundAccessTokens: true },
+        },
+      };
 
-        defaultsTo(this.title, false, undefined, configuration);
-        defaultsTo(this.title, undefined);
-        mustBeBoolean(this.title, undefined, configuration);
-      });
+      defaultsTo(this.title, false, undefined, configuration);
+      defaultsTo(this.title, undefined);
+      mustBeBoolean(this.title, undefined, configuration);
     });
-  }
+  });
 
   context('features.backchannelLogout', () => {
     const configuration = {
@@ -1056,87 +1049,85 @@ describe('Client metadata validation', () => {
       tokenEndpointAuthMethods: ['tls_client_auth', 'client_secret_basic'],
     };
 
-    if (runtimeSupport.KeyObject) {
-      context('tls_client_auth_subject_dn', function () {
-        mustBeString(this.title, undefined, undefined, configuration);
-        allows(this.title, 'foo', {
-          token_endpoint_auth_method: 'tls_client_auth',
-        }, configuration);
-        allows(this.title, 'foo', {
-          revocation_endpoint_auth_method: 'tls_client_auth',
-        }, configuration);
-        allows(this.title, 'foo', {
-          introspection_endpoint_auth_method: 'tls_client_auth',
-        }, configuration);
-        allows(this.title, 'foo', undefined, configuration, (client) => {
-          expect(client.metadata()[this.title]).to.eql(undefined);
-        });
+    context('tls_client_auth_subject_dn', function () {
+      mustBeString(this.title, undefined, undefined, configuration);
+      allows(this.title, 'foo', {
+        token_endpoint_auth_method: 'tls_client_auth',
+      }, configuration);
+      allows(this.title, 'foo', {
+        revocation_endpoint_auth_method: 'tls_client_auth',
+      }, configuration);
+      allows(this.title, 'foo', {
+        introspection_endpoint_auth_method: 'tls_client_auth',
+      }, configuration);
+      allows(this.title, 'foo', undefined, configuration, (client) => {
+        expect(client.metadata()[this.title]).to.eql(undefined);
       });
+    });
 
-      context('tls_client_auth_san_dns', function () {
-        mustBeString(this.title, undefined, undefined, configuration);
-        allows(this.title, 'foo', {
-          token_endpoint_auth_method: 'tls_client_auth',
-        }, configuration);
-        allows(this.title, 'foo', {
-          revocation_endpoint_auth_method: 'tls_client_auth',
-        }, configuration);
-        allows(this.title, 'foo', {
-          introspection_endpoint_auth_method: 'tls_client_auth',
-        }, configuration);
-        allows(this.title, 'foo', undefined, configuration, (client) => {
-          expect(client.metadata()[this.title]).to.eql(undefined);
-        });
+    context('tls_client_auth_san_dns', function () {
+      mustBeString(this.title, undefined, undefined, configuration);
+      allows(this.title, 'foo', {
+        token_endpoint_auth_method: 'tls_client_auth',
+      }, configuration);
+      allows(this.title, 'foo', {
+        revocation_endpoint_auth_method: 'tls_client_auth',
+      }, configuration);
+      allows(this.title, 'foo', {
+        introspection_endpoint_auth_method: 'tls_client_auth',
+      }, configuration);
+      allows(this.title, 'foo', undefined, configuration, (client) => {
+        expect(client.metadata()[this.title]).to.eql(undefined);
       });
+    });
 
-      context('tls_client_auth_san_uri', function () {
-        mustBeString(this.title, undefined, undefined, configuration);
-        allows(this.title, 'foo', {
-          token_endpoint_auth_method: 'tls_client_auth',
-        }, configuration);
-        allows(this.title, 'foo', {
-          revocation_endpoint_auth_method: 'tls_client_auth',
-        }, configuration);
-        allows(this.title, 'foo', {
-          introspection_endpoint_auth_method: 'tls_client_auth',
-        }, configuration);
-        allows(this.title, 'foo', undefined, configuration, (client) => {
-          expect(client.metadata()[this.title]).to.eql(undefined);
-        });
+    context('tls_client_auth_san_uri', function () {
+      mustBeString(this.title, undefined, undefined, configuration);
+      allows(this.title, 'foo', {
+        token_endpoint_auth_method: 'tls_client_auth',
+      }, configuration);
+      allows(this.title, 'foo', {
+        revocation_endpoint_auth_method: 'tls_client_auth',
+      }, configuration);
+      allows(this.title, 'foo', {
+        introspection_endpoint_auth_method: 'tls_client_auth',
+      }, configuration);
+      allows(this.title, 'foo', undefined, configuration, (client) => {
+        expect(client.metadata()[this.title]).to.eql(undefined);
       });
+    });
 
-      context('tls_client_auth_san_ip', function () {
-        mustBeString(this.title, undefined, undefined, configuration);
-        allows(this.title, 'foo', {
-          token_endpoint_auth_method: 'tls_client_auth',
-        }, configuration);
-        allows(this.title, 'foo', {
-          revocation_endpoint_auth_method: 'tls_client_auth',
-        }, configuration);
-        allows(this.title, 'foo', {
-          introspection_endpoint_auth_method: 'tls_client_auth',
-        }, configuration);
-        allows(this.title, 'foo', undefined, configuration, (client) => {
-          expect(client.metadata()[this.title]).to.eql(undefined);
-        });
+    context('tls_client_auth_san_ip', function () {
+      mustBeString(this.title, undefined, undefined, configuration);
+      allows(this.title, 'foo', {
+        token_endpoint_auth_method: 'tls_client_auth',
+      }, configuration);
+      allows(this.title, 'foo', {
+        revocation_endpoint_auth_method: 'tls_client_auth',
+      }, configuration);
+      allows(this.title, 'foo', {
+        introspection_endpoint_auth_method: 'tls_client_auth',
+      }, configuration);
+      allows(this.title, 'foo', undefined, configuration, (client) => {
+        expect(client.metadata()[this.title]).to.eql(undefined);
       });
+    });
 
-      context('tls_client_auth_san_email', function () {
-        mustBeString(this.title, undefined, undefined, configuration);
-        allows(this.title, 'foo', {
-          token_endpoint_auth_method: 'tls_client_auth',
-        }, configuration);
-        allows(this.title, 'foo', {
-          revocation_endpoint_auth_method: 'tls_client_auth',
-        }, configuration);
-        allows(this.title, 'foo', {
-          introspection_endpoint_auth_method: 'tls_client_auth',
-        }, configuration);
-        allows(this.title, 'foo', undefined, configuration, (client) => {
-          expect(client.metadata()[this.title]).to.eql(undefined);
-        });
+    context('tls_client_auth_san_email', function () {
+      mustBeString(this.title, undefined, undefined, configuration);
+      allows(this.title, 'foo', {
+        token_endpoint_auth_method: 'tls_client_auth',
+      }, configuration);
+      allows(this.title, 'foo', {
+        revocation_endpoint_auth_method: 'tls_client_auth',
+      }, configuration);
+      allows(this.title, 'foo', {
+        introspection_endpoint_auth_method: 'tls_client_auth',
+      }, configuration);
+      allows(this.title, 'foo', undefined, configuration, (client) => {
+        expect(client.metadata()[this.title]).to.eql(undefined);
       });
-    }
+    });
   }
 
   context('jwks_uri', function () {

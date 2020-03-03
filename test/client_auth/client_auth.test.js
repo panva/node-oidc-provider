@@ -7,7 +7,6 @@ const sinon = require('sinon');
 const { expect } = require('chai');
 const cloneDeep = require('lodash/cloneDeep');
 
-const runtimeSupport = require('../../lib/helpers/runtime_support');
 const nanoid = require('../../lib/helpers/nanoid');
 const { Provider } = require('../../lib');
 const bootstrap = require('../test_helper');
@@ -101,8 +100,8 @@ describe('client authentication options', () => {
         'ES256K',
         'ES384',
         'ES512',
-        runtimeSupport.EdDSA ? 'EdDSA' : false,
-      ].filter(Boolean);
+        'EdDSA',
+      ];
 
       expect(i(provider).configuration('tokenEndpointAuthSigningAlgValues')).to.eql(algs);
       expect(i(provider).configuration('introspectionEndpointAuthSigningAlgValues')).to.eql(algs);
@@ -135,8 +134,8 @@ describe('client authentication options', () => {
         'ES256K',
         'ES384',
         'ES512',
-        runtimeSupport.EdDSA ? 'EdDSA' : false,
-      ].filter(Boolean);
+        'EdDSA',
+      ];
 
       expect(i(provider).configuration('tokenEndpointAuthSigningAlgValues')).to.eql(algs);
       expect(i(provider).configuration('introspectionEndpointAuthSigningAlgValues')).to.eql(algs);
@@ -1138,116 +1137,114 @@ describe('client authentication options', () => {
     });
   });
 
-  if (runtimeSupport.KeyObject) {
-    describe('tls_client_auth auth', () => {
-      it('accepts the auth', function () {
-        return this.agent.post(route)
-          .set('x-ssl-client-cert', rsacrt.replace(RegExp('\\r?\\n', 'g'), ''))
-          .set('x-ssl-client-verify', 'SUCCESS')
-          .set('x-ssl-client-san-dns', 'rp.example.com')
-          .send({
-            client_id: 'client-pki-mtls',
-            grant_type: 'implicit',
-          })
-          .type('form')
-          .expect(tokenAuthSucceeded);
-      });
-
-      it('fails the auth when getCertificate() does not return a cert', function () {
-        return this.agent.post(route)
-          .send({
-            client_id: 'client-pki-mtls',
-            grant_type: 'implicit',
-          })
-          .type('form')
-          .expect(tokenAuthRejected);
-      });
-
-      it('fails the auth when certificateAuthorized() fails', function () {
-        return this.agent.post(route)
-          .set('x-ssl-client-cert', rsacrt.replace(RegExp('\\r?\\n', 'g'), ''))
-          .set('x-ssl-client-verify', 'FAILED: self signed certificate')
-          .set('x-ssl-client-san-dns', 'rp.example.com')
-          .send({
-            client_id: 'client-pki-mtls',
-            grant_type: 'implicit',
-          })
-          .type('form')
-          .expect(tokenAuthRejected);
-      });
-
-      it('fails the auth when certificateSubjectMatches() return false', function () {
-        return this.agent.post(route)
-          .set('x-ssl-client-cert', rsacrt.replace(RegExp('\\r?\\n', 'g'), ''))
-          .set('x-ssl-client-verify', 'SUCCESS')
-          .set('x-ssl-client-san-dns', 'foobarbaz')
-          .send({
-            client_id: 'client-pki-mtls',
-            grant_type: 'implicit',
-          })
-          .type('form')
-          .expect(tokenAuthRejected);
-      });
+  describe('tls_client_auth auth', () => {
+    it('accepts the auth', function () {
+      return this.agent.post(route)
+        .set('x-ssl-client-cert', rsacrt.replace(RegExp('\\r?\\n', 'g'), ''))
+        .set('x-ssl-client-verify', 'SUCCESS')
+        .set('x-ssl-client-san-dns', 'rp.example.com')
+        .send({
+          client_id: 'client-pki-mtls',
+          grant_type: 'implicit',
+        })
+        .type('form')
+        .expect(tokenAuthSucceeded);
     });
 
-    describe('self_signed_tls_client_auth auth', () => {
-      it('accepts the auth [1/2]', function () {
-        return this.agent.post(route)
-          .set('x-ssl-client-cert', rsacrt.replace(RegExp('\\r?\\n', 'g'), ''))
-          .send({
-            client_id: 'client-self-signed-mtls',
-            grant_type: 'implicit',
-          })
-          .type('form')
-          .expect(tokenAuthSucceeded);
-      });
-
-      it('accepts the auth [2/2]', function () {
-        return this.agent.post(route)
-          .set('x-ssl-client-cert', eccrt.replace(RegExp('\\r?\\n', 'g'), ''))
-          .send({
-            client_id: 'client-self-signed-mtls',
-            grant_type: 'implicit',
-          })
-          .type('form')
-          .expect(tokenAuthSucceeded);
-      });
-
-      it('fails the auth when x-ssl-client-cert is not passed by the proxy', function () {
-        return this.agent.post(route)
-          .send({
-            client_id: 'client-self-signed-mtls',
-            grant_type: 'implicit',
-          })
-          .type('form')
-          .expect(tokenAuthRejected);
-      });
-
-      it('fails the auth when x-ssl-client-cert does not match the registered ones', function () {
-        return this.agent.post(route)
-          .set('x-ssl-client-cert', eccrt.replace(RegExp('\\r?\\n', 'g'), ''))
-          .send({
-            client_id: 'client-self-signed-mtls-rsa',
-            grant_type: 'implicit',
-          })
-          .type('form')
-          .expect(tokenAuthRejected);
-      });
-
-      it('handles rotation of stale jwks', function () {
-        nock('https://client.example.com/')
-          .get('/jwks')
-          .reply(200, JSON.stringify(mtlsKeys));
-
-        return this.agent.post(route)
-          .set('x-ssl-client-cert', rsacrt.replace(RegExp('\\r?\\n', 'g'), ''))
-          .send({
-            client_id: 'client-self-signed-mtls-jwks_uri',
-            grant_type: 'implicit',
-          })
-          .type('form')
-          .expect(tokenAuthSucceeded);
-      });
+    it('fails the auth when getCertificate() does not return a cert', function () {
+      return this.agent.post(route)
+        .send({
+          client_id: 'client-pki-mtls',
+          grant_type: 'implicit',
+        })
+        .type('form')
+        .expect(tokenAuthRejected);
     });
-  }
+
+    it('fails the auth when certificateAuthorized() fails', function () {
+      return this.agent.post(route)
+        .set('x-ssl-client-cert', rsacrt.replace(RegExp('\\r?\\n', 'g'), ''))
+        .set('x-ssl-client-verify', 'FAILED: self signed certificate')
+        .set('x-ssl-client-san-dns', 'rp.example.com')
+        .send({
+          client_id: 'client-pki-mtls',
+          grant_type: 'implicit',
+        })
+        .type('form')
+        .expect(tokenAuthRejected);
+    });
+
+    it('fails the auth when certificateSubjectMatches() return false', function () {
+      return this.agent.post(route)
+        .set('x-ssl-client-cert', rsacrt.replace(RegExp('\\r?\\n', 'g'), ''))
+        .set('x-ssl-client-verify', 'SUCCESS')
+        .set('x-ssl-client-san-dns', 'foobarbaz')
+        .send({
+          client_id: 'client-pki-mtls',
+          grant_type: 'implicit',
+        })
+        .type('form')
+        .expect(tokenAuthRejected);
+    });
+  });
+
+  describe('self_signed_tls_client_auth auth', () => {
+    it('accepts the auth [1/2]', function () {
+      return this.agent.post(route)
+        .set('x-ssl-client-cert', rsacrt.replace(RegExp('\\r?\\n', 'g'), ''))
+        .send({
+          client_id: 'client-self-signed-mtls',
+          grant_type: 'implicit',
+        })
+        .type('form')
+        .expect(tokenAuthSucceeded);
+    });
+
+    it('accepts the auth [2/2]', function () {
+      return this.agent.post(route)
+        .set('x-ssl-client-cert', eccrt.replace(RegExp('\\r?\\n', 'g'), ''))
+        .send({
+          client_id: 'client-self-signed-mtls',
+          grant_type: 'implicit',
+        })
+        .type('form')
+        .expect(tokenAuthSucceeded);
+    });
+
+    it('fails the auth when x-ssl-client-cert is not passed by the proxy', function () {
+      return this.agent.post(route)
+        .send({
+          client_id: 'client-self-signed-mtls',
+          grant_type: 'implicit',
+        })
+        .type('form')
+        .expect(tokenAuthRejected);
+    });
+
+    it('fails the auth when x-ssl-client-cert does not match the registered ones', function () {
+      return this.agent.post(route)
+        .set('x-ssl-client-cert', eccrt.replace(RegExp('\\r?\\n', 'g'), ''))
+        .send({
+          client_id: 'client-self-signed-mtls-rsa',
+          grant_type: 'implicit',
+        })
+        .type('form')
+        .expect(tokenAuthRejected);
+    });
+
+    it('handles rotation of stale jwks', function () {
+      nock('https://client.example.com/')
+        .get('/jwks')
+        .reply(200, JSON.stringify(mtlsKeys));
+
+      return this.agent.post(route)
+        .set('x-ssl-client-cert', rsacrt.replace(RegExp('\\r?\\n', 'g'), ''))
+        .send({
+          client_id: 'client-self-signed-mtls-jwks_uri',
+          grant_type: 'implicit',
+        })
+        .type('form')
+        .expect(tokenAuthSucceeded);
+    });
+  });
 });

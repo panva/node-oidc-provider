@@ -1170,7 +1170,7 @@ _**default value**_:
 
 [RFC 8705](https://tools.ietf.org/html/rfc8705) - OAuth 2.0 Mutual TLS Client Authentication and Certificate Bound Access Tokens  
 
-Enables specific features from the Mutual TLS specification. The three main features have their own specific setting in this feature's configuration object and you must provide functions for resolving some of the functions which are deployment-specific. Note: **This feature is only supported in node runtime >= 12.0.0**   
+Enables specific features from the Mutual TLS specification. The three main features have their own specific setting in this feature's configuration object and you must provide functions for resolving some of the functions which are deployment-specific.   
   
 
 
@@ -3218,7 +3218,7 @@ _**default value**_:
 
 ```js
 [
-  // asymmetric RSAES based (note: RSA-OAEP-* is only supported in node runtime >= 12.9.0)
+  // asymmetric RSAES based
   'RSA-OAEP', 'RSA-OAEP-256', 'RSA-OAEP-384', 'RSA-OAEP-512', 'RSA1_5',
   // asymmetric ECDH-ES based
   'ECDH-ES', 'ECDH-ES+A128KW', 'ECDH-ES+A192KW', 'ECDH-ES+A256KW',
@@ -3282,7 +3282,7 @@ _**default value**_:
   'RS256', 'RS384', 'RS512',
   'PS256', 'PS384', 'PS512',
   'ES256', 'ES256K', 'ES384', 'ES512',
-  'EdDSA', // (note: EdDSA is only supported in node runtime >= 12.0.0)
+  'EdDSA',
 ]
 ```
 </details>
@@ -3310,7 +3310,7 @@ _**default value**_:
   'RS256', 'RS384', 'RS512',
   'PS256', 'PS384', 'PS512',
   'ES256', 'ES256K', 'ES384', 'ES512',
-  'EdDSA', // (note: EdDSA is only supported in node runtime >= 12.0.0)
+  'EdDSA',
 ]
 ```
 </details>
@@ -3337,7 +3337,7 @@ _**default value**_:
 
 ```js
 [
-  // asymmetric RSAES based (note: RSA-OAEP-* is only supported in node runtime >= 12.9.0)
+  // asymmetric RSAES based
   'RSA-OAEP', 'RSA-OAEP-256', 'RSA-OAEP-384', 'RSA-OAEP-512', 'RSA1_5',
   // asymmetric ECDH-ES based
   'ECDH-ES', 'ECDH-ES+A128KW', 'ECDH-ES+A192KW', 'ECDH-ES+A256KW',
@@ -3402,7 +3402,7 @@ _**default value**_:
   'RS256', 'RS384', 'RS512',
   'PS256', 'PS384', 'PS512',
   'ES256', 'ES256K', 'ES384', 'ES512',
-  'EdDSA', // (note: EdDSA is only supported in node runtime >= 12.0.0)
+  'EdDSA',
 ]
 ```
 </details>
@@ -3429,7 +3429,7 @@ _**default value**_:
 
 ```js
 [
-  // asymmetric RSAES based (note: RSA-OAEP-* is only supported in node runtime >= 12.9.0)
+  // asymmetric RSAES based
   'RSA-OAEP', 'RSA-OAEP-256', 'RSA-OAEP-384', 'RSA-OAEP-512', 'RSA1_5',
   // asymmetric ECDH-ES based
   'ECDH-ES', 'ECDH-ES+A128KW', 'ECDH-ES+A192KW', 'ECDH-ES+A256KW',
@@ -3493,7 +3493,7 @@ _**default value**_:
   'RS256', 'RS384', 'RS512',
   'PS256', 'PS384', 'PS512',
   'ES256', 'ES256K', 'ES384', 'ES512',
-  'EdDSA', // (note: EdDSA is only supported in node runtime >= 12.0.0)
+  'EdDSA',
 ]
 ```
 </details>
@@ -3524,7 +3524,7 @@ _**default value**_:
   'RS256', 'RS384', 'RS512',
   'PS256', 'PS384', 'PS512',
   'ES256', 'ES256K', 'ES384', 'ES512',
-  'EdDSA', // (note: EdDSA is only supported in node runtime >= 12.0.0)
+  'EdDSA',
 ]
 ```
 </details>
@@ -3551,7 +3551,7 @@ _**default value**_:
 
 ```js
 [
-  // asymmetric RSAES based (note: RSA-OAEP-* is only supported in node runtime >= 12.9.0)
+  // asymmetric RSAES based
   'RSA-OAEP', 'RSA-OAEP-256', 'RSA-OAEP-384', 'RSA-OAEP-512', 'RSA1_5',
   // asymmetric ECDH-ES based
   'ECDH-ES', 'ECDH-ES+A128KW', 'ECDH-ES+A192KW', 'ECDH-ES+A256KW',
@@ -3616,7 +3616,7 @@ _**default value**_:
   'RS256', 'RS384', 'RS512',
   'PS256', 'PS384', 'PS512',
   'ES256', 'ES256K', 'ES384', 'ES512',
-  'EdDSA', // (note: EdDSA is only supported in node runtime >= 12.0.0)
+  'EdDSA',
 ]
 ```
 </details>
@@ -3646,7 +3646,7 @@ _**default value**_:
   'RS256', 'RS384', 'RS512',
   'PS256', 'PS384', 'PS512',
   'ES256', 'ES256K', 'ES384', 'ES512',
-  'EdDSA', // (note: EdDSA is only supported in node runtime >= 12.0.0)
+  'EdDSA',
 ]
 ```
 </details>
@@ -3676,7 +3676,7 @@ _**default value**_:
   'RS256', 'RS384', 'RS512',
   'PS256', 'PS384', 'PS512',
   'ES256', 'ES256K', 'ES384', 'ES512',
-  'EdDSA', // (note: EdDSA is only supported in node runtime >= 12.0.0)
+  'EdDSA',
 ]
 ```
 </details>
@@ -3703,7 +3703,7 @@ _**default value**_:
 
 ```js
 [
-  // asymmetric RSAES based (note: RSA-OAEP-* is only supported in node runtime >= 12.9.0)
+  // asymmetric RSAES based
   'RSA-OAEP', 'RSA-OAEP-256', 'RSA-OAEP-384', 'RSA-OAEP-512', 'RSA1_5',
   // asymmetric ECDH-ES based
   'ECDH-ES', 'ECDH-ES+A128KW', 'ECDH-ES+A192KW', 'ECDH-ES+A256KW',
@@ -3768,7 +3768,7 @@ _**default value**_:
   'RS256', 'RS384', 'RS512',
   'PS256', 'PS384', 'PS512',
   'ES256', 'ES256K', 'ES384', 'ES512',
-  'EdDSA', // (note: EdDSA is only supported in node runtime >= 12.0.0)
+  'EdDSA',
 ]
 ```
 </details>
