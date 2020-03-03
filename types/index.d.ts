@@ -192,7 +192,7 @@ declare class Interaction extends BaseModel {
   prompt: PromptDetail;
   result?: InteractionResults;
   returnTo: string;
-  signed?: string[];
+  trusted?: string[];
   uid: string;
   lastSubmission?: InteractionResults;
 
@@ -692,7 +692,7 @@ declare class OIDCContext {
 
   readonly webMessageUriCheckPerformed?: boolean;
   readonly redirectUriCheckPerformed?: boolean;
-  readonly signed?: string[];
+  readonly trusted?: string[];
   readonly registrationAccessToken?: RegistrationAccessToken;
   readonly deviceCode?: DeviceCode;
   readonly accessToken?: AccessToken;
@@ -794,7 +794,7 @@ export interface AdapterPayload extends AnyClientMetadata {
   };
   sessionUid?: string;
   sid?: string;
-  signed?: string[];
+  trusted?: string[];
   state?: AnyObject;
   transient?: boolean;
   uid?: string;

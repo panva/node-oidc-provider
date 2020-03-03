@@ -127,7 +127,7 @@ class MyAdapter {
      * - returnTo {string} - after resolving interactions send the user-agent to this url
      * - params {object} - parsed recognized parameters object
      * - lastSubmission {object} - previous interaction result submission
-     * - signed {string[]} - parameter names that come from a trusted source
+     * - trusted {string[]} - parameter names that come from a trusted source
      * - result {object} - interaction results object is expected here
      * - session {object}
      * - session.uid {string} - uid of the session this Interaction belongs to
