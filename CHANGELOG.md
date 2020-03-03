@@ -2,6 +2,22 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+# [6.23.0](https://github.com/panva/node-oidc-provider/compare/v6.22.1...v6.23.0) (2020-03-03)
+
+
+### Bug Fixes
+
+* client credentials exchange checks the client's scope whitelist ([5e4defc](https://github.com/panva/node-oidc-provider/commit/5e4defcc8a9fa174c2ce4826078ac818be21eab8))
+* stable features with ack now throw to indicate a possible breaking change ([cf58d35](https://github.com/panva/node-oidc-provider/commit/cf58d357717fe70ca363a1d41bf26d7c7544786c))
+* **typescript:** adapter methods typings and interface name typo ([e086fc6](https://github.com/panva/node-oidc-provider/commit/e086fc66464b71e9f95df74fecefc16d41b7b96a))
+
+
+### Features
+
+* features.mTLS (RFC 8705) is now a stable feature ([cfeaca8](https://github.com/panva/node-oidc-provider/commit/cfeaca810cf62eee3e1b798954389264be9fea03))
+
+
+
 ## [6.22.1](https://github.com/panva/node-oidc-provider/compare/v6.22.0...v6.22.1) (2020-02-28)
 
 
