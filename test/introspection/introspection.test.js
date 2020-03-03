@@ -3,6 +3,8 @@ const { expect } = require('chai');
 
 const bootstrap = require('../test_helper');
 
+const { formats: { AccessToken: FORMAT } } = require('../../lib/helpers/defaults');
+
 const route = '/token/introspection';
 
 describe('introspection features', () => {
@@ -38,11 +40,15 @@ describe('introspection features', () => {
         .type('form')
         .expect(200)
         .expect((response) => {
-          expect(response.body).to.contain.keys('client_id', 'scope', 'sub', 'iss', 'iat', 'exp', 'token_type', 'aud', 'jti');
+          expect(response.body).to.contain.keys('client_id', 'scope', 'sub', 'iss', 'iat', 'exp', 'token_type', 'aud');
           expect(response.body.sub).to.equal('accountId');
           expect(response.body.token_type).to.equal('Bearer');
           expect(response.body.iss).to.equal(this.provider.issuer);
           expect(response.body.aud).to.equal('urn:example:foo');
+
+          if (FORMAT !== 'opaque' && typeof FORMAT !== 'function') {
+            expect(response.body).to.contain.key('jti');
+          }
         });
     });
 
