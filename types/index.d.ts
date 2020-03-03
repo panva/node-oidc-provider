@@ -1172,7 +1172,6 @@ export class Provider extends events.EventEmitter {
 
   readonly issuer: string;
   readonly app: Koa;
-  readonly callback: (req: http.IncomingMessage | http2.Http2ServerRequest, res: http.ServerResponse | http2.Http2ServerResponse) => void;
 
   env?: Koa['env'];
   proxy?: Koa['proxy'];
@@ -1181,6 +1180,7 @@ export class Provider extends events.EventEmitter {
   maxIpsCount?: number;
   keys?: Koa['keys'];
   listen: Koa['listen'];
+  callback: Koa['callback'];
 
   interactionResult(
     req: http.IncomingMessage | http2.Http2ServerRequest,

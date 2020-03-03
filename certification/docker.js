@@ -39,5 +39,5 @@ render(provider.app, {
   root: path.join(__dirname, '..', 'example', 'views'),
 });
 provider.use(routes(provider).routes());
-const server = https.createServer(pem, provider.callback);
+const server = https.createServer(pem, provider.callback());
 server.listen(PORT);

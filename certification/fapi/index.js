@@ -253,7 +253,7 @@ if (SUITE_BASE_URL === OFFICIAL_CERTIFICATION) {
     requestCert: true,
     rejectUnauthorized: false,
     ...pem,
-  }, fapi.callback);
+  }, fapi.callback());
 
   server.listen(PORT);
 }

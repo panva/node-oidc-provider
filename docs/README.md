@@ -63,7 +63,7 @@ const configuration = {
 const oidc = new Provider('http://localhost:3000', configuration);
 
 // express/nodejs style application callback (req, res, next) for use with express apps, see /examples/express.js
-oidc.callback
+oidc.callback()
 
 // koa application for use with koa apps, see /examples/koa.js
 oidc.app
@@ -270,7 +270,7 @@ provider.registerGrantType(grantType, tokenExchangeHandler, parameters, allowedD
 
 
 ## Registering module middlewares (helmet, ip-filters, rate-limiters, etc)
-When using `provider.app` or `provider.callback` as a mounted application in your own koa or express
+When using `provider.app` or `provider.callback()` as a mounted application in your own koa or express
 stack just follow the respective module's documentation. However, when using the `provider.app` Koa
 instance directly to register i.e. koa-helmet you must push the middleware in
 front of oidc-provider in the middleware stack.
@@ -346,7 +346,7 @@ Note: if you mount oidc-provider to a path it's likely you will have to also upd
 ### to a `connect` application
 ```js
 // assumes connect ^3.0.0
-connectApp.use('/oidc', oidc.callback);
+connectApp.use('/oidc', oidc.callback());
 ```
 
 ### to a `fastify` application
@@ -356,13 +356,13 @@ await app.register(require('fastify-express'));
 // or
 // await app.register(require('middie'));
 
-fastifyApp.use('/oidc', oidc.callback);
+fastifyApp.use('/oidc', oidc.callback());
 ```
 
 ### to a `hapi` application
 ```js
 // assumes @hapi/hapi ^20.0.0
-const { callback } = oidc;
+const callback = oidc.callback();
 hapiApp.route({
   path: `/oidc/{any*}`,
   method: '*',
@@ -403,7 +403,7 @@ export class OidcController {
 ### to an `express` application
 ```js
 // assumes express ^4.0.0
-expressApp.use('/oidc', oidc.callback);
+expressApp.use('/oidc', oidc.callback());
 ```
 
 ### to a `koa` application

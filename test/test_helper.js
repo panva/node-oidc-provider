@@ -402,20 +402,20 @@ module.exports = function testHelper(dir, {
       }
       case 'express': {
         const app = new Express();
-        app.use(mountTo, provider.callback);
+        app.use(mountTo, provider.callback());
         global.server.on('request', app);
         break;
       }
       case 'connect': {
         const app = new Connect();
-        app.use(mountTo, provider.callback);
+        app.use(mountTo, provider.callback());
         global.server.on('request', app);
         break;
       }
       case 'fastify': {
         const app = new Fastify();
         await app.register(middie);
-        app.use(mountTo, provider.callback);
+        app.use(mountTo, provider.callback());
         await new Promise((resolve) => global.server.close(resolve));
         await app.listen(port);
         global.server = app.server;
@@ -429,7 +429,7 @@ module.exports = function testHelper(dir, {
       case 'hapi': {
         const Hapi = require('@hapi/hapi'); // eslint-disable-line global-require
         const app = new Hapi.Server({ port });
-        const { callback } = provider;
+        const callback = provider.callback();
         app.route({
           path: `${mountTo}/{any*}`,
           method: '*',
@@ -460,7 +460,7 @@ module.exports = function testHelper(dir, {
         break;
       }
       default:
-        global.server.on('request', provider.callback);
+        global.server.on('request', provider.callback());
     }
 
     agent = supertest(global.server);

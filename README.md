@@ -105,7 +105,7 @@ const configuration = {
 const oidc = new Provider('http://localhost:3000', configuration);
 
 // express/nodejs style application callback (req, res, next) for use with express apps, see /examples/express.js
-oidc.callback
+oidc.callback()
 
 // koa application for use with koa apps, see /examples/koa.js
 oidc.app
