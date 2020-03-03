@@ -749,6 +749,7 @@ export interface AdapterPayload {
   clientId?: string;
   codeChallenge?: string;
   codeChallengeMethod?: string;
+  consumed?: any;
   deviceInfo?: AnyObject;
   error?: string;
   errorDescription?: string;
@@ -1007,7 +1008,7 @@ export interface Configuration {
   formats?: {
     AccessToken?: AccessTokenFormatFunction | TokenFormat;
     ClientCredentials?: ClientCredentialsFormatFunction | TokenFormat;
-    jwtAccessTokenSigningAlg?: (ctx: KoaContextWithOIDC, token: AccessToken | ClientCredentials, client: Client) => CanBePromise<AsymmetricSigningAlgoritm>;
+    jwtAccessTokenSigningAlg?: (ctx: KoaContextWithOIDC, token: AccessToken | ClientCredentials, client: Client) => CanBePromise<AsymmetricSigningAlgorithm>;
     customizers?: {
       jwt?: (ctx: KoaContextWithOIDC, token: AccessToken | ClientCredentials, parts: JWTStructured) => Promise<JWTStructured> | JWTStructured;
       'jwt-ietf'?: (ctx: KoaContextWithOIDC, token: AccessToken | ClientCredentials, parts: JWTStructured) => Promise<JWTStructured> | JWTStructured;
@@ -1099,7 +1100,7 @@ export interface Configuration {
     authorizationEncryptionAlgValues?: EncryptionAlgValues[];
     authorizationEncryptionEncValues?: EncryptionEncValues[];
     authorizationSigningAlgValues?: SigningAlgorithm[];
-    dPoPSigningAlgValues?: AsymmetricSigningAlgoritm[];
+    dPoPSigningAlgValues?: AsymmetricSigningAlgorithm[];
     idTokenEncryptionAlgValues?: EncryptionAlgValues[];
     idTokenEncryptionEncValues?: EncryptionEncValues[];
     idTokenSigningAlgValues?: SigningAlgorithmWithNone[];
@@ -1119,10 +1120,10 @@ export interface Configuration {
 }
 
 export type NoneAlg = 'none';
-export type AsymmetricSigningAlgoritm = 'PS256' | 'PS384' | 'PS512' | 'ES256' | 'ES256K' | 'ES384' | 'ES512' | 'EdDSA' | 'RS256' | 'RS384' | 'RS512';
+export type AsymmetricSigningAlgorithm = 'PS256' | 'PS384' | 'PS512' | 'ES256' | 'ES256K' | 'ES384' | 'ES512' | 'EdDSA' | 'RS256' | 'RS384' | 'RS512';
 export type SymmetricSigningAlgorithm = 'HS256' | 'HS384' | 'HS512';
-export type SigningAlgorithm = AsymmetricSigningAlgoritm | SymmetricSigningAlgorithm;
-export type SigningAlgorithmWithNone = AsymmetricSigningAlgoritm | SymmetricSigningAlgorithm | NoneAlg;
+export type SigningAlgorithm = AsymmetricSigningAlgorithm | SymmetricSigningAlgorithm;
+export type SigningAlgorithmWithNone = AsymmetricSigningAlgorithm | SymmetricSigningAlgorithm | NoneAlg;
 export type EncryptionAlgValues = 'RSA-OAEP' | 'RSA-OAEP-256' | 'RSA-OAEP-384' | 'RSA-OAEP-512' | 'RSA1_5' | 'ECDH-ES' |
   'ECDH-ES+A128KW' | 'ECDH-ES+A192KW' | 'ECDH-ES+A256KW' | 'A128KW' | 'A192KW' | 'A256KW' |
   'A128GCMKW' | 'A192GCMKW' | 'A256GCMKW' | 'PBES2-HS256+A128KW' | 'PBES2-HS384+A192KW' |

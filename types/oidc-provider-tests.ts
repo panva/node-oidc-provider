@@ -1,5 +1,5 @@
 // tslint:disable-next-line:no-relative-import-in-test
-import { Provider, interactionPolicy, AsymmetricSigningAlgoritm } from './index.d';
+import { Provider, interactionPolicy, AsymmetricSigningAlgorithm } from './index.d';
 
 new Provider('https://op.example.com');
 
@@ -52,13 +52,19 @@ const provider = new Provider('https://op.example.com', {
     async revokeByGrantId(grantId: string) {}
 
     async find(id: string) {
-      return {};
+      return {
+        consumed: false
+      };
     }
     async findByUserCode(userCode: string) {
-      return {};
+      return {
+        consumed: false
+      };
     }
     async findByUid(uid: string) {
-      return {};
+      return {
+        consumed: false
+      };
     }
   },
   claims: {
@@ -122,7 +128,7 @@ const provider = new Provider('https://op.example.com', {
       clientCredentials.iat.toFixed();
       return 'opaque';
     },
-    async jwtAccessTokenSigningAlg(ctx, token, client): Promise<AsymmetricSigningAlgoritm> {
+    async jwtAccessTokenSigningAlg(ctx, token, client): Promise<AsymmetricSigningAlgorithm> {
       ctx.oidc.issuer.substring(0);
       token.iat.toFixed();
       client.clientId.substring(0);
