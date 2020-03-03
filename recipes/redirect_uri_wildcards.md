@@ -37,7 +37,7 @@ const { InvalidClientMetadata } = Provider.errors;
 const provider = new Provider(/* your issuer identifier */, {
   extraClientMetadata: {
     properties: ['redirect_uris'],
-    validator(key, value, metadata) {
+    validator(ctx, key, value, metadata) {
       if (key === 'redirect_uris') {
         for (const redirectUri of value) {
           if (redirectUri.includes('*')) {

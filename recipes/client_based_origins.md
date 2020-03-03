@@ -51,7 +51,7 @@ const isOrigin = (value) => {
 new Provider(/* your issuer */, {
   extraClientMetadata: {
     properties: [corsProp],
-    validator(key, value, metadata) {
+    validator(ctx, key, value, metadata) {
       if (key === corsProp) {
         // set default (no CORS)
         if (value === undefined) {

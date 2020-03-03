@@ -2255,12 +2255,16 @@ validator function that will be executed in order once for every property define
 
 _**default value**_:
 ```js
+<<<<<<< HEAD
 function extraClientMetadataValidator(key, value, metadata, ctx) {
+=======
+function validator(ctx, key, value, metadata) {
+  // @param ctx - koa request context (only provided when a client is being constructed during
+  //              Client Registration Request or Client Update Request
+>>>>>>> eed8a207... refactor: extraClientMetadata.validator arguments reordered
   // @param key - the client metadata property name
   // @param value - the property value
   // @param metadata - the current accumulated client metadata
-  // @param ctx - koa request context (only provided when a client is being constructed during
-  //              Client Registration Request or Client Update Request
   // validations for key, value, other related metadata
   // throw new Provider.errors.InvalidClientMetadata() to reject the client metadata
   // metadata[key] = value; to (re)assign metadata values
@@ -2280,7 +2284,7 @@ const softwareStatementKey = JWK.asKey(require('path/to/public/key'))
 {
   extraClientMetadata: {
     properties: ['software_statement'],
-    validator(key, value, metadata) {
+    validator(ctx, key, value, metadata) {
       if (key === 'software_statement') {
         if (value === undefined) return;
         // software_statement is not stored, but used to convey client metadata

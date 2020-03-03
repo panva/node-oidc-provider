@@ -1088,7 +1088,7 @@ export interface Configuration {
   extraClientMetadata?: {
     properties?: string[];
 
-    validator?: (key: string, value: any, metadata: ClientMetadata, ctx: KoaContextWithOIDC) => void | undefined;
+    validator?: (ctx: KoaContextWithOIDC, key: string, value: any, metadata: ClientMetadata) => void | undefined;
   };
 
   postLogoutSuccessSource?: (ctx: KoaContextWithOIDC) => CanBePromise<void | undefined>;

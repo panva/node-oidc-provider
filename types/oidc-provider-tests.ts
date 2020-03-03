@@ -285,7 +285,7 @@ const provider = new Provider('https://op.example.com', {
   },
   extraClientMetadata: {
     properties: ['foo', 'bar'],
-    validator(key, value, metadata, ctx) {
+    validator(ctx, key, value, metadata) {
       ctx.oidc.issuer.substring(0);
       metadata.client_id.substring(0);
       key.substring(0);

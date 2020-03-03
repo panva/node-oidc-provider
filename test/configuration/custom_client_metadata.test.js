@@ -39,13 +39,13 @@ describe('extraClientMetadata configuration', () => {
 
     expect(calls.length).to.eql(6);
 
-    expect(calls[0].calledWith('foo', undefined)).to.be.true;
-    expect(calls[1].calledWith('bar', undefined)).to.be.true;
-    expect(calls[2].calledWith('foo_bar', undefined)).to.be.true;
+    expect(calls[0].calledWith(undefined, 'foo', undefined)).to.be.true;
+    expect(calls[1].calledWith(undefined, 'bar', undefined)).to.be.true;
+    expect(calls[2].calledWith(undefined, 'foo_bar', undefined)).to.be.true;
 
-    expect(calls[3].calledWith('foo', 'one')).to.be.true;
-    expect(calls[4].calledWith('bar', 'two')).to.be.true;
-    expect(calls[5].calledWith('foo_bar', 'three')).to.be.true;
+    expect(calls[3].calledWith(undefined, 'foo', 'one')).to.be.true;
+    expect(calls[4].calledWith(undefined, 'bar', 'two')).to.be.true;
+    expect(calls[5].calledWith(undefined, 'foo_bar', 'three')).to.be.true;
 
     const client = await provider.Client.find('client-2');
     expect(client).to.have.property('foo_bar');
@@ -56,7 +56,7 @@ describe('extraClientMetadata configuration', () => {
     const provider = new Provider('http://localhost:3000', {
       extraClientMetadata: {
         properties: ['foo'],
-        validator(key, value, metadata) {
+        validator(ctx, key, value, metadata) {
           expect(key).to.eql('foo');
           expect(value).to.eql(undefined);
           metadata[key] = 'default';
@@ -81,7 +81,7 @@ describe('extraClientMetadata configuration', () => {
     const provider = new Provider('http://localhost:3000', {
       extraClientMetadata: {
         properties: ['bar'],
-        validator(key, value, metadata) {
+        validator(ctx, key, value, metadata) {
           metadata.foo = 'foo';
         },
       },
@@ -117,7 +117,7 @@ describe('extraClientMetadata configuration', () => {
     await provider.Client.find('client');
 
     expect(validator.calledOnce).to.be.true;
-    expect(validator.calledWith('client_name', undefined)).to.be.true;
+    expect(validator.calledWith(undefined, 'client_name', undefined)).to.be.true;
   });
 
   it('should throw regular errors during #find()', async () => {
