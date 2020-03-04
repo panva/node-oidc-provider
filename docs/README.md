@@ -1066,9 +1066,30 @@ Enables Token Introspection features
 _**default value**_:
 ```js
 {
+  allowedPolicy: [AsyncFunction: allowedPolicy], // see expanded details below
   enabled: false
 }
 ```
+
+<details><summary>(Click to expand) features.introspection options details</summary><br>
+
+
+#### allowedPolicy
+
+Helper function used to determine whether the client/RS (client argument) is allowed to introspect the given token (token argument).  
+
+
+_**default value**_:
+```js
+async function allowedPolicy(ctx, client, token) {
+  if (client.introspectionEndpointAuthMethod === 'none' && token.clientId !== ctx.oidc.client.clientId) {
+    return false;
+  }
+  return true;
+}
+```
+
+</details>
 
 ### features.jwtIntrospection
 

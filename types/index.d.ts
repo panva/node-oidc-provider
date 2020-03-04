@@ -877,6 +877,7 @@ export interface Configuration {
 
     introspection?: {
       enabled?: boolean
+      allowedPolicy?: (ctx: KoaContextWithOIDC, client: Client, token: AccessToken | ClientCredentials | RefreshToken) => CanBePromise<boolean>;
     };
 
     revocation?: {

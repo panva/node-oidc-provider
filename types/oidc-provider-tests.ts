@@ -317,7 +317,15 @@ const provider = new Provider('https://op.example.com', {
   features: {
     devInteractions: { enabled: false },
     claimsParameter: { enabled: false },
-    introspection: { enabled: false },
+    introspection: {
+      enabled: false,
+      async allowedPolicy(ctx, client, token) {
+        ctx.oidc.issuer.substring(0);
+        client.clientId.substring(0);
+        token.iat.toFixed();
+        return false;
+      },
+    },
     userinfo: { enabled: false },
     jwtUserinfo: { enabled: false },
     webMessageResponseMode: { enabled: false, ack: 'id-00', scriptNonce() { return "foo"; } },
