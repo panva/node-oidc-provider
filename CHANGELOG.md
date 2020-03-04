@@ -2,6 +2,15 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [6.23.1](https://github.com/panva/node-oidc-provider/compare/v6.23.0...v6.23.1) (2020-03-04)
+
+
+### Bug Fixes
+
+* allow client registration update fields to be omitted by the client ([9df9bd7](https://github.com/panva/node-oidc-provider/commit/9df9bd74bccb44f88a9008483afb13f43cf610e6)), closes [#664](https://github.com/panva/node-oidc-provider/issues/664)
+
+
+
 # [6.23.0](https://github.com/panva/node-oidc-provider/compare/v6.22.1...v6.23.0) (2020-03-03)
 
 
