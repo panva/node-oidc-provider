@@ -39,7 +39,7 @@ enabled by default, check the configuration section on how to enable them.
 
 The following draft specifications are implemented by oidc-provider.
 - [JSON Web Token (JWT) Profile for OAuth 2.0 Access Tokens - draft 05][jwt-at]
-- [JWT Response for OAuth Token Introspection - draft 08][jwt-introspection]
+- [JWT Response for OAuth Token Introspection - draft 09][jwt-introspection]
 - [JWT Secured Authorization Response Mode for OAuth 2.0 (JARM) - draft 02][jarm]
 - [OAuth 2.0 Demonstration of Proof-of-Possession at the Application Layer (DPoP) - draft 00][dpop]
 - [OAuth 2.0 JWT Secured Authorization Request (JAR)][jar]
@@ -166,7 +166,7 @@ See the list of available emitted [event names](/docs/events.md) and their descr
 [wmrm]: https://tools.ietf.org/html/draft-sakimura-oauth-wmrm-00
 [jar]: https://tools.ietf.org/html/draft-ietf-oauth-jwsreq-19
 [device-flow]: https://tools.ietf.org/html/rfc8628
-[jwt-introspection]: https://tools.ietf.org/html/draft-ietf-oauth-jwt-introspection-response-08
+[jwt-introspection]: https://tools.ietf.org/html/draft-ietf-oauth-jwt-introspection-response-09
 [sponsor-auth0]: https://auth0.com/overview?utm_source=GHsponsor&utm_medium=GHsponsor&utm_campaign=oidc-provider&utm_content=auth
 [mtls]: https://tools.ietf.org/html/rfc8705
 [dpop]: https://tools.ietf.org/html/draft-ietf-oauth-dpop-00

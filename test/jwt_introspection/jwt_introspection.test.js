@@ -55,7 +55,8 @@ describe('jwtIntrospection features', () => {
         .expect(200)
         .expect('content-type', 'application/json; charset=utf-8')
         .expect(({ body }) => {
-          ({ iat, ...json } = body);
+          json = body;
+          iat = json.iat;
         });
 
       timekeeper.travel(now + (10 * 1000));
@@ -66,13 +67,46 @@ describe('jwtIntrospection features', () => {
           token,
         })
         .type('form')
-        .accept('application/jwt')
+        .accept('application/token-introspection+jwt')
         .expect(200)
-        .expect('content-type', 'application/jwt; charset=utf-8')
+        .expect('content-type', 'application/token-introspection+jwt; charset=utf-8')
         .expect(({ text }) => {
-          const { payload: { iat: jwtIat, ...payload }, header } = JWT.decode(text);
-          expect(payload).to.eql(json);
+          const {
+            payload: {
+              iat: jwtIat, iss, aud, token_introspection,
+            }, header,
+          } = JWT.decode(text);
+          expect(iss).to.eql(this.provider.issuer);
+          expect(aud).to.eql('client-signed');
+          expect(token_introspection).to.eql(json);
           expect(jwtIat).to.eql(iat + 10);
+          expect(header).to.have.property('typ', 'token-introspection+jwt');
+        });
+    });
+
+    it('returns the response as jwt (active: false)', async function () {
+      const now = Date.now();
+      timekeeper.freeze(now);
+
+      return this.agent.post(route)
+        .auth('client-signed', 'secret')
+        .send({
+          token: 'foobar',
+        })
+        .type('form')
+        .accept('application/token-introspection+jwt')
+        .expect(200)
+        .expect('content-type', 'application/token-introspection+jwt; charset=utf-8')
+        .expect(({ text }) => {
+          const {
+            payload: {
+              iat: jwtIat, iss, aud, token_introspection,
+            }, header,
+          } = JWT.decode(text);
+          expect(iss).to.eql(this.provider.issuer);
+          expect(aud).to.eql('client-signed');
+          expect(token_introspection).to.eql({ active: false });
+          expect(jwtIat).to.eql(Math.floor(now / 1000));
           expect(header).to.have.property('typ', 'token-introspection+jwt');
         });
     });
@@ -93,7 +127,7 @@ describe('jwtIntrospection features', () => {
           token,
         })
         .type('form')
-        .accept('application/jwt')
+        .accept('application/token-introspection+jwt')
         .expect(400)
         .expect('content-type', 'application/json; charset=utf-8')
         .expect({
@@ -102,7 +136,7 @@ describe('jwtIntrospection features', () => {
         });
     });
 
-    it('non-authenticated without accept: application/jwt fails', async function () {
+    it('non-authenticated without accept: application/token-introspection+jwt fails', async function () {
       const at = new this.provider.AccessToken({
         accountId: 'accountId',
         grantId: 'foo',
@@ -121,7 +155,7 @@ describe('jwtIntrospection features', () => {
         .expect('content-type', 'application/json; charset=utf-8')
         .expect({
           error: 'invalid_request',
-          error_description: 'introspection must be requested with Accept: application/jwt for this client',
+          error_description: 'introspection must be requested with Accept: application/token-introspection+jwt for this client',
         });
 
       return this.agent.post(route)
@@ -130,9 +164,9 @@ describe('jwtIntrospection features', () => {
           token,
         })
         .type('form')
-        .accept('application/jwt')
+        .accept('application/token-introspection+jwt')
         .expect(200)
-        .expect('content-type', 'application/jwt; charset=utf-8')
+        .expect('content-type', 'application/token-introspection+jwt; charset=utf-8')
         .expect(({ text }) => {
           const header = JWT.header(text);
           expect(header).to.have.property('alg', 'PBES2-HS256+A128KW');

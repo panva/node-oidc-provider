@@ -1093,7 +1093,7 @@ async function allowedPolicy(ctx, client, token) {
 
 ### features.jwtIntrospection
 
-[draft-ietf-oauth-jwt-introspection-response-08](https://tools.ietf.org/html/draft-ietf-oauth-jwt-introspection-response-08) - JWT Response for OAuth Token Introspection  
+[draft-ietf-oauth-jwt-introspection-response-09](https://tools.ietf.org/html/draft-ietf-oauth-jwt-introspection-response-09) - JWT Response for OAuth Token Introspection  
 
 Enables JWT responses for Token Introspection features   
   

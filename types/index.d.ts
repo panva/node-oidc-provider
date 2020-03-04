@@ -972,7 +972,7 @@ export interface Configuration {
 
     jwtIntrospection?: {
       enabled?: boolean,
-      ack?: 8 | 'draft-08'
+      ack?: 'draft-09'
     },
 
     jwtResponseModes?: {

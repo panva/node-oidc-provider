@@ -331,7 +331,7 @@ const provider = new Provider('https://op.example.com', {
     webMessageResponseMode: { enabled: false, ack: 'id-00', scriptNonce() { return "foo"; } },
     revocation: { enabled: false },
     sessionManagement: { enabled: false, ack: 28, keepHeaders: false, scriptNonce() { return "foo"; } },
-    jwtIntrospection: { enabled: false, ack: 8 },
+    jwtIntrospection: { enabled: false, ack: 'draft-09' },
     jwtResponseModes: { enabled: false, ack: 2 },
     pushedAuthorizationRequests: { enabled: false, ack: 0 },
     secp256k1: { enabled: false, ack: 'draft-03' },
