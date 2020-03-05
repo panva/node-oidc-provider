@@ -1,9 +1,6 @@
 /// <reference types="node" />
 // TypeScript Version: 3.6
 
-/* tslint:disable:strict-export-declare-modifiers */
-/* tslint:disable:void-return */
-
 import * as events from 'events';
 import * as http from 'http';
 import * as http2 from 'http2';

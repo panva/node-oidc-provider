@@ -1,4 +1,3 @@
-// tslint:disable-next-line:no-relative-import-in-test
 import { Provider, interactionPolicy, AsymmetricSigningAlgorithm } from './index.d';
 
 new Provider('https://op.example.com');
