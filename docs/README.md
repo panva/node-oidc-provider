@@ -674,6 +674,7 @@ Enables Back-Channel Logout features.
 _**default value**_:
 ```js
 {
+  ack: undefined,
   enabled: false
 }
 ```
@@ -717,6 +718,7 @@ Enables `DPoP` - mechanism for sender-constraining tokens via a proof-of-possess
 _**default value**_:
 ```js
 {
+  ack: undefined,
   enabled: false,
   iatTolerance: 60
 }
@@ -934,6 +936,7 @@ Enables extra behaviours defined in FAPI Part 1 & 2 that cannot be achieved by o
 _**default value**_:
 ```js
 {
+  ack: undefined,
   enabled: false
 }
 ```
@@ -968,6 +971,7 @@ Enables Front-Channel Logout features
 _**default value**_:
 ```js
 {
+  ack: undefined,
   enabled: false,
   logoutPendingSource: [AsyncFunction: logoutPendingSource] // see expanded details below
 }
@@ -1029,6 +1033,7 @@ Enables the use of `jwt-ietf` JWT Access Token format
 _**default value**_:
 ```js
 {
+  ack: undefined,
   enabled: false
 }
 ```
@@ -1094,6 +1099,7 @@ Enables JWT responses for Token Introspection features
 _**default value**_:
 ```js
 {
+  ack: undefined,
   enabled: false
 }
 ```
@@ -1109,6 +1115,7 @@ Enables JWT Secured Authorization Responses
 _**default value**_:
 ```js
 {
+  ack: undefined,
   enabled: false
 }
 ```
@@ -1274,6 +1281,7 @@ Enables the use of `pushed_authorization_request_endpoint` defined by the Pushed
 _**default value**_:
 ```js
 {
+  ack: undefined,
   enabled: false,
   requirePushedAuthorizationRequests: false
 }
@@ -1809,6 +1817,7 @@ Enables Session Management features.
 _**default value**_:
 ```js
 {
+  ack: undefined,
   enabled: false,
   keepHeaders: false,
   scriptNonce: [Function: sessionManagementScriptNonce] // see expanded details below
@@ -1870,6 +1879,7 @@ Enables `web_message` response mode.
 _**default value**_:
 ```js
 {
+  ack: undefined,
   enabled: false,
   scriptNonce: [Function: webMessageResponseModeScriptNonce] // see expanded details below
 }
@@ -2169,7 +2179,7 @@ async function expiresWithSession(ctx, token) {
 
 ### extraAccessTokenClaims
 
-Function used to get additional access token claims when it is being issued. These claims will be available in your storage under property `extra`, returned by introspection as top level claims and pushed into `jwt` and `jwt-ietf` formatted tokens as top level claims as well. Returned claims may not overwrite other top level claims.   
+Function used to get additional access token claims when it is being issued. These claims will be available in your storage under property `extra`, returned by introspection as top level claims and pushed into `jwt`, and `jwt-ietf` formatted tokens as top level claims as well. Returned claims may not overwrite other top level claims.   
   
 
 
