@@ -461,7 +461,6 @@ location / {
 - [conformIdTokenClaims ❗](#conformidtokenclaims)
 - [cookies](#cookies)
 - [discovery](#discovery)
-- [dynamicScopes](#dynamicscopes)
 - [expiresWithSession](#expireswithsession)
 - [extraAccessTokenClaims](#extraaccesstokenclaims)
 - [extraClientMetadata](#extraclientmetadata)
@@ -2141,30 +2140,6 @@ _**default value**_:
 }
 ```
 
-### dynamicScopes
-
-Array of the dynamic scope values that the OP supports. These must be regular expressions that the OP will check string scope values, that aren't in the static list, against.   
-  
-
-
-_**default value**_:
-```js
-[]
-```
-<a id="dynamic-scopes-to-enable-a-dynamic-scope-values-like-api-write-hex-id-and-api-read-hex-id"></a><details><summary>(Click to expand) To enable a dynamic scope values like `api:write:{hex id}` and `api:read:{hex id}`</summary><br>
-
-
-Configure `dynamicScopes` like so:
-  
-
-```js
-[
-  /^api:write:[a-fA-F0-9]{2,}$/,
-  /^api:read:[a-fA-F0-9]{2,}$/,
-]
-```
-</details>
-
 ### expiresWithSession
 
 Function used to decide whether the given authorization code/ device code or implicit returned access token be bound to the user session. This will be applied to all tokens issued from the authorization / device code in the future. When tokens are session-bound the session will be loaded by its `uid` every time the token is encountered. Session bound tokens will effectively get revoked if the end-user logs out.  
@@ -2226,16 +2201,14 @@ validator function that will be executed in order once for every property define
 
 _**default value**_:
 ```js
-<<<<<<< HEAD
-function extraClientMetadataValidator(key, value, metadata, ctx) {
-=======
-function validator(ctx, key, value, metadata) {
+function extraClientMetadataValidator(ctx, key, value, metadata) {
   // @param ctx - koa request context (only provided when a client is being constructed during
   //              Client Registration Request or Client Update Request
->>>>>>> eed8a207... refactor: extraClientMetadata.validator arguments reordered
   // @param key - the client metadata property name
   // @param value - the property value
   // @param metadata - the current accumulated client metadata
+  // @param ctx - koa request context (only provided when a client is being constructed during
+  //              Client Registration Request or Client Update Request
   // validations for key, value, other related metadata
   // throw new Provider.errors.InvalidClientMetadata() to reject the client metadata
   // metadata[key] = value; to (re)assign metadata values

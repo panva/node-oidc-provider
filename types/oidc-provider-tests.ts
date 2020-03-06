@@ -238,10 +238,6 @@ const provider = new Provider('https://op.example.com', {
     pushed_authorization_request: '/request',
   },
   scopes: ['foo', 'bar'],
-  dynamicScopes: [
-    /foo/,
-    /bar/
-  ],
   subjectTypes: ['public', 'pairwise'],
   tokenEndpointAuthMethods: ['self_signed_tls_client_auth'],
   introspectionEndpointAuthMethods: ['none'],

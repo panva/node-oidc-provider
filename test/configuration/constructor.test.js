@@ -72,16 +72,6 @@ describe('Provider configuration', () => {
     });
   });
 
-  describe('dynamicScopes', () => {
-    it('only accepts arrays and sets', () => {
-      new Provider('http://localhost:3000', { dynamicScopes: [/foo/] });
-      new Provider('http://localhost:3000', { dynamicScopes: new Set([/foo/]) });
-      expect(() => {
-        new Provider('http://localhost:3000', { dynamicScopes: { foo: true } });
-      }).to.throw('dynamicScopes must be an Array or Set');
-    });
-  });
-
   describe('claims', () => {
     it('only accepts maps and objects', () => {
       new Provider('http://localhost:3000', { claims: { foo: null } });

@@ -13,7 +13,7 @@ const mtlsKeys = require('../jwks/jwks.json');
 
 const sigKey = global.keystore.get().toJWK();
 const privateKey = global.keystore.get().toJWK(true);
-const { DYNAMIC_SCOPE_LABEL, errors: { InvalidClientMetadata } } = Provider;
+const { errors: { InvalidClientMetadata } } = Provider;
 
 describe('Client metadata validation', () => {
   let DefaultProvider;
@@ -310,9 +310,6 @@ describe('Client metadata validation', () => {
   });
 
   context('scope', function () {
-    const SIGN = /^sign:[a-fA-F0-9]{2,}$/;
-    SIGN[DYNAMIC_SCOPE_LABEL] = 'sign:{hex}';
-
     mustBeString(this.title);
     allows(this.title, undefined);
     allows(this.title, 'openid');
@@ -322,10 +319,6 @@ describe('Client metadata validation', () => {
     allows(this.title, 'openid profile', undefined, { claims: { profile: ['given_name'] } });
     allows(this.title, 'profile', undefined, { scopes: ['profile'] });
     allows(this.title, 'profile', undefined, { claims: { profile: ['given_name'] } });
-    allows(this.title, 'openid sign:{hex}', undefined, { dynamicScopes: [SIGN] });
-    allows(this.title, 'openid sign:{hex}', undefined, { claims: new Map([[SIGN, ['given_name']]]) });
-    allows(this.title, 'sign:{hex}', undefined, { dynamicScopes: [SIGN] });
-    allows(this.title, 'sign:{hex}', undefined, { claims: new Map([[SIGN, ['given_name']]]) });
     rejects(this.title, 'foo', /must only contain supported scopes/);
   });
 
