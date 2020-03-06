@@ -3004,7 +3004,7 @@ _**default value**_:
 
 ### scopes
 
-Array of the scope values that the OP supports  
+Array of additional scope values that the OP signals to support in the discovery endpoint  
 
 
 _**default value**_:
