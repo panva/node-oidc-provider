@@ -15,7 +15,7 @@ export {};
 export type CanBePromise<T> = Promise<T> | T;
 export type RetryFunction = (retry: number, error: Error) => number;
 export type FindAccount = (ctx: KoaContextWithOIDC, sub: string, token?: AuthorizationCode | AccessToken | DeviceCode) => CanBePromise<Account | undefined>;
-export type TokenFormat = 'opaque' | 'jwt' | 'jwt-ietf' | 'paseto';
+export type TokenFormat = 'opaque' | 'jwt' | 'jwt-ietf';
 
 export type AccessTokenFormatFunction = (ctx: KoaContextWithOIDC, token: AccessToken) => TokenFormat;
 export type ClientCredentialsFormatFunction = (ctx: KoaContextWithOIDC, token: ClientCredentials) => TokenFormat;
@@ -259,11 +259,6 @@ declare class RequestUriCache {
 
 declare class JWTStructured {
   header?: AnyObject;
-  payload: AnyObject;
-}
-
-declare class PASETOStructured {
-  footer?: AnyObject | Buffer | string;
   payload: AnyObject;
 }
 
@@ -773,7 +768,6 @@ export interface AdapterPayload extends AnyClientMetadata {
   loginTs?: number;
   nonce?: string;
   params?: AnyObject;
-  paseto?: string;
   policies?: string[];
   redirectUri?: string;
   request?: string;
@@ -1021,7 +1015,6 @@ export interface Configuration {
     customizers?: {
       jwt?: (ctx: KoaContextWithOIDC, token: AccessToken | ClientCredentials, parts: JWTStructured) => CanBePromise<JWTStructured>;
       'jwt-ietf'?: (ctx: KoaContextWithOIDC, token: AccessToken | ClientCredentials, parts: JWTStructured) => CanBePromise<JWTStructured>;
-      paseto?: (ctx: KoaContextWithOIDC, token: AccessToken | ClientCredentials, parts: PASETOStructured) => CanBePromise<PASETOStructured>;
     };
   };
 

@@ -96,10 +96,6 @@ class MyAdapter {
      * - same as `opaque` with the addition of
      * - 'jwt-ietf' {string} - the JWT value returned to the client
      *
-     * when `paseto`
-     * - same as `opaque` with the addition of
-     * - paseto {string} - the PASETO value returned to the client
-     *
      * Client model will only use this when registered through Dynamic Registration features and
      * will contain all client properties.
      *

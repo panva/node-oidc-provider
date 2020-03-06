@@ -20,7 +20,6 @@ if (!formats.length) {
   formats.push('opaque');
   formats.push('jwt');
   formats.push('jwt-ietf');
-  formats.push('paseto');
   formats.push('dynamic');
 }
 const passed = [];
@@ -105,11 +104,8 @@ async function singleRun() {
   if (formats.includes('jwt-ietf')) {
     await singleRun.call({ format: 'jwt-ietf' });
   }
-  if (formats.includes('paseto')) {
-    await singleRun.call({ format: 'paseto' });
-  }
   if (formats.includes('dynamic')) {
-    await singleRun.call({ format: () => sample(['opaque', 'jwt', 'jwt-ietf', 'paseto']) });
+    await singleRun.call({ format: () => sample(['opaque', 'jwt', 'jwt-ietf']) });
   }
   passed.forEach((pass) => console.log('\x1b[32m%s\x1b[0m', pass));
 })()

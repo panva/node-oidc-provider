@@ -2169,7 +2169,7 @@ async function expiresWithSession(ctx, token) {
 
 ### extraAccessTokenClaims
 
-Function used to get additional access token claims when it is being issued. These claims will be available in your storage under property `extra`, returned by introspection as top level claims and pushed into `jwt`, `jwt-ietf` and `paseto` formatted tokens as top level claims as well. Returned claims may not overwrite other top level claims.   
+Function used to get additional access token claims when it is being issued. These claims will be available in your storage under property `extra`, returned by introspection as top level claims and pushed into `jwt` and `jwt-ietf` formatted tokens as top level claims as well. Returned claims may not overwrite other top level claims.   
   
 
 
@@ -2292,8 +2292,7 @@ This option allows to configure the token serialization format. The different va
  - `opaque` (default) formatted tokens store every property as a root property in your adapter
  - `jwt` formatted tokens are issued as JWTs and stored the same as `opaque` only with additional property `jwt`. See `formats.jwtAccessTokenSigningAlg` for resolving the JWT Access Token signing algorithm. Note this is a proprietary format that will eventually get deprecated in favour of the 'jwt-ietf' value (once it gets stable and close to being an RFC)
  - `jwt-ietf` formatted tokens are issued as JWTs and stored the same as `opaque` only with additional property `jwt-ietf`. See `formats.jwtAccessTokenSigningAlg` for resolving the JWT Access Token signing algorithm. This is an implementation of [JSON Web Token (JWT) Profile for OAuth 2.0 Access Tokens](https://tools.ietf.org/html/draft-ietf-oauth-access-token-jwt-05) draft and to enable it you need to enable `features.ietfJWTAccessTokenProfile`. 'jwt-ietf' value (once it gets stable and close to being an RFC)
- - `paseto` formatted tokens are issued as v2.public PASETOs and stored the same as `opaque` only with additional property `paseto`. The server must have an `OKP Ed25519` key available to sign with else it will throw a server error. PASETOs are also allowed to only have a single audience, if the token's "aud" resolves with more than one the server will throw a server error. **This format is only supported in node runtime >= 12.0.0**
- - the value may also be a function dynamically determining the format (returning either `jwt`, `jwt-ietf`, `paseto` or `opaque` depending on the token itself)   
+ - the value may also be a function dynamically determining the format (returning either `jwt`, `jwt-ietf`, or `opaque` depending on the token itself)   
   
 
 
@@ -2304,8 +2303,7 @@ _**default value**_:
   ClientCredentials: 'opaque',
   customizers: {
     'jwt-ietf': undefined,
-    jwt: undefined,
-    paseto: undefined
+    jwt: undefined
   },
   jwtAccessTokenSigningAlg: [AsyncFunction: jwtAccessTokenSigningAlg] // see expanded details below
 }
@@ -2318,16 +2316,6 @@ Configure `formats`:
 
 ```js
 { AccessToken: 'jwt' }
-```
-</details>
-<a id="formats-to-enable-paseto-v-2-public-access-tokens"></a><details><summary>(Click to expand) To enable PASETO v2.public Access Tokens</summary><br>
-
-
-Configure `formats`:
-  
-
-```js
-{ AccessToken: 'paseto' }
 ```
 </details>
 <a id="formats-to-dynamically-decide-on-the-format-used-e-g-only-if-it-is-intended-for-a-resource"></a><details><summary>(Click to expand) To dynamically decide on the format used, e.g. only if it is intended for a resource</summary><br>
@@ -2347,7 +2335,7 @@ server Configure `formats`:
 
 ### formats.customizers
 
-Functions used before signing a structured Access Token of a given type, such as a JWT or PASETO one. Customizing here only changes the structured Access Token, not your storage, introspection or anything else. For such extras use [`extraAccessTokenClaims`](#extraaccesstokenclaims) instead.   
+Functions used before signing a structured Access Token of a given type, such as a JWT one. Customizing here only changes the structured Access Token, not your storage, introspection or anything else. For such extras use [`extraAccessTokenClaims`](#extraaccesstokenclaims) instead.   
   
 
 
@@ -2355,8 +2343,7 @@ _**default value**_:
 ```js
 {
   'jwt-ietf': undefined,
-  jwt: undefined,
-  paseto: undefined
+  jwt: undefined
 }
 ```
 <a id="formats-customizers-to-push-additional-claims-to-a-jwt-format-access-token-payload"></a><details><summary>(Click to expand) To push additional claims to a `jwt` format Access Token payload
@@ -2406,22 +2393,6 @@ _**default value**_:
   customizers: {
     async ['jwt-ietf'](ctx, token, jwt) {
       jwt.header = { foo: 'bar' };
-    }
-  }
-}
-```
-</details>
-<a id="formats-customizers-to-push-a-payload-and-a-footer-to-a-paseto-structured-access-token"></a><details><summary>(Click to expand) To push a payload and a footer to a PASETO structured access token
-</summary><br>
-
-```js
-{
-  customizers: {
-    paseto(ctx, token, structuredToken) {
-      structuredToken.payload.foo = 'bar';
-      structuredToken.footer = 'foo'
-      structuredToken.footer = Buffer.from('foo')
-      structuredToken.footer = { foo: 'bar' } // will get stringified
     }
   }
 }

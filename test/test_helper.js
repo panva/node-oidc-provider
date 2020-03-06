@@ -60,7 +60,6 @@ function readCookie(value) {
 const { port } = global.server.address();
 
 const jwt = (token) => JSON.parse(base64url.decode(token.split('.')[1])).jti;
-const paseto = (token) => JSON.parse(base64url.toBuffer(token.split('.')[2]).slice(0, -64)).jti;
 
 module.exports = function testHelper(dir, {
   config: base = path.basename(dir),
@@ -350,10 +349,6 @@ module.exports = function testHelper(dir, {
     function getTokenJti(token) {
       try {
         return jwt(token);
-      } catch (err) {}
-
-      try {
-        return paseto(token);
       } catch (err) {}
 
       return token; // opaque
