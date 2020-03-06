@@ -565,6 +565,39 @@ provider.use(async (ctx, next) => {
   //
 });
 
+provider.Client.prototype.grantTypeAllowed = function (grantType) {
+  grantType.substring(0);
+  return true;
+}
+provider.Client.prototype.responseTypeAllowed = function (responseType) {
+  responseType.substring(0);
+  return true;
+}
+provider.Client.prototype.redirectUriAllowed = function (redirectUri) {
+  redirectUri.substring(0);
+  return true;
+}
+provider.Client.prototype.requestUriAllowed = function (requestUri) {
+  requestUri.substring(0);
+  return true;
+}
+provider.Client.prototype.postLogoutRedirectUriAllowed = function (postLogoutRedirectUri) {
+  postLogoutRedirectUri.substring(0);
+  return true;
+}
+provider.Client.prototype.checkSessionOriginAllowed = function (checkSessionOrigin) {
+  checkSessionOrigin.substring(0);
+  return true;
+}
+provider.Client.prototype.webMessageUriAllowed = function (webMessageUri) {
+  webMessageUri.substring(0);
+  return true;
+}
+provider.Client.prototype.compareClientSecret = async function (actual) {
+  actual.substring(0);
+  return true;
+};
+
 (async () => {
   const client = await provider.Client.find('foo');
   if (client !== undefined) {

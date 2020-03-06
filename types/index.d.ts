@@ -540,8 +540,6 @@ declare class Client {
   readonly clientId: string;
   readonly keystore: ClientKeystore;
 
-  readonlyclientId: string;
-
   readonly grantTypes?: string[];
   readonly redirectUris?: string[];
   readonly responseTypes?: ResponseType[];
