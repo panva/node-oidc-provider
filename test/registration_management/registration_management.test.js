@@ -10,8 +10,8 @@ describe('OAuth 2.0 Dynamic Client Registration Management Protocol', () => {
 
   // setup does not have the provider;
 
-  function setup(meta) {
-    const props = { redirect_uris: ['https://client.example.com/cb'], ...meta };
+  function setup(metadata) {
+    const props = { redirect_uris: ['https://client.example.com/cb'], ...metadata };
 
     return this.agent.post('/reg').send(props).expect(201)
       .then((res) => res.body);

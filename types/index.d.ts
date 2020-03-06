@@ -164,7 +164,6 @@ export interface ClientAuthorizationState {
   persistsLogout?: boolean;
   sid?: string;
   grantId?: string;
-  meta?: AnyObject;
   rejectedScopes?: string[];
   rejectedClaims?: string[];
   promptedClaims?: string[];
@@ -234,8 +233,6 @@ declare class Session extends BaseModel {
   sidFor(clientId: string, value: string): void;
   grantIdFor(clientId: string): string;
   grantIdFor(clientId: string, value: string): void;
-  metaFor(clientId: string): AnyObject | void;
-  metaFor(clientId: string, value: AnyObject): void;
   acceptedScopesFor(clientId: string): Set<string>;
   acceptedClaimsFor(clientId: string): Set<string>;
   promptedScopesFor(clientId: string): Set<string>;
@@ -1162,8 +1159,6 @@ export interface InteractionResults {
     replace?: boolean;
   };
 
-  meta?: AnyObject;
-
   [key: string]: any;
 }
 
@@ -1197,18 +1192,6 @@ export class Provider extends events.EventEmitter {
   ): Promise<void>;
 
   interactionDetails(req: http.IncomingMessage | http2.Http2ServerRequest, res: http.ServerResponse | http2.Http2ServerResponse): Promise<Interaction>;
-
-  setProviderSession(
-    req: http.IncomingMessage | http2.Http2ServerRequest,
-    res: http.ServerResponse | http2.Http2ServerResponse,
-    options: {
-      account: string;
-      ts?: number;
-      remember?: boolean;
-      clients?: string[];
-      meta?: AnyObject;
-    }
-  ): Promise<Session>;
 
   registerGrantType(
     name: string,

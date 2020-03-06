@@ -8,8 +8,6 @@ const nanoid = require('../../lib/helpers/nanoid');
 const bootstrap = require('../test_helper');
 const epochTime = require('../../lib/helpers/epoch_time');
 
-const config = require('./interaction.config');
-
 const expire = new Date();
 expire.setDate(expire.getDate() + 1);
 const expired = new Date(0);
@@ -978,34 +976,6 @@ describe('resume after consent', () => {
         expect(error).to.be.an.instanceof(Error);
         expect(error).to.have.property('message', 'expected Array or Set');
       });
-    });
-  });
-
-  context('meta results', () => {
-    it('should process and store meta-informations provided alongside login', async function () {
-      const auth = new this.AuthorizationRequest({
-        response_type: 'code',
-        response_mode: 'fragment',
-        scope: 'openid',
-      });
-
-      await setup.call(this, auth, {
-        login: {
-          account: nanoid(),
-          remember: true,
-        },
-        meta: {
-          scope: 'openid',
-        },
-      });
-
-      return this.agent.get('/auth/resume')
-        .expect(() => {
-          const session = this.getSession({ instantiate: true });
-          const meta = session.metaFor(config.client.client_id);
-          expect(meta).to.be.ok;
-          expect(meta).to.have.property('scope');
-        });
     });
   });
 

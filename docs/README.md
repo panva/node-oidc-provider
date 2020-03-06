@@ -168,12 +168,6 @@ router.post('/interaction/:uid', async (ctx, next) => {
     rejectedClaims: [], // array of strings, claim names the end-user has not granted
   },
 
-  // meta is a free object you may store alongside an authorization. It can be useful
-  // during the interaction check to verify information on the ongoing session.
-  meta: {
-    // object structure up-to-you
-  },
-
   ['custom prompt name resolved']: {},
 }
 
@@ -206,39 +200,6 @@ router.post('/interaction/:uid', async (ctx, next) => {
   const redirectTo = await provider.interactionResult(ctx.req, ctx.res, result);
 
   ctx.body = { redirectTo };
-});
-```
-
-**`#provider.setProviderSession`**
-Sometimes interactions need to be interrupted before finishing and need to be picked up later,
-or a session just needs to be established from outside the regular authorization request.
-`#provider.setProviderSession` will take care of setting the proper cookies and storing the
-updated/created session object.
-
-Signature:
-```js
-async setProviderSession(req, res, {
-  account, // account id string
-  ts = epochTime(), // [optional] login timestamp, defaults to current timestamp
-  remember = true, // [optional] set the session as persistent, defaults to true
-  clients = [], // [optional] array of client id strings to pre-authorize in the updated session
-  meta: { // [optional] object with keys being client_ids present in clients with their respective meta
-    [client_id]: {},
-  }
-} = {})
-```
-
-```js
-// with express
-expressApp.post('/interaction/:uid/login', async (req, res) => {
-  await provider.setProviderSession(req, res, { account: 'accountId' });
-  // ...
-});
-
-// with koa
-router.post('/interaction/:uid/login', async (ctx, next) => {
-  await provider.setProviderSession(ctx.req, ctx.res, { account: 'accountId' });
-  // ...
 });
 ```
 

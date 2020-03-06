@@ -24,7 +24,7 @@ describe('Client metadata validation', () => {
     });
   });
 
-  function addClient(meta, configuration) {
+  function addClient(metadata, configuration) {
     let provider;
     if (configuration) {
       provider = new Provider('http://localhost', merge({
@@ -39,18 +39,18 @@ describe('Client metadata validation', () => {
       client_id: 'client',
       client_secret: 'its64bytes_____________________________________________________!',
       redirect_uris: ['https://client.example.com/cb'],
-      ...meta,
+      ...metadata,
     });
   }
 
   const fail = () => { throw new Error('expected promise to be rejected'); };
 
-  const mustBeString = (prop, values = [[], 123, true, null, false, {}, ''], meta, configuration) => {
+  const mustBeString = (prop, values = [[], 123, true, null, false, {}, ''], metadata, configuration) => {
     values.forEach((value) => {
       let msg = util.format('must be a string, %j provided', value);
-      if (meta) msg = util.format(`${msg}, [client %j]`, omit(meta, ['jwks.keys']));
+      if (metadata) msg = util.format(`${msg}, [client %j]`, omit(metadata, ['jwks.keys']));
       if (configuration) msg = util.format(`${msg}, [provider %j]`, configuration);
-      it(msg, () => addClient({ ...meta, [prop]: value }, configuration).then(fail, (err) => {
+      it(msg, () => addClient({ ...metadata, [prop]: value }, configuration).then(fail, (err) => {
         if (prop === 'redirect_uris') {
           expect(err.message).to.equal('invalid_redirect_uri');
         } else {
@@ -101,10 +101,10 @@ describe('Client metadata validation', () => {
     });
   };
 
-  const mustBeBoolean = (prop, meta, configuration) => {
+  const mustBeBoolean = (prop, metadata, configuration) => {
     [{}, 'string', 123, null, []].forEach((value) => {
       let msg = util.format('must be a boolean, %j provided', value);
-      if (meta) msg = util.format(`${msg}, [client %j]`, omit(meta, ['jwks.keys']));
+      if (metadata) msg = util.format(`${msg}, [client %j]`, omit(metadata, ['jwks.keys']));
       if (configuration) msg = util.format(`${msg}, [provider %j]`, configuration);
       it(msg, () => addClient({
         [prop]: value,
@@ -119,12 +119,12 @@ describe('Client metadata validation', () => {
     });
   };
 
-  const defaultsTo = (prop, value, meta, configuration) => {
+  const defaultsTo = (prop, value, metadata, configuration) => {
     let msg = util.format('defaults to %s', value);
-    if (meta) msg = util.format(`${msg}, [client %j]`, omit(meta, ['jwks.keys']));
+    if (metadata) msg = util.format(`${msg}, [client %j]`, omit(metadata, ['jwks.keys']));
     if (configuration) msg = util.format(`${msg}, [provider %j]`, configuration);
 
-    it(msg, () => addClient(meta, configuration).then((client) => {
+    it(msg, () => addClient(metadata, configuration).then((client) => {
       if (value === undefined) {
         expect(client.metadata()).not.to.have.property(prop);
       } else {
@@ -150,24 +150,26 @@ describe('Client metadata validation', () => {
     });
   };
 
-  const allows = (prop, value, meta, configuration, assertion = (client) => {
+  const allows = (prop, value, metadata, configuration, assertion = (client) => {
     expect(client.metadata()[prop]).to.eql(value);
   }) => {
     let msg = util.format('passes %j', value);
-    if (meta) msg = util.format(`${msg}, [client %j]`, omit(meta, ['jwks.keys']));
+    if (metadata) msg = util.format(`${msg}, [client %j]`, omit(metadata, ['jwks.keys']));
     if (configuration) msg = util.format(`${msg}, [provider %j]`, configuration);
-    it(msg, () => addClient({ ...meta, [prop]: value }, configuration).then(assertion, (err) => {
-      if (err instanceof InvalidClientMetadata) {
-        throw new Error(`InvalidClientMetadata received ${err.message} ${err.error_description}`);
-      }
-    }));
+    it(msg, () => { // eslint-disable-line arrow-body-style
+      return addClient({ ...metadata, [prop]: value }, configuration).then(assertion, (err) => {
+        if (err instanceof InvalidClientMetadata) {
+          throw new Error(`InvalidClientMetadata received ${err.message} ${err.error_description}`);
+        }
+      });
+    });
   };
 
-  const rejects = (prop, value, description, meta, configuration) => {
+  const rejects = (prop, value, description, metadata, configuration) => {
     let msg = util.format('rejects %j', value);
-    if (meta) msg = util.format(`${msg}, [client %j]`, omit(meta, ['jwks.keys']));
+    if (metadata) msg = util.format(`${msg}, [client %j]`, omit(metadata, ['jwks.keys']));
     if (configuration) msg = util.format(`${msg}, [provider %j]`, configuration);
-    it(msg, () => addClient({ ...meta, [prop]: value }, configuration).then(fail, (err) => {
+    it(msg, () => addClient({ ...metadata, [prop]: value }, configuration).then(fail, (err) => {
       if (prop === 'redirect_uris') {
         expect(err.message).to.equal('invalid_redirect_uri');
       } else {
