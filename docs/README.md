@@ -2426,19 +2426,18 @@ async function jwtAccessTokenSigningAlg(ctx, token, client) {
 
 ### httpOptions
 
-Function called whenever calls to an external HTTP(S) resource are being made. Use this to change the [got](https://github.com/sindresorhus/got/tree/v9.6.0) library's request options as these requests are being made. This can be used to e.g. Change the request timeout option or to configure the global agent to use HTTP_PROXY and HTTPS_PROXY environment variables.   
+Function called whenever calls to an external HTTP(S) resource are being made. You can change the request `timeout` duration, the `agent` used as well as the `lookup` resolver function.   
   
 
 
 _**default value**_:
 ```js
-function httpOptions(options) {
-  options.followRedirect = false;
-  options.headers['User-Agent'] = 'oidc-provider/${VERSION} (${ISSUER_IDENTIFIER})';
-  options.retry = 0;
-  options.throwHttpErrors = false;
-  options.timeout = 2500;
-  return options;
+function httpOptions(url) {
+  return {
+    timeout: 2500,
+    agent: undefined, // defaults to node's global agents (https.globalAgent or http.globalAgent)
+    lookup: undefined, // defaults to CacheableLookup (https://github.com/szmarczak/cacheable-lookup)
+  };
 }
 ```
 <a id="http-options-to-change-the-request's-timeout"></a><details><summary>(Click to expand) To change the request's timeout</summary><br>
@@ -2449,9 +2448,8 @@ To change all request's timeout configure the httpOptions as a function like so:
 
 ```js
  {
-   httpOptions(options) {
-     options.timeout = 5000;
-     return options;
+   httpOptions(url) {
+     return { timeout: 5000 };
    }
  }
 ```

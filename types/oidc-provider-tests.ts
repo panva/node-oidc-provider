@@ -1,4 +1,6 @@
 import { Provider, interactionPolicy, AsymmetricSigningAlgorithm } from './index.d';
+import * as dns from 'dns'
+import * as https from 'https'
 
 new Provider('https://op.example.com');
 
@@ -181,14 +183,9 @@ const provider = new Provider('https://op.example.com', {
       },
     },
   },
-  httpOptions(options) {
-    if (options.headers) {
-      options.headers.foo = 'bar';
-    }
-    options.json = false;
-    options.timeout = 5000;
-    options.retry = 1;
-    return options;
+  httpOptions(url) {
+    url.href.substring(0)
+    return { timeout: 5000, lookup: dns.lookup, agent: https.globalAgent }
   },
   async expiresWithSession(ctx, token) {
     ctx.oidc.issuer.substring(0);

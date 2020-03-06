@@ -417,8 +417,7 @@ describe('client authentication options', () => {
 
         const response = await got.post(`http://[${address}]:${port}${route}`, {
           throwHttpErrors: false,
-          form: true,
-          body: {
+          form: {
             grant_type: 'implicit',
             client_id: 'client-post',
             client_secret: 'secret',

@@ -164,7 +164,7 @@ describe('pairwise features', () => {
         }, (err) => {
           expect(err).to.be.ok;
           expect(err.message).to.eq('invalid_client_metadata');
-          expect(err.error_description).to.eq('could not load sector_identifier_uri (Unexpected token n in JSON at position 2 in "https://client.example.com/file_of_redirect_uris": \n{ not a valid json...)');
+          expect(err.error_description).to.eq('could not load sector_identifier_uri (Unexpected token n in JSON at position 2 in "https://client.example.com/file_of_redirect_uris")');
         });
       });
 
@@ -211,9 +211,7 @@ describe('pairwise features', () => {
       it('doesnt accepts 200s, rejects even on redirect', function () {
         nock('https://client.example.com')
           .get('/file_of_redirect_uris')
-          .reply(302, 'redirecting', {
-            location: '/otherfile',
-          });
+          .reply(201, j('https://client.example.com/cb'));
 
         return i(this.provider).clientAdd({
           client_id: 'client',
@@ -226,7 +224,7 @@ describe('pairwise features', () => {
         }, (err) => {
           expect(err).to.be.ok;
           expect(err.message).to.eq('invalid_client_metadata');
-          expect(err.error_description).to.eq('unexpected sector_identifier_uri response status code, expected 200 OK, got 302 Found');
+          expect(err.error_description).to.eq('unexpected sector_identifier_uri response status code, expected 200 OK, got 201 Created');
         });
       });
     });

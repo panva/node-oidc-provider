@@ -35,27 +35,6 @@ describe('Back-Channel Logout 1.0', () => {
       return client.backchannelLogout('subject', 'foo');
     });
 
-    it('uses custom http options when provided', async function () {
-      const client = await this.provider.Client.find('client');
-
-      const pre = i(this.provider).configuration('httpOptions');
-      i(this.provider).configuration().httpOptions = (opts) => {
-        Object.assign(opts.body, { foo: 'bar' });
-        return opts;
-      };
-
-      nock('https://client.example.com/')
-        .filteringRequestBody((body) => {
-          expect(body).to.match(/^logout_token=(([\w-]+\.?){3})&foo=bar$/);
-        })
-        .post('/backchannel_logout', () => true)
-        .reply(200);
-
-      return client.backchannelLogout('subject', 'foo').then(() => {
-        i(this.provider).configuration().httpOptions = pre;
-      });
-    });
-
     it('omits sid when its not required', async function () {
       const client = await this.provider.Client.find('no-sid');
 

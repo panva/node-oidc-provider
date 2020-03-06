@@ -2,7 +2,7 @@
 const { strict: assert } = require('assert');
 const { createWriteStream } = require('fs');
 
-const Got = require('got'); // TODO: upgrade got
+const Got = require('got');
 const ms = require('ms');
 
 const debug = require('./debug');
@@ -21,7 +21,7 @@ class API {
         ...(bearerToken ? { authorization: `bearer ${bearerToken}` } : undefined),
         'content-type': 'application/json',
       },
-      json: true,
+      responseType: 'json',
       retry: 0,
       timeout: 10000,
     });
@@ -54,11 +54,11 @@ class API {
     assert(configuration, 'argument property "configuration" missing');
 
     const { statusCode, body: response } = await this.post('/api/plan', {
-      query: {
+      searchParams: {
         planName,
         ...(variant ? { variant } : undefined),
       },
-      body: configuration,
+      json: configuration,
     });
 
     assert.equal(statusCode, 201);
@@ -70,13 +70,15 @@ class API {
     assert(plan, 'argument property "plan" missing');
     assert(test, 'argument property "test" missing');
 
-    const query = { test, plan };
+    const searchParams = { test, plan };
 
     if (variant) {
-      Object.assign(query, { variant: JSON.stringify(variant) });
+      Object.assign(searchParams, { variant: JSON.stringify(variant) });
     }
 
-    const { statusCode, body: response } = await this.post('/api/runner', { query });
+    const { statusCode, body: response } = await this.post('/api/runner', {
+      searchParams,
+    });
 
     assert.equal(statusCode, 201);
 

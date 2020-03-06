@@ -2,10 +2,11 @@
 // TypeScript Version: 3.6
 
 import * as events from 'events';
+import * as url from 'url';
+import * as dns from 'dns';
 import * as http from 'http';
-import * as http2 from 'http2';
 import * as https from 'https';
-import * as tls from 'tls';
+import * as http2 from 'http2';
 
 import * as jose from 'jose';
 import * as Koa from 'koa';
@@ -23,42 +24,6 @@ export type ClientCredentialsFormatFunction = (ctx: KoaContextWithOIDC, token: C
 export type TTLFunction<T> = (ctx: KoaContextWithOIDC, token: T, client: Client) => number;
 
 export interface AnyObject {
-  [key: string]: any;
-}
-
-/**
- * @see https://github.com/sindresorhus/got/tree/v9.6.0#options
- */
-export interface HttpRequestOptions extends tls.SecureContextOptions {
-  url?: string;
-  headers?: AnyObject;
-  query?: AnyObject;
-  body?: AnyObject;
-  form?: boolean;
-  json?: boolean;
-  timeout?: number | {
-    lookup?: number;
-    connect?: number;
-    secureConnect?: number;
-    socket?: number;
-    response?: number;
-    send?: number;
-    request?: number;
-  };
-  retry?: number | {
-    retries?: number | RetryFunction;
-    methods?: Array<'GET' | 'POST' | 'PUT' | 'HEAD' | 'DELETE' | 'OPTIONS' | 'TRACE'>;
-    statusCodes?: Array<408 | 413 | 429 | 500 | 502 | 503 | 504>;
-    maxRetryAfter?: number;
-    errorCodes?: string[];
-  };
-  followRedirect?: boolean;
-  throwHttpErrors?: boolean;
-  agent?: http.Agent | https.Agent | boolean | {
-    http: http.Agent,
-    https: https.Agent,
-  };
-
   [key: string]: any;
 }
 
@@ -1018,7 +983,7 @@ export interface Configuration {
     };
   };
 
-  httpOptions?: (options: HttpRequestOptions) => HttpRequestOptions;
+  httpOptions?: (url: url.URL) => HttpOptions;
 
   expiresWithSession?: (ctx: KoaContextWithOIDC, token: AccessToken | AuthorizationCode | DeviceCode) => CanBePromise<boolean>;
 
@@ -1124,6 +1089,7 @@ export interface Configuration {
   };
 }
 
+export type HttpOptions = { timeout?: number, agent?: http.Agent | https.Agent, lookup?: typeof dns.lookup };
 export type NoneAlg = 'none';
 export type AsymmetricSigningAlgorithm = 'PS256' | 'PS384' | 'PS512' | 'ES256' | 'ES256K' | 'ES384' | 'ES512' | 'EdDSA' | 'RS256' | 'RS384' | 'RS512';
 export type SymmetricSigningAlgorithm = 'HS256' | 'HS384' | 'HS512';

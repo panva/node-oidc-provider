@@ -1,6 +1,6 @@
 /* eslint-disable no-console, no-await-in-loop, no-loop-func */
 
-const got = require('got'); // TODO: upgrade got
+const got = require('got');
 
 const {
   TRAVIS_BUILD_NUMBER,
@@ -12,13 +12,14 @@ const {
 const slug = encodeURIComponent('panva/oidc-provider-conformance-tests');
 
 (async () => {
-  const { body: { request: { id } } } = await got.post(`https://api.travis-ci.com/repo/${slug}/requests`, {
+  const { request: { id } } = await got.post(`https://api.travis-ci.com/repo/${slug}/requests`, {
+    resolveBodyOnly: true,
+    responseType: 'json',
     headers: {
       'Travis-API-Version': 3,
       Authorization: `token ${TRAVIS_AUTH_TOKEN}`,
     },
-    json: true,
-    body: {
+    json: {
       request: {
         message: `Triggered by upstream build #${TRAVIS_BUILD_NUMBER} of ${TRAVIS_REPO_SLUG} commit ${TRAVIS_COMMIT}`,
         branch: 'master',
@@ -47,8 +48,9 @@ const slug = encodeURIComponent('panva/oidc-provider-conformance-tests');
         'Travis-API-Version': 3,
         Authorization: `token ${TRAVIS_AUTH_TOKEN}`,
       },
-      json: true,
-    }).then(({ body }) => {
+      resolveBodyOnly: true,
+      responseType: 'json',
+    }).then((body) => {
       if (!body.builds.length) {
         return new Promise((resolve) => { setTimeout(resolve, 20 * 1000); });
       }
