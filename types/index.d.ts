@@ -925,7 +925,7 @@ export interface Configuration {
     dPoP?: {
       enabled?: boolean,
       iatTolerance?: number,
-      ack?: 'id-03' | 'individual-draft-03'
+      ack?: 'id-03' | 'individual-draft-03' | 'individual-draft-04'
     },
 
     secp256k1?: {
