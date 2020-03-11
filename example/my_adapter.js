@@ -87,15 +87,6 @@ class MyAdapter {
      * - policies {string[]} - [InitialAccessToken, RegistrationAccessToken only] array of policies
      * - request {string} - [PushedAuthorizationRequest only] Pushed Request Object value
      *
-     *
-     * when `jwt`
-     * - same as `opaque` with the addition of
-     * - jwt {string} - the JWT value returned to the client
-     *
-     * when `jwt-ietf`
-     * - same as `opaque` with the addition of
-     * - 'jwt-ietf' {string} - the JWT value returned to the client
-     *
      * Client model will only use this when registered through Dynamic Registration features and
      * will contain all client properties.
      *

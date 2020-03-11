@@ -10,6 +10,7 @@ const { spy, match: { string, number }, assert } = sinon;
 if (FORMAT === 'opaque') {
   describe('opaque storage', () => {
     before(bootstrap(__dirname));
+    const format = 'opaque';
     const accountId = 'account';
     const claims = {};
     const clientId = 'client';
@@ -63,6 +64,7 @@ if (FORMAT === 'opaque') {
 
       expect(upsert.getCall(0).args[0]).to.have.lengthOf(43);
       assert.calledWith(upsert, string, {
+        format,
         accountId,
         aud,
         claims,
@@ -92,6 +94,7 @@ if (FORMAT === 'opaque') {
 
       expect(upsert.getCall(0).args[0]).to.have.lengthOf(43);
       assert.calledWith(upsert, string, {
+        format,
         accountId,
         acr,
         amr,
@@ -125,6 +128,7 @@ if (FORMAT === 'opaque') {
 
       expect(upsert.getCall(0).args[0]).to.have.lengthOf(43);
       assert.calledWith(upsert, string, {
+        format,
         accountId,
         acr,
         amr,
@@ -164,6 +168,7 @@ if (FORMAT === 'opaque') {
 
       expect(upsert.getCall(0).args[0]).to.have.lengthOf(43);
       assert.calledWith(upsert, string, {
+        format,
         accountId,
         acr,
         amr,
@@ -199,6 +204,7 @@ if (FORMAT === 'opaque') {
 
       expect(upsert.getCall(0).args[0]).to.have.lengthOf(43);
       assert.calledWith(upsert, string, {
+        format,
         aud,
         clientId,
         exp: number,
@@ -223,6 +229,7 @@ if (FORMAT === 'opaque') {
 
       expect(upsert.getCall(0).args[0]).to.have.lengthOf(43);
       assert.calledWith(upsert, string, {
+        format,
         exp: number,
         iat: number,
         jti: upsert.getCall(0).args[0],
@@ -244,6 +251,7 @@ if (FORMAT === 'opaque') {
 
       expect(upsert.getCall(0).args[0]).to.have.lengthOf(43);
       assert.calledWith(upsert, string, {
+        format,
         clientId,
         kind,
         policies,

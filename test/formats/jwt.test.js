@@ -17,6 +17,7 @@ function decode(b64urljson) {
 if (FORMAT === 'jwt') {
   describe('jwt storage', () => {
     before(bootstrap(__dirname));
+    const format = 'jwt';
     const accountId = 'account';
     const claims = {};
     const clientId = 'client';
@@ -69,6 +70,7 @@ if (FORMAT === 'jwt') {
       const jwt = await token.save();
 
       assert.calledWith(upsert, string, {
+        format,
         accountId,
         aud,
         claims,
@@ -78,7 +80,6 @@ if (FORMAT === 'jwt') {
         gty,
         iat: number,
         jti: upsert.getCall(0).args[0],
-        jwt: string,
         kind,
         scope,
         sid,
@@ -118,6 +119,7 @@ if (FORMAT === 'jwt') {
       const jwt = await token.save();
 
       assert.calledWith(upsert, string, {
+        format,
         accountId,
         aud,
         claims,
@@ -127,7 +129,6 @@ if (FORMAT === 'jwt') {
         gty,
         iat: number,
         jti: upsert.getCall(0).args[0],
-        jwt: string,
         kind,
         scope,
         sid,
@@ -167,12 +168,12 @@ if (FORMAT === 'jwt') {
       const jwt = await token.save();
 
       assert.calledWith(upsert, string, {
+        format,
         aud,
         clientId,
         exp: number,
         iat: number,
         jti: upsert.getCall(0).args[0],
-        jwt: string,
         kind,
         scope,
         'x5t#S256': s256,
