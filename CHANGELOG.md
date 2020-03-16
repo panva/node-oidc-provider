@@ -2,6 +2,15 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [6.23.2](https://github.com/panva/node-oidc-provider/compare/v6.23.1...v6.23.2) (2020-03-16)
+
+
+### Bug Fixes
+
+* return `iss` to introspection responses ([f1b6fb4](https://github.com/panva/node-oidc-provider/commit/f1b6fb40aa06c8d95cb5e2f833cd55fb6b132725)), closes [#676](https://github.com/panva/node-oidc-provider/issues/676)
+
+
+
 ## [6.23.1](https://github.com/panva/node-oidc-provider/compare/v6.23.0...v6.23.1) (2020-03-04)
 
 
