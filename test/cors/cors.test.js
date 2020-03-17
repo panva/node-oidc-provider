@@ -103,7 +103,18 @@ describe('CORS setup', () => {
     expect(headers[ACAHeaders]).to.eql('foo');
   });
 
-  describe('with clientBasedCORS true (default)', () => {
+  describe('with clientBasedCORS resolving to true', () => {
+    before(function () {
+      const conf = i(this.provider).configuration();
+      this.clientBasedCORS = conf.clientBasedCORS;
+      conf.clientBasedCORS = () => true;
+    });
+
+    after(function () {
+      const conf = i(this.provider).configuration();
+      conf.clientBasedCORS = this.clientBasedCORS;
+    });
+
     it('userinfo has cors open', async function () {
       const { status, headers } = await req.call(
         this,
@@ -281,17 +292,7 @@ describe('CORS setup', () => {
     });
   });
 
-  describe('with clientBasedCORS false', () => {
-    before(function () {
-      const conf = i(this.provider).configuration();
-      conf.clientBasedCORS = () => false;
-    });
-
-    after(function () {
-      const conf = i(this.provider).configuration();
-      conf.clientBasedCORS = () => true;
-    });
-
+  describe('with clientBasedCORS false (default)', () => {
     it('userinfo has cors closed', async function () {
       const { status, headers } = await req.call(
         this,

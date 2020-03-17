@@ -1980,7 +1980,7 @@ Function used to check whether a given CORS request should be allowed based on t
 _**default value**_:
 ```js
 function clientBasedCORS(ctx, origin, client) {
-  return true;
+  return false;
 }
 ```
 
