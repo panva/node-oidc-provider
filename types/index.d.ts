@@ -1119,12 +1119,7 @@ export class Provider extends events.EventEmitter {
   readonly issuer: string;
   readonly app: Koa;
 
-  env?: Koa['env'];
   proxy?: Koa['proxy'];
-  subdomainOffset?: number;
-  proxyIpHeader?: string;
-  maxIpsCount?: number;
-  keys?: Koa['keys'];
   listen: Koa['listen'];
   callback: Koa['callback'];
 
