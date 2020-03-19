@@ -2033,7 +2033,7 @@ To change the default client response_types configure `clientDefaults` to be an 
 
 A `Number` value (in seconds) describing the allowed system clock skew for validating client-provided JWTs, e.g. Request Objects, DPoP Proofs and otherwise comparing timestamps  
 
-_**recommendation**_: Only set this to a reasonable value when needed to cover server-side client and oidc-provider server clock skew. More than 5 minutes (if needed) is probably a sign something else is wrong.  
+_**recommendation**_: Only set this to a reasonable value when needed to cover server-side client and oidc-provider server clock skew.  
 
 
 _**default value**_:
