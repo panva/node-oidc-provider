@@ -57,9 +57,6 @@ package.json since breaking changes may be introduced as part of these version u
 [acknowledge](/docs/README.md#features) the version and be notified of breaking changes as part of
 your CI.
 
-Missing a feature? - If it wasn't already discussed before, [ask for it][suggest-feature].  
-Found a bug? - [report it][bug].
-
 ## Certification
 [<img width="184" height="96" align="right" src="https://cdn.jsdelivr.net/gh/panva/node-oidc-provider@acd3ebf2f5ebbb5605463cb681a1fb2ab9742ace/OpenID_Certified.png" alt="OpenID Certification">][openid-certified-link]  
 Filip Skokan has [certified][openid-certified-link] that [oidc-provider][npm-url]
@@ -171,8 +168,6 @@ See the list of available emitted [event names](/docs/events.md) and their descr
 [device-flow]: https://tools.ietf.org/html/rfc8628
 [jwt-introspection]: https://tools.ietf.org/html/draft-ietf-oauth-jwt-introspection-response-08
 [sponsor-auth0]: https://auth0.com/overview?utm_source=GHsponsor&utm_medium=GHsponsor&utm_campaign=oidc-provider&utm_content=auth
-[suggest-feature]: https://github.com/panva/node-oidc-provider/issues/new?template=feature-request.md
-[bug]: https://github.com/panva/node-oidc-provider/issues/new?template=bug-report.md
 [mtls]: https://tools.ietf.org/html/rfc8705
 [dpop]: https://tools.ietf.org/html/draft-fett-oauth-dpop-04
 [resource-indicators]: https://tools.ietf.org/html/draft-ietf-oauth-resource-indicators-08
