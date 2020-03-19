@@ -2114,7 +2114,7 @@ _**default value**_:
 ```js
 {
   httpOnly: true,
-  maxAge: 600000,
+  maxAge: 3600000,
   overwrite: true,
   sameSite: 'lax'
 }
