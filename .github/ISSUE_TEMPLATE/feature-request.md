@@ -1,6 +1,8 @@
 ---
-name: Feature request
-about: Suggest an idea for oidc-provider
+name: ⭐ Feature request
+about: I have an idea for a new feature
+title: 'proposal: '
+labels: enhancement
 
 ---
 

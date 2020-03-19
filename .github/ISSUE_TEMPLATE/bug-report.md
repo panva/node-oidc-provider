@@ -1,6 +1,8 @@
 ---
-name: Bug report
-about: Create a report to help improve oidc-provider
+name: 🐞Bug report
+about: Something is not working as I think it should be
+title: 'bug report: '
+labels: bug, triage
 
 ---
 
