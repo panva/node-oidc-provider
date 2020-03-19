@@ -1,7 +1,6 @@
 ---
 name: 🐞Bug report
 about: Something is not working as I think it should be
-title: 'bug report: '
 labels: bug, triage
 
 ---
