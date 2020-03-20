@@ -439,7 +439,7 @@ module.exports = function testHelper(dir, {
 
             await new Promise((resolve) => {
               res.on('finish', resolve);
-              callback.call(provider, req, res);
+              callback(req, res);
             });
 
             req.url = req.url.replace('/', mountTo);

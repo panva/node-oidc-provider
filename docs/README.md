@@ -368,7 +368,7 @@ hapiApp.route({
 
     await new Promise((resolve) => {
       res.on('finish', resolve);
-      callback.call(oidc, req, res);
+      callback(req, res);
     });
 
     req.url = req.url.replace('/', prefix);
