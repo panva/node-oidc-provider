@@ -2,6 +2,15 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [6.23.3](https://github.com/panva/node-oidc-provider/compare/v6.23.2...v6.23.3) (2020-03-22)
+
+
+### Bug Fixes
+
+* client jwks_uri are now fetched with a lock, cooldown improvements ([b193010](https://github.com/panva/node-oidc-provider/commit/b193010c4a110335e09be2524eef4b27701e2f8f))
+
+
+
 ## [6.23.2](https://github.com/panva/node-oidc-provider/compare/v6.23.1...v6.23.2) (2020-03-16)
 
 
