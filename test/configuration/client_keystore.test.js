@@ -50,27 +50,38 @@ describe('client keystore refresh', () => {
 
   afterEach(sinon.restore);
 
-  it('gets the jwks from the uri', async function () {
+  it('gets the jwks from the uri (and does only one request concurrently)', async function () {
     await keystore.generate('EC', 'P-256');
     setResponse();
 
     const client = await this.provider.Client.find('client');
-    await client.keystore.refresh();
+    await Promise.all([
+      client.keystore.refresh(),
+      client.keystore.refresh(),
+    ]);
 
     expect(client.keystore.get({ kty: 'EC' })).to.be.ok;
   });
 
-  it('fails when private keys are encountered', async function () {
+  it('fails when private keys are encountered (and does only one request concurrently)', async function () {
     setResponse(keystore.toJWKS(true));
 
     const client = await this.provider.Client.find('client');
     sinon.stub(client.keystore, 'fresh').returns(false);
-    await client.keystore.refresh().then(fail, (err) => {
-      expect(err).to.be.an('error');
-      expect(err.message).to.equal('invalid_client_metadata');
-      expect(err.error_description).to.match(/jwks_uri could not be refreshed/);
-      expect(err.error_description).to.match(/jwks_uri must not contain private or symmetric keys/);
-    });
+    return Promise.all([
+      client.keystore.refresh().then(fail, (err) => {
+        expect(err).to.be.an('error');
+        expect(err.message).to.equal('invalid_client_metadata');
+        expect(err.error_description).to.match(/jwks_uri could not be refreshed/);
+        expect(err.error_description).to.match(/jwks_uri must not contain private or symmetric keys/);
+      }),
+      client.keystore.refresh().then(fail, (err) => {
+        expect(err).to.be.an('error');
+        expect(err.message).to.equal('invalid_client_metadata');
+        expect(err.error_description).to.match(/jwks_uri could not be refreshed/);
+        expect(err.error_description).to.match(/jwks_uri must not contain private or symmetric keys/);
+      }),
+    ]);
   });
 
   it('adds new keys', async function () {
