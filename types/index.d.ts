@@ -377,7 +377,7 @@ declare class RefreshToken extends BaseToken {
   isSenderConstrained(): boolean;
   consume(): Promise<void>;
 
-  static revokeByGrantId(grantId: string): Promise<undefined | void>;
+  static revokeByGrantId(grantId: string): Promise<void>;
 }
 
 declare class AuthorizationCode extends BaseToken {
@@ -425,7 +425,7 @@ declare class AuthorizationCode extends BaseToken {
 
   consume(): Promise<void>;
 
-  static revokeByGrantId(grantId: string): Promise<undefined | void>;
+  static revokeByGrantId(grantId: string): Promise<void>;
 }
 
 declare class DeviceCode extends BaseToken {
@@ -466,7 +466,7 @@ declare class DeviceCode extends BaseToken {
 
   consume(): Promise<void>;
 
-  static revokeByGrantId(grantId: string): Promise<undefined | void>;
+  static revokeByGrantId(grantId: string): Promise<void>;
 }
 
 declare class ClientCredentials extends BaseToken {
@@ -538,7 +538,7 @@ declare class AccessToken extends BaseToken {
   setAudiences(audience: string | string[]): void;
   isSenderConstrained(): boolean;
 
-  static revokeByGrantId(grantId: string): Promise<undefined | void>;
+  static revokeByGrantId(grantId: string): Promise<void>;
 }
 
 declare class IdToken {
