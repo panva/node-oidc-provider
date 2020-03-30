@@ -544,4 +544,13 @@ provider.use(async (ctx, next) => {
   if (accessToken !== undefined) {
     accessToken.jti.substring(0);
   }
+
+  try {
+      await Promise.all([
+        provider.AccessToken.revokeByGrantId('grantId'),
+        provider.AuthorizationCode.revokeByGrantId('grantId'),
+        provider.DeviceCode.revokeByGrantId('grantId'),
+        provider.RefreshToken.revokeByGrantId('grantId'),
+      ]);
+  } catch(e) {}
 })();
