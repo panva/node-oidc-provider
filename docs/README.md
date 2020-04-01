@@ -3059,7 +3059,7 @@ _**default value**_:
 
 ### ttl
 
-Expirations (in seconds, or dynamically returned value) for all token types   
+description: Expirations for all token types. The value can be a number (in seconds) or a synchronous function that dynamically returns value based on the context.   
   
 
 _**recommendation**_: Do not set token TTLs longer then they absolutely have to be, the shorter the TTL, the better. Rather than setting crazy high Refresh Token TTL look into `rotateRefreshToken` configuration option which is set up in way that when refresh tokens are regularly used they will have their TTL refreshed (via rotation). This is inline with the [OAuth 2.0 Security Best Current Practice](https://tools.ietf.org/html/draft-ietf-oauth-security-topics-13)  
@@ -3068,11 +3068,11 @@ _**recommendation**_: Do not set token TTLs longer then they absolutely have to 
 _**default value**_:
 ```js
 {
-  AccessToken: 3600,
-  AuthorizationCode: 600,
-  ClientCredentials: 600,
-  DeviceCode: 600,
-  IdToken: 3600,
+  AccessToken: 3600 /* 1 hour in seconds */,
+  AuthorizationCode: 600 /* 10 minutes in seconds */,
+  ClientCredentials: 600 /* 10 minutes in seconds */,
+  DeviceCode: 600 /* 10 minutes in seconds */,
+  IdToken: 3600 /* 1 hour in seconds */,
   RefreshToken: function RefreshTokenTTL(ctx, token, client) {
     if (
       ctx && ctx.oidc.entities.RotatedRefreshToken

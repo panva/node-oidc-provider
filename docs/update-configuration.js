@@ -10,11 +10,26 @@ const words = require('lodash/words'); // eslint-disable-line import/no-extraneo
 const docs = require('../lib/helpers/docs');
 const values = require('../lib/helpers/defaults')();
 
-values.ttl.RefreshToken[inspect.custom] = () => (
-  values.ttl.RefreshToken.toString()
-    .replace(/ {6}/g, '  ')
-    .replace(/\s+}$/, '\n}')
-);
+for (const [key, value] of Object.entries(values.ttl)) { // eslint-disable-line no-restricted-syntax
+  if (key === 'RefreshToken') {
+    value[inspect.custom] = () => (
+      value.toString()
+        .replace(/ {6}/g, '  ')
+        .replace(/\s+}$/, '\n}')
+        .split('\n')
+        .filter((line) => !line.includes('Change'))
+        .join('\n')
+    );
+  } else if (typeof value === 'function') {
+    const comp = value();
+    value[inspect.custom] = () => (
+      value.toString()
+        .split('\n')
+        .map((line) => (line.includes('return') ? `${comp} /* ${line.trim().split('// ')[1]} */` : undefined))
+        .filter(Boolean)[0]
+    );
+  }
+}
 
 values.interactions.policy[inspect.custom] = () => readFileSync('./docs/checks.txt').toString();
 
