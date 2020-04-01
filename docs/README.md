@@ -983,7 +983,8 @@ _**default value**_:
 
 [Front-Channel Logout 1.0 - draft 02](https://openid.net/specs/openid-connect-frontchannel-1_0-02.html)  
 
-Enables Front-Channel Logout features  
+Enables Front-Channel Logout features   
+ Note: Browsers blocking access to cookies from a third party context hinder the reliability of this standard.  
 
 
 _**default value**_:
@@ -1695,7 +1696,8 @@ _**default value**_:
 
 [Session Management 1.0 - draft 28](https://openid.net/specs/openid-connect-session-1_0-28.html)  
 
-Enables Session Management features.  
+Enables Session Management features.   
+ Note: Browsers blocking access to cookies from a third party context hinder the reliability of this standard.  
 
 
 _**default value**_:
@@ -1755,6 +1757,7 @@ _**default value**_:
 [draft-sakimura-oauth-wmrm-00](https://tools.ietf.org/html/draft-sakimura-oauth-wmrm-00) - OAuth 2.0 Web Message Response Mode  
 
 Enables `web_message` response mode.   
+ Note: Browsers blocking access to cookies from a third party context hinder the reliability of `response_mode=web_message` "no prompt" mode.   
  Note: Although a general advise to use a `helmet` ([express](https://www.npmjs.com/package/helmet), [koa](https://www.npmjs.com/package/koa-helmet)) it is especially advised for your interaction views routes if Web Message Response Mode is available on your deployment.  
 
 
