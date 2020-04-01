@@ -52,7 +52,7 @@ class MyAdapter {
      * - authTime {number} - timestamp of the end-user's authentication
      * - claims {object} - claims parameter (see claims in OIDC Core 1.0), rejected claims
      *     are, in addition, pushed in as an Array of Strings in the `rejected` property.
-     * - extra {object} - extra claims returned by the extraAccessTokenClaims helper
+     * - extra {object} - extra claims returned by the extraTokenClaims helper
      * - codeChallenge {string} - client provided PKCE code_challenge value
      * - codeChallengeMethod {string} - client provided PKCE code_challenge_method value
      * - sessionUid {string} - uid of a session this token stems from

@@ -3,7 +3,7 @@ const merge = require('lodash/merge');
 
 const config = cloneDeep(require('../default.config'));
 
-config.extraAccessTokenClaims = () => ({ foo: 'bar' });
+config.extraTokenClaims = () => ({ foo: 'bar' });
 merge(config.features, {
   registration: {
     initialAccessToken: true,

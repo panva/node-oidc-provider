@@ -147,7 +147,7 @@ const provider = new Provider('https://op.example.com', {
     },
   },
   extraParams: ['foo', 'bar', 'baz'],
-  async extraAccessTokenClaims(ctx, token) {
+  async extraTokenClaims(ctx, token) {
     ctx.oidc.issuer.substring(0);
     token.jti.substring(0);
 

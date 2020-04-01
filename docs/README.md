@@ -462,7 +462,7 @@ location / {
 - [cookies](#cookies)
 - [discovery](#discovery)
 - [expiresWithSession](#expireswithsession)
-- [extraAccessTokenClaims](#extraaccesstokenclaims)
+- [extraTokenClaims](#extratokenclaims)
 - [extraClientMetadata](#extraclientmetadata)
 - [extraParams](#extraparams)
 - [formats](#formats)
@@ -2152,32 +2152,6 @@ async function expiresWithSession(ctx, token) {
 }
 ```
 
-### extraAccessTokenClaims
-
-Function used to get additional access token claims when it is being issued. These claims will be available in your storage under property `extra`, returned by introspection as top level claims and pushed into `jwt`, and `jwt-ietf` formatted tokens as top level claims as well. Returned claims may not overwrite other top level claims.   
-  
-
-
-_**default value**_:
-```js
-async function extraAccessTokenClaims(ctx, token) {
-  return undefined;
-}
-```
-<a id="extra-access-token-claims-to-push-additional-claims-to-an-access-token"></a><details><summary>(Click to expand) To push additional claims to an Access Token
-</summary><br>
-
-```js
-{
-  extraAccessTokenClaims(ctx, token) {
-    return {
-      'urn:oidc-provider:example:foo': 'bar',
-    };
-  }
-}
-```
-</details>
-
 ### extraClientMetadata
 
 Allows for custom client metadata to be defined, validated, manipulated as well as for existing property validations to be extended. Existing properties are snakeCased on a Client instance (e.g. `client.redirectUris`), new properties (defined by this configuration) will be avaialable with their names verbatim (e.g. `client['urn:example:client:my-property']`)  
@@ -2269,6 +2243,32 @@ _**default value**_:
 []
 ```
 
+### extraTokenClaims
+
+Function used to get additional access token claims when it is being issued. These claims will be available in your storage under property `extra`, returned by introspection as top level claims and pushed into `jwt`, and `jwt-ietf` formatted tokens as top level claims as well. Returned claims may not overwrite other top level claims.   
+  
+
+
+_**default value**_:
+```js
+async function extraTokenClaims(ctx, token) {
+  return undefined;
+}
+```
+<a id="extra-token-claims-to-push-additional-claims-to-an-access-token"></a><details><summary>(Click to expand) To push additional claims to an Access Token
+</summary><br>
+
+```js
+{
+  extraTokenClaims(ctx, token) {
+    return {
+      'urn:oidc-provider:example:foo': 'bar',
+    };
+  }
+}
+```
+</details>
+
 ### formats
 
 This option allows to configure the token value format. The different values change how a client-facing token value is generated.   
@@ -2318,7 +2318,7 @@ Configure `formats`:
 
 ### formats.customizers
 
-Functions used before signing a structured Access Token of a given type, such as a JWT one. Customizing here only changes the structured Access Token, not your storage, introspection or anything else. For such extras use [`extraAccessTokenClaims`](#extraaccesstokenclaims) instead.   
+Functions used before signing a structured Access Token of a given type, such as a JWT one. Customizing here only changes the structured Access Token, not your storage, introspection or anything else. For such extras use [`extraTokenClaims`](#extratokenclaims) instead.   
   
 
 

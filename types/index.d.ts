@@ -967,7 +967,7 @@ export interface Configuration {
     };
   };
 
-  extraAccessTokenClaims?: (ctx: KoaContextWithOIDC, token: AccessToken | ClientCredentials) => CanBePromise<AnyObject | void | undefined> ;
+  extraTokenClaims?: (ctx: KoaContextWithOIDC, token: AccessToken | ClientCredentials) => CanBePromise<AnyObject | void | undefined> ;
 
   formats?: {
     AccessToken?: AccessTokenFormatFunction | TokenFormat;
