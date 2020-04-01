@@ -1041,7 +1041,7 @@ async function logoutPendingSource(ctx, frames, postLogoutRedirectUri) {
 
 ### features.ietfJWTAccessTokenProfile
 
-[draft-ietf-oauth-access-token-jwt-03](https://tools.ietf.org/html/draft-ietf-oauth-access-token-jwt-03) - JSON Web Token (JWT) Profile for OAuth 2.0 Access Tokens  
+[draft-ietf-oauth-access-token-jwt-05](https://tools.ietf.org/html/draft-ietf-oauth-access-token-jwt-05) - JSON Web Token (JWT) Profile for OAuth 2.0 Access Tokens  
 
 Enables the use of `jwt-ietf` JWT Access Token format   
   
@@ -2155,7 +2155,7 @@ _**default value**_:
 This option allows to configure the token serialization format. The different values change how a client-facing token value is generated as well as what properties get sent to the adapter for storage.
  - `opaque` (default) formatted tokens store every property as a root property in your adapter
  - `jwt` formatted tokens are issued as JWTs and stored the same as `opaque` only with additional property `jwt`. See `formats.jwtAccessTokenSigningAlg` for resolving the JWT Access Token signing algorithm. Note this is a proprietary format that will eventually get deprecated in favour of the 'jwt-ietf' value (once it gets stable and close to being an RFC)
- - `jwt-ietf` formatted tokens are issued as JWTs and stored the same as `opaque` only with additional property `jwt-ietf`. See `formats.jwtAccessTokenSigningAlg` for resolving the JWT Access Token signing algorithm. This is an implementation of [JSON Web Token (JWT) Profile for OAuth 2.0 Access Tokens](https://tools.ietf.org/html/draft-ietf-oauth-access-token-jwt-02) draft and to enable it you need to enable `features.ietfJWTAccessTokenProfile`. 'jwt-ietf' value (once it gets stable and close to being an RFC)
+ - `jwt-ietf` formatted tokens are issued as JWTs and stored the same as `opaque` only with additional property `jwt-ietf`. See `formats.jwtAccessTokenSigningAlg` for resolving the JWT Access Token signing algorithm. This is an implementation of [JSON Web Token (JWT) Profile for OAuth 2.0 Access Tokens](https://tools.ietf.org/html/draft-ietf-oauth-access-token-jwt-05) draft and to enable it you need to enable `features.ietfJWTAccessTokenProfile`. 'jwt-ietf' value (once it gets stable and close to being an RFC)
  - `paseto` formatted tokens are issued as v2.public PASETOs and stored the same as `opaque` only with additional property `paseto`. The server must have an `OKP Ed25519` key available to sign with else it will throw a server error. PASETOs are also allowed to only have a single audience, if the token's "aud" resolves with more than one the server will throw a server error. **This format is only supported in node runtime >= 12.0.0**
  - the value may also be a function dynamically determining the format (returning either `jwt`, `jwt-ietf`, `paseto` or `opaque` depending on the token itself)   
   

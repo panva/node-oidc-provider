@@ -38,7 +38,7 @@ enabled by default, check the configuration section on how to enable them.
 - [RFC8705 - OAuth 2.0 Mutual TLS Client Authentication and Certificate Bound Access Tokens (MTLS)][mtls]
 
 The following draft specifications are implemented by oidc-provider.
-- [JSON Web Token (JWT) Profile for OAuth 2.0 Access Tokens - draft 03][jwt-at]
+- [JSON Web Token (JWT) Profile for OAuth 2.0 Access Tokens - draft 05][jwt-at]
 - [JWT Response for OAuth Token Introspection - draft 08][jwt-introspection]
 - [JWT Secured Authorization Response Mode for OAuth 2.0 (JARM) - draft 02][jarm]
 - [OAuth 2.0 Demonstration of Proof-of-Possession at the Application Layer (DPoP) - individual draft 04][dpop]
@@ -172,7 +172,7 @@ See the list of available emitted [event names](/docs/events.md) and their descr
 [dpop]: https://tools.ietf.org/html/draft-fett-oauth-dpop-04
 [resource-indicators]: https://tools.ietf.org/html/draft-ietf-oauth-resource-indicators-08
 [jarm]: https://openid.net/specs/openid-financial-api-jarm-wd-02.html
-[jwt-at]: https://tools.ietf.org/html/draft-ietf-oauth-access-token-jwt-03
+[jwt-at]: https://tools.ietf.org/html/draft-ietf-oauth-access-token-jwt-05
 [support-sponsor]: https://github.com/sponsors/panva
 [par]: https://tools.ietf.org/html/draft-ietf-oauth-par-01
 [secp256k1]: https://tools.ietf.org/html/draft-ietf-cose-webauthn-algorithms-05
