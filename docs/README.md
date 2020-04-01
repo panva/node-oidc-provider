@@ -2288,7 +2288,7 @@ _**default value**_:
     'jwt-ietf': undefined,
     jwt: undefined
   },
-  jwtAccessTokenSigningAlg: [AsyncFunction: jwtAccessTokenSigningAlg] // see expanded details below
+  tokenSigningAlg: [AsyncFunction: tokenSigningAlg] // see expanded details below
 }
 ```
 <a id="formats-to-enable-jwt-access-tokens"></a><details><summary>(Click to expand) To enable JWT Access Tokens</summary><br>
@@ -2382,14 +2382,14 @@ _**default value**_:
 ```
 </details>
 
-### formats.jwtAccessTokenSigningAlg
+### formats.tokenSigningAlg
 
 Function used to resolve a JWT Access Token signing algorithm. The resolved algorithm must be an asymmetric one supported by the provider's keys in jwks.  
 
 
 _**default value**_:
 ```js
-async function jwtAccessTokenSigningAlg(ctx, token, client) {
+async function tokenSigningAlg(ctx, token, client) {
   if (client && client.idTokenSignedResponseAlg !== 'none' && !client.idTokenSignedResponseAlg.startsWith('HS')) {
     return client.idTokenSignedResponseAlg;
   }

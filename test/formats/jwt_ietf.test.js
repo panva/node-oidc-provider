@@ -229,7 +229,7 @@ if (FORMAT === 'jwt-ietf') {
     describe('invalid signing alg resolved', () => {
       ['none', 'HS256', 'HS384', 'HS512'].forEach((alg) => {
         it(`throws an Error when ${alg} is resolved`, async function () {
-          i(this.provider).configuration('formats').jwtAccessTokenSigningAlg = async () => alg;
+          i(this.provider).configuration('formats').tokenSigningAlg = async () => alg;
           const client = await this.provider.Client.find(clientId);
           const token = new this.provider.AccessToken({ client, ...fullPayload });
           try {
@@ -243,7 +243,7 @@ if (FORMAT === 'jwt-ietf') {
       });
 
       it('throws an Error when unsupported provider keystore alg is resolved', async function () {
-        i(this.provider).configuration('formats').jwtAccessTokenSigningAlg = async () => 'ES384';
+        i(this.provider).configuration('formats').tokenSigningAlg = async () => 'ES384';
         const client = await this.provider.Client.find(clientId);
         const token = new this.provider.AccessToken({ client, ...fullPayload });
         try {

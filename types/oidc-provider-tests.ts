@@ -7,7 +7,7 @@ new Provider('https://op.example.com');
 new Provider('https://op.example.com', {
   rotateRefreshToken: true,
   formats: {
-    jwtAccessTokenSigningAlg() {
+    tokenSigningAlg() {
       return 'ES384';
     },
     customizers: {
@@ -160,7 +160,7 @@ const provider = new Provider('https://op.example.com', {
       clientCredentials.iat.toFixed();
       return 'opaque';
     },
-    async jwtAccessTokenSigningAlg(ctx, token, client): Promise<AsymmetricSigningAlgorithm> {
+    async tokenSigningAlg(ctx, token, client): Promise<AsymmetricSigningAlgorithm> {
       ctx.oidc.issuer.substring(0);
       token.iat.toFixed();
       client.clientId.substring(0);
