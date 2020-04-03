@@ -2,6 +2,15 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [6.23.4](https://github.com/panva/node-oidc-provider/compare/v6.23.3...v6.23.4) (2020-04-03)
+
+
+### Bug Fixes
+
+* **typescript:** added revokeByGrantId types to appropriate models ([883b038](https://github.com/panva/node-oidc-provider/commit/883b0389470f5658aea4da313dac17c487e485c7))
+
+
+
 ## [6.23.3](https://github.com/panva/node-oidc-provider/compare/v6.23.2...v6.23.3) (2020-03-22)
 
 
