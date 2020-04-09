@@ -2,6 +2,15 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [6.23.5](https://github.com/panva/node-oidc-provider/compare/v6.23.4...v6.23.5) (2020-04-09)
+
+
+### Bug Fixes
+
+* revert "chore: update tree router" ([13e4142](https://github.com/panva/node-oidc-provider/commit/13e4142b57bc6c9961479d1af15a6612cba7a760)), closes [#696](https://github.com/panva/node-oidc-provider/issues/696)
+
+
+
 ## [6.23.4](https://github.com/panva/node-oidc-provider/compare/v6.23.3...v6.23.4) (2020-04-03)
 
 
