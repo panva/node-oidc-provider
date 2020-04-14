@@ -2229,7 +2229,7 @@ _**default value**_:
 ```js
 {
   customizers: {
-    jwt(ctx, token, jwt) {
+    async jwt(ctx, token, jwt) {
       jwt.payload.foo = 'bar';
     }
   }
@@ -2242,7 +2242,7 @@ _**default value**_:
 ```js
 {
   customizers: {
-    jwt(ctx, token, jwt) {
+    async jwt(ctx, token, jwt) {
       jwt.header = { foo: 'bar' };
     }
   }
@@ -2255,7 +2255,7 @@ _**default value**_:
 ```js
 {
   customizers: {
-    ['jwt-ietf'](ctx, token, jwt) {
+    async ['jwt-ietf'](ctx, token, jwt) {
       jwt.payload.foo = 'bar';
     }
   }
@@ -2268,7 +2268,7 @@ _**default value**_:
 ```js
 {
   customizers: {
-    ['jwt-ietf'](ctx, token, jwt) {
+    async ['jwt-ietf'](ctx, token, jwt) {
       jwt.header = { foo: 'bar' };
     }
   }
