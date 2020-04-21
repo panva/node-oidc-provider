@@ -1,7 +1,7 @@
 ---
 name: 🐞Bug report
 about: Something is not working as I think it should be
-labels: bug, triage
+labels: triage
 
 ---
 
