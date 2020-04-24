@@ -1506,6 +1506,13 @@ declare class DefaultPolicy extends Array<interactionPolicy.Prompt> {
   add(prompt: interactionPolicy.Prompt, index?: number): void;
 }
 
+declare class Checks extends Array<interactionPolicy.Check> {
+  get(name: string): interactionPolicy.Check;
+  remove(name: string): void;
+  clear(): void;
+  add(prompt: interactionPolicy.Check, index?: number): void;
+}
+
 export namespace interactionPolicy {
   class Check {
     constructor(
@@ -1536,7 +1543,7 @@ export namespace interactionPolicy {
     name: string;
     requestable: boolean;
     details?: (ctx: KoaContextWithOIDC) => Promise<AnyObject>;
-    checks: Check[];
+    checks: Checks;
   }
 
   function base(): DefaultPolicy;
