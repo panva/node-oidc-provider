@@ -1,6 +1,6 @@
 const store = new Map();
 const logins = new Map();
-const nanoid = require('nanoid');
+const { nanoid } = require('nanoid');
 
 class Account {
   constructor(id, profile) {
