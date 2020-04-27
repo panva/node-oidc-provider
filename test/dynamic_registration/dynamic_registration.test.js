@@ -198,13 +198,17 @@ describe('registration features', () => {
             .expect(201);
         });
 
-        it('allows reg calls with the access tokens as a Bearer token [post]', function () {
+        it('fails reg calls with the access tokens in application/json body', function () {
           return this.agent.post('/reg')
             .send({
               redirect_uris: ['https://client.example.com/cb'],
               access_token: 'foobar',
             })
-            .expect(201);
+            .expect(400)
+            .expect({
+              error: 'invalid_request',
+              error_description: 'no access token provided',
+            });
         });
 
         it('allows reg calls with the access tokens as a Bearer token [header]', function () {
@@ -269,13 +273,17 @@ describe('registration features', () => {
             .expect(201);
         });
 
-        it('allows reg calls with the access tokens as a Bearer token [post]', function () {
+        it('fails reg calls with the access tokens in application/json body', function () {
           return this.agent.post('/reg')
             .send({
               redirect_uris: ['https://client.example.com/cb'],
               access_token: this.token,
             })
-            .expect(201);
+            .expect(400)
+            .expect({
+              error: 'invalid_request',
+              error_description: 'no access token provided',
+            });
         });
 
         it('allows reg calls with the access tokens as a Bearer token [header]', function () {
