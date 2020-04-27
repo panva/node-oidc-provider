@@ -2,6 +2,23 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+# [6.24.0](https://github.com/panva/node-oidc-provider/compare/v6.23.5...v6.24.0) (2020-04-27)
+
+
+### Bug Fixes
+
+* **typescript:** added types of prompt.checks in interaction policy ([3b97bde](https://github.com/panva/node-oidc-provider/commit/3b97bdef30e287893ba28c9893b9638efde9eb59))
+
+
+### Features
+
+* **typescript:** export the DefaultPolicy interface ([b36190b](https://github.com/panva/node-oidc-provider/commit/b36190b9f3e93634d42dfd7fd7ab6ba212465231)), closes [#707](https://github.com/panva/node-oidc-provider/issues/707)
+* add server-wide policy configuration on accepting tokens in query ([90b400a](https://github.com/panva/node-oidc-provider/commit/90b400a2ee8954b8e965752df97b19ddeb60dcea))
+* introspection response allowedPolicy helper function added ([e59cc66](https://github.com/panva/node-oidc-provider/commit/e59cc6600bfa9acf96f491f9e2ea9345c7c664a2)), closes [#642](https://github.com/panva/node-oidc-provider/issues/642)
+* update features.jwtIntrospection to draft 09 ([219e8c3](https://github.com/panva/node-oidc-provider/commit/219e8c3df230737c175e9fb9b318c4bd1c0ef011))
+
+
+
 ## [6.23.5](https://github.com/panva/node-oidc-provider/compare/v6.23.4...v6.23.5) (2020-04-09)
 
 
