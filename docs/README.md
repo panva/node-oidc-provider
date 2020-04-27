@@ -1807,6 +1807,17 @@ function scriptNonce(ctx) {
 
 </details>
 
+### acceptQueryParamAccessTokens
+
+Several OAuth 2.0 / OIDC profiles prohibit the use of query strings to carry access tokens. This setting either allows (true) or prohibits (false) that mechanism to be used.   
+  
+
+
+_**default value**_:
+```js
+true
+```
+
 ### acrValues
 
 Array of strings, the Authentication Context Class References that OP supports.  

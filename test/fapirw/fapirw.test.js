@@ -12,11 +12,11 @@ describe('Financial-grade API - Part 2: Read and Write API Security Profile beha
         .expect('x-fapi-interaction-id', 'b2bef873-2fd8-4fcd-943b-caafcd0b1c3b');
     });
 
-    it('does not recognize query string bearer token', async function () {
+    it('does not allow query string bearer token', async function () {
       const at = await new this.provider.AccessToken({ clientId: 'client', accountId: 'account', scope: 'openid' }).save();
       await this.agent.get('/me')
         .query({ access_token: at })
-        .expect(this.failWith(400, 'invalid_request', 'no access token provided'));
+        .expect(this.failWith(400, 'invalid_request', 'access tokens must not be provided via query parameter'));
 
       await this.agent.get('/me')
         .auth(at, { type: 'bearer' })
