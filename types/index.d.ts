@@ -233,7 +233,7 @@ declare class Session extends BaseModel {
   grantIdFor(clientId: string): string;
   grantIdFor(clientId: string, value: string): void;
   metaFor(clientId: string): AnyObject | void;
-  metaFor(clientId: string, value: string): void;
+  metaFor(clientId: string, value: AnyObject): void;
   acceptedScopesFor(clientId: string): Set<string>;
   acceptedClaimsFor(clientId: string): Set<string>;
   promptedScopesFor(clientId: string): Set<string>;
