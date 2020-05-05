@@ -934,7 +934,7 @@ export interface Configuration {
     dPoP?: {
       enabled?: boolean,
       iatTolerance?: number,
-      ack?: 'id-03' | 'individual-draft-03' | 'individual-draft-04' | 'draft-00'
+      ack?: 'draft-01'
     },
 
     secp256k1?: {
@@ -1575,6 +1575,9 @@ export namespace errors {
     constructor(description?: string, detail?: string);
   }
   class InvalidClient extends OIDCProviderError {
+    constructor(description?: string, detail?: string);
+  }
+  class InvalidDpopProof extends OIDCProviderError {
     constructor(description?: string, detail?: string);
   }
   class InvalidClientAuth extends OIDCProviderError {
