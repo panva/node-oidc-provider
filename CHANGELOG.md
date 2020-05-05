@@ -2,6 +2,33 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+# [6.25.0](https://github.com/panva/node-oidc-provider/compare/v6.24.0...v6.25.0) (2020-05-05)
+
+
+### Bug Fixes
+
+* **typescript:** fix metaFor "value" argument type ([0b31b69](https://github.com/panva/node-oidc-provider/commit/0b31b690baa6a93e2c308990d5a11edcca4e2cd3)), closes [#711](https://github.com/panva/node-oidc-provider/issues/711)
+
+
+### Features
+
+* update DPoP implementation to ietf draft 01 ([330d13c](https://github.com/panva/node-oidc-provider/commit/330d13cfe2eee22d1745909e90cab738e71e8f5d))
+
+
+### BREAKING CHANGES
+
+* DPoP implementation updated to
+[draft-ietf-oauth-dpop-01](https://tools.ietf.org/html/draft-ietf-oauth-dpop-01)
+
+Note: Updates to draft specification versions are released as MINOR
+library versions, if you utilize these specification implementations
+consider using the tilde `~` operator in your package.json since
+breaking changes may be introduced as part of these version updates.
+Alternatively, [acknowledge](/docs/README.md#features) the version and
+be notified of breaking changes as part of your CI.
+
+
+
 # [6.24.0](https://github.com/panva/node-oidc-provider/compare/v6.23.5...v6.24.0) (2020-04-27)
 
 
