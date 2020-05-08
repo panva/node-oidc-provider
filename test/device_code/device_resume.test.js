@@ -392,7 +392,7 @@ describe('device interaction resume /device/:user_code/:uid/', () => {
         await this.agent.get(path)
           .expect(200)
           .expect('content-type', 'text/html; charset=utf-8')
-          .expect(/<body onload="javascript:document\.forms\[0]\.submit\(\)"/)
+          .expect(/<body>/)
           .expect(/<input type="hidden" name="logout" value="yes"\/>/)
           .expect(({ text }) => {
             const { state } = this.getSession();
