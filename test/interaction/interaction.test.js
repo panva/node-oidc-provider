@@ -394,7 +394,7 @@ describe('resume after interaction', () => {
       await this.agent.get('/auth/resume')
         .expect(200)
         .expect('content-type', 'text/html; charset=utf-8')
-        .expect(/<body>/)
+        .expect(/document.addEventListener\('DOMContentLoaded', function \(\) { document.forms\[0\].submit\(\) }\);/)
         .expect(/<input type="hidden" name="logout" value="yes"\/>/)
         .expect(({ text }) => {
           const { state } = this.getSession();
