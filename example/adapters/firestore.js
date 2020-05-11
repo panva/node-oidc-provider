@@ -6,7 +6,7 @@
 // 5- import the library using`import * as admin from 'firebase-admin'` in the server file.
 // 6- Call `admin.initializeApp()` in the server file to establish the connection. Make sure that it is called only once.
 
-// If you need help please reach out to @hadyrashwan on Github or  @h2rashwan on twitter.
+// Please contact me @h
 
 const admin = require('firebase-admin');
 
