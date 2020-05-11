@@ -512,7 +512,7 @@ describe('resume after consent', () => {
       await this.agent.get('/auth/resume')
         .expect(200)
         .expect('content-type', 'text/html; charset=utf-8')
-        .expect(/<body onload="javascript:document\.forms\[0]\.submit\(\)"/)
+        .expect(/document.addEventListener\('DOMContentLoaded', function \(\) { document.forms\[0\].submit\(\) }\);/)
         .expect(/<input type="hidden" name="logout" value="yes"\/>/)
         .expect(({ text }) => {
           ({ state } = this.getSession());

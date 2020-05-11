@@ -31,7 +31,7 @@ describe('GET code_verification endpoint', () => {
         .query({ user_code: '123-456-789' })
         .expect(200)
         .expect('content-type', 'text/html; charset=utf-8')
-        .expect(/<body onload="javascript:document\.forms\[0]\.submit\(\)"/)
+        .expect(/document.addEventListener\('DOMContentLoaded', function \(\) { document.forms\[0\].submit\(\) }\);/)
         .expect(({ text }) => {
           ({ state: { secret } } = this.getSession());
           expect(text).to.match(new RegExp(`input type="hidden" name="xsrf" value="${secret}"`));
