@@ -28,8 +28,7 @@ if (!formats.length) {
 const passed = [];
 
 const { utils: { lookupFiles } } = Mocha;
-// const files = lookupFiles('test/**/*.test.js', ['js'], true);
-const files = ["test/device_code/code_verification_endpoint.test.js"];
+const files = lookupFiles('test/**/*.test.js', ['js'], true);
 class SuiteFailedError extends Error {}
 
 const { info, warn } = console;
