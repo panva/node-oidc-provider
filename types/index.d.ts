@@ -565,7 +565,7 @@ declare class ClientKeystore {
   toJWKS(private?: boolean): jose.JSONWebKeySet;
 }
 
-declare class Client {
+export class Client {
   responseTypeAllowed(type: ResponseType): boolean;
   grantTypeAllowed(type: string): boolean;
   redirectUriAllowed(redirectUri: string): boolean;
