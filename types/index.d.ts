@@ -1033,6 +1033,11 @@ export interface Configuration {
 
   pkceMethods?: PKCEMethods[];
 
+  pkce?: {
+    methods: PKCEMethods[];
+    required?: (ctx: KoaContextWithOIDC, client: Client) => boolean;
+  };
+
   routes?: {
     authorization?: string;
     check_session?: string;

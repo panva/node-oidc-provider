@@ -198,6 +198,14 @@ const provider = new Provider('https://op.example.com', {
   },
   responseTypes: ['code', 'code id_token', 'none'],
   pkceMethods: ['plain', 'S256'],
+  pkce: {
+    methods: ['plain', 'S256'],
+    required(ctx, client) {
+      ctx.oidc.issuer.substring(0);
+      client.clientId.substring(0);
+      return true;
+    }
+  },
   routes: {
     authorization: '/auth',
     check_session: '/session/check',

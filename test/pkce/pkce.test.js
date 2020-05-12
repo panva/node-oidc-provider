@@ -133,7 +133,7 @@ describe('PKCE RFC7636', () => {
         .query(auth)
         .expect(auth.validatePresence(['error', 'error_description', 'state']))
         .expect(auth.validateError('invalid_request'))
-        .expect(auth.validateErrorDescription('PKCE must be used by native clients'));
+        .expect(auth.validateErrorDescription('PKCE must be used for this request'));
     });
 
     it('forces native clients using hybrid flow to use pkce', function () {
@@ -148,7 +148,7 @@ describe('PKCE RFC7636', () => {
         .expect(auth.validateFragment)
         .expect(auth.validatePresence(['error', 'error_description', 'state']))
         .expect(auth.validateError('invalid_request'))
-        .expect(auth.validateErrorDescription('PKCE must be used by native clients'));
+        .expect(auth.validateErrorDescription('PKCE must be used for this request'));
     });
 
     bootstrap.passInteractionChecks('native_client_prompt', () => {
@@ -168,11 +168,11 @@ describe('PKCE RFC7636', () => {
 
     describe('only S256 is supported', () => {
       before(function () {
-        i(this.provider).configuration().pkceMethods = ['S256'];
+        i(this.provider).configuration().pkce.methods = ['S256'];
       });
 
       after(function () {
-        i(this.provider).configuration().pkceMethods = ['plain', 'S256'];
+        i(this.provider).configuration().pkce.methods = ['plain', 'S256'];
       });
 
       it('fails when client does not provide challenge method', function () {
@@ -433,11 +433,11 @@ describe('PKCE RFC7636', () => {
 
     describe('only S256 is supported', () => {
       before(function () {
-        i(this.provider).configuration().pkceMethods = ['S256'];
+        i(this.provider).configuration().pkce.methods = ['S256'];
       });
 
       after(function () {
-        i(this.provider).configuration().pkceMethods = ['plain', 'S256'];
+        i(this.provider).configuration().pkce.methods = ['plain', 'S256'];
       });
 
       it('passes if S256 is used', async function () {

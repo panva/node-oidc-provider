@@ -494,7 +494,7 @@ location / {
 - [issueRefreshToken](#issuerefreshtoken)
 - [logoutSource](#logoutsource)
 - [pairwiseIdentifier](#pairwiseidentifier)
-- [pkceMethods](#pkcemethods)
+- [pkce](#pkce)
 - [postLogoutSuccessSource](#postlogoutsuccesssource)
 - [renderError](#rendererror)
 - [responseTypes](#responsetypes)
@@ -2819,7 +2819,12 @@ async function pairwiseIdentifier(ctx, accountId, client) {
 }
 ```
 
-### pkceMethods
+### pkce
+
+PKCE configuration such as available methods and policy check on required use of PKCE  
+
+
+### pkce.methods
 
 fine-tune the supported code challenge methods. Supported values are
  - `S256`
@@ -2831,6 +2836,20 @@ _**default value**_:
 [
   'S256'
 ]
+```
+
+### pkce.required
+
+Configures if and when the OP requires clients to use PKCE. This helper is called whenever an authorization request lacks the code_challenge parameter. Return
+ - `false` to allow the request to continue without PKCE
+ - `true` to abort the request  
+
+
+_**default value**_:
+```js
+function required(ctx, client) {
+  return client.applicationType === 'native';
+}
 ```
 
 ### postLogoutSuccessSource
