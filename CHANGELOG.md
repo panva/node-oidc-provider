@@ -2,6 +2,20 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+# [6.26.0](https://github.com/panva/node-oidc-provider/compare/v6.25.0...v6.26.0) (2020-05-12)
+
+
+### Bug Fixes
+
+* A192CBC-HS384 and A256CBC-HS512 direct encryption key derivation ([ead23a7](https://github.com/panva/node-oidc-provider/commit/ead23a76ea3539618c62ecd8974d55e5c76ebcda))
+
+
+### Features
+
+* helper to define PKCE use requirement ([0c2e208](https://github.com/panva/node-oidc-provider/commit/0c2e208f928dbe7960ccfcc6516b1730a2ff83c0))
+
+
+
 # [6.25.0](https://github.com/panva/node-oidc-provider/compare/v6.24.0...v6.25.0) (2020-05-05)
 
 
