@@ -8,7 +8,6 @@
  * 6- Call `admin.initializeApp()` in the server file to establish the connection.
  *
  * Reach out to @hadyrashwan <https://github.com/hadyrashwan> for questions on this community example.
- *
  */
 
 const undefinedFirestoreValue = 'custom.type.firestore'; // A work around as firestore does not support undefined.
