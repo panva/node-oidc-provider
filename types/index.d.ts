@@ -1505,7 +1505,7 @@ export class Provider extends events.EventEmitter {
 export default Provider;
 
 declare class Checks extends Array<interactionPolicy.Check> {
-  get(name: string): interactionPolicy.Check;
+  get(name: string): interactionPolicy.Check | undefined;
   remove(name: string): void;
   clear(): void;
   add(prompt: interactionPolicy.Check, index?: number): void;
@@ -1513,7 +1513,7 @@ declare class Checks extends Array<interactionPolicy.Check> {
 
 export namespace interactionPolicy {
   interface DefaultPolicy extends Array<interactionPolicy.Prompt> {
-    get(name: string): interactionPolicy.Prompt;
+    get(name: string): interactionPolicy.Prompt | undefined;
     remove(name: string): void;
     clear(): void;
     add(prompt: interactionPolicy.Prompt, index?: number): void;
