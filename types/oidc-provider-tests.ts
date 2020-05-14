@@ -238,7 +238,6 @@ const provider = new Provider('https://op.example.com', {
     ],
   },
   responseTypes: ['code', 'code id_token', 'none'],
-  pkceMethods: ['plain', 'S256'],
   pkce: {
     methods: ['plain', 'S256'],
     required(ctx, client) {

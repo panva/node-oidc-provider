@@ -171,45 +171,8 @@ describe('Provider configuration', () => {
     });
   });
 
-  describe('pkceMethods', () => {
-    it('validates configuration pkceMethods members', () => {
-      const throws = [
-        () => {
-          new Provider('http://localhost:3000', {
-            pkceMethods: ['S256', 'plain', 'foobar'],
-          });
-        },
-        () => {
-          new Provider('http://localhost:3000', {
-            pkceMethods: ['foobar'],
-          });
-        },
-      ];
-
-      throws.forEach((fn) => {
-        expect(fn).to.throw('only plain and S256 code challenge methods are supported');
-      });
-    });
-
-    it('validates configuration pkceMethods presence', () => {
-      expect(() => {
-        new Provider('http://localhost:3000', {
-          pkceMethods: [],
-        });
-      }).to.throw('pkce.methods must not be empty');
-    });
-
-    it('validates configuration pkceMethods type', () => {
-      expect(() => {
-        new Provider('http://localhost:3000', {
-          pkceMethods: 'public',
-        });
-      }).to.throw('pkce.methods must be an array');
-    });
-  });
-
   describe('pkce.methods', () => {
-    it('validates configuration pkceMethods members', () => {
+    it('validates configuration pkce.methods members', () => {
       const throws = [
         () => {
           new Provider('http://localhost:3000', {

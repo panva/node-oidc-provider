@@ -1035,8 +1035,6 @@ export interface Configuration {
 
   responseTypes?: ResponseType[];
 
-  pkceMethods?: PKCEMethods[];
-
   pkce?: {
     methods: PKCEMethods[];
     required?: (ctx: KoaContextWithOIDC, client: Client) => boolean;
