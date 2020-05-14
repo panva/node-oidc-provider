@@ -1,10 +1,15 @@
-// Setup firebase-admin for use in nodejs
-// 1- Add the firebase-admin npm package.
-// 2- Go to https://console.firebase.google.com/ and create a project if you do not have an existing one.
-// 3- Get the secret from https://console.firebase.google.com/u/0/project/{PROJECT_ID}/settings/serviceaccounts/adminsdk.
-// 4- Set GOOGLE_APPLICATION_CREDENTIALS environment variable to the path of the JSON file.
-// 5- import the library using`import * as admin from 'firebase-admin'` in the server file.
-// 6- Call `admin.initializeApp()` in the server file to establish the connection.
+/*
+ * Setup firebase-admin for use in nodejs
+ * 1- Add the firebase-admin npm package.
+ * 2- Go to https://console.firebase.google.com/ and create a project if you do not have an existing one.
+ * 3- Get the secret from https://console.firebase.google.com/u/0/project/{PROJECT_ID}/settings/serviceaccounts/adminsdk.
+ * 4- Set GOOGLE_APPLICATION_CREDENTIALS environment variable to the path of the JSON file.
+ * 5- import the library using`import * as admin from 'firebase-admin'` in the server file.
+ * 6- Call `admin.initializeApp()` in the server file to establish the connection.
+ *
+ * Reach out to @hadyrashwan <https://github.com/hadyrashwan> for questions on this community example.
+ *
+ */
 
 const undefinedFirestoreValue = 'custom.type.firestore'; // A work around as firestore does not support undefined.
 const namePrefix = 'oidc_library';
