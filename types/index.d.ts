@@ -237,13 +237,13 @@ declare class Session extends BaseModel {
   acceptedScopesFor(clientId: string): Set<string>;
   acceptedClaimsFor(clientId: string): Set<string>;
   promptedScopesFor(clientId: string): Set<string>;
-  promptedScopesFor(clientId: string, scopes: string[]): void;
+  promptedScopesFor(clientId: string, scopes: string[] | Set<string>): void;
   promptedClaimsFor(clientId: string): Set<string>;
-  promptedClaimsFor(clientId: string, claims: string[]): void;
+  promptedClaimsFor(clientId: string, claims: string[] | Set<string>): void;
   rejectedScopesFor(clientId: string): Set<string>;
-  rejectedScopesFor(clientId: string, scopes: string[], replace?: boolean): void;
+  rejectedScopesFor(clientId: string, scopes: string[] | Set<string>, replace?: boolean): void;
   rejectedClaimsFor(clientId: string): Set<string>;
-  rejectedClaimsFor(clientId: string, claims: string[], replace?: boolean): void;
+  rejectedClaimsFor(clientId: string, claims: string[] | Set<string>, replace?: boolean): void;
 
   save(ttl?: number): Promise<string>;
   destroy(): Promise<void>;
