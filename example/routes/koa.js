@@ -188,7 +188,7 @@ module.exports = (provider) => {
         prompts.add('login');
         interaction.params.prompt = [...prompts].join(' ');
       } else {
-        interaction.params.prompt = 'logout';
+        interaction.params.prompt = 'login';
       }
       await interaction.save();
     }
