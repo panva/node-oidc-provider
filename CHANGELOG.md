@@ -2,6 +2,16 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [6.26.1](https://github.com/panva/node-oidc-provider/compare/v6.26.0...v6.26.1) (2020-05-18)
+
+
+### Bug Fixes
+
+* **typescript:** claims/scopes as Set in rejected/prompted functions ([#719](https://github.com/panva/node-oidc-provider/issues/719)) ([950c21d](https://github.com/panva/node-oidc-provider/commit/950c21d909b84c9de915ed30cff4d6f1f7cc95f7))
+* **typescript:** undefined return for DefaultPolicy.get and Checks.get ([b61e9d8](https://github.com/panva/node-oidc-provider/commit/b61e9d886c3f5655374f2e70323fa272b5242adb))
+
+
+
 # [6.26.0](https://github.com/panva/node-oidc-provider/compare/v6.25.0...v6.26.0) (2020-05-12)
 
 
