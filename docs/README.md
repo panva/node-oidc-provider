@@ -2790,11 +2790,11 @@ Array of Client Authentication methods supported by this OP's Introspection Endp
 _**default value**_:
 ```js
 [
-  'none',
   'client_secret_basic',
   'client_secret_jwt',
   'client_secret_post',
-  'private_key_jwt'
+  'private_key_jwt',
+  'none'
 ]
 ```
 
@@ -2940,11 +2940,11 @@ Array of Client Authentication methods supported by this OP's Revocation Endpoin
 _**default value**_:
 ```js
 [
-  'none',
   'client_secret_basic',
   'client_secret_jwt',
   'client_secret_post',
-  'private_key_jwt'
+  'private_key_jwt',
+  'none'
 ]
 ```
 
@@ -3037,11 +3037,11 @@ Array of Client Authentication methods supported by this OP's Token Endpoint
 _**default value**_:
 ```js
 [
-  'none',
   'client_secret_basic',
   'client_secret_jwt',
   'client_secret_post',
-  'private_key_jwt'
+  'private_key_jwt',
+  'none'
 ]
 ```
 <a id="token-endpoint-auth-methods-supported-values-list"></a><details><summary>(Click to expand) Supported values list
