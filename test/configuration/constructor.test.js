@@ -160,24 +160,11 @@ describe('Provider configuration', () => {
   });
 
   describe('secp256k1', () => {
-    it('checks that secp256k1 is enabled before enabling ES256K algorithm is supported', () => {
+    it('is supported', () => {
       expect(() => {
         new Provider('http://localhost:3000', {
           whitelistedJWA: {
             requestObjectSigningAlgValues: ['ES256K'],
-          },
-        });
-      }).to.throw('`features.secp256k1` must be enabled before enabling support for ES256K');
-
-      expect(() => {
-        new Provider('http://localhost:3000', {
-          whitelistedJWA: {
-            requestObjectSigningAlgValues: ['ES256K'],
-          },
-          features: {
-            secp256k1: {
-              enabled: true,
-            },
           },
         });
       }).not.to.throw();

@@ -22,7 +22,6 @@ describe('Client metadata validation', () => {
     DefaultProvider = new Provider('http://localhost', {
       jwks: global.keystore.toJWKS(true),
       whitelistedJWA: cloneDeep(whitelistedJWA),
-      features: { secp256k1: { enabled: true } },
     });
   });
 
@@ -32,7 +31,6 @@ describe('Client metadata validation', () => {
       provider = new Provider('http://localhost', merge({
         jwks: global.keystore.toJWKS(true),
         whitelistedJWA: cloneDeep(whitelistedJWA),
-        features: { secp256k1: { enabled: true } },
       }, configuration));
     } else {
       provider = DefaultProvider;

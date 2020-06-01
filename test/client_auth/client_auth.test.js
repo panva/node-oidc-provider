@@ -64,9 +64,6 @@ describe('client authentication options', () => {
           'client_secret_jwt',
           'client_secret_post',
         ],
-        features: {
-          secp256k1: { enabled: true },
-        },
         whitelistedJWA: cloneDeep(JWA),
       });
 
@@ -89,9 +86,6 @@ describe('client authentication options', () => {
           'client_secret_post',
           'private_key_jwt',
         ],
-        features: {
-          secp256k1: { enabled: true },
-        },
         whitelistedJWA: cloneDeep(JWA),
       });
 
@@ -123,9 +117,6 @@ describe('client authentication options', () => {
           'client_secret_post',
           'private_key_jwt',
         ],
-        features: {
-          secp256k1: { enabled: true },
-        },
         whitelistedJWA: cloneDeep(JWA),
       });
 

@@ -70,16 +70,12 @@ describe('configuration.jwks', () => {
     });
   });
 
-  it('checks that secp256k1 is enabled when adding secp256k1 keys', async () => {
+  it('supports secp256k1 keys', async () => {
     const ks = new jose.JWKS.KeyStore();
     await ks.generate('EC', 'secp256k1');
 
     expect(() => {
       new Provider('http://localhost', { jwks: ks.toJWKS(true) });
-    }).to.throw('`features.secp256k1` must be enabled before adding secp256k1 EC keys');
-
-    expect(() => {
-      new Provider('http://localhost', { jwks: ks.toJWKS(true), features: { secp256k1: { enabled: true } } });
     }).not.to.throw();
   });
 

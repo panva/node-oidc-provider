@@ -937,11 +937,6 @@ export interface Configuration {
       ack?: 'draft-01'
     },
 
-    secp256k1?: {
-      enabled?: boolean,
-      ack?: 'draft-03' | 'draft-04' | 'draft-05'
-    },
-
     sessionManagement?: {
       enabled?: boolean,
       keepHeaders?: boolean,

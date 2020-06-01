@@ -342,7 +342,6 @@ const provider = new Provider('https://op.example.com', {
     jwtIntrospection: { enabled: false, ack: 'draft-09' },
     jwtResponseModes: { enabled: false, ack: 2 },
     pushedAuthorizationRequests: { enabled: false, ack: 0 },
-    secp256k1: { enabled: false, ack: 'draft-03' },
     registration: {
       enabled: true,
       initialAccessToken: true,

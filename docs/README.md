@@ -470,7 +470,6 @@ location / {
   - [requestObjects](#featuresrequestobjects)
   - [resourceIndicators](#featuresresourceindicators)
   - [revocation](#featuresrevocation)
-  - [secp256k1](#featuressecp256k1)
   - [sessionManagement](#featuressessionmanagement)
   - [userinfo](#featuresuserinfo)
   - [webMessageResponseMode](#featureswebmessageresponsemode)
@@ -1690,20 +1689,6 @@ async function allowedPolicy(ctx, resources, client) {
 
 Enables Token Revocation   
   
-
-
-_**default value**_:
-```js
-{
-  enabled: false
-}
-```
-
-### features.secp256k1
-
-[html/draft-ietf-cose-webauthn-algorithms-05](https://tools.ietf.org/html/html/draft-ietf-cose-webauthn-algorithms-05) - Support for secp256k1 EC curve  
-
-Enables the use of ES256K algorithm in `whitelistedJWA` configuration as well as having an EC JWK with secp256k1 curve in the provider keystore.  
 
 
 _**default value**_:
