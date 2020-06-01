@@ -2,6 +2,33 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+# [6.27.0](https://github.com/panva/node-oidc-provider/compare/v6.26.1...v6.27.0) (2020-06-01)
+
+
+### Bug Fixes
+
+* allow any JSON numeric value for timestamp values for DPoP JWTs ([0700fde](https://github.com/panva/node-oidc-provider/commit/0700fde4e9fb6b4b0a718fb323d1e3d955a1be43))
+
+
+### Features
+
+* secp256k1 EC curve and ES256K JWS alg feature flag removed ([f74f6bd](https://github.com/panva/node-oidc-provider/commit/f74f6bdf3eea8b6e97c735b697e49779a70b4d1c))
+
+
+### BREAKING CHANGES
+
+* secp256k1 and ES256K have been registered in IANA a few
+days ago so the flag is not needed anymore.
+
+Note: Updates to draft specification versions are released as MINOR
+library versions, if you utilize these specification implementations
+consider using the tilde `~` operator in your package.json since
+breaking changes may be introduced as part of these version updates.
+Alternatively, [acknowledge](/docs/README.md#features) the version and
+be notified of breaking changes as part of your CI.
+
+
+
 ## [6.26.1](https://github.com/panva/node-oidc-provider/compare/v6.26.0...v6.26.1) (2020-05-18)
 
 
