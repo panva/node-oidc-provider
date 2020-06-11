@@ -254,7 +254,6 @@ module.exports = function testHelper(dir, {
         absolute = all;
       }
 
-
       return (response) => {
         const { query } = parse(response.headers.location, true);
         if (absolute) {

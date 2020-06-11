@@ -1,4 +1,3 @@
-
 const { readFileSync } = require('fs');
 const url = require('url');
 

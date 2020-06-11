@@ -14,7 +14,6 @@ const clientKey = {
 const rsaKeys = cloneDeep(mtlsKeys);
 rsaKeys.keys.splice(0, 1);
 
-
 config.tokenEndpointAuthMethods = [
   'none',
   'client_secret_basic',

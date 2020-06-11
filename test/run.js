@@ -10,7 +10,6 @@ const runtimeSupport = require('../lib/helpers/runtime_support');
 
 const FORMAT_REGEXP = /^--format=([\w-]+)$/;
 
-
 const formats = [];
 process.argv.forEach((arg) => {
   if (FORMAT_REGEXP.test(arg)) {
