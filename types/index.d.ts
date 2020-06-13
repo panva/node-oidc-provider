@@ -552,7 +552,7 @@ declare class IdToken {
   set(key: string, value: any): void;
   payload(): Promise<AnyObject>;
   issue(context?: { use: 'idtoken' | 'logout' | 'userinfo' | 'introspection' | 'authorization', expiresAt?: number }): Promise<string>;
-  validate(idToken: string, client: Client): Promise<{ header: AnyObject, payload: AnyObject }>;
+  static validate(idToken: string, client: Client): Promise<{ header: AnyObject, payload: AnyObject }>;
 }
 
 declare class ClientKeystore {
