@@ -1478,23 +1478,23 @@ export class Provider extends events.EventEmitter {
   prependOnceListener(event: 'server_error', listener: (ctx: KoaContextWithOIDC, err: Error) => void): this;
   // tslint:enable:unified-signatures
 
-  readonly Client: typeof Client;
-  readonly AccessToken: typeof AccessToken;
-  readonly InitialAccessToken: typeof InitialAccessToken;
-  readonly RefreshToken: typeof RefreshToken;
-  readonly AuthorizationCode: typeof AuthorizationCode;
-  readonly RegistrationAccessToken: typeof RegistrationAccessToken;
-  readonly PushedAuthorizationRequest: typeof PushedAuthorizationRequest;
-  readonly ClientCredentials: typeof ClientCredentials;
-  readonly DeviceCode: typeof DeviceCode;
-  readonly BaseToken: typeof BaseToken;
+  readonly Client: Client;
+  readonly AccessToken: AccessToken;
+  readonly InitialAccessToken: InitialAccessToken;
+  readonly RefreshToken: RefreshToken;
+  readonly AuthorizationCode: AuthorizationCode;
+  readonly RegistrationAccessToken: RegistrationAccessToken;
+  readonly PushedAuthorizationRequest: PushedAuthorizationRequest;
+  readonly ClientCredentials: ClientCredentials;
+  readonly DeviceCode: DeviceCode;
+  readonly BaseToken: BaseToken;
   readonly Account: { findAccount: FindAccount; };
-  readonly IdToken: typeof IdToken;
-  readonly ReplayDetection: typeof ReplayDetection;
+  readonly IdToken: IdToken;
+  readonly ReplayDetection: ReplayDetection;
   readonly requestUriCache: RequestUriCache;
-  readonly OIDCContext: typeof OIDCContext;
-  readonly Session: typeof Session;
-  readonly Interaction: typeof Interaction;
+  readonly OIDCContext: OIDCContext;
+  readonly Session: Session;
+  readonly Interaction: Interaction;
 }
 
 export default Provider;
