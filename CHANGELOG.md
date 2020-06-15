@@ -2,6 +2,16 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [6.27.1](https://github.com/panva/node-oidc-provider/compare/v6.27.0...v6.27.1) (2020-06-15)
+
+
+### Bug Fixes
+
+* correct jwtIntrospection draft ack version ([#735](https://github.com/panva/node-oidc-provider/issues/735)) ([62b97d4](https://github.com/panva/node-oidc-provider/commit/62b97d4e6a47cbbbe2d9216a31988a6d442689bf))
+* **typescript:** static IdToken.validate ([#733](https://github.com/panva/node-oidc-provider/issues/733)) ([a0d997e](https://github.com/panva/node-oidc-provider/commit/a0d997e9a8653cddaa95ae31b0bea6bdaa1e0267))
+
+
+
 # [6.27.0](https://github.com/panva/node-oidc-provider/compare/v6.26.1...v6.27.0) (2020-06-01)
 
 
