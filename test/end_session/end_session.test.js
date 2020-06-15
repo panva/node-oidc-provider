@@ -24,7 +24,7 @@ describe('logout endpoint', () => {
               const { state } = this.getSession();
 
               expect(state.secret).to.be.ok;
-              expect(state.postLogoutRedirectUri).to.equal(`${this.provider.issuer}${this.suitePath('/session/end/success')}`);
+              expect(state.postLogoutRedirectUri).to.be.undefined;
 
               expect(body).to.include(`input type="hidden" name="xsrf" value="${state.secret}"`);
               expect(body).to.include(`form method="post" action="${this.provider.issuer}${this.suitePath('/session/end/confirm')}"`);
@@ -183,7 +183,7 @@ describe('logout endpoint', () => {
               .expect(200)
               .expect(() => {
                 const { state: { postLogoutRedirectUri } } = this.getSession();
-                expect(postLogoutRedirectUri).to.equal(`${this.provider.issuer}${this.suitePath('/session/end/success')}`);
+                expect(postLogoutRedirectUri).to.be.undefined;
               });
           });
         });
@@ -381,12 +381,12 @@ describe('logout endpoint', () => {
           });
       });
 
-      it('only clears one clients session if user doesnt wanna log out', function () {
+      it('only clears one clients session if user doesnt wanna log out (using post_logout_redirect_uri)', function () {
         const adapter = this.TestAdapter.for('Session');
         sinon.spy(adapter, 'destroy');
         let session = this.getSession();
         const oldId = this.getSessionId();
-        session.state = { secret: '123', postLogoutRedirectUri: '/', clientId: 'client' };
+        session.state = { secret: '123', postLogoutRedirectUri: 'https://rp.example.com/logout/cb', clientId: 'client' };
 
         expect(session.authorizations.client).to.be.ok;
 
@@ -400,7 +400,30 @@ describe('logout endpoint', () => {
             expect(session.state).to.be.undefined;
             expect(this.getSessionId()).not.to.eql(oldId);
             expect(adapter.destroy.calledOnceWith(oldId)).to.be.true;
-            expect(parseUrl(response.headers.location, true).query.client_id).to.eql('client');
+            expect(parseUrl(response.headers.location, true).query).not.to.have.key('client_id');
+          });
+      });
+
+      it('only clears one clients session if user doesnt wanna log out (using end_session_success)', function () {
+        const adapter = this.TestAdapter.for('Session');
+        sinon.spy(adapter, 'destroy');
+        let session = this.getSession();
+        const oldId = this.getSessionId();
+        session.state = { secret: '123', clientId: 'client' };
+
+        expect(session.authorizations.client).to.be.ok;
+
+        return this.agent.post('/session/end/confirm')
+          .send({ xsrf: '123' })
+          .type('form')
+          .expect(302)
+          .expect((response) => {
+            session = this.getSession();
+            expect(session.authorizations.client).to.be.undefined;
+            expect(session.state).to.be.undefined;
+            expect(this.getSessionId()).not.to.eql(oldId);
+            expect(adapter.destroy.calledOnceWith(oldId)).to.be.true;
+            expect(parseUrl(response.headers.location, true).query).to.have.property('client_id', 'client');
           });
       });
 
