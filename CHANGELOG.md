@@ -2,6 +2,15 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [6.27.2](https://github.com/panva/node-oidc-provider/compare/v6.27.1...v6.27.2) (2020-06-16)
+
+
+### Bug Fixes
+
+* remove unintended client_id from post_logout_redirect_uri callbacks ([57d07cd](https://github.com/panva/node-oidc-provider/commit/57d07cd14a6d18681ee0953c28f4ebe7fda3681c))
+
+
+
 ## [6.27.1](https://github.com/panva/node-oidc-provider/compare/v6.27.0...v6.27.1) (2020-06-15)
 
 
