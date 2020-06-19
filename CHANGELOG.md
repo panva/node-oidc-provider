@@ -2,6 +2,15 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [6.27.3](https://github.com/panva/node-oidc-provider/compare/v6.27.2...v6.27.3) (2020-06-19)
+
+
+### Bug Fixes
+
+* re-allow transfer-encoding chunked ([f88447b](https://github.com/panva/node-oidc-provider/commit/f88447bf989a208d7e0490dbe3226c534259c442)), closes [#739](https://github.com/panva/node-oidc-provider/issues/739)
+
+
+
 ## [6.27.2](https://github.com/panva/node-oidc-provider/compare/v6.27.1...v6.27.2) (2020-06-16)
 
 
