@@ -1,5 +1,6 @@
 const { readFileSync } = require('fs');
 
+const got = require('got');
 const nock = require('nock');
 const jose = require('jose');
 const sinon = require('sinon');
@@ -409,6 +410,26 @@ describe('client authentication options', () => {
         .type('form')
         .expect(tokenAuthSucceeded);
     });
+
+    // TODO: not sure why when mounted everything crap out
+    if (!process.env.MOUNT_VIA) {
+      it('can use transfer-encoding: chunked', async () => {
+        const { address, port } = global.server.address();
+
+        const response = await got.post(`http://[${address}]:${port}${route}`, {
+          throwHttpErrors: false,
+          form: true,
+          body: {
+            grant_type: 'implicit',
+            client_id: 'client-post',
+            client_secret: 'secret',
+          },
+          headers: { 'transfer-encoding': 'chunked' },
+        });
+
+        expect(JSON.parse(response.body)).to.deep.eql(tokenAuthSucceeded);
+      });
+    }
 
     it('accepts the auth (but client configured with basic)', function () {
       return this.agent.post(route)
