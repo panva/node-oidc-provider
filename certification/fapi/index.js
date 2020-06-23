@@ -20,6 +20,17 @@ const JWK_PKJWTONE = jose.JWK.asKey(readFileSync(path.join(__dirname, 'pkjwtone.
 const JWK_PKJWTTWO = jose.JWK.asKey(readFileSync(path.join(__dirname, 'pkjwttwo.key')), { alg: 'PS256', use: 'sig' }).toJWK();
 const JWK_MTLSONE = jose.JWK.asKey(readFileSync(path.join(__dirname, 'mtlsone.key')), { x5c: [normalize(readFileSync(path.join(__dirname, 'mtlsone.crt')))], alg: 'PS256', use: 'sig' }).toJWK();
 const JWK_MTLSTWO = jose.JWK.asKey(readFileSync(path.join(__dirname, 'mtlstwo.key')), { x5c: [normalize(readFileSync(path.join(__dirname, 'mtlstwo.crt')))], alg: 'PS256', use: 'sig' }).toJWK();
+const PIETER_CERT = {
+  e: 'AQAB',
+  n: 'q_VMoR77SK9kJoSv2TsEXzLEhPyS3AcNyX2eeGWtyy9Ys-6dXLyaWpKGJjfXp2K-FsBp8H9naz2fjKKk5Yh9RtnnKmovXJ3MYPQwrIWklocrLR2GemgX-bfKoiAV8H6cvV0-8yzgPFV6-1BGV7jwObT0dgVQuu6B9JUxsysJx0jpbDwY5lJT3nCvFTTTpuGMDLBSSbhhva7_qywGytE0TPxUo-k9noqykrGq0961G-9c9-3VQIpycYccDSWOTJZWdS0CL0YzEEExugafl0lApg6XO86U7ankSa6gHXOgu0c8DR0ZR9Qk-c173ozog6Fe3k1ijUZhzHnDsbj5CdZBjQ',
+  kty: 'RSA',
+  kid: '-8v_umxArXLPlqt6mgVxznjQJ68nTPRxLee94gIv5K0',
+  x5c: [
+    'MIIFPjCCBCagAwIBAgIQCDDO7LHnzcaiW38hyvy0YTANBgkqhkiG9w0BAQsFADBpMQswCQYDVQQGEwJOTDEWMBQGA1UECBMNTm9vcmQtSG9sbGFuZDESMBAGA1UEBxMJQW1zdGVyZGFtMQ8wDQYDVQQKEwZURVJFTkExHTAbBgNVBAMTFFRFUkVOQSBQZXJzb25hbCBDQSAzMB4XDTE5MDkwNjAwMDAwMFoXDTIyMDkwNjEyMDAwMFowaDELMAkGA1UEBhMCQkUxDzANBgNVBAcTBkxldXZlbjEqMCgGA1UEChMhS2F0aG9saWVrZSBVbml2ZXJzaXRlaXQgdGUgTGV1dmVuMRwwGgYDVQQDExNQaWV0ZXIgUGhpbGlwcGFlcnRzMIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAq/VMoR77SK9kJoSv2TsEXzLEhPyS3AcNyX2eeGWtyy9Ys+6dXLyaWpKGJjfXp2K+FsBp8H9naz2fjKKk5Yh9RtnnKmovXJ3MYPQwrIWklocrLR2GemgX+bfKoiAV8H6cvV0+8yzgPFV6+1BGV7jwObT0dgVQuu6B9JUxsysJx0jpbDwY5lJT3nCvFTTTpuGMDLBSSbhhva7/qywGytE0TPxUo+k9noqykrGq0961G+9c9+3VQIpycYccDSWOTJZWdS0CL0YzEEExugafl0lApg6XO86U7ankSa6gHXOgu0c8DR0ZR9Qk+c173ozog6Fe3k1ijUZhzHnDsbj5CdZBjQIDAQABo4IB4TCCAd0wHwYDVR0jBBgwFoAU8CHpSXdzn4WuGDvoUnAUBu1C7sowHQYDVR0OBBYEFFp3ct/711kj4yUq1+0X/Mv7DnMxMAwGA1UdEwEB/wQCMAAwLQYDVR0RBCYwJIEicGlldGVyLnBoaWxpcHBhZXJ0c0Bjcy5rdWxldXZlbi5iZTAOBgNVHQ8BAf8EBAMCBaAwHQYDVR0lBBYwFAYIKwYBBQUHAwIGCCsGAQUFBwMEMEMGA1UdIAQ8MDowOAYKYIZIAYb9bAQBAjAqMCgGCCsGAQUFBwIBFhxodHRwczovL3d3dy5kaWdpY2VydC5jb20vQ1BTMHUGA1UdHwRuMGwwNKAyoDCGLmh0dHA6Ly9jcmwzLmRpZ2ljZXJ0LmNvbS9URVJFTkFQZXJzb25hbENBMy5jcmwwNKAyoDCGLmh0dHA6Ly9jcmw0LmRpZ2ljZXJ0LmNvbS9URVJFTkFQZXJzb25hbENBMy5jcmwwcwYIKwYBBQUHAQEEZzBlMCQGCCsGAQUFBzABhhhodHRwOi8vb2NzcC5kaWdpY2VydC5jb20wPQYIKwYBBQUHMAKGMWh0dHA6Ly9jYWNlcnRzLmRpZ2ljZXJ0LmNvbS9URVJFTkFQZXJzb25hbENBMy5jcnQwDQYJKoZIhvcNAQELBQADggEBALEk4C34xTbcMm/qPxkEac/++auxInjO7lSvylpgUpID8vCPRcNE8ulPHNhGsuNHmD/ZMkExYZNhH91F4yTbb0qWho1jCBKR31Gd+/gbZWO3kGlhQ2L5J9wjh151Ets/rTCyL7bDrFMreFjjlq0HsemcCvfl6GIeBk6/OLBZqase+BrWOY2C03f9s1JIffLX52NAuqjlkIwS6a5nXwKKhvrxMF+mpmKqj4rGl7sgJWKetKfHZPQIKWicB+33FIEwe2y/ZwcUPqSemkb/a5tflLe36oGECe6lgy7rQH27fCgNFkiHCNsfLFSFYCCXfG8s+hX22Acn6h3us2FC9uuX/s8=',
+  ],
+  x5t: 'e14U_0lRS3I8Y52s8q14Y9YzdQA',
+  'x5t#S256': '9KGCCIST3a4eGWK7F-65wDFzuc42Twt0kNy8AaoMfnw',
+};
 
 const fapi = new Provider(ISSUER, {
   acrValues: ['urn:mace:incommon:iap:silver'],
@@ -120,6 +131,30 @@ const fapi = new Provider(ISSUER, {
       token_endpoint_auth_method: 'self_signed_tls_client_auth',
       jwks: {
         keys: [JWK_MTLSTWO],
+      },
+    },
+    {
+      client_id: 'pieter-mtls',
+      response_types: ['code', 'code id_token'],
+      grant_types: ['implicit', 'authorization_code', 'refresh_token'],
+      redirect_uris: [
+        'https://oauch.io/Callback',
+      ],
+      token_endpoint_auth_method: 'self_signed_tls_client_auth',
+      jwks: {
+        keys: [PIETER_CERT],
+      },
+    },
+    {
+      client_id: 'pieter-pkjwt',
+      response_types: ['code', 'code id_token'],
+      grant_types: ['implicit', 'authorization_code', 'refresh_token'],
+      redirect_uris: [
+        'https://oauch.io/Callback',
+      ],
+      token_endpoint_auth_method: 'private_key_jwt',
+      jwks: {
+        keys: [PIETER_CERT],
       },
     },
   ],
