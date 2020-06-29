@@ -8,7 +8,7 @@ const get = require('lodash/get'); // eslint-disable-line import/no-extraneous-d
 const words = require('lodash/words'); // eslint-disable-line import/no-extraneous-dependencies
 
 const docs = require('../lib/helpers/docs');
-const values = require('../lib/helpers/defaults');
+const values = require('../lib/helpers/defaults')();
 
 values.ttl.RefreshToken[inspect.custom] = () => (
   values.ttl.RefreshToken.toString()

@@ -8,7 +8,7 @@ const isEmpty = require('lodash/isEmpty');
 const bodyParser = require('koa-body');
 const Router = require('koa-router');
 
-const { renderError } = require('../../lib/helpers/defaults'); // make your own, you'll need it anyway
+const { renderError } = require('../../lib/helpers/defaults')(); // make your own, you'll need it anyway
 const Account = require('../support/account');
 
 const keys = new Set();

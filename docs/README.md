@@ -1065,7 +1065,7 @@ Enables Token Introspection features
 _**default value**_:
 ```js
 {
-  allowedPolicy: [AsyncFunction: allowedPolicy], // see expanded details below
+  allowedPolicy: [AsyncFunction: introspectionAllowedPolicy], // see expanded details below
   enabled: false
 }
 ```
@@ -1080,7 +1080,7 @@ Helper function used to determine whether the client/RS (client argument) is all
 
 _**default value**_:
 ```js
-async function allowedPolicy(ctx, client, token) {
+async function introspectionAllowedPolicy(ctx, client, token) {
   if (client.introspectionEndpointAuthMethod === 'none' && token.clientId !== ctx.oidc.client.clientId) {
     return false;
   }
@@ -1611,7 +1611,7 @@ Enables the use of `resource` parameter for the authorization and token endpoint
 _**default value**_:
 ```js
 {
-  allowedPolicy: [AsyncFunction: allowedPolicy], // see expanded details below
+  allowedPolicy: [AsyncFunction: resourceIndicatorsAllowedPolicy], // see expanded details below
   enabled: false
 }
 ```
@@ -1676,7 +1676,7 @@ _**recommendation**_: Only allow pre-registered resource values, to pre-register
 
 _**default value**_:
 ```js
-async function allowedPolicy(ctx, resources, client) {
+async function resourceIndicatorsAllowedPolicy(ctx, resources, client) {
   return true;
 }
 ```
@@ -1711,7 +1711,7 @@ _**default value**_:
 {
   enabled: false,
   keepHeaders: false,
-  scriptNonce: [Function: scriptNonce] // see expanded details below
+  scriptNonce: [Function: sessionManagementScriptNonce] // see expanded details below
 }
 ```
 
@@ -1737,7 +1737,7 @@ When using `nonce-{random}` CSP policy use this helper function to resolve a non
 
 _**default value**_:
 ```js
-function scriptNonce(ctx) {
+function sessionManagementScriptNonce(ctx) {
   return undefined;
 }
 ```
@@ -1771,7 +1771,7 @@ _**default value**_:
 ```js
 {
   enabled: false,
-  scriptNonce: [Function: scriptNonce] // see expanded details below
+  scriptNonce: [Function: webMessageResponseModeScriptNonce] // see expanded details below
 }
 ```
 
@@ -1785,7 +1785,7 @@ When using `nonce-{random}` CSP policy use this helper function to resolve a non
 
 _**default value**_:
 ```js
-function scriptNonce(ctx) {
+function webMessageResponseModeScriptNonce(ctx) {
   return undefined;
 }
 ```
@@ -2105,7 +2105,7 @@ validator function that will be executed in order once for every property define
 
 _**default value**_:
 ```js
-function validator(key, value, metadata, ctx) {
+function extraClientMetadataValidator(key, value, metadata, ctx) {
   // @param key - the client metadata property name
   // @param value - the property value
   // @param metadata - the current accumulated client metadata
@@ -2709,7 +2709,7 @@ Function used to determine where to redirect User-Agent for necessary interactio
 
 _**default value**_:
 ```js
-async function url(ctx, interaction) {
+async function interactionsUrl(ctx, interaction) {
   return `/interaction/${ctx.oidc.uid}`;
 }
 ```
@@ -2832,7 +2832,7 @@ Configures if and when the OP requires clients to use PKCE. This helper is calle
 
 _**default value**_:
 ```js
-function required(ctx, client) {
+function pkceRequired(ctx, client) {
   return client.applicationType === 'native';
 }
 ```
@@ -3061,7 +3061,7 @@ _**default value**_:
   ClientCredentials: 600,
   DeviceCode: 600,
   IdToken: 3600,
-  RefreshToken: function RefreshToken(ctx, token, client) {
+  RefreshToken: function RefreshTokenTTL(ctx, token, client) {
     if (
       ctx && ctx.oidc.entities.RotatedRefreshToken
       && client.applicationType === 'web'

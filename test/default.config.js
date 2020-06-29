@@ -1,8 +1,9 @@
 const cloneDeep = require('lodash/cloneDeep');
+const merge = require('lodash/merge');
 
 const { JWA } = require('../lib/consts');
 
-module.exports = {
+module.exports = merge({
   claims: {
     address: {
       address: null,
@@ -52,4 +53,4 @@ module.exports = {
   ],
   features: {},
   whitelistedJWA: cloneDeep(JWA),
-};
+}, global.TEST_CONFIGURATION_DEFAULTS);
