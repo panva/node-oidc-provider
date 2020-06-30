@@ -2,6 +2,10 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [6.27.4](https://github.com/panva/node-oidc-provider/compare/v6.27.3...v6.27.4) (2020-06-30)
+
+
+
 ## [6.27.3](https://github.com/panva/node-oidc-provider/compare/v6.27.2...v6.27.3) (2020-06-19)
 
 
