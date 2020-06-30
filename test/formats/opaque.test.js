@@ -1,10 +1,10 @@
 const sinon = require('sinon').createSandbox();
 const { expect } = require('chai');
 
-const { formats: { AccessToken: FORMAT } } = require('../../lib/helpers/defaults');
 const epochTime = require('../../lib/helpers/epoch_time');
 const bootstrap = require('../test_helper');
 
+const { formats: { AccessToken: FORMAT } } = global.TEST_CONFIGURATION_DEFAULTS;
 const { spy, match: { string, number }, assert } = sinon;
 
 if (FORMAT === 'opaque') {

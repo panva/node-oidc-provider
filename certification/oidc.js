@@ -2,7 +2,6 @@
 
 const path = require('path');
 
-const set = require('lodash/set');
 const render = require('koa-ejs');
 const helmet = require('koa-helmet');
 
@@ -67,8 +66,8 @@ let server;
 
   if (process.env.NODE_ENV === 'production') {
     provider.proxy = true;
-    set(configuration, 'cookies.short.secure', true);
-    set(configuration, 'cookies.long.secure', true);
+    configuration.cookies.short.secure = true;
+    configuration.cookies.long.secure = true;
 
     provider.use(async (ctx, next) => {
       if (ctx.secure) {

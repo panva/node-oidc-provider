@@ -7,8 +7,9 @@ const nanoid = require('../../lib/helpers/nanoid');
 const bootstrap = require('../test_helper');
 const { decode } = require('../../lib/helpers/jwt');
 const epochTime = require('../../lib/helpers/epoch_time');
-const { formats: { AccessToken: FORMAT } } = require('../../lib/helpers/defaults');
 const { EdDSA, shake256 } = require('../../lib/helpers/runtime_support');
+
+const { formats: { AccessToken: FORMAT } } = global.TEST_CONFIGURATION_DEFAULTS;
 
 describe('signatures', () => {
   before(bootstrap(__dirname));

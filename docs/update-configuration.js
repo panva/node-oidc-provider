@@ -4,11 +4,11 @@ const { createInterface: readline } = require('readline');
 const { inspect } = require('util');
 const { createReadStream, writeFileSync, readFileSync } = require('fs');
 
-const get = require('lodash/get');
-const words = require('lodash/words');
+const get = require('lodash/get'); // eslint-disable-line import/no-extraneous-dependencies
+const words = require('lodash/words'); // eslint-disable-line import/no-extraneous-dependencies
 
 const docs = require('../lib/helpers/docs');
-const values = require('../lib/helpers/defaults');
+const values = require('../lib/helpers/defaults')();
 
 values.ttl.RefreshToken[inspect.custom] = () => (
   values.ttl.RefreshToken.toString()
