@@ -1836,7 +1836,8 @@ async function audiences(ctx, sub, token, use) {
 
 ### claims
 
-Array of the Claim Names of the Claims that the OpenID Provider MAY be able to supply values for.  
+Describes the claims that the OpenID Provider MAY be able to supply values for. It is also used to define which claims fall under what scope (configure `{ ['scope']: ['claim', 'another-claim'] }`) as well as to expose additional claims that are available to RPs via the `claims` authorization parameter (configure as `{ ['claim']: null }`).   
+  
 
 
 _**default value**_:
@@ -1851,6 +1852,13 @@ _**default value**_:
   sid: null
 }
 ```
+<a id="claims-open-id-connect-1-0-standard-claims"></a><details><summary>(Click to expand) OpenID Connect 1.0 Standard Claims</summary><br>
+
+
+See [/recipes/claim_configuration.md](/recipes/claim_configuration.md)  
+
+
+</details>
 
 ### clientBasedCORS
 
