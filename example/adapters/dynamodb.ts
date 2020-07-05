@@ -38,9 +38,7 @@
 // Mention @SachinShekhar in issues to ask questions about this code.
 
 import { Adapter, AdapterPayload } from "oidc-provider";
-import { DynamoDB, AWSError } from "aws-sdk";
-import { PromiseResult } from "aws-sdk/lib/request";
-import { chunk } from "lodash";
+import { DynamoDB } from "aws-sdk";
 
 const TABLE_NAME = process.env.OAUTH_TABLE!;
 const TABLE_REGION = process.env.AWS_REGION;
@@ -176,44 +174,40 @@ export class DynamoDBAdapter implements Adapter {
   }
 
   async revokeByGrantId(grantId: string): Promise<void> {
-    const params: DynamoDB.DocumentClient.QueryInput = {
-      TableName: TABLE_NAME,
-      IndexName: "grantIdIndex",
-      KeyConditionExpression: "grantId = :grantId",
-      ExpressionAttributeValues: {
-        ":grantId": grantId,
-      },
-      ProjectionExpression: "modelId",
-    };
+    let ExclusiveStartKey: DynamoDB.DocumentClient.Key | undefined = undefined;
 
-    const results = <{ modelId: string }[] | undefined>(
-      (await dynamoClient.query(params).promise()).Items
-    );
+    do {
+      const params: DynamoDB.DocumentClient.QueryInput = {
+        TableName: TABLE_NAME,
+        IndexName: "grantIdIndex",
+        KeyConditionExpression: "grantId = :grantId",
+        ExpressionAttributeValues: {
+          ":grantId": grantId,
+        },
+        ProjectionExpression: "modelId",
+        Limit: 25,
+        ExclusiveStartKey,
+      };
 
-    if (!results || !results.length) {
-      return;
-    }
+      const queryResult = await dynamoClient.query(params).promise();
+      ExclusiveStartKey = queryResult.LastEvaluatedKey;
 
-    // DynamoDB allows only 25 operations per batchWrite
-    let resultChunks: { modelId: string }[][] = chunk(results, 25);
+      const items = <{ modelId: string }[] | undefined>queryResult.Items;
 
-    let batchWritePromises: Promise<
-      PromiseResult<DynamoDB.DocumentClient.BatchWriteItemOutput, AWSError>
-    >[] = [];
+      if (!items || !items.length) {
+        return;
+      }
 
-    for (let i = 0; resultChunks.length; i++) {
       const batchWriteParams: DynamoDB.DocumentClient.BatchWriteItemInput = {
         RequestItems: {
-          [TABLE_NAME]: resultChunks[i].reduce<DynamoDB.DocumentClient.WriteRequests>(
-            (acc, result) => [...acc, { DeleteRequest: { Key: { modelId: result.modelId } } }],
+          [TABLE_NAME]: items.reduce<DynamoDB.DocumentClient.WriteRequests>(
+            (acc, item) => [...acc, { DeleteRequest: { Key: { modelId: item.modelId } } }],
             []
           ),
         },
       };
 
-      batchWritePromises.push(dynamoClient.batchWrite(batchWriteParams).promise());
-    }
-
-    await Promise.all(batchWritePromises);
+      await dynamoClient.batchWrite(batchWriteParams).promise();
+    } while (ExclusiveStartKey);
   }
 }
