@@ -5,7 +5,6 @@ import * as events from 'events';
 import * as http from 'http';
 import * as http2 from 'http2';
 import * as https from 'https';
-import * as net from 'net';
 import * as tls from 'tls';
 
 import * as jose from 'jose';
