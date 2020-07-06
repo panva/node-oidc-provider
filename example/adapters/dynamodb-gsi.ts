@@ -1,5 +1,7 @@
 // This adapter is written in Typescript. If you want to get Javascript version without compiling it with tsc, paste this code here: https://babeljs.io/en/repl (choose Typescript preset)
 
+// The filename is suffixed with 'gsi' because this adapter makes use of Global Secondary Indexes.
+
 /**
  * Prerequisites:
  * 
