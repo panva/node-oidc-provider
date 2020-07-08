@@ -105,7 +105,6 @@ const Provider = require('oidc-provider');
 const configuration = {
   // ... see the available options in Configuration options section
   features: {
-    discovery: true,
     registration: { initialAccessToken: true },
   },
   format: { default: 'opaque' },
