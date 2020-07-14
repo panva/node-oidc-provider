@@ -2,6 +2,21 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+# [6.28.0](https://github.com/panva/node-oidc-provider/compare/v6.27.5...v6.28.0) (2020-07-14)
+
+
+### Bug Fixes
+
+* ensure client is still valid after custom metadata processing ([fded7c6](https://github.com/panva/node-oidc-provider/commit/fded7c674199668321f08af15be4f0a01092d4c1))
+
+
+### Features
+
+* incorporate behaviours and metadata from jwsreq-25 ([cb12761](https://github.com/panva/node-oidc-provider/commit/cb12761bf15b877d3bf878eea7f1fbd267a020ea))
+* update PAR implementation to ietf draft 02 ([fd2ccee](https://github.com/panva/node-oidc-provider/commit/fd2ccee437572e01c1afb60b58d5386b93d5e992))
+
+
+
 ## [6.27.5](https://github.com/panva/node-oidc-provider/compare/v6.27.4...v6.27.5) (2020-07-06)
 
 
