@@ -5,6 +5,10 @@ will have to configure your instance with how to find your user accounts, where 
 persisted data from and where your end-user interactions happen. The [example](/example) application
 is a good starting point to get an idea of what you should provide.
 
+> ⚠️⚠️ This page now describes oidc-provider version v7.x documentation. For legacy versions see 
+[here](https://github.com/panva/node-oidc-provider/blob/v6.x/docs/README.md) for v6.x and 
+[here](https://github.com/panva/node-oidc-provider/blob/v5.x/docs/configuration.md) for v5.x.
+
 ## Sponsor
 
 [<img width="65" height="65" align="left" src="https://avatars.githubusercontent.com/u/2824157?s=75&v=4" alt="auth0-logo">][sponsor-auth0] If you want to quickly add OpenID Connect authentication to Node.js apps, feel free to check out Auth0's Node.js SDK and free plan at [auth0.com/developers][sponsor-auth0].<br><br>

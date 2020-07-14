@@ -12,7 +12,10 @@ If you or your business use oidc-provider, please consider becoming a [sponsor][
 
 ---
 
-**⚠️ If you're landing here you're likely looking for [v5.x documentation](https://github.com/panva/node-oidc-provider/blob/v5.x/docs/configuration.md).**
+**⚠️ If you're landing here you're likely looking for [v5.x documentation](https://github.com/panva/node-oidc-provider/blob/v5.x/docs/configuration.md).
+Note that version v5.x is no longer under any form of support, that means no questions will be answered in the issue tracker, no PRs will be accepted,
+expect no further ^5.0.0 releases. For help getting upgraded from v5.x through v6.x to the latest v7.x reach out to me to discuss commercial form of
+support**
 
 [support-sponsor]: https://github.com/sponsors/panva
 [sponsor-auth0]: https://auth0.com/overview?utm_source=GHsponsor&utm_medium=GHsponsor&utm_campaign=oidc-provider&utm_content=auth

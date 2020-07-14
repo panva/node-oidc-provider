@@ -1,6 +1,6 @@
 # Client Metadata-based CORS Origin whitelist
 
-- built for version: ^6.0.0
+- built for version: ^6.0.0 || ^7.0.0
 - no guarantees this is bug-free
 
 OIDC routes that are ever needed to be called from a browser user-agent are CORS-enabled and by

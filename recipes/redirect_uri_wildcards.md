@@ -1,6 +1,6 @@
 # Wildcard support
 
-- built for version: ^6.0.0
+- built for version: ^6.0.0 || ^7.0.0
 - no guarantees this is bug-free, no support will be provided for this, you've been warned, you're on
 your own
 - if you get caught allowing wildcards in production you'll suffer the consequences

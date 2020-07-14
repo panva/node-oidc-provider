@@ -1,6 +1,6 @@
 # Allowing HTTP and/or localhost for implicit response type web clients
 
-- built for version: ^6.15.0
+- built for version: ^6.15.0 || ^7.0.0
 
 > ⚠️ This violates the OIDC Core 1.0 specification. **Its only practical use-case is for development purposes and as such is not recommended
 > for any production deployment.**
