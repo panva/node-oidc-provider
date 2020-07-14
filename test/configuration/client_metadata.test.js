@@ -873,6 +873,30 @@ describe('Client metadata validation', () => {
     });
   });
 
+  describe('features.pushedAuthorizationRequests', () => {
+    context('require_pushed_authorization_requests', function () {
+      const configuration = (value = false) => ({
+        features: {
+          pushedAuthorizationRequests: {
+            enabled: true,
+            requirePushedAuthorizationRequests: value,
+          },
+        },
+      });
+      mustBeBoolean(this.title, undefined, configuration());
+      mustBeBoolean(this.title, undefined, configuration(true));
+      defaultsTo(this.title, false, undefined, configuration());
+      defaultsTo(this.title, true, undefined, configuration(true));
+      defaultsTo(this.title, true, {
+        require_pushed_authorization_requests: false,
+      }, configuration(true));
+      defaultsTo(this.title, true, undefined, {
+        ...configuration(),
+        clientDefaults: { require_pushed_authorization_requests: true },
+      });
+    });
+  });
+
   context('jwks', function () {
     const configuration = {
       features: {

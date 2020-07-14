@@ -123,6 +123,8 @@ export interface AnyClientMetadata {
   web_message_uris?: string[];
   tls_client_certificate_bound_access_tokens?: boolean;
 
+  require_pushed_authorization_requests?: boolean;
+
   [key: string]: any;
 }
 
@@ -975,8 +977,9 @@ export interface Configuration {
     },
 
     pushedAuthorizationRequests?: {
+      requirePushedAuthorizationRequests?: boolean;
       enabled?: boolean,
-      ack?: 0 | 'individual-draft-01' | 'draft-00' | 'draft-01'
+      ack?: 'draft-02'
     },
 
     mTLS?: {

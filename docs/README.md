@@ -1281,9 +1281,25 @@ Enables the use of `pushed_authorization_request_endpoint` defined by the Pushed
 _**default value**_:
 ```js
 {
-  enabled: false
+  enabled: false,
+  requirePushedAuthorizationRequests: false
 }
 ```
+
+<details><summary>(Click to expand) features.pushedAuthorizationRequests options details</summary><br>
+
+
+#### requirePushedAuthorizationRequests
+
+Makes the use of PAR required for all authorization requests as an OP policy.  
+
+
+_**default value**_:
+```js
+false
+```
+
+</details>
 
 ### features.registration
 
