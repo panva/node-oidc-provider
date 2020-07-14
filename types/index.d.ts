@@ -123,6 +123,7 @@ export interface AnyClientMetadata {
   web_message_uris?: string[];
   tls_client_certificate_bound_access_tokens?: boolean;
 
+  require_signed_request_object?: boolean;
   require_pushed_authorization_requests?: boolean;
 
   [key: string]: any;
@@ -926,6 +927,7 @@ export interface Configuration {
       request?: boolean;
       requestUri?: boolean;
       requireUriRegistration?: boolean;
+      requireSignedRequestObject?: boolean;
       mergingStrategy?: {
         name?: 'lax' | 'strict' | 'whitelist',
         whitelist?: string[] | Set<string>;

@@ -234,6 +234,29 @@ describe('Client metadata validation', () => {
     rejects(this.title, ['not a member', '1'], "default_acr_values can only contain '0', '1', or '2'", undefined, { acrValues });
   });
 
+  context('require_signed_request_object', function () {
+    const configuration = (value = false, requestUri = true) => ({
+      features: {
+        requestObjects: {
+          requestUri,
+          requireSignedRequestObject: value,
+        },
+      },
+    });
+    mustBeBoolean(this.title);
+    defaultsTo(this.title, undefined, undefined, configuration(false, false));
+    defaultsTo(this.title, false, undefined, configuration());
+    defaultsTo(this.title, true, undefined, configuration(true));
+    defaultsTo(this.title, true, {
+      require_signed_request_object: false,
+    }, configuration(true));
+    defaultsTo(this.title, true, undefined, {
+      ...configuration(),
+      clientDefaults: { require_signed_request_object: true },
+    });
+    rejects(this.title, true, 'request_object_signing_alg must not be "none" when require_signed_request_object is true', { request_object_signing_alg: 'none' });
+  });
+
   context('default_max_age', function () {
     allows(this.title, 5);
     allows(this.title, 0);

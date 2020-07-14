@@ -26,6 +26,13 @@ module.exports = {
     grant_types: ['urn:ietf:params:oauth:grant-type:device_code', 'authorization_code'],
     redirect_uris: ['https://client.example.com/cb'],
   }, {
+    client_id: 'client-requiredSignedRequestObject',
+    token_endpoint_auth_method: 'none',
+    require_signed_request_object: true,
+    client_secret: 'its48bytes_____________________________________!',
+    grant_types: ['urn:ietf:params:oauth:grant-type:device_code', 'authorization_code'],
+    redirect_uris: ['https://client.example.com/cb'],
+  }, {
     client_id: 'client-with-HS-sig',
     token_endpoint_auth_method: 'none',
     client_secret: 'atleast32byteslongforHS256mmkay?',

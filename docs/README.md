@@ -1547,6 +1547,7 @@ _**default value**_:
   },
   request: false,
   requestUri: true,
+  requireSignedRequestObject: false,
   requireUriRegistration: true
 }
 ```
@@ -1602,6 +1603,16 @@ Enables the use and validations of the `request_uri` parameter.
 _**default value**_:
 ```js
 true
+```
+
+#### requireSignedRequestObject
+
+Makes the use of signed request objects required for all authorization requests as an OP policy.  
+
+
+_**default value**_:
+```js
+false
 ```
 
 #### requireUriRegistration

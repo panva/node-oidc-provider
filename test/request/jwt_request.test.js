@@ -44,12 +44,26 @@ describe('request parameter features', () => {
   });
 
   describe('configuration features.requestUri', () => {
-    it('extends discovery', function () {
-      return this.agent.get('/.well-known/openid-configuration')
+    it('extends discovery', async function () {
+      await this.agent.get('/.well-known/openid-configuration')
         .expect(200)
         .expect((response) => {
           expect(response.body).to.have.property('request_parameter_supported', true);
+          expect(response.body).not.to.have.property('require_signed_request_object');
         });
+
+      i(this.provider).configuration('features.requestObjects').requireSignedRequestObject = true;
+
+      await this.agent.get('/.well-known/openid-configuration')
+        .expect(200)
+        .expect((response) => {
+          expect(response.body).to.have.property('request_parameter_supported', true);
+          expect(response.body).to.have.property('require_signed_request_object', true);
+        });
+    });
+
+    after(function () {
+      i(this.provider).configuration('features.requestObjects').requireSignedRequestObject = false;
     });
   });
 
@@ -241,6 +255,36 @@ describe('request parameter features', () => {
         })
           .expect(successCode)
           .expect(successFnCheck));
+      });
+
+      it('works with signed by none unless the client is required to use SIGNED request object', function () {
+        const spy = sinon.spy();
+        this.provider.once(errorEvt, spy);
+
+        return JWT.sign({
+          client_id: 'client-requiredSignedRequestObject',
+          response_type: 'code',
+          redirect_uri: 'https://client.example.com/cb',
+        }, null, 'none', { issuer: 'client-requiredSignedRequestObject', audience: this.provider.issuer }).then((request) => this.wrap({
+          agent: this.agent,
+          route,
+          verb,
+          auth: {
+            request,
+            scope: 'openid',
+            client_id: 'client-requiredSignedRequestObject',
+            response_type: 'code',
+          },
+        })
+          .expect(errorCode)
+          .expect(() => {
+            expect(spy.calledOnce).to.be.true;
+            expect(spy.args[0][1]).to.have.property('message', 'invalid_request_object');
+            expect(spy.args[0][1]).to.have.property(
+              'error_description',
+              'Request Object must not be unsigned for this client',
+            );
+          }));
       });
 
       describe('JAR only request', () => {
