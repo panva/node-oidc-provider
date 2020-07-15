@@ -119,22 +119,22 @@ jobs:
           sed -i -e 's/mtls.fapi.panva.cz/172.17.0.1:3000/g' certification/fapi/pkjwt.json
           sed -i -e 's/fapi.panva.cz/172.17.0.1:3000/g' certification/fapi/pkjwt.json
       - name: Run private_key_jwt variant
-        run: npx mocha --delay --timeout 0 --retries 2 certification/fapi/runner
+        run: npx mocha --delay --timeout 0 --retries 2 certification/runner
         env:
           VARIANT: '{"client_auth_type":"private_key_jwt","fapi_profile":"plain_fapi","fapi_response_mode":"plain_response"}'
           CONFIGURATION: ./certification/fapi/pkjwt.json
       - name: Run mtls variant
-        run: npx mocha --delay --timeout 0 --retries 2 certification/fapi/runner
+        run: npx mocha --delay --timeout 0 --retries 2 certification/runner
         env:
           VARIANT: '{"client_auth_type":"mtls","fapi_profile":"plain_fapi","fapi_response_mode":"plain_response"}'
           CONFIGURATION: ./certification/fapi/mtls.json
       - name: Run private_key_jwt-jarm variant
-        run: npx mocha --delay --timeout 0 --retries 2 certification/fapi/runner
+        run: npx mocha --delay --timeout 0 --retries 2 certification/runner
         env:
           VARIANT: '{"client_auth_type":"private_key_jwt","fapi_profile":"plain_fapi","fapi_response_mode":"jarm"}'
           CONFIGURATION: ./certification/fapi/pkjwt.json
       - name: Run mtls-jarm variant
-        run: npx mocha --delay --timeout 0 --retries 2 certification/fapi/runner
+        run: npx mocha --delay --timeout 0 --retries 2 certification/runner
         env:
           VARIANT: '{"client_auth_type":"mtls","fapi_profile":"plain_fapi","fapi_response_mode":"jarm"}'
           CONFIGURATION: ./certification/fapi/mtls.json
