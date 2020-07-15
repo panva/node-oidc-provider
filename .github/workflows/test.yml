@@ -63,6 +63,9 @@ jobs:
           - code+id_token
           - code+id_token+token
           - code+token
+    env:
+      ISSUER: https://172.17.0.1:3000
+      NODE_TLS_REJECT_UNAUTHORIZED: 0
     steps:
       - run: |
           docker pull panvafs/oidc-certification-op-ci
@@ -74,13 +77,8 @@ jobs:
           node-version: 12
       - run: npx panva/npm-install-retry
       - run: node certification/docker &
-        env:
-          ISSUER: https://172.17.0.1:3000
-          NODE_TLS_REJECT_UNAUTHORIZED: 0
       - run: git clone https://github.com/panva/oidc-provider-conformance-tests.git
       - env:
-          ISSUER: https://172.17.0.1:3000
-          NODE_TLS_REJECT_UNAUTHORIZED: 0
           TEST_HOSTNAME: 127.0.0.1
         run: |
             cd oidc-provider-conformance-tests
@@ -90,6 +88,10 @@ jobs:
 
   fapi-conformance:
     runs-on: ubuntu-latest
+    env:
+      SUITE_BASE_URL: https://localhost.emobix.co.uk:8443
+      NODE_TLS_REJECT_UNAUTHORIZED: 0
+      PLAN_NAME: fapi-rw-id2-test-plan
     steps:
       - uses: actions/checkout@master
       - env:
@@ -110,8 +112,6 @@ jobs:
       - run: node certification/fapi &
         env:
           ISSUER: https://172.17.0.1:3000
-          NODE_TLS_REJECT_UNAUTHORIZED: 0
-          SUITE_BASE_URL: https://localhost.emobix.co.uk:8443
           NODE_OPTIONS: --tls-cipher-list="ECDHE-ECDSA-AES128-GCM-SHA256 ECDHE-ECDSA-AES256-GCM-SHA384 ECDHE-RSA-AES128-GCM-SHA256 ECDHE-RSA-AES256-GCM-SHA384"
       - run: |
           sed -i -e 's/mtls.fapi.panva.cz/172.17.0.1:3000/g' certification/fapi/mtls.json
@@ -121,35 +121,23 @@ jobs:
       - name: Run private_key_jwt variant
         run: npx mocha --delay --timeout 0 --retries 2 certification/fapi/runner
         env:
-          PLAN_NAME: fapi-rw-id2-test-plan
           VARIANT: '{"client_auth_type":"private_key_jwt","fapi_profile":"plain_fapi","fapi_response_mode":"plain_response"}'
           CONFIGURATION: ./certification/fapi/pkjwt.json
-          SUITE_BASE_URL: https://localhost.emobix.co.uk:8443
-          NODE_TLS_REJECT_UNAUTHORIZED: 0
       - name: Run mtls variant
         run: npx mocha --delay --timeout 0 --retries 2 certification/fapi/runner
         env:
-          PLAN_NAME: fapi-rw-id2-test-plan
           VARIANT: '{"client_auth_type":"mtls","fapi_profile":"plain_fapi","fapi_response_mode":"plain_response"}'
           CONFIGURATION: ./certification/fapi/mtls.json
-          SUITE_BASE_URL: https://localhost.emobix.co.uk:8443
-          NODE_TLS_REJECT_UNAUTHORIZED: 0
       - name: Run private_key_jwt-jarm variant
         run: npx mocha --delay --timeout 0 --retries 2 certification/fapi/runner
         env:
-          PLAN_NAME: fapi-rw-id2-test-plan
           VARIANT: '{"client_auth_type":"private_key_jwt","fapi_profile":"plain_fapi","fapi_response_mode":"jarm"}'
           CONFIGURATION: ./certification/fapi/pkjwt.json
-          SUITE_BASE_URL: https://localhost.emobix.co.uk:8443
-          NODE_TLS_REJECT_UNAUTHORIZED: 0
       - name: Run mtls-jarm variant
         run: npx mocha --delay --timeout 0 --retries 2 certification/fapi/runner
         env:
-          PLAN_NAME: fapi-rw-id2-test-plan
           VARIANT: '{"client_auth_type":"mtls","fapi_profile":"plain_fapi","fapi_response_mode":"jarm"}'
           CONFIGURATION: ./certification/fapi/mtls.json
-          SUITE_BASE_URL: https://localhost.emobix.co.uk:8443
-          NODE_TLS_REJECT_UNAUTHORIZED: 0
 
   deploy:
     if: github.event_name == 'push' && github.ref == 'refs/heads/master' && github.repository == 'panva/node-oidc-provider'
