@@ -33,10 +33,10 @@ const {
   debug('%s/plan-detail.html?plan=%s', SUITE_BASE_URL, PLAN_ID);
   debug('modules to test %O', MODULES);
 
-  for (const moduleName of MODULES) { // eslint-disable-line no-restricted-syntax
-    it(moduleName, async () => {
-      debug('\n\nRunning test module: %s', moduleName);
-      const { id: moduleId } = await runner.createTestFromPlan({ plan: PLAN_ID, test: moduleName });
+  for (const { testModule } of MODULES) { // eslint-disable-line no-restricted-syntax
+    it(testModule, async () => {
+      debug('\n\nRunning test module: %s', testModule);
+      const { id: moduleId } = await runner.createTestFromPlan({ plan: PLAN_ID, test: testModule });
       debug('Created test module, new id: %s', moduleId);
       debug('%s/log-detail.html?log=%s', SUITE_BASE_URL, moduleId);
       await runner.waitForState({ moduleId });

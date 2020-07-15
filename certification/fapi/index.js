@@ -1,5 +1,6 @@
 const { readFileSync } = require('fs');
 const path = require('path');
+const { randomBytes } = require('crypto');
 const https = require('https');
 
 const jose = require('jose');
@@ -189,7 +190,15 @@ fapi.interactionResult = function patchedInteractionResult(...args) {
   return orig.call(this, ...args);
 };
 
+function uuid(e){return e?(e^randomBytes(1)[0]%16>>e/4).toString(16):([1e7]+-1e3+-4e3+-8e3+-1e11).replace(/[018]/g,uuid)} // eslint-disable-line
+
 fapi.use(helmet());
+fapi.use((ctx, next) => {
+  if (!('x-fapi-interaction-id' in ctx.headers)) {
+    ctx.headers['x-fapi-interaction-id'] = uuid();
+  }
+  return next();
+});
 
 if (process.env.NODE_ENV === 'production') {
   fapi.proxy = true;
