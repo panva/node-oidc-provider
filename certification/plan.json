@@ -1,0 +1,1073 @@
+{
+  "server": {
+      "discoveryUrl": "https://op.panva.cz/.well-known/openid-configuration",
+      "login_hint": "bob@example.com"
+  },
+  "client": {
+      "client_name": "first-openid-client"
+  },
+  "client2": {
+      "client_name": "second-openid-client"
+  },
+  "browser": [
+      {
+          "match": "https://op.panva.cz/auth*",
+          "tasks": [
+              {
+                  "task": "Login",
+                  "optional": true,
+                  "match": "https://op.panva.cz/interaction*",
+                  "commands": [
+                      [
+                          "text",
+                          "name",
+                          "login",
+                          "foo",
+                          "optional"
+                      ],
+                      [
+                          "text",
+                          "name",
+                          "password",
+                          "bar",
+                          "optional"
+                      ],
+                      [
+                          "click",
+                          "class",
+                          "login-submit"
+                      ]
+                  ]
+              },
+              {
+                  "task": "Consent",
+                  "optional": true,
+                  "match": "https://op.panva.cz/interaction*",
+                  "commands": [
+                      [
+                          "click",
+                          "class",
+                          "login-submit"
+                      ]
+                  ]
+              },
+              {
+                  "task": "Verify Complete",
+                  "match": "*/test/*/callback*",
+                  "commands": [
+                      [
+                          "wait",
+                          "id",
+                          "submission_complete",
+                          10
+                      ]
+                  ]
+              }
+          ]
+      },
+      {
+          "match": "https://op.panva.cz/session/end*",
+          "tasks": [
+              {
+                  "task": "Choose logout option",
+                  "match": "https://op.panva.cz/session/end*",
+                  "commands": [
+                      [
+                          "click",
+                          "css",
+                          "button[autofocus] "
+                      ]
+                  ]
+              },
+              {
+                  "task": "process user choice, wait for redirect back",
+                  "optional": true,
+                  "match": "https://op.panva.cz/session/end/confirm",
+                  "commands" : [
+                      [
+                          "wait",
+                          "contains",
+                          "/test/*/post",
+                          10
+                      ]
+                  ]
+              },
+              {
+                  "task": "Verify Complete",
+                  "match": "*/test/*/post*"
+              }
+          ]
+      }
+  ],
+  "override": {
+      "oidcc-prompt-login": {
+          "browser": [
+              {
+                  "comment": "updates placeholder during the second authorization",
+                  "match": "https://op.panva.cz/auth*",
+                  "tasks": [
+                      {
+                          "task": "Login",
+                          "optional": true,
+                          "match": "https://op.panva.cz/interaction*",
+                          "commands": [
+                              [
+                                  "wait",
+                                  "xpath",
+                                  "//*",
+                                  10,
+                                  "Sign-in",
+                                  "update-image-placeholder-optional"
+                              ],
+                              [
+                                  "text",
+                                  "name",
+                                  "login",
+                                  "foo",
+                                  "optional"
+                              ],
+                              [
+                                  "text",
+                                  "name",
+                                  "password",
+                                  "bar",
+                                  "optional"
+                              ],
+                              [
+                                  "click",
+                                  "class",
+                                  "login-submit"
+                              ]
+                          ]
+                      },
+                      {
+                          "task": "Consent",
+                          "optional": true,
+                          "match": "https://op.panva.cz/interaction*",
+                          "commands": [
+                              [
+                                  "click",
+                                  "class",
+                                  "login-submit"
+                              ]
+                          ]
+                      },
+                      {
+                          "task": "Verify Complete",
+                          "match": "*/test/*/callback*",
+                          "commands": [
+                              [
+                                  "wait",
+                                  "id",
+                                  "submission_complete",
+                                  10
+                              ]
+                          ]
+                      }
+                  ]
+              }
+          ]
+      },
+      "oidcc-max-age-1": {
+          "browser": [
+              {
+                  "comment": "updates placeholder during the second authorization",
+                  "match": "https://op.panva.cz/auth*",
+                  "tasks": [
+                      {
+                          "task": "Login",
+                          "optional": true,
+                          "match": "https://op.panva.cz/interaction*",
+                          "commands": [
+                              [
+                                  "wait",
+                                  "xpath",
+                                  "//*",
+                                  10,
+                                  "Sign-in",
+                                  "update-image-placeholder-optional"
+                              ],
+                              [
+                                  "text",
+                                  "name",
+                                  "login",
+                                  "foo",
+                                  "optional"
+                              ],
+                              [
+                                  "text",
+                                  "name",
+                                  "password",
+                                  "bar",
+                                  "optional"
+                              ],
+                              [
+                                  "click",
+                                  "class",
+                                  "login-submit"
+                              ]
+                          ]
+                      },
+                      {
+                          "task": "Consent",
+                          "optional": true,
+                          "match": "https://op.panva.cz/interaction*",
+                          "commands": [
+                              [
+                                  "click",
+                                  "class",
+                                  "login-submit"
+                              ]
+                          ]
+                      },
+                      {
+                          "task": "Verify Complete",
+                          "match": "*/test/*/callback*",
+                          "commands": [
+                              [
+                                  "wait",
+                                  "id",
+                                  "submission_complete",
+                                  10
+                              ]
+                          ]
+                      }
+                  ]
+              }
+          ]
+      },
+      "oidcc-ensure-registered-redirect-uri": {
+          "browser": [
+              {
+                  "comment": "expect an immediate error page",
+                  "match": "https://op.panva.cz/auth*",
+                  "tasks": [
+                      {
+                          "task": "Expect redirect uri mismatch error page",
+                          "match": "https://op.panva.cz/auth*",
+                          "commands": [
+                              [
+                                  "wait",
+                                  "xpath",
+                                  "//*",
+                                  10,
+                                  "oops! something went wrong",
+                                  "update-image-placeholder"
+                              ]
+                          ]
+                      }
+                  ]
+              }
+          ]
+      },
+      "oidcc-ensure-redirect-uri-in-authorization-request": {
+          "browser": [
+              {
+                  "comment": "expect an immediate error page",
+                  "match": "https://op.panva.cz/auth*",
+                  "tasks": [
+                      {
+                          "task": "Expect redirect uri mismatch error page",
+                          "match": "https://op.panva.cz/auth*",
+                          "commands": [
+                              [
+                                  "wait",
+                                  "xpath",
+                                  "//*",
+                                  10,
+                                  "oops! something went wrong",
+                                  "update-image-placeholder"
+                              ]
+                          ]
+                      }
+                  ]
+              }
+          ]
+      },
+      "oidcc-redirect-uri-query-added": {
+          "browser": [
+              {
+                  "comment": "expect an immediate error page",
+                  "match": "https://op.panva.cz/auth*",
+                  "tasks": [
+                      {
+                          "task": "Expect redirect uri mismatch error page",
+                          "match": "https://op.panva.cz/auth*",
+                          "commands": [
+                              [
+                                  "wait",
+                                  "xpath",
+                                  "//*",
+                                  10,
+                                  "oops! something went wrong",
+                                  "update-image-placeholder"
+                              ]
+                          ]
+                      }
+                  ]
+              }
+          ]
+      },
+      "oidcc-redirect-uri-query-mismatch": {
+          "browser": [
+              {
+                  "comment": "expect an immediate error page",
+                  "match": "https://op.panva.cz/auth*",
+                  "tasks": [
+                      {
+                          "task": "Expect redirect uri mismatch error page",
+                          "match": "https://op.panva.cz/auth*",
+                          "commands": [
+                              [
+                                  "wait",
+                                  "xpath",
+                                  "//*",
+                                  10,
+                                  "oops! something went wrong",
+                                  "update-image-placeholder"
+                              ]
+                          ]
+                      }
+                  ]
+              }
+          ]
+      },
+      "oidcc-registration-logo-uri": {
+          "browser": [
+              {
+                  "comment": "expect a login page with logo",
+                  "match": "https://op.panva.cz/auth*",
+                  "tasks": [
+                      {
+                          "task": "Expect a login page with logo",
+                          "match": "https://op.panva.cz/interaction*",
+                          "commands": [
+                              [
+                                  "wait",
+                                  "xpath",
+                                  "//*",
+                                  10,
+                                  "Sign-in",
+                                  "update-image-placeholder"
+                              ]
+                          ]
+                      }
+                  ]
+              }
+          ]
+      },
+      "oidcc-registration-policy-uri": {
+          "browser": [
+              {
+                  "comment": "expect a login page with policy document link",
+                  "match": "https://op.panva.cz/auth*",
+                  "tasks": [
+                      {
+                          "task": "Expect a login page with policy document link",
+                          "match": "https://op.panva.cz/interaction*",
+                          "commands": [
+                              [
+                                  "wait",
+                                  "xpath",
+                                  "//*",
+                                  10,
+                                  "Sign-in",
+                                  "update-image-placeholder"
+                              ]
+                          ]
+                      }
+                  ]
+              }
+          ]
+      },
+      "oidcc-registration-tos-uri": {
+          "browser": [
+              {
+                  "comment": "expect a login page with TOS document link",
+                  "match": "https://op.panva.cz/auth*",
+                  "tasks": [
+                      {
+                          "task": "Expect a login page with TOS document link",
+                          "match": "https://op.panva.cz/interaction*",
+                          "commands": [
+                              [
+                                  "wait",
+                                  "xpath",
+                                  "//*",
+                                  10,
+                                  "Sign-in",
+                                  "update-image-placeholder"
+                              ]
+                          ]
+                      }
+                  ]
+              }
+          ]
+      },
+      "oidcc-rp-initiated-logout-bad-post-logout-redirect-uri": {
+          "browser": [
+              {
+                  "match": "https://op.panva.cz/auth*",
+                  "tasks": [
+                      {
+                          "task": "Login",
+                          "optional": true,
+                          "match": "https://op.panva.cz/interaction*",
+                          "commands": [
+                              [
+                                  "text",
+                                  "name",
+                                  "login",
+                                  "foo",
+                                  "optional"
+                              ],
+                              [
+                                  "text",
+                                  "name",
+                                  "password",
+                                  "bar",
+                                  "optional"
+                              ],
+                              [
+                                  "click",
+                                  "class",
+                                  "login-submit"
+                              ]
+                          ]
+                      },
+                      {
+                          "task": "Consent",
+                          "optional": true,
+                          "match": "https://op.panva.cz/interaction*",
+                          "commands": [
+                              [
+                                  "click",
+                                  "class",
+                                  "login-submit"
+                              ]
+                          ]
+                      },
+                      {
+                          "task": "Verify Complete",
+                          "match": "*/test/*/callback*",
+                          "commands": [
+                              [
+                                  "wait",
+                                  "id",
+                                  "submission_complete",
+                                  10
+                              ]
+                          ]
+                      }
+                  ]
+              },
+              {
+                  "comment": "expect an immediate error page",
+                  "match": "https://op.panva.cz/session/end*",
+                  "tasks": [
+                      {
+                          "task": "Expect error page",
+                          "match": "https://op.panva.cz/session/end*",
+                          "commands": [
+                              [
+                                  "wait",
+                                  "xpath",
+                                  "//*",
+                                  10,
+                                  "post_logout_redirect_uri not registered",
+                                  "update-image-placeholder"
+                              ]
+                          ]
+                      }
+                  ]
+              }
+          ]
+      },
+      "oidcc-rp-initiated-logout-query-added-to-post-logout-redirect-uri": {
+          "browser": [
+              {
+                  "match": "https://op.panva.cz/auth*",
+                  "tasks": [
+                      {
+                          "task": "Login",
+                          "optional": true,
+                          "match": "https://op.panva.cz/interaction*",
+                          "commands": [
+                              [
+                                  "text",
+                                  "name",
+                                  "login",
+                                  "foo",
+                                  "optional"
+                              ],
+                              [
+                                  "text",
+                                  "name",
+                                  "password",
+                                  "bar",
+                                  "optional"
+                              ],
+                              [
+                                  "click",
+                                  "class",
+                                  "login-submit"
+                              ]
+                          ]
+                      },
+                      {
+                          "task": "Consent",
+                          "optional": true,
+                          "match": "https://op.panva.cz/interaction*",
+                          "commands": [
+                              [
+                                  "click",
+                                  "class",
+                                  "login-submit"
+                              ]
+                          ]
+                      },
+                      {
+                          "task": "Verify Complete",
+                          "match": "*/test/*/callback*",
+                          "commands": [
+                              [
+                                  "wait",
+                                  "id",
+                                  "submission_complete",
+                                  10
+                              ]
+                          ]
+                      }
+                  ]
+              },
+              {
+                  "comment": "expect an immediate error page",
+                  "match": "https://op.panva.cz/session/end*",
+                  "tasks": [
+                      {
+                          "task": "Expect error page",
+                          "match": "https://op.panva.cz/session/end*",
+                          "commands": [
+                              [
+                                  "wait",
+                                  "xpath",
+                                  "//*",
+                                  10,
+                                  "post_logout_redirect_uri not registered",
+                                  "update-image-placeholder"
+                              ]
+                          ]
+                      }
+                  ]
+              }
+          ]
+      },
+      "oidcc-rp-initiated-logout-modified-id-token-hint" : {
+          "browser": [
+              {
+                  "match": "https://op.panva.cz/auth*",
+                  "tasks": [
+                      {
+                          "task": "Login",
+                          "optional": true,
+                          "match": "https://op.panva.cz/interaction*",
+                          "commands": [
+                              [
+                                  "text",
+                                  "name",
+                                  "login",
+                                  "foo",
+                                  "optional"
+                              ],
+                              [
+                                  "text",
+                                  "name",
+                                  "password",
+                                  "bar",
+                                  "optional"
+                              ],
+                              [
+                                  "click",
+                                  "class",
+                                  "login-submit"
+                              ]
+                          ]
+                      },
+                      {
+                          "task": "Consent",
+                          "optional": true,
+                          "match": "https://op.panva.cz/interaction*",
+                          "commands": [
+                              [
+                                  "click",
+                                  "class",
+                                  "login-submit"
+                              ]
+                          ]
+                      },
+                      {
+                          "task": "Verify Complete",
+                          "match": "*/test/*/callback*",
+                          "commands": [
+                              [
+                                  "wait",
+                                  "id",
+                                  "submission_complete",
+                                  10
+                              ]
+                          ]
+                      }
+                  ]
+              },
+              {
+                  "comment": "expect an immediate error page",
+                  "match": "https://op.panva.cz/session/end*",
+                  "tasks": [
+                      {
+                          "task": "Expect error page",
+                          "match": "https://op.panva.cz/session/end*",
+                          "commands": [
+                              [
+                                  "wait",
+                                  "xpath",
+                                  "//*",
+                                  10,
+                                  "could not validate id_token_hint",
+                                  "update-image-placeholder"
+                              ]
+                          ]
+                      }
+                  ]
+              }
+          ]
+      },
+      "oidcc-rp-initiated-logout-bad-id-token-hint" : {
+          "browser": [
+              {
+                  "match": "https://op.panva.cz/auth*",
+                  "tasks": [
+                      {
+                          "task": "Login",
+                          "optional": true,
+                          "match": "https://op.panva.cz/interaction*",
+                          "commands": [
+                              [
+                                  "text",
+                                  "name",
+                                  "login",
+                                  "foo",
+                                  "optional"
+                              ],
+                              [
+                                  "text",
+                                  "name",
+                                  "password",
+                                  "bar",
+                                  "optional"
+                              ],
+                              [
+                                  "click",
+                                  "class",
+                                  "login-submit"
+                              ]
+                          ]
+                      },
+                      {
+                          "task": "Consent",
+                          "optional": true,
+                          "match": "https://op.panva.cz/interaction*",
+                          "commands": [
+                              [
+                                  "click",
+                                  "class",
+                                  "login-submit"
+                              ]
+                          ]
+                      },
+                      {
+                          "task": "Verify Complete",
+                          "match": "*/test/*/callback*",
+                          "commands": [
+                              [
+                                  "wait",
+                                  "id",
+                                  "submission_complete",
+                                  10
+                              ]
+                          ]
+                      }
+                  ]
+              },
+              {
+                  "comment": "expect an immediate error page",
+                  "match": "https://op.panva.cz/session/end*",
+                  "tasks": [
+                      {
+                          "task": "Expect error page",
+                          "match": "https://op.panva.cz/session/end*",
+                          "commands": [
+                              [
+                                  "wait",
+                                  "xpath",
+                                  "//*",
+                                  10,
+                                  "unrecognized id_token_hint audience",
+                                  "update-image-placeholder"
+                              ]
+                          ]
+                      }
+                  ]
+              }
+          ]
+      },
+      "oidcc-rp-initiated-logout-no-id-token-hint" : {
+          "browser": [
+              {
+                  "match": "https://op.panva.cz/auth*",
+                  "tasks": [
+                      {
+                          "task": "Login",
+                          "optional": true,
+                          "match": "https://op.panva.cz/interaction*",
+                          "commands": [
+                              [
+                                  "text",
+                                  "name",
+                                  "login",
+                                  "foo",
+                                  "optional"
+                              ],
+                              [
+                                  "text",
+                                  "name",
+                                  "password",
+                                  "bar",
+                                  "optional"
+                              ],
+                              [
+                                  "click",
+                                  "class",
+                                  "login-submit"
+                              ]
+                          ]
+                      },
+                      {
+                          "task": "Consent",
+                          "optional": true,
+                          "match": "https://op.panva.cz/interaction*",
+                          "commands": [
+                              [
+                                  "click",
+                                  "class",
+                                  "login-submit"
+                              ]
+                          ]
+                      },
+                      {
+                          "task": "Verify Complete",
+                          "match": "*/test/*/callback*",
+                          "commands": [
+                              [
+                                  "wait",
+                                  "id",
+                                  "submission_complete",
+                                  10
+                              ]
+                          ]
+                      }
+                  ]
+              },
+              {
+                  "comment": "expect an immediate error page",
+                  "match": "https://op.panva.cz/session/end*",
+                  "tasks": [
+                      {
+                          "task": "Expect error page",
+                          "match": "https://op.panva.cz/session/end*",
+                          "commands": [
+                              [
+                                  "wait",
+                                  "xpath",
+                                  "//*",
+                                  10,
+                                  "post_logout_redirect_uri can only be used in combination with id_token_hint",
+                                  "update-image-placeholder"
+                              ]
+                          ]
+                      }
+                  ]
+              }
+          ]
+      },
+      "oidcc-rp-initiated-logout-no-params" : {
+          "browser": [
+              {
+                  "match": "https://op.panva.cz/auth*",
+                  "tasks": [
+                      {
+                          "task": "Login",
+                          "optional": true,
+                          "match": "https://op.panva.cz/interaction*",
+                          "commands": [
+                              [
+                                  "text",
+                                  "name",
+                                  "login",
+                                  "foo",
+                                  "optional"
+                              ],
+                              [
+                                  "text",
+                                  "name",
+                                  "password",
+                                  "bar",
+                                  "optional"
+                              ],
+                              [
+                                  "click",
+                                  "class",
+                                  "login-submit"
+                              ]
+                          ]
+                      },
+                      {
+                          "task": "Consent",
+                          "optional": true,
+                          "match": "https://op.panva.cz/interaction*",
+                          "commands": [
+                              [
+                                  "click",
+                                  "class",
+                                  "login-submit"
+                              ]
+                          ]
+                      },
+                      {
+                          "task": "Verify Complete",
+                          "match": "*/test/*/callback*",
+                          "commands": [
+                              [
+                                  "wait",
+                                  "id",
+                                  "submission_complete",
+                                  10
+                              ]
+                          ]
+                      }
+                  ]
+              },
+              {
+                  "comment": "wait for the logout success",
+                  "match": "https://op.panva.cz/session/end*",
+                  "tasks": [
+                      {
+                          "task": "Choose logout option",
+                          "match": "https://op.panva.cz/session/end*",
+                          "commands": [
+                              [
+                                  "click",
+                                  "css",
+                                  "button[autofocus] "
+                              ]
+                          ]
+                      },
+                      {
+                          "task": "Expect success page",
+                          "match": "https://op.panva.cz/session/end/success",
+                          "commands": [
+                              [
+                                  "wait",
+                                  "xpath",
+                                  "//*",
+                                  10,
+                                  "Sign-out Success",
+                                  "update-image-placeholder"
+                              ]
+                          ]
+                      }
+                  ]
+              }
+          ]
+      },
+      "oidcc-rp-initiated-logout-no-post-logout-redirect-uri" : {
+          "browser": [
+              {
+                  "match": "https://op.panva.cz/auth*",
+                  "tasks": [
+                      {
+                          "task": "Login",
+                          "optional": true,
+                          "match": "https://op.panva.cz/interaction*",
+                          "commands": [
+                              [
+                                  "text",
+                                  "name",
+                                  "login",
+                                  "foo",
+                                  "optional"
+                              ],
+                              [
+                                  "text",
+                                  "name",
+                                  "password",
+                                  "bar",
+                                  "optional"
+                              ],
+                              [
+                                  "click",
+                                  "class",
+                                  "login-submit"
+                              ]
+                          ]
+                      },
+                      {
+                          "task": "Consent",
+                          "optional": true,
+                          "match": "https://op.panva.cz/interaction*",
+                          "commands": [
+                              [
+                                  "click",
+                                  "class",
+                                  "login-submit"
+                              ]
+                          ]
+                      },
+                      {
+                          "task": "Verify Complete",
+                          "match": "*/test/*/callback*",
+                          "commands": [
+                              [
+                                  "wait",
+                                  "id",
+                                  "submission_complete",
+                                  10
+                              ]
+                          ]
+                      }
+                  ]
+              },
+              {
+                  "comment": "wait for the logout success",
+                  "match": "https://op.panva.cz/session/end*",
+                  "tasks": [
+                      {
+                          "task": "Choose logout option",
+                          "match": "https://op.panva.cz/session/end*",
+                          "commands": [
+                              [
+                                  "click",
+                                  "css",
+                                  "button[autofocus] "
+                              ]
+                          ]
+                      },
+                      {
+                          "task": "Expect success page",
+                          "match": "https://op.panva.cz/session/end/success?*",
+                          "commands": [
+                              [
+                                  "wait",
+                                  "xpath",
+                                  "//*",
+                                  10,
+                                  "Sign-out Success",
+                                  "update-image-placeholder"
+                              ]
+                          ]
+                      }
+                  ]
+              }
+          ]
+      },
+      "oidcc-rp-initiated-logout-only-state" : {
+          "browser": [
+              {
+                  "match": "https://op.panva.cz/auth*",
+                  "tasks": [
+                      {
+                          "task": "Login",
+                          "optional": true,
+                          "match": "https://op.panva.cz/interaction*",
+                          "commands": [
+                              [
+                                  "text",
+                                  "name",
+                                  "login",
+                                  "foo",
+                                  "optional"
+                              ],
+                              [
+                                  "text",
+                                  "name",
+                                  "password",
+                                  "bar",
+                                  "optional"
+                              ],
+                              [
+                                  "click",
+                                  "class",
+                                  "login-submit"
+                              ]
+                          ]
+                      },
+                      {
+                          "task": "Consent",
+                          "optional": true,
+                          "match": "https://op.panva.cz/interaction*",
+                          "commands": [
+                              [
+                                  "click",
+                                  "class",
+                                  "login-submit"
+                              ]
+                          ]
+                      },
+                      {
+                          "task": "Verify Complete",
+                          "match": "*/test/*/callback*",
+                          "commands": [
+                              [
+                                  "wait",
+                                  "id",
+                                  "submission_complete",
+                                  10
+                              ]
+                          ]
+                      }
+                  ]
+              },
+              {
+                  "comment": "wait for the logout success",
+                  "match": "https://op.panva.cz/session/end*",
+                  "tasks": [
+                      {
+                          "task": "Choose logout option",
+                          "match": "https://op.panva.cz/session/end*",
+                          "commands": [
+                              [
+                                  "click",
+                                  "css",
+                                  "button[autofocus] "
+                              ]
+                          ]
+                      },
+                      {
+                          "task": "Expect success page",
+                          "match": "https://op.panva.cz/session/end/success",
+                          "commands": [
+                              [
+                                  "wait",
+                                  "xpath",
+                                  "//*",
+                                  10,
+                                  "Sign-out Success",
+                                  "update-image-placeholder"
+                              ]
+                          ]
+                      }
+                  ]
+              }
+          ]
+      }
+  }
+}

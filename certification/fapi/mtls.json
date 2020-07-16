@@ -1,5 +1,5 @@
 {
-    "alias": "oidc-provider-mtls",
+    "alias": "oidc-provider",
     "server": {
         "discoveryUrl": "https://fapi.panva.cz/.well-known/openid-configuration"
     },
@@ -113,7 +113,7 @@
                 },
                 {
                     "task": "Verify Complete",
-                    "match": "https://*/test/a/oidc-provider-mtls/callback*",
+                    "match": "https://*/test/a/*/callback*",
                     "commands": [
                         [
                             "wait",

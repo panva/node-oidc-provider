@@ -1,5 +1,5 @@
 {
-    "alias": "oidc-provider-pkjwt",
+    "alias": "oidc-provider",
     "server": {
         "discoveryUrl": "https://fapi.panva.cz/.well-known/openid-configuration"
     },
@@ -103,7 +103,7 @@
                 },
                 {
                     "task": "Verify Complete",
-                    "match": "https://*/test/a/oidc-provider-pkjwt/callback*",
+                    "match": "https://*/test/a/*/callback*",
                     "commands": [
                         [
                             "wait",
@@ -210,6 +210,5 @@
                 }
             ]
         }
-    },
-    "description": "oidc-provider private_key_jwt"
+    }
 }

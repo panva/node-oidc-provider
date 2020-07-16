@@ -139,6 +139,13 @@ module.exports = {
         x: 'Eb3RtGgBGOEz33yu46aha_RU6pyBaYNlu6SawlWGGHQ',
         y: 'tUncttzF6Ud4Abfn1N2A1Rz2MBbJSdI0zuKS28BNb-U',
       }, {
+        crv: 'secp256k1',
+        d: 'ANJ-5X72e_4mNAbM-gGIpKTyrJozJe9rVSnex_w2Lj4',
+        kty: 'EC',
+        use: 'sig',
+        x: 'KDAUHh_SpgROXXAq8IFs9B9lGNB9VP4RwebeAO2tBao',
+        y: 'wr3L1dZyUCrS4H18fDYy5hcvGTCp05tiiBy0ZUG8Qs4',
+      }, {
         crv: 'P-384',
         d: 'nHHV7KHGMNp1P7fIiC3iSNUb07pzgcjNgumLhy2nGYCeNticodVEOve1DQEGkVtJ',
         kty: 'EC',

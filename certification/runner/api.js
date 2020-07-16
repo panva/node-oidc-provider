@@ -1,5 +1,6 @@
 /* eslint-disable no-await-in-loop */
 const { strict: assert } = require('assert');
+const { createWriteStream } = require('fs');
 
 const Got = require('got');
 const ms = require('ms');
@@ -25,7 +26,18 @@ class API {
       timeout: 10000,
     });
 
+    const { stream } = Got.extend({
+      baseUrl,
+      followRedirect: false,
+      headers: {
+        ...(bearerToken ? { authorization: `bearer ${bearerToken}` } : undefined),
+        'content-type': 'application/json',
+      },
+      retry: 0,
+    });
+
     this.get = get;
+    this.stream = stream;
     this.post = post;
   }
 
@@ -54,13 +66,17 @@ class API {
     return response;
   }
 
-  async createTestFromPlan({ plan, test } = {}) {
+  async createTestFromPlan({ plan, test, variant } = {}) {
     assert(plan, 'argument property "plan" missing');
     assert(test, 'argument property "test" missing');
 
-    const { statusCode, body: response } = await this.post('/api/runner', {
-      query: { test, plan },
-    });
+    const query = { test, plan };
+
+    if (variant) {
+      Object.assign(query, { variant: JSON.stringify(variant) });
+    }
+
+    const { statusCode, body: response } = await this.post('/api/runner', { query });
 
     assert.equal(statusCode, 201);
 
@@ -87,6 +103,19 @@ class API {
     return response;
   }
 
+  async downloadArtifact({ planId } = {}) {
+    assert(planId, 'argument property "planId" missing');
+    await new Promise((resolve) => {
+      const download = this.stream(`/api/plan/exporthtml/${planId}`, {
+        headers: { accept: 'application/zip' },
+        encoding: null,
+      });
+
+      download.pipe(createWriteStream(`export-${planId}.zip`));
+      download.on('close', resolve);
+    });
+  }
+
   async waitForState({ moduleId, timeout = ms('4m') } = {}) {
     assert(moduleId, 'argument property "moduleId" missing');
     assert(moduleId, 'argument property "states" missing');
@@ -96,7 +125,9 @@ class API {
 
     while (Date.now() < timeoutAt) {
       const { status, result } = await this.getModuleInfo({ moduleId });
-      debug('module id %s status is %s', moduleId, status);
+      if (!['WAITING', 'FINISHED', 'RUNNING', 'CREATED'].includes(status)) {
+        debug('module id %s status is %s', moduleId, status);
+      }
       if (FINISHED.has(status)) {
         if (!status || !result) continue; // eslint-disable-line no-continue
         if (!RESULTS.has(result)) {
