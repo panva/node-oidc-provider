@@ -31,11 +31,10 @@ const details = await provider.interactionDetails(req, res)
 // rest of your code...
 
 const result = {
-  select_account: {},
   login: { account: account.accountId },
   consent: { 
-    rejectedScopes: ... // array of strings or Set of strings representing rejectedScopes
-    rejectedClaims: ... // array of strings or Set of strings representing rejectedClaims
+    rejectedScopes: [] // array of strings representing rejected scopes, see below
+    rejectedClaims: [] // array of strings representing rejected claims, see below
   }
 }
 const options = { mergeWithLastSubmission: false }
