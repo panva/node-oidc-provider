@@ -83,7 +83,7 @@ jobs:
   fapi-conformance:
     runs-on: ubuntu-latest
     env:
-      VERSION: release-v4.0.7
+      VERSION: release-v4.0.8
       SUITE_BASE_URL: https://localhost.emobix.co.uk:8443
       NODE_TLS_REJECT_UNAUTHORIZED: 0
       PLAN_NAME: fapi-rw-id2-test-plan
@@ -163,7 +163,7 @@ jobs:
   oidc-conformance:
     runs-on: ubuntu-latest
     env:
-      VERSION: release-v4.0.7
+      VERSION: release-v4.0.8
       SUITE_BASE_URL: https://localhost.emobix.co.uk:8443
       NODE_TLS_REJECT_UNAUTHORIZED: 0
       SETUP: ${{ matrix.setup }}
