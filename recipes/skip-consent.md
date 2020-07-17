@@ -33,11 +33,13 @@ const details = await provider.interactionDetails(req, res)
 const result = {
   select_account: {},
   login: { account: account.accountId },
-  consent: { accepted: [details.params.scope.split(' ').filter(scope => WHITELISTED_SCOPES.includes(scope))] }
+  consent: { 
+    rejectedScopes: ... // array of strings or Set of strings representing rejectedScopes
+    rejectedClaims: ... // array of strings or Set of strings representing rejectedClaims
+  }
 }
 const options = { mergeWithLastSubmission: false }
 await provider.interactionFinished(req, res, result, options)
 ```
 
-You should also provide `WHITELISTED_SCOPES` to above code based on `clientId` in order to prevent scopes being exposed to clients you don't want them to be exposed to.
-You can also blacklist scopes by adding them to `consent.rejectedScopes` key, or blacklist claims by adding them to `consent.rejectedClaims` key in order to prevent them from being issued.
+You should also provide array or Set of `rejectedScopes` and `rejectedClaims` in `consent` object in order to prevent scopes/claims being exposed to clients you don't want them to be exposed to.
