@@ -56,10 +56,12 @@ function report() {
     await pass({ format });
   }
 
-  const mountTo = '/oidc';
+  if (process.platform === 'linux') {
+    const mountTo = '/oidc';
 
-  for (const mountVia of ['connect', 'express', 'fastify', 'hapi', 'koa']) {
-    await pass({ format: 'dynamic', mountVia, mountTo });
+    for (const mountVia of ['connect', 'express', 'fastify', 'hapi', 'koa']) {
+      await pass({ format: 'dynamic', mountVia, mountTo });
+    }
   }
 
   await report();
