@@ -34,7 +34,7 @@ const result = {
   login: { account: account.accountId },
   consent: { 
     rejectedScopes: [], // array of strings representing rejected scopes, see below
-    rejectedClaims: [] // array of strings representing rejected claims, see below
+    rejectedClaims: [], // array of strings representing rejected claims, see below
   }
 }
 const options = { mergeWithLastSubmission: false }
