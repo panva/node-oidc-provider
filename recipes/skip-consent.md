@@ -42,4 +42,4 @@ const options = { mergeWithLastSubmission: false }
 await provider.interactionFinished(req, res, result, options)
 ```
 
-You should also provide array or Set of `rejectedScopes` and `rejectedClaims` in `consent` object in order to prevent scopes/claims being exposed to clients you don't want them to be exposed to.
+You should also provide of `rejectedScopes` and `rejectedClaims` in `consent` object in order to prevent scopes/claims being exposed to clients you don't want them to be exposed to.
