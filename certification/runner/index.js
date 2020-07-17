@@ -9,19 +9,26 @@ const debug = require('./debug');
 const API = require('./api');
 
 const {
-  CONFIGURATION,
   SUITE_ACCESS_TOKEN,
   SUITE_BASE_URL = 'https://www.certification.openid.net',
 } = process.env;
 
 let {
+  CONFIGURATION = './certification/plan.json',
   PLAN_NAME,
   VARIANT,
   SKIP,
 } = process.env;
 
 if ('SETUP' in process.env) {
-  ({ plan: PLAN_NAME, skip: SKIP, ...VARIANT } = JSON.parse(process.env.SETUP));
+  let configurationFile;
+  ({
+    configuration: configurationFile,
+    plan: PLAN_NAME,
+    skip: SKIP,
+    ...VARIANT
+  } = JSON.parse(process.env.SETUP));
+  CONFIGURATION = configurationFile || CONFIGURATION;
   VARIANT = JSON.stringify(VARIANT);
 }
 

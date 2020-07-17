@@ -33,7 +33,7 @@ jobs:
           key: ${{ runner.os }}-node_modules-${{ hashFiles('**/package.json') }}-${{ steps.node.outputs.version }}
       - name: Install dependencies
         run: npx panva/npm-install-retry
-        if: steps.node_modules.outputs.cache-hit != 'true'
+        if: ${{ steps.node_modules.outputs.cache-hit != 'true' }}
       - run: npm run lint
       - run: npm run lint-ts
 
@@ -74,98 +74,17 @@ jobs:
           key: ${{ runner.os }}-node_modules-${{ hashFiles('**/package.json') }}-${{ steps.node.outputs.version }}
       - name: Install dependencies
         run: npx panva/npm-install-retry
-        if: steps.node_modules.outputs.cache-hit != 'true'
+        if: ${{ steps.node_modules.outputs.cache-hit != 'true' }}
       - run: npm run ci
       - env:
           CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
         run: npx codecov
 
-  fapi-conformance:
+  conformance-suite:
     runs-on: ubuntu-latest
     env:
       VERSION: release-v4.0.8
       SUITE_BASE_URL: https://localhost.emobix.co.uk:8443
-      NODE_TLS_REJECT_UNAUTHORIZED: 0
-      PLAN_NAME: fapi-rw-id2-test-plan
-    steps:
-      - name: Checkout
-        uses: actions/checkout@master
-      - name: Setup node
-        uses: actions/setup-node@v2-beta
-        with:
-          node-version: 12
-      - name: Store node version variable
-        id: node
-        run: |
-          echo "::set-output name=version::$(node -v)"
-      - name: Cache node_modules
-        uses: actions/cache@v2
-        id: node_modules
-        with:
-          path: node_modules
-          key: ${{ runner.os }}-node_modules-${{ hashFiles('**/package.json') }}-${{ steps.node.outputs.version }}
-      - name: Install dependencies
-        run: npx panva/npm-install-retry
-        if: steps.node_modules.outputs.cache-hit != 'true'
-      - name: Run oidc-provider
-        run: node certification/fapi &
-        env:
-          DEBUG: oidc-provider:*
-          ISSUER: https://172.17.0.1:3000
-          NODE_OPTIONS: --tls-cipher-list="ECDHE-ECDSA-AES128-GCM-SHA256 ECDHE-ECDSA-AES256-GCM-SHA384 ECDHE-RSA-AES128-GCM-SHA256 ECDHE-RSA-AES256-GCM-SHA384"
-      - name: Cache Conformance Suite Build
-        uses: actions/cache@v2
-        id: cache
-        with:
-          path: ./conformance-suite
-          key: suite-${{ env.VERSION }}
-      - name: Conformance Suite Build
-        if: steps.cache.outputs.cache-hit != 'true'
-        env:
-          MAVEN_CACHE: ./m2
-        run: |
-          git clone https://gitlab.com/openid/conformance-suite.git
-          cd conformance-suite
-          git checkout $VERSION
-          sed -i -e 's/localhost/localhost.emobix.co.uk/g' src/main/resources/application.properties
-          sed -i -e 's/-B clean/-B -DskipTests=true/g' builder-compose.yml
-          docker-compose -f builder-compose.yml run builder
-      - name: Run Conformance Suite
-        run: |
-          cd conformance-suite
-          docker-compose -f docker-compose-dev.yml up -d
-          while ! curl -skfail https://localhost.emobix.co.uk:8443/api/runner/available >/dev/null; do sleep 2; done
-      - name: Adjust configuration files for CI
-        run: |
-          sed -i -e 's/mtls.fapi.panva.cz/172.17.0.1:3000/g' certification/fapi/mtls.json
-          sed -i -e 's/fapi.panva.cz/172.17.0.1:3000/g' certification/fapi/mtls.json
-          sed -i -e 's/mtls.fapi.panva.cz/172.17.0.1:3000/g' certification/fapi/pkjwt.json
-          sed -i -e 's/fapi.panva.cz/172.17.0.1:3000/g' certification/fapi/pkjwt.json
-      - name: Run test plans
-        run: |
-          npx concurrently \
-          "CONFIGURATION='./certification/fapi/pkjwt.json' VARIANT='{\"client_auth_type\":\"private_key_jwt\",\"fapi_profile\":\"plain_fapi\",\"fapi_response_mode\":\"plain_response\"}' mocha --delay --timeout 0 --retries 0 certification/runner" \
-          "CONFIGURATION='./certification/fapi/mtls.json' VARIANT='{\"client_auth_type\":\"mtls\",\"fapi_profile\":\"plain_fapi\",\"fapi_response_mode\":\"plain_response\"}' mocha --delay --timeout 0 --retries 0 certification/runner" \
-          "CONFIGURATION='./certification/fapi/pkjwt.json' VARIANT='{\"client_auth_type\":\"private_key_jwt\",\"fapi_profile\":\"plain_fapi\",\"fapi_response_mode\":\"jarm\"}' mocha --delay --timeout 0 --retries 0 certification/runner" \
-          "CONFIGURATION='./certification/fapi/mtls.json' VARIANT='{\"client_auth_type\":\"mtls\",\"fapi_profile\":\"plain_fapi\",\"fapi_response_mode\":\"jarm\"}' mocha --delay --timeout 0 --retries 0 certification/runner"
-      - name: Upload test artifacts
-        uses: actions/upload-artifact@v2
-        with:
-          path: export-*.zip
-          name: fapi certification html results
-        if: always()
-      - name: Stop Conformance Suite
-        run: |
-          cd conformance-suite
-          docker-compose -f docker-compose-dev.yml down
-          sudo rm -rf mongo
-
-  oidc-conformance:
-    runs-on: ubuntu-latest
-    env:
-      VERSION: release-v4.0.8
-      SUITE_BASE_URL: https://localhost.emobix.co.uk:8443
-      NODE_TLS_REJECT_UNAUTHORIZED: 0
       SETUP: ${{ matrix.setup }}
     strategy:
       matrix:
@@ -184,6 +103,10 @@ jobs:
           - '{"plan":"oidcc-frontchannel-rp-initiated-logout-certification-test-plan","response_type":"code","client_registration":"dynamic_client"}'
           - '{"plan":"oidcc-rp-initiated-logout-certification-test-plan","response_type":"code","client_registration":"dynamic_client"}'
           - '{"plan":"oidcc-session-management-certification-test-plan","response_type":"code","client_registration":"dynamic_client","skip":"oidcc-session-management-rp-initiated-logout"}'
+          - '{"plan":"fapi-rw-id2-test-plan","configuration":"./certification/fapi/pkjwt.json","client_auth_type":"private_key_jwt","fapi_profile":"plain_fapi","fapi_response_mode":"plain_response"}'
+          - '{"plan":"fapi-rw-id2-test-plan","configuration":"./certification/fapi/pkjwt.json","client_auth_type":"private_key_jwt","fapi_profile":"plain_fapi","fapi_response_mode":"jarm"}'
+          - '{"plan":"fapi-rw-id2-test-plan","configuration":"./certification/fapi/mtls.json","client_auth_type":"mtls","fapi_profile":"plain_fapi","fapi_response_mode":"plain_response"}'
+          - '{"plan":"fapi-rw-id2-test-plan","configuration":"./certification/fapi/mtls.json","client_auth_type":"mtls","fapi_profile":"plain_fapi","fapi_response_mode":"jarm"}'
     steps:
       - name: Checkout
         uses: actions/checkout@master
@@ -203,12 +126,22 @@ jobs:
           key: ${{ runner.os }}-node_modules-${{ hashFiles('**/package.json') }}-${{ steps.node.outputs.version }}
       - name: Install dependencies
         run: npx panva/npm-install-retry
-        if: steps.node_modules.outputs.cache-hit != 'true'
-      - name: Run oidc-provider
+        if: ${{ steps.node_modules.outputs.cache-hit != 'true' }}
+      - name: Run oidc-provider (OIDC)
         run: node certification/docker &
+        if: ${{ startsWith(fromJSON(matrix.setup).plan, 'oidcc') }}
         env:
-          DEBUG: oidc-provider:*
+          PORT: 3000
           ISSUER: https://172.17.0.1:3000
+          NODE_TLS_REJECT_UNAUTHORIZED: 0
+      - name: Run oidc-provider (FAPI)
+        run: node certification/fapi &
+        if: ${{ startsWith(fromJSON(matrix.setup).plan, 'fapi') }}
+        env:
+          ISSUER: https://172.17.0.1:3001
+          PORT: 3001
+          NODE_OPTIONS: --tls-cipher-list="ECDHE-ECDSA-AES128-GCM-SHA256 ECDHE-ECDSA-AES256-GCM-SHA384 ECDHE-RSA-AES128-GCM-SHA256 ECDHE-RSA-AES256-GCM-SHA384"
+          NODE_TLS_REJECT_UNAUTHORIZED: 0
       - name: Cache Conformance Suite Build
         uses: actions/cache@v2
         id: cache
@@ -216,7 +149,7 @@ jobs:
           path: ./conformance-suite
           key: suite-${{ env.VERSION }}
       - name: Conformance Suite Build
-        if: steps.cache.outputs.cache-hit != 'true'
+        if: ${{ steps.cache.outputs.cache-hit != 'true' }}
         env:
           MAVEN_CACHE: ./m2
         run: |
@@ -234,16 +167,20 @@ jobs:
       - name: Adjust configuration files for CI
         run: |
           sed -i -e 's/op.panva.cz/172.17.0.1:3000/g' certification/plan.json
+          sed -i -e 's/mtls.fapi.panva.cz/172.17.0.1:3001/g' certification/fapi/mtls.json
+          sed -i -e 's/fapi.panva.cz/172.17.0.1:3001/g' certification/fapi/mtls.json
+          sed -i -e 's/mtls.fapi.panva.cz/172.17.0.1:3001/g' certification/fapi/pkjwt.json
+          sed -i -e 's/fapi.panva.cz/172.17.0.1:3001/g' certification/fapi/pkjwt.json
       - name: Run ${{ matrix.setup }}
         run: npx mocha --delay --timeout 0 --retries 0 certification/runner
         env:
-          CONFIGURATION: ./certification/plan.json
+          NODE_TLS_REJECT_UNAUTHORIZED: 0
       - name: Upload test artifacts
         uses: actions/upload-artifact@v2
         with:
           path: export-*.zip
           name: oidc certification html results
-        if: always()
+        if: ${{ always() }}
       - name: Stop Conformance Suite
         run: |
           cd conformance-suite
@@ -251,12 +188,11 @@ jobs:
           sudo rm -rf mongo
 
   deploy:
-    if: github.event_name == 'push' && github.ref == 'refs/heads/master' && github.repository == 'panva/node-oidc-provider'
+    if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/master' && github.repository == 'panva/node-oidc-provider' }}
     runs-on: ubuntu-latest
     needs:
       - test
-      - oidc-conformance
-      - fapi-conformance
+      - conformance-suite
     strategy:
       matrix:
         app:
