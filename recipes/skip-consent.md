@@ -33,7 +33,7 @@ const details = await provider.interactionDetails(req, res)
 const result = {
   login: { account: account.accountId },
   consent: { 
-    rejectedScopes: [] // array of strings representing rejected scopes, see below
+    rejectedScopes: [], // array of strings representing rejected scopes, see below
     rejectedClaims: [] // array of strings representing rejected claims, see below
   }
 }
