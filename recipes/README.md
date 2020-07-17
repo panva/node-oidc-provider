@@ -20,6 +20,7 @@ If you or your business use oidc-provider, please consider becoming a [sponsor][
 - [Decentralized claims](decentralized_claims.md)
 - [Redirect URI wildcards](redirect_uri_wildcards.md)
 - [Allowing HTTP and/or localhost for implicit response types](implicit_http_localhost.md)
+- [Skipping consent](skip-consent.md)
 - ... got something worthy of being here? Submit a PR with a new recipe to help others.
 
 [support-sponsor]: https://github.com/sponsors/panva
