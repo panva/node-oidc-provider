@@ -163,7 +163,7 @@ See the list of available emitted [event names](/docs/events.md) and their descr
 [oauth-native-apps]: https://tools.ietf.org/html/rfc8252
 [debug-link]: https://github.com/visionmedia/debug
 [wmrm]: https://tools.ietf.org/html/draft-sakimura-oauth-wmrm-00
-[jar]: https://tools.ietf.org/html/draft-ietf-oauth-jwsreq-19
+[jar]: https://tools.ietf.org/html/draft-ietf-oauth-jwsreq-26
 [device-flow]: https://tools.ietf.org/html/rfc8628
 [jwt-introspection]: https://tools.ietf.org/html/draft-ietf-oauth-jwt-introspection-response-09
 [sponsor-auth0]: https://auth0.com/overview?utm_source=GHsponsor&utm_medium=GHsponsor&utm_campaign=oidc-provider&utm_content=auth
