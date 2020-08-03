@@ -1272,7 +1272,7 @@ false
 
 ### features.pushedAuthorizationRequests
 
-[draft-ietf-oauth-par-01](https://tools.ietf.org/html/draft-ietf-oauth-par-01) - OAuth 2.0 Pushed Authorization Requests  
+[draft-ietf-oauth-par-03](https://tools.ietf.org/html/draft-ietf-oauth-par-03) - OAuth 2.0 Pushed Authorization Requests  
 
 Enables the use of `pushed_authorization_request_endpoint` defined by the Pushed Authorization Requests draft.   
   

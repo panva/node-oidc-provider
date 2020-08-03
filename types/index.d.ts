@@ -981,7 +981,7 @@ export interface Configuration {
     pushedAuthorizationRequests?: {
       requirePushedAuthorizationRequests?: boolean;
       enabled?: boolean,
-      ack?: 'draft-02'
+      ack?: 'draft-02' | 'draft-03'
     },
 
     mTLS?: {
