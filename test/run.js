@@ -3,6 +3,7 @@
 const { createServer } = require('http');
 
 const Mocha = require('mocha');
+const lookupFiles = require('mocha/lib/cli/lookup-files');
 const { all: clearRequireCache } = require('clear-module');
 const sample = require('lodash/sample');
 
@@ -28,7 +29,6 @@ if (!formats.length) {
 }
 const passed = [];
 
-const { utils: { lookupFiles } } = Mocha;
 const files = lookupFiles('test/**/*.test.js', ['js'], true);
 class SuiteFailedError extends Error {}
 

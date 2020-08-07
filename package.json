@@ -84,7 +84,7 @@
     "koa-mount": "^4.0.0",
     "koa-router": "^7.4.0",
     "lodash": "^4.17.19",
-    "mocha": "^8.0.1",
+    "mocha": "^8.1.1",
     "mocha.parallel": "^0.15.6",
     "moment": "^2.27.0",
     "nock": "^13.0.2",
