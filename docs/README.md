@@ -3780,7 +3780,7 @@ listeners for errors
 deliver them to client developers out-of-band, e.g. by logs in an admin interface.
 
 ```js
-function handleClientAuthErrors(err, { headers: { authorization }, oidc: { body, client } }) {
+function handleClientAuthErrors({ headers: { authorization }, oidc: { body, client } }, err) {
   if (err.statusCode === 401 && err.message === 'invalid_client') {
     // console.log(err);
     // save error details out-of-bands for the client developers, `authorization`, `body`, `client`
