@@ -5,7 +5,10 @@ const config = cloneDeep(require('../default.config'));
 const { Check, Prompt, base } = require('../../lib/helpers/interaction_policy');
 
 config.extraParams = ['triggerCustomFail', 'triggerUnrequestable'];
-merge(config.features, { sessionManagement: { enabled: true } });
+merge(config.features, {
+  sessionManagement: { enabled: true },
+  rpInitiatedLogout: { enabled: false },
+});
 
 const policy = base();
 

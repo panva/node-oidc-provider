@@ -464,7 +464,7 @@ describe('logout endpoint', () => {
 
     describe('GET end_session_success', () => {
       it('calls the postLogoutSuccessSource helper', function () {
-        const renderSpy = sinon.spy(i(this.provider).configuration(), 'postLogoutSuccessSource');
+        const renderSpy = sinon.spy(i(this.provider).configuration('features.rpInitiatedLogout'), 'postLogoutSuccessSource');
         return this.agent.get('/session/end/success')
           .set('Accept', 'text/html')
           .expect(200)
@@ -476,7 +476,7 @@ describe('logout endpoint', () => {
       });
 
       it('has the client loaded when present', function () {
-        const renderSpy = sinon.spy(i(this.provider).configuration(), 'postLogoutSuccessSource');
+        const renderSpy = sinon.spy(i(this.provider).configuration('features.rpInitiatedLogout'), 'postLogoutSuccessSource');
         return this.agent.get('/session/end/success?client_id=client')
           .set('Accept', 'text/html')
           .expect(200)

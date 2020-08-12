@@ -9,6 +9,7 @@ merge(config.features, {
   claimsParameter: { enabled: true },
   requestObjects: { request: false, requestUri: false },
   resourceIndicators: { enabled: true },
+  rpInitiatedLogout: { enabled: false },
 });
 
 config.extraParams = [
