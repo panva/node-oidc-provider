@@ -46,6 +46,7 @@ The following draft specifications are implemented by oidc-provider.
 - [OAuth 2.0 Pushed Authorization Requests - draft 03][par]
 - [OAuth 2.0 Resource Indicators - draft 08][resource-indicators]
 - [OAuth 2.0 Web Message Response Mode - individual draft 00][wmrm]
+- [OpenID Connect RP-Initiated Logout 1.0 - draft 01][rpinitiated-logout]
 - [OpenID Connect Back-Channel Logout 1.0 - draft 06][backchannel-logout]
 - [OpenID Connect Front-Channel Logout 1.0 - draft 04][frontchannel-logout]
 - [OpenID Connect Session Management 1.0 - draft 30][session-management]
@@ -174,3 +175,4 @@ See the list of available emitted [event names](/docs/events.md) and their descr
 [jwt-at]: https://tools.ietf.org/html/draft-ietf-oauth-access-token-jwt-05
 [support-sponsor]: https://github.com/sponsors/panva
 [par]: https://tools.ietf.org/html/draft-ietf-oauth-par-03
+[rpinitiated-logout]: https://openid.net/specs/openid-connect-rpinitiated-1_0-01.html
