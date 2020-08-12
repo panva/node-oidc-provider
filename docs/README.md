@@ -1727,7 +1727,7 @@ _**default value**_:
 
 ### features.sessionManagement
 
-[Session Management 1.0 - draft 28](https://openid.net/specs/openid-connect-session-1_0-28.html)  
+[Session Management 1.0 - draft 30](https://openid.net/specs/openid-connect-session-1_0-30.html)  
 
 Enables Session Management features.   
  Note: Browsers blocking access to cookies from a third party context hinder the reliability of this standard.  

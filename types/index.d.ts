@@ -943,7 +943,7 @@ export interface Configuration {
     sessionManagement?: {
       enabled?: boolean,
       keepHeaders?: boolean,
-      ack?: 28 | 'draft-28',
+      ack?: 28 | 'draft-28' | 'draft-29' | 'draft-30',
       scriptNonce?: (ctx: KoaContextWithOIDC) => string
     },
 

@@ -46,9 +46,9 @@ The following draft specifications are implemented by oidc-provider.
 - [OAuth 2.0 Pushed Authorization Requests - draft 03][par]
 - [OAuth 2.0 Resource Indicators - draft 08][resource-indicators]
 - [OAuth 2.0 Web Message Response Mode - individual draft 00][wmrm]
-- [OpenID Connect Session Management 1.0 - draft 28][session-management]
 - [OpenID Connect Back-Channel Logout 1.0 - draft 06][backchannel-logout]
 - [OpenID Connect Front-Channel Logout 1.0 - draft 04][frontchannel-logout]
+- [OpenID Connect Session Management 1.0 - draft 30][session-management]
 
 Updates to draft specification versions are released as MINOR library versions,
 if you utilize these specification implementations consider using the tilde `~` operator in your
@@ -146,7 +146,7 @@ See the list of available emitted [event names](/docs/events.md) and their descr
 [discovery]: https://openid.net/specs/openid-connect-discovery-1_0.html
 [oauth2-registration]: https://tools.ietf.org/html/rfc7591
 [registration]: https://openid.net/specs/openid-connect-registration-1_0.html
-[session-management]: https://openid.net/specs/openid-connect-session-1_0-28.html
+[session-management]: https://openid.net/specs/openid-connect-session-1_0-30.html
 [form-post]: https://openid.net/specs/oauth-v2-form-post-response-mode-1_0.html
 [oauth2]: https://tools.ietf.org/html/rfc6749
 [oauth2-bearer]: https://tools.ietf.org/html/rfc6750
