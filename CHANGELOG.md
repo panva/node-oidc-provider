@@ -2,6 +2,16 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [6.29.0](https://github.com/panva/node-oidc-provider/compare/v6.28.0...v6.29.0) (2020-08-12)
+
+
+### Features
+
+* allow RP-Initiated Logout 1.0 feature to be disabled ([a2ef044](https://github.com/panva/node-oidc-provider/commit/a2ef0449fd5102f3b09218189744be592818859b))
+* update backchannelLogout feature draft version ([9a9dd7e](https://github.com/panva/node-oidc-provider/commit/9a9dd7e754cf509f2ae8cb82193ce79627e5ec4a))
+* update frontchannelLogout feature draft version ([d54cc8f](https://github.com/panva/node-oidc-provider/commit/d54cc8f8caf145aaa3959f1b3b7eb202e4072976))
+* update sessionManagement feature draft version ([aa62927](https://github.com/panva/node-oidc-provider/commit/aa62927ebe8d3832d3dd63de95bddd2590ea6d6f))
+
 ## [6.28.0](https://github.com/panva/node-oidc-provider/compare/v6.27.5...v6.28.0) (2020-07-14)
 
 
