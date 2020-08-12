@@ -1002,7 +1002,7 @@ export interface Configuration {
 
     frontchannelLogout?: {
       enabled?: boolean;
-      ack?: 2 | 'draft-02';
+      ack?: 2 | 'draft-02' | 'draft-03' | 'draft-04';
       logoutPendingSource?: (ctx: KoaContextWithOIDC, frames: string[], postLogoutRedirectUri?: string) => CanBePromise<void | undefined>;
     };
   };

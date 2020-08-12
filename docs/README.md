@@ -980,7 +980,7 @@ _**default value**_:
 
 ### features.frontchannelLogout
 
-[Front-Channel Logout 1.0 - draft 02](https://openid.net/specs/openid-connect-frontchannel-1_0-02.html)  
+[Front-Channel Logout 1.0 - draft 04](https://openid.net/specs/openid-connect-frontchannel-1_0-04.html)  
 
 Enables Front-Channel Logout features   
  Note: Browsers blocking access to cookies from a third party context hinder the reliability of this standard.  

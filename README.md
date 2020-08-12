@@ -46,9 +46,9 @@ The following draft specifications are implemented by oidc-provider.
 - [OAuth 2.0 Pushed Authorization Requests - draft 03][par]
 - [OAuth 2.0 Resource Indicators - draft 08][resource-indicators]
 - [OAuth 2.0 Web Message Response Mode - individual draft 00][wmrm]
-- [OpenID Connect Front-Channel Logout 1.0 - draft 02][frontchannel-logout]
 - [OpenID Connect Session Management 1.0 - draft 28][session-management]
 - [OpenID Connect Back-Channel Logout 1.0 - draft 06][backchannel-logout]
+- [OpenID Connect Front-Channel Logout 1.0 - draft 04][frontchannel-logout]
 
 Updates to draft specification versions are released as MINOR library versions,
 if you utilize these specification implementations consider using the tilde `~` operator in your
@@ -157,8 +157,8 @@ See the list of available emitted [event names](/docs/events.md) and their descr
 [heroku-example]: https://op.panva.cz/.well-known/openid-configuration
 [heroku-example-client]: https://tranquil-reef-95185.herokuapp.com/client
 [openid-client]: https://github.com/panva/node-openid-client
-[frontchannel-logout]: https://openid.net/specs/openid-connect-frontchannel-1_0-02.html
 [backchannel-logout]: https://openid.net/specs/openid-connect-backchannel-1_0-06.html
+[frontchannel-logout]: https://openid.net/specs/openid-connect-frontchannel-1_0-04.html
 [registration-management]: https://tools.ietf.org/html/rfc7592
 [oauth-native-apps]: https://tools.ietf.org/html/rfc8252
 [debug-link]: https://github.com/visionmedia/debug
