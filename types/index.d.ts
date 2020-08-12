@@ -949,7 +949,7 @@ export interface Configuration {
 
     backchannelLogout?: {
       enabled?: boolean,
-      ack?: 4 | 'draft-04'
+      ack?: 4 | 'draft-04' | 'draft-05' | 'draft-06'
     },
 
     ietfJWTAccessTokenProfile?: {

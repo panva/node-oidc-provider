@@ -686,7 +686,7 @@ new Provider('http://localhost:3000', {
 
 ### features.backchannelLogout
 
-[Back-Channel Logout 1.0 - draft 04](https://openid.net/specs/openid-connect-backchannel-1_0-04.html)  
+[Back-Channel Logout 1.0 - draft 06](https://openid.net/specs/openid-connect-backchannel-1_0-06.html)  
 
 Enables Back-Channel Logout features.   
   
