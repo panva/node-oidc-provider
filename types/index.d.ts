@@ -984,6 +984,12 @@ export interface Configuration {
       ack?: 'draft-02' | 'draft-03'
     },
 
+    rpInitiatedLogout?: {
+      enabled?: boolean,
+      postLogoutSuccessSource?: (ctx: KoaContextWithOIDC) => CanBePromise<void | undefined>,
+      logoutSource?: (ctx: KoaContextWithOIDC, form: string) => CanBePromise<void | undefined>
+    },
+
     mTLS?: {
       enabled?: boolean;
       certificateBoundAccessTokens?: boolean;
