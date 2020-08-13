@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [6.29.1](https://github.com/panva/node-oidc-provider/compare/v6.29.0...v6.29.1) (2020-08-13)
+
+
+### Bug Fixes
+
+* **typescript:** add missing rpInitiatedLogout types ([59c389b](https://github.com/panva/node-oidc-provider/commit/59c389b6e78cd4e9968d575dbaf5824edc8a1464))
+
 ## [6.29.0](https://github.com/panva/node-oidc-provider/compare/v6.28.0...v6.29.0) (2020-08-12)
 
 
