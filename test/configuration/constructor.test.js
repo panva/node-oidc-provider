@@ -72,22 +72,6 @@ describe('Provider configuration', () => {
     });
   });
 
-  describe('claims', () => {
-    it('only accepts maps and objects', () => {
-      new Provider('http://localhost:3000', { claims: { foo: null } });
-      new Provider('http://localhost:3000', { claims: new Map(Object.entries({ foo: null })) });
-      expect(() => {
-        const claims = new class {
-          constructor() {
-            this.foo = null;
-          }
-        }();
-
-        new Provider('http://localhost:3000', { claims });
-      }).to.throw('claims must be a plain javascript object or Map');
-    });
-  });
-
   describe('ttl', () => {
     it('checks the values are positive safe integers or functions', () => {
       let throws = [

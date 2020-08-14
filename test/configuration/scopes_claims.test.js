@@ -10,7 +10,7 @@ describe('custom claims', () => {
       },
     });
 
-    expect(i(provider).configuration('claims').get('openid')).to.eql({
+    expect(i(provider).configuration('claims').openid).to.eql({
       sub: null,
       foo: null,
     });
@@ -23,22 +23,20 @@ describe('custom claims', () => {
       },
     });
 
-    expect(i(provider).configuration('claims').get('openid')).to.eql({
+    expect(i(provider).configuration('claims').openid).to.eql({
       sub: null,
       foo: null,
     });
   });
 
   it('detects new scopes from claims definition', () => {
-    const claims = new Map(Object.entries({
-      insurance: ['company_name', 'coverage'],
-      payment: {
-        preferred_method: null,
-      },
-    }));
-
     const provider = new Provider('https://op.example.com', {
-      claims,
+      claims: {
+        insurance: ['company_name', 'coverage'],
+        payment: {
+          preferred_method: null,
+        },
+      },
     });
 
     expect(i(provider).configuration('scopes')).to.contain('insurance', 'payment');
