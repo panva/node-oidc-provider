@@ -420,32 +420,6 @@ describe('request parameter features', () => {
         });
       });
 
-      it('fails to process a request without request', function () {
-        const spy = sinon.spy();
-        this.provider.once(errorEvt, spy);
-
-        return this.wrap({
-          agent: this.agent,
-          route,
-          verb,
-          auth: {
-            scope: 'openid',
-            client_id: 'client-with-HS-sig',
-            response_type: 'code',
-            redirect_uri: 'https://client.example.com/cb',
-          },
-        })
-          .expect(errorCode)
-          .expect(() => {
-            expect(spy.calledOnce).to.be.true;
-            expect(spy.args[0][1]).to.have.property('message', 'invalid_request');
-            expect(spy.args[0][1]).to.have.property(
-              'error_description',
-              'Request Object must be used by this client',
-            );
-          });
-      });
-
       it('can contain max_age parameter as a number and it (and other params too) will be forced as string', async function () {
         const spy = sinon.spy();
         this.provider.once(successEvt, spy);
