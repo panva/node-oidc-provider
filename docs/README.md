@@ -348,14 +348,18 @@ connectApp.use(prefix, oidc.callback);
 
 ### to a `fastify` application
 ```js
-// assumes fastify ^2.0.0
+// assumes fastify ^3.0.0
+await app.register(require('fastify-express'));
+// or
+// await app.register(require('middie'));
+
 const prefix = '/oidc';
 fastifyApp.use(prefix, oidc.callback);
 ```
 
 ### to a `hapi` application
 ```js
-// assumes @hapi/hapi ^18.0.0
+// assumes @hapi/hapi ^20.0.0
 const prefix = '/oidc';
 const { callback } = oidc;
 hapiApp.route({

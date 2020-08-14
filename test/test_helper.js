@@ -17,6 +17,7 @@ const KeyGrip = require('keygrip'); // eslint-disable-line import/no-extraneous-
 const Connect = require('connect');
 const Express = require('express');
 const Fastify = require('fastify');
+const middie = require('middie');
 const Hapi = require('@hapi/hapi');
 const Koa = require('koa');
 
@@ -414,6 +415,7 @@ module.exports = function testHelper(dir, {
       }
       case 'fastify': {
         const app = new Fastify();
+        await app.register(middie);
         app.use(mountTo, provider.callback);
         await new Promise((resolve) => global.server.close(resolve));
         await app.listen(port);
