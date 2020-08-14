@@ -18,7 +18,6 @@ const Connect = require('connect');
 const Express = require('express');
 const Fastify = require('fastify');
 const middie = require('middie');
-const Hapi = require('@hapi/hapi');
 const Koa = require('koa');
 
 const nanoid = require('../lib/helpers/nanoid');
@@ -428,6 +427,7 @@ module.exports = function testHelper(dir, {
         break;
       }
       case 'hapi': {
+        const Hapi = require('@hapi/hapi'); // eslint-disable-line global-require
         const app = new Hapi.Server({ port });
         const { callback } = provider;
         app.route({

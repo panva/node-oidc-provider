@@ -58,8 +58,13 @@ function report() {
 
   if (process.platform === 'linux') {
     const mountTo = '/oidc';
+    const frameworks = ['connect', 'express', 'fastify', 'koa'];
 
-    for (const mountVia of ['connect', 'express', 'fastify', 'hapi', 'koa']) {
+    if (process.version.substr(1).split('.').map((x) => parseInt(x, 10))[0] >= 12) {
+      frameworks.push('hapi');
+    }
+
+    for (const mountVia of frameworks) {
       await pass({ format: 'dynamic', mountVia, mountTo });
     }
   }
