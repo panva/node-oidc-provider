@@ -264,9 +264,6 @@ const provider = new Provider('https://op.example.com', {
       metadata.foo = 'bar';
     }
   },
-  async postLogoutSuccessSource(ctx) {
-    ctx.oidc.issuer.substring(0);
-  },
   interactions: {
     async url(ctx, interaction) {
       ctx.oidc.issuer.substring(0);
@@ -322,10 +319,6 @@ const provider = new Provider('https://op.example.com', {
     use.substring(0);
     return 'foo';
   },
-  async logoutSource(ctx, form) {
-    ctx.oidc.issuer.substring(0);
-    form.substring(0);
-  },
   async renderError(ctx, out, err) {
     ctx.oidc.issuer.substring(0);
     out.error.substring(0);
@@ -350,6 +343,16 @@ const provider = new Provider('https://op.example.com', {
       },
     },
     userinfo: { enabled: false },
+    rpInitiatedLogout: {
+      enabled: false,
+      async postLogoutSuccessSource(ctx) {
+        ctx.oidc.issuer.substring(0);
+      },
+      async logoutSource(ctx, form) {
+        ctx.oidc.issuer.substring(0);
+        form.substring(0);
+      },
+    },
     jwtUserinfo: { enabled: false },
     webMessageResponseMode: { enabled: false, ack: 'id-00', scriptNonce() { return "foo"; } },
     revocation: { enabled: false },

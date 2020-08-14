@@ -1038,11 +1038,7 @@ export interface Configuration {
     validator?: (ctx: KoaContextWithOIDC, key: string, value: any, metadata: ClientMetadata) => void | undefined;
   };
 
-  postLogoutSuccessSource?: (ctx: KoaContextWithOIDC) => CanBePromise<void | undefined>;
-
   rotateRefreshToken?: ((ctx: KoaContextWithOIDC) => CanBePromise<boolean>) | boolean;
-
-  logoutSource?: (ctx: KoaContextWithOIDC, form: string) => CanBePromise<void | undefined>;
 
   renderError?: (ctx: KoaContextWithOIDC, out: ErrorOut, error: errors.OIDCProviderError | Error) => CanBePromise<void | undefined>;
 
