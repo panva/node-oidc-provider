@@ -742,7 +742,7 @@ export interface ErrorOut {
   state?: string;
 }
 
-export interface AdapterPayload {
+export interface AdapterPayload extends AnyClientMetadata {
   account?: string;
   accountId?: string;
   acr?: string;
