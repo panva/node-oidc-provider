@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [6.29.2](https://github.com/panva/node-oidc-provider/compare/v6.29.1...v6.29.2) (2020-08-20)
+
+
+### Bug Fixes
+
+* **typescript:** extend AdapterPayload from AnyClientMetadata ([6631a2d](https://github.com/panva/node-oidc-provider/commit/6631a2d6e43b30ad90a1f2c1e4bdff1fe3686715)), closes [#774](https://github.com/panva/node-oidc-provider/issues/774)
+
 ## [6.29.1](https://github.com/panva/node-oidc-provider/compare/v6.29.0...v6.29.1) (2020-08-13)
 
 
