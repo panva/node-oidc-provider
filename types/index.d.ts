@@ -814,6 +814,8 @@ export interface Adapter {
   revokeByGrantId(grantId: string): Promise<undefined | void>;
 }
 
+export type AdapterFactory = (name: string) => Adapter;
+
 export interface AdapterConstructor {
   new(name: string): Adapter;
 }
@@ -832,7 +834,7 @@ export interface CookiesSetOptions {
 export interface Configuration {
   acrValues?: string[] | Set<string>;
 
-  adapter?: AdapterConstructor;
+  adapter?: AdapterConstructor | AdapterFactory;
 
   claims?: {
     [key: string]: null | string[]

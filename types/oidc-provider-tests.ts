@@ -60,6 +60,24 @@ new Provider('https://op.example.com', {
   }
 });
 
+new Provider('https://op.example.com', {
+  adapter: (name: string) => ({
+    name,
+    async upsert(id: string, payload: object, expiresIn: number) {},
+    async consume(id: string) {},
+    async destroy(id: string) {},
+    async revokeByGrantId(grantId: string) {},
+
+    async find(id: string) {
+      return {
+        client_id: '...',
+      };
+    },
+    async findByUserCode(userCode: string) {},
+    async findByUid(uid: string) {},
+  })
+});
+
 const provider = new Provider('https://op.example.com', {
   acrValues: ['urn:example:bronze'],
   adapter: class Adapter {
