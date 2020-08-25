@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [6.29.3](https://github.com/panva/node-oidc-provider/compare/v6.29.2...v6.29.3) (2020-08-25)
+
+
+### Bug Fixes
+
+* **typescript:** allows adapter factory in typings ([#776](https://github.com/panva/node-oidc-provider/issues/776)) ([3cfcd77](https://github.com/panva/node-oidc-provider/commit/3cfcd778cb3a9bdecac0ad51dec062daa187e6b0))
+
 ## [6.29.2](https://github.com/panva/node-oidc-provider/compare/v6.29.1...v6.29.2) (2020-08-20)
 
 
