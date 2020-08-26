@@ -33,7 +33,7 @@ describe('jwtIntrospection features', () => {
       }).to.throw('jwtIntrospection is only available in conjuction with introspection');
     });
 
-    it('returns the response as jwt', async function () {
+    it('returns the response as json when not negotiated to be a JWT', async function () {
       const now = Date.now();
       timekeeper.freeze(now);
       const at = new this.provider.AccessToken({
