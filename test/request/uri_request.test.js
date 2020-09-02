@@ -206,97 +206,6 @@ describe('request Uri features', () => {
           });
       });
 
-      describe('urn support', () => {
-        afterEach(sinon.restore);
-
-        it('urn cannot be registered and will fail on client#requestUriAllowed()', function () {
-          const spy = sinon.spy();
-          this.provider.once(error, spy);
-          sinon.spy(this.provider.Client.prototype, 'requestUriAllowed');
-
-          return this.wrap({
-            agent: this.agent,
-            route,
-            verb,
-            auth: {
-              request_uri: 'urn:example',
-              scope: 'openid',
-              client_id: 'client',
-              response_type: 'code',
-            },
-          })
-            .expect(errorCode)
-            .expect(() => {
-              expect(this.provider.Client.prototype.requestUriAllowed.calledOnce).to.be.true;
-              expect(spy.calledOnce).to.be.true;
-              expect(spy.args[0][1]).to.have.property('message', 'invalid_request_uri');
-              expect(spy.args[0][1]).to.have.property(
-                'error_description',
-                'provided request_uri is not whitelisted',
-              );
-            });
-        });
-
-        it('but this is overloadable public API', function () {
-          const spy = sinon.spy();
-          this.provider.once(error, spy);
-          sinon.stub(this.provider.Client.prototype, 'requestUriAllowed').returns(true);
-
-          return this.wrap({
-            agent: this.agent,
-            route,
-            verb,
-            auth: {
-              request_uri: 'urn:example',
-              scope: 'openid',
-              client_id: 'client',
-              response_type: 'code',
-            },
-          })
-            .expect(errorCode)
-            .expect(() => {
-              expect(this.provider.Client.prototype.requestUriAllowed.calledOnce).to.be.true;
-              expect(spy.calledOnce).to.be.true;
-              expect(spy.args[0][1]).to.have.property('message', 'invalid_request_uri');
-              expect(spy.args[0][1]).to.have.property(
-                'error_description',
-                'could not load or parse request_uri (resolving request_uri by URN is not implemented)',
-              );
-            });
-        });
-
-        it('so is the request uri cache', async function () {
-          const spy = sinon.spy();
-          this.provider.once(error, spy);
-          sinon.stub(this.provider.Client.prototype, 'requestUriAllowed').returns(true);
-
-          const request = await JWT.sign({
-            client_id: 'client',
-            response_type: 'code',
-            redirect_uri: 'https://client.example.com/cb',
-          }, null, 'none', { issuer: 'client', audience: this.provider.issuer });
-
-          sinon.stub(this.provider.requestUriCache, 'resolveUrn').returns(request);
-
-          return this.wrap({
-            agent: this.agent,
-            route,
-            verb,
-            auth: {
-              request_uri: 'urn:example',
-              scope: 'openid',
-              client_id: 'client',
-              response_type: 'code',
-            },
-          })
-            .expect(successCode)
-            .expect(successFnCheck)
-            .expect(() => {
-              expect(this.provider.requestUriCache.resolveUrn.calledOnce).to.be.true;
-            });
-        });
-      });
-
       context('when client has requestUris set', () => {
         before(async function () {
           (await this.provider.Client.find('client')).requestUris = ['https://thisoneisallowed.com'];
@@ -728,10 +637,10 @@ describe('request Uri features', () => {
         .get('/cachedRequest')
         .reply(200, 'content2');
 
-      const first = await cache.resolveWebUri('https://client.example.com/cachedRequest#1');
-      const second = await cache.resolveWebUri('https://client.example.com/cachedRequest#1');
-      const third = await cache.resolveWebUri('https://client.example.com/cachedRequest#2');
-      const fourth = await cache.resolveWebUri('https://client.example.com/cachedRequest#2');
+      const first = await cache.resolve('https://client.example.com/cachedRequest#1');
+      const second = await cache.resolve('https://client.example.com/cachedRequest#1');
+      const third = await cache.resolve('https://client.example.com/cachedRequest#2');
+      const fourth = await cache.resolve('https://client.example.com/cachedRequest#2');
 
       expect(first).to.equal(second);
       expect(first).not.to.equal(third);

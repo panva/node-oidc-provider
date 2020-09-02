@@ -218,8 +218,7 @@ declare class Session extends BaseModel {
 }
 
 declare class RequestUriCache {
-  resolveUrn(urn: string): Promise<string>;
-  resolveWebUri(requestUri: string): Promise<string>;
+  resolve(requestUri: string): Promise<string>;
 }
 
 declare class JWTStructured {
