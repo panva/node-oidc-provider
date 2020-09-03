@@ -2388,16 +2388,13 @@ _**default value**_:
 
 ### formats.tokenSigningAlg
 
-Function used to resolve a JWT Access Token signing algorithm. The resolved algorithm must be an asymmetric one supported by the provider's keys in jwks.  
+Function used to resolve a JWT Access Token signing algorithm. The resolved algorithm must be an asymmetric one supported by the provider's keys in jwks. This helper should resolve with a JWS Algorithm string.  
 
 
 _**default value**_:
 ```js
-async function tokenSigningAlg(ctx, token, client) {
-  if (client && client.idTokenSignedResponseAlg !== 'none' && !client.idTokenSignedResponseAlg.startsWith('HS')) {
-    return client.idTokenSignedResponseAlg;
-  }
-  return 'RS256';
+async function tokenSigningAlg(ctx, token) {
+  return undefined;
 }
 ```
 

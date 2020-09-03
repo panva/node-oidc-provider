@@ -160,11 +160,10 @@ const provider = new Provider('https://op.example.com', {
       clientCredentials.iat.toFixed();
       return 'opaque';
     },
-    async tokenSigningAlg(ctx, token, client): Promise<AsymmetricSigningAlgorithm> {
+    async tokenSigningAlg(ctx, token) {
       ctx.oidc.issuer.substring(0);
       token.iat.toFixed();
-      client.clientId.substring(0);
-      return 'ES384';
+      return <AsymmetricSigningAlgorithm>'ES384'
     },
     customizers: {
       jwt(ctx, token, parts) {
