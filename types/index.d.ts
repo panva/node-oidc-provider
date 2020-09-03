@@ -972,6 +972,7 @@ export interface Configuration {
     AccessToken?: AccessTokenFormatFunction | TokenFormat;
     ClientCredentials?: ClientCredentialsFormatFunction | TokenFormat;
     tokenSigningAlg?: (ctx: KoaContextWithOIDC, token: AccessToken | ClientCredentials) => CanBePromise<AsymmetricSigningAlgorithm>;
+    bitsOfOpaqueRandomness?: number | ((ctx: KoaContextWithOIDC, token: BaseToken) => number);
     customizers?: {
       jwt?: (ctx: KoaContextWithOIDC, token: AccessToken | ClientCredentials, parts: JWTStructured) => CanBePromise<JWTStructured>;
       'jwt-ietf'?: (ctx: KoaContextWithOIDC, token: AccessToken | ClientCredentials, parts: JWTStructured) => CanBePromise<JWTStructured>;

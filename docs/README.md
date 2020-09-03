@@ -2288,6 +2288,7 @@ _**default value**_:
 {
   AccessToken: 'opaque',
   ClientCredentials: 'opaque',
+  bitsOfOpaqueRandomness: 256,
   customizers: {
     'jwt-ietf': undefined,
     jwt: undefined
@@ -2316,6 +2317,29 @@ Configure `formats`:
   AccessToken(ctx, token) {
     return token.aud ? 'jwt' : 'opaque';
   }
+}
+```
+</details>
+
+### formats.bitsOfOpaqueRandomness
+
+The value should be an integer (or a function returning an integer) and the resulting opaque token length is equal to `Math.ceil(i / Math.log2(n))` where n is the number of symbols in the used alphabet, 64 in our case.   
+  
+
+
+_**default value**_:
+```js
+256
+```
+<a id="formats-bits-of-opaque-randomness-to-have-e-g-refresh-tokens-values-longer-than-access-tokens"></a><details><summary>(Click to expand) To have e.g. Refresh Tokens values longer than Access Tokens.
+</summary><br>
+
+```js
+function bitsOfOpaqueRandomness(ctx, token) {
+  if (token.kind === 'RefreshToken') {
+    return 384;
+  }
+  return 256;
 }
 ```
 </details>
