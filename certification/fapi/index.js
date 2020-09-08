@@ -72,6 +72,7 @@ const fapi = new Provider(ISSUER, {
         `${SUITE_BASE_URL}/test/a/oidc-provider-private_key_jwt-plain_fapi-plain_response/callback`,
         `${SUITE_BASE_URL}/test/a/oidc-provider/callback`,
         'https://review-app-dev-branch-8.certification.openid.net/test/a/mtls/callback', // removeme eventually
+        'https://review-app-dev-branch-8.certification.openid.net/test/a/mtls/callback?dummy1=lorem&dummy2=ipsum', // removeme eventually
         `${SUITE_BASE_URL}/test/a/oidc-provider-private_key_jwt-plain_fapi-jarm/callback?dummy1=lorem&dummy2=ipsum`,
         `${SUITE_BASE_URL}/test/a/oidc-provider-private_key_jwt-plain_fapi-plain_response/callback?dummy1=lorem&dummy2=ipsum`,
         `${SUITE_BASE_URL}/test/a/oidc-provider/callback?dummy1=lorem&dummy2=ipsum`,
@@ -90,6 +91,7 @@ const fapi = new Provider(ISSUER, {
         `${SUITE_BASE_URL}/test/a/oidc-provider-private_key_jwt-plain_fapi-plain_response/callback`,
         `${SUITE_BASE_URL}/test/a/oidc-provider/callback`,
         'https://review-app-dev-branch-8.certification.openid.net/test/a/mtls/callback', // removeme eventually
+        'https://review-app-dev-branch-8.certification.openid.net/test/a/mtls/callback?dummy1=lorem&dummy2=ipsum', // removeme eventually
         `${SUITE_BASE_URL}/test/a/oidc-provider-private_key_jwt-plain_fapi-jarm/callback?dummy1=lorem&dummy2=ipsum`,
         `${SUITE_BASE_URL}/test/a/oidc-provider-private_key_jwt-plain_fapi-plain_response/callback?dummy1=lorem&dummy2=ipsum`,
         `${SUITE_BASE_URL}/test/a/oidc-provider/callback?dummy1=lorem&dummy2=ipsum`,
@@ -108,6 +110,7 @@ const fapi = new Provider(ISSUER, {
         `${SUITE_BASE_URL}/test/a/oidc-provider-mtls-plain_fapi-plain_response/callback`,
         `${SUITE_BASE_URL}/test/a/oidc-provider/callback`,
         'https://review-app-dev-branch-8.certification.openid.net/test/a/mtls/callback', // removeme eventually
+        'https://review-app-dev-branch-8.certification.openid.net/test/a/mtls/callback?dummy1=lorem&dummy2=ipsum', // removeme eventually
         `${SUITE_BASE_URL}/test/a/oidc-provider-mtls-plain_fapi-jarm/callback?dummy1=lorem&dummy2=ipsum`,
         `${SUITE_BASE_URL}/test/a/oidc-provider-mtls-plain_fapi-plain_response/callback?dummy1=lorem&dummy2=ipsum`,
         `${SUITE_BASE_URL}/test/a/oidc-provider/callback?dummy1=lorem&dummy2=ipsum`,
@@ -126,6 +129,7 @@ const fapi = new Provider(ISSUER, {
         `${SUITE_BASE_URL}/test/a/oidc-provider-mtls-plain_fapi-plain_response/callback`,
         `${SUITE_BASE_URL}/test/a/oidc-provider/callback`,
         'https://review-app-dev-branch-8.certification.openid.net/test/a/mtls/callback', // removeme eventually
+        'https://review-app-dev-branch-8.certification.openid.net/test/a/mtls/callback?dummy1=lorem&dummy2=ipsum', // removeme eventually
         `${SUITE_BASE_URL}/test/a/oidc-provider-mtls-plain_fapi-jarm/callback?dummy1=lorem&dummy2=ipsum`,
         `${SUITE_BASE_URL}/test/a/oidc-provider-mtls-plain_fapi-plain_response/callback?dummy1=lorem&dummy2=ipsum`,
         `${SUITE_BASE_URL}/test/a/oidc-provider/callback?dummy1=lorem&dummy2=ipsum`,
