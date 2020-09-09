@@ -43,7 +43,7 @@
   "scripts": {
     "ci": "node ./test/ci",
     "coverage": "nyc node ./test/run",
-    "heroku-postbuild": "npm install mongodb@^3.0.0 openid-client@^3.0.0",
+    "heroku-postbuild": "npm install mongodb@^3.0.0 openid-client@^4.0.0",
     "lint": "eslint lib example certification test",
     "lint-ts": "npx typescript@~3.6.0 --build types",
     "lint-fix": "eslint lib example certification test --fix",
