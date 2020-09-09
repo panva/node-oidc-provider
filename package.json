@@ -35,7 +35,9 @@
     "lib",
     "types/index.d.ts"
   ],
-  "funding": "https://github.com/sponsors/panva",
+  "funding": {
+    "url": "https://github.com/sponsors/panva"
+  },
   "main": "lib/index.js",
   "types": "types/index.d.ts",
   "scripts": {
