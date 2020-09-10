@@ -30,13 +30,18 @@ let server;
     await adapter.connect();
   }
 
-  const provider = new Provider(ISSUER, { adapter, ...configuration });
+  const prod = process.env.NODE_ENV === 'production';
 
-  if (process.env.NODE_ENV === 'production') {
-    app.enable('trust proxy');
-    provider.proxy = true;
+  if (prod) {
     set(configuration, 'cookies.short.secure', true);
     set(configuration, 'cookies.long.secure', true);
+  }
+
+  const provider = new Provider(ISSUER, { adapter, ...configuration });
+
+  if (prod) {
+    app.enable('trust proxy');
+    provider.proxy = true;
 
     app.use((req, res, next) => {
       if (req.secure) {

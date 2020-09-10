@@ -24,15 +24,19 @@ let server;
     await adapter.connect();
   }
 
+  const prod = process.env.NODE_ENV === 'production';
+
+  if (prod) {
+    set(configuration, 'cookies.short.secure', true);
+    set(configuration, 'cookies.long.secure', true);
+  }
+
   const provider = new Provider(ISSUER, { adapter, ...configuration });
 
   provider.use(helmet());
 
-  if (process.env.NODE_ENV === 'production') {
+  if (prod) {
     provider.proxy = true;
-    set(configuration, 'cookies.short.secure', true);
-    set(configuration, 'cookies.long.secure', true);
-
     provider.use(async (ctx, next) => {
       if (ctx.secure) {
         await next();
