@@ -3152,9 +3152,8 @@ _**default value**_:
   'A128KW',
   'A256KW',
   'ECDH-ES',
-  'ECDH-ES+A128KW',
-  'ECDH-ES+A256KW',
-  'RSA-OAEP'
+  'RSA-OAEP',
+  'dir'
 ]
 ```
 <a id="whitelisted-jwa-authorization-encryption-alg-values-supported-values-list"></a><details><summary>(Click to expand) Supported values list
@@ -3210,7 +3209,6 @@ JWA algorithms the provider supports to sign JWT Authorization Responses with
 _**default value**_:
 ```js
 [
-  'HS256',
   'RS256',
   'PS256',
   'ES256',
@@ -3222,11 +3220,11 @@ _**default value**_:
 
 ```js
 [
-  'HS256', 'HS384', 'HS512',
   'RS256', 'RS384', 'RS512',
   'PS256', 'PS384', 'PS512',
   'ES256', 'ES256K', 'ES384', 'ES512',
   'EdDSA',
+  'HS256', 'HS384', 'HS512',
 ]
 ```
 </details>
@@ -3271,9 +3269,8 @@ _**default value**_:
   'A128KW',
   'A256KW',
   'ECDH-ES',
-  'ECDH-ES+A128KW',
-  'ECDH-ES+A256KW',
-  'RSA-OAEP'
+  'RSA-OAEP',
+  'dir'
 ]
 ```
 <a id="whitelisted-jwa-id-token-encryption-alg-values-supported-values-list"></a><details><summary>(Click to expand) Supported values list
@@ -3329,7 +3326,6 @@ JWA algorithms the provider supports to sign ID Tokens with
 _**default value**_:
 ```js
 [
-  'HS256',
   'RS256',
   'PS256',
   'ES256',
@@ -3341,12 +3337,12 @@ _**default value**_:
 
 ```js
 [
-  'none',
-  'HS256', 'HS384', 'HS512',
   'RS256', 'RS384', 'RS512',
   'PS256', 'PS384', 'PS512',
   'ES256', 'ES256K', 'ES384', 'ES512',
   'EdDSA',
+  'HS256', 'HS384', 'HS512',
+  'none',
 ]
 ```
 </details>
@@ -3363,9 +3359,8 @@ _**default value**_:
   'A128KW',
   'A256KW',
   'ECDH-ES',
-  'ECDH-ES+A128KW',
-  'ECDH-ES+A256KW',
-  'RSA-OAEP'
+  'RSA-OAEP',
+  'dir'
 ]
 ```
 <a id="whitelisted-jwa-introspection-encryption-alg-values-supported-values-list"></a><details><summary>(Click to expand) Supported values list
@@ -3433,11 +3428,11 @@ _**default value**_:
 
 ```js
 [
-  'HS256', 'HS384', 'HS512',
   'RS256', 'RS384', 'RS512',
   'PS256', 'PS384', 'PS512',
   'ES256', 'ES256K', 'ES384', 'ES512',
   'EdDSA',
+  'HS256', 'HS384', 'HS512',
 ]
 ```
 </details>
@@ -3451,7 +3446,6 @@ JWA algorithms the provider supports to sign JWT Introspection responses with
 _**default value**_:
 ```js
 [
-  'HS256',
   'RS256',
   'PS256',
   'ES256',
@@ -3463,12 +3457,12 @@ _**default value**_:
 
 ```js
 [
-  'none',
-  'HS256', 'HS384', 'HS512',
   'RS256', 'RS384', 'RS512',
   'PS256', 'PS384', 'PS512',
   'ES256', 'ES256K', 'ES384', 'ES512',
   'EdDSA',
+  'HS256', 'HS384', 'HS512',
+  'none',
 ]
 ```
 </details>
@@ -3485,9 +3479,8 @@ _**default value**_:
   'A128KW',
   'A256KW',
   'ECDH-ES',
-  'ECDH-ES+A128KW',
-  'ECDH-ES+A256KW',
-  'RSA-OAEP'
+  'RSA-OAEP',
+  'dir'
 ]
 ```
 <a id="whitelisted-jwa-request-object-encryption-alg-values-supported-values-list"></a><details><summary>(Click to expand) Supported values list
@@ -3555,12 +3548,12 @@ _**default value**_:
 
 ```js
 [
-  'none',
-  'HS256', 'HS384', 'HS512',
   'RS256', 'RS384', 'RS512',
   'PS256', 'PS384', 'PS512',
   'ES256', 'ES256K', 'ES384', 'ES512',
   'EdDSA',
+  'HS256', 'HS384', 'HS512',
+  'none',
 ]
 ```
 </details>
@@ -3586,11 +3579,11 @@ _**default value**_:
 
 ```js
 [
-  'HS256', 'HS384', 'HS512',
   'RS256', 'RS384', 'RS512',
   'PS256', 'PS384', 'PS512',
   'ES256', 'ES256K', 'ES384', 'ES512',
   'EdDSA',
+  'HS256', 'HS384', 'HS512',
 ]
 ```
 </details>
@@ -3616,11 +3609,11 @@ _**default value**_:
 
 ```js
 [
-  'HS256', 'HS384', 'HS512',
   'RS256', 'RS384', 'RS512',
   'PS256', 'PS384', 'PS512',
   'ES256', 'ES256K', 'ES384', 'ES512',
   'EdDSA',
+  'HS256', 'HS384', 'HS512',
 ]
 ```
 </details>
@@ -3637,9 +3630,8 @@ _**default value**_:
   'A128KW',
   'A256KW',
   'ECDH-ES',
-  'ECDH-ES+A128KW',
-  'ECDH-ES+A256KW',
-  'RSA-OAEP'
+  'RSA-OAEP',
+  'dir'
 ]
 ```
 <a id="whitelisted-jwa-userinfo-encryption-alg-values-supported-values-list"></a><details><summary>(Click to expand) Supported values list
@@ -3695,7 +3687,6 @@ JWA algorithms the provider supports to sign UserInfo responses with
 _**default value**_:
 ```js
 [
-  'HS256',
   'RS256',
   'PS256',
   'ES256',
@@ -3707,12 +3698,12 @@ _**default value**_:
 
 ```js
 [
-  'none',
-  'HS256', 'HS384', 'HS512',
   'RS256', 'RS384', 'RS512',
   'PS256', 'PS384', 'PS512',
   'ES256', 'ES256K', 'ES384', 'ES512',
   'EdDSA',
+  'HS256', 'HS384', 'HS512',
+  'none',
 ]
 ```
 </details>

@@ -85,6 +85,7 @@ describe('provider instance', () => {
           },
         },
         whitelistedJWA: {
+          tokenEndpointAuthSigningAlgValues: ['HS256'],
           idTokenEncryptionAlgValues: ['dir'],
         },
       });
@@ -135,6 +136,7 @@ describe('provider instance', () => {
           },
         },
         whitelistedJWA: {
+          tokenEndpointAuthSigningAlgValues: ['HS256'],
           idTokenEncryptionAlgValues: ['dir'],
         },
       });

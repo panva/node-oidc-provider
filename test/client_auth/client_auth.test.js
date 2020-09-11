@@ -56,6 +56,40 @@ describe('client authentication options', () => {
       expect(i(provider).configuration('revocationEndpointAuthSigningAlgValues')).to.be.undefined;
     });
 
+    it('removes client_secret_jwt when no HMAC based alg is enabled', () => {
+      const provider = new Provider('http://localhost', {
+        tokenEndpointAuthMethods: [
+          'none',
+          'client_secret_jwt',
+          'private_key_jwt',
+          'client_secret_basic',
+          'client_secret_post',
+        ],
+        whitelistedJWA: {
+          tokenEndpointAuthSigningAlgValues: ['PS256'],
+        },
+      });
+
+      expect(i(provider).configuration('tokenEndpointAuthMethods')).not.to.include('client_secret_jwt');
+    });
+
+    it('removes private_key_jwt when no public key crypto based alg is enabled', () => {
+      const provider = new Provider('http://localhost', {
+        tokenEndpointAuthMethods: [
+          'none',
+          'client_secret_jwt',
+          'private_key_jwt',
+          'client_secret_basic',
+          'client_secret_post',
+        ],
+        whitelistedJWA: {
+          tokenEndpointAuthSigningAlgValues: ['HS256'],
+        },
+      });
+
+      expect(i(provider).configuration('tokenEndpointAuthMethods')).not.to.include('private_key_jwt');
+    });
+
     it('pushes only symmetric algs when client_secret_jwt is enabled', () => {
       const provider = new Provider('http://localhost', {
         tokenEndpointAuthMethods: [
