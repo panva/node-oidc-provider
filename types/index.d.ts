@@ -1056,7 +1056,7 @@ export interface Configuration {
 
   findAccount?: FindAccount;
 
-  whitelistedJWA?: {
+  enabledJWA?: {
     authorizationEncryptionAlgValues?: EncryptionAlgValues[];
     authorizationEncryptionEncValues?: EncryptionEncValues[];
     authorizationSigningAlgValues?: SigningAlgorithm[];

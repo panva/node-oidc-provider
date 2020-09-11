@@ -137,7 +137,7 @@ describe('Provider configuration', () => {
     it('is supported', () => {
       expect(() => {
         new Provider('http://localhost:3000', {
-          whitelistedJWA: {
+          enabledJWA: {
             requestObjectSigningAlgValues: ['ES256K'],
           },
         });

@@ -471,7 +471,7 @@ const provider = new Provider('https://op.example.com', {
       },
     }
   },
-  whitelistedJWA: {
+  enabledJWA: {
     tokenEndpointAuthSigningAlgValues: [
       'HS256', 'RS256', 'PS256', 'ES256', 'EdDSA',
     ],

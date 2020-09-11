@@ -7,36 +7,36 @@ describe('Provider declaring supported algorithms', () => {
   it('validates the configuration properties', () => {
     expect(() => {
       new Provider('https://op.example.com', { // eslint-disable-line no-new
-        whitelistedJWA: {
+        enabledJWA: {
           invalidProperty: ['HS256', 'RS256'],
         },
       });
-    }).to.throw('invalid property whitelistedJWA.invalidProperty provided');
+    }).to.throw('invalid property enabledJWA.invalidProperty provided');
   });
 
   it('validates an array is provided', () => {
     expect(() => {
       new Provider('https://op.example.com', { // eslint-disable-line no-new
-        whitelistedJWA: {
+        enabledJWA: {
           idTokenSigningAlgValues: new Set(['HS256', 'RS256']),
         },
       });
-    }).to.throw('invalid type for whitelistedJWA.idTokenSigningAlgValues provided, expected Array');
+    }).to.throw('invalid type for enabledJWA.idTokenSigningAlgValues provided, expected Array');
   });
 
   it('validates only implemented algs are provided', () => {
     expect(() => {
       new Provider('https://op.example.com', { // eslint-disable-line no-new
-        whitelistedJWA: {
+        enabledJWA: {
           tokenEndpointAuthSigningAlgValues: ['none'],
         },
       });
-    }).to.throw('unsupported whitelistedJWA.tokenEndpointAuthSigningAlgValues algorithm provided');
+    }).to.throw('unsupported enabledJWA.tokenEndpointAuthSigningAlgValues algorithm provided');
   });
 
   it('idTokenSigningAlgValues', () => {
     const provider = new Provider('https://op.example.com', {
-      whitelistedJWA: {
+      enabledJWA: {
         idTokenSigningAlgValues: ['HS256', 'RS256'],
       },
       jwks: {

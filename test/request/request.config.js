@@ -15,7 +15,7 @@ merge(config.features, {
   resourceIndicators: { enabled: true },
 });
 
-pull(config.whitelistedJWA.requestObjectSigningAlgValues, 'HS384');
+pull(config.enabledJWA.requestObjectSigningAlgValues, 'HS384');
 
 module.exports = {
   config,

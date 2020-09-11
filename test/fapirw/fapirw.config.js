@@ -11,7 +11,7 @@ merge(config.features, {
     mergingStrategy: { name: 'strict' },
   },
 });
-config.whitelistedJWA = {
+config.enabledJWA = {
   requestObjectSigningAlgValues: ['none'],
 };
 

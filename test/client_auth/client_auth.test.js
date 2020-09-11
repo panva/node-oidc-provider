@@ -65,7 +65,7 @@ describe('client authentication options', () => {
           'client_secret_basic',
           'client_secret_post',
         ],
-        whitelistedJWA: {
+        enabledJWA: {
           tokenEndpointAuthSigningAlgValues: ['PS256'],
         },
       });
@@ -82,7 +82,7 @@ describe('client authentication options', () => {
           'client_secret_basic',
           'client_secret_post',
         ],
-        whitelistedJWA: {
+        enabledJWA: {
           tokenEndpointAuthSigningAlgValues: ['HS256'],
         },
       });
@@ -98,7 +98,7 @@ describe('client authentication options', () => {
           'client_secret_jwt',
           'client_secret_post',
         ],
-        whitelistedJWA: cloneDeep(JWA),
+        enabledJWA: cloneDeep(JWA),
       });
 
       const algs = [
@@ -120,7 +120,7 @@ describe('client authentication options', () => {
           'client_secret_post',
           'private_key_jwt',
         ],
-        whitelistedJWA: cloneDeep(JWA),
+        enabledJWA: cloneDeep(JWA),
       });
 
       const algs = [
@@ -151,7 +151,7 @@ describe('client authentication options', () => {
           'client_secret_post',
           'private_key_jwt',
         ],
-        whitelistedJWA: cloneDeep(JWA),
+        enabledJWA: cloneDeep(JWA),
       });
 
       const algs = [

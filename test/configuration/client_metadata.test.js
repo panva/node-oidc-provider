@@ -8,7 +8,7 @@ const pull = require('lodash/pull');
 const cloneDeep = require('lodash/cloneDeep');
 
 const { Provider } = require('../../lib');
-const { whitelistedJWA } = require('../default.config');
+const { enabledJWA } = require('../default.config');
 const mtlsKeys = require('../jwks/jwks.json');
 
 const sigKey = global.keystore.get().toJWK();
@@ -20,7 +20,7 @@ describe('Client metadata validation', () => {
   before(() => {
     DefaultProvider = new Provider('http://localhost', {
       jwks: global.keystore.toJWKS(true),
-      whitelistedJWA: cloneDeep(whitelistedJWA),
+      enabledJWA: cloneDeep(enabledJWA),
     });
   });
 
@@ -29,7 +29,7 @@ describe('Client metadata validation', () => {
     if (configuration) {
       provider = new Provider('http://localhost', merge({
         jwks: global.keystore.toJWKS(true),
-        whitelistedJWA: cloneDeep(whitelistedJWA),
+        enabledJWA: cloneDeep(enabledJWA),
       }, configuration));
     } else {
       provider = DefaultProvider;
@@ -576,8 +576,8 @@ describe('Client metadata validation', () => {
           [endpointAuthMethodProperty]: method,
           ...additional,
         }, {
-          whitelistedJWA: {
-            [confProperty]: pull(cloneDeep(whitelistedJWA[confProperty]), `${accepted}384`),
+          enabledJWA: {
+            [confProperty]: pull(cloneDeep(enabledJWA[confProperty]), `${accepted}384`),
           },
           ...configuration,
         });

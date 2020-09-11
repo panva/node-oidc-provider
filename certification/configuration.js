@@ -1,7 +1,7 @@
 const crypto = require('crypto');
 
 const pkg = require('../package.json');
-const whitelistedJWA = JSON.parse(JSON.stringify(require('../lib/consts/jwa')));
+const enabledJWA = JSON.parse(JSON.stringify(require('../lib/consts/jwa')));
 const { interactionPolicy: { Prompt, base: policy } } = require('../lib');
 const { InvalidClientMetadata } = require('../lib/helpers/errors');
 
@@ -212,5 +212,5 @@ module.exports = {
 
     return code.scopes.has('offline_access') || (client.applicationType === 'web' && client.tokenEndpointAuthMethod === 'none');
   },
-  whitelistedJWA,
+  enabledJWA,
 };

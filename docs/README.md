@@ -483,7 +483,7 @@ location / {
 - [subjectTypes](#subjecttypes)
 - [tokenEndpointAuthMethods](#tokenendpointauthmethods)
 - [ttl ❗](#ttl)
-- [whitelistedJWA](#whitelistedjwa)
+- [enabledJWA](#enabledjwa)
 
 <!-- DO NOT EDIT, COMMIT OR STAGE CHANGES BELOW THIS LINE -->
 <!-- START CONF OPTIONS -->
@@ -956,7 +956,7 @@ _**default value**_:
  - `features.claimsParameter`
  - `features.requestObjects` and enable `request` and/or `request_uri`
  - `features.requestObjects.mergingStrategy.name` set to `strict`
- - `whitelistedJWA`
+ - `enabledJWA`
  - (optional) `features.pushedAuthorizationRequests`
  - (optional) `features.jwtResponseModes`  
 
@@ -3133,14 +3133,14 @@ Configure `ttl` for a given token type with a function like so, this must return
 ```
 </details>
 
-### whitelistedJWA
+### enabledJWA
 
 Fine-tune the algorithms your provider will support by declaring algorithm values for each respective JWA use  
 
 _**recommendation**_: Only allow JWA algs that are necessary. The current defaults are based on recommendations from the [JWA specification](https://tools.ietf.org/html/rfc7518) + enables RSASSA-PSS based on current guidance in FAPI. "none" JWT algs are disabled by default but available if you need them.  
 
 
-### whitelistedJWA.authorizationEncryptionAlgValues
+### enabledJWA.authorizationEncryptionAlgValues
 
 JWA algorithms the provider supports to wrap keys for JWT Authorization response encryption   
   
@@ -3156,7 +3156,7 @@ _**default value**_:
   'dir'
 ]
 ```
-<a id="whitelisted-jwa-authorization-encryption-alg-values-supported-values-list"></a><details><summary>(Click to expand) Supported values list
+<a id="enabled-jwa-authorization-encryption-alg-values-supported-values-list"></a><details><summary>(Click to expand) Supported values list
 </summary><br>
 
 ```js
@@ -3175,7 +3175,7 @@ _**default value**_:
 ```
 </details>
 
-### whitelistedJWA.authorizationEncryptionEncValues
+### enabledJWA.authorizationEncryptionEncValues
 
 JWA algorithms the provider supports to encrypt JWT Authorization Responses with   
   
@@ -3190,7 +3190,7 @@ _**default value**_:
   'A256GCM'
 ]
 ```
-<a id="whitelisted-jwa-authorization-encryption-enc-values-supported-values-list"></a><details><summary>(Click to expand) Supported values list
+<a id="enabled-jwa-authorization-encryption-enc-values-supported-values-list"></a><details><summary>(Click to expand) Supported values list
 </summary><br>
 
 ```js
@@ -3200,7 +3200,7 @@ _**default value**_:
 ```
 </details>
 
-### whitelistedJWA.authorizationSigningAlgValues
+### enabledJWA.authorizationSigningAlgValues
 
 JWA algorithms the provider supports to sign JWT Authorization Responses with   
   
@@ -3215,7 +3215,7 @@ _**default value**_:
   'EdDSA'
 ]
 ```
-<a id="whitelisted-jwa-authorization-signing-alg-values-supported-values-list"></a><details><summary>(Click to expand) Supported values list
+<a id="enabled-jwa-authorization-signing-alg-values-supported-values-list"></a><details><summary>(Click to expand) Supported values list
 </summary><br>
 
 ```js
@@ -3229,7 +3229,7 @@ _**default value**_:
 ```
 </details>
 
-### whitelistedJWA.dPoPSigningAlgValues
+### enabledJWA.dPoPSigningAlgValues
 
 JWA algorithms the provider supports to verify DPoP Proof JWTs with   
   
@@ -3244,7 +3244,7 @@ _**default value**_:
   'EdDSA'
 ]
 ```
-<a id="whitelisted-jwa-d-po-p-signing-alg-values-supported-values-list"></a><details><summary>(Click to expand) Supported values list
+<a id="enabled-jwa-d-po-p-signing-alg-values-supported-values-list"></a><details><summary>(Click to expand) Supported values list
 </summary><br>
 
 ```js
@@ -3257,7 +3257,7 @@ _**default value**_:
 ```
 </details>
 
-### whitelistedJWA.idTokenEncryptionAlgValues
+### enabledJWA.idTokenEncryptionAlgValues
 
 JWA algorithms the provider supports to wrap keys for ID Token encryption   
   
@@ -3273,7 +3273,7 @@ _**default value**_:
   'dir'
 ]
 ```
-<a id="whitelisted-jwa-id-token-encryption-alg-values-supported-values-list"></a><details><summary>(Click to expand) Supported values list
+<a id="enabled-jwa-id-token-encryption-alg-values-supported-values-list"></a><details><summary>(Click to expand) Supported values list
 </summary><br>
 
 ```js
@@ -3292,7 +3292,7 @@ _**default value**_:
 ```
 </details>
 
-### whitelistedJWA.idTokenEncryptionEncValues
+### enabledJWA.idTokenEncryptionEncValues
 
 JWA algorithms the provider supports to encrypt ID Tokens with   
   
@@ -3307,7 +3307,7 @@ _**default value**_:
   'A256GCM'
 ]
 ```
-<a id="whitelisted-jwa-id-token-encryption-enc-values-supported-values-list"></a><details><summary>(Click to expand) Supported values list
+<a id="enabled-jwa-id-token-encryption-enc-values-supported-values-list"></a><details><summary>(Click to expand) Supported values list
 </summary><br>
 
 ```js
@@ -3317,7 +3317,7 @@ _**default value**_:
 ```
 </details>
 
-### whitelistedJWA.idTokenSigningAlgValues
+### enabledJWA.idTokenSigningAlgValues
 
 JWA algorithms the provider supports to sign ID Tokens with   
   
@@ -3332,7 +3332,7 @@ _**default value**_:
   'EdDSA'
 ]
 ```
-<a id="whitelisted-jwa-id-token-signing-alg-values-supported-values-list"></a><details><summary>(Click to expand) Supported values list
+<a id="enabled-jwa-id-token-signing-alg-values-supported-values-list"></a><details><summary>(Click to expand) Supported values list
 </summary><br>
 
 ```js
@@ -3347,7 +3347,7 @@ _**default value**_:
 ```
 </details>
 
-### whitelistedJWA.introspectionEncryptionAlgValues
+### enabledJWA.introspectionEncryptionAlgValues
 
 JWA algorithms the provider supports to wrap keys for JWT Introspection response encryption   
   
@@ -3363,7 +3363,7 @@ _**default value**_:
   'dir'
 ]
 ```
-<a id="whitelisted-jwa-introspection-encryption-alg-values-supported-values-list"></a><details><summary>(Click to expand) Supported values list
+<a id="enabled-jwa-introspection-encryption-alg-values-supported-values-list"></a><details><summary>(Click to expand) Supported values list
 </summary><br>
 
 ```js
@@ -3382,7 +3382,7 @@ _**default value**_:
 ```
 </details>
 
-### whitelistedJWA.introspectionEncryptionEncValues
+### enabledJWA.introspectionEncryptionEncValues
 
 JWA algorithms the provider supports to encrypt JWT Introspection responses with   
   
@@ -3397,7 +3397,7 @@ _**default value**_:
   'A256GCM'
 ]
 ```
-<a id="whitelisted-jwa-introspection-encryption-enc-values-supported-values-list"></a><details><summary>(Click to expand) Supported values list
+<a id="enabled-jwa-introspection-encryption-enc-values-supported-values-list"></a><details><summary>(Click to expand) Supported values list
 </summary><br>
 
 ```js
@@ -3407,7 +3407,7 @@ _**default value**_:
 ```
 </details>
 
-### whitelistedJWA.introspectionEndpointAuthSigningAlgValues
+### enabledJWA.introspectionEndpointAuthSigningAlgValues
 
 JWA algorithms the provider supports on the introspection endpoint   
   
@@ -3423,7 +3423,7 @@ _**default value**_:
   'EdDSA'
 ]
 ```
-<a id="whitelisted-jwa-introspection-endpoint-auth-signing-alg-values-supported-values-list"></a><details><summary>(Click to expand) Supported values list
+<a id="enabled-jwa-introspection-endpoint-auth-signing-alg-values-supported-values-list"></a><details><summary>(Click to expand) Supported values list
 </summary><br>
 
 ```js
@@ -3437,7 +3437,7 @@ _**default value**_:
 ```
 </details>
 
-### whitelistedJWA.introspectionSigningAlgValues
+### enabledJWA.introspectionSigningAlgValues
 
 JWA algorithms the provider supports to sign JWT Introspection responses with   
   
@@ -3452,7 +3452,7 @@ _**default value**_:
   'EdDSA'
 ]
 ```
-<a id="whitelisted-jwa-introspection-signing-alg-values-supported-values-list"></a><details><summary>(Click to expand) Supported values list
+<a id="enabled-jwa-introspection-signing-alg-values-supported-values-list"></a><details><summary>(Click to expand) Supported values list
 </summary><br>
 
 ```js
@@ -3467,7 +3467,7 @@ _**default value**_:
 ```
 </details>
 
-### whitelistedJWA.requestObjectEncryptionAlgValues
+### enabledJWA.requestObjectEncryptionAlgValues
 
 JWA algorithms the provider supports to receive encrypted Request Object keys wrapped with   
   
@@ -3483,7 +3483,7 @@ _**default value**_:
   'dir'
 ]
 ```
-<a id="whitelisted-jwa-request-object-encryption-alg-values-supported-values-list"></a><details><summary>(Click to expand) Supported values list
+<a id="enabled-jwa-request-object-encryption-alg-values-supported-values-list"></a><details><summary>(Click to expand) Supported values list
 </summary><br>
 
 ```js
@@ -3502,7 +3502,7 @@ _**default value**_:
 ```
 </details>
 
-### whitelistedJWA.requestObjectEncryptionEncValues
+### enabledJWA.requestObjectEncryptionEncValues
 
 JWA algorithms the provider supports decrypt Request Objects with encryption   
   
@@ -3517,7 +3517,7 @@ _**default value**_:
   'A256GCM'
 ]
 ```
-<a id="whitelisted-jwa-request-object-encryption-enc-values-supported-values-list"></a><details><summary>(Click to expand) Supported values list
+<a id="enabled-jwa-request-object-encryption-enc-values-supported-values-list"></a><details><summary>(Click to expand) Supported values list
 </summary><br>
 
 ```js
@@ -3527,7 +3527,7 @@ _**default value**_:
 ```
 </details>
 
-### whitelistedJWA.requestObjectSigningAlgValues
+### enabledJWA.requestObjectSigningAlgValues
 
 JWA algorithms the provider supports to receive Request Objects with   
   
@@ -3543,7 +3543,7 @@ _**default value**_:
   'EdDSA'
 ]
 ```
-<a id="whitelisted-jwa-request-object-signing-alg-values-supported-values-list"></a><details><summary>(Click to expand) Supported values list
+<a id="enabled-jwa-request-object-signing-alg-values-supported-values-list"></a><details><summary>(Click to expand) Supported values list
 </summary><br>
 
 ```js
@@ -3558,7 +3558,7 @@ _**default value**_:
 ```
 </details>
 
-### whitelistedJWA.revocationEndpointAuthSigningAlgValues
+### enabledJWA.revocationEndpointAuthSigningAlgValues
 
 JWA algorithms the provider supports on the revocation endpoint   
   
@@ -3574,7 +3574,7 @@ _**default value**_:
   'EdDSA'
 ]
 ```
-<a id="whitelisted-jwa-revocation-endpoint-auth-signing-alg-values-supported-values-list"></a><details><summary>(Click to expand) Supported values list
+<a id="enabled-jwa-revocation-endpoint-auth-signing-alg-values-supported-values-list"></a><details><summary>(Click to expand) Supported values list
 </summary><br>
 
 ```js
@@ -3588,7 +3588,7 @@ _**default value**_:
 ```
 </details>
 
-### whitelistedJWA.tokenEndpointAuthSigningAlgValues
+### enabledJWA.tokenEndpointAuthSigningAlgValues
 
 JWA algorithms the provider supports on the token endpoint   
   
@@ -3604,7 +3604,7 @@ _**default value**_:
   'EdDSA'
 ]
 ```
-<a id="whitelisted-jwa-token-endpoint-auth-signing-alg-values-supported-values-list"></a><details><summary>(Click to expand) Supported values list
+<a id="enabled-jwa-token-endpoint-auth-signing-alg-values-supported-values-list"></a><details><summary>(Click to expand) Supported values list
 </summary><br>
 
 ```js
@@ -3618,7 +3618,7 @@ _**default value**_:
 ```
 </details>
 
-### whitelistedJWA.userinfoEncryptionAlgValues
+### enabledJWA.userinfoEncryptionAlgValues
 
 JWA algorithms the provider supports to wrap keys for UserInfo Response encryption   
   
@@ -3634,7 +3634,7 @@ _**default value**_:
   'dir'
 ]
 ```
-<a id="whitelisted-jwa-userinfo-encryption-alg-values-supported-values-list"></a><details><summary>(Click to expand) Supported values list
+<a id="enabled-jwa-userinfo-encryption-alg-values-supported-values-list"></a><details><summary>(Click to expand) Supported values list
 </summary><br>
 
 ```js
@@ -3653,7 +3653,7 @@ _**default value**_:
 ```
 </details>
 
-### whitelistedJWA.userinfoEncryptionEncValues
+### enabledJWA.userinfoEncryptionEncValues
 
 JWA algorithms the provider supports to encrypt UserInfo responses with   
   
@@ -3668,7 +3668,7 @@ _**default value**_:
   'A256GCM'
 ]
 ```
-<a id="whitelisted-jwa-userinfo-encryption-enc-values-supported-values-list"></a><details><summary>(Click to expand) Supported values list
+<a id="enabled-jwa-userinfo-encryption-enc-values-supported-values-list"></a><details><summary>(Click to expand) Supported values list
 </summary><br>
 
 ```js
@@ -3678,7 +3678,7 @@ _**default value**_:
 ```
 </details>
 
-### whitelistedJWA.userinfoSigningAlgValues
+### enabledJWA.userinfoSigningAlgValues
 
 JWA algorithms the provider supports to sign UserInfo responses with   
   
@@ -3693,7 +3693,7 @@ _**default value**_:
   'EdDSA'
 ]
 ```
-<a id="whitelisted-jwa-userinfo-signing-alg-values-supported-values-list"></a><details><summary>(Click to expand) Supported values list
+<a id="enabled-jwa-userinfo-signing-alg-values-supported-values-list"></a><details><summary>(Click to expand) Supported values list
 </summary><br>
 
 ```js

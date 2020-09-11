@@ -7,7 +7,7 @@ const merge = require('lodash/merge');
 const config = cloneDeep(require('../default.config'));
 const { errors: { InvalidTarget } } = require('../../lib');
 
-config.whitelistedJWA.requestObjectSigningAlgValues = ['none'];
+config.enabledJWA.requestObjectSigningAlgValues = ['none'];
 merge(config.features, {
   requestObjects: { request: true },
   clientCredentials: { enabled: true },

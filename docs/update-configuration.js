@@ -175,14 +175,23 @@ const props = [
     return what;
   }
 
+  const jwa = [];
   let featuresIdx = 0;
-  const configuration = Object.keys(blocks).sort().reduce((acc, key) => {
-    if (!key) return acc;
-    if (key.startsWith('features')) {
+  const configuration = Object.keys(blocks).sort().filter((value) => {
+    if (!value) {
+      return false;
+    }
+    if (value.startsWith('enabledJWA')) {
+      jwa.push(value);
+      return false;
+    }
+    return true;
+  }, []).reduce((acc, cur) => {
+    if (cur.startsWith('features')) {
       featuresIdx += 1;
-      acc.unshift(key);
+      acc.unshift(cur);
     } else {
-      acc.push(key);
+      acc.push(cur);
     }
     return acc;
   }, []);
@@ -199,7 +208,7 @@ const props = [
 
   let hidden;
   let prev;
-  for (const block of [...adapter, ...clients, ...findAccount, ...jwks, ...features, ...configuration]) { // eslint-disable-line no-restricted-syntax, max-len
+  for (const block of [...adapter, ...clients, ...findAccount, ...jwks, ...features, ...configuration, ...jwa]) { // eslint-disable-line no-restricted-syntax, max-len
     const section = blocks[block];
 
     if ('@skip' in section) {

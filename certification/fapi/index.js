@@ -187,7 +187,7 @@ const fapi = new Provider(ISSUER, {
   },
   responseTypes: ['code id_token', 'code'],
   tokenEndpointAuthMethods,
-  whitelistedJWA: {
+  enabledJWA: {
     authorizationSigningAlgValues: ALGS,
     idTokenSigningAlgValues: ALGS,
     introspectionSigningAlgValues: ALGS,

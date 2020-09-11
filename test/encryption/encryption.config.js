@@ -12,8 +12,8 @@ merge(config.features, {
   jwtIntrospection: { enabled: true },
 });
 
-pull(config.whitelistedJWA.requestObjectEncryptionAlgValues, 'RSA-OAEP');
-pull(config.whitelistedJWA.requestObjectEncryptionEncValues, 'A192CBC-HS384');
+pull(config.enabledJWA.requestObjectEncryptionAlgValues, 'RSA-OAEP');
+pull(config.enabledJWA.requestObjectEncryptionEncValues, 'A192CBC-HS384');
 
 const k = jose.JWK.generateSync('RSA', 2048);
 

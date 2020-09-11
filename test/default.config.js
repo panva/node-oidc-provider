@@ -52,5 +52,5 @@ module.exports = merge({
     'none',
   ],
   features: {},
-  whitelistedJWA: cloneDeep(JWA),
+  enabledJWA: cloneDeep(JWA),
 }, global.TEST_CONFIGURATION_DEFAULTS);

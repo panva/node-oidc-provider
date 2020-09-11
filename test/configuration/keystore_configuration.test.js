@@ -62,7 +62,7 @@ describe('configuration.jwks', () => {
         'code token',
         'token',
       ],
-      whitelistedJWA: {
+      enabledJWA: {
         idTokenSigningAlgValues: ['none'],
       },
       jwks: this.keystore.toJWKS(true),

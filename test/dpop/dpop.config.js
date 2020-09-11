@@ -3,7 +3,7 @@ const merge = require('lodash/merge');
 
 const config = cloneDeep(require('../default.config'));
 
-config.whitelistedJWA.dPoPSigningAlgValues = ['ES256', 'PS256'];
+config.enabledJWA.dPoPSigningAlgValues = ['ES256', 'PS256'];
 merge(config.features, {
   dPoP: { enabled: true },
   clientCredentials: { enabled: true },
