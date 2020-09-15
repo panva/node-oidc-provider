@@ -74,6 +74,7 @@ async function singleRun() {
   });
   await new Promise((resolve, reject) => {
     const mocha = new Mocha();
+    mocha.timeout(3000);
     mocha.files = files;
 
     if ('CI' in process.env) {
