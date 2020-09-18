@@ -14,7 +14,7 @@ export {};
 
 export type CanBePromise<T> = Promise<T> | T;
 export type RetryFunction = (retry: number, error: Error) => number;
-export type FindAccount = (ctx: KoaContextWithOIDC, sub: string, token?: AuthorizationCode | AccessToken | DeviceCode) => CanBePromise<Account>;
+export type FindAccount = (ctx: KoaContextWithOIDC, sub: string, token?: AuthorizationCode | AccessToken | DeviceCode) => CanBePromise<Account | undefined>;
 export type TokenFormat = 'opaque' | 'jwt' | 'jwt-ietf' | 'paseto';
 
 export type AccessTokenFormatFunction = (ctx: KoaContextWithOIDC, token: AccessToken) => TokenFormat;

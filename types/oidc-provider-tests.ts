@@ -325,15 +325,17 @@ const provider = new Provider('https://op.example.com', {
       token.iat.toFixed();
     }
 
-    return {
-      accountId: sub,
-      async claims() {
-        return {
-          sub,
-          foo: 'bar',
-        };
-      },
-    };
+    if (Math.random() > 0.5) {
+      return {
+        accountId: sub,
+        async claims() {
+          return {
+            sub,
+            foo: 'bar',
+          };
+        },
+      };
+    }
   },
   async rotateRefreshToken(ctx) {
     ctx.oidc.issuer.substring(0);
