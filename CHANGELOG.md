@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [6.29.4](https://github.com/panva/node-oidc-provider/compare/v6.29.3...v6.29.4) (2020-09-19)
+
+
+### Bug Fixes
+
+* **typescript:** findAccount may return undefined ([#786](https://github.com/panva/node-oidc-provider/issues/786)) ([6689cdb](https://github.com/panva/node-oidc-provider/commit/6689cdb7edeb6e66f70446fb3e7c1266debc631e))
+* updated request object mime-type as per draft-ietf-oauth-jwsreq-30 ([f15524a](https://github.com/panva/node-oidc-provider/commit/f15524a049722d2b3c5eb95c31ff0950e930bf29))
+
 ## [6.29.3](https://github.com/panva/node-oidc-provider/compare/v6.29.2...v6.29.3) (2020-08-25)
 
 
