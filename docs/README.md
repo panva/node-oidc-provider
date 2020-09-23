@@ -28,6 +28,7 @@ If you or your business use oidc-provider, please consider becoming a [sponsor][
 - [Mounting oidc-provider](#mounting-oidc-provider)
   - [to a connect application](#to-a-connect-application)
   - [to a fastify application](#to-a-fastify-application)
+  - [to a nest application](#to-a-nest-application)
   - [to a hapi application](#to-a-hapi-application)
   - [to a koa application](#to-a-koa-application)
   - [to an express application](#to-an-express-application)
@@ -337,13 +338,12 @@ provider.use(async (ctx, next) => {
 
 ## Mounting oidc-provider
 The following snippets show how a provider instance can be mounted to existing applications with a
-path prefix.
+path prefix `/oidc`.
 
 ### to a `connect` application
 ```js
 // assumes connect ^3.0.0
-const prefix = '/oidc';
-connectApp.use(prefix, oidc.callback);
+connectApp.use('/oidc', oidc.callback);
 ```
 
 ### to a `fastify` application
@@ -353,29 +353,27 @@ await app.register(require('fastify-express'));
 // or
 // await app.register(require('middie'));
 
-const prefix = '/oidc';
-fastifyApp.use(prefix, oidc.callback);
+fastifyApp.use('/oidc', oidc.callback);
 ```
 
 ### to a `hapi` application
 ```js
 // assumes @hapi/hapi ^20.0.0
-const prefix = '/oidc';
 const { callback } = oidc;
 hapiApp.route({
-  path: `${prefix}/{any*}`,
+  path: `/oidc/{any*}`,
   method: '*',
   config: { payload: { output: 'stream', parse: false } },
   async handler({ raw: { req, res } }, h) {
     req.originalUrl = req.url;
-    req.url = req.url.replace(prefix, '');
+    req.url = req.url.replace('/oidc', '');
 
     await new Promise((resolve) => {
       res.on('finish', resolve);
       callback(req, res);
     });
 
-    req.url = req.url.replace('/', prefix);
+    req.url = req.url.replace('/', '/oidc');
     delete req.originalUrl;
 
     return res.finished ? h.abandon : h.continue;
@@ -383,11 +381,26 @@ hapiApp.route({
 });
 ```
 
+### to a `nest` application
+```ts
+// assumes NestJS ^7.0.0
+import { Controller, All, Req, Res } from '@nestjs/common';
+import { Request, Response } from 'express';
+const { callback } = oidc;
+@Controller('oidc')
+export class OidcController {
+  @All('/*')
+  public mountedOidc(@Req() req: Request, @Res() res: Response): void {
+    req.url = req.originalUrl.replace('/oidc', '');
+    return callback(req, res);
+  }
+}
+```
+
 ### to an `express` application
 ```js
 // assumes express ^4.0.0
-const prefix = '/oidc';
-expressApp.use(prefix, oidc.callback);
+expressApp.use('/oidc', oidc.callback);
 ```
 
 ### to a `koa` application
@@ -395,8 +408,7 @@ expressApp.use(prefix, oidc.callback);
 // assumes koa ^2.0.0
 // assumes koa-mount ^4.0.0
 const mount = require('koa-mount');
-const prefix = '/oidc';
-koaApp.use(mount(prefix, oidc.app));
+koaApp.use(mount('/oidc', oidc.app));
 ```
 
 Note: when the issuer identifier does not include the path prefix you should take care of rewriting
@@ -424,6 +436,7 @@ application code
 | oidc-provider mounted to a `koa` application | `yourKoaApp.proxy = true` |
 | oidc-provider mounted to a `fastify` application | `provider.proxy = true` |
 | oidc-provider mounted to a `hapi` application | `provider.proxy = true` |
+| oidc-provider mounted to a `nest` application | `provider.proxy = true` |
 
 It is also necessary that the web server doing the offloading also passes
 those headers to the downstream application. Here is a common configuration
