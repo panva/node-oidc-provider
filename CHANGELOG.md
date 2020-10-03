@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [6.29.5](https://github.com/panva/node-oidc-provider/compare/v6.29.4...v6.29.5) (2020-10-03)
+
+
+### Bug Fixes
+
+* loopback redirectUriAllowed protocol check ([#794](https://github.com/panva/node-oidc-provider/issues/794)) ([da99330](https://github.com/panva/node-oidc-provider/commit/da993300c2237e794f012b679c483d42c1d9e423))
+
 ## [6.29.4](https://github.com/panva/node-oidc-provider/compare/v6.29.3...v6.29.4) (2020-09-19)
 
 
