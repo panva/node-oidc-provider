@@ -99,8 +99,8 @@ Since oidc-provider only comes with feature-less views and interaction handlers 
 those in, here is how oidc-provider allows you to do so:
 
 When oidc-provider cannot fulfill the authorization request for any of the possible reasons (missing
-user session, requested ACR not fulfilled, prompt requested, ...) it will resolve an the
-(configurable )`interactions.url` helper function and redirect the User-Agent to that url. Before
+user session, requested ACR not fulfilled, prompt requested, ...) it will resolve the 
+[`interactions.url`](#interactionsurl) helper function and redirect the User-Agent to that url. Before
 doing so it will save a short-lived session and dump its identifier into a cookie scoped to the
 resolved interaction path.
 
@@ -339,6 +339,9 @@ provider.use(async (ctx, next) => {
 ## Mounting oidc-provider
 The following snippets show how a provider instance can be mounted to existing applications with a
 path prefix `/oidc`.
+
+Note: if you mount oidc-provider to a path it's likely you will have to also update the 
+[`interactions.url`](#interactionsurl) configuration to reflect the new path.
 
 ### to a `connect` application
 ```js
