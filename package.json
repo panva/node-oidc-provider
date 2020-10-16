@@ -66,8 +66,8 @@
     "raw-body": "^2.4.1"
   },
   "devDependencies": {
-    "@commitlint/cli": "^9.1.2",
-    "@commitlint/config-conventional": "^9.1.2",
+    "@commitlint/cli": "^11.0.0",
+    "@commitlint/config-conventional": "^11.0.0",
     "@hapi/hapi": "^20.0.0",
     "base64url": "^3.0.1",
     "chai": "^4.2.0",
