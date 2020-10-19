@@ -93,9 +93,7 @@ module.exports = {
     requestObjects: {
       request: true,
       requestUri: true,
-      mergingStrategy: {
-        name: 'whitelist',
-      },
+      mode: 'strict',
     },
     revocation: { enabled: true },
     sessionManagement: { enabled: true },

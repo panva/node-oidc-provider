@@ -881,10 +881,7 @@ export interface Configuration {
       requestUri?: boolean;
       requireUriRegistration?: boolean;
       requireSignedRequestObject?: boolean;
-      mergingStrategy?: {
-        name?: 'lax' | 'strict' | 'whitelist',
-        whitelist?: string[] | Set<string>;
-      };
+      mode?: 'lax' | 'strict';
     };
 
     dPoP?: {

@@ -179,9 +179,7 @@ const fapi = new Provider(ISSUER, {
       request: true,
       requestUri: true,
       requireUriRegistration: true,
-      mergingStrategy: {
-        name: 'strict',
-      },
+      mode: 'strict',
     },
     revocation: { enabled: true },
   },

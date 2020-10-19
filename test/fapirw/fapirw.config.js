@@ -8,7 +8,7 @@ merge(config.features, {
   jwtResponseModes: { enabled: true },
   requestObjects: {
     request: true,
-    mergingStrategy: { name: 'strict' },
+    mode: 'strict',
   },
 });
 config.enabledJWA = {

@@ -11,16 +11,14 @@ const bootstrap = require('../test_helper');
 describe('request parameter features', () => {
   before(bootstrap(__dirname));
 
-  describe('merging strategies', () => {
-    ['lax', 'strict', 'whitelist'].forEach((value) => {
+  describe('modes', () => {
+    ['lax', 'strict'].forEach((value) => {
       it(`${value} is an allowed strategy name`, () => {
         expect(() => {
           new Provider('http://localhost:3000', { // eslint-disable-line no-new
             features: {
               requestObjects: {
-                mergingStrategy: {
-                  name: value,
-                },
+                mode: value,
               },
             },
           });
@@ -33,13 +31,11 @@ describe('request parameter features', () => {
         new Provider('http://localhost:3000', { // eslint-disable-line no-new
           features: {
             requestObjects: {
-              mergingStrategy: {
-                name: 'foobar',
-              },
+              mode: 'foobar',
             },
           },
         });
-      }).to.throw(TypeError, "'mergingStrategy.name' must be 'lax', 'strict', or 'whitelist'");
+      }).to.throw(TypeError, "'mode' must be 'lax' or 'strict'");
     });
   });
 
@@ -97,24 +93,22 @@ describe('request parameter features', () => {
         return this.logout();
       });
 
-      describe('merging strategies', () => {
+      describe('modes', () => {
         beforeEach(function () {
           const ro = i(this.provider).configuration().features.requestObjects;
           this.orig = {
-            mergingStrategy: ro.mergingStrategy.name,
-            whitelist: [...ro.mergingStrategy.whitelist],
+            mode: ro.mode,
           };
         });
 
         afterEach(function () {
           const ro = i(this.provider).configuration().features.requestObjects;
-          ro.mergingStrategy.name = this.orig.mergingStrategy;
-          ro.mergingStrategy.whitelist = new Set(this.orig.whitelist);
+          ro.mode = this.orig.mode;
         });
 
         describe('strict', () => {
           it('does not use anything from the OAuth 2.0 parameters', async function () {
-            i(this.provider).configuration().features.requestObjects.mergingStrategy.name = 'strict';
+            i(this.provider).configuration().features.requestObjects.mode = 'strict';
 
             const spy = sinon.spy();
             this.provider.once('authorization.success', spy);
@@ -153,7 +147,7 @@ describe('request parameter features', () => {
 
         describe('lax', () => {
           it('uses anything not found in the Request Object', async function () {
-            i(this.provider).configuration().features.requestObjects.mergingStrategy.name = 'lax';
+            i(this.provider).configuration().features.requestObjects.mode = 'lax';
 
             const spy = sinon.spy();
             this.provider.once('authorization.success', spy);
@@ -186,52 +180,6 @@ describe('request parameter features', () => {
               .expect(() => {
                 expect(spy.calledOnce).to.be.true;
                 expect(spy.args[0][0].oidc.params.ui_locales).to.eq('foo');
-              }));
-          });
-        });
-
-        describe('whitelist', () => {
-          it('uses anything not found in the Request Object', async function () {
-            i(this.provider).configuration()
-              .features.requestObjects.mergingStrategy.name = 'whitelist';
-            i(this.provider).configuration()
-              .features.requestObjects.mergingStrategy.whitelist = new Set([
-                'ui_locales',
-              ]);
-
-            const spy = sinon.spy();
-            this.provider.once('authorization.success', spy);
-
-            if (successCode === 200) {
-              this.provider.once('device_authorization.success', ({ oidc }) => {
-                this.provider.emit('authorization.success', { oidc: { params: oidc.entities.DeviceCode.params } });
-              });
-            }
-
-            await JWT.sign({
-              client_id: 'client',
-              response_type: 'code',
-              redirect_uri: 'https://client.example.com/cb',
-              scope: 'openid',
-            }, null, 'none', { issuer: 'client', audience: this.provider.issuer }).then((request) => this.wrap({
-              agent: this.agent,
-              route,
-              verb,
-              auth: {
-                request,
-                ui_locales: 'foo',
-                claims_locales: 'foo',
-                ...(successCode === 200 ? {
-                  client_id: 'client',
-                } : undefined),
-              },
-            })
-              .expect(successCode)
-              .expect(successFnCheck)
-              .expect(() => {
-                expect(spy.calledOnce).to.be.true;
-                expect(spy.args[0][0].oidc.params.ui_locales).to.eq('foo');
-                expect(spy.args[0][0].oidc.params.claims_locales).to.eq(undefined);
               }));
           });
         });

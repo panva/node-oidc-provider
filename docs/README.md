@@ -955,7 +955,7 @@ _**default value**_:
  - `features.mTLS` and enable `selfSignedTlsClientAuth` and/or `tlsClientAuth`
  - `features.claimsParameter`
  - `features.requestObjects` and enable `request` and/or `request_uri`
- - `features.requestObjects.mergingStrategy.name` set to `strict`
+ - `features.requestObjects.mode` set to `strict`
  - `enabledJWA`
  - (optional) `features.pushedAuthorizationRequests`
  - (optional) `features.jwtResponseModes`  
@@ -1542,15 +1542,7 @@ Enables the use and validations of the `request` and/or `request_uri` parameters
 _**default value**_:
 ```js
 {
-  mergingStrategy: {
-    name: 'lax',
-    whitelist: [
-      'code_challenge',
-      'nonce',
-      'state',
-      'prompt'
-    ]
-  },
+  mode: 'lax',
   request: false,
   requestUri: true,
   requireSignedRequestObject: false,
@@ -1561,35 +1553,18 @@ _**default value**_:
 <details><summary>(Click to expand) features.requestObjects options details</summary><br>
 
 
-#### mergingStrategy.name
+#### mode
 
 defines the provider's strategy when it comes to using regular OAuth 2.0 parameters that are present. Parameters inside the Request Object are ALWAYS used, this option controls whether to combine those with the regular ones or not.   
  Supported values are:   
  - 'lax' (default) This is the behaviour expected by OIDC Core 1.0 - all parameters that are not present in the Resource Object are used when resolving the authorization request.
- - 'strict' This is the behaviour expected by FAPI or JAR, all parameters outside of the Request Object are ignored.
- - 'whitelist' During this strategy only parameters in the configured whitelist are used. This means that pre-signed Request Objects could be used multiple times while the per-transaction whitelisted parameters can be provided using regular OAuth 2.0 syntax.   
+ - 'strict' This is the behaviour expected by FAPI or JAR, all parameters outside of the Request Object are ignored.   
   
 
 
 _**default value**_:
 ```js
 'lax'
-```
-
-#### mergingStrategy.whitelist
-
-This whitelist is only used when the 'mergingStrategy.name' value is 'whitelist'.   
-  
-
-
-_**default value**_:
-```js
-[
-  'code_challenge',
-  'nonce',
-  'state',
-  'prompt'
-]
 ```
 
 #### request

@@ -399,10 +399,7 @@ const provider = new Provider('https://op.example.com', {
       request: false,
       requestUri: false,
       requireUriRegistration: false,
-      mergingStrategy: {
-        name: 'lax',
-        whitelist: ['nonce'],
-      },
+      mode: 'lax'
     },
     encryption: { enabled: false },
     fapiRW: { enabled: false, ack: 'id02-rev.3' },
