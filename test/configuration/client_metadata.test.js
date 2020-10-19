@@ -586,10 +586,11 @@ describe('Client metadata validation', () => {
   });
 
   context('userinfo_signed_response_alg', function () {
-    defaultsTo(this.title, undefined);
-    mustBeString(this.title);
-    allows(this.title, 'HS256');
-    rejects(this.title, 'not-an-alg');
+    const configuration = { features: { jwtUserinfo: { enabled: true } } };
+    defaultsTo(this.title, undefined, undefined, configuration);
+    mustBeString(this.title, undefined, undefined, configuration);
+    allows(this.title, 'HS256', undefined, configuration);
+    rejects(this.title, 'not-an-alg', undefined, undefined, configuration);
   });
 
   context('introspection_signed_response_alg', function () {
@@ -621,6 +622,7 @@ describe('Client metadata validation', () => {
         introspection: { enabled: true },
         jwtIntrospection: { enabled: true },
         jwtResponseModes: { enabled: true },
+        jwtUserinfo: { enabled: true },
       },
     };
 
@@ -920,6 +922,7 @@ describe('Client metadata validation', () => {
         jwtIntrospection: { enabled: true },
         revocation: { enabled: true },
         encryption: { enabled: true },
+        jwtUserinfo: { enabled: true },
       },
     };
 

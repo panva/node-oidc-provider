@@ -85,6 +85,7 @@ module.exports = {
     dPoP: { enabled: true },
     encryption: { enabled: true },
     frontchannelLogout: { enabled: true },
+    jwtUserinfo: { enabled: true },
     introspection: { enabled: true },
     registration: { enabled: true },
     registrationManagement: { enabled: true, rotateRegistrationAccessToken: true },

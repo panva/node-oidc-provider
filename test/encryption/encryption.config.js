@@ -10,6 +10,7 @@ merge(config.features, {
   encryption: { enabled: true },
   introspection: { enabled: true },
   jwtIntrospection: { enabled: true },
+  jwtUserinfo: { enabled: true },
 });
 
 pull(config.enabledJWA.requestObjectEncryptionAlgValues, 'RSA-OAEP');

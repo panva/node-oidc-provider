@@ -3,6 +3,7 @@ const cloneDeep = require('lodash/cloneDeep');
 const config = cloneDeep(require('../default.config'));
 
 config.audiences = () => ['foo'];
+config.features.jwtUserinfo = { enabled: true };
 
 module.exports = {
   config,

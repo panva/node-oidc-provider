@@ -1133,7 +1133,7 @@ Enables the userinfo to optionally return signed and/or encrypted JWTs, also ena
 _**default value**_:
 ```js
 {
-  enabled: true
+  enabled: false
 }
 ```
 
