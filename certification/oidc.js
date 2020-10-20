@@ -69,20 +69,6 @@ let server;
     configuration.cookies.short.secure = true;
     configuration.cookies.long.secure = true;
 
-    provider.use((ctx, next) => {
-      if (ctx.path === '/.well-known/webfinger') {
-        ctx.body = {
-          links: [{
-            href: provider.issuer,
-            rel: 'http://openid.net/specs/connect/1.0/issuer',
-          }],
-          subject: ctx.query.resource,
-        };
-        ctx.type = 'application/jrd+json';
-      }
-      return next();
-    });
-
     provider.use(async (ctx, next) => {
       if (ctx.secure) {
         await next();
