@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [6.29.6](https://github.com/panva/node-oidc-provider/compare/v6.29.5...v6.29.6) (2020-11-08)
+
+
+### Bug Fixes
+
+* ensure decrypted request object is accessed in PAR responses ([09751d7](https://github.com/panva/node-oidc-provider/commit/09751d75c770ab0b3a9032239abd4ca7b7cba7cf)), closes [#813](https://github.com/panva/node-oidc-provider/issues/813)
+
 ## [6.29.5](https://github.com/panva/node-oidc-provider/compare/v6.29.4...v6.29.5) (2020-10-03)
 
 
