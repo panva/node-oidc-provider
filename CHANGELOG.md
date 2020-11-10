@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [6.29.7](https://github.com/panva/node-oidc-provider/compare/v6.29.6...v6.29.7) (2020-11-10)
+
+
+### Bug Fixes
+
+* client keystore refresh keeps the derived octet keys in store ([024841e](https://github.com/panva/node-oidc-provider/commit/024841e82ddb5b4ffdd2c66504381f02c6219de8)), closes [#816](https://github.com/panva/node-oidc-provider/issues/816)
+
 ## [6.29.6](https://github.com/panva/node-oidc-provider/compare/v6.29.5...v6.29.6) (2020-11-08)
 
 
