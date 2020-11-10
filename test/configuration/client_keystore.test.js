@@ -246,6 +246,18 @@ describe('client keystore refresh', () => {
   });
 
   describe('refreshing', () => {
+    it('keeps the derived keys in keystore', async function () {
+      const client = await this.provider.Client.find('client');
+      expect(client.keystore.get({ alg: 'HS256' })).to.be.ok;
+      setResponse();
+      sinon.stub(client.keystore, 'fresh').callsFake(function () {
+        this.fresh.restore();
+        return false;
+      });
+      await client.keystore.refresh();
+      expect(client.keystore.get({ alg: 'HS256' })).to.be.ok;
+    });
+
     it('when a stale keystore is passed to JWT verification it gets refreshed when verification fails', async function () {
       setResponse();
 
