@@ -382,7 +382,7 @@ declare class RefreshToken extends BaseToken {
   static revokeByGrantId(grantId: string): Promise<void>;
 }
 
-declare class AuthorizationCode extends BaseToken {
+export class AuthorizationCode extends BaseToken {
   constructor(properties: {
     client: Client;
     accountId: string;
@@ -430,7 +430,7 @@ declare class AuthorizationCode extends BaseToken {
   static revokeByGrantId(grantId: string): Promise<void>;
 }
 
-declare class DeviceCode extends BaseToken {
+export class DeviceCode extends BaseToken {
   constructor(properties: {
     params: AnyObject;
     userCode: string;
@@ -506,7 +506,7 @@ declare class RegistrationAccessToken extends BaseToken {
   policies?: string[];
 }
 
-declare class AccessToken extends BaseToken {
+export class AccessToken extends BaseToken {
   constructor(properties: {
     client: Client;
     accountId: string;
