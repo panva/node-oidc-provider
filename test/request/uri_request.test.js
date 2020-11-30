@@ -737,37 +737,5 @@ describe('request Uri features', () => {
       expect(first).not.to.equal(third);
       expect(third).to.equal(fourth);
     });
-
-    it('respects provided response max-age header', async function () {
-      this.retries(1);
-
-      const cache = new RequestUriCache(this.provider);
-      nock('https://client.example.com')
-        .get('/cachedRequest')
-        .reply(200, 'content24', {
-          'Cache-Control': 'private, max-age=5',
-        });
-
-      await cache.resolveWebUri('https://client.example.com/cachedRequest');
-      const dump = cache.cache.dump();
-      expect(dump).to.have.lengthOf(1);
-      expect((dump[0].e - Date.now()) / 1000 | 0).to.be.closeTo(5, 1); // eslint-disable-line no-bitwise, max-len
-    });
-
-    it('respects provided response expires header', async function () {
-      this.retries(1);
-
-      const cache = new RequestUriCache(this.provider);
-      nock('https://client.example.com')
-        .get('/cachedRequest')
-        .reply(200, 'content24', {
-          Expires: new Date(Date.now() + (5 * 1000)).toGMTString(),
-        });
-
-      await cache.resolveWebUri('https://client.example.com/cachedRequest');
-      const dump = cache.cache.dump();
-      expect(dump).to.have.lengthOf(1);
-      expect((dump[0].e - Date.now()) / 1000 | 0).to.be.closeTo(5, 1); // eslint-disable-line no-bitwise, max-len
-    });
   });
 });
