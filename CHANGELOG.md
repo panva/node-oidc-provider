@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [6.29.8](https://github.com/panva/node-oidc-provider/compare/v6.29.7...v6.29.8) (2020-11-30)
+
+
+### Bug Fixes
+
+* ignore client metadata valued `undefined` when applying defualts ([d0ee50a](https://github.com/panva/node-oidc-provider/commit/d0ee50a23271d1d6655b6552e2fa92e1d049904c)), closes [#824](https://github.com/panva/node-oidc-provider/issues/824)
+
 ## [6.29.7](https://github.com/panva/node-oidc-provider/compare/v6.29.6...v6.29.7) (2020-11-10)
 
 
