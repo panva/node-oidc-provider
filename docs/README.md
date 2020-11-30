@@ -629,6 +629,7 @@ _**recommendation**_: **Provider key rotation** - The following action order is 
 </summary><br>
 
 ```js
+// npm install jose@2
 const { JWKS: { KeyStore } } = require('jose');
 const keystore = new KeyStore();
 keystore.generateSync('RSA', 2048, { alg: 'RS256', use: 'sig' });
@@ -642,6 +643,7 @@ Re-using the same keys for both encryption and signing is discouraged so it is b
   
 
 ```js
+// npm install jose@2
 const { JWKS: { KeyStore } } = require('jose');
 const keystore = new KeyStore();
 Promise.all([
@@ -1432,6 +1434,7 @@ Support modules:
   
 
 ```js
+// npm install jose@2
 const { JWT: { verify }, JWK } = require('jose');
 const {
   errors: { InvalidSoftwareStatement, UnapprovedSoftwareStatement, InvalidClientMetadata },
@@ -2251,6 +2254,7 @@ function extraClientMetadataValidator(key, value, metadata, ctx) {
 </summary><br>
 
 ```js
+// npm install jose@2
 const { JWT: { verify }, JWK } = require('jose');
 const {
   errors: { InvalidSoftwareStatement, UnapprovedSoftwareStatement },
