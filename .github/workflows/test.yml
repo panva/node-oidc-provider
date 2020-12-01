@@ -38,7 +38,7 @@ jobs:
       - run: npm run lint-ts
 
   test:
-    name: Node Tests + Coverage
+    name: Node Tests
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
@@ -77,9 +77,6 @@ jobs:
         run: npx panva/npm-install-retry
         if: ${{ steps.node_modules.outputs.cache-hit != 'true' }}
       - run: npm run ci
-      - env:
-          CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
-        run: npx codecov
 
   conformance-suite:
     runs-on: ubuntu-latest
