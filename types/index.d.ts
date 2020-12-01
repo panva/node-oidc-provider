@@ -217,10 +217,6 @@ declare class Session extends BaseModel {
   static get(ctx: Koa.Context): Promise<Session>;
 }
 
-declare class RequestUriCache {
-  resolve(requestUri: string): Promise<string>;
-}
-
 declare class JWTStructured {
   header?: AnyObject;
   payload: AnyObject;
@@ -1427,7 +1423,6 @@ export class Provider extends events.EventEmitter {
   readonly Account: { findAccount: FindAccount; };
   readonly IdToken: typeof IdToken;
   readonly ReplayDetection: typeof ReplayDetection;
-  readonly requestUriCache: RequestUriCache;
   readonly OIDCContext: typeof OIDCContext;
   readonly Session: typeof Session;
   readonly Interaction: typeof Interaction;
