@@ -686,6 +686,7 @@ export interface Account {
 }
 
 export type RotateRegistrationAccessTokenFunction = (ctx: KoaContextWithOIDC) => CanBePromise<boolean>;
+export type IssueRegistrationAccessTokenFunction = (ctx: KoaContextWithOIDC, client: Client) => boolean;
 
 export interface ErrorOut {
   error: string;
@@ -864,6 +865,7 @@ export interface Configuration {
     registrationManagement?: {
       enabled?: boolean;
       rotateRegistrationAccessToken?: RotateRegistrationAccessTokenFunction | boolean
+      issueRegistrationAccessToken?: IssueRegistrationAccessTokenFunction | boolean
     };
 
     deviceFlow?: {

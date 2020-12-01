@@ -38,6 +38,146 @@ describe('registration features', () => {
         .end(() => {});
     });
 
+    context('when issueRegistrationAccessToken is false', () => {
+      before(function () {
+        const config = i(this.provider).configuration('features.registration');
+        this.orig = config.issueRegistrationAccessToken;
+        config.issueRegistrationAccessToken = false;
+      });
+
+      after(function () {
+        i(this.provider).configuration('features.registration').issueRegistrationAccessToken = this.orig;
+      });
+
+      it('omits issuing a registration access token and does not return registration_client_uri', function () {
+        return this.agent.post('/reg')
+          .send({
+            redirect_uris: ['https://client.example.com/cb'],
+          })
+          .expect(201)
+          .expect((response) => {
+            expect(response.body).not.to.contain.keys('registration_client_uri', 'registration_access_token');
+          });
+      });
+
+      it('populates ctx.oidc.entities', function (done) {
+        this.provider.use(this.assertOnce((ctx) => {
+          expect(ctx.oidc.entities).not.to.have.property('RegistrationAccessToken');
+        }, done));
+
+        this.agent.post('/reg')
+          .send({
+            redirect_uris: ['https://client.example.com/cb'],
+          })
+          .end(() => {});
+      });
+    });
+
+    context('when issueRegistrationAccessToken is a function returning false', () => {
+      before(function () {
+        const config = i(this.provider).configuration('features.registration');
+        this.orig = config.issueRegistrationAccessToken;
+        config.issueRegistrationAccessToken = () => false;
+      });
+
+      after(function () {
+        i(this.provider).configuration('features.registration').issueRegistrationAccessToken = this.orig;
+      });
+
+      it('omits issuing a registration access token and does not return registration_client_uri', function () {
+        return this.agent.post('/reg')
+          .send({
+            redirect_uris: ['https://client.example.com/cb'],
+          })
+          .expect(201)
+          .expect((response) => {
+            expect(response.body).not.to.contain.keys('registration_client_uri', 'registration_access_token');
+          });
+      });
+
+      it('populates ctx.oidc.entities', function (done) {
+        this.provider.use(this.assertOnce((ctx) => {
+          expect(ctx.oidc.entities).not.to.have.property('RegistrationAccessToken');
+        }, done));
+
+        this.agent.post('/reg')
+          .send({
+            redirect_uris: ['https://client.example.com/cb'],
+          })
+          .end(() => {});
+      });
+    });
+
+    context('when issueRegistrationAccessToken is a function returning true', () => {
+      before(function () {
+        const config = i(this.provider).configuration('features.registration');
+        this.orig = config.issueRegistrationAccessToken;
+        config.issueRegistrationAccessToken = () => true;
+      });
+
+      after(function () {
+        i(this.provider).configuration('features.registration').issueRegistrationAccessToken = this.orig;
+      });
+
+      it('omits issuing a registration access token and does not return registration_client_uri', function () {
+        return this.agent.post('/reg')
+          .send({
+            redirect_uris: ['https://client.example.com/cb'],
+          })
+          .expect(201)
+          .expect((response) => {
+            expect(response.body).to.contain.keys('registration_client_uri', 'registration_access_token');
+          });
+      });
+
+      it('populates ctx.oidc.entities', function (done) {
+        this.provider.use(this.assertOnce((ctx) => {
+          expect(ctx.oidc.entities).to.have.property('RegistrationAccessToken');
+        }, done));
+
+        this.agent.post('/reg')
+          .send({
+            redirect_uris: ['https://client.example.com/cb'],
+          })
+          .end(() => {});
+      });
+    });
+
+    context('when issueRegistrationAccessToken is true', () => {
+      before(function () {
+        const config = i(this.provider).configuration('features.registration');
+        this.orig = config.issueRegistrationAccessToken;
+        config.issueRegistrationAccessToken = true;
+      });
+
+      after(function () {
+        i(this.provider).configuration('features.registration').issueRegistrationAccessToken = this.orig;
+      });
+
+      it('omits issuing a registration access token and does not return registration_client_uri', function () {
+        return this.agent.post('/reg')
+          .send({
+            redirect_uris: ['https://client.example.com/cb'],
+          })
+          .expect(201)
+          .expect((response) => {
+            expect(response.body).to.contain.keys('registration_client_uri', 'registration_access_token');
+          });
+      });
+
+      it('populates ctx.oidc.entities', function (done) {
+        this.provider.use(this.assertOnce((ctx) => {
+          expect(ctx.oidc.entities).to.have.property('RegistrationAccessToken');
+        }, done));
+
+        this.agent.post('/reg')
+          .send({
+            redirect_uris: ['https://client.example.com/cb'],
+          })
+          .end(() => {});
+      });
+    });
+
     it('omits the client_secret generation when it is not needed', function () {
       return this.agent.post('/reg')
         .send({

@@ -1318,6 +1318,7 @@ _**default value**_:
   enabled: false,
   idFactory: [Function: idFactory], // see expanded details below
   initialAccessToken: false,
+  issueRegistrationAccessToken: true,
   policies: undefined,
   secretFactory: [Function: secretFactory] // see expanded details below
 }
@@ -1355,6 +1356,30 @@ false
 
 ```js
 new (provider.InitialAccessToken)({}).save().then(console.log);
+```
+</details>
+
+#### issueRegistrationAccessToken
+
+Boolean or a function used to decide whether a registration access token will be issued or not. Supported values are
+ - `false` registration access tokens is issued
+ - `true` registration access tokens is not issued
+ - function returning true/false, true when token should be issued, false when it shouldn't   
+  
+
+
+_**default value**_:
+```js
+true
+```
+<a id="issue-registration-access-token-to-determine-if-a-registration-access-token-should-be-issued-dynamically"></a><details><summary>(Click to expand) To determine if a registration access token should be issued dynamically
+</summary><br>
+
+```js
+// @param ctx - koa request context
+async issueRegistrationAccessToken(ctx) {
+  return policyImplementation(ctx)
+}
 ```
 </details>
 
