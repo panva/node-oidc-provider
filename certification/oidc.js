@@ -66,8 +66,6 @@ let server;
 
   if (process.env.NODE_ENV === 'production') {
     provider.proxy = true;
-    configuration.cookies.short.secure = true;
-    configuration.cookies.long.secure = true;
 
     provider.use(async (ctx, next) => {
       if (ctx.secure) {

@@ -190,7 +190,7 @@ module.exports = (provider) => {
       } else {
         interaction.params.prompt = 'login';
       }
-      await interaction.save();
+      await interaction.persist();
     }
 
     const result = { select_account: {} };

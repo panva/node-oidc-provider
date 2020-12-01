@@ -3,7 +3,6 @@
 const path = require('path');
 const url = require('url');
 
-const set = require('lodash/set');
 const express = require('express'); // eslint-disable-line import/no-unresolved
 const helmet = require('helmet');
 
@@ -31,11 +30,6 @@ let server;
   }
 
   const prod = process.env.NODE_ENV === 'production';
-
-  if (prod) {
-    set(configuration, 'cookies.short.secure', true);
-    set(configuration, 'cookies.long.secure', true);
-  }
 
   const provider = new Provider(ISSUER, { adapter, ...configuration });
 

@@ -74,8 +74,8 @@ describe('device interaction resume /device/:user_code/:uid/', () => {
 
     return Promise.all([
       code.save(),
-      interaction.save(),
-      session.save(),
+      interaction.save(30), // TODO: bother running the ttl helper?
+      session.save(30), // TODO: bother running the ttl helper?
     ]);
   }
 

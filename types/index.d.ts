@@ -160,7 +160,8 @@ declare class Interaction extends BaseModel {
   uid: string;
   lastSubmission?: InteractionResults;
 
-  save(ttl?: number): Promise<string>;
+  save(ttl: number): Promise<string>;
+  persist(): Promise<string>;
 }
 
 declare class Session extends BaseModel {
@@ -209,7 +210,8 @@ declare class Session extends BaseModel {
   rejectedClaimsFor(clientId: string): Set<string>;
   rejectedClaimsFor(clientId: string, claims: string[] | Set<string>, replace?: boolean): void;
 
-  save(ttl?: number): Promise<string>;
+  save(ttl: number): Promise<string>;
+  persist(): Promise<string>;
   destroy(): Promise<void>;
   resetIdentifier(): void;
   static find<T>(this: { new (...args: any[]): T }, cookieId: string): Promise<T | undefined>;
@@ -769,7 +771,6 @@ export interface AdapterConstructor {
 }
 
 export interface CookiesSetOptions {
-  maxAge?: number;
   path?: string;
   domain?: string;
   secure?: boolean;
@@ -1023,6 +1024,8 @@ export interface Configuration {
     DeviceCode?: TTLFunction<DeviceCode> | number;
     IdToken?: TTLFunction<IdToken> | number;
     RefreshToken?: TTLFunction<RefreshToken> | number;
+    Interaction?: TTLFunction<Interaction> | number;
+    Session?: TTLFunction<Session> | number;
 
     [key: string]: any;
   };

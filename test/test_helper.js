@@ -136,14 +136,14 @@ module.exports = function testHelper(dir, {
       cookies.push([`_session.sig=${keys.sign(pre)}`, ...post].join(';'));
 
       session.authorizations = {};
+      const ctx = new provider.OIDCContext({ req: { socket: {} }, res: {} });
+      ctx.params = { scope, claims };
+
+      if (ctx.params.claims && typeof ctx.params.claims !== 'string') {
+        ctx.params.claims = JSON.stringify(ctx.params.claims);
+      }
+
       clients.forEach((cl) => {
-        const ctx = new provider.OIDCContext({ req: { socket: {} }, res: {} });
-        ctx.params = { scope, claims };
-
-        if (ctx.params.claims && typeof ctx.params.claims !== 'string') {
-          ctx.params.claims = JSON.stringify(ctx.params.claims);
-        }
-
         session.authorizations[cl.client_id] = {
           sid: nanoid(),
           grantId: nanoid(),
@@ -161,7 +161,13 @@ module.exports = function testHelper(dir, {
         }
       });
 
-      return Account.findAccount({}, account).then(session.save()).then(() => {
+      let ttl = i(provider).configuration('ttl.Session');
+
+      if (typeof ttl === 'function') {
+        ttl = ttl(ctx, session);
+      }
+
+      return Account.findAccount({}, account).then(session.save(ttl)).then(() => {
         agent._saveCookies.bind(agent)({ headers: { 'set-cookie': cookies } });
       });
     }

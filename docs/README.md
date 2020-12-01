@@ -2060,7 +2060,7 @@ true
 
 ### cookies
 
-Options for the [cookie module](https://github.com/pillarjs/cookies#cookiesset-name--value---options--) used to keep track of various User-Agent states.  
+Options for the [cookie module](https://github.com/pillarjs/cookies#cookiesset-name--value---options--) used to keep track of various User-Agent states. The options `maxAge` and `expires` are ignored. Use `ttl.Session` and `ttl.Interaction` to configure the ttl and in turn the cookie expiration values for Session and Interaction models.  
 
 
 ### cookies.keys
@@ -2086,7 +2086,6 @@ _**default value**_:
 ```js
 {
   httpOnly: true,
-  maxAge: 1209600000,
   overwrite: true,
   sameSite: 'none'
 }
@@ -2118,7 +2117,6 @@ _**default value**_:
 ```js
 {
   httpOnly: true,
-  maxAge: 3600000,
   overwrite: true,
   sameSite: 'lax'
 }
@@ -3084,7 +3082,7 @@ _**default value**_:
 
 ### ttl
 
-description: Expirations for all token types. The value can be a number (in seconds) or a synchronous function that dynamically returns value based on the context.   
+description: Expirations for various token and session types. The value can be a number (in seconds) or a synchronous function that dynamically returns value based on the context.   
   
 
 _**recommendation**_: Do not set token TTLs longer then they absolutely have to be, the shorter the TTL, the better. Rather than setting crazy high Refresh Token TTL look into `rotateRefreshToken` configuration option which is set up in way that when refresh tokens are regularly used they will have their TTL refreshed (via rotation). This is inline with the [OAuth 2.0 Security Best Current Practice](https://tools.ietf.org/html/draft-ietf-oauth-security-topics-13)  
@@ -3098,6 +3096,7 @@ _**default value**_:
   ClientCredentials: 600 /* 10 minutes in seconds */,
   DeviceCode: 600 /* 10 minutes in seconds */,
   IdToken: 3600 /* 1 hour in seconds */,
+  Interaction: 3600 /* 1 hour in seconds */,
   RefreshToken: function RefreshTokenTTL(ctx, token, client) {
     if (
       ctx && ctx.oidc.entities.RotatedRefreshToken
@@ -3110,7 +3109,8 @@ _**default value**_:
     }
   
     return 14 * 24 * 60 * 60; // 14 days in seconds
-  }
+  },
+  Session: 1209600 /* 14 days in seconds */
 }
 ```
 <a id="ttl-to-resolve-a-ttl-on-runtime-for-each-new-token"></a><details><summary>(Click to expand) To resolve a ttl on runtime for each new token</summary><br>

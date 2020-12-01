@@ -2,7 +2,6 @@
 
 const path = require('path');
 
-const set = require('lodash/set');
 const render = require('koa-ejs');
 const helmet = require('koa-helmet');
 
@@ -25,11 +24,6 @@ let server;
   }
 
   const prod = process.env.NODE_ENV === 'production';
-
-  if (prod) {
-    set(configuration, 'cookies.short.secure', true);
-    set(configuration, 'cookies.long.secure', true);
-  }
 
   const provider = new Provider(ISSUER, { adapter, ...configuration });
 

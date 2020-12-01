@@ -237,7 +237,7 @@ expire.setDate(expire.getDate() + 1);
             },
           });
 
-          return sess.save();
+          return sess.save(30); // TODO: bother running the ttl helper?
         }
 
         it('session subject value differs from the one requested [1/2]', function () {
