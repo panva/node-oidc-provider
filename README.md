@@ -41,6 +41,7 @@ The following draft specifications are implemented by oidc-provider.
 - [JSON Web Token (JWT) Profile for OAuth 2.0 Access Tokens - draft 05][jwt-at]
 - [JWT Response for OAuth Token Introspection - draft 09][jwt-introspection]
 - [JWT Secured Authorization Response Mode for OAuth 2.0 (JARM) - draft 02][jarm]
+- [OAuth 2.0 Authorization Server Issuer Identifier in Authorization Response][iss-auth-resp]
 - [OAuth 2.0 Demonstration of Proof-of-Possession at the Application Layer (DPoP) - draft 01][dpop]
 - [OAuth 2.0 JWT Secured Authorization Request (JAR)][jar]
 - [OAuth 2.0 Pushed Authorization Requests - draft 03][par]
@@ -176,3 +177,4 @@ See the list of available emitted [event names](/docs/events.md) and their descr
 [support-sponsor]: https://github.com/sponsors/panva
 [par]: https://tools.ietf.org/html/draft-ietf-oauth-par-03
 [rpinitiated-logout]: https://openid.net/specs/openid-connect-rpinitiated-1_0-01.html
+[iss-auth-resp]: https://tools.ietf.org/html/draft-ietf-oauth-iss-auth-resp-00

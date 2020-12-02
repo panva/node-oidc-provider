@@ -1110,6 +1110,20 @@ async function introspectionAllowedPolicy(ctx, client, token) {
 
 </details>
 
+### features.issAuthResp
+
+[draft-ietf-oauth-iss-auth-resp-00](https://tools.ietf.org/html/draft-ietf-oauth-iss-auth-resp-00) - OAuth 2.0 Authorization Server Issuer Identifier in Authorization Response  
+
+Enables `iss` authorization response parameter for responses without existing countermeasures against mix-up attacks.  
+
+
+_**default value**_:
+```js
+{
+  enabled: false
+}
+```
+
 ### features.jwtIntrospection
 
 [draft-ietf-oauth-jwt-introspection-response-09](https://tools.ietf.org/html/draft-ietf-oauth-jwt-introspection-response-09) - JWT Response for OAuth Token Introspection  
