@@ -192,8 +192,14 @@ module.exports = function testHelper(dir, {
 
         Object.defineProperty(this, 'validateClientLocation', {
           value: (response) => {
-            const expected = parse(this.redirect_uri, true);
             const actual = parse(response.headers.location, true);
+            let expected
+            if (this.redirect_uri) {
+              expected = parse(this.redirect_uri, true);
+            } else {
+              expected = parse(c && c.redirect_uris[0], true);
+            }
+
             ['protocol', 'host', 'pathname'].forEach((attr) => {
               expect(actual[attr]).to.equal(expected[attr]);
             });

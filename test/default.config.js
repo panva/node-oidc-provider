@@ -53,4 +53,5 @@ module.exports = merge({
   ],
   features: {},
   enabledJWA: cloneDeep(JWA),
+  allowOmittingSingleRegisteredRedirectUri: true,
 }, global.TEST_CONFIGURATION_DEFAULTS);

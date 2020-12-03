@@ -24,7 +24,7 @@ describe('grant_type=authorization_code', () => {
     this.provider.removeAllListeners('server_error');
   });
 
-  context('with real tokens (1/2) - more than two redirect_uris registered', () => {
+  context('with real tokens (1/3) - more than one redirect_uris registered', () => {
     before(function () { return this.login(); });
     after(function () { return this.logout(); });
 
@@ -258,6 +258,21 @@ describe('grant_type=authorization_code', () => {
         });
     });
 
+    it('validates redirect_uri presence', function () {
+      return this.agent.post(route)
+        .auth('client', 'secret')
+        .send({
+          code: this.ac,
+          grant_type: 'authorization_code',
+        })
+        .type('form')
+        .expect(400)
+        .expect((response) => {
+          expect(response.body).to.have.property('error', 'invalid_request');
+          expect(response.body).to.have.property('error_description', "missing required parameter 'redirect_uri'");
+        });
+    });
+
     it('validates account is still there', function () {
       sinon.stub(this.provider.Account, 'findAccount').callsFake(() => Promise.resolve());
 
@@ -286,9 +301,52 @@ describe('grant_type=authorization_code', () => {
     });
   });
 
-  context('with real tokens (2/2) - one redirect_uri registered', () => {
-    before(function () { return this.login(); });
-    after(function () { return this.logout(); });
+  context('with real tokens (2/3) - one redirect_uri registered with allowOmittingSingleRegisteredRedirectUri=false', () => {
+    before(async function () {
+      await this.login();
+      return this.agent.get('/auth')
+        .query({
+          client_id: 'client2',
+          scope: 'openid',
+          response_type: 'code',
+          redirect_uri: 'https://client.example.com/cb3',
+        })
+        .expect(302)
+        .expect((response) => {
+          const { query: { code } } = parseUrl(response.headers.location, true);
+          this.ac = code;
+        });
+    });
+
+    it('validates redirect_uri presence', function () {
+      const spy = sinon.spy();
+      this.provider.on('grant.error', spy);
+
+      return this.agent.post(route)
+        .auth('client', 'secret')
+        .send({
+          code: this.ac,
+          grant_type: 'authorization_code',
+        })
+        .type('form')
+        .expect(400)
+        .expect((response) => {
+          expect(response.body).to.have.property('error', 'invalid_request');
+          expect(response.body).to.have.property('error_description', "missing required parameter 'redirect_uri'");
+        });
+    });
+  });
+
+  context('with real tokens (3/3) - one redirect_uri registered with allowOmittingSingleRegisteredRedirectUri=true', () => {
+    before(function () {
+      i(this.provider).configuration().allowOmittingSingleRegisteredRedirectUri = true;
+      return this.login();
+    });
+
+    after(function () {
+      i(this.provider).configuration().allowOmittingSingleRegisteredRedirectUri = false;
+      return this.logout();
+    });
 
     beforeEach(function () {
       return this.agent.get('/auth')

@@ -457,6 +457,7 @@ location / {
   - [userinfo](#featuresuserinfo)
   - [webMessageResponseMode](#featureswebmessageresponsemode)
 - [acrValues](#acrvalues)
+- [allowOmittingSingleRegisteredRedirectUri](#allowomittingsingleregisteredredirecturi)
 - [audiences](#audiences)
 - [claims ❗](#claims)
 - [clientBasedCORS](#clientbasedcors)
@@ -1924,6 +1925,16 @@ Array of strings, the Authentication Context Class References that OP supports.
 _**default value**_:
 ```js
 []
+```
+
+### allowOmittingSingleRegisteredRedirectUri
+
+Allow omitting the redirect_uri parameter when only a single one is registered for a client.  
+
+
+_**default value**_:
+```js
+false
 ```
 
 ### audiences

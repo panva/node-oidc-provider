@@ -531,6 +531,56 @@ describe('BASIC code', () => {
         });
       });
 
+      context('when client has a single redirect_uri', () => {
+        after(async function () {
+          i(this.provider).configuration().allowOmittingSingleRegisteredRedirectUri = false;
+          await this.logout();
+        });
+
+        it('missing mandatory parameter redirect_uri', function () {
+          const emitSpy = sinon.spy();
+          const renderSpy = sinon.spy(i(this.provider).configuration(), 'renderError');
+          this.provider.once('authorization.error', emitSpy);
+          const auth = new this.AuthorizationRequest({
+            response_type,
+            scope,
+          });
+          delete auth.redirect_uri;
+
+          return this.wrap({ route, verb, auth })
+            .expect(() => {
+              renderSpy.restore();
+            })
+            .expect(400)
+            .expect(() => {
+              expect(emitSpy.calledOnce).to.be.true;
+              expect(renderSpy.calledOnce).to.be.true;
+              const renderArgs = renderSpy.args[0];
+              expect(renderArgs[1]).to.have.property('error', 'invalid_request');
+              expect(renderArgs[1]).to.have.property('error_description', 'missing required parameter \'redirect_uri\'');
+              expect(renderArgs[2]).to.be.an.instanceof(InvalidRequest);
+            });
+        });
+
+        it('unless allowOmittingSingleRegisteredRedirectUri is true', async function () {
+          i(this.provider).configuration().allowOmittingSingleRegisteredRedirectUri = true;
+          await this.login();
+          const auth = new this.AuthorizationRequest({
+            response_type,
+            scope,
+            client_id: 'client',
+          });
+
+          delete auth.redirect_uri;
+
+          return this.wrap({ route, verb, auth })
+            .expect(302)
+            .expect(auth.validatePresence(['code', 'state']))
+            .expect(auth.validateState)
+            .expect(auth.validateClientLocation);
+        });
+      });
+
       context('when client has more then one redirect_uri', () => {
         before(async function () {
           const client = await this.provider.Client.find('client');

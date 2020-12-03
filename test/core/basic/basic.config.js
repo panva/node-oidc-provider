@@ -7,6 +7,7 @@ const { Prompt, Check, base } = require('../../../lib/helpers/interaction_policy
 config.extraParams = ['triggerCustomFail'];
 merge(config.features, { requestObjects: { requestUri: false } });
 config.responseTypes = ['id_token', 'code', 'none'];
+config.allowOmittingSingleRegisteredRedirectUri = false;
 
 const policy = base();
 

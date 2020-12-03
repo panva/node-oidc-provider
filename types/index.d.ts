@@ -1040,6 +1040,8 @@ export interface Configuration {
 
   renderError?: (ctx: KoaContextWithOIDC, out: ErrorOut, error: errors.OIDCProviderError | Error) => CanBePromise<void | undefined>;
 
+  allowOmittingSingleRegisteredRedirectUri?: boolean;
+
   interactions?: {
     policy?: interactionPolicy.Prompt[];
     url?: (ctx: KoaContextWithOIDC, interaction: Interaction) => CanBePromise<string>;
