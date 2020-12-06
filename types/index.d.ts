@@ -190,7 +190,7 @@ declare class Interaction extends BaseModel {
   };
   params: AnyObject;
   prompt: PromptDetail;
-  result: InteractionResults;
+  result?: InteractionResults;
   returnTo: string;
   signed?: string[];
   uid: string;
