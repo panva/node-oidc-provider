@@ -66,8 +66,6 @@
     "raw-body": "^2.4.1"
   },
   "devDependencies": {
-    "@commitlint/cli": "^11.0.0",
-    "@commitlint/config-conventional": "^11.0.0",
     "@hapi/hapi": "^20.0.0",
     "base64url": "^3.0.1",
     "chai": "^4.2.0",
@@ -79,7 +77,6 @@
     "express": "^4.17.1",
     "fastify": "^3.4.1",
     "https-pem": "^2.0.0",
-    "husky": "^4.2.5",
     "koa-body": "^4.2.0",
     "koa-ejs": "^4.3.0",
     "koa-helmet": "^5.2.0",
@@ -100,22 +97,12 @@
   "engines": {
     "node": "^10.13.0 || >=12.0.0"
   },
-  "commitlint": {
-    "extends": [
-      "@commitlint/config-conventional"
-    ]
-  },
   "nyc": {
     "cache": false,
     "reporter": [
       "lcov",
       "text-summary"
     ]
-  },
-  "husky": {
-    "hooks": {
-      "commit-msg": "commitlint -E HUSKY_GIT_PARAMS"
-    }
   },
   "standard-version": {
     "scripts": {
