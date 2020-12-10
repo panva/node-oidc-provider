@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [6.29.9](https://github.com/panva/node-oidc-provider/compare/v6.29.8...v6.29.9) (2020-12-10)
+
+
+### Bug Fixes
+
+* **typescript:** interaction result may be undefined ([#833](https://github.com/panva/node-oidc-provider/issues/833)) ([44aa53e](https://github.com/panva/node-oidc-provider/commit/44aa53eb0630560eba563d13372b14424daf7f22))
+* unrecognized EC curves and OKP subtypes are ignored ([660f46d](https://github.com/panva/node-oidc-provider/commit/660f46d25f5d5fe8e0df0ce0cfdb3a8d8708a3ef))
+
 ## [6.29.8](https://github.com/panva/node-oidc-provider/compare/v6.29.7...v6.29.8) (2020-11-30)
 
 
