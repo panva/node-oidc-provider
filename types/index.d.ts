@@ -177,7 +177,11 @@ export interface PromptDetail {
   details: AnyObject;
 }
 
-declare class Interaction extends BaseModel {
+export interface InteractionConstructor extends BaseModelConstructor {
+  new(): Interaction;
+}
+
+export interface Interaction extends BaseModel {
   readonly kind: 'Interaction';
   iat: number;
   exp: number;
@@ -199,7 +203,15 @@ declare class Interaction extends BaseModel {
   save(ttl?: number): Promise<string>;
 }
 
-declare class Session extends BaseModel {
+export interface SessionConstructor extends BaseModelConstructor {
+  new(): Session;
+
+  find<T>(this: {new(...args: any[]): T}, cookieId: string): Promise<T | undefined>;
+  findByUid(uid: string): Promise<Session | undefined>;
+  get(ctx: Koa.Context): Promise<Session>;
+}
+
+export interface Session extends BaseModel {
   readonly kind: 'Session';
   iat: number;
   exp: number;
@@ -250,9 +262,6 @@ declare class Session extends BaseModel {
   save(ttl?: number): Promise<string>;
   destroy(): Promise<void>;
   resetIdentifier(): void;
-  static find<T>(this: { new (...args: any[]): T }, cookieId: string): Promise<T | undefined>;
-  static findByUid(uid: string): Promise<Session | undefined>;
-  static get(ctx: Koa.Context): Promise<Session>;
 }
 
 declare class RequestUriCache {
@@ -277,25 +286,34 @@ interface BaseModel {
   exp?: number;
 }
 
-declare class BaseModel {
+export interface BaseModelConstructor {
   readonly adapter: Adapter;
+  IN_PAYLOAD: string[];
 
-  save(ttl?: number): Promise<string>;
-  destroy(): Promise<void>;
-  emit(eventName: string): void;
+  new(): BaseModel;
 
-  static readonly adapter: Adapter;
-
-  static IN_PAYLOAD: string[];
-
-  static find<T>(
+  find<T>(
     this: { new (...args: any[]): T },
     id: string,
     options?: object
   ): Promise<T | undefined>;
 }
 
-declare class BaseToken extends BaseModel {
+export interface BaseModel {
+  readonly adapter: Adapter;
+
+  save(ttl?: number): Promise<string>;
+
+  destroy(): Promise<void>;
+
+  emit(eventName: string): void;
+}
+
+export interface BaseTokenConstructor extends BaseModelConstructor {
+  new(): BaseToken;
+}
+
+export interface BaseToken extends BaseModel {
   iat: number;
   exp?: number;
   jti: string;
@@ -312,49 +330,61 @@ declare class BaseToken extends BaseModel {
   readonly remainingTTL: number;
   readonly expiration: number;
 
-  static IN_PAYLOAD: string[];
-
-  static find<T>(this: { new (...args: any[]): T }, jti: string, options?: { ignoreExpiration?: boolean }): Promise<T | undefined>;
   save(): Promise<string>;
 
   readonly adapter: Adapter;
-  static readonly adapter: Adapter;
 }
 
-declare class ReplayDetection {
+export interface ReplayDetectionConstructor {
+  readonly adapter: Adapter;
+
+  new(...args: any[]): ReplayDetection;
+}
+
+export interface ReplayDetection {
   readonly kind: 'ReplayDetection';
   unique(iss: string, jti: string, exp?: number): Promise<boolean>;
 
   readonly adapter: Adapter;
-  static readonly adapter: Adapter;
 }
 
-declare class PushedAuthorizationRequest extends BaseToken {
-  constructor(properties: { request: string });
+export interface PushedAuthorizationRequestConstructor extends BaseTokenConstructor {
+  new(properties: { request: string }): PushedAuthorizationRequest;
+}
+
+export interface PushedAuthorizationRequest extends BaseToken {
   readonly kind: 'PushedAuthorizationRequest';
   request: string;
 }
 
-declare class RefreshToken extends BaseToken {
-  constructor(properties: {
-    client: Client;
-    accountId: string;
-    acr?: string;
-    amr?: string[];
-    authTime?: number;
-    claims?: ClaimsWithRejects;
-    nonce?: string;
-    resource?: string | string[];
-    scope: string;
-    sid?: string;
-    sessionUid?: string;
-    expiresWithSession?: boolean;
-    'x5t#S256'?: string;
-    jkt?: string;
-    grantId: string;
-    gty: string;
-    [key: string]: any;
-  });
+export interface RefreshTokenOptions {
+  client: Client;
+  accountId: string;
+  acr?: string;
+  amr?: string[];
+  authTime?: number;
+  claims?: ClaimsWithRejects;
+  nonce?: string;
+  resource?: string | string[];
+  scope: string;
+  sid?: string;
+  sessionUid?: string;
+  expiresWithSession?: boolean;
+  'x5t#S256'?: string;
+  jkt?: string;
+  grantId: string;
+  gty: string;
+
+  [key: string]: any;
+}
+
+export interface RefreshTokenConstructor extends BaseTokenConstructor {
+  new(properties: RefreshTokenOptions): RefreshToken;
+
+  revokeByGrantId(grantId: string): Promise<void>;
+}
+
+export interface RefreshToken extends BaseToken {
   readonly kind: 'RefreshToken';
   rotations?: number;
   iiat?: number;
@@ -378,33 +408,39 @@ declare class RefreshToken extends BaseToken {
   totalLifetime(): number;
   isSenderConstrained(): boolean;
   consume(): Promise<void>;
-
-  static revokeByGrantId(grantId: string): Promise<void>;
 }
 
-declare class AuthorizationCode extends BaseToken {
-  constructor(properties: {
-    client: Client;
-    accountId: string;
-    redirectUri?: string;
-    acr?: string;
-    amr?: string[];
-    authTime?: number;
-    claims?: ClaimsWithRejects;
-    nonce?: string;
-    resource?: string | string[];
-    codeChallenge?: string;
-    codeChallengeMethod?: string;
-    scope: string;
-    sid?: string;
-    sessionUid?: string;
-    expiresWithSession?: boolean;
-    'x5t#S256'?: string;
-    jkt?: string;
-    grantId: string;
-    gty: string;
-    [key: string]: any;
-  });
+export interface AuthorizationCodeOptions {
+  client: Client;
+  accountId: string;
+  redirectUri?: string;
+  acr?: string;
+  amr?: string[];
+  authTime?: number;
+  claims?: ClaimsWithRejects;
+  nonce?: string;
+  resource?: string | string[];
+  codeChallenge?: string;
+  codeChallengeMethod?: string;
+  scope: string;
+  sid?: string;
+  sessionUid?: string;
+  expiresWithSession?: boolean;
+  'x5t#S256'?: string;
+  jkt?: string;
+  grantId: string;
+  gty: string;
+
+  [key: string]: any;
+}
+
+export interface AuthorizationCodeConstructor extends BaseTokenConstructor {
+  new(properties: AuthorizationCodeOptions): AuthorizationCode;
+
+  revokeByGrantId(grantId: string): Promise<void>;
+}
+
+declare interface AuthorizationCode extends BaseToken {
   readonly kind: 'AuthorizationCode';
   redirectUri?: string;
   codeChallenge?: string;
@@ -426,22 +462,26 @@ declare class AuthorizationCode extends BaseToken {
   gty?: string;
 
   consume(): Promise<void>;
-
-  static revokeByGrantId(grantId: string): Promise<void>;
 }
 
-declare class DeviceCode extends BaseToken {
-  constructor(properties: {
-    params: AnyObject;
-    userCode: string;
-    grantId: string;
-    client: Client;
-    deviceInfo: AnyObject;
-    [key: string]: any;
-  });
+export interface DeviceCodeOptions {
+  params: AnyObject;
+  userCode: string;
+  grantId: string;
+  client: Client;
+  deviceInfo: AnyObject;
 
-  static findByUserCode(userCode: string, options?: { ignoreExpiration?: boolean }): Promise<DeviceCode | undefined>;
+  [key: string]: any;
+}
 
+export interface DeviceCodeConstructor extends BaseTokenConstructor {
+  new(properties: DeviceCodeOptions): DeviceCode;
+
+  findByUserCode(userCode: string, options?: { ignoreExpiration?: boolean }): Promise<DeviceCode | undefined>;
+  revokeByGrantId(grantId: string): Promise<void>;
+}
+
+export interface DeviceCode extends BaseToken {
   readonly kind: 'DeviceCode';
   error?: string;
   errorDescription?: string;
@@ -467,17 +507,21 @@ declare class DeviceCode extends BaseToken {
   consumed: any;
 
   consume(): Promise<void>;
-
-  static revokeByGrantId(grantId: string): Promise<void>;
 }
 
-declare class ClientCredentials extends BaseToken {
-  constructor(properties: {
-    client: Client;
-    resource?: string | string[];
-    scope: string;
-    [key: string]: any;
-  });
+export interface ClientCredentialsOptions {
+  client: Client;
+  resource?: string | string[];
+  scope: string;
+
+  [key: string]: any;
+}
+
+export interface ClientCredentialsConstructor extends BaseTokenConstructor {
+  new(properties: ClientCredentialsOptions): ClientCredentials;
+}
+
+export interface ClientCredentials extends BaseToken {
   readonly kind: 'ClientCredentials';
   scope?: string;
   extra?: AnyObject;
@@ -490,38 +534,54 @@ declare class ClientCredentials extends BaseToken {
   isSenderConstrained(): boolean;
 }
 
-declare class InitialAccessToken extends BaseToken {
-  constructor(properties?: {
-    expiresIn?: number;
-    policies?: string[];
-    [key: string]: any;
-  });
+export interface InitialAccessTokenOptions {
+  expiresIn?: number;
+  policies?: string[];
+  [key: string]: any;
+}
+
+export interface InitialAccessTokenConstructor extends BaseTokenConstructor {
+  new(properties?: InitialAccessTokenOptions): InitialAccessToken;
+}
+
+export interface InitialAccessToken extends BaseToken {
   readonly kind: 'InitialAccessToken';
   clientId: undefined;
   policies?: string[];
 }
 
-declare class RegistrationAccessToken extends BaseToken {
+export interface RegistrationAccessTokenConstructor extends BaseTokenConstructor {
+  new(): RegistrationAccessToken;
+}
+
+export interface RegistrationAccessToken extends BaseToken {
   readonly kind: 'RegistrationAccessToken';
   policies?: string[];
 }
 
-declare class AccessToken extends BaseToken {
-  constructor(properties: {
-    client: Client;
-    accountId: string;
-    claims?: ClaimsWithRejects;
-    aud?: string | string[];
-    scope: string;
-    sid?: string;
-    sessionUid?: string;
-    expiresWithSession?: boolean;
-    'x5t#S256'?: string;
-    jkt?: string;
-    grantId: string;
-    gty: string;
-    [key: string]: any;
-  });
+export interface AccessTokenOptions {
+  client: Client;
+  accountId: string;
+  claims?: ClaimsWithRejects;
+  aud?: string | string[];
+  scope: string;
+  sid?: string;
+  sessionUid?: string;
+  expiresWithSession?: boolean;
+  'x5t#S256'?: string;
+  jkt?: string;
+  grantId: string;
+  gty: string;
+  [key: string]: any;
+}
+
+export interface AccessTokenConstructor extends BaseTokenConstructor {
+  new(properties: AccessTokenOptions): AccessToken;
+
+  revokeByGrantId(grantId: string): Promise<void>;
+}
+
+export interface AccessToken extends BaseToken {
   readonly kind: 'AccessToken';
   accountId: string;
   aud: string | string[];
@@ -539,13 +599,15 @@ declare class AccessToken extends BaseToken {
 
   setAudiences(audience: string | string[]): void;
   isSenderConstrained(): boolean;
-
-  static revokeByGrantId(grantId: string): Promise<void>;
 }
 
-declare class IdToken {
-  constructor(claims: AnyObject, context?: { ctx?: KoaContextWithOIDC, client?: Client });
+export interface IdTokenConstructor {
+  new(claims: AnyObject, context?: {ctx?: KoaContextWithOIDC, client?: Client}): IdToken;
 
+  validate(idToken: string, client: Client): Promise<{header: AnyObject, payload: AnyObject}>;
+}
+
+export interface IdToken {
   readonly ctx: KoaContextWithOIDC;
   readonly client: Client;
   readonly available: AnyObject;
@@ -554,10 +616,13 @@ declare class IdToken {
   set(key: string, value: any): void;
   payload(): Promise<AnyObject>;
   issue(context?: { use: 'idtoken' | 'logout' | 'userinfo' | 'introspection' | 'authorization', expiresAt?: number }): Promise<string>;
-  static validate(idToken: string, client: Client): Promise<{ header: AnyObject, payload: AnyObject }>;
 }
 
-declare class ClientKeystore {
+export interface ClientKeystoreConstructor {
+  new(): ClientKeystore;
+}
+
+export interface ClientKeystore {
   fresh(): boolean;
   stale(): boolean;
   refresh(): Promise<void>;
@@ -567,7 +632,13 @@ declare class ClientKeystore {
   toJWKS(private?: boolean): jose.JSONWebKeySet;
 }
 
-declare class Client {
+export interface ClientConstructor {
+  new(): Client;
+
+  find(id: string): Promise<Client | undefined>;
+}
+
+export interface Client {
   responseTypeAllowed(type: ResponseType): boolean;
   grantTypeAllowed(type: string): boolean;
   redirectUriAllowed(redirectUri: string): boolean;
@@ -645,12 +716,13 @@ declare class Client {
   readonly tlsClientCertificateBoundAccessTokens?: boolean;
 
   [key: string]: any;
-
-  static find(id: string): Promise<Client | undefined>;
 }
 
-declare class OIDCContext {
-  constructor(ctx: Koa.Context);
+export interface OIDCContextConstructor {
+  new(ctx: Koa.Context): OIDCContext
+}
+
+export interface OIDCContext {
   readonly route: string;
   uid: string;
 
@@ -1490,23 +1562,23 @@ export class Provider extends events.EventEmitter {
   prependOnceListener(event: 'server_error', listener: (ctx: KoaContextWithOIDC, err: Error) => void): this;
   // tslint:enable:unified-signatures
 
-  readonly Client: typeof Client;
-  readonly AccessToken: typeof AccessToken;
-  readonly InitialAccessToken: typeof InitialAccessToken;
-  readonly RefreshToken: typeof RefreshToken;
-  readonly AuthorizationCode: typeof AuthorizationCode;
-  readonly RegistrationAccessToken: typeof RegistrationAccessToken;
-  readonly PushedAuthorizationRequest: typeof PushedAuthorizationRequest;
-  readonly ClientCredentials: typeof ClientCredentials;
-  readonly DeviceCode: typeof DeviceCode;
-  readonly BaseToken: typeof BaseToken;
+  readonly Client: ClientConstructor;
+  readonly AccessToken: AccessTokenConstructor;
+  readonly InitialAccessToken: InitialAccessTokenConstructor;
+  readonly RefreshToken: RefreshTokenConstructor;
+  readonly AuthorizationCode: AuthorizationCodeConstructor;
+  readonly RegistrationAccessToken: RegistrationAccessTokenConstructor;
+  readonly PushedAuthorizationRequest: PushedAuthorizationRequestConstructor;
+  readonly ClientCredentials: ClientCredentialsConstructor;
+  readonly DeviceCode: DeviceCodeConstructor;
+  readonly BaseToken: BaseTokenConstructor;
   readonly Account: { findAccount: FindAccount; };
-  readonly IdToken: typeof IdToken;
-  readonly ReplayDetection: typeof ReplayDetection;
+  readonly IdToken: IdTokenConstructor;
+  readonly ReplayDetection: ReplayDetectionConstructor;
   readonly requestUriCache: RequestUriCache;
-  readonly OIDCContext: typeof OIDCContext;
-  readonly Session: typeof Session;
-  readonly Interaction: typeof Interaction;
+  readonly OIDCContext: OIDCContextConstructor;
+  readonly Session: SessionConstructor;
+  readonly Interaction: InteractionConstructor;
 }
 
 export default Provider;
