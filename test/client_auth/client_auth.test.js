@@ -280,16 +280,6 @@ describe('client authentication options', () => {
         });
     });
 
-    it('accepts the auth (https://tools.ietf.org/html/rfc6749#appendix-B)', function () {
-      return this.agent.post(route)
-        .send({
-          grant_type: 'implicit',
-        })
-        .type('form')
-        .auth('+%25%26%2B%C2%A3%E2%82%AC', '+%25%26%2B%C2%A3%E2%82%AC')
-        .expect(tokenAuthSucceeded);
-    });
-
     it('accepts the auth (https://tools.ietf.org/html/rfc6749#appendix-B again)', function () {
       return this.agent.post(route)
         .send({

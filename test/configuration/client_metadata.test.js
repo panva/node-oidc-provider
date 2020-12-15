@@ -198,6 +198,7 @@ describe('Client metadata validation', () => {
     mustBeString(this.title, [123, {}, [], true]);
 
     allows(this.title, 'whatever client id');
+    rejects(this.title, '£', 'invalid client_id value');
   });
 
   context('client_name', function () {
@@ -209,6 +210,7 @@ describe('Client metadata validation', () => {
     isRequired(this.title);
     mustBeString(this.title, [123, {}, [], true]);
     allows(this.title, 'whatever client secret');
+    rejects(this.title, '£', 'invalid client_secret value');
     // must of certain length => GOTO: client_secrets.test.js
   });
 
