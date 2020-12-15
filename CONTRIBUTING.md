@@ -3,11 +3,11 @@
 Please note we have a [code of conduct][coc], please follow it in all your interactions with the
 project.
 
-When contributing to this project, please first discuss the change you wish to make via issue,
-email, or any other method with the owners of this project before proposing a change via a Pull
-Request. Use (and follow!) the appropriate [Issue Template][new-issue] to do so. The project
-promotes and follows current best practices in regards to the specifications it implements.
-A contribution that tries to implement something non-standard will most likely be dismissed.
+When contributing to this project, please first discuss the change you wish to make via a discussion,
+email, or any other appropriate method with the owners of this project before proposing a change 
+via a Pull Request. The project promotes and follows current best practices in regards to the 
+specifications it implements. A contribution that tries to implement something non-standard will most 
+likely be dismissed.
 
 ## Rules of the discussions
 
@@ -32,5 +32,4 @@ times.
     comments of defaults.js
 
 [coc]: https://github.com/panva/node-oidc-provider/blob/master/CODE_OF_CONDUCT.md
-[new-issue]: https://github.com/panva/node-oidc-provider/issues/new/choose
 [standard-version]: https://github.com/conventional-changelog/standard-version
