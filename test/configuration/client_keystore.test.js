@@ -71,14 +71,12 @@ describe('client keystore refresh', () => {
       client.keystore.refresh().then(fail, (err) => {
         expect(err).to.be.an('error');
         expect(err.message).to.equal('invalid_client_metadata');
-        expect(err.error_description).to.match(/jwks_uri could not be refreshed/);
-        expect(err.error_description).to.match(/jwks_uri must not contain private or symmetric keys/);
+        expect(err.error_description).to.eql('client JSON Web Key Set failed to be refreshed');
       }),
       client.keystore.refresh().then(fail, (err) => {
         expect(err).to.be.an('error');
         expect(err.message).to.equal('invalid_client_metadata');
-        expect(err.error_description).to.match(/jwks_uri could not be refreshed/);
-        expect(err.error_description).to.match(/jwks_uri must not contain private or symmetric keys/);
+        expect(err.error_description).to.eql('client JSON Web Key Set failed to be refreshed');
       }),
     ]);
   });
@@ -111,8 +109,7 @@ describe('client keystore refresh', () => {
     await client.keystore.refresh().then(fail, (err) => {
       expect(err).to.be.an('error');
       expect(err.message).to.equal('invalid_client_metadata');
-      expect(err.error_description).to.match(/jwks_uri could not be refreshed/);
-      expect(err.error_description).to.match(/unexpected jwks_uri response status code, expected 200 OK, got 201 Created/);
+      expect(err.error_description).to.eql('client JSON Web Key Set failed to be refreshed');
     });
   });
 
@@ -124,8 +121,7 @@ describe('client keystore refresh', () => {
     await client.keystore.refresh().then(fail, (err) => {
       expect(err).to.be.an('error');
       expect(err.message).to.equal('invalid_client_metadata');
-      expect(err.error_description).to.match(/jwks_uri could not be refreshed/);
-      expect(err.error_description).to.match(/Unexpected token/);
+      expect(err.error_description).to.eql('client JSON Web Key Set failed to be refreshed');
     });
   });
 
@@ -137,8 +133,7 @@ describe('client keystore refresh', () => {
     await client.keystore.refresh().then(fail, (err) => {
       expect(err).to.be.an('error');
       expect(err.message).to.equal('invalid_client_metadata');
-      expect(err.error_description).to.match(/jwks_uri could not be refreshed/);
-      expect(err.error_description).to.match(/response was not a valid JSON Web Key Set/);
+      expect(err.error_description).to.eql('client JSON Web Key Set failed to be refreshed');
     });
   });
 
@@ -150,8 +145,7 @@ describe('client keystore refresh', () => {
     await client.keystore.refresh().then(fail, (err) => {
       expect(err).to.be.an('error');
       expect(err.message).to.equal('invalid_client_metadata');
-      expect(err.error_description).to.match(/jwks_uri could not be refreshed/);
-      expect(err.error_description).to.match(/must be an array of one or more PKIX certificates when provided/);
+      expect(err.error_description).to.eql('client JSON Web Key Set failed to be refreshed');
     });
   });
 

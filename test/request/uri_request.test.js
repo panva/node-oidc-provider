@@ -317,7 +317,7 @@ describe('request Uri features', () => {
           .expect(() => {
             expect(spy.calledOnce).to.be.true;
             expect(spy.args[0][1]).to.have.property('message', 'invalid_request_uri');
-            expect(spy.args[0][1]).to.have.property('error_description', 'could not load or parse request_uri (unexpected request_uri response status code, expected 200 OK, got 500 Internal Server Error)');
+            expect(spy.args[0][1]).to.have.property('error_description', 'could not load or parse request_uri');
           });
       });
 
@@ -346,7 +346,7 @@ describe('request Uri features', () => {
           .expect(() => {
             expect(spy.calledOnce).to.be.true;
             expect(spy.args[0][1]).to.have.property('message', 'invalid_request_uri');
-            expect(spy.args[0][1]).to.have.property('error_description').and.matches(/expected 200 OK, got 302 Found/);
+            expect(spy.args[0][1]).to.have.property('error_description', 'could not load or parse request_uri');
           });
       });
 

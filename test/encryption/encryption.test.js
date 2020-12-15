@@ -312,7 +312,7 @@ describe('encryption', () => {
             .expect((response) => {
               const { query } = url.parse(response.headers.location, true);
               expect(query).to.have.property('error', 'invalid_request_object');
-              expect(query).to.have.property('error_description').contains('unsupported encrypted request alg');
+              expect(query).to.have.property('error_description', 'could not decrypt request object');
             }));
         });
 
@@ -334,7 +334,7 @@ describe('encryption', () => {
             .expect((response) => {
               const { query } = url.parse(response.headers.location, true);
               expect(query).to.have.property('error', 'invalid_request_object');
-              expect(query).to.have.property('error_description').contains('unsupported encrypted request enc');
+              expect(query).to.have.property('error_description', 'could not decrypt request object');
             }));
         });
       });

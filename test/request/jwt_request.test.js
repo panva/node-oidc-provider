@@ -278,7 +278,7 @@ describe('request parameter features', () => {
               expect(spy.args[0][1]).to.have.property('message', 'invalid_request_object');
               expect(spy.args[0][1]).to.have.property(
                 'error_description',
-                route !== '/device/auth' ? 'Request Object is not a valid JWT' : 'could not parse Request Object (invalid JWT.decode input)',
+                route !== '/device/auth' ? 'Request Object is not a valid JWT' : 'could not parse Request Object',
               );
             });
         });
@@ -816,7 +816,7 @@ describe('request parameter features', () => {
             expect(spy.args[0][1]).to.have.property('message', 'invalid_request_object');
             expect(spy.args[0][1]).to.have.property(
               'error_description',
-              'Request Object claims are invalid (jwt expired)',
+              'Request Object claims are invalid',
             );
           }));
       });

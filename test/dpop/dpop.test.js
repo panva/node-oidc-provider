@@ -85,7 +85,7 @@ describe('features.dPoP', () => {
         .set('DPoP', JWT.sign({}, key, { kid: false, header: { jwk: key, typ: value } }))
         .set('Authorization', 'DPoP foo')
         .expect(400)
-        .expect({ error: 'invalid_token', error_description: 'invalid DPoP key binding (unexpected "typ" JWT header value)' })
+        .expect({ error: 'invalid_token', error_description: 'invalid DPoP key binding' })
         .expect('WWW-Authenticate', /^DPoP /)
         .expect('WWW-Authenticate', /error="invalid_token"/)
         .expect('WWW-Authenticate', /algs="ES256 PS256"/);
@@ -96,7 +96,7 @@ describe('features.dPoP', () => {
         .set('DPoP', `${base64url.encode(JSON.stringify({ jwk: key, typ: 'dpop+jwt', alg: value }))}.e30.`)
         .set('Authorization', 'DPoP foo')
         .expect(400)
-        .expect({ error: 'invalid_token', error_description: 'invalid DPoP key binding (alg not whitelisted)' })
+        .expect({ error: 'invalid_token', error_description: 'invalid DPoP key binding' })
         .expect('WWW-Authenticate', /^DPoP /)
         .expect('WWW-Authenticate', /error="invalid_token"/)
         .expect('WWW-Authenticate', /algs="ES256 PS256"/);
@@ -107,7 +107,7 @@ describe('features.dPoP', () => {
         .set('DPoP', JWT.sign({}, key, { kid: false, header: { typ: 'dpop+jwt', jwk: value } }))
         .set('Authorization', 'DPoP foo')
         .expect(400)
-        .expect({ error: 'invalid_token', error_description: 'invalid DPoP key binding (JWS Header Parameter "jwk" must be a JSON object)' })
+        .expect({ error: 'invalid_token', error_description: 'invalid DPoP key binding' })
         .expect('WWW-Authenticate', /^DPoP /)
         .expect('WWW-Authenticate', /error="invalid_token"/)
         .expect('WWW-Authenticate', /algs="ES256 PS256"/);
@@ -117,7 +117,7 @@ describe('features.dPoP', () => {
       .set('DPoP', JWT.sign({}, key, { kid: false, header: { typ: 'dpop+jwt', jwk: key.toJWK(true) } }))
       .set('Authorization', 'DPoP foo')
       .expect(400)
-      .expect({ error: 'invalid_token', error_description: 'invalid DPoP key binding (JWS Header Parameter "jwk" must be a public key)' })
+      .expect({ error: 'invalid_token', error_description: 'invalid DPoP key binding' })
       .expect('WWW-Authenticate', /^DPoP /)
       .expect('WWW-Authenticate', /error="invalid_token"/)
       .expect('WWW-Authenticate', /algs="ES256 PS256"/);
@@ -126,7 +126,7 @@ describe('features.dPoP', () => {
       .set('DPoP', JWT.sign({}, key, { kid: false, header: { typ: 'dpop+jwt', jwk: await JWK.generate('oct') } }))
       .set('Authorization', 'DPoP foo')
       .expect(400)
-      .expect({ error: 'invalid_token', error_description: 'invalid DPoP key binding (JWS Header Parameter "jwk" must be a public key)' })
+      .expect({ error: 'invalid_token', error_description: 'invalid DPoP key binding' })
       .expect('WWW-Authenticate', /^DPoP /)
       .expect('WWW-Authenticate', /error="invalid_token"/)
       .expect('WWW-Authenticate', /algs="ES256 PS256"/);
@@ -135,7 +135,7 @@ describe('features.dPoP', () => {
       .set('DPoP', JWT.sign({ htm: 'POST', htu: `${this.provider.issuer}${this.suitePath('/me')}` }, key, { kid: false, header: { typ: 'dpop+jwt', jwk: key } }))
       .set('Authorization', 'DPoP foo')
       .expect(400)
-      .expect({ error: 'invalid_token', error_description: 'invalid DPoP key binding (must have a jti string property)' })
+      .expect({ error: 'invalid_token', error_description: 'invalid DPoP key binding' })
       .expect('WWW-Authenticate', /^DPoP /)
       .expect('WWW-Authenticate', /error="invalid_token"/)
       .expect('WWW-Authenticate', /algs="ES256 PS256"/);
@@ -144,7 +144,7 @@ describe('features.dPoP', () => {
       .set('DPoP', JWT.sign({ jti: 'foo', htm: 'POST' }, key, { kid: false, header: { typ: 'dpop+jwt', jwk: key } }))
       .set('Authorization', 'DPoP foo')
       .expect(400)
-      .expect({ error: 'invalid_token', error_description: 'invalid DPoP key binding (htm mismatch)' })
+      .expect({ error: 'invalid_token', error_description: 'invalid DPoP key binding' })
       .expect('WWW-Authenticate', /^DPoP /)
       .expect('WWW-Authenticate', /error="invalid_token"/)
       .expect('WWW-Authenticate', /algs="ES256 PS256"/);
@@ -153,7 +153,7 @@ describe('features.dPoP', () => {
       .set('DPoP', JWT.sign({ jti: 'foo', htm: 'GET', htu: 'foo' }, key, { kid: false, header: { typ: 'dpop+jwt', jwk: key } }))
       .set('Authorization', 'DPoP foo')
       .expect(400)
-      .expect({ error: 'invalid_token', error_description: 'invalid DPoP key binding (htu mismatch)' })
+      .expect({ error: 'invalid_token', error_description: 'invalid DPoP key binding' })
       .expect('WWW-Authenticate', /^DPoP /)
       .expect('WWW-Authenticate', /error="invalid_token"/)
       .expect('WWW-Authenticate', /algs="ES256 PS256"/);
@@ -164,7 +164,7 @@ describe('features.dPoP', () => {
       }, key, { kid: false, iat: false, header: { typ: 'dpop+jwt', jwk: key } }))
       .set('Authorization', 'DPoP foo')
       .expect(400)
-      .expect({ error: 'invalid_token', error_description: 'invalid DPoP key binding ("iat" claim timestamp check failed (too far in the past))' })
+      .expect({ error: 'invalid_token', error_description: 'invalid DPoP key binding' })
       .expect('WWW-Authenticate', /^DPoP /)
       .expect('WWW-Authenticate', /error="invalid_token"/)
       .expect('WWW-Authenticate', /algs="ES256 PS256"/);
@@ -175,7 +175,7 @@ describe('features.dPoP', () => {
       }, key, { kid: false, header: { typ: 'dpop+jwt', jwk: await JWK.generate('EC') } }))
       .set('Authorization', 'DPoP foo')
       .expect(400)
-      .expect({ error: 'invalid_token', error_description: 'invalid DPoP key binding (signature verification failed)' })
+      .expect({ error: 'invalid_token', error_description: 'invalid DPoP key binding' })
       .expect('WWW-Authenticate', /^DPoP /)
       .expect('WWW-Authenticate', /error="invalid_token"/)
       .expect('WWW-Authenticate', /algs="ES256 PS256"/);

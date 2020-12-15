@@ -208,7 +208,7 @@ describe('signatures', () => {
         .expect(auth.validateState)
         .expect(auth.validateClientLocation)
         .expect(auth.validateError('invalid_request'))
-        .expect(auth.validateErrorDescription(/^could not validate id_token_hint \(jwt issuer invalid/));
+        .expect(auth.validateErrorDescription('could not validate id_token_hint'));
     });
   });
 

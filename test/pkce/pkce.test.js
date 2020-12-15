@@ -104,7 +104,7 @@ describe('PKCE RFC7636', () => {
         .query(auth)
         .expect(auth.validatePresence(['error', 'error_description', 'state']))
         .expect(auth.validateError('invalid_request'))
-        .expect(auth.validateErrorDescription('code_challenge must only contain [a-Z] / [0-9] / "-" / "." / "_" / "~"'));
+        .expect(auth.validateErrorDescription('code_challenge contains invalid characters'));
     });
 
     it('validates the value of codeChallengeMethod if provided', function () {
@@ -427,7 +427,7 @@ describe('PKCE RFC7636', () => {
         .expect(400)
         .expect((response) => {
           expect(response.body).to.have.property('error', 'invalid_request');
-          expect(response.body).to.have.property('error_description', 'code_verifier must only contain [a-Z] / [0-9] / "-" / "." / "_" / "~"');
+          expect(response.body).to.have.property('error_description', 'code_verifier contains invalid characters');
         });
     });
 

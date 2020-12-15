@@ -929,16 +929,16 @@ describe('Client metadata validation', () => {
     };
 
     [false, Boolean, 'foo', 123, null, { kty: null }, { kty: '' }].forEach((value) => {
-      rejects(this.title, { keys: [value] }, 'jwks keys member index 0 is not a valid JWK');
+      rejects(this.title, { keys: [value] }, 'client JSON Web Key Set is invalid');
     });
     rejects(this.title, 'string', 'jwks must be a JWK Set');
     rejects(this.title, {}, 'jwks must be a JWK Set');
     rejects(this.title, 1, 'jwks must be a JWK Set');
     rejects(this.title, 0, 'jwks must be a JWK Set');
     rejects(this.title, true, 'jwks must be a JWK Set');
-    rejects(this.title, { keys: [privateKey] }, 'jwks must not contain private or symmetric keys (found in keys member index 0)');
-    rejects(this.title, { keys: [{ k: '6vl9Rlk88HO8onFHq0ZvTtga68vkUr-bRZ2Hvxu-rAw', kty: 'oct' }] }, 'jwks must not contain private or symmetric keys (found in keys member index 0)');
-    rejects(this.title, { keys: [{ kty: 'oct', kid: 'jf1nb1YotqxK9viWsXMsngnTCmO2r3w_moVIPtaf8wU' }] }, 'jwks must not contain private or symmetric keys (found in keys member index 0)');
+    rejects(this.title, { keys: [privateKey] }, 'client JSON Web Key Set is invalid');
+    rejects(this.title, { keys: [{ k: '6vl9Rlk88HO8onFHq0ZvTtga68vkUr-bRZ2Hvxu-rAw', kty: 'oct' }] }, 'client JSON Web Key Set is invalid');
+    rejects(this.title, { keys: [{ kty: 'oct', kid: 'jf1nb1YotqxK9viWsXMsngnTCmO2r3w_moVIPtaf8wU' }] }, 'client JSON Web Key Set is invalid');
     allows(this.title, { keys: [{ kty: 'unrecognized' }] });
     allows(this.title, { keys: [] });
     ['introspection', 'revocation', 'token'].forEach((endpoint) => {
@@ -955,15 +955,15 @@ describe('Client metadata validation', () => {
 
     const invalidx5c = cloneDeep(mtlsKeys);
     invalidx5c.keys[0].x5c = true;
-    rejects(this.title, invalidx5c, 'jwks keys member index 0 is not a valid EC JWK (`x5c` must be an array of one or more PKIX certificates when provided)');
+    rejects(this.title, invalidx5c, 'client JSON Web Key Set is invalid');
 
     const emptyx5c = cloneDeep(mtlsKeys);
     emptyx5c.keys[0].x5c = [];
-    rejects(this.title, emptyx5c, 'jwks keys member index 0 is not a valid EC JWK (`x5c` must be an array of one or more PKIX certificates when provided)');
+    rejects(this.title, emptyx5c, 'client JSON Web Key Set is invalid');
 
     const invalidCert = cloneDeep(mtlsKeys);
     invalidCert.keys[0].x5c = ['foobar'];
-    rejects(this.title, invalidCert, 'jwks keys member index 0 is not a valid EC JWK (`x5c` member at index 0 is not a valid base64-encoded DER PKIX certificate)');
+    rejects(this.title, invalidCert, 'client JSON Web Key Set is invalid');
 
     [
       'id_token_encrypted_response_alg',
