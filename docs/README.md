@@ -1961,7 +1961,7 @@ async function audiences(ctx, sub, token, use) {
 
 ### claims
 
-Describes the claims that the OpenID Provider MAY be able to supply values for. It is also used to define which claims fall under what scope (configure `{ ['scope']: ['claim', 'another-claim'] }`) as well as to expose additional claims that are available to RPs via the `claims` authorization parameter (configure as `{ ['claim']: null }`).   
+Describes the claims that the OpenID Provider MAY be able to supply values for. It is also used to define which claims fall under what scope (configure `{ scopeName: ['claim', 'another-claim'] }`) as well as to expose additional claims that are available to RPs via the `claims` authorization parameter (configure as `{ claimName: null }`).   
   
 
 
