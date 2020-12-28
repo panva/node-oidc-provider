@@ -24,6 +24,16 @@ describe('default routing behavior', () => {
         });
     });
 
+    it('handles unknown routes #696', function () {
+      return this.agent.get('/d')
+        .expect(404)
+        .expect('content-type', /application\/json/)
+        .expect({
+          error: 'invalid_request',
+          error_description: 'unrecognized route or not allowed method (GET on /d)',
+        });
+    });
+
     it('handles unhandled verbs unhandled unknown routes', function () {
       return this.agent.trace('/foobar')
         .expect(404)
