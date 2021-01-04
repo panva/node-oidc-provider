@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [6.29.10](https://github.com/panva/node-oidc-provider/compare/v6.29.9...v6.29.10) (2021-01-04)
+
+
+### Bug Fixes
+
+* html safe guard the action attribute in form post responses ([7cd6025](https://github.com/panva/node-oidc-provider/commit/7cd6025c0e9e66bac2288600ea0870d2e044663d))
+
 ## [6.29.9](https://github.com/panva/node-oidc-provider/compare/v6.29.8...v6.29.9) (2020-12-10)
 
 
