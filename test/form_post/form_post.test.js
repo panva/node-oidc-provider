@@ -2,6 +2,7 @@ const { expect } = require('chai');
 const sinon = require('sinon');
 
 const bootstrap = require('../test_helper');
+const safe = require('../../lib/helpers/html_safe');
 
 const route = '/auth';
 
@@ -26,6 +27,21 @@ describe('/auth', () => {
             .expect(/input type="hidden" name="code" value=/)
             .expect(new RegExp(`input type="hidden" name="state" value="${auth.state}"`))
             .expect(new RegExp(`form method="post" action="${auth.redirect_uri}"`));
+        });
+
+        it('sanitizes the action attribute', function () {
+          const auth = new this.AuthorizationRequest({
+            response_type: 'code id_token token',
+            response_mode: 'form_post',
+            scope: 'openid',
+            redirect_uri: 'https://client.example.com/cb"><script>alert(0)</script><x="',
+          });
+
+          return this.wrap({ route, verb, auth })
+            .expect(200)
+            .expect(({ text: body }) => {
+              expect(body).to.contain(safe(auth.redirect_uri));
+            });
         });
       });
 
