@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [6.29.11](https://github.com/panva/node-oidc-provider/compare/v6.29.10...v6.29.11) (2021-01-12)
+
+
+### Bug Fixes
+
+* missing login prompt details ([c7b0036](https://github.com/panva/node-oidc-provider/commit/c7b00368d43d4c6c36e32f7e39cbc743e5fae501)), closes [#853](https://github.com/panva/node-oidc-provider/issues/853)
+
 ## [6.29.10](https://github.com/panva/node-oidc-provider/compare/v6.29.9...v6.29.10) (2021-01-04)
 
 
