@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [6.30.1](https://github.com/panva/node-oidc-provider/compare/v6.30.0...v6.30.1) (2021-01-13)
+
+
+### Bug Fixes
+
+* botched 6.30.0 release with a syntax error ([cd5f02a](https://github.com/panva/node-oidc-provider/commit/cd5f02a555dcead032178db36a31cce67d808577))
+
 ## [6.30.0](https://github.com/panva/node-oidc-provider/compare/v6.29.11...v6.30.0) (2021-01-13)
 
 
