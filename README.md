@@ -40,7 +40,7 @@ enabled by default, check the configuration section on how to enable them.
 The following draft specifications are implemented by oidc-provider.
 - [JSON Web Token (JWT) Profile for OAuth 2.0 Access Tokens - draft 05][jwt-at]
 - [JWT Response for OAuth Token Introspection - draft 09][jwt-introspection]
-- [JWT Secured Authorization Response Mode for OAuth 2.0 (JARM) - draft 02][jarm]
+- [JWT Secured Authorization Response Mode for OAuth 2.0 (JARM) - Implementer's Draft 01][jarm]
 - [OAuth 2.0 Authorization Server Issuer Identifier in Authorization Response][iss-auth-resp]
 - [OAuth 2.0 Demonstration of Proof-of-Possession at the Application Layer (DPoP) - draft 01][dpop]
 - [OAuth 2.0 JWT Secured Authorization Request (JAR)][jar]
@@ -172,7 +172,7 @@ See the list of available emitted [event names](/docs/events.md) and their descr
 [mtls]: https://tools.ietf.org/html/rfc8705
 [dpop]: https://tools.ietf.org/html/draft-ietf-oauth-dpop-01
 [resource-indicators]: https://tools.ietf.org/html/draft-ietf-oauth-resource-indicators-08
-[jarm]: https://openid.net/specs/openid-financial-api-jarm-wd-02.html
+[jarm]: https://openid.net/specs/openid-financial-api-jarm-ID1.html
 [jwt-at]: https://tools.ietf.org/html/draft-ietf-oauth-access-token-jwt-05
 [support-sponsor]: https://github.com/sponsors/panva
 [par]: https://tools.ietf.org/html/draft-ietf-oauth-par-03

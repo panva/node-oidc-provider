@@ -1141,7 +1141,7 @@ _**default value**_:
 
 ### features.jwtResponseModes
 
-[openid-financial-api-jarm-wd-02](https://openid.net/specs/openid-financial-api-jarm-wd-02.html) - JWT Secured Authorization Response Mode (JARM)  
+[openid-financial-api-jarm-ID1](https://openid.net/specs/openid-financial-api-jarm-ID1.html) - JWT Secured Authorization Response Mode (JARM)  
 
 Enables JWT Secured Authorization Responses   
   
