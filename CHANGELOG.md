@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [6.30.0](https://github.com/panva/node-oidc-provider/compare/v6.29.11...v6.30.0) (2021-01-13)
+
+
+### Features
+
+* Authorization Server Issuer Identifier in Authorization Response ([3f67ee9](https://github.com/panva/node-oidc-provider/commit/3f67ee90bdebbf62caa8afa84fc4dc0ddaef2dba))
+* update JARM feature draft version to Implementer's Draft 01 ([0a021de](https://github.com/panva/node-oidc-provider/commit/0a021de697c67969a2a0ec030500a53ed185d42e))
+
 ## [6.29.11](https://github.com/panva/node-oidc-provider/compare/v6.29.10...v6.29.11) (2021-01-12)
 
 
