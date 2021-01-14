@@ -151,7 +151,7 @@ jobs:
         env:
           MAVEN_CACHE: ./m2
         run: |
-          git clone https://gitlab.com/openid/conformance-suite.git
+          git clone https://gitlab.com/openid/conformance-suite.git --depth 1
           cd conformance-suite
           git checkout $VERSION
           sed -i -e 's/localhost/localhost.emobix.co.uk/g' src/main/resources/application.properties
