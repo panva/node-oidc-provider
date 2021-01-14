@@ -151,9 +151,8 @@ jobs:
         env:
           MAVEN_CACHE: ./m2
         run: |
-          git clone https://gitlab.com/openid/conformance-suite.git --depth 1
+          git clone --depth 1 --single-branch --branch $VERSION https://gitlab.com/openid/conformance-suite.git
           cd conformance-suite
-          git checkout $VERSION
           sed -i -e 's/localhost/localhost.emobix.co.uk/g' src/main/resources/application.properties
           sed -i -e 's/-B clean/-B -DskipTests=true/g' builder-compose.yml
           docker-compose -f builder-compose.yml run builder
