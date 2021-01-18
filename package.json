@@ -55,14 +55,14 @@
     "debug": "^4.1.1",
     "ejs": "^3.1.5",
     "got": "^9.6.0",
-    "jose": "^2.0.2",
+    "jose": "^2.0.4",
     "jsesc": "^3.0.1",
     "koa": "^2.13.0",
     "koa-compose": "^4.1.0",
     "lru-cache": "^6.0.0",
     "nanoid": "^3.1.10",
     "object-hash": "^2.0.3",
-    "oidc-token-hash": "^5.0.0",
+    "oidc-token-hash": "^5.0.1",
     "raw-body": "^2.4.1"
   },
   "devDependencies": {
