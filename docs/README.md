@@ -2533,9 +2533,9 @@ _**default value**_:
       const { oidc } = ctx;
 
       return {
-        ...(oidc.params.max_age === undefined ? { max_age: oidc.params.max_age } : undefined),
-        ...(oidc.params.login_hint === undefined ? { login_hint: oidc.params.login_hint } : undefined),
-        ...(oidc.params.id_token_hint === undefined ? { id_token_hint: oidc.params.id_token_hint } : undefined),
+        ...(oidc.params.max_age === undefined ? undefined : { max_age: oidc.params.max_age }),
+        ...(oidc.params.login_hint === undefined ? undefined : { login_hint: oidc.params.login_hint }),
+        ...(oidc.params.id_token_hint === undefined ? undefined : { id_token_hint: oidc.params.id_token_hint }),
       };
     },
     checks: [
