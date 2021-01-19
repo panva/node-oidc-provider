@@ -2,6 +2,23 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [6.31.0](https://github.com/panva/node-oidc-provider/compare/v6.30.1...v6.31.0) (2021-01-19)
+
+
+### Features
+
+* end_session_endpoint now recognizes client_id and logout_hint ([9dd2b0e](https://github.com/panva/node-oidc-provider/commit/9dd2b0eaff06959f37e786506d5d2b072e917651))
+
+
+### Bug Fixes
+
+* keep grants that persist if logged out by that grant's client ([26449f5](https://github.com/panva/node-oidc-provider/commit/26449f5d00625a818674596fa8dd3155c069172b)), closes [#857](https://github.com/panva/node-oidc-provider/issues/857)
+
+
+### Performance
+
+* use native node's base64url encoding when available ([6149bd3](https://github.com/panva/node-oidc-provider/commit/6149bd37f75a2e49453c1ef25e2ec48fb6ba29f5))
+
 ## [6.30.1](https://github.com/panva/node-oidc-provider/compare/v6.30.0...v6.30.1) (2021-01-13)
 
 
