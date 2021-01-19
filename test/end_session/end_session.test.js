@@ -439,30 +439,46 @@ describe('logout endpoint', () => {
 
       it('destroys complete session if user wants to', function () {
         const sessionId = this.getSessionId();
-        const adapter = this.TestAdapter.for('Session');
-        sinon.spy(adapter, 'destroy');
-        sinon.spy(adapter, 'upsert');
+        const sessionAdapter = this.TestAdapter.for('Session');
+        sinon.spy(sessionAdapter, 'destroy');
+        sinon.spy(sessionAdapter, 'upsert');
+        const authorizationCodeAdapter = this.TestAdapter.for('AuthorizationCode');
+        sinon.spy(authorizationCodeAdapter, 'revokeByGrantId');
+        const session = this.getSession();
 
-        this.getSession().state = { secret: '123', postLogoutRedirectUri: '/', clientId: 'client' };
+        session.state = { secret: '123', postLogoutRedirectUri: '/', clientId: 'client' };
+        session.authorizations.client.persistsLogout = true;
+
+        const [firstGrant, secondGrant] = Object.keys(session.authorizations)
+          .map((x) => session.authorizations[x].grantId);
 
         return this.agent.post('/session/end/confirm')
           .send({ xsrf: '123', logout: 'yes' })
           .type('form')
           .expect(302)
           .expect((response) => {
-            expect(adapter.destroy.called).to.be.true;
-            expect(adapter.upsert.called).not.to.be.true;
-            expect(adapter.destroy.withArgs(sessionId).calledOnce).to.be.true;
+            expect(sessionAdapter.destroy.called).to.be.true;
+            expect(sessionAdapter.upsert.called).not.to.be.true;
+            expect(sessionAdapter.destroy.withArgs(sessionId).calledOnce).to.be.true;
             expect(parseUrl(response.headers.location, true).query).not.to.have.property('client_id');
+            expect(authorizationCodeAdapter
+              .revokeByGrantId.calledOnce).to.be.true;
+            expect(authorizationCodeAdapter
+              .revokeByGrantId.withArgs(firstGrant).calledOnce).to.be.false;
+            expect(authorizationCodeAdapter
+              .revokeByGrantId.withArgs(secondGrant).calledOnce).to.be.true;
           });
       });
 
       it('only clears one clients session if user doesnt wanna log out (using post_logout_redirect_uri)', function () {
         const adapter = this.TestAdapter.for('Session');
         sinon.spy(adapter, 'destroy');
+        const authorizationCodeAdapter = this.TestAdapter.for('AuthorizationCode');
+        sinon.spy(authorizationCodeAdapter, 'revokeByGrantId');
         let session = this.getSession();
         const oldId = this.getSessionId();
         session.state = { secret: '123', postLogoutRedirectUri: 'https://rp.example.com/logout/cb', clientId: 'client' };
+        session.authorizations.client.persistsLogout = true;
 
         expect(session.authorizations.client).to.be.ok;
 
@@ -477,6 +493,8 @@ describe('logout endpoint', () => {
             expect(this.getSessionId()).not.to.eql(oldId);
             expect(adapter.destroy.calledOnceWith(oldId)).to.be.true;
             expect(parseUrl(response.headers.location, true).query).not.to.have.key('client_id');
+            expect(authorizationCodeAdapter
+              .revokeByGrantId.called).to.be.false;
           });
       });
 
