@@ -80,7 +80,7 @@ describe('logout endpoint', () => {
               });
           });
 
-          it('allows to redirect there', function () {
+          it('allows to redirect there (with id_token_hint)', function () {
             const params = {
               id_token_hint: this.idToken,
               post_logout_redirect_uri: 'https://client.example.com/logout/cb',
@@ -91,6 +91,82 @@ describe('logout endpoint', () => {
               .expect(() => {
                 const { state: { postLogoutRedirectUri } } = this.getSession();
                 expect(postLogoutRedirectUri).to.equal('https://client.example.com/logout/cb');
+              });
+          });
+
+          it('allows to redirect there (with client_id)', function () {
+            const params = {
+              client_id: 'client',
+              post_logout_redirect_uri: 'https://client.example.com/logout/cb',
+            };
+
+            return this.wrap({ route, verb, params })
+              .expect(200)
+              .expect(() => {
+                const { state: { postLogoutRedirectUri } } = this.getSession();
+                expect(postLogoutRedirectUri).to.equal('https://client.example.com/logout/cb');
+              });
+          });
+
+          it('allows to redirect there (with id_token_hint and client_id)', function () {
+            const params = {
+              client_id: 'client',
+              id_token_hint: this.idToken,
+              post_logout_redirect_uri: 'https://client.example.com/logout/cb',
+            };
+
+            return this.wrap({ route, verb, params })
+              .expect(200)
+              .expect(() => {
+                const { state: { postLogoutRedirectUri } } = this.getSession();
+                expect(postLogoutRedirectUri).to.equal('https://client.example.com/logout/cb');
+              });
+          });
+
+          it('requires client_id to match the id_token_hint', function () {
+            const params = {
+              client_id: 'client2',
+              id_token_hint: this.idToken,
+              post_logout_redirect_uri: 'https://client.example.com/logout/cb',
+            };
+
+            const emitSpy = sinon.spy();
+            const renderSpy = sinon.spy(i(this.provider).configuration(), 'renderError');
+            this.provider.once('end_session.error', emitSpy);
+
+            return this.wrap({ route, verb, params })
+              .set('Accept', 'text/html')
+              .expect(400)
+              .expect(() => {
+                expect(emitSpy.calledOnce).to.be.true;
+                expect(renderSpy.calledOnce).to.be.true;
+                const renderArgs = renderSpy.args[0];
+                expect(renderArgs[1]).to.have.property('error', 'invalid_request');
+                expect(renderArgs[1]).to.have.property('error_description', 'client_id does not match the provided id_token_hint');
+                expect(renderArgs[2]).to.be.an.instanceof(InvalidRequest);
+              });
+          });
+
+          it('requires client_id to be valid', function () {
+            const params = {
+              client_id: 'client2',
+              post_logout_redirect_uri: 'https://client.example.com/logout/cb',
+            };
+
+            const emitSpy = sinon.spy();
+            const renderSpy = sinon.spy(i(this.provider).configuration(), 'renderError');
+            this.provider.once('end_session.error', emitSpy);
+
+            return this.wrap({ route, verb, params })
+              .set('Accept', 'text/html')
+              .expect(400)
+              .expect(() => {
+                expect(emitSpy.calledOnce).to.be.true;
+                expect(renderSpy.calledOnce).to.be.true;
+                const renderArgs = renderSpy.args[0];
+                expect(renderArgs[1]).to.have.property('error', 'invalid_client');
+                expect(renderArgs[1]).to.have.property('error_description', 'client is invalid');
+                expect(renderArgs[2]).to.be.an.instanceof(InvalidClient);
               });
           });
 
@@ -188,7 +264,7 @@ describe('logout endpoint', () => {
           });
         });
 
-        it('without id_token_hint post_logout_redirect_uri may not be provided', function () {
+        it('without id_token_hint or client_id post_logout_redirect_uri may not be provided', function () {
           const emitSpy = sinon.spy();
           const renderSpy = sinon.spy(i(this.provider).configuration(), 'renderError');
           this.provider.once('end_session.error', emitSpy);
@@ -205,7 +281,7 @@ describe('logout endpoint', () => {
               expect(renderSpy.calledOnce).to.be.true;
               const renderArgs = renderSpy.args[0];
               expect(renderArgs[1]).to.have.property('error', 'invalid_request');
-              expect(renderArgs[1]).to.have.property('error_description', 'post_logout_redirect_uri can only be used in combination with id_token_hint');
+              expect(renderArgs[1]).to.have.property('error_description', 'post_logout_redirect_uri can only be used in combination with id_token_hint or client_id');
               expect(renderArgs[2]).to.be.an.instanceof(InvalidRequest);
             });
         });
