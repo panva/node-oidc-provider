@@ -893,7 +893,6 @@ export interface Configuration {
       enabled?: boolean,
       keepHeaders?: boolean,
       ack?: 28 | 'draft-28' | 'draft-29' | 'draft-30',
-      scriptNonce?: (ctx: KoaContextWithOIDC) => string
     },
 
     backchannelLogout?: {
@@ -914,7 +913,6 @@ export interface Configuration {
     webMessageResponseMode?: {
       enabled?: boolean,
       ack?: 'id-00' | 'individual-draft-00',
-      scriptNonce?: (ctx: KoaContextWithOIDC) => string
     },
 
     jwtIntrospection?: {

@@ -999,7 +999,7 @@ async function logoutPendingSource(ctx, frames, postLogoutRedirectUri) {
     </head>
     <body>
       ${frames.join('')}
-      <script>
+      <script>${pushInlineSha(ctx, `
         var loaded = 0;
         function redirect() {
           window.location.replace("${postLogoutRedirectUri}");
@@ -1014,7 +1014,7 @@ async function logoutPendingSource(ctx, frames, postLogoutRedirectUri) {
           element.onload = frameOnLoad;
         });
         setTimeout(redirect, 2500);
-      </script>
+      `)}</script>
       <noscript>
         Your browser does not support JavaScript or you've disabled it.<br/>
         <a href="${postLogoutRedirectUri}">Continue</a>
@@ -1823,8 +1823,7 @@ _**default value**_:
 {
   ack: undefined,
   enabled: false,
-  keepHeaders: false,
-  scriptNonce: [Function: sessionManagementScriptNonce] // see expanded details below
+  keepHeaders: false
 }
 ```
 
@@ -1841,18 +1840,6 @@ _**recommendation**_: Only enable this if you know what you're doing either in a
 _**default value**_:
 ```js
 false
-```
-
-#### scriptNonce
-
-When using `nonce-{random}` CSP policy use this helper function to resolve a nonce to add to the &lt;script&gt; tags in the `check_session_iframe` html source.  
-
-
-_**default value**_:
-```js
-function sessionManagementScriptNonce(ctx) {
-  return undefined;
-}
 ```
 
 </details>
@@ -1884,27 +1871,9 @@ _**default value**_:
 ```js
 {
   ack: undefined,
-  enabled: false,
-  scriptNonce: [Function: webMessageResponseModeScriptNonce] // see expanded details below
+  enabled: false
 }
 ```
-
-<details><summary>(Click to expand) features.webMessageResponseMode options details</summary><br>
-
-
-#### scriptNonce
-
-When using `nonce-{random}` CSP policy use this helper function to resolve a nonce to add to the &lt;script&gt; tag in the rendered web_message response mode html source  
-
-
-_**default value**_:
-```js
-function webMessageResponseModeScriptNonce(ctx) {
-  return undefined;
-}
-```
-
-</details>
 
 ### acceptQueryParamAccessTokens
 

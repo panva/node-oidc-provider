@@ -7,17 +7,9 @@ describe('check_session_iframe', () => {
   before(function () {
     this.provider.use(async (ctx, next) => {
       ctx.response.set('X-Frame-Options', 'SAMEORIGIN');
-      ctx.response.set('Content-Security-Policy', "default-src 'none'; frame-ancestors 'self' example.com *.example.net; script-src 'self' 'nonce-foo'; connect-src 'self'; img-src 'self'; style-src 'self';");
+      ctx.response.set('Content-Security-Policy', "default-src 'none'; frame-ancestors 'self' example.com *.example.net; script-src 'self'; connect-src 'self'; img-src 'self'; style-src 'self';");
       await next();
     });
-  });
-  before(function () {
-    const { scriptNonce: orig } = i(this.provider).configuration('features.sessionManagement');
-    this.orig = orig;
-  });
-
-  afterEach(function () {
-    i(this.provider).configuration('features.sessionManagement').scriptNonce = this.orig;
   });
 
   it('responds with frameable html', async function () {
@@ -27,13 +19,7 @@ describe('check_session_iframe', () => {
       .expect((response) => {
         expect(response.headers['x-frame-options']).not.to.be.ok;
         expect(response.headers['content-security-policy']).not.to.match(/frame-ancestors/);
-        expect(response.text).not.to.contain('nonce="foo"');
       });
-
-    i(this.provider).configuration('features.sessionManagement').scriptNonce = (ctx) => {
-      expect(ctx.oidc).to.be.ok;
-      return 'foo';
-    };
 
     return this.agent.get('/session/check')
       .expect(200)
@@ -41,7 +27,6 @@ describe('check_session_iframe', () => {
       .expect((response) => {
         expect(response.headers['x-frame-options']).not.to.be.ok;
         expect(response.headers['content-security-policy']).not.to.match(/frame-ancestors/);
-        expect(response.text).to.contain('nonce="foo"');
       });
   });
 
