@@ -2781,7 +2781,7 @@ Function used to determine where to redirect User-Agent for necessary interactio
 _**default value**_:
 ```js
 async function interactionsUrl(ctx, interaction) {
-  return `/interaction/${ctx.oidc.uid}`;
+  return `/interaction/${interaction.uid}`;
 }
 ```
 

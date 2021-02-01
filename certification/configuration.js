@@ -35,8 +35,8 @@ module.exports = {
   ],
   interactions: {
     policy: interactions,
-    url(ctx) {
-      return `/interaction/${ctx.oidc.uid}`;
+    url(ctx, interaction) {
+      return `/interaction/${interaction.uid}`;
     },
   },
   acrValues: ['urn:mace:incommon:iap:bronze'],

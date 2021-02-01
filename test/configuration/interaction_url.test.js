@@ -16,11 +16,7 @@ describe('pathFor related behaviors', () => {
       },
     });
 
-    const url = await i(provider).configuration('interactions.url')({
-      oidc: {
-        uid: 'foobar',
-      },
-    });
+    const url = await i(provider).configuration('interactions.url')({}, { uid: 'foobar' });
 
     expect(url).to.equal('/interaction/foobar');
   });

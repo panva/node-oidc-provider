@@ -13,22 +13,22 @@ const { any } = sinon.match;
 const expire = new Date();
 expire.setDate(expire.getDate() + 1);
 
-let grantId;
+let uid;
 let userCode;
 let path;
 
-describe('device interaction resume /device/:user_code/:uid/', () => {
+describe('device interaction resume /device/:uid/', () => {
   before(bootstrap(__dirname));
 
   beforeEach(function () {
-    grantId = nanoid();
+    uid = nanoid();
     userCode = generate('base-20', '***-***-***');
-    path = this.suitePath(`/device/${userCode}/${grantId}`);
+    path = this.suitePath(`/device/${uid}`);
   });
 
   afterEach(sinon.restore);
 
-  function setup(auth, result, sessionData) {
+  async function setup(auth, result, sessionData) {
     expect(auth).to.be.ok;
 
     const cookies = [];
@@ -39,16 +39,16 @@ describe('device interaction resume /device/:user_code/:uid/', () => {
     };
 
     const session = new this.provider.Session({ jti: 'sess', ...sessionData });
-    const interaction = new this.provider.Interaction(grantId, { session });
-    const keys = new KeyGrip(i(this.provider).configuration('cookies.keys'));
-    const code = new this.provider.DeviceCode({
+    const deviceCode = await new this.provider.DeviceCode({
       params,
       clientId: 'client',
-      grantId,
       userCode,
-    });
+    }).save();
 
-    const cookie = `_interaction_resume=${grantId}; path=${path}; expires=${expire.toGMTString()}; httponly`;
+    const interaction = new this.provider.Interaction(uid, { uid, session, deviceCode });
+    const keys = new KeyGrip(i(this.provider).configuration('cookies.keys'));
+
+    const cookie = `_interaction_resume=${uid}; path=${path}; expires=${expire.toGMTString()}; httponly`;
     cookies.push(cookie);
     let [pre, ...post] = cookie.split(';');
     cookies.push([`_interaction_resume.sig=${keys.sign(pre)}`, ...post].join(';'));
@@ -73,7 +73,6 @@ describe('device interaction resume /device/:user_code/:uid/', () => {
     });
 
     return Promise.all([
-      code.save(),
       interaction.save(30), // TODO: bother running the ttl helper?
       session.save(30), // TODO: bother running the ttl helper?
     ]);
@@ -151,7 +150,7 @@ describe('device interaction resume /device/:user_code/:uid/', () => {
 
         await setup.call(this, auth);
 
-        sinon.stub(this.provider.DeviceCode, 'findByUserCode').resolves();
+        sinon.stub(this.provider.DeviceCode, 'find').resolves();
 
         await this.agent.get(path)
           .accept('text/html')
@@ -177,7 +176,7 @@ describe('device interaction resume /device/:user_code/:uid/', () => {
 
         await setup.call(this, auth);
 
-        sinon.stub(this.provider.DeviceCode, 'findByUserCode').resolves({ grantId, isExpired: true });
+        sinon.stub(this.provider.DeviceCode, 'find').resolves({ isExpired: true });
 
         await this.agent.get(path)
           .accept('text/html')
@@ -203,7 +202,7 @@ describe('device interaction resume /device/:user_code/:uid/', () => {
 
         await setup.call(this, auth);
 
-        sinon.stub(this.provider.DeviceCode, 'findByUserCode').resolves({ grantId, accountId: 'foo' });
+        sinon.stub(this.provider.DeviceCode, 'find').resolves({ accountId: 'foo' });
 
         await this.agent.get(path)
           .accept('text/html')
@@ -229,7 +228,7 @@ describe('device interaction resume /device/:user_code/:uid/', () => {
 
         await setup.call(this, auth);
 
-        sinon.stub(this.provider.DeviceCode, 'findByUserCode').resolves({ grantId, error: 'access_denied' });
+        sinon.stub(this.provider.DeviceCode, 'find').resolves({ error: 'access_denied' });
 
         await this.agent.get(path)
           .accept('text/html')
@@ -241,33 +240,6 @@ describe('device interaction resume /device/:user_code/:uid/', () => {
         sinon.assert.calledWithMatch(spy, any, any, any, sinon.match((err) => {
           expect(err.name).to.equal('AlreadyUsedError');
           expect(err.message).to.equal('code has already been used');
-          return true;
-        }));
-      });
-
-      it('checks for mismatches in resume and code grants', async function () {
-        const spy = sinon.spy(i(this.provider).configuration('features.deviceFlow'), 'userCodeInputSource');
-
-        const auth = new this.AuthorizationRequest({
-          response_type: 'code',
-          scope: 'openid',
-        });
-
-        await setup.call(this, auth);
-
-        sinon.stub(this.provider.DeviceCode, 'findByUserCode').resolves({ grantId: 'foo', save: sinon.stub().resolves() });
-
-        await this.agent.get(path)
-          .accept('text/html')
-          .expect(400)
-          .expect(new RegExp(`<form id="op.deviceInputForm" novalidate method="post" action="http://127.0.0.1:\\d+${this.suitePath('/device')}">`))
-          .expect(/<p class="red">There was an error processing your request<\/p>/);
-
-        expect(spy.calledOnce).to.be.true;
-        sinon.assert.calledWithMatch(spy, any, any, any, sinon.match((err) => {
-          expect(err.name).to.equal('InvalidRequest');
-          expect(err.error).to.equal('invalid_request');
-          expect(err.error_description).to.equal('grantId mismatch');
           return true;
         }));
       });
@@ -385,7 +357,7 @@ describe('device interaction resume /device/:user_code/:uid/', () => {
           })
           .expect(/<form method="post" action=".+\/session\/end\/confirm">/);
 
-        expect(await this.provider.Interaction.find(grantId)).to.be.ok;
+        expect(await this.provider.Interaction.find(uid)).to.be.ok;
 
         await this.agent.post('/session/end/confirm')
           .send({

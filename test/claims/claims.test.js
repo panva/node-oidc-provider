@@ -217,7 +217,7 @@ expire.setDate(expire.getDate() + 1);
         function setup(grant, result) {
           const cookies = [];
 
-          const sess = new this.provider.Interaction('resume', {});
+          const sess = new this.provider.Interaction('resume', { uid: 'resume' });
           const keys = new KeyGrip(i(this.provider).configuration('cookies.keys'));
           if (grant) {
             const cookie = `_interaction_resume=resume; path=${this.suitePath('/auth/resume')}; expires=${expire.toGMTString()}; httponly`;

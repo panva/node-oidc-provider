@@ -305,7 +305,6 @@ describe('POST code_verification endpoint w/ verification', () => {
       const spy = sinon.spy(i(this.provider).configuration('features.deviceFlow'), 'userCodeInputSource');
 
       let code = await new this.provider.DeviceCode({
-        grantId: this.getSession({ instantiate: true }).grantIdFor('client'),
         clientId: 'client',
         userCode: 'FOO',
         params: {
@@ -339,7 +338,6 @@ describe('POST code_verification endpoint w/ verification', () => {
       const spy = sinon.spy(i(this.provider).configuration('features.deviceFlow'), 'successSource');
 
       let code = await new this.provider.DeviceCode({
-        grantId: this.getSession({ instantiate: true }).grantIdFor('client'),
         clientId: 'client',
         userCode: 'FOO',
         params: {
@@ -377,7 +375,6 @@ describe('POST code_verification endpoint w/ verification', () => {
       const spy = sinon.spy(i(this.provider).configuration('features.deviceFlow'), 'successSource');
 
       let code = await new this.provider.DeviceCode({
-        grantId: this.getSession({ instantiate: true }).grantIdFor('client-backchannel'),
         clientId: 'client-backchannel',
         userCode: 'FOO',
         params: {
@@ -405,7 +402,6 @@ describe('POST code_verification endpoint w/ verification', () => {
       const spy = sinon.spy(i(this.provider).configuration('features.deviceFlow'), 'successSource');
 
       let code = await new this.provider.DeviceCode({
-        grantId: this.getSession({ instantiate: true }).grantIdFor('client'),
         clientId: 'client',
         userCode: 'FOO',
         params: {
@@ -434,7 +430,6 @@ describe('POST code_verification endpoint w/ verification', () => {
       const spy = sinon.spy(i(this.provider).configuration('features.deviceFlow'), 'successSource');
 
       let code = await new this.provider.DeviceCode({
-        grantId: this.getSession({ instantiate: true }).grantIdFor('client'),
         clientId: 'client',
         userCode: 'FOOBAR',
         params: {

@@ -112,6 +112,7 @@ class MyAdapter {
      * - iat {number} - timestamp of the interaction's creation
      * - uid {string} - the uid of the authorizing client's established session
      * - returnTo {string} - after resolving interactions send the user-agent to this url
+     * - deviceCode {string} - [DeviceCode user flows only] deviceCode reference
      * - params {object} - parsed recognized parameters object
      * - lastSubmission {object} - previous interaction result submission
      * - trusted {string[]} - parameter names that come from a trusted source

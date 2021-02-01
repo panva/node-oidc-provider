@@ -221,10 +221,10 @@ module.exports = function testHelper(dir, {
             expect(query).to.be.null;
             expect(response).to.have.nested.property('headers.set-cookie').that.is.an('array');
 
-            const grantid = readCookie(response.headers['set-cookie'][0]);
+            const uid = readCookie(response.headers['set-cookie'][0]);
             expect(readCookie(response.headers['set-cookie'][0])).to.equal(readCookie(response.headers['set-cookie'][2]));
 
-            const interaction = TestAdapter.for('Interaction').syncFind(grantid);
+            const interaction = TestAdapter.for('Interaction').syncFind(uid);
 
             Object.entries(this).forEach(([key, value]) => {
               if (key === 'res') return;
@@ -244,8 +244,8 @@ module.exports = function testHelper(dir, {
 
     AuthorizationRequest.prototype.validateInteraction = (eName, ...eReasons) => { // eslint-disable-line arrow-body-style, max-len
       return (response) => {
-        const grantid = readCookie(response.headers['set-cookie'][0]);
-        const { prompt: { name, reasons } } = TestAdapter.for('Interaction').syncFind(grantid);
+        const uid = readCookie(response.headers['set-cookie'][0]);
+        const { prompt: { name, reasons } } = TestAdapter.for('Interaction').syncFind(uid);
         expect(name).to.equal(eName);
         expect(reasons).to.contain.members(eReasons);
       };

@@ -351,6 +351,7 @@ describe('resume after consent', () => {
 
     const session = new this.provider.Session({ jti: 'sess', ...sessionData });
     const interaction = new this.provider.Interaction('resume', {
+      uid: 'resume',
       params: grant,
       session,
     });

@@ -156,6 +156,7 @@ declare class Interaction extends BaseModel {
   prompt: PromptDetail;
   result?: InteractionResults;
   returnTo: string;
+  deviceCode?: string;
   trusted?: string[];
   uid: string;
   lastSubmission?: InteractionResults;
@@ -604,7 +605,6 @@ declare class Client {
 declare class OIDCContext {
   constructor(ctx: Koa.Context);
   readonly route: string;
-  uid: string;
 
   readonly cookies: {
     get(name: string, opts?: { signed?: boolean }): string | undefined;
