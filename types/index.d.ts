@@ -1218,6 +1218,7 @@ export class Provider extends events.EventEmitter {
   ): void;
   use: Koa['use'];
 
+  configuration(): Configuration;
   configuration<T>(path: string): T;
 
   // tslint:disable:unified-signatures
