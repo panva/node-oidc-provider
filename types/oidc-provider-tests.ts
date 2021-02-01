@@ -1,4 +1,4 @@
-import { Provider, interactionPolicy, AsymmetricSigningAlgorithm } from './index.d';
+import { Provider, interactionPolicy, AsymmetricSigningAlgorithm, Configuration } from './index.d';
 
 new Provider('https://op.example.com');
 
@@ -575,6 +575,8 @@ provider.on('authorization.accepted', (ctx) => {
 
   ctx.oidc.cookies.set('key', 'value', { signed: true, sameSite: 'strict' });
 });
+
+provider.configuration<Configuration['clockTolerance']>('clockTolerance');
 
 provider.on('interaction.started', (ctx, prompt) => {
   ctx.oidc.route.substring(0);

@@ -1218,6 +1218,8 @@ export class Provider extends events.EventEmitter {
   ): void;
   use: Koa['use'];
 
+  configuration<T>(path: string): T;
+
   // tslint:disable:unified-signatures
   addListener(event: string, listener: (...args: any[]) => void): this;
   addListener(event: 'access_token.destroyed', listener: (accessToken: AccessToken) => void): this;
