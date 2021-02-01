@@ -168,11 +168,11 @@ describe('PKCE RFC7636', () => {
 
     describe('only S256 is supported', () => {
       before(function () {
-        i(this.provider).configuration().pkce.methods = ['S256'];
+        this.provider.configuration().pkce.methods = ['S256'];
       });
 
       after(function () {
-        i(this.provider).configuration().pkce.methods = ['plain', 'S256'];
+        this.provider.configuration().pkce.methods = ['plain', 'S256'];
       });
 
       it('fails when client does not provide challenge method', function () {
@@ -433,11 +433,11 @@ describe('PKCE RFC7636', () => {
 
     describe('only S256 is supported', () => {
       before(function () {
-        i(this.provider).configuration().pkce.methods = ['S256'];
+        this.provider.configuration().pkce.methods = ['S256'];
       });
 
       after(function () {
-        i(this.provider).configuration().pkce.methods = ['plain', 'S256'];
+        this.provider.configuration().pkce.methods = ['plain', 'S256'];
       });
 
       it('passes if S256 is used', async function () {

@@ -222,13 +222,13 @@ describe('grant_type=urn:ietf:params:oauth:grant-type:device_code', () => {
 
     context('', () => {
       before(function () {
-        const ttl = i(this.provider).configuration('ttl');
+        const ttl = this.provider.configuration('ttl');
         this.prev = ttl.DeviceCode;
         ttl.DeviceCode = 0;
       });
 
       after(function () {
-        i(this.provider).configuration('ttl').DeviceCode = this.prev;
+        this.provider.configuration('ttl').DeviceCode = this.prev;
       });
 
       it('validates code is not expired', async function () {

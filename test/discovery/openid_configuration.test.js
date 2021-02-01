@@ -24,8 +24,8 @@ describe(route, () => {
   });
 
   it('is configurable with extra properties', function () {
-    i(this.provider).configuration('discovery').service_documentation = 'https://docs.example.com';
-    i(this.provider).configuration('discovery').authorization_endpoint = 'this will not be used';
+    this.provider.configuration('discovery').service_documentation = 'https://docs.example.com';
+    this.provider.configuration('discovery').authorization_endpoint = 'this will not be used';
 
     return this.agent.get(route)
       .expect((response) => {

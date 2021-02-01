@@ -218,7 +218,7 @@ expire.setDate(expire.getDate() + 1);
           const cookies = [];
 
           const sess = new this.provider.Interaction('resume', {});
-          const keys = new KeyGrip(i(this.provider).configuration('cookies.keys'));
+          const keys = new KeyGrip(this.provider.configuration('cookies.keys'));
           if (grant) {
             const cookie = `_interaction_resume=resume; path=${this.suitePath('/auth/resume')}; expires=${expire.toGMTString()}; httponly`;
             cookies.push(cookie);
@@ -754,11 +754,11 @@ expire.setDate(expire.getDate() + 1);
 
       describe('when userinfo is disabled', () => {
         before(function () {
-          i(this.provider).configuration('features').userinfo.enabled = false;
+          this.provider.configuration('features').userinfo.enabled = false;
         });
 
         after(function () {
-          i(this.provider).configuration('features').userinfo.enabled = false;
+          this.provider.configuration('features').userinfo.enabled = false;
         });
 
         it('should not accept userinfo as a property', function () {

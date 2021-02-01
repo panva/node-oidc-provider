@@ -16,7 +16,7 @@ describe('pathFor related behaviors', () => {
       },
     });
 
-    const url = await i(provider).configuration('interactions.url')({
+    const url = await provider.configuration('interactions.url')({
       oidc: {
         uid: 'foobar',
       },

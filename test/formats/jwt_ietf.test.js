@@ -201,12 +201,12 @@ if (FORMAT === 'jwt-ietf') {
 
     describe('customizers', () => {
       afterEach(function () {
-        i(this.provider).configuration('formats.customizers')['jwt-ietf'] = undefined;
+        this.provider.configuration('formats.customizers')['jwt-ietf'] = undefined;
       });
 
       it('allows the payload to be extended', async function () {
         const accessToken = new this.provider.AccessToken(fullPayload);
-        i(this.provider).configuration('formats.customizers')['jwt-ietf'] = (ctx, token, jwt) => {
+        this.provider.configuration('formats.customizers')['jwt-ietf'] = (ctx, token, jwt) => {
           expect(token).to.equal(accessToken);
           expect(jwt).to.have.property('payload');
           expect(jwt).to.have.property('header', undefined);
@@ -225,7 +225,7 @@ if (FORMAT === 'jwt-ietf') {
     describe('invalid signing alg resolved', () => {
       ['none', 'HS256', 'HS384', 'HS512'].forEach((alg) => {
         it(`throws an Error when ${alg} is resolved`, async function () {
-          i(this.provider).configuration('formats').jwtAccessTokenSigningAlg = async () => alg;
+          this.provider.configuration('formats').jwtAccessTokenSigningAlg = async () => alg;
           const token = new this.provider.AccessToken(fullPayload);
           try {
             await token.save();
@@ -238,7 +238,7 @@ if (FORMAT === 'jwt-ietf') {
       });
 
       it('throws an Error when unsupported provider keystore alg is resolved', async function () {
-        i(this.provider).configuration('formats').jwtAccessTokenSigningAlg = async () => 'ES384';
+        this.provider.configuration('formats').jwtAccessTokenSigningAlg = async () => 'ES384';
         const token = new this.provider.AccessToken(fullPayload);
         try {
           await token.save();

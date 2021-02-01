@@ -52,9 +52,9 @@ describe('client authentication options', () => {
         ],
       });
 
-      expect(i(provider).configuration('tokenEndpointAuthSigningAlgValues')).to.be.undefined;
-      expect(i(provider).configuration('introspectionEndpointAuthSigningAlgValues')).to.be.undefined;
-      expect(i(provider).configuration('revocationEndpointAuthSigningAlgValues')).to.be.undefined;
+      expect(provider.configuration('tokenEndpointAuthSigningAlgValues')).to.be.undefined;
+      expect(provider.configuration('introspectionEndpointAuthSigningAlgValues')).to.be.undefined;
+      expect(provider.configuration('revocationEndpointAuthSigningAlgValues')).to.be.undefined;
     });
 
     it('pushes only symmetric algs when client_secret_jwt is enabled', () => {
@@ -74,9 +74,9 @@ describe('client authentication options', () => {
         'HS512',
       ];
 
-      expect(i(provider).configuration('tokenEndpointAuthSigningAlgValues')).to.eql(algs);
-      expect(i(provider).configuration('introspectionEndpointAuthSigningAlgValues')).to.eql(algs);
-      expect(i(provider).configuration('revocationEndpointAuthSigningAlgValues')).to.eql(algs);
+      expect(provider.configuration('tokenEndpointAuthSigningAlgValues')).to.eql(algs);
+      expect(provider.configuration('introspectionEndpointAuthSigningAlgValues')).to.eql(algs);
+      expect(provider.configuration('revocationEndpointAuthSigningAlgValues')).to.eql(algs);
     });
 
     it('pushes only asymmetric algs when private_key_jwt is enabled', () => {
@@ -104,9 +104,9 @@ describe('client authentication options', () => {
         runtimeSupport.EdDSA ? 'EdDSA' : false,
       ].filter(Boolean);
 
-      expect(i(provider).configuration('tokenEndpointAuthSigningAlgValues')).to.eql(algs);
-      expect(i(provider).configuration('introspectionEndpointAuthSigningAlgValues')).to.eql(algs);
-      expect(i(provider).configuration('revocationEndpointAuthSigningAlgValues')).to.eql(algs);
+      expect(provider.configuration('tokenEndpointAuthSigningAlgValues')).to.eql(algs);
+      expect(provider.configuration('introspectionEndpointAuthSigningAlgValues')).to.eql(algs);
+      expect(provider.configuration('revocationEndpointAuthSigningAlgValues')).to.eql(algs);
     });
 
     it('pushes all algs when both _jwt methods are enabled', () => {
@@ -138,9 +138,9 @@ describe('client authentication options', () => {
         runtimeSupport.EdDSA ? 'EdDSA' : false,
       ].filter(Boolean);
 
-      expect(i(provider).configuration('tokenEndpointAuthSigningAlgValues')).to.eql(algs);
-      expect(i(provider).configuration('introspectionEndpointAuthSigningAlgValues')).to.eql(algs);
-      expect(i(provider).configuration('revocationEndpointAuthSigningAlgValues')).to.eql(algs);
+      expect(provider.configuration('tokenEndpointAuthSigningAlgValues')).to.eql(algs);
+      expect(provider.configuration('introspectionEndpointAuthSigningAlgValues')).to.eql(algs);
+      expect(provider.configuration('revocationEndpointAuthSigningAlgValues')).to.eql(algs);
     });
   });
 
@@ -1096,7 +1096,7 @@ describe('client authentication options', () => {
     });
 
     after(function () {
-      i(this.provider).configuration().clockTolerance = 0;
+      this.provider.configuration().clockTolerance = 0;
     });
 
     it('accepts the auth', function () {
@@ -1118,7 +1118,7 @@ describe('client authentication options', () => {
     });
 
     it('accepts client assertions issued within acceptable system clock skew', function () {
-      i(this.provider).configuration().clockTolerance = 10;
+      this.provider.configuration().clockTolerance = 10;
       return JWT.sign({
         jti: nanoid(),
         aud: this.provider.issuer + this.suitePath('/token'),

@@ -198,12 +198,12 @@ if (FORMAT === 'paseto') {
 
     describe('customizers', () => {
       afterEach(function () {
-        i(this.provider).configuration('formats.customizers').paseto = undefined;
+        this.provider.configuration('formats.customizers').paseto = undefined;
       });
 
       it('allows the payload to be extended', async function () {
         const accessToken = new this.provider.AccessToken(fullPayload);
-        i(this.provider).configuration('formats.customizers').paseto = (ctx, token, paseto) => {
+        this.provider.configuration('formats.customizers').paseto = (ctx, token, paseto) => {
           expect(token).to.equal(accessToken);
           expect(paseto).to.have.property('payload');
           paseto.payload.customized = true;
@@ -213,7 +213,7 @@ if (FORMAT === 'paseto') {
         const { payload } = await pasetoLib.V2.verify(paseto, key, { complete: true });
         expect(payload).to.have.property('customized', true);
 
-        i(this.provider).configuration('formats.customizers').paseto = (ctx, token, t) => {
+        this.provider.configuration('formats.customizers').paseto = (ctx, token, t) => {
           expect(t).to.have.property('footer', undefined);
           t.footer = { customized: true };
         };
@@ -223,7 +223,7 @@ if (FORMAT === 'paseto') {
         expect(footer).to.be.instanceOf(Buffer);
         expect(JSON.parse(footer)).to.have.property('customized', true);
 
-        i(this.provider).configuration('formats.customizers').paseto = (ctx, token, t) => {
+        this.provider.configuration('formats.customizers').paseto = (ctx, token, t) => {
           t.footer = Buffer.from('foobar');
         };
 
@@ -232,7 +232,7 @@ if (FORMAT === 'paseto') {
         expect(footer).to.be.instanceOf(Buffer);
         expect(footer.toString()).to.eql('foobar');
 
-        i(this.provider).configuration('formats.customizers').paseto = (ctx, token, t) => {
+        this.provider.configuration('formats.customizers').paseto = (ctx, token, t) => {
           t.footer = 'foobarbaz';
         };
 

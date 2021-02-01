@@ -121,13 +121,13 @@ describe('grant_type=authorization_code', () => {
 
     context('', () => {
       before(function () {
-        const ttl = i(this.provider).configuration('ttl');
+        const ttl = this.provider.configuration('ttl');
         this.prev = ttl.AuthorizationCode;
         ttl.AuthorizationCode = 5;
       });
 
       after(function () {
-        i(this.provider).configuration('ttl').AuthorizationCode = this.prev;
+        this.provider.configuration('ttl').AuthorizationCode = this.prev;
       });
 
       it('validates code is not expired', function () {
@@ -378,13 +378,13 @@ describe('grant_type=authorization_code', () => {
 
     context('', () => {
       before(function () {
-        const ttl = i(this.provider).configuration('ttl');
+        const ttl = this.provider.configuration('ttl');
         this.prev = ttl.AuthorizationCode;
         ttl.AuthorizationCode = 5;
       });
 
       after(function () {
-        i(this.provider).configuration('ttl').AuthorizationCode = this.prev;
+        this.provider.configuration('ttl').AuthorizationCode = this.prev;
       });
 
       it('validates code is not expired', function () {

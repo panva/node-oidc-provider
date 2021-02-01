@@ -52,7 +52,7 @@ describe('request parameter features', () => {
           expect(response.body).not.to.have.property('require_signed_request_object');
         });
 
-      i(this.provider).configuration('features.requestObjects').requireSignedRequestObject = true;
+      this.provider.configuration('features.requestObjects').requireSignedRequestObject = true;
 
       await this.agent.get('/.well-known/openid-configuration')
         .expect(200)
@@ -63,7 +63,7 @@ describe('request parameter features', () => {
     });
 
     after(function () {
-      i(this.provider).configuration('features.requestObjects').requireSignedRequestObject = false;
+      this.provider.configuration('features.requestObjects').requireSignedRequestObject = false;
     });
   });
 
@@ -93,13 +93,13 @@ describe('request parameter features', () => {
         });
       });
       after(function () {
-        i(this.provider).configuration().clockTolerance = 0;
+        this.provider.configuration().clockTolerance = 0;
         return this.logout();
       });
 
       describe('merging strategies', () => {
         beforeEach(function () {
-          const ro = i(this.provider).configuration().features.requestObjects;
+          const ro = this.provider.configuration().features.requestObjects;
           this.orig = {
             mergingStrategy: ro.mergingStrategy.name,
             whitelist: [...ro.mergingStrategy.whitelist],
@@ -107,14 +107,14 @@ describe('request parameter features', () => {
         });
 
         afterEach(function () {
-          const ro = i(this.provider).configuration().features.requestObjects;
+          const ro = this.provider.configuration().features.requestObjects;
           ro.mergingStrategy.name = this.orig.mergingStrategy;
           ro.mergingStrategy.whitelist = new Set(this.orig.whitelist);
         });
 
         describe('strict', () => {
           it('does not use anything from the OAuth 2.0 parameters', async function () {
-            i(this.provider).configuration().features.requestObjects.mergingStrategy.name = 'strict';
+            this.provider.configuration().features.requestObjects.mergingStrategy.name = 'strict';
 
             const spy = sinon.spy();
             this.provider.once('authorization.success', spy);
@@ -153,7 +153,7 @@ describe('request parameter features', () => {
 
         describe('lax', () => {
           it('uses anything not found in the Request Object', async function () {
-            i(this.provider).configuration().features.requestObjects.mergingStrategy.name = 'lax';
+            this.provider.configuration().features.requestObjects.mergingStrategy.name = 'lax';
 
             const spy = sinon.spy();
             this.provider.once('authorization.success', spy);
@@ -192,9 +192,9 @@ describe('request parameter features', () => {
 
         describe('whitelist', () => {
           it('uses anything not found in the Request Object', async function () {
-            i(this.provider).configuration()
+            this.provider.configuration()
               .features.requestObjects.mergingStrategy.name = 'whitelist';
-            i(this.provider).configuration()
+            this.provider.configuration()
               .features.requestObjects.mergingStrategy.whitelist = new Set([
                 'ui_locales',
               ]);
@@ -536,7 +536,7 @@ describe('request parameter features', () => {
         const key = (await this.provider.Client.find('client-with-HS-sig')).keystore.get({
           alg: 'HS256',
         });
-        i(this.provider).configuration().clockTolerance = 10;
+        this.provider.configuration().clockTolerance = 10;
         return JWT.sign({
           iat: Math.ceil(Date.now() / 1000) + 5,
           client_id: 'client-with-HS-sig',

@@ -31,7 +31,7 @@ global.i = require('../lib/helpers/weak_cache');
 Object.defineProperties(Provider.prototype, {
   enable: {
     value(feature, options = {}) {
-      const config = i(this).configuration(`features.${feature}`);
+      const config = this.configuration(`features.${feature}`);
       if (!config) {
         throw new Error(`invalid feature: ${feature}`);
       }
@@ -128,7 +128,7 @@ module.exports = function testHelper(dir, {
       const account = nanoid();
       this.loggedInAccountId = account;
 
-      const keys = new KeyGrip(i(provider).configuration('cookies.keys'));
+      const keys = new KeyGrip(provider.configuration('cookies.keys'));
       const session = new (provider.Session)({ jti: sessionId, loginTs, account });
       const sessionCookie = `_session=${sessionId}; path=/; expires=${expire.toGMTString()}; httponly`;
       const cookies = [sessionCookie];
@@ -154,7 +154,7 @@ module.exports = function testHelper(dir, {
           rejectedClaims,
         };
 
-        if (i(provider).configuration('features.sessionManagement.enabled')) {
+        if (provider.configuration('features.sessionManagement.enabled')) {
           const cookie = `_state.${cl.client_id}=${session.stateFor(cl.client_id)}; path=/; expires=${expire.toGMTString()}`;
           cookies.push(cookie);
           [pre, ...post] = cookie.split(';');
@@ -496,7 +496,7 @@ module.exports.passInteractionChecks = (...reasons) => {
 
   context('', () => {
     before(function () {
-      const { policy } = i(this.provider).configuration('interactions');
+      const { policy } = this.provider.configuration('interactions');
 
       const iChecks = flatten(policy.map((i) => i.checks));
 

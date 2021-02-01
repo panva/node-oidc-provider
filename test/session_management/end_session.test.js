@@ -77,13 +77,13 @@ describe('[session_management]', () => {
     it('follows a domain if configured', function () {
       this.getSession().state = { secret: '123', postLogoutRedirectUri: '/', clientId: 'client' };
 
-      i(this.provider).configuration().cookies.long.domain = '.oidc.dev';
+      this.provider.configuration().cookies.long.domain = '.oidc.dev';
 
       return this.agent.post('/session/end/confirm')
         .send({ xsrf: '123', logout: 'yes' })
         .type('form')
         .expect(() => {
-          delete i(this.provider).configuration().cookies.long.domain;
+          delete this.provider.configuration().cookies.long.domain;
         })
         .expect(302)
         .expect((response) => {
@@ -97,13 +97,13 @@ describe('[session_management]', () => {
         secret: '123', postLogoutRedirectUri: '/', clientId: 'client', state: 'foobar',
       };
 
-      i(this.provider).configuration().cookies.long.domain = '.oidc.dev';
+      this.provider.configuration().cookies.long.domain = '.oidc.dev';
 
       return this.agent.post('/session/end/confirm')
         .send({ xsrf: '123', logout: 'yes' })
         .type('form')
         .expect(() => {
-          delete i(this.provider).configuration().cookies.long.domain;
+          delete this.provider.configuration().cookies.long.domain;
         })
         .expect(302)
         .expect('location', '/?state=foobar')

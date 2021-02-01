@@ -131,7 +131,7 @@ describe('logout endpoint', () => {
             };
 
             const emitSpy = sinon.spy();
-            const renderSpy = sinon.spy(i(this.provider).configuration(), 'renderError');
+            const renderSpy = sinon.spy(this.provider.configuration(), 'renderError');
             this.provider.once('end_session.error', emitSpy);
 
             return this.wrap({ route, verb, params })
@@ -154,7 +154,7 @@ describe('logout endpoint', () => {
             };
 
             const emitSpy = sinon.spy();
-            const renderSpy = sinon.spy(i(this.provider).configuration(), 'renderError');
+            const renderSpy = sinon.spy(this.provider.configuration(), 'renderError');
             this.provider.once('end_session.error', emitSpy);
 
             return this.wrap({ route, verb, params })
@@ -202,7 +202,7 @@ describe('logout endpoint', () => {
               };
 
               const emitSpy = sinon.spy();
-              const renderSpy = sinon.spy(i(this.provider).configuration(), 'renderError');
+              const renderSpy = sinon.spy(this.provider.configuration(), 'renderError');
               this.provider.once('end_session.error', emitSpy);
 
               return this.wrap({ route, verb, params })
@@ -266,7 +266,7 @@ describe('logout endpoint', () => {
 
         it('without id_token_hint or client_id post_logout_redirect_uri may not be provided', function () {
           const emitSpy = sinon.spy();
-          const renderSpy = sinon.spy(i(this.provider).configuration(), 'renderError');
+          const renderSpy = sinon.spy(this.provider.configuration(), 'renderError');
           this.provider.once('end_session.error', emitSpy);
           const params = {
             post_logout_redirect_uri: 'https://client.example.com/callback/logout',
@@ -288,7 +288,7 @@ describe('logout endpoint', () => {
 
         it('validates post_logout_redirect_uri allowed on client', function () {
           const emitSpy = sinon.spy();
-          const renderSpy = sinon.spy(i(this.provider).configuration(), 'renderError');
+          const renderSpy = sinon.spy(this.provider.configuration(), 'renderError');
           this.provider.once('end_session.error', emitSpy);
           const params = {
             id_token_hint: this.idToken,
@@ -311,7 +311,7 @@ describe('logout endpoint', () => {
 
         it('rejects invalid JWTs', function () {
           const emitSpy = sinon.spy();
-          const renderSpy = sinon.spy(i(this.provider).configuration(), 'renderError');
+          const renderSpy = sinon.spy(this.provider.configuration(), 'renderError');
           this.provider.once('end_session.error', emitSpy);
           const params = {
             id_token_hint: 'not.a.jwt',
@@ -333,7 +333,7 @@ describe('logout endpoint', () => {
 
         it('rejects JWTs with unrecognized client', async function () {
           const emitSpy = sinon.spy();
-          const renderSpy = sinon.spy(i(this.provider).configuration(), 'renderError');
+          const renderSpy = sinon.spy(this.provider.configuration(), 'renderError');
           this.provider.once('end_session.error', emitSpy);
           const params = {
             id_token_hint: await JWT.sign({
@@ -358,7 +358,7 @@ describe('logout endpoint', () => {
 
         it('rejects JWTs with bad signatures', async function () {
           const emitSpy = sinon.spy();
-          const renderSpy = sinon.spy(i(this.provider).configuration(), 'renderError');
+          const renderSpy = sinon.spy(this.provider.configuration(), 'renderError');
           this.provider.once('end_session.error', emitSpy);
           const params = {
             id_token_hint: await JWT.sign({
@@ -386,7 +386,7 @@ describe('logout endpoint', () => {
     describe('POST end_session_confirm', () => {
       it('checks session.state is set', function () {
         const emitSpy = sinon.spy();
-        const renderSpy = sinon.spy(i(this.provider).configuration(), 'renderError');
+        const renderSpy = sinon.spy(this.provider.configuration(), 'renderError');
         this.provider.once('end_session_confirm.error', emitSpy);
         return this.agent.post('/session/end/confirm')
           .set('Accept', 'text/html')
@@ -405,7 +405,7 @@ describe('logout endpoint', () => {
 
       it('checks session.state.secret (xsrf is right)', function () {
         const emitSpy = sinon.spy();
-        const renderSpy = sinon.spy(i(this.provider).configuration(), 'renderError');
+        const renderSpy = sinon.spy(this.provider.configuration(), 'renderError');
         this.provider.once('end_session_confirm.error', emitSpy);
         this.getSession().state = { secret: '123' };
 
@@ -526,13 +526,13 @@ describe('logout endpoint', () => {
           secret: '123', postLogoutRedirectUri: '/', clientId: 'client', state: 'foobar',
         };
 
-        i(this.provider).configuration().cookies.long.domain = '.oidc.dev';
+        this.provider.configuration().cookies.long.domain = '.oidc.dev';
 
         return this.agent.post('/session/end/confirm')
           .send({ xsrf: '123', logout: 'yes' })
           .type('form')
           .expect(() => {
-            delete i(this.provider).configuration().cookies.long.domain;
+            delete this.provider.configuration().cookies.long.domain;
           })
           .expect(302)
           .expect('location', '/?state=foobar');
@@ -550,7 +550,7 @@ describe('logout endpoint', () => {
           .send({ xsrf: '123' })
           .type('form')
           .expect(() => {
-            delete i(this.provider).configuration().cookies.long.domain;
+            delete this.provider.configuration().cookies.long.domain;
           })
           .expect(302);
       });
@@ -558,7 +558,7 @@ describe('logout endpoint', () => {
 
     describe('GET end_session_success', () => {
       it('calls the postLogoutSuccessSource helper', function () {
-        const renderSpy = sinon.spy(i(this.provider).configuration('features.rpInitiatedLogout'), 'postLogoutSuccessSource');
+        const renderSpy = sinon.spy(this.provider.configuration('features.rpInitiatedLogout'), 'postLogoutSuccessSource');
         return this.agent.get('/session/end/success')
           .set('Accept', 'text/html')
           .expect(200)
@@ -570,7 +570,7 @@ describe('logout endpoint', () => {
       });
 
       it('has the client loaded when present', function () {
-        const renderSpy = sinon.spy(i(this.provider).configuration('features.rpInitiatedLogout'), 'postLogoutSuccessSource');
+        const renderSpy = sinon.spy(this.provider.configuration('features.rpInitiatedLogout'), 'postLogoutSuccessSource');
         return this.agent.get('/session/end/success?client_id=client')
           .set('Accept', 'text/html')
           .expect(200)
@@ -583,7 +583,7 @@ describe('logout endpoint', () => {
 
       it('throws when the client is not found', function () {
         const emitSpy = sinon.spy();
-        const renderSpy = sinon.spy(i(this.provider).configuration(), 'renderError');
+        const renderSpy = sinon.spy(this.provider.configuration(), 'renderError');
         this.provider.once('end_session_success.error', emitSpy);
         return this.agent.get('/session/end/success?client_id=foobar')
           .set('Accept', 'text/html')

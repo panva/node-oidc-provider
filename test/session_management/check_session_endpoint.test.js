@@ -12,12 +12,12 @@ describe('check_session_iframe', () => {
     });
   });
   before(function () {
-    const { scriptNonce: orig } = i(this.provider).configuration('features.sessionManagement');
+    const { scriptNonce: orig } = this.provider.configuration('features.sessionManagement');
     this.orig = orig;
   });
 
   afterEach(function () {
-    i(this.provider).configuration('features.sessionManagement').scriptNonce = this.orig;
+    this.provider.configuration('features.sessionManagement').scriptNonce = this.orig;
   });
 
   it('responds with frameable html', async function () {
@@ -30,7 +30,7 @@ describe('check_session_iframe', () => {
         expect(response.text).not.to.contain('nonce="foo"');
       });
 
-    i(this.provider).configuration('features.sessionManagement').scriptNonce = (ctx) => {
+    this.provider.configuration('features.sessionManagement').scriptNonce = (ctx) => {
       expect(ctx.oidc).to.be.ok;
       return 'foo';
     };

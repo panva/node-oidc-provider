@@ -24,7 +24,7 @@ describe('Pushed Request Object', () => {
           expect(response.body).not.to.have.property('require_pushed_authorization_requests');
         });
 
-      i(this.provider).configuration('features.pushedAuthorizationRequests').requirePushedAuthorizationRequests = true;
+      this.provider.configuration('features.pushedAuthorizationRequests').requirePushedAuthorizationRequests = true;
 
       return this.agent.get('/.well-known/openid-configuration')
         .expect((response) => {
@@ -35,7 +35,7 @@ describe('Pushed Request Object', () => {
     });
 
     after(function () {
-      i(this.provider).configuration('features.pushedAuthorizationRequests').requirePushedAuthorizationRequests = false;
+      this.provider.configuration('features.pushedAuthorizationRequests').requirePushedAuthorizationRequests = false;
     });
   });
 
@@ -286,7 +286,7 @@ describe('Pushed Request Object', () => {
           });
 
           it('handles expired or invalid pushed authorization request object (when no client_id in the request)', async function () {
-            const renderSpy = sinon.spy(i(this.provider).configuration(), 'renderError');
+            const renderSpy = sinon.spy(this.provider.configuration(), 'renderError');
 
             const auth = new this.AuthorizationRequest({
               client_id: undefined,

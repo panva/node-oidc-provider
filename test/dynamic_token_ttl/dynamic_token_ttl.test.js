@@ -11,16 +11,16 @@ describe('dynamic ttl', () => {
   before(bootstrap(__dirname));
   bootstrap.skipConsent();
   before(function () {
-    this.prev = cloneDeep(i(this.provider).configuration('ttl'));
+    this.prev = cloneDeep(this.provider.configuration('ttl'));
   });
   afterEach(function () {
-    i(this.provider).configuration().ttl = this.prev;
+    this.provider.configuration().ttl = this.prev;
   });
   before(function () { return this.login(); });
 
   it('client credentials', async function () {
     const ClientCredentials = sinon.fake.returns(123);
-    i(this.provider).configuration('ttl').ClientCredentials = ClientCredentials;
+    this.provider.configuration('ttl').ClientCredentials = ClientCredentials;
 
     await this.agent.post('/token')
       .send({
@@ -40,7 +40,7 @@ describe('dynamic ttl', () => {
 
   it('device flow init', async function () {
     const DeviceCode = sinon.fake.returns(123);
-    i(this.provider).configuration('ttl').DeviceCode = DeviceCode;
+    this.provider.configuration('ttl').DeviceCode = DeviceCode;
 
     let device_code;
     await this.agent.post('/device/auth')
@@ -68,9 +68,9 @@ describe('dynamic ttl', () => {
     const IdToken = sinon.fake.returns(123);
     const AccessToken = sinon.fake.returns(1234);
     const RefreshToken = sinon.fake.returns(12345);
-    i(this.provider).configuration('ttl').IdToken = IdToken;
-    i(this.provider).configuration('ttl').AccessToken = AccessToken;
-    i(this.provider).configuration('ttl').RefreshToken = RefreshToken;
+    this.provider.configuration('ttl').IdToken = IdToken;
+    this.provider.configuration('ttl').AccessToken = AccessToken;
+    this.provider.configuration('ttl').RefreshToken = RefreshToken;
 
     await this.agent.post('/token')
       .send({
@@ -98,9 +98,9 @@ describe('dynamic ttl', () => {
     const IdToken = sinon.fake.returns(123);
     const AccessToken = sinon.fake.returns(1234);
     const AuthorizationCode = sinon.fake.returns(12);
-    i(this.provider).configuration('ttl').IdToken = IdToken;
-    i(this.provider).configuration('ttl').AccessToken = AccessToken;
-    i(this.provider).configuration('ttl').AuthorizationCode = AuthorizationCode;
+    this.provider.configuration('ttl').IdToken = IdToken;
+    this.provider.configuration('ttl').AccessToken = AccessToken;
+    this.provider.configuration('ttl').AuthorizationCode = AuthorizationCode;
 
     const auth = new this.AuthorizationRequest({
       response_type: 'code id_token token',
@@ -134,9 +134,9 @@ describe('dynamic ttl', () => {
     const IdToken = sinon.fake.returns(123);
     const AccessToken = sinon.fake.returns(1234);
     const RefreshToken = sinon.fake.returns(12345);
-    i(this.provider).configuration('ttl').IdToken = IdToken;
-    i(this.provider).configuration('ttl').AccessToken = AccessToken;
-    i(this.provider).configuration('ttl').RefreshToken = RefreshToken;
+    this.provider.configuration('ttl').IdToken = IdToken;
+    this.provider.configuration('ttl').AccessToken = AccessToken;
+    this.provider.configuration('ttl').RefreshToken = RefreshToken;
 
     const auth = new this.AuthorizationRequest({
       response_type: 'code',
@@ -208,9 +208,9 @@ describe('dynamic ttl', () => {
     const IdToken = sinon.fake.returns(123);
     const AccessToken = sinon.fake.returns(1234);
     const RefreshToken = sinon.fake.returns(12345);
-    i(this.provider).configuration('ttl').IdToken = IdToken;
-    i(this.provider).configuration('ttl').AccessToken = AccessToken;
-    i(this.provider).configuration('ttl').RefreshToken = RefreshToken;
+    this.provider.configuration('ttl').IdToken = IdToken;
+    this.provider.configuration('ttl').AccessToken = AccessToken;
+    this.provider.configuration('ttl').RefreshToken = RefreshToken;
 
     await this.agent.post('/token')
       .send({

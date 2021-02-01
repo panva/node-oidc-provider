@@ -45,16 +45,16 @@ describe('CORS setup', () => {
 
   describe('error handling', () => {
     before(function () {
-      this.default = i(this.provider).configuration('clientBasedCORS');
+      this.default = this.provider.configuration('clientBasedCORS');
     });
 
     after(function () {
-      const conf = i(this.provider).configuration();
+      const conf = this.provider.configuration();
       conf.clientBasedCORS = this.default;
     });
 
     it('500s when clientBasedCORS returns non-boolean', async function () {
-      i(this.provider).configuration().clientBasedCORS = () => Promise.resolve(true);
+      this.provider.configuration().clientBasedCORS = () => Promise.resolve(true);
       const { status, headers } = await req.call(
         this,
         'get',
@@ -283,12 +283,12 @@ describe('CORS setup', () => {
 
   describe('with clientBasedCORS false', () => {
     before(function () {
-      const conf = i(this.provider).configuration();
+      const conf = this.provider.configuration();
       conf.clientBasedCORS = () => false;
     });
 
     after(function () {
-      const conf = i(this.provider).configuration();
+      const conf = this.provider.configuration();
       conf.clientBasedCORS = () => true;
     });
 

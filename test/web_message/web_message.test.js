@@ -102,7 +102,7 @@ describe('configuration features.webMessageResponseMode', () => {
     context('error handling', () => {
       it('verifies web_message_uri is whitelisted', function () {
         const emitSpy = sinon.spy();
-        const renderSpy = sinon.spy(i(this.provider).configuration(), 'renderError');
+        const renderSpy = sinon.spy(this.provider.configuration(), 'renderError');
         this.provider.once('authorization.error', emitSpy);
 
         const auth = new this.AuthorizationRequest({
@@ -128,7 +128,7 @@ describe('configuration features.webMessageResponseMode', () => {
       });
 
       it('validates web_message_uri ad acta [regular error]', function () {
-        const renderSpy = sinon.spy(i(this.provider).configuration(), 'renderError');
+        const renderSpy = sinon.spy(this.provider.configuration(), 'renderError');
         const spy = sinon.spy();
         this.provider.on('authorization.error', spy);
         const auth = new this.AuthorizationRequest({
@@ -160,7 +160,7 @@ describe('configuration features.webMessageResponseMode', () => {
       });
 
       it('validates web_message_uri ad acta [server error]', function () {
-        const renderSpy = sinon.spy(i(this.provider).configuration(), 'renderError');
+        const renderSpy = sinon.spy(this.provider.configuration(), 'renderError');
         const authErrorSpy = sinon.spy();
         const serverErrorSpy = sinon.spy();
         this.provider.on('authorization.error', authErrorSpy);

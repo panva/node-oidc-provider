@@ -44,6 +44,6 @@ describe('Provider declaring supported algorithms', () => {
       },
     });
 
-    expect(i(provider).configuration('idTokenSigningAlgValues')).to.eql(['HS256', 'RS256']);
+    expect(provider.configuration('idTokenSigningAlgValues')).to.eql(['HS256', 'RS256']);
   });
 });

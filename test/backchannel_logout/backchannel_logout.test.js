@@ -38,8 +38,8 @@ describe('Back-Channel Logout 1.0', () => {
     it('uses custom http options when provided', async function () {
       const client = await this.provider.Client.find('client');
 
-      const pre = i(this.provider).configuration('httpOptions');
-      i(this.provider).configuration().httpOptions = (opts) => {
+      const pre = this.provider.configuration('httpOptions');
+      this.provider.configuration().httpOptions = (opts) => {
         Object.assign(opts.body, { foo: 'bar' });
         return opts;
       };
@@ -52,7 +52,7 @@ describe('Back-Channel Logout 1.0', () => {
         .reply(200);
 
       return client.backchannelLogout('subject', 'foo').then(() => {
-        i(this.provider).configuration().httpOptions = pre;
+        this.provider.configuration().httpOptions = pre;
       });
     });
 

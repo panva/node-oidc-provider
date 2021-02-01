@@ -10,7 +10,7 @@ describe('custom claims', () => {
       },
     });
 
-    expect(i(provider).configuration('claims').get('openid')).to.eql({
+    expect(provider.configuration('claims').get('openid')).to.eql({
       sub: null,
       foo: null,
     });
@@ -23,7 +23,7 @@ describe('custom claims', () => {
       },
     });
 
-    expect(i(provider).configuration('claims').get('openid')).to.eql({
+    expect(provider.configuration('claims').get('openid')).to.eql({
       sub: null,
       foo: null,
     });
@@ -45,8 +45,8 @@ describe('custom claims', () => {
       claims,
     });
 
-    expect(i(provider).configuration('scopes')).to.contain('insurance', 'payment');
-    expect(i(provider).configuration('dynamicScopes')).to.contain(foo, bar);
+    expect(provider.configuration('scopes')).to.contain('insurance', 'payment');
+    expect(provider.configuration('dynamicScopes')).to.contain(foo, bar);
   });
 
   it('removes the acr claim if no acrs are configured', () => {
@@ -54,6 +54,6 @@ describe('custom claims', () => {
       acrValues: [],
     });
 
-    expect(i(provider).configuration('claimsSupported')).not.to.contain('acr');
+    expect(provider.configuration('claimsSupported')).not.to.contain('acr');
   });
 });

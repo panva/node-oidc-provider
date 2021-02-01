@@ -136,7 +136,7 @@ describe('signatures', () => {
     beforeEach(async function () {
       const ac = new this.provider.AuthorizationCode({
         accountId: 'accountIdentity',
-        acr: i(this.provider).configuration('acrValues[0]'),
+        acr: this.provider.configuration('acrValues[0]'),
         authTime: epochTime(),
         clientId: 'client-sig-none',
         grantId: nanoid(),
@@ -223,7 +223,7 @@ describe('signatures', () => {
     beforeEach(async function () {
       const ac = new this.provider.AuthorizationCode({
         accountId: 'accountIdentity',
-        acr: i(this.provider).configuration('acrValues[0]'),
+        acr: this.provider.configuration('acrValues[0]'),
         authTime: epochTime(),
         clientId: 'client-sig-HS256',
         grantId: nanoid(),

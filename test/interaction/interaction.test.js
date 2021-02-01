@@ -356,7 +356,7 @@ describe('resume after consent', () => {
       params: grant,
       session,
     });
-    const keys = new KeyGrip(i(this.provider).configuration('cookies.keys'));
+    const keys = new KeyGrip(this.provider.configuration('cookies.keys'));
 
     expect(grant).to.be.ok;
 
