@@ -576,6 +576,7 @@ provider.on('authorization.accepted', (ctx) => {
   ctx.oidc.cookies.set('key', 'value', { signed: true, sameSite: 'strict' });
 });
 
+provider.configuration();
 provider.configuration<Configuration['clockTolerance']>('clockTolerance');
 
 provider.on('interaction.started', (ctx, prompt) => {
