@@ -122,25 +122,23 @@ describe('PKCE RFC7636', () => {
         .expect(auth.validateErrorDescription('not supported value of code_challenge_method'));
     });
 
-    it('forces native clients using code flow to use pkce', function () {
+    it('forces clients using code flow to use pkce', function () {
       const auth = new this.AuthorizationRequest({
         response_type: 'code',
         scope: 'openid',
-        client_id: 'native',
       });
 
       return this.agent.get('/auth')
         .query(auth)
         .expect(auth.validatePresence(['error', 'error_description', 'state']))
         .expect(auth.validateError('invalid_request'))
-        .expect(auth.validateErrorDescription('PKCE must be used for this request'));
+        .expect(auth.validateErrorDescription('Authorization Server policy requires PKCE to be used for this request'));
     });
 
-    it('forces native clients using hybrid flow to use pkce', function () {
+    it('forces clients using hybrid flow to use pkce', function () {
       const auth = new this.AuthorizationRequest({
         response_type: 'code id_token',
         scope: 'openid',
-        client_id: 'native',
       });
 
       return this.agent.get('/auth')
@@ -148,7 +146,7 @@ describe('PKCE RFC7636', () => {
         .expect(auth.validateFragment)
         .expect(auth.validatePresence(['error', 'error_description', 'state']))
         .expect(auth.validateError('invalid_request'))
-        .expect(auth.validateErrorDescription('PKCE must be used for this request'));
+        .expect(auth.validateErrorDescription('Authorization Server policy requires PKCE to be used for this request'));
     });
 
     bootstrap.passInteractionChecks('native_client_prompt', () => {
@@ -156,7 +154,6 @@ describe('PKCE RFC7636', () => {
         const auth = new this.AuthorizationRequest({
           response_type: 'id_token',
           scope: 'openid',
-          client_id: 'native',
         });
 
         return this.agent.get('/auth')

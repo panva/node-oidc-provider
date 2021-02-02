@@ -54,4 +54,7 @@ module.exports = merge({
   features: {},
   enabledJWA: cloneDeep(JWA),
   allowOmittingSingleRegisteredRedirectUri: true,
+  pkce: {
+    required: () => false,
+  },
 }, global.TEST_CONFIGURATION_DEFAULTS);

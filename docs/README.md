@@ -2876,7 +2876,7 @@ Configures if and when the OP requires clients to use PKCE. This helper is calle
 _**default value**_:
 ```js
 function pkceRequired(ctx, client) {
-  return client.applicationType === 'native';
+  return true;
 }
 ```
 
