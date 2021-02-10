@@ -611,7 +611,7 @@ async function findAccount(ctx, sub, token) {
 
 ### jwks
 
-JSON Web Key Set used by the provider for signing and encryption. The object must be in [JWK Set format](https://tools.ietf.org/html/rfc7517#section-5). All provided keys must be private keys. **Note:** Be sure to follow best practices for distributing private keying material and secrets for your respective target deployment environment.   
+JSON Web Key Set used by the provider for signing and decryption. The object must be in [JWK Set format](https://tools.ietf.org/html/rfc7517#section-5). All provided keys must be private keys. **Note:** Be sure to follow best practices for distributing private keying material and secrets for your respective target deployment environment.   
    
  Supported key types are:   
  - RSA
