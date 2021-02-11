@@ -56,8 +56,6 @@ let server;
 
   const provider = new Provider(ISSUER, { adapter, ...configuration });
 
-  provider.use(helmet());
-
   app.use(routes(provider).routes());
   app.use(mount(provider.app));
   server = app.listen(PORT, () => {
