@@ -31,6 +31,7 @@ describe('grant_type=client_credentials', () => {
   it('ignores unsupported scopes', async function () {
     const spy = sinon.spy();
     this.provider.once('client_credentials.saved', spy);
+    this.provider.once('client_credentials.issued', spy);
 
     await this.agent.post(route)
       .auth('client', 'secret')

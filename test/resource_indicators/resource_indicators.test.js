@@ -1,987 +1,500 @@
-const { stringify } = require('querystring');
-const url = require('url');
+/* eslint-disable prefer-destructuring */
 
-const { expect } = require('chai');
 const sinon = require('sinon');
+const { expect } = require('chai');
 
 const bootstrap = require('../test_helper');
+const { features: { resourceIndicators: defaults } } = require('../../lib/helpers/defaults')();
 
-const { formats: { AccessToken: FORMAT } } = global.TEST_CONFIGURATION_DEFAULTS;
-const allowMultiple = ['opaque', 'jwt'].includes(FORMAT);
+const fail = () => { throw new Error('expected promise to be rejected'); };
+
+describe('features.resourceIndicators defaults', () => {
+  it('defaultResource', async () => {
+    expect(await defaults.defaultResource()).to.be.undefined;
+    expect(await defaults.defaultResource(undefined, undefined, ['urn:example:rs'])).to.deep.equal(['urn:example:rs']);
+  });
+
+  it('getResourceServerInfo', async () => defaults.getResourceServerInfo().then(fail, (err) => {
+    expect(err.message).to.equal('invalid_target');
+    expect(err.error_description).to.equal('resource indicator is missing, or unknown');
+  }));
+});
 
 describe('features.resourceIndicators', () => {
   before(bootstrap(__dirname));
-  before(function () { return this.login(); });
-
-  afterEach(function () {
-    this.provider.removeAllListeners();
-  });
-
-  describe('urn:ietf:params:oauth:grant-type:device_code', () => {
-    describe('requested with device authorization request', () => {
-      it('allows for single resource to be requested (1/2)', async function () {
-        let deviceCode;
-        await this.agent.post('/device/auth')
-          .send({
-            client_id: 'client',
-            scope: 'openid',
-            resource: 'https://client.example.com/api',
-          })
-          .type('form')
-          .expect(200)
-          .expect(({ body: { device_code: dc } }) => {
-            deviceCode = dc;
-          });
-        const adapter = this.TestAdapter.for('DeviceCode');
-        const jti = this.getTokenJti(deviceCode);
-
-        expect(
-          adapter.syncFind(jti),
-        ).to.have.nested.property('params.resource', 'https://client.example.com/api');
-
-        adapter.syncUpdate(jti, {
-          scope: 'openid',
-          accountId: 'account',
-          resource: 'https://client.example.com/api',
-        });
-
-        const spy = sinon.spy();
-        this.provider.once('access_token.saved', spy);
-
-        await this.agent.post('/token')
-          .send({
-            client_id: 'client',
-            device_code: deviceCode,
-            grant_type: 'urn:ietf:params:oauth:grant-type:device_code',
-          })
-          .type('form')
-          .expect(200);
-
-        const [token] = spy.firstCall.args;
-        expect(token.aud).to.include('https://client.example.com/api');
-      });
-
-      it('allows for single resource to be requested (2/2)', async function () {
-        let deviceCode;
-        await this.agent.post('/device/auth')
-          .send({
-            client_id: 'client',
-            scope: 'openid',
-            resource: 'urn:foo:bar',
-          })
-          .type('form')
-          .expect(200)
-          .expect(({ body: { device_code: dc } }) => {
-            deviceCode = dc;
-          });
-        const adapter = this.TestAdapter.for('DeviceCode');
-        const jti = this.getTokenJti(deviceCode);
-
-        expect(
-          adapter.syncFind(jti),
-        ).to.have.nested.property('params.resource', 'urn:foo:bar');
-
-        adapter.syncUpdate(jti, {
-          scope: 'openid',
-          accountId: 'account',
-          resource: 'urn:foo:bar',
-        });
-
-        const spy = sinon.spy();
-        this.provider.once('access_token.saved', spy);
-
-        await this.agent.post('/token')
-          .send({
-            client_id: 'client',
-            device_code: deviceCode,
-            grant_type: 'urn:ietf:params:oauth:grant-type:device_code',
-          })
-          .type('form')
-          .expect(200);
-
-        const [token] = spy.firstCall.args;
-        expect(token.aud).to.include('urn:foo:bar');
-      });
-
-      if (allowMultiple) {
-        it('allows for multiple resources to be requested', async function () {
-          let deviceCode;
-          await this.agent.post('/device/auth')
-            .send(`${stringify({
-              client_id: 'client',
-              scope: 'openid',
-            })}&resource=${encodeURIComponent('https://client.example.com/api')}&resource=${encodeURIComponent('https://rs.example.com')}`)
-            .type('form')
-            .expect(200)
-            .expect(({ body: { device_code: dc } }) => {
-              deviceCode = dc;
-            });
-
-          const adapter = this.TestAdapter.for('DeviceCode');
-          const jti = this.getTokenJti(deviceCode);
-
-          expect(
-            adapter.syncFind(jti),
-          ).to.have.deep.nested.property('params.resource', ['https://client.example.com/api', 'https://rs.example.com']);
-
-          adapter.syncUpdate(jti, {
-            scope: 'openid',
-            accountId: 'account',
-            resource: ['https://client.example.com/api', 'https://rs.example.com'],
-          });
-
-          const spy = sinon.spy();
-          this.provider.once('access_token.saved', spy);
-
-          await this.agent.post('/token')
-            .send({
-              client_id: 'client',
-              device_code: deviceCode,
-              grant_type: 'urn:ietf:params:oauth:grant-type:device_code',
-            })
-            .type('form')
-            .expect(200);
-
-          const [token] = spy.firstCall.args;
-          expect(token.aud).to.include('https://client.example.com/api');
-          expect(token.aud).to.include('https://rs.example.com');
-        });
-      } else if (typeof FORMAT !== 'function') {
-        it('does not allow multiple resources to be added to an issued access token', async function () {
-          let deviceCode;
-          await this.agent.post('/device/auth')
-            .send(`${stringify({
-              client_id: 'client',
-              scope: 'openid',
-            })}&resource=${encodeURIComponent('https://client.example.com/api')}&resource=${encodeURIComponent('https://rs.example.com')}`)
-            .type('form')
-            .expect(200)
-            .expect(({ body: { device_code: dc } }) => {
-              deviceCode = dc;
-            });
-
-          const adapter = this.TestAdapter.for('DeviceCode');
-          const jti = this.getTokenJti(deviceCode);
-
-          expect(
-            adapter.syncFind(jti),
-          ).to.have.deep.nested.property('params.resource', ['https://client.example.com/api', 'https://rs.example.com']);
-
-          adapter.syncUpdate(jti, {
-            scope: 'openid',
-            accountId: 'account',
-            resource: ['https://client.example.com/api', 'https://rs.example.com'],
-          });
-
-          const spy = sinon.spy();
-          this.provider.on('server_error', spy);
-
-          await this.agent.post('/token')
-            .send({
-              client_id: 'client',
-              device_code: deviceCode,
-              grant_type: 'urn:ietf:params:oauth:grant-type:device_code',
-            })
-            .type('form')
-            .expect(500)
-            .expect((response) => {
-              expect(response.body).to.have.property('error', 'server_error');
-              expect(response.body).to.have.property('error_description', 'oops! something went wrong');
-            });
-
-          expect(spy).to.have.property('calledOnce', true);
-          const error = spy.firstCall.args[1];
-          expect(error).to.be.an.instanceof(Error);
-          expect(error).to.have.property('message', 'only a single audience ("aud") value is permitted for this token type');
-        });
-      }
-
-      it('runs the allowedPolicy helper to determine whether a resource can be used', function () {
-        return this.agent.post('/device/auth')
-          .send({
-            client_id: 'client',
-            scope: 'openid',
-            resource: 'urn:example:bad',
-          })
-          .type('form')
-          .expect(400)
-          .expect({ error: 'invalid_target', error_description: 'requested resource or resources are not permitted' });
-      });
-
-      it('allows for arbitrary validations to be in place in the audiences helper', async function () {
-        let deviceCode;
-        await this.agent.post('/device/auth')
-          .send({
-            client_id: 'client',
-            scope: 'openid',
-            resource: 'http://client.example.com/api',
-          })
-          .type('form')
-          .expect(200)
-          .expect(({ body: { device_code: dc } }) => {
-            deviceCode = dc;
-          });
-        const adapter = this.TestAdapter.for('DeviceCode');
-        const jti = this.getTokenJti(deviceCode);
-
-        expect(
-          adapter.syncFind(jti),
-        ).to.have.nested.property('params.resource', 'http://client.example.com/api');
-
-        adapter.syncUpdate(jti, {
-          scope: 'openid',
-          accountId: 'account',
-          resource: 'http://client.example.com/api',
-        });
-
-        await this.agent.post('/token')
-          .send({
-            client_id: 'client',
-            device_code: deviceCode,
-            grant_type: 'urn:ietf:params:oauth:grant-type:device_code',
-          })
-          .type('form')
-          .expect(400)
-          .expect({
-            error: 'invalid_target',
-            error_description: 'resources must be https URIs or URNs',
-          });
-      });
-    });
-
-    describe('requested at the token endpoint', () => {
-      beforeEach(async function () {
-        await this.agent.post('/device/auth')
-          .send({
-            client_id: 'client',
-            scope: 'openid',
-          })
-          .type('form')
-          .expect(200)
-          .expect(({ body: { device_code: dc } }) => {
-            this.dc = dc;
-          });
-
-        this.TestAdapter.for('DeviceCode').syncUpdate(this.getTokenJti(this.dc), {
-          scope: 'openid',
-          accountId: 'account',
-        });
-      });
-
-      it('allows for single resource to be requested (1/2)', async function () {
-        const spy = sinon.spy();
-        this.provider.once('access_token.saved', spy);
-
-        await this.agent.post('/token')
-          .send({
-            client_id: 'client',
-            device_code: this.dc,
-            grant_type: 'urn:ietf:params:oauth:grant-type:device_code',
-            resource: 'https://client.example.com/api',
-          })
-          .type('form')
-          .expect(200);
-
-        const [token] = spy.firstCall.args;
-        expect(token.aud).to.include('https://client.example.com/api');
-      });
-
-      it('allows for single resource to be requested (2/2)', async function () {
-        const spy = sinon.spy();
-        this.provider.once('access_token.saved', spy);
-
-        await this.agent.post('/token')
-          .send({
-            client_id: 'client',
-            device_code: this.dc,
-            grant_type: 'urn:ietf:params:oauth:grant-type:device_code',
-            resource: 'urn:foo:bar',
-          })
-          .type('form')
-          .expect(200);
-
-        const [token] = spy.firstCall.args;
-        expect(token.aud).to.include('urn:foo:bar');
-      });
-
-      if (allowMultiple) {
-        it('allows for multiple resources to be requested', async function () {
-          const spy = sinon.spy();
-          this.provider.once('access_token.saved', spy);
-
-          await this.agent.post('/token')
-            .send(`${stringify({
-              client_id: 'client',
-              device_code: this.dc,
-              grant_type: 'urn:ietf:params:oauth:grant-type:device_code',
-            })}&resource=${encodeURIComponent('https://client.example.com/api')}&resource=${encodeURIComponent('https://rs.example.com')}`)
-            .type('form')
-            .expect(200);
-
-          const [token] = spy.firstCall.args;
-          expect(token.aud).to.include('https://client.example.com/api');
-          expect(token.aud).to.include('https://rs.example.com');
-        });
-      } else if (typeof FORMAT !== 'function') {
-        it('does not allow multiple resources to be added to an issued access token', async function () {
-          const spy = sinon.spy();
-          this.provider.once('server_error', spy);
-
-          await this.agent.post('/token')
-            .send(`${stringify({
-              client_id: 'client',
-              device_code: this.dc,
-              grant_type: 'urn:ietf:params:oauth:grant-type:device_code',
-            })}&resource=${encodeURIComponent('https://client.example.com/api')}&resource=${encodeURIComponent('https://rs.example.com')}`)
-            .type('form')
-            .expect(500)
-            .expect((response) => {
-              expect(response.body).to.have.property('error', 'server_error');
-              expect(response.body).to.have.property('error_description', 'oops! something went wrong');
-            });
-
-          expect(spy).to.have.property('calledOnce', true);
-          const error = spy.firstCall.args[1];
-          expect(error).to.be.an.instanceof(Error);
-          expect(error).to.have.property('message', 'only a single audience ("aud") value is permitted for this token type');
-        });
-      }
-
-      it('runs the allowedPolicy helper to determine whether a resource can be used', function () {
-        return this.agent.post('/token')
-          .send({
-            client_id: 'client',
-            device_code: this.dc,
-            grant_type: 'urn:ietf:params:oauth:grant-type:device_code',
-            resource: 'urn:example:bad',
-          })
-          .type('form')
-          .expect(400)
-          .expect({
-            error: 'invalid_target',
-            error_description: 'requested resource or resources are not permitted',
-          });
-      });
-
-      it('allows for arbitrary validations to be in place in the audiences helper', async function () {
-        await this.agent.post('/token')
-          .send({
-            client_id: 'client',
-            device_code: this.dc,
-            grant_type: 'urn:ietf:params:oauth:grant-type:device_code',
-            resource: 'http://client.example.com/api',
-          })
-          .type('form')
-          .expect(400)
-          .expect({
-            error: 'invalid_target',
-            error_description: 'resources must be https URIs or URNs',
-          });
-      });
+  before(function () {
+    return this.login({
+      resources: {
+        'urn:wl:default': 'api:read api:write',
+        'urn:wl:explicit': 'api:read api:write',
+      },
     });
   });
 
-  describe('client_credentials', () => {
-    it('allows for single resource to be requested (1/2)', async function () {
-      const spy = sinon.spy();
-      this.provider.once('client_credentials.saved', spy);
-
-      await this.agent.post('/token')
-        .send({
-          client_id: 'client',
-          grant_type: 'client_credentials',
-          resource: 'https://client.example.com/api',
-        })
-        .type('form')
-        .expect(200);
-
-      const [token] = spy.firstCall.args;
-      expect(token.aud).to.include('https://client.example.com/api');
-    });
-
-    it('allows for single resource to be requested (2/2)', async function () {
-      const spy = sinon.spy();
-      this.provider.once('client_credentials.saved', spy);
-
-      await this.agent.post('/token')
-        .send({
-          client_id: 'client',
-          grant_type: 'client_credentials',
-          resource: 'urn:foo:bar',
-        })
-        .type('form')
-        .expect(200);
-
-      const [token] = spy.firstCall.args;
-      expect(token.aud).to.include('urn:foo:bar');
-    });
-
-    if (allowMultiple) {
-      it('allows for multiple resources to be requested', async function () {
-        const spy = sinon.spy();
-        this.provider.once('client_credentials.saved', spy);
-
-        await this.agent.post('/token')
-          .send(`${stringify({
-            client_id: 'client',
-            grant_type: 'client_credentials',
-          })}&resource=${encodeURIComponent('https://client.example.com/api')}&resource=${encodeURIComponent('https://rs.example.com')}`)
-          .type('form')
-          .expect(200);
-
-        const [token] = spy.firstCall.args;
-        expect(token.aud).to.include('https://client.example.com/api');
-        expect(token.aud).to.include('https://rs.example.com');
-      });
-    } else if (typeof FORMAT !== 'function') {
-      it('does not allow multiple resources to be added to an issued access token', async function () {
-        const spy = sinon.spy();
-        this.provider.on('server_error', spy);
-
-        await this.agent.post('/token')
-          .send(`${stringify({
-            client_id: 'client',
-            grant_type: 'client_credentials',
-          })}&resource=${encodeURIComponent('https://client.example.com/api')}&resource=${encodeURIComponent('https://rs.example.com')}`)
-          .type('form')
-          .expect(500)
-          .expect((response) => {
-            expect(response.body).to.have.property('error', 'server_error');
-            expect(response.body).to.have.property('error_description', 'oops! something went wrong');
-          });
-
-        expect(spy).to.have.property('calledOnce', true);
-        const error = spy.firstCall.args[1];
-        expect(error).to.be.an.instanceof(Error);
-        expect(error).to.have.property('message', 'only a single audience ("aud") value is permitted for this token type');
-      });
-    }
-
-    it('runs the allowedPolicy helper to determine whether a resource can be used', function () {
+  describe('resource validations', () => {
+    it('must be a URI', function () {
       return this.agent.post('/token')
         .send({
           client_id: 'client',
           grant_type: 'client_credentials',
-          resource: 'urn:example:bad',
+          scope: 'api:read',
+          resource: 'wl-not-a-uri',
         })
         .type('form')
         .expect(400)
         .expect({
           error: 'invalid_target',
-          error_description: 'requested resource or resources are not permitted',
+          error_description: 'resource indicator must be an absolute URI',
         });
     });
 
-    it('allows for arbitrary validations to be in place in the audiences helper', async function () {
-      await this.agent.post('/token')
+    it('must not contain a fragment', function () {
+      return this.agent.post('/token')
         .send({
           client_id: 'client',
           grant_type: 'client_credentials',
-          resource: 'http://client.example.com/api',
+          scope: 'api:read',
+          resource: 'urn:wl:foo/bar#',
         })
         .type('form')
         .expect(400)
         .expect({
           error: 'invalid_target',
-          error_description: 'resources must be https URIs or URNs',
+          error_description: 'resource indicator must not contain a fragment component',
         });
     });
   });
 
-  describe('authorization and token endpoints', () => {
-    before(function () { return this.login(); });
+  ['get', 'post'].forEach((verb) => {
+    describe(`${verb} response_type includes token`, () => {
+      const response_type = 'id_token token';
 
-    describe('authorization endpoint', () => {
-      it('allows for single resource to be requested (1/2)', async function () {
+      it('checks the policy and adds the resource', async function () {
         const spy = sinon.spy();
-        this.provider.once('authorization.success', spy);
+        this.provider.once('access_token.saved', spy);
+        this.provider.once('access_token.issued', spy);
 
         const auth = new this.AuthorizationRequest({
-          response_type: 'id_token token',
-          scope: 'openid',
-          resource: 'https://client.example.com/api',
+          response_type,
+          resource: 'urn:not:whitelisted',
+          scope: 'openid api:read',
         });
 
-        await this.wrap({ route: '/auth', verb: 'get', auth })
-          .expect(302)
-          .expect(auth.validateFragment)
-          .expect(auth.validatePresence(['id_token', 'state', 'access_token', 'expires_in', 'token_type', 'scope']))
-          .expect(auth.validateState)
-          .expect(auth.validateClientLocation);
-
-        const [{ oidc: { entities: { AccessToken } } }] = spy.firstCall.args;
-        expect(AccessToken.aud).to.include('https://client.example.com/api');
-      });
-
-      it('allows for single resource to be requested (2/2)', async function () {
-        const spy = sinon.spy();
-        this.provider.once('authorization.success', spy);
-
-        const auth = new this.AuthorizationRequest({
-          response_type: 'id_token token',
-          scope: 'openid',
-          resource: 'urn:foo:bar',
-        });
-
-        await this.wrap({ route: '/auth', verb: 'get', auth })
-          .expect(302)
-          .expect(auth.validateFragment)
-          .expect(auth.validatePresence(['id_token', 'state', 'access_token', 'expires_in', 'token_type', 'scope']))
-          .expect(auth.validateState)
-          .expect(auth.validateClientLocation);
-
-        const [{ oidc: { entities: { AccessToken } } }] = spy.firstCall.args;
-        expect(AccessToken.aud).to.include('urn:foo:bar');
-      });
-
-      if (allowMultiple) {
-        it('allows for multiple resources to be requested', async function () {
-          const spy = sinon.spy();
-          this.provider.once('authorization.success', spy);
-
-          const auth = new this.AuthorizationRequest({
-            response_type: 'id_token token',
-            scope: 'openid',
-            resource: ['https://client.example.com/api', 'https://rs.example.com'],
-          });
-
-          await this.wrap({ route: '/auth', verb: 'get', auth })
-            .expect(302)
-            .expect(auth.validateFragment)
-            .expect(auth.validatePresence(['id_token', 'state', 'access_token', 'expires_in', 'token_type', 'scope']))
-            .expect(auth.validateState)
-            .expect(auth.validateClientLocation);
-
-          const [{ oidc: { entities: { AccessToken } } }] = spy.firstCall.args;
-          expect(AccessToken.aud).to.include('https://client.example.com/api');
-          expect(AccessToken.aud).to.include('https://rs.example.com');
-        });
-      } else if (typeof FORMAT !== 'function') {
-        it('does not allow multiple resources to be added to an issued access token', async function () {
-          const spy = sinon.spy();
-          this.provider.once('server_error', spy);
-
-          const auth = new this.AuthorizationRequest({
-            response_type: 'id_token token',
-            scope: 'openid',
-            resource: ['https://client.example.com/api', 'https://rs.example.com'],
-          });
-
-          await this.wrap({ route: '/auth', verb: 'get', auth })
-            .expect(302)
-            .expect(auth.validateFragment)
-            .expect(auth.validatePresence(['state', 'error', 'error_description']))
-            .expect(auth.validateState)
-            .expect(auth.validateClientLocation)
-            .expect(auth.validateError('server_error'))
-            .expect(auth.validateErrorDescription('oops! something went wrong'));
-
-          expect(spy).to.have.property('calledOnce', true);
-          const error = spy.firstCall.args[1];
-          expect(error).to.be.an.instanceof(Error);
-          expect(error).to.have.property('message', 'only a single audience ("aud") value is permitted for this token type');
-        });
-      }
-
-      it('runs the allowedPolicy helper to determine whether a resource can be used', async function () {
-        const auth = new this.AuthorizationRequest({
-          response_type: 'id_token token',
-          scope: 'openid',
-          resource: 'urn:example:bad',
-        });
-
-        await this.wrap({ route: '/auth', verb: 'get', auth })
+        await this.wrap({ route: '/auth', verb, auth })
           .expect(302)
           .expect(auth.validateFragment)
           .expect(auth.validatePresence(['error', 'error_description', 'state']))
           .expect(auth.validateState)
           .expect(auth.validateClientLocation)
           .expect(auth.validateError('invalid_target'))
-          .expect(auth.validateErrorDescription('requested resource or resources are not permitted'));
-      });
+          .expect(auth.validateErrorDescription('resource indicator is missing, or unknown'));
 
-      it('allows for arbitrary validations to be in place in the audiences helper', async function () {
-        const auth = new this.AuthorizationRequest({
-          response_type: 'id_token token',
-          scope: 'openid',
-          resource: 'http://client.example.com/api',
-        });
-
-        await this.wrap({ route: '/auth', verb: 'get', auth })
+        auth.resource = 'urn:wl:explicit';
+        await this.wrap({ route: '/auth', verb, auth })
           .expect(302)
           .expect(auth.validateFragment)
+          .expect(auth.validatePresence(['id_token', 'state', 'access_token', 'expires_in', 'token_type', 'scope']))
+          .expect(auth.validateState)
+          .expect(auth.validateClientLocation);
+
+        expect(spy.calledOnce).to.be.true;
+        const token = spy.args[0][0];
+        expect(token.aud).to.equal('urn:wl:explicit');
+      });
+
+      it('applies the default resource', async function () {
+        const spy = sinon.spy();
+        this.provider.once('access_token.saved', spy);
+        this.provider.once('access_token.issued', spy);
+
+        const auth = new this.AuthorizationRequest({
+          response_type,
+          scope: 'openid api:read',
+        });
+
+        await this.wrap({ route: '/auth', verb, auth })
+          .expect(302)
+          .expect(auth.validateFragment)
+          .expect(auth.validatePresence(['id_token', 'state', 'access_token', 'expires_in', 'token_type', 'scope']))
+          .expect(auth.validateState)
+          .expect(auth.validateClientLocation);
+
+        expect(spy.calledOnce).to.be.true;
+        const token = spy.args[0][0];
+        expect(token.aud).to.equal('urn:wl:default');
+      });
+    });
+
+    describe(`${verb} response_type includes code`, () => {
+      const response_type = 'code';
+
+      it('checks the policy and adds the resource', async function () {
+        const spy = sinon.spy();
+        this.provider.once('authorization_code.saved', spy);
+
+        const auth = new this.AuthorizationRequest({
+          response_type,
+          resource: 'urn:not:whitelisted',
+          scope: 'api:read',
+        });
+
+        await this.wrap({ route: '/auth', verb, auth })
+          .expect(302)
           .expect(auth.validatePresence(['error', 'error_description', 'state']))
           .expect(auth.validateState)
           .expect(auth.validateClientLocation)
           .expect(auth.validateError('invalid_target'))
-          .expect(auth.validateErrorDescription('resources must be https URIs or URNs'));
-      });
-    });
+          .expect(auth.validateErrorDescription('resource indicator is missing, or unknown'));
 
-    describe('token endpoint', () => {
-      bootstrap.skipConsent();
-
-      it('allows for single resource to be requested (1/2)', async function () {
-        let spy = sinon.spy();
-        this.provider.once('grant.success', spy);
-
-        const auth = new this.AuthorizationRequest({
-          response_type: 'code',
-          scope: 'openid offline_access',
-          prompt: 'consent',
-          resource: 'https://client.example.com/api',
-        });
-
-        let code;
-        await this.wrap({ route: '/auth', verb: 'get', auth })
+        auth.resource = 'urn:wl:explicit';
+        await this.wrap({ route: '/auth', verb, auth })
           .expect(302)
           .expect(auth.validatePresence(['code', 'state']))
           .expect(auth.validateState)
-          .expect(auth.validateClientLocation)
-          .expect(({ headers: { location } }) => {
-            ({ query: { code } } = url.parse(location, true));
-          });
+          .expect(auth.validateClientLocation);
 
-        let AccessToken;
-        let refresh_token;
+        expect(spy.calledOnce).to.be.true;
+        const code = spy.args[0][0];
+        expect(code.resource).to.equal('urn:wl:explicit');
+
+        const spy2 = sinon.spy();
+        this.provider.once('access_token.saved', spy2);
+        this.provider.once('access_token.issued', spy2);
+        const spy3 = sinon.spy();
+        this.provider.once('refresh_token.saved', spy3);
+
         await this.agent.post('/token')
           .send({
-            code,
             client_id: 'client',
             grant_type: 'authorization_code',
-            redirect_uri: 'https://client.example.com/cb',
+            code: code.jti,
           })
           .type('form')
-          .expect(200)
-          .expect(({ body }) => {
-            ({ refresh_token } = body);
-          });
+          .expect(200);
 
-        ([{ oidc: { entities: { AccessToken } } }] = spy.firstCall.args);
-        expect(AccessToken.aud).to.include('https://client.example.com/api');
+        expect(spy2.calledOnce).to.be.true;
+        let at = spy2.args[0][0];
+        expect(at.aud).to.equal('urn:wl:explicit');
 
-        spy = sinon.spy();
-        this.provider.once('grant.success', spy);
+        expect(spy3.calledOnce).to.be.true;
+        let rt = spy3.args[0][0];
+        expect(rt.resource).to.equal('urn:wl:explicit');
+
+        const spy4 = sinon.spy();
+        this.provider.once('access_token.saved', spy4);
+        this.provider.once('access_token.issued', spy4);
+        const spy5 = sinon.spy();
+        this.provider.once('refresh_token.saved', spy5);
 
         await this.agent.post('/token')
           .send({
-            refresh_token,
             client_id: 'client',
             grant_type: 'refresh_token',
+            refresh_token: rt.jti,
           })
           .type('form')
-          .expect(200)
-          .expect(({ body }) => {
-            ({ refresh_token } = body);
-          });
+          .expect(200);
 
-        ([{ oidc: { entities: { AccessToken } } }] = spy.firstCall.args);
-        expect(AccessToken.aud).to.include('https://client.example.com/api');
+        expect(spy4.calledOnce).to.be.true;
+        at = spy4.args[0][0];
+        expect(at.aud).to.equal('urn:wl:explicit');
+
+        expect(spy5.calledOnce).to.be.true;
+        rt = spy5.args[0][0];
+        expect(rt.resource).to.equal('urn:wl:explicit');
       });
 
-      it('allows for single resource to be requested (2/2)', async function () {
-        let spy = sinon.spy();
-        this.provider.once('grant.success', spy);
+      it('applies the default resource', async function () {
+        const spy = sinon.spy();
+        this.provider.once('authorization_code.saved', spy);
 
         const auth = new this.AuthorizationRequest({
-          response_type: 'code',
-          scope: 'openid offline_access',
-          prompt: 'consent',
-          resource: 'urn:foo:bar',
+          response_type,
+          scope: 'api:read',
         });
 
-        let code;
-        await this.wrap({ route: '/auth', verb: 'get', auth })
+        await this.wrap({ route: '/auth', verb, auth })
           .expect(302)
           .expect(auth.validatePresence(['code', 'state']))
           .expect(auth.validateState)
-          .expect(auth.validateClientLocation)
-          .expect(({ headers: { location } }) => {
-            ({ query: { code } } = url.parse(location, true));
-          });
+          .expect(auth.validateClientLocation);
 
-        let AccessToken;
-        let refresh_token;
+        expect(spy.calledOnce).to.be.true;
+        const code = spy.args[0][0];
+        expect(code.resource).to.equal('urn:wl:default');
+
+        const spy2 = sinon.spy();
+        this.provider.once('access_token.saved', spy2);
+        this.provider.once('access_token.issued', spy2);
+        const spy3 = sinon.spy();
+        this.provider.once('refresh_token.saved', spy3);
+
         await this.agent.post('/token')
           .send({
-            code,
             client_id: 'client',
             grant_type: 'authorization_code',
-            redirect_uri: 'https://client.example.com/cb',
+            code: code.jti,
           })
           .type('form')
-          .expect(200)
-          .expect(({ body }) => {
-            ({ refresh_token } = body);
-          });
+          .expect(200);
 
-        ([{ oidc: { entities: { AccessToken } } }] = spy.firstCall.args);
-        expect(AccessToken.aud).to.include('urn:foo:bar');
+        expect(spy2.calledOnce).to.be.true;
+        let at = spy2.args[0][0];
+        expect(at.aud).to.equal('urn:wl:default');
 
-        spy = sinon.spy();
-        this.provider.once('grant.success', spy);
+        expect(spy3.calledOnce).to.be.true;
+        let rt = spy3.args[0][0];
+        expect(rt.resource).to.equal('urn:wl:default');
+
+        const spy4 = sinon.spy();
+        this.provider.once('access_token.saved', spy4);
+        this.provider.once('access_token.issued', spy4);
+        const spy5 = sinon.spy();
+        this.provider.once('refresh_token.saved', spy5);
 
         await this.agent.post('/token')
           .send({
-            refresh_token,
             client_id: 'client',
             grant_type: 'refresh_token',
+            refresh_token: rt.jti,
           })
           .type('form')
-          .expect(200)
-          .expect(({ body }) => {
-            ({ refresh_token } = body);
-          });
+          .expect(200);
 
-        ([{ oidc: { entities: { AccessToken } } }] = spy.firstCall.args);
-        expect(AccessToken.aud).to.include('urn:foo:bar');
-      });
+        expect(spy4.calledOnce).to.be.true;
+        at = spy4.args[0][0];
+        expect(at.aud).to.equal('urn:wl:default');
 
-      if (allowMultiple) {
-        it('allows for multiple resources to be requested', async function () {
-          let spy = sinon.spy();
-          this.provider.once('grant.success', spy);
-
-          const auth = new this.AuthorizationRequest({
-            response_type: 'code',
-            scope: 'openid offline_access',
-            prompt: 'consent',
-            resource: ['https://client.example.com/api', 'https://rs.example.com'],
-          });
-
-          let code;
-          await this.wrap({ route: '/auth', verb: 'get', auth })
-            .expect(302)
-            .expect(auth.validatePresence(['code', 'state']))
-            .expect(auth.validateState)
-            .expect(auth.validateClientLocation)
-            .expect(({ headers: { location } }) => {
-              ({ query: { code } } = url.parse(location, true));
-            });
-
-          let AccessToken;
-          let refresh_token;
-          await this.agent.post('/token')
-            .send({
-              code,
-              client_id: 'client',
-              grant_type: 'authorization_code',
-              redirect_uri: 'https://client.example.com/cb',
-            })
-            .type('form')
-            .expect(200)
-            .expect(({ body }) => {
-              ({ refresh_token } = body);
-            });
-
-          ([{ oidc: { entities: { AccessToken } } }] = spy.firstCall.args);
-          expect(AccessToken.aud).to.include('https://client.example.com/api');
-          expect(AccessToken.aud).to.include('https://rs.example.com');
-
-          spy = sinon.spy();
-          this.provider.once('grant.success', spy);
-
-          await this.agent.post('/token')
-            .send({
-              refresh_token,
-              client_id: 'client',
-              grant_type: 'refresh_token',
-            })
-            .type('form')
-            .expect(200)
-            .expect(({ body }) => {
-              ({ refresh_token } = body);
-            });
-
-          ([{ oidc: { entities: { AccessToken } } }] = spy.firstCall.args);
-          expect(AccessToken.aud).to.include('https://client.example.com/api');
-          expect(AccessToken.aud).to.include('https://rs.example.com');
-        });
-      } else if (typeof FORMAT !== 'function') {
-        it('does not allow multiple resources to be added to an issued access token', async function () {
-          const spy = sinon.spy();
-          this.provider.once('server_error', spy);
-
-          const auth = new this.AuthorizationRequest({
-            response_type: 'code',
-            scope: 'openid offline_access',
-            prompt: 'consent',
-            resource: ['https://client.example.com/api', 'https://rs.example.com'],
-          });
-
-          let code;
-          await this.wrap({ route: '/auth', verb: 'get', auth })
-            .expect(302)
-            .expect(auth.validatePresence(['code', 'state']))
-            .expect(auth.validateState)
-            .expect(auth.validateClientLocation)
-            .expect(({ headers: { location } }) => {
-              ({ query: { code } } = url.parse(location, true));
-            });
-
-          await this.agent.post('/token')
-            .send({
-              code,
-              client_id: 'client',
-              grant_type: 'authorization_code',
-              redirect_uri: 'https://client.example.com/cb',
-            })
-            .type('form')
-            .expect(500)
-            .expect((response) => {
-              expect(response.body).to.have.property('error', 'server_error');
-              expect(response.body).to.have.property('error_description', 'oops! something went wrong');
-            });
-
-          expect(spy).to.have.property('calledOnce', true);
-          const error = spy.firstCall.args[1];
-          expect(error).to.be.an.instanceof(Error);
-          expect(error).to.have.property('message', 'only a single audience ("aud") value is permitted for this token type');
-        });
-      }
-
-      it('runs the allowedPolicy helper to determine whether a resource can be used', async function () {
-        const auth = new this.AuthorizationRequest({
-          response_type: 'code',
-          scope: 'openid',
-        });
-
-        let code;
-        await this.wrap({ route: '/auth', verb: 'get', auth })
-          .expect(302)
-          .expect(auth.validatePresence(['code', 'state']))
-          .expect(auth.validateState)
-          .expect(auth.validateClientLocation)
-          .expect(({ headers: { location } }) => {
-            ({ query: { code } } = url.parse(location, true));
-          });
-
-        await this.agent.post('/token')
-          .send({
-            code,
-            client_id: 'client',
-            grant_type: 'authorization_code',
-            redirect_uri: 'https://client.example.com/cb',
-            resource: 'urn:example:bad',
-          })
-          .type('form')
-          .expect(400)
-          .expect({
-            error: 'invalid_target',
-            error_description: 'requested resource or resources are not permitted',
-          });
-      });
-
-      it('allows for arbitrary validations to be in place in the audiences helper (1/2)', async function () {
-        const auth = new this.AuthorizationRequest({
-          response_type: 'code',
-          scope: 'openid',
-          resource: 'http://client.example.com/api',
-        });
-
-        let code;
-        await this.wrap({ route: '/auth', verb: 'get', auth })
-          .expect(302)
-          .expect(auth.validatePresence(['code', 'state']))
-          .expect(auth.validateState)
-          .expect(auth.validateClientLocation)
-          .expect(({ headers: { location } }) => {
-            ({ query: { code } } = url.parse(location, true));
-          });
-
-        await this.agent.post('/token')
-          .send({
-            code,
-            client_id: 'client',
-            grant_type: 'authorization_code',
-            redirect_uri: 'https://client.example.com/cb',
-          })
-          .type('form')
-          .expect(400)
-          .expect({
-            error: 'invalid_target',
-            error_description: 'resources must be https URIs or URNs',
-          });
-      });
-
-      it('allows for arbitrary validations to be in place in the audiences helper (2/2)', async function () {
-        const auth = new this.AuthorizationRequest({
-          response_type: 'code',
-          scope: 'openid',
-        });
-
-        let code;
-        await this.wrap({ route: '/auth', verb: 'get', auth })
-          .expect(302)
-          .expect(auth.validatePresence(['code', 'state']))
-          .expect(auth.validateState)
-          .expect(auth.validateClientLocation)
-          .expect(({ headers: { location } }) => {
-            ({ query: { code } } = url.parse(location, true));
-          });
-
-        await this.agent.post('/token')
-          .send({
-            code,
-            client_id: 'client',
-            grant_type: 'authorization_code',
-            redirect_uri: 'https://client.example.com/cb',
-            resource: 'http://client.example.com/api',
-          })
-          .type('form')
-          .expect(400)
-          .expect({
-            error: 'invalid_target',
-            error_description: 'resources must be https URIs or URNs',
-          });
+        expect(spy5.calledOnce).to.be.true;
+        rt = spy5.args[0][0];
+        expect(rt.resource).to.equal('urn:wl:default');
       });
     });
   });
 
-  describe('general resource validations', () => {
-    it('validates absolute URIs are provided', async function () {
-      await this.agent.post('/token')
+  describe('device code', () => {
+    it('checks the policy and adds the resource', async function () {
+      await this.agent.post('/device/auth')
         .send({
           client_id: 'client',
-          grant_type: 'client_credentials',
-          resource: 'client.example.com/api',
+          resource: 'urn:not:whitelisted',
+          scope: 'api:read',
         })
         .type('form')
         .expect(400)
         .expect({
           error: 'invalid_target',
-          error_description: 'resource must be an absolute URI',
+          error_description: 'resource indicator is missing, or unknown',
         });
+
+      let user_code;
+      let device_code;
+      await this.agent.post('/device/auth')
+        .send({
+          client_id: 'client',
+          resource: 'urn:wl:explicit',
+          scope: 'api:read',
+        })
+        .type('form')
+        .expect(200)
+        .expect(({ body }) => {
+          ({ user_code, device_code } = body);
+        });
+
+      this.getSession().state = { secret: 'foo' };
+
+      await this.agent.post('/device')
+        .send({
+          user_code,
+          xsrf: 'foo',
+          confirm: true,
+        })
+        .type('form')
+        .expect(200);
+
+      const spy = sinon.spy();
+      this.provider.once('access_token.saved', spy);
+      this.provider.once('access_token.issued', spy);
+      const spy2 = sinon.spy();
+      this.provider.once('refresh_token.saved', spy2);
+
+      await this.agent.post('/token')
+        .send({
+          client_id: 'client',
+          grant_type: 'urn:ietf:params:oauth:grant-type:device_code',
+          device_code,
+        })
+        .type('form')
+        .expect(200);
+
+      expect(spy.calledOnce).to.be.true;
+      let at = spy.args[0][0];
+      expect(at.aud).to.equal('urn:wl:explicit');
+
+      expect(spy2.calledOnce).to.be.true;
+      let rt = spy2.args[0][0];
+      expect(rt.resource).to.equal('urn:wl:explicit');
+
+      const spy3 = sinon.spy();
+      this.provider.once('access_token.saved', spy3);
+      this.provider.once('access_token.issued', spy3);
+      const spy4 = sinon.spy();
+      this.provider.once('refresh_token.saved', spy4);
+
+      await this.agent.post('/token')
+        .send({
+          client_id: 'client',
+          grant_type: 'refresh_token',
+          refresh_token: rt.jti,
+        })
+        .type('form')
+        .expect(200);
+
+      expect(spy3.calledOnce).to.be.true;
+      at = spy3.args[0][0];
+      expect(at.aud).to.equal('urn:wl:explicit');
+
+      expect(spy4.calledOnce).to.be.true;
+      rt = spy4.args[0][0];
+      expect(rt.resource).to.equal('urn:wl:explicit');
     });
 
-    it('validates no fragment component is present in the resource (1/2)', async function () {
+    it('applies the default resource', async function () {
+      let user_code;
+      let device_code;
+      await this.agent.post('/device/auth')
+        .send({
+          client_id: 'client',
+          scope: 'api:read',
+        })
+        .type('form')
+        .expect(200)
+        .expect(({ body }) => {
+          ({ user_code, device_code } = body);
+        });
+
+      this.getSession().state = { secret: 'foo' };
+
+      await this.agent.post('/device')
+        .send({
+          user_code,
+          xsrf: 'foo',
+          confirm: true,
+        })
+        .type('form')
+        .expect(200);
+
+      const spy = sinon.spy();
+      this.provider.once('access_token.saved', spy);
+      this.provider.once('access_token.issued', spy);
+      const spy2 = sinon.spy();
+      this.provider.once('refresh_token.saved', spy2);
+
       await this.agent.post('/token')
         .send({
           client_id: 'client',
-          grant_type: 'client_credentials',
-          resource: 'https://client.example.com/api#',
+          grant_type: 'urn:ietf:params:oauth:grant-type:device_code',
+          device_code,
         })
         .type('form')
-        .expect(400)
-        .expect({
-          error: 'invalid_target',
-          error_description: 'resource must not contain a fragment component',
-        });
+        .expect(200);
+
+      expect(spy.calledOnce).to.be.true;
+      let at = spy.args[0][0];
+      expect(at.aud).to.equal('urn:wl:default');
+
+      expect(spy2.calledOnce).to.be.true;
+      let rt = spy2.args[0][0];
+      expect(rt.resource).to.equal('urn:wl:default');
+
+      const spy3 = sinon.spy();
+      this.provider.once('access_token.saved', spy3);
+      this.provider.once('access_token.issued', spy3);
+      const spy4 = sinon.spy();
+      this.provider.once('refresh_token.saved', spy4);
+
+      await this.agent.post('/token')
+        .send({
+          client_id: 'client',
+          grant_type: 'refresh_token',
+          refresh_token: rt.jti,
+        })
+        .type('form')
+        .expect(200);
+
+      expect(spy3.calledOnce).to.be.true;
+      at = spy3.args[0][0];
+      expect(at.aud).to.equal('urn:wl:default');
+
+      expect(spy4.calledOnce).to.be.true;
+      rt = spy4.args[0][0];
+      expect(rt.resource).to.equal('urn:wl:default');
+    });
+  });
+
+  describe('userinfo', () => {
+    it('allows userinfo for audience-less tokens', async function () {
+      const at = new this.provider.AccessToken({
+        accountId: this.loggedInAccountId,
+        grantId: this.getGrantId(),
+        client: await this.provider.Client.find('client'),
+        scope: 'openid api:read',
+        aud: undefined,
+      });
+
+      const bearer = await at.save();
+
+      return this.agent.get('/me')
+        .auth(bearer, { type: 'bearer' })
+        .expect(200);
     });
 
-    it('validates no fragment component is present in the resource (2/2)', async function () {
-      await this.agent.post('/token')
-        .send({
-          client_id: 'client',
-          grant_type: 'client_credentials',
-          resource: 'https://client.example.com/api#foo=bar',
-        })
-        .type('form')
-        .expect(400)
-        .expect({
-          error: 'invalid_target',
-          error_description: 'resource must not contain a fragment component',
+    it('fails userinfo for string userinfo url tokens', async function () {
+      const at = new this.provider.AccessToken({
+        accountId: this.loggedInAccountId,
+        grantId: this.getGrantId(),
+        client: await this.provider.Client.find('client'),
+        scope: 'openid api:read',
+        aud: 'urn:foo:bar',
+      });
+
+      const bearer = await at.save();
+
+      const spy = sinon.spy();
+      this.provider.once('userinfo.error', spy);
+
+      await this.agent.get('/me')
+        .auth(bearer, { type: 'bearer' })
+        .expect(401)
+        .expect({ error: 'invalid_token', error_description: 'invalid token provided' });
+
+      expect(spy).to.have.property('calledOnce', true);
+      expect(spy.args[0][1]).to.have.property('error_detail', 'token audience prevents accessing the userinfo endpoint');
+    });
+
+    [{}, false, 1].forEach((aud, i, { length }) => {
+      it(`fails on various invalid aud values ${i + 1}/${length}`, async function () {
+        const at = new this.provider.AccessToken({
+          accountId: this.loggedInAccountId,
+          grantId: this.getGrantId(),
+          client: await this.provider.Client.find('client'),
+          scope: 'openid api:read',
+          aud,
         });
+
+        const bearer = await at.save();
+
+        const spy = sinon.spy();
+        this.provider.once('userinfo.error', spy);
+
+        await this.agent.get('/me')
+          .auth(bearer, { type: 'bearer' })
+          .expect(401)
+          .expect({ error: 'invalid_token', error_description: 'invalid token provided' });
+
+        expect(spy).to.have.property('calledOnce', true);
+        expect(spy.args[0][1]).to.have.property('error_detail', 'token audience prevents accessing the userinfo endpoint');
+      });
     });
   });
 });

@@ -3,12 +3,9 @@ const { parse: parseLocation } = require('url');
 const { expect } = require('chai');
 const base64url = require('base64url');
 
-const nanoid = require('../../lib/helpers/nanoid');
 const bootstrap = require('../test_helper');
 const { decode } = require('../../lib/helpers/jwt');
 const epochTime = require('../../lib/helpers/epoch_time');
-
-const { formats: { AccessToken: FORMAT } } = global.TEST_CONFIGURATION_DEFAULTS;
 
 describe('signatures', () => {
   before(bootstrap(__dirname));
@@ -130,11 +127,11 @@ describe('signatures', () => {
     after(function () { return this.logout(); });
     beforeEach(async function () {
       const ac = new this.provider.AuthorizationCode({
-        accountId: 'accountIdentity',
+        accountId: this.loggedInAccountId,
         acr: i(this.provider).configuration('acrValues[0]'),
         authTime: epochTime(),
         clientId: 'client-sig-none',
-        grantId: nanoid(),
+        grantId: this.getGrantId('client-sig-none'),
         redirectUri: 'https://client.example.com/cb',
         scope: 'openid',
       });
@@ -161,15 +158,6 @@ describe('signatures', () => {
       expect(decode(this.idToken)).to.have.nested.property('header.alg', 'none');
     });
 
-    if (FORMAT === 'jwt') {
-      it('but the access token remains signed with RS256', function () {
-        const components = this.accessToken.split('.');
-        expect(components).to.have.lengthOf(3);
-        expect(components[2]).not.to.equal('');
-        expect(decode(this.accessToken)).to.have.nested.property('header.alg', 'RS256');
-      });
-    }
-
     it('the unsigned token can be used as id_token_hint', function () {
       const auth = new this.AuthorizationRequest({
         response_type: 'code',
@@ -181,11 +169,9 @@ describe('signatures', () => {
 
       return this.wrap({ auth, route: '/auth', verb: 'get' })
         .expect(302)
-        .expect(auth.validatePresence(['error', 'error_description', 'state']))
+        .expect(auth.validatePresence(['code', 'state']))
         .expect(auth.validateState)
-        .expect(auth.validateClientLocation)
-        .expect(auth.validateError('login_required'))
-        .expect(auth.validateErrorDescription('id_token_hint and authenticated subject do not match'));
+        .expect(auth.validateClientLocation);
     });
 
     it('still validates the tokens payload', function () {
@@ -217,11 +203,11 @@ describe('signatures', () => {
     after(function () { return this.logout(); });
     beforeEach(async function () {
       const ac = new this.provider.AuthorizationCode({
-        accountId: 'accountIdentity',
+        accountId: this.loggedInAccountId,
         acr: i(this.provider).configuration('acrValues[0]'),
         authTime: epochTime(),
         clientId: 'client-sig-HS256',
-        grantId: nanoid(),
+        grantId: this.getGrantId('client-sig-HS256'),
         redirectUri: 'https://client.example.com/cb',
         scope: 'openid',
       });
@@ -258,11 +244,9 @@ describe('signatures', () => {
 
       return this.wrap({ auth, route: '/auth', verb: 'get' })
         .expect(302)
-        .expect(auth.validatePresence(['error', 'error_description', 'state']))
+        .expect(auth.validatePresence(['code', 'state']))
         .expect(auth.validateState)
-        .expect(auth.validateClientLocation)
-        .expect(auth.validateError('login_required'))
-        .expect(auth.validateErrorDescription('id_token_hint and authenticated subject do not match'));
+        .expect(auth.validateClientLocation);
     });
   });
 });

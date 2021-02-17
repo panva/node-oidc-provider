@@ -6,6 +6,7 @@ describe('Financial-grade API - Part 2: Read and Write API Security Profile beha
   before(bootstrap(__dirname));
 
   describe('userinfo', () => {
+    before(function () { return this.login(); });
     it('echoes back the x-fapi-interaction-id header', function () {
       return this.agent.get('/me')
         .set('X-FAPI-Interaction-Id', 'b2bef873-2fd8-4fcd-943b-caafcd0b1c3b')
@@ -15,7 +16,8 @@ describe('Financial-grade API - Part 2: Read and Write API Security Profile beha
     it('does not allow query string bearer token', async function () {
       const at = await new this.provider.AccessToken({
         client: await this.provider.Client.find('client'),
-        accountId: 'account',
+        accountId: this.loggedInAccountId,
+        grantId: this.getGrantId(),
         scope: 'openid',
       }).save();
       await this.agent.get('/me')
@@ -25,13 +27,13 @@ describe('Financial-grade API - Part 2: Read and Write API Security Profile beha
       await this.agent.get('/me')
         .auth(at, { type: 'bearer' })
         .expect(200)
-        .expect({ sub: 'account' });
+        .expect({ sub: this.loggedInAccountId });
 
       await this.agent.post('/me')
         .type('form')
         .send({ access_token: at })
         .expect(200)
-        .expect({ sub: 'account' });
+        .expect({ sub: this.loggedInAccountId });
     });
   });
 
@@ -44,7 +46,7 @@ describe('Financial-grade API - Part 2: Read and Write API Security Profile beha
         scope: 'openid',
         client_id: 'client',
         response_type: 'code',
-        nonce: 'foo', // TODO: see oidc_required.js
+        nonce: 'foo',
       });
 
       return this.wrap({
@@ -64,7 +66,7 @@ describe('Financial-grade API - Part 2: Read and Write API Security Profile beha
         scope: 'openid',
         client_id: 'client',
         response_type: 'code',
-        nonce: 'foo', // TODO: see oidc_required.js
+        nonce: 'foo',
         exp: epochTime() + 60,
       }))}.`;
 

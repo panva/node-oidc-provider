@@ -3,10 +3,10 @@ const { spawn } = require('child_process');
 
 let first = true;
 
-function pass({ format, mountTo, mountVia } = {}) {
+function pass({ mountTo, mountVia } = {}) {
   const child = spawn(
     'nyc',
-    ['--silent', first ? '' : '--no-clean', 'npm', 'run', 'test', '--', `--format=${format}`].filter(Boolean),
+    ['--silent', first ? '' : '--no-clean', 'npm', 'run', 'test'].filter(Boolean),
     {
       stdio: 'inherit',
       shell: true,
@@ -48,13 +48,9 @@ function report() {
 }
 
 (async () => {
-  const formats = ['opaque', 'jwt', 'dynamic'];
+  await pass();
 
-  for (const format of formats) {
-    await pass({ format });
-  }
-
-  if (process.platform === 'linux') {
+  if (process.platform === 'linux' || !('CI' in process.env)) {
     const mountTo = '/oidc';
     const frameworks = ['connect', 'express', 'fastify', 'koa'];
 
@@ -63,7 +59,7 @@ function report() {
     }
 
     for (const mountVia of frameworks) {
-      await pass({ format: 'dynamic', mountVia, mountTo });
+      await pass({ mountVia, mountTo });
     }
   }
 

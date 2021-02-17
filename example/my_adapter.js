@@ -8,7 +8,7 @@ class MyAdapter {
    * Creates an instance of MyAdapter for an oidc-provider model.
    *
    * @constructor
-   * @param {string} name Name of the oidc-provider model. One of "Session", "AccessToken",
+   * @param {string} name Name of the oidc-provider model. One of "Grant, "Session", "AccessToken",
    * "AuthorizationCode", "RefreshToken", "ClientCredentials", "Client", "InitialAccessToken",
    * "RegistrationAccessToken", "DeviceCode", "Interaction", "ReplayDetection", or "PushedAuthorizationRequest"
    *
@@ -35,38 +35,34 @@ class MyAdapter {
      *
      * When this is one of AccessToken, AuthorizationCode, RefreshToken, ClientCredentials,
      * InitialAccessToken, RegistrationAccessToken or DeviceCode the payload will contain the
-     * following properties depending on the used `formats` value for the given token (or default).
+     * following properties:
      *
      * Note: This list is not exhaustive and properties may be added in the future, it is highly
      * recommended to use a schema that allows for this.
      *
-     * when `opaque` (default)
      * - jti {string} - unique identifier of the token
      * - kind {string} - token class name
-     * - format {string} - the format used for the token storage and representation
      * - exp {number} - timestamp of the token's expiration
      * - iat {number} - timestamp of the token's creation
      * - accountId {string} - account identifier the token belongs to
      * - clientId {string} - client identifier the token belongs to
-     * - aud {string[]} - array of audiences the token is intended for
+     * - aud {string} - audience of a token
      * - authTime {number} - timestamp of the end-user's authentication
-     * - claims {object} - claims parameter (see claims in OIDC Core 1.0), rejected claims
-     *     are, in addition, pushed in as an Array of Strings in the `rejected` property.
+     * - claims {object} - claims parameter (see claims in OIDC Core 1.0)
      * - extra {object} - extra claims returned by the extraTokenClaims helper
      * - codeChallenge {string} - client provided PKCE code_challenge value
      * - codeChallengeMethod {string} - client provided PKCE code_challenge_method value
      * - sessionUid {string} - uid of a session this token stems from
      * - expiresWithSession {boolean} - whether the token is valid when session expires
-     * - grantId {string} - grant identifier, tokens with the same value belong together
+     * - grantId {string} - grant identifier
      * - nonce {string} - random nonce from an authorization request
      * - redirectUri {string} - redirect_uri value from an authorization request
-     * - resource {string} - granted or requested resource indicator value (auth code, device code, refresh token)
+     * - resource {string|string[]} - resource indicator value(s) (auth code, device code, refresh token)
      * - rotations {number} - [RefreshToken only] - number of times the refresh token was rotated
      * - iiat {number} - [RefreshToken only] - the very first (initial) issued at before rotations
      * - acr {string} - authentication context class reference value
      * - amr {string[]} - Authentication methods references
-     * - scope {string} - scope value from an authorization request, rejected scopes are removed
-     *     from the value
+     * - scope {string} - scope value from an authorization request
      * - sid {string} - session identifier the token comes from
      * - 'x5t#S256' {string} - X.509 Certificate SHA-256 Thumbprint of a certificate bound access or
      *     refresh token
@@ -89,6 +85,28 @@ class MyAdapter {
      *
      * Client model will only use this when registered through Dynamic Registration features and
      * will contain all client properties.
+     *
+     * Grant model payload contains the following properties:
+     * - jti {string} - Grant's unique identifier
+     * - kind {string} - "Grant" fixed string value
+     * - exp {number} - timestamp of the grant's expiration. exp will be missing when expiration
+     *     is not configured on the Grant model.
+     * - iat {number} - timestamp of the grant's creation
+     * - accountId {string} - the grant account identifier
+     * - clientId {string} - client identifier the grant belongs to
+     * - openid {object}
+     * - openid.scope {string} - Granted OpenId Scope value
+     * - openid.claims {string[]} - Granted OpenId Claim names
+     * - resources {object}
+     * - resources[resourceIndicator] {string} - Granted Scope value for a Resource Server
+     *     (indicated by its resource indicator value)
+     * - resources {object}
+     * - rejected.openid {object}
+     * - rejected.openid.scope {string} - Rejected OpenId Scope value
+     * - rejected.openid.claims {string[]} - Rejected OpenId Claim names
+     * - rejected.resources {object}
+     * - rejected.resources[resourceIndicator] {string} - Rejected Scope value for a Resource Server
+     *     (indicated by its resource indicator value)
      *
      * OIDC Session model payload contains the following properties:
      * - jti {string} - Session's unique identifier, it changes on some occasions

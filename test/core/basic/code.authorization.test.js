@@ -52,7 +52,7 @@ describe('BASIC code', () => {
 
       it('populates ctx.oidc.entities', function (done) {
         this.provider.use(this.assertOnce((ctx) => {
-          expect(ctx.oidc.entities).to.have.keys('AuthorizationCode', 'Client', 'Account', 'Session');
+          expect(ctx.oidc.entities).to.have.keys('AuthorizationCode', 'Grant', 'Client', 'Account', 'Session');
         }, done));
 
         const auth = new this.AuthorizationRequest({
@@ -205,21 +205,6 @@ describe('BASIC code', () => {
           .expect(auth.validateInteraction('login', 'no_session'));
       });
 
-      it('client not authorized in session yet', function () {
-        const session = this.getSession();
-        session.authorizations = {};
-
-        const auth = new this.AuthorizationRequest({
-          response_type,
-          scope,
-        });
-
-        return this.wrap({ route, verb, auth })
-          .expect(302)
-          .expect(auth.validateInteractionRedirect)
-          .expect(auth.validateInteraction('consent', 'client_not_authorized'));
-      });
-
       it('additional scopes are requested', function () {
         const auth = new this.AuthorizationRequest({
           response_type,
@@ -229,7 +214,7 @@ describe('BASIC code', () => {
         return this.wrap({ route, verb, auth })
           .expect(302)
           .expect(auth.validateInteractionRedirect)
-          .expect(auth.validateInteraction('consent', 'scopes_missing'));
+          .expect(auth.validateInteraction('consent', 'op_scopes_missing'));
       });
 
       it('are required for native clients by default', function () {
@@ -471,6 +456,7 @@ describe('BASIC code', () => {
         const auth = new this.AuthorizationRequest({
           client_id: 'client-limited-scope',
           response_type: 'code',
+          prompt: 'consent',
           scope: 'openid foobar offline_access', // foobar is ignored, offline_access is not whitelisted
         });
 

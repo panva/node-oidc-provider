@@ -396,6 +396,37 @@ describe('request parameter features', () => {
         ).to.be.true;
       });
 
+      it('can contain params as array and have them handled as dupes', async function () {
+        const spy = sinon.spy();
+        this.provider.once(errorEvt, spy);
+
+        return JWT.sign({
+          client_id: 'client',
+          response_type: 'code',
+          scope: ['openid', 'profile'],
+          redirect_uri: 'https://client.example.com/cb',
+        }, null, 'none', { issuer: 'client', audience: this.provider.issuer }).then((request) => this.wrap({
+          agent: this.agent,
+          route,
+          verb,
+          auth: {
+            request,
+            scope: 'openid',
+            client_id: 'client',
+            response_type: 'code',
+          },
+        })
+          .expect(errorCode)
+          .expect(() => {
+            expect(spy.calledOnce).to.be.true;
+            expect(spy.args[0][1]).to.have.property('message', 'invalid_request');
+            expect(spy.args[0][1]).to.have.property(
+              'error_description',
+              "'scope' parameter must not be provided twice",
+            );
+          }));
+      });
+
       it('can contain claims parameter as JSON', async function () {
         const spy = sinon.spy();
         this.provider.once(successEvt, spy);
@@ -643,34 +674,6 @@ describe('request parameter features', () => {
               'Request Object must not contain request or request_uri properties',
             );
           }));
-      });
-
-      it('can contain resource parameter as an Array', async function () {
-        const spy = sinon.spy();
-        this.provider.once(successEvt, spy);
-
-        await JWT.sign({
-          client_id: 'client',
-          response_type: 'code',
-          redirect_uri: 'https://client.example.com/cb',
-          resource: ['https://rp.example.com/api'],
-        }, null, 'none', { issuer: 'client', audience: this.provider.issuer }).then((request) => this.wrap({
-          agent: this.agent,
-          route,
-          verb,
-          auth: {
-            request,
-            scope: 'openid',
-            client_id: 'client',
-            response_type: 'code',
-          },
-        })
-          .expect(successCode)
-          .expect(successFnCheck));
-
-        expect(
-          spy.calledWithMatch({ oidc: { params: { resource: ['https://rp.example.com/api'] } } }),
-        ).to.be.true;
       });
 
       if (route !== '/device/auth') {

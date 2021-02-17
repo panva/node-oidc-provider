@@ -31,11 +31,11 @@ const Vary = 'vary';
 
 describe('CORS setup', () => {
   before(bootstrap(__dirname));
-
+  before(function () { return this.login(); });
   before(async function () {
     const at = new this.provider.AccessToken({
-      accountId: 'accountId',
-      grantId: 'foo',
+      accountId: this.loggedInAccountId,
+      grantId: this.getGrantId(),
       client: await this.provider.Client.find('client'),
       scope: 'openid',
     });

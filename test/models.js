@@ -50,7 +50,7 @@ class TestAdapter extends MemoryAdapter {
   }
 
   async upsert(id, payload, expiresIn) {
-    if (this.model !== 'RegistrationAccessToken' && this.model !== 'InitialAccessToken' && this.model !== 'Client') {
+    if (this.model !== 'RegistrationAccessToken' && this.model !== 'InitialAccessToken' && this.model !== 'Client' && this.model !== 'Grant') {
       expect(payload).to.have.property('exp').that.is.a('number').and.is.finite;
       expect(payload.exp).to.be.closeTo(expiresIn + epochTime(), 1);
     }

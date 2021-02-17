@@ -54,5 +54,6 @@ module.exports = {
     client_secret: 'secret',
     redirect_uris: ['https://client.example.com/cb'],
     scope: 'openid',
+    grant_types: ['authorization_code', 'refresh_token'],
   }],
 };

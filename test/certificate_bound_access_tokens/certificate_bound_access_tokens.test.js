@@ -11,6 +11,8 @@ const expectedS256 = 'eXvgMeO-8uLw0FGYkJefOXSFHOnbbcfv95rIYCPsbpo';
 
 describe('features.mTLS.certificateBoundAccessTokens', () => {
   before(bootstrap(__dirname));
+  before(function () { return this.login(); });
+  after(function () { return this.logout(); });
 
   describe('discovery', () => {
     it('extends discovery', function () {
@@ -25,7 +27,8 @@ describe('features.mTLS.certificateBoundAccessTokens', () => {
   describe('userinfo', () => {
     it('acts like an RS checking the thumbprint now', async function () {
       const at = new this.provider.AccessToken({
-        accountId: 'account',
+        grantId: this.getGrantId('client'),
+        accountId: this.loggedInAccountId,
         client: await this.provider.Client.find('client'),
         scope: 'openid',
       });
@@ -52,7 +55,8 @@ describe('features.mTLS.certificateBoundAccessTokens', () => {
   describe('introspection', () => {
     it('exposes cnf now', async function () {
       const at = new this.provider.AccessToken({
-        accountId: 'account',
+        grantId: this.getGrantId('client'),
+        accountId: this.loggedInAccountId,
         client: await this.provider.Client.find('client'),
         scope: 'openid',
       });
@@ -74,6 +78,7 @@ describe('features.mTLS.certificateBoundAccessTokens', () => {
   });
 
   describe('urn:ietf:params:oauth:grant-type:device_code', () => {
+    before(function () { return this.login({ scope: 'openid offline_access' }); });
     beforeEach(async function () {
       await this.agent.post('/device/auth')
         .auth('client', 'secret')
@@ -85,8 +90,9 @@ describe('features.mTLS.certificateBoundAccessTokens', () => {
         });
 
       this.TestAdapter.for('DeviceCode').syncUpdate(this.getTokenJti(this.dc), {
+        grantId: this.getGrantId('client'),
         scope: 'openid offline_access',
-        accountId: 'account',
+        accountId: this.loggedInAccountId,
       });
     });
 
@@ -135,6 +141,8 @@ describe('features.mTLS.certificateBoundAccessTokens', () => {
       // changes the code to client-none and
       this.TestAdapter.for('DeviceCode').syncUpdate(this.getTokenJti(this.dc), {
         clientId: 'client-none',
+        grantId: this.getGrantId('client-none'),
+        accountId: this.loggedInAccountId,
       });
 
       await this.agent.post('/token')
@@ -155,7 +163,7 @@ describe('features.mTLS.certificateBoundAccessTokens', () => {
   });
 
   describe('authorization flow', () => {
-    before(function () { return this.login(); });
+    before(function () { return this.login({ scope: 'openid offline_access' }); });
     bootstrap.skipConsent();
 
     beforeEach(async function () {
@@ -273,7 +281,7 @@ describe('features.mTLS.certificateBoundAccessTokens', () => {
   });
 
   describe('authorization flow (public client)', () => {
-    before(function () { return this.login(); });
+    before(function () { return this.login({ scope: 'openid offline_access' }); });
     bootstrap.skipConsent();
 
     beforeEach(async function () {

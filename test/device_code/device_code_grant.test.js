@@ -13,7 +13,8 @@ function errorDetail(spy) {
 }
 
 describe('grant_type=urn:ietf:params:oauth:grant-type:device_code w/ conformIdTokenClaims=false', () => {
-  before(bootstrap(__dirname, { config: 'device_code_non_conform' })); // agent
+  before(bootstrap(__dirname, { config: 'device_code_non_conform', account: 'sub' })); // agent
+  before(function () { return this.login({ scope: 'openid profile offline_access', account: 'sub' }); });
 
   it('returns the right stuff', async function () {
     const spy = sinon.spy();
@@ -21,6 +22,7 @@ describe('grant_type=urn:ietf:params:oauth:grant-type:device_code w/ conformIdTo
 
     const deviceCode = new this.provider.DeviceCode({
       accountId: 'sub',
+      grantId: this.getGrantId(),
       scope: 'openid profile offline_access',
       clientId: 'client',
     });
@@ -46,6 +48,7 @@ describe('grant_type=urn:ietf:params:oauth:grant-type:device_code w/ conformIdTo
 
 describe('grant_type=urn:ietf:params:oauth:grant-type:device_code', () => {
   before(bootstrap(__dirname));
+  before(function () { return this.login({ scope: 'openid profile offline_access', account: 'sub' }); });
 
   it('returns the right stuff', async function () {
     const spy = sinon.spy();
@@ -53,6 +56,7 @@ describe('grant_type=urn:ietf:params:oauth:grant-type:device_code', () => {
 
     const deviceCode = new this.provider.DeviceCode({
       accountId: 'sub',
+      grantId: this.getGrantId(),
       scope: 'openid profile offline_access',
       clientId: 'client',
     });
@@ -78,12 +82,13 @@ describe('grant_type=urn:ietf:params:oauth:grant-type:device_code', () => {
   it('populates ctx.oidc.entities (no offline_access)', function (done) {
     this.provider.use(this.assertOnce((ctx) => {
       expect(ctx.body.refresh_token).to.be.undefined;
-      expect(ctx.oidc.entities).to.have.keys('Account', 'Client', 'DeviceCode', 'AccessToken');
+      expect(ctx.oidc.entities).to.have.keys('Account', 'Grant', 'Client', 'DeviceCode', 'AccessToken');
       expect(ctx.oidc.entities.AccessToken).to.have.property('gty', 'device_code');
     }, done));
 
     const deviceCode = new this.provider.DeviceCode({
       accountId: 'sub',
+      grantId: this.getGrantId(),
       scope: 'openid',
       clientId: 'client',
     });
@@ -101,13 +106,14 @@ describe('grant_type=urn:ietf:params:oauth:grant-type:device_code', () => {
 
   it('populates ctx.oidc.entities (w/ offline_access)', function (done) {
     this.provider.use(this.assertOnce((ctx) => {
-      expect(ctx.oidc.entities).to.have.keys('Account', 'Client', 'DeviceCode', 'AccessToken', 'RefreshToken');
+      expect(ctx.oidc.entities).to.have.keys('Account', 'Grant', 'Client', 'DeviceCode', 'AccessToken', 'RefreshToken');
       expect(ctx.oidc.entities.AccessToken).to.have.property('gty', 'device_code');
       expect(ctx.oidc.entities.RefreshToken).to.have.property('gty', 'device_code');
     }, done));
 
     const deviceCode = new this.provider.DeviceCode({
       accountId: 'sub',
+      grantId: this.getGrantId(),
       scope: 'openid offline_access',
       clientId: 'client',
     });
@@ -167,6 +173,7 @@ describe('grant_type=urn:ietf:params:oauth:grant-type:device_code', () => {
 
       const deviceCode = new this.provider.DeviceCode({
         accountId: 'sub',
+        grantId: this.getGrantId(),
         scope: 'openid',
         clientId: 'client',
       });
@@ -198,6 +205,7 @@ describe('grant_type=urn:ietf:params:oauth:grant-type:device_code', () => {
 
       const deviceCode = new this.provider.DeviceCode({
         accountId: 'sub',
+        grantId: this.getGrantId(),
         scope: 'openid',
         clientId: 'client-other',
       });
@@ -256,6 +264,7 @@ describe('grant_type=urn:ietf:params:oauth:grant-type:device_code', () => {
     it('consumes the code', async function () {
       const deviceCode = new this.provider.DeviceCode({
         accountId: 'sub',
+        grantId: this.getGrantId(),
         scope: 'openid',
         clientId: 'client',
       });
@@ -282,6 +291,7 @@ describe('grant_type=urn:ietf:params:oauth:grant-type:device_code', () => {
 
       const deviceCode = new this.provider.DeviceCode({
         accountId: 'sub',
+        grantId: this.getGrantId(),
         scope: 'openid',
         clientId: 'client',
       });

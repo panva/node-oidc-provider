@@ -470,7 +470,7 @@ describe('logout endpoint', () => {
           });
       });
 
-      it('only clears one clients session if user doesnt wanna log out (using post_logout_redirect_uri)', function () {
+      it('only clears one clients session if user doesn\'t want to log out (using post_logout_redirect_uri)', function () {
         const adapter = this.TestAdapter.for('Session');
         sinon.spy(adapter, 'destroy');
         const authorizationCodeAdapter = this.TestAdapter.for('AuthorizationCode');
@@ -498,7 +498,7 @@ describe('logout endpoint', () => {
           });
       });
 
-      it('only clears one clients session if user doesnt wanna log out (using end_session_success)', function () {
+      it('only clears one clients session if user doesn\'t want to log out (using end_session_success)', function () {
         const adapter = this.TestAdapter.for('Session');
         sinon.spy(adapter, 'destroy');
         let session = this.getSession();

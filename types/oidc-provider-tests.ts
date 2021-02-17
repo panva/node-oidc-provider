@@ -1,4 +1,4 @@
-import { Provider, interactionPolicy, AsymmetricSigningAlgorithm } from './index.d';
+import { Provider, interactionPolicy, AsymmetricSigningAlgorithm, TokenFormat } from './index.d';
 import * as dns from 'dns'
 import * as https from 'https'
 
@@ -7,9 +7,6 @@ new Provider('https://op.example.com');
 new Provider('https://op.example.com', {
   rotateRefreshToken: true,
   formats: {
-    tokenSigningAlg() {
-      return 'ES384';
-    },
     customizers: {
       async jwt(ctx, token, parts) {
         ctx.oidc.issuer.substring(0);
@@ -153,11 +150,6 @@ const provider = new Provider('https://op.example.com', {
       clientCredentials.iat.toFixed();
       return 'opaque';
     },
-    async tokenSigningAlg(ctx, token) {
-      ctx.oidc.issuer.substring(0);
-      token.iat.toFixed();
-      return <AsymmetricSigningAlgorithm>'ES384'
-    },
     customizers: {
       jwt(ctx, token, parts) {
         ctx.oidc.issuer.substring(0);
@@ -295,15 +287,6 @@ const provider = new Provider('https://op.example.com', {
     ctx.oidc.issuer.substring(0);
     return true;
   },
-  async audiences(ctx, sub, token, use) {
-    ctx.oidc.issuer.substring(0);
-    if (sub !== undefined) {
-      sub.substring(0);
-    }
-    token.iat.toFixed();
-    use.substring(0);
-    return 'foo';
-  },
   async renderError(ctx, out, err) {
     ctx.oidc.issuer.substring(0);
     out.error.substring(0);
@@ -369,15 +352,48 @@ const provider = new Provider('https://op.example.com', {
     },
     resourceIndicators: {
       enabled: true,
-      ack: 7,
-      async allowedPolicy(ctx, resources, client) {
+      async getResourceServerInfo(ctx, resourceIndicator, client) {
+        client.clientId.substring(0);
         ctx.oidc.issuer.substring(0);
-        if (Array.isArray(resources)) {
-          resources[0].substring(0);
-        } else {
-          resources.substring(0);
+        resourceIndicator.substring(0);
+
+        switch (Math.random()) {
+          case 1:
+            return {
+              scope: ctx.oidc.params && ctx.oidc.params.scope || '',
+            };
+          case 2:
+            return {
+              accessTokenTTL: 2399,
+              scope: ctx.oidc.params && ctx.oidc.params.scope || '',
+            };
+          case 3:
+            return {
+              accessTokenFormat: <TokenFormat>'opaque',
+              scope: ctx.oidc.params && ctx.oidc.params.scope || '',
+            };
+          case 4:
+            return {
+              accessTokenFormat: <TokenFormat>'jwt',
+              scope: ctx.oidc.params && ctx.oidc.params.scope || '',
+            };
+          case 5:
+            return {
+              accessTokenFormat: <TokenFormat>'jwt',
+              scope: ctx.oidc.params && ctx.oidc.params.scope || '',
+              jwt: {}
+            };
+          default:
+            return {
+              audience: 'foo',
+              scope: ctx.oidc.params && ctx.oidc.params.scope || '',
+            };
         }
-        return true;
+
+      },
+      async defaultResource(ctx) {
+        ctx.oidc.issuer.substring(0);
+        return 'urn:example:foo';
       },
     },
     requestObjects: {

@@ -1,3 +1,4 @@
+/* eslint-disable no-shadow */
 const url = require('url');
 
 const { expect } = require('chai');
@@ -20,7 +21,7 @@ describe('session bound tokens behaviours', () => {
   before(bootstrap(__dirname));
   bootstrap.skipConsent();
 
-  beforeEach(function () { return this.login(); });
+  beforeEach(function () { return this.login({ scope: 'openid offline_access' }); });
   after(function () { return this.logout(); });
 
   describe('authorization_code flow', () => {
@@ -93,11 +94,11 @@ describe('session bound tokens behaviours', () => {
         .expect(200)
         .expect(assignTokenResponseValues.bind(this));
 
-      let token = await this.provider.AccessToken.find(this.access_token);
-      expect(token).to.have.property('expiresWithSession', true);
       let refresh = await this.provider.RefreshToken.find(this.refresh_token);
       expect(refresh).to.have.property('expiresWithSession', true);
 
+      const token = await this.provider.AccessToken.find(this.access_token);
+      expect(token).to.have.property('expiresWithSession', true);
       await this.agent.get('/me')
         .auth(this.access_token, { type: 'bearer' })
         .expect(200);
@@ -112,10 +113,13 @@ describe('session bound tokens behaviours', () => {
         .expect(200)
         .expect(assignTokenResponseValues.bind(this));
 
-      token = await this.provider.AccessToken.find(this.access_token);
-      expect(token).to.have.property('expiresWithSession', true);
       refresh = await this.provider.RefreshToken.find(this.refresh_token);
       expect(refresh).to.have.property('expiresWithSession', true);
+
+      {
+        const token = await this.provider.AccessToken.find(this.access_token);
+        expect(token).to.have.property('expiresWithSession', true);
+      }
 
       await this.TestAdapter.for('Session').destroy(this.getSessionId());
 
@@ -163,10 +167,13 @@ describe('session bound tokens behaviours', () => {
         .expect(200)
         .expect(assignTokenResponseValues.bind(this));
 
-      let token = await this.provider.AccessToken.find(this.access_token);
-      expect(token).not.to.have.property('expiresWithSession');
       let refresh = await this.provider.RefreshToken.find(this.refresh_token);
       expect(refresh).not.to.have.property('expiresWithSession');
+
+      {
+        const token = await this.provider.AccessToken.find(this.access_token);
+        expect(token).not.to.have.property('expiresWithSession');
+      }
 
       await this.agent.get('/me')
         .auth(this.access_token, { type: 'bearer' })
@@ -182,7 +189,7 @@ describe('session bound tokens behaviours', () => {
         .expect(200)
         .expect(assignTokenResponseValues.bind(this));
 
-      token = await this.provider.AccessToken.find(this.access_token);
+      const token = await this.provider.AccessToken.find(this.access_token);
       expect(token).not.to.have.property('expiresWithSession');
       refresh = await this.provider.RefreshToken.find(this.refresh_token);
       expect(refresh).not.to.have.property('expiresWithSession');
@@ -203,8 +210,11 @@ describe('session bound tokens behaviours', () => {
         .expect(200)
         .expect(assignTokenResponseValues.bind(this));
 
-      token = await this.provider.AccessToken.find(this.access_token);
-      expect(token).not.to.have.property('expiresWithSession');
+      {
+        const token = await this.provider.AccessToken.find(this.access_token);
+        expect(token).not.to.have.property('expiresWithSession');
+      }
+
       refresh = await this.provider.RefreshToken.find(this.refresh_token);
       expect(refresh).not.to.have.property('expiresWithSession');
     });

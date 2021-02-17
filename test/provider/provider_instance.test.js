@@ -36,7 +36,7 @@ describe('provider instance', () => {
 
     it('it is silent when a version is acknowledged where the draft is backwards compatible with a previous draft', () => {
       new Provider('http://localhost', { // eslint-disable-line no-new
-        features: { resourceIndicators: { enabled: true, ack: 2 } },
+        features: { backchannelLogout: { enabled: true, ack: 4 } },
       });
 
       expect(console.info.called).to.be.false;

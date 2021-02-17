@@ -25,8 +25,8 @@ describe('grant_type=authorization_code', () => {
   });
 
   context('with real tokens (1/3) - more than one redirect_uris registered', () => {
-    before(function () { return this.login(); });
-    after(function () { return this.logout(); });
+    beforeEach(function () { return this.login(); });
+    afterEach(function () { return this.logout(); });
 
     beforeEach(function () {
       return this.agent.get('/auth')
@@ -69,7 +69,7 @@ describe('grant_type=authorization_code', () => {
 
     it('populates ctx.oidc.entities (no offline_access)', function (done) {
       this.provider.use(this.assertOnce((ctx) => {
-        expect(ctx.oidc.entities).to.have.keys('Account', 'Client', 'AuthorizationCode', 'AccessToken');
+        expect(ctx.oidc.entities).to.have.keys('Account', 'Grant', 'Client', 'AuthorizationCode', 'AccessToken');
         expect(ctx.oidc.entities.AccessToken).to.have.property('gty', 'authorization_code');
       }, done));
 
@@ -86,12 +86,14 @@ describe('grant_type=authorization_code', () => {
 
     it('populates ctx.oidc.entities (w/ offline_access)', function (done) {
       this.provider.use(this.assertOnce((ctx) => {
-        expect(ctx.oidc.entities).to.have.keys('Account', 'Client', 'AuthorizationCode', 'AccessToken', 'RefreshToken');
+        expect(ctx.oidc.entities).to.have.keys('Account', 'Grant', 'Client', 'AuthorizationCode', 'AccessToken', 'RefreshToken');
         expect(ctx.oidc.entities.AccessToken).to.have.property('gty', 'authorization_code');
         expect(ctx.oidc.entities.RefreshToken).to.have.property('gty', 'authorization_code');
       }, done));
 
-      this.getSession().authorizations.client.promptedScopes.push('offline_access');
+      this.TestAdapter.for('Grant').syncUpdate(this.getSession().authorizations.client.grantId, {
+        scope: 'openid offline_access',
+      });
       this.TestAdapter.for('AuthorizationCode').syncUpdate(this.getTokenJti(this.ac), {
         scope: 'openid offline_access',
       });
@@ -157,10 +159,8 @@ describe('grant_type=authorization_code', () => {
     it('validates code is not already used', function () {
       const grantErrorSpy = sinon.spy();
       const grantRevokeSpy = sinon.spy();
-      const tokenDestroySpy = sinon.spy();
       this.provider.on('grant.error', grantErrorSpy);
       this.provider.on('grant.revoked', grantRevokeSpy);
-      this.provider.on('authorization_code.destroyed', tokenDestroySpy);
 
       this.code.consumed = epochTime();
 
@@ -175,7 +175,6 @@ describe('grant_type=authorization_code', () => {
         .expect(400)
         .expect(() => {
           expect(grantRevokeSpy.calledOnce).to.be.true;
-          expect(tokenDestroySpy.calledOnce).to.be.true;
           expect(grantErrorSpy.calledOnce).to.be.true;
           expect(errorDetail(grantErrorSpy)).to.equal('authorization code already consumed');
         })
@@ -302,7 +301,7 @@ describe('grant_type=authorization_code', () => {
   });
 
   context('with real tokens (2/3) - one redirect_uri registered with allowOmittingSingleRegisteredRedirectUri=false', () => {
-    before(async function () {
+    beforeEach(async function () {
       await this.login();
       return this.agent.get('/auth')
         .query({
@@ -338,12 +337,12 @@ describe('grant_type=authorization_code', () => {
   });
 
   context('with real tokens (3/3) - one redirect_uri registered with allowOmittingSingleRegisteredRedirectUri=true', () => {
-    before(function () {
+    beforeEach(function () {
       i(this.provider).configuration().allowOmittingSingleRegisteredRedirectUri = true;
       return this.login();
     });
 
-    after(function () {
+    afterEach(function () {
       i(this.provider).configuration().allowOmittingSingleRegisteredRedirectUri = false;
       return this.logout();
     });
@@ -387,7 +386,7 @@ describe('grant_type=authorization_code', () => {
 
     it('populates ctx.oidc.entities (no offline_access)', function (done) {
       this.provider.use(this.assertOnce((ctx) => {
-        expect(ctx.oidc.entities).to.have.keys('Account', 'Client', 'AuthorizationCode', 'AccessToken');
+        expect(ctx.oidc.entities).to.have.keys('Account', 'Grant', 'Client', 'AuthorizationCode', 'AccessToken');
         expect(ctx.oidc.entities.AccessToken).to.have.property('gty', 'authorization_code');
       }, done));
 
@@ -403,12 +402,14 @@ describe('grant_type=authorization_code', () => {
 
     it('populates ctx.oidc.entities (w/ offline_access)', function (done) {
       this.provider.use(this.assertOnce((ctx) => {
-        expect(ctx.oidc.entities).to.have.keys('Account', 'Client', 'AuthorizationCode', 'AccessToken', 'RefreshToken');
+        expect(ctx.oidc.entities).to.have.keys('Account', 'Grant', 'Client', 'AuthorizationCode', 'AccessToken', 'RefreshToken');
         expect(ctx.oidc.entities.AccessToken).to.have.property('gty', 'authorization_code');
         expect(ctx.oidc.entities.RefreshToken).to.have.property('gty', 'authorization_code');
       }, done));
 
-      this.getSession().authorizations.client2.promptedScopes.push('offline_access');
+      this.TestAdapter.for('Grant').syncUpdate(this.getSession().authorizations.client2.grantId, {
+        scope: 'openid offline_access',
+      });
       this.TestAdapter.for('AuthorizationCode').syncUpdate(this.getTokenJti(this.ac), {
         scope: 'openid offline_access',
       });
@@ -471,10 +472,8 @@ describe('grant_type=authorization_code', () => {
     it('validates code is not already used', function () {
       const grantErrorSpy = sinon.spy();
       const grantRevokeSpy = sinon.spy();
-      const tokenDestroySpy = sinon.spy();
       this.provider.on('grant.error', grantErrorSpy);
       this.provider.on('grant.revoked', grantRevokeSpy);
-      this.provider.on('authorization_code.destroyed', tokenDestroySpy);
 
       this.code.consumed = epochTime();
 
@@ -488,7 +487,6 @@ describe('grant_type=authorization_code', () => {
         .expect(400)
         .expect(() => {
           expect(grantRevokeSpy.calledOnce).to.be.true;
-          expect(tokenDestroySpy.calledOnce).to.be.true;
           expect(grantErrorSpy.calledOnce).to.be.true;
           expect(errorDetail(grantErrorSpy)).to.equal('authorization code already consumed');
         })

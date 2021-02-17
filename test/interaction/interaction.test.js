@@ -167,8 +167,8 @@ describe('devInteractions', () => {
 
       return this.agent.get(this.url.replace('interaction', 'auth'))
         .expect(302)
-        .expect(auth.validateState)
         .expect(auth.validateClientLocation)
+        .expect(auth.validateState)
         .expect(auth.validateError('access_denied'))
         .expect(auth.validateErrorDescription('End-User aborted interaction'));
     });
@@ -349,7 +349,12 @@ describe('resume after consent', () => {
   function setup(grant, result, sessionData) {
     const cookies = [];
 
-    const session = new this.provider.Session({ jti: 'sess', ...sessionData });
+    let session;
+    if (result && result.login) {
+      session = new this.provider.Session({ jti: 'sess', ...sessionData });
+    } else {
+      session = this.getLastSession();
+    }
     const interaction = new this.provider.Interaction('resume', {
       uid: 'resume',
       params: grant,
@@ -364,7 +369,7 @@ describe('resume after consent', () => {
     let [pre, ...post] = cookie.split(';');
     cookies.push([`_interaction_resume.sig=${keys.sign(pre)}`, ...post].join(';'));
 
-    const sessionCookie = `_session=sess; path=/; expires=${expire.toGMTString()}; httponly`;
+    const sessionCookie = `_session=${session.jti || 'sess'}; path=/; expires=${expire.toGMTString()}; httponly`;
     cookies.push(sessionCookie);
     [pre, ...post] = sessionCookie.split(';');
     cookies.push([`_session.sig=${keys.sign(pre)}`, ...post].join(';'));
@@ -389,6 +394,9 @@ describe('resume after consent', () => {
   }
 
   context('general', () => {
+    before(function () { return this.login(); });
+    after(function () { return this.logout(); });
+
     it('needs the resume cookie to be present, else renders an err', function () {
       return this.agent.get('/auth/resume')
         .expect(400)
@@ -413,6 +421,7 @@ describe('resume after consent', () => {
 
   context('login results', () => {
     it('should process newly established permanent sessions (default)', async function () {
+      sinon.stub(this.provider.Grant.prototype, 'getOIDCScope').returns('openid');
       const auth = new this.AuthorizationRequest({
         response_type: 'code',
         response_mode: 'query',
@@ -423,14 +432,13 @@ describe('resume after consent', () => {
         login: {
           account: nanoid(),
         },
-        consent: {},
       });
 
       return this.agent.get('/auth/resume')
         .expect(302)
         .expect('set-cookie', /expires/) // expect a permanent cookie
-        .expect(auth.validateState)
         .expect(auth.validateClientLocation)
+        .expect(auth.validateState)
         .expect(auth.validatePresence(['code', 'state']))
         .expect(() => {
           expect(this.getSession()).to.be.ok.and.not.have.property('transient');
@@ -438,6 +446,7 @@ describe('resume after consent', () => {
     });
 
     it('should process newly established permanent sessions (explicit)', async function () {
+      sinon.stub(this.provider.Grant.prototype, 'getOIDCScope').returns('openid');
       const auth = new this.AuthorizationRequest({
         response_type: 'code',
         response_mode: 'query',
@@ -449,14 +458,13 @@ describe('resume after consent', () => {
           account: nanoid(),
           remember: true,
         },
-        consent: {},
       });
 
       return this.agent.get('/auth/resume')
         .expect(302)
         .expect('set-cookie', /expires/) // expect a permanent cookie
-        .expect(auth.validateState)
         .expect(auth.validateClientLocation)
+        .expect(auth.validateState)
         .expect(auth.validatePresence(['code', 'state']))
         .expect(() => {
           expect(this.getSession()).to.be.ok.and.not.have.property('transient');
@@ -464,6 +472,7 @@ describe('resume after consent', () => {
     });
 
     it('should process newly established temporary sessions', async function () {
+      sinon.stub(this.provider.Grant.prototype, 'getOIDCScope').returns('openid');
       const auth = new this.AuthorizationRequest({
         response_type: 'code',
         response_mode: 'query',
@@ -475,7 +484,6 @@ describe('resume after consent', () => {
           account: nanoid(),
           remember: false,
         },
-        consent: {},
       });
 
       return this.agent.get('/auth/resume')
@@ -490,6 +498,7 @@ describe('resume after consent', () => {
     });
 
     it('should trigger logout when the session subject changes', async function () {
+      sinon.stub(this.provider.Grant.prototype, 'getOIDCScope').returns('openid');
       const auth = new this.AuthorizationRequest({
         response_type: 'code',
         response_mode: 'query',
@@ -500,7 +509,6 @@ describe('resume after consent', () => {
         login: {
           account: nanoid(),
         },
-        consent: {},
       }, {
         account: nanoid(),
       });
@@ -533,18 +541,38 @@ describe('resume after consent', () => {
 
       await this.agent.get('/auth/resume')
         .expect(302)
-        .expect(auth.validateState)
-        .expect(auth.validateClientLocation);
+        .expect(auth.validateClientLocation)
+        .expect(auth.validateState);
     });
   });
 
-  context('consent results', () => {
-    it('when scope includes offline_access', async function () {
+  describe('custom interaction errors', () => {
+    describe('when prompt=none', () => {
+      before(function () { return this.login(); });
+      after(function () { return this.logout(); });
+      it('custom interactions can fail too (prompt none)', async function () {
+        const auth = new this.AuthorizationRequest({
+          response_type: 'code',
+          scope: 'openid',
+          triggerCustomFail: 'foo',
+          prompt: 'none',
+        });
+
+        return this.agent.get('/auth')
+          .query(auth)
+          .expect(302)
+          .expect(auth.validateState)
+          .expect(auth.validateClientLocation)
+          .expect(auth.validateError('error_foo'))
+          .expect(auth.validateErrorDescription('error_description_foo'));
+      });
+    });
+
+    it('custom interactions can fail too', async function () {
       const auth = new this.AuthorizationRequest({
         response_type: 'code',
-        response_mode: 'query',
-        prompt: 'consent',
-        scope: 'openid offline_access',
+        scope: 'openid',
+        triggerCustomFail: 'foo',
       });
 
       await setup.call(this, auth, {
@@ -555,427 +583,10 @@ describe('resume after consent', () => {
         consent: {},
       });
 
-      let authorizationCode;
-
-      this.provider.once('authorization_code.saved', (code) => {
-        authorizationCode = code;
-      });
-
       return this.agent.get('/auth/resume')
-        .expect(() => {
-          expect(authorizationCode).to.be.ok;
-          expect(authorizationCode).to.have.property('scope', 'openid offline_access');
-        });
-    });
-
-    describe('custom interaction errors', () => {
-      describe('when prompt=none', () => {
-        before(function () { return this.login(); });
-        after(function () { return this.logout(); });
-        it('custom interactions can fail too (prompt none)', async function () {
-          const auth = new this.AuthorizationRequest({
-            response_type: 'code',
-            scope: 'openid',
-            triggerCustomFail: 'foo',
-            prompt: 'none',
-          });
-
-          return this.agent.get('/auth')
-            .query(auth)
-            .expect(302)
-            .expect(auth.validateState)
-            .expect(auth.validateClientLocation)
-            .expect(auth.validateError('error_foo'))
-            .expect(auth.validateErrorDescription('error_description_foo'));
-        });
-      });
-
-      it('custom interactions can fail too', async function () {
-        const auth = new this.AuthorizationRequest({
-          response_type: 'code',
-          scope: 'openid',
-          triggerCustomFail: 'foo',
-        });
-
-        await setup.call(this, auth, {
-          login: {
-            account: nanoid(),
-            remember: true,
-          },
-          consent: {},
-        });
-
-        return this.agent.get('/auth/resume')
-          .expect(302)
-          .expect(auth.validateInteractionRedirect)
-          .expect(auth.validateInteraction('login', 'reason_foo'));
-      });
-    });
-
-    describe('rejectedScopes', () => {
-      it('allows for scopes to be rejected', async function () {
-        const auth = new this.AuthorizationRequest({
-          response_type: 'code',
-          response_mode: 'query',
-          scope: 'openid profile',
-        });
-
-        await setup.call(this, auth, {
-          login: {
-            account: nanoid(),
-            remember: true,
-          },
-          consent: {
-            rejectedScopes: ['profile'],
-          },
-        });
-
-        let authorizationCode;
-
-        this.provider.once('authorization_code.saved', (code) => {
-          authorizationCode = code;
-        });
-
-        return this.agent.get('/auth/resume')
-          .expect(() => {
-            expect(authorizationCode).to.be.ok;
-            expect(authorizationCode).to.have.property('scope', 'openid');
-          });
-      });
-
-      it('prompted & rejected scopes can be accumulated over time', async function () {
-        const auth = new this.AuthorizationRequest({
-          response_type: 'code',
-          response_mode: 'query',
-          scope: 'openid profile email',
-        });
-
-        await setup.call(this, auth, {
-          consent: {
-            rejectedScopes: ['email'],
-          },
-        }, {
-          account: nanoid(),
-          authorizations: {
-            client: {
-              sid: 'foo',
-              grantId: 'foo',
-              rejectedScopes: ['profile'],
-              promptedScopes: ['openid', 'profile'],
-            },
-          },
-        });
-
-        let authorizationCode;
-        let session;
-        this.provider.once('authorization_code.saved', (code) => {
-          authorizationCode = code;
-        });
-        this.provider.once('session.saved', (code) => {
-          session = code;
-        });
-
-        return this.agent.get('/auth/resume')
-          .expect(() => {
-            expect(session).to.be.ok;
-            expect(session).to.have.nested.deep.property('authorizations.client.promptedScopes', ['openid', 'profile', 'email']);
-            expect(session).to.have.nested.deep.property('authorizations.client.rejectedScopes', ['profile', 'email']);
-            expect(authorizationCode).to.be.ok;
-            expect(authorizationCode).to.have.property('scope', 'openid');
-          });
-      });
-
-      it('existing rejected scopes can be replaced', async function () {
-        const auth = new this.AuthorizationRequest({
-          response_type: 'code',
-          response_mode: 'query',
-          scope: 'openid profile email',
-        });
-
-        await setup.call(this, auth, {
-          consent: {
-            rejectedScopes: [],
-            replace: true,
-          },
-        }, {
-          account: nanoid(),
-          authorizations: {
-            client: {
-              sid: 'foo',
-              grantId: 'foo',
-              rejectedScopes: ['profile'],
-              promptedScopes: ['openid', 'profile'],
-            },
-          },
-        });
-
-        let authorizationCode;
-        let session;
-        this.provider.once('authorization_code.saved', (code) => {
-          authorizationCode = code;
-        });
-        this.provider.once('session.saved', (code) => {
-          session = code;
-        });
-
-        return this.agent.get('/auth/resume')
-          .expect(() => {
-            expect(session).to.be.ok;
-            expect(session).to.have.nested.deep.property('authorizations.client.promptedScopes', ['openid', 'profile', 'email']);
-            expect(session).to.have.nested.deep.property('authorizations.client.rejectedScopes', []);
-            expect(authorizationCode).to.be.ok;
-            expect(authorizationCode).to.have.property('scope', 'openid profile email');
-          });
-      });
-
-      it('cannot reject openid scope', async function () {
-        const spy = sinon.spy();
-        this.provider.once('server_error', spy);
-
-        const auth = new this.AuthorizationRequest({
-          response_type: 'code',
-          response_mode: 'query',
-          scope: 'openid',
-          prompt: 'consent',
-        });
-
-        await setup.call(this, auth, {
-          login: {
-            account: nanoid(),
-            remember: true,
-          },
-          consent: {
-            rejectedScopes: ['openid'],
-          },
-        });
-
-        await this.agent.get('/auth/resume')
-          .expect(302)
-          .expect(auth.validateState)
-          .expect(auth.validateClientLocation)
-          .expect(auth.validateError('server_error'));
-
-        expect(spy).to.have.property('calledOnce', true);
-        const error = spy.firstCall.args[1];
-        expect(error).to.be.an.instanceof(Error);
-        expect(error).to.have.property('message', 'openid cannot be rejected');
-      });
-
-      it('must be passed as Set or Array', async function () {
-        const spy = sinon.spy();
-        this.provider.once('server_error', spy);
-
-        const auth = new this.AuthorizationRequest({
-          response_type: 'code',
-          scope: 'openid',
-          prompt: 'consent',
-        });
-
-        await setup.call(this, auth, {
-          login: {
-            account: nanoid(),
-            remember: true,
-          },
-          consent: {
-            rejectedScopes: 'openid',
-          },
-        });
-
-        await this.agent.get('/auth/resume')
-          .expect(302)
-          .expect(auth.validateState)
-          .expect(auth.validateClientLocation)
-          .expect(auth.validateError('server_error'));
-
-        expect(spy).to.have.property('calledOnce', true);
-        const error = spy.firstCall.args[1];
-        expect(error).to.be.an.instanceof(Error);
-        expect(error).to.have.property('message', 'expected Array or Set');
-      });
-    });
-
-    describe('rejectedClaims', () => {
-      it('allows for claims to be rejected', async function () {
-        const auth = new this.AuthorizationRequest({
-          response_type: 'code',
-          scope: 'openid profile',
-        });
-
-        await setup.call(this, auth, {
-          login: {
-            account: nanoid(),
-            remember: true,
-          },
-          consent: {
-            rejectedClaims: ['nickname'],
-          },
-        });
-
-        let authorizationCode;
-
-        this.provider.once('authorization_code.saved', (code) => {
-          authorizationCode = code;
-        });
-
-        return this.agent.get('/auth/resume')
-          .expect(() => {
-            expect(authorizationCode).to.be.ok;
-            expect(authorizationCode).to.have.property('scope', 'openid profile');
-            expect(authorizationCode).to.have.deep.property('claims', { rejected: ['nickname'] });
-          });
-      });
-
-      it('prompted & rejected claims can be accumulated over time', async function () {
-        const auth = new this.AuthorizationRequest({
-          response_type: 'code',
-          response_mode: 'query',
-          scope: 'openid profile email',
-        });
-
-        await setup.call(this, auth, {
-          consent: {
-            rejectedClaims: ['email'],
-          },
-        }, {
-          account: nanoid(),
-          authorizations: {
-            client: {
-              sid: 'foo',
-              grantId: 'foo',
-              rejectedClaims: ['nickname'],
-              promptedClaims: ['nickname'],
-            },
-          },
-        });
-
-        let authorizationCode;
-        let session;
-
-        this.provider.once('authorization_code.saved', (code) => {
-          authorizationCode = code;
-        });
-        this.provider.once('session.saved', (code) => {
-          session = code;
-        });
-
-        return this.agent.get('/auth/resume')
-          .expect(() => {
-            expect(session).to.be.ok;
-            expect(session).to.have.nested.deep.property('authorizations.client.rejectedClaims', ['nickname', 'email']);
-            expect(authorizationCode).to.be.ok;
-            expect(authorizationCode).to.have.property('scope', 'openid profile email');
-            expect(authorizationCode).to.have.deep.property('claims', { rejected: ['nickname', 'email'] });
-          });
-      });
-
-      it('existing rejected claims can be replaced', async function () {
-        const auth = new this.AuthorizationRequest({
-          response_type: 'code',
-          response_mode: 'query',
-          scope: 'openid profile email',
-        });
-
-        await setup.call(this, auth, {
-          consent: {
-            rejectedClaims: [],
-            replace: true,
-          },
-        }, {
-          account: nanoid(),
-          authorizations: {
-            client: {
-              sid: 'foo',
-              grantId: 'foo',
-              rejectedClaims: ['nickname'],
-            },
-          },
-        });
-
-        let authorizationCode;
-        let session;
-
-        this.provider.once('authorization_code.saved', (code) => {
-          authorizationCode = code;
-        });
-        this.provider.once('session.saved', (code) => {
-          session = code;
-        });
-
-        return this.agent.get('/auth/resume')
-          .expect(() => {
-            expect(session).to.be.ok;
-            expect(session).to.have.nested.deep.property('authorizations.client.rejectedClaims', []);
-            expect(authorizationCode).to.be.ok;
-            expect(authorizationCode).to.have.property('scope', 'openid profile email');
-            expect(authorizationCode).to.have.deep.property('claims', { rejected: [] });
-          });
-      });
-
-      ['sub', 'sid', 'auth_time', 'acr', 'amr', 'iss'].forEach((claim) => {
-        it(`cannot reject ${claim} claim`, async function () {
-          const spy = sinon.spy();
-          this.provider.once('server_error', spy);
-
-          const auth = new this.AuthorizationRequest({
-            response_type: 'code',
-            scope: 'openid',
-            prompt: 'consent',
-          });
-
-          await setup.call(this, auth, {
-            login: {
-              account: nanoid(),
-              remember: true,
-            },
-            consent: {
-              rejectedClaims: [claim],
-            },
-          });
-
-          await this.agent.get('/auth/resume')
-            .expect(302)
-            .expect(auth.validateState)
-            .expect(auth.validateClientLocation)
-            .expect(auth.validateError('server_error'));
-
-          expect(spy).to.have.property('calledOnce', true);
-          const error = spy.firstCall.args[1];
-          expect(error).to.be.an.instanceof(Error);
-          expect(error).to.have.property('message', `${claim} cannot be rejected`);
-        });
-      });
-
-      it('must be passed as Set or Array', async function () {
-        const spy = sinon.spy();
-        this.provider.once('server_error', spy);
-
-        const auth = new this.AuthorizationRequest({
-          response_type: 'code',
-          scope: 'openid',
-          prompt: 'consent',
-        });
-
-        await setup.call(this, auth, {
-          login: {
-            account: nanoid(),
-            remember: true,
-          },
-          consent: {
-            rejectedClaims: 'email',
-          },
-        });
-
-        await this.agent.get('/auth/resume')
-          .expect(302)
-          .expect(auth.validateState)
-          .expect(auth.validateClientLocation)
-          .expect(auth.validateError('server_error'));
-
-        expect(spy).to.have.property('calledOnce', true);
-        const error = spy.firstCall.args[1];
-        expect(error).to.be.an.instanceof(Error);
-        expect(error).to.have.property('message', 'expected Array or Set');
-      });
+        .expect(302)
+        .expect(auth.validateInteractionRedirect)
+        .expect(auth.validateInteraction('login', 'reason_foo'));
     });
   });
 
@@ -1063,13 +674,7 @@ describe('resume after consent', () => {
         prompt: 'custom',
       });
 
-      await setup.call(this, auth, {
-        login: {
-          account: nanoid(),
-          remember: true,
-        },
-        consent: {},
-      });
+      await setup.call(this, auth, {});
 
       return this.agent.get('/auth/resume')
         .expect(302)

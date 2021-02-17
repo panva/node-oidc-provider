@@ -321,7 +321,7 @@ describe('Client metadata validation', () => {
     allows(this.title, 'openid profile', undefined, { claims: { profile: ['given_name'] } });
     allows(this.title, 'profile', undefined, { scopes: ['profile'] });
     allows(this.title, 'profile', undefined, { claims: { profile: ['given_name'] } });
-    rejects(this.title, 'foo', /must only contain supported scopes/);
+    rejects(this.title, 'foo', 'scope must only contain Authorization Server supported scope values');
   });
 
   context('redirect_uris', function () {

@@ -8,7 +8,8 @@ loaded client or session.
 | event name | event handler function parameters | Emitted .. |
 |---|---|---|
 | `access_token.destroyed` | `(token)` | ... whenever an access token is destroyed |
-| `access_token.saved` | `(token)` | ... whenever an access token is saved |
+| `access_token.saved` | `(token)` | ... whenever an opaque access token is saved |
+| `access_token.issued` | `(token)` | ... whenever a structured access token is issued |
 | `authorization_code.consumed` | `(code)` | ... whenever an authorization code is consumed |
 | `authorization_code.destroyed` | `(code)` | ... whenever an authorization code is destroyed |
 | `authorization_code.saved` | `(code)` | ... whenever an authorization code is saved |
@@ -21,7 +22,8 @@ loaded client or session.
 | `check_session_origin.error` | `(ctx, error)` | ... whenever a handled error is encountered in the `check_session_origin` endpoint |
 | `check_session.error` | `(ctx, error)` | ... whenever a handled error is encountered in the `check_session` endpoint |
 | `client_credentials.destroyed` | `(token)` | ... whenever client credentials token is destroyed |
-| `client_credentials.saved` | `(token)` | ... whenever client credentials token is saved |
+| `client_credentials.saved` | `(token)` | ... whenever an opaque client credentials token is saved |
+| `client_credentials.issued` | `(token)` | ... whenever a structured client credentials token is issued |
 | `device_code.consumed` | `(code)` | ... whenever a device code is consumed |
 | `device_code.destroyed` | `(code)` | ... whenever a device code is destroyed |
 | `device_code.saved` | `(code)` | ... whenever a device code is saved |

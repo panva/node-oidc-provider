@@ -5,22 +5,7 @@ const { createServer } = require('http');
 const Mocha = require('mocha');
 const lookupFiles = require('mocha/lib/cli/lookup-files');
 const { all: clearRequireCache } = require('clear-module');
-const sample = require('lodash/sample');
 
-const FORMAT_REGEXP = /^--format=([\w-]+)$/;
-
-const formats = [];
-process.argv.forEach((arg) => {
-  if (FORMAT_REGEXP.test(arg)) {
-    formats.push(RegExp.$1);
-  }
-});
-
-if (!formats.length) {
-  formats.push('opaque');
-  formats.push('jwt');
-  formats.push('dynamic');
-}
 const passed = [];
 
 const files = lookupFiles('test/**/*.test.js', ['js'], true);
@@ -34,7 +19,7 @@ console.warn = function (...args) {
   if (!args[0].includes('WARNING: ')) warn.apply(this, args);
 };
 
-async function singleRun() {
+async function run() {
   clearRequireCache();
   const jose = require('jose'); // eslint-disable-line global-require
   global.keystore = new jose.JWKS.KeyStore();
@@ -43,11 +28,6 @@ async function singleRun() {
     global.keystore.generate('EC', 'P-256'),
     global.keystore.generate('OKP', 'Ed25519'),
   ]);
-  global.TEST_CONFIGURATION_DEFAULTS = {};
-  global.TEST_CONFIGURATION_DEFAULTS.formats = {
-    AccessToken: this.format,
-    ClientCredentials: this.format,
-  };
 
   process.env.MOUNT_VIA = process.env.MOUNT_VIA || '';
   process.env.MOUNT_TO = process.env.MOUNT_TO || '/';
@@ -69,32 +49,22 @@ async function singleRun() {
       mocha.forbidPending(); // force suite fail on encountered skip test
     }
 
-    const format = typeof this.format === 'string' ? this.format : 'dynamic';
-
     const mountAddendum = via ? ` mounted using ${via === 'koa' ? 'koa-mount' : via} to ${to}` : '';
-    console.log('\n\x1b[32m%s\x1b[0m', `Running suite with ${format}${mountAddendum}`);
+    console.log('\n\x1b[32m%s\x1b[0m', `Running suite${mountAddendum}`);
 
     mocha.run((failures) => {
       if (!failures) {
-        passed.push(`Suite passed with ${format} format${mountAddendum}`);
+        passed.push(`Suite passed${mountAddendum}`);
         global.server.close(resolve);
       } else {
-        reject(new SuiteFailedError(`Suite failed with ${format} format${mountAddendum}`));
+        reject(new SuiteFailedError(`Suite failed${mountAddendum}`));
       }
     });
   });
 }
 
 (async () => {
-  if (formats.includes('opaque')) {
-    await singleRun.call({ format: 'opaque' });
-  }
-  if (formats.includes('jwt')) {
-    await singleRun.call({ format: 'jwt' });
-  }
-  if (formats.includes('dynamic')) {
-    await singleRun.call({ format: () => sample(['opaque', 'jwt']) });
-  }
+  await run();
   passed.forEach((pass) => console.log('\x1b[32m%s\x1b[0m', pass));
 })()
   .catch((error) => {

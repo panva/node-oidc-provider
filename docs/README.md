@@ -15,7 +15,7 @@ is a good starting point to get an idea of what you should provide.
 
 ## Support
 
-If you or your business use oidc-provider, please consider becoming a [sponsor][support-sponsor] so I can continue maintaining it and adding new features carefree.
+If you or your business use oidc-provider, or you need help using/upgrading the module, please consider becoming a [sponsor][support-sponsor] so I can continue maintaining it and adding new features carefree.
 
 <br>
 
@@ -48,13 +48,6 @@ If you or your business use oidc-provider, please consider becoming a [sponsor][
 const { Provider } = require('oidc-provider');
 const configuration = {
   // ... see the available options in Configuration options section
-  features: {
-    introspection: { enabled: true },
-    revocation: { enabled: true },
-  },
-  formats: {
-    AccessToken: 'jwt',
-  },
   clients: [{
     client_id: 'foo',
     client_secret: 'bar',
@@ -168,8 +161,7 @@ router.post('/interaction/:uid', async (ctx, next) => {
 
   // consent was given by the user to the client for this session
   consent: {
-    rejectedScopes: [], // array of strings, scope names the end-user has not granted
-    rejectedClaims: [], // array of strings, claim names the end-user has not granted
+    grantId: string, // the identifer of Grant object you saved during the interaction, resolved by Grant.prototype.save()
   },
 
   ['custom prompt name resolved']: {},
@@ -457,7 +449,6 @@ location / {
   - [webMessageResponseMode](#featureswebmessageresponsemode)
 - [acrValues](#acrvalues)
 - [allowOmittingSingleRegisteredRedirectUri](#allowomittingsingleregisteredredirecturi)
-- [audiences](#audiences)
 - [claims ❗](#claims)
 - [clientBasedCORS](#clientbasedcors)
 - [clientDefaults](#clientdefaults)
@@ -466,17 +457,19 @@ location / {
 - [cookies](#cookies)
 - [discovery](#discovery)
 - [expiresWithSession](#expireswithsession)
-- [extraTokenClaims](#extratokenclaims)
 - [extraClientMetadata](#extraclientmetadata)
 - [extraParams](#extraparams)
+- [extraTokenClaims](#extratokenclaims)
 - [formats](#formats)
 - [httpOptions](#httpoptions)
 - [interactions ❗](#interactions)
 - [issueRefreshToken](#issuerefreshtoken)
+- [loadExistingGrant](#loadexistinggrant)
 - [pairwiseIdentifier](#pairwiseidentifier)
 - [pkce](#pkce)
 - [renderError](#rendererror)
 - [responseTypes](#responsetypes)
+- [revokeGrantPolicy](#revokegrantpolicy)
 - [rotateRefreshToken](#rotaterefreshtoken)
 - [routes](#routes)
 - [scopes](#scopes)
@@ -967,7 +960,9 @@ _**default value**_:
 
 [RFC7662](https://tools.ietf.org/html/rfc7662) - OAuth 2.0 Token Introspection  
 
-Enables Token Introspection features   
+Enables Token Introspection for:
+ - opaque access tokens
+ - refresh tokens   
   
 
 
@@ -1061,7 +1056,7 @@ _**default value**_:
 
 ### features.mTLS
 
-[RFC 8705](https://tools.ietf.org/html/rfc8705) - OAuth 2.0 Mutual TLS Client Authentication and Certificate Bound Access Tokens  
+[RFC8705](https://tools.ietf.org/html/rfc8705) - OAuth 2.0 Mutual TLS Client Authentication and Certificate Bound Access Tokens  
 
 Enables specific features from the Mutual TLS specification. The three main features have their own specific setting in this feature's configuration object and you must provide functions for resolving some of the functions which are deployment-specific.   
   
@@ -1558,84 +1553,130 @@ true
 
 ### features.resourceIndicators
 
-[draft-ietf-oauth-resource-indicators-08](https://tools.ietf.org/html/draft-ietf-oauth-resource-indicators-08) - Resource Indicators for OAuth 2.0  
+[RFC8707](https://tools.ietf.org/html/rfc8707) - Resource Indicators for OAuth 2.0  
 
-Enables the use of `resource` parameter for the authorization and token endpoints. In order for the feature to be any useful you must also use the `audiences` function to validate the resource(s) and transform it to the Access Token audience.   
-  
+Enables the use of `resource` parameter for the authorization and token endpoints.   
+ - Multiple resource parameters may be present during Authorization Code Flow, but only a single audience for an Access Token is permitted.
+ - Authorization Requests that result in an Access Token being issued by the Authorization Endpoint must only contain a single resource (or one must be resolved using the `defaultResource` helper).
+ - Client Credentials grant must only contain a single resource parameter.
+ - During Authorization Code / Refresh Token / Device Code exchanges, if the exchanged code/token does not include the `'openid'` scope and only has a single resource then the resource parameter may be omitted - an Access Token for the single resource is returned.
+ - During Authorization Code / Refresh Token / Device Code exchanges, if the exchanged code/token does not include the `'openid'` scope and has multiple resources then the resource parameter must be provided (or one must be resolved using the `defaultResource` helper). An Access Token for the provided/resolved resource is returned.
+ - (with userinfo endpoint enabled) During Authorization Code / Refresh Token / Device Code exchanges, if the exchanged code/token includes the `'openid'` scope and no resource parameter is present - an Access Token for the UserInfo Endpoint is returned.
+ - (with userinfo endpoint disabled) During Authorization Code / Refresh Token / Device Code exchanges, if the exchanged code/token includes the `'openid'` scope and only has a single resource then the resource parameter may be omitted - an Access Token for the single resource is returned.
+ - Issued Access Tokens always only contain scopes that are defined on the respective Resource Server (returned from `features.resourceIndicators.getResourceServerInfo`).  
 
 
 _**default value**_:
 ```js
 {
-  allowedPolicy: [AsyncFunction: resourceIndicatorsAllowedPolicy], // see expanded details below
-  enabled: false
+  defaultResource: [AsyncFunction: defaultResource], // see expanded details below
+  enabled: true,
+  getResourceServerInfo: [AsyncFunction: getResourceServerInfo] // see expanded details below
 }
 ```
-<a id="features-resource-indicators-example-use"></a><details><summary>(Click to expand) Example use</summary><br>
-
-
-This example
- - will transform resources to audience and push them down to the audience of access tokens
- - will take both, the parameter and previously granted resources into consideration
- - assumes resource parameters are validated using `features.resourceIndicators.allowedPolicy`
-  
-
-```js
-// const { InvalidTarget } = Provider.errors;
-// `transform` is mapping the resource values to actual aud values
-{
-  // ...
-  async function audiences(ctx, sub, token, use) {
-    if (use === 'access_token') {
-      const { oidc: { route, client, params: { resource: resourceParam } } } = ctx;
-      let grantedResource;
-      if (route === 'token') {
-        const { oidc: { params: { grant_type } } } = ctx;
-        switch (grant_type) {
-          case 'authorization_code':
-            grantedResource = ctx.oidc.entities.AuthorizationCode.resource;
-            break;
-          case 'refresh_token':
-            grantedResource = ctx.oidc.entities.RefreshToken.resource;
-            break;
-          case 'urn:ietf:params:oauth:grant-type:device_code':
-            grantedResource = ctx.oidc.entities.DeviceCode.resource;
-            break;
-          default:
-        }
-      }
-      // => array of validated and transformed string audiences or undefined if no audiences
-      //    are to be listed
-      return transform(resourceParam, grantedResource);
-    }
-  },
-  formats: {
-    AccessToken(ctx, token) {
-      return token.aud ? 'jwt' : 'opaque';
-    }
-  },
-  // ...
-}
-```
-</details>
 
 <details><summary>(Click to expand) features.resourceIndicators options details</summary><br>
 
 
-#### allowedPolicy
+#### defaultResource
 
-Function used to check if a request parameter should be processed, e.g. If it is whitelisted for a given client.   
-  
-
-_**recommendation**_: Only allow pre-registered resource values, to pre-register these you shall use the `extraClientMetadata` configuration option to define a custom metadata and use that to implement your policy using this function.  
+Function used to determine the default resource indicator for a request when none is provided by the client during the call or when multiple are provided/resolved and only a single one is required.  
 
 
 _**default value**_:
 ```js
-async function resourceIndicatorsAllowedPolicy(ctx, resources, client) {
-  return true;
+async function defaultResource(ctx, client, oneOf) {
+  // @param ctx - koa request context
+  // @param client - client making the request
+  // @param oneOf {string[]} - The Authorization Server needs to select **one** of the values provided.
+  //                           Default is that the array is provided so that the request will fail.
+  //                           This argument is only provided when called during
+  //                           Authorization Code / Refresh Token / Device Code exchanges.
+  if (oneOf) return oneOf;
+  return undefined;
 }
 ```
+
+#### getResourceServerInfo
+
+Function used to load information about a resource server and check if the client is meant to request scopes for that particular resource.   
+  
+
+_**recommendation**_: Only allow client's pre-registered resource values, to pre-register these you shall use the `extraClientMetadata` configuration option to define a custom metadata and use that to implement your policy using this function.  
+
+
+_**default value**_:
+```js
+async function getResourceServerInfo(ctx, resourceIndicator, client) {
+  // @param ctx - koa request context
+  // @param resourceIndicator - resource indicator value either requested or resolved by the defaultResource helper.
+  // @param client - client making the request
+  throw new errors.InvalidTarget();
+}
+```
+<a id="get-resource-server-info-resource-server-with-two-scopes-an-expected-audience-value-and-an-access-token-ttl"></a><details><summary>(Click to expand) Resource Server with two scopes, an expected audience value and an Access Token TTL.
+</summary><br>
+
+```js
+{
+  scope: 'api:read api:write',
+  audience: 'resource-server-audience-value',
+  accessTokenTTL: 2 * 60 * 60, // 2 hours
+}
+```
+</details>
+<a id="get-resource-server-info-resource-server-definition"></a><details><summary>(Click to expand) Resource Server Definition
+</summary><br>
+
+```js
+{
+  // REQUIRED
+  // available scope values (space-delimited string)
+  scope: string,
+  // OPTIONAL
+  // "aud" (Audience) value to use
+  // Default is the resource indicator value will be used as audience
+  audience?: string,
+  // OPTIONAL
+  // Issued Token TTL
+  // Default is - see `ttl` configuration
+  accessTokenTTL?: number,
+  // Issued Token Format
+  // Default is - see `formats` configuration
+  accessTokenFormat?: string,
+  // JWT Token Format (when accessTokenFormat or `formats` resolves to 'jwt')
+  // Default is `{ sign: { alg: 'RS256' } }`
+  // Tokens may be signed, signed and then encrypted, or just encrypted JWTs.
+  jwt?: {
+    // Tokens will be signed
+    sign?:
+     | {
+         alg?: string, // 'PS256' | 'PS384' | 'PS512' | 'ES256' | 'ES256K' | 'ES384' | 'ES512' | 'EdDSA' | 'RS256' | 'RS384' | 'RS512'
+         kid?: string, // OPTIONAL `kid` to aid in 'public' key selection
+       }
+     | {
+         alg? string, // 'HS256' | 'HS384' | 'HS512'
+         key: crypto.KeyObject | Buffer, // shared symmetric secret to sign the JWT token with
+         kid?: string, // OPTIONAL `kid` JOSE Header Parameter to put in the token's JWS Header
+       },
+    // Tokens will be encrypted
+    encrypt?: {
+      alg: string, // 'dir' | 'RSA-OAEP' | 'RSA-OAEP-256' | 'RSA-OAEP-384' | 'RSA-OAEP-512' | 'RSA1_5' | 'ECDH-ES' | 'ECDH-ES+A128KW' | 'ECDH-ES+A192KW' | 'ECDH-ES+A256KW' | 'A128KW' | 'A192KW' | 'A256KW' | 'A128GCMKW' | 'A192GCMKW' | 'A256GCMKW' | 'PBES2-HS256+A128KW' | 'PBES2-HS384+A192KW' | 'PBES2-HS512+A256KW'
+      enc: string, // 'A128CBC-HS256' | 'A128GCM' | 'A192CBC-HS384' | 'A192GCM' | 'A256CBC-HS512' | 'A256GCM'
+      key: crypto.KeyObject | Buffer, // public key or shared symmetric secret to encrypt the JWT token with
+      kid?: string, // OPTIONAL `kid` JOSE Header Parameter to put in the token's JWE Header
+    }
+  }
+  // PASETO Token Format (when accessTokenFormat or `formats` resolves to 'paseto')
+  paseto?: {
+    version: 1 | 2,
+    purpose: 'local' | 'public',
+    key?: crypto.KeyObject, // required when purpose is 'local'
+    kid?: string, // OPTIONAL `kid` to aid in 'public' key selection or to put in the footer for 'local'
+  }
+}
+```
+</details>
 
 </details>
 
@@ -1791,27 +1832,6 @@ Allow omitting the redirect_uri parameter when only a single one is registered f
 _**default value**_:
 ```js
 false
-```
-
-### audiences
-
-Function used to set an audience to issued Access Tokens. The return value should be either:   
- - falsy (no audience, implicitly the client is the only allowed audience of the token)
- - a single string `aud` value (e.g. Such as the Resource Server indicated by the resource parameter)
- - array of string `aud` values (it is supported but NOT RECOMMENDED, consider it DEPRECATED)   
-  
-
-
-_**default value**_:
-```js
-async function audiences(ctx, sub, token, use) {
-  // @param ctx   - koa request context
-  // @param sub   - account identifier (subject)
-  // @param token - the token to which these additional audiences will be passed to
-  // @param use   - can be one of "access_token" or "client_credentials"
-  //   depending on where the specific audience is intended to be allowed
-  return undefined;
-}
 ```
 
 ### claims
@@ -2139,49 +2159,25 @@ async function extraTokenClaims(ctx, token) {
 
 ### formats
 
-This option allows to configure the token value format. The different values change how a client-facing token value is generated.   
+This option allows to configure the token value format. The different values change how a client-facing token value is generated and also if the token is stored using the adapter or not.   
  Supported formats are:
- - `opaque` (default) tokens are PRNG generated random strings using url safe base64 alphabet. See `formats.bitsOfOpaqueRandomness` for influencing the token length.
- - `jwt` tokens are issued as JWTs. See `formats.tokenSigningAlg` for resolving the JWT Access Token signing algorithm. Tokens using this format are not stored using the adapter, they cannot be introspected at the introspection_endpoint and they cannot be used to access the userinfo_endpoint. Tokens issued in this format MUST have an audience/indicated resource.   
-  
+ - `opaque` (default) tokens are PRNG generated random strings using url safe base64 alphabet. See `formats.bitsOfOpaqueRandomness` for influencing the token length. Tokens are stored using the adapter.
+ - `jwt` tokens are issued as JWTs. Tokens using this format are not stored using the adapter, they cannot be introspected at the introspection_endpoint and they cannot be used to access the userinfo_endpoint. Tokens issued in this format MUST have an audience/indicated resource.
+ - `paseto` tokens are issued as PASETOs. Tokens using this format are not stored using the adapter, they cannot be introspected at the introspection_endpoint and they cannot be used to access the userinfo_endpoint. Tokens issued in this format MUST have an audience/indicated resource.  
 
 
 _**default value**_:
 ```js
 {
-  AccessToken: 'opaque',
-  ClientCredentials: 'opaque',
+  AccessToken: [Function: AccessTokenFormat], // see expanded details below
+  ClientCredentials: [Function: ClientCredentialsFormat], // see expanded details below
   bitsOfOpaqueRandomness: 256,
   customizers: {
-    jwt: undefined
-  },
-  tokenSigningAlg: [AsyncFunction: tokenSigningAlg] // see expanded details below
-}
-```
-<a id="formats-to-enable-jwt-access-tokens"></a><details><summary>(Click to expand) To enable JWT Access Tokens</summary><br>
-
-
-Configure `formats`:
-  
-
-```js
-{ AccessToken: 'jwt' }
-```
-</details>
-<a id="formats-to-dynamically-decide-on-the-format-used"></a><details><summary>(Click to expand) To dynamically decide on the format used</summary><br>
-
-
-Configure `formats`:
-  
-
-```js
-{
-  AccessToken(ctx, token) {
-    return token.aud ? 'jwt' : 'opaque';
+    jwt: undefined,
+    paseto: undefined
   }
 }
 ```
-</details>
 
 ### formats.bitsOfOpaqueRandomness
 
@@ -2208,14 +2204,15 @@ function bitsOfOpaqueRandomness(ctx, token) {
 
 ### formats.customizers
 
-Functions used before signing a structured Access Token of a given type, such as a JWT one. Customizing here only changes the structured Access Token, not your storage, introspection or anything else. For such extras use [`extraTokenClaims`](#extratokenclaims) instead.   
+Customizer functions used before issuing a structured Access Token.   
   
 
 
 _**default value**_:
 ```js
 {
-  jwt: undefined
+  jwt: undefined,
+  paseto: undefined
 }
 ```
 <a id="formats-customizers-to-push-additional-headers-and-payload-claims-to-a-jwt-format-access-token"></a><details><summary>(Click to expand) To push additional headers and payload claims to a `jwt` format Access Token
@@ -2232,18 +2229,20 @@ _**default value**_:
 }
 ```
 </details>
+<a id="formats-customizers-to-push-a-payload-and-a-footer-to-a-paseto-structured-access-token"></a><details><summary>(Click to expand) To push a payload and a footer to a PASETO structured access token
+</summary><br>
 
-### formats.tokenSigningAlg
-
-Function used to resolve a JWT Access Token signing algorithm. The resolved algorithm must be an asymmetric one supported by the provider's keys in jwks. This helper should resolve with a JWS Algorithm string.  
-
-
-_**default value**_:
 ```js
-async function tokenSigningAlg(ctx, token) {
-  return undefined;
+{
+  customizers: {
+    paseto(ctx, token, structuredToken) {
+      structuredToken.payload.foo = 'bar';
+      structuredToken.footer = { foo: 'bar' };
+    }
+  }
 }
 ```
+</details>
 
 ### httpOptions
 
@@ -2291,315 +2290,239 @@ structure of Prompts and their checks formed by Prompt and Check class instances
 _**default value**_:
 ```js
 [
-  Prompt {
-    name: 'login',
-    requestable: true,
-    details: (ctx) => {
-      const { oidc } = ctx;
+/* LOGIN PROMPT */
+new Prompt(
+  { name: 'login', requestable: true },
 
-      return {
-        ...(oidc.params.max_age === undefined ? undefined : { max_age: oidc.params.max_age }),
-        ...(oidc.params.login_hint === undefined ? undefined : { login_hint: oidc.params.login_hint }),
-        ...(oidc.params.id_token_hint === undefined ? undefined : { id_token_hint: oidc.params.id_token_hint }),
-      };
-    },
-    checks: [
-      Check {
-        reason: 'login_prompt',
-        description: 'login prompt was not resolved',
-        error: 'login_required',
-        details: () => {},
-        check: (ctx) => {
-          const { oidc } = ctx;
-          if (oidc.prompts.has(name) && oidc.promptPending(name)) {
-            return true;
-          }
+  (ctx) => {
+    const { oidc } = ctx;
 
-          return false;
-        }
-      },
-      Check {
-        reason: 'no_session',
-        description: 'End-User authentication is required',
-        error: 'login_required',
-        details: () => {},
-        check: (ctx) => {
-          const { oidc } = ctx;
-          if (oidc.session.accountId()) {
-            return false;
-          }
-
-          return true;
-        }
-      },
-      Check {
-        reason: 'max_age',
-        description: 'End-User authentication could not be obtained',
-        error: 'login_required',
-        details: () => {},
-        check: (ctx) => {
-          const { oidc } = ctx;
-          if (oidc.params.max_age === undefined) {
-            return false;
-          }
-
-          if (!oidc.session.accountId()) {
-            return true;
-          }
-
-          if (oidc.session.past(oidc.params.max_age) && (!ctx.oidc.result || !ctx.oidc.result.login)) {
-            return true;
-          }
-
-          return false;
-        }
-      },
-      Check {
-        reason: 'id_token_hint',
-        description: 'id_token_hint and authenticated subject do not match',
-        error: 'login_required',
-        details: () => {},
-        check: async (ctx) => {
-          const { oidc } = ctx;
-          if (oidc.entities.IdTokenHint === undefined) {
-            return false;
-          }
-
-          const { payload } = oidc.entities.IdTokenHint;
-
-          let sub = oidc.session.accountId();
-          if (sub === undefined) {
-            return true;
-          }
-
-          if (oidc.client.sectorIdentifier) {
-            sub = await instance(oidc.provider).configuration('pairwiseIdentifier')(ctx, sub, oidc.client);
-          }
-
-          if (payload.sub !== sub) {
-            return true;
-          }
-
-          return false;
-        }
-      },
-      Check {
-        reason: 'claims_id_token_sub_value',
-        description: 'requested subject could not be obtained',
-        error: 'login_required',
-        details: ({ oidc }) => ({ sub: oidc.claims.id_token.sub }),
-        check: async (ctx) => {
-          const { oidc } = ctx;
-          if (!has(oidc.claims, 'id_token.sub.value')) {
-            return false;
-          }
-
-          let sub = oidc.session.accountId();
-          if (sub === undefined) {
-            return true;
-          }
-
-          if (oidc.client.sectorIdentifier) {
-            sub = await instance(oidc.provider).configuration('pairwiseIdentifier')(ctx, sub, oidc.client);
-          }
-
-          if (oidc.claims.id_token.sub.value !== sub) {
-            return true;
-          }
-
-          return false;
-        }
-      },
-      Check {
-        reason: 'essential_acrs',
-        description: 'none of the requested ACRs could not be obtained',
-        error: 'login_required',
-        details: ({ oidc }) => ({ acr: oidc.claims.id_token.acr }),
-        check: (ctx) => {
-          const { oidc } = ctx;
-          const request = get(oidc.claims, 'id_token.acr', {});
-
-          if (!request || !request.essential || !request.values) {
-            return false;
-          }
-
-          if (!Array.isArray(oidc.claims.id_token.acr.values)) {
-            throw new errors.InvalidRequest('invalid claims.id_token.acr.values type');
-          }
-
-          if (request.values.includes(oidc.acr)) {
-            return false;
-          }
-
-          return true;
-        }
-      },
-      Check {
-        reason: 'essential_acr',
-        description: 'requested ACR could not be obtained',
-        error: 'login_required',
-        details: ({ oidc }) => ({ acr: oidc.claims.id_token.acr }),
-        check: (ctx) => {
-          const { oidc } = ctx;
-          const request = get(oidc.claims, 'id_token.acr', {});
-
-          if (!request || !request.essential || !request.value) {
-            return false;
-          }
-
-          if (request.value === oidc.acr) {
-            return false;
-          }
-
-          return true;
-        }
-      }
-    ]
+    return {
+      ...(oidc.params.max_age === undefined ? undefined : { max_age: oidc.params.max_age }),
+      ...(oidc.params.login_hint === undefined ? undefined : { login_hint: oidc.params.login_hint }),
+      ...(oidc.params.id_token_hint === undefined ? undefined : { id_token_hint: oidc.params.id_token_hint }),
+    };
   },
-  Prompt {
-    name: 'consent',
-    requestable: true,
-    details: (ctx) => {
-      const { oidc } = ctx;
 
-      const acceptedScopes = oidc.session.acceptedScopesFor(oidc.params.client_id);
-      const rejectedScopes = oidc.session.rejectedScopesFor(oidc.params.client_id);
-      const acceptedClaims = oidc.session.acceptedClaimsFor(oidc.params.client_id);
-      const rejectedClaims = oidc.session.rejectedClaimsFor(oidc.params.client_id);
+  new Check('no_session', 'End-User authentication is required', (ctx) => {
+    const { oidc } = ctx;
+    if (oidc.session.accountId()) {
+      return Check.NO_NEED_TO_PROMPT;
+    }
 
-      const details = {
-        scopes: {
-          new: [...oidc.requestParamScopes]
-            .filter(x => !acceptedScopes.has(x) && !rejectedScopes.has(x)),
-          accepted: [...acceptedScopes],
-          rejected: [...rejectedScopes],
-        },
-        claims: {
-          new: [...oidc.requestParamClaims]
-            .filter(x => !acceptedClaims.has(x) && !rejectedClaims.has(x)),
-          accepted: [...acceptedClaims],
-          rejected: [...rejectedClaims],
-        },
-      };
+    return Check.REQUEST_PROMPT;
+  }),
 
-      return omitBy(details, val => val === undefined);
-    },
-    checks: [
-      Check {
-        reason: 'consent_prompt',
-        description: 'consent prompt was not resolved',
-        error: 'consent_required',
-        details: () => {},
-        check: (ctx) => {
-          const { oidc } = ctx;
-          if (oidc.prompts.has(name) && oidc.promptPending(name)) {
-            return true;
-          }
+  new Check('max_age', 'End-User authentication could not be obtained', (ctx) => {
+    const { oidc } = ctx;
+    if (oidc.params.max_age === undefined) {
+      return Check.NO_NEED_TO_PROMPT;
+    }
 
-          return false;
-        }
-      },
-      Check {
-        reason: 'client_not_authorized',
-        description: 'client not authorized for End-User session yet',
-        error: 'interaction_required',
-        details: () => {},
-        check: (ctx) => {
-          const { oidc } = ctx;
-          if (oidc.session.sidFor(oidc.client.clientId)) {
-            return false;
-          }
+    if (!oidc.session.accountId()) {
+      return Check.REQUEST_PROMPT;
+    }
 
-          return true;
-        }
-      },
-      Check {
-        reason: 'native_client_prompt',
-        description: 'native clients require End-User interaction',
-        error: 'interaction_required',
-        details: () => {},
-        check: (ctx) => {
-          const { oidc } = ctx;
-          if (
-            oidc.client.applicationType === 'native'
-            && oidc.params.response_type !== 'none'
-            && (!oidc.result || !('consent' in oidc.result))
-          ) {
-            return true;
-          }
+    if (oidc.session.past(oidc.params.max_age) && (!ctx.oidc.result || !ctx.oidc.result.login)) {
+      return Check.REQUEST_PROMPT;
+    }
 
-          return false;
-        }
-      },
-      Check {
-        reason: 'scopes_missing',
-        description: 'requested scopes not granted by End-User',
-        error: 'consent_required',
-        details: () => {},
-        check: (ctx) => {
-          const { oidc } = ctx;
-          const promptedScopes = oidc.session.promptedScopesFor(oidc.client.clientId);
+    return Check.NO_NEED_TO_PROMPT;
+  }),
 
-          for (const scope of oidc.requestParamScopes) { // eslint-disable-line no-restricted-syntax
-            if (!promptedScopes.has(scope)) {
-              return true;
-            }
-          }
+  new Check('id_token_hint', 'id_token_hint and authenticated subject do not match', async (ctx) => {
+    const { oidc } = ctx;
+    if (oidc.entities.IdTokenHint === undefined) {
+      return Check.NO_NEED_TO_PROMPT;
+    }
 
-          return false;
-        }
-      },
-      Check {
-        reason: 'claims_missing',
-        description: 'requested claims not granted by End-User',
-        error: 'consent_required',
-        details: () => {},
-        check: (ctx) => {
-          const { oidc } = ctx;
-          const promptedClaims = oidc.session.promptedClaimsFor(oidc.client.clientId);
+    const { payload } = oidc.entities.IdTokenHint;
 
-          for (const claim of oidc.requestParamClaims) { // eslint-disable-line no-restricted-syntax
-            if (!promptedClaims.has(claim) && !['sub', 'sid', 'auth_time', 'acr', 'amr', 'iss'].includes(claim)) {
-              return true;
-            }
-          }
+    let sub = oidc.session.accountId();
+    if (sub === undefined) {
+      return Check.REQUEST_PROMPT;
+    }
 
-          return false;
+    if (oidc.client.sectorIdentifier) {
+      sub = await instance(oidc.provider).configuration('pairwiseIdentifier')(ctx, sub, oidc.client);
+    }
+
+    if (payload.sub !== sub) {
+      return Check.REQUEST_PROMPT;
+    }
+
+    return Check.NO_NEED_TO_PROMPT;
+  }),
+
+  new Check('claims_id_token_sub_value', 'requested subject could not be obtained', async (ctx) => {
+    const { oidc } = ctx;
+
+    if (!oidc.claims.id_token || !oidc.claims.id_token.sub || !('value' in oidc.claims.id_token.sub)) {
+      return Check.NO_NEED_TO_PROMPT;
+    }
+
+    let sub = oidc.session.accountId();
+    if (sub === undefined) {
+      return Check.REQUEST_PROMPT;
+    }
+
+    if (oidc.client.sectorIdentifier) {
+      sub = await instance(oidc.provider).configuration('pairwiseIdentifier')(ctx, sub, oidc.client);
+    }
+
+    if (oidc.claims.id_token.sub.value !== sub) {
+      return Check.REQUEST_PROMPT;
+    }
+
+    return Check.NO_NEED_TO_PROMPT;
+  }, ({ oidc }) => ({ sub: oidc.claims.id_token.sub })),
+
+  new Check('essential_acrs', 'none of the requested ACRs could not be obtained', (ctx) => {
+    const { oidc } = ctx;
+    const request = get(oidc.claims, 'id_token.acr', {});
+
+    if (!request || !request.essential || !request.values) {
+      return Check.NO_NEED_TO_PROMPT;
+    }
+
+    if (!Array.isArray(oidc.claims.id_token.acr.values)) {
+      throw new errors.InvalidRequest('invalid claims.id_token.acr.values type');
+    }
+
+    if (request.values.includes(oidc.acr)) {
+      return Check.NO_NEED_TO_PROMPT;
+    }
+
+    return Check.REQUEST_PROMPT;
+  }, ({ oidc }) => ({ acr: oidc.claims.id_token.acr })),
+
+  new Check('essential_acr', 'requested ACR could not be obtained', (ctx) => {
+    const { oidc } = ctx;
+    const request = get(oidc.claims, 'id_token.acr', {});
+
+    if (!request || !request.essential || !request.value) {
+      return Check.NO_NEED_TO_PROMPT;
+    }
+
+    if (request.value === oidc.acr) {
+      return Check.NO_NEED_TO_PROMPT;
+    }
+
+    return Check.REQUEST_PROMPT;
+  }, ({ oidc }) => ({ acr: oidc.claims.id_token.acr })),
+)
+
+/* CONSENT PROMPT */
+new Prompt(
+  { name: 'consent', requestable: true },
+
+  new Check('native_client_prompt', 'native clients require End-User interaction', 'interaction_required', (ctx) => {
+    const { oidc } = ctx;
+    if (
+      oidc.client.applicationType === 'native'
+      && oidc.params.response_type !== 'none'
+      && (!oidc.result || !('consent' in oidc.result))
+    ) {
+      return Check.REQUEST_PROMPT;
+    }
+
+    return Check.NO_NEED_TO_PROMPT;
+  }),
+
+  new Check('op_scopes_missing', 'requested scopes not granted', (ctx) => {
+    const { oidc } = ctx;
+    const encounteredScopes = new Set(oidc.grant.getOIDCScopeEncountered().split(' '));
+
+    let missing;
+    for (const scope of oidc.requestParamOIDCScopes) { // eslint-disable-line no-restricted-syntax
+      if (!encounteredScopes.has(scope)) {
+        missing || (missing = []);
+        missing.push(scope);
+      }
+    }
+
+    if (missing && missing.length) {
+      ctx.oidc[missingOIDCScope] = missing;
+      return Check.REQUEST_PROMPT;
+    }
+
+    return Check.NO_NEED_TO_PROMPT;
+  }, ({ oidc }) => ({ missingOIDCScope: oidc[missingOIDCScope] })),
+
+  new Check('op_claims_missing', 'requested claims not granted', (ctx) => {
+    const { oidc } = ctx;
+    const encounteredClaims = new Set(oidc.grant.getOIDCClaimsEncountered());
+
+    let missing;
+    for (const claim of oidc.requestParamClaims) { // eslint-disable-line no-restricted-syntax
+      if (!encounteredClaims.has(claim) && !['sub', 'sid', 'auth_time', 'acr', 'amr', 'iss'].includes(claim)) {
+        missing || (missing = []);
+        missing.push(claim);
+      }
+    }
+
+    if (missing && missing.length) {
+      ctx.oidc[missingOIDClaims] = missing;
+      return Check.REQUEST_PROMPT;
+    }
+
+    return Check.NO_NEED_TO_PROMPT;
+  }, ({ oidc }) => ({ missingOIDClaims: oidc[missingOIDClaims] })),
+
+  // checks resource server scopes
+  new Check('rs_scopes_missing', 'requested scopes not granted', (ctx) => {
+    const { oidc } = ctx;
+
+    let missing;
+
+    // eslint-disable-next-line no-restricted-syntax
+    for (const [indicator, resourceServer] of Object.entries(ctx.oidc.resourceServers)) {
+      const encounteredScopes = new Set(oidc.grant.getResourceScopeEncountered(indicator).split(' '));
+      const requestedScopes = ctx.oidc.requestParamScopes;
+      const availableScopes = resourceServer.scopes;
+
+      for (const scope of requestedScopes) { // eslint-disable-line no-restricted-syntax
+        if (availableScopes.has(scope) && !encounteredScopes.has(scope)) {
+          missing || (missing = {});
+          missing[indicator] || (missing[indicator] = []);
+          missing[indicator].push(scope);
         }
       }
-    ]
-  }
-]
+    }
 
+    if (missing && Object.keys(missing).length) {
+      ctx.oidc[missingResourceScopes] = missing;
+      return Check.REQUEST_PROMPT;
+    }
+
+    return Check.NO_NEED_TO_PROMPT;
+  }, ({ oidc }) => ({ missingResourceScopes: oidc[missingResourceScopes] })),
+)
+]
 ```
 <a id="interactions-policy-default-interaction-policy-description"></a><details><summary>(Click to expand) default interaction policy description</summary><br>
 
 
 The default interaction policy consists of two available prompts, login and consent <br/><br/>
  - `login` does the following checks:
- - no_session - checks that there's an established session, a authenticated end-user
+ - no_session - checks that there's an established session, an authenticated end-user
  - max_age - processes the max_age parameter (when the session's auth_time is too old it requires login)
  - id_token_hint - processes the id_token_hint parameter (when the end-user sub differs it requires login)
  - claims_id_token_sub_value - processes the claims parameter `sub` (when the `claims` parameter requested sub differs it requires login)
  - essential_acrs - processes the claims parameter `acr` (when the current acr is not amongst the `claims` parameter essential `acr.values` it requires login)
  - essential_acr - processes the claims parameter `acr` (when the current acr is not equal to the `claims` parameter essential `acr.value` it requires login) <br/><br/>
  - `consent` does the following checks:
- - client_not_authorized - every client needs to go through a consent once per end-user session
  - native_client_prompt - native clients always require re-consent
- - scopes_missing - when requested scope includes scope values previously not requested it requests consent
- - claims_missing - when requested claims parameter includes claims previously not requested it requests consent <br/><br/> These checks are the best practice for various privacy and security reasons.  
+ - op_scopes_missing - requires consent when the requested scope includes scope values previously not requested
+ - op_claims_missing - requires consent when the requested claims parameter includes claims previously not requested
+ - rs_scopes_missing - requires consent when the requested resource indicated scope values include scopes previously not requested <br/><br/> These checks are the best practice for various privacy and security reasons.  
 
 
 </details>
-<a id="interactions-policy-disabling-default-checks"></a><details><summary>(Click to expand) disabling default checks</summary><br>
+<a id="interactions-policy-disabling-default-consent-checks"></a><details><summary>(Click to expand) disabling default consent checks</summary><br>
 
 
-You may be required to skip (silently accept) some of the consent checks, while it is discouraged there are valid reasons to do that, for instance in some first-party scenarios or going with pre-existing, previously granted, consents. Definitely do not just remove the checks, remove and add ones that do the same operation with the exception of those scenarios you want to skip and in those you'll have to call some of the methods ran by the `returnTo` / `resume` flow by default to ensure smooth operation.
- - `ctx.oidc.session.ensureClientContainer(clientId<string>)` ensures the client namespace in the session is set up
- - `ctx.oidc.session.promptedScopesFor(clientId<string>, scopes<Set|Array>)` - the scopes that were already prompted before hand
- - `ctx.oidc.session.promptedClaimsFor(clientId<string>, claims<Set|Array>)`- the claims that were already prompted before hand
- - `ctx.oidc.session.rejectedScopesFor(clientId<string>, scopes<Set|Array>)` - the scopes that were already prompted before hand but were rejected
- - `ctx.oidc.session.rejectedClaimsFor(clientId<string>, claims<Set|Array>)` - the claims that were already prompted before hand but were rejected  
+You may be required to skip (silently accept) some of the consent checks, while it is discouraged there are valid reasons to do that, for instance in some first-party scenarios or going with pre-existing, previously granted, consents. To simply silenty "accept" first-party/resource indicated scopes or pre-agreed upon claims use the `loadExistingGrant` configuration helper function, in there you may just instantiate (and save!) a grant for the current clientId and accountId values.  
 
 
 </details>
@@ -2673,6 +2596,24 @@ async issueRefreshToken(ctx, client, code) {
 }
 ```
 </details>
+
+### loadExistingGrant
+
+Helper function used to load existing but also just in time pre-established Grants,to attempt to resolve an Authorization Request with. Default: loads a grant based on the .,interaction result `consent.grantId` first, falls back to the existing grantId for the client,in the current session.  
+
+
+_**default value**_:
+```js
+async function loadExistingGrant(ctx) {
+  const grantId = (ctx.oidc.result
+    && ctx.oidc.result.consent
+    && ctx.oidc.result.consent.grantId) || ctx.oidc.session.grantIdFor(ctx.oidc.client.clientId);
+  if (grantId) {
+    return ctx.oidc.provider.Grant.find(grantId);
+  }
+  return undefined;
+}
+```
 
 ### pairwiseIdentifier
 
@@ -2796,6 +2737,24 @@ _**default value**_:
 ]
 ```
 
+### revokeGrantPolicy
+
+Function called in a number of different context to determine whether an underlying Grant entry should also be revoked or not.   
+ contexts:
+ - RP-Initiated Logout
+ - Refresh Token Revocation
+ - Authorization Code re-use
+ - Device Code re-use
+ - Rotated Refresh Token re-use  
+
+
+_**default value**_:
+```js
+function revokeGrantPolicy(ctx) {
+  return true;
+}
+```
+
 ### rotateRefreshToken
 
 Configures if and how the OP rotates refresh tokens after they are used. Supported values are
@@ -2851,7 +2810,7 @@ _**default value**_:
 
 ### scopes
 
-Array of additional scope values that the OP signals to support in the discovery endpoint  
+Array of additional scope values that the OP signals to support in the discovery endpoint. Only add scopes the Authorization Server has a corresponding resource for. Resource Server scopes don't belong here, see `features.resourceIndicators`.  
 
 
 _**default value**_:
@@ -2915,10 +2874,21 @@ _**recommendation**_: Do not set token TTLs longer then they absolutely have to 
 _**default value**_:
 ```js
 {
-  AccessToken: 3600 /* 1 hour in seconds */,
+  AccessToken: function AccessTokenTTL(ctx, token, client) {
+    if (token.resourceServer) {
+      return token.resourceServer.accessTokenTTL || 60 * 60; // 1 hour in seconds
+    }
+    return 60 * 60; // 1 hour in seconds
+  },
   AuthorizationCode: 600 /* 10 minutes in seconds */,
-  ClientCredentials: 600 /* 10 minutes in seconds */,
+  ClientCredentials: function ClientCredentialsTTL(ctx, token, client) {
+    if (token.resourceServer) {
+      return token.resourceServer.accessTokenTTL || 10 * 60; // 10 minutes in seconds
+    }
+    return 10 * 60; // 10 minutes in seconds
+  },
   DeviceCode: 600 /* 10 minutes in seconds */,
+  Grant: 1209600 /* 14 days in seconds */,
   IdToken: 3600 /* 1 hour in seconds */,
   Interaction: 3600 /* 1 hour in seconds */,
   RefreshToken: function RefreshTokenTTL(ctx, token, client) {

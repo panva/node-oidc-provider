@@ -1,9 +1,8 @@
 const cloneDeep = require('lodash/cloneDeep');
-const merge = require('lodash/merge');
 
 const { JWA } = require('../lib/consts');
 
-module.exports = merge({
+module.exports = {
   claims: {
     address: {
       address: null,
@@ -57,4 +56,4 @@ module.exports = merge({
   pkce: {
     required: () => false,
   },
-}, global.TEST_CONFIGURATION_DEFAULTS);
+};

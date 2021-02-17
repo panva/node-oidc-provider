@@ -16,7 +16,7 @@ describe('dynamic ttl', () => {
   afterEach(function () {
     i(this.provider).configuration().ttl = this.prev;
   });
-  before(function () { return this.login(); });
+  before(function () { return this.login({ scope: 'openid offline_access' }); });
 
   it('client credentials', async function () {
     const ClientCredentials = sinon.fake.returns(123);
@@ -62,7 +62,8 @@ describe('dynamic ttl', () => {
 
     this.TestAdapter.for('DeviceCode').syncUpdate(this.getTokenJti(device_code), {
       scope: 'openid offline_access',
-      accountId: 'account',
+      accountId: this.loggedInAccountId,
+      grantId: this.getGrantId('client'),
     });
 
     const IdToken = sinon.fake.returns(123);

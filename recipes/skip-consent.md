@@ -1,50 +1,42 @@
 # Skipping consent screen
 
-- built for version: ^6.0.0
+- built for version: ^7.0.0
 - no guarantees this is bug-free, no support will be provided for this, you've been warned, you're on
 your own
 - it is not recommended to have consent-free flows for the obvious issues this poses for native 
 applications
 
-Sometimes with your provider you don't need a consent screen.
+Sometimes your use-case doesn't need a consent screen.
 This use-case might occur if your provider has only *first-party* clients configured.
-To achieve that you need to remove `consent` interaction from provider policy configuration:
+To achieve that you want to add the requested claims/scopes/resource scopes to the grant:
 
 ```js
-const {
-  interactionPolicy: { base },
-} = require('oidc-provider');
-
-const policy = base(); // initialize your own policy from default base policy
-policy.remove('consent'); // remove consent Prompt from it
-
-
 const oidcConfiguration = {
-  interactions: {
-    policy, // add customized policy here
-    // ... rest of the interactions configuration
-  },
-  // ...rest of the OP configuraton
+  loadExistingGrant(ctx) {
+    const grantId = (ctx.oidc.result
+      && ctx.oidc.result.consent
+      && ctx.oidc.result.consent.grantId) || ctx.oidc.session.grantIdFor(ctx.oidc.client.clientId);
+
+    if (grantId) {
+      return ctx.oidc.provider.Grant.find(grantId);
+    } else if (isFirstParty(ctx.oidc.client)) {
+      const grant = new ctx.oidc.provider.Grant({
+        clientId: ctx.oidc.client.clientId,
+        accountId: ctx.oidc.session.accountId(),
+      });
+
+      grant.addOIDCScope('openid email profile');
+      grant.addOIDCClaims(['first_name']);
+      grant.addResourceScope('urn:example:resource-indicator', 'api:read api:write');
+      await grant.save();
+      return grant;
+    }
+  }
 };
 const provider = new Provider(ISSUER, oidcConfiguration); // finally, configure your provider
 ```
 
-Additionally, if you do remove consent prompt, you will get error when your RPs try to request scopes other than `openid` and `offline_access`.
-In order to accomodate those use-cases, you need to provide accepted property in interaction results whenever `interactionFinished` is called.
-
-```js
-const details = await provider.interactionDetails(req, res);
-// rest of your code...
-
-const result = {
-  login: { account: account.accountId },
-  consent: { 
-    rejectedScopes: [], // array of strings representing rejected scopes, see below
-    rejectedClaims: [], // array of strings representing rejected claims, see below
-  },
-};
-const options = { mergeWithLastSubmission: false };
-await provider.interactionFinished(req, res, result, options);
-```
-
-You should also provide of `rejectedScopes` and `rejectedClaims` in `consent` object in order to prevent scopes/claims being exposed to clients you don't want them to be exposed to.
+This will get you as far as not asking for any consent unless the application is a native 
+application (e.g. iOS, Android, CLI, Device Flow). It is recommended to still show a consent
+screen to those with the application details to those since they are public clients and their
+redirect_uri ownership can rarely be validated.

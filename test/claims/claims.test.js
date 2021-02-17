@@ -517,7 +517,7 @@ expire.setDate(expire.getDate() + 1);
             .expect(auth.validateState)
             .expect(auth.validateClientLocation)
             .expect(auth.validateError('consent_required'))
-            .expect(auth.validateErrorDescription('requested claims not granted by End-User'));
+            .expect(auth.validateErrorDescription('requested claims not granted'));
         });
 
         it('id_token_hint belongs to a user that is not currently logged in [1/3]', async function () {

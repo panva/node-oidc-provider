@@ -224,9 +224,12 @@ describe('PKCE RFC7636', () => {
   });
 
   describe('token grant_type=authorization_code', () => {
+    before(function () { return this.login(); });
+
     it('passes with plain values', async function () {
       const authCode = new this.provider.AuthorizationCode({
-        accountId: 'sub',
+        accountId: this.loggedInAccountId,
+        grantId: this.getGrantId(),
         scope: 'openid',
         clientId: 'client',
         codeChallenge: 'E9Melhoa2OwvFrEMTJguCHaoeK1t8URWbuGJSstw-cM',
@@ -249,7 +252,8 @@ describe('PKCE RFC7636', () => {
 
     it('passes with S256 values', async function () {
       const authCode = new this.provider.AuthorizationCode({
-        accountId: 'sub',
+        accountId: this.loggedInAccountId,
+        grantId: this.getGrantId(),
         scope: 'openid',
         clientId: 'client',
         codeChallenge: 'E9Melhoa2OwvFrEMTJguCHaoeK1t8URWbuGJSstw-cM',
@@ -272,7 +276,8 @@ describe('PKCE RFC7636', () => {
 
     it('checks presence of code_verifier param if code has codeChallenge', async function () {
       const authCode = new this.provider.AuthorizationCode({
-        accountId: 'sub',
+        accountId: this.loggedInAccountId,
+        grantId: this.getGrantId(),
         scope: 'openid',
         clientId: 'client',
         codeChallenge: 'E9Melhoa2OwvFrEMTJguCHaoeK1t8URWbuGJSstw-cM',
@@ -297,7 +302,8 @@ describe('PKCE RFC7636', () => {
 
     it('checks value of code_verifier when method = plain', async function () {
       const authCode = new this.provider.AuthorizationCode({
-        accountId: 'sub',
+        accountId: this.loggedInAccountId,
+        grantId: this.getGrantId(),
         scope: 'openid',
         clientId: 'client',
         codeChallenge: 'E9Melhoa2OwvFrEMTJguCHaoeK1t8URWbuGJSstw-cM',
@@ -323,7 +329,8 @@ describe('PKCE RFC7636', () => {
 
     it('checks value of code_verifier when method = S256', async function () {
       const authCode = new this.provider.AuthorizationCode({
-        accountId: 'sub',
+        accountId: this.loggedInAccountId,
+        grantId: this.getGrantId(),
         scope: 'openid',
         clientId: 'client',
         codeChallenge: 'E9Melhoa2OwvFrEMTJguCHaoeK1t8URWbuGJSstw-cM',
@@ -349,7 +356,8 @@ describe('PKCE RFC7636', () => {
 
     it('checks that code_verifier is conform to its ABNF (too short)', async function () {
       const authCode = new this.provider.AuthorizationCode({
-        accountId: 'sub',
+        accountId: this.loggedInAccountId,
+        grantId: this.getGrantId(),
         scope: 'openid',
         clientId: 'client',
         codeChallenge: 'E9Melhoa2OwvFrEMTJguCHaoeK1t8URWbuGJSstw-cM',
@@ -376,7 +384,8 @@ describe('PKCE RFC7636', () => {
 
     it('checks that code_verifier is conform to its ABNF (too long)', async function () {
       const authCode = new this.provider.AuthorizationCode({
-        accountId: 'sub',
+        accountId: this.loggedInAccountId,
+        grantId: this.getGrantId(),
         scope: 'openid',
         clientId: 'client',
         codeChallenge: 'E9Melhoa2OwvFrEMTJguCHaoeK1t8URWbuGJSstw-cM',
@@ -403,7 +412,8 @@ describe('PKCE RFC7636', () => {
 
     it('checks that code_verifier is conform to its ABNF (charset)', async function () {
       const authCode = new this.provider.AuthorizationCode({
-        accountId: 'sub',
+        accountId: this.loggedInAccountId,
+        grantId: this.getGrantId(),
         scope: 'openid',
         clientId: 'client',
         codeChallenge: 'E9Melhoa2OwvFrEMTJguCHaoeK1t8URWbuGJSstw-cM',
@@ -439,7 +449,8 @@ describe('PKCE RFC7636', () => {
 
       it('passes if S256 is used', async function () {
         const authCode = new this.provider.AuthorizationCode({
-          accountId: 'sub',
+          accountId: this.loggedInAccountId,
+          grantId: this.getGrantId(),
           scope: 'openid',
           clientId: 'client',
           codeChallenge: 'E9Melhoa2OwvFrEMTJguCHaoeK1t8URWbuGJSstw-cM',

@@ -97,6 +97,7 @@ module.exports = function testHelper(dir, {
     });
 
     let agent;
+    let lastSession;
 
     function logout() {
       const expire = new Date(0);
@@ -110,18 +111,23 @@ module.exports = function testHelper(dir, {
       return agent._saveCookies.bind(agent)({ headers: { 'set-cookie': cookies } });
     }
 
-    function login({
-      scope = 'openid', claims, rejectedScopes = [], rejectedClaims = [],
+    async function login({
+      scope = 'openid',
+      claims,
+      resources = {},
+      rejectedScopes = [],
+      rejectedClaims = [],
+      account = nanoid(),
     } = {}) {
       const sessionId = nanoid();
       const loginTs = epochTime();
       const expire = new Date();
       expire.setDate(expire.getDate() + 1);
-      const account = nanoid();
       this.loggedInAccountId = account;
 
       const keys = new KeyGrip(i(provider).configuration('cookies.keys'));
       const session = new (provider.Session)({ jti: sessionId, loginTs, account });
+      lastSession = session;
       const sessionCookie = `_session=${sessionId}; path=/; expires=${expire.toGMTString()}; httponly`;
       const cookies = [sessionCookie];
 
@@ -136,16 +142,31 @@ module.exports = function testHelper(dir, {
         ctx.params.claims = JSON.stringify(ctx.params.claims);
       }
 
-      clients.forEach((cl) => {
+      // eslint-disable-next-line no-restricted-syntax
+      for (const cl of clients) {
+        const grant = new provider.Grant({ clientId: cl.client_id, accountId: account });
+        grant.addOIDCScope(scope);
+        if (ctx.params.claims) {
+          grant.addOIDCClaims(Object.keys(JSON.parse(ctx.params.claims).id_token || {}));
+          grant.addOIDCClaims(Object.keys(JSON.parse(ctx.params.claims).userinfo || {}));
+        }
+        if (rejectedScopes.length) {
+          grant.rejectOIDCScope(rejectedScopes.join(' '));
+        }
+        if (rejectedClaims.length) {
+          grant.rejectOIDCClaims(rejectedClaims);
+        }
+        // eslint-disable-next-line no-restricted-syntax
+        for (const [key, value] of Object.entries(resources)) {
+          grant.addResourceScope(key, value);
+        }
+        // eslint-disable-next-line no-await-in-loop
+        const grantId = await grant.save();
         session.authorizations[cl.client_id] = {
           sid: nanoid(),
-          grantId: nanoid(),
-          promptedScopes: scope.split(' '),
-          promptedClaims: [...ctx.requestParamClaims],
-          rejectedScopes,
-          rejectedClaims,
+          grantId,
         };
-      });
+      }
 
       let ttl = i(provider).configuration('ttl.Session');
 
@@ -179,11 +200,13 @@ module.exports = function testHelper(dir, {
         Object.defineProperty(this, 'validateClientLocation', {
           value: (response) => {
             const actual = parse(response.headers.location, true);
-            let expected
+            let expected;
             if (this.redirect_uri) {
+              expect(response.headers.location).to.match(new RegExp(this.redirect_uri));
               expected = parse(this.redirect_uri, true);
             } else {
-              expected = parse(c && c.redirect_uris[0], true);
+              expect(response.headers.location).to.match(new RegExp(c.redirect_uris[0]));
+              expected = parse(c.redirect_uris[0], true);
             }
 
             ['protocol', 'host', 'pathname'].forEach((attr) => {
@@ -287,6 +310,10 @@ module.exports = function testHelper(dir, {
       return this.validateResponseParameter('error_description', expected);
     };
 
+    function getLastSession() {
+      return lastSession;
+    }
+
     function getSession({ instantiate } = { instantiate: false }) {
       const { value: sessionId } = agent.jar.getCookie('_session', { path: '/' });
       const raw = TestAdapter.for('Session').syncFind(sessionId);
@@ -301,6 +328,19 @@ module.exports = function testHelper(dir, {
     function getSessionId() {
       const { value: sessionId } = agent.jar.getCookie('_session', { path: '/' }) || {};
       return sessionId;
+    }
+
+    function getGrantId(client_id) {
+      const session = getSession();
+      let clientId = client_id;
+
+      if (!clientId && client) clientId = client.client_id;
+      if (!clientId && clients) clientId = clients[0].client_id;
+      try {
+        return session.authorizations[clientId].grantId;
+      } catch (err) {
+        throw new Error('getGrantId() failed');
+      }
     }
 
     function wrap(opts) {
@@ -375,8 +415,10 @@ module.exports = function testHelper(dir, {
       assertOnce,
       AuthorizationRequest,
       failWith,
+      getLastSession,
       getSession,
       getSessionId,
+      getGrantId,
       getTokenJti,
       login,
       logout,
@@ -511,11 +553,6 @@ module.exports.skipConsent = () => {
 
   before(function () {
     sandbox.stub(this.provider.OIDCContext.prototype, 'promptPending').returns(false);
-    sandbox.stub(this.provider.OIDCContext.prototype, 'requestParamScopes').get(() => new Set());
-    sandbox.stub(this.provider.OIDCContext.prototype, 'requestParamClaims').get(() => new Set());
-    sandbox.stub(this.provider.OIDCContext.prototype, 'acceptedScope').callsFake(function () {
-      return this.params.scope;
-    });
   });
 
   after(sandbox.restore);

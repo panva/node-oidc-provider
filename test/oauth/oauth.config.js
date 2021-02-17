@@ -11,7 +11,6 @@ config.responseTypes = [
   'code',
   'id_token token',
   'id_token',
-  'token',
   'none',
 ];
 config.scopes = ['openid', 'offline_access', 'api:read'];
@@ -33,7 +32,6 @@ module.exports = {
       'code',
       'id_token token',
       'id_token',
-      'token',
       'none',
     ],
     redirect_uris: ['https://client.example.com/cb'],

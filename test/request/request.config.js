@@ -12,7 +12,6 @@ merge(config.features, {
   },
   claimsParameter: { enabled: true },
   deviceFlow: { enabled: true },
-  resourceIndicators: { enabled: true },
 });
 
 pull(config.enabledJWA.requestObjectSigningAlgValues, 'HS384');

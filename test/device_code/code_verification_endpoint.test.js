@@ -300,7 +300,7 @@ describe('POST code_verification endpoint w/ verification', () => {
     this.getSession().state = { secret: xsrf };
   });
 
-  bootstrap.passInteractionChecks('native_client_prompt', 'claims_missing', () => {
+  bootstrap.passInteractionChecks('native_client_prompt', 'op_claims_missing', () => {
     it('accepts an abort command', async function () {
       const spy = sinon.spy(i(this.provider).configuration('features.deviceFlow'), 'userCodeInputSource');
 
@@ -311,7 +311,6 @@ describe('POST code_verification endpoint w/ verification', () => {
           scope: 'openid email',
           client_id: 'client',
           claims: JSON.stringify({ userinfo: { email: null } }),
-          resource: 'urn:foo:bar',
         },
       }).save();
 
@@ -344,7 +343,6 @@ describe('POST code_verification endpoint w/ verification', () => {
           scope: 'openid email',
           client_id: 'client',
           claims: JSON.stringify({ userinfo: { email: null } }),
-          resource: 'urn:foo:bar',
         },
       }).save();
 
@@ -365,8 +363,7 @@ describe('POST code_verification endpoint w/ verification', () => {
       expect(code).to.have.property('accountId', session.account);
       expect(code).to.have.property('authTime', session.loginTs);
       expect(code).to.have.property('scope', 'openid email');
-      expect(code).to.have.property('claims').that.eqls({ userinfo: { email: null }, rejected: ['email_verified'] });
-      expect(code).to.have.property('resource', 'urn:foo:bar');
+      expect(code).to.have.property('claims').that.eqls({ userinfo: { email: null } });
 
       expect(spy.calledOnce).to.be.true;
     });
@@ -455,7 +452,7 @@ describe('POST code_verification endpoint w/ verification', () => {
       expect(code).to.have.property('accountId', session.account);
       expect(code).to.have.property('authTime', session.loginTs);
       expect(code).to.have.property('scope', 'openid email');
-      expect(code).to.have.property('claims').that.eqls({ userinfo: { email: null }, rejected: ['email_verified'] });
+      expect(code).to.have.property('claims').that.eqls({ userinfo: { email: null } });
 
       expect(spy.calledOnce).to.be.true;
     });

@@ -20,8 +20,8 @@ describe('grant_type=refresh_token', () => {
 
   afterEach(() => timekeeper.reset());
 
-  before(function () { return this.login({ scope: 'openid email' }); });
-  after(function () { return this.logout(); });
+  beforeEach(function () { return this.login({ scope: 'openid email offline_access' }); });
+  afterEach(function () { return this.logout(); });
   bootstrap.skipConsent();
 
   beforeEach(function (done) {
@@ -92,7 +92,7 @@ describe('grant_type=refresh_token', () => {
 
   it('populates ctx.oidc.entities', function (done) {
     this.provider.use(this.assertOnce((ctx) => {
-      expect(ctx.oidc.entities).to.have.keys('Account', 'Client', 'AccessToken', 'RefreshToken');
+      expect(ctx.oidc.entities).to.have.keys('Account', 'Grant', 'Client', 'AccessToken', 'RefreshToken');
       expect(ctx.oidc.entities.RefreshToken).to.have.property('gty', 'authorization_code');
       expect(ctx.oidc.entities.AccessToken).to.have.property('gty', 'authorization_code refresh_token');
     }, done));
@@ -211,6 +211,7 @@ describe('grant_type=refresh_token', () => {
       const { rt } = this;
       const spy = sinon.spy();
       this.provider.on('access_token.saved', spy);
+      this.provider.on('access_token.issued', spy);
 
       return this.agent.post(route)
         .auth('client', 'secret')
@@ -233,6 +234,7 @@ describe('grant_type=refresh_token', () => {
       const { rt } = this;
       const spy = sinon.spy();
       this.provider.on('access_token.saved', spy);
+      this.provider.on('access_token.issued', spy);
 
       return this.agent.post(route)
         .auth('client', 'secret')
@@ -325,7 +327,7 @@ describe('grant_type=refresh_token', () => {
 
     it('populates ctx.oidc.entities', function (done) {
       this.provider.use(this.assertOnce((ctx) => {
-        expect(ctx.oidc.entities).to.have.keys('Account', 'Client', 'AccessToken', 'RotatedRefreshToken', 'RefreshToken');
+        expect(ctx.oidc.entities).to.have.keys('Account', 'Grant', 'Client', 'AccessToken', 'RotatedRefreshToken', 'RefreshToken');
         expect(ctx.oidc.entities.RotatedRefreshToken).not.to.eql(ctx.oidc.entities.RefreshToken);
         expect(ctx.oidc.entities.RotatedRefreshToken).to.have.property('gty', 'authorization_code');
         expect(ctx.oidc.entities.RefreshToken).to.have.property('gty', 'authorization_code refresh_token');
@@ -376,6 +378,7 @@ describe('grant_type=refresh_token', () => {
       this.provider.on('refresh_token.consumed', consumeSpy);
       this.provider.on('refresh_token.saved', issueSpy);
       this.provider.on('access_token.saved', issueSpy);
+      this.provider.on('access_token.issued', issueSpy);
 
       return this.agent.post(route)
         .auth('client', 'secret')
@@ -400,6 +403,7 @@ describe('grant_type=refresh_token', () => {
       this.provider.on('refresh_token.consumed', consumeSpy);
       this.provider.on('refresh_token.saved', issueSpy);
       this.provider.on('access_token.saved', issueSpy);
+      this.provider.on('access_token.issued', issueSpy);
 
       return this.agent.post(route)
         .auth('client', 'secret')
@@ -464,7 +468,7 @@ describe('grant_type=refresh_token', () => {
 
     it('populates ctx.oidc.entities', function (done) {
       this.provider.use(this.assertOnce((ctx) => {
-        expect(ctx.oidc.entities).to.have.keys('Account', 'Client', 'AccessToken', 'RotatedRefreshToken', 'RefreshToken');
+        expect(ctx.oidc.entities).to.have.keys('Account', 'Grant', 'Client', 'AccessToken', 'RotatedRefreshToken', 'RefreshToken');
         expect(ctx.oidc.entities.RotatedRefreshToken).not.to.eql(ctx.oidc.entities.RefreshToken);
         expect(ctx.oidc.entities.RotatedRefreshToken).to.have.property('gty', 'authorization_code');
         expect(ctx.oidc.entities.RefreshToken).to.have.property('gty', 'authorization_code refresh_token');
@@ -538,6 +542,7 @@ describe('grant_type=refresh_token', () => {
       this.provider.on('refresh_token.consumed', consumeSpy);
       this.provider.on('refresh_token.saved', issueSpy);
       this.provider.on('access_token.saved', issueSpy);
+      this.provider.on('access_token.issued', issueSpy);
 
       return this.agent.post(route)
         .auth('client', 'secret')
@@ -602,7 +607,7 @@ describe('grant_type=refresh_token', () => {
 
     it('does not rotate', function (done) {
       this.provider.use(this.assertOnce((ctx) => {
-        expect(ctx.oidc.entities).to.have.keys('Account', 'Client', 'AccessToken', 'RefreshToken');
+        expect(ctx.oidc.entities).to.have.keys('Account', 'Grant', 'Client', 'AccessToken', 'RefreshToken');
         expect(ctx.oidc.entities.RefreshToken).to.have.property('gty', 'authorization_code');
         expect(ctx.oidc.entities.AccessToken).to.have.property('gty', 'authorization_code refresh_token');
       }, done));

@@ -11,7 +11,7 @@ const docs = require('../lib/helpers/docs');
 const values = require('../lib/helpers/defaults')();
 
 for (const [key, value] of Object.entries(values.ttl)) { // eslint-disable-line no-restricted-syntax
-  if (key === 'RefreshToken') {
+  if (['RefreshToken', 'ClientCredentials', 'AccessToken'].includes(key)) {
     value[inspect.custom] = () => (
       value.toString()
         .replace(/ {6}/g, '  ')
@@ -31,7 +31,13 @@ for (const [key, value] of Object.entries(values.ttl)) { // eslint-disable-line 
   }
 }
 
-values.interactions.policy[inspect.custom] = () => readFileSync('./docs/checks.txt').toString();
+values.interactions.policy[inspect.custom] = () => `[
+/* LOGIN PROMPT */
+${require('../lib/helpers/interaction_policy/prompts/login').toString().replace('() => new Prompt', 'new Prompt')}
+
+/* CONSENT PROMPT */
+${require('../lib/helpers/interaction_policy/prompts/consent').toString().replace('() => new Prompt', 'new Prompt')}
+]`;
 
 function capitalizeSentences(copy) {
   return copy.replace(/\. [a-z]/g, (match) => `. ${match.slice(-1).toUpperCase()}`);

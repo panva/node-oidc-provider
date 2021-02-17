@@ -7,6 +7,7 @@ import * as dns from 'dns';
 import * as http from 'http';
 import * as https from 'https';
 import * as http2 from 'http2';
+import * as crypto from 'crypto';
 
 import * as jose from 'jose';
 import * as Koa from 'koa';
@@ -119,18 +120,10 @@ export interface ClaimsParameter {
   };
 }
 
-export interface ClaimsWithRejects extends ClaimsParameter {
-  rejected?: string[];
-}
-
 export interface ClientAuthorizationState {
   persistsLogout?: boolean;
   sid?: string;
   grantId?: string;
-  rejectedScopes?: string[];
-  rejectedClaims?: string[];
-  promptedClaims?: string[];
-  promptedScopes?: string[];
 }
 
 export interface PromptDetail {
@@ -197,16 +190,6 @@ declare class Session extends BaseModel {
   sidFor(clientId: string, value: string): void;
   grantIdFor(clientId: string): string;
   grantIdFor(clientId: string, value: string): void;
-  acceptedScopesFor(clientId: string): Set<string>;
-  acceptedClaimsFor(clientId: string): Set<string>;
-  promptedScopesFor(clientId: string): Set<string>;
-  promptedScopesFor(clientId: string, scopes: string[] | Set<string>): void;
-  promptedClaimsFor(clientId: string): Set<string>;
-  promptedClaimsFor(clientId: string, claims: string[] | Set<string>): void;
-  rejectedScopesFor(clientId: string): Set<string>;
-  rejectedScopesFor(clientId: string, scopes: string[] | Set<string>, replace?: boolean): void;
-  rejectedClaimsFor(clientId: string): Set<string>;
-  rejectedClaimsFor(clientId: string, claims: string[] | Set<string>, replace?: boolean): void;
 
   save(ttl: number): Promise<string>;
   persist(): Promise<string>;
@@ -215,6 +198,37 @@ declare class Session extends BaseModel {
   static find<T>(this: { new (...args: any[]): T }, cookieId: string): Promise<T | undefined>;
   static findByUid(uid: string): Promise<Session | undefined>;
   static get(ctx: Koa.Context): Promise<Session>;
+}
+
+declare class Grant extends BaseModel {
+  accountId?: string;
+  clientId?: string;
+  openid?: {
+    scope?: string;
+    claims?: string[];
+  };
+  resources?: {
+    [resource: string]: string;
+  }
+  rejected?: Pick<Grant, 'openid' | 'resources'>
+
+  addOIDCScope(scope: string): undefined;
+  rejectOIDCScope(scope: string): undefined;
+  getOIDCScope(): string;
+  getOIDCScopeEncountered(): string;
+  getOIDCScopeFiltered(filter: Set<string>): string;
+
+  addOIDCClaims(claims: string[]): undefined;
+  rejectOIDCClaims(claims: string[]): undefined;
+  getOIDCClaims(): string[];
+  getOIDCClaimsEncountered(): string[];
+  getOIDCClaimsFiltered(filter: Set<string>): string[];
+
+  addResourceScope(resource: string, scope: string): undefined;
+  rejectResourceScope(resource: string, scope: string): undefined;
+  getResourceScope(resource: string): string;
+  getResourceScopeEncountered(resource: string): string;
+  getResourceScopeFiltered(resource: string, filter: Set<string>): string;
 }
 
 declare class JWTStructured {
@@ -294,7 +308,7 @@ declare class RefreshToken extends BaseToken {
     acr?: string;
     amr?: string[];
     authTime?: number;
-    claims?: ClaimsWithRejects;
+    claims?: ClaimsParameter;
     nonce?: string;
     resource?: string | string[];
     scope: string;
@@ -314,7 +328,7 @@ declare class RefreshToken extends BaseToken {
   acr?: string;
   amr?: string[];
   authTime?: number;
-  claims?: ClaimsWithRejects;
+  claims?: ClaimsParameter;
   nonce?: string;
   resource?: string | string[];
   scope?: string;
@@ -342,7 +356,7 @@ declare class AuthorizationCode extends BaseToken {
     acr?: string;
     amr?: string[];
     authTime?: number;
-    claims?: ClaimsWithRejects;
+    claims?: ClaimsParameter;
     nonce?: string;
     resource?: string | string[];
     codeChallenge?: string;
@@ -365,7 +379,7 @@ declare class AuthorizationCode extends BaseToken {
   acr?: string;
   amr?: string[];
   authTime?: number;
-  claims?: ClaimsWithRejects;
+  claims?: ClaimsParameter;
   nonce?: string;
   resource?: string | string[];
   scope?: string;
@@ -407,7 +421,7 @@ declare class DeviceCode extends BaseToken {
   acr?: string;
   amr?: string[];
   authTime?: number;
-  claims?: ClaimsWithRejects;
+  claims?: ClaimsParameter;
   nonce?: string;
   resource?: string | string[];
   scope?: string;
@@ -426,7 +440,7 @@ declare class DeviceCode extends BaseToken {
 declare class ClientCredentials extends BaseToken {
   constructor(properties: {
     client: Client;
-    resource?: string | string[];
+    resourceServer?: ResourceServer;
     scope: string;
     [key: string]: any;
   });
@@ -438,7 +452,6 @@ declare class ClientCredentials extends BaseToken {
   'x5t#S256'?: string;
   jkt?: string;
 
-  setAudiences(audience: string | string[]): void;
   isSenderConstrained(): boolean;
 }
 
@@ -462,7 +475,8 @@ declare class AccessToken extends BaseToken {
   constructor(properties: {
     client: Client;
     accountId: string;
-    claims?: ClaimsWithRejects;
+    resourceServer?: ResourceServer;
+    claims?: ClaimsParameter;
     aud?: string | string[];
     scope: string;
     sid?: string;
@@ -477,7 +491,7 @@ declare class AccessToken extends BaseToken {
   readonly kind: 'AccessToken';
   accountId: string;
   aud: string | string[];
-  claims?: ClaimsWithRejects;
+  claims?: ClaimsParameter;
   extra?: AnyObject;
   grantId: string;
   scope?: string;
@@ -489,7 +503,6 @@ declare class AccessToken extends BaseToken {
   'x5t#S256'?: string;
   jkt?: string;
 
-  setAudiences(audience: string | string[]): void;
   isSenderConstrained(): boolean;
 
   static revokeByGrantId(grantId: string): Promise<void>;
@@ -596,6 +609,28 @@ declare class Client {
   static find(id: string): Promise<Client | undefined>;
 }
 
+export interface ResourceServer {
+  audience?: string;
+  scope: string;
+  accessTokenTTL?: number;
+  accessTokenFormat?: TokenFormat;
+  jwt?: {
+    sign?: {
+      alg: AsymmetricSigningAlgorithm
+    } | {
+      alg: SymmetricSigningAlgorithm
+      key: crypto.KeyObject | Buffer
+      kid?: string
+    },
+    encrypt?: {
+      alg: EncryptionAlgValues
+      enc: EncryptionEncValues
+      key: crypto.KeyObject
+      kid?: string
+    }
+  }
+}
+
 declare class OIDCContext {
   constructor(ctx: Koa.Context);
   readonly route: string;
@@ -626,6 +661,7 @@ declare class OIDCContext {
   readonly claims: ClaimsParameter;
   readonly issuer: string;
   readonly provider: Provider;
+  readonly resourceServers?: { [key: string]: ResourceServer }
 
   entity(key: string, value: any): void;
 
@@ -649,9 +685,6 @@ declare class OIDCContext {
   readonly amr: string[];
   readonly body?: AnyObject;
   readonly params?: AnyObject;
-
-  acceptedScope(): string[] | void;
-  resolvedClaims(): ClaimsWithRejects;
 
   getAccessToken(opts?: { acceptDPoP?: boolean, acceptQueryParam?: boolean }): string;
 }
@@ -697,7 +730,7 @@ export interface AdapterPayload extends AnyClientMetadata {
     [clientId: string]: ClientAuthorizationState;
   };
   authTime?: number;
-  claims?: ClaimsWithRejects;
+  claims?: ClaimsParameter;
   clientId?: string;
   codeChallenge?: string;
   codeChallengeMethod?: string;
@@ -930,8 +963,8 @@ export interface Configuration {
 
     resourceIndicators?: {
       enabled?: boolean;
-      ack?: 2 | 3 | 4 | 5 | 6 | 7 | 'draft-07';
-      allowedPolicy?: (ctx: KoaContextWithOIDC, resources: string | string[], client: Client) => CanBePromise<boolean>;
+      getResourceServerInfo?: (ctx: KoaContextWithOIDC, resourceIndicator: string, client: Client) => CanBePromise<ResourceServer>;
+      defaultResource?: (ctx: KoaContextWithOIDC) => CanBePromise<string | string[]>;
     };
   };
 
@@ -940,7 +973,6 @@ export interface Configuration {
   formats?: {
     AccessToken?: AccessTokenFormatFunction | TokenFormat;
     ClientCredentials?: ClientCredentialsFormatFunction | TokenFormat;
-    tokenSigningAlg?: (ctx: KoaContextWithOIDC, token: AccessToken | ClientCredentials) => CanBePromise<AsymmetricSigningAlgorithm>;
     bitsOfOpaqueRandomness?: number | ((ctx: KoaContextWithOIDC, token: BaseToken) => number);
     customizers?: {
       jwt?: (ctx: KoaContextWithOIDC, token: AccessToken | ClientCredentials, parts: JWTStructured) => CanBePromise<JWTStructured>;
@@ -998,9 +1030,12 @@ export interface Configuration {
     RefreshToken?: TTLFunction<RefreshToken> | number;
     Interaction?: TTLFunction<Interaction> | number;
     Session?: TTLFunction<Session> | number;
+    Grant?: TTLFunction<RefreshToken> | number;
 
     [key: string]: any;
   };
+
+  loadExistingGrant?: (ctx: KoaContextWithOIDC) => CanBePromise<Grant>;
 
   extraClientMetadata?: {
     properties?: string[];
@@ -1018,13 +1053,6 @@ export interface Configuration {
     policy?: interactionPolicy.Prompt[];
     url?: (ctx: KoaContextWithOIDC, interaction: Interaction) => CanBePromise<string>;
   };
-
-  audiences?: (
-    ctx: KoaContextWithOIDC,
-    sub: string | undefined,
-    token: AccessToken | ClientCredentials,
-    use: 'access_token' | 'client_credentials'
-  ) => CanBePromise<false | string | string[]>;
 
   findAccount?: FindAccount;
 
@@ -1073,9 +1101,7 @@ export interface InteractionResults {
   };
 
   consent?: {
-    rejectedClaims?: string[] | Set<string>
-    rejectedScopes?: string[] | Set<string>
-    replace?: boolean;
+    grantId?: string
   };
 
   [key: string]: any;
@@ -1119,6 +1145,7 @@ export class Provider extends events.EventEmitter {
   addListener(event: string, listener: (...args: any[]) => void): this;
   addListener(event: 'access_token.destroyed', listener: (accessToken: AccessToken) => void): this;
   addListener(event: 'access_token.saved', listener: (accessToken: AccessToken) => void): this;
+  addListener(event: 'access_token.issued', listener: (accessToken: AccessToken) => void): this;
   addListener(event: 'authorization_code.saved', listener: (authorizationCode: AuthorizationCode) => void): this;
   addListener(event: 'authorization_code.destroyed', listener: (authorizationCode: AuthorizationCode) => void): this;
   addListener(event: 'authorization_code.consumed', listener: (authorizationCode: AuthorizationCode) => void): this;
@@ -1127,6 +1154,7 @@ export class Provider extends events.EventEmitter {
   addListener(event: 'device_code.consumed', listener: (deviceCode: DeviceCode) => void): this;
   addListener(event: 'client_credentials.destroyed', listener: (clientCredentials: ClientCredentials) => void): this;
   addListener(event: 'client_credentials.saved', listener: (clientCredentials: ClientCredentials) => void): this;
+  addListener(event: 'client_credentials.issued', listener: (clientCredentials: ClientCredentials) => void): this;
   addListener(event: 'interaction.destroyed', listener: (interaction: Interaction) => void): this;
   addListener(event: 'interaction.saved', listener: (interaction: Interaction) => void): this;
   addListener(event: 'session.destroyed', listener: (session: Session) => void): this;
@@ -1173,6 +1201,7 @@ export class Provider extends events.EventEmitter {
   on(event: string, listener: (...args: any[]) => void): this;
   on(event: 'access_token.destroyed', listener: (accessToken: AccessToken) => void): this;
   on(event: 'access_token.saved', listener: (accessToken: AccessToken) => void): this;
+  on(event: 'access_token.issued', listener: (accessToken: AccessToken) => void): this;
   on(event: 'authorization_code.saved', listener: (authorizationCode: AuthorizationCode) => void): this;
   on(event: 'authorization_code.destroyed', listener: (authorizationCode: AuthorizationCode) => void): this;
   on(event: 'authorization_code.consumed', listener: (authorizationCode: AuthorizationCode) => void): this;
@@ -1181,6 +1210,7 @@ export class Provider extends events.EventEmitter {
   on(event: 'device_code.consumed', listener: (deviceCode: DeviceCode) => void): this;
   on(event: 'client_credentials.destroyed', listener: (clientCredentials: ClientCredentials) => void): this;
   on(event: 'client_credentials.saved', listener: (clientCredentials: ClientCredentials) => void): this;
+  on(event: 'client_credentials.issued', listener: (clientCredentials: ClientCredentials) => void): this;
   on(event: 'interaction.destroyed', listener: (interaction: Interaction) => void): this;
   on(event: 'interaction.saved', listener: (interaction: Interaction) => void): this;
   on(event: 'session.destroyed', listener: (session: Session) => void): this;
@@ -1227,6 +1257,7 @@ export class Provider extends events.EventEmitter {
   once(event: string, listener: (...args: any[]) => void): this;
   once(event: 'access_token.destroyed', listener: (accessToken: AccessToken) => void): this;
   once(event: 'access_token.saved', listener: (accessToken: AccessToken) => void): this;
+  once(event: 'access_token.issued', listener: (accessToken: AccessToken) => void): this;
   once(event: 'authorization_code.saved', listener: (authorizationCode: AuthorizationCode) => void): this;
   once(event: 'authorization_code.destroyed', listener: (authorizationCode: AuthorizationCode) => void): this;
   once(event: 'authorization_code.consumed', listener: (authorizationCode: AuthorizationCode) => void): this;
@@ -1235,6 +1266,7 @@ export class Provider extends events.EventEmitter {
   once(event: 'device_code.consumed', listener: (deviceCode: DeviceCode) => void): this;
   once(event: 'client_credentials.destroyed', listener: (clientCredentials: ClientCredentials) => void): this;
   once(event: 'client_credentials.saved', listener: (clientCredentials: ClientCredentials) => void): this;
+  once(event: 'client_credentials.issued', listener: (clientCredentials: ClientCredentials) => void): this;
   once(event: 'interaction.destroyed', listener: (interaction: Interaction) => void): this;
   once(event: 'interaction.saved', listener: (interaction: Interaction) => void): this;
   once(event: 'session.destroyed', listener: (session: Session) => void): this;
@@ -1281,6 +1313,7 @@ export class Provider extends events.EventEmitter {
   prependListener(event: string, listener: (...args: any[]) => void): this;
   prependListener(event: 'access_token.destroyed', listener: (accessToken: AccessToken) => void): this;
   prependListener(event: 'access_token.saved', listener: (accessToken: AccessToken) => void): this;
+  prependListener(event: 'access_token.issued', listener: (accessToken: AccessToken) => void): this;
   prependListener(event: 'authorization_code.saved', listener: (authorizationCode: AuthorizationCode) => void): this;
   prependListener(event: 'authorization_code.destroyed', listener: (authorizationCode: AuthorizationCode) => void): this;
   prependListener(event: 'authorization_code.consumed', listener: (authorizationCode: AuthorizationCode) => void): this;
@@ -1289,6 +1322,7 @@ export class Provider extends events.EventEmitter {
   prependListener(event: 'device_code.consumed', listener: (deviceCode: DeviceCode) => void): this;
   prependListener(event: 'client_credentials.destroyed', listener: (clientCredentials: ClientCredentials) => void): this;
   prependListener(event: 'client_credentials.saved', listener: (clientCredentials: ClientCredentials) => void): this;
+  prependListener(event: 'client_credentials.issued', listener: (clientCredentials: ClientCredentials) => void): this;
   prependListener(event: 'interaction.destroyed', listener: (interaction: Interaction) => void): this;
   prependListener(event: 'interaction.saved', listener: (interaction: Interaction) => void): this;
   prependListener(event: 'session.destroyed', listener: (session: Session) => void): this;
@@ -1335,6 +1369,7 @@ export class Provider extends events.EventEmitter {
   prependOnceListener(event: string, listener: (...args: any[]) => void): this;
   prependOnceListener(event: 'access_token.destroyed', listener: (accessToken: AccessToken) => void): this;
   prependOnceListener(event: 'access_token.saved', listener: (accessToken: AccessToken) => void): this;
+  prependOnceListener(event: 'access_token.issued', listener: (accessToken: AccessToken) => void): this;
   prependOnceListener(event: 'authorization_code.saved', listener: (authorizationCode: AuthorizationCode) => void): this;
   prependOnceListener(event: 'authorization_code.destroyed', listener: (authorizationCode: AuthorizationCode) => void): this;
   prependOnceListener(event: 'authorization_code.consumed', listener: (authorizationCode: AuthorizationCode) => void): this;
@@ -1343,6 +1378,7 @@ export class Provider extends events.EventEmitter {
   prependOnceListener(event: 'device_code.consumed', listener: (deviceCode: DeviceCode) => void): this;
   prependOnceListener(event: 'client_credentials.destroyed', listener: (clientCredentials: ClientCredentials) => void): this;
   prependOnceListener(event: 'client_credentials.saved', listener: (clientCredentials: ClientCredentials) => void): this;
+  prependOnceListener(event: 'client_credentials.issued', listener: (clientCredentials: ClientCredentials) => void): this;
   prependOnceListener(event: 'interaction.destroyed', listener: (interaction: Interaction) => void): this;
   prependOnceListener(event: 'interaction.saved', listener: (interaction: Interaction) => void): this;
   prependOnceListener(event: 'session.destroyed', listener: (session: Session) => void): this;
@@ -1387,6 +1423,7 @@ export class Provider extends events.EventEmitter {
   prependOnceListener(event: 'server_error', listener: (ctx: KoaContextWithOIDC, err: Error) => void): this;
   // tslint:enable:unified-signatures
 
+  readonly Grant: typeof Grant;
   readonly Client: typeof Client;
   readonly AccessToken: typeof AccessToken;
   readonly InitialAccessToken: typeof InitialAccessToken;

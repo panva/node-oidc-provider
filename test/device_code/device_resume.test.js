@@ -247,6 +247,7 @@ describe('device interaction resume /device/:uid/', () => {
 
     context('login results', () => {
       it('should process newly established permanent sessions (default)', async function () {
+        sinon.stub(this.provider.Grant.prototype, 'getOIDCScope').returns('openid');
         const spy = sinon.spy(i(this.provider).configuration('features.deviceFlow'), 'successSource');
 
         await setup.call(this, {
@@ -274,6 +275,7 @@ describe('device interaction resume /device/:uid/', () => {
       });
 
       it('should process newly established permanent sessions (explicit)', async function () {
+        sinon.stub(this.provider.Grant.prototype, 'getOIDCScope').returns('openid');
         const spy = sinon.spy(i(this.provider).configuration('features.deviceFlow'), 'successSource');
 
         await setup.call(this, {
@@ -302,6 +304,7 @@ describe('device interaction resume /device/:uid/', () => {
       });
 
       it('should process newly established temporary sessions', async function () {
+        sinon.stub(this.provider.Grant.prototype, 'getOIDCScope').returns('openid');
         const spy = sinon.spy(i(this.provider).configuration('features.deviceFlow'), 'successSource');
 
         await setup.call(this, {
@@ -329,6 +332,7 @@ describe('device interaction resume /device/:uid/', () => {
       });
 
       it('should trigger logout when the session subject changes', async function () {
+        sinon.stub(this.provider.Grant.prototype, 'getOIDCScope').returns('openid');
         const auth = new this.AuthorizationRequest({
           scope: 'openid',
         });
@@ -337,7 +341,6 @@ describe('device interaction resume /device/:uid/', () => {
           login: {
             account: nanoid(),
           },
-          consent: {},
         }, {
           account: nanoid(),
         });
@@ -370,33 +373,6 @@ describe('device interaction resume /device/:uid/', () => {
 
         await this.agent.get(state.postLogoutRedirectUri.replace(this.provider.issuer, ''))
           .expect(200);
-      });
-    });
-
-    context('consent results', () => {
-      it('when scope includes offline_access', async function () {
-        const spy = sinon.spy(i(this.provider).configuration('features.deviceFlow'), 'successSource');
-
-        await setup.call(this, {
-          scope: 'openid offline_access',
-        }, {
-          login: {
-            account: nanoid(),
-            remember: true,
-          },
-          consent: {},
-        });
-
-        await this.agent.get(path)
-          .accept('text/html')
-          .expect(() => {
-            expect(spy.calledOnce).to.be.true;
-          })
-          .expect(200);
-
-        const code = await this.provider.DeviceCode.findByUserCode(userCode);
-        expect(code).to.have.property('accountId');
-        expect(code).to.have.property('scope', 'openid offline_access');
       });
     });
 

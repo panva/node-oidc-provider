@@ -44,7 +44,7 @@ describe('HYBRID code+token', () => {
 
       it('populates ctx.oidc.entities', function (done) {
         this.provider.use(this.assertOnce((ctx) => {
-          expect(ctx.oidc.entities).to.have.keys('Client', 'Account', 'AuthorizationCode', 'AccessToken', 'Session');
+          expect(ctx.oidc.entities).to.have.keys('Client', 'Grant', 'Account', 'AuthorizationCode', 'AccessToken', 'Session');
         }, done));
 
         const auth = new this.AuthorizationRequest({
@@ -59,6 +59,7 @@ describe('HYBRID code+token', () => {
         const spy = sinon.spy();
         this.provider.once('authorization_code.saved', spy);
         this.provider.once('access_token.saved', spy);
+        this.provider.once('access_token.issued', spy);
 
         const auth = new this.AuthorizationRequest({
           response_type,

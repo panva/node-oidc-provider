@@ -23,6 +23,7 @@ describe('jwtIntrospection features', () => {
   });
 
   describe('JWT Response for OAuth Token Introspection', () => {
+    before(function () { return this.login({ account: 'accountId' }); });
     it('can only be enabled with introspection', () => {
       expect(() => {
         new Provider('http://localhost', { // eslint-disable-line no-new
@@ -38,9 +39,9 @@ describe('jwtIntrospection features', () => {
       timekeeper.freeze(now);
       const at = new this.provider.AccessToken({
         accountId: 'accountId',
-        grantId: 'foo',
+        grantId: this.getGrantId(),
         client: await this.provider.Client.find('client-signed'),
-        scope: 'scope',
+        scope: 'openid',
       });
 
       let json;
@@ -114,9 +115,9 @@ describe('jwtIntrospection features', () => {
     it('errors when secret is expired for HMAC alg', async function () {
       const at = new this.provider.AccessToken({
         accountId: 'accountId',
-        grantId: 'foo',
+        grantId: this.getGrantId(),
         client: await this.provider.Client.find('client-HS-expired'),
-        scope: 'scope',
+        scope: 'openid',
       });
 
       const token = await at.save();
@@ -139,9 +140,9 @@ describe('jwtIntrospection features', () => {
     it('non-authenticated without accept: application/token-introspection+jwt fails', async function () {
       const at = new this.provider.AccessToken({
         accountId: 'accountId',
-        grantId: 'foo',
+        grantId: this.getGrantId(),
         client: await this.provider.Client.find('client-encrypted'),
-        scope: 'scope',
+        scope: 'openid',
       });
 
       const token = await at.save();

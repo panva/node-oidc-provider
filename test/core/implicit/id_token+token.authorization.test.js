@@ -1,5 +1,3 @@
-const url = require('url');
-
 const sinon = require('sinon');
 const { expect } = require('chai');
 
@@ -50,7 +48,7 @@ describe('IMPLICIT id_token+token', () => {
 
       it('populates ctx.oidc.entities', function (done) {
         this.provider.use(this.assertOnce((ctx) => {
-          expect(ctx.oidc.entities).to.have.keys('Client', 'Account', 'AccessToken', 'Session');
+          expect(ctx.oidc.entities).to.have.keys('Client', 'Grant', 'Account', 'AccessToken', 'Session');
         }, done));
 
         const auth = new this.AuthorizationRequest({
@@ -67,18 +65,18 @@ describe('IMPLICIT id_token+token', () => {
           scope: 'openid offline_access',
         });
 
+        const spy = sinon.spy();
+        this.provider.once('access_token.saved', spy);
+        this.provider.once('access_token.issued', spy);
+
         return this.wrap({ route, verb, auth })
           .expect(302)
           .expect(auth.validateFragment)
           .expect(auth.validatePresence(['id_token', 'state', 'access_token', 'expires_in', 'token_type', 'scope']))
           .expect(auth.validateState)
           .expect(auth.validateClientLocation)
-          .then((response) => {
-            const { query: { access_token } } = url.parse(response.headers.location, true);
-            const jti = this.getTokenJti(access_token);
-            const stored = this.TestAdapter.for('AccessToken').syncFind(jti);
-
-            expect(stored).to.have.property('scope', 'openid');
+          .then(() => {
+            expect(spy.getCall(0).firstArg).to.have.property('scope', 'openid');
           });
       });
     });

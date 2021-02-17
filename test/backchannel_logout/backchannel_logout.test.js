@@ -79,7 +79,7 @@ describe('Back-Channel Logout 1.0', () => {
   });
 
   describe('end_session extension', () => {
-    beforeEach(function () { return this.login(); });
+    beforeEach(function () { return this.login({ scope: 'openid offline_access' }); });
     afterEach(function () { return this.logout(); });
 
     bootstrap.skipConsent();

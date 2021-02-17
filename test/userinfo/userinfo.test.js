@@ -58,7 +58,7 @@ describe('userinfo /me', () => {
 
   it('populates ctx.oidc.entities', function (done) {
     this.provider.use(this.assertOnce((ctx) => {
-      expect(ctx.oidc.entities).to.have.keys('Client', 'AccessToken', 'Account');
+      expect(ctx.oidc.entities).to.have.keys('Client', 'Grant', 'AccessToken', 'Account');
     }, done));
 
     (async () => {

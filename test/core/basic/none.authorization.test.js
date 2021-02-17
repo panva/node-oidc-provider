@@ -43,7 +43,7 @@ const scope = 'openid';
 
     it('populates ctx.oidc.entities', function (done) {
       this.provider.use(this.assertOnce((ctx) => {
-        expect(ctx.oidc.entities).to.have.keys('Client', 'Account', 'Session');
+        expect(ctx.oidc.entities).to.have.keys('Client', 'Grant', 'Account', 'Session');
       }, done));
 
       const auth = new this.AuthorizationRequest({
