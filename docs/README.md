@@ -442,7 +442,6 @@ location / {
   - [dPoP](#featuresdpop)
   - [encryption](#featuresencryption)
   - [fapiRW](#featuresfapirw)
-  - [ietfJWTAccessTokenProfile](#featuresietfjwtaccesstokenprofile)
   - [introspection](#featuresintrospection)
   - [jwtIntrospection](#featuresjwtintrospection)
   - [jwtResponseModes](#featuresjwtresponsemodes)
@@ -1025,22 +1024,6 @@ async function logoutPendingSource(ctx, frames, postLogoutRedirectUri) {
 ```
 
 </details>
-
-### features.ietfJWTAccessTokenProfile
-
-[draft-ietf-oauth-access-token-jwt-05](https://tools.ietf.org/html/draft-ietf-oauth-access-token-jwt-05) - JSON Web Token (JWT) Profile for OAuth 2.0 Access Tokens  
-
-Enables the use of `jwt-ietf` JWT Access Token format   
-  
-
-
-_**default value**_:
-```js
-{
-  ack: undefined,
-  enabled: false
-}
-```
 
 ### features.introspection
 
@@ -2227,7 +2210,7 @@ _**default value**_:
 
 ### extraTokenClaims
 
-Function used to get additional access token claims when it is being issued. These claims will be available in your storage under property `extra`, returned by introspection as top level claims and pushed into `jwt`, and `jwt-ietf` formatted tokens as top level claims as well. Returned claims may not overwrite other top level claims.   
+Function used to get additional access token claims when it is being issued. These claims will be available in your storage under property `extra`, returned by introspection as top level claims and pushed into `jwt` formatted tokens as top level claims as well. Returned claims may not overwrite pre-existing top level claims.   
   
 
 
@@ -2256,8 +2239,7 @@ async function extraTokenClaims(ctx, token) {
 This option allows to configure the token value format. The different values change how a client-facing token value is generated.   
  Supported formats are:
  - `opaque` (default) tokens are PRNG generated random strings using url safe base64 alphabet. See `formats.bitsOfOpaqueRandomness` for influencing the token length.
- - `jwt` tokens are issued as JWTs. See `formats.tokenSigningAlg` for resolving the JWT Access Token signing algorithm. Note this is a proprietary format that will eventually get deprecated in favour of the 'jwt-ietf' value (once it gets stable and close to being an RFC).
- - `jwt-ietf` tokens are issued as JWTs. See `formats.tokenSigningAlg` for resolving the JWT Access Token signing algorithm. This is an implementation of [JSON Web Token (JWT) Profile for OAuth 2.0 Access Tokens](https://tools.ietf.org/html/draft-ietf-oauth-access-token-jwt-05) draft and to enable it you need to enable `features.ietfJWTAccessTokenProfile`.   
+ - `jwt` tokens are issued as JWTs. See `formats.tokenSigningAlg` for resolving the JWT Access Token signing algorithm. Tokens using this format are not stored using the adapter, they cannot be introspected at the introspection_endpoint and they cannot be used to access the userinfo_endpoint. Tokens issued in this format MUST have an audience/indicated resource.   
   
 
 
@@ -2268,7 +2250,6 @@ _**default value**_:
   ClientCredentials: 'opaque',
   bitsOfOpaqueRandomness: 256,
   customizers: {
-    'jwt-ietf': undefined,
     jwt: undefined
   },
   tokenSigningAlg: [AsyncFunction: tokenSigningAlg] // see expanded details below
@@ -2331,24 +2312,10 @@ Functions used before signing a structured Access Token of a given type, such as
 _**default value**_:
 ```js
 {
-  'jwt-ietf': undefined,
   jwt: undefined
 }
 ```
-<a id="formats-customizers-to-push-additional-claims-to-a-jwt-format-access-token-payload"></a><details><summary>(Click to expand) To push additional claims to a `jwt` format Access Token payload
-</summary><br>
-
-```js
-{
-  customizers: {
-    async jwt(ctx, token, jwt) {
-      jwt.payload.foo = 'bar';
-    }
-  }
-}
-```
-</details>
-<a id="formats-customizers-to-push-additional-headers-to-a-jwt-format-access-token"></a><details><summary>(Click to expand) To push additional headers to a `jwt` format Access Token
+<a id="formats-customizers-to-push-additional-headers-and-payload-claims-to-a-jwt-format-access-token"></a><details><summary>(Click to expand) To push additional headers and payload claims to a `jwt` format Access Token
 </summary><br>
 
 ```js
@@ -2356,32 +2323,7 @@ _**default value**_:
   customizers: {
     async jwt(ctx, token, jwt) {
       jwt.header = { foo: 'bar' };
-    }
-  }
-}
-```
-</details>
-<a id="formats-customizers-to-push-additional-claims-to-a-jwt-ietf-format-access-token-payload"></a><details><summary>(Click to expand) To push additional claims to a `jwt-ietf` format Access Token payload
-</summary><br>
-
-```js
-{
-  customizers: {
-    async ['jwt-ietf'](ctx, token, jwt) {
       jwt.payload.foo = 'bar';
-    }
-  }
-}
-```
-</details>
-<a id="formats-customizers-to-push-additional-headers-to-a-jwt-ietf-format-access-token"></a><details><summary>(Click to expand) To push additional headers to a `jwt-ietf` format Access Token
-</summary><br>
-
-```js
-{
-  customizers: {
-    async ['jwt-ietf'](ctx, token, jwt) {
-      jwt.header = { foo: 'bar' };
     }
   }
 }

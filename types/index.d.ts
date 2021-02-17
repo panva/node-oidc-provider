@@ -16,7 +16,7 @@ export {};
 export type CanBePromise<T> = Promise<T> | T;
 export type RetryFunction = (retry: number, error: Error) => number;
 export type FindAccount = (ctx: KoaContextWithOIDC, sub: string, token?: AuthorizationCode | AccessToken | DeviceCode) => CanBePromise<Account | undefined>;
-export type TokenFormat = 'opaque' | 'jwt' | 'jwt-ietf';
+export type TokenFormat = 'opaque' | 'jwt';
 
 export type AccessTokenFormatFunction = (ctx: KoaContextWithOIDC, token: AccessToken) => TokenFormat;
 export type ClientCredentialsFormatFunction = (ctx: KoaContextWithOIDC, token: ClientCredentials) => TokenFormat;
@@ -721,7 +721,6 @@ export interface AdapterPayload extends AnyClientMetadata {
   iiat?: number;
   inFlight?: boolean;
   jti?: string;
-  jwt?: string;
   kind?: string;
   lastSubmission?: InteractionResults;
   loginTs?: number;
@@ -750,7 +749,6 @@ export interface AdapterPayload extends AnyClientMetadata {
   uid?: string;
   userCode?: string;
   jkt?: string;
-  'jwt-ietf'?: string;
   'x5t#S256'?: string;
 }
 
@@ -900,11 +898,6 @@ export interface Configuration {
       ack?: 4 | 'draft-04' | 'draft-05' | 'draft-06'
     },
 
-    ietfJWTAccessTokenProfile?: {
-      enabled?: boolean,
-      ack?: 2 | 'draft-02' | 'draft-03' | 'draft-04' | 'draft-05'
-    },
-
     fapiRW?: {
       enabled?: boolean,
       ack?: 'id02-rev.3' | 'implementers-draft-02'
@@ -969,7 +962,6 @@ export interface Configuration {
     bitsOfOpaqueRandomness?: number | ((ctx: KoaContextWithOIDC, token: BaseToken) => number);
     customizers?: {
       jwt?: (ctx: KoaContextWithOIDC, token: AccessToken | ClientCredentials, parts: JWTStructured) => CanBePromise<JWTStructured>;
-      'jwt-ietf'?: (ctx: KoaContextWithOIDC, token: AccessToken | ClientCredentials, parts: JWTStructured) => CanBePromise<JWTStructured>;
     };
   };
 

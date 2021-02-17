@@ -32,7 +32,7 @@ if (FORMAT === 'jwt') {
     const redirectUri = 'https://rp.example.com/cb';
     const codeChallenge = 'codeChallenge';
     const codeChallengeMethod = 'codeChallengeMethod';
-    const aud = ['foo', 'bar'];
+    const aud = 'foo';
     const gty = 'foo';
     const error = 'access_denied';
     const errorDescription = 'resource owner denied access';
@@ -53,7 +53,7 @@ if (FORMAT === 'jwt') {
 
     /* eslint-disable object-property-newline */
     const fullPayload = {
-      accountId, claims, grantId, scope, sid, consumed, acr, amr, authTime, nonce,
+      accountId, claims, clientId, grantId, scope, sid, consumed, acr, amr, authTime, nonce,
       redirectUri, codeChallenge, codeChallengeMethod, aud, error, errorDescription, params,
       userCode, deviceInfo, gty, resource, policies, sessionUid, expiresWithSession,
       'x5t#S256': s256, inFlight, iiat, rotations, extra, jkt: s256,
@@ -67,8 +67,9 @@ if (FORMAT === 'jwt') {
       const upsert = spy(this.TestAdapter.for('AccessToken'), 'upsert');
       const client = await this.provider.Client.find(clientId);
       const token = new this.provider.AccessToken({ client, ...fullPayload });
+      const issued = sinon.spy();
+      this.provider.on('access_token.issued', issued);
       const jwt = await token.save();
-
       assert.calledWith(upsert, string, {
         format,
         accountId,
@@ -92,12 +93,14 @@ if (FORMAT === 'jwt') {
 
       const { iat, jti, exp } = upsert.getCall(0).args[1];
       const header = decode(jwt.split('.')[0]);
-      expect(header).to.have.property('typ', 'JWT');
+      expect(header).to.have.property('typ', 'at+jwt');
       const payload = decode(jwt.split('.')[1]);
+      expect(iat).to.be.a('number');
+      expect(exp).to.be.a('number');
       expect(payload).to.eql({
         ...extra,
         aud,
-        azp: clientId,
+        client_id: clientId,
         exp,
         iat,
         iss: this.provider.issuer,
@@ -116,6 +119,8 @@ if (FORMAT === 'jwt') {
       const upsert = spy(this.TestAdapter.for('AccessToken'), 'upsert');
       const client = await this.provider.Client.find('pairwise');
       const token = new this.provider.AccessToken({ client, ...fullPayload });
+      const issued = sinon.spy();
+      this.provider.on('access_token.issued', issued);
       const jwt = await token.save();
 
       assert.calledWith(upsert, string, {
@@ -141,12 +146,14 @@ if (FORMAT === 'jwt') {
 
       const { iat, jti, exp } = upsert.getCall(0).args[1];
       const header = decode(jwt.split('.')[0]);
-      expect(header).to.have.property('typ', 'JWT');
+      expect(header).to.have.property('typ', 'at+jwt');
       const payload = decode(jwt.split('.')[1]);
+      expect(iat).to.be.a('number');
+      expect(exp).to.be.a('number');
       expect(payload).to.eql({
         ...extra,
         aud,
-        azp: 'pairwise',
+        client_id: 'pairwise',
         exp,
         iat,
         iss: this.provider.issuer,
@@ -165,6 +172,8 @@ if (FORMAT === 'jwt') {
       const upsert = spy(this.TestAdapter.for('ClientCredentials'), 'upsert');
       const client = await this.provider.Client.find(clientId);
       const token = new this.provider.ClientCredentials({ client, ...fullPayload });
+      const issued = sinon.spy();
+      this.provider.on('client_credentials.issued', issued);
       const jwt = await token.save();
 
       assert.calledWith(upsert, string, {
@@ -183,12 +192,15 @@ if (FORMAT === 'jwt') {
 
       const { iat, jti, exp } = upsert.getCall(0).args[1];
       const header = decode(jwt.split('.')[0]);
-      expect(header).to.have.property('typ', 'JWT');
+      expect(header).to.have.property('typ', 'at+jwt');
       const payload = decode(jwt.split('.')[1]);
+      expect(iat).to.be.a('number');
+      expect(exp).to.be.a('number');
       expect(payload).to.eql({
         ...extra,
         aud,
-        azp: clientId,
+        client_id: clientId,
+        sub: clientId,
         exp,
         iat,
         iss: this.provider.issuer,

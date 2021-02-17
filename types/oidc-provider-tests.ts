@@ -17,14 +17,7 @@ new Provider('https://op.example.com', {
         parts.header = { foo: 'bar' };
         parts.payload.foo = 'bar';
         return parts;
-      },
-      async 'jwt-ietf'(ctx, token, parts) {
-        ctx.oidc.issuer.substring(0);
-        token.iat.toFixed();
-        parts.header = { foo: 'bar' };
-        parts.payload.foo = 'bar';
-        return parts;
-      },
+      }
     },
   },
 });
@@ -172,14 +165,7 @@ const provider = new Provider('https://op.example.com', {
         parts.header = { foo: 'bar' };
         parts.payload.foo = 'bar';
         return parts;
-      },
-      'jwt-ietf'(ctx, token, parts) {
-        ctx.oidc.issuer.substring(0);
-        token.iat.toFixed();
-        parts.header = { foo: 'bar' };
-        parts.payload.foo = 'bar';
-        return parts;
-      },
+      }
     },
   },
   httpOptions(url) {
@@ -405,7 +391,6 @@ const provider = new Provider('https://op.example.com', {
     fapiRW: { enabled: false, ack: 'id02-rev.3' },
     clientCredentials: { enabled: false },
     backchannelLogout: { enabled: false, ack: 4 },
-    ietfJWTAccessTokenProfile: { enabled: false, ack: 2 },
     dPoP: { enabled: false, ack: 'draft-01', iatTolerance: 120 },
     frontchannelLogout: {
       ack: 2,

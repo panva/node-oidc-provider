@@ -48,7 +48,7 @@ function report() {
 }
 
 (async () => {
-  const formats = ['opaque', 'jwt', 'jwt-ietf', 'dynamic'];
+  const formats = ['opaque', 'jwt', 'dynamic'];
 
   for (const format of formats) {
     await pass({ format });

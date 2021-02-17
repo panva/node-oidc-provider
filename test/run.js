@@ -19,7 +19,6 @@ process.argv.forEach((arg) => {
 if (!formats.length) {
   formats.push('opaque');
   formats.push('jwt');
-  formats.push('jwt-ietf');
   formats.push('dynamic');
 }
 const passed = [];
@@ -45,14 +44,6 @@ async function singleRun() {
     global.keystore.generate('OKP', 'Ed25519'),
   ]);
   global.TEST_CONFIGURATION_DEFAULTS = {};
-  if (this.format === 'jwt-ietf' || typeof this.format === 'function') {
-    global.TEST_CONFIGURATION_DEFAULTS.features = {
-      ietfJWTAccessTokenProfile: {
-        ack: 2,
-        enabled: true,
-      },
-    };
-  }
   global.TEST_CONFIGURATION_DEFAULTS.formats = {
     AccessToken: this.format,
     ClientCredentials: this.format,
@@ -101,11 +92,8 @@ async function singleRun() {
   if (formats.includes('jwt')) {
     await singleRun.call({ format: 'jwt' });
   }
-  if (formats.includes('jwt-ietf')) {
-    await singleRun.call({ format: 'jwt-ietf' });
-  }
   if (formats.includes('dynamic')) {
-    await singleRun.call({ format: () => sample(['opaque', 'jwt', 'jwt-ietf']) });
+    await singleRun.call({ format: () => sample(['opaque', 'jwt']) });
   }
   passed.forEach((pass) => console.log('\x1b[32m%s\x1b[0m', pass));
 })()

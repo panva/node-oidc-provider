@@ -6,7 +6,7 @@ const config = cloneDeep(require('../default.config'));
 
 const { formats: { AccessToken: FORMAT } } = global.TEST_CONFIGURATION_DEFAULTS;
 
-const [AccessToken, RefreshToken, AuthorizationCode] = shuffle(['opaque', 'jwt', 'jwt-ietf', () => sample(['opaque', 'jwt', 'jwt-ietf'])]);
+const [AccessToken, RefreshToken, AuthorizationCode] = shuffle(['opaque', 'jwt', () => sample(['opaque', 'jwt'])]);
 
 config.formats = {
   default: FORMAT,
