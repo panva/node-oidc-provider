@@ -20,7 +20,7 @@ describe('provider instance', () => {
 
     it('it warns when draft/experimental specs are enabled', () => {
       new Provider('http://localhost', { // eslint-disable-line no-new
-        features: { sessionManagement: { enabled: true } },
+        features: { backchannelLogout: { enabled: true } },
       });
 
       expect(console.info.called).to.be.true;
@@ -28,7 +28,7 @@ describe('provider instance', () => {
 
     it('it is silent when a version is acknowledged', () => {
       new Provider('http://localhost', { // eslint-disable-line no-new
-        features: { sessionManagement: { enabled: true, ack: 28 } },
+        features: { backchannelLogout: { enabled: true, ack: 'draft-06' } },
       });
 
       expect(console.info.called).to.be.false;
@@ -45,7 +45,7 @@ describe('provider instance', () => {
     it('throws when an acked feature has breaking changes since', () => {
       expect(() => {
         new Provider('http://localhost', { // eslint-disable-line no-new
-          features: { sessionManagement: { enabled: true, ack: 27 } },
+          features: { backchannelLogout: { enabled: true, ack: 3 } },
         });
       }).to.throw('An unacknowledged version of a draft feature is included in this oidc-provider version.');
       expect(console.info.called).to.be.true;

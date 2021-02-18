@@ -1675,7 +1675,7 @@ _**default value**_:
 
 #### logoutSource
 
-HTML source rendered when session management feature renders a confirmation prompt for the User-Agent.  
+HTML source rendered when RP-Initiated Logout renders a confirmation prompt for the User-Agent.  
 
 
 _**default value**_:
@@ -1703,7 +1703,7 @@ async function logoutSource(ctx, form) {
 
 #### postLogoutSuccessSource
 
-HTML source rendered when session management feature concludes a logout but there was no `post_logout_redirect_uri` provided by the client.  
+HTML source rendered when RP-Initiated Logout concludes a logout but there was no `post_logout_redirect_uri` provided by the client.  
 
 
 _**default value**_:
@@ -1727,40 +1727,6 @@ async function postLogoutSuccessSource(ctx) {
     </body>
     </html>`;
 }
-```
-
-</details>
-
-### features.sessionManagement
-
-[Session Management 1.0 - draft 30](https://openid.net/specs/openid-connect-session-1_0-30.html)  
-
-Enables Session Management features.   
- Note: Browsers blocking access to cookies from a third party context hinder the reliability of this standard.  
-
-
-_**default value**_:
-```js
-{
-  ack: undefined,
-  enabled: false,
-  keepHeaders: false
-}
-```
-
-<details><summary>(Click to expand) features.sessionManagement options details</summary><br>
-
-
-#### keepHeaders
-
-Enables/Disables removing frame-ancestors from Content-Security-Policy and X-Frame-Options headers.  
-
-_**recommendation**_: Only enable this if you know what you're doing either in a followup middleware or your app server, otherwise you shouldn't have the need to touch this option.  
-
-
-_**default value**_:
-```js
-false
 ```
 
 </details>
@@ -2002,8 +1968,7 @@ _**default value**_:
 {
   interaction: '_interaction',
   resume: '_interaction_resume',
-  session: '_session',
-  state: '_state'
+  session: '_session'
 }
 ```
 
@@ -2871,7 +2836,6 @@ _**default value**_:
 ```js
 {
   authorization: '/auth',
-  check_session: '/session/check',
   code_verification: '/device',
   device_authorization: '/device/auth',
   end_session: '/session/end',

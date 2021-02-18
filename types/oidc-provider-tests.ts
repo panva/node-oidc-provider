@@ -341,7 +341,6 @@ const provider = new Provider('https://op.example.com', {
     jwtUserinfo: { enabled: false },
     webMessageResponseMode: { enabled: false, ack: 'id-00' },
     revocation: { enabled: false },
-    sessionManagement: { enabled: false, ack: 28, keepHeaders: false },
     jwtIntrospection: { enabled: false, ack: 'draft-09' },
     jwtResponseModes: { enabled: false, ack: 2 },
     pushedAuthorizationRequests: { enabled: false, ack: 'draft-02' },
@@ -556,10 +555,6 @@ provider.Client.prototype.requestUriAllowed = function (requestUri) {
 }
 provider.Client.prototype.postLogoutRedirectUriAllowed = function (postLogoutRedirectUri) {
   postLogoutRedirectUri.substring(0);
-  return true;
-}
-provider.Client.prototype.checkSessionOriginAllowed = function (checkSessionOrigin) {
-  checkSessionOrigin.substring(0);
   return true;
 }
 provider.Client.prototype.webMessageUriAllowed = function (webMessageUri) {

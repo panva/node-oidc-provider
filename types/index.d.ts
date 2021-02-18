@@ -193,7 +193,6 @@ declare class Session extends BaseModel {
     transient?: boolean;
   }): void;
   authorizationFor(clientId: string): ClientAuthorizationState | void;
-  stateFor(clientId: string): string;
   sidFor(clientId: string): string;
   sidFor(clientId: string, value: string): void;
   grantIdFor(clientId: string): string;
@@ -524,7 +523,6 @@ declare class Client {
   responseTypeAllowed(type: ResponseType): boolean;
   grantTypeAllowed(type: string): boolean;
   redirectUriAllowed(redirectUri: string): boolean;
-  checkSessionOriginAllowed(origin: string): boolean;
   webMessageUriAllowed(webMessageUri: string): boolean;
   requestUriAllowed(requestUri: string): boolean;
   postLogoutRedirectUriAllowed(postLogoutRedirectUri: string): boolean;
@@ -881,12 +879,6 @@ export interface Configuration {
       enabled?: boolean,
       iatTolerance?: number,
       ack?: 'draft-01'
-    },
-
-    sessionManagement?: {
-      enabled?: boolean,
-      keepHeaders?: boolean,
-      ack?: 28 | 'draft-28' | 'draft-29' | 'draft-30',
     },
 
     backchannelLogout?: {

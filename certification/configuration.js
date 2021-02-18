@@ -94,7 +94,6 @@ module.exports = {
       mode: 'strict',
     },
     revocation: { enabled: true },
-    sessionManagement: { enabled: true },
   },
   jwks: {
     keys: [

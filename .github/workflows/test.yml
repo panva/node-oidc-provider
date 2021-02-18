@@ -93,7 +93,6 @@ jobs:
           - '{"plan":"oidcc-dynamic-certification-test-plan","response_type":"code id_token token","skip":"oidcc-server-rotate-keys"}'
           - '{"plan":"oidcc-backchannel-rp-initiated-logout-certification-test-plan","response_type":"code","client_registration":"dynamic_client"}'
           - '{"plan":"oidcc-rp-initiated-logout-certification-test-plan","response_type":"code","client_registration":"dynamic_client"}'
-          - '{"plan":"oidcc-session-management-certification-test-plan","response_type":"code","client_registration":"dynamic_client","skip":"oidcc-session-management-rp-initiated-logout"}'
           - '{"plan":"fapi-rw-id2-test-plan","configuration":"./certification/fapi/pkjwt.json","client_auth_type":"private_key_jwt","fapi_profile":"plain_fapi","fapi_response_mode":"plain_response"}'
           - '{"plan":"fapi-rw-id2-test-plan","configuration":"./certification/fapi/pkjwt.json","client_auth_type":"private_key_jwt","fapi_profile":"plain_fapi","fapi_response_mode":"jarm"}'
           - '{"plan":"fapi-rw-id2-test-plan","configuration":"./certification/fapi/mtls.json","client_auth_type":"mtls","fapi_profile":"plain_fapi","fapi_response_mode":"plain_response"}'

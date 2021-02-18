@@ -431,7 +431,7 @@ describe('resume after consent', () => {
         .expect('set-cookie', /expires/) // expect a permanent cookie
         .expect(auth.validateState)
         .expect(auth.validateClientLocation)
-        .expect(auth.validatePresence(['code', 'state', 'session_state']))
+        .expect(auth.validatePresence(['code', 'state']))
         .expect(() => {
           expect(this.getSession()).to.be.ok.and.not.have.property('transient');
         });
@@ -457,7 +457,7 @@ describe('resume after consent', () => {
         .expect('set-cookie', /expires/) // expect a permanent cookie
         .expect(auth.validateState)
         .expect(auth.validateClientLocation)
-        .expect(auth.validatePresence(['code', 'state', 'session_state']))
+        .expect(auth.validatePresence(['code', 'state']))
         .expect(() => {
           expect(this.getSession()).to.be.ok.and.not.have.property('transient');
         });
@@ -482,9 +482,8 @@ describe('resume after consent', () => {
         .expect(302)
         .expect(auth.validateState)
         .expect('set-cookie', /_session=((?!expires).)+,/) // expect a transient session cookie
-        .expect('set-cookie', /_state\.client=((?!expires).)+,/) // expect a transient session cookie
         .expect(auth.validateClientLocation)
-        .expect(auth.validatePresence(['code', 'state', 'session_state']))
+        .expect(auth.validatePresence(['code', 'state']))
         .expect(() => {
           expect(this.getSession()).to.be.ok.and.have.property('transient');
         });
@@ -994,7 +993,7 @@ describe('resume after consent', () => {
       return this.agent.get('/auth/resume')
         .expect(302)
         .expect(auth.validateState)
-        .expect(auth.validatePresence(['error', 'state', 'session_state']))
+        .expect(auth.validatePresence(['error', 'state']))
         .expect(auth.validateError('access_denied'));
     });
 
@@ -1012,7 +1011,7 @@ describe('resume after consent', () => {
       return this.agent.get('/auth/resume')
         .expect(302)
         .expect(auth.validateState)
-        .expect(auth.validatePresence(['error', 'state', 'session_state']))
+        .expect(auth.validatePresence(['error', 'state']))
         .expect(auth.validateError('access_denied'));
     });
 

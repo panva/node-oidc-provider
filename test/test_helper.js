@@ -107,13 +107,6 @@ module.exports = function testHelper(dir, {
         `_session.legacy.sig=; path=/; expires=${expire.toGMTString()}; httponly`,
       ];
 
-      clients.forEach((cl) => {
-        cookies.push(`_state.${cl.client_id}=; path=/; expires=${expire.toGMTString()}; httponly`);
-        cookies.push(`_state.${cl.client_id}.sig=; path=/; expires=${expire.toGMTString()}; httponly`);
-        cookies.push(`_state.${cl.client_id}.legacy=; path=/; expires=${expire.toGMTString()}; httponly`);
-        cookies.push(`_state.${cl.client_id}.legacy.sig=; path=/; expires=${expire.toGMTString()}; httponly`);
-      });
-
       return agent._saveCookies.bind(agent)({ headers: { 'set-cookie': cookies } });
     }
 
@@ -132,7 +125,7 @@ module.exports = function testHelper(dir, {
       const sessionCookie = `_session=${sessionId}; path=/; expires=${expire.toGMTString()}; httponly`;
       const cookies = [sessionCookie];
 
-      let [pre, ...post] = sessionCookie.split(';');
+      const [pre, ...post] = sessionCookie.split(';');
       cookies.push([`_session.sig=${keys.sign(pre)}`, ...post].join(';'));
 
       session.authorizations = {};
@@ -152,13 +145,6 @@ module.exports = function testHelper(dir, {
           rejectedScopes,
           rejectedClaims,
         };
-
-        if (i(provider).configuration('features.sessionManagement.enabled')) {
-          const cookie = `_state.${cl.client_id}=${session.stateFor(cl.client_id)}; path=/; expires=${expire.toGMTString()}`;
-          cookies.push(cookie);
-          [pre, ...post] = cookie.split(';');
-          cookies.push([`_state.${cl.client_id}.sig=${keys.sign(pre)}`, ...post].join(';'));
-        }
       });
 
       let ttl = i(provider).configuration('ttl.Session');

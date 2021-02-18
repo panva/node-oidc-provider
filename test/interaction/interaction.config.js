@@ -6,7 +6,6 @@ const { Check, Prompt, base } = require('../../lib/helpers/interaction_policy');
 
 config.extraParams = ['triggerCustomFail', 'triggerUnrequestable'];
 merge(config.features, {
-  sessionManagement: { enabled: true },
   rpInitiatedLogout: { enabled: false },
 });
 
