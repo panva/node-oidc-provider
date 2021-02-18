@@ -72,8 +72,6 @@ export interface AnyClientMetadata {
   revocation_endpoint_auth_signing_alg?: SigningAlgorithm;
   backchannel_logout_session_required?: boolean;
   backchannel_logout_uri?: string;
-  frontchannel_logout_session_required?: boolean;
-  frontchannel_logout_uri?: string;
   request_object_signing_alg?: SigningAlgorithmWithNone;
   request_object_encryption_alg?: EncryptionAlgValues;
   request_object_encryption_enc?: EncryptionEncValues;
@@ -581,8 +579,6 @@ declare class Client {
   readonly revocationEndpointAuthSigningAlg?: string;
   readonly backchannelLogoutSessionRequired?: boolean;
   readonly backchannelLogoutUri?: string;
-  readonly frontchannelLogoutSessionRequired?: boolean;
-  readonly frontchannelLogoutUri?: string;
   readonly requestObjectSigningAlg?: string;
   readonly requestObjectEncryptionAlg?: string;
   readonly requestObjectEncryptionEnc?: string;
@@ -944,12 +940,6 @@ export interface Configuration {
       enabled?: boolean;
       ack?: 2 | 3 | 4 | 5 | 6 | 7 | 'draft-07';
       allowedPolicy?: (ctx: KoaContextWithOIDC, resources: string | string[], client: Client) => CanBePromise<boolean>;
-    };
-
-    frontchannelLogout?: {
-      enabled?: boolean;
-      ack?: 2 | 'draft-02' | 'draft-03' | 'draft-04';
-      logoutPendingSource?: (ctx: KoaContextWithOIDC, frames: string[], postLogoutRedirectUri?: string) => CanBePromise<void | undefined>;
     };
   };
 

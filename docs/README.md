@@ -535,7 +535,7 @@ _**default value**_:
 <a id="clients-available-metadata"></a><details><summary>(Click to expand) Available Metadata</summary><br>
 
 
-application_type, client_id, client_name, client_secret, client_uri, contacts, default_acr_values, default_max_age, grant_types, id_token_signed_response_alg, initiate_login_uri, jwks, jwks_uri, logo_uri, policy_uri, post_logout_redirect_uris, redirect_uris, require_auth_time, response_types, scope, sector_identifier_uri, subject_type, token_endpoint_auth_method, tos_uri, userinfo_signed_response_alg <br/><br/>The following metadata is available but may not be recognized depending on your provider's configuration.<br/><br/> authorization_encrypted_response_alg, authorization_encrypted_response_enc, authorization_signed_response_alg, backchannel_logout_session_required, backchannel_logout_uri, frontchannel_logout_session_required, frontchannel_logout_uri, id_token_encrypted_response_alg, id_token_encrypted_response_enc, introspection_encrypted_response_alg, introspection_encrypted_response_enc, introspection_endpoint_auth_method, introspection_endpoint_auth_signing_alg, introspection_signed_response_alg, request_object_encryption_alg, request_object_encryption_enc, request_object_signing_alg, request_uris, revocation_endpoint_auth_method, revocation_endpoint_auth_signing_alg, tls_client_auth_san_dns, tls_client_auth_san_email, tls_client_auth_san_ip, tls_client_auth_san_uri, tls_client_auth_subject_dn, tls_client_certificate_bound_access_tokens, token_endpoint_auth_signing_alg, userinfo_encrypted_response_alg, userinfo_encrypted_response_enc, web_message_uris  
+application_type, client_id, client_name, client_secret, client_uri, contacts, default_acr_values, default_max_age, grant_types, id_token_signed_response_alg, initiate_login_uri, jwks, jwks_uri, logo_uri, policy_uri, post_logout_redirect_uris, redirect_uris, require_auth_time, response_types, scope, sector_identifier_uri, subject_type, token_endpoint_auth_method, tos_uri, userinfo_signed_response_alg <br/><br/>The following metadata is available but may not be recognized depending on your provider's configuration.<br/><br/> authorization_encrypted_response_alg, authorization_encrypted_response_enc, authorization_signed_response_alg, backchannel_logout_session_required, backchannel_logout_uri, id_token_encrypted_response_alg, id_token_encrypted_response_enc, introspection_encrypted_response_alg, introspection_encrypted_response_enc, introspection_endpoint_auth_method, introspection_endpoint_auth_signing_alg, introspection_signed_response_alg, request_object_encryption_alg, request_object_encryption_enc, request_object_signing_alg, request_uris, revocation_endpoint_auth_method, revocation_endpoint_auth_signing_alg, tls_client_auth_san_dns, tls_client_auth_san_email, tls_client_auth_san_ip, tls_client_auth_san_uri, tls_client_auth_subject_dn, tls_client_certificate_bound_access_tokens, token_endpoint_auth_signing_alg, userinfo_encrypted_response_alg, userinfo_encrypted_response_enc, web_message_uris  
 
 
 </details>
@@ -960,68 +960,6 @@ _**default value**_:
  - (optional) `features.pushedAuthorizationRequests`
  - (optional) `features.jwtResponseModes`  
 
-
-</details>
-
-### features.frontchannelLogout
-
-[Front-Channel Logout 1.0 - draft 04](https://openid.net/specs/openid-connect-frontchannel-1_0-04.html)  
-
-Enables Front-Channel Logout features   
- Note: Browsers blocking access to cookies from a third party context hinder the reliability of this standard.  
-
-
-_**default value**_:
-```js
-{
-  ack: undefined,
-  enabled: false,
-  logoutPendingSource: [AsyncFunction: logoutPendingSource] // see expanded details below
-}
-```
-
-<details><summary>(Click to expand) features.frontchannelLogout options details</summary><br>
-
-
-#### logoutPendingSource
-
-HTML source rendered when there are pending front-channel logout iframes to be called to trigger RP logouts. It should handle waiting for the frames to be loaded as well as have a timeout mechanism in it.  
-
-
-_**default value**_:
-```js
-async function logoutPendingSource(ctx, frames, postLogoutRedirectUri) {
-  ctx.body = `<!DOCTYPE html>
-    <head>
-      <title>Logout</title>
-      <style>/* css and html classes omitted for brevity, see lib/helpers/defaults.js */</style>
-    </head>
-    <body>
-      ${frames.join('')}
-      <script>${pushInlineSha(ctx, `
-        var loaded = 0;
-        function redirect() {
-          window.location.replace("${postLogoutRedirectUri}");
-        }
-        function frameOnLoad() {
-          loaded += 1;
-          if (loaded === ${frames.length}) {
-            redirect();
-          }
-        }
-        Array.prototype.slice.call(document.querySelectorAll('iframe')).forEach(function (element) {
-          element.onload = frameOnLoad;
-        });
-        setTimeout(redirect, 2500);
-      `)}</script>
-      <noscript>
-        Your browser does not support JavaScript or you've disabled it.<br/>
-        <a href="${postLogoutRedirectUri}">Continue</a>
-      </noscript>
-    </body>
-    </html>`;
-}
-```
 
 </details>
 

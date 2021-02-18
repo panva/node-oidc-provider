@@ -1019,26 +1019,6 @@ describe('Client metadata validation', () => {
     });
   });
 
-  context('features.frontchannelLogout', () => {
-    const configuration = {
-      features: {
-        frontchannelLogout: { enabled: true },
-      },
-    };
-
-    context('frontchannel_logout_uri', function () {
-      defaultsTo(this.title, undefined);
-      mustBeString(this.title, undefined, undefined, configuration);
-      mustBeUri(this.title, ['http', 'https'], configuration);
-    });
-
-    context('frontchannel_logout_session_required', function () {
-      defaultsTo(this.title, undefined);
-      defaultsTo(this.title, false, undefined, configuration);
-      mustBeBoolean(this.title, undefined, configuration);
-    });
-  });
-
   {
     const configuration = {
       features: {

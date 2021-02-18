@@ -82,7 +82,6 @@ module.exports = {
     deviceFlow: { enabled: true },
     dPoP: { enabled: true },
     encryption: { enabled: true },
-    frontchannelLogout: { enabled: true },
     jwtUserinfo: { enabled: true },
     introspection: { enabled: true },
     registration: { enabled: true },

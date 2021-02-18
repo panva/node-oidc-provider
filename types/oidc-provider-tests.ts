@@ -392,17 +392,6 @@ const provider = new Provider('https://op.example.com', {
     clientCredentials: { enabled: false },
     backchannelLogout: { enabled: false, ack: 4 },
     dPoP: { enabled: false, ack: 'draft-01', iatTolerance: 120 },
-    frontchannelLogout: {
-      ack: 2,
-      enabled: false,
-      async logoutPendingSource(ctx, frames, postLogoutRedirectUri) {
-        ctx.oidc.issuer.substring(0);
-        frames[0].substring(0);
-        if (postLogoutRedirectUri) {
-          postLogoutRedirectUri.substring(0);
-        }
-      }
-    },
     deviceFlow: {
       enabled: false,
       charset: 'digits',
