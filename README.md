@@ -49,8 +49,6 @@ The following draft specifications are implemented by oidc-provider.
 - [OAuth 2.0 Web Message Response Mode - individual draft 00][wmrm]
 - [OpenID Connect RP-Initiated Logout 1.0 - draft 01][rpinitiated-logout]
 - [OpenID Connect Back-Channel Logout 1.0 - draft 06][backchannel-logout]
-- [OpenID Connect Front-Channel Logout 1.0 - draft 04][frontchannel-logout]
-- [OpenID Connect Session Management 1.0 - draft 30][session-management]
 
 Updates to draft specification versions are released as MINOR library versions,
 if you utilize these specification implementations consider using the tilde `~` operator in your
@@ -64,7 +62,7 @@ Filip Skokan has [certified][openid-certified-link] that [oidc-provider][npm-url
 conforms to the following profiles of the OpenID Connect™ protocol
 
 - OP Basic, Implicit, Hybrid, Config, Dynamic, Form Post, and 3rd Party-Init
-- OP Front-Channel Logout, Back-Channel Logout, RP-Initiated Logout, and Session Management
+- OP Back-Channel Logout and RP-Initiated Logout
 - OP FAPI R/W MTLS and Private Key
 
 ## Sponsor
@@ -148,7 +146,6 @@ See the list of available emitted [event names](/docs/events.md) and their descr
 [discovery]: https://openid.net/specs/openid-connect-discovery-1_0.html
 [oauth2-registration]: https://tools.ietf.org/html/rfc7591
 [registration]: https://openid.net/specs/openid-connect-registration-1_0.html
-[session-management]: https://openid.net/specs/openid-connect-session-1_0-30.html
 [form-post]: https://openid.net/specs/oauth-v2-form-post-response-mode-1_0.html
 [oauth2]: https://tools.ietf.org/html/rfc6749
 [oauth2-bearer]: https://tools.ietf.org/html/rfc6750
@@ -160,7 +157,6 @@ See the list of available emitted [event names](/docs/events.md) and their descr
 [heroku-example-client]: https://tranquil-reef-95185.herokuapp.com/client
 [openid-client]: https://github.com/panva/node-openid-client
 [backchannel-logout]: https://openid.net/specs/openid-connect-backchannel-1_0-06.html
-[frontchannel-logout]: https://openid.net/specs/openid-connect-frontchannel-1_0-04.html
 [registration-management]: https://tools.ietf.org/html/rfc7592
 [oauth-native-apps]: https://tools.ietf.org/html/rfc8252
 [debug-link]: https://github.com/visionmedia/debug
