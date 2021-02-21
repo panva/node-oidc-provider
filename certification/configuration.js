@@ -208,4 +208,7 @@ module.exports = {
     return code.scopes.has('offline_access') || (client.applicationType === 'web' && client.tokenEndpointAuthMethod === 'none');
   },
   enabledJWA,
+  pkce: {
+    required: () => false,
+  },
 };

@@ -193,6 +193,9 @@ const fapi = new Provider(ISSUER, {
     tokenEndpointAuthSigningAlgValues: ALGS,
     userinfoSigningAlgValues: ALGS,
   },
+  pkce: {
+    required: () => false,
+  },
 });
 
 const orig = fapi.interactionResult;
