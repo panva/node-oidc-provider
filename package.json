@@ -32,26 +32,22 @@
   "license": "MIT",
   "author": "Filip Skokan <panva.ip@gmail.com>",
   "files": [
-    "lib",
-    "types/index.d.ts"
+    "lib"
   ],
   "funding": {
     "url": "https://github.com/sponsors/panva"
   },
   "main": "lib/index.js",
-  "types": "types/index.d.ts",
   "scripts": {
     "ci": "node ./test/ci",
     "coverage": "nyc node ./test/run",
     "heroku-postbuild": "npm install mongodb@^3.0.0 openid-client@^4.0.0",
     "lint": "eslint lib example certification test",
-    "lint-ts": "npx typescript@~3.6.0 --build types",
     "lint-fix": "eslint lib example certification test --fix",
     "test": "node ./test/run"
   },
   "dependencies": {
     "@koa/cors": "^3.1.0",
-    "@types/koa": "^2.11.4",
     "cacheable-lookup": "^6.0.0",
     "debug": "^4.1.1",
     "ejs": "^3.1.5",
