@@ -37,9 +37,9 @@ enabled by default, check the configuration section on how to enable them.
 - [RFC8628 - OAuth 2.0 Device Authorization Grant (Device Flow)][device-flow]
 - [RFC8705 - OAuth 2.0 Mutual TLS Client Authentication and Certificate Bound Access Tokens (MTLS)][mtls]
 - [RFC8707 - OAuth 2.0 Resource Indicators][resource-indicators]
+- [JSON Web Token (JWT) Profile for OAuth 2.0 Access Tokens][jwt-at]
 
 The following draft specifications are implemented by oidc-provider.
-- [JSON Web Token (JWT) Profile for OAuth 2.0 Access Tokens - draft 05][jwt-at]
 - [JWT Response for OAuth Token Introspection - draft 09][jwt-introspection]
 - [JWT Secured Authorization Response Mode for OAuth 2.0 (JARM) - Implementer's Draft 01][jarm]
 - [OAuth 2.0 Authorization Server Issuer Identifier in Authorization Response][iss-auth-resp]
@@ -169,7 +169,7 @@ See the list of available emitted [event names](/docs/events.md) and their descr
 [dpop]: https://tools.ietf.org/html/draft-ietf-oauth-dpop-01
 [resource-indicators]: https://tools.ietf.org/html/rfc8707
 [jarm]: https://openid.net/specs/openid-financial-api-jarm-ID1.html
-[jwt-at]: https://tools.ietf.org/html/draft-ietf-oauth-access-token-jwt-05
+[jwt-at]: https://tools.ietf.org/html/draft-ietf-oauth-access-token-jwt-11
 [support-sponsor]: https://github.com/sponsors/panva
 [par]: https://tools.ietf.org/html/draft-ietf-oauth-par-03
 [rpinitiated-logout]: https://openid.net/specs/openid-connect-rpinitiated-1_0-01.html
