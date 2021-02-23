@@ -360,7 +360,7 @@ describe('POST code_verification endpoint w/ verification', () => {
       const session = this.getSession();
 
       expect(code).not.to.have.property('sid');
-      expect(code).to.have.property('accountId', session.account);
+      expect(code).to.have.property('accountId', session.accountId);
       expect(code).to.have.property('authTime', session.loginTs);
       expect(code).to.have.property('scope', 'openid email');
       expect(code).to.have.property('claims').that.eqls({ userinfo: { email: null } });
@@ -449,7 +449,7 @@ describe('POST code_verification endpoint w/ verification', () => {
 
       const session = this.getSession();
 
-      expect(code).to.have.property('accountId', session.account);
+      expect(code).to.have.property('accountId', session.accountId);
       expect(code).to.have.property('authTime', session.loginTs);
       expect(code).to.have.property('scope', 'openid email');
       expect(code).to.have.property('claims').that.eqls({ userinfo: { email: null } });

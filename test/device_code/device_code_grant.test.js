@@ -13,8 +13,8 @@ function errorDetail(spy) {
 }
 
 describe('grant_type=urn:ietf:params:oauth:grant-type:device_code w/ conformIdTokenClaims=false', () => {
-  before(bootstrap(__dirname, { config: 'device_code_non_conform', account: 'sub' })); // agent
-  before(function () { return this.login({ scope: 'openid profile offline_access', account: 'sub' }); });
+  before(bootstrap(__dirname, { config: 'device_code_non_conform' })); // agent
+  before(function () { return this.login({ scope: 'openid profile offline_access', accountId: 'sub' }); });
 
   it('returns the right stuff', async function () {
     const spy = sinon.spy();
@@ -48,7 +48,7 @@ describe('grant_type=urn:ietf:params:oauth:grant-type:device_code w/ conformIdTo
 
 describe('grant_type=urn:ietf:params:oauth:grant-type:device_code', () => {
   before(bootstrap(__dirname));
-  before(function () { return this.login({ scope: 'openid profile offline_access', account: 'sub' }); });
+  before(function () { return this.login({ scope: 'openid profile offline_access', accountId: 'sub' }); });
 
   it('returns the right stuff', async function () {
     const spy = sinon.spy();

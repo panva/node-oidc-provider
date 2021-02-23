@@ -117,16 +117,16 @@ module.exports = function testHelper(dir, {
       resources = {},
       rejectedScopes = [],
       rejectedClaims = [],
-      account = nanoid(),
+      accountId = nanoid(),
     } = {}) {
       const sessionId = nanoid();
       const loginTs = epochTime();
       const expire = new Date();
       expire.setDate(expire.getDate() + 1);
-      this.loggedInAccountId = account;
+      this.loggedInAccountId = accountId;
 
       const keys = new KeyGrip(i(provider).configuration('cookies.keys'));
-      const session = new (provider.Session)({ jti: sessionId, loginTs, account });
+      const session = new (provider.Session)({ jti: sessionId, loginTs, accountId });
       lastSession = session;
       const sessionCookie = `_session=${sessionId}; path=/; expires=${expire.toGMTString()}; httponly`;
       const cookies = [sessionCookie];
@@ -144,7 +144,7 @@ module.exports = function testHelper(dir, {
 
       // eslint-disable-next-line no-restricted-syntax
       for (const cl of clients) {
-        const grant = new provider.Grant({ clientId: cl.client_id, accountId: account });
+        const grant = new provider.Grant({ clientId: cl.client_id, accountId });
         grant.addOIDCScope(scope);
         if (ctx.params.claims) {
           grant.addOIDCClaims(Object.keys(JSON.parse(ctx.params.claims).id_token || {}));
@@ -174,7 +174,7 @@ module.exports = function testHelper(dir, {
         ttl = ttl(ctx, session);
       }
 
-      return Account.findAccount({}, account).then(session.save(ttl)).then(() => {
+      return Account.findAccount({}, accountId).then(session.save(ttl)).then(() => {
         agent._saveCookies.bind(agent)({ headers: { 'set-cookie': cookies } });
       });
     }

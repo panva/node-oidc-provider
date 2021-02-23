@@ -87,7 +87,7 @@ describe('device interaction resume /device/:uid/', () => {
           scope: 'openid',
         }, {
           login: {
-            account: nanoid(),
+            accountId: nanoid(),
             remember: true,
           },
           consent: {},
@@ -254,7 +254,7 @@ describe('device interaction resume /device/:uid/', () => {
           scope: 'openid',
         }, {
           login: {
-            account: nanoid(),
+            accountId: nanoid(),
           },
           consent: {},
         });
@@ -282,7 +282,7 @@ describe('device interaction resume /device/:uid/', () => {
           scope: 'openid',
         }, {
           login: {
-            account: nanoid(),
+            accountId: nanoid(),
             remember: true,
           },
           consent: {},
@@ -311,7 +311,7 @@ describe('device interaction resume /device/:uid/', () => {
           scope: 'openid',
         }, {
           login: {
-            account: nanoid(),
+            accountId: nanoid(),
             remember: false,
           },
           consent: {},
@@ -339,10 +339,10 @@ describe('device interaction resume /device/:uid/', () => {
 
         await setup.call(this, auth, {
           login: {
-            account: nanoid(),
+            accountId: nanoid(),
           },
         }, {
-          account: nanoid(),
+          accountId: nanoid(),
         });
 
         let state;

@@ -250,7 +250,7 @@ expire.setDate(expire.getDate() + 1);
             claims: {
               id_token: {
                 sub: {
-                  value: session.account,
+                  value: session.accountId,
                 },
               },
             },
@@ -274,7 +274,7 @@ expire.setDate(expire.getDate() + 1);
             claims: {
               id_token: {
                 sub: {
-                  value: `${session.account}-pairwise`,
+                  value: `${session.accountId}-pairwise`,
                 },
               },
             },
@@ -307,7 +307,7 @@ expire.setDate(expire.getDate() + 1);
 
             setup.call(this, auth, {
               login: {
-                account: this.loggedInAccountId,
+                accountId: this.loggedInAccountId,
                 acr: '2',
               },
             });
@@ -338,7 +338,7 @@ expire.setDate(expire.getDate() + 1);
 
             setup.call(this, auth, {
               login: {
-                account: this.loggedInAccountId,
+                accountId: this.loggedInAccountId,
                 acr: '1',
               },
             });
@@ -603,7 +603,7 @@ expire.setDate(expire.getDate() + 1);
           const session = this.getSession();
           const client = await this.provider.Client.find('client');
           const { IdToken } = this.provider;
-          const idToken = new IdToken({ sub: session.account }, { client, ctx: undefined });
+          const idToken = new IdToken({ sub: session.accountId }, { client, ctx: undefined });
 
           idToken.scope = 'openid';
           const hint = await idToken.issue({ use: 'idtoken' });
@@ -627,7 +627,7 @@ expire.setDate(expire.getDate() + 1);
           const session = this.getSession();
           const client = await this.provider.Client.find('client-pairwise');
           const { IdToken } = this.provider;
-          const idToken = new IdToken({ sub: session.account }, { client, ctx: undefined });
+          const idToken = new IdToken({ sub: session.accountId }, { client, ctx: undefined });
 
           idToken.scope = 'openid';
           const hint = await idToken.issue({ use: 'idtoken' });

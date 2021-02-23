@@ -172,7 +172,7 @@ describe('Back-Channel Logout 1.0', () => {
       const errorSpy = sinon.spy();
       this.provider.once('backchannel.error', errorSpy);
 
-      const accountId = session.account;
+      const { accountId } = session;
 
       return this.agent.post('/session/end/confirm')
         .send(params)
@@ -206,7 +206,7 @@ describe('Back-Channel Logout 1.0', () => {
       sinon.spy(client, 'backchannelLogout');
       sinon.spy(client2, 'backchannelLogout');
 
-      const accountId = session.account;
+      const { accountId } = session;
       const { sid } = session.authorizations.client;
 
       return this.agent.post('/session/end/confirm')

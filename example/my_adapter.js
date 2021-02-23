@@ -114,7 +114,7 @@ class MyAdapter {
      * - kind {string} - "Session" fixed string value
      * - exp {number} - timestamp of the session's expiration
      * - iat {number} - timestamp of the session's creation
-     * - account {string} - the session account identifier
+     * - accountId {string} - the session account identifier
      * - authorizations {object} - object with session authorized clients and their session identifiers
      * - loginTs {number} - timestamp of user's authentication
      * - acr {string} - authentication context class reference value

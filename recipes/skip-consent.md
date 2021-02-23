@@ -22,7 +22,7 @@ const oidcConfiguration = {
     } else if (isFirstParty(ctx.oidc.client)) {
       const grant = new ctx.oidc.provider.Grant({
         clientId: ctx.oidc.client.clientId,
-        accountId: ctx.oidc.session.accountId(),
+        accountId: ctx.oidc.session.accountId,
       });
 
       grant.addOIDCScope('openid email profile');

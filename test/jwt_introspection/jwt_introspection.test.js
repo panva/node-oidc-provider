@@ -23,7 +23,7 @@ describe('jwtIntrospection features', () => {
   });
 
   describe('JWT Response for OAuth Token Introspection', () => {
-    before(function () { return this.login({ account: 'accountId' }); });
+    before(function () { return this.login({ accountId: 'accountId' }); });
     it('can only be enabled with introspection', () => {
       expect(() => {
         new Provider('http://localhost', { // eslint-disable-line no-new

@@ -66,37 +66,6 @@ describe('/auth', () => {
             .expect(new RegExp(`input type="hidden" name="state" value="${auth.state}"`))
             .expect(new RegExp(`form method="post" action="${auth.redirect_uri}"`));
         });
-
-        context('[exception]', () => {
-          before(async function () {
-            sinon.stub(this.provider.Session.prototype, 'accountId').throws();
-          });
-
-          after(async function () {
-            this.provider.Session.prototype.accountId.restore();
-          });
-
-          it('responds by rendering a self-submitting form with the exception', function () {
-            const auth = new this.AuthorizationRequest({
-              response_type: 'code',
-              prompt: 'none',
-              response_mode: 'form_post',
-              scope: 'openid',
-            });
-
-            const spy = sinon.spy();
-            this.provider.once('server_error', spy);
-
-            return this.wrap({ route, verb, auth })
-              .expect(500)
-              .expect(() => {
-                expect(spy.called).to.be.true;
-              })
-              .expect(new RegExp('input type="hidden" name="error" value="server_error"'))
-              .expect(new RegExp(`input type="hidden" name="state" value="${auth.state}"`))
-              .expect(new RegExp(`form method="post" action="${auth.redirect_uri}"`));
-          });
-        });
       });
     });
   });

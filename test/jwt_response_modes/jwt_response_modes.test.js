@@ -245,11 +245,11 @@ describe('configuration features.jwtResponseModes', () => {
   });
 
   Object.entries({
-    'query.jwt': [302, 302],
-    'fragment.jwt': [302, 302],
-    'form_post.jwt': [400, 500],
-    'web_message.jwt': [400, 500],
-  }).forEach(([mode, [errStatus, exceptionStatus]]) => {
+    'query.jwt': 302,
+    'fragment.jwt': 302,
+    'form_post.jwt': 400,
+    'web_message.jwt': 400,
+  }).forEach(([mode, errStatus]) => {
     context(`${mode} err handling`, () => {
       it(`responds with a ${errStatus}`, function () {
         const auth = new this.AuthorizationRequest({
@@ -287,34 +287,6 @@ describe('configuration features.jwtResponseModes', () => {
             expect(spy.args[0][1]).to.have.property('error', 'invalid_client');
             expect(spy.args[0][1]).to.have.property('error_description', 'client secret is expired, cannot issue a JWT Authorization response');
           });
-      });
-
-      context('[exception]', () => {
-        before(async function () {
-          sinon.stub(this.provider.Session.prototype, 'accountId').throws();
-        });
-
-        after(async function () {
-          this.provider.Session.prototype.accountId.restore();
-        });
-
-        it(`responds with a ${exceptionStatus}`, function () {
-          const auth = new this.AuthorizationRequest({
-            response_type: 'code',
-            prompt: 'none',
-            response_mode: mode,
-            scope: 'openid',
-          });
-
-          const spy = sinon.spy();
-          this.provider.once('server_error', spy);
-
-          return this.wrap({ route, verb: 'get', auth })
-            .expect(exceptionStatus)
-            .expect(() => {
-              expect(spy.called).to.be.true;
-            });
-        });
       });
     });
   });

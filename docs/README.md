@@ -153,7 +153,7 @@ router.post('/interaction/:uid', async (ctx, next) => {
   // authentication/login prompt got resolved, omit if no authentication happened, i.e. the user
   // cancelled
   login: {
-    account: '7ff1d19a-d3fd-4863-978e-8cce75fa880c', // logged-in account id
+    accountId: '7ff1d19a-d3fd-4863-978e-8cce75fa880c', // logged-in account id
     acr: string, // acr value for the authentication
     remember: boolean, // true if provider should use a persistent cookie rather than a session one, defaults to true
     ts: number, // unix timestamp of the authentication, defaults to now()
@@ -2306,7 +2306,7 @@ new Prompt(
 
   new Check('no_session', 'End-User authentication is required', (ctx) => {
     const { oidc } = ctx;
-    if (oidc.session.accountId()) {
+    if (oidc.session.accountId) {
       return Check.NO_NEED_TO_PROMPT;
     }
 
@@ -2319,7 +2319,7 @@ new Prompt(
       return Check.NO_NEED_TO_PROMPT;
     }
 
-    if (!oidc.session.accountId()) {
+    if (!oidc.session.accountId) {
       return Check.REQUEST_PROMPT;
     }
 
@@ -2338,7 +2338,7 @@ new Prompt(
 
     const { payload } = oidc.entities.IdTokenHint;
 
-    let sub = oidc.session.accountId();
+    let sub = oidc.session.accountId;
     if (sub === undefined) {
       return Check.REQUEST_PROMPT;
     }
@@ -2361,7 +2361,7 @@ new Prompt(
       return Check.NO_NEED_TO_PROMPT;
     }
 
-    let sub = oidc.session.accountId();
+    let sub = oidc.session.accountId;
     if (sub === undefined) {
       return Check.REQUEST_PROMPT;
     }
@@ -3615,7 +3615,7 @@ validating the password digest. Custom implementation using the provided
 ```js
 const ctx = provider.app.createContext(req, res)
 const session = await provider.Session.get(ctx)
-const signedIn = !!session.account
+const signedIn = !!session.accountId
 ```
 
 ### Client Credentials only clients

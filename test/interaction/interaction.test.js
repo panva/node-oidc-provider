@@ -111,7 +111,7 @@ describe('devInteractions', () => {
 
     it("checks that the authentication session's principal didn't change", async function () {
       const session = this.getSession({ instantiate: true });
-      session.account = 'foobar';
+      session.accountId = 'foobar';
       await session.persist();
 
       await this.agent.get(this.url)
@@ -234,7 +234,7 @@ describe('devInteractions', () => {
       expect(spy).to.have.property('calledOnce', true);
       const error = spy.firstCall.args[1];
       expect(error).to.be.an.instanceof(TypeError);
-      expect(error).to.have.property('message', 'account must be a non-empty string, got: string');
+      expect(error).to.have.property('message', 'accountId must be a non-empty string, got: string');
     });
 
     handlesInteractionSessionErrors();
@@ -430,7 +430,7 @@ describe('resume after consent', () => {
 
       await setup.call(this, auth, {
         login: {
-          account: nanoid(),
+          accountId: nanoid(),
         },
       });
 
@@ -455,7 +455,7 @@ describe('resume after consent', () => {
 
       await setup.call(this, auth, {
         login: {
-          account: nanoid(),
+          accountId: nanoid(),
           remember: true,
         },
       });
@@ -481,7 +481,7 @@ describe('resume after consent', () => {
 
       await setup.call(this, auth, {
         login: {
-          account: nanoid(),
+          accountId: nanoid(),
           remember: false,
         },
       });
@@ -507,10 +507,10 @@ describe('resume after consent', () => {
 
       await setup.call(this, auth, {
         login: {
-          account: nanoid(),
+          accountId: nanoid(),
         },
       }, {
-        account: nanoid(),
+        accountId: nanoid(),
       });
 
       let state;
@@ -577,7 +577,7 @@ describe('resume after consent', () => {
 
       await setup.call(this, auth, {
         login: {
-          account: nanoid(),
+          accountId: nanoid(),
           remember: true,
         },
         consent: {},
@@ -709,7 +709,7 @@ describe('resume after consent', () => {
 
       await setup.call(this, auth, {
         login: {
-          account: nanoid(),
+          accountId: nanoid(),
           remember: true,
         },
         consent: {},

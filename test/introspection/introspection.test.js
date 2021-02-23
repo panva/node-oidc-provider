@@ -20,7 +20,7 @@ describe('introspection features', () => {
   });
 
   describe('/token/introspection', () => {
-    before(function () { return this.login({ account: 'accountId' }); });
+    before(function () { return this.login({ accountId: 'accountId' }); });
     it('returns the properties for access token [no hint]', async function () {
       const at = new this.provider.AccessToken({
         accountId: 'accountId',

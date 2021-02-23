@@ -192,7 +192,7 @@ describe('BASIC code', () => {
       it('no account id was found in the session info', function () {
         const session = this.getSession();
         delete session.loginTs;
-        delete session.account;
+        delete session.accountId;
 
         const auth = new this.AuthorizationRequest({
           response_type,
@@ -981,38 +981,6 @@ describe('BASIC code', () => {
             .expect(auth.validateClientLocation)
             .expect(auth.validateError('invalid_request'))
             .expect(auth.validateErrorDescription(/could not validate id_token_hint/));
-        });
-      });
-
-      context('exception handling', () => {
-        before(async function () {
-          sinon.stub(this.provider.Session.prototype, 'accountId').throws();
-        });
-
-        after(async function () {
-          this.provider.Session.prototype.accountId.restore();
-        });
-
-        it('responds with server_error redirect to redirect_uri', function () {
-          const auth = new this.AuthorizationRequest({
-            response_type,
-            prompt: 'none',
-            scope,
-          });
-
-          const spy = sinon.spy();
-          this.provider.once('server_error', spy);
-
-          return this.wrap({ route, verb, auth })
-            .expect(302)
-            .expect(() => {
-              expect(spy.called).to.be.true;
-            })
-            .expect(auth.validatePresence(['error', 'error_description', 'state']))
-            .expect(auth.validateState)
-            .expect(auth.validateClientLocation)
-            .expect(auth.validateError('server_error'))
-            .expect(auth.validateErrorDescription('oops! something went wrong'));
         });
       });
     });

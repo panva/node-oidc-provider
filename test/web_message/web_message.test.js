@@ -226,46 +226,6 @@ describe('configuration features.webMessageResponseMode', () => {
         expect(response).to.have.property('error', 'login_required');
         expect(response).to.have.property('state', auth.state);
       });
-
-      context('[exception]', () => {
-        before(async function () {
-          sinon.stub(this.provider.Session.prototype, 'accountId').throws();
-        });
-
-        after(async function () {
-          this.provider.Session.prototype.accountId.restore();
-        });
-
-        it('responds by rendering a self-submitting form with the exception', async function () {
-          const auth = new this.AuthorizationRequest({
-            response_type,
-            prompt: 'none',
-            response_mode,
-            scope,
-          });
-
-          const spy = sinon.spy();
-          this.provider.once('server_error', spy);
-
-          await this.wrap({ route, auth, verb: 'get' })
-            .expect(500)
-            .expect('pragma', 'no-cache')
-            .expect('cache-control', 'no-cache, no-store')
-            .expect('content-type', 'text/html; charset=utf-8')
-            .expect((response) => {
-              expect(response.headers['x-frame-options']).not.to.be.ok;
-              expect(response.headers['content-security-policy']).not.to.match(/frame-ancestors/);
-            })
-            .expect(() => {
-              expect(spy.called).to.be.true;
-            })
-            .expect(/var data = ({[a-zA-Z0-9"!{} ,-_]+});/);
-
-          const { response } = JSON.parse(RegExp.$1);
-          expect(response).to.have.property('error', 'server_error');
-          expect(response).to.have.property('state', auth.state);
-        });
-      });
     });
   });
 });

@@ -45,7 +45,7 @@ let server;
     if (login) {
       Object.assign(args[2].login, {
         acr: 'urn:mace:incommon:iap:bronze',
-        amr: login.account.startsWith('google.') ? ['google'] : ['pwd'],
+        amr: login.accountId.startsWith('google.') ? ['google'] : ['pwd'],
       });
     }
 

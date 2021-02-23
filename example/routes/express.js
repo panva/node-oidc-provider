@@ -120,7 +120,7 @@ module.exports = (app, provider) => {
       const result = {
         select_account: {}, // make sure its skipped by the interaction policy since we just logged in
         login: {
-          account: account.accountId,
+          accountId: account.accountId,
         },
       };
 
