@@ -2131,6 +2131,15 @@ _**default value**_:
 }
 ```
 
+Configure `cookies.names` like so:
+  
+
+```js
+async function cookiesNames(ctx, type) => {
+  return `_${type}`
+}
+```
+
 ### cookies.short
 
 Options for short-term cookies  

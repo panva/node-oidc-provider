@@ -831,6 +831,13 @@ export interface CookiesSetOptions {
   overwrite?: boolean;
 }
 
+export interface CookiesNames {
+  session?: string;
+  interaction?: string;
+  resume?: string;
+  state?: string;
+}
+
 export interface Configuration {
   acrValues?: string[] | Set<string>;
 
@@ -851,12 +858,9 @@ export interface Configuration {
   conformIdTokenClaims?: boolean;
 
   cookies?: {
-    names?: {
-      session?: string;
-      interaction?: string;
-      resume?: string;
-      state?: string;
-    };
+    names?:
+      | CookiesNames
+      | ((ctx: KoaContextWithOIDC, type: string) => CanBePromise<string>);
     long?: CookiesSetOptions;
     short?: CookiesSetOptions;
     keys?: Array<string | Buffer>;
