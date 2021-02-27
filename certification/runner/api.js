@@ -15,7 +15,8 @@ class API {
     assert(baseUrl, 'argument property "baseUrl" missing');
 
     const { get, post } = Got.extend({
-      baseUrl,
+      prefixUrl: baseUrl,
+      throwHttpErrors: false,
       followRedirect: false,
       headers: {
         ...(bearerToken ? { authorization: `bearer ${bearerToken}` } : undefined),
@@ -27,7 +28,8 @@ class API {
     });
 
     const { stream } = Got.extend({
-      baseUrl,
+      prefixUrl: baseUrl,
+      throwHttpErrors: false,
       followRedirect: false,
       headers: {
         ...(bearerToken ? { authorization: `bearer ${bearerToken}` } : undefined),
@@ -42,7 +44,7 @@ class API {
   }
 
   async getAllTestModules() {
-    const { statusCode, body: response } = await this.get('/api/runner/available');
+    const { statusCode, body: response } = await this.get('api/runner/available');
 
     assert.equal(statusCode, 200);
 
@@ -53,7 +55,7 @@ class API {
     assert(planName, 'argument property "planName" missing');
     assert(configuration, 'argument property "configuration" missing');
 
-    const { statusCode, body: response } = await this.post('/api/plan', {
+    const { statusCode, body: response } = await this.post('api/plan', {
       searchParams: {
         planName,
         ...(variant ? { variant } : undefined),
@@ -76,7 +78,7 @@ class API {
       Object.assign(searchParams, { variant: JSON.stringify(variant) });
     }
 
-    const { statusCode, body: response } = await this.post('/api/runner', {
+    const { statusCode, body: response } = await this.post('api/runner', {
       searchParams,
     });
 
@@ -88,7 +90,7 @@ class API {
   async getModuleInfo({ moduleId } = {}) {
     assert(moduleId, 'argument property "moduleId" missing');
 
-    const { statusCode, body: response } = await this.get(`/api/info/${moduleId}`);
+    const { statusCode, body: response } = await this.get(`api/info/${moduleId}`);
 
     assert.equal(statusCode, 200);
 
@@ -98,7 +100,7 @@ class API {
   async getTestLog({ moduleId } = {}) {
     assert(moduleId, 'argument property "moduleId" missing');
 
-    const { statusCode, body: response } = await this.get(`/api/log/${moduleId}`);
+    const { statusCode, body: response } = await this.get(`api/log/${moduleId}`);
 
     assert.equal(statusCode, 200);
 
@@ -108,13 +110,17 @@ class API {
   async downloadArtifact({ planId } = {}) {
     assert(planId, 'argument property "planId" missing');
     await new Promise((resolve) => {
-      const download = this.stream(`/api/plan/exporthtml/${planId}`, {
+      const download = this.stream(`api/plan/exporthtml/${planId}`, {
         headers: { accept: 'application/zip' },
-        encoding: null,
+        responseType: 'buffer',
       });
 
-      download.pipe(createWriteStream(`export-${planId}.zip`));
-      download.on('close', resolve);
+      const filename = `export-${planId}.zip`;
+      download.pipe(createWriteStream(filename));
+      download.on('close', () => {
+        console.log(`Logs in ${filename}.`); // eslint-disable-line no-console
+        resolve();
+      });
     });
   }
 

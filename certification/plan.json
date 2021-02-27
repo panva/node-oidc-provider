@@ -963,7 +963,7 @@
                       },
                       {
                           "task": "Expect success page",
-                          "match": "https://op.panva.cz/session/end/success?*",
+                          "match": "https://op.panva.cz/session/end/success",
                           "commands": [
                               [
                                   "wait",

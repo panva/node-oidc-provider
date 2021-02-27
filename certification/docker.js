@@ -17,6 +17,12 @@ configuration.findAccount = Account.findAccount;
 
 const provider = new Provider(ISSUER, configuration);
 
+// https://gitlab.com/openid/conformance-suite/-/issues/872
+provider.on('authorization.success', (ctx, out) => {
+  // eslint-disable-next-line no-param-reassign
+  out.session_state = 'foo';
+});
+
 // don't wanna re-bundle the interactions so just insert the login amr and acr as static whenever
 // login is submitted, usually you would submit them from your interaction
 const { interactionFinished } = provider;
@@ -25,7 +31,7 @@ provider.interactionFinished = (...args) => {
   if (login) {
     Object.assign(args[2].login, {
       acr: 'urn:mace:incommon:iap:bronze',
-      amr: login.accountId.startsWith('google.') ? ['google'] : ['pwd'],
+      amr: ['pwd'],
     });
   }
 

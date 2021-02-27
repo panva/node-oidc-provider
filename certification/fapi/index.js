@@ -22,6 +22,20 @@ const JWK_PKJWTTWO = jose.JWK.asKey(readFileSync(path.join(__dirname, 'pkjwttwo.
 const JWK_MTLSONE = jose.JWK.asKey(readFileSync(path.join(__dirname, 'mtlsone.key')), { x5c: [normalize(readFileSync(path.join(__dirname, 'mtlsone.crt')))], alg: 'PS256', use: 'sig' }).toJWK();
 const JWK_MTLSTWO = jose.JWK.asKey(readFileSync(path.join(__dirname, 'mtlstwo.key')), { x5c: [normalize(readFileSync(path.join(__dirname, 'mtlstwo.crt')))], alg: 'PS256', use: 'sig' }).toJWK();
 
+const aliases = [
+  'oidc-provider',
+  'oidc-provider-by_value-mtls-plain_fapi-jarm',
+  'oidc-provider-by_value-mtls-plain_fapi-plain_response',
+  'oidc-provider-by_value-private_key_jwt-plain_fapi-jarm',
+  'oidc-provider-by_value-private_key_jwt-plain_fapi-plain_response',
+  'oidc-provider-pushed-mtls-plain_fapi-jarm',
+  'oidc-provider-pushed-mtls-plain_fapi-plain_response',
+  'oidc-provider-pushed-private_key_jwt-plain_fapi-jarm',
+  'oidc-provider-pushed-private_key_jwt-plain_fapi-plain_response',
+];
+
+const REDIRECT_URIS = aliases.map((alias) => [`${SUITE_BASE_URL}/test/a/${alias}/callback`, `${SUITE_BASE_URL}/test/a/${alias}/callback?dummy1=lorem&dummy2=ipsum`]).flat(Infinity);
+
 const fapi = new Provider(ISSUER, {
   acrValues: ['urn:mace:incommon:iap:silver'],
   routes: {
@@ -67,16 +81,7 @@ const fapi = new Provider(ISSUER, {
       client_id: 'pkjwt-one',
       response_types: ['code', 'code id_token'],
       grant_types: ['implicit', 'authorization_code', 'refresh_token'],
-      redirect_uris: [
-        `${SUITE_BASE_URL}/test/a/oidc-provider-private_key_jwt-plain_fapi-jarm/callback`,
-        `${SUITE_BASE_URL}/test/a/oidc-provider-private_key_jwt-plain_fapi-plain_response/callback`,
-        `${SUITE_BASE_URL}/test/a/oidc-provider/callback`,
-        'https://review-app-dev-branch-8.certification.openid.net/test/a/mtls/callback', // removeme eventually
-        'https://review-app-dev-branch-8.certification.openid.net/test/a/mtls/callback?dummy1=lorem&dummy2=ipsum', // removeme eventually
-        `${SUITE_BASE_URL}/test/a/oidc-provider-private_key_jwt-plain_fapi-jarm/callback?dummy1=lorem&dummy2=ipsum`,
-        `${SUITE_BASE_URL}/test/a/oidc-provider-private_key_jwt-plain_fapi-plain_response/callback?dummy1=lorem&dummy2=ipsum`,
-        `${SUITE_BASE_URL}/test/a/oidc-provider/callback?dummy1=lorem&dummy2=ipsum`,
-      ],
+      redirect_uris: REDIRECT_URIS,
       token_endpoint_auth_method: 'private_key_jwt',
       jwks: {
         keys: [JWK_PKJWTONE],
@@ -86,16 +91,7 @@ const fapi = new Provider(ISSUER, {
       client_id: 'pkjwt-two',
       response_types: ['code', 'code id_token'],
       grant_types: ['implicit', 'authorization_code', 'refresh_token'],
-      redirect_uris: [
-        `${SUITE_BASE_URL}/test/a/oidc-provider-private_key_jwt-plain_fapi-jarm/callback`,
-        `${SUITE_BASE_URL}/test/a/oidc-provider-private_key_jwt-plain_fapi-plain_response/callback`,
-        `${SUITE_BASE_URL}/test/a/oidc-provider/callback`,
-        'https://review-app-dev-branch-8.certification.openid.net/test/a/mtls/callback', // removeme eventually
-        'https://review-app-dev-branch-8.certification.openid.net/test/a/mtls/callback?dummy1=lorem&dummy2=ipsum', // removeme eventually
-        `${SUITE_BASE_URL}/test/a/oidc-provider-private_key_jwt-plain_fapi-jarm/callback?dummy1=lorem&dummy2=ipsum`,
-        `${SUITE_BASE_URL}/test/a/oidc-provider-private_key_jwt-plain_fapi-plain_response/callback?dummy1=lorem&dummy2=ipsum`,
-        `${SUITE_BASE_URL}/test/a/oidc-provider/callback?dummy1=lorem&dummy2=ipsum`,
-      ],
+      redirect_uris: REDIRECT_URIS,
       token_endpoint_auth_method: 'private_key_jwt',
       jwks: {
         keys: [JWK_PKJWTTWO],
@@ -105,16 +101,7 @@ const fapi = new Provider(ISSUER, {
       client_id: 'mtls-one',
       response_types: ['code', 'code id_token'],
       grant_types: ['implicit', 'authorization_code', 'refresh_token'],
-      redirect_uris: [
-        `${SUITE_BASE_URL}/test/a/oidc-provider-mtls-plain_fapi-jarm/callback`,
-        `${SUITE_BASE_URL}/test/a/oidc-provider-mtls-plain_fapi-plain_response/callback`,
-        `${SUITE_BASE_URL}/test/a/oidc-provider/callback`,
-        'https://review-app-dev-branch-8.certification.openid.net/test/a/mtls/callback', // removeme eventually
-        'https://review-app-dev-branch-8.certification.openid.net/test/a/mtls/callback?dummy1=lorem&dummy2=ipsum', // removeme eventually
-        `${SUITE_BASE_URL}/test/a/oidc-provider-mtls-plain_fapi-jarm/callback?dummy1=lorem&dummy2=ipsum`,
-        `${SUITE_BASE_URL}/test/a/oidc-provider-mtls-plain_fapi-plain_response/callback?dummy1=lorem&dummy2=ipsum`,
-        `${SUITE_BASE_URL}/test/a/oidc-provider/callback?dummy1=lorem&dummy2=ipsum`,
-      ],
+      redirect_uris: REDIRECT_URIS,
       token_endpoint_auth_method: 'self_signed_tls_client_auth',
       jwks: {
         keys: [JWK_MTLSONE],
@@ -124,16 +111,7 @@ const fapi = new Provider(ISSUER, {
       client_id: 'mtls-two',
       response_types: ['code', 'code id_token'],
       grant_types: ['implicit', 'authorization_code', 'refresh_token'],
-      redirect_uris: [
-        `${SUITE_BASE_URL}/test/a/oidc-provider-mtls-plain_fapi-jarm/callback`,
-        `${SUITE_BASE_URL}/test/a/oidc-provider-mtls-plain_fapi-plain_response/callback`,
-        `${SUITE_BASE_URL}/test/a/oidc-provider/callback`,
-        'https://review-app-dev-branch-8.certification.openid.net/test/a/mtls/callback', // removeme eventually
-        'https://review-app-dev-branch-8.certification.openid.net/test/a/mtls/callback?dummy1=lorem&dummy2=ipsum', // removeme eventually
-        `${SUITE_BASE_URL}/test/a/oidc-provider-mtls-plain_fapi-jarm/callback?dummy1=lorem&dummy2=ipsum`,
-        `${SUITE_BASE_URL}/test/a/oidc-provider-mtls-plain_fapi-plain_response/callback?dummy1=lorem&dummy2=ipsum`,
-        `${SUITE_BASE_URL}/test/a/oidc-provider/callback?dummy1=lorem&dummy2=ipsum`,
-      ],
+      redirect_uris: REDIRECT_URIS,
       token_endpoint_auth_method: 'self_signed_tls_client_auth',
       jwks: {
         keys: [JWK_MTLSTWO],
@@ -145,6 +123,7 @@ const fapi = new Provider(ISSUER, {
     grant_types: ['authorization_code', 'implicit'],
     id_token_signed_response_alg: 'PS256',
     introspection_signed_response_alg: 'PS256',
+    require_signed_request_object: true,
     request_object_signing_alg: 'PS256',
     response_types: ['code id_token'],
     scope: 'openid offline_access',
