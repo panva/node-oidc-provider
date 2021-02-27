@@ -92,7 +92,57 @@ describe('Pushed Request Object', () => {
               .expect(201)
               .expect(({ body }) => {
                 expect(body).to.have.keys('expires_in', 'request_uri');
-                expect(body).to.have.property('expires_in', 300);
+                expect(body).to.have.property('expires_in', 60);
+                expect(body).to.have.property('request_uri').and.match(/^urn:ietf:params:oauth:request_uri:(.+)$/);
+              });
+
+            expect(spy).to.have.property('calledOnce', true);
+          });
+
+          it('uses the expiration from JWT when below MAX_TTL', async function () {
+            const spy = sinon.spy();
+            this.provider.once('pushed_authorization_request.success', spy);
+
+            await this.agent.post(route)
+              .auth(clientId, 'secret')
+              .type('form')
+              .send({
+                request: await JWT.sign({
+                  response_type: 'code',
+                  client_id: clientId,
+                }, this.key, 'HS256', {
+                  expiresIn: 20,
+                }),
+              })
+              .expect(201)
+              .expect(({ body }) => {
+                expect(body).to.have.keys('expires_in', 'request_uri');
+                expect(body).to.have.property('expires_in', 20);
+                expect(body).to.have.property('request_uri').and.match(/^urn:ietf:params:oauth:request_uri:(.+)$/);
+              });
+
+            expect(spy).to.have.property('calledOnce', true);
+          });
+
+          it('uses MAX_TTL when the expiration from JWT is above it', async function () {
+            const spy = sinon.spy();
+            this.provider.once('pushed_authorization_request.success', spy);
+
+            await this.agent.post(route)
+              .auth(clientId, 'secret')
+              .type('form')
+              .send({
+                request: await JWT.sign({
+                  response_type: 'code',
+                  client_id: clientId,
+                }, this.key, 'HS256', {
+                  expiresIn: 120,
+                }),
+              })
+              .expect(201)
+              .expect(({ body }) => {
+                expect(body).to.have.keys('expires_in', 'request_uri');
+                expect(body).to.have.property('expires_in', 60);
                 expect(body).to.have.property('request_uri').and.match(/^urn:ietf:params:oauth:request_uri:(.+)$/);
               });
 
@@ -363,7 +413,7 @@ describe('Pushed Request Object', () => {
               .expect(201)
               .expect(({ body }) => {
                 expect(body).to.have.keys('expires_in', 'request_uri');
-                expect(body).to.have.property('expires_in', 300);
+                expect(body).to.have.property('expires_in', 60);
                 expect(body).to.have.property('request_uri').and.match(/^urn:ietf:params:oauth:request_uri:(.+)$/);
               });
 
