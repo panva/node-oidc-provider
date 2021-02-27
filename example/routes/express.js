@@ -53,28 +53,6 @@ module.exports = (app, provider) => {
       const client = await provider.Client.find(params.client_id);
 
       switch (prompt.name) {
-        case 'select_account': {
-          if (!session) {
-            return provider.interactionFinished(req, res, { select_account: {} }, { mergeWithLastSubmission: false });
-          }
-
-          const account = await provider.Account.findAccount(undefined, session.accountId);
-          const { email } = await account.claims('prompt', 'email', { email: null }, []);
-
-          return res.render('select_account', {
-            client,
-            uid,
-            email,
-            details: prompt.details,
-            params,
-            title: 'Sign-in',
-            session: session ? debug(session) : undefined,
-            dbg: {
-              params: debug(params),
-              prompt: debug(prompt),
-            },
-          });
-        }
         case 'login': {
           return res.render('login', {
             client,
@@ -118,36 +96,11 @@ module.exports = (app, provider) => {
       const account = await Account.findByLogin(req.body.login);
 
       const result = {
-        select_account: {}, // make sure its skipped by the interaction policy since we just logged in
         login: {
           accountId: account.accountId,
         },
       };
 
-      await provider.interactionFinished(req, res, result, { mergeWithLastSubmission: false });
-    } catch (err) {
-      next(err);
-    }
-  });
-
-  app.post('/interaction/:uid/continue', setNoCache, body, async (req, res, next) => {
-    try {
-      const interaction = await provider.interactionDetails(req, res);
-      const { prompt: { name, details } } = interaction;
-      assert.equal(name, 'select_account');
-
-      if (req.body.switch) {
-        if (interaction.params.prompt) {
-          const prompts = new Set(interaction.params.prompt.split(' '));
-          prompts.add('login');
-          interaction.params.prompt = [...prompts].join(' ');
-        } else {
-          interaction.params.prompt = 'login';
-        }
-        await interaction.persist();
-      }
-
-      const result = { select_account: {} };
       await provider.interactionFinished(req, res, result, { mergeWithLastSubmission: false });
     } catch (err) {
       next(err);

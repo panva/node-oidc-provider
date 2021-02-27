@@ -2,7 +2,6 @@ const crypto = require('crypto');
 
 const pkg = require('../package.json');
 const enabledJWA = JSON.parse(JSON.stringify(require('../lib/consts/jwa')));
-const { interactionPolicy: { Prompt, base: policy } } = require('../lib');
 const { InvalidClientMetadata } = require('../lib/helpers/errors');
 
 const timeout = parseInt(process.env.TIMEOUT, 10);
@@ -14,13 +13,6 @@ const tokenEndpointAuthMethods = [
   'private_key_jwt',
   'self_signed_tls_client_auth',
 ];
-
-const interactions = policy();
-const selectAccount = new Prompt({
-  name: 'select_account',
-  requestable: true,
-});
-interactions.add(selectAccount, 0);
 
 module.exports = {
   clients: [
@@ -34,7 +26,6 @@ module.exports = {
     },
   ],
   interactions: {
-    policy: interactions,
     url(ctx, interaction) {
       return `/interaction/${interaction.uid}`;
     },

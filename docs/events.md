@@ -19,8 +19,6 @@ loaded client or session.
 | `backchannel.error` | `(ctx, error, client, accountId, sid)` | ... whenever an error is encountered for a client during backchannel-logout |
 | `backchannel.success` | `(ctx, client, accountId, sid)` | ... whenever a client is successfully notified about logout through backchannel-logout features |
 | `jwks.error` | `(ctx, error)` | ... whenever a handled error is encountered in the `jwks` endpoint |
-| `check_session_origin.error` | `(ctx, error)` | ... whenever a handled error is encountered in the `check_session_origin` endpoint |
-| `check_session.error` | `(ctx, error)` | ... whenever a handled error is encountered in the `check_session` endpoint |
 | `client_credentials.destroyed` | `(token)` | ... whenever client credentials token is destroyed |
 | `client_credentials.saved` | `(token)` | ... whenever an opaque client credentials token is saved |
 | `client_credentials.issued` | `(token)` | ... whenever a structured client credentials token is issued |

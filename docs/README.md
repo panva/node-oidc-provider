@@ -5,9 +5,8 @@ will have to configure your instance with how to find your user accounts, where 
 persisted data from and where your end-user interactions happen. The [example](/example) application
 is a good starting point to get an idea of what you should provide.
 
-> ⚠️⚠️ This page now describes oidc-provider version v7.x documentation. For legacy versions see 
-[here](https://github.com/panva/node-oidc-provider/blob/v6.x/docs/README.md) for v6.x and 
-[here](https://github.com/panva/node-oidc-provider/blob/v5.x/docs/configuration.md) for v5.x.
+> ⚠️⚠️ This page now describes oidc-provider version v7.x documentation. See 
+[here](https://github.com/panva/node-oidc-provider/blob/v6.x/docs/README.md) for v6.x.
 
 ## Sponsor
 
@@ -15,7 +14,7 @@ is a good starting point to get an idea of what you should provide.
 
 ## Support
 
-If you or your business use oidc-provider, or you need help using/upgrading the module, please consider becoming a [sponsor][support-sponsor] so I can continue maintaining it and adding new features carefree.
+If you or your business use oidc-provider, or you need help using/upgrading the module, please consider becoming a [sponsor][support-sponsor] so I can continue maintaining it and adding new features carefree. The only way to guarantee you get feedback from the author & sole maintainer of this module is to support the package through GitHub Sponsors. I make it a best effort to try and answer newcomers regardless of being a supporter or not, but if you're asking your n-th question and don't get an answer it's because I'm out of handouts and spare time to give.
 
 <br>
 
@@ -98,27 +97,25 @@ those in, here is how oidc-provider allows you to do so:
 When oidc-provider cannot fulfill the authorization request for any of the possible reasons (missing
 user session, requested ACR not fulfilled, prompt requested, ...) it will resolve the 
 [`interactions.url`](#interactionsurl) helper function and redirect the User-Agent to that url. Before
-doing so it will save a short-lived session and dump its identifier into a cookie scoped to the
+doing so it will save a short-lived "interaction session" and dump its identifier into a cookie scoped to the
 resolved interaction path.
 
-This session contains:
+This interaction session contains:
 
 - details of the interaction that is required
 - all authorization request parameters
-- current session account ID should there be one
-- the uid of the authorization request
+- current end-user session account ID should there be one
 - the url to redirect the user to once interaction is finished
 
 oidc-provider expects that you resolve the prompt interaction and then redirect the User-Agent back
 with the results.
 
 Once the required interactions are finished you are expected to redirect back to the authorization
-endpoint, affixed by the uid of the original request and the interaction results stored in the
+endpoint, affixed by the uid of the interaction session and the interaction results stored in the
 interaction session object.
 
 The Provider instance comes with helpers that aid with getting interaction details as well as
-packing the results. See them used in the [step-by-step](https://github.com/panva/node-oidc-provider-example)
-or [in-repo](/example) examples.
+packing the results. See them used in the [in-repo](/example) examples.
 
 
 **`#provider.interactionDetails(req, res)`**
@@ -180,8 +177,7 @@ router.post('/interaction/:uid', async (ctx, next) => {
 
 **`#provider.interactionResult`**
 Unlike `#provider.interactionFinished` authorization request resume uri is returned instead of
-immediate http redirect. It should be used when custom response handling is needed e.g. making AJAX
-login where redirect information is expected to be available in the response.
+immediate http redirect.
 
 ```js
 // with express
@@ -260,8 +256,6 @@ provider.use(async (ctx, next) => {
    * checking `ctx.oidc.route`, the unique route names used are
    *
    * `authorization`
-   * `check_session_origin`
-   * `check_session`
    * `client_delete`
    * `client_update`
    * `client`
@@ -421,6 +415,8 @@ location / {
 
 **Table of Contents**
 
+> ❗ marks the configuration you most likely want to take a look at.
+
 - [adapter ❗](#adapter)
 - [clients ❗](#clients)
 - [findAccount ❗](#findaccount)
@@ -430,7 +426,7 @@ location / {
   - [claimsParameter](#featuresclaimsparameter)
   - [clientCredentials](#featuresclientcredentials)
   - [deviceFlow](#featuresdeviceflow)
-  - [devInteractions](#featuresdevinteractions)
+  - [devInteractions ❗](#featuresdevinteractions)
   - [dPoP](#featuresdpop)
   - [encryption](#featuresencryption)
   - [fapiRW](#featuresfapirw)
@@ -443,7 +439,7 @@ location / {
   - [registration](#featuresregistration)
   - [registrationManagement](#featuresregistrationmanagement)
   - [requestObjects](#featuresrequestobjects)
-  - [resourceIndicators](#featuresresourceindicators)
+  - [resourceIndicators ❗](#featuresresourceindicators)
   - [revocation](#featuresrevocation)
   - [userinfo](#featuresuserinfo)
   - [webMessageResponseMode](#featureswebmessageresponsemode)
@@ -453,7 +449,7 @@ location / {
 - [clientBasedCORS](#clientbasedcors)
 - [clientDefaults](#clientdefaults)
 - [clockTolerance](#clocktolerance)
-- [conformIdTokenClaims ❗](#conformidtokenclaims)
+- [conformIdTokenClaims](#conformidtokenclaims)
 - [cookies](#cookies)
 - [discovery](#discovery)
 - [expiresWithSession](#expireswithsession)
@@ -466,7 +462,7 @@ location / {
 - [issueRefreshToken](#issuerefreshtoken)
 - [loadExistingGrant](#loadexistinggrant)
 - [pairwiseIdentifier](#pairwiseidentifier)
-- [pkce](#pkce)
+- [pkce ❗](#pkce)
 - [renderError](#rendererror)
 - [responseTypes](#responsetypes)
 - [revokeGrantPolicy](#revokegrantpolicy)
@@ -921,7 +917,7 @@ _**default value**_:
 
 ### features.fapiRW
 
-[Financial-grade API - Part 2: Read and Write API Security Profile](https://openid.net/specs/openid-financial-api-part-2-ID2.html)  
+[Financial-grade API - Part 2: Read and Write API Security Profile - Implementer's Draft 02](https://openid.net/specs/openid-financial-api-part-2-ID2.html)  
 
 Enables extra behaviours defined in FAPI Part 1 & 2 that cannot be achieved by other configuration options, namely:   
  - Request Object `exp` claim is REQUIRED
@@ -944,6 +940,7 @@ _**default value**_:
  - `clientDefaults` for setting different default client `id_token_signed_response_alg`
  - `clientDefaults` for setting different default client `response_types`
  - `clientDefaults` for setting client `tls_client_certificate_bound_access_tokens` to true
+ - `clientDefaults` for setting client `require_signed_request_object` to true
  - `features.mTLS` and enable `certificateBoundAccessTokens`
  - `features.mTLS` and enable `selfSignedTlsClientAuth` and/or `tlsClientAuth`
  - `features.claimsParameter`
@@ -1555,7 +1552,7 @@ true
 
 [RFC8707](https://tools.ietf.org/html/rfc8707) - Resource Indicators for OAuth 2.0  
 
-Enables the use of `resource` parameter for the authorization and token endpoints.   
+Enables the use of `resource` parameter for the authorization and token endpoints to enable issuing Access Tokens for Resource Servers (APIs).   
  - Multiple resource parameters may be present during Authorization Code Flow, but only a single audience for an Access Token is permitted.
  - Authorization Requests that result in an Access Token being issued by the Authorization Endpoint must only contain a single resource (or one must be resolved using the `defaultResource` helper).
  - Client Credentials grant must only contain a single resource parameter.
@@ -1599,7 +1596,7 @@ async function defaultResource(ctx, client, oneOf) {
 
 #### getResourceServerInfo
 
-Function used to load information about a resource server and check if the client is meant to request scopes for that particular resource.   
+Function used to load information about a Resource Server (API) and check if the client is meant to request scopes for that particular resource.   
   
 
 _**recommendation**_: Only allow client's pre-registered resource values, to pre-register these you shall use the `extraClientMetadata` configuration option to define a custom metadata and use that to implement your policy using this function.  
@@ -1614,14 +1611,18 @@ async function getResourceServerInfo(ctx, resourceIndicator, client) {
   throw new errors.InvalidTarget();
 }
 ```
-<a id="get-resource-server-info-resource-server-with-two-scopes-an-expected-audience-value-and-an-access-token-ttl"></a><details><summary>(Click to expand) Resource Server with two scopes, an expected audience value and an Access Token TTL.
-</summary><br>
+<a id="get-resource-server-info-resource-server-api-with-two-scopes-an-expected-audience-value-an-access-token-ttl"></a><details><summary>(Click to expand) Resource Server (API) with two scopes, an expected audience value, an Access Token TTL</summary><br>
+
+
+and a JWT Access Token Format.
+  
 
 ```js
 {
   scope: 'api:read api:write',
   audience: 'resource-server-audience-value',
   accessTokenTTL: 2 * 60 * 60, // 2 hours
+  accessTokenFormat: 'jwt',
 }
 ```
 </details>
@@ -1635,7 +1636,7 @@ async function getResourceServerInfo(ctx, resourceIndicator, client) {
   scope: string,
   // OPTIONAL
   // "aud" (Audience) value to use
-  // Default is the resource indicator value will be used as audience
+  // Default is the resource indicator value will be used as token audience
   audience?: string,
   // OPTIONAL
   // Issued Token TTL
@@ -1644,7 +1645,7 @@ async function getResourceServerInfo(ctx, resourceIndicator, client) {
   // Issued Token Format
   // Default is - see `formats` configuration
   accessTokenFormat?: string,
-  // JWT Token Format (when accessTokenFormat or `formats` resolves to 'jwt')
+  // JWT Access Token Format (when accessTokenFormat or `formats` resolves to 'jwt')
   // Default is `{ sign: { alg: 'RS256' } }`
   // Tokens may be signed, signed and then encrypted, or just encrypted JWTs.
   jwt?: {
@@ -1667,7 +1668,7 @@ async function getResourceServerInfo(ctx, resourceIndicator, client) {
       kid?: string, // OPTIONAL `kid` JOSE Header Parameter to put in the token's JWE Header
     }
   }
-  // PASETO Token Format (when accessTokenFormat or `formats` resolves to 'paseto')
+  // PASETO Access Token Format (when accessTokenFormat or `formats` resolves to 'paseto')
   paseto?: {
     version: 1 | 2,
     purpose: 'local' | 'public',
@@ -2810,7 +2811,7 @@ _**default value**_:
 
 ### scopes
 
-Array of additional scope values that the OP signals to support in the discovery endpoint. Only add scopes the Authorization Server has a corresponding resource for. Resource Server scopes don't belong here, see `features.resourceIndicators`.  
+Array of additional scope values that the OP signals to support in the discovery endpoint. Only add scopes the Authorization Server has a corresponding resource for. Resource Server scopes don't belong here, see `features.resourceIndicators` for configuring those.  
 
 
 _**default value**_:

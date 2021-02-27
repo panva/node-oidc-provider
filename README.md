@@ -42,6 +42,7 @@ enabled by default, check the configuration section on how to enable them.
 The following draft specifications are implemented by oidc-provider.
 - [JWT Response for OAuth Token Introspection - draft 09][jwt-introspection]
 - [JWT Secured Authorization Response Mode for OAuth 2.0 (JARM) - Implementer's Draft 01][jarm]
+- [Financial-grade API - Part 2: Read and Write API Security Profile - Implementer's Draft 02][fapi]
 - [OAuth 2.0 Authorization Server Issuer Identifier in Authorization Response][iss-auth-resp]
 - [OAuth 2.0 Demonstration of Proof-of-Possession at the Application Layer (DPoP) - draft 01][dpop]
 - [OAuth 2.0 JWT Secured Authorization Request (JAR)][jar]
@@ -71,13 +72,13 @@ conforms to the following profiles of the OpenID Connect™ protocol
 
 ## Support
 
-If you or your business use oidc-provider, or you need help using/upgrading the module, please consider becoming a [sponsor][support-sponsor] so I can continue maintaining it and adding new features carefree.
+If you or your business use oidc-provider, or you need help using/upgrading the module, please consider becoming a [sponsor][support-sponsor] so I can continue maintaining it and adding new features carefree. The only way to guarantee you get feedback from the author & sole maintainer of this module is to support the package through GitHub Sponsors. I make it a best effort to try and answer newcomers regardless of being a supporter or not, but if you're asking your n-th question and don't get an answer it's because I'm out of handouts and spare time to give.
 
 ## Get started
 You may check the [example folder](/example) or follow a [step by step example][example-repo] to see
 which of those fits your desired application setup.
 
-A feature-rich example configuration of oidc-provider is available for you to experiment with
+An example configuration of oidc-provider is available for you to experiment with
 [here][heroku-example]. Dynamic Client Registration is open, you can literally register any client
 you want there. An example client using this provider is available [here][heroku-example-client]
 (uses [openid-client][openid-client]).
@@ -121,17 +122,6 @@ const server = oidc.listen(3000, () => {
 Collection of useful configurations use cases are available over at [recipes](/recipes).
 
 
-## Debugging
-oidc-provider uses the [debug][debug-link] module internally to log information about various states
-of authentication requests, errors and grants. To see all these set the `DEBUG` environment variable
-to `oidc-provider:*` when launching your app.
-
-There is no filter on what is included in the debug output, since it may end-user Personally
-identifiable information or client credentials its use is only advised for debugging, not regular
-logging. Use emitted events to cherry pick the one's of interest to your flows and form your own
-logs aware of what should and should not be a part of a logged message.
-
-
 ## Events
 Your oidc-provider instance is an event emitter, using event handlers you can hook into the various
 actions and i.e. emit metrics or that react to specific triggers. In some scenarios you can even
@@ -153,13 +143,10 @@ See the list of available emitted [event names](/docs/events.md) and their descr
 [introspection]: https://tools.ietf.org/html/rfc7662
 [pkce]: https://tools.ietf.org/html/rfc7636
 [example-repo]: https://github.com/panva/node-oidc-provider-example
-[heroku-example]: https://op.panva.cz/.well-known/openid-configuration
-[heroku-example-client]: https://tranquil-reef-95185.herokuapp.com/client
 [openid-client]: https://github.com/panva/node-openid-client
 [backchannel-logout]: https://openid.net/specs/openid-connect-backchannel-1_0-06.html
 [registration-management]: https://tools.ietf.org/html/rfc7592
 [oauth-native-apps]: https://tools.ietf.org/html/rfc8252
-[debug-link]: https://github.com/visionmedia/debug
 [wmrm]: https://tools.ietf.org/html/draft-sakimura-oauth-wmrm-00
 [jar]: https://tools.ietf.org/html/draft-ietf-oauth-jwsreq-26
 [device-flow]: https://tools.ietf.org/html/rfc8628
@@ -174,3 +161,4 @@ See the list of available emitted [event names](/docs/events.md) and their descr
 [par]: https://tools.ietf.org/html/draft-ietf-oauth-par-03
 [rpinitiated-logout]: https://openid.net/specs/openid-connect-rpinitiated-1_0-01.html
 [iss-auth-resp]: https://tools.ietf.org/html/draft-ietf-oauth-iss-auth-resp-00
+[fapi]: https://openid.net/specs/openid-financial-api-part-2-ID2.html
