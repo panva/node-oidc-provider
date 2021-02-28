@@ -77,7 +77,7 @@ describe('extraClientMetadata configuration', () => {
     expect(client).to.have.property('clientName', 'test RP');
   });
 
-  it('should not allow props to be added without them being whitelisted', async () => {
+  it('should not allow props to be added without them being allowed', async () => {
     const provider = new Provider('http://localhost:3000', {
       extraClientMetadata: {
         properties: ['bar'],

@@ -108,7 +108,7 @@ describe('grant_type=client_credentials w/ resourceIndicators', () => {
       .send({
         grant_type: 'client_credentials',
         scope: 'api:read',
-        resource: 'urn:not:whitelisted',
+        resource: 'urn:not:allowed',
       })
       .type('form')
       .expect(400)

@@ -100,7 +100,7 @@ describe('configuration features.webMessageResponseMode', () => {
     });
 
     context('error handling', () => {
-      it('verifies web_message_uri is whitelisted', function () {
+      it('verifies web_message_uri is allowed', function () {
         const emitSpy = sinon.spy();
         const renderSpy = sinon.spy(i(this.provider).configuration(), 'renderError');
         this.provider.once('authorization.error', emitSpy);

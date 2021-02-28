@@ -53,7 +53,7 @@ describe('grant_type=client_credentials', () => {
     expect(token).to.have.property('scope', 'api:read');
   });
 
-  it('checks clients scope whitelist', async function () {
+  it('checks clients scope allow list', async function () {
     return this.agent.post(route)
       .auth('client', 'secret')
       .send({
@@ -64,7 +64,7 @@ describe('grant_type=client_credentials', () => {
       .expect(400)
       .expect({
         error: 'invalid_scope',
-        error_description: 'requested scope is not whitelisted',
+        error_description: 'requested scope is not allowed',
         scope: 'api:write',
       });
   });

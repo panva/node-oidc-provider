@@ -76,7 +76,7 @@ describe('features.resourceIndicators', () => {
 
         const auth = new this.AuthorizationRequest({
           response_type,
-          resource: 'urn:not:whitelisted',
+          resource: 'urn:not:allowed',
           scope: 'openid api:read',
         });
 
@@ -134,7 +134,7 @@ describe('features.resourceIndicators', () => {
 
         const auth = new this.AuthorizationRequest({
           response_type,
-          resource: 'urn:not:whitelisted',
+          resource: 'urn:not:allowed',
           scope: 'api:read',
         });
 
@@ -277,7 +277,7 @@ describe('features.resourceIndicators', () => {
       await this.agent.post('/device/auth')
         .send({
           client_id: 'client',
-          resource: 'urn:not:whitelisted',
+          resource: 'urn:not:allowed',
           scope: 'api:read',
         })
         .type('form')

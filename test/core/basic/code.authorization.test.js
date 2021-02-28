@@ -457,7 +457,7 @@ describe('BASIC code', () => {
           client_id: 'client-limited-scope',
           response_type: 'code',
           prompt: 'consent',
-          scope: 'openid foobar offline_access', // foobar is ignored, offline_access is not whitelisted
+          scope: 'openid foobar offline_access', // foobar is ignored, offline_access is not allowed
         });
 
         return this.wrap({ route, verb, auth })
@@ -470,7 +470,7 @@ describe('BASIC code', () => {
           .expect(auth.validateClientLocation)
           .expect(auth.validateError('invalid_scope'))
           .expect(auth.validateScope('offline_access'))
-          .expect(auth.validateErrorDescription('requested scope is not whitelisted'));
+          .expect(auth.validateErrorDescription('requested scope is not allowed'));
       });
 
       it('disallowed response mode', function () {

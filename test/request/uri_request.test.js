@@ -215,7 +215,7 @@ describe('request Uri features', () => {
           (await this.provider.Client.find('client')).requestUris = undefined;
         });
 
-        it('checks the whitelist', async function () {
+        it('checks the allow list', async function () {
           const request = await JWT.sign({
             client_id: 'client',
             response_type: 'code',
@@ -288,7 +288,7 @@ describe('request Uri features', () => {
               expect(spy.args[0][1]).to.have.property('message', 'invalid_request_uri');
               expect(spy.args[0][1]).to.have.property(
                 'error_description',
-                'provided request_uri is not whitelisted',
+                'provided request_uri is not allowed',
               );
             });
         });
