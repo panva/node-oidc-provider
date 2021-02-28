@@ -11,7 +11,8 @@ merge(config.features, {
     enabled: true,
   },
   requestObjects: {
-    request: true,
+    request: false,
+    requestUri: false,
   },
 });
 

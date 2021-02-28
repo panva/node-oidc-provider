@@ -4,11 +4,9 @@ const jose = require('jose');
 
 const JWT = require('../../lib/helpers/jwt');
 const bootstrap = require('../test_helper');
-const { Provider } = require('../../lib');
 
 describe('Pushed Request Object', () => {
   before(bootstrap(__dirname));
-  const route = '/request';
 
   before(async function () {
     const client = await this.provider.Client.find('client');
@@ -21,6 +19,9 @@ describe('Pushed Request Object', () => {
         .expect((response) => {
           expect(response.body).not.to.have.property('request_object_endpoint');
           expect(response.body).to.have.property('pushed_authorization_request_endpoint');
+          expect(response.body).to.have.deep.property('request_object_signing_alg_values_supported').with.not.lengthOf(0);
+          expect(response.body).to.have.property('request_parameter_supported', false);
+          expect(response.body).to.have.property('request_uri_parameter_supported', false);
           expect(response.body).not.to.have.property('require_pushed_authorization_requests');
         });
 
@@ -28,8 +29,6 @@ describe('Pushed Request Object', () => {
 
       return this.agent.get('/.well-known/openid-configuration')
         .expect((response) => {
-          expect(response.body).not.to.have.property('request_object_endpoint');
-          expect(response.body).to.have.property('pushed_authorization_request_endpoint');
           expect(response.body).to.have.property('require_pushed_authorization_requests', true);
         });
     });
@@ -37,20 +36,6 @@ describe('Pushed Request Object', () => {
     after(function () {
       i(this.provider).configuration('features.pushedAuthorizationRequests').requirePushedAuthorizationRequests = false;
     });
-  });
-
-  it('can only be enabled with request objects', () => {
-    expect(() => {
-      new Provider('http://localhost', { // eslint-disable-line no-new
-        features: {
-          pushedAuthorizationRequests: { enabled: true },
-          requestObjects: {
-            request: false,
-            requestUri: false,
-          },
-        },
-      });
-    }).to.throw('pushedAuthorizationRequests is only available in conjuction with requestObjects.requestUri');
   });
 
   ['client', 'client-par-required'].forEach((clientId) => {
@@ -68,7 +53,7 @@ describe('Pushed Request Object', () => {
               response_type: 'code',
               client_id: clientId,
             }, this.key, 'HS256').then((request) => {
-              this.agent.post(route)
+              this.agent.post('/request')
                 .auth(clientId, 'secret')
                 .type('form')
                 .send({ request })
@@ -80,7 +65,7 @@ describe('Pushed Request Object', () => {
             const spy = sinon.spy();
             this.provider.once('pushed_authorization_request.success', spy);
 
-            await this.agent.post(route)
+            await this.agent.post('/request')
               .auth(clientId, 'secret')
               .type('form')
               .send({
@@ -103,7 +88,7 @@ describe('Pushed Request Object', () => {
             const spy = sinon.spy();
             this.provider.once('pushed_authorization_request.success', spy);
 
-            await this.agent.post(route)
+            await this.agent.post('/request')
               .auth(clientId, 'secret')
               .type('form')
               .send({
@@ -117,7 +102,7 @@ describe('Pushed Request Object', () => {
               .expect(201)
               .expect(({ body }) => {
                 expect(body).to.have.keys('expires_in', 'request_uri');
-                expect(body).to.have.property('expires_in', 20);
+                expect(body).to.have.property('expires_in').to.be.closeTo(20, 1);
                 expect(body).to.have.property('request_uri').and.match(/^urn:ietf:params:oauth:request_uri:(.+)$/);
               });
 
@@ -128,7 +113,7 @@ describe('Pushed Request Object', () => {
             const spy = sinon.spy();
             this.provider.once('pushed_authorization_request.success', spy);
 
-            await this.agent.post(route)
+            await this.agent.post('/request')
               .auth(clientId, 'secret')
               .type('form')
               .send({
@@ -153,7 +138,7 @@ describe('Pushed Request Object', () => {
             const spy = sinon.spy();
             this.provider.once('pushed_authorization_request.saved', spy);
 
-            await this.agent.post(route)
+            await this.agent.post('/request')
               .auth(clientId, 'secret')
               .type('form')
               .send({
@@ -174,7 +159,7 @@ describe('Pushed Request Object', () => {
           });
 
           it('requires the registered request object signing alg be used', async function () {
-            return this.agent.post(route)
+            return this.agent.post('/request')
               .auth('client-alg-registered', 'secret')
               .type('form')
               .send({
@@ -191,7 +176,7 @@ describe('Pushed Request Object', () => {
           });
 
           it('requires the request object client_id to equal the authenticated client one', async function () {
-            return this.agent.post(route)
+            return this.agent.post('/request')
               .auth(clientId, 'secret')
               .type('form')
               .send({
@@ -208,7 +193,7 @@ describe('Pushed Request Object', () => {
           });
 
           it('remaps request validation errors to be related to the request object', async function () {
-            return this.agent.post(route)
+            return this.agent.post('/request')
               .auth(clientId, 'secret')
               .type('form')
               .send({
@@ -228,7 +213,7 @@ describe('Pushed Request Object', () => {
           it('leaves non OIDCProviderError alone', async function () {
             const adapterThrow = new Error('adapter throw!');
             sinon.stub(this.TestAdapter.for('PushedAuthorizationRequest'), 'upsert').callsFake(async () => { throw adapterThrow; });
-            return this.agent.post(route)
+            return this.agent.post('/request')
               .auth(clientId, 'secret')
               .type('form')
               .send({
@@ -253,7 +238,7 @@ describe('Pushed Request Object', () => {
           after(function () { return this.logout(); });
 
           it('allows the request_uri to be used', async function () {
-            const { body: { request_uri } } = await this.agent.post(route)
+            const { body: { request_uri } } = await this.agent.post('/request')
               .auth(clientId, 'secret')
               .type('form')
               .send({
@@ -282,44 +267,6 @@ describe('Pushed Request Object', () => {
 
             expect(await this.provider.PushedAuthorizationRequest.find(id)).not.to.be.ok;
           });
-
-          if (requirePushedAuthorizationRequests) {
-            it('forbids plain Authorization Request use', async function () {
-              const auth = new this.AuthorizationRequest({
-                client_id: clientId,
-                request: await JWT.sign({
-                  scope: 'openid',
-                  response_type: 'code',
-                  client_id: clientId,
-                }, this.key, 'HS256'),
-              });
-
-              await this.wrap({ route: '/auth', verb: 'get', auth })
-                .expect(302)
-                .expect(auth.validatePresence(['error', 'error_description', 'state']))
-                .expect(auth.validateState)
-                .expect(auth.validateClientLocation)
-                .expect(auth.validateError('invalid_request'))
-                .expect(auth.validateErrorDescription('Pushed Authorization Request must be used'));
-            });
-          } else {
-            it('still allows plain Authorization Request use', async function () {
-              const auth = new this.AuthorizationRequest({
-                client_id: clientId,
-                request: await JWT.sign({
-                  scope: 'openid',
-                  response_type: 'code',
-                  client_id: clientId,
-                }, this.key, 'HS256'),
-              });
-
-              await this.wrap({ route: '/auth', verb: 'get', auth })
-                .expect(302)
-                .expect(auth.validatePresence(['code', 'state']))
-                .expect(auth.validateState)
-                .expect(auth.validateClientLocation);
-            });
-          }
 
           it('handles expired or invalid pushed authorization request object', async function () {
             const auth = new this.AuthorizationRequest({
@@ -357,7 +304,7 @@ describe('Pushed Request Object', () => {
           });
 
           it('allows the request_uri to be used without passing client_id to the request', async function () {
-            const { body: { request_uri } } = await this.agent.post(route)
+            const { body: { request_uri } } = await this.agent.post('/request')
               .auth(clientId, 'secret')
               .type('form')
               .send({
@@ -389,7 +336,7 @@ describe('Pushed Request Object', () => {
               expect(ctx.oidc.entities).to.have.keys('Client', 'PushedAuthorizationRequest');
             }, done));
 
-            this.agent.post(route)
+            this.agent.post('/request')
               .auth(clientId, 'secret')
               .type('form')
               .send({
@@ -403,7 +350,7 @@ describe('Pushed Request Object', () => {
             const spy = sinon.spy();
             this.provider.once('pushed_authorization_request.success', spy);
 
-            await this.agent.post(route)
+            await this.agent.post('/request')
               .auth(clientId, 'secret')
               .type('form')
               .send({
@@ -421,7 +368,7 @@ describe('Pushed Request Object', () => {
           });
 
           it('forbids request_uri to be used', async function () {
-            return this.agent.post(route)
+            return this.agent.post('/request')
               .auth(clientId, 'secret')
               .type('form')
               .send({
@@ -436,7 +383,7 @@ describe('Pushed Request Object', () => {
           });
 
           it('does not remap request validation errors to be related to the request object', async function () {
-            return this.agent.post(route)
+            return this.agent.post('/request')
               .auth(clientId, 'secret')
               .type('form')
               .send({
@@ -454,7 +401,7 @@ describe('Pushed Request Object', () => {
           it('leaves non OIDCProviderError alone', async function () {
             const adapterThrow = new Error('adapter throw!');
             sinon.stub(this.TestAdapter.for('PushedAuthorizationRequest'), 'upsert').callsFake(async () => { throw adapterThrow; });
-            return this.agent.post(route)
+            return this.agent.post('/request')
               .auth(clientId, 'secret')
               .type('form')
               .send({
@@ -477,7 +424,7 @@ describe('Pushed Request Object', () => {
           after(function () { return this.logout(); });
 
           it('allows the request_uri to be used', async function () {
-            const { body: { request_uri } } = await this.agent.post(route)
+            const { body: { request_uri } } = await this.agent.post('/request')
               .auth(clientId, 'secret')
               .type('form')
               .send({
@@ -506,7 +453,7 @@ describe('Pushed Request Object', () => {
           });
 
           it('allows the request_uri to be used without passing client_id to the request', async function () {
-            const { body: { request_uri } } = await this.agent.post(route)
+            const { body: { request_uri } } = await this.agent.post('/request')
               .auth(clientId, 'secret')
               .type('form')
               .send({
