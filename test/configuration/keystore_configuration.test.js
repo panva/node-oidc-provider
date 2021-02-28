@@ -60,7 +60,6 @@ describe('configuration.jwks', () => {
         'code',
         'none',
         'code token',
-        'token',
       ],
       enabledJWA: {
         idTokenSigningAlgValues: ['none'],

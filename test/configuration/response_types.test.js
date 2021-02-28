@@ -18,6 +18,14 @@ describe('response_types Provider configuration', () => {
     }).to.throw('unsupported response type: id_token tokencode');
   });
 
+  it('throws when unsupported types are configured', () => {
+    expect(() => {
+      new Provider('https://op.example.com', { // eslint-disable-line no-new
+        responseTypes: ['token'],
+      });
+    }).to.throw('unsupported response type: token');
+  });
+
   it('validates none is always standalone', () => {
     expect(() => {
       new Provider('https://op.example.com', { // eslint-disable-line no-new
