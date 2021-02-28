@@ -72,7 +72,11 @@ describe('pairwise features', () => {
     });
 
     context('sector_identifier_uri is provided', () => {
-      it('is ignored unless pairwise subject_type is used', function () {
+      it('is not ignored even without subject_type=pairwise', function () {
+        nock('https://foobar.example.com')
+          .get('/file_of_redirect_uris')
+          .reply(200, j(['https://client.example.com/cb', 'https://another.example.com/forum/cb']));
+
         return i(this.provider).clientAdd({
           client_id: 'client',
           client_secret: 'secret',
@@ -81,7 +85,7 @@ describe('pairwise features', () => {
           subject_type: 'public',
         }).then((client) => {
           expect(client).to.be.ok;
-          expect(client.sectorIdentifier).to.eq(undefined);
+          expect(client.sectorIdentifier).to.eq('foobar.example.com');
         });
       });
 
