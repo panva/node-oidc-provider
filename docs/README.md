@@ -468,6 +468,7 @@ location / {
 - [revokeGrantPolicy](#revokegrantpolicy)
 - [rotateRefreshToken](#rotaterefreshtoken)
 - [routes](#routes)
+- [sectorIdentifierUriValidate](#sectoridentifierurivalidate)
 - [scopes](#scopes)
 - [subjectTypes](#subjecttypes)
 - [tokenEndpointAuthMethods](#tokenendpointauthmethods)
@@ -2384,7 +2385,7 @@ new Prompt(
       return Check.REQUEST_PROMPT;
     }
 
-    if (oidc.client.sectorIdentifier) {
+    if (oidc.client.subjectType === 'pairwise') {
       sub = await instance(oidc.provider).configuration('pairwiseIdentifier')(ctx, sub, oidc.client);
     }
 
@@ -2407,7 +2408,7 @@ new Prompt(
       return Check.REQUEST_PROMPT;
     }
 
-    if (oidc.client.sectorIdentifier) {
+    if (oidc.client.subjectType === 'pairwise') {
       sub = await instance(oidc.provider).configuration('pairwiseIdentifier')(ctx, sub, oidc.client);
     }
 
@@ -2860,6 +2861,19 @@ _**default value**_:
   'openid',
   'offline_access'
 ]
+```
+
+### sectorIdentifierUriValidate
+
+Function called to make a decision about whether sectorIdentifierUri of a client being loaded, registered, or updated should be fetched and its contents validated against the client metadata.  
+
+
+_**default value**_:
+```js
+function sectorIdentifierUriValidate(client) {
+  // @param client - the Client instance
+  return true;
+}
 ```
 
 ### subjectTypes
