@@ -91,5 +91,5 @@ provider.Client.prototype.redirectUriAllowed = function wildcardRedirectUriAllow
 
 Similar to the above with the same recommendation not to use this in any other environment other
 than development, the only things that change are metadata property names (`post_logout_redirect_uris`),
-client property on which the whitelist is (`postLogoutRedirectUris`) and the client method called
+client property on which the allow list is (`postLogoutRedirectUris`) and the client method called
 (`postLogoutRedirectUriAllowed`).

@@ -1,10 +1,10 @@
-# Client Metadata-based CORS Origin whitelist
+# Client Metadata-based CORS Origin allow list
 
 - built for version: ^6.0.0 || ^7.0.0
 - no guarantees this is bug-free
 
 OIDC routes that are ever needed to be called from a browser user-agent are CORS-enabled and by
-default have all origins whitelisted. This works for developing and testing but at some point you
+default have all origins allowed. This works for developing and testing but at some point you
 might want to restrict the call's origins.
 
 These endpoints have CORS enabled from all origins all the time, no real reason to restrict it:

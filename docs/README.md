@@ -702,7 +702,7 @@ _**default value**_:
 
 ### features.dPoP
 
-[draft-ietf-oauth-dpop-01](https://tools.ietf.org/html/draft-ietf-oauth-dpop-01) - OAuth 2.0 Demonstration of Proof-of-Possession at the Application Layer  
+[draft-ietf-oauth-dpop-02](https://tools.ietf.org/html/draft-ietf-oauth-dpop-02) - OAuth 2.0 Demonstration of Proof-of-Possession at the Application Layer  
 
 Enables `DPoP` - mechanism for sender-constraining tokens via a proof-of-possession mechanism on the application level. Browser DPoP Proof generation [here](https://www.npmjs.com/package/dpop).  
 
@@ -1001,13 +1001,14 @@ Enables `iss` authorization response parameter for responses without existing co
 _**default value**_:
 ```js
 {
+  ack: undefined,
   enabled: false
 }
 ```
 
 ### features.jwtIntrospection
 
-[draft-ietf-oauth-jwt-introspection-response-09](https://tools.ietf.org/html/draft-ietf-oauth-jwt-introspection-response-09) - JWT Response for OAuth Token Introspection  
+[draft-ietf-oauth-jwt-introspection-response-10](https://tools.ietf.org/html/draft-ietf-oauth-jwt-introspection-response-10) - JWT Response for OAuth Token Introspection  
 
 Enables JWT responses for Token Introspection features   
   
@@ -1041,7 +1042,7 @@ _**default value**_:
 
 [Core 1.0](https://openid.net/specs/openid-connect-core-1_0.html#UserInfo) - JWT UserInfo Endpoint Responses  
 
-Enables the userinfo to optionally return signed and/or encrypted JWTs, also enables the relevant client metadata for setting up signing and/or encryption  
+Enables the userinfo to optionally return signed and/or encrypted JWTs, also enables the relevant client metadata for setting up signing and/or encryption.  
 
 
 _**default value**_:
@@ -1189,7 +1190,7 @@ false
 
 ### features.pushedAuthorizationRequests
 
-[draft-ietf-oauth-par-03](https://tools.ietf.org/html/draft-ietf-oauth-par-03) - OAuth 2.0 Pushed Authorization Requests  
+[draft-ietf-oauth-par-06](https://tools.ietf.org/html/draft-ietf-oauth-par-06) - OAuth 2.0 Pushed Authorization Requests  
 
 Enables the use of `pushed_authorization_request_endpoint` defined by the Pushed Authorization Requests draft.   
   
@@ -1473,7 +1474,7 @@ false
 
 ### features.requestObjects
 
-[Core 1.0](https://openid.net/specs/openid-connect-core-1_0.html#RequestObject) and [JWT Secured Authorization Request (JAR)](https://tools.ietf.org/html/draft-ietf-oauth-jwsreq-26) - Request Object  
+[Core 1.0](https://openid.net/specs/openid-connect-core-1_0.html#RequestObject) and [JWT Secured Authorization Request (JAR)](https://tools.ietf.org/html/draft-ietf-oauth-jwsreq-30) - Request Object  
 
 Enables the use and validations of the `request` and/or `request_uri` parameters.  
 
@@ -1585,7 +1586,7 @@ _**default value**_:
 async function defaultResource(ctx, client, oneOf) {
   // @param ctx - koa request context
   // @param client - client making the request
-  // @param oneOf {string[]} - The Authorization Server needs to select **one** of the values provided.
+  // @param oneOf {string[]} - The OP needs to select **one** of the values provided.
   //                           Default is that the array is provided so that the request will fail.
   //                           This argument is only provided when called during
   //                           Authorization Code / Refresh Token / Device Code exchanges.
@@ -1623,6 +1624,42 @@ and a JWT Access Token Format.
   audience: 'resource-server-audience-value',
   accessTokenTTL: 2 * 60 * 60, // 2 hours
   accessTokenFormat: 'jwt',
+  jwt: {
+    sign: { alg: 'ES256' },
+  },
+}
+```
+</details>
+<a id="get-resource-server-info-resource-server-api-with-two-scopes-and-a-symmetrically-encrypted-jwt-access-token-format"></a><details><summary>(Click to expand) Resource Server (API) with two scopes and a symmetrically encrypted JWT Access Token Format.
+</summary><br>
+
+```js
+{
+  scope: 'api:read api:write',
+  accessTokenFormat: 'jwt',
+  jwt: {
+    sign: false,
+    encrypt: {
+      alg: 'dir',
+      enc: 'A128CBC-HS256',
+      key: Buffer.from('f40dd9591646bebcb9c32aed02f5e610c2d15e1d38cde0c1fe14a55cf6bfe2d9', 'hex')
+    },
+  }
+}
+```
+</details>
+<a id="get-resource-server-info-resource-server-api-with-two-scopes-and-a-v-1-local-paseto-access-token-format"></a><details><summary>(Click to expand) Resource Server (API) with two scopes and a v1.local PASETO Access Token Format.
+</summary><br>
+
+```js
+{
+  scope: 'api:read api:write',
+  accessTokenFormat: 'paseto',
+  paseto: {
+    version: 1,
+    purpose: 'local',
+    key: Buffer.from('f40dd9591646bebcb9c32aed02f5e610c2d15e1d38cde0c1fe14a55cf6bfe2d9', 'hex')
+  }
 }
 ```
 </details>
@@ -1644,16 +1681,16 @@ and a JWT Access Token Format.
   accessTokenTTL?: number,
   // Issued Token Format
   // Default is - see `formats` configuration
-  accessTokenFormat?: string,
+  accessTokenFormat?: 'opaque' | 'jwt' | 'paseto',
   // JWT Access Token Format (when accessTokenFormat or `formats` resolves to 'jwt')
-  // Default is `{ sign: { alg: 'RS256' } }`
+  // Default is `{ sign: { alg: 'RS256' }, encrypt: false }`
   // Tokens may be signed, signed and then encrypted, or just encrypted JWTs.
   jwt?: {
     // Tokens will be signed
     sign?:
      | {
          alg?: string, // 'PS256' | 'PS384' | 'PS512' | 'ES256' | 'ES256K' | 'ES384' | 'ES512' | 'EdDSA' | 'RS256' | 'RS384' | 'RS512'
-         kid?: string, // OPTIONAL `kid` to aid in 'public' key selection
+         kid?: string, // OPTIONAL `kid` to aid in signing key selection
        }
      | {
          alg? string, // 'HS256' | 'HS384' | 'HS512'
@@ -1673,7 +1710,7 @@ and a JWT Access Token Format.
     version: 1 | 2,
     purpose: 'local' | 'public',
     key?: crypto.KeyObject, // required when purpose is 'local'
-    kid?: string, // OPTIONAL `kid` to aid in 'public' key selection or to put in the footer for 'local'
+    kid?: string, // OPTIONAL `kid` to aid in signing key selection or to put in the footer for 'local'
   }
 }
 ```
@@ -1685,7 +1722,9 @@ and a JWT Access Token Format.
 
 [RFC7009](https://tools.ietf.org/html/rfc7009) - OAuth 2.0 Token Revocation  
 
-Enables Token Revocation   
+Enables Token Revocation for:
+ - opaque access tokens
+ - refresh tokens   
   
 
 
@@ -1777,7 +1816,7 @@ async function postLogoutSuccessSource(ctx) {
 
 [Core 1.0](https://openid.net/specs/openid-connect-core-1_0.html#UserInfo) - UserInfo Endpoint  
 
-Enables the userinfo endpoint.  
+Enables the userinfo endpoint. Its use requires an opaque Access Token with at least `openid` scope that's without a Resource Server audience.  
 
 
 _**default value**_:
@@ -1817,7 +1856,7 @@ true
 
 ### acrValues
 
-Array of strings, the Authentication Context Class References that OP supports.  
+Array of strings, the Authentication Context Class References that the OP supports.  
 
 
 _**default value**_:
@@ -1937,7 +1976,8 @@ _**default value**_:
 
 ID Token only contains End-User claims when the requested `response_type` is `id_token`  
 
-[Core 1.0 - Requesting Claims using Scope Values](https://openid.net/specs/openid-connect-core-1_0.html#ScopeClaims) defines that claims requested using the `scope` parameter are only returned from the UserInfo Endpoint unless the `response_type` is `id_token`. This is the default oidc-provider behaviour, you can turn this behaviour off and return End-User claims with all ID Tokens by providing this configuration as `false`.   
+[Core 1.0 - Requesting Claims using Scope Values](https://openid.net/specs/openid-connect-core-1_0.html#ScopeClaims) defines that claims requested using the `scope` parameter are only returned from the UserInfo Endpoint unless the `response_type` is `id_token`.   
+ Despite of this configuration the ID Token always includes claims requested using the `scope` parameter when the userinfo endpoint is disabled, or when issuing an Access Token not applicable for access to the userinfo endpoint.   
   
 
 
@@ -2134,7 +2174,7 @@ _**default value**_:
 
 ### extraTokenClaims
 
-Function used to get additional access token claims when it is being issued. These claims will be available in your storage under property `extra`, returned by introspection as top level claims and pushed into `jwt` formatted tokens as top level claims as well. Returned claims may not overwrite pre-existing top level claims.   
+Function used to get additional claims for an Access Token when it is being issued. These claims will be available in your storage under property `extra`, returned by introspection as top level claims and pushed into `jwt` or `paseto` formatted tokens as top level claims as well. Returned claims may not overwrite pre-existing top level claims.   
   
 
 
@@ -2585,7 +2625,7 @@ async function issueRefreshToken(ctx, client, code) {
 <a id="issue-refresh-token-to-always-issue-a-refresh-tokens"></a><details><summary>(Click to expand) To always issue a refresh tokens ...</summary><br>
 
 
-... If a client has the grant whitelisted and scope includes offline_access or the client is a public web client doing code flow. Configure `issueRefreshToken` like so
+... If a client has the grant allowed and scope includes offline_access or the client is a public web client doing code flow. Configure `issueRefreshToken` like so
   
 
 ```js
@@ -2693,7 +2733,7 @@ async function renderError(ctx, out, error) {
 
 ### responseTypes
 
-Array of response_type values that OP supports. The default omits all response types that result in access tokens being issued by the authorization endpoint directly as per [OAuth 2.0 Security Best Current Practice](https://tools.ietf.org/html/draft-ietf-oauth-security-topics-13#section-3.1.2) You can still enable them if you need to.   
+Array of response_type values that the OP supports. The default omits all response types that result in access tokens being issued by the authorization endpoint directly as per [OAuth 2.0 Security Best Current Practice](https://tools.ietf.org/html/draft-ietf-oauth-security-topics-13#section-3.1.2) You can still enable them if you need to.   
   
 
 
@@ -2811,7 +2851,7 @@ _**default value**_:
 
 ### scopes
 
-Array of additional scope values that the OP signals to support in the discovery endpoint. Only add scopes the Authorization Server has a corresponding resource for. Resource Server scopes don't belong here, see `features.resourceIndicators` for configuring those.  
+Array of additional scope values that the OP signals to support in the discovery endpoint. Only add scopes the OP has a corresponding resource for. Resource Server scopes don't belong here, see `features.resourceIndicators` for configuring those.  
 
 
 _**default value**_:

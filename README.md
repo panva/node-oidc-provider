@@ -40,13 +40,13 @@ enabled by default, check the configuration section on how to enable them.
 - [JSON Web Token (JWT) Profile for OAuth 2.0 Access Tokens][jwt-at]
 
 The following draft specifications are implemented by oidc-provider.
-- [JWT Response for OAuth Token Introspection - draft 09][jwt-introspection]
+- [JWT Response for OAuth Token Introspection - draft 10][jwt-introspection]
 - [JWT Secured Authorization Response Mode for OAuth 2.0 (JARM) - Implementer's Draft 01][jarm]
 - [Financial-grade API - Part 2: Read and Write API Security Profile - Implementer's Draft 02][fapi]
-- [OAuth 2.0 Authorization Server Issuer Identifier in Authorization Response][iss-auth-resp]
-- [OAuth 2.0 Demonstration of Proof-of-Possession at the Application Layer (DPoP) - draft 01][dpop]
-- [OAuth 2.0 JWT Secured Authorization Request (JAR)][jar]
-- [OAuth 2.0 Pushed Authorization Requests - draft 03][par]
+- [OAuth 2.0 Authorization Server Issuer Identifier in Authorization Response - draft 00][iss-auth-resp]
+- [OAuth 2.0 Demonstration of Proof-of-Possession at the Application Layer (DPoP) - draft 02][dpop]
+- [OAuth 2.0 JWT Secured Authorization Request (JAR) - draft 30][jar]
+- [OAuth 2.0 Pushed Authorization Requests - draft 06][par]
 - [OAuth 2.0 Web Message Response Mode - individual draft 00][wmrm]
 - [OpenID Connect RP-Initiated Logout 1.0 - draft 01][rpinitiated-logout]
 - [OpenID Connect Back-Channel Logout 1.0 - draft 06][backchannel-logout]
@@ -148,17 +148,17 @@ See the list of available emitted [event names](/docs/events.md) and their descr
 [registration-management]: https://tools.ietf.org/html/rfc7592
 [oauth-native-apps]: https://tools.ietf.org/html/rfc8252
 [wmrm]: https://tools.ietf.org/html/draft-sakimura-oauth-wmrm-00
-[jar]: https://tools.ietf.org/html/draft-ietf-oauth-jwsreq-26
+[jar]: https://tools.ietf.org/html/draft-ietf-oauth-jwsreq-30
 [device-flow]: https://tools.ietf.org/html/rfc8628
-[jwt-introspection]: https://tools.ietf.org/html/draft-ietf-oauth-jwt-introspection-response-09
+[jwt-introspection]: https://tools.ietf.org/html/draft-ietf-oauth-jwt-introspection-response-10
 [sponsor-auth0]: https://auth0.com/developers?utm_source=GHsponsor&utm_medium=GHsponsor&utm_campaign=oidc-provider&utm_content=auth
 [mtls]: https://tools.ietf.org/html/rfc8705
-[dpop]: https://tools.ietf.org/html/draft-ietf-oauth-dpop-01
+[dpop]: https://tools.ietf.org/html/draft-ietf-oauth-dpop-02
 [resource-indicators]: https://tools.ietf.org/html/rfc8707
 [jarm]: https://openid.net/specs/openid-financial-api-jarm-ID1.html
 [jwt-at]: https://tools.ietf.org/html/draft-ietf-oauth-access-token-jwt-11
 [support-sponsor]: https://github.com/sponsors/panva
-[par]: https://tools.ietf.org/html/draft-ietf-oauth-par-03
+[par]: https://tools.ietf.org/html/draft-ietf-oauth-par-06
 [rpinitiated-logout]: https://openid.net/specs/openid-connect-rpinitiated-1_0-01.html
 [iss-auth-resp]: https://tools.ietf.org/html/draft-ietf-oauth-iss-auth-resp-00
 [fapi]: https://openid.net/specs/openid-financial-api-part-2-ID2.html
