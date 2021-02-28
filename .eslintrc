@@ -1,5 +1,6 @@
 {
   "extends": "airbnb-base",
+  "parser": "babel-eslint",
   "rules": {
     "no-empty": ["error", { "allowEmptyCatch": true }],
     "no-underscore-dangle": ["error", { "allow": ["_claim_names", "_claim_sources", "_matchedRouteName"] }],
