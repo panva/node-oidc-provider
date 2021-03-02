@@ -8,7 +8,7 @@ const ms = require('ms');
 const debug = require('./debug');
 
 const FINISHED = new Set(['FINISHED']);
-const RESULTS = new Set(['REVIEW', 'PASSED']);
+const RESULTS = new Set(['REVIEW', 'PASSED', 'SKIPPED']);
 
 class API {
   constructor({ baseUrl, bearerToken } = {}) {

@@ -4,6 +4,13 @@ const pkg = require('../package.json');
 const enabledJWA = JSON.parse(JSON.stringify(require('../lib/consts/jwa')));
 const { InvalidClientMetadata } = require('../lib/helpers/errors');
 
+function filterOutNone(conf, prop) {
+  // eslint-disable-next-line no-param-reassign
+  conf[prop] = conf[prop].filter((alg) => alg !== 'none');
+}
+
+Object.keys(enabledJWA).forEach(filterOutNone.bind(undefined, enabledJWA));
+
 const timeout = parseInt(process.env.TIMEOUT, 10);
 const tokenEndpointAuthMethods = [
   'none',

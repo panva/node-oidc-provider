@@ -95,10 +95,12 @@ describe('Financial-grade API - Part 2: Read and Write API Security Profile beha
     it('still works', function () {
       const request = `${base64url.encode(JSON.stringify({ alg: 'none' }))}.${base64url.encode(JSON.stringify({
         client_id: 'client',
+        iss: 'client',
         scope: 'openid',
         response_type: 'code id_token',
         nonce: 'foo',
         redirect_uri: 'https://client.example.com/cb',
+        aud: this.provider.issuer,
         state: 'foo',
         exp: epochTime() + 60,
       }))}.`;

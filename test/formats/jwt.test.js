@@ -94,7 +94,7 @@ describe('jwt format', () => {
 
       const header = decode(jwt.split('.')[0]);
       expect(header).to.have.property('alg', 'RS256');
-      expect(header).to.have.property('kid', i(this.provider).keystore.get({ alg: 'RS256' }).kid);
+      expect(header).to.have.property('kid', i(this.provider).keystore.selectForSign({ alg: 'RS256' })[0].kid);
     });
 
     it('uses the default idtokensigningalg by default (jwt)', async function () {
@@ -110,7 +110,7 @@ describe('jwt format', () => {
 
       const header = decode(jwt.split('.')[0]);
       expect(header).to.have.property('alg', 'RS256');
-      expect(header).to.have.property('kid', i(this.provider).keystore.get({ alg: 'RS256' }).kid);
+      expect(header).to.have.property('kid', i(this.provider).keystore.selectForSign({ alg: 'RS256' })[0].kid);
     });
 
     it('can be used to specify the signing algorithm to be HMAC (buffer)', async function () {

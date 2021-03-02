@@ -21,7 +21,7 @@ console.warn = function (...args) {
 
 async function run() {
   clearRequireCache();
-  const jose = require('jose'); // eslint-disable-line global-require
+  const jose = require('jose2'); // eslint-disable-line global-require
   global.keystore = new jose.JWKS.KeyStore();
   await Promise.all([
     global.keystore.generate('RSA', 2048),

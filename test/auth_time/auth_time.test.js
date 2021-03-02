@@ -1,7 +1,7 @@
 const url = require('url');
 
 const sinon = require('sinon');
-const { JWT: { decode } } = require('jose');
+const { JWT: { decode } } = require('jose2');
 const { expect } = require('chai');
 
 const bootstrap = require('../test_helper');

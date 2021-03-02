@@ -1,5 +1,5 @@
 const { expect } = require('chai');
-const jose = require('jose');
+const jose = require('jose2');
 
 const { Provider } = require('../../lib');
 

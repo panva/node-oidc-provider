@@ -1,7 +1,7 @@
 const cloneDeep = require('lodash/cloneDeep');
 const merge = require('lodash/merge');
 const pull = require('lodash/pull');
-const jose = require('jose');
+const jose = require('jose2');
 
 const config = cloneDeep(require('../default.config'));
 

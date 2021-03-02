@@ -3,7 +3,7 @@ const path = require('path');
 const { randomBytes } = require('crypto');
 const https = require('https');
 
-const jose = require('jose');
+const jose = require('jose2');
 const helmet = require('koa-helmet');
 const pem = require('https-pem');
 

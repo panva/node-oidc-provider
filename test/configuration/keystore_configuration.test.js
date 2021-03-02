@@ -1,6 +1,6 @@
 /* eslint-disable no-new, no-console */
 
-const jose = require('jose');
+const jose = require('jose2');
 const sinon = require('sinon').createSandbox();
 const { expect } = require('chai');
 
@@ -24,13 +24,13 @@ describe('configuration.jwks', () => {
     return new Provider('http://localhost', { jwks: this.keystore.toJWKS(true) });
   });
 
-  it('must only contain EC and RS keys', async function () {
+  it('must only contain RSA, EC, or OKP keys', async function () {
     await this.keystore.add(global.keystore.get({ kty: 'RSA' }));
     await this.keystore.generate('oct', 256);
 
     expect(() => {
       new Provider('http://localhost', { jwks: this.keystore.toJWKS(true) });
-    }).to.throw('only private RSA, EC or OKP keys should be part of keystore configuration');
+    }).to.throw('only RSA, EC, or OKP keys should be part of jwks configuration');
   });
 
   it('must only contain private keys', async function () {
@@ -38,7 +38,7 @@ describe('configuration.jwks', () => {
 
     expect(() => {
       new Provider('http://localhost', { jwks: { keys: [this.keystore.get().toJWK()] } });
-    }).to.throw('only private RSA, EC or OKP keys should be part of keystore configuration');
+    }).to.throw('jwks.keys[0] configuration is missing required properties');
   });
 
   it('warns if "kid" is the same for multiple keys', async () => {

@@ -2,7 +2,7 @@ const url = require('url');
 
 const sinon = require('sinon');
 const { expect } = require('chai');
-const { JWK, JWT } = require('jose');
+const { JWK, JWT } = require('jose2');
 
 const nanoid = require('../../lib/helpers/nanoid');
 const epochTime = require('../../lib/helpers/epoch_time');
@@ -43,7 +43,7 @@ describe('features.dPoP', () => {
         client: await this.provider.Client.find('client'),
         scope: 'openid',
       });
-      at.setThumbprint('jkt', this.jwk);
+      at.setThumbprint('jkt', this.jwk.thumbprint);
 
       const dpop = await at.save();
 
@@ -83,10 +83,20 @@ describe('features.dPoP', () => {
     it('validates the DPoP Proof JWT is conform', async function () {
       const key = await JWK.generate('EC');
 
+      const at = new this.provider.AccessToken({
+        accountId: this.loggedInAccountId,
+        grantId: this.getGrantId(),
+        client: await this.provider.Client.find('client'),
+        scope: 'openid',
+      });
+      at.setThumbprint('jkt', this.jwk.thumbprint);
+
+      const dpop = await at.save();
+
       for (const value of ['JWT', 'secevent+jwt']) { // eslint-disable-line no-restricted-syntax
         await this.agent.get('/me') // eslint-disable-line no-await-in-loop
           .set('DPoP', JWT.sign({}, key, { kid: false, header: { jwk: key, typ: value } }))
-          .set('Authorization', 'DPoP foo')
+          .set('Authorization', `DPoP ${dpop}`)
           .expect(400)
           .expect({ error: 'invalid_token', error_description: 'invalid DPoP key binding' })
           .expect('WWW-Authenticate', /^DPoP /)
@@ -97,7 +107,7 @@ describe('features.dPoP', () => {
       for (const value of [1, true, 'none', 'HS256', 'unsupported']) { // eslint-disable-line no-restricted-syntax
         await this.agent.get('/me') // eslint-disable-line no-await-in-loop
           .set('DPoP', `${base64url.encode(JSON.stringify({ jwk: key, typ: 'dpop+jwt', alg: value }))}.e30.`)
-          .set('Authorization', 'DPoP foo')
+          .set('Authorization', `DPoP ${dpop}`)
           .expect(400)
           .expect({ error: 'invalid_token', error_description: 'invalid DPoP key binding' })
           .expect('WWW-Authenticate', /^DPoP /)
@@ -108,7 +118,7 @@ describe('features.dPoP', () => {
       for (const value of [undefined, '', 1, true, null, 'foo', []]) { // eslint-disable-line no-restricted-syntax
         await this.agent.get('/me') // eslint-disable-line no-await-in-loop
           .set('DPoP', JWT.sign({}, key, { kid: false, header: { typ: 'dpop+jwt', jwk: value } }))
-          .set('Authorization', 'DPoP foo')
+          .set('Authorization', `DPoP ${dpop}`)
           .expect(400)
           .expect({ error: 'invalid_token', error_description: 'invalid DPoP key binding' })
           .expect('WWW-Authenticate', /^DPoP /)
@@ -118,7 +128,7 @@ describe('features.dPoP', () => {
 
       await this.agent.get('/me') // eslint-disable-line no-await-in-loop
         .set('DPoP', JWT.sign({}, key, { kid: false, header: { typ: 'dpop+jwt', jwk: key.toJWK(true) } }))
-        .set('Authorization', 'DPoP foo')
+        .set('Authorization', `DPoP ${dpop}`)
         .expect(400)
         .expect({ error: 'invalid_token', error_description: 'invalid DPoP key binding' })
         .expect('WWW-Authenticate', /^DPoP /)
@@ -127,7 +137,7 @@ describe('features.dPoP', () => {
 
       await this.agent.get('/me') // eslint-disable-line no-await-in-loop
         .set('DPoP', JWT.sign({}, key, { kid: false, header: { typ: 'dpop+jwt', jwk: await JWK.generate('oct') } }))
-        .set('Authorization', 'DPoP foo')
+        .set('Authorization', `DPoP ${dpop}`)
         .expect(400)
         .expect({ error: 'invalid_token', error_description: 'invalid DPoP key binding' })
         .expect('WWW-Authenticate', /^DPoP /)
@@ -136,7 +146,7 @@ describe('features.dPoP', () => {
 
       await this.agent.get('/me') // eslint-disable-line no-await-in-loop
         .set('DPoP', JWT.sign({ htm: 'POST', htu: `${this.provider.issuer}${this.suitePath('/me')}` }, key, { kid: false, header: { typ: 'dpop+jwt', jwk: key } }))
-        .set('Authorization', 'DPoP foo')
+        .set('Authorization', `DPoP ${dpop}`)
         .expect(400)
         .expect({ error: 'invalid_token', error_description: 'invalid DPoP key binding' })
         .expect('WWW-Authenticate', /^DPoP /)
@@ -145,7 +155,7 @@ describe('features.dPoP', () => {
 
       await this.agent.get('/me') // eslint-disable-line no-await-in-loop
         .set('DPoP', JWT.sign({ jti: 'foo', htm: 'POST' }, key, { kid: false, header: { typ: 'dpop+jwt', jwk: key } }))
-        .set('Authorization', 'DPoP foo')
+        .set('Authorization', `DPoP ${dpop}`)
         .expect(400)
         .expect({ error: 'invalid_token', error_description: 'invalid DPoP key binding' })
         .expect('WWW-Authenticate', /^DPoP /)
@@ -154,7 +164,7 @@ describe('features.dPoP', () => {
 
       await this.agent.get('/me') // eslint-disable-line no-await-in-loop
         .set('DPoP', JWT.sign({ jti: 'foo', htm: 'GET', htu: 'foo' }, key, { kid: false, header: { typ: 'dpop+jwt', jwk: key } }))
-        .set('Authorization', 'DPoP foo')
+        .set('Authorization', `DPoP ${dpop}`)
         .expect(400)
         .expect({ error: 'invalid_token', error_description: 'invalid DPoP key binding' })
         .expect('WWW-Authenticate', /^DPoP /)
@@ -165,7 +175,7 @@ describe('features.dPoP', () => {
         .set('DPoP', JWT.sign({
           jti: 'foo', htm: 'GET', htu: `${this.provider.issuer}${this.suitePath('/me')}`, iat: epochTime() - 61,
         }, key, { kid: false, iat: false, header: { typ: 'dpop+jwt', jwk: key } }))
-        .set('Authorization', 'DPoP foo')
+        .set('Authorization', `DPoP ${dpop}`)
         .expect(400)
         .expect({ error: 'invalid_token', error_description: 'invalid DPoP key binding' })
         .expect('WWW-Authenticate', /^DPoP /)
@@ -176,7 +186,7 @@ describe('features.dPoP', () => {
         .set('DPoP', JWT.sign({
           jti: 'foo', htm: 'GET', htu: `${this.provider.issuer}${this.suitePath('/me')}`,
         }, key, { kid: false, header: { typ: 'dpop+jwt', jwk: await JWK.generate('EC') } }))
-        .set('Authorization', 'DPoP foo')
+        .set('Authorization', `DPoP ${dpop}`)
         .expect(400)
         .expect({ error: 'invalid_token', error_description: 'invalid DPoP key binding' })
         .expect('WWW-Authenticate', /^DPoP /)
@@ -191,7 +201,7 @@ describe('features.dPoP', () => {
         client: await this.provider.Client.find('client'),
         scope: 'openid',
       });
-      at.setThumbprint('jkt', this.jwk);
+      at.setThumbprint('jkt', this.jwk.thumbprint);
 
       const dpop = await at.save();
       const proof = this.proof(`${this.provider.issuer}${this.suitePath('/me')}`, 'GET');
@@ -247,7 +257,7 @@ describe('features.dPoP', () => {
         client: await this.provider.Client.find('client'),
         scope: 'openid',
       });
-      at.setThumbprint('jkt', this.jwk);
+      at.setThumbprint('jkt', this.jwk.thumbprint);
 
       const token = await at.save();
 

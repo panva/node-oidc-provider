@@ -1,6 +1,7 @@
 const { expect } = require('chai');
 const sinon = require('sinon');
-const jose = require('jose');
+const jose = require('jose2');
+const { default: parseJwk } = require('jose/jwk/parse'); // eslint-disable-line import/no-unresolved
 
 const JWT = require('../../lib/helpers/jwt');
 const bootstrap = require('../test_helper');
@@ -10,7 +11,7 @@ describe('Pushed Request Object', () => {
 
   before(async function () {
     const client = await this.provider.Client.find('client');
-    this.key = client.keystore.get({ alg: 'HS256' });
+    this.key = await parseJwk(client.symmetricKeyStore.selectForSign({ alg: 'HS256' })[0]);
   });
 
   describe('discovery', () => {
@@ -52,6 +53,8 @@ describe('Pushed Request Object', () => {
             JWT.sign({
               response_type: 'code',
               client_id: clientId,
+              iss: clientId,
+              aud: this.provider.issuer,
             }, this.key, 'HS256').then((request) => {
               this.agent.post('/request')
                 .auth(clientId, 'secret')
@@ -72,6 +75,8 @@ describe('Pushed Request Object', () => {
                 request: await JWT.sign({
                   response_type: 'code',
                   client_id: clientId,
+                  iss: clientId,
+                  aud: this.provider.issuer,
                 }, this.key, 'HS256'),
               })
               .expect(201)
@@ -95,6 +100,8 @@ describe('Pushed Request Object', () => {
                 request: await JWT.sign({
                   response_type: 'code',
                   client_id: clientId,
+                  iss: clientId,
+                  aud: this.provider.issuer,
                 }, this.key, 'HS256', {
                   expiresIn: 20,
                 }),
@@ -120,6 +127,8 @@ describe('Pushed Request Object', () => {
                 request: await JWT.sign({
                   response_type: 'code',
                   client_id: clientId,
+                  iss: clientId,
+                  aud: this.provider.issuer,
                 }, this.key, 'HS256', {
                   expiresIn: 120,
                 }),
@@ -147,6 +156,8 @@ describe('Pushed Request Object', () => {
                 request: await JWT.sign({
                   response_type: 'code',
                   client_id: clientId,
+                  iss: clientId,
+                  aud: this.provider.issuer,
                 }, this.key, 'HS256'),
               })
               .expect(201);
@@ -200,6 +211,8 @@ describe('Pushed Request Object', () => {
                 request: await JWT.sign({
                   response_type: 'code',
                   client_id: clientId,
+                  iss: clientId,
+                  aud: this.provider.issuer,
                   redirect_uri: 'https://rp.example.com/unlisted',
                 }, this.key, 'HS256'),
               })
@@ -220,6 +233,8 @@ describe('Pushed Request Object', () => {
                 request: await JWT.sign({
                   response_type: 'code',
                   client_id: clientId,
+                  iss: clientId,
+                  aud: this.provider.issuer,
                 }, this.key, 'HS256'),
               })
               .expect(() => {
@@ -246,6 +261,8 @@ describe('Pushed Request Object', () => {
                   scope: 'openid',
                   response_type: 'code',
                   client_id: clientId,
+                  iss: clientId,
+                  aud: this.provider.issuer,
                 }, this.key, 'HS256'),
               });
 
@@ -256,6 +273,8 @@ describe('Pushed Request Object', () => {
 
             const auth = new this.AuthorizationRequest({
               client_id: clientId,
+              iss: clientId,
+              aud: this.provider.issuer,
               state: undefined,
               redirect_uri: undefined,
               request_uri,
@@ -312,6 +331,8 @@ describe('Pushed Request Object', () => {
                   scope: 'openid',
                   response_type: 'code',
                   client_id: clientId,
+                  iss: clientId,
+                  aud: this.provider.issuer,
                 }, this.key, 'HS256'),
               });
 
@@ -342,6 +363,8 @@ describe('Pushed Request Object', () => {
               .send({
                 response_type: 'code',
                 client_id: clientId,
+                iss: clientId,
+                aud: this.provider.issuer,
               })
               .end(() => {});
           });
@@ -356,6 +379,8 @@ describe('Pushed Request Object', () => {
               .send({
                 response_type: 'code',
                 client_id: clientId,
+                iss: clientId,
+                aud: this.provider.issuer,
               })
               .expect(201)
               .expect(({ body }) => {
@@ -389,6 +414,8 @@ describe('Pushed Request Object', () => {
               .send({
                 response_type: 'code',
                 client_id: clientId,
+                iss: clientId,
+                aud: this.provider.issuer,
                 redirect_uri: 'https://rp.example.com/unlisted',
               })
               .expect(400)
@@ -407,6 +434,8 @@ describe('Pushed Request Object', () => {
               .send({
                 response_type: 'code',
                 client_id: clientId,
+                iss: clientId,
+                aud: this.provider.issuer,
               })
               .expect(() => {
                 this.TestAdapter.for('PushedAuthorizationRequest').upsert.restore();
@@ -431,6 +460,8 @@ describe('Pushed Request Object', () => {
                 scope: 'openid',
                 response_type: 'code',
                 client_id: clientId,
+                iss: clientId,
+                aud: this.provider.issuer,
               });
 
             let id = request_uri.split(':');
@@ -440,6 +471,8 @@ describe('Pushed Request Object', () => {
 
             const auth = new this.AuthorizationRequest({
               client_id: clientId,
+              iss: clientId,
+              aud: this.provider.issuer,
               state: undefined,
               redirect_uri: undefined,
               request_uri,
@@ -460,6 +493,8 @@ describe('Pushed Request Object', () => {
                 scope: 'openid',
                 response_type: 'code',
                 client_id: clientId,
+                iss: clientId,
+                aud: this.provider.issuer,
               });
 
             const auth = new this.AuthorizationRequest({

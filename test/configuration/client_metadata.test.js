@@ -9,7 +9,6 @@ const cloneDeep = require('lodash/cloneDeep');
 
 const { Provider } = require('../../lib');
 const { enabledJWA } = require('../default.config');
-const mtlsKeys = require('../jwks/jwks.json');
 
 const sigKey = global.keystore.get().toJWK();
 const privateKey = global.keystore.get().toJWK(true);
@@ -931,11 +930,11 @@ describe('Client metadata validation', () => {
     [false, Boolean, 'foo', 123, null, { kty: null }, { kty: '' }].forEach((value) => {
       rejects(this.title, { keys: [value] }, 'client JSON Web Key Set is invalid');
     });
-    rejects(this.title, 'string', 'jwks must be a JWK Set');
-    rejects(this.title, {}, 'jwks must be a JWK Set');
-    rejects(this.title, 1, 'jwks must be a JWK Set');
-    rejects(this.title, 0, 'jwks must be a JWK Set');
-    rejects(this.title, true, 'jwks must be a JWK Set');
+    rejects('jwks', 'string', 'client JSON Web Key Set is invalid');
+    rejects(this.title, {}, 'client JSON Web Key Set is invalid');
+    rejects(this.title, 1, 'client JSON Web Key Set is invalid');
+    rejects(this.title, 0, 'client JSON Web Key Set is invalid');
+    rejects(this.title, true, 'client JSON Web Key Set is invalid');
     rejects(this.title, { keys: [privateKey] }, 'client JSON Web Key Set is invalid');
     rejects(this.title, { keys: [{ k: '6vl9Rlk88HO8onFHq0ZvTtga68vkUr-bRZ2Hvxu-rAw', kty: 'oct' }] }, 'client JSON Web Key Set is invalid');
     rejects(this.title, { keys: [{ kty: 'oct', kid: 'jf1nb1YotqxK9viWsXMsngnTCmO2r3w_moVIPtaf8wU' }] }, 'client JSON Web Key Set is invalid');
@@ -952,18 +951,6 @@ describe('Client metadata validation', () => {
     rejects(this.title, undefined, 'jwks or jwks_uri is mandatory for this client', {
       request_object_signing_alg: 'ES384',
     });
-
-    const invalidx5c = cloneDeep(mtlsKeys);
-    invalidx5c.keys[0].x5c = true;
-    rejects(this.title, invalidx5c, 'client JSON Web Key Set is invalid');
-
-    const emptyx5c = cloneDeep(mtlsKeys);
-    emptyx5c.keys[0].x5c = [];
-    rejects(this.title, emptyx5c, 'client JSON Web Key Set is invalid');
-
-    const invalidCert = cloneDeep(mtlsKeys);
-    invalidCert.keys[0].x5c = ['foobar'];
-    rejects(this.title, invalidCert, 'client JSON Web Key Set is invalid');
 
     [
       'id_token_encrypted_response_alg',

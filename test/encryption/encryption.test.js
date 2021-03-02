@@ -3,7 +3,7 @@ const url = require('url');
 const { expect } = require('chai');
 const base64url = require('base64url');
 const sinon = require('sinon');
-const jose = require('jose');
+const jose = require('jose2');
 
 const bootstrap = require('../test_helper');
 const JWT = require('../../lib/helpers/jwt');
@@ -187,13 +187,20 @@ describe('encryption', () => {
         });
       });
 
-      describe('authorization Request Object encryption', () => {
-        it('works with signed by none', function () {
-          return JWT.sign({
+      describe('Request Object encryption', () => {
+        it('works with signed by none', async function () {
+          const signed = await JWT.sign({
             client_id: 'client',
             response_type: 'code',
             redirect_uri: 'https://client.example.com/cb',
-          }, null, 'none', { issuer: 'client', audience: this.provider.issuer }).then((signed) => JWT.encrypt(signed, i(this.provider).keystore.get({ kty: 'RSA' }), { enc: 'A128CBC-HS256', alg: 'RSA1_5' })).then((encrypted) => this.wrap({
+          }, null, 'none', { issuer: 'client', audience: this.provider.issuer });
+
+          let [key] = i(this.provider).keystore.selectForEncrypt({ kty: 'RSA', alg: 'RSA1_5' });
+          key = await i(this.provider).keystore.getKeyObject(key, 'RSA1_5');
+
+          const encrypted = jose.JWE.encrypt(signed, key, { enc: 'A128CBC-HS256', alg: 'RSA1_5' });
+
+          return this.wrap({
             route,
             verb,
             auth: {
@@ -211,68 +218,89 @@ describe('encryption', () => {
                 expect(actual[attr]).to.equal(expected[attr]);
               });
               expect(actual.query).to.have.property('code');
-            }));
+            });
         });
 
         describe('JAR only request', () => {
-          it('works without any other params if client_id is replicated in the header', function () {
-            return JWT.sign({
-              client_id: 'client',
-              response_type: 'code',
-              redirect_uri: 'https://client.example.com/cb',
-              scope: 'openid',
-            }, null, 'none', { issuer: 'client', audience: this.provider.issuer }).then((signed) => jose.JWE.encrypt(signed, i(this.provider).keystore.get({ kty: 'RSA' }), { enc: 'A128CBC-HS256', alg: 'RSA1_5', client_id: 'client' })).then((encrypted) => this.wrap({
-              route,
-              verb,
-              auth: {
-                request: encrypted,
-              },
-            })
-              .expect(302)
-              .expect((response) => {
-                const expected = url.parse('https://client.example.com/cb', true);
-                const actual = url.parse(response.headers.location, true);
-                ['protocol', 'host', 'pathname'].forEach((attr) => {
-                  expect(actual[attr]).to.equal(expected[attr]);
-                });
-                expect(actual.query).to.have.property('code');
-              }));
-          });
-
-          it('works without any other params if iss is replicated in the header', function () {
-            return JWT.sign({
-              client_id: 'client',
-              response_type: 'code',
-              redirect_uri: 'https://client.example.com/cb',
-              scope: 'openid',
-            }, null, 'none', { issuer: 'client', audience: this.provider.issuer }).then((signed) => jose.JWE.encrypt(signed, i(this.provider).keystore.get({ kty: 'RSA' }), { enc: 'A128CBC-HS256', alg: 'RSA1_5', iss: 'client' })).then((encrypted) => this.wrap({
-              route,
-              verb,
-              auth: {
-                request: encrypted,
-              },
-            })
-              .expect(302)
-              .expect((response) => {
-                const expected = url.parse('https://client.example.com/cb', true);
-                const actual = url.parse(response.headers.location, true);
-                ['protocol', 'host', 'pathname'].forEach((attr) => {
-                  expect(actual[attr]).to.equal(expected[attr]);
-                });
-                expect(actual.query).to.have.property('code');
-              }));
-          });
-
-          it('handles invalid JWE', function () {
+          it('fails without any other params even if client_id is replicated in the header', async function () {
             const spy = sinon.spy();
             this.provider.once('authorization.error', spy);
 
-            return JWT.sign({
+            const signed = await JWT.sign({
               client_id: 'client',
               response_type: 'code',
               redirect_uri: 'https://client.example.com/cb',
               scope: 'openid',
-            }, null, 'none', { issuer: 'client', audience: this.provider.issuer }).then((signed) => jose.JWE.encrypt(signed, i(this.provider).keystore.get({ kty: 'RSA' }), { enc: 'A128CBC-HS256', alg: 'RSA1_5', client_id: 'client' })).then((encrypted) => this.wrap({
+            }, null, 'none', { issuer: 'client', audience: this.provider.issuer });
+
+            let [key] = i(this.provider).keystore.selectForEncrypt({ kty: 'RSA', alg: 'RSA1_5' });
+            key = await i(this.provider).keystore.getKeyObject(key, 'RSA1_5');
+
+            const encrypted = jose.JWE.encrypt(signed, key, { enc: 'A128CBC-HS256', alg: 'RSA1_5', client_id: 'client' });
+
+            return this.wrap({
+              route,
+              verb,
+              auth: {
+                request: encrypted,
+              },
+            })
+              .expect(400)
+              .expect(() => {
+                expect(spy.calledOnce).to.be.true;
+                expect(spy.args[0][1]).to.have.property('message', 'invalid_request');
+                expect(spy.args[0][1]).to.have.property('error_description', "missing required parameter 'client_id'");
+              });
+          });
+
+          it('works without any other params if iss is replicated in the header', async function () {
+            const signed = await JWT.sign({
+              client_id: 'client',
+              response_type: 'code',
+              redirect_uri: 'https://client.example.com/cb',
+              scope: 'openid',
+            }, null, 'none', { issuer: 'client', audience: this.provider.issuer });
+
+            let [key] = i(this.provider).keystore.selectForEncrypt({ kty: 'RSA', alg: 'RSA1_5' });
+            key = await i(this.provider).keystore.getKeyObject(key, 'RSA1_5');
+
+            const encrypted = jose.JWE.encrypt(signed, key, { enc: 'A128CBC-HS256', alg: 'RSA1_5', iss: 'client' });
+
+            return this.wrap({
+              route,
+              verb,
+              auth: {
+                request: encrypted,
+              },
+            })
+              .expect(302)
+              .expect((response) => {
+                const expected = url.parse('https://client.example.com/cb', true);
+                const actual = url.parse(response.headers.location, true);
+                ['protocol', 'host', 'pathname'].forEach((attr) => {
+                  expect(actual[attr]).to.equal(expected[attr]);
+                });
+                expect(actual.query).to.have.property('code');
+              });
+          });
+
+          it('handles invalid JWE', async function () {
+            const spy = sinon.spy();
+            this.provider.once('authorization.error', spy);
+
+            const signed = await JWT.sign({
+              client_id: 'client',
+              response_type: 'code',
+              redirect_uri: 'https://client.example.com/cb',
+              scope: 'openid',
+            }, null, 'none', { issuer: 'client', audience: this.provider.issuer });
+
+            let [key] = i(this.provider).keystore.selectForEncrypt({ kty: 'RSA', alg: 'RSA1_5' });
+            key = await i(this.provider).keystore.getKeyObject(key, 'RSA1_5');
+
+            const encrypted = jose.JWE.encrypt(signed, key, { enc: 'A128CBC-HS256', alg: 'RSA1_5', client_id: 'client' });
+
+            return this.wrap({
               route,
               verb,
               auth: {
@@ -290,16 +318,23 @@ describe('encryption', () => {
                 expect(spy.calledOnce).to.be.true;
                 expect(spy.args[0][1]).to.have.property('message', 'invalid_request_object');
                 expect(spy.args[0][1]).to.have.property('error_description', 'Request Object is not a valid JWE');
-              }));
+              });
           });
         });
 
-        it('handles enc unsupported algs', function () {
-          return JWT.sign({
+        it('handles enc unsupported algs', async function () {
+          const signed = await JWT.sign({
             client_id: 'client',
             response_type: 'code',
             redirect_uri: 'https://client.example.com/cb',
-          }, null, 'none', { issuer: 'client', audience: this.provider.issuer }).then((signed) => JWT.encrypt(signed, i(this.provider).keystore.get({ kty: 'RSA' }), { enc: 'A128CBC-HS256', alg: 'RSA-OAEP' })).then((encrypted) => this.wrap({
+          }, null, 'none', { issuer: 'client', audience: this.provider.issuer });
+
+          let [key] = i(this.provider).keystore.selectForEncrypt({ kty: 'RSA', alg: 'RSA-OAEP' });
+          key = await i(this.provider).keystore.getKeyObject(key, 'RSA-OAEP');
+
+          const encrypted = jose.JWE.encrypt(signed, key, { enc: 'A128CBC-HS256', alg: 'RSA-OAEP' });
+
+          return this.wrap({
             route,
             verb,
             auth: {
@@ -313,15 +348,22 @@ describe('encryption', () => {
               const { query } = url.parse(response.headers.location, true);
               expect(query).to.have.property('error', 'invalid_request_object');
               expect(query).to.have.property('error_description', 'could not decrypt request object');
-            }));
+            });
         });
 
-        it('handles enc unsupported encs', function () {
-          return JWT.sign({
+        it('handles enc unsupported encs', async function () {
+          const signed = await JWT.sign({
             client_id: 'client',
             response_type: 'code',
             redirect_uri: 'https://client.example.com/cb',
-          }, null, 'none', { issuer: 'client', audience: this.provider.issuer }).then((signed) => JWT.encrypt(signed, i(this.provider).keystore.get({ kty: 'RSA' }), { enc: 'A192CBC-HS384', alg: 'RSA1_5' })).then((encrypted) => this.wrap({
+          }, null, 'none', { issuer: 'client', audience: this.provider.issuer });
+
+          let [key] = i(this.provider).keystore.selectForEncrypt({ kty: 'RSA', alg: 'RSA1_5' });
+          key = await i(this.provider).keystore.getKeyObject(key, 'RSA1_5');
+
+          const encrypted = jose.JWE.encrypt(signed, key, { enc: 'A192CBC-HS384', alg: 'RSA1_5' });
+
+          return this.wrap({
             route,
             verb,
             auth: {
@@ -335,7 +377,7 @@ describe('encryption', () => {
               const { query } = url.parse(response.headers.location, true);
               expect(query).to.have.property('error', 'invalid_request_object');
               expect(query).to.have.property('error_description', 'could not decrypt request object');
-            }));
+            });
         });
       });
 
@@ -379,12 +421,19 @@ describe('encryption', () => {
 
         it('accepts symmetric encrypted Request Objects', async function () {
           const client = await this.provider.Client.find('clientSymmetric');
-          return JWT.sign({
+          const signed = await JWT.sign({
             client_id: 'clientSymmetric',
             response_type: 'id_token',
             nonce: 'foobar',
             redirect_uri: 'https://client.example.com/cb',
-          }, null, 'none', { issuer: 'clientSymmetric', audience: this.provider.issuer }).then((signed) => JWT.encrypt(signed, client.keystore.get({ alg: 'A128KW' }), { enc: 'A128CBC-HS256', alg: 'A128KW' })).then((encrypted) => this.wrap({
+          }, null, 'none', { issuer: 'clientSymmetric', audience: this.provider.issuer });
+
+          let [key] = client.symmetricKeyStore.selectForEncrypt({ alg: 'A128KW' });
+          key = await client.symmetricKeyStore.getKeyObject(key, 'A128KW');
+
+          const encrypted = jose.JWE.encrypt(signed, key, { enc: 'A128CBC-HS256', alg: 'A128KW' });
+
+          return this.wrap({
             route,
             verb,
             auth: {
@@ -402,16 +451,23 @@ describe('encryption', () => {
                 expect(actual[attr]).to.equal(expected[attr]);
               });
               expect(actual.query).to.have.property('id_token');
-            }));
+            });
         });
 
         it('rejects symmetric encrypted request objects when secret is expired', async function () {
           const client = await this.provider.Client.find('clientSymmetric-expired');
-          return JWT.sign({
+          const signed = await JWT.sign({
             client_id: 'clientSymmetric-expired',
             response_type: 'id_token',
             nonce: 'foobar',
-          }, null, 'none', { issuer: 'clientSymmetric-expired', audience: this.provider.issuer }).then((signed) => JWT.encrypt(signed, client.keystore.get({ alg: 'A128KW' }), { enc: 'A128CBC-HS256', alg: 'A128KW' })).then((encrypted) => this.wrap({
+          }, null, 'none', { issuer: 'clientSymmetric-expired', audience: this.provider.issuer });
+
+          let [key] = client.symmetricKeyStore.selectForEncrypt({ alg: 'A128KW' });
+          key = await client.symmetricKeyStore.getKeyObject(key, 'A128KW');
+
+          const encrypted = jose.JWE.encrypt(signed, key, { enc: 'A128CBC-HS256', alg: 'A128KW' });
+
+          return this.wrap({
             route,
             verb,
             auth: {
@@ -427,7 +483,7 @@ describe('encryption', () => {
               const { query } = url.parse(response.headers.location.replace('#', '?'), true);
               expect(query).to.have.property('error', 'invalid_request_object');
               expect(query).to.have.property('error_description', 'could not decrypt the Request Object - the client secret used for its encryption is expired');
-            }));
+            });
         });
 
         it('responds encrypted with i.e. PBES2 password derived key id_token', function () {
@@ -455,12 +511,19 @@ describe('encryption', () => {
 
         it('accepts symmetric (dir) encrypted Request Objects', async function () {
           const client = await this.provider.Client.find('clientSymmetric');
-          return JWT.sign({
+          const signed = await JWT.sign({
             client_id: 'clientSymmetric-dir',
             response_type: 'id_token',
             nonce: 'foobar',
             redirect_uri: 'https://client.example.com/cb',
-          }, null, 'none', { issuer: 'clientSymmetric-dir', audience: this.provider.issuer }).then((signed) => JWT.encrypt(signed, client.keystore.get({ alg: 'A128CBC-HS256' }), { enc: 'A128CBC-HS256', alg: 'dir' })).then((encrypted) => this.wrap({
+          }, null, 'none', { issuer: 'clientSymmetric-dir', audience: this.provider.issuer });
+
+          let [key] = client.symmetricKeyStore.selectForEncrypt({ alg: 'A128CBC-HS256' });
+          key = await client.symmetricKeyStore.getKeyObject(key, 'A128CBC-HS256');
+
+          const encrypted = jose.JWE.encrypt(signed, key, { enc: 'A128CBC-HS256', alg: 'dir' });
+
+          return this.wrap({
             route,
             verb,
             auth: {
@@ -478,16 +541,23 @@ describe('encryption', () => {
                 expect(actual[attr]).to.equal(expected[attr]);
               });
               expect(actual.query).to.have.property('id_token');
-            }));
+            });
         });
 
         it('rejects symmetric (dir) encrypted request objects when secret is expired', async function () {
           const client = await this.provider.Client.find('clientSymmetric');
-          return JWT.sign({
+          const signed = await JWT.sign({
             client_id: 'clientSymmetric-expired',
             response_type: 'id_token',
             nonce: 'foobar',
-          }, null, 'none', { issuer: 'clientSymmetric-expired', audience: this.provider.issuer }).then((signed) => JWT.encrypt(signed, client.keystore.get({ alg: 'A128CBC-HS256' }), { enc: 'A128CBC-HS256', alg: 'dir' })).then((encrypted) => this.wrap({
+          }, null, 'none', { issuer: 'clientSymmetric-expired', audience: this.provider.issuer });
+
+          let [key] = client.symmetricKeyStore.selectForEncrypt({ alg: 'A128CBC-HS256' });
+          key = await client.symmetricKeyStore.getKeyObject(key, 'A128CBC-HS256');
+
+          const encrypted = jose.JWE.encrypt(signed, key, { enc: 'A128CBC-HS256', alg: 'dir' });
+
+          return this.wrap({
             route,
             verb,
             auth: {
@@ -503,7 +573,7 @@ describe('encryption', () => {
               const { query } = url.parse(response.headers.location.replace('#', '?'), true);
               expect(query).to.have.property('error', 'invalid_request_object');
               expect(query).to.have.property('error_description', 'could not decrypt the Request Object - the client secret used for its encryption is expired');
-            }));
+            });
         });
 
         it('responds encrypted with i.e. PBES2 password derived key id_token', function () {

@@ -2,7 +2,8 @@ const { readFileSync } = require('fs');
 
 const got = require('got');
 const nock = require('nock');
-const jose = require('jose');
+const jose = require('jose2');
+const { default: parseJwk } = require('jose/jwk/parse'); // eslint-disable-line import/no-unresolved
 const sinon = require('sinon');
 const { expect } = require('chai');
 const cloneDeep = require('lodash/cloneDeep');
@@ -518,7 +519,7 @@ describe('client authentication options', () => {
 
   describe('client_secret_jwt auth', () => {
     before(async function () {
-      this.key = (await this.provider.Client.find('client-jwt-secret')).keystore.get({ alg: 'HS256' });
+      this.key = await parseJwk((await this.provider.Client.find('client-jwt-secret')).symmetricKeyStore.selectForSign({ alg: 'HS256' })[0]);
     });
 
     it('accepts the auth', function () {
@@ -1016,7 +1017,7 @@ describe('client authentication options', () => {
     });
 
     it('rejects assertions when the secret is expired', async function () {
-      const key = (await this.provider.Client.find('secret-expired-jwt')).keystore.get({ alg: 'HS256' });
+      const key = await parseJwk((await this.provider.Client.find('secret-expired-jwt')).symmetricKeyStore.selectForSign({ alg: 'HS256' })[0]);
       return JWT.sign({
         jti: nanoid(),
         aud: this.provider.issuer + this.suitePath('/token'),
@@ -1127,7 +1128,7 @@ describe('client authentication options', () => {
         aud: this.provider.issuer + this.suitePath('/token'),
         sub: 'client-jwt-key',
         iss: 'client-jwt-key',
-      }, privateKey, 'RS256', {
+      }, privateKey.keyObject, 'RS256', {
         expiresIn: 60,
       }).then((assertion) => this.agent.post(route)
         .send({
@@ -1147,7 +1148,7 @@ describe('client authentication options', () => {
         sub: 'client-jwt-key',
         iss: 'client-jwt-key',
         iat: Math.ceil(Date.now() / 1000) + 5,
-      }, privateKey, 'RS256', {
+      }, privateKey.keyObject, 'RS256', {
         expiresIn: 60,
       }).then((assertion) => this.agent.post(route)
         .send({
