@@ -174,7 +174,8 @@ jobs:
         uses: actions/upload-artifact@v2
         with:
           path: export-*.zip
-          name: oidc certification html results
+          name: failed certification html results
+          if-no-files-found: ignore
         if: ${{ always() }}
       - name: Stop Conformance Suite
         run: |

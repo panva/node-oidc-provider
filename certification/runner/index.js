@@ -54,12 +54,19 @@ runner.createTestPlan({
 
   SKIP = SKIP || ('SKIP' in process.env ? process.env.SKIP.split(',') : []);
 
+  let download = false;
   describe(PLAN_NAME, () => {
-    after(async () => runner.downloadArtifact({ planId: PLAN_ID }));
+    after(() => {
+      if (download) {
+        return runner.downloadArtifact({ planId: PLAN_ID });
+      }
+      return undefined;
+    });
 
     afterEach(function () {
       const { state, err } = this.currentTest;
       if (state !== 'passed') {
+        download = true;
         process.exitCode |= 1;
         console.error(err);
       }
