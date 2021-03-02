@@ -78,7 +78,7 @@ describe('paseto format', () => {
 
       const client = await this.provider.Client.find(clientId);
       const token = new this.provider.AccessToken({ client, ...fullPayload, resourceServer });
-      expect(await token.save()).to.match(/^v1.public./);
+      expect(await token.save()).to.match(/^v1\.public\./);
     });
 
     it('v2.public', async function () {
@@ -93,7 +93,7 @@ describe('paseto format', () => {
 
       const client = await this.provider.Client.find(clientId);
       const token = new this.provider.AccessToken({ client, ...fullPayload, resourceServer });
-      expect(await token.save()).to.match(/^v2.public./);
+      expect(await token.save()).to.match(/^v2\.public\./);
     });
 
     it('v1.local', async function () {
@@ -109,7 +109,7 @@ describe('paseto format', () => {
 
       const client = await this.provider.Client.find(clientId);
       const token = new this.provider.AccessToken({ client, ...fullPayload, resourceServer });
-      expect(await token.save()).to.match(/^v1.local./);
+      expect(await token.save()).to.match(/^v1\.local\./);
     });
 
     it('v1.local (keyObject)', async function () {
@@ -125,7 +125,7 @@ describe('paseto format', () => {
 
       const client = await this.provider.Client.find(clientId);
       const token = new this.provider.AccessToken({ client, ...fullPayload, resourceServer });
-      expect(await token.save()).to.match(/^v1.local./);
+      expect(await token.save()).to.match(/^v1\.local\./);
     });
 
     it('v2.local is not supported', async function () {
