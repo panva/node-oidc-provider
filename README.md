@@ -78,11 +78,6 @@ If you or your business use oidc-provider, or you need help using/upgrading the 
 You may check the [example folder](/example) or follow a [step by step example][example-repo] to see
 which of those fits your desired application setup.
 
-An example configuration of oidc-provider is available for you to experiment with
-[here][heroku-example]. Dynamic Client Registration is open, you can literally register any client
-you want there. An example client using this provider is available [here][heroku-example-client]
-(uses [openid-client][openid-client]).
-
 Also be sure to check the available configuration docs section.
 
 ## [Documentation](/docs/README.md) & Configuration
@@ -143,7 +138,6 @@ See the list of available emitted [event names](/docs/events.md) and their descr
 [introspection]: https://tools.ietf.org/html/rfc7662
 [pkce]: https://tools.ietf.org/html/rfc7636
 [example-repo]: https://github.com/panva/node-oidc-provider-example
-[openid-client]: https://github.com/panva/node-openid-client
 [backchannel-logout]: https://openid.net/specs/openid-connect-backchannel-1_0-06.html
 [registration-management]: https://tools.ietf.org/html/rfc7592
 [oauth-native-apps]: https://tools.ietf.org/html/rfc8252
