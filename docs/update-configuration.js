@@ -113,8 +113,7 @@ const props = [
 
       line = Buffer.from(strLine);
 
-
-      if (strLine.startsWith('/*') && !strLine.includes('eslint') && !strLine.includes('istanbul')) {
+      if (strLine.startsWith('/*') && !strLine.includes('eslint')) {
         inBlock = true;
         nextIsOption = true;
         return;
@@ -298,9 +297,6 @@ const props = [
               return undefined;
             }
             if (line.includes('/* eslint-enable')) {
-              return undefined;
-            }
-            if (line.includes('/* istanbul ignore')) {
               return undefined;
             }
             line = line.replace(/ \/\/ TODO.+/, '');
