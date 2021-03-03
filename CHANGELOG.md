@@ -2,6 +2,320 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [7.0.0](https://github.com/panva/node-oidc-provider/compare/v6.31.0...v7.0.0) (2021-03-03)
+
+
+### ⚠ BREAKING CHANGES
+
+* PAR no longer remaps all errors as
+invalid_request_object.
+* `IdToken.prototype.issue` now requires the `use`
+option.
+* JWT Header Parameter `client_id` in Request Objects is
+now ignored.
+* Request Objects now require `iss` and `aud` claims.
+* `OIDCContext.prototype.dPoP` getter was removed.
+* BaseToken.prototype.setThumbprint `jkt` mode now
+expects the string thumbprint value instead of the jose.JWK instance.
+* Client JWKS `kid` values are no longer automatically
+calculated per RFC7638 when missing. As a result when client's public
+keys are used to encrypt assertions the `kid` header will be missing
+when such keys are used.
+* Provider constructor will now reject JWKS that serve
+no purpose (e.g. are only usable for encryption but encryption is
+disabled).
+* Provider's `jwks_uri` response will no longer include
+* Client and Provider JWKS are validated to be
+syntactically correct as before but only resolve to a `crypto.KeyObject`
+when they're used.
+* `sector_identifier_uri` is now verified regardless of
+client's `subject_type` when provided.
+* `response_type=token` is no longer supported
+* `Session.prototype.accountId` function was removed, it
+is just a property access now.
+* Session adapter payload property `account` was renamed
+to `accountId`.
+* Interactions result `login.account` was renamed to
+`login.accountId`
+* `Session.prototype.loginAccount` option `account` was
+renamed to `accountId`
+* TypeScript type definitions are no longer bundled with
+the package, instead these will be re-published to DefinitelyTyped.
+* `configuration.features.resourceIndicators` was
+completely re-implemented.
+* `configuration.audiences` helper function was removed,
+use the `resourceIndicators` feature instead.
+* Access Tokens with an audience can no longer be used
+to access the userinfo endpoint.
+* Only a single audience ("aud") is permitted in
+Access Tokens and Client Credential tokens.
+* Structured (JWT and PASETO) access tokens Access Tokens
+no longer default to using the clientId as audience, if no audience is
+specified an Error is throw indicating that issuing a structured token
+is probably not needed for a token only usable at the userinfo_endpoint.
+* Only opaque access tokens without an audience may be
+used to access the userinfo_endpoint.
+* Only opaque access tokens may be introspected using
+the introspection_endpoint.
+* Only opaque access tokens may be revoked using
+the revocation_endpoint.
+* Only opaque access tokens get stored using the adapter.
+* Structured (JWT and PASETO) access tokens do not get
+stored by the adapter anymore.
+* `access_token.saved` event is only emitted for opaque
+access tokens, non-opaque tokens get emitted via `access_token.issued`.
+* PASETO tokens were re-implemented from scratch using
+the new resourceIndicators implementation.
+* `client_credentials.saved` event is only emitted for
+opaque access tokens, non-opaque tokens get emitted via
+`client_credentials.issued`.
+* Structured (JWT and PASETO) access tokens MUST contain
+an audience, an error will be thrown if they don't.
+* `formats.jwtAccessTokenSigningAlg` configuration was
+removed in favour of Resource Server configuration helpers.
+* The default consent prompt interaction details have
+changed, these now include `missingOIDCScopes`(`string[]`),
+`missingOIDClaims`(`string[]`),
+`missingResourceScope`(`{ [resourceIndicator]: string[]`).
+* The interaction result `consent` structure changed. It
+may now only contain a single property, `grantId` (string) which is
+the identifier of a Grant (returned by calling Grant.prototype.save()).
+* Session-bound artifacts no longer fail to load when
+the session's grant has less scopes than the artifact, instead the
+action will work with the intersection of currently granted scopes with
+the ones on the artifact.
+* Sessions no longer hold the "granted" set of
+scopes/claims. This is now tracked in the Grant artifact instead. The
+following properties are no longer present on the
+`session.authorizations[client_id]` object: rejectedScopes,
+rejectedClaims, promptedClaims, promptedScopes.
+* The following Session prototype methods have been
+removed: acceptedClaimsFor, acceptedScopesFor, promptedClaimsFor,
+promptedScopesFor, rejectedClaimsFor, rejectedScopesFor.
+* OpenID Connect Session Management draft
+implementation was removed. This is due to front-channel becoming more
+and more unreliable due to browsers blocking third-party cookie access.
+* OpenID Connect Front-Channel Logout draft
+implementation was removed. This is due to front-channel becoming more
+and more unreliable due to browsers blocking third-party cookie access.
+* The `jwt-ietf` token format is now just `jwt`. The
+`ietfJWTAccessTokenProfile` feature is therefore obsolete and removed.
+The prior `jwt` format may be emulated using the
+`formats.customizers.jwt` helper function.
+* Default PKCE use policy now enforces the use of PKCE
+`code_challenge` for all requests where PKCE applies. Use the
+`pkce.required` helper to revert to the old policy if you have a reason
+to exempt some clients from this policy.
+* `ctx.oidc.uid` is now undefined, no random values are
+now generated. In places where `ctx.oidc.uid` was used as a source
+of a random value, an always fresh random value is now generated
+instead.
+* Removed every `DEBUG=*` code other than error ones.
+Ways to debug the code will surface through logging in the future.
+* The Device Flow feature resume path now longer contains
+the user code in the URL. Instead, `deviceCode` is now attached to
+`Interaction` models when part of a device authorization grant flow.
+* The DeviceCode model now gets `grantId` property
+assigned only after successful consent interaction.
+* Every interaction now gets a totally unique identifier,
+"same grant", which never actually was about grants, or consequent
+bounces through interaction will now each get a unique identifier.
+* The `features.webMessageResponseMode.scriptNonce`
+helper was removed, all inline scripts will now have their sha256
+automatically added to CSP script-src directives when one is present.
+* `client_id` and `client_secret` values are now checked
+to conform to their ABNF syntax (%x20-7E).
+* Allowing to omit a redirect_uri parameter for
+clients with a single one registered is now disabled by default. You can
+re-enable this using the `allowOmittingSingleRegisteredRedirectUri`
+configuration option.
+* Configuration option `cookies.short.maxAge` was removed.
+Use `ttl.Interaction` configuration to define the Interaction TTL which
+in turn controls the cookie expiration.
+* Configuration option `cookies.long.maxAge` was removed.
+Use `ttl.Session` configuration to define the Session TTL which
+in turn controls the cookie expiration.
+* Configuration option `cookies.short.expires` was
+removed.
+* Configuration option `cookies.long.expires` was
+removed.
+* Interaction.prototype.save `ttl` argument is now
+required.
+* Session.prototype.save `ttl` argument is now required.
+* Provider.prototype.requestUriCache getter was removed.
+* `features.jwtUserinfo` is disabled by default now.
+* Removed "whitelist" Request Object merging strategy
+* `requestObjects.mergingStrategy` configuration is now a
+string valued "strict" or "lax"
+* `requestObjects.mergingStrategy` configuration is now
+`requestObjects.mode`.
+* Configuration option `whitelistedJWA` is now
+`enabledJWA`.
+* Removed HS256 as a default-enabled algorithm from the
+following configuration values so that all AS-issued assertions are
+firm to only come from the AS: `whitelistedJWA.idTokenSigningAlgValues`,
+`whitelistedJWA.userinfoSigningAlgValues`,
+`whitelistedJWA.introspectionSigningAlgValues`,
+`whitelistedJWA.authorizationSigningAlgValues`
+* Default JWE Algorithms ("alg") now includes "dir".
+* ECDH-ES KW variants are not enabled by default anymore.
+* The default for JWT Access Tokens' signing algorithm
+is no longer the client's `id_token_signed_response_alg` falling back to
+RS256 but rather only the provider's default
+`id_token_signed_response_alg`.
+* Removed built in support for urn: request uris.
+* Renamed RequestUriCache.prototype.resolveWebUri to
+RequestUriCache.prototype.resolve
+* The `claims` configuration property can no longer be
+a `Map` instance, only plain objects are allowed.
+* `request_object_signing_alg` no longer means a request
+object must be provided, `require_signed_request_object` boolean value
+serves that purpose now as per the clarifications made in OIDF and IETF
+Working Groups.
+* The deprecated `postLogoutSuccessSource` configuration
+property was removed, use
+`features.rpInitiatedLogout.postLogoutSuccessSource` instead.
+* The deprecated `logoutSource` configuration
+property was removed, use
+`features.rpInitiatedLogout.logoutSource` instead.
+* RedirectUriMismatch error was removed.
+* `redirect_uri_mismatch` error codes are now
+`invalid_redirect_uri`.
+* Only www-urlencoded bodies recognize RFC6750 payload
+bearer token. On the authorization server this only affects the dynamic
+registration features and removes an unintended side effect.
+* `extraAccessTokenClaims` helper function is renamed to
+`extraTokenClaims`.
+* The jwks_uri response is now using the proper content
+type `application/jwk-set+json`.
+* Default Interaction TTL increased from 10 minutes to
+1 hour.
+* The following Provider instance getters/setters are
+removed: subdomainOffset, proxyIpHeader, maxIpsCount, keys. You can
+access the underlying Koa app via `provider.app` if you have the need
+to use these.
+* Default clientBasedCORS helper return value is now
+`false`, you must ergo use this helper to open up cors based on your
+policy.
+* The deprecated `setS256Thumbprint` token instance
+method is removed.
+* The deprecated `OIDCContext.prototype.bearer` method
+is removed.
+* removed `dynamicScopes` configuration option, scope
+configuration using pre-configured values is gone in favour of
+Resource Indicators refactor.
+* httpOptions helper function argument is now just
+a URL instance. It no longer receives the "to be executed" http request
+options.
+* httpOptions helper changed. It can now only return
+three properties {
+  `timeout`: number,
+  `agent`: instanceof https.Agent || http.Agent,
+  `lookup`: dns.lookup like option
+}
+* The deprecated `pkceMethods` configuration property was
+removed, use `pkce.methods` instead.
+* `provider.setInteractionSession` function was removed.
+* `meta` interaction result was removed.
+* Structured token constructors now require a client
+property with a client instance rather than a clientId property.
+* `extraClientMetadata.validator` `ctx` argument is now
+the first one.
+* Single member audience arrays are now transformed to a
+single audience string value instead.
+* Introspection response `jti` is not returned for
+opaque tokens.
+* `OIDCContext` and `Interaction` instance property
+`signed` renamed to `trusted`.
+* `provider.interactionDetails` now only works if both
+`req` and `res` are provided.
+* `Provider.prototype.callback` is now a function instead
+of a getter.
+* Node.js runtime version policy changed. Version
+12.19.0 is now the minimum required runtime and *ONLY LTS* releases are
+supported. This means "Current" Node releases are not officially
+supported and you may get mixed results when using them.
+
+### Features
+
+* added configurable policy for issuing registration access tokens ([f18395f](https://github.com/panva/node-oidc-provider/commit/f18395fd0432e6bb7ae8ad60f519ec7a35a31231))
+* allow dynamic session and interaction expiration TTL ([afcb375](https://github.com/panva/node-oidc-provider/commit/afcb3750ca0e2a269ad55627d5a9a19e38f90f57))
+* allow pre-existing Grants to be loaded during authorization ([9dc7921](https://github.com/panva/node-oidc-provider/commit/9dc792117060a1e682b35a96bcefbba6851a1402))
+* apply max expiration on PAR objects created from a JWT ([03f9d8f](https://github.com/panva/node-oidc-provider/commit/03f9d8f1ab95c769e0f029850f40c55a0f673c79))
+* automatically add inline scripts to CSP script-src directives ([85c3f4d](https://github.com/panva/node-oidc-provider/commit/85c3f4d0047fd2bd7aab28d2508f87def0766c93)), closes [#850](https://github.com/panva/node-oidc-provider/issues/850) [#584](https://github.com/panva/node-oidc-provider/issues/584)
+* check client_id and client_secret ABNF syntax ([3d0d078](https://github.com/panva/node-oidc-provider/commit/3d0d0786cc88c14cfb72ca0e69f219bc69cdd06f))
+* control whether underlying Grant gets destroyed during logout and revocation ([ee74dcf](https://github.com/panva/node-oidc-provider/commit/ee74dcf9901433b94f49f304a42b5fba333e9d77))
+* features.resourceIndicators (RFC 8707) is now a stable feature ([84c3a5c](https://github.com/panva/node-oidc-provider/commit/84c3a5cdb78b8ffda53e2cbebd135bc262b27d4d))
+* helper function to decide whether to validate client.sector_identifier_uri ([72058a5](https://github.com/panva/node-oidc-provider/commit/72058a5fb786288975e13043bcbad003c77aabbf))
+* JWT Access Tokens are now just issued and not stored anymore ([d1ee6b7](https://github.com/panva/node-oidc-provider/commit/d1ee6b7c27b24aa6b7a0626d69e2e524975e6021))
+* JWT Access Tokens can now be encrypted with a symmetric secret shared with the recipient ([0f76c65](https://github.com/panva/node-oidc-provider/commit/0f76c6576c0a38b3e9550b6017fccaa915fe918e))
+* JWT Access Tokens can now be encrypted with an asymmetric public key of the recipient ([d2a63b7](https://github.com/panva/node-oidc-provider/commit/d2a63b7aa172f0a684157b915099ac4bb04e3c37))
+* JWT Access Tokens can now be HMAC-signed with a symmetric secret shared with the recipient ([5041158](https://github.com/panva/node-oidc-provider/commit/504115880b4f937cc9a53cecf6447cad4aa4f3a5))
+* omitting redirect_uri for clients with a single one is now optional ([329c577](https://github.com/panva/node-oidc-provider/commit/329c5778549b5596c62243e6f745d903b27892ec))
+* opaque token length can now be influenced ([f35764f](https://github.com/panva/node-oidc-provider/commit/f35764fce43fe0899fdb682672e79acb93a66986)), closes [#760](https://github.com/panva/node-oidc-provider/issues/760)
+* PAR no longer requires otherwise enabled `features.requestObjects` ([33f3a83](https://github.com/panva/node-oidc-provider/commit/33f3a8332b454f3d1fa2b3de0512bf8904a7b695))
+* PASETO Access Tokens are now just issued and not stored anymore ([4efe741](https://github.com/panva/node-oidc-provider/commit/4efe74103bbf091ff0060977b1aa0c8b4517347f))
+* PASETO Access Tokens can now be encrypted with a symmetric secret shared with the recipient using v1.local ([2e78582](https://github.com/panva/node-oidc-provider/commit/2e785825ec53dc4be5e3394ee076b22eca69999a))
+* PASETO Access Tokens now support both v1.public and v2.public ([dff2a72](https://github.com/panva/node-oidc-provider/commit/dff2a72fc25ff1fee8d52b1f66d4c1d1bc4a0c9e))
+* require Node.js version ^12.19.0 || ^14.15.0 ([2a54e33](https://github.com/panva/node-oidc-provider/commit/2a54e33c4f2b18367924ab53aa6be383503afc87))
+* require use of PKCE ([aa2bd51](https://github.com/panva/node-oidc-provider/commit/aa2bd514d4e829d9d14aa284859d0dc67e5463b1))
+* sector_identifier_uri can be used without pairwise subject_type ([202e4c5](https://github.com/panva/node-oidc-provider/commit/202e4c54a4ac5c40c2f0c2d388c6b70228191079))
+* The key used to asymmetrically sign JWT Access Tokens can now be chosen based on its Key ID. ([8b32707](https://github.com/panva/node-oidc-provider/commit/8b327072405f40ea141218cf20cddb90285fd70a))
+* The key used to asymmetrically sign PASETO Access Tokens can now be chosen based on its Key ID. ([efd3dab](https://github.com/panva/node-oidc-provider/commit/efd3dab876e7b71f95cc98e9cc7eb4a909bd81c2))
+
+
+### Bug Fixes
+
+* check DPoP htm as case-sensitive ([33223ff](https://github.com/panva/node-oidc-provider/commit/33223fffa6588359b4e85f8f6c8e7c339ca34461))
+* delay FAPI response type/mode check when request_uri is present ([78916b7](https://github.com/panva/node-oidc-provider/commit/78916b7a4b53eeaab531e11233364f587f379c09))
+* ignore clockTolerance when verifying stored PAR objects ([c3c2276](https://github.com/panva/node-oidc-provider/commit/c3c22766650a4b0a48ccfd20248237f421fbf97a))
+* only www-urlencoded bodies recognize RFC6750 payload bearer token ([4553bd5](https://github.com/panva/node-oidc-provider/commit/4553bd548f8eab5f8f545c3cb10a3f92acc65b42))
+* remap `invalid_redirect_uri` as `invalid_request` in PAR ([ceb3cd1](https://github.com/panva/node-oidc-provider/commit/ceb3cd15d6051479cc6925771189c27dec559d06))
+* remove legacy accept header value from request uri requests ([4cc28ef](https://github.com/panva/node-oidc-provider/commit/4cc28efa6f42b67b6206915b85ae811954fedb93))
+* **typescript:** Interaction.prototype.session structure ([#924](https://github.com/panva/node-oidc-provider/issues/924)) ([76c36c7](https://github.com/panva/node-oidc-provider/commit/76c36c7ca955c75d95fdccc7569dbd11ef5ac00d))
+
+
+### Refactor
+
+* `OIDCContext` and `Interaction` property `signed` renamed ([0ed56bd](https://github.com/panva/node-oidc-provider/commit/0ed56bdbc9d5ee556eefee77b02000e3b699a2e3))
+* audience arrays with 1 member are changed to a single value ([d156983](https://github.com/panva/node-oidc-provider/commit/d1569839d34ce46fdd7ddaa0a6093deb66228ec7))
+* by default disabled JWT Userinfo Responses ([5931a59](https://github.com/panva/node-oidc-provider/commit/5931a59cf9b6a35dcf7538905257a951a5bd3611))
+* changed default signing algorithm selection method ([995d2d4](https://github.com/panva/node-oidc-provider/commit/995d2d49552019fcc8de1d299f340061d8a9f623))
+* clean up RequestUriCache ([8c0b9c5](https://github.com/panva/node-oidc-provider/commit/8c0b9c509863b1e2d1882575a8c41b0187e2f269))
+* configuration `whitelistedJWA` is now `enabledJWA` ([d77fd4f](https://github.com/panva/node-oidc-provider/commit/d77fd4f3213ef46cf0ec6fc88e2a46fc24f8481d))
+* default clientBasedCORS helper is now false ([4cf4cc6](https://github.com/panva/node-oidc-provider/commit/4cf4cc6f0191aa8b320c7760ea41d4ea7d90c8cd))
+* default enabled JWAs ([d8ebde0](https://github.com/panva/node-oidc-provider/commit/d8ebde053d7c32874c495f37bb3bd29b44ad3369))
+* default Interaction TTL increased from 10 minutes to 1 hour ([f6c7b5e](https://github.com/panva/node-oidc-provider/commit/f6c7b5e4738582bfa592941c73eecf8fb8de09b6))
+* extraClientMetadata.validator arguments reordered ([ea6dc73](https://github.com/panva/node-oidc-provider/commit/ea6dc7363ff7e08e0d640bb5932feaf1455960f2))
+* idToken.issue() now requires the `use` option ([d1d9421](https://github.com/panva/node-oidc-provider/commit/d1d9421c18398785fefc168bc2e9cac07b12cae4))
+* introspection response `jti` not returned for opaque tokens ([a333aaa](https://github.com/panva/node-oidc-provider/commit/a333aaa0bd2020f7da4784debc0d3af97e4c4460))
+* only allow objects as `claims` configuration parameter ([2ac59b7](https://github.com/panva/node-oidc-provider/commit/2ac59b772f5417694962e4c1c21e4469c456e4e8))
+* provider.callback is now a function instead of a getter ([e78e573](https://github.com/panva/node-oidc-provider/commit/e78e573aca6a9e1a1ae8d0b77d69160cda7838e9))
+* provider.interactionDetails(req, res) now requires res ([2c3a667](https://github.com/panva/node-oidc-provider/commit/2c3a667de583846470921883918f4c4145bef6c6))
+* provider's jwks_uri is now application/jwk-set+json content ([285eb41](https://github.com/panva/node-oidc-provider/commit/285eb4131f16efcd465e3bc2386347b0808192b5))
+* remove bundled TypeScript type defintions ([3a6b671](https://github.com/panva/node-oidc-provider/commit/3a6b671ce10530881f8dd6835371e76d67cb0eb3))
+* remove deprecated `pkceMethods` configuration property ([65712d0](https://github.com/panva/node-oidc-provider/commit/65712d0887b23aaa832a843d3485accf4895504d))
+* remove deprecated `setS256Thumbprint` token instance method ([6afaf31](https://github.com/panva/node-oidc-provider/commit/6afaf3139c3d4c3c0db097cf44efc9bffd7f3782))
+* remove few deprecated configuration properties ([1767c8f](https://github.com/panva/node-oidc-provider/commit/1767c8ffc233d63a5fbc6aebdfc95006fab69775))
+* remove Provider.prototype.requestUriCache ([e8b411c](https://github.com/panva/node-oidc-provider/commit/e8b411c4b1615a2fabd2ccec1bf9fd8dd158d30c))
+* remove the deprecated `OIDCContext.prototype.bearer` method ([52000d5](https://github.com/panva/node-oidc-provider/commit/52000d55a2452a66917d9a567bf0530ac767bb12))
+* removed `dynamicScopes` configuration option ([285fc7a](https://github.com/panva/node-oidc-provider/commit/285fc7ab8b49b8b179232b5fa6c50dd47b0f76f2))
+* removed a bunch of proxied methods from provider to app ([3fb32e7](https://github.com/panva/node-oidc-provider/commit/3fb32e7eb5d2ec50902ff913d8dae7398808f15a))
+* removed oidc.uid, removed a lot of debug ([801d28f](https://github.com/panva/node-oidc-provider/commit/801d28f01e4f391ffbc2a0d22abf01f415e2cabf))
+* Removed OpenID Connect Front-Channel Logout ([feecb5e](https://github.com/panva/node-oidc-provider/commit/feecb5eaa1cea3e0a474ab036c328b1f8e150914))
+* Removed OpenID Connect Session Management ([224dd38](https://github.com/panva/node-oidc-provider/commit/224dd38fe1d43bf646c017bdfa7eaac3f3ef1518))
+* removed provider.setInteractionSession and result meta object ([ac1b0f6](https://github.com/panva/node-oidc-provider/commit/ac1b0f68472d48c6e42502260cb6206e683a6457))
+* rename session.account to session.accountId for consistency ([3e81740](https://github.com/panva/node-oidc-provider/commit/3e817405d44bf25725b763f5cb88a9d8d26195c7))
+* renamed `extraAccessTokenClaims` helper function ([ce57d6d](https://github.com/panva/node-oidc-provider/commit/ce57d6d38c2803c4f004cdf0be707c6be92b3d43))
+* replaced the `jwt` format with `jwt-ietf` as it is stable now ([d61b515](https://github.com/panva/node-oidc-provider/commit/d61b51596501df8df4f740056aa7fa6e94a13149))
+* request_object_signing_alg no longer forces request object use ([e7309af](https://github.com/panva/node-oidc-provider/commit/e7309af980e33f9b54104781ee32c3bb7c539e79))
+* requestObjects.mergingStrategy "whitelist" was removed ([7b10e9f](https://github.com/panva/node-oidc-provider/commit/7b10e9f519c470d2c36d64c4831a11d98456b1e9))
+* require client in structured tokens constructors ([a4e02bd](https://github.com/panva/node-oidc-provider/commit/a4e02bdb5b1a97474a69e0e3bbf4f46adf2dfb7b))
+* response_type value `token` is no longer supported ([0c74a1a](https://github.com/panva/node-oidc-provider/commit/0c74a1a2e3594155613b9471174d32a2279803c3))
+* updated `got` http request library ([b395a0d](https://github.com/panva/node-oidc-provider/commit/b395a0dce8ca6eac25d197b77eb225d99bcdc324))
+* use invalid_redirect_uri over redirect_uri_mismatch error ([2565cce](https://github.com/panva/node-oidc-provider/commit/2565cce57f94daf5df67569b35eefc3f9f48af14))
+* use jose@3 instead of jose@2 ([5572e0e](https://github.com/panva/node-oidc-provider/commit/5572e0e193c92cd59b4ac4ee1addef649eb5a0ae)), closes [x5t#S256](https://github.com/panva/x5t/issues/S256)
+
 ## [6.31.0](https://github.com/panva/node-oidc-provider/compare/v6.30.1...v6.31.0) (2021-01-19)
 
 
