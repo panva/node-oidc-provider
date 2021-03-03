@@ -24,7 +24,6 @@ when such keys are used.
 * Provider constructor will now reject JWKS that serve
 no purpose (e.g. are only usable for encryption but encryption is
 disabled).
-* Provider's `jwks_uri` response will no longer include
 * Client and Provider JWKS are validated to be
 syntactically correct as before but only resolve to a `crypto.KeyObject`
 when they're used.
