@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [6.31.1](https://github.com/panva/node-oidc-provider/compare/v6.31.0...v6.31.1) (2021-03-03)
+
+
+### Bug Fixes
+
+* **typescript:** Interaction.prototype.session structure ([#924](https://github.com/panva/node-oidc-provider/issues/924)) ([76c36c7](https://github.com/panva/node-oidc-provider/commit/76c36c7ca955c75d95fdccc7569dbd11ef5ac00d))
+
 ## [6.31.0](https://github.com/panva/node-oidc-provider/compare/v6.30.1...v6.31.0) (2021-01-19)
 
 
