@@ -336,7 +336,7 @@ hapiApp.route({
 // assumes NestJS ^7.0.0
 import { Controller, All, Req, Res } from '@nestjs/common';
 import { Request, Response } from 'express';
-const { callback } = oidc;
+const callback = oidc.callback();
 @Controller('oidc')
 export class OidcController {
   @All('/*')
