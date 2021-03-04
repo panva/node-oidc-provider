@@ -3614,7 +3614,7 @@ Every client is configured with one of 7 available
 and it must adhere to how that given method must be submitted. Submitting multiple means of
 authentication is also not possible. If you're a provider operator you're encouraged to set up
 listeners for errors
-(see [events.md](https://github.com/panva/node-oidc-provider/blob/master/docs/events.md)) and
+(see [events.md](https://github.com/panva/node-oidc-provider/blob/v7.x/docs/events.md)) and
 deliver them to client developers out-of-band, e.g. by logs in an admin interface.
 
 ```js

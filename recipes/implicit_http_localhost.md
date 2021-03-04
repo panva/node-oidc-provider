@@ -33,6 +33,6 @@ provider.Client.Schema.prototype.invalidate = function invalidate(message, code)
 ```
 
 In addition to this you may also utilize
-[extra client metadata](https://github.com/panva/node-oidc-provider/blob/master/docs/README.md#extraclientmetadata)
+[extra client metadata](https://github.com/panva/node-oidc-provider/blob/v7.x/docs/README.md#extraclientmetadata)
 and only skip these checks for clients in something like a development mode or similar. Again, no
 production client should be allowed to skip these validations.

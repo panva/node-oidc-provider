@@ -185,7 +185,7 @@ jobs:
           sudo rm -rf mongo
 
   deploy:
-    if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/master' && github.repository == 'panva/node-oidc-provider' }}
+    if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' && github.repository == 'panva/node-oidc-provider' }}
     runs-on: ubuntu-latest
     needs:
       - test
