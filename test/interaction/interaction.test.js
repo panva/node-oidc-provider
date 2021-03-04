@@ -226,10 +226,7 @@ describe('devInteractions', () => {
         });
 
       await this.agent.get(new URL(location).pathname)
-        .expect(302)
-        .expect(this.auth.validateState)
-        .expect(this.auth.validateClientLocation)
-        .expect(this.auth.validateError('server_error'));
+        .expect(500);
 
       expect(spy).to.have.property('calledOnce', true);
       const error = spy.firstCall.args[1];
