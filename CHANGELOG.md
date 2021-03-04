@@ -313,7 +313,7 @@ supported and you may get mixed results when using them.
 * response_type value `token` is no longer supported ([0c74a1a](https://github.com/panva/node-oidc-provider/commit/0c74a1a2e3594155613b9471174d32a2279803c3))
 * updated `got` http request library ([b395a0d](https://github.com/panva/node-oidc-provider/commit/b395a0dce8ca6eac25d197b77eb225d99bcdc324))
 * use invalid_redirect_uri over redirect_uri_mismatch error ([2565cce](https://github.com/panva/node-oidc-provider/commit/2565cce57f94daf5df67569b35eefc3f9f48af14))
-* use jose@3 instead of jose@2 ([5572e0e](https://github.com/panva/node-oidc-provider/commit/5572e0e193c92cd59b4ac4ee1addef649eb5a0ae)), closes [x5t#S256](https://github.com/panva/x5t/issues/S256)
+* use jose@3 instead of jose@2 ([5572e0e](https://github.com/panva/node-oidc-provider/commit/5572e0e193c92cd59b4ac4ee1addef649eb5a0ae))
 
 ## [6.31.0](https://github.com/panva/node-oidc-provider/compare/v6.30.1...v6.31.0) (2021-01-19)
 
