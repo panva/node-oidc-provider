@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [7.1.0](https://github.com/panva/node-oidc-provider/compare/v7.0.0...v7.1.0) (2021-03-05)
+
+
+### Features
+
+* allow control of which errors flow back to client's redirect_uri ([219cd45](https://github.com/panva/node-oidc-provider/commit/219cd458480e3526380504c879807475e6818830))
+* server_error codes no longer redirect back to clients ([b591d7f](https://github.com/panva/node-oidc-provider/commit/b591d7f0dd9e22ed8e47dc9441548c682bb995f1))
+
 ## [7.0.0](https://github.com/panva/node-oidc-provider/compare/v6.31.0...v7.0.0) (2021-03-03)
 
 
