@@ -25,12 +25,6 @@ let server;
 
   const provider = new Provider(ISSUER, { adapter, ...configuration });
 
-  // https://gitlab.com/openid/conformance-suite/-/issues/872
-  provider.on('authorization.success', (ctx, out) => {
-    // eslint-disable-next-line no-param-reassign
-    out.session_state = 'foo';
-  });
-
   if (GOOGLE_CLIENT_ID) {
     const openid = require('openid-client'); // eslint-disable-line global-require, import/no-unresolved
     const google = await openid.Issuer.discover('https://accounts.google.com/.well-known/openid-configuration');
