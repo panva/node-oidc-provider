@@ -21,10 +21,7 @@ const eccrt = readFileSync('test/jwks/ec.crt').toString();
 
 const route = '/token';
 
-const tokenAuthSucceeded = {
-  error: 'unauthorized_client',
-  error_description: 'requested grant type is not allowed for this client',
-};
+const tokenAuthSucceeded = { success: true };
 
 const introspectionAuthSucceeded = {
   active: false,
@@ -41,6 +38,12 @@ function errorDetail(spy) {
 
 describe('client authentication options', () => {
   before(bootstrap(__dirname));
+
+  before(function () {
+    this.provider.registerGrantType('foo', (ctx) => {
+      ctx.body = { success: true };
+    });
+  });
 
   describe('discovery', () => {
     it('pushes no algs when neither _jwt method is enabled', () => {
@@ -192,7 +195,7 @@ describe('client authentication options', () => {
   it('rejects when no client is found', function () {
     return this.agent.post(route)
       .send({
-        grant_type: 'implicit',
+        grant_type: 'foo',
         client_id: 'client-not-found',
       })
       .type('form')
@@ -204,15 +207,12 @@ describe('client authentication options', () => {
     it('accepts the "auth"', function () {
       return this.agent.post(route)
         .send({
-          grant_type: 'implicit',
+          grant_type: 'foo',
           client_id: 'client-none',
         })
         .type('form')
-        .expect(400)
-        .expect({
-          error: 'invalid_request',
-          error_description: 'implicit is not a grant resolved with a token endpoint call',
-        });
+        .expect(200)
+        .expect(tokenAuthSucceeded);
     });
 
     it('rejects the "auth" if secret was also provided', function () {
@@ -220,7 +220,7 @@ describe('client authentication options', () => {
       this.provider.once('grant.error', spy);
       return this.agent.post(route)
         .send({
-          grant_type: 'implicit',
+          grant_type: 'foo',
           client_id: 'client-none',
           client_secret: 'foobar',
         })
@@ -238,38 +238,41 @@ describe('client authentication options', () => {
     it('accepts the auth', function () {
       return this.agent.post(route)
         .send({
-          grant_type: 'implicit',
+          grant_type: 'foo',
         })
         .type('form')
         .auth('client-basic', 'secret')
+        .expect(200)
         .expect(tokenAuthSucceeded);
     });
 
     it('accepts the auth (but client configured with post)', function () {
       return this.agent.post(route)
         .send({
-          grant_type: 'implicit',
+          grant_type: 'foo',
         })
         .type('form')
         .auth('client-post', 'secret')
+        .expect(200)
         .expect(tokenAuthSucceeded);
     });
 
     it('accepts the auth even with id in the body', function () {
       return this.agent.post(route)
         .send({
-          grant_type: 'implicit',
+          grant_type: 'foo',
           client_id: 'client-basic',
         })
         .type('form')
         .auth('client-basic', 'secret')
+        .expect(200)
         .expect(tokenAuthSucceeded);
     });
 
     it('rejects the auth when body id differs', function () {
       return this.agent.post(route)
         .send({
-          grant_type: 'implicit',
+          grant_type: 'foo',
           client_id: 'client-basic-other',
         })
         .type('form')
@@ -284,17 +287,18 @@ describe('client authentication options', () => {
     it('accepts the auth (https://tools.ietf.org/html/rfc6749#appendix-B again)', function () {
       return this.agent.post(route)
         .send({
-          grant_type: 'implicit',
+          grant_type: 'foo',
         })
         .type('form')
         .auth('an%3Aidentifier', 'some+secure+%26+non-standard+secret')
+        .expect(200)
         .expect(tokenAuthSucceeded);
     });
 
     it('rejects improperly encoded headers', function () {
       return this.agent.post(route)
         .send({
-          grant_type: 'implicit',
+          grant_type: 'foo',
         })
         .type('form')
         .auth('foo with %', 'foo with $')
@@ -307,7 +311,7 @@ describe('client authentication options', () => {
     it('validates the Basic scheme format (parts)', function () {
       return this.agent.post(route)
         .send({
-          grant_type: 'implicit',
+          grant_type: 'foo',
         })
         .type('form')
         .set('Authorization', 'Basic')
@@ -321,7 +325,7 @@ describe('client authentication options', () => {
     it('validates the Basic scheme format (Basic)', function () {
       return this.agent.post(route)
         .send({
-          grant_type: 'implicit',
+          grant_type: 'foo',
         })
         .type('form')
         .auth('foo', { type: 'bearer' })
@@ -335,7 +339,7 @@ describe('client authentication options', () => {
     it('validates the Basic scheme format (no :)', function () {
       return this.agent.post(route)
         .send({
-          grant_type: 'implicit',
+          grant_type: 'foo',
         })
         .type('form')
         .set('Authorization', 'Basic Zm9v')
@@ -351,7 +355,7 @@ describe('client authentication options', () => {
       this.provider.once('grant.error', spy);
       return this.agent.post(route)
         .send({
-          grant_type: 'implicit',
+          grant_type: 'foo',
         })
         .type('form')
         .auth('client-basic', 'invalid secret')
@@ -366,7 +370,7 @@ describe('client authentication options', () => {
     it('rejects double auth', function () {
       return this.agent.post(route)
         .send({
-          grant_type: 'implicit',
+          grant_type: 'foo',
           client_id: 'client-basic',
           client_secret: 'secret',
         })
@@ -382,7 +386,7 @@ describe('client authentication options', () => {
     it('rejects double auth (no client_id in body)', function () {
       return this.agent.post(route)
         .send({
-          grant_type: 'implicit',
+          grant_type: 'foo',
           client_secret: 'secret',
         })
         .type('form')
@@ -397,7 +401,7 @@ describe('client authentication options', () => {
     it('requires the client_secret to be sent', function () {
       return this.agent.post(route)
         .send({
-          grant_type: 'implicit',
+          grant_type: 'foo',
         })
         .type('form')
         .auth('client-basic', '')
@@ -411,7 +415,7 @@ describe('client authentication options', () => {
     it('rejects expired secrets', function () {
       return this.agent.post(route)
         .send({
-          grant_type: 'implicit',
+          grant_type: 'foo',
         })
         .type('form')
         .auth('secret-expired-basic', 'secret')
@@ -427,11 +431,12 @@ describe('client authentication options', () => {
     it('accepts the auth', function () {
       return this.agent.post(route)
         .send({
-          grant_type: 'implicit',
+          grant_type: 'foo',
           client_id: 'client-post',
           client_secret: 'secret',
         })
         .type('form')
+        .expect(200)
         .expect(tokenAuthSucceeded);
     });
 
@@ -443,7 +448,7 @@ describe('client authentication options', () => {
         const response = await got.post(`http://[${address}]:${port}${route}`, {
           throwHttpErrors: false,
           form: {
-            grant_type: 'implicit',
+            grant_type: 'foo',
             client_id: 'client-post',
             client_secret: 'secret',
           },
@@ -457,11 +462,12 @@ describe('client authentication options', () => {
     it('accepts the auth (but client configured with basic)', function () {
       return this.agent.post(route)
         .send({
-          grant_type: 'implicit',
+          grant_type: 'foo',
           client_id: 'client-basic',
           client_secret: 'secret',
         })
         .type('form')
+        .expect(200)
         .expect(tokenAuthSucceeded);
     });
 
@@ -470,7 +476,7 @@ describe('client authentication options', () => {
       this.provider.once('grant.error', spy);
       return this.agent.post(route)
         .send({
-          grant_type: 'implicit',
+          grant_type: 'foo',
           client_id: 'client-post',
           client_secret: 'invalid',
         })
@@ -488,7 +494,7 @@ describe('client authentication options', () => {
       this.provider.once('grant.error', spy);
       return this.agent.post(route)
         .send({
-          grant_type: 'implicit',
+          grant_type: 'foo',
           client_id: 'client-post',
           client_secret: '',
         })
@@ -504,7 +510,7 @@ describe('client authentication options', () => {
     it('rejects expired secrets', function () {
       return this.agent.post(route)
         .send({
-          grant_type: 'implicit',
+          grant_type: 'foo',
           client_id: 'secret-expired-basic',
           client_secret: 'secret',
         })
@@ -531,7 +537,7 @@ describe('client authentication options', () => {
       }, this.key, 'HS256', { expiresIn: 60 }).then((assertion) => this.agent.post(route)
         .send({
           client_assertion: assertion,
-          grant_type: 'implicit',
+          grant_type: 'foo',
           client_assertion_type: 'urn:ietf:params:oauth:client-assertion-type:jwt-bearer',
         })
         .type('form')
@@ -548,7 +554,7 @@ describe('client authentication options', () => {
         }, this.key, 'HS256', { expiresIn: 60 }).then((assertion) => this.agent.post(route)
           .send({
             client_assertion: assertion,
-            grant_type: 'implicit',
+            grant_type: 'foo',
             client_assertion_type: 'urn:ietf:params:oauth:client-assertion-type:jwt-bearer',
           })
           .type('form')
@@ -596,7 +602,7 @@ describe('client authentication options', () => {
         }, this.key, 'HS256', { expiresIn: 60 }).then((assertion) => this.agent.post(route)
           .send({
             client_assertion: assertion,
-            grant_type: 'implicit',
+            grant_type: 'foo',
             client_assertion_type: 'urn:ietf:params:oauth:client-assertion-type:jwt-bearer',
           })
           .type('form')
@@ -648,7 +654,7 @@ describe('client authentication options', () => {
         .send({
           client_id: 'client-none',
           client_assertion: assertion,
-          grant_type: 'implicit',
+          grant_type: 'foo',
           client_assertion_type: 'urn:ietf:params:oauth:client-assertion-type:jwt-bearer',
         })
         .type('form')
@@ -670,7 +676,7 @@ describe('client authentication options', () => {
         .auth('client-basic', 'secret')
         .send({
           client_assertion: assertion,
-          grant_type: 'implicit',
+          grant_type: 'foo',
           client_assertion_type: 'urn:ietf:params:oauth:client-assertion-type:jwt-bearer',
         })
         .type('form')
@@ -690,7 +696,7 @@ describe('client authentication options', () => {
       }, this.key, 'HS256', { expiresIn: 60 }).then((assertion) => this.agent.post(route)
         .send({
           client_assertion: assertion,
-          grant_type: 'implicit',
+          grant_type: 'foo',
           client_assertion_type: 'urn:ietf:params:oauth:client-assertion-type:jwt-bearer',
           client_secret: 'foo',
         })
@@ -711,7 +717,7 @@ describe('client authentication options', () => {
       }, this.key, 'HS256', { expiresIn: 60 }).then((assertion) => this.agent.post(route)
         .send({
           client_assertion: assertion,
-          grant_type: 'implicit',
+          grant_type: 'foo',
           client_assertion_type: 'urn:ietf:params:oauth:client-assertion-type:jwt-bearer',
         })
         .type('form')
@@ -723,7 +729,7 @@ describe('client authentication options', () => {
         .send({
           client_id: 'client-jwt-secret',
           client_assertion: '.eyJzdWIiOiJjbGllbnQtand0LXNlY3JldCIsImFsZyI6IkhTMjU2In0.',
-          grant_type: 'implicit',
+          grant_type: 'foo',
           client_assertion_type: 'urn:ietf:params:oauth:client-assertion-type:jwt-bearer',
         })
         .type('form')
@@ -748,7 +754,7 @@ describe('client authentication options', () => {
       }).then((assertion) => this.agent.post(route)
         .send({
           client_assertion: assertion,
-          grant_type: 'implicit',
+          grant_type: 'foo',
           client_assertion_type: 'urn:ietf:params:oauth:client-assertion-type:jwt-bearer',
         })
         .type('form')
@@ -772,7 +778,7 @@ describe('client authentication options', () => {
       }).then((assertion) => this.agent.post(route)
         .send({
           client_assertion: assertion,
-          grant_type: 'implicit',
+          grant_type: 'foo',
           client_assertion_type: 'urn:ietf:params:oauth:client-assertion-type:jwt-bearer',
         })
         .type('form')
@@ -797,7 +803,7 @@ describe('client authentication options', () => {
       }).then((assertion) => this.agent.post(route)
         .send({
           client_assertion: assertion,
-          grant_type: 'implicit',
+          grant_type: 'foo',
           client_assertion_type: 'urn:ietf:params:oauth:client-assertion-type:jwt-bearer',
         })
         .type('form')
@@ -822,7 +828,7 @@ describe('client authentication options', () => {
       }).then((assertion) => this.agent.post(route)
         .send({
           client_assertion: assertion,
-          grant_type: 'implicit',
+          grant_type: 'foo',
           client_assertion_type: 'urn:ietf:params:oauth:client-assertion-type:jwt-bearer',
         })
         .type('form')
@@ -847,7 +853,7 @@ describe('client authentication options', () => {
       }).then((assertion) => this.agent.post(route)
         .send({
           client_assertion: assertion,
-          grant_type: 'implicit',
+          grant_type: 'foo',
           client_assertion_type: 'urn:ietf:params:oauth:client-assertion-type:jwt-bearer',
         })
         .type('form')
@@ -873,7 +879,7 @@ describe('client authentication options', () => {
       }).then((assertion) => this.agent.post(route)
         .send({
           client_assertion: assertion,
-          grant_type: 'implicit',
+          grant_type: 'foo',
           client_assertion_type: 'urn:ietf:params:oauth:client-assertion-type:jwt-bearer',
         })
         .type('form')
@@ -899,7 +905,7 @@ describe('client authentication options', () => {
       }).then((assertion) => this.agent.post(route)
         .send({
           client_assertion: assertion,
-          grant_type: 'implicit',
+          grant_type: 'foo',
           client_assertion_type: 'urn:ietf:params:oauth:client-assertion-type:jwt-bearer',
         })
         .type('form')
@@ -920,7 +926,7 @@ describe('client authentication options', () => {
       }, this.key, 'HS256', { expiresIn: 60 }).then((assertion) => this.agent.post(route)
         .send({
           client_assertion: assertion,
-          grant_type: 'implicit',
+          grant_type: 'foo',
           client_id: 'mismatching-client-id',
           client_assertion_type: 'urn:ietf:params:oauth:client-assertion-type:jwt-bearer',
         })
@@ -943,7 +949,7 @@ describe('client authentication options', () => {
       }).then((assertion) => this.agent.post(route)
         .send({
           client_assertion: assertion,
-          grant_type: 'implicit',
+          grant_type: 'foo',
         // client_assertion_type: 'urn:ietf:params:oauth:client-assertion-type:jwt-bearer'
         })
         .type('form')
@@ -965,7 +971,7 @@ describe('client authentication options', () => {
       }).then((assertion) => this.agent.post(route)
         .send({
           client_assertion: assertion,
-          grant_type: 'implicit',
+          grant_type: 'foo',
           client_assertion_type: 'urn:ietf:mycustom',
         })
         .type('form')
@@ -980,7 +986,7 @@ describe('client authentication options', () => {
       return this.agent.post(route)
         .send({
           client_assertion: 'this.notatall.valid',
-          grant_type: 'implicit',
+          grant_type: 'foo',
           client_assertion_type: 'urn:ietf:params:oauth:client-assertion-type:jwt-bearer',
         })
         .type('form')
@@ -1004,7 +1010,7 @@ describe('client authentication options', () => {
       }).then((assertion) => this.agent.post(route)
         .send({
           client_assertion: assertion,
-          grant_type: 'implicit',
+          grant_type: 'foo',
           client_assertion_type: 'urn:ietf:params:oauth:client-assertion-type:jwt-bearer',
         })
         .type('form')
@@ -1028,7 +1034,7 @@ describe('client authentication options', () => {
       }).then((assertion) => this.agent.post(route)
         .send({
           client_assertion: assertion,
-          grant_type: 'implicit',
+          grant_type: 'foo',
           client_assertion_type: 'urn:ietf:params:oauth:client-assertion-type:jwt-bearer',
         })
         .type('form')
@@ -1053,7 +1059,7 @@ describe('client authentication options', () => {
           .then((assertion) => this.agent.post(route)
             .send({
               client_assertion: assertion,
-              grant_type: 'implicit',
+              grant_type: 'foo',
               client_assertion_type: 'urn:ietf:params:oauth:client-assertion-type:jwt-bearer',
             })
             .type('form')
@@ -1064,7 +1070,7 @@ describe('client authentication options', () => {
             .then(() => this.agent.post(route)
               .send({
                 client_assertion: assertion,
-                grant_type: 'implicit',
+                grant_type: 'foo',
                 client_assertion_type: 'urn:ietf:params:oauth:client-assertion-type:jwt-bearer',
               })
               .type('form')
@@ -1097,7 +1103,7 @@ describe('client authentication options', () => {
         }).then((assertion) => this.agent.post(route)
           .send({
             client_assertion: assertion,
-            grant_type: 'implicit',
+            grant_type: 'foo',
             client_assertion_type: 'urn:ietf:params:oauth:client-assertion-type:jwt-bearer',
           })
           .type('form')
@@ -1133,7 +1139,7 @@ describe('client authentication options', () => {
       }).then((assertion) => this.agent.post(route)
         .send({
           client_assertion: assertion,
-          grant_type: 'implicit',
+          grant_type: 'foo',
           client_assertion_type: 'urn:ietf:params:oauth:client-assertion-type:jwt-bearer',
         })
         .type('form')
@@ -1153,7 +1159,7 @@ describe('client authentication options', () => {
       }).then((assertion) => this.agent.post(route)
         .send({
           client_assertion: assertion,
-          grant_type: 'implicit',
+          grant_type: 'foo',
           client_assertion_type: 'urn:ietf:params:oauth:client-assertion-type:jwt-bearer',
         })
         .type('form')
@@ -1169,9 +1175,10 @@ describe('client authentication options', () => {
         .set('x-ssl-client-san-dns', 'rp.example.com')
         .send({
           client_id: 'client-pki-mtls',
-          grant_type: 'implicit',
+          grant_type: 'foo',
         })
         .type('form')
+        .expect(200)
         .expect(tokenAuthSucceeded);
     });
 
@@ -1179,7 +1186,7 @@ describe('client authentication options', () => {
       return this.agent.post(route)
         .send({
           client_id: 'client-pki-mtls',
-          grant_type: 'implicit',
+          grant_type: 'foo',
         })
         .type('form')
         .expect(tokenAuthRejected);
@@ -1192,7 +1199,7 @@ describe('client authentication options', () => {
         .set('x-ssl-client-san-dns', 'rp.example.com')
         .send({
           client_id: 'client-pki-mtls',
-          grant_type: 'implicit',
+          grant_type: 'foo',
         })
         .type('form')
         .expect(tokenAuthRejected);
@@ -1205,7 +1212,7 @@ describe('client authentication options', () => {
         .set('x-ssl-client-san-dns', 'foobarbaz')
         .send({
           client_id: 'client-pki-mtls',
-          grant_type: 'implicit',
+          grant_type: 'foo',
         })
         .type('form')
         .expect(tokenAuthRejected);
@@ -1218,9 +1225,10 @@ describe('client authentication options', () => {
         .set('x-ssl-client-cert', rsacrt.replace(RegExp('\\r?\\n', 'g'), ''))
         .send({
           client_id: 'client-self-signed-mtls',
-          grant_type: 'implicit',
+          grant_type: 'foo',
         })
         .type('form')
+        .expect(200)
         .expect(tokenAuthSucceeded);
     });
 
@@ -1229,9 +1237,10 @@ describe('client authentication options', () => {
         .set('x-ssl-client-cert', eccrt.replace(RegExp('\\r?\\n', 'g'), ''))
         .send({
           client_id: 'client-self-signed-mtls',
-          grant_type: 'implicit',
+          grant_type: 'foo',
         })
         .type('form')
+        .expect(200)
         .expect(tokenAuthSucceeded);
     });
 
@@ -1239,7 +1248,7 @@ describe('client authentication options', () => {
       return this.agent.post(route)
         .send({
           client_id: 'client-self-signed-mtls',
-          grant_type: 'implicit',
+          grant_type: 'foo',
         })
         .type('form')
         .expect(tokenAuthRejected);
@@ -1250,7 +1259,7 @@ describe('client authentication options', () => {
         .set('x-ssl-client-cert', eccrt.replace(RegExp('\\r?\\n', 'g'), ''))
         .send({
           client_id: 'client-self-signed-mtls-rsa',
-          grant_type: 'implicit',
+          grant_type: 'foo',
         })
         .type('form')
         .expect(tokenAuthRejected);
@@ -1265,9 +1274,10 @@ describe('client authentication options', () => {
         .set('x-ssl-client-cert', rsacrt.replace(RegExp('\\r?\\n', 'g'), ''))
         .send({
           client_id: 'client-self-signed-mtls-jwks_uri',
-          grant_type: 'implicit',
+          grant_type: 'foo',
         })
         .type('form')
+        .expect(200)
         .expect(tokenAuthSucceeded);
     });
   });
