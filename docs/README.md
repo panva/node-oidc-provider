@@ -2197,7 +2197,7 @@ async function extraTokenClaims(ctx, token) {
 
 ### formats
 
-This option allows to configure the token value format. The different values change how a client-facing token value is generated and also if the token is stored using the adapter or not.   
+This option allows to configure the token value format. The different values change how a client-facing token value is generated and also if the token is stored using the adapter or not. The use of JWT or PASETO formats also requires use of Resource Indicators. In earlier version of oidc-provider the formats.AccessToken and formats.ClientCredentials configuration might've been used but in v7.x there's no need to change their default value because they default to use the `accessTokenFormat` from a Resource Server, that's where you should tell the Authorization Server to issue a token in a certain format.   
  Supported formats are:
  - `opaque` (default) tokens are PRNG generated random strings using url safe base64 alphabet. See `formats.bitsOfOpaqueRandomness` for influencing the token length. Tokens are stored using the adapter.
  - `jwt` tokens are issued as JWTs. Tokens using this format are not stored using the adapter, they cannot be introspected at the introspection_endpoint and they cannot be used to access the userinfo_endpoint. Tokens issued in this format MUST have an audience/indicated resource.
