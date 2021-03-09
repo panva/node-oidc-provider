@@ -118,7 +118,7 @@ module.exports = (app, provider) => {
 
       if (grantId) {
         // we'll be modifying existing grant in existing session
-        grant = await provider.find(grantId);
+        grant = await provider.Grant.find(grantId);
       } else {
         // we're establishing a new grant
         grant = new provider.Grant({

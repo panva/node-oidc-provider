@@ -135,6 +135,7 @@ class MyAdapter {
      * - lastSubmission {object} - previous interaction result submission
      * - trusted {string[]} - parameter names that come from a trusted source
      * - result {object} - interaction results object is expected here
+     * - grantId {string} - grant identifier if there's a preexisting one
      * - session {object}
      * - session.uid {string} - uid of the session this Interaction belongs to
      * - session.cookie {string} - jti of the session this Interaction belongs to
