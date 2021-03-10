@@ -2,9 +2,10 @@ const { readFileSync } = require('fs');
 const path = require('path');
 const { randomBytes } = require('crypto');
 const https = require('https');
+const { promisify } = require('util');
 
 const jose = require('jose2');
-const helmet = require('koa-helmet');
+const helmet = require('helmet');
 const pem = require('https-pem');
 
 const { Provider } = require('../../lib'); // require('oidc-provider');
@@ -188,7 +189,15 @@ fapi.interactionResult = function patchedInteractionResult(...args) {
 
 function uuid(e){return e?(e^randomBytes(1)[0]%16>>e/4).toString(16):([1e7]+-1e3+-4e3+-8e3+-1e11).replace(/[018]/g,uuid)} // eslint-disable-line
 
-fapi.use(helmet());
+const pHelmet = promisify(helmet());
+
+fapi.use(async (ctx, next) => {
+  const origSecure = ctx.req.secure;
+  ctx.req.secure = ctx.request.secure;
+  await pHelmet(ctx.req, ctx.res);
+  ctx.req.secure = origSecure;
+  return next();
+});
 fapi.use((ctx, next) => {
   if (!('x-fapi-interaction-id' in ctx.headers)) {
     ctx.headers['x-fapi-interaction-id'] = uuid();

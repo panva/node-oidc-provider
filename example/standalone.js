@@ -3,7 +3,7 @@
 const path = require('path');
 
 const render = require('koa-ejs');
-const helmet = require('koa-helmet');
+const helmet = require('koa-helmet'); // eslint-disable-line import/no-unresolved
 
 const { Provider } = require('../lib'); // require('oidc-provider');
 

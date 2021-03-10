@@ -1,9 +1,11 @@
 /* eslint-disable no-console */
 
+const { promisify } = require('util');
 const path = require('path');
+const crypto = require('crypto');
 
 const render = require('koa-ejs');
-const helmet = require('koa-helmet');
+const helmet = require('helmet');
 
 const { Provider } = require('../lib'); // require('oidc-provider');
 const Account = require('../example/support/account');
@@ -52,7 +54,26 @@ let server;
     return interactionFinished.call(provider, ...args);
   };
 
-  provider.use(helmet());
+  const pHelmet = promisify(helmet({
+    contentSecurityPolicy: {
+      directives: {
+        ...helmet.contentSecurityPolicy.getDefaultDirectives(),
+        'script-src': ["'self'", (req, res) => `'nonce-${res.locals.cspNonce}'`],
+      },
+    },
+  }));
+
+  provider.use(async (ctx, next) => {
+    const origSecure = ctx.req.secure;
+    ctx.req.secure = ctx.request.secure;
+    // eslint-disable-next-line no-unused-expressions
+    ctx.res.locals || (ctx.res.locals = {});
+    ctx.res.locals.cspNonce = crypto.randomBytes(16).toString('base64');
+    await pHelmet(ctx.req, ctx.res);
+    ctx.req.secure = origSecure;
+    return next();
+  });
+
   provider.use((ctx, next) => {
     if (ctx.path !== '/.well-known/oauth-authorization-server') {
       return next();

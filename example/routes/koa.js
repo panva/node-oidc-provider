@@ -86,7 +86,10 @@ module.exports = (provider) => {
     text: false, json: false, patchNode: true, patchKoa: true,
   });
 
-  router.get('/interaction/callback/google', (ctx) => ctx.render('repost', { provider: 'google', layout: false }));
+  router.get('/interaction/callback/google', (ctx) => {
+    const nonce = ctx.res.locals.cspNonce;
+    return ctx.render('repost', { layout: false, upstream: 'google', nonce });
+  });
 
   router.post('/interaction/:uid/login', body, async (ctx) => {
     const { prompt: { name } } = await provider.interactionDetails(ctx.req, ctx.res);
@@ -111,7 +114,7 @@ module.exports = (provider) => {
 
     const path = `/interaction/${ctx.params.uid}/federated`;
 
-    switch (ctx.request.body.provider) {
+    switch (ctx.request.body.upstream) {
       case 'google': {
         const callbackParams = ctx.google.callbackParams(ctx.req);
 

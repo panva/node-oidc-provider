@@ -3,7 +3,7 @@
     <title>Fragment Federated Callback Repost Form</title>
   </head>
   <body>
-    <script>
+    <script nonce="<%= nonce %>">
     function parseQuery(queryString) {
       var query = {};
       var pairs = (queryString[0] === '?' ? queryString.substr(1) : queryString).split('&');
@@ -15,7 +15,7 @@
     }
 
     var fields = parseQuery(window.location.hash.substring(1));
-    fields.provider = '<%= provider %>'
+    fields.upstream = '<%= upstream %>'
     var uid = fields.state.split('|')[0]
 
     var form = document.createElement('form');
