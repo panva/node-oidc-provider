@@ -2500,12 +2500,12 @@ new Prompt(
     }
 
     if (missing && missing.length) {
-      ctx.oidc[missingOIDClaims] = missing;
+      ctx.oidc[missingOIDCClaims] = missing;
       return Check.REQUEST_PROMPT;
     }
 
     return Check.NO_NEED_TO_PROMPT;
-  }, ({ oidc }) => ({ missingOIDClaims: oidc[missingOIDClaims] })),
+  }, ({ oidc }) => ({ missingOIDCClaims: oidc[missingOIDCClaims] })),
 
   // checks resource server scopes
   new Check('rs_scopes_missing', 'requested scopes not granted', (ctx) => {

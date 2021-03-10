@@ -130,8 +130,8 @@ module.exports = (app, provider) => {
       if (details.missingOIDCScope) {
         grant.addOIDCScope(details.missingOIDCScope.join(' '));
       }
-      if (details.missingOIDClaims) {
-        grant.addOIDCClaims(details.missingOIDClaims);
+      if (details.missingOIDCClaims) {
+        grant.addOIDCClaims(details.missingOIDCClaims);
       }
       if (details.missingResourceScopes) {
         // eslint-disable-next-line no-restricted-syntax

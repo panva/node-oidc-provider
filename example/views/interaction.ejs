@@ -3,7 +3,7 @@
 </div>
 
 <ul>
-<% if ([details.missingOIDCScope, details.missingOIDClaims, details.missingResourceScopes].filter(Boolean).length === 0) { %>
+<% if ([details.missingOIDCScope, details.missingOIDCClaims, details.missingResourceScopes].filter(Boolean).length === 0) { %>
   <li>the client is asking you to confirm previously given authorization</li>
 <% } %>
 
@@ -17,11 +17,11 @@
   </ul>
 <% } %>
 
-<% missingOIDClaims = new Set(details.missingOIDClaims); ['sub', 'sid', 'auth_time', 'acr', 'amr', 'iss'].forEach(Set.prototype.delete.bind(missingOIDClaims)) %>
-<% if (missingOIDClaims.size) { %>
+<% missingOIDCClaims = new Set(details.missingOIDCClaims); ['sub', 'sid', 'auth_time', 'acr', 'amr', 'iss'].forEach(Set.prototype.delete.bind(missingOIDCClaims)) %>
+<% if (missingOIDCClaims.size) { %>
   <li>claims:</li>
   <ul>
-    <% missingOIDClaims.forEach((claim) => { %>
+    <% missingOIDCClaims.forEach((claim) => { %>
       <li><%= claim %></li>
     <% }) %>
   </ul>
