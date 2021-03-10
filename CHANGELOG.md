@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [7.1.1](https://github.com/panva/node-oidc-provider/compare/v7.1.0...v7.1.1) (2021-03-10)
+
+
+### Bug Fixes
+
+* save the grantId reference field with an interaction session ([6cab64e](https://github.com/panva/node-oidc-provider/commit/6cab64e1c28422f4ef3ca558bc5f68578cd92a55))
+* typo in consent detail missingOIDClaims -> missingOIDCClaims ([1427383](https://github.com/panva/node-oidc-provider/commit/1427383bb67f296063e7952d0dce0201732c29ba))
+
 ## [7.1.0](https://github.com/panva/node-oidc-provider/compare/v7.0.0...v7.1.0) (2021-03-05)
 
 
