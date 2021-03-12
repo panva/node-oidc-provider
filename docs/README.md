@@ -452,7 +452,6 @@ location / {
 - [extraClientMetadata](#extraclientmetadata)
 - [extraParams](#extraparams)
 - [extraTokenClaims](#extratokenclaims)
-- [formats](#formats)
 - [httpOptions](#httpoptions)
 - [interactions ❗](#interactions)
 - [issueRefreshToken](#issuerefreshtoken)
@@ -1677,9 +1676,9 @@ and a JWT Access Token Format.
   // Default is - see `ttl` configuration
   accessTokenTTL?: number,
   // Issued Token Format
-  // Default is - see `formats` configuration
+  // Default is - opaque
   accessTokenFormat?: 'opaque' | 'jwt' | 'paseto',
-  // JWT Access Token Format (when accessTokenFormat or `formats` resolves to 'jwt')
+  // JWT Access Token Format (when accessTokenFormat is 'jwt')
   // Default is `{ sign: { alg: 'RS256' }, encrypt: false }`
   // Tokens may be signed, signed and then encrypted, or just encrypted JWTs.
   jwt?: {
@@ -1702,7 +1701,7 @@ and a JWT Access Token Format.
       kid?: string, // OPTIONAL `kid` JOSE Header Parameter to put in the token's JWE Header
     }
   }
-  // PASETO Access Token Format (when accessTokenFormat or `formats` resolves to 'paseto')
+  // PASETO Access Token Format (when accessTokenFormat is 'paseto')
   paseto?: {
     version: 1 | 2,
     purpose: 'local' | 'public',
@@ -2194,28 +2193,6 @@ async function extraTokenClaims(ctx, token) {
 }
 ```
 </details>
-
-### formats
-
-This option allows to configure the token value format. The different values change how a client-facing token value is generated and also if the token is stored using the adapter or not. The use of JWT or PASETO formats also requires use of Resource Indicators. In earlier version of oidc-provider the formats.AccessToken and formats.ClientCredentials configuration might've been used but in v7.x there's no need to change their default value because they default to use the `accessTokenFormat` from a Resource Server, that's where you should tell the Authorization Server to issue a token in a certain format.   
- Supported formats are:
- - `opaque` (default) tokens are PRNG generated random strings using url safe base64 alphabet. See `formats.bitsOfOpaqueRandomness` for influencing the token length. Tokens are stored using the adapter.
- - `jwt` tokens are issued as JWTs. Tokens using this format are not stored using the adapter, they cannot be introspected at the introspection_endpoint and they cannot be used to access the userinfo_endpoint. Tokens issued in this format MUST have an audience/indicated resource.
- - `paseto` tokens are issued as PASETOs. Tokens using this format are not stored using the adapter, they cannot be introspected at the introspection_endpoint and they cannot be used to access the userinfo_endpoint. Tokens issued in this format MUST have an audience/indicated resource.  
-
-
-_**default value**_:
-```js
-{
-  AccessToken: [Function: AccessTokenFormat], // see expanded details below
-  ClientCredentials: [Function: ClientCredentialsFormat], // see expanded details below
-  bitsOfOpaqueRandomness: 256,
-  customizers: {
-    jwt: undefined,
-    paseto: undefined
-  }
-}
-```
 
 ### formats.bitsOfOpaqueRandomness
 
