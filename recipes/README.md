@@ -11,13 +11,14 @@ If you or your business use oidc-provider, or you need help using/upgrading the 
 
 ---
 
+- [Accepting Dynamic OP Scope Values](dynamic_op_scope.md)
 - [Allowing HTTP and/or localhost for implicit response types](implicit_http_localhost.md)
 - [Claim configuration](claim_configuration.md)
 - [Client-based CORS origins](client_based_origins.md)
 - [Decentralized claims](decentralized_claims.md)
 - [Redirect URI wildcards](redirect_uri_wildcards.md)
-- [Skipping consent](skip_consent.md)
 - [Render instead Redirect on invalid_request](skip_redirect.md)
+- [Skipping consent](skip_consent.md)
 - ... got something worthy of being here? Submit a PR with a new recipe to help others.
 
 [support-sponsor]: https://github.com/sponsors/panva
