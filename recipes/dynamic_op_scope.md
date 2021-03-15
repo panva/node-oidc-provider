@@ -1,6 +1,6 @@
 # Accepting Dynamic OP Scope Values
 
-- built for version: ^7.2.0
+- built for version: ^7.1.2
 - For dynamic scopes at the Resource Server you'd use the helpers in the `resourceIndicators` feature.
 
 ```js
