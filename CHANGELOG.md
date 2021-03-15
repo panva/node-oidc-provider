@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [7.1.2](https://github.com/panva/node-oidc-provider/compare/v7.1.1...v7.1.2) (2021-03-15)
+
+
+### Bug Fixes
+
+* v1.paseto token alg keystore value to be PS384 instead of RS384 ([ae1f879](https://github.com/panva/node-oidc-provider/commit/ae1f879e10a6079c47727830f8e1aa8d6ef95466))
+
 ## [7.1.1](https://github.com/panva/node-oidc-provider/compare/v7.1.0...v7.1.1) (2021-03-10)
 
 
