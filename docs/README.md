@@ -3649,14 +3649,29 @@ const signedIn = !!session.accountId
 ### Client Credentials only clients
 
 You're getting the `redirect_uris is mandatory property` error but Client Credential clients
-(Resource Servers) don't need `redirect_uris` or `response_types`... You're getting this error
+don't need `redirect_uris` or `response_types`... You're getting this error
 because they are required properties, but they can be empty...
 
 ```js
 {
+  // ... rest of the client configuration
   redirect_uris: [],
   response_types: [],
   grant_types: ['client_credentials']
+}
+```
+
+### Resource Server only clients (e.g. for token introspection)
+
+You're getting the `redirect_uris is mandatory property` error but. You're getting this error
+because they are required properties, but they can be empty...
+
+```js
+{
+  // ... rest of the client configuration
+  redirect_uris: [],
+  response_types: [],
+  grant_types: []
 }
 ```
 
