@@ -77,7 +77,7 @@ jobs:
   conformance-suite:
     runs-on: ubuntu-latest
     env:
-      VERSION: release-v4.1.6
+      VERSION: release-v4.1.7
       SUITE_BASE_URL: https://localhost.emobix.co.uk:8443
       SETUP: ${{ matrix.setup }}
     strategy:
@@ -97,13 +97,13 @@ jobs:
           - '{"plan":"oidcc-backchannel-rp-initiated-logout-certification-test-plan","response_type":"code","client_registration":"dynamic_client"}'
           - '{"plan":"oidcc-rp-initiated-logout-certification-test-plan","response_type":"code","client_registration":"dynamic_client"}'
           - '{"plan":"fapi-rw-id2-test-plan","configuration":"./certification/fapi/pkjwt.json","fapi_auth_request_method":"by_value","client_auth_type":"private_key_jwt","fapi_profile":"plain_fapi","fapi_response_mode":"plain_response"}'
-          - '{"plan":"fapi-rw-id2-test-plan","configuration":"./certification/fapi/pkjwt.json","fapi_auth_request_method":"pushed","client_auth_type":"private_key_jwt","fapi_profile":"plain_fapi","fapi_response_mode":"plain_response","skip":"fapi-rw-id2-ensure-response-type-code-fails,fapi-rw-id2-par-attempt-reuse-request_uri,fapi-rw-id2-par-attempt-to-use-expired-request_uri"}'
+          - '{"plan":"fapi-rw-id2-test-plan","configuration":"./certification/fapi/pkjwt.json","fapi_auth_request_method":"pushed","client_auth_type":"private_key_jwt","fapi_profile":"plain_fapi","fapi_response_mode":"plain_response"}'
           - '{"plan":"fapi-rw-id2-test-plan","configuration":"./certification/fapi/pkjwt.json","fapi_auth_request_method":"by_value","client_auth_type":"private_key_jwt","fapi_profile":"plain_fapi","fapi_response_mode":"jarm"}'
-          - '{"plan":"fapi-rw-id2-test-plan","configuration":"./certification/fapi/pkjwt.json","fapi_auth_request_method":"pushed","client_auth_type":"private_key_jwt","fapi_profile":"plain_fapi","fapi_response_mode":"jarm","skip":"fapi-rw-id2-ensure-response-type-code-fails,fapi-rw-id2-par-attempt-reuse-request_uri,fapi-rw-id2-par-attempt-to-use-expired-request_uri"}'
+          - '{"plan":"fapi-rw-id2-test-plan","configuration":"./certification/fapi/pkjwt.json","fapi_auth_request_method":"pushed","client_auth_type":"private_key_jwt","fapi_profile":"plain_fapi","fapi_response_mode":"jarm"}'
           - '{"plan":"fapi-rw-id2-test-plan","configuration":"./certification/fapi/mtls.json","fapi_auth_request_method":"by_value","client_auth_type":"mtls","fapi_profile":"plain_fapi","fapi_response_mode":"plain_response"}'
-          - '{"plan":"fapi-rw-id2-test-plan","configuration":"./certification/fapi/mtls.json","fapi_auth_request_method":"pushed","client_auth_type":"mtls","fapi_profile":"plain_fapi","fapi_response_mode":"plain_response","skip":"fapi-rw-id2-ensure-response-type-code-fails,fapi-rw-id2-par-attempt-reuse-request_uri,fapi-rw-id2-par-attempt-to-use-expired-request_uri"}'
+          - '{"plan":"fapi-rw-id2-test-plan","configuration":"./certification/fapi/mtls.json","fapi_auth_request_method":"pushed","client_auth_type":"mtls","fapi_profile":"plain_fapi","fapi_response_mode":"plain_response"}'
           - '{"plan":"fapi-rw-id2-test-plan","configuration":"./certification/fapi/mtls.json","fapi_auth_request_method":"by_value","client_auth_type":"mtls","fapi_profile":"plain_fapi","fapi_response_mode":"jarm"}'
-          - '{"plan":"fapi-rw-id2-test-plan","configuration":"./certification/fapi/mtls.json","fapi_auth_request_method":"pushed","client_auth_type":"mtls","fapi_profile":"plain_fapi","fapi_response_mode":"jarm","skip":"fapi-rw-id2-ensure-response-type-code-fails,fapi-rw-id2-par-attempt-reuse-request_uri,fapi-rw-id2-par-attempt-to-use-expired-request_uri"}'
+          - '{"plan":"fapi-rw-id2-test-plan","configuration":"./certification/fapi/mtls.json","fapi_auth_request_method":"pushed","client_auth_type":"mtls","fapi_profile":"plain_fapi","fapi_response_mode":"jarm"}'
     steps:
       - name: Checkout
         uses: actions/checkout@master
