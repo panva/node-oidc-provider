@@ -1,7 +1,7 @@
 const { expect } = require('chai');
 const sinon = require('sinon');
 const jose = require('jose2');
-const { default: parseJwk } = require('jose/jwk/parse'); // eslint-disable-line import/no-unresolved
+const { parseJwk } = require('jose/jwk/parse'); // eslint-disable-line import/no-unresolved
 
 const JWT = require('../../lib/helpers/jwt');
 const bootstrap = require('../test_helper');

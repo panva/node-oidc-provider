@@ -1,7 +1,7 @@
 const { createSecretKey, randomBytes } = require('crypto');
 const { parse } = require('url');
 
-const { default: parseJwk } = require('jose/jwk/parse'); // eslint-disable-line import/no-unresolved
+const { parseJwk } = require('jose/jwk/parse'); // eslint-disable-line import/no-unresolved
 const sinon = require('sinon');
 const { expect } = require('chai');
 
