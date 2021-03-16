@@ -3663,8 +3663,8 @@ because they are required properties, but they can be empty...
 
 ### Resource Server only clients (e.g. for token introspection)
 
-You're getting the `redirect_uris is mandatory property` error but. You're getting this error
-because they are required properties, but they can be empty...
+You're getting the `redirect_uris is mandatory property` error but the resource server needs
+none. You're getting this error because they are required properties, but they can be empty...
 
 ```js
 {
