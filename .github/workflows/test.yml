@@ -40,6 +40,7 @@ jobs:
   test:
     name: Node Tests
     runs-on: ${{ matrix.os }}
+    continue-on-error: ${{ matrix.experimental || false }}
     strategy:
       fail-fast: false
       matrix:
@@ -48,10 +49,14 @@ jobs:
           - 12
           - 14.15.0
           - 14
-          - '>=15'
         os:
           - ubuntu-latest
           - windows-latest
+        include:
+          - experimental: true
+            node-version: '>=15'
+            os: ubuntu-latest
+
     steps:
       - name: Checkout
         uses: actions/checkout@master
