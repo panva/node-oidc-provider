@@ -1689,7 +1689,7 @@ and a JWT Access Token Format.
          kid?: string, // OPTIONAL `kid` to aid in signing key selection
        }
      | {
-         alg? string, // 'HS256' | 'HS384' | 'HS512'
+         alg: string, // 'HS256' | 'HS384' | 'HS512'
          key: crypto.KeyObject | Buffer, // shared symmetric secret to sign the JWT token with
          kid?: string, // OPTIONAL `kid` JOSE Header Parameter to put in the token's JWS Header
        },

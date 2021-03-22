@@ -3,7 +3,7 @@
 - built for version: ^7.1.0
 
 ```js
-const { errors } = require('oidc-provider);
+const { errors } = require('oidc-provider');
 Object.defineProperty(errors.InvalidRequest.prototype, 'allow_redirect', { value: false });
 ```
 
