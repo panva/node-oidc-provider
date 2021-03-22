@@ -19,6 +19,7 @@ If you or your business use oidc-provider, or you need help using/upgrading the 
 - [Redirect URI wildcards](redirect_uri_wildcards.md)
 - [Render instead Redirect on invalid_request](skip_redirect.md)
 - [Skipping consent](skip_consent.md)
+- [Avoid excuting expensive operations in findAccount](avoid_exp_opts.md)
 - ... got something worthy of being here? Submit a PR with a new recipe to help others.
 
 [support-sponsor]: https://github.com/sponsors/panva
