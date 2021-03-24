@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [7.1.3](https://github.com/panva/node-oidc-provider/compare/v7.1.2...v7.1.3) (2021-03-24)
+
+
+### Bug Fixes
+
+* interaction uid is now an alias to its jti, it is not stored anymore either ([2d85768](https://github.com/panva/node-oidc-provider/commit/2d857688eb2bfc0fab6b2f02c3ffbf2b953442f7))
+* keyselection for ecdh when both OKP and EC are present ([a0f8f7d](https://github.com/panva/node-oidc-provider/commit/a0f8f7d883106c650ef3cb5b380c39f2e29a6b3b))
+
 ## [7.1.2](https://github.com/panva/node-oidc-provider/compare/v7.1.1...v7.1.2) (2021-03-15)
 
 
