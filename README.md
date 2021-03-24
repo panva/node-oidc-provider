@@ -10,7 +10,6 @@ additional features and standards implemented.
 - [Get started](#get-started)
 - [Documentation & Configuration](#documentation--configuration)
 - [Recipes](#recipes)
-- [Debugging](#debugging)
 - [Events](#events)
 
 ## Implemented specs & features
