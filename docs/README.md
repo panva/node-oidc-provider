@@ -1574,7 +1574,7 @@ _**default value**_:
 
 #### defaultResource
 
-Function used to determine the default resource indicator for a request when none is provided by the client during the call or when multiple are provided/resolved and only a single one is required.  
+Function used to determine the default resource indicator for a request when none is provided by the client during the authorization request or when multiple are provided/resolved and only a single one is required during an Access Token Request.  
 
 
 _**default value**_:
