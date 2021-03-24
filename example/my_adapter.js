@@ -128,7 +128,6 @@ class MyAdapter {
      * - kind {string} - "Interaction" fixed string value
      * - exp {number} - timestamp of the interaction's expiration
      * - iat {number} - timestamp of the interaction's creation
-     * - uid {string} - the uid of the authorizing client's established session
      * - returnTo {string} - after resolving interactions send the user-agent to this url
      * - deviceCode {string} - [DeviceCode user flows only] deviceCode reference
      * - params {object} - parsed recognized parameters object
