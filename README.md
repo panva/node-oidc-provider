@@ -41,11 +41,11 @@ enabled by default, check the configuration section on how to enable them.
 The following draft specifications are implemented by oidc-provider.
 - [JWT Response for OAuth Token Introspection - draft 10][jwt-introspection]
 - [JWT Secured Authorization Response Mode for OAuth 2.0 (JARM) - Implementer's Draft 01][jarm]
-- [Financial-grade API - Part 2: Read and Write API Security Profile - Implementer's Draft 02][fapi]
+- [Financial-grade API - Part 2: Read and Write API Security Profile (FAPI) - Implementer's Draft 02][fapi]
 - [OAuth 2.0 Authorization Server Issuer Identifier in Authorization Response - draft 00][iss-auth-resp]
 - [OAuth 2.0 Demonstration of Proof-of-Possession at the Application Layer (DPoP) - draft 02][dpop]
 - [OAuth 2.0 JWT Secured Authorization Request (JAR) - draft 30][jar]
-- [OAuth 2.0 Pushed Authorization Requests - draft 06][par]
+- [OAuth 2.0 Pushed Authorization Requests (PAR) - draft 06][par]
 - [OAuth 2.0 Web Message Response Mode - individual draft 00][wmrm]
 - [OpenID Connect RP-Initiated Logout 1.0 - draft 01][rpinitiated-logout]
 - [OpenID Connect Back-Channel Logout 1.0 - draft 06][backchannel-logout]

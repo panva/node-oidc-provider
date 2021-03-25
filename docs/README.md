@@ -698,7 +698,7 @@ _**default value**_:
 
 ### features.dPoP
 
-[draft-ietf-oauth-dpop-02](https://tools.ietf.org/html/draft-ietf-oauth-dpop-02) - OAuth 2.0 Demonstration of Proof-of-Possession at the Application Layer  
+[draft-ietf-oauth-dpop-02](https://tools.ietf.org/html/draft-ietf-oauth-dpop-02) - OAuth 2.0 Demonstration of Proof-of-Possession at the Application Layer (DPoP)  
 
 Enables `DPoP` - mechanism for sender-constraining tokens via a proof-of-possession mechanism on the application level. Browser DPoP Proof generation [here](https://www.npmjs.com/package/dpop).  
 
@@ -727,9 +727,9 @@ _**default value**_:
 
 ### features.deviceFlow
 
-[RFC8628](https://tools.ietf.org/html/rfc8628) - OAuth 2.0 Device Authorization Grant  
+[RFC8628](https://tools.ietf.org/html/rfc8628) - OAuth 2.0 Device Authorization Grant (Device Flow)  
 
-Enables Device Authorization Grant (Device Flow)  
+Enables Device Authorization Grant  
 
 
 _**default value**_:
@@ -913,7 +913,7 @@ _**default value**_:
 
 ### features.fapiRW
 
-[Financial-grade API - Part 2: Read and Write API Security Profile - Implementer's Draft 02](https://openid.net/specs/openid-financial-api-part-2-ID2.html)  
+[Financial-grade API - Part 2: Read and Write API Security Profile (FAPI) - Implementer's Draft 02](https://openid.net/specs/openid-financial-api-part-2-ID2.html)  
 
 Enables extra behaviours defined in FAPI Part 1 & 2 that cannot be achieved by other configuration options, namely:   
  - Request Object `exp` claim is REQUIRED
@@ -1050,7 +1050,7 @@ _**default value**_:
 
 ### features.mTLS
 
-[RFC8705](https://tools.ietf.org/html/rfc8705) - OAuth 2.0 Mutual TLS Client Authentication and Certificate Bound Access Tokens  
+[RFC8705](https://tools.ietf.org/html/rfc8705) - OAuth 2.0 Mutual TLS Client Authentication and Certificate Bound Access Tokens (MTLS)  
 
 Enables specific features from the Mutual TLS specification. The three main features have their own specific setting in this feature's configuration object and you must provide functions for resolving some of the functions which are deployment-specific.   
   
@@ -1186,7 +1186,7 @@ false
 
 ### features.pushedAuthorizationRequests
 
-[draft-ietf-oauth-par-06](https://tools.ietf.org/html/draft-ietf-oauth-par-06) - OAuth 2.0 Pushed Authorization Requests  
+[draft-ietf-oauth-par-06](https://tools.ietf.org/html/draft-ietf-oauth-par-06) - OAuth 2.0 Pushed Authorization Requests (PAR)  
 
 Enables the use of `pushed_authorization_request_endpoint` defined by the Pushed Authorization Requests draft.   
   
@@ -2650,6 +2650,8 @@ async function pairwiseIdentifier(ctx, accountId, client) {
 
 ### pkce
 
+[RFC7636 - Proof Key for Code Exchange (PKCE)](https://tools.ietf.org/html/rfc7636)  
+
 PKCE configuration such as available methods and policy check on required use of PKCE  
 
 
@@ -3584,7 +3586,7 @@ const encoded_secret = 'some+secure+%26+non-standard+secret';
 So essentially, your client is not submitting the client auth in a conform way and you should fix
 that.
 
-### I'm getting an client authentication failed error with no details
+### I'm getting a client authentication failed error with no details
 
 Every client is configured with one of 7 available
 [`token_endpoint_auth_method` values](https://www.iana.org/assignments/oauth-parameters/oauth-parameters.xhtml#token-endpoint-auth-method)
