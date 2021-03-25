@@ -2942,7 +2942,7 @@ _**recommendation**_: Only allow JWA algs that are necessary. The current defaul
 
 ### enabledJWA.authorizationEncryptionAlgValues
 
-JWA algorithms the provider supports to wrap keys for JWT Authorization response encryption   
+JWE "alg" Algorithm values the provider supports for JWT Authorization response (JARM) encryption   
   
 
 
@@ -2977,7 +2977,7 @@ _**default value**_:
 
 ### enabledJWA.authorizationEncryptionEncValues
 
-JWA algorithms the provider supports to encrypt JWT Authorization Responses with   
+JWE "enc" Content Encryption Algorithm values the provider supports to encrypt JWT Authorization Responses (JARM) with   
   
 
 
@@ -3002,7 +3002,7 @@ _**default value**_:
 
 ### enabledJWA.authorizationSigningAlgValues
 
-JWA algorithms the provider supports to sign JWT Authorization Responses with   
+JWS "alg" Algorithm values the provider supports to sign JWT Authorization Responses (JARM) with   
   
 
 
@@ -3031,7 +3031,7 @@ _**default value**_:
 
 ### enabledJWA.dPoPSigningAlgValues
 
-JWA algorithms the provider supports to verify DPoP Proof JWTs with   
+JWS "alg" Algorithm values the provider supports to verify signed DPoP Proof JWTs with   
   
 
 
@@ -3059,7 +3059,7 @@ _**default value**_:
 
 ### enabledJWA.idTokenEncryptionAlgValues
 
-JWA algorithms the provider supports to wrap keys for ID Token encryption   
+JWE "alg" Algorithm values the provider supports for ID Token encryption   
   
 
 
@@ -3094,7 +3094,7 @@ _**default value**_:
 
 ### enabledJWA.idTokenEncryptionEncValues
 
-JWA algorithms the provider supports to encrypt ID Tokens with   
+JWE "enc" Content Encryption Algorithm values the provider supports to encrypt ID Tokens with   
   
 
 
@@ -3119,7 +3119,7 @@ _**default value**_:
 
 ### enabledJWA.idTokenSigningAlgValues
 
-JWA algorithms the provider supports to sign ID Tokens with   
+JWS "alg" Algorithm values the provider supports to sign ID Tokens with.   
   
 
 
@@ -3149,7 +3149,7 @@ _**default value**_:
 
 ### enabledJWA.introspectionEncryptionAlgValues
 
-JWA algorithms the provider supports to wrap keys for JWT Introspection response encryption   
+JWE "alg" Algorithm values the provider supports for JWT Introspection response encryption   
   
 
 
@@ -3184,7 +3184,7 @@ _**default value**_:
 
 ### enabledJWA.introspectionEncryptionEncValues
 
-JWA algorithms the provider supports to encrypt JWT Introspection responses with   
+JWE "enc" Content Encryption Algorithm values the provider supports to encrypt JWT Introspection responses with   
   
 
 
@@ -3209,7 +3209,7 @@ _**default value**_:
 
 ### enabledJWA.introspectionSigningAlgValues
 
-JWA algorithms the provider supports to sign JWT Introspection responses with   
+JWS "alg" Algorithm values the provider supports to sign JWT Introspection responses with   
   
 
 
@@ -3239,7 +3239,7 @@ _**default value**_:
 
 ### enabledJWA.requestObjectEncryptionAlgValues
 
-JWA algorithms the provider supports to receive encrypted Request Object keys wrapped with   
+JWE "alg" Algorithm values the provider supports to receive encrypted Request Objects (JAR) with   
   
 
 
@@ -3274,7 +3274,7 @@ _**default value**_:
 
 ### enabledJWA.requestObjectEncryptionEncValues
 
-JWA algorithms the provider supports decrypt Request Objects with encryption   
+JWE "enc" Content Encryption Algorithm values the provider supports to decrypt Request Objects (JAR) with   
   
 
 
@@ -3299,7 +3299,7 @@ _**default value**_:
 
 ### enabledJWA.requestObjectSigningAlgValues
 
-JWA algorithms the provider supports to receive Request Objects with   
+JWS "alg" Algorithm values the provider supports to receive signed Request Objects (JAR) with   
   
 
 
@@ -3330,7 +3330,7 @@ _**default value**_:
 
 ### enabledJWA.tokenEndpointAuthSigningAlgValues
 
-JWA algorithms the provider supports on the token endpoint   
+JWS "alg" Algorithm values the provider supports for signed JWT Client Authentication   
   
 
 
@@ -3360,7 +3360,7 @@ _**default value**_:
 
 ### enabledJWA.userinfoEncryptionAlgValues
 
-JWA algorithms the provider supports to wrap keys for UserInfo Response encryption   
+JWE "alg" Algorithm values the provider supports for UserInfo Response encryption   
   
 
 
@@ -3395,7 +3395,7 @@ _**default value**_:
 
 ### enabledJWA.userinfoEncryptionEncValues
 
-JWA algorithms the provider supports to encrypt UserInfo responses with   
+JWE "enc" Content Encryption Algorithm values the provider supports to encrypt UserInfo responses with   
   
 
 
@@ -3420,7 +3420,7 @@ _**default value**_:
 
 ### enabledJWA.userinfoSigningAlgValues
 
-JWA algorithms the provider supports to sign UserInfo responses with   
+JWS "alg" Algorithm values the provider supports to sign UserInfo responses with   
   
 
 
