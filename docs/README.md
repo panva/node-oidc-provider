@@ -1164,7 +1164,7 @@ function getCertificate(ctx) {
 
 #### selfSignedTlsClientAuth
 
-Enables section 2.2. Self-Signed Certificate Mutual TLS client authentication method `self_signed_tls_client_auth` for use in the server's `tokenEndpointAuthMethods`, `introspectionEndpointAuthMethods`, and `revocationEndpointAuthMethods` configuration options.  
+Enables section 2.2. Self-Signed Certificate Mutual TLS client authentication method `self_signed_tls_client_auth` for use in the server's `tokenEndpointAuthMethods` configuration.  
 
 
 _**default value**_:
@@ -1174,7 +1174,7 @@ false
 
 #### tlsClientAuth
 
-Enables section 2.1. PKI Mutual TLS client authentication method `tls_client_auth` for use in the server's `tokenEndpointAuthMethods`, `introspectionEndpointAuthMethods`, and `revocationEndpointAuthMethods` configuration options.  
+Enables section 2.1. PKI Mutual TLS client authentication method `tls_client_auth` for use in the server's `tokenEndpointAuthMethods` configuration.  
 
 
 _**default value**_:
@@ -1901,7 +1901,8 @@ See [/recipes/claim_configuration.md](/recipes/claim_configuration.md)
 
 ### clientBasedCORS
 
-Function used to check whether a given CORS request should be allowed based on the request's client.  
+Function used to check whether a given CORS request should be allowed based on the request's client.   
+  
 
 
 _**default value**_:
@@ -1910,6 +1911,13 @@ function clientBasedCORS(ctx, origin, client) {
   return false;
 }
 ```
+<a id="client-based-cors-client-metadata-based-cors-origin-allow-list"></a><details><summary>(Click to expand) Client Metadata-based CORS Origin allow list</summary><br>
+
+
+See [/recipes/client_based_origins.md](/recipes/client_based_origins.md)  
+
+
+</details>
 
 ### clientDefaults
 
@@ -2160,7 +2168,7 @@ const softwareStatementKey = JWK.asKey(require('path/to/public/key'))
 
 ### extraParams
 
-Pass an iterable object (i.e. Array or Set of strings) to extend the parameters recognised by the authorization and device authorization endpoints. These parameters are then available in `ctx.oidc.params` as well as passed to interaction session details  
+Pass an iterable object (i.e. Array or Set of strings) to extend the parameters recognised by the authorization, device authorization, and pushed authorization request endpoints. These parameters are then available in `ctx.oidc.params` as well as passed to interaction session details.  
 
 
 _**default value**_:
@@ -2170,7 +2178,7 @@ _**default value**_:
 
 ### extraTokenClaims
 
-Function used to get additional claims for an Access Token when it is being issued. These claims will be available in your storage under property `extra`, returned by introspection as top level claims and pushed into `jwt` or `paseto` formatted tokens as top level claims as well. Returned claims may not overwrite pre-existing top level claims.   
+Function used to assign additional claims to an Access Token when it is being issued. For `opaque` Access Tokens these claims will be stored in your storage under the `extra` property and returned by introspection as top level claims. For jwt` or `paseto` Access Tokens these will be top level claims. Returned claims will not overwrite pre-existing top level claims.   
   
 
 
@@ -2568,22 +2576,6 @@ async function interactionsUrl(ctx, interaction) {
 }
 ```
 
-### introspectionEndpointAuthMethods
-
-Array of Client Authentication methods supported by this OP's Introspection Endpoint. If no configuration value is provided the same values as for tokenEndpointAuthMethods will be used. Supported values list is the same as for tokenEndpointAuthMethods.  
-
-
-_**default value**_:
-```js
-[
-  'client_secret_basic',
-  'client_secret_jwt',
-  'client_secret_post',
-  'private_key_jwt',
-  'none'
-]
-```
-
 ### issueRefreshToken
 
 Function used to decide whether a refresh token will be issued or not   
@@ -2737,22 +2729,6 @@ These are values defined in [Core 1.0](https://openid.net/specs/openid-connect-c
 ]
 ```
 </details>
-
-### revocationEndpointAuthMethods
-
-Array of Client Authentication methods supported by this OP's Revocation Endpoint. If no configuration value is provided the same values as for tokenEndpointAuthMethods will be used. Supported values list is the same as for tokenEndpointAuthMethods.  
-
-
-_**default value**_:
-```js
-[
-  'client_secret_basic',
-  'client_secret_jwt',
-  'client_secret_post',
-  'private_key_jwt',
-  'none'
-]
-```
 
 ### revokeGrantPolicy
 
@@ -3231,36 +3207,6 @@ _**default value**_:
 ```
 </details>
 
-### enabledJWA.introspectionEndpointAuthSigningAlgValues
-
-JWA algorithms the provider supports on the introspection endpoint   
-  
-
-
-_**default value**_:
-```js
-[
-  'HS256',
-  'RS256',
-  'PS256',
-  'ES256',
-  'EdDSA'
-]
-```
-<a id="enabled-jwa-introspection-endpoint-auth-signing-alg-values-supported-values-list"></a><details><summary>(Click to expand) Supported values list
-</summary><br>
-
-```js
-[
-  'RS256', 'RS384', 'RS512',
-  'PS256', 'PS384', 'PS512',
-  'ES256', 'ES256K', 'ES384', 'ES512',
-  'EdDSA',
-  'HS256', 'HS384', 'HS512',
-]
-```
-</details>
-
 ### enabledJWA.introspectionSigningAlgValues
 
 JWA algorithms the provider supports to sign JWT Introspection responses with   
@@ -3378,36 +3324,6 @@ _**default value**_:
   'EdDSA',
   'HS256', 'HS384', 'HS512',
   'none',
-]
-```
-</details>
-
-### enabledJWA.revocationEndpointAuthSigningAlgValues
-
-JWA algorithms the provider supports on the revocation endpoint   
-  
-
-
-_**default value**_:
-```js
-[
-  'HS256',
-  'RS256',
-  'PS256',
-  'ES256',
-  'EdDSA'
-]
-```
-<a id="enabled-jwa-revocation-endpoint-auth-signing-alg-values-supported-values-list"></a><details><summary>(Click to expand) Supported values list
-</summary><br>
-
-```js
-[
-  'RS256', 'RS384', 'RS512',
-  'PS256', 'PS384', 'PS512',
-  'ES256', 'ES256K', 'ES384', 'ES512',
-  'EdDSA',
-  'HS256', 'HS384', 'HS512',
 ]
 ```
 </details>
