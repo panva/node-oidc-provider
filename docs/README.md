@@ -572,38 +572,6 @@ _**recommendation**_: **Provider key rotation** - The following action order is 
  3. move your new key to the very front of the "keys" array in your JWKS, this means the key will be used for signing after reload
  4. reload all your processes  
 
-<a id="jwks-generating-keys"></a><details><summary>(Click to expand) Generating keys
-</summary><br>
-
-```js
-// npm install jose@2
-const { JWKS: { KeyStore } } = require('jose');
-const keystore = new KeyStore();
-keystore.generateSync('RSA', 2048, { alg: 'RS256', use: 'sig' });
-console.log('this is the full private JWKS:\n', keystore.toJWKS(true));
-```
-</details>
-<a id="jwks-generating-keys-for-both-signing-and-encryption"></a><details><summary>(Click to expand) Generating keys for both signing and encryption</summary><br>
-
-
-Re-using the same keys for both encryption and signing is discouraged so it is best to generate one with `{ use: 'sig' }` and another with `{ use: 'enc' }`, e.g.
-  
-
-```js
-// npm install jose@2
-const { JWKS: { KeyStore } } = require('jose');
-const keystore = new KeyStore();
-Promise.all([
-  keystore.generate('RSA', 2048, { use: 'sig' }),
-  keystore.generate('RSA', 2048, { use: 'enc' }),
-  keystore.generate('EC', 'P-256', { use: 'sig' }),
-  keystore.generate('EC', 'P-256', { use: 'enc' }),
-  keystore.generate('OKP', 'Ed25519', { use: 'sig' }),
-]).then(function () {
-  console.log('this is the full private JWKS:\n', keystore.toJWKS(true));
-});
-```
-</details>
 
 ### features
 
@@ -1347,61 +1315,6 @@ Note: referenced policies must always be present when encountered on a token, an
 ctx.oidc.entities.RegistrationAccessToken.policies = ['update-policy'];
 ```
 </details>
-<a id="policies-using-initial-access-token-policies-for-software-statement-dynamic-client-registration-property"></a><details><summary>(Click to expand) Using Initial Access Token policies for software_statement dynamic client registration property</summary><br>
-
-
-Support modules:
-  
-
-```js
-// npm install jose@2
-const { JWT: { verify }, JWK } = require('jose');
-const {
-  errors: { InvalidSoftwareStatement, UnapprovedSoftwareStatement, InvalidClientMetadata },
-} = require('oidc-provider');
-```
-features.registration configuration:
-  
-
-```js
-{
- enabled: true,
- initialAccessToken: true, // to enable adapter-backed initial access tokens
- policies: {
-   'softwareStatement': async function (ctx, metadata) {
-     if (!('software_statement' in metadata)) {
-       throw new InvalidClientMetadata('software_statement must be provided');
-     }
-     const softwareStatementKey = JWK.asKey(await loadKeyForThisPolicy());
-     const statement = metadata.software_statement;
-     let payload;
-     try {
-       payload = verify(value, softwareStatementKey, {
-         algorithms: ['PS256'],
-         issuer: 'Software Statement Issuer',
-       });
-       // additional custom validation function
-       if (!approvedStatement(value, payload)) {
-         throw new UnapprovedSoftwareStatement('software_statement not approved for use');
-       }
-       // cherry pick the software_statement values and assign them
-       // Note: regular validations will run!
-       const { client_name, client_uri } = payload;
-       Object.assign(metadata, { client_name, client_uri });
-     } catch (err) {
-       throw new InvalidSoftwareStatement('could not verify software_statement');
-     }
-   },
- },
-}
-```
-An Initial Access Token that requires and validates the given software statement is created like so
-  
-
-```js
-new (provider.InitialAccessToken)({ policies: ['softwareStatement'] }).save().then(console.log);
-```
-</details>
 
 #### secretFactory
 
@@ -2102,8 +2015,7 @@ _**default value**_:
 
 ### extraClientMetadata.validator
 
-validator function that will be executed in order once for every property defined in `extraClientMetadata.properties`, regardless of its value or presence on the client metadata passed in. Must be synchronous, async validators or functions returning Promise will be rejected during runtime. To modify the current client metadata values (for current key or any other) just modify the passed in `metadata` argument.   
-  
+validator function that will be executed in order once for every property defined in `extraClientMetadata.properties`, regardless of its value or presence on the client metadata passed in. Must be synchronous, async validators or functions returning Promise will be rejected during runtime. To modify the current client metadata values (for current key or any other) just modify the passed in `metadata` argument.  
 
 
 _**default value**_:
@@ -2122,49 +2034,6 @@ function extraClientMetadataValidator(ctx, key, value, metadata) {
   // return not necessary, metadata is already a reference
 }
 ```
-<a id="extra-client-metadata-validator-using-extra-client-metadata-to-allow-software-statement-dynamic-client-registration-property"></a><details><summary>(Click to expand) Using extraClientMetadata to allow software_statement dynamic client registration property
-</summary><br>
-
-```js
-// npm install jose@2
-const { JWT: { verify }, JWK } = require('jose');
-const {
-  errors: { InvalidSoftwareStatement, UnapprovedSoftwareStatement },
-} = require('oidc-provider');
-const softwareStatementKey = JWK.asKey(require('path/to/public/key'))
-{
-  extraClientMetadata: {
-    properties: ['software_statement'],
-    validator(ctx, key, value, metadata) {
-      if (key === 'software_statement') {
-        if (value === undefined) return;
-        // software_statement is not stored, but used to convey client metadata
-        delete metadata.software_statement;
-        let payload;
-        try {
-          // extraClientMetadata.validator must be sync :sadface:
-          payload = verify(value, softwareStatementKey, {
-            algorithms: ['PS256'],
-            issuer: 'Software Statement Issuer',
-          });
-          // additional custom validation function
-          if (!approvedStatement(value, payload)) {
-            throw new UnapprovedSoftwareStatement('software_statement not approved for use');
-          }
-          // cherry pick the software_statement values and assign them
-          // Note: there will be no further validation ran on those values, so make sure
-          //   they're conform
-          const { client_name, client_uri } = payload;
-          Object.assign(metadata, { client_name, client_uri });
-        } catch (err) {
-          throw new InvalidSoftwareStatement('could not verify software_statement');
-        }
-      }
-    }
-  }
-}
-```
-</details>
 
 ### extraParams
 
