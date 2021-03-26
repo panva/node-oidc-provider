@@ -13,7 +13,7 @@ const { Provider } = require('../../lib'); // require('oidc-provider');
 const OFFICIAL_CERTIFICATION = 'https://www.certification.openid.net';
 const { PORT = 3000, ISSUER = `http://localhost:${PORT}`, SUITE_BASE_URL = OFFICIAL_CERTIFICATION } = process.env;
 
-const ALGS = ['PS256', 'ES256', 'EdDSA'];
+const ALGS = ['PS256'];
 const tokenEndpointAuthMethods = ['private_key_jwt', 'self_signed_tls_client_auth'];
 
 const normalize = (cert) => cert.toString().replace(/(?:-----(?:BEGIN|END) CERTIFICATE-----|\s)/g, '');
@@ -57,31 +57,12 @@ const fapi = new Provider(ISSUER, {
         qi: 'nmJaonUO_d62824V6YmWuEX7imXdgHKRi-tY4IUDJbrm7lKEfcn_xazqilECh1xm7O8b4bj0th3JrRcs1Al0sWP1FwVHjzzmg5oqq26PvHjmtVIHn3cXGT6AmY8-eUPkYgPBc61Ej58Usazm1iuRIe-wNIBeL244kFTQK7zJfnE',
         use: 'sig',
       },
-      {
-        alg: 'ES256',
-        crv: 'P-256',
-        d: 'otMhQm75BL5LLmfkCtDDbAxHSLsj2zqBNJvf0C1zY2E',
-        kty: 'EC',
-        use: 'sig',
-        x: 'p9xTCnXKLoJnBOpm1kzSgPt87AIZJZLtdlAXnUk3rxY',
-        y: 'ZpaFStCyyWXA_UFQe-rwsSIgOGw92uuzO4BLbvUKkpY',
-      },
-      {
-        alg: 'EdDSA',
-        crv: 'Ed25519',
-        d: '0OlblX_LYlFnDRD8yEE5gkc4vZw6T94uDCsxRfIEpKo',
-        kty: 'OKP',
-        use: 'sig',
-        x: 'oZrknP771NulaB41XAkHQlvZBLlFnVtlE4AcmGpsGYU',
-      },
     ],
   },
   scopes: ['openid', 'offline_access'],
   clients: [
     {
       client_id: 'pkjwt-one',
-      response_types: ['code', 'code id_token'],
-      grant_types: ['implicit', 'authorization_code', 'refresh_token'],
       redirect_uris: REDIRECT_URIS,
       token_endpoint_auth_method: 'private_key_jwt',
       jwks: {
@@ -90,8 +71,6 @@ const fapi = new Provider(ISSUER, {
     },
     {
       client_id: 'pkjwt-two',
-      response_types: ['code', 'code id_token'],
-      grant_types: ['implicit', 'authorization_code', 'refresh_token'],
       redirect_uris: REDIRECT_URIS,
       token_endpoint_auth_method: 'private_key_jwt',
       jwks: {
@@ -100,8 +79,6 @@ const fapi = new Provider(ISSUER, {
     },
     {
       client_id: 'mtls-one',
-      response_types: ['code', 'code id_token'],
-      grant_types: ['implicit', 'authorization_code', 'refresh_token'],
       redirect_uris: REDIRECT_URIS,
       token_endpoint_auth_method: 'self_signed_tls_client_auth',
       jwks: {
@@ -110,8 +87,6 @@ const fapi = new Provider(ISSUER, {
     },
     {
       client_id: 'mtls-two',
-      response_types: ['code', 'code id_token'],
-      grant_types: ['implicit', 'authorization_code', 'refresh_token'],
       redirect_uris: REDIRECT_URIS,
       token_endpoint_auth_method: 'self_signed_tls_client_auth',
       jwks: {
@@ -121,13 +96,11 @@ const fapi = new Provider(ISSUER, {
   ],
   clientDefaults: {
     authorization_signed_response_alg: 'PS256',
-    grant_types: ['authorization_code', 'implicit'],
+    grant_types: ['implicit', 'authorization_code', 'refresh_token'],
+    response_types: ['code', 'code id_token'],
     id_token_signed_response_alg: 'PS256',
     introspection_signed_response_alg: 'PS256',
-    require_signed_request_object: true,
     request_object_signing_alg: 'PS256',
-    response_types: ['code id_token'],
-    scope: 'openid offline_access',
     tls_client_certificate_bound_access_tokens: true,
     token_endpoint_auth_method: 'private_key_jwt',
   },
@@ -151,17 +124,14 @@ const fapi = new Provider(ISSUER, {
       },
     },
     claimsParameter: { enabled: true },
-    introspection: { enabled: true },
-    jwtIntrospection: { enabled: true },
     jwtResponseModes: { enabled: true },
     pushedAuthorizationRequests: { enabled: true },
     requestObjects: {
       request: true,
-      requestUri: true,
-      requireUriRegistration: true,
+      requestUri: false,
+      requireSignedRequestObject: true,
       mode: 'strict',
     },
-    revocation: { enabled: true },
   },
   responseTypes: ['code id_token', 'code'],
   tokenEndpointAuthMethods,
