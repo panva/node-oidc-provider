@@ -84,31 +84,215 @@ jobs:
     env:
       VERSION: release-v4.1.7
       SUITE_BASE_URL: https://localhost.emobix.co.uk:8443
-      SETUP: ${{ matrix.setup }}
+      SETUP: ${{ toJSON(matrix.setup) }}
     strategy:
       fail-fast: false
       matrix:
         setup:
-          - '{"plan":"oidcc-basic-certification-test-plan","server_metadata":"discovery","client_registration":"dynamic_client"}'
-          - '{"plan":"oidcc-hybrid-certification-test-plan","server_metadata":"discovery","client_registration":"dynamic_client"}'
-          - '{"plan":"oidcc-implicit-certification-test-plan","server_metadata":"discovery","client_registration":"dynamic_client"}'
-          - '{"plan":"oidcc-config-certification-test-plan"}'
-          - '{"plan":"oidcc-dynamic-certification-test-plan","response_type":"code","skip":"oidcc-server-rotate-keys"}'
-          - '{"plan":"oidcc-dynamic-certification-test-plan","response_type":"id_token","skip":"oidcc-server-rotate-keys"}'
-          - '{"plan":"oidcc-dynamic-certification-test-plan","response_type":"id_token token","skip":"oidcc-server-rotate-keys"}'
-          - '{"plan":"oidcc-dynamic-certification-test-plan","response_type":"code id_token","skip":"oidcc-server-rotate-keys"}'
-          - '{"plan":"oidcc-dynamic-certification-test-plan","response_type":"code token","skip":"oidcc-server-rotate-keys"}'
-          - '{"plan":"oidcc-dynamic-certification-test-plan","response_type":"code id_token token","skip":"oidcc-server-rotate-keys"}'
-          - '{"plan":"oidcc-backchannel-rp-initiated-logout-certification-test-plan","response_type":"code","client_registration":"dynamic_client"}'
-          - '{"plan":"oidcc-rp-initiated-logout-certification-test-plan","response_type":"code","client_registration":"dynamic_client"}'
-          - '{"plan":"fapi-rw-id2-test-plan","configuration":"./certification/fapi/pkjwt.json","fapi_auth_request_method":"by_value","client_auth_type":"private_key_jwt","fapi_profile":"plain_fapi","fapi_response_mode":"plain_response"}'
-          - '{"plan":"fapi-rw-id2-test-plan","configuration":"./certification/fapi/pkjwt.json","fapi_auth_request_method":"pushed","client_auth_type":"private_key_jwt","fapi_profile":"plain_fapi","fapi_response_mode":"plain_response"}'
-          - '{"plan":"fapi-rw-id2-test-plan","configuration":"./certification/fapi/pkjwt.json","fapi_auth_request_method":"by_value","client_auth_type":"private_key_jwt","fapi_profile":"plain_fapi","fapi_response_mode":"jarm"}'
-          - '{"plan":"fapi-rw-id2-test-plan","configuration":"./certification/fapi/pkjwt.json","fapi_auth_request_method":"pushed","client_auth_type":"private_key_jwt","fapi_profile":"plain_fapi","fapi_response_mode":"jarm"}'
-          - '{"plan":"fapi-rw-id2-test-plan","configuration":"./certification/fapi/mtls.json","fapi_auth_request_method":"by_value","client_auth_type":"mtls","fapi_profile":"plain_fapi","fapi_response_mode":"plain_response"}'
-          - '{"plan":"fapi-rw-id2-test-plan","configuration":"./certification/fapi/mtls.json","fapi_auth_request_method":"pushed","client_auth_type":"mtls","fapi_profile":"plain_fapi","fapi_response_mode":"plain_response"}'
-          - '{"plan":"fapi-rw-id2-test-plan","configuration":"./certification/fapi/mtls.json","fapi_auth_request_method":"by_value","client_auth_type":"mtls","fapi_profile":"plain_fapi","fapi_response_mode":"jarm"}'
-          - '{"plan":"fapi-rw-id2-test-plan","configuration":"./certification/fapi/mtls.json","fapi_auth_request_method":"pushed","client_auth_type":"mtls","fapi_profile":"plain_fapi","fapi_response_mode":"jarm"}'
+          # OP Basic
+          - plan: oidcc-basic-certification-test-plan
+            server_metadata: discovery
+            client_registration: dynamic_client
+
+          # OP Hybrid
+          - plan: oidcc-hybrid-certification-test-plan
+            server_metadata: discovery
+            client_registration: dynamic_client
+
+          # OP Implicit
+          - plan: oidcc-implicit-certification-test-plan
+            server_metadata: discovery
+            client_registration: dynamic_client
+
+          # OP Dynamic
+          - plan: oidcc-dynamic-certification-test-plan
+            response_type: code
+            skip: oidcc-server-rotate-keys
+          - plan: oidcc-dynamic-certification-test-plan
+            response_type: id_token
+            skip: oidcc-server-rotate-keys
+          - plan: oidcc-dynamic-certification-test-plan
+            response_type: id_token token
+            skip: oidcc-server-rotate-keys
+          - plan: oidcc-dynamic-certification-test-plan
+            response_type: code id_token
+            skip: oidcc-server-rotate-keys
+          - plan: oidcc-dynamic-certification-test-plan
+            response_type: code token
+            skip: oidcc-server-rotate-keys
+          - plan: oidcc-dynamic-certification-test-plan
+            response_type: code id_token token
+            skip: oidcc-server-rotate-keys
+
+          # RP-Initiated OP
+          - plan: oidcc-rp-initiated-logout-certification-test-plan
+            response_type: code
+            client_registration: dynamic_client
+
+          # Back-Channel OP
+          - plan: oidcc-backchannel-rp-initiated-logout-certification-test-plan
+            response_type: code
+            client_registration: dynamic_client
+
+          # FAPI RW-ID2
+          - plan: fapi-rw-id2-test-plan
+            configuration: ./certification/fapi/pkjwt.json
+            fapi_auth_request_method: by_value
+            client_auth_type: private_key_jwt
+            fapi_profile: plain_fapi
+            fapi_response_mode: plain_response
+          - plan: fapi-rw-id2-test-plan
+            configuration: ./certification/fapi/pkjwt.json
+            fapi_auth_request_method: pushed
+            client_auth_type: private_key_jwt
+            fapi_profile: plain_fapi
+            fapi_response_mode: plain_response
+          - plan: fapi-rw-id2-test-plan
+            configuration: ./certification/fapi/pkjwt.json
+            fapi_auth_request_method: by_value
+            client_auth_type: private_key_jwt
+            fapi_profile: plain_fapi
+            fapi_response_mode: jarm
+          - plan: fapi-rw-id2-test-plan
+            configuration: ./certification/fapi/pkjwt.json
+            fapi_auth_request_method: pushed
+            client_auth_type: private_key_jwt
+            fapi_profile: plain_fapi
+            fapi_response_mode: jarm
+          - plan: fapi-rw-id2-test-plan
+            configuration: ./certification/fapi/mtls.json
+            fapi_auth_request_method: by_value
+            client_auth_type: mtls
+            fapi_profile: plain_fapi
+            fapi_response_mode: plain_response
+          - plan: fapi-rw-id2-test-plan
+            configuration: ./certification/fapi/mtls.json
+            fapi_auth_request_method: pushed
+            client_auth_type: mtls
+            fapi_profile: plain_fapi
+            fapi_response_mode: plain_response
+          - plan: fapi-rw-id2-test-plan
+            configuration: ./certification/fapi/mtls.json
+            fapi_auth_request_method: by_value
+            client_auth_type: mtls
+            fapi_profile: plain_fapi
+            fapi_response_mode: jarm
+          - plan: fapi-rw-id2-test-plan
+            configuration: ./certification/fapi/mtls.json
+            fapi_auth_request_method: pushed
+            client_auth_type: mtls
+            fapi_profile: plain_fapi
+            fapi_response_mode: jarm
+
+          # Extensive
+          - plan: oidcc-test-plan
+            client_registration: dynamic_client
+            response_mode: default
+            response_type: code
+            client_auth_type: client_secret_basic
+            skip: oidcc-server-rotate-keys
+          - plan: oidcc-test-plan
+            client_registration: dynamic_client
+            response_mode: default
+            response_type: code id_token
+            client_auth_type: client_secret_basic
+            skip: oidcc-server-rotate-keys
+          - plan: oidcc-test-plan
+            client_registration: dynamic_client
+            response_mode: default
+            response_type: code id_token token
+            client_auth_type: client_secret_basic
+            skip: oidcc-server-rotate-keys
+          - plan: oidcc-test-plan
+            client_registration: dynamic_client
+            response_mode: default
+            response_type: code token
+            client_auth_type: client_secret_basic
+            skip: oidcc-server-rotate-keys
+          - plan: oidcc-test-plan
+            client_registration: dynamic_client
+            response_mode: default
+            response_type: code
+            client_auth_type: client_secret_post
+            skip: oidcc-server-rotate-keys
+          - plan: oidcc-test-plan
+            client_registration: dynamic_client
+            response_mode: default
+            response_type: code id_token
+            client_auth_type: client_secret_post
+            skip: oidcc-server-rotate-keys
+          - plan: oidcc-test-plan
+            client_registration: dynamic_client
+            response_mode: default
+            response_type: code id_token token
+            client_auth_type: client_secret_post
+            skip: oidcc-server-rotate-keys
+          - plan: oidcc-test-plan
+            client_registration: dynamic_client
+            response_mode: default
+            response_type: code token
+            client_auth_type: client_secret_post
+            skip: oidcc-server-rotate-keys
+          - plan: oidcc-test-plan
+            client_registration: dynamic_client
+            response_mode: default
+            response_type: code
+            client_auth_type: client_secret_jwt
+            skip: oidcc-server-rotate-keys
+          - plan: oidcc-test-plan
+            client_registration: dynamic_client
+            response_mode: default
+            response_type: code id_token
+            client_auth_type: client_secret_jwt
+            skip: oidcc-server-rotate-keys
+          - plan: oidcc-test-plan
+            client_registration: dynamic_client
+            response_mode: default
+            response_type: code id_token token
+            client_auth_type: client_secret_jwt
+            skip: oidcc-server-rotate-keys
+          - plan: oidcc-test-plan
+            client_registration: dynamic_client
+            response_mode: default
+            response_type: code token
+            client_auth_type: client_secret_jwt
+            skip: oidcc-server-rotate-keys
+          - plan: oidcc-test-plan
+            client_registration: dynamic_client
+            response_mode: default
+            response_type: code
+            client_auth_type: private_key_jwt
+            skip: oidcc-server-rotate-keys
+          - plan: oidcc-test-plan
+            client_registration: dynamic_client
+            response_mode: default
+            response_type: code id_token
+            client_auth_type: private_key_jwt
+            skip: oidcc-server-rotate-keys
+          - plan: oidcc-test-plan
+            client_registration: dynamic_client
+            response_mode: default
+            response_type: code id_token token
+            client_auth_type: private_key_jwt
+            skip: oidcc-server-rotate-keys
+          - plan: oidcc-test-plan
+            client_registration: dynamic_client
+            response_mode: default
+            response_type: code token
+            client_auth_type: private_key_jwt
+            skip: oidcc-server-rotate-keys
+          - plan: oidcc-test-plan
+            client_registration: dynamic_client
+            response_mode: default
+            response_type: id_token
+            client_auth_type: none
+            skip: oidcc-server-rotate-keys
+          - plan: oidcc-test-plan
+            client_registration: dynamic_client
+            response_mode: default
+            response_type: id_token token
+            client_auth_type: none
+            skip: oidcc-server-rotate-keys
     steps:
       - name: Checkout
         uses: actions/checkout@master
@@ -131,14 +315,14 @@ jobs:
         if: ${{ steps.node_modules.outputs.cache-hit != 'true' }}
       - name: Run oidc-provider (OIDC)
         run: node certification/docker &
-        if: ${{ startsWith(fromJSON(matrix.setup).plan, 'oidcc') }}
+        if: ${{ startsWith(matrix.setup.plan, 'oidcc') }}
         env:
           PORT: 3000
           ISSUER: https://172.17.0.1:3000
           NODE_TLS_REJECT_UNAUTHORIZED: 0
       - name: Run oidc-provider (FAPI)
         run: node certification/fapi &
-        if: ${{ startsWith(fromJSON(matrix.setup).plan, 'fapi') }}
+        if: ${{ startsWith(matrix.setup.plan, 'fapi') }}
         env:
           ISSUER: https://172.17.0.1:3000
           PORT: 3000
@@ -172,7 +356,7 @@ jobs:
           sed -i -e 's/fapi.panva.cz/172.17.0.1:3000/g' certification/fapi/mtls.json
           sed -i -e 's/mtls.fapi.panva.cz/172.17.0.1:3000/g' certification/fapi/pkjwt.json
           sed -i -e 's/fapi.panva.cz/172.17.0.1:3000/g' certification/fapi/pkjwt.json
-      - name: Run ${{ matrix.setup }}
+      - name: Run ${{ toJSON(matrix.setup) }}
         run: npx mocha --delay --timeout 0 --retries 0 certification/runner
         env:
           NODE_TLS_REJECT_UNAUTHORIZED: 0
