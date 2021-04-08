@@ -1,4 +1,5 @@
 const url = require('url');
+const { createHash } = require('crypto');
 
 const sinon = require('sinon');
 const { expect } = require('chai');
@@ -10,6 +11,10 @@ const bootstrap = require('../test_helper');
 const base64url = require('../../lib/helpers/base64url');
 
 const expectedS256 = 'ZjEgWN6HnCZRssL1jRQHiJi6vlWXolM5Zba8FQBYONg';
+
+function ath(accessToken) {
+  return base64url.encode(createHash('sha256').update(accessToken).digest());
+}
 
 describe('features.dPoP', () => {
   before(bootstrap(__dirname));
@@ -25,7 +30,21 @@ describe('features.dPoP', () => {
     });
   });
   before(function () {
-    this.proof = (uri, method, jwk = this.jwk) => JWT.sign({ htu: uri, htm: method, jti: nanoid() }, jwk, { kid: false, header: { typ: 'dpop+jwt', jwk: JWK.asKey(jwk) } });
+    this.proof = (uri, method, accessToken, jwk = this.jwk) => {
+      let accessTokenHash;
+      if (accessToken) {
+        accessTokenHash = ath(accessToken);
+      }
+      return JWT.sign(
+        {
+          htu: uri, htm: method, jti: nanoid(), ath: accessTokenHash,
+        },
+        jwk,
+        {
+          kid: false, header: { typ: 'dpop+jwt', jwk: JWK.asKey(jwk) },
+        },
+      );
+    };
   });
 
   it('extends discovery', function () {
@@ -63,7 +82,7 @@ describe('features.dPoP', () => {
         .expect('WWW-Authenticate', /algs="ES256 PS256"/);
 
       await this.agent.post('/me')
-        .set('DPoP', this.proof(`${this.provider.issuer}${this.suitePath('/me')}`, 'POST'))
+        .set('DPoP', this.proof(`${this.provider.issuer}${this.suitePath('/me')}`, 'POST', dpop))
         .send({ access_token: dpop })
         .type('form')
         .expect(400)
@@ -72,7 +91,7 @@ describe('features.dPoP', () => {
         .expect('WWW-Authenticate', /algs="ES256 PS256"/);
 
       await this.agent.get('/me')
-        .set('DPoP', this.proof(`${this.provider.issuer}${this.suitePath('/me')}`, 'GET'))
+        .set('DPoP', this.proof(`${this.provider.issuer}${this.suitePath('/me')}`, 'GET', dpop))
         .set('Authorization', `Bearer ${dpop}`)
         .expect(400)
         .expect({ error: 'invalid_request', error_description: 'authorization header scheme must be `DPoP` when DPoP is used' })
@@ -204,7 +223,7 @@ describe('features.dPoP', () => {
       at.setThumbprint('jkt', this.jwk.thumbprint);
 
       const dpop = await at.save();
-      const proof = this.proof(`${this.provider.issuer}${this.suitePath('/me')}`, 'GET');
+      const proof = this.proof(`${this.provider.issuer}${this.suitePath('/me')}`, 'GET', dpop);
 
       await this.agent.get('/me')
         .set('Authorization', `DPoP ${dpop}`)
@@ -230,9 +249,15 @@ describe('features.dPoP', () => {
 
       await this.agent.get('/me')
         .set('Authorization', `DPoP ${dpop}`)
-        .set('DPoP', this.proof(`${this.provider.issuer}${this.suitePath('/me')}`, 'GET', anotherJWK))
+        .set('DPoP', this.proof(`${this.provider.issuer}${this.suitePath('/me')}`, 'GET', dpop, anotherJWK))
         .expect({ error: 'invalid_token', error_description: 'invalid token provided' })
         .expect(401);
+
+      await this.agent.get('/me')
+        .set('Authorization', `DPoP ${dpop}`)
+        .set('DPoP', this.proof(`${this.provider.issuer}${this.suitePath('/me')}`, 'GET', 'anotherAccessTokenValue'))
+        .expect({ error: 'invalid_token', error_description: 'invalid DPoP key binding' })
+        .expect(400);
 
       expect(spy).to.have.property('calledOnce', true);
       expect(spy.args[0][1]).to.have.property('error_detail', 'failed jkt verification');
@@ -506,7 +531,7 @@ describe('features.dPoP', () => {
             grant_type: 'refresh_token',
             refresh_token: this.rt,
           })
-          .set('DPoP', this.proof(`${this.provider.issuer}${this.suitePath('/token')}`, 'POST', anotherJWK))
+          .set('DPoP', this.proof(`${this.provider.issuer}${this.suitePath('/token')}`, 'POST', undefined, anotherJWK))
           .type('form')
           .expect(400)
           .expect({ error: 'invalid_grant', error_description: 'grant request is invalid' });

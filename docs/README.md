@@ -666,7 +666,7 @@ _**default value**_:
 
 ### features.dPoP
 
-[draft-ietf-oauth-dpop-02](https://tools.ietf.org/html/draft-ietf-oauth-dpop-02) - OAuth 2.0 Demonstration of Proof-of-Possession at the Application Layer (DPoP)  
+[draft-ietf-oauth-dpop-03](https://tools.ietf.org/html/draft-ietf-oauth-dpop-03) - OAuth 2.0 Demonstration of Proof-of-Possession at the Application Layer (DPoP)  
 
 Enables `DPoP` - mechanism for sender-constraining tokens via a proof-of-possession mechanism on the application level. Browser DPoP Proof generation [here](https://www.npmjs.com/package/dpop).  
 
