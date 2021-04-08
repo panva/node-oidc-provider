@@ -427,6 +427,7 @@ location / {
   - [encryption](#featuresencryption)
   - [fapiRW](#featuresfapirw)
   - [introspection](#featuresintrospection)
+  - [issAuthResp](#featuresissauthresp)
   - [jwtIntrospection](#featuresjwtintrospection)
   - [jwtResponseModes](#featuresjwtresponsemodes)
   - [jwtUserinfo](#featuresjwtuserinfo)
@@ -438,7 +439,6 @@ location / {
   - [resourceIndicators ❗](#featuresresourceindicators)
   - [revocation](#featuresrevocation)
   - [userinfo](#featuresuserinfo)
-  - [webMessageResponseMode](#featureswebmessageresponsemode)
 - [acrValues](#acrvalues)
 - [allowOmittingSingleRegisteredRedirectUri](#allowomittingsingleregisteredredirecturi)
 - [claims ❗](#claims)
@@ -558,15 +558,13 @@ async function findAccount(ctx, sub, token) {
 
 ### jwks
 
-JSON Web Key Set used by the provider for signing and decryption. The object must be in [JWK Set format](https://tools.ietf.org/html/rfc7517#section-5). All provided keys must be private keys. **Note:** Be sure to follow best practices for distributing private keying material and secrets for your respective target deployment environment.   
-   
- Supported key types are:   
- - RSA
- - OKP (Ed25519, Ed448, X25519, X448 sub types)
- - EC (P-256, secp256k1, P-384, and P-521 curves)   
+JSON Web Key Set used by the provider for signing and decryption. The object must be in [JWK Set format](https://tools.ietf.org/html/rfc7517#section-5). All provided keys must be private keys.   
   
 
-_**recommendation**_: **Provider key rotation** - The following action order is recommended when rotating signing keys on a distributed deployment with rolling reloads in place.
+_**recommendation**_: Be sure to follow best practices for distributing private keying material and secrets for your respective target deployment environment. Supported key types are:
+ - RSA
+ - OKP (Ed25519, Ed448, X25519, X448 sub types)
+ - EC (P-256, secp256k1, P-384, and P-521 curves) Provider key rotation** - The following action order is recommended when rotating signing keys on a distributed deployment with rolling reloads in place.
  1. push new keys at the very end of the "keys" array in your JWKS, this means the keys will become available for verification should they be encountered but not yet used for signing
  2. reload all your processes
  3. move your new key to the very front of the "keys" array in your JWKS, this means the key will be used for signing after reload
@@ -584,33 +582,33 @@ Enable/disable features. Some features are still either based on draft or experi
 ```js
 new Provider('http://localhost:3000', {
   features: {
-    webMessageResponseMode: {
+    backchannelLogout: {
       enabled: true,
     },
   },
 });
 // The above code produces this NOTICE
 // NOTICE: The following draft features are enabled and their implemented version not acknowledged
-// NOTICE:   - OAuth 2.0 Web Message Response Mode - draft 00 (This is an Individual draft. URL: https://tools.ietf.org/html/draft-sakimura-oauth-wmrm-00)
+// NOTICE:   - OpenID Connect Back-Channel Logout 1.0 - draft 06 (OIDF AB/Connect Working Group draft. URL: https://openid.net/specs/openid-connect-backchannel-1_0-06.html)
 // NOTICE: Breaking changes between draft version updates may occur and these will be published as MINOR semver oidc-provider updates.
-// NOTICE: You may disable this notice and these potentially breaking updates by acknowledging the current draft version. See https://github.com/panva/node-oidc-provider/tree/v6.6.2/docs/README.md#features
+// NOTICE: You may disable this notice and these potentially breaking updates by acknowledging the current draft version. See https://github.com/panva/node-oidc-provider/tree/v7.3.0/docs/README.md#features
 new Provider('http://localhost:3000', {
   features: {
-    webMessageResponseMode: {
+    backchannelLogout: {
       enabled: true,
-      ack: 0, // < we're acknowledging draft 00 of the RFC
+      ack: 'draft-06', // < we're acknowledging draft 06 of the RFC
     },
   },
 });
-// No more NOTICE, at this point if the draft implementation changed to 01 and contained no breaking
+// No more NOTICE, at this point if the draft implementation changed to 07 and contained no breaking
 // changes, you're good to go, still no NOTICE, your code is safe to run.
-// Now lets assume you upgrade oidc-provider version and it bundles draft 02 and it contains breaking
+// Now lets assume you upgrade oidc-provider version and it bundles draft 08 and it contains breaking
 // changes
 new Provider('http://localhost:3000', {
   features: {
-    webMessageResponseMode: {
+    backchannelLogout: {
       enabled: true,
-      ack: 0, // < bundled is 2, but we're still acknowledging 0
+      ack: 'draft-06', // < bundled is draft-08, but we're still acknowledging draft-06
     },
   },
 });
@@ -625,6 +623,8 @@ new Provider('http://localhost:3000', {
 
 Enables Back-Channel Logout features.   
   
+
+_**recommendation**_: Updates to draft specification versions are released as MINOR library versions, if you utilize these specification implementations consider using the tilde `~` operator in your package.json since breaking changes may be introduced as part of these version updates. Alternatively, [acknowledge](#features) the version and be notified of breaking changes as part of your CI.  
 
 
 _**default value**_:
@@ -668,7 +668,10 @@ _**default value**_:
 
 [draft-ietf-oauth-dpop-03](https://tools.ietf.org/html/draft-ietf-oauth-dpop-03) - OAuth 2.0 Demonstration of Proof-of-Possession at the Application Layer (DPoP)  
 
-Enables `DPoP` - mechanism for sender-constraining tokens via a proof-of-possession mechanism on the application level. Browser DPoP Proof generation [here](https://www.npmjs.com/package/dpop).  
+Enables `DPoP` - mechanism for sender-constraining tokens via a proof-of-possession mechanism on the application level. Browser DPoP Proof generation [here](https://www.npmjs.com/package/dpop).   
+  
+
+_**recommendation**_: Updates to draft specification versions are released as MINOR library versions, if you utilize these specification implementations consider using the tilde `~` operator in your package.json since breaking changes may be introduced as part of these version updates. Alternatively, [acknowledge](#features) the version and be notified of breaking changes as part of your CI.  
 
 
 _**default value**_:
@@ -888,6 +891,8 @@ Enables extra behaviours defined in FAPI Part 1 & 2 that cannot be achieved by o
  - `userinfo_endpoint` becomes a FAPI resource, echoing back the x-fapi-interaction-id header and disabling query string as a mechanism for providing access tokens   
   
 
+_**recommendation**_: Updates to draft specification versions are released as MINOR library versions, if you utilize these specification implementations consider using the tilde `~` operator in your package.json since breaking changes may be introduced as part of these version updates. Alternatively, [acknowledge](#features) the version and be notified of breaking changes as part of your CI.  
+
 
 _**default value**_:
 ```js
@@ -959,7 +964,10 @@ async function introspectionAllowedPolicy(ctx, client, token) {
 
 [draft-ietf-oauth-iss-auth-resp-00](https://tools.ietf.org/html/draft-ietf-oauth-iss-auth-resp-00) - OAuth 2.0 Authorization Server Issuer Identifier in Authorization Response  
 
-Enables `iss` authorization response parameter for responses without existing countermeasures against mix-up attacks.  
+Enables `iss` authorization response parameter for responses without existing countermeasures against mix-up attacks.   
+  
+
+_**recommendation**_: Updates to draft specification versions are released as MINOR library versions, if you utilize these specification implementations consider using the tilde `~` operator in your package.json since breaking changes may be introduced as part of these version updates. Alternatively, [acknowledge](#features) the version and be notified of breaking changes as part of your CI.  
 
 
 _**default value**_:
@@ -977,6 +985,8 @@ _**default value**_:
 Enables JWT responses for Token Introspection features   
   
 
+_**recommendation**_: Updates to draft specification versions are released as MINOR library versions, if you utilize these specification implementations consider using the tilde `~` operator in your package.json since breaking changes may be introduced as part of these version updates. Alternatively, [acknowledge](#features) the version and be notified of breaking changes as part of your CI.  
+
 
 _**default value**_:
 ```js
@@ -992,6 +1002,8 @@ _**default value**_:
 
 Enables JWT Secured Authorization Responses   
   
+
+_**recommendation**_: Updates to draft specification versions are released as MINOR library versions, if you utilize these specification implementations consider using the tilde `~` operator in your package.json since breaking changes may be introduced as part of these version updates. Alternatively, [acknowledge](#features) the version and be notified of breaking changes as part of your CI.  
 
 
 _**default value**_:
@@ -1159,6 +1171,8 @@ false
 Enables the use of `pushed_authorization_request_endpoint` defined by the Pushed Authorization Requests draft.   
   
 
+_**recommendation**_: Updates to draft specification versions are released as MINOR library versions, if you utilize these specification implementations consider using the tilde `~` operator in your package.json since breaking changes may be introduced as part of these version updates. Alternatively, [acknowledge](#features) the version and be notified of breaking changes as part of your CI.  
+
 
 _**default value**_:
 ```js
@@ -1267,6 +1281,12 @@ async issueRegistrationAccessToken(ctx) {
 define registration and registration management policies applied to client properties. Policies are sync/async functions that are assigned to an Initial Access Token that run before the regular client property validations are run. Multiple policies may be assigned to an Initial Access Token and by default the same policies will transfer over to the Registration Access Token. A policy may throw / reject and it may modify the properties object.   
   
 
+_**recommendation**_: referenced policies must always be present when encountered on a token, an AssertionError will be thrown inside the request context if it is not, resulting in a 500 Server Error. the same policies will be assigned to the Registration Access Token after a successful validation. If you wish to assign different policies to the Registration Access Token
+ ```js
+ // inside your final ran policy
+ ctx.oidc.entities.RegistrationAccessToken.policies = ['update-policy'];
+ ```  
+
 
 _**default value**_:
 ```js
@@ -1306,13 +1326,6 @@ An Initial Access Token with those policies being executed (one by one in that o
 
 ```js
 new (provider.InitialAccessToken)({ policies: ['my-policy', 'my-policy-2'] }).save().then(console.log);
-```
-Note: referenced policies must always be present when encountered on a token, an AssertionError will be thrown inside the request context if it is not, resulting in a 500 Server Error. Note: the same policies will be assigned to the Registration Access Token after a successful validation. If you wish to assign different policies to the Registration Access Token
-  
-
-```js
-// inside your final ran policy
-ctx.oidc.entities.RegistrationAccessToken.policies = ['update-policy'];
 ```
 </details>
 
@@ -1732,23 +1745,6 @@ _**default value**_:
 ```js
 {
   enabled: true
-}
-```
-
-### features.webMessageResponseMode
-
-[draft-sakimura-oauth-wmrm-00](https://tools.ietf.org/html/draft-sakimura-oauth-wmrm-00) - OAuth 2.0 Web Message Response Mode  
-
-Enables `web_message` response mode.   
- Note: Browsers blocking access to cookies from a third party context hinder the reliability of `response_mode=web_message` "no prompt" mode.   
- Note: Although a general advise to use a `helmet` ([express](https://www.npmjs.com/package/helmet), [koa](https://www.npmjs.com/package/koa-helmet)) it is especially advised for your interaction views routes if Web Message Response Mode is available on your deployment.  
-
-
-_**default value**_:
-```js
-{
-  ack: undefined,
-  enabled: false
 }
 ```
 

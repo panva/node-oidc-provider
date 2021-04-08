@@ -46,7 +46,6 @@ The following draft specifications are implemented by oidc-provider.
 - [OAuth 2.0 Demonstration of Proof-of-Possession at the Application Layer (DPoP) - draft 03][dpop]
 - [OAuth 2.0 JWT Secured Authorization Request (JAR) - draft 33][jar]
 - [OAuth 2.0 Pushed Authorization Requests (PAR) - draft 06][par]
-- [OAuth 2.0 Web Message Response Mode - individual draft 00][wmrm]
 - [OpenID Connect RP-Initiated Logout 1.0 - draft 01][rpinitiated-logout]
 - [OpenID Connect Back-Channel Logout 1.0 - draft 06][backchannel-logout]
 
@@ -140,7 +139,6 @@ See the list of available emitted [event names](/docs/events.md) and their descr
 [backchannel-logout]: https://openid.net/specs/openid-connect-backchannel-1_0-06.html
 [registration-management]: https://tools.ietf.org/html/rfc7592
 [oauth-native-apps]: https://tools.ietf.org/html/rfc8252
-[wmrm]: https://tools.ietf.org/html/draft-sakimura-oauth-wmrm-00
 [jar]: https://tools.ietf.org/html/draft-ietf-oauth-jwsreq-33
 [device-flow]: https://tools.ietf.org/html/rfc8628
 [jwt-introspection]: https://tools.ietf.org/html/draft-ietf-oauth-jwt-introspection-response-10
