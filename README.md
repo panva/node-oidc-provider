@@ -44,7 +44,7 @@ The following draft specifications are implemented by oidc-provider.
 - [Financial-grade API - Part 2: Read and Write API Security Profile (FAPI) - Implementer's Draft 02][fapi]
 - [OAuth 2.0 Authorization Server Issuer Identifier in Authorization Response - draft 00][iss-auth-resp]
 - [OAuth 2.0 Demonstration of Proof-of-Possession at the Application Layer (DPoP) - draft 03][dpop]
-- [OAuth 2.0 JWT Secured Authorization Request (JAR) - draft 30][jar]
+- [OAuth 2.0 JWT Secured Authorization Request (JAR) - draft 33][jar]
 - [OAuth 2.0 Pushed Authorization Requests (PAR) - draft 06][par]
 - [OAuth 2.0 Web Message Response Mode - individual draft 00][wmrm]
 - [OpenID Connect RP-Initiated Logout 1.0 - draft 01][rpinitiated-logout]
@@ -141,7 +141,7 @@ See the list of available emitted [event names](/docs/events.md) and their descr
 [registration-management]: https://tools.ietf.org/html/rfc7592
 [oauth-native-apps]: https://tools.ietf.org/html/rfc8252
 [wmrm]: https://tools.ietf.org/html/draft-sakimura-oauth-wmrm-00
-[jar]: https://tools.ietf.org/html/draft-ietf-oauth-jwsreq-30
+[jar]: https://tools.ietf.org/html/draft-ietf-oauth-jwsreq-33
 [device-flow]: https://tools.ietf.org/html/rfc8628
 [jwt-introspection]: https://tools.ietf.org/html/draft-ietf-oauth-jwt-introspection-response-10
 [sponsor-auth0]: https://auth0.com/developers?utm_source=GHsponsor&utm_medium=GHsponsor&utm_campaign=oidc-provider&utm_content=auth
