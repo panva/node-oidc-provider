@@ -2,6 +2,17 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [7.3.0](https://github.com/panva/node-oidc-provider/compare/v7.2.0...v7.3.0) (2021-04-08)
+
+
+### ⚠ BREAKING CHANGES
+
+* DPoP implementation updated to [draft-ietf-oauth-dpop-03](https://tools.ietf.org/html/draft-ietf-oauth-dpop-03)
+
+### Features
+
+* update DPoP implementation to ietf draft 03 ([d08126f](https://github.com/panva/node-oidc-provider/commit/d08126f70fc45ef3c3b10ade692406e3793e27dc))
+
 ## [7.2.0](https://github.com/panva/node-oidc-provider/compare/v7.1.3...v7.2.0) (2021-04-01)
 
 
