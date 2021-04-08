@@ -56,6 +56,13 @@ module.exports = {
     profile: ['birthdate', 'family_name', 'gender', 'given_name', 'locale', 'middle_name', 'name',
       'nickname', 'picture', 'preferred_username', 'profile', 'updated_at', 'website', 'zoneinfo'],
   },
+  clientBasedCORS(ctx, origin, client) {
+    if (client.clientId === 'dpop-heroku' && origin === 'https://murmuring-journey-60982.herokuapp.com') {
+      return true;
+    }
+
+    return false;
+  },
   features: {
     backchannelLogout: { enabled: true },
     devInteractions: { enabled: false },
