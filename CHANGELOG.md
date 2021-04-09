@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [7.3.1](https://github.com/panva/node-oidc-provider/compare/v7.3.0...v7.3.1) (2021-04-09)
+
+
+### Bug Fixes
+
+* store original PAR signed request object after decryption ([fa26e55](https://github.com/panva/node-oidc-provider/commit/fa26e55fac320502119f18e7c1fb576cda6ef0d3))
+
 ## [7.3.0](https://github.com/panva/node-oidc-provider/compare/v7.2.0...v7.3.0) (2021-04-08)
 
 
