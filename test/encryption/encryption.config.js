@@ -11,6 +11,7 @@ merge(config.features, {
   introspection: { enabled: true },
   jwtIntrospection: { enabled: true },
   jwtUserinfo: { enabled: true },
+  pushedAuthorizationRequests: { enabled: true },
 });
 
 pull(config.enabledJWA.requestObjectEncryptionAlgValues, 'RSA-OAEP');
@@ -68,6 +69,14 @@ module.exports = {
       response_types: ['id_token'],
       grant_types: ['implicit'],
       id_token_encrypted_response_alg: 'dir',
+    },
+    {
+      client_id: 'clientRequestObjectSigningAlg',
+      client_secret: 'secret',
+      redirect_uris: ['https://client.example.com/cb'],
+      response_types: ['code'],
+      grant_types: ['authorization_code'],
+      request_object_signing_alg: 'HS256',
     },
   ],
 };

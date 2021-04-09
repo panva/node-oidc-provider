@@ -381,6 +381,123 @@ describe('encryption', () => {
         });
       });
 
+      describe('Pushed Request Object encryption', () => {
+        it('works with signed by none', async function () {
+          const signed = await JWT.sign({
+            client_id: 'client',
+            response_type: 'code',
+            redirect_uri: 'https://client.example.com/cb',
+            scope: 'openid',
+          }, null, 'none', { issuer: 'client', audience: this.provider.issuer });
+
+          let [key] = i(this.provider).keystore.selectForEncrypt({ kty: 'RSA', alg: 'RSA1_5' });
+          key = await i(this.provider).keystore.getKeyObject(key, 'RSA1_5');
+
+          const encrypted = jose.JWE.encrypt(signed, key, { enc: 'A128CBC-HS256', alg: 'RSA1_5' });
+
+          const { body } = await this.agent.post('/request')
+            .auth('client', 'secret')
+            .type('form')
+            .send({ request: encrypted });
+
+          return this.wrap({
+            route,
+            verb,
+            auth: {
+              request_uri: body.request_uri,
+              client_id: 'client',
+            },
+          })
+            .expect(302)
+            .expect((response) => {
+              const expected = url.parse('https://client.example.com/cb', true);
+              const actual = url.parse(response.headers.location, true);
+              ['protocol', 'host', 'pathname'].forEach((attr) => {
+                expect(actual[attr]).to.equal(expected[attr]);
+              });
+              expect(actual.query).to.have.property('code');
+            });
+        });
+
+        it('works with signed by other than none', async function () {
+          const client = await this.provider.Client.find('client');
+          const [hsSecret] = client.symmetricKeyStore.selectForSign({ alg: 'HS256' });
+          const signed = await JWT.sign({
+            client_id: 'client',
+            response_type: 'code',
+            redirect_uri: 'https://client.example.com/cb',
+            scope: 'openid',
+          }, await client.symmetricKeyStore.getKeyObject(hsSecret, 'HS256'), 'HS256', { issuer: 'client', audience: this.provider.issuer });
+
+          let [key] = i(this.provider).keystore.selectForEncrypt({ kty: 'RSA', alg: 'RSA1_5' });
+          key = await i(this.provider).keystore.getKeyObject(key, 'RSA1_5');
+
+          const encrypted = jose.JWE.encrypt(signed, key, { enc: 'A128CBC-HS256', alg: 'RSA1_5' });
+
+          const { body } = await this.agent.post('/request')
+            .auth('client', 'secret')
+            .type('form')
+            .send({ request: encrypted });
+
+          return this.wrap({
+            route,
+            verb,
+            auth: {
+              request_uri: body.request_uri,
+              client_id: 'client',
+            },
+          })
+            .expect(302)
+            .expect((response) => {
+              const expected = url.parse('https://client.example.com/cb', true);
+              const actual = url.parse(response.headers.location, true);
+              ['protocol', 'host', 'pathname'].forEach((attr) => {
+                expect(actual[attr]).to.equal(expected[attr]);
+              });
+              expect(actual.query).to.have.property('code');
+            });
+        });
+
+        it('works with signed by other than none when an alg is required', async function () {
+          const client = await this.provider.Client.find('clientRequestObjectSigningAlg');
+          const [hsSecret] = client.symmetricKeyStore.selectForSign({ alg: 'HS256' });
+          const signed = await JWT.sign({
+            client_id: 'clientRequestObjectSigningAlg',
+            response_type: 'code',
+            redirect_uri: 'https://client.example.com/cb',
+            scope: 'openid',
+          }, await client.symmetricKeyStore.getKeyObject(hsSecret, 'HS256'), 'HS256', { issuer: 'clientRequestObjectSigningAlg', audience: this.provider.issuer });
+
+          let [key] = i(this.provider).keystore.selectForEncrypt({ kty: 'RSA', alg: 'RSA1_5' });
+          key = await i(this.provider).keystore.getKeyObject(key, 'RSA1_5');
+
+          const encrypted = jose.JWE.encrypt(signed, key, { enc: 'A128CBC-HS256', alg: 'RSA1_5' });
+
+          const { body } = await this.agent.post('/request')
+            .auth('clientRequestObjectSigningAlg', 'secret')
+            .type('form')
+            .send({ request: encrypted });
+
+          return this.wrap({
+            route,
+            verb,
+            auth: {
+              request_uri: body.request_uri,
+              client_id: 'clientRequestObjectSigningAlg',
+            },
+          })
+            .expect(302)
+            .expect((response) => {
+              const expected = url.parse('https://client.example.com/cb', true);
+              const actual = url.parse(response.headers.location, true);
+              ['protocol', 'host', 'pathname'].forEach((attr) => {
+                expect(actual[attr]).to.equal(expected[attr]);
+              });
+              expect(actual.query).to.have.property('code');
+            });
+        });
+      });
+
       it('handles when no suitable encryption key is found', async function () {
         const client = await this.provider.Client.find('client');
 
