@@ -1213,7 +1213,7 @@ _**default value**_:
   initialAccessToken: false,
   issueRegistrationAccessToken: true,
   policies: undefined,
-  secretFactory: [Function: secretFactory] // see expanded details below
+  secretFactory: [AsyncFunction: secretFactory] // see expanded details below
 }
 ```
 
@@ -1336,8 +1336,10 @@ Function used to generate random client secrets during dynamic client registrati
 
 _**default value**_:
 ```js
-function secretFactory(ctx) {
-  return base64url.encodeBuffer(crypto.randomBytes(64)); // 512 base64url random bits
+async function secretFactory(ctx) {
+  const bytes = Buffer.allocUnsafe(64);
+  await randomFill(bytes);
+  return base64url.encodeBuffer(bytes);
 }
 ```
 
