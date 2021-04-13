@@ -129,8 +129,6 @@ describe('opaque storage', () => {
       authTime,
       claims,
       clientId,
-      codeChallenge,
-      codeChallengeMethod,
       consumed,
       deviceInfo,
       error,
