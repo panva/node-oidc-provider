@@ -99,7 +99,6 @@ const fapi = new Provider(ISSUER, {
     grant_types: ['implicit', 'authorization_code', 'refresh_token'],
     response_types: ['code', 'code id_token'],
     id_token_signed_response_alg: 'PS256',
-    introspection_signed_response_alg: 'PS256',
     request_object_signing_alg: 'PS256',
     tls_client_certificate_bound_access_tokens: true,
     token_endpoint_auth_method: 'private_key_jwt',
@@ -138,7 +137,6 @@ const fapi = new Provider(ISSUER, {
   enabledJWA: {
     authorizationSigningAlgValues: ALGS,
     idTokenSigningAlgValues: ALGS,
-    introspectionSigningAlgValues: ALGS,
     requestObjectSigningAlgValues: ALGS,
     tokenEndpointAuthSigningAlgValues: ALGS,
     userinfoSigningAlgValues: ALGS,
@@ -184,7 +182,7 @@ if (process.env.NODE_ENV === 'production') {
 
       switch (ctx.oidc && ctx.oidc.route) {
         case 'discovery': {
-          ['token', 'introspection', 'revocation', 'userinfo', 'pushed_authorization_request'].forEach((endpoint) => {
+          ['token', 'userinfo', 'pushed_authorization_request'].forEach((endpoint) => {
             if (ctx.body[`${endpoint}_endpoint`].startsWith(ISSUER)) {
               ctx.body[`${endpoint}_endpoint`] = ctx.body[`${endpoint}_endpoint`].replace('https://', 'https://mtls.');
             }
