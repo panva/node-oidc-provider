@@ -3,31 +3,9 @@
 - built for version: ^6.0.0 || ^7.0.0
 - no guarantees this is bug-free
 
-OIDC routes that are ever needed to be called from a browser user-agent are CORS-enabled and by
-default have all origins allowed. This works for developing and testing but at some point you
-might want to restrict the call's origins.
-
-These endpoints have CORS enabled from all origins all the time, no real reason to restrict it:
-
-- jwks (`jwks_uri`)
-- discovery (`/.well-known/openid-configuration`)
-
-These endpoints have CORS enabled from all origins by default:
-
-- `device_authorization_endpoint`
-- `introspection_endpoint`
-- `revocation_endpoint`
-- `token_endpoint`
-- `userinfo_endpoint`
-
-As these always get their client resolved during the request (either through client authentication
-or the token's client) you can use any mechanism available to you to have them fail the moment
-client is identified. In this recipe we'll use a custom client metadata to register an array of
-origins that will be allowed when  encountered, otherwise the requests will fail.
-
-Since neither one of the specifications defines metadata for client's allowed CORS origins here's
-how to implement a custom client metadata field and have it used during CORS requests (both actual
-and preflights).
+Since the specifications do not define metadata for client's allowed CORS origins here's
+how to implement a custom client metadata field and have it used during CORS requests
+in the `clientBasedCORS` helper function.
 
 ```js
 const { URL } = require('url');
