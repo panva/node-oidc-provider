@@ -35,7 +35,7 @@ const models = [
   'Interaction',
   'ReplayDetection',
   'PushedAuthorizationRequest',
-  'Grant'
+  'Grant',
 ].reduce((map, name) => {
   map.set(name, sequelize.define(name, {
     id: { type: Sequelize.STRING, primaryKey: true },
