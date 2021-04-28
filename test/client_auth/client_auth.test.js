@@ -840,6 +840,31 @@ describe('client authentication options', () => {
         }));
     });
 
+    it('sub must be set', function () {
+      const spy = sinon.spy();
+      this.provider.once('grant.error', spy);
+      return JWT.sign({
+        jti: nanoid(),
+        aud: this.provider.issuer + this.suitePath('/token'),
+        // sub: 'client-jwt-secret',
+        iss: 'client-jwt-secret',
+      }, this.key, 'HS256', {
+        expiresIn: 60,
+      }).then((assertion) => this.agent.post(route)
+        .send({
+          client_assertion: assertion,
+          grant_type: 'foo',
+          client_assertion_type: 'urn:ietf:params:oauth:client-assertion-type:jwt-bearer',
+        })
+        .type('form')
+        .expect(401)
+        .expect(tokenAuthRejected)
+        .expect(() => {
+          expect(spy.calledOnce).to.be.true;
+          expect(errorDetail(spy)).to.equal('sub (JWT subject) must be provided in the client_assertion JWT');
+        }));
+    });
+
     it('iss must be the client id', function () {
       const spy = sinon.spy();
       this.provider.once('grant.error', spy);
@@ -861,7 +886,7 @@ describe('client authentication options', () => {
         .expect(tokenAuthRejected)
         .expect(() => {
           expect(spy.calledOnce).to.be.true;
-          expect(errorDetail(spy)).to.equal('issuer (iss) must be the client id');
+          expect(errorDetail(spy)).to.equal('iss (JWT issuer) must be the client_id');
         }));
     });
 
