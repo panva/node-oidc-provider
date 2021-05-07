@@ -7,7 +7,7 @@ const { expect } = require('chai');
 const bootstrap = require('../test_helper');
 
 const crt = readFileSync('./test/jwks/client.crt').toString();
-const expectedS256 = 'eXvgMeO-8uLw0FGYkJefOXSFHOnbbcfv95rIYCPsbpo';
+const expectedS256 = 'A4DtL2JmUMhAsvJj5tKyn64SqzmuXbMrJa0n761y5v0';
 
 describe('features.mTLS.certificateBoundAccessTokens', () => {
   before(bootstrap(__dirname));
