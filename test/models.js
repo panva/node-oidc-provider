@@ -1,5 +1,7 @@
 /* eslint-disable max-classes-per-file */
 
+const { strict: assert } = require('assert');
+
 const map = new Map();
 
 map.del = function (...args) {
@@ -69,7 +71,12 @@ class Account {
     return testStorage;
   }
 
-  claims() {
+  claims(use, scope, claims, rejected) {
+    assert.equal(typeof use, 'string');
+    assert.equal(typeof scope, 'string');
+    assert.equal(typeof claims, 'object');
+    assert.ok(Array.isArray(rejected));
+
     return {
       address: {
         country: '000',
@@ -101,10 +108,12 @@ class Account {
     };
   }
 
-  static async findAccount(ctx, id) {
-    let acc = testStorage.get(`Account:${id}`);
+  // eslint-disable-next-line no-unused-vars
+  static async findAccount(ctx, sub, token) {
+    assert.equal(typeof sub, 'string');
+    let acc = testStorage.get(`Account:${sub}`);
     if (!acc) {
-      acc = new Account(id);
+      acc = new Account(sub);
     }
     return acc;
   }
