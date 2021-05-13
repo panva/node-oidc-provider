@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [7.3.2](https://github.com/panva/node-oidc-provider/compare/v7.3.1...v7.3.2) (2021-05-13)
+
+
+### Bug Fixes
+
+* account claims scope argument type during refresh token exchange ([bd1bee1](https://github.com/panva/node-oidc-provider/commit/bd1bee17a77b6b6746cc19be2984db87169ed5b9)), closes [#1000](https://github.com/panva/node-oidc-provider/issues/1000)
+
 ## [7.3.1](https://github.com/panva/node-oidc-provider/compare/v7.3.0...v7.3.1) (2021-04-09)
 
 
