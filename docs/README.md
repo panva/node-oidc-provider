@@ -2473,7 +2473,7 @@ async issueRefreshToken(ctx, client, code) {
 
 ### loadExistingGrant
 
-Helper function used to load existing but also just in time pre-established Grants,to attempt to resolve an Authorization Request with. Default: loads a grant based on the .,interaction result `consent.grantId` first, falls back to the existing grantId for the client,in the current session.  
+Helper function used to load existing but also just in time pre-established Grants,to attempt to resolve an Authorization Request with. Default: loads a grant based on the,interaction result `consent.grantId` first, falls back to the existing grantId for the client,in the current session.  
 
 
 _**default value**_:
