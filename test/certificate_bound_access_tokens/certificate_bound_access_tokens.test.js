@@ -384,8 +384,8 @@ describe('features.mTLS.certificateBoundAccessTokens', () => {
         this.provider.once('grant.error', spy);
 
         await this.agent.post('/token')
-          .auth('client', 'secret')
           .send({
+            client_id: 'client-none',
             grant_type: 'refresh_token',
             refresh_token: this.rt,
           })
@@ -402,8 +402,8 @@ describe('features.mTLS.certificateBoundAccessTokens', () => {
         this.provider.once('grant.error', spy);
 
         await this.agent.post('/token')
-          .auth('client', 'secret')
           .send({
+            client_id: 'client-none',
             grant_type: 'refresh_token',
             refresh_token: this.rt,
           })

@@ -11,7 +11,7 @@ const docs = require('../lib/helpers/docs');
 const values = require('../lib/helpers/defaults')();
 
 for (const [key, value] of Object.entries(values.ttl)) { // eslint-disable-line no-restricted-syntax
-  if (['RefreshToken', 'ClientCredentials', 'AccessToken'].includes(key)) {
+  if (['RefreshToken', 'ClientCredentials', 'AccessToken', 'BackchannelAuthenticationRequest'].includes(key)) {
     value[inspect.custom] = () => (
       value.toString()
         .replace(/ {6}/g, '  ')

@@ -153,7 +153,7 @@ describe('Financial-grade API - Part 2: Read and Write API Security Profile beha
         .expect(auth.validatePresence(['error', 'error_description', 'state']))
         .expect(auth.validateClientLocation)
         .expect(auth.validateError('invalid_request_object'))
-        .expect(auth.validateErrorDescription('Request Object is missing the "exp" claim'));
+        .expect(auth.validateErrorDescription("Request Object is missing the 'exp' claim"));
     });
   });
 });

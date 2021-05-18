@@ -60,8 +60,9 @@ describe('Client metadata validation', () => {
     });
   };
 
-  const mustBeUri = (prop, protocols, configuration) => {
+  const mustBeUri = (prop, protocols, configuration, metadata) => {
     it('must be a uri', () => addClient({
+      ...metadata,
       [prop]: 'whatever://not but not a uri',
     }, configuration).then(fail, (err) => {
       if (prop === 'redirect_uris') {
@@ -132,12 +133,13 @@ describe('Client metadata validation', () => {
     }));
   };
 
-  const isRequired = (prop, values, configuration) => {
+  const isRequired = (prop, values, configuration, metadata) => {
     (values || [null, undefined, '']).forEach((value) => {
       let msg = util.format('is required, %j provided', value);
       if (configuration) msg = util.format(`${msg}, [provider %j]`, configuration);
       it(msg, () => addClient({
         [prop]: value,
+        ...metadata,
       }, configuration).then(fail, (err) => {
         if (prop === 'redirect_uris') {
           expect(err.message).to.equal('invalid_redirect_uri');
@@ -916,6 +918,49 @@ describe('Client metadata validation', () => {
     });
   });
 
+  describe('features.ciba', () => {
+    const configuration = { features: { ciba: { enabled: true, deliveryModes: ['ping', 'poll'] } } };
+    const metadata = {
+      grant_types: ['urn:openid:params:grant-type:ciba'],
+      redirect_uris: [],
+      response_types: [],
+      backchannel_token_delivery_mode: 'poll',
+    };
+
+    context('backchannel_user_code_parameter', function () {
+      mustBeBoolean(this.title, undefined, configuration);
+      defaultsTo(this.title, false, undefined, configuration);
+    });
+
+    context('backchannel_token_delivery_mode', function () {
+      mustBeString(this.title, undefined, undefined, configuration);
+      isRequired(this.title, undefined, configuration, {
+        ...metadata, backchannel_token_delivery_mode: undefined,
+      });
+    });
+
+    context('backchannel_client_notification_endpoint', function () {
+      isRequired(this.title, undefined, configuration, { ...metadata, backchannel_token_delivery_mode: 'ping' });
+      mustBeUri(this.title, ['https'], configuration, { ...metadata, backchannel_token_delivery_mode: 'ping' });
+    });
+
+    context('backchannel_authentication_request_signing_alg', function () {
+      mustBeString(this.title, undefined, metadata, configuration);
+      [
+        'RS256', 'RS384', 'RS512',
+        'PS256', 'PS384', 'PS512', 'ES256', 'ES384', 'ES512', 'EdDSA',
+      ].forEach((alg) => {
+        allows(this.title, alg, { ...metadata, jwks: { keys: [sigKey] } }, configuration);
+      });
+      rejects(this.title, 'not-an-alg', undefined, metadata, configuration);
+      rejects(this.title, 'none', undefined, metadata, configuration);
+      rejects(this.title, 'HS256', undefined, metadata, configuration);
+      rejects(this.title, 'HS384', undefined, metadata, configuration);
+      rejects(this.title, 'HS512', undefined, metadata, configuration);
+      defaultsTo(this.title, undefined, undefined, configuration);
+    });
+  });
+
   describe('features.deviceFlow', () => {
     const configuration = { features: { deviceFlow: { enabled: true } } };
     const metadata = {
@@ -950,6 +995,7 @@ describe('Client metadata validation', () => {
         revocation: { enabled: true },
         encryption: { enabled: true },
         jwtUserinfo: { enabled: true },
+        ciba: { enabled: true },
       },
     };
 
@@ -971,12 +1017,16 @@ describe('Client metadata validation', () => {
         [`${endpoint}_endpoint_auth_method`]: 'private_key_jwt',
       }, configuration);
     });
-    rejects(this.title, undefined, 'jwks or jwks_uri is mandatory for this client', {
-      request_object_signing_alg: 'RS256',
-    });
-    rejects(this.title, undefined, 'jwks or jwks_uri is mandatory for this client', {
-      request_object_signing_alg: 'ES384',
-    });
+
+    // eslint-disable-next-line no-restricted-syntax
+    for (const prop of ['request_object_signing_alg', 'backchannel_authentication_request_signing_alg']) {
+      rejects(this.title, undefined, 'jwks or jwks_uri is mandatory for this client', {
+        [prop]: 'RS256',
+      }, configuration);
+      rejects(this.title, undefined, 'jwks or jwks_uri is mandatory for this client', {
+        [prop]: 'ES384',
+      }, configuration);
+    }
 
     [
       'id_token_encrypted_response_alg',

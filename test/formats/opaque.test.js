@@ -135,7 +135,6 @@ describe('opaque storage', () => {
       errorDescription,
       exp: number,
       grantId,
-      gty,
       iat: number,
       jti: upsert.getCall(0).args[0],
       kind,
@@ -148,6 +147,39 @@ describe('opaque storage', () => {
       sessionUid,
       expiresWithSession,
       inFlight,
+    });
+  });
+
+  it('for BackchannelAuthenticationRequest', async function () {
+    const kind = 'BackchannelAuthenticationRequest';
+    const upsert = spy(this.TestAdapter.for('BackchannelAuthenticationRequest'), 'upsert');
+    const client = await this.provider.Client.find(clientId);
+    const token = new this.provider.BackchannelAuthenticationRequest({ client, ...fullPayload });
+    await token.save();
+
+    expect(upsert.getCall(0).args[0]).to.have.lengthOf(43);
+    assert.calledWith(upsert, string, {
+      accountId,
+      acr,
+      amr,
+      authTime,
+      claims,
+      clientId,
+      consumed,
+      error,
+      errorDescription,
+      exp: number,
+      grantId,
+      iat: number,
+      jti: upsert.getCall(0).args[0],
+      kind,
+      nonce,
+      params,
+      resource,
+      scope,
+      sid,
+      sessionUid,
+      expiresWithSession,
     });
   });
 

@@ -158,7 +158,7 @@ describe('grant_type=refresh_token', () => {
         .expect(400)
         .expect(() => {
           expect(spy.calledOnce).to.be.true;
-          expect(errorDetail(spy)).to.equal('refresh token client mismatch');
+          expect(errorDetail(spy)).to.equal('client mismatch');
         })
         .expect((response) => {
           expect(response.body).to.have.property('error', 'invalid_grant');

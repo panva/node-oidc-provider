@@ -1,10 +1,12 @@
 {
     "alias": "oidc-provider",
+    "automated_ciba_approval_url": "https://fapi.panva.cz/ciba-sim?authReqId={auth_req_id}&action={action}",
     "server": {
         "discoveryUrl": "https://fapi.panva.cz/.well-known/openid-configuration"
     },
     "client": {
         "client_id": "pkjwt-one",
+        "client_name": "pkjwt-one",
         "scope": "openid offline_access",
         "jwks": {
             "keys": [
@@ -23,7 +25,9 @@
                     "use": "sig"
                 }
             ]
-        }
+        },
+        "hint_type": "login_hint",
+        "hint_value": "panva"
     },
     "mtls": {
         "cert": "-----BEGIN CERTIFICATE-----\nMIIC4DCCAcgCCQDuBF1vmG5mlDANBgkqhkiG9w0BAQsFADAyMQswCQYDVQQGEwJD\nWjEPMA0GA1UEBwwGUHJhZ3VlMRIwEAYDVQQDDAlwa210bHNvbmUwHhcNMTkwNjE4\nMTIzMTA2WhcNMjAwNjE3MTIzMTA2WjAyMQswCQYDVQQGEwJDWjEPMA0GA1UEBwwG\nUHJhZ3VlMRIwEAYDVQQDDAlwa210bHNvbmUwggEiMA0GCSqGSIb3DQEBAQUAA4IB\nDwAwggEKAoIBAQDEEnW885Hp+2Q7l+KCtKPOwfPIVOLKshgygWIAXC8z5TKnA1N9\nqbB2BvpDpWUKdXrYuBzWcNH/PHwrJvX42AHGeXCZJDSXzuRH934/fjMQHTFJquoP\n4rziUlRJfT+pwJcuvgxgGLI5xgzNqD7gZZp/9LVm5OdXU1poQviUel+hwV5eiT1r\n1fOe5LOiXkLwp3kBLlqGrtRPFIIa+20qkvnFh5ZcnRmOmm2vcAnI7OaNc2rSLHVb\nvkFuY8mMEx8rtthq0dQyyy1Ucudi3cLCI2x8Px0qQFUqWH4LgNaj7VZjlU1NPE8L\njsSPLasZsMsn0wt22fo+v5bJbaZ3N3QQqM0VAgMBAAEwDQYJKoZIhvcNAQELBQAD\nggEBAFGKYDieCWZ63Fx9jMhtlPlHUgkR6bmKqGwvZuVAe9Zz+sHvbVtTk/4AEOjS\nozksxf070O1PnK3zY0SuZynhKJnTaFouN45iMnnNQS6XMKd9Tm5WpSRbxfaOeuIZ\nybvOmNy0nuxkvqcE5fXIyr9bDCO9WEArQIQqjGJ93zKJpV2nT9Q7heTK430z7Hp3\n+XxwGXoKsLW/jebr3ryWTMEv8ouEbXeCz2OH6Oup8UIwXDyjYxwhwS5FAcRQdh4K\nnhHOLGYVAuVR3wPewtrTioYznFdfwtDHGd9fZVxrXPlVqCksj0CTnPf7UgXtjm2h\nTfkwHHtW2BegWR/q3+q9gs7uehc=\n-----END CERTIFICATE-----\n",
@@ -31,6 +35,7 @@
     },
     "client2": {
         "client_id": "pkjwt-two",
+        "client_name": "pkjwt-two",
         "scope": "openid offline_access",
         "jwks": {
             "keys": [
@@ -49,7 +54,8 @@
                     "use": "sig"
                 }
             ]
-        }
+        },
+        "acr_value": "urn:mace:incommon:iap:silver"
     },
     "mtls2": {
         "cert": "-----BEGIN CERTIFICATE-----\nMIIC4DCCAcgCCQDO8JBSH914NDANBgkqhkiG9w0BAQsFADAyMQswCQYDVQQGEwJD\nWjEPMA0GA1UEBwwGUHJhZ3VlMRIwEAYDVQQDDAlwa210bHN0d28wHhcNMTkwNjE4\nMTIzMjAxWhcNMjAwNjE3MTIzMjAxWjAyMQswCQYDVQQGEwJDWjEPMA0GA1UEBwwG\nUHJhZ3VlMRIwEAYDVQQDDAlwa210bHN0d28wggEiMA0GCSqGSIb3DQEBAQUAA4IB\nDwAwggEKAoIBAQDhqVAaMsvnCETzDtKwfKxZC1jwIOhIyUp8xp+2oN+pJwtqP0Up\nkLlTV7MD94HZSL3n3f9hsG6appRQGGAJ2ThOw1N9zlAr7Sk9YH6Gtu3bYSDvS6wa\nKjVoxGrrmLfyuoEbv3PDqMWuOjE3MT/G1nwUBgIEKYAr8hizY8dUE0Z2qWvKFZJj\n6etjCXEppjXuwlSusHWw/tj/ePMMxMAJMPPhzJeh6AL7iUKBisJysPuaWrS9ntdP\nxv9PS40sv6cZT4woxmE6tpTCkAxabXqA25SgJOyKOjnvg+BPNlrucLqHw3ErWrxY\nTL99cHqhexO6K4FaspW3+1kuWd3fY4Cm+zkTAgMBAAEwDQYJKoZIhvcNAQELBQAD\nggEBALsB6MGWke5vS1TB3Z+NJkC29bEIb3XGC9WaxRovH0jqaaua2AfAF7VZzUyW\nS/+r6hvWOtqUVy7YF1ThnEJXuXJG9ra2B2+F5RYNCtrVj6Bi+zDTSJ4IvQfrF0XB\nKwwOdRu7VJpAxvweA/3woKl6Cjfy20ZupPH9mxr1R78BMKgEtdFsiLwbB7MOdDbT\nLsrUcEcupXv+gZek22upQKrAk/XFP067KIqKmCEhDidxhP251SloUaruv9cHEx0a\nDKol9eR465FAiBLvg2N7qJHCKlWdn99SgN4Y3kINsuFR7Tj4QIJZNubOjV0YeOgn\nAWzRJlZD89KZAQgjj4Z215QeLxA=\n-----END CERTIFICATE-----\n",

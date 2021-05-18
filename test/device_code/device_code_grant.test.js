@@ -221,7 +221,7 @@ describe('grant_type=urn:ietf:params:oauth:grant-type:device_code', () => {
         .expect(400)
         .expect(() => {
           expect(spy.calledOnce).to.be.true;
-          expect(errorDetail(spy)).to.equal('device code client mismatch');
+          expect(errorDetail(spy)).to.equal('client mismatch');
         })
         .expect((response) => {
           expect(response.body).to.have.property('error', 'invalid_grant');

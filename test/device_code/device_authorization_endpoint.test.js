@@ -95,68 +95,6 @@ describe('device_authorization_endpoint', () => {
           });
       });
     });
-
-    it('checks prompt values', function () {
-      const spy = sinon.spy();
-      this.provider.once('device_authorization.error', spy);
-
-      return this.agent.post(route)
-        .send({
-          client_id: 'client',
-          scope: 'openid',
-          prompt: 'unsupported',
-        })
-        .type('form')
-        .expect(400)
-        .expect('content-type', /application\/json/)
-        .expect(() => {
-          expect(spy.calledOnce).to.be.true;
-        })
-        .expect({
-          error: 'invalid_request',
-          error_description: 'unsupported prompt value requested',
-        });
-    });
-
-    it('checks for bad prompt combination', function () {
-      const spy = sinon.spy();
-      this.provider.once('device_authorization.error', spy);
-
-      return this.agent.post(route)
-        .send({
-          client_id: 'client',
-          scope: 'openid',
-          prompt: 'none login',
-        })
-        .type('form')
-        .expect(400)
-        .expect('content-type', /application\/json/)
-        .expect(() => {
-          expect(spy.calledOnce).to.be.true;
-        })
-        .expect({
-          error: 'invalid_request',
-          error_description: 'prompt none must only be used alone',
-        });
-    });
-
-    it('unsupported prompt', function () {
-      const spy = sinon.spy();
-      this.provider.once('device_authorization.error', spy);
-
-      return this.agent.post(route)
-        .send('scope=openid&scope=openid&client_id=client')
-        .type('form')
-        .expect(400)
-        .expect('content-type', /application\/json/)
-        .expect(() => {
-          expect(spy.calledOnce).to.be.true;
-        })
-        .expect({
-          error: 'invalid_request',
-          error_description: "'scope' parameter must not be provided twice",
-        });
-    });
   });
 
   it('responds with json 200', async function () {

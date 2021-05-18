@@ -273,7 +273,7 @@ describe('CORS setup', () => {
         'https://example.com',
         ['set', 'content-type', 'application/x-www-form-urlencoded'],
         ['type', 'form'],
-        ['send', { client_id: 'client', prompt: 'none login' }],
+        ['send', { client_id: 'client', max_age: '-1' }],
       );
       expect(status).to.eql(400);
       expect(headers[Vary]).to.eql('Origin');

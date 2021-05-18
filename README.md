@@ -42,12 +42,14 @@ The following draft specifications are implemented by oidc-provider.
 - [JWT Response for OAuth Token Introspection - draft 10][jwt-introspection]
 - [JWT Secured Authorization Response Mode for OAuth 2.0 (JARM) - Implementer's Draft 01][jarm]
 - [Financial-grade API - Part 2: Read and Write API Security Profile (FAPI) - Implementer's Draft 02][fapi]
+- [Financial-grade API: Client Initiated Backchannel Authentication Profile (FAPI-CIBA) - Implementer's Draft 01][fapi-ciba]
 - [OAuth 2.0 Authorization Server Issuer Identifier in Authorization Response - draft 00][iss-auth-resp]
 - [OAuth 2.0 Demonstration of Proof-of-Possession at the Application Layer (DPoP) - draft 03][dpop]
 - [OAuth 2.0 JWT Secured Authorization Request (JAR) - draft 33][jar]
 - [OAuth 2.0 Pushed Authorization Requests (PAR) - draft 06][par]
-- [OpenID Connect RP-Initiated Logout 1.0 - draft 01][rpinitiated-logout]
 - [OpenID Connect Back-Channel Logout 1.0 - draft 06][backchannel-logout]
+- [OpenID Connect Client Initiated Backchannel Authentication Flow - Core 1.0 (CIBA) - draft-03][ciba]
+- [OpenID Connect RP-Initiated Logout 1.0 - draft 01][rpinitiated-logout]
 
 Updates to draft specification versions are released as MINOR library versions,
 if you utilize these specification implementations consider using the tilde `~` operator in your
@@ -64,6 +66,7 @@ conforms to the following profiles of the OpenID Connect™ protocol
 - Back-Channel OP, RP-Initiated OP
 - FAPI R/W OP w/ MTLS, FAPI R/W OP w/ Private Key
 - FAPI R/W OP w/ MTLS PAR, FAPI R/W OP w/ Private Key PAR
+- FAPI-CIBA OP poll w/ MTLS, FAPI-CIBA OP poll w/ Private Key, FAPI-CIBA OP Ping w/ MTLS, FAPI-CIBA OP Ping w/ Private Key
 
 ## Sponsor
 
@@ -154,3 +157,5 @@ See the list of available emitted [event names](/docs/events.md) and their descr
 [rpinitiated-logout]: https://openid.net/specs/openid-connect-rpinitiated-1_0-01.html
 [iss-auth-resp]: https://tools.ietf.org/html/draft-ietf-oauth-iss-auth-resp-00
 [fapi]: https://openid.net/specs/openid-financial-api-part-2-ID2.html
+[ciba]: https://openid.net/specs/openid-client-initiated-backchannel-authentication-core-1_0-03.html
+[fapi-ciba]: https://openid.net/specs/openid-financial-api-ciba-ID1.html

@@ -3,13 +3,17 @@
   "version": "7.3.2",
   "description": "OAuth 2.0 Authorization Server implementation for Node.js with OpenID Connect",
   "keywords": [
+    "appauth",
     "auth",
     "authentication",
     "authorization",
     "basic",
     "certified",
+    "ciba",
     "config",
     "connect",
+    "device flow",
+    "dpop",
     "dynamic",
     "express",
     "fapi",
@@ -18,26 +22,32 @@
     "hybrid",
     "identity",
     "implicit",
+    "jar",
+    "jarm",
     "koa",
+    "mtls",
     "oauth 2.0",
+    "oauth 2.1",
     "oauth",
     "oauth2",
     "oidc",
     "openid",
+    "par",
+    "pkce",
     "provider",
     "server"
   ],
   "homepage": "https://github.com/panva/node-oidc-provider",
   "repository": "panva/node-oidc-provider",
-  "license": "MIT",
-  "author": "Filip Skokan <panva.ip@gmail.com>",
-  "files": [
-    "lib"
-  ],
   "funding": {
     "url": "https://github.com/sponsors/panva"
   },
+  "license": "MIT",
+  "author": "Filip Skokan <panva.ip@gmail.com>",
   "main": "lib/index.js",
+  "files": [
+    "lib"
+  ],
   "scripts": {
     "ci": "node ./test/ci",
     "coverage": "c8 node ./test/run",

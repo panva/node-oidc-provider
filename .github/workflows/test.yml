@@ -191,6 +191,32 @@ jobs:
             fapi_profile: plain_fapi
             fapi_response_mode: jarm
 
+          # FAPI RW-CIBA-ID1
+          - plan: fapi-ciba-id1-test-plan
+            configuration: ./certification/fapi/pkjwt.json
+            client_auth_type: private_key_jwt
+            fapi_profile: plain_fapi
+            ciba_mode: poll
+            client_registration: dynamic_client
+          - plan: fapi-ciba-id1-test-plan
+            configuration: ./certification/fapi/pkjwt.json
+            client_auth_type: private_key_jwt
+            fapi_profile: plain_fapi
+            ciba_mode: ping
+            client_registration: dynamic_client
+          - plan: fapi-ciba-id1-test-plan
+            configuration: ./certification/fapi/mtls.json
+            client_auth_type: mtls
+            fapi_profile: plain_fapi
+            ciba_mode: poll
+            client_registration: dynamic_client
+          - plan: fapi-ciba-id1-test-plan
+            configuration: ./certification/fapi/mtls.json
+            client_auth_type: mtls
+            fapi_profile: plain_fapi
+            ciba_mode: ping
+            client_registration: dynamic_client
+
           # Extensive
           - plan: oidcc-test-plan
             client_registration: dynamic_client

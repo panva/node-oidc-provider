@@ -419,6 +419,7 @@ location / {
 - [jwks ❗](#jwks)
 - [features ❗](#features)
   - [backchannelLogout](#featuresbackchannellogout)
+  - [ciba](#featuresciba)
   - [claimsParameter](#featuresclaimsparameter)
   - [clientCredentials](#featuresclientcredentials)
   - [deviceFlow](#featuresdeviceflow)
@@ -634,6 +635,156 @@ _**default value**_:
   enabled: false
 }
 ```
+
+### features.ciba
+
+[OpenID Connect Client Initiated Backchannel Authentication Flow - Core 1.0 - draft-03](https://openid.net/specs/openid-client-initiated-backchannel-authentication-core-1_0-03.html)  
+
+Enables Core CIBA Flow, when combined with `features.fapiRW` enables [Financial-grade API: Client Initiated Backchannel Authentication Profile - Implementer's Draft 01](https://openid.net/specs/openid-financial-api-ciba-ID1.html) as well.   
+  
+
+
+_**default value**_:
+```js
+{
+  ack: undefined,
+  deliveryModes: [
+    'poll'
+  ],
+  enabled: false,
+  processLoginHint: [AsyncFunction: processLoginHint], // see expanded details below
+  processLoginHintToken: [AsyncFunction: processLoginHintToken], // see expanded details below
+  triggerAuthenticationDevice: [AsyncFunction: triggerAuthenticationDevice], // see expanded details below
+  validateBindingMessage: [AsyncFunction: validateBindingMessage], // see expanded details below
+  validateRequestContext: [AsyncFunction: validateRequestContext], // see expanded details below
+  verifyUserCode: [AsyncFunction: verifyUserCode] // see expanded details below
+}
+```
+
+<details><summary>(Click to expand) features.ciba options details</summary><br>
+
+
+#### deliveryModes
+
+fine-tune the supported token delivery modes. Supported values are
+ - `poll`
+ - `ping`   
+  
+
+
+_**default value**_:
+```js
+[
+  'poll'
+]
+```
+
+#### processLoginHint
+
+Helper function used to process the login_hint parameter and return the accountId value to use for processsing the request.   
+  
+
+_**recommendation**_: Use `throw Provider.errors.InvalidRequest('validation error message')` when login_hint is invalid. Use `return undefined` or when you can't determine the accountId from the login_hint.  
+
+
+_**default value**_:
+```js
+async function processLoginHint(ctx, loginHint) {
+  // @param ctx - koa request context
+  // @param loginHint - string value of the login_hint parameter
+  throw new Error('features.ciba.processLoginHint not implemented');
+}
+```
+
+#### processLoginHintToken
+
+Helper function used to process the login_hint_token parameter and return the accountId value to use for processsing the request.   
+  
+
+_**recommendation**_: Use `throw Provider.errors.ExpiredLoginHintToken('validation error message')` when login_hint_token is expired. Use `throw Provider.errors.InvalidRequest('validation error message')` when login_hint_token is invalid. Use `return undefined` or when you can't determine the accountId from the login_hint.  
+
+
+_**default value**_:
+```js
+async function processLoginHintToken(ctx, loginHintToken) {
+  // @param ctx - koa request context
+  // @param loginHintToken - string value of the login_hint_token parameter
+  throw new Error('features.ciba.processLoginHintToken not implemented');
+}
+```
+
+#### triggerAuthenticationDevice
+
+Helper function used to trigger the authentication and authorization on end-user's Authentication Device. It is called after accepting the backchannel authentication request but before sending client back the response.   
+  
+
+
+_**default value**_:
+```js
+async function triggerAuthenticationDevice(ctx, request, account, client) {
+  // @param ctx - koa request context
+  // @param request - the BackchannelAuthenticationRequest instance
+  // @param account - the account object retrieved by findAccount
+  // @param client - the Client instance
+  throw new Error('features.ciba.triggerAuthenticationDevice not implemented');
+}
+```
+
+#### validateBindingMessage
+
+Helper function used to process the binding_message parameter and throw if its not following the authorization server's policy.   
+  
+
+_**recommendation**_: Use `throw Provider.errors.InvalidBindingMessage('validation error message')` when the binding_message is invalid. Use `return undefined` when a binding_message isn't required and wasn't provided.  
+
+
+_**default value**_:
+```js
+async function validateBindingMessage(ctx, bindingMessage) {
+  // @param ctx - koa request context
+  // @param bindingMessage - string value of the binding_message parameter, when not provided it is undefined
+  if (bindingMessage && !/^[a-zA-Z0-9-._+/!?#]{1,20}$/.exec(bindingMessage)) {
+    throw new errors.InvalidBindingMessage('the binding_message value, when provided, needs to be 1 - 20 characters in length and use only a basic set of characters (matching the regex: ^[a-zA-Z0-9-._+/!?#]{1,20}$ )');
+  }
+}
+```
+
+#### validateRequestContext
+
+Helper function used to process the request_context parameter and throw if its not following the authorization server's policy.   
+  
+
+_**recommendation**_: Use `throw Provider.errors.InvalidRequest('validation error message')` when the request_context is required by policy and missing or invalid. Use `return undefined` when a request_context isn't required and wasn't provided.  
+
+
+_**default value**_:
+```js
+async function validateRequestContext(ctx, requestContext) {
+  // @param ctx - koa request context
+  // @param requestContext - string value of the request_context parameter, when not provided it is undefined
+  throw new Error('features.ciba.validateRequestContext not implemented');
+}
+```
+
+#### verifyUserCode
+
+Helper function used to verify the user_code parameter value is present when required and verify its value.   
+  
+
+_**recommendation**_: Use `throw Provider.errors.MissingUserCode('validation error message')` when user_code should have been provided but wasn't. Use `throw Provider.errors.InvalidUserCode('validation error message')` when the provided user_code is invalid. Use `return undefined` when no user_code was provided and isn't required.  
+
+
+_**default value**_:
+```js
+async function verifyUserCode(ctx, account, userCode) {
+  // @param ctx - koa request context
+  // @param account -
+  // @param userCode - string value of the user_code parameter, when not provided it is undefined
+  throw new Error('features.ciba.verifyUserCode not implemented');
+}
+```
+
+</details>
 
 ### features.claimsParameter
 
@@ -2655,6 +2806,7 @@ _**default value**_:
 ```js
 {
   authorization: '/auth',
+  backchannel_authentication: '/backchannel',
   code_verification: '/device',
   device_authorization: '/device/auth',
   end_session: '/session/end',
@@ -2754,6 +2906,13 @@ _**default value**_:
     return 60 * 60; // 1 hour in seconds
   },
   AuthorizationCode: 600 /* 10 minutes in seconds */,
+  BackchannelAuthenticationRequest: function BackchannelAuthenticationRequestTTL(ctx, request, client) {
+    if (ctx && ctx.oidc && ctx.oidc.params.requested_expiry) {
+      return Math.min(10 * 60, +ctx.oidc.params.requested_expiry); // 10 minutes in seconds or requested_expiry, whichever is shorter
+    }
+  
+    return 10 * 60; // 10 minutes in seconds
+  },
   ClientCredentials: function ClientCredentialsTTL(ctx, token, client) {
     if (token.resourceServer) {
       return token.resourceServer.accessTokenTTL || 10 * 60; // 10 minutes in seconds

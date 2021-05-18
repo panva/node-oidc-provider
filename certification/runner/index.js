@@ -52,7 +52,10 @@ runner.createTestPlan({
   planName: PLAN_NAME,
   variant: VARIANT,
 }).then((plan) => {
-  const { id: PLAN_ID, modules: MODULES } = plan;
+  let { modules: MODULES } = plan;
+  const { id: PLAN_ID } = plan;
+
+  MODULES = MODULES.sort(() => Math.random() - 0.5);
 
   debug('Created test plan, new id %s', PLAN_ID);
   debug('%s/plan-detail.html?plan=%s', SUITE_BASE_URL, PLAN_ID);
@@ -96,7 +99,7 @@ runner.createTestPlan({
     if (configuration.alias) {
       parallel.limit(1);
     } else {
-      parallel.limit(5);
+      parallel.limit(10);
     }
   });
 
