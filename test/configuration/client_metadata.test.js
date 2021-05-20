@@ -916,6 +916,32 @@ describe('Client metadata validation', () => {
     });
   });
 
+  describe('features.deviceFlow', () => {
+    const configuration = { features: { deviceFlow: { enabled: true } } };
+    const metadata = {
+      grant_types: ['urn:ietf:params:oauth:grant-type:device_code'],
+      response_types: [],
+      redirect_uris: undefined,
+    };
+
+    defaultsTo('redirect_uris', [], metadata, configuration);
+    defaultsTo('redirect_uris', ['https://rp.example.com/callback'], metadata, { ...configuration, clientDefaults: { redirect_uris: ['https://rp.example.com/callback'] } });
+    rejects('redirect_uris', null, 'redirect_uris must be an array', metadata, configuration);
+  });
+
+  describe('features.clientCredentials', () => {
+    const configuration = { features: { clientCredentials: { enabled: true } } };
+    const metadata = {
+      grant_types: ['client_credentials'],
+      response_types: [],
+      redirect_uris: undefined,
+    };
+
+    defaultsTo('redirect_uris', [], metadata, configuration);
+    defaultsTo('redirect_uris', ['https://rp.example.com/callback'], metadata, { ...configuration, clientDefaults: { redirect_uris: ['https://rp.example.com/callback'] } });
+    rejects('redirect_uris', null, 'redirect_uris must be an array', metadata, configuration);
+  });
+
   context('jwks', function () {
     const configuration = {
       features: {
