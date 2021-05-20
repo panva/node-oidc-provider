@@ -4,6 +4,8 @@
 const { strict: assert } = require('assert');
 const fs = require('fs');
 
+const parallel = require('mocha.parallel');
+
 const debug = require('./debug');
 const API = require('./api');
 
@@ -41,6 +43,10 @@ if ('alias' in configuration) {
   configuration.alias = `${configuration.alias}-${Object.values(JSON.parse(VARIANT)).join('-')}`;
 }
 
+if (JSON.parse(VARIANT).client_registration === 'dynamic_client') {
+  delete configuration.alias;
+}
+
 runner.createTestPlan({
   configuration,
   planName: PLAN_NAME,
@@ -72,17 +78,25 @@ runner.createTestPlan({
       }
     });
 
-    for (const { testModule, variant } of MODULES) {
-      const test = SKIP.includes(testModule) ? it.skip : it;
-      test(`${testModule}, ${JSON.stringify(variant)}`, async () => {
-        debug('\n\nRunning test module: %s', testModule);
-        const { id: moduleId } = await runner.createTestFromPlan({
-          plan: PLAN_ID, test: testModule, variant,
+    parallel('', () => {
+      for (const { testModule, variant } of MODULES) {
+        const test = SKIP.includes(testModule) ? it.skip : it;
+        test(`${testModule}, ${JSON.stringify(variant)}`, async () => {
+          debug('\n\nRunning test module: %s', testModule);
+          const { id: moduleId } = await runner.createTestFromPlan({
+            plan: PLAN_ID, test: testModule, variant,
+          });
+          debug('Created test module, new id: %s', moduleId);
+          debug('%s/log-detail.html?log=%s', SUITE_BASE_URL, moduleId);
+          await runner.waitForState({ moduleId });
         });
-        debug('Created test module, new id: %s', moduleId);
-        debug('%s/log-detail.html?log=%s', SUITE_BASE_URL, moduleId);
-        await runner.waitForState({ moduleId });
-      });
+      }
+    });
+
+    if (configuration.alias) {
+      parallel.limit(1);
+    } else {
+      parallel.limit(5);
     }
   });
 
