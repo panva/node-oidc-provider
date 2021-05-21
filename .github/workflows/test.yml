@@ -82,7 +82,7 @@ jobs:
   conformance-suite:
     runs-on: ubuntu-latest
     env:
-      VERSION: release-v4.1.10
+      VERSION: release-v4.1.11
       SUITE_BASE_URL: https://localhost.emobix.co.uk:8443
       SETUP: ${{ toJSON(matrix.setup) }}
     strategy:
