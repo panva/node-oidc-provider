@@ -50,7 +50,7 @@
   ],
   "scripts": {
     "ci": "node ./test/ci",
-    "coverage": "c8 node ./test/run",
+    "coverage": "c8 --reporter=lcov --reporter=text-summary node ./test/run",
     "heroku-postbuild": "npm install mongodb@^3.0.0 openid-client@^4.0.0",
     "lint": "eslint lib example certification test",
     "lint-fix": "eslint lib example certification test --fix",
