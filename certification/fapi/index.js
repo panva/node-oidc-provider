@@ -1,3 +1,5 @@
+/* eslint-disable no-console */
+
 const { readFileSync } = require('fs');
 const path = require('path');
 const { randomBytes } = require('crypto');
@@ -212,5 +214,10 @@ if (SUITE_BASE_URL === OFFICIAL_CERTIFICATION) {
     ...pem,
   }, fapi.callback());
 
-  server.listen(PORT);
+  server.listen(PORT, () => {
+    console.log(`application is listening on port ${PORT}, check its /.well-known/openid-configuration`);
+    process.on('SIGINT', () => {
+      process.exit(0);
+    });
+  });
 }

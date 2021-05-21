@@ -78,6 +78,13 @@ jobs:
         run: npx panva/npm-install-retry
         if: ${{ steps.node_modules.outputs.cache-hit != 'true' }}
       - run: npm run ci
+      - uses: actions/upload-artifact@v2
+        if: ${{ matrix.node-version == 14 && matrix.os == 'ubuntu-latest' }}
+        with:
+          if-no-files-found: warn
+          retention-days: 1
+          name: coverage-data
+          path: coverage/
 
   conformance-suite:
     runs-on: ubuntu-latest
@@ -299,7 +306,7 @@ jobs:
       - name: Setup node
         uses: actions/setup-node@v2-beta
         with:
-          node-version: 12
+          node-version: 14
       - name: Store node version variable
         id: node
         run: |
@@ -314,14 +321,14 @@ jobs:
         run: npx panva/npm-install-retry
         if: ${{ steps.node_modules.outputs.cache-hit != 'true' }}
       - name: Run oidc-provider (OIDC)
-        run: node certification/docker &
+        run: npx c8 node certification/docker &
         if: ${{ startsWith(matrix.setup.plan, 'oidcc') }}
         env:
           PORT: 3000
           ISSUER: https://172.17.0.1:3000
           NODE_TLS_REJECT_UNAUTHORIZED: 0
       - name: Run oidc-provider (FAPI)
-        run: node certification/fapi &
+        run: npx c8 node certification/fapi &
         if: ${{ startsWith(matrix.setup.plan, 'fapi') }}
         env:
           ISSUER: https://172.17.0.1:3000
@@ -369,9 +376,52 @@ jobs:
         if: ${{ always() }}
       - name: Stop Conformance Suite
         run: |
+          killall -SIGINT node
           cd conformance-suite
           docker-compose -f docker-compose-dev.yml down
           sudo rm -rf mongo
+      - uses: actions/upload-artifact@v2
+        with:
+          if-no-files-found: warn
+          retention-days: 1
+          name: coverage-data
+          path: coverage/
+
+  coverage:
+    runs-on: ubuntu-latest
+    needs:
+      - test
+      - conformance-suite
+    steps:
+      - name: Checkout
+        uses: actions/checkout@master
+      - name: Setup node
+        uses: actions/setup-node@v2-beta
+        with:
+          node-version: 14
+      - name: Store node version variable
+        id: node
+        run: |
+          echo "::set-output name=version::$(node -v)"
+      - name: Cache node_modules
+        uses: actions/cache@v2
+        id: node_modules
+        with:
+          path: node_modules
+          key: ${{ runner.os }}-node_modules-${{ hashFiles('**/package.json') }}-${{ steps.node.outputs.version }}
+      - name: Install dependencies
+        run: npx panva/npm-install-retry
+        if: ${{ steps.node_modules.outputs.cache-hit != 'true' }}
+      - uses: actions/download-artifact@v2
+        with:
+          name: coverage-data
+          path: coverage/
+      - run: npx c8 report --reporter=lcov --reporter=text-summary
+      - uses: actions/upload-artifact@v2
+        with:
+          if-no-files-found: warn
+          name: coverage-report
+          path: coverage/lcov-report/
 
   deploy:
     if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' && github.repository == 'panva/node-oidc-provider' }}

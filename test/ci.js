@@ -5,8 +5,8 @@ let first = true;
 
 function pass({ mountTo, mountVia } = {}) {
   const child = spawn(
-    'nyc',
-    ['--silent', first ? '' : '--no-clean', 'npm', 'run', 'test'].filter(Boolean),
+    'c8',
+    [first ? '' : '--clean=false', 'npm', 'run', 'test'].filter(Boolean),
     {
       stdio: 'inherit',
       shell: true,
@@ -34,8 +34,8 @@ function pass({ mountTo, mountVia } = {}) {
 
 function report() {
   const child = spawn(
-    'nyc',
-    ['report'],
+    'c8',
+    ['report', '--reporter=lcov', '--reporter=text-summary'],
     {
       stdio: 'inherit',
       shell: true,

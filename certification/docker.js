@@ -40,4 +40,9 @@ render(provider.app, {
 });
 provider.use(routes(provider).routes());
 const server = https.createServer(pem, provider.callback());
-server.listen(PORT);
+server.listen(PORT, () => {
+  console.log(`application is listening on port ${PORT}, check its /.well-known/openid-configuration`);
+  process.on('SIGINT', () => {
+    process.exit(0);
+  });
+});

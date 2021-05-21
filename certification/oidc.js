@@ -134,6 +134,9 @@ let server;
   provider.use(routes(provider).routes());
   server = provider.listen(PORT, () => {
     console.log(`application is listening on port ${PORT}, check its /.well-known/openid-configuration`);
+    process.on('SIGINT', () => {
+      process.exit(0);
+    });
   });
 })().catch((err) => {
   if (server && server.listening) server.close();
