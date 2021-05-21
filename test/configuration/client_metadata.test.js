@@ -9,6 +9,7 @@ const cloneDeep = require('lodash/cloneDeep');
 
 const { Provider } = require('../../lib');
 const { enabledJWA } = require('../default.config');
+const sectorIdentifier = require('../../lib/helpers/sector_identifier');
 
 const sigKey = global.keystore.get().toJWK();
 const privateKey = global.keystore.get().toJWK(true);
@@ -959,6 +960,17 @@ describe('Client metadata validation', () => {
       rejects(this.title, 'HS512', undefined, metadata, configuration);
       defaultsTo(this.title, undefined, undefined, configuration);
     });
+
+    allows('subject_type', 'pairwise', {
+      ...metadata, token_endpoint_auth_method: 'private_key_jwt', subject_type: 'pairwise', jwks_uri: 'https://rp.example.com/jwks',
+    }, { ...configuration, subjectTypes: ['pairwise', 'public'] }, (client) => {
+      expect(sectorIdentifier(client)).to.eql('rp.example.com');
+    });
+    isRequired('jwks_uri', [undefined], { ...configuration, subjectTypes: ['pairwise', 'public'] }, { ...metadata, subject_type: 'pairwise' });
+    isRequired('sector_identifier_uri', [undefined], { ...configuration, subjectTypes: ['pairwise', 'public'] }, {
+      ...metadata, jwks_uri: 'https://rp.example.com/sector', subject_type: 'pairwise', response_types: ['code'], grant_types: [...metadata.grant_types, 'authorization_code'], redirect_uris: ['https://rp.example.com/cb'],
+    });
+    rejects('subject_type', 'pairwise', 'pairwise urn:openid:params:grant-type:ciba clients must utilize private_key_jwt or self_signed_tls_client_auth token endpoint authentication methods', { ...metadata, subject_type: 'pairwise', jwks_uri: 'https://rp.example.com/jwks' }, { ...configuration, subjectTypes: ['pairwise', 'public'] });
   });
 
   describe('features.deviceFlow', () => {
@@ -972,6 +984,16 @@ describe('Client metadata validation', () => {
     defaultsTo('redirect_uris', [], metadata, configuration);
     defaultsTo('redirect_uris', ['https://rp.example.com/callback'], metadata, { ...configuration, clientDefaults: { redirect_uris: ['https://rp.example.com/callback'] } });
     rejects('redirect_uris', null, 'redirect_uris must be an array', metadata, configuration);
+    allows('subject_type', 'pairwise', {
+      ...metadata, token_endpoint_auth_method: 'private_key_jwt', subject_type: 'pairwise', jwks_uri: 'https://rp.example.com/jwks',
+    }, { ...configuration, subjectTypes: ['pairwise', 'public'] }, (client) => {
+      expect(sectorIdentifier(client)).to.eql('rp.example.com');
+    });
+    isRequired('jwks_uri', [undefined], { ...configuration, subjectTypes: ['pairwise', 'public'] }, { ...metadata, subject_type: 'pairwise' });
+    isRequired('sector_identifier_uri', [undefined], { ...configuration, subjectTypes: ['pairwise', 'public'] }, {
+      ...metadata, jwks_uri: 'https://rp.example.com/sector', subject_type: 'pairwise', response_types: ['code'], grant_types: [...metadata.grant_types, 'authorization_code'], redirect_uris: ['https://rp.example.com/cb'],
+    });
+    rejects('subject_type', 'pairwise', 'pairwise urn:ietf:params:oauth:grant-type:device_code clients must utilize private_key_jwt or self_signed_tls_client_auth token endpoint authentication methods', { ...metadata, subject_type: 'pairwise', jwks_uri: 'https://rp.example.com/jwks' }, { ...configuration, subjectTypes: ['pairwise', 'public'] });
   });
 
   describe('features.clientCredentials', () => {
@@ -1209,6 +1231,26 @@ describe('Client metadata validation', () => {
     expect(client.grantTypes).not.to.be.empty;
     expect(client.responseTypes).to.be.empty;
     expect(client.redirectUris).to.be.empty;
+  }));
+
+  it('fails to determine sector identifier', () => addClient({
+    client_id: 'authorization-server',
+    client_secret: 'foobar',
+    redirect_uris: [],
+    response_types: [],
+    grant_types: [],
+    subject_type: 'pairwise',
+  }, { subjectTypes: ['pairwise', 'public'] }).then((client) => {
+    expect(client.grantTypes).to.be.empty;
+    expect(client.responseTypes).to.be.empty;
+    expect(client.redirectUris).to.be.empty;
+    expect(() => sectorIdentifier(client)).to.throw();
+    try {
+      sectorIdentifier(client);
+    } catch (err) {
+      expect(err.error).to.eql('invalid_client_metadata');
+      expect(err.error_description).to.eql('could not determine a sector identifier');
+    }
   }));
 
   context('clientDefaults configuration option allows for default client metadata to be changed', () => {

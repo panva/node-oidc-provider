@@ -3,6 +3,8 @@ const cloneDeep = require('lodash/cloneDeep');
 const config = cloneDeep(require('../default.config'));
 
 config.subjectTypes = ['public', 'pairwise'];
+config.features.ciba = { enabled: true };
+config.features.deviceFlow = { enabled: true };
 
 module.exports = {
   config,
@@ -20,6 +22,6 @@ module.exports = {
     response_types: ['code'],
     subject_type: 'pairwise',
     redirect_uris: ['https://client.example.com/cb'],
-    sector_identifier_uri: 'https://foobar.example.com/file_of_redirect_uris',
+    sector_identifier_uri: 'https://foobar.example.com/sector',
   }],
 };
