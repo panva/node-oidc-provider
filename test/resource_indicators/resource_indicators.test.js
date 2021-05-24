@@ -269,6 +269,142 @@ describe('features.resourceIndicators', () => {
         rt = spy5.args[0][0];
         expect(rt.resource).to.equal('urn:wl:default');
       });
+
+      it('applies the default resource (when useGrantedResource returns true)', async function () {
+        const spy = sinon.spy();
+        this.provider.once('authorization_code.saved', spy);
+
+        const auth = new this.AuthorizationRequest({
+          response_type,
+          scope: 'openid api:read',
+        });
+
+        await this.wrap({ route: '/auth', verb, auth })
+          .expect(302)
+          .expect(auth.validatePresence(['code', 'state']))
+          .expect(auth.validateState)
+          .expect(auth.validateClientLocation);
+
+        expect(spy.calledOnce).to.be.true;
+        const code = spy.args[0][0];
+        expect(code.resource).to.equal('urn:wl:default');
+
+        const spy2 = sinon.spy();
+        this.provider.once('access_token.saved', spy2);
+        this.provider.once('access_token.issued', spy2);
+        const spy3 = sinon.spy();
+        this.provider.once('refresh_token.saved', spy3);
+
+        await this.agent.post('/token')
+          .send({
+            client_id: 'client',
+            grant_type: 'authorization_code',
+            code: code.jti,
+            usegranted: true,
+          })
+          .type('form')
+          .expect(200);
+
+        expect(spy2.calledOnce).to.be.true;
+        let at = spy2.args[0][0];
+        expect(at.aud).to.equal('urn:wl:default');
+
+        expect(spy3.calledOnce).to.be.true;
+        let rt = spy3.args[0][0];
+        expect(rt.resource).to.equal('urn:wl:default');
+
+        const spy4 = sinon.spy();
+        this.provider.once('access_token.saved', spy4);
+        this.provider.once('access_token.issued', spy4);
+        const spy5 = sinon.spy();
+        this.provider.once('refresh_token.saved', spy5);
+
+        await this.agent.post('/token')
+          .send({
+            client_id: 'client',
+            grant_type: 'refresh_token',
+            refresh_token: rt.jti,
+            usegranted: true,
+          })
+          .type('form')
+          .expect(200);
+
+        expect(spy4.calledOnce).to.be.true;
+        at = spy4.args[0][0];
+        expect(at.aud).to.equal('urn:wl:default');
+
+        expect(spy5.calledOnce).to.be.true;
+        rt = spy5.args[0][0];
+        expect(rt.resource).to.equal('urn:wl:default');
+      });
+
+      it('applies the explicit resource', async function () {
+        const spy = sinon.spy();
+        this.provider.once('authorization_code.saved', spy);
+
+        const auth = new this.AuthorizationRequest({
+          response_type,
+          scope: 'openid api:read',
+        });
+
+        await this.wrap({ route: '/auth', verb, auth })
+          .expect(302)
+          .expect(auth.validatePresence(['code', 'state']))
+          .expect(auth.validateState)
+          .expect(auth.validateClientLocation);
+
+        expect(spy.calledOnce).to.be.true;
+        const code = spy.args[0][0];
+        expect(code.resource).to.equal('urn:wl:default');
+
+        const spy2 = sinon.spy();
+        this.provider.once('access_token.saved', spy2);
+        this.provider.once('access_token.issued', spy2);
+        const spy3 = sinon.spy();
+        this.provider.once('refresh_token.saved', spy3);
+
+        await this.agent.post('/token')
+          .send({
+            client_id: 'client',
+            grant_type: 'authorization_code',
+            code: code.jti,
+            resource: 'urn:wl:default',
+          })
+          .type('form')
+          .expect(200);
+
+        expect(spy2.calledOnce).to.be.true;
+        let at = spy2.args[0][0];
+        expect(at.aud).to.equal('urn:wl:default');
+
+        expect(spy3.calledOnce).to.be.true;
+        let rt = spy3.args[0][0];
+        expect(rt.resource).to.equal('urn:wl:default');
+
+        const spy4 = sinon.spy();
+        this.provider.once('access_token.saved', spy4);
+        this.provider.once('access_token.issued', spy4);
+        const spy5 = sinon.spy();
+        this.provider.once('refresh_token.saved', spy5);
+
+        await this.agent.post('/token')
+          .send({
+            client_id: 'client',
+            grant_type: 'refresh_token',
+            refresh_token: rt.jti,
+            resource: 'urn:wl:default',
+          })
+          .type('form')
+          .expect(200);
+
+        expect(spy4.calledOnce).to.be.true;
+        at = spy4.args[0][0];
+        expect(at.aud).to.equal('urn:wl:default');
+
+        expect(spy5.calledOnce).to.be.true;
+        rt = spy5.args[0][0];
+        expect(rt.resource).to.equal('urn:wl:default');
+      });
     });
   });
 
@@ -416,6 +552,154 @@ describe('features.resourceIndicators', () => {
       await this.agent.post('/token')
         .send({
           client_id: 'client',
+          grant_type: 'refresh_token',
+          refresh_token: rt.jti,
+        })
+        .type('form')
+        .expect(200);
+
+      expect(spy3.calledOnce).to.be.true;
+      at = spy3.args[0][0];
+      expect(at.aud).to.equal('urn:wl:default');
+
+      expect(spy4.calledOnce).to.be.true;
+      rt = spy4.args[0][0];
+      expect(rt.resource).to.equal('urn:wl:default');
+    });
+
+    it('applies the default resource (when useGrantedResource returns true)', async function () {
+      let user_code;
+      let device_code;
+      await this.agent.post('/device/auth')
+        .send({
+          client_id: 'client',
+          scope: 'openid api:read',
+        })
+        .type('form')
+        .expect(200)
+        .expect(({ body }) => {
+          ({ user_code, device_code } = body);
+        });
+
+      this.getSession().state = { secret: 'foo' };
+
+      await this.agent.post('/device')
+        .send({
+          user_code,
+          xsrf: 'foo',
+          confirm: true,
+        })
+        .type('form')
+        .expect(200);
+
+      const spy = sinon.spy();
+      this.provider.once('access_token.saved', spy);
+      this.provider.once('access_token.issued', spy);
+      const spy2 = sinon.spy();
+      this.provider.once('refresh_token.saved', spy2);
+
+      await this.agent.post('/token')
+        .send({
+          client_id: 'client',
+          usegranted: true,
+          grant_type: 'urn:ietf:params:oauth:grant-type:device_code',
+          device_code,
+        })
+        .type('form')
+        .expect(200);
+
+      expect(spy.calledOnce).to.be.true;
+      let at = spy.args[0][0];
+      expect(at.aud).to.equal('urn:wl:default');
+
+      expect(spy2.calledOnce).to.be.true;
+      let rt = spy2.args[0][0];
+      expect(rt.resource).to.equal('urn:wl:default');
+
+      const spy3 = sinon.spy();
+      this.provider.once('access_token.saved', spy3);
+      this.provider.once('access_token.issued', spy3);
+      const spy4 = sinon.spy();
+      this.provider.once('refresh_token.saved', spy4);
+
+      await this.agent.post('/token')
+        .send({
+          client_id: 'client',
+          usegranted: true,
+          grant_type: 'refresh_token',
+          refresh_token: rt.jti,
+        })
+        .type('form')
+        .expect(200);
+
+      expect(spy3.calledOnce).to.be.true;
+      at = spy3.args[0][0];
+      expect(at.aud).to.equal('urn:wl:default');
+
+      expect(spy4.calledOnce).to.be.true;
+      rt = spy4.args[0][0];
+      expect(rt.resource).to.equal('urn:wl:default');
+    });
+
+    it('applies the explicit resource', async function () {
+      let user_code;
+      let device_code;
+      await this.agent.post('/device/auth')
+        .send({
+          client_id: 'client',
+          scope: 'openid api:read',
+        })
+        .type('form')
+        .expect(200)
+        .expect(({ body }) => {
+          ({ user_code, device_code } = body);
+        });
+
+      this.getSession().state = { secret: 'foo' };
+
+      await this.agent.post('/device')
+        .send({
+          user_code,
+          xsrf: 'foo',
+          confirm: true,
+        })
+        .type('form')
+        .expect(200);
+
+      const spy = sinon.spy();
+      this.provider.once('access_token.saved', spy);
+      this.provider.once('access_token.issued', spy);
+      const spy2 = sinon.spy();
+      this.provider.once('refresh_token.saved', spy2);
+
+      await this.agent.post('/token')
+        .send({
+          client_id: 'client',
+          resource: 'urn:wl:default',
+          grant_type: 'urn:ietf:params:oauth:grant-type:device_code',
+          device_code,
+        })
+        .type('form')
+        .expect(200);
+
+      expect(spy.calledOnce).to.be.true;
+      let at = spy.args[0][0];
+      expect(at.aud).to.equal('urn:wl:default');
+
+      expect(spy2.calledOnce).to.be.true;
+      let rt = spy2.args[0][0];
+      expect(rt.resource).to.equal('urn:wl:default');
+
+      const spy3 = sinon.spy();
+      this.provider.once('access_token.saved', spy3);
+      this.provider.once('access_token.issued', spy3);
+      const spy4 = sinon.spy();
+      this.provider.once('refresh_token.saved', spy4);
+
+      await this.agent.post('/token')
+        .send({
+          client_id: 'client',
+          resource: 'urn:wl:default',
           grant_type: 'refresh_token',
           refresh_token: rt.jti,
         })

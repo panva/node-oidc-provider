@@ -1634,7 +1634,8 @@ Enables the use of `resource` parameter for the authorization and token endpoint
  - Client Credentials grant must only contain a single resource parameter.
  - During Authorization Code / Refresh Token / Device Code exchanges, if the exchanged code/token does not include the `'openid'` scope and only has a single resource then the resource parameter may be omitted - an Access Token for the single resource is returned.
  - During Authorization Code / Refresh Token / Device Code exchanges, if the exchanged code/token does not include the `'openid'` scope and has multiple resources then the resource parameter must be provided (or one must be resolved using the `defaultResource` helper). An Access Token for the provided/resolved resource is returned.
- - (with userinfo endpoint enabled) During Authorization Code / Refresh Token / Device Code exchanges, if the exchanged code/token includes the `'openid'` scope and no resource parameter is present - an Access Token for the UserInfo Endpoint is returned.
+ - (with userinfo endpoint enabled and useGrantedResource helper returning falsy) During Authorization Code / Refresh Token / Device Code exchanges, if the exchanged code/token includes the `'openid'` scope and no resource parameter is present - an Access Token for the UserInfo Endpoint is returned.
+ - (with userinfo endpoint enabled and useGrantedResource helper returning truthy) During Authorization Code / Refresh Token / Device Code exchanges, even if the exchanged code/token includes the `'openid'` scope and only has a single resource then the resource parameter may be omitted - an Access Token for the single resource is returned.
  - (with userinfo endpoint disabled) During Authorization Code / Refresh Token / Device Code exchanges, if the exchanged code/token includes the `'openid'` scope and only has a single resource then the resource parameter may be omitted - an Access Token for the single resource is returned.
  - Issued Access Tokens always only contain scopes that are defined on the respective Resource Server (returned from `features.resourceIndicators.getResourceServerInfo`).  
 
@@ -1644,7 +1645,8 @@ _**default value**_:
 {
   defaultResource: [AsyncFunction: defaultResource], // see expanded details below
   enabled: true,
-  getResourceServerInfo: [AsyncFunction: getResourceServerInfo] // see expanded details below
+  getResourceServerInfo: [AsyncFunction: getResourceServerInfo], // see expanded details below
+  useGrantedResource: [AsyncFunction: useGrantedResource] // see expanded details below
 }
 ```
 
@@ -1790,6 +1792,24 @@ and a JWT Access Token Format.
 }
 ```
 </details>
+
+#### useGrantedResource
+
+Function used to determine if an already granted resource indicator should be used without being explicitly requested by the client during the Token Endpoint request.   
+  
+
+_**recommendation**_: Use `return true` when it's allowed for a client skip providing the "resource" parameter at the Token Endpoint. Use `return false` (default) when it's required for a client to explitly provide a "resource" parameter at the Token Endpoint or when other indication dictates an Access Token for the UserInfo Endpoint should returned.  
+
+
+_**default value**_:
+```js
+async function useGrantedResource(ctx, model) {
+  // @param ctx - koa request context
+  // @param model - depending on the request's grant_type this can be either an AuthorizationCode, BackchannelAuthenticationRequest,
+  //                RefreshToken, or DeviceCode model instance.
+  return false;
+}
+```
 
 </details>
 

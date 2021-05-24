@@ -14,6 +14,9 @@ merge(config, {
     deviceFlow: { enabled: true },
     resourceIndicators: {
       enabled: true,
+      useGrantedResource(ctx) {
+        return ctx.oidc.body && ctx.oidc.body.usegranted;
+      },
       getResourceServerInfo(ctx, resource) {
         if (resource.includes('wl')) {
           return {
