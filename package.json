@@ -96,7 +96,7 @@
     "lodash": "^4.17.20",
     "middie": "^5.2.0",
     "mocha": "^8.2.0",
-    "mocha.parallel": "^0.15.6",
+    "mocha.parallel": "panva/mocha.parallel",
     "moment": "^2.29.1",
     "nock": "^13.0.4",
     "sinon": "^10.0.0",

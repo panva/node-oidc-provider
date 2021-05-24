@@ -920,7 +920,7 @@ describe('Client metadata validation', () => {
   });
 
   describe('features.ciba', () => {
-    const configuration = { features: { ciba: { enabled: true, deliveryModes: ['ping', 'poll'] } } };
+    const configuration = { features: { ciba: { enabled: true, deliveryModes: ['ping', 'poll'] }, requestObjects: { request: false, requestUri: false } } };
     const metadata = {
       grant_types: ['urn:openid:params:grant-type:ciba'],
       redirect_uris: [],

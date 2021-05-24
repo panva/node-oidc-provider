@@ -341,7 +341,7 @@ describe('features.dPoP', () => {
       const spy = sinon.spy();
       this.provider.once('grant.success', spy);
 
-      // changes the code to client-none and
+      // changes the code to client-none
       this.TestAdapter.for('DeviceCode').syncUpdate(this.getTokenJti(this.dc), {
         clientId: 'client-none',
         accountId: this.loggedInAccountId,
@@ -353,6 +353,71 @@ describe('features.dPoP', () => {
           client_id: 'client-none',
           grant_type: 'urn:ietf:params:oauth:grant-type:device_code',
           device_code: this.dc,
+        })
+        .type('form')
+        .set('DPoP', this.proof(`${this.provider.issuer}${this.suitePath('/token')}`, 'POST'))
+        .expect(200);
+
+      expect(spy).to.have.property('calledOnce', true);
+      const { oidc: { entities: { AccessToken, RefreshToken } } } = spy.args[0][0];
+      expect(AccessToken).to.have.property('jkt', expectedS256);
+      expect(RefreshToken).to.have.property('jkt', expectedS256);
+    });
+  });
+
+  describe('urn:openid:params:grant-type:ciba', () => {
+    beforeEach(async function () {
+      await this.agent.post('/backchannel')
+        .auth('client', 'secret')
+        .send({
+          scope: 'openid offline_access',
+          login_hint: 'accountId',
+        })
+        .type('form')
+        .expect(200)
+        .expect(({ body: { auth_req_id: reqId } }) => {
+          this.reqId = reqId;
+        });
+    });
+
+    it('binds the access token to the jwk', async function () {
+      const spy = sinon.spy();
+      this.provider.once('grant.success', spy);
+
+      await this.agent.post('/token')
+        .auth('client', 'secret')
+        .send({
+          grant_type: 'urn:openid:params:grant-type:ciba',
+          auth_req_id: this.reqId,
+        })
+        .type('form')
+        .set('DPoP', this.proof(`${this.provider.issuer}${this.suitePath('/token')}`, 'POST'))
+        .expect(200);
+
+      expect(spy).to.have.property('calledOnce', true);
+      const { oidc: { entities: { AccessToken, RefreshToken } } } = spy.args[0][0];
+      expect(AccessToken).to.have.property('jkt', expectedS256);
+      expect(RefreshToken).not.to.have.property('jkt');
+    });
+
+    it('binds the refresh token to the jwk for public clients', async function () {
+      const spy = sinon.spy();
+      this.provider.once('grant.success', spy);
+
+      // changes the code to client-none
+      this.TestAdapter.for('BackchannelAuthenticationRequest').syncUpdate(this.getTokenJti(this.reqId), {
+        clientId: 'client-none',
+      });
+      const { grantId } = this.TestAdapter.for('BackchannelAuthenticationRequest').syncFind(this.getTokenJti(this.reqId));
+      this.TestAdapter.for('Grant').syncUpdate(grantId, {
+        clientId: 'client-none',
+      });
+
+      await this.agent.post('/token')
+        .send({
+          client_id: 'client-none',
+          grant_type: 'urn:openid:params:grant-type:ciba',
+          auth_req_id: this.reqId,
         })
         .type('form')
         .set('DPoP', this.proof(`${this.provider.issuer}${this.suitePath('/token')}`, 'POST'))

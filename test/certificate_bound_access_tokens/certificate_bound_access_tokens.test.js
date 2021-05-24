@@ -162,6 +162,89 @@ describe('features.mTLS.certificateBoundAccessTokens', () => {
     });
   });
 
+  describe('urn:openid:params:grant-type:ciba', () => {
+    beforeEach(async function () {
+      await this.agent.post('/backchannel')
+        .auth('client', 'secret')
+        .send({
+          scope: 'openid offline_access',
+          login_hint: 'accountId',
+        })
+        .type('form')
+        .expect(200)
+        .expect(({ body: { auth_req_id: reqId } }) => {
+          this.reqId = reqId;
+        });
+    });
+
+    it('binds the access token to the certificate', async function () {
+      const spy = sinon.spy();
+      this.provider.once('grant.success', spy);
+
+      await this.agent.post('/token')
+        .auth('client', 'secret')
+        .send({
+          grant_type: 'urn:openid:params:grant-type:ciba',
+          auth_req_id: this.reqId,
+        })
+        .type('form')
+        .set('x-ssl-client-cert', crt.replace(RegExp('\\r?\\n', 'g'), ''))
+        .expect(200);
+
+      expect(spy).to.have.property('calledOnce', true);
+      const { oidc: { entities: { AccessToken, RefreshToken } } } = spy.args[0][0];
+      expect(AccessToken).to.have.property('x5t#S256', expectedS256);
+      expect(RefreshToken).not.to.have.property('x5t#S256');
+    });
+
+    it('verifies the request made with mutual-TLS', async function () {
+      const spy = sinon.spy();
+      this.provider.once('grant.error', spy);
+
+      await this.agent.post('/token')
+        .auth('client', 'secret')
+        .send({
+          grant_type: 'urn:openid:params:grant-type:ciba',
+          auth_req_id: this.reqId,
+        })
+        .type('form')
+        .expect(400)
+        .expect({ error: 'invalid_grant', error_description: 'grant request is invalid' });
+
+      expect(spy).to.have.property('calledOnce', true);
+      expect(spy.args[0][1]).to.have.property('error_detail', 'mutual TLS client certificate not provided');
+    });
+
+    it('binds the refresh token to the certificate for public clients', async function () {
+      const spy = sinon.spy();
+      this.provider.once('grant.success', spy);
+
+      // changes the code to client-none
+      this.TestAdapter.for('BackchannelAuthenticationRequest').syncUpdate(this.getTokenJti(this.reqId), {
+        clientId: 'client-none',
+      });
+      const { grantId } = this.TestAdapter.for('BackchannelAuthenticationRequest').syncFind(this.getTokenJti(this.reqId));
+      this.TestAdapter.for('Grant').syncUpdate(grantId, {
+        clientId: 'client-none',
+      });
+
+      await this.agent.post('/token')
+        .send({
+          client_id: 'client-none',
+          grant_type: 'urn:openid:params:grant-type:ciba',
+          auth_req_id: this.reqId,
+        })
+        .type('form')
+        .set('x-ssl-client-cert', crt.replace(RegExp('\\r?\\n', 'g'), ''))
+        .expect(200);
+
+      expect(spy).to.have.property('calledOnce', true);
+      const { oidc: { entities: { AccessToken, RefreshToken } } } = spy.args[0][0];
+      expect(AccessToken).to.have.property('x5t#S256', expectedS256);
+      expect(RefreshToken).to.have.property('x5t#S256', expectedS256);
+    });
+  });
+
   describe('authorization flow', () => {
     before(function () { return this.login({ scope: 'openid offline_access' }); });
     bootstrap.skipConsent();

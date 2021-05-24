@@ -63,22 +63,17 @@ runner.createTestPlan({
 
   SKIP = SKIP || ('SKIP' in process.env ? process.env.SKIP.split(',') : []);
 
-  let download = false;
+  if (fs.existsSync('.download')) {
+    fs.unlinkSync('.download');
+  }
+
   describe(PLAN_NAME, () => {
     after(() => {
-      if (download) {
+      if (fs.existsSync('.download')) {
+        fs.unlinkSync('.download');
         return runner.downloadArtifact({ planId: PLAN_ID });
       }
       return undefined;
-    });
-
-    afterEach(function () {
-      const { state, err } = this.currentTest;
-      if (state !== 'passed') {
-        download = true;
-        process.exitCode |= 1;
-        console.error(err);
-      }
     });
 
     parallel('', () => {
@@ -91,7 +86,12 @@ runner.createTestPlan({
           });
           debug('Created test module, new id: %s', moduleId);
           debug('%s/log-detail.html?log=%s', SUITE_BASE_URL, moduleId);
-          await runner.waitForState({ moduleId });
+          try {
+            await runner.waitForState({ moduleId });
+          } catch (err) {
+            fs.writeFileSync('.download', 'foo');
+            throw err;
+          }
         });
       }
     });

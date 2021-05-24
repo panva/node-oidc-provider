@@ -3,9 +3,12 @@ const { strict: assert } = require('assert');
 const sinon = require('sinon');
 const { expect } = require('chai');
 const nock = require('nock');
+const jose = require('jose2');
 
 const { AccessDenied } = require('../../lib/helpers/errors');
 const bootstrap = require('../test_helper');
+
+const { emitter, once } = require('./ciba.config');
 
 describe('configuration features.ciba', () => {
   before(bootstrap(__dirname));
@@ -124,6 +127,136 @@ describe('configuration features.ciba', () => {
   describe('backchannel_authentication_endpoint', () => {
     const route = '/backchannel';
 
+    it('minimal w/ login_hint', async function () {
+      const [, [, request, account, client]] = await Promise.all([
+        this.agent.post(route)
+          .send({
+            scope: 'openid',
+            login_hint: 'accountId',
+            client_id: 'client',
+            unrecognized: true,
+          })
+          .type('form')
+          .expect(200)
+          .expect('content-type', /application\/json/)
+          .expect((response) => {
+            expect(response.body).to.have.keys('expires_in', 'auth_req_id');
+            expect(response.body.expires_in).to.be.a('number');
+            expect(response.body.auth_req_id).to.be.a('string');
+          }),
+        once(emitter, 'triggerAuthenticationDevice'),
+        once(emitter, 'processLoginHint'),
+        once(emitter, 'validateBindingMessage'),
+        once(emitter, 'validateRequestContext'),
+        once(emitter, 'verifyUserCode'),
+      ]);
+
+      expect(request.accountId).to.eql(account.accountId);
+      expect(request.clientId).to.eql(client.clientId);
+      expect(request.resource).to.be.undefined;
+      expect(request.claims).to.deep.eql({});
+      expect(request.nonce).to.be.undefined;
+      expect(request.scope).to.be.eql('openid');
+      expect(request.params).to.deep.eql({ client_id: 'client', login_hint: 'accountId', scope: 'openid' });
+    });
+
+    it('minimal w/ login_hint_token', async function () {
+      const [, [, request, account, client]] = await Promise.all([
+        this.agent.post(route)
+          .send({
+            scope: 'openid',
+            login_hint_token: 'accountId',
+            client_id: 'client',
+            unrecognized: true,
+          })
+          .type('form')
+          .expect(200)
+          .expect('content-type', /application\/json/)
+          .expect((response) => {
+            expect(response.body).to.have.keys('expires_in', 'auth_req_id');
+            expect(response.body.expires_in).to.be.a('number');
+            expect(response.body.auth_req_id).to.be.a('string');
+          }),
+        once(emitter, 'triggerAuthenticationDevice'),
+        once(emitter, 'processLoginHintToken'),
+        once(emitter, 'validateBindingMessage'),
+        once(emitter, 'validateRequestContext'),
+        once(emitter, 'verifyUserCode'),
+      ]);
+
+      expect(request.accountId).to.eql(account.accountId);
+      expect(request.clientId).to.eql(client.clientId);
+      expect(request.resource).to.be.undefined;
+      expect(request.claims).to.deep.eql({});
+      expect(request.nonce).to.be.undefined;
+      expect(request.scope).to.be.eql('openid');
+      expect(request.params).to.deep.eql({ client_id: 'client', login_hint_token: 'accountId', scope: 'openid' });
+    });
+
+    it('minimal w/ id_token_hint', async function () {
+      const [, [, request]] = await Promise.all([
+        this.agent.post(route)
+          .send({
+            scope: 'openid',
+            login_hint_token: 'accountId',
+            client_id: 'client',
+            unrecognized: true,
+          })
+          .type('form')
+          .expect(200)
+          .expect('content-type', /application\/json/)
+          .expect((response) => {
+            expect(response.body).to.have.keys('expires_in', 'auth_req_id');
+            expect(response.body.expires_in).to.be.a('number');
+            expect(response.body.auth_req_id).to.be.a('string');
+          }),
+        once(emitter, 'triggerAuthenticationDevice'),
+      ]);
+      const grant = new this.provider.Grant({ accountId: 'accountId', clientId: 'client' });
+      grant.addOIDCScope('openid');
+      await grant.save();
+      await this.provider.backchannelResult(request, grant);
+
+      const { body: { id_token } } = await this.agent.post('/token')
+        .send({
+          client_id: 'client',
+          grant_type: 'urn:openid:params:grant-type:ciba',
+          auth_req_id: request.jti,
+        })
+        .type('form')
+        .expect(200);
+
+      const [, [, request2, account, client]] = await Promise.all([
+        this.agent.post(route)
+          .send({
+            scope: 'openid',
+            id_token_hint: id_token,
+            client_id: 'client',
+            unrecognized: true,
+          })
+          .type('form')
+          .expect(200)
+          .expect('content-type', /application\/json/)
+          .expect((response) => {
+            expect(response.body).to.have.keys('expires_in', 'auth_req_id');
+            expect(response.body.expires_in).to.be.a('number');
+            expect(response.body.auth_req_id).to.be.a('string');
+          }),
+        once(emitter, 'triggerAuthenticationDevice'),
+        once(emitter, 'validateBindingMessage'),
+        once(emitter, 'validateRequestContext'),
+        once(emitter, 'verifyUserCode'),
+      ]);
+
+      expect(request2.accountId).to.eql(account.accountId);
+      expect(request2.clientId).to.eql(client.clientId);
+      expect(request2.resource).to.be.undefined;
+      expect(request2.claims).to.deep.eql({});
+      expect(request2.nonce).to.be.undefined;
+      expect(request2.scope).to.be.eql('openid');
+      expect(request2.params).to.deep.eql({ client_id: 'client', id_token_hint: id_token, scope: 'openid' });
+    });
+
     describe('client validation', () => {
       it('only responds to clients with urn:openid:params:grant-type:ciba enabled', function () {
         const spy = sinon.spy();
@@ -186,6 +319,50 @@ describe('configuration features.ciba', () => {
     });
 
     describe('param validation', () => {
+      it('could not resolve Account', async function () {
+        const spy = sinon.spy();
+        this.provider.once('backchannel_authentication.error', spy);
+
+        return this.agent.post(route)
+          .send({
+            scope: 'openid',
+            login_hint: 'notfound',
+            client_id: 'client',
+          })
+          .type('form')
+          .expect(400)
+          .expect('content-type', /application\/json/)
+          .expect(() => {
+            expect(spy.calledOnce).to.be.true;
+          })
+          .expect({
+            error: 'unknown_user_id',
+            error_description: 'could not identify end-user',
+          });
+      });
+
+      it('could not resolve account identifier', async function () {
+        const spy = sinon.spy();
+        this.provider.once('backchannel_authentication.error', spy);
+
+        return this.agent.post(route)
+          .send({
+            scope: 'openid',
+            login_hint_token: 'notfound',
+            client_id: 'client',
+          })
+          .type('form')
+          .expect(400)
+          .expect('content-type', /application\/json/)
+          .expect(() => {
+            expect(spy.calledOnce).to.be.true;
+          })
+          .expect({
+            error: 'unknown_user_id',
+            error_description: 'could not identify end-user',
+          });
+      });
+
       it('requires the scope param', async function () {
         const spy = sinon.spy();
         this.provider.once('backchannel_authentication.error', spy);
@@ -318,7 +495,7 @@ describe('configuration features.ciba', () => {
         const spy = sinon.spy();
         this.provider.once('backchannel_authentication.error', spy);
 
-        return this.agent.post(route)
+        await this.agent.post(route)
           .send({
             client_id: 'client-signed',
             scope: 'openid',
@@ -332,6 +509,164 @@ describe('configuration features.ciba', () => {
           .expect({
             error: 'invalid_request',
             error_description: 'Request Object must be used by this client',
+          });
+        const jwk = await jose.JWK.generate('EC', 'P-256', { alg: 'ES256' });
+
+        nock('https://rp.example.com/')
+          .get('/jwks')
+          .reply(200, { keys: [jwk.toJWK(false)] });
+
+        return this.agent.post(route)
+          .send({
+            client_id: 'client-signed',
+            request: jose.JWT.sign({
+              client_id: 'client-signed',
+              scope: 'openid',
+              jti: 'foo',
+              login_hint: 'accountId',
+            },
+            jwk,
+            {
+              expiresIn: '5m',
+              notBefore: '0s',
+              issuer: 'client-signed',
+              audience: this.provider.issuer,
+            }),
+          })
+          .type('form')
+          .expect(200);
+      });
+
+      it('validates request object claims are present (exp)', async function () {
+        const spy = sinon.spy();
+        this.provider.once('backchannel_authentication.error', spy);
+
+        return this.agent.post(route)
+          .send({
+            client_id: 'client-signed',
+            request: jose.JWT.sign({
+              client_id: 'client-signed',
+              scope: 'openid',
+              jti: 'foo',
+              login_hint: 'accountId',
+            },
+            await jose.JWK.generate('EC', 'P-256', { alg: 'ES256' }),
+            {
+              // expiresIn: '5m',
+              notBefore: '0s',
+              issuer: 'client-signed',
+              audience: this.provider.issuer,
+            }),
+          })
+          .type('form')
+          .expect(400)
+          .expect('content-type', /application\/json/)
+          .expect(() => {
+            expect(spy.calledOnce).to.be.true;
+          })
+          .expect({
+            error: 'invalid_request',
+            error_description: "Request Object is missing the 'exp' claim",
+          });
+      });
+
+      it('validates request object claims are present (nbf)', async function () {
+        const spy = sinon.spy();
+        this.provider.once('backchannel_authentication.error', spy);
+
+        return this.agent.post(route)
+          .send({
+            client_id: 'client-signed',
+            request: jose.JWT.sign({
+              client_id: 'client-signed',
+              scope: 'openid',
+              jti: 'foo',
+              login_hint: 'accountId',
+            },
+            await jose.JWK.generate('EC', 'P-256', { alg: 'ES256' }),
+            {
+              expiresIn: '5m',
+              // notBefore: '0s',
+              issuer: 'client-signed',
+              audience: this.provider.issuer,
+            }),
+          })
+          .type('form')
+          .expect(400)
+          .expect('content-type', /application\/json/)
+          .expect(() => {
+            expect(spy.calledOnce).to.be.true;
+          })
+          .expect({
+            error: 'invalid_request',
+            error_description: "Request Object is missing the 'nbf' claim",
+          });
+      });
+
+      it('validates request object claims are present (jti)', async function () {
+        const spy = sinon.spy();
+        this.provider.once('backchannel_authentication.error', spy);
+
+        return this.agent.post(route)
+          .send({
+            client_id: 'client-signed',
+            request: jose.JWT.sign({
+              client_id: 'client-signed',
+              scope: 'openid',
+              // jti: 'foo',
+              login_hint: 'accountId',
+            },
+            await jose.JWK.generate('EC', 'P-256', { alg: 'ES256' }),
+            {
+              expiresIn: '5m',
+              notBefore: '0s',
+              issuer: 'client-signed',
+              audience: this.provider.issuer,
+            }),
+          })
+          .type('form')
+          .expect(400)
+          .expect('content-type', /application\/json/)
+          .expect(() => {
+            expect(spy.calledOnce).to.be.true;
+          })
+          .expect({
+            error: 'invalid_request',
+            error_description: "Request Object is missing the 'jti' claim",
+          });
+      });
+
+      it('validates request object claims are present (iat)', async function () {
+        const spy = sinon.spy();
+        this.provider.once('backchannel_authentication.error', spy);
+
+        return this.agent.post(route)
+          .send({
+            client_id: 'client-signed',
+            request: jose.JWT.sign({
+              client_id: 'client-signed',
+              scope: 'openid',
+              jti: 'foo',
+              login_hint: 'accountId',
+            },
+            await jose.JWK.generate('EC', 'P-256', { alg: 'ES256' }),
+            {
+              expiresIn: '5m',
+              notBefore: '0s',
+              iat: false,
+              issuer: 'client-signed',
+              audience: this.provider.issuer,
+            }),
+          })
+          .type('form')
+          .expect(400)
+          .expect('content-type', /application\/json/)
+          .expect(() => {
+            expect(spy.calledOnce).to.be.true;
+          })
+          .expect({
+            error: 'invalid_request',
+            error_description: "Request Object is missing the 'iat' claim",
           });
       });
 

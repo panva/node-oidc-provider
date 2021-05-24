@@ -666,7 +666,7 @@ _**default value**_:
 
 #### deliveryModes
 
-fine-tune the supported token delivery modes. Supported values are
+Fine-tune the supported token delivery modes. Supported values are
  - `poll`
  - `ping`   
   
@@ -716,6 +716,7 @@ async function processLoginHintToken(ctx, loginHintToken) {
 #### triggerAuthenticationDevice
 
 Helper function used to trigger the authentication and authorization on end-user's Authentication Device. It is called after accepting the backchannel authentication request but before sending client back the response.   
+ When the end-user authenticates use `provider.backchannelResult()` to finish the Consumption Device login process.   
   
 
 
@@ -729,6 +730,25 @@ async function triggerAuthenticationDevice(ctx, request, account, client) {
   throw new Error('features.ciba.triggerAuthenticationDevice not implemented');
 }
 ```
+<a id="trigger-authentication-device-provider-backchannel-result-method"></a><details><summary>(Click to expand) `provider.backchannelResult()` method</summary><br>
+
+
+`backchannelResult` is a method on the Provider prototype, it returns a `Promise` with no fulfillment value.
+  
+
+```js
+const provider = new Provider(...);
+await provider.backchannelResult(...);
+```
+`backchannelResult(request, result[, options]);`
+ - `request` BackchannelAuthenticationRequest - BackchannelAuthenticationRequest instance.
+ - `result` Grant | OIDCProviderError - instance of a persisted Grant model or an OIDCProviderError (all exported by Provider.errors).
+ - `options.acr?`: string - Authentication Context Class Reference value that identifies the Authentication Context Class that the authentication performed satisfied.
+ - `options.amr?`: string[] - Identifiers for authentication methods used in the authentication.
+ - `options.authTime?`: number - Time when the End-User authentication occurred.  
+
+
+</details>
 
 #### validateBindingMessage
 
@@ -2687,7 +2707,7 @@ PKCE configuration such as available methods and policy check on required use of
 
 ### pkce.methods
 
-fine-tune the supported code challenge methods. Supported values are
+Fine-tune the supported code challenge methods. Supported values are
  - `S256`
  - `plain`  
 

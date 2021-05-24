@@ -110,6 +110,9 @@ class Account {
 
   // eslint-disable-next-line no-unused-vars
   static async findAccount(ctx, sub, token) {
+    if (sub === 'notfound') {
+      return undefined;
+    }
     assert.equal(typeof sub, 'string');
     let acc = testStorage.get(`Account:${sub}`);
     if (!acc) {

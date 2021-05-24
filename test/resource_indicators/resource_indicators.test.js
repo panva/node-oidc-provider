@@ -408,7 +408,7 @@ describe('features.resourceIndicators', () => {
     });
   });
 
-  describe('device code', () => {
+  describe('urn:ietf:params:oauth:grant-type:device_code', () => {
     it('checks the policy and adds the resource', async function () {
       await this.agent.post('/device/auth')
         .send({
@@ -709,6 +709,210 @@ describe('features.resourceIndicators', () => {
       expect(spy3.calledOnce).to.be.true;
       at = spy3.args[0][0];
       expect(at.aud).to.equal('urn:wl:default');
+
+      expect(spy4.calledOnce).to.be.true;
+      rt = spy4.args[0][0];
+      expect(rt.resource).to.equal('urn:wl:default');
+    });
+  });
+
+  describe('urn:openid:params:grant-type:ciba', () => {
+    it('checks the policy and adds the resource', async function () {
+      await this.agent.post('/backchannel')
+        .send({
+          client_id: 'client',
+          resource: 'urn:not:allowed',
+          scope: 'openid api:read',
+          login_hint: 'accountId',
+        })
+        .type('form')
+        .expect(400)
+        .expect({
+          error: 'invalid_target',
+          error_description: 'resource indicator is missing, or unknown',
+        });
+
+      let auth_req_id;
+      await this.agent.post('/backchannel')
+        .send({
+          client_id: 'client',
+          resource: 'urn:wl:explicit',
+          scope: 'openid api:read',
+          login_hint: 'accountId',
+        })
+        .type('form')
+        .expect(200)
+        .expect(({ body }) => {
+          ({ auth_req_id } = body);
+        });
+
+      const spy = sinon.spy();
+      this.provider.once('access_token.saved', spy);
+      this.provider.once('access_token.issued', spy);
+      const spy2 = sinon.spy();
+      this.provider.once('refresh_token.saved', spy2);
+
+      await this.agent.post('/token')
+        .send({
+          client_id: 'client',
+          grant_type: 'urn:openid:params:grant-type:ciba',
+          auth_req_id,
+          resource: 'urn:wl:explicit',
+        })
+        .type('form')
+        .expect(200);
+
+      expect(spy.calledOnce).to.be.true;
+      let at = spy.args[0][0];
+      expect(at.aud).to.equal('urn:wl:explicit');
+
+      expect(spy2.calledOnce).to.be.true;
+      let rt = spy2.args[0][0];
+      expect(rt.resource).to.equal('urn:wl:explicit');
+
+      const spy3 = sinon.spy();
+      this.provider.once('access_token.saved', spy3);
+      this.provider.once('access_token.issued', spy3);
+      const spy4 = sinon.spy();
+      this.provider.once('refresh_token.saved', spy4);
+
+      await this.agent.post('/token')
+        .send({
+          client_id: 'client',
+          grant_type: 'refresh_token',
+          refresh_token: rt.jti,
+          resource: 'urn:wl:explicit',
+        })
+        .type('form')
+        .expect(200);
+
+      expect(spy3.calledOnce).to.be.true;
+      at = spy3.args[0][0];
+      expect(at.aud).to.equal('urn:wl:explicit');
+
+      expect(spy4.calledOnce).to.be.true;
+      rt = spy4.args[0][0];
+      expect(rt.resource).to.equal('urn:wl:explicit');
+    });
+
+    it('applies the default resource (when useGrantedResource returns true)', async function () {
+      let auth_req_id;
+      await this.agent.post('/backchannel')
+        .send({
+          client_id: 'client',
+          scope: 'openid api:read',
+          login_hint: 'accountId',
+        })
+        .type('form')
+        .expect(200)
+        .expect(({ body }) => {
+          ({ auth_req_id } = body);
+        });
+
+      const spy = sinon.spy();
+      this.provider.once('access_token.saved', spy);
+      this.provider.once('access_token.issued', spy);
+      const spy2 = sinon.spy();
+      this.provider.once('refresh_token.saved', spy2);
+
+      await this.agent.post('/token')
+        .send({
+          client_id: 'client',
+          grant_type: 'urn:openid:params:grant-type:ciba',
+          auth_req_id,
+          usegranted: true,
+        })
+        .type('form')
+        .expect(200);
+
+      expect(spy.calledOnce).to.be.true;
+      let at = spy.args[0][0];
+      expect(at.aud).to.equal('urn:wl:default');
+
+      expect(spy2.calledOnce).to.be.true;
+      let rt = spy2.args[0][0];
+      expect(rt.resource).to.equal('urn:wl:default');
+
+      const spy3 = sinon.spy();
+      this.provider.once('access_token.saved', spy3);
+      this.provider.once('access_token.issued', spy3);
+      const spy4 = sinon.spy();
+      this.provider.once('refresh_token.saved', spy4);
+
+      await this.agent.post('/token')
+        .send({
+          client_id: 'client',
+          grant_type: 'refresh_token',
+          refresh_token: rt.jti,
+          usegranted: true,
+        })
+        .type('form')
+        .expect(200);
+
+      expect(spy3.calledOnce).to.be.true;
+      at = spy3.args[0][0];
+      expect(at.aud).to.equal('urn:wl:default');
+
+      expect(spy4.calledOnce).to.be.true;
+      rt = spy4.args[0][0];
+      expect(rt.resource).to.equal('urn:wl:default');
+    });
+
+    it('issues access token for userinfo (when useGrantedResource returns false)', async function () {
+      let auth_req_id;
+      await this.agent.post('/backchannel')
+        .send({
+          client_id: 'client',
+          scope: 'openid api:read',
+          login_hint: 'accountId',
+        })
+        .type('form')
+        .expect(200)
+        .expect(({ body }) => {
+          ({ auth_req_id } = body);
+        });
+
+      const spy = sinon.spy();
+      this.provider.once('access_token.saved', spy);
+      this.provider.once('access_token.issued', spy);
+      const spy2 = sinon.spy();
+      this.provider.once('refresh_token.saved', spy2);
+
+      await this.agent.post('/token')
+        .send({
+          client_id: 'client',
+          grant_type: 'urn:openid:params:grant-type:ciba',
+          auth_req_id,
+        })
+        .type('form')
+        .expect(200);
+
+      expect(spy.calledOnce).to.be.true;
+      let at = spy.args[0][0];
+      expect(at.aud).to.equal(undefined);
+
+      expect(spy2.calledOnce).to.be.true;
+      let rt = spy2.args[0][0];
+      expect(rt.resource).to.equal('urn:wl:default');
+
+      const spy3 = sinon.spy();
+      this.provider.once('access_token.saved', spy3);
+      this.provider.once('access_token.issued', spy3);
+      const spy4 = sinon.spy();
+      this.provider.once('refresh_token.saved', spy4);
+
+      await this.agent.post('/token')
+        .send({
+          client_id: 'client',
+          grant_type: 'refresh_token',
+          refresh_token: rt.jti,
+        })
+        .type('form')
+        .expect(200);
+
+      expect(spy3.calledOnce).to.be.true;
+      at = spy3.args[0][0];
+      expect(at.aud).to.equal(undefined);
 
       expect(spy4.calledOnce).to.be.true;
       rt = spy4.args[0][0];
