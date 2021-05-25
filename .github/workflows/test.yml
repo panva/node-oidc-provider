@@ -86,10 +86,37 @@ jobs:
           name: coverage-data
           path: coverage/
 
-  conformance-suite:
+  build-conformance-suite:
     runs-on: ubuntu-latest
     env:
       VERSION: release-v4.1.11
+    steps:
+      - name: Checkout
+        uses: actions/checkout@master
+      - name: Load Cached Conformance Suite Build
+        uses: actions/cache@v2
+        id: cache
+        with:
+          path: ./conformance-suite
+          key: suite-${{ hashFiles('**/test.yml') }}
+      - name: Conformance Suite Checkout
+        if: ${{ steps.cache.outputs.cache-hit != 'true' }}
+        run: git clone --depth 1 --single-branch --branch $VERSION https://gitlab.com/openid/conformance-suite.git
+      - name: Conformance Suite Build
+        working-directory: ./conformance-suite
+        if: ${{ steps.cache.outputs.cache-hit != 'true' }}
+        env:
+          MAVEN_CACHE: ./m2
+        run: |
+          sed -i -e 's/localhost/localhost.emobix.co.uk/g' src/main/resources/application.properties
+          sed -i -e 's/-B clean/-B -DskipTests=true/g' builder-compose.yml
+          docker-compose -f builder-compose.yml run builder
+
+  conformance-suite:
+    runs-on: ubuntu-latest
+    needs:
+      - build-conformance-suite
+    env:
       SUITE_BASE_URL: https://localhost.emobix.co.uk:8443
       SETUP: ${{ toJSON(matrix.setup) }}
     strategy:
@@ -421,25 +448,15 @@ jobs:
           PORT: 3000
           NODE_OPTIONS: --tls-cipher-list="ECDHE-ECDSA-AES128-GCM-SHA256 ECDHE-ECDSA-AES256-GCM-SHA384 ECDHE-RSA-AES128-GCM-SHA256 ECDHE-RSA-AES256-GCM-SHA384"
           NODE_TLS_REJECT_UNAUTHORIZED: 0
-      - name: Cache Conformance Suite Build
+      - name: Load Cached Conformance Suite Build
         uses: actions/cache@v2
         id: cache
         with:
           path: ./conformance-suite
-          key: suite-${{ env.VERSION }}
-      - name: Conformance Suite Build
-        if: ${{ steps.cache.outputs.cache-hit != 'true' }}
-        env:
-          MAVEN_CACHE: ./m2
-        run: |
-          git clone --depth 1 --single-branch --branch $VERSION https://gitlab.com/openid/conformance-suite.git
-          cd conformance-suite
-          sed -i -e 's/localhost/localhost.emobix.co.uk/g' src/main/resources/application.properties
-          sed -i -e 's/-B clean/-B -DskipTests=true/g' builder-compose.yml
-          docker-compose -f builder-compose.yml run builder
+          key: suite-${{ hashFiles('**/test.yml') }}
       - name: Run Conformance Suite
+        working-directory: ./conformance-suite
         run: |
-          cd conformance-suite
           docker-compose -f docker-compose-dev.yml up -d
           while ! curl -skfail https://localhost.emobix.co.uk:8443/api/runner/available >/dev/null; do sleep 2; done
       - name: Adjust configuration files for CI
@@ -461,9 +478,9 @@ jobs:
           if-no-files-found: ignore
         if: ${{ always() }}
       - name: Stop Conformance Suite
+        working-directory: ./conformance-suite
         run: |
           killall -SIGINT node
-          cd conformance-suite
           docker-compose -f docker-compose-dev.yml down
           sudo rm -rf mongo
       - uses: actions/upload-artifact@v2

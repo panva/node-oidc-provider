@@ -59,10 +59,7 @@ runner.createTestPlan({
   planName: PLAN_NAME,
   variant: VARIANT,
 }).then((plan) => {
-  let { modules: MODULES } = plan;
-  const { id: PLAN_ID } = plan;
-
-  MODULES = MODULES.sort(() => Math.random() - 0.5);
+  const { id: PLAN_ID, modules: MODULES } = plan;
 
   debug('Created test plan, new id %s', PLAN_ID);
   debug('%s/plan-detail.html?plan=%s', SUITE_BASE_URL, PLAN_ID);
@@ -70,14 +67,15 @@ runner.createTestPlan({
 
   SKIP = SKIP || ('SKIP' in process.env ? process.env.SKIP.split(',') : []);
 
-  if (fs.existsSync('.download')) {
-    fs.unlinkSync('.download');
+  if (fs.existsSync('.failed')) {
+    fs.unlinkSync('.failed');
   }
 
   describe(PLAN_NAME, () => {
     after(() => {
-      if (fs.existsSync('.download')) {
-        fs.unlinkSync('.download');
+      if (fs.existsSync('.failed')) {
+        fs.unlinkSync('.failed');
+        process.exitCode |= 1;
         return runner.downloadArtifact({ planId: PLAN_ID });
       }
       return undefined;
@@ -96,7 +94,7 @@ runner.createTestPlan({
           try {
             await runner.waitForState({ moduleId });
           } catch (err) {
-            fs.writeFileSync('.download', 'foo');
+            fs.writeFileSync('.failed', Buffer.alloc(0));
             throw err;
           }
         });
