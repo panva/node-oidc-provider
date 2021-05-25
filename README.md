@@ -37,11 +37,12 @@ enabled by default, check the configuration section on how to enable them.
 - [RFC8705 - OAuth 2.0 Mutual TLS Client Authentication and Certificate Bound Access Tokens (MTLS)][mtls]
 - [RFC8707 - OAuth 2.0 Resource Indicators][resource-indicators]
 - [JSON Web Token (JWT) Profile for OAuth 2.0 Access Tokens][jwt-at]
+- [Financial-grade API Security Profile 1.0 - Part 2: Advanced (FAPI)][fapi]
+- [Financial-grade API - Part 2: Read and Write API Security Profile (FAPI) - Implementer's Draft 02][fapi-id2]
 
 The following draft specifications are implemented by oidc-provider.
 - [JWT Response for OAuth Token Introspection - draft 10][jwt-introspection]
 - [JWT Secured Authorization Response Mode for OAuth 2.0 (JARM) - Implementer's Draft 01][jarm]
-- [Financial-grade API - Part 2: Read and Write API Security Profile (FAPI) - Implementer's Draft 02][fapi]
 - [Financial-grade API: Client Initiated Backchannel Authentication Profile (FAPI-CIBA) - Implementer's Draft 01][fapi-ciba]
 - [OAuth 2.0 Authorization Server Issuer Identifier in Authorization Response - draft 00][iss-auth-resp]
 - [OAuth 2.0 Demonstration of Proof-of-Possession at the Application Layer (DPoP) - draft 03][dpop]
@@ -156,6 +157,7 @@ See the list of available emitted [event names](/docs/events.md) and their descr
 [par]: https://tools.ietf.org/html/draft-ietf-oauth-par-06
 [rpinitiated-logout]: https://openid.net/specs/openid-connect-rpinitiated-1_0-01.html
 [iss-auth-resp]: https://tools.ietf.org/html/draft-ietf-oauth-iss-auth-resp-00
-[fapi]: https://openid.net/specs/openid-financial-api-part-2-ID2.html
+[fapi-id2]: https://openid.net/specs/openid-financial-api-part-2-ID2.html
+[fapi]: https://openid.net/specs/openid-financial-api-part-2-1_0.html
 [ciba]: https://openid.net/specs/openid-client-initiated-backchannel-authentication-core-1_0-03.html
 [fapi-ciba]: https://openid.net/specs/openid-financial-api-ciba-ID1.html

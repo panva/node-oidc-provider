@@ -2,8 +2,8 @@ const bootstrap = require('../test_helper');
 const base64url = require('../../lib/helpers/base64url');
 const epochTime = require('../../lib/helpers/epoch_time');
 
-describe('Financial-grade API - Part 2: Read and Write API Security Profile behaviours', () => {
-  before(bootstrap(__dirname));
+describe('Financial-grade API Security Profile 1.0 - Part 2: Advanced (FINAL) behaviours', () => {
+  before(bootstrap(__dirname, { config: 'fapi-final' }));
 
   describe('userinfo', () => {
     before(function () { return this.login(); });
@@ -67,7 +67,9 @@ describe('Financial-grade API - Part 2: Read and Write API Security Profile beha
         client_id: 'client',
         response_type: 'code',
         nonce: 'foo',
+        aud: this.provider.issuer,
         exp: epochTime() + 60,
+        nbf: epochTime(),
       }))}.`;
 
       const auth = new this.AuthorizationRequest({
@@ -103,6 +105,7 @@ describe('Financial-grade API - Part 2: Read and Write API Security Profile beha
         aud: this.provider.issuer,
         state: 'foo',
         exp: epochTime() + 60,
+        nbf: epochTime(),
       }))}.`;
 
       const auth = new this.AuthorizationRequest({
@@ -128,6 +131,9 @@ describe('Financial-grade API - Part 2: Read and Write API Security Profile beha
 
     it('requires exp to be provided in the Request Object', function () {
       const request = `${base64url.encode(JSON.stringify({ alg: 'none' }))}.${base64url.encode(JSON.stringify({
+        aud: this.provider.issuer,
+        // exp: epochTime() + 60,
+        nbf: epochTime(),
         client_id: 'client',
         scope: 'openid',
         response_type: 'code id_token',
@@ -154,6 +160,72 @@ describe('Financial-grade API - Part 2: Read and Write API Security Profile beha
         .expect(auth.validateClientLocation)
         .expect(auth.validateError('invalid_request_object'))
         .expect(auth.validateErrorDescription("Request Object is missing the 'exp' claim"));
+    });
+
+    it('requires nbf to be provided in the Request Object', function () {
+      const request = `${base64url.encode(JSON.stringify({ alg: 'none' }))}.${base64url.encode(JSON.stringify({
+        aud: this.provider.issuer,
+        exp: epochTime() + 60,
+        // nbf: epochTime(),
+        client_id: 'client',
+        scope: 'openid',
+        response_type: 'code id_token',
+        nonce: 'foo',
+      }))}.`;
+
+      const auth = new this.AuthorizationRequest({
+        request,
+        scope: 'openid',
+        client_id: 'client',
+        response_type: 'code id_token',
+        nonce: 'foo',
+      });
+
+      return this.wrap({
+        agent: this.agent,
+        route: '/auth',
+        verb: 'get',
+        auth,
+      })
+        .expect(302)
+        .expect(auth.validateFragment)
+        .expect(auth.validatePresence(['error', 'error_description', 'state']))
+        .expect(auth.validateClientLocation)
+        .expect(auth.validateError('invalid_request_object'))
+        .expect(auth.validateErrorDescription("Request Object is missing the 'nbf' claim"));
+    });
+
+    it('requires nbf to be no more than 3600 from exp', function () {
+      const request = `${base64url.encode(JSON.stringify({ alg: 'none' }))}.${base64url.encode(JSON.stringify({
+        exp: epochTime() + 60,
+        nbf: epochTime() - 3600,
+        aud: this.provider.issuer,
+        client_id: 'client',
+        scope: 'openid',
+        response_type: 'code id_token',
+        nonce: 'foo',
+      }))}.`;
+
+      const auth = new this.AuthorizationRequest({
+        request,
+        scope: 'openid',
+        client_id: 'client',
+        response_type: 'code id_token',
+        nonce: 'foo',
+      });
+
+      return this.wrap({
+        agent: this.agent,
+        route: '/auth',
+        verb: 'get',
+        auth,
+      })
+        .expect(302)
+        .expect(auth.validateFragment)
+        .expect(auth.validatePresence(['error', 'error_description', 'state']))
+        .expect(auth.validateClientLocation)
+        .expect(auth.validateError('invalid_request_object'))
+        .expect(auth.validateErrorDescription("Request Object 'exp' claim too far from 'nbf' claim"));
     });
   });
 });

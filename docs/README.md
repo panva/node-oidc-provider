@@ -426,7 +426,7 @@ location / {
   - [devInteractions ❗](#featuresdevinteractions)
   - [dPoP](#featuresdpop)
   - [encryption](#featuresencryption)
-  - [fapiRW](#featuresfapirw)
+  - [fapi](#featuresfapi)
   - [introspection](#featuresintrospection)
   - [issAuthResp](#featuresissauthresp)
   - [jwtIntrospection](#featuresjwtintrospection)
@@ -640,7 +640,7 @@ _**default value**_:
 
 [OpenID Connect Client Initiated Backchannel Authentication Flow - Core 1.0 - draft-03](https://openid.net/specs/openid-client-initiated-backchannel-authentication-core-1_0-03.html)  
 
-Enables Core CIBA Flow, when combined with `features.fapiRW` enables [Financial-grade API: Client Initiated Backchannel Authentication Profile - Implementer's Draft 01](https://openid.net/specs/openid-financial-api-ciba-ID1.html) as well.   
+Enables Core CIBA Flow, when combined with `features.fapi` enables [Financial-grade API: Client Initiated Backchannel Authentication Profile - Implementer's Draft 01](https://openid.net/specs/openid-financial-api-ciba-ID1.html) as well.   
   
 
 
@@ -1053,26 +1053,22 @@ _**default value**_:
 }
 ```
 
-### features.fapiRW
+### features.fapi
 
-[Financial-grade API - Part 2: Read and Write API Security Profile (FAPI) - Implementer's Draft 02](https://openid.net/specs/openid-financial-api-part-2-ID2.html)  
+Financial-grade API Security Profile  
 
-Enables extra behaviours defined in FAPI Part 1 & 2 that cannot be achieved by other configuration options, namely:   
- - Request Object `exp` claim is REQUIRED
- - `userinfo_endpoint` becomes a FAPI resource, echoing back the x-fapi-interaction-id header and disabling query string as a mechanism for providing access tokens   
+Enables extra Authorization Server behaviours defined in FAPI that cannot be achieved by other configuration options.   
   
-
-_**recommendation**_: Updates to draft specification versions are released as MINOR library versions, if you utilize these specification implementations consider using the tilde `~` operator in your package.json since breaking changes may be introduced as part of these version updates. Alternatively, [acknowledge](#features) the version and be notified of breaking changes as part of your CI.  
 
 
 _**default value**_:
 ```js
 {
-  ack: undefined,
-  enabled: false
+  enabled: false,
+  profile: '1.0 Final'
 }
 ```
-<a id="features-fapi-rw-other-configuration-needed-to-reach-fapi-levels"></a><details><summary>(Click to expand) other configuration needed to reach FAPI levels
+<a id="features-fapi-other-configuration-needed-to-reach-fapi-conformance"></a><details><summary>(Click to expand) other configuration needed to reach FAPI conformance
 </summary><br>
 
 
@@ -1085,11 +1081,28 @@ _**default value**_:
  - `features.mTLS` and enable `selfSignedTlsClientAuth` and/or `tlsClientAuth`
  - `features.claimsParameter`
  - `features.requestObjects` and enable `request` and/or `request_uri`
- - `features.requestObjects.mode` set to `strict`
- - `enabledJWA`
+ - `enabledJWA` algorithm allow lists
  - (optional) `features.pushedAuthorizationRequests`
  - (optional) `features.jwtResponseModes`  
 
+
+</details>
+
+<details><summary>(Click to expand) features.fapi options details</summary><br>
+
+
+#### profile
+
+The specific profile of FAPI to enable. Supported values are:   
+ - '1.0 Final' (default) Enables behaviours from [Financial-grade API Security Profile 1.0 - Part 2: Advanced](https://openid.net/specs/openid-financial-api-part-2-1_0.html)
+ - '1.0 ID2' Enables behaviours from [Financial-grade API - Part 2: Read and Write API Security Profile - Implementer's Draft 02](https://openid.net/specs/openid-financial-api-part-2-ID2.html)
+ - Function returning one of the other supported values, or undefined if FAPI behaviours are to be ignored. The function is invoked with two arguments `(ctx, client)` and serves the purpose of allowing the used profile to be context-specific.  
+
+
+_**default value**_:
+```js
+'1.0 Final'
+```
 
 </details>
 
@@ -1593,7 +1606,7 @@ _**default value**_:
 defines the provider's strategy when it comes to using regular OAuth 2.0 parameters that are present. Parameters inside the Request Object are ALWAYS used, this option controls whether to combine those with the regular ones or not.   
  Supported values are:   
  - 'lax' (default) This is the behaviour expected by OIDC Core 1.0 - all parameters that are not present in the Resource Object are used when resolving the authorization request.
- - 'strict' This is the behaviour expected by FAPI or JAR, all parameters outside of the Request Object are ignored.   
+ - 'strict' This is the behaviour expected by FAPI or JAR, all parameters outside of the Request Object are ignored. For FAPI and FAPI-CIBA this value is enforced.   
   
 
 

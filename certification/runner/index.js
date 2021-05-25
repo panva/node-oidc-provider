@@ -43,6 +43,13 @@ if ('alias' in configuration) {
   configuration.alias = `${configuration.alias}-${Object.values(JSON.parse(VARIANT)).join('-')}`;
 }
 
+if (PLAN_NAME === 'fapi1-advanced-final-test-plan') {
+  configuration.override = Object.entries(configuration.override).reduce((acc, [key, value]) => {
+    acc[key.replace('fapi-rw-id2', 'fapi1-advanced-final')] = value;
+    return acc;
+  }, {});
+}
+
 if (JSON.parse(VARIANT).client_registration === 'dynamic_client') {
   delete configuration.alias;
 }

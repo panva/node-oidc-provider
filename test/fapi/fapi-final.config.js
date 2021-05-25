@@ -4,7 +4,9 @@ const merge = require('lodash/merge');
 const config = cloneDeep(require('../default.config'));
 
 merge(config.features, {
-  fapiRW: { enabled: true },
+  fapi: {
+    enabled: true,
+  },
   jwtResponseModes: { enabled: true },
   requestObjects: {
     request: true,

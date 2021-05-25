@@ -127,7 +127,10 @@ const fapi = new Provider(ISSUER, {
     },
     registration: { enabled: true },
     registrationManagement: { enabled: true },
-    fapiRW: { enabled: true },
+    fapi: {
+      enabled: true,
+      profile: process.env.PROFILE ? process.env.PROFILE : '1.0 Final',
+    },
     mTLS: {
       enabled: true,
       certificateBoundAccessTokens: true,
