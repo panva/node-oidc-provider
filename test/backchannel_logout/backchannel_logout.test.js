@@ -1,3 +1,4 @@
+const { strict: assert } = require('assert');
 const { parse: parseUrl } = require('url');
 
 const sinon = require('sinon').createSandbox();
@@ -6,8 +7,6 @@ const base64url = require('base64url');
 const nock = require('nock');
 
 const bootstrap = require('../test_helper');
-
-const fail = () => { throw new Error('expected promise to be rejected'); };
 
 describe('Back-Channel Logout 1.0', () => {
   before(bootstrap(__dirname));
@@ -61,8 +60,8 @@ describe('Back-Channel Logout 1.0', () => {
         .post('/backchannel_logout')
         .reply(500);
 
-      return client.backchannelLogout('subject', 'foo').then(fail, (err) => {
-        expect(err.message).to.eql('expected 200 OK from https://no-sid.example.com/backchannel_logout, got: 500 Internal Server Error');
+      return assert.rejects(client.backchannelLogout('subject', 'foo'), {
+        message: 'expected 200 OK from https://no-sid.example.com/backchannel_logout, got: 500 Internal Server Error',
       });
     });
   });

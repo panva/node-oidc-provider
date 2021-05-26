@@ -1,10 +1,10 @@
+const { strict: assert } = require('assert');
+
 const sinon = require('sinon').createSandbox();
 const { expect } = require('chai');
 const timekeeper = require('timekeeper');
 
 const bootstrap = require('../test_helper');
-
-const fail = () => { throw new Error('expected promise to be rejected'); };
 
 describe('BaseToken', () => {
   before(bootstrap(__dirname));
@@ -136,9 +136,10 @@ describe('BaseToken', () => {
     const value = await token.save();
     const adapterThrow = new Error('adapter throw!');
     sinon.stub(this.TestAdapter.for('Session'), 'findByUid').callsFake(async () => { throw adapterThrow; });
-    await this.provider.RefreshToken.find(value).then(fail, (err) => {
+    return assert.rejects(this.provider.RefreshToken.find(value), (err) => {
       this.TestAdapter.for('Session').findByUid.restore();
       expect(err).to.equal(adapterThrow);
+      return true;
     });
   });
 
@@ -156,12 +157,12 @@ describe('BaseToken', () => {
   it('rethrows adapter#findByUserCode errors (Device Code)', async function () {
     const adapterThrow = new Error('adapter throw!');
     sinon.stub(this.TestAdapter.for('DeviceCode'), 'findByUserCode').callsFake(async () => { throw adapterThrow; });
-    await this.provider.DeviceCode.findByUserCode('123-456-789').then(() => {
+    return assert.rejects(this.provider.DeviceCode.findByUserCode('123-456-789').then(() => {
       this.TestAdapter.for('DeviceCode').findByUserCode.restore();
-      fail();
-    }, (err) => {
+    }), (err) => {
       this.TestAdapter.for('DeviceCode').findByUserCode.restore();
       expect(err).to.equal(adapterThrow);
+      return true;
     });
   });
 });

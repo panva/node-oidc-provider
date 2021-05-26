@@ -1,5 +1,6 @@
-/* eslint-disable no-param-reassign */
+/* eslint-disable no-param-reassign, max-len */
 
+const { strict: assert } = require('assert');
 const url = require('url');
 
 const sinon = require('sinon').createSandbox();
@@ -7,8 +8,6 @@ const { expect } = require('chai');
 
 const bootstrap = require('../test_helper');
 const { Provider } = require('../../lib');
-
-const fail = () => { throw new Error('expected promise to be rejected'); };
 
 describe('client registration policies', () => {
   before(bootstrap(__dirname));
@@ -147,58 +146,66 @@ describe('client registration policies', () => {
     });
 
     it('policies must be an array', async function () {
-      await new this.provider.InitialAccessToken({ policies: null }).save().then(fail, (err) => {
+      await assert.rejects(new this.provider.InitialAccessToken({ policies: null }).save(), (err) => {
         expect(err).to.have.property('message', 'policies must be an array');
+        return true;
       });
       const saved = await new this.provider.InitialAccessToken({ policies: undefined }).save();
       this.TestAdapter.for('InitialAccessToken').syncUpdate(this.getTokenJti(saved), {
         policies: null,
       });
 
-      await this.provider.InitialAccessToken.find(saved).then(fail, (err) => {
+      return assert.rejects(this.provider.InitialAccessToken.find(saved), (err) => {
         expect(err).to.have.property('message', 'policies must be an array');
+        return true;
       });
     });
 
     it('policies array must have members', async function () {
-      await new this.provider.InitialAccessToken({ policies: [] }).save().then(fail, (err) => {
+      await assert.rejects(new this.provider.InitialAccessToken({ policies: [] }).save(), (err) => {
         expect(err).to.have.property('message', 'policies must not be empty');
+        return true;
       });
       const saved = await new this.provider.InitialAccessToken({ policies: undefined }).save();
       this.TestAdapter.for('InitialAccessToken').syncUpdate(this.getTokenJti(saved), {
         policies: [],
       });
 
-      await this.provider.InitialAccessToken.find(saved).then(fail, (err) => {
+      return assert.rejects(this.provider.InitialAccessToken.find(saved), (err) => {
         expect(err).to.have.property('message', 'policies must not be empty');
+        return true;
       });
     });
 
     it('policies members must be strings', async function () {
-      await new this.provider.InitialAccessToken({ policies: [null] }).save().then(fail, (err) => {
+      await assert.rejects(new this.provider.InitialAccessToken({ policies: [null] }).save(), (err) => {
         expect(err).to.have.property('message', 'policies must be strings');
+        return true;
       });
       const saved = await new this.provider.InitialAccessToken({ policies: undefined }).save();
       this.TestAdapter.for('InitialAccessToken').syncUpdate(this.getTokenJti(saved), {
         policies: [null],
       });
 
-      await this.provider.InitialAccessToken.find(saved).then(fail, (err) => {
+      return assert.rejects(this.provider.InitialAccessToken.find(saved), (err) => {
         expect(err).to.have.property('message', 'policies must be strings');
+        return true;
       });
     });
 
     it('policies members must be present in the provider configuration', async function () {
-      await new this.provider.InitialAccessToken({ policies: ['foo-bar'] }).save().then(fail, (err) => {
+      await assert.rejects(new this.provider.InitialAccessToken({ policies: ['foo-bar'] }).save(), (err) => {
         expect(err).to.have.property('message', 'policy foo-bar not configured');
+        return true;
       });
       const saved = await new this.provider.InitialAccessToken({ policies: undefined }).save();
       this.TestAdapter.for('InitialAccessToken').syncUpdate(this.getTokenJti(saved), {
         policies: ['foo-bar'],
       });
 
-      await this.provider.InitialAccessToken.find(saved).then(fail, (err) => {
+      return assert.rejects(this.provider.InitialAccessToken.find(saved), (err) => {
         expect(err).to.have.property('message', 'policy foo-bar not configured');
+        return true;
       });
     });
   });
@@ -354,8 +361,9 @@ describe('client registration policies', () => {
         policies: null,
       });
 
-      await this.provider.RegistrationAccessToken.find(saved).then(fail, (err) => {
+      return assert.rejects(this.provider.RegistrationAccessToken.find(saved), (err) => {
         expect(err).to.have.property('message', 'policies must be an array');
+        return true;
       });
     });
 
@@ -365,8 +373,9 @@ describe('client registration policies', () => {
         policies: [],
       });
 
-      await this.provider.RegistrationAccessToken.find(saved).then(fail, (err) => {
+      return assert.rejects(this.provider.RegistrationAccessToken.find(saved), (err) => {
         expect(err).to.have.property('message', 'policies must not be empty');
+        return true;
       });
     });
 
@@ -376,8 +385,9 @@ describe('client registration policies', () => {
         policies: [null],
       });
 
-      await this.provider.RegistrationAccessToken.find(saved).then(fail, (err) => {
+      return assert.rejects(this.provider.RegistrationAccessToken.find(saved), (err) => {
         expect(err).to.have.property('message', 'policies must be strings');
+        return true;
       });
     });
 
@@ -387,8 +397,9 @@ describe('client registration policies', () => {
         policies: ['foo-bar'],
       });
 
-      await this.provider.RegistrationAccessToken.find(saved).then(fail, (err) => {
+      return assert.rejects(this.provider.RegistrationAccessToken.find(saved), (err) => {
         expect(err).to.have.property('message', 'policy foo-bar not configured');
+        return true;
       });
     });
   });

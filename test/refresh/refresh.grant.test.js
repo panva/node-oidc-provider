@@ -1,3 +1,4 @@
+const { strict: assert } = require('assert');
 const { parse: parseUrl } = require('url');
 
 const sinon = require('sinon');
@@ -7,8 +8,6 @@ const timekeeper = require('timekeeper');
 
 const bootstrap = require('../test_helper');
 
-const fail = () => { throw new Error('expected promise to be rejected'); };
-const j = JSON.parse;
 const route = '/token';
 
 function errorDetail(spy) {
@@ -84,7 +83,7 @@ describe('grant_type=refresh_token', () => {
       })
       .expect(({ body }) => {
         expect(body).to.have.keys('access_token', 'id_token', 'expires_in', 'token_type', 'refresh_token', 'scope');
-        const refreshIdToken = j(base64url.decode(body.id_token.split('.')[1]));
+        const refreshIdToken = JSON.parse(base64url.decode(body.id_token.split('.')[1]));
         expect(refreshIdToken).to.have.property('nonce', 'foobarnonce');
         expect(body).to.have.property('refresh_token').that.is.a('string');
       });
@@ -365,7 +364,7 @@ describe('grant_type=refresh_token', () => {
         })
         .expect((response) => {
           expect(response.body).to.have.keys('access_token', 'id_token', 'expires_in', 'token_type', 'refresh_token', 'scope');
-          const refreshIdToken = j(base64url.decode(response.body.id_token.split('.')[1]));
+          const refreshIdToken = JSON.parse(base64url.decode(response.body.id_token.split('.')[1]));
           expect(refreshIdToken).to.have.property('nonce', 'foobarnonce');
           expect(response.body).to.have.property('refresh_token').not.equal(rt);
         });
@@ -431,7 +430,7 @@ describe('grant_type=refresh_token', () => {
       this.provider.on('grant.revoked', grantRevokeSpy);
       this.provider.on('refresh_token.destroyed', tokenDestroySpy);
 
-      return Promise.all([
+      return assert.rejects(Promise.all([
         this.agent.post(route)
           .auth('client', 'secret')
           .send({
@@ -448,9 +447,10 @@ describe('grant_type=refresh_token', () => {
           })
           .type('form')
           .expect(200), // one of them will fail.
-      ]).then(fail, () => {
+      ]), () => {
         expect(grantRevokeSpy.calledOnce).to.be.true;
         expect(tokenDestroySpy.calledOnce).to.be.true;
+        return true;
       });
     });
   });
@@ -506,7 +506,7 @@ describe('grant_type=refresh_token', () => {
         })
         .expect((response) => {
           expect(response.body).to.have.keys('access_token', 'id_token', 'expires_in', 'token_type', 'refresh_token', 'scope');
-          const refreshIdToken = j(base64url.decode(response.body.id_token.split('.')[1]));
+          const refreshIdToken = JSON.parse(base64url.decode(response.body.id_token.split('.')[1]));
           expect(refreshIdToken).to.have.property('nonce', 'foobarnonce');
           expect(response.body).to.have.property('refresh_token').not.equal(rt);
         });
@@ -570,7 +570,7 @@ describe('grant_type=refresh_token', () => {
       this.provider.on('grant.revoked', grantRevokeSpy);
       this.provider.on('refresh_token.destroyed', tokenDestroySpy);
 
-      return Promise.all([
+      return assert.rejects(Promise.all([
         this.agent.post(route)
           .auth('client', 'secret')
           .send({
@@ -587,9 +587,10 @@ describe('grant_type=refresh_token', () => {
           })
           .type('form')
           .expect(200), // one of them will fail.
-      ]).then(fail, () => {
+      ]), () => {
         expect(grantRevokeSpy.calledOnce).to.be.true;
         expect(tokenDestroySpy.calledOnce).to.be.true;
+        return true;
       });
     });
   });
@@ -622,7 +623,7 @@ describe('grant_type=refresh_token', () => {
         .expect(200)
         .expect(({ body }) => {
           expect(body).to.have.keys('access_token', 'id_token', 'expires_in', 'token_type', 'refresh_token', 'scope');
-          const refreshIdToken = j(base64url.decode(body.id_token.split('.')[1]));
+          const refreshIdToken = JSON.parse(base64url.decode(body.id_token.split('.')[1]));
           expect(refreshIdToken).to.have.property('nonce', 'foobarnonce');
           expect(body).to.have.property('refresh_token').that.is.a('string');
         })

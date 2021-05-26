@@ -5,8 +5,6 @@ const nock = require('nock');
 
 const bootstrap = require('../test_helper');
 
-const j = JSON.stringify;
-
 describe('pairwise features', () => {
   before(bootstrap(__dirname));
 
@@ -58,7 +56,7 @@ describe('pairwise features', () => {
       it('is not ignored even without subject_type=pairwise', function () {
         nock('https://foobar.example.com')
           .get('/sector')
-          .reply(200, j(['https://client.example.com/cb', 'https://another.example.com/forum/cb']));
+          .reply(200, JSON.stringify(['https://client.example.com/cb', 'https://another.example.com/forum/cb']));
 
         return i(this.provider).clientAdd({
           client_id: 'client',
@@ -75,7 +73,7 @@ describe('pairwise features', () => {
       it('validates the sector from the provided uri', function () {
         nock('https://foobar.example.com')
           .get('/sector')
-          .reply(200, j(['https://client.example.com/cb', 'https://another.example.com/forum/cb']));
+          .reply(200, JSON.stringify(['https://client.example.com/cb', 'https://another.example.com/forum/cb']));
 
         return i(this.provider).clientAdd({
           client_id: 'client',
@@ -92,7 +90,7 @@ describe('pairwise features', () => {
       it('validates the sector from the provided uri for static clients too', function () {
         nock('https://foobar.example.com')
           .get('/sector')
-          .reply(200, j(['https://client.example.com/cb', 'https://another.example.com/forum/cb']));
+          .reply(200, JSON.stringify(['https://client.example.com/cb', 'https://another.example.com/forum/cb']));
 
         return this.provider.Client.find('client-static-with-sector').then((client) => {
           expect(client).to.be.ok;
@@ -118,7 +116,7 @@ describe('pairwise features', () => {
       it('validates all redirect_uris are in the uri', function () {
         nock('https://client.example.com')
           .get('/sector')
-          .reply(200, j(['https://client.example.com/cb', 'https://another.example.com/forum/cb']));
+          .reply(200, JSON.stringify(['https://client.example.com/cb', 'https://another.example.com/forum/cb']));
 
         return i(this.provider).clientAdd({
           client_id: 'client',
@@ -139,7 +137,7 @@ describe('pairwise features', () => {
         it('validates jwks_uri is in the response', function () {
           nock('https://client.example.com')
             .get('/sector')
-            .reply(200, j(['https://client.example.com/cb', 'https://another.example.com/forum/cb']));
+            .reply(200, JSON.stringify(['https://client.example.com/cb', 'https://another.example.com/forum/cb']));
 
           return i(this.provider).clientAdd({
             client_id: 'client',
@@ -164,7 +162,7 @@ describe('pairwise features', () => {
         it('validates jwks_uri is in the response', function () {
           nock('https://client.example.com')
             .get('/sector')
-            .reply(200, j(['https://client.example.com/cb', 'https://another.example.com/forum/cb']));
+            .reply(200, JSON.stringify(['https://client.example.com/cb', 'https://another.example.com/forum/cb']));
 
           return i(this.provider).clientAdd({
             client_id: 'client',
@@ -207,7 +205,7 @@ describe('pairwise features', () => {
       it('validates only accepts json array responses', function () {
         nock('https://client.example.com')
           .get('/sector')
-          .reply(200, j('https://client.example.com/cb'));
+          .reply(200, JSON.stringify('https://client.example.com/cb'));
 
         return i(this.provider).clientAdd({
           client_id: 'client',
@@ -247,7 +245,7 @@ describe('pairwise features', () => {
       it('doesnt accepts 200s, rejects even on redirect', function () {
         nock('https://client.example.com')
           .get('/sector')
-          .reply(201, j('https://client.example.com/cb'));
+          .reply(201, JSON.stringify('https://client.example.com/cb'));
 
         return i(this.provider).clientAdd({
           client_id: 'client',

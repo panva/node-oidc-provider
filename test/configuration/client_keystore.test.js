@@ -10,8 +10,6 @@ const JWT = require('../../lib/helpers/jwt');
 const epochTime = require('../../lib/helpers/epoch_time');
 const bootstrap = require('../test_helper');
 
-const fail = () => { throw new Error('expected promise to be rejected'); };
-
 const endpoint = nock('https://client.example.com/');
 const keystore = new jose.JWKS.KeyStore();
 
@@ -63,15 +61,17 @@ describe('client keystore refresh', () => {
     const client = await this.provider.Client.find('client');
     sinon.stub(client.asymmetricKeyStore, 'fresh').returns(false);
     return Promise.all([
-      client.asymmetricKeyStore.refresh().then(fail, (err) => {
+      assert.rejects(client.asymmetricKeyStore.refresh(), (err) => {
         expect(err).to.be.an('error');
         expect(err.message).to.equal('invalid_client_metadata');
         expect(err.error_description).to.eql('client JSON Web Key Set failed to be refreshed');
+        return true;
       }),
-      client.asymmetricKeyStore.refresh().then(fail, (err) => {
+      assert.rejects(client.asymmetricKeyStore.refresh(), (err) => {
         expect(err).to.be.an('error');
         expect(err.message).to.equal('invalid_client_metadata');
         expect(err.error_description).to.eql('client JSON Web Key Set failed to be refreshed');
+        return true;
       }),
     ]);
   });
@@ -101,10 +101,11 @@ describe('client keystore refresh', () => {
 
     const client = await this.provider.Client.find('client');
     sinon.stub(client.asymmetricKeyStore, 'fresh').returns(false);
-    await client.asymmetricKeyStore.refresh().then(fail, (err) => {
+    return assert.rejects(client.asymmetricKeyStore.refresh(), (err) => {
       expect(err).to.be.an('error');
       expect(err.message).to.equal('invalid_client_metadata');
       expect(err.error_description).to.eql('client JSON Web Key Set failed to be refreshed');
+      return true;
     });
   });
 
@@ -113,10 +114,11 @@ describe('client keystore refresh', () => {
 
     const client = await this.provider.Client.find('client');
     sinon.stub(client.asymmetricKeyStore, 'fresh').returns(false);
-    await client.asymmetricKeyStore.refresh().then(fail, (err) => {
+    return assert.rejects(client.asymmetricKeyStore.refresh(), (err) => {
       expect(err).to.be.an('error');
       expect(err.message).to.equal('invalid_client_metadata');
       expect(err.error_description).to.eql('client JSON Web Key Set failed to be refreshed');
+      return true;
     });
   });
 
@@ -125,10 +127,11 @@ describe('client keystore refresh', () => {
 
     const client = await this.provider.Client.find('client');
     sinon.stub(client.asymmetricKeyStore, 'fresh').returns(false);
-    await client.asymmetricKeyStore.refresh().then(fail, (err) => {
+    return assert.rejects(client.asymmetricKeyStore.refresh(), (err) => {
       expect(err).to.be.an('error');
       expect(err.message).to.equal('invalid_client_metadata');
       expect(err.error_description).to.eql('client JSON Web Key Set failed to be refreshed');
+      return true;
     });
   });
 
@@ -225,10 +228,10 @@ describe('client keystore refresh', () => {
 
       const client = await this.provider.Client.find('client');
       client.asymmetricKeyStore.freshUntil = epochTime() - 1;
-      await JWT.verify(
+      return assert.rejects(JWT.verify(
         'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiYWRtaW4iOnRydWV9.TJVA95OrM7E2cBab30RMHrHDcEfxjoYZgeFONFh7HgA',
         client.asymmetricKeyStore,
-      ).then(fail, () => {});
+      ));
     });
 
     it('refreshes stale keystores before id_token encryption', async function () {

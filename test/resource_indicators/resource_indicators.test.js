@@ -1,12 +1,12 @@
 /* eslint-disable prefer-destructuring */
 
+const { strict: assert } = require('assert');
+
 const sinon = require('sinon');
 const { expect } = require('chai');
 
 const bootstrap = require('../test_helper');
 const { features: { resourceIndicators: defaults } } = require('../../lib/helpers/defaults')();
-
-const fail = () => { throw new Error('expected promise to be rejected'); };
 
 describe('features.resourceIndicators defaults', () => {
   it('defaultResource', async () => {
@@ -14,9 +14,10 @@ describe('features.resourceIndicators defaults', () => {
     expect(await defaults.defaultResource(undefined, undefined, ['urn:example:rs'])).to.deep.equal(['urn:example:rs']);
   });
 
-  it('getResourceServerInfo', async () => defaults.getResourceServerInfo().then(fail, (err) => {
+  it('getResourceServerInfo', () => assert.rejects(defaults.getResourceServerInfo(), (err) => {
     expect(err.message).to.equal('invalid_target');
     expect(err.error_description).to.equal('resource indicator is missing, or unknown');
+    return true;
   }));
 });
 

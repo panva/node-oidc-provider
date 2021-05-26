@@ -1,5 +1,7 @@
 /* eslint-disable no-underscore-dangle */
 
+const { strict: assert } = require('assert');
+
 const { expect } = require('chai');
 const KeyGrip = require('keygrip'); // eslint-disable-line import/no-extraneous-dependencies
 const sinon = require('sinon').createSandbox();
@@ -11,7 +13,6 @@ const epochTime = require('../../lib/helpers/epoch_time');
 const expire = new Date();
 expire.setDate(expire.getDate() + 1);
 const expired = new Date(0);
-const fail = () => { throw new Error('expected promise to be rejected'); };
 
 function handlesInteractionSessionErrors() {
   it('"handles" not found interaction session id cookie', async function () {
@@ -24,9 +25,10 @@ function handlesInteractionSessionErrors() {
     sinon.spy(this.provider, 'interactionDetails');
 
     await this.agent.get(this.url).expect(400);
-    await this.provider.interactionDetails.getCall(0).returnValue.then(fail, (err) => {
+    return assert.rejects(this.provider.interactionDetails.getCall(0).returnValue, (err) => {
       expect(err.name).to.eql('SessionNotFound');
       expect(err.error_description).to.eql('interaction session id cookie not found');
+      return true;
     });
   });
 
@@ -36,9 +38,10 @@ function handlesInteractionSessionErrors() {
     sinon.spy(this.provider, 'interactionDetails');
 
     await this.agent.get(this.url).expect(400);
-    await this.provider.interactionDetails.getCall(0).returnValue.then(fail, (err) => {
+    return assert.rejects(this.provider.interactionDetails.getCall(0).returnValue, (err) => {
       expect(err.name).to.eql('SessionNotFound');
       expect(err.error_description).to.eql('interaction session not found');
+      return true;
     });
   });
 }

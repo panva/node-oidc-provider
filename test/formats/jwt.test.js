@@ -1,5 +1,6 @@
 /* eslint-disable no-shadow */
 /* eslint-disable no-param-reassign */
+const { strict: assert } = require('assert');
 const crypto = require('crypto');
 const util = require('util');
 
@@ -10,7 +11,6 @@ const base64url = require('base64url');
 const epochTime = require('../../lib/helpers/epoch_time');
 const bootstrap = require('../test_helper');
 
-const fail = () => { throw new Error('expected promise to be rejected'); };
 const generateKeyPair = util.promisify(crypto.generateKeyPair);
 function decode(b64urljson) {
   return JSON.parse(base64url.decode(b64urljson));
@@ -142,9 +142,10 @@ describe('jwt format', () => {
 
       const client = await this.provider.Client.find(clientId);
       const token = new this.provider.AccessToken({ client, ...fullPayload, resourceServer });
-      await token.save().then(fail, (err) => {
+      return assert.rejects(token.save(), (err) => {
         expect(err).to.be.an('error');
         expect(err.message).to.equal('jwt.sign.kid must be a string when provided');
+        return true;
       });
     });
 
@@ -164,9 +165,10 @@ describe('jwt format', () => {
 
       const client = await this.provider.Client.find(clientId);
       const token = new this.provider.AccessToken({ client, ...fullPayload, resourceServer });
-      await token.save().then(fail, (err) => {
+      return assert.rejects(token.save(), (err) => {
         expect(err).to.be.an('error');
         expect(err.message).to.equal('jwt.encrypt.kid must be a string when provided');
+        return true;
       });
     });
 
@@ -348,9 +350,10 @@ describe('jwt format', () => {
 
       const client = await this.provider.Client.find(clientId);
       const token = new this.provider.AccessToken({ client, ...fullPayload, resourceServer });
-      await token.save().then(fail, (err) => {
+      return assert.rejects(token.save(), (err) => {
         expect(err).to.be.an('error');
         expect(err.message).to.equal('JWT Access Tokens may not use JWS algorithm "none"');
+        return true;
       });
     });
 
@@ -367,9 +370,10 @@ describe('jwt format', () => {
 
       const client = await this.provider.Client.find(clientId);
       const token = new this.provider.AccessToken({ client, ...fullPayload, resourceServer });
-      await token.save().then(fail, (err) => {
+      return assert.rejects(token.save(), (err) => {
         expect(err).to.be.an('error');
         expect(err.message).to.equal('missing jwt.sign.key Resource Server configuration');
+        return true;
       });
     });
 
@@ -387,9 +391,10 @@ describe('jwt format', () => {
 
       const client = await this.provider.Client.find(clientId);
       const token = new this.provider.AccessToken({ client, ...fullPayload, resourceServer });
-      await token.save().then(fail, (err) => {
+      return assert.rejects(token.save(), (err) => {
         expect(err).to.be.an('error');
         expect(err.message).to.equal('jwt.sign.key Resource Server configuration must be a secret (symmetric) key');
+        return true;
       });
     });
 
@@ -407,9 +412,10 @@ describe('jwt format', () => {
 
       const client = await this.provider.Client.find(clientId);
       const token = new this.provider.AccessToken({ client, ...fullPayload, resourceServer });
-      await token.save().then(fail, (err) => {
+      return assert.rejects(token.save(), (err) => {
         expect(err).to.be.an('error');
         expect(err.message).to.equal('jwt.sign.key Resource Server configuration must be a secret (symmetric) key');
+        return true;
       });
     });
 
@@ -426,9 +432,10 @@ describe('jwt format', () => {
 
       const client = await this.provider.Client.find(clientId);
       const token = new this.provider.AccessToken({ client, ...fullPayload, resourceServer });
-      await token.save().then(fail, (err) => {
+      return assert.rejects(token.save(), (err) => {
         expect(err).to.be.an('error');
         expect(err.message).to.equal('resolved Resource Server jwt configuration has no corresponding key in the provider\'s keystore');
+        return true;
       });
     });
 
@@ -447,9 +454,10 @@ describe('jwt format', () => {
 
       const client = await this.provider.Client.find(clientId);
       const token = new this.provider.AccessToken({ client, ...fullPayload, resourceServer });
-      await token.save().then(fail, (err) => {
+      return assert.rejects(token.save(), (err) => {
         expect(err).to.be.an('error');
         expect(err.message).to.equal('jwt.encrypt.key Resource Server configuration must be a secret (symmetric) or a public key');
+        return true;
       });
     });
 
@@ -468,14 +476,16 @@ describe('jwt format', () => {
 
       const client = await this.provider.Client.find(clientId);
       const token = new this.provider.AccessToken({ client, ...fullPayload, resourceServer });
-      await token.save().then(fail, (err) => {
+      return assert.rejects(token.save(), (err) => {
         expect(err).to.be.an('error');
         expect(err.message).to.equal('missing jwt.sign Resource Server configuration');
+        return true;
       });
     });
 
     // eslint-disable-next-line no-restricted-syntax
     for (const prop of ['alg', 'enc', 'key']) {
+      // eslint-disable-next-line no-loop-func
       it(`ensures JWE Configuration has ${prop}`, async function () {
         const resourceServer = {
           accessTokenFormat: 'jwt',
@@ -493,9 +503,10 @@ describe('jwt format', () => {
 
         const client = await this.provider.Client.find(clientId);
         const token = new this.provider.AccessToken({ client, ...fullPayload, resourceServer });
-        await token.save().then(fail, (err) => {
+        return assert.rejects(token.save(), (err) => {
           expect(err).to.be.an('error');
           expect(err.message).to.equal(`missing jwt.encrypt.${prop} Resource Server configuration`);
+          return true;
         });
       });
     }

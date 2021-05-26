@@ -1,5 +1,6 @@
 /* eslint-disable no-shadow */
 /* eslint-disable no-param-reassign */
+const { strict: assert } = require('assert');
 const crypto = require('crypto');
 const util = require('util');
 
@@ -10,7 +11,6 @@ const paseto = require('paseto');
 const epochTime = require('../../lib/helpers/epoch_time');
 const bootstrap = require('../test_helper');
 
-const fail = () => { throw new Error('expected promise to be rejected'); };
 const generateKeyPair = util.promisify(crypto.generateKeyPair);
 
 describe('paseto format', () => {
@@ -141,9 +141,10 @@ describe('paseto format', () => {
 
       const client = await this.provider.Client.find(clientId);
       const token = new this.provider.AccessToken({ client, ...fullPayload, resourceServer });
-      await token.save().then(fail, (err) => {
+      return assert.rejects(token.save(), (err) => {
         expect(err).to.be.an('error');
         expect(err.message).to.equal('unsupported PASETO version and purpose');
+        return true;
       });
     });
 
@@ -160,9 +161,10 @@ describe('paseto format', () => {
 
       const client = await this.provider.Client.find(clientId);
       const token = new this.provider.AccessToken({ client, ...fullPayload, resourceServer });
-      await token.save().then(fail, (err) => {
+      return assert.rejects(token.save(), (err) => {
         expect(err).to.be.an('error');
         expect(err.message).to.equal('resolved Resource Server paseto configuration has no corresponding key in the provider\'s keystore');
+        return true;
       });
     });
 
@@ -180,9 +182,10 @@ describe('paseto format', () => {
 
       const client = await this.provider.Client.find(clientId);
       const token = new this.provider.AccessToken({ client, ...fullPayload, resourceServer });
-      await token.save().then(fail, (err) => {
+      return assert.rejects(token.save(), (err) => {
         expect(err).to.be.an('error');
         expect(err.message).to.equal('paseto.kid must be a string when provided');
+        return true;
       });
     });
 
@@ -198,9 +201,10 @@ describe('paseto format', () => {
 
       const client = await this.provider.Client.find(clientId);
       const token = new this.provider.AccessToken({ client, ...fullPayload, resourceServer });
-      await token.save().then(fail, (err) => {
+      return assert.rejects(token.save(), (err) => {
         expect(err).to.be.an('error');
         expect(err.message).to.equal('unsupported PASETO version and purpose');
+        return true;
       });
     });
 
@@ -216,9 +220,10 @@ describe('paseto format', () => {
 
       const client = await this.provider.Client.find(clientId);
       const token = new this.provider.AccessToken({ client, ...fullPayload, resourceServer });
-      await token.save().then(fail, (err) => {
+      return assert.rejects(token.save(), (err) => {
         expect(err).to.be.an('error');
         expect(err.message).to.equal('unsupported "paseto.version"');
+        return true;
       });
     });
 
@@ -234,9 +239,10 @@ describe('paseto format', () => {
 
       const client = await this.provider.Client.find(clientId);
       const token = new this.provider.AccessToken({ client, ...fullPayload, resourceServer });
-      await token.save().then(fail, (err) => {
+      return assert.rejects(token.save(), (err) => {
         expect(err).to.be.an('error');
         expect(err.message).to.equal('local purpose PASETO Resource Server requires a "paseto.key"');
+        return true;
       });
     });
 
@@ -253,9 +259,10 @@ describe('paseto format', () => {
 
       const client = await this.provider.Client.find(clientId);
       const token = new this.provider.AccessToken({ client, ...fullPayload, resourceServer });
-      await token.save().then(fail, (err) => {
+      return assert.rejects(token.save(), (err) => {
         expect(err).to.be.an('error');
         expect(err.message).to.equal('local purpose PASETO Resource Server "paseto.key" must be 256 bits long secret key');
+        return true;
       });
     });
 
@@ -272,9 +279,10 @@ describe('paseto format', () => {
 
       const client = await this.provider.Client.find(clientId);
       const token = new this.provider.AccessToken({ client, ...fullPayload, resourceServer });
-      await token.save().then(fail, (err) => {
+      return assert.rejects(token.save(), (err) => {
         expect(err).to.be.an('error');
         expect(err.message).to.equal('local purpose PASETO Resource Server "paseto.key" must be 256 bits long secret key');
+        return true;
       });
     });
 
@@ -291,9 +299,10 @@ describe('paseto format', () => {
 
       const client = await this.provider.Client.find(clientId);
       const token = new this.provider.AccessToken({ client, ...fullPayload, resourceServer });
-      await token.save().then(fail, (err) => {
+      return assert.rejects(token.save(), (err) => {
         expect(err).to.be.an('error');
         expect(err.message).to.equal('local purpose PASETO Resource Server "paseto.key" must be 256 bits long secret key');
+        return true;
       });
     });
 
@@ -305,9 +314,10 @@ describe('paseto format', () => {
 
       const client = await this.provider.Client.find(clientId);
       const token = new this.provider.AccessToken({ client, ...fullPayload, resourceServer });
-      await token.save().then(fail, (err) => {
+      return assert.rejects(token.save(), (err) => {
         expect(err).to.be.an('error');
         expect(err.message).to.equal('missing "paseto" Resource Server configuration');
+        return true;
       });
     });
 
@@ -320,9 +330,10 @@ describe('paseto format', () => {
 
       const client = await this.provider.Client.find(clientId);
       const token = new this.provider.AccessToken({ client, ...fullPayload, resourceServer });
-      await token.save().then(fail, (err) => {
+      return assert.rejects(token.save(), (err) => {
         expect(err).to.be.an('error');
         expect(err.message).to.equal('missing "paseto" Resource Server configuration');
+        return true;
       });
     });
   });
