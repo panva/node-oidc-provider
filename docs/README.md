@@ -2809,6 +2809,7 @@ Function called in a number of different context to determine whether an underly
  - Refresh Token Revocation
  - Authorization Code re-use
  - Device Code re-use
+ - Backchannel Authentication Request re-use
  - Rotated Refresh Token re-use  
 
 
