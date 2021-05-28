@@ -2,6 +2,32 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [7.4.0](https://github.com/panva/node-oidc-provider/compare/v7.3.2...v7.4.0) (2021-05-28)
+
+
+### ⚠ BREAKING CHANGES
+
+* **fapi:** Draft feature `fapiRW` was replaced by a stable `fapi`
+feature.
+* **fapi:** The default profile for the new `fapi` feature is
+Financial-grade API Security Profile 1.0 - Part 2: Advanced (Final) rather than
+Financial-grade API - Part 2: Read and Write API Security Profile (ID2).
+ID2 albeit being an Implementer's Draft remains a possible
+`features.fapi.profile` option
+
+### Features
+
+* **fapi:** FAPI (Final and ID2) is now a stable feature ([4f52a4c](https://github.com/panva/node-oidc-provider/commit/4f52a4cf62d0e2282a8f6a1759725b8633135b83))
+* **resourceIndicators:** allow omitting resource parameter at the token endpoint ([0309ec0](https://github.com/panva/node-oidc-provider/commit/0309ec068ef7c347fc8f68bf70a5a1fc79f78d57)), closes [/github.com/panva/node-oidc-provider/discussions/989#discussioncomment-676812](https://github.com/panva//github.com/panva/node-oidc-provider/discussions/989/issues/discussioncomment-676812) [#989](https://github.com/panva/node-oidc-provider/issues/989)
+* Client Initiated Backchannel Authentication (CIBA) and FAPI-CIBA-ID1 ([a217484](https://github.com/panva/node-oidc-provider/commit/a217484caa3593e556e9c4c18d0766d878d7f813))
+
+
+### Bug Fixes
+
+* **deviceFlow:** ensure pairwise device flow clients prove ownership of their jwks_uri ([ec99201](https://github.com/panva/node-oidc-provider/commit/ec9920138d3dda17fe107b77a1361be1a4372089))
+* remove default got user-agent ([d65187c](https://github.com/panva/node-oidc-provider/commit/d65187c296770c3b903ccdd9f30c323b5ad36a8b))
+* skip validating client redirect_uris presence when not required ([90965bb](https://github.com/panva/node-oidc-provider/commit/90965bb61bb87159fee0513a59849bdaa45e4fff))
+
 ## [7.3.2](https://github.com/panva/node-oidc-provider/compare/v7.3.1...v7.3.2) (2021-05-13)
 
 
