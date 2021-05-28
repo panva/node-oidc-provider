@@ -53,7 +53,7 @@ describe('encryption', () => {
             scope: 'openid',
           });
 
-          return this.wrap({ route, verb, auth }).expect(302)
+          return this.wrap({ route, verb, auth }).expect(303)
             .expect(auth.validateFragment)
             .expect(auth.validatePresence(['error', 'error_description', 'state']))
             .expect(auth.validateState)
@@ -210,7 +210,7 @@ describe('encryption', () => {
               response_type: 'code',
             },
           })
-            .expect(302)
+            .expect(303)
             .expect((response) => {
               const expected = url.parse('https://client.example.com/cb', true);
               const actual = url.parse(response.headers.location, true);
@@ -273,7 +273,7 @@ describe('encryption', () => {
                 request: encrypted,
               },
             })
-              .expect(302)
+              .expect(303)
               .expect((response) => {
                 const expected = url.parse('https://client.example.com/cb', true);
                 const actual = url.parse(response.headers.location, true);
@@ -408,7 +408,7 @@ describe('encryption', () => {
               client_id: 'client',
             },
           })
-            .expect(302)
+            .expect(303)
             .expect((response) => {
               const expected = url.parse('https://client.example.com/cb', true);
               const actual = url.parse(response.headers.location, true);
@@ -447,7 +447,7 @@ describe('encryption', () => {
               client_id: 'client',
             },
           })
-            .expect(302)
+            .expect(303)
             .expect((response) => {
               const expected = url.parse('https://client.example.com/cb', true);
               const actual = url.parse(response.headers.location, true);
@@ -486,7 +486,7 @@ describe('encryption', () => {
               client_id: 'clientRequestObjectSigningAlg',
             },
           })
-            .expect(302)
+            .expect(303)
             .expect((response) => {
               const expected = url.parse('https://client.example.com/cb', true);
               const actual = url.parse(response.headers.location, true);
@@ -560,7 +560,7 @@ describe('encryption', () => {
               response_type: 'id_token',
             },
           })
-            .expect(302)
+            .expect(303)
             .expect((response) => {
               const expected = url.parse('https://client.example.com/cb', true);
               const actual = url.parse(response.headers.location.replace('#', '?'), true);
@@ -595,7 +595,7 @@ describe('encryption', () => {
               response_type: 'id_token',
             },
           })
-            .expect(302)
+            .expect(303)
             .expect((response) => {
               const { query } = url.parse(response.headers.location.replace('#', '?'), true);
               expect(query).to.have.property('error', 'invalid_request_object');
@@ -650,7 +650,7 @@ describe('encryption', () => {
               response_type: 'id_token',
             },
           })
-            .expect(302)
+            .expect(303)
             .expect((response) => {
               const expected = url.parse('https://client.example.com/cb', true);
               const actual = url.parse(response.headers.location.replace('#', '?'), true);
@@ -685,7 +685,7 @@ describe('encryption', () => {
               response_type: 'id_token',
             },
           })
-            .expect(302)
+            .expect(303)
             .expect((response) => {
               const { query } = url.parse(response.headers.location.replace('#', '?'), true);
               expect(query).to.have.property('error', 'invalid_request_object');

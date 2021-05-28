@@ -39,7 +39,7 @@ describe('configuration features.jwtResponseModes', () => {
       });
 
       await this.wrap({ route, auth, verb: 'get' })
-        .expect(302)
+        .expect(303)
         .expect(auth.validateFragment)
         .expect(auth.validatePresence(['response']))
         .expect(auth.validateClientLocation)
@@ -63,7 +63,7 @@ describe('configuration features.jwtResponseModes', () => {
       });
 
       await this.wrap({ route, auth, verb: 'get' })
-        .expect(302)
+        .expect(303)
         .expect(auth.validatePresence(['response']))
         .expect(auth.validateClientLocation)
         .expect(({ headers: { location } }) => {
@@ -86,7 +86,7 @@ describe('configuration features.jwtResponseModes', () => {
       });
 
       await this.wrap({ route, auth, verb: 'get' })
-        .expect(302)
+        .expect(303)
         .expect(auth.validatePresence(['response']))
         .expect(auth.validateClientLocation)
         .expect(({ headers: { location } }) => {
@@ -106,7 +106,7 @@ describe('configuration features.jwtResponseModes', () => {
         });
 
         await this.wrap({ route, auth, verb: 'get' })
-          .expect(302)
+          .expect(303)
           .expect(auth.validateFragment)
           .expect(auth.validateClientLocation)
           .expect(auth.validateError('invalid_client'))
@@ -122,7 +122,7 @@ describe('configuration features.jwtResponseModes', () => {
         });
 
         await this.wrap({ route, auth, verb: 'get' })
-          .expect(302)
+          .expect(303)
           .expect(auth.validateClientLocation)
           .expect(auth.validateError('invalid_client'))
           .expect(auth.validateErrorDescription('client secret is expired, cannot issue a JWT Authorization response'));
@@ -137,7 +137,7 @@ describe('configuration features.jwtResponseModes', () => {
         });
 
         await this.wrap({ route, auth, verb: 'get' })
-          .expect(302)
+          .expect(303)
           .expect(auth.validateClientLocation)
           .expect(auth.validateError('invalid_client'))
           .expect(auth.validateErrorDescription('client secret is expired, cannot issue a JWT Authorization response'));
@@ -157,7 +157,7 @@ describe('configuration features.jwtResponseModes', () => {
       });
 
       await this.wrap({ route, auth, verb: 'get' })
-        .expect(302)
+        .expect(303)
         .expect(auth.validatePresence(['response']))
         .expect(auth.validateClientLocation)
         .expect(({ headers: { location } }) => {
@@ -178,7 +178,7 @@ describe('configuration features.jwtResponseModes', () => {
       });
 
       await this.wrap({ route, auth, verb: 'get' })
-        .expect(302)
+        .expect(303)
         .expect(auth.validateClientLocation)
         .expect(auth.validateError('invalid_client'))
         .expect(auth.validateErrorDescription('client secret is expired, cannot issue a JWT Authorization response'));
@@ -195,7 +195,7 @@ describe('configuration features.jwtResponseModes', () => {
       });
 
       await this.wrap({ route, auth, verb: 'get' })
-        .expect(302)
+        .expect(303)
         .expect(auth.validatePresence(['response']))
         .expect(auth.validateClientLocation);
 
@@ -210,7 +210,7 @@ describe('configuration features.jwtResponseModes', () => {
       });
 
       await this.wrap({ route, auth, verb: 'get' })
-        .expect(302)
+        .expect(303)
         .expect(auth.validatePresence(['response']))
         .expect(auth.validateClientLocation)
         .expect(({ headers: { location } }) => {
@@ -233,7 +233,7 @@ describe('configuration features.jwtResponseModes', () => {
       });
 
       await this.wrap({ route, auth, verb: 'get' })
-        .expect(302)
+        .expect(303)
         .expect(auth.validatePresence(['response']))
         .expect(auth.validateClientLocation)
         .expect(({ headers: { location } }) => {
@@ -245,8 +245,8 @@ describe('configuration features.jwtResponseModes', () => {
   });
 
   Object.entries({
-    'query.jwt': 302,
-    'fragment.jwt': 302,
+    'query.jwt': 303,
+    'fragment.jwt': 303,
     'form_post.jwt': 400,
     'web_message.jwt': 400,
   }).forEach(([mode, errStatus]) => {

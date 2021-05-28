@@ -38,7 +38,7 @@ describe('configuration conformIdTokenClaims=false', () => {
         const { headers: { location } } = await this.agent
           .get('/auth')
           .query(auth)
-          .expect(302)
+          .expect(303)
           .expect((...args) => {
             if (response_type === 'code') return;
             auth.validateFragment(...args);

@@ -21,7 +21,7 @@ describe('HYBRID code+token', () => {
         });
 
         return this.wrap({ route, verb, auth })
-          .expect(302)
+          .expect(303)
           .expect(auth.validateFragment)
           .expect(auth.validatePresence(['code', 'state', 'access_token', 'expires_in', 'token_type', 'scope']))
           .expect(auth.validateState)
@@ -35,7 +35,7 @@ describe('HYBRID code+token', () => {
         });
 
         return this.wrap({ route, verb, auth })
-          .expect(302)
+          .expect(303)
           .expect(auth.validateFragment)
           .expect(auth.validatePresence(['code', 'state', 'access_token', 'expires_in', 'token_type', 'scope']))
           .expect(auth.validateState)
@@ -67,7 +67,7 @@ describe('HYBRID code+token', () => {
         });
 
         return this.wrap({ route, verb, auth })
-          .expect(302)
+          .expect(303)
           .expect(auth.validateFragment)
           .expect(auth.validateClientLocation)
           .expect(() => {
@@ -92,7 +92,7 @@ describe('HYBRID code+token', () => {
         });
 
         await this.wrap({ route, verb, auth })
-          .expect(302)
+          .expect(303)
           .expect(auth.validateFragment)
           .expect(auth.validatePresence(['code', 'state', 'access_token', 'expires_in', 'token_type', 'scope']))
           .expect(auth.validateState)
@@ -112,7 +112,7 @@ describe('HYBRID code+token', () => {
         });
 
         return this.wrap({ route, verb, auth })
-          .expect(302)
+          .expect(303)
           .expect(() => {
             expect(spy.calledOnce).to.be.true;
           })

@@ -36,7 +36,7 @@ describe('grant_type=authorization_code', () => {
           response_type: 'code',
           redirect_uri: 'https://client.example.com/cb',
         })
-        .expect(302)
+        .expect(303)
         .expect((response) => {
           const { query: { code } } = parseUrl(response.headers.location, true);
           const jti = this.getTokenJti(code);
@@ -310,7 +310,7 @@ describe('grant_type=authorization_code', () => {
           response_type: 'code',
           redirect_uri: 'https://client.example.com/cb3',
         })
-        .expect(302)
+        .expect(303)
         .expect((response) => {
           const { query: { code } } = parseUrl(response.headers.location, true);
           this.ac = code;
@@ -354,7 +354,7 @@ describe('grant_type=authorization_code', () => {
           scope: 'openid',
           response_type: 'code',
         })
-        .expect(302)
+        .expect(303)
         .expect((response) => {
           const { query: { code } } = parseUrl(response.headers.location, true);
           const jti = this.getTokenJti(code);

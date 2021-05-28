@@ -29,7 +29,7 @@ describe('BASIC code', () => {
         });
 
         return this.wrap({ route, verb, auth })
-          .expect(302)
+          .expect(303)
           .expect(auth.validatePresence(['code', 'state']))
           .expect(auth.validateState)
           .expect(auth.validateClientLocation);
@@ -43,7 +43,7 @@ describe('BASIC code', () => {
         });
 
         return this.wrap({ route, verb, auth })
-          .expect(302)
+          .expect(303)
           .expect(auth.validateFragment)
           .expect(auth.validatePresence(['code', 'state']))
           .expect(auth.validateState)
@@ -73,7 +73,7 @@ describe('BASIC code', () => {
         });
 
         return this.wrap({ route, verb, auth })
-          .expect(302)
+          .expect(303)
           .expect(auth.validatePresence(['state']))
           .expect(auth.validateState)
           .expect(auth.validateClientLocation);
@@ -88,7 +88,7 @@ describe('BASIC code', () => {
         });
 
         return this.wrap({ route, verb, auth })
-          .expect(302)
+          .expect(303)
           .expect(auth.validateClientLocation)
           .expect(() => {
             expect(spy.firstCall.args[0]).to.have.property('scope', 'openid');
@@ -107,7 +107,7 @@ describe('BASIC code', () => {
           });
 
           return this.wrap({ route, verb, auth })
-            .expect(302)
+            .expect(303)
             .expect(auth.validateClientLocation)
             .expect(() => {
               expect(spy.firstCall.args[0]).to.have.property('scope').and.not.include('offline_access');
@@ -125,7 +125,7 @@ describe('BASIC code', () => {
           });
 
           return this.wrap({ route, verb, auth })
-            .expect(302)
+            .expect(303)
             .expect(auth.validateClientLocation)
             .expect(() => {
               expect(spy.firstCall.args[0]).to.have.property('scope').and.not.include('offline_access');
@@ -155,7 +155,7 @@ describe('BASIC code', () => {
         });
 
         await this.wrap({ route, verb, auth })
-          .expect(302)
+          .expect(303)
           .expect(auth.validateClientLocation)
           .expect(auth.validatePresence(['error', 'state']))
           .expect(auth.validateError('access_denied'));
@@ -175,7 +175,7 @@ describe('BASIC code', () => {
         });
 
         await this.wrap({ route, verb, auth })
-          .expect(302)
+          .expect(303)
           .expect(auth.validateClientLocation)
           .expect(auth.validatePresence(['error', 'state']))
           .expect(auth.validateError('access_denied'));
@@ -200,7 +200,7 @@ describe('BASIC code', () => {
         });
 
         return this.wrap({ route, verb, auth })
-          .expect(302)
+          .expect(303)
           .expect(auth.validateInteractionRedirect)
           .expect(auth.validateInteraction('login', 'no_session'));
       });
@@ -212,7 +212,7 @@ describe('BASIC code', () => {
         });
 
         return this.wrap({ route, verb, auth })
-          .expect(302)
+          .expect(303)
           .expect(auth.validateInteractionRedirect)
           .expect(auth.validateInteraction('consent', 'op_scopes_missing'));
       });
@@ -228,7 +228,7 @@ describe('BASIC code', () => {
         });
 
         return this.wrap({ route, verb, auth })
-          .expect(302)
+          .expect(303)
           .expect(auth.validateInteractionRedirect)
           .expect(auth.validateInteraction('consent', 'native_client_prompt'));
       });
@@ -241,7 +241,7 @@ describe('BASIC code', () => {
         });
 
         return this.wrap({ route, verb, auth })
-          .expect(302)
+          .expect(303)
           .expect(auth.validateInteractionRedirect)
           .expect(auth.validateInteraction('login', 'login_prompt'));
       });
@@ -254,7 +254,7 @@ describe('BASIC code', () => {
         });
 
         return this.wrap({ route, verb, auth })
-          .expect(302)
+          .expect(303)
           .expect(auth.validateInteractionRedirect)
           .expect(auth.validateInteraction('login', 'login_prompt'));
       });
@@ -269,7 +269,7 @@ describe('BASIC code', () => {
         });
 
         return this.wrap({ route, verb, auth })
-          .expect(302)
+          .expect(303)
           .expect(auth.validateInteractionRedirect)
           .expect(auth.validateInteraction('login', 'max_age', 'no_session'));
       });
@@ -285,7 +285,7 @@ describe('BASIC code', () => {
         });
 
         return this.wrap({ route, verb, auth })
-          .expect(302)
+          .expect(303)
           .expect(auth.validateInteractionRedirect)
           .expect(auth.validateInteraction('login', 'max_age'));
       });
@@ -301,7 +301,7 @@ describe('BASIC code', () => {
         });
 
         return this.wrap({ route, verb, auth })
-          .expect(302)
+          .expect(303)
           .expect(auth.validateInteractionRedirect)
           .expect(auth.validateInteraction('login', 'max_age'));
       });
@@ -314,7 +314,7 @@ describe('BASIC code', () => {
         });
 
         return this.wrap({ route, verb, auth })
-          .expect(302)
+          .expect(303)
           .expect(auth.validateInteractionRedirect)
           .expect(auth.validateInteraction('login', 'reason_foo'));
       });
@@ -335,7 +335,7 @@ describe('BASIC code', () => {
           .expect(() => {
             delete client.defaultMaxAge;
           })
-          .expect(302)
+          .expect(303)
           .expect(auth.validateInteractionRedirect)
           .expect(auth.validateInteraction('login', 'max_age'));
       });
@@ -367,7 +367,7 @@ describe('BASIC code', () => {
           }
         })(querystring.stringify(auth));
 
-        return wrapped.expect(302)
+        return wrapped.expect(303)
           .expect(() => {
             expect(spy.calledOnce).to.be.true;
           })
@@ -405,7 +405,7 @@ describe('BASIC code', () => {
           }
         })(querystring.stringify(auth));
 
-        return wrapped.expect(302)
+        return wrapped.expect(303)
           .expect(() => {
             expect(spy.calledOnce).to.be.true;
           })
@@ -440,7 +440,7 @@ describe('BASIC code', () => {
           }
         })(querystring.stringify(auth));
 
-        return wrapped.expect(302)
+        return wrapped.expect(303)
           .expect(() => {
             expect(spy.calledOnce).to.be.true;
           })
@@ -461,7 +461,7 @@ describe('BASIC code', () => {
         });
 
         return this.wrap({ route, verb, auth })
-          .expect(302)
+          .expect(303)
           .expect(() => {
             expect(spy.calledOnce).to.be.true;
           })
@@ -483,7 +483,7 @@ describe('BASIC code', () => {
         });
 
         return this.wrap({ route, verb, auth })
-          .expect(302)
+          .expect(303)
           .expect(() => {
             expect(spy.calledOnce).to.be.true;
           })
@@ -506,7 +506,7 @@ describe('BASIC code', () => {
 
           return this.agent.get(route)
             .query(auth)
-            .expect(302)
+            .expect(303)
             .expect(() => {
               expect(spy.calledOnce).to.be.true;
             })
@@ -560,7 +560,7 @@ describe('BASIC code', () => {
           delete auth.redirect_uri;
 
           return this.wrap({ route, verb, auth })
-            .expect(302)
+            .expect(303)
             .expect(auth.validatePresence(['code', 'state']))
             .expect(auth.validateState)
             .expect(auth.validateClientLocation);
@@ -615,7 +615,7 @@ describe('BASIC code', () => {
 
         return this.agent.get(route)
           .query(auth)
-          .expect(302)
+          .expect(303)
           .expect(() => {
             expect(spy.calledOnce).to.be.true;
           })
@@ -636,7 +636,7 @@ describe('BASIC code', () => {
         });
 
         return this.wrap({ route, verb, auth })
-          .expect(302)
+          .expect(303)
           .expect(() => {
             expect(spy.calledOnce).to.be.true;
           })
@@ -657,7 +657,7 @@ describe('BASIC code', () => {
         });
 
         return this.wrap({ route, verb, auth })
-          .expect(302)
+          .expect(303)
           .expect(() => {
             expect(spy.calledOnce).to.be.true;
           })
@@ -678,7 +678,7 @@ describe('BASIC code', () => {
         });
 
         return this.wrap({ route, verb, auth })
-          .expect(302)
+          .expect(303)
           .expect(() => {
             expect(spy.calledOnce).to.be.true;
           })
@@ -817,7 +817,7 @@ describe('BASIC code', () => {
         });
 
         return this.wrap({ route, verb, auth })
-          .expect(302)
+          .expect(303)
           .expect(() => {
             expect(spy.calledOnce).to.be.true;
           })
@@ -838,7 +838,7 @@ describe('BASIC code', () => {
         });
 
         return this.wrap({ route, verb, auth })
-          .expect(302)
+          .expect(303)
           .expect(() => {
             expect(spy.calledOnce).to.be.true;
           })
@@ -859,7 +859,7 @@ describe('BASIC code', () => {
         });
 
         return this.wrap({ route, verb, auth })
-          .expect(302)
+          .expect(303)
           .expect(() => {
             expect(spy.calledOnce).to.be.true;
           })
@@ -899,7 +899,7 @@ describe('BASIC code', () => {
         });
 
         return this.wrap({ route, verb, auth })
-          .expect(302)
+          .expect(303)
           .expect(() => {
             expect(spy.calledOnce).to.be.true;
           })
@@ -921,7 +921,7 @@ describe('BASIC code', () => {
         });
 
         return this.wrap({ route, verb, auth })
-          .expect(302)
+          .expect(303)
           .expect(() => {
             expect(spy.calledOnce).to.be.true;
           })
@@ -972,7 +972,7 @@ describe('BASIC code', () => {
           });
 
           return this.wrap({ route, verb, auth })
-            .expect(302)
+            .expect(303)
             .expect(() => {
               expect(spy.calledOnce).to.be.true;
             })

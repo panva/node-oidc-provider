@@ -126,6 +126,7 @@ module.exports = (provider) => {
           ctx.cookies.set('google.state', state, { path, sameSite: 'strict' });
           ctx.cookies.set('google.nonce', nonce, { path, sameSite: 'strict' });
 
+          ctx.status = 303;
           return ctx.redirect(ctx.google.authorizationUrl({
             state, nonce, scope: 'openid email profile',
           }));

@@ -57,8 +57,8 @@ describe('request Uri features', () => {
   }
 
   [
-    ['/auth', 'get', 'authorization.error', 302, 302, redirectSuccess],
-    ['/auth', 'post', 'authorization.error', 302, 302, redirectSuccess],
+    ['/auth', 'get', 'authorization.error', 303, 303, redirectSuccess],
+    ['/auth', 'post', 'authorization.error', 303, 303, redirectSuccess],
     ['/device/auth', 'post', 'device_authorization.error', 200, 400, httpSuccess],
   ].forEach(([route, verb, error, successCode, errorCode, successFnCheck]) => {
     describe(`${route} ${verb} passing request parameters in request_uri`, () => {
@@ -332,7 +332,7 @@ describe('request Uri features', () => {
 
         nock('https://client.example.com')
           .get('/request')
-          .reply(302, 'redirecting', {
+          .reply(303, 'redirecting', {
             location: '/someotherrequest',
           });
 

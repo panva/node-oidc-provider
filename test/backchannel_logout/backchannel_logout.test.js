@@ -93,7 +93,7 @@ describe('Back-Channel Logout 1.0', () => {
           response_type: 'code id_token',
           redirect_uri: 'https://client.example.com/cb',
         })
-        .expect(302)
+        .expect(303)
         .expect((response) => {
           const { query } = parseUrl(response.headers.location.replace('#', '?'), true);
           expect(query).to.have.property('code');
@@ -176,7 +176,7 @@ describe('Back-Channel Logout 1.0', () => {
       return this.agent.post('/session/end/confirm')
         .send(params)
         .type('form')
-        .expect(302)
+        .expect(303)
         .expect(() => {
           (() => {
             const { sid } = session.authorizations.client;
@@ -211,7 +211,7 @@ describe('Back-Channel Logout 1.0', () => {
       return this.agent.post('/session/end/confirm')
         .send(params)
         .type('form')
-        .expect(302)
+        .expect(303)
         .expect(() => {
           expect(client.backchannelLogout.called).to.be.true;
           expect(client.backchannelLogout.calledWith(accountId, sid)).to.be.true;
@@ -234,7 +234,7 @@ describe('Back-Channel Logout 1.0', () => {
       return this.agent.post('/session/end/confirm')
         .send(params)
         .type('form')
-        .expect(302)
+        .expect(303)
         .expect(() => {
           expect(client.backchannelLogout.called).to.be.false;
           client.backchannelLogout.restore();

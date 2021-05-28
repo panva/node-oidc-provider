@@ -77,8 +77,8 @@ describe('request parameter features', () => {
   }
 
   [
-    ['/auth', 'get', 'authorization.error', 302, 302, redirectSuccess, 'authorization.success'],
-    ['/auth', 'post', 'authorization.error', 302, 302, redirectSuccess, 'authorization.success'],
+    ['/auth', 'get', 'authorization.error', 303, 303, redirectSuccess, 'authorization.success'],
+    ['/auth', 'post', 'authorization.error', 303, 303, redirectSuccess, 'authorization.success'],
     ['/device/auth', 'post', 'device_authorization.error', 200, 400, httpSuccess, 'device_authorization.success'],
   ].forEach(([
     route, verb, errorEvt, successCode, errorCode, successFnCheck, successEvt,

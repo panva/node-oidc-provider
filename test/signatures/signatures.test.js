@@ -57,7 +57,7 @@ describe('signatures', () => {
       auth.client_id = 'client-sig-none';
 
       return this.wrap({ auth, route: '/auth', verb: 'get' })
-        .expect(302)
+        .expect(303)
         .expect(auth.validatePresence(['code', 'state']))
         .expect(auth.validateState)
         .expect(auth.validateClientLocation);
@@ -78,7 +78,7 @@ describe('signatures', () => {
       auth.client_id = 'client-sig-none';
 
       return this.wrap({ auth, route: '/auth', verb: 'get' })
-        .expect(302)
+        .expect(303)
         .expect(auth.validatePresence(['error', 'error_description', 'state']))
         .expect(auth.validateState)
         .expect(auth.validateClientLocation)
@@ -132,7 +132,7 @@ describe('signatures', () => {
       auth.client_id = 'client-sig-HS256';
 
       return this.wrap({ auth, route: '/auth', verb: 'get' })
-        .expect(302)
+        .expect(303)
         .expect(auth.validatePresence(['code', 'state']))
         .expect(auth.validateState)
         .expect(auth.validateClientLocation);
@@ -159,7 +159,7 @@ describe('signatures', () => {
       });
 
       return this.wrap({ auth, verb: 'get', route: '/auth' })
-        .expect(302)
+        .expect(303)
         .expect(auth.validateFragment)
         .expect(auth.validateClientLocation)
         .expect((response) => {
@@ -178,7 +178,7 @@ describe('signatures', () => {
       });
 
       return this.wrap({ auth, verb: 'get', route: '/auth' })
-        .expect(302)
+        .expect(303)
         .expect(auth.validateFragment)
         .expect(auth.validateClientLocation)
         .expect((response) => {
@@ -197,7 +197,7 @@ describe('signatures', () => {
       });
 
       return this.wrap({ auth, verb: 'get', route: '/auth' })
-        .expect(302)
+        .expect(303)
         .expect(auth.validateFragment)
         .expect(auth.validateClientLocation)
         .expect((response) => {
@@ -216,7 +216,7 @@ describe('signatures', () => {
       });
 
       return this.wrap({ auth, verb: 'get', route: '/auth' })
-        .expect(302)
+        .expect(303)
         .expect(auth.validateFragment)
         .expect(auth.validateClientLocation)
         .expect((response) => {
@@ -237,7 +237,7 @@ describe('signatures', () => {
       });
 
       return this.wrap({ auth, verb: 'get', route: '/auth' })
-        .expect(302)
+        .expect(303)
         .expect(auth.validateFragment)
         .expect(auth.validateClientLocation)
         .expect((response) => {

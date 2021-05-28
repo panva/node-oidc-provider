@@ -33,7 +33,7 @@ describe('grant_type=refresh_token', () => {
         redirect_uri: 'https://client.example.com/cb',
         nonce: 'foobarnonce',
       })
-      .expect(302)
+      .expect(303)
       .end((err, authResponse) => {
         if (err) {
           return done(err);

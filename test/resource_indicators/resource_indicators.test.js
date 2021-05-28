@@ -82,7 +82,7 @@ describe('features.resourceIndicators', () => {
         });
 
         await this.wrap({ route: '/auth', verb, auth })
-          .expect(302)
+          .expect(303)
           .expect(auth.validateFragment)
           .expect(auth.validatePresence(['error', 'error_description', 'state']))
           .expect(auth.validateState)
@@ -92,7 +92,7 @@ describe('features.resourceIndicators', () => {
 
         auth.resource = 'urn:wl:explicit';
         await this.wrap({ route: '/auth', verb, auth })
-          .expect(302)
+          .expect(303)
           .expect(auth.validateFragment)
           .expect(auth.validatePresence(['id_token', 'state', 'access_token', 'expires_in', 'token_type', 'scope']))
           .expect(auth.validateState)
@@ -114,7 +114,7 @@ describe('features.resourceIndicators', () => {
         });
 
         await this.wrap({ route: '/auth', verb, auth })
-          .expect(302)
+          .expect(303)
           .expect(auth.validateFragment)
           .expect(auth.validatePresence(['id_token', 'state', 'access_token', 'expires_in', 'token_type', 'scope']))
           .expect(auth.validateState)
@@ -140,7 +140,7 @@ describe('features.resourceIndicators', () => {
         });
 
         await this.wrap({ route: '/auth', verb, auth })
-          .expect(302)
+          .expect(303)
           .expect(auth.validatePresence(['error', 'error_description', 'state']))
           .expect(auth.validateState)
           .expect(auth.validateClientLocation)
@@ -149,7 +149,7 @@ describe('features.resourceIndicators', () => {
 
         auth.resource = 'urn:wl:explicit';
         await this.wrap({ route: '/auth', verb, auth })
-          .expect(302)
+          .expect(303)
           .expect(auth.validatePresence(['code', 'state']))
           .expect(auth.validateState)
           .expect(auth.validateClientLocation);
@@ -215,7 +215,7 @@ describe('features.resourceIndicators', () => {
         });
 
         await this.wrap({ route: '/auth', verb, auth })
-          .expect(302)
+          .expect(303)
           .expect(auth.validatePresence(['code', 'state']))
           .expect(auth.validateState)
           .expect(auth.validateClientLocation);
@@ -281,7 +281,7 @@ describe('features.resourceIndicators', () => {
         });
 
         await this.wrap({ route: '/auth', verb, auth })
-          .expect(302)
+          .expect(303)
           .expect(auth.validatePresence(['code', 'state']))
           .expect(auth.validateState)
           .expect(auth.validateClientLocation);
@@ -349,7 +349,7 @@ describe('features.resourceIndicators', () => {
         });
 
         await this.wrap({ route: '/auth', verb, auth })
-          .expect(302)
+          .expect(303)
           .expect(auth.validatePresence(['code', 'state']))
           .expect(auth.validateState)
           .expect(auth.validateClientLocation);

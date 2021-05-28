@@ -48,7 +48,7 @@ describe('logout endpoint', () => {
           response_type: 'id_token',
           redirect_uri: 'https://client.example.com/cb',
         })
-        .expect(302)
+        .expect(303)
         .expect((response) => {
           const { query: { id_token: idToken } } = parseUrl(response.headers.location.replace('#', '?'), true);
           this.idToken = idToken;
@@ -189,7 +189,7 @@ describe('logout endpoint', () => {
                   response_type: 'id_token',
                   redirect_uri: 'https://client.example.com/cb',
                 })
-                .expect(302)
+                .expect(303)
                 .expect((response) => {
                   ({ query: { id_token: idToken } } = parseUrl(response.headers.location.replace('#', '?'), true));
                 });
@@ -455,7 +455,7 @@ describe('logout endpoint', () => {
         return this.agent.post('/session/end/confirm')
           .send({ xsrf: '123', logout: 'yes' })
           .type('form')
-          .expect(302)
+          .expect(303)
           .expect((response) => {
             expect(sessionAdapter.destroy.called).to.be.true;
             expect(sessionAdapter.upsert.called).not.to.be.true;
@@ -485,7 +485,7 @@ describe('logout endpoint', () => {
         return this.agent.post('/session/end/confirm')
           .send({ xsrf: '123' })
           .type('form')
-          .expect(302)
+          .expect(303)
           .expect((response) => {
             session = this.getSession();
             expect(session.authorizations.client).to.be.undefined;
@@ -510,7 +510,7 @@ describe('logout endpoint', () => {
         return this.agent.post('/session/end/confirm')
           .send({ xsrf: '123' })
           .type('form')
-          .expect(302)
+          .expect(303)
           .expect((response) => {
             session = this.getSession();
             expect(session.authorizations.client).to.be.undefined;
@@ -534,7 +534,7 @@ describe('logout endpoint', () => {
           .expect(() => {
             delete i(this.provider).configuration().cookies.long.domain;
           })
-          .expect(302)
+          .expect(303)
           .expect('location', '/?state=foobar');
       });
 
@@ -552,7 +552,7 @@ describe('logout endpoint', () => {
           .expect(() => {
             delete i(this.provider).configuration().cookies.long.domain;
           })
-          .expect(302);
+          .expect(303);
       });
     });
 

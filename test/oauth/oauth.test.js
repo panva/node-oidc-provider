@@ -22,7 +22,7 @@ describe('requests without the openid scope', () => {
         });
 
         await this.wrap({ route: '/auth', verb: 'get', auth })
-          .expect(302)
+          .expect(303)
           .expect(auth.validatePresence(['error', 'error_description', 'state'])) // notice state is not expected
           .expect(auth.validateClientLocation)
           .expect(auth.validateError('invalid_request'))
@@ -49,7 +49,7 @@ describe('requests without the openid scope', () => {
           .expect(() => {
             delete client[clientProperty];
           })
-          .expect(302)
+          .expect(303)
           .expect(auth.validatePresence(['error', 'error_description', 'state'])) // notice state is not expected
           .expect(auth.validateClientLocation)
           .expect(auth.validateError('invalid_request'))
@@ -76,7 +76,7 @@ describe('requests without the openid scope', () => {
           this.provider.on('authorization_code.saved', spy);
 
           await this.wrap({ route: '/auth', verb: 'get', auth })
-            .expect(302)
+            .expect(303)
             .expect(auth.validateClientLocation)
             .expect(auth.validatePresence(['code', 'state']));
 
@@ -92,7 +92,7 @@ describe('requests without the openid scope', () => {
             });
 
             await this.wrap({ route: '/auth', verb: 'get', auth })
-              .expect(302)
+              .expect(303)
               .expect(auth.validateClientLocation)
               .expect(auth.validatePresence(['code', 'state']))
               .expect((response) => {
@@ -173,7 +173,7 @@ describe('requests without the openid scope', () => {
 
             let code;
             await this.wrap({ route: '/auth', verb: 'get', auth })
-              .expect(302)
+              .expect(303)
               .expect(auth.validateClientLocation)
               .expect(auth.validatePresence(['code', 'state']))
               .expect((response) => {
@@ -233,7 +233,7 @@ describe('requests without the openid scope', () => {
           this.provider.on('authorization.success', spy);
 
           await this.wrap({ route: '/auth', verb: 'get', auth })
-            .expect(302)
+            .expect(303)
             .expect(auth.validateClientLocation)
             .expect(auth.validatePresence(['state']));
 
@@ -356,7 +356,7 @@ describe('requests without the openid scope', () => {
         delete auth.state;
 
         await this.wrap({ route: '/auth', verb: 'get', auth })
-          .expect(302)
+          .expect(303)
           .expect(auth.validateFragment)
           .expect(auth.validatePresence(['error', 'error_description'])) // notice state is not expected
           .expect(auth.validateClientLocation)
@@ -373,7 +373,7 @@ describe('requests without the openid scope', () => {
         delete auth.state;
 
         await this.wrap({ route: '/auth', verb: 'get', auth })
-          .expect(302)
+          .expect(303)
           .expect(auth.validateFragment)
           .expect(auth.validatePresence(['error', 'error_description'])) // notice state is not expected
           .expect(auth.validateClientLocation)

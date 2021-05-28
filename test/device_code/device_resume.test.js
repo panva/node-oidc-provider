@@ -368,7 +368,7 @@ describe('device interaction resume /device/:uid/', () => {
             logout: 'yes',
           })
           .type('form')
-          .expect(302)
+          .expect(303)
           .expect('location', state.postLogoutRedirectUri);
 
         await this.agent.get(state.postLogoutRedirectUri.replace(this.provider.issuer, ''))

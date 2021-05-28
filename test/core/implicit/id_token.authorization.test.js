@@ -24,7 +24,7 @@ describe('IMPLICIT id_token', () => {
         });
 
         return this.wrap({ route, verb, auth })
-          .expect(302)
+          .expect(303)
           .expect(auth.validateFragment)
           .expect(auth.validatePresence(['id_token', 'state']))
           .expect(auth.validateState)
@@ -51,7 +51,7 @@ describe('IMPLICIT id_token', () => {
         });
 
         return this.wrap({ route, verb, auth })
-          .expect(302)
+          .expect(303)
           .expect(auth.validateFragment)
           .expect(auth.validatePresence(['id_token', 'state']))
           .expect(auth.validateState)
@@ -72,7 +72,7 @@ describe('IMPLICIT id_token', () => {
         });
 
         return this.wrap({ route, verb, auth })
-          .expect(302)
+          .expect(303)
           .expect(() => {
             expect(spy.calledOnce).to.be.true;
           })
@@ -96,7 +96,7 @@ describe('IMPLICIT id_token', () => {
 
         let idTokenHint;
         await this.wrap({ route, verb, auth })
-          .expect(302)
+          .expect(303)
           .expect(auth.validateFragment)
           .expect(auth.validatePresence(['id_token', 'state']))
           .expect((response) => {
@@ -116,7 +116,7 @@ describe('IMPLICIT id_token', () => {
         });
 
         return this.wrap({ route, verb, auth })
-          .expect(302)
+          .expect(303)
           .expect(() => {
             expect(spy.calledOnce).to.be.true;
           })
@@ -138,7 +138,7 @@ describe('IMPLICIT id_token', () => {
         });
 
         return this.wrap({ route, verb, auth })
-          .expect(302)
+          .expect(303)
           .expect(() => {
             expect(spy.calledOnce).to.be.true;
           })
@@ -174,7 +174,7 @@ describe('IMPLICIT id_token', () => {
           }
         })(querystring.stringify(auth));
 
-        return wrapped.expect(302)
+        return wrapped.expect(303)
           .expect(() => {
             expect(spy.calledOnce).to.be.true;
           })
@@ -196,7 +196,7 @@ describe('IMPLICIT id_token', () => {
 
         return this.agent.get(route)
           .query(auth)
-          .expect(302)
+          .expect(303)
           .expect(() => {
             expect(spy.calledOnce).to.be.true;
           })

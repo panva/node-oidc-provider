@@ -439,7 +439,7 @@ describe('features.dPoP', () => {
       });
 
       await this.wrap({ route: '/auth', verb: 'get', auth })
-        .expect(302)
+        .expect(303)
         .expect(auth.validateClientLocation)
         .expect(({ headers: { location } }) => {
           const { query: { code } } = url.parse(location, true);
@@ -518,7 +518,7 @@ describe('features.dPoP', () => {
       });
 
       await this.wrap({ route: '/auth', verb: 'get', auth })
-        .expect(302)
+        .expect(303)
         .expect(auth.validateClientLocation)
         .expect(({ headers: { location } }) => {
           const { query: { code } } = url.parse(location, true);

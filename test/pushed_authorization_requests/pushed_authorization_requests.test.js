@@ -281,7 +281,7 @@ describe('Pushed Request Object', () => {
             });
 
             await this.wrap({ route: '/auth', verb: 'get', auth })
-              .expect(302)
+              .expect(303)
               .expect(auth.validatePresence(['code']));
 
             expect(await this.provider.PushedAuthorizationRequest.find(id)).not.to.be.ok;
@@ -293,7 +293,7 @@ describe('Pushed Request Object', () => {
             });
 
             return this.wrap({ route: '/auth', verb: 'get', auth })
-              .expect(302)
+              .expect(303)
               .expect(auth.validatePresence(['error', 'error_description', 'state']))
               .expect(auth.validateState)
               .expect(auth.validateClientLocation)
@@ -344,7 +344,7 @@ describe('Pushed Request Object', () => {
             });
 
             return this.wrap({ route: '/auth', verb: 'get', auth })
-              .expect(302)
+              .expect(303)
               .expect(auth.validatePresence(['code']));
           });
         });
@@ -479,7 +479,7 @@ describe('Pushed Request Object', () => {
             });
 
             await this.wrap({ route: '/auth', verb: 'get', auth })
-              .expect(302)
+              .expect(303)
               .expect(auth.validatePresence(['code']));
 
             expect(await this.provider.PushedAuthorizationRequest.find(id)).not.to.be.ok;
@@ -505,7 +505,7 @@ describe('Pushed Request Object', () => {
             });
 
             return this.wrap({ route: '/auth', verb: 'get', auth })
-              .expect(302)
+              .expect(303)
               .expect(auth.validatePresence(['code']));
           });
         });

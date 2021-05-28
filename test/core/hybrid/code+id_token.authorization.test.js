@@ -21,7 +21,7 @@ describe('HYBRID code+id_token', () => {
         });
 
         return this.wrap({ route, verb, auth })
-          .expect(302)
+          .expect(303)
           .expect(auth.validateFragment)
           .expect(auth.validatePresence(['code', 'id_token', 'state']))
           .expect(auth.validateState)
@@ -35,7 +35,7 @@ describe('HYBRID code+id_token', () => {
         });
 
         return this.wrap({ route, verb, auth })
-          .expect(302)
+          .expect(303)
           .expect(auth.validateFragment)
           .expect(auth.validatePresence(['code', 'id_token', 'state']))
           .expect(auth.validateState)
@@ -68,7 +68,7 @@ describe('HYBRID code+id_token', () => {
           });
 
           return this.wrap({ route, verb, auth })
-            .expect(302)
+            .expect(303)
             .expect(auth.validateFragment)
             .expect(auth.validateClientLocation)
             .expect(() => {
@@ -87,7 +87,7 @@ describe('HYBRID code+id_token', () => {
           });
 
           return this.wrap({ route, verb, auth })
-            .expect(302)
+            .expect(303)
             .expect(auth.validateFragment)
             .expect(auth.validateClientLocation)
             .expect(() => {
@@ -108,7 +108,7 @@ describe('HYBRID code+id_token', () => {
         });
 
         return this.wrap({ route, verb, auth })
-          .expect(302)
+          .expect(303)
           .expect(() => {
             expect(spy.calledOnce).to.be.true;
           })
@@ -130,7 +130,7 @@ describe('HYBRID code+id_token', () => {
 
         return this.agent.get(route)
           .query(auth)
-          .expect(302)
+          .expect(303)
           .expect(() => {
             expect(spy.calledOnce).to.be.true;
           })

@@ -48,7 +48,7 @@ expire.setDate(expire.getDate() + 1);
         });
 
         return this.wrap({ route, verb, auth })
-          .expect(302)
+          .expect(303)
           .expect(auth.validateFragment)
           .expect(auth.validatePresence(['id_token'], false))
           .expect((response) => {
@@ -134,7 +134,7 @@ expire.setDate(expire.getDate() + 1);
         });
 
         this.wrap({ route, verb, auth })
-          .expect(302)
+          .expect(303)
           .expect(auth.validateFragment)
           .expect(auth.validatePresence(['access_token', 'scope'], false))
           .end((err, response) => {
@@ -186,7 +186,7 @@ expire.setDate(expire.getDate() + 1);
         });
 
         this.wrap({ route, verb, auth })
-          .expect(302)
+          .expect(303)
           .expect(auth.validateFragment)
           .expect(auth.validatePresence(['id_token', 'access_token', 'scope'], false))
           .expect((response) => {
@@ -257,7 +257,7 @@ expire.setDate(expire.getDate() + 1);
           });
 
           return this.wrap({ route, verb, auth })
-            .expect(302)
+            .expect(303)
             .expect(auth.validateFragment)
             .expect(auth.validatePresence(['id_token', 'state']))
             .expect(auth.validateState)
@@ -281,7 +281,7 @@ expire.setDate(expire.getDate() + 1);
           });
 
           return this.wrap({ route, verb, auth })
-            .expect(302)
+            .expect(303)
             .expect(auth.validateFragment)
             .expect(auth.validatePresence(['id_token', 'state']))
             .expect(auth.validateState)
@@ -313,7 +313,7 @@ expire.setDate(expire.getDate() + 1);
             });
 
             return this.wrap({ route: `${route}/resume`, verb, auth })
-              .expect(302)
+              .expect(303)
               .expect(auth.validateFragment)
               .expect(auth.validatePresence(['id_token', 'state']))
               .expect(auth.validateState)
@@ -344,7 +344,7 @@ expire.setDate(expire.getDate() + 1);
             });
 
             return this.wrap({ route: `${route}/resume`, verb, auth })
-              .expect(302)
+              .expect(303)
               .expect(auth.validateFragment)
               .expect(auth.validatePresence(['id_token', 'state']))
               .expect(auth.validateState)
@@ -370,7 +370,7 @@ expire.setDate(expire.getDate() + 1);
           });
 
           return this.wrap({ route, verb, auth })
-            .expect(302)
+            .expect(303)
             .expect(auth.validateFragment)
             .expect(auth.validatePresence(['error', 'error_description', 'state']))
             .expect(auth.validateState)
@@ -395,7 +395,7 @@ expire.setDate(expire.getDate() + 1);
           });
 
           return this.wrap({ route, verb, auth })
-            .expect(302)
+            .expect(303)
             .expect(auth.validateFragment)
             .expect(auth.validatePresence(['error', 'error_description', 'state']))
             .expect(auth.validateState)
@@ -420,7 +420,7 @@ expire.setDate(expire.getDate() + 1);
           });
 
           return this.wrap({ route, verb, auth })
-            .expect(302)
+            .expect(303)
             .expect(auth.validateInteractionRedirect)
             .expect(auth.validateInteraction('login', 'claims_id_token_sub_value', 'no_session'));
         });
@@ -441,7 +441,7 @@ expire.setDate(expire.getDate() + 1);
           });
 
           return this.wrap({ route, verb, auth })
-            .expect(302)
+            .expect(303)
             .expect(auth.validateFragment)
             .expect(auth.validatePresence(['error', 'error_description', 'state']))
             .expect(auth.validateState)
@@ -466,7 +466,7 @@ expire.setDate(expire.getDate() + 1);
           });
 
           return this.wrap({ route, verb, auth })
-            .expect(302)
+            .expect(303)
             .expect(auth.validateFragment)
             .expect(auth.validatePresence(['error', 'error_description', 'state']))
             .expect(auth.validateState)
@@ -491,7 +491,7 @@ expire.setDate(expire.getDate() + 1);
           });
 
           return this.wrap({ route, verb, auth })
-            .expect(302)
+            .expect(303)
             .expect(auth.validateFragment)
             .expect(auth.validatePresence(['error', 'error_description', 'state']))
             .expect(auth.validateState)
@@ -511,7 +511,7 @@ expire.setDate(expire.getDate() + 1);
           });
 
           return this.wrap({ route, verb, auth })
-            .expect(302)
+            .expect(303)
             .expect(auth.validateFragment)
             .expect(auth.validatePresence(['error', 'error_description', 'state']))
             .expect(auth.validateState)
@@ -538,7 +538,7 @@ expire.setDate(expire.getDate() + 1);
           });
 
           return this.wrap({ route, verb, auth })
-            .expect(302)
+            .expect(303)
             .expect(auth.validateFragment)
             .expect(auth.validatePresence(['error', 'error_description', 'state']))
             .expect(auth.validateState)
@@ -566,7 +566,7 @@ expire.setDate(expire.getDate() + 1);
           });
 
           return this.wrap({ route, verb, auth })
-            .expect(302)
+            .expect(303)
             .expect(auth.validateFragment)
             .expect(auth.validatePresence(['error', 'error_description', 'state']))
             .expect(auth.validateState)
@@ -594,7 +594,7 @@ expire.setDate(expire.getDate() + 1);
           });
 
           return this.wrap({ route, verb, auth })
-            .expect(302)
+            .expect(303)
             .expect(auth.validateInteractionRedirect)
             .expect(auth.validateInteraction('login', 'id_token_hint', 'no_session'));
         });
@@ -616,7 +616,7 @@ expire.setDate(expire.getDate() + 1);
           });
 
           return this.wrap({ route, verb, auth })
-            .expect(302)
+            .expect(303)
             .expect(auth.validateFragment)
             .expect(auth.validatePresence(['id_token', 'state']))
             .expect(auth.validateState)
@@ -641,7 +641,7 @@ expire.setDate(expire.getDate() + 1);
           });
 
           return this.wrap({ route, verb, auth })
-            .expect(302)
+            .expect(303)
             .expect(auth.validateFragment)
             .expect(auth.validatePresence(['id_token', 'state']))
             .expect(auth.validateState)
@@ -659,7 +659,7 @@ expire.setDate(expire.getDate() + 1);
         });
 
         return this.wrap({ route, verb, auth })
-          .expect(302)
+          .expect(303)
           .expect(auth.validatePresence(['error', 'error_description', 'state']))
           .expect(auth.validateState)
           .expect(auth.validateClientLocation)
@@ -675,7 +675,7 @@ expire.setDate(expire.getDate() + 1);
         });
 
         return this.wrap({ route, verb, auth })
-          .expect(302)
+          .expect(303)
           .expect(auth.validateFragment)
           .expect(auth.validatePresence(['error', 'error_description', 'state']))
           .expect(auth.validateState)
@@ -692,7 +692,7 @@ expire.setDate(expire.getDate() + 1);
         });
 
         return this.wrap({ route, verb, auth })
-          .expect(302)
+          .expect(303)
           .expect(auth.validateFragment)
           .expect(auth.validatePresence(['error', 'error_description', 'state']))
           .expect(auth.validateState)
@@ -709,7 +709,7 @@ expire.setDate(expire.getDate() + 1);
         });
 
         return this.wrap({ route, verb, auth })
-          .expect(302)
+          .expect(303)
           .expect(auth.validateFragment)
           .expect(auth.validatePresence(['error', 'error_description', 'state']))
           .expect(auth.validateState)
@@ -726,7 +726,7 @@ expire.setDate(expire.getDate() + 1);
         });
 
         return this.wrap({ route, verb, auth })
-          .expect(302)
+          .expect(303)
           .expect(auth.validateFragment)
           .expect(auth.validatePresence(['error', 'error_description', 'state']))
           .expect(auth.validateState)
@@ -743,7 +743,7 @@ expire.setDate(expire.getDate() + 1);
         });
 
         return this.wrap({ route, verb, auth })
-          .expect(302)
+          .expect(303)
           .expect(auth.validateFragment)
           .expect(auth.validatePresence(['error', 'error_description', 'state']))
           .expect(auth.validateState)
@@ -774,7 +774,7 @@ expire.setDate(expire.getDate() + 1);
           });
 
           return this.wrap({ route, verb, auth })
-            .expect(302)
+            .expect(303)
             .expect(auth.validateFragment)
             .expect(auth.validatePresence(['error', 'error_description', 'state']))
             .expect(auth.validateState)
@@ -792,7 +792,7 @@ expire.setDate(expire.getDate() + 1);
         });
 
         return this.wrap({ route, verb, auth })
-          .expect(302)
+          .expect(303)
           .expect(auth.validateFragment)
           .expect(auth.validatePresence(['error', 'error_description', 'state']))
           .expect(auth.validateState)

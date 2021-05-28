@@ -252,6 +252,7 @@ if (process.env.NODE_ENV === 'production') {
         default:
       }
     } else if (ctx.method === 'GET' || ctx.method === 'HEAD') {
+      ctx.status = 303;
       ctx.redirect(ctx.href.replace(/^http:\/\//i, 'https://'));
     } else {
       ctx.body = {

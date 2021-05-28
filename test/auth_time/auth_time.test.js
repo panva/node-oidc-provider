@@ -23,7 +23,7 @@ describe('responds with a id_token containing auth_time', () => {
     let id_token;
 
     await this.wrap({ route: '/auth', verb: 'get', auth })
-      .expect(302)
+      .expect(303)
       .expect(auth.validateFragment)
       .expect(auth.validatePresence(['id_token', 'state']))
       .expect(auth.validateState)
@@ -54,7 +54,7 @@ describe('responds with a id_token containing auth_time', () => {
       let id_token;
 
       await this.wrap({ route: '/auth', verb: 'get', auth })
-        .expect(302)
+        .expect(303)
         .expect(auth.validateFragment)
         .expect(auth.validatePresence(['id_token', 'state']))
         .expect(auth.validateState)
@@ -76,7 +76,7 @@ describe('responds with a id_token containing auth_time', () => {
       let id_token;
 
       await this.wrap({ route: '/auth', verb: 'get', auth })
-        .expect(302)
+        .expect(303)
         .expect(auth.validateFragment)
         .expect(auth.validatePresence(['id_token', 'state']))
         .expect(auth.validateState)
@@ -99,7 +99,7 @@ describe('responds with a id_token containing auth_time', () => {
     let id_token;
 
     await this.wrap({ route: '/auth', verb: 'get', auth })
-      .expect(302)
+      .expect(303)
       .expect(auth.validateFragment)
       .expect(auth.validatePresence(['id_token', 'state']))
       .expect(auth.validateState)
@@ -121,7 +121,7 @@ describe('responds with a id_token containing auth_time', () => {
     let id_token;
 
     await this.wrap({ route: '/auth', verb: 'get', auth })
-      .expect(302)
+      .expect(303)
       .expect(auth.validateFragment)
       .expect(auth.validatePresence(['id_token', 'state']))
       .expect(auth.validateState)

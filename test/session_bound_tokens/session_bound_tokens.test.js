@@ -33,7 +33,7 @@ describe('session bound tokens behaviours', () => {
 
       await this.agent.get('/auth')
         .query(auth)
-        .expect(302)
+        .expect(303)
         .expect(auth.validatePresence(['code', 'state']))
         .expect(auth.validateState)
         .expect(auth.validateClientLocation)
@@ -75,7 +75,7 @@ describe('session bound tokens behaviours', () => {
 
       await this.agent.get('/auth')
         .query(auth)
-        .expect(302)
+        .expect(303)
         .expect(auth.validatePresence(['code', 'state']))
         .expect(auth.validateState)
         .expect(auth.validateClientLocation)
@@ -148,7 +148,7 @@ describe('session bound tokens behaviours', () => {
 
       await this.agent.get('/auth')
         .query(auth)
-        .expect(302)
+        .expect(303)
         .expect(auth.validatePresence(['code', 'state']))
         .expect(auth.validateState)
         .expect(auth.validateClientLocation)
@@ -229,7 +229,7 @@ describe('session bound tokens behaviours', () => {
 
       await this.agent.get('/auth')
         .query(auth)
-        .expect(302)
+        .expect(303)
         .expect(auth.validateFragment)
         .expect(auth.validatePresence(['id_token', 'state', 'access_token', 'expires_in', 'token_type', 'scope']))
         .expect(auth.validateState)

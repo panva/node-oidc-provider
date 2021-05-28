@@ -20,7 +20,7 @@ const scope = 'openid';
       });
 
       return this.wrap({ route, verb, auth })
-        .expect(302)
+        .expect(303)
         .expect(auth.validatePresence(['state']))
         .expect(auth.validateState)
         .expect(auth.validateClientLocation);
@@ -34,7 +34,7 @@ const scope = 'openid';
       });
 
       return this.wrap({ route, verb, auth })
-        .expect(302)
+        .expect(303)
         .expect(auth.validateFragment)
         .expect(auth.validatePresence(['state']))
         .expect(auth.validateState)

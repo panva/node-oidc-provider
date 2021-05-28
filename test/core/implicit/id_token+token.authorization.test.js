@@ -21,7 +21,7 @@ describe('IMPLICIT id_token+token', () => {
         });
 
         await this.wrap({ route, verb, auth })
-          .expect(302)
+          .expect(303)
           .expect(auth.validateFragment)
           .expect(auth.validatePresence(['id_token', 'state', 'access_token', 'expires_in', 'token_type', 'scope']))
           .expect(auth.validateState)
@@ -37,7 +37,7 @@ describe('IMPLICIT id_token+token', () => {
         });
 
         await this.wrap({ route, verb, auth })
-          .expect(302)
+          .expect(303)
           .expect(auth.validateFragment)
           .expect(auth.validatePresence(['id_token', 'state', 'access_token', 'expires_in', 'token_type', 'scope']))
           .expect(auth.validateState)
@@ -70,7 +70,7 @@ describe('IMPLICIT id_token+token', () => {
         this.provider.once('access_token.issued', spy);
 
         return this.wrap({ route, verb, auth })
-          .expect(302)
+          .expect(303)
           .expect(auth.validateFragment)
           .expect(auth.validatePresence(['id_token', 'state', 'access_token', 'expires_in', 'token_type', 'scope']))
           .expect(auth.validateState)
@@ -96,7 +96,7 @@ describe('IMPLICIT id_token+token', () => {
         });
 
         await this.wrap({ route, verb, auth })
-          .expect(302)
+          .expect(303)
           .expect(auth.validateFragment)
           .expect(auth.validatePresence(['id_token', 'state', 'access_token', 'expires_in', 'token_type', 'scope']))
           .expect(auth.validateState)
@@ -116,7 +116,7 @@ describe('IMPLICIT id_token+token', () => {
         });
 
         return this.wrap({ route, verb, auth })
-          .expect(302)
+          .expect(303)
           .expect(() => {
             expect(spy.calledOnce).to.be.true;
           })
@@ -138,7 +138,7 @@ describe('IMPLICIT id_token+token', () => {
 
         return this.agent.get(route)
           .query(auth)
-          .expect(302)
+          .expect(303)
           .expect(() => {
             expect(spy.calledOnce).to.be.true;
           })

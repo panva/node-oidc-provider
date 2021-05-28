@@ -33,7 +33,7 @@ describe('session exp handling', () => {
     });
 
     await this.wrap({ route, verb, auth })
-      .expect(302)
+      .expect(303)
       .expect(auth.validateInteractionRedirect)
       .expect(auth.validateInteraction('login', 'no_session'));
 
@@ -61,7 +61,7 @@ describe('session exp handling', () => {
       });
 
       await this.wrap({ route, verb, auth })
-        .expect(302)
+        .expect(303)
         .expect(auth.validatePresence(['code', 'state']))
         .expect(auth.validateState)
         .expect(auth.validateClientLocation);
@@ -84,7 +84,7 @@ describe('session exp handling', () => {
       });
 
       await this.wrap({ route, verb, auth })
-        .expect(302)
+        .expect(303)
         .expect(auth.validateInteractionRedirect)
         .expect(auth.validateInteraction('login', 'no_session'));
 

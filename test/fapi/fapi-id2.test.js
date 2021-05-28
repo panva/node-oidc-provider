@@ -55,7 +55,7 @@ describe('Financial-grade API - Part 2: Read and Write API Security Profile (ID2
         verb: 'get',
         auth,
       })
-        .expect(302)
+        .expect(303)
         .expect(auth.validateClientLocation)
         .expect(auth.validateError('invalid_request'))
         .expect(auth.validateErrorDescription('response_mode not allowed for this response_type in FAPI mode'));
@@ -81,7 +81,7 @@ describe('Financial-grade API - Part 2: Read and Write API Security Profile (ID2
         verb: 'get',
         auth,
       })
-        .expect(302)
+        .expect(303)
         .expect(auth.validateClientLocation)
         .expect(auth.validateError('invalid_request'))
         .expect(auth.validateErrorDescription('response_mode not allowed for this response_type in FAPI mode'));
@@ -120,7 +120,7 @@ describe('Financial-grade API - Part 2: Read and Write API Security Profile (ID2
         verb: 'get',
         auth,
       })
-        .expect(302)
+        .expect(303)
         .expect(auth.validateFragment)
         .expect(auth.validatePresence(['id_token', 'code', 'state']))
         .expect(auth.validateClientLocation);
@@ -148,7 +148,7 @@ describe('Financial-grade API - Part 2: Read and Write API Security Profile (ID2
         verb: 'get',
         auth,
       })
-        .expect(302)
+        .expect(303)
         .expect(auth.validateFragment)
         .expect(auth.validatePresence(['error', 'error_description', 'state']))
         .expect(auth.validateClientLocation)

@@ -109,7 +109,7 @@ describe('dynamic ttl', () => {
     });
 
     await this.wrap({ route: '/auth', verb: 'get', auth })
-      .expect(302)
+      .expect(303)
       .expect(auth.validateFragment)
       .expect(({ headers: { location } }) => {
         const { query: { expires_in, id_token } } = url.parse(location, true);
@@ -148,7 +148,7 @@ describe('dynamic ttl', () => {
     let code;
 
     await this.wrap({ route: '/auth', verb: 'get', auth })
-      .expect(302)
+      .expect(303)
       .expect(({ headers: { location } }) => {
         ({ query: { code } } = url.parse(location, true));
       });
@@ -186,7 +186,7 @@ describe('dynamic ttl', () => {
     let code;
 
     await this.wrap({ route: '/auth', verb: 'get', auth })
-      .expect(302)
+      .expect(303)
       .expect(({ headers: { location } }) => {
         ({ query: { code } } = url.parse(location, true));
       });
