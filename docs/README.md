@@ -252,6 +252,7 @@ provider.use(async (ctx, next) => {
    * checking `ctx.oidc.route`, the unique route names used are
    *
    * `authorization`
+   * `backchannel_authentication`
    * `client_delete`
    * `client_update`
    * `client`
@@ -1662,11 +1663,11 @@ true
 [RFC8707](https://tools.ietf.org/html/rfc8707) - Resource Indicators for OAuth 2.0  
 
 Enables the use of `resource` parameter for the authorization and token endpoints to enable issuing Access Tokens for Resource Servers (APIs).   
- - Multiple resource parameters may be present during Authorization Code Flow, but only a single audience for an Access Token is permitted.
- - Authorization Requests that result in an Access Token being issued by the Authorization Endpoint must only contain a single resource (or one must be resolved using the `defaultResource` helper).
+ - Multiple resource parameters may be present during Authorization Code Flow, Device Authorization Grant, and Backchannel Authentication Requests, but only a single audience for an Access Token is permitted.
+ - Authorization and Authentication Requests that result in an Access Token being issued by the Authorization Endpoint must only contain a single resource (or one must be resolved using the `defaultResource` helper).
  - Client Credentials grant must only contain a single resource parameter.
- - During Authorization Code / Refresh Token / Device Code exchanges, if the exchanged code/token does not include the `'openid'` scope and only has a single resource then the resource parameter may be omitted - an Access Token for the single resource is returned.
- - During Authorization Code / Refresh Token / Device Code exchanges, if the exchanged code/token does not include the `'openid'` scope and has multiple resources then the resource parameter must be provided (or one must be resolved using the `defaultResource` helper). An Access Token for the provided/resolved resource is returned.
+ - During Authorization Code / Refresh Token / Device Code / Backchannel Authentication Request exchanges, if the exchanged code/token does not include the `'openid'` scope and only has a single resource then the resource parameter may be omitted - an Access Token for the single resource is returned.
+ - During Authorization Code / Refresh Token / Device Code / Backchannel Authentication Request exchanges, if the exchanged code/token does not include the `'openid'` scope and has multiple resources then the resource parameter must be provided (or one must be resolved using the `defaultResource` helper). An Access Token for the provided/resolved resource is returned.
  - (with userinfo endpoint enabled and useGrantedResource helper returning falsy) During Authorization Code / Refresh Token / Device Code exchanges, if the exchanged code/token includes the `'openid'` scope and no resource parameter is present - an Access Token for the UserInfo Endpoint is returned.
  - (with userinfo endpoint enabled and useGrantedResource helper returning truthy) During Authorization Code / Refresh Token / Device Code exchanges, even if the exchanged code/token includes the `'openid'` scope and only has a single resource then the resource parameter may be omitted - an Access Token for the single resource is returned.
  - (with userinfo endpoint disabled) During Authorization Code / Refresh Token / Device Code exchanges, if the exchanged code/token includes the `'openid'` scope and only has a single resource then the resource parameter may be omitted - an Access Token for the single resource is returned.
