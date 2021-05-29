@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [7.4.1](https://github.com/panva/node-oidc-provider/compare/v7.4.0...v7.4.1) (2021-05-29)
+
+
+### Bug Fixes
+
+* handle backchannel requests in grant revocation ([8fe9aec](https://github.com/panva/node-oidc-provider/commit/8fe9aecdf8d93c7c9f2cca5f9e2e6ffaf65714e9))
+
 ## [7.4.0](https://github.com/panva/node-oidc-provider/compare/v7.3.2...v7.4.0) (2021-05-28)
 
 
