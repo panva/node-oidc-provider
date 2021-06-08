@@ -44,7 +44,7 @@ The following draft specifications are implemented by oidc-provider.
 - [JWT Response for OAuth Token Introspection - draft 10][jwt-introspection]
 - [JWT Secured Authorization Response Mode for OAuth 2.0 (JARM) - Implementer's Draft 01][jarm]
 - [Financial-grade API: Client Initiated Backchannel Authentication Profile (FAPI-CIBA) - Implementer's Draft 01][fapi-ciba]
-- [OAuth 2.0 Authorization Server Issuer Identifier in Authorization Response - draft 00][iss-auth-resp]
+- [OAuth 2.0 Authorization Server Issuer Identifier in Authorization Response - draft 01][iss-auth-resp]
 - [OAuth 2.0 Demonstration of Proof-of-Possession at the Application Layer (DPoP) - draft 03][dpop]
 - [OAuth 2.0 JWT Secured Authorization Request (JAR) - draft 33][jar]
 - [OAuth 2.0 Pushed Authorization Requests (PAR) - draft 06][par]
@@ -156,7 +156,7 @@ See the list of available emitted [event names](/docs/events.md) and their descr
 [support-sponsor]: https://github.com/sponsors/panva
 [par]: https://tools.ietf.org/html/draft-ietf-oauth-par-06
 [rpinitiated-logout]: https://openid.net/specs/openid-connect-rpinitiated-1_0-01.html
-[iss-auth-resp]: https://tools.ietf.org/html/draft-ietf-oauth-iss-auth-resp-00
+[iss-auth-resp]: https://tools.ietf.org/html/draft-ietf-oauth-iss-auth-resp-01
 [fapi-id2]: https://openid.net/specs/openid-financial-api-part-2-ID2.html
 [fapi]: https://openid.net/specs/openid-financial-api-part-2-1_0.html
 [ciba]: https://openid.net/specs/openid-client-initiated-backchannel-authentication-core-1_0-03.html
