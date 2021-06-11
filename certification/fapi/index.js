@@ -114,15 +114,7 @@ const fapi = new Provider(ISSUER, {
       },
       verifyUserCode() {},
       validateRequestContext() {},
-      triggerAuthenticationDevice(ctx, request, account, client) {
-        // TODO: remove when https://gitlab.com/openid/conformance-suite/-/issues/894 gets fixed
-        // eslint-disable-next-line eqeqeq
-        if (client.backchannelTokenDeliveryMode === 'ping' && ctx.oidc.params.requested_expiry == 30) {
-          setTimeout(() => {
-            client.backchannelPing(request);
-          }, +ctx.oidc.params.requested_expiry * 1000);
-        }
-      },
+      triggerAuthenticationDevice() {},
       deliveryModes: ['poll', 'ping'],
     },
     registration: { enabled: true },
