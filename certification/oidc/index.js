@@ -7,9 +7,9 @@ const crypto = require('crypto');
 const render = require('koa-ejs');
 const helmet = require('helmet');
 
-const { Provider } = require('../lib'); // require('oidc-provider');
-const Account = require('../example/support/account');
-const routes = require('../example/routes/koa');
+const { Provider } = require('../../lib'); // require('oidc-provider');
+const Account = require('../../example/support/account');
+const routes = require('../../example/routes/koa');
 
 const configuration = require('./configuration');
 
@@ -129,7 +129,7 @@ let server;
     cache: false,
     viewExt: 'ejs',
     layout: '_layout',
-    root: path.join(__dirname, '..', 'example', 'views'),
+    root: path.join(__dirname, '..', '..', 'example', 'views'),
   });
   provider.use(routes(provider).routes());
   server = provider.listen(PORT, () => {

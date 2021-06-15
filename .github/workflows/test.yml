@@ -89,7 +89,7 @@ jobs:
   build-conformance-suite:
     runs-on: ubuntu-latest
     env:
-      VERSION: release-v4.1.12
+      VERSION: release-v4.1.13
     steps:
       - name: Checkout
         uses: actions/checkout@master
@@ -127,281 +127,310 @@ jobs:
           - plan: oidcc-basic-certification-test-plan
             server_metadata: discovery
             client_registration: dynamic_client
+            configuration: ./certification/oidc/plan.json
 
           # OP Hybrid
           - plan: oidcc-hybrid-certification-test-plan
             server_metadata: discovery
             client_registration: dynamic_client
+            configuration: ./certification/oidc/plan.json
 
           # OP Implicit
           - plan: oidcc-implicit-certification-test-plan
             server_metadata: discovery
             client_registration: dynamic_client
+            configuration: ./certification/oidc/plan.json
 
           # OP Dynamic
           - plan: oidcc-dynamic-certification-test-plan
             response_type: code
             skip: oidcc-server-rotate-keys
+            configuration: ./certification/oidc/plan.json
           - plan: oidcc-dynamic-certification-test-plan
             response_type: id_token
             skip: oidcc-server-rotate-keys
+            configuration: ./certification/oidc/plan.json
           - plan: oidcc-dynamic-certification-test-plan
             response_type: id_token token
             skip: oidcc-server-rotate-keys
+            configuration: ./certification/oidc/plan.json
           - plan: oidcc-dynamic-certification-test-plan
             response_type: code id_token
             skip: oidcc-server-rotate-keys
+            configuration: ./certification/oidc/plan.json
           - plan: oidcc-dynamic-certification-test-plan
             response_type: code token
             skip: oidcc-server-rotate-keys
+            configuration: ./certification/oidc/plan.json
           - plan: oidcc-dynamic-certification-test-plan
             response_type: code id_token token
             skip: oidcc-server-rotate-keys
+            configuration: ./certification/oidc/plan.json
 
           # RP-Initiated OP
           - plan: oidcc-rp-initiated-logout-certification-test-plan
             response_type: code
             client_registration: dynamic_client
+            configuration: ./certification/oidc/plan.json
 
           # Back-Channel OP
           - plan: oidcc-backchannel-rp-initiated-logout-certification-test-plan
             response_type: code
             client_registration: dynamic_client
+            configuration: ./certification/oidc/plan.json
 
           # FAPI 1.0 R/W (ID2)
           - plan: fapi-rw-id2-test-plan
-            configuration: ./certification/fapi/pkjwt.json
             fapi_auth_request_method: by_value
             client_auth_type: private_key_jwt
             fapi_profile: plain_fapi
             fapi_response_mode: plain_response
-          - plan: fapi-rw-id2-test-plan
             configuration: ./certification/fapi/pkjwt.json
+          - plan: fapi-rw-id2-test-plan
             fapi_auth_request_method: pushed
             client_auth_type: private_key_jwt
             fapi_profile: plain_fapi
             fapi_response_mode: plain_response
-          - plan: fapi-rw-id2-test-plan
             configuration: ./certification/fapi/pkjwt.json
+          - plan: fapi-rw-id2-test-plan
             fapi_auth_request_method: by_value
             client_auth_type: private_key_jwt
             fapi_profile: plain_fapi
             fapi_response_mode: jarm
-          - plan: fapi-rw-id2-test-plan
             configuration: ./certification/fapi/pkjwt.json
+          - plan: fapi-rw-id2-test-plan
             fapi_auth_request_method: pushed
             client_auth_type: private_key_jwt
             fapi_profile: plain_fapi
             fapi_response_mode: jarm
+            configuration: ./certification/fapi/pkjwt.json
           - plan: fapi-rw-id2-test-plan
-            configuration: ./certification/fapi/mtls.json
             fapi_auth_request_method: by_value
             client_auth_type: mtls
             fapi_profile: plain_fapi
             fapi_response_mode: plain_response
-          - plan: fapi-rw-id2-test-plan
             configuration: ./certification/fapi/mtls.json
+          - plan: fapi-rw-id2-test-plan
             fapi_auth_request_method: pushed
             client_auth_type: mtls
             fapi_profile: plain_fapi
             fapi_response_mode: plain_response
-          - plan: fapi-rw-id2-test-plan
             configuration: ./certification/fapi/mtls.json
+          - plan: fapi-rw-id2-test-plan
             fapi_auth_request_method: by_value
             client_auth_type: mtls
             fapi_profile: plain_fapi
             fapi_response_mode: jarm
-          - plan: fapi-rw-id2-test-plan
             configuration: ./certification/fapi/mtls.json
+          - plan: fapi-rw-id2-test-plan
             fapi_auth_request_method: pushed
             client_auth_type: mtls
             fapi_profile: plain_fapi
             fapi_response_mode: jarm
+            configuration: ./certification/fapi/mtls.json
 
           # FAPI 1.0 Advanced (Final)
           - plan: fapi1-advanced-final-test-plan
-            configuration: ./certification/fapi/pkjwt.json
             fapi_auth_request_method: by_value
             client_auth_type: private_key_jwt
             fapi_profile: plain_fapi
             fapi_response_mode: plain_response
-          - plan: fapi1-advanced-final-test-plan
             configuration: ./certification/fapi/pkjwt.json
+          - plan: fapi1-advanced-final-test-plan
             fapi_auth_request_method: pushed
             client_auth_type: private_key_jwt
             fapi_profile: plain_fapi
             fapi_response_mode: plain_response
-          - plan: fapi1-advanced-final-test-plan
             configuration: ./certification/fapi/pkjwt.json
+          - plan: fapi1-advanced-final-test-plan
             fapi_auth_request_method: by_value
             client_auth_type: private_key_jwt
             fapi_profile: plain_fapi
             fapi_response_mode: jarm
-          - plan: fapi1-advanced-final-test-plan
             configuration: ./certification/fapi/pkjwt.json
+          - plan: fapi1-advanced-final-test-plan
             fapi_auth_request_method: pushed
             client_auth_type: private_key_jwt
             fapi_profile: plain_fapi
             fapi_response_mode: jarm
+            configuration: ./certification/fapi/pkjwt.json
           - plan: fapi1-advanced-final-test-plan
-            configuration: ./certification/fapi/mtls.json
             fapi_auth_request_method: by_value
             client_auth_type: mtls
             fapi_profile: plain_fapi
             fapi_response_mode: plain_response
-          - plan: fapi1-advanced-final-test-plan
             configuration: ./certification/fapi/mtls.json
+          - plan: fapi1-advanced-final-test-plan
             fapi_auth_request_method: pushed
             client_auth_type: mtls
             fapi_profile: plain_fapi
             fapi_response_mode: plain_response
-          - plan: fapi1-advanced-final-test-plan
             configuration: ./certification/fapi/mtls.json
+          - plan: fapi1-advanced-final-test-plan
             fapi_auth_request_method: by_value
             client_auth_type: mtls
             fapi_profile: plain_fapi
             fapi_response_mode: jarm
-          - plan: fapi1-advanced-final-test-plan
             configuration: ./certification/fapi/mtls.json
+          - plan: fapi1-advanced-final-test-plan
             fapi_auth_request_method: pushed
             client_auth_type: mtls
             fapi_profile: plain_fapi
             fapi_response_mode: jarm
+            configuration: ./certification/fapi/mtls.json
 
           # FAPI RW-CIBA-ID1
           - plan: fapi-ciba-id1-test-plan
-            configuration: ./certification/fapi/pkjwt.json
             client_auth_type: private_key_jwt
             fapi_profile: plain_fapi
             ciba_mode: poll
             client_registration: dynamic_client
-          - plan: fapi-ciba-id1-test-plan
             configuration: ./certification/fapi/pkjwt.json
+          - plan: fapi-ciba-id1-test-plan
             client_auth_type: private_key_jwt
             fapi_profile: plain_fapi
             ciba_mode: ping
             client_registration: dynamic_client
+            configuration: ./certification/fapi/pkjwt.json
           - plan: fapi-ciba-id1-test-plan
-            configuration: ./certification/fapi/mtls.json
             client_auth_type: mtls
             fapi_profile: plain_fapi
             ciba_mode: poll
             client_registration: dynamic_client
-          - plan: fapi-ciba-id1-test-plan
             configuration: ./certification/fapi/mtls.json
+          - plan: fapi-ciba-id1-test-plan
             client_auth_type: mtls
             fapi_profile: plain_fapi
             ciba_mode: ping
             client_registration: dynamic_client
+            configuration: ./certification/fapi/mtls.json
 
           # Extensive
           - plan: oidcc-test-plan
-            client_registration: dynamic_client
-            response_mode: default
             response_type: code
             client_auth_type: client_secret_basic
-            skip: oidcc-server-rotate-keys
-          - plan: oidcc-test-plan
+            configuration: ./certification/oidc/plan.json
             client_registration: dynamic_client
             response_mode: default
+            skip: oidcc-server-rotate-keys
+          - plan: oidcc-test-plan
             response_type: code id_token
             client_auth_type: client_secret_basic
-            skip: oidcc-server-rotate-keys
-          - plan: oidcc-test-plan
+            configuration: ./certification/oidc/plan.json
             client_registration: dynamic_client
             response_mode: default
+            skip: oidcc-server-rotate-keys
+          - plan: oidcc-test-plan
             response_type: code id_token token
             client_auth_type: client_secret_basic
-            skip: oidcc-server-rotate-keys
-          - plan: oidcc-test-plan
+            configuration: ./certification/oidc/plan.json
             client_registration: dynamic_client
             response_mode: default
+            skip: oidcc-server-rotate-keys
+          - plan: oidcc-test-plan
             response_type: code token
             client_auth_type: client_secret_basic
-            skip: oidcc-server-rotate-keys
-          - plan: oidcc-test-plan
+            configuration: ./certification/oidc/plan.json
             client_registration: dynamic_client
             response_mode: default
+            skip: oidcc-server-rotate-keys
+          - plan: oidcc-test-plan
             response_type: code
             client_auth_type: client_secret_post
-            skip: oidcc-server-rotate-keys
-          - plan: oidcc-test-plan
+            configuration: ./certification/oidc/plan.json
             client_registration: dynamic_client
             response_mode: default
+            skip: oidcc-server-rotate-keys
+          - plan: oidcc-test-plan
             response_type: code id_token
             client_auth_type: client_secret_post
-            skip: oidcc-server-rotate-keys
-          - plan: oidcc-test-plan
+            configuration: ./certification/oidc/plan.json
             client_registration: dynamic_client
             response_mode: default
+            skip: oidcc-server-rotate-keys
+          - plan: oidcc-test-plan
             response_type: code id_token token
             client_auth_type: client_secret_post
-            skip: oidcc-server-rotate-keys
-          - plan: oidcc-test-plan
+            configuration: ./certification/oidc/plan.json
             client_registration: dynamic_client
             response_mode: default
+            skip: oidcc-server-rotate-keys
+          - plan: oidcc-test-plan
             response_type: code token
             client_auth_type: client_secret_post
-            skip: oidcc-server-rotate-keys
-          - plan: oidcc-test-plan
+            configuration: ./certification/oidc/plan.json
             client_registration: dynamic_client
             response_mode: default
+            skip: oidcc-server-rotate-keys
+          - plan: oidcc-test-plan
             response_type: code
             client_auth_type: client_secret_jwt
-            skip: oidcc-server-rotate-keys
-          - plan: oidcc-test-plan
+            configuration: ./certification/oidc/plan.json
             client_registration: dynamic_client
             response_mode: default
+            skip: oidcc-server-rotate-keys
+          - plan: oidcc-test-plan
             response_type: code id_token
             client_auth_type: client_secret_jwt
-            skip: oidcc-server-rotate-keys
-          - plan: oidcc-test-plan
+            configuration: ./certification/oidc/plan.json
             client_registration: dynamic_client
             response_mode: default
+            skip: oidcc-server-rotate-keys
+          - plan: oidcc-test-plan
             response_type: code id_token token
             client_auth_type: client_secret_jwt
-            skip: oidcc-server-rotate-keys
-          - plan: oidcc-test-plan
+            configuration: ./certification/oidc/plan.json
             client_registration: dynamic_client
             response_mode: default
+            skip: oidcc-server-rotate-keys
+          - plan: oidcc-test-plan
             response_type: code token
             client_auth_type: client_secret_jwt
-            skip: oidcc-server-rotate-keys
-          - plan: oidcc-test-plan
+            configuration: ./certification/oidc/plan.json
             client_registration: dynamic_client
             response_mode: default
+            skip: oidcc-server-rotate-keys
+          - plan: oidcc-test-plan
             response_type: code
             client_auth_type: private_key_jwt
-            skip: oidcc-server-rotate-keys
-          - plan: oidcc-test-plan
+            configuration: ./certification/oidc/plan.json
             client_registration: dynamic_client
             response_mode: default
+            skip: oidcc-server-rotate-keys
+          - plan: oidcc-test-plan
             response_type: code id_token
             client_auth_type: private_key_jwt
-            skip: oidcc-server-rotate-keys
-          - plan: oidcc-test-plan
+            configuration: ./certification/oidc/plan.json
             client_registration: dynamic_client
             response_mode: default
+            skip: oidcc-server-rotate-keys
+          - plan: oidcc-test-plan
             response_type: code id_token token
             client_auth_type: private_key_jwt
-            skip: oidcc-server-rotate-keys
-          - plan: oidcc-test-plan
+            configuration: ./certification/oidc/plan.json
             client_registration: dynamic_client
             response_mode: default
+            skip: oidcc-server-rotate-keys
+          - plan: oidcc-test-plan
             response_type: code token
             client_auth_type: private_key_jwt
-            skip: oidcc-server-rotate-keys
-          - plan: oidcc-test-plan
+            configuration: ./certification/oidc/plan.json
             client_registration: dynamic_client
             response_mode: default
+            skip: oidcc-server-rotate-keys
+          - plan: oidcc-test-plan
             response_type: id_token
             client_auth_type: none
-            skip: oidcc-server-rotate-keys
-          - plan: oidcc-test-plan
+            configuration: ./certification/oidc/plan.json
             client_registration: dynamic_client
             response_mode: default
+            skip: oidcc-server-rotate-keys
+          - plan: oidcc-test-plan
             response_type: id_token token
             client_auth_type: none
+            configuration: ./certification/oidc/plan.json
+            client_registration: dynamic_client
+            response_mode: default
             skip: oidcc-server-rotate-keys
     steps:
       - name: Checkout
@@ -424,7 +453,7 @@ jobs:
         run: npx panva/npm-install-retry
         if: ${{ steps.node_modules.outputs.cache-hit != 'true' }}
       - name: Run oidc-provider (OIDC)
-        run: npx c8 node certification/docker &
+        run: npx c8 node certification/oidc/docker &
         if: ${{ startsWith(matrix.setup.plan, 'oidcc-') }}
         env:
           PORT: 3000
@@ -461,7 +490,7 @@ jobs:
           while ! curl -skfail https://localhost.emobix.co.uk:8443/api/runner/available >/dev/null; do sleep 2; done
       - name: Adjust configuration files for CI
         run: |
-          sed -i -e 's/op.panva.cz/172.17.0.1:3000/g' certification/plan.json
+          sed -i -e 's/op.panva.cz/172.17.0.1:3000/g' certification/oidc/plan.json
           sed -i -e 's/mtls.fapi.panva.cz/172.17.0.1:3000/g' certification/fapi/mtls.json
           sed -i -e 's/fapi.panva.cz/172.17.0.1:3000/g' certification/fapi/mtls.json
           sed -i -e 's/mtls.fapi.panva.cz/172.17.0.1:3000/g' certification/fapi/pkjwt.json

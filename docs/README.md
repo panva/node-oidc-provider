@@ -1078,6 +1078,7 @@ _**default value**_:
  - `clientDefaults` for setting different default client `response_types`
  - `clientDefaults` for setting client `tls_client_certificate_bound_access_tokens` to true
  - `clientDefaults` for setting client `require_signed_request_object` to true
+ - `clientDefaults` for setting client `default_acr_values` to whatever values are set by the specific FAPI ecosystem
  - `features.mTLS` and enable `certificateBoundAccessTokens`
  - `features.mTLS` and enable `selfSignedTlsClientAuth` and/or `tlsClientAuth`
  - `features.claimsParameter`

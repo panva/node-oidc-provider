@@ -12,35 +12,23 @@ const API = require('./api');
 const {
   SUITE_ACCESS_TOKEN,
   SUITE_BASE_URL = 'https://www.certification.openid.net',
+  SETUP,
 } = process.env;
 
-let {
-  CONFIGURATION = './certification/plan.json',
-  PLAN_NAME,
-  VARIANT,
-  SKIP,
-} = process.env;
+assert(SETUP, 'process.env.SETUP missing');
 
-if ('SETUP' in process.env) {
-  let configurationFile;
-  ({
-    configuration: configurationFile,
-    plan: PLAN_NAME,
-    skip: SKIP,
-    ...VARIANT
-  } = JSON.parse(process.env.SETUP));
-  CONFIGURATION = configurationFile || CONFIGURATION;
-  VARIANT = JSON.stringify(VARIANT);
-}
-
-assert(PLAN_NAME, 'process.env.PLAN_NAME missing');
-assert(CONFIGURATION, 'process.env.CONFIGURATION missing');
+const {
+  configuration: CONFIGURATION,
+  plan: PLAN_NAME,
+  skip: SKIP,
+  ...VARIANT
+} = JSON.parse(process.env.SETUP);
 
 const configuration = JSON.parse(fs.readFileSync(CONFIGURATION));
 const runner = new API({ baseUrl: SUITE_BASE_URL, bearerToken: SUITE_ACCESS_TOKEN });
 
 if ('alias' in configuration) {
-  configuration.alias = `${configuration.alias}-${Object.values(JSON.parse(VARIANT)).join('-')}`;
+  configuration.alias = `${configuration.alias}-${Object.values(VARIANT).join('-')}`;
 }
 
 if (PLAN_NAME === 'fapi1-advanced-final-test-plan') {
@@ -50,22 +38,20 @@ if (PLAN_NAME === 'fapi1-advanced-final-test-plan') {
   }, {});
 }
 
-if (JSON.parse(VARIANT).client_registration === 'dynamic_client') {
+if (VARIANT.client_registration === 'dynamic_client') {
   delete configuration.alias;
 }
 
 runner.createTestPlan({
   configuration,
   planName: PLAN_NAME,
-  variant: VARIANT,
+  variant: JSON.stringify(VARIANT),
 }).then((plan) => {
   const { id: PLAN_ID, modules: MODULES } = plan;
 
   debug('Created test plan, new id %s', PLAN_ID);
   debug('%s/plan-detail.html?plan=%s', SUITE_BASE_URL, PLAN_ID);
   debug('modules to test %O', MODULES);
-
-  SKIP = SKIP || ('SKIP' in process.env ? process.env.SKIP.split(',') : []);
 
   if (fs.existsSync('.failed')) {
     fs.unlinkSync('.failed');
@@ -82,8 +68,9 @@ runner.createTestPlan({
     });
 
     parallel('', () => {
+      const skips = SKIP ? SKIP.split(',') : [];
       for (const { testModule, variant } of MODULES) {
-        const test = SKIP.includes(testModule) ? it.skip : it;
+        const test = skips.includes(testModule) ? it.skip : it;
         test(`${testModule}, ${JSON.stringify(variant)}`, async () => {
           debug('\n\nRunning test module: %s', testModule);
           const { id: moduleId } = await runner.createTestFromPlan({

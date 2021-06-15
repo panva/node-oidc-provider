@@ -97,6 +97,7 @@ const fapi = new Provider(ISSUER, {
     },
   ],
   clientDefaults: {
+    default_acr_values: ['urn:mace:incommon:iap:silver'],
     authorization_signed_response_alg: 'PS256',
     grant_types: ['implicit', 'authorization_code', 'refresh_token'],
     response_types: ['code', 'code id_token'],
@@ -139,7 +140,6 @@ const fapi = new Provider(ISSUER, {
         return undefined;
       },
     },
-    claimsParameter: { enabled: true },
     jwtResponseModes: { enabled: true },
     pushedAuthorizationRequests: { enabled: true },
     requestObjects: {

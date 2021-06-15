@@ -1,8 +1,8 @@
 const crypto = require('crypto');
 
-const pkg = require('../package.json');
-const enabledJWA = JSON.parse(JSON.stringify(require('../lib/consts/jwa')));
-const { InvalidClientMetadata } = require('../lib/helpers/errors');
+const pkg = require('../../package.json');
+const enabledJWA = JSON.parse(JSON.stringify(require('../../lib/consts/jwa')));
+const { InvalidClientMetadata } = require('../../lib/helpers/errors');
 
 function filterOutNone(conf, prop) {
   // eslint-disable-next-line no-param-reassign
