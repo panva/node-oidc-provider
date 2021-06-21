@@ -124,13 +124,10 @@ describe('Provider configuration', () => {
     });
   });
 
-  ['token', 'introspection', 'revocation'].forEach((endpoint) => {
-    const prop = `${endpoint}EndpointAuthMethods`;
-    it(`validates configuration ${prop} members`, () => {
-      expect(() => {
-        new Provider('http://localhost:3000', { [prop]: ['foo'] });
-      }).to.throw(`only supported ${prop} are 'none', 'client_secret_basic', 'client_secret_jwt', 'client_secret_post', and 'private_key_jwt'`);
-    });
+  it('validates configuration tokenEndpointAuthMethods members', () => {
+    expect(() => {
+      new Provider('http://localhost:3000', { tokenEndpointAuthMethods: ['foo'] });
+    }).to.throw('only supported tokenEndpointAuthMethods are \'none\', \'client_secret_basic\', \'client_secret_jwt\', \'client_secret_post\', and \'private_key_jwt\'');
   });
 
   describe('secp256k1', () => {

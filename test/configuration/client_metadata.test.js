@@ -555,8 +555,6 @@ describe('Client metadata validation', () => {
 
   [
     'token_endpoint_auth_method',
-    'introspection_endpoint_auth_method',
-    'revocation_endpoint_auth_method',
   ].forEach((endpointAuthMethodProperty) => {
     const configuration = {
       [`${endpointAuthMethodProperty.split('_')[0]}EndpointAuthMethods`]: [
@@ -1110,11 +1108,9 @@ describe('Client metadata validation', () => {
     rejects(this.title, { keys: [{ kty: 'oct', kid: 'jf1nb1YotqxK9viWsXMsngnTCmO2r3w_moVIPtaf8wU' }] }, 'client JSON Web Key Set is invalid');
     allows(this.title, { keys: [{ kty: 'unrecognized' }] });
     allows(this.title, { keys: [] });
-    ['introspection', 'revocation', 'token'].forEach((endpoint) => {
-      rejects(this.title, undefined, 'jwks or jwks_uri is mandatory for this client', {
-        [`${endpoint}_endpoint_auth_method`]: 'private_key_jwt',
-      }, configuration);
-    });
+    rejects(this.title, undefined, 'jwks or jwks_uri is mandatory for this client', {
+      token_endpoint_auth_method: 'private_key_jwt',
+    }, configuration);
 
     // eslint-disable-next-line no-restricted-syntax
     for (const prop of ['request_object_signing_alg', 'backchannel_authentication_request_signing_alg']) {
@@ -1195,12 +1191,6 @@ describe('Client metadata validation', () => {
       allows(this.title, 'foo', {
         token_endpoint_auth_method: 'tls_client_auth',
       }, configuration);
-      allows(this.title, 'foo', {
-        revocation_endpoint_auth_method: 'tls_client_auth',
-      }, configuration);
-      allows(this.title, 'foo', {
-        introspection_endpoint_auth_method: 'tls_client_auth',
-      }, configuration);
       allows(this.title, 'foo', undefined, configuration, (client) => {
         expect(client.metadata()[this.title]).to.eql(undefined);
       });
@@ -1210,12 +1200,6 @@ describe('Client metadata validation', () => {
       mustBeString(this.title, undefined, undefined, configuration);
       allows(this.title, 'foo', {
         token_endpoint_auth_method: 'tls_client_auth',
-      }, configuration);
-      allows(this.title, 'foo', {
-        revocation_endpoint_auth_method: 'tls_client_auth',
-      }, configuration);
-      allows(this.title, 'foo', {
-        introspection_endpoint_auth_method: 'tls_client_auth',
       }, configuration);
       allows(this.title, 'foo', undefined, configuration, (client) => {
         expect(client.metadata()[this.title]).to.eql(undefined);
@@ -1227,12 +1211,6 @@ describe('Client metadata validation', () => {
       allows(this.title, 'foo', {
         token_endpoint_auth_method: 'tls_client_auth',
       }, configuration);
-      allows(this.title, 'foo', {
-        revocation_endpoint_auth_method: 'tls_client_auth',
-      }, configuration);
-      allows(this.title, 'foo', {
-        introspection_endpoint_auth_method: 'tls_client_auth',
-      }, configuration);
       allows(this.title, 'foo', undefined, configuration, (client) => {
         expect(client.metadata()[this.title]).to.eql(undefined);
       });
@@ -1243,12 +1221,6 @@ describe('Client metadata validation', () => {
       allows(this.title, 'foo', {
         token_endpoint_auth_method: 'tls_client_auth',
       }, configuration);
-      allows(this.title, 'foo', {
-        revocation_endpoint_auth_method: 'tls_client_auth',
-      }, configuration);
-      allows(this.title, 'foo', {
-        introspection_endpoint_auth_method: 'tls_client_auth',
-      }, configuration);
       allows(this.title, 'foo', undefined, configuration, (client) => {
         expect(client.metadata()[this.title]).to.eql(undefined);
       });
@@ -1258,12 +1230,6 @@ describe('Client metadata validation', () => {
       mustBeString(this.title, undefined, undefined, configuration);
       allows(this.title, 'foo', {
         token_endpoint_auth_method: 'tls_client_auth',
-      }, configuration);
-      allows(this.title, 'foo', {
-        revocation_endpoint_auth_method: 'tls_client_auth',
-      }, configuration);
-      allows(this.title, 'foo', {
-        introspection_endpoint_auth_method: 'tls_client_auth',
       }, configuration);
       allows(this.title, 'foo', undefined, configuration, (client) => {
         expect(client.metadata()[this.title]).to.eql(undefined);
@@ -1333,22 +1299,6 @@ describe('Client metadata validation', () => {
     defaultsTo('token_endpoint_auth_method', 'client_secret_post', undefined, {
       clientDefaults: {
         token_endpoint_auth_method: 'client_secret_post',
-      },
-    });
-    defaultsTo('introspection_endpoint_auth_method', 'client_secret_post', undefined, {
-      features: {
-        introspection: { enabled: true },
-      },
-      clientDefaults: {
-        token_endpoint_auth_method: 'client_secret_post',
-      },
-    });
-    defaultsTo('introspection_endpoint_auth_signing_alg', 'HS384', { token_endpoint_auth_method: 'client_secret_jwt' }, {
-      features: {
-        introspection: { enabled: true },
-      },
-      clientDefaults: {
-        token_endpoint_auth_signing_alg: 'HS384',
       },
     });
     defaultsTo('id_token_signed_response_alg', 'PS256', undefined, {

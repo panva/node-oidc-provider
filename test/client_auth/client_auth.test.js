@@ -56,8 +56,6 @@ describe('client authentication options', () => {
       });
 
       expect(i(provider).configuration('tokenEndpointAuthSigningAlgValues')).to.be.undefined;
-      expect(i(provider).configuration('introspectionEndpointAuthSigningAlgValues')).to.be.undefined;
-      expect(i(provider).configuration('revocationEndpointAuthSigningAlgValues')).to.be.undefined;
     });
 
     it('removes client_secret_jwt when no HMAC based alg is enabled', () => {
@@ -112,8 +110,6 @@ describe('client authentication options', () => {
       ];
 
       expect(i(provider).configuration('tokenEndpointAuthSigningAlgValues')).to.eql(algs);
-      expect(i(provider).configuration('introspectionEndpointAuthSigningAlgValues')).to.eql(algs);
-      expect(i(provider).configuration('revocationEndpointAuthSigningAlgValues')).to.eql(algs);
     });
 
     it('pushes only asymmetric algs when private_key_jwt is enabled', () => {
@@ -142,8 +138,6 @@ describe('client authentication options', () => {
       ];
 
       expect(i(provider).configuration('tokenEndpointAuthSigningAlgValues')).to.eql(algs);
-      expect(i(provider).configuration('introspectionEndpointAuthSigningAlgValues')).to.eql(algs);
-      expect(i(provider).configuration('revocationEndpointAuthSigningAlgValues')).to.eql(algs);
     });
 
     it('pushes all algs when both _jwt methods are enabled', () => {
@@ -176,8 +170,6 @@ describe('client authentication options', () => {
       ];
 
       expect(i(provider).configuration('tokenEndpointAuthSigningAlgValues')).to.eql(algs);
-      expect(i(provider).configuration('introspectionEndpointAuthSigningAlgValues')).to.eql(algs);
-      expect(i(provider).configuration('revocationEndpointAuthSigningAlgValues')).to.eql(algs);
     });
   });
 
