@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [7.5.0](https://github.com/panva/node-oidc-provider/compare/v7.4.1...v7.5.0) (2021-06-23)
+
+
+### Features
+
+* use 303 See Other HTTP response status code for built in redirects ([c243bf6](https://github.com/panva/node-oidc-provider/commit/c243bf6b6663c41ff3e75c09b95fb978eba87381))
+
 ## [7.4.1](https://github.com/panva/node-oidc-provider/compare/v7.4.0...v7.4.1) (2021-05-29)
 
 
