@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [7.5.1](https://github.com/panva/node-oidc-provider/compare/v7.5.0...v7.5.1) (2021-06-24)
+
+
+### Bug Fixes
+
+* issue id tokens with claims when resource is used ([#1038](https://github.com/panva/node-oidc-provider/issues/1038)) ([4b16c71](https://github.com/panva/node-oidc-provider/commit/4b16c71983dfa9b8f2bf14008e4858478a916e5d))
+
 ## [7.5.0](https://github.com/panva/node-oidc-provider/compare/v7.4.1...v7.5.0) (2021-06-23)
 
 
