@@ -42,7 +42,9 @@ function knexAdapter(client, cleanInterval = 3600000) {
     return getClient()
       .table(oidc_payloads)
       .where("expiresAt", "<", new Date())
-      .delete();
+      .delete().then(() => {
+        _cleaned = Date.now();
+      });
   }
 
   function getExpireAt(expiresIn) {
