@@ -1,50 +1,37 @@
+/* eslint-disable no-underscore-dangle */
+
 /*
  * Tests, pakcage.json and usage examples can be found here :
  * https://github.com/ydarma/oidc-provider-knex-adapter
  * This code is provided under "The Unlicense"
  */
 
-const knex = require("knex");
-const oidc_payloads = "oidc_payloads";
+const knex = require('knex'); // eslint-disable-line import/no-unresolved
+
+const tableName = 'oidc_payloads';
 
 const types = [
-  "Session",
-  "AccessToken",
-  "AuthorizationCode",
-  "RefreshToken",
-  "DeviceCode",
-  "ClientCredentials",
-  "Client",
-  "InitialAccessToken",
-  "RegistrationAccessToken",
-  "Interaction",
-  "ReplayDetection",
-  "PushedAuthorizationRequest",
-  "Grant",
+  'Session',
+  'AccessToken',
+  'AuthorizationCode',
+  'RefreshToken',
+  'DeviceCode',
+  'ClientCredentials',
+  'Client',
+  'InitialAccessToken',
+  'RegistrationAccessToken',
+  'Interaction',
+  'ReplayDetection',
+  'PushedAuthorizationRequest',
+  'Grant',
 ].reduce((map, name, i) => ({ ...map, [name]: i + 1 }), {});
 
-function knexAdapter(client, cleanInterval = 3600000) {
-
-  let _client = undefined;
-  let _lastCleaned = Date.now();
+function knexAdapter(client) {
+  let _client;
 
   function getClient() {
-    if (typeof _client == "undefined")
-      _client = typeof client == "function" ? client : knex(client);
+    if (typeof _client === 'undefined') _client = typeof client === 'function' ? client : knex(client);
     return _client;
-  }
-
-  function shouldClean() {
-    return Date.now() > _lastCleaned + cleanInterval;
-  }
-
-  function clean() {
-    return getClient()
-      .table(oidc_payloads)
-      .where("expiresAt", "<", new Date())
-      .delete().then(() => {
-        _cleaned = Date.now();
-      });
   }
 
   function getExpireAt(expiresIn) {
@@ -57,13 +44,12 @@ function knexAdapter(client, cleanInterval = 3600000) {
     constructor(name) {
       this.name = name;
       this.type = types[name];
-      if (shouldClean()) DbAdapter._cleaned = clean();
     }
 
     async upsert(id, payload, expiresIn) {
       const expiresAt = getExpireAt(expiresIn);
       await getClient()
-        .table(oidc_payloads)
+        .table(tableName)
         .insert({
           id,
           type: this.type,
@@ -73,20 +59,21 @@ function knexAdapter(client, cleanInterval = 3600000) {
           uid: payload.uid,
           expiresAt,
         })
-        .onConflict(["id", "type"])
+        .onConflict(['id', 'type'])
         .merge();
     }
 
     get _table() {
       return getClient()
-        .table(oidc_payloads)
-        .where("type", this.type);
+        .table(tableName)
+        .where('type', this.type);
     }
 
     _rows(obj) {
       return this._table.where(obj);
     }
 
+    // eslint-disable-next-line class-methods-use-this
     _result(r) {
       return r.length > 0
         ? {
@@ -127,11 +114,11 @@ function knexAdapter(client, cleanInterval = 3600000) {
 }
 
 const defaultConfig = {
-  client: "pg",
-  connection: "postgresql://"
+  client: 'pg',
+  connection: 'postgresql://',
 };
 
-const defaultAdapter = knexAdapter(defaultConfig)
-defaultAdapter.knexAdapter = knexAdapter
+const defaultAdapter = knexAdapter(defaultConfig);
+defaultAdapter.knexAdapter = knexAdapter;
 
-module.exports = defaultAdapter
+module.exports = defaultAdapter;
