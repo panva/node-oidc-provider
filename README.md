@@ -65,8 +65,8 @@ conforms to the following profiles of the OpenID Connect™ protocol
 
 - Basic OP, Implicit OP, Hybrid OP, Config OP, Dynamic OP, Form Post OP, 3rd Party-Init OP
 - Back-Channel OP, RP-Initiated OP
-- FAPI 1.0 OP w/ MTLS, FAPI 1.0 OP w/ Private Key (Both Final and Implementer's Draft 02)
-- FAPI 1.0 OP w/ MTLS PAR, FAPI 1.0 OP w/ Private Key PAR (Both Final and Implementer's Draft 02)
+- FAPI 1.0 Advanced Final (w/ Private Key JWT, MTLS, JARM, PAR)
+- FAPI 1.0 Second Implementer’s Draft (w/ Private Key JWT, MTLS, PAR)
 - FAPI-CIBA OP poll w/ MTLS, FAPI-CIBA OP poll w/ Private Key, FAPI-CIBA OP Ping w/ MTLS, FAPI-CIBA OP Ping w/ Private Key
 
 ## Sponsor
