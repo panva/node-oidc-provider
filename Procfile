@@ -1,1 +1,1 @@
-web: node certification/oidc
+web: node certification
