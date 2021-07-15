@@ -1,0 +1,43 @@
+name: 🐞Bug report
+description: There's a bug I want to report
+labels: triage
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for taking the time to fill out this bug report. Do not use this form to ask questions, make suggestions or report something you're not sure is a bug, use the [appropriate](https://github.com/panva/node-oidc-provider/issues/new/choose) Discussions Topic for those.
+  - type: textarea
+    attributes:
+      label: What happened?
+      description: A clear and concise description of what the bug is and what you expected to happen instead.
+    validations:
+      required: true
+  - type: input
+    attributes:
+      label: Version
+      description: What exact version of the library do you use?
+      placeholder: e.g. v7.3.0
+    validations:
+      required: true
+  - type: input
+    attributes:
+      label: Node.js version
+      description: What exact version of node.js do you use?
+      placeholder: e.g. v14.17.3
+    validations:
+      required: true
+  - type: textarea
+    attributes:
+      label: Reproduction & Logs
+      description: Please create a gist or a public repo which can be cloned, installed and ran locally. Provide the link here as well as any additional steps to reproduce or useful logs.
+    validations:
+      required: true
+  - type: checkboxes
+    attributes:
+      options:
+        - label: I have searched the issues tracker and discussions for similar topics and couldn't find anything related.
+          required: true
+        - label: I have searched the [FAQ](https://github.com/panva/node-oidc-provider/blob/v7.x/docs/README.md#faq) and couldn't find anything related.
+          required: true
+        - label: I agree to follow this project's [Code of Conduct](https://github.com/panva/node-oidc-provider/blob/main/CODE_OF_CONDUCT.md)
+          required: true
