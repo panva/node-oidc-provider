@@ -1,8 +1,11 @@
 const cloneDeep = require('lodash/cloneDeep');
 const merge = require('lodash/merge');
+const jose = require('jose2');
 
 const config = cloneDeep(require('../default.config'));
 
+config.jwks = global.keystore.toJWKS(true);
+config.jwks.keys.push(jose.JWK.generateSync('EC', 'P-384', { use: 'sig' }).toJWK(true));
 config.extraTokenClaims = () => ({ foo: 'bar' });
 merge(config.features, {
   registration: {

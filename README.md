@@ -36,9 +36,13 @@ enabled by default, check the configuration section on how to enable them.
 - [RFC8628 - OAuth 2.0 Device Authorization Grant (Device Flow)][device-flow]
 - [RFC8705 - OAuth 2.0 Mutual TLS Client Authentication and Certificate Bound Access Tokens (MTLS)][mtls]
 - [RFC8707 - OAuth 2.0 Resource Indicators][resource-indicators]
-- [JSON Web Token (JWT) Profile for OAuth 2.0 Access Tokens][jwt-at]
 - [Financial-grade API Security Profile 1.0 - Part 2: Advanced (FAPI)][fapi]
 - [Financial-grade API - Part 2: Read and Write API Security Profile (FAPI) - Implementer's Draft 02][fapi-id2]
+
+Supported Access Token formats:
+- Opaque
+- [JSON Web Token (JWT) Profile for OAuth 2.0 Access Tokens][jwt-at]
+- [Platform-Agnostic Security Tokens (PASETO)][paseto-at]
 
 The following draft specifications are implemented by oidc-provider.
 - [JWT Response for OAuth Token Introspection - draft 10][jwt-introspection]
@@ -153,6 +157,7 @@ See the list of available emitted [event names](/docs/events.md) and their descr
 [resource-indicators]: https://tools.ietf.org/html/rfc8707
 [jarm]: https://openid.net/specs/openid-financial-api-jarm-ID1.html
 [jwt-at]: https://tools.ietf.org/html/draft-ietf-oauth-access-token-jwt-11
+[paseto-at]: https://paseto.io
 [support-sponsor]: https://github.com/sponsors/panva
 [par]: https://tools.ietf.org/html/draft-ietf-oauth-par-08
 [rpinitiated-logout]: https://openid.net/specs/openid-connect-rpinitiated-1_0-01.html

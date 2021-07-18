@@ -1819,7 +1819,7 @@ and a JWT Access Token Format.
   }
   // PASETO Access Token Format (when accessTokenFormat is 'paseto')
   paseto?: {
-    version: 1 | 2,
+    version: 1 | 2 | 3 | 4,
     purpose: 'local' | 'public',
     key?: crypto.KeyObject, // required when purpose is 'local'
     kid?: string, // OPTIONAL `kid` to aid in signing key selection or to put in the footer for 'local'
@@ -2325,7 +2325,7 @@ _**default value**_:
 }
 ```
 </details>
-<a id="formats-customizers-to-push-a-payload-and-a-footer-to-a-paseto-structured-access-token"></a><details><summary>(Click to expand) To push a payload and a footer to a PASETO structured access token
+<a id="formats-customizers-to-push-a-payload-a-footer-and-use-an-implicit-assertion-with-a-paseto-structured-access-token"></a><details><summary>(Click to expand) To push a payload, a footer, and use an implicit assertion with a PASETO structured access token
 </summary><br>
 
 ```js
@@ -2334,6 +2334,7 @@ _**default value**_:
     paseto(ctx, token, structuredToken) {
       structuredToken.payload.foo = 'bar';
       structuredToken.footer = { foo: 'bar' };
+      structuredToken.assertion = 'foo'; // v3 and v4 tokens only
     }
   }
 }

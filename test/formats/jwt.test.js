@@ -425,7 +425,7 @@ describe('jwt format', () => {
         audience: 'foo',
         jwt: {
           sign: {
-            alg: 'ES384',
+            alg: 'ES512',
           },
         },
       };

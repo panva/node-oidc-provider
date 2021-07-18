@@ -6,7 +6,16 @@ const util = require('util');
 
 const sinon = require('sinon').createSandbox();
 const { expect } = require('chai');
-const paseto = require('paseto');
+
+let paseto;
+const above16 = process.version.substr(1).split('.').map((x) => parseInt(x, 10))[0] >= 16;
+if (above16) {
+  // eslint-disable-next-line
+  paseto = require('paseto3');
+} else {
+  // eslint-disable-next-line
+  paseto = require('paseto2');
+}
 
 const epochTime = require('../../lib/helpers/epoch_time');
 const bootstrap = require('../test_helper');
@@ -96,6 +105,40 @@ describe('paseto format', () => {
       expect(await token.save()).to.match(/^v2\.public\./);
     });
 
+    if (above16) {
+      it('v3.public', async function () {
+        const resourceServer = {
+          accessTokenFormat: 'paseto',
+          audience: 'foo',
+          paseto: {
+            version: 3,
+            purpose: 'public',
+          },
+        };
+
+        const client = await this.provider.Client.find(clientId);
+        const token = new this.provider.AccessToken({ client, ...fullPayload, resourceServer });
+        expect(await token.save()).to.match(/^v3\.public\./);
+      });
+    }
+
+    if (above16) {
+      it('v4.public', async function () {
+        const resourceServer = {
+          accessTokenFormat: 'paseto',
+          audience: 'foo',
+          paseto: {
+            version: 4,
+            purpose: 'public',
+          },
+        };
+
+        const client = await this.provider.Client.find(clientId);
+        const token = new this.provider.AccessToken({ client, ...fullPayload, resourceServer });
+        expect(await token.save()).to.match(/^v4\.public\./);
+      });
+    }
+
     it('v1.local', async function () {
       const resourceServer = {
         accessTokenFormat: 'paseto',
@@ -128,25 +171,39 @@ describe('paseto format', () => {
       expect(await token.save()).to.match(/^v1\.local\./);
     });
 
-    it('v2.local is not supported', async function () {
-      const resourceServer = {
-        accessTokenFormat: 'paseto',
-        audience: 'foo',
-        paseto: {
-          version: 2,
-          purpose: 'local',
-          key: crypto.randomBytes(32),
-        },
-      };
+    if (above16) {
+      it('v3.local', async function () {
+        const resourceServer = {
+          accessTokenFormat: 'paseto',
+          audience: 'foo',
+          paseto: {
+            version: 3,
+            purpose: 'local',
+            key: crypto.randomBytes(32),
+          },
+        };
 
-      const client = await this.provider.Client.find(clientId);
-      const token = new this.provider.AccessToken({ client, ...fullPayload, resourceServer });
-      return assert.rejects(token.save(), (err) => {
-        expect(err).to.be.an('error');
-        expect(err.message).to.equal('unsupported PASETO version and purpose');
-        return true;
+        const client = await this.provider.Client.find(clientId);
+        const token = new this.provider.AccessToken({ client, ...fullPayload, resourceServer });
+        expect(await token.save()).to.match(/^v3\.local\./);
       });
-    });
+
+      it('v3.local (keyObject)', async function () {
+        const resourceServer = {
+          accessTokenFormat: 'paseto',
+          audience: 'foo',
+          paseto: {
+            version: 3,
+            purpose: 'local',
+            key: crypto.createSecretKey(crypto.randomBytes(32)),
+          },
+        };
+
+        const client = await this.provider.Client.find(clientId);
+        const token = new this.provider.AccessToken({ client, ...fullPayload, resourceServer });
+        expect(await token.save()).to.match(/^v3\.local\./);
+      });
+    }
 
     it('public kid selection failing', async function () {
       const resourceServer = {
@@ -194,8 +251,8 @@ describe('paseto format', () => {
         accessTokenFormat: 'paseto',
         audience: 'foo',
         paseto: {
-          version: 1,
-          purpose: 'foobar',
+          version: 2,
+          purpose: 'local',
         },
       };
 
@@ -204,25 +261,6 @@ describe('paseto format', () => {
       return assert.rejects(token.save(), (err) => {
         expect(err).to.be.an('error');
         expect(err.message).to.equal('unsupported PASETO version and purpose');
-        return true;
-      });
-    });
-
-    it('unsupported "paseto.version"', async function () {
-      const resourceServer = {
-        accessTokenFormat: 'paseto',
-        audience: 'foo',
-        paseto: {
-          version: 3,
-          purpose: 'foobar',
-        },
-      };
-
-      const client = await this.provider.Client.find(clientId);
-      const token = new this.provider.AccessToken({ client, ...fullPayload, resourceServer });
-      return assert.rejects(token.save(), (err) => {
-        expect(err).to.be.an('error');
-        expect(err.message).to.equal('unsupported "paseto.version"');
         return true;
       });
     });
@@ -320,6 +358,27 @@ describe('paseto format', () => {
         return true;
       });
     });
+
+    if (!above16) {
+      it('only >= 16.0.0 node supports v3 and v4', async function () {
+        const resourceServer = {
+          accessTokenFormat: 'paseto',
+          audience: 'foo',
+          paseto: {
+            version: 3,
+            purpose: 'public',
+          },
+        };
+
+        const client = await this.provider.Client.find(clientId);
+        const token = new this.provider.AccessToken({ client, ...fullPayload, resourceServer });
+        return assert.rejects(token.save(), (err) => {
+          expect(err).to.be.an('error');
+          expect(err.message).to.equal('PASETO v3 and v4 tokens are only supported in Node.js >= 16.0.0 runtimes');
+          return true;
+        });
+      });
+    }
 
     it('invalid paseto configuration type', async function () {
       const resourceServer = {
