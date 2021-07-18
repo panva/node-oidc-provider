@@ -89,7 +89,7 @@ jobs:
   build-conformance-suite:
     runs-on: ubuntu-latest
     env:
-      VERSION: release-v4.1.18
+      VERSION: release-v4.1.19
     steps:
       - name: Checkout
         uses: actions/checkout@master
