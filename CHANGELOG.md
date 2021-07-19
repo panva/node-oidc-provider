@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [7.5.3](https://github.com/panva/node-oidc-provider/compare/v7.5.2...v7.5.3) (2021-07-19)
+
+
+### Bug Fixes
+
+* memory adapter grant references for intended models ([2fe4dc8](https://github.com/panva/node-oidc-provider/commit/2fe4dc83677cdbc8b0f4cc9dc5fa5cdea336162b))
+
 ## [7.5.2](https://github.com/panva/node-oidc-provider/compare/v7.5.1...v7.5.2) (2021-07-19)
 
 
