@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [7.5.2](https://github.com/panva/node-oidc-provider/compare/v7.5.1...v7.5.2) (2021-07-19)
+
+
+### Bug Fixes
+
+* use correct keystore select method for paseto access tokens ([ce394bc](https://github.com/panva/node-oidc-provider/commit/ce394bc15874fcea17a61f913248a72a66bf4945))
+
 ## [7.5.1](https://github.com/panva/node-oidc-provider/compare/v7.5.0...v7.5.1) (2021-06-24)
 
 
