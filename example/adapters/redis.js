@@ -4,10 +4,19 @@ const isEmpty = require('lodash/isEmpty');
 
 const client = new Redis(process.env.REDIS_URL, { keyPrefix: 'oidc:' });
 
+const grantable = new Set([
+  'AccessToken',
+  'AuthorizationCode',
+  'RefreshToken',
+  'DeviceCode',
+  'BackchannelAuthenticationRequest',
+]);
+
 const consumable = new Set([
   'AuthorizationCode',
   'RefreshToken',
   'DeviceCode',
+  'BackchannelAuthenticationRequest',
 ]);
 
 function grantKeyFor(id) {
@@ -39,7 +48,7 @@ class RedisAdapter {
       multi.expire(key, expiresIn);
     }
 
-    if (payload.grantId) {
+    if (grantable.has(this.name) && payload.grantId) {
       const grantKey = grantKeyFor(payload.grantId);
       multi.rpush(grantKey, key);
       // if you're seeing grant key lists growing out of acceptable proportions consider using LTRIM

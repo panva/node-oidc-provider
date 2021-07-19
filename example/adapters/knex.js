@@ -24,6 +24,7 @@ const types = [
   'ReplayDetection',
   'PushedAuthorizationRequest',
   'Grant',
+  'BackchannelAuthenticationRequest',
 ].reduce((map, name, i) => ({ ...map, [name]: i + 1 }), {});
 
 function knexAdapter(client) {

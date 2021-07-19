@@ -20,6 +20,7 @@ const grantable = new Set([
   'AuthorizationCode',
   'RefreshToken',
   'DeviceCode',
+  'BackchannelAuthenticationRequest',
 ]);
 
 const models = [
@@ -36,6 +37,7 @@ const models = [
   'ReplayDetection',
   'PushedAuthorizationRequest',
   'Grant',
+  'BackchannelAuthenticationRequest',
 ].reduce((map, name) => {
   map.set(name, sequelize.define(name, {
     id: { type: Sequelize.STRING, primaryKey: true },

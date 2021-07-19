@@ -7,6 +7,14 @@ const Redis = require('ioredis'); // eslint-disable-line import/no-unresolved
 
 const client = new Redis(process.env.REDIS_URL);
 
+const grantable = new Set([
+  'AccessToken',
+  'AuthorizationCode',
+  'RefreshToken',
+  'DeviceCode',
+  'BackchannelAuthenticationRequest',
+]);
+
 function grantKeyFor(id) {
   return `oidc:grant:${id}`;
 }
@@ -35,7 +43,7 @@ class RedisAdapter {
       multi.expire(key, expiresIn);
     }
 
-    if (payload.grantId) {
+    if (grantable.has(this.name) && payload.grantId) {
       const grantKey = grantKeyFor(payload.grantId);
       multi.rpush(grantKey, key);
       // if you're seeing grant key lists growing out of acceptable proportions consider using LTRIM

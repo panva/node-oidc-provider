@@ -11,6 +11,7 @@ const grantable = new Set([
   'authorization_code',
   'refresh_token',
   'device_code',
+  'backchannel_authentication_request',
 ]);
 
 class CollectionSet extends Set {
