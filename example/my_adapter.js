@@ -10,7 +10,8 @@ class MyAdapter {
    * @constructor
    * @param {string} name Name of the oidc-provider model. One of "Grant, "Session", "AccessToken",
    * "AuthorizationCode", "RefreshToken", "ClientCredentials", "Client", "InitialAccessToken",
-   * "RegistrationAccessToken", "DeviceCode", "Interaction", "ReplayDetection", or "PushedAuthorizationRequest"
+   * "RegistrationAccessToken", "DeviceCode", "Interaction", "ReplayDetection",
+   * "BackchannelAuthenticationRequest", or "PushedAuthorizationRequest"
    *
    */
   constructor(name) {
@@ -71,15 +72,16 @@ class MyAdapter {
      * - gty {string} - [AccessToken, RefreshToken only] space delimited grant values, indicating
      *     the grant type(s) they originate from (implicit, authorization_code, refresh_token or
      *     device_code) the original one is always first, second is refresh_token if refreshed
-     * - params {object} - [DeviceCode only] an object with the authorization request parameters
-     *     as requested by the client with device_authorization_endpoint
+     * - params {object} - [DeviceCode and BackchannelAuthenticationRequest only] an object with the
+     *     authorization request parameters as requested by the client with device_authorization_endpoint
      * - userCode {string} - [DeviceCode only] user code value
      * - deviceInfo {object} - [DeviceCode only] an object with details about the
      *     device_authorization_endpoint request
      * - inFlight {boolean} - [DeviceCode only]
-     * - error {string} - [DeviceCode only] - error from authnz to be returned to the polling client
-     * - errorDescription {string} - [DeviceCode only] - error_description from authnz to be returned
-     *     to the polling client
+     * - error {string} - [DeviceCode and BackchannelAuthenticationRequest only] - error from authnz to be
+     *     returned to the polling client
+     * - errorDescription {string} - [DeviceCode and BackchannelAuthenticationRequest only] - error_description
+     *     from authnz to be returned to the polling client
      * - policies {string[]} - [InitialAccessToken, RegistrationAccessToken only] array of policies
      * - request {string} - [PushedAuthorizationRequest only] Pushed Request Object value
      *
