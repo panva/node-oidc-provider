@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [7.5.4](https://github.com/panva/node-oidc-provider/compare/v7.5.3...v7.5.4) (2021-07-21)
+
+
+### Bug Fixes
+
+* add missing x-ua-compatible to form_post and dag input ([f773669](https://github.com/panva/node-oidc-provider/commit/f77366982b33281226f6b88492e844322da69915)), closes [#1052](https://github.com/panva/node-oidc-provider/issues/1052)
+
 ## [7.5.3](https://github.com/panva/node-oidc-provider/compare/v7.5.2...v7.5.3) (2021-07-19)
 
 
