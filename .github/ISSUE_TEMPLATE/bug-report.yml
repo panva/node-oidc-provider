@@ -35,6 +35,8 @@ body:
   - type: checkboxes
     attributes:
       options:
+        - label: I have provided a gist or a public repo which can be cloned, installed and ran locally in order to reproduce the bug in the textarea above.
+          required: true
         - label: I have searched the issues tracker and discussions for similar topics and couldn't find anything related.
           required: true
         - label: I have searched the [FAQ](https://github.com/panva/node-oidc-provider/blob/v7.x/docs/README.md#faq) and couldn't find anything related.
