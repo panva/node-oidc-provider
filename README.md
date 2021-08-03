@@ -14,8 +14,9 @@ additional features and standards implemented.
 
 ## Implemented specs & features
 
-The following specifications are implemented by oidc-provider. Note that not all features are
-enabled by default, check the configuration section on how to enable them.
+The following specifications are implemented by oidc-provider:
+
+_Note that not all features are enabled by default, check the configuration section on how to enable them._
 
 - [RFC6749 - OAuth 2.0][oauth2] & [OpenID Connect Core 1.0][core]
   - Authorization (Authorization Code Flow, Implicit Flow, Hybrid Flow)
@@ -40,11 +41,13 @@ enabled by default, check the configuration section on how to enable them.
 - [Financial-grade API - Part 2: Read and Write API Security Profile (FAPI) - Implementer's Draft 02][fapi-id2]
 
 Supported Access Token formats:
+
 - Opaque
 - [JSON Web Token (JWT) Profile for OAuth 2.0 Access Tokens][jwt-at]
 - [Platform-Agnostic Security Tokens (PASETO)][paseto-at]
 
-The following draft specifications are implemented by oidc-provider.
+The following draft specifications are implemented by oidc-provider:
+
 - [JWT Response for OAuth Token Introspection - draft 10][jwt-introspection]
 - [JWT Secured Authorization Response Mode for OAuth 2.0 (JARM) - Implementer's Draft 01][jarm]
 - [Financial-grade API: Client Initiated Backchannel Authentication Profile (FAPI-CIBA) - Implementer's Draft 01][fapi-ciba]
@@ -70,7 +73,7 @@ conforms to the following profiles of the OpenID Connect™ protocol
 - Basic OP, Implicit OP, Hybrid OP, Config OP, Dynamic OP, Form Post OP, 3rd Party-Init OP
 - Back-Channel OP, RP-Initiated OP
 - FAPI 1.0 Advanced Final (w/ Private Key JWT, MTLS, JARM, PAR)
-- FAPI 1.0 Second Implementer’s Draft (w/ Private Key JWT, MTLS, PAR)
+- FAPI 1.0 Second Implementer's Draft (w/ Private Key JWT, MTLS, PAR)
 - FAPI-CIBA OP (w/ Private Key JWT, MTLS, Ping mode, Poll mode)
 
 ## Sponsor
@@ -96,25 +99,18 @@ various ways to fit a variety of uses. See the [documentation](/docs/README.md).
 ```js
 const { Provider } = require('oidc-provider');
 const configuration = {
-  // ... see available options /docs
+  // ... see /docs for available configuration
   clients: [{
     client_id: 'foo',
     client_secret: 'bar',
     redirect_uris: ['http://lvh.me:8080/cb'],
-    // + other client properties
+    // ... other client properties
   }],
 };
 
 const oidc = new Provider('http://localhost:3000', configuration);
 
-// express/nodejs style application callback (req, res, next) for use with express apps, see /examples/express.js
-oidc.callback()
-
-// koa application for use with koa apps, see /examples/koa.js
-oidc.app
-
-// or just expose a server standalone, see /examples/standalone.js
-const server = oidc.listen(3000, () => {
+oidc.listen(3000, () => {
   console.log('oidc-provider listening on port 3000, check http://localhost:3000/.well-known/openid-configuration');
 });
 ```
@@ -125,10 +121,8 @@ Collection of useful configurations use cases are available over at [recipes](/r
 
 
 ## Events
-Your oidc-provider instance is an event emitter, using event handlers you can hook into the various
-actions and i.e. emit metrics or that react to specific triggers. In some scenarios you can even
-change the defined behavior.  
-See the list of available emitted [event names](/docs/events.md) and their description.
+oidc-provider instances are event emitters, using event handlers you can hook into the various
+actions and i.e. emit metrics that react to specific triggers. See the list of available emitted [event names](/docs/events.md) and their description.
 
 
 [npm-url]: https://www.npmjs.com/package/oidc-provider
