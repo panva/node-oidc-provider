@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [7.6.0](https://github.com/panva/node-oidc-provider/compare/v7.5.4...v7.6.0) (2021-08-03)
+
+
+### Features
+
+* support v3.local, v3.public, and v4.public paseto access tokens format ([aca5813](https://github.com/panva/node-oidc-provider/commit/aca5813a5b7e669f30894102ad925b1aec3f3467))
+
 ## [7.5.4](https://github.com/panva/node-oidc-provider/compare/v7.5.3...v7.5.4) (2021-07-21)
 
 
