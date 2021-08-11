@@ -82,7 +82,7 @@ conforms to the following profiles of the OpenID Connect™ protocol
 
 ## Support
 
-If you or your business use oidc-provider, or you need help using/upgrading the module, please consider becoming a [sponsor][support-sponsor] so I can continue maintaining it and adding new features carefree. The only way to guarantee you get feedback from the author & sole maintainer of this module is to support the package through GitHub Sponsors. I make it a best effort to try and answer newcomers regardless of being a supporter or not, but if you're asking your n-th question and don't get an answer it's because I'm out of handouts and spare time to give.
+If you or your business use oidc-provider, or you need help using/upgrading the module, please consider becoming a [sponsor][support-sponsor] so I can continue maintaining it and adding new features carefree. The only way to guarantee you get feedback from the author & sole maintainer of this module is to support the package through GitHub Sponsors.
 
 ## Get started
 You may check the [example folder](/example) or follow a [step by step example][example-repo] to see
