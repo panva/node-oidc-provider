@@ -37,6 +37,7 @@ _Note that not all features are enabled by default, check the configuration sect
 - [RFC8628 - OAuth 2.0 Device Authorization Grant (Device Flow)][device-flow]
 - [RFC8705 - OAuth 2.0 Mutual TLS Client Authentication and Certificate Bound Access Tokens (MTLS)][mtls]
 - [RFC8707 - OAuth 2.0 Resource Indicators][resource-indicators]
+- [RFC9101 - OAuth 2.0 JWT-Secured Authorization Request (JAR)][jar]
 - [Financial-grade API Security Profile 1.0 - Part 2: Advanced (FAPI)][fapi]
 - [Financial-grade API - Part 2: Read and Write API Security Profile (FAPI) - Implementer's Draft 02][fapi-id2]
 
@@ -53,7 +54,6 @@ The following draft specifications are implemented by oidc-provider:
 - [Financial-grade API: Client Initiated Backchannel Authentication Profile (FAPI-CIBA) - Implementer's Draft 01][fapi-ciba]
 - [OAuth 2.0 Authorization Server Issuer Identifier in Authorization Response - draft 01][iss-auth-resp]
 - [OAuth 2.0 Demonstration of Proof-of-Possession at the Application Layer (DPoP) - draft 03][dpop]
-- [OAuth 2.0 JWT Secured Authorization Request (JAR) - draft 33][jar]
 - [OAuth 2.0 Pushed Authorization Requests (PAR) - draft 08][par]
 - [OpenID Connect Back-Channel Logout 1.0 - draft 06][backchannel-logout]
 - [OpenID Connect Client Initiated Backchannel Authentication Flow - Core 1.0 (CIBA) - draft-03][ciba]
@@ -142,7 +142,7 @@ actions and i.e. emit metrics that react to specific triggers. See the list of a
 [backchannel-logout]: https://openid.net/specs/openid-connect-backchannel-1_0-06.html
 [registration-management]: https://tools.ietf.org/html/rfc7592
 [oauth-native-apps]: https://tools.ietf.org/html/rfc8252
-[jar]: https://tools.ietf.org/html/draft-ietf-oauth-jwsreq-33
+[jar]: https://www.rfc-editor.org/rfc/rfc9101.html
 [device-flow]: https://tools.ietf.org/html/rfc8628
 [jwt-introspection]: https://tools.ietf.org/html/draft-ietf-oauth-jwt-introspection-response-10
 [sponsor-auth0]: https://auth0.com/developers?utm_source=GHsponsor&utm_medium=GHsponsor&utm_campaign=oidc-provider&utm_content=auth
