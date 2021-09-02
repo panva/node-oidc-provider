@@ -19,13 +19,6 @@ The following specifications are implemented by oidc-provider:
 _Note that not all features are enabled by default, check the configuration section on how to enable them._
 
 - [RFC6749 - OAuth 2.0][oauth2] & [OpenID Connect Core 1.0][core]
-  - Authorization (Authorization Code Flow, Implicit Flow, Hybrid Flow)
-  - UserInfo Endpoint and ID Tokens including Signing and Encryption
-  - Passing a Request Object by Value or Reference including Signing and Encryption
-  - Public and Pairwise Subject Identifier Types
-  - Offline Access / Refresh Token Grant
-  - Client Credentials Grant
-  - Client Authentication incl. client_secret_jwt and private_key_jwt methods
 - [OpenID Connect Discovery 1.0][discovery]
 - [OpenID Connect Dynamic Client Registration 1.0][registration] and [RFC7591 - OAuth 2.0 Dynamic Client Registration Protocol][oauth2-registration]
 - [OAuth 2.0 Form Post Response Mode][form-post]
@@ -39,7 +32,6 @@ _Note that not all features are enabled by default, check the configuration sect
 - [RFC8707 - OAuth 2.0 Resource Indicators][resource-indicators]
 - [RFC9101 - OAuth 2.0 JWT-Secured Authorization Request (JAR)][jar]
 - [Financial-grade API Security Profile 1.0 - Part 2: Advanced (FAPI)][fapi]
-- [Financial-grade API - Part 2: Read and Write API Security Profile (FAPI) - Implementer's Draft 02][fapi-id2]
 - [OpenID Connect Client Initiated Backchannel Authentication Flow - Core 1.0 (CIBA)][ciba]
 
 Supported Access Token formats:
@@ -156,7 +148,6 @@ actions and i.e. emit metrics that react to specific triggers. See the list of a
 [par]: https://tools.ietf.org/html/draft-ietf-oauth-par-08
 [rpinitiated-logout]: https://openid.net/specs/openid-connect-rpinitiated-1_0-01.html
 [iss-auth-resp]: https://tools.ietf.org/html/draft-ietf-oauth-iss-auth-resp-01
-[fapi-id2]: https://openid.net/specs/openid-financial-api-part-2-ID2.html
 [fapi]: https://openid.net/specs/openid-financial-api-part-2-1_0.html
 [ciba]: https://openid.net/specs/openid-client-initiated-backchannel-authentication-core-1_0-final.html
 [fapi-ciba]: https://openid.net/specs/openid-financial-api-ciba-ID1.html
