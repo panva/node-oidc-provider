@@ -40,6 +40,7 @@ _Note that not all features are enabled by default, check the configuration sect
 - [RFC9101 - OAuth 2.0 JWT-Secured Authorization Request (JAR)][jar]
 - [Financial-grade API Security Profile 1.0 - Part 2: Advanced (FAPI)][fapi]
 - [Financial-grade API - Part 2: Read and Write API Security Profile (FAPI) - Implementer's Draft 02][fapi-id2]
+- [OpenID Connect Client Initiated Backchannel Authentication Flow - Core 1.0 (CIBA)][ciba]
 
 Supported Access Token formats:
 
@@ -56,7 +57,6 @@ The following draft specifications are implemented by oidc-provider:
 - [OAuth 2.0 Demonstration of Proof-of-Possession at the Application Layer (DPoP) - draft 03][dpop]
 - [OAuth 2.0 Pushed Authorization Requests (PAR) - draft 08][par]
 - [OpenID Connect Back-Channel Logout 1.0 - draft 06][backchannel-logout]
-- [OpenID Connect Client Initiated Backchannel Authentication Flow - Core 1.0 (CIBA) - draft-03][ciba]
 - [OpenID Connect RP-Initiated Logout 1.0 - draft 01][rpinitiated-logout]
 
 Updates to draft specification versions are released as MINOR library versions,
@@ -158,5 +158,5 @@ actions and i.e. emit metrics that react to specific triggers. See the list of a
 [iss-auth-resp]: https://tools.ietf.org/html/draft-ietf-oauth-iss-auth-resp-01
 [fapi-id2]: https://openid.net/specs/openid-financial-api-part-2-ID2.html
 [fapi]: https://openid.net/specs/openid-financial-api-part-2-1_0.html
-[ciba]: https://openid.net/specs/openid-client-initiated-backchannel-authentication-core-1_0-03.html
+[ciba]: https://openid.net/specs/openid-client-initiated-backchannel-authentication-core-1_0-final.html
 [fapi-ciba]: https://openid.net/specs/openid-financial-api-ciba-ID1.html
