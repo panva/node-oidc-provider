@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [7.7.0](https://github.com/panva/node-oidc-provider/compare/v7.6.0...v7.7.0) (2021-09-02)
+
+
+### Features
+
+* CIBA Core 1.0 is now a stable feature ([cc8bc0d](https://github.com/panva/node-oidc-provider/commit/cc8bc0d651e8111a144cb3eeaf7f61600dd074f2))
+
 ## [7.6.0](https://github.com/panva/node-oidc-provider/compare/v7.5.4...v7.6.0) (2021-08-03)
 
 
