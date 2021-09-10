@@ -105,7 +105,7 @@ let server;
             break;
           }
           case 'device_authorization': {
-            if (ctx.stats === 200) {
+            if (ctx.status === 200) {
               ctx.body.verification_uri = ctx.body.verification_uri.replace('https://mtls.', 'https://');
               ctx.body.verification_uri_complete = ctx.body.verification_uri_complete.replace('https://mtls.', 'https://');
             }
