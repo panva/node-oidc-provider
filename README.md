@@ -31,6 +31,7 @@ _Note that not all features are enabled by default, check the configuration sect
 - [RFC8705 - OAuth 2.0 Mutual TLS Client Authentication and Certificate Bound Access Tokens (MTLS)][mtls]
 - [RFC8707 - OAuth 2.0 Resource Indicators][resource-indicators]
 - [RFC9101 - OAuth 2.0 JWT-Secured Authorization Request (JAR)][jar]
+- [RFC9126 - OAuth 2.0 Pushed Authorization Requests (PAR) - draft 08][par]
 - [Financial-grade API Security Profile 1.0 - Part 2: Advanced (FAPI)][fapi]
 - [OpenID Connect Client Initiated Backchannel Authentication Flow - Core 1.0 (CIBA)][ciba]
 
@@ -47,7 +48,6 @@ The following draft specifications are implemented by oidc-provider:
 - [Financial-grade API: Client Initiated Backchannel Authentication Profile (FAPI-CIBA) - Implementer's Draft 01][fapi-ciba]
 - [OAuth 2.0 Authorization Server Issuer Identifier in Authorization Response - draft 01][iss-auth-resp]
 - [OAuth 2.0 Demonstration of Proof-of-Possession at the Application Layer (DPoP) - draft 03][dpop]
-- [OAuth 2.0 Pushed Authorization Requests (PAR) - draft 08][par]
 - [OpenID Connect Back-Channel Logout 1.0 - draft 06][backchannel-logout]
 - [OpenID Connect RP-Initiated Logout 1.0 - draft 01][rpinitiated-logout]
 
@@ -145,7 +145,7 @@ actions and i.e. emit metrics that react to specific triggers. See the list of a
 [jwt-at]: https://tools.ietf.org/html/draft-ietf-oauth-access-token-jwt-11
 [paseto-at]: https://paseto.io
 [support-sponsor]: https://github.com/sponsors/panva
-[par]: https://tools.ietf.org/html/draft-ietf-oauth-par-08
+[par]: https://www.rfc-editor.org/rfc/rfc9126.html
 [rpinitiated-logout]: https://openid.net/specs/openid-connect-rpinitiated-1_0-01.html
 [iss-auth-resp]: https://tools.ietf.org/html/draft-ietf-oauth-iss-auth-resp-01
 [fapi]: https://openid.net/specs/openid-financial-api-part-2-1_0.html

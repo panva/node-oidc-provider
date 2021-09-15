@@ -1351,18 +1351,14 @@ false
 
 ### features.pushedAuthorizationRequests
 
-[draft-ietf-oauth-par-08](https://tools.ietf.org/html/draft-ietf-oauth-par-08) - OAuth 2.0 Pushed Authorization Requests (PAR)  
+[RFC9126](https://www.rfc-editor.org/rfc/rfc9126.html) - OAuth 2.0 Pushed Authorization Requests (PAR)  
 
-Enables the use of `pushed_authorization_request_endpoint` defined by the Pushed Authorization Requests draft.   
-  
-
-_**recommendation**_: Updates to draft specification versions are released as MINOR library versions, if you utilize these specification implementations consider using the tilde `~` operator in your package.json since breaking changes may be introduced as part of these version updates. Alternatively, [acknowledge](#features) the version and be notified of breaking changes as part of your CI.  
+Enables the use of `pushed_authorization_request_endpoint` defined by the Pushed Authorization Requests RFC.  
 
 
 _**default value**_:
 ```js
 {
-  ack: undefined,
   enabled: false,
   requirePushedAuthorizationRequests: false
 }
