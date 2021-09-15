@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [7.8.0](https://github.com/panva/node-oidc-provider/compare/v7.7.0...v7.8.0) (2021-09-15)
+
+
+### Features
+
+* OAuth 2.0 Pushed Authorization Requests (PAR) is now a stable feature ([3c54d8d](https://github.com/panva/node-oidc-provider/commit/3c54d8ddb85d72fc9432c283b3bea417a895afca))
+
 ## [7.7.0](https://github.com/panva/node-oidc-provider/compare/v7.6.0...v7.7.0) (2021-09-02)
 
 
