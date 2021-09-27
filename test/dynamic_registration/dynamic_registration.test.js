@@ -119,7 +119,7 @@ describe('registration features', () => {
         i(this.provider).configuration('features.registration').issueRegistrationAccessToken = this.orig;
       });
 
-      it('omits issuing a registration access token and does not return registration_client_uri', function () {
+      it('issues a registration access token and does return registration_client_uri', function () {
         return this.agent.post('/reg')
           .send({
             redirect_uris: ['https://client.example.com/cb'],
@@ -154,7 +154,7 @@ describe('registration features', () => {
         i(this.provider).configuration('features.registration').issueRegistrationAccessToken = this.orig;
       });
 
-      it('omits issuing a registration access token and does not return registration_client_uri', function () {
+      it('issues a registration access token and does return registration_client_uri', function () {
         return this.agent.post('/reg')
           .send({
             redirect_uris: ['https://client.example.com/cb'],
