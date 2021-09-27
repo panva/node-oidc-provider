@@ -1436,8 +1436,8 @@ new (provider.InitialAccessToken)({}).save().then(console.log);
 #### issueRegistrationAccessToken
 
 Boolean or a function used to decide whether a registration access token will be issued or not. Supported values are
- - `false` registration access tokens is issued
- - `true` registration access tokens is not issued
+ - `true` registration access tokens is issued
+ - `false` registration access tokens is not issued
  - function returning true/false, true when token should be issued, false when it shouldn't   
   
 
