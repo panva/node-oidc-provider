@@ -145,7 +145,7 @@ expire.setDate(expire.getDate() + 1);
             const { query: { access_token } } = parseLocation(response.headers.location, true);
             return this.agent
               .get('/me')
-              .query({ access_token })
+              .auth(access_token, { type: 'bearer' })
               .expect(200)
               .expect(({ body }) => {
                 expect(body).to.contain.keys('email', 'middle_name');
@@ -199,7 +199,7 @@ expire.setDate(expire.getDate() + 1);
             const { query: { access_token } } = parseLocation(response.headers.location, true);
             this.agent
               .get('/me')
-              .query({ access_token })
+              .auth(access_token, { type: 'bearer' })
               .expect(200)
               .expect((userinfo) => {
                 expect(userinfo.body).to.contain.key('given_name');

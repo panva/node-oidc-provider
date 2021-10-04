@@ -1952,7 +1952,7 @@ Several OAuth 2.0 / OIDC profiles prohibit the use of query strings to carry acc
 
 _**default value**_:
 ```js
-true
+false
 ```
 
 ### acrValues

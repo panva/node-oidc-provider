@@ -326,17 +326,6 @@ describe('registration features', () => {
           this.provider.enable('registration', { initialAccessToken: undefined });
         });
 
-        it('allows reg calls with the access tokens as a Bearer token [query]', function () {
-          return this.agent.post('/reg')
-            .send({
-              redirect_uris: ['https://client.example.com/cb'],
-            })
-            .query({
-              access_token: 'foobar',
-            })
-            .expect(201);
-        });
-
         it('fails reg calls with the access tokens in application/json body', function () {
           return this.agent.post('/reg')
             .send({
@@ -399,17 +388,6 @@ describe('registration features', () => {
             const token = this.TestAdapter.for('InitialAccessToken').syncFind(jti);
             expect(token).to.have.property('exp');
           });
-        });
-
-        it('allows reg calls with the access tokens as a Bearer token [query]', function () {
-          return this.agent.post('/reg')
-            .send({
-              redirect_uris: ['https://client.example.com/cb'],
-            })
-            .query({
-              access_token: this.token,
-            })
-            .expect(201);
         });
 
         it('fails reg calls with the access tokens in application/json body', function () {

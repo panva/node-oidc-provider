@@ -92,7 +92,7 @@ describe('distributed and aggregated claims', () => {
           const { query: { access_token } } = parseLocation(authorization.headers.location, true);
 
           return this.agent.get('/me')
-            .query({ access_token })
+            .auth(access_token, { type: 'bearer' })
             .expect(200)
             .end((userinfoError, userinfo) => {
               if (userinfoError) return done(userinfoError);
@@ -127,7 +127,7 @@ describe('distributed and aggregated claims', () => {
           const { query: { access_token } } = parseLocation(authorization.headers.location, true);
 
           return this.agent.get('/me')
-            .query({ access_token })
+            .auth(access_token, { type: 'bearer' })
             .expect(200)
             .end((userinfoError, userinfo) => {
               if (userinfoError) return done(userinfoError);
