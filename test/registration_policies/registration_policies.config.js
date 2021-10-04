@@ -4,7 +4,7 @@ const merge = require('lodash/merge');
 const config = cloneDeep(require('../default.config'));
 
 merge(config.features, {
-  registrationManagement: { enabled: true },
+  registrationManagement: { enabled: true, rotateRegistrationAccessToken: false },
   registration: {
     enabled: true,
     initialAccessToken: true,

@@ -1530,7 +1530,7 @@ _**default value**_:
 ```js
 {
   enabled: false,
-  rotateRegistrationAccessToken: false
+  rotateRegistrationAccessToken: true
 }
 ```
 
@@ -1547,7 +1547,7 @@ Enables registration access token rotation. The provider will discard the curren
 
 _**default value**_:
 ```js
-false
+true
 ```
 <a id="rotate-registration-access-token-function-use"></a><details><summary>(Click to expand) function use
 </summary><br>
