@@ -1,6 +1,7 @@
 # Events
 
-Your oidc-provider instance is an event emitter, `this` is always the instance. In events where
+Your oidc-provider instance is an event emitter, in the event handlers `this` is always the
+Provider instance. In events where
 `ctx` (request context) is passed to the listener `ctx.oidc`
 [OIDCContext](/lib/helpers/oidc_context.js) holds additional details like recognized parameters,
 loaded client or session.
