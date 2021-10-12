@@ -77,9 +77,23 @@ describe('userinfo /me', () => {
       .expect(this.failWith(400, 'invalid_request', 'no access token provided'));
   });
 
+  it('validates the openid scope is present', async function () {
+    const at = await new this.provider.AccessToken({
+      client: await this.provider.Client.find('client'),
+    }).save();
+    sinon.stub(this.provider.Client, 'find').callsFake(async () => undefined);
+    return this.agent.get('/me')
+      .auth(at, { type: 'bearer' })
+      .expect(() => {
+        this.provider.Client.find.restore();
+      })
+      .expect(this.failWith(403, 'insufficient_scope', 'access token missing openid scope', 'openid'));
+  });
+
   it('validates a client is still valid for a found token', async function () {
     const at = await new this.provider.AccessToken({
       client: await this.provider.Client.find('client'),
+      scope: 'openid',
     }).save();
     sinon.stub(this.provider.Client, 'find').callsFake(async () => undefined);
     return this.agent.get('/me')
@@ -93,6 +107,7 @@ describe('userinfo /me', () => {
   it('validates an account still valid for a found token', async function () {
     const at = await new this.provider.AccessToken({
       client: await this.provider.Client.find('client'),
+      scope: 'openid',
       accountId: 'notfound',
     }).save();
     return this.agent.get('/me')
@@ -119,6 +134,6 @@ describe('userinfo /me', () => {
         scope: 'openid profile',
       })
       .auth(this.access_token, { type: 'bearer' })
-      .expect(this.failWith(400, 'invalid_scope', 'access token missing requested scope', 'profile'));
+      .expect(this.failWith(403, 'insufficient_scope', 'access token missing requested scope', 'profile'));
   });
 });
