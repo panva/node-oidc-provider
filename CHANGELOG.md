@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [7.8.1](https://github.com/panva/node-oidc-provider/compare/v7.8.0...v7.8.1) (2021-10-12)
+
+
+### Bug Fixes
+
+* use insufficient_scope instead of invalid_scope at userinfo_endpoint ([ba8a8f0](https://github.com/panva/node-oidc-provider/commit/ba8a8f0188c9a73a0ab0f8b974bea49feb2a87a6))
+
 ## [7.8.0](https://github.com/panva/node-oidc-provider/compare/v7.7.0...v7.8.0) (2021-09-15)
 
 
