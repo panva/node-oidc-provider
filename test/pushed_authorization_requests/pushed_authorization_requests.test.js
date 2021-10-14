@@ -1,7 +1,7 @@
 const { expect } = require('chai');
 const sinon = require('sinon');
 const jose = require('jose2');
-const { parseJwk } = require('jose/jwk/parse'); // eslint-disable-line import/no-unresolved
+const { importJWK } = require('jose');
 
 const JWT = require('../../lib/helpers/jwt');
 const bootstrap = require('../test_helper');
@@ -11,7 +11,7 @@ describe('Pushed Request Object', () => {
 
   before(async function () {
     const client = await this.provider.Client.find('client');
-    this.key = await parseJwk(client.symmetricKeyStore.selectForSign({ alg: 'HS256' })[0]);
+    this.key = await importJWK(client.symmetricKeyStore.selectForSign({ alg: 'HS256' })[0]);
   });
 
   describe('discovery', () => {

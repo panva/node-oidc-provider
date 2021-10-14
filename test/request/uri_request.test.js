@@ -1,7 +1,7 @@
 const { createSecretKey, randomBytes } = require('crypto');
 const { parse } = require('url');
 
-const { parseJwk } = require('jose/jwk/parse'); // eslint-disable-line import/no-unresolved
+const { importJWK } = require('jose');
 const sinon = require('sinon').createSandbox();
 const nock = require('nock');
 const { expect } = require('chai');
@@ -68,7 +68,7 @@ describe('request Uri features', () => {
       it('works with signed by an actual alg (https)', async function () {
         const client = await this.provider.Client.find('client-with-HS-sig');
         let [key] = client.symmetricKeyStore.selectForSign({ alg: 'HS256' });
-        key = await parseJwk(key);
+        key = await importJWK(key);
         const request = await JWT.sign({
           client_id: 'client-with-HS-sig',
           response_type: 'code',
@@ -97,7 +97,7 @@ describe('request Uri features', () => {
       it('works with signed by an actual alg (http)', async function () {
         const client = await this.provider.Client.find('client-with-HS-sig');
         let [key] = client.symmetricKeyStore.selectForSign({ alg: 'HS256' });
-        key = await parseJwk(key);
+        key = await importJWK(key);
         const request = await JWT.sign({
           client_id: 'client-with-HS-sig',
           response_type: 'code',
@@ -601,7 +601,7 @@ describe('request Uri features', () => {
 
         const client = await this.provider.Client.find('client-with-HS-sig');
         let [key] = client.symmetricKeyStore.selectForSign({ alg: 'HS256' });
-        key = await parseJwk(key);
+        key = await importJWK(key);
         const request = await JWT.sign({
           client_id: 'client',
           response_type: 'code',

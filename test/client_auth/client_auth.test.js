@@ -3,7 +3,7 @@ const { readFileSync } = require('fs');
 const got = require('got');
 const nock = require('nock');
 const jose = require('jose2');
-const { parseJwk } = require('jose/jwk/parse'); // eslint-disable-line import/no-unresolved
+const { importJWK } = require('jose');
 const sinon = require('sinon');
 const { expect } = require('chai');
 const cloneDeep = require('lodash/cloneDeep');
@@ -525,7 +525,7 @@ describe('client authentication options', () => {
 
   describe('client_secret_jwt auth', () => {
     before(async function () {
-      this.key = await parseJwk((await this.provider.Client.find('client-jwt-secret')).symmetricKeyStore.selectForSign({ alg: 'HS256' })[0]);
+      this.key = await importJWK((await this.provider.Client.find('client-jwt-secret')).symmetricKeyStore.selectForSign({ alg: 'HS256' })[0]);
     });
 
     it('accepts the auth', function () {
@@ -1048,7 +1048,7 @@ describe('client authentication options', () => {
     });
 
     it('rejects assertions when the secret is expired', async function () {
-      const key = await parseJwk((await this.provider.Client.find('secret-expired-jwt')).symmetricKeyStore.selectForSign({ alg: 'HS256' })[0]);
+      const key = await importJWK((await this.provider.Client.find('secret-expired-jwt')).symmetricKeyStore.selectForSign({ alg: 'HS256' })[0]);
       return JWT.sign({
         jti: nanoid(),
         aud: this.provider.issuer + this.suitePath('/token'),
