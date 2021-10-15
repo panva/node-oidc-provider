@@ -70,7 +70,7 @@ conforms to the following profiles of the OpenID Connect™ protocol
 
 ## Sponsor
 
-[<img width="65" height="65" align="left" src="https://avatars.githubusercontent.com/u/2824157?s=75&v=4" alt="auth0-logo">][sponsor-auth0] If you want to quickly add OpenID Connect authentication to Node.js apps, feel free to check out Auth0's Node.js SDK and free plan at [auth0.com/developers][sponsor-auth0].<br><br>
+[<img height="65" align="left" src="https://user-images.githubusercontent.com/241506/137552951-428a370a-22eb-46d3-abfe-2b176005fd56.png" alt="auth0-logo">][sponsor-auth0] If you want to quickly add OpenID Connect authentication to Node.js apps, feel free to check out Auth0's Node.js SDK and free plan. [Create an Auth0 account; it's free!][sponsor-auth0]<br><br>
 
 ## Support
 
@@ -137,7 +137,7 @@ actions and i.e. emit metrics that react to specific triggers. See the list of a
 [jar]: https://www.rfc-editor.org/rfc/rfc9101.html
 [device-flow]: https://tools.ietf.org/html/rfc8628
 [jwt-introspection]: https://tools.ietf.org/html/draft-ietf-oauth-jwt-introspection-response-10
-[sponsor-auth0]: https://auth0.com/developers?utm_source=GHsponsor&utm_medium=GHsponsor&utm_campaign=oidc-provider&utm_content=auth
+[sponsor-auth0]: https://a0.to/try-auth0
 [mtls]: https://tools.ietf.org/html/rfc8705
 [dpop]: https://tools.ietf.org/html/draft-ietf-oauth-dpop-03
 [resource-indicators]: https://tools.ietf.org/html/rfc8707
