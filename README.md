@@ -70,7 +70,7 @@ conforms to the following profiles of the OpenID Connect™ protocol
 
 ## Sponsor
 
-[<img height="65" align="left" src="https://user-images.githubusercontent.com/241506/137552951-428a370a-22eb-46d3-abfe-2b176005fd56.png" alt="auth0-logo">][sponsor-auth0] If you want to quickly add OpenID Connect authentication to Node.js apps, feel free to check out Auth0's Node.js SDK and free plan. [Create an Auth0 account; it's free!][sponsor-auth0]<br><br>
+[<img height="65" align="left" src="https://cdn.auth0.com/blog/github-sponsorships/brand-evolution-logo-Auth0-horizontal-Indigo.png" alt="auth0-logo">][sponsor-auth0] If you want to quickly add OpenID Connect authentication to Node.js apps, feel free to check out Auth0's Node.js SDK and free plan. [Create an Auth0 account; it's free!][sponsor-auth0]<br><br>
 
 ## Support
 
