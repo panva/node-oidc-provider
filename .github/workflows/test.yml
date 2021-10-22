@@ -115,6 +115,7 @@ jobs:
   conformance-suite:
     runs-on: ubuntu-latest
     needs:
+      - test
       - build-conformance-suite
     env:
       SUITE_BASE_URL: https://localhost.emobix.co.uk:8443
