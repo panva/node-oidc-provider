@@ -31,7 +31,10 @@ class API {
       timeout: 10000,
     });
 
-    const { stream } = Got.extend({
+    this.get = get;
+    this.post = post;
+
+    this.stream = Got.extend({
       prefixUrl: baseUrl,
       throwHttpErrors: false,
       followRedirect: false,
@@ -40,11 +43,7 @@ class API {
         'content-type': 'application/json',
       },
       retry: 0,
-    });
-
-    this.get = get;
-    this.stream = stream;
-    this.post = post;
+    }).stream;
   }
 
   async getAllTestModules() {
