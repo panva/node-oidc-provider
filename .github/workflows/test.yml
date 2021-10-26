@@ -49,12 +49,14 @@ jobs:
           - 12
           - 14.15.0
           - 14
+          - 16.13.0
+          - 16
         os:
           - ubuntu-latest
           - windows-latest
         include:
           - experimental: true
-            node-version: '>=15'
+            node-version: '>=17'
             os: ubuntu-latest
 
     steps:
