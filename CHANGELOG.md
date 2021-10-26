@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [7.9.0](https://github.com/panva/node-oidc-provider/compare/v7.8.1...v7.9.0) (2021-10-26)
+
+
+### Features
+
+* add LTS Gallium as a supported runtime version ([19b4d0d](https://github.com/panva/node-oidc-provider/commit/19b4d0daa4ca1e05acd2b5651545251fe937ff39))
+
 ## [7.8.1](https://github.com/panva/node-oidc-provider/compare/v7.8.0...v7.8.1) (2021-10-12)
 
 
