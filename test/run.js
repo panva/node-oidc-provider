@@ -35,7 +35,7 @@ async function run() {
   const { MOUNT_VIA: via, MOUNT_TO: to } = process.env;
 
   await new Promise((resolve) => {
-    global.server = createServer().listen(0);
+    global.server = createServer().listen(0, '::');
     global.server.once('listening', resolve);
   });
   await new Promise((resolve, reject) => {
