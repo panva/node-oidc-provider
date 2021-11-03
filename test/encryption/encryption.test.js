@@ -1,9 +1,9 @@
 const url = require('url');
 
 const { expect } = require('chai');
-const base64url = require('base64url');
 const sinon = require('sinon');
 const jose = require('jose2');
+const { decodeProtectedHeader } = require('jose');
 
 const bootstrap = require('../test_helper');
 const JWT = require('../../lib/helpers/jwt');
@@ -89,6 +89,12 @@ describe('encryption', () => {
           expect(JWT.decode(result)).to.be.ok;
         });
 
+        it('duplicates iss and aud as JWE Header Parameters in an encrypted ID Token', function () {
+          const header = decodeProtectedHeader(this.id_token);
+          expect(header).to.have.property('iss').eql(this.provider.issuer);
+          expect(header).to.have.property('aud').eql('client');
+        });
+
         it('responds with an encrypted userinfo JWT', function (done) {
           this.agent.get('/me')
             .auth(this.access_token, { type: 'bearer' })
@@ -99,6 +105,11 @@ describe('encryption', () => {
             })
             .end((err, response) => {
               if (err) throw err;
+
+              const header = decodeProtectedHeader(response.text);
+              expect(header).to.have.property('iss').eql(this.provider.issuer);
+              expect(header).to.have.property('aud').eql('client');
+
               const result = jose.JWE.decrypt(response.text, this.keystore);
               expect(result).to.be.ok;
               expect(JSON.parse(result)).to.have.keys('sub');
@@ -127,6 +138,11 @@ describe('encryption', () => {
               })
               .end((err, response) => {
                 if (err) throw err;
+
+                const header = decodeProtectedHeader(response.text);
+                expect(header).to.have.property('iss').eql(this.provider.issuer);
+                expect(header).to.have.property('aud').eql('client');
+
                 const result = jose.JWE.decrypt(response.text, this.keystore);
                 expect(result).to.be.ok;
                 expect(result.toString().split('.')).to.have.lengthOf(3);
@@ -606,7 +622,10 @@ describe('encryption', () => {
         it('responds encrypted with i.e. PBES2 password derived key id_token', function () {
           expect(this.id_token).to.be.ok;
           expect(this.id_token.split('.')).to.have.lengthOf(5);
-          expect(JSON.parse(base64url.decode(this.id_token.split('.')[0]))).to.have.property('alg', 'PBES2-HS384+A192KW');
+          const header = decodeProtectedHeader(this.id_token);
+          expect(header).to.have.property('alg', 'PBES2-HS384+A192KW');
+          expect(header).to.have.property('iss').eql(this.provider.issuer);
+          expect(header).to.have.property('aud').eql('clientSymmetric');
         });
       });
 
@@ -693,12 +712,14 @@ describe('encryption', () => {
             });
         });
 
-        it('responds encrypted with i.e. PBES2 password derived key id_token', function () {
+        it('responds encrypted', function () {
           expect(this.id_token).to.be.ok;
           expect(this.id_token.split('.')).to.have.lengthOf(5);
-          const header = JSON.parse(base64url.decode(this.id_token.split('.')[0]));
+          const header = decodeProtectedHeader(this.id_token);
           expect(header).to.have.property('alg', 'dir');
           expect(header).to.have.property('enc', 'A128CBC-HS256');
+          expect(header).to.have.property('iss').eql(this.provider.issuer);
+          expect(header).to.have.property('aud').eql('clientSymmetric-dir');
         });
       });
     });
