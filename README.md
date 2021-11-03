@@ -142,7 +142,7 @@ actions and i.e. emit metrics that react to specific triggers. See the list of a
 [dpop]: https://tools.ietf.org/html/draft-ietf-oauth-dpop-03
 [resource-indicators]: https://tools.ietf.org/html/rfc8707
 [jarm]: https://openid.net/specs/openid-financial-api-jarm-ID1.html
-[jwt-at]: https://tools.ietf.org/html/draft-ietf-oauth-access-token-jwt-11
+[jwt-at]: https://www.rfc-editor.org/rfc/rfc9068.html
 [paseto-at]: https://paseto.io
 [support-sponsor]: https://github.com/sponsors/panva
 [par]: https://www.rfc-editor.org/rfc/rfc9126.html
