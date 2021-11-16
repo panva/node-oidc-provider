@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [7.10.1](https://github.com/panva/node-oidc-provider/compare/v7.10.0...v7.10.1) (2021-11-16)
+
+
+### Fixes
+
+* clearly mark that multiple pop mechanisms are not allowed ([49eed4c](https://github.com/panva/node-oidc-provider/commit/49eed4c20b28ef95e7a1a6315783dd3956b8c84a))
+
 ## [7.10.0](https://github.com/panva/node-oidc-provider/compare/v7.9.0...v7.10.0) (2021-11-04)
 
 
