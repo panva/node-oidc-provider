@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [7.10.2](https://github.com/panva/node-oidc-provider/compare/v7.10.1...v7.10.2) (2021-11-28)
+
+
+### Fixes
+
+* use paseto configuration from `getResourceServerInfo` ([#1150](https://github.com/panva/node-oidc-provider/issues/1150)) ([02c821d](https://github.com/panva/node-oidc-provider/commit/02c821d7f16c6421d30ffc449366d4d79d951830))
+
 ## [7.10.1](https://github.com/panva/node-oidc-provider/compare/v7.10.0...v7.10.1) (2021-11-16)
 
 
