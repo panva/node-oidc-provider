@@ -8,6 +8,7 @@ const sinon = require('sinon').createSandbox();
 const { expect } = require('chai');
 const base64url = require('base64url');
 
+const ResourceServer = require('../../lib/helpers/resource_server');
 const epochTime = require('../../lib/helpers/epoch_time');
 const bootstrap = require('../test_helper');
 
@@ -48,10 +49,10 @@ describe('jwt format', () => {
   const iiat = epochTime();
   const rotations = 1;
   const extra = { foo: 'bar' };
-  const resourceServer = {
+  const resourceServer = new ResourceServer(resource, {
     accessTokenFormat: 'jwt',
     audience: 'foo',
-  };
+  });
 
   /* eslint-disable object-property-newline */
   const fullPayload = {
@@ -66,13 +67,13 @@ describe('jwt format', () => {
 
   describe('Resource Server Configuration', () => {
     it('can be used to specify the signing algorithm', async function () {
-      const resourceServer = {
+      const resourceServer = new ResourceServer(resource, {
         accessTokenFormat: 'jwt',
         audience: 'foo',
         jwt: {
           sign: { alg: 'PS256' },
         },
-      };
+      });
 
       const client = await this.provider.Client.find(clientId);
       const token = new this.provider.AccessToken({ client, ...fullPayload, resourceServer });
@@ -83,10 +84,10 @@ describe('jwt format', () => {
     });
 
     it('uses the default idtokensigningalg by default (no jwt)', async function () {
-      const resourceServer = {
+      const resourceServer = new ResourceServer(resource, {
         accessTokenFormat: 'jwt',
         audience: 'foo',
-      };
+      });
 
       const client = await this.provider.Client.find(clientId);
       const token = new this.provider.AccessToken({ client, ...fullPayload, resourceServer });
@@ -98,11 +99,11 @@ describe('jwt format', () => {
     });
 
     it('uses the default idtokensigningalg by default (jwt)', async function () {
-      const resourceServer = {
+      const resourceServer = new ResourceServer(resource, {
         accessTokenFormat: 'jwt',
         audience: 'foo',
         jwt: {},
-      };
+      });
 
       const client = await this.provider.Client.find(clientId);
       const token = new this.provider.AccessToken({ client, ...fullPayload, resourceServer });
@@ -114,13 +115,13 @@ describe('jwt format', () => {
     });
 
     it('can be used to specify the signing algorithm to be HMAC (buffer)', async function () {
-      const resourceServer = {
+      const resourceServer = new ResourceServer(resource, {
         accessTokenFormat: 'jwt',
         audience: 'foo',
         jwt: {
           sign: { alg: 'HS256', key: crypto.randomBytes(32) },
         },
-      };
+      });
 
       const client = await this.provider.Client.find(clientId);
       const token = new this.provider.AccessToken({ client, ...fullPayload, resourceServer });
@@ -132,13 +133,13 @@ describe('jwt format', () => {
     });
 
     it('kid must be a string (sign)', async function () {
-      const resourceServer = {
+      const resourceServer = new ResourceServer(resource, {
         accessTokenFormat: 'jwt',
         audience: 'foo',
         jwt: {
           sign: { alg: 'HS256', key: crypto.randomBytes(32), kid: 200 },
         },
-      };
+      });
 
       const client = await this.provider.Client.find(clientId);
       const token = new this.provider.AccessToken({ client, ...fullPayload, resourceServer });
@@ -150,7 +151,7 @@ describe('jwt format', () => {
     });
 
     it('kid must be a string (encrypt)', async function () {
-      const resourceServer = {
+      const resourceServer = new ResourceServer(resource, {
         accessTokenFormat: 'jwt',
         audience: 'foo',
         jwt: {
@@ -161,7 +162,7 @@ describe('jwt format', () => {
             kid: 200,
           },
         },
-      };
+      });
 
       const client = await this.provider.Client.find(clientId);
       const token = new this.provider.AccessToken({ client, ...fullPayload, resourceServer });
@@ -173,13 +174,13 @@ describe('jwt format', () => {
     });
 
     it('can be used to specify the signing algorithm to be HMAC (buffer w/ kid)', async function () {
-      const resourceServer = {
+      const resourceServer = new ResourceServer(resource, {
         accessTokenFormat: 'jwt',
         audience: 'foo',
         jwt: {
           sign: { alg: 'HS256', key: crypto.randomBytes(32), kid: 'feb-2020' },
         },
-      };
+      });
 
       const client = await this.provider.Client.find(clientId);
       const token = new this.provider.AccessToken({ client, ...fullPayload, resourceServer });
@@ -190,13 +191,13 @@ describe('jwt format', () => {
     });
 
     it('can be used to specify the signing algorithm to be HMAC (KeyObject)', async function () {
-      const resourceServer = {
+      const resourceServer = new ResourceServer(resource, {
         accessTokenFormat: 'jwt',
         audience: 'foo',
         jwt: {
           sign: { alg: 'HS256', key: crypto.createSecretKey(crypto.randomBytes(32)) },
         },
-      };
+      });
 
       const client = await this.provider.Client.find(clientId);
       const token = new this.provider.AccessToken({ client, ...fullPayload, resourceServer });
@@ -208,7 +209,7 @@ describe('jwt format', () => {
     });
 
     it('can be an encrypted JWT', async function () {
-      const resourceServer = {
+      const resourceServer = new ResourceServer(resource, {
         accessTokenFormat: 'jwt',
         audience: 'foo',
         jwt: {
@@ -219,7 +220,7 @@ describe('jwt format', () => {
             key: crypto.randomBytes(16),
           },
         },
-      };
+      });
 
       const client = await this.provider.Client.find(clientId);
       const token = new this.provider.AccessToken({ client, ...fullPayload, resourceServer });
@@ -235,7 +236,7 @@ describe('jwt format', () => {
     });
 
     it('can be an encrypted JWT w/ kid', async function () {
-      const resourceServer = {
+      const resourceServer = new ResourceServer(resource, {
         accessTokenFormat: 'jwt',
         audience: 'foo',
         jwt: {
@@ -247,7 +248,7 @@ describe('jwt format', () => {
             kid: 'feb-2020',
           },
         },
-      };
+      });
 
       const client = await this.provider.Client.find(clientId);
       const token = new this.provider.AccessToken({ client, ...fullPayload, resourceServer });
@@ -258,7 +259,7 @@ describe('jwt format', () => {
     });
 
     it('can be a nested JWT (explicit)', async function () {
-      const resourceServer = {
+      const resourceServer = new ResourceServer(resource, {
         accessTokenFormat: 'jwt',
         audience: 'foo',
         jwt: {
@@ -271,7 +272,7 @@ describe('jwt format', () => {
             key: (await generateKeyPair('ec', { namedCurve: 'P-256' })).publicKey,
           },
         },
-      };
+      });
 
       const client = await this.provider.Client.find(clientId);
       const token = new this.provider.AccessToken({ client, ...fullPayload, resourceServer });
@@ -287,7 +288,7 @@ describe('jwt format', () => {
     });
 
     it('can be a nested JWT w/ kid', async function () {
-      const resourceServer = {
+      const resourceServer = new ResourceServer(resource, {
         accessTokenFormat: 'jwt',
         audience: 'foo',
         jwt: {
@@ -301,7 +302,7 @@ describe('jwt format', () => {
             kid: 'feb-2020',
           },
         },
-      };
+      });
 
       const client = await this.provider.Client.find(clientId);
       const token = new this.provider.AccessToken({ client, ...fullPayload, resourceServer });
@@ -312,7 +313,7 @@ describe('jwt format', () => {
     });
 
     it('can be a nested JWT (implicit signing alg)', async function () {
-      const resourceServer = {
+      const resourceServer = new ResourceServer(resource, {
         accessTokenFormat: 'jwt',
         audience: 'foo',
         jwt: {
@@ -323,7 +324,7 @@ describe('jwt format', () => {
             key: (await generateKeyPair('ec', { namedCurve: 'P-256' })).publicKey,
           },
         },
-      };
+      });
 
       const client = await this.provider.Client.find(clientId);
       const token = new this.provider.AccessToken({ client, ...fullPayload, resourceServer });
@@ -338,7 +339,7 @@ describe('jwt format', () => {
     });
 
     it('ensures "none" JWS algorithm cannot be used', async function () {
-      const resourceServer = {
+      const resourceServer = new ResourceServer(resource, {
         accessTokenFormat: 'jwt',
         audience: 'foo',
         jwt: {
@@ -346,7 +347,7 @@ describe('jwt format', () => {
             alg: 'none',
           },
         },
-      };
+      });
 
       const client = await this.provider.Client.find(clientId);
       const token = new this.provider.AccessToken({ client, ...fullPayload, resourceServer });
@@ -358,7 +359,7 @@ describe('jwt format', () => {
     });
 
     it('ensures HMAC JWS algorithms get a key', async function () {
-      const resourceServer = {
+      const resourceServer = new ResourceServer(resource, {
         accessTokenFormat: 'jwt',
         audience: 'foo',
         jwt: {
@@ -366,7 +367,7 @@ describe('jwt format', () => {
             alg: 'HS256',
           },
         },
-      };
+      });
 
       const client = await this.provider.Client.find(clientId);
       const token = new this.provider.AccessToken({ client, ...fullPayload, resourceServer });
@@ -378,7 +379,7 @@ describe('jwt format', () => {
     });
 
     it('ensures HMAC JWS algorithms get a secret key (1/2)', async function () {
-      const resourceServer = {
+      const resourceServer = new ResourceServer(resource, {
         accessTokenFormat: 'jwt',
         audience: 'foo',
         jwt: {
@@ -387,7 +388,7 @@ describe('jwt format', () => {
             key: (await generateKeyPair('ec', { namedCurve: 'P-256' })).publicKey,
           },
         },
-      };
+      });
 
       const client = await this.provider.Client.find(clientId);
       const token = new this.provider.AccessToken({ client, ...fullPayload, resourceServer });
@@ -399,7 +400,7 @@ describe('jwt format', () => {
     });
 
     it('ensures HMAC JWS algorithms get a secret key (1/2)', async function () {
-      const resourceServer = {
+      const resourceServer = new ResourceServer(resource, {
         accessTokenFormat: 'jwt',
         audience: 'foo',
         jwt: {
@@ -408,7 +409,7 @@ describe('jwt format', () => {
             key: (await generateKeyPair('ec', { namedCurve: 'P-256' })).privateKey,
           },
         },
-      };
+      });
 
       const client = await this.provider.Client.find(clientId);
       const token = new this.provider.AccessToken({ client, ...fullPayload, resourceServer });
@@ -420,7 +421,7 @@ describe('jwt format', () => {
     });
 
     it('ensures Asymmetric JWS algorithms have a key in the provider keystore', async function () {
-      const resourceServer = {
+      const resourceServer = new ResourceServer(resource, {
         accessTokenFormat: 'jwt',
         audience: 'foo',
         jwt: {
@@ -428,7 +429,7 @@ describe('jwt format', () => {
             alg: 'ES512',
           },
         },
-      };
+      });
 
       const client = await this.provider.Client.find(clientId);
       const token = new this.provider.AccessToken({ client, ...fullPayload, resourceServer });
@@ -440,7 +441,7 @@ describe('jwt format', () => {
     });
 
     it('ensures JWE key is public or secret', async function () {
-      const resourceServer = {
+      const resourceServer = new ResourceServer(resource, {
         accessTokenFormat: 'jwt',
         audience: 'foo',
         jwt: {
@@ -450,7 +451,7 @@ describe('jwt format', () => {
             key: (await generateKeyPair('ec', { namedCurve: 'P-256' })).privateKey,
           },
         },
-      };
+      });
 
       const client = await this.provider.Client.find(clientId);
       const token = new this.provider.AccessToken({ client, ...fullPayload, resourceServer });
@@ -462,7 +463,7 @@ describe('jwt format', () => {
     });
 
     it('ensures Nested JWT when JWE encryption is a public one', async function () {
-      const resourceServer = {
+      const resourceServer = new ResourceServer(resource, {
         accessTokenFormat: 'jwt',
         audience: 'foo',
         jwt: {
@@ -472,7 +473,7 @@ describe('jwt format', () => {
             key: (await generateKeyPair('ec', { namedCurve: 'P-256' })).publicKey,
           },
         },
-      };
+      });
 
       const client = await this.provider.Client.find(clientId);
       const token = new this.provider.AccessToken({ client, ...fullPayload, resourceServer });
@@ -487,7 +488,7 @@ describe('jwt format', () => {
     for (const prop of ['alg', 'enc', 'key']) {
       // eslint-disable-next-line no-loop-func
       it(`ensures JWE Configuration has ${prop}`, async function () {
-        const resourceServer = {
+        const resourceServer = new ResourceServer(resource, {
           accessTokenFormat: 'jwt',
           audience: 'foo',
           jwt: {
@@ -497,7 +498,7 @@ describe('jwt format', () => {
               key: crypto.randomBytes(16),
             },
           },
-        };
+        });
 
         delete resourceServer.jwt.encrypt[prop];
 
