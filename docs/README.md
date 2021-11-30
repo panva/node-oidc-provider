@@ -1813,6 +1813,7 @@ and a JWT Access Token Format.
     }
   }
   // PASETO Access Token Format (when accessTokenFormat is 'paseto')
+  // Note: v2.public and v4.public are NOT supported
   paseto?: {
     version: 1 | 2 | 3 | 4,
     purpose: 'local' | 'public',
