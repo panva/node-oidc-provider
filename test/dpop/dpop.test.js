@@ -118,10 +118,10 @@ describe('features.dPoP', () => {
         await this.agent.get('/me') // eslint-disable-line no-await-in-loop
           .set('DPoP', JWT.sign({}, key, { kid: false, header: { jwk: key, typ: value } }))
           .set('Authorization', `DPoP ${dpop}`)
-          .expect(400)
-          .expect({ error: 'invalid_token', error_description: 'invalid DPoP key binding' })
+          .expect(401)
+          .expect({ error: 'invalid_dpop_proof', error_description: 'invalid DPoP key binding' })
           .expect('WWW-Authenticate', /^DPoP /)
-          .expect('WWW-Authenticate', /error="invalid_token"/)
+          .expect('WWW-Authenticate', /error="invalid_dpop_proof"/)
           .expect('WWW-Authenticate', /algs="ES256 PS256"/);
       }
 
@@ -129,10 +129,10 @@ describe('features.dPoP', () => {
         await this.agent.get('/me') // eslint-disable-line no-await-in-loop
           .set('DPoP', `${base64url.encode(JSON.stringify({ jwk: key, typ: 'dpop+jwt', alg: value }))}.e30.`)
           .set('Authorization', `DPoP ${dpop}`)
-          .expect(400)
-          .expect({ error: 'invalid_token', error_description: 'invalid DPoP key binding' })
+          .expect(401)
+          .expect({ error: 'invalid_dpop_proof', error_description: 'invalid DPoP key binding' })
           .expect('WWW-Authenticate', /^DPoP /)
-          .expect('WWW-Authenticate', /error="invalid_token"/)
+          .expect('WWW-Authenticate', /error="invalid_dpop_proof"/)
           .expect('WWW-Authenticate', /algs="ES256 PS256"/);
       }
 
@@ -140,56 +140,56 @@ describe('features.dPoP', () => {
         await this.agent.get('/me') // eslint-disable-line no-await-in-loop
           .set('DPoP', JWT.sign({}, key, { kid: false, header: { typ: 'dpop+jwt', jwk: value } }))
           .set('Authorization', `DPoP ${dpop}`)
-          .expect(400)
-          .expect({ error: 'invalid_token', error_description: 'invalid DPoP key binding' })
+          .expect(401)
+          .expect({ error: 'invalid_dpop_proof', error_description: 'invalid DPoP key binding' })
           .expect('WWW-Authenticate', /^DPoP /)
-          .expect('WWW-Authenticate', /error="invalid_token"/)
+          .expect('WWW-Authenticate', /error="invalid_dpop_proof"/)
           .expect('WWW-Authenticate', /algs="ES256 PS256"/);
       }
 
       await this.agent.get('/me') // eslint-disable-line no-await-in-loop
         .set('DPoP', JWT.sign({}, key, { kid: false, header: { typ: 'dpop+jwt', jwk: key.toJWK(true) } }))
         .set('Authorization', `DPoP ${dpop}`)
-        .expect(400)
-        .expect({ error: 'invalid_token', error_description: 'invalid DPoP key binding' })
+        .expect(401)
+        .expect({ error: 'invalid_dpop_proof', error_description: 'invalid DPoP key binding' })
         .expect('WWW-Authenticate', /^DPoP /)
-        .expect('WWW-Authenticate', /error="invalid_token"/)
+        .expect('WWW-Authenticate', /error="invalid_dpop_proof"/)
         .expect('WWW-Authenticate', /algs="ES256 PS256"/);
 
       await this.agent.get('/me') // eslint-disable-line no-await-in-loop
         .set('DPoP', JWT.sign({}, key, { kid: false, header: { typ: 'dpop+jwt', jwk: await JWK.generate('oct') } }))
         .set('Authorization', `DPoP ${dpop}`)
-        .expect(400)
-        .expect({ error: 'invalid_token', error_description: 'invalid DPoP key binding' })
+        .expect(401)
+        .expect({ error: 'invalid_dpop_proof', error_description: 'invalid DPoP key binding' })
         .expect('WWW-Authenticate', /^DPoP /)
-        .expect('WWW-Authenticate', /error="invalid_token"/)
+        .expect('WWW-Authenticate', /error="invalid_dpop_proof"/)
         .expect('WWW-Authenticate', /algs="ES256 PS256"/);
 
       await this.agent.get('/me') // eslint-disable-line no-await-in-loop
         .set('DPoP', JWT.sign({ htm: 'POST', htu: `${this.provider.issuer}${this.suitePath('/me')}` }, key, { kid: false, header: { typ: 'dpop+jwt', jwk: key } }))
         .set('Authorization', `DPoP ${dpop}`)
-        .expect(400)
-        .expect({ error: 'invalid_token', error_description: 'invalid DPoP key binding' })
+        .expect(401)
+        .expect({ error: 'invalid_dpop_proof', error_description: 'DPoP Proof must have a jti string property' })
         .expect('WWW-Authenticate', /^DPoP /)
-        .expect('WWW-Authenticate', /error="invalid_token"/)
+        .expect('WWW-Authenticate', /error="invalid_dpop_proof"/)
         .expect('WWW-Authenticate', /algs="ES256 PS256"/);
 
       await this.agent.get('/me') // eslint-disable-line no-await-in-loop
         .set('DPoP', JWT.sign({ jti: 'foo', htm: 'POST' }, key, { kid: false, header: { typ: 'dpop+jwt', jwk: key } }))
         .set('Authorization', `DPoP ${dpop}`)
-        .expect(400)
-        .expect({ error: 'invalid_token', error_description: 'invalid DPoP key binding' })
+        .expect(401)
+        .expect({ error: 'invalid_dpop_proof', error_description: 'DPoP Proof htm mismatch' })
         .expect('WWW-Authenticate', /^DPoP /)
-        .expect('WWW-Authenticate', /error="invalid_token"/)
+        .expect('WWW-Authenticate', /error="invalid_dpop_proof"/)
         .expect('WWW-Authenticate', /algs="ES256 PS256"/);
 
       await this.agent.get('/me') // eslint-disable-line no-await-in-loop
         .set('DPoP', JWT.sign({ jti: 'foo', htm: 'GET', htu: 'foo' }, key, { kid: false, header: { typ: 'dpop+jwt', jwk: key } }))
         .set('Authorization', `DPoP ${dpop}`)
-        .expect(400)
-        .expect({ error: 'invalid_token', error_description: 'invalid DPoP key binding' })
+        .expect(401)
+        .expect({ error: 'invalid_dpop_proof', error_description: 'DPoP Proof htu mismatch' })
         .expect('WWW-Authenticate', /^DPoP /)
-        .expect('WWW-Authenticate', /error="invalid_token"/)
+        .expect('WWW-Authenticate', /error="invalid_dpop_proof"/)
         .expect('WWW-Authenticate', /algs="ES256 PS256"/);
 
       await this.agent.get('/me') // eslint-disable-line no-await-in-loop
@@ -197,10 +197,10 @@ describe('features.dPoP', () => {
           jti: 'foo', htm: 'GET', htu: `${this.provider.issuer}${this.suitePath('/me')}`, iat: epochTime() - 61,
         }, key, { kid: false, iat: false, header: { typ: 'dpop+jwt', jwk: key } }))
         .set('Authorization', `DPoP ${dpop}`)
-        .expect(400)
-        .expect({ error: 'invalid_token', error_description: 'invalid DPoP key binding' })
+        .expect(401)
+        .expect({ error: 'invalid_dpop_proof', error_description: 'invalid DPoP key binding' })
         .expect('WWW-Authenticate', /^DPoP /)
-        .expect('WWW-Authenticate', /error="invalid_token"/)
+        .expect('WWW-Authenticate', /error="invalid_dpop_proof"/)
         .expect('WWW-Authenticate', /algs="ES256 PS256"/);
 
       await this.agent.get('/me') // eslint-disable-line no-await-in-loop
@@ -208,10 +208,10 @@ describe('features.dPoP', () => {
           jti: 'foo', htm: 'GET', htu: `${this.provider.issuer}${this.suitePath('/me')}`,
         }, key, { kid: false, header: { typ: 'dpop+jwt', jwk: await JWK.generate('EC') } }))
         .set('Authorization', `DPoP ${dpop}`)
-        .expect(400)
-        .expect({ error: 'invalid_token', error_description: 'invalid DPoP key binding' })
+        .expect(401)
+        .expect({ error: 'invalid_dpop_proof', error_description: 'invalid DPoP key binding' })
         .expect('WWW-Authenticate', /^DPoP /)
-        .expect('WWW-Authenticate', /error="invalid_token"/)
+        .expect('WWW-Authenticate', /error="invalid_dpop_proof"/)
         .expect('WWW-Authenticate', /algs="ES256 PS256"/);
     });
 
@@ -258,8 +258,8 @@ describe('features.dPoP', () => {
       await this.agent.get('/me')
         .set('Authorization', `DPoP ${dpop}`)
         .set('DPoP', this.proof(`${this.provider.issuer}${this.suitePath('/me')}`, 'GET', 'anotherAccessTokenValue'))
-        .expect({ error: 'invalid_token', error_description: 'invalid DPoP key binding' })
-        .expect(400);
+        .expect({ error: 'invalid_dpop_proof', error_description: 'DPoP Proof ath mismatch' })
+        .expect(401);
 
       expect(spy).to.have.property('calledOnce', true);
       expect(spy.args[0][1]).to.have.property('error_detail', 'failed jkt verification');
@@ -624,6 +624,18 @@ describe('features.dPoP', () => {
       expect(spy).to.have.property('calledOnce', true);
       const { oidc: { entities: { ClientCredentials } } } = spy.args[0][0];
       expect(ClientCredentials).to.have.property('jkt', expectedS256);
+    });
+  });
+
+  describe('status codes at the token endpoint', () => {
+    it('should be 400 for invalid_dpop_proof', async function () {
+      return this.agent.post('/token')
+        .auth('client', 'secret')
+        .send({ grant_type: 'client_credentials' })
+        .set('DPoP', 'invalid')
+        .type('form')
+        .expect(400)
+        .expect({ error: 'invalid_dpop_proof', error_description: 'invalid DPoP key binding' });
     });
   });
 });
