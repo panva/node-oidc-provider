@@ -49,7 +49,7 @@ The following draft specifications are implemented by oidc-provider:
 
 - [JWT Response for OAuth Token Introspection - draft 10][jwt-introspection]
 - [Financial-grade API: Client Initiated Backchannel Authentication Profile (FAPI-CIBA) - Implementer's Draft 01][fapi-ciba]
-- [OAuth 2.0 Demonstration of Proof-of-Possession at the Application Layer (DPoP) - draft 03][dpop]
+- [OAuth 2.0 Demonstration of Proof-of-Possession at the Application Layer (DPoP) - draft 11][dpop]
 
 Updates to draft specification versions are released as MINOR library versions,
 if you utilize these specification implementations consider using the tilde `~` operator in your
@@ -139,7 +139,7 @@ actions and i.e. emit metrics that react to specific triggers. See the list of a
 [jwt-introspection]: https://tools.ietf.org/html/draft-ietf-oauth-jwt-introspection-response-10
 [sponsor-auth0]: https://a0.to/try-auth0
 [mtls]: https://www.rfc-editor.org/rfc/rfc8705.html
-[dpop]: https://tools.ietf.org/html/draft-ietf-oauth-dpop-03
+[dpop]: https://tools.ietf.org/html/draft-ietf-oauth-dpop-11
 [resource-indicators]: https://www.rfc-editor.org/rfc/rfc8707.html
 [jarm]: https://openid.net/specs/oauth-v2-jarm.html
 [jwt-at]: https://www.rfc-editor.org/rfc/rfc9068.html

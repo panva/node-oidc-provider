@@ -848,9 +848,9 @@ _**default value**_:
 
 ### features.dPoP
 
-[draft-ietf-oauth-dpop-03](https://tools.ietf.org/html/draft-ietf-oauth-dpop-03) - OAuth 2.0 Demonstration of Proof-of-Possession at the Application Layer (DPoP)  
+[draft-ietf-oauth-dpop-11](https://tools.ietf.org/html/draft-ietf-oauth-dpop-11) - OAuth 2.0 Demonstration of Proof-of-Possession at the Application Layer (DPoP)  
 
-Enables `DPoP` - mechanism for sender-constraining tokens via a proof-of-possession mechanism on the application level. Browser DPoP Proof generation [here](https://www.npmjs.com/package/dpop).   
+Enables `DPoP` - mechanism for sender-constraining tokens via a proof-of-possession mechanism on the application level. Browser DPoP proof generation [here](https://www.npmjs.com/package/dpop).   
   
 
 _**recommendation**_: Updates to draft specification versions are released as MINOR library versions, if you utilize these specification implementations consider using the tilde `~` operator in your package.json since breaking changes may be introduced as part of these version updates. Alternatively, [acknowledge](#features) the version and be notified of breaking changes as part of your CI.  
@@ -860,8 +860,7 @@ _**default value**_:
 ```js
 {
   ack: undefined,
-  enabled: false,
-  iatTolerance: 60
+  enabled: false
 }
 ```
 
@@ -3092,7 +3091,7 @@ _**default value**_:
 
 ### enabledJWA.dPoPSigningAlgValues
 
-JWS "alg" Algorithm values the provider supports to verify signed DPoP Proof JWTs with   
+JWS "alg" Algorithm values the provider supports to verify signed DPoP proof JWTs with   
   
 
 

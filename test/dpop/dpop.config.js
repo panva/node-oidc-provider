@@ -5,10 +5,11 @@ const config = cloneDeep(require('../default.config'));
 
 config.enabledJWA.dPoPSigningAlgValues = ['ES256', 'PS256'];
 merge(config.features, {
-  dPoP: { enabled: true },
+  dPoP: { enabled: true, nonceSecret: Buffer.alloc(32, 0) },
   clientCredentials: { enabled: true },
   introspection: { enabled: true },
   deviceFlow: { enabled: true },
+  pushedAuthorizationRequests: { enabled: true },
   ciba: {
     enabled: true,
     processLoginHint(ctx, loginHint) {

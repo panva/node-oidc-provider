@@ -990,6 +990,25 @@ describe('Client metadata validation', () => {
     });
   });
 
+  describe('features.dpop', () => {
+    context('dpop_bound_access_tokens', function () {
+      const configuration = {
+        features: {
+          dPoP: {
+            enabled: true,
+          },
+        },
+      };
+      mustBeBoolean(this.title, undefined, configuration);
+      mustBeBoolean(this.title, undefined, configuration);
+      defaultsTo(this.title, false, undefined, configuration);
+      defaultsTo(this.title, true, undefined, {
+        ...configuration,
+        clientDefaults: { dpop_bound_access_tokens: true },
+      });
+    });
+  });
+
   describe('features.ciba', () => {
     const configuration = { features: { ciba: { enabled: true, deliveryModes: ['ping', 'poll'] }, requestObjects: { request: false, requestUri: false } } };
     const metadata = {
