@@ -18,6 +18,9 @@ describe('grant_type=refresh_token', () => {
   before(bootstrap(__dirname));
 
   afterEach(() => timekeeper.reset());
+  afterEach(function () {
+    this.provider.removeAllListeners();
+  });
 
   beforeEach(function () { return this.login({ scope: 'openid email offline_access' }); });
   afterEach(function () { return this.logout(); });

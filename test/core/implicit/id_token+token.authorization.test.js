@@ -9,6 +9,9 @@ const scope = 'openid';
 
 describe('IMPLICIT id_token+token', () => {
   before(bootstrap(__dirname));
+  afterEach(function () {
+    this.provider.removeAllListeners();
+  });
 
   ['get', 'post'].forEach((verb) => {
     describe(`${verb} ${route} with session`, () => {

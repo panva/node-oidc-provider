@@ -23,6 +23,9 @@ describe('features.resourceIndicators defaults', () => {
 
 describe('features.resourceIndicators', () => {
   before(bootstrap(__dirname));
+  afterEach(function () {
+    this.provider.removeAllListeners();
+  });
   before(function () {
     return this.login({
       resources: {

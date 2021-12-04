@@ -19,6 +19,10 @@ function decode(b64urljson) {
 
 describe('jwt format', () => {
   before(bootstrap(__dirname));
+  afterEach(function () {
+    this.provider.removeAllListeners();
+  });
+
   const accountId = 'account';
   const claims = {};
   const clientId = 'client';
