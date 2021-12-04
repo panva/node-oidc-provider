@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [7.10.3](https://github.com/panva/node-oidc-provider/compare/v7.10.2...v7.10.3) (2021-12-04)
+
+
+### Fixes
+
+* expose invalid_dpop_proof error code and set it to 401 on userinfo ([2628d7e](https://github.com/panva/node-oidc-provider/commit/2628d7e4b81d22a3972e8f82c94b9ec4dd9835d4))
+
 ## [7.10.2](https://github.com/panva/node-oidc-provider/compare/v7.10.1...v7.10.2) (2021-11-28)
 
 
