@@ -46,7 +46,7 @@ The following draft specifications are implemented by oidc-provider:
 - [JWT Response for OAuth Token Introspection - draft 10][jwt-introspection]
 - [JWT Secured Authorization Response Mode for OAuth 2.0 (JARM) - Implementer's Draft 01][jarm]
 - [Financial-grade API: Client Initiated Backchannel Authentication Profile (FAPI-CIBA) - Implementer's Draft 01][fapi-ciba]
-- [OAuth 2.0 Authorization Server Issuer Identifier in Authorization Response - draft 01][iss-auth-resp]
+- [OAuth 2.0 Authorization Server Issuer Identifier in Authorization Response - draft 04][iss-auth-resp]
 - [OAuth 2.0 Demonstration of Proof-of-Possession at the Application Layer (DPoP) - draft 03][dpop]
 - [OpenID Connect Back-Channel Logout 1.0 - draft 06][backchannel-logout]
 - [OpenID Connect RP-Initiated Logout 1.0 - draft 01][rpinitiated-logout]
@@ -147,7 +147,7 @@ actions and i.e. emit metrics that react to specific triggers. See the list of a
 [support-sponsor]: https://github.com/sponsors/panva
 [par]: https://www.rfc-editor.org/rfc/rfc9126.html
 [rpinitiated-logout]: https://openid.net/specs/openid-connect-rpinitiated-1_0-01.html
-[iss-auth-resp]: https://tools.ietf.org/html/draft-ietf-oauth-iss-auth-resp-01
+[iss-auth-resp]: https://tools.ietf.org/html/draft-ietf-oauth-iss-auth-resp-04
 [fapi]: https://openid.net/specs/openid-financial-api-part-2-1_0.html
 [ciba]: https://openid.net/specs/openid-client-initiated-backchannel-authentication-core-1_0-final.html
 [fapi-ciba]: https://openid.net/specs/openid-financial-api-ciba-ID1.html

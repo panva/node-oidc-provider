@@ -222,6 +222,13 @@ module.exports = function testHelper(dir, {
           },
         });
 
+        Object.defineProperty(this, 'validateIss', {
+          value: (response) => {
+            const { query: { iss } } = parse(response.headers.location, true);
+            expect(iss).to.equal(issuerIdentifier);
+          },
+        });
+
         Object.defineProperty(this, 'validateInteractionRedirect', {
           value: (response) => {
             const { hostname, search, query } = parse(response.headers.location);
