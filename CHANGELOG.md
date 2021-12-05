@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [7.10.4](https://github.com/panva/node-oidc-provider/compare/v7.10.3...v7.10.4) (2021-12-05)
+
+
+### Fixes
+
+* add iss to error responses when issAuthResp is enabled ([05ac3a8](https://github.com/panva/node-oidc-provider/commit/05ac3a8cc51f18d33e17982b81f1996e6a327e8c))
+
 ## [7.10.3](https://github.com/panva/node-oidc-provider/compare/v7.10.2...v7.10.3) (2021-12-04)
 
 
