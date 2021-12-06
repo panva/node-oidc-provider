@@ -124,6 +124,7 @@ const fapi = new Provider(ISSUER, {
       enabled: true,
       profile: process.env.PROFILE ? process.env.PROFILE : '1.0 Final',
     },
+    issAuthResp: { enabled: true },
     mTLS: {
       enabled: true,
       certificateBoundAccessTokens: true,
