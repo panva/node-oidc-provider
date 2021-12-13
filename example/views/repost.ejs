@@ -6,7 +6,7 @@
     <script nonce="<%= nonce %>">
     function parseQuery(queryString) {
       var query = {};
-      var pairs = (queryString[0] === '?' ? queryString.substr(1) : queryString).split('&');
+      var pairs = (queryString[0] === '?' ? queryString.slice(1) : queryString).split('&');
       for (var i = 0; i < pairs.length; i++) {
           var pair = pairs[i].split('=');
           query[decodeURIComponent(pair[0])] = decodeURIComponent(pair[1] || '');
@@ -14,7 +14,7 @@
       return query;
     }
 
-    var fields = parseQuery(window.location.hash.substring(1));
+    var fields = parseQuery(window.location.hash.slice(1));
     fields.upstream = '<%= upstream %>'
     var uid = fields.state.split('|')[0]
 

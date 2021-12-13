@@ -123,15 +123,15 @@ const props = [
 
       if (nextIsOption) {
         nextIsOption = false;
-        option = blocks[strLine.substring(2)] = new Block(); // eslint-disable-line no-multi-assign
+        option = blocks[strLine.slice(2)] = new Block(); // eslint-disable-line no-multi-assign
         return;
       }
 
       const next = props.find((prop) => {
         if (
           prop.startsWith('@')
-            ? strLine.substring(2, 2 + prop.length) === prop
-            : strLine.substring(2, 2 + prop.length + 1) === `${prop}:`
+            ? strLine.slice(2, 2 + prop.length) === prop
+            : strLine.slice(2, 2 + prop.length + 1) === `${prop}:`
         ) {
           let override;
           if (prop === 'example' && option.example) {

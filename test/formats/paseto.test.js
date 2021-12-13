@@ -8,7 +8,7 @@ const sinon = require('sinon').createSandbox();
 const { expect } = require('chai');
 
 let paseto;
-const above16 = process.version.substr(1).split('.').map((x) => parseInt(x, 10))[0] >= 16;
+const above16 = parseInt(process.versions.node, 10) >= 16;
 if (above16) {
   // eslint-disable-next-line
   paseto = require('paseto3');
