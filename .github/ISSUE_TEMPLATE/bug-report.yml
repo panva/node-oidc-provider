@@ -34,6 +34,7 @@ body:
       required: true
   - type: checkboxes
     attributes:
+      label: Required
       options:
         - label: I have provided a gist or a public repo which can be cloned, installed and ran locally in order to reproduce the bug in the textarea above.
           required: true
