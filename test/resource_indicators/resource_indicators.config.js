@@ -38,7 +38,7 @@ merge(config, {
     },
     resourceIndicators: {
       enabled: true,
-      useGrantedResource(ctx) {
+      async useGrantedResource(ctx) {
         return ctx.oidc.body && ctx.oidc.body.usegranted;
       },
       getResourceServerInfo(ctx, resource) {
