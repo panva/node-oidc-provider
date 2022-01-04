@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [7.10.5](https://github.com/panva/node-oidc-provider/compare/v7.10.4...v7.10.5) (2022-01-04)
+
+
+### Fixes
+
+* **resourceIndicators:** await the result of useGrantedResource ([#1173](https://github.com/panva/node-oidc-provider/issues/1173)) ([64a8028](https://github.com/panva/node-oidc-provider/commit/64a802884dc4b990847cda4eacb3dba619ae379d))
+
 ## [7.10.4](https://github.com/panva/node-oidc-provider/compare/v7.10.3...v7.10.4) (2021-12-05)
 
 
