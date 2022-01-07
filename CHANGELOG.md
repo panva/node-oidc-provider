@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [7.10.6](https://github.com/panva/node-oidc-provider/compare/v7.10.5...v7.10.6) (2022-01-07)
+
+
+### Fixes
+
+* substr > slice change in mountPath should have been substring ([adc0d63](https://github.com/panva/node-oidc-provider/commit/adc0d63193c131d7a45f83e4195360a62ef2c522))
+
 ## [7.10.5](https://github.com/panva/node-oidc-provider/compare/v7.10.4...v7.10.5) (2022-01-04)
 
 
