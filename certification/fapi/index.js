@@ -8,7 +8,7 @@ const { promisify } = require('util');
 
 const jose = require('jose2');
 const helmet = require('helmet');
-const pem = require('https-pem');
+const selfsigned = require('selfsigned').generate();
 
 const { Provider, errors } = require('../../lib'); // require('oidc-provider');
 
@@ -271,7 +271,8 @@ if (SUITE_BASE_URL === OFFICIAL_CERTIFICATION) {
   const server = https.createServer({
     requestCert: true,
     rejectUnauthorized: false,
-    ...pem,
+    key: selfsigned.private,
+    cert: selfsigned.cert,
   }, fapi.callback());
 
   server.listen(PORT, () => {

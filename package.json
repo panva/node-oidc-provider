@@ -90,7 +90,6 @@
     "express": "^4.17.1",
     "fastify": "^3.21.6",
     "helmet": "^4.6.0",
-    "https-pem": "^2.0.0",
     "jose2": "npm:jose@^2.0.4",
     "koa-body": "^4.2.0",
     "koa-ejs": "^4.3.0",
@@ -102,6 +101,7 @@
     "mocha.parallel": "github:panva/mocha.parallel",
     "moment": "^2.29.1",
     "nock": "^13.1.3",
+    "selfsigned": "^2.0.0",
     "sinon": "^11.1.2",
     "supertest": "^6.1.6",
     "timekeeper": "^2.2.0"

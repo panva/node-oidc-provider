@@ -3,7 +3,7 @@
 const path = require('path');
 const https = require('https');
 
-const pem = require('https-pem');
+const selfsigned = require('selfsigned').generate();
 const render = require('koa-ejs');
 
 const { Provider } = require('../../lib'); // require('oidc-provider');
@@ -39,7 +39,10 @@ render(provider.app, {
   root: path.join(__dirname, '..', '..', 'example', 'views'),
 });
 provider.use(routes(provider).routes());
-const server = https.createServer(pem, provider.callback());
+const server = https.createServer({
+  key: selfsigned.private,
+  cert: selfsigned.cert,
+}, provider.callback());
 server.listen(PORT, () => {
   console.log(`application is listening on port ${PORT}, check its /.well-known/openid-configuration`);
   process.on('SIGINT', () => {
