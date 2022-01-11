@@ -14,7 +14,7 @@ if (above16) {
   paseto = require('paseto3');
 } else {
   // eslint-disable-next-line
-  paseto = require('paseto2');
+  paseto = require('paseto');
 }
 
 const ResourceServer = require('../../lib/helpers/resource_server');
