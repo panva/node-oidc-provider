@@ -51,7 +51,7 @@
   "scripts": {
     "ci": "node ./test/ci",
     "coverage": "c8 --reporter=lcov --reporter=text-summary node ./test/run",
-    "heroku-postbuild": "npm install mongodb@^3.0.0 openid-client@^5.0.0",
+    "heroku-postbuild": "npm install mongodb@^4.3.0 openid-client@^5.0.0",
     "lint": "eslint lib example certification test",
     "lint-fix": "eslint lib example certification test --fix",
     "test": "node ./test/run"
