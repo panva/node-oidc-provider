@@ -1,9 +1,10 @@
 /* eslint-disable no-console */
 
 const path = require('path');
+const { promisify } = require('util');
 
 const render = require('koa-ejs');
-const helmet = require('koa-helmet'); // eslint-disable-line import/no-unresolved
+const helmet = require('helmet');
 
 const { Provider } = require('../lib'); // require('oidc-provider');
 
@@ -27,7 +28,22 @@ let server;
 
   const provider = new Provider(ISSUER, { adapter, ...configuration });
 
-  provider.use(helmet());
+  const directives = helmet.contentSecurityPolicy.getDefaultDirectives();
+  delete directives['form-action'];
+  const pHelmet = promisify(helmet({
+    contentSecurityPolicy: {
+      useDefaults: false,
+      directives,
+    },
+  }));
+
+  provider.use(async (ctx, next) => {
+    const origSecure = ctx.req.secure;
+    ctx.req.secure = ctx.request.secure;
+    await pHelmet(ctx.req, ctx.res);
+    ctx.req.secure = origSecure;
+    return next();
+  });
 
   if (prod) {
     provider.proxy = true;

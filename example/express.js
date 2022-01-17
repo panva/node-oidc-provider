@@ -16,7 +16,15 @@ const { PORT = 3000, ISSUER = `http://localhost:${PORT}` } = process.env;
 configuration.findAccount = Account.findAccount;
 
 const app = express();
-app.use(helmet());
+
+const directives = helmet.contentSecurityPolicy.getDefaultDirectives();
+delete directives['form-action'];
+app.use(helmet({
+  contentSecurityPolicy: {
+    useDefaults: false,
+    directives,
+  },
+}));
 
 app.set('views', path.join(__dirname, 'views'));
 app.set('view engine', 'ejs');

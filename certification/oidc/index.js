@@ -54,12 +54,13 @@ let server;
     return interactionFinished.call(provider, ...args);
   };
 
+  const directives = helmet.contentSecurityPolicy.getDefaultDirectives();
+  delete directives['form-action'];
+  directives['script-src'] = ["'self'", (req, res) => `'nonce-${res.locals.cspNonce}'`];
   const pHelmet = promisify(helmet({
     contentSecurityPolicy: {
-      directives: {
-        ...helmet.contentSecurityPolicy.getDefaultDirectives(),
-        'script-src': ["'self'", (req, res) => `'nonce-${res.locals.cspNonce}'`],
-      },
+      useDefaults: false,
+      directives,
     },
   }));
 

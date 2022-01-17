@@ -1,10 +1,11 @@
 /* eslint-disable no-console */
 
 const path = require('path');
+const { promisify } = require('util');
 
 const Koa = require('koa');
 const render = require('koa-ejs');
-const helmet = require('koa-helmet'); // eslint-disable-line import/no-unresolved
+const helmet = require('helmet');
 const mount = require('koa-mount');
 
 const { Provider } = require('../lib'); // require('oidc-provider');
@@ -17,7 +18,24 @@ const { PORT = 3000, ISSUER = `http://localhost:${PORT}` } = process.env;
 configuration.findAccount = Account.findAccount;
 
 const app = new Koa();
-app.use(helmet());
+
+const directives = helmet.contentSecurityPolicy.getDefaultDirectives();
+delete directives['form-action'];
+const pHelmet = promisify(helmet({
+  contentSecurityPolicy: {
+    useDefaults: false,
+    directives,
+  },
+}));
+
+app.use(async (ctx, next) => {
+  const origSecure = ctx.req.secure;
+  ctx.req.secure = ctx.request.secure;
+  await pHelmet(ctx.req, ctx.res);
+  ctx.req.secure = origSecure;
+  return next();
+});
+
 render(app, {
   cache: false,
   viewExt: 'ejs',
