@@ -74,7 +74,7 @@
     "raw-body": "^2.4.1"
   },
   "optionalDependencies": {
-    "paseto3": "npm:paseto@^3.0.0"
+    "paseto3": "npm:paseto@^3.1.0"
   },
   "devDependencies": {
     "@hapi/hapi": "^20.2.0",
@@ -90,7 +90,7 @@
     "express": "^4.17.1",
     "fastify": "^3.21.6",
     "helmet": "^5.0.1",
-    "jose2": "npm:jose@^2.0.4",
+    "jose2": "npm:jose@^2.0.5",
     "koa-body": "^4.2.0",
     "koa-ejs": "^4.3.0",
     "koa-mount": "^4.0.0",
