@@ -90,20 +90,22 @@ jobs:
 
   build-conformance-suite:
     runs-on: ubuntu-latest
-    env:
-      VERSION: release-v4.1.39
     steps:
       - name: Checkout
         uses: actions/checkout@master
+      - name: Set Conformance Suite Version
+        run: |
+          export VERSION=($(curl --silent --header "PRIVATE-TOKEN: ${{ secrets.GITLAB_API_TOKEN }}" "https://gitlab.com/api/v4/projects/4175605/releases" | jq -r '.[0].tag_name'))
+          echo "VERSION=$VERSION" >> $GITHUB_ENV
       - name: Load Cached Conformance Suite Build
         uses: actions/cache@v2
         id: cache
         with:
           path: ./conformance-suite
-          key: suite-${{ hashFiles('**/test.yml') }}
+          key: suite-${{ hashFiles('**/test.yml') }}-${{ env.VERSION }}
       - name: Conformance Suite Checkout
         if: ${{ steps.cache.outputs.cache-hit != 'true' }}
-        run: git clone --depth 1 --single-branch --branch $VERSION https://gitlab.com/openid/conformance-suite.git
+        run: git clone --depth 1 --single-branch --branch ${{ env.VERSION }} https://gitlab.com/openid/conformance-suite.git
       - name: Conformance Suite Build
         working-directory: ./conformance-suite
         if: ${{ steps.cache.outputs.cache-hit != 'true' }}
