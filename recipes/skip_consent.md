@@ -40,3 +40,5 @@ This will get you as far as not asking for any consent unless the application is
 application (e.g. iOS, Android, CLI, Device Flow). It is recommended to still show a consent
 screen to those with the application details to those since they are public clients and their
 redirect_uri ownership can rarely be validated.
+
+bug with this?
