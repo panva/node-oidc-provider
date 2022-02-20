@@ -1719,11 +1719,8 @@ async function getResourceServerInfo(ctx, resourceIndicator, client) {
   throw new errors.InvalidTarget();
 }
 ```
-<a id="get-resource-server-info-resource-server-api-with-two-scopes-an-expected-audience-value-an-access-token-ttl"></a><details><summary>(Click to expand) Resource Server (API) with two scopes, an expected audience value, an Access Token TTL</summary><br>
-
-
-and a JWT Access Token Format.
-  
+<a id="get-resource-server-info-resource-server-api-with-two-scopes-an-expected-audience-value-an-access-token-ttl-and-a-jwt-access-token-format"></a><details><summary>(Click to expand) Resource Server (API) with two scopes, an expected audience value, an Access Token TTL and a JWT Access Token Format.
+</summary><br>
 
 ```js
 {
