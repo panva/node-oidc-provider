@@ -211,6 +211,18 @@
                                     "//*/a"
                                 ]
                             ]
+                        },
+                        {
+                            "task": "Verify Complete",
+                            "match": "https://*/test/a/*/callback*",
+                            "commands": [
+                                [
+                                    "wait",
+                                    "id",
+                                    "submission_complete",
+                                    10
+                                ]
+                            ]
                         }
                     ]
                 }
