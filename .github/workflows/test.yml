@@ -31,7 +31,7 @@ jobs:
         id: node_modules
         with:
           path: node_modules
-          key: ${{ runner.os }}-node_modules-${{ hashFiles('**/package.json') }}-${{ steps.node.outputs.version }}
+          key: ${{ runner.os }}-node_modules-${{ hashFiles('package.json') }}-${{ steps.node.outputs.version }}
       - name: Install dependencies
         run: npx panva/npm-install-retry
         if: ${{ steps.node_modules.outputs.cache-hit != 'true' }}
@@ -75,7 +75,7 @@ jobs:
         id: node_modules
         with:
           path: node_modules
-          key: ${{ runner.os }}-node_modules-${{ hashFiles('**/package.json') }}-${{ steps.node.outputs.version }}
+          key: ${{ runner.os }}-node_modules-${{ hashFiles('package.json') }}-${{ steps.node.outputs.version }}
       - name: Install dependencies
         run: npx panva/npm-install-retry
         if: ${{ steps.node_modules.outputs.cache-hit != 'true' }}
@@ -102,7 +102,7 @@ jobs:
         id: cache
         with:
           path: ./conformance-suite
-          key: suite-${{ hashFiles('**/test.yml') }}-${{ env.VERSION }}
+          key: suite-${{ hashFiles('.github/workflows/test.yml') }}-${{ env.VERSION }}
       - name: Conformance Suite Checkout
         if: ${{ steps.cache.outputs.cache-hit != 'true' }}
         run: git clone --depth 1 --single-branch --branch ${{ env.VERSION }} https://gitlab.com/openid/conformance-suite.git
@@ -453,7 +453,7 @@ jobs:
         id: node_modules
         with:
           path: node_modules
-          key: ${{ runner.os }}-node_modules-${{ hashFiles('**/package.json') }}-${{ steps.node.outputs.version }}
+          key: ${{ runner.os }}-node_modules-${{ hashFiles('package.json') }}-${{ steps.node.outputs.version }}
       - name: Install dependencies
         run: npx panva/npm-install-retry
         if: ${{ steps.node_modules.outputs.cache-hit != 'true' }}
@@ -482,12 +482,22 @@ jobs:
           PORT: 3000
           NODE_OPTIONS: --tls-cipher-list="ECDHE-ECDSA-AES128-GCM-SHA256 ECDHE-ECDSA-AES256-GCM-SHA384 ECDHE-RSA-AES128-GCM-SHA256 ECDHE-RSA-AES256-GCM-SHA384"
           NODE_TLS_REJECT_UNAUTHORIZED: 0
+      - name: Set Conformance Suite Version
+        run: |
+          export VERSION=($(curl --silent "https://gitlab.com/api/v4/projects/4175605/releases" | jq -r '.[0].tag_name'))
+          echo "VERSION=$VERSION" >> $GITHUB_ENV
       - name: Load Cached Conformance Suite Build
         uses: actions/cache@v2
         id: cache
         with:
           path: ./conformance-suite
-          key: suite-${{ hashFiles('**/test.yml') }}
+          key: suite-${{ hashFiles('.github/workflows/test.yml') }}-${{ env.VERSION }}
+      - name: Abort if Conformance Suite version changed during the CI run.
+        if: ${{ steps.cache.outputs.cache-hit != 'true' }}
+        uses: actions/github-script@v3
+        with:
+          script: |
+              core.setFailed('Conformance Suite version changed during the CI run')
       - name: Run Conformance Suite
         working-directory: ./conformance-suite
         run: |
@@ -545,7 +555,7 @@ jobs:
         id: node_modules
         with:
           path: node_modules
-          key: ${{ runner.os }}-node_modules-${{ hashFiles('**/package.json') }}-${{ steps.node.outputs.version }}
+          key: ${{ runner.os }}-node_modules-${{ hashFiles('package.json') }}-${{ steps.node.outputs.version }}
       - name: Install dependencies
         run: npx panva/npm-install-retry
         if: ${{ steps.node_modules.outputs.cache-hit != 'true' }}
