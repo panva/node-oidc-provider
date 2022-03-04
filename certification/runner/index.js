@@ -69,6 +69,8 @@ runner.createTestPlan({
 
     parallel('', () => {
       const skips = SKIP ? SKIP.split(',') : [];
+      skips.push('fapi1-advanced-final-user-rejects-authentication');
+      skips.push('fapi-rw-id2-user-rejects-authentication');
       for (const { testModule, variant } of MODULES) {
         const test = skips.includes(testModule) ? it.skip : it;
         test(`${testModule}, ${JSON.stringify(variant)}`, async () => {
