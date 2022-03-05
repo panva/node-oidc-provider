@@ -494,7 +494,7 @@ jobs:
           key: suite-${{ hashFiles('.github/workflows/test.yml') }}-${{ env.VERSION }}
       - name: Abort if Conformance Suite version changed during the CI run.
         if: ${{ steps.cache.outputs.cache-hit != 'true' }}
-        uses: actions/github-script@v3
+        uses: actions/github-script@v6
         with:
           script: |
               core.setFailed('Conformance Suite version changed during the CI run')
