@@ -564,3 +564,14 @@ module.exports.skipConsent = () => {
 
   after(sandbox.restore);
 };
+
+module.exports.dontIgnoreOfflineAccessScope = () => {
+  const sandbox = sinon.createSandbox();
+
+  before(function () {
+    const configuration = i(this.provider).configuration();
+    sandbox.stub(configuration, 'ignoreOfflineAccessScope').returns(false);
+  });
+
+  after(sandbox.restore);
+};
