@@ -11,6 +11,20 @@ on:
     - cron:  0 9 * * 1-5
 
 jobs:
+  audit:
+    name: NPM Audit (Production)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@master
+      - name: Setup node
+        uses: actions/setup-node@v2
+        with:
+          node-version: 16
+      - name: Install dependencies
+        run: npx panva/npm-install-retry
+      - run: npm audit --production
+
   lint:
     name: Lint
     continue-on-error: true
@@ -119,6 +133,7 @@ jobs:
   conformance-suite:
     runs-on: ubuntu-latest
     needs:
+      - audit
       - test
       - build-conformance-suite
     env:
