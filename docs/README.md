@@ -194,8 +194,9 @@ router.post('/interaction/:uid', async (ctx, next) => {
 
 ## Custom Grant Types
 oidc-provider comes with the basic grants implemented, but you can register your own grant types,
-for example to implement an [OAuth 2.0 Token Exchange](https://tools.ietf.org/html/rfc8693). You can
-check the standard grant factories [here](/lib/actions/grants).
+for example to implement an 
+[OAuth 2.0 Token Exchange](https://www.rfc-editor.org/rfc/rfc8693.html). You can check the standard
+grant factories [here](/lib/actions/grants).
 
 ```js
 const parameters = [
@@ -559,7 +560,7 @@ async function findAccount(ctx, sub, token) {
 
 ### jwks
 
-JSON Web Key Set used by the provider for signing and decryption. The object must be in [JWK Set format](https://tools.ietf.org/html/rfc7517#section-5). All provided keys must be private keys.   
+JSON Web Key Set used by the provider for signing and decryption. The object must be in [JWK Set format](https://www.rfc-editor.org/rfc/rfc7517.html#section-5). All provided keys must be private keys.   
   
 
 _**recommendation**_: Be sure to follow best practices for distributing private keying material and secrets for your respective target deployment environment. Supported key types are:
@@ -822,7 +823,7 @@ _**default value**_:
 
 ### features.clientCredentials
 
-[RFC6749](https://tools.ietf.org/html/rfc6749#section-1.3.4) - Client Credentials  
+[RFC6749](https://www.rfc-editor.org/rfc/rfc6749.html#section-1.3.4) - Client Credentials  
 
 Enables `grant_type=client_credentials` to be used on the token endpoint.  
 
@@ -868,7 +869,7 @@ _**default value**_:
 
 ### features.deviceFlow
 
-[RFC8628](https://tools.ietf.org/html/rfc8628) - OAuth 2.0 Device Authorization Grant (Device Flow)  
+[RFC8628](https://www.rfc-editor.org/rfc/rfc8628.html) - OAuth 2.0 Device Authorization Grant (Device Flow)  
 
 Enables Device Authorization Grant  
 
@@ -1108,7 +1109,7 @@ _**default value**_:
 
 ### features.introspection
 
-[RFC7662](https://tools.ietf.org/html/rfc7662) - OAuth 2.0 Token Introspection  
+[RFC7662](https://www.rfc-editor.org/rfc/rfc7662.html) - OAuth 2.0 Token Introspection  
 
 Enables Token Introspection for:
  - opaque access tokens
@@ -1196,7 +1197,7 @@ _**default value**_:
 
 ### features.mTLS
 
-[RFC8705](https://tools.ietf.org/html/rfc8705) - OAuth 2.0 Mutual TLS Client Authentication and Certificate Bound Access Tokens (MTLS)  
+[RFC8705](https://www.rfc-editor.org/rfc/rfc8705.html) - OAuth 2.0 Mutual TLS Client Authentication and Certificate Bound Access Tokens (MTLS)  
 
 Enables specific features from the Mutual TLS specification. The three main features have their own specific setting in this feature's configuration object and you must provide functions for resolving some of the functions which are deployment-specific.   
   
@@ -1509,7 +1510,7 @@ async function secretFactory(ctx) {
 
 ### features.registrationManagement
 
-[OAuth 2.0 Dynamic Client Registration Management Protocol](https://tools.ietf.org/html/rfc7592)  
+[OAuth 2.0 Dynamic Client Registration Management Protocol](https://www.rfc-editor.org/rfc/rfc7592.html)  
 
 Enables Update and Delete features described in the RFC  
 
@@ -1637,7 +1638,7 @@ true
 
 ### features.resourceIndicators
 
-[RFC8707](https://tools.ietf.org/html/rfc8707) - Resource Indicators for OAuth 2.0  
+[RFC8707](https://www.rfc-editor.org/rfc/rfc8707.html) - Resource Indicators for OAuth 2.0  
 
 Enables the use of `resource` parameter for the authorization and token endpoints to enable issuing Access Tokens for Resource Servers (APIs).   
  - Multiple resource parameters may be present during Authorization Code Flow, Device Authorization Grant, and Backchannel Authentication Requests, but only a single audience for an Access Token is permitted.
@@ -1824,7 +1825,7 @@ async function useGrantedResource(ctx, model) {
 
 ### features.revocation
 
-[RFC7009](https://tools.ietf.org/html/rfc7009) - OAuth 2.0 Token Revocation  
+[RFC7009](https://www.rfc-editor.org/rfc/rfc7009.html) - OAuth 2.0 Token Revocation  
 
 Enables Token Revocation for:
  - opaque access tokens
@@ -2690,7 +2691,7 @@ async function pairwiseIdentifier(ctx, accountId, client) {
 
 ### pkce
 
-[RFC7636 - Proof Key for Code Exchange (PKCE)](https://tools.ietf.org/html/rfc7636)  
+[RFC7636 - Proof Key for Code Exchange (PKCE)](https://www.rfc-editor.org/rfc/rfc7636.html)  
 
 PKCE configuration such as available methods and policy check on required use of PKCE  
 
@@ -2994,7 +2995,7 @@ Configure `ttl` for a given token type with a function like so, this must return
 
 Fine-tune the algorithms your provider will support by declaring algorithm values for each respective JWA use  
 
-_**recommendation**_: Only allow JWA algs that are necessary. The current defaults are based on recommendations from the [JWA specification](https://tools.ietf.org/html/rfc7518) + enables RSASSA-PSS based on current guidance in FAPI. "none" JWT algs are disabled by default but available if you need them.  
+_**recommendation**_: Only allow JWA algs that are necessary. The current defaults are based on recommendations from the [JWA specification](https://www.rfc-editor.org/rfc/rfc7518.html) + enables RSASSA-PSS based on current guidance in FAPI. "none" JWT algs are disabled by default but available if you need them.  
 
 
 ### enabledJWA.authorizationEncryptionAlgValues
@@ -3539,8 +3540,8 @@ be additionally formencoded.
 
 A proper way of submitting `client_id` and `client_secret` using `client_secret_basic` is
 `Authorization: base64(formEncode(client_id):formEncode(client_secret))` as per
-https://tools.ietf.org/html/rfc6749#section-2.3.1 incl.
-https://tools.ietf.org/html/rfc6749#appendix-B
+https://www.rfc-editor.org/rfc/rfc6749.html#section-2.3.1 incl.
+https://www.rfc-editor.org/rfc/rfc6749.html#appendix-B
 
 Example:
 
