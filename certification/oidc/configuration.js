@@ -66,7 +66,6 @@ module.exports = {
   features: {
     backchannelLogout: { enabled: true },
     devInteractions: { enabled: false },
-    issAuthResp: { enabled: true },
     mTLS: {
       enabled: true,
       certificateBoundAccessTokens: true,

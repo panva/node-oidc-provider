@@ -2,7 +2,7 @@ const { expect } = require('chai');
 
 const bootstrap = require('../test_helper');
 
-describe('features.issAuthResp', () => {
+describe('OAuth 2.0 Authorization Server Issuer Identification', () => {
   before(bootstrap(__dirname));
 
   describe('enriched discovery', () => {

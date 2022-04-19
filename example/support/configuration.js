@@ -27,7 +27,6 @@ module.exports = {
 
     deviceFlow: { enabled: true }, // defaults to false
     revocation: { enabled: true }, // defaults to false
-    issAuthResp: { enabled: true }, // defaults to false
   },
   jwks: {
     keys: [

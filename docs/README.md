@@ -429,7 +429,6 @@ location / {
   - [encryption](#featuresencryption)
   - [fapi](#featuresfapi)
   - [introspection](#featuresintrospection)
-  - [issAuthResp](#featuresissauthresp)
   - [jwtIntrospection](#featuresjwtintrospection)
   - [jwtResponseModes](#featuresjwtresponsemodes)
   - [jwtUserinfo](#featuresjwtuserinfo)
@@ -1144,24 +1143,6 @@ async function introspectionAllowedPolicy(ctx, client, token) {
 ```
 
 </details>
-
-### features.issAuthResp
-
-[draft-ietf-oauth-iss-auth-resp-04](https://tools.ietf.org/html/draft-ietf-oauth-iss-auth-resp-04) - OAuth 2.0 Authorization Server Issuer Identifier in Authorization Response  
-
-Enables `iss` authorization response parameter for responses without existing countermeasures against mix-up attacks.   
-  
-
-_**recommendation**_: Updates to draft specification versions are released as MINOR library versions, if you utilize these specification implementations consider using the tilde `~` operator in your package.json since breaking changes may be introduced as part of these version updates. Alternatively, [acknowledge](#features) the version and be notified of breaking changes as part of your CI.  
-
-
-_**default value**_:
-```js
-{
-  ack: undefined,
-  enabled: false
-}
-```
 
 ### features.jwtIntrospection
 

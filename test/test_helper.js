@@ -281,6 +281,9 @@ module.exports = function testHelper(dir, {
         absolute = all;
       }
 
+      // eslint-disable-next-line no-param-reassign
+      keys = (!absolute || keys.includes('id_token') || keys.includes('response')) ? keys : [...new Set(keys.concat('iss'))];
+
       return (response) => {
         const { query } = parse(response.headers.location, true);
         if (absolute) {
