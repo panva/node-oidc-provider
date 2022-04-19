@@ -20,7 +20,7 @@ describe('provider instance', () => {
 
     it('it warns when draft/experimental specs are enabled', () => {
       new Provider('http://localhost', { // eslint-disable-line no-new
-        features: { backchannelLogout: { enabled: true } },
+        features: { webMessageResponseMode: { enabled: true } },
       });
 
       expect(console.info.called).to.be.true;
@@ -28,7 +28,7 @@ describe('provider instance', () => {
 
     it('it is silent when a version is acknowledged', () => {
       new Provider('http://localhost', { // eslint-disable-line no-new
-        features: { backchannelLogout: { enabled: true, ack: 'draft-06' } },
+        features: { webMessageResponseMode: { enabled: true, ack: 'individual-draft-00' } },
       });
 
       expect(console.info.called).to.be.false;
@@ -36,7 +36,7 @@ describe('provider instance', () => {
 
     it('it is silent when a version is acknowledged where the draft is backwards compatible with a previous draft', () => {
       new Provider('http://localhost', { // eslint-disable-line no-new
-        features: { backchannelLogout: { enabled: true, ack: 4 } },
+        features: { webMessageResponseMode: { enabled: true, ack: 'id-00' } },
       });
 
       expect(console.info.called).to.be.false;
@@ -45,7 +45,7 @@ describe('provider instance', () => {
     it('throws when an acked feature has breaking changes since', () => {
       expect(() => {
         new Provider('http://localhost', { // eslint-disable-line no-new
-          features: { backchannelLogout: { enabled: true, ack: 3 } },
+          features: { webMessageResponseMode: { enabled: true, ack: 'not a current version' } },
         });
       }).to.throw('An unacknowledged version of a draft feature is included in this oidc-provider version.');
       expect(console.info.called).to.be.true;

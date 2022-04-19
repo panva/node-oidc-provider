@@ -48,7 +48,7 @@ The following draft specifications are implemented by oidc-provider:
 - [JWT Secured Authorization Response Mode for OAuth 2.0 (JARM) - Implementer's Draft 01][jarm]
 - [Financial-grade API: Client Initiated Backchannel Authentication Profile (FAPI-CIBA) - Implementer's Draft 01][fapi-ciba]
 - [OAuth 2.0 Demonstration of Proof-of-Possession at the Application Layer (DPoP) - draft 03][dpop]
-- [OpenID Connect Back-Channel Logout 1.0 - draft 06][backchannel-logout]
+- [OpenID Connect Back-Channel Logout 1.0 - draft 07][backchannel-logout]
 - [OpenID Connect RP-Initiated Logout 1.0 - draft 01][rpinitiated-logout]
 
 Updates to draft specification versions are released as MINOR library versions,
@@ -131,7 +131,7 @@ actions and i.e. emit metrics that react to specific triggers. See the list of a
 [introspection]: https://www.rfc-editor.org/rfc/rfc7662.html
 [pkce]: https://www.rfc-editor.org/rfc/rfc7636.html
 [example-repo]: https://github.com/panva/node-oidc-provider-example
-[backchannel-logout]: https://openid.net/specs/openid-connect-backchannel-1_0-06.html
+[backchannel-logout]: https://openid.net/specs/openid-connect-backchannel-1_0-07.html
 [registration-management]: https://www.rfc-editor.org/rfc/rfc7592.html
 [oauth-native-apps]: https://www.rfc-editor.org/rfc/rfc8252.html
 [jar]: https://www.rfc-editor.org/rfc/rfc9101.html
