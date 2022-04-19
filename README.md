@@ -49,7 +49,7 @@ The following draft specifications are implemented by oidc-provider:
 - [Financial-grade API: Client Initiated Backchannel Authentication Profile (FAPI-CIBA) - Implementer's Draft 01][fapi-ciba]
 - [OAuth 2.0 Demonstration of Proof-of-Possession at the Application Layer (DPoP) - draft 03][dpop]
 - [OpenID Connect Back-Channel Logout 1.0 - draft 07][backchannel-logout]
-- [OpenID Connect RP-Initiated Logout 1.0 - draft 01][rpinitiated-logout]
+- [OpenID Connect RP-Initiated Logout 1.0 - draft 02][rpinitiated-logout]
 
 Updates to draft specification versions are released as MINOR library versions,
 if you utilize these specification implementations consider using the tilde `~` operator in your
@@ -146,7 +146,7 @@ actions and i.e. emit metrics that react to specific triggers. See the list of a
 [paseto-at]: https://paseto.io
 [support-sponsor]: https://github.com/sponsors/panva
 [par]: https://www.rfc-editor.org/rfc/rfc9126.html
-[rpinitiated-logout]: https://openid.net/specs/openid-connect-rpinitiated-1_0-01.html
+[rpinitiated-logout]: https://openid.net/specs/openid-connect-rpinitiated-1_0-02.html
 [iss-auth-resp]: https://www.rfc-editor.org/rfc/rfc9207.html
 [fapi]: https://openid.net/specs/openid-financial-api-part-2-1_0.html
 [ciba]: https://openid.net/specs/openid-client-initiated-backchannel-authentication-core-1_0-final.html
