@@ -372,6 +372,46 @@ describe('Client metadata validation', () => {
     });
   });
 
+  context('post_logout_redirect_uris', function () {
+    defaultsTo(this.title, [], undefined);
+    defaultsTo(this.title, [], { post_logout_redirect_uris: undefined });
+    mustBeArray(this.title, [{}, 'string', 123, true]);
+    rejects(this.title, [123], /must only contain strings$/);
+
+    allows(this.title, ['http://some'], {
+      application_type: 'web',
+    });
+    allows(this.title, ['https://some'], {
+      application_type: 'web',
+    });
+    rejects(this.title, ['https://rp.example.com#'], /post_logout_redirect_uris must not contain fragments$/);
+    rejects(this.title, ['https://rp.example.com#whatever'], /post_logout_redirect_uris must not contain fragments$/, {
+      application_type: 'web',
+    });
+    rejects(this.title, ['no-dot-reverse-notation:/some'], undefined, {
+      application_type: 'web',
+    });
+    rejects(this.title, ['https://localhost'], undefined, {
+      application_type: 'web',
+      grant_types: ['implicit', 'authorization_code'],
+      response_types: ['code id_token'],
+    });
+    allows(this.title, ['http://localhost'], {
+      application_type: 'web',
+    });
+    rejects(this.title, ['http://some'], undefined, {
+      application_type: 'native',
+    });
+    rejects(this.title, ['not-a-uri'], undefined, {
+      application_type: 'native',
+    });
+    rejects(this.title, ['http://foo/bar'], undefined, {
+      application_type: 'web',
+      grant_types: ['implicit'],
+      response_types: ['id_token'],
+    });
+  });
+
   context('request_object_signing_alg', function () {
     mustBeString(this.title);
     [
@@ -474,18 +514,6 @@ describe('Client metadata validation', () => {
     mustBeString(this.title);
     allows(this.title, 'public');
     rejects(this.title, 'not-a-type');
-  });
-
-  context('post_logout_redirect_uris', function () {
-    defaultsTo(this.title, [], undefined);
-    defaultsTo(this.title, [], { post_logout_redirect_uris: undefined });
-    mustBeArray(this.title, undefined);
-
-    rejects(this.title, [123], /must only contain strings$/, undefined);
-    allows(this.title, ['http://a-web-uri'], undefined);
-    allows(this.title, ['https://a-web-uri'], undefined);
-    allows(this.title, ['any-custom-scheme://not-a-web-uri'], undefined);
-    rejects(this.title, ['not a uri'], /must only contain uris$/, undefined);
   });
 
   [
