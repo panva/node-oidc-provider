@@ -2,6 +2,20 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [7.11.0](https://github.com/panva/node-oidc-provider/compare/v7.10.6...v7.11.0) (2022-04-20)
+
+
+### Features
+
+* allow native app callbacks in client post_logout_redirect_uris ([3fca22b](https://github.com/panva/node-oidc-provider/commit/3fca22bb5dc8dc529c08c596109988a35e110f74))
+* bump backchannelLogout to draft-07 ([95611d9](https://github.com/panva/node-oidc-provider/commit/95611d9978c1f5c10ae9dbe1d49186983a3b01df))
+* graduate issAuthResp feature as stable and enable by default ([e774f60](https://github.com/panva/node-oidc-provider/commit/e774f606ea63271c971aad3d7b5730d0f16c0f52))
+
+
+### Fixes
+
+* ensure jwt replay detection takes clockTolerance into account ([f167233](https://github.com/panva/node-oidc-provider/commit/f1672336750b8a23ad0c0fa9f3bb2f91ad61397d))
+
 ## [7.10.6](https://github.com/panva/node-oidc-provider/compare/v7.10.5...v7.10.6) (2022-01-07)
 
 
