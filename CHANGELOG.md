@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [7.11.1](https://github.com/panva/node-oidc-provider/compare/v7.11.0...v7.11.1) (2022-04-25)
+
+
+### Fixes
+
+* client schema invalidation code not set ([edf22fb](https://github.com/panva/node-oidc-provider/commit/edf22fba1ca8fb21e528c6755f74ae48a9d6704b))
+
 ## [7.11.0](https://github.com/panva/node-oidc-provider/compare/v7.10.6...v7.11.0) (2022-04-20)
 
 
