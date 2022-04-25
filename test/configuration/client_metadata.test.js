@@ -1,6 +1,7 @@
 const { strict: assert } = require('assert');
 const util = require('util');
 
+const sinon = require('sinon');
 const { expect } = require('chai');
 const camelCase = require('lodash/camelCase');
 const merge = require('lodash/merge');
@@ -369,6 +370,42 @@ describe('Client metadata validation', () => {
       application_type: 'web',
       grant_types: ['implicit'],
       response_types: ['id_token'],
+    });
+    it('has an schema invalidation hook for forcing https on implicit', async () => {
+      const sandbox = sinon.createSandbox();
+      sandbox.spy(DefaultProvider.Client.Schema.prototype, 'invalidate');
+      await addClient({
+        grant_types: ['implicit'],
+        response_types: ['id_token'],
+        redirect_uris: ['http://foo/bar'],
+      }).then(() => {
+        assert(false);
+      }, () => {
+        const spy = DefaultProvider.Client.Schema.prototype.invalidate;
+        expect(spy).to.have.property('calledOnce', true);
+        const call = spy.getCall(0);
+        const [, code] = call.args;
+        expect(code).to.eql('implicit-force-https');
+      }).finally(() => {
+        sandbox.restore();
+      });
+    });
+    it('has an schema invalidation hook for preventing localhost', async () => {
+      const sandbox = sinon.createSandbox();
+      sandbox.spy(DefaultProvider.Client.Schema.prototype, 'invalidate');
+      await addClient({
+        grant_types: ['implicit'],
+        response_types: ['id_token'],
+        redirect_uris: ['https://localhost'],
+      }).then(() => {
+        assert(false);
+      }, () => {
+        const spy = DefaultProvider.Client.Schema.prototype.invalidate;
+        expect(spy).to.have.property('calledOnce', true);
+        const call = spy.getCall(0);
+        const [, code] = call.args;
+        expect(code).to.eql('implicit-forbid-localhost');
+      });
     });
   });
 
