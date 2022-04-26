@@ -44,8 +44,7 @@ describe('OAuth 2.0 Dynamic Client Registration Management Protocol', () => {
         }))
         .expect(200)
         .expect('content-type', /application\/json/)
-        .expect('pragma', 'no-cache')
-        .expect('cache-control', 'no-cache, no-store')
+        .expect('cache-control', 'no-store')
         .expect((res) => {
           expect(res.body).to.have.property('registration_access_token', client.registration_access_token);
           expect(res.body).to.have.property('registration_client_uri', client.registration_client_uri);
@@ -273,8 +272,7 @@ describe('OAuth 2.0 Dynamic Client Registration Management Protocol', () => {
       const client = await setup.call(this, {});
       await this.agent.del(`/reg/${client.client_id}`)
         .auth(client.registration_access_token, { type: 'bearer' })
-        .expect('pragma', 'no-cache')
-        .expect('cache-control', 'no-cache, no-store')
+        .expect('cache-control', 'no-store')
         .expect('') // empty body
         .expect(204);
 

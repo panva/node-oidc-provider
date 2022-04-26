@@ -301,8 +301,7 @@ describe('introspection features', () => {
         .auth('client', 'secret')
         .send({})
         .type('form')
-        .expect('pragma', 'no-cache')
-        .expect('cache-control', 'no-cache, no-store');
+        .expect('cache-control', 'no-store');
     });
 
     it('validates token param presence', function () {

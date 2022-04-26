@@ -43,8 +43,7 @@ describe('configuration features.webMessageResponseMode', () => {
 
         await this.wrap({ route, auth, verb: 'get' })
           .expect(200)
-          .expect('pragma', 'no-cache')
-          .expect('cache-control', 'no-cache, no-store')
+          .expect('cache-control', 'no-store')
           .expect('content-type', 'text/html; charset=utf-8')
           .expect((response) => {
             expect(response.headers['x-frame-options']).not.to.be.ok;
@@ -76,8 +75,7 @@ describe('configuration features.webMessageResponseMode', () => {
 
         await this.wrap({ route, auth, verb: 'get' })
           .expect(200)
-          .expect('pragma', 'no-cache')
-          .expect('cache-control', 'no-cache, no-store')
+          .expect('cache-control', 'no-store')
           .expect('content-type', 'text/html; charset=utf-8')
           .expect((response) => {
             expect(response.headers['x-frame-options']).not.to.be.ok;
@@ -107,8 +105,7 @@ describe('configuration features.webMessageResponseMode', () => {
 
         await this.wrap({ route, auth, verb: 'get' })
           .expect(200)
-          .expect('pragma', 'no-cache')
-          .expect('cache-control', 'no-cache, no-store')
+          .expect('cache-control', 'no-store')
           .expect('content-type', 'text/html; charset=utf-8')
           .expect((response) => {
             expect(response.headers['x-frame-options']).not.to.be.ok;
@@ -136,8 +133,7 @@ describe('configuration features.webMessageResponseMode', () => {
 
         await this.wrap({ route, auth, verb: 'get' })
           .expect(200)
-          .expect('pragma', 'no-cache')
-          .expect('cache-control', 'no-cache, no-store')
+          .expect('cache-control', 'no-store')
           .expect('content-type', 'text/html; charset=utf-8')
           .expect((response) => {
             expect(response.headers['x-frame-options']).not.to.be.ok;
@@ -269,8 +265,7 @@ describe('configuration features.webMessageResponseMode', () => {
 
         await this.wrap({ route, auth, verb: 'get' })
           .expect(400)
-          .expect('pragma', 'no-cache')
-          .expect('cache-control', 'no-cache, no-store')
+          .expect('cache-control', 'no-store')
           .expect('content-type', 'text/html; charset=utf-8')
           .expect((response) => {
             expect(response.headers['x-frame-options']).not.to.be.ok;

@@ -117,8 +117,7 @@ describe('grant_type=authorization_code', () => {
           grant_type: 'authorization_code',
           redirect_uri: 'https://client.example.com/cb',
         })
-        .expect('pragma', 'no-cache')
-        .expect('cache-control', 'no-cache, no-store');
+        .expect('cache-control', 'no-store');
     });
 
     context('', () => {
@@ -431,8 +430,7 @@ describe('grant_type=authorization_code', () => {
           code: this.ac,
           grant_type: 'authorization_code',
         })
-        .expect('pragma', 'no-cache')
-        .expect('cache-control', 'no-cache, no-store');
+        .expect('cache-control', 'no-store');
     });
 
     context('', () => {
