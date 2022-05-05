@@ -566,7 +566,11 @@ JSON Web Key Set used by the provider for signing and decryption. The object mus
 _**recommendation**_: Be sure to follow best practices for distributing private keying material and secrets for your respective target deployment environment. Supported key types are:
  - RSA
  - OKP (Ed25519, Ed448, X25519, X448 sub types)
- - EC (P-256, secp256k1, P-384, and P-521 curves) Provider key rotation** - The following action order is recommended when rotating signing keys on a distributed deployment with rolling reloads in place.
+ - EC (P-256, secp256k1, P-384, and P-521 curves) 
+
+**Provider key rotation**
+
+The following action order is recommended when rotating signing keys on a distributed deployment with rolling reloads in place.
  1. push new keys at the very end of the "keys" array in your JWKS, this means the keys will become available for verification should they be encountered but not yet used for signing
  2. reload all your processes
  3. move your new key to the very front of the "keys" array in your JWKS, this means the key will be used for signing after reload
