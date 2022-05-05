@@ -561,16 +561,15 @@ async function findAccount(ctx, sub, token) {
 ### jwks
 
 JSON Web Key Set used by the provider for signing and decryption. The object must be in [JWK Set format](https://www.rfc-editor.org/rfc/rfc7517.html#section-5). All provided keys must be private keys.   
-  
-
-_**recommendation**_: Be sure to follow best practices for distributing private keying material and secrets for your respective target deployment environment. Supported key types are:
+ Supported key types are:   
  - RSA
  - OKP (Ed25519, Ed448, X25519, X448 sub types)
- - EC (P-256, secp256k1, P-384, and P-521 curves) 
+ - EC (P-256, secp256k1, P-384, and P-521 curves)   
+  
 
-**Provider key rotation**
+_**recommendation**_: Be sure to follow best practices for distributing private keying material and secrets for your respective target deployment environment.  
 
-The following action order is recommended when rotating signing keys on a distributed deployment with rolling reloads in place.
+_**recommendation**_: The following action order is recommended when rotating signing keys on a distributed deployment with rolling reloads in place.
  1. push new keys at the very end of the "keys" array in your JWKS, this means the keys will become available for verification should they be encountered but not yet used for signing
  2. reload all your processes
  3. move your new key to the very front of the "keys" array in your JWKS, this means the key will be used for signing after reload
@@ -688,7 +687,9 @@ _**default value**_:
 Helper function used to process the login_hint parameter and return the accountId value to use for processsing the request.   
   
 
-_**recommendation**_: Use `throw Provider.errors.InvalidRequest('validation error message')` when login_hint is invalid. Use `return undefined` or when you can't determine the accountId from the login_hint.  
+_**recommendation**_: Use `throw Provider.errors.InvalidRequest('validation error message')` when login_hint is invalid.  
+
+_**recommendation**_: Use `return undefined` or when you can't determine the accountId from the login_hint.  
 
 
 _**default value**_:
@@ -705,7 +706,11 @@ async function processLoginHint(ctx, loginHint) {
 Helper function used to process the login_hint_token parameter and return the accountId value to use for processsing the request.   
   
 
-_**recommendation**_: Use `throw Provider.errors.ExpiredLoginHintToken('validation error message')` when login_hint_token is expired. Use `throw Provider.errors.InvalidRequest('validation error message')` when login_hint_token is invalid. Use `return undefined` or when you can't determine the accountId from the login_hint.  
+_**recommendation**_: Use `throw Provider.errors.ExpiredLoginHintToken('validation error message')` when login_hint_token is expired.  
+
+_**recommendation**_: Use `throw Provider.errors.InvalidRequest('validation error message')` when login_hint_token is invalid.  
+
+_**recommendation**_: Use `return undefined` or when you can't determine the accountId from the login_hint.  
 
 
 _**default value**_:
@@ -759,7 +764,9 @@ await provider.backchannelResult(...);
 Helper function used to process the binding_message parameter and throw if its not following the authorization server's policy.   
   
 
-_**recommendation**_: Use `throw Provider.errors.InvalidBindingMessage('validation error message')` when the binding_message is invalid. Use `return undefined` when a binding_message isn't required and wasn't provided.  
+_**recommendation**_: Use `throw Provider.errors.InvalidBindingMessage('validation error message')` when the binding_message is invalid.  
+
+_**recommendation**_: Use `return undefined` when a binding_message isn't required and wasn't provided.  
 
 
 _**default value**_:
@@ -778,7 +785,9 @@ async function validateBindingMessage(ctx, bindingMessage) {
 Helper function used to process the request_context parameter and throw if its not following the authorization server's policy.   
   
 
-_**recommendation**_: Use `throw Provider.errors.InvalidRequest('validation error message')` when the request_context is required by policy and missing or invalid. Use `return undefined` when a request_context isn't required and wasn't provided.  
+_**recommendation**_: Use `throw Provider.errors.InvalidRequest('validation error message')` when the request_context is required by policy and missing or invalid.  
+
+_**recommendation**_: Use `return undefined` when a request_context isn't required and wasn't provided.  
 
 
 _**default value**_:
@@ -795,7 +804,11 @@ async function validateRequestContext(ctx, requestContext) {
 Helper function used to verify the user_code parameter value is present when required and verify its value.   
   
 
-_**recommendation**_: Use `throw Provider.errors.MissingUserCode('validation error message')` when user_code should have been provided but wasn't. Use `throw Provider.errors.InvalidUserCode('validation error message')` when the provided user_code is invalid. Use `return undefined` when no user_code was provided and isn't required.  
+_**recommendation**_: Use `throw Provider.errors.MissingUserCode('validation error message')` when user_code should have been provided but wasn't.  
+
+_**recommendation**_: Use `throw Provider.errors.InvalidUserCode('validation error message')` when the provided user_code is invalid.  
+
+_**recommendation**_: Use `return undefined` when no user_code was provided and isn't required.  
 
 
 _**default value**_:
@@ -1448,7 +1461,9 @@ async issueRegistrationAccessToken(ctx) {
 define registration and registration management policies applied to client properties. Policies are sync/async functions that are assigned to an Initial Access Token that run before the regular client property validations are run. Multiple policies may be assigned to an Initial Access Token and by default the same policies will transfer over to the Registration Access Token. A policy may throw / reject and it may modify the properties object.   
   
 
-_**recommendation**_: referenced policies must always be present when encountered on a token, an AssertionError will be thrown inside the request context if it is not, resulting in a 500 Server Error. the same policies will be assigned to the Registration Access Token after a successful validation. If you wish to assign different policies to the Registration Access Token
+_**recommendation**_: referenced policies must always be present when encountered on a token, an AssertionError will be thrown inside the request context if it is not, resulting in a 500 Server Error.  
+
+_**recommendation**_: the same policies will be assigned to the Registration Access Token after a successful validation. If you wish to assign different policies to the Registration Access Token
  ```js
  // inside your final ran policy
  ctx.oidc.entities.RegistrationAccessToken.policies = ['update-policy'];
@@ -1812,7 +1827,9 @@ async function getResourceServerInfo(ctx, resourceIndicator, client) {
 Function used to determine if an already granted resource indicator should be used without being explicitly requested by the client during the Token Endpoint request.   
   
 
-_**recommendation**_: Use `return true` when it's allowed for a client skip providing the "resource" parameter at the Token Endpoint. Use `return false` (default) when it's required for a client to explitly provide a "resource" parameter at the Token Endpoint or when other indication dictates an Access Token for the UserInfo Endpoint should returned.  
+_**recommendation**_: Use `return true` when it's allowed for a client skip providing the "resource" parameter at the Token Endpoint.  
+
+_**recommendation**_: Use `return false` (default) when it's required for a client to explitly provide a "resource" parameter at the Token Endpoint or when other indication dictates an Access Token for the UserInfo Endpoint should returned.  
 
 
 _**default value**_:
@@ -2929,7 +2946,9 @@ _**default value**_:
 description: Expirations for various token and session types. The value can be a number (in seconds) or a synchronous function that dynamically returns value based on the context.   
   
 
-_**recommendation**_: Do not set token TTLs longer then they absolutely have to be, the shorter the TTL, the better. Rather than setting crazy high Refresh Token TTL look into `rotateRefreshToken` configuration option which is set up in way that when refresh tokens are regularly used they will have their TTL refreshed (via rotation). This is inline with the [OAuth 2.0 Security Best Current Practice](https://tools.ietf.org/html/draft-ietf-oauth-security-topics-13)  
+_**recommendation**_: Do not set token TTLs longer then they absolutely have to be, the shorter the TTL, the better.  
+
+_**recommendation**_: Rather than setting crazy high Refresh Token TTL look into `rotateRefreshToken` configuration option which is set up in way that when refresh tokens are regularly used they will have their TTL refreshed (via rotation). This is inline with the [OAuth 2.0 Security Best Current Practice](https://tools.ietf.org/html/draft-ietf-oauth-security-topics-13)  
 
 
 _**default value**_:
