@@ -140,6 +140,12 @@ const props = [
               .map((e) => parseInt(e.slice(-1), 10) || 0));
             override = `example${i + 1}`;
           }
+          if (prop === 'recommendation' && option.recommendation) {
+            const i = Math.max(...Object.keys(option)
+              .filter((p) => p.startsWith('recommendation'))
+              .map((e) => parseInt(e.slice(-1), 10) || 0));
+            override = `recommendation${i + 1}`;
+          }
           option.active = override || prop;
           option.write(line.slice(prop.length + 4));
           return true;
@@ -253,10 +259,8 @@ const props = [
       append(`${capitalizeSentences(section.description.join(' '))}  \n\n`);
     }
 
-    ['recommendation'].forEach((option) => {
-      if (section[option]) {
-        append(`_**${option}**_: ${section[option].join(' ')}  \n\n`);
-      }
+    Object.keys(section).filter((x) => x.startsWith('recommendation')).forEach((prop) => {
+      append(`_**recommendation**_: ${section[prop].join(' ')}  \n\n`);
     });
 
     if (!('@nodefault' in section)) {
