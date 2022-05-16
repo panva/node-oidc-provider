@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [7.11.2](https://github.com/panva/node-oidc-provider/compare/v7.11.1...v7.11.2) (2022-05-16)
+
+
+### Fixes
+
+* updated `signed` to `trusted` in the Interaction model ([#1192](https://github.com/panva/node-oidc-provider/issues/1192)) ([eb91aea](https://github.com/panva/node-oidc-provider/commit/eb91aea9c3a50284e71f43ce2fe7f31ebdd83bb5))
+
 ## [7.11.1](https://github.com/panva/node-oidc-provider/compare/v7.11.0...v7.11.1) (2022-04-25)
 
 
