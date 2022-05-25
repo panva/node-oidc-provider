@@ -860,9 +860,38 @@ _**default value**_:
 ```js
 {
   ack: undefined,
-  enabled: false
+  enabled: false,
+  nonceSecret: undefined,
+  requireNonce: [Function: requireNonce] // see expanded details below
 }
 ```
+
+<details><summary>(Click to expand) features.dPoP options details</summary><br>
+
+
+#### nonceSecret
+
+A secret value used for generating server-provided DPoP nonces. Must be a 32-byte length Buffer instance when provided.  
+
+
+_**default value**_:
+```js
+undefined
+```
+
+#### requireNonce
+
+Function used to determine whether a DPoP nonce is required or not.  
+
+
+_**default value**_:
+```js
+function requireNonce(ctx) {
+  return false;
+}
+```
+
+</details>
 
 ### features.devInteractions
 

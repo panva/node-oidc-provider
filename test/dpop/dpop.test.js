@@ -31,18 +31,18 @@ describe('features.dPoP', () => {
     });
   });
   before(function () {
-    this.proof = (uri, method, accessToken, jwk = this.jwk) => {
+    this.proof = (uri, method, accessToken, jwk, nonce) => {
       let accessTokenHash;
       if (accessToken) {
         accessTokenHash = ath(accessToken);
       }
       return JWT.sign(
         {
-          htu: uri, htm: method, jti: nanoid(), ath: accessTokenHash,
+          htu: uri, htm: method, jti: nanoid(), ath: accessTokenHash, nonce,
         },
-        jwk,
+        jwk ?? this.jwk,
         {
-          kid: false, header: { typ: 'dpop+jwt', jwk: JWK.asKey(jwk) },
+          kid: false, header: { typ: 'dpop+jwt', jwk: JWK.asKey(jwk ?? this.jwk) },
         },
       );
     };
@@ -200,7 +200,7 @@ describe('features.dPoP', () => {
 
       await this.agent.get('/me') // eslint-disable-line no-await-in-loop
         .set('DPoP', JWT.sign({
-          jti: nanoid(), htm: 'GET', htu: `${this.provider.issuer}${this.suitePath('/me')}`, iat: epochTime() - 61,
+          jti: nanoid(), htm: 'GET', htu: `${this.provider.issuer}${this.suitePath('/me')}`, iat: epochTime() - 301,
         }, key, { kid: false, iat: false, header: { typ: 'dpop+jwt', jwk: key } }))
         .set('Authorization', `DPoP ${dpop}`)
         .expect(401)
@@ -211,7 +211,7 @@ describe('features.dPoP', () => {
 
       await this.agent.get('/me') // eslint-disable-line no-await-in-loop
         .set('DPoP', JWT.sign({
-          jti: nanoid(), htm: 'GET', htu: `${this.provider.issuer}${this.suitePath('/me')}`, iat: epochTime() + 61,
+          jti: nanoid(), htm: 'GET', htu: `${this.provider.issuer}${this.suitePath('/me')}`, iat: epochTime() + 301,
         }, key, { kid: false, iat: false, header: { typ: 'dpop+jwt', jwk: key } }))
         .set('Authorization', `DPoP ${dpop}`)
         .expect(401)
@@ -241,6 +241,15 @@ describe('features.dPoP', () => {
         .set('Authorization', `DPoP ${dpop}`)
         .expect(401)
         .expect({ error: 'invalid_dpop_proof', error_description: 'invalid DPoP key binding' })
+        .expect('WWW-Authenticate', /^DPoP /)
+        .expect('WWW-Authenticate', /error="invalid_dpop_proof"/)
+        .expect('WWW-Authenticate', /algs="ES256 PS256"/);
+
+      await this.agent.get('/me') // eslint-disable-line no-await-in-loop
+        .set('DPoP', await this.proof(`${this.provider.issuer}${this.suitePath('/me')}`, 'GET', dpop, undefined, null))
+        .set('Authorization', `DPoP ${dpop}`)
+        .expect(401)
+        .expect({ error: 'invalid_dpop_proof', error_description: 'DPoP proof nonce must be a string' })
         .expect('WWW-Authenticate', /^DPoP /)
         .expect('WWW-Authenticate', /error="invalid_dpop_proof"/)
         .expect('WWW-Authenticate', /algs="ES256 PS256"/);
@@ -860,6 +869,119 @@ describe('features.dPoP', () => {
         .type('form')
         .expect(400)
         .expect({ error: 'invalid_dpop_proof', error_description: 'invalid DPoP key binding' });
+    });
+  });
+
+  describe('invalid nonce', () => {
+    it('@ userinfo', async function () {
+      let nonce;
+      await this.agent.get('/me')
+        .set('Authorization', 'DPoP foo')
+        .send({ grant_type: 'client_credentials' })
+        .set('DPoP', this.proof(`${this.provider.issuer}${this.suitePath('/me')}`, 'GET', 'foo', undefined, 'foo'))
+        .expect(401)
+        .expect({ error: 'use_dpop_nonce', error_description: 'invalid nonce in DPoP proof' })
+        .expect(({ headers }) => { nonce = headers['dpop-nonce']; });
+
+      return this.agent.get('/me')
+        .set('Authorization', 'DPoP foo')
+        .send({ grant_type: 'client_credentials' })
+        .set('DPoP', this.proof(`${this.provider.issuer}${this.suitePath('/me')}`, 'GET', 'foo', undefined, nonce))
+        .expect(401)
+        .expect({ error: 'invalid_token', error_description: 'invalid token provided' });
+    });
+
+    it('@ token endpoint', async function () {
+      let nonce;
+      await this.agent.post('/token')
+        .auth('client', 'secret')
+        .send({ grant_type: 'client_credentials' })
+        .set('DPoP', this.proof(`${this.provider.issuer}${this.suitePath('/token')}`, 'POST', undefined, undefined, 'foo'))
+        .type('form')
+        .expect(400)
+        .expect({ error: 'use_dpop_nonce', error_description: 'invalid nonce in DPoP proof' })
+        .expect(({ headers }) => { nonce = headers['dpop-nonce']; });
+
+      return this.agent.post('/token')
+        .auth('client', 'secret')
+        .send({ grant_type: 'client_credentials' })
+        .set('DPoP', this.proof(`${this.provider.issuer}${this.suitePath('/token')}`, 'POST', undefined, undefined, nonce))
+        .type('form')
+        .expect(200);
+    });
+  });
+
+  describe('required nonce', () => {
+    before(function () {
+      this.orig = i(this.provider).configuration().features.dPoP.requireNonce;
+      i(this.provider).configuration().features.dPoP.requireNonce = () => true;
+    });
+
+    after(function () {
+      i(this.provider).configuration().features.dPoP.requireNonce = this.orig;
+    });
+
+    it('@ PAR endpoint', async function () {
+      let nonce;
+      await this.agent.post('/request')
+        .auth('client', 'secret')
+        .send({
+          response_type: 'code',
+          client_id: 'client',
+        })
+        .set('DPoP', this.proof(`${this.provider.issuer}${this.suitePath('/request')}`, 'POST'))
+        .type('form')
+        .expect(400)
+        .expect('dpop-nonce', /^[\w-]{43}$/)
+        .expect({ error: 'use_dpop_nonce', error_description: 'nonce is required in the DPoP proof' })
+        .expect(({ headers }) => { nonce = headers['dpop-nonce']; });
+
+      await this.agent.post('/request')
+        .auth('client', 'secret')
+        .send({
+          response_type: 'code',
+          client_id: 'client',
+        })
+        .set('DPoP', this.proof(`${this.provider.issuer}${this.suitePath('/request')}`, 'POST', undefined, undefined, nonce))
+        .type('form')
+        .expect(201);
+    });
+
+    it('@ userinfo', async function () {
+      let nonce;
+      await this.agent.get('/me')
+        .set('Authorization', 'DPoP foo')
+        .send({ grant_type: 'client_credentials' })
+        .set('DPoP', this.proof(`${this.provider.issuer}${this.suitePath('/me')}`, 'GET', 'foo'))
+        .expect(401)
+        .expect({ error: 'use_dpop_nonce', error_description: 'nonce is required in the DPoP proof' })
+        .expect(({ headers }) => { nonce = headers['dpop-nonce']; });
+
+      return this.agent.get('/me')
+        .set('Authorization', 'DPoP foo')
+        .send({ grant_type: 'client_credentials' })
+        .set('DPoP', this.proof(`${this.provider.issuer}${this.suitePath('/me')}`, 'GET', 'foo', undefined, nonce))
+        .expect(401)
+        .expect({ error: 'invalid_token', error_description: 'invalid token provided' });
+    });
+
+    it('@ token endpoint', async function () {
+      let nonce;
+      await this.agent.post('/token')
+        .auth('client', 'secret')
+        .send({ grant_type: 'client_credentials' })
+        .set('DPoP', this.proof(`${this.provider.issuer}${this.suitePath('/token')}`, 'POST'))
+        .type('form')
+        .expect(400)
+        .expect({ error: 'use_dpop_nonce', error_description: 'nonce is required in the DPoP proof' })
+        .expect(({ headers }) => { nonce = headers['dpop-nonce']; });
+
+      return this.agent.post('/token')
+        .auth('client', 'secret')
+        .send({ grant_type: 'client_credentials' })
+        .set('DPoP', this.proof(`${this.provider.issuer}${this.suitePath('/token')}`, 'POST', undefined, undefined, nonce))
+        .type('form')
+        .expect(200);
     });
   });
 });
