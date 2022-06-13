@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [7.11.3](https://github.com/panva/node-oidc-provider/compare/v7.11.2...v7.11.3) (2022-06-13)
+
+
+### Fixes
+
+* httpOptions helper ([#1194](https://github.com/panva/node-oidc-provider/issues/1194)) ([80fe961](https://github.com/panva/node-oidc-provider/commit/80fe9619cd679b5988820e5389b027a4b0a24ca2))
+
 ## [7.11.2](https://github.com/panva/node-oidc-provider/compare/v7.11.1...v7.11.2) (2022-05-16)
 
 
