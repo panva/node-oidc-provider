@@ -7,6 +7,7 @@ config.enabledJWA.requestObjectSigningAlgValues = config.enabledJWA.requestObjec
 
 merge(config.features, {
   pushedAuthorizationRequests: {
+    allowDynamicRedirectUris: false,
     requirePushedAuthorizationRequests: false,
     enabled: true,
   },
@@ -32,5 +33,14 @@ module.exports = {
     client_secret: 'secret',
     request_object_signing_alg: 'HS256',
     redirect_uris: ['https://rp.example.com/cb'],
-  }],
+  }, {
+    client_id: 'client-allow-par-dynamic-redirect',
+    client_secret: 'secret',
+    redirect_uris: ['https://rp.example.com'],
+  }, {
+    client_id: 'client-redirect-trailing-slash',
+    client_secret: 'secret',
+    redirect_uris: ['https://rp.example.com/'],
+  },
+  ],
 };

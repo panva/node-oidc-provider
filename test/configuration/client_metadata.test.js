@@ -993,6 +993,28 @@ describe('Client metadata validation', () => {
         clientDefaults: { require_pushed_authorization_requests: true },
       });
     });
+
+    context('allow_dynamic_redirect_uris', function () {
+      const configuration = (value = false) => ({
+        features: {
+          pushedAuthorizationRequests: {
+            enabled: true,
+            allowDynamicRedirectUris: value,
+          },
+        },
+      });
+      mustBeBoolean(this.title, undefined, configuration());
+      mustBeBoolean(this.title, undefined, configuration(true));
+      defaultsTo(this.title, false, undefined, configuration());
+      defaultsTo(this.title, true, undefined, configuration(true));
+      defaultsTo(this.title, true, {
+        allow_dynamic_redirect_uris: false,
+      }, configuration(true));
+      defaultsTo(this.title, true, undefined, {
+        ...configuration(),
+        clientDefaults: { allow_dynamic_redirect_uris: true },
+      });
+    });
   });
 
   describe('features.ciba', () => {

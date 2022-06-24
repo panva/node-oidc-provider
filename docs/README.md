@@ -1360,6 +1360,7 @@ _**default value**_:
 {
   enabled: false,
   requirePushedAuthorizationRequests: false
+  allowDynamicRedirectUris: false
 }
 ```
 
@@ -1368,7 +1369,11 @@ _**default value**_:
 
 #### requirePushedAuthorizationRequests
 
-Makes the use of PAR required for all authorization requests as an OP policy.  
+Makes the use of PAR required for all authorization requests as an OP policy.
+
+#### allowDynamicRedirectUris
+
+Allow dynamic paths in redirect URIs for PAR. Domain name must still match.  
 
 
 _**default value**_:

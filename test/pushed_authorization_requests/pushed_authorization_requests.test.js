@@ -425,6 +425,24 @@ describe('Pushed Request Object', () => {
               });
           });
 
+          it('allows domain only matching on redirect uri', async function () {
+            return this.agent.post('/request')
+              .auth(clientId, 'secret')
+              .type('form')
+              .send({
+                response_type: 'code',
+                client_id: clientId,
+                iss: clientId,
+                aud: this.provider.issuer,
+                redirect_uri: 'https://rp.example.com/unlisted',
+              })
+              .expect(400)
+              .expect({
+                error: 'invalid_request',
+                error_description: "redirect_uri did not match any of the client's registered redirect_uris",
+              });
+          });
+
           it('leaves non OIDCProviderError alone', async function () {
             const adapterThrow = new Error('adapter throw!');
             sinon.stub(this.TestAdapter.for('PushedAuthorizationRequest'), 'upsert').callsFake(async () => { throw adapterThrow; });
@@ -507,6 +525,179 @@ describe('Pushed Request Object', () => {
             return this.wrap({ route: '/auth', verb: 'get', auth })
               .expect(303)
               .expect(auth.validatePresence(['code']));
+          });
+        });
+      });
+    });
+  });
+
+  ['client-allow-par-dynamic-redirect', 'client-redirect-trailing-slash'].forEach((clientId) => {
+    const trailingSlash = clientId === 'client-redirect-trailing-slash' ? 'with' : 'without';
+    describe(`when allow_dynamic_redirect_uris=true ${trailingSlash} trailing slash`, () => {
+      before(function () {
+        i(this.provider).configuration('features.pushedAuthorizationRequests').allowDynamicRedirectUris = true;
+      });
+
+      after(function () {
+        i(this.provider).configuration('features.pushedAuthorizationRequests').allowDynamicRedirectUris = false;
+      });
+
+      describe('using a JAR request parameter', () => {
+        describe('Pushed Authorization Request Endpoint', () => {
+          it('allows domain only matching on redirect uri', function (done) {
+            this.provider.use(this.assertOnce((ctx) => {
+              expect(ctx.oidc.entities).to.have.keys('Client', 'PushedAuthorizationRequest');
+            }, done));
+
+            JWT.sign({
+              response_type: 'code',
+              client_id: clientId,
+              iss: clientId,
+              aud: this.provider.issuer,
+              redirect_uri: 'https://rp.example.com/unlisted',
+            }, this.key, 'HS256').then((request) => {
+              this.agent.post('/request')
+                .auth(clientId, 'secret')
+                .type('form')
+                .send({ request })
+                .end(() => {});
+            });
+          });
+
+          it('does not allow redirect uri with incorrect domain', function () {
+            return JWT.sign({
+              response_type: 'code',
+              client_id: clientId,
+              iss: clientId,
+              aud: this.provider.issuer,
+              redirect_uri: 'https://different.domain.com/unlisted',
+            }, this.key, 'HS256').then((request) => {
+              this.agent.post('/request')
+                .auth(clientId, 'secret')
+                .type('form')
+                .send({ request })
+                .expect(400)
+                .expect({
+                  error: 'invalid_request',
+                  error_description: "redirect_uri did not match any of the client's registered redirect_uris",
+                });
+            });
+          });
+        });
+
+        describe('Using Pushed Authorization Requests', () => {
+          before(function () { return this.login(); });
+          after(function () { return this.logout(); });
+
+          it('allows domain only matching on redirect uri', async function () {
+            const { body: { request_uri } } = await this.agent.post('/request')
+              .auth(clientId, 'secret')
+              .type('form')
+              .send({
+                request: await JWT.sign({
+                  scope: 'openid',
+                  response_type: 'code',
+                  client_id: clientId,
+                  iss: clientId,
+                  aud: this.provider.issuer,
+                }, this.key, 'HS256'),
+              });
+
+            let id = request_uri.split(':');
+            id = id[id.length - 1];
+
+            expect(await this.provider.PushedAuthorizationRequest.find(id)).to.be.ok;
+
+            const auth = new this.AuthorizationRequest({
+              client_id: clientId,
+              iss: clientId,
+              aud: this.provider.issuer,
+              state: undefined,
+              redirect_uri: 'https://rp.example.com/unlisted',
+              request_uri,
+            });
+
+            await this.wrap({ route: '/auth', verb: 'get', auth })
+              .expect(303)
+              .expect(auth.validatePresence(['code']));
+
+            expect(await this.provider.PushedAuthorizationRequest.find(id)).not.to.be.ok;
+          });
+        });
+      });
+
+      describe('using a plain pushed authorization request', () => {
+        describe('Pushed Authorization Request Endpoint', () => {
+          it('allows domain only matching on redirect uri', function () {
+            return this.agent.post('/request')
+              .auth(clientId, 'secret')
+              .type('form')
+              .send({
+                response_type: 'code',
+                client_id: clientId,
+                iss: clientId,
+                aud: this.provider.issuer,
+                redirect_uri: 'https://rp.example.com/unlisted',
+              })
+              .expect(201);
+          });
+
+          it('does not allow redirect uri with incorrect domain', function () {
+            return this.agent.post('/request')
+              .auth(clientId, 'secret')
+              .type('form')
+              .send({
+                response_type: 'code',
+                client_id: clientId,
+                iss: clientId,
+                aud: this.provider.issuer,
+                redirect_uri: 'https://different.domain.com/unlisted',
+              })
+              .expect(400)
+              .expect({
+                error: 'invalid_request',
+                error_description: "redirect_uri did not match any of the client's registered redirect_uris",
+              });
+          });
+        });
+
+        describe('Using Pushed Authorization Requests', () => {
+          before(function () { return this.login(); });
+          after(function () { return this.logout(); });
+
+          it('allows domain only matching on redirect uri', async function () {
+            const { body: { request_uri } } = await this.agent.post('/request')
+              .auth(clientId, 'secret')
+              .type('form')
+              .send({
+                scope: 'openid',
+                response_type: 'code',
+                client_id: clientId,
+                iss: clientId,
+                aud: this.provider.issuer,
+                redirect_uri: 'https://rp.example.com/unlisted',
+              })
+              .expect(201);
+
+            let id = request_uri.split(':');
+            id = id[id.length - 1];
+
+            expect(await this.provider.PushedAuthorizationRequest.find(id)).to.be.ok;
+
+            const auth = new this.AuthorizationRequest({
+              client_id: clientId,
+              iss: clientId,
+              aud: this.provider.issuer,
+              state: undefined,
+              redirect_uri: 'https://rp.example.com/unlisted',
+              request_uri,
+            });
+
+            await this.wrap({ route: '/auth', verb: 'get', auth })
+              .expect(303)
+              .expect(auth.validatePresence(['code']));
+
+            expect(await this.provider.PushedAuthorizationRequest.find(id)).not.to.be.ok;
           });
         });
       });
