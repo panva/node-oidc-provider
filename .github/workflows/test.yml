@@ -10,6 +10,10 @@ on:
   schedule:
     - cron:  0 9 * * 1-5
   workflow_dispatch:
+    inputs:
+      conformance-version:
+        description: 'Conformance Suite Version (commit hash)'
+        required: false
 
 jobs:
   audit:
@@ -106,22 +110,33 @@ jobs:
 
   build-conformance-suite:
     runs-on: ubuntu-latest
+    outputs:
+      cache-key: ${{ steps.cache-key.outputs.value }}
     steps:
       - name: Checkout
         uses: actions/checkout@master
-      - name: Set Conformance Suite Version
+      - name: Set Conformance Suite Version from GitLab
+        if: ${{ !github.event.inputs.conformance-version }}
         run: |
           export VERSION=($(curl --silent "https://gitlab.com/api/v4/projects/4175605/releases" | jq -r '.[0].tag_name'))
           echo "VERSION=$VERSION" >> $GITHUB_ENV
+      - name: Set Conformance Suite Version from Workflow Dispatch
+        if: ${{ github.event.inputs.conformance-version }}
+        run: |
+          echo "VERSION=${{ github.event.inputs.conformance-version }}" >> $GITHUB_ENV
+      - id: cache-key
+        run: echo "::set-output name=value::suite-${{ hashFiles('.github/workflows/test.yml') }}-${{ env.VERSION }}"
       - name: Load Cached Conformance Suite Build
-        uses: actions/cache@v2
+        uses: actions/cache@v3
         id: cache
         with:
           path: ./conformance-suite
-          key: suite-${{ hashFiles('.github/workflows/test.yml') }}-${{ env.VERSION }}
+          key: ${{ steps.cache-key.outputs.value }}
       - name: Conformance Suite Checkout
         if: ${{ steps.cache.outputs.cache-hit != 'true' }}
-        run: git clone --depth 1 --single-branch --branch ${{ env.VERSION }} https://gitlab.com/openid/conformance-suite.git
+        run: git clone https://gitlab.com/openid/conformance-suite.git
+      - run: git reset --hard ${{ env.VERSION }}
+        working-directory: ./conformance-suite
       - name: Conformance Suite Build
         working-directory: ./conformance-suite
         if: ${{ steps.cache.outputs.cache-hit != 'true' }}
@@ -503,17 +518,17 @@ jobs:
           export VERSION=($(curl --silent "https://gitlab.com/api/v4/projects/4175605/releases" | jq -r '.[0].tag_name'))
           echo "VERSION=$VERSION" >> $GITHUB_ENV
       - name: Load Cached Conformance Suite Build
-        uses: actions/cache@v2
+        uses: actions/cache@v3
         id: cache
         with:
           path: ./conformance-suite
-          key: suite-${{ hashFiles('.github/workflows/test.yml') }}-${{ env.VERSION }}
-      - name: Abort if Conformance Suite version changed during the CI run.
+          key: ${{ needs.build-conformance-suite.outputs.cache-key }}
+      - name: Abort if Conformance Suite isn't cached
         if: ${{ steps.cache.outputs.cache-hit != 'true' }}
         uses: actions/github-script@v6
         with:
           script: |
-              core.setFailed('Conformance Suite version changed during the CI run')
+              core.setFailed('Conformance Suite cache hit failed')
       - name: Run Conformance Suite
         working-directory: ./conformance-suite
         run: |
