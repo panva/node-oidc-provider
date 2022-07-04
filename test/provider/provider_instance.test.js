@@ -106,6 +106,9 @@ describe('provider instance', () => {
       await assert.rejects(provider.AccessToken.find('tokenValue'), {
         message: 'used this adapter',
       });
+      await assert.rejects(provider.Client.find('clientId'), {
+        message: 'used this adapter',
+      });
     });
 
     it('can be a class static function', async () => {
@@ -125,6 +128,9 @@ describe('provider instance', () => {
       await assert.rejects(provider.AccessToken.find('tokenValue'), {
         message: 'used this adapter',
       });
+      await assert.rejects(provider.Client.find('clientId'), {
+        message: 'used this adapter',
+      });
     });
 
     it('can be an arrow function', async () => {
@@ -136,6 +142,9 @@ describe('provider instance', () => {
         }),
       });
       await assert.rejects(provider.AccessToken.find('tokenValue'), {
+        message: 'used this adapter',
+      });
+      await assert.rejects(provider.Client.find('clientId'), {
         message: 'used this adapter',
       });
     });
