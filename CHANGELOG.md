@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [7.11.4](https://github.com/panva/node-oidc-provider/compare/v7.11.3...v7.11.4) (2022-07-04)
+
+
+### Fixes
+
+* arrow & static class methods as adapter factories ([#1197](https://github.com/panva/node-oidc-provider/issues/1197)) ([cee552f](https://github.com/panva/node-oidc-provider/commit/cee552f0403863d9a1b8495b93098cc706f7f625))
+
 ## [7.11.3](https://github.com/panva/node-oidc-provider/compare/v7.11.2...v7.11.3) (2022-06-13)
 
 
