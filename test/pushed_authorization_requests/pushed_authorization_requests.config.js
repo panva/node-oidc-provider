@@ -41,6 +41,10 @@ module.exports = {
     client_id: 'client-redirect-trailing-slash',
     client_secret: 'secret',
     redirect_uris: ['https://rp.example.com/'],
+  }, {
+    client_id: 'client-redirect-with-path',
+    client_secret: 'secret',
+    redirect_uris: ['https://rp.example.com/test'],
   },
   ],
 };

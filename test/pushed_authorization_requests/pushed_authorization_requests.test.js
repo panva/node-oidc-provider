@@ -531,7 +531,7 @@ describe('Pushed Request Object', () => {
     });
   });
 
-  ['client-allow-par-dynamic-redirect', 'client-redirect-trailing-slash'].forEach((clientId) => {
+  ['client-allow-par-dynamic-redirect', 'client-redirect-trailing-slash', 'client-redirect-with-path'].forEach((clientId) => {
     const trailingSlash = clientId === 'client-redirect-trailing-slash' ? 'with' : 'without';
     describe(`when allow_dynamic_redirect_uris=true ${trailingSlash} trailing slash`, () => {
       before(function () {
