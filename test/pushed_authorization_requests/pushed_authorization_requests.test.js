@@ -177,7 +177,7 @@ describe('Pushed Request Object', () => {
                 request: await JWT.sign({
                   response_type: 'code',
                   client_id: 'client-alg-registered',
-                }, undefined, 'none'),
+                }, this.key, 'HS384'),
               })
               .expect(400)
               .expect({
@@ -472,6 +472,39 @@ describe('Pushed Request Object', () => {
             const auth = new this.AuthorizationRequest({
               client_id: clientId,
               iss: clientId,
+              aud: this.provider.issuer,
+              state: undefined,
+              redirect_uri: undefined,
+              request_uri,
+            });
+
+            await this.wrap({ route: '/auth', verb: 'get', auth })
+              .expect(303)
+              .expect(auth.validatePresence(['code']));
+
+            expect(await this.provider.PushedAuthorizationRequest.find(id)).not.to.be.ok;
+          });
+
+          it('allows the request_uri to be used (when request object was not used but client has request_object_signing_alg for its optional use)', async function () {
+            const { body: { request_uri } } = await this.agent.post('/request')
+              .auth('client-alg-registered', 'secret')
+              .type('form')
+              .send({
+                scope: 'openid',
+                response_type: 'code',
+                client_id: 'client-alg-registered',
+                iss: 'client-alg-registered',
+                aud: this.provider.issuer,
+              });
+
+            let id = request_uri.split(':');
+            id = id[id.length - 1];
+
+            expect(await this.provider.PushedAuthorizationRequest.find(id)).to.be.ok;
+
+            const auth = new this.AuthorizationRequest({
+              client_id: 'client-alg-registered',
+              iss: 'client-alg-registered',
               aud: this.provider.issuer,
               state: undefined,
               redirect_uri: undefined,
