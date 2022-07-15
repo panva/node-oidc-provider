@@ -529,8 +529,6 @@ jobs:
         with:
           script: |
               core.setFailed('Conformance Suite cache hit failed')
-      - uses: satackey/action-docker-layer-caching@v0.0.11
-        continue-on-error: true
       - name: Run Conformance Suite
         working-directory: ./conformance-suite
         run: |
