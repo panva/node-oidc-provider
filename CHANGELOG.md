@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [7.11.5](https://github.com/panva/node-oidc-provider/compare/v7.11.4...v7.11.5) (2022-07-16)
+
+
+### Fixes
+
+* **PAR:** set additional stored PAR object properties on plain requests ([1be15fa](https://github.com/panva/node-oidc-provider/commit/1be15faed0a704bf5a2c34121d8131e00f23c734))
+* **PAR:** skip stored PAR object alg validation when it's being used ([406caa4](https://github.com/panva/node-oidc-provider/commit/406caa48f0c5929666e43a7b76af9a393c4631d2))
+
 ## [7.11.4](https://github.com/panva/node-oidc-provider/compare/v7.11.3...v7.11.4) (2022-07-04)
 
 
