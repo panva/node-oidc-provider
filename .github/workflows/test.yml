@@ -24,11 +24,14 @@ jobs:
       - name: Checkout
         uses: actions/checkout@master
       - name: Setup node
-        uses: actions/setup-node@v2
+        uses: actions/setup-node@v3
         with:
           node-version: 16
-      - name: Install dependencies
-        run: npx panva/npm-install-retry
+          check-latest: true
+          cache: 'npm'
+      - run: npm i -g npm
+      - run: npm clean-install
+      - run: npm upgrade
       - run: npm audit --production
 
   lint:
@@ -39,22 +42,13 @@ jobs:
       - name: Checkout
         uses: actions/checkout@master
       - name: Setup node
-        uses: actions/setup-node@v2
+        uses: actions/setup-node@v3
         with:
-          node-version: 12
-      - name: Store node version variable
-        id: node
-        run: |
-          echo "::set-output name=version::$(node -v)"
-      - name: Cache node_modules
-        uses: actions/cache@v2
-        id: node_modules
-        with:
-          path: node_modules
-          key: ${{ runner.os }}-node_modules-${{ hashFiles('package.json') }}-${{ steps.node.outputs.version }}
-      - name: Install dependencies
-        run: npx panva/npm-install-retry
-        if: ${{ steps.node_modules.outputs.cache-hit != 'true' }}
+          node-version: 16
+          check-latest: true
+          cache: 'npm'
+      - run: npm i -g npm
+      - run: npm clean-install
       - run: npm run lint
 
   test:
@@ -83,25 +77,14 @@ jobs:
       - name: Checkout
         uses: actions/checkout@master
       - name: Setup node
-        uses: actions/setup-node@v2
+        uses: actions/setup-node@v3
         with:
           node-version: ${{ matrix.node-version }}
-      - name: Store node version variable
-        id: node
-        run: |
-          echo "::set-output name=version::$(node -v)"
-      - name: Cache node_modules
-        uses: actions/cache@v2
-        id: node_modules
-        with:
-          path: node_modules
-          key: ${{ runner.os }}-node_modules-${{ hashFiles('package.json') }}-${{ steps.node.outputs.version }}
-      - name: Install dependencies
-        run: npx panva/npm-install-retry
-        if: ${{ steps.node_modules.outputs.cache-hit != 'true' }}
+      - run: npm i -g npm
+      - run: npm clean-install
       - run: npm run ci
       - uses: actions/upload-artifact@v2
-        if: ${{ matrix.node-version == 14 && matrix.os == 'ubuntu-latest' }}
+        if: ${{ matrix.node-version == 16 && matrix.os == 'ubuntu-latest' }}
         with:
           if-no-files-found: warn
           retention-days: 1
@@ -472,22 +455,13 @@ jobs:
       - name: Checkout
         uses: actions/checkout@master
       - name: Setup node
-        uses: actions/setup-node@v2
+        uses: actions/setup-node@v3
         with:
-          node-version: 14
-      - name: Store node version variable
-        id: node
-        run: |
-          echo "::set-output name=version::$(node -v)"
-      - name: Cache node_modules
-        uses: actions/cache@v2
-        id: node_modules
-        with:
-          path: node_modules
-          key: ${{ runner.os }}-node_modules-${{ hashFiles('package.json') }}-${{ steps.node.outputs.version }}
-      - name: Install dependencies
-        run: npx panva/npm-install-retry
-        if: ${{ steps.node_modules.outputs.cache-hit != 'true' }}
+          node-version: 16
+          check-latest: true
+          cache: 'npm'
+      - run: npm i -g npm
+      - run: npm clean-install
       - name: Run oidc-provider (OIDC)
         run: npx c8 node certification/oidc/docker &
         if: ${{ startsWith(matrix.setup.plan, 'oidcc-') }}
@@ -574,22 +548,13 @@ jobs:
       - name: Checkout
         uses: actions/checkout@master
       - name: Setup node
-        uses: actions/setup-node@v2
+        uses: actions/setup-node@v3
         with:
-          node-version: 14
-      - name: Store node version variable
-        id: node
-        run: |
-          echo "::set-output name=version::$(node -v)"
-      - name: Cache node_modules
-        uses: actions/cache@v2
-        id: node_modules
-        with:
-          path: node_modules
-          key: ${{ runner.os }}-node_modules-${{ hashFiles('package.json') }}-${{ steps.node.outputs.version }}
-      - name: Install dependencies
-        run: npx panva/npm-install-retry
-        if: ${{ steps.node_modules.outputs.cache-hit != 'true' }}
+          node-version: 16
+          check-latest: true
+          cache: 'npm'
+      - run: npm i -g npm
+      - run: npm clean-install
       - uses: actions/download-artifact@v2
         with:
           name: coverage-data
