@@ -1,7 +1,7 @@
 const { expect } = require('chai');
 const sinon = require('sinon');
 const jose = require('jose2');
-const { importJWK } = require('jose');
+const { importJWK, decodeProtectedHeader, decodeJwt } = require('jose');
 
 const JWT = require('../../lib/helpers/jwt');
 const bootstrap = require('../test_helper');
@@ -372,6 +372,8 @@ describe('Pushed Request Object', () => {
           it('stores a request object and returns a uri', async function () {
             const spy = sinon.spy();
             this.provider.once('pushed_authorization_request.success', spy);
+            const spy2 = sinon.spy();
+            this.provider.once('pushed_authorization_request.saved', spy2);
 
             await this.agent.post('/request')
               .auth(clientId, 'secret')
@@ -390,6 +392,11 @@ describe('Pushed Request Object', () => {
               });
 
             expect(spy).to.have.property('calledOnce', true);
+            expect(spy2).to.have.property('calledOnce', true);
+            const header = decodeProtectedHeader(spy2.args[0][0].request);
+            expect(header).to.deep.eql({ alg: 'none' });
+            const payload = decodeJwt(spy2.args[0][0].request);
+            expect(payload).to.contain.keys(['aud', 'exp', 'iat', 'nbf', 'iss']);
           });
 
           it('forbids request_uri to be used', async function () {
