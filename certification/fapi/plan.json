@@ -5,8 +5,7 @@
         "discoveryUrl": "https://fapi.panva.cz/.well-known/openid-configuration"
     },
     "client": {
-        "client_id": "mtls-one",
-        "client_name": "mtls-one",
+        "client_name": "one",
         "scope": "openid offline_access",
         "jwks": {
             "keys": [
@@ -38,8 +37,7 @@
         "key": "-----BEGIN PRIVATE KEY-----\nMIIEvgIBADANBgkqhkiG9w0BAQEFAASCBKgwggSkAgEAAoIBAQDEEnW885Hp+2Q7\nl+KCtKPOwfPIVOLKshgygWIAXC8z5TKnA1N9qbB2BvpDpWUKdXrYuBzWcNH/PHwr\nJvX42AHGeXCZJDSXzuRH934/fjMQHTFJquoP4rziUlRJfT+pwJcuvgxgGLI5xgzN\nqD7gZZp/9LVm5OdXU1poQviUel+hwV5eiT1r1fOe5LOiXkLwp3kBLlqGrtRPFIIa\n+20qkvnFh5ZcnRmOmm2vcAnI7OaNc2rSLHVbvkFuY8mMEx8rtthq0dQyyy1Ucudi\n3cLCI2x8Px0qQFUqWH4LgNaj7VZjlU1NPE8LjsSPLasZsMsn0wt22fo+v5bJbaZ3\nN3QQqM0VAgMBAAECggEBAKrgF6Hrd9+9yhWxgaM9gIDhQO73I4tY+IOThHAh5rVI\nawNof6vFZdcGr7aiftNFnSEgG2m7exgAg4or8zPCNJHfJgUgq4Eduo8JnwoAlsnV\nVy4HeOMNTGXFMFW3hPMQt/DxieF5xGFbO69DkECJ68LV5f3dQcw2BVVWAEON/qf9\nUhgEnx79OdiCYzyoHjxaHoXk9cVTUtXwmU0lphRFT14W2Py0KZ5vA8JEefoZl/qE\no42iR0KB4eDj/LiduWAMKDLN/u0Dmq3WxLvw7LHnlqENTEY56Lw1sbMQlmvl0zCD\n68BeMz+Mvlm7VRSCxR+3uX6Nli3eb2EsYziZIlt00iUCgYEA4ZNvp0u6vXQAf7IG\nESuhu3u4cD6K8iJ6BT+O64yHJzc17e9lt+p89GasTtkgeEH/lr+XxScVBYndi/8v\naqsA47bkIoWVvcXq7C4jkv0bPelpaI/KPGfoZC1etR102+dS1ZufxzwSo64drw+H\nPuwaIkXvmpK4MBI9jEYoOHh9KR8CgYEA3oRU/iCWvKOGHlR9BmcBysVGmkvBwj8X\nLTJGfxJkm3M9utLSg0uNo7vW0Zm88KdzdeaRBt6ltZAG3hBL0mHNwC0hYRv5fzO7\nyczWFLPXbUNVqC5OLI+wTL7+ikx040lL9IRRtgub47+9IvxxaGaIRzsFwa+15D7T\nCE7K8BydH0sCgYEAivnkC2VL2tcyS3op5MBF95Vk77qIrl9xX/RloFfHGPEaB8q7\nl5EfhRAQzs9VAuJejsjhv7SxbeUfmtYQp55NgP44FdDJjc73SqWugyvvcbhxmdsl\nFQxLkBSnydwpGCav0Sz9RqmLLk7iuO1PPQQHoeAGm+wTEILcaqT6uLf7HK8CgYBO\nlloWLphOI0q454oIetTNMoNO9zaFThb3ZWw0cOCLblX853xl1oc9rpeeCzgJnnpO\nx5Gs5XGNAEMMpqDAur4aA1Zon6KsZC8MhIWPZjzNYByee0wsvMq9MC9h1MLrivWC\ndEEPlGYIN62q75F2F9BFp/jOgSoyZGXP51QRHWn4pQKBgCEy7GsS3sAj3GiTmCkV\nvR3gKSlSKmJULmI+8EoT6tzYhMvyqoCHPtll2DHzBeqA6Il2DKz+gFbKln2+LrPU\nrb2rgK9e8qdZH9X36Ws8u9YA/VasGQRUFIAcFcNWoBBX79nBQ/89zrPubaN2Rh9B\nKuUEGLKAzDf1JIzseUr8jdvw\n-----END PRIVATE KEY-----\n"
     },
     "client2": {
-        "client_id": "mtls-two",
-        "client_name": "mtls-two",
+        "client_name": "two",
         "scope": "openid offline_access",
         "jwks": {
             "keys": [
@@ -131,7 +129,7 @@
         }
     ],
     "override": {
-        "fapi-rw-id2-ensure-redirect-uri-in-authorization-request": {
+        "REPLACEME-ensure-redirect-uri-in-authorization-request": {
             "browser": [
                 {
                     "comment": "expect an immediate error page",
@@ -155,7 +153,7 @@
                 }
             ]
         },
-        "fapi-rw-id2-ensure-registered-redirect-uri": {
+        "REPLACEME-ensure-registered-redirect-uri": {
             "browser": [
                 {
                     "comment": "expect an immediate error page",
@@ -179,7 +177,7 @@
                 }
             ]
         },
-        "fapi-rw-id2-ensure-request-object-without-redirect-uri-fails": {
+        "REPLACEME-ensure-request-object-without-redirect-uri-fails": {
             "browser": [
                 {
                     "comment": "expect an immediate error page",
@@ -203,7 +201,7 @@
                 }
             ]
         },
-        "fapi-rw-id2-user-rejects-authentication": {
+        "REPLACEME-user-rejects-authentication": {
             "browser": [
                 {
                     "comment": "Rejects interaction",

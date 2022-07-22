@@ -2,15 +2,17 @@
 
 const { readFileSync } = require('fs');
 const path = require('path');
-const { randomBytes } = require('crypto');
+const { randomBytes, randomUUID } = require('crypto');
 const https = require('https');
 const { promisify } = require('util');
+const { URL } = require('url');
 
 const jose = require('jose2');
 const helmet = require('helmet');
 const selfsigned = require('selfsigned').generate();
 
 const { Provider, errors } = require('../../lib'); // require('oidc-provider');
+const MemoryAdapter = require('../../lib/adapters/memory_adapter');
 
 const OFFICIAL_CERTIFICATION = 'https://www.certification.openid.net';
 const { PORT = 3000, ISSUER = `http://localhost:${PORT}`, SUITE_BASE_URL = OFFICIAL_CERTIFICATION } = process.env;
@@ -20,30 +22,125 @@ const tokenEndpointAuthMethods = ['private_key_jwt', 'self_signed_tls_client_aut
 
 const normalize = (cert) => cert.toString().replace(/(?:-----(?:BEGIN|END) CERTIFICATE-----|\s)/g, '');
 
-const JWK_PKJWTONE = jose.JWK.asKey(readFileSync(path.join(__dirname, 'pkjwtone.key')), { alg: 'PS256', use: 'sig' }).toJWK();
-const JWK_PKJWTTWO = jose.JWK.asKey(readFileSync(path.join(__dirname, 'pkjwttwo.key')), { alg: 'PS256', use: 'sig' }).toJWK();
-const JWK_MTLSONE = jose.JWK.asKey(readFileSync(path.join(__dirname, 'mtlsone.key')), { x5c: [normalize(readFileSync(path.join(__dirname, 'mtlsone.crt')))], alg: 'PS256', use: 'sig' }).toJWK();
-const JWK_MTLSTWO = jose.JWK.asKey(readFileSync(path.join(__dirname, 'mtlstwo.key')), { x5c: [normalize(readFileSync(path.join(__dirname, 'mtlstwo.crt')))], alg: 'PS256', use: 'sig' }).toJWK();
+const JWK_ONE = jose.JWK.asKey(readFileSync(path.join(__dirname, 'one.key')), { x5c: [normalize(readFileSync(path.join(__dirname, 'one.crt')))], alg: 'PS256', use: 'sig' }).toJWK();
+const JWK_TWO = jose.JWK.asKey(readFileSync(path.join(__dirname, 'two.key')), { x5c: [normalize(readFileSync(path.join(__dirname, 'two.crt')))], alg: 'PS256', use: 'sig' }).toJWK();
 
-const aliases = [
-  'oidc-provider',
-  'oidc-provider-by_value-mtls-plain_fapi-jarm',
-  'oidc-provider-by_value-mtls-plain_fapi-plain_response',
-  'oidc-provider-by_value-private_key_jwt-plain_fapi-jarm',
-  'oidc-provider-by_value-private_key_jwt-plain_fapi-plain_response',
-  'oidc-provider-pushed-mtls-plain_fapi-jarm',
-  'oidc-provider-pushed-mtls-plain_fapi-plain_response',
-  'oidc-provider-pushed-private_key_jwt-plain_fapi-jarm',
-  'oidc-provider-pushed-private_key_jwt-plain_fapi-plain_response',
-];
+function jwk(metadata, key) {
+  return {
+    ...metadata,
+    jwks: { keys: [key] },
+  };
+}
 
-const REDIRECT_URIS = aliases.map((alias) => [`${SUITE_BASE_URL}/test/a/${alias}/callback`, `${SUITE_BASE_URL}/test/a/${alias}/callback?dummy1=lorem&dummy2=ipsum`]).flat(Infinity);
+function pkjwt(metadata, key) {
+  return jwk({
+    ...metadata,
+    token_endpoint_auth_method: 'private_key_jwt',
+  }, key);
+}
+
+function mtlsAuth(metadata, key) {
+  return jwk({
+    ...metadata,
+    token_endpoint_auth_method: 'self_signed_tls_client_auth',
+  }, key);
+}
+
+function mtlsPoP(metadata) {
+  return {
+    ...metadata,
+    tls_client_certificate_bound_access_tokens: true,
+  };
+}
+
+function jar(metadata) {
+  return {
+    ...metadata,
+    require_signed_request_object: true,
+  };
+}
+
+function fapi1(metadata) {
+  return mtlsPoP(jar({
+    ...metadata,
+    default_acr_values: ['urn:mace:incommon:iap:silver'],
+    grant_types: ['implicit', 'authorization_code', 'refresh_token'],
+    response_types: ['code', 'code id_token'],
+    redirect_uris: ['https://rp.example.com/cb'],
+  }));
+}
+
+const adapter = (name) => {
+  if (name === 'Client') {
+    const memory = new MemoryAdapter(name);
+    const orig = MemoryAdapter.prototype.find;
+    memory.find = async function find(id) {
+      const [version, ...rest] = id.split('-');
+
+      let metadata = {
+        cacheBuster: randomUUID(),
+      };
+
+      if (version === '1.0') {
+        const [tag, clientAuth, num, ...empty] = rest;
+        if (empty.length !== 0) {
+          return orig.call(this, id);
+        }
+        metadata = fapi1(metadata);
+
+        switch (tag) {
+          case 'final':
+            metadata.profile = '1.0 Final';
+            break;
+          case 'id2':
+            metadata.profile = '1.0 ID2';
+            break;
+          default:
+            return orig.call(this, id);
+        }
+
+        let key;
+        switch (num) {
+          case 'one':
+            key = JWK_ONE;
+            break;
+          case 'two':
+            key = JWK_TWO;
+            break;
+          default:
+            return orig.call(this, id);
+        }
+
+        switch (clientAuth) {
+          case 'mtls':
+            metadata = mtlsAuth(metadata, key);
+            break;
+          case 'pkjwt':
+            metadata = pkjwt(metadata, key);
+            break;
+          default:
+            return orig.call(this, id);
+        }
+
+        metadata.client_id = id;
+        return metadata;
+      }
+
+      return orig.call(this, id);
+    };
+
+    return memory;
+  }
+
+  return new MemoryAdapter(name);
+};
 
 const fapi = new Provider(ISSUER, {
   acrValues: ['urn:mace:incommon:iap:silver'],
   routes: {
     userinfo: '/accounts',
   },
+  adapter,
   jwks: {
     keys: [
       {
@@ -62,49 +159,10 @@ const fapi = new Provider(ISSUER, {
     ],
   },
   scopes: ['openid', 'offline_access'],
-  clients: [
-    {
-      client_id: 'pkjwt-one',
-      redirect_uris: REDIRECT_URIS,
-      token_endpoint_auth_method: 'private_key_jwt',
-      jwks: {
-        keys: [JWK_PKJWTONE],
-      },
-    },
-    {
-      client_id: 'pkjwt-two',
-      redirect_uris: REDIRECT_URIS,
-      token_endpoint_auth_method: 'private_key_jwt',
-      jwks: {
-        keys: [JWK_PKJWTTWO],
-      },
-    },
-    {
-      client_id: 'mtls-one',
-      redirect_uris: REDIRECT_URIS,
-      token_endpoint_auth_method: 'self_signed_tls_client_auth',
-      jwks: {
-        keys: [JWK_MTLSONE],
-      },
-    },
-    {
-      client_id: 'mtls-two',
-      redirect_uris: REDIRECT_URIS,
-      token_endpoint_auth_method: 'self_signed_tls_client_auth',
-      jwks: {
-        keys: [JWK_MTLSTWO],
-      },
-    },
-  ],
   clientDefaults: {
-    default_acr_values: ['urn:mace:incommon:iap:silver'],
     authorization_signed_response_alg: 'PS256',
-    grant_types: ['implicit', 'authorization_code', 'refresh_token'],
-    response_types: ['code', 'code id_token'],
     id_token_signed_response_alg: 'PS256',
     request_object_signing_alg: 'PS256',
-    tls_client_certificate_bound_access_tokens: true,
-    token_endpoint_auth_method: 'private_key_jwt',
   },
   clockTolerance: 5,
   features: {
@@ -122,7 +180,16 @@ const fapi = new Provider(ISSUER, {
     registrationManagement: { enabled: true },
     fapi: {
       enabled: true,
-      profile: process.env.PROFILE ? process.env.PROFILE : '1.0 Final',
+      profile(ctx, client) {
+        if (!client?.profile) {
+          if (client.grantTypes.includes('urn:openid:params:grant-type:ciba')) {
+            return '1.0 Final';
+          }
+          throw new Error('could not determine FAPI profile');
+        }
+
+        return client.profile;
+      },
     },
     mTLS: {
       enabled: true,
@@ -145,7 +212,7 @@ const fapi = new Provider(ISSUER, {
     requestObjects: {
       request: true,
       requestUri: false,
-      requireSignedRequestObject: true,
+      requireSignedRequestObject: false,
       mode: 'strict',
     },
   },
@@ -158,6 +225,9 @@ const fapi = new Provider(ISSUER, {
     tokenEndpointAuthSigningAlgValues: ALGS,
     userinfoSigningAlgValues: ALGS,
   },
+  extraClientMetadata: {
+    properties: ['profile'],
+  },
   pkce: {
     required: () => false,
   },
@@ -169,6 +239,19 @@ Object.defineProperty(fapi.OIDCContext.prototype, 'clientJwtAuthExpectedAudience
     const acceptedAudiences = clientJwtAuthExpectedAudience.call(this);
     acceptedAudiences.add(this.ctx.href);
     return acceptedAudiences;
+  },
+});
+
+Object.defineProperty(fapi.Client.prototype, 'redirectUriAllowed', {
+  value(url) {
+    let parsed;
+    try {
+      parsed = new URL(url);
+    } catch (err) {
+      return false;
+    }
+
+    return parsed.origin === SUITE_BASE_URL && parsed.pathname.endsWith('/callback') && (parsed.search === '' || parsed.search === '?dummy1=lorem&dummy2=ipsum');
   },
 });
 

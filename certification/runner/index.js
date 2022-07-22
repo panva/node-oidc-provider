@@ -1,5 +1,5 @@
 /* eslint-env mocha */
-/* eslint-disable no-bitwise, func-names, no-console, no-restricted-syntax, no-await-in-loop */
+/* eslint-disable no-bitwise, func-names, no-console, no-restricted-syntax, no-await-in-loop, no-multi-assign, max-len */
 
 const { strict: assert } = require('assert');
 const fs = require('fs');
@@ -28,12 +28,31 @@ const configuration = JSON.parse(fs.readFileSync(CONFIGURATION));
 const runner = new API({ baseUrl: SUITE_BASE_URL, bearerToken: SUITE_ACCESS_TOKEN });
 
 if ('alias' in configuration) {
-  configuration.alias = `${configuration.alias}-${Object.values(VARIANT).join('-')}`;
+  configuration.alias = `${configuration.alias}-${Object.values(VARIANT).sort().join('-')}`;
 }
 
-if (PLAN_NAME === 'fapi1-advanced-final-test-plan') {
+let override;
+// eslint-disable-next-line default-case
+switch (PLAN_NAME) {
+  case 'fapi1-advanced-final-test-plan': {
+    override = 'fapi1-advanced-final';
+    const auth = VARIANT.client_auth_type === 'mtls' ? 'mtls' : 'pkjwt';
+    configuration.client.client_id = `1.0-final-${auth}-one`;
+    configuration.client2.client_id = `1.0-final-${auth}-two`;
+    break;
+  }
+  case 'fapi-rw-id2-test-plan': {
+    override = 'fapi-rw-id2';
+    const auth = VARIANT.client_auth_type === 'mtls' ? 'mtls' : 'pkjwt';
+    configuration.client.client_id = `1.0-id2-${auth}-one`;
+    configuration.client2.client_id = `1.0-id2-${auth}-two`;
+    break;
+  }
+}
+
+if (override) {
   configuration.override = Object.entries(configuration.override).reduce((acc, [key, value]) => {
-    acc[key.replace('fapi-rw-id2', 'fapi1-advanced-final')] = value;
+    acc[key.replace('REPLACEME', override)] = value;
     return acc;
   }, {});
 }
