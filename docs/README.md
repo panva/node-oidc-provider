@@ -440,6 +440,7 @@ location / {
   - [requestObjects](#featuresrequestobjects)
   - [resourceIndicators ❗](#featuresresourceindicators)
   - [revocation](#featuresrevocation)
+  - [rpInitiatedLogout](#featuresrpinitiatedlogout)
   - [userinfo](#featuresuserinfo)
 - [acrValues](#acrvalues)
 - [allowOmittingSingleRegisteredRedirectUri](#allowomittingsingleregisteredredirecturi)
@@ -1866,6 +1867,7 @@ _**default value**_:
   enabled: true,
   logoutSource: [AsyncFunction: logoutSource], // see expanded details below
   postLogoutSuccessSource: [AsyncFunction: postLogoutSuccessSource] // see expanded details below
+  onConfirmed: [AsyncFunction: onConfirmed] // see expanded details below
 }
 ```
 
@@ -1925,6 +1927,21 @@ async function postLogoutSuccessSource(ctx) {
       </div>
     </body>
     </html>`;
+}
+```
+
+#### onConfirmed
+
+Callback executed after Logout is confirmed by user. Receives request `ctx` to for example clear login cookies not set by oidc-provider.
+
+
+_**default value**_: `undefined`
+
+_**example**_:
+```js
+async function onConfirmed(ctx) {
+  // Clear cookie
+  ctx.cookies.set('cookie-not-managed-by-oidc-provider')
 }
 ```
 
