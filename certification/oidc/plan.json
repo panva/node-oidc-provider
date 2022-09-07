@@ -778,25 +778,36 @@
                   ]
               },
               {
-                  "comment": "expect an immediate error page",
-                  "match": "https://op.panva.cz/session/end*",
-                  "tasks": [
-                      {
-                          "task": "Expect error page",
-                          "match": "https://op.panva.cz/session/end*",
-                          "commands": [
-                              [
-                                  "wait",
-                                  "xpath",
-                                  "//*",
-                                  10,
-                                  "post_logout_redirect_uri can only be used in combination with id_token_hint",
-                                  "update-image-placeholder"
-                              ]
-                          ]
-                      }
-                  ]
-              }
+                "comment": "wait for the logout success",
+                "match": "https://op.panva.cz/session/end*",
+                "tasks": [
+                    {
+                        "task": "Choose logout option",
+                        "match": "https://op.panva.cz/session/end*",
+                        "commands": [
+                            [
+                                "click",
+                                "css",
+                                "button[autofocus] "
+                            ]
+                        ]
+                    },
+                    {
+                        "task": "Expect success page",
+                        "match": "https://op.panva.cz/session/end/success",
+                        "commands": [
+                            [
+                                "wait",
+                                "xpath",
+                                "//*",
+                                10,
+                                "Sign-out Success",
+                                "update-image-placeholder"
+                            ]
+                        ]
+                    }
+                ]
+            }
           ]
       },
       "oidcc-rp-initiated-logout-no-params" : {

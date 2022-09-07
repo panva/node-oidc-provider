@@ -262,28 +262,17 @@ describe('logout endpoint', () => {
                 expect(postLogoutRedirectUri).to.be.undefined;
               });
           });
-        });
 
-        it('without id_token_hint or client_id post_logout_redirect_uri may not be provided', function () {
-          const emitSpy = sinon.spy();
-          const renderSpy = sinon.spy(i(this.provider).configuration(), 'renderError');
-          this.provider.once('end_session.error', emitSpy);
-          const params = {
-            post_logout_redirect_uri: 'https://client.example.com/callback/logout',
-          };
+          it('ignores unverified post_logout_redirect_uri', function () {
+            const params = { post_logout_redirect_uri: 'https://client.example.com/logout/cb' };
 
-          return this.agent.get(route)
-            .set('Accept', 'text/html')
-            .query(params)
-            .expect(400)
-            .expect(() => {
-              expect(emitSpy.calledOnce).to.be.true;
-              expect(renderSpy.calledOnce).to.be.true;
-              const renderArgs = renderSpy.args[0];
-              expect(renderArgs[1]).to.have.property('error', 'invalid_request');
-              expect(renderArgs[1]).to.have.property('error_description', 'post_logout_redirect_uri can only be used in combination with id_token_hint or client_id');
-              expect(renderArgs[2]).to.be.an.instanceof(InvalidRequest);
-            });
+            return this.wrap({ route, verb, params })
+              .expect(200)
+              .expect(() => {
+                const { state: { postLogoutRedirectUri } } = this.getSession();
+                expect(postLogoutRedirectUri).to.be.undefined;
+              });
+          });
         });
 
         it('validates post_logout_redirect_uri allowed on client', function () {

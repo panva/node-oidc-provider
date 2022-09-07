@@ -1863,7 +1863,7 @@ _**default value**_:
 
 ### features.rpInitiatedLogout
 
-[RP-Initiated Logout 1.0](https://openid.net/specs/openid-connect-rpinitiated-1_0-02.html)  
+[RP-Initiated Logout 1.0](https://openid.net/specs/openid-connect-rpinitiated-1_0-final.html)  
 
 Enables RP-Initiated Logout features  
 
