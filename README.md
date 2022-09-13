@@ -33,7 +33,7 @@ _Note that not all features are enabled by default, check the configuration sect
 - [RFC8705 - OAuth 2.0 Mutual TLS Client Authentication and Certificate Bound Access Tokens (MTLS)][mtls]
 - [RFC8707 - OAuth 2.0 Resource Indicators][resource-indicators]
 - [RFC9101 - OAuth 2.0 JWT-Secured Authorization Request (JAR)][jar]
-- [RFC9126 - OAuth 2.0 Pushed Authorization Requests (PAR) - draft 08][par]
+- [RFC9126 - OAuth 2.0 Pushed Authorization Requests (PAR)][par]
 - [RFC9207 - OAuth 2.0 Authorization Server Issuer Identifier in Authorization Response][iss-auth-resp]
 - [Financial-grade API Security Profile 1.0 - Part 2: Advanced (FAPI)][fapi]
 - [OpenID Connect Client Initiated Backchannel Authentication Flow - Core 1.0 (CIBA)][ciba]
