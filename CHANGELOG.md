@@ -2,6 +2,18 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [7.12.0](https://github.com/panva/node-oidc-provider/compare/v7.11.5...v7.12.0) (2022-09-13)
+
+
+### Features
+
+* graduate backchannelLogout feature as stable ([617e260](https://github.com/panva/node-oidc-provider/commit/617e2602d0e862fdbdec4d501555097596378d96))
+
+
+### Fixes
+
+* ignore instead of throw on unverified post_logout_redirect_uri ([04b1096](https://github.com/panva/node-oidc-provider/commit/04b1096ac1507cab15a680ebde91cc33f6d636eb))
+
 ## [7.11.5](https://github.com/panva/node-oidc-provider/compare/v7.11.4...v7.11.5) (2022-07-16)
 
 
