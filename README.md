@@ -22,6 +22,7 @@ _Note that not all features are enabled by default, check the configuration sect
 - [OpenID Connect Discovery 1.0][discovery]
 - [OpenID Connect Dynamic Client Registration 1.0][registration] and [RFC7591 - OAuth 2.0 Dynamic Client Registration Protocol][oauth2-registration]
 - [OpenID Connect RP-Initiated Logout 1.0][rpinitiated-logout]
+- [OpenID Connect Back-Channel Logout 1.0][backchannel-logout]
 - [OAuth 2.0 Form Post Response Mode][form-post]
 - [RFC7009 - OAuth 2.0 Token Revocation][revocation]
 - [RFC7592 - OAuth 2.0 Dynamic Client Registration Management Protocol][registration-management]
@@ -49,7 +50,6 @@ The following draft specifications are implemented by oidc-provider:
 - [JWT Secured Authorization Response Mode for OAuth 2.0 (JARM) - Implementer's Draft 01][jarm]
 - [Financial-grade API: Client Initiated Backchannel Authentication Profile (FAPI-CIBA) - Implementer's Draft 01][fapi-ciba]
 - [OAuth 2.0 Demonstration of Proof-of-Possession at the Application Layer (DPoP) - draft 03][dpop]
-- [OpenID Connect Back-Channel Logout 1.0 - draft 07][backchannel-logout]
 
 Updates to draft specification versions are released as MINOR library versions,
 if you utilize these specification implementations consider using the tilde `~` operator in your
@@ -131,7 +131,7 @@ actions and i.e. emit metrics that react to specific triggers. See the list of a
 [introspection]: https://www.rfc-editor.org/rfc/rfc7662.html
 [pkce]: https://www.rfc-editor.org/rfc/rfc7636.html
 [example-repo]: https://github.com/panva/node-oidc-provider-example
-[backchannel-logout]: https://openid.net/specs/openid-connect-backchannel-1_0-07.html
+[backchannel-logout]: https://openid.net/specs/openid-connect-backchannel-1_0-final.html
 [registration-management]: https://www.rfc-editor.org/rfc/rfc7592.html
 [oauth-native-apps]: https://www.rfc-editor.org/rfc/rfc8252.html
 [jar]: https://www.rfc-editor.org/rfc/rfc9101.html

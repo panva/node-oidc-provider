@@ -624,18 +624,14 @@ new Provider('http://localhost:3000', {
 
 ### features.backchannelLogout
 
-[Back-Channel Logout 1.0 - draft 07](https://openid.net/specs/openid-connect-backchannel-1_0-07.html)  
+[Back-Channel Logout 1.0](https://openid.net/specs/openid-connect-backchannel-1_0-final.html)  
 
-Enables Back-Channel Logout features.   
-  
-
-_**recommendation**_: Updates to draft specification versions are released as MINOR library versions, if you utilize these specification implementations consider using the tilde `~` operator in your package.json since breaking changes may be introduced as part of these version updates. Alternatively, [acknowledge](#features) the version and be notified of breaking changes as part of your CI.  
+Enables Back-Channel Logout features.  
 
 
 _**default value**_:
 ```js
 {
-  ack: undefined,
   enabled: false
 }
 ```
