@@ -305,7 +305,6 @@ const fastify = new Fastify();
 await fastify.register(require('@fastify/middie'));
 // or
 // await app.register(require('@fastify/express'));
-const oidc = new Provider(issuer, configuration);
 fastify.use('/oidc', oidc.callback());
 ```
 
