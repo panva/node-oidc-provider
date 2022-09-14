@@ -54,7 +54,7 @@ function report() {
     const mountTo = '/oidc';
     const frameworks = ['connect', 'express', 'koa'];
 
-    const major = process.version.slice(1).split('.').map((x) => parseInt(x, 10))[0];
+    const [major] = process.version.slice(1).split('.').map((x) => parseInt(x, 10));
 
     if (major >= 12) {
       frameworks.push('hapi');

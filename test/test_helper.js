@@ -1,6 +1,8 @@
+/* eslint-disable global-require */
 /* eslint-disable no-underscore-dangle */
 
 process.env.NODE_ENV = process.env.NODE_ENV || 'test';
+const [major] = process.version.slice(1).split('.').map((x) => parseInt(x, 10));
 
 const { parse } = require('url');
 const path = require('path');
@@ -16,13 +18,19 @@ const base64url = require('base64url');
 const KeyGrip = require('keygrip'); // eslint-disable-line import/no-extraneous-dependencies
 const Connect = require('connect');
 const Express = require('express');
-const Fastify = require('fastify');
-const middie = require('@fastify/middie');
 const Koa = require('koa');
 
 const nanoid = require('../lib/helpers/nanoid');
 const epochTime = require('../lib/helpers/epoch_time');
 const { Provider } = require('../lib');
+
+let Fastify;
+let middie;
+
+if (major >= 14) {
+  Fastify = require('fastify');
+  middie = require('@fastify/middie');
+}
 
 const { Account, TestAdapter } = require('./models');
 
