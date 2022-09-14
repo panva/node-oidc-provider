@@ -300,20 +300,13 @@ connectApp.use('/oidc', oidc.callback());
 
 ### to a `fastify` application
 ```js
-// assumes fastify ^4.5.0
-async function build() {
-  const fastify = Fastify();
-  await fastify.register(require('@fastify/express'));
-  // or
-  // await app.register(require('middie'));
-  const oidc = new Provider(issuer, configuration);
-  fastify.use('/oidc', oidc.callback());
-  return fastify;
-}
-
-build()
-  .then((fastify) => fastify.listen({ port }))
-  .catch();
+// assumes fastify ^4.0.0
+const fastify = new Fastify();
+await fastify.register(require('@fastify/middie'));
+// or
+// await app.register(require('@fastify/express'));
+const oidc = new Provider(issuer, configuration);
+fastify.use('/oidc', oidc.callback());
 ```
 
 ### to a `hapi` application

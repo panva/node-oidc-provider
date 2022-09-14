@@ -17,7 +17,7 @@ const KeyGrip = require('keygrip'); // eslint-disable-line import/no-extraneous-
 const Connect = require('connect');
 const Express = require('express');
 const Fastify = require('fastify');
-const middie = require('middie');
+const middie = require('@fastify/middie');
 const Koa = require('koa');
 
 const nanoid = require('../lib/helpers/nanoid');
