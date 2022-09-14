@@ -52,10 +52,16 @@ function report() {
 
   if (process.platform === 'linux' || !('CI' in process.env)) {
     const mountTo = '/oidc';
-    const frameworks = ['connect', 'express', 'fastify', 'koa'];
+    const frameworks = ['connect', 'express', 'koa'];
 
-    if (process.version.slice(1).split('.').map((x) => parseInt(x, 10))[0] >= 12) {
+    const [major] = process.version.slice(1).split('.').map((x) => parseInt(x, 10));
+
+    if (major >= 12) {
       frameworks.push('hapi');
+    }
+
+    if (major >= 14) {
+      frameworks.push('fastify');
     }
 
     for (const mountVia of frameworks) {

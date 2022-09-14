@@ -1,3 +1,4 @@
+/* eslint-disable global-require */
 /* eslint-disable no-underscore-dangle */
 
 process.env.NODE_ENV = process.env.NODE_ENV || 'test';
@@ -16,8 +17,6 @@ const base64url = require('base64url');
 const KeyGrip = require('keygrip'); // eslint-disable-line import/no-extraneous-dependencies
 const Connect = require('connect');
 const Express = require('express');
-const Fastify = require('fastify');
-const middie = require('middie');
 const Koa = require('koa');
 
 const nanoid = require('../lib/helpers/nanoid');
@@ -458,6 +457,8 @@ module.exports = function testHelper(dir, {
         break;
       }
       case 'fastify': {
+        const Fastify = require('fastify');
+        const middie = require('@fastify/middie');
         const app = new Fastify();
         await app.register(middie);
         app.use(mountTo, provider.callback());
@@ -472,7 +473,7 @@ module.exports = function testHelper(dir, {
         break;
       }
       case 'hapi': {
-        const Hapi = require('@hapi/hapi'); // eslint-disable-line global-require
+        const Hapi = require('@hapi/hapi');
         const app = new Hapi.Server({ port });
         const callback = provider.callback();
         app.route({
