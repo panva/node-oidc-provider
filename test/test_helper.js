@@ -2,7 +2,6 @@
 /* eslint-disable no-underscore-dangle */
 
 process.env.NODE_ENV = process.env.NODE_ENV || 'test';
-const [major] = process.version.slice(1).split('.').map((x) => parseInt(x, 10));
 
 const { parse } = require('url');
 const path = require('path');
@@ -23,14 +22,6 @@ const Koa = require('koa');
 const nanoid = require('../lib/helpers/nanoid');
 const epochTime = require('../lib/helpers/epoch_time');
 const { Provider } = require('../lib');
-
-let Fastify;
-let middie;
-
-if (major >= 14) {
-  Fastify = require('fastify');
-  middie = require('@fastify/middie');
-}
 
 const { Account, TestAdapter } = require('./models');
 
@@ -466,6 +457,8 @@ module.exports = function testHelper(dir, {
         break;
       }
       case 'fastify': {
+        const Fastify = require('fastify');
+        const middie = require('@fastify/middie');
         const app = new Fastify();
         await app.register(middie);
         app.use(mountTo, provider.callback());
@@ -480,7 +473,7 @@ module.exports = function testHelper(dir, {
         break;
       }
       case 'hapi': {
-        const Hapi = require('@hapi/hapi'); // eslint-disable-line global-require
+        const Hapi = require('@hapi/hapi');
         const app = new Hapi.Server({ port });
         const callback = provider.callback();
         app.route({
