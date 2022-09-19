@@ -25,8 +25,11 @@ const oidcConfiguration = {
       // this aligns the Grant ttl with that of the current session
       // if the same Grant is used for multiple sessions, or is set
       // to never expire, you probably do not want this in your code
-      if (ctx.oidc.account && grant.exp < ctx.oidc.session.exp) {
-        grant.exp = ctx.oidc.session.exp;
+      if (ctx.oidc.account) {
+        // Change sessionTtl to match the value set for oidc's "Session.ttl" in your configuration
+        const sessionTtl = 14 * 24 * 60 * 60; // 14 days in seconds, the default session ttl
+        const epochCurrentTime = Math.floor(Date.now() / 1000);
+        grant.exp = epochCurrentTime + sessionTtl;
 
         await grant.save();
       }
