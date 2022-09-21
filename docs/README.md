@@ -2952,7 +2952,7 @@ _**default value**_:
     }
     return 60 * 60; // 1 hour in seconds
   },
-  AuthorizationCode: 600 /* 10 minutes in seconds */,
+  AuthorizationCode: 60 /* 1 minute in seconds */,
   BackchannelAuthenticationRequest: function BackchannelAuthenticationRequestTTL(ctx, request, client) {
     if (ctx && ctx.oidc && ctx.oidc.params.requested_expiry) {
       return Math.min(10 * 60, +ctx.oidc.params.requested_expiry); // 10 minutes in seconds or requested_expiry, whichever is shorter
