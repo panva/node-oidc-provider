@@ -22,7 +22,7 @@ describe('configuration features.ciba', () => {
       .expect(200)
       .expect((response) => {
         expect(response.body).to.have.property('backchannel_authentication_endpoint').matches(/\/backchannel$/);
-        expect(response.body).to.have.property('backchannel_authentication_request_signing_alg_values_supported').not.contains('none').not.contains('HS256');
+        expect(response.body).to.have.property('backchannel_authentication_request_signing_alg_values_supported').not.contains('HS256');
         expect(response.body).to.have.property('backchannel_token_delivery_modes_supported').deep.equal(['poll', 'ping']);
         expect(response.body).to.have.property('backchannel_user_code_parameter_supported', true);
       });

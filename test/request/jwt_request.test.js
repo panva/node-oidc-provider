@@ -125,7 +125,7 @@ describe('request parameter features', () => {
               response_type: 'code',
               redirect_uri: 'https://client.example.com/cb',
               scope: 'openid',
-            }, null, 'none', { issuer: 'client', audience: this.provider.issuer }).then((request) => this.wrap({
+            }, Buffer.from('secret'), 'HS256', { issuer: 'client', audience: this.provider.issuer }).then((request) => this.wrap({
               agent: this.agent,
               route,
               verb,
@@ -164,7 +164,7 @@ describe('request parameter features', () => {
               response_type: 'code',
               redirect_uri: 'https://client.example.com/cb',
               scope: 'openid',
-            }, null, 'none', { issuer: 'client', audience: this.provider.issuer }).then((request) => this.wrap({
+            }, Buffer.from('secret'), 'HS256', { issuer: 'client', audience: this.provider.issuer }).then((request) => this.wrap({
               agent: this.agent,
               route,
               verb,
@@ -186,56 +186,6 @@ describe('request parameter features', () => {
         });
       });
 
-      it('works with signed by none', function () {
-        return JWT.sign({
-          client_id: 'client',
-          response_type: 'code',
-          redirect_uri: 'https://client.example.com/cb',
-        }, null, 'none', { issuer: 'client', audience: this.provider.issuer }).then((request) => this.wrap({
-          agent: this.agent,
-          route,
-          verb,
-          auth: {
-            request,
-            scope: 'openid',
-            client_id: 'client',
-            response_type: 'code',
-          },
-        })
-          .expect(successCode)
-          .expect(successFnCheck));
-      });
-
-      it('works with signed by none unless the client is required to use SIGNED request object', function () {
-        const spy = sinon.spy();
-        this.provider.once(errorEvt, spy);
-
-        return JWT.sign({
-          client_id: 'client-requiredSignedRequestObject',
-          response_type: 'code',
-          redirect_uri: 'https://client.example.com/cb',
-        }, null, 'none', { issuer: 'client-requiredSignedRequestObject', audience: this.provider.issuer }).then((request) => this.wrap({
-          agent: this.agent,
-          route,
-          verb,
-          auth: {
-            request,
-            scope: 'openid',
-            client_id: 'client-requiredSignedRequestObject',
-            response_type: 'code',
-          },
-        })
-          .expect(errorCode)
-          .expect(() => {
-            expect(spy.calledOnce).to.be.true;
-            expect(spy.args[0][1]).to.have.property('message', 'invalid_request_object');
-            expect(spy.args[0][1]).to.have.property(
-              'error_description',
-              'Request Object must not be unsigned for this client',
-            );
-          }));
-      });
-
       describe('JAR only request', () => {
         it('works without any other params', function () {
           return JWT.sign({
@@ -243,7 +193,7 @@ describe('request parameter features', () => {
             response_type: 'code',
             redirect_uri: 'https://client.example.com/cb',
             scope: 'openid',
-          }, null, 'none', { issuer: 'client', audience: this.provider.issuer }).then((request) => this.wrap({
+          }, Buffer.from('secret'), 'HS256', { issuer: 'client', audience: this.provider.issuer }).then((request) => this.wrap({
             agent: this.agent,
             route,
             verb,
@@ -293,7 +243,7 @@ describe('request parameter features', () => {
             response_type: 'code',
             redirect_uri: 'https://client.example.com/cb',
             scope: 'openid',
-          }, null, 'none', { /* issuer: 'client', */ audience: this.provider.issuer }).then((request) => this.wrap({
+          }, Buffer.from('secret'), 'HS256', { /* issuer: 'client', */ audience: this.provider.issuer }).then((request) => this.wrap({
             agent: this.agent,
             route,
             verb,
@@ -321,7 +271,7 @@ describe('request parameter features', () => {
             response_type: 'code',
             redirect_uri: 'https://client.example.com/cb',
             scope: 'openid',
-          }, null, 'none', { issuer: '', audience: this.provider.issuer }).then((request) => this.wrap({
+          }, Buffer.from('secret'), 'HS256', { issuer: '', audience: this.provider.issuer }).then((request) => this.wrap({
             agent: this.agent,
             route,
             verb,
@@ -349,7 +299,7 @@ describe('request parameter features', () => {
             response_type: 'code',
             redirect_uri: 'https://client.example.com/cb',
             scope: 'openid',
-          }, null, 'none', { issuer: 123678, audience: this.provider.issuer }).then((request) => this.wrap({
+          }, Buffer.from('secret'), 'HS256', { issuer: 123678, audience: this.provider.issuer }).then((request) => this.wrap({
             agent: this.agent,
             route,
             verb,
@@ -378,7 +328,7 @@ describe('request parameter features', () => {
           response_type: 'code',
           redirect_uri: 'https://client.example.com/cb',
           max_age: 300,
-        }, null, 'none', { issuer: 'client', audience: this.provider.issuer }).then((request) => this.wrap({
+        }, Buffer.from('secret'), 'HS256', { issuer: 'client', audience: this.provider.issuer }).then((request) => this.wrap({
           agent: this.agent,
           route,
           verb,
@@ -406,7 +356,7 @@ describe('request parameter features', () => {
           response_type: 'code',
           scope: ['openid', 'profile'],
           redirect_uri: 'https://client.example.com/cb',
-        }, null, 'none', { issuer: 'client', audience: this.provider.issuer }).then((request) => this.wrap({
+        }, Buffer.from('secret'), 'HS256', { issuer: 'client', audience: this.provider.issuer }).then((request) => this.wrap({
           agent: this.agent,
           route,
           verb,
@@ -438,7 +388,7 @@ describe('request parameter features', () => {
           response_type: 'code',
           redirect_uri: 'https://client.example.com/cb',
           claims,
-        }, null, 'none', { issuer: 'client', audience: this.provider.issuer }).then((request) => this.wrap({
+        }, Buffer.from('secret'), 'HS256', { issuer: 'client', audience: this.provider.issuer }).then((request) => this.wrap({
           agent: this.agent,
           route,
           verb,
@@ -467,7 +417,7 @@ describe('request parameter features', () => {
           response_type: 'code',
           redirect_uri: 'https://client.example.com/cb',
           claims: { id_token: { email: null } },
-        }, null, 'none', { issuer: 'client', audience: this.provider.issuer }).then((request) => this.wrap({
+        }, Buffer.from('secret'), 'HS256', { issuer: 'client', audience: this.provider.issuer }).then((request) => this.wrap({
           agent: this.agent,
           route,
           verb,
@@ -624,7 +574,7 @@ describe('request parameter features', () => {
           response_type: 'code',
           request: 'request inception',
           redirect_uri: 'https://client.example.com/cb',
-        }, null, 'none', { issuer: 'client', audience: this.provider.issuer }).then((request) => this.wrap({
+        }, Buffer.from('secret'), 'HS256', { issuer: 'client', audience: this.provider.issuer }).then((request) => this.wrap({
           agent: this.agent,
           route,
           verb,
@@ -655,7 +605,7 @@ describe('request parameter features', () => {
           response_type: 'code',
           request_uri: 'request uri inception',
           redirect_uri: 'https://client.example.com/cb',
-        }, null, 'none', { issuer: 'client', audience: this.provider.issuer }).then((request) => this.wrap({
+        }, Buffer.from('secret'), 'HS256', { issuer: 'client', audience: this.provider.issuer }).then((request) => this.wrap({
           agent: this.agent,
           route,
           verb,
@@ -684,7 +634,7 @@ describe('request parameter features', () => {
             response_type: 'code',
             response_mode: 'fragment',
             redirect_uri: 'https://client.example.com/cb',
-          }, null, 'none', { issuer: 'client', audience: this.provider.issuer }).then((request) => this.wrap({
+          }, Buffer.from('secret'), 'HS256', { issuer: 'client', audience: this.provider.issuer }).then((request) => this.wrap({
             agent: this.agent,
             route,
             verb,
@@ -709,7 +659,7 @@ describe('request parameter features', () => {
             response_type: 'code',
             redirect_uri: 'https://client.example.com/cb',
             response_mode: 'foo',
-          }, null, 'none', { issuer: 'client2', audience: this.provider.issuer }).then((request) => this.wrap({
+          }, Buffer.from('secret'), 'HS256', { issuer: 'client2', audience: this.provider.issuer }).then((request) => this.wrap({
             agent: this.agent,
             route,
             verb,
@@ -739,7 +689,7 @@ describe('request parameter features', () => {
             client_id: 'client',
             response_type: 'id_token',
             redirect_uri: 'https://client.example.com/cb',
-          }, null, 'none', { issuer: 'client', audience: this.provider.issuer }).then((request) => this.wrap({
+          }, Buffer.from('secret'), 'HS256', { issuer: 'client', audience: this.provider.issuer }).then((request) => this.wrap({
             agent: this.agent,
             route,
             verb,
@@ -770,7 +720,7 @@ describe('request parameter features', () => {
             response_type: 'code',
             redirect_uri: 'https://client.example.com/cb',
             state: 'foobar',
-          }, null, 'none', { issuer: 'client2', audience: this.provider.issuer }).then((request) => this.wrap({
+          }, Buffer.from('secret'), 'HS256', { issuer: 'client2', audience: this.provider.issuer }).then((request) => this.wrap({
             agent: this.agent,
             route,
             verb,
@@ -803,7 +753,7 @@ describe('request parameter features', () => {
           response_type: 'code',
           redirect_uri: 'https://client.example.com/cb',
           exp: 1,
-        }, null, 'none', { issuer: 'client', audience: this.provider.issuer }).then((request) => this.wrap({
+        }, Buffer.from('secret'), 'HS256', { issuer: 'client', audience: this.provider.issuer }).then((request) => this.wrap({
           agent: this.agent,
           route,
           verb,
@@ -833,7 +783,7 @@ describe('request parameter features', () => {
           client_id: 'client2',
           response_type: 'code',
           redirect_uri: 'https://client.example.com/cb',
-        }, null, 'none', { issuer: 'client2', audience: this.provider.issuer }).then((request) => this.wrap({
+        }, Buffer.from('secret'), 'HS256', { issuer: 'client2', audience: this.provider.issuer }).then((request) => this.wrap({
           agent: this.agent,
           route,
           verb,
@@ -886,7 +836,7 @@ describe('request parameter features', () => {
           client_id: 'client-with-HS-sig',
           response_type: 'code',
           redirect_uri: 'https://client.example.com/cb',
-        }, null, 'none', { issuer: 'client-with-HS-sig', audience: this.provider.issuer }).then((request) => this.wrap({
+        }, Buffer.from('secret'), 'HS512', { issuer: 'client-with-HS-sig', audience: this.provider.issuer }).then((request) => this.wrap({
           agent: this.agent,
           route,
           verb,
@@ -938,15 +888,11 @@ describe('request parameter features', () => {
       it('bad signatures will be rejected', async function () {
         const spy = sinon.spy();
         this.provider.once(errorEvt, spy);
-
-        const client = await this.provider.Client.find('client-with-HS-sig');
-        let [key] = client.symmetricKeyStore.selectForSign({ alg: 'HS256' });
-        key = await importJWK(key);
         return JWT.sign({
           client_id: 'client',
           response_type: 'code',
           redirect_uri: 'https://client.example.com/cb',
-        }, key, 'HS256', { issuer: 'client', audience: this.provider.issuer }).then((request) => this.wrap({
+        }, Buffer.from('not THE secret'), 'HS256', { issuer: 'client', audience: this.provider.issuer }).then((request) => this.wrap({
           agent: this.agent,
           route,
           verb,
@@ -974,7 +920,7 @@ describe('request parameter features', () => {
           response_type: 'code',
           redirect_uri: 'https://client.example.com/cb',
           registration: 'foo',
-        }, null, 'none', { issuer: 'client', audience: this.provider.issuer }).then((request) => this.wrap({
+        }, Buffer.from('secret'), 'HS256', { issuer: 'client', audience: this.provider.issuer }).then((request) => this.wrap({
           agent: this.agent,
           route,
           verb,

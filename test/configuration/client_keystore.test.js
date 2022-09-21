@@ -34,7 +34,7 @@ describe('client keystore refresh', () => {
       client_secret: 'secret',
       redirect_uris: ['https://client.example.com/cb'],
       jwks_uri: 'https://client.example.com/jwks',
-      id_token_signed_response_alg: 'none',
+      id_token_signed_response_alg: 'HS256',
       id_token_encrypted_response_alg: 'ECDH-ES+A128KW',
       id_token_encrypted_response_enc: 'A128CBC-HS256',
     });

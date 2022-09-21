@@ -1,6 +1,9 @@
+const jose = require('jose');
+
 const bootstrap = require('../test_helper');
-const base64url = require('../../lib/helpers/base64url');
 const epochTime = require('../../lib/helpers/epoch_time');
+
+const { keypair: { privateKey } } = require('./fapi-final.config');
 
 describe('Financial-grade API Security Profile 1.0 - Part 2: Advanced (FINAL) behaviours', () => {
   before(bootstrap(__dirname, { config: 'fapi-final' }));
@@ -61,8 +64,8 @@ describe('Financial-grade API Security Profile 1.0 - Part 2: Advanced (FINAL) be
         .expect(auth.validateErrorDescription('response_mode not allowed for this response_type in FAPI mode'));
     });
 
-    it('requires jwt response mode to be used when id token is not issued by authorization endpoint (JAR)', function () {
-      const request = `${base64url.encode(JSON.stringify({ alg: 'none' }))}.${base64url.encode(JSON.stringify({
+    it('requires jwt response mode to be used when id token is not issued by authorization endpoint (JAR)', async function () {
+      const request = await new jose.SignJWT({
         scope: 'openid',
         client_id: 'client',
         response_type: 'code',
@@ -70,7 +73,7 @@ describe('Financial-grade API Security Profile 1.0 - Part 2: Advanced (FINAL) be
         aud: this.provider.issuer,
         exp: epochTime() + 60,
         nbf: epochTime(),
-      }))}.`;
+      }).setProtectedHeader({ alg: 'ES256' }).sign(privateKey);
 
       const auth = new this.AuthorizationRequest({
         request,
@@ -94,8 +97,8 @@ describe('Financial-grade API Security Profile 1.0 - Part 2: Advanced (FINAL) be
     beforeEach(function () { return this.login(); });
     afterEach(function () { return this.logout(); });
 
-    it('still works', function () {
-      const request = `${base64url.encode(JSON.stringify({ alg: 'none' }))}.${base64url.encode(JSON.stringify({
+    it('still works', async function () {
+      const request = await new jose.SignJWT({
         client_id: 'client',
         iss: 'client',
         scope: 'openid',
@@ -106,7 +109,7 @@ describe('Financial-grade API Security Profile 1.0 - Part 2: Advanced (FINAL) be
         state: 'foo',
         exp: epochTime() + 60,
         nbf: epochTime(),
-      }))}.`;
+      }).setProtectedHeader({ alg: 'ES256' }).sign(privateKey);
 
       const auth = new this.AuthorizationRequest({
         request,
@@ -129,8 +132,8 @@ describe('Financial-grade API Security Profile 1.0 - Part 2: Advanced (FINAL) be
         .expect(auth.validateClientLocation);
     });
 
-    it('requires exp to be provided in the Request Object', function () {
-      const request = `${base64url.encode(JSON.stringify({ alg: 'none' }))}.${base64url.encode(JSON.stringify({
+    it('requires exp to be provided in the Request Object', async function () {
+      const request = await new jose.SignJWT({
         aud: this.provider.issuer,
         // exp: epochTime() + 60,
         nbf: epochTime(),
@@ -138,7 +141,7 @@ describe('Financial-grade API Security Profile 1.0 - Part 2: Advanced (FINAL) be
         scope: 'openid',
         response_type: 'code id_token',
         nonce: 'foo',
-      }))}.`;
+      }).setProtectedHeader({ alg: 'ES256' }).sign(privateKey);
 
       const auth = new this.AuthorizationRequest({
         request,
@@ -162,8 +165,8 @@ describe('Financial-grade API Security Profile 1.0 - Part 2: Advanced (FINAL) be
         .expect(auth.validateErrorDescription("Request Object is missing the 'exp' claim"));
     });
 
-    it('requires nbf to be provided in the Request Object', function () {
-      const request = `${base64url.encode(JSON.stringify({ alg: 'none' }))}.${base64url.encode(JSON.stringify({
+    it('requires nbf to be provided in the Request Object', async function () {
+      const request = await new jose.SignJWT({
         aud: this.provider.issuer,
         exp: epochTime() + 60,
         // nbf: epochTime(),
@@ -171,7 +174,7 @@ describe('Financial-grade API Security Profile 1.0 - Part 2: Advanced (FINAL) be
         scope: 'openid',
         response_type: 'code id_token',
         nonce: 'foo',
-      }))}.`;
+      }).setProtectedHeader({ alg: 'ES256' }).sign(privateKey);
 
       const auth = new this.AuthorizationRequest({
         request,
@@ -195,8 +198,8 @@ describe('Financial-grade API Security Profile 1.0 - Part 2: Advanced (FINAL) be
         .expect(auth.validateErrorDescription("Request Object is missing the 'nbf' claim"));
     });
 
-    it('requires nbf to be no more than 3600 from exp', function () {
-      const request = `${base64url.encode(JSON.stringify({ alg: 'none' }))}.${base64url.encode(JSON.stringify({
+    it('requires nbf to be no more than 3600 from exp', async function () {
+      const request = await new jose.SignJWT({
         exp: epochTime() + 60,
         nbf: epochTime() - 3600,
         aud: this.provider.issuer,
@@ -204,7 +207,7 @@ describe('Financial-grade API Security Profile 1.0 - Part 2: Advanced (FINAL) be
         scope: 'openid',
         response_type: 'code id_token',
         nonce: 'foo',
-      }))}.`;
+      }).setProtectedHeader({ alg: 'ES256' }).sign(privateKey);
 
       const auth = new this.AuthorizationRequest({
         request,

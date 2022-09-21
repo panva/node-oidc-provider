@@ -123,68 +123,6 @@ describe('request Uri features', () => {
           .expect(successFnCheck);
       });
 
-      it('works with signed by none (https)', async function () {
-        const request = await JWT.sign({
-          client_id: 'client',
-          response_type: 'code',
-          redirect_uri: 'https://client.example.com/cb',
-        }, null, 'none', { issuer: 'client', audience: this.provider.issuer });
-
-        nock('https://client.example.com')
-          .get('/request')
-          .reply(200, request);
-
-        return this.wrap({
-          agent: this.agent,
-          route,
-          verb,
-          auth: {
-            request_uri: `https://client.example.com/request#${Math.random()}`,
-            scope: 'openid',
-            client_id: 'client',
-            response_type: 'code',
-          },
-        })
-          .expect(successCode)
-          .expect(successFnCheck);
-      });
-
-      it('forbids http signed by none', async function () {
-        const spy = sinon.spy();
-        this.provider.once(error, spy);
-
-        const request = await JWT.sign({
-          client_id: 'client',
-          response_type: 'code',
-          redirect_uri: 'https://client.example.com/cb',
-        }, null, 'none', { issuer: 'client', audience: this.provider.issuer });
-
-        nock('http://client.example.com')
-          .get('/request')
-          .reply(200, request);
-
-        return this.wrap({
-          agent: this.agent,
-          route,
-          verb,
-          auth: {
-            request_uri: `http://client.example.com/request#${Math.random()}`,
-            scope: 'openid',
-            client_id: 'client',
-            response_type: 'code',
-          },
-        })
-          .expect(errorCode)
-          .expect(() => {
-            expect(spy.calledOnce).to.be.true;
-            expect(spy.args[0][1]).to.have.property('message', 'invalid_request_object');
-            expect(spy.args[0][1]).to.have.property(
-              'error_description',
-              'Request Object from insecure request_uri must be signed and/or symmetrically encrypted',
-            );
-          });
-      });
-
       it('forbids non urn: or web schemes', function () {
         const spy = sinon.spy();
         this.provider.once(error, spy);
@@ -225,7 +163,7 @@ describe('request Uri features', () => {
             client_id: 'client',
             response_type: 'code',
             redirect_uri: 'https://client.example.com/cb',
-          }, null, 'none', { issuer: 'client', audience: this.provider.issuer });
+          }, Buffer.from('secret'), 'HS256', { issuer: 'client', audience: this.provider.issuer });
 
           nock('https://thisoneisallowed.com')
             .get('/')
@@ -251,7 +189,7 @@ describe('request Uri features', () => {
             client_id: 'client',
             response_type: 'code',
             redirect_uri: 'https://client.example.com/cb',
-          }, null, 'none', { issuer: 'client', audience: this.provider.issuer });
+          }, Buffer.from('secret'), 'HS256', { issuer: 'client', audience: this.provider.issuer });
 
           nock('https://thisoneisallowed.com#hash234')
             .get('/')
@@ -364,7 +302,7 @@ describe('request Uri features', () => {
           response_type: 'code',
           request: 'request inception',
           redirect_uri: 'https://client.example.com/cb',
-        }, null, 'none', { issuer: 'client', audience: this.provider.issuer });
+        }, Buffer.from('secret'), 'HS256', { issuer: 'client', audience: this.provider.issuer });
 
         return this.wrap({
           agent: this.agent,
@@ -398,7 +336,7 @@ describe('request Uri features', () => {
           response_type: 'code',
           request: 'request inception',
           redirect_uri: 'https://client.example.com/cb',
-        }, null, 'none', { issuer: 'client', audience: this.provider.issuer });
+        }, Buffer.from('secret'), 'HS256', { issuer: 'client', audience: this.provider.issuer });
 
         nock('https://client.example.com')
           .get('/request')
@@ -435,7 +373,7 @@ describe('request Uri features', () => {
           response_type: 'code',
           request_uri: 'request uri inception',
           redirect_uri: 'https://client.example.com/cb',
-        }, null, 'none', { issuer: 'client', audience: this.provider.issuer });
+        }, Buffer.from('secret'), 'HS256', { issuer: 'client', audience: this.provider.issuer });
 
         nock('https://client.example.com')
           .get('/request')
@@ -471,7 +409,7 @@ describe('request Uri features', () => {
           client_id: 'client2',
           response_type: 'code',
           redirect_uri: 'https://client.example.com/cb',
-        }, null, 'none', { issuer: 'client2', audience: this.provider.issuer });
+        }, Buffer.from('secret'), 'HS256', { issuer: 'client2', audience: this.provider.issuer });
 
         nock('https://client.example.com')
           .get('/request')
@@ -534,7 +472,7 @@ describe('request Uri features', () => {
           client_id: 'client-with-HS-sig',
           response_type: 'code',
           redirect_uri: 'https://client.example.com/cb',
-        }, null, 'none', { issuer: 'client-with-HS-sig', audience: this.provider.issuer });
+        }, Buffer.from('secret'), 'HS512', { issuer: 'client-with-HS-sig', audience: this.provider.issuer });
 
         nock('https://client.example.com')
           .get('/request')
@@ -599,14 +537,11 @@ describe('request Uri features', () => {
         const spy = sinon.spy();
         this.provider.once(error, spy);
 
-        const client = await this.provider.Client.find('client-with-HS-sig');
-        let [key] = client.symmetricKeyStore.selectForSign({ alg: 'HS256' });
-        key = await importJWK(key);
         const request = await JWT.sign({
           client_id: 'client',
           response_type: 'code',
           redirect_uri: 'https://client.example.com/cb',
-        }, key, 'HS256', { issuer: 'client', audience: this.provider.issuer });
+        }, Buffer.from('not THE secret'), 'HS256', { issuer: 'client', audience: this.provider.issuer });
 
         nock('https://client.example.com')
           .get('/request')

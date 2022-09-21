@@ -75,7 +75,7 @@ describe('configuration conformIdTokenClaims=false', () => {
             .expect(200));
           this.userinfo = userinfo;
 
-          client.userinfoSignedResponseAlg = 'none';
+          client.userinfoSignedResponseAlg = 'HS256';
           await this.provider.Client.find('client');
           ({ text: userinfo } = await this.agent.get('/me')
             .auth(access_token, { type: 'bearer' })

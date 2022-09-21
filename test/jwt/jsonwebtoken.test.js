@@ -24,14 +24,6 @@ describe('JSON Web Token (JWT) RFC7519 implementation', () => {
     });
   });
 
-  it('signs and decodes with none', () => JWT.sign({ data: true }, null, 'none')
-    .then((jwt) => JWT.decode(jwt))
-    .then((decoded) => {
-      expect(decoded.header).not.to.have.property('kid');
-      expect(decoded.header).to.have.property('alg', 'none');
-      expect(decoded.payload).to.contain({ data: true });
-    }));
-
   it('does not verify none', () => JWT.sign({ data: true }, null, 'none')
     .then((jwt) => JWT.verify(jwt))
     .then((valid) => {
@@ -98,31 +90,31 @@ describe('JSON Web Token (JWT) RFC7519 implementation', () => {
   });
 
   describe('sign options', () => {
-    it('iat by default', () => JWT.sign({ data: true }, null, 'none')
+    it('iat by default', () => JWT.sign({ data: true }, Buffer.from('secret'), 'HS256')
       .then((jwt) => JWT.decode(jwt))
       .then((decoded) => {
         expect(decoded.payload).to.have.property('iat');
       }));
 
-    it('expiresIn', () => JWT.sign({ data: true }, null, 'none', { expiresIn: 60 })
+    it('expiresIn', () => JWT.sign({ data: true }, Buffer.from('secret'), 'HS256', { expiresIn: 60 })
       .then((jwt) => JWT.decode(jwt))
       .then((decoded) => {
         expect(decoded.payload).to.have.property('exp', decoded.payload.iat + 60);
       }));
 
-    it('audience', () => JWT.sign({ data: true }, null, 'none', { audience: 'clientId' })
+    it('audience', () => JWT.sign({ data: true }, Buffer.from('secret'), 'HS256', { audience: 'clientId' })
       .then((jwt) => JWT.decode(jwt))
       .then((decoded) => {
         expect(decoded.payload).to.have.property('aud', 'clientId');
       }));
 
-    it('issuer', () => JWT.sign({ data: true }, null, 'none', { issuer: 'http://example.com/issuer' })
+    it('issuer', () => JWT.sign({ data: true }, Buffer.from('secret'), 'HS256', { issuer: 'http://example.com/issuer' })
       .then((jwt) => JWT.decode(jwt))
       .then((decoded) => {
         expect(decoded.payload).to.have.property('iss', 'http://example.com/issuer');
       }));
 
-    it('subject', () => JWT.sign({ data: true }, null, 'none', { subject: 'http://example.com/subject' })
+    it('subject', () => JWT.sign({ data: true }, Buffer.from('secret'), 'HS256', { subject: 'http://example.com/subject' })
       .then((jwt) => JWT.decode(jwt))
       .then((decoded) => {
         expect(decoded.payload).to.have.property('sub', 'http://example.com/subject');

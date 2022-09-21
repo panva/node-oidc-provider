@@ -3,13 +3,6 @@ const crypto = require('crypto');
 const pkg = require('../../package.json');
 const enabledJWA = JSON.parse(JSON.stringify(require('../../lib/consts/jwa')));
 
-function filterOutNone(conf, prop) {
-  // eslint-disable-next-line no-param-reassign
-  conf[prop] = conf[prop].filter((alg) => alg !== 'none');
-}
-
-Object.keys(enabledJWA).forEach(filterOutNone.bind(undefined, enabledJWA));
-
 const timeout = parseInt(process.env.TIMEOUT, 10);
 const clientAuthMethods = [
   'none',

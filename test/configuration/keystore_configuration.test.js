@@ -54,20 +54,6 @@ describe('configuration.jwks', () => {
     expect(console.warn.calledWithMatch(/different keys within the keystore SHOULD use distinct `kid` values, with your current keystore you should expect interoperability issues with your clients/)).to.be.true;
   });
 
-  it('allows to instantiate without RS256 if ID Tokens only come from the token_endpoint', function () {
-    new Provider('http://localhost', {
-      responseTypes: [
-        'code',
-        'none',
-        'code token',
-      ],
-      enabledJWA: {
-        idTokenSigningAlgValues: ['none'],
-      },
-      jwks: this.keystore.toJWKS(true),
-    });
-  });
-
   it('supports secp256k1 keys', async () => {
     const ks = new jose.JWKS.KeyStore();
     await ks.generate('EC', 'secp256k1');

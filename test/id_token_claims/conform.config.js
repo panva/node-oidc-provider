@@ -11,6 +11,7 @@ module.exports = {
   config,
   clients: [{
     client_id: 'client',
+    client_secret: 'secret',
     token_endpoint_auth_method: 'none',
     grant_types: ['authorization_code', 'implicit', 'refresh_token'],
     response_types: [

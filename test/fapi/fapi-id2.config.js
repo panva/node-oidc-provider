@@ -1,7 +1,11 @@
+const crypto = require('crypto');
+
 const cloneDeep = require('lodash/cloneDeep');
 const merge = require('lodash/merge');
 
 const config = cloneDeep(require('../default.config'));
+
+const keypair = crypto.generateKeyPairSync('ec', { namedCurve: 'P-256' });
 
 merge(config.features, {
   fapi: {
@@ -15,7 +19,7 @@ merge(config.features, {
   },
 });
 config.enabledJWA = {
-  requestObjectSigningAlgValues: ['none'],
+  requestObjectSigningAlgValues: ['ES256'],
 };
 
 module.exports = {
@@ -26,5 +30,9 @@ module.exports = {
     grant_types: ['implicit', 'authorization_code'],
     redirect_uris: ['https://client.example.com/cb'],
     token_endpoint_auth_method: 'none',
+    jwks: {
+      keys: [keypair.publicKey.export({ format: 'jwk' })],
+    },
   }],
+  keypair,
 };

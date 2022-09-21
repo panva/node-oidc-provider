@@ -73,7 +73,7 @@ module.exports = {
   }, {
     token_endpoint_auth_method: 'client_secret_jwt',
     client_id: 'client-jwt-secret',
-    client_secret: 'its64bytes_____________________________________________________!',
+    client_secret: 'secret',
     grant_types: ['foo'],
     response_types: [],
     redirect_uris: [],

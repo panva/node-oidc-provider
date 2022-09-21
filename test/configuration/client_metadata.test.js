@@ -38,7 +38,7 @@ describe('Client metadata validation', () => {
 
     return i(provider).clientAdd({
       client_id: 'client',
-      client_secret: 'its64bytes_____________________________________________________!',
+      client_secret: 'secret',
       redirect_uris: ['https://client.example.com/cb'],
       ...metadata,
     });
@@ -265,7 +265,6 @@ describe('Client metadata validation', () => {
       ...configuration(),
       clientDefaults: { require_signed_request_object: true },
     });
-    rejects(this.title, true, 'request_object_signing_alg must not be "none" when require_signed_request_object is true', { request_object_signing_alg: 'none' });
   });
 
   context('default_max_age', function () {
@@ -303,6 +302,7 @@ describe('Client metadata validation', () => {
     rejects(this.title, 'none', undefined, {
       response_types: ['code id_token'],
     });
+    rejects(this.title, 'none');
   });
 
   [
@@ -451,12 +451,13 @@ describe('Client metadata validation', () => {
   context('request_object_signing_alg', function () {
     mustBeString(this.title);
     [
-      'none', 'HS256', 'HS384', 'HS512', 'RS256', 'RS384', 'RS512',
+      'HS256', 'HS384', 'HS512', 'RS256', 'RS384', 'RS512',
       'PS256', 'PS384', 'PS512', 'ES256', 'ES384', 'ES512', 'EdDSA',
     ].forEach((alg) => {
       allows(this.title, alg, { jwks: { keys: [sigKey] } });
     });
     rejects(this.title, 'not-an-alg');
+    rejects(this.title, 'none');
   });
 
   context('request_uris', function () {
@@ -622,6 +623,7 @@ describe('Client metadata validation', () => {
     });
 
     context('token_endpoint_auth_signing_alg', function () {
+      rejects(this.title, 'none');
       Object.entries({
         client_secret_jwt: ['HS', 'RS'],
         private_key_jwt: ['RS', 'HS', { jwks: { keys: [sigKey] } }],
@@ -655,6 +657,7 @@ describe('Client metadata validation', () => {
     mustBeString(this.title, undefined, undefined, configuration);
     allows(this.title, 'HS256', undefined, configuration);
     rejects(this.title, 'not-an-alg', undefined, undefined, configuration);
+    rejects(this.title, 'none', undefined, undefined, configuration);
   });
 
   context('introspection_signed_response_alg', function () {
@@ -668,6 +671,7 @@ describe('Client metadata validation', () => {
     mustBeString(this.title, undefined, undefined, configuration);
     allows(this.title, 'HS256', undefined, configuration);
     rejects(this.title, 'not-an-alg', undefined, undefined, configuration);
+    rejects(this.title, 'none', undefined, undefined, configuration);
   });
 
   context('authorization_signed_response_alg', function () {
@@ -713,6 +717,7 @@ describe('Client metadata validation', () => {
         }, configuration);
       });
       rejects(this.title, 'not-an-alg', undefined, undefined, configuration);
+      rejects(this.title, 'none', undefined, undefined, configuration);
     });
 
     context('id_token_encrypted_response_enc', function () {
@@ -765,6 +770,7 @@ describe('Client metadata validation', () => {
         }, configuration);
       });
       rejects(this.title, 'not-an-alg', undefined, undefined, configuration);
+      rejects(this.title, 'none', undefined, undefined, configuration);
     });
 
     context('userinfo_encrypted_response_enc', function () {
@@ -818,6 +824,7 @@ describe('Client metadata validation', () => {
         }, configuration);
       });
       rejects(this.title, 'not-an-alg', undefined, undefined, configuration);
+      rejects(this.title, 'none', undefined, undefined, configuration);
     });
 
     context('introspection_encrypted_response_enc', function () {
@@ -871,6 +878,7 @@ describe('Client metadata validation', () => {
         }, configuration);
       });
       rejects(this.title, 'not-an-alg', undefined, undefined, configuration);
+      rejects(this.title, 'none', undefined, undefined, configuration);
     });
 
     context('authorization_encrypted_response_enc', function () {
@@ -928,6 +936,7 @@ describe('Client metadata validation', () => {
         allows(this.title, value, undefined, configuration);
       });
       rejects(this.title, 'not-an-alg', undefined, undefined, configuration);
+      rejects(this.title, 'none', undefined, undefined, configuration);
     });
 
     context('request_object_encryption_enc', function () {
@@ -1014,6 +1023,7 @@ describe('Client metadata validation', () => {
         allows(this.title, alg, { ...metadata, jwks: { keys: [sigKey] } }, configuration);
       });
       rejects(this.title, 'not-an-alg', undefined, metadata, configuration);
+      rejects(this.title, 'none', undefined, metadata, configuration);
       rejects(this.title, 'none', undefined, metadata, configuration);
       rejects(this.title, 'HS256', undefined, metadata, configuration);
       rejects(this.title, 'HS384', undefined, metadata, configuration);
@@ -1152,7 +1162,6 @@ describe('Client metadata validation', () => {
       defaultsTo(this.title, undefined);
       mustBeString(this.title, undefined, undefined, configuration);
       mustBeUri(this.title, ['http', 'https'], configuration);
-      rejects(this.title, 'https://rp.example.com/bcl', 'id_token_signed_response_alg must not be "none" when backchannel_logout_uri is used', { id_token_signed_response_alg: 'none' }, configuration);
     });
 
     context('backchannel_logout_session_required', function () {

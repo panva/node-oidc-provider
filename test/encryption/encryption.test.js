@@ -203,39 +203,6 @@ describe('encryption', () => {
       });
 
       describe('Request Object encryption', () => {
-        it('works with signed by none', async function () {
-          const signed = await JWT.sign({
-            client_id: 'client',
-            response_type: 'code',
-            redirect_uri: 'https://client.example.com/cb',
-          }, null, 'none', { issuer: 'client', audience: this.provider.issuer });
-
-          let [key] = i(this.provider).keystore.selectForEncrypt({ kty: 'RSA', alg: 'RSA1_5' });
-          key = await i(this.provider).keystore.getKeyObject(key, 'RSA1_5');
-
-          const encrypted = jose.JWE.encrypt(signed, key, { enc: 'A128CBC-HS256', alg: 'RSA1_5' });
-
-          return this.wrap({
-            route,
-            verb,
-            auth: {
-              request: encrypted,
-              scope: 'openid',
-              client_id: 'client',
-              response_type: 'code',
-            },
-          })
-            .expect(303)
-            .expect((response) => {
-              const expected = url.parse('https://client.example.com/cb', true);
-              const actual = url.parse(response.headers.location, true);
-              ['protocol', 'host', 'pathname'].forEach((attr) => {
-                expect(actual[attr]).to.equal(expected[attr]);
-              });
-              expect(actual.query).to.have.property('code');
-            });
-        });
-
         describe('JAR only request', () => {
           it('fails without any other params even if client_id is replicated in the header', async function () {
             const spy = sinon.spy();
@@ -246,7 +213,7 @@ describe('encryption', () => {
               response_type: 'code',
               redirect_uri: 'https://client.example.com/cb',
               scope: 'openid',
-            }, null, 'none', { issuer: 'client', audience: this.provider.issuer });
+            }, Buffer.from('secret'), 'HS256', { issuer: 'client', audience: this.provider.issuer });
 
             let [key] = i(this.provider).keystore.selectForEncrypt({ kty: 'RSA', alg: 'RSA1_5' });
             key = await i(this.provider).keystore.getKeyObject(key, 'RSA1_5');
@@ -274,7 +241,7 @@ describe('encryption', () => {
               response_type: 'code',
               redirect_uri: 'https://client.example.com/cb',
               scope: 'openid',
-            }, null, 'none', { issuer: 'client', audience: this.provider.issuer });
+            }, Buffer.from('secret'), 'HS256', { issuer: 'client', audience: this.provider.issuer });
 
             let [key] = i(this.provider).keystore.selectForEncrypt({ kty: 'RSA', alg: 'RSA1_5' });
             key = await i(this.provider).keystore.getKeyObject(key, 'RSA1_5');
@@ -308,7 +275,7 @@ describe('encryption', () => {
               response_type: 'code',
               redirect_uri: 'https://client.example.com/cb',
               scope: 'openid',
-            }, null, 'none', { issuer: 'client', audience: this.provider.issuer });
+            }, Buffer.from('secret'), 'HS256', { issuer: 'client', audience: this.provider.issuer });
 
             let [key] = i(this.provider).keystore.selectForEncrypt({ kty: 'RSA', alg: 'RSA1_5' });
             key = await i(this.provider).keystore.getKeyObject(key, 'RSA1_5');
@@ -342,7 +309,7 @@ describe('encryption', () => {
             client_id: 'client',
             response_type: 'code',
             redirect_uri: 'https://client.example.com/cb',
-          }, null, 'none', { issuer: 'client', audience: this.provider.issuer });
+          }, Buffer.from('secret'), 'HS256', { issuer: 'client', audience: this.provider.issuer });
 
           let [key] = i(this.provider).keystore.selectForEncrypt({ kty: 'RSA', alg: 'RSA-OAEP' });
           key = await i(this.provider).keystore.getKeyObject(key, 'RSA-OAEP');
@@ -371,7 +338,7 @@ describe('encryption', () => {
             client_id: 'client',
             response_type: 'code',
             redirect_uri: 'https://client.example.com/cb',
-          }, null, 'none', { issuer: 'client', audience: this.provider.issuer });
+          }, Buffer.from('secret'), 'HS256', { issuer: 'client', audience: this.provider.issuer });
 
           let [key] = i(this.provider).keystore.selectForEncrypt({ kty: 'RSA', alg: 'RSA1_5' });
           key = await i(this.provider).keystore.getKeyObject(key, 'RSA1_5');
@@ -397,44 +364,7 @@ describe('encryption', () => {
       });
 
       describe('Pushed Request Object encryption', () => {
-        it('works with signed by none', async function () {
-          const signed = await JWT.sign({
-            client_id: 'client',
-            response_type: 'code',
-            redirect_uri: 'https://client.example.com/cb',
-            scope: 'openid',
-          }, null, 'none', { issuer: 'client', audience: this.provider.issuer });
-
-          let [key] = i(this.provider).keystore.selectForEncrypt({ kty: 'RSA', alg: 'RSA1_5' });
-          key = await i(this.provider).keystore.getKeyObject(key, 'RSA1_5');
-
-          const encrypted = jose.JWE.encrypt(signed, key, { enc: 'A128CBC-HS256', alg: 'RSA1_5' });
-
-          const { body } = await this.agent.post('/request')
-            .auth('client', 'secret')
-            .type('form')
-            .send({ request: encrypted });
-
-          return this.wrap({
-            route,
-            verb,
-            auth: {
-              request_uri: body.request_uri,
-              client_id: 'client',
-            },
-          })
-            .expect(303)
-            .expect((response) => {
-              const expected = url.parse('https://client.example.com/cb', true);
-              const actual = url.parse(response.headers.location, true);
-              ['protocol', 'host', 'pathname'].forEach((attr) => {
-                expect(actual[attr]).to.equal(expected[attr]);
-              });
-              expect(actual.query).to.have.property('code');
-            });
-        });
-
-        it('works with signed by other than none', async function () {
+        it('works signed', async function () {
           const client = await this.provider.Client.find('client');
           const [hsSecret] = client.symmetricKeyStore.selectForSign({ alg: 'HS256' });
           const signed = await JWT.sign({
@@ -558,7 +488,7 @@ describe('encryption', () => {
             response_type: 'id_token',
             nonce: 'foobar',
             redirect_uri: 'https://client.example.com/cb',
-          }, null, 'none', { issuer: 'clientSymmetric', audience: this.provider.issuer });
+          }, Buffer.from('secret'), 'HS256', { issuer: 'clientSymmetric', audience: this.provider.issuer });
 
           let [key] = client.symmetricKeyStore.selectForEncrypt({ alg: 'A128KW' });
           key = await client.symmetricKeyStore.getKeyObject(key, 'A128KW');
@@ -592,7 +522,7 @@ describe('encryption', () => {
             client_id: 'clientSymmetric-expired',
             response_type: 'id_token',
             nonce: 'foobar',
-          }, null, 'none', { issuer: 'clientSymmetric-expired', audience: this.provider.issuer });
+          }, Buffer.from('secret'), 'HS256', { issuer: 'clientSymmetric-expired', audience: this.provider.issuer });
 
           let [key] = client.symmetricKeyStore.selectForEncrypt({ alg: 'A128KW' });
           key = await client.symmetricKeyStore.getKeyObject(key, 'A128KW');
@@ -651,7 +581,7 @@ describe('encryption', () => {
             response_type: 'id_token',
             nonce: 'foobar',
             redirect_uri: 'https://client.example.com/cb',
-          }, null, 'none', { issuer: 'clientSymmetric-dir', audience: this.provider.issuer });
+          }, Buffer.from('secret'), 'HS256', { issuer: 'clientSymmetric-dir', audience: this.provider.issuer });
 
           let [key] = client.symmetricKeyStore.selectForEncrypt({ alg: 'A128CBC-HS256' });
           key = await client.symmetricKeyStore.getKeyObject(key, 'A128CBC-HS256');
@@ -685,7 +615,7 @@ describe('encryption', () => {
             client_id: 'clientSymmetric-expired',
             response_type: 'id_token',
             nonce: 'foobar',
-          }, null, 'none', { issuer: 'clientSymmetric-expired', audience: this.provider.issuer });
+          }, Buffer.from('secret'), 'HS256', { issuer: 'clientSymmetric-expired', audience: this.provider.issuer });
 
           let [key] = client.symmetricKeyStore.selectForEncrypt({ alg: 'A128CBC-HS256' });
           key = await client.symmetricKeyStore.getKeyObject(key, 'A128CBC-HS256');

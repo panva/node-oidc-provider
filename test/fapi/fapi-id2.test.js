@@ -1,6 +1,9 @@
+const jose = require('jose');
+
 const bootstrap = require('../test_helper');
-const base64url = require('../../lib/helpers/base64url');
 const epochTime = require('../../lib/helpers/epoch_time');
+
+const { keypair: { privateKey } } = require('./fapi-id2.config');
 
 describe('Financial-grade API - Part 2: Read and Write API Security Profile (ID2) behaviours', () => {
   before(bootstrap(__dirname, { config: 'fapi-id2' }));
@@ -61,14 +64,14 @@ describe('Financial-grade API - Part 2: Read and Write API Security Profile (ID2
         .expect(auth.validateErrorDescription('response_mode not allowed for this response_type in FAPI mode'));
     });
 
-    it('requires jwt response mode to be used when id token is not issued by authorization endpoint (JAR)', function () {
-      const request = `${base64url.encode(JSON.stringify({ alg: 'none' }))}.${base64url.encode(JSON.stringify({
+    it('requires jwt response mode to be used when id token is not issued by authorization endpoint (JAR)', async function () {
+      const request = await new jose.SignJWT({
         scope: 'openid',
         client_id: 'client',
         response_type: 'code',
         nonce: 'foo',
         exp: epochTime() + 60,
-      }))}.`;
+      }).setProtectedHeader({ alg: 'ES256' }).sign(privateKey);
 
       const auth = new this.AuthorizationRequest({
         request,
@@ -92,8 +95,8 @@ describe('Financial-grade API - Part 2: Read and Write API Security Profile (ID2
     beforeEach(function () { return this.login(); });
     afterEach(function () { return this.logout(); });
 
-    it('still works', function () {
-      const request = `${base64url.encode(JSON.stringify({ alg: 'none' }))}.${base64url.encode(JSON.stringify({
+    it('still works', async function () {
+      const request = await new jose.SignJWT({
         client_id: 'client',
         iss: 'client',
         scope: 'openid',
@@ -103,7 +106,7 @@ describe('Financial-grade API - Part 2: Read and Write API Security Profile (ID2
         aud: this.provider.issuer,
         state: 'foo',
         exp: epochTime() + 60,
-      }))}.`;
+      }).setProtectedHeader({ alg: 'ES256' }).sign(privateKey);
 
       const auth = new this.AuthorizationRequest({
         request,
@@ -126,13 +129,13 @@ describe('Financial-grade API - Part 2: Read and Write API Security Profile (ID2
         .expect(auth.validateClientLocation);
     });
 
-    it('requires exp to be provided in the Request Object', function () {
-      const request = `${base64url.encode(JSON.stringify({ alg: 'none' }))}.${base64url.encode(JSON.stringify({
+    it('requires exp to be provided in the Request Object', async function () {
+      const request = await new jose.SignJWT({
         client_id: 'client',
         scope: 'openid',
         response_type: 'code id_token',
         nonce: 'foo',
-      }))}.`;
+      }).setProtectedHeader({ alg: 'ES256' }).sign(privateKey);
 
       const auth = new this.AuthorizationRequest({
         request,

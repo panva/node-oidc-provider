@@ -328,7 +328,7 @@ describe('logout endpoint', () => {
             id_token_hint: await JWT.sign({
               aud: 'nonexistant',
               iss: this.provider.issuer,
-            }, null, 'none'),
+            }, Buffer.from('secret'), 'HS256'),
           };
 
           return this.agent.get(route)
@@ -353,7 +353,7 @@ describe('logout endpoint', () => {
             id_token_hint: await JWT.sign({
               aud: 'client',
               iss: this.provider.issuer,
-            }, null, 'none'),
+            }, Buffer.from('not THE secret'), 'HS256'),
           };
 
           return this.agent.get(route)

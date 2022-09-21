@@ -3241,7 +3241,6 @@ _**default value**_:
   'ES256', 'ES256K', 'ES384', 'ES512',
   'EdDSA',
   'HS256', 'HS384', 'HS512',
-  'none',
 ]
 ```
 </details>
@@ -3329,7 +3328,6 @@ _**default value**_:
   'ES256', 'ES256K', 'ES384', 'ES512',
   'EdDSA',
   'HS256', 'HS384', 'HS512',
-  'none',
 ]
 ```
 </details>
@@ -3418,7 +3416,6 @@ _**default value**_:
   'ES256', 'ES256K', 'ES384', 'ES512',
   'EdDSA',
   'HS256', 'HS384', 'HS512',
-  'none',
 ]
 ```
 </details>
@@ -3506,7 +3503,6 @@ _**default value**_:
   'ES256', 'ES256K', 'ES384', 'ES512',
   'EdDSA',
   'HS256', 'HS384', 'HS512',
-  'none',
 ]
 ```
 </details>
