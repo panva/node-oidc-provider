@@ -170,7 +170,7 @@ describe('jwtIntrospection features', () => {
         .expect('content-type', 'application/token-introspection+jwt; charset=utf-8')
         .expect(({ text }) => {
           const header = JWT.header(text);
-          expect(header).to.have.property('alg', 'PBES2-HS256+A128KW');
+          expect(header).to.have.property('alg', 'A128KW');
           expect(header).to.have.property('enc', 'A128CBC-HS256');
         });
     });

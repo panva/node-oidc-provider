@@ -23,7 +23,6 @@ describe('encryption', () => {
   [
     // symmetric kw
     'A128GCMKW', 'A192GCMKW', 'A256GCMKW', 'A128KW', 'A192KW', 'A256KW',
-    'PBES2-HS256+A128KW', 'PBES2-HS384+A192KW', 'PBES2-HS512+A256KW',
     // no kw
     'dir',
   ].forEach((alg) => {
@@ -59,7 +58,7 @@ describe('encryption', () => {
             .expect(auth.validateState)
             .expect(auth.validateClientLocation)
             .expect(auth.validateError('invalid_client'))
-            .expect(auth.validateErrorDescription('client secret is expired - cannot issue an encrypted ID Token (PBES2-HS384+A192KW)'));
+            .expect(auth.validateErrorDescription('client secret is expired - cannot issue an encrypted ID Token (A128KW)'));
         });
       });
 
@@ -619,11 +618,11 @@ describe('encryption', () => {
             });
         });
 
-        it('responds encrypted with i.e. PBES2 password derived key id_token', function () {
+        it('responds encrypted', function () {
           expect(this.id_token).to.be.ok;
           expect(this.id_token.split('.')).to.have.lengthOf(5);
           const header = decodeProtectedHeader(this.id_token);
-          expect(header).to.have.property('alg', 'PBES2-HS384+A192KW');
+          expect(header).to.have.property('alg', 'A128KW');
           expect(header).to.have.property('iss').eql(this.provider.issuer);
           expect(header).to.have.property('aud').eql('clientSymmetric');
         });

@@ -29,7 +29,7 @@ module.exports = {
     client_id: 'client-encrypted',
     client_secret: 'secret',
     token_endpoint_auth_method: 'none',
-    introspection_encrypted_response_alg: 'PBES2-HS256+A128KW',
+    introspection_encrypted_response_alg: 'A128KW',
     redirect_uris: ['https://client.example.com/cb'],
   }],
 };

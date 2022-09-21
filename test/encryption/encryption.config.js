@@ -51,7 +51,7 @@ module.exports = {
       redirect_uris: ['https://client.example.com/cb'],
       response_types: ['id_token'],
       grant_types: ['implicit'],
-      id_token_encrypted_response_alg: 'PBES2-HS384+A192KW',
+      id_token_encrypted_response_alg: 'A128KW',
     },
     {
       client_id: 'clientSymmetric-expired',
@@ -60,7 +60,7 @@ module.exports = {
       response_types: ['id_token'],
       grant_types: ['implicit'],
       client_secret_expires_at: 1,
-      id_token_encrypted_response_alg: 'PBES2-HS384+A192KW',
+      id_token_encrypted_response_alg: 'A128KW',
     },
     {
       client_id: 'clientSymmetric-dir',
