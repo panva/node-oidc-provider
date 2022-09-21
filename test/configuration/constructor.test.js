@@ -124,10 +124,10 @@ describe('Provider configuration', () => {
     });
   });
 
-  it('validates configuration tokenEndpointAuthMethods members', () => {
+  it('validates configuration clientAuthMethods members', () => {
     expect(() => {
-      new Provider('http://localhost:3000', { tokenEndpointAuthMethods: ['foo'] });
-    }).to.throw('only supported tokenEndpointAuthMethods are \'none\', \'client_secret_basic\', \'client_secret_jwt\', \'client_secret_post\', and \'private_key_jwt\'');
+      new Provider('http://localhost:3000', { clientAuthMethods: ['foo'] });
+    }).to.throw('only supported clientAuthMethods are \'none\', \'client_secret_basic\', \'client_secret_jwt\', \'client_secret_post\', and \'private_key_jwt\'');
   });
 
   describe('secp256k1', () => {

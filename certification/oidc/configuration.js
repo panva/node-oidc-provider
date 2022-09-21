@@ -11,7 +11,7 @@ function filterOutNone(conf, prop) {
 Object.keys(enabledJWA).forEach(filterOutNone.bind(undefined, enabledJWA));
 
 const timeout = parseInt(process.env.TIMEOUT, 10);
-const tokenEndpointAuthMethods = [
+const clientAuthMethods = [
   'none',
   'client_secret_basic',
   'client_secret_jwt',
@@ -173,7 +173,7 @@ module.exports = {
   ttl: {
     RegistrationAccessToken: 1 * 24 * 60 * 60,
   },
-  tokenEndpointAuthMethods,
+  clientAuthMethods,
   httpOptions(gotOptions) {
     gotOptions.timeout = timeout || gotOptions.timeout; // eslint-disable-line no-param-reassign
     return gotOptions;
@@ -183,7 +183,7 @@ module.exports = {
       return false;
     }
 
-    return code.scopes.has('offline_access') || (client.applicationType === 'web' && client.tokenEndpointAuthMethod === 'none');
+    return code.scopes.has('offline_access') || (client.applicationType === 'web' && client.clientAuthMethod === 'none');
   },
   enabledJWA,
   pkce: {

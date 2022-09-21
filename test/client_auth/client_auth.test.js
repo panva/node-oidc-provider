@@ -48,19 +48,19 @@ describe('client authentication options', () => {
   describe('discovery', () => {
     it('pushes no algs when neither _jwt method is enabled', () => {
       const provider = new Provider('http://localhost', {
-        tokenEndpointAuthMethods: [
+        clientAuthMethods: [
           'none',
           'client_secret_basic',
           'client_secret_post',
         ],
       });
 
-      expect(i(provider).configuration('tokenEndpointAuthSigningAlgValues')).to.be.undefined;
+      expect(i(provider).configuration('clientAuthSigningAlgValues')).to.be.undefined;
     });
 
     it('removes client_secret_jwt when no HMAC based alg is enabled', () => {
       const provider = new Provider('http://localhost', {
-        tokenEndpointAuthMethods: [
+        clientAuthMethods: [
           'none',
           'client_secret_jwt',
           'private_key_jwt',
@@ -68,16 +68,16 @@ describe('client authentication options', () => {
           'client_secret_post',
         ],
         enabledJWA: {
-          tokenEndpointAuthSigningAlgValues: ['PS256'],
+          clientAuthSigningAlgValues: ['PS256'],
         },
       });
 
-      expect(i(provider).configuration('tokenEndpointAuthMethods')).not.to.include('client_secret_jwt');
+      expect(i(provider).configuration('clientAuthMethods')).not.to.include('client_secret_jwt');
     });
 
     it('removes private_key_jwt when no public key crypto based alg is enabled', () => {
       const provider = new Provider('http://localhost', {
-        tokenEndpointAuthMethods: [
+        clientAuthMethods: [
           'none',
           'client_secret_jwt',
           'private_key_jwt',
@@ -85,16 +85,16 @@ describe('client authentication options', () => {
           'client_secret_post',
         ],
         enabledJWA: {
-          tokenEndpointAuthSigningAlgValues: ['HS256'],
+          clientAuthSigningAlgValues: ['HS256'],
         },
       });
 
-      expect(i(provider).configuration('tokenEndpointAuthMethods')).not.to.include('private_key_jwt');
+      expect(i(provider).configuration('clientAuthMethods')).not.to.include('private_key_jwt');
     });
 
     it('pushes only symmetric algs when client_secret_jwt is enabled', () => {
       const provider = new Provider('http://localhost', {
-        tokenEndpointAuthMethods: [
+        clientAuthMethods: [
           'none',
           'client_secret_basic',
           'client_secret_jwt',
@@ -109,12 +109,12 @@ describe('client authentication options', () => {
         'HS512',
       ];
 
-      expect(i(provider).configuration('tokenEndpointAuthSigningAlgValues')).to.eql(algs);
+      expect(i(provider).configuration('clientAuthSigningAlgValues')).to.eql(algs);
     });
 
     it('pushes only asymmetric algs when private_key_jwt is enabled', () => {
       const provider = new Provider('http://localhost', {
-        tokenEndpointAuthMethods: [
+        clientAuthMethods: [
           'none',
           'client_secret_basic',
           'client_secret_post',
@@ -137,12 +137,12 @@ describe('client authentication options', () => {
         'EdDSA',
       ];
 
-      expect(i(provider).configuration('tokenEndpointAuthSigningAlgValues')).to.eql(algs);
+      expect(i(provider).configuration('clientAuthSigningAlgValues')).to.eql(algs);
     });
 
     it('pushes all algs when both _jwt methods are enabled', () => {
       const provider = new Provider('http://localhost', {
-        tokenEndpointAuthMethods: [
+        clientAuthMethods: [
           'none',
           'client_secret_basic',
           'client_secret_jwt',
@@ -169,7 +169,7 @@ describe('client authentication options', () => {
         'EdDSA',
       ];
 
-      expect(i(provider).configuration('tokenEndpointAuthSigningAlgValues')).to.eql(algs);
+      expect(i(provider).configuration('clientAuthSigningAlgValues')).to.eql(algs);
     });
   });
 
@@ -219,7 +219,7 @@ describe('client authentication options', () => {
         .type('form')
         .expect(() => {
           expect(spy.calledOnce).to.be.true;
-          expect(errorDetail(spy)).to.equal('the registered client token_endpoint_auth_method does not match the provided auth mechanism');
+          expect(errorDetail(spy)).to.equal('the provided authentication mechanism does not match the registered client authentication method');
         })
         .expect(401)
         .expect(tokenAuthRejected);
@@ -493,7 +493,7 @@ describe('client authentication options', () => {
         .type('form')
         .expect(() => {
           expect(spy.calledOnce).to.be.true;
-          expect(errorDetail(spy)).to.equal('the registered client token_endpoint_auth_method does not match the provided auth mechanism');
+          expect(errorDetail(spy)).to.equal('the provided authentication mechanism does not match the registered client authentication method');
         })
         .expect(401)
         .expect(tokenAuthRejected);
@@ -654,7 +654,7 @@ describe('client authentication options', () => {
         .expect(tokenAuthRejected)
         .expect(() => {
           expect(spy.calledOnce).to.be.true;
-          expect(errorDetail(spy)).to.equal('the registered client token_endpoint_auth_method does not match the provided auth mechanism');
+          expect(errorDetail(spy)).to.equal('the provided authentication mechanism does not match the registered client authentication method');
         }));
     });
 

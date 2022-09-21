@@ -468,7 +468,7 @@ location / {
 - [sectorIdentifierUriValidate](#sectoridentifierurivalidate)
 - [scopes](#scopes)
 - [subjectTypes](#subjecttypes)
-- [tokenEndpointAuthMethods](#tokenendpointauthmethods)
+- [clientAuthMethods](#clientauthmethods)
 - [ttl ❗](#ttl)
 - [enabledJWA](#enabledjwa)
 
@@ -1149,7 +1149,7 @@ Helper function used to determine whether the client/RS (client argument) is all
 _**default value**_:
 ```js
 async function introspectionAllowedPolicy(ctx, client, token) {
-  if (client.tokenEndpointAuthMethod === 'none' && token.clientId !== ctx.oidc.client.clientId) {
+  if (client.clientAuthMethod === 'none' && token.clientId !== ctx.oidc.client.clientId) {
     return false;
   }
   return true;
@@ -1320,7 +1320,7 @@ function getCertificate(ctx) {
 
 #### selfSignedTlsClientAuth
 
-Enables section 2.2. Self-Signed Certificate Mutual TLS client authentication method `self_signed_tls_client_auth` for use in the server's `tokenEndpointAuthMethods` configuration.  
+Enables section 2.2. Self-Signed Certificate Mutual TLS client authentication method `self_signed_tls_client_auth` for use in the server's `clientAuthMethods` configuration.  
 
 
 _**default value**_:
@@ -1330,7 +1330,7 @@ false
 
 #### tlsClientAuth
 
-Enables section 2.1. PKI Mutual TLS client authentication method `tls_client_auth` for use in the server's `tokenEndpointAuthMethods` configuration.  
+Enables section 2.1. PKI Mutual TLS client authentication method `tls_client_auth` for use in the server's `clientAuthMethods` configuration.  
 
 
 _**default value**_:
@@ -2004,6 +2004,34 @@ See [/recipes/claim_configuration.md](/recipes/claim_configuration.md)
 
 </details>
 
+### clientAuthMethods
+
+Array of supported Client Authentication methods  
+
+
+_**default value**_:
+```js
+[
+  'client_secret_basic',
+  'client_secret_jwt',
+  'client_secret_post',
+  'private_key_jwt',
+  'none'
+]
+```
+<a id="client-auth-methods-supported-values-list"></a><details><summary>(Click to expand) Supported values list
+</summary><br>
+
+```js
+[
+  'none',
+  'client_secret_basic', 'client_secret_post',
+  'client_secret_jwt', 'private_key_jwt',
+  'tls_client_auth', 'self_signed_tls_client_auth', // these methods are only available when features.mTLS is configured
+]
+```
+</details>
+
 ### clientBasedCORS
 
 Function used to check whether a given CORS request should be allowed based on the request's client.   
@@ -2661,7 +2689,7 @@ async issueRefreshToken(ctx, client, code) {
   if (!client.grantTypeAllowed('refresh_token')) {
     return false;
   }
-  return code.scopes.has('offline_access') || (client.applicationType === 'web' && client.tokenEndpointAuthMethod === 'none');
+  return code.scopes.has('offline_access') || (client.applicationType === 'web' && client.clientAuthMethod === 'none');
 }
 ```
 </details>
@@ -2834,7 +2862,7 @@ function rotateRefreshToken(ctx) {
     return false;
   }
   // rotate non sender-constrained public client refresh tokens
-  if (client.tokenEndpointAuthMethod === 'none' && !refreshToken.isSenderConstrained()) {
+  if (client.clientAuthMethod === 'none' && !refreshToken.isSenderConstrained()) {
     return true;
   }
   // rotate if the token is nearing expiration (it's beyond 70% of its lifetime)
@@ -2905,34 +2933,6 @@ _**default value**_:
 ]
 ```
 
-### tokenEndpointAuthMethods
-
-Array of Client Authentication methods supported by this OP's Token Endpoint  
-
-
-_**default value**_:
-```js
-[
-  'client_secret_basic',
-  'client_secret_jwt',
-  'client_secret_post',
-  'private_key_jwt',
-  'none'
-]
-```
-<a id="token-endpoint-auth-methods-supported-values-list"></a><details><summary>(Click to expand) Supported values list
-</summary><br>
-
-```js
-[
-  'none',
-  'client_secret_basic', 'client_secret_post',
-  'client_secret_jwt', 'private_key_jwt',
-  'tls_client_auth', 'self_signed_tls_client_auth', // these methods are only available when features.mTLS is configured
-]
-```
-</details>
-
 ### ttl
 
 description: Expirations for various token and session types. The value can be a number (in seconds) or a synchronous function that dynamically returns value based on the context.   
@@ -2974,7 +2974,7 @@ _**default value**_:
     if (
       ctx && ctx.oidc.entities.RotatedRefreshToken
       && client.applicationType === 'web'
-      && client.tokenEndpointAuthMethod === 'none'
+      && client.clientAuthMethod === 'none'
       && !token.isSenderConstrained()
     ) {
       // Non-Sender Constrained SPA RefreshTokens do not have infinite expiration through rotation
@@ -3089,6 +3089,36 @@ _**default value**_:
 ]
 ```
 <a id="enabled-jwa-authorization-signing-alg-values-supported-values-list"></a><details><summary>(Click to expand) Supported values list
+</summary><br>
+
+```js
+[
+  'RS256', 'RS384', 'RS512',
+  'PS256', 'PS384', 'PS512',
+  'ES256', 'ES256K', 'ES384', 'ES512',
+  'EdDSA',
+  'HS256', 'HS384', 'HS512',
+]
+```
+</details>
+
+### enabledJWA.clientAuthSigningAlgValues
+
+JWS "alg" Algorithm values the provider supports for signed JWT Client Authentication   
+  
+
+
+_**default value**_:
+```js
+[
+  'HS256',
+  'RS256',
+  'PS256',
+  'ES256',
+  'EdDSA'
+]
+```
+<a id="enabled-jwa-client-auth-signing-alg-values-supported-values-list"></a><details><summary>(Click to expand) Supported values list
 </summary><br>
 
 ```js
@@ -3397,36 +3427,6 @@ _**default value**_:
   'EdDSA',
   'HS256', 'HS384', 'HS512',
   'none',
-]
-```
-</details>
-
-### enabledJWA.tokenEndpointAuthSigningAlgValues
-
-JWS "alg" Algorithm values the provider supports for signed JWT Client Authentication   
-  
-
-
-_**default value**_:
-```js
-[
-  'HS256',
-  'RS256',
-  'PS256',
-  'ES256',
-  'EdDSA'
-]
-```
-<a id="enabled-jwa-token-endpoint-auth-signing-alg-values-supported-values-list"></a><details><summary>(Click to expand) Supported values list
-</summary><br>
-
-```js
-[
-  'RS256', 'RS384', 'RS512',
-  'PS256', 'PS384', 'PS512',
-  'ES256', 'ES256K', 'ES384', 'ES512',
-  'EdDSA',
-  'HS256', 'HS384', 'HS512',
 ]
 ```
 </details>

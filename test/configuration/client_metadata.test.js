@@ -3,7 +3,6 @@ const util = require('util');
 
 const sinon = require('sinon');
 const { expect } = require('chai');
-const camelCase = require('lodash/camelCase');
 const merge = require('lodash/merge');
 const omit = require('lodash/omit');
 const pull = require('lodash/pull');
@@ -553,11 +552,9 @@ describe('Client metadata validation', () => {
     rejects(this.title, 'not-a-type');
   });
 
-  [
-    'token_endpoint_auth_method',
-  ].forEach((endpointAuthMethodProperty) => {
+  {
     const configuration = {
-      [`${endpointAuthMethodProperty.split('_')[0]}EndpointAuthMethods`]: [
+      clientAuthMethods: [
         'none',
         'client_secret_basic',
         'client_secret_post',
@@ -572,16 +569,12 @@ describe('Client metadata validation', () => {
       },
     };
 
-    if (!endpointAuthMethodProperty.startsWith('token')) {
-      Object.assign(configuration.features, { [endpointAuthMethodProperty.split('_')[0]]: { enabled: true } });
-    }
-
-    context(endpointAuthMethodProperty, function () {
+    context('token_endpoint_auth_method', function () {
       defaultsTo(this.title, 'client_secret_basic', undefined, configuration);
       mustBeString(this.title, undefined, undefined, configuration);
-      rejects(this.title, 'foo', `${endpointAuthMethodProperty} must not be provided (no values are allowed)`, undefined, {
+      rejects(this.title, 'foo', 'token_endpoint_auth_method must not be provided (no values are allowed)', undefined, {
         ...configuration,
-        [`${endpointAuthMethodProperty.split('_')[0]}EndpointAuthMethods`]: [],
+        clientAuthMethods: [],
       });
 
       [
@@ -628,35 +621,33 @@ describe('Client metadata validation', () => {
       }, configuration);
     });
 
-    const endpointAuthSigningAlgProperty = endpointAuthMethodProperty.replace('_method', '_signing_alg');
-    context(endpointAuthSigningAlgProperty, function () {
+    context('token_endpoint_auth_signing_alg', function () {
       Object.entries({
         client_secret_jwt: ['HS', 'RS'],
         private_key_jwt: ['RS', 'HS', { jwks: { keys: [sigKey] } }],
       }).forEach(([method, [accepted, rejected, additional]]) => {
         allows(this.title, `${accepted}256`, {
-          [endpointAuthMethodProperty]: method,
+          token_endpoint_auth_method: method,
           ...additional,
         }, configuration);
 
-        rejects(this.title, `${rejected}256`, new RegExp(`^${endpointAuthSigningAlgProperty} must be`), {
-          [endpointAuthMethodProperty]: method,
+        rejects(this.title, `${rejected}256`, new RegExp('^token_endpoint_auth_signing_alg must be'), {
+          token_endpoint_auth_method: method,
           ...additional,
         }, configuration);
 
-        const confProperty = `${camelCase(endpointAuthSigningAlgProperty)}Values`;
-        rejects(this.title, `${accepted}384`, new RegExp(`^${endpointAuthSigningAlgProperty} must be`), {
-          [endpointAuthMethodProperty]: method,
+        rejects(this.title, `${accepted}384`, new RegExp('^token_endpoint_auth_signing_alg must be'), {
+          token_endpoint_auth_method: method,
           ...additional,
         }, {
           enabledJWA: {
-            [confProperty]: pull(cloneDeep(enabledJWA[confProperty]), `${accepted}384`),
+            clientAuthSigningAlgValues: pull(cloneDeep(enabledJWA.clientAuthSigningAlgValues), `${accepted}384`),
           },
           ...configuration,
         });
       });
     });
-  });
+  }
 
   context('userinfo_signed_response_alg', function () {
     const configuration = { features: { jwtUserinfo: { enabled: true } } };
@@ -1183,7 +1174,7 @@ describe('Client metadata validation', () => {
         revocation: { enabled: true },
         introspection: { enabled: true },
       },
-      tokenEndpointAuthMethods: ['tls_client_auth', 'client_secret_basic'],
+      clientAuthMethods: ['tls_client_auth', 'client_secret_basic'],
     };
 
     context('tls_client_auth_subject_dn', function () {

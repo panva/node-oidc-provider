@@ -18,7 +18,7 @@ const OFFICIAL_CERTIFICATION = 'https://www.certification.openid.net';
 const { PORT = 3000, ISSUER = `http://localhost:${PORT}`, SUITE_BASE_URL = OFFICIAL_CERTIFICATION } = process.env;
 
 const ALGS = ['PS256'];
-const tokenEndpointAuthMethods = ['private_key_jwt', 'self_signed_tls_client_auth'];
+const clientAuthMethods = ['private_key_jwt', 'self_signed_tls_client_auth'];
 
 const normalize = (cert) => cert.toString().replace(/(?:-----(?:BEGIN|END) CERTIFICATE-----|\s)/g, '');
 
@@ -217,12 +217,12 @@ const fapi = new Provider(ISSUER, {
     },
   },
   responseTypes: ['code id_token', 'code'],
-  tokenEndpointAuthMethods,
+  clientAuthMethods,
   enabledJWA: {
     authorizationSigningAlgValues: ALGS,
     idTokenSigningAlgValues: ALGS,
     requestObjectSigningAlgValues: ALGS,
-    tokenEndpointAuthSigningAlgValues: ALGS,
+    clientAuthSigningAlgValues: ALGS,
     userinfoSigningAlgValues: ALGS,
   },
   extraClientMetadata: {

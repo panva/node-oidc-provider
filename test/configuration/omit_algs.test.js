@@ -28,10 +28,10 @@ describe('Provider declaring supported algorithms', () => {
     expect(() => {
       new Provider('https://op.example.com', { // eslint-disable-line no-new
         enabledJWA: {
-          tokenEndpointAuthSigningAlgValues: ['none'],
+          clientAuthSigningAlgValues: ['none'],
         },
       });
-    }).to.throw('unsupported enabledJWA.tokenEndpointAuthSigningAlgValues algorithm provided');
+    }).to.throw('unsupported enabledJWA.clientAuthSigningAlgValues algorithm provided');
   });
 
   it('idTokenSigningAlgValues', () => {
