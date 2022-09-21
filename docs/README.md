@@ -1580,7 +1580,7 @@ Enables the use and validations of the `request` and/or `request_uri` parameters
 _**default value**_:
 ```js
 {
-  mode: 'lax',
+  mode: 'strict',
   request: false,
   requestUri: true,
   requireSignedRequestObject: false,
@@ -1602,7 +1602,7 @@ defines the provider's strategy when it comes to using regular OAuth 2.0 paramet
 
 _**default value**_:
 ```js
-'lax'
+'strict'
 ```
 
 #### request

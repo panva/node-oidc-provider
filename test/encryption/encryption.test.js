@@ -485,6 +485,7 @@ describe('encryption', () => {
           const client = await this.provider.Client.find('clientSymmetric');
           const signed = await JWT.sign({
             client_id: 'clientSymmetric',
+            scope: 'openid',
             response_type: 'id_token',
             nonce: 'foobar',
             redirect_uri: 'https://client.example.com/cb',
@@ -578,6 +579,7 @@ describe('encryption', () => {
           const client = await this.provider.Client.find('clientSymmetric');
           const signed = await JWT.sign({
             client_id: 'clientSymmetric-dir',
+            scope: 'openid',
             response_type: 'id_token',
             nonce: 'foobar',
             redirect_uri: 'https://client.example.com/cb',

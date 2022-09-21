@@ -326,6 +326,7 @@ describe('request parameter features', () => {
         await JWT.sign({
           client_id: 'client',
           response_type: 'code',
+          scope: 'openid',
           redirect_uri: 'https://client.example.com/cb',
           max_age: 300,
         }, Buffer.from('secret'), 'HS256', { issuer: 'client', audience: this.provider.issuer }).then((request) => this.wrap({
@@ -387,6 +388,7 @@ describe('request parameter features', () => {
           client_id: 'client',
           response_type: 'code',
           redirect_uri: 'https://client.example.com/cb',
+          scope: 'openid',
           claims,
         }, Buffer.from('secret'), 'HS256', { issuer: 'client', audience: this.provider.issuer }).then((request) => this.wrap({
           agent: this.agent,
@@ -417,6 +419,7 @@ describe('request parameter features', () => {
           response_type: 'code',
           redirect_uri: 'https://client.example.com/cb',
           claims: { id_token: { email: null } },
+          scope: 'openid',
         }, Buffer.from('secret'), 'HS256', { issuer: 'client', audience: this.provider.issuer }).then((request) => this.wrap({
           agent: this.agent,
           route,
@@ -444,6 +447,7 @@ describe('request parameter features', () => {
         return JWT.sign({
           iat: Math.ceil(Date.now() / 1000) + 5,
           client_id: 'client-with-HS-sig',
+          scope: 'openid',
           response_type: 'code',
           redirect_uri: 'https://client.example.com/cb',
         }, key, 'HS256', { issuer: 'client-with-HS-sig', audience: this.provider.issuer }).then((request) => this.wrap({
@@ -467,6 +471,7 @@ describe('request parameter features', () => {
         key = await importJWK(key);
         return JWT.sign({
           client_id: 'client-with-HS-sig',
+          scope: 'openid',
           response_type: 'code',
           redirect_uri: 'https://client.example.com/cb',
         }, key, 'HS256', { issuer: 'client-with-HS-sig', audience: this.provider.issuer }).then((request) => this.wrap({
@@ -524,8 +529,10 @@ describe('request parameter features', () => {
         key = await importJWK(key);
 
         const request = await JWT.sign({
+          client_id: 'client-with-HS-sig',
           response_type: 'code',
           redirect_uri: 'https://client.example.com/cb',
+          scope: 'openid',
           jti: `very-random-and-collision-resistant-${index}`,
         }, key, 'HS256', { issuer: 'client-with-HS-sig', audience: this.provider.issuer, expiresIn: 30 });
 
@@ -633,6 +640,7 @@ describe('request parameter features', () => {
             client_id: 'client',
             response_type: 'code',
             response_mode: 'fragment',
+            scope: 'openid',
             redirect_uri: 'https://client.example.com/cb',
           }, Buffer.from('secret'), 'HS256', { issuer: 'client', audience: this.provider.issuer }).then((request) => this.wrap({
             agent: this.agent,
@@ -834,6 +842,7 @@ describe('request parameter features', () => {
 
         return JWT.sign({
           client_id: 'client-with-HS-sig',
+          scope: 'openid',
           response_type: 'code',
           redirect_uri: 'https://client.example.com/cb',
         }, Buffer.from('secret'), 'HS512', { issuer: 'client-with-HS-sig', audience: this.provider.issuer }).then((request) => this.wrap({
@@ -950,6 +959,7 @@ describe('request parameter features', () => {
           client_id: 'client-with-HS-sig',
           unrecognized: true,
           response_type: 'code',
+          scope: 'openid',
           redirect_uri: 'https://client.example.com/cb',
         }, key, 'HS256', { issuer: 'client-with-HS-sig', audience: this.provider.issuer }).then((request) => this.wrap({
           agent: this.agent,

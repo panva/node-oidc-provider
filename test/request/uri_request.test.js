@@ -70,6 +70,7 @@ describe('request Uri features', () => {
         let [key] = client.symmetricKeyStore.selectForSign({ alg: 'HS256' });
         key = await importJWK(key);
         const request = await JWT.sign({
+          scope: 'openid',
           client_id: 'client-with-HS-sig',
           response_type: 'code',
           redirect_uri: 'https://client.example.com/cb',
@@ -99,6 +100,7 @@ describe('request Uri features', () => {
         let [key] = client.symmetricKeyStore.selectForSign({ alg: 'HS256' });
         key = await importJWK(key);
         const request = await JWT.sign({
+          scope: 'openid',
           client_id: 'client-with-HS-sig',
           response_type: 'code',
           redirect_uri: 'https://client.example.com/cb',
@@ -161,6 +163,7 @@ describe('request Uri features', () => {
         it('checks the allow list', async function () {
           const request = await JWT.sign({
             client_id: 'client',
+            scope: 'openid',
             response_type: 'code',
             redirect_uri: 'https://client.example.com/cb',
           }, Buffer.from('secret'), 'HS256', { issuer: 'client', audience: this.provider.issuer });
@@ -187,6 +190,7 @@ describe('request Uri features', () => {
         it('allows for fragments to be provided', async function () {
           const request = await JWT.sign({
             client_id: 'client',
+            scope: 'openid',
             response_type: 'code',
             redirect_uri: 'https://client.example.com/cb',
           }, Buffer.from('secret'), 'HS256', { issuer: 'client', audience: this.provider.issuer });
