@@ -1,5 +1,3 @@
-import { AssertionError } from 'node:assert';
-
 import { expect } from 'chai';
 import jose from 'jose2';
 
@@ -133,7 +131,7 @@ describe('JSON Web Token (JWT) RFC7519 implementation', () => {
           expect(valid).not.to.be.ok;
         }, (err) => {
           expect(err).to.be.ok;
-          expect(err).to.be.an.instanceOf(AssertionError);
+          expect(err).to.be.an.instanceOf(Error);
           expect(err).to.have.property('message', 'jwt not active yet');
         });
     });
@@ -171,7 +169,7 @@ describe('JSON Web Token (JWT) RFC7519 implementation', () => {
           expect(valid).not.to.be.ok;
         }, (err) => {
           expect(err).to.be.ok;
-          expect(err).to.be.an.instanceOf(AssertionError);
+          expect(err).to.be.an.instanceOf(Error);
           expect(err).to.have.property('message', 'invalid nbf value');
         });
     });
@@ -189,7 +187,7 @@ describe('JSON Web Token (JWT) RFC7519 implementation', () => {
           expect(valid).not.to.be.ok;
         }, (err) => {
           expect(err).to.be.ok;
-          expect(err).to.be.an.instanceOf(AssertionError);
+          expect(err).to.be.an.instanceOf(Error);
           expect(err).to.have.property('message', 'jwt issued in the future');
         });
     });
@@ -233,7 +231,7 @@ describe('JSON Web Token (JWT) RFC7519 implementation', () => {
           expect(valid).not.to.be.ok;
         }, (err) => {
           expect(err).to.be.ok;
-          expect(err).to.be.an.instanceOf(AssertionError);
+          expect(err).to.be.an.instanceOf(Error);
           expect(err).to.have.property('message', 'invalid iat value');
         });
     });
@@ -249,7 +247,7 @@ describe('JSON Web Token (JWT) RFC7519 implementation', () => {
           expect(valid).not.to.be.ok;
         }, (err) => {
           expect(err).to.be.ok;
-          expect(err).to.be.an.instanceOf(AssertionError);
+          expect(err).to.be.an.instanceOf(Error);
           expect(err).to.have.property('message', 'jwt expired');
         });
     });
@@ -287,7 +285,7 @@ describe('JSON Web Token (JWT) RFC7519 implementation', () => {
           expect(valid).not.to.be.ok;
         }, (err) => {
           expect(err).to.be.ok;
-          expect(err).to.be.an.instanceOf(AssertionError);
+          expect(err).to.be.an.instanceOf(Error);
           expect(err).to.have.property('message', 'invalid exp value');
         });
     });
@@ -335,7 +333,7 @@ describe('JSON Web Token (JWT) RFC7519 implementation', () => {
         })
         .catch((err) => {
           expect(err).to.be.ok;
-          expect(err).to.be.an.instanceOf(AssertionError);
+          expect(err).to.be.an.instanceOf(Error);
           expect(err).to.have.property('message', 'jwt audience missing pappa');
         });
     });
@@ -356,7 +354,7 @@ describe('JSON Web Token (JWT) RFC7519 implementation', () => {
         })
         .catch((err) => {
           expect(err).to.be.ok;
-          expect(err).to.be.an.instanceOf(AssertionError);
+          expect(err).to.be.an.instanceOf(Error);
           expect(err).to.have.property('message', 'jwt audience missing pappa');
         });
     });
@@ -390,7 +388,7 @@ describe('JSON Web Token (JWT) RFC7519 implementation', () => {
         })
         .catch((err) => {
           expect(err).to.be.ok;
-          expect(err).to.be.an.instanceOf(AssertionError);
+          expect(err).to.be.an.instanceOf(Error);
           expect(err).to.have.property('message').that.matches(/jwt issuer invalid/);
         });
     });
