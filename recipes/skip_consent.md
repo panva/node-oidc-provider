@@ -13,28 +13,25 @@ To achieve that you want to add the requested claims/scopes/resource scopes to t
 ```js
 const oidcConfiguration = {
   loadExistingGrant(ctx) {
+    // keep grant expiry aligned with session expiry
+    // to prevent consent prompt being requested when grant expires
+    await Promise.all(
+      Object.entries(ctx.oidc.session.authorizations).map(async ([, { grantId }]) => {
+        const grant = await ctx.oidc.provider.Grant.find(grantId);
+        // this aligns the Grant ttl with that of the current session
+        // if the same Grant is used for multiple sessions, or is set
+        // to never expire, you probably do not want this in your code
+        grant.exp = epochTime() + sessionTtlInSeconds;
+        await grant.save();
+      })
+    );
+    
     const grantId = (ctx.oidc.result
       && ctx.oidc.result.consent
       && ctx.oidc.result.consent.grantId) || ctx.oidc.session.grantIdFor(ctx.oidc.client.clientId);
 
     if (grantId) {
-      // keep grant expiry aligned with session expiry
-      // to prevent consent prompt being requested when grant expires
-      const grant = await ctx.oidc.provider.Grant.find(grantId);
-
-      // this aligns the Grant ttl with that of the current session
-      // if the same Grant is used for multiple sessions, or is set
-      // to never expire, you probably do not want this in your code
-      if (ctx.oidc.account) {
-        // Change sessionTtl to match the value set for oidc's "Session.ttl" in your configuration
-        const sessionTtl = 14 * 24 * 60 * 60; // 14 days in seconds, the default session ttl
-        const epochCurrentTime = Math.floor(Date.now() / 1000);
-        grant.exp = epochCurrentTime + sessionTtl;
-
-        await grant.save();
-      }
-
-      return grant;
+      return await ctx.oidc.provider.Grant.find(grantId);
     } else if (isFirstParty(ctx.oidc.client)) {
       const grant = new ctx.oidc.provider.Grant({
         clientId: ctx.oidc.client.clientId,
