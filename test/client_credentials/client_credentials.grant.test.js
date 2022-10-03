@@ -30,13 +30,14 @@ describe('grant_type=client_credentials', () => {
 
   it('ignores unsupported scopes', async function () {
     const spy = sinon.spy();
-    this.provider.once('token.issued', spy);
+    this.provider.once('client_credentials.saved', spy);
+    this.provider.once('client_credentials.issued', spy);
 
     await this.agent.post(route)
       .auth('client', 'secret')
       .send({
         grant_type: 'client_credentials',
-        scope: 'api:read api:write',
+        scope: 'api:read api:admin',
       })
       .type('form')
       .expect(200)
@@ -50,6 +51,22 @@ describe('grant_type=client_credentials', () => {
     const [[token]] = spy.args;
 
     expect(token).to.have.property('scope', 'api:read');
+  });
+
+  it('checks clients scope allow list', async function () {
+    return this.agent.post(route)
+      .auth('client', 'secret')
+      .send({
+        grant_type: 'client_credentials',
+        scope: 'api:read api:write',
+      })
+      .type('form')
+      .expect(400)
+      .expect({
+        error: 'invalid_scope',
+        error_description: 'requested scope is not allowed',
+        scope: 'api:write',
+      });
   });
 
   it('populates ctx.oidc.entities', function (done) {

@@ -3,44 +3,47 @@
 const path = require('path');
 const url = require('url');
 
-const { set } = require('lodash');
 const express = require('express'); // eslint-disable-line import/no-unresolved
 const helmet = require('helmet');
 
-const Provider = require('../lib'); // require('oidc-provider');
+const { Provider } = require('../lib'); // require('oidc-provider');
 
 const Account = require('./support/account');
-const { provider: providerConfiguration, clients, keys } = require('./support/configuration');
+const configuration = require('./support/configuration');
 const routes = require('./routes/express');
 
-const { PORT = 3000, ISSUER = `http://localhost:${PORT}`, TIMEOUT } = process.env;
-providerConfiguration.findById = Account.findById;
+const { PORT = 3000, ISSUER = `http://localhost:${PORT}` } = process.env;
+configuration.findAccount = Account.findAccount;
 
 const app = express();
-app.use(helmet());
+
+const directives = helmet.contentSecurityPolicy.getDefaultDirectives();
+delete directives['form-action'];
+app.use(helmet({
+  contentSecurityPolicy: {
+    useDefaults: false,
+    directives,
+  },
+}));
 
 app.set('views', path.join(__dirname, 'views'));
 app.set('view engine', 'ejs');
 
-const provider = new Provider(ISSUER, providerConfiguration);
-
-if (TIMEOUT) {
-  provider.defaultHttpOptions = { timeout: parseInt(TIMEOUT, 10) };
-}
-
 let server;
 (async () => {
-  await provider.initialize({
-    adapter: process.env.MONGODB_URI ? require('./support/heroku_mongo_adapter') : undefined, // eslint-disable-line global-require
-    clients,
-    keystore: { keys },
-  });
+  let adapter;
+  if (process.env.MONGODB_URI) {
+    adapter = require('./adapters/mongodb'); // eslint-disable-line global-require
+    await adapter.connect();
+  }
 
-  if (process.env.NODE_ENV === 'production') {
+  const prod = process.env.NODE_ENV === 'production';
+
+  const provider = new Provider(ISSUER, { adapter, ...configuration });
+
+  if (prod) {
     app.enable('trust proxy');
     provider.proxy = true;
-    set(providerConfiguration, 'cookies.short.secure', true);
-    set(providerConfiguration, 'cookies.long.secure', true);
 
     app.use((req, res, next) => {
       if (req.secure) {
@@ -61,9 +64,9 @@ let server;
   }
 
   routes(app, provider);
-  app.use(provider.callback);
+  app.use(provider.callback());
   server = app.listen(PORT, () => {
-    console.log(`application is listening on port ${PORT}, check it's /.well-known/openid-configuration`);
+    console.log(`application is listening on port ${PORT}, check its /.well-known/openid-configuration`);
   });
 })().catch((err) => {
   if (server && server.listening) server.close();

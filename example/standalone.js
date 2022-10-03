@@ -1,45 +1,57 @@
 /* eslint-disable no-console */
 
 const path = require('path');
+const { promisify } = require('util');
 
-const { set } = require('lodash');
 const render = require('koa-ejs');
-const helmet = require('koa-helmet');
+const helmet = require('helmet');
 
-const Provider = require('../lib'); // require('oidc-provider');
+const { Provider } = require('../lib'); // require('oidc-provider');
 
 const Account = require('./support/account');
-const { provider: providerConfiguration, clients, keys } = require('./support/configuration');
+const configuration = require('./support/configuration');
 const routes = require('./routes/koa');
 
-const { PORT = 3000, ISSUER = `http://localhost:${PORT}`, TIMEOUT } = process.env;
-providerConfiguration.findById = Account.findById;
-
-const provider = new Provider(ISSUER, providerConfiguration);
-
-if (TIMEOUT) {
-  provider.defaultHttpOptions = { timeout: parseInt(TIMEOUT, 10) };
-}
-
-provider.use(helmet());
+const { PORT = 3000, ISSUER = `http://localhost:${PORT}` } = process.env;
+configuration.findAccount = Account.findAccount;
 
 let server;
 
 (async () => {
-  await provider.initialize({
-    adapter: process.env.MONGODB_URI ? require('./support/heroku_mongo_adapter') : undefined, // eslint-disable-line global-require
-    clients,
-    keystore: { keys },
-  });
-  if (process.env.NODE_ENV === 'production') {
-    provider.proxy = true;
-    set(providerConfiguration, 'cookies.short.secure', true);
-    set(providerConfiguration, 'cookies.long.secure', true);
+  let adapter;
+  if (process.env.MONGODB_URI) {
+    adapter = require('./adapters/mongodb'); // eslint-disable-line global-require
+    await adapter.connect();
+  }
 
+  const prod = process.env.NODE_ENV === 'production';
+
+  const provider = new Provider(ISSUER, { adapter, ...configuration });
+
+  const directives = helmet.contentSecurityPolicy.getDefaultDirectives();
+  delete directives['form-action'];
+  const pHelmet = promisify(helmet({
+    contentSecurityPolicy: {
+      useDefaults: false,
+      directives,
+    },
+  }));
+
+  provider.use(async (ctx, next) => {
+    const origSecure = ctx.req.secure;
+    ctx.req.secure = ctx.request.secure;
+    await pHelmet(ctx.req, ctx.res);
+    ctx.req.secure = origSecure;
+    return next();
+  });
+
+  if (prod) {
+    provider.proxy = true;
     provider.use(async (ctx, next) => {
       if (ctx.secure) {
         await next();
       } else if (ctx.method === 'GET' || ctx.method === 'HEAD') {
+        ctx.status = 303;
         ctx.redirect(ctx.href.replace(/^http:\/\//i, 'https://'));
       } else {
         ctx.body = {
@@ -58,7 +70,7 @@ let server;
   });
   provider.use(routes(provider).routes());
   server = provider.listen(PORT, () => {
-    console.log(`application is listening on port ${PORT}, check it's /.well-known/openid-configuration`);
+    console.log(`application is listening on port ${PORT}, check its /.well-known/openid-configuration`);
   });
 })().catch((err) => {
   if (server && server.listening) server.close();

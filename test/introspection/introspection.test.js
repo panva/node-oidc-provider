@@ -14,18 +14,20 @@ describe('introspection features', () => {
         .expect(200)
         .expect((response) => {
           expect(response.body).to.have.property('introspection_endpoint').and.matches(/token\/introspect/);
-          expect(response.body).not.to.have.property('introspection_endpoint_signing_alg_values_supported');
+          expect(response.body).not.to.have.property('introspection_signing_alg_values_supported');
         });
     });
   });
 
   describe('/token/introspection', () => {
+    before(function () { return this.login({ accountId: 'accountId' }); });
     it('returns the properties for access token [no hint]', async function () {
       const at = new this.provider.AccessToken({
         accountId: 'accountId',
-        grantId: 'foo',
-        clientId: 'client',
+        grantId: this.getGrantId(),
+        client: await this.provider.Client.find('client'),
         scope: 'scope',
+        aud: 'urn:example:foo',
       });
 
       const token = await at.save();
@@ -37,16 +39,19 @@ describe('introspection features', () => {
         .type('form')
         .expect(200)
         .expect((response) => {
-          expect(response.body).to.contain.keys('client_id', 'scope', 'sub');
+          expect(response.body).to.contain.keys('client_id', 'scope', 'sub', 'iss', 'iat', 'exp', 'token_type', 'aud');
           expect(response.body.sub).to.equal('accountId');
+          expect(response.body.token_type).to.equal('Bearer');
+          expect(response.body.iss).to.equal(this.provider.issuer);
+          expect(response.body.aud).to.equal('urn:example:foo');
         });
     });
 
     it('returns the properties for access token [correct hint]', async function () {
       const at = new this.provider.AccessToken({
         accountId: 'accountId',
-        grantId: 'foo',
-        clientId: 'client',
+        grantId: this.getGrantId(),
+        client: await this.provider.Client.find('client'),
         scope: 'scope',
       });
 
@@ -68,8 +73,8 @@ describe('introspection features', () => {
     it('returns the properties for access token [wrong hint]', async function () {
       const at = new this.provider.AccessToken({
         accountId: 'accountId',
-        grantId: 'foo',
-        clientId: 'client',
+        grantId: this.getGrantId(),
+        client: await this.provider.Client.find('client'),
         scope: 'scope',
       });
 
@@ -91,8 +96,8 @@ describe('introspection features', () => {
     it('returns the properties for access token [unrecognized hint]', async function () {
       const at = new this.provider.AccessToken({
         accountId: 'accountId',
-        grantId: 'foo',
-        clientId: 'client',
+        grantId: this.getGrantId(),
+        client: await this.provider.Client.find('client'),
         scope: 'scope',
       });
 
@@ -114,8 +119,8 @@ describe('introspection features', () => {
     it('returns the properties for refresh token [no hint]', async function () {
       const rt = new this.provider.RefreshToken({
         accountId: 'accountId',
-        grantId: 'foo',
-        clientId: 'client',
+        grantId: this.getGrantId(),
+        client: await this.provider.Client.find('client'),
         scope: 'scope',
       });
 
@@ -133,8 +138,8 @@ describe('introspection features', () => {
     it('returns the properties for refresh token [correct hint]', async function () {
       const rt = new this.provider.RefreshToken({
         accountId: 'accountId',
-        grantId: 'foo',
-        clientId: 'client',
+        grantId: this.getGrantId(),
+        client: await this.provider.Client.find('client'),
         scope: 'scope',
       });
 
@@ -152,8 +157,8 @@ describe('introspection features', () => {
     it('returns the properties for refresh token [wrong hint]', async function () {
       const rt = new this.provider.RefreshToken({
         accountId: 'accountId',
-        grantId: 'foo',
-        clientId: 'client',
+        grantId: this.getGrantId(),
+        client: await this.provider.Client.find('client'),
         scope: 'scope',
       });
 
@@ -171,8 +176,8 @@ describe('introspection features', () => {
     it('returns the properties for refresh token [unrecognized hint]', async function () {
       const rt = new this.provider.RefreshToken({
         accountId: 'accountId',
-        grantId: 'foo',
-        clientId: 'client',
+        grantId: this.getGrantId(),
+        client: await this.provider.Client.find('client'),
         scope: 'scope',
       });
 
@@ -189,7 +194,7 @@ describe('introspection features', () => {
 
     it('returns the properties for client credentials token [no hint]', async function () {
       const rt = new this.provider.ClientCredentials({
-        clientId: 'client',
+        client: await this.provider.Client.find('client'),
       });
 
       const token = await rt.save();
@@ -205,7 +210,7 @@ describe('introspection features', () => {
 
     it('returns the properties for client credentials token [correct hint]', async function () {
       const rt = new this.provider.ClientCredentials({
-        clientId: 'client',
+        client: await this.provider.Client.find('client'),
       });
 
       const token = await rt.save();
@@ -221,7 +226,7 @@ describe('introspection features', () => {
 
     it('returns the properties for client credentials token [wrong hint]', async function () {
       const rt = new this.provider.ClientCredentials({
-        clientId: 'client',
+        client: await this.provider.Client.find('client'),
       });
 
       const token = await rt.save();
@@ -237,7 +242,7 @@ describe('introspection features', () => {
 
     it('returns the properties for client credentials token [unrecognized hint]', async function () {
       const rt = new this.provider.ClientCredentials({
-        clientId: 'client',
+        client: await this.provider.Client.find('client'),
       });
 
       const token = await rt.save();
@@ -254,7 +259,7 @@ describe('introspection features', () => {
     it('can be called by pairwise clients', async function () {
       const rt = new this.provider.RefreshToken({
         accountId: 'accountId',
-        grantId: 'foo',
+        grantId: this.getGrantId('client-pairwise'),
         clientId: 'client-pairwise',
         scope: 'scope',
       });
@@ -274,7 +279,7 @@ describe('introspection features', () => {
     it('can be called by RS clients and uses the original subject_type', async function () {
       const rt = new this.provider.RefreshToken({
         accountId: 'accountId',
-        grantId: 'foo',
+        grantId: this.getGrantId('client-pairwise'),
         clientId: 'client-pairwise',
         scope: 'scope',
       });
@@ -296,8 +301,7 @@ describe('introspection features', () => {
         .auth('client', 'secret')
         .send({})
         .type('form')
-        .expect('pragma', 'no-cache')
-        .expect('cache-control', 'no-cache, no-store');
+        .expect('cache-control', 'no-store');
     });
 
     it('validates token param presence', function () {
@@ -308,7 +312,7 @@ describe('introspection features', () => {
         .expect(400)
         .expect((response) => {
           expect(response.body).to.have.property('error', 'invalid_request');
-          expect(response.body).to.have.property('error_description').and.matches(/missing required parameter.+\(token\)/);
+          expect(response.body).to.have.property('error_description', "missing required parameter 'token'");
         });
     });
 
@@ -329,8 +333,8 @@ describe('introspection features', () => {
     it('responds with active=false when client auth = none and token does not belong to it', async function () {
       const at = new this.provider.AccessToken({
         accountId: 'accountId',
-        grantId: 'foo',
-        clientId: 'client',
+        grantId: this.getGrantId(),
+        client: await this.provider.Client.find('client'),
         scope: 'scope',
       });
 
@@ -380,8 +384,8 @@ describe('introspection features', () => {
     it('responds only with active=false when token is expired', async function () {
       const at = new this.provider.AccessToken({
         accountId: 'accountId',
-        grantId: 'foo',
-        clientId: 'client',
+        grantId: this.getGrantId(),
+        client: await this.provider.Client.find('client'),
         scope: 'scope',
         expiresIn: -1,
       });
@@ -402,8 +406,8 @@ describe('introspection features', () => {
     it('responds only with active=false when token is already consumed', async function () {
       const rt = new this.provider.RefreshToken({
         accountId: 'accountId',
-        grantId: 'foo',
-        clientId: 'client',
+        grantId: this.getGrantId(),
+        client: await this.provider.Client.find('client'),
         scope: 'scope',
       });
 
@@ -456,7 +460,7 @@ describe('introspection features', () => {
         (async () => {
           const at = new this.provider.AccessToken({
             accountId: 'accountId',
-            clientId: 'client',
+            client: await this.provider.Client.find('client'),
             scope: 'scope',
           });
 
@@ -478,7 +482,7 @@ describe('introspection features', () => {
         (async () => {
           const rt = new this.provider.RefreshToken({
             accountId: 'accountId',
-            clientId: 'client',
+            client: await this.provider.Client.find('client'),
             scope: 'scope',
           });
 
@@ -497,7 +501,7 @@ describe('introspection features', () => {
 
         (async () => {
           const rt = new this.provider.ClientCredentials({
-            clientId: 'client',
+            client: await this.provider.Client.find('client'),
           });
 
           const token = await rt.save();

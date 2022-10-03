@@ -3,6 +3,7 @@ const url = require('url');
 const { expect } = require('chai');
 const sinon = require('sinon');
 
+const { Provider } = require('../../lib');
 const bootstrap = require('../test_helper');
 
 describe('userinfo /me', () => {
@@ -24,8 +25,29 @@ describe('userinfo /me', () => {
       });
   });
 
-  it('returns 200 OK and user claims except the rejected ones', function () {
+  it('jwtUserinfo can only be enabled with userinfo', () => {
+    expect(() => {
+      new Provider('http://localhost', { // eslint-disable-line no-new
+        features: {
+          jwtUserinfo: { enabled: true },
+          userinfo: { enabled: false },
+        },
+      });
+    }).to.throw('jwtUserinfo is only available in conjuction with userinfo');
+  });
+
+  it('[get] returns 200 OK and user claims except the rejected ones', function () {
     return this.agent.get('/me')
+      .auth(this.access_token, { type: 'bearer' })
+      .expect(200)
+      .expect((response) => {
+        expect(response.body).to.have.keys(['sub', 'email']);
+        expect(response.body).not.to.have.keys(['email_verified']);
+      });
+  });
+
+  it('[post] returns 200 OK and user claims except the rejected ones', function () {
+    return this.agent.post('/me')
       .auth(this.access_token, { type: 'bearer' })
       .expect(200)
       .expect((response) => {
@@ -36,7 +58,7 @@ describe('userinfo /me', () => {
 
   it('populates ctx.oidc.entities', function (done) {
     this.provider.use(this.assertOnce((ctx) => {
-      expect(ctx.oidc.entities).to.have.keys('Client', 'AccessToken', 'Account');
+      expect(ctx.oidc.entities).to.have.keys('Client', 'Grant', 'AccessToken', 'Account');
     }, done));
 
     (async () => {
@@ -52,11 +74,27 @@ describe('userinfo /me', () => {
 
   it('validates access token is provided', function () {
     return this.agent.get('/me')
-      .expect(this.failWith(400, 'invalid_request', 'no bearer auth mechanism provided'));
+      .expect(this.failWith(400, 'invalid_request', 'no access token provided'));
+  });
+
+  it('validates the openid scope is present', async function () {
+    const at = await new this.provider.AccessToken({
+      client: await this.provider.Client.find('client'),
+    }).save();
+    sinon.stub(this.provider.Client, 'find').callsFake(async () => undefined);
+    return this.agent.get('/me')
+      .auth(at, { type: 'bearer' })
+      .expect(() => {
+        this.provider.Client.find.restore();
+      })
+      .expect(this.failWith(403, 'insufficient_scope', 'access token missing openid scope', 'openid'));
   });
 
   it('validates a client is still valid for a found token', async function () {
-    const at = await new this.provider.AccessToken({ clientId: 'client' }).save();
+    const at = await new this.provider.AccessToken({
+      client: await this.provider.Client.find('client'),
+      scope: 'openid',
+    }).save();
     sinon.stub(this.provider.Client, 'find').callsFake(async () => undefined);
     return this.agent.get('/me')
       .auth(at, { type: 'bearer' })
@@ -67,7 +105,11 @@ describe('userinfo /me', () => {
   });
 
   it('validates an account still valid for a found token', async function () {
-    const at = await new this.provider.AccessToken({ clientId: 'client', accountId: 'notfound' }).save();
+    const at = await new this.provider.AccessToken({
+      client: await this.provider.Client.find('client'),
+      scope: 'openid',
+      accountId: 'notfound',
+    }).save();
     return this.agent.get('/me')
       .auth(at, { type: 'bearer' })
       .expect(this.failWith(401, 'invalid_token', 'invalid token provided'));
@@ -92,6 +134,6 @@ describe('userinfo /me', () => {
         scope: 'openid profile',
       })
       .auth(this.access_token, { type: 'bearer' })
-      .expect(this.failWith(400, 'invalid_scope', 'access token missing requested scope', 'profile'));
+      .expect(this.failWith(403, 'insufficient_scope', 'access token missing requested scope', 'profile'));
   });
 });

@@ -1,6 +1,6 @@
 const { expect } = require('chai');
 
-const Provider = require('../../lib');
+const { Provider } = require('../../lib');
 
 describe('Provider configuration', () => {
   it('validates subjectTypes members', () => {
@@ -28,13 +28,5 @@ describe('Provider configuration', () => {
         subjectTypes: [],
       });
     }).to.throw('subjectTypes must not be empty');
-  });
-
-  it('validates subjectTypes type', () => {
-    expect(() => {
-      new Provider('http://localhost:3000', { // eslint-disable-line no-new
-        subjectTypes: 'public',
-      });
-    }).to.throw('subjectTypes must be an array');
   });
 });

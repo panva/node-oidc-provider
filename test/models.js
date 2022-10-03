@@ -1,29 +1,31 @@
-const base64url = require('base64url');
+/* eslint-disable max-classes-per-file */
+
+const { strict: assert } = require('assert');
+
+const map = new Map();
+
+map.del = function (...args) {
+  this.delete(...args);
+};
+
+const { expect } = require('chai');
 
 const epochTime = require('../lib/helpers/epoch_time');
-const { formats: { default: FORMAT } } = require('../lib/helpers/defaults');
+const MemoryAdapter = require('../lib/adapters/memory_adapter');
 
-const store = new Map();
+MemoryAdapter.setStorage(map);
+const testStorage = new Map();
 
-function grantKeyFor(id) {
-  return ['grant', id].join(':');
-}
-
-function userCodeKeyFor(userCode) {
-  return ['userCode', userCode].join(':');
-}
-
-class TestAdapter {
+class TestAdapter extends MemoryAdapter {
   constructor(name) {
-    this.name = name;
-    if (store.has(name)) return store.get(name);
-    // ID-less model, only needed for tests
-    store.set(name, this);
-    this.store = store;
+    if (testStorage.has(name)) return testStorage.get(name);
+    super(name);
+    this.store = map;
+    testStorage.set(name, this);
   }
 
   static for(name) {
-    if (store.has(name)) return store.get(name);
+    if (testStorage.has(name)) return testStorage.get(name);
     return new this(name);
   }
 
@@ -31,101 +33,50 @@ class TestAdapter {
     return this.constructor.for(key);
   }
 
-  key(id) {
-    return [this.name, id].join(':');
+  static clear() {
+    map.clear();
   }
 
   clear() { // eslint-disable-line class-methods-use-this
-    store.clear();
+    map.clear();
   }
 
-  destroy(id) {
-    const key = this.key(id);
-
-    const found = this.get(key);
-    const grantId = found && found.grantId;
-
-    store.delete(key);
-
-    if (grantId) {
-      const grantKey = grantKeyFor(grantId);
-      store.get(grantKey).forEach(token => store.delete(token));
-      store.delete(grantKey);
-    }
-
-    return Promise.resolve();
-  }
-
-  consume(id) {
-    store.get(this.key(id)).consumed = epochTime();
-    return Promise.resolve();
-  }
-
-  syncFind(id, { payload = false } = {}) {
-    const found = store.get(this.key(id));
-    if (!found) return undefined;
-    if (payload && FORMAT === 'legacy') {
-      return JSON.parse(base64url.decode(found.payload));
-    }
-    return found;
+  syncFind(id) {
+    return map.get(this.key(id)) || undefined;
   }
 
   syncUpdate(id, update) {
-    const found = store.get(this.key(id));
+    const found = map.get(this.key(id));
     if (!found) return;
-    if (FORMAT === 'legacy') {
-      const payload = JSON.parse(base64url.decode(found.payload));
-      Object.assign(payload, update);
-      found.payload = base64url(JSON.stringify(payload));
-    } else {
-      Object.assign(found, update);
-    }
+    Object.assign(found, update);
   }
 
-  find(id) {
-    return Promise.resolve(this.syncFind(id));
-  }
-
-  findByUserCode(userCode) {
-    const id = store.get(userCodeKeyFor(userCode));
-    return this.find(id);
-  }
-
-  upsert(id, payload, expiresIn) {
-    const key = this.key(id);
-
-    const { grantId, userCode } = payload;
-    if (grantId) {
-      const grantKey = grantKeyFor(grantId);
-      const grant = store.get(grantKey);
-      if (!grant) {
-        store.set(grantKey, [key]);
-      } else {
-        grant.push(key);
-      }
+  async upsert(id, payload, expiresIn) {
+    if (this.model !== 'RegistrationAccessToken' && this.model !== 'InitialAccessToken' && this.model !== 'Client' && this.model !== 'Grant') {
+      expect(payload).to.have.property('exp').that.is.a('number').and.is.finite;
+      expect(payload.exp).to.be.closeTo(expiresIn + epochTime(), 1);
     }
 
-    if (userCode) {
-      store.set(userCodeKeyFor(userCode), id, expiresIn * 1000);
-    }
-
-    store.set(key, payload, expiresIn * 1000);
-
-    return Promise.resolve();
+    return super.upsert(id, payload, expiresIn);
   }
 }
 
 class Account {
   constructor(id) {
     this.accountId = id;
-    store.set(`Account:${this.accountId}`, this);
+    testStorage.set(`Account:${this.accountId}`, this);
   }
 
   static get storage() {
-    return store;
+    return testStorage;
   }
 
-  claims() {
+  claims(use, scope, claims, rejected) {
+    assert.equal(typeof use, 'string');
+    assert.equal(typeof scope, 'string');
+    assert.equal(typeof claims, 'object');
+    assert.ok(Array.isArray(rejected));
+
     return {
       address: {
         country: '000',
@@ -148,7 +99,7 @@ class Account {
       phone_number: '+420 721 773500',
       phone_number_verified: false,
       picture: 'http://lorempixel.com/400/200/',
-      preferred_username: 'Jdawg',
+      preferred_username: 'johnny',
       profile: 'https://johnswebsite.com',
       sub: this.accountId,
       updated_at: 1454704946,
@@ -157,10 +108,15 @@ class Account {
     };
   }
 
-  static async findById(ctx, id) {
-    let acc = store.get(`Account:${id}`);
+  // eslint-disable-next-line no-unused-vars
+  static async findAccount(ctx, sub, token) {
+    if (sub === 'notfound') {
+      return undefined;
+    }
+    assert.equal(typeof sub, 'string');
+    let acc = testStorage.get(`Account:${sub}`);
     if (!acc) {
-      acc = new Account(id);
+      acc = new Account(sub);
     }
     return acc;
   }

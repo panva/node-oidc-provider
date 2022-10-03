@@ -1,11 +1,14 @@
-const { clone } = require('lodash');
+const cloneDeep = require('lodash/cloneDeep');
+const merge = require('lodash/merge');
 
-const config = clone(require('../default.config'));
+const config = cloneDeep(require('../default.config'));
 
 config.subjectTypes = ['public', 'pairwise'];
-config.features = {
-  introspection: true, encryption: true, clientCredentials: true,
-};
+merge(config.features, {
+  introspection: { enabled: true },
+  encryption: { enabled: true },
+  clientCredentials: { enabled: true },
+});
 
 module.exports = {
   config,

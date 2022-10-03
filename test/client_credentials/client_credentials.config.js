@@ -1,9 +1,10 @@
-const { clone } = require('lodash');
+const cloneDeep = require('lodash/cloneDeep');
+const merge = require('lodash/merge');
 
-const config = clone(require('../default.config'));
+const config = cloneDeep(require('../default.config'));
 
-config.features = { clientCredentials: true };
-config.scopes = ['api:read'];
+merge(config.features, { clientCredentials: { enabled: true } });
+config.scopes = ['api:read', 'api:write'];
 
 module.exports = {
   config,
@@ -13,5 +14,6 @@ module.exports = {
     grant_types: ['authorization_code', 'client_credentials'],
     response_types: ['code'],
     redirect_uris: ['https://client.example.com/cb'],
+    scope: 'api:read',
   },
 };

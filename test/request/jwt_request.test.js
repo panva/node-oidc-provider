@@ -1,21 +1,66 @@
+const { createSecretKey, randomBytes } = require('crypto');
 const { parse } = require('url');
 
+const { importJWK } = require('jose');
 const sinon = require('sinon');
 const { expect } = require('chai');
 
+const { Provider } = require('../../lib');
 const JWT = require('../../lib/helpers/jwt');
 const bootstrap = require('../test_helper');
 
 describe('request parameter features', () => {
   before(bootstrap(__dirname));
 
+  describe('modes', () => {
+    ['lax', 'strict'].forEach((value) => {
+      it(`${value} is an allowed strategy name`, () => {
+        expect(() => {
+          new Provider('http://localhost:3000', { // eslint-disable-line no-new
+            features: {
+              requestObjects: {
+                mode: value,
+              },
+            },
+          });
+        }).not.to.throw();
+      });
+    });
+
+    it('throws on unsupported strategy names', () => {
+      expect(() => {
+        new Provider('http://localhost:3000', { // eslint-disable-line no-new
+          features: {
+            requestObjects: {
+              mode: 'foobar',
+            },
+          },
+        });
+      }).to.throw(TypeError, "'mode' must be 'lax' or 'strict'");
+    });
+  });
+
   describe('configuration features.requestUri', () => {
-    it('extends discovery', function () {
-      return this.agent.get('/.well-known/openid-configuration')
+    it('extends discovery', async function () {
+      await this.agent.get('/.well-known/openid-configuration')
         .expect(200)
         .expect((response) => {
           expect(response.body).to.have.property('request_parameter_supported', true);
+          expect(response.body).not.to.have.property('require_signed_request_object');
         });
+
+      i(this.provider).configuration('features.requestObjects').requireSignedRequestObject = true;
+
+      await this.agent.get('/.well-known/openid-configuration')
+        .expect(200)
+        .expect((response) => {
+          expect(response.body).to.have.property('request_parameter_supported', true);
+          expect(response.body).to.have.property('require_signed_request_object', true);
+        });
+    });
+
+    after(function () {
+      i(this.provider).configuration('features.requestObjects').requireSignedRequestObject = false;
     });
   });
 
@@ -32,10 +77,12 @@ describe('request parameter features', () => {
   }
 
   [
-    ['/auth', 'get', 'authorization.error', 302, 302, redirectSuccess, 'authorization.success'],
-    ['/auth', 'post', 'authorization.error', 302, 302, redirectSuccess, 'authorization.success'],
+    ['/auth', 'get', 'authorization.error', 303, 303, redirectSuccess, 'authorization.success'],
+    ['/auth', 'post', 'authorization.error', 303, 303, redirectSuccess, 'authorization.success'],
     ['/device/auth', 'post', 'device_authorization.error', 200, 400, httpSuccess, 'device_authorization.success'],
-  ].forEach(([route, verb, errorEvt, successCode, errorCode, successFnCheck, successEvt]) => {
+  ].forEach(([
+    route, verb, errorEvt, successCode, errorCode, successFnCheck, successEvt,
+  ], index) => {
     describe(`${route} ${verb} passing request parameters as JWTs`, () => {
       before(function () {
         return this.login({
@@ -47,12 +94,104 @@ describe('request parameter features', () => {
         return this.logout();
       });
 
+      describe('modes', () => {
+        beforeEach(function () {
+          const ro = i(this.provider).configuration().features.requestObjects;
+          this.orig = {
+            mode: ro.mode,
+          };
+        });
+
+        afterEach(function () {
+          const ro = i(this.provider).configuration().features.requestObjects;
+          ro.mode = this.orig.mode;
+        });
+
+        describe('strict', () => {
+          it('does not use anything from the OAuth 2.0 parameters', async function () {
+            i(this.provider).configuration().features.requestObjects.mode = 'strict';
+
+            const spy = sinon.spy();
+            this.provider.once('authorization.success', spy);
+
+            if (successCode === 200) {
+              this.provider.once('device_authorization.success', ({ oidc }) => {
+                this.provider.emit('authorization.success', { oidc: { params: oidc.entities.DeviceCode.params } });
+              });
+            }
+
+            await JWT.sign({
+              client_id: 'client',
+              response_type: 'code',
+              redirect_uri: 'https://client.example.com/cb',
+              scope: 'openid',
+            }, null, 'none', { issuer: 'client', audience: this.provider.issuer }).then((request) => this.wrap({
+              agent: this.agent,
+              route,
+              verb,
+              auth: {
+                request,
+                ui_locales: 'foo',
+                ...(successCode === 200 ? {
+                  client_id: 'client',
+                } : undefined),
+              },
+            })
+              .expect(successCode)
+              .expect(successFnCheck)
+              .expect(() => {
+                expect(spy.calledOnce).to.be.true;
+                expect(spy.args[0][0].oidc.params.ui_locales).to.eq(undefined);
+              }));
+          });
+        });
+
+        describe('lax', () => {
+          it('uses anything not found in the Request Object', async function () {
+            i(this.provider).configuration().features.requestObjects.mode = 'lax';
+
+            const spy = sinon.spy();
+            this.provider.once('authorization.success', spy);
+
+            if (successCode === 200) {
+              this.provider.once('device_authorization.success', ({ oidc }) => {
+                this.provider.emit('authorization.success', { oidc: { params: oidc.entities.DeviceCode.params } });
+              });
+            }
+
+            await JWT.sign({
+              client_id: 'client',
+              response_type: 'code',
+              redirect_uri: 'https://client.example.com/cb',
+              scope: 'openid',
+            }, null, 'none', { issuer: 'client', audience: this.provider.issuer }).then((request) => this.wrap({
+              agent: this.agent,
+              route,
+              verb,
+              auth: {
+                request,
+                ui_locales: 'foo',
+                ...(successCode === 200 ? {
+                  client_id: 'client',
+                } : undefined),
+              },
+            })
+              .expect(successCode)
+              .expect(successFnCheck)
+              .expect(() => {
+                expect(spy.calledOnce).to.be.true;
+                expect(spy.args[0][0].oidc.params.ui_locales).to.eq('foo');
+              }));
+          });
+        });
+      });
+
       it('works with signed by none', function () {
         return JWT.sign({
           client_id: 'client',
           response_type: 'code',
           redirect_uri: 'https://client.example.com/cb',
-        }, null, 'none', { issuer: 'client', audience: this.provider.issuer }).then(request => this.wrap({
+        }, null, 'none', { issuer: 'client', audience: this.provider.issuer }).then((request) => this.wrap({
           agent: this.agent,
           route,
           verb,
@@ -67,6 +206,169 @@ describe('request parameter features', () => {
           .expect(successFnCheck));
       });
 
+      it('works with signed by none unless the client is required to use SIGNED request object', function () {
+        const spy = sinon.spy();
+        this.provider.once(errorEvt, spy);
+
+        return JWT.sign({
+          client_id: 'client-requiredSignedRequestObject',
+          response_type: 'code',
+          redirect_uri: 'https://client.example.com/cb',
+        }, null, 'none', { issuer: 'client-requiredSignedRequestObject', audience: this.provider.issuer }).then((request) => this.wrap({
+          agent: this.agent,
+          route,
+          verb,
+          auth: {
+            request,
+            scope: 'openid',
+            client_id: 'client-requiredSignedRequestObject',
+            response_type: 'code',
+          },
+        })
+          .expect(errorCode)
+          .expect(() => {
+            expect(spy.calledOnce).to.be.true;
+            expect(spy.args[0][1]).to.have.property('message', 'invalid_request_object');
+            expect(spy.args[0][1]).to.have.property(
+              'error_description',
+              'Request Object must not be unsigned for this client',
+            );
+          }));
+      });
+
+      describe('JAR only request', () => {
+        it('works without any other params', function () {
+          return JWT.sign({
+            client_id: 'client',
+            response_type: 'code',
+            redirect_uri: 'https://client.example.com/cb',
+            scope: 'openid',
+          }, null, 'none', { issuer: 'client', audience: this.provider.issuer }).then((request) => this.wrap({
+            agent: this.agent,
+            route,
+            verb,
+            auth: {
+              request,
+              ...(successCode === 200 ? {
+                client_id: 'client',
+              } : undefined),
+            },
+          })
+            .expect(successCode)
+            .expect(successFnCheck));
+        });
+
+        it('when invalid Request Object', function () {
+          const spy = sinon.spy();
+          this.provider.once(errorEvt, spy);
+
+          return this.wrap({
+            agent: this.agent,
+            route,
+            verb,
+            auth: {
+              request: 'foo',
+              ...(successCode === 200 ? {
+                client_id: 'client',
+              } : undefined),
+            },
+          })
+            .expect(400)
+            .expect(() => {
+              expect(spy.calledOnce).to.be.true;
+              expect(spy.args[0][1]).to.have.property('message', 'invalid_request_object');
+              expect(spy.args[0][1]).to.have.property(
+                'error_description',
+                route !== '/device/auth' ? 'Request Object is not a valid JWT' : 'could not parse Request Object',
+              );
+            });
+        });
+
+        it('if without client_id', function () {
+          const spy = sinon.spy();
+          this.provider.once(errorEvt, spy);
+
+          return JWT.sign({
+            // client_id: 'client',
+            response_type: 'code',
+            redirect_uri: 'https://client.example.com/cb',
+            scope: 'openid',
+          }, null, 'none', { /* issuer: 'client', */ audience: this.provider.issuer }).then((request) => this.wrap({
+            agent: this.agent,
+            route,
+            verb,
+            auth: {
+              request,
+            },
+          })
+            .expect(400)
+            .expect(() => {
+              expect(spy.calledOnce).to.be.true;
+              expect(spy.args[0][1]).to.have.property('message', 'invalid_request');
+              expect(spy.args[0][1]).to.have.property(
+                'error_description',
+                route !== '/device/auth' ? "missing required parameter 'client_id'" : 'no client authentication mechanism provided',
+              );
+            }));
+        });
+
+        it('if with empty client_id', function () {
+          const spy = sinon.spy();
+          this.provider.once(errorEvt, spy);
+
+          return JWT.sign({
+            client_id: '',
+            response_type: 'code',
+            redirect_uri: 'https://client.example.com/cb',
+            scope: 'openid',
+          }, null, 'none', { issuer: '', audience: this.provider.issuer }).then((request) => this.wrap({
+            agent: this.agent,
+            route,
+            verb,
+            auth: {
+              request,
+            },
+          })
+            .expect(400)
+            .expect(() => {
+              expect(spy.calledOnce).to.be.true;
+              expect(spy.args[0][1]).to.have.property('message', 'invalid_request');
+              expect(spy.args[0][1]).to.have.property(
+                'error_description',
+                route !== '/device/auth' ? "missing required parameter 'client_id'" : 'no client authentication mechanism provided',
+              );
+            }));
+        });
+
+        it('if with invalid type client_id', function () {
+          const spy = sinon.spy();
+          this.provider.once(errorEvt, spy);
+
+          return JWT.sign({
+            client_id: 123678,
+            response_type: 'code',
+            redirect_uri: 'https://client.example.com/cb',
+            scope: 'openid',
+          }, null, 'none', { issuer: 123678, audience: this.provider.issuer }).then((request) => this.wrap({
+            agent: this.agent,
+            route,
+            verb,
+            auth: {
+              request,
+            },
+          })
+            .expect(400)
+            .expect(() => {
+              expect(spy.calledOnce).to.be.true;
+              expect(spy.args[0][1]).to.have.property('message', 'invalid_request');
+              expect(spy.args[0][1]).to.have.property(
+                'error_description',
+                route !== '/device/auth' ? "missing required parameter 'client_id'" : 'no client authentication mechanism provided',
+              );
+            }));
+        });
+      });
+
       it('can contain max_age parameter as a number and it (and other params too) will be forced as string', async function () {
         const spy = sinon.spy();
         this.provider.once(successEvt, spy);
@@ -76,7 +378,7 @@ describe('request parameter features', () => {
           response_type: 'code',
           redirect_uri: 'https://client.example.com/cb',
           max_age: 300,
-        }, null, 'none', { issuer: 'client', audience: this.provider.issuer }).then(request => this.wrap({
+        }, null, 'none', { issuer: 'client', audience: this.provider.issuer }).then((request) => this.wrap({
           agent: this.agent,
           route,
           verb,
@@ -95,6 +397,37 @@ describe('request parameter features', () => {
         ).to.be.true;
       });
 
+      it('can contain params as array and have them handled as dupes', async function () {
+        const spy = sinon.spy();
+        this.provider.once(errorEvt, spy);
+
+        return JWT.sign({
+          client_id: 'client',
+          response_type: 'code',
+          scope: ['openid', 'profile'],
+          redirect_uri: 'https://client.example.com/cb',
+        }, null, 'none', { issuer: 'client', audience: this.provider.issuer }).then((request) => this.wrap({
+          agent: this.agent,
+          route,
+          verb,
+          auth: {
+            request,
+            scope: 'openid',
+            client_id: 'client',
+            response_type: 'code',
+          },
+        })
+          .expect(errorCode)
+          .expect(() => {
+            expect(spy.calledOnce).to.be.true;
+            expect(spy.args[0][1]).to.have.property('message', 'invalid_request');
+            expect(spy.args[0][1]).to.have.property(
+              'error_description',
+              "'scope' parameter must not be provided twice",
+            );
+          }));
+      });
+
       it('can contain claims parameter as JSON', async function () {
         const spy = sinon.spy();
         this.provider.once(successEvt, spy);
@@ -105,7 +438,7 @@ describe('request parameter features', () => {
           response_type: 'code',
           redirect_uri: 'https://client.example.com/cb',
           claims,
-        }, null, 'none', { issuer: 'client', audience: this.provider.issuer }).then(request => this.wrap({
+        }, null, 'none', { issuer: 'client', audience: this.provider.issuer }).then((request) => this.wrap({
           agent: this.agent,
           route,
           verb,
@@ -134,7 +467,7 @@ describe('request parameter features', () => {
           response_type: 'code',
           redirect_uri: 'https://client.example.com/cb',
           claims: { id_token: { email: null } },
-        }, null, 'none', { issuer: 'client', audience: this.provider.issuer }).then(request => this.wrap({
+        }, null, 'none', { issuer: 'client', audience: this.provider.issuer }).then((request) => this.wrap({
           agent: this.agent,
           route,
           verb,
@@ -153,17 +486,17 @@ describe('request parameter features', () => {
         ).to.be.true;
       });
 
-      it('can accept request objects issued within acceptable system clock skew', async function () {
-        const key = (await this.provider.Client.find('client-with-HS-sig')).keystore.get({
-          alg: 'HS256',
-        });
+      it('can accept Request Objects issued within acceptable system clock skew', async function () {
+        const client = await this.provider.Client.find('client-with-HS-sig');
+        let [key] = client.symmetricKeyStore.selectForSign({ alg: 'HS256' });
+        key = await importJWK(key);
         i(this.provider).configuration().clockTolerance = 10;
         return JWT.sign({
           iat: Math.ceil(Date.now() / 1000) + 5,
           client_id: 'client-with-HS-sig',
           response_type: 'code',
           redirect_uri: 'https://client.example.com/cb',
-        }, key, 'HS256', { issuer: 'client-with-HS-sig', audience: this.provider.issuer }).then(request => this.wrap({
+        }, key, 'HS256', { issuer: 'client-with-HS-sig', audience: this.provider.issuer }).then((request) => this.wrap({
           agent: this.agent,
           route,
           verb,
@@ -178,15 +511,15 @@ describe('request parameter features', () => {
           .expect(successFnCheck));
       });
 
-      it('works with signed by an actual HS', async function () {
-        const key = (await this.provider.Client.find('client-with-HS-sig')).keystore.get({
-          alg: 'HS256',
-        });
+      it('works with signed by an actual DSA', async function () {
+        const client = await this.provider.Client.find('client-with-HS-sig');
+        let [key] = client.symmetricKeyStore.selectForSign({ alg: 'HS256' });
+        key = await importJWK(key);
         return JWT.sign({
           client_id: 'client-with-HS-sig',
           response_type: 'code',
           redirect_uri: 'https://client.example.com/cb',
-        }, key, 'HS256', { issuer: 'client-with-HS-sig', audience: this.provider.issuer }).then(request => this.wrap({
+        }, key, 'HS256', { issuer: 'client-with-HS-sig', audience: this.provider.issuer }).then((request) => this.wrap({
           agent: this.agent,
           route,
           verb,
@@ -199,6 +532,87 @@ describe('request parameter features', () => {
         })
           .expect(successCode)
           .expect(successFnCheck));
+      });
+
+      it('rejects HMAC based requests when signed with an expired secret', async function () {
+        const client = await this.provider.Client.find('client-with-HS-sig-expired');
+        let [key] = client.symmetricKeyStore.selectForSign({ alg: 'HS256' });
+        key = await importJWK(key);
+
+        const spy = sinon.spy();
+        this.provider.once(errorEvt, spy);
+
+        return JWT.sign({
+          client_id: 'client-with-HS-sig-expired',
+          response_type: 'code',
+          redirect_uri: 'https://client.example.com/cb',
+        }, key, 'HS256', { issuer: 'client-with-HS-sig-expired', audience: this.provider.issuer }).then((request) => this.wrap({
+          agent: this.agent,
+          route,
+          verb,
+          auth: {
+            request,
+            scope: 'openid',
+            client_id: 'client-with-HS-sig-expired',
+            response_type: 'code',
+          },
+        })
+          .expect(errorCode)
+          .expect(() => {
+            expect(spy.calledOnce).to.be.true;
+            expect(spy.args[0][1]).to.have.property('message', 'invalid_request_object');
+            expect(spy.args[0][1]).to.have.property(
+              'error_description',
+              'could not validate the Request Object - the client secret used for its signature is expired',
+            );
+          }));
+      });
+
+      it('supports optional replay prevention', async function () {
+        const client = await this.provider.Client.find('client-with-HS-sig');
+        let [key] = client.symmetricKeyStore.selectForSign({ alg: 'HS256' });
+        key = await importJWK(key);
+
+        const request = await JWT.sign({
+          response_type: 'code',
+          redirect_uri: 'https://client.example.com/cb',
+          jti: `very-random-and-collision-resistant-${index}`,
+        }, key, 'HS256', { issuer: 'client-with-HS-sig', audience: this.provider.issuer, expiresIn: 30 });
+
+        await this.wrap({
+          agent: this.agent,
+          route,
+          verb,
+          auth: {
+            request,
+            scope: 'openid',
+            client_id: 'client-with-HS-sig',
+            response_type: 'code',
+          },
+        })
+          .expect(successCode)
+          .expect(successFnCheck);
+
+        const spy = sinon.spy();
+        this.provider.once(errorEvt, spy);
+
+        await this.wrap({
+          agent: this.agent,
+          route,
+          verb,
+          auth: {
+            request,
+            scope: 'openid',
+            client_id: 'client-with-HS-sig',
+            response_type: 'code',
+          },
+        })
+          .expect(errorCode)
+          .expect(() => {
+            expect(spy.calledOnce).to.be.true;
+            expect(spy.args[0][1]).to.have.property('message', 'invalid_request_object');
+            expect(spy.args[0][1]).to.have.property('error_description').that.matches(/request replay detected/);
+          });
       });
 
       it('doesnt allow request inception', function () {
@@ -210,7 +624,7 @@ describe('request parameter features', () => {
           response_type: 'code',
           request: 'request inception',
           redirect_uri: 'https://client.example.com/cb',
-        }, null, 'none', { issuer: 'client', audience: this.provider.issuer }).then(request => this.wrap({
+        }, null, 'none', { issuer: 'client', audience: this.provider.issuer }).then((request) => this.wrap({
           agent: this.agent,
           route,
           verb,
@@ -224,10 +638,10 @@ describe('request parameter features', () => {
           .expect(errorCode)
           .expect(() => {
             expect(spy.calledOnce).to.be.true;
-            expect(spy.args[0][0]).to.have.property('message', 'invalid_request_object');
-            expect(spy.args[0][0]).to.have.property(
+            expect(spy.args[0][1]).to.have.property('message', 'invalid_request_object');
+            expect(spy.args[0][1]).to.have.property(
               'error_description',
-              'request object must not contain request or request_uri properties',
+              'Request Object must not contain request or request_uri properties',
             );
           }));
       });
@@ -241,7 +655,7 @@ describe('request parameter features', () => {
           response_type: 'code',
           request_uri: 'request uri inception',
           redirect_uri: 'https://client.example.com/cb',
-        }, null, 'none', { issuer: 'client', audience: this.provider.issuer }).then(request => this.wrap({
+        }, null, 'none', { issuer: 'client', audience: this.provider.issuer }).then((request) => this.wrap({
           agent: this.agent,
           route,
           verb,
@@ -255,25 +669,22 @@ describe('request parameter features', () => {
           .expect(errorCode)
           .expect(() => {
             expect(spy.calledOnce).to.be.true;
-            expect(spy.args[0][0]).to.have.property('message', 'invalid_request_object');
-            expect(spy.args[0][0]).to.have.property(
+            expect(spy.args[0][1]).to.have.property('message', 'invalid_request_object');
+            expect(spy.args[0][1]).to.have.property(
               'error_description',
-              'request object must not contain request or request_uri properties',
+              'Request Object must not contain request or request_uri properties',
             );
           }));
       });
 
       if (route !== '/device/auth') {
-        it('can contain resource parameter as an Array', async function () {
-          const spy = sinon.spy();
-          this.provider.once(successEvt, spy);
-
-          await JWT.sign({
+        it('may contain a response_mode and it will be honoured', function () {
+          return JWT.sign({
             client_id: 'client',
             response_type: 'code',
+            response_mode: 'fragment',
             redirect_uri: 'https://client.example.com/cb',
-            resource: ['https://rp.example.com/api'],
-          }, null, 'none', { issuer: 'client', audience: this.provider.issuer }).then(request => this.wrap({
+          }, null, 'none', { issuer: 'client', audience: this.provider.issuer }).then((request) => this.wrap({
             agent: this.agent,
             route,
             verb,
@@ -284,23 +695,21 @@ describe('request parameter features', () => {
               response_type: 'code',
             },
           })
+            .expect(this.AuthorizationRequest.prototype.validateFragment)
             .expect(successCode)
             .expect(successFnCheck));
-
-          expect(
-            spy.calledWithMatch({ oidc: { params: { resource: ['https://rp.example.com/api'] } } }),
-          ).to.be.true;
         });
 
-        it('doesnt allow response_type to differ', function () {
+        it('re-checks the response mode from the request', function () {
           const spy = sinon.spy();
           this.provider.once(errorEvt, spy);
 
           return JWT.sign({
-            client_id: 'client',
-            response_type: 'id_token',
+            client_id: 'client2',
+            response_type: 'code',
             redirect_uri: 'https://client.example.com/cb',
-          }, null, 'none', { issuer: 'client', audience: this.provider.issuer }).then(request => this.wrap({
+            response_mode: 'foo',
+          }, null, 'none', { issuer: 'client2', audience: this.provider.issuer }).then((request) => this.wrap({
             agent: this.agent,
             route,
             verb,
@@ -314,24 +723,87 @@ describe('request parameter features', () => {
             .expect(errorCode)
             .expect(() => {
               expect(spy.calledOnce).to.be.true;
-              expect(spy.args[0][0]).to.have.property('message', 'invalid_request_object');
-              expect(spy.args[0][0]).to.have.property(
+              expect(spy.args[0][1]).to.have.property('message', 'unsupported_response_mode');
+              expect(spy.args[0][1]).to.have.property(
+                'error_description',
+                'unsupported response_mode requested',
+              );
+            }));
+        });
+
+        it('doesnt allow response_type to differ', function () {
+          const spy = sinon.spy();
+          this.provider.once(errorEvt, spy);
+
+          return JWT.sign({
+            client_id: 'client',
+            response_type: 'id_token',
+            redirect_uri: 'https://client.example.com/cb',
+          }, null, 'none', { issuer: 'client', audience: this.provider.issuer }).then((request) => this.wrap({
+            agent: this.agent,
+            route,
+            verb,
+            auth: {
+              request,
+              scope: 'openid',
+              client_id: 'client',
+              response_type: 'code',
+            },
+          })
+            .expect(errorCode)
+            .expect(() => {
+              expect(spy.calledOnce).to.be.true;
+              expect(spy.args[0][1]).to.have.property('message', 'invalid_request_object');
+              expect(spy.args[0][1]).to.have.property(
                 'error_description',
                 'request response_type must equal the one in request parameters',
               );
             }));
         });
+
+        it('uses the state from the request even if its validations will fail', function () {
+          const spy = sinon.spy();
+          this.provider.once(errorEvt, spy);
+
+          return JWT.sign({
+            client_id: 'client2',
+            response_type: 'code',
+            redirect_uri: 'https://client.example.com/cb',
+            state: 'foobar',
+          }, null, 'none', { issuer: 'client2', audience: this.provider.issuer }).then((request) => this.wrap({
+            agent: this.agent,
+            route,
+            verb,
+            auth: {
+              request,
+              scope: 'openid',
+              client_id: 'client',
+              response_type: 'code',
+            },
+          })
+            .expect(this.AuthorizationRequest.prototype.validateResponseParameter.call({}, 'state', 'foobar'))
+            .expect(errorCode)
+            .expect(() => {
+              expect(spy.calledOnce).to.be.true;
+              expect(spy.args[0][1]).to.have.property('message', 'invalid_request_object');
+              expect(spy.args[0][1]).to.have.property(
+                'error_description',
+                'request client_id must equal the one in request parameters',
+              );
+            }));
+        });
       }
 
-      it('doesnt allow client_id to differ', function () {
+      it('handles JWT claim assertions', function () {
         const spy = sinon.spy();
         this.provider.once(errorEvt, spy);
 
         return JWT.sign({
-          client_id: 'client2',
+          client_id: 'client',
           response_type: 'code',
           redirect_uri: 'https://client.example.com/cb',
-        }, null, 'none', { issuer: 'client2', audience: this.provider.issuer }).then(request => this.wrap({
+          exp: 1,
+        }, null, 'none', { issuer: 'client', audience: this.provider.issuer }).then((request) => this.wrap({
           agent: this.agent,
           route,
           verb,
@@ -345,8 +817,38 @@ describe('request parameter features', () => {
           .expect(errorCode)
           .expect(() => {
             expect(spy.calledOnce).to.be.true;
-            expect(spy.args[0][0]).to.have.property('message', 'invalid_request_object');
-            expect(spy.args[0][0]).to.have.property(
+            expect(spy.args[0][1]).to.have.property('message', 'invalid_request_object');
+            expect(spy.args[0][1]).to.have.property(
+              'error_description',
+              'Request Object claims are invalid',
+            );
+          }));
+      });
+
+      it('doesnt allow client_id to differ', function () {
+        const spy = sinon.spy();
+        this.provider.once(errorEvt, spy);
+
+        return JWT.sign({
+          client_id: 'client2',
+          response_type: 'code',
+          redirect_uri: 'https://client.example.com/cb',
+        }, null, 'none', { issuer: 'client2', audience: this.provider.issuer }).then((request) => this.wrap({
+          agent: this.agent,
+          route,
+          verb,
+          auth: {
+            request,
+            scope: 'openid',
+            client_id: 'client',
+            response_type: 'code',
+          },
+        })
+          .expect(errorCode)
+          .expect(() => {
+            expect(spy.calledOnce).to.be.true;
+            expect(spy.args[0][1]).to.have.property('message', 'invalid_request_object');
+            expect(spy.args[0][1]).to.have.property(
               'error_description',
               'request client_id must equal the one in request parameters',
             );
@@ -371,8 +873,8 @@ describe('request parameter features', () => {
           .expect(errorCode)
           .expect(() => {
             expect(spy.calledOnce).to.be.true;
-            expect(spy.args[0][0]).to.have.property('message', 'invalid_request_object');
-            expect(spy.args[0][0]).to.have.property('error_description').and.matches(/could not parse request object as valid JWT/);
+            expect(spy.args[0][1]).to.have.property('message', 'invalid_request_object');
+            expect(spy.args[0][1]).to.have.property('error_description').and.matches(/could not parse Request Object/);
           });
       });
 
@@ -384,7 +886,7 @@ describe('request parameter features', () => {
           client_id: 'client-with-HS-sig',
           response_type: 'code',
           redirect_uri: 'https://client.example.com/cb',
-        }, null, 'none', { issuer: 'client-with-HS-sig', audience: this.provider.issuer }).then(request => this.wrap({
+        }, null, 'none', { issuer: 'client-with-HS-sig', audience: this.provider.issuer }).then((request) => this.wrap({
           agent: this.agent,
           route,
           verb,
@@ -398,8 +900,8 @@ describe('request parameter features', () => {
           .expect(errorCode)
           .expect(() => {
             expect(spy.calledOnce).to.be.true;
-            expect(spy.args[0][0]).to.have.property('message', 'invalid_request_object');
-            expect(spy.args[0][0]).to.have.property(
+            expect(spy.args[0][1]).to.have.property('message', 'invalid_request_object');
+            expect(spy.args[0][1]).to.have.property(
               'error_description',
               'the preregistered alg must be used in request or request_uri',
             );
@@ -409,14 +911,12 @@ describe('request parameter features', () => {
       it('unsupported algs must not be used', async function () {
         const spy = sinon.spy();
         this.provider.once(errorEvt, spy);
-        const key = (await this.provider.Client.find('client')).keystore.get({
-          alg: 'HS384',
-        });
+
         return JWT.sign({
           client_id: 'client',
           response_type: 'code',
           redirect_uri: 'https://client.example.com/cb',
-        }, key, 'HS384', { issuer: 'client', audience: this.provider.issuer }).then(request => this.wrap({
+        }, createSecretKey(randomBytes(48)), 'HS384', { issuer: 'client', audience: this.provider.issuer }).then((request) => this.wrap({
           agent: this.agent,
           route,
           verb,
@@ -430,8 +930,8 @@ describe('request parameter features', () => {
           .expect(errorCode)
           .expect(() => {
             expect(spy.calledOnce).to.be.true;
-            expect(spy.args[0][0]).to.have.property('message', 'invalid_request_object');
-            expect(spy.args[0][0]).to.have.property('error_description', 'unsupported signed request alg');
+            expect(spy.args[0][1]).to.have.property('message', 'invalid_request_object');
+            expect(spy.args[0][1]).to.have.property('error_description', 'unsupported signed request alg');
           }));
       });
 
@@ -439,14 +939,14 @@ describe('request parameter features', () => {
         const spy = sinon.spy();
         this.provider.once(errorEvt, spy);
 
-        const key = (await this.provider.Client.find('client-with-HS-sig')).keystore.get({
-          alg: 'HS256',
-        });
+        const client = await this.provider.Client.find('client-with-HS-sig');
+        let [key] = client.symmetricKeyStore.selectForSign({ alg: 'HS256' });
+        key = await importJWK(key);
         return JWT.sign({
           client_id: 'client',
           response_type: 'code',
           redirect_uri: 'https://client.example.com/cb',
-        }, key, 'HS256', { issuer: 'client', audience: this.provider.issuer }).then(request => this.wrap({
+        }, key, 'HS256', { issuer: 'client', audience: this.provider.issuer }).then((request) => this.wrap({
           agent: this.agent,
           route,
           verb,
@@ -460,21 +960,52 @@ describe('request parameter features', () => {
           .expect(errorCode)
           .expect(() => {
             expect(spy.calledOnce).to.be.true;
-            expect(spy.args[0][0]).to.have.property('message', 'invalid_request_object');
-            expect(spy.args[0][0]).to.have.property('error_description').that.matches(/could not validate request object/);
+            expect(spy.args[0][1]).to.have.property('message', 'invalid_request_object');
+            expect(spy.args[0][1]).to.have.property('error_description').that.matches(/could not validate Request Object/);
+          }));
+      });
+
+      it('rejects "registration" parameter part of the Request Object', function () {
+        const spy = sinon.spy();
+        this.provider.once(errorEvt, spy);
+
+        return JWT.sign({
+          client_id: 'client',
+          response_type: 'code',
+          redirect_uri: 'https://client.example.com/cb',
+          registration: 'foo',
+        }, null, 'none', { issuer: 'client', audience: this.provider.issuer }).then((request) => this.wrap({
+          agent: this.agent,
+          route,
+          verb,
+          auth: {
+            request,
+            scope: 'openid',
+            client_id: 'client',
+            response_type: 'code',
+          },
+        })
+          .expect(errorCode)
+          .expect(() => {
+            expect(spy.calledOnce).to.be.true;
+            expect(spy.args[0][1]).to.have.property('message', 'registration_not_supported');
+            expect(spy.args[0][1]).to.have.property(
+              'error_description',
+              'registration parameter provided but not supported',
+            );
           }));
       });
 
       it('handles unrecognized parameters', async function () {
-        const key = (await this.provider.Client.find('client-with-HS-sig')).keystore.get({
-          alg: 'HS256',
-        });
+        const client = await this.provider.Client.find('client-with-HS-sig');
+        let [key] = client.symmetricKeyStore.selectForSign({ alg: 'HS256' });
+        key = await importJWK(key);
         return JWT.sign({
           client_id: 'client-with-HS-sig',
           unrecognized: true,
           response_type: 'code',
           redirect_uri: 'https://client.example.com/cb',
-        }, key, 'HS256', { issuer: 'client-with-HS-sig', audience: this.provider.issuer }).then(request => this.wrap({
+        }, key, 'HS256', { issuer: 'client-with-HS-sig', audience: this.provider.issuer }).then((request) => this.wrap({
           agent: this.agent,
           route,
           verb,

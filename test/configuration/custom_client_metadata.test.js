@@ -3,10 +3,8 @@
 const { expect } = require('chai');
 const sinon = require('sinon');
 
-const Provider = require('../../lib');
+const { Provider } = require('../../lib');
 const { InvalidClientMetadata } = require('../../lib/helpers/errors');
-
-const fail = () => { throw new Error('expected promise to be rejected'); };
 
 describe('extraClientMetadata configuration', () => {
   it('allows for properties to be added to client schema and have them synchronously validated', async () => {
@@ -17,9 +15,6 @@ describe('extraClientMetadata configuration', () => {
         properties,
         validator,
       },
-    });
-
-    await provider.initialize({
       clients: [
         {
           client_id: 'client-1',
@@ -36,17 +31,21 @@ describe('extraClientMetadata configuration', () => {
         },
       ],
     });
+
+    await provider.Client.find('client-1');
+    await provider.Client.find('client-2');
+
     const calls = validator.getCalls();
 
     expect(calls.length).to.eql(6);
 
-    expect(calls[0].calledWith('foo', undefined)).to.be.true;
-    expect(calls[1].calledWith('bar', undefined)).to.be.true;
-    expect(calls[2].calledWith('foo_bar', undefined)).to.be.true;
+    expect(calls[0].calledWith(undefined, 'foo', undefined)).to.be.true;
+    expect(calls[1].calledWith(undefined, 'bar', undefined)).to.be.true;
+    expect(calls[2].calledWith(undefined, 'foo_bar', undefined)).to.be.true;
 
-    expect(calls[3].calledWith('foo', 'one')).to.be.true;
-    expect(calls[4].calledWith('bar', 'two')).to.be.true;
-    expect(calls[5].calledWith('foo_bar', 'three')).to.be.true;
+    expect(calls[3].calledWith(undefined, 'foo', 'one')).to.be.true;
+    expect(calls[4].calledWith(undefined, 'bar', 'two')).to.be.true;
+    expect(calls[5].calledWith(undefined, 'foo_bar', 'three')).to.be.true;
 
     const client = await provider.Client.find('client-2');
     expect(client).to.have.property('foo_bar');
@@ -57,16 +56,13 @@ describe('extraClientMetadata configuration', () => {
     const provider = new Provider('http://localhost:3000', {
       extraClientMetadata: {
         properties: ['foo'],
-        validator(key, value, metadata) {
+        validator(ctx, key, value, metadata) {
           expect(key).to.eql('foo');
           expect(value).to.eql(undefined);
           metadata[key] = 'default';
           metadata.client_name = 'test RP';
         },
       },
-    });
-
-    await provider.initialize({
       clients: [
         {
           client_id: 'client',
@@ -81,17 +77,14 @@ describe('extraClientMetadata configuration', () => {
     expect(client).to.have.property('clientName', 'test RP');
   });
 
-  it('should not allow props to be added without them being whitelisted', async () => {
+  it('should not allow props to be added without them being allowed', async () => {
     const provider = new Provider('http://localhost:3000', {
       extraClientMetadata: {
         properties: ['bar'],
-        validator(key, value, metadata) {
+        validator(ctx, key, value, metadata) {
           metadata.foo = 'foo';
         },
       },
-    });
-
-    await provider.initialize({
       clients: [
         {
           client_id: 'client',
@@ -107,14 +100,11 @@ describe('extraClientMetadata configuration', () => {
 
   it('can be used to add validations to existing standard properties', async () => {
     const validator = sinon.spy();
-    const provider = new Provider('http://localhost:3000', {
+    const provider = new Provider('http://localhost:3000', { // eslint-disable-line no-new
       extraClientMetadata: {
         properties: ['client_name'],
         validator,
       },
-    });
-
-    await provider.initialize({
       clients: [
         {
           client_id: 'client',
@@ -123,33 +113,38 @@ describe('extraClientMetadata configuration', () => {
         },
       ],
     });
+
+    await provider.Client.find('client');
 
     expect(validator.calledOnce).to.be.true;
-    expect(validator.calledWith('client_name', undefined)).to.be.true;
+    expect(validator.calledWith(undefined, 'client_name', undefined)).to.be.true;
   });
 
-  it('should re-throw errors', async () => {
-    const provider = new Provider('http://localhost:3000', {
-      extraClientMetadata: {
-        properties: ['client_description'],
-        validator() {
-          throw new InvalidClientMetadata('invalid client_description name provided');
+  it('should throw regular errors during #find()', async () => {
+    try {
+      const provider = new Provider('http://localhost:3000', { // eslint-disable-line no-new
+        extraClientMetadata: {
+          properties: ['client_description'],
+          validator() {
+            throw new InvalidClientMetadata('invalid client_description name provided');
+          },
         },
-      },
-    });
+        clients: [
+          {
+            client_name: 'foo',
+            client_id: 'client',
+            client_secret: 'bar',
+            redirect_uris: ['http://rp.example.com/cb'],
+          },
+        ],
+      });
 
-    return provider.initialize({
-      clients: [
-        {
-          client_name: 'foo',
-          client_id: 'client',
-          client_secret: 'bar',
-          redirect_uris: ['http://rp.example.com/cb'],
-        },
-      ],
-    }).then(fail, (err) => {
+      await provider.Client.find('client');
+
+      throw new Error('expected a throw from the above');
+    } catch (err) {
       expect(err).to.have.property('message', 'invalid_client_metadata');
       expect(err).to.have.property('error_description', 'invalid client_description name provided');
-    });
+    }
   });
 });

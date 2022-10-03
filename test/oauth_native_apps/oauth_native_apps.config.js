@@ -1,8 +1,6 @@
-const { clone } = require('lodash');
+const cloneDeep = require('lodash/cloneDeep');
 
-const config = clone(require('../default.config'));
-
-config.features = { oauthNativeApps: true };
+const config = cloneDeep(require('../default.config'));
 
 module.exports = {
   config,

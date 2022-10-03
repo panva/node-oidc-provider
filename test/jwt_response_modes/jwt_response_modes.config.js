@@ -1,8 +1,13 @@
-const { clone } = require('lodash');
+const cloneDeep = require('lodash/cloneDeep');
+const merge = require('lodash/merge');
 
-const config = clone(require('../default.config'));
+const config = cloneDeep(require('../default.config'));
 
-config.features = { encryption: true, webMessageResponseMode: true, jwtResponseModes: true };
+merge(config.features, {
+  encryption: { enabled: true },
+  webMessageResponseMode: { enabled: true },
+  jwtResponseModes: { enabled: true },
+});
 
 module.exports = {
   config,
@@ -21,6 +26,15 @@ module.exports = {
       response_types: ['code', 'id_token token', 'none'],
       redirect_uris: ['https://client.example.com'],
       authorization_encrypted_response_alg: 'A128KW',
+    },
+    {
+      client_id: 'client-expired',
+      client_secret: 'secret',
+      client_secret_expires_at: 1,
+      grant_types: ['authorization_code', 'implicit'],
+      response_types: ['code', 'id_token token', 'none'],
+      redirect_uris: ['https://client.example.com'],
+      authorization_signed_response_alg: 'HS256',
     },
   ],
 };

@@ -1,57 +1,55 @@
 /* eslint-disable no-underscore-dangle */
 
-const { expect } = require('chai');
-const uuid = require('uuid/v4');
-const KeyGrip = require('keygrip'); // eslint-disable-line import/no-extraneous-dependencies
-const sinon = require('sinon');
+const { strict: assert } = require('assert');
 
+const { expect } = require('chai');
+const KeyGrip = require('keygrip'); // eslint-disable-line import/no-extraneous-dependencies
+const sinon = require('sinon').createSandbox();
+
+const nanoid = require('../../lib/helpers/nanoid');
 const bootstrap = require('../test_helper');
 const epochTime = require('../../lib/helpers/epoch_time');
-
-const config = require('./interaction.config');
 
 const expire = new Date();
 expire.setDate(expire.getDate() + 1);
 const expired = new Date(0);
-const fail = () => { throw new Error('expected promise to be rejected'); };
 
 function handlesInteractionSessionErrors() {
   it('"handles" not found interaction session id cookie', async function () {
     const cookies = [
-      `_grant=; path=${this.url}; expires=${expired.toGMTString()}; httponly`,
-      `_grant.sig=; path=${this.url}; expires=${expired.toGMTString()}; httponly`,
+      `_interaction=; path=${this.url}; expires=${expired.toGMTString()}; httponly`,
+      `_interaction.sig=; path=${this.url}; expires=${expired.toGMTString()}; httponly`,
     ];
     this.agent._saveCookies.bind(this.agent)({ headers: { 'set-cookie': cookies } });
 
     sinon.spy(this.provider, 'interactionDetails');
 
     await this.agent.get(this.url).expect(400);
-    await this.provider.interactionDetails.getCall(0).returnValue.then(fail, (err) => {
+    return assert.rejects(this.provider.interactionDetails.getCall(0).returnValue, (err) => {
       expect(err.name).to.eql('SessionNotFound');
       expect(err.error_description).to.eql('interaction session id cookie not found');
+      return true;
     });
   });
 
   it('"handles" not found interaction session', async function () {
-    sinon.stub(this.provider.Session, 'find').resolves();
+    sinon.stub(this.provider.Interaction, 'find').resolves();
 
     sinon.spy(this.provider, 'interactionDetails');
 
     await this.agent.get(this.url).expect(400);
-    await this.provider.interactionDetails.getCall(0).returnValue.then(fail, (err) => {
+    return assert.rejects(this.provider.interactionDetails.getCall(0).returnValue, (err) => {
       expect(err.name).to.eql('SessionNotFound');
       expect(err.error_description).to.eql('interaction session not found');
+      return true;
     });
   });
 }
 
 describe('devInteractions', () => {
   before(bootstrap(__dirname));
-  afterEach(function () {
-    if (this.provider.Session.find.restore) this.provider.Session.find.restore();
-    if (this.provider.interactionDetails.restore) this.provider.interactionDetails.restore();
-    if (this.provider.interactionFinished.restore) this.provider.interactionFinished.restore();
-  });
+  afterEach(sinon.restore);
+
   context('render login', () => {
     beforeEach(function () { return this.logout(); });
     beforeEach(function () {
@@ -70,8 +68,8 @@ describe('devInteractions', () => {
     it('with a form', function () {
       return this.agent.get(this.url)
         .expect(200)
-        .expect(new RegExp(`action="${this.url}/submit"`))
-        .expect(new RegExp('name="view" value="login"'))
+        .expect(new RegExp(`action="${this.provider.issuer}${this.url}"`))
+        .expect(new RegExp('name="prompt" value="login"'))
         .expect(/Sign-in/);
     });
 
@@ -98,12 +96,85 @@ describe('devInteractions', () => {
     it('with a form', function () {
       return this.agent.get(this.url)
         .expect(200)
-        .expect(new RegExp(`action="${this.url}/submit"`))
-        .expect(new RegExp('name="view" value="interaction"'))
+        .expect(new RegExp(`action="${this.provider.issuer}${this.url}"`))
+        .expect(new RegExp('name="prompt" value="consent"'))
         .expect(/Authorize/);
     });
 
-    handlesInteractionSessionErrors();
+    it('checks that the authentication session is still there', async function () {
+      const session = this.getSession({ instantiate: true });
+      await session.destroy();
+
+      await this.agent.get(this.url)
+        .accept('text/html')
+        .expect(400)
+        .expect('content-type', 'text/html; charset=utf-8')
+        .expect(/session not found/);
+    });
+
+    it("checks that the authentication session's principal didn't change", async function () {
+      const session = this.getSession({ instantiate: true });
+      session.accountId = 'foobar';
+      await session.persist();
+
+      await this.agent.get(this.url)
+        .accept('text/html')
+        .expect(400)
+        .expect('content-type', 'text/html; charset=utf-8')
+        .expect(/session principal changed/);
+    });
+  });
+
+  context('when unimplemented prompt is requested', () => {
+    beforeEach(function () { return this.logout(); });
+
+    it('throws a 501', async function () {
+      const auth = new this.AuthorizationRequest({
+        response_type: 'code',
+        scope: 'openid',
+      });
+
+      const url = await this.agent.get('/auth')
+        .query(auth)
+        .then((response) => response.headers.location);
+
+      const split = url.split('/');
+      const uid = split[split.length - 1];
+      const interaction = this.TestAdapter.for('Interaction').syncFind(uid);
+      interaction.prompt.name = 'notimplemented';
+
+      return this.agent.get(url).expect(501);
+    });
+  });
+
+  context('navigate to abort', () => {
+    before(function () { return this.logout(); });
+
+    it('should abort an interaction with an error', async function () {
+      const auth = new this.AuthorizationRequest({
+        response_type: 'code',
+        scope: 'openid',
+      });
+
+      await this.agent.get('/auth')
+        .query(auth)
+        .then((response) => {
+          this.url = response.headers.location;
+        });
+
+      await this.agent.get(`${this.url}/abort`)
+        .expect(303)
+        .expect(({ headers: { location } }) => {
+          this.location = location;
+        });
+
+      return this.agent.get(this.url.replace('interaction', 'auth'))
+        .expect(303)
+        .expect(auth.validateClientLocation)
+        .expect(auth.validateState)
+        .expect(auth.validateError('access_denied'))
+        .expect(auth.validateErrorDescription('End-User aborted interaction'));
+    });
   });
 
   context('submit login', () => {
@@ -113,6 +184,7 @@ describe('devInteractions', () => {
         response_type: 'code',
         scope: 'openid',
       });
+      this.auth = auth;
 
       return this.agent.get('/auth')
         .query(auth)
@@ -121,21 +193,54 @@ describe('devInteractions', () => {
         });
     });
 
-    it('accepts the login and resumes auth', function () {
-      return this.agent.post(`${this.url}/submit`)
+    it('accepts the login and resumes auth', async function () {
+      let location;
+      await this.agent.post(`${this.url}`)
         .send({
-          view: 'login',
+          prompt: 'login',
           login: 'foobar',
         })
         .type('form')
-        .expect(302)
-        .expect('location', new RegExp(this.url.replace('interaction', 'auth')));
+        .expect(303)
+        .expect('location', new RegExp(this.url.replace('interaction', 'auth')))
+        .expect(({ headers }) => {
+          ({ location } = headers);
+        });
+
+      await this.agent.get(new URL(location).pathname)
+        .expect(303);
+    });
+
+    it('checks that the account is a non empty string', async function () {
+      let location;
+      const spy = sinon.spy();
+      this.provider.once('server_error', spy);
+
+      await this.agent.post(`${this.url}`)
+        .send({
+          prompt: 'login',
+          login: '',
+        })
+        .type('form')
+        .expect(303)
+        .expect('location', new RegExp(this.url.replace('interaction', 'auth')))
+        .expect(({ headers }) => {
+          ({ location } = headers);
+        });
+
+      await this.agent.get(new URL(location).pathname)
+        .expect(500);
+
+      expect(spy).to.have.property('calledOnce', true);
+      const error = spy.firstCall.args[1];
+      expect(error).to.be.an.instanceof(TypeError);
+      expect(error).to.have.property('message', 'accountId must be a non-empty string, got: string');
     });
 
     handlesInteractionSessionErrors();
   });
 
-  context('submit interaction', () => {
+  context('submit consent', () => {
     beforeEach(function () { return this.logout(); });
     beforeEach(function () { return this.login(); });
     beforeEach(function () {
@@ -152,43 +257,120 @@ describe('devInteractions', () => {
         });
     });
 
-    it('accepts the interaction and resumes auth', function () {
-      return this.agent.post(`${this.url}/submit`)
+    it('accepts the consent and resumes auth', async function () {
+      let location;
+      await this.agent.post(`${this.url}`)
         .send({
-          view: 'interaction',
+          prompt: 'consent',
         })
         .type('form')
-        .expect(302)
-        .expect('location', new RegExp(this.url.replace('interaction', 'auth')));
+        .expect(303)
+        .expect('location', new RegExp(this.url.replace('interaction', 'auth')))
+        .expect(({ headers }) => {
+          ({ location } = headers);
+        });
+
+      await this.agent.get(new URL(location).pathname)
+        .expect(303);
+    });
+
+    it('checks the session interaction came from still exists', async function () {
+      let location;
+      await this.agent.post(`${this.url}`)
+        .send({
+          prompt: 'consent',
+        })
+        .type('form')
+        .expect(303)
+        .expect('location', new RegExp(this.url.replace('interaction', 'auth')))
+        .expect(({ headers }) => {
+          ({ location } = headers);
+        });
+
+      const session = this.getSession({ instantiate: true });
+      await session.destroy();
+
+      await this.agent.get(new URL(location).pathname)
+        .expect(400)
+        .expect('content-type', 'text/html; charset=utf-8')
+        .expect(/interaction session and authentication session mismatch/);
+    });
+
+    it('checks the session interaction came from is still the one', async function () {
+      let location;
+      await this.agent.post(`${this.url}`)
+        .send({
+          prompt: 'consent',
+        })
+        .type('form')
+        .expect(303)
+        .expect('location', new RegExp(this.url.replace('interaction', 'auth')))
+        .expect(({ headers }) => {
+          ({ location } = headers);
+        });
+
+      await this.login();
+
+      await this.agent.get(new URL(location).pathname)
+        .expect(400)
+        .expect('content-type', 'text/html; charset=utf-8')
+        .expect(/interaction session and authentication session mismatch/);
+    });
+
+    it('checks the session interaction came from is still the one', async function () {
+      let location;
+      await this.agent.post(`${this.url}`)
+        .send({
+          prompt: 'consent',
+        })
+        .type('form')
+        .expect(303)
+        .expect('location', new RegExp(this.url.replace('interaction', 'auth')))
+        .expect(({ headers }) => {
+          ({ location } = headers);
+        });
+
+      await this.login();
+
+      await this.agent.get(new URL(location).pathname)
+        .expect(400)
+        .expect('content-type', 'text/html; charset=utf-8')
+        .expect(/interaction session and authentication session mismatch/);
     });
 
     handlesInteractionSessionErrors();
   });
 });
 
-describe('resume after interaction', () => {
+describe('resume after consent', () => {
   before(bootstrap(__dirname));
+  afterEach(sinon.restore);
 
-  afterEach(function () {
-    if (this.provider.Session.find.restore) this.provider.Session.find.restore();
-  });
-
-  function setup(grant, result) {
+  function setup(grant, result, sessionData) {
     const cookies = [];
 
-    const interaction = new this.provider.Session('resume', {});
-    const session = new this.provider.Session('sess', {});
+    let session;
+    if (result && result.login) {
+      session = new this.provider.Session({ jti: 'sess', ...sessionData });
+    } else {
+      session = this.getLastSession();
+    }
+    const interaction = new this.provider.Interaction('resume', {
+      uid: 'resume',
+      params: grant,
+      session,
+    });
     const keys = new KeyGrip(i(this.provider).configuration('cookies.keys'));
 
     expect(grant).to.be.ok;
 
-    const cookie = `_grant=resume; path=/auth/resume; expires=${expire.toGMTString()}; httponly`;
+    const cookie = `_interaction_resume=resume; path=${this.suitePath('/auth/resume')}; expires=${expire.toGMTString()}; httponly`;
     cookies.push(cookie);
     let [pre, ...post] = cookie.split(';');
-    cookies.push([`_grant.sig=${keys.sign(pre)}`, ...post].join(';'));
-    Object.assign(interaction, { params: grant });
+    cookies.push([`_interaction_resume.sig=${keys.sign(pre)}`, ...post].join(';'));
 
-    const sessionCookie = `_session=sess; path=/; expires=${expire.toGMTString()}; httponly`;
+    const sessionCookie = `_session=${session.jti || 'sess'}; path=/; expires=${expire.toGMTString()}; httponly`;
+    cookies.push(sessionCookie);
     [pre, ...post] = sessionCookie.split(';');
     cookies.push([`_session.sig=${keys.sign(pre)}`, ...post].join(';'));
 
@@ -206,27 +388,30 @@ describe('resume after interaction', () => {
     });
 
     return Promise.all([
-      interaction.save(),
-      session.save(),
+      interaction.save(30), // TODO: bother running the ttl helper?
+      session.save(30), // TODO: bother running the ttl helper?
     ]);
   }
 
   context('general', () => {
+    before(function () { return this.login(); });
+    after(function () { return this.logout(); });
+
     it('needs the resume cookie to be present, else renders an err', function () {
       return this.agent.get('/auth/resume')
         .expect(400)
         .expect(/authorization request has expired/);
     });
 
-    it('needs to find the session to resume', function () {
+    it('needs to find the session to resume', async function () {
       const auth = new this.AuthorizationRequest({
         response_type: 'code',
         scope: 'openid',
       });
 
-      setup.call(this, auth);
+      await setup.call(this, auth);
 
-      sinon.stub(this.provider.Session, 'find').resolves();
+      sinon.stub(this.provider.Interaction, 'find').resolves();
 
       return this.agent.get('/auth/resume')
         .expect(400)
@@ -235,147 +420,147 @@ describe('resume after interaction', () => {
   });
 
   context('login results', () => {
-    it('should redirect to client with error if interaction did not resolve in a session', function () {
-      const auth = new this.AuthorizationRequest({
-        response_type: 'code',
-        scope: 'openid',
-      });
-
-      setup.call(this, auth);
-
-      return this.agent.get('/auth/resume')
-        .expect(302)
-        .expect(auth.validateState)
-        .expect(auth.validateClientLocation)
-        .expect(auth.validateError('login_required'))
-        .expect(auth.validateErrorDescription('End-User authentication is required'));
-    });
-
-    it('should process newly established permanent sessions', function () {
+    it('should process newly established permanent sessions (default)', async function () {
+      sinon.stub(this.provider.Grant.prototype, 'getOIDCScope').returns('openid');
       const auth = new this.AuthorizationRequest({
         response_type: 'code',
         response_mode: 'query',
         scope: 'openid',
       });
 
-      setup.call(this, auth, {
+      await setup.call(this, auth, {
         login: {
-          account: uuid(),
-          remember: true,
+          accountId: nanoid(),
         },
-        consent: {},
       });
 
       return this.agent.get('/auth/resume')
-        .expect(302)
+        .expect(303)
         .expect('set-cookie', /expires/) // expect a permanent cookie
-        .expect(auth.validateState)
         .expect(auth.validateClientLocation)
-        .expect(auth.validatePresence(['code', 'state', 'session_state']))
+        .expect(auth.validateState)
+        .expect(auth.validatePresence(['code', 'state']))
         .expect(() => {
           expect(this.getSession()).to.be.ok.and.not.have.property('transient');
         });
     });
 
-    it('should process newly established temporary sessions', function () {
+    it('should process newly established permanent sessions (explicit)', async function () {
+      sinon.stub(this.provider.Grant.prototype, 'getOIDCScope').returns('openid');
       const auth = new this.AuthorizationRequest({
         response_type: 'code',
         response_mode: 'query',
         scope: 'openid',
       });
 
-      setup.call(this, auth, {
+      await setup.call(this, auth, {
         login: {
-          account: uuid(),
+          accountId: nanoid(),
+          remember: true,
         },
-        consent: {},
       });
 
       return this.agent.get('/auth/resume')
-        .expect(302)
+        .expect(303)
+        .expect('set-cookie', /expires/) // expect a permanent cookie
+        .expect(auth.validateClientLocation)
+        .expect(auth.validateState)
+        .expect(auth.validatePresence(['code', 'state']))
+        .expect(() => {
+          expect(this.getSession()).to.be.ok.and.not.have.property('transient');
+        });
+    });
+
+    it('should process newly established temporary sessions', async function () {
+      sinon.stub(this.provider.Grant.prototype, 'getOIDCScope').returns('openid');
+      const auth = new this.AuthorizationRequest({
+        response_type: 'code',
+        response_mode: 'query',
+        scope: 'openid',
+      });
+
+      await setup.call(this, auth, {
+        login: {
+          accountId: nanoid(),
+          remember: false,
+        },
+      });
+
+      return this.agent.get('/auth/resume')
+        .expect(303)
         .expect(auth.validateState)
         .expect('set-cookie', /_session=((?!expires).)+,/) // expect a transient session cookie
-        .expect('set-cookie', /_state\.client=((?!expires).)+,/) // expect a transient session cookie
         .expect(auth.validateClientLocation)
-        .expect(auth.validatePresence(['code', 'state', 'session_state']))
+        .expect(auth.validatePresence(['code', 'state']))
         .expect(() => {
           expect(this.getSession()).to.be.ok.and.have.property('transient');
         });
     });
+
+    it('should trigger logout when the session subject changes', async function () {
+      sinon.stub(this.provider.Grant.prototype, 'getOIDCScope').returns('openid');
+      const auth = new this.AuthorizationRequest({
+        response_type: 'code',
+        response_mode: 'query',
+        scope: 'openid',
+      });
+
+      await setup.call(this, auth, {
+        login: {
+          accountId: nanoid(),
+        },
+      }, {
+        accountId: nanoid(),
+      });
+
+      let state;
+
+      await this.agent.get('/auth/resume')
+        .expect(200)
+        .expect('content-type', 'text/html; charset=utf-8')
+        .expect(/document.addEventListener\('DOMContentLoaded', function \(\) { document.forms\[0\].submit\(\) }\);/)
+        .expect(/<input type="hidden" name="logout" value="yes"\/>/)
+        .expect(({ text }) => {
+          ({ state } = this.getSession());
+          expect(state).to.have.property('clientId', 'client');
+          expect(state).to.have.property('postLogoutRedirectUri').that.matches(/\/auth\/resume$/);
+          expect(text).to.match(new RegExp(`input type="hidden" name="xsrf" value="${state.secret}"`));
+        })
+        .expect(/<form method="post" action=".+\/session\/end\/confirm">/);
+
+      expect(await this.provider.Interaction.find('resume')).to.be.ok;
+
+      await this.agent.post('/session/end/confirm')
+        .send({
+          xsrf: state.secret,
+          logout: 'yes',
+        })
+        .type('form')
+        .expect(303)
+        .expect('location', /\/auth\/resume$/);
+
+      await this.agent.get('/auth/resume')
+        .expect(303)
+        .expect(auth.validateClientLocation)
+        .expect(auth.validateState);
+    });
   });
 
-  context('consent results', () => {
-    it('when scope includes offline_access', function () {
-      const auth = new this.AuthorizationRequest({
-        response_type: 'code',
-        prompt: 'consent',
-        scope: 'openid offline_access',
-      });
-
-      setup.call(this, auth, {
-        login: {
-          account: uuid(),
-          remember: true,
-        },
-        consent: {},
-      });
-
-      let authorizationCode;
-
-      this.provider.once('token.issued', (code) => {
-        authorizationCode = code;
-      });
-
-      return this.agent.get('/auth/resume')
-        .expect(() => {
-          this.provider.removeAllListeners('token.issued');
-        })
-        .expect(() => {
-          expect(authorizationCode).to.be.ok;
-          expect(authorizationCode).to.have.property('scope', 'openid offline_access');
-        });
-    });
-
-    it('if not resolved returns consent_required error', function () {
-      const auth = new this.AuthorizationRequest({
-        response_type: 'code',
-        scope: 'openid',
-        prompt: 'consent',
-      });
-
-      setup.call(this, auth, {
-        login: {
-          account: uuid(),
-          remember: true,
-        },
-      });
-
-      return this.agent.get('/auth/resume')
-        .expect(302)
-        .expect(auth.validateState)
-        .expect(auth.validateClientLocation)
-        .expect(auth.validateError('consent_required'))
-        .expect(auth.validateErrorDescription('prompt consent was not resolved'));
-    });
-
-    describe('custom interaction errors', () => {
-      it('custom interactions can fail too', function () {
+  describe('custom interaction errors', () => {
+    describe('when prompt=none', () => {
+      before(function () { return this.login(); });
+      after(function () { return this.logout(); });
+      it('custom interactions can fail too (prompt none)', async function () {
         const auth = new this.AuthorizationRequest({
           response_type: 'code',
           scope: 'openid',
-          custom: 'foo',
+          triggerCustomFail: 'foo',
+          prompt: 'none',
         });
 
-        setup.call(this, auth, {
-          login: {
-            account: uuid(),
-            remember: true,
-          },
-          consent: {},
-        });
-
-        return this.agent.get('/auth/resume')
-          .expect(302)
+        return this.agent.get('/auth')
+          .query(auth)
+          .expect(303)
           .expect(auth.validateState)
           .expect(auth.validateClientLocation)
           .expect(auth.validateError('error_foo'))
@@ -383,330 +568,157 @@ describe('resume after interaction', () => {
       });
     });
 
-    describe('rejectedScopes', () => {
-      it('allows for scopes to be rejected', function () {
-        const auth = new this.AuthorizationRequest({
-          response_type: 'code',
-          scope: 'openid profile',
-        });
-
-        setup.call(this, auth, {
-          login: {
-            account: uuid(),
-            remember: true,
-          },
-          consent: {
-            rejectedScopes: ['profile'],
-          },
-        });
-
-        let authorizationCode;
-
-        this.provider.once('token.issued', (code) => {
-          authorizationCode = code;
-        });
-
-        return this.agent.get('/auth/resume')
-          .expect(() => {
-            this.provider.removeAllListeners('token.issued');
-          })
-          .expect(() => {
-            expect(authorizationCode).to.be.ok;
-            expect(authorizationCode).to.have.property('scope', 'openid');
-          });
-      });
-
-      it('cannot reject openid scope', async function () {
-        const spy = sinon.spy();
-        this.provider.once('server_error', spy);
-
-        const auth = new this.AuthorizationRequest({
-          response_type: 'code',
-          scope: 'openid',
-          prompt: 'consent',
-        });
-
-        setup.call(this, auth, {
-          login: {
-            account: uuid(),
-            remember: true,
-          },
-          consent: {
-            rejectedScopes: ['openid'],
-          },
-        });
-
-        await this.agent.get('/auth/resume')
-          .expect(302)
-          .expect(auth.validateState)
-          .expect(auth.validateClientLocation)
-          .expect(auth.validateError('server_error'));
-
-        expect(spy).to.have.property('calledOnce', true);
-        const error = spy.firstCall.args[0];
-        expect(error).to.be.an.instanceof(Error);
-        expect(error).to.have.property('message', 'openid cannot be rejected');
-      });
-
-      it('must be passed as Set or Array', async function () {
-        const spy = sinon.spy();
-        this.provider.once('server_error', spy);
-
-        const auth = new this.AuthorizationRequest({
-          response_type: 'code',
-          scope: 'openid',
-          prompt: 'consent',
-        });
-
-        setup.call(this, auth, {
-          login: {
-            account: uuid(),
-            remember: true,
-          },
-          consent: {
-            rejectedScopes: 'openid',
-          },
-        });
-
-        await this.agent.get('/auth/resume')
-          .expect(302)
-          .expect(auth.validateState)
-          .expect(auth.validateClientLocation)
-          .expect(auth.validateError('server_error'));
-
-        expect(spy).to.have.property('calledOnce', true);
-        const error = spy.firstCall.args[0];
-        expect(error).to.be.an.instanceof(Error);
-        expect(error).to.have.property('message', 'expected Array or Set');
-      });
-    });
-
-    describe('rejectedClaims', () => {
-      it('allows for claims to be rejected', function () {
-        const auth = new this.AuthorizationRequest({
-          response_type: 'code',
-          scope: 'openid profile',
-        });
-
-        setup.call(this, auth, {
-          login: {
-            account: uuid(),
-            remember: true,
-          },
-          consent: {
-            rejectedClaims: ['nickname'],
-          },
-        });
-
-        let authorizationCode;
-
-        this.provider.once('token.issued', (code) => {
-          authorizationCode = code;
-        });
-
-        return this.agent.get('/auth/resume')
-          .expect(() => {
-            this.provider.removeAllListeners('token.issued');
-          })
-          .expect(() => {
-            expect(authorizationCode).to.be.ok;
-            expect(authorizationCode).to.have.property('scope', 'openid profile');
-            expect(authorizationCode).to.have.deep.property('claims', { rejected: ['nickname'] });
-          });
-      });
-
-      ['sub', 'sid', 'auth_time', 'acr', 'amr', 'iss'].forEach((claim) => {
-        it(`cannot reject ${claim} claim`, async function () {
-          const spy = sinon.spy();
-          this.provider.once('server_error', spy);
-
-          const auth = new this.AuthorizationRequest({
-            response_type: 'code',
-            scope: 'openid',
-            prompt: 'consent',
-          });
-
-          setup.call(this, auth, {
-            login: {
-              account: uuid(),
-              remember: true,
-            },
-            consent: {
-              rejectedClaims: [claim],
-            },
-          });
-
-          await this.agent.get('/auth/resume')
-            .expect(302)
-            .expect(auth.validateState)
-            .expect(auth.validateClientLocation)
-            .expect(auth.validateError('server_error'));
-
-          expect(spy).to.have.property('calledOnce', true);
-          const error = spy.firstCall.args[0];
-          expect(error).to.be.an.instanceof(Error);
-          expect(error).to.have.property('message', `${claim} cannot be rejected`);
-        });
-      });
-
-      it('must be passed as Set or Array', async function () {
-        const spy = sinon.spy();
-        this.provider.once('server_error', spy);
-
-        const auth = new this.AuthorizationRequest({
-          response_type: 'code',
-          scope: 'openid',
-          prompt: 'consent',
-        });
-
-        setup.call(this, auth, {
-          login: {
-            account: uuid(),
-            remember: true,
-          },
-          consent: {
-            rejectedClaims: 'email',
-          },
-        });
-
-        await this.agent.get('/auth/resume')
-          .expect(302)
-          .expect(auth.validateState)
-          .expect(auth.validateClientLocation)
-          .expect(auth.validateError('server_error'));
-
-        expect(spy).to.have.property('calledOnce', true);
-        const error = spy.firstCall.args[0];
-        expect(error).to.be.an.instanceof(Error);
-        expect(error).to.have.property('message', 'expected Array or Set');
-      });
-    });
-  });
-
-  context('meta results', () => {
-    it('should process and store meta-informations provided alongside login', function () {
+    it('custom interactions can fail too', async function () {
       const auth = new this.AuthorizationRequest({
         response_type: 'code',
-        response_mode: 'fragment',
         scope: 'openid',
+        triggerCustomFail: 'foo',
       });
 
-      setup.call(this, auth, {
+      await setup.call(this, auth, {
         login: {
-          account: uuid(),
+          accountId: nanoid(),
           remember: true,
         },
-        meta: {
-          scope: 'openid',
-        },
+        consent: {},
       });
 
       return this.agent.get('/auth/resume')
-        .expect(() => {
-          const meta = this.getSession({ instantiate: true }).metaFor(config.client.client_id);
-          expect(meta).to.be.ok;
-          expect(meta).to.have.property('scope');
-        });
+        .expect(303)
+        .expect(auth.validateInteractionRedirect)
+        .expect(auth.validateInteraction('login', 'reason_foo'));
     });
   });
 
   context('interaction errors', () => {
-    it('should abort an interaction when given an error result object (no description)', function () {
+    it('should abort an interaction when given an error result object (no description)', async function () {
       const auth = new this.AuthorizationRequest({
         response_type: 'code',
         scope: 'openid',
       });
 
-      setup.call(this, auth, {
+      await setup.call(this, auth, {
         error: 'access_denied',
       });
 
       return this.agent.get('/auth/resume')
-        .expect(302)
+        .expect(303)
         .expect(auth.validateState)
-        .expect(auth.validateError('access_denied'))
-        .expect(auth.validateErrorDescription(''));
+        .expect(auth.validatePresence(['error', 'state']))
+        .expect(auth.validateError('access_denied'));
     });
 
-    it('should abort an interaction when given an error result object (with state)', function () {
+    it('should abort an interaction when given an error result object (with state)', async function () {
       const auth = new this.AuthorizationRequest({
         response_type: 'code',
         scope: 'openid',
         state: 'bf458-00aa3',
       });
 
-      setup.call(this, auth, {
+      await setup.call(this, auth, {
         error: 'access_denied',
       });
 
       return this.agent.get('/auth/resume')
-        .expect(302)
+        .expect(303)
         .expect(auth.validateState)
-        .expect(auth.validateError('access_denied'))
-        .expect(auth.validateErrorDescription(''));
+        .expect(auth.validatePresence(['error', 'state']))
+        .expect(auth.validateError('access_denied'));
     });
 
-    it('should abort an interaction when given an error result object (with description)', function () {
+    it('should abort an interaction when given an error result object (with description)', async function () {
       const auth = new this.AuthorizationRequest({
         response_type: 'code',
         scope: 'openid',
       });
 
-      setup.call(this, auth, {
+      await setup.call(this, auth, {
         error: 'access_denied',
         error_description: 'scope out of reach',
       });
 
       return this.agent.get('/auth/resume')
-        .expect(302)
+        .expect(303)
         .expect(auth.validateState)
         .expect(auth.validateError('access_denied'))
         .expect(auth.validateErrorDescription('scope out of reach'));
     });
 
-    it('should abort an interaction when given an error result object (custom error)', function () {
+    it('should abort an interaction when given an error result object (custom error)', async function () {
       const auth = new this.AuthorizationRequest({
         response_type: 'code',
         scope: 'openid',
       });
 
-      setup.call(this, auth, {
+      await setup.call(this, auth, {
         error: 'custom_foo',
         error_description: 'custom_foobar',
       });
 
       return this.agent.get('/auth/resume')
-        .expect(302)
+        .expect(303)
         .expect(auth.validateState)
         .expect(auth.validateError('custom_foo'))
         .expect(auth.validateErrorDescription('custom_foobar'));
     });
   });
 
-  context('custom prompts', () => {
+  context('custom requestable prompts', () => {
     before(function () { return this.login(); });
     after(function () { return this.logout(); });
 
-    it('should fail if they are not resolved', function () {
+    it('should fail if they are not resolved', async function () {
       const auth = new this.AuthorizationRequest({
         response_type: 'code',
         scope: 'openid',
         prompt: 'custom',
       });
 
-      setup.call(this, auth, {
+      await setup.call(this, auth, {});
+
+      return this.agent.get('/auth/resume')
+        .expect(303)
+        .expect(auth.validateInteractionRedirect)
+        .expect(auth.validateInteraction('custom', 'custom_prompt'));
+    });
+  });
+
+  context('custom unrequestable prompts', () => {
+    it('should prompt interaction', async function () {
+      const auth = new this.AuthorizationRequest({
+        response_type: 'code',
+        triggerUnrequestable: 'foo',
+        response_mode: 'query',
+        scope: 'openid',
+      });
+
+      return this.agent.get('/auth')
+        .query(auth)
+        .expect(303)
+        .expect(auth.validateInteractionRedirect)
+        .expect(auth.validateInteraction('unrequestable', 'un_foo'));
+    });
+
+    it('should fail if they are not satisfied', async function () {
+      const auth = new this.AuthorizationRequest({
+        response_type: 'code',
+        triggerUnrequestable: 'foo',
+        response_mode: 'query',
+        scope: 'openid',
+      });
+
+      await setup.call(this, auth, {
         login: {
-          account: uuid(),
+          accountId: nanoid(),
           remember: true,
         },
+        consent: {},
       });
 
       return this.agent.get('/auth/resume')
-        .expect(302)
-        .expect(auth.validateState)
-        .expect(auth.validateClientLocation)
-        .expect(auth.validateError('interaction_required'))
-        .expect(auth.validateErrorDescription('prompt custom was not resolved'));
+        .expect(303)
+        .expect(auth.validateInteractionRedirect)
+        .expect(auth.validateInteraction('unrequestable', 'un_foo'));
     });
   });
 });

@@ -1,8 +1,11 @@
-const { clone } = require('lodash');
+const cloneDeep = require('lodash/cloneDeep');
+const merge = require('lodash/merge');
 
-const config = clone(require('../default.config'));
+const config = cloneDeep(require('../default.config'));
 
-config.features = { conformIdTokenClaims: true, claimsParameter: true, alwaysIssueRefresh: true };
+merge(config.features, {
+  claimsParameter: { enabled: true },
+});
 
 module.exports = {
   config,

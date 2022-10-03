@@ -1,4 +1,4 @@
-const { cloneDeep } = require('lodash');
+const cloneDeep = require('lodash/cloneDeep');
 
 const { JWA } = require('../lib/consts');
 
@@ -41,5 +41,19 @@ module.exports = {
     },
     keys: ['foo'],
   },
-  whitelistedJWA: cloneDeep(JWA),
+  responseTypes: [
+    'code id_token token',
+    'code id_token',
+    'code token',
+    'code',
+    'id_token token',
+    'id_token',
+    'none',
+  ],
+  features: {},
+  enabledJWA: cloneDeep(JWA),
+  allowOmittingSingleRegisteredRedirectUri: true,
+  pkce: {
+    required: () => false,
+  },
 };

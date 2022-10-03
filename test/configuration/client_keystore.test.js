@@ -1,26 +1,26 @@
-const assert = require('assert');
+const { strict: assert } = require('assert');
 
-const keystore = require('node-jose').JWK.createKeyStore();
+const jose = require('jose2');
 const moment = require('moment');
 const nock = require('nock');
-const sinon = require('sinon');
+const sinon = require('sinon').createSandbox();
 const { expect } = require('chai');
 
 const JWT = require('../../lib/helpers/jwt');
 const epochTime = require('../../lib/helpers/epoch_time');
 const bootstrap = require('../test_helper');
 
-const fail = () => { throw new Error('expected promise to be rejected'); };
-
 const endpoint = nock('https://client.example.com/');
+const keystore = new jose.JWKS.KeyStore();
 
-function setResponse(body = keystore.toJSON(), statusCode = 200, headers = {}) {
+function setResponse(body = keystore.toJWKS(), statusCode = 200, headers = {}) {
   endpoint
     .get('/jwks')
     .reply(statusCode, typeof body === 'string' ? body : JSON.stringify(body), headers);
   assert(!nock.isDone(), 'expected client\'s jwks_uri to be fetched');
 }
 
+// NOTE: these tests are to be run sequentially, picking one random won't pass
 describe('client keystore refresh', () => {
   afterEach(() => {
     expect(nock.isDone()).to.be.true;
@@ -29,7 +29,7 @@ describe('client keystore refresh', () => {
   before(bootstrap(__dirname, { config: 'client_keystore' }));
 
   before(async function () {
-    return i(this.provider).clientAdd({
+    return i(this.provider).clientAddStatic({
       client_id: 'client',
       client_secret: 'secret',
       redirect_uris: ['https://client.example.com/cb'],
@@ -40,19 +40,40 @@ describe('client keystore refresh', () => {
     });
   });
 
-  afterEach(async function () {
-    const client = await this.provider.Client.find('client');
-    if (client.keystore.fresh.restore) client.keystore.fresh.restore();
-  });
+  afterEach(sinon.restore);
 
-  it('gets the jwks from the uri', async function () {
+  it('gets the jwks from the uri (and does only one request concurrently)', async function () {
     await keystore.generate('EC', 'P-256');
     setResponse();
 
     const client = await this.provider.Client.find('client');
-    await client.keystore.refresh();
+    await Promise.all([
+      client.asymmetricKeyStore.refresh(),
+      client.asymmetricKeyStore.refresh(),
+    ]);
 
-    expect(client.keystore.get({ kty: 'EC' })).to.be.ok;
+    expect(client.asymmetricKeyStore.selectForSign({ kty: 'EC' })).not.to.be.empty;
+  });
+
+  it('fails when private keys are encountered (and does only one request concurrently)', async function () {
+    setResponse(keystore.toJWKS(true));
+
+    const client = await this.provider.Client.find('client');
+    sinon.stub(client.asymmetricKeyStore, 'fresh').returns(false);
+    return Promise.all([
+      assert.rejects(client.asymmetricKeyStore.refresh(), (err) => {
+        expect(err).to.be.an('error');
+        expect(err.message).to.equal('invalid_client_metadata');
+        expect(err.error_description).to.eql('client JSON Web Key Set failed to be refreshed');
+        return true;
+      }),
+      assert.rejects(client.asymmetricKeyStore.refresh(), (err) => {
+        expect(err).to.be.an('error');
+        expect(err.message).to.equal('invalid_client_metadata');
+        expect(err.error_description).to.eql('client JSON Web Key Set failed to be refreshed');
+        return true;
+      }),
+    ]);
   });
 
   it('adds new keys', async function () {
@@ -60,31 +81,31 @@ describe('client keystore refresh', () => {
     await keystore.generate('EC', 'P-256');
     setResponse();
 
-    sinon.stub(client.keystore, 'fresh').returns(false);
-    await client.keystore.refresh();
-    expect(client.keystore.all({ kty: 'EC' })).to.have.lengthOf(2);
+    sinon.stub(client.asymmetricKeyStore, 'fresh').returns(false);
+    await client.asymmetricKeyStore.refresh();
+    expect(client.asymmetricKeyStore.selectForSign({ kty: 'EC' })).to.have.lengthOf(2);
   });
 
   it('removes not found keys', async function () {
     setResponse({ keys: [] });
 
     const client = await this.provider.Client.find('client');
-    sinon.stub(client.keystore, 'fresh').returns(false);
-    await client.keystore.refresh();
+    sinon.stub(client.asymmetricKeyStore, 'fresh').returns(false);
+    await client.asymmetricKeyStore.refresh();
 
-    expect(client.keystore.get({ kty: 'EC' })).not.to.be.ok;
+    expect(client.asymmetricKeyStore.selectForSign({ kty: 'EC' })).to.be.empty;
   });
 
   it('only accepts 200s', async function () {
-    setResponse('/somewhere', 302);
+    setResponse({ keys: [] }, 201);
 
     const client = await this.provider.Client.find('client');
-    sinon.stub(client.keystore, 'fresh').returns(false);
-    await client.keystore.refresh().then(fail, (err) => {
+    sinon.stub(client.asymmetricKeyStore, 'fresh').returns(false);
+    return assert.rejects(client.asymmetricKeyStore.refresh(), (err) => {
       expect(err).to.be.an('error');
       expect(err.message).to.equal('invalid_client_metadata');
-      expect(err.error_description).to.match(/jwks_uri could not be refreshed/);
-      expect(err.error_description).to.match(/unexpected jwks_uri statusCode, expected 200, got 302/);
+      expect(err.error_description).to.eql('client JSON Web Key Set failed to be refreshed');
+      return true;
     });
   });
 
@@ -92,12 +113,12 @@ describe('client keystore refresh', () => {
     setResponse('not json');
 
     const client = await this.provider.Client.find('client');
-    sinon.stub(client.keystore, 'fresh').returns(false);
-    await client.keystore.refresh().then(fail, (err) => {
+    sinon.stub(client.asymmetricKeyStore, 'fresh').returns(false);
+    return assert.rejects(client.asymmetricKeyStore.refresh(), (err) => {
       expect(err).to.be.an('error');
       expect(err.message).to.equal('invalid_client_metadata');
-      expect(err.error_description).to.match(/jwks_uri could not be refreshed/);
-      expect(err.error_description).to.match(/Unexpected token/);
+      expect(err.error_description).to.eql('client JSON Web Key Set failed to be refreshed');
+      return true;
     });
   });
 
@@ -105,12 +126,12 @@ describe('client keystore refresh', () => {
     setResponse({ keys: {} });
 
     const client = await this.provider.Client.find('client');
-    sinon.stub(client.keystore, 'fresh').returns(false);
-    await client.keystore.refresh().then(fail, (err) => {
+    sinon.stub(client.asymmetricKeyStore, 'fresh').returns(false);
+    return assert.rejects(client.asymmetricKeyStore.refresh(), (err) => {
       expect(err).to.be.an('error');
       expect(err.message).to.equal('invalid_client_metadata');
-      expect(err.error_description).to.match(/jwks_uri could not be refreshed/);
-      expect(err.error_description).to.match(/invalid jwks_uri response/);
+      expect(err.error_description).to.eql('client JSON Web Key Set failed to be refreshed');
+      return true;
     });
   });
 
@@ -126,14 +147,14 @@ describe('client keystore refresh', () => {
 
       const freshUntil = epochTime(until);
 
-      sinon.stub(client.keystore, 'fresh').callsFake(function () {
+      sinon.stub(client.asymmetricKeyStore, 'fresh').callsFake(function () {
         this.fresh.restore();
         return false;
       });
-      await client.keystore.refresh();
-      expect(client.keystore.fresh()).to.be.true;
-      expect(client.keystore.stale()).to.be.false;
-      expect(client.keystore.freshUntil).to.equal(freshUntil);
+      await client.asymmetricKeyStore.refresh();
+      expect(client.asymmetricKeyStore.fresh()).to.be.true;
+      expect(client.asymmetricKeyStore.stale()).to.be.false;
+      expect(client.asymmetricKeyStore.freshUntil).to.equal(freshUntil);
     });
 
     it('ignores the cache-control one when expires is provided', async function () {
@@ -148,17 +169,19 @@ describe('client keystore refresh', () => {
 
       const freshUntil = epochTime(until);
 
-      sinon.stub(client.keystore, 'fresh').callsFake(function () {
+      sinon.stub(client.asymmetricKeyStore, 'fresh').callsFake(function () {
         this.fresh.restore();
         return false;
       });
-      await client.keystore.refresh();
-      expect(client.keystore.fresh()).to.be.true;
-      expect(client.keystore.stale()).to.be.false;
-      expect(client.keystore.freshUntil).to.equal(freshUntil);
+      await client.asymmetricKeyStore.refresh();
+      expect(client.asymmetricKeyStore.fresh()).to.be.true;
+      expect(client.asymmetricKeyStore.stale()).to.be.false;
+      expect(client.asymmetricKeyStore.freshUntil).to.equal(freshUntil);
     });
 
     it('uses the max-age if Cache-Control is missing', async function () {
+      this.retries(1);
+
       const client = await this.provider.Client.find('client');
       await keystore.generate('EC', 'P-256');
 
@@ -168,17 +191,19 @@ describe('client keystore refresh', () => {
 
       const freshUntil = epochTime() + 3600;
 
-      sinon.stub(client.keystore, 'fresh').callsFake(function () {
+      sinon.stub(client.asymmetricKeyStore, 'fresh').callsFake(function () {
         this.fresh.restore();
         return false;
       });
-      await client.keystore.refresh();
-      expect(client.keystore.fresh()).to.be.true;
-      expect(client.keystore.stale()).to.be.false;
-      expect(client.keystore.freshUntil).to.be.closeTo(freshUntil, 1);
+      await client.asymmetricKeyStore.refresh();
+      expect(client.asymmetricKeyStore.fresh()).to.be.true;
+      expect(client.asymmetricKeyStore.stale()).to.be.false;
+      expect(client.asymmetricKeyStore.freshUntil).to.be.closeTo(freshUntil, 1);
     });
 
     it('falls back to 1 minute throttle if no caching header is found', async function () {
+      this.retries(1);
+
       const client = await this.provider.Client.find('client');
       await keystore.generate('EC', 'P-256');
 
@@ -186,40 +211,40 @@ describe('client keystore refresh', () => {
 
       const freshUntil = epochTime() + 60;
 
-      sinon.stub(client.keystore, 'fresh').callsFake(function () {
+      sinon.stub(client.asymmetricKeyStore, 'fresh').callsFake(function () {
         this.fresh.restore();
         return false;
       });
-      await client.keystore.refresh();
-      expect(client.keystore.fresh()).to.be.true;
-      expect(client.keystore.stale()).to.be.false;
-      expect(client.keystore.freshUntil).to.be.closeTo(freshUntil, 1);
+      await client.asymmetricKeyStore.refresh();
+      expect(client.asymmetricKeyStore.fresh()).to.be.true;
+      expect(client.asymmetricKeyStore.stale()).to.be.false;
+      expect(client.asymmetricKeyStore.freshUntil).to.be.closeTo(freshUntil, 1);
     });
   });
 
   describe('refreshing', () => {
-    it('when a stale keystore is passed to JWT verification it gets refreshed', async function () {
+    it('when a stale keystore is passed to JWT verification it gets refreshed when verification fails', async function () {
       setResponse();
 
       const client = await this.provider.Client.find('client');
-      client.keystore.freshUntil = epochTime() - 1;
-      await JWT.verify(
-        'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiYWRtaW4iOnRydWV9.TJVA95OrM7E2cBab30RMHrHDcEfxjoYZgeFONFh7HgQ',
-        client.keystore,
-      ).then(fail, () => {});
+      client.asymmetricKeyStore.freshUntil = epochTime() - 1;
+      return assert.rejects(JWT.verify(
+        'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiYWRtaW4iOnRydWV9.TJVA95OrM7E2cBab30RMHrHDcEfxjoYZgeFONFh7HgA',
+        client.asymmetricKeyStore,
+      ));
     });
 
     it('refreshes stale keystores before id_token encryption', async function () {
       setResponse();
 
       const client = await this.provider.Client.find('client');
-      client.keystore.freshUntil = epochTime() - 1;
-      expect(client.keystore.stale()).to.be.true;
+      client.asymmetricKeyStore.freshUntil = epochTime() - 1;
+      expect(client.asymmetricKeyStore.stale()).to.be.true;
 
       const { IdToken } = this.provider;
-      const token = new IdToken({ foo: 'bar' }, client);
+      const token = new IdToken({ foo: 'bar' }, { client, ctx: undefined });
 
-      await token.sign();
+      await token.issue({ use: 'idtoken' });
     });
   });
 });

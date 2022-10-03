@@ -4,12 +4,43 @@ const { createInterface: readline } = require('readline');
 const { inspect } = require('util');
 const { createReadStream, writeFileSync, readFileSync } = require('fs');
 
-const { get } = require('lodash');
+const get = require('lodash/get'); // eslint-disable-line import/no-extraneous-dependencies
+const words = require('lodash/words'); // eslint-disable-line import/no-extraneous-dependencies
 
-const values = require('../lib/helpers/defaults');
+const docs = require('../lib/helpers/docs');
+const values = require('../lib/helpers/defaults')();
+
+for (const [key, value] of Object.entries(values.ttl)) { // eslint-disable-line no-restricted-syntax
+  if (['RefreshToken', 'ClientCredentials', 'AccessToken', 'BackchannelAuthenticationRequest'].includes(key)) {
+    value[inspect.custom] = () => (
+      value.toString()
+        .replace(/ {6}/g, '  ')
+        .replace(/\s+}$/, '\n}')
+        .split('\n')
+        .filter((line) => !line.includes('Change'))
+        .join('\n')
+    );
+  } else if (typeof value === 'function') {
+    const comp = value();
+    value[inspect.custom] = () => (
+      value.toString()
+        .split('\n')
+        .map((line) => (line.includes('return') ? `${comp} /* ${line.trim().split('// ')[1]} */` : undefined))
+        .filter(Boolean)[0]
+    );
+  }
+}
+
+values.interactions.policy[inspect.custom] = () => `[
+/* LOGIN PROMPT */
+${require('../lib/helpers/interaction_policy/prompts/login').toString().replace('() => new Prompt', 'new Prompt')}
+
+/* CONSENT PROMPT */
+${require('../lib/helpers/interaction_policy/prompts/consent').toString().replace('() => new Prompt', 'new Prompt')}
+]`;
 
 function capitalizeSentences(copy) {
-  return copy.replace(/\. [a-z]/g, match => `. ${match.slice(-1).toUpperCase()}`);
+  return copy.replace(/\. [a-z]/g, (match) => `. ${match.slice(-1).toUpperCase()}`);
 }
 
 class Block {
@@ -25,7 +56,11 @@ class Block {
         buffer = buffer.slice(10);
       }
 
-      if (buffer.indexOf('-') === 0 || buffer.indexOf('```') !== -1 || buffer.indexOf('|') === 0) {
+      if (buffer.indexOf('##DOCS') !== -1) {
+        buffer = Buffer.from(buffer.toString().replace(/##DOCS\/(.+)##/g, () => docs(RegExp.$1)));
+      }
+
+      if (buffer.indexOf('-') === 0 || /^\d+\./.exec(buffer) || buffer.indexOf('```') !== -1 || buffer.indexOf('|') === 0) {
         const last = this[this.active].pop();
         if (last.toString().endsWith('\n')) {
           this[this.active].push(last);
@@ -45,7 +80,6 @@ class Block {
 
 const props = [
   'description',
-  'affects',
   'title',
   'recommendation',
   'example',
@@ -79,8 +113,7 @@ const props = [
 
       line = Buffer.from(strLine);
 
-
-      if (strLine.startsWith('/*')) {
+      if (strLine.startsWith('/*') && !strLine.includes('eslint')) {
         inBlock = true;
         nextIsOption = true;
         return;
@@ -90,22 +123,28 @@ const props = [
 
       if (nextIsOption) {
         nextIsOption = false;
-        option = blocks[strLine.substring(2)] = new Block(); // eslint-disable-line no-multi-assign
+        option = blocks[strLine.slice(2)] = new Block(); // eslint-disable-line no-multi-assign
         return;
       }
 
       const next = props.find((prop) => {
         if (
           prop.startsWith('@')
-            ? strLine.substring(2, 2 + prop.length) === prop
-            : strLine.substring(2, 2 + prop.length + 1) === `${prop}:`
+            ? strLine.slice(2, 2 + prop.length) === prop
+            : strLine.slice(2, 2 + prop.length + 1) === `${prop}:`
         ) {
           let override;
           if (prop === 'example' && option.example) {
             const i = Math.max(...Object.keys(option)
-              .filter(p => p.startsWith('example'))
-              .map(e => parseInt(e.slice(-1), 10) || 0));
+              .filter((p) => p.startsWith('example'))
+              .map((e) => parseInt(e.slice(-1), 10) || 0));
             override = `example${i + 1}`;
+          }
+          if (prop === 'recommendation' && option.recommendation) {
+            const i = Math.max(...Object.keys(option)
+              .filter((p) => p.startsWith('recommendation'))
+              .map((e) => parseInt(e.slice(-1), 10) || 0));
+            override = `recommendation${i + 1}`;
           }
           option.active = override || prop;
           option.write(line.slice(prop.length + 4));
@@ -141,37 +180,77 @@ const props = [
   }
 
   function expand(what) {
-    const lines = what.split('\n').length;
     what = `\`\`\`js\n${what}\n\`\`\`\n`;
-    if (lines > 5) {
-      return `<details>\n  <summary><em><strong>default value</strong></em> (Click to expand)</summary>\n  <br>\n\n${what}\n</details>\n\n`;
-    }
 
     append('\n_**default value**_:\n');
     return what;
   }
 
-  let count = 0;
-  const configuration = Object.keys(blocks).sort().reduce((acc, key) => {
-    if (!key) return acc;
-    if (key.startsWith('features')) {
-      count += 1;
-      acc.unshift(key);
+  const jwa = [];
+  let featuresIdx = 0;
+  const configuration = Object.keys(blocks).sort().filter((value) => {
+    if (!value) {
+      return false;
+    }
+    if (value.startsWith('enabledJWA')) {
+      jwa.push(value);
+      return false;
+    }
+    return true;
+  }, []).reduce((acc, cur) => {
+    if (cur.startsWith('features')) {
+      featuresIdx += 1;
+      acc.unshift(cur);
     } else {
-      acc.push(key);
+      acc.push(cur);
     }
     return acc;
   }, []);
 
-  const features = configuration.splice(0, count).sort();
-  for (const block of [...features, ...configuration]) { // eslint-disable-line no-restricted-syntax
+  const features = configuration.splice(0, featuresIdx).sort();
+  const clientsIdx = configuration.findIndex((x) => x === 'clients');
+  const clients = configuration.splice(clientsIdx, 1);
+  const adapterIdx = configuration.findIndex((x) => x === 'adapter');
+  const adapter = configuration.splice(adapterIdx, 1);
+  const jwksIdx = configuration.findIndex((x) => x === 'jwks');
+  const jwks = configuration.splice(jwksIdx, 1);
+  const findAccountIdx = configuration.findIndex((x) => x === 'findAccount');
+  const findAccount = configuration.splice(findAccountIdx, 1);
+
+  let hidden;
+  let prev;
+  for (const block of [...adapter, ...clients, ...findAccount, ...jwks, ...features, ...configuration, ...jwa]) { // eslint-disable-line no-restricted-syntax, max-len
     const section = blocks[block];
 
     if ('@skip' in section) {
       continue; // eslint-disable-line no-continue
     }
 
-    append(`\n### ${block}\n\n`);
+    let heading;
+    let headingTitle;
+    if (block.startsWith('features.')) {
+      const parts = block.split('.');
+      heading = '#'.repeat(Math.min(parts.length + 1, 4));
+      if (parts.length > 2) {
+        headingTitle = parts.slice(2).join('.');
+      } else {
+        headingTitle = block;
+      }
+    } else {
+      heading = '###';
+      headingTitle = block;
+    }
+
+    if (heading.length > 3 && !hidden) {
+      hidden = true;
+      append(`\n<details><summary>(Click to expand) ${prev} options details</summary><br>\n\n`);
+    } else if (hidden && heading.length === 3) {
+      hidden = false;
+      append('\n</details>\n');
+    }
+    prev = block;
+
+    append(`\n${heading} ${headingTitle}\n\n`);
     if (section.title) {
       append(`${section.title}  \n\n`);
     }
@@ -180,10 +259,8 @@ const props = [
       append(`${capitalizeSentences(section.description.join(' '))}  \n\n`);
     }
 
-    ['affects', 'recommendation'].forEach((option) => {
-      if (section[option]) {
-        append(`_**${option}**_: ${section[option].join(' ')}  \n`);
-      }
+    Object.keys(section).filter((x) => x.startsWith('recommendation')).forEach((prop) => {
+      append(`_**recommendation**_: ${section[prop].join(' ')}  \n\n`);
     });
 
     if (!('@nodefault' in section)) {
@@ -197,9 +274,13 @@ const props = [
           append('\n```\n');
           break;
         case 'string':
+        case 'undefined':
         case 'object': {
-          const output = inspect(value);
-          append(expand(output));
+          const output = inspect(value, { compact: false, sorted: true });
+          append(expand(output).split('\n').map((line) => {
+            line = line.replace(/(\[(?:Async)?Function: \w+\],?)/, '$1 // see expanded details below');
+            return line;
+          }).join('\n'));
           break;
         }
         case 'function': {
@@ -212,8 +293,16 @@ const props = [
             }
             if (line.includes('shouldChange')) return undefined;
             if (line.includes('mustChange')) return undefined;
-            if (line.startsWith(' ')) line = line.slice(fixIndent);
+            if (line.startsWith(' ')) {
+              line = line.replace(new RegExp(`^( {0,${fixIndent}})`), '');
+            }
             line = line.replace(/ \/\/ eslint-disable.+/, '');
+            if (line.includes('/* eslint-disable')) {
+              return undefined;
+            }
+            if (line.includes('/* eslint-enable')) {
+              return undefined;
+            }
             line = line.replace(/ \/\/ TODO.+/, '');
             line = line.replace(/ class="[ \-\w]+ ?"/, '');
             if (line.includes('<meta ')) {
@@ -221,7 +310,8 @@ const props = [
             }
             if (line.includes('<style>')) {
               mute = true;
-              return '<style>/* css and html classes omitted for brevity, see lib/helpers/defaults.js */</style>';
+              line.match(/^(\s+)/);
+              return `${' '.repeat(Math.max(fixIndent, RegExp.$1.length))}<style>/* css and html classes omitted for brevity, see lib/helpers/defaults.js */</style>`;
             }
             if (line.includes('</style>')) {
               mute = false;
@@ -234,13 +324,14 @@ const props = [
           break;
         }
         default:
-          throw new Error(`unexpected value type ${typeof value} for ${block}`);
+          throw new TypeError(`unexpected value type ${typeof value} for ${block}`);
       }
     }
 
-    Object.keys(section).filter(p => p.startsWith('example')).forEach((prop) => {
+    Object.keys(section).filter((p) => p.startsWith('example')).forEach((prop) => {
       const [title, ...content] = section[prop];
-      append(`<details>\n  <summary>(Click to expand) ${title}</summary>\n  <br>\n\n`);
+      append(`<a id="${words(`${headingTitle} ${title}`).map((w) => w.toLowerCase()).join('-')}"></a>`.replace('\n', ''));
+      append(`<details><summary>(Click to expand) ${title}</summary><br>\n\n`);
 
       const parts = [];
       let incode;
@@ -263,7 +354,7 @@ const props = [
       }
 
       while (parts.length) {
-        const until = parts.findIndex(p => Array.isArray(p));
+        const until = parts.findIndex((p) => Array.isArray(p));
         if (until === 0) {
           const lines = parts.shift();
           lines.forEach(append);
@@ -277,7 +368,7 @@ const props = [
     });
   }
 
-  const conf = readFileSync('./docs/configuration.md');
+  const conf = readFileSync('./docs/README.md');
 
   const comStart = '<!-- START CONF OPTIONS -->';
   const comEnd = '<!-- END CONF OPTIONS -->';
@@ -285,7 +376,7 @@ const props = [
   const pre = conf.slice(0, conf.indexOf(comStart) + comStart.length);
   const post = conf.slice(conf.indexOf(comEnd));
 
-  writeFileSync('./docs/configuration.md', Buffer.concat([pre, mid, post]));
+  writeFileSync('./docs/README.md', Buffer.concat([pre, mid, post]));
 })().catch((err) => {
   console.error(err); // eslint-disable-line no-console
   process.exitCode = 1;

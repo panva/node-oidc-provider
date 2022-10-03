@@ -1,6 +1,6 @@
 const { expect } = require('chai');
 
-const Provider = require('../../lib');
+const { Provider } = require('../../lib');
 
 describe('response_types Provider configuration', () => {
   it('fixes common issues', () => {
@@ -16,6 +16,14 @@ describe('response_types Provider configuration', () => {
         responseTypes: ['id_token tokencode'],
       });
     }).to.throw('unsupported response type: id_token tokencode');
+  });
+
+  it('throws when unsupported types are configured', () => {
+    expect(() => {
+      new Provider('https://op.example.com', { // eslint-disable-line no-new
+        responseTypes: ['token'],
+      });
+    }).to.throw('unsupported response type: token');
   });
 
   it('validates none is always standalone', () => {

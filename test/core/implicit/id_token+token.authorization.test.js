@@ -1,5 +1,3 @@
-const url = require('url');
-
 const sinon = require('sinon');
 const { expect } = require('chai');
 
@@ -11,6 +9,9 @@ const scope = 'openid';
 
 describe('IMPLICIT id_token+token', () => {
   before(bootstrap(__dirname));
+  afterEach(function () {
+    this.provider.removeAllListeners();
+  });
 
   ['get', 'post'].forEach((verb) => {
     describe(`${verb} ${route} with session`, () => {
@@ -23,9 +24,9 @@ describe('IMPLICIT id_token+token', () => {
         });
 
         await this.wrap({ route, verb, auth })
-          .expect(302)
+          .expect(303)
           .expect(auth.validateFragment)
-          .expect(auth.validatePresence(['id_token', 'state', 'access_token', 'expires_in', 'token_type']))
+          .expect(auth.validatePresence(['id_token', 'state', 'access_token', 'expires_in', 'token_type', 'scope']))
           .expect(auth.validateState)
           .expect(auth.validateClientLocation);
 
@@ -39,9 +40,9 @@ describe('IMPLICIT id_token+token', () => {
         });
 
         await this.wrap({ route, verb, auth })
-          .expect(302)
+          .expect(303)
           .expect(auth.validateFragment)
-          .expect(auth.validatePresence(['id_token', 'state', 'access_token', 'expires_in', 'token_type']))
+          .expect(auth.validatePresence(['id_token', 'state', 'access_token', 'expires_in', 'token_type', 'scope']))
           .expect(auth.validateState)
           .expect(auth.validateClientLocation);
 
@@ -50,7 +51,7 @@ describe('IMPLICIT id_token+token', () => {
 
       it('populates ctx.oidc.entities', function (done) {
         this.provider.use(this.assertOnce((ctx) => {
-          expect(ctx.oidc.entities).to.have.keys('Client', 'Account', 'AccessToken');
+          expect(ctx.oidc.entities).to.have.keys('Client', 'Grant', 'Account', 'AccessToken', 'Session');
         }, done));
 
         const auth = new this.AuthorizationRequest({
@@ -67,19 +68,43 @@ describe('IMPLICIT id_token+token', () => {
           scope: 'openid offline_access',
         });
 
+        const spy = sinon.spy();
+        this.provider.once('access_token.saved', spy);
+        this.provider.once('access_token.issued', spy);
+
         return this.wrap({ route, verb, auth })
-          .expect(302)
+          .expect(303)
           .expect(auth.validateFragment)
-          .expect(auth.validatePresence(['id_token', 'state', 'access_token', 'expires_in', 'token_type']))
+          .expect(auth.validatePresence(['id_token', 'state', 'access_token', 'expires_in', 'token_type', 'scope']))
           .expect(auth.validateState)
           .expect(auth.validateClientLocation)
-          .then((response) => {
-            const { query: { access_token } } = url.parse(response.headers.location, true);
-            const jti = this.getTokenJti(access_token);
-            const stored = this.TestAdapter.for('AccessToken').syncFind(jti, { payload: true });
-
-            expect(stored).to.have.property('scope', 'openid');
+          .then(() => {
+            expect(spy.getCall(0).firstArg).to.have.property('scope', 'openid');
           });
+      });
+    });
+
+    describe(`${verb} ${route} with the scope not being fulfilled`, () => {
+      before(function () {
+        return this.login({
+          scope: 'openid profile email',
+          rejectedScopes: ['email'],
+        });
+      });
+
+      it('responds with an extra parameter scope', async function () {
+        const auth = new this.AuthorizationRequest({
+          response_type,
+          scope: 'openid profile email',
+        });
+
+        await this.wrap({ route, verb, auth })
+          .expect(303)
+          .expect(auth.validateFragment)
+          .expect(auth.validatePresence(['id_token', 'state', 'access_token', 'expires_in', 'token_type', 'scope']))
+          .expect(auth.validateState)
+          .expect(auth.validateClientLocation)
+          .expect(auth.validateResponseParameter('scope', 'openid profile'));
       });
     });
 
@@ -94,7 +119,7 @@ describe('IMPLICIT id_token+token', () => {
         });
 
         return this.wrap({ route, verb, auth })
-          .expect(302)
+          .expect(303)
           .expect(() => {
             expect(spy.calledOnce).to.be.true;
           })
@@ -116,7 +141,7 @@ describe('IMPLICIT id_token+token', () => {
 
         return this.agent.get(route)
           .query(auth)
-          .expect(302)
+          .expect(303)
           .expect(() => {
             expect(spy.calledOnce).to.be.true;
           })
@@ -125,7 +150,7 @@ describe('IMPLICIT id_token+token', () => {
           .expect(auth.validateState)
           .expect(auth.validateClientLocation)
           .expect(auth.validateError('invalid_request'))
-          .expect(auth.validateErrorDescription('missing required parameter(s) (nonce)'));
+          .expect(auth.validateErrorDescription("missing required parameter 'nonce'"));
       });
     });
   });

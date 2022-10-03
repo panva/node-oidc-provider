@@ -9,11 +9,12 @@ const route = '/token';
 const grant_type = 'urn:ietf:params:oauth:grant-type:device_code';
 
 function errorDetail(spy) {
-  return spy.args[0][0].error_detail;
+  return spy.args[0][1].error_detail;
 }
 
 describe('grant_type=urn:ietf:params:oauth:grant-type:device_code w/ conformIdTokenClaims=false', () => {
   before(bootstrap(__dirname, { config: 'device_code_non_conform' })); // agent
+  before(function () { return this.login({ scope: 'openid profile offline_access', accountId: 'sub' }); });
 
   it('returns the right stuff', async function () {
     const spy = sinon.spy();
@@ -21,6 +22,7 @@ describe('grant_type=urn:ietf:params:oauth:grant-type:device_code w/ conformIdTo
 
     const deviceCode = new this.provider.DeviceCode({
       accountId: 'sub',
+      grantId: this.getGrantId(),
       scope: 'openid profile offline_access',
       clientId: 'client',
     });
@@ -46,6 +48,7 @@ describe('grant_type=urn:ietf:params:oauth:grant-type:device_code w/ conformIdTo
 
 describe('grant_type=urn:ietf:params:oauth:grant-type:device_code', () => {
   before(bootstrap(__dirname));
+  before(function () { return this.login({ scope: 'openid profile offline_access', accountId: 'sub' }); });
 
   it('returns the right stuff', async function () {
     const spy = sinon.spy();
@@ -53,6 +56,7 @@ describe('grant_type=urn:ietf:params:oauth:grant-type:device_code', () => {
 
     const deviceCode = new this.provider.DeviceCode({
       accountId: 'sub',
+      grantId: this.getGrantId(),
       scope: 'openid profile offline_access',
       clientId: 'client',
     });
@@ -78,12 +82,13 @@ describe('grant_type=urn:ietf:params:oauth:grant-type:device_code', () => {
   it('populates ctx.oidc.entities (no offline_access)', function (done) {
     this.provider.use(this.assertOnce((ctx) => {
       expect(ctx.body.refresh_token).to.be.undefined;
-      expect(ctx.oidc.entities).to.have.keys('Account', 'Client', 'DeviceCode', 'AccessToken');
+      expect(ctx.oidc.entities).to.have.keys('Account', 'Grant', 'Client', 'DeviceCode', 'AccessToken');
       expect(ctx.oidc.entities.AccessToken).to.have.property('gty', 'device_code');
     }, done));
 
     const deviceCode = new this.provider.DeviceCode({
       accountId: 'sub',
+      grantId: this.getGrantId(),
       scope: 'openid',
       clientId: 'client',
     });
@@ -101,13 +106,14 @@ describe('grant_type=urn:ietf:params:oauth:grant-type:device_code', () => {
 
   it('populates ctx.oidc.entities (w/ offline_access)', function (done) {
     this.provider.use(this.assertOnce((ctx) => {
-      expect(ctx.oidc.entities).to.have.keys('Account', 'Client', 'DeviceCode', 'AccessToken', 'RefreshToken');
+      expect(ctx.oidc.entities).to.have.keys('Account', 'Grant', 'Client', 'DeviceCode', 'AccessToken', 'RefreshToken');
       expect(ctx.oidc.entities.AccessToken).to.have.property('gty', 'device_code');
       expect(ctx.oidc.entities.RefreshToken).to.have.property('gty', 'device_code');
     }, done));
 
     const deviceCode = new this.provider.DeviceCode({
       accountId: 'sub',
+      grantId: this.getGrantId(),
       scope: 'openid offline_access',
       clientId: 'client',
     });
@@ -135,7 +141,7 @@ describe('grant_type=urn:ietf:params:oauth:grant-type:device_code', () => {
         .expect('content-type', /application\/json/)
         .expect({
           error: 'invalid_request',
-          error_description: 'missing required parameter(s) (device_code)',
+          error_description: "missing required parameter 'device_code'",
         });
     });
 
@@ -160,13 +166,14 @@ describe('grant_type=urn:ietf:params:oauth:grant-type:device_code', () => {
     });
 
     it('validates account is still there', async function () {
-      sinon.stub(this.provider.Account, 'findById').callsFake(() => Promise.resolve());
+      sinon.stub(this.provider.Account, 'findAccount').callsFake(() => Promise.resolve());
 
       const spy = sinon.spy();
       this.provider.once('grant.error', spy);
 
       const deviceCode = new this.provider.DeviceCode({
         accountId: 'sub',
+        grantId: this.getGrantId(),
         scope: 'openid',
         clientId: 'client',
       });
@@ -180,7 +187,7 @@ describe('grant_type=urn:ietf:params:oauth:grant-type:device_code', () => {
         })
         .type('form')
         .expect(() => {
-          this.provider.Account.findById.restore();
+          this.provider.Account.findAccount.restore();
         })
         .expect(400)
         .expect(() => {
@@ -192,158 +199,13 @@ describe('grant_type=urn:ietf:params:oauth:grant-type:device_code', () => {
         });
     });
 
-    describe('PKCE', () => {
-      it('passes with plain values', async function () {
-        const deviceCode = new this.provider.DeviceCode({
-          accountId: 'sub',
-          scope: 'openid',
-          clientId: 'client',
-          codeChallenge: 'plainFoobar',
-          codeChallengeMethod: 'plain',
-        });
-        const code = await deviceCode.save();
-
-        return this.agent.post('/token')
-          .type('form')
-          .send({
-            client_id: 'client',
-            device_code: code,
-            grant_type,
-            code_verifier: 'plainFoobar',
-          })
-          .expect(200);
-      });
-
-      it('passes with S256 values', async function () {
-        const deviceCode = new this.provider.DeviceCode({
-          accountId: 'sub',
-          scope: 'openid',
-          clientId: 'client',
-          codeChallenge: 'E9Melhoa2OwvFrEMTJguCHaoeK1t8URWbuGJSstw-cM',
-          codeChallengeMethod: 'S256',
-        });
-        const code = await deviceCode.save();
-
-        return this.agent.post('/token')
-          .type('form')
-          .send({
-            client_id: 'client',
-            device_code: code,
-            grant_type,
-            code_verifier: 'dBjftJeZ4CVP-mB92K27uhbUJU1p1r_wW1gFWFOEjXk',
-          })
-          .expect(200);
-      });
-
-      it('checks presence of code_verifier param if code has codeChallenge', async function () {
-        const deviceCode = new this.provider.DeviceCode({
-          accountId: 'sub',
-          scope: 'openid',
-          clientId: 'client',
-          codeChallenge: 'plainFoobar',
-          codeChallengeMethod: 'plain',
-        });
-        const code = await deviceCode.save();
-
-        return this.agent.post('/token')
-          .type('form')
-          .send({
-            client_id: 'client',
-            device_code: code,
-            grant_type,
-          })
-          .expect(400)
-          .expect((response) => {
-            expect(response.body).to.have.property('error', 'invalid_grant');
-          });
-      });
-
-      it('checks value of code_verifier when method = plain', async function () {
-        const deviceCode = new this.provider.DeviceCode({
-          accountId: 'sub',
-          scope: 'openid',
-          clientId: 'client',
-          codeChallenge: 'plainFoobar',
-          codeChallengeMethod: 'plain',
-        });
-        const code = await deviceCode.save();
-
-        return this.agent.post('/token')
-          .type('form')
-          .send({
-            client_id: 'client',
-            device_code: code,
-            grant_type,
-            code_verifier: 'plainFoobars',
-          })
-          .expect(400)
-          .expect((response) => {
-            expect(response.body).to.have.property('error', 'invalid_grant');
-          });
-      });
-
-      it('checks value of code_verifier when method = S256', async function () {
-        const deviceCode = new this.provider.DeviceCode({
-          accountId: 'sub',
-          scope: 'openid',
-          clientId: 'client',
-          codeChallenge: 'E9Melhoa2OwvFrEMTJguCHaoeK1t8URWbuGJSstw-cM',
-          codeChallengeMethod: 'S256',
-        });
-        const code = await deviceCode.save();
-
-        return this.agent.post('/token')
-          .type('form')
-          .send({
-            client_id: 'client',
-            device_code: code,
-            grant_type,
-            code_verifier: 'invalidE9Melhoa2OwvFrEMTJguCHaoeK1t8URWbuGJSstw-cM',
-          })
-          .expect(400)
-          .expect((response) => {
-            expect(response.body).to.have.property('error', 'invalid_grant');
-          });
-      });
-
-      describe('only S256 is supported', () => {
-        before(function () {
-          i(this.provider).configuration('features.pkce').supportedMethods = ['S256'];
-        });
-
-        after(function () {
-          i(this.provider).configuration('features.pkce').supportedMethods = ['plain', 'S256'];
-        });
-
-        it('passes if S256 is used', async function () {
-          const deviceCode = new this.provider.DeviceCode({
-            accountId: 'sub',
-            scope: 'openid',
-            clientId: 'client',
-            codeChallenge: 'E9Melhoa2OwvFrEMTJguCHaoeK1t8URWbuGJSstw-cM',
-            codeChallengeMethod: 'S256',
-          });
-          const code = await deviceCode.save();
-
-          return this.agent.post('/token')
-            .type('form')
-            .send({
-              client_id: 'client',
-              device_code: code,
-              grant_type,
-              code_verifier: 'dBjftJeZ4CVP-mB92K27uhbUJU1p1r_wW1gFWFOEjXk',
-            })
-            .expect(200);
-        });
-      });
-    });
-
     it('code belongs to client', async function () {
       const spy = sinon.spy();
       this.provider.once('grant.error', spy);
 
       const deviceCode = new this.provider.DeviceCode({
         accountId: 'sub',
+        grantId: this.getGrantId(),
         scope: 'openid',
         clientId: 'client-other',
       });
@@ -359,7 +221,7 @@ describe('grant_type=urn:ietf:params:oauth:grant-type:device_code', () => {
         .expect(400)
         .expect(() => {
           expect(spy.calledOnce).to.be.true;
-          expect(errorDetail(spy)).to.equal('device code client mismatch');
+          expect(errorDetail(spy)).to.equal('client mismatch');
         })
         .expect((response) => {
           expect(response.body).to.have.property('error', 'invalid_grant');
@@ -402,6 +264,7 @@ describe('grant_type=urn:ietf:params:oauth:grant-type:device_code', () => {
     it('consumes the code', async function () {
       const deviceCode = new this.provider.DeviceCode({
         accountId: 'sub',
+        grantId: this.getGrantId(),
         scope: 'openid',
         clientId: 'client',
       });
@@ -428,6 +291,7 @@ describe('grant_type=urn:ietf:params:oauth:grant-type:device_code', () => {
 
       const deviceCode = new this.provider.DeviceCode({
         accountId: 'sub',
+        grantId: this.getGrantId(),
         scope: 'openid',
         clientId: 'client',
       });

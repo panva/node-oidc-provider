@@ -9,6 +9,9 @@ const scope = 'openid';
 
 describe('HYBRID code+id_token+token', () => {
   before(bootstrap(__dirname));
+  afterEach(function () {
+    this.provider.removeAllListeners();
+  });
 
   ['get', 'post'].forEach((verb) => {
     describe(`${verb} ${route} with session`, () => {
@@ -21,9 +24,9 @@ describe('HYBRID code+id_token+token', () => {
         });
 
         await this.wrap({ route, verb, auth })
-          .expect(302)
+          .expect(303)
           .expect(auth.validateFragment)
-          .expect(auth.validatePresence(['code', 'id_token', 'state', 'access_token', 'expires_in', 'token_type']))
+          .expect(auth.validatePresence(['code', 'id_token', 'state', 'access_token', 'expires_in', 'token_type', 'scope']))
           .expect(auth.validateState)
           .expect(auth.validateClientLocation);
 
@@ -37,9 +40,9 @@ describe('HYBRID code+id_token+token', () => {
         });
 
         await this.wrap({ route, verb, auth })
-          .expect(302)
+          .expect(303)
           .expect(auth.validateFragment)
-          .expect(auth.validatePresence(['code', 'id_token', 'state', 'access_token', 'expires_in', 'token_type']))
+          .expect(auth.validatePresence(['code', 'id_token', 'state', 'access_token', 'expires_in', 'token_type', 'scope']))
           .expect(auth.validateState)
           .expect(auth.validateClientLocation);
 
@@ -48,7 +51,7 @@ describe('HYBRID code+id_token+token', () => {
 
       it('populates ctx.oidc.entities', function (done) {
         this.provider.use(this.assertOnce((ctx) => {
-          expect(ctx.oidc.entities).to.have.keys('Client', 'Account', 'AuthorizationCode', 'AccessToken');
+          expect(ctx.oidc.entities).to.have.keys('Client', 'Grant', 'Account', 'AuthorizationCode', 'AccessToken', 'Session');
         }, done));
 
         const auth = new this.AuthorizationRequest({
@@ -59,22 +62,75 @@ describe('HYBRID code+id_token+token', () => {
         this.wrap({ route, verb, auth }).end(() => {});
       });
 
-      it('ignores the scope offline_access unless prompt consent is present', function () {
-        const spy = sinon.spy();
-        this.provider.once('token.issued', spy);
+      describe('ignoring the offline_access scope', () => {
+        bootstrap.skipConsent();
 
-        const auth = new this.AuthorizationRequest({
-          response_type,
-          scope: 'openid offline_access',
+        it('ignores the scope offline_access unless prompt consent is present', function () {
+          const spy = sinon.spy();
+          this.provider.once('authorization_code.saved', spy);
+          this.provider.once('access_token.saved', spy);
+          this.provider.once('access_token.issued', spy);
+
+          const auth = new this.AuthorizationRequest({
+            response_type,
+            scope: 'openid offline_access',
+          });
+
+          return this.wrap({ route, verb, auth })
+            .expect(303)
+            .expect(auth.validateFragment)
+            .expect(auth.validateClientLocation)
+            .expect(() => {
+              expect(spy.firstCall.args[0]).to.have.property('scope').and.not.include('offline_access');
+              expect(spy.secondCall.args[0]).to.have.property('scope').and.not.include('offline_access');
+            });
         });
 
-        return this.wrap({ route, verb, auth })
-          .expect(302)
-          .expect(auth.validateFragment)
-          .expect(auth.validateClientLocation)
-          .expect(() => {
-            expect(spy.firstCall.args[0]).to.have.property('scope').and.not.include('offline_access');
+        it('ignores the scope offline_access unless the client can do refresh_token exchange', function () {
+          const spy = sinon.spy();
+          this.provider.once('authorization_code.saved', spy);
+          this.provider.once('access_token.saved', spy);
+          this.provider.once('access_token.issued', spy);
+
+          const auth = new this.AuthorizationRequest({
+            client_id: 'client-no-refresh',
+            response_type,
+            scope: 'openid offline_access',
           });
+
+          return this.wrap({ route, verb, auth })
+            .expect(303)
+            .expect(auth.validateFragment)
+            .expect(auth.validateClientLocation)
+            .expect(() => {
+              expect(spy.firstCall.args[0]).to.have.property('scope').and.not.include('offline_access');
+              expect(spy.secondCall.args[0]).to.have.property('scope').and.not.include('offline_access');
+            });
+        });
+      });
+    });
+
+    describe(`${verb} ${route} with the scope not being fulfilled`, () => {
+      before(function () {
+        return this.login({
+          scope: 'openid profile email',
+          rejectedScopes: ['email'],
+        });
+      });
+
+      it('responds with an extra parameter scope', async function () {
+        const auth = new this.AuthorizationRequest({
+          response_type,
+          scope: 'openid profile email',
+        });
+
+        await this.wrap({ route, verb, auth })
+          .expect(303)
+          .expect(auth.validateFragment)
+          .expect(auth.validatePresence(['code', 'id_token', 'state', 'access_token', 'expires_in', 'token_type', 'scope']))
+          .expect(auth.validateState)
+          .expect(auth.validateClientLocation)
+          .expect(auth.validateResponseParameter('scope', 'openid profile'));
       });
     });
 
@@ -89,7 +145,7 @@ describe('HYBRID code+id_token+token', () => {
         });
 
         return this.wrap({ route, verb, auth })
-          .expect(302)
+          .expect(303)
           .expect(() => {
             expect(spy.calledOnce).to.be.true;
           })
@@ -111,7 +167,7 @@ describe('HYBRID code+id_token+token', () => {
 
         return this.agent.get(route)
           .query(auth)
-          .expect(302)
+          .expect(303)
           .expect(() => {
             expect(spy.calledOnce).to.be.true;
           })
@@ -120,7 +176,7 @@ describe('HYBRID code+id_token+token', () => {
           .expect(auth.validateState)
           .expect(auth.validateClientLocation)
           .expect(auth.validateError('invalid_request'))
-          .expect(auth.validateErrorDescription('missing required parameter(s) (nonce)'));
+          .expect(auth.validateErrorDescription("missing required parameter 'nonce'"));
       });
     });
   });

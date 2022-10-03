@@ -1,11 +1,6 @@
-const { clone } = require('lodash');
+const cloneDeep = require('lodash/cloneDeep');
 
-const config = clone(require('../default.config'));
-const { formats: { default: FORMAT } } = require('../../lib/helpers/defaults');
-
-config.formats = {
-  default: FORMAT,
-};
+const config = cloneDeep(require('../default.config'));
 
 module.exports = {
   config,

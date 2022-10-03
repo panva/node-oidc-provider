@@ -1,8 +1,8 @@
-const { clone } = require('lodash');
+const cloneDeep = require('lodash/cloneDeep');
 
-const config = clone(require('../default.config'));
+const config = cloneDeep(require('../default.config'));
 
-config.findById = (ctx, id) => {
+config.findAccount = (ctx, id) => {
   if (id === 'notfound') return undefined;
   return {
     accountId: id,

@@ -1,0 +1,6 @@
+{
+  "src": "lib",
+  "include": "lib",
+  "exclude": "lib/router",
+  "reporter": []
+}

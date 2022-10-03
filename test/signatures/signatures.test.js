@@ -1,97 +1,26 @@
 const { parse: parseLocation } = require('url');
 
-const uuid = require('uuid/v4');
 const { expect } = require('chai');
 const base64url = require('base64url');
+const jose = require('jose2');
 
 const bootstrap = require('../test_helper');
 const { decode } = require('../../lib/helpers/jwt');
 const epochTime = require('../../lib/helpers/epoch_time');
-const { formats: { default: FORMAT } } = require('../../lib/helpers/defaults');
 
 describe('signatures', () => {
   before(bootstrap(__dirname));
-
-  describe('token hashes in id_token', () => {
-    before(async function () {
-      this.client = await this.provider.Client.find('client');
-    });
-
-    before(function () { return this.login(); });
-    after(function () { return this.logout(); });
-
-    after(function () {
-      this.client.idTokenSignedResponseAlg = 'RS256';
-    });
-
-    it('responds with a access_token and code (half of sha512)', function () {
-      this.client.idTokenSignedResponseAlg = 'RS512';
-      const auth = new this.AuthorizationRequest({
-        response_type: 'code id_token token',
-        scope: 'openid',
-      });
-
-      return this.wrap({ auth, verb: 'get', route: '/auth' })
-        .expect(302)
-        .expect(auth.validateFragment)
-        .expect(auth.validateClientLocation)
-        .expect((response) => {
-          const { query: { id_token } } = parseLocation(response.headers.location, true);
-          const { payload } = decode(id_token);
-          expect(payload).to.contain.keys('at_hash', 'c_hash');
-          expect(payload.at_hash).to.have.lengthOf(43);
-        });
-    });
-
-    it('responds with a access_token and code (half of sha384)', function () {
-      this.client.idTokenSignedResponseAlg = 'RS384';
-      const auth = new this.AuthorizationRequest({
-        response_type: 'code id_token token',
-        scope: 'openid',
-      });
-
-      return this.wrap({ auth, verb: 'get', route: '/auth' })
-        .expect(302)
-        .expect(auth.validateFragment)
-        .expect(auth.validateClientLocation)
-        .expect((response) => {
-          const { query: { id_token } } = parseLocation(response.headers.location, true);
-          const { payload } = decode(id_token);
-          expect(payload).to.contain.keys('at_hash', 'c_hash');
-          expect(payload.at_hash).to.have.lengthOf(32);
-        });
-    });
-
-    it('responds with a access_token and code (half of sha256)', function () {
-      this.client.idTokenSignedResponseAlg = 'RS256';
-      const auth = new this.AuthorizationRequest({
-        response_type: 'code id_token token',
-        scope: 'openid',
-      });
-
-      return this.wrap({ auth, verb: 'get', route: '/auth' })
-        .expect(302)
-        .expect(auth.validateFragment)
-        .expect(auth.validateClientLocation)
-        .expect((response) => {
-          const { query: { id_token } } = parseLocation(response.headers.location, true);
-          const { payload } = decode(id_token);
-          expect(payload).to.contain.keys('at_hash', 'c_hash');
-          expect(payload.at_hash).to.have.lengthOf(22);
-        });
-    });
-  });
 
   describe('when id_token_signed_response_alg=none', () => {
     before(function () { return this.login(); });
     after(function () { return this.logout(); });
     beforeEach(async function () {
       const ac = new this.provider.AuthorizationCode({
-        accountId: 'accountIdentity',
+        accountId: this.loggedInAccountId,
         acr: i(this.provider).configuration('acrValues[0]'),
         authTime: epochTime(),
         clientId: 'client-sig-none',
-        grantId: uuid(),
+        grantId: this.getGrantId('client-sig-none'),
         redirectUri: 'https://client.example.com/cb',
         scope: 'openid',
       });
@@ -118,15 +47,6 @@ describe('signatures', () => {
       expect(decode(this.idToken)).to.have.nested.property('header.alg', 'none');
     });
 
-    if (FORMAT === 'jwt') {
-      it('but the access token remains signed with RS256', function () {
-        const components = this.accessToken.split('.');
-        expect(components).to.have.lengthOf(3);
-        expect(components[2]).not.to.equal('');
-        expect(decode(this.accessToken)).to.have.nested.property('header.alg', 'RS256');
-      });
-    }
-
     it('the unsigned token can be used as id_token_hint', function () {
       const auth = new this.AuthorizationRequest({
         response_type: 'code',
@@ -137,12 +57,10 @@ describe('signatures', () => {
       auth.client_id = 'client-sig-none';
 
       return this.wrap({ auth, route: '/auth', verb: 'get' })
-        .expect(302)
-        .expect(auth.validatePresence(['error', 'error_description', 'state']))
+        .expect(303)
+        .expect(auth.validatePresence(['code', 'state']))
         .expect(auth.validateState)
-        .expect(auth.validateClientLocation)
-        .expect(auth.validateError('login_required'))
-        .expect(auth.validateErrorDescription('id_token_hint and authenticated subject do not match'));
+        .expect(auth.validateClientLocation);
     });
 
     it('still validates the tokens payload', function () {
@@ -160,12 +78,12 @@ describe('signatures', () => {
       auth.client_id = 'client-sig-none';
 
       return this.wrap({ auth, route: '/auth', verb: 'get' })
-        .expect(302)
+        .expect(303)
         .expect(auth.validatePresence(['error', 'error_description', 'state']))
         .expect(auth.validateState)
         .expect(auth.validateClientLocation)
         .expect(auth.validateError('invalid_request'))
-        .expect(auth.validateErrorDescription(/^could not validate id_token_hint \(jwt issuer invalid/));
+        .expect(auth.validateErrorDescription('could not validate id_token_hint'));
     });
   });
 
@@ -174,11 +92,11 @@ describe('signatures', () => {
     after(function () { return this.logout(); });
     beforeEach(async function () {
       const ac = new this.provider.AuthorizationCode({
-        accountId: 'accountIdentity',
+        accountId: this.loggedInAccountId,
         acr: i(this.provider).configuration('acrValues[0]'),
         authTime: epochTime(),
         clientId: 'client-sig-HS256',
-        grantId: uuid(),
+        grantId: this.getGrantId('client-sig-HS256'),
         redirectUri: 'https://client.example.com/cb',
         scope: 'openid',
       });
@@ -214,12 +132,120 @@ describe('signatures', () => {
       auth.client_id = 'client-sig-HS256';
 
       return this.wrap({ auth, route: '/auth', verb: 'get' })
-        .expect(302)
-        .expect(auth.validatePresence(['error', 'error_description', 'state']))
+        .expect(303)
+        .expect(auth.validatePresence(['code', 'state']))
         .expect(auth.validateState)
+        .expect(auth.validateClientLocation);
+    });
+  });
+
+  describe('token hashes in id_token', () => {
+    before(async function () {
+      this.client = await this.provider.Client.find('client');
+    });
+
+    before(function () { return this.login(); });
+    after(function () { return this.logout(); });
+
+    after(function () {
+      this.client.idTokenSignedResponseAlg = 'RS256';
+    });
+
+    it('responds with a access_token and code (half of sha512 Ed25519)', function () {
+      this.client.idTokenSignedResponseAlg = 'EdDSA';
+      const auth = new this.AuthorizationRequest({
+        response_type: 'code id_token token',
+        scope: 'openid',
+      });
+
+      return this.wrap({ auth, verb: 'get', route: '/auth' })
+        .expect(303)
+        .expect(auth.validateFragment)
         .expect(auth.validateClientLocation)
-        .expect(auth.validateError('login_required'))
-        .expect(auth.validateErrorDescription('id_token_hint and authenticated subject do not match'));
+        .expect((response) => {
+          const { query: { id_token } } = parseLocation(response.headers.location, true);
+          const { payload } = decode(id_token);
+          expect(payload).to.contain.keys('at_hash', 'c_hash');
+          expect(payload.at_hash).to.have.lengthOf(43);
+        });
+    });
+
+    it('responds with a access_token and code (half of sha512)', function () {
+      this.client.idTokenSignedResponseAlg = 'RS512';
+      const auth = new this.AuthorizationRequest({
+        response_type: 'code id_token token',
+        scope: 'openid',
+      });
+
+      return this.wrap({ auth, verb: 'get', route: '/auth' })
+        .expect(303)
+        .expect(auth.validateFragment)
+        .expect(auth.validateClientLocation)
+        .expect((response) => {
+          const { query: { id_token } } = parseLocation(response.headers.location, true);
+          const { payload } = decode(id_token);
+          expect(payload).to.contain.keys('at_hash', 'c_hash');
+          expect(payload.at_hash).to.have.lengthOf(43);
+        });
+    });
+
+    it('responds with a access_token and code (half of sha384)', function () {
+      this.client.idTokenSignedResponseAlg = 'RS384';
+      const auth = new this.AuthorizationRequest({
+        response_type: 'code id_token token',
+        scope: 'openid',
+      });
+
+      return this.wrap({ auth, verb: 'get', route: '/auth' })
+        .expect(303)
+        .expect(auth.validateFragment)
+        .expect(auth.validateClientLocation)
+        .expect((response) => {
+          const { query: { id_token } } = parseLocation(response.headers.location, true);
+          const { payload } = decode(id_token);
+          expect(payload).to.contain.keys('at_hash', 'c_hash');
+          expect(payload.at_hash).to.have.lengthOf(32);
+        });
+    });
+
+    it('responds with a access_token and code (half of sha256)', function () {
+      this.client.idTokenSignedResponseAlg = 'RS256';
+      const auth = new this.AuthorizationRequest({
+        response_type: 'code id_token token',
+        scope: 'openid',
+      });
+
+      return this.wrap({ auth, verb: 'get', route: '/auth' })
+        .expect(303)
+        .expect(auth.validateFragment)
+        .expect(auth.validateClientLocation)
+        .expect((response) => {
+          const { query: { id_token } } = parseLocation(response.headers.location, true);
+          const { payload } = decode(id_token);
+          expect(payload).to.contain.keys('at_hash', 'c_hash');
+          expect(payload.at_hash).to.have.lengthOf(22);
+        });
+    });
+
+    it('responds with a access_token and code (half of shake256(m, 114) Ed448)', async function () {
+      this.client.idTokenSignedResponseAlg = 'EdDSA';
+      i(this.provider).keystore.clear();
+      i(this.provider).keystore.add(jose.JWK.generateSync('OKP', 'Ed448').toJWK(true));
+      const auth = new this.AuthorizationRequest({
+        response_type: 'code id_token token',
+        scope: 'openid',
+      });
+
+      return this.wrap({ auth, verb: 'get', route: '/auth' })
+        .expect(303)
+        .expect(auth.validateFragment)
+        .expect(auth.validateClientLocation)
+        .expect((response) => {
+          const { query: { id_token } } = parseLocation(response.headers.location, true);
+          const { payload } = decode(id_token);
+          expect(payload).to.contain.keys('at_hash', 'c_hash');
+          expect(payload.at_hash).to.have.lengthOf(76);
+        });
     });
   });
 });

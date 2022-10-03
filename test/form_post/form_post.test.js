@@ -2,6 +2,7 @@ const { expect } = require('chai');
 const sinon = require('sinon');
 
 const bootstrap = require('../test_helper');
+const safe = require('../../lib/helpers/html_safe');
 
 const route = '/auth';
 
@@ -27,6 +28,21 @@ describe('/auth', () => {
             .expect(new RegExp(`input type="hidden" name="state" value="${auth.state}"`))
             .expect(new RegExp(`form method="post" action="${auth.redirect_uri}"`));
         });
+
+        it('sanitizes the action attribute', function () {
+          const auth = new this.AuthorizationRequest({
+            response_type: 'code id_token token',
+            response_mode: 'form_post',
+            scope: 'openid',
+            redirect_uri: 'https://client.example.com/cb"><script>alert(0)</script><x="',
+          });
+
+          return this.wrap({ route, verb, auth })
+            .expect(200)
+            .expect(({ text: body }) => {
+              expect(body).to.contain(safe(auth.redirect_uri));
+            });
+        });
       });
 
       context('error handling', () => {
@@ -42,44 +58,13 @@ describe('/auth', () => {
           this.provider.once('authorization.error', spy);
 
           return this.wrap({ route, verb, auth })
-            .expect(200)
+            .expect(400)
             .expect(() => {
               expect(spy.called).to.be.true;
             })
             .expect(new RegExp('input type="hidden" name="error" value="login_required"'))
             .expect(new RegExp(`input type="hidden" name="state" value="${auth.state}"`))
             .expect(new RegExp(`form method="post" action="${auth.redirect_uri}"`));
-        });
-
-        context('[exception]', () => {
-          before(async function () {
-            sinon.stub(this.provider.Session.prototype, 'accountId').throws();
-          });
-
-          after(async function () {
-            this.provider.Session.prototype.accountId.restore();
-          });
-
-          it('responds by rendering a self-submitting form with the exception', function () {
-            const auth = new this.AuthorizationRequest({
-              response_type: 'code',
-              prompt: 'none',
-              response_mode: 'form_post',
-              scope: 'openid',
-            });
-
-            const spy = sinon.spy();
-            this.provider.once('server_error', spy);
-
-            return this.wrap({ route, verb, auth })
-              .expect(200)
-              .expect(() => {
-                expect(spy.called).to.be.true;
-              })
-              .expect(new RegExp('input type="hidden" name="error" value="server_error"'))
-              .expect(new RegExp(`input type="hidden" name="state" value="${auth.state}"`))
-              .expect(new RegExp(`form method="post" action="${auth.redirect_uri}"`));
-          });
         });
       });
     });

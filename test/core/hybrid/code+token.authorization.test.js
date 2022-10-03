@@ -9,6 +9,9 @@ const scope = 'openid';
 
 describe('HYBRID code+token', () => {
   before(bootstrap(__dirname));
+  afterEach(function () {
+    this.provider.removeAllListeners();
+  });
 
   ['get', 'post'].forEach((verb) => {
     describe(`${verb} ${route} with session`, () => {
@@ -21,9 +24,9 @@ describe('HYBRID code+token', () => {
         });
 
         return this.wrap({ route, verb, auth })
-          .expect(302)
+          .expect(303)
           .expect(auth.validateFragment)
-          .expect(auth.validatePresence(['code', 'state', 'access_token', 'expires_in', 'token_type']))
+          .expect(auth.validatePresence(['code', 'state', 'access_token', 'expires_in', 'token_type', 'scope']))
           .expect(auth.validateState)
           .expect(auth.validateClientLocation);
       });
@@ -35,16 +38,16 @@ describe('HYBRID code+token', () => {
         });
 
         return this.wrap({ route, verb, auth })
-          .expect(302)
+          .expect(303)
           .expect(auth.validateFragment)
-          .expect(auth.validatePresence(['code', 'state', 'access_token', 'expires_in', 'token_type']))
+          .expect(auth.validatePresence(['code', 'state', 'access_token', 'expires_in', 'token_type', 'scope']))
           .expect(auth.validateState)
           .expect(auth.validateClientLocation);
       });
 
       it('populates ctx.oidc.entities', function (done) {
         this.provider.use(this.assertOnce((ctx) => {
-          expect(ctx.oidc.entities).to.have.keys('Client', 'Account', 'AuthorizationCode', 'AccessToken');
+          expect(ctx.oidc.entities).to.have.keys('Client', 'Grant', 'Account', 'AuthorizationCode', 'AccessToken', 'Session');
         }, done));
 
         const auth = new this.AuthorizationRequest({
@@ -57,7 +60,9 @@ describe('HYBRID code+token', () => {
 
       it('ignores the scope offline_access unless prompt consent is present', function () {
         const spy = sinon.spy();
-        this.provider.once('token.issued', spy);
+        this.provider.once('authorization_code.saved', spy);
+        this.provider.once('access_token.saved', spy);
+        this.provider.once('access_token.issued', spy);
 
         const auth = new this.AuthorizationRequest({
           response_type,
@@ -65,12 +70,37 @@ describe('HYBRID code+token', () => {
         });
 
         return this.wrap({ route, verb, auth })
-          .expect(302)
+          .expect(303)
           .expect(auth.validateFragment)
           .expect(auth.validateClientLocation)
           .expect(() => {
             expect(spy.firstCall.args[0]).to.have.property('scope').and.not.include('offline_access');
+            expect(spy.secondCall.args[0]).to.have.property('scope').and.not.include('offline_access');
           });
+      });
+    });
+
+    describe(`${verb} ${route} with the scope not being fulfilled`, () => {
+      before(function () {
+        return this.login({
+          scope: 'openid profile email',
+          rejectedScopes: ['email'],
+        });
+      });
+
+      it('responds with an extra parameter scope', async function () {
+        const auth = new this.AuthorizationRequest({
+          response_type,
+          scope: 'openid profile email',
+        });
+
+        await this.wrap({ route, verb, auth })
+          .expect(303)
+          .expect(auth.validateFragment)
+          .expect(auth.validatePresence(['code', 'state', 'access_token', 'expires_in', 'token_type', 'scope']))
+          .expect(auth.validateState)
+          .expect(auth.validateClientLocation)
+          .expect(auth.validateResponseParameter('scope', 'openid profile'));
       });
     });
 
@@ -85,7 +115,7 @@ describe('HYBRID code+token', () => {
         });
 
         return this.wrap({ route, verb, auth })
-          .expect(302)
+          .expect(303)
           .expect(() => {
             expect(spy.calledOnce).to.be.true;
           })

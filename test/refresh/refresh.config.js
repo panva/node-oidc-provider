@@ -1,9 +1,8 @@
-const { clone } = require('lodash');
+const cloneDeep = require('lodash/cloneDeep');
 
-const config = clone(require('../default.config'));
+const config = cloneDeep(require('../default.config'));
 
-config.features = { alwaysIssueRefresh: true };
-config.refreshTokenRotation = 'none';
+config.rotateRefreshToken = false;
 
 module.exports = {
   config,

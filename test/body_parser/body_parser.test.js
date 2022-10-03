@@ -5,7 +5,7 @@ const upstreamParser = require('koa-body');
 const sinon = require('sinon');
 const { expect } = require('chai');
 
-const Provider = require('../../lib');
+const { Provider } = require('../../lib');
 
 describe('body parser', () => {
   afterEach(() => {
@@ -15,9 +15,8 @@ describe('body parser', () => {
   describe('application/x-www-form-urlencoded', () => {
     it('uses the upstream parser albeit reluctantly', async () => {
       const provider = new Provider('http://localhost:3000', {
-        features: { clientCredentials: true },
-      });
-      await provider.initialize({
+        features: { clientCredentials: { enabled: true } },
+        jwks: global.keystore.toJWKS(true),
         clients: [{
           client_id: 'client',
           client_secret: 'secret',
@@ -47,11 +46,8 @@ describe('body parser', () => {
 
     it('removes all qs magic', async () => {
       const provider = new Provider('http://localhost:3000', {
-        features: { clientCredentials: true },
-      });
-      const spy = sinon.spy();
-      provider.once('grant.success', spy);
-      await provider.initialize({
+        features: { clientCredentials: { enabled: true } },
+        jwks: global.keystore.toJWKS(true),
         clients: [{
           client_id: 'client',
           client_secret: 'secret',
@@ -61,6 +57,8 @@ describe('body parser', () => {
           token_endpoint_auth_method: 'client_secret_post',
         }],
       });
+      const spy = sinon.spy();
+      provider.once('grant.success', spy);
       const app = new Koa();
 
       app.use(upstreamParser());
@@ -80,7 +78,7 @@ describe('body parser', () => {
         .expect(200);
 
       expect(
-        spy.calledWithMatch({ oidc: { params: { scope: '' } } }),
+        spy.calledWithMatch({ oidc: { params: { scope: undefined } } }),
       ).to.be.true;
     });
   });
@@ -88,9 +86,9 @@ describe('body parser', () => {
   describe('application/json', () => {
     it('uses the upstream parser albeit reluctantly', async () => {
       const provider = new Provider('http://localhost:3000', {
-        features: { registration: true },
+        jwks: global.keystore.toJWKS(true),
+        features: { registration: { enabled: true } },
       });
-      await provider.initialize();
       const app = new Koa();
 
       app.use(upstreamParser());
@@ -109,9 +107,9 @@ describe('body parser', () => {
 
     it('handles parsing errors', async () => {
       const provider = new Provider('http://localhost:3000', {
-        features: { registration: true },
+        jwks: global.keystore.toJWKS(true),
+        features: { registration: { enabled: true } },
       });
-      await provider.initialize();
 
       global.server.on('request', provider.app.callback());
 
@@ -120,7 +118,7 @@ describe('body parser', () => {
         .send('not a json')
         .type('json')
         .expect(400)
-        .expect('{"error":"invalid_request","error_description":"couldnt parse the request body"}');
+        .expect('{"error":"invalid_request","error_description":"failed to parse the request body"}');
     });
   });
 });

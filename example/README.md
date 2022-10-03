@@ -11,9 +11,9 @@ See the following examples
 
 Further resources
 
-- [Configuration](/docs/configuration.md)
-- [Mounting to a path](/docs/configuration.md#mounting-oidc-provider)
+- [Configuration](/docs/README.md)
+- [Mounting to a path](/docs/README.md#mounting-oidc-provider)
 
 Useful to know oidc-provider dependencies
 - [Koa](https://koajs.com/) - web framework oidc-provider uses internally
-- [node-jose](https://github.com/cisco/node-jose) - everything JOSE
+- [jose](https://github.com/panva/jose) - everything JOSE

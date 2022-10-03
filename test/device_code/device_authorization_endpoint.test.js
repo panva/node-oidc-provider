@@ -43,7 +43,7 @@ describe('device_authorization_endpoint', () => {
         .expect('content-type', /application\/json/)
         .expect({
           error: 'unauthorized_client',
-          error_description: 'device flow not allowed for this client',
+          error_description: 'urn:ietf:params:oauth:grant-type:device_code is not allowed for this client',
         })
         .expect(() => {
           expect(spy.calledOnce).to.be.true;
@@ -59,14 +59,14 @@ describe('device_authorization_endpoint', () => {
           client_id: 'not-found-client',
         })
         .type('form')
-        .expect(400)
+        .expect(401)
         .expect('content-type', /application\/json/)
         .expect(() => {
           expect(spy.calledOnce).to.be.true;
         })
         .expect({
           error: 'invalid_client',
-          error_description: 'client is invalid',
+          error_description: 'client authentication failed',
         });
     });
   });
@@ -93,196 +93,6 @@ describe('device_authorization_endpoint', () => {
             error: `${param}_not_supported`,
             error_description: `${param} parameter provided but not supported`,
           });
-      });
-    });
-
-    it('checks prompt values', function () {
-      const spy = sinon.spy();
-      this.provider.once('device_authorization.error', spy);
-
-      return this.agent.post(route)
-        .send({
-          client_id: 'client',
-          scope: 'openid',
-          prompt: 'unsupported',
-        })
-        .type('form')
-        .expect(400)
-        .expect('content-type', /application\/json/)
-        .expect(() => {
-          expect(spy.calledOnce).to.be.true;
-        })
-        .expect({
-          error: 'invalid_request',
-          error_description: 'invalid prompt value provided',
-        });
-    });
-
-    it('checks for bad prompt combination', function () {
-      const spy = sinon.spy();
-      this.provider.once('device_authorization.error', spy);
-
-      return this.agent.post(route)
-        .send({
-          client_id: 'client',
-          scope: 'openid',
-          prompt: 'none login',
-        })
-        .type('form')
-        .expect(400)
-        .expect('content-type', /application\/json/)
-        .expect(() => {
-          expect(spy.calledOnce).to.be.true;
-        })
-        .expect({
-          error: 'invalid_request',
-          error_description: 'prompt none must only be used alone',
-        });
-    });
-
-    it('unsupported prompt', function () {
-      const spy = sinon.spy();
-      this.provider.once('device_authorization.error', spy);
-
-      return this.agent.post(route)
-        .send('scope=openid&scope=openid&client_id=client')
-        .type('form')
-        .expect(400)
-        .expect('content-type', /application\/json/)
-        .expect(() => {
-          expect(spy.calledOnce).to.be.true;
-        })
-        .expect({
-          error: 'invalid_request',
-          error_description: 'parameters must not be provided twice. (scope)',
-        });
-    });
-
-    it('makes sure scope is provided', function () {
-      const spy = sinon.spy();
-      this.provider.once('device_authorization.error', spy);
-
-      return this.agent.post(route)
-        .send({
-          client_id: 'client',
-        })
-        .type('form')
-        .expect(400)
-        .expect('content-type', /application\/json/)
-        .expect(() => {
-          expect(spy.calledOnce).to.be.true;
-        })
-        .expect({
-          error: 'invalid_request',
-          error_description: 'missing required parameter(s) (scope)',
-        });
-    });
-
-    it('makes sure openid is provided as a scope', function () {
-      const spy = sinon.spy();
-      this.provider.once('device_authorization.error', spy);
-
-      return this.agent.post(route)
-        .send({
-          client_id: 'client',
-          scope: 'profile',
-        })
-        .type('form')
-        .expect(400)
-        .expect('content-type', /application\/json/)
-        .expect(() => {
-          expect(spy.calledOnce).to.be.true;
-        })
-        .expect({
-          error: 'invalid_request',
-          error_description: 'openid is required scope',
-        });
-    });
-  });
-
-  describe('pkce', () => {
-    it('checks for PKCE methods', function () {
-      const spy = sinon.spy();
-      this.provider.once('device_authorization.error', spy);
-
-      return this.agent.post(route)
-        .send({
-          client_id: 'client',
-          scope: 'openid',
-          code_challenge: 'foobar',
-          code_challenge_method: 'bar',
-        })
-        .type('form')
-        .expect(400)
-        .expect('content-type', /application\/json/)
-        .expect(() => {
-          expect(spy.calledOnce).to.be.true;
-        })
-        .expect({
-          error: 'invalid_request',
-          error_description: 'not supported value of code_challenge_method',
-        });
-    });
-
-    it('checks that codeChallenge is provided if codeChallengeMethod was', function () {
-      const spy = sinon.spy();
-      this.provider.once('device_authorization.error', spy);
-
-      return this.agent.post(route)
-        .send({
-          client_id: 'client',
-          scope: 'openid',
-          code_challenge_method: 'S256',
-        })
-        .type('form')
-        .expect(400)
-        .expect('content-type', /application\/json/)
-        .expect(() => {
-          expect(spy.calledOnce).to.be.true;
-        })
-        .expect({
-          error: 'invalid_request',
-          error_description: 'code_challenge must be provided with code_challenge_method',
-        });
-    });
-
-    describe('forcedForNative flag', () => {
-      afterEach(function () {
-        i(this.provider).configuration('features.pkce').forcedForNative = false;
-      });
-
-      it('forces native clients using code flow to use pkce', function () {
-        const spy = sinon.spy();
-        this.provider.once('device_authorization.error', spy);
-
-        return this.agent.post(route)
-          .send({
-            client_id: 'client',
-            scope: 'openid',
-          })
-          .type('form')
-          .expect(400)
-          .expect('content-type', /application\/json/)
-          .expect(() => {
-            expect(spy.calledOnce).to.be.true;
-          })
-          .expect({
-            error: 'invalid_request',
-            error_description: 'PKCE must be provided for native clients',
-          });
-      });
-
-      it('when false pkce is optional', function () {
-        i(this.provider).configuration('features.pkce').forcedForNative = false;
-
-        return this.agent.post(route)
-          .send({
-            client_id: 'client',
-            scope: 'openid',
-          })
-          .type('form')
-          .expect(200)
-          .expect('content-type', /application\/json/);
       });
     });
   });
@@ -338,6 +148,23 @@ describe('device_authorization_endpoint', () => {
     expect(dc.params).not.to.have.property('response_type');
     expect(dc.params).not.to.have.property('state');
     expect(dc.params).not.to.have.property('response_mode');
+  });
+
+  it('handles regular client auth', function () {
+    return this.agent.post(route)
+      .auth('client-basic-auth', 'secret')
+      .type('form')
+      .expect(200)
+      .expect('content-type', /application\/json/)
+      .expect(({ body }) => {
+        expect(body).to.have.keys([
+          'device_code',
+          'user_code',
+          'verification_uri',
+          'verification_uri_complete',
+          'expires_in',
+        ]);
+      });
   });
 
   it('populates ctx.oidc.entities', function (done) {

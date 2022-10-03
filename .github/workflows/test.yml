@@ -1,0 +1,578 @@
+name: Continuous Integration
+
+on:
+  push:
+    paths-ignore:
+      - '**.md'
+  pull_request:
+    paths-ignore:
+      - '**.md'
+  schedule:
+    - cron:  0 9 * * 1-5
+  workflow_dispatch:
+    inputs:
+      conformance-version:
+        description: 'Conformance Suite Version (commit hash)'
+        required: false
+
+jobs:
+  audit:
+    name: NPM Audit (Production)
+    continue-on-error: true
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@master
+      - name: Setup node
+        uses: actions/setup-node@v3
+        with:
+          node-version: 16
+          check-latest: true
+          cache: 'npm'
+      - run: npm i -g npm
+      - run: npm clean-install
+      - run: npm upgrade
+      - run: npm audit --production
+
+  lint:
+    name: Lint
+    continue-on-error: true
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@master
+      - name: Setup node
+        uses: actions/setup-node@v3
+        with:
+          node-version: 16
+          check-latest: true
+          cache: 'npm'
+      - run: npm i -g npm
+      - run: npm clean-install
+      - run: npm run lint
+
+  test:
+    name: Node Tests
+    runs-on: ${{ matrix.os }}
+    continue-on-error: ${{ matrix.experimental || false }}
+    strategy:
+      fail-fast: false
+      matrix:
+        node-version:
+          - 12.19.0
+          - 12
+          - 14.15.0
+          - 14
+          - 16.13.0
+          - 16
+        os:
+          - ubuntu-latest
+          - windows-latest
+        include:
+          - experimental: true
+            node-version: '>=17'
+            os: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@master
+      - name: Setup node
+        uses: actions/setup-node@v3
+        with:
+          node-version: ${{ matrix.node-version }}
+          check-latest: true
+          cache: 'npm'
+      - run: npm i -g npm
+      - run: npm clean-install
+      - run: npm run ci
+      - uses: actions/upload-artifact@v2
+        if: ${{ matrix.node-version == 16 && matrix.os == 'ubuntu-latest' }}
+        with:
+          if-no-files-found: warn
+          retention-days: 1
+          name: coverage-data
+          path: coverage/
+
+  build-conformance-suite:
+    runs-on: ubuntu-latest
+    outputs:
+      cache-key: ${{ steps.cache-key.outputs.value }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@master
+      - name: Set Conformance Suite Version from GitLab
+        if: ${{ !github.event.inputs.conformance-version }}
+        run: |
+          export VERSION=($(curl --silent "https://gitlab.com/api/v4/projects/4175605/releases" | jq -r '.[0].tag_name'))
+          echo "VERSION=$VERSION" >> $GITHUB_ENV
+      - name: Set Conformance Suite Version from Workflow Dispatch
+        if: ${{ github.event.inputs.conformance-version }}
+        run: |
+          echo "VERSION=${{ github.event.inputs.conformance-version }}" >> $GITHUB_ENV
+      - id: cache-key
+        run: echo "::set-output name=value::suite-${{ hashFiles('.github/workflows/test.yml') }}-${{ env.VERSION }}"
+      - name: Load Cached Conformance Suite Build
+        uses: actions/cache@v3
+        id: cache
+        with:
+          path: ./conformance-suite
+          key: ${{ steps.cache-key.outputs.value }}
+      - name: Conformance Suite Checkout
+        if: ${{ steps.cache.outputs.cache-hit != 'true' }}
+        run: git clone https://gitlab.com/openid/conformance-suite.git
+      - run: git reset --hard ${{ env.VERSION }}
+        working-directory: ./conformance-suite
+      - name: Conformance Suite Build
+        working-directory: ./conformance-suite
+        if: ${{ steps.cache.outputs.cache-hit != 'true' }}
+        env:
+          MAVEN_CACHE: ./m2
+        run: |
+          sed -i -e 's/localhost/localhost.emobix.co.uk/g' src/main/resources/application.properties
+          sed -i -e 's/-B clean/-B -DskipTests=true/g' builder-compose.yml
+          docker-compose -f builder-compose.yml run builder
+
+  conformance-suite:
+    runs-on: ubuntu-latest
+    needs:
+      - test
+      - build-conformance-suite
+    env:
+      SUITE_BASE_URL: https://localhost.emobix.co.uk:8443
+      SETUP: ${{ toJSON(matrix.setup) }}
+    strategy:
+      fail-fast: false
+      matrix:
+        setup:
+          # OP Basic
+          - plan: oidcc-basic-certification-test-plan
+            server_metadata: discovery
+            client_registration: dynamic_client
+            configuration: ./certification/oidc/plan.json
+
+          # OP Hybrid
+          - plan: oidcc-hybrid-certification-test-plan
+            server_metadata: discovery
+            client_registration: dynamic_client
+            configuration: ./certification/oidc/plan.json
+
+          # OP Implicit
+          - plan: oidcc-implicit-certification-test-plan
+            server_metadata: discovery
+            client_registration: dynamic_client
+            configuration: ./certification/oidc/plan.json
+
+          # OP Dynamic
+          - plan: oidcc-dynamic-certification-test-plan
+            response_type: code
+            skip: oidcc-server-rotate-keys
+            configuration: ./certification/oidc/plan.json
+          - plan: oidcc-dynamic-certification-test-plan
+            response_type: id_token
+            skip: oidcc-server-rotate-keys
+            configuration: ./certification/oidc/plan.json
+          - plan: oidcc-dynamic-certification-test-plan
+            response_type: id_token token
+            skip: oidcc-server-rotate-keys
+            configuration: ./certification/oidc/plan.json
+          - plan: oidcc-dynamic-certification-test-plan
+            response_type: code id_token
+            skip: oidcc-server-rotate-keys
+            configuration: ./certification/oidc/plan.json
+          - plan: oidcc-dynamic-certification-test-plan
+            response_type: code token
+            skip: oidcc-server-rotate-keys
+            configuration: ./certification/oidc/plan.json
+          - plan: oidcc-dynamic-certification-test-plan
+            response_type: code id_token token
+            skip: oidcc-server-rotate-keys
+            configuration: ./certification/oidc/plan.json
+
+          # RP-Initiated OP
+          - plan: oidcc-rp-initiated-logout-certification-test-plan
+            response_type: code
+            client_registration: dynamic_client
+            configuration: ./certification/oidc/plan.json
+
+          # Back-Channel OP
+          - plan: oidcc-backchannel-rp-initiated-logout-certification-test-plan
+            response_type: code
+            client_registration: dynamic_client
+            configuration: ./certification/oidc/plan.json
+
+          # FAPI 1.0 R/W (ID2)
+          - plan: fapi-rw-id2-test-plan
+            fapi_auth_request_method: by_value
+            client_auth_type: private_key_jwt
+            fapi_profile: plain_fapi
+            fapi_response_mode: plain_response
+            configuration: ./certification/fapi/plan.json
+          - plan: fapi-rw-id2-test-plan
+            fapi_auth_request_method: pushed
+            client_auth_type: private_key_jwt
+            fapi_profile: plain_fapi
+            fapi_response_mode: plain_response
+            configuration: ./certification/fapi/plan.json
+          - plan: fapi-rw-id2-test-plan
+            fapi_auth_request_method: by_value
+            client_auth_type: private_key_jwt
+            fapi_profile: plain_fapi
+            fapi_response_mode: jarm
+            configuration: ./certification/fapi/plan.json
+          - plan: fapi-rw-id2-test-plan
+            fapi_auth_request_method: pushed
+            client_auth_type: private_key_jwt
+            fapi_profile: plain_fapi
+            fapi_response_mode: jarm
+            configuration: ./certification/fapi/plan.json
+          - plan: fapi-rw-id2-test-plan
+            fapi_auth_request_method: by_value
+            client_auth_type: mtls
+            fapi_profile: plain_fapi
+            fapi_response_mode: plain_response
+            configuration: ./certification/fapi/plan.json
+          - plan: fapi-rw-id2-test-plan
+            fapi_auth_request_method: pushed
+            client_auth_type: mtls
+            fapi_profile: plain_fapi
+            fapi_response_mode: plain_response
+            configuration: ./certification/fapi/plan.json
+          - plan: fapi-rw-id2-test-plan
+            fapi_auth_request_method: by_value
+            client_auth_type: mtls
+            fapi_profile: plain_fapi
+            fapi_response_mode: jarm
+            configuration: ./certification/fapi/plan.json
+          - plan: fapi-rw-id2-test-plan
+            fapi_auth_request_method: pushed
+            client_auth_type: mtls
+            fapi_profile: plain_fapi
+            fapi_response_mode: jarm
+            configuration: ./certification/fapi/plan.json
+
+          # FAPI 1.0 Advanced (Final)
+          - plan: fapi1-advanced-final-test-plan
+            fapi_auth_request_method: by_value
+            client_auth_type: private_key_jwt
+            fapi_profile: plain_fapi
+            fapi_response_mode: plain_response
+            configuration: ./certification/fapi/plan.json
+          - plan: fapi1-advanced-final-test-plan
+            fapi_auth_request_method: pushed
+            client_auth_type: private_key_jwt
+            fapi_profile: plain_fapi
+            fapi_response_mode: plain_response
+            configuration: ./certification/fapi/plan.json
+          - plan: fapi1-advanced-final-test-plan
+            fapi_auth_request_method: by_value
+            client_auth_type: private_key_jwt
+            fapi_profile: plain_fapi
+            fapi_response_mode: jarm
+            configuration: ./certification/fapi/plan.json
+          - plan: fapi1-advanced-final-test-plan
+            fapi_auth_request_method: pushed
+            client_auth_type: private_key_jwt
+            fapi_profile: plain_fapi
+            fapi_response_mode: jarm
+            configuration: ./certification/fapi/plan.json
+          - plan: fapi1-advanced-final-test-plan
+            fapi_auth_request_method: by_value
+            client_auth_type: mtls
+            fapi_profile: plain_fapi
+            fapi_response_mode: plain_response
+            configuration: ./certification/fapi/plan.json
+          - plan: fapi1-advanced-final-test-plan
+            fapi_auth_request_method: pushed
+            client_auth_type: mtls
+            fapi_profile: plain_fapi
+            fapi_response_mode: plain_response
+            configuration: ./certification/fapi/plan.json
+          - plan: fapi1-advanced-final-test-plan
+            fapi_auth_request_method: by_value
+            client_auth_type: mtls
+            fapi_profile: plain_fapi
+            fapi_response_mode: jarm
+            configuration: ./certification/fapi/plan.json
+          - plan: fapi1-advanced-final-test-plan
+            fapi_auth_request_method: pushed
+            client_auth_type: mtls
+            fapi_profile: plain_fapi
+            fapi_response_mode: jarm
+            configuration: ./certification/fapi/plan.json
+
+          # FAPI RW-CIBA-ID1
+          - plan: fapi-ciba-id1-test-plan
+            client_auth_type: private_key_jwt
+            fapi_profile: plain_fapi
+            ciba_mode: poll
+            client_registration: dynamic_client
+            configuration: ./certification/fapi/plan.json
+          - plan: fapi-ciba-id1-test-plan
+            client_auth_type: private_key_jwt
+            fapi_profile: plain_fapi
+            ciba_mode: ping
+            client_registration: dynamic_client
+            configuration: ./certification/fapi/plan.json
+          - plan: fapi-ciba-id1-test-plan
+            client_auth_type: mtls
+            fapi_profile: plain_fapi
+            ciba_mode: poll
+            client_registration: dynamic_client
+            configuration: ./certification/fapi/plan.json
+          - plan: fapi-ciba-id1-test-plan
+            client_auth_type: mtls
+            fapi_profile: plain_fapi
+            ciba_mode: ping
+            client_registration: dynamic_client
+            configuration: ./certification/fapi/plan.json
+
+          # Extensive
+          - plan: oidcc-test-plan
+            response_type: code
+            client_auth_type: client_secret_basic
+            configuration: ./certification/oidc/plan.json
+            client_registration: dynamic_client
+            response_mode: default
+            skip: oidcc-server-rotate-keys
+          - plan: oidcc-test-plan
+            response_type: code id_token
+            client_auth_type: client_secret_basic
+            configuration: ./certification/oidc/plan.json
+            client_registration: dynamic_client
+            response_mode: default
+            skip: oidcc-server-rotate-keys
+          - plan: oidcc-test-plan
+            response_type: code id_token token
+            client_auth_type: client_secret_basic
+            configuration: ./certification/oidc/plan.json
+            client_registration: dynamic_client
+            response_mode: default
+            skip: oidcc-server-rotate-keys
+          - plan: oidcc-test-plan
+            response_type: code token
+            client_auth_type: client_secret_basic
+            configuration: ./certification/oidc/plan.json
+            client_registration: dynamic_client
+            response_mode: default
+            skip: oidcc-server-rotate-keys
+          - plan: oidcc-test-plan
+            response_type: code
+            client_auth_type: client_secret_post
+            configuration: ./certification/oidc/plan.json
+            client_registration: dynamic_client
+            response_mode: default
+            skip: oidcc-server-rotate-keys
+          - plan: oidcc-test-plan
+            response_type: code id_token
+            client_auth_type: client_secret_post
+            configuration: ./certification/oidc/plan.json
+            client_registration: dynamic_client
+            response_mode: default
+            skip: oidcc-server-rotate-keys
+          - plan: oidcc-test-plan
+            response_type: code id_token token
+            client_auth_type: client_secret_post
+            configuration: ./certification/oidc/plan.json
+            client_registration: dynamic_client
+            response_mode: default
+            skip: oidcc-server-rotate-keys
+          - plan: oidcc-test-plan
+            response_type: code token
+            client_auth_type: client_secret_post
+            configuration: ./certification/oidc/plan.json
+            client_registration: dynamic_client
+            response_mode: default
+            skip: oidcc-server-rotate-keys
+          - plan: oidcc-test-plan
+            response_type: code
+            client_auth_type: client_secret_jwt
+            configuration: ./certification/oidc/plan.json
+            client_registration: dynamic_client
+            response_mode: default
+            skip: oidcc-server-rotate-keys
+          - plan: oidcc-test-plan
+            response_type: code id_token
+            client_auth_type: client_secret_jwt
+            configuration: ./certification/oidc/plan.json
+            client_registration: dynamic_client
+            response_mode: default
+            skip: oidcc-server-rotate-keys
+          - plan: oidcc-test-plan
+            response_type: code id_token token
+            client_auth_type: client_secret_jwt
+            configuration: ./certification/oidc/plan.json
+            client_registration: dynamic_client
+            response_mode: default
+            skip: oidcc-server-rotate-keys
+          - plan: oidcc-test-plan
+            response_type: code token
+            client_auth_type: client_secret_jwt
+            configuration: ./certification/oidc/plan.json
+            client_registration: dynamic_client
+            response_mode: default
+            skip: oidcc-server-rotate-keys
+          - plan: oidcc-test-plan
+            response_type: code
+            client_auth_type: private_key_jwt
+            configuration: ./certification/oidc/plan.json
+            client_registration: dynamic_client
+            response_mode: default
+            skip: oidcc-server-rotate-keys
+          - plan: oidcc-test-plan
+            response_type: code id_token
+            client_auth_type: private_key_jwt
+            configuration: ./certification/oidc/plan.json
+            client_registration: dynamic_client
+            response_mode: default
+            skip: oidcc-server-rotate-keys
+          - plan: oidcc-test-plan
+            response_type: code id_token token
+            client_auth_type: private_key_jwt
+            configuration: ./certification/oidc/plan.json
+            client_registration: dynamic_client
+            response_mode: default
+            skip: oidcc-server-rotate-keys
+          - plan: oidcc-test-plan
+            response_type: code token
+            client_auth_type: private_key_jwt
+            configuration: ./certification/oidc/plan.json
+            client_registration: dynamic_client
+            response_mode: default
+            skip: oidcc-server-rotate-keys
+          - plan: oidcc-test-plan
+            response_type: id_token
+            client_auth_type: none
+            configuration: ./certification/oidc/plan.json
+            client_registration: dynamic_client
+            response_mode: default
+            skip: oidcc-server-rotate-keys
+          - plan: oidcc-test-plan
+            response_type: id_token token
+            client_auth_type: none
+            configuration: ./certification/oidc/plan.json
+            client_registration: dynamic_client
+            response_mode: default
+            skip: oidcc-server-rotate-keys
+    steps:
+      - name: Checkout
+        uses: actions/checkout@master
+      - name: Setup node
+        uses: actions/setup-node@v3
+        with:
+          node-version: 16
+          check-latest: true
+          cache: 'npm'
+      - run: npm i -g npm
+      - run: npm clean-install
+      - name: Run oidc-provider (OIDC)
+        run: npx c8 node certification/oidc/docker &
+        if: ${{ startsWith(matrix.setup.plan, 'oidcc') }}
+        env:
+          PORT: 3000
+          ISSUER: https://172.17.0.1:3000
+          NODE_TLS_REJECT_UNAUTHORIZED: 0
+      - name: Run oidc-provider (FAPI)
+        run: npx c8 node certification/fapi &
+        if: ${{ startsWith(matrix.setup.plan, 'fapi') }}
+        env:
+          ISSUER: https://172.17.0.1:3000
+          PORT: 3000
+          NODE_OPTIONS: --tls-cipher-list="ECDHE-ECDSA-AES128-GCM-SHA256 ECDHE-ECDSA-AES256-GCM-SHA384 ECDHE-RSA-AES128-GCM-SHA256 ECDHE-RSA-AES256-GCM-SHA384"
+          NODE_TLS_REJECT_UNAUTHORIZED: 0
+      - name: Set Conformance Suite Version
+        run: |
+          export VERSION=($(curl --silent "https://gitlab.com/api/v4/projects/4175605/releases" | jq -r '.[0].tag_name'))
+          echo "VERSION=$VERSION" >> $GITHUB_ENV
+      - name: Load Cached Conformance Suite Build
+        uses: actions/cache@v3
+        id: cache
+        with:
+          path: ./conformance-suite
+          key: ${{ needs.build-conformance-suite.outputs.cache-key }}
+      - name: Abort if Conformance Suite isn't cached
+        if: ${{ steps.cache.outputs.cache-hit != 'true' }}
+        uses: actions/github-script@v6
+        with:
+          script: |
+              core.setFailed('Conformance Suite cache hit failed')
+      - name: Run Conformance Suite
+        working-directory: ./conformance-suite
+        run: |
+          docker-compose -f docker-compose-dev.yml up -d
+          while ! curl -skfail https://localhost.emobix.co.uk:8443/api/runner/available >/dev/null; do sleep 2; done
+      - name: Adjust configuration files for CI
+        run: |
+          sed -i -e 's/op.panva.cz/172.17.0.1:3000/g' certification/oidc/plan.json
+          sed -i -e 's/mtls.fapi.panva.cz/172.17.0.1:3000/g' certification/fapi/plan.json
+          sed -i -e 's/fapi.panva.cz/172.17.0.1:3000/g' certification/fapi/plan.json
+      - name: Run the plan
+        run: npx mocha --delay --timeout 0 --retries 0 certification/runner
+        env:
+          NODE_TLS_REJECT_UNAUTHORIZED: 0
+      - name: Upload test artifacts
+        uses: actions/upload-artifact@v2
+        with:
+          path: export-*.zip
+          name: failed certification html results
+          if-no-files-found: ignore
+        if: ${{ always() }}
+      - name: Stop Conformance Suite
+        working-directory: ./conformance-suite
+        run: |
+          killall -SIGINT node
+          docker-compose -f docker-compose-dev.yml down
+          sudo rm -rf mongo
+      - uses: actions/upload-artifact@v2
+        with:
+          if-no-files-found: warn
+          retention-days: 1
+          name: coverage-data
+          path: coverage/
+
+  coverage:
+    runs-on: ubuntu-latest
+    needs:
+      - test
+      - conformance-suite
+    steps:
+      - name: Checkout
+        uses: actions/checkout@master
+      - name: Setup node
+        uses: actions/setup-node@v3
+        with:
+          node-version: 16
+          check-latest: true
+          cache: 'npm'
+      - run: npm i -g npm
+      - run: npm clean-install
+      - uses: actions/download-artifact@v2
+        with:
+          name: coverage-data
+          path: coverage/
+      - run: npx c8 report --reporter=lcov --reporter=text-summary
+      - uses: actions/upload-artifact@v2
+        with:
+          if-no-files-found: warn
+          name: coverage-report
+          path: coverage/lcov-report/
+
+  deploy:
+    if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' && github.repository == 'panva/node-oidc-provider' }}
+    runs-on: ubuntu-latest
+    needs:
+      - test
+      - conformance-suite
+    strategy:
+      fail-fast: false
+      matrix:
+        app:
+          - radiant-refuge-93411
+          - powerful-cove-31049
+    steps:
+      - name: Checkout
+        uses: actions/checkout@master
+      - uses: actions/setup-ruby@v1
+        with:
+          ruby-version: 2.x
+      - run: gem install dpl-heroku -v 1.10.14
+      - run: dpl --provider=heroku --strategy=api --api-key=${{ secrets.HEROKU_AUTH_TOKEN }} --app=${{ matrix.app }}

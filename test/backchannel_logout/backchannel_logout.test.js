@@ -1,6 +1,7 @@
+const { strict: assert } = require('assert');
 const { parse: parseUrl } = require('url');
 
-const sinon = require('sinon');
+const sinon = require('sinon').createSandbox();
 const { expect } = require('chai');
 const base64url = require('base64url');
 const nock = require('nock');
@@ -11,10 +12,7 @@ describe('Back-Channel Logout 1.0', () => {
   before(bootstrap(__dirname));
 
   afterEach(nock.cleanAll);
-  afterEach(async function () {
-    const client = await this.provider.Client.find('client');
-    if (client.backchannelLogout.restore) client.backchannelLogout.restore();
-  });
+  afterEach(sinon.restore);
 
   describe('Client#backchannelLogout', () => {
     it('triggers the call', async function () {
@@ -23,16 +21,50 @@ describe('Back-Channel Logout 1.0', () => {
       nock('https://client.example.com/')
         .filteringRequestBody((body) => {
           expect(body).to.match(/^logout_token=(([\w-]+\.?){3})$/);
+          const header = JSON.parse(base64url.decode(RegExp.$1.split('.')[0]));
+          expect(header).to.have.property('typ', 'logout+jwt');
           const decoded = JSON.parse(base64url.decode(RegExp.$1.split('.')[1]));
-          expect(decoded).to.have.all.keys('sub', 'events', 'iat', 'aud', 'iss', 'jti');
+          expect(decoded).to.have.all.keys('sub', 'events', 'iat', 'aud', 'iss', 'jti', 'sid');
           expect(decoded).to.have.property('events').and.eql({ 'http://schemas.openid.net/event/backchannel-logout': {} });
           expect(decoded).to.have.property('aud', 'client');
           expect(decoded).to.have.property('sub', 'subject');
+          expect(decoded).to.have.property('sid', 'foo');
         })
-        .post('/backchannel_logout')
-        .reply(204);
+        .post('/backchannel_logout', () => true)
+        .reply(200);
 
-      return client.backchannelLogout('subject');
+      return client.backchannelLogout('subject', 'foo');
+    });
+
+    it('omits sid when its not required', async function () {
+      const client = await this.provider.Client.find('no-sid');
+
+      nock('https://no-sid.example.com/')
+        .filteringRequestBody((body) => {
+          expect(body).to.match(/^logout_token=(([\w-]+\.?){3})$/);
+          const decoded = JSON.parse(base64url.decode(RegExp.$1.split('.')[1]));
+          expect(decoded).to.have.all.keys('sub', 'events', 'iat', 'aud', 'iss', 'jti');
+          expect(decoded).to.have.property('events').and.eql({ 'http://schemas.openid.net/event/backchannel-logout': {} });
+          expect(decoded).to.have.property('aud', 'no-sid');
+          expect(decoded).to.have.property('sub', 'subject');
+          expect(decoded).not.to.have.property('sid');
+        })
+        .post('/backchannel_logout', () => true)
+        .reply(200);
+
+      return client.backchannelLogout('subject', 'foo');
+    });
+
+    it('handles non-200 OK responses', async function () {
+      const client = await this.provider.Client.find('no-sid');
+
+      nock('https://no-sid.example.com/')
+        .post('/backchannel_logout')
+        .reply(500);
+
+      return assert.rejects(client.backchannelLogout('subject', 'foo'), {
+        message: 'expected 200 OK from https://no-sid.example.com/backchannel_logout, got: 500 Internal Server Error',
+      });
     });
   });
 
@@ -48,23 +80,28 @@ describe('Back-Channel Logout 1.0', () => {
   });
 
   describe('end_session extension', () => {
-    beforeEach(function () { return this.login(); });
+    beforeEach(function () { return this.login({ scope: 'openid offline_access' }); });
     afterEach(function () { return this.logout(); });
+
+    bootstrap.skipConsent();
 
     beforeEach(function () {
       return this.agent.get('/auth')
         .query({
           client_id: 'client',
-          scope: 'openid',
+          scope: 'openid offline_access',
+          prompt: 'consent',
           nonce: String(Math.random()),
           response_type: 'code id_token',
           redirect_uri: 'https://client.example.com/cb',
         })
-        .expect(302)
+        .expect(303)
         .expect((response) => {
-          const { query: { code, id_token: idToken } } = parseUrl(response.headers.location.replace('#', '?'), true);
-          this.idToken = idToken;
-          this.code = code;
+          const { query } = parseUrl(response.headers.location.replace('#', '?'), true);
+          expect(query).to.have.property('code');
+          expect(query).to.have.property('id_token');
+          this.idToken = query.id_token;
+          this.code = query.code;
         });
     });
 
@@ -119,7 +156,7 @@ describe('Back-Channel Logout 1.0', () => {
 
     it('triggers the backchannelLogout for all visited clients [when global logout]', async function () {
       const session = this.getSession();
-      session.logout = { secret: '123', clientId: 'client', postLogoutRedirectUri: '/' };
+      session.state = { secret: '123', clientId: 'client', postLogoutRedirectUri: '/' };
       const params = { logout: 'yes', xsrf: '123' };
       const client = await this.provider.Client.find('client');
       const client2 = await this.provider.Client.find('second-client');
@@ -129,19 +166,19 @@ describe('Back-Channel Logout 1.0', () => {
 
       nock('https://client.example.com/')
         .post('/backchannel_logout')
-        .reply(204);
+        .reply(200);
 
       const successSpy = sinon.spy();
       this.provider.once('backchannel.success', successSpy);
       const errorSpy = sinon.spy();
       this.provider.once('backchannel.error', errorSpy);
 
-      const accountId = session.account;
+      const { accountId } = session;
 
-      return this.agent.post('/session/end')
+      return this.agent.post('/session/end/confirm')
         .send(params)
         .type('form')
-        .expect(302)
+        .expect(303)
         .expect(() => {
           (() => {
             const { sid } = session.authorizations.client;
@@ -162,7 +199,7 @@ describe('Back-Channel Logout 1.0', () => {
 
     it('still triggers the backchannelLogout for the specific client [when no global logout]', async function () {
       const session = this.getSession();
-      session.logout = { secret: '123', clientId: 'client', postLogoutRedirectUri: '/' };
+      session.state = { secret: '123', clientId: 'client', postLogoutRedirectUri: '/' };
       const params = { xsrf: '123' };
       const client = await this.provider.Client.find('client');
       const client2 = await this.provider.Client.find('second-client');
@@ -170,13 +207,13 @@ describe('Back-Channel Logout 1.0', () => {
       sinon.spy(client, 'backchannelLogout');
       sinon.spy(client2, 'backchannelLogout');
 
-      const accountId = session.account;
+      const { accountId } = session;
       const { sid } = session.authorizations.client;
 
-      return this.agent.post('/session/end')
+      return this.agent.post('/session/end/confirm')
         .send(params)
         .type('form')
-        .expect(302)
+        .expect(303)
         .expect(() => {
           expect(client.backchannelLogout.called).to.be.true;
           expect(client.backchannelLogout.calledWith(accountId, sid)).to.be.true;
@@ -187,7 +224,7 @@ describe('Back-Channel Logout 1.0', () => {
     });
 
     it('ignores the backchannelLogout when client does not support', async function () {
-      this.getSession().logout = { secret: '123', clientId: 'client', postLogoutRedirectUri: '/' };
+      this.getSession().state = { secret: '123', clientId: 'client', postLogoutRedirectUri: '/' };
       const params = { logout: 'yes', xsrf: '123' };
       const client = await this.provider.Client.find('client');
       const client2 = await this.provider.Client.find('second-client');
@@ -196,10 +233,10 @@ describe('Back-Channel Logout 1.0', () => {
       sinon.spy(client, 'backchannelLogout');
       sinon.spy(client2, 'backchannelLogout');
 
-      return this.agent.post('/session/end')
+      return this.agent.post('/session/end/confirm')
         .send(params)
         .type('form')
-        .expect(302)
+        .expect(303)
         .expect(() => {
           expect(client.backchannelLogout.called).to.be.false;
           client.backchannelLogout.restore();

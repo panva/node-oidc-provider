@@ -1,7 +1,7 @@
-const { clone } = require('lodash');
+const cloneDeep = require('lodash/cloneDeep');
 
-const setup = clone(require('./conform.config'));
+const setup = cloneDeep(require('./conform.config'));
 
-setup.config.features.conformIdTokenClaims = false;
+setup.config.conformIdTokenClaims = false;
 
 module.exports = setup;

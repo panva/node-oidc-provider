@@ -1,1 +1,1 @@
-web: node example/standalone.js
+web: node certification

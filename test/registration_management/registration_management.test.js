@@ -1,22 +1,20 @@
-const { omit } = require('lodash');
+const omit = require('lodash/omit');
 const sinon = require('sinon');
 const { expect } = require('chai');
 
 const bootstrap = require('../test_helper');
-const Provider = require('../../lib');
+const { Provider } = require('../../lib');
 
 describe('OAuth 2.0 Dynamic Client Registration Management Protocol', () => {
   before(bootstrap(__dirname));
 
   // setup does not have the provider;
 
-  function setup(meta) {
-    const props = Object.assign({
-      redirect_uris: ['https://client.example.com/cb'],
-    }, meta);
+  function setup(metadata) {
+    const props = { redirect_uris: ['https://client.example.com/cb'], ...metadata };
 
     return this.agent.post('/reg').send(props).expect(201)
-      .then(res => res.body);
+      .then((res) => res.body);
   }
 
   describe('feature flag', () => {
@@ -24,7 +22,7 @@ describe('OAuth 2.0 Dynamic Client Registration Management Protocol', () => {
       expect(() => {
         new Provider('http://localhost', { // eslint-disable-line no-new
           features: {
-            registrationManagement: true,
+            registrationManagement: { enabled: true },
           },
         });
       }).to.throw('registrationManagement is only available in conjuction with registration');
@@ -46,8 +44,7 @@ describe('OAuth 2.0 Dynamic Client Registration Management Protocol', () => {
         }))
         .expect(200)
         .expect('content-type', /application\/json/)
-        .expect('pragma', 'no-cache')
-        .expect('cache-control', 'no-cache, no-store')
+        .expect('cache-control', 'no-store')
         .expect((res) => {
           expect(res.body).to.have.property('registration_access_token', client.registration_access_token);
           expect(res.body).to.have.property('registration_client_uri', client.registration_client_uri);
@@ -67,13 +64,13 @@ describe('OAuth 2.0 Dynamic Client Registration Management Protocol', () => {
     it('rejects calls with no registration access token', async function () {
       const client = await setup.call(this, {});
       return this.agent.put(`/reg/${client.client_id}`)
-        .expect(this.failWith(400, 'invalid_request', 'no bearer auth mechanism provided'));
+        .expect(this.failWith(400, 'invalid_request', 'no access token provided'));
     });
 
     it('populates ctx.oidc.entities', function (done) {
       this.provider.use(this.assertOnce((ctx) => {
         expect(ctx.oidc.entities).to.have.keys('Client', 'RegistrationAccessToken');
-      }, done, ctx => ctx.method === 'PUT'));
+      }, done, (ctx) => ctx.method === 'PUT'));
 
       (async () => {
         const client = await setup.call(this, {});
@@ -85,8 +82,6 @@ describe('OAuth 2.0 Dynamic Client Registration Management Protocol', () => {
 
     it('allows for properties to be deleted', async function () {
       const client = await setup.call(this, { userinfo_signed_response_alg: 'RS256' });
-      // removing userinfo_signed_response_alg and having it defaulted
-      // console.log(client);
       return this.agent.put(`/reg/${client.client_id}`)
         .auth(client.registration_access_token, { type: 'bearer' })
         .send(updateProperties(client, {
@@ -108,22 +103,20 @@ describe('OAuth 2.0 Dynamic Client Registration Management Protocol', () => {
         .expect(this.failWith(400, 'invalid_request', "provided client_secret does not match the authenticated client's one"));
     });
 
-    it('must contain all previous properties', async function () {
+    it('allows for properties to be deleted by omission', async function () {
       const client = await setup.call(this, { userinfo_signed_response_alg: 'RS256' });
-      // removing userinfo_signed_response_alg and having it defaulted
-      // console.log(client);
+      delete client.userinfo_signed_response_alg;
       return this.agent.put(`/reg/${client.client_id}`)
         .auth(client.registration_access_token, { type: 'bearer' })
-        .send(updateProperties(client, {
-          userinfo_signed_response_alg: undefined,
-        }))
-        .expect(this.failWith(400, 'invalid_request', 'userinfo_signed_response_alg must be provided'));
+        .send(updateProperties(client))
+        .expect(200)
+        .expect((res) => {
+          expect(res.body).not.to.have.property('userinfo_signed_response_alg');
+        });
     });
 
     it('provides a secret if suddently needed', async function () {
       const client = await setup.call(this, { token_endpoint_auth_method: 'none', response_types: ['id_token'], grant_types: ['implicit'] });
-      // removing userinfo_signed_response_alg and having it defaulted
-      // console.log(client);
       expect(client).not.to.have.property('client_secret');
       return this.agent.put(`/reg/${client.client_id}`)
         .auth(client.registration_access_token, { type: 'bearer' })
@@ -210,24 +203,26 @@ describe('OAuth 2.0 Dynamic Client Registration Management Protocol', () => {
         .send(updateProperties(client.metadata(), {
           redirect_uris: ['https://client.example.com/foobar/cb'],
         }))
-        .expect(this.failWith(403, 'invalid_request', 'this client is not allowed to update its records'));
+        .expect(this.failWith(403, 'invalid_request', 'client does not have permission to update its record'));
     });
 
     describe('rotateRegistrationAccessToken', () => {
       before(function () {
         const conf = i(this.provider).configuration();
-        conf.features.registrationManagement = { rotateRegistrationAccessToken: true };
+        conf.features.registrationManagement = {
+          enabled: true, rotateRegistrationAccessToken: true,
+        };
       });
 
       after(function () {
         const conf = i(this.provider).configuration();
-        conf.features.registrationManagement = true;
+        conf.features.registrationManagement = { enabled: true };
       });
 
       it('destroys the old RegistrationAccessToken', async function () {
         const client = await setup.call(this, {});
         const spy = sinon.spy();
-        this.provider.once('token.revoked', spy);
+        this.provider.once('registration_access_token.destroyed', spy);
 
         return this.agent.put(`/reg/${client.client_id}`)
           .auth(client.registration_access_token, { type: 'bearer' })
@@ -243,7 +238,7 @@ describe('OAuth 2.0 Dynamic Client Registration Management Protocol', () => {
           expect(ctx.oidc.entities).to.contain.keys('RotatedRegistrationAccessToken', 'RegistrationAccessToken');
           expect(ctx.oidc.entities.RotatedRegistrationAccessToken)
             .not.to.eql(ctx.oidc.entities.RegistrationAccessToken);
-        }, done, ctx => ctx.method === 'PUT'));
+        }, done, (ctx) => ctx.method === 'PUT'));
 
         (async () => {
           const client = await setup.call(this, {});
@@ -256,7 +251,7 @@ describe('OAuth 2.0 Dynamic Client Registration Management Protocol', () => {
       it('issues and returns new RegistrationAccessToken', async function () {
         const client = await setup.call(this, {});
         const spy = sinon.spy();
-        this.provider.once('token.issued', spy);
+        this.provider.once('registration_access_token.saved', spy);
 
         return this.agent.put(`/reg/${client.client_id}`)
           .auth(client.registration_access_token, { type: 'bearer' })
@@ -273,20 +268,23 @@ describe('OAuth 2.0 Dynamic Client Registration Management Protocol', () => {
   });
 
   describe('Client Delete Request', () => {
-    it('responds w/ empty 204 and nocache headers', async function () {
+    it('responds w/ empty 204 and nocache headers and removes the registration access token', async function () {
       const client = await setup.call(this, {});
-      return this.agent.del(`/reg/${client.client_id}`)
+      await this.agent.del(`/reg/${client.client_id}`)
         .auth(client.registration_access_token, { type: 'bearer' })
-        .expect('pragma', 'no-cache')
-        .expect('cache-control', 'no-cache, no-store')
+        .expect('cache-control', 'no-store')
         .expect('') // empty body
         .expect(204);
+
+      expect(
+        await this.provider.RegistrationAccessToken.find(client.registration_access_token),
+      ).to.be.undefined;
     });
 
     it('populates ctx.oidc.entities', function (done) {
       this.provider.use(this.assertOnce((ctx) => {
         expect(ctx.oidc.entities).to.have.keys('Client', 'RegistrationAccessToken');
-      }, done, ctx => ctx.method === 'DELETE'));
+      }, done, (ctx) => ctx.method === 'DELETE'));
 
       (async () => {
         const client = await setup.call(this, {});
@@ -318,7 +316,7 @@ describe('OAuth 2.0 Dynamic Client Registration Management Protocol', () => {
     it('rejects calls with no registration access token', async function () {
       const client = await setup.call(this, {});
       return this.agent.del(`/reg/${client.client_id}`)
-        .expect(this.failWith(400, 'invalid_request', 'no bearer auth mechanism provided'));
+        .expect(this.failWith(400, 'invalid_request', 'no access token provided'));
     });
 
     it('cannot delete non-dynamic clients', async function () {
@@ -326,7 +324,7 @@ describe('OAuth 2.0 Dynamic Client Registration Management Protocol', () => {
       const bearer = await rat.save();
       return this.agent.del('/reg/client')
         .auth(bearer, { type: 'bearer' })
-        .expect(this.failWith(403, 'invalid_request', 'this client is not allowed to delete itself'));
+        .expect(this.failWith(403, 'invalid_request', 'client does not have permission to delete its record'));
     });
   });
 });

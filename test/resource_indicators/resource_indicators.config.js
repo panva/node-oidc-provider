@@ -1,77 +1,88 @@
-const { URL } = require('url');
-
-const { cloneDeep } = require('lodash');
+const cloneDeep = require('lodash/cloneDeep');
+const merge = require('lodash/merge');
 
 const config = cloneDeep(require('../default.config'));
-const { errors: { InvalidTarget } } = require('../../lib');
+const errors = require('../../lib/helpers/errors');
 
-config.whitelistedJWA.requestObjectSigningAlgValues = ['none'];
-config.features = {
-  request: true,
-  clientCredentials: true,
-  deviceFlow: true,
-  alwaysIssueRefresh: true,
-  resourceIndicators: true,
-};
+merge(config, {
+  issueRefreshToken() {
+    return true;
+  },
+  features: {
+    introspection: { enabled: true },
+    clientCredentials: { enabled: true },
+    deviceFlow: { enabled: true },
+    ciba: {
+      enabled: true,
+      processLoginHint(ctx, loginHint) {
+        return loginHint;
+      },
+      validateBindingMessage() {},
+      validateRequestContext() {},
+      verifyUserCode() {},
+      async triggerAuthenticationDevice(ctx, request) {
+        const grant = new ctx.oidc.provider.Grant({
+          clientId: request.clientId, accountId: request.accountId,
+        });
+        grant.addOIDCScope(ctx.oidc.requestParamScopes);
 
-config.audiences = ({ oidc: { params, route, entities } }, sub, token, use) => {
-  if (['access_token', 'client_credentials'].includes(use)) {
-    const resourceParam = params.resource;
-    let resources = [];
-    if (Array.isArray(resourceParam)) {
-      resources = resources.concat(resourceParam);
-    } else if (resourceParam) {
-      resources.push(resourceParam);
-    }
+        const resources = Array.isArray(request.resource) ? request.resource : [request.resource];
+        // eslint-disable-next-line no-restricted-syntax
+        for (const resource of resources) {
+          grant.addResourceScope(resource, request.scope);
+        }
 
-    if (route === 'token') {
-      const { grant_type } = params;
-      let grantedResource;
-      switch (grant_type) {
-        case 'authorization_code':
-          grantedResource = entities.AuthorizationCode.resource;
-          break;
-        case 'refresh_token':
-          grantedResource = entities.RefreshToken.resource;
-          break;
-        case 'urn:ietf:params:oauth:grant-type:device_code':
-          grantedResource = entities.DeviceCode.resource;
-          break;
-        default:
-      }
-      if (Array.isArray(grantedResource)) {
-        resources = resources.concat(grantedResource);
-      } else if (grantedResource) {
-        resources.push(grantedResource);
-      }
-    }
+        await grant.save();
+        return ctx.oidc.provider.backchannelResult(request, grant.jti);
+      },
+    },
+    resourceIndicators: {
+      enabled: true,
+      async useGrantedResource(ctx) {
+        return ctx.oidc.body && ctx.oidc.body.usegranted;
+      },
+      getResourceServerInfo(ctx, resource) {
+        if (resource.includes('wl')) {
+          return {
+            audience: resource,
+            scope: 'api:read api:write',
+          };
+        }
 
-    resources.forEach((aud) => {
-      const { protocol } = new URL(aud);
-      if (!['https:', 'urn:'].includes(protocol)) {
-        throw new InvalidTarget('resources must be https URIs or URNs');
-      }
-    });
+        throw new errors.InvalidTarget();
+      },
+      defaultResource(ctx) {
+        if (ctx.oidc.body && ctx.oidc.body.nodefault) {
+          return undefined;
+        }
 
-    return resources;
-  }
-
-  return undefined;
-};
+        return 'urn:wl:default';
+      },
+    },
+  },
+});
 
 module.exports = {
   config,
-  client: {
-    client_id: 'client',
-    token_endpoint_auth_method: 'none',
-    redirect_uris: ['https://client.example.com/cb'],
-    grant_types: [
-      'implicit',
-      'authorization_code',
-      'refresh_token',
-      'urn:ietf:params:oauth:grant-type:device_code',
-      'client_credentials',
-    ],
-    response_types: ['id_token token', 'code'],
-  },
+  clients: [
+    {
+      client_id: 'client',
+      token_endpoint_auth_method: 'none',
+      redirect_uris: ['https://client.example.com/cb'],
+      response_types: [
+        'id_token',
+        'id_token token',
+        'code',
+      ],
+      backchannel_token_delivery_mode: 'poll',
+      grant_types: [
+        'implicit',
+        'refresh_token',
+        'client_credentials',
+        'authorization_code',
+        'urn:ietf:params:oauth:grant-type:device_code',
+        'urn:openid:params:grant-type:ciba',
+      ],
+    },
+  ],
 };

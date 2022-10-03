@@ -1,28 +1,38 @@
-const { clone } = require('lodash');
+const cloneDeep = require('lodash/cloneDeep');
+const merge = require('lodash/merge');
 
-const config = clone(require('../default.config'));
-const { interactionCheck } = require('../../lib/helpers/defaults');
+const config = cloneDeep(require('../default.config'));
+const { Check, Prompt, base } = require('../../lib/helpers/interaction_policy');
 
-config.extraParams = ['custom'];
-config.features = { sessionManagement: true };
+config.extraParams = ['triggerCustomFail', 'triggerUnrequestable'];
+merge(config.features, {
+  rpInitiatedLogout: { enabled: false },
+});
 
-config.prompts = ['consent', 'login', 'none', 'custom'];
-config.interactionCheck = async (ctx) => {
-  let interaction = await interactionCheck(ctx);
+const policy = base();
 
-  if (!interaction) {
-    if (ctx.oidc.params.custom) {
-      interaction = {
-        error: 'error_foo',
-        error_description: 'error_description_foo',
-        reason: 'reason_foo',
-        reason_description: 'reason_description_foo.',
-      };
+const check = new Check(
+  'reason_foo',
+  'error_description_foo',
+  'error_foo',
+  (ctx) => {
+    if (ctx.oidc.params.triggerCustomFail) {
+      return true;
     }
-  }
+    return false;
+  },
+);
 
-  return interaction;
-};
+policy.get('login').checks.add(check);
+policy.add(new Prompt({ name: 'custom', requestable: true }));
+policy.add(new Prompt({ name: 'unrequestable', requestable: false }, new Check('un_foo', 'un_foo_desc', 'un_foo_err', (ctx) => {
+  if (ctx.oidc.params.triggerUnrequestable && (!ctx.oidc.result || !('foo' in ctx.oidc.result))) {
+    return true;
+  }
+  return false;
+})), 0);
+
+config.interactions = { policy };
 
 module.exports = {
   config,

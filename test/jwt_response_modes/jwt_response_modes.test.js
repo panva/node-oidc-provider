@@ -39,7 +39,7 @@ describe('configuration features.jwtResponseModes', () => {
       });
 
       await this.wrap({ route, auth, verb: 'get' })
-        .expect(302)
+        .expect(303)
         .expect(auth.validateFragment)
         .expect(auth.validatePresence(['response']))
         .expect(auth.validateClientLocation)
@@ -63,7 +63,7 @@ describe('configuration features.jwtResponseModes', () => {
       });
 
       await this.wrap({ route, auth, verb: 'get' })
-        .expect(302)
+        .expect(303)
         .expect(auth.validatePresence(['response']))
         .expect(auth.validateClientLocation)
         .expect(({ headers: { location } }) => {
@@ -86,7 +86,7 @@ describe('configuration features.jwtResponseModes', () => {
       });
 
       await this.wrap({ route, auth, verb: 'get' })
-        .expect(302)
+        .expect(303)
         .expect(auth.validatePresence(['response']))
         .expect(auth.validateClientLocation)
         .expect(({ headers: { location } }) => {
@@ -94,6 +94,54 @@ describe('configuration features.jwtResponseModes', () => {
           const { payload } = decode(response);
           expect(payload).to.have.all.keys('exp', 'aud', 'state', 'iss');
         });
+    });
+
+    describe('when secret is expired', () => {
+      it('defaults to fragment for implicit and hybrid response types', async function () {
+        const auth = new this.AuthorizationRequest({
+          client_id: 'client-expired',
+          response_type: 'id_token token',
+          response_mode: 'jwt',
+          scope: 'openid',
+        });
+
+        await this.wrap({ route, auth, verb: 'get' })
+          .expect(303)
+          .expect(auth.validateFragment)
+          .expect(auth.validateClientLocation)
+          .expect(auth.validateError('invalid_client'))
+          .expect(auth.validateErrorDescription('client secret is expired, cannot issue a JWT Authorization response'));
+      });
+
+      it('defaults to query for code response type', async function () {
+        const auth = new this.AuthorizationRequest({
+          response_type: 'code',
+          response_mode: 'jwt',
+          scope: 'openid',
+          client_id: 'client-expired',
+        });
+
+        await this.wrap({ route, auth, verb: 'get' })
+          .expect(303)
+          .expect(auth.validateClientLocation)
+          .expect(auth.validateError('invalid_client'))
+          .expect(auth.validateErrorDescription('client secret is expired, cannot issue a JWT Authorization response'));
+      });
+
+      it('defaults to query for none response type', async function () {
+        const auth = new this.AuthorizationRequest({
+          response_type: 'none',
+          response_mode: 'jwt',
+          scope: 'openid',
+          client_id: 'client-expired',
+        });
+
+        await this.wrap({ route, auth, verb: 'get' })
+          .expect(303)
+          .expect(auth.validateClientLocation)
+          .expect(auth.validateError('invalid_client'))
+          .expect(auth.validateErrorDescription('client secret is expired, cannot issue a JWT Authorization response'));
+      });
     });
   });
 
@@ -109,7 +157,7 @@ describe('configuration features.jwtResponseModes', () => {
       });
 
       await this.wrap({ route, auth, verb: 'get' })
-        .expect(302)
+        .expect(303)
         .expect(auth.validatePresence(['response']))
         .expect(auth.validateClientLocation)
         .expect(({ headers: { location } }) => {
@@ -119,6 +167,21 @@ describe('configuration features.jwtResponseModes', () => {
           expect(payload.error).to.eql('invalid_request');
           expect(payload.error_description).to.eql('response_mode not allowed for this response_type unless encrypted');
         });
+    });
+
+    it('uses the query part when expired', async function () {
+      const auth = new this.AuthorizationRequest({
+        response_type: 'id_token token',
+        response_mode: 'query.jwt',
+        scope: 'openid',
+        client_id: 'client-expired',
+      });
+
+      await this.wrap({ route, auth, verb: 'get' })
+        .expect(303)
+        .expect(auth.validateClientLocation)
+        .expect(auth.validateError('invalid_client'))
+        .expect(auth.validateErrorDescription('client secret is expired, cannot issue a JWT Authorization response'));
     });
 
     it('is allowed for implicit and hybrid response types if encrypted', async function () {
@@ -132,7 +195,7 @@ describe('configuration features.jwtResponseModes', () => {
       });
 
       await this.wrap({ route, auth, verb: 'get' })
-        .expect(302)
+        .expect(303)
         .expect(auth.validatePresence(['response']))
         .expect(auth.validateClientLocation);
 
@@ -147,7 +210,7 @@ describe('configuration features.jwtResponseModes', () => {
       });
 
       await this.wrap({ route, auth, verb: 'get' })
-        .expect(302)
+        .expect(303)
         .expect(auth.validatePresence(['response']))
         .expect(auth.validateClientLocation)
         .expect(({ headers: { location } }) => {
@@ -170,7 +233,7 @@ describe('configuration features.jwtResponseModes', () => {
       });
 
       await this.wrap({ route, auth, verb: 'get' })
-        .expect(302)
+        .expect(303)
         .expect(auth.validatePresence(['response']))
         .expect(auth.validateClientLocation)
         .expect(({ headers: { location } }) => {
@@ -178,6 +241,53 @@ describe('configuration features.jwtResponseModes', () => {
           const { payload } = decode(response);
           expect(payload).to.have.all.keys('exp', 'aud', 'state', 'iss');
         });
+    });
+  });
+
+  Object.entries({
+    'query.jwt': 303,
+    'fragment.jwt': 303,
+    'form_post.jwt': 400,
+    'web_message.jwt': 400,
+  }).forEach(([mode, errStatus]) => {
+    context(`${mode} err handling`, () => {
+      it(`responds with a ${errStatus}`, function () {
+        const auth = new this.AuthorizationRequest({
+          response_type: 'code',
+          prompt: 'none',
+          response_mode: mode,
+          scope: 'openid',
+        });
+
+        const spy = sinon.spy();
+        this.provider.once('authorization.error', spy);
+
+        return this.wrap({ route, verb: 'get', auth })
+          .expect(errStatus)
+          .expect(() => {
+            expect(spy.called).to.be.true;
+          });
+      });
+
+      it('handles expired secrets', async function () {
+        const spy = sinon.spy();
+        this.provider.once('authorization.error', spy);
+
+        const auth = new this.AuthorizationRequest({
+          response_type: 'code',
+          response_mode: mode,
+          scope: 'openid',
+          client_id: 'client-expired',
+        });
+
+        await this.wrap({ route, auth, verb: 'get' })
+          .expect(errStatus)
+          .expect(() => {
+            expect(spy.called).to.be.true;
+            expect(spy.args[0][1]).to.have.property('error', 'invalid_client');
+            expect(spy.args[0][1]).to.have.property('error_description', 'client secret is expired, cannot issue a JWT Authorization response');
+          });
+      });
     });
   });
 });
