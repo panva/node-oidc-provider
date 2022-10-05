@@ -4,7 +4,7 @@ const path = require('path');
 const https = require('https');
 
 const selfsigned = require('selfsigned').generate();
-const render = require('koa-ejs');
+const render = require('@koa/ejs');
 
 const { Provider } = require('../../lib'); // require('oidc-provider');
 const Account = require('../../example/support/account');

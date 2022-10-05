@@ -79,6 +79,7 @@
   "devDependencies": {
     "@fastify/middie": "^8.0.0",
     "@hapi/hapi": "^20.2.2",
+    "@koa/ejs": "^5.0.0",
     "babel-eslint": "^10.1.0",
     "base64url": "^3.0.1",
     "c8": "^7.11.3",
@@ -93,7 +94,6 @@
     "helmet": "^5.1.0",
     "jose2": "npm:jose@^2.0.5",
     "koa-body": "^4.2.0",
-    "koa-ejs": "^4.3.0",
     "koa-mount": "^4.0.0",
     "koa-router": "^10.1.1",
     "lodash": "^4.17.21",

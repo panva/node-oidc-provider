@@ -4,7 +4,7 @@ const { promisify } = require('util');
 const path = require('path');
 const crypto = require('crypto');
 
-const render = require('koa-ejs');
+const render = require('@koa/ejs');
 const helmet = require('helmet');
 
 const { Provider } = require('../../lib'); // require('oidc-provider');

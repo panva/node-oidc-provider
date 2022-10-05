@@ -4,7 +4,7 @@ const path = require('path');
 const { promisify } = require('util');
 
 const Koa = require('koa');
-const render = require('koa-ejs');
+const render = require('@koa/ejs');
 const helmet = require('helmet');
 const mount = require('koa-mount');
 

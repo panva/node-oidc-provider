@@ -3,7 +3,7 @@
 const path = require('path');
 const { promisify } = require('util');
 
-const render = require('koa-ejs');
+const render = require('@koa/ejs');
 const helmet = require('helmet');
 
 const { Provider } = require('../lib'); // require('oidc-provider');
