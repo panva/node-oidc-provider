@@ -22,7 +22,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@master
+        uses: actions/checkout@v3
       - name: Setup node
         uses: actions/setup-node@v3
         with:
@@ -40,7 +40,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@master
+        uses: actions/checkout@v3
       - name: Setup node
         uses: actions/setup-node@v3
         with:
@@ -75,7 +75,7 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@master
+        uses: actions/checkout@v3
       - name: Setup node
         uses: actions/setup-node@v3
         with:
@@ -85,7 +85,7 @@ jobs:
       - run: npm i -g npm
       - run: npm clean-install
       - run: npm run ci
-      - uses: actions/upload-artifact@v2
+      - uses: actions/upload-artifact@v3
         if: ${{ matrix.node-version == 16 && matrix.os == 'ubuntu-latest' }}
         with:
           if-no-files-found: warn
@@ -99,7 +99,7 @@ jobs:
       cache-key: ${{ steps.cache-key.outputs.value }}
     steps:
       - name: Checkout
-        uses: actions/checkout@master
+        uses: actions/checkout@v3
       - name: Set Conformance Suite Version from GitLab
         if: ${{ !github.event.inputs.conformance-version }}
         run: |
@@ -455,7 +455,7 @@ jobs:
             skip: oidcc-server-rotate-keys
     steps:
       - name: Checkout
-        uses: actions/checkout@master
+        uses: actions/checkout@v3
       - name: Setup node
         uses: actions/setup-node@v3
         with:
@@ -510,7 +510,7 @@ jobs:
         env:
           NODE_TLS_REJECT_UNAUTHORIZED: 0
       - name: Upload test artifacts
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v3
         with:
           path: export-*.zip
           name: failed certification html results
@@ -522,7 +522,7 @@ jobs:
           killall -SIGINT node
           docker-compose -f docker-compose-dev.yml down
           sudo rm -rf mongo
-      - uses: actions/upload-artifact@v2
+      - uses: actions/upload-artifact@v3
         with:
           if-no-files-found: warn
           retention-days: 1
@@ -536,7 +536,7 @@ jobs:
       - conformance-suite
     steps:
       - name: Checkout
-        uses: actions/checkout@master
+        uses: actions/checkout@v3
       - name: Setup node
         uses: actions/setup-node@v3
         with:
@@ -545,12 +545,12 @@ jobs:
           cache: 'npm'
       - run: npm i -g npm
       - run: npm clean-install
-      - uses: actions/download-artifact@v2
+      - uses: actions/download-artifact@v3
         with:
           name: coverage-data
           path: coverage/
       - run: npx c8 report --reporter=lcov --reporter=text-summary
-      - uses: actions/upload-artifact@v2
+      - uses: actions/upload-artifact@v3
         with:
           if-no-files-found: warn
           name: coverage-report
@@ -570,7 +570,7 @@ jobs:
           - powerful-cove-31049
     steps:
       - name: Checkout
-        uses: actions/checkout@master
+        uses: actions/checkout@v3
       - uses: actions/setup-ruby@v1
         with:
           ruby-version: 2.x
