@@ -110,7 +110,7 @@ jobs:
         run: |
           echo "VERSION=${{ github.event.inputs.conformance-version }}" >> $GITHUB_ENV
       - id: cache-key
-        run: echo "::set-output name=value::suite-${{ hashFiles('.github/workflows/test.yml') }}-${{ env.VERSION }}"
+        run: echo "value=suite-${{ hashFiles('.github/workflows/test.yml') }}-${{ env.VERSION }}" >> $GITHUB_OUTPUT
       - name: Load Cached Conformance Suite Build
         uses: actions/cache@v3
         id: cache
