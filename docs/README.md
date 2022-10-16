@@ -2330,7 +2330,7 @@ function httpOptions(url) {
   return {
     timeout: 2500,
     agent: undefined, // defaults to node's global agents (https.globalAgent or http.globalAgent)
-    lookup: undefined, // defaults to CacheableLookup (https://github.com/szmarczak/cacheable-lookup)
+    lookup: undefined, // defaults to `dns.lookup()` (https://nodejs.org/api/dns.html#dnslookuphostname-options-callback)
   };
 }
 ```

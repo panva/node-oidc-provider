@@ -56,7 +56,6 @@
   },
   "dependencies": {
     "@koa/cors": "^3.3.0",
-    "cacheable-lookup": "^6.0.4",
     "debug": "^4.3.4",
     "ejs": "^3.1.8",
     "got": "^11.8.5",
