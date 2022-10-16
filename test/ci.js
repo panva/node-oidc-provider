@@ -33,17 +33,7 @@ function pass({ mountTo, mountVia } = {}) {
 
   if (process.platform === 'linux' || !('CI' in process.env)) {
     const mountTo = '/oidc';
-    const frameworks = ['connect', 'express', 'koa'];
-
-    const [major] = process.version.slice(1).split('.').map((x) => parseInt(x, 10));
-
-    if (major >= 12) {
-      frameworks.push('hapi');
-    }
-
-    if (major >= 14) {
-      frameworks.push('fastify');
-    }
+    const frameworks = ['connect', 'express', 'koa', 'hapi', 'fastify'];
 
     for (const mountVia of frameworks) {
       await pass({ mountVia, mountTo });

@@ -37,9 +37,6 @@ jobs:
       fail-fast: false
       matrix:
         node-version:
-          - lts/erbium # 12
-          - lts/fermium # 14
-          - lts/gallium # 16
           - lts/hydrogen # 18
           - current
 
@@ -53,8 +50,6 @@ jobs:
           node-version: ${{ matrix.node-version }}
           cache: 'npm'
           check-latest: true
-      - run: npm install --global npm@8
-        if: ${{ startsWith(steps.node.outputs.node-version, 'v12') || startsWith(steps.node.outputs.node-version, 'v14') }}
       - run: npm clean-install
       - run: npm run ci
 
