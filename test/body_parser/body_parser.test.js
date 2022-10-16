@@ -1,7 +1,7 @@
 const Koa = require('koa');
 const mount = require('koa-mount');
 const supertest = require('supertest');
-const upstreamParser = require('koa-body');
+const { koaBody: upstreamParser } = require('koa-body');
 const sinon = require('sinon');
 const { expect } = require('chai');
 

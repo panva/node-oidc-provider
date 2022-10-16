@@ -5,7 +5,7 @@ const crypto = require('crypto');
 const { inspect } = require('util');
 
 const isEmpty = require('lodash/isEmpty');
-const bodyParser = require('koa-body');
+const { koaBody: bodyParser } = require('koa-body');
 const Router = require('koa-router');
 
 const { renderError } = require('../../lib/helpers/defaults')(); // make your own, you'll need it anyway

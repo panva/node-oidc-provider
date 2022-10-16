@@ -1,6 +1,7 @@
 /* eslint-disable no-console */
 
 const { createServer } = require('http');
+const { once } = require('events');
 
 const Mocha = require('mocha');
 const lookupFiles = require('mocha/lib/cli/lookup-files');
@@ -34,10 +35,8 @@ async function run() {
 
   const { MOUNT_VIA: via, MOUNT_TO: to } = process.env;
 
-  await new Promise((resolve) => {
-    global.server = createServer().listen(0, '::');
-    global.server.once('listening', resolve);
-  });
+  global.server = createServer().listen(0, '::');
+  await once(global.server, 'listening');
   await new Promise((resolve, reject) => {
     const mocha = new Mocha();
     mocha.timeout(3000);

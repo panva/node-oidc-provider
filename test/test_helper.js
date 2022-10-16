@@ -484,10 +484,8 @@ module.exports = function testHelper(dir, {
             req.originalUrl = req.url;
             req.url = req.url.replace(mountTo, '');
 
-            await new Promise((resolve) => {
-              res.on('finish', resolve);
-              callback(req, res);
-            });
+            callback(req, res);
+            await once(res, 'finish');
 
             req.url = req.url.replace('/', mountTo);
             delete req.originalUrl;

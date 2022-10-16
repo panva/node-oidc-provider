@@ -310,7 +310,7 @@ fastify.use('/oidc', oidc.callback());
 
 ### to a `hapi` application
 ```js
-// assumes @hapi/hapi ^20.0.0
+// assumes @hapi/hapi ^21.0.0
 const callback = oidc.callback();
 hapiApp.route({
   path: `/oidc/{any*}`,
@@ -320,10 +320,8 @@ hapiApp.route({
     req.originalUrl = req.url;
     req.url = req.url.replace('/oidc', '');
 
-    await new Promise((resolve) => {
-      res.on('finish', resolve);
-      callback(req, res);
-    });
+    callback(req, res);
+    await once(res, 'finish');
 
     req.url = req.url.replace('/', '/oidc');
     delete req.originalUrl;
