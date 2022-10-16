@@ -1745,21 +1745,6 @@ async function getResourceServerInfo(ctx, resourceIndicator, client) {
 }
 ```
 </details>
-<a id="get-resource-server-info-resource-server-api-with-two-scopes-and-a-v-1-local-paseto-access-token-format"></a><details><summary>(Click to expand) Resource Server (API) with two scopes and a v1.local PASETO Access Token Format.
-</summary><br>
-
-```js
-{
-  scope: 'api:read api:write',
-  accessTokenFormat: 'paseto',
-  paseto: {
-    version: 1,
-    purpose: 'local',
-    key: Buffer.from('f40dd9591646bebcb9c32aed02f5e610c2d15e1d38cde0c1fe14a55cf6bfe2d9', 'hex')
-  }
-}
-```
-</details>
 <a id="get-resource-server-info-resource-server-definition"></a><details><summary>(Click to expand) Resource Server Definition
 </summary><br>
 
@@ -1778,7 +1763,7 @@ async function getResourceServerInfo(ctx, resourceIndicator, client) {
   accessTokenTTL?: number,
   // Issued Token Format
   // Default is - opaque
-  accessTokenFormat?: 'opaque' | 'jwt' | 'paseto',
+  accessTokenFormat?: 'opaque' | 'jwt',
   // JWT Access Token Format (when accessTokenFormat is 'jwt')
   // Default is `{ sign: { alg: 'RS256' }, encrypt: false }`
   // Tokens may be signed, signed and then encrypted, or just encrypted JWTs.
@@ -1801,14 +1786,6 @@ async function getResourceServerInfo(ctx, resourceIndicator, client) {
       key: crypto.KeyObject | Buffer, // public key or shared symmetric secret to encrypt the JWT token with
       kid?: string, // OPTIONAL `kid` JOSE Header Parameter to put in the token's JWE Header
     }
-  }
-  // PASETO Access Token Format (when accessTokenFormat is 'paseto')
-  // Note: v2.local and v4.local are NOT supported
-  paseto?: {
-    version: 1 | 2 | 3 | 4,
-    purpose: 'local' | 'public',
-    key?: crypto.KeyObject, // required when purpose is 'local'
-    kid?: string, // OPTIONAL `kid` to aid in signing key selection or to put in the footer for 'local'
   }
 }
 ```
@@ -2267,7 +2244,7 @@ _**default value**_:
 
 ### extraTokenClaims
 
-Function used to assign additional claims to an Access Token when it is being issued. For `opaque` Access Tokens these claims will be stored in your storage under the `extra` property and returned by introspection as top level claims. For `jwt` or `paseto` Access Tokens these will be top level claims. Returned claims will not overwrite pre-existing top level claims.   
+Function used to assign additional claims to an Access Token when it is being issued. For `opaque` Access Tokens these claims will be stored in your storage under the `extra` property and returned by introspection as top level claims. For `jwt` Access Tokens these will be top level claims. Returned claims will not overwrite pre-existing top level claims.   
   
 
 
@@ -2323,8 +2300,7 @@ Customizer functions used before issuing a structured Access Token.
 _**default value**_:
 ```js
 {
-  jwt: undefined,
-  paseto: undefined
+  jwt: undefined
 }
 ```
 <a id="formats-customizers-to-push-additional-headers-and-payload-claims-to-a-jwt-format-access-token"></a><details><summary>(Click to expand) To push additional headers and payload claims to a `jwt` format Access Token
@@ -2336,21 +2312,6 @@ _**default value**_:
     async jwt(ctx, token, jwt) {
       jwt.header = { foo: 'bar' };
       jwt.payload.foo = 'bar';
-    }
-  }
-}
-```
-</details>
-<a id="formats-customizers-to-push-a-payload-a-footer-and-use-an-implicit-assertion-with-a-paseto-structured-access-token"></a><details><summary>(Click to expand) To push a payload, a footer, and use an implicit assertion with a PASETO structured access token
-</summary><br>
-
-```js
-{
-  customizers: {
-    paseto(ctx, token, structuredToken) {
-      structuredToken.payload.foo = 'bar';
-      structuredToken.footer = { foo: 'bar' };
-      structuredToken.assertion = 'foo'; // v3 and v4 tokens only
     }
   }
 }
