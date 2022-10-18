@@ -50,10 +50,8 @@
   ],
   "scripts": {
     "ci": "node ./test/ci",
-    "coverage": "c8 --reporter=lcov --reporter=text-summary node ./test/run",
     "heroku-postbuild": "npm install mongodb@^4.3.0 openid-client@^5.0.0",
-    "lint": "eslint lib example certification test",
-    "lint-fix": "eslint lib example certification test --fix",
+    "format": "eslint lib example certification test --fix",
     "test": "node ./test/run"
   },
   "dependencies": {
@@ -82,7 +80,6 @@
     "@koa/ejs": "^5.0.0",
     "babel-eslint": "^10.1.0",
     "base64url": "^3.0.1",
-    "c8": "^7.11.3",
     "chai": "^4.3.6",
     "clear-module": "^4.1.2",
     "connect": "^3.7.0",

@@ -1,12 +1,10 @@
 /* eslint-disable no-restricted-syntax, max-len, no-await-in-loop, no-plusplus */
 const { spawn } = require('child_process');
 
-let first = true;
-
 function pass({ mountTo, mountVia } = {}) {
   const child = spawn(
-    'c8',
-    [first ? '' : '--clean=false', 'npm', 'run', 'test'].filter(Boolean),
+    'npm',
+    ['run', 'test'],
     {
       stdio: 'inherit',
       shell: true,
@@ -19,8 +17,6 @@ function pass({ mountTo, mountVia } = {}) {
     },
   );
 
-  first = false;
-
   return new Promise((resolve, reject) => {
     child.on('close', (code) => {
       if (code === 0) {
@@ -29,21 +25,6 @@ function pass({ mountTo, mountVia } = {}) {
         reject();
       }
     });
-  });
-}
-
-function report() {
-  const child = spawn(
-    'c8',
-    ['report', '--reporter=lcov', '--reporter=text-summary'],
-    {
-      stdio: 'inherit',
-      shell: true,
-    },
-  );
-
-  return new Promise((resolve) => {
-    child.on('close', resolve);
   });
 }
 
@@ -68,8 +49,6 @@ function report() {
       await pass({ mountVia, mountTo });
     }
   }
-
-  await report();
 })().catch(() => {
   process.exitCode = 1;
 });
