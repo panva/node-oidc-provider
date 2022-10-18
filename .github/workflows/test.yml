@@ -24,6 +24,7 @@ jobs:
         with:
           node-version: 18 # lts/hydrogen
           cache: 'npm'
+          check-latest: true
       - run: npm i -g npm
       - run: npm clean-install
       - run: npm upgrade
@@ -53,6 +54,7 @@ jobs:
         with:
           node-version: ${{ matrix.node-version }}
           cache: 'npm'
+          check-latest: true
       - run: npm i -g npm
       - run: npm clean-install
       - run: npm run ci
@@ -425,6 +427,7 @@ jobs:
         with:
           node-version: 18 # lts/hydrogen
           cache: 'npm'
+          check-latest: true
       - run: npm i -g npm
       - run: npm clean-install
       - name: Run oidc-provider (OIDC)
