@@ -54,7 +54,8 @@
     "heroku-postbuild": "npm install mongodb@^4.3.0 openid-client@^5.0.0",
     "lint": "eslint lib example certification test",
     "lint-fix": "eslint lib example certification test --fix",
-    "test": "node ./test/run"
+    "test": "node ./test/run",
+    "publish:cd": "yarn build && ./node_modules/.bin/publish"
   },
   "dependencies": {
     "@koa/cors": "^3.3.0",
