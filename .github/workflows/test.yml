@@ -4,7 +4,7 @@ on:
   push:
   pull_request:
   schedule:
-    - cron:  0 9 * * 1-5
+    - cron: '55 11 * * 1'
   workflow_dispatch:
     inputs:
       conformance-version:
