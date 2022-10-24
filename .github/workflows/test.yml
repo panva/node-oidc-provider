@@ -33,7 +33,7 @@ jobs:
   test:
     name: Node Tests
     runs-on: ubuntu-latest
-    continue-on-error: ${{ matrix.experimental || false }}
+    continue-on-error: ${{ !startsWith(matrix.node-version, 'lts') }}
     strategy:
       fail-fast: false
       matrix:
@@ -42,9 +42,7 @@ jobs:
           - lts/fermium # 14
           - lts/gallium # 16
           - 18 # lts/hydrogen
-        include:
-          - experimental: true
-            node-version: current
+          - current
 
     steps:
       - name: Checkout
