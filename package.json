@@ -95,7 +95,6 @@
     "koa-router": "^10.1.1",
     "lodash": "^4.17.21",
     "mocha": "^9.2.2",
-    "mocha.parallel": "github:panva/mocha.parallel",
     "moment": "^2.29.4",
     "nock": "^13.2.8",
     "selfsigned": "^2.0.1",
