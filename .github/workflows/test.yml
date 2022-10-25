@@ -22,7 +22,7 @@ jobs:
       - name: Setup node
         uses: actions/setup-node@v3
         with:
-          node-version: 18 # lts/hydrogen
+          node-version: lts/hydrogen # 18
           cache: 'npm'
           check-latest: true
       - run: npm i -g npm
@@ -41,7 +41,7 @@ jobs:
           - lts/erbium # 12
           - lts/fermium # 14
           - lts/gallium # 16
-          - 18 # lts/hydrogen
+          - lts/hydrogen # 18
           - current
 
     steps:
@@ -423,7 +423,7 @@ jobs:
       - name: Setup node
         uses: actions/setup-node@v3
         with:
-          node-version: 18 # lts/hydrogen
+          node-version: lts/hydrogen # 18
           cache: 'npm'
           check-latest: true
       - run: npm i -g npm
