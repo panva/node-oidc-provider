@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [7.13.0](https://github.com/panva/node-oidc-provider/compare/v7.12.0...v7.13.0) (2022-10-26)
+
+
+### Features
+
+* enable v18 LTS in package.json ([e423b4d](https://github.com/panva/node-oidc-provider/commit/e423b4d87a6caf490d993e8ae4e2b428504f7d8b))
+
 ## [7.12.0](https://github.com/panva/node-oidc-provider/compare/v7.11.5...v7.12.0) (2022-09-13)
 
 
