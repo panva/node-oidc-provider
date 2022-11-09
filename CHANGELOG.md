@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [7.14.0](https://github.com/panva/node-oidc-provider/compare/v7.13.0...v7.14.0) (2022-11-09)
+
+
+### Features
+
+* graduate jwtResponseModes (JARM) feature as stable ([7b878cd](https://github.com/panva/node-oidc-provider/commit/7b878cd195da05024a45c0e347546f0d4ee862c5))
+
 ## [7.13.0](https://github.com/panva/node-oidc-provider/compare/v7.12.0...v7.13.0) (2022-10-26)
 
 
