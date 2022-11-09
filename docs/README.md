@@ -1178,18 +1178,14 @@ _**default value**_:
 
 ### features.jwtResponseModes
 
-[openid-financial-api-jarm-ID1](https://openid.net/specs/openid-financial-api-jarm-ID1.html) - JWT Secured Authorization Response Mode (JARM)  
+[JWT Secured Authorization Response Mode (JARM)](https://openid.net/specs/oauth-v2-jarm.html)  
 
-Enables JWT Secured Authorization Responses   
-  
-
-_**recommendation**_: Updates to draft specification versions are released as MINOR library versions, if you utilize these specification implementations consider using the tilde `~` operator in your package.json since breaking changes may be introduced as part of these version updates. Alternatively, [acknowledge](#features) the version and be notified of breaking changes as part of your CI.  
+Enables JWT Secured Authorization Responses  
 
 
 _**default value**_:
 ```js
 {
-  ack: undefined,
   enabled: false
 }
 ```

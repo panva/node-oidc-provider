@@ -36,6 +36,7 @@ _Note that not all features are enabled by default, check the configuration sect
 - [RFC9126 - OAuth 2.0 Pushed Authorization Requests (PAR)][par]
 - [RFC9207 - OAuth 2.0 Authorization Server Issuer Identifier in Authorization Response][iss-auth-resp]
 - [Financial-grade API Security Profile 1.0 - Part 2: Advanced (FAPI)][fapi]
+- [JWT Secured Authorization Response Mode for OAuth 2.0 (JARM)][jarm]
 - [OpenID Connect Client Initiated Backchannel Authentication Flow - Core 1.0 (CIBA)][ciba]
 
 Supported Access Token formats:
@@ -47,7 +48,6 @@ Supported Access Token formats:
 The following draft specifications are implemented by oidc-provider:
 
 - [JWT Response for OAuth Token Introspection - draft 10][jwt-introspection]
-- [JWT Secured Authorization Response Mode for OAuth 2.0 (JARM) - Implementer's Draft 01][jarm]
 - [Financial-grade API: Client Initiated Backchannel Authentication Profile (FAPI-CIBA) - Implementer's Draft 01][fapi-ciba]
 - [OAuth 2.0 Demonstration of Proof-of-Possession at the Application Layer (DPoP) - draft 03][dpop]
 
@@ -141,7 +141,7 @@ actions and i.e. emit metrics that react to specific triggers. See the list of a
 [mtls]: https://www.rfc-editor.org/rfc/rfc8705.html
 [dpop]: https://tools.ietf.org/html/draft-ietf-oauth-dpop-03
 [resource-indicators]: https://www.rfc-editor.org/rfc/rfc8707.html
-[jarm]: https://openid.net/specs/openid-financial-api-jarm-ID1.html
+[jarm]: https://openid.net/specs/oauth-v2-jarm.html
 [jwt-at]: https://www.rfc-editor.org/rfc/rfc9068.html
 [paseto-at]: https://paseto.io
 [support-sponsor]: https://github.com/sponsors/panva
