@@ -25,7 +25,6 @@ jobs:
           node-version: lts/hydrogen # 18
           cache: 'npm'
           check-latest: true
-      - run: npm i -g npm
       - run: npm clean-install
       - run: npm upgrade
       - run: npm audit --production
@@ -428,7 +427,6 @@ jobs:
           node-version: lts/hydrogen # 18
           cache: 'npm'
           check-latest: true
-      - run: npm i -g npm
       - run: npm clean-install
       - name: Run oidc-provider (OIDC)
         run: npx c8 node certification/oidc/docker &
