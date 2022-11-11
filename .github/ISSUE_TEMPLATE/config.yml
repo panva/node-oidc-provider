@@ -12,9 +12,3 @@ contact_links:
     url: https://github.com/panva/node-oidc-provider/discussions/893
     about:
       Have a proposal for a new feature? Head over to the discussions "Ideas" Category
-  - name: Report a security vulnerability
-    url: https://en.wikipedia.org/wiki/Responsible_disclosure
-    about:
-      Do not disclose vulnerabilities via issues or discussions. Reach out to the project team
-      via e.g. email, we'll work together on patching the vulnerability and follow some form of
-      Responsible disclosure once fixed. Thank you.
