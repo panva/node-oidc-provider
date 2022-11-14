@@ -71,16 +71,7 @@ module.exports = {
       certificateBoundAccessTokens: true,
       selfSignedTlsClientAuth: true,
       getCertificate(ctx) {
-        return unescape(ctx.get('x-ssl-client-cert').replace(/\+/g, ' '));
-      },
-      certificateAuthorized(ctx) {
-        return ctx.get('x-ssl-client-verify') === 'SUCCESS';
-      },
-      certificateSubjectMatches(ctx, property, expected) {
-        if (property !== 'tls_client_auth_subject_dn') {
-          throw new InvalidClientMetadata(`${property} is not supported by this deployment`);
-        }
-        return ctx.get('x-ssl-client-s-dn') === expected;
+        return ctx.get('client-certificate');
       },
     },
     claimsParameter: { enabled: true },

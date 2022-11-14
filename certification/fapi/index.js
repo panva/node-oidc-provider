@@ -197,7 +197,7 @@ const fapi = new Provider(ISSUER, {
       selfSignedTlsClientAuth: true,
       getCertificate(ctx) {
         if (SUITE_BASE_URL === OFFICIAL_CERTIFICATION) {
-          return unescape(ctx.get('x-ssl-client-cert').replace(/\+/g, ' '));
+          return ctx.get('client-certificate');
         }
 
         const peerCertificate = ctx.socket.getPeerCertificate();
