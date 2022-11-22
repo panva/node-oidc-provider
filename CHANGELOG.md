@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [7.14.1](https://github.com/panva/node-oidc-provider/compare/v7.14.0...v7.14.1) (2022-11-22)
+
+
+### Fixes
+
+* url encode client_id returned in registration responses ([500dfeb](https://github.com/panva/node-oidc-provider/commit/500dfeb763bd8ea445ad3c79be8e543ba34af275))
+
 ## [7.14.0](https://github.com/panva/node-oidc-provider/compare/v7.13.0...v7.14.0) (2022-11-09)
 
 
