@@ -147,7 +147,7 @@ class API {
         throw new Error(`module id ${moduleId} is ${status}`);
       }
 
-      await new Promise((resolve) => setTimeout(resolve, ms('2s')));
+      await new Promise((resolve) => { setTimeout(resolve, ms('2s')); });
     }
 
     debug(`module id ${moduleId} expected state timeout`);

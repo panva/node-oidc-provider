@@ -7,6 +7,7 @@ const { parse } = require('url');
 const path = require('path');
 const querystring = require('querystring');
 const { createServer } = require('http');
+const { once } = require('events');
 
 const sinon = require('sinon');
 const flatten = require('lodash/flatten');
@@ -462,13 +463,13 @@ module.exports = function testHelper(dir, {
         const app = new Fastify();
         await app.register(middie);
         app.use(mountTo, provider.callback());
-        await new Promise((resolve) => global.server.close(resolve));
+        await new Promise((resolve) => { global.server.close(resolve); });
         await app.listen(port, '::');
         global.server = app.server;
         afterPromises.push(async () => {
           await app.close();
           global.server = createServer().listen(port, '::');
-          await new Promise((resolve) => global.server.once('listening', resolve));
+          await once(global.server, 'listening');
         });
         break;
       }
@@ -493,13 +494,13 @@ module.exports = function testHelper(dir, {
             return res.finished ? h.abandon : h.continue;
           },
         });
-        await new Promise((resolve) => global.server.close(resolve));
+        await new Promise((resolve) => { global.server.close(resolve); });
         await app.start();
         global.server = app.listener;
         afterPromises.push(async () => {
           await app.stop();
           global.server = createServer().listen(port, '::');
-          await new Promise((resolve) => global.server.once('listening', resolve));
+          await once(global.server, 'listening');
         });
         break;
       }

@@ -519,19 +519,21 @@ describe('configuration features.ciba', () => {
         return this.agent.post(route)
           .send({
             client_id: 'client-signed',
-            request: jose.JWT.sign({
-              client_id: 'client-signed',
-              scope: 'openid',
-              jti: 'foo',
-              login_hint: 'accountId',
-            },
-            jwk,
-            {
-              expiresIn: '5m',
-              notBefore: '0s',
-              issuer: 'client-signed',
-              audience: this.provider.issuer,
-            }),
+            request: jose.JWT.sign(
+              {
+                client_id: 'client-signed',
+                scope: 'openid',
+                jti: 'foo',
+                login_hint: 'accountId',
+              },
+              jwk,
+              {
+                expiresIn: '5m',
+                notBefore: '0s',
+                issuer: 'client-signed',
+                audience: this.provider.issuer,
+              },
+            ),
           })
           .type('form')
           .expect(200);
@@ -544,19 +546,21 @@ describe('configuration features.ciba', () => {
         return this.agent.post(route)
           .send({
             client_id: 'client-signed',
-            request: jose.JWT.sign({
-              client_id: 'client-signed',
-              scope: 'openid',
-              jti: 'foo',
-              login_hint: 'accountId',
-            },
-            await jose.JWK.generate('EC', 'P-256', { alg: 'ES256' }),
-            {
+            request: jose.JWT.sign(
+              {
+                client_id: 'client-signed',
+                scope: 'openid',
+                jti: 'foo',
+                login_hint: 'accountId',
+              },
+              await jose.JWK.generate('EC', 'P-256', { alg: 'ES256' }),
+              {
               // expiresIn: '5m',
-              notBefore: '0s',
-              issuer: 'client-signed',
-              audience: this.provider.issuer,
-            }),
+                notBefore: '0s',
+                issuer: 'client-signed',
+                audience: this.provider.issuer,
+              },
+            ),
           })
           .type('form')
           .expect(400)
@@ -577,19 +581,21 @@ describe('configuration features.ciba', () => {
         return this.agent.post(route)
           .send({
             client_id: 'client-signed',
-            request: jose.JWT.sign({
-              client_id: 'client-signed',
-              scope: 'openid',
-              jti: 'foo',
-              login_hint: 'accountId',
-            },
-            await jose.JWK.generate('EC', 'P-256', { alg: 'ES256' }),
-            {
-              expiresIn: '5m',
-              // notBefore: '0s',
-              issuer: 'client-signed',
-              audience: this.provider.issuer,
-            }),
+            request: jose.JWT.sign(
+              {
+                client_id: 'client-signed',
+                scope: 'openid',
+                jti: 'foo',
+                login_hint: 'accountId',
+              },
+              await jose.JWK.generate('EC', 'P-256', { alg: 'ES256' }),
+              {
+                expiresIn: '5m',
+                // notBefore: '0s',
+                issuer: 'client-signed',
+                audience: this.provider.issuer,
+              },
+            ),
           })
           .type('form')
           .expect(400)
@@ -610,19 +616,21 @@ describe('configuration features.ciba', () => {
         return this.agent.post(route)
           .send({
             client_id: 'client-signed',
-            request: jose.JWT.sign({
-              client_id: 'client-signed',
-              scope: 'openid',
-              // jti: 'foo',
-              login_hint: 'accountId',
-            },
-            await jose.JWK.generate('EC', 'P-256', { alg: 'ES256' }),
-            {
-              expiresIn: '5m',
-              notBefore: '0s',
-              issuer: 'client-signed',
-              audience: this.provider.issuer,
-            }),
+            request: jose.JWT.sign(
+              {
+                client_id: 'client-signed',
+                scope: 'openid',
+                // jti: 'foo',
+                login_hint: 'accountId',
+              },
+              await jose.JWK.generate('EC', 'P-256', { alg: 'ES256' }),
+              {
+                expiresIn: '5m',
+                notBefore: '0s',
+                issuer: 'client-signed',
+                audience: this.provider.issuer,
+              },
+            ),
           })
           .type('form')
           .expect(400)
@@ -643,20 +651,22 @@ describe('configuration features.ciba', () => {
         return this.agent.post(route)
           .send({
             client_id: 'client-signed',
-            request: jose.JWT.sign({
-              client_id: 'client-signed',
-              scope: 'openid',
-              jti: 'foo',
-              login_hint: 'accountId',
-            },
-            await jose.JWK.generate('EC', 'P-256', { alg: 'ES256' }),
-            {
-              expiresIn: '5m',
-              notBefore: '0s',
-              iat: false,
-              issuer: 'client-signed',
-              audience: this.provider.issuer,
-            }),
+            request: jose.JWT.sign(
+              {
+                client_id: 'client-signed',
+                scope: 'openid',
+                jti: 'foo',
+                login_hint: 'accountId',
+              },
+              await jose.JWK.generate('EC', 'P-256', { alg: 'ES256' }),
+              {
+                expiresIn: '5m',
+                notBefore: '0s',
+                iat: false,
+                issuer: 'client-signed',
+                audience: this.provider.issuer,
+              },
+            ),
           })
           .type('form')
           .expect(400)

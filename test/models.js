@@ -18,6 +18,7 @@ const testStorage = new Map();
 
 class TestAdapter extends MemoryAdapter {
   constructor(name) {
+    // eslint-disable-next-line no-constructor-return
     if (testStorage.has(name)) return testStorage.get(name);
     super(name);
     this.store = map;

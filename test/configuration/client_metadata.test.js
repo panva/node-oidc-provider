@@ -44,6 +44,7 @@ describe('Client metadata validation', () => {
     });
   }
 
+  // eslint-disable-next-line default-param-last
   const mustBeString = (prop, values = [[], 123, true, null, false, {}, ''], metadata, configuration) => {
     values.forEach((value) => {
       let msg = util.format('must be a string, %j provided', value);
@@ -87,6 +88,7 @@ describe('Client metadata validation', () => {
     });
   };
 
+  // eslint-disable-next-line default-param-last
   const mustBeArray = (prop, values = [{}, 'string', 123, true, null, false], configuration) => {
     values.forEach((value) => {
       let msg = util.format('must be a array, %j provided', value);
@@ -633,12 +635,12 @@ describe('Client metadata validation', () => {
           ...additional,
         }, configuration);
 
-        rejects(this.title, `${rejected}256`, new RegExp('^token_endpoint_auth_signing_alg must be'), {
+        rejects(this.title, `${rejected}256`, /^token_endpoint_auth_signing_alg must be/, {
           token_endpoint_auth_method: method,
           ...additional,
         }, configuration);
 
-        rejects(this.title, `${accepted}384`, new RegExp('^token_endpoint_auth_signing_alg must be'), {
+        rejects(this.title, `${accepted}384`, /^token_endpoint_auth_signing_alg must be/, {
           token_endpoint_auth_method: method,
           ...additional,
         }, {

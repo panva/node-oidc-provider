@@ -62,7 +62,7 @@ describe('/auth', () => {
             .expect(() => {
               expect(spy.called).to.be.true;
             })
-            .expect(new RegExp('input type="hidden" name="error" value="login_required"'))
+            .expect(/input type="hidden" name="error" value="login_required"/)
             .expect(new RegExp(`input type="hidden" name="state" value="${auth.state}"`))
             .expect(new RegExp(`form method="post" action="${auth.redirect_uri}"`));
         });
