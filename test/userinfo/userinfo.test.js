@@ -3,8 +3,8 @@ const url = require('node:url');
 const { expect } = require('chai');
 const sinon = require('sinon');
 
-const { Provider } = require('../../lib');
-const bootstrap = require('../test_helper');
+const { Provider } = require('../../lib/index.js');
+const bootstrap = require('../test_helper.js');
 
 describe('userinfo /me', () => {
   before(bootstrap(__dirname));

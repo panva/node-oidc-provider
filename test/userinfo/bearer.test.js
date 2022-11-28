@@ -1,4 +1,4 @@
-const bootstrap = require('../test_helper');
+const bootstrap = require('../test_helper.js');
 
 describe('providing Bearer token', () => {
   before(bootstrap(__dirname));

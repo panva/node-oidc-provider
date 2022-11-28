@@ -1,6 +1,6 @@
 const { expect } = require('chai');
 
-const { Provider } = require('../../lib');
+const { Provider } = require('../../lib/index.js');
 
 describe('Provider declaring support for refresh_token grant type', () => {
   it('is enabled by default', () => {

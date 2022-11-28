@@ -1,6 +1,6 @@
 const cloneDeep = require('lodash/cloneDeep');
 
-const { JWA } = require('../lib/consts');
+const { JWA } = require('../lib/consts/index.js');
 
 module.exports = {
   claims: {

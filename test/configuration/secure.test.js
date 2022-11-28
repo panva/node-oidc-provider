@@ -1,7 +1,7 @@
 const sinon = require('sinon');
 const { expect } = require('chai');
 
-const bootstrap = require('../test_helper');
+const bootstrap = require('../test_helper.js');
 
 describe('x-forwarded-proto trust, detection and warnings', () => {
   /* eslint-disable no-console */

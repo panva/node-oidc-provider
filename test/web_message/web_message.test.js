@@ -1,8 +1,8 @@
 const { expect } = require('chai');
 const sinon = require('sinon');
 
-const bootstrap = require('../test_helper');
-const { WebMessageUriMismatch } = require('../../lib/helpers/errors');
+const bootstrap = require('../test_helper.js');
+const { WebMessageUriMismatch } = require('../../lib/helpers/errors.js');
 
 const route = '/auth';
 const response_type = 'code id_token token';

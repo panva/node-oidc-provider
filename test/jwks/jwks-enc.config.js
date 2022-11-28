@@ -1,6 +1,6 @@
 const cloneDeep = require('lodash/cloneDeep');
 
-const config = cloneDeep(require('../default.config'));
+const config = cloneDeep(require('../default.config.js'));
 
 config.features.encryption = { enabled: true };
 

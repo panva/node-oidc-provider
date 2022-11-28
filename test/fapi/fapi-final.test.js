@@ -1,9 +1,9 @@
 const jose = require('jose');
 
-const bootstrap = require('../test_helper');
-const epochTime = require('../../lib/helpers/epoch_time');
+const bootstrap = require('../test_helper.js');
+const epochTime = require('../../lib/helpers/epoch_time.js');
 
-const { keypair: { privateKey } } = require('./fapi-final.config');
+const { keypair: { privateKey } } = require('./fapi-final.config.js');
 
 describe('Financial-grade API Security Profile 1.0 - Part 2: Advanced (FINAL) behaviours', () => {
   before(bootstrap(__dirname, { config: 'fapi-final' }));

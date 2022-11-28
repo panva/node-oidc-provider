@@ -3,8 +3,8 @@
 const { expect } = require('chai');
 const sinon = require('sinon');
 
-const { Provider } = require('../../lib');
-const { InvalidClientMetadata } = require('../../lib/helpers/errors');
+const { Provider } = require('../../lib/index.js');
+const { InvalidClientMetadata } = require('../../lib/helpers/errors.js');
 
 describe('extraClientMetadata configuration', () => {
   it('allows for properties to be added to client schema and have them synchronously validated', async () => {

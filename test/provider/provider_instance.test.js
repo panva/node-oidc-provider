@@ -5,7 +5,7 @@ const { strict: assert } = require('node:assert');
 const { expect } = require('chai');
 const sinon = require('sinon');
 
-const { Provider } = require('../../lib');
+const { Provider } = require('../../lib/index.js');
 
 describe('provider instance', () => {
   context('draft/experimental spec warnings', () => {

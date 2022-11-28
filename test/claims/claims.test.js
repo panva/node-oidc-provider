@@ -6,8 +6,8 @@ const get = require('lodash/get');
 const { expect } = require('chai');
 const KeyGrip = require('keygrip'); // eslint-disable-line import/no-extraneous-dependencies
 
-const { decode: decodeJWT } = require('../../lib/helpers/jwt');
-const bootstrap = require('../test_helper');
+const { decode: decodeJWT } = require('../../lib/helpers/jwt.js');
+const bootstrap = require('../test_helper.js');
 
 const route = '/auth';
 const expire = new Date();

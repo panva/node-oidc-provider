@@ -8,11 +8,11 @@ const render = require('@koa/ejs');
 const helmet = require('helmet');
 const mount = require('koa-mount');
 
-const { Provider } = require('../lib'); // require('oidc-provider');
+const { Provider } = require('../lib/index.js'); // require('oidc-provider');
 
-const Account = require('./support/account');
-const configuration = require('./support/configuration');
-const routes = require('./routes/koa');
+const Account = require('./support/account.js');
+const configuration = require('./support/configuration.js');
+const routes = require('./routes/koa.js');
 
 const { PORT = 3000, ISSUER = `http://localhost:${PORT}` } = process.env;
 configuration.findAccount = Account.findAccount;
@@ -66,7 +66,7 @@ let server;
 (async () => {
   let adapter;
   if (process.env.MONGODB_URI) {
-    adapter = require('./adapters/mongodb'); // eslint-disable-line global-require
+    adapter = require('./adapters/mongodb.js'); // eslint-disable-line global-require
     await adapter.connect();
   }
 

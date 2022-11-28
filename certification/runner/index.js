@@ -4,8 +4,8 @@
 const { strict: assert } = require('node:assert');
 const fs = require('node:fs');
 
-const debug = require('./debug');
-const API = require('./api');
+const debug = require('./debug.js');
+const API = require('./api.js');
 
 const {
   SUITE_ACCESS_TOKEN,

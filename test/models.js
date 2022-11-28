@@ -10,8 +10,8 @@ map.del = function (...args) {
 
 const { expect } = require('chai');
 
-const epochTime = require('../lib/helpers/epoch_time');
-const MemoryAdapter = require('../lib/adapters/memory_adapter');
+const epochTime = require('../lib/helpers/epoch_time.js');
+const MemoryAdapter = require('../lib/adapters/memory_adapter.js');
 
 MemoryAdapter.setStorage(map);
 const testStorage = new Map();

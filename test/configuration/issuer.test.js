@@ -4,7 +4,7 @@ const { strict: assert } = require('node:assert');
 
 const { expect } = require('chai');
 
-const { Provider } = require('../../lib');
+const { Provider } = require('../../lib/index.js');
 
 describe('Provider issuer configuration', () => {
   it('validates the issuer input to be present and valid', () => {

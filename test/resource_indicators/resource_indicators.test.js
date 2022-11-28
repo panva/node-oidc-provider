@@ -5,8 +5,8 @@ const { strict: assert } = require('node:assert');
 const sinon = require('sinon');
 const { expect } = require('chai');
 
-const bootstrap = require('../test_helper');
-const { features: { resourceIndicators: defaults } } = require('../../lib/helpers/defaults')();
+const bootstrap = require('../test_helper.js');
+const { features: { resourceIndicators: defaults } } = require('../../lib/helpers/defaults.js')();
 
 describe('features.resourceIndicators defaults', () => {
   it('defaultResource', async () => {

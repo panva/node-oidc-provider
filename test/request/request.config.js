@@ -2,7 +2,7 @@ const cloneDeep = require('lodash/cloneDeep');
 const pull = require('lodash/pull');
 const merge = require('lodash/merge');
 
-const config = cloneDeep(require('../default.config'));
+const config = cloneDeep(require('../default.config.js'));
 
 merge(config.features, {
   requestObjects: {

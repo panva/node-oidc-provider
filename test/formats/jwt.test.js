@@ -8,9 +8,9 @@ const sinon = require('sinon').createSandbox();
 const { expect } = require('chai');
 const base64url = require('base64url');
 
-const ResourceServer = require('../../lib/helpers/resource_server');
-const epochTime = require('../../lib/helpers/epoch_time');
-const bootstrap = require('../test_helper');
+const ResourceServer = require('../../lib/helpers/resource_server.js');
+const epochTime = require('../../lib/helpers/epoch_time.js');
+const bootstrap = require('../test_helper.js');
 
 const generateKeyPair = util.promisify(crypto.generateKeyPair);
 function decode(b64urljson) {

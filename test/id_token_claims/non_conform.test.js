@@ -4,8 +4,8 @@ const { parse: parseUrl } = require('node:url');
 
 const { expect } = require('chai');
 
-const bootstrap = require('../test_helper');
-const { decode: decodeJWT } = require('../../lib/helpers/jwt');
+const bootstrap = require('../test_helper.js');
+const { decode: decodeJWT } = require('../../lib/helpers/jwt.js');
 
 const redirect_uri = 'https://client.example.com/cb';
 const scope = 'openid email offline_access';

@@ -7,11 +7,11 @@ const crypto = require('node:crypto');
 const render = require('@koa/ejs');
 const helmet = require('helmet');
 
-const { Provider } = require('../../lib'); // require('oidc-provider');
-const Account = require('../../example/support/account');
-const routes = require('../../example/routes/koa');
+const { Provider } = require('../../lib/index.js'); // require('oidc-provider');
+const Account = require('../../example/support/account.js');
+const routes = require('../../example/routes/koa.js');
 
-const configuration = require('./configuration');
+const configuration = require('./configuration.js');
 
 const { GOOGLE_CLIENT_ID, PORT = 3000, ISSUER = `http://localhost:${PORT}` } = process.env;
 configuration.findAccount = Account.findAccount;
@@ -21,7 +21,7 @@ let server;
 (async () => {
   let adapter;
   if (process.env.MONGODB_URI) {
-    adapter = require('./heroku_mongo_adapter'); // eslint-disable-line global-require
+    adapter = require('./heroku_mongo_adapter.js'); // eslint-disable-line global-require
     await adapter.connect();
   }
 

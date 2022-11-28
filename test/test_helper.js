@@ -20,13 +20,13 @@ const Connect = require('connect');
 const Express = require('express');
 const Koa = require('koa');
 
-const nanoid = require('../lib/helpers/nanoid');
-const epochTime = require('../lib/helpers/epoch_time');
-const { Provider } = require('../lib');
+const nanoid = require('../lib/helpers/nanoid.js');
+const epochTime = require('../lib/helpers/epoch_time.js');
+const { Provider } = require('../lib/index.js');
 
-const { Account, TestAdapter } = require('./models');
+const { Account, TestAdapter } = require('./models.js');
 
-global.i = require('../lib/helpers/weak_cache');
+global.i = require('../lib/helpers/weak_cache.js');
 
 Object.defineProperties(Provider.prototype, {
   enable: {

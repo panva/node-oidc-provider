@@ -4,8 +4,8 @@ const sinon = require('sinon').createSandbox();
 const { expect } = require('chai');
 const timekeeper = require('timekeeper');
 
-const epochTime = require('../../lib/helpers/epoch_time');
-const bootstrap = require('../test_helper');
+const epochTime = require('../../lib/helpers/epoch_time.js');
+const bootstrap = require('../test_helper.js');
 
 const route = '/token';
 

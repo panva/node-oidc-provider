@@ -2,7 +2,7 @@ const sinon = require('sinon').createSandbox();
 const { expect } = require('chai');
 const timekeeper = require('timekeeper');
 
-const bootstrap = require('../test_helper');
+const bootstrap = require('../test_helper.js');
 
 const { any } = sinon.match;
 const route = '/device';

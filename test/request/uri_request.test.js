@@ -6,9 +6,9 @@ const sinon = require('sinon').createSandbox();
 const nock = require('nock');
 const { expect } = require('chai');
 
-const JWT = require('../../lib/helpers/jwt');
-const RequestUriCache = require('../../lib/helpers/request_uri_cache');
-const bootstrap = require('../test_helper');
+const JWT = require('../../lib/helpers/jwt.js');
+const RequestUriCache = require('../../lib/helpers/request_uri_cache.js');
+const bootstrap = require('../test_helper.js');
 
 describe('request Uri features', () => {
   before(bootstrap(__dirname));

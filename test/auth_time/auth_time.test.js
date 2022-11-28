@@ -4,7 +4,7 @@ const sinon = require('sinon');
 const { JWT: { decode } } = require('jose2');
 const { expect } = require('chai');
 
-const bootstrap = require('../test_helper');
+const bootstrap = require('../test_helper.js');
 
 describe('responds with a id_token containing auth_time', () => {
   before(bootstrap(__dirname));

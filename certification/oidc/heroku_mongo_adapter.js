@@ -1,4 +1,4 @@
-const MongoAdapter = require('../../example/adapters/mongodb');
+const MongoAdapter = require('../../example/adapters/mongodb.js');
 
 class HerokuExampleAdapter extends MongoAdapter {
   async upsert(_id, payload, expiresIn) {

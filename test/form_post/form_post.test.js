@@ -1,8 +1,8 @@
 const { expect } = require('chai');
 const sinon = require('sinon');
 
-const bootstrap = require('../test_helper');
-const safe = require('../../lib/helpers/html_safe');
+const bootstrap = require('../test_helper.js');
+const safe = require('../../lib/helpers/html_safe.js');
 
 const route = '/auth';
 

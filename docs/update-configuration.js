@@ -7,8 +7,8 @@ const { createReadStream, writeFileSync, readFileSync } = require('node:fs');
 const get = require('lodash/get'); // eslint-disable-line import/no-extraneous-dependencies
 const words = require('lodash/words'); // eslint-disable-line import/no-extraneous-dependencies
 
-const docs = require('../lib/helpers/docs');
-const values = require('../lib/helpers/defaults')();
+const docs = require('../lib/helpers/docs.js');
+const values = require('../lib/helpers/defaults.js')();
 
 for (const [key, value] of Object.entries(values.ttl)) { // eslint-disable-line no-restricted-syntax
   if (['RefreshToken', 'ClientCredentials', 'AccessToken', 'BackchannelAuthenticationRequest'].includes(key)) {

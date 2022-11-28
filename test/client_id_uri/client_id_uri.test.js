@@ -1,6 +1,6 @@
 const { expect } = require('chai');
 
-const bootstrap = require('../test_helper');
+const bootstrap = require('../test_helper.js');
 
 describe('registration management with client_id as URI', () => {
   before(bootstrap(__dirname));

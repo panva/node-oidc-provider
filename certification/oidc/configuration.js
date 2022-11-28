@@ -1,7 +1,7 @@
 const crypto = require('node:crypto');
 
 const pkg = require('../../package.json');
-const enabledJWA = JSON.parse(JSON.stringify(require('../../lib/consts/jwa')));
+const enabledJWA = JSON.parse(JSON.stringify(require('../../lib/consts/jwa.js')));
 
 const timeout = parseInt(process.env.TIMEOUT, 10);
 const clientAuthMethods = [

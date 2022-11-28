@@ -4,7 +4,7 @@ const jose = require('jose2');
 const sinon = require('sinon').createSandbox();
 const { expect } = require('chai');
 
-const { Provider } = require('../../lib');
+const { Provider } = require('../../lib/index.js');
 
 describe('configuration.jwks', () => {
   beforeEach(function () {

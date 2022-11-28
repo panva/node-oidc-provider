@@ -6,7 +6,7 @@ const base64url = require('base64url');
 const { expect } = require('chai');
 const timekeeper = require('timekeeper');
 
-const bootstrap = require('../test_helper');
+const bootstrap = require('../test_helper.js');
 
 const route = '/token';
 

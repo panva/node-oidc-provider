@@ -3,8 +3,8 @@ const sinon = require('sinon');
 const jose = require('jose2');
 const { importJWK, decodeProtectedHeader, decodeJwt } = require('jose');
 
-const JWT = require('../../lib/helpers/jwt');
-const bootstrap = require('../test_helper');
+const JWT = require('../../lib/helpers/jwt.js');
+const bootstrap = require('../test_helper.js');
 
 describe('Pushed Request Object', () => {
   before(bootstrap(__dirname));

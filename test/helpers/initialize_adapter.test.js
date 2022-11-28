@@ -1,6 +1,6 @@
 const { expect } = require('chai');
 
-const initializeAdapter = require('../../lib/helpers/initialize_adapter');
+const initializeAdapter = require('../../lib/helpers/initialize_adapter.js');
 
 describe('initializeAdapter helper', () => {
   it('throws when adapter is not a constructor or not a function', () => {

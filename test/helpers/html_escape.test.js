@@ -1,6 +1,6 @@
 const { expect } = require('chai');
 
-const htmlSafe = require('../../lib/helpers/html_safe');
+const htmlSafe = require('../../lib/helpers/html_safe.js');
 
 describe('htmlSafe helper', () => {
   it('handles numbers', () => {

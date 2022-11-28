@@ -1,6 +1,6 @@
 const { expect } = require('chai');
 
-const bootstrap = require('../test_helper');
+const bootstrap = require('../test_helper.js');
 
 describe('OAuth 2.0 Authorization Server Issuer Identification', () => {
   before(bootstrap(__dirname));

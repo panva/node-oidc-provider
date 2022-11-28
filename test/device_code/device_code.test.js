@@ -1,7 +1,7 @@
 const { expect } = require('chai');
 
-const { Provider } = require('../../lib');
-const bootstrap = require('../test_helper');
+const { Provider } = require('../../lib/index.js');
+const bootstrap = require('../test_helper.js');
 
 describe('configuration features.deviceFlow', () => {
   before(bootstrap(__dirname));

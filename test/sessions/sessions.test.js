@@ -1,8 +1,8 @@
 const sinon = require('sinon');
 const { expect } = require('chai');
 
-const bootstrap = require('../test_helper');
-const epochTime = require('../../lib/helpers/epoch_time');
+const bootstrap = require('../test_helper.js');
+const epochTime = require('../../lib/helpers/epoch_time.js');
 
 const route = '/auth';
 const response_type = 'code';

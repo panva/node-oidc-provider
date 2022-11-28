@@ -6,11 +6,11 @@ const https = require('node:https');
 const selfsigned = require('selfsigned').generate();
 const render = require('@koa/ejs');
 
-const { Provider } = require('../../lib'); // require('oidc-provider');
-const Account = require('../../example/support/account');
-const routes = require('../../example/routes/koa');
+const { Provider } = require('../../lib/index.js'); // require('oidc-provider');
+const Account = require('../../example/support/account.js');
+const routes = require('../../example/routes/koa.js');
 
-const configuration = require('./configuration');
+const configuration = require('./configuration.js');
 
 const { PORT = 3000, ISSUER = `http://localhost:${PORT}` } = process.env;
 configuration.findAccount = Account.findAccount;

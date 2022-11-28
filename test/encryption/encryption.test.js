@@ -5,10 +5,10 @@ const sinon = require('sinon');
 const jose = require('jose2');
 const { decodeProtectedHeader } = require('jose');
 
-const bootstrap = require('../test_helper');
-const JWT = require('../../lib/helpers/jwt');
+const bootstrap = require('../test_helper.js');
+const JWT = require('../../lib/helpers/jwt.js');
 
-const { privKey } = require('./encryption.config');
+const { privKey } = require('./encryption.config.js');
 
 const route = '/auth';
 

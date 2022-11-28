@@ -1,9 +1,9 @@
 const { expect } = require('chai');
 const timekeeper = require('timekeeper');
 
-const bootstrap = require('../test_helper');
-const JWT = require('../../lib/helpers/jwt');
-const { Provider } = require('../../lib');
+const bootstrap = require('../test_helper.js');
+const JWT = require('../../lib/helpers/jwt.js');
+const { Provider } = require('../../lib/index.js');
 
 const route = '/token/introspection';
 

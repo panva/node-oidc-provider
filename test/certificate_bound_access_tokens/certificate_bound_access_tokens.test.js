@@ -4,7 +4,7 @@ const url = require('node:url');
 const sinon = require('sinon');
 const { expect } = require('chai');
 
-const bootstrap = require('../test_helper');
+const bootstrap = require('../test_helper.js');
 
 const crt = readFileSync('./test/jwks/client.crt').toString();
 const expectedS256 = 'A4DtL2JmUMhAsvJj5tKyn64SqzmuXbMrJa0n761y5v0';

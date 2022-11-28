@@ -1,9 +1,9 @@
 const jose = require('jose');
 
-const bootstrap = require('../test_helper');
-const epochTime = require('../../lib/helpers/epoch_time');
+const bootstrap = require('../test_helper.js');
+const epochTime = require('../../lib/helpers/epoch_time.js');
 
-const { keypair: { privateKey } } = require('./fapi-id2.config');
+const { keypair: { privateKey } } = require('./fapi-id2.config.js');
 
 describe('Financial-grade API - Part 2: Read and Write API Security Profile (ID2) behaviours', () => {
   before(bootstrap(__dirname, { config: 'fapi-id2' }));

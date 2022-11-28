@@ -6,8 +6,8 @@ const url = require('node:url');
 const sinon = require('sinon').createSandbox();
 const { expect } = require('chai');
 
-const bootstrap = require('../test_helper');
-const { Provider } = require('../../lib');
+const bootstrap = require('../test_helper.js');
+const { Provider } = require('../../lib/index.js');
 
 describe('client registration policies', () => {
   before(bootstrap(__dirname));

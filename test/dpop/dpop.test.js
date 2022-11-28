@@ -6,10 +6,10 @@ const { expect } = require('chai');
 const { JWK, JWT } = require('jose2');
 const { importJWK } = require('jose');
 
-const nanoid = require('../../lib/helpers/nanoid');
-const epochTime = require('../../lib/helpers/epoch_time');
-const bootstrap = require('../test_helper');
-const base64url = require('../../lib/helpers/base64url');
+const nanoid = require('../../lib/helpers/nanoid.js');
+const epochTime = require('../../lib/helpers/epoch_time.js');
+const bootstrap = require('../test_helper.js');
+const base64url = require('../../lib/helpers/base64url.js');
 
 const expectedS256 = 'ZjEgWN6HnCZRssL1jRQHiJi6vlWXolM5Zba8FQBYONg';
 

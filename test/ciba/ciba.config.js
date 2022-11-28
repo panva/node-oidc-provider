@@ -5,7 +5,7 @@ const { EventEmitter, once } = require('node:events');
 
 const cloneDeep = require('lodash/cloneDeep');
 
-const config = cloneDeep(require('../default.config'));
+const config = cloneDeep(require('../default.config.js'));
 
 const emitter = new EventEmitter();
 

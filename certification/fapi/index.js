@@ -11,8 +11,8 @@ const jose = require('jose2');
 const helmet = require('helmet');
 const selfsigned = require('selfsigned').generate();
 
-const { Provider, errors } = require('../../lib'); // require('oidc-provider');
-const MemoryAdapter = require('../../lib/adapters/memory_adapter');
+const { Provider, errors } = require('../../lib/index.js'); // require('oidc-provider');
+const MemoryAdapter = require('../../lib/adapters/memory_adapter.js');
 
 const OFFICIAL_CERTIFICATION = 'https://www.certification.openid.net';
 const { PORT = 3000, ISSUER = `http://localhost:${PORT}`, SUITE_BASE_URL = OFFICIAL_CERTIFICATION } = process.env;

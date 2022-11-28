@@ -3,7 +3,7 @@ const uniq = require('lodash/uniq');
 const { expect } = require('chai');
 const nock = require('nock');
 
-const bootstrap = require('../test_helper');
+const bootstrap = require('../test_helper.js');
 
 describe('pairwise features', () => {
   before(bootstrap(__dirname));

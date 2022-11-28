@@ -4,9 +4,9 @@ const sinon = require('sinon').createSandbox();
 const { expect } = require('chai');
 const timekeeper = require('timekeeper');
 
-const bootstrap = require('../test_helper');
-const JWT = require('../../lib/helpers/jwt');
-const { InvalidClient, InvalidRequest } = require('../../lib/helpers/errors');
+const bootstrap = require('../test_helper.js');
+const JWT = require('../../lib/helpers/jwt.js');
+const { InvalidClient, InvalidRequest } = require('../../lib/helpers/errors.js');
 
 const route = '/session/end';
 

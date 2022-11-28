@@ -3,9 +3,9 @@ const { parse: parseLocation } = require('node:url');
 const { expect } = require('chai');
 const jose = require('jose2');
 
-const bootstrap = require('../test_helper');
-const { decode } = require('../../lib/helpers/jwt');
-const epochTime = require('../../lib/helpers/epoch_time');
+const bootstrap = require('../test_helper.js');
+const { decode } = require('../../lib/helpers/jwt.js');
+const epochTime = require('../../lib/helpers/epoch_time.js');
 
 describe('signatures', () => {
   before(bootstrap(__dirname));

@@ -4,7 +4,7 @@ const url = require('node:url');
 const sinon = require('sinon');
 const { expect } = require('chai');
 
-const bootstrap = require('../../test_helper');
+const bootstrap = require('../../test_helper.js');
 
 const route = '/auth';
 const response_type = 'id_token';

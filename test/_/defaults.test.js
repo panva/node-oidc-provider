@@ -1,6 +1,6 @@
 const { expect } = require('chai');
 
-const defaults = require('../../lib/helpers/_/defaults');
+const defaults = require('../../lib/helpers/_/defaults.js');
 
 const { deep: defaultsDeep } = defaults;
 

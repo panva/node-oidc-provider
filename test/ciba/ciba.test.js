@@ -5,10 +5,10 @@ const { expect } = require('chai');
 const nock = require('nock');
 const jose = require('jose2');
 
-const { AccessDenied } = require('../../lib/helpers/errors');
-const bootstrap = require('../test_helper');
+const { AccessDenied } = require('../../lib/helpers/errors.js');
+const bootstrap = require('../test_helper.js');
 
-const { emitter, once } = require('./ciba.config');
+const { emitter, once } = require('./ciba.config.js');
 
 describe('configuration features.ciba', () => {
   before(bootstrap(__dirname));

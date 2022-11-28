@@ -1,8 +1,8 @@
 const cloneDeep = require('lodash/cloneDeep');
 const merge = require('lodash/merge');
 
-const config = cloneDeep(require('../default.config'));
-const errors = require('../../lib/helpers/errors');
+const config = cloneDeep(require('../default.config.js'));
+const errors = require('../../lib/helpers/errors.js');
 
 merge(config, {
   issueRefreshToken() {

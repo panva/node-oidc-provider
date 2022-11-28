@@ -8,8 +8,8 @@ const isEmpty = require('lodash/isEmpty');
 const { koaBody: bodyParser } = require('koa-body');
 const Router = require('koa-router');
 
-const { renderError } = require('../../lib/helpers/defaults')(); // make your own, you'll need it anyway
-const Account = require('../support/account');
+const { renderError } = require('../../lib/helpers/defaults.js')(); // make your own, you'll need it anyway
+const Account = require('../support/account.js');
 
 const keys = new Set();
 const debug = (obj) => querystring.stringify(Object.entries(obj).reduce((acc, [key, value]) => {

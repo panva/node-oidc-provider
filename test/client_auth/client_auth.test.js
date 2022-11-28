@@ -8,12 +8,12 @@ const sinon = require('sinon');
 const { expect } = require('chai');
 const cloneDeep = require('lodash/cloneDeep');
 
-const nanoid = require('../../lib/helpers/nanoid');
-const { Provider } = require('../../lib');
-const bootstrap = require('../test_helper');
-const clientKey = require('../client.sig.key');
-const JWT = require('../../lib/helpers/jwt');
-const { JWA } = require('../../lib/consts');
+const nanoid = require('../../lib/helpers/nanoid.js');
+const { Provider } = require('../../lib/index.js');
+const bootstrap = require('../test_helper.js');
+const clientKey = require('../client.sig.key.js');
+const JWT = require('../../lib/helpers/jwt.js');
+const { JWA } = require('../../lib/consts/index.js');
 const mtlsKeys = require('../jwks/jwks.json');
 
 const rsacrt = readFileSync('test/jwks/rsa.crt').toString();

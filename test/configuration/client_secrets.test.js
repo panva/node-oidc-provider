@@ -1,6 +1,6 @@
 const { expect } = require('chai');
 
-const bootstrap = require('../test_helper');
+const bootstrap = require('../test_helper.js');
 
 describe('Client#add', () => {
   before(bootstrap(__dirname, { config: 'client_secrets' }));

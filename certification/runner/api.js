@@ -9,7 +9,7 @@ const ms = require('ms');
 
 const pipeline = promisify(stream.pipeline);
 
-const debug = require('./debug');
+const debug = require('./debug.js');
 
 const FINISHED = new Set(['FINISHED']);
 const RESULTS = new Set(['REVIEW', 'PASSED', 'SKIPPED']);

@@ -1,6 +1,6 @@
 const { expect } = require('chai');
 
-const bootstrap = require('../test_helper');
+const bootstrap = require('../test_helper.js');
 
 describe('configuration features.encryption', () => {
   before(bootstrap(__dirname));

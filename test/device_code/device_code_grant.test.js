@@ -2,8 +2,8 @@ const { expect } = require('chai');
 const sinon = require('sinon');
 const base64url = require('base64url');
 
-const bootstrap = require('../test_helper');
-const epochTime = require('../../lib/helpers/epoch_time');
+const bootstrap = require('../test_helper.js');
+const epochTime = require('../../lib/helpers/epoch_time.js');
 
 const route = '/token';
 const grant_type = 'urn:ietf:params:oauth:grant-type:device_code';

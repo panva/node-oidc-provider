@@ -4,8 +4,8 @@ const { parse: parseLocation } = require('node:url');
 
 const { expect } = require('chai');
 
-const bootstrap = require('../test_helper');
-const { decode: decodeJWT } = require('../../lib/helpers/jwt');
+const bootstrap = require('../test_helper.js');
+const { decode: decodeJWT } = require('../../lib/helpers/jwt.js');
 
 describe('distributed and aggregated claims', () => {
   before(bootstrap(__dirname));

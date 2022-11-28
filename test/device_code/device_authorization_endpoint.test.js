@@ -1,8 +1,8 @@
 const sinon = require('sinon');
 const { expect } = require('chai');
 
-const bootstrap = require('../test_helper');
-const { normalize } = require('../../lib/helpers/user_codes');
+const bootstrap = require('../test_helper.js');
+const { normalize } = require('../../lib/helpers/user_codes.js');
 
 const route = '/device/auth';
 

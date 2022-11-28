@@ -1,4 +1,4 @@
-const bootstrap = require('../test_helper');
+const bootstrap = require('../test_helper.js');
 
 describe('default routing behavior', () => {
   describe('without mounting', () => {

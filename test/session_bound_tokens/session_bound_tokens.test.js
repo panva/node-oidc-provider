@@ -3,7 +3,7 @@ const url = require('node:url');
 
 const { expect } = require('chai');
 
-const bootstrap = require('../test_helper');
+const bootstrap = require('../test_helper.js');
 
 function assignAuthorizationResponseValues({ headers: { location } }) {
   const { query: { access_token, code } } = url.parse(location, true);

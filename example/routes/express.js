@@ -6,7 +6,7 @@ const { inspect } = require('node:util');
 const isEmpty = require('lodash/isEmpty');
 const { urlencoded } = require('express'); // eslint-disable-line import/no-unresolved
 
-const Account = require('../support/account');
+const Account = require('../support/account.js');
 
 const body = urlencoded({ extended: false });
 

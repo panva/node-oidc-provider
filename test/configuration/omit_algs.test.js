@@ -1,7 +1,7 @@
 const { expect } = require('chai');
 const jose = require('jose2');
 
-const { Provider } = require('../../lib');
+const { Provider } = require('../../lib/index.js');
 
 describe('Provider declaring supported algorithms', () => {
   it('validates the configuration properties', () => {

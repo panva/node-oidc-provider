@@ -6,9 +6,9 @@ const { expect } = require('chai');
 const KeyGrip = require('keygrip'); // eslint-disable-line import/no-extraneous-dependencies
 const sinon = require('sinon').createSandbox();
 
-const nanoid = require('../../lib/helpers/nanoid');
-const bootstrap = require('../test_helper');
-const epochTime = require('../../lib/helpers/epoch_time');
+const nanoid = require('../../lib/helpers/nanoid.js');
+const bootstrap = require('../test_helper.js');
+const epochTime = require('../../lib/helpers/epoch_time.js');
 
 const expire = new Date();
 expire.setDate(expire.getDate() + 1);

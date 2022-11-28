@@ -1,10 +1,10 @@
 const cloneDeep = require('lodash/cloneDeep');
 const merge = require('lodash/merge');
 
-const config = cloneDeep(require('../default.config'));
+const config = cloneDeep(require('../default.config.js'));
 const {
   e, n, kid, kty, use,
-} = require('../client.sig.key');
+} = require('../client.sig.key.js');
 const mtlsKeys = require('../jwks/jwks.json');
 
 const clientKey = {

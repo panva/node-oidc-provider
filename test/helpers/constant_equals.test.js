@@ -1,6 +1,6 @@
 const { expect } = require('chai');
 
-const constantEquals = require('../../lib/helpers/constant_equals');
+const constantEquals = require('../../lib/helpers/constant_equals.js');
 
 describe('constantEquals', () => {
   it('compares strings in equal time', () => {

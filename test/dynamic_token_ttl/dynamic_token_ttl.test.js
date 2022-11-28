@@ -4,8 +4,8 @@ const { expect } = require('chai');
 const sinon = require('sinon');
 const cloneDeep = require('lodash/cloneDeep');
 
-const bootstrap = require('../test_helper');
-const JWT = require('../../lib/helpers/jwt');
+const bootstrap = require('../test_helper.js');
+const JWT = require('../../lib/helpers/jwt.js');
 
 describe('dynamic ttl', () => {
   before(bootstrap(__dirname));

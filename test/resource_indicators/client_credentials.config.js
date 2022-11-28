@@ -1,8 +1,8 @@
 const cloneDeep = require('lodash/cloneDeep');
 const merge = require('lodash/merge');
 
-const errors = require('../../lib/helpers/errors');
-const config = cloneDeep(require('../default.config'));
+const errors = require('../../lib/helpers/errors.js');
+const config = cloneDeep(require('../default.config.js'));
 
 merge(config.features, {
   clientCredentials: { enabled: true },

@@ -2,7 +2,7 @@ const { strict: assert } = require('node:assert');
 
 const { expect } = require('chai');
 
-const bootstrap = require('../test_helper');
+const bootstrap = require('../test_helper.js');
 
 describe('OAuth 2.0 for Native Apps Best Current Practice features', () => {
   before(bootstrap(__dirname));

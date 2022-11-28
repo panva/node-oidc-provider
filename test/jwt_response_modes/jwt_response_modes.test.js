@@ -3,8 +3,8 @@ const url = require('node:url');
 const { expect } = require('chai');
 const sinon = require('sinon');
 
-const bootstrap = require('../test_helper');
-const { decode } = require('../../lib/helpers/jwt');
+const bootstrap = require('../test_helper.js');
+const { decode } = require('../../lib/helpers/jwt.js');
 
 const route = '/auth';
 

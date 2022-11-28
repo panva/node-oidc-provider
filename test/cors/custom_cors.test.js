@@ -1,7 +1,7 @@
 const { expect } = require('chai');
 const cors = require('@koa/cors');
 
-const bootstrap = require('../test_helper');
+const bootstrap = require('../test_helper.js');
 
 function req(verb, url, origin, ...methods) {
   const request = this.agent[verb](url)

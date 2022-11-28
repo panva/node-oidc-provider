@@ -4,7 +4,7 @@ const sinon = require('sinon');
 const { expect } = require('chai');
 const snakeCase = require('lodash/snakeCase');
 
-const bootstrap = require('../test_helper');
+const bootstrap = require('../test_helper.js');
 
 describe('requests without the openid scope', () => {
   before(bootstrap(__dirname));

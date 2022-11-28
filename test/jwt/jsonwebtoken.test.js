@@ -3,9 +3,9 @@ const { AssertionError } = require('node:assert');
 const { expect } = require('chai');
 const jose = require('jose2');
 
-const JWT = require('../../lib/helpers/jwt');
-const epochTime = require('../../lib/helpers/epoch_time');
-const KeyStore = require('../../lib/helpers/keystore');
+const JWT = require('../../lib/helpers/jwt.js');
+const epochTime = require('../../lib/helpers/epoch_time.js');
+const KeyStore = require('../../lib/helpers/keystore.js');
 
 const ks = new jose.JWKS.KeyStore();
 

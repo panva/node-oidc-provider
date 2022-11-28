@@ -1,4 +1,4 @@
-const bootstrap = require('../test_helper');
+const bootstrap = require('../test_helper.js');
 
 describe('default error behavior', () => {
   before(bootstrap(__dirname));

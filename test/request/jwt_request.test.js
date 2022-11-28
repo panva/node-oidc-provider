@@ -5,9 +5,9 @@ const { importJWK } = require('jose');
 const sinon = require('sinon');
 const { expect } = require('chai');
 
-const { Provider } = require('../../lib');
-const JWT = require('../../lib/helpers/jwt');
-const bootstrap = require('../test_helper');
+const { Provider } = require('../../lib/index.js');
+const JWT = require('../../lib/helpers/jwt.js');
+const bootstrap = require('../test_helper.js');
 
 describe('request parameter features', () => {
   before(bootstrap(__dirname));

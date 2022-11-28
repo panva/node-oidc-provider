@@ -2,7 +2,7 @@ const querystring = require('node:querystring');
 
 const { expect } = require('chai');
 
-const bootstrap = require('../test_helper');
+const bootstrap = require('../test_helper.js');
 
 function register(provider, grantType, params, options) {
   provider.registerGrantType(grantType, (ctx) => {

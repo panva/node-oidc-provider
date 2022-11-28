@@ -1,6 +1,6 @@
 const { expect } = require('chai');
 
-const merge = require('../../lib/helpers/_/merge');
+const merge = require('../../lib/helpers/_/merge.js');
 
 describe('merge', () => {
   it('merges objects', () => {

@@ -8,9 +8,9 @@ const omit = require('lodash/omit');
 const pull = require('lodash/pull');
 const cloneDeep = require('lodash/cloneDeep');
 
-const { Provider } = require('../../lib');
-const { enabledJWA } = require('../default.config');
-const sectorIdentifier = require('../../lib/helpers/sector_identifier');
+const { Provider } = require('../../lib/index.js');
+const { enabledJWA } = require('../default.config.js');
+const sectorIdentifier = require('../../lib/helpers/sector_identifier.js');
 
 const sigKey = global.keystore.get().toJWK();
 const privateKey = global.keystore.get().toJWK(true);

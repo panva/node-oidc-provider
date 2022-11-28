@@ -6,9 +6,9 @@ const nock = require('nock');
 const sinon = require('sinon').createSandbox();
 const { expect } = require('chai');
 
-const JWT = require('../../lib/helpers/jwt');
-const epochTime = require('../../lib/helpers/epoch_time');
-const bootstrap = require('../test_helper');
+const JWT = require('../../lib/helpers/jwt.js');
+const epochTime = require('../../lib/helpers/epoch_time.js');
+const bootstrap = require('../test_helper.js');
 
 const endpoint = nock('https://client.example.com/');
 const keystore = new jose.JWKS.KeyStore();

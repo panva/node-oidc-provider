@@ -1,8 +1,8 @@
 const cloneDeep = require('lodash/cloneDeep');
 const merge = require('lodash/merge');
 
-const config = cloneDeep(require('../../default.config'));
-const { Prompt, Check, base } = require('../../../lib/helpers/interaction_policy');
+const config = cloneDeep(require('../../default.config.js'));
+const { Prompt, Check, base } = require('../../../lib/helpers/interaction_policy/index.js');
 
 config.extraParams = ['triggerCustomFail'];
 merge(config.features, { requestObjects: { requestUri: false } });

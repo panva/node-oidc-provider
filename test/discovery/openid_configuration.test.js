@@ -1,8 +1,8 @@
 const { expect } = require('chai');
 const sinon = require('sinon').createSandbox();
 
-const bootstrap = require('../test_helper');
-const { InvalidRequest } = require('../../lib/helpers/errors');
+const bootstrap = require('../test_helper.js');
+const { InvalidRequest } = require('../../lib/helpers/errors.js');
 
 const route = '/.well-known/openid-configuration';
 
