@@ -24,8 +24,8 @@ Update whatever file holds your provider, e.g. `index.js` where the provider ins
 prototype needs to be changed.
 
 ```js
-const net = require('net');
-const { URL } = require('url');
+const net = require('node:net');
+const { URL } = require('node:url');
 
 const wildcard = require('wildcard');
 const psl = require('psl');

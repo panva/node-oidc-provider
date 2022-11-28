@@ -1,7 +1,7 @@
 /* eslint-disable no-console, max-len, camelcase, no-unused-vars */
-const { strict: assert } = require('assert');
-const querystring = require('querystring');
-const { inspect } = require('util');
+const { strict: assert } = require('node:assert');
+const querystring = require('node:querystring');
+const { inspect } = require('node:util');
 
 const isEmpty = require('lodash/isEmpty');
 const { urlencoded } = require('express'); // eslint-disable-line import/no-unresolved

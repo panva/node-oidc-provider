@@ -1,6 +1,6 @@
 /* eslint-disable max-classes-per-file */
 
-const { strict: assert } = require('assert');
+const { strict: assert } = require('node:assert');
 
 const { expect } = require('chai');
 const sinon = require('sinon');

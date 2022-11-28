@@ -1,4 +1,4 @@
-const querystring = require('querystring');
+const querystring = require('node:querystring');
 
 const sinon = require('sinon');
 const { expect } = require('chai');

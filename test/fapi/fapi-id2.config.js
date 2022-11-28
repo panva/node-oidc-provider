@@ -1,4 +1,4 @@
-const crypto = require('crypto');
+const crypto = require('node:crypto');
 
 const cloneDeep = require('lodash/cloneDeep');
 const merge = require('lodash/merge');

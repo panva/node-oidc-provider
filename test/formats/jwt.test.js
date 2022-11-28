@@ -1,8 +1,8 @@
 /* eslint-disable no-shadow */
 /* eslint-disable no-param-reassign */
-const { strict: assert } = require('assert');
-const crypto = require('crypto');
-const util = require('util');
+const { strict: assert } = require('node:assert');
+const crypto = require('node:crypto');
+const util = require('node:util');
 
 const sinon = require('sinon').createSandbox();
 const { expect } = require('chai');

@@ -1,8 +1,8 @@
 /* eslint-disable no-await-in-loop */
-const { strict: assert } = require('assert');
-const { createWriteStream } = require('fs');
-const stream = require('stream');
-const { promisify } = require('util');
+const { strict: assert } = require('node:assert');
+const { createWriteStream } = require('node:fs');
+const stream = require('node:stream');
+const { promisify } = require('node:util');
 
 const Got = require('got');
 const ms = require('ms');

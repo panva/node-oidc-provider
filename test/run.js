@@ -1,7 +1,7 @@
 /* eslint-disable no-console */
 
-const { createServer } = require('http');
-const { once } = require('events');
+const { createServer } = require('node:http');
+const { once } = require('node:events');
 
 const Mocha = require('mocha');
 const lookupFiles = require('mocha/lib/cli/lookup-files');

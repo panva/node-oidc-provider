@@ -1,7 +1,7 @@
 /* eslint-disable no-console */
 
-const path = require('path');
-const url = require('url');
+const path = require('node:path');
+const url = require('node:url');
 
 const express = require('express'); // eslint-disable-line import/no-unresolved
 const helmet = require('helmet');

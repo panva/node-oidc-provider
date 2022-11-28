@@ -1,4 +1,4 @@
-const url = require('url');
+const url = require('node:url');
 
 const sinon = require('sinon');
 const { JWT: { decode } } = require('jose2');

@@ -1,5 +1,5 @@
-const { strict: assert } = require('assert');
-const { parse: parseUrl } = require('url');
+const { strict: assert } = require('node:assert');
+const { parse: parseUrl } = require('node:url');
 
 const sinon = require('sinon');
 const base64url = require('base64url');

@@ -1,4 +1,4 @@
-const crypto = require('crypto');
+const crypto = require('node:crypto');
 
 const pkg = require('../../package.json');
 const enabledJWA = JSON.parse(JSON.stringify(require('../../lib/consts/jwa')));

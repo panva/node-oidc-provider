@@ -1,5 +1,5 @@
-const { readFileSync } = require('fs');
-const url = require('url');
+const { readFileSync } = require('node:fs');
+const url = require('node:url');
 
 const sinon = require('sinon');
 const { expect } = require('chai');

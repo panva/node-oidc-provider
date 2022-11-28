@@ -8,7 +8,7 @@ how to implement a custom client metadata field and have it used during CORS req
 in the `clientBasedCORS` helper function.
 
 ```js
-const { URL } = require('url');
+const { URL } = require('node:url');
 
 const { errors: { InvalidClientMetadata } } = Provider;
 

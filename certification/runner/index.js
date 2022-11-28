@@ -1,8 +1,8 @@
 /* eslint-env mocha */
 /* eslint-disable no-bitwise, func-names, no-console, no-restricted-syntax, no-await-in-loop, no-multi-assign, max-len */
 
-const { strict: assert } = require('assert');
-const fs = require('fs');
+const { strict: assert } = require('node:assert');
+const fs = require('node:fs');
 
 const debug = require('./debug');
 const API = require('./api');

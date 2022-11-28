@@ -1,4 +1,4 @@
-const { parse: parseLocation } = require('url');
+const { parse: parseLocation } = require('node:url');
 
 const { expect } = require('chai');
 const jose = require('jose2');

@@ -1,7 +1,7 @@
 /* eslint-disable no-param-reassign, max-len */
 
-const { strict: assert } = require('assert');
-const url = require('url');
+const { strict: assert } = require('node:assert');
+const url = require('node:url');
 
 const sinon = require('sinon').createSandbox();
 const { expect } = require('chai');

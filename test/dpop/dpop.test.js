@@ -1,5 +1,5 @@
-const url = require('url');
-const { createHash } = require('crypto');
+const url = require('node:url');
+const { createHash } = require('node:crypto');
 
 const sinon = require('sinon');
 const { expect } = require('chai');

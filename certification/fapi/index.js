@@ -1,11 +1,11 @@
 /* eslint-disable no-console */
 
-const { readFileSync } = require('fs');
-const path = require('path');
-const { randomBytes, randomUUID } = require('crypto');
-const https = require('https');
-const { promisify } = require('util');
-const { URL } = require('url');
+const { readFileSync } = require('node:fs');
+const path = require('node:path');
+const { randomBytes, randomUUID } = require('node:crypto');
+const https = require('node:https');
+const { promisify } = require('node:util');
+const { URL } = require('node:url');
 
 const jose = require('jose2');
 const helmet = require('helmet');

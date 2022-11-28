@@ -1,7 +1,7 @@
 /* eslint-disable prefer-rest-params */
 
-const { strict: assert } = require('assert');
-const { EventEmitter, once } = require('events');
+const { strict: assert } = require('node:assert');
+const { EventEmitter, once } = require('node:events');
 
 const cloneDeep = require('lodash/cloneDeep');
 

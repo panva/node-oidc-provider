@@ -1,6 +1,6 @@
 /* eslint-disable max-classes-per-file */
 
-const { strict: assert } = require('assert');
+const { strict: assert } = require('node:assert');
 
 const map = new Map();
 

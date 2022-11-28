@@ -1,4 +1,4 @@
-const { parse: parseUrl } = require('url');
+const { parse: parseUrl } = require('node:url');
 
 const { expect } = require('chai');
 

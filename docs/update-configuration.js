@@ -1,8 +1,8 @@
 /* eslint-disable no-param-reassign */
 
-const { createInterface: readline } = require('readline');
-const { inspect } = require('util');
-const { createReadStream, writeFileSync, readFileSync } = require('fs');
+const { createInterface: readline } = require('node:readline');
+const { inspect } = require('node:util');
+const { createReadStream, writeFileSync, readFileSync } = require('node:fs');
 
 const get = require('lodash/get'); // eslint-disable-line import/no-extraneous-dependencies
 const words = require('lodash/words'); // eslint-disable-line import/no-extraneous-dependencies

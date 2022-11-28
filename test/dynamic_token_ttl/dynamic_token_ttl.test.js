@@ -1,4 +1,4 @@
-const url = require('url');
+const url = require('node:url');
 
 const { expect } = require('chai');
 const sinon = require('sinon');

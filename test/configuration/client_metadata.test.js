@@ -1,5 +1,5 @@
-const { strict: assert } = require('assert');
-const util = require('util');
+const { strict: assert } = require('node:assert');
+const util = require('node:util');
 
 const sinon = require('sinon');
 const { expect } = require('chai');

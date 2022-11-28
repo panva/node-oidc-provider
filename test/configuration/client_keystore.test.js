@@ -1,4 +1,4 @@
-const { strict: assert } = require('assert');
+const { strict: assert } = require('node:assert');
 
 const jose = require('jose2');
 const moment = require('moment');

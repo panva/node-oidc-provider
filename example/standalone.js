@@ -1,7 +1,7 @@
 /* eslint-disable no-console */
 
-const path = require('path');
-const { promisify } = require('util');
+const path = require('node:path');
+const { promisify } = require('node:util');
 
 const render = require('@koa/ejs');
 const helmet = require('helmet');

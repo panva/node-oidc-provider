@@ -1,6 +1,6 @@
 /* eslint-disable no-underscore-dangle */
 
-const { strict: assert } = require('assert');
+const { strict: assert } = require('node:assert');
 
 const { expect } = require('chai');
 const KeyGrip = require('keygrip'); // eslint-disable-line import/no-extraneous-dependencies

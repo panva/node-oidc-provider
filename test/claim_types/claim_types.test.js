@@ -1,6 +1,6 @@
 /* eslint-disable no-underscore-dangle */
 
-const { parse: parseLocation } = require('url');
+const { parse: parseLocation } = require('node:url');
 
 const { expect } = require('chai');
 

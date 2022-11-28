@@ -1,5 +1,5 @@
-const querystring = require('querystring');
-const url = require('url');
+const querystring = require('node:querystring');
+const url = require('node:url');
 
 const sinon = require('sinon');
 const { expect } = require('chai');

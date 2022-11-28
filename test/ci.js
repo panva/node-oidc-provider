@@ -1,5 +1,5 @@
 /* eslint-disable no-restricted-syntax, max-len, no-await-in-loop, no-plusplus */
-const { spawn } = require('child_process');
+const { spawn } = require('node:child_process');
 
 function pass({ mountTo, mountVia } = {}) {
   const child = spawn(

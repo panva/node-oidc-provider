@@ -1,6 +1,6 @@
 /* eslint-disable prefer-destructuring */
 
-const { strict: assert } = require('assert');
+const { strict: assert } = require('node:assert');
 
 const sinon = require('sinon');
 const { expect } = require('chai');

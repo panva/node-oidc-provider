@@ -1,5 +1,5 @@
-const { createSecretKey, randomBytes } = require('crypto');
-const { parse } = require('url');
+const { createSecretKey, randomBytes } = require('node:crypto');
+const { parse } = require('node:url');
 
 const { importJWK } = require('jose');
 const sinon = require('sinon');

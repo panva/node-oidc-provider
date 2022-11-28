@@ -1,5 +1,5 @@
 /* eslint-disable no-shadow */
-const url = require('url');
+const url = require('node:url');
 
 const { expect } = require('chai');
 

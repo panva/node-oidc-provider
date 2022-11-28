@@ -1,7 +1,7 @@
 /* eslint-disable no-console */
 
-const path = require('path');
-const https = require('https');
+const path = require('node:path');
+const https = require('node:https');
 
 const selfsigned = require('selfsigned').generate();
 const render = require('@koa/ejs');

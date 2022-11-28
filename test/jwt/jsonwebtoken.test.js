@@ -1,4 +1,4 @@
-const { AssertionError } = require('assert');
+const { AssertionError } = require('node:assert');
 
 const { expect } = require('chai');
 const jose = require('jose2');

@@ -1,8 +1,8 @@
 /* eslint-disable no-console, max-len, camelcase, no-unused-vars */
-const { strict: assert } = require('assert');
-const querystring = require('querystring');
-const crypto = require('crypto');
-const { inspect } = require('util');
+const { strict: assert } = require('node:assert');
+const querystring = require('node:querystring');
+const crypto = require('node:crypto');
+const { inspect } = require('node:util');
 
 const isEmpty = require('lodash/isEmpty');
 const { koaBody: bodyParser } = require('koa-body');

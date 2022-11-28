@@ -3,11 +3,11 @@
 
 process.env.NODE_ENV = process.env.NODE_ENV || 'test';
 
-const { parse } = require('url');
-const path = require('path');
-const querystring = require('querystring');
-const { createServer } = require('http');
-const { once } = require('events');
+const { parse } = require('node:url');
+const path = require('node:path');
+const querystring = require('node:querystring');
+const { createServer } = require('node:http');
+const { once } = require('node:events');
 
 const sinon = require('sinon');
 const flatten = require('lodash/flatten');
