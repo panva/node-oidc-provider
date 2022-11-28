@@ -2985,6 +2985,7 @@ _**default value**_:
   'A256KW',
   'ECDH-ES',
   'RSA-OAEP',
+  'RSA-OAEP-256',
   'dir'
 ]
 ```
@@ -3130,6 +3131,7 @@ _**default value**_:
   'A256KW',
   'ECDH-ES',
   'RSA-OAEP',
+  'RSA-OAEP-256',
   'dir'
 ]
 ```
@@ -3217,6 +3219,7 @@ _**default value**_:
   'A256KW',
   'ECDH-ES',
   'RSA-OAEP',
+  'RSA-OAEP-256',
   'dir'
 ]
 ```
@@ -3304,6 +3307,7 @@ _**default value**_:
   'A256KW',
   'ECDH-ES',
   'RSA-OAEP',
+  'RSA-OAEP-256',
   'dir'
 ]
 ```
@@ -3392,6 +3396,7 @@ _**default value**_:
   'A256KW',
   'ECDH-ES',
   'RSA-OAEP',
+  'RSA-OAEP-256',
   'dir'
 ]
 ```
