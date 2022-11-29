@@ -687,6 +687,13 @@ describe('Client metadata validation', () => {
     allows(this.title, 'HS256', undefined, configuration);
     rejects(this.title, 'not-an-alg', undefined, undefined, configuration);
     rejects(this.title, 'none', undefined, undefined, configuration);
+    rejects(
+      this.title,
+      undefined,
+      'userinfo_signed_response_alg is mandatory property when userinfo_encrypted_response_alg is provided',
+      { userinfo_encrypted_response_alg: 'dir' },
+      merge({ features: { encryption: { enabled: true } } }, configuration),
+    );
   });
 
   context('introspection_signed_response_alg', function () {
@@ -777,11 +784,13 @@ describe('Client metadata validation', () => {
     });
 
     context('userinfo_encrypted_response_alg', function () {
+      const metadata = {
+        jwks: { keys: [sigKey] },
+        userinfo_signed_response_alg: 'RS256',
+      };
       defaultsTo(this.title, undefined);
       defaultsTo(this.title, undefined, undefined, configuration);
-      mustBeString(this.title, undefined, {
-        jwks: { keys: [sigKey] },
-      }, configuration);
+      mustBeString(this.title, undefined, metadata, configuration);
       it('is required when userinfo_encrypted_response_enc is also provided', () => assert.rejects(addClient({
         userinfo_encrypted_response_enc: 'whatever',
       }, configuration), (err) => {
@@ -789,14 +798,12 @@ describe('Client metadata validation', () => {
         expect(err.error_description).to.equal('userinfo_encrypted_response_alg is mandatory property when userinfo_encrypted_response_enc is provided');
         return true;
       }));
-      allows(this.title, 'dir', undefined, configuration);
+      allows(this.title, 'dir', metadata, configuration);
       [
         'RSA-OAEP', 'RSA-OAEP-256', 'RSA-OAEP-384', 'RSA-OAEP-512', 'ECDH-ES', 'ECDH-ES+A128KW', 'ECDH-ES+A192KW',
         'ECDH-ES+A256KW', 'A128GCMKW', 'A192GCMKW', 'A256GCMKW', 'A128KW', 'A192KW', 'A256KW',
       ].forEach((value) => {
-        allows(this.title, value, {
-          jwks: { keys: [sigKey] },
-        }, configuration);
+        allows(this.title, value, metadata, configuration);
       });
       rejects(this.title, 'not-an-alg', undefined, undefined, configuration);
       rejects(this.title, 'none', undefined, undefined, configuration);
@@ -807,10 +814,12 @@ describe('Client metadata validation', () => {
       defaultsTo(this.title, undefined, undefined, configuration);
       defaultsTo(this.title, 'A128CBC-HS256', {
         [this.title.replace(/(enc$)/, 'alg')]: 'RSA-OAEP',
+        [this.title.replace('encrypted', 'signed').replace('_enc', '_alg')]: 'RS256',
         jwks: { keys: [sigKey] },
       }, configuration);
       mustBeString(this.title, undefined, {
         [this.title.replace(/(enc$)/, 'alg')]: 'RSA-OAEP',
+        [this.title.replace('encrypted', 'signed').replace('_enc', '_alg')]: 'RS256',
         jwks: { keys: [sigKey] },
       }, configuration);
       [
@@ -818,24 +827,29 @@ describe('Client metadata validation', () => {
       ].forEach((value) => {
         allows(this.title, value, {
           [this.title.replace(/(enc$)/, 'alg')]: 'RSA-OAEP',
+          [this.title.replace('encrypted', 'signed').replace('_enc', '_alg')]: 'RS256',
           jwks: { keys: [sigKey] },
         }, configuration);
         allows(this.title, value, {
           [this.title.replace(/(enc$)/, 'alg')]: 'dir',
+          [this.title.replace('encrypted', 'signed').replace('_enc', '_alg')]: 'RS256',
         }, configuration);
       });
       rejects(this.title, 'not-an-enc', undefined, {
         [this.title.replace(/(enc$)/, 'alg')]: 'RSA-OAEP',
+        [this.title.replace('encrypted', 'signed').replace('_enc', '_alg')]: 'RS256',
         jwks: { keys: [sigKey] },
       }, configuration);
     });
 
     context('introspection_encrypted_response_alg', function () {
+      const metadata = {
+        jwks: { keys: [sigKey] },
+        introspection_signed_response_alg: 'RS256',
+      };
       defaultsTo(this.title, undefined);
       defaultsTo(this.title, undefined, undefined, configuration);
-      mustBeString(this.title, undefined, {
-        jwks: { keys: [sigKey] },
-      }, configuration);
+      mustBeString(this.title, undefined, metadata, configuration);
       it('is required when introspection_encrypted_response_enc is also provided', () => assert.rejects(addClient({
         introspection_encrypted_response_enc: 'whatever',
       }, configuration), (err) => {
@@ -843,14 +857,12 @@ describe('Client metadata validation', () => {
         expect(err.error_description).to.equal('introspection_encrypted_response_alg is mandatory property when introspection_encrypted_response_enc is provided');
         return true;
       }));
-      allows(this.title, 'dir', undefined, configuration);
+      allows(this.title, 'dir', metadata, configuration);
       [
         'RSA-OAEP', 'RSA-OAEP-256', 'RSA-OAEP-384', 'RSA-OAEP-512', 'ECDH-ES', 'ECDH-ES+A128KW', 'ECDH-ES+A192KW',
         'ECDH-ES+A256KW', 'A128GCMKW', 'A192GCMKW', 'A256GCMKW', 'A128KW', 'A192KW', 'A256KW',
       ].forEach((value) => {
-        allows(this.title, value, {
-          jwks: { keys: [sigKey] },
-        }, configuration);
+        allows(this.title, value, metadata, configuration);
       });
       rejects(this.title, 'not-an-alg', undefined, undefined, configuration);
       rejects(this.title, 'none', undefined, undefined, configuration);
@@ -885,11 +897,13 @@ describe('Client metadata validation', () => {
     });
 
     context('authorization_encrypted_response_alg', function () {
+      const metadata = {
+        jwks: { keys: [sigKey] },
+        authorization_signed_response_alg: 'RS256',
+      };
       defaultsTo(this.title, undefined);
       defaultsTo(this.title, undefined, undefined, configuration);
-      mustBeString(this.title, undefined, {
-        jwks: { keys: [sigKey] },
-      }, configuration);
+      mustBeString(this.title, undefined, metadata, configuration);
       it('is required when authorization_encrypted_response_enc is also provided', () => assert.rejects(addClient({
         authorization_encrypted_response_enc: 'whatever',
       }, configuration), (err) => {
@@ -897,14 +911,12 @@ describe('Client metadata validation', () => {
         expect(err.error_description).to.equal('authorization_encrypted_response_alg is mandatory property when authorization_encrypted_response_enc is provided');
         return true;
       }));
-      allows(this.title, 'dir', undefined, configuration);
+      allows(this.title, 'dir', metadata, configuration);
       [
         'RSA-OAEP', 'RSA-OAEP-256', 'RSA-OAEP-384', 'RSA-OAEP-512', 'ECDH-ES', 'ECDH-ES+A128KW', 'ECDH-ES+A192KW',
         'ECDH-ES+A256KW', 'A128GCMKW', 'A192GCMKW', 'A256GCMKW', 'A128KW', 'A192KW', 'A256KW',
       ].forEach((value) => {
-        allows(this.title, value, {
-          jwks: { keys: [sigKey] },
-        }, configuration);
+        allows(this.title, value, metadata, configuration);
       });
       rejects(this.title, 'not-an-alg', undefined, undefined, configuration);
       rejects(this.title, 'none', undefined, undefined, configuration);
@@ -1178,11 +1190,9 @@ describe('Client metadata validation', () => {
       ].forEach((alg) => {
         rejects(this.title, undefined, 'jwks or jwks_uri is mandatory for this client', {
           [prop]: alg,
+          [prop.replace('encrypted', 'signed')]: 'RS256',
         }, configuration);
       });
-    });
-    rejects(this.title, { keys: ['something'] }, 'jwks and jwks_uri must not be used at the same time', {
-      jwks_uri: 'https://client.example.com/jwks',
     });
   });
 

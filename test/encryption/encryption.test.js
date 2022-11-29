@@ -94,7 +94,7 @@ describe('encryption', () => {
           expect(header).to.have.property('aud').eql('client');
         });
 
-        it('responds with an encrypted userinfo JWT', function (done) {
+        it('handles nested encrypted and signed userinfo JWT', function (done) {
           this.agent.get('/me')
             .auth(this.access_token, { type: 'bearer' })
             .expect(200)
@@ -111,46 +111,12 @@ describe('encryption', () => {
 
               const result = jose.JWE.decrypt(response.text, this.keystore);
               expect(result).to.be.ok;
-              expect(JSON.parse(result)).to.have.keys('sub');
+              expect(result.toString().split('.')).to.have.lengthOf(3);
+              const decode = JWT.decode(result);
+              expect(decode).to.be.ok;
+              expect(decode.payload).to.have.property('exp').above(Date.now() / 1000);
               done();
             });
-        });
-
-        describe('userinfo nested signed and encrypted', () => {
-          before(async function () {
-            const client = await this.provider.Client.find('client');
-            client.userinfoSignedResponseAlg = 'RS256';
-          });
-
-          after(async function () {
-            const client = await this.provider.Client.find('client');
-            client.userinfoSignedResponseAlg = undefined;
-          });
-
-          it('also handles nested encrypted and signed userinfo JWT', function (done) {
-            this.agent.get('/me')
-              .auth(this.access_token, { type: 'bearer' })
-              .expect(200)
-              .expect('content-type', /application\/jwt/)
-              .expect((response) => {
-                expect(response.text.split('.')).to.have.lengthOf(5);
-              })
-              .end((err, response) => {
-                if (err) throw err;
-
-                const header = decodeProtectedHeader(response.text);
-                expect(header).to.have.property('iss').eql(this.provider.issuer);
-                expect(header).to.have.property('aud').eql('client');
-
-                const result = jose.JWE.decrypt(response.text, this.keystore);
-                expect(result).to.be.ok;
-                expect(result.toString().split('.')).to.have.lengthOf(3);
-                const decode = JWT.decode(result);
-                expect(decode).to.be.ok;
-                expect(decode.payload).to.have.property('exp').above(Date.now() / 1000);
-                done();
-              });
-          });
         });
 
         describe('userinfo signed - expired client secret', () => {
@@ -162,7 +128,7 @@ describe('encryption', () => {
 
           after(async function () {
             const client = await this.provider.Client.find('client');
-            client.userinfoSignedResponseAlg = undefined;
+            client.userinfoSignedResponseAlg = 'RS256';
             client.clientSecretExpiresAt = 0;
           });
 

@@ -42,6 +42,7 @@ export default {
       // id_token_encrypted_response_enc: 'A128CBC-HS256',
       request_object_encryption_alg: 'RSA-OAEP',
       // request_object_encryption_enc: 'A128CBC-HS256',
+      userinfo_signed_response_alg: 'RS256',
       userinfo_encrypted_response_alg: 'RSA-OAEP',
       // userinfo_encrypted_response_enc: 'A128CBC-HS256',
     },
