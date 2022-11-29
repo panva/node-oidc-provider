@@ -943,7 +943,7 @@ _**default value**_:
 
 #### deviceInfo
 
-Function used to extract details from the device authorization endpoint request. This is then available during the end-user confirm screen and is supposed to aid the user confirm that the particular authorization initiated by the user from a device in his possession  
+Function used to extract details from the device authorization endpoint request. This is then available during the end-user confirm screen and is supposed to aid the user confirm that the particular authorization initiated by the user from a device in their possession.  
 
 
 _**default value**_:
