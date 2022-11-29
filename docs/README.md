@@ -5,8 +5,8 @@ will have to configure your instance with how to find your user accounts, where 
 persisted data from and where your end-user interactions happen. The [example](/example) application
 is a good starting point to get an idea of what you should provide.
 
-> ⚠️⚠️ This page now describes oidc-provider version v7.x documentation. See 
-[here](https://github.com/panva/node-oidc-provider/blob/v6.x/docs/README.md) for v6.x.
+> ⚠️⚠️ This page now describes oidc-provider version v8.x documentation. See 
+[here](https://github.com/panva/node-oidc-provider/blob/v7.x/docs/README.md) for v7.x.
 
 ## Support
 
@@ -3561,7 +3561,7 @@ Every client is configured with one of 7 available
 and it must adhere to how that given method must be submitted. Submitting multiple means of
 authentication is also not possible. If you're a provider operator you're encouraged to set up
 listeners for errors
-(see [events.md](https://github.com/panva/node-oidc-provider/blob/v7.x/docs/events.md)) and
+(see [events.md](https://github.com/panva/node-oidc-provider/blob/v8.x/docs/events.md)) and
 deliver them to client developers out-of-band, e.g. by logs in an admin interface.
 
 ```js

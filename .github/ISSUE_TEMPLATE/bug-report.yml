@@ -40,7 +40,7 @@ body:
           required: true
         - label: I have searched the issues tracker and discussions for similar topics and couldn't find anything related.
           required: true
-        - label: I have searched the [FAQ](https://github.com/panva/node-oidc-provider/blob/v7.x/docs/README.md#faq) and couldn't find anything related.
+        - label: I have searched the [FAQ](https://github.com/panva/node-oidc-provider/blob/v8.x/docs/README.md#faq) and couldn't find anything related.
           required: true
         - label: I agree to follow this project's [Code of Conduct](https://github.com/panva/node-oidc-provider/blob/main/CODE_OF_CONDUCT.md)
           required: true
