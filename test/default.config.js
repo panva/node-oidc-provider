@@ -54,7 +54,6 @@ export default () => ({
   ],
   features: {},
   enabledJWA: cloneDeep({ ...JWA }),
-  allowOmittingSingleRegisteredRedirectUri: true,
   pkce: {
     required: () => false,
   },

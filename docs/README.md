@@ -1954,7 +1954,7 @@ Allow omitting the redirect_uri parameter when only a single one is registered f
 
 _**default value**_:
 ```js
-false
+true
 ```
 
 ### claims
