@@ -1,13 +1,14 @@
 /* eslint-disable no-underscore-dangle */
-const { expect } = require('chai');
-const KeyGrip = require('keygrip'); // eslint-disable-line import/no-extraneous-dependencies
-const sinon = require('sinon').createSandbox();
+import { expect } from 'chai';
+import KeyGrip from 'keygrip'; // eslint-disable-line import/no-extraneous-dependencies
+import { createSandbox } from 'sinon';
 
-const nanoid = require('../../lib/helpers/nanoid.js');
-const bootstrap = require('../test_helper.js');
-const epochTime = require('../../lib/helpers/epoch_time.js');
-const { generate } = require('../../lib/helpers/user_codes.js');
+import nanoid from '../../lib/helpers/nanoid.js';
+import bootstrap, { passInteractionChecks } from '../test_helper.js';
+import epochTime from '../../lib/helpers/epoch_time.js';
+import { generate } from '../../lib/helpers/user_codes.js';
 
+const sinon = createSandbox();
 const { any } = sinon.match;
 
 const expire = new Date();
@@ -18,7 +19,7 @@ let userCode;
 let path;
 
 describe('device interaction resume /device/:uid/', () => {
-  before(bootstrap(__dirname));
+  before(bootstrap(import.meta.url));
 
   beforeEach(function () {
     uid = nanoid();
@@ -78,7 +79,7 @@ describe('device interaction resume /device/:uid/', () => {
     ]);
   }
 
-  bootstrap.passInteractionChecks('native_client_prompt', () => {
+  passInteractionChecks('native_client_prompt', () => {
     context('general', () => {
       it('needs the resume cookie to be present, else renders an err', async function () {
         const spy = sinon.spy(i(this.provider).configuration('features.deviceFlow'), 'userCodeInputSource');

@@ -1,6 +1,6 @@
 # OpenID Connect 1.0 Standard Claims
 
-- built for version: ^6.0.0 || ^7.0.0
+- built for version: ^6.0.0 || ^7.0.0 || ^8.0.0
 
 The `claims` configuration parameter can be used to define which claims fall under what scope
 as well as to expose additional claims that are available to RPs via the `claims` authorization

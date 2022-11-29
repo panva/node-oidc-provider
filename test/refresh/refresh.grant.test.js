@@ -1,12 +1,12 @@
-const { strict: assert } = require('node:assert');
-const { parse: parseUrl } = require('node:url');
+import { strict as assert } from 'node:assert';
+import { parse as parseUrl } from 'node:url';
 
-const sinon = require('sinon');
-const base64url = require('base64url');
-const { expect } = require('chai');
-const timekeeper = require('timekeeper');
+import sinon from 'sinon';
+import base64url from 'base64url';
+import { expect } from 'chai';
+import timekeeper from 'timekeeper';
 
-const bootstrap = require('../test_helper.js');
+import bootstrap, { skipConsent } from '../test_helper.js';
 
 const route = '/token';
 
@@ -15,7 +15,7 @@ function errorDetail(spy) {
 }
 
 describe('grant_type=refresh_token', () => {
-  before(bootstrap(__dirname));
+  before(bootstrap(import.meta.url));
 
   afterEach(() => timekeeper.reset());
   afterEach(function () {
@@ -24,7 +24,7 @@ describe('grant_type=refresh_token', () => {
 
   beforeEach(function () { return this.login({ scope: 'openid email offline_access' }); });
   afterEach(function () { return this.logout(); });
-  bootstrap.skipConsent();
+  skipConsent();
 
   beforeEach(function (done) {
     this.agent.get('/auth')

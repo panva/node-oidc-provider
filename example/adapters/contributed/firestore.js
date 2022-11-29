@@ -10,10 +10,10 @@
  * Reach out to @hadyrashwan <https://github.com/hadyrashwan> for questions on this community example.
  */
 
+import admin from 'firebase-admin'; // eslint-disable-line import/no-unresolved
+
 const undefinedFirestoreValue = 'custom.type.firestore'; // A work around as firestore does not support undefined.
 const namePrefix = 'oidc_library';
-
-const admin = require('firebase-admin'); // eslint-disable-line import/no-unresolved
 
 const db = admin.firestore();
 /**
@@ -131,4 +131,4 @@ class FirestoreAdapter {
     return internalObject;
   }
 }
-module.exports = FirestoreAdapter;
+export default FirestoreAdapter;

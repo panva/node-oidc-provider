@@ -1,14 +1,16 @@
 /* eslint-disable no-underscore-dangle */
 
-const { strict: assert } = require('node:assert');
+import { strict as assert } from 'node:assert';
 
-const { expect } = require('chai');
-const KeyGrip = require('keygrip'); // eslint-disable-line import/no-extraneous-dependencies
-const sinon = require('sinon').createSandbox();
+import { expect } from 'chai';
+import KeyGrip from 'keygrip'; // eslint-disable-line import/no-extraneous-dependencies
+import { createSandbox } from 'sinon';
 
-const nanoid = require('../../lib/helpers/nanoid.js');
-const bootstrap = require('../test_helper.js');
-const epochTime = require('../../lib/helpers/epoch_time.js');
+import nanoid from '../../lib/helpers/nanoid.js';
+import bootstrap from '../test_helper.js';
+import epochTime from '../../lib/helpers/epoch_time.js';
+
+const sinon = createSandbox();
 
 const expire = new Date();
 expire.setDate(expire.getDate() + 1);
@@ -45,9 +47,8 @@ function handlesInteractionSessionErrors() {
     });
   });
 }
-
 describe('devInteractions', () => {
-  before(bootstrap(__dirname));
+  before(bootstrap(import.meta.url));
   afterEach(sinon.restore);
 
   context('render login', () => {
@@ -343,7 +344,7 @@ describe('devInteractions', () => {
 });
 
 describe('resume after consent', () => {
-  before(bootstrap(__dirname));
+  before(bootstrap(import.meta.url));
   afterEach(sinon.restore);
 
   function setup(grant, result, sessionData) {

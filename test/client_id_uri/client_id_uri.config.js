@@ -1,8 +1,9 @@
-const cloneDeep = require('lodash/cloneDeep');
-const merge = require('lodash/merge');
+import merge from 'lodash/merge.js';
 
-const nanoid = require('../../lib/helpers/nanoid.js');
-const config = cloneDeep(require('../default.config.js'));
+import nanoid from '../../lib/helpers/nanoid.js';
+import getConfig from '../default.config.js';
+
+const config = getConfig();
 
 merge(config.features, {
   registration: {
@@ -16,6 +17,6 @@ merge(config.features, {
   },
 });
 
-module.exports = {
+export default {
   config,
 };

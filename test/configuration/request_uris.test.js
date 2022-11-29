@@ -1,6 +1,6 @@
-const { expect } = require('chai');
+import { expect } from 'chai';
 
-const { Provider } = require('../../lib/index.js');
+import Provider from '../../lib/index.js';
 
 describe('client.requestUris', () => {
   it('defaults to empty array when registration of them is a must', () => {

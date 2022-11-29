@@ -1,14 +1,14 @@
-const sinon = require('sinon');
-const { expect } = require('chai');
+import sinon from 'sinon';
+import { expect } from 'chai';
 
-const bootstrap = require('../../test_helper.js');
+import bootstrap, { skipConsent } from '../../test_helper.js';
 
 const route = '/auth';
 const response_type = 'code id_token token';
 const scope = 'openid';
 
 describe('HYBRID code+id_token+token', () => {
-  before(bootstrap(__dirname));
+  before(bootstrap(import.meta.url));
   afterEach(function () {
     this.provider.removeAllListeners();
   });
@@ -63,7 +63,7 @@ describe('HYBRID code+id_token+token', () => {
       });
 
       describe('ignoring the offline_access scope', () => {
-        bootstrap.skipConsent();
+        skipConsent();
 
         it('ignores the scope offline_access unless prompt consent is present', function () {
           const spy = sinon.spy();

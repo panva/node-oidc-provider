@@ -1,16 +1,18 @@
 /* eslint-disable no-param-reassign */
 
-const { createInterface: readline } = require('node:readline');
-const { inspect } = require('node:util');
-const { createReadStream, writeFileSync, readFileSync } = require('node:fs');
+import { createInterface as readline } from 'node:readline';
+import { inspect } from 'node:util';
+import { createReadStream, writeFileSync, readFileSync } from 'node:fs';
 
-const get = require('lodash/get'); // eslint-disable-line import/no-extraneous-dependencies
-const words = require('lodash/words'); // eslint-disable-line import/no-extraneous-dependencies
+import get from 'lodash/get.js'; // eslint-disable-line import/no-extraneous-dependencies
+import words from 'lodash/words.js'; // eslint-disable-line import/no-extraneous-dependencies
 
-const docs = require('../lib/helpers/docs.js');
-const values = require('../lib/helpers/defaults.js')();
+import docs from '../lib/helpers/docs.js';
+import { defaults } from '../lib/helpers/defaults.js';
+import login from '../lib/helpers/interaction_policy/prompts/login.js';
+import consent from '../lib/helpers/interaction_policy/prompts/consent.js';
 
-for (const [key, value] of Object.entries(values.ttl)) { // eslint-disable-line no-restricted-syntax
+for (const [key, value] of Object.entries(defaults.ttl)) { // eslint-disable-line no-restricted-syntax, max-len
   if (['RefreshToken', 'ClientCredentials', 'AccessToken', 'BackchannelAuthenticationRequest'].includes(key)) {
     value[inspect.custom] = () => (
       value.toString()
@@ -31,12 +33,12 @@ for (const [key, value] of Object.entries(values.ttl)) { // eslint-disable-line 
   }
 }
 
-values.interactions.policy[inspect.custom] = () => `[
+defaults.interactions.policy[inspect.custom] = () => `[
 /* LOGIN PROMPT */
-${require('../lib/helpers/interaction_policy/prompts/login').toString().replace('() => new Prompt', 'new Prompt')}
+${login.toString().replace('() => new Prompt', 'new Prompt')}
 
 /* CONSENT PROMPT */
-${require('../lib/helpers/interaction_policy/prompts/consent').toString().replace('() => new Prompt', 'new Prompt')}
+${consent.toString().replace('() => new Prompt', 'new Prompt')}
 ]`;
 
 function capitalizeSentences(copy) {
@@ -87,7 +89,20 @@ const props = [
   '@skip',
 ];
 
-(async () => {
+let mid = Buffer.from('');
+
+function append(what) {
+  mid = Buffer.concat([mid, Buffer.from(what)]);
+}
+
+function expand(what) {
+  what = `\`\`\`js\n${what}\n\`\`\`\n`;
+
+  append('\n_**default value**_:\n');
+  return what;
+}
+
+try {
   const blocks = {};
   await new Promise((resolve, reject) => {
     const read = readline({ input: createReadStream('./lib/helpers/defaults.js') });
@@ -173,19 +188,6 @@ const props = [
     read.on('error', reject);
   });
 
-  let mid = Buffer.from('');
-
-  function append(what) {
-    mid = Buffer.concat([mid, Buffer.from(what)]);
-  }
-
-  function expand(what) {
-    what = `\`\`\`js\n${what}\n\`\`\`\n`;
-
-    append('\n_**default value**_:\n');
-    return what;
-  }
-
   const jwa = [];
   let featuresIdx = 0;
   const configuration = Object.keys(blocks).sort().filter((value) => {
@@ -264,7 +266,7 @@ const props = [
     });
 
     if (!('@nodefault' in section)) {
-      const value = get(values, block);
+      const value = get(defaults, block);
       switch (typeof value) {
         case 'boolean':
         case 'number':
@@ -377,7 +379,7 @@ const props = [
   const post = conf.slice(conf.indexOf(comEnd));
 
   writeFileSync('./docs/README.md', Buffer.concat([pre, mid, post]));
-})().catch((err) => {
+} catch (err) {
   console.error(err); // eslint-disable-line no-console
   process.exitCode = 1;
-});
+}

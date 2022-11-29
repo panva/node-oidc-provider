@@ -1,6 +1,6 @@
-const { expect } = require('chai');
+import { expect } from 'chai';
 
-const redirectUri = require('../../lib/helpers/redirect_uri.js');
+import redirectUri from '../../lib/helpers/redirect_uri.js';
 
 describe('redirectUri helper', () => {
   it('does not modify the redirect_uri when it does not have path', () => {

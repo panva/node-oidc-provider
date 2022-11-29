@@ -1,8 +1,8 @@
 /* eslint-disable max-classes-per-file */
 
 // npm i mongodb@^4.3.0
-const { MongoClient } = require('mongodb'); // eslint-disable-line import/no-unresolved
-const snakeCase = require('lodash/snakeCase');
+import { MongoClient } from 'mongodb'; // eslint-disable-line import/no-unresolved
+import snakeCase from 'lodash/snakeCase.js';
 
 let DB;
 
@@ -131,4 +131,4 @@ class MongoAdapter {
   }
 }
 
-module.exports = MongoAdapter;
+export default MongoAdapter;

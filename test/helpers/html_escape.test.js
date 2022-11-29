@@ -1,6 +1,6 @@
-const { expect } = require('chai');
+import { expect } from 'chai';
 
-const htmlSafe = require('../../lib/helpers/html_safe.js');
+import htmlSafe from '../../lib/helpers/html_safe.js';
 
 describe('htmlSafe helper', () => {
   it('handles numbers', () => {

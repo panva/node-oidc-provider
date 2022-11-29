@@ -1,9 +1,9 @@
 /* eslint-disable no-shadow */
-const url = require('node:url');
+import url from 'node:url';
 
-const { expect } = require('chai');
+import { expect } from 'chai';
 
-const bootstrap = require('../test_helper.js');
+import bootstrap, { skipConsent } from '../test_helper.js';
 
 function assignAuthorizationResponseValues({ headers: { location } }) {
   const { query: { access_token, code } } = url.parse(location, true);
@@ -18,8 +18,8 @@ function assignTokenResponseValues({ body }) {
 }
 
 describe('session bound tokens behaviours', () => {
-  before(bootstrap(__dirname));
-  bootstrap.skipConsent();
+  before(bootstrap(import.meta.url));
+  skipConsent();
 
   beforeEach(function () { return this.login({ scope: 'openid offline_access' }); });
   after(function () { return this.logout(); });

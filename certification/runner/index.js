@@ -1,11 +1,11 @@
 /* eslint-env mocha */
 /* eslint-disable no-bitwise, func-names, no-console, no-restricted-syntax, no-await-in-loop, no-multi-assign, max-len */
 
-const { strict: assert } = require('node:assert');
-const fs = require('node:fs');
+import { strict as assert } from 'node:assert';
+import fs from 'node:fs';
 
-const debug = require('./debug.js');
-const API = require('./api.js');
+import debug from './debug.js';
+import API from './api.js';
 
 const {
   SUITE_ACCESS_TOKEN,
@@ -59,11 +59,13 @@ if (VARIANT.client_registration === 'dynamic_client') {
   delete configuration.alias;
 }
 
-runner.createTestPlan({
-  configuration,
-  planName: PLAN_NAME,
-  variant: JSON.stringify(VARIANT),
-}).then((plan) => {
+try {
+  const plan = await runner.createTestPlan({
+    configuration,
+    planName: PLAN_NAME,
+    variant: JSON.stringify(VARIANT),
+  });
+
   const { id: PLAN_ID, modules: MODULES } = plan;
 
   debug('Created test plan, new id %s', PLAN_ID);
@@ -98,9 +100,7 @@ runner.createTestPlan({
       });
     }
   });
-
-  run();
-}).catch((err) => {
+} catch (err) {
   console.error(err);
   process.exitCode = 1;
-});
+}

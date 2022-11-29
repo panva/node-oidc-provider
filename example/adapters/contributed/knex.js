@@ -6,7 +6,7 @@
  * This code is provided under "The Unlicense"
  */
 
-const knex = require('knex'); // eslint-disable-line import/no-unresolved
+import knex from 'knex'; // eslint-disable-line import/no-unresolved
 
 const tableName = 'oidc_payloads';
 
@@ -122,4 +122,4 @@ const defaultConfig = {
 const defaultAdapter = knexAdapter(defaultConfig);
 defaultAdapter.knexAdapter = knexAdapter;
 
-module.exports = defaultAdapter;
+export default defaultAdapter;

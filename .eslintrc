@@ -2,12 +2,19 @@
   "extends": "airbnb-base",
   "rules": {
     "no-empty": ["error", { "allowEmptyCatch": true }],
-    "no-underscore-dangle": ["error", { "allow": ["_claim_names", "_claim_sources", "_matchedRouteName"] }],
+    "no-underscore-dangle": ["error", { "allow": ["_claim_names", "_claim_sources", "_matchedRouteName", "__dirname"] }],
     "import/order": ["error", { "groups": ["builtin", "external", "internal", "parent", "sibling", "index"], "newlines-between": "always" }],
     "symbol-description": ["off"],
     "import/extensions": ["error", "ignorePackages"]
   },
+  "parser": "@babel/eslint-parser",
   "parserOptions": {
-    "ecmaVersion": "latest"
+    "ecmaVersion": "latest",
+    "requireConfigFile": false,
+    "babelOptions": {
+      "plugins": [
+        "@babel/plugin-syntax-import-assertions"
+      ]
+    }
   }
 }

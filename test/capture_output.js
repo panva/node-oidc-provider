@@ -1,6 +1,6 @@
 /* eslint-disable no-console */
 
-function captureConsoleInfo(fn, color) {
+export function captureConsoleInfo(fn, color) {
   let out;
   const { isTTY } = process.stdout;
   const orig = console.info;
@@ -18,7 +18,7 @@ function captureConsoleInfo(fn, color) {
   }
 }
 
-function captureConsoleWarn(fn, color) {
+export function captureConsoleWarn(fn, color) {
   let out;
   const { isTTY } = process.stderr;
   const orig = console.warn;
@@ -35,8 +35,3 @@ function captureConsoleWarn(fn, color) {
     console.warn = orig;
   }
 }
-
-module.exports = {
-  captureConsoleInfo,
-  captureConsoleWarn,
-};

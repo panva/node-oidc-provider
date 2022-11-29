@@ -1,10 +1,12 @@
 /* eslint-disable no-new, no-console */
 
-const jose = require('jose2');
-const sinon = require('sinon').createSandbox();
-const { expect } = require('chai');
+import jose from 'jose2';
+import { createSandbox } from 'sinon';
+import { expect } from 'chai';
 
-const { Provider } = require('../../lib/index.js');
+import Provider from '../../lib/index.js';
+
+const sinon = createSandbox();
 
 describe('configuration.jwks', () => {
   beforeEach(function () {

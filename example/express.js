@@ -1,16 +1,19 @@
 /* eslint-disable no-console */
 
-const path = require('node:path');
-const url = require('node:url');
+import path from 'node:path';
+import url from 'node:url';
 
-const express = require('express'); // eslint-disable-line import/no-unresolved
-const helmet = require('helmet');
+import { dirname } from 'desm';
+import express from 'express'; // eslint-disable-line import/no-unresolved
+import helmet from 'helmet';
 
-const { Provider } = require('../lib/index.js'); // require('oidc-provider');
+import Provider from '../lib/index.js'; // from 'oidc-provider';
 
-const Account = require('./support/account.js');
-const configuration = require('./support/configuration.js');
-const routes = require('./routes/express.js');
+import Account from './support/account.js';
+import configuration from './support/configuration.js';
+import routes from './routes/express.js';
+
+const __dirname = dirname(import.meta.url);
 
 const { PORT = 3000, ISSUER = `http://localhost:${PORT}` } = process.env;
 configuration.findAccount = Account.findAccount;
@@ -30,10 +33,10 @@ app.set('views', path.join(__dirname, 'views'));
 app.set('view engine', 'ejs');
 
 let server;
-(async () => {
+try {
   let adapter;
   if (process.env.MONGODB_URI) {
-    adapter = require('./adapters/mongodb.js'); // eslint-disable-line global-require
+    ({ default: adapter } = await import('./adapters/mongodb.js'));
     await adapter.connect();
   }
 
@@ -68,8 +71,8 @@ let server;
   server = app.listen(PORT, () => {
     console.log(`application is listening on port ${PORT}, check its /.well-known/openid-configuration`);
   });
-})().catch((err) => {
+} catch (err) {
   if (server && server.listening) server.close();
   console.error(err);
   process.exitCode = 1;
-});
+}

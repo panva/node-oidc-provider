@@ -89,7 +89,7 @@ oidc-provider can be mounted to existing connect, express, fastify, hapi, or koa
 various ways to fit a variety of uses. See the [documentation](/docs/README.md).
 
 ```js
-const { Provider } = require('oidc-provider');
+import Provider from 'oidc-provider';
 const configuration = {
   // ... see /docs for available configuration
   clients: [{

@@ -8,7 +8,7 @@
 */
 
 // npm i sequelize@^5.21.2
-const Sequelize = require('sequelize'); // eslint-disable-line import/no-unresolved
+import Sequelize from 'sequelize'; // eslint-disable-line import/no-unresolved
 
 const sequelize = new Sequelize('databaseName', 'username', 'password', {
   host: 'databaseHost',
@@ -113,4 +113,4 @@ class SequelizeAdapter {
   }
 }
 
-module.exports = SequelizeAdapter;
+export default SequelizeAdapter;

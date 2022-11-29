@@ -1,9 +1,9 @@
-const { expect } = require('chai');
+import { expect } from 'chai';
 
-const bootstrap = require('../test_helper.js');
+import bootstrap from '../test_helper.js';
 
 describe('OAuth 2.0 Authorization Server Issuer Identification', () => {
-  before(bootstrap(__dirname));
+  before(bootstrap(import.meta.url));
 
   describe('enriched discovery', () => {
     it('shows the url now', function () {

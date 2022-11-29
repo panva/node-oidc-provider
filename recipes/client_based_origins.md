@@ -1,6 +1,6 @@
 # Client Metadata-based CORS Origin allow list
 
-- built for version: ^6.0.0 || ^7.0.0
+- built for version: ^8.0.0
 - no guarantees this is bug-free
 
 Since the specifications do not define metadata for client's allowed CORS origins here's
@@ -8,9 +8,9 @@ how to implement a custom client metadata field and have it used during CORS req
 in the `clientBasedCORS` helper function.
 
 ```js
-const { URL } = require('node:url');
+import { URL } from 'node:url';
 
-const { errors: { InvalidClientMetadata } } = Provider;
+import Provider, { errors } from 'oidc-provider'
 
 const corsProp = 'urn:custom:client:allowed-cors-origins';
 const isOrigin = (value) => {
@@ -38,7 +38,7 @@ new Provider(/* your issuer */, {
         }
         // validate an array of Origin strings
         if (!Array.isArray(value) || !value.every(isOrigin)) {
-          throw new InvalidClientMetadata(`${corsProp} must be an array of origins`);
+          throw new errors.InvalidClientMetadata(`${corsProp} must be an array of origins`);
         }
       }
     },

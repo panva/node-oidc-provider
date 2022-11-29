@@ -1,11 +1,11 @@
-const { parse: parseUrl } = require('node:url');
+import { parse as parseUrl } from 'node:url';
 
-const { expect } = require('chai');
+import { expect } from 'chai';
 
-const bootstrap = require('../test_helper.js');
+import bootstrap, { passInteractionChecks } from '../test_helper.js';
 
 describe('PKCE RFC7636', () => {
-  before(bootstrap(__dirname));
+  before(bootstrap(import.meta.url));
 
   describe('authorization', () => {
     before(function () { return this.login(); });
@@ -149,7 +149,7 @@ describe('PKCE RFC7636', () => {
         .expect(auth.validateErrorDescription('Authorization Server policy requires PKCE to be used for this request'));
     });
 
-    bootstrap.passInteractionChecks('native_client_prompt', () => {
+    passInteractionChecks('native_client_prompt', () => {
       it('is not in effect for implicit flows', function () {
         const auth = new this.AuthorizationRequest({
           response_type: 'id_token',

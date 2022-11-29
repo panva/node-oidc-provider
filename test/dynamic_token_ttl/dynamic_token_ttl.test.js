@@ -1,15 +1,15 @@
-const url = require('node:url');
+import url from 'node:url';
 
-const { expect } = require('chai');
-const sinon = require('sinon');
-const cloneDeep = require('lodash/cloneDeep');
+import { expect } from 'chai';
+import sinon from 'sinon';
+import cloneDeep from 'lodash/cloneDeep.js';
 
-const bootstrap = require('../test_helper.js');
-const JWT = require('../../lib/helpers/jwt.js');
+import bootstrap, { skipConsent } from '../test_helper.js';
+import * as JWT from '../../lib/helpers/jwt.js';
 
 describe('dynamic ttl', () => {
-  before(bootstrap(__dirname));
-  bootstrap.skipConsent();
+  before(bootstrap(import.meta.url));
+  skipConsent();
   before(function () {
     this.prev = cloneDeep(i(this.provider).configuration('ttl'));
   });

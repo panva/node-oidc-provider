@@ -1,15 +1,15 @@
 /* eslint-disable no-await-in-loop */
-const { strict: assert } = require('node:assert');
-const { createWriteStream } = require('node:fs');
-const stream = require('node:stream');
-const { promisify } = require('node:util');
+import { strict as assert } from 'node:assert';
+import { createWriteStream } from 'node:fs';
+import stream from 'node:stream';
+import { promisify } from 'node:util';
 
-const Got = require('got');
-const ms = require('ms');
+import Got from 'got';
+import ms from 'ms';
+
+import debug from './debug.js';
 
 const pipeline = promisify(stream.pipeline);
-
-const debug = require('./debug.js');
 
 const FINISHED = new Set(['FINISHED']);
 const RESULTS = new Set(['REVIEW', 'PASSED', 'SKIPPED']);
@@ -155,4 +155,4 @@ class API {
   }
 }
 
-module.exports = API;
+export default API;

@@ -1,15 +1,16 @@
 /* eslint-disable no-console, max-len, camelcase, no-unused-vars */
-const { strict: assert } = require('node:assert');
-const querystring = require('node:querystring');
-const crypto = require('node:crypto');
-const { inspect } = require('node:util');
+import { strict as assert } from 'node:assert';
+import querystring from 'node:querystring';
+import crypto from 'node:crypto';
+import { inspect } from 'node:util';
 
-const isEmpty = require('lodash/isEmpty');
-const { koaBody: bodyParser } = require('koa-body');
-const Router = require('koa-router');
+import isEmpty from 'lodash/isEmpty.js';
+import { koaBody as bodyParser } from 'koa-body';
+import Router from 'koa-router';
 
-const { renderError } = require('../../lib/helpers/defaults.js')(); // make your own, you'll need it anyway
-const Account = require('../support/account.js');
+import { defaults } from '../../lib/helpers/defaults.js'; // make your own, you'll need it anyway
+import Account from '../support/account.js';
+import { errors } from '../../lib/index.js'; // from 'oidc-provider';
 
 const keys = new Set();
 const debug = (obj) => querystring.stringify(Object.entries(obj).reduce((acc, [key, value]) => {
@@ -21,9 +22,10 @@ const debug = (obj) => querystring.stringify(Object.entries(obj).reduce((acc, [k
   encodeURIComponent(value) { return keys.has(value) ? `<strong>${value}</strong>` : value; },
 });
 
-module.exports = (provider) => {
+const { SessionNotFound } = errors;
+
+export default (provider) => {
   const router = new Router();
-  const { constructor: { errors: { SessionNotFound } } } = provider;
 
   router.use(async (ctx, next) => {
     ctx.set('cache-control', 'no-store');
@@ -33,7 +35,7 @@ module.exports = (provider) => {
       if (err instanceof SessionNotFound) {
         ctx.status = err.status;
         const { message: error, error_description } = err;
-        renderError(ctx, { error, error_description }, err);
+        await defaults.renderError(ctx, { error, error_description }, err);
       } else {
         throw err;
       }

@@ -1,8 +1,10 @@
-const cloneDeep = require('lodash/cloneDeep');
+import cloneDeep from 'lodash/cloneDeep.js';
 
-const { JWA } = require('../lib/consts/index.js');
+import { JWA } from '../lib/consts/index.js';
 
-module.exports = {
+export const enabledJWA = cloneDeep({ ...JWA });
+
+export default () => ({
   claims: {
     address: {
       address: null,
@@ -51,9 +53,9 @@ module.exports = {
     'none',
   ],
   features: {},
-  enabledJWA: cloneDeep(JWA),
+  enabledJWA: cloneDeep({ ...JWA }),
   allowOmittingSingleRegisteredRedirectUri: true,
   pkce: {
     required: () => false,
   },
-};
+});

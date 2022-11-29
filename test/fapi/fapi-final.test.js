@@ -1,12 +1,12 @@
-const jose = require('jose');
+import * as jose from 'jose';
 
-const bootstrap = require('../test_helper.js');
-const epochTime = require('../../lib/helpers/epoch_time.js');
+import bootstrap from '../test_helper.js';
+import epochTime from '../../lib/helpers/epoch_time.js';
 
-const { keypair: { privateKey } } = require('./fapi-final.config.js');
+import { keypair } from './fapi-final.config.js';
 
 describe('Financial-grade API Security Profile 1.0 - Part 2: Advanced (FINAL) behaviours', () => {
-  before(bootstrap(__dirname, { config: 'fapi-final' }));
+  before(bootstrap(import.meta.url, { config: 'fapi-final' }));
 
   describe('userinfo', () => {
     before(function () { return this.login(); });
@@ -73,7 +73,7 @@ describe('Financial-grade API Security Profile 1.0 - Part 2: Advanced (FINAL) be
         aud: this.provider.issuer,
         exp: epochTime() + 60,
         nbf: epochTime(),
-      }).setProtectedHeader({ alg: 'ES256' }).sign(privateKey);
+      }).setProtectedHeader({ alg: 'ES256' }).sign(keypair.privateKey);
 
       const auth = new this.AuthorizationRequest({
         request,
@@ -109,7 +109,7 @@ describe('Financial-grade API Security Profile 1.0 - Part 2: Advanced (FINAL) be
         state: 'foo',
         exp: epochTime() + 60,
         nbf: epochTime(),
-      }).setProtectedHeader({ alg: 'ES256' }).sign(privateKey);
+      }).setProtectedHeader({ alg: 'ES256' }).sign(keypair.privateKey);
 
       const auth = new this.AuthorizationRequest({
         request,
@@ -141,7 +141,7 @@ describe('Financial-grade API Security Profile 1.0 - Part 2: Advanced (FINAL) be
         scope: 'openid',
         response_type: 'code id_token',
         nonce: 'foo',
-      }).setProtectedHeader({ alg: 'ES256' }).sign(privateKey);
+      }).setProtectedHeader({ alg: 'ES256' }).sign(keypair.privateKey);
 
       const auth = new this.AuthorizationRequest({
         request,
@@ -174,7 +174,7 @@ describe('Financial-grade API Security Profile 1.0 - Part 2: Advanced (FINAL) be
         scope: 'openid',
         response_type: 'code id_token',
         nonce: 'foo',
-      }).setProtectedHeader({ alg: 'ES256' }).sign(privateKey);
+      }).setProtectedHeader({ alg: 'ES256' }).sign(keypair.privateKey);
 
       const auth = new this.AuthorizationRequest({
         request,
@@ -207,7 +207,7 @@ describe('Financial-grade API Security Profile 1.0 - Part 2: Advanced (FINAL) be
         scope: 'openid',
         response_type: 'code id_token',
         nonce: 'foo',
-      }).setProtectedHeader({ alg: 'ES256' }).sign(privateKey);
+      }).setProtectedHeader({ alg: 'ES256' }).sign(keypair.privateKey);
 
       const auth = new this.AuthorizationRequest({
         request,

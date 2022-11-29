@@ -1,16 +1,18 @@
 /* eslint-disable no-param-reassign, max-len */
 
-const { strict: assert } = require('node:assert');
-const url = require('node:url');
+import { strict as assert } from 'node:assert';
+import url from 'node:url';
 
-const sinon = require('sinon').createSandbox();
-const { expect } = require('chai');
+import { createSandbox } from 'sinon';
+import { expect } from 'chai';
 
-const bootstrap = require('../test_helper.js');
-const { Provider } = require('../../lib/index.js');
+import bootstrap from '../test_helper.js';
+import Provider, { errors } from '../../lib/index.js';
+
+const sinon = createSandbox();
 
 describe('client registration policies', () => {
-  before(bootstrap(__dirname));
+  before(bootstrap(import.meta.url));
   beforeEach(sinon.restore);
 
   describe('configuration', () => {
@@ -96,7 +98,7 @@ describe('client registration policies', () => {
 
     it('allows for policies to validate property values', async function () {
       i(this.provider).configuration('features.registration.policies')['throw-error'] = () => {
-        throw new Provider.errors.InvalidClientMetadata('foo');
+        throw new errors.InvalidClientMetadata('foo');
       };
 
       const value = await new this.provider.InitialAccessToken({ policies: ['throw-error'] }).save();
@@ -302,7 +304,7 @@ describe('client registration policies', () => {
 
     it('allows for policies to validate property values', async function () {
       i(this.provider).configuration('features.registration.policies')['throw-error'] = () => {
-        throw new Provider.errors.InvalidClientMetadata('foo');
+        throw new errors.InvalidClientMetadata('foo');
       };
       this.TestAdapter.for('RegistrationAccessToken').syncUpdate(this.getTokenJti(this.rat), {
         policies: ['throw-error'],

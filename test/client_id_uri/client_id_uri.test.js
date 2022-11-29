@@ -1,9 +1,9 @@
-const { expect } = require('chai');
+import { expect } from 'chai';
 
-const bootstrap = require('../test_helper.js');
+import bootstrap from '../test_helper.js';
 
 describe('registration management with client_id as URI', () => {
-  before(bootstrap(__dirname));
+  before(bootstrap(import.meta.url));
 
   it('returns client_id as a URI string', async function () {
     let client_id;

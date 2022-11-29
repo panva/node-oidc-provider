@@ -1,9 +1,9 @@
-const { expect } = require('chai');
+import { expect } from 'chai';
 
-const bootstrap = require('../test_helper.js');
+import bootstrap from '../test_helper.js';
 
 describe('Client#add', () => {
-  before(bootstrap(__dirname, { config: 'client_secrets' }));
+  before(bootstrap(import.meta.url, { config: 'client_secrets' }));
 
   it('client secret is mandatory if client auth needs it', function () {
     expect(this.provider.Client.needsSecret({

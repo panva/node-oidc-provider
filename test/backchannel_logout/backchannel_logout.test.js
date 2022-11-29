@@ -1,15 +1,17 @@
-const { strict: assert } = require('node:assert');
-const { parse: parseUrl } = require('node:url');
+import { strict as assert } from 'node:assert';
+import { parse as parseUrl } from 'node:url';
 
-const sinon = require('sinon').createSandbox();
-const { expect } = require('chai');
-const base64url = require('base64url');
-const nock = require('nock');
+import { createSandbox } from 'sinon';
+import { expect } from 'chai';
+import base64url from 'base64url';
+import nock from 'nock';
 
-const bootstrap = require('../test_helper.js');
+import bootstrap, { skipConsent } from '../test_helper.js';
+
+const sinon = createSandbox();
 
 describe('Back-Channel Logout 1.0', () => {
-  before(bootstrap(__dirname));
+  before(bootstrap(import.meta.url));
 
   afterEach(nock.cleanAll);
   afterEach(sinon.restore);
@@ -83,7 +85,7 @@ describe('Back-Channel Logout 1.0', () => {
     beforeEach(function () { return this.login({ scope: 'openid offline_access' }); });
     afterEach(function () { return this.logout(); });
 
-    bootstrap.skipConsent();
+    skipConsent();
 
     beforeEach(function () {
       return this.agent.get('/auth')

@@ -1,11 +1,11 @@
-const Koa = require('koa');
-const mount = require('koa-mount');
-const supertest = require('supertest');
-const { koaBody: upstreamParser } = require('koa-body');
-const sinon = require('sinon');
-const { expect } = require('chai');
+import Koa from 'koa';
+import mount from 'koa-mount';
+import supertest from 'supertest';
+import { koaBody as upstreamParser } from 'koa-body';
+import sinon from 'sinon';
+import { expect } from 'chai';
 
-const { Provider } = require('../../lib/index.js');
+import Provider from '../../lib/index.js';
 
 describe('body parser', () => {
   afterEach(() => {

@@ -1,13 +1,13 @@
 /* eslint-disable prefer-rest-params */
 
-const { strict: assert } = require('node:assert');
-const { EventEmitter, once } = require('node:events');
+import { strict as assert } from 'node:assert';
+import events from 'node:events';
 
-const cloneDeep = require('lodash/cloneDeep');
+import getConfig from '../default.config.js';
 
-const config = cloneDeep(require('../default.config.js'));
+const config = getConfig();
 
-const emitter = new EventEmitter();
+export const emitter = new events.EventEmitter();
 
 config.features.encryption = {
   enabled: true,
@@ -55,10 +55,8 @@ config.features.ciba = {
   },
 };
 
-module.exports = {
+export default {
   config,
-  emitter,
-  once,
   clients: [
     {
       client_id: 'client',

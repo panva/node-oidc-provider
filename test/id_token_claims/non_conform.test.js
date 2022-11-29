@@ -1,18 +1,18 @@
 /* eslint-disable prefer-const */
 
-const { parse: parseUrl } = require('node:url');
+import { parse as parseUrl } from 'node:url';
 
-const { expect } = require('chai');
+import { expect } from 'chai';
 
-const bootstrap = require('../test_helper.js');
-const { decode: decodeJWT } = require('../../lib/helpers/jwt.js');
+import bootstrap, { skipConsent } from '../test_helper.js';
+import { decode as decodeJWT } from '../../lib/helpers/jwt.js';
 
 const redirect_uri = 'https://client.example.com/cb';
 const scope = 'openid email offline_access';
 const client_id = 'client';
 
 describe('configuration conformIdTokenClaims=false', () => {
-  before(bootstrap(__dirname, { config: 'non_conform' }));
+  before(bootstrap(import.meta.url, { config: 'non_conform' }));
   before(function () {
     return this.login({
       scope,
@@ -20,7 +20,7 @@ describe('configuration conformIdTokenClaims=false', () => {
     });
   });
 
-  bootstrap.skipConsent();
+  skipConsent();
 
   [
     'code id_token token', 'code id_token', 'code token', 'code', 'id_token token', 'id_token',

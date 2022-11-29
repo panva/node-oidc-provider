@@ -1,12 +1,12 @@
-const { expect } = require('chai');
+import { expect } from 'chai';
 
-const bootstrap = require('../test_helper.js');
+import bootstrap from '../test_helper.js';
 
 const route = '/jwks';
 
 describe(route, () => {
   describe('with encryption enabled', () => {
-    before(bootstrap(__dirname, { config: 'jwks-enc' }));
+    before(bootstrap(import.meta.url, { config: 'jwks-enc' }));
 
     describe('when populated with signing keys', () => {
       it('responds with json 200', function () {
@@ -94,7 +94,7 @@ describe(route, () => {
   });
 
   describe('with encryption disabled', () => {
-    before(bootstrap(__dirname, { config: 'jwks-noenc' }));
+    before(bootstrap(import.meta.url, { config: 'jwks-noenc' }));
 
     describe('when populated with signing keys', () => {
       it('responds with json 200', function () {

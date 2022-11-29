@@ -1,7 +1,7 @@
-const bootstrap = require('../test_helper.js');
+import bootstrap from '../test_helper.js';
 
 describe('providing Bearer token', () => {
-  before(bootstrap(__dirname));
+  before(bootstrap(import.meta.url));
   context('invalid requests', () => {
     it('nothing provided', function () {
       return this.agent.get('/me')

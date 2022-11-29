@@ -1,8 +1,9 @@
-const cloneDeep = require('lodash/cloneDeep');
-const merge = require('lodash/merge');
+import merge from 'lodash/merge.js';
 
-const config = cloneDeep(require('../../default.config.js'));
-const { Prompt, Check, base } = require('../../../lib/helpers/interaction_policy/index.js');
+import { Prompt, Check, base } from '../../../lib/helpers/interaction_policy/index.js';
+import getConfig from '../../default.config.js';
+
+const config = getConfig();
 
 config.extraParams = ['triggerCustomFail'];
 merge(config.features, { requestObjects: { requestUri: false } });
@@ -28,7 +29,7 @@ policy.add(new Prompt({ name: 'unrequestable', requestable: false }));
 
 config.interactions = { policy };
 
-module.exports = {
+export default {
   config,
   clients: [{
     client_id: 'client',

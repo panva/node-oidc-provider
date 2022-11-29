@@ -1,7 +1,8 @@
-const crypto = require('node:crypto');
+import crypto from 'node:crypto';
 
-const pkg = require('../../package.json');
-const enabledJWA = JSON.parse(JSON.stringify(require('../../lib/consts/jwa.js')));
+import pkg from '../../package.json' assert { type: 'json' };
+
+const enabledJWA = JSON.parse(JSON.stringify(await import('../../lib/consts/jwa.js')));
 
 const timeout = parseInt(process.env.TIMEOUT, 10);
 const clientAuthMethods = [
@@ -13,7 +14,7 @@ const clientAuthMethods = [
   'self_signed_tls_client_auth',
 ];
 
-module.exports = {
+export default {
   interactions: {
     url(ctx, interaction) {
       return `/interaction/${interaction.uid}`;

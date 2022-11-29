@@ -1,7 +1,7 @@
-const sinon = require('sinon');
-const { expect } = require('chai');
+import sinon from 'sinon';
+import { expect } from 'chai';
 
-const bootstrap = require('../test_helper.js');
+import bootstrap from '../test_helper.js';
 
 describe('x-forwarded-proto trust, detection and warnings', () => {
   /* eslint-disable no-console */
@@ -14,7 +14,7 @@ describe('x-forwarded-proto trust, detection and warnings', () => {
   const acceptUnauthorized = { tls: { rejectUnauthorized: false } };
 
   context('when not trusted', () => {
-    before(bootstrap(__dirname, { protocol: 'https:' }));
+    before(bootstrap(import.meta.url, { protocol: 'https:' }));
     it('is ignored unless proxy=true is set and warns once', async function () {
       await this.agent.get('/.well-known/openid-configuration', acceptUnauthorized)
         .set('x-forwarded-proto', 'https')
@@ -31,7 +31,7 @@ describe('x-forwarded-proto trust, detection and warnings', () => {
   });
 
   context('when not even detected', () => {
-    before(bootstrap(__dirname, { protocol: 'https:' }));
+    before(bootstrap(import.meta.url, { protocol: 'https:' }));
     it('is ignored unless proxy=true is set and warns once', async function () {
       await this.agent.get('/.well-known/openid-configuration', acceptUnauthorized)
         .expect(200)
@@ -46,7 +46,7 @@ describe('x-forwarded-proto trust, detection and warnings', () => {
   });
 
   context('when trusted', () => {
-    before(bootstrap(__dirname, { protocol: 'https:' }));
+    before(bootstrap(import.meta.url, { protocol: 'https:' }));
     it('is trusted when proxy=true is set on the koa app', async function () {
       if (this.app) {
         this.app.proxy = true;

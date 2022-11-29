@@ -1,8 +1,9 @@
-const cloneDeep = require('lodash/cloneDeep');
-const pull = require('lodash/pull');
-const merge = require('lodash/merge');
+import pull from 'lodash/pull.js';
+import merge from 'lodash/merge.js';
 
-const config = cloneDeep(require('../default.config.js'));
+import getConfig from '../default.config.js';
+
+const config = getConfig();
 
 merge(config.features, {
   requestObjects: {
@@ -16,7 +17,7 @@ merge(config.features, {
 
 pull(config.enabledJWA.requestObjectSigningAlgValues, 'HS384');
 
-module.exports = {
+export default {
   config,
   clients: [{
     client_id: 'client',

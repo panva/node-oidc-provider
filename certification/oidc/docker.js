@@ -1,21 +1,24 @@
 /* eslint-disable no-console */
 
-const path = require('node:path');
-const https = require('node:https');
+import path from 'node:path';
+import https from 'node:https';
 
-const selfsigned = require('selfsigned').generate();
-const render = require('@koa/ejs');
+import { generate } from 'selfsigned';
+import render from '@koa/ejs';
+import { dirname } from 'desm';
 
-const { Provider } = require('../../lib/index.js'); // require('oidc-provider');
-const Account = require('../../example/support/account.js');
-const routes = require('../../example/routes/koa.js');
+import Provider from '../../lib/index.js'; // from 'oidc-provider';
+import Account from '../../example/support/account.js';
+import routes from '../../example/routes/koa.js';
 
-const configuration = require('./configuration.js');
+import configuration from './configuration.js';
 
+const selfsigned = generate();
 const { PORT = 3000, ISSUER = `http://localhost:${PORT}` } = process.env;
 configuration.findAccount = Account.findAccount;
 
 const provider = new Provider(ISSUER, configuration);
+const __dirname = dirname(import.meta.url);
 
 // don't wanna re-bundle the interactions so just insert the login amr and acr as static whenever
 // login is submitted, usually you would submit them from your interaction

@@ -1,17 +1,19 @@
-const { parse: parseUrl } = require('node:url');
+import { parse as parseUrl } from 'node:url';
 
-const sinon = require('sinon').createSandbox();
-const { expect } = require('chai');
-const timekeeper = require('timekeeper');
+import { createSandbox } from 'sinon';
+import { expect } from 'chai';
+import timekeeper from 'timekeeper';
 
-const bootstrap = require('../test_helper.js');
-const JWT = require('../../lib/helpers/jwt.js');
-const { InvalidClient, InvalidRequest } = require('../../lib/helpers/errors.js');
+import bootstrap from '../test_helper.js';
+import * as JWT from '../../lib/helpers/jwt.js';
+import { InvalidClient, InvalidRequest } from '../../lib/helpers/errors.js';
+
+const sinon = createSandbox();
 
 const route = '/session/end';
 
 describe('logout endpoint', () => {
-  before(bootstrap(__dirname));
+  before(bootstrap(import.meta.url));
   afterEach(() => timekeeper.reset());
 
   describe('when logged out', () => {

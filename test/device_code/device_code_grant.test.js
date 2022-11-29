@@ -1,9 +1,9 @@
-const { expect } = require('chai');
-const sinon = require('sinon');
-const base64url = require('base64url');
+import { expect } from 'chai';
+import sinon from 'sinon';
+import base64url from 'base64url';
 
-const bootstrap = require('../test_helper.js');
-const epochTime = require('../../lib/helpers/epoch_time.js');
+import bootstrap from '../test_helper.js';
+import epochTime from '../../lib/helpers/epoch_time.js';
 
 const route = '/token';
 const grant_type = 'urn:ietf:params:oauth:grant-type:device_code';
@@ -13,7 +13,7 @@ function errorDetail(spy) {
 }
 
 describe('grant_type=urn:ietf:params:oauth:grant-type:device_code w/ conformIdTokenClaims=false', () => {
-  before(bootstrap(__dirname, { config: 'device_code_non_conform' })); // agent
+  before(bootstrap(import.meta.url, { config: 'device_code_non_conform' })); // agent
   before(function () { return this.login({ scope: 'openid profile offline_access', accountId: 'sub' }); });
 
   it('returns the right stuff', async function () {
@@ -47,7 +47,7 @@ describe('grant_type=urn:ietf:params:oauth:grant-type:device_code w/ conformIdTo
 });
 
 describe('grant_type=urn:ietf:params:oauth:grant-type:device_code', () => {
-  before(bootstrap(__dirname));
+  before(bootstrap(import.meta.url));
   before(function () { return this.login({ scope: 'openid profile offline_access', accountId: 'sub' }); });
 
   it('returns the right stuff', async function () {

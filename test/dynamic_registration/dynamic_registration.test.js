@@ -1,10 +1,10 @@
-const { expect } = require('chai');
-const sinon = require('sinon');
+import { expect } from 'chai';
+import sinon from 'sinon';
 
-const bootstrap = require('../test_helper.js');
+import bootstrap from '../test_helper.js';
 
 describe('registration features', () => {
-  before(bootstrap(__dirname));
+  before(bootstrap(import.meta.url));
 
   context('POST /reg', () => {
     it('generates the id, secret that does not expire and reg access token and returns the defaulted values', function () {

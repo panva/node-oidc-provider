@@ -1,20 +1,22 @@
 /* eslint-disable prefer-destructuring */
 
-const { strict: assert } = require('node:assert');
+import { strict as assert } from 'node:assert';
 
-const sinon = require('sinon');
-const { expect } = require('chai');
+import sinon from 'sinon';
+import { expect } from 'chai';
 
-const bootstrap = require('../test_helper.js');
-const { features: { resourceIndicators: defaults } } = require('../../lib/helpers/defaults.js')();
+import bootstrap from '../test_helper.js';
+import { defaults } from '../../lib/helpers/defaults.js';
+
+const { features: { resourceIndicators } } = defaults;
 
 describe('features.resourceIndicators defaults', () => {
   it('defaultResource', async () => {
-    expect(await defaults.defaultResource()).to.be.undefined;
-    expect(await defaults.defaultResource(undefined, undefined, ['urn:example:rs'])).to.deep.equal(['urn:example:rs']);
+    expect(await resourceIndicators.defaultResource()).to.be.undefined;
+    expect(await resourceIndicators.defaultResource(undefined, undefined, ['urn:example:rs'])).to.deep.equal(['urn:example:rs']);
   });
 
-  it('getResourceServerInfo', () => assert.rejects(defaults.getResourceServerInfo(), (err) => {
+  it('getResourceServerInfo', () => assert.rejects(resourceIndicators.getResourceServerInfo(), (err) => {
     expect(err.message).to.equal('invalid_target');
     expect(err.error_description).to.equal('resource indicator is missing, or unknown');
     return true;
@@ -22,7 +24,7 @@ describe('features.resourceIndicators defaults', () => {
 });
 
 describe('features.resourceIndicators', () => {
-  before(bootstrap(__dirname));
+  before(bootstrap(import.meta.url));
   afterEach(function () {
     this.provider.removeAllListeners();
   });

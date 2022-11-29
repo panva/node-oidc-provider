@@ -1,13 +1,13 @@
-const { parse: parseUrl } = require('node:url');
+import { parse as parseUrl } from 'node:url';
 
-const sinon = require('sinon');
-const { expect } = require('chai');
-const snakeCase = require('lodash/snakeCase');
+import sinon from 'sinon';
+import { expect } from 'chai';
+import snakeCase from 'lodash/snakeCase.js';
 
-const bootstrap = require('../test_helper.js');
+import bootstrap, { skipConsent } from '../test_helper.js';
 
 describe('requests without the openid scope', () => {
-  before(bootstrap(__dirname));
+  before(bootstrap(import.meta.url));
 
   afterEach(function () {
     this.provider.removeAllListeners();
@@ -159,7 +159,7 @@ describe('requests without the openid scope', () => {
         });
 
         describe('refresh token exchange', () => {
-          bootstrap.skipConsent();
+          skipConsent();
           const refreshScope = `${scope || ''} offline_access`.trim();
 
           before(function () { return this.login({ scope: [scope, 'offline_access'].join(' ') }); });

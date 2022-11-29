@@ -1,9 +1,10 @@
-const cloneDeep = require('lodash/cloneDeep');
-const merge = require('lodash/merge');
-const pull = require('lodash/pull');
-const jose = require('jose2');
+import merge from 'lodash/merge.js';
+import pull from 'lodash/pull.js';
+import jose from 'jose2';
 
-const config = cloneDeep(require('../default.config.js'));
+import getConfig from '../default.config.js';
+
+const config = getConfig();
 
 merge(config.features, {
   requestObjects: { request: true },
@@ -19,7 +20,7 @@ pull(config.enabledJWA.requestObjectEncryptionEncValues, 'A192CBC-HS384');
 
 const k = jose.JWK.generateSync('RSA', 2048);
 
-const privKey = {
+export const privKey = {
   keys: [k.toJWK(true)],
 };
 
@@ -27,9 +28,8 @@ const pubKey = {
   keys: [k.toJWK(false)],
 };
 
-module.exports = {
+export default {
   config,
-  privKey,
   clients: [
     {
       client_id: 'client',

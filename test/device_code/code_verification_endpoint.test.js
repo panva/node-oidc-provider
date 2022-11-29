@@ -1,14 +1,16 @@
-const sinon = require('sinon').createSandbox();
-const { expect } = require('chai');
-const timekeeper = require('timekeeper');
+import { createSandbox } from 'sinon';
+import { expect } from 'chai';
+import timekeeper from 'timekeeper';
 
-const bootstrap = require('../test_helper.js');
+import bootstrap, { passInteractionChecks } from '../test_helper.js';
+
+const sinon = createSandbox();
 
 const { any } = sinon.match;
 const route = '/device';
 
 describe('GET code_verification endpoint', () => {
-  before(bootstrap(__dirname));
+  before(bootstrap(import.meta.url));
 
   describe('when accessed without user_code in query (verification_uri)', () => {
     it('renders 200 OK end-user form with csrf', function () {
@@ -51,7 +53,7 @@ describe('GET code_verification endpoint', () => {
 });
 
 describe('POST code_verification endpoint w/o verification', () => {
-  before(bootstrap(__dirname));
+  before(bootstrap(import.meta.url));
   before(function () { return this.login(); });
   afterEach(() => timekeeper.reset());
 
@@ -284,7 +286,7 @@ describe('POST code_verification endpoint w/o verification', () => {
 });
 
 describe('POST code_verification endpoint w/ verification', () => {
-  before(bootstrap(__dirname));
+  before(bootstrap(import.meta.url));
   before(function () {
     return this.login({
       scope: 'openid email',
@@ -300,7 +302,7 @@ describe('POST code_verification endpoint w/ verification', () => {
     this.getSession().state = { secret: xsrf };
   });
 
-  bootstrap.passInteractionChecks('native_client_prompt', 'op_claims_missing', () => {
+  passInteractionChecks('native_client_prompt', 'op_claims_missing', () => {
     it('accepts an abort command', async function () {
       const spy = sinon.spy(i(this.provider).configuration('features.deviceFlow'), 'userCodeInputSource');
 

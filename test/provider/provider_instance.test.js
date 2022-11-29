@@ -1,11 +1,11 @@
 /* eslint-disable max-classes-per-file */
 
-const { strict: assert } = require('node:assert');
+import { strict as assert } from 'node:assert';
 
-const { expect } = require('chai');
-const sinon = require('sinon');
+import { expect } from 'chai';
+import sinon from 'sinon';
 
-const { Provider } = require('../../lib/index.js');
+import Provider from '../../lib/index.js';
 
 describe('provider instance', () => {
   context('draft/experimental spec warnings', () => {

@@ -1,13 +1,13 @@
-const url = require('node:url');
+import url from 'node:url';
 
-const { expect } = require('chai');
-const sinon = require('sinon');
+import { expect } from 'chai';
+import sinon from 'sinon';
 
-const { Provider } = require('../../lib/index.js');
-const bootstrap = require('../test_helper.js');
+import Provider from '../../lib/index.js';
+import bootstrap from '../test_helper.js';
 
 describe('userinfo /me', () => {
-  before(bootstrap(__dirname));
+  before(bootstrap(import.meta.url));
 
   before(function () { return this.login({ scope: 'openid email', rejectedClaims: ['email_verified'] }); });
 

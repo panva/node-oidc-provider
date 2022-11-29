@@ -239,4 +239,4 @@ class MyAdapter {
   }
 }
 
-module.exports = MyAdapter;
+export default MyAdapter;

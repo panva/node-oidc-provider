@@ -1,12 +1,12 @@
-const map = require('lodash/map');
-const uniq = require('lodash/uniq');
-const { expect } = require('chai');
-const nock = require('nock');
+import map from 'lodash/map.js';
+import uniq from 'lodash/uniq.js';
+import { expect } from 'chai';
+import nock from 'nock';
 
-const bootstrap = require('../test_helper.js');
+import bootstrap from '../test_helper.js';
 
 describe('pairwise features', () => {
-  before(bootstrap(__dirname));
+  before(bootstrap(import.meta.url));
 
   describe('pairwise client configuration', () => {
     beforeEach(nock.cleanAll);

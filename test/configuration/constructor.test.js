@@ -1,8 +1,8 @@
 /* eslint-disable no-new */
 
-const { expect } = require('chai');
+import { expect } from 'chai';
 
-const { Provider } = require('../../lib/index.js');
+import Provider from '../../lib/index.js';
 
 describe('Provider configuration', () => {
   describe('clients', () => {

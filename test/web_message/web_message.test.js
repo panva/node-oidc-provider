@@ -1,8 +1,8 @@
-const { expect } = require('chai');
-const sinon = require('sinon');
+import { expect } from 'chai';
+import sinon from 'sinon';
 
-const bootstrap = require('../test_helper.js');
-const { WebMessageUriMismatch } = require('../../lib/helpers/errors.js');
+import bootstrap from '../test_helper.js';
+import { WebMessageUriMismatch } from '../../lib/helpers/errors.js';
 
 const route = '/auth';
 const response_type = 'code id_token token';
@@ -10,7 +10,7 @@ const response_mode = 'web_message';
 const scope = 'openid';
 
 describe('configuration features.webMessageResponseMode', () => {
-  before(bootstrap(__dirname));
+  before(bootstrap(import.meta.url));
 
   before(function () {
     this.provider.use(async (ctx, next) => {

@@ -465,7 +465,7 @@ jobs:
           sed -i -e 's/mtls.fapi.panva.cz/172.17.0.1:3000/g' certification/fapi/plan.json
           sed -i -e 's/fapi.panva.cz/172.17.0.1:3000/g' certification/fapi/plan.json
       - name: Run the plan
-        run: npx mocha --delay --timeout 0 --retries 0 certification/runner
+        run: npx mocha --timeout 0 --retries 1 certification/runner
         env:
           NODE_TLS_REJECT_UNAUTHORIZED: 0
       - name: Upload test artifacts

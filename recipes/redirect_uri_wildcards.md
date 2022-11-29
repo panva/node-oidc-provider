@@ -1,6 +1,6 @@
 # Wildcard support
 
-- built for version: ^6.0.0 || ^7.0.0
+- built for version: ^8.0.0
 - no guarantees this is bug-free, no support will be provided for this, you've been warned, you're on
 your own
 - if you get caught allowing wildcards in production you'll suffer the consequences
@@ -16,20 +16,20 @@ your own
 Install the `wildcard` and `psl` packages.
 
 ```console
-npm i wildcard@^1.1.2
-npm i psl@^1.1.33
+npm i wildcard@^2.0.0
+npm i psl@^1.9.0
 ```
 
 Update whatever file holds your provider, e.g. `index.js` where the provider instance Client
 prototype needs to be changed.
 
 ```js
-const net = require('node:net');
-const { URL } = require('node:url');
+import net from 'node:net';
+import { URL } from 'node:url';
 
-const wildcard = require('wildcard');
-const psl = require('psl');
-const { InvalidClientMetadata } = Provider.errors;
+import wildcard from 'wildcard';
+import psl from 'psl';
+import Provider, { errors } from 'oidc-provider'
 
 // defining `redirect_uris` as custom client metadata enables to run additional validations
 // here some conditions are applied for "using" wildcards
@@ -44,22 +44,22 @@ const provider = new Provider(/* your issuer identifier */, {
             const { hostname, href } = new URL(redirectUri);
 
             if (href.split('*').length !== 2) {
-              throw new InvalidClientMetadata('redirect_uris with a wildcard may only contain a single one');
+              throw new errors.InvalidClientMetadata('redirect_uris with a wildcard may only contain a single one');
             }
 
             if (!hostname.includes('*')) {
-              throw new InvalidClientMetadata('redirect_uris may only have a wildcard in the hostname');
+              throw new errors.InvalidClientMetadata('redirect_uris may only have a wildcard in the hostname');
             }
 
             const test = hostname.replace('*', 'test');
 
             // checks that the wildcard is for a full subdomain e.g. *.panva.cz, not *suffix.panva.cz
             if (!wildcard(hostname, test)) {
-              throw new InvalidClientMetadata('redirect_uris with a wildcard must only match the whole subdomain');
+              throw new errors.InvalidClientMetadata('redirect_uris with a wildcard must only match the whole subdomain');
             }
 
             if (!psl.get(hostname.split('*.')[1])) {
-              throw new InvalidClientMetadata('redirect_uris with a wildcard must not match an eTLD+1 of a known public suffix domain');
+              throw new errors.InvalidClientMetadata('redirect_uris with a wildcard must not match an eTLD+1 of a known public suffix domain');
             }
           }
         }

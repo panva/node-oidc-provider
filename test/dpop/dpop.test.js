@@ -1,15 +1,15 @@
-const url = require('node:url');
-const { createHash } = require('node:crypto');
+import url from 'node:url';
+import { createHash } from 'node:crypto';
 
-const sinon = require('sinon');
-const { expect } = require('chai');
-const { JWK, JWT } = require('jose2');
-const { importJWK } = require('jose');
+import sinon from 'sinon';
+import { expect } from 'chai';
+import { JWK, JWT } from 'jose2';
+import { importJWK } from 'jose';
 
-const nanoid = require('../../lib/helpers/nanoid.js');
-const epochTime = require('../../lib/helpers/epoch_time.js');
-const bootstrap = require('../test_helper.js');
-const base64url = require('../../lib/helpers/base64url.js');
+import nanoid from '../../lib/helpers/nanoid.js';
+import epochTime from '../../lib/helpers/epoch_time.js';
+import bootstrap, { skipConsent } from '../test_helper.js';
+import * as base64url from '../../lib/helpers/base64url.js';
 
 const expectedS256 = 'ZjEgWN6HnCZRssL1jRQHiJi6vlWXolM5Zba8FQBYONg';
 
@@ -18,9 +18,9 @@ function ath(accessToken) {
 }
 
 describe('features.dPoP', () => {
-  before(bootstrap(__dirname));
+  before(bootstrap(import.meta.url));
   before(function () { return this.login({ scope: 'openid offline_access' }); });
-  bootstrap.skipConsent();
+  skipConsent();
   before(async function () {
     this.jwk = JWK.asKey({
       crv: 'P-256',

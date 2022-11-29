@@ -1,11 +1,11 @@
-const { AssertionError } = require('node:assert');
+import { AssertionError } from 'node:assert';
 
-const { expect } = require('chai');
-const jose = require('jose2');
+import { expect } from 'chai';
+import jose from 'jose2';
 
-const JWT = require('../../lib/helpers/jwt.js');
-const epochTime = require('../../lib/helpers/epoch_time.js');
-const KeyStore = require('../../lib/helpers/keystore.js');
+import * as JWT from '../../lib/helpers/jwt.js';
+import epochTime from '../../lib/helpers/epoch_time.js';
+import KeyStore from '../../lib/helpers/keystore.js';
 
 const ks = new jose.JWKS.KeyStore();
 

@@ -1,22 +1,21 @@
 /* eslint-disable no-underscore-dangle */
 
-const { parse: parseLocation } = require('node:url');
+import { parse as parseLocation } from 'node:url';
 
-const get = require('lodash/get');
-const { expect } = require('chai');
-const KeyGrip = require('keygrip'); // eslint-disable-line import/no-extraneous-dependencies
+import get from 'lodash/get.js';
+import { expect } from 'chai';
+import KeyGrip from 'keygrip'; // eslint-disable-line import/no-extraneous-dependencies
 
-const { decode: decodeJWT } = require('../../lib/helpers/jwt.js');
-const bootstrap = require('../test_helper.js');
+import { decode as decodeJWT } from '../../lib/helpers/jwt.js';
+import bootstrap from '../test_helper.js';
 
 const route = '/auth';
 const expire = new Date();
 
 expire.setDate(expire.getDate() + 1);
-
 ['get', 'post'].forEach((verb) => {
   describe(`claimsParameter via ${verb} ${route}`, () => {
-    before(bootstrap(__dirname));
+    before(bootstrap(import.meta.url));
 
     describe('specify id_token', () => {
       before(function () {

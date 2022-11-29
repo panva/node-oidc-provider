@@ -1,11 +1,13 @@
-const { parse: parseUrl } = require('node:url');
+import { parse as parseUrl } from 'node:url';
 
-const sinon = require('sinon').createSandbox();
-const { expect } = require('chai');
-const timekeeper = require('timekeeper');
+import { createSandbox } from 'sinon';
+import { expect } from 'chai';
+import timekeeper from 'timekeeper';
 
-const epochTime = require('../../lib/helpers/epoch_time.js');
-const bootstrap = require('../test_helper.js');
+import epochTime from '../../lib/helpers/epoch_time.js';
+import bootstrap from '../test_helper.js';
+
+const sinon = createSandbox();
 
 const route = '/token';
 
@@ -14,7 +16,7 @@ function errorDetail(spy) {
 }
 
 describe('grant_type=authorization_code', () => {
-  before(bootstrap(__dirname));
+  before(bootstrap(import.meta.url));
 
   afterEach(() => timekeeper.reset());
 

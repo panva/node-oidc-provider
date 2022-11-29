@@ -1,6 +1,6 @@
-const { expect } = require('chai');
+import { expect } from 'chai';
 
-const { Provider } = require('../../lib/index.js');
+import Provider from '../../lib/index.js';
 
 describe('response_types Provider configuration', () => {
   it('fixes common issues', () => {

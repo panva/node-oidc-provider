@@ -1,14 +1,18 @@
-const cloneDeep = require('lodash/cloneDeep');
-const merge = require('lodash/merge');
+import cloneDeep from 'lodash/cloneDeep.js';
+import merge from 'lodash/merge.js';
 
-const config = cloneDeep(require('../default.config.js'));
-const {
-  e, n, kid, kty, use,
-} = require('../client.sig.key.js');
-const mtlsKeys = require('../jwks/jwks.json');
+import mtlsKeys from '../jwks/jwks.json' assert { type: 'json' };
+import key from '../client.sig.key.js';
+import getConfig from '../default.config.js';
+
+const config = getConfig();
 
 const clientKey = {
-  e, n, kid, kty, use,
+  e: key.e,
+  n: key.n,
+  kid: key.kid,
+  kty: key.kty,
+  use: key.use,
 };
 const rsaKeys = cloneDeep(mtlsKeys);
 rsaKeys.keys.splice(0, 1);
@@ -34,13 +38,13 @@ merge(config.features, {
     certificateAuthorized(ctx) {
       return ctx.get('x-ssl-client-verify') === 'SUCCESS';
     },
-    certificateSubjectMatches(ctx, key, expected) {
-      return key === 'tls_client_auth_san_dns' && ctx.get('x-ssl-client-san-dns') === expected;
+    certificateSubjectMatches(ctx, property, expected) {
+      return property === 'tls_client_auth_san_dns' && ctx.get('x-ssl-client-san-dns') === expected;
     },
   },
 });
 
-module.exports = {
+export default {
   config,
   clients: [{
     token_endpoint_auth_method: 'none',

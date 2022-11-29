@@ -1,15 +1,15 @@
-const url = require('node:url');
+import url from 'node:url';
 
-const { expect } = require('chai');
-const sinon = require('sinon');
+import { expect } from 'chai';
+import sinon from 'sinon';
 
-const bootstrap = require('../test_helper.js');
-const { decode } = require('../../lib/helpers/jwt.js');
+import bootstrap from '../test_helper.js';
+import { decode } from '../../lib/helpers/jwt.js';
 
 const route = '/auth';
 
 describe('configuration features.jwtResponseModes', () => {
-  before(bootstrap(__dirname));
+  before(bootstrap(import.meta.url));
 
   describe('discovery', () => {
     it('extends the well known config', function () {

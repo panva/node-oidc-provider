@@ -1,6 +1,6 @@
-const cloneDeep = require('lodash/cloneDeep');
+import getConfig from '../default.config.js';
 
-const config = cloneDeep(require('../default.config.js'));
+const config = getConfig();
 
 config.features.encryption = { enabled: true };
 
@@ -78,6 +78,6 @@ config.jwks = {
   ],
 };
 
-module.exports = {
+export default {
   config,
 };

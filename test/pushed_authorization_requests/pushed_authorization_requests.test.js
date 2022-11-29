@@ -1,13 +1,13 @@
-const { expect } = require('chai');
-const sinon = require('sinon');
-const jose = require('jose2');
-const { importJWK, decodeProtectedHeader, decodeJwt } = require('jose');
+import { expect } from 'chai';
+import sinon from 'sinon';
+import jose from 'jose2';
+import { importJWK, decodeProtectedHeader, decodeJwt } from 'jose';
 
-const JWT = require('../../lib/helpers/jwt.js');
-const bootstrap = require('../test_helper.js');
+import * as JWT from '../../lib/helpers/jwt.js';
+import bootstrap from '../test_helper.js';
 
 describe('Pushed Request Object', () => {
-  before(bootstrap(__dirname));
+  before(bootstrap(import.meta.url));
 
   before(async function () {
     const client = await this.provider.Client.find('client');

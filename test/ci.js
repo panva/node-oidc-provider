@@ -1,5 +1,5 @@
 /* eslint-disable no-restricted-syntax, max-len, no-await-in-loop, no-plusplus */
-const { spawn } = require('node:child_process');
+import { spawn } from 'node:child_process';
 
 function pass({ mountTo, mountVia } = {}) {
   const child = spawn(
@@ -28,7 +28,7 @@ function pass({ mountTo, mountVia } = {}) {
   });
 }
 
-(async () => {
+try {
   await pass();
 
   if (process.platform === 'linux' || !('CI' in process.env)) {
@@ -39,6 +39,6 @@ function pass({ mountTo, mountVia } = {}) {
       await pass({ mountVia, mountTo });
     }
   }
-})().catch(() => {
+} catch {
   process.exitCode = 1;
-});
+}

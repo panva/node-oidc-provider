@@ -1,10 +1,10 @@
 /* eslint-disable no-param-reassign */
 
-const { expect } = require('chai');
-const sinon = require('sinon');
+import { expect } from 'chai';
+import sinon from 'sinon';
 
-const { Provider } = require('../../lib/index.js');
-const { InvalidClientMetadata } = require('../../lib/helpers/errors.js');
+import Provider from '../../lib/index.js';
+import { InvalidClientMetadata } from '../../lib/helpers/errors.js';
 
 describe('extraClientMetadata configuration', () => {
   it('allows for properties to be added to client schema and have them synchronously validated', async () => {

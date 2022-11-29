@@ -1,16 +1,16 @@
-const { readFileSync } = require('node:fs');
-const url = require('node:url');
+import { readFileSync } from 'node:fs';
+import url from 'node:url';
 
-const sinon = require('sinon');
-const { expect } = require('chai');
+import sinon from 'sinon';
+import { expect } from 'chai';
 
-const bootstrap = require('../test_helper.js');
+import bootstrap, { skipConsent } from '../test_helper.js';
 
 const crt = readFileSync('./test/jwks/client.crt').toString();
 const expectedS256 = 'A4DtL2JmUMhAsvJj5tKyn64SqzmuXbMrJa0n761y5v0';
 
 describe('features.mTLS.certificateBoundAccessTokens', () => {
-  before(bootstrap(__dirname));
+  before(bootstrap(import.meta.url));
   before(function () { return this.login(); });
   after(function () { return this.logout(); });
 
@@ -249,7 +249,7 @@ describe('features.mTLS.certificateBoundAccessTokens', () => {
 
   describe('authorization flow', () => {
     before(function () { return this.login({ scope: 'openid offline_access' }); });
-    bootstrap.skipConsent();
+    skipConsent();
 
     beforeEach(async function () {
       const auth = new this.AuthorizationRequest({
@@ -367,7 +367,7 @@ describe('features.mTLS.certificateBoundAccessTokens', () => {
 
   describe('authorization flow (public client)', () => {
     before(function () { return this.login({ scope: 'openid offline_access' }); });
-    bootstrap.skipConsent();
+    skipConsent();
 
     beforeEach(async function () {
       const auth = new this.AuthorizationRequest({

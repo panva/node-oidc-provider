@@ -1,34 +1,37 @@
 /* eslint-disable no-console */
 
-const { promisify } = require('node:util');
-const path = require('node:path');
-const crypto = require('node:crypto');
+import { promisify } from 'node:util';
+import path from 'node:path';
+import crypto from 'node:crypto';
 
-const render = require('@koa/ejs');
-const helmet = require('helmet');
+import { dirname } from 'desm';
+import render from '@koa/ejs';
+import helmet from 'helmet';
 
-const { Provider } = require('../../lib/index.js'); // require('oidc-provider');
-const Account = require('../../example/support/account.js');
-const routes = require('../../example/routes/koa.js');
+import Provider from '../../lib/index.js'; // from 'oidc-provider';
+import Account from '../../example/support/account.js';
+import routes from '../../example/routes/koa.js';
 
-const configuration = require('./configuration.js');
+import configuration from './configuration.js';
+
+const __dirname = dirname(import.meta.url);
 
 const { GOOGLE_CLIENT_ID, PORT = 3000, ISSUER = `http://localhost:${PORT}` } = process.env;
 configuration.findAccount = Account.findAccount;
 
 let server;
 
-(async () => {
+try {
   let adapter;
   if (process.env.MONGODB_URI) {
-    adapter = require('./heroku_mongo_adapter.js'); // eslint-disable-line global-require
+    ({ default: adapter } = await import('./heroku_mongo_adapter.js'));
     await adapter.connect();
   }
 
   const provider = new Provider(ISSUER, { adapter, ...configuration });
 
   if (GOOGLE_CLIENT_ID) {
-    const openid = require('openid-client'); // eslint-disable-line global-require, import/no-unresolved
+    const openid = await import('openid-client'); // eslint-disable-line import/no-unresolved
     const google = await openid.Issuer.discover('https://accounts.google.com/.well-known/openid-configuration');
     const googleClient = new google.Client({
       client_id: GOOGLE_CLIENT_ID,
@@ -140,8 +143,8 @@ let server;
       process.exit(0);
     });
   });
-})().catch((err) => {
+} catch (err) {
   if (server && server.listening) server.close();
   console.error(err);
   process.exitCode = 1;
-});
+}

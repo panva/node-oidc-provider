@@ -1,19 +1,22 @@
 /* eslint-disable no-console */
 
-const { readFileSync } = require('node:fs');
-const path = require('node:path');
-const { randomBytes, randomUUID } = require('node:crypto');
-const https = require('node:https');
-const { promisify } = require('node:util');
-const { URL } = require('node:url');
+import { readFileSync } from 'node:fs';
+import path from 'node:path';
+import { randomBytes, randomUUID } from 'node:crypto';
+import https from 'node:https';
+import { promisify } from 'node:util';
+import { URL } from 'node:url';
 
-const jose = require('jose2');
-const helmet = require('helmet');
-const selfsigned = require('selfsigned').generate();
+import { dirname } from 'desm';
+import jose from 'jose2';
+import helmet from 'helmet';
+import { generate } from 'selfsigned';
 
-const { Provider, errors } = require('../../lib/index.js'); // require('oidc-provider');
-const MemoryAdapter = require('../../lib/adapters/memory_adapter.js');
+import Provider, { errors } from '../../lib/index.js'; // from 'oidc-provider';
+import MemoryAdapter from '../../lib/adapters/memory_adapter.js';
 
+const __dirname = dirname(import.meta.url);
+const selfsigned = generate();
 const OFFICIAL_CERTIFICATION = 'https://www.certification.openid.net';
 const { PORT = 3000, ISSUER = `http://localhost:${PORT}`, SUITE_BASE_URL = OFFICIAL_CERTIFICATION } = process.env;
 

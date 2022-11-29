@@ -1,11 +1,12 @@
-const crypto = require('node:crypto');
+import crypto from 'node:crypto';
 
-const cloneDeep = require('lodash/cloneDeep');
-const merge = require('lodash/merge');
+import merge from 'lodash/merge.js';
 
-const config = cloneDeep(require('../default.config.js'));
+import getConfig from '../default.config.js';
 
-const keypair = crypto.generateKeyPairSync('ec', { namedCurve: 'P-256' });
+const config = getConfig();
+
+export const keypair = crypto.generateKeyPairSync('ec', { namedCurve: 'P-256' });
 
 merge(config.features, {
   fapi: {
@@ -21,7 +22,7 @@ config.enabledJWA = {
   requestObjectSigningAlgValues: ['ES256'],
 };
 
-module.exports = {
+export default {
   config,
   clients: [{
     client_id: 'client',
@@ -33,5 +34,4 @@ module.exports = {
       keys: [keypair.publicKey.export({ format: 'jwk' })],
     },
   }],
-  keypair,
 };

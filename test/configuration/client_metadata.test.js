@@ -1,20 +1,20 @@
-const { strict: assert } = require('node:assert');
-const util = require('node:util');
+import { strict as assert } from 'node:assert';
+import util from 'node:util';
 
-const sinon = require('sinon');
-const { expect } = require('chai');
-const merge = require('lodash/merge');
-const omit = require('lodash/omit');
-const pull = require('lodash/pull');
-const cloneDeep = require('lodash/cloneDeep');
+import sinon from 'sinon';
+import { expect } from 'chai';
+import merge from 'lodash/merge.js';
+import omit from 'lodash/omit.js';
+import pull from 'lodash/pull.js';
+import cloneDeep from 'lodash/cloneDeep.js';
 
-const { Provider } = require('../../lib/index.js');
-const { enabledJWA } = require('../default.config.js');
-const sectorIdentifier = require('../../lib/helpers/sector_identifier.js');
+import Provider, { errors } from '../../lib/index.js';
+import { enabledJWA } from '../default.config.js';
+import sectorIdentifier from '../../lib/helpers/sector_identifier.js';
 
 const sigKey = global.keystore.get().toJWK();
 const privateKey = global.keystore.get().toJWK(true);
-const { errors: { InvalidClientMetadata } } = Provider;
+const { InvalidClientMetadata } = errors;
 
 describe('Client metadata validation', () => {
   let DefaultProvider;

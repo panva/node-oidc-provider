@@ -1,12 +1,12 @@
 /* eslint-disable no-console, max-len, camelcase, no-unused-vars */
-const { strict: assert } = require('node:assert');
-const querystring = require('node:querystring');
-const { inspect } = require('node:util');
+import { strict as assert } from 'node:assert';
+import querystring from 'node:querystring';
+import { inspect } from 'node:util';
 
-const isEmpty = require('lodash/isEmpty');
-const { urlencoded } = require('express'); // eslint-disable-line import/no-unresolved
+import isEmpty from 'lodash/isEmpty.js';
+import { urlencoded } from 'express'; // eslint-disable-line import/no-unresolved
 
-const Account = require('../support/account.js');
+import Account from '../support/account.js';
 
 const body = urlencoded({ extended: false });
 
@@ -20,7 +20,7 @@ const debug = (obj) => querystring.stringify(Object.entries(obj).reduce((acc, [k
   encodeURIComponent(value) { return keys.has(value) ? `<strong>${value}</strong>` : value; },
 });
 
-module.exports = (app, provider) => {
+export default (app, provider) => {
   const { constructor: { errors: { SessionNotFound } } } = provider;
 
   app.use((req, res, next) => {

@@ -1,22 +1,22 @@
-const querystring = require('node:querystring');
+import querystring from 'node:querystring';
 
-const sinon = require('sinon');
-const { expect } = require('chai');
+import sinon from 'sinon';
+import { expect } from 'chai';
 
-const bootstrap = require('../../test_helper.js');
-const epochTime = require('../../../lib/helpers/epoch_time.js');
-const {
+import bootstrap, { skipConsent } from '../../test_helper.js';
+import epochTime from '../../../lib/helpers/epoch_time.js';
+import {
   InvalidRequest,
   InvalidClient,
   InvalidRedirectUri,
-} = require('../../../lib/helpers/errors.js');
+} from '../../../lib/helpers/errors.js';
 
 const route = '/auth';
 const response_type = 'code';
 const scope = 'openid';
 
 describe('BASIC code', () => {
-  before(bootstrap(__dirname));
+  before(bootstrap(import.meta.url));
 
   ['get', 'post'].forEach((verb) => {
     describe(`${verb} ${route} with session`, () => {
@@ -96,7 +96,7 @@ describe('BASIC code', () => {
       });
 
       describe('ignoring the offline_access scope', () => {
-        bootstrap.skipConsent();
+        skipConsent();
 
         it('ignores the scope offline_access unless prompt consent is present', function () {
           const spy = sinon.spy();

@@ -40,7 +40,7 @@ If you or your business use oidc-provider, or you need help using/upgrading the 
 ## Basic configuration example
 
 ```js
-const { Provider } = require('oidc-provider');
+import Provider from 'oidc-provider';
 const configuration = {
   // ... see the available options in Configuration options section
   clients: [{
@@ -226,7 +226,7 @@ instance directly to register i.e. koa-helmet you must push the middleware in
 front of oidc-provider in the middleware stack.
 
 ```js
-const helmet = require('koa-helmet');
+import helmet from 'koa-helmet';
 
 // Correct, pushes koa-helmet at the end of the middleware stack but BEFORE oidc-provider.
 provider.use(helmet());
@@ -357,7 +357,7 @@ expressApp.use('/oidc', oidc.callback());
 ```js
 // assumes koa ^2.0.0
 // assumes koa-mount ^4.0.0
-const mount = require('koa-mount');
+import mount from 'koa-mount';
 koaApp.use(mount('/oidc', oidc.app));
 ```
 
@@ -681,7 +681,7 @@ _**default value**_:
 Helper function used to process the login_hint parameter and return the accountId value to use for processsing the request.   
   
 
-_**recommendation**_: Use `throw Provider.errors.InvalidRequest('validation error message')` when login_hint is invalid.  
+_**recommendation**_: Use `throw errors.InvalidRequest('validation error message')` when login_hint is invalid.  
 
 _**recommendation**_: Use `return undefined` or when you can't determine the accountId from the login_hint.  
 
@@ -700,9 +700,9 @@ async function processLoginHint(ctx, loginHint) {
 Helper function used to process the login_hint_token parameter and return the accountId value to use for processsing the request.   
   
 
-_**recommendation**_: Use `throw Provider.errors.ExpiredLoginHintToken('validation error message')` when login_hint_token is expired.  
+_**recommendation**_: Use `throw errors.ExpiredLoginHintToken('validation error message')` when login_hint_token is expired.  
 
-_**recommendation**_: Use `throw Provider.errors.InvalidRequest('validation error message')` when login_hint_token is invalid.  
+_**recommendation**_: Use `throw errors.InvalidRequest('validation error message')` when login_hint_token is invalid.  
 
 _**recommendation**_: Use `return undefined` or when you can't determine the accountId from the login_hint.  
 
@@ -745,7 +745,7 @@ await provider.backchannelResult(...);
 ```
 `backchannelResult(request, result[, options]);`
  - `request` BackchannelAuthenticationRequest - BackchannelAuthenticationRequest instance.
- - `result` Grant | OIDCProviderError - instance of a persisted Grant model or an OIDCProviderError (all exported by Provider.errors).
+ - `result` Grant | OIDCProviderError - instance of a persisted Grant model or an OIDCProviderError (all exported by errors).
  - `options.acr?`: string - Authentication Context Class Reference value that identifies the Authentication Context Class that the authentication performed satisfied.
  - `options.amr?`: string[] - Identifiers for authentication methods used in the authentication.
  - `options.authTime?`: number - Time when the End-User authentication occurred.  
@@ -758,7 +758,7 @@ await provider.backchannelResult(...);
 Helper function used to process the binding_message parameter and throw if its not following the authorization server's policy.   
   
 
-_**recommendation**_: Use `throw Provider.errors.InvalidBindingMessage('validation error message')` when the binding_message is invalid.  
+_**recommendation**_: Use `throw errors.InvalidBindingMessage('validation error message')` when the binding_message is invalid.  
 
 _**recommendation**_: Use `return undefined` when a binding_message isn't required and wasn't provided.  
 
@@ -779,7 +779,7 @@ async function validateBindingMessage(ctx, bindingMessage) {
 Helper function used to process the request_context parameter and throw if its not following the authorization server's policy.   
   
 
-_**recommendation**_: Use `throw Provider.errors.InvalidRequest('validation error message')` when the request_context is required by policy and missing or invalid.  
+_**recommendation**_: Use `throw errors.InvalidRequest('validation error message')` when the request_context is required by policy and missing or invalid.  
 
 _**recommendation**_: Use `return undefined` when a request_context isn't required and wasn't provided.  
 
@@ -798,9 +798,9 @@ async function validateRequestContext(ctx, requestContext) {
 Helper function used to verify the user_code parameter value is present when required and verify its value.   
   
 
-_**recommendation**_: Use `throw Provider.errors.MissingUserCode('validation error message')` when user_code should have been provided but wasn't.  
+_**recommendation**_: Use `throw errors.MissingUserCode('validation error message')` when user_code should have been provided but wasn't.  
 
-_**recommendation**_: Use `throw Provider.errors.InvalidUserCode('validation error message')` when the provided user_code is invalid.  
+_**recommendation**_: Use `throw errors.InvalidUserCode('validation error message')` when the provided user_code is invalid.  
 
 _**recommendation**_: Use `return undefined` when no user_code was provided and isn't required.  
 
@@ -1514,7 +1514,7 @@ To define policy functions configure `features.registration` to be an object lik
       properties.userinfo_signed_response_alg = 'RS256';
       // example of throwing a validation error
       if (someCondition(ctx, properties)) {
-        throw new Provider.errors.InvalidClientMetadata('validation error message');
+        throw new errors.InvalidClientMetadata('validation error message');
       }
     },
     'my-policy-2': async function (ctx, properties) {},
@@ -2252,7 +2252,7 @@ function extraClientMetadataValidator(ctx, key, value, metadata) {
   // @param ctx - koa request context (only provided when a client is being constructed during
   //              Client Registration Request or Client Update Request
   // validations for key, value, other related metadata
-  // throw new Provider.errors.InvalidClientMetadata() to reject the client metadata
+  // throw new errors.InvalidClientMetadata() to reject the client metadata
   // metadata[key] = value; to (re)assign metadata values
   // return not necessary, metadata is already a reference
 }
@@ -2630,7 +2630,8 @@ You may be required to skip (silently accept) some of the consent checks, while 
 </summary><br>
 
 ```js
-const { interactionPolicy: { Prompt, Check, base } } = require('oidc-provider');
+import { interactionPolicy } from 'oidc-provider';
+const { Prompt, Check, base } = interactionPolicy;
 const basePolicy = base()
 // basePolicy.get(name) => returns a Prompt instance by its name
 // basePolicy.remove(name) => removes a Prompt instance by its name

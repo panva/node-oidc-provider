@@ -1,8 +1,8 @@
-const sinon = require('sinon');
-const { expect } = require('chai');
+import sinon from 'sinon';
+import { expect } from 'chai';
 
-const bootstrap = require('../test_helper.js');
-const epochTime = require('../../lib/helpers/epoch_time.js');
+import bootstrap from '../test_helper.js';
+import epochTime from '../../lib/helpers/epoch_time.js';
 
 const route = '/auth';
 const response_type = 'code';
@@ -10,7 +10,7 @@ const scope = 'openid';
 const verb = 'get';
 
 describe('session exp handling', () => {
-  before(bootstrap(__dirname));
+  before(bootstrap(import.meta.url));
 
   afterEach(function () {
     try {

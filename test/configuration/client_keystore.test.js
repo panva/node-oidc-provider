@@ -1,14 +1,16 @@
-const { strict: assert } = require('node:assert');
+import { strict as assert } from 'node:assert';
 
-const jose = require('jose2');
-const moment = require('moment');
-const nock = require('nock');
-const sinon = require('sinon').createSandbox();
-const { expect } = require('chai');
+import jose from 'jose2';
+import moment from 'moment';
+import nock from 'nock';
+import { createSandbox } from 'sinon';
+import { expect } from 'chai';
 
-const JWT = require('../../lib/helpers/jwt.js');
-const epochTime = require('../../lib/helpers/epoch_time.js');
-const bootstrap = require('../test_helper.js');
+import * as JWT from '../../lib/helpers/jwt.js';
+import epochTime from '../../lib/helpers/epoch_time.js';
+import bootstrap from '../test_helper.js';
+
+const sinon = createSandbox();
 
 const endpoint = nock('https://client.example.com/');
 const keystore = new jose.JWKS.KeyStore();
@@ -26,7 +28,7 @@ describe('client keystore refresh', () => {
     expect(nock.isDone()).to.be.true;
   });
 
-  before(bootstrap(__dirname, { config: 'client_keystore' }));
+  before(bootstrap(import.meta.url, { config: 'client_keystore' }));
 
   before(async function () {
     return i(this.provider).clientAddStatic({

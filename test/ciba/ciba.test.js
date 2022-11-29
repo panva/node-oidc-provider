@@ -1,17 +1,18 @@
-const { strict: assert } = require('node:assert');
+import { strict as assert } from 'node:assert';
+import { once } from 'node:events';
 
-const sinon = require('sinon');
-const { expect } = require('chai');
-const nock = require('nock');
-const jose = require('jose2');
+import sinon from 'sinon';
+import { expect } from 'chai';
+import nock from 'nock';
+import jose from 'jose2';
 
-const { AccessDenied } = require('../../lib/helpers/errors.js');
-const bootstrap = require('../test_helper.js');
+import { AccessDenied } from '../../lib/helpers/errors.js';
+import bootstrap from '../test_helper.js';
 
-const { emitter, once } = require('./ciba.config.js');
+import { emitter } from './ciba.config.js';
 
 describe('configuration features.ciba', () => {
-  before(bootstrap(__dirname));
+  before(bootstrap(import.meta.url));
 
   afterEach(() => {
     expect(nock.isDone()).to.be.true;

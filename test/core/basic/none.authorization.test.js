@@ -1,14 +1,13 @@
-const { expect } = require('chai');
+import { expect } from 'chai';
 
-const bootstrap = require('../../test_helper.js');
+import bootstrap from '../../test_helper.js';
 
 const route = '/auth';
 const response_type = 'none';
 const scope = 'openid';
-
 ['get', 'post'].forEach((verb) => {
   describe(`${verb} ${route} response_type=none`, () => {
-    before(bootstrap(__dirname));
+    before(bootstrap(import.meta.url));
 
     before(function () { return this.login(); });
     after(function () { return this.logout(); });

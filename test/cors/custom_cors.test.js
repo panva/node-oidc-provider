@@ -1,7 +1,7 @@
-const { expect } = require('chai');
-const cors = require('@koa/cors');
+import { expect } from 'chai';
+import cors from '@koa/cors';
 
-const bootstrap = require('../test_helper.js');
+import bootstrap from '../test_helper.js';
 
 function req(verb, url, origin, ...methods) {
   const request = this.agent[verb](url)
@@ -26,7 +26,7 @@ const ACAMaxAge = 'access-control-max-age';
 const ACAOrigin = 'access-control-allow-origin';
 
 describe('CORS setup', () => {
-  before(bootstrap(__dirname));
+  before(bootstrap(import.meta.url));
 
   before(async function () {
     this.provider.use(cors({

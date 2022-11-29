@@ -1,16 +1,18 @@
 /* eslint-disable no-shadow */
 /* eslint-disable no-param-reassign */
-const { strict: assert } = require('node:assert');
-const crypto = require('node:crypto');
-const util = require('node:util');
+import { strict as assert } from 'node:assert';
+import crypto from 'node:crypto';
+import util from 'node:util';
 
-const sinon = require('sinon').createSandbox();
-const { expect } = require('chai');
-const base64url = require('base64url');
+import { createSandbox } from 'sinon';
+import { expect } from 'chai';
+import base64url from 'base64url';
 
-const ResourceServer = require('../../lib/helpers/resource_server.js');
-const epochTime = require('../../lib/helpers/epoch_time.js');
-const bootstrap = require('../test_helper.js');
+import ResourceServer from '../../lib/helpers/resource_server.js';
+import epochTime from '../../lib/helpers/epoch_time.js';
+import bootstrap from '../test_helper.js';
+
+const sinon = createSandbox();
 
 const generateKeyPair = util.promisify(crypto.generateKeyPair);
 function decode(b64urljson) {
@@ -18,7 +20,7 @@ function decode(b64urljson) {
 }
 
 describe('jwt format', () => {
-  before(bootstrap(__dirname));
+  before(bootstrap(import.meta.url));
   afterEach(function () {
     this.provider.removeAllListeners();
   });

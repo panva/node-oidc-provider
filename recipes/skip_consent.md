@@ -1,6 +1,6 @@
 # Skipping consent screen
 
-- built for version: ^7.0.0
+- built for version: ^7.0.0 || ^8.0.0
 - no guarantees this is bug-free, no support will be provided for this, you've been warned, you're on
 your own
 - it is not recommended to have consent-free flows for the obvious issues this poses for native

@@ -1,6 +1,6 @@
 // npm i ioredis@^4.0.0
-const Redis = require('ioredis'); // eslint-disable-line import/no-unresolved
-const isEmpty = require('lodash/isEmpty');
+import Redis from 'ioredis'; // eslint-disable-line import/no-unresolved
+import isEmpty from 'lodash/isEmpty.js';
 
 const client = new Redis(process.env.REDIS_URL, { keyPrefix: 'oidc:' });
 
@@ -125,4 +125,4 @@ class RedisAdapter {
   }
 }
 
-module.exports = RedisAdapter;
+export default RedisAdapter;

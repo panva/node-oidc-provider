@@ -1,12 +1,12 @@
 # Allowing HTTP and/or localhost for implicit response type web clients
 
-- built for version: ^6.15.0 || ^7.0.0
+- built for version: ^6.15.0 || ^7.0.0 || ^8.0.0
 
 > ⚠️ This violates the OIDC Core 1.0 specification. **Its only practical use-case is for development purposes and as such is not recommended
 > for any production deployment.**
 
 ```js
-const { Provider } = require('oidc-provider');
+import Provider from 'oidc-provider';
 
 const provider = new Provider('http://localhost:3000', {
   clients: [
@@ -33,6 +33,6 @@ provider.Client.Schema.prototype.invalidate = function invalidate(message, code)
 ```
 
 In addition to this you may also utilize
-[extra client metadata](https://github.com/panva/node-oidc-provider/blob/v7.x/docs/README.md#extraclientmetadata)
+[extra client metadata](https://github.com/panva/node-oidc-provider/blob/v8.x/docs/README.md#extraclientmetadata)
 and only skip these checks for clients in something like a development mode or similar. Again, no
 production client should be allowed to skip these validations.

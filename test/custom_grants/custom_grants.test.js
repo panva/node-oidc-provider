@@ -1,8 +1,8 @@
-const querystring = require('node:querystring');
+import querystring from 'node:querystring';
 
-const { expect } = require('chai');
+import { expect } from 'chai';
 
-const bootstrap = require('../test_helper.js');
+import bootstrap from '../test_helper.js';
 
 function register(provider, grantType, params, options) {
   provider.registerGrantType(grantType, (ctx) => {
@@ -11,7 +11,7 @@ function register(provider, grantType, params, options) {
 }
 
 describe('custom token endpoint grant types', () => {
-  before(bootstrap(__dirname));
+  before(bootstrap(import.meta.url));
 
   before('allows for grant types to be added', function () {
     register(this.provider, 'lotto', 'name');

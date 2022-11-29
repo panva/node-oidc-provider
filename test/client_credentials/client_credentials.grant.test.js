@@ -1,12 +1,12 @@
-const sinon = require('sinon');
-const { expect } = require('chai');
+import sinon from 'sinon';
+import { expect } from 'chai';
 
-const bootstrap = require('../test_helper.js');
+import bootstrap from '../test_helper.js';
 
 const route = '/token';
 
 describe('grant_type=client_credentials', () => {
-  before(bootstrap(__dirname));
+  before(bootstrap(import.meta.url));
 
   it('provides a Bearer client credentials token', function () {
     const spy = sinon.spy();

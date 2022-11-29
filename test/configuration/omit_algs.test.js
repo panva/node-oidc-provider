@@ -1,7 +1,7 @@
-const { expect } = require('chai');
-const jose = require('jose2');
+import { expect } from 'chai';
+import jose from 'jose2';
 
-const { Provider } = require('../../lib/index.js');
+import Provider from '../../lib/index.js';
 
 describe('Provider declaring supported algorithms', () => {
   it('validates the configuration properties', () => {

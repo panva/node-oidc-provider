@@ -1,14 +1,14 @@
-const { parse: parseLocation } = require('node:url');
+import { parse as parseLocation } from 'node:url';
 
-const { expect } = require('chai');
-const jose = require('jose2');
+import { expect } from 'chai';
+import jose from 'jose2';
 
-const bootstrap = require('../test_helper.js');
-const { decode } = require('../../lib/helpers/jwt.js');
-const epochTime = require('../../lib/helpers/epoch_time.js');
+import bootstrap from '../test_helper.js';
+import { decode } from '../../lib/helpers/jwt.js';
+import epochTime from '../../lib/helpers/epoch_time.js';
 
 describe('signatures', () => {
-  before(bootstrap(__dirname));
+  before(bootstrap(import.meta.url));
 
   describe('when id_token_signed_response_alg=HS256', () => {
     before(function () { return this.login(); });

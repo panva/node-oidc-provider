@@ -1,13 +1,13 @@
-const sinon = require('sinon');
-const { expect } = require('chai');
+import sinon from 'sinon';
+import { expect } from 'chai';
 
-const bootstrap = require('../test_helper.js');
-const { normalize } = require('../../lib/helpers/user_codes.js');
+import bootstrap from '../test_helper.js';
+import { normalize } from '../../lib/helpers/user_codes.js';
 
 const route = '/device/auth';
 
 describe('device_authorization_endpoint', () => {
-  before(bootstrap(__dirname));
+  before(bootstrap(import.meta.url));
 
   it('rejects other than application/x-www-form-urlencoded', function () {
     const spy = sinon.spy();

@@ -1,6 +1,6 @@
 # Aggregated and Distributed claims
 
-- built for version: ^6.0.0 || ^7.0.0
+- built for version: ^6.0.0 || ^7.0.0 || ^8.0.0
 
 Returning aggregated and distributed claims is as easy as having your `findAccount`'s `claims()`
 method return the two necessary members `_claim_sources` and `_claim_names` with the

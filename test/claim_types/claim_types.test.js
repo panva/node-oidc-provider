@@ -1,14 +1,14 @@
 /* eslint-disable no-underscore-dangle */
 
-const { parse: parseLocation } = require('node:url');
+import { parse as parseLocation } from 'node:url';
 
-const { expect } = require('chai');
+import { expect } from 'chai';
 
-const bootstrap = require('../test_helper.js');
-const { decode: decodeJWT } = require('../../lib/helpers/jwt.js');
+import bootstrap from '../test_helper.js';
+import { decode as decodeJWT } from '../../lib/helpers/jwt.js';
 
 describe('distributed and aggregated claims', () => {
-  before(bootstrap(__dirname));
+  before(bootstrap(import.meta.url));
   before(function () {
     const { Account } = this.provider;
     Account.findAccount = (ctx, id) => Promise.resolve({

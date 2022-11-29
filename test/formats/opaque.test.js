@@ -1,13 +1,15 @@
-const sinon = require('sinon').createSandbox();
-const { expect } = require('chai');
+import { createSandbox } from 'sinon';
+import { expect } from 'chai';
 
-const epochTime = require('../../lib/helpers/epoch_time.js');
-const bootstrap = require('../test_helper.js');
+import epochTime from '../../lib/helpers/epoch_time.js';
+import bootstrap from '../test_helper.js';
+
+const sinon = createSandbox();
 
 const { spy, match: { string, number }, assert } = sinon;
 
 describe('opaque storage', () => {
-  before(bootstrap(__dirname));
+  before(bootstrap(import.meta.url));
   const accountId = 'account';
   const claims = {};
   const clientId = 'client';

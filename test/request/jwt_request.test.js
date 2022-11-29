@@ -1,16 +1,16 @@
-const { createSecretKey, randomBytes } = require('node:crypto');
-const { parse } = require('node:url');
+import { createSecretKey, randomBytes } from 'node:crypto';
+import { parse } from 'node:url';
 
-const { importJWK } = require('jose');
-const sinon = require('sinon');
-const { expect } = require('chai');
+import { importJWK } from 'jose';
+import sinon from 'sinon';
+import { expect } from 'chai';
 
-const { Provider } = require('../../lib/index.js');
-const JWT = require('../../lib/helpers/jwt.js');
-const bootstrap = require('../test_helper.js');
+import Provider from '../../lib/index.js';
+import * as JWT from '../../lib/helpers/jwt.js';
+import bootstrap from '../test_helper.js';
 
 describe('request parameter features', () => {
-  before(bootstrap(__dirname));
+  before(bootstrap(import.meta.url));
 
   describe('modes', () => {
     ['lax', 'strict'].forEach((value) => {

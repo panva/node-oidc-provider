@@ -1,14 +1,14 @@
-const sinon = require('sinon');
-const { expect } = require('chai');
+import sinon from 'sinon';
+import { expect } from 'chai';
 
-const bootstrap = require('../../test_helper.js');
+import bootstrap from '../../test_helper.js';
 
 const route = '/auth';
 const response_type = 'id_token token';
 const scope = 'openid';
 
 describe('IMPLICIT id_token+token', () => {
-  before(bootstrap(__dirname));
+  before(bootstrap(import.meta.url));
   afterEach(function () {
     this.provider.removeAllListeners();
   });

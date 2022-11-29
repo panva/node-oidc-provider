@@ -1,20 +1,20 @@
-const { readFileSync } = require('node:fs');
+import { readFileSync } from 'node:fs';
 
-const got = require('got');
-const nock = require('nock');
-const jose = require('jose2');
-const { importJWK } = require('jose');
-const sinon = require('sinon');
-const { expect } = require('chai');
-const cloneDeep = require('lodash/cloneDeep');
+import got from 'got';
+import nock from 'nock';
+import jose from 'jose2';
+import { importJWK } from 'jose';
+import sinon from 'sinon';
+import { expect } from 'chai';
+import cloneDeep from 'lodash/cloneDeep.js';
 
-const nanoid = require('../../lib/helpers/nanoid.js');
-const { Provider } = require('../../lib/index.js');
-const bootstrap = require('../test_helper.js');
-const clientKey = require('../client.sig.key.js');
-const JWT = require('../../lib/helpers/jwt.js');
-const { JWA } = require('../../lib/consts/index.js');
-const mtlsKeys = require('../jwks/jwks.json');
+import nanoid from '../../lib/helpers/nanoid.js';
+import Provider from '../../lib/index.js';
+import bootstrap from '../test_helper.js';
+import clientKey from '../client.sig.key.js';
+import * as JWT from '../../lib/helpers/jwt.js';
+import { JWA } from '../../lib/consts/index.js';
+import mtlsKeys from '../jwks/jwks.json' assert { type: 'json' };
 
 const rsacrt = readFileSync('test/jwks/rsa.crt').toString();
 const eccrt = readFileSync('test/jwks/ec.crt').toString();
@@ -37,7 +37,7 @@ function errorDetail(spy) {
 }
 
 describe('client authentication options', () => {
-  before(bootstrap(__dirname));
+  before(bootstrap(import.meta.url));
 
   before(function () {
     this.provider.registerGrantType('foo', (ctx) => {
@@ -100,7 +100,7 @@ describe('client authentication options', () => {
           'client_secret_jwt',
           'client_secret_post',
         ],
-        enabledJWA: cloneDeep(JWA),
+        enabledJWA: cloneDeep({ ...JWA }),
       });
 
       const algs = [
@@ -120,7 +120,7 @@ describe('client authentication options', () => {
           'client_secret_post',
           'private_key_jwt',
         ],
-        enabledJWA: cloneDeep(JWA),
+        enabledJWA: cloneDeep({ ...JWA }),
       });
 
       const algs = [
@@ -149,7 +149,7 @@ describe('client authentication options', () => {
           'client_secret_post',
           'private_key_jwt',
         ],
-        enabledJWA: cloneDeep(JWA),
+        enabledJWA: cloneDeep({ ...JWA }),
       });
 
       const algs = [

@@ -3,7 +3,7 @@
  */
 
 // npm i ioredis@^4.0.0
-const Redis = require('ioredis'); // eslint-disable-line import/no-unresolved
+import Redis from 'ioredis'; // eslint-disable-line import/no-unresolved
 
 const client = new Redis(process.env.REDIS_URL);
 
@@ -108,4 +108,4 @@ class RedisAdapter {
   }
 }
 
-module.exports = RedisAdapter;
+export default RedisAdapter;

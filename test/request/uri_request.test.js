@@ -1,17 +1,18 @@
-const { createSecretKey, randomBytes } = require('node:crypto');
-const { parse } = require('node:url');
+import { createSecretKey, randomBytes } from 'node:crypto';
+import { parse } from 'node:url';
 
-const { importJWK } = require('jose');
-const sinon = require('sinon').createSandbox();
-const nock = require('nock');
-const { expect } = require('chai');
+import { importJWK } from 'jose';
+import { createSandbox } from 'sinon';
+import nock from 'nock';
+import { expect } from 'chai';
 
-const JWT = require('../../lib/helpers/jwt.js');
-const RequestUriCache = require('../../lib/helpers/request_uri_cache.js');
-const bootstrap = require('../test_helper.js');
+import * as JWT from '../../lib/helpers/jwt.js';
+import RequestUriCache from '../../lib/helpers/request_uri_cache.js';
+import bootstrap from '../test_helper.js';
 
+const sinon = createSandbox();
 describe('request Uri features', () => {
-  before(bootstrap(__dirname));
+  before(bootstrap(import.meta.url));
   beforeEach(nock.cleanAll);
 
   describe('configuration features.requestUri', () => {

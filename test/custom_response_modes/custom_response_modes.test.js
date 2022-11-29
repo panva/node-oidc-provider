@@ -1,10 +1,10 @@
-const { expect } = require('chai');
-const sinon = require('sinon');
+import { expect } from 'chai';
+import sinon from 'sinon';
 
-const bootstrap = require('../test_helper.js');
+import bootstrap from '../test_helper.js';
 
 describe('custom response modes', () => {
-  before(bootstrap(__dirname));
+  before(bootstrap(import.meta.url));
 
   before(function () { return this.login(); });
 

@@ -1,13 +1,15 @@
-const { strict: assert } = require('node:assert');
+import { strict as assert } from 'node:assert';
 
-const sinon = require('sinon').createSandbox();
-const { expect } = require('chai');
-const timekeeper = require('timekeeper');
+import { createSandbox } from 'sinon';
+import { expect } from 'chai';
+import timekeeper from 'timekeeper';
 
-const bootstrap = require('../test_helper.js');
+import bootstrap from '../test_helper.js';
+
+const sinon = createSandbox();
 
 describe('BaseToken', () => {
-  before(bootstrap(__dirname));
+  before(bootstrap(import.meta.url));
 
   beforeEach(function () {
     this.adapter = this.TestAdapter.for('RefreshToken');

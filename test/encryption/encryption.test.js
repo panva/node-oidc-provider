@@ -1,19 +1,19 @@
-const url = require('node:url');
+import url from 'node:url';
 
-const { expect } = require('chai');
-const sinon = require('sinon');
-const jose = require('jose2');
-const { decodeProtectedHeader } = require('jose');
+import { expect } from 'chai';
+import sinon from 'sinon';
+import jose from 'jose2';
+import { decodeProtectedHeader } from 'jose';
 
-const bootstrap = require('../test_helper.js');
-const JWT = require('../../lib/helpers/jwt.js');
+import bootstrap from '../test_helper.js';
+import * as JWT from '../../lib/helpers/jwt.js';
 
-const { privKey } = require('./encryption.config.js');
+import { privKey } from './encryption.config.js';
 
 const route = '/auth';
 
 describe('encryption', () => {
-  before(bootstrap(__dirname));
+  before(bootstrap(import.meta.url));
 
   before(function () {
     this.keystore = jose.JWKS.asKeyStore(privKey);

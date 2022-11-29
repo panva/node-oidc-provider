@@ -1,7 +1,7 @@
 /* eslint-disable prefer-arrow-callback */
-const { expect } = require('chai');
+import { expect } from 'chai';
 
-const { isConstructable } = require('../../lib/helpers/type_validators.js');
+import isConstructable from '../../lib/helpers/type_validators.js';
 
 describe('type validators helper', () => {
   it('should be falsy when argument is null', () => {

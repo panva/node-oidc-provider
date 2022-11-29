@@ -1,14 +1,14 @@
-const { expect } = require('chai');
-const timekeeper = require('timekeeper');
+import { expect } from 'chai';
+import timekeeper from 'timekeeper';
 
-const bootstrap = require('../test_helper.js');
-const JWT = require('../../lib/helpers/jwt.js');
-const { Provider } = require('../../lib/index.js');
+import bootstrap from '../test_helper.js';
+import * as JWT from '../../lib/helpers/jwt.js';
+import Provider from '../../lib/index.js';
 
 const route = '/token/introspection';
 
 describe('jwtIntrospection features', () => {
-  before(bootstrap(__dirname));
+  before(bootstrap(import.meta.url));
 
   afterEach(() => timekeeper.reset());
 

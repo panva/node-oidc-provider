@@ -1,10 +1,10 @@
 /* eslint-disable no-new */
 
-const { strict: assert } = require('node:assert');
+import { strict as assert } from 'node:assert';
 
-const { expect } = require('chai');
+import { expect } from 'chai';
 
-const { Provider } = require('../../lib/index.js');
+import Provider from '../../lib/index.js';
 
 describe('Provider issuer configuration', () => {
   it('validates the issuer input to be present and valid', () => {

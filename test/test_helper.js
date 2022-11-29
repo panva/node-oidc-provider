@@ -1,32 +1,33 @@
-/* eslint-disable global-require */
 /* eslint-disable no-underscore-dangle */
+
+import { parse } from 'node:url';
+import path from 'node:path';
+import querystring from 'node:querystring';
+import { createServer } from 'node:http';
+import { once } from 'node:events';
+
+import sinon from 'sinon';
+import { dirname } from 'desm';
+import flatten from 'lodash/flatten.js';
+import { agent as supertest } from 'supertest';
+import { expect } from 'chai';
+import koaMount from 'koa-mount';
+import base64url from 'base64url';
+import KeyGrip from 'keygrip'; // eslint-disable-line import/no-extraneous-dependencies
+import Connect from 'connect';
+import Express from 'express';
+import Koa from 'koa';
+
+import nanoid from '../lib/helpers/nanoid.js';
+import epochTime from '../lib/helpers/epoch_time.js';
+import Provider from '../lib/index.js';
+import instance from '../lib/helpers/weak_cache.js';
+
+import { Account, TestAdapter } from './models.js';
 
 process.env.NODE_ENV = process.env.NODE_ENV || 'test';
 
-const { parse } = require('node:url');
-const path = require('node:path');
-const querystring = require('node:querystring');
-const { createServer } = require('node:http');
-const { once } = require('node:events');
-
-const sinon = require('sinon');
-const flatten = require('lodash/flatten');
-const { agent: supertest } = require('supertest');
-const { expect } = require('chai');
-const koaMount = require('koa-mount');
-const base64url = require('base64url');
-const KeyGrip = require('keygrip'); // eslint-disable-line import/no-extraneous-dependencies
-const Connect = require('connect');
-const Express = require('express');
-const Koa = require('koa');
-
-const nanoid = require('../lib/helpers/nanoid.js');
-const epochTime = require('../lib/helpers/epoch_time.js');
-const { Provider } = require('../lib/index.js');
-
-const { Account, TestAdapter } = require('./models.js');
-
-global.i = require('../lib/helpers/weak_cache.js');
+global.i = instance;
 
 Object.defineProperties(Provider.prototype, {
   enable: {
@@ -61,12 +62,15 @@ const { port } = global.server.address();
 
 const jwt = (token) => JSON.parse(base64url.decode(token.split('.')[1])).jti;
 
-module.exports = function testHelper(dir, {
-  config: base = path.basename(dir),
+export default function testHelper(importMetaUrl, {
+  config: base,
   protocol = 'http:',
   mountVia = process.env.MOUNT_VIA,
   mountTo = mountVia ? process.env.MOUNT_TO || '/' : '/',
 } = {}) {
+  const dir = dirname(importMetaUrl);
+  // eslint-disable-next-line no-param-reassign
+  base ??= path.basename(dir);
   const afterPromises = [];
 
   after(async () => {
@@ -77,7 +81,9 @@ module.exports = function testHelper(dir, {
 
   return async function () {
     const conf = path.format({ dir, base: `${base}.config.js` });
-    let { config, client, clients } = require(conf); // eslint-disable-line
+    const { default: mod } = await import(conf);
+    const { config, client } = mod;
+    let { clients } = mod;
 
     if (client && !clients) {
       clients = [client];
@@ -458,8 +464,8 @@ module.exports = function testHelper(dir, {
         break;
       }
       case 'fastify': {
-        const Fastify = require('fastify');
-        const middie = require('@fastify/middie');
+        const { default: Fastify } = await import('fastify');
+        const { default: middie } = await import('@fastify/middie');
         const app = new Fastify();
         await app.register(middie);
         app.use(mountTo, provider.callback());
@@ -474,7 +480,7 @@ module.exports = function testHelper(dir, {
         break;
       }
       case 'hapi': {
-        const Hapi = require('@hapi/hapi');
+        const { default: Hapi } = await import('@hapi/hapi');
         const app = new Hapi.Server({ port });
         const callback = provider.callback();
         app.route({
@@ -532,9 +538,9 @@ module.exports = function testHelper(dir, {
 
     this.agent = agent;
   };
-};
+}
 
-module.exports.passInteractionChecks = (...reasons) => {
+export function passInteractionChecks(...reasons) {
   const cb = reasons.pop();
 
   const sandbox = sinon.createSandbox();
@@ -556,9 +562,9 @@ module.exports.passInteractionChecks = (...reasons) => {
 
     cb();
   });
-};
+}
 
-module.exports.skipConsent = () => {
+export function skipConsent() {
   const sandbox = sinon.createSandbox();
 
   before(function () {
@@ -566,4 +572,4 @@ module.exports.skipConsent = () => {
   });
 
   after(sandbox.restore);
-};
+}

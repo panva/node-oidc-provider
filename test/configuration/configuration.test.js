@@ -1,6 +1,6 @@
-const { expect } = require('chai');
+import { expect } from 'chai';
 
-const Configuration = require('../../lib/helpers/configuration.js');
+import Configuration from '../../lib/helpers/configuration.js';
 
 describe('Provider configuration', () => {
   it('checks that a feature configuration property is valid', () => {
