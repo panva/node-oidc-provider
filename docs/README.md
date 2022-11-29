@@ -958,7 +958,7 @@ function deviceInfo(ctx) {
 
 #### mask
 
-a string used as a template for the generated user codes, `*` characters will be replaced by random chars from the charset, `-`(dash) and ` ` (space) characters may be included for readability. See the RFC for details about minimal recommended entropy  
+a string used as a template for the generated user codes, `*` characters will be replaced by random chars from the charset, `-`(dash) and ` ` (space) characters may be included for readability. See the RFC for details about minimal recommended entropy.  
 
 
 _**default value**_:
@@ -1096,8 +1096,7 @@ _**default value**_:
 
 Financial-grade API Security Profile  
 
-Enables extra Authorization Server behaviours defined in FAPI that cannot be achieved by other configuration options.   
-  
+Enables extra Authorization Server behaviours defined in FAPI that cannot be achieved by other configuration options.  
 
 
 _**default value**_:
@@ -1107,26 +1106,6 @@ _**default value**_:
   profile: '1.0 Final'
 }
 ```
-<a id="features-fapi-other-configuration-needed-to-reach-fapi-conformance"></a><details><summary>(Click to expand) other configuration needed to reach FAPI conformance
-</summary><br>
-
-
-- `clientDefaults` for setting different default client `token_endpoint_auth_method`
- - `clientDefaults` for setting different default client `id_token_signed_response_alg`
- - `clientDefaults` for setting different default client `response_types`
- - `clientDefaults` for setting client `tls_client_certificate_bound_access_tokens` to true
- - `clientDefaults` for setting client `require_signed_request_object` to true
- - `clientDefaults` for setting client `default_acr_values` to whatever values are set by the specific FAPI ecosystem
- - `features.mTLS` and enable `certificateBoundAccessTokens`
- - `features.mTLS` and enable `selfSignedTlsClientAuth` and/or `tlsClientAuth`
- - `features.claimsParameter`
- - `features.requestObjects` and enable `request` and/or `request_uri`
- - `enabledJWA` algorithm allow lists
- - (optional) `features.pushedAuthorizationRequests`
- - (optional) `features.jwtResponseModes`  
-
-
-</details>
 
 <details><summary>(Click to expand) features.fapi options details</summary><br>
 
