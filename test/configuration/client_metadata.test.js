@@ -256,7 +256,7 @@ describe('Client metadata validation', () => {
         },
       },
     });
-    mustBeBoolean(this.title);
+    mustBeBoolean(this.title, undefined, configuration());
     defaultsTo(this.title, undefined, undefined, configuration(false, false));
     defaultsTo(this.title, false, undefined, configuration());
     defaultsTo(this.title, true, undefined, configuration(true));
@@ -451,15 +451,37 @@ describe('Client metadata validation', () => {
   });
 
   context('request_object_signing_alg', function () {
-    mustBeString(this.title);
-    [
-      'HS256', 'HS384', 'HS512', 'RS256', 'RS384', 'RS512',
-      'PS256', 'PS384', 'PS512', 'ES256', 'ES384', 'ES512', 'EdDSA',
-    ].forEach((alg) => {
-      allows(this.title, alg, { jwks: { keys: [sigKey] } });
-    });
-    rejects(this.title, 'not-an-alg');
-    rejects(this.title, 'none');
+    // eslint-disable-next-line no-restricted-syntax
+    for (const configuration of [
+      {
+        features: {
+          requestObjects: { requestUri: true, request: false },
+          pushedAuthorizationRequests: { enabled: false },
+        },
+      },
+      {
+        features: {
+          requestObjects: { requestUri: false, request: true },
+          pushedAuthorizationRequests: { enabled: false },
+        },
+      },
+      {
+        features: {
+          requestObjects: { requestUri: false, request: false },
+          pushedAuthorizationRequests: { enabled: true },
+        },
+      },
+    ]) {
+      mustBeString(this.title, undefined, undefined, configuration);
+      [
+        'HS256', 'HS384', 'HS512', 'RS256', 'RS384', 'RS512',
+        'PS256', 'PS384', 'PS512', 'ES256', 'ES384', 'ES512', 'EdDSA',
+      ].forEach((alg) => {
+        allows(this.title, alg, { jwks: { keys: [sigKey] } }, configuration);
+      });
+      rejects(this.title, 'not-an-alg', undefined, undefined, configuration);
+      rejects(this.title, 'none', undefined, undefined, configuration);
+    }
   });
 
   context('request_uris', function () {
@@ -476,14 +498,19 @@ describe('Client metadata validation', () => {
         },
       },
     });
-    mustBeArray(this.title);
+    const configuration = {
+      features: {
+        requestObjects: { requestUri: true },
+      },
+    };
+    mustBeArray(this.title, undefined, configuration);
 
-    allows(this.title, ['https://a-web-uri']);
-    allows(this.title, ['http://a-web-uri'], /must only contain https uris$/);
-    rejects(this.title, [123], /must only contain strings$/);
-    rejects(this.title, ['not a uri'], /request_uris must only contain web uris$/);
-    rejects(this.title, ['custom-scheme://not-a-web-uri'], /request_uris must only contain web uris$/);
-    rejects(this.title, ['urn:example'], /request_uris must only contain web uris$/);
+    allows(this.title, ['https://a-web-uri'], undefined, configuration);
+    allows(this.title, ['http://a-web-uri'], /must only contain https uris$/, configuration);
+    rejects(this.title, [123], /must only contain strings$/, undefined, configuration);
+    rejects(this.title, ['not a uri'], /request_uris must only contain web uris$/, undefined, configuration);
+    rejects(this.title, ['custom-scheme://not-a-web-uri'], /request_uris must only contain web uris$/, undefined, configuration);
+    rejects(this.title, ['urn:example'], /request_uris must only contain web uris$/, undefined, configuration);
   });
 
   context('web_message_uris', function () {
@@ -1109,6 +1136,7 @@ describe('Client metadata validation', () => {
         encryption: { enabled: true },
         jwtUserinfo: { enabled: true },
         ciba: { enabled: true },
+        requestObjects: { request: true },
       },
     };
 

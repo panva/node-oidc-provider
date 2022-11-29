@@ -6,6 +6,7 @@ const config = getConfig();
 
 merge(config.features, {
   claimsParameter: { enabled: true },
+  jwtUserinfo: { enabled: true },
 });
 
 export default {
@@ -19,5 +20,6 @@ export default {
       'code id_token token', 'code id_token', 'code token', 'code', 'id_token token', 'id_token',
     ],
     redirect_uris: ['https://client.example.com/cb'],
+    userinfo_signed_response_alg: 'HS256',
   }],
 };

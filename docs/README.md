@@ -1608,7 +1608,7 @@ _**default value**_:
 {
   mode: 'strict',
   request: false,
-  requestUri: true,
+  requestUri: false,
   requireSignedRequestObject: false,
   requireUriRegistration: true
 }
@@ -1648,7 +1648,7 @@ Enables the use and validations of the `request_uri` parameter.
 
 _**default value**_:
 ```js
-true
+false
 ```
 
 #### requireSignedRequestObject
