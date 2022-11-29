@@ -738,7 +738,7 @@ describe('Client metadata validation', () => {
       }));
       allows(this.title, 'dir', undefined, configuration);
       [
-        'RSA-OAEP', 'RSA-OAEP-256', 'RSA-OAEP-384', 'RSA-OAEP-512', 'RSA1_5', 'ECDH-ES', 'ECDH-ES+A128KW', 'ECDH-ES+A192KW',
+        'RSA-OAEP', 'RSA-OAEP-256', 'RSA-OAEP-384', 'RSA-OAEP-512', 'ECDH-ES', 'ECDH-ES+A128KW', 'ECDH-ES+A192KW',
         'ECDH-ES+A256KW', 'A128GCMKW', 'A192GCMKW', 'A256GCMKW', 'A128KW', 'A192KW', 'A256KW',
       ].forEach((value) => {
         allows(this.title, value, {
@@ -752,18 +752,18 @@ describe('Client metadata validation', () => {
     context('id_token_encrypted_response_enc', function () {
       defaultsTo(this.title, undefined);
       defaultsTo(this.title, 'A128CBC-HS256', {
-        [this.title.replace(/(enc$)/, 'alg')]: 'RSA1_5',
+        [this.title.replace(/(enc$)/, 'alg')]: 'RSA-OAEP',
         jwks: { keys: [sigKey] },
       }, configuration);
       mustBeString(this.title, undefined, {
-        [this.title.replace(/(enc$)/, 'alg')]: 'RSA1_5',
+        [this.title.replace(/(enc$)/, 'alg')]: 'RSA-OAEP',
         jwks: { keys: [sigKey] },
       }, configuration);
       [
         'A128CBC-HS256', 'A128GCM', 'A192CBC-HS384', 'A192GCM', 'A256CBC-HS512', 'A256GCM',
       ].forEach((value) => {
         allows(this.title, value, {
-          [this.title.replace(/(enc$)/, 'alg')]: 'RSA1_5',
+          [this.title.replace(/(enc$)/, 'alg')]: 'RSA-OAEP',
           jwks: { keys: [sigKey] },
         }, configuration);
         allows(this.title, value, {
@@ -771,7 +771,7 @@ describe('Client metadata validation', () => {
         }, configuration);
       });
       rejects(this.title, 'not-an-enc', undefined, {
-        [this.title.replace(/(enc$)/, 'alg')]: 'RSA1_5',
+        [this.title.replace(/(enc$)/, 'alg')]: 'RSA-OAEP',
         jwks: { keys: [sigKey] },
       }, configuration);
     });
@@ -791,7 +791,7 @@ describe('Client metadata validation', () => {
       }));
       allows(this.title, 'dir', undefined, configuration);
       [
-        'RSA-OAEP', 'RSA-OAEP-256', 'RSA-OAEP-384', 'RSA-OAEP-512', 'RSA1_5', 'ECDH-ES', 'ECDH-ES+A128KW', 'ECDH-ES+A192KW',
+        'RSA-OAEP', 'RSA-OAEP-256', 'RSA-OAEP-384', 'RSA-OAEP-512', 'ECDH-ES', 'ECDH-ES+A128KW', 'ECDH-ES+A192KW',
         'ECDH-ES+A256KW', 'A128GCMKW', 'A192GCMKW', 'A256GCMKW', 'A128KW', 'A192KW', 'A256KW',
       ].forEach((value) => {
         allows(this.title, value, {
@@ -806,18 +806,18 @@ describe('Client metadata validation', () => {
       defaultsTo(this.title, undefined);
       defaultsTo(this.title, undefined, undefined, configuration);
       defaultsTo(this.title, 'A128CBC-HS256', {
-        [this.title.replace(/(enc$)/, 'alg')]: 'RSA1_5',
+        [this.title.replace(/(enc$)/, 'alg')]: 'RSA-OAEP',
         jwks: { keys: [sigKey] },
       }, configuration);
       mustBeString(this.title, undefined, {
-        [this.title.replace(/(enc$)/, 'alg')]: 'RSA1_5',
+        [this.title.replace(/(enc$)/, 'alg')]: 'RSA-OAEP',
         jwks: { keys: [sigKey] },
       }, configuration);
       [
         'A128CBC-HS256', 'A128GCM', 'A192CBC-HS384', 'A192GCM', 'A256CBC-HS512', 'A256GCM',
       ].forEach((value) => {
         allows(this.title, value, {
-          [this.title.replace(/(enc$)/, 'alg')]: 'RSA1_5',
+          [this.title.replace(/(enc$)/, 'alg')]: 'RSA-OAEP',
           jwks: { keys: [sigKey] },
         }, configuration);
         allows(this.title, value, {
@@ -825,7 +825,7 @@ describe('Client metadata validation', () => {
         }, configuration);
       });
       rejects(this.title, 'not-an-enc', undefined, {
-        [this.title.replace(/(enc$)/, 'alg')]: 'RSA1_5',
+        [this.title.replace(/(enc$)/, 'alg')]: 'RSA-OAEP',
         jwks: { keys: [sigKey] },
       }, configuration);
     });
@@ -845,7 +845,7 @@ describe('Client metadata validation', () => {
       }));
       allows(this.title, 'dir', undefined, configuration);
       [
-        'RSA-OAEP', 'RSA-OAEP-256', 'RSA-OAEP-384', 'RSA-OAEP-512', 'RSA1_5', 'ECDH-ES', 'ECDH-ES+A128KW', 'ECDH-ES+A192KW',
+        'RSA-OAEP', 'RSA-OAEP-256', 'RSA-OAEP-384', 'RSA-OAEP-512', 'ECDH-ES', 'ECDH-ES+A128KW', 'ECDH-ES+A192KW',
         'ECDH-ES+A256KW', 'A128GCMKW', 'A192GCMKW', 'A256GCMKW', 'A128KW', 'A192KW', 'A256KW',
       ].forEach((value) => {
         allows(this.title, value, {
@@ -860,18 +860,18 @@ describe('Client metadata validation', () => {
       defaultsTo(this.title, undefined);
       defaultsTo(this.title, undefined, undefined, configuration);
       defaultsTo(this.title, 'A128CBC-HS256', {
-        [this.title.replace(/(enc$)/, 'alg')]: 'RSA1_5',
+        [this.title.replace(/(enc$)/, 'alg')]: 'RSA-OAEP',
         jwks: { keys: [sigKey] },
       }, configuration);
       mustBeString(this.title, undefined, {
-        [this.title.replace(/(enc$)/, 'alg')]: 'RSA1_5',
+        [this.title.replace(/(enc$)/, 'alg')]: 'RSA-OAEP',
         jwks: { keys: [sigKey] },
       }, configuration);
       [
         'A128CBC-HS256', 'A128GCM', 'A192CBC-HS384', 'A192GCM', 'A256CBC-HS512', 'A256GCM',
       ].forEach((value) => {
         allows(this.title, value, {
-          [this.title.replace(/(enc$)/, 'alg')]: 'RSA1_5',
+          [this.title.replace(/(enc$)/, 'alg')]: 'RSA-OAEP',
           jwks: { keys: [sigKey] },
         }, configuration);
         allows(this.title, value, {
@@ -879,7 +879,7 @@ describe('Client metadata validation', () => {
         }, configuration);
       });
       rejects(this.title, 'not-an-enc', undefined, {
-        [this.title.replace(/(enc$)/, 'alg')]: 'RSA1_5',
+        [this.title.replace(/(enc$)/, 'alg')]: 'RSA-OAEP',
         jwks: { keys: [sigKey] },
       }, configuration);
     });
@@ -899,7 +899,7 @@ describe('Client metadata validation', () => {
       }));
       allows(this.title, 'dir', undefined, configuration);
       [
-        'RSA-OAEP', 'RSA-OAEP-256', 'RSA-OAEP-384', 'RSA-OAEP-512', 'RSA1_5', 'ECDH-ES', 'ECDH-ES+A128KW', 'ECDH-ES+A192KW',
+        'RSA-OAEP', 'RSA-OAEP-256', 'RSA-OAEP-384', 'RSA-OAEP-512', 'ECDH-ES', 'ECDH-ES+A128KW', 'ECDH-ES+A192KW',
         'ECDH-ES+A256KW', 'A128GCMKW', 'A192GCMKW', 'A256GCMKW', 'A128KW', 'A192KW', 'A256KW',
       ].forEach((value) => {
         allows(this.title, value, {
@@ -914,18 +914,18 @@ describe('Client metadata validation', () => {
       defaultsTo(this.title, undefined);
       defaultsTo(this.title, undefined, undefined, configuration);
       defaultsTo(this.title, 'A128CBC-HS256', {
-        [this.title.replace(/(enc$)/, 'alg')]: 'RSA1_5',
+        [this.title.replace(/(enc$)/, 'alg')]: 'RSA-OAEP',
         jwks: { keys: [sigKey] },
       }, configuration);
       mustBeString(this.title, undefined, {
-        [this.title.replace(/(enc$)/, 'alg')]: 'RSA1_5',
+        [this.title.replace(/(enc$)/, 'alg')]: 'RSA-OAEP',
         jwks: { keys: [sigKey] },
       }, configuration);
       [
         'A128CBC-HS256', 'A128GCM', 'A192CBC-HS384', 'A192GCM', 'A256CBC-HS512', 'A256GCM',
       ].forEach((value) => {
         allows(this.title, value, {
-          [this.title.replace(/(enc$)/, 'alg')]: 'RSA1_5',
+          [this.title.replace(/(enc$)/, 'alg')]: 'RSA-OAEP',
           jwks: { keys: [sigKey] },
         }, configuration);
         allows(this.title, value, {
@@ -933,7 +933,7 @@ describe('Client metadata validation', () => {
         }, configuration);
       });
       rejects(this.title, 'not-an-enc', undefined, {
-        [this.title.replace(/(enc$)/, 'alg')]: 'RSA1_5',
+        [this.title.replace(/(enc$)/, 'alg')]: 'RSA-OAEP',
         jwks: { keys: [sigKey] },
       }, configuration);
     });
@@ -959,7 +959,7 @@ describe('Client metadata validation', () => {
       }));
       allows(this.title, 'dir', undefined, configuration);
       [
-        'RSA-OAEP', 'RSA-OAEP-256', 'RSA-OAEP-384', 'RSA-OAEP-512', 'RSA1_5', 'ECDH-ES', 'ECDH-ES+A128KW', 'ECDH-ES+A192KW',
+        'RSA-OAEP', 'RSA-OAEP-256', 'RSA-OAEP-384', 'RSA-OAEP-512', 'ECDH-ES', 'ECDH-ES+A128KW', 'ECDH-ES+A192KW',
         'ECDH-ES+A256KW', 'A128GCMKW', 'A192GCMKW', 'A256GCMKW', 'A128KW', 'A192KW', 'A256KW',
       ].forEach((value) => {
         allows(this.title, value, undefined, configuration);
@@ -972,23 +972,23 @@ describe('Client metadata validation', () => {
       defaultsTo(this.title, undefined);
       defaultsTo(this.title, undefined, undefined, configuration);
       defaultsTo(this.title, 'A128CBC-HS256', {
-        [this.title.replace(/(enc$)/, 'alg')]: 'RSA1_5',
+        [this.title.replace(/(enc$)/, 'alg')]: 'RSA-OAEP',
       }, configuration);
       mustBeString(this.title, undefined, {
-        [this.title.replace(/(enc$)/, 'alg')]: 'RSA1_5',
+        [this.title.replace(/(enc$)/, 'alg')]: 'RSA-OAEP',
       }, configuration);
       [
         'A128CBC-HS256', 'A128GCM', 'A192CBC-HS384', 'A192GCM', 'A256CBC-HS512', 'A256GCM',
       ].forEach((value) => {
         allows(this.title, value, {
-          [this.title.replace(/(enc$)/, 'alg')]: 'RSA1_5',
+          [this.title.replace(/(enc$)/, 'alg')]: 'RSA-OAEP',
         }, configuration);
         allows(this.title, value, {
           [this.title.replace(/(enc$)/, 'alg')]: 'dir',
         }, configuration);
       });
       rejects(this.title, 'not-an-enc', undefined, {
-        [this.title.replace(/(enc$)/, 'alg')]: 'RSA1_5',
+        [this.title.replace(/(enc$)/, 'alg')]: 'RSA-OAEP',
       }, configuration);
     });
   });
@@ -1173,7 +1173,7 @@ describe('Client metadata validation', () => {
       'introspection_encrypted_response_alg',
     ].forEach((prop) => {
       [
-        'RSA-OAEP', 'RSA1_5',
+        'RSA-OAEP',
         'ECDH-ES', 'ECDH-ES+A128KW', 'ECDH-ES+A192KW', 'ECDH-ES+A256KW',
       ].forEach((alg) => {
         rejects(this.title, undefined, 'jwks or jwks_uri is mandatory for this client', {

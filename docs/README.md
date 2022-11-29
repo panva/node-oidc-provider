@@ -1807,7 +1807,7 @@ async function getResourceServerInfo(ctx, resourceIndicator, client) {
        },
     // Tokens will be encrypted
     encrypt?: {
-      alg: string, // 'dir' | 'RSA-OAEP' | 'RSA-OAEP-256' | 'RSA-OAEP-384' | 'RSA-OAEP-512' | 'RSA1_5' | 'ECDH-ES' | 'ECDH-ES+A128KW' | 'ECDH-ES+A192KW' | 'ECDH-ES+A256KW' | 'A128KW' | 'A192KW' | 'A256KW' | 'A128GCMKW' | 'A192GCMKW' | 'A256GCMKW'
+      alg: string, // 'dir' | 'RSA-OAEP' | 'RSA-OAEP-256' | 'RSA-OAEP-384' | 'RSA-OAEP-512' | 'ECDH-ES' | 'ECDH-ES+A128KW' | 'ECDH-ES+A192KW' | 'ECDH-ES+A256KW' | 'A128KW' | 'A192KW' | 'A256KW' | 'A128GCMKW' | 'A192GCMKW' | 'A256GCMKW'
       enc: string, // 'A128CBC-HS256' | 'A128GCM' | 'A192CBC-HS384' | 'A192GCM' | 'A256CBC-HS512' | 'A256GCM'
       key: crypto.KeyObject | Buffer, // public key or shared symmetric secret to encrypt the JWT token with
       kid?: string, // OPTIONAL `kid` JOSE Header Parameter to put in the token's JWE Header
@@ -3024,7 +3024,7 @@ _**default value**_:
 ```js
 [
   // asymmetric RSAES based
-  'RSA-OAEP', 'RSA-OAEP-256', 'RSA-OAEP-384', 'RSA-OAEP-512', 'RSA1_5',
+  'RSA-OAEP', 'RSA-OAEP-256', 'RSA-OAEP-384', 'RSA-OAEP-512',
   // asymmetric ECDH-ES based
   'ECDH-ES', 'ECDH-ES+A128KW', 'ECDH-ES+A192KW', 'ECDH-ES+A256KW',
   // symmetric AES key wrapping
@@ -3170,7 +3170,7 @@ _**default value**_:
 ```js
 [
   // asymmetric RSAES based
-  'RSA-OAEP', 'RSA-OAEP-256', 'RSA-OAEP-384', 'RSA-OAEP-512', 'RSA1_5',
+  'RSA-OAEP', 'RSA-OAEP-256', 'RSA-OAEP-384', 'RSA-OAEP-512',
   // asymmetric ECDH-ES based
   'ECDH-ES', 'ECDH-ES+A128KW', 'ECDH-ES+A192KW', 'ECDH-ES+A256KW',
   // symmetric AES key wrapping
@@ -3258,7 +3258,7 @@ _**default value**_:
 ```js
 [
   // asymmetric RSAES based
-  'RSA-OAEP', 'RSA-OAEP-256', 'RSA-OAEP-384', 'RSA-OAEP-512', 'RSA1_5',
+  'RSA-OAEP', 'RSA-OAEP-256', 'RSA-OAEP-384', 'RSA-OAEP-512',
   // asymmetric ECDH-ES based
   'ECDH-ES', 'ECDH-ES+A128KW', 'ECDH-ES+A192KW', 'ECDH-ES+A256KW',
   // symmetric AES key wrapping
@@ -3346,7 +3346,7 @@ _**default value**_:
 ```js
 [
   // asymmetric RSAES based
-  'RSA-OAEP', 'RSA-OAEP-256', 'RSA-OAEP-384', 'RSA-OAEP-512', 'RSA1_5',
+  'RSA-OAEP', 'RSA-OAEP-256', 'RSA-OAEP-384', 'RSA-OAEP-512',
   // asymmetric ECDH-ES based
   'ECDH-ES', 'ECDH-ES+A128KW', 'ECDH-ES+A192KW', 'ECDH-ES+A256KW',
   // symmetric AES key wrapping
@@ -3435,7 +3435,7 @@ _**default value**_:
 ```js
 [
   // asymmetric RSAES based
-  'RSA-OAEP', 'RSA-OAEP-256', 'RSA-OAEP-384', 'RSA-OAEP-512', 'RSA1_5',
+  'RSA-OAEP', 'RSA-OAEP-256', 'RSA-OAEP-384', 'RSA-OAEP-512',
   // asymmetric ECDH-ES based
   'ECDH-ES', 'ECDH-ES+A128KW', 'ECDH-ES+A192KW', 'ECDH-ES+A256KW',
   // symmetric AES key wrapping

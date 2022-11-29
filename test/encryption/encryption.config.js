@@ -15,7 +15,7 @@ merge(config.features, {
   pushedAuthorizationRequests: { enabled: true },
 });
 
-pull(config.enabledJWA.requestObjectEncryptionAlgValues, 'RSA-OAEP');
+pull(config.enabledJWA.requestObjectEncryptionAlgValues, 'RSA-OAEP-512');
 pull(config.enabledJWA.requestObjectEncryptionEncValues, 'A192CBC-HS384');
 
 const k = jose.JWK.generateSync('RSA', 2048);
@@ -38,11 +38,11 @@ export default {
       response_types: ['id_token token', 'code'],
       grant_types: ['implicit', 'authorization_code'],
       jwks: pubKey,
-      id_token_encrypted_response_alg: 'RSA1_5',
+      id_token_encrypted_response_alg: 'RSA-OAEP',
       // id_token_encrypted_response_enc: 'A128CBC-HS256',
-      request_object_encryption_alg: 'RSA1_5',
+      request_object_encryption_alg: 'RSA-OAEP',
       // request_object_encryption_enc: 'A128CBC-HS256',
-      userinfo_encrypted_response_alg: 'RSA1_5',
+      userinfo_encrypted_response_alg: 'RSA-OAEP',
       // userinfo_encrypted_response_enc: 'A128CBC-HS256',
     },
     {

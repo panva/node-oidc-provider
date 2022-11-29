@@ -187,7 +187,7 @@ describe('encryption', () => {
           after(async function () {
             const client = await this.provider.Client.find('client');
             client.clientSecretExpiresAt = 0;
-            client.userinfoEncryptedResponseAlg = 'RSA1_5';
+            client.userinfoEncryptedResponseAlg = 'RSA-OAEP';
           });
 
           it('errors with a specific message', function () {
@@ -215,10 +215,10 @@ describe('encryption', () => {
               scope: 'openid',
             }, Buffer.from('secret'), 'HS256', { issuer: 'client', audience: this.provider.issuer });
 
-            let [key] = i(this.provider).keystore.selectForEncrypt({ kty: 'RSA', alg: 'RSA1_5' });
-            key = await i(this.provider).keystore.getKeyObject(key, 'RSA1_5');
+            let [key] = i(this.provider).keystore.selectForEncrypt({ kty: 'RSA', alg: 'RSA-OAEP' });
+            key = await i(this.provider).keystore.getKeyObject(key, 'RSA-OAEP');
 
-            const encrypted = jose.JWE.encrypt(signed, key, { enc: 'A128CBC-HS256', alg: 'RSA1_5', client_id: 'client' });
+            const encrypted = jose.JWE.encrypt(signed, key, { enc: 'A128CBC-HS256', alg: 'RSA-OAEP', client_id: 'client' });
 
             return this.wrap({
               route,
@@ -243,10 +243,10 @@ describe('encryption', () => {
               scope: 'openid',
             }, Buffer.from('secret'), 'HS256', { issuer: 'client', audience: this.provider.issuer });
 
-            let [key] = i(this.provider).keystore.selectForEncrypt({ kty: 'RSA', alg: 'RSA1_5' });
-            key = await i(this.provider).keystore.getKeyObject(key, 'RSA1_5');
+            let [key] = i(this.provider).keystore.selectForEncrypt({ kty: 'RSA', alg: 'RSA-OAEP' });
+            key = await i(this.provider).keystore.getKeyObject(key, 'RSA-OAEP');
 
-            const encrypted = jose.JWE.encrypt(signed, key, { enc: 'A128CBC-HS256', alg: 'RSA1_5', iss: 'client' });
+            const encrypted = jose.JWE.encrypt(signed, key, { enc: 'A128CBC-HS256', alg: 'RSA-OAEP', iss: 'client' });
 
             return this.wrap({
               route,
@@ -277,10 +277,10 @@ describe('encryption', () => {
               scope: 'openid',
             }, Buffer.from('secret'), 'HS256', { issuer: 'client', audience: this.provider.issuer });
 
-            let [key] = i(this.provider).keystore.selectForEncrypt({ kty: 'RSA', alg: 'RSA1_5' });
-            key = await i(this.provider).keystore.getKeyObject(key, 'RSA1_5');
+            let [key] = i(this.provider).keystore.selectForEncrypt({ kty: 'RSA', alg: 'RSA-OAEP' });
+            key = await i(this.provider).keystore.getKeyObject(key, 'RSA-OAEP');
 
-            const encrypted = jose.JWE.encrypt(signed, key, { enc: 'A128CBC-HS256', alg: 'RSA1_5', client_id: 'client' });
+            const encrypted = jose.JWE.encrypt(signed, key, { enc: 'A128CBC-HS256', alg: 'RSA-OAEP', client_id: 'client' });
 
             return this.wrap({
               route,
@@ -311,10 +311,10 @@ describe('encryption', () => {
             redirect_uri: 'https://client.example.com/cb',
           }, Buffer.from('secret'), 'HS256', { issuer: 'client', audience: this.provider.issuer });
 
-          let [key] = i(this.provider).keystore.selectForEncrypt({ kty: 'RSA', alg: 'RSA-OAEP' });
-          key = await i(this.provider).keystore.getKeyObject(key, 'RSA-OAEP');
+          let [key] = i(this.provider).keystore.selectForEncrypt({ kty: 'RSA', alg: 'RSA-OAEP-512' });
+          key = await i(this.provider).keystore.getKeyObject(key, 'RSA-OAEP-512');
 
-          const encrypted = jose.JWE.encrypt(signed, key, { enc: 'A128CBC-HS256', alg: 'RSA-OAEP' });
+          const encrypted = jose.JWE.encrypt(signed, key, { enc: 'A128CBC-HS256', alg: 'RSA-OAEP-512' });
 
           return this.wrap({
             route,
@@ -340,10 +340,10 @@ describe('encryption', () => {
             redirect_uri: 'https://client.example.com/cb',
           }, Buffer.from('secret'), 'HS256', { issuer: 'client', audience: this.provider.issuer });
 
-          let [key] = i(this.provider).keystore.selectForEncrypt({ kty: 'RSA', alg: 'RSA1_5' });
-          key = await i(this.provider).keystore.getKeyObject(key, 'RSA1_5');
+          let [key] = i(this.provider).keystore.selectForEncrypt({ kty: 'RSA', alg: 'RSA-OAEP-512' });
+          key = await i(this.provider).keystore.getKeyObject(key, 'RSA-OAEP-512');
 
-          const encrypted = jose.JWE.encrypt(signed, key, { enc: 'A192CBC-HS384', alg: 'RSA1_5' });
+          const encrypted = jose.JWE.encrypt(signed, key, { enc: 'A192CBC-HS384', alg: 'RSA-OAEP-512' });
 
           return this.wrap({
             route,
@@ -374,10 +374,10 @@ describe('encryption', () => {
             scope: 'openid',
           }, await client.symmetricKeyStore.getKeyObject(hsSecret, 'HS256'), 'HS256', { issuer: 'client', audience: this.provider.issuer });
 
-          let [key] = i(this.provider).keystore.selectForEncrypt({ kty: 'RSA', alg: 'RSA1_5' });
-          key = await i(this.provider).keystore.getKeyObject(key, 'RSA1_5');
+          let [key] = i(this.provider).keystore.selectForEncrypt({ kty: 'RSA', alg: 'RSA-OAEP' });
+          key = await i(this.provider).keystore.getKeyObject(key, 'RSA-OAEP');
 
-          const encrypted = jose.JWE.encrypt(signed, key, { enc: 'A128CBC-HS256', alg: 'RSA1_5' });
+          const encrypted = jose.JWE.encrypt(signed, key, { enc: 'A128CBC-HS256', alg: 'RSA-OAEP' });
 
           const { body } = await this.agent.post('/request')
             .auth('client', 'secret')
@@ -413,10 +413,10 @@ describe('encryption', () => {
             scope: 'openid',
           }, await client.symmetricKeyStore.getKeyObject(hsSecret, 'HS256'), 'HS256', { issuer: 'clientRequestObjectSigningAlg', audience: this.provider.issuer });
 
-          let [key] = i(this.provider).keystore.selectForEncrypt({ kty: 'RSA', alg: 'RSA1_5' });
-          key = await i(this.provider).keystore.getKeyObject(key, 'RSA1_5');
+          let [key] = i(this.provider).keystore.selectForEncrypt({ kty: 'RSA', alg: 'RSA-OAEP' });
+          key = await i(this.provider).keystore.getKeyObject(key, 'RSA-OAEP');
 
-          const encrypted = jose.JWE.encrypt(signed, key, { enc: 'A128CBC-HS256', alg: 'RSA1_5' });
+          const encrypted = jose.JWE.encrypt(signed, key, { enc: 'A128CBC-HS256', alg: 'RSA-OAEP' });
 
           const { body } = await this.agent.post('/request')
             .auth('clientRequestObjectSigningAlg', 'secret')
@@ -455,7 +455,7 @@ describe('encryption', () => {
 
         return this.wrap({ route, verb, auth })
           .expect(() => {
-            client.idTokenEncryptedResponseAlg = 'RSA1_5';
+            client.idTokenEncryptedResponseAlg = 'RSA-OAEP';
           })
           .expect(auth.validateFragment)
           .expect((response) => {
