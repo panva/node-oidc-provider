@@ -71,7 +71,7 @@ try {
     const origSecure = ctx.req.secure;
     ctx.req.secure = ctx.request.secure;
     // eslint-disable-next-line no-unused-expressions
-    ctx.res.locals || (ctx.res.locals = {});
+    ctx.res.locals ||= {};
     ctx.res.locals.cspNonce = crypto.randomBytes(16).toString('base64');
     await pHelmet(ctx.req, ctx.res);
     ctx.req.secure = origSecure;

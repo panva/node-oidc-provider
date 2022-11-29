@@ -2515,7 +2515,7 @@ new Prompt(
     let missing;
     for (const scope of oidc.requestParamOIDCScopes) { // eslint-disable-line no-restricted-syntax
       if (!encounteredScopes.has(scope)) {
-        missing || (missing = []);
+        missing ||= [];
         missing.push(scope);
       }
     }
@@ -2535,7 +2535,7 @@ new Prompt(
     let missing;
     for (const claim of oidc.requestParamClaims) { // eslint-disable-line no-restricted-syntax
       if (!encounteredClaims.has(claim) && !['sub', 'sid', 'auth_time', 'acr', 'amr', 'iss'].includes(claim)) {
-        missing || (missing = []);
+        missing ||= [];
         missing.push(claim);
       }
     }
