@@ -171,7 +171,7 @@ try {
         return;
       }
 
-      if (option && option.active) {
+      if (option?.active) {
         option.write(line);
       }
     });

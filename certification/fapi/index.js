@@ -260,7 +260,7 @@ Object.defineProperty(fapi.Client.prototype, 'redirectUriAllowed', {
 
 const orig = fapi.interactionResult;
 fapi.interactionResult = function patchedInteractionResult(...args) {
-  if (args[2] && args[2].login) {
+  if (args[2]?.login) {
     args[2].login.acr = 'urn:mace:incommon:iap:silver'; // eslint-disable-line no-param-reassign
   }
 
@@ -333,7 +333,7 @@ if (process.env.NODE_ENV === 'production') {
     if (ctx.secure) {
       await next();
 
-      switch (ctx.oidc && ctx.oidc.route) {
+      switch (ctx.oidc?.route) {
         case 'discovery': {
           ['token', 'userinfo', 'pushed_authorization_request', 'backchannel_authentication'].forEach((endpoint) => {
             if (ctx.body[`${endpoint}_endpoint`].startsWith(ISSUER)) {

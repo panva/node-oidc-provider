@@ -351,7 +351,7 @@ describe('resume after consent', () => {
     const cookies = [];
 
     let session;
-    if (result && result.login) {
+    if (result?.login) {
       session = new this.provider.Session({ jti: 'sess', ...sessionData });
     } else {
       session = this.getLastSession();

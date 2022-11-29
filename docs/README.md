@@ -2520,7 +2520,7 @@ new Prompt(
       }
     }
 
-    if (missing && missing.length) {
+    if (missing?.length) {
       ctx.oidc[missingOIDCScope] = missing;
       return Check.REQUEST_PROMPT;
     }
@@ -2540,7 +2540,7 @@ new Prompt(
       }
     }
 
-    if (missing && missing.length) {
+    if (missing?.length) {
       ctx.oidc[missingOIDCClaims] = missing;
       return Check.REQUEST_PROMPT;
     }
@@ -2669,9 +2669,7 @@ Helper function used to load existing but also just in time pre-established Gran
 _**default value**_:
 ```js
 async function loadExistingGrant(ctx) {
-  const grantId = (ctx.oidc.result
-    && ctx.oidc.result.consent
-    && ctx.oidc.result.consent.grantId) || ctx.oidc.session.grantIdFor(ctx.oidc.client.clientId);
+  const grantId = (ctx.oidc.result?.consent?.grantId) || ctx.oidc.session.grantIdFor(ctx.oidc.client.clientId);
   if (grantId) {
     return ctx.oidc.provider.Grant.find(grantId);
   }
@@ -2921,7 +2919,7 @@ _**default value**_:
   },
   AuthorizationCode: 60 /* 1 minute in seconds */,
   BackchannelAuthenticationRequest: function BackchannelAuthenticationRequestTTL(ctx, request, client) {
-    if (ctx && ctx.oidc && ctx.oidc.params.requested_expiry) {
+    if (ctx?.oidc && ctx.oidc.params.requested_expiry) {
       return Math.min(10 * 60, +ctx.oidc.params.requested_expiry); // 10 minutes in seconds or requested_expiry, whichever is shorter
     }
   

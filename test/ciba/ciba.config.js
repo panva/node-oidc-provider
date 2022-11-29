@@ -20,13 +20,13 @@ config.features.ciba = {
   enabled: true,
   deliveryModes: ['poll', 'ping'],
   processLoginHint(ctx, loginHint) {
-    assert(ctx && ctx.oidc);
+    assert(ctx?.oidc);
     assert(typeof loginHint === 'string');
     emitter.emit('processLoginHint', ...arguments);
     return loginHint;
   },
   processLoginHintToken(ctx, loginHintToken) {
-    assert(ctx && ctx.oidc);
+    assert(ctx?.oidc);
     assert(typeof loginHintToken === 'string');
     emitter.emit('processLoginHintToken', ...arguments);
     if (loginHintToken === 'notfound') {
@@ -35,18 +35,18 @@ config.features.ciba = {
     return loginHintToken;
   },
   validateBindingMessage(ctx, bindingMessage) {
-    assert(ctx && ctx.oidc);
+    assert(ctx?.oidc);
     assert(bindingMessage === undefined || typeof bindingMessage === 'string');
     emitter.emit('validateBindingMessage', ...arguments);
   },
   validateRequestContext(ctx, requestContext) {
-    assert(ctx && ctx.oidc);
+    assert(ctx?.oidc);
     assert(requestContext === undefined || typeof requestContext === 'string');
     emitter.emit('validateRequestContext', ...arguments);
   },
   verifyUserCode(ctx, account, userCode) {
-    assert(ctx && ctx.oidc);
-    assert(account && account.accountId && typeof account.claims === 'function');
+    assert(ctx?.oidc);
+    assert(account?.accountId && typeof account.claims === 'function');
     assert(userCode === undefined || typeof userCode === 'string');
     emitter.emit('verifyUserCode', ...arguments);
   },

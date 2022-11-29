@@ -20,7 +20,7 @@ merge(config.features, {
       throw new errors.InvalidTarget();
     },
     defaultResource(ctx) {
-      if (ctx.oidc.body && ctx.oidc.body.nodefault) {
+      if (ctx.oidc.body?.nodefault) {
         return undefined;
       }
 

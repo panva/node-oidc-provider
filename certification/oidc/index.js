@@ -96,7 +96,7 @@ try {
       if (ctx.secure) {
         await next();
 
-        switch (ctx.oidc && ctx.oidc.route) {
+        switch (ctx.oidc?.route) {
           case 'discovery': {
             ctx.body.mtls_endpoint_aliases = {};
             ['token', 'introspection', 'revocation', 'userinfo', 'device_authorization', 'pushed_authorization_request'].forEach((endpoint) => {
@@ -144,7 +144,7 @@ try {
     });
   });
 } catch (err) {
-  if (server && server.listening) server.close();
+  if (server?.listening) server.close();
   console.error(err);
   process.exitCode = 1;
 }

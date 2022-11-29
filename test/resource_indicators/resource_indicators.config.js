@@ -40,7 +40,7 @@ merge(config, {
     resourceIndicators: {
       enabled: true,
       async useGrantedResource(ctx) {
-        return ctx.oidc.body && ctx.oidc.body.usegranted;
+        return ctx.oidc.body?.usegranted;
       },
       getResourceServerInfo(ctx, resource) {
         if (resource.includes('wl')) {
@@ -53,7 +53,7 @@ merge(config, {
         throw new errors.InvalidTarget();
       },
       defaultResource(ctx) {
-        if (ctx.oidc.body && ctx.oidc.body.nodefault) {
+        if (ctx.oidc.body?.nodefault) {
           return undefined;
         }
 
