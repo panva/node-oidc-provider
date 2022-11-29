@@ -11,6 +11,7 @@ export const keypair = crypto.generateKeyPairSync('ec', { namedCurve: 'P-256' })
 merge(config.features, {
   fapi: {
     enabled: true,
+    profile: '1.0 Final',
   },
   jwtResponseModes: { enabled: true },
   requestObjects: {
