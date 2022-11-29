@@ -7,7 +7,6 @@ import { createReadStream, writeFileSync, readFileSync } from 'node:fs';
 import get from 'lodash/get.js'; // eslint-disable-line import/no-extraneous-dependencies
 import words from 'lodash/words.js'; // eslint-disable-line import/no-extraneous-dependencies
 
-import docs from '../lib/helpers/docs.js';
 import { defaults } from '../lib/helpers/defaults.js';
 import login from '../lib/helpers/interaction_policy/prompts/login.js';
 import consent from '../lib/helpers/interaction_policy/prompts/consent.js';
@@ -56,10 +55,6 @@ class Block {
 
       if (buffer.indexOf('@indent@') === 0) {
         buffer = buffer.slice(10);
-      }
-
-      if (buffer.indexOf('##DOCS') !== -1) {
-        buffer = Buffer.from(buffer.toString().replace(/##DOCS\/(.+)##/g, () => docs(RegExp.$1)));
       }
 
       if (buffer.indexOf('-') === 0 || /^\d+\./.exec(buffer) || buffer.indexOf('```') !== -1 || buffer.indexOf('|') === 0) {
