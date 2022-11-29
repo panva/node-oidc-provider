@@ -2346,7 +2346,7 @@ _**default value**_:
 
 ### httpOptions
 
-Function called whenever calls to an external HTTP(S) resource are being made. You can change the request `timeout` duration, the `agent` used as well as the `lookup` resolver function.   
+Function called whenever calls to an external HTTP(S) resource are being made. You can change the request timeout through the `signal` option, the `agent` used as well as the `dnsLookup` resolver function.   
   
 
 
@@ -2354,9 +2354,9 @@ _**default value**_:
 ```js
 function httpOptions(url) {
   return {
-    timeout: 2500,
+    signal: undefined, // defaults to AbortSignal.timeout(2500)
     agent: undefined, // defaults to node's global agents (https.globalAgent or http.globalAgent)
-    lookup: undefined, // defaults to `dns.lookup()` (https://nodejs.org/api/dns.html#dnslookuphostname-options-callback)
+    dnsLookup: undefined, // defaults to `dns.lookup()` (https://nodejs.org/api/dns.html#dnslookuphostname-options-callback)
   };
 }
 ```
@@ -2369,7 +2369,7 @@ To change all request's timeout configure the httpOptions as a function like so:
 ```js
  {
    httpOptions(url) {
-     return { timeout: 5000 };
+     return { signal: AbortSignal.timeout(5000) };
    }
  }
 ```

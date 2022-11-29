@@ -1,6 +1,6 @@
 import { readFileSync } from 'node:fs';
 
-import got from 'got';
+import got from 'got'; // eslint-disable-line import/no-unresolved
 import nock from 'nock';
 import jose from 'jose2';
 import { importJWK } from 'jose';

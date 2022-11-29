@@ -4,7 +4,7 @@ import { createWriteStream } from 'node:fs';
 import stream from 'node:stream';
 import { promisify } from 'node:util';
 
-import Got from 'got';
+import got from 'got'; // eslint-disable-line import/no-unresolved
 import ms from 'ms';
 
 import debug from './debug.js';
@@ -18,7 +18,7 @@ class API {
   constructor({ baseUrl, bearerToken } = {}) {
     assert(baseUrl, 'argument property "baseUrl" missing');
 
-    const { get, post } = Got.extend({
+    const { get, post } = got.extend({
       prefixUrl: baseUrl,
       throwHttpErrors: false,
       followRedirect: false,
@@ -27,14 +27,16 @@ class API {
         'content-type': 'application/json',
       },
       responseType: 'json',
-      retry: 0,
-      timeout: 10000,
+      retry: { limit: 0 },
+      https: {
+        rejectUnauthorized: process.env.NODE_TLS_REJECT_UNAUTHORIZED !== '0',
+      },
     });
 
     this.get = get;
     this.post = post;
 
-    this.stream = Got.extend({
+    this.stream = got.extend({
       prefixUrl: baseUrl,
       throwHttpErrors: false,
       followRedirect: false,
@@ -42,7 +44,10 @@ class API {
         ...(bearerToken ? { authorization: `bearer ${bearerToken}` } : undefined),
         'content-type': 'application/json',
       },
-      retry: 0,
+      retry: { limit: 0 },
+      https: {
+        rejectUnauthorized: process.env.NODE_TLS_REJECT_UNAUTHORIZED !== '0',
+      },
     }).stream;
   }
 
