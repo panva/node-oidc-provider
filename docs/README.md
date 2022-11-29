@@ -3107,8 +3107,6 @@ JWS "alg" Algorithm values the provider supports to verify signed DPoP proof JWT
 _**default value**_:
 ```js
 [
-  'RS256',
-  'PS256',
   'ES256',
   'EdDSA'
 ]
