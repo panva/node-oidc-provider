@@ -92,7 +92,7 @@ those in, here is how oidc-provider allows you to do so:
 
 When oidc-provider cannot fulfill the authorization request for any of the possible reasons (missing
 user session, requested ACR not fulfilled, prompt requested, ...) it will resolve the 
-[`interactions.url`](#interactionsurl) helper function and redirect the User-Agent to that url. Before
+[`interactions.url`](#interactionsurl) helper function and redirect the User-Agent to that URL. Before
 doing so it will save a short-lived "interaction session" and dump its identifier into a cookie scoped to the
 resolved interaction path.
 
@@ -101,7 +101,7 @@ This interaction session contains:
 - details of the interaction that is required
 - all authorization request parameters
 - current end-user session account ID should there be one
-- the url to redirect the user to once interaction is finished
+- the URL to redirect the user to once interaction is finished
 
 oidc-provider expects that you resolve the prompt interaction and then redirect the User-Agent back
 with the results.
@@ -2356,7 +2356,7 @@ To change all request's timeout configure the httpOptions as a function like so:
 
 ### interactions
 
-Holds the configuration for interaction policy and url to send end-users to when the policy decides to require interaction.   
+Holds the configuration for interaction policy and a URL to send end-users to when the policy decides to require interaction.   
   
 
 
