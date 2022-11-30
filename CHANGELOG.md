@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [7.14.2](https://github.com/panva/node-oidc-provider/compare/v7.14.1...v7.14.2) (2022-11-30)
+
+
+### Fixes
+
+* build client symmetric keys from all client signing alg properties ([a26f87d](https://github.com/panva/node-oidc-provider/commit/a26f87d74fcc38e48da2814b9e41e84f7e64e784))
+
 ## [7.14.1](https://github.com/panva/node-oidc-provider/compare/v7.14.0...v7.14.1) (2022-11-22)
 
 
