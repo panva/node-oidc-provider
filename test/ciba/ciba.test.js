@@ -321,6 +321,30 @@ describe('features.ciba', () => {
       });
 
       describe('param validation', () => {
+        ['request', 'request_uri', 'registration'].forEach((param) => {
+          it(`check for not supported parameter ${param}`, function () {
+            const spy = sinon.spy();
+            this.provider.once('backchannel_authentication.error', spy);
+
+            return this.agent.post(route)
+              .send({
+                client_id: 'client',
+                scope: 'openid',
+                [param]: 'some',
+              })
+              .type('form')
+              .expect(400)
+              .expect('content-type', /application\/json/)
+              .expect(() => {
+                expect(spy.calledOnce).to.be.true;
+              })
+              .expect({
+                error: `${param}_not_supported`,
+                error_description: `${param} parameter provided but not supported`,
+              });
+          });
+        });
+
         it('could not resolve Account', async function () {
           const spy = sinon.spy();
           this.provider.once('backchannel_authentication.error', spy);
@@ -536,6 +560,30 @@ describe('features.ciba', () => {
       const route = '/backchannel';
 
       describe('param validation', () => {
+        ['request_uri', 'registration'].forEach((param) => {
+          it(`check for not supported parameter ${param}`, function () {
+            const spy = sinon.spy();
+            this.provider.once('backchannel_authentication.error', spy);
+
+            return this.agent.post(route)
+              .send({
+                client_id: 'client',
+                scope: 'openid',
+                [param]: 'some',
+              })
+              .type('form')
+              .expect(400)
+              .expect('content-type', /application\/json/)
+              .expect(() => {
+                expect(spy.calledOnce).to.be.true;
+              })
+              .expect({
+                error: `${param}_not_supported`,
+                error_description: `${param} parameter provided but not supported`,
+              });
+          });
+        });
+
         it('validates request object is used', async function () {
           const spy = sinon.spy();
           this.provider.once('backchannel_authentication.error', spy);

@@ -80,7 +80,6 @@ describe('device_authorization_endpoint', () => {
         return this.agent.post(route)
           .send({
             client_id: 'client',
-            scope: 'openid',
             [param]: 'some',
           })
           .type('form')

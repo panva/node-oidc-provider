@@ -53,14 +53,10 @@ describe('request Uri features', () => {
     });
     expect(actual.query).to.have.property('code');
   }
-  function httpSuccess({ body }) {
-    expect(body).to.contain.key('device_code');
-  }
 
   [
     ['/auth', 'get', 'authorization.error', 303, 303, redirectSuccess],
     ['/auth', 'post', 'authorization.error', 303, 303, redirectSuccess],
-    ['/device/auth', 'post', 'device_authorization.error', 200, 400, httpSuccess],
   ].forEach(([route, verb, error, successCode, errorCode, successFnCheck]) => {
     describe(`${route} ${verb} passing request parameters in request_uri`, () => {
       before(function () { return this.login(); });
