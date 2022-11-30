@@ -1,4 +1,5 @@
 import crypto from 'node:crypto';
+import { strict as assert } from 'node:assert';
 
 import merge from 'lodash/merge.js';
 
@@ -11,7 +12,11 @@ export const keypair = crypto.generateKeyPairSync('ec', { namedCurve: 'P-256' })
 merge(config.features, {
   fapi: {
     enabled: true,
-    profile: '1.0 ID2',
+    profile(ctx, client) {
+      assert(ctx, 'ctx not provided in fapi.profile');
+      assert(client, 'client not provided in fapi.profile');
+      return '1.0 ID2';
+    },
   },
   jwtResponseModes: { enabled: true },
   requestObjects: {
@@ -22,6 +27,7 @@ merge(config.features, {
 config.enabledJWA = {
   requestObjectSigningAlgValues: ['ES256'],
 };
+config.acceptQueryParamAccessTokens = true;
 
 export default {
   config,

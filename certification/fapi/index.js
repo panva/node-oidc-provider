@@ -320,9 +320,8 @@ fapi.use(async (ctx, next) => {
   return next();
 });
 fapi.use((ctx, next) => {
-  if (!('x-fapi-interaction-id' in ctx.headers)) {
-    ctx.headers['x-fapi-interaction-id'] = uuid();
-  }
+  const id = ctx.get('x-fapi-interaction-id') || uuid();
+  ctx.set('x-fapi-interaction-id', id);
   return next();
 });
 
