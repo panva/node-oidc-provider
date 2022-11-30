@@ -100,6 +100,7 @@ jobs:
     env:
       SUITE_BASE_URL: https://localhost.emobix.co.uk:8443
       SETUP: ${{ toJSON(matrix.setup) }}
+    continue-on-error: ${{ startsWith(matrix.setup.plan, 'fapi2') }}
     strategy:
       fail-fast: false
       matrix:
