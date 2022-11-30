@@ -10,6 +10,7 @@ merge(config.features, {
   claimsParameter: { enabled: true },
   requestObjects: { request: false, requestUri: false },
   rpInitiatedLogout: { enabled: false },
+  pushedAuthorizationRequests: { enabled: false },
 });
 
 config.extraParams = [

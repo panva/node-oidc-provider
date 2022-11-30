@@ -1355,7 +1355,7 @@ Enables the use of `pushed_authorization_request_endpoint` defined by the Pushed
 _**default value**_:
 ```js
 {
-  enabled: false,
+  enabled: true,
   requirePushedAuthorizationRequests: false
 }
 ```

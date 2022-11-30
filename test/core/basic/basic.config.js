@@ -6,7 +6,10 @@ import getConfig from '../../default.config.js';
 const config = getConfig();
 
 config.extraParams = ['triggerCustomFail'];
-merge(config.features, { requestObjects: { requestUri: false } });
+merge(config.features, {
+  pushedAuthorizationRequests: { enabled: false },
+  requestObjects: { requestUri: false, request: false },
+});
 config.responseTypes = ['id_token', 'code', 'none'];
 config.allowOmittingSingleRegisteredRedirectUri = false;
 

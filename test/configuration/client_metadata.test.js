@@ -254,6 +254,9 @@ describe('Client metadata validation', () => {
           requestUri,
           requireSignedRequestObject: value,
         },
+        pushedAuthorizationRequests: {
+          enabled: false,
+        },
       },
     });
     mustBeBoolean(this.title, undefined, configuration());
