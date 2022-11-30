@@ -21,16 +21,6 @@ const tokenEndpointAuthMethods = [
 ];
 
 module.exports = {
-  clients: [
-    {
-      client_id: 'dpop-heroku',
-      token_endpoint_auth_method: 'none',
-      scope: 'openid offline_access',
-      grant_types: ['authorization_code', 'refresh_token'],
-      response_types: ['code'],
-      redirect_uris: ['https://murmuring-journey-60982.herokuapp.com/cb'],
-    },
-  ],
   interactions: {
     url(ctx, interaction) {
       return `/interaction/${interaction.uid}`;
@@ -54,13 +44,6 @@ module.exports = {
     phone: ['phone_number', 'phone_number_verified'],
     profile: ['birthdate', 'family_name', 'gender', 'given_name', 'locale', 'middle_name', 'name',
       'nickname', 'picture', 'preferred_username', 'profile', 'updated_at', 'website', 'zoneinfo'],
-  },
-  clientBasedCORS(ctx, origin, client) {
-    if (client.clientId === 'dpop-heroku' && origin === 'https://murmuring-journey-60982.herokuapp.com') {
-      return true;
-    }
-
-    return false;
   },
   features: {
     backchannelLogout: { enabled: true },
