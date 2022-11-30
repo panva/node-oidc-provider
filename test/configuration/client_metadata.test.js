@@ -468,12 +468,6 @@ describe('Client metadata validation', () => {
           pushedAuthorizationRequests: { enabled: false },
         },
       },
-      {
-        features: {
-          requestObjects: { requestUri: false, request: false },
-          pushedAuthorizationRequests: { enabled: true },
-        },
-      },
     ]) {
       mustBeString(this.title, undefined, undefined, configuration);
       [
@@ -1078,20 +1072,25 @@ describe('Client metadata validation', () => {
     });
 
     context('backchannel_authentication_request_signing_alg', function () {
-      mustBeString(this.title, undefined, metadata, configuration);
+      const withRequestObjects = merge(
+        {},
+        configuration,
+        { features: { requestObjects: { request: true } } },
+      );
+      mustBeString(this.title, undefined, metadata, withRequestObjects);
       [
         'RS256', 'RS384', 'RS512',
         'PS256', 'PS384', 'PS512', 'ES256', 'ES384', 'ES512', 'EdDSA',
       ].forEach((alg) => {
-        allows(this.title, alg, { ...metadata, jwks: { keys: [sigKey] } }, configuration);
+        allows(this.title, alg, { ...metadata, jwks: { keys: [sigKey] } }, withRequestObjects);
       });
-      rejects(this.title, 'not-an-alg', undefined, metadata, configuration);
-      rejects(this.title, 'none', undefined, metadata, configuration);
-      rejects(this.title, 'none', undefined, metadata, configuration);
-      rejects(this.title, 'HS256', undefined, metadata, configuration);
-      rejects(this.title, 'HS384', undefined, metadata, configuration);
-      rejects(this.title, 'HS512', undefined, metadata, configuration);
-      defaultsTo(this.title, undefined, undefined, configuration);
+      rejects(this.title, 'not-an-alg', undefined, metadata, withRequestObjects);
+      rejects(this.title, 'none', undefined, metadata, withRequestObjects);
+      rejects(this.title, 'none', undefined, metadata, withRequestObjects);
+      rejects(this.title, 'HS256', undefined, metadata, withRequestObjects);
+      rejects(this.title, 'HS384', undefined, metadata, withRequestObjects);
+      rejects(this.title, 'HS512', undefined, metadata, withRequestObjects);
+      defaultsTo(this.title, undefined, undefined, withRequestObjects);
     });
 
     allows('subject_type', 'pairwise', {

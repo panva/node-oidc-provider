@@ -638,7 +638,7 @@ _**default value**_:
 
 [OpenID Connect Client Initiated Backchannel Authentication Flow - Core 1.0](https://openid.net/specs/openid-client-initiated-backchannel-authentication-core-1_0-final.html)  
 
-Enables Core CIBA Flow, when combined with `features.fapi` enables [Financial-grade API: Client Initiated Backchannel Authentication Profile - Implementer's Draft 01](https://openid.net/specs/openid-financial-api-ciba-ID1.html) as well.   
+Enables Core CIBA Flow, when combined with `features.fapi` and `features.requestObjects.request` enables [Financial-grade API: Client Initiated Backchannel Authentication Profile - Implementer's Draft 01](https://openid.net/specs/openid-financial-api-ciba-ID1.html) as well.   
   
 
 

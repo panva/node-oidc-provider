@@ -7,546 +7,605 @@ import * as JWT from '../../lib/helpers/jwt.js';
 import bootstrap from '../test_helper.js';
 
 describe('Pushed Request Object', () => {
-  before(bootstrap(import.meta.url));
+  context('w/o Request Objects', () => {
+    before(bootstrap(import.meta.url));
 
-  before(async function () {
-    const client = await this.provider.Client.find('client');
-    this.key = await importJWK(client.symmetricKeyStore.selectForSign({ alg: 'HS256' })[0]);
-  });
-
-  describe('discovery', () => {
-    it('extends the well known config', async function () {
-      await this.agent.get('/.well-known/openid-configuration')
-        .expect((response) => {
-          expect(response.body).not.to.have.property('request_object_endpoint');
-          expect(response.body).to.have.property('pushed_authorization_request_endpoint');
-          expect(response.body).to.have.deep.property('request_object_signing_alg_values_supported').with.not.lengthOf(0);
-          expect(response.body).to.have.property('request_parameter_supported', false);
-          expect(response.body).to.have.property('request_uri_parameter_supported', false);
-          expect(response.body).not.to.have.property('require_pushed_authorization_requests');
-        });
-
-      i(this.provider).configuration('features.pushedAuthorizationRequests').requirePushedAuthorizationRequests = true;
-
-      return this.agent.get('/.well-known/openid-configuration')
-        .expect((response) => {
-          expect(response.body).to.have.property('require_pushed_authorization_requests', true);
-        });
+    before(async function () {
+      const client = await this.provider.Client.find('client');
+      this.key = await importJWK(client.symmetricKeyStore.selectForSign({ alg: 'HS256' })[0]);
     });
 
-    after(function () {
-      i(this.provider).configuration('features.pushedAuthorizationRequests').requirePushedAuthorizationRequests = false;
+    describe('discovery', () => {
+      it('extends the well known config', async function () {
+        await this.agent.get('/.well-known/openid-configuration')
+          .expect((response) => {
+            expect(response.body).not.to.have.property('request_object_endpoint');
+            expect(response.body).to.have.property('pushed_authorization_request_endpoint');
+            expect(response.body).not.to.have.property('request_object_signing_alg_values_supported');
+            expect(response.body).to.have.property('request_parameter_supported', false);
+            expect(response.body).to.have.property('request_uri_parameter_supported', false);
+            expect(response.body).not.to.have.property('require_pushed_authorization_requests');
+          });
+
+        i(this.provider).configuration('features.pushedAuthorizationRequests').requirePushedAuthorizationRequests = true;
+
+        return this.agent.get('/.well-known/openid-configuration')
+          .expect((response) => {
+            expect(response.body).to.have.property('require_pushed_authorization_requests', true);
+          });
+      });
+
+      after(function () {
+        i(this.provider).configuration('features.pushedAuthorizationRequests').requirePushedAuthorizationRequests = false;
+      });
     });
-  });
 
-  ['client', 'client-par-required'].forEach((clientId) => {
-    const requirePushedAuthorizationRequests = clientId === 'client-par-required';
+    ['client', 'client-par-required'].forEach((clientId) => {
+      const requirePushedAuthorizationRequests = clientId === 'client-par-required';
 
-    describe(`when require_pushed_authorization_requests=${requirePushedAuthorizationRequests}`, () => {
-      describe('using a JAR request parameter', () => {
-        describe('Pushed Authorization Request Endpoint', () => {
-          it('populates ctx.oidc.entities', function (done) {
-            this.provider.use(this.assertOnce((ctx) => {
-              expect(ctx.oidc.entities).to.have.keys('Client', 'PushedAuthorizationRequest');
-            }, done));
+      describe(`when require_pushed_authorization_requests=${requirePushedAuthorizationRequests}`, () => {
+        describe('using a JAR request parameter', () => {
+          it('is not enabled', async function () {
+            return this.agent.post('/request')
+              .auth(clientId, 'secret')
+              .type('form')
+              .send({
+                client_id: clientId,
+                request: 'this.should.be.a.jwt',
+              })
+              .expect(400)
+              .expect({
+                error: 'request_not_supported',
+                error_description: 'request parameter provided but not supported',
+              });
+          });
+        });
 
-            JWT.sign({
-              response_type: 'code',
-              client_id: clientId,
-              iss: clientId,
-              aud: this.provider.issuer,
-            }, this.key, 'HS256').then((request) => {
+        describe('using a plain pushed authorization request', () => {
+          describe('Pushed Authorization Request Endpoint', () => {
+            it('populates ctx.oidc.entities', function (done) {
+              this.provider.use(this.assertOnce((ctx) => {
+                expect(ctx.oidc.entities).to.have.keys('Client', 'PushedAuthorizationRequest');
+              }, done));
+
               this.agent.post('/request')
                 .auth(clientId, 'secret')
                 .type('form')
-                .send({ request })
+                .send({
+                  response_type: 'code',
+                  client_id: clientId,
+                  iss: clientId,
+                  aud: this.provider.issuer,
+                })
                 .end(() => {});
             });
-          });
 
-          it('stores a request object and returns a uri', async function () {
-            const spy = sinon.spy();
-            this.provider.once('pushed_authorization_request.success', spy);
+            it('stores a request object and returns a uri', async function () {
+              const spy = sinon.spy();
+              this.provider.once('pushed_authorization_request.success', spy);
+              const spy2 = sinon.spy();
+              this.provider.once('pushed_authorization_request.saved', spy2);
 
-            await this.agent.post('/request')
-              .auth(clientId, 'secret')
-              .type('form')
-              .send({
-                request: await JWT.sign({
+              await this.agent.post('/request')
+                .auth(clientId, 'secret')
+                .type('form')
+                .send({
                   response_type: 'code',
                   client_id: clientId,
                   iss: clientId,
                   aud: this.provider.issuer,
-                }, this.key, 'HS256'),
-              })
-              .expect(201)
-              .expect(({ body }) => {
-                expect(body).to.have.keys('expires_in', 'request_uri');
-                expect(body).to.have.property('expires_in', 60);
-                expect(body).to.have.property('request_uri').and.match(/^urn:ietf:params:oauth:request_uri:(.+)$/);
-              });
+                })
+                .expect(201)
+                .expect(({ body }) => {
+                  expect(body).to.have.keys('expires_in', 'request_uri');
+                  expect(body).to.have.property('expires_in', 60);
+                  expect(body).to.have.property('request_uri').and.match(/^urn:ietf:params:oauth:request_uri:(.+)$/);
+                });
 
-            expect(spy).to.have.property('calledOnce', true);
-          });
+              expect(spy).to.have.property('calledOnce', true);
+              expect(spy2).to.have.property('calledOnce', true);
+              const header = decodeProtectedHeader(spy2.args[0][0].request);
+              expect(header).to.deep.eql({ alg: 'none' });
+              const payload = decodeJwt(spy2.args[0][0].request);
+              expect(payload).to.contain.keys(['aud', 'exp', 'iat', 'nbf', 'iss']);
+            });
 
-          it('uses the expiration from JWT when below MAX_TTL', async function () {
-            const spy = sinon.spy();
-            this.provider.once('pushed_authorization_request.success', spy);
-
-            await this.agent.post('/request')
-              .auth(clientId, 'secret')
-              .type('form')
-              .send({
-                request: await JWT.sign({
+            it('forbids request_uri to be used', async function () {
+              return this.agent.post('/request')
+                .auth(clientId, 'secret')
+                .type('form')
+                .send({
                   response_type: 'code',
-                  client_id: clientId,
-                  iss: clientId,
-                  aud: this.provider.issuer,
-                }, this.key, 'HS256', {
-                  expiresIn: 20,
-                }),
-              })
-              .expect(201)
-              .expect(({ body }) => {
-                expect(body).to.have.keys('expires_in', 'request_uri');
-                expect(body).to.have.property('expires_in').to.be.closeTo(20, 1);
-                expect(body).to.have.property('request_uri').and.match(/^urn:ietf:params:oauth:request_uri:(.+)$/);
-              });
+                  request_uri: 'https://rp.example.com/jar#foo',
+                })
+                .expect(400)
+                .expect({
+                  error: 'invalid_request',
+                  error_description: '`request_uri` parameter must not be used at the pushed_authorization_request_endpoint',
+                });
+            });
 
-            expect(spy).to.have.property('calledOnce', true);
-          });
-
-          it('uses MAX_TTL when the expiration from JWT is above it', async function () {
-            const spy = sinon.spy();
-            this.provider.once('pushed_authorization_request.success', spy);
-
-            await this.agent.post('/request')
-              .auth(clientId, 'secret')
-              .type('form')
-              .send({
-                request: await JWT.sign({
-                  response_type: 'code',
-                  client_id: clientId,
-                  iss: clientId,
-                  aud: this.provider.issuer,
-                }, this.key, 'HS256', {
-                  expiresIn: 120,
-                }),
-              })
-              .expect(201)
-              .expect(({ body }) => {
-                expect(body).to.have.keys('expires_in', 'request_uri');
-                expect(body).to.have.property('expires_in', 60);
-                expect(body).to.have.property('request_uri').and.match(/^urn:ietf:params:oauth:request_uri:(.+)$/);
-              });
-
-            expect(spy).to.have.property('calledOnce', true);
-          });
-
-          it('ignores regular parameters when passing a JAR request', async function () {
-            const spy = sinon.spy();
-            this.provider.once('pushed_authorization_request.saved', spy);
-
-            await this.agent.post('/request')
-              .auth(clientId, 'secret')
-              .type('form')
-              .send({
-                nonce: 'foo',
-                response_type: 'code token',
-                request: await JWT.sign({
-                  response_type: 'code',
-                  client_id: clientId,
-                  iss: clientId,
-                  aud: this.provider.issuer,
-                }, this.key, 'HS256'),
-              })
-              .expect(201);
-
-            expect(spy).to.have.property('calledOnce', true);
-            const { request } = spy.args[0][0];
-            const payload = jose.JWT.decode(request);
-            expect(payload).not.to.have.property('nonce');
-            expect(payload).to.have.property('response_type', 'code');
-          });
-
-          it('requires the registered request object signing alg be used', async function () {
-            return this.agent.post('/request')
-              .auth('client-alg-registered', 'secret')
-              .type('form')
-              .send({
-                request: await JWT.sign({
-                  response_type: 'code',
-                  client_id: 'client-alg-registered',
-                }, this.key, 'HS384'),
-              })
-              .expect(400)
-              .expect({
-                error: 'invalid_request_object',
-                error_description: 'the preregistered alg must be used in request or request_uri',
-              });
-          });
-
-          it('requires the request object client_id to equal the authenticated client one', async function () {
-            return this.agent.post('/request')
-              .auth(clientId, 'secret')
-              .type('form')
-              .send({
-                request: await JWT.sign({
-                  response_type: 'code',
-                  client_id: 'client-foo',
-                }, this.key, 'HS256'),
-              })
-              .expect(400)
-              .expect({
-                error: 'invalid_request_object',
-                error_description: "request client_id must equal the authenticated client's client_id",
-              });
-          });
-
-          it('remaps request validation errors to be related to the request object', async function () {
-            return this.agent.post('/request')
-              .auth(clientId, 'secret')
-              .type('form')
-              .send({
-                request: await JWT.sign({
+            it('does not remap request validation errors to be related to the request object', async function () {
+              return this.agent.post('/request')
+                .auth(clientId, 'secret')
+                .type('form')
+                .send({
                   response_type: 'code',
                   client_id: clientId,
                   iss: clientId,
                   aud: this.provider.issuer,
                   redirect_uri: 'https://rp.example.com/unlisted',
-                }, this.key, 'HS256'),
-              })
-              .expect(400)
-              .expect({
-                error: 'invalid_request',
-                error_description: "redirect_uri did not match any of the client's registered redirect_uris",
-              });
-          });
+                })
+                .expect(400)
+                .expect({
+                  error: 'invalid_request',
+                  error_description: "redirect_uri did not match any of the client's registered redirect_uris",
+                });
+            });
 
-          it('leaves non OIDCProviderError alone', async function () {
-            const adapterThrow = new Error('adapter throw!');
-            sinon.stub(this.TestAdapter.for('PushedAuthorizationRequest'), 'upsert').callsFake(async () => { throw adapterThrow; });
-            return this.agent.post('/request')
-              .auth(clientId, 'secret')
-              .type('form')
-              .send({
-                request: await JWT.sign({
+            it('leaves non OIDCProviderError alone', async function () {
+              const adapterThrow = new Error('adapter throw!');
+              sinon.stub(this.TestAdapter.for('PushedAuthorizationRequest'), 'upsert').callsFake(async () => { throw adapterThrow; });
+              return this.agent.post('/request')
+                .auth(clientId, 'secret')
+                .type('form')
+                .send({
                   response_type: 'code',
                   client_id: clientId,
                   iss: clientId,
                   aud: this.provider.issuer,
-                }, this.key, 'HS256'),
-              })
-              .expect(() => {
-                this.TestAdapter.for('PushedAuthorizationRequest').upsert.restore();
-              })
-              .expect(500)
-              .expect({
-                error: 'server_error',
-                error_description: 'oops! something went wrong',
-              });
+                })
+                .expect(() => {
+                  this.TestAdapter.for('PushedAuthorizationRequest').upsert.restore();
+                })
+                .expect(500)
+                .expect({
+                  error: 'server_error',
+                  error_description: 'oops! something went wrong',
+                });
+            });
           });
-        });
 
-        describe('Using Pushed Authorization Requests', () => {
-          before(function () { return this.login(); });
-          after(function () { return this.logout(); });
+          describe('Using Pushed Authorization Requests', () => {
+            before(function () { return this.login(); });
+            after(function () { return this.logout(); });
 
-          it('allows the request_uri to be used', async function () {
-            const { body: { request_uri } } = await this.agent.post('/request')
-              .auth(clientId, 'secret')
-              .type('form')
-              .send({
-                request: await JWT.sign({
+            it('allows the request_uri to be used', async function () {
+              const { body: { request_uri } } = await this.agent.post('/request')
+                .auth(clientId, 'secret')
+                .type('form')
+                .send({
                   scope: 'openid',
                   response_type: 'code',
                   client_id: clientId,
                   iss: clientId,
                   aud: this.provider.issuer,
-                }, this.key, 'HS256'),
+                });
+
+              let id = request_uri.split(':');
+              id = id[id.length - 1];
+
+              expect(await this.provider.PushedAuthorizationRequest.find(id)).to.be.ok;
+
+              const auth = new this.AuthorizationRequest({
+                client_id: clientId,
+                iss: clientId,
+                aud: this.provider.issuer,
+                state: undefined,
+                redirect_uri: undefined,
+                request_uri,
               });
 
-            let id = request_uri.split(':');
-            id = id[id.length - 1];
+              await this.wrap({ route: '/auth', verb: 'get', auth })
+                .expect(303)
+                .expect(auth.validatePresence(['code']));
 
-            expect(await this.provider.PushedAuthorizationRequest.find(id)).to.be.ok;
-
-            const auth = new this.AuthorizationRequest({
-              client_id: clientId,
-              iss: clientId,
-              aud: this.provider.issuer,
-              state: undefined,
-              redirect_uri: undefined,
-              request_uri,
+              expect(await this.provider.PushedAuthorizationRequest.find(id)).not.to.be.ok;
             });
 
-            await this.wrap({ route: '/auth', verb: 'get', auth })
-              .expect(303)
-              .expect(auth.validatePresence(['code']));
-
-            expect(await this.provider.PushedAuthorizationRequest.find(id)).not.to.be.ok;
-          });
-
-          it('handles expired or invalid pushed authorization request object', async function () {
-            const auth = new this.AuthorizationRequest({
-              request_uri: 'urn:ietf:params:oauth:request_uri:foobar',
-            });
-
-            return this.wrap({ route: '/auth', verb: 'get', auth })
-              .expect(303)
-              .expect(auth.validatePresence(['error', 'error_description', 'state']))
-              .expect(auth.validateState)
-              .expect(auth.validateClientLocation)
-              .expect(auth.validateError('invalid_request_uri'))
-              .expect(auth.validateErrorDescription('request_uri is invalid or expired'));
-          });
-
-          it('handles expired or invalid pushed authorization request object (when no client_id in the request)', async function () {
-            const renderSpy = sinon.spy(i(this.provider).configuration(), 'renderError');
-
-            const auth = new this.AuthorizationRequest({
-              client_id: undefined,
-              request_uri: 'urn:ietf:params:oauth:request_uri:foobar',
-            });
-
-            return this.wrap({ route: '/auth', verb: 'get', auth })
-              .expect(() => {
-                renderSpy.restore();
-              })
-              .expect(400)
-              .expect(() => {
-                expect(renderSpy.calledOnce).to.be.true;
-                const renderArgs = renderSpy.args[0];
-                expect(renderArgs[1]).to.have.property('error', 'invalid_request_uri');
-                expect(renderArgs[1]).to.have.property('error_description', 'request_uri is invalid or expired');
-              });
-          });
-
-          it('allows the request_uri to be used without passing client_id to the request', async function () {
-            const { body: { request_uri } } = await this.agent.post('/request')
-              .auth(clientId, 'secret')
-              .type('form')
-              .send({
-                request: await JWT.sign({
+            it('allows the request_uri to be used (when request object was not used but client has request_object_signing_alg for its optional use)', async function () {
+              const { body: { request_uri } } = await this.agent.post('/request')
+                .auth('client-alg-registered', 'secret')
+                .type('form')
+                .send({
                   scope: 'openid',
                   response_type: 'code',
-                  client_id: clientId,
-                  iss: clientId,
+                  client_id: 'client-alg-registered',
+                  iss: 'client-alg-registered',
                   aud: this.provider.issuer,
-                }, this.key, 'HS256'),
-              });
+                });
 
-            const auth = new this.AuthorizationRequest({
-              client_id: undefined,
-              state: undefined,
-              redirect_uri: undefined,
-              request_uri,
-            });
+              let id = request_uri.split(':');
+              id = id[id.length - 1];
 
-            return this.wrap({ route: '/auth', verb: 'get', auth })
-              .expect(303)
-              .expect(auth.validatePresence(['code']));
-          });
-        });
-      });
+              expect(await this.provider.PushedAuthorizationRequest.find(id)).to.be.ok;
 
-      describe('using a plain pushed authorization request', () => {
-        describe('Pushed Authorization Request Endpoint', () => {
-          it('populates ctx.oidc.entities', function (done) {
-            this.provider.use(this.assertOnce((ctx) => {
-              expect(ctx.oidc.entities).to.have.keys('Client', 'PushedAuthorizationRequest');
-            }, done));
-
-            this.agent.post('/request')
-              .auth(clientId, 'secret')
-              .type('form')
-              .send({
-                response_type: 'code',
-                client_id: clientId,
-                iss: clientId,
-                aud: this.provider.issuer,
-              })
-              .end(() => {});
-          });
-
-          it('stores a request object and returns a uri', async function () {
-            const spy = sinon.spy();
-            this.provider.once('pushed_authorization_request.success', spy);
-            const spy2 = sinon.spy();
-            this.provider.once('pushed_authorization_request.saved', spy2);
-
-            await this.agent.post('/request')
-              .auth(clientId, 'secret')
-              .type('form')
-              .send({
-                response_type: 'code',
-                client_id: clientId,
-                iss: clientId,
-                aud: this.provider.issuer,
-              })
-              .expect(201)
-              .expect(({ body }) => {
-                expect(body).to.have.keys('expires_in', 'request_uri');
-                expect(body).to.have.property('expires_in', 60);
-                expect(body).to.have.property('request_uri').and.match(/^urn:ietf:params:oauth:request_uri:(.+)$/);
-              });
-
-            expect(spy).to.have.property('calledOnce', true);
-            expect(spy2).to.have.property('calledOnce', true);
-            const header = decodeProtectedHeader(spy2.args[0][0].request);
-            expect(header).to.deep.eql({ alg: 'none' });
-            const payload = decodeJwt(spy2.args[0][0].request);
-            expect(payload).to.contain.keys(['aud', 'exp', 'iat', 'nbf', 'iss']);
-          });
-
-          it('forbids request_uri to be used', async function () {
-            return this.agent.post('/request')
-              .auth(clientId, 'secret')
-              .type('form')
-              .send({
-                response_type: 'code',
-                request_uri: 'https://rp.example.com/jar#foo',
-              })
-              .expect(400)
-              .expect({
-                error: 'invalid_request',
-                error_description: '`request_uri` parameter must not be used at the pushed_authorization_request_endpoint',
-              });
-          });
-
-          it('does not remap request validation errors to be related to the request object', async function () {
-            return this.agent.post('/request')
-              .auth(clientId, 'secret')
-              .type('form')
-              .send({
-                response_type: 'code',
-                client_id: clientId,
-                iss: clientId,
-                aud: this.provider.issuer,
-                redirect_uri: 'https://rp.example.com/unlisted',
-              })
-              .expect(400)
-              .expect({
-                error: 'invalid_request',
-                error_description: "redirect_uri did not match any of the client's registered redirect_uris",
-              });
-          });
-
-          it('leaves non OIDCProviderError alone', async function () {
-            const adapterThrow = new Error('adapter throw!');
-            sinon.stub(this.TestAdapter.for('PushedAuthorizationRequest'), 'upsert').callsFake(async () => { throw adapterThrow; });
-            return this.agent.post('/request')
-              .auth(clientId, 'secret')
-              .type('form')
-              .send({
-                response_type: 'code',
-                client_id: clientId,
-                iss: clientId,
-                aud: this.provider.issuer,
-              })
-              .expect(() => {
-                this.TestAdapter.for('PushedAuthorizationRequest').upsert.restore();
-              })
-              .expect(500)
-              .expect({
-                error: 'server_error',
-                error_description: 'oops! something went wrong',
-              });
-          });
-        });
-
-        describe('Using Pushed Authorization Requests', () => {
-          before(function () { return this.login(); });
-          after(function () { return this.logout(); });
-
-          it('allows the request_uri to be used', async function () {
-            const { body: { request_uri } } = await this.agent.post('/request')
-              .auth(clientId, 'secret')
-              .type('form')
-              .send({
-                scope: 'openid',
-                response_type: 'code',
-                client_id: clientId,
-                iss: clientId,
-                aud: this.provider.issuer,
-              });
-
-            let id = request_uri.split(':');
-            id = id[id.length - 1];
-
-            expect(await this.provider.PushedAuthorizationRequest.find(id)).to.be.ok;
-
-            const auth = new this.AuthorizationRequest({
-              client_id: clientId,
-              iss: clientId,
-              aud: this.provider.issuer,
-              state: undefined,
-              redirect_uri: undefined,
-              request_uri,
-            });
-
-            await this.wrap({ route: '/auth', verb: 'get', auth })
-              .expect(303)
-              .expect(auth.validatePresence(['code']));
-
-            expect(await this.provider.PushedAuthorizationRequest.find(id)).not.to.be.ok;
-          });
-
-          it('allows the request_uri to be used (when request object was not used but client has request_object_signing_alg for its optional use)', async function () {
-            const { body: { request_uri } } = await this.agent.post('/request')
-              .auth('client-alg-registered', 'secret')
-              .type('form')
-              .send({
-                scope: 'openid',
-                response_type: 'code',
+              const auth = new this.AuthorizationRequest({
                 client_id: 'client-alg-registered',
                 iss: 'client-alg-registered',
                 aud: this.provider.issuer,
+                state: undefined,
+                redirect_uri: undefined,
+                request_uri,
               });
 
-            let id = request_uri.split(':');
-            id = id[id.length - 1];
+              await this.wrap({ route: '/auth', verb: 'get', auth })
+                .expect(303)
+                .expect(auth.validatePresence(['code']));
 
-            expect(await this.provider.PushedAuthorizationRequest.find(id)).to.be.ok;
-
-            const auth = new this.AuthorizationRequest({
-              client_id: 'client-alg-registered',
-              iss: 'client-alg-registered',
-              aud: this.provider.issuer,
-              state: undefined,
-              redirect_uri: undefined,
-              request_uri,
+              expect(await this.provider.PushedAuthorizationRequest.find(id)).not.to.be.ok;
             });
 
-            await this.wrap({ route: '/auth', verb: 'get', auth })
-              .expect(303)
-              .expect(auth.validatePresence(['code']));
+            it('allows the request_uri to be used without passing client_id to the request', async function () {
+              const { body: { request_uri } } = await this.agent.post('/request')
+                .auth(clientId, 'secret')
+                .type('form')
+                .send({
+                  scope: 'openid',
+                  response_type: 'code',
+                  client_id: clientId,
+                  iss: clientId,
+                  aud: this.provider.issuer,
+                });
 
-            expect(await this.provider.PushedAuthorizationRequest.find(id)).not.to.be.ok;
+              const auth = new this.AuthorizationRequest({
+                client_id: undefined,
+                state: undefined,
+                redirect_uri: undefined,
+                request_uri,
+              });
+
+              return this.wrap({ route: '/auth', verb: 'get', auth })
+                .expect(303)
+                .expect(auth.validatePresence(['code']));
+            });
+          });
+        });
+      });
+    });
+  });
+
+  context('with Request Objects', () => {
+    before(bootstrap(import.meta.url, { config: 'pushed_authorization_requests_jar' }));
+
+    before(async function () {
+      const client = await this.provider.Client.find('client');
+      this.key = await importJWK(client.symmetricKeyStore.selectForSign({ alg: 'HS256' })[0]);
+    });
+
+    describe('discovery', () => {
+      it('extends the well known config', async function () {
+        await this.agent.get('/.well-known/openid-configuration')
+          .expect((response) => {
+            expect(response.body).not.to.have.property('request_object_endpoint');
+            expect(response.body).to.have.property('pushed_authorization_request_endpoint');
+            expect(response.body).to.have.property('request_object_signing_alg_values_supported').with.not.lengthOf(0);
+            expect(response.body).to.have.property('request_parameter_supported', true);
+            expect(response.body).to.have.property('request_uri_parameter_supported', false);
+            expect(response.body).not.to.have.property('require_pushed_authorization_requests');
           });
 
-          it('allows the request_uri to be used without passing client_id to the request', async function () {
-            const { body: { request_uri } } = await this.agent.post('/request')
-              .auth(clientId, 'secret')
-              .type('form')
-              .send({
-                scope: 'openid',
+        i(this.provider).configuration('features.pushedAuthorizationRequests').requirePushedAuthorizationRequests = true;
+
+        return this.agent.get('/.well-known/openid-configuration')
+          .expect((response) => {
+            expect(response.body).to.have.property('require_pushed_authorization_requests', true);
+          });
+      });
+
+      after(function () {
+        i(this.provider).configuration('features.pushedAuthorizationRequests').requirePushedAuthorizationRequests = false;
+      });
+    });
+
+    ['client', 'client-par-required'].forEach((clientId) => {
+      const requirePushedAuthorizationRequests = clientId === 'client-par-required';
+
+      describe(`when require_pushed_authorization_requests=${requirePushedAuthorizationRequests}`, () => {
+        describe('using a JAR request parameter', () => {
+          describe('Pushed Authorization Request Endpoint', () => {
+            it('populates ctx.oidc.entities', function (done) {
+              this.provider.use(this.assertOnce((ctx) => {
+                expect(ctx.oidc.entities).to.have.keys('Client', 'PushedAuthorizationRequest');
+              }, done));
+
+              JWT.sign({
                 response_type: 'code',
                 client_id: clientId,
                 iss: clientId,
                 aud: this.provider.issuer,
+              }, this.key, 'HS256').then((request) => {
+                this.agent.post('/request')
+                  .auth(clientId, 'secret')
+                  .type('form')
+                  .send({ request })
+                  .end(() => {});
               });
-
-            const auth = new this.AuthorizationRequest({
-              client_id: undefined,
-              state: undefined,
-              redirect_uri: undefined,
-              request_uri,
             });
 
-            return this.wrap({ route: '/auth', verb: 'get', auth })
-              .expect(303)
-              .expect(auth.validatePresence(['code']));
+            it('stores a request object and returns a uri', async function () {
+              const spy = sinon.spy();
+              this.provider.once('pushed_authorization_request.success', spy);
+
+              await this.agent.post('/request')
+                .auth(clientId, 'secret')
+                .type('form')
+                .send({
+                  request: await JWT.sign({
+                    response_type: 'code',
+                    client_id: clientId,
+                    iss: clientId,
+                    aud: this.provider.issuer,
+                  }, this.key, 'HS256'),
+                })
+                .expect(201)
+                .expect(({ body }) => {
+                  expect(body).to.have.keys('expires_in', 'request_uri');
+                  expect(body).to.have.property('expires_in', 60);
+                  expect(body).to.have.property('request_uri').and.match(/^urn:ietf:params:oauth:request_uri:(.+)$/);
+                });
+
+              expect(spy).to.have.property('calledOnce', true);
+            });
+
+            it('uses the expiration from JWT when below MAX_TTL', async function () {
+              const spy = sinon.spy();
+              this.provider.once('pushed_authorization_request.success', spy);
+
+              await this.agent.post('/request')
+                .auth(clientId, 'secret')
+                .type('form')
+                .send({
+                  request: await JWT.sign({
+                    response_type: 'code',
+                    client_id: clientId,
+                    iss: clientId,
+                    aud: this.provider.issuer,
+                  }, this.key, 'HS256', {
+                    expiresIn: 20,
+                  }),
+                })
+                .expect(201)
+                .expect(({ body }) => {
+                  expect(body).to.have.keys('expires_in', 'request_uri');
+                  expect(body).to.have.property('expires_in').to.be.closeTo(20, 1);
+                  expect(body).to.have.property('request_uri').and.match(/^urn:ietf:params:oauth:request_uri:(.+)$/);
+                });
+
+              expect(spy).to.have.property('calledOnce', true);
+            });
+
+            it('uses MAX_TTL when the expiration from JWT is above it', async function () {
+              const spy = sinon.spy();
+              this.provider.once('pushed_authorization_request.success', spy);
+
+              await this.agent.post('/request')
+                .auth(clientId, 'secret')
+                .type('form')
+                .send({
+                  request: await JWT.sign({
+                    response_type: 'code',
+                    client_id: clientId,
+                    iss: clientId,
+                    aud: this.provider.issuer,
+                  }, this.key, 'HS256', {
+                    expiresIn: 120,
+                  }),
+                })
+                .expect(201)
+                .expect(({ body }) => {
+                  expect(body).to.have.keys('expires_in', 'request_uri');
+                  expect(body).to.have.property('expires_in', 60);
+                  expect(body).to.have.property('request_uri').and.match(/^urn:ietf:params:oauth:request_uri:(.+)$/);
+                });
+
+              expect(spy).to.have.property('calledOnce', true);
+            });
+
+            it('ignores regular parameters when passing a JAR request', async function () {
+              const spy = sinon.spy();
+              this.provider.once('pushed_authorization_request.saved', spy);
+
+              await this.agent.post('/request')
+                .auth(clientId, 'secret')
+                .type('form')
+                .send({
+                  nonce: 'foo',
+                  response_type: 'code token',
+                  request: await JWT.sign({
+                    response_type: 'code',
+                    client_id: clientId,
+                    iss: clientId,
+                    aud: this.provider.issuer,
+                  }, this.key, 'HS256'),
+                })
+                .expect(201);
+
+              expect(spy).to.have.property('calledOnce', true);
+              const { request } = spy.args[0][0];
+              const payload = jose.JWT.decode(request);
+              expect(payload).not.to.have.property('nonce');
+              expect(payload).to.have.property('response_type', 'code');
+            });
+
+            it('requires the registered request object signing alg be used', async function () {
+              return this.agent.post('/request')
+                .auth('client-alg-registered', 'secret')
+                .type('form')
+                .send({
+                  request: await JWT.sign({
+                    response_type: 'code',
+                    client_id: 'client-alg-registered',
+                  }, this.key, 'HS384'),
+                })
+                .expect(400)
+                .expect({
+                  error: 'invalid_request_object',
+                  error_description: 'the preregistered alg must be used in request or request_uri',
+                });
+            });
+
+            it('requires the request object client_id to equal the authenticated client one', async function () {
+              return this.agent.post('/request')
+                .auth(clientId, 'secret')
+                .type('form')
+                .send({
+                  request: await JWT.sign({
+                    response_type: 'code',
+                    client_id: 'client-foo',
+                  }, this.key, 'HS256'),
+                })
+                .expect(400)
+                .expect({
+                  error: 'invalid_request_object',
+                  error_description: "request client_id must equal the authenticated client's client_id",
+                });
+            });
+
+            it('remaps request validation errors to be related to the request object', async function () {
+              return this.agent.post('/request')
+                .auth(clientId, 'secret')
+                .type('form')
+                .send({
+                  request: await JWT.sign({
+                    response_type: 'code',
+                    client_id: clientId,
+                    iss: clientId,
+                    aud: this.provider.issuer,
+                    redirect_uri: 'https://rp.example.com/unlisted',
+                  }, this.key, 'HS256'),
+                })
+                .expect(400)
+                .expect({
+                  error: 'invalid_request',
+                  error_description: "redirect_uri did not match any of the client's registered redirect_uris",
+                });
+            });
+
+            it('leaves non OIDCProviderError alone', async function () {
+              const adapterThrow = new Error('adapter throw!');
+              sinon.stub(this.TestAdapter.for('PushedAuthorizationRequest'), 'upsert').callsFake(async () => { throw adapterThrow; });
+              return this.agent.post('/request')
+                .auth(clientId, 'secret')
+                .type('form')
+                .send({
+                  request: await JWT.sign({
+                    response_type: 'code',
+                    client_id: clientId,
+                    iss: clientId,
+                    aud: this.provider.issuer,
+                  }, this.key, 'HS256'),
+                })
+                .expect(() => {
+                  this.TestAdapter.for('PushedAuthorizationRequest').upsert.restore();
+                })
+                .expect(500)
+                .expect({
+                  error: 'server_error',
+                  error_description: 'oops! something went wrong',
+                });
+            });
+          });
+
+          describe('Using Pushed Authorization Requests', () => {
+            before(function () { return this.login(); });
+            after(function () { return this.logout(); });
+
+            it('allows the request_uri to be used', async function () {
+              const { body: { request_uri } } = await this.agent.post('/request')
+                .auth(clientId, 'secret')
+                .type('form')
+                .send({
+                  request: await JWT.sign({
+                    scope: 'openid',
+                    response_type: 'code',
+                    client_id: clientId,
+                    iss: clientId,
+                    aud: this.provider.issuer,
+                  }, this.key, 'HS256'),
+                });
+
+              let id = request_uri.split(':');
+              id = id[id.length - 1];
+
+              expect(await this.provider.PushedAuthorizationRequest.find(id)).to.be.ok;
+
+              const auth = new this.AuthorizationRequest({
+                client_id: clientId,
+                iss: clientId,
+                aud: this.provider.issuer,
+                state: undefined,
+                redirect_uri: undefined,
+                request_uri,
+              });
+
+              await this.wrap({ route: '/auth', verb: 'get', auth })
+                .expect(303)
+                .expect(auth.validatePresence(['code']));
+
+              expect(await this.provider.PushedAuthorizationRequest.find(id)).not.to.be.ok;
+            });
+
+            it('handles expired or invalid pushed authorization request object', async function () {
+              const auth = new this.AuthorizationRequest({
+                request_uri: 'urn:ietf:params:oauth:request_uri:foobar',
+              });
+
+              return this.wrap({ route: '/auth', verb: 'get', auth })
+                .expect(303)
+                .expect(auth.validatePresence(['error', 'error_description', 'state']))
+                .expect(auth.validateState)
+                .expect(auth.validateClientLocation)
+                .expect(auth.validateError('invalid_request_uri'))
+                .expect(auth.validateErrorDescription('request_uri is invalid or expired'));
+            });
+
+            it('handles expired or invalid pushed authorization request object (when no client_id in the request)', async function () {
+              const renderSpy = sinon.spy(i(this.provider).configuration(), 'renderError');
+
+              const auth = new this.AuthorizationRequest({
+                client_id: undefined,
+                request_uri: 'urn:ietf:params:oauth:request_uri:foobar',
+              });
+
+              return this.wrap({ route: '/auth', verb: 'get', auth })
+                .expect(() => {
+                  renderSpy.restore();
+                })
+                .expect(400)
+                .expect(() => {
+                  expect(renderSpy.calledOnce).to.be.true;
+                  const renderArgs = renderSpy.args[0];
+                  expect(renderArgs[1]).to.have.property('error', 'invalid_request_uri');
+                  expect(renderArgs[1]).to.have.property('error_description', 'request_uri is invalid or expired');
+                });
+            });
+
+            it('allows the request_uri to be used without passing client_id to the request', async function () {
+              const { body: { request_uri } } = await this.agent.post('/request')
+                .auth(clientId, 'secret')
+                .type('form')
+                .send({
+                  request: await JWT.sign({
+                    scope: 'openid',
+                    response_type: 'code',
+                    client_id: clientId,
+                    iss: clientId,
+                    aud: this.provider.issuer,
+                  }, this.key, 'HS256'),
+                });
+
+              const auth = new this.AuthorizationRequest({
+                client_id: undefined,
+                state: undefined,
+                redirect_uri: undefined,
+                request_uri,
+              });
+
+              return this.wrap({ route: '/auth', verb: 'get', auth })
+                .expect(303)
+                .expect(auth.validatePresence(['code']));
+            });
           });
         });
       });
