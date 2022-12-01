@@ -7,14 +7,7 @@
     "symbol-description": ["off"],
     "import/extensions": ["error", "ignorePackages"]
   },
-  "parser": "@babel/eslint-parser",
   "parserOptions": {
-    "ecmaVersion": "latest",
-    "requireConfigFile": false,
-    "babelOptions": {
-      "plugins": [
-        "@babel/plugin-syntax-import-assertions"
-      ]
-    }
+    "ecmaVersion": "latest"
   }
 }

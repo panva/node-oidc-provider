@@ -6,7 +6,7 @@ import { expect } from 'chai';
 
 import bootstrap, { skipConsent } from '../test_helper.js';
 
-const crt = readFileSync('./test/jwks/client.crt').toString();
+const crt = readFileSync('./test/jwks/client.crt', { encoding: 'ascii' });
 const expectedS256 = 'A4DtL2JmUMhAsvJj5tKyn64SqzmuXbMrJa0n761y5v0';
 
 describe('features.mTLS.certificateBoundAccessTokens', () => {

@@ -1,6 +1,14 @@
 import * as crypto from 'node:crypto';
+import * as fs from 'node:fs';
+import * as path from 'node:path';
 
-import pkg from '../../package.json' assert { type: 'json' };
+import { dirname } from 'desm';
+
+const pkg = JSON.parse(
+  fs.readFileSync(path.resolve(dirname(import.meta.url), '../../package.json'), {
+    encoding: 'utf-8',
+  }),
+);
 
 const enabledJWA = JSON.parse(JSON.stringify(await import('../../lib/consts/jwa.js')));
 

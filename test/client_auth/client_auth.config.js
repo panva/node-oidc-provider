@@ -1,9 +1,16 @@
+import { readFileSync } from 'node:fs';
+
 import cloneDeep from 'lodash/cloneDeep.js';
 import merge from 'lodash/merge.js';
 
-import mtlsKeys from '../jwks/jwks.json' assert { type: 'json' };
 import key from '../client.sig.key.js';
 import getConfig from '../default.config.js';
+
+const mtlsKeys = JSON.parse(
+  readFileSync('test/jwks/jwks.json', {
+    encoding: 'utf-8',
+  }),
+);
 
 const config = getConfig();
 

@@ -14,10 +14,15 @@ import bootstrap from '../test_helper.js';
 import clientKey from '../client.sig.key.js';
 import * as JWT from '../../lib/helpers/jwt.js';
 import { JWA } from '../../lib/consts/index.js';
-import mtlsKeys from '../jwks/jwks.json' assert { type: 'json' };
 
-const rsacrt = readFileSync('test/jwks/rsa.crt').toString();
-const eccrt = readFileSync('test/jwks/ec.crt').toString();
+const mtlsKeys = JSON.parse(
+  readFileSync('test/jwks/jwks.json', {
+    encoding: 'utf-8',
+  }),
+);
+
+const rsacrt = readFileSync('test/jwks/rsa.crt', { encoding: 'ascii' });
+const eccrt = readFileSync('test/jwks/ec.crt', { encoding: 'ascii' });
 
 const route = '/token';
 

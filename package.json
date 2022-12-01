@@ -72,8 +72,6 @@
     "raw-body": "^2.5.1"
   },
   "devDependencies": {
-    "@babel/eslint-parser": "^7.19.1",
-    "@babel/plugin-syntax-import-assertions": "^7.20.0",
     "@fastify/middie": "^8.0.0",
     "@hapi/hapi": "^21.0.0",
     "@koa/ejs": "^5.0.0",
