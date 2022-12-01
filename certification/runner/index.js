@@ -2,7 +2,7 @@
 /* eslint-disable no-bitwise, func-names, no-console, no-restricted-syntax, no-await-in-loop, no-multi-assign, max-len */
 
 import { strict as assert } from 'node:assert';
-import fs from 'node:fs';
+import * as fs from 'node:fs';
 
 import debug from './debug.js';
 import API from './api.js';

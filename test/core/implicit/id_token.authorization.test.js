@@ -1,5 +1,5 @@
-import querystring from 'node:querystring';
-import url from 'node:url';
+import * as querystring from 'node:querystring';
+import * as url from 'node:url';
 
 import sinon from 'sinon';
 import { expect } from 'chai';

@@ -1,4 +1,4 @@
-import crypto from 'node:crypto';
+import * as crypto from 'node:crypto';
 
 import pkg from '../../package.json' assert { type: 'json' };
 

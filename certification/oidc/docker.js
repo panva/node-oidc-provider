@@ -1,7 +1,7 @@
 /* eslint-disable no-console */
 
-import path from 'node:path';
-import https from 'node:https';
+import * as path from 'node:path';
+import * as https from 'node:https';
 
 import { generate } from 'selfsigned';
 import render from '@koa/ejs';

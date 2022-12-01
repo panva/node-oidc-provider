@@ -1,4 +1,4 @@
-import querystring from 'node:querystring';
+import * as querystring from 'node:querystring';
 
 import { expect } from 'chai';
 

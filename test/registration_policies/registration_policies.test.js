@@ -1,7 +1,7 @@
 /* eslint-disable no-param-reassign, max-len */
 
 import { strict as assert } from 'node:assert';
-import url from 'node:url';
+import * as url from 'node:url';
 
 import { createSandbox } from 'sinon';
 import { expect } from 'chai';

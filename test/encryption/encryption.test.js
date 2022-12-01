@@ -1,4 +1,4 @@
-import url from 'node:url';
+import * as url from 'node:url';
 
 import { expect } from 'chai';
 import sinon from 'sinon';

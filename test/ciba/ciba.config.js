@@ -1,7 +1,7 @@
 /* eslint-disable prefer-rest-params */
 
 import { strict as assert } from 'node:assert';
-import events from 'node:events';
+import * as events from 'node:events';
 
 import getConfig from '../default.config.js';
 

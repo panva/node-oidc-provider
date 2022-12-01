@@ -1,5 +1,5 @@
 import { strict as assert } from 'node:assert';
-import util from 'node:util';
+import * as util from 'node:util';
 
 import sinon from 'sinon';
 import { expect } from 'chai';

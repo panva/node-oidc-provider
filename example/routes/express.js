@@ -1,6 +1,6 @@
 /* eslint-disable no-console, max-len, camelcase, no-unused-vars */
 import { strict as assert } from 'node:assert';
-import querystring from 'node:querystring';
+import * as querystring from 'node:querystring';
 import { inspect } from 'node:util';
 
 import isEmpty from 'lodash/isEmpty.js';

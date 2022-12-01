@@ -1,8 +1,8 @@
 /* eslint-disable no-underscore-dangle */
 
 import { parse } from 'node:url';
-import path from 'node:path';
-import querystring from 'node:querystring';
+import * as path from 'node:path';
+import * as querystring from 'node:querystring';
 import { createServer } from 'node:http';
 import { once } from 'node:events';
 

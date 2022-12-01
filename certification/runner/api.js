@@ -1,7 +1,7 @@
 /* eslint-disable no-await-in-loop */
 import { strict as assert } from 'node:assert';
 import { createWriteStream } from 'node:fs';
-import stream from 'node:stream';
+import * as stream from 'node:stream';
 import { promisify } from 'node:util';
 
 import got from 'got'; // eslint-disable-line import/no-unresolved

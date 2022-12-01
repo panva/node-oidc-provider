@@ -1,6 +1,6 @@
 /* eslint-disable no-console */
 
-import path from 'node:path';
+import * as path from 'node:path';
 import { promisify } from 'node:util';
 
 import { dirname } from 'desm';

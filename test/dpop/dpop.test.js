@@ -1,4 +1,4 @@
-import url from 'node:url';
+import * as url from 'node:url';
 import { createHash } from 'node:crypto';
 
 import sinon from 'sinon';

@@ -1,9 +1,9 @@
 /* eslint-disable no-console */
 
 import { readFileSync } from 'node:fs';
-import path from 'node:path';
+import * as path from 'node:path';
 import { randomBytes, randomUUID } from 'node:crypto';
-import https from 'node:https';
+import * as https from 'node:https';
 import { promisify } from 'node:util';
 import { URL } from 'node:url';
 

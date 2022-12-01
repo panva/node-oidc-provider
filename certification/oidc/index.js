@@ -1,8 +1,8 @@
 /* eslint-disable no-console */
 
 import { promisify } from 'node:util';
-import path from 'node:path';
-import crypto from 'node:crypto';
+import * as path from 'node:path';
+import * as crypto from 'node:crypto';
 
 import { dirname } from 'desm';
 import render from '@koa/ejs';

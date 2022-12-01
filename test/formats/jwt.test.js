@@ -1,8 +1,8 @@
 /* eslint-disable no-shadow */
 /* eslint-disable no-param-reassign */
 import { strict as assert } from 'node:assert';
-import crypto from 'node:crypto';
-import util from 'node:util';
+import * as crypto from 'node:crypto';
+import * as util from 'node:util';
 
 import { createSandbox } from 'sinon';
 import { expect } from 'chai';

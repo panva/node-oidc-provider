@@ -24,7 +24,7 @@ Update whatever file holds your provider, e.g. `index.js` where the provider ins
 prototype needs to be changed.
 
 ```js
-import net from 'node:net';
+import * as net from 'node:net';
 import { URL } from 'node:url';
 
 import wildcard from 'wildcard';

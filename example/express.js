@@ -1,7 +1,7 @@
 /* eslint-disable no-console */
 
-import path from 'node:path';
-import url from 'node:url';
+import * as path from 'node:path';
+import * as url from 'node:url';
 
 import { dirname } from 'desm';
 import express from 'express'; // eslint-disable-line import/no-unresolved

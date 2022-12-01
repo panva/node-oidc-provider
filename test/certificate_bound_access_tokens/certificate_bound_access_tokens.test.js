@@ -1,5 +1,5 @@
 import { readFileSync } from 'node:fs';
-import url from 'node:url';
+import * as url from 'node:url';
 
 import sinon from 'sinon';
 import { expect } from 'chai';

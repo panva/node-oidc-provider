@@ -1,4 +1,4 @@
-import crypto from 'node:crypto';
+import * as crypto from 'node:crypto';
 import { strict as assert } from 'node:assert';
 
 import merge from 'lodash/merge.js';
