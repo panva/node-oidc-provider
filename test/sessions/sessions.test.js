@@ -23,7 +23,7 @@ describe('session exp handling', () => {
     await this.login();
     const session = this.getSession();
     const oldSessionId = this.getSessionId();
-    session.exp = epochTime();
+    session.exp = epochTime() - 300;
 
     sinon.spy(this.TestAdapter.for('Session'), 'destroy');
 

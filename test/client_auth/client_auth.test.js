@@ -1023,7 +1023,7 @@ describe('client authentication options', () => {
         sub: 'client-jwt-secret',
         iss: 'client-jwt-secret',
       }, this.key, 'HS256', {
-        expiresIn: -1,
+        expiresIn: -300,
       }).then((assertion) => this.agent.post(route)
         .send({
           client_assertion: assertion,

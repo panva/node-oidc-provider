@@ -167,7 +167,6 @@ const fapi = new Provider(ISSUER, {
     id_token_signed_response_alg: 'PS256',
     request_object_signing_alg: 'PS256',
   },
-  clockTolerance: 5,
   features: {
     ciba: {
       enabled: true,

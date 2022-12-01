@@ -2088,7 +2088,7 @@ _**recommendation**_: Only set this to a reasonable value when needed to cover s
 
 _**default value**_:
 ```js
-0
+15
 ```
 
 ### conformIdTokenClaims
