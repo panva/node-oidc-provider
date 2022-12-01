@@ -2264,9 +2264,9 @@ async function extraTokenClaims(ctx, token) {
 
 ```js
 {
-  extraTokenClaims(ctx, token) {
+  async extraTokenClaims(ctx, token) {
     return {
-      'urn:oidc-provider:example:foo': 'bar',
+      'urn:idp:example:foo': 'bar',
     };
   }
 }
@@ -2912,10 +2912,7 @@ _**default value**_:
 ```js
 {
   AccessToken: function AccessTokenTTL(ctx, token, client) {
-    if (token.resourceServer) {
-      return token.resourceServer.accessTokenTTL || 60 * 60; // 1 hour in seconds
-    }
-    return 60 * 60; // 1 hour in seconds
+    return token.resourceServer?.accessTokenTTL || 60 * 60; // 1 hour in seconds
   },
   AuthorizationCode: 60 /* 1 minute in seconds */,
   BackchannelAuthenticationRequest: function BackchannelAuthenticationRequestTTL(ctx, request, client) {
@@ -2926,10 +2923,7 @@ _**default value**_:
     return 10 * 60; // 10 minutes in seconds
   },
   ClientCredentials: function ClientCredentialsTTL(ctx, token, client) {
-    if (token.resourceServer) {
-      return token.resourceServer.accessTokenTTL || 10 * 60; // 10 minutes in seconds
-    }
-    return 10 * 60; // 10 minutes in seconds
+    return token.resourceServer?.accessTokenTTL || 10 * 60; // 10 minutes in seconds
   },
   DeviceCode: 600 /* 10 minutes in seconds */,
   Grant: 1209600 /* 14 days in seconds */,
