@@ -1,3 +1,5 @@
+import { randomBytes } from 'node:crypto';
+
 import { expect } from 'chai';
 import sinon from 'sinon';
 import jose from 'jose2';
@@ -310,11 +312,12 @@ describe('Pushed Request Object', () => {
               }, done));
 
               JWT.sign({
+                jti: randomBytes(16).toString('base64url'),
                 response_type: 'code',
                 client_id: clientId,
                 iss: clientId,
                 aud: this.provider.issuer,
-              }, this.key, 'HS256').then((request) => {
+              }, this.key, 'HS256', { expiresIn: 30 }).then((request) => {
                 this.agent.post('/request')
                   .auth(clientId, 'secret')
                   .type('form')
@@ -332,6 +335,66 @@ describe('Pushed Request Object', () => {
                 .type('form')
                 .send({
                   request: await JWT.sign({
+                    jti: randomBytes(16).toString('base64url'),
+                    response_type: 'code',
+                    client_id: clientId,
+                    iss: clientId,
+                    aud: this.provider.issuer,
+                  }, this.key, 'HS256', {
+                    expiresIn: 30,
+                  }),
+                })
+                .expect(201)
+                .expect(({ body }) => {
+                  expect(body).to.have.keys('expires_in', 'request_uri');
+                  expect(body).to.have.property('expires_in', 30);
+                  expect(body).to.have.property('request_uri').and.match(/^urn:ietf:params:oauth:request_uri:(.+)$/);
+                });
+
+              expect(spy).to.have.property('calledOnce', true);
+            });
+
+            it('checks for request object replay', async function () {
+              const request = await JWT.sign({
+                jti: randomBytes(16).toString('base64url'),
+                response_type: 'code',
+                client_id: clientId,
+                iss: clientId,
+                aud: this.provider.issuer,
+              }, this.key, 'HS256', {
+                expiresIn: 30,
+              });
+
+              await this.agent.post('/request')
+                .auth(clientId, 'secret')
+                .type('form')
+                .send({ request })
+                .expect(201)
+                .expect(({ body }) => {
+                  expect(body).to.have.keys('expires_in', 'request_uri');
+                });
+
+              await this.agent.post('/request')
+                .auth(clientId, 'secret')
+                .type('form')
+                .send({ request })
+                .expect(400)
+                .expect(({ body }) => {
+                  expect(body).to.have.property('error', 'invalid_request_object');
+                  expect(body).to.have.property('error_description').and.matches(/^request object replay detected/);
+                });
+            });
+
+            it('defaults to MAX_TTL when no expires_in is present', async function () {
+              const spy = sinon.spy();
+              this.provider.once('pushed_authorization_request.success', spy);
+
+              await this.agent.post('/request')
+                .auth(clientId, 'secret')
+                .type('form')
+                .send({
+                  request: await JWT.sign({
+                    jti: randomBytes(16).toString('base64url'),
                     response_type: 'code',
                     client_id: clientId,
                     iss: clientId,
@@ -340,9 +403,7 @@ describe('Pushed Request Object', () => {
                 })
                 .expect(201)
                 .expect(({ body }) => {
-                  expect(body).to.have.keys('expires_in', 'request_uri');
                   expect(body).to.have.property('expires_in', 60);
-                  expect(body).to.have.property('request_uri').and.match(/^urn:ietf:params:oauth:request_uri:(.+)$/);
                 });
 
               expect(spy).to.have.property('calledOnce', true);
@@ -357,6 +418,7 @@ describe('Pushed Request Object', () => {
                 .type('form')
                 .send({
                   request: await JWT.sign({
+                    jti: randomBytes(16).toString('base64url'),
                     response_type: 'code',
                     client_id: clientId,
                     iss: clientId,
@@ -384,6 +446,7 @@ describe('Pushed Request Object', () => {
                 .type('form')
                 .send({
                   request: await JWT.sign({
+                    jti: randomBytes(16).toString('base64url'),
                     response_type: 'code',
                     client_id: clientId,
                     iss: clientId,
@@ -413,11 +476,12 @@ describe('Pushed Request Object', () => {
                   nonce: 'foo',
                   response_type: 'code token',
                   request: await JWT.sign({
+                    jti: randomBytes(16).toString('base64url'),
                     response_type: 'code',
                     client_id: clientId,
                     iss: clientId,
                     aud: this.provider.issuer,
-                  }, this.key, 'HS256'),
+                  }, this.key, 'HS256', { expiresIn: 30 }),
                 })
                 .expect(201);
 
@@ -434,6 +498,7 @@ describe('Pushed Request Object', () => {
                 .type('form')
                 .send({
                   request: await JWT.sign({
+                    jti: randomBytes(16).toString('base64url'),
                     response_type: 'code',
                     client_id: 'client-alg-registered',
                   }, this.key, 'HS384'),
@@ -451,9 +516,10 @@ describe('Pushed Request Object', () => {
                 .type('form')
                 .send({
                   request: await JWT.sign({
+                    jti: randomBytes(16).toString('base64url'),
                     response_type: 'code',
                     client_id: 'client-foo',
-                  }, this.key, 'HS256'),
+                  }, this.key, 'HS256', { expiresIn: 30 }),
                 })
                 .expect(400)
                 .expect({
@@ -468,12 +534,13 @@ describe('Pushed Request Object', () => {
                 .type('form')
                 .send({
                   request: await JWT.sign({
+                    jti: randomBytes(16).toString('base64url'),
                     response_type: 'code',
                     client_id: clientId,
                     iss: clientId,
                     aud: this.provider.issuer,
                     redirect_uri: 'https://rp.example.com/unlisted',
-                  }, this.key, 'HS256'),
+                  }, this.key, 'HS256', { expiresIn: 30 }),
                 })
                 .expect(400)
                 .expect({
@@ -490,11 +557,12 @@ describe('Pushed Request Object', () => {
                 .type('form')
                 .send({
                   request: await JWT.sign({
+                    jti: randomBytes(16).toString('base64url'),
                     response_type: 'code',
                     client_id: clientId,
                     iss: clientId,
                     aud: this.provider.issuer,
-                  }, this.key, 'HS256'),
+                  }, this.key, 'HS256', { expiresIn: 30 }),
                 })
                 .expect(() => {
                   this.TestAdapter.for('PushedAuthorizationRequest').upsert.restore();
@@ -517,12 +585,13 @@ describe('Pushed Request Object', () => {
                 .type('form')
                 .send({
                   request: await JWT.sign({
+                    jti: randomBytes(16).toString('base64url'),
                     scope: 'openid',
                     response_type: 'code',
                     client_id: clientId,
                     iss: clientId,
                     aud: this.provider.issuer,
-                  }, this.key, 'HS256'),
+                  }, this.key, 'HS256', { expiresIn: 30 }),
                 });
 
               let id = request_uri.split(':');
@@ -587,12 +656,13 @@ describe('Pushed Request Object', () => {
                 .type('form')
                 .send({
                   request: await JWT.sign({
+                    jti: randomBytes(16).toString('base64url'),
                     scope: 'openid',
                     response_type: 'code',
                     client_id: clientId,
                     iss: clientId,
                     aud: this.provider.issuer,
-                  }, this.key, 'HS256'),
+                  }, this.key, 'HS256', { expiresIn: 30 }),
                 });
 
               const auth = new this.AuthorizationRequest({
