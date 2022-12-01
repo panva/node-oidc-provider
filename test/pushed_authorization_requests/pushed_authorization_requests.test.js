@@ -106,9 +106,11 @@ describe('Pushed Request Object', () => {
 
               expect(spy).to.have.property('calledOnce', true);
               expect(spy2).to.have.property('calledOnce', true);
-              const header = decodeProtectedHeader(spy2.args[0][0].request);
+              const stored = spy2.args[0][0];
+              expect(stored).to.have.property('trusted', true);
+              const header = decodeProtectedHeader(stored.request);
               expect(header).to.deep.eql({ alg: 'none' });
-              const payload = decodeJwt(spy2.args[0][0].request);
+              const payload = decodeJwt(stored.request);
               expect(payload).to.contain.keys(['aud', 'exp', 'iat', 'nbf', 'iss']);
             });
 
