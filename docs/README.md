@@ -1,6 +1,6 @@
 # oidc-provider API documentation
 
-oidc-provider allows to be extended and configured in various ways to fit a variety of use cases. You
+This module to be extended and configured in various ways to fit a variety of use cases. You
 will have to configure your instance with how to find your user accounts, where to store and retrieve
 persisted data from and where your end-user interactions happen. The [example](/example) application
 is a good starting point to get an idea of what you should provide.
@@ -10,7 +10,7 @@ is a good starting point to get an idea of what you should provide.
 
 ## Support
 
-If you or your business use oidc-provider, or you need help using/upgrading the module, please consider becoming a [sponsor][support-sponsor] so I can continue maintaining it and adding new features carefree. The only way to guarantee you get feedback from the author & sole maintainer of this module is to support the package through GitHub Sponsors.
+If you or your company use this module, or you need help using/upgrading the module, please consider becoming a [sponsor][support-sponsor] so I can continue maintaining it and adding new features carefree. The only way to guarantee you get feedback from the author & sole maintainer of this module is to support the package through GitHub Sponsors.
 
 <br>
 
@@ -69,7 +69,7 @@ const server = oidc.listen(3000, () => {
 
 ## Accounts
 
-oidc-provider needs to be able to find an account and once found the account needs to have an
+This module needs to be able to find an account and once found the account needs to have an
 `accountId` property as well as `claims()` function returning an object with claims that correspond
 to the claims your issuer supports. Tell oidc-provider how to find your account by an ID.
 `#claims()` can also return a Promise later resolved / rejected.
@@ -88,7 +88,7 @@ const oidc = new Provider('http://localhost:3000', {
 
 ## User flows
 Since oidc-provider only comes with feature-less views and interaction handlers it is up to you to fill
-those in, here is how oidc-provider allows you to do so:
+those in, here is how this module allows you to do so:
 
 When oidc-provider cannot fulfill the authorization request for any of the possible reasons (missing
 user session, requested ACR not fulfilled, prompt requested, ...) it will resolve the 
