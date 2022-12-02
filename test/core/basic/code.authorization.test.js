@@ -510,7 +510,7 @@ describe('BASIC code', () => {
             .expect(() => {
               expect(spy.calledOnce).to.be.true;
             })
-            .expect(auth.validatePresence(['error', 'error_description', 'state']))
+            .expect(auth.validatePresence(['error', 'state']))
             .expect(auth.validateState)
             .expect(auth.validateClientLocation)
             .expect(auth.validateError(`${param}_not_supported`));

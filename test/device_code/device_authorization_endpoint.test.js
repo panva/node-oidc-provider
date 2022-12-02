@@ -90,7 +90,6 @@ describe('device_authorization_endpoint', () => {
           })
           .expect({
             error: `${param}_not_supported`,
-            error_description: `${param} parameter provided but not supported`,
           });
       });
     });

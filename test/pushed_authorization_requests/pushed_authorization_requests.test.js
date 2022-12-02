@@ -57,7 +57,6 @@ describe('Pushed Request Object', () => {
               .expect(400)
               .expect({
                 error: 'request_not_supported',
-                error_description: 'request parameter provided but not supported',
               });
           });
         });
@@ -123,8 +122,7 @@ describe('Pushed Request Object', () => {
                 })
                 .expect(400)
                 .expect({
-                  error: 'invalid_request',
-                  error_description: '`request_uri` parameter must not be used at the pushed_authorization_request_endpoint',
+                  error: 'request_uri_not_supported',
                 });
             });
 

@@ -939,10 +939,6 @@ describe('request parameter features', () => {
           .expect(() => {
             expect(spy.calledOnce).to.be.true;
             expect(spy.args[0][1]).to.have.property('message', 'registration_not_supported');
-            expect(spy.args[0][1]).to.have.property(
-              'error_description',
-              'registration parameter provided but not supported',
-            );
           }));
       });
 

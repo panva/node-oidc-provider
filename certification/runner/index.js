@@ -58,6 +58,10 @@ switch (PLAN_NAME) {
     VARIANT.server_metadata = 'discovery';
     VARIANT.client_registration = 'dynamic_client';
     break;
+  case 'fapi2-message-signing-id1-test-plan':
+    VARIANT.fapi_request_method = 'signed_non_repudiation';
+    VARIANT.fapi_response_mode = 'jarm';
+    break;
   default:
     break;
 }
@@ -69,21 +73,36 @@ if ('alias' in configuration) {
   configuration.alias = `${configuration.alias}-${Object.values(VARIANT).sort().join('-')}`;
 }
 
+function removeOpenidScope(config) {
+  for (const client of [config.client, config.client2]) {
+    const scope = new Set(client.scope.split(' '));
+    scope.delete('openid');
+    // eslint-disable-next-line no-param-reassign
+    client.scope = [...scope].join(' ');
+  }
+}
+
+const auth = VARIANT.client_auth_type === 'mtls' ? 'mtls' : 'pkjwt';
 let override;
 // eslint-disable-next-line default-case
 switch (PLAN_NAME) {
+  case 'fapi-rw-id2-test-plan':
   case 'fapi1-advanced-final-test-plan': {
-    override = 'fapi1-advanced-final';
-    const auth = VARIANT.client_auth_type === 'mtls' ? 'mtls' : 'pkjwt';
-    configuration.client.client_id = `1.0-final-${auth}-one`;
-    configuration.client2.client_id = `1.0-final-${auth}-two`;
+    const revision = PLAN_NAME.split('-')[2]; // id2 or final
+    override = revision === 'final' ? 'fapi1-advanced-final' : 'fapi-rw-id2';
+    configuration.client.client_id = `1.0-${revision}-${auth}-one`;
+    configuration.client2.client_id = `1.0-${revision}-${auth}-two`;
     break;
   }
-  case 'fapi-rw-id2-test-plan': {
-    override = 'fapi-rw-id2';
-    const auth = VARIANT.client_auth_type === 'mtls' ? 'mtls' : 'pkjwt';
-    configuration.client.client_id = `1.0-id2-${auth}-one`;
-    configuration.client2.client_id = `1.0-id2-${auth}-two`;
+  case 'fapi2-security-profile-id2-test-plan':
+  case 'fapi2-message-signing-id1-test-plan': {
+    override = 'fapi2-security-profile-id2';
+    const spec = PLAN_NAME.split('-').slice(1, 3).join('').replace('-', ''); // securityprofile or messagesigning
+    if (VARIANT.openid === 'plain_oauth') {
+      removeOpenidScope(configuration);
+    }
+    configuration.client.client_id = `2.0-${spec}-${auth}-${VARIANT.sender_constrain}-one`;
+    configuration.client2.client_id = `2.0-${spec}-${auth}-${VARIANT.sender_constrain}-two`;
     break;
   }
 }
@@ -97,6 +116,11 @@ if (override) {
 
 if (VARIANT.client_registration === 'dynamic_client') {
   delete configuration.alias;
+}
+
+if (PLAN_NAME.startsWith('fapi2') && VARIANT.client_auth_type !== 'mtls' && VARIANT.sender_constrain !== 'mtls') {
+  delete configuration.mtls;
+  delete configuration.mtls2;
 }
 
 function summary(prefix, failedTests) {

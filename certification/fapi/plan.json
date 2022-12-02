@@ -6,7 +6,7 @@
     },
     "client": {
         "client_name": "one",
-        "scope": "openid offline_access",
+        "scope": "openid address email phone profile offline_access",
         "jwks": {
             "keys": [
                 {
@@ -37,7 +37,7 @@
     },
     "client2": {
         "client_name": "two",
-        "scope": "openid offline_access",
+        "scope": "openid address email phone profile offline_access",
         "jwks": {
             "keys": [
                 {

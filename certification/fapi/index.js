@@ -8,12 +8,14 @@ import { promisify } from 'node:util';
 import { URL } from 'node:url';
 
 import { dirname } from 'desm';
+import * as jose from 'jose';
 import helmet from 'helmet';
 import { generate } from 'selfsigned';
 
 import Provider, { errors } from '../../lib/index.js'; // from 'oidc-provider';
 import MemoryAdapter from '../../lib/adapters/memory_adapter.js';
 import { stripPrivateJWKFields } from '../../test/keys.js';
+import Account from '../../example/support/account.js';
 
 const __dirname = dirname(import.meta.url);
 const selfsigned = generate();
@@ -48,6 +50,13 @@ function mtlsAuth(metadata, key) {
   }, key);
 }
 
+function dPoP(metadata) {
+  return {
+    ...metadata,
+    dpop_bound_access_tokens: true,
+  };
+}
+
 function mtlsPoP(metadata) {
   return {
     ...metadata,
@@ -72,25 +81,34 @@ function fapi1(metadata) {
   }));
 }
 
+function fapi2(metadata) {
+  return {
+    ...metadata,
+    grant_types: ['authorization_code', 'refresh_token'],
+    response_types: ['code'],
+    require_pushed_authorization_requests: true,
+    redirect_uris: ['https://rp.example.com/cb'],
+  };
+}
+
+const eKey = crypto.randomBytes(32);
+const resource = 'urn:example:resource-endpoint';
+
 const adapter = (name) => {
   if (name === 'Client') {
     const memory = new MemoryAdapter(name);
     const orig = MemoryAdapter.prototype.find;
     memory.find = async function find(id) {
-      const [version, ...rest] = id.split('-');
-
-      let metadata = {
-        cacheBuster: crypto.randomUUID(),
-      };
+      const { 0: version, length, ...rest } = id.split('-');
 
       if (version === '1.0') {
-        const [tag, clientAuth, num, ...empty] = rest;
-        if (empty.length !== 0) {
+        const { 1: revision, 2: clientAuth, 3: num } = rest;
+        if (length !== 4) {
           return orig.call(this, id);
         }
-        metadata = fapi1(metadata);
+        let metadata = fapi1({ client_id: id });
 
-        switch (tag) {
+        switch (revision) {
           case 'final':
             metadata.profile = '1.0 Final';
             break;
@@ -124,7 +142,63 @@ const adapter = (name) => {
             return orig.call(this, id);
         }
 
-        metadata.client_id = id;
+        return metadata;
+      }
+
+      if (version === '2.0') {
+        const {
+          1: spec, 2: clientAuth, 3: constrain, 4: num,
+        } = rest;
+        if (length !== 5) {
+          return orig.call(this, id);
+        }
+        let metadata = fapi2({ client_id: id });
+        metadata.profile = '2.0';
+
+        switch (spec) {
+          case 'securityprofile':
+            break;
+          case 'messagesigning':
+            metadata = jar(metadata);
+            break;
+          default:
+            return orig.call(this, id);
+        }
+
+        let key;
+        switch (num) {
+          case 'one':
+            key = stripPrivateJWKFields(JWK_ONE);
+            break;
+          case 'two':
+            key = stripPrivateJWKFields(JWK_TWO);
+            break;
+          default:
+            return orig.call(this, id);
+        }
+
+        switch (clientAuth) {
+          case 'mtls':
+            metadata = mtlsAuth(metadata, key);
+            break;
+          case 'pkjwt':
+            metadata = pkjwt(metadata, key);
+            break;
+          default:
+            return orig.call(this, id);
+        }
+
+        switch (constrain) {
+          case 'mtls':
+            metadata = mtlsPoP(metadata);
+            break;
+          case 'dpop':
+            metadata = dPoP(metadata);
+            break;
+          default:
+            return orig.call(this, id);
+        }
+
         return metadata;
       }
 
@@ -134,6 +208,42 @@ const adapter = (name) => {
     return memory;
   }
 
+  if (name === 'AccessToken') {
+    const accessTokensAdapter = new MemoryAdapter(name);
+    const orig = MemoryAdapter.prototype.find;
+    accessTokensAdapter.find = async function find(id) {
+      try {
+        const verified = await jose.jwtDecrypt(id, eKey, {
+          audience: resource,
+          issuer: ISSUER,
+          typ: 'at+jwt',
+        });
+
+        const {
+          payload: {
+            client_id: clientId,
+            sub: accountId,
+            aud,
+            iss,
+            cnf,
+            ...payload
+          },
+        } = verified;
+
+        return {
+          ...payload,
+          scope: `openid ${payload.scope}`,
+          ...cnf,
+          clientId,
+          accountId,
+        };
+      } catch {
+        return orig.call(this, id);
+      }
+    };
+    return accessTokensAdapter;
+  }
+
   return new MemoryAdapter(name);
 };
 
@@ -141,6 +251,14 @@ const fapi = new Provider(ISSUER, {
   acrValues: ['urn:mace:incommon:iap:silver'],
   routes: {
     userinfo: '/accounts',
+  },
+  findAccount: Account.findAccount,
+  async extraTokenClaims(ctx, token) {
+    if (token.kind === 'AccessToken' && token.resourceServer?.identifier() === resource) {
+      return { grantId: token.grantId };
+    }
+
+    return undefined;
   },
   adapter,
   jwks: {
@@ -160,13 +278,49 @@ const fapi = new Provider(ISSUER, {
       },
     ],
   },
-  scopes: ['openid', 'offline_access'],
+  claims: {
+    address: ['address'],
+    email: ['email', 'email_verified'],
+    phone: ['phone_number', 'phone_number_verified'],
+    profile: ['birthdate', 'family_name', 'gender', 'given_name', 'locale', 'middle_name', 'name',
+      'nickname', 'picture', 'preferred_username', 'profile', 'updated_at', 'website', 'zoneinfo'],
+  },
   clientDefaults: {
     authorization_signed_response_alg: 'PS256',
     id_token_signed_response_alg: 'PS256',
     request_object_signing_alg: 'PS256',
   },
   features: {
+    claimsParameter: {
+      enabled: true,
+    },
+    resourceIndicators: {
+      defaultResource(ctx, client, oneOf) {
+        if (oneOf) return oneOf;
+        return resource;
+      },
+      useGrantedResource() {
+        return true;
+      },
+      getResourceServerInfo(ctx, resourceIndicator) {
+        if (resourceIndicator === resource) {
+          return {
+            scope: 'openid address email phone profile',
+            accessTokenTTL: 2 * 60 * 60, // 2 hours
+            accessTokenFormat: 'jwt',
+            jwt: {
+              sign: false,
+              encrypt: {
+                alg: 'dir',
+                enc: 'A128CBC-HS256',
+                key: eKey,
+              },
+            },
+          };
+        }
+        throw new errors.InvalidTarget();
+      },
+    },
     ciba: {
       enabled: true,
       processLoginHint(ctx, loginHint) {
@@ -191,6 +345,9 @@ const fapi = new Provider(ISSUER, {
 
         return client.profile;
       },
+    },
+    dPoP: {
+      enabled: true,
     },
     mTLS: {
       enabled: true,
@@ -224,6 +381,7 @@ const fapi = new Provider(ISSUER, {
     idTokenSigningAlgValues: ALGS,
     requestObjectSigningAlgValues: ALGS,
     clientAuthSigningAlgValues: ALGS,
+    dPoPSigningAlgValues: ALGS,
     userinfoSigningAlgValues: ALGS,
   },
   extraClientMetadata: {
@@ -246,8 +404,8 @@ Object.defineProperty(fapi.OIDCContext.prototype, 'clientJwtAuthExpectedAudience
 const SUITE_ORIGINS = new Set([
   'https://demo.certification.openid.net',
   'https://localhost:8443',
-  'https://localhost.emobix.co.uk',
   'https://localhost.emobix.co.uk:8443',
+  'https://localhost.emobix.co.uk',
   'https://review-app-dev-branch-1.certification.openid.net',
   'https://review-app-dev-branch-2.certification.openid.net',
   'https://review-app-dev-branch-3.certification.openid.net',
@@ -313,6 +471,10 @@ fapi.use(async (ctx, next) => {
         claims = claims.concat(Object.keys(request.claims.userinfo));
       }
       grant.addOIDCClaims(claims);
+      // eslint-disable-next-line no-restricted-syntax
+      for (const indicator of request.params.resource) {
+        grant.addResourceScope(indicator, request.params.scope);
+      }
       await grant.save();
       await fapi.backchannelResult(request, grant, { acr: 'urn:mace:incommon:iap:silver' }).catch(() => {});
     } else {
@@ -333,9 +495,9 @@ fapi.use(async (ctx, next) => {
   ctx.req.secure = origSecure;
   return next();
 });
+
 fapi.use((ctx, next) => {
-  const id = ctx.get('x-fapi-interaction-id') || crypto.randomUUID();
-  ctx.set('x-fapi-interaction-id', id);
+  ctx.set('x-fapi-interaction-id', ctx.get('x-fapi-interaction-id') || crypto.randomUUID());
   return next();
 });
 

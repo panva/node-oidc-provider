@@ -49,6 +49,8 @@ The following draft specifications are implemented by oidc-provider:
 
 - [JWT Response for OAuth Token Introspection - draft 10][jwt-introspection]
 - [Financial-grade API: Client Initiated Backchannel Authentication Profile (`FAPI-CIBA`) - Implementer's Draft 01][fapi-ciba]
+- [FAPI 2.0 Security Profile (`FAPI 2.0`) - Implementer's Draft 02][fapi2sp-id2]
+- [FAPI 2.0 Message Signing (`FAPI 2.0`) - Implementer's Draft 01][fapi2ms-id1]
 
 Updates to draft specification versions are released as MINOR library versions,
 if you utilize these specification implementations consider using the tilde `~` operator in your
@@ -140,3 +142,5 @@ actions and i.e. emit metrics that react to specific triggers. See the list of a
 [fapi]: https://openid.net/specs/openid-financial-api-part-2-1_0.html
 [ciba]: https://openid.net/specs/openid-client-initiated-backchannel-authentication-core-1_0-final.html
 [fapi-ciba]: https://openid.net/specs/openid-financial-api-ciba-ID1.html
+[fapi2sp-id2]: https://openid.net/specs/fapi-2_0-security-profile-ID2.html
+[fapi2ms-id1]: https://openid.net/specs/fapi-2_0-message-signing-ID1.html

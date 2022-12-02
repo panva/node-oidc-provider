@@ -340,7 +340,6 @@ describe('features.ciba', () => {
               })
               .expect({
                 error: `${param}_not_supported`,
-                error_description: `${param} parameter provided but not supported`,
               });
           });
         });
@@ -534,7 +533,6 @@ describe('features.ciba', () => {
             })
             .expect({
               error: 'request_not_supported',
-              error_description: 'request parameter provided but not supported',
             });
         });
       });
@@ -579,7 +577,6 @@ describe('features.ciba', () => {
               })
               .expect({
                 error: `${param}_not_supported`,
-                error_description: `${param} parameter provided but not supported`,
               });
           });
         });

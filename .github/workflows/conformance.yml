@@ -21,7 +21,6 @@ jobs:
     env:
       SUITE_BASE_URL: https://localhost.emobix.co.uk:8443
       SETUP: ${{ toJSON(matrix.setup) }}
-    continue-on-error: ${{ startsWith(matrix.setup.plan, 'fapi2') }}
     strategy:
       fail-fast: false
       matrix:
@@ -54,6 +53,74 @@ jobs:
 
           # Back-Channel OP
           - plan: oidcc-backchannel-rp-initiated-logout-certification-test-plan
+
+          # FAPI 2.0 Security Profile ID2
+          - plan: fapi2-security-profile-id2-test-plan
+            client_auth_type: private_key_jwt
+            sender_constrain: dpop
+            openid: openid_connect
+          - plan: fapi2-security-profile-id2-test-plan
+            client_auth_type: private_key_jwt
+            sender_constrain: dpop
+            openid: plain_oauth
+          - plan: fapi2-security-profile-id2-test-plan
+            client_auth_type: private_key_jwt
+            sender_constrain: mtls
+            openid: openid_connect
+          - plan: fapi2-security-profile-id2-test-plan
+            client_auth_type: private_key_jwt
+            sender_constrain: mtls
+            openid: plain_oauth
+          - plan: fapi2-security-profile-id2-test-plan
+            client_auth_type: mtls
+            sender_constrain: dpop
+            openid: openid_connect
+          - plan: fapi2-security-profile-id2-test-plan
+            client_auth_type: mtls
+            sender_constrain: dpop
+            openid: plain_oauth
+          - plan: fapi2-security-profile-id2-test-plan
+            client_auth_type: mtls
+            sender_constrain: mtls
+            openid: openid_connect
+          - plan: fapi2-security-profile-id2-test-plan
+            client_auth_type: mtls
+            sender_constrain: mtls
+            openid: plain_oauth
+
+          # FAPI 2.0 Message Signing ID1
+          - plan: fapi2-message-signing-id1-test-plan
+            client_auth_type: private_key_jwt
+            sender_constrain: dpop
+            openid: openid_connect
+          - plan: fapi2-message-signing-id1-test-plan
+            client_auth_type: private_key_jwt
+            sender_constrain: dpop
+            openid: plain_oauth
+          - plan: fapi2-message-signing-id1-test-plan
+            client_auth_type: private_key_jwt
+            sender_constrain: mtls
+            openid: openid_connect
+          - plan: fapi2-message-signing-id1-test-plan
+            client_auth_type: private_key_jwt
+            sender_constrain: mtls
+            openid: plain_oauth
+          - plan: fapi2-message-signing-id1-test-plan
+            client_auth_type: mtls
+            sender_constrain: dpop
+            openid: openid_connect
+          - plan: fapi2-message-signing-id1-test-plan
+            client_auth_type: mtls
+            sender_constrain: dpop
+            openid: plain_oauth
+          - plan: fapi2-message-signing-id1-test-plan
+            client_auth_type: mtls
+            sender_constrain: mtls
+            openid: openid_connect
+          - plan: fapi2-message-signing-id1-test-plan
+            client_auth_type: mtls
+            sender_constrain: mtls
+            openid: plain_oauth
 
           # FAPI 1.0 Advanced (Final)
           - plan: fapi1-advanced-final-test-plan
