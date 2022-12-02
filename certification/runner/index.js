@@ -16,11 +16,51 @@ const {
 assert(SETUP, 'process.env.SETUP missing');
 
 const {
-  configuration: CONFIGURATION,
   plan: PLAN_NAME,
-  skip: SKIP,
   ...VARIANT
 } = JSON.parse(process.env.SETUP);
+
+let SKIP;
+let CONFIGURATION;
+if (PLAN_NAME.startsWith('fapi')) {
+  VARIANT.fapi_profile = 'plain_fapi';
+  CONFIGURATION = './certification/fapi/plan.json';
+} else {
+  CONFIGURATION = './certification/oidc/plan.json';
+}
+
+switch (PLAN_NAME) {
+  case 'oidcc-dynamic-certification-test-plan':
+    SKIP = 'oidcc-server-rotate-keys';
+    break;
+  case 'oidcc-test-plan':
+    SKIP = 'oidcc-server-rotate-keys';
+    VARIANT.client_registration = 'dynamic_client';
+    VARIANT.response_mode = 'default';
+    break;
+  case 'fapi-ciba-id1-test-plan':
+    VARIANT.client_registration = 'dynamic_client';
+    break;
+  case 'oidcc-rp-initiated-logout-certification-test-plan':
+  case 'oidcc-backchannel-rp-initiated-logout-certification-test-plan':
+    VARIANT.client_registration = 'dynamic_client';
+    VARIANT.response_type = 'code';
+    break;
+  case 'oidcc-basic-certification-test-plan':
+    VARIANT.server_metadata = 'discovery';
+    VARIANT.client_registration = 'dynamic_client';
+    break;
+  case 'oidcc-hybrid-certification-test-plan':
+    VARIANT.server_metadata = 'discovery';
+    VARIANT.client_registration = 'dynamic_client';
+    break;
+  case 'oidcc-implicit-certification-test-plan':
+    VARIANT.server_metadata = 'discovery';
+    VARIANT.client_registration = 'dynamic_client';
+    break;
+  default:
+    break;
+}
 
 const configuration = JSON.parse(fs.readFileSync(CONFIGURATION));
 const runner = new API({ baseUrl: SUITE_BASE_URL, bearerToken: SUITE_ACCESS_TOKEN });
