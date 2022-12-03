@@ -43,7 +43,6 @@ Supported Access Token formats:
 
 - Opaque
 - [JSON Web Token (JWT) Profile for OAuth 2.0 Access Tokens][jwt-at]
-- [Platform-Agnostic Security Tokens (PASETO)][paseto-at]
 
 The following draft specifications are implemented by oidc-provider:
 
@@ -143,7 +142,6 @@ actions and i.e. emit metrics that react to specific triggers. See the list of a
 [resource-indicators]: https://www.rfc-editor.org/rfc/rfc8707.html
 [jarm]: https://openid.net/specs/oauth-v2-jarm.html
 [jwt-at]: https://www.rfc-editor.org/rfc/rfc9068.html
-[paseto-at]: https://paseto.io
 [support-sponsor]: https://github.com/sponsors/panva
 [par]: https://www.rfc-editor.org/rfc/rfc9126.html
 [rpinitiated-logout]: https://openid.net/specs/openid-connect-rpinitiated-1_0-final.html
