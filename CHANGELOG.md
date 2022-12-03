@@ -2,6 +2,90 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [8.0.0](https://github.com/panva/node-oidc-provider/compare/v7.14.3...v8.0.0) (2022-12-03)
+
+
+### ⚠ BREAKING CHANGES
+
+* Default clock skew tolerance is now set to 15 seconds (previously 0 seconds tolerance). This can be reverted using the `clockTolerance` configuration option.
+* The userinfo endpoint will no longer echo back `x-fapi-interaction-id` headers. This can be reverted using a custom pre-middleware.
+* `request_uri` parameter is no longer supported at the Device Authorization Endpoint.
+* The combination of FAPI and CIBA features no longer forces CIBA clients to use JAR. To continue conforming to a given FAPI CIBA profile that requires the use of JAR either set `features.requestObjects.requireSignedRequestObject` to `true` as a global policy or set `require_signed_request_object` or `backchannel_authentication_request_signing_alg` client metadata.
+* PAR no longer automatically enables the support for JAR. To support PAR with JAR configure both `features.pushedAuthorizationRequests` and `features.requestObjects.request`.
+* CIBA no longer automatically enables the support for JAR. To support CIBA with JAR configure both `features.ciba` and `features.requestObjects.request`.
+* Pushed Authorization Requests (PAR) are now enabled by default. This can be reverted using the `features.pushedAuthorizationRequests.enabled` configuration option.
+* Completely removed v6.x way of setting access token formats.
+* `expiresWithSession()` for access tokens issued by the authorization endpoint will now only be invoked for opaque format access tokens.
+* Default allowed DPoP signing algorithms are now just ES256 and EdDSA. RSA algorithms not allowed by default. This can be reverted using the `enabledJWA.dPoPSigningAlgValues` configuration option.
+* Omitting a redirect_uri parameter when a single one is registered is now enabled by default (again). This can be reverted using the `allowOmittingSingleRegisteredRedirectUri` configuration option.
+* `features.fapi.profile` is now a required configuration option when `features.fapi.enabled` is `true`.
+* `id_token_signed_response_alg` now must be set when `id_token_encrypted_response_alg` is also set on a client.
+* `userinfo_signed_response_alg` now must be set when `userinfo_encrypted_response_alg` is also set on a client.
+* `introspection_signed_response_alg` now must be set when `introspection_encrypted_response_alg` is also set on a client.
+* `authorization_signed_response_alg` now must be set when `authorization_encrypted_response_alg` is also set on a client.
+* The RSA1_5 JWE Key Management Algorithm, which was previously disabled by default, is now completely removed.
+* `request_uri` parameter support is now disabled by default. This can be reverted using the `features.requestObjects.requestUri` configuration option.
+* `httpOptions` return property `lookup` was renamed to `dnsLookup`.
+* `httpOptions` return property `timeout` was removed, return an `AbortSignal` instance as `signal` property instead.
+* `oidc-provider` is now an ESM-only module, it must now be imported using the `import` declaration or the `import()` syntax, the `Provider` constructor is the module's default export, the `errors` and `interactionPolicy` exports are the package's named exports. There is no `Provider` named export.
+* `httpOptions` no longer defaults to using the npm module `cacheable-lookup` as its `dnsLookup` option. It defaults to `node:dns` module's `lookup` export instead.
+* PASETO Access Token format support was removed.
+* Removed support for Node.js 12.
+* Removed support for Node.js 14.
+* Removed support for Node.js 16.
+* Node.js LTS 18 (^18.12.0) is now required.
+* Default Authorization Code duration is now 60 seconds instead of 10 minutes. This can be reverted using the `ttl.AuthorizationCode` configuration option.
+* Request Object use now defaults to its stricter definition from RFC 9101 rather than OIDC Core 1.0. This can be reverted using the `features.requestObjects.mode` configuration option.
+* The "none" JWS algorithm, which was previously disabled by default, is now completely removed.
+* The PBKDF2 based JWE Key Management Algorithms, which were previously disabled by default, are now completely removed.
+* The client registration management update action now rotates registration access tokens by default. This can be reverted using the `features.registrationManagement.rotateRegistrationAccessToken` configuration option.
+* It is no longer possible to pass Bearer tokens using the `access_token` query string parameter. This can be reverted using the `acceptQueryParamAccessTokens` configuration option.
+* The `tokenEndpointAuthMethods` configuration method was renamed to `clientAuthMethods`.
+* The `enabledJWA.tokenEndpointAuthSigningAlgValues` configuration method was renamed to `enabledJWA.clientAuthSigningAlgValues`.
+* The non-standard `introspection_endpoint_auth_method`, and `introspection_endpoint_auth_signing_alg` client metadata properties were removed. The client's `token_endpoint_auth_method`, and `token_endpoint_auth_signing_alg` properties are now used as the only indication of how a client must authenticate at the introspection endpoint. The accompanying JWA and authentication methods configuration properties were also removed.
+* The non-standard `revocation_endpoint_auth_method`, and `revocation_endpoint_auth_signing_alg` client metadata properties were removed. The client's `token_endpoint_auth_method`, and `token_endpoint_auth_signing_alg` properties are now used as the only indication of how a client must authenticate at the revocation endpoint. The accompanying JWA and authentication methods configuration properties were also removed.
+
+### Features
+
+* add UnmetAuthenticationRequirements error ([3f6684a](https://github.com/panva/node-oidc-provider/commit/3f6684a259878eeddc8d5c90fa84635c9e38961b))
+* bump DPoP to draft-11 ([917507f](https://github.com/panva/node-oidc-provider/commit/917507fe66e4edf7185886c09e1bac4a714117b6))
+* support DPoP nonces ([8d82988](https://github.com/panva/node-oidc-provider/commit/8d82988b0834d631fda17200481883301b993984))
+
+
+### Performance
+
+* replace native asserts ([1f77781](https://github.com/panva/node-oidc-provider/commit/1f777812584dc9500993a9d100d8aec621f2136e)), closes [#1204](https://github.com/panva/node-oidc-provider/issues/1204) [#1205](https://github.com/panva/node-oidc-provider/issues/1205)
+
+
+### Refactor
+
+* change default on allowOmittingSingleRegisteredRedirectUri ([d41bb0f](https://github.com/panva/node-oidc-provider/commit/d41bb0ff06b19d81f64682ffedecc87a7c34e3a3))
+* check request_uri_not_supported early ([57b39a2](https://github.com/panva/node-oidc-provider/commit/57b39a28dfcea9f362cd64d1c663ed151240e6a1))
+* CIBA and PAR do not automatically turn on JAR ([089fa43](https://github.com/panva/node-oidc-provider/commit/089fa43e62ee2c1d3df4a21e16650d2e501fd0d3))
+* Completely removed v6.x way of setting access token formats. ([a2cf235](https://github.com/panva/node-oidc-provider/commit/a2cf23527f00858c92a00284cc5ab857b03029cb))
+* default code ttl down from 10 minutes down to 1 minute ([f770e2d](https://github.com/panva/node-oidc-provider/commit/f770e2dadb4cdd09261a3953c6f1c15cef4001ac))
+* default dPoPSigningAlgValues changed ([9859969](https://github.com/panva/node-oidc-provider/commit/98599690263144ee7f96922b481286e04d30a6be))
+* default JAR mode is now strict instead of lax ([cef63b6](https://github.com/panva/node-oidc-provider/commit/cef63b6a75abee6ea934daf62299b5457668b634))
+* disable query string bearer by default ([059557b](https://github.com/panva/node-oidc-provider/commit/059557b532de7e8a0734f73c97db2f2eaa56d189))
+* disable request_uri support by default ([3575584](https://github.com/panva/node-oidc-provider/commit/3575584ca6a33e97a1288af6fba3669c21ad65ce))
+* enable PAR by default ([4272027](https://github.com/panva/node-oidc-provider/commit/42720276fe14c4420ec1ee2f9925d2b6123d936d))
+* expiresWithSession on authorization endpoint access tokens ([cb67083](https://github.com/panva/node-oidc-provider/commit/cb670834c8e892e3b25345cc92d207bafc12c8f7))
+* oidc-provider is now an ESM-only module ([3c5ebe1](https://github.com/panva/node-oidc-provider/commit/3c5ebe1070d92c40143b7a7874c0d0c454a2231e))
+* PBKDF2 JWE encryption algorithms are no longer supported ([868ab2f](https://github.com/panva/node-oidc-provider/commit/868ab2f15f48da9bd104cea5e8e85916d079cf8f))
+* redo fapi profile checks, remove x-fapi-headers nonsense ([7cf031a](https://github.com/panva/node-oidc-provider/commit/7cf031a6c1dc554ddff040c3ceaf33d06f61a98b))
+* remove default from FAPI profile configuration ([0f93b8c](https://github.com/panva/node-oidc-provider/commit/0f93b8c6c354fbe4271b7d9cba707f4041fd99d7))
+* remove introspection and revocation client metadata ([a6433d0](https://github.com/panva/node-oidc-provider/commit/a6433d04c16a22e8d664dada2226d7f5124605e4))
+* removed default outgoing cacheable-lookup use ([7c10920](https://github.com/panva/node-oidc-provider/commit/7c109208e7363db195527a26d08e172fcf0d4a04))
+* removed optional "none" JWS algorithm support ([e654fe6](https://github.com/panva/node-oidc-provider/commit/e654fe6e1ff1d6c72113a240ab15b77a34058790))
+* removed PASETO access token format support ([079e2f2](https://github.com/panva/node-oidc-provider/commit/079e2f27bc66efcf4910672de815dc22abe25ec6))
+* removed support for issuing `"cty": "json"` JWEs ([b4b837b](https://github.com/panva/node-oidc-provider/commit/b4b837b4642f3f7bde49e73b43f63ac711935079))
+* renamed client auth related configuration ([b8e8ce9](https://github.com/panva/node-oidc-provider/commit/b8e8ce9a8844db732b49a9e1e949045565561087))
+* require Node.js LTS 18 ([ff26cf6](https://github.com/panva/node-oidc-provider/commit/ff26cf6890561c1a0fe677c4466f978c506e20de))
+* rotated registration management access tokens by default ([2eb5c63](https://github.com/panva/node-oidc-provider/commit/2eb5c633add5c45326b04b846f96e370da9e385c))
+* RSA1_5 JWE encryption algorithm is no longer supported ([a967a4e](https://github.com/panva/node-oidc-provider/commit/a967a4eba384ae2f61acd18a959b8e9b31acf32d))
+* set default clock skew tolerance to 15 seconds ([42c00da](https://github.com/panva/node-oidc-provider/commit/42c00dabccd950990015ce48ed3f9a7e60594abc))
+* update http request options ([2fd5eda](https://github.com/panva/node-oidc-provider/commit/2fd5edafeac7c7b839bcc4c675c062310cc1caf5))
+
 ## [7.14.3](https://github.com/panva/node-oidc-provider/compare/v7.14.2...v7.14.3) (2022-12-01)
 
 
