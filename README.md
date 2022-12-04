@@ -61,8 +61,8 @@ your CI.
 Filip Skokan has [certified][openid-certified-link] that [oidc-provider][npm-url]
 conforms to the following profiles of the OpenID Connect™ protocol
 
-- Basic OP, Implicit OP, Hybrid OP, Config OP, Dynamic OP, Form Post OP, 3rd Party-Init OP
-- Back-Channel OP, RP-Initiated OP
+- Basic, Implicit, Hybrid, Config, Dynamic, Form Post, and 3rd Party-Init OP profiles
+- Back-Channel Logout and RP-Initiated Logout
 - FAPI 1.0 Advanced (w/ Private Key JWT, MTLS, JARM, PAR, CIBA)
 
 ## Sponsor
