@@ -7,7 +7,6 @@ additional features and standards implemented.
 
 - [Implemented specs & features](#implemented-specs--features)
 - [Certification](#certification)
-- [Get started](#get-started)
 - [Documentation & Configuration](#documentation--configuration)
 - [Recipes](#recipes)
 - [Events](#events)
