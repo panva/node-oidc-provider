@@ -623,7 +623,7 @@ new Provider('http://localhost:3000', {
 
 ### features.backchannelLogout
 
-[Back-Channel Logout 1.0](https://openid.net/specs/openid-connect-backchannel-1_0-final.html)  
+[`OIDC Back-Channel Logout 1.0`](https://openid.net/specs/openid-connect-backchannel-1_0-final.html)  
 
 Enables Back-Channel Logout features.  
 
@@ -637,9 +637,9 @@ _**default value**_:
 
 ### features.ciba
 
-[OpenID Connect Client Initiated Backchannel Authentication Flow - Core 1.0](https://openid.net/specs/openid-client-initiated-backchannel-authentication-core-1_0-final.html)  
+[OIDC Client Initiated Backchannel Authentication Flow (`CIBA`)](https://openid.net/specs/openid-client-initiated-backchannel-authentication-core-1_0-final.html)  
 
-Enables Core CIBA Flow, when combined with `features.fapi` and `features.requestObjects.request` enables [Financial-grade API: Client Initiated Backchannel Authentication Profile - Implementer's Draft 01](https://openid.net/specs/openid-financial-api-ciba-ID1.html) as well.   
+Enables Core `CIBA` Flow, when combined with `features.fapi` and `features.requestObjects.request` enables [Financial-grade API: Client Initiated Backchannel Authentication Profile - Implementer's Draft 01](https://openid.net/specs/openid-financial-api-ciba-ID1.html) as well.   
   
 
 
@@ -682,7 +682,7 @@ _**default value**_:
 Helper function used to process the login_hint parameter and return the accountId value to use for processsing the request.   
   
 
-_**recommendation**_: Use `throw errors.InvalidRequest('validation error message')` when login_hint is invalid.  
+_**recommendation**_: Use `throw new errors.InvalidRequest('validation error message')` when login_hint is invalid.  
 
 _**recommendation**_: Use `return undefined` or when you can't determine the accountId from the login_hint.  
 
@@ -701,9 +701,9 @@ async function processLoginHint(ctx, loginHint) {
 Helper function used to process the login_hint_token parameter and return the accountId value to use for processsing the request.   
   
 
-_**recommendation**_: Use `throw errors.ExpiredLoginHintToken('validation error message')` when login_hint_token is expired.  
+_**recommendation**_: Use `throw new errors.ExpiredLoginHintToken('validation error message')` when login_hint_token is expired.  
 
-_**recommendation**_: Use `throw errors.InvalidRequest('validation error message')` when login_hint_token is invalid.  
+_**recommendation**_: Use `throw new errors.InvalidRequest('validation error message')` when login_hint_token is invalid.  
 
 _**recommendation**_: Use `return undefined` or when you can't determine the accountId from the login_hint.  
 
@@ -759,7 +759,7 @@ await provider.backchannelResult(...);
 Helper function used to process the binding_message parameter and throw if its not following the authorization server's policy.   
   
 
-_**recommendation**_: Use `throw errors.InvalidBindingMessage('validation error message')` when the binding_message is invalid.  
+_**recommendation**_: Use `throw new errors.InvalidBindingMessage('validation error message')` when the binding_message is invalid.  
 
 _**recommendation**_: Use `return undefined` when a binding_message isn't required and wasn't provided.  
 
@@ -780,7 +780,7 @@ async function validateBindingMessage(ctx, bindingMessage) {
 Helper function used to process the request_context parameter and throw if its not following the authorization server's policy.   
   
 
-_**recommendation**_: Use `throw errors.InvalidRequest('validation error message')` when the request_context is required by policy and missing or invalid.  
+_**recommendation**_: Use `throw new errors.InvalidRequest('validation error message')` when the request_context is required by policy and missing or invalid.  
 
 _**recommendation**_: Use `return undefined` when a request_context isn't required and wasn't provided.  
 
@@ -799,9 +799,9 @@ async function validateRequestContext(ctx, requestContext) {
 Helper function used to verify the user_code parameter value is present when required and verify its value.   
   
 
-_**recommendation**_: Use `throw errors.MissingUserCode('validation error message')` when user_code should have been provided but wasn't.  
+_**recommendation**_: Use `throw new errors.MissingUserCode('validation error message')` when user_code should have been provided but wasn't.  
 
-_**recommendation**_: Use `throw errors.InvalidUserCode('validation error message')` when the provided user_code is invalid.  
+_**recommendation**_: Use `throw new errors.InvalidUserCode('validation error message')` when the provided user_code is invalid.  
 
 _**recommendation**_: Use `return undefined` when no user_code was provided and isn't required.  
 
@@ -820,7 +820,7 @@ async function verifyUserCode(ctx, account, userCode) {
 
 ### features.claimsParameter
 
-[Core 1.0](https://openid.net/specs/openid-connect-core-1_0.html#ClaimsParameter) - Requesting Claims using the "claims" Request Parameter  
+[`OIDC Core 1.0`](https://openid.net/specs/openid-connect-core-1_0.html#ClaimsParameter) - Requesting Claims using the "claims" Request Parameter  
 
 Enables the use and validations of `claims` parameter as described in the specification.   
   
@@ -835,7 +835,7 @@ _**default value**_:
 
 ### features.clientCredentials
 
-[RFC6749](https://www.rfc-editor.org/rfc/rfc6749.html#section-1.3.4) - Client Credentials  
+[`RFC6749`](https://www.rfc-editor.org/rfc/rfc6749.html#section-1.3.4) - Client Credentials  
 
 Enables `grant_type=client_credentials` to be used on the token endpoint.  
 
@@ -849,7 +849,7 @@ _**default value**_:
 
 ### features.dPoP
 
-[draft-ietf-oauth-dpop-11](https://tools.ietf.org/html/draft-ietf-oauth-dpop-11) - OAuth 2.0 Demonstration of Proof-of-Possession at the Application Layer (DPoP)  
+[draft-ietf-oauth-dpop-11](https://tools.ietf.org/html/draft-ietf-oauth-dpop-11) - OAuth 2.0 Demonstration of Proof-of-Possession at the Application Layer (`DPoP`)  
 
 Enables `DPoP` - mechanism for sender-constraining tokens via a proof-of-possession mechanism on the application level. Browser DPoP proof generation [here](https://www.npmjs.com/package/dpop).   
   
@@ -909,7 +909,7 @@ _**default value**_:
 
 ### features.deviceFlow
 
-[RFC8628](https://www.rfc-editor.org/rfc/rfc8628.html) - OAuth 2.0 Device Authorization Grant (Device Flow)  
+[`RFC8628`](https://www.rfc-editor.org/rfc/rfc8628.html) - OAuth 2.0 Device Authorization Grant (`Device Flow`)  
 
 Enables Device Authorization Grant  
 
@@ -1095,7 +1095,7 @@ _**default value**_:
 
 ### features.fapi
 
-Financial-grade API Security Profile  
+Financial-grade API Security Profile (`FAPI`)  
 
 Enables extra Authorization Server behaviours defined in FAPI that cannot be achieved by other configuration options.  
 
@@ -1113,10 +1113,10 @@ _**default value**_:
 
 #### profile
 
-The specific profile of FAPI to enable. Supported values are:   
+The specific profile of `FAPI` to enable. Supported values are:   
  - '1.0 Final' Enables behaviours from [Financial-grade API Security Profile 1.0 - Part 2: Advanced](https://openid.net/specs/openid-financial-api-part-2-1_0.html)
  - '1.0 ID2' Enables behaviours from [Financial-grade API - Part 2: Read and Write API Security Profile - Implementer's Draft 02](https://openid.net/specs/openid-financial-api-part-2-ID2.html)
- - Function returning one of the other supported values, or undefined if FAPI behaviours are to be ignored. The function is invoked with two arguments `(ctx, client)` and serves the purpose of allowing the used profile to be context-specific.  
+ - Function returning one of the other supported values, or undefined if `FAPI` behaviours are to be ignored. The function is invoked with two arguments `(ctx, client)` and serves the purpose of allowing the used profile to be context-specific.  
 
 
 _**default value**_:
@@ -1128,7 +1128,7 @@ undefined
 
 ### features.introspection
 
-[RFC7662](https://www.rfc-editor.org/rfc/rfc7662.html) - OAuth 2.0 Token Introspection  
+[`RFC7662`](https://www.rfc-editor.org/rfc/rfc7662.html) - OAuth 2.0 Token Introspection  
 
 Enables Token Introspection for:
  - opaque access tokens
@@ -1184,7 +1184,7 @@ _**default value**_:
 
 ### features.jwtResponseModes
 
-[JWT Secured Authorization Response Mode (JARM)](https://openid.net/specs/oauth-v2-jarm.html)  
+[JWT Secured Authorization Response Mode (`JARM`)](https://openid.net/specs/oauth-v2-jarm.html)  
 
 Enables JWT Secured Authorization Responses  
 
@@ -1198,7 +1198,7 @@ _**default value**_:
 
 ### features.jwtUserinfo
 
-[Core 1.0](https://openid.net/specs/openid-connect-core-1_0.html#UserInfo) - JWT UserInfo Endpoint Responses  
+[`OIDC Core 1.0`](https://openid.net/specs/openid-connect-core-1_0.html#UserInfo) - JWT UserInfo Endpoint Responses  
 
 Enables the userinfo to optionally return signed and/or encrypted JWTs, also enables the relevant client metadata for setting up signing and/or encryption.  
 
@@ -1212,7 +1212,7 @@ _**default value**_:
 
 ### features.mTLS
 
-[RFC8705](https://www.rfc-editor.org/rfc/rfc8705.html) - OAuth 2.0 Mutual TLS Client Authentication and Certificate Bound Access Tokens (MTLS)  
+[`RFC8705`](https://www.rfc-editor.org/rfc/rfc8705.html) - OAuth 2.0 Mutual TLS Client Authentication and Certificate Bound Access Tokens (`MTLS`)  
 
 Enables specific features from the Mutual TLS specification. The three main features have their own specific setting in this feature's configuration object and you must provide functions for resolving some of the functions which are deployment-specific.   
   
@@ -1348,7 +1348,7 @@ false
 
 ### features.pushedAuthorizationRequests
 
-[RFC9126](https://www.rfc-editor.org/rfc/rfc9126.html) - OAuth 2.0 Pushed Authorization Requests (PAR)  
+[`RFC9126`](https://www.rfc-editor.org/rfc/rfc9126.html) - OAuth 2.0 Pushed Authorization Requests (`PAR`)  
 
 Enables the use of `pushed_authorization_request_endpoint` defined by the Pushed Authorization Requests RFC.  
 
@@ -1366,7 +1366,7 @@ _**default value**_:
 
 #### requirePushedAuthorizationRequests
 
-Makes the use of PAR required for all authorization requests as an OP policy.  
+Makes the use of `PAR` required for all authorization requests as an OP policy.  
 
 
 _**default value**_:
@@ -1378,7 +1378,7 @@ false
 
 ### features.registration
 
-[Dynamic Client Registration 1.0](https://openid.net/specs/openid-connect-registration-1_0.html)  
+[`Dynamic Client Registration 1.0`](https://openid.net/specs/openid-connect-registration-1_0.html) and [`RFC7591` - OAuth 2.0 Dynamic Client Registration Protocol](https://www.rfc-editor.org/rfc/rfc7591.html)  
 
 Enables Dynamic Client Registration.  
 
@@ -1578,7 +1578,7 @@ true
 
 ### features.requestObjects
 
-[Core 1.0](https://openid.net/specs/openid-connect-core-1_0.html#RequestObject) and [JWT Secured Authorization Request (JAR)](https://www.rfc-editor.org/rfc/rfc9101.html) - Request Object  
+[`OIDC Core 1.0`](https://openid.net/specs/openid-connect-core-1_0.html#RequestObject) and [JWT Secured Authorization Request (`JAR`)](https://www.rfc-editor.org/rfc/rfc9101.html) - Request Object  
 
 Enables the use and validations of the `request` and/or `request_uri` parameters.  
 
@@ -1601,8 +1601,8 @@ _**default value**_:
 
 defines the provider's strategy when it comes to using regular OAuth 2.0 parameters that are present. Parameters inside the Request Object are ALWAYS used, this option controls whether to combine those with the regular ones or not.   
  Supported values are:   
- - 'lax' (default) This is the behaviour expected by OIDC Core 1.0 - all parameters that are not present in the Resource Object are used when resolving the authorization request.
- - 'strict' This is the behaviour expected by FAPI or JAR, all parameters outside of the Request Object are ignored. For FAPI and FAPI-CIBA this value is enforced.   
+ - 'lax' This is the behaviour expected by `OIDC Core 1.0` - all parameters that are not present in the Resource Object are used when resolving the authorization request.
+ - 'strict' (default) All parameters outside of the Request Object are ignored. For `PAR`, `FAPI`, and `CIBA` this value is enforced.   
   
 
 
@@ -1655,7 +1655,7 @@ true
 
 ### features.resourceIndicators
 
-[RFC8707](https://www.rfc-editor.org/rfc/rfc8707.html) - Resource Indicators for OAuth 2.0  
+[`RFC8707`](https://www.rfc-editor.org/rfc/rfc8707.html) - Resource Indicators for OAuth 2.0  
 
 Enables the use of `resource` parameter for the authorization and token endpoints to enable issuing Access Tokens for Resource Servers (APIs).   
  - Multiple resource parameters may be present during Authorization Code Flow, Device Authorization Grant, and Backchannel Authentication Requests, but only a single audience for an Access Token is permitted.
@@ -1821,7 +1821,7 @@ async function useGrantedResource(ctx, model) {
 
 ### features.revocation
 
-[RFC7009](https://www.rfc-editor.org/rfc/rfc7009.html) - OAuth 2.0 Token Revocation  
+[`RFC7009`](https://www.rfc-editor.org/rfc/rfc7009.html) - OAuth 2.0 Token Revocation  
 
 Enables Token Revocation for:
  - opaque access tokens
@@ -1838,7 +1838,7 @@ _**default value**_:
 
 ### features.rpInitiatedLogout
 
-[RP-Initiated Logout 1.0](https://openid.net/specs/openid-connect-rpinitiated-1_0-final.html)  
+[`OIDC RP-Initiated Logout 1.0`](https://openid.net/specs/openid-connect-rpinitiated-1_0-final.html)  
 
 Enables RP-Initiated Logout features  
 
@@ -1915,7 +1915,7 @@ async function postLogoutSuccessSource(ctx) {
 
 ### features.userinfo
 
-[Core 1.0](https://openid.net/specs/openid-connect-core-1_0.html#UserInfo) - UserInfo Endpoint  
+[`OIDC Core 1.0`](https://openid.net/specs/openid-connect-core-1_0.html#UserInfo) - UserInfo Endpoint  
 
 Enables the userinfo endpoint. Its use requires an opaque Access Token with at least `openid` scope that's without a Resource Server audience.  
 
@@ -2096,7 +2096,7 @@ _**default value**_:
 
 ID Token only contains End-User claims when the requested `response_type` is `id_token`  
 
-[Core 1.0 - Requesting Claims using Scope Values](https://openid.net/specs/openid-connect-core-1_0.html#ScopeClaims) defines that claims requested using the `scope` parameter are only returned from the UserInfo Endpoint unless the `response_type` is `id_token`.   
+[`OIDC Core 1.0` - Requesting Claims using Scope Values](https://openid.net/specs/openid-connect-core-1_0.html#ScopeClaims) defines that claims requested using the `scope` parameter are only returned from the UserInfo Endpoint unless the `response_type` is `id_token`.   
  Despite of this configuration the ID Token always includes claims requested using the `scope` parameter when the userinfo endpoint is disabled, or when issuing an Access Token not applicable for access to the userinfo endpoint.   
   
 
@@ -2680,7 +2680,7 @@ async function loadExistingGrant(ctx) {
 
 ### pairwiseIdentifier
 
-Function used by the OP when resolving pairwise ID Token and Userinfo sub claim values. See [Core 1.0](https://openid.net/specs/openid-connect-core-1_0.html#PairwiseAlg)  
+Function used by the OP when resolving pairwise ID Token and Userinfo sub claim values. See [`OIDC Core 1.0`](https://openid.net/specs/openid-connect-core-1_0.html#PairwiseAlg)  
 
 _**recommendation**_: Since this might be called several times in one request with the same arguments consider using memoization or otherwise caching the result based on account and client ids.  
 
@@ -2698,9 +2698,9 @@ async function pairwiseIdentifier(ctx, accountId, client) {
 
 ### pkce
 
-[RFC7636 - Proof Key for Code Exchange (PKCE)](https://www.rfc-editor.org/rfc/rfc7636.html)  
+[`RFC7636` - Proof Key for Code Exchange (`PKCE`)](https://www.rfc-editor.org/rfc/rfc7636.html)  
 
-PKCE configuration such as available methods and policy check on required use of PKCE  
+`PKCE` configuration such as available methods and policy check on required use of `PKCE`  
 
 
 ### pkce.methods
@@ -2719,8 +2719,8 @@ _**default value**_:
 
 ### pkce.required
 
-Configures if and when the OP requires clients to use PKCE. This helper is called whenever an authorization request lacks the code_challenge parameter. Return
- - `false` to allow the request to continue without PKCE
+Configures if and when the OP requires clients to use `PKCE`. This helper is called whenever an authorization request lacks the code_challenge parameter. Return
+ - `false` to allow the request to continue without `PKCE`
  - `true` to abort the request  
 
 
@@ -2773,7 +2773,7 @@ _**default value**_:
 <a id="response-types-supported-values-list"></a><details><summary>(Click to expand) Supported values list</summary><br>
 
 
-These are values defined in [Core 1.0](https://openid.net/specs/openid-connect-core-1_0.html#Authentication) and [OAuth 2.0 Multiple Response Type Encoding Practices](https://openid.net/specs/oauth-v2-multiple-response-types-1_0.html)
+These are values defined in [`OIDC Core 1.0`](https://openid.net/specs/openid-connect-core-1_0.html#Authentication) and [OAuth 2.0 Multiple Response Type Encoding Practices](https://openid.net/specs/oauth-v2-multiple-response-types-1_0.html)
   
 
 ```js
@@ -2970,12 +2970,10 @@ Configure `ttl` for a given token type with a function like so, this must return
 
 Fine-tune the algorithms your provider will support by declaring algorithm values for each respective JWA use  
 
-_**recommendation**_: Only allow JWA algs that are necessary. The current defaults are based on recommendations from the [JWA specification](https://www.rfc-editor.org/rfc/rfc7518.html) + enables RSASSA-PSS based on current guidance in FAPI. "none" JWT algs are disabled by default but available if you need them.  
-
 
 ### enabledJWA.authorizationEncryptionAlgValues
 
-JWE "alg" Algorithm values the provider supports for JWT Authorization response (JARM) encryption   
+JWE "alg" Algorithm values the provider supports for JWT Authorization response (`JARM`) encryption   
   
 
 
@@ -3009,7 +3007,7 @@ _**default value**_:
 
 ### enabledJWA.authorizationEncryptionEncValues
 
-JWE "enc" Content Encryption Algorithm values the provider supports to encrypt JWT Authorization Responses (JARM) with   
+JWE "enc" Content Encryption Algorithm values the provider supports to encrypt JWT Authorization Responses (`JARM`) with   
   
 
 
@@ -3034,7 +3032,7 @@ _**default value**_:
 
 ### enabledJWA.authorizationSigningAlgValues
 
-JWS "alg" Algorithm values the provider supports to sign JWT Authorization Responses (JARM) with   
+JWS "alg" Algorithm values the provider supports to sign JWT Authorization Responses (`JARM`) with   
   
 
 
@@ -3295,7 +3293,7 @@ _**default value**_:
 
 ### enabledJWA.requestObjectEncryptionAlgValues
 
-JWE "alg" Algorithm values the provider supports to receive encrypted Request Objects (JAR) with   
+JWE "alg" Algorithm values the provider supports to receive encrypted Request Objects (`JAR`) with   
   
 
 
@@ -3329,7 +3327,7 @@ _**default value**_:
 
 ### enabledJWA.requestObjectEncryptionEncValues
 
-JWE "enc" Content Encryption Algorithm values the provider supports to decrypt Request Objects (JAR) with   
+JWE "enc" Content Encryption Algorithm values the provider supports to decrypt Request Objects (`JAR`) with   
   
 
 
@@ -3354,7 +3352,7 @@ _**default value**_:
 
 ### enabledJWA.requestObjectSigningAlgValues
 
-JWS "alg" Algorithm values the provider supports to receive signed Request Objects (JAR) with   
+JWS "alg" Algorithm values the provider supports to receive signed Request Objects (`JAR`) with   
   
 
 

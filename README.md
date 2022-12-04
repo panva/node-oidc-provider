@@ -1,7 +1,7 @@
 # oidc-provider
 
-oidc-provider is an OAuth 2.0 Authorization Server with [OpenID Connect][openid-connect] and many
-additional features and standards implemented.
+oidc-provider is an OAuth 2.0 Authorization Server with support for [OpenID Connect][openid-connect] (`OIDC`) and many
+other additional features and standards.
 
 **Table of Contents**
 
@@ -13,30 +13,31 @@ additional features and standards implemented.
 
 ## Implemented specs & features
 
-The following specifications are implemented by oidc-provider:
+The following specifications are implemented by oidc-provider (not exhaustive):
 
 _Note that not all features are enabled by default, check the configuration section on how to enable them._
 
-- [RFC6749 - OAuth 2.0][oauth2] & [OpenID Connect Core 1.0][core]
-- [OpenID Connect Discovery 1.0][discovery]
-- [OpenID Connect Dynamic Client Registration 1.0][registration] and [RFC7591 - OAuth 2.0 Dynamic Client Registration Protocol][oauth2-registration]
-- [OpenID Connect RP-Initiated Logout 1.0][rpinitiated-logout]
-- [OpenID Connect Back-Channel Logout 1.0][backchannel-logout]
-- [OAuth 2.0 Form Post Response Mode][form-post]
-- [RFC7009 - OAuth 2.0 Token Revocation][revocation]
-- [RFC7592 - OAuth 2.0 Dynamic Client Registration Management Protocol][registration-management]
-- [RFC7636 - Proof Key for Code Exchange (PKCE)][pkce]
-- [RFC7662 - OAuth 2.0 Token Introspection][introspection]
-- [RFC8252 - OAuth 2.0 for Native Apps BCP (AppAuth)][oauth-native-apps]
-- [RFC8628 - OAuth 2.0 Device Authorization Grant (Device Flow)][device-flow]
-- [RFC8705 - OAuth 2.0 Mutual TLS Client Authentication and Certificate Bound Access Tokens (MTLS)][mtls]
-- [RFC8707 - OAuth 2.0 Resource Indicators][resource-indicators]
-- [RFC9101 - OAuth 2.0 JWT-Secured Authorization Request (JAR)][jar]
-- [RFC9126 - OAuth 2.0 Pushed Authorization Requests (PAR)][par]
-- [RFC9207 - OAuth 2.0 Authorization Server Issuer Identifier in Authorization Response][iss-auth-resp]
-- [Financial-grade API Security Profile 1.0 - Part 2: Advanced (FAPI)][fapi]
-- [JWT Secured Authorization Response Mode for OAuth 2.0 (JARM)][jarm]
-- [OpenID Connect Client Initiated Backchannel Authentication Flow - Core 1.0 (CIBA)][ciba]
+- [`RFC6749` - OAuth 2.0][oauth2] & [OIDC `Core 1.0`][core]
+- [OIDC `Discovery 1.0`][discovery]
+- Dynamic Client Registration
+  - [OIDC `Dynamic Client Registration 1.0`][registration]
+  - [`RFC7591` - OAuth 2.0 Dynamic Client Registration Protocol][oauth2-registration]
+  - [`RFC7592` - OAuth 2.0 Dynamic Client Registration Management Protocol][registration-management]
+- [OIDC `RP-Initiated Logout 1.0`][rpinitiated-logout]
+- [OIDC `Back-Channel Logout 1.0`][backchannel-logout]
+- [`RFC7009` - OAuth 2.0 Token Revocation][revocation]
+- [`RFC7636` - Proof Key for Code Exchange (`PKCE`)][pkce]
+- [`RFC7662` - OAuth 2.0 Token Introspection][introspection]
+- [`RFC8252` - OAuth 2.0 for Native Apps BCP (`AppAuth`)][oauth-native-apps]
+- [`RFC8628` - OAuth 2.0 Device Authorization Grant (`Device Flow`)][device-flow]
+- [`RFC8705` - OAuth 2.0 Mutual TLS Client Authentication and Certificate Bound Access Tokens (`MTLS`)][mtls]
+- [`RFC8707` - OAuth 2.0 Resource Indicators][resource-indicators]
+- [`RFC9101` - OAuth 2.0 JWT-Secured Authorization Request (`JAR`)][jar]
+- [`RFC9126` - OAuth 2.0 Pushed Authorization Requests (`PAR`)][par]
+- [`RFC9207` - OAuth 2.0 Authorization Server Issuer Identifier in Authorization Response][iss-auth-resp]
+- [Financial-grade API Security Profile 1.0 - Part 2: Advanced (`FAPI 1.0`)][fapi]
+- [JWT Secured Authorization Response Mode for OAuth 2.0 (`JARM`)][jarm]
+- [OIDC Client Initiated Backchannel Authentication Flow (`CIBA`)][ciba]
 
 Supported Access Token formats:
 
@@ -46,8 +47,8 @@ Supported Access Token formats:
 The following draft specifications are implemented by oidc-provider:
 
 - [JWT Response for OAuth Token Introspection - draft 10][jwt-introspection]
-- [Financial-grade API: Client Initiated Backchannel Authentication Profile (FAPI-CIBA) - Implementer's Draft 01][fapi-ciba]
-- [OAuth 2.0 Demonstration of Proof-of-Possession at the Application Layer (DPoP) - draft 11][dpop]
+- [Financial-grade API: Client Initiated Backchannel Authentication Profile (`FAPI-CIBA`) - Implementer's Draft 01][fapi-ciba]
+- [OAuth 2.0 Demonstration of Proof-of-Possession at the Application Layer (`DPoP`) - draft 11][dpop]
 
 Updates to draft specification versions are released as MINOR library versions,
 if you utilize these specification implementations consider using the tilde `~` operator in your
@@ -58,7 +59,7 @@ your CI.
 ## Certification
 [<img width="184" height="96" align="right" src="https://cdn.jsdelivr.net/gh/panva/node-oidc-provider@acd3ebf2f5ebbb5605463cb681a1fb2ab9742ace/OpenID_Certified.png" alt="OpenID Certification">][openid-certified-link]  
 Filip Skokan has [certified][openid-certified-link] that [oidc-provider][npm-url]
-conforms to the following profiles of the OpenID Connect™ protocol
+conforms to the following profiles of the OpenID Connect™ protocol.
 
 - Basic, Implicit, Hybrid, Config, Dynamic, Form Post, and 3rd Party-Init OP profiles
 - Back-Channel Logout and RP-Initiated Logout
@@ -99,7 +100,7 @@ oidc.listen(3000, () => {
 
 
 ## Recipes
-Collection of useful configurations use cases are available over at [recipes](/recipes).
+Collection of useful configuration use cases are available over at [recipes](/recipes).
 
 
 ## Events
@@ -114,7 +115,6 @@ actions and i.e. emit metrics that react to specific triggers. See the list of a
 [discovery]: https://openid.net/specs/openid-connect-discovery-1_0.html
 [oauth2-registration]: https://www.rfc-editor.org/rfc/rfc7591.html
 [registration]: https://openid.net/specs/openid-connect-registration-1_0.html
-[form-post]: https://openid.net/specs/oauth-v2-form-post-response-mode-1_0.html
 [oauth2]: https://www.rfc-editor.org/rfc/rfc6749.html
 [oauth2-bearer]: https://www.rfc-editor.org/rfc/rfc6750.html
 [revocation]: https://www.rfc-editor.org/rfc/rfc7009.html
