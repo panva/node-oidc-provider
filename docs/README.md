@@ -2250,7 +2250,7 @@ _**default value**_:
 
 ### extraTokenClaims
 
-Function used to assign additional claims to an Access Token when it is being issued. For `opaque` Access Tokens these claims will be stored in your storage under the `extra` property and returned by introspection as top level claims. For `jwt` Access Tokens these will be top level claims. Returned claims will not overwrite pre-existing top level claims.   
+Function used to add additional claims to an Access Token when it is being issued. For `opaque` Access Tokens these claims will be stored in your storage under the `extra` property and returned by introspection as top level claims. For `jwt` Access Tokens these will be top level claims. Returned claims will not overwrite pre-existing top level claims.   
   
 
 
@@ -2260,7 +2260,7 @@ async function extraTokenClaims(ctx, token) {
   return undefined;
 }
 ```
-<a id="extra-token-claims-to-push-additional-claims-to-an-access-token"></a><details><summary>(Click to expand) To push additional claims to an Access Token
+<a id="extra-token-claims-to-add-an-arbitrary-claim-to-an-access-token"></a><details><summary>(Click to expand) To add an arbitrary claim to an Access Token
 </summary><br>
 
 ```js
