@@ -13,9 +13,8 @@ To achieve that you want to add the requested claims/scopes/resource scopes to t
 ```js
 const oidcConfiguration = {
   loadExistingGrant(ctx) {
-    const grantId = (ctx.oidc.result
-      && ctx.oidc.result.consent
-      && ctx.oidc.result.consent.grantId) || ctx.oidc.session.grantIdFor(ctx.oidc.client.clientId);
+    const grantId = ctx.oidc.result?.consent?.grantId 
+      || ctx.oidc.session.grantIdFor(ctx.oidc.client.clientId);
 
     if (grantId) {
       // keep grant expiry aligned with session expiry
