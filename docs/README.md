@@ -146,8 +146,9 @@ router.post('/interaction/:uid', async (ctx, next) => {
   // authentication/login prompt got resolved, omit if no authentication happened, i.e. the user
   // cancelled
   login: {
-    accountId: '7ff1d19a-d3fd-4863-978e-8cce75fa880c', // logged-in account id
+    accountId: string, // logged-in account id
     acr: string, // acr value for the authentication
+    arm: string[], // amr values for the authentication
     remember: boolean, // true if provider should use a persistent cookie rather than a session one, defaults to true
     ts: number, // unix timestamp of the authentication, defaults to now()
   },
