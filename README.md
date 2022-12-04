@@ -1,6 +1,6 @@
 # oidc-provider
 
-oidc-provider is an OAuth 2.0 Authorization Server with support for [OpenID Connect][openid-connect] (`OIDC`) and many
+This module provides an [`OAuth 2.0`][oauth2] Authorization Server with support for [OpenID Connect][openid-connect] (`OIDC`) and many
 other additional features and standards.
 
 **Table of Contents**
@@ -17,7 +17,7 @@ The following specifications are implemented by oidc-provider (not exhaustive):
 
 _Note that not all features are enabled by default, check the configuration section on how to enable them._
 
-- [`RFC6749` - OAuth 2.0][oauth2] & [OIDC `Core 1.0`][core]
+- [`RFC6749` - OAuth 2.0][oauth2] & [`OIDC` Core 1.0][core]
 - [OIDC `Discovery 1.0`][discovery]
 - Dynamic Client Registration
   - [OIDC `Dynamic Client Registration 1.0`][registration]
