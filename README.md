@@ -73,22 +73,16 @@ conforms to the following profiles of the OpenID Connect™ protocol
 
 If you or your company use this module, or you need help using/upgrading the module, please consider becoming a [sponsor][support-sponsor] so I can continue maintaining it and adding new features carefree. The only way to guarantee you get feedback from the author & sole maintainer of this module is to support the package through GitHub Sponsors.
 
-## Get started
-You may check the [example folder](/example) or follow a [step by step example][example-repo] to see
-which of those fits your desired application setup.
-
-Also be sure to check the available configuration docs section.
-
 ## [Documentation](/docs/README.md) & Configuration
 
 oidc-provider can be mounted to existing connect, express, fastify, hapi, or koa applications, see
 [how](/docs/README.md#mounting-oidc-provider). The provider allows to be extended and configured in
-various ways to fit a variety of uses. See the [documentation](/docs/README.md).
+various ways to fit a variety of uses. See the [documentation](/docs/README.md) and [example folder](/example).
 
 ```js
 import Provider from 'oidc-provider';
 const configuration = {
-  // ... see /docs for available configuration
+  // refer to the documentation for other available configuration
   clients: [{
     client_id: 'foo',
     client_secret: 'bar',
