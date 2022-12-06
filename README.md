@@ -1,6 +1,6 @@
 # oidc-provider
 
-This module provides an [`OAuth 2.0`][oauth2] Authorization Server with support for [OpenID Connect][openid-connect] (`OIDC`) and many
+This module provides an OAuth 2.0 ([RFC 6749][oauth2]) Authorization Server with support for OpenID Connect ([OIDC][openid-connect]) and many
 other additional features and standards.
 
 **Table of Contents**
