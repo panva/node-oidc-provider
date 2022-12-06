@@ -100,7 +100,7 @@ describe('Pushed Request Object', () => {
                 .expect(201)
                 .expect(({ body }) => {
                   expect(body).to.have.keys('expires_in', 'request_uri');
-                  expect(body).to.have.property('expires_in', 60);
+                  expect(body).to.have.property('expires_in').closeTo(60, 1);
                   expect(body).to.have.property('request_uri').and.match(/^urn:ietf:params:oauth:request_uri:(.+)$/);
                 });
 
@@ -349,7 +349,7 @@ describe('Pushed Request Object', () => {
                 .expect(201)
                 .expect(({ body }) => {
                   expect(body).to.have.keys('expires_in', 'request_uri');
-                  expect(body).to.have.property('expires_in', 30);
+                  expect(body).to.have.property('expires_in').closeTo(30, 1);
                   expect(body).to.have.property('request_uri').and.match(/^urn:ietf:params:oauth:request_uri:(.+)$/);
                 });
 
@@ -405,7 +405,7 @@ describe('Pushed Request Object', () => {
                 })
                 .expect(201)
                 .expect(({ body }) => {
-                  expect(body).to.have.property('expires_in', 60);
+                  expect(body).to.have.property('expires_in').closeTo(60, 1);
                 });
 
               expect(spy).to.have.property('calledOnce', true);
@@ -460,7 +460,7 @@ describe('Pushed Request Object', () => {
                 .expect(201)
                 .expect(({ body }) => {
                   expect(body).to.have.keys('expires_in', 'request_uri');
-                  expect(body).to.have.property('expires_in', 60);
+                  expect(body).to.have.property('expires_in').closeTo(60, 1);
                   expect(body).to.have.property('request_uri').and.match(/^urn:ietf:params:oauth:request_uri:(.+)$/);
                 });
 
