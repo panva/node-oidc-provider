@@ -28,10 +28,16 @@ describe('Client metadata validation', () => {
   function addClient(metadata, configuration) {
     let provider;
     if (configuration) {
-      provider = new Provider('http://localhost', merge({
-        jwks: global.keystore.toJWKS(true),
-        enabledJWA: cloneDeep(enabledJWA),
-      }, configuration));
+      provider = new Provider(
+        'http://localhost',
+        merge(
+          {
+            jwks: global.keystore.toJWKS(true),
+            enabledJWA: cloneDeep(enabledJWA),
+          },
+          configuration,
+        ),
+      );
     } else {
       provider = DefaultProvider;
     }
@@ -44,8 +50,12 @@ describe('Client metadata validation', () => {
     });
   }
 
-  // eslint-disable-next-line default-param-last
-  const mustBeString = (prop, values = [[], 123, true, null, false, {}, ''], metadata, configuration) => {
+  const mustBeString = (
+    prop,
+    values = [[], 123, true, null, false, {}, ''], // eslint-disable-line default-param-last
+    metadata,
+    configuration,
+  ) => {
     values.forEach((value) => {
       let msg = util.format('must be a string, %j provided', value);
       if (metadata) msg = util.format(`${msg}, [client %j]`, omit(metadata, ['jwks.keys']));
@@ -64,22 +74,28 @@ describe('Client metadata validation', () => {
   };
 
   const mustBeUri = (prop, protocols, configuration, metadata) => {
-    it('must be a uri', () => assert.rejects(addClient({
-      ...metadata,
-      [prop]: 'whatever://not but not a uri',
-    }, configuration), (err) => {
-      if (prop === 'redirect_uris') {
-        expect(err.message).to.equal('invalid_redirect_uri');
-      } else {
-        expect(err.message).to.equal('invalid_client_metadata');
-      }
-      if (protocols.length === 1 && protocols[0] === 'https') {
-        expect(err.error_description).to.equal(`${prop} must be a https uri`);
-      } else {
-        expect(err.error_description).to.equal(`${prop} must be a web uri`);
-      }
-      return true;
-    }));
+    it('must be a uri', () => assert.rejects(
+      addClient(
+        {
+          ...metadata,
+          [prop]: 'whatever://not but not a uri',
+        },
+        configuration,
+      ),
+      (err) => {
+        if (prop === 'redirect_uris') {
+          expect(err.message).to.equal('invalid_redirect_uri');
+        } else {
+          expect(err.message).to.equal('invalid_client_metadata');
+        }
+        if (protocols.length === 1 && protocols[0] === 'https') {
+          expect(err.error_description).to.equal(`${prop} must be a https uri`);
+        } else {
+          expect(err.error_description).to.equal(`${prop} must be a web uri`);
+        }
+        return true;
+      },
+    ));
 
     protocols.forEach((protocol) => {
       it(`can be ${protocol} uri`, () => addClient({
@@ -93,17 +109,23 @@ describe('Client metadata validation', () => {
     values.forEach((value) => {
       let msg = util.format('must be a array, %j provided', value);
       if (configuration) msg = util.format(`${msg}, [provider %j]`, configuration);
-      it(msg, () => assert.rejects(addClient({
-        [prop]: value,
-      }, configuration), (err) => {
-        if (prop === 'redirect_uris') {
-          expect(err.message).to.equal('invalid_redirect_uri');
-        } else {
-          expect(err.message).to.equal('invalid_client_metadata');
-        }
-        expect(err.error_description).to.equal(`${prop} must be an array`);
-        return true;
-      }));
+      it(msg, () => assert.rejects(
+        addClient(
+          {
+            [prop]: value,
+          },
+          configuration,
+        ),
+        (err) => {
+          if (prop === 'redirect_uris') {
+            expect(err.message).to.equal('invalid_redirect_uri');
+          } else {
+            expect(err.message).to.equal('invalid_client_metadata');
+          }
+          expect(err.error_description).to.equal(`${prop} must be an array`);
+          return true;
+        },
+      ));
     });
   };
 
@@ -112,17 +134,23 @@ describe('Client metadata validation', () => {
       let msg = util.format('must be a boolean, %j provided', value);
       if (metadata) msg = util.format(`${msg}, [client %j]`, omit(metadata, ['jwks.keys']));
       if (configuration) msg = util.format(`${msg}, [provider %j]`, configuration);
-      it(msg, () => assert.rejects(addClient({
-        [prop]: value,
-      }, configuration), (err) => {
-        if (prop === 'redirect_uris') {
-          expect(err.message).to.equal('invalid_redirect_uri');
-        } else {
-          expect(err.message).to.equal('invalid_client_metadata');
-        }
-        expect(err.error_description).to.equal(`${prop} must be a boolean`);
-        return true;
-      }));
+      it(msg, () => assert.rejects(
+        addClient(
+          {
+            [prop]: value,
+          },
+          configuration,
+        ),
+        (err) => {
+          if (prop === 'redirect_uris') {
+            expect(err.message).to.equal('invalid_redirect_uri');
+          } else {
+            expect(err.message).to.equal('invalid_client_metadata');
+          }
+          expect(err.error_description).to.equal(`${prop} must be a boolean`);
+          return true;
+        },
+      ));
     });
   };
 
@@ -144,34 +172,45 @@ describe('Client metadata validation', () => {
     (values || [null, undefined, '']).forEach((value) => {
       let msg = util.format('is required, %j provided', value);
       if (configuration) msg = util.format(`${msg}, [provider %j]`, configuration);
-      it(msg, () => assert.rejects(addClient({
-        [prop]: value,
-        ...metadata,
-      }, configuration), (err) => {
-        if (prop === 'redirect_uris') {
-          expect(err.message).to.equal('invalid_redirect_uri');
-        } else {
-          expect(err.message).to.equal('invalid_client_metadata');
-        }
-        expect(err.error_description).to.equal(`${prop} is mandatory property`);
-        return true;
-      }));
+      it(msg, () => assert.rejects(
+        addClient(
+          {
+            [prop]: value,
+            ...metadata,
+          },
+          configuration,
+        ),
+        (err) => {
+          if (prop === 'redirect_uris') {
+            expect(err.message).to.equal('invalid_redirect_uri');
+          } else {
+            expect(err.message).to.equal('invalid_client_metadata');
+          }
+          expect(err.error_description).to.equal(`${prop} is mandatory property`);
+          return true;
+        },
+      ));
     });
   };
 
-  const allows = (prop, value, metadata, configuration, assertion = (client) => {
-    expect(client.metadata()[prop]).to.eql(value);
-  }) => {
+  const allows = (
+    prop,
+    value,
+    metadata,
+    configuration,
+    assertion = (client) => {
+      expect(client.metadata()[prop]).to.eql(value);
+    },
+  ) => {
     let msg = util.format('passes %j', value);
     if (metadata) msg = util.format(`${msg}, [client %j]`, omit(metadata, ['jwks.keys']));
     if (configuration) msg = util.format(`${msg}, [provider %j]`, configuration);
-    it(msg, () => { // eslint-disable-line arrow-body-style
-      return addClient({ ...metadata, [prop]: value }, configuration).then(assertion, (err) => {
-        if (err instanceof InvalidClientMetadata) {
-          throw new Error(`InvalidClientMetadata received ${err.message} ${err.error_description}`);
-        }
-      });
-    });
+    // eslint-disable-next-line max-len
+    it(msg, () => addClient({ ...metadata, [prop]: value }, configuration).then(assertion, (err) => {
+      if (err instanceof InvalidClientMetadata) {
+        throw new Error(`InvalidClientMetadata received ${err.message} ${err.error_description}`);
+      }
+    }));
   };
 
   const rejects = (prop, value, description, metadata, configuration) => {
@@ -241,10 +280,30 @@ describe('Client metadata validation', () => {
     });
     allows(this.title, acrValues, undefined, { acrValues });
     rejects(this.title, [123], /must only contain strings$/);
-    rejects(this.title, ['not a member'], 'default_acr_values must be empty (no values are allowed)');
-    rejects(this.title, ['not a member', '1', 'default_acr_values must be empty (no values are allowed)']);
-    rejects(this.title, ['not a member'], "default_acr_values can only contain '0', '1', or '2'", undefined, { acrValues });
-    rejects(this.title, ['not a member', '1'], "default_acr_values can only contain '0', '1', or '2'", undefined, { acrValues });
+    rejects(
+      this.title,
+      ['not a member'],
+      'default_acr_values must be empty (no values are allowed)',
+    );
+    rejects(this.title, [
+      'not a member',
+      '1',
+      'default_acr_values must be empty (no values are allowed)',
+    ]);
+    rejects(
+      this.title,
+      ['not a member'],
+      "default_acr_values can only contain '0', '1', or '2'",
+      undefined,
+      { acrValues },
+    );
+    rejects(
+      this.title,
+      ['not a member', '1'],
+      "default_acr_values can only contain '0', '1', or '2'",
+      undefined,
+      { acrValues },
+    );
   });
 
   context('require_signed_request_object', function () {
@@ -263,9 +322,14 @@ describe('Client metadata validation', () => {
     defaultsTo(this.title, undefined, undefined, configuration(false, false));
     defaultsTo(this.title, false, undefined, configuration());
     defaultsTo(this.title, true, undefined, configuration(true));
-    defaultsTo(this.title, true, {
-      require_signed_request_object: false,
-    }, configuration(true));
+    defaultsTo(
+      this.title,
+      true,
+      {
+        require_signed_request_object: false,
+      },
+      configuration(true),
+    );
     defaultsTo(this.title, true, undefined, {
       ...configuration(),
       clientDefaults: { require_signed_request_object: true },
@@ -290,13 +354,16 @@ describe('Client metadata validation', () => {
     rejects(this.title, [123], /must only contain strings$/);
     rejects(this.title, []);
     rejects(this.title, ['not-a-type']);
-    rejects(this.title, ['implicit'], undefined, { // misses authorization_code
+    rejects(this.title, ['implicit'], undefined, {
+      // misses authorization_code
       response_types: ['id_token', 'code'],
     });
-    rejects(this.title, ['authorization_code'], undefined, { // misses implicit
+    rejects(this.title, ['authorization_code'], undefined, {
+      // misses implicit
       response_types: ['id_token'],
     });
-    rejects(this.title, ['authorization_code'], undefined, { // misses implicit
+    rejects(this.title, ['authorization_code'], undefined, {
+      // misses implicit
       response_types: ['token'],
     });
   });
@@ -310,9 +377,7 @@ describe('Client metadata validation', () => {
     rejects(this.title, 'none');
   });
 
-  [
-    'client_uri', 'logo_uri', 'policy_uri', 'tos_uri',
-  ].forEach((prop) => {
+  ['client_uri', 'logo_uri', 'policy_uri', 'tos_uri'].forEach((prop) => {
     context(prop, function () {
       mustBeString(this.title);
       mustBeUri(this.title, ['http', 'https']);
@@ -334,7 +399,11 @@ describe('Client metadata validation', () => {
     allows(this.title, 'openid profile', undefined, { claims: { profile: ['given_name'] } });
     allows(this.title, 'profile', undefined, { scopes: ['profile'] });
     allows(this.title, 'profile', undefined, { claims: { profile: ['given_name'] } });
-    rejects(this.title, 'foo', 'scope must only contain Authorization Server supported scope values');
+    rejects(
+      this.title,
+      'foo',
+      'scope must only contain Authorization Server supported scope values',
+    );
   });
 
   context('redirect_uris', function () {
@@ -350,9 +419,14 @@ describe('Client metadata validation', () => {
       application_type: 'web',
     });
     rejects(this.title, ['https://rp.example.com#'], /redirect_uris must not contain fragments$/);
-    rejects(this.title, ['https://rp.example.com#whatever'], /redirect_uris must not contain fragments$/, {
-      application_type: 'web',
-    });
+    rejects(
+      this.title,
+      ['https://rp.example.com#whatever'],
+      /redirect_uris must not contain fragments$/,
+      {
+        application_type: 'web',
+      },
+    );
     rejects(this.title, ['no-dot-reverse-notation:/some'], undefined, {
       application_type: 'web',
     });
@@ -382,17 +456,22 @@ describe('Client metadata validation', () => {
         grant_types: ['implicit'],
         response_types: ['id_token'],
         redirect_uris: ['http://foo/bar'],
-      }).then(() => {
-        assert(false);
-      }, () => {
-        const spy = DefaultProvider.Client.Schema.prototype.invalidate;
-        expect(spy).to.have.property('calledOnce', true);
-        const call = spy.getCall(0);
-        const [, code] = call.args;
-        expect(code).to.eql('implicit-force-https');
-      }).finally(() => {
-        sandbox.restore();
-      });
+      })
+        .then(
+          () => {
+            assert(false);
+          },
+          () => {
+            const spy = DefaultProvider.Client.Schema.prototype.invalidate;
+            expect(spy).to.have.property('calledOnce', true);
+            const call = spy.getCall(0);
+            const [, code] = call.args;
+            expect(code).to.eql('implicit-force-https');
+          },
+        )
+        .finally(() => {
+          sandbox.restore();
+        });
     });
     it('has an schema invalidation hook for preventing localhost', async () => {
       const sandbox = sinon.createSandbox();
@@ -401,15 +480,18 @@ describe('Client metadata validation', () => {
         grant_types: ['implicit'],
         response_types: ['id_token'],
         redirect_uris: ['https://localhost'],
-      }).then(() => {
-        assert(false);
-      }, () => {
-        const spy = DefaultProvider.Client.Schema.prototype.invalidate;
-        expect(spy).to.have.property('calledOnce', true);
-        const call = spy.getCall(0);
-        const [, code] = call.args;
-        expect(code).to.eql('implicit-forbid-localhost');
-      });
+      }).then(
+        () => {
+          assert(false);
+        },
+        () => {
+          const spy = DefaultProvider.Client.Schema.prototype.invalidate;
+          expect(spy).to.have.property('calledOnce', true);
+          const call = spy.getCall(0);
+          const [, code] = call.args;
+          expect(code).to.eql('implicit-forbid-localhost');
+        },
+      );
     });
   });
 
@@ -425,10 +507,19 @@ describe('Client metadata validation', () => {
     allows(this.title, ['https://some'], {
       application_type: 'web',
     });
-    rejects(this.title, ['https://rp.example.com#'], /post_logout_redirect_uris must not contain fragments$/);
-    rejects(this.title, ['https://rp.example.com#whatever'], /post_logout_redirect_uris must not contain fragments$/, {
-      application_type: 'web',
-    });
+    rejects(
+      this.title,
+      ['https://rp.example.com#'],
+      /post_logout_redirect_uris must not contain fragments$/,
+    );
+    rejects(
+      this.title,
+      ['https://rp.example.com#whatever'],
+      /post_logout_redirect_uris must not contain fragments$/,
+      {
+        application_type: 'web',
+      },
+    );
     rejects(this.title, ['no-dot-reverse-notation:/some'], undefined, {
       application_type: 'web',
     });
@@ -454,7 +545,6 @@ describe('Client metadata validation', () => {
   });
 
   context('request_object_signing_alg', function () {
-    // eslint-disable-next-line no-restricted-syntax
     for (const configuration of [
       {
         features: {
@@ -471,8 +561,19 @@ describe('Client metadata validation', () => {
     ]) {
       mustBeString(this.title, undefined, undefined, configuration);
       [
-        'HS256', 'HS384', 'HS512', 'RS256', 'RS384', 'RS512',
-        'PS256', 'PS384', 'PS512', 'ES256', 'ES384', 'ES512', 'EdDSA',
+        'HS256',
+        'HS384',
+        'HS512',
+        'RS256',
+        'RS384',
+        'RS512',
+        'PS256',
+        'PS384',
+        'PS512',
+        'ES256',
+        'ES384',
+        'ES512',
+        'EdDSA',
       ].forEach((alg) => {
         allows(this.title, alg, { jwks: { keys: [sigKey] } }, configuration);
       });
@@ -505,9 +606,27 @@ describe('Client metadata validation', () => {
     allows(this.title, ['https://a-web-uri'], undefined, configuration);
     allows(this.title, ['http://a-web-uri'], /must only contain https uris$/, configuration);
     rejects(this.title, [123], /must only contain strings$/, undefined, configuration);
-    rejects(this.title, ['not a uri'], /request_uris must only contain web uris$/, undefined, configuration);
-    rejects(this.title, ['custom-scheme://not-a-web-uri'], /request_uris must only contain web uris$/, undefined, configuration);
-    rejects(this.title, ['urn:example'], /request_uris must only contain web uris$/, undefined, configuration);
+    rejects(
+      this.title,
+      ['not a uri'],
+      /request_uris must only contain web uris$/,
+      undefined,
+      configuration,
+    );
+    rejects(
+      this.title,
+      ['custom-scheme://not-a-web-uri'],
+      /request_uris must only contain web uris$/,
+      undefined,
+      configuration,
+    );
+    rejects(
+      this.title,
+      ['urn:example'],
+      /request_uris must only contain web uris$/,
+      undefined,
+      configuration,
+    );
   });
 
   context('web_message_uris', function () {
@@ -522,12 +641,48 @@ describe('Client metadata validation', () => {
     rejects(this.title, [true], /must only contain strings$/, undefined, configuration);
     rejects(this.title, [null], /must only contain strings$/, undefined, configuration);
     rejects(this.title, ['not a uri'], /must only contain valid uris$/, undefined, configuration);
-    rejects(this.title, ['custom-scheme://not-a-web-uri'], /must only contain web uris$/, undefined, configuration);
-    rejects(this.title, ['https://example.com/'], /must only contain origins$/, undefined, configuration);
-    rejects(this.title, ['https://example.com?'], /must only contain origins$/, undefined, configuration);
-    rejects(this.title, ['https://example.com#'], /must only contain origins$/, undefined, configuration);
-    rejects(this.title, ['https://foo:bar@example.com'], /must only contain origins$/, undefined, configuration);
-    rejects(this.title, ['https://foo@example.com'], /must only contain origins$/, undefined, configuration);
+    rejects(
+      this.title,
+      ['custom-scheme://not-a-web-uri'],
+      /must only contain web uris$/,
+      undefined,
+      configuration,
+    );
+    rejects(
+      this.title,
+      ['https://example.com/'],
+      /must only contain origins$/,
+      undefined,
+      configuration,
+    );
+    rejects(
+      this.title,
+      ['https://example.com?'],
+      /must only contain origins$/,
+      undefined,
+      configuration,
+    );
+    rejects(
+      this.title,
+      ['https://example.com#'],
+      /must only contain origins$/,
+      undefined,
+      configuration,
+    );
+    rejects(
+      this.title,
+      ['https://foo:bar@example.com'],
+      /must only contain origins$/,
+      undefined,
+      configuration,
+    );
+    rejects(
+      this.title,
+      ['https://foo@example.com'],
+      /must only contain origins$/,
+      undefined,
+      configuration,
+    );
   });
 
   context('require_auth_time', function () {
@@ -538,7 +693,15 @@ describe('Client metadata validation', () => {
   context('response_types', function () {
     defaultsTo(this.title, ['code']);
     mustBeArray(this.title);
-    const responseTypes = ['code id_token token', 'code id_token', 'code token', 'code', 'id_token token', 'id_token', 'none'];
+    const responseTypes = [
+      'code id_token token',
+      'code id_token',
+      'code token',
+      'code',
+      'id_token token',
+      'id_token',
+      'none',
+    ];
     responseTypes.forEach((value) => {
       const grants = [];
       if (value.includes('token')) {
@@ -547,18 +710,35 @@ describe('Client metadata validation', () => {
       if (value.includes('code')) {
         grants.push('authorization_code');
       }
-      allows(this.title, [value], {
-        grant_types: grants,
-      }, { responseTypes });
+      allows(
+        this.title,
+        [value],
+        {
+          grant_types: grants,
+        },
+        { responseTypes },
+      );
     });
-    allows(this.title, responseTypes, {
-      grant_types: ['implicit', 'authorization_code'],
-    }, { responseTypes });
-    allows(this.title, ['token id_token'], { // mixed up order
-      grant_types: ['implicit'],
-    }, { responseTypes }, (client) => {
-      expect(client.metadata().response_types).to.eql(['id_token token']);
-    });
+    allows(
+      this.title,
+      responseTypes,
+      {
+        grant_types: ['implicit', 'authorization_code'],
+      },
+      { responseTypes },
+    );
+    allows(
+      this.title,
+      ['token id_token'],
+      {
+        // mixed up order
+        grant_types: ['implicit'],
+      },
+      { responseTypes },
+      (client) => {
+        expect(client.metadata().response_types).to.eql(['id_token token']);
+      },
+    );
 
     rejects(this.title, [123], /must only contain strings$/);
     rejects(this.title, [], /must contain members$/);
@@ -591,7 +771,9 @@ describe('Client metadata validation', () => {
       ],
       features: {
         mTLS: {
-          enabled: true, selfSignedTlsClientAuth: true, tlsClientAuth: true,
+          enabled: true,
+          selfSignedTlsClientAuth: true,
+          tlsClientAuth: true,
         },
       },
     };
@@ -599,41 +781,93 @@ describe('Client metadata validation', () => {
     context('token_endpoint_auth_method', function () {
       defaultsTo(this.title, 'client_secret_basic', undefined, configuration);
       mustBeString(this.title, undefined, undefined, configuration);
-      rejects(this.title, 'foo', 'token_endpoint_auth_method must not be provided (no values are allowed)', undefined, {
-        ...configuration,
-        clientAuthMethods: [],
-      });
+      rejects(
+        this.title,
+        'foo',
+        'token_endpoint_auth_method must not be provided (no values are allowed)',
+        undefined,
+        {
+          ...configuration,
+          clientAuthMethods: [],
+        },
+      );
 
       [
-        'client_secret_basic', 'client_secret_jwt', 'client_secret_post', 'private_key_jwt', 'tls_client_auth',
+        'client_secret_basic',
+        'client_secret_jwt',
+        'client_secret_post',
+        'private_key_jwt',
+        'tls_client_auth',
       ].forEach((value) => {
         switch (value) {
           case 'private_key_jwt':
-            allows(this.title, value, {
-              jwks: { keys: [sigKey] },
-            }, configuration);
+            allows(
+              this.title,
+              value,
+              {
+                jwks: { keys: [sigKey] },
+              },
+              configuration,
+            );
             break;
           case 'tls_client_auth':
-            allows(this.title, value, {
-              tls_client_auth_subject_dn: 'foo',
-            }, configuration);
-            allows(this.title, value, {
-              tls_client_auth_san_dns: 'foo',
-            }, configuration);
-            allows(this.title, value, {
-              tls_client_auth_san_uri: 'foo',
-            }, configuration);
-            allows(this.title, value, {
-              tls_client_auth_san_ip: 'foo',
-            }, configuration);
-            allows(this.title, value, {
-              tls_client_auth_san_email: 'foo',
-            }, configuration);
-            rejects(this.title, value, 'tls_client_auth requires one of the certificate subject value parameters', undefined, configuration);
-            rejects(this.title, value, 'only one tls_client_auth certificate subject value must be provided', {
-              tls_client_auth_san_ip: 'foo',
-              tls_client_auth_san_email: 'foo',
-            }, configuration);
+            allows(
+              this.title,
+              value,
+              {
+                tls_client_auth_subject_dn: 'foo',
+              },
+              configuration,
+            );
+            allows(
+              this.title,
+              value,
+              {
+                tls_client_auth_san_dns: 'foo',
+              },
+              configuration,
+            );
+            allows(
+              this.title,
+              value,
+              {
+                tls_client_auth_san_uri: 'foo',
+              },
+              configuration,
+            );
+            allows(
+              this.title,
+              value,
+              {
+                tls_client_auth_san_ip: 'foo',
+              },
+              configuration,
+            );
+            allows(
+              this.title,
+              value,
+              {
+                tls_client_auth_san_email: 'foo',
+              },
+              configuration,
+            );
+            rejects(
+              this.title,
+              value,
+              'tls_client_auth requires one of the certificate subject value parameters',
+              undefined,
+              configuration,
+            );
+            rejects(
+              this.title,
+              value,
+              'only one tls_client_auth certificate subject value must be provided',
+              {
+                tls_client_auth_san_ip: 'foo',
+                tls_client_auth_san_email: 'foo',
+              },
+              configuration,
+            );
             break;
           default: {
             allows(this.title, value, undefined, configuration);
@@ -642,10 +876,15 @@ describe('Client metadata validation', () => {
       });
       rejects(this.title, 'not-a-method', undefined, undefined, configuration);
 
-      allows(this.title, 'none', {
-        response_types: ['id_token'],
-        grant_types: ['implicit'],
-      }, configuration);
+      allows(
+        this.title,
+        'none',
+        {
+          response_types: ['id_token'],
+          grant_types: ['implicit'],
+        },
+        configuration,
+      );
     });
 
     context('token_endpoint_auth_signing_alg', function () {
@@ -654,25 +893,45 @@ describe('Client metadata validation', () => {
         client_secret_jwt: ['HS', 'RS'],
         private_key_jwt: ['RS', 'HS', { jwks: { keys: [sigKey] } }],
       }).forEach(([method, [accepted, rejected, additional]]) => {
-        allows(this.title, `${accepted}256`, {
-          token_endpoint_auth_method: method,
-          ...additional,
-        }, configuration);
-
-        rejects(this.title, `${rejected}256`, /^token_endpoint_auth_signing_alg must be/, {
-          token_endpoint_auth_method: method,
-          ...additional,
-        }, configuration);
-
-        rejects(this.title, `${accepted}384`, /^token_endpoint_auth_signing_alg must be/, {
-          token_endpoint_auth_method: method,
-          ...additional,
-        }, {
-          enabledJWA: {
-            clientAuthSigningAlgValues: pull(cloneDeep(enabledJWA.clientAuthSigningAlgValues), `${accepted}384`),
+        allows(
+          this.title,
+          `${accepted}256`,
+          {
+            token_endpoint_auth_method: method,
+            ...additional,
           },
-          ...configuration,
-        });
+          configuration,
+        );
+
+        rejects(
+          this.title,
+          `${rejected}256`,
+          /^token_endpoint_auth_signing_alg must be/,
+          {
+            token_endpoint_auth_method: method,
+            ...additional,
+          },
+          configuration,
+        );
+
+        rejects(
+          this.title,
+          `${accepted}384`,
+          /^token_endpoint_auth_signing_alg must be/,
+          {
+            token_endpoint_auth_method: method,
+            ...additional,
+          },
+          {
+            enabledJWA: {
+              clientAuthSigningAlgValues: pull(
+                cloneDeep(enabledJWA.clientAuthSigningAlgValues),
+                `${accepted}384`,
+              ),
+            },
+            ...configuration,
+          },
+        );
       });
     });
   }
@@ -730,24 +989,54 @@ describe('Client metadata validation', () => {
     context('id_token_encrypted_response_alg', function () {
       defaultsTo(this.title, undefined);
       defaultsTo(this.title, undefined, undefined, configuration);
-      mustBeString(this.title, undefined, {
-        jwks: { keys: [sigKey] },
-      }, configuration);
-      it('is required when id_token_encrypted_response_enc is also provided', () => assert.rejects(addClient({
-        id_token_encrypted_response_enc: 'whatever',
-      }, configuration), (err) => {
-        expect(err.message).to.equal('invalid_client_metadata');
-        expect(err.error_description).to.equal('id_token_encrypted_response_alg is mandatory property when id_token_encrypted_response_enc is provided');
-        return true;
-      }));
+      mustBeString(
+        this.title,
+        undefined,
+        {
+          jwks: { keys: [sigKey] },
+        },
+        configuration,
+      );
+      it('is required when id_token_encrypted_response_enc is also provided', () => assert.rejects(
+        addClient(
+          {
+            id_token_encrypted_response_enc: 'whatever',
+          },
+          configuration,
+        ),
+        (err) => {
+          expect(err.message).to.equal('invalid_client_metadata');
+          expect(err.error_description).to.equal(
+            'id_token_encrypted_response_alg is mandatory property when id_token_encrypted_response_enc is provided',
+          );
+          return true;
+        },
+      ));
       allows(this.title, 'dir', undefined, configuration);
       [
-        'RSA-OAEP', 'RSA-OAEP-256', 'RSA-OAEP-384', 'RSA-OAEP-512', 'ECDH-ES', 'ECDH-ES+A128KW', 'ECDH-ES+A192KW',
-        'ECDH-ES+A256KW', 'A128GCMKW', 'A192GCMKW', 'A256GCMKW', 'A128KW', 'A192KW', 'A256KW',
+        'RSA-OAEP',
+        'RSA-OAEP-256',
+        'RSA-OAEP-384',
+        'RSA-OAEP-512',
+        'ECDH-ES',
+        'ECDH-ES+A128KW',
+        'ECDH-ES+A192KW',
+        'ECDH-ES+A256KW',
+        'A128GCMKW',
+        'A192GCMKW',
+        'A256GCMKW',
+        'A128KW',
+        'A192KW',
+        'A256KW',
       ].forEach((value) => {
-        allows(this.title, value, {
-          jwks: { keys: [sigKey] },
-        }, configuration);
+        allows(
+          this.title,
+          value,
+          {
+            jwks: { keys: [sigKey] },
+          },
+          configuration,
+        );
       });
       rejects(this.title, 'not-an-alg', undefined, undefined, configuration);
       rejects(this.title, 'none', undefined, undefined, configuration);
@@ -755,29 +1044,55 @@ describe('Client metadata validation', () => {
 
     context('id_token_encrypted_response_enc', function () {
       defaultsTo(this.title, undefined);
-      defaultsTo(this.title, 'A128CBC-HS256', {
-        [this.title.replace(/(enc$)/, 'alg')]: 'RSA-OAEP',
-        jwks: { keys: [sigKey] },
-      }, configuration);
-      mustBeString(this.title, undefined, {
-        [this.title.replace(/(enc$)/, 'alg')]: 'RSA-OAEP',
-        jwks: { keys: [sigKey] },
-      }, configuration);
-      [
-        'A128CBC-HS256', 'A128GCM', 'A192CBC-HS384', 'A192GCM', 'A256CBC-HS512', 'A256GCM',
-      ].forEach((value) => {
-        allows(this.title, value, {
+      defaultsTo(
+        this.title,
+        'A128CBC-HS256',
+        {
           [this.title.replace(/(enc$)/, 'alg')]: 'RSA-OAEP',
           jwks: { keys: [sigKey] },
-        }, configuration);
-        allows(this.title, value, {
-          [this.title.replace(/(enc$)/, 'alg')]: 'dir',
-        }, configuration);
-      });
-      rejects(this.title, 'not-an-enc', undefined, {
-        [this.title.replace(/(enc$)/, 'alg')]: 'RSA-OAEP',
-        jwks: { keys: [sigKey] },
-      }, configuration);
+        },
+        configuration,
+      );
+      mustBeString(
+        this.title,
+        undefined,
+        {
+          [this.title.replace(/(enc$)/, 'alg')]: 'RSA-OAEP',
+          jwks: { keys: [sigKey] },
+        },
+        configuration,
+      );
+      ['A128CBC-HS256', 'A128GCM', 'A192CBC-HS384', 'A192GCM', 'A256CBC-HS512', 'A256GCM'].forEach(
+        (value) => {
+          allows(
+            this.title,
+            value,
+            {
+              [this.title.replace(/(enc$)/, 'alg')]: 'RSA-OAEP',
+              jwks: { keys: [sigKey] },
+            },
+            configuration,
+          );
+          allows(
+            this.title,
+            value,
+            {
+              [this.title.replace(/(enc$)/, 'alg')]: 'dir',
+            },
+            configuration,
+          );
+        },
+      );
+      rejects(
+        this.title,
+        'not-an-enc',
+        undefined,
+        {
+          [this.title.replace(/(enc$)/, 'alg')]: 'RSA-OAEP',
+          jwks: { keys: [sigKey] },
+        },
+        configuration,
+      );
     });
 
     context('userinfo_encrypted_response_alg', function () {
@@ -788,17 +1103,37 @@ describe('Client metadata validation', () => {
       defaultsTo(this.title, undefined);
       defaultsTo(this.title, undefined, undefined, configuration);
       mustBeString(this.title, undefined, metadata, configuration);
-      it('is required when userinfo_encrypted_response_enc is also provided', () => assert.rejects(addClient({
-        userinfo_encrypted_response_enc: 'whatever',
-      }, configuration), (err) => {
-        expect(err.message).to.equal('invalid_client_metadata');
-        expect(err.error_description).to.equal('userinfo_encrypted_response_alg is mandatory property when userinfo_encrypted_response_enc is provided');
-        return true;
-      }));
+      it('is required when userinfo_encrypted_response_enc is also provided', () => assert.rejects(
+        addClient(
+          {
+            userinfo_encrypted_response_enc: 'whatever',
+          },
+          configuration,
+        ),
+        (err) => {
+          expect(err.message).to.equal('invalid_client_metadata');
+          expect(err.error_description).to.equal(
+            'userinfo_encrypted_response_alg is mandatory property when userinfo_encrypted_response_enc is provided',
+          );
+          return true;
+        },
+      ));
       allows(this.title, 'dir', metadata, configuration);
       [
-        'RSA-OAEP', 'RSA-OAEP-256', 'RSA-OAEP-384', 'RSA-OAEP-512', 'ECDH-ES', 'ECDH-ES+A128KW', 'ECDH-ES+A192KW',
-        'ECDH-ES+A256KW', 'A128GCMKW', 'A192GCMKW', 'A256GCMKW', 'A128KW', 'A192KW', 'A256KW',
+        'RSA-OAEP',
+        'RSA-OAEP-256',
+        'RSA-OAEP-384',
+        'RSA-OAEP-512',
+        'ECDH-ES',
+        'ECDH-ES+A128KW',
+        'ECDH-ES+A192KW',
+        'ECDH-ES+A256KW',
+        'A128GCMKW',
+        'A192GCMKW',
+        'A256GCMKW',
+        'A128KW',
+        'A192KW',
+        'A256KW',
       ].forEach((value) => {
         allows(this.title, value, metadata, configuration);
       });
@@ -809,34 +1144,60 @@ describe('Client metadata validation', () => {
     context('userinfo_encrypted_response_enc', function () {
       defaultsTo(this.title, undefined);
       defaultsTo(this.title, undefined, undefined, configuration);
-      defaultsTo(this.title, 'A128CBC-HS256', {
-        [this.title.replace(/(enc$)/, 'alg')]: 'RSA-OAEP',
-        [this.title.replace('encrypted', 'signed').replace('_enc', '_alg')]: 'RS256',
-        jwks: { keys: [sigKey] },
-      }, configuration);
-      mustBeString(this.title, undefined, {
-        [this.title.replace(/(enc$)/, 'alg')]: 'RSA-OAEP',
-        [this.title.replace('encrypted', 'signed').replace('_enc', '_alg')]: 'RS256',
-        jwks: { keys: [sigKey] },
-      }, configuration);
-      [
-        'A128CBC-HS256', 'A128GCM', 'A192CBC-HS384', 'A192GCM', 'A256CBC-HS512', 'A256GCM',
-      ].forEach((value) => {
-        allows(this.title, value, {
+      defaultsTo(
+        this.title,
+        'A128CBC-HS256',
+        {
           [this.title.replace(/(enc$)/, 'alg')]: 'RSA-OAEP',
           [this.title.replace('encrypted', 'signed').replace('_enc', '_alg')]: 'RS256',
           jwks: { keys: [sigKey] },
-        }, configuration);
-        allows(this.title, value, {
-          [this.title.replace(/(enc$)/, 'alg')]: 'dir',
+        },
+        configuration,
+      );
+      mustBeString(
+        this.title,
+        undefined,
+        {
+          [this.title.replace(/(enc$)/, 'alg')]: 'RSA-OAEP',
           [this.title.replace('encrypted', 'signed').replace('_enc', '_alg')]: 'RS256',
-        }, configuration);
-      });
-      rejects(this.title, 'not-an-enc', undefined, {
-        [this.title.replace(/(enc$)/, 'alg')]: 'RSA-OAEP',
-        [this.title.replace('encrypted', 'signed').replace('_enc', '_alg')]: 'RS256',
-        jwks: { keys: [sigKey] },
-      }, configuration);
+          jwks: { keys: [sigKey] },
+        },
+        configuration,
+      );
+      ['A128CBC-HS256', 'A128GCM', 'A192CBC-HS384', 'A192GCM', 'A256CBC-HS512', 'A256GCM'].forEach(
+        (value) => {
+          allows(
+            this.title,
+            value,
+            {
+              [this.title.replace(/(enc$)/, 'alg')]: 'RSA-OAEP',
+              [this.title.replace('encrypted', 'signed').replace('_enc', '_alg')]: 'RS256',
+              jwks: { keys: [sigKey] },
+            },
+            configuration,
+          );
+          allows(
+            this.title,
+            value,
+            {
+              [this.title.replace(/(enc$)/, 'alg')]: 'dir',
+              [this.title.replace('encrypted', 'signed').replace('_enc', '_alg')]: 'RS256',
+            },
+            configuration,
+          );
+        },
+      );
+      rejects(
+        this.title,
+        'not-an-enc',
+        undefined,
+        {
+          [this.title.replace(/(enc$)/, 'alg')]: 'RSA-OAEP',
+          [this.title.replace('encrypted', 'signed').replace('_enc', '_alg')]: 'RS256',
+          jwks: { keys: [sigKey] },
+        },
+        configuration,
+      );
     });
 
     context('introspection_encrypted_response_alg', function () {
@@ -847,17 +1208,37 @@ describe('Client metadata validation', () => {
       defaultsTo(this.title, undefined);
       defaultsTo(this.title, undefined, undefined, configuration);
       mustBeString(this.title, undefined, metadata, configuration);
-      it('is required when introspection_encrypted_response_enc is also provided', () => assert.rejects(addClient({
-        introspection_encrypted_response_enc: 'whatever',
-      }, configuration), (err) => {
-        expect(err.message).to.equal('invalid_client_metadata');
-        expect(err.error_description).to.equal('introspection_encrypted_response_alg is mandatory property when introspection_encrypted_response_enc is provided');
-        return true;
-      }));
+      it('is required when introspection_encrypted_response_enc is also provided', () => assert.rejects(
+        addClient(
+          {
+            introspection_encrypted_response_enc: 'whatever',
+          },
+          configuration,
+        ),
+        (err) => {
+          expect(err.message).to.equal('invalid_client_metadata');
+          expect(err.error_description).to.equal(
+            'introspection_encrypted_response_alg is mandatory property when introspection_encrypted_response_enc is provided',
+          );
+          return true;
+        },
+      ));
       allows(this.title, 'dir', metadata, configuration);
       [
-        'RSA-OAEP', 'RSA-OAEP-256', 'RSA-OAEP-384', 'RSA-OAEP-512', 'ECDH-ES', 'ECDH-ES+A128KW', 'ECDH-ES+A192KW',
-        'ECDH-ES+A256KW', 'A128GCMKW', 'A192GCMKW', 'A256GCMKW', 'A128KW', 'A192KW', 'A256KW',
+        'RSA-OAEP',
+        'RSA-OAEP-256',
+        'RSA-OAEP-384',
+        'RSA-OAEP-512',
+        'ECDH-ES',
+        'ECDH-ES+A128KW',
+        'ECDH-ES+A192KW',
+        'ECDH-ES+A256KW',
+        'A128GCMKW',
+        'A192GCMKW',
+        'A256GCMKW',
+        'A128KW',
+        'A192KW',
+        'A256KW',
       ].forEach((value) => {
         allows(this.title, value, metadata, configuration);
       });
@@ -868,29 +1249,55 @@ describe('Client metadata validation', () => {
     context('introspection_encrypted_response_enc', function () {
       defaultsTo(this.title, undefined);
       defaultsTo(this.title, undefined, undefined, configuration);
-      defaultsTo(this.title, 'A128CBC-HS256', {
-        [this.title.replace(/(enc$)/, 'alg')]: 'RSA-OAEP',
-        jwks: { keys: [sigKey] },
-      }, configuration);
-      mustBeString(this.title, undefined, {
-        [this.title.replace(/(enc$)/, 'alg')]: 'RSA-OAEP',
-        jwks: { keys: [sigKey] },
-      }, configuration);
-      [
-        'A128CBC-HS256', 'A128GCM', 'A192CBC-HS384', 'A192GCM', 'A256CBC-HS512', 'A256GCM',
-      ].forEach((value) => {
-        allows(this.title, value, {
+      defaultsTo(
+        this.title,
+        'A128CBC-HS256',
+        {
           [this.title.replace(/(enc$)/, 'alg')]: 'RSA-OAEP',
           jwks: { keys: [sigKey] },
-        }, configuration);
-        allows(this.title, value, {
-          [this.title.replace(/(enc$)/, 'alg')]: 'dir',
-        }, configuration);
-      });
-      rejects(this.title, 'not-an-enc', undefined, {
-        [this.title.replace(/(enc$)/, 'alg')]: 'RSA-OAEP',
-        jwks: { keys: [sigKey] },
-      }, configuration);
+        },
+        configuration,
+      );
+      mustBeString(
+        this.title,
+        undefined,
+        {
+          [this.title.replace(/(enc$)/, 'alg')]: 'RSA-OAEP',
+          jwks: { keys: [sigKey] },
+        },
+        configuration,
+      );
+      ['A128CBC-HS256', 'A128GCM', 'A192CBC-HS384', 'A192GCM', 'A256CBC-HS512', 'A256GCM'].forEach(
+        (value) => {
+          allows(
+            this.title,
+            value,
+            {
+              [this.title.replace(/(enc$)/, 'alg')]: 'RSA-OAEP',
+              jwks: { keys: [sigKey] },
+            },
+            configuration,
+          );
+          allows(
+            this.title,
+            value,
+            {
+              [this.title.replace(/(enc$)/, 'alg')]: 'dir',
+            },
+            configuration,
+          );
+        },
+      );
+      rejects(
+        this.title,
+        'not-an-enc',
+        undefined,
+        {
+          [this.title.replace(/(enc$)/, 'alg')]: 'RSA-OAEP',
+          jwks: { keys: [sigKey] },
+        },
+        configuration,
+      );
     });
 
     context('authorization_encrypted_response_alg', function () {
@@ -901,17 +1308,37 @@ describe('Client metadata validation', () => {
       defaultsTo(this.title, undefined);
       defaultsTo(this.title, undefined, undefined, configuration);
       mustBeString(this.title, undefined, metadata, configuration);
-      it('is required when authorization_encrypted_response_enc is also provided', () => assert.rejects(addClient({
-        authorization_encrypted_response_enc: 'whatever',
-      }, configuration), (err) => {
-        expect(err.message).to.equal('invalid_client_metadata');
-        expect(err.error_description).to.equal('authorization_encrypted_response_alg is mandatory property when authorization_encrypted_response_enc is provided');
-        return true;
-      }));
+      it('is required when authorization_encrypted_response_enc is also provided', () => assert.rejects(
+        addClient(
+          {
+            authorization_encrypted_response_enc: 'whatever',
+          },
+          configuration,
+        ),
+        (err) => {
+          expect(err.message).to.equal('invalid_client_metadata');
+          expect(err.error_description).to.equal(
+            'authorization_encrypted_response_alg is mandatory property when authorization_encrypted_response_enc is provided',
+          );
+          return true;
+        },
+      ));
       allows(this.title, 'dir', metadata, configuration);
       [
-        'RSA-OAEP', 'RSA-OAEP-256', 'RSA-OAEP-384', 'RSA-OAEP-512', 'ECDH-ES', 'ECDH-ES+A128KW', 'ECDH-ES+A192KW',
-        'ECDH-ES+A256KW', 'A128GCMKW', 'A192GCMKW', 'A256GCMKW', 'A128KW', 'A192KW', 'A256KW',
+        'RSA-OAEP',
+        'RSA-OAEP-256',
+        'RSA-OAEP-384',
+        'RSA-OAEP-512',
+        'ECDH-ES',
+        'ECDH-ES+A128KW',
+        'ECDH-ES+A192KW',
+        'ECDH-ES+A256KW',
+        'A128GCMKW',
+        'A192GCMKW',
+        'A256GCMKW',
+        'A128KW',
+        'A192KW',
+        'A256KW',
       ].forEach((value) => {
         allows(this.title, value, metadata, configuration);
       });
@@ -922,29 +1349,55 @@ describe('Client metadata validation', () => {
     context('authorization_encrypted_response_enc', function () {
       defaultsTo(this.title, undefined);
       defaultsTo(this.title, undefined, undefined, configuration);
-      defaultsTo(this.title, 'A128CBC-HS256', {
-        [this.title.replace(/(enc$)/, 'alg')]: 'RSA-OAEP',
-        jwks: { keys: [sigKey] },
-      }, configuration);
-      mustBeString(this.title, undefined, {
-        [this.title.replace(/(enc$)/, 'alg')]: 'RSA-OAEP',
-        jwks: { keys: [sigKey] },
-      }, configuration);
-      [
-        'A128CBC-HS256', 'A128GCM', 'A192CBC-HS384', 'A192GCM', 'A256CBC-HS512', 'A256GCM',
-      ].forEach((value) => {
-        allows(this.title, value, {
+      defaultsTo(
+        this.title,
+        'A128CBC-HS256',
+        {
           [this.title.replace(/(enc$)/, 'alg')]: 'RSA-OAEP',
           jwks: { keys: [sigKey] },
-        }, configuration);
-        allows(this.title, value, {
-          [this.title.replace(/(enc$)/, 'alg')]: 'dir',
-        }, configuration);
-      });
-      rejects(this.title, 'not-an-enc', undefined, {
-        [this.title.replace(/(enc$)/, 'alg')]: 'RSA-OAEP',
-        jwks: { keys: [sigKey] },
-      }, configuration);
+        },
+        configuration,
+      );
+      mustBeString(
+        this.title,
+        undefined,
+        {
+          [this.title.replace(/(enc$)/, 'alg')]: 'RSA-OAEP',
+          jwks: { keys: [sigKey] },
+        },
+        configuration,
+      );
+      ['A128CBC-HS256', 'A128GCM', 'A192CBC-HS384', 'A192GCM', 'A256CBC-HS512', 'A256GCM'].forEach(
+        (value) => {
+          allows(
+            this.title,
+            value,
+            {
+              [this.title.replace(/(enc$)/, 'alg')]: 'RSA-OAEP',
+              jwks: { keys: [sigKey] },
+            },
+            configuration,
+          );
+          allows(
+            this.title,
+            value,
+            {
+              [this.title.replace(/(enc$)/, 'alg')]: 'dir',
+            },
+            configuration,
+          );
+        },
+      );
+      rejects(
+        this.title,
+        'not-an-enc',
+        undefined,
+        {
+          [this.title.replace(/(enc$)/, 'alg')]: 'RSA-OAEP',
+          jwks: { keys: [sigKey] },
+        },
+        configuration,
+      );
     });
   });
 
@@ -959,17 +1412,37 @@ describe('Client metadata validation', () => {
       defaultsTo(this.title, undefined);
       defaultsTo(this.title, undefined, undefined, configuration);
       mustBeString(this.title, undefined, undefined, configuration);
-      it('is required when request_object_encryption_enc is also provided', () => assert.rejects(addClient({
-        request_object_encryption_enc: 'whatever',
-      }, configuration), (err) => {
-        expect(err.message).to.equal('invalid_client_metadata');
-        expect(err.error_description).to.equal('request_object_encryption_alg is mandatory property when request_object_encryption_enc is provided');
-        return true;
-      }));
+      it('is required when request_object_encryption_enc is also provided', () => assert.rejects(
+        addClient(
+          {
+            request_object_encryption_enc: 'whatever',
+          },
+          configuration,
+        ),
+        (err) => {
+          expect(err.message).to.equal('invalid_client_metadata');
+          expect(err.error_description).to.equal(
+            'request_object_encryption_alg is mandatory property when request_object_encryption_enc is provided',
+          );
+          return true;
+        },
+      ));
       allows(this.title, 'dir', undefined, configuration);
       [
-        'RSA-OAEP', 'RSA-OAEP-256', 'RSA-OAEP-384', 'RSA-OAEP-512', 'ECDH-ES', 'ECDH-ES+A128KW', 'ECDH-ES+A192KW',
-        'ECDH-ES+A256KW', 'A128GCMKW', 'A192GCMKW', 'A256GCMKW', 'A128KW', 'A192KW', 'A256KW',
+        'RSA-OAEP',
+        'RSA-OAEP-256',
+        'RSA-OAEP-384',
+        'RSA-OAEP-512',
+        'ECDH-ES',
+        'ECDH-ES+A128KW',
+        'ECDH-ES+A192KW',
+        'ECDH-ES+A256KW',
+        'A128GCMKW',
+        'A192GCMKW',
+        'A256GCMKW',
+        'A128KW',
+        'A192KW',
+        'A256KW',
       ].forEach((value) => {
         allows(this.title, value, undefined, configuration);
       });
@@ -980,25 +1453,51 @@ describe('Client metadata validation', () => {
     context('request_object_encryption_enc', function () {
       defaultsTo(this.title, undefined);
       defaultsTo(this.title, undefined, undefined, configuration);
-      defaultsTo(this.title, 'A128CBC-HS256', {
-        [this.title.replace(/(enc$)/, 'alg')]: 'RSA-OAEP',
-      }, configuration);
-      mustBeString(this.title, undefined, {
-        [this.title.replace(/(enc$)/, 'alg')]: 'RSA-OAEP',
-      }, configuration);
-      [
-        'A128CBC-HS256', 'A128GCM', 'A192CBC-HS384', 'A192GCM', 'A256CBC-HS512', 'A256GCM',
-      ].forEach((value) => {
-        allows(this.title, value, {
+      defaultsTo(
+        this.title,
+        'A128CBC-HS256',
+        {
           [this.title.replace(/(enc$)/, 'alg')]: 'RSA-OAEP',
-        }, configuration);
-        allows(this.title, value, {
-          [this.title.replace(/(enc$)/, 'alg')]: 'dir',
-        }, configuration);
-      });
-      rejects(this.title, 'not-an-enc', undefined, {
-        [this.title.replace(/(enc$)/, 'alg')]: 'RSA-OAEP',
-      }, configuration);
+        },
+        configuration,
+      );
+      mustBeString(
+        this.title,
+        undefined,
+        {
+          [this.title.replace(/(enc$)/, 'alg')]: 'RSA-OAEP',
+        },
+        configuration,
+      );
+      ['A128CBC-HS256', 'A128GCM', 'A192CBC-HS384', 'A192GCM', 'A256CBC-HS512', 'A256GCM'].forEach(
+        (value) => {
+          allows(
+            this.title,
+            value,
+            {
+              [this.title.replace(/(enc$)/, 'alg')]: 'RSA-OAEP',
+            },
+            configuration,
+          );
+          allows(
+            this.title,
+            value,
+            {
+              [this.title.replace(/(enc$)/, 'alg')]: 'dir',
+            },
+            configuration,
+          );
+        },
+      );
+      rejects(
+        this.title,
+        'not-an-enc',
+        undefined,
+        {
+          [this.title.replace(/(enc$)/, 'alg')]: 'RSA-OAEP',
+        },
+        configuration,
+      );
     });
   });
 
@@ -1016,9 +1515,14 @@ describe('Client metadata validation', () => {
       mustBeBoolean(this.title, undefined, configuration(true));
       defaultsTo(this.title, false, undefined, configuration());
       defaultsTo(this.title, true, undefined, configuration(true));
-      defaultsTo(this.title, true, {
-        require_pushed_authorization_requests: false,
-      }, configuration(true));
+      defaultsTo(
+        this.title,
+        true,
+        {
+          require_pushed_authorization_requests: false,
+        },
+        configuration(true),
+      );
       defaultsTo(this.title, true, undefined, {
         ...configuration(),
         clientDefaults: { require_pushed_authorization_requests: true },
@@ -1046,7 +1550,12 @@ describe('Client metadata validation', () => {
   });
 
   describe('features.ciba', () => {
-    const configuration = { features: { ciba: { enabled: true, deliveryModes: ['ping', 'poll'] }, requestObjects: { request: false, requestUri: false } } };
+    const configuration = {
+      features: {
+        ciba: { enabled: true, deliveryModes: ['ping', 'poll'] },
+        requestObjects: { request: false, requestUri: false },
+      },
+    };
     const metadata = {
       grant_types: ['urn:openid:params:grant-type:ciba'],
       redirect_uris: [],
@@ -1062,25 +1571,38 @@ describe('Client metadata validation', () => {
     context('backchannel_token_delivery_mode', function () {
       mustBeString(this.title, undefined, undefined, configuration);
       isRequired(this.title, undefined, configuration, {
-        ...metadata, backchannel_token_delivery_mode: undefined,
+        ...metadata,
+        backchannel_token_delivery_mode: undefined,
       });
     });
 
     context('backchannel_client_notification_endpoint', function () {
-      isRequired(this.title, undefined, configuration, { ...metadata, backchannel_token_delivery_mode: 'ping' });
-      mustBeUri(this.title, ['https'], configuration, { ...metadata, backchannel_token_delivery_mode: 'ping' });
+      isRequired(this.title, undefined, configuration, {
+        ...metadata,
+        backchannel_token_delivery_mode: 'ping',
+      });
+      mustBeUri(this.title, ['https'], configuration, {
+        ...metadata,
+        backchannel_token_delivery_mode: 'ping',
+      });
     });
 
     context('backchannel_authentication_request_signing_alg', function () {
-      const withRequestObjects = merge(
-        {},
-        configuration,
-        { features: { requestObjects: { request: true } } },
-      );
+      const withRequestObjects = merge({}, configuration, {
+        features: { requestObjects: { request: true } },
+      });
       mustBeString(this.title, undefined, metadata, withRequestObjects);
       [
-        'RS256', 'RS384', 'RS512',
-        'PS256', 'PS384', 'PS512', 'ES256', 'ES384', 'ES512', 'EdDSA',
+        'RS256',
+        'RS384',
+        'RS512',
+        'PS256',
+        'PS384',
+        'PS512',
+        'ES256',
+        'ES384',
+        'ES512',
+        'EdDSA',
       ].forEach((alg) => {
         allows(this.title, alg, { ...metadata, jwks: { keys: [sigKey] } }, withRequestObjects);
       });
@@ -1093,16 +1615,46 @@ describe('Client metadata validation', () => {
       defaultsTo(this.title, undefined, undefined, withRequestObjects);
     });
 
-    allows('subject_type', 'pairwise', {
-      ...metadata, token_endpoint_auth_method: 'private_key_jwt', subject_type: 'pairwise', jwks_uri: 'https://rp.example.com/jwks',
-    }, { ...configuration, subjectTypes: ['pairwise', 'public'] }, (client) => {
-      expect(sectorIdentifier(client)).to.eql('rp.example.com');
-    });
-    isRequired('jwks_uri', [undefined], { ...configuration, subjectTypes: ['pairwise', 'public'] }, { ...metadata, subject_type: 'pairwise' });
-    isRequired('sector_identifier_uri', [undefined], { ...configuration, subjectTypes: ['pairwise', 'public'] }, {
-      ...metadata, jwks_uri: 'https://rp.example.com/sector', subject_type: 'pairwise', response_types: ['code'], grant_types: [...metadata.grant_types, 'authorization_code'], redirect_uris: ['https://rp.example.com/cb'],
-    });
-    rejects('subject_type', 'pairwise', 'pairwise urn:openid:params:grant-type:ciba clients must utilize private_key_jwt or self_signed_tls_client_auth token endpoint authentication methods', { ...metadata, subject_type: 'pairwise', jwks_uri: 'https://rp.example.com/jwks' }, { ...configuration, subjectTypes: ['pairwise', 'public'] });
+    allows(
+      'subject_type',
+      'pairwise',
+      {
+        ...metadata,
+        token_endpoint_auth_method: 'private_key_jwt',
+        subject_type: 'pairwise',
+        jwks_uri: 'https://rp.example.com/jwks',
+      },
+      { ...configuration, subjectTypes: ['pairwise', 'public'] },
+      (client) => {
+        expect(sectorIdentifier(client)).to.eql('rp.example.com');
+      },
+    );
+    isRequired(
+      'jwks_uri',
+      [undefined],
+      { ...configuration, subjectTypes: ['pairwise', 'public'] },
+      { ...metadata, subject_type: 'pairwise' },
+    );
+    isRequired(
+      'sector_identifier_uri',
+      [undefined],
+      { ...configuration, subjectTypes: ['pairwise', 'public'] },
+      {
+        ...metadata,
+        jwks_uri: 'https://rp.example.com/sector',
+        subject_type: 'pairwise',
+        response_types: ['code'],
+        grant_types: [...metadata.grant_types, 'authorization_code'],
+        redirect_uris: ['https://rp.example.com/cb'],
+      },
+    );
+    rejects(
+      'subject_type',
+      'pairwise',
+      'pairwise urn:openid:params:grant-type:ciba clients must utilize private_key_jwt or self_signed_tls_client_auth token endpoint authentication methods',
+      { ...metadata, subject_type: 'pairwise', jwks_uri: 'https://rp.example.com/jwks' },
+      { ...configuration, subjectTypes: ['pairwise', 'public'] },
+    );
   });
 
   describe('features.deviceFlow', () => {
@@ -1114,18 +1666,51 @@ describe('Client metadata validation', () => {
     };
 
     defaultsTo('redirect_uris', [], metadata, configuration);
-    defaultsTo('redirect_uris', ['https://rp.example.com/callback'], metadata, { ...configuration, clientDefaults: { redirect_uris: ['https://rp.example.com/callback'] } });
+    defaultsTo('redirect_uris', ['https://rp.example.com/callback'], metadata, {
+      ...configuration,
+      clientDefaults: { redirect_uris: ['https://rp.example.com/callback'] },
+    });
     rejects('redirect_uris', null, 'redirect_uris must be an array', metadata, configuration);
-    allows('subject_type', 'pairwise', {
-      ...metadata, token_endpoint_auth_method: 'private_key_jwt', subject_type: 'pairwise', jwks_uri: 'https://rp.example.com/jwks',
-    }, { ...configuration, subjectTypes: ['pairwise', 'public'] }, (client) => {
-      expect(sectorIdentifier(client)).to.eql('rp.example.com');
-    });
-    isRequired('jwks_uri', [undefined], { ...configuration, subjectTypes: ['pairwise', 'public'] }, { ...metadata, subject_type: 'pairwise' });
-    isRequired('sector_identifier_uri', [undefined], { ...configuration, subjectTypes: ['pairwise', 'public'] }, {
-      ...metadata, jwks_uri: 'https://rp.example.com/sector', subject_type: 'pairwise', response_types: ['code'], grant_types: [...metadata.grant_types, 'authorization_code'], redirect_uris: ['https://rp.example.com/cb'],
-    });
-    rejects('subject_type', 'pairwise', 'pairwise urn:ietf:params:oauth:grant-type:device_code clients must utilize private_key_jwt or self_signed_tls_client_auth token endpoint authentication methods', { ...metadata, subject_type: 'pairwise', jwks_uri: 'https://rp.example.com/jwks' }, { ...configuration, subjectTypes: ['pairwise', 'public'] });
+    allows(
+      'subject_type',
+      'pairwise',
+      {
+        ...metadata,
+        token_endpoint_auth_method: 'private_key_jwt',
+        subject_type: 'pairwise',
+        jwks_uri: 'https://rp.example.com/jwks',
+      },
+      { ...configuration, subjectTypes: ['pairwise', 'public'] },
+      (client) => {
+        expect(sectorIdentifier(client)).to.eql('rp.example.com');
+      },
+    );
+    isRequired(
+      'jwks_uri',
+      [undefined],
+      { ...configuration, subjectTypes: ['pairwise', 'public'] },
+      { ...metadata, subject_type: 'pairwise' },
+    );
+    isRequired(
+      'sector_identifier_uri',
+      [undefined],
+      { ...configuration, subjectTypes: ['pairwise', 'public'] },
+      {
+        ...metadata,
+        jwks_uri: 'https://rp.example.com/sector',
+        subject_type: 'pairwise',
+        response_types: ['code'],
+        grant_types: [...metadata.grant_types, 'authorization_code'],
+        redirect_uris: ['https://rp.example.com/cb'],
+      },
+    );
+    rejects(
+      'subject_type',
+      'pairwise',
+      'pairwise urn:ietf:params:oauth:grant-type:device_code clients must utilize private_key_jwt or self_signed_tls_client_auth token endpoint authentication methods',
+      { ...metadata, subject_type: 'pairwise', jwks_uri: 'https://rp.example.com/jwks' },
+      { ...configuration, subjectTypes: ['pairwise', 'public'] },
+    );
   });
 
   describe('features.clientCredentials', () => {
@@ -1137,7 +1722,10 @@ describe('Client metadata validation', () => {
     };
 
     defaultsTo('redirect_uris', [], metadata, configuration);
-    defaultsTo('redirect_uris', ['https://rp.example.com/callback'], metadata, { ...configuration, clientDefaults: { redirect_uris: ['https://rp.example.com/callback'] } });
+    defaultsTo('redirect_uris', ['https://rp.example.com/callback'], metadata, {
+      ...configuration,
+      clientDefaults: { redirect_uris: ['https://rp.example.com/callback'] },
+    });
     rejects('redirect_uris', null, 'redirect_uris must be an array', metadata, configuration);
   });
 
@@ -1163,22 +1751,50 @@ describe('Client metadata validation', () => {
     rejects(this.title, 0, 'client JSON Web Key Set is invalid');
     rejects(this.title, true, 'client JSON Web Key Set is invalid');
     rejects(this.title, { keys: [privateKey] }, 'client JSON Web Key Set is invalid');
-    rejects(this.title, { keys: [{ k: '6vl9Rlk88HO8onFHq0ZvTtga68vkUr-bRZ2Hvxu-rAw', kty: 'oct' }] }, 'client JSON Web Key Set is invalid');
-    rejects(this.title, { keys: [{ kty: 'oct', kid: 'jf1nb1YotqxK9viWsXMsngnTCmO2r3w_moVIPtaf8wU' }] }, 'client JSON Web Key Set is invalid');
+    rejects(
+      this.title,
+      { keys: [{ k: '6vl9Rlk88HO8onFHq0ZvTtga68vkUr-bRZ2Hvxu-rAw', kty: 'oct' }] },
+      'client JSON Web Key Set is invalid',
+    );
+    rejects(
+      this.title,
+      { keys: [{ kty: 'oct', kid: 'jf1nb1YotqxK9viWsXMsngnTCmO2r3w_moVIPtaf8wU' }] },
+      'client JSON Web Key Set is invalid',
+    );
     allows(this.title, { keys: [{ kty: 'unrecognized' }] });
     allows(this.title, { keys: [] });
-    rejects(this.title, undefined, 'jwks or jwks_uri is mandatory for this client', {
-      token_endpoint_auth_method: 'private_key_jwt',
-    }, configuration);
+    rejects(
+      this.title,
+      undefined,
+      'jwks or jwks_uri is mandatory for this client',
+      {
+        token_endpoint_auth_method: 'private_key_jwt',
+      },
+      configuration,
+    );
 
-    // eslint-disable-next-line no-restricted-syntax
-    for (const prop of ['request_object_signing_alg', 'backchannel_authentication_request_signing_alg']) {
-      rejects(this.title, undefined, 'jwks or jwks_uri is mandatory for this client', {
-        [prop]: 'RS256',
-      }, configuration);
-      rejects(this.title, undefined, 'jwks or jwks_uri is mandatory for this client', {
-        [prop]: 'ES384',
-      }, configuration);
+    for (const prop of [
+      'request_object_signing_alg',
+      'backchannel_authentication_request_signing_alg',
+    ]) {
+      rejects(
+        this.title,
+        undefined,
+        'jwks or jwks_uri is mandatory for this client',
+        {
+          [prop]: 'RS256',
+        },
+        configuration,
+      );
+      rejects(
+        this.title,
+        undefined,
+        'jwks or jwks_uri is mandatory for this client',
+        {
+          [prop]: 'ES384',
+        },
+        configuration,
+      );
     }
 
     [
@@ -1186,15 +1802,20 @@ describe('Client metadata validation', () => {
       'userinfo_encrypted_response_alg',
       'introspection_encrypted_response_alg',
     ].forEach((prop) => {
-      [
-        'RSA-OAEP',
-        'ECDH-ES', 'ECDH-ES+A128KW', 'ECDH-ES+A192KW', 'ECDH-ES+A256KW',
-      ].forEach((alg) => {
-        rejects(this.title, undefined, 'jwks or jwks_uri is mandatory for this client', {
-          [prop]: alg,
-          [prop.replace('encrypted', 'signed')]: 'RS256',
-        }, configuration);
-      });
+      ['RSA-OAEP', 'ECDH-ES', 'ECDH-ES+A128KW', 'ECDH-ES+A192KW', 'ECDH-ES+A256KW'].forEach(
+        (alg) => {
+          rejects(
+            this.title,
+            undefined,
+            'jwks or jwks_uri is mandatory for this client',
+            {
+              [prop]: alg,
+              [prop.replace('encrypted', 'signed')]: 'RS256',
+            },
+            configuration,
+          );
+        },
+      );
     });
   });
 
@@ -1244,9 +1865,14 @@ describe('Client metadata validation', () => {
 
     context('tls_client_auth_subject_dn', function () {
       mustBeString(this.title, undefined, undefined, configuration);
-      allows(this.title, 'foo', {
-        token_endpoint_auth_method: 'tls_client_auth',
-      }, configuration);
+      allows(
+        this.title,
+        'foo',
+        {
+          token_endpoint_auth_method: 'tls_client_auth',
+        },
+        configuration,
+      );
       allows(this.title, 'foo', undefined, configuration, (client) => {
         expect(client.metadata()[this.title]).to.eql(undefined);
       });
@@ -1254,9 +1880,14 @@ describe('Client metadata validation', () => {
 
     context('tls_client_auth_san_dns', function () {
       mustBeString(this.title, undefined, undefined, configuration);
-      allows(this.title, 'foo', {
-        token_endpoint_auth_method: 'tls_client_auth',
-      }, configuration);
+      allows(
+        this.title,
+        'foo',
+        {
+          token_endpoint_auth_method: 'tls_client_auth',
+        },
+        configuration,
+      );
       allows(this.title, 'foo', undefined, configuration, (client) => {
         expect(client.metadata()[this.title]).to.eql(undefined);
       });
@@ -1264,9 +1895,14 @@ describe('Client metadata validation', () => {
 
     context('tls_client_auth_san_uri', function () {
       mustBeString(this.title, undefined, undefined, configuration);
-      allows(this.title, 'foo', {
-        token_endpoint_auth_method: 'tls_client_auth',
-      }, configuration);
+      allows(
+        this.title,
+        'foo',
+        {
+          token_endpoint_auth_method: 'tls_client_auth',
+        },
+        configuration,
+      );
       allows(this.title, 'foo', undefined, configuration, (client) => {
         expect(client.metadata()[this.title]).to.eql(undefined);
       });
@@ -1274,9 +1910,14 @@ describe('Client metadata validation', () => {
 
     context('tls_client_auth_san_ip', function () {
       mustBeString(this.title, undefined, undefined, configuration);
-      allows(this.title, 'foo', {
-        token_endpoint_auth_method: 'tls_client_auth',
-      }, configuration);
+      allows(
+        this.title,
+        'foo',
+        {
+          token_endpoint_auth_method: 'tls_client_auth',
+        },
+        configuration,
+      );
       allows(this.title, 'foo', undefined, configuration, (client) => {
         expect(client.metadata()[this.title]).to.eql(undefined);
       });
@@ -1284,9 +1925,14 @@ describe('Client metadata validation', () => {
 
     context('tls_client_auth_san_email', function () {
       mustBeString(this.title, undefined, undefined, configuration);
-      allows(this.title, 'foo', {
-        token_endpoint_auth_method: 'tls_client_auth',
-      }, configuration);
+      allows(
+        this.title,
+        'foo',
+        {
+          token_endpoint_auth_method: 'tls_client_auth',
+        },
+        configuration,
+      );
       allows(this.title, 'foo', undefined, configuration, (client) => {
         expect(client.metadata()[this.title]).to.eql(undefined);
       });
@@ -1317,28 +1963,34 @@ describe('Client metadata validation', () => {
     expect(client.redirectUris).to.be.empty;
   }));
 
-  it('allows clients only with client_credentials', () => addClient({
-    client_id: 'resource-server',
-    client_secret: 'foobar',
-    redirect_uris: [],
-    response_types: [],
-    grant_types: ['client_credentials'],
-  }, {
-    features: { clientCredentials: { enabled: true } },
-  }).then((client) => {
+  it('allows clients only with client_credentials', () => addClient(
+    {
+      client_id: 'resource-server',
+      client_secret: 'foobar',
+      redirect_uris: [],
+      response_types: [],
+      grant_types: ['client_credentials'],
+    },
+    {
+      features: { clientCredentials: { enabled: true } },
+    },
+  ).then((client) => {
     expect(client.grantTypes).not.to.be.empty;
     expect(client.responseTypes).to.be.empty;
     expect(client.redirectUris).to.be.empty;
   }));
 
-  it('fails to determine sector identifier', () => addClient({
-    client_id: 'authorization-server',
-    client_secret: 'foobar',
-    redirect_uris: [],
-    response_types: [],
-    grant_types: [],
-    subject_type: 'pairwise',
-  }, { subjectTypes: ['pairwise', 'public'] }).then((client) => {
+  it('fails to determine sector identifier', () => addClient(
+    {
+      client_id: 'authorization-server',
+      client_secret: 'foobar',
+      redirect_uris: [],
+      response_types: [],
+      grant_types: [],
+      subject_type: 'pairwise',
+    },
+    { subjectTypes: ['pairwise', 'public'] },
+  ).then((client) => {
     expect(client.grantTypes).to.be.empty;
     expect(client.responseTypes).to.be.empty;
     expect(client.redirectUris).to.be.empty;
@@ -1351,27 +2003,30 @@ describe('Client metadata validation', () => {
     }
   }));
 
-  context('clientDefaults configuration option allows for default client metadata to be changed', () => {
-    defaultsTo('token_endpoint_auth_method', 'client_secret_post', undefined, {
-      clientDefaults: {
-        token_endpoint_auth_method: 'client_secret_post',
-      },
-    });
-    defaultsTo('id_token_signed_response_alg', 'PS256', undefined, {
-      clientDefaults: {
-        id_token_signed_response_alg: 'PS256',
-      },
-    });
-    defaultsTo('grant_types', ['authorization_code', 'refresh_token'], undefined, {
-      clientDefaults: {
-        grant_types: ['authorization_code', 'refresh_token'],
-      },
-    });
-    defaultsTo('response_types', ['code id_token'], undefined, {
-      clientDefaults: {
-        response_types: ['code id_token'],
-        grant_types: ['authorization_code', 'implicit'],
-      },
-    });
-  });
+  context(
+    'clientDefaults configuration option allows for default client metadata to be changed',
+    () => {
+      defaultsTo('token_endpoint_auth_method', 'client_secret_post', undefined, {
+        clientDefaults: {
+          token_endpoint_auth_method: 'client_secret_post',
+        },
+      });
+      defaultsTo('id_token_signed_response_alg', 'PS256', undefined, {
+        clientDefaults: {
+          id_token_signed_response_alg: 'PS256',
+        },
+      });
+      defaultsTo('grant_types', ['authorization_code', 'refresh_token'], undefined, {
+        clientDefaults: {
+          grant_types: ['authorization_code', 'refresh_token'],
+        },
+      });
+      defaultsTo('response_types', ['code id_token'], undefined, {
+        clientDefaults: {
+          response_types: ['code id_token'],
+          grant_types: ['authorization_code', 'implicit'],
+        },
+      });
+    },
+  );
 });

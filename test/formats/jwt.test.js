@@ -490,7 +490,6 @@ describe('jwt format', () => {
       });
     });
 
-    // eslint-disable-next-line no-restricted-syntax
     for (const prop of ['alg', 'enc', 'key']) {
       // eslint-disable-next-line no-loop-func
       it(`ensures JWE Configuration has ${prop}`, async function () {

@@ -1,5 +1,5 @@
 /* eslint-env mocha */
-/* eslint-disable no-bitwise, func-names, no-console, no-restricted-syntax, no-await-in-loop, no-multi-assign, max-len */
+/* eslint-disable no-bitwise, func-names, no-console, no-await-in-loop, no-multi-assign */
 
 import { strict as assert } from 'node:assert';
 import * as fs from 'node:fs';

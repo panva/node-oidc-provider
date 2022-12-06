@@ -120,7 +120,7 @@ describe('features.dPoP', () => {
 
       const dpop = await at.save();
 
-      for (const value of ['JWT', 'secevent+jwt']) { // eslint-disable-line no-restricted-syntax
+      for (const value of ['JWT', 'secevent+jwt']) {
         await this.agent.get('/me') // eslint-disable-line no-await-in-loop
           .set('DPoP', JWT.sign({}, key, { kid: false, header: { jwk: key, typ: value } }))
           .set('Authorization', `DPoP ${dpop}`)
@@ -131,7 +131,7 @@ describe('features.dPoP', () => {
           .expect('WWW-Authenticate', /algs="ES256 PS256"/);
       }
 
-      for (const value of [1, true, 'none', 'HS256', 'unsupported']) { // eslint-disable-line no-restricted-syntax
+      for (const value of [1, true, 'none', 'HS256', 'unsupported']) {
         await this.agent.get('/me') // eslint-disable-line no-await-in-loop
           .set('DPoP', `${base64url.encode(JSON.stringify({ jwk: key, typ: 'dpop+jwt', alg: value }))}.e30.`)
           .set('Authorization', `DPoP ${dpop}`)
@@ -142,7 +142,7 @@ describe('features.dPoP', () => {
           .expect('WWW-Authenticate', /algs="ES256 PS256"/);
       }
 
-      for (const value of [undefined, '', 1, true, null, 'foo', []]) { // eslint-disable-line no-restricted-syntax
+      for (const value of [undefined, '', 1, true, null, 'foo', []]) {
         await this.agent.get('/me') // eslint-disable-line no-await-in-loop
           .set('DPoP', JWT.sign({}, key, { kid: false, header: { typ: 'dpop+jwt', jwk: value } }))
           .set('Authorization', `DPoP ${dpop}`)

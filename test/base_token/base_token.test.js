@@ -43,8 +43,8 @@ describe('BaseToken', () => {
   });
 
   it('handles invalid inputs', async function () {
-    for (const input of [true, Boolean, 1, Infinity, {}, [], new Set()]) { // eslint-disable-line no-restricted-syntax, max-len
-      const result = await this.provider.RefreshToken.find(input); // eslint-disable-line no-await-in-loop, max-len
+    for (const input of [true, Boolean, 1, Infinity, {}, [], new Set()]) {
+      const result = await this.provider.RefreshToken.find(input); // eslint-disable-line no-await-in-loop
       expect(result).to.be.undefined;
     }
   });

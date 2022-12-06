@@ -1,4 +1,4 @@
-/* eslint-disable no-restricted-syntax, max-len, no-await-in-loop, no-plusplus */
+/* eslint-disable no-await-in-loop */
 import { spawn } from 'node:child_process';
 
 function pass({ mountTo, mountVia } = {}) {

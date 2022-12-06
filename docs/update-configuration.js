@@ -11,7 +11,7 @@ import { defaults } from '../lib/helpers/defaults.js';
 import login from '../lib/helpers/interaction_policy/prompts/login.js';
 import consent from '../lib/helpers/interaction_policy/prompts/consent.js';
 
-for (const [key, value] of Object.entries(defaults.ttl)) { // eslint-disable-line no-restricted-syntax, max-len
+for (const [key, value] of Object.entries(defaults.ttl)) {
   if (['RefreshToken', 'ClientCredentials', 'AccessToken', 'BackchannelAuthenticationRequest'].includes(key)) {
     value[inspect.custom] = () => (
       value.toString()
@@ -216,7 +216,9 @@ try {
 
   let hidden;
   let prev;
-  for (const block of [...adapter, ...clients, ...findAccount, ...jwks, ...features, ...configuration, ...jwa]) { // eslint-disable-line no-restricted-syntax, max-len
+  for (const block of [
+    ...adapter, ...clients, ...findAccount, ...jwks, ...features, ...configuration, ...jwa,
+  ]) {
     const section = blocks[block];
 
     if ('@skip' in section) {
@@ -332,7 +334,7 @@ try {
 
       const parts = [];
       let incode;
-      for (const line of content) { // eslint-disable-line no-restricted-syntax
+      for (const line of content) {
         const backticks = line.indexOf('```') !== -1;
         if (incode) {
           parts[parts.length - 1].push(line);

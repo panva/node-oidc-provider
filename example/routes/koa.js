@@ -1,4 +1,4 @@
-/* eslint-disable no-console, max-len, camelcase, no-unused-vars */
+/* eslint-disable no-console, camelcase, no-unused-vars */
 import { strict as assert } from 'node:assert';
 import * as querystring from 'node:querystring';
 import * as crypto from 'node:crypto';
@@ -182,7 +182,6 @@ export default (provider) => {
       grant.addOIDCClaims(details.missingOIDCClaims);
     }
     if (details.missingResourceScopes) {
-      // eslint-disable-next-line no-restricted-syntax
       for (const [indicator, scope] of Object.entries(details.missingResourceScopes)) {
         grant.addResourceScope(indicator, scope.join(' '));
       }

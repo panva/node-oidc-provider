@@ -28,7 +28,7 @@ merge(config, {
         grant.addOIDCScope(ctx.oidc.requestParamScopes);
 
         const resources = Array.isArray(request.resource) ? request.resource : [request.resource];
-        // eslint-disable-next-line no-restricted-syntax
+
         for (const resource of resources) {
           grant.addResourceScope(resource, request.scope);
         }

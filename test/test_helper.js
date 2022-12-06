@@ -148,7 +148,6 @@ export default function testHelper(importMetaUrl, {
         ctx.params.claims = JSON.stringify(ctx.params.claims);
       }
 
-      // eslint-disable-next-line no-restricted-syntax
       for (const cl of clients) {
         const grant = new provider.Grant({ clientId: cl.client_id, accountId });
         grant.addOIDCScope(scope);
@@ -162,7 +161,7 @@ export default function testHelper(importMetaUrl, {
         if (rejectedClaims.length) {
           grant.rejectOIDCClaims(rejectedClaims);
         }
-        // eslint-disable-next-line no-restricted-syntax
+
         for (const [key, value] of Object.entries(resources)) {
           grant.addResourceScope(key, value);
         }
@@ -188,7 +187,7 @@ export default function testHelper(importMetaUrl, {
     class AuthorizationRequest {
       constructor(parameters = {}) {
         if (parameters.claims && typeof parameters.claims !== 'string') {
-          parameters.claims = JSON.stringify(parameters.claims); // eslint-disable-line no-param-reassign, max-len
+          parameters.claims = JSON.stringify(parameters.claims); // eslint-disable-line no-param-reassign
         }
 
         Object.assign(this, parameters);
@@ -264,7 +263,7 @@ export default function testHelper(importMetaUrl, {
       }
     }
 
-    AuthorizationRequest.prototype.validateInteraction = (eName, ...eReasons) => { // eslint-disable-line arrow-body-style, max-len
+    AuthorizationRequest.prototype.validateInteraction = (eName, ...eReasons) => { // eslint-disable-line arrow-body-style
       return (response) => {
         const uid = readCookie(response.headers['set-cookie'][0]);
         const { prompt: { name, reasons } } = TestAdapter.for('Interaction').syncFind(uid);

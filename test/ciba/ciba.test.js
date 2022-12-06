@@ -48,7 +48,7 @@ describe('features.ciba', () => {
 
       it('"request" must be a supported type', async function () {
         const result = new AccessDenied();
-        // eslint-disable-next-line no-restricted-syntax
+
         for (const request of [{}, [], 0, 1, true, false, new Set(), new Error()]) {
         // eslint-disable-next-line no-await-in-loop
           await assert.rejects(this.provider.backchannelResult(request, result), { name: 'TypeError', message: 'invalid "request" argument' });
@@ -65,7 +65,7 @@ describe('features.ciba', () => {
 
       it('"result" must be a supported type', async function () {
         const request = new this.provider.BackchannelAuthenticationRequest({ clientId: 'client' });
-        // eslint-disable-next-line no-restricted-syntax
+
         for (const result of [{}, [], 0, 1, true, false, new Set(), new Error()]) {
         // eslint-disable-next-line no-await-in-loop
           await assert.rejects(this.provider.backchannelResult(request, result), { name: 'TypeError', message: 'invalid "result" argument' });

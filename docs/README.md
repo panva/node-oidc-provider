@@ -2379,8 +2379,12 @@ new Prompt(
 
     return {
       ...(oidc.params.max_age === undefined ? undefined : { max_age: oidc.params.max_age }),
-      ...(oidc.params.login_hint === undefined ? undefined : { login_hint: oidc.params.login_hint }),
-      ...(oidc.params.id_token_hint === undefined ? undefined : { id_token_hint: oidc.params.id_token_hint }),
+      ...(oidc.params.login_hint === undefined
+        ? undefined
+        : { login_hint: oidc.params.login_hint }),
+      ...(oidc.params.id_token_hint === undefined
+        ? undefined
+        : { id_token_hint: oidc.params.id_token_hint }),
     };
   },
 
@@ -2410,86 +2414,117 @@ new Prompt(
     return Check.NO_NEED_TO_PROMPT;
   }),
 
-  new Check('id_token_hint', 'id_token_hint and authenticated subject do not match', async (ctx) => {
-    const { oidc } = ctx;
-    if (oidc.entities.IdTokenHint === undefined) {
+  new Check(
+    'id_token_hint',
+    'id_token_hint and authenticated subject do not match',
+    async (ctx) => {
+      const { oidc } = ctx;
+      if (oidc.entities.IdTokenHint === undefined) {
+        return Check.NO_NEED_TO_PROMPT;
+      }
+
+      const { payload } = oidc.entities.IdTokenHint;
+
+      let sub = oidc.session.accountId;
+      if (sub === undefined) {
+        return Check.REQUEST_PROMPT;
+      }
+
+      if (oidc.client.subjectType === 'pairwise') {
+        sub = await instance(oidc.provider).configuration('pairwiseIdentifier')(
+          ctx,
+          sub,
+          oidc.client,
+        );
+      }
+
+      if (payload.sub !== sub) {
+        return Check.REQUEST_PROMPT;
+      }
+
       return Check.NO_NEED_TO_PROMPT;
-    }
+    },
+  ),
 
-    const { payload } = oidc.entities.IdTokenHint;
+  new Check(
+    'claims_id_token_sub_value',
+    'requested subject could not be obtained',
+    async (ctx) => {
+      const { oidc } = ctx;
 
-    let sub = oidc.session.accountId;
-    if (sub === undefined) {
+      if (
+        !oidc.claims.id_token
+          || !oidc.claims.id_token.sub
+          || !('value' in oidc.claims.id_token.sub)
+      ) {
+        return Check.NO_NEED_TO_PROMPT;
+      }
+
+      let sub = oidc.session.accountId;
+      if (sub === undefined) {
+        return Check.REQUEST_PROMPT;
+      }
+
+      if (oidc.client.subjectType === 'pairwise') {
+        sub = await instance(oidc.provider).configuration('pairwiseIdentifier')(
+          ctx,
+          sub,
+          oidc.client,
+        );
+      }
+
+      if (oidc.claims.id_token.sub.value !== sub) {
+        return Check.REQUEST_PROMPT;
+      }
+
+      return Check.NO_NEED_TO_PROMPT;
+    },
+    ({ oidc }) => ({ sub: oidc.claims.id_token.sub }),
+  ),
+
+  new Check(
+    'essential_acrs',
+    'none of the requested ACRs could not be obtained',
+    (ctx) => {
+      const { oidc } = ctx;
+      const request = get(oidc.claims, 'id_token.acr', {});
+
+      if (!request || !request.essential || !request.values) {
+        return Check.NO_NEED_TO_PROMPT;
+      }
+
+      if (!Array.isArray(oidc.claims.id_token.acr.values)) {
+        throw new errors.InvalidRequest('invalid claims.id_token.acr.values type');
+      }
+
+      if (request.values.includes(oidc.acr)) {
+        return Check.NO_NEED_TO_PROMPT;
+      }
+
       return Check.REQUEST_PROMPT;
-    }
+    },
+    ({ oidc }) => ({ acr: oidc.claims.id_token.acr }),
+  ),
 
-    if (oidc.client.subjectType === 'pairwise') {
-      sub = await instance(oidc.provider).configuration('pairwiseIdentifier')(ctx, sub, oidc.client);
-    }
+  new Check(
+    'essential_acr',
+    'requested ACR could not be obtained',
+    (ctx) => {
+      const { oidc } = ctx;
+      const request = get(oidc.claims, 'id_token.acr', {});
 
-    if (payload.sub !== sub) {
+      if (!request || !request.essential || !request.value) {
+        return Check.NO_NEED_TO_PROMPT;
+      }
+
+      if (request.value === oidc.acr) {
+        return Check.NO_NEED_TO_PROMPT;
+      }
+
       return Check.REQUEST_PROMPT;
-    }
-
-    return Check.NO_NEED_TO_PROMPT;
-  }),
-
-  new Check('claims_id_token_sub_value', 'requested subject could not be obtained', async (ctx) => {
-    const { oidc } = ctx;
-
-    if (!oidc.claims.id_token || !oidc.claims.id_token.sub || !('value' in oidc.claims.id_token.sub)) {
-      return Check.NO_NEED_TO_PROMPT;
-    }
-
-    let sub = oidc.session.accountId;
-    if (sub === undefined) {
-      return Check.REQUEST_PROMPT;
-    }
-
-    if (oidc.client.subjectType === 'pairwise') {
-      sub = await instance(oidc.provider).configuration('pairwiseIdentifier')(ctx, sub, oidc.client);
-    }
-
-    if (oidc.claims.id_token.sub.value !== sub) {
-      return Check.REQUEST_PROMPT;
-    }
-
-    return Check.NO_NEED_TO_PROMPT;
-  }, ({ oidc }) => ({ sub: oidc.claims.id_token.sub })),
-
-  new Check('essential_acrs', 'none of the requested ACRs could not be obtained', (ctx) => {
-    const { oidc } = ctx;
-    const request = get(oidc.claims, 'id_token.acr', {});
-
-    if (!request || !request.essential || !request.values) {
-      return Check.NO_NEED_TO_PROMPT;
-    }
-
-    if (!Array.isArray(oidc.claims.id_token.acr.values)) {
-      throw new errors.InvalidRequest('invalid claims.id_token.acr.values type');
-    }
-
-    if (request.values.includes(oidc.acr)) {
-      return Check.NO_NEED_TO_PROMPT;
-    }
-
-    return Check.REQUEST_PROMPT;
-  }, ({ oidc }) => ({ acr: oidc.claims.id_token.acr })),
-
-  new Check('essential_acr', 'requested ACR could not be obtained', (ctx) => {
-    const { oidc } = ctx;
-    const request = get(oidc.claims, 'id_token.acr', {});
-
-    if (!request || !request.essential || !request.value) {
-      return Check.NO_NEED_TO_PROMPT;
-    }
-
-    if (request.value === oidc.acr) {
-      return Check.NO_NEED_TO_PROMPT;
-    }
-
-    return Check.REQUEST_PROMPT;
-  }, ({ oidc }) => ({ acr: oidc.claims.id_token.acr })),
+    },
+    ({ oidc }) => ({ acr: oidc.claims.id_token.acr }),
+  ),
 )
 
 /* CONSENT PROMPT */
@@ -2514,7 +2549,7 @@ new Prompt(
     const encounteredScopes = new Set(oidc.grant.getOIDCScopeEncountered().split(' '));
 
     let missing;
-    for (const scope of oidc.requestParamOIDCScopes) { // eslint-disable-line no-restricted-syntax
+    for (const scope of oidc.requestParamOIDCScopes) {
       if (!encounteredScopes.has(scope)) {
         missing ||= [];
         missing.push(scope);
@@ -2534,7 +2569,7 @@ new Prompt(
     const encounteredClaims = new Set(oidc.grant.getOIDCClaimsEncountered());
 
     let missing;
-    for (const claim of oidc.requestParamClaims) { // eslint-disable-line no-restricted-syntax
+    for (const claim of oidc.requestParamClaims) {
       if (!encounteredClaims.has(claim) && !['sub', 'sid', 'auth_time', 'acr', 'amr', 'iss'].includes(claim)) {
         missing ||= [];
         missing.push(claim);
@@ -2555,13 +2590,12 @@ new Prompt(
 
     let missing;
 
-    // eslint-disable-next-line no-restricted-syntax
     for (const [indicator, resourceServer] of Object.entries(ctx.oidc.resourceServers)) {
       const encounteredScopes = new Set(oidc.grant.getResourceScopeEncountered(indicator).split(' '));
       const requestedScopes = ctx.oidc.requestParamScopes;
       const availableScopes = resourceServer.scopes;
 
-      for (const scope of requestedScopes) { // eslint-disable-line no-restricted-syntax
+      for (const scope of requestedScopes) {
         if (availableScopes.has(scope) && !encounteredScopes.has(scope)) {
           missing || (missing = {});
           missing[indicator] || (missing[indicator] = []);
@@ -2670,7 +2704,8 @@ Helper function used to load existing but also just in time pre-established Gran
 _**default value**_:
 ```js
 async function loadExistingGrant(ctx) {
-  const grantId = (ctx.oidc.result?.consent?.grantId) || ctx.oidc.session.grantIdFor(ctx.oidc.client.clientId);
+  const grantId = (ctx.oidc.result?.consent?.grantId)
+    || ctx.oidc.session.grantIdFor(ctx.oidc.client.clientId);
   if (grantId) {
     return ctx.oidc.provider.Grant.find(grantId);
   }
