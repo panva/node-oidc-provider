@@ -2203,7 +2203,7 @@ async function expiresWithSession(ctx, code) {
 
 ### extraClientMetadata
 
-Allows for custom client metadata to be defined, validated, manipulated as well as for existing property validations to be extended. Existing properties are snakeCased on a Client instance (e.g. `client.redirectUris`), new properties (defined by this configuration) will be avaialable with their names verbatim (e.g. `client['urn:example:client:my-property']`)  
+Allows for custom client metadata to be defined, validated, manipulated as well as for existing property validations to be extended. Existing properties are snakeCased on a Client instance (e.g. `client.redirectUris`), new properties (defined by this configuration) will be available with their names verbatim (e.g. `client['urn:example:client:my-property']`)  
 
 
 ### extraClientMetadata.properties
