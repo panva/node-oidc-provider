@@ -160,6 +160,18 @@ export default {
         kty: 'OKP',
         use: 'sig',
         x: 'BG1zKFg6A_Rzix4pA08oYN5xHqhKIiREXZ59NZoA8p3xhgjh-tm8nc-6udtiL5ZNhWDbnRSq4jQA',
+      }, {
+        crv: 'X25519',
+        d: '2FxH51AcogWa_0iVjUngdfu-HBXXt7qdAeqUKLbRwnA',
+        x: 'k78x74A5JRGr8XW75Rpu7W4_cgZFkm_mvToVAXHDgE8',
+        kty: 'OKP',
+        use: 'enc',
+      }, {
+        crv: 'X448',
+        d: 'ONXShn4L3QWTSuXd2JSTzuwQ0ZJHUu39j35owJ_qtXzRCqWVtkjCo7FXYNxo-mwtFR8xkO-hO8Y',
+        x: 'b30-VJpeXpRLcWtQpr75W2YIN4010rHjfV850uK1Ap9RddHw9Bs7VZ-8lE7-nB7X9E8jLB6C_xw',
+        kty: 'OKP',
+        use: 'enc',
       },
     ],
   },
