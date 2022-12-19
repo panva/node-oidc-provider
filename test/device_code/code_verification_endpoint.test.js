@@ -77,14 +77,14 @@ describe('POST code_verification endpoint w/o verification', () => {
 
     await new this.provider.DeviceCode({
       clientId: 'client',
-      userCode: 'FOOCODE',
+      userCode: 'FOOOCODE',
       deviceInfo,
     }).save();
 
     await this.agent.post(route)
       .send({
         xsrf,
-        user_code: 'FOO-CODE',
+        user_code: 'FOOO-CODE',
       })
       .type('form')
       .expect(200)
@@ -94,7 +94,7 @@ describe('POST code_verification endpoint w/o verification', () => {
     sinon.assert.calledWithMatch(spy, any, any, sinon.match((client) => {
       expect(client.clientId).to.equal('client');
       return true;
-    }), deviceInfo);
+    }), deviceInfo, 'FOOO-CODE');
   });
 
   it('re-renders on no submitted code', async function () {
