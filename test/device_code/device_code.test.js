@@ -72,6 +72,39 @@ describe('configuration features.deviceFlow', () => {
     }).to.throw('mask can only contain asterisk("*"), hyphen-minus("-") and space(" ") characters');
   });
 
+  it('can be configured with a confirmParamName', () => {
+    expect(() => {
+      new Provider('http://localhost', {
+        features: {
+          deviceFlow: {
+            enabled: true,
+            confirmParamName: 'approved',
+          },
+        },
+      });
+    }).not.to.throw;
+    expect(() => {
+      new Provider('http://localhost', {
+        features: {
+          deviceFlow: {
+            enabled: true,
+            confirmParamName: 'accept_request',
+          },
+        },
+      });
+    }).not.to.throw;
+    expect(() => {
+      new Provider('http://localhost', {
+        features: {
+          deviceFlow: {
+            enabled: true,
+            confirmParamName: 'abc+12',
+          },
+        },
+      });
+    }).to.throw('confirmation parameter name needs to be 1 - 20 characters in length and use only a basic set of characters (matching the regex: ^[a-zA-Z0-9_]{1,20}$ )');
+  });
+
   it('extends discovery', function () {
     return this.agent.get('/.well-known/openid-configuration')
       .expect(200)
