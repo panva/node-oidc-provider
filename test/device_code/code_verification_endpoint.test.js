@@ -319,6 +319,7 @@ describe('POST code_verification endpoint w/ verification', () => {
       await this.agent.post(route)
         .send({
           xsrf,
+          confirm: '',
           abort: 'yes',
           user_code: 'FOO',
         })
