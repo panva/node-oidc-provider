@@ -99,6 +99,6 @@
     "timekeeper": "^2.2.0"
   },
   "engines": {
-    "node": "18"
+    "node": "^18"
   }
 }
