@@ -8,12 +8,12 @@ import { promisify } from 'node:util';
 import { URL } from 'node:url';
 
 import { dirname } from 'desm';
-import jose from 'jose2';
 import helmet from 'helmet';
 import { generate } from 'selfsigned';
 
 import Provider, { errors } from '../../lib/index.js'; // from 'oidc-provider';
 import MemoryAdapter from '../../lib/adapters/memory_adapter.js';
+import { stripPrivateJWKFields } from '../../test/keys.js';
 
 const __dirname = dirname(import.meta.url);
 const selfsigned = generate();
@@ -23,10 +23,10 @@ const { PORT = 3000, ISSUER = `http://localhost:${PORT}`, SUITE_BASE_URL = OFFIC
 const ALGS = ['PS256'];
 const clientAuthMethods = ['private_key_jwt', 'self_signed_tls_client_auth'];
 
-const normalize = (cert) => cert.toString().replace(/(?:-----(?:BEGIN|END) CERTIFICATE-----|\s)/g, '');
-
-const JWK_ONE = jose.JWK.asKey(readFileSync(path.join(__dirname, 'one.key')), { x5c: [normalize(readFileSync(path.join(__dirname, 'one.crt')))], alg: 'PS256', use: 'sig' }).toJWK();
-const JWK_TWO = jose.JWK.asKey(readFileSync(path.join(__dirname, 'two.key')), { x5c: [normalize(readFileSync(path.join(__dirname, 'two.crt')))], alg: 'PS256', use: 'sig' }).toJWK();
+const {
+  client: { jwks: { keys: [JWK_ONE] } },
+  client2: { jwks: { keys: [JWK_TWO] } },
+} = JSON.parse(readFileSync(path.join(__dirname, 'plan.json')));
 
 function jwk(metadata, key) {
   return {
@@ -105,10 +105,10 @@ const adapter = (name) => {
         let key;
         switch (num) {
           case 'one':
-            key = JWK_ONE;
+            key = stripPrivateJWKFields(JWK_ONE);
             break;
           case 'two':
-            key = JWK_TWO;
+            key = stripPrivateJWKFields(JWK_TWO);
             break;
           default:
             return orig.call(this, id);
