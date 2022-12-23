@@ -2,7 +2,6 @@ import { randomBytes } from 'node:crypto';
 
 import { expect } from 'chai';
 import sinon from 'sinon';
-import jose from 'jose2';
 import { importJWK, decodeProtectedHeader, decodeJwt } from 'jose';
 
 import * as JWT from '../../lib/helpers/jwt.js';
@@ -489,7 +488,7 @@ describe('Pushed Request Object', () => {
 
               expect(spy).to.have.property('calledOnce', true);
               const { request } = spy.args[0][0];
-              const payload = jose.JWT.decode(request);
+              const payload = decodeJwt(request);
               expect(payload).not.to.have.property('nonce');
               expect(payload).to.have.property('response_type', 'code');
             });

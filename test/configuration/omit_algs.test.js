@@ -1,5 +1,5 @@
 import { expect } from 'chai';
-import jose from 'jose2';
+import { generateKeyPair } from 'jose';
 
 import Provider from '../../lib/index.js';
 
@@ -34,13 +34,14 @@ describe('Provider declaring supported algorithms', () => {
     }).to.throw('unsupported enabledJWA.clientAuthSigningAlgValues algorithm provided');
   });
 
-  it('idTokenSigningAlgValues', () => {
+  it('idTokenSigningAlgValues', async () => {
+    const { privateKey } = await generateKeyPair('RS256');
     const provider = new Provider('https://op.example.com', {
       enabledJWA: {
         idTokenSigningAlgValues: ['HS256', 'RS256'],
       },
       jwks: {
-        keys: [jose.JWK.generateSync('RSA').toJWK(true)],
+        keys: [privateKey.export({ format: 'jwk' })],
       },
     });
 

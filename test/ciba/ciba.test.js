@@ -4,7 +4,7 @@ import { once } from 'node:events';
 import sinon from 'sinon';
 import { expect } from 'chai';
 import nock from 'nock';
-import jose from 'jose2';
+import { generateKeyPair, SignJWT } from 'jose';
 
 import { AccessDenied } from '../../lib/helpers/errors.js';
 import bootstrap from '../test_helper.js';
@@ -603,30 +603,28 @@ describe('features.ciba', () => {
               error: 'invalid_request',
               error_description: 'Request Object must be used by this client',
             });
-          const jwk = await jose.JWK.generate('EC', 'P-256', { alg: 'ES256' });
+
+          const { privateKey, publicKey } = await generateKeyPair('ES256');
 
           nock('https://rp.example.com/')
             .get('/jwks')
-            .reply(200, { keys: [jwk.toJWK(false)] });
+            .reply(200, { keys: [publicKey.export({ format: 'jwk' })] });
 
           return this.agent.post(route)
             .send({
               client_id: 'client-signed',
-              request: jose.JWT.sign(
-                {
-                  client_id: 'client-signed',
-                  scope: 'openid',
-                  jti: 'foo',
-                  login_hint: 'accountId',
-                },
-                jwk,
-                {
-                  expiresIn: '5m',
-                  notBefore: '0s',
-                  issuer: 'client-signed',
-                  audience: this.provider.issuer,
-                },
-              ),
+              request: await new SignJWT({
+                client_id: 'client-signed',
+                scope: 'openid',
+                login_hint: 'accountId',
+              }).setProtectedHeader({ alg: 'ES256' })
+                .setJti('foo')
+                .setExpirationTime('5m')
+                .setNotBefore('0s')
+                .setIssuer('client-signed')
+                .setIssuedAt()
+                .setAudience(this.provider.issuer)
+                .sign(privateKey),
             })
             .type('form')
             .expect(200);
@@ -636,24 +634,23 @@ describe('features.ciba', () => {
           const spy = sinon.spy();
           this.provider.once('backchannel_authentication.error', spy);
 
+          const { privateKey } = await generateKeyPair('ES256');
+
           return this.agent.post(route)
             .send({
               client_id: 'client-signed',
-              request: jose.JWT.sign(
-                {
-                  client_id: 'client-signed',
-                  scope: 'openid',
-                  jti: 'foo',
-                  login_hint: 'accountId',
-                },
-                await jose.JWK.generate('EC', 'P-256', { alg: 'ES256' }),
-                {
-                  // expiresIn: '5m',
-                  notBefore: '0s',
-                  issuer: 'client-signed',
-                  audience: this.provider.issuer,
-                },
-              ),
+              request: await new SignJWT({
+                client_id: 'client-signed',
+                scope: 'openid',
+                login_hint: 'accountId',
+              }).setProtectedHeader({ alg: 'ES256' })
+                .setJti('foo')
+                // .setExpirationTime('5m')
+                .setNotBefore('0s')
+                .setIssuer('client-signed')
+                .setIssuedAt()
+                .setAudience(this.provider.issuer)
+                .sign(privateKey),
             })
             .type('form')
             .expect(400)
@@ -671,24 +668,23 @@ describe('features.ciba', () => {
           const spy = sinon.spy();
           this.provider.once('backchannel_authentication.error', spy);
 
+          const { privateKey } = await generateKeyPair('ES256');
+
           return this.agent.post(route)
             .send({
               client_id: 'client-signed',
-              request: jose.JWT.sign(
-                {
-                  client_id: 'client-signed',
-                  scope: 'openid',
-                  jti: 'foo',
-                  login_hint: 'accountId',
-                },
-                await jose.JWK.generate('EC', 'P-256', { alg: 'ES256' }),
-                {
-                  expiresIn: '5m',
-                  // notBefore: '0s',
-                  issuer: 'client-signed',
-                  audience: this.provider.issuer,
-                },
-              ),
+              request: await new SignJWT({
+                client_id: 'client-signed',
+                scope: 'openid',
+                login_hint: 'accountId',
+              }).setProtectedHeader({ alg: 'ES256' })
+                .setJti('foo')
+                .setExpirationTime('5m')
+                // .setNotBefore('0s')
+                .setIssuer('client-signed')
+                .setIssuedAt()
+                .setAudience(this.provider.issuer)
+                .sign(privateKey),
             })
             .type('form')
             .expect(400)
@@ -706,24 +702,23 @@ describe('features.ciba', () => {
           const spy = sinon.spy();
           this.provider.once('backchannel_authentication.error', spy);
 
+          const { privateKey } = await generateKeyPair('ES256');
+
           return this.agent.post(route)
             .send({
               client_id: 'client-signed',
-              request: jose.JWT.sign(
-                {
-                  client_id: 'client-signed',
-                  scope: 'openid',
-                  // jti: 'foo',
-                  login_hint: 'accountId',
-                },
-                await jose.JWK.generate('EC', 'P-256', { alg: 'ES256' }),
-                {
-                  expiresIn: '5m',
-                  notBefore: '0s',
-                  issuer: 'client-signed',
-                  audience: this.provider.issuer,
-                },
-              ),
+              request: await new SignJWT({
+                client_id: 'client-signed',
+                scope: 'openid',
+                login_hint: 'accountId',
+              }).setProtectedHeader({ alg: 'ES256' })
+                // .setJti('foo')
+                .setExpirationTime('5m')
+                .setNotBefore('0s')
+                .setIssuer('client-signed')
+                .setIssuedAt()
+                .setAudience(this.provider.issuer)
+                .sign(privateKey),
             })
             .type('form')
             .expect(400)
@@ -741,25 +736,23 @@ describe('features.ciba', () => {
           const spy = sinon.spy();
           this.provider.once('backchannel_authentication.error', spy);
 
+          const { privateKey } = await generateKeyPair('ES256');
+
           return this.agent.post(route)
             .send({
               client_id: 'client-signed',
-              request: jose.JWT.sign(
-                {
-                  client_id: 'client-signed',
-                  scope: 'openid',
-                  jti: 'foo',
-                  login_hint: 'accountId',
-                },
-                await jose.JWK.generate('EC', 'P-256', { alg: 'ES256' }),
-                {
-                  expiresIn: '5m',
-                  notBefore: '0s',
-                  iat: false,
-                  issuer: 'client-signed',
-                  audience: this.provider.issuer,
-                },
-              ),
+              request: await new SignJWT({
+                client_id: 'client-signed',
+                scope: 'openid',
+                login_hint: 'accountId',
+              }).setProtectedHeader({ alg: 'ES256' })
+                .setJti('foo')
+                .setExpirationTime('5m')
+                .setNotBefore('0s')
+                .setIssuer('client-signed')
+                // .setIssuedAt()
+                .setAudience(this.provider.issuer)
+                .sign(privateKey),
             })
             .type('form')
             .expect(400)

@@ -1,6 +1,6 @@
+import { generateKeyPair } from 'jose';
 import merge from 'lodash/merge.js';
 import pull from 'lodash/pull.js';
-import jose from 'jose2';
 
 import getConfig from '../default.config.js';
 
@@ -18,15 +18,7 @@ merge(config.features, {
 pull(config.enabledJWA.requestObjectEncryptionAlgValues, 'RSA-OAEP-512');
 pull(config.enabledJWA.requestObjectEncryptionEncValues, 'A192CBC-HS384');
 
-const k = jose.JWK.generateSync('RSA', 2048);
-
-export const privKey = {
-  keys: [k.toJWK(true)],
-};
-
-const pubKey = {
-  keys: [k.toJWK(false)],
-};
+export const keypair = await generateKeyPair('RS256');
 
 export default {
   config,
@@ -37,7 +29,7 @@ export default {
       redirect_uris: ['https://client.example.com/cb'],
       response_types: ['id_token token', 'code'],
       grant_types: ['implicit', 'authorization_code'],
-      jwks: pubKey,
+      jwks: { keys: [keypair.publicKey.export({ format: 'jwk' })] },
       id_token_encrypted_response_alg: 'RSA-OAEP',
       // id_token_encrypted_response_enc: 'A128CBC-HS256',
       request_object_encryption_alg: 'RSA-OAEP',

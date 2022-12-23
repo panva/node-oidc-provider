@@ -1,13 +1,13 @@
-import * as crypto from 'node:crypto';
 import { strict as assert } from 'node:assert';
 
+import { generateKeyPair } from 'jose';
 import merge from 'lodash/merge.js';
 
 import getConfig from '../default.config.js';
 
 const config = getConfig();
 
-export const keypair = crypto.generateKeyPairSync('ec', { namedCurve: 'P-256' });
+export const keypair = await generateKeyPair('ES256');
 
 merge(config.features, {
   fapi: {

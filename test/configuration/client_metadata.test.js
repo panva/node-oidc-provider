@@ -11,16 +11,17 @@ import cloneDeep from 'lodash/cloneDeep.js';
 import Provider, { errors } from '../../lib/index.js';
 import { enabledJWA } from '../default.config.js';
 import sectorIdentifier from '../../lib/helpers/sector_identifier.js';
+import keys, { stripPrivateJWKFields } from '../keys.js';
 
-const sigKey = global.keystore.get().toJWK();
-const privateKey = global.keystore.get().toJWK(true);
+const sigKey = stripPrivateJWKFields(keys[0]);
+const privateKey = keys[0];
 const { InvalidClientMetadata } = errors;
 
 describe('Client metadata validation', () => {
   let DefaultProvider;
   before(() => {
     DefaultProvider = new Provider('http://localhost', {
-      jwks: global.keystore.toJWKS(true),
+      jwks: { keys },
       enabledJWA: cloneDeep(enabledJWA),
     });
   });
@@ -32,7 +33,7 @@ describe('Client metadata validation', () => {
         'http://localhost',
         merge(
           {
-            jwks: global.keystore.toJWKS(true),
+            jwks: { keys },
             enabledJWA: cloneDeep(enabledJWA),
           },
           configuration,

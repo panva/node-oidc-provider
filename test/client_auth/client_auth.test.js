@@ -1,8 +1,8 @@
+import { createPrivateKey } from 'node:crypto';
 import { readFileSync } from 'node:fs';
 
 import got from 'got'; // eslint-disable-line import/no-unresolved
 import nock from 'nock';
-import jose from 'jose2';
 import { importJWK } from 'jose';
 import sinon from 'sinon';
 import { expect } from 'chai';
@@ -1140,11 +1140,7 @@ describe('client authentication options', () => {
   });
 
   describe('private_key_jwt auth', () => {
-    let privateKey;
-
-    before(() => {
-      privateKey = jose.JWK.asKey(clientKey);
-    });
+    const privateKey = createPrivateKey({ format: 'jwk', key: clientKey });
 
     after(function () {
       i(this.provider).configuration().clockTolerance = 0;
@@ -1156,7 +1152,7 @@ describe('client authentication options', () => {
         aud: this.provider.issuer + this.suitePath('/token'),
         sub: 'client-jwt-key',
         iss: 'client-jwt-key',
-      }, privateKey.keyObject, 'RS256', {
+      }, privateKey, 'RS256', {
         expiresIn: 60,
       }).then((assertion) => this.agent.post(route)
         .send({
@@ -1176,7 +1172,7 @@ describe('client authentication options', () => {
         sub: 'client-jwt-key',
         iss: 'client-jwt-key',
         iat: Math.ceil(Date.now() / 1000) + 5,
-      }, privateKey.keyObject, 'RS256', {
+      }, privateKey, 'RS256', {
         expiresIn: 60,
       }).then((assertion) => this.agent.post(route)
         .send({

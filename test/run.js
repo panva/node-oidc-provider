@@ -25,13 +25,6 @@ console.warn = function (...args) {
 
 async function run() {
   clearRequireCache.all();
-  const jose = await import('jose2');
-  global.keystore = new jose.JWKS.KeyStore();
-  await Promise.all([
-    global.keystore.generate('RSA', 2048),
-    global.keystore.generate('EC', 'P-256'),
-    global.keystore.generate('OKP', 'Ed25519'),
-  ]);
 
   process.env.MOUNT_VIA = process.env.MOUNT_VIA || '';
   process.env.MOUNT_TO = process.env.MOUNT_TO || '/';

@@ -24,6 +24,7 @@ import Provider from '../lib/index.js';
 import instance from '../lib/helpers/weak_cache.js';
 
 import { Account, TestAdapter } from './models.js';
+import keys from './keys.js';
 
 process.env.NODE_ENV = process.env.NODE_ENV || 'test';
 
@@ -97,7 +98,7 @@ export default function testHelper(importMetaUrl, {
 
     const provider = new Provider(issuerIdentifier, {
       clients,
-      jwks: global.keystore.toJWKS(true),
+      jwks: { keys },
       adapter: TestAdapter,
       ...config,
     });
@@ -131,14 +132,14 @@ export default function testHelper(importMetaUrl, {
       expire.setDate(expire.getDate() + 1);
       this.loggedInAccountId = accountId;
 
-      const keys = new KeyGrip(i(provider).configuration('cookies.keys'));
+      const keyGrip = new KeyGrip(i(provider).configuration('cookies.keys'));
       const session = new (provider.Session)({ jti: sessionId, loginTs, accountId });
       lastSession = session;
       const sessionCookie = `_session=${sessionId}; path=/; expires=${expire.toGMTString()}; httponly`;
       const cookies = [sessionCookie];
 
       const [pre, ...post] = sessionCookie.split(';');
-      cookies.push([`_session.sig=${keys.sign(pre)}`, ...post].join(';'));
+      cookies.push([`_session.sig=${keyGrip.sign(pre)}`, ...post].join(';'));
 
       session.authorizations = {};
       const ctx = new provider.OIDCContext({ req: { socket: {} }, res: {} });
@@ -278,7 +279,7 @@ export default function testHelper(importMetaUrl, {
       response.headers.location = response.headers.location.replace('#', '?'); // eslint-disable-line no-param-reassign
     };
 
-    AuthorizationRequest.prototype.validatePresence = function (keys, all) {
+    AuthorizationRequest.prototype.validatePresence = function (properties, all) {
       let absolute;
       if (all === undefined) {
         absolute = true;
@@ -287,16 +288,16 @@ export default function testHelper(importMetaUrl, {
       }
 
       // eslint-disable-next-line no-param-reassign
-      keys = (!absolute || keys.includes('id_token') || keys.includes('response')) ? keys : [...new Set(keys.concat('iss'))];
+      properties = (!absolute || properties.includes('id_token') || properties.includes('response')) ? properties : [...new Set(properties.concat('iss'))];
 
       return (response) => {
         const { query } = parse(response.headers.location, true);
         if (absolute) {
-          expect(query).to.have.keys(keys);
+          expect(query).to.have.keys(properties);
         } else {
-          expect(query).to.contain.keys(keys);
+          expect(query).to.contain.keys(properties);
         }
-        keys.forEach((key) => {
+        properties.forEach((key) => {
           this.res[key] = query[key];
         });
       };

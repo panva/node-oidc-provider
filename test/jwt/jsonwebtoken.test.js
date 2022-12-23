@@ -1,17 +1,11 @@
 import { expect } from 'chai';
-import jose from 'jose2';
+import { generateKeyPair, generateSecret, exportJWK } from 'jose';
 
 import * as JWT from '../../lib/helpers/jwt.js';
 import epochTime from '../../lib/helpers/epoch_time.js';
 import KeyStore from '../../lib/helpers/keystore.js';
 
-const ks = new jose.JWKS.KeyStore();
-
 describe('JSON Web Token (JWT) RFC7519 implementation', () => {
-  before(() => ks.generate('oct', 256)
-    .then(() => ks.add(global.keystore.get({ kty: 'RSA' })))
-    .then(() => ks.add(global.keystore.get({ kty: 'EC' }))));
-
   describe('.decode()', () => {
     it('doesnt decode non strings or non buffers', () => {
       expect(() => JWT.decode({})).to.throw(TypeError);
@@ -30,19 +24,22 @@ describe('JSON Web Token (JWT) RFC7519 implementation', () => {
       expect(err).to.be.ok;
     }));
 
-  it('does not verify none with a key', () => JWT.sign({ data: true }, null, 'none')
-    .then((jwt) => JWT.verify(jwt, new KeyStore([ks.get({ kty: 'oct' }).toJWK(true)])))
-    .then((valid) => {
-      expect(valid).not.to.be.ok;
-    }, (err) => {
-      expect(err).to.be.ok;
-    }));
+  it('does not verify none with a key', async () => {
+    const keyobject = await generateSecret('HS256');
+    const jwk = await exportJWK(keyobject);
 
-  it('signs and validates with oct', () => {
-    const key = ks.get({ kty: 'oct' });
-    const keyobject = key.keyObject;
-    const jwk = key.toJWK(true);
-    delete jwk.kid;
+    return JWT.sign({ data: true }, null, 'none')
+      .then((jwt) => JWT.verify(jwt, new KeyStore([jwk])))
+      .then((valid) => {
+        expect(valid).not.to.be.ok;
+      }, (err) => {
+        expect(err).to.be.ok;
+      });
+  });
+
+  it('signs and validates with oct', async () => {
+    const keyobject = await generateSecret('HS256');
+    const jwk = await exportJWK(keyobject);
     return JWT.sign({ data: true }, keyobject, 'HS256')
       .then((jwt) => JWT.verify(jwt, new KeyStore([jwk])))
       .then((decoded) => {
@@ -52,10 +49,8 @@ describe('JSON Web Token (JWT) RFC7519 implementation', () => {
       });
   });
 
-  it('handles utf8 characters', () => {
-    const key = ks.get({ kty: 'oct' });
-    const keyobject = key.keyObject;
-
+  it('handles utf8 characters', async () => {
+    const keyobject = await generateSecret('HS256');
     return JWT.sign({ 'ś∂źć√': 'ś∂źć√' }, keyobject, 'HS256')
       .then((jwt) => JWT.decode(jwt))
       .then((decoded) => {
@@ -63,11 +58,10 @@ describe('JSON Web Token (JWT) RFC7519 implementation', () => {
       });
   });
 
-  it('signs and validates with RSA', () => {
-    const key = ks.get({ kty: 'RSA' });
-    const keyobject = key.keyObject;
-    const jwk = key.toJWK(false);
-    return JWT.sign({ data: true }, keyobject, 'RS256')
+  it('signs and validates with RSA', async () => {
+    const { privateKey, publicKey } = await generateKeyPair('RS256');
+    const jwk = await exportJWK(publicKey);
+    return JWT.sign({ data: true }, privateKey, 'RS256')
       .then((jwt) => JWT.verify(jwt, new KeyStore([jwk])))
       .then((decoded) => {
         expect(decoded.header).to.have.property('alg', 'RS256');
@@ -75,11 +69,10 @@ describe('JSON Web Token (JWT) RFC7519 implementation', () => {
       });
   });
 
-  it('signs and validates with EC', () => {
-    const key = ks.get({ kty: 'EC' });
-    const keyobject = key.keyObject;
-    const jwk = key.toJWK(false);
-    return JWT.sign({ data: true }, keyobject, 'ES256')
+  it('signs and validates with EC', async () => {
+    const { privateKey, publicKey } = await generateKeyPair('ES256');
+    const jwk = await exportJWK(publicKey);
+    return JWT.sign({ data: true }, privateKey, 'ES256')
       .then((jwt) => JWT.verify(jwt, new KeyStore([jwk])))
       .then((decoded) => {
         expect(decoded.header).to.have.property('alg', 'ES256');
@@ -87,32 +80,43 @@ describe('JSON Web Token (JWT) RFC7519 implementation', () => {
       });
   });
 
+  it('signs and validates with EdDSA', async () => {
+    const { privateKey, publicKey } = await generateKeyPair('EdDSA');
+    const jwk = await exportJWK(publicKey);
+    return JWT.sign({ data: true }, privateKey, 'EdDSA')
+      .then((jwt) => JWT.verify(jwt, new KeyStore([jwk])))
+      .then((decoded) => {
+        expect(decoded.header).to.have.property('alg', 'EdDSA');
+        expect(decoded.payload).to.contain({ data: true });
+      });
+  });
+
   describe('sign options', () => {
-    it('iat by default', () => JWT.sign({ data: true }, Buffer.from('secret'), 'HS256')
+    it('iat by default', async () => JWT.sign({ data: true }, await generateSecret('HS256'), 'HS256')
       .then((jwt) => JWT.decode(jwt))
       .then((decoded) => {
         expect(decoded.payload).to.have.property('iat');
       }));
 
-    it('expiresIn', () => JWT.sign({ data: true }, Buffer.from('secret'), 'HS256', { expiresIn: 60 })
+    it('expiresIn', async () => JWT.sign({ data: true }, await generateSecret('HS256'), 'HS256', { expiresIn: 60 })
       .then((jwt) => JWT.decode(jwt))
       .then((decoded) => {
         expect(decoded.payload).to.have.property('exp', decoded.payload.iat + 60);
       }));
 
-    it('audience', () => JWT.sign({ data: true }, Buffer.from('secret'), 'HS256', { audience: 'clientId' })
+    it('audience', async () => JWT.sign({ data: true }, await generateSecret('HS256'), 'HS256', { audience: 'clientId' })
       .then((jwt) => JWT.decode(jwt))
       .then((decoded) => {
         expect(decoded.payload).to.have.property('aud', 'clientId');
       }));
 
-    it('issuer', () => JWT.sign({ data: true }, Buffer.from('secret'), 'HS256', { issuer: 'http://example.com/issuer' })
+    it('issuer', async () => JWT.sign({ data: true }, await generateSecret('HS256'), 'HS256', { issuer: 'http://example.com/issuer' })
       .then((jwt) => JWT.decode(jwt))
       .then((decoded) => {
         expect(decoded.payload).to.have.property('iss', 'http://example.com/issuer');
       }));
 
-    it('subject', () => JWT.sign({ data: true }, Buffer.from('secret'), 'HS256', { subject: 'http://example.com/subject' })
+    it('subject', async () => JWT.sign({ data: true }, await generateSecret('HS256'), 'HS256', { subject: 'http://example.com/subject' })
       .then((jwt) => JWT.decode(jwt))
       .then((decoded) => {
         expect(decoded.payload).to.have.property('sub', 'http://example.com/subject');
@@ -120,11 +124,9 @@ describe('JSON Web Token (JWT) RFC7519 implementation', () => {
   });
 
   describe('verify', () => {
-    it('nbf', () => {
-      const key = ks.get({ kty: 'oct' });
-      const keyobject = key.keyObject;
-      const jwk = key.toJWK(true);
-      delete jwk.kid;
+    it('nbf', async () => {
+      const keyobject = await generateSecret('HS256');
+      const jwk = await exportJWK(keyobject);
       return JWT.sign({ data: true, nbf: epochTime() + 3600 }, keyobject, 'HS256')
         .then((jwt) => JWT.verify(jwt, new KeyStore([jwk])))
         .then((valid) => {
@@ -136,33 +138,27 @@ describe('JSON Web Token (JWT) RFC7519 implementation', () => {
         });
     });
 
-    it('nbf ignored', () => {
-      const key = ks.get({ kty: 'oct' });
-      const keyobject = key.keyObject;
-      const jwk = key.toJWK(true);
-      delete jwk.kid;
+    it('nbf ignored', async () => {
+      const keyobject = await generateSecret('HS256');
+      const jwk = await exportJWK(keyobject);
       return JWT.sign({ data: true, nbf: epochTime() + 3600 }, keyobject, 'HS256')
         .then((jwt) => JWT.verify(jwt, new KeyStore([jwk]), {
           ignoreNotBefore: true,
         }));
     });
 
-    it('nbf accepted within set clock tolerance', () => {
-      const key = ks.get({ kty: 'oct' });
-      const keyobject = key.keyObject;
-      const jwk = key.toJWK(true);
-      delete jwk.kid;
+    it('nbf accepted within set clock tolerance', async () => {
+      const keyobject = await generateSecret('HS256');
+      const jwk = await exportJWK(keyobject);
       return JWT.sign({ data: true, nbf: epochTime() + 5 }, keyobject, 'HS256')
         .then((jwt) => JWT.verify(jwt, new KeyStore([jwk]), {
           clockTolerance: 10,
         }));
     });
 
-    it('nbf invalid', () => {
-      const key = ks.get({ kty: 'oct' });
-      const keyobject = key.keyObject;
-      const jwk = key.toJWK(true);
-      delete jwk.kid;
+    it('nbf invalid', async () => {
+      const keyobject = await generateSecret('HS256');
+      const jwk = await exportJWK(keyobject);
       return JWT.sign({ data: true, nbf: 'not a nbf' }, keyobject, 'HS256')
         .then((jwt) => JWT.verify(jwt, new KeyStore([jwk])))
         .then((valid) => {
@@ -174,11 +170,9 @@ describe('JSON Web Token (JWT) RFC7519 implementation', () => {
         });
     });
 
-    it('iat', () => {
-      const key = ks.get({ kty: 'oct' });
-      const keyobject = key.keyObject;
-      const jwk = key.toJWK(true);
-      delete jwk.kid;
+    it('iat', async () => {
+      const keyobject = await generateSecret('HS256');
+      const jwk = await exportJWK(keyobject);
       return JWT.sign({ data: true, iat: epochTime() + 3600 }, keyobject, 'HS256', {
         noTimestamp: true,
       })
@@ -192,11 +186,9 @@ describe('JSON Web Token (JWT) RFC7519 implementation', () => {
         });
     });
 
-    it('iat ignored', () => {
-      const key = ks.get({ kty: 'oct' });
-      const keyobject = key.keyObject;
-      const jwk = key.toJWK(true);
-      delete jwk.kid;
+    it('iat ignored', async () => {
+      const keyobject = await generateSecret('HS256');
+      const jwk = await exportJWK(keyobject);
       return JWT.sign({ data: true, iat: epochTime() + 3600 }, keyobject, 'HS256', {
         noTimestamp: true,
       })
@@ -205,11 +197,9 @@ describe('JSON Web Token (JWT) RFC7519 implementation', () => {
         }));
     });
 
-    it('iat accepted within set clock tolerance', () => {
-      const key = ks.get({ kty: 'oct' });
-      const keyobject = key.keyObject;
-      const jwk = key.toJWK(true);
-      delete jwk.kid;
+    it('iat accepted within set clock tolerance', async () => {
+      const keyobject = await generateSecret('HS256');
+      const jwk = await exportJWK(keyobject);
       return JWT.sign({ data: true, iat: epochTime() + 5 }, keyobject, 'HS256', {
         noTimestamp: true,
       })
@@ -218,11 +208,9 @@ describe('JSON Web Token (JWT) RFC7519 implementation', () => {
         }));
     });
 
-    it('iat invalid', () => {
-      const key = ks.get({ kty: 'oct' });
-      const keyobject = key.keyObject;
-      const jwk = key.toJWK(true);
-      delete jwk.kid;
+    it('iat invalid', async () => {
+      const keyobject = await generateSecret('HS256');
+      const jwk = await exportJWK(keyobject);
       return JWT.sign({ data: true, iat: 'not an iat' }, keyobject, 'HS256', {
         noTimestamp: true,
       })
@@ -236,11 +224,9 @@ describe('JSON Web Token (JWT) RFC7519 implementation', () => {
         });
     });
 
-    it('exp', () => {
-      const key = ks.get({ kty: 'oct' });
-      const keyobject = key.keyObject;
-      const jwk = key.toJWK(true);
-      delete jwk.kid;
+    it('exp', async () => {
+      const keyobject = await generateSecret('HS256');
+      const jwk = await exportJWK(keyobject);
       return JWT.sign({ data: true, exp: epochTime() - 3600 }, keyobject, 'HS256')
         .then((jwt) => JWT.verify(jwt, new KeyStore([jwk])))
         .then((valid) => {
@@ -252,33 +238,27 @@ describe('JSON Web Token (JWT) RFC7519 implementation', () => {
         });
     });
 
-    it('exp ignored', () => {
-      const key = ks.get({ kty: 'oct' });
-      const keyobject = key.keyObject;
-      const jwk = key.toJWK(true);
-      delete jwk.kid;
+    it('exp ignored', async () => {
+      const keyobject = await generateSecret('HS256');
+      const jwk = await exportJWK(keyobject);
       return JWT.sign({ data: true, exp: epochTime() - 3600 }, keyobject, 'HS256')
         .then((jwt) => JWT.verify(jwt, new KeyStore([jwk]), {
           ignoreExpiration: true,
         }));
     });
 
-    it('exp accepted within set clock tolerance', () => {
-      const key = ks.get({ kty: 'oct' });
-      const keyobject = key.keyObject;
-      const jwk = key.toJWK(true);
-      delete jwk.kid;
+    it('exp accepted within set clock tolerance', async () => {
+      const keyobject = await generateSecret('HS256');
+      const jwk = await exportJWK(keyobject);
       return JWT.sign({ data: true, exp: epochTime() - 5 }, keyobject, 'HS256')
         .then((jwt) => JWT.verify(jwt, new KeyStore([jwk]), {
           clockTolerance: 10,
         }));
     });
 
-    it('exp invalid', () => {
-      const key = ks.get({ kty: 'oct' });
-      const keyobject = key.keyObject;
-      const jwk = key.toJWK(true);
-      delete jwk.kid;
+    it('exp invalid', async () => {
+      const keyobject = await generateSecret('HS256');
+      const jwk = await exportJWK(keyobject);
       return JWT.sign({ data: true, exp: 'not an exp' }, keyobject, 'HS256')
         .then((jwt) => JWT.verify(jwt, new KeyStore([jwk])))
         .then((valid) => {
@@ -290,11 +270,9 @@ describe('JSON Web Token (JWT) RFC7519 implementation', () => {
         });
     });
 
-    it('audience (single)', () => {
-      const key = ks.get({ kty: 'oct' });
-      const keyobject = key.keyObject;
-      const jwk = key.toJWK(true);
-      delete jwk.kid;
+    it('audience (single)', async () => {
+      const keyobject = await generateSecret('HS256');
+      const jwk = await exportJWK(keyobject);
       return JWT.sign({ data: true }, keyobject, 'HS256', {
         audience: 'client',
       })
@@ -303,11 +281,9 @@ describe('JSON Web Token (JWT) RFC7519 implementation', () => {
         }));
     });
 
-    it('audience (multi)', () => {
-      const key = ks.get({ kty: 'oct' });
-      const keyobject = key.keyObject;
-      const jwk = key.toJWK(true);
-      delete jwk.kid;
+    it('audience (multi)', async () => {
+      const keyobject = await generateSecret('HS256');
+      const jwk = await exportJWK(keyobject);
       return JWT.sign({ data: true }, keyobject, 'HS256', {
         audience: ['client', 'momma'],
         authorizedParty: 'client',
@@ -317,11 +293,9 @@ describe('JSON Web Token (JWT) RFC7519 implementation', () => {
         }));
     });
 
-    it('audience (single) failed', () => {
-      const key = ks.get({ kty: 'oct' });
-      const keyobject = key.keyObject;
-      const jwk = key.toJWK(true);
-      delete jwk.kid;
+    it('audience (single) failed', async () => {
+      const keyobject = await generateSecret('HS256');
+      const jwk = await exportJWK(keyobject);
       return JWT.sign({ data: true }, keyobject, 'HS256', {
         audience: 'client',
       })
@@ -338,11 +312,9 @@ describe('JSON Web Token (JWT) RFC7519 implementation', () => {
         });
     });
 
-    it('audience (multi) failed', () => {
-      const key = ks.get({ kty: 'oct' });
-      const keyobject = key.keyObject;
-      const jwk = key.toJWK(true);
-      delete jwk.kid;
+    it('audience (multi) failed', async () => {
+      const keyobject = await generateSecret('HS256');
+      const jwk = await exportJWK(keyobject);
       return JWT.sign({ data: true }, keyobject, 'HS256', {
         audience: ['client', 'momma'],
       })
@@ -359,11 +331,9 @@ describe('JSON Web Token (JWT) RFC7519 implementation', () => {
         });
     });
 
-    it('issuer', () => {
-      const key = ks.get({ kty: 'oct' });
-      const keyobject = key.keyObject;
-      const jwk = key.toJWK(true);
-      delete jwk.kid;
+    it('issuer', async () => {
+      const keyobject = await generateSecret('HS256');
+      const jwk = await exportJWK(keyobject);
       return JWT.sign({ data: true }, keyobject, 'HS256', {
         issuer: 'me',
       })
@@ -372,11 +342,9 @@ describe('JSON Web Token (JWT) RFC7519 implementation', () => {
         }));
     });
 
-    it('issuer failed', () => {
-      const key = ks.get({ kty: 'oct' });
-      const keyobject = key.keyObject;
-      const jwk = key.toJWK(true);
-      delete jwk.kid;
+    it('issuer failed', async () => {
+      const keyobject = await generateSecret('HS256');
+      const jwk = await exportJWK(keyobject);
       return JWT.sign({ data: true }, keyobject, 'HS256', {
         issuer: 'me',
       })

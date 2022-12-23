@@ -1,12 +1,9 @@
 import merge from 'lodash/merge.js';
-import jose from 'jose2';
 
 import getConfig from '../default.config.js';
 
 const config = getConfig();
 
-config.jwks = global.keystore.toJWKS(true);
-config.jwks.keys.push(jose.JWK.generateSync('EC', 'P-384', { use: 'sig' }).toJWK(true));
 config.extraTokenClaims = () => ({ foo: 'bar' });
 merge(config.features, {
   registration: {

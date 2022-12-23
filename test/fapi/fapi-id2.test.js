@@ -1,4 +1,4 @@
-import * as jose from 'jose';
+import { SignJWT } from 'jose';
 
 import bootstrap from '../test_helper.js';
 import epochTime from '../../lib/helpers/epoch_time.js';
@@ -61,7 +61,7 @@ describe('Financial-grade API - Part 2: Read and Write API Security Profile (ID2
     });
 
     it('requires jwt response mode to be used when id token is not issued by authorization endpoint (JAR)', async function () {
-      const request = await new jose.SignJWT({
+      const request = await new SignJWT({
         scope: 'openid',
         client_id: 'client',
         response_type: 'code',
@@ -92,7 +92,7 @@ describe('Financial-grade API - Part 2: Read and Write API Security Profile (ID2
     afterEach(function () { return this.logout(); });
 
     it('still works', async function () {
-      const request = await new jose.SignJWT({
+      const request = await new SignJWT({
         client_id: 'client',
         iss: 'client',
         scope: 'openid',
@@ -126,7 +126,7 @@ describe('Financial-grade API - Part 2: Read and Write API Security Profile (ID2
     });
 
     it('requires exp to be provided in the Request Object', async function () {
-      const request = await new jose.SignJWT({
+      const request = await new SignJWT({
         client_id: 'client',
         scope: 'openid',
         response_type: 'code id_token',

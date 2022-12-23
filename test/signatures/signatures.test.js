@@ -1,7 +1,7 @@
 import { parse as parseLocation } from 'node:url';
 
+import { generateKeyPair } from 'jose';
 import { expect } from 'chai';
-import jose from 'jose2';
 
 import bootstrap from '../test_helper.js';
 import { decode } from '../../lib/helpers/jwt.js';
@@ -153,7 +153,7 @@ describe('signatures', () => {
     it('responds with a access_token and code (half of shake256(m, 114) Ed448)', async function () {
       this.client.idTokenSignedResponseAlg = 'EdDSA';
       i(this.provider).keystore.clear();
-      i(this.provider).keystore.add(jose.JWK.generateSync('OKP', 'Ed448').toJWK(true));
+      i(this.provider).keystore.add((await generateKeyPair('EdDSA', { crv: 'Ed448' })).privateKey.export({ format: 'jwk' }));
       const auth = new this.AuthorizationRequest({
         response_type: 'code id_token token',
         scope: 'openid',

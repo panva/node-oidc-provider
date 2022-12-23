@@ -1,6 +1,5 @@
 import { strict as assert } from 'node:assert';
 
-import jose from 'jose2';
 import moment from 'moment';
 import nock from 'nock';
 import { createSandbox } from 'sinon';
@@ -13,9 +12,17 @@ import bootstrap from '../test_helper.js';
 const sinon = createSandbox();
 
 const endpoint = nock('https://client.example.com/');
-const keystore = new jose.JWKS.KeyStore();
 
-function setResponse(body = keystore.toJWKS(), statusCode = 200, headers = {}) {
+const keys = [{
+  kty: 'EC',
+  x: 'kD4NZtqcBOZIxftx1mj2YivhZAIHthDu3NI2QvC0QDY',
+  y: 'pwAHxPuyDIQJJeoMvQ7uI7LjOfx8cw8fy37YwzGnxcA',
+  crv: 'P-256',
+}];
+
+function setResponse(body = {
+  keys,
+}, statusCode = 200, headers = {}) {
   endpoint
     .get('/jwks')
     .reply(statusCode, typeof body === 'string' ? body : JSON.stringify(body), headers);
@@ -45,7 +52,6 @@ describe('client keystore refresh', () => {
   afterEach(sinon.restore);
 
   it('gets the jwks from the uri (and does only one request concurrently)', async function () {
-    await keystore.generate('EC', 'P-256');
     setResponse();
 
     const client = await this.provider.Client.find('client');
@@ -58,7 +64,15 @@ describe('client keystore refresh', () => {
   });
 
   it('fails when private keys are encountered (and does only one request concurrently)', async function () {
-    setResponse(keystore.toJWKS(true));
+    setResponse({
+      keys: [{
+        kty: 'EC',
+        x: 'vu2xH_Rzev40voYeW5clt1BVjyV1sFld60ZfecW5RbM',
+        y: 'bPvB8qkseGy38m8HUQKbsmvtBE_9OEBuUmpJgTRIg28',
+        crv: 'P-256',
+        d: '9YzpRwRvpKsStP7uPqs0yRvbregkHMYIFy-cG_KJCsY',
+      }],
+    });
 
     const client = await this.provider.Client.find('client');
     sinon.stub(client.asymmetricKeyStore, 'fresh').returns(false);
@@ -80,7 +94,12 @@ describe('client keystore refresh', () => {
 
   it('adds new keys', async function () {
     const client = await this.provider.Client.find('client');
-    await keystore.generate('EC', 'P-256');
+    keys.push({
+      kty: 'EC',
+      x: 'pPrd-y2inidf7iiYmB_ymaTWZrBresjbgmnjLzIOiBY',
+      y: 'Wkxz6RSvg9xEvDLppPJ0Bi7psTF974mXSlpuf_x120c',
+      crv: 'P-256',
+    });
     setResponse();
 
     sinon.stub(client.asymmetricKeyStore, 'fresh').returns(false);
@@ -140,7 +159,6 @@ describe('client keystore refresh', () => {
   describe('caching', () => {
     it('uses expires caching header to determine stale states', async function () {
       const client = await this.provider.Client.find('client');
-      await keystore.generate('EC', 'P-256');
       const until = moment().add(2, 'hours').toDate();
 
       setResponse(undefined, undefined, {
@@ -161,7 +179,6 @@ describe('client keystore refresh', () => {
 
     it('ignores the cache-control one when expires is provided', async function () {
       const client = await this.provider.Client.find('client');
-      await keystore.generate('EC', 'P-256');
       const until = moment().add(2, 'hours').toDate();
 
       setResponse(undefined, undefined, {
@@ -185,7 +202,6 @@ describe('client keystore refresh', () => {
       this.retries(1);
 
       const client = await this.provider.Client.find('client');
-      await keystore.generate('EC', 'P-256');
 
       setResponse(undefined, undefined, {
         'Cache-Control': 'private, max-age=3600',
@@ -207,7 +223,6 @@ describe('client keystore refresh', () => {
       this.retries(1);
 
       const client = await this.provider.Client.find('client');
-      await keystore.generate('EC', 'P-256');
 
       setResponse();
 
