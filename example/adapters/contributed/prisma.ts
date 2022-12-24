@@ -1,16 +1,16 @@
 /*
- * A simple Fully typed adapter for oidc-provider that uses Prisma, you can
+ * A simple fully typed adapter for oidc-provider that uses Prisma, you can
  * find more information about the adapter with an expressjs example here:
  * https://github.com/Mostafatalaat770/node-oidc-provider-prisma-adapter
  *
  *
- * for more information, you can contact me on:
+ * In case of questions, you can contact me on:
  * - GitHub: https://github.com/Mostafatalaat770
- * - LinkedIn: https://www.linkedin.com/in/mostafatalaat770/
+ * - LinkedIn: https://linkedin.com/in/mostafatalaat770/
  * - Email: mostafatalaat770@gmail.com
  *
  *
- * pnpm i @prisma/client || npm i @prisma/client || yarn add @prisma/client
+ * pnpm add @prisma/client || npm i @prisma/client || yarn add @prisma/client
  */
 
 import { PrismaClient, OidcModel, Prisma } from "@prisma/client";
