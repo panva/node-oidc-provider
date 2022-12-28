@@ -19,7 +19,7 @@ import { Adapter, AdapterPayload } from "oidc-provider";
 const prisma = new PrismaClient();
 
 const types = [
-	"OidcModels",
+	"Session",
 	"AccessToken",
 	"AuthorizationCode",
 	"RefreshToken",
