@@ -2,7 +2,7 @@
 
 import { readFileSync } from 'node:fs';
 import * as path from 'node:path';
-import { randomBytes, randomUUID } from 'node:crypto';
+import { randomUUID } from 'node:crypto';
 import * as https from 'node:https';
 import { promisify } from 'node:util';
 import { URL } from 'node:url';
@@ -266,8 +266,6 @@ fapi.interactionResult = function patchedInteractionResult(...args) {
   return orig.call(this, ...args);
 };
 
-function uuid(e){return e?(e^randomBytes(1)[0]%16>>e/4).toString(16):([1e7]+-1e3+-4e3+-8e3+-1e11).replace(/[018]/g,uuid)} // eslint-disable-line
-
 const directives = helmet.contentSecurityPolicy.getDefaultDirectives();
 delete directives['form-action'];
 const pHelmet = promisify(helmet({
@@ -319,7 +317,7 @@ fapi.use(async (ctx, next) => {
   return next();
 });
 fapi.use((ctx, next) => {
-  const id = ctx.get('x-fapi-interaction-id') || uuid();
+  const id = ctx.get('x-fapi-interaction-id') || randomUUID();
   ctx.set('x-fapi-interaction-id', id);
   return next();
 });
