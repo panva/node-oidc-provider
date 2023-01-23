@@ -1,4 +1,4 @@
-import { createPrivateKey } from 'node:crypto';
+import { createPrivateKey, X509Certificate } from 'node:crypto';
 import { readFileSync } from 'node:fs';
 
 import got from 'got'; // eslint-disable-line import/no-unresolved
@@ -21,8 +21,8 @@ const mtlsKeys = JSON.parse(
   }),
 );
 
-const rsacrt = readFileSync('test/jwks/rsa.crt', { encoding: 'ascii' });
-const eccrt = readFileSync('test/jwks/ec.crt', { encoding: 'ascii' });
+const rsacrt = new X509Certificate(readFileSync('test/jwks/rsa.crt', { encoding: 'ascii' }));
+const eccrt = new X509Certificate(readFileSync('test/jwks/ec.crt', { encoding: 'ascii' }));
 
 const route = '/token';
 
@@ -1188,7 +1188,7 @@ describe('client authentication options', () => {
   describe('tls_client_auth auth', () => {
     it('accepts the auth', function () {
       return this.agent.post(route)
-        .set('x-ssl-client-cert', rsacrt.replace(/\r?\n/g, ''))
+        .set('x-ssl-client-cert', rsacrt.raw.toString('base64'))
         .set('x-ssl-client-verify', 'SUCCESS')
         .set('x-ssl-client-san-dns', 'rp.example.com')
         .send({
@@ -1212,7 +1212,7 @@ describe('client authentication options', () => {
 
     it('fails the auth when certificateAuthorized() fails', function () {
       return this.agent.post(route)
-        .set('x-ssl-client-cert', rsacrt.replace(/\r?\n/g, ''))
+        .set('x-ssl-client-cert', rsacrt.raw.toString('base64'))
         .set('x-ssl-client-verify', 'FAILED: self signed certificate')
         .set('x-ssl-client-san-dns', 'rp.example.com')
         .send({
@@ -1225,7 +1225,7 @@ describe('client authentication options', () => {
 
     it('fails the auth when certificateSubjectMatches() return false', function () {
       return this.agent.post(route)
-        .set('x-ssl-client-cert', rsacrt.replace(/\r?\n/g, ''))
+        .set('x-ssl-client-cert', rsacrt.raw.toString('base64'))
         .set('x-ssl-client-verify', 'SUCCESS')
         .set('x-ssl-client-san-dns', 'foobarbaz')
         .send({
@@ -1240,7 +1240,7 @@ describe('client authentication options', () => {
   describe('self_signed_tls_client_auth auth', () => {
     it('accepts the auth [1/2]', function () {
       return this.agent.post(route)
-        .set('x-ssl-client-cert', rsacrt.replace(/\r?\n/g, ''))
+        .set('x-ssl-client-cert', rsacrt.raw.toString('base64'))
         .send({
           client_id: 'client-self-signed-mtls',
           grant_type: 'foo',
@@ -1252,7 +1252,7 @@ describe('client authentication options', () => {
 
     it('accepts the auth [2/2]', function () {
       return this.agent.post(route)
-        .set('x-ssl-client-cert', eccrt.replace(/\r?\n/g, ''))
+        .set('x-ssl-client-cert', eccrt.raw.toString('base64'))
         .send({
           client_id: 'client-self-signed-mtls',
           grant_type: 'foo',
@@ -1274,7 +1274,7 @@ describe('client authentication options', () => {
 
     it('fails the auth when x-ssl-client-cert does not match the registered ones', function () {
       return this.agent.post(route)
-        .set('x-ssl-client-cert', eccrt.replace(/\r?\n/g, ''))
+        .set('x-ssl-client-cert', eccrt.raw.toString('base64'))
         .send({
           client_id: 'client-self-signed-mtls-rsa',
           grant_type: 'foo',
@@ -1289,7 +1289,7 @@ describe('client authentication options', () => {
         .reply(200, JSON.stringify(mtlsKeys));
 
       return this.agent.post(route)
-        .set('x-ssl-client-cert', rsacrt.replace(/\r?\n/g, ''))
+        .set('x-ssl-client-cert', rsacrt.raw.toString('base64'))
         .send({
           client_id: 'client-self-signed-mtls-jwks_uri',
           grant_type: 'foo',

@@ -2,7 +2,7 @@
 
 import { readFileSync } from 'node:fs';
 import * as path from 'node:path';
-import { randomUUID } from 'node:crypto';
+import * as crypto from 'node:crypto';
 import * as https from 'node:https';
 import { promisify } from 'node:util';
 import { URL } from 'node:url';
@@ -81,7 +81,7 @@ const adapter = (name) => {
       const [version, ...rest] = id.split('-');
 
       let metadata = {
-        cacheBuster: randomUUID(),
+        cacheBuster: crypto.randomUUID(),
       };
 
       if (version === '1.0') {
@@ -199,14 +199,14 @@ const fapi = new Provider(ISSUER, {
       selfSignedTlsClientAuth: true,
       getCertificate(ctx) {
         if (SUITE_BASE_URL === OFFICIAL_CERTIFICATION) {
-          return ctx.get('client-certificate');
+          try {
+            return new crypto.X509Certificate(Buffer.from(ctx.get('client-certificate'), 'base64'));
+          } catch {
+            return undefined;
+          }
         }
 
-        const peerCertificate = ctx.socket.getPeerCertificate();
-        if (peerCertificate.raw) {
-          return `-----BEGIN CERTIFICATE-----\n${peerCertificate.raw.toString('base64').match(/.{1,64}/g).join('\n')}\n-----END CERTIFICATE-----`;
-        }
-        return undefined;
+        return ctx.socket.getPeerX509Certificate();
       },
     },
     jwtResponseModes: { enabled: true },
@@ -317,7 +317,7 @@ fapi.use(async (ctx, next) => {
   return next();
 });
 fapi.use((ctx, next) => {
-  const id = ctx.get('x-fapi-interaction-id') || randomUUID();
+  const id = ctx.get('x-fapi-interaction-id') || crypto.randomUUID();
   ctx.set('x-fapi-interaction-id', id);
   return next();
 });

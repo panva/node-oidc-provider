@@ -1239,27 +1239,6 @@ _**default value**_:
 Function used to determine if the client certificate, used in the request, is verified and comes from a trusted CA for the client. Should return true/false. Only used for `tls_client_auth` client authentication method.   
   
 
-<a id="certificate-authorized-when-behind-a-tls-terminating-proxy-nginx-apache"></a><details><summary>(Click to expand) When behind a TLS terminating proxy (nginx/apache)</summary><br>
-
-
-When behind a TLS terminating proxy it is common that this detail be passed to the application as a sanitized header. This returns the chosen header value provided by nginx's `$ssl_client_verify` or apache's `%{SSL_CLIENT_VERIFY}s`
-  
-
-```js
-function certificateAuthorized(ctx) {
-  return ctx.get('x-ssl-client-verify') === 'SUCCESS';
-}
-```
-</details>
-<a id="certificate-authorized-when-using-node's-https-create-server"></a><details><summary>(Click to expand) When using node's `https.createServer`
-</summary><br>
-
-```js
-function certificateAuthorized(ctx) {
-  return ctx.socket.authorized;
-}
-```
-</details>
 
 #### certificateBoundAccessTokens
 
@@ -1276,53 +1255,12 @@ false
 Function used to determine if the client certificate, used in the request, subject matches the registered client property. Only used for `tls_client_auth` client authentication method.   
   
 
-<a id="certificate-subject-matches-when-behind-a-tls-terminating-proxy-nginx-apache"></a><details><summary>(Click to expand) When behind a TLS terminating proxy (nginx/apache)</summary><br>
-
-
-TLS terminating proxies can pass a header with the Subject DN pretty easily, for Nginx this would be `$ssl_client_s_dn`, for apache `%{SSL_CLIENT_S_DN}s`.
-  
-
-```js
-function certificateSubjectMatches(ctx, property, expected) {
-  switch (property) {
-    case 'tls_client_auth_subject_dn':
-      return ctx.get('x-ssl-client-s-dn') === expected;
-    default:
-      throw new Error(`${property} certificate subject matching not implemented`);
-  }
-}
-```
-</details>
 
 #### getCertificate
 
-Function used to retrieve the PEM-formatted client certificate used in the request.   
+Function used to retrieve a `crypto.X509Certificate` instance, or a PEM-formatted string, representation of client certificate used in the request.   
   
 
-<a id="get-certificate-when-behind-a-tls-terminating-proxy-nginx-apache"></a><details><summary>(Click to expand) When behind a TLS terminating proxy (nginx/apache)</summary><br>
-
-
-When behind a TLS terminating proxy it is common that the certificate be passed to the application as a sanitized header. This returns the chosen header value provided by nginx's `$ssl_client_cert` or apache's `%{SSL_CLIENT_CERT}s`
-  
-
-```js
-function getCertificate(ctx) {
-  return ctx.get('x-ssl-client-cert');
-}
-```
-</details>
-<a id="get-certificate-when-using-node's-https-create-server"></a><details><summary>(Click to expand) When using node's `https.createServer`
-</summary><br>
-
-```js
-function getCertificate(ctx) {
-  const peerCertificate = ctx.socket.getPeerCertificate();
-  if (peerCertificate.raw) {
-    return `-----BEGIN CERTIFICATE-----\n${peerCertificate.raw.toString('base64')}\n-----END CERTIFICATE-----`;
-  }
-}
-```
-</details>
 
 #### selfSignedTlsClientAuth
 

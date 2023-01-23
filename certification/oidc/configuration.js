@@ -55,7 +55,11 @@ export default {
       certificateBoundAccessTokens: true,
       selfSignedTlsClientAuth: true,
       getCertificate(ctx) {
-        return ctx.get('client-certificate');
+        try {
+          return new crypto.X509Certificate(Buffer.from(ctx.get('client-certificate'), 'base64'));
+        } catch {
+          return undefined;
+        }
       },
     },
     claimsParameter: { enabled: true },

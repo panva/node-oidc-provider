@@ -1,3 +1,4 @@
+import { X509Certificate } from 'node:crypto';
 import { readFileSync } from 'node:fs';
 
 import cloneDeep from 'lodash/cloneDeep.js';
@@ -40,7 +41,11 @@ merge(config.features, {
     selfSignedTlsClientAuth: true,
     tlsClientAuth: true,
     getCertificate(ctx) {
-      return ctx.get('x-ssl-client-cert');
+      try {
+        return new X509Certificate(Buffer.from(ctx.get('x-ssl-client-cert'), 'base64'));
+      } catch (e) {
+        return undefined;
+      }
     },
     certificateAuthorized(ctx) {
       return ctx.get('x-ssl-client-verify') === 'SUCCESS';

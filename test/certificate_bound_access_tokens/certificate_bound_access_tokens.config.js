@@ -1,3 +1,5 @@
+import { X509Certificate } from 'node:crypto';
+
 import merge from 'lodash/merge.js';
 
 import getConfig from '../default.config.js';
@@ -9,7 +11,11 @@ merge(config.features, {
     enabled: true,
     certificateBoundAccessTokens: true,
     getCertificate(ctx) {
-      return ctx.get('x-ssl-client-cert');
+      try {
+        return new X509Certificate(Buffer.from(ctx.get('x-ssl-client-cert'), 'base64'));
+      } catch (e) {
+        return undefined;
+      }
     },
   },
   clientCredentials: { enabled: true },

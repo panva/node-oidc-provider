@@ -1,3 +1,4 @@
+import { X509Certificate } from 'node:crypto';
 import { readFileSync } from 'node:fs';
 import * as url from 'node:url';
 
@@ -6,7 +7,7 @@ import { expect } from 'chai';
 
 import bootstrap, { skipConsent } from '../test_helper.js';
 
-const crt = readFileSync('./test/jwks/client.crt', { encoding: 'ascii' });
+const crt = new X509Certificate(readFileSync('./test/jwks/client.crt', { encoding: 'ascii' }));
 const expectedS256 = 'A4DtL2JmUMhAsvJj5tKyn64SqzmuXbMrJa0n761y5v0';
 
 describe('features.mTLS.certificateBoundAccessTokens', () => {
@@ -49,7 +50,7 @@ describe('features.mTLS.certificateBoundAccessTokens', () => {
 
       await this.agent.get('/me')
         .auth(bearer, { type: 'bearer' })
-        .set('x-ssl-client-cert', crt.replace(/\r?\n/g, ''))
+        .set('x-ssl-client-cert', crt.raw.toString('base64'))
         .expect(200);
     });
   });
@@ -109,7 +110,7 @@ describe('features.mTLS.certificateBoundAccessTokens', () => {
           device_code: this.dc,
         })
         .type('form')
-        .set('x-ssl-client-cert', crt.replace(/\r?\n/g, ''))
+        .set('x-ssl-client-cert', crt.raw.toString('base64'))
         .expect(200);
 
       expect(spy).to.have.property('calledOnce', true);
@@ -154,7 +155,7 @@ describe('features.mTLS.certificateBoundAccessTokens', () => {
           device_code: this.dc,
         })
         .type('form')
-        .set('x-ssl-client-cert', crt.replace(/\r?\n/g, ''))
+        .set('x-ssl-client-cert', crt.raw.toString('base64'))
         .expect(200);
 
       expect(spy).to.have.property('calledOnce', true);
@@ -190,7 +191,7 @@ describe('features.mTLS.certificateBoundAccessTokens', () => {
           auth_req_id: this.reqId,
         })
         .type('form')
-        .set('x-ssl-client-cert', crt.replace(/\r?\n/g, ''))
+        .set('x-ssl-client-cert', crt.raw.toString('base64'))
         .expect(200);
 
       expect(spy).to.have.property('calledOnce', true);
@@ -237,7 +238,7 @@ describe('features.mTLS.certificateBoundAccessTokens', () => {
           auth_req_id: this.reqId,
         })
         .type('form')
-        .set('x-ssl-client-cert', crt.replace(/\r?\n/g, ''))
+        .set('x-ssl-client-cert', crt.raw.toString('base64'))
         .expect(200);
 
       expect(spy).to.have.property('calledOnce', true);
@@ -280,7 +281,7 @@ describe('features.mTLS.certificateBoundAccessTokens', () => {
             redirect_uri: 'https://client.example.com/cb',
           })
           .type('form')
-          .set('x-ssl-client-cert', crt.replace(/\r?\n/g, ''))
+          .set('x-ssl-client-cert', crt.raw.toString('base64'))
           .expect(200);
 
         expect(spy).to.have.property('calledOnce', true);
@@ -319,7 +320,7 @@ describe('features.mTLS.certificateBoundAccessTokens', () => {
             redirect_uri: 'https://client.example.com/cb',
           })
           .type('form')
-          .set('x-ssl-client-cert', crt.replace(/\r?\n/g, ''))
+          .set('x-ssl-client-cert', crt.raw.toString('base64'))
           .expect(({ body }) => {
             this.rt = body.refresh_token;
           });
@@ -336,7 +337,7 @@ describe('features.mTLS.certificateBoundAccessTokens', () => {
             refresh_token: this.rt,
           })
           .type('form')
-          .set('x-ssl-client-cert', crt.replace(/\r?\n/g, ''))
+          .set('x-ssl-client-cert', crt.raw.toString('base64'))
           .expect(200);
 
         expect(spy).to.have.property('calledOnce', true);
@@ -399,7 +400,7 @@ describe('features.mTLS.certificateBoundAccessTokens', () => {
             redirect_uri: 'https://client.example.com/cb',
           })
           .type('form')
-          .set('x-ssl-client-cert', crt.replace(/\r?\n/g, ''))
+          .set('x-ssl-client-cert', crt.raw.toString('base64'))
           .expect(200);
 
         expect(spy).to.have.property('calledOnce', true);
@@ -438,7 +439,7 @@ describe('features.mTLS.certificateBoundAccessTokens', () => {
             redirect_uri: 'https://client.example.com/cb',
           })
           .type('form')
-          .set('x-ssl-client-cert', crt.replace(/\r?\n/g, ''))
+          .set('x-ssl-client-cert', crt.raw.toString('base64'))
           .expect(({ body }) => {
             this.rt = body.refresh_token;
           });
@@ -455,7 +456,7 @@ describe('features.mTLS.certificateBoundAccessTokens', () => {
             refresh_token: this.rt,
           })
           .type('form')
-          .set('x-ssl-client-cert', crt.replace(/\r?\n/g, ''))
+          .set('x-ssl-client-cert', crt.raw.toString('base64'))
           .expect(200);
 
         expect(spy).to.have.property('calledOnce', true);
@@ -492,7 +493,7 @@ describe('features.mTLS.certificateBoundAccessTokens', () => {
             grant_type: 'refresh_token',
             refresh_token: this.rt,
           })
-          .set('x-ssl-client-cert', 'foo')
+          .set('x-ssl-client-cert', new X509Certificate(readFileSync('./test/jwks/rsa.crt', { encoding: 'ascii' })).raw.toString('base64'))
           .type('form')
           .expect(400)
           .expect({ error: 'invalid_grant', error_description: 'grant request is invalid' });
@@ -511,7 +512,7 @@ describe('features.mTLS.certificateBoundAccessTokens', () => {
       await this.agent.post('/token')
         .auth('client', 'secret')
         .send({ grant_type: 'client_credentials' })
-        .set('x-ssl-client-cert', crt.replace(/\r?\n/g, ''))
+        .set('x-ssl-client-cert', crt.raw.toString('base64'))
         .type('form')
         .expect(200);
 
