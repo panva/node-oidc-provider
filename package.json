@@ -96,8 +96,5 @@
     "sinon": "^15.0.0",
     "supertest": "^6.3.1",
     "timekeeper": "^2.2.0"
-  },
-  "engines": {
-    "node": "18"
   }
 }
