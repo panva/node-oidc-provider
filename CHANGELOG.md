@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [8.1.0](https://github.com/panva/node-oidc-provider/compare/v8.0.0...v8.1.0) (2023-01-23)
+
+
+### Features
+
+* mTLS.getCertificate helper can return a X509Certificate object ([be3f47f](https://github.com/panva/node-oidc-provider/commit/be3f47f686ee3bb2bdde2f8a1f77f1c619457a3b))
+
 ## [8.0.0](https://github.com/panva/node-oidc-provider/compare/v7.14.3...v8.0.0) (2022-12-03)
 
 
