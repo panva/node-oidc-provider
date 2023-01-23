@@ -1236,9 +1236,15 @@ _**default value**_:
 
 #### certificateAuthorized
 
-Function used to determine if the client certificate, used in the request, is verified and comes from a trusted CA for the client. Should return true/false. Only used for `tls_client_auth` client authentication method.   
-  
+Function used to determine if the client certificate, used in the request, is verified and comes from a trusted CA for the client. Should return true/false. Only used for `tls_client_auth` client authentication method.  
 
+
+_**default value**_:
+```js
+function certificateAuthorized(ctx) {
+  throw new Error('features.mTLS.certificateAuthorized function not configured');
+}
+```
 
 #### certificateBoundAccessTokens
 
@@ -1252,15 +1258,27 @@ false
 
 #### certificateSubjectMatches
 
-Function used to determine if the client certificate, used in the request, subject matches the registered client property. Only used for `tls_client_auth` client authentication method.   
-  
+Function used to determine if the client certificate, used in the request, subject matches the registered client property. Only used for `tls_client_auth` client authentication method.  
 
+
+_**default value**_:
+```js
+function certificateSubjectMatches(ctx, property, expected) {
+  throw new Error('features.mTLS.certificateSubjectMatches function not configured');
+}
+```
 
 #### getCertificate
 
-Function used to retrieve a `crypto.X509Certificate` instance, or a PEM-formatted string, representation of client certificate used in the request.   
-  
+Function used to retrieve a `crypto.X509Certificate` instance, or a PEM-formatted string, representation of client certificate used in the request.  
 
+
+_**default value**_:
+```js
+function getCertificate(ctx) {
+  throw new Error('features.mTLS.getCertificate function not configured');
+}
+```
 
 #### selfSignedTlsClientAuth
 
