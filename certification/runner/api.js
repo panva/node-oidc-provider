@@ -118,10 +118,11 @@ class API {
   async downloadArtifact({ planId } = {}) {
     assert(planId, 'argument property "planId" missing');
     const filename = `export-${planId}.zip`;
-    for (const out of [process.env.GITHUB_ENV, process.env.GITHUB_STEP_SUMMARY]) {
-      if (out) {
-        writeFileSync(out, `EXPORT_FILE=${filename}`, { flag: 'a' });
-      }
+    if (process.env.GITHUB_ENV) {
+      writeFileSync(process.env.GITHUB_ENV, `EXPORT_FILE=${filename}`, { flag: 'a' });
+    }
+    if (process.env.GITHUB_STEP_SUMMARY) {
+      writeFileSync(process.env.GITHUB_STEP_SUMMARY, `\n\nArtifact: \`${filename}\``, { flag: 'a' });
     }
     return pipeline(
       this.stream(`api/plan/exporthtml/${planId}`, {

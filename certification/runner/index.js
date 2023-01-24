@@ -112,18 +112,38 @@ try {
   debug('%s/plan-detail.html?plan=%s', SUITE_BASE_URL, PLAN_ID);
   debug('modules to test %O', MODULES);
 
-  let download = false;
+  let failed = false;
   describe(PLAN_NAME, () => {
     after(() => {
-      if (download) {
+      if (failed) {
+        if (process.env.GITHUB_STEP_SUMMARY) {
+          const backticks = '```';
+          fs.writeFileSync(process.env.GITHUB_STEP_SUMMARY, `
+Failed Plan Name: \`${PLAN_NAME}\`
+
+Failed Variant:
+
+${backticks}json
+${JSON.stringify(VARIANT, null, 4)}
+${backticks}
+
+<details>
+<summary>Expand Configuration</summary>
+
+${backticks}json
+${JSON.stringify(configuration, null, 4)}
+${backticks}
+
+</details>
+
+`, { flag: 'a' });
+        }
         runner.downloadArtifact({ planId: PLAN_ID });
       }
     });
 
     afterEach(function () {
-      if (this.currentTest.state === 'failed') {
-        download = true;
-      }
+      failed ||= this.currentTest.state === 'failed';
     });
 
     const skips = SKIP ? SKIP.split(',') : [];

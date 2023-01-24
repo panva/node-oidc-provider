@@ -78,6 +78,12 @@ jobs:
         with:
           path: ./conformance-suite
           key: ${{ steps.cache-key.outputs.value }}
+      - run: |
+          echo "### Conformance Suite Details" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "Version: **${{ env.VERSION }}**" >> $GITHUB_STEP_SUMMARY
+          echo "Cache Key: **${{ steps.cache-key.outputs.value }}**" >> $GITHUB_STEP_SUMMARY
+          echo "Cache Hit: **${{ steps.cache.outputs.cache-hit || false }}**" >> $GITHUB_STEP_SUMMARY
       - name: Conformance Suite Checkout
         if: ${{ steps.cache.outputs.cache-hit != 'true' }}
         run: git clone https://gitlab.com/openid/conformance-suite.git
