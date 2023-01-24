@@ -17,8 +17,7 @@ import { stripPrivateJWKFields } from '../../test/keys.js';
 
 const __dirname = dirname(import.meta.url);
 const selfsigned = generate();
-const OFFICIAL_CERTIFICATION = 'https://www.certification.openid.net';
-const { PORT = 3000, ISSUER = `http://localhost:${PORT}`, SUITE_BASE_URL = OFFICIAL_CERTIFICATION } = process.env;
+const { PORT = 3000, ISSUER = `http://localhost:${PORT}` } = process.env;
 
 const ALGS = ['PS256'];
 const clientAuthMethods = ['private_key_jwt', 'self_signed_tls_client_auth'];
@@ -198,7 +197,7 @@ const fapi = new Provider(ISSUER, {
       certificateBoundAccessTokens: true,
       selfSignedTlsClientAuth: true,
       getCertificate(ctx) {
-        if (SUITE_BASE_URL === OFFICIAL_CERTIFICATION) {
+        if (process.env.NODE_ENV === 'production') {
           try {
             return new crypto.X509Certificate(Buffer.from(ctx.get('client-certificate'), 'base64'));
           } catch {
@@ -244,6 +243,24 @@ Object.defineProperty(fapi.OIDCContext.prototype, 'clientJwtAuthExpectedAudience
   },
 });
 
+const SUITE_ORIGINS = new Set([
+  'https://demo.certification.openid.net',
+  'https://localhost:8443',
+  'https://localhost.emobix.co.uk',
+  'https://localhost.emobix.co.uk:8443',
+  'https://review-app-dev-branch-1.certification.openid.net',
+  'https://review-app-dev-branch-2.certification.openid.net',
+  'https://review-app-dev-branch-3.certification.openid.net',
+  'https://review-app-dev-branch-4.certification.openid.net',
+  'https://review-app-dev-branch-5.certification.openid.net',
+  'https://review-app-dev-branch-6.certification.openid.net',
+  'https://review-app-dev-branch-7.certification.openid.net',
+  'https://review-app-dev-branch-8.certification.openid.net',
+  'https://review-app-dev-branch-9.certification.openid.net',
+  'https://staging.certification.openid.net',
+  'https://www.certification.openid.net',
+]);
+
 Object.defineProperty(fapi.Client.prototype, 'redirectUriAllowed', {
   value(url) {
     let parsed;
@@ -253,7 +270,7 @@ Object.defineProperty(fapi.Client.prototype, 'redirectUriAllowed', {
       return false;
     }
 
-    return parsed.origin === SUITE_BASE_URL && parsed.pathname.endsWith('/callback') && (parsed.search === '' || parsed.search === '?dummy1=lorem&dummy2=ipsum');
+    return SUITE_ORIGINS.has(parsed.origin) && parsed.pathname.endsWith('/callback') && (parsed.search === '' || parsed.search === '?dummy1=lorem&dummy2=ipsum');
   },
 });
 
@@ -351,9 +368,7 @@ if (process.env.NODE_ENV === 'production') {
       ctx.status = 400;
     }
   });
-}
 
-if (SUITE_BASE_URL === OFFICIAL_CERTIFICATION) {
   fapi.listen(PORT);
 } else {
   const server = https.createServer({
