@@ -285,18 +285,24 @@ jobs:
           check-latest: true
       - run: npm clean-install
       - name: Run oidc-provider (OIDC)
-        run: npx c8 node certification/oidc/docker &
+        run: |
+          set -o pipefail
+          node certification/oidc/docker |& tee server.log &
         if: ${{ startsWith(matrix.setup.plan, 'oidcc') }}
         env:
           PORT: 3000
+          DEBUG: oidc-provider:*
           ISSUER: https://172.17.0.1:3000
           NODE_TLS_REJECT_UNAUTHORIZED: 0
       - name: Run oidc-provider (FAPI)
-        run: npx c8 node certification/fapi &
+        run: |
+          set -o pipefail
+          node certification/fapi |& tee server.log &
         if: ${{ startsWith(matrix.setup.plan, 'fapi') }}
         env:
           ISSUER: https://172.17.0.1:3000
           PORT: 3000
+          DEBUG: oidc-provider:*
           NODE_OPTIONS: --tls-cipher-list="DHE-RSA-AES128-GCM-SHA256 ECDHE-RSA-AES128-GCM-SHA256 DHE-RSA-AES256-GCM-SHA384 ECDHE-RSA-AES256-GCM-SHA384"
           NODE_TLS_REJECT_UNAUTHORIZED: 0
       - name: Set Conformance Suite Version
@@ -329,6 +335,10 @@ jobs:
         run: npx mocha --timeout 0 --retries 1 certification/runner
         env:
           NODE_TLS_REJECT_UNAUTHORIZED: 0
+      - name: Add server log to artifact
+        if: ${{ failure() }}
+        run: |
+          zip -ur ${{ env.EXPORT_FILE }} server.log
       - name: Upload test artifacts
         uses: actions/upload-artifact@v3
         with:
