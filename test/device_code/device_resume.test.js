@@ -68,9 +68,8 @@ describe('device interaction resume /device/:uid/', () => {
     }
 
     this.agent._saveCookies.bind(this.agent)({
-      headers: {
-        'set-cookie': cookies,
-      },
+      request: { url: this.provider.issuer },
+      headers: { 'set-cookie': cookies },
     });
 
     return Promise.all([
@@ -96,9 +95,8 @@ describe('device interaction resume /device/:uid/', () => {
 
         // force an invalid sig, hence the framework not loading the cookie
         this.agent._saveCookies.bind(this.agent)({
-          headers: {
-            'set-cookie': `_interaction_resume.sig=; path=${path}; httpOnly`,
-          },
+          request: { url: this.provider.issuer },
+          headers: { 'set-cookie': `_interaction_resume.sig=; path=${path}; httpOnly` },
         });
 
         await this.agent.get(path)

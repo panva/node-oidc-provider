@@ -22,7 +22,10 @@ function handlesInteractionSessionErrors() {
       `_interaction=; path=${this.url}; expires=${expired.toGMTString()}; httponly`,
       `_interaction.sig=; path=${this.url}; expires=${expired.toGMTString()}; httponly`,
     ];
-    this.agent._saveCookies.bind(this.agent)({ headers: { 'set-cookie': cookies } });
+    this.agent._saveCookies.bind(this.agent)({
+      request: { url: this.provider.issuer },
+      headers: { 'set-cookie': cookies },
+    });
 
     sinon.spy(this.provider, 'interactionDetails');
 
@@ -383,9 +386,8 @@ describe('resume after consent', () => {
     }
 
     this.agent._saveCookies.bind(this.agent)({
-      headers: {
-        'set-cookie': cookies,
-      },
+      request: { url: this.provider.issuer },
+      headers: { 'set-cookie': cookies },
     });
 
     return Promise.all([
