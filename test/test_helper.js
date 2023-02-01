@@ -1,6 +1,6 @@
 /* eslint-disable no-underscore-dangle */
 
-import { parse } from 'node:url';
+import { parse, pathToFileURL } from 'node:url';
 import * as path from 'node:path';
 import * as querystring from 'node:querystring';
 import { createServer } from 'node:http';
@@ -82,7 +82,7 @@ export default function testHelper(importMetaUrl, {
   });
 
   return async function () {
-    const conf = path.format({ dir, base: `${base}.config.js` });
+    const conf = pathToFileURL(path.format({ dir, base: `${base}.config.js` })).toString();
     const { default: mod } = await import(conf);
     const { config, client } = mod;
     let { clients } = mod;
