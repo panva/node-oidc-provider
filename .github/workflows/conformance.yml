@@ -35,7 +35,7 @@ jobs:
           echo "Cache Hit: **${{ steps.cache.outputs.cache-hit || false }}**" >> $GITHUB_STEP_SUMMARY
       - name: Conformance Suite Checkout
         if: ${{ steps.cache.outputs.cache-hit != 'true' }}
-        run: git clone --branch ${{ env.VERSION }} --depth=1 https://gitlab.com/openid/conformance-suite.git
+        run: git clone --branch ${{ env.VERSION }} --single-branch --depth=1 https://gitlab.com/openid/conformance-suite.git
       - name: Conformance Suite Build
         if: ${{ steps.cache.outputs.cache-hit != 'true' }}
         env:
