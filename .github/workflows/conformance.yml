@@ -1,0 +1,320 @@
+name: Conformance Checks
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  schedule:
+    - cron: '55 11 * * 1'
+  workflow_dispatch:
+    inputs:
+      conformance-version:
+        description: 'Conformance Suite Version (commit hash)'
+        required: false
+
+jobs:
+  build-conformance-suite:
+    runs-on: ubuntu-latest
+    outputs:
+      cache-key: ${{ steps.cache-key.outputs.value }}
+    steps:
+      - name: Environment Information
+        run: npx envinfo
+      - name: Checkout
+        uses: actions/checkout@v3
+      - name: Set Conformance Suite Version from GitLab
+        if: ${{ !github.event.inputs.conformance-version }}
+        run: |
+          export VERSION=($(curl --silent "https://gitlab.com/api/v4/projects/4175605/releases" | jq -r '.[0].tag_name'))
+          echo "VERSION=$VERSION" >> $GITHUB_ENV
+      - name: Set Conformance Suite Version from Workflow Dispatch
+        if: ${{ github.event.inputs.conformance-version }}
+        run: |
+          echo "VERSION=${{ github.event.inputs.conformance-version }}" >> $GITHUB_ENV
+      - id: cache-key
+        run: echo "value=suite-${{ hashFiles('.github/workflows/conformance.yml') }}-${{ env.VERSION }}" >> $GITHUB_OUTPUT
+      - name: Load Cached Conformance Suite Build
+        uses: actions/cache@v3
+        id: cache
+        with:
+          path: ./conformance-suite
+          key: ${{ steps.cache-key.outputs.value }}
+      - run: |
+          echo "### Conformance Suite Details" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "Version: **${{ env.VERSION }}**" >> $GITHUB_STEP_SUMMARY
+          echo "Cache Key: **${{ steps.cache-key.outputs.value }}**" >> $GITHUB_STEP_SUMMARY
+          echo "Cache Hit: **${{ steps.cache.outputs.cache-hit || false }}**" >> $GITHUB_STEP_SUMMARY
+      - name: Conformance Suite Checkout
+        if: ${{ steps.cache.outputs.cache-hit != 'true' }}
+        run: git clone https://gitlab.com/openid/conformance-suite.git
+      - run: git reset --hard ${{ env.VERSION }}
+        working-directory: ./conformance-suite
+      - name: Conformance Suite Build
+        working-directory: ./conformance-suite
+        if: ${{ steps.cache.outputs.cache-hit != 'true' }}
+        env:
+          MAVEN_CACHE: ./m2
+        run: |
+          sed -i -e 's/localhost/localhost.emobix.co.uk/g' src/main/resources/application.properties
+          sed -i -e 's/-B clean/-B -DskipTests=true/g' builder-compose.yml
+          docker-compose -f builder-compose.yml run builder
+
+  conformance-suite:
+    runs-on: ubuntu-latest
+    needs:
+      - build-conformance-suite
+    env:
+      SUITE_BASE_URL: https://localhost.emobix.co.uk:8443
+      SETUP: ${{ toJSON(matrix.setup) }}
+    continue-on-error: ${{ startsWith(matrix.setup.plan, 'fapi2') }}
+    strategy:
+      fail-fast: false
+      matrix:
+        setup:
+          # OP Basic
+          - plan: oidcc-basic-certification-test-plan
+
+          # OP Hybrid
+          - plan: oidcc-hybrid-certification-test-plan
+
+          # OP Implicit
+          - plan: oidcc-implicit-certification-test-plan
+
+          # OP Dynamic
+          - plan: oidcc-dynamic-certification-test-plan
+            response_type: code
+          - plan: oidcc-dynamic-certification-test-plan
+            response_type: id_token
+          - plan: oidcc-dynamic-certification-test-plan
+            response_type: id_token token
+          - plan: oidcc-dynamic-certification-test-plan
+            response_type: code id_token
+          - plan: oidcc-dynamic-certification-test-plan
+            response_type: code token
+          - plan: oidcc-dynamic-certification-test-plan
+            response_type: code id_token token
+
+          # RP-Initiated OP
+          - plan: oidcc-rp-initiated-logout-certification-test-plan
+
+          # Back-Channel OP
+          - plan: oidcc-backchannel-rp-initiated-logout-certification-test-plan
+
+          # FAPI 1.0 R/W (ID2)
+          - plan: fapi-rw-id2-test-plan
+            fapi_auth_request_method: by_value
+            client_auth_type: private_key_jwt
+            fapi_response_mode: plain_response
+          - plan: fapi-rw-id2-test-plan
+            fapi_auth_request_method: pushed
+            client_auth_type: private_key_jwt
+            fapi_response_mode: plain_response
+          - plan: fapi-rw-id2-test-plan
+            fapi_auth_request_method: by_value
+            client_auth_type: private_key_jwt
+            fapi_response_mode: jarm
+          - plan: fapi-rw-id2-test-plan
+            fapi_auth_request_method: pushed
+            client_auth_type: private_key_jwt
+            fapi_response_mode: jarm
+          - plan: fapi-rw-id2-test-plan
+            fapi_auth_request_method: by_value
+            client_auth_type: mtls
+            fapi_response_mode: plain_response
+          - plan: fapi-rw-id2-test-plan
+            fapi_auth_request_method: pushed
+            client_auth_type: mtls
+            fapi_response_mode: plain_response
+          - plan: fapi-rw-id2-test-plan
+            fapi_auth_request_method: by_value
+            client_auth_type: mtls
+            fapi_response_mode: jarm
+          - plan: fapi-rw-id2-test-plan
+            fapi_auth_request_method: pushed
+            client_auth_type: mtls
+            fapi_response_mode: jarm
+
+          # FAPI 1.0 Advanced (Final)
+          - plan: fapi1-advanced-final-test-plan
+            fapi_auth_request_method: by_value
+            client_auth_type: private_key_jwt
+            fapi_response_mode: plain_response
+          - plan: fapi1-advanced-final-test-plan
+            fapi_auth_request_method: pushed
+            client_auth_type: private_key_jwt
+            fapi_response_mode: plain_response
+          - plan: fapi1-advanced-final-test-plan
+            fapi_auth_request_method: by_value
+            client_auth_type: private_key_jwt
+            fapi_response_mode: jarm
+          - plan: fapi1-advanced-final-test-plan
+            fapi_auth_request_method: pushed
+            client_auth_type: private_key_jwt
+            fapi_response_mode: jarm
+          - plan: fapi1-advanced-final-test-plan
+            fapi_auth_request_method: by_value
+            client_auth_type: mtls
+            fapi_response_mode: plain_response
+          - plan: fapi1-advanced-final-test-plan
+            fapi_auth_request_method: pushed
+            client_auth_type: mtls
+            fapi_response_mode: plain_response
+          - plan: fapi1-advanced-final-test-plan
+            fapi_auth_request_method: by_value
+            client_auth_type: mtls
+            fapi_response_mode: jarm
+          - plan: fapi1-advanced-final-test-plan
+            fapi_auth_request_method: pushed
+            client_auth_type: mtls
+            fapi_response_mode: jarm
+
+          # FAPI RW-CIBA-ID1
+          - plan: fapi-ciba-id1-test-plan
+            client_auth_type: private_key_jwt
+            ciba_mode: poll
+          - plan: fapi-ciba-id1-test-plan
+            client_auth_type: private_key_jwt
+            ciba_mode: ping
+          - plan: fapi-ciba-id1-test-plan
+            client_auth_type: mtls
+            ciba_mode: poll
+          - plan: fapi-ciba-id1-test-plan
+            client_auth_type: mtls
+            ciba_mode: ping
+
+          # Extensive
+          - plan: oidcc-test-plan
+            response_type: code
+            client_auth_type: client_secret_basic
+          - plan: oidcc-test-plan
+            response_type: code id_token
+            client_auth_type: client_secret_basic
+          - plan: oidcc-test-plan
+            response_type: code id_token token
+            client_auth_type: client_secret_basic
+          - plan: oidcc-test-plan
+            response_type: code token
+            client_auth_type: client_secret_basic
+          - plan: oidcc-test-plan
+            response_type: code
+            client_auth_type: client_secret_post
+          - plan: oidcc-test-plan
+            response_type: code id_token
+            client_auth_type: client_secret_post
+          - plan: oidcc-test-plan
+            response_type: code id_token token
+            client_auth_type: client_secret_post
+          - plan: oidcc-test-plan
+            response_type: code token
+            client_auth_type: client_secret_post
+          - plan: oidcc-test-plan
+            response_type: code
+            client_auth_type: client_secret_jwt
+          - plan: oidcc-test-plan
+            response_type: code id_token
+            client_auth_type: client_secret_jwt
+          - plan: oidcc-test-plan
+            response_type: code id_token token
+            client_auth_type: client_secret_jwt
+          - plan: oidcc-test-plan
+            response_type: code token
+            client_auth_type: client_secret_jwt
+          - plan: oidcc-test-plan
+            response_type: code
+            client_auth_type: private_key_jwt
+          - plan: oidcc-test-plan
+            response_type: code id_token
+            client_auth_type: private_key_jwt
+          - plan: oidcc-test-plan
+            response_type: code id_token token
+            client_auth_type: private_key_jwt
+          - plan: oidcc-test-plan
+            response_type: code token
+            client_auth_type: private_key_jwt
+          - plan: oidcc-test-plan
+            response_type: id_token
+            client_auth_type: none
+          - plan: oidcc-test-plan
+            response_type: id_token token
+            client_auth_type: none
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+      - name: Setup node
+        uses: actions/setup-node@v3
+        with:
+          node-version: lts/hydrogen # 18
+          cache: 'npm'
+          check-latest: true
+      - run: npm clean-install
+      - name: Run oidc-provider (OIDC)
+        run: |
+          set -o pipefail
+          node certification/oidc/docker |& tee server.log &
+        if: ${{ startsWith(matrix.setup.plan, 'oidcc') }}
+        env:
+          PORT: 3000
+          DEBUG: oidc-provider:*
+          ISSUER: https://172.17.0.1:3000
+          NODE_TLS_REJECT_UNAUTHORIZED: 0
+      - name: Run oidc-provider (FAPI)
+        run: |
+          set -o pipefail
+          node certification/fapi |& tee server.log &
+        if: ${{ startsWith(matrix.setup.plan, 'fapi') }}
+        env:
+          ISSUER: https://172.17.0.1:3000
+          PORT: 3000
+          DEBUG: oidc-provider:*
+          NODE_OPTIONS: --tls-cipher-list="DHE-RSA-AES128-GCM-SHA256 ECDHE-RSA-AES128-GCM-SHA256 DHE-RSA-AES256-GCM-SHA384 ECDHE-RSA-AES256-GCM-SHA384"
+          NODE_TLS_REJECT_UNAUTHORIZED: 0
+      - name: Set Conformance Suite Version
+        run: |
+          export VERSION=($(curl --silent "https://gitlab.com/api/v4/projects/4175605/releases" | jq -r '.[0].tag_name'))
+          echo "VERSION=$VERSION" >> $GITHUB_ENV
+      - name: Load Cached Conformance Suite Build
+        uses: actions/cache@v3
+        id: cache
+        with:
+          path: ./conformance-suite
+          key: ${{ needs.build-conformance-suite.outputs.cache-key }}
+      - name: Abort if Conformance Suite isn't cached
+        if: ${{ steps.cache.outputs.cache-hit != 'true' }}
+        uses: actions/github-script@v6
+        with:
+          script: |
+              core.setFailed('Conformance Suite cache hit failed')
+      - name: Run Conformance Suite
+        working-directory: ./conformance-suite
+        run: |
+          docker-compose -f docker-compose-dev.yml up -d
+          while ! curl -skfail https://localhost.emobix.co.uk:8443/api/runner/available >/dev/null; do sleep 2; done
+      - name: Adjust configuration files for CI
+        run: |
+          sed -i -e 's/op.panva.cz/172.17.0.1:3000/g' certification/oidc/plan.json
+          sed -i -e 's/mtls.fapi.panva.cz/172.17.0.1:3000/g' certification/fapi/plan.json
+          sed -i -e 's/fapi.panva.cz/172.17.0.1:3000/g' certification/fapi/plan.json
+      - name: Run the plan
+        run: npx mocha --timeout 0 --retries 1 certification/runner
+        env:
+          NODE_TLS_REJECT_UNAUTHORIZED: 0
+      - name: Add server log to artifact
+        if: ${{ failure() }}
+        run: |
+          zip -ur ${{ env.EXPORT_FILE }} server.log
+      - name: Upload test artifacts
+        uses: actions/upload-artifact@v3
+        with:
+          path: export-*.zip
+          name: failed certification html results
+          if-no-files-found: ignore
+        if: ${{ always() }}
+      - name: Stop Conformance Suite
+        working-directory: ./conformance-suite
+        run: |
+          killall -SIGINT node
+          docker-compose -f docker-compose-dev.yml down
+          sudo rm -rf mongo
