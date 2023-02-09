@@ -11,40 +11,7 @@ on:
 
 jobs:
   build:
-    runs-on: ubuntu-latest
-    outputs:
-      cache-key: ${{ steps.cache-key.outputs.value }}
-    steps:
-      - name: Environment Information
-        run: npx envinfo
-      - name: Set Conformance Suite Version
-        run: echo "VERSION=$(curl --silent "https://gitlab.com/api/v4/projects/4175605/releases" | jq -r '.[0].tag_name')" >> $GITHUB_ENV
-      - id: cache-key
-        run: echo "value=suite-${{ env.VERSION }}" >> $GITHUB_OUTPUT
-      - name: Load Cached Conformance Suite Build
-        uses: actions/cache@v3
-        id: cache
-        with:
-          path: ./conformance-suite
-          key: ${{ steps.cache-key.outputs.value }}
-      - run: |
-          echo "### Conformance Suite Details" >> $GITHUB_STEP_SUMMARY
-          echo "" >> $GITHUB_STEP_SUMMARY
-          echo "Version: **${{ env.VERSION }}**" >> $GITHUB_STEP_SUMMARY
-          echo "Cache Key: **${{ steps.cache-key.outputs.value }}**" >> $GITHUB_STEP_SUMMARY
-          echo "Cache Hit: **${{ steps.cache.outputs.cache-hit || false }}**" >> $GITHUB_STEP_SUMMARY
-      - name: Conformance Suite Checkout
-        if: ${{ steps.cache.outputs.cache-hit != 'true' }}
-        run: git clone --branch ${{ env.VERSION }} --single-branch --depth=1 https://gitlab.com/openid/conformance-suite.git
-      - name: Conformance Suite Build
-        if: ${{ steps.cache.outputs.cache-hit != 'true' }}
-        env:
-          MAVEN_CACHE: ./m2
-        working-directory: ./conformance-suite
-        run: |
-          sed -i -e 's/localhost/localhost.emobix.co.uk/g' src/main/resources/application.properties
-          sed -i -e 's/-B clean/-B -DskipTests=true/g' builder-compose.yml
-          docker-compose -f builder-compose.yml run builder
+    uses: panva/.github/.github/workflows/build-conformance-suite.yml@main
 
   run:
     runs-on: ubuntu-latest
