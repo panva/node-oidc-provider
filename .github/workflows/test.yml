@@ -11,21 +11,7 @@ on:
 
 jobs:
   audit:
-    name: Audit NPM Dependencies
-    continue-on-error: true
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v3
-      - name: Setup node
-        uses: actions/setup-node@v3
-        with:
-          node-version: lts/hydrogen # 18
-          cache: 'npm'
-          check-latest: true
-      - run: npm clean-install
-      - run: npm upgrade
-      - run: npm audit --production
+    uses: panva/.github/.github/workflows/npm-audit.yml@main
 
   test:
     name: Test Suite
