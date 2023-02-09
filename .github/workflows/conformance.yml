@@ -8,32 +8,19 @@ on:
   schedule:
     - cron: '55 11 * * 1'
   workflow_dispatch:
-    inputs:
-      conformance-version:
-        description: 'Conformance Suite Version (commit hash)'
-        required: false
 
 jobs:
-  build-conformance-suite:
+  build:
     runs-on: ubuntu-latest
     outputs:
       cache-key: ${{ steps.cache-key.outputs.value }}
     steps:
       - name: Environment Information
         run: npx envinfo
-      - name: Checkout
-        uses: actions/checkout@v3
-      - name: Set Conformance Suite Version from GitLab
-        if: ${{ !github.event.inputs.conformance-version }}
-        run: |
-          export VERSION=($(curl --silent "https://gitlab.com/api/v4/projects/4175605/releases" | jq -r '.[0].tag_name'))
-          echo "VERSION=$VERSION" >> $GITHUB_ENV
-      - name: Set Conformance Suite Version from Workflow Dispatch
-        if: ${{ github.event.inputs.conformance-version }}
-        run: |
-          echo "VERSION=${{ github.event.inputs.conformance-version }}" >> $GITHUB_ENV
+      - name: Set Conformance Suite Version
+        run: echo "VERSION=$(curl --silent "https://gitlab.com/api/v4/projects/4175605/releases" | jq -r '.[0].tag_name')" >> $GITHUB_ENV
       - id: cache-key
-        run: echo "value=suite-${{ hashFiles('.github/workflows/conformance.yml') }}-${{ env.VERSION }}" >> $GITHUB_OUTPUT
+        run: echo "value=suite-${{ env.VERSION }}" >> $GITHUB_OUTPUT
       - name: Load Cached Conformance Suite Build
         uses: actions/cache@v3
         id: cache
@@ -48,23 +35,21 @@ jobs:
           echo "Cache Hit: **${{ steps.cache.outputs.cache-hit || false }}**" >> $GITHUB_STEP_SUMMARY
       - name: Conformance Suite Checkout
         if: ${{ steps.cache.outputs.cache-hit != 'true' }}
-        run: git clone https://gitlab.com/openid/conformance-suite.git
-      - run: git reset --hard ${{ env.VERSION }}
-        working-directory: ./conformance-suite
+        run: git clone --branch ${{ env.VERSION }} --depth=1 https://gitlab.com/openid/conformance-suite.git
       - name: Conformance Suite Build
-        working-directory: ./conformance-suite
         if: ${{ steps.cache.outputs.cache-hit != 'true' }}
         env:
           MAVEN_CACHE: ./m2
+        working-directory: ./conformance-suite
         run: |
           sed -i -e 's/localhost/localhost.emobix.co.uk/g' src/main/resources/application.properties
           sed -i -e 's/-B clean/-B -DskipTests=true/g' builder-compose.yml
           docker-compose -f builder-compose.yml run builder
 
-  conformance-suite:
+  run:
     runs-on: ubuntu-latest
     needs:
-      - build-conformance-suite
+      - build
     env:
       SUITE_BASE_URL: https://localhost.emobix.co.uk:8443
       SETUP: ${{ toJSON(matrix.setup) }}
@@ -280,13 +265,8 @@ jobs:
         id: cache
         with:
           path: ./conformance-suite
-          key: ${{ needs.build-conformance-suite.outputs.cache-key }}
-      - name: Abort if Conformance Suite isn't cached
-        if: ${{ steps.cache.outputs.cache-hit != 'true' }}
-        uses: actions/github-script@v6
-        with:
-          script: |
-              core.setFailed('Conformance Suite cache hit failed')
+          key: ${{ needs.build.outputs.cache-key }}
+          fail-on-cache-miss: true
       - name: Run Conformance Suite
         working-directory: ./conformance-suite
         run: |
