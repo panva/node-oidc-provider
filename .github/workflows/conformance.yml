@@ -200,7 +200,6 @@ jobs:
         with:
           node-version: lts/hydrogen # 18
           cache: 'npm'
-          check-latest: true
       - run: npm clean-install
       - name: Run oidc-provider (OIDC)
         run: |
