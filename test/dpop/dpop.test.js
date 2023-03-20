@@ -69,7 +69,7 @@ describe('features.dPoP', () => {
 
       await this.agent.get('/me')
         .set('Authorization', `DPoP ${dpop}`)
-        .expect(400)
+        .expect(401)
         .expect({ error: 'invalid_request', error_description: '`DPoP` header not provided' })
         .expect('WWW-Authenticate', /^DPoP /)
         .expect('WWW-Authenticate', /algs="ES256 PS256"/);
