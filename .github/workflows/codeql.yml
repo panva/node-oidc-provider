@@ -22,6 +22,7 @@ on:
 
 jobs:
   analyze:
+    if: ${{ github.repository == 'panva/node-oidc-provider' }}
     name: Analyze
     runs-on: ubuntu-latest
     permissions:

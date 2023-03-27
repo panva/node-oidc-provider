@@ -11,6 +11,7 @@ on:
 
 jobs:
   build:
+    if: ${{ github.repository == 'panva/node-oidc-provider' || github.event_name == 'workflow_dispatch' }}
     uses: panva/.github/.github/workflows/build-conformance-suite.yml@main
 
   run:

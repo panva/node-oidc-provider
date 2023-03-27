@@ -11,9 +11,11 @@ on:
 
 jobs:
   audit:
+    if: ${{ github.repository == 'panva/node-oidc-provider' || github.event_name == 'workflow_dispatch' }}
     uses: panva/.github/.github/workflows/npm-audit.yml@main
 
   test:
+    if: ${{ github.repository == 'panva/node-oidc-provider' || github.event_name == 'workflow_dispatch' }}
     name: Test Suite
     runs-on: ubuntu-latest
     continue-on-error: ${{ !startsWith(matrix.node-version, 'lts') }}

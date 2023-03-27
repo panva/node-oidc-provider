@@ -6,6 +6,7 @@ on:
 
 jobs:
   lock:
+    if: ${{ github.repository == 'panva/node-oidc-provider' }}
     continue-on-error: true
     runs-on: ubuntu-latest
     steps:
