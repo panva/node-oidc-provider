@@ -6,8 +6,17 @@ export default {
     //   grant_types: ['refresh_token', 'authorization_code'],
     //   redirect_uris: ['http://sso-client.dev/providers/7/open_id', 'http://sso-client.dev/providers/8/open_id'],
     // }
+    // TODO: Remove before contributing..
+    {
+      client_id: 'foo',
+      client_secret: 'bar',
+      grant_types: ['refresh_token', 'authorization_code'],
+      redirect_uris: ['https://httpbin.org/get'],
+    },
   ],
   interactions: {
+    // TODO: Remove before contributing..
+    preserveUid: true,
     url(ctx, interaction) { // eslint-disable-line no-unused-vars
       return `/interaction/${interaction.uid}`;
     },
@@ -27,6 +36,10 @@ export default {
 
     deviceFlow: { enabled: true }, // defaults to false
     revocation: { enabled: true }, // defaults to false
+  },
+  // TODO: Remove before contributing..
+  pkce: {
+    required: () => false,
   },
   jwks: {
     keys: [
