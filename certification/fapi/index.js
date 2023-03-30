@@ -71,6 +71,13 @@ function jar(metadata) {
   };
 }
 
+function jarm(metadata) {
+  return {
+    ...metadata,
+    response_modes: ['jwt'],
+  };
+}
+
 function fapi1(metadata) {
   return mtlsPoP(jar({
     ...metadata,
@@ -160,6 +167,7 @@ const adapter = (name) => {
             break;
           case 'messagesigning':
             metadata = jar(metadata);
+            metadata = jarm(metadata);
             break;
           default:
             return orig.call(this, id);

@@ -56,14 +56,16 @@ describe('Financial-grade API - Part 2: Read and Write API Security Profile (ID2
       })
         .expect(303)
         .expect(auth.validateClientLocation)
-        .expect(auth.validateError('invalid_request'))
-        .expect(auth.validateErrorDescription('requested response_mode not allowed for the requested response_type in FAPI 1.0 ID2'));
+        .expect(auth.validateError('unauthorized_client'))
+        .expect(auth.validateErrorDescription('requested response_mode is not allowed for this client or request'));
     });
 
     it('requires jwt response mode to be used when id token is not issued by authorization endpoint (JAR)', async function () {
       const request = await new SignJWT({
         scope: 'openid',
         client_id: 'client',
+        iss: 'client',
+        aud: this.provider.issuer,
         response_type: 'code',
         nonce: 'foo',
         exp: epochTime() + 60,
@@ -82,8 +84,8 @@ describe('Financial-grade API - Part 2: Read and Write API Security Profile (ID2
       })
         .expect(303)
         .expect(auth.validateClientLocation)
-        .expect(auth.validateError('invalid_request'))
-        .expect(auth.validateErrorDescription('requested response_mode not allowed for the requested response_type in FAPI 1.0 ID2'));
+        .expect(auth.validateError('unauthorized_client'))
+        .expect(auth.validateErrorDescription('requested response_mode is not allowed for this client or request'));
     });
   });
 
@@ -129,6 +131,7 @@ describe('Financial-grade API - Part 2: Read and Write API Security Profile (ID2
       const request = await new SignJWT({
         client_id: 'client',
         scope: 'openid',
+        iss: 'client',
         response_type: 'code id_token',
         nonce: 'foo',
       }).setProtectedHeader({ alg: 'ES256' }).sign(keypair.privateKey);

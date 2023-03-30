@@ -56,8 +56,8 @@ describe('Financial-grade API Security Profile 1.0 - Part 2: Advanced (FINAL) be
       })
         .expect(303)
         .expect(auth.validateClientLocation)
-        .expect(auth.validateError('invalid_request'))
-        .expect(auth.validateErrorDescription('requested response_mode not allowed for the requested response_type in FAPI 1.0 Final'));
+        .expect(auth.validateError('unauthorized_client'))
+        .expect(auth.validateErrorDescription('requested response_mode is not allowed for this client or request'));
     });
 
     it('requires jwt response mode to be used when id token is not issued by authorization endpoint (JAR)', async function () {
@@ -66,6 +66,7 @@ describe('Financial-grade API Security Profile 1.0 - Part 2: Advanced (FINAL) be
         client_id: 'client',
         response_type: 'code',
         nonce: 'foo',
+        iss: 'client',
         aud: this.provider.issuer,
         exp: epochTime() + 60,
         nbf: epochTime(),
@@ -84,8 +85,8 @@ describe('Financial-grade API Security Profile 1.0 - Part 2: Advanced (FINAL) be
       })
         .expect(303)
         .expect(auth.validateClientLocation)
-        .expect(auth.validateError('invalid_request'))
-        .expect(auth.validateErrorDescription('requested response_mode not allowed for the requested response_type in FAPI 1.0 Final'));
+        .expect(auth.validateError('unauthorized_client'))
+        .expect(auth.validateErrorDescription('requested response_mode is not allowed for this client or request'));
     });
   });
 
@@ -133,6 +134,7 @@ describe('Financial-grade API Security Profile 1.0 - Part 2: Advanced (FINAL) be
         aud: this.provider.issuer,
         // exp: epochTime() + 60,
         nbf: epochTime(),
+        iss: 'client',
         client_id: 'client',
         scope: 'openid',
         response_type: 'code id_token',
@@ -168,6 +170,7 @@ describe('Financial-grade API Security Profile 1.0 - Part 2: Advanced (FINAL) be
         // nbf: epochTime(),
         client_id: 'client',
         scope: 'openid',
+        iss: 'client',
         response_type: 'code id_token',
         nonce: 'foo',
       }).setProtectedHeader({ alg: 'ES256' }).sign(keypair.privateKey);
@@ -201,6 +204,7 @@ describe('Financial-grade API Security Profile 1.0 - Part 2: Advanced (FINAL) be
         aud: this.provider.issuer,
         client_id: 'client',
         scope: 'openid',
+        iss: 'client',
         response_type: 'code id_token',
         nonce: 'foo',
       }).setProtectedHeader({ alg: 'ES256' }).sign(keypair.privateKey);

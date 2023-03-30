@@ -491,7 +491,7 @@ describe('BASIC code', () => {
           .expect(auth.validateState)
           .expect(auth.validateClientLocation)
           .expect(auth.validateError('invalid_request'))
-          .expect(auth.validateErrorDescription('response_mode not allowed for this response_type'));
+          .expect(auth.validateErrorDescription('requested response_mode is not allowed for the requested response_type'));
       });
 
       ['request', 'request_uri', 'registration'].forEach((param) => {

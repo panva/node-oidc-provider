@@ -165,7 +165,7 @@ describe('configuration features.jwtResponseModes', () => {
           const { payload } = decode(response);
           expect(payload).to.have.all.keys('error', 'error_description', 'state', 'aud', 'exp', 'iss');
           expect(payload.error).to.eql('invalid_request');
-          expect(payload.error_description).to.eql('response_mode not allowed for this response_type unless encrypted');
+          expect(payload.error_description).to.eql('requested response_mode is not allowed for the requested response_type unless encrypted');
         });
     });
 

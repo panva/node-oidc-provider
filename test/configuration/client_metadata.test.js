@@ -155,7 +155,7 @@ describe('Client metadata validation', () => {
     });
   };
 
-  const defaultsTo = (prop, value, metadata, configuration) => {
+  const defaultsTo = (prop, value, metadata, configuration, additionalAssertion) => {
     let msg = util.format('defaults to %s', value);
     if (metadata) msg = util.format(`${msg}, [client %j]`, omit(metadata, ['jwks.keys']));
     if (configuration) msg = util.format(`${msg}, [provider %j]`, configuration);
@@ -166,6 +166,12 @@ describe('Client metadata validation', () => {
       } else {
         expect(client.metadata()).to.have.property(prop).and.eql(value);
       }
+
+      if (additionalAssertion) {
+        return additionalAssertion(client);
+      }
+
+      return undefined;
     }));
   };
 
@@ -747,6 +753,39 @@ describe('Client metadata validation', () => {
     rejects(this.title, [], /must contain members$/);
     rejects(this.title, ['not-a-type']);
     rejects(this.title, ['not-a-type', 'none']);
+  });
+
+  context('response_modes', function () {
+    defaultsTo(this.title, undefined, undefined, undefined, (client) => {
+      expect(client.responseModeAllowed('query')).to.be.true;
+      expect(client.responseModeAllowed('fragment')).to.be.true;
+      expect(client.responseModeAllowed('form_post')).to.be.true;
+    });
+    mustBeArray(this.title);
+
+    allows(this.title, ['query', 'fragment', 'form_post']);
+    allows(this.title, ['query']);
+    allows(this.title, ['fragment']);
+    allows(this.title, ['form_post']);
+
+    allows(this.title, ['query', 'fragment'], undefined, undefined, (client) => {
+      expect(client.responseModeAllowed('query')).to.be.true;
+      expect(client.responseModeAllowed('fragment')).to.be.true;
+      expect(client.responseModeAllowed('form_post')).to.be.false;
+    });
+
+    allows(this.title, ['jwt'], undefined, { features: { jwtResponseModes: { enabled: true } } });
+    allows(this.title, ['fragment.jwt'], undefined, { features: { jwtResponseModes: { enabled: true } } });
+    allows(this.title, ['query.jwt'], undefined, { features: { jwtResponseModes: { enabled: true } } });
+    allows(this.title, ['form_post.jwt'], undefined, { features: { jwtResponseModes: { enabled: true } } });
+
+    allows(this.title, ['web_message'], undefined, { features: { webMessageResponseMode: { enabled: true } } });
+    allows(this.title, ['web_message.jwt'], undefined, { features: { webMessageResponseMode: { enabled: true }, jwtResponseModes: { enabled: true } } });
+
+    rejects(this.title, [123], /must only contain strings$/);
+    rejects(this.title, [], /must contain members$/);
+    rejects(this.title, ['not-a-mode']);
+    rejects(this.title, ['not-a-mode']);
   });
 
   context('sector_identifier_uri', function () {

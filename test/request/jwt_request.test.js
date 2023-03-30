@@ -676,17 +676,17 @@ describe('request parameter features', () => {
             .expect(successFnCheck));
         });
 
-        it('re-checks the response mode from the request', function () {
+        it('checks the response mode from the request', function () {
           const spy = sinon.spy();
           this.provider.once(errorEvt, spy);
 
           return JWT.sign({
             jti: randomBytes(16).toString('base64url'),
-            client_id: 'client2',
+            client_id: 'client',
             response_type: 'code',
             redirect_uri: 'https://client.example.com/cb',
             response_mode: 'foo',
-          }, Buffer.from('secret'), 'HS256', { issuer: 'client2', audience: this.provider.issuer, expiresIn: 30 }).then((request) => this.wrap({
+          }, Buffer.from('secret'), 'HS256', { issuer: 'client', audience: this.provider.issuer, expiresIn: 30 }).then((request) => this.wrap({
             agent: this.agent,
             route,
             verb,
@@ -695,6 +695,7 @@ describe('request parameter features', () => {
               scope: 'openid',
               client_id: 'client',
               response_type: 'code',
+              response_mode: 'query',
             },
           })
             .expect(errorCode)
