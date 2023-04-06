@@ -99,29 +99,12 @@ if (VARIANT.client_registration === 'dynamic_client') {
   delete configuration.alias;
 }
 
-try {
-  const plan = await runner.createTestPlan({
-    configuration,
-    planName: PLAN_NAME,
-    variant: JSON.stringify(VARIANT),
-  });
+function summary(prefix) {
+  const backticks = '```';
+  fs.writeFileSync(process.env.GITHUB_STEP_SUMMARY, `
+${prefix} Plan Name: \`${PLAN_NAME}\`
 
-  const { id: PLAN_ID, modules: MODULES } = plan;
-
-  debug('Created test plan, new id %s', PLAN_ID);
-  debug('%s/plan-detail.html?plan=%s', SUITE_BASE_URL, PLAN_ID);
-  debug('modules to test %O', MODULES);
-
-  let failed = false;
-  describe(PLAN_NAME, () => {
-    after(() => {
-      if (failed) {
-        if (process.env.GITHUB_STEP_SUMMARY) {
-          const backticks = '```';
-          fs.writeFileSync(process.env.GITHUB_STEP_SUMMARY, `
-Failed Plan Name: \`${PLAN_NAME}\`
-
-Failed Variant:
+${prefix} Variant:
 
 ${backticks}json
 ${JSON.stringify(VARIANT, null, 4)}
@@ -137,7 +120,34 @@ ${backticks}
 </details>
 
 `, { flag: 'a' });
+}
+
+try {
+  const plan = await runner.createTestPlan({
+    configuration,
+    planName: PLAN_NAME,
+    variant: JSON.stringify(VARIANT),
+  });
+
+  const { id: PLAN_ID, modules: MODULES } = plan;
+
+  debug('Created test plan, new id %s', PLAN_ID);
+  debug('%s/plan-detail.html?plan=%s', SUITE_BASE_URL, PLAN_ID);
+  debug('modules to test %O', MODULES);
+
+  let failed = false;
+  let warned = false;
+  describe(PLAN_NAME, () => {
+    after(() => {
+      if (process.env.GITHUB_STEP_SUMMARY) {
+        if (failed) {
+          summary('Failed');
+        } else if (warned) {
+          summary('Warned');
         }
+      }
+
+      if (failed || warned) {
         runner.downloadArtifact({ planId: PLAN_ID });
       }
     });
@@ -149,6 +159,7 @@ ${backticks}
     const skips = SKIP ? SKIP.split(',') : [];
     for (const { testModule, variant } of MODULES) {
       const test = skips.includes(testModule) ? it.skip : it;
+      // eslint-disable-next-line no-loop-func
       test(`${testModule}, ${JSON.stringify(variant)}`, async () => {
         debug('\n\nRunning test module: %s', testModule);
         const { id: moduleId } = await runner.createTestFromPlan({
@@ -156,7 +167,10 @@ ${backticks}
         });
         debug('Created test module, new id: %s', moduleId);
         debug('%s/log-detail.html?log=%s', SUITE_BASE_URL, moduleId);
-        await runner.waitForState({ moduleId });
+        const [, result] = await runner.waitForState({ moduleId });
+        if (result === 'WARNING') {
+          warned ||= true;
+        }
       });
     }
   });
