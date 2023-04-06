@@ -99,8 +99,9 @@ if (VARIANT.client_registration === 'dynamic_client') {
   delete configuration.alias;
 }
 
-function summary(prefix) {
+function summary(prefix, failedTests) {
   const backticks = '```';
+
   fs.writeFileSync(process.env.GITHUB_STEP_SUMMARY, `
 ${prefix} Plan Name: \`${PLAN_NAME}\`
 
@@ -120,6 +121,13 @@ ${backticks}
 </details>
 
 `, { flag: 'a' });
+
+  if (failedTests) {
+    fs.writeFileSync(process.env.GITHUB_STEP_SUMMARY, `
+${prefix} Tests:
+${[...new Set(failedTests.map((test) => `* \`${test.split(',')[0]}\``))].join('\n')}
+`, { flag: 'a' });
+  }
 }
 
 try {
@@ -135,25 +143,27 @@ try {
   debug('%s/plan-detail.html?plan=%s', SUITE_BASE_URL, PLAN_ID);
   debug('modules to test %O', MODULES);
 
-  let failed = false;
+  const failedTests = [];
   let warned = false;
   describe(PLAN_NAME, () => {
     after(() => {
       if (process.env.GITHUB_STEP_SUMMARY) {
-        if (failed) {
-          summary('Failed');
+        if (failedTests.length) {
+          summary('Failed', failedTests);
         } else if (warned) {
           summary('Warned');
         }
       }
 
-      if (failed || warned) {
+      if (failedTests.length || warned) {
         runner.downloadArtifact({ planId: PLAN_ID });
       }
     });
 
     afterEach(function () {
-      failed ||= this.currentTest.state === 'failed';
+      if (this.currentTest.state === 'failed') {
+        failedTests.push(this.currentTest.title);
+      }
     });
 
     const skips = SKIP ? SKIP.split(',') : [];
