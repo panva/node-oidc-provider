@@ -2,6 +2,8 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [8.1.2](https://github.com/panva/node-oidc-provider/compare/v8.1.1...v8.1.2) (2023-04-21)
+
 ## [8.1.1](https://github.com/panva/node-oidc-provider/compare/v8.1.0...v8.1.1) (2023-03-09)
 
 ## [8.1.0](https://github.com/panva/node-oidc-provider/compare/v8.0.0...v8.1.0) (2023-01-23)
