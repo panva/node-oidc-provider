@@ -21,7 +21,6 @@ jobs:
           node-version: lts/hydrogen # 18
           registry-url: https://registry.npmjs.org
           always-auth: true
-      - run: npm install -g npm
       - run: npm publish --provenance
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
