@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [8.2.0](https://github.com/panva/node-oidc-provider/compare/v8.1.2...v8.2.0) (2023-04-24)
+
+
+### Features
+
+* add correlation identifier to interactions ([#1218](https://github.com/panva/node-oidc-provider/issues/1218)) ([c072352](https://github.com/panva/node-oidc-provider/commit/c072352e586cc161d51513408ae5fd063d9867d1))
+
 ## [8.1.2](https://github.com/panva/node-oidc-provider/compare/v8.1.1...v8.1.2) (2023-04-21)
 
 ## [8.1.1](https://github.com/panva/node-oidc-provider/compare/v8.1.0...v8.1.1) (2023-03-09)
