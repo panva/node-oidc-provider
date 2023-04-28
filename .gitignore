@@ -44,3 +44,4 @@ db.sqlite
 
 # TS test
 types/*.js
+.DS_Store
