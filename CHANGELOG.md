@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [8.2.1](https://github.com/panva/node-oidc-provider/compare/v8.2.0...v8.2.1) (2023-05-06)
+
+
+### Fixes
+
+* ignore post_logout_redirect_uris when logout is disabled ([#1221](https://github.com/panva/node-oidc-provider/issues/1221)) ([d7dd6cf](https://github.com/panva/node-oidc-provider/commit/d7dd6cf13739dea62b6e72531ba27ef27fbf4e50))
+
 ## [8.2.0](https://github.com/panva/node-oidc-provider/compare/v8.1.2...v8.2.0) (2023-04-24)
 
 
