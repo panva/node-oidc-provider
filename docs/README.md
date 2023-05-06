@@ -439,6 +439,7 @@ location / {
   - [requestObjects](#featuresrequestobjects)
   - [resourceIndicators ❗](#featuresresourceindicators)
   - [revocation](#featuresrevocation)
+  - [rpInitiatedLogout](#featuresrpinitiatedlogout)
   - [userinfo](#featuresuserinfo)
 - [acrValues](#acrvalues)
 - [allowOmittingSingleRegisteredRedirectUri](#allowomittingsingleregisteredredirecturi)
