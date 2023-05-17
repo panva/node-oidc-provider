@@ -59,7 +59,7 @@
     "@koa/cors": "^4.0.0",
     "@koa/router": "^12.0.0",
     "debug": "^4.3.4",
-    "eta": "^2.1.2",
+    "eta": "^2.2.0",
     "got": "^12.6.0",
     "jose": "^4.14.4",
     "jsesc": "^3.0.2",
@@ -71,7 +71,7 @@
     "raw-body": "^2.5.2"
   },
   "devDependencies": {
-    "@fastify/middie": "^8.2.0",
+    "@fastify/middie": "^8.3.0",
     "@hapi/hapi": "^21.3.2",
     "@koa/ejs": "^5.1.0",
     "base64url": "^3.0.1",
