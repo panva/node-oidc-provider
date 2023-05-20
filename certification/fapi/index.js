@@ -396,6 +396,7 @@ const fapi = new Provider(ISSUER, {
     properties: ['profile'],
   },
   pkce: {
+    // TODO: remove in v9.x
     required: () => false,
   },
 });
