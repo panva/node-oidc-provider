@@ -42,7 +42,7 @@ describe('device_authorization_endpoint', () => {
         .expect(400)
         .expect('content-type', /application\/json/)
         .expect({
-          error: 'unauthorized_client',
+          error: 'invalid_request',
           error_description: 'urn:ietf:params:oauth:grant-type:device_code is not allowed for this client',
         })
         .expect(() => {

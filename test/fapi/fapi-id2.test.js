@@ -56,7 +56,7 @@ describe('Financial-grade API - Part 2: Read and Write API Security Profile (ID2
       })
         .expect(303)
         .expect(auth.validateClientLocation)
-        .expect(auth.validateError('unauthorized_client'))
+        .expect(auth.validateError('invalid_request'))
         .expect(auth.validateErrorDescription('requested response_mode is not allowed for this client or request'));
     });
 
@@ -84,7 +84,7 @@ describe('Financial-grade API - Part 2: Read and Write API Security Profile (ID2
       })
         .expect(303)
         .expect(auth.validateClientLocation)
-        .expect(auth.validateError('unauthorized_client'))
+        .expect(auth.validateError('invalid_request'))
         .expect(auth.validateErrorDescription('requested response_mode is not allowed for this client or request'));
     });
   });

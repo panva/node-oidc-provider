@@ -907,7 +907,7 @@ describe('BASIC code', () => {
           .expect(auth.validatePresence(['error', 'error_description', 'state']))
           .expect(auth.validateState)
           .expect(auth.validateClientLocation)
-          .expect(auth.validateError('unauthorized_client'))
+          .expect(auth.validateError('invalid_request'))
           .expect(auth.validateErrorDescription('requested response_type is not allowed for this client'));
       });
 

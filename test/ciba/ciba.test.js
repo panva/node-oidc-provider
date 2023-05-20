@@ -272,7 +272,7 @@ describe('features.ciba', () => {
             .expect(400)
             .expect('content-type', /application\/json/)
             .expect({
-              error: 'unauthorized_client',
+              error: 'invalid_request',
               error_description: 'urn:openid:params:grant-type:ciba is not allowed for this client',
             })
             .expect(() => {
