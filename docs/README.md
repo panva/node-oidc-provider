@@ -1547,6 +1547,7 @@ Enables the use and validations of the `request` and/or `request_uri` parameters
 _**default value**_:
 ```js
 {
+  assertJwtClaimsAndHeader: [AsyncFunction: assertJwtClaimsAndHeader], // see expanded details below
   mode: 'strict',
   request: false,
   requestUri: false,
@@ -1557,6 +1558,52 @@ _**default value**_:
 
 <details><summary>(Click to expand) features.requestObjects options details</summary><br>
 
+
+#### assertJwtClaimsAndHeader
+
+Helper function used to validate the Request Object JWT Claims Set and Header beyond what the JAR specification requires.  
+
+
+_**default value**_:
+```js
+async function assertJwtClaimsAndHeader(ctx, claims, header, client) {
+  // @param ctx - koa request context
+  // @param claims - parsed Request Object JWT Claims Set as object
+  // @param header - parsed Request Object JWT Headers as object
+  // @param client - the Client instance
+  const fapiProfile = ctx.oidc.isFapi('1.0 Final', '1.0 ID2', '2.0');
+  if (fapiProfile) {
+    if (!('exp' in claims)) {
+      throw new errors.InvalidRequestObject("Request Object is missing the 'exp' claim");
+    }
+    if (fapiProfile === '1.0 Final' || fapiProfile === '2.0') {
+      if (!('aud' in claims)) {
+        throw new errors.InvalidRequestObject("Request Object is missing the 'aud' claim");
+      }
+      if (!('nbf' in claims)) {
+        throw new errors.InvalidRequestObject("Request Object is missing the 'nbf' claim");
+      }
+      const diff = claims.exp - claims.nbf;
+      if (Math.sign(diff) !== 1 || diff > 3600) {
+        throw new errors.InvalidRequestObject("Request Object 'exp' claim too far from 'nbf' claim");
+      }
+    }
+  }
+  if (ctx.oidc.route === 'backchannel_authentication') {
+    for (const claim of ['exp', 'iat', 'nbf', 'jti']) {
+      if (!(claim in claims)) {
+        throw new errors.InvalidRequestObject(`Request Object is missing the '${claim}' claim`);
+      }
+    }
+    if (fapiProfile) {
+      const diff = claims.exp - claims.nbf;
+      if (Math.sign(diff) !== 1 || diff > 3600) {
+        throw new errors.InvalidRequestObject("Request Object 'exp' claim too far from 'nbf' claim");
+      }
+    }
+  }
+}
+```
 
 #### mode
 
