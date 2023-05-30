@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [8.2.2](https://github.com/panva/node-oidc-provider/compare/v8.2.1...v8.2.2) (2023-05-30)
+
+
+### Fixes
+
+* ignore non-existent resource scopes during refresh ([#1222](https://github.com/panva/node-oidc-provider/issues/1222)) ([bdf23ba](https://github.com/panva/node-oidc-provider/commit/bdf23baf7ac58d629390344d93fc29224c67331e))
+
 ## [8.2.1](https://github.com/panva/node-oidc-provider/compare/v8.2.0...v8.2.1) (2023-05-06)
 
 
