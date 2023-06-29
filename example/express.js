@@ -2,6 +2,8 @@
 
 import * as path from 'node:path';
 import * as url from 'node:url';
+import https from 'node:https';
+import fs from 'node:fs';
 
 import { dirname } from 'desm';
 import express from 'express'; // eslint-disable-line import/no-unresolved
@@ -15,7 +17,7 @@ import routes from './routes/express.js';
 
 const __dirname = dirname(import.meta.url);
 
-const { PORT = 3000, ISSUER = `http://localhost:${PORT}` } = process.env;
+const { PORT = 3000, ISSUER = `https://localhost:${PORT}` } = process.env;
 configuration.findAccount = Account.findAccount;
 
 const app = express();
@@ -64,13 +66,29 @@ try {
         });
       }
     });
+  } else {
+    const { invalidate: orig } = provider.Client.Schema.prototype;
+
+    provider.Client.Schema.prototype.invalidate = function invalidate(message, code) {
+      if (code === 'implicit-force-https' || code === 'implicit-forbid-localhost') {
+        return;
+      }
+
+      orig.call(this, message);
+    };
   }
 
   routes(app, provider);
   app.use(provider.callback());
-  server = app.listen(PORT, () => {
-    console.log(`application is listening on port ${PORT}, check its /.well-known/openid-configuration`);
-  });
+  // server = app.listen(PORT, () => {
+  //   console.log(`application is listening on port ${PORT}, check its /.well-known/openid-configuration`);
+  // });
+  const options = {
+    key: fs.readFileSync('localhost-key.pem'),
+    cert: fs.readFileSync('localhost.pem'),
+  };
+  server = https.createServer(options, app);
+  server.listen(PORT);
 } catch (err) {
   if (server?.listening) server.close();
   console.error(err);
