@@ -7,6 +7,7 @@ import isEmpty from 'lodash/isEmpty.js';
 import { urlencoded } from 'express'; // eslint-disable-line import/no-unresolved
 
 import Account from '../support/account.js';
+import { SessionNotFound } from '../../lib/helpers/errors.js';
 
 const body = urlencoded({ extended: false });
 
@@ -21,8 +22,6 @@ const debug = (obj) => querystring.stringify(Object.entries(obj).reduce((acc, [k
 });
 
 export default (app, provider) => {
-  const { constructor: { errors: { SessionNotFound } } } = provider;
-
   app.use((req, res, next) => {
     const orig = res.render;
     // you'll probably want to use a full blown render engine capable of layouts
