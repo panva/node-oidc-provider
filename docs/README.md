@@ -290,8 +290,10 @@ provider.use(async (ctx, next) => {
 The following snippets show how a provider instance can be mounted to existing applications with a
 path prefix `/oidc`.
 
-Note: if you mount oidc-provider to a path it's likely you will have to also update the 
-[`interactions.url`](#interactionsurl) configuration to reflect the new path.
+If you are mounting the provider under a prefix, you should make further considerations:
+
+* You will have to update the [`interactions.url`](#interactionsurl) configuration to reflect the new path
+* You will have to include the prefix in provider instance issuer identifiers
 
 ### to a `connect` application
 ```js
@@ -318,14 +320,8 @@ hapiApp.route({
   method: '*',
   config: { payload: { output: 'stream', parse: false } },
   async handler({ raw: { req, res } }, h) {
-    req.originalUrl = req.url;
-    req.url = req.url.replace('/oidc', '');
-
     callback(req, res);
     await once(res, 'finish');
-
-    req.url = req.url.replace('/', '/oidc');
-    delete req.originalUrl;
 
     return res.finished ? h.abandon : h.continue;
   }
@@ -342,7 +338,6 @@ const callback = oidc.callback();
 export class OidcController {
   @All('/*')
   public mountedOidc(@Req() req: Request, @Res() res: Response): void {
-    req.url = req.originalUrl.replace('/oidc', '');
     return callback(req, res);
   }
 }
@@ -362,10 +357,14 @@ import mount from 'koa-mount';
 koaApp.use(mount('/oidc', oidc.app));
 ```
 
-Note: when the issuer identifier does not include the path prefix you should take care of rewriting
-your `${root}/.well-known/openid-configuration` to `${root}${prefix}/.well-known/openid-configuration`
-so that your deployment remains conform to the
-[Discovery 1.0](https://openid.net/specs/openid-connect-discovery-1_0.html) specification.
+### to a `next` application
+```js
+// assumes next ^13
+// src/pages/api/oidc/[...oidc].ts
+
+// You may have to take extra steps to stop the provider instance from being dereferenced and garbaged between requests
+export default provider.callback()
+```
 
 ## Trusting TLS offloading proxies
 
