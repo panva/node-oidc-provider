@@ -75,13 +75,8 @@ describe('provider instance', () => {
       expect(provider.urlFor('authorization')).to.equal('http://localhost/auth');
     });
 
-    it('returns the route for prefixed issuers (1/2)', () => {
+    it('returns the route for prefixed issuers', () => {
       const provider = new Provider('http://localhost/op/2.0');
-      expect(provider.urlFor('authorization')).to.equal('http://localhost/op/2.0/auth');
-    });
-
-    it('returns the route for prefixed issuers (2/2)', () => {
-      const provider = new Provider('http://localhost/op/2.0/');
       expect(provider.urlFor('authorization')).to.equal('http://localhost/op/2.0/auth');
     });
 
