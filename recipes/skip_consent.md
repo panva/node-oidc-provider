@@ -12,7 +12,7 @@ To achieve that you want to add the requested claims/scopes/resource scopes to t
 
 ```js
 const oidcConfiguration = {
-  loadExistingGrant(ctx) {
+  async loadExistingGrant(ctx) {
     const grantId = ctx.oidc.result?.consent?.grantId 
       || ctx.oidc.session.grantIdFor(ctx.oidc.client.clientId);
 
