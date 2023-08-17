@@ -148,7 +148,7 @@ router.post('/interaction/:uid', async (ctx, next) => {
   login: {
     accountId: string, // logged-in account id
     acr: string, // acr value for the authentication
-    arm: string[], // amr values for the authentication
+    amr: string[], // amr values for the authentication
     remember: boolean, // true if provider should use a persistent cookie rather than a session one, defaults to true
     ts: number, // unix timestamp of the authentication, defaults to now()
   },
