@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [8.3.1](https://github.com/panva/node-oidc-provider/compare/v8.3.0...v8.3.1) (2023-08-30)
+
+
+### Fixes
+
+* **DPoP:** compare htu scheme and hostname case independent ([b72d668](https://github.com/panva/node-oidc-provider/commit/b72d6686489bdb1a7484e1ba697614137cd36b73))
+
 ## [8.3.0](https://github.com/panva/node-oidc-provider/compare/v8.2.2...v8.3.0) (2023-08-27)
 
 
