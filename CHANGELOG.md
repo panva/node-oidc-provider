@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [8.4.0](https://github.com/panva/node-oidc-provider/compare/v8.3.2...v8.4.0) (2023-09-08)
+
+
+### Features
+
+* **DPoP:** remove experimental flag, DPoP is now RFC9449 ([89d133e](https://github.com/panva/node-oidc-provider/commit/89d133edf5090e017ef353a00ecaf578fee2f178))
+
 ## [8.3.2](https://github.com/panva/node-oidc-provider/compare/v8.3.1...v8.3.2) (2023-09-02)
 
 
