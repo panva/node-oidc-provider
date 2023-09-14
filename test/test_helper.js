@@ -64,12 +64,15 @@ const { port } = global.server.address();
 
 const jwt = (token) => JSON.parse(base64url.decode(token.split('.')[1])).jti;
 
-export default function testHelper(importMetaUrl, {
-  config: base,
-  protocol = 'http:',
-  mountVia = process.env.MOUNT_VIA,
-  mountTo = mountVia ? process.env.MOUNT_TO || '/' : '/',
-} = {}) {
+export default function testHelper(
+  importMetaUrl,
+  {
+    config: base,
+    protocol = 'http:',
+    mountVia = process.env.MOUNT_VIA,
+    mountTo = mountVia ? process.env.MOUNT_TO || '/' : '/',
+  } = {},
+) {
   const dir = dirname(importMetaUrl);
   // eslint-disable-next-line no-param-reassign
   base ??= path.basename(dir);
@@ -95,7 +98,9 @@ export default function testHelper(importMetaUrl, {
       config.findAccount = Account.findAccount;
     }
 
-    const issuerIdentifier = `${protocol}//127.0.0.1:${port}`;
+    const issuerIdentifier = `${protocol}//127.0.0.1:${port}${mountTo}`;
+
+    console.log(issuerIdentifier, 'IDENTII', mountTo);
 
     const provider = new Provider(issuerIdentifier, {
       clients,
@@ -137,7 +142,7 @@ export default function testHelper(importMetaUrl, {
       this.loggedInAccountId = accountId;
 
       const keyGrip = new KeyGrip(i(provider).configuration('cookies.keys'));
-      const session = new (provider.Session)({ jti: sessionId, loginTs, accountId });
+      const session = new provider.Session({ jti: sessionId, loginTs, accountId });
       lastSession = session;
       const sessionCookie = `_session=${sessionId}; path=/; expires=${expire.toGMTString()}; httponly`;
       const cookies = [sessionCookie];
@@ -184,12 +189,14 @@ export default function testHelper(importMetaUrl, {
         ttl = ttl(ctx, session);
       }
 
-      return Account.findAccount({}, accountId).then(session.save(ttl)).then(() => {
-        agent._saveCookies.bind(agent)({
-          request: { url: provider.issuer },
-          headers: { 'set-cookie': cookies },
+      return Account.findAccount({}, accountId)
+        .then(session.save(ttl))
+        .then(() => {
+          agent._saveCookies.bind(agent)({
+            request: { url: provider.issuer },
+            headers: { 'set-cookie': cookies },
+          });
         });
-      });
     }
 
     class AuthorizationRequest {
@@ -203,7 +210,9 @@ export default function testHelper(importMetaUrl, {
         this.client_id = 'client_id' in parameters ? parameters.client_id : clients[0].client_id;
         const c = clients.find((cl) => cl.client_id === this.client_id);
         this.state = 'state' in parameters ? parameters.state : Math.random().toString();
-        this.redirect_uri = 'redirect_uri' in parameters ? parameters.redirect_uri : parameters.redirect_uri || (c && c.redirect_uris[0]);
+        this.redirect_uri = 'redirect_uri' in parameters
+          ? parameters.redirect_uri
+          : parameters.redirect_uri || (c && c.redirect_uris[0]);
         this.res = {};
 
         if (this.response_type && this.response_type.includes('id_token')) {
@@ -230,14 +239,18 @@ export default function testHelper(importMetaUrl, {
 
         Object.defineProperty(this, 'validateState', {
           value: (response) => {
-            const { query: { state } } = parse(response.headers.location, true);
+            const {
+              query: { state },
+            } = parse(response.headers.location, true);
             expect(state).to.equal(this.state);
           },
         });
 
         Object.defineProperty(this, 'validateIss', {
           value: (response) => {
-            const { query: { iss } } = parse(response.headers.location, true);
+            const {
+              query: { iss },
+            } = parse(response.headers.location, true);
             expect(iss).to.equal(issuerIdentifier);
           },
         });
@@ -251,7 +264,9 @@ export default function testHelper(importMetaUrl, {
             expect(response).to.have.nested.property('headers.set-cookie').that.is.an('array');
 
             const uid = readCookie(response.headers['set-cookie'][0]);
-            expect(readCookie(response.headers['set-cookie'][0])).to.equal(readCookie(response.headers['set-cookie'][2]));
+            expect(readCookie(response.headers['set-cookie'][0])).to.equal(
+              readCookie(response.headers['set-cookie'][2]),
+            );
 
             const interaction = TestAdapter.for('Interaction').syncFind(uid);
 
@@ -271,15 +286,14 @@ export default function testHelper(importMetaUrl, {
       }
     }
 
-    AuthorizationRequest.prototype.validateInteraction = (eName, ...eReasons) => { // eslint-disable-line arrow-body-style
-      return (response) => {
-        const uid = readCookie(response.headers['set-cookie'][0]);
-        const { prompt: { name, reasons } } = TestAdapter.for('Interaction').syncFind(uid);
-        expect(name).to.equal(eName);
-        expect(reasons).to.contain.members(eReasons);
-      };
+    AuthorizationRequest.prototype.validateInteraction = (eName, ...eReasons) => (response) => {
+      const uid = readCookie(response.headers['set-cookie'][0]);
+      const {
+        prompt: { name, reasons },
+      } = TestAdapter.for('Interaction').syncFind(uid);
+      expect(name).to.equal(eName);
+      expect(reasons).to.contain.members(eReasons);
     };
-
     AuthorizationRequest.prototype.validateFragment = function (response) {
       const { hash } = parse(response.headers.location);
       expect(hash).to.exist;
@@ -295,7 +309,9 @@ export default function testHelper(importMetaUrl, {
       }
 
       // eslint-disable-next-line no-param-reassign
-      properties = (!absolute || properties.includes('id_token') || properties.includes('response')) ? properties : [...new Set(properties.concat('iss'))];
+      properties = !absolute || properties.includes('id_token') || properties.includes('response')
+        ? properties
+        : [...new Set(properties.concat('iss'))];
 
       return (response) => {
         const { query } = parse(response.headers.location, true);
@@ -312,7 +328,9 @@ export default function testHelper(importMetaUrl, {
 
     AuthorizationRequest.prototype.validateResponseParameter = function (parameter, expected) {
       return (response) => {
-        const { query: { [parameter]: value } } = parse(response.headers.location, true);
+        const {
+          query: { [parameter]: value },
+        } = parse(response.headers.location, true);
         if (expected.exec) {
           expect(value).to.match(expected);
         } else {
@@ -372,9 +390,7 @@ export default function testHelper(importMetaUrl, {
       } = opts;
       switch (verb) {
         case 'get':
-          return agent
-            .get(route)
-            .query(auth || params);
+          return agent.get(route).query(auth || params);
         case 'post':
           return agent
             .post(route)
@@ -417,7 +433,9 @@ export default function testHelper(importMetaUrl, {
 
     function failWith(code, error, error_description, scope) {
       return ({ status, body, headers: { 'www-authenticate': wwwAuth } }) => {
-        const { provider: { issuer } } = this;
+        const {
+          provider: { issuer },
+        } = this;
         expect(status).to.eql(code);
         expect(body).to.have.property('error', error);
         expect(body).to.have.property('error_description', error_description);
@@ -429,7 +447,11 @@ export default function testHelper(importMetaUrl, {
           assert = assert.to;
         }
         assert.match(new RegExp(`error="${error}"`));
-        assert.match(new RegExp(`error_description="${error_description.replace(/[-/\\^$*+?.()|[\]{}]/g, '\\$&')}"`));
+        assert.match(
+          new RegExp(
+            `error_description="${error_description.replace(/[-/\\^$*+?.()|[\]{}]/g, '\\$&')}"`,
+          ),
+        );
         if (scope) assert.match(new RegExp(`scope="${scope}"`));
       };
     }
@@ -453,20 +475,21 @@ export default function testHelper(importMetaUrl, {
     switch (mountVia) {
       case 'koa': {
         const app = new Koa();
-        app.use(koaMount(mountTo, provider.app));
+        app.use(koaMount(provider.app));
         global.server.on('request', app.callback());
         this.app = app;
         break;
       }
       case 'express': {
         const app = new Express();
-        app.use(mountTo, provider.callback());
+        app.use(provider.callback());
         global.server.on('request', app);
         break;
       }
       case 'connect': {
         const app = new Connect();
-        app.use(mountTo, provider.callback());
+        console.log('connect mountTo', mountTo);
+        app.use(provider.callback());
         global.server.on('request', app);
         break;
       }
@@ -475,8 +498,10 @@ export default function testHelper(importMetaUrl, {
         const { default: middie } = await import('@fastify/middie');
         const app = new Fastify();
         await app.register(middie);
-        app.use(mountTo, provider.callback());
-        await new Promise((resolve) => { global.server.close(resolve); });
+        app.use(provider.callback());
+        await new Promise((resolve) => {
+          global.server.close(resolve);
+        });
         await app.listen({ port, host: '::' });
         global.server = app.server;
         afterPromises.push(async () => {
@@ -491,23 +516,19 @@ export default function testHelper(importMetaUrl, {
         const app = new Hapi.Server({ port });
         const callback = provider.callback();
         app.route({
-          path: `${mountTo}/{any*}`,
+          path: '/{any*}',
           method: '*',
           config: { payload: { output: 'stream', parse: false } },
           async handler({ raw: { req, res } }, h) {
-            req.originalUrl = req.url;
-            req.url = req.url.replace(mountTo, '');
-
             callback(req, res);
             await once(res, 'finish');
-
-            req.url = req.url.replace('/', mountTo);
-            delete req.originalUrl;
 
             return res.finished ? h.abandon : h.continue;
           },
         });
-        await new Promise((resolve) => { global.server.close(resolve); });
+        await new Promise((resolve) => {
+          global.server.close(resolve);
+        });
         await app.start();
         global.server = app.listener;
         afterPromises.push(async () => {

@@ -298,7 +298,7 @@ If you are mounting the provider under a prefix, you should make further conside
 ### to a `connect` application
 ```js
 // assumes connect ^3.0.0
-connectApp.use('/oidc', oidc.callback());
+connectApp.use(oidc.callback());
 ```
 
 ### to a `fastify` application
@@ -308,7 +308,7 @@ const fastify = new Fastify();
 await fastify.register(require('@fastify/middie'));
 // or
 // await app.register(require('@fastify/express'));
-fastify.use('/oidc', oidc.callback());
+fastify.use(oidc.callback());
 ```
 
 ### to a `hapi` application
@@ -316,7 +316,7 @@ fastify.use('/oidc', oidc.callback());
 // assumes @hapi/hapi ^21.0.0
 const callback = oidc.callback();
 hapiApp.route({
-  path: `/oidc/{any*}`,
+  path: `/{any*}`,
   method: '*',
   config: { payload: { output: 'stream', parse: false } },
   async handler({ raw: { req, res } }, h) {
@@ -334,7 +334,7 @@ hapiApp.route({
 import { Controller, All, Req, Res } from '@nestjs/common';
 import { Request, Response } from 'express';
 const callback = oidc.callback();
-@Controller('oidc')
+@Controller()
 export class OidcController {
   @All('/*')
   public mountedOidc(@Req() req: Request, @Res() res: Response): void {
@@ -346,7 +346,7 @@ export class OidcController {
 ### to an `express` application
 ```js
 // assumes express ^4.0.0
-expressApp.use('/oidc', oidc.callback());
+expressApp.use(oidc.callback());
 ```
 
 ### to a `koa` application
@@ -354,7 +354,7 @@ expressApp.use('/oidc', oidc.callback());
 // assumes koa ^2.0.0
 // assumes koa-mount ^4.0.0
 import mount from 'koa-mount';
-koaApp.use(mount('/oidc', oidc.app));
+koaApp.use(mount(oidc.app));
 ```
 
 ### to a `next` application

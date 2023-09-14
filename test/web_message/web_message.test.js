@@ -263,7 +263,7 @@ describe('configuration features.webMessageResponseMode', () => {
         const spy = sinon.spy();
         this.provider.once('authorization.error', spy);
 
-        await this.wrap({ route, auth, verb: 'get' })
+        await this.wrap({ route: this.provider.pathFor('authorization'), auth, verb: 'get' })
           .expect(400)
           .expect('cache-control', 'no-store')
           .expect('content-type', 'text/html; charset=utf-8')
