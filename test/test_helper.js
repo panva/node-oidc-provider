@@ -23,6 +23,7 @@ import nanoid from '../lib/helpers/nanoid.js';
 import epochTime from '../lib/helpers/epoch_time.js';
 import Provider from '../lib/index.js';
 import instance from '../lib/helpers/weak_cache.js';
+import removeTrailingSlash from '../lib/helpers/remove_trailing_slash.js';
 
 import { Account, TestAdapter } from './models.js';
 import keys from './keys.js';
@@ -98,9 +99,8 @@ export default function testHelper(
       config.findAccount = Account.findAccount;
     }
 
-    const issuerIdentifier = `${protocol}//127.0.0.1:${port}${mountTo}`;
-
-    console.log(issuerIdentifier, 'IDENTII', mountTo);
+    let issuerIdentifier = `${protocol}//127.0.0.1:${port}${mountTo}`;
+    issuerIdentifier = removeTrailingSlash(issuerIdentifier);
 
     const provider = new Provider(issuerIdentifier, {
       clients,
@@ -488,7 +488,6 @@ export default function testHelper(
       }
       case 'connect': {
         const app = new Connect();
-        console.log('connect mountTo', mountTo);
         app.use(provider.callback());
         global.server.on('request', app);
         break;

@@ -1015,7 +1015,7 @@ describe('features.dPoP', () => {
         .expect({ error: 'invalid_token', error_description: 'invalid token provided' });
     });
 
-    it.only('@ token endpoint', async function () {
+    it('@ token endpoint', async function () {
       let nonce;
       await this.agent.post('/token')
         .auth('client', 'secret')
