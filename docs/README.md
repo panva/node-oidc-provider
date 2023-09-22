@@ -298,7 +298,7 @@ If you are mounting the provider under a prefix, you should make further conside
 ### to a `connect` application
 ```js
 // assumes connect ^3.0.0
-connectApp.use(oidc.callback());
+connectApp.use('/oidc', oidc.callback());
 ```
 
 ### to a `fastify` application
@@ -308,7 +308,7 @@ const fastify = new Fastify();
 await fastify.register(require('@fastify/middie'));
 // or
 // await app.register(require('@fastify/express'));
-fastify.use(oidc.callback());
+fastify.use('/oidc', oidc.callback());
 ```
 
 ### to a `hapi` application
@@ -316,12 +316,18 @@ fastify.use(oidc.callback());
 // assumes @hapi/hapi ^21.0.0
 const callback = oidc.callback();
 hapiApp.route({
-  path: `/{any*}`,
+  path: `/oidc/{any*}`,
   method: '*',
   config: { payload: { output: 'stream', parse: false } },
   async handler({ raw: { req, res } }, h) {
+    req.originalUrl = req.url;
+    req.url = req.url.replace('/oidc', '');
+
     callback(req, res);
     await once(res, 'finish');
+
+    req.url = req.url.replace('/', '/oidc');
+    delete req.originalUrl;
 
     return res.finished ? h.abandon : h.continue;
   }
@@ -334,10 +340,11 @@ hapiApp.route({
 import { Controller, All, Req, Res } from '@nestjs/common';
 import { Request, Response } from 'express';
 const callback = oidc.callback();
-@Controller()
+@Controller('oidc')
 export class OidcController {
   @All('/*')
   public mountedOidc(@Req() req: Request, @Res() res: Response): void {
+    req.url = req.originalUrl.replace('/oidc', '');
     return callback(req, res);
   }
 }
@@ -346,7 +353,7 @@ export class OidcController {
 ### to an `express` application
 ```js
 // assumes express ^4.0.0
-expressApp.use(oidc.callback());
+expressApp.use('/oidc', oidc.callback());
 ```
 
 ### to a `koa` application
@@ -354,7 +361,7 @@ expressApp.use(oidc.callback());
 // assumes koa ^2.0.0
 // assumes koa-mount ^4.0.0
 import mount from 'koa-mount';
-koaApp.use(mount(oidc.app));
+koaApp.use(mount('/oidc', oidc.app));
 ```
 
 ### to a `next` application
@@ -365,6 +372,8 @@ koaApp.use(mount(oidc.app));
 // You may have to take extra steps to stop the provider instance from being dereferenced and garbaged between requests
 export default provider.callback()
 ```
+
+Note: when the issuer identifier does not include the path prefix you should take care of rewriting your `${root}/.well-known/openid-configuration` to `${root}${prefix}/.well-known/openid-configuration` so that your deployment remains conform to the [Discovery 1.0](https://openid.net/specs/openid-connect-discovery-1_0.html) specification.
 
 ## Trusting TLS offloading proxies
 
