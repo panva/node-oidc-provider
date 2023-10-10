@@ -140,6 +140,7 @@ class MyAdapter {
      * - trusted {string[]} - parameter names that come from a trusted source
      * - result {object} - interaction results object is expected here
      * - grantId {string} - grant identifier if there's a preexisting one
+     * - cid {string} - correlating identifier for the Authorization request
      * - session {object}
      * - session.uid {string} - uid of the session this Interaction belongs to
      * - session.cookie {string} - jti of the session this Interaction belongs to

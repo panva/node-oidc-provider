@@ -497,8 +497,10 @@ describe('Client metadata validation', () => {
   });
 
   context('post_logout_redirect_uris', function () {
-    defaultsTo(this.title, [], undefined);
-    defaultsTo(this.title, [], { post_logout_redirect_uris: undefined });
+    defaultsTo(this.title, []);
+    defaultsTo(this.title, undefined, undefined, {
+      features: { rpInitiatedLogout: { enabled: false } },
+    });
     mustBeArray(this.title, [{}, 'string', 123, true]);
     rejects(this.title, [123], /must only contain strings$/);
 

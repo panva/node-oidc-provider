@@ -148,7 +148,7 @@ router.post('/interaction/:uid', async (ctx, next) => {
   login: {
     accountId: string, // logged-in account id
     acr: string, // acr value for the authentication
-    arm: string[], // amr values for the authentication
+    amr: string[], // amr values for the authentication
     remember: boolean, // true if provider should use a persistent cookie rather than a session one, defaults to true
     ts: number, // unix timestamp of the authentication, defaults to now()
   },
@@ -439,6 +439,7 @@ location / {
   - [requestObjects](#featuresrequestobjects)
   - [resourceIndicators ❗](#featuresresourceindicators)
   - [revocation](#featuresrevocation)
+  - [rpInitiatedLogout](#featuresrpinitiatedlogout)
   - [userinfo](#featuresuserinfo)
 - [acrValues](#acrvalues)
 - [allowOmittingSingleRegisteredRedirectUri](#allowomittingsingleregisteredredirecturi)
@@ -849,12 +850,9 @@ _**default value**_:
 
 ### features.dPoP
 
-[draft-ietf-oauth-dpop-11](https://tools.ietf.org/html/draft-ietf-oauth-dpop-11) - OAuth 2.0 Demonstration of Proof-of-Possession at the Application Layer (`DPoP`)  
+[`RFC9449`](https://www.rfc-editor.org/rfc/rfc9449.html) - OAuth 2.0 Demonstration of Proof-of-Possession at the Application Layer (`DPoP`)  
 
-Enables `DPoP` - mechanism for sender-constraining tokens via a proof-of-possession mechanism on the application level. Browser DPoP proof generation [here](https://www.npmjs.com/package/dpop).   
-  
-
-_**recommendation**_: Updates to draft specification versions are released as MINOR library versions, if you utilize these specification implementations consider using the tilde `~` operator in your package.json since breaking changes may be introduced as part of these version updates. Alternatively, [acknowledge](#features) the version and be notified of breaking changes as part of your CI.  
+Enables `DPoP` - mechanism for sender-constraining tokens via a proof-of-possession mechanism on the application level. Browser DPoP proof generation [here](https://www.npmjs.com/package/dpop).  
 
 
 _**default value**_:
@@ -2282,7 +2280,7 @@ _**default value**_:
 
 ### httpOptions
 
-Function called whenever calls to an external HTTP(S) resource are being made. You can change the request timeout through the `signal` option, the `agent` used as well as the `dnsLookup` resolver function.   
+Function called whenever calls to an external HTTP(S) resource are being made. You can change the request timeout through the `signal` option, the request `agent` used, the `user-agent` string used for the `user-agent` HTTP header, as well as the `dnsLookup` resolver function.   
   
 
 
@@ -2293,6 +2291,7 @@ function httpOptions(url) {
     signal: undefined, // defaults to AbortSignal.timeout(2500)
     agent: undefined, // defaults to node's global agents (https.globalAgent or http.globalAgent)
     dnsLookup: undefined, // defaults to `dns.lookup()` (https://nodejs.org/api/dns.html#dnslookuphostname-options-callback)
+    'user-agent': undefined, // defaults to not sending the user-agent HTTP header
   };
 }
 ```

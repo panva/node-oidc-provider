@@ -35,6 +35,7 @@ _Note that not all features are enabled by default, check the configuration sect
 - [`RFC9101` - OAuth 2.0 JWT-Secured Authorization Request (`JAR`)][jar]
 - [`RFC9126` - OAuth 2.0 Pushed Authorization Requests (`PAR`)][par]
 - [`RFC9207` - OAuth 2.0 Authorization Server Issuer Identifier in Authorization Response][iss-auth-resp]
+- [`RFC9449` - OAuth 2.0 Demonstration of Proof-of-Possession at the Application Layer (`DPoP`)][dpop]
 - [Financial-grade API Security Profile 1.0 - Part 2: Advanced (`FAPI 1.0`)][fapi]
 - [JWT Secured Authorization Response Mode for OAuth 2.0 (`JARM`)][jarm]
 - [OIDC Client Initiated Backchannel Authentication Flow (`CIBA`)][ciba]
@@ -48,7 +49,6 @@ The following draft specifications are implemented by oidc-provider:
 
 - [JWT Response for OAuth Token Introspection - draft 10][jwt-introspection]
 - [Financial-grade API: Client Initiated Backchannel Authentication Profile (`FAPI-CIBA`) - Implementer's Draft 01][fapi-ciba]
-- [OAuth 2.0 Demonstration of Proof-of-Possession at the Application Layer (`DPoP`) - draft 11][dpop]
 
 Updates to draft specification versions are released as MINOR library versions,
 if you utilize these specification implementations consider using the tilde `~` operator in your
@@ -129,7 +129,7 @@ actions and i.e. emit metrics that react to specific triggers. See the list of a
 [jwt-introspection]: https://tools.ietf.org/html/draft-ietf-oauth-jwt-introspection-response-10
 [sponsor-auth0]: https://a0.to/try-auth0
 [mtls]: https://www.rfc-editor.org/rfc/rfc8705.html
-[dpop]: https://tools.ietf.org/html/draft-ietf-oauth-dpop-11
+[dpop]: https://www.rfc-editor.org/rfc/rfc9449.html
 [resource-indicators]: https://www.rfc-editor.org/rfc/rfc8707.html
 [jarm]: https://openid.net/specs/oauth-v2-jarm.html
 [jwt-at]: https://www.rfc-editor.org/rfc/rfc9068.html
