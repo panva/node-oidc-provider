@@ -7,6 +7,7 @@ import isEmpty from 'lodash/isEmpty.js';
 import { urlencoded } from 'express'; // eslint-disable-line import/no-unresolved
 
 import Account from '../support/account.js';
+import { errors } from '../../lib/index.js'; // from 'oidc-provider';
 
 const body = urlencoded({ extended: false });
 
@@ -19,10 +20,8 @@ const debug = (obj) => querystring.stringify(Object.entries(obj).reduce((acc, [k
 }, {}), '<br/>', ': ', {
   encodeURIComponent(value) { return keys.has(value) ? `<strong>${value}</strong>` : value; },
 });
-
+const { SessionNotFound } = errors;
 export default (app, provider) => {
-  const { constructor: { errors: { SessionNotFound } } } = provider;
-
   app.use((req, res, next) => {
     const orig = res.render;
     // you'll probably want to use a full blown render engine capable of layouts

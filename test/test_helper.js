@@ -477,7 +477,7 @@ export default function testHelper(importMetaUrl, {
         await app.register(middie);
         app.use(mountTo, provider.callback());
         await new Promise((resolve) => { global.server.close(resolve); });
-        await app.listen(port, '::');
+        await app.listen({ port, host: '::' });
         global.server = app.server;
         afterPromises.push(async () => {
           await app.close();

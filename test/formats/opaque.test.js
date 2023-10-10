@@ -84,6 +84,14 @@ describe('opaque storage', () => {
     });
   });
 
+  it('for AccessToken extraTokenClaims gets assigned upon save()', async function () {
+    const client = await this.provider.Client.find(clientId);
+    const token = new this.provider.AccessToken({ client, ...fullPayload, extra: undefined });
+    expect(token.extra).to.eql(undefined);
+    await token.save();
+    expect(token.extra).to.eql(extra);
+  });
+
   it('for AuthorizationCode', async function () {
     const kind = 'AuthorizationCode';
     const upsert = spy(this.TestAdapter.for('AuthorizationCode'), 'upsert');
@@ -242,6 +250,14 @@ describe('opaque storage', () => {
       jkt: s256,
       extra,
     });
+  });
+
+  it('for ClientCredentials extraTokenClaims gets assigned upon save()', async function () {
+    const client = await this.provider.Client.find(clientId);
+    const token = new this.provider.ClientCredentials({ client, ...fullPayload, extra: undefined });
+    expect(token.extra).to.eql(undefined);
+    await token.save();
+    expect(token.extra).to.eql(extra);
   });
 
   it('for InitialAccessToken', async function () {
