@@ -12,7 +12,7 @@ import debug from './debug.js';
 const pipeline = promisify(stream.pipeline);
 
 const FINISHED = new Set(['FINISHED']);
-const RESULTS = new Set(['REVIEW', 'PASSED', 'SKIPPED']);
+const RESULTS = new Set(['REVIEW', 'PASSED', 'WARNING', 'SKIPPED']);
 
 class API {
   constructor({ baseUrl, bearerToken } = {}) {

@@ -2,6 +2,57 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [8.4.0](https://github.com/panva/node-oidc-provider/compare/v8.3.2...v8.4.0) (2023-09-08)
+
+
+### Features
+
+* **DPoP:** remove experimental flag, DPoP is now RFC9449 ([89d133e](https://github.com/panva/node-oidc-provider/commit/89d133edf5090e017ef353a00ecaf578fee2f178))
+
+## [8.3.2](https://github.com/panva/node-oidc-provider/compare/v8.3.1...v8.3.2) (2023-09-02)
+
+
+### Fixes
+
+* assign extraTokenClaims return to the model ([e296dc7](https://github.com/panva/node-oidc-provider/commit/e296dc78247bf9259f088a9b5400cf9d921b23cf))
+
+## [8.3.1](https://github.com/panva/node-oidc-provider/compare/v8.3.0...v8.3.1) (2023-08-30)
+
+
+### Fixes
+
+* **DPoP:** compare htu scheme and hostname case independent ([b72d668](https://github.com/panva/node-oidc-provider/commit/b72d6686489bdb1a7484e1ba697614137cd36b73))
+
+## [8.3.0](https://github.com/panva/node-oidc-provider/compare/v8.2.2...v8.3.0) (2023-08-27)
+
+
+### Features
+
+* allow specifying the user-agent header for outgoing requests ([95f24ef](https://github.com/panva/node-oidc-provider/commit/95f24ef6365ae54375f7459cec19fb1c6b8ba291))
+
+## [8.2.2](https://github.com/panva/node-oidc-provider/compare/v8.2.1...v8.2.2) (2023-05-30)
+
+
+### Fixes
+
+* ignore non-existent resource scopes during refresh ([#1222](https://github.com/panva/node-oidc-provider/issues/1222)) ([bdf23ba](https://github.com/panva/node-oidc-provider/commit/bdf23baf7ac58d629390344d93fc29224c67331e))
+
+## [8.2.1](https://github.com/panva/node-oidc-provider/compare/v8.2.0...v8.2.1) (2023-05-06)
+
+
+### Fixes
+
+* ignore post_logout_redirect_uris when logout is disabled ([#1221](https://github.com/panva/node-oidc-provider/issues/1221)) ([d7dd6cf](https://github.com/panva/node-oidc-provider/commit/d7dd6cf13739dea62b6e72531ba27ef27fbf4e50))
+
+## [8.2.0](https://github.com/panva/node-oidc-provider/compare/v8.1.2...v8.2.0) (2023-04-24)
+
+
+### Features
+
+* add correlation identifier to interactions ([#1218](https://github.com/panva/node-oidc-provider/issues/1218)) ([c072352](https://github.com/panva/node-oidc-provider/commit/c072352e586cc161d51513408ae5fd063d9867d1))
+
+## [8.1.2](https://github.com/panva/node-oidc-provider/compare/v8.1.1...v8.1.2) (2023-04-21)
+
 ## [8.1.1](https://github.com/panva/node-oidc-provider/compare/v8.1.0...v8.1.1) (2023-03-09)
 
 ## [8.1.0](https://github.com/panva/node-oidc-provider/compare/v8.0.0...v8.1.0) (2023-01-23)
