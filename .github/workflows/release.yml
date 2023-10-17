@@ -6,7 +6,6 @@ on:
 
 jobs:
   npm:
-    if: ${{ github.repository == 'panva/node-oidc-provider' }}
     runs-on: ubuntu-latest
     permissions:
       id-token: write

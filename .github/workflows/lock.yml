@@ -1,12 +1,15 @@
 name: 'Lock threads'
 
 on:
-  schedule:
-    - cron: '55 11 * * 1'
+  push:
+    branches: [ main ]
+  pull_request:
+    # The branches below must be a subset of the branches above
+    branches: [ main ]
+  workflow_dispatch:
 
 jobs:
   lock:
-    if: ${{ github.repository == 'panva/node-oidc-provider' }}
     continue-on-error: true
     runs-on: ubuntu-latest
     steps:
