@@ -13,16 +13,14 @@ name: "CodeQL"
 
 on:
   push:
-    branches: [ "main" ]
+    branches: [master]
   pull_request:
     # The branches below must be a subset of the branches above
-    branches: [ "main" ]
-  schedule:
-    - cron: '55 11 * * 1'
+    branches: [ main ]
+  workflow_dispatch:
 
 jobs:
   analyze:
-    if: ${{ github.repository == 'panva/node-oidc-provider' }}
     name: Analyze
     runs-on: ubuntu-latest
     permissions:
