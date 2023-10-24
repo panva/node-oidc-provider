@@ -16,7 +16,7 @@ jobs:
         with:
           fetch-depth: 0
       - name: Setup node
-        uses: actions/setup-node@v3
+        uses: actions/setup-node@v4
         with:
           node-version: lts/hydrogen # 18
           registry-url: https://registry.npmjs.org
@@ -49,7 +49,7 @@ jobs:
         with:
           fetch-depth: 2
       - name: Setup node
-        uses: actions/setup-node@v3
+        uses: actions/setup-node@v4
         with:
           node-version: lts/hydrogen # 18
           cache: 'npm'
