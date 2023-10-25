@@ -199,7 +199,7 @@ jobs:
       - name: Setup node
         uses: actions/setup-node@v4
         with:
-          node-version: lts/hydrogen # 18
+          node-version: lts/iron # 20
           cache: 'npm'
       - run: npm clean-install
       - name: Run oidc-provider (OIDC)
