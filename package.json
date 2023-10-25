@@ -93,7 +93,7 @@
     "moment": "^2.29.4",
     "nock": "^13.3.6",
     "selfsigned": "^2.1.1",
-    "sinon": "^15.2.0",
+    "sinon": "^17.0.0",
     "supertest": "^6.3.3",
     "timekeeper": "^2.3.1"
   }
