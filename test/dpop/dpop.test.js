@@ -151,7 +151,7 @@ describe('features.dPoP', () => {
         }
 
         for (const { args: [, err] } of spy.getCalls()) {
-          expect(err.error_detail).to.be.oneOf(['"alg" (Algorithm) Header Parameter not allowed', 'JWS "alg" (Algorithm) Header Parameter missing or invalid']);
+          expect(err.error_detail).to.be.oneOf(['"alg" (Algorithm) Header Parameter value not allowed', 'JWS "alg" (Algorithm) Header Parameter missing or invalid']);
         }
       });
 
