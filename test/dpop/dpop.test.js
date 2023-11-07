@@ -115,8 +115,8 @@ describe('features.dPoP', () => {
         this.provider.on('userinfo.error', spy);
 
         for (const value of ['JWT', 'secevent+jwt']) {
-          await this.agent.get('/me') // eslint-disable-line no-await-in-loop
-            .set('DPoP', await new SignJWT({}) // eslint-disable-line no-await-in-loop
+          await this.agent.get('/me')
+            .set('DPoP', await new SignJWT({})
               .setProtectedHeader({
                 alg: 'ES256',
                 jwk: this.jwk,
@@ -140,7 +140,7 @@ describe('features.dPoP', () => {
         const spy = sinon.spy();
         this.provider.on('userinfo.error', spy);
         for (const value of [1, true, 'none', 'HS256', 'unsupported']) {
-          await this.agent.get('/me') // eslint-disable-line no-await-in-loop
+          await this.agent.get('/me')
             .set('DPoP', `${base64url.encode(JSON.stringify({ jwk: this.jwk, typ: 'dpop+jwt', alg: value }))}.e30.`)
             .set('Authorization', `DPoP ${this.access_token}`)
             .expect(401)
@@ -159,8 +159,8 @@ describe('features.dPoP', () => {
         const spy = sinon.spy();
         this.provider.on('userinfo.error', spy);
         for (const value of [undefined, '', 1, true, null, 'foo', []]) {
-          await this.agent.get('/me') // eslint-disable-line no-await-in-loop
-            .set('DPoP', await new SignJWT({}) // eslint-disable-line no-await-in-loop
+          await this.agent.get('/me')
+            .set('DPoP', await new SignJWT({})
               .setProtectedHeader({
                 alg: 'ES256',
                 jwk: value,
@@ -206,7 +206,7 @@ describe('features.dPoP', () => {
       it('no symmetric key in header', async function () {
         const spy = sinon.spy();
         this.provider.on('userinfo.error', spy);
-        await this.agent.get('/me') // eslint-disable-line no-await-in-loop
+        await this.agent.get('/me')
           .set('DPoP', await new SignJWT({})
             .setProtectedHeader({
               alg: 'ES256',
@@ -227,7 +227,7 @@ describe('features.dPoP', () => {
       });
 
       it('missing jti', async function () {
-        await this.agent.get('/me') // eslint-disable-line no-await-in-loop
+        await this.agent.get('/me')
           .set('DPoP', await new SignJWT({ htm: 'POST', htu: `${this.provider.issuer}${this.suitePath('/me')}` })
             .setProtectedHeader({ alg: 'ES256', typ: 'dpop+jwt', jwk: this.jwk })
             .setIssuedAt()
@@ -241,7 +241,7 @@ describe('features.dPoP', () => {
       });
 
       it('htm mismatch', async function () {
-        await this.agent.get('/me') // eslint-disable-line no-await-in-loop
+        await this.agent.get('/me')
           .set('DPoP', await new SignJWT({ htm: 'POST', htu: `${this.provider.issuer}${this.suitePath('/me')}`, ath: this.ath })
             .setProtectedHeader({ alg: 'ES256', typ: 'dpop+jwt', jwk: this.jwk })
             .setIssuedAt()
@@ -256,7 +256,7 @@ describe('features.dPoP', () => {
       });
 
       it('htu mismatch', async function () {
-        await this.agent.get('/me') // eslint-disable-line no-await-in-loop
+        await this.agent.get('/me')
           .set('DPoP', await new SignJWT({ htm: 'GET', htu: `${this.provider.issuer}${this.suitePath('/token')}`, ath: this.ath })
             .setProtectedHeader({ alg: 'ES256', typ: 'dpop+jwt', jwk: this.jwk })
             .setIssuedAt()
@@ -271,7 +271,7 @@ describe('features.dPoP', () => {
       });
 
       it('iat too old', async function () {
-        await this.agent.get('/me') // eslint-disable-line no-await-in-loop
+        await this.agent.get('/me')
           .set('DPoP', await new SignJWT({ htm: 'GET', htu: `${this.provider.issuer}${this.suitePath('/me')}`, ath: this.ath })
             .setProtectedHeader({ alg: 'ES256', typ: 'dpop+jwt', jwk: this.jwk })
             .setIssuedAt(epochTime() - 301)
@@ -286,7 +286,7 @@ describe('features.dPoP', () => {
       });
 
       it('iat too in the future', async function () {
-        await this.agent.get('/me') // eslint-disable-line no-await-in-loop
+        await this.agent.get('/me')
           .set('DPoP', await new SignJWT({ htm: 'GET', htu: `${this.provider.issuer}${this.suitePath('/me')}`, ath: this.ath })
             .setProtectedHeader({ alg: 'ES256', typ: 'dpop+jwt', jwk: this.jwk })
             .setIssuedAt(epochTime() + 301)

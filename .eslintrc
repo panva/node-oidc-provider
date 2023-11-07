@@ -3,6 +3,7 @@
   "rules": {
     "no-empty": ["error", { "allowEmptyCatch": true }],
     "no-underscore-dangle": ["error", { "allow": ["_claim_names", "_claim_sources", "_matchedRouteName", "__dirname"] }],
+    "no-await-in-loop": ["off"],
     "import/order": ["error", { "groups": ["builtin", "external", "internal", "parent", "sibling", "index"], "newlines-between": "always" }],
     "symbol-description": ["off"],
     "import/extensions": ["error", "ignorePackages"],

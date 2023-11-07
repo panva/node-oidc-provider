@@ -50,7 +50,6 @@ describe('features.ciba', () => {
         const result = new AccessDenied();
 
         for (const request of [{}, [], 0, 1, true, false, new Set(), new Error()]) {
-        // eslint-disable-next-line no-await-in-loop
           await assert.rejects(this.provider.backchannelResult(request, result), { name: 'TypeError', message: 'invalid "request" argument' });
         }
       });
@@ -67,7 +66,6 @@ describe('features.ciba', () => {
         const request = new this.provider.BackchannelAuthenticationRequest({ clientId: 'client' });
 
         for (const result of [{}, [], 0, 1, true, false, new Set(), new Error()]) {
-        // eslint-disable-next-line no-await-in-loop
           await assert.rejects(this.provider.backchannelResult(request, result), { name: 'TypeError', message: 'invalid "result" argument' });
         }
       });

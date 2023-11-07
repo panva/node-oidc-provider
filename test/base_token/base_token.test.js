@@ -44,7 +44,7 @@ describe('BaseToken', () => {
 
   it('handles invalid inputs', async function () {
     for (const input of [true, Boolean, 1, Infinity, {}, [], new Set()]) {
-      const result = await this.provider.RefreshToken.find(input); // eslint-disable-line no-await-in-loop
+      const result = await this.provider.RefreshToken.find(input);
       expect(result).to.be.undefined;
     }
   });

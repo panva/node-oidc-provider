@@ -1,4 +1,3 @@
-/* eslint-disable no-await-in-loop */
 import { spawn } from 'node:child_process';
 
 function pass({ mountTo, mountVia } = {}) {

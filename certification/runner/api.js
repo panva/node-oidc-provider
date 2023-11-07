@@ -1,4 +1,3 @@
-/* eslint-disable no-await-in-loop */
 import { strict as assert } from 'node:assert';
 import { createWriteStream, writeFileSync } from 'node:fs';
 import * as stream from 'node:stream';

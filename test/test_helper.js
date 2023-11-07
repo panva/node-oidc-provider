@@ -214,7 +214,7 @@ export default function testHelper(importMetaUrl, {
         for (const [key, value] of Object.entries(resources)) {
           grant.addResourceScope(key, value);
         }
-        // eslint-disable-next-line no-await-in-loop
+
         const grantId = await grant.save();
         session.authorizations[cl.client_id] = {
           sid: nanoid(),
