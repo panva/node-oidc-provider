@@ -17,3 +17,4 @@ jobs:
           issue-lock-reason: ''
           pr-inactive-days: '90'
           pr-lock-reason: ''
+          discussion-inactive-days: "90"
