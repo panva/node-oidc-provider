@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [8.4.2](https://github.com/panva/node-oidc-provider/compare/v8.4.1...v8.4.2) (2023-12-02)
+
+
+### Fixes
+
+* reject client JSON Web Key Set `null` value ([#1237](https://github.com/panva/node-oidc-provider/issues/1237)) ([cce6d43](https://github.com/panva/node-oidc-provider/commit/cce6d43535da72cd244b18d8a42a8dbee5f0f955))
+
 ## [8.4.1](https://github.com/panva/node-oidc-provider/compare/v8.4.0...v8.4.1) (2023-10-25)
 
 ## [8.4.0](https://github.com/panva/node-oidc-provider/compare/v8.3.2...v8.4.0) (2023-09-08)
