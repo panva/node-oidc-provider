@@ -254,6 +254,8 @@ describe('Client metadata validation', () => {
   context('client_name', function () {
     mustBeString(this.title);
     allows(this.title, 'whatever client name');
+    rejects(this.title, '');
+    rejects(this.title, null);
   });
 
   context('client_secret', function () {
