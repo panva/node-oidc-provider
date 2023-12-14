@@ -1749,6 +1749,7 @@ describe('Client metadata validation', () => {
       rejects(this.title, { keys: [value] }, 'client JSON Web Key Set is invalid');
     });
     rejects('jwks', 'string', 'client JSON Web Key Set is invalid');
+    rejects('jwks', null, 'client JSON Web Key Set is invalid');
     rejects(this.title, {}, 'client JSON Web Key Set is invalid');
     rejects(this.title, 1, 'client JSON Web Key Set is invalid');
     rejects(this.title, 0, 'client JSON Web Key Set is invalid');
