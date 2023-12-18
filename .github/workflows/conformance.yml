@@ -253,7 +253,7 @@ jobs:
         run: |
           zip -ur ${{ env.EXPORT_FILE }} server.log
       - name: Upload test artifacts
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v3
         with:
           path: export-*.zip
           name: certification html results
