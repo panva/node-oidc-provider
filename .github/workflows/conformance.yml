@@ -253,10 +253,10 @@ jobs:
         run: |
           zip -ur ${{ env.EXPORT_FILE }} server.log
       - name: Upload test artifacts
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           path: export-*.zip
-          name: certification html results
+          name: certification html results idx(${{ strategy.job-index }})
           if-no-files-found: ignore
         if: ${{ always() }}
       - name: Stop Conformance Suite
