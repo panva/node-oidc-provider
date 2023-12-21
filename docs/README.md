@@ -365,7 +365,8 @@ koaApp.use(mount('/oidc', oidc.app));
 Note: when the issuer identifier does not include the path prefix you should take care of rewriting
 your `${root}/.well-known/openid-configuration` to `${root}${prefix}/.well-known/openid-configuration`
 so that your deployment remains conform to the
-[Discovery 1.0](https://openid.net/specs/openid-connect-discovery-1_0.html) specification.
+[Discovery 1.0](https://openid.net/specs/openid-connect-discovery-1_0.html#ProviderConfigurationRequest)
+specification.
 
 ## Trusting TLS offloading proxies
 

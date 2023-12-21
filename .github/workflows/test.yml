@@ -21,14 +21,15 @@ jobs:
       matrix:
         node-version:
           - lts/hydrogen # 18
+          - lts/iron # 20
           - current
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
       - name: Setup node
         id: node
-        uses: actions/setup-node@v3
+        uses: actions/setup-node@v4
         with:
           node-version: ${{ matrix.node-version }}
           cache: 'npm'
@@ -49,7 +50,7 @@ jobs:
   #         - powerful-cove-31049
   #   steps:
   #     - name: Checkout
-  #       uses: actions/checkout@v3
+  #       uses: actions/checkout@v4
   #     - uses: ruby/setup-ruby@v1
   #       with:
   #         ruby-version: '2.7'

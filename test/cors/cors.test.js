@@ -29,6 +29,15 @@ const ACAOrigin = 'access-control-allow-origin';
 const ACEHeaders = 'access-control-expose-headers';
 const Vary = 'vary';
 
+function accessControlHeaders(headers) {
+  return Object.fromEntries(Object.entries(headers).filter(([header]) => header.startsWith('access-control-')));
+}
+
+function assertCorsHeaders(headers, expected) {
+  expect(headers[Vary]).to.eql('Origin');
+  expect(accessControlHeaders(headers)).to.eql(expected);
+}
+
 describe('CORS setup', () => {
   before(bootstrap(import.meta.url));
   before(function () { return this.login(); });
@@ -63,44 +72,49 @@ describe('CORS setup', () => {
         ['set', 'authorization', `Bearer ${this.token}`],
       );
       expect(status).to.eql(500);
-      expect(headers[Vary]).to.eql('Origin');
-      expect(headers[ACEHeaders]).to.eql('WWW-Authenticate');
-      expect(headers[ACAOrigin]).to.eql('https://example.com');
+      assertCorsHeaders(headers, {
+        [ACEHeaders]: 'WWW-Authenticate',
+        [ACAOrigin]: 'https://example.com',
+      });
     });
   });
 
   it('discovery has cors open', async function () {
     const { status, headers } = await req.call(this, 'get', '/.well-known/openid-configuration', 'https://example.com');
     expect(status).to.eql(200);
-    expect(headers[Vary]).to.eql('Origin');
-    expect(headers[ACAOrigin]).to.eql('https://example.com');
+    assertCorsHeaders(headers, {
+      [ACAOrigin]: 'https://example.com',
+    });
   });
 
   it('discovery preflights have cors open', async function () {
     const { status, headers } = await preflight.call(this, 'GET', '/.well-known/openid-configuration', 'https://example.com');
     expect(status).to.eql(204);
-    expect(headers[Vary]).to.eql('Origin');
-    expect(headers[ACAOrigin]).to.eql('https://example.com');
-    expect(headers[ACAMaxAge]).to.eql('3600');
-    expect(headers[ACAMethods]).to.eql('GET');
-    expect(headers[ACAHeaders]).to.eql('foo');
+    assertCorsHeaders(headers, {
+      [ACAOrigin]: 'https://example.com',
+      [ACAMaxAge]: '3600',
+      [ACAMethods]: 'GET',
+      [ACAHeaders]: 'foo',
+    });
   });
 
   it('jwks_uri has cors open', async function () {
     const { status, headers } = await req.call(this, 'get', '/jwks', 'https://example.com');
     expect(status).to.eql(200);
-    expect(headers[Vary]).to.eql('Origin');
-    expect(headers[ACAOrigin]).to.eql('https://example.com');
+    assertCorsHeaders(headers, {
+      [ACAOrigin]: 'https://example.com',
+    });
   });
 
   it('jwks_uri preflights have cors open', async function () {
     const { status, headers } = await preflight.call(this, 'GET', '/jwks', 'https://example.com');
     expect(status).to.eql(204);
-    expect(headers[Vary]).to.eql('Origin');
-    expect(headers[ACAOrigin]).to.eql('https://example.com');
-    expect(headers[ACAMaxAge]).to.eql('3600');
-    expect(headers[ACAMethods]).to.eql('GET');
-    expect(headers[ACAHeaders]).to.eql('foo');
+    assertCorsHeaders(headers, {
+      [ACAOrigin]: 'https://example.com',
+      [ACAMaxAge]: '3600',
+      [ACAMethods]: 'GET',
+      [ACAHeaders]: 'foo',
+    });
   });
 
   describe('with clientBasedCORS resolving to true', () => {
@@ -124,19 +138,21 @@ describe('CORS setup', () => {
         ['set', 'authorization', `Bearer ${this.token}`],
       );
       expect(status).to.eql(200);
-      expect(headers[Vary]).to.eql('Origin');
-      expect(headers[ACEHeaders]).to.eql('WWW-Authenticate');
-      expect(headers[ACAOrigin]).to.eql('https://example.com');
+      assertCorsHeaders(headers, {
+        [ACEHeaders]: 'WWW-Authenticate',
+        [ACAOrigin]: 'https://example.com',
+      });
     });
 
     it('userinfo preflights have cors open', async function () {
       const { status, headers } = await preflight.call(this, 'GET', '/me', 'https://example.com');
       expect(status).to.eql(204);
-      expect(headers[Vary]).to.eql('Origin');
-      expect(headers[ACAOrigin]).to.eql('https://example.com');
-      expect(headers[ACAMaxAge]).to.eql('3600');
-      expect(headers[ACAMethods]).to.eql('GET,POST');
-      expect(headers[ACAHeaders]).to.eql('foo');
+      assertCorsHeaders(headers, {
+        [ACAOrigin]: 'https://example.com',
+        [ACAMaxAge]: '3600',
+        [ACAMethods]: 'GET,POST',
+        [ACAHeaders]: 'foo',
+      });
     });
 
     it('token has cors open', async function () {
@@ -150,9 +166,10 @@ describe('CORS setup', () => {
         ['send', { client_id: 'client', grant_type: 'client_credentials' }],
       );
       expect(status).to.eql(200);
-      expect(headers[Vary]).to.eql('Origin');
-      expect(headers[ACEHeaders]).to.eql('WWW-Authenticate');
-      expect(headers[ACAOrigin]).to.eql('https://example.com');
+      assertCorsHeaders(headers, {
+        [ACEHeaders]: 'WWW-Authenticate',
+        [ACAOrigin]: 'https://example.com',
+      });
     });
 
     it('token (error) has cors open', async function () {
@@ -166,19 +183,21 @@ describe('CORS setup', () => {
         ['send', { client_id: 'client' }],
       );
       expect(status).to.eql(400);
-      expect(headers[Vary]).to.eql('Origin');
-      expect(headers[ACEHeaders]).to.eql('WWW-Authenticate');
-      expect(headers[ACAOrigin]).to.eql('https://example.com');
+      assertCorsHeaders(headers, {
+        [ACEHeaders]: 'WWW-Authenticate',
+        [ACAOrigin]: 'https://example.com',
+      });
     });
 
     it('token preflights have cors open', async function () {
       const { status, headers } = await preflight.call(this, 'POST', '/token', 'https://example.com');
       expect(status).to.eql(204);
-      expect(headers[Vary]).to.eql('Origin');
-      expect(headers[ACAOrigin]).to.eql('https://example.com');
-      expect(headers[ACAMaxAge]).to.eql('3600');
-      expect(headers[ACAMethods]).to.eql('POST');
-      expect(headers[ACAHeaders]).to.eql('foo');
+      assertCorsHeaders(headers, {
+        [ACAOrigin]: 'https://example.com',
+        [ACAMaxAge]: '3600',
+        [ACAMethods]: 'POST',
+        [ACAHeaders]: 'foo',
+      });
     });
 
     it('revocation has cors open', async function () {
@@ -192,19 +211,21 @@ describe('CORS setup', () => {
         ['send', { client_id: 'client', token: 'foo' }],
       );
       expect(status).to.eql(200);
-      expect(headers[Vary]).to.eql('Origin');
-      expect(headers[ACEHeaders]).to.eql('WWW-Authenticate');
-      expect(headers[ACAOrigin]).to.eql('https://example.com');
+      assertCorsHeaders(headers, {
+        [ACEHeaders]: 'WWW-Authenticate',
+        [ACAOrigin]: 'https://example.com',
+      });
     });
 
     it('revocation preflights have cors open', async function () {
       const { status, headers } = await preflight.call(this, 'POST', '/token/revocation', 'https://example.com');
       expect(status).to.eql(204);
-      expect(headers[Vary]).to.eql('Origin');
-      expect(headers[ACAOrigin]).to.eql('https://example.com');
-      expect(headers[ACAMaxAge]).to.eql('3600');
-      expect(headers[ACAMethods]).to.eql('POST');
-      expect(headers[ACAHeaders]).to.eql('foo');
+      assertCorsHeaders(headers, {
+        [ACAOrigin]: 'https://example.com',
+        [ACAMaxAge]: '3600',
+        [ACAMethods]: 'POST',
+        [ACAHeaders]: 'foo',
+      });
     });
 
     it('introspection has cors open', async function () {
@@ -218,9 +239,10 @@ describe('CORS setup', () => {
         ['send', { client_id: 'client', token: this.token }],
       );
       expect(status).to.eql(200);
-      expect(headers[Vary]).to.eql('Origin');
-      expect(headers[ACEHeaders]).to.eql('WWW-Authenticate');
-      expect(headers[ACAOrigin]).to.eql('https://example.com');
+      assertCorsHeaders(headers, {
+        [ACEHeaders]: 'WWW-Authenticate',
+        [ACAOrigin]: 'https://example.com',
+      });
     });
 
     it('introspection (error) has cors open', async function () {
@@ -234,19 +256,21 @@ describe('CORS setup', () => {
         ['send', { client_id: 'client' }],
       );
       expect(status).to.eql(400);
-      expect(headers[Vary]).to.eql('Origin');
-      expect(headers[ACEHeaders]).to.eql('WWW-Authenticate');
-      expect(headers[ACAOrigin]).to.eql('https://example.com');
+      assertCorsHeaders(headers, {
+        [ACEHeaders]: 'WWW-Authenticate',
+        [ACAOrigin]: 'https://example.com',
+      });
     });
 
     it('introspection preflights have cors open', async function () {
       const { status, headers } = await preflight.call(this, 'POST', '/token/introspection', 'https://example.com');
       expect(status).to.eql(204);
-      expect(headers[Vary]).to.eql('Origin');
-      expect(headers[ACAOrigin]).to.eql('https://example.com');
-      expect(headers[ACAMaxAge]).to.eql('3600');
-      expect(headers[ACAMethods]).to.eql('POST');
-      expect(headers[ACAHeaders]).to.eql('foo');
+      assertCorsHeaders(headers, {
+        [ACAOrigin]: 'https://example.com',
+        [ACAMaxAge]: '3600',
+        [ACAMethods]: 'POST',
+        [ACAHeaders]: 'foo',
+      });
     });
 
     it('device_authorization has cors open', async function () {
@@ -260,9 +284,10 @@ describe('CORS setup', () => {
         ['send', { client_id: 'client' }],
       );
       expect(status).to.eql(200);
-      expect(headers[Vary]).to.eql('Origin');
-      expect(headers[ACEHeaders]).to.eql('WWW-Authenticate');
-      expect(headers[ACAOrigin]).to.eql('https://example.com');
+      assertCorsHeaders(headers, {
+        [ACEHeaders]: 'WWW-Authenticate',
+        [ACAOrigin]: 'https://example.com',
+      });
     });
 
     it('device_authorization (error) has cors open', async function () {
@@ -276,19 +301,21 @@ describe('CORS setup', () => {
         ['send', { client_id: 'client', max_age: '-1' }],
       );
       expect(status).to.eql(400);
-      expect(headers[Vary]).to.eql('Origin');
-      expect(headers[ACEHeaders]).to.eql('WWW-Authenticate');
-      expect(headers[ACAOrigin]).to.eql('https://example.com');
+      assertCorsHeaders(headers, {
+        [ACEHeaders]: 'WWW-Authenticate',
+        [ACAOrigin]: 'https://example.com',
+      });
     });
 
     it('device_authorization preflights have cors open', async function () {
       const { status, headers } = await preflight.call(this, 'POST', '/device/auth', 'https://example.com');
       expect(status).to.eql(204);
-      expect(headers[Vary]).to.eql('Origin');
-      expect(headers[ACAOrigin]).to.eql('https://example.com');
-      expect(headers[ACAMaxAge]).to.eql('3600');
-      expect(headers[ACAMethods]).to.eql('POST');
-      expect(headers[ACAHeaders]).to.eql('foo');
+      assertCorsHeaders(headers, {
+        [ACAOrigin]: 'https://example.com',
+        [ACAMaxAge]: '3600',
+        [ACAMethods]: 'POST',
+        [ACAHeaders]: 'foo',
+      });
     });
   });
 
@@ -302,19 +329,21 @@ describe('CORS setup', () => {
         ['set', 'authorization', `Bearer ${this.token}`],
       );
       expect(status).to.eql(400);
-      expect(headers[Vary]).to.eql('Origin');
-      expect(headers[ACEHeaders]).to.eql('WWW-Authenticate');
-      expect(headers).not.to.have.property(ACAOrigin);
+      assertCorsHeaders(headers, {
+        // no Access-Control-Allow-Origin
+        [ACEHeaders]: 'WWW-Authenticate',
+      });
     });
 
     it('userinfo preflights have cors open', async function () {
       const { status, headers } = await preflight.call(this, 'GET', '/me', 'https://example.com');
       expect(status).to.eql(204);
-      expect(headers[Vary]).to.eql('Origin');
-      expect(headers[ACAOrigin]).to.eql('https://example.com');
-      expect(headers[ACAMaxAge]).to.eql('3600');
-      expect(headers[ACAMethods]).to.eql('GET,POST');
-      expect(headers[ACAHeaders]).to.eql('foo');
+      assertCorsHeaders(headers, {
+        [ACAOrigin]: 'https://example.com',
+        [ACAMaxAge]: '3600',
+        [ACAMethods]: 'GET,POST',
+        [ACAHeaders]: 'foo',
+      });
     });
 
     it('token has cors closed', async function () {
@@ -328,9 +357,10 @@ describe('CORS setup', () => {
         ['send', { client_id: 'client', grant_type: 'client_credentials' }],
       );
       expect(status).to.eql(400);
-      expect(headers[Vary]).to.eql('Origin');
-      expect(headers[ACEHeaders]).to.eql('WWW-Authenticate');
-      expect(headers).not.to.have.property(ACAOrigin);
+      assertCorsHeaders(headers, {
+        // no Access-Control-Allow-Origin
+        [ACEHeaders]: 'WWW-Authenticate',
+      });
     });
 
     it('token (error) has cors open', async function () {
@@ -343,19 +373,21 @@ describe('CORS setup', () => {
         ['type', 'form'],
       );
       expect(status).to.eql(400);
-      expect(headers[Vary]).to.eql('Origin');
-      expect(headers[ACEHeaders]).to.eql('WWW-Authenticate');
-      expect(headers[ACAOrigin]).to.eql('https://example.com');
+      assertCorsHeaders(headers, {
+        [ACEHeaders]: 'WWW-Authenticate',
+        [ACAOrigin]: 'https://example.com',
+      });
     });
 
     it('token preflights have cors open', async function () {
       const { status, headers } = await preflight.call(this, 'POST', '/token', 'https://example.com');
       expect(status).to.eql(204);
-      expect(headers[Vary]).to.eql('Origin');
-      expect(headers[ACAOrigin]).to.eql('https://example.com');
-      expect(headers[ACAMaxAge]).to.eql('3600');
-      expect(headers[ACAMethods]).to.eql('POST');
-      expect(headers[ACAHeaders]).to.eql('foo');
+      assertCorsHeaders(headers, {
+        [ACAOrigin]: 'https://example.com',
+        [ACAMaxAge]: '3600',
+        [ACAMethods]: 'POST',
+        [ACAHeaders]: 'foo',
+      });
     });
 
     it('revocation has cors closed', async function () {
@@ -369,19 +401,21 @@ describe('CORS setup', () => {
         ['send', { client_id: 'client', token: 'foo' }],
       );
       expect(status).to.eql(400);
-      expect(headers[Vary]).to.eql('Origin');
-      expect(headers[ACEHeaders]).to.eql('WWW-Authenticate');
-      expect(headers).not.to.have.property(ACAOrigin);
+      assertCorsHeaders(headers, {
+        // no Access-Control-Allow-Origin
+        [ACEHeaders]: 'WWW-Authenticate',
+      });
     });
 
     it('revocation preflights have cors open', async function () {
       const { status, headers } = await preflight.call(this, 'POST', '/token/revocation', 'https://example.com');
       expect(status).to.eql(204);
-      expect(headers[Vary]).to.eql('Origin');
-      expect(headers[ACAOrigin]).to.eql('https://example.com');
-      expect(headers[ACAMaxAge]).to.eql('3600');
-      expect(headers[ACAMethods]).to.eql('POST');
-      expect(headers[ACAHeaders]).to.eql('foo');
+      assertCorsHeaders(headers, {
+        [ACAOrigin]: 'https://example.com',
+        [ACAMaxAge]: '3600',
+        [ACAMethods]: 'POST',
+        [ACAHeaders]: 'foo',
+      });
     });
 
     it('introspection has cors closed', async function () {
@@ -395,9 +429,10 @@ describe('CORS setup', () => {
         ['send', { client_id: 'client', token: this.token }],
       );
       expect(status).to.eql(400);
-      expect(headers[Vary]).to.eql('Origin');
-      expect(headers[ACEHeaders]).to.eql('WWW-Authenticate');
-      expect(headers).not.to.have.property(ACAOrigin);
+      assertCorsHeaders(headers, {
+        // no Access-Control-Allow-Origin
+        [ACEHeaders]: 'WWW-Authenticate',
+      });
     });
 
     it('introspection (error) has cors open', async function () {
@@ -410,19 +445,21 @@ describe('CORS setup', () => {
         ['type', 'form'],
       );
       expect(status).to.eql(400);
-      expect(headers[Vary]).to.eql('Origin');
-      expect(headers[ACEHeaders]).to.eql('WWW-Authenticate');
-      expect(headers[ACAOrigin]).to.eql('https://example.com');
+      assertCorsHeaders(headers, {
+        [ACEHeaders]: 'WWW-Authenticate',
+        [ACAOrigin]: 'https://example.com',
+      });
     });
 
     it('introspection preflights have cors open', async function () {
       const { status, headers } = await preflight.call(this, 'POST', '/token/introspection', 'https://example.com');
       expect(status).to.eql(204);
-      expect(headers[Vary]).to.eql('Origin');
-      expect(headers[ACAOrigin]).to.eql('https://example.com');
-      expect(headers[ACAMaxAge]).to.eql('3600');
-      expect(headers[ACAMethods]).to.eql('POST');
-      expect(headers[ACAHeaders]).to.eql('foo');
+      assertCorsHeaders(headers, {
+        [ACAOrigin]: 'https://example.com',
+        [ACAMaxAge]: '3600',
+        [ACAMethods]: 'POST',
+        [ACAHeaders]: 'foo',
+      });
     });
 
     it('device_authorization has cors closed', async function () {
@@ -436,9 +473,10 @@ describe('CORS setup', () => {
         ['send', { client_id: 'client' }],
       );
       expect(status).to.eql(400);
-      expect(headers[Vary]).to.eql('Origin');
-      expect(headers[ACEHeaders]).to.eql('WWW-Authenticate');
-      expect(headers).not.to.have.property(ACAOrigin);
+      assertCorsHeaders(headers, {
+        // no Access-Control-Allow-Origin
+        [ACEHeaders]: 'WWW-Authenticate',
+      });
     });
 
     it('device_authorization (error) has cors open', async function () {
@@ -451,19 +489,21 @@ describe('CORS setup', () => {
         ['type', 'form'],
       );
       expect(status).to.eql(400);
-      expect(headers[Vary]).to.eql('Origin');
-      expect(headers[ACEHeaders]).to.eql('WWW-Authenticate');
-      expect(headers[ACAOrigin]).to.eql('https://example.com');
+      assertCorsHeaders(headers, {
+        [ACEHeaders]: 'WWW-Authenticate',
+        [ACAOrigin]: 'https://example.com',
+      });
     });
 
     it('device_authorization preflights have cors open', async function () {
       const { status, headers } = await preflight.call(this, 'POST', '/device/auth', 'https://example.com');
       expect(status).to.eql(204);
-      expect(headers[Vary]).to.eql('Origin');
-      expect(headers[ACAOrigin]).to.eql('https://example.com');
-      expect(headers[ACAMaxAge]).to.eql('3600');
-      expect(headers[ACAMethods]).to.eql('POST');
-      expect(headers[ACAHeaders]).to.eql('foo');
+      assertCorsHeaders(headers, {
+        [ACAOrigin]: 'https://example.com',
+        [ACAMaxAge]: '3600',
+        [ACAMethods]: 'POST',
+        [ACAHeaders]: 'foo',
+      });
     });
   });
 });
