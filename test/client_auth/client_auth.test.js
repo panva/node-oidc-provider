@@ -281,13 +281,24 @@ describe('client authentication options', () => {
         });
     });
 
+    it('accepts the auth (https://tools.ietf.org/html/rfc6749#appendix-B)', function () {
+      return this.agent.post(route)
+        .send({
+          grant_type: 'foo',
+        })
+        .type('form')
+        .auth(' %&+', ' %&+')
+        .expect(200)
+        .expect(tokenAuthSucceeded);
+    });
+
     it('accepts the auth (https://tools.ietf.org/html/rfc6749#appendix-B again)', function () {
       return this.agent.post(route)
         .send({
           grant_type: 'foo',
         })
         .type('form')
-        .auth('an%3Aidentifier', 'some+secure+%26+non-standard+secret')
+        .auth('an:identifier', 'some secure & non-standard secret')
         .expect(200)
         .expect(tokenAuthSucceeded);
     });
@@ -298,7 +309,7 @@ describe('client authentication options', () => {
           grant_type: 'foo',
         })
         .type('form')
-        .auth('foo with %', 'foo with $')
+        .set('Authorization', `Basic ${btoa('foo with %:foo with $')}`)
         .expect({
           error: 'invalid_request',
           error_description: 'client_id and client_secret in the authorization header are not properly encoded',

@@ -9,6 +9,7 @@ import { once } from 'node:events';
 import sinon from 'sinon';
 import { dirname } from 'desm';
 import flatten from 'lodash/flatten.js';
+import { Request } from 'superagent'; // eslint-disable-line import/no-extraneous-dependencies
 import { agent as supertest } from 'supertest';
 import { expect } from 'chai';
 import koaMount from 'koa-mount';
@@ -26,6 +27,45 @@ import instance from '../lib/helpers/weak_cache.js';
 
 import { Account, TestAdapter } from './models.js';
 import keys from './keys.js';
+
+const { _auth } = Request.prototype;
+
+function encodeToken(token) {
+  return encodeURIComponent(token).replace(/(?:[-_.!~*'()]|%20)/g, (substring) => {
+    switch (substring) {
+      case '-':
+        return '%2D';
+      case '_':
+        return '%5F';
+      case '.':
+        return '%2E';
+      case '!':
+        return '%21';
+      case '~':
+        return '%7E';
+      case '*':
+        return '%2A';
+      case "'":
+        return '%27';
+      case '(':
+        return '%28';
+      case ')':
+        return '%29';
+      case '%20':
+        return '+';
+      default:
+        throw new Error();
+    }
+  });
+}
+
+Request.prototype._auth = function (user, pass, options, encoder) {
+  if (options?.type === 'basic') {
+    return _auth.call(this, encodeToken(user), encodeToken(pass), options, encoder);
+  }
+
+  return _auth.call(this, user, pass, options, encoder);
+};
 
 process.env.NODE_ENV = process.env.NODE_ENV || 'test';
 

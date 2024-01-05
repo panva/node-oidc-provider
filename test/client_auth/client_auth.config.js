@@ -145,5 +145,14 @@ export default {
     response_types: [],
     redirect_uris: [],
     client_secret_expires_at: 1,
+  },
+  // Appendix B
+  {
+    token_endpoint_auth_method: 'client_secret_basic',
+    client_id: ' %&+',
+    client_secret: ' %&+',
+    grant_types: ['foo'],
+    response_types: [],
+    redirect_uris: [],
   }],
 };
