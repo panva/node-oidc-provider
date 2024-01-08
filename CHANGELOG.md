@@ -2,6 +2,18 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [8.4.4](https://github.com/panva/node-oidc-provider/compare/v8.4.3...v8.4.4) (2024-01-08)
+
+
+### Refactor
+
+* test decoded basic auth tokens for their VSCHAR pattern ([3f86cc0](https://github.com/panva/node-oidc-provider/commit/3f86cc097768d83b1a4d734d0f7a7244676572b4))
+
+
+### Fixes
+
+* **DPoP,PAR,JAR:** validate DPoP before invalidating JAR during PAR ([ca0f999](https://github.com/panva/node-oidc-provider/commit/ca0f999e82ab7048b3f22a9d7798d17c7aafa405))
+
 ## [8.4.3](https://github.com/panva/node-oidc-provider/compare/v8.4.2...v8.4.3) (2023-12-14)
 
 ## [8.4.2](https://github.com/panva/node-oidc-provider/compare/v8.4.1...v8.4.2) (2023-12-02)
