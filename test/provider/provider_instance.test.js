@@ -32,15 +32,7 @@ describe('provider instance', () => {
 
     it('it is silent when a version is acknowledged', () => {
       new Provider('http://localhost', { // eslint-disable-line no-new
-        features: { webMessageResponseMode: { enabled: true, ack: 'individual-draft-00' } },
-      });
-
-      expect(console.info.called).to.be.false;
-    });
-
-    it('it is silent when a version is acknowledged where the draft is backwards compatible with a previous draft', () => {
-      new Provider('http://localhost', { // eslint-disable-line no-new
-        features: { webMessageResponseMode: { enabled: true, ack: 'id-00' } },
+        features: { webMessageResponseMode: { enabled: true, ack: 'individual-draft-01' } },
       });
 
       expect(console.info.called).to.be.false;

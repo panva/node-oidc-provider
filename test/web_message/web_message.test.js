@@ -2,7 +2,6 @@ import { expect } from 'chai';
 import sinon from 'sinon';
 
 import bootstrap from '../test_helper.js';
-import { WebMessageUriMismatch } from '../../lib/helpers/errors.js';
 
 const route = '/auth';
 const response_type = 'code id_token token';
@@ -52,10 +51,8 @@ describe('configuration features.webMessageResponseMode', () => {
           .expect(/var data = ({[a-zA-Z0-9"{}~ ,-_]+});/);
 
         const response = JSON.parse(RegExp.$1);
-        expect(response).to.have.keys('redirect_uri', 'web_message_uri', 'web_message_target', 'response');
+        expect(response).to.have.keys('redirect_uri', 'response');
         expect(response).to.have.property('redirect_uri', auth.redirect_uri);
-        expect(response).to.have.property('web_message_uri', null);
-        expect(response).to.have.property('web_message_target', null);
         expect(response.response).to.have.keys('id_token', 'state', 'access_token', 'scope', 'expires_in', 'token_type', 'code');
         expect(response.response.id_token).to.be.a('string');
         expect(response.response.expires_in).to.be.a('number');
@@ -66,38 +63,6 @@ describe('configuration features.webMessageResponseMode', () => {
 
       it('responds by rendering a an HTML with the client side code and response data [2/4]', async function () {
         const auth = new this.AuthorizationRequest({
-          response_type,
-          response_mode,
-          scope,
-          web_message_uri: 'https://auth.example.com',
-          web_message_target: 'targetID',
-        });
-
-        await this.wrap({ route, auth, verb: 'get' })
-          .expect(200)
-          .expect('cache-control', 'no-store')
-          .expect('content-type', 'text/html; charset=utf-8')
-          .expect((response) => {
-            expect(response.headers['x-frame-options']).not.to.be.ok;
-            expect(response.headers['content-security-policy']).not.to.match(/frame-ancestors/);
-          })
-          .expect(/var data = ({[a-zA-Z0-9"{}~ ,-_]+});/);
-
-        const response = JSON.parse(RegExp.$1);
-        expect(response).to.have.keys('redirect_uri', 'web_message_uri', 'web_message_target', 'response');
-        expect(response).to.have.property('redirect_uri', auth.redirect_uri);
-        expect(response).to.have.property('web_message_uri', 'https://auth.example.com');
-        expect(response).to.have.property('web_message_target', 'targetID');
-        expect(response.response).to.have.keys('id_token', 'state', 'access_token', 'scope', 'expires_in', 'token_type', 'code');
-        expect(response.response.id_token).to.be.a('string');
-        expect(response.response.expires_in).to.be.a('number');
-        expect(response.response.access_token).to.be.a('string');
-        expect(response.response.token_type).to.equal('Bearer');
-        expect(response.response.state).to.equal(auth.state);
-      });
-
-      it('responds by rendering a an HTML with the client side code and response data [3/4]', async function () {
-        const auth = new this.AuthorizationRequest({
           response_type: 'code',
           response_mode,
           scope,
@@ -114,45 +79,13 @@ describe('configuration features.webMessageResponseMode', () => {
           .expect(/var data = ({[a-zA-Z0-9"{}~ ,-_]+});/);
 
         const response = JSON.parse(RegExp.$1);
-        expect(response).to.have.keys('redirect_uri', 'web_message_uri', 'web_message_target', 'response');
+        expect(response).to.have.keys('redirect_uri', 'response');
         expect(response).to.have.property('redirect_uri', auth.redirect_uri);
-        expect(response).to.have.property('web_message_uri', null);
-        expect(response).to.have.property('web_message_target', null);
         expect(response.response).to.have.keys('state', 'code', 'iss');
         expect(response.response.state).to.equal(auth.state);
       });
 
-      it('responds by rendering a an HTML with the client side code and response data [4/4]', async function () {
-        const auth = new this.AuthorizationRequest({
-          response_type: 'code',
-          response_mode,
-          scope,
-          web_message_uri: 'https://auth.example.com',
-          web_message_target: 'targetID',
-        });
-
-        await this.wrap({ route, auth, verb: 'get' })
-          .expect(200)
-          .expect('cache-control', 'no-store')
-          .expect('content-type', 'text/html; charset=utf-8')
-          .expect((response) => {
-            expect(response.headers['x-frame-options']).not.to.be.ok;
-            expect(response.headers['content-security-policy']).not.to.match(/frame-ancestors/);
-          })
-          .expect(/var data = ({[a-zA-Z0-9"{}~ ,-_]+});/);
-
-        const response = JSON.parse(RegExp.$1);
-        expect(response).to.have.keys('redirect_uri', 'web_message_uri', 'web_message_target', 'response');
-        expect(response).to.have.property('redirect_uri', auth.redirect_uri);
-        expect(response).to.have.property('web_message_uri', 'https://auth.example.com');
-        expect(response).to.have.property('web_message_target', 'targetID');
-        expect(response.response).to.have.keys('state', 'code', 'iss');
-        expect(response.response.state).to.equal(auth.state);
-      });
-    });
-
-    context('error handling', () => {
-      it('verifies web_message_uri is allowed', function () {
+      it('rejects relay mode with a rendered page', function () {
         const emitSpy = sinon.spy();
         const renderSpy = sinon.spy(i(this.provider).configuration(), 'renderError');
         this.provider.once('authorization.error', emitSpy);
@@ -160,7 +93,7 @@ describe('configuration features.webMessageResponseMode', () => {
         const auth = new this.AuthorizationRequest({
           response_type,
           response_mode,
-          web_message_uri: 'https://invalid.example.com',
+          web_message_uri: 'anything',
           scope,
         });
 
@@ -174,113 +107,40 @@ describe('configuration features.webMessageResponseMode', () => {
             expect(renderSpy.calledOnce).to.be.true;
             const renderArgs = renderSpy.args[0];
             expect(renderArgs[1]).to.have.property('iss');
-            expect(renderArgs[1]).to.have.property('error', 'web_message_uri_mismatch');
-            expect(renderArgs[1]).to.have.property('error_description', "web_message_uri did not match any client's registered web_message_uris");
-            expect(renderArgs[2]).to.be.an.instanceof(WebMessageUriMismatch);
+            expect(renderArgs[1]).to.have.property('error', 'invalid_request');
+            expect(renderArgs[1]).to.have.property('error_description', 'Web Message Response Mode Relay Mode is not supported');
           });
       });
+    });
 
-      it('validates web_message_uri ad acta [regular error]', function () {
-        const renderSpy = sinon.spy(i(this.provider).configuration(), 'renderError');
-        const spy = sinon.spy();
-        this.provider.on('authorization.error', spy);
-        const auth = new this.AuthorizationRequest({
-          response_type,
-          response_mode,
-          // scope,
-          web_message_uri: 'https://invalid.example.com',
-        });
-
-        return this.agent.get(route)
-          .query(auth)
-          .expect(() => {
-            this.provider.removeAllListeners('authorization.error');
-            renderSpy.restore();
-          })
-          .expect(() => {
-            expect(spy.calledTwice).to.be.true;
-          })
-          .expect(() => {
-            expect(spy.firstCall.calledWithMatch({}, { message: 'invalid_request' })).to.be.true;
-            expect(spy.secondCall.calledWithMatch({}, { message: 'web_message_uri_mismatch' })).to.be.true;
-          })
-          .expect(() => {
-            expect(renderSpy.calledOnce).to.be.true;
-            const renderArgs = renderSpy.args[0];
-            expect(renderArgs[1]).to.have.property('iss');
-            expect(renderArgs[1]).to.have.property('error', 'web_message_uri_mismatch');
-            expect(renderArgs[2]).to.be.an.instanceof(WebMessageUriMismatch);
-          });
+    it('handles errors', async function () {
+      const auth = new this.AuthorizationRequest({
+        response_type,
+        prompt: 'none',
+        response_mode,
+        scope,
       });
 
-      it('validates web_message_uri ad acta [server error]', function () {
-        const renderSpy = sinon.spy(i(this.provider).configuration(), 'renderError');
-        const authErrorSpy = sinon.spy();
-        const serverErrorSpy = sinon.spy();
-        this.provider.on('authorization.error', authErrorSpy);
-        this.provider.on('server_error', serverErrorSpy);
-        sinon.stub(i(this.provider).responseModes, 'has').callsFake(() => { throw new Error('foobar'); });
-        const auth = new this.AuthorizationRequest({
-          response_type,
-          response_mode,
-          scope,
-          web_message_uri: 'https://invalid.example.com',
-        });
+      const spy = sinon.spy();
+      this.provider.once('authorization.error', spy);
 
-        return this.agent.get(route)
-          .query(auth)
-          .expect(() => {
-            i(this.provider).responseModes.has.restore();
-            this.provider.removeAllListeners('authorization.error');
-            this.provider.removeAllListeners('server_error');
-            renderSpy.restore();
-          })
-          .expect(() => {
-            expect(serverErrorSpy.calledOnce).to.be.true;
-            expect(authErrorSpy.calledOnce).to.be.true;
-          })
-          .expect(() => {
-            expect(serverErrorSpy.calledWithMatch({}, { message: 'foobar' })).to.be.true;
-            expect(authErrorSpy.calledWithMatch({}, { message: 'web_message_uri_mismatch' })).to.be.true;
-          })
-          .expect(() => {
-            expect(renderSpy.calledOnce).to.be.true;
-            const renderArgs = renderSpy.args[0];
-            expect(renderArgs[1]).to.have.property('iss');
-            expect(renderArgs[1]).to.have.property('error', 'web_message_uri_mismatch');
-            expect(renderArgs[2]).to.be.an.instanceof(WebMessageUriMismatch);
-          });
-      });
+      await this.wrap({ route, auth, verb: 'get' })
+        .expect(400)
+        .expect('cache-control', 'no-store')
+        .expect('content-type', 'text/html; charset=utf-8')
+        .expect((response) => {
+          expect(response.headers['x-frame-options']).not.to.be.ok;
+          expect(response.headers['content-security-policy']).not.to.match(/frame-ancestors/);
+        })
+        .expect(() => {
+          expect(spy.called).to.be.true;
+        })
+        .expect(/var data = ({[a-zA-Z0-9"{} ,-_]+});/);
 
-      it('responds by rendering a self-submitting form with the error', async function () {
-        const auth = new this.AuthorizationRequest({
-          response_type,
-          prompt: 'none',
-          response_mode,
-          scope,
-        });
-
-        const spy = sinon.spy();
-        this.provider.once('authorization.error', spy);
-
-        await this.wrap({ route, auth, verb: 'get' })
-          .expect(400)
-          .expect('cache-control', 'no-store')
-          .expect('content-type', 'text/html; charset=utf-8')
-          .expect((response) => {
-            expect(response.headers['x-frame-options']).not.to.be.ok;
-            expect(response.headers['content-security-policy']).not.to.match(/frame-ancestors/);
-          })
-          .expect(() => {
-            expect(spy.called).to.be.true;
-          })
-          .expect(/var data = ({[a-zA-Z0-9"{} ,-_]+});/);
-
-        const { response } = JSON.parse(RegExp.$1);
-        expect(response).to.have.property('iss');
-        expect(response).to.have.property('error', 'login_required');
-        expect(response).to.have.property('state', auth.state);
-      });
+      const { response } = JSON.parse(RegExp.$1);
+      expect(response).to.have.property('iss');
+      expect(response).to.have.property('error', 'login_required');
+      expect(response).to.have.property('state', auth.state);
     });
   });
 });

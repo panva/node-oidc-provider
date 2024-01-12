@@ -638,62 +638,6 @@ describe('Client metadata validation', () => {
     );
   });
 
-  context('web_message_uris', function () {
-    const configuration = { features: { webMessageResponseMode: { enabled: true } } };
-    defaultsTo(this.title, [], undefined, configuration);
-    mustBeArray(this.title, undefined, configuration);
-
-    allows(this.title, [], undefined, configuration);
-    allows(this.title, ['https://example.com'], undefined, configuration);
-    allows(this.title, ['https://example.com:3000'], undefined, configuration);
-    rejects(this.title, [123], /must only contain strings$/, undefined, configuration);
-    rejects(this.title, [true], /must only contain strings$/, undefined, configuration);
-    rejects(this.title, [null], /must only contain strings$/, undefined, configuration);
-    rejects(this.title, ['not a uri'], /must only contain valid uris$/, undefined, configuration);
-    rejects(
-      this.title,
-      ['custom-scheme://not-a-web-uri'],
-      /must only contain web uris$/,
-      undefined,
-      configuration,
-    );
-    rejects(
-      this.title,
-      ['https://example.com/'],
-      /must only contain origins$/,
-      undefined,
-      configuration,
-    );
-    rejects(
-      this.title,
-      ['https://example.com?'],
-      /must only contain origins$/,
-      undefined,
-      configuration,
-    );
-    rejects(
-      this.title,
-      ['https://example.com#'],
-      /must only contain origins$/,
-      undefined,
-      configuration,
-    );
-    rejects(
-      this.title,
-      ['https://foo:bar@example.com'],
-      /must only contain origins$/,
-      undefined,
-      configuration,
-    );
-    rejects(
-      this.title,
-      ['https://foo@example.com'],
-      /must only contain origins$/,
-      undefined,
-      configuration,
-    );
-  });
-
   context('require_auth_time', function () {
     defaultsTo(this.title, false);
     mustBeBoolean(this.title);
