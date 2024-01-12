@@ -11,13 +11,13 @@ jobs:
       id-token: write
     steps:
       - name: Checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           fetch-depth: 0
       - name: Setup node
-        uses: actions/setup-node@v3
+        uses: actions/setup-node@v4
         with:
-          node-version: lts/hydrogen # 18
+          node-version: lts/iron # 20
           registry-url: https://registry.npmjs.org
           always-auth: true
       - run: npm publish --provenance
@@ -32,7 +32,7 @@ jobs:
       contents: write
     steps:
       - name: Checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           fetch-depth: 0
       - run: git push origin $GITHUB_SHA:v8.x
@@ -44,13 +44,13 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           fetch-depth: 2
       - name: Setup node
-        uses: actions/setup-node@v3
+        uses: actions/setup-node@v4
         with:
-          node-version: lts/hydrogen # 18
+          node-version: lts/iron # 20
           cache: 'npm'
       - run: node .release-notes.cjs
         env:

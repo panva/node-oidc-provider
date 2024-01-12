@@ -17,18 +17,11 @@ import configuration from './configuration.js';
 const __dirname = dirname(import.meta.url);
 
 const { GOOGLE_CLIENT_ID, PORT = 3000, ISSUER = `http://localhost:${PORT}` } = process.env;
-configuration.findAccount = Account.findAccount;
 
 let server;
 
 try {
-  let adapter;
-  if (process.env.MONGODB_URI) {
-    ({ default: adapter } = await import('./heroku_mongo_adapter.js'));
-    await adapter.connect();
-  }
-
-  const provider = new Provider(ISSUER, { adapter, ...configuration });
+  const provider = new Provider(ISSUER, { ...configuration, findAccount: Account.findAccount });
 
   if (GOOGLE_CLIENT_ID) {
     const openid = await import('openid-client'); // eslint-disable-line import/no-unresolved
