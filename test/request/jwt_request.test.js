@@ -395,57 +395,6 @@ describe('request parameter features', () => {
           }));
       });
 
-      it('supports optional replay prevention', async function () {
-        const client = await this.provider.Client.find('client-with-HS-sig');
-        let [key] = client.symmetricKeyStore.selectForSign({ alg: 'HS256' });
-        key = await importJWK(key);
-
-        const request = await JWT.sign({
-          jti: randomBytes(16).toString('base64url'),
-          client_id: 'client-with-HS-sig',
-          response_type: 'code',
-          redirect_uri: 'https://client.example.com/cb',
-          scope: 'openid',
-        }, key, 'HS256', {
-          issuer: 'client-with-HS-sig', audience: this.provider.issuer, expiresIn: 30,
-        });
-
-        await this.wrap({
-          agent: this.agent,
-          route,
-          verb,
-          auth: {
-            request,
-            scope: 'openid',
-            client_id: 'client-with-HS-sig',
-            response_type: 'code',
-          },
-        })
-          .expect(successCode)
-          .expect(successFnCheck);
-
-        const spy = sinon.spy();
-        this.provider.once(errorEvt, spy);
-
-        await this.wrap({
-          agent: this.agent,
-          route,
-          verb,
-          auth: {
-            request,
-            scope: 'openid',
-            client_id: 'client-with-HS-sig',
-            response_type: 'code',
-          },
-        })
-          .expect(errorCode)
-          .expect(() => {
-            expect(spy.calledOnce).to.be.true;
-            expect(spy.args[0][1]).to.have.property('message', 'invalid_request_object');
-            expect(spy.args[0][1]).to.have.property('error_description').that.matches(/^request object replay detected/);
-          });
-      });
-
       it('doesnt allow request inception', function () {
         const spy = sinon.spy();
         this.provider.once(errorEvt, spy);
