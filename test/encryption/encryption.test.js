@@ -1,7 +1,6 @@
 import * as url from 'node:url';
 
 import { expect } from 'chai';
-import sinon from 'sinon';
 import {
   compactDecrypt, CompactEncrypt, decodeJwt, decodeProtectedHeader,
 } from 'jose';
@@ -168,113 +167,6 @@ describe('encryption', () => {
       });
 
       describe('Request Object encryption', () => {
-        describe('JAR only request', () => {
-          it('fails without any other params even if client_id is replicated in the header', async function () {
-            const spy = sinon.spy();
-            this.provider.once('authorization.error', spy);
-
-            const signed = await JWT.sign({
-              client_id: 'client',
-              response_type: 'code',
-              redirect_uri: 'https://client.example.com/cb',
-              scope: 'openid',
-            }, Buffer.from('secret'), 'HS256', { issuer: 'client', audience: this.provider.issuer });
-
-            let [key] = i(this.provider).keystore.selectForEncrypt({ kty: 'RSA', alg: 'RSA-OAEP' });
-            key = await i(this.provider).keystore.getKeyObject(key, 'RSA-OAEP');
-
-            const encrypted = await new CompactEncrypt(encoder.encode(signed))
-              .setProtectedHeader({ enc: 'A128CBC-HS256', alg: 'RSA-OAEP', client_id: 'client' })
-              .encrypt(key);
-
-            return this.wrap({
-              route,
-              verb,
-              auth: {
-                request: encrypted,
-              },
-            })
-              .expect(400)
-              .expect(() => {
-                expect(spy.calledOnce).to.be.true;
-                expect(spy.args[0][1]).to.have.property('message', 'invalid_request');
-                expect(spy.args[0][1]).to.have.property('error_description', "missing required parameter 'client_id'");
-              });
-          });
-
-          it('works without any other params if iss is replicated in the header', async function () {
-            const signed = await JWT.sign({
-              client_id: 'client',
-              response_type: 'code',
-              redirect_uri: 'https://client.example.com/cb',
-              scope: 'openid',
-            }, Buffer.from('secret'), 'HS256', { issuer: 'client', audience: this.provider.issuer });
-
-            let [key] = i(this.provider).keystore.selectForEncrypt({ kty: 'RSA', alg: 'RSA-OAEP' });
-            key = await i(this.provider).keystore.getKeyObject(key, 'RSA-OAEP');
-
-            const encrypted = await new CompactEncrypt(encoder.encode(signed))
-              .setProtectedHeader({ enc: 'A128CBC-HS256', alg: 'RSA-OAEP', iss: 'client' })
-              .encrypt(key);
-
-            return this.wrap({
-              route,
-              verb,
-              auth: {
-                request: encrypted,
-              },
-            })
-              .expect(303)
-              .expect((response) => {
-                const expected = url.parse('https://client.example.com/cb', true);
-                const actual = url.parse(response.headers.location, true);
-                ['protocol', 'host', 'pathname'].forEach((attr) => {
-                  expect(actual[attr]).to.equal(expected[attr]);
-                });
-                expect(actual.query).to.have.property('code');
-              });
-          });
-
-          it('handles invalid JWE', async function () {
-            const spy = sinon.spy();
-            this.provider.once('authorization.error', spy);
-
-            const signed = await JWT.sign({
-              client_id: 'client',
-              response_type: 'code',
-              redirect_uri: 'https://client.example.com/cb',
-              scope: 'openid',
-            }, Buffer.from('secret'), 'HS256', { issuer: 'client', audience: this.provider.issuer });
-
-            let [key] = i(this.provider).keystore.selectForEncrypt({ kty: 'RSA', alg: 'RSA-OAEP' });
-            key = await i(this.provider).keystore.getKeyObject(key, 'RSA-OAEP');
-
-            const encrypted = await new CompactEncrypt(encoder.encode(signed))
-              .setProtectedHeader({ enc: 'A128CBC-HS256', alg: 'RSA-OAEP', client_id: 'client' })
-              .encrypt(key);
-
-            return this.wrap({
-              route,
-              verb,
-              auth: {
-                request: encrypted.split('.').map((part, i) => {
-                  if (i === 0) {
-                    return 'foo';
-                  }
-
-                  return part;
-                }).join('.'),
-              },
-            })
-              .expect(400)
-              .expect(() => {
-                expect(spy.calledOnce).to.be.true;
-                expect(spy.args[0][1]).to.have.property('message', 'invalid_request_object');
-                expect(spy.args[0][1]).to.have.property('error_description', 'Request Object is not a valid JWE');
-              });
-          });
-        });
-
         it('handles enc unsupported algs', async function () {
           const signed = await JWT.sign({
             client_id: 'client',

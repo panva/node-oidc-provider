@@ -133,9 +133,7 @@ describe('request parameter features', () => {
               auth: {
                 request,
                 ui_locales: 'foo',
-                ...(successCode === 200 ? {
-                  client_id: 'client',
-                } : undefined),
+                client_id: 'client',
               },
             })
               .expect(successCode)
@@ -173,9 +171,7 @@ describe('request parameter features', () => {
               auth: {
                 request,
                 ui_locales: 'foo',
-                ...(successCode === 200 ? {
-                  client_id: 'client',
-                } : undefined),
+                client_id: 'client',
               },
             })
               .expect(successCode)
@@ -185,143 +181,6 @@ describe('request parameter features', () => {
                 expect(spy.args[0][0].oidc.params.ui_locales).to.eq('foo');
               }));
           });
-        });
-      });
-
-      describe('JAR only request', () => {
-        it('works without any other params', function () {
-          return JWT.sign({
-            jti: randomBytes(16).toString('base64url'),
-            client_id: 'client',
-            response_type: 'code',
-            redirect_uri: 'https://client.example.com/cb',
-            scope: 'openid',
-          }, Buffer.from('secret'), 'HS256', { issuer: 'client', audience: this.provider.issuer, expiresIn: 30 }).then((request) => this.wrap({
-            agent: this.agent,
-            route,
-            verb,
-            auth: {
-              request,
-              ...(successCode === 200 ? {
-                client_id: 'client',
-              } : undefined),
-            },
-          })
-            .expect(successCode)
-            .expect(successFnCheck));
-        });
-
-        it('when invalid Request Object', function () {
-          const spy = sinon.spy();
-          this.provider.once(errorEvt, spy);
-
-          return this.wrap({
-            agent: this.agent,
-            route,
-            verb,
-            auth: {
-              request: 'foo',
-              ...(successCode === 200 ? {
-                client_id: 'client',
-              } : undefined),
-            },
-          })
-            .expect(400)
-            .expect(() => {
-              expect(spy.calledOnce).to.be.true;
-              expect(spy.args[0][1]).to.have.property('message', 'invalid_request_object');
-              expect(spy.args[0][1]).to.have.property(
-                'error_description',
-                route !== '/device/auth' ? 'Request Object is not a valid JWT' : 'could not parse Request Object',
-              );
-            });
-        });
-
-        it('if without client_id', function () {
-          const spy = sinon.spy();
-          this.provider.once(errorEvt, spy);
-
-          return JWT.sign({
-            jti: randomBytes(16).toString('base64url'),
-            // client_id: 'client',
-            response_type: 'code',
-            redirect_uri: 'https://client.example.com/cb',
-            scope: 'openid',
-          }, Buffer.from('secret'), 'HS256', { /* issuer: 'client', */ audience: this.provider.issuer, expiresIn: 30 }).then((request) => this.wrap({
-            agent: this.agent,
-            route,
-            verb,
-            auth: {
-              request,
-            },
-          })
-            .expect(400)
-            .expect(() => {
-              expect(spy.calledOnce).to.be.true;
-              expect(spy.args[0][1]).to.have.property('message', 'invalid_request');
-              expect(spy.args[0][1]).to.have.property(
-                'error_description',
-                route !== '/device/auth' ? "missing required parameter 'client_id'" : 'no client authentication mechanism provided',
-              );
-            }));
-        });
-
-        it('if with empty client_id', function () {
-          const spy = sinon.spy();
-          this.provider.once(errorEvt, spy);
-
-          return JWT.sign({
-            jti: randomBytes(16).toString('base64url'),
-            client_id: '',
-            response_type: 'code',
-            redirect_uri: 'https://client.example.com/cb',
-            scope: 'openid',
-          }, Buffer.from('secret'), 'HS256', { issuer: '', audience: this.provider.issuer, expiresIn: 30 }).then((request) => this.wrap({
-            agent: this.agent,
-            route,
-            verb,
-            auth: {
-              request,
-            },
-          })
-            .expect(400)
-            .expect(() => {
-              expect(spy.calledOnce).to.be.true;
-              expect(spy.args[0][1]).to.have.property('message', 'invalid_request');
-              expect(spy.args[0][1]).to.have.property(
-                'error_description',
-                route !== '/device/auth' ? "missing required parameter 'client_id'" : 'no client authentication mechanism provided',
-              );
-            }));
-        });
-
-        it('if with invalid type client_id', function () {
-          const spy = sinon.spy();
-          this.provider.once(errorEvt, spy);
-
-          return JWT.sign({
-            jti: randomBytes(16).toString('base64url'),
-            client_id: 123678,
-            response_type: 'code',
-            redirect_uri: 'https://client.example.com/cb',
-            scope: 'openid',
-          }, Buffer.from('secret'), 'HS256', { issuer: 123678, audience: this.provider.issuer, expiresIn: 30 }).then((request) => this.wrap({
-            agent: this.agent,
-            route,
-            verb,
-            auth: {
-              request,
-            },
-          })
-            .expect(400)
-            .expect(() => {
-              expect(spy.calledOnce).to.be.true;
-              expect(spy.args[0][1]).to.have.property('message', 'invalid_request');
-              expect(spy.args[0][1]).to.have.property(
-                'error_description',
-                route !== '/device/auth' ? "missing required parameter 'client_id'" : 'no client authentication mechanism provided',
-              );
-            }));
         });
       });
 

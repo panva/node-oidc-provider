@@ -236,30 +236,6 @@ describe('Pushed Request Object', () => {
 
               expect(await this.provider.PushedAuthorizationRequest.find(id)).not.to.be.ok;
             });
-
-            it('allows the request_uri to be used without passing client_id to the request', async function () {
-              const { body: { request_uri } } = await this.agent.post('/request')
-                .auth(clientId, 'secret')
-                .type('form')
-                .send({
-                  scope: 'openid',
-                  response_type: 'code',
-                  client_id: clientId,
-                  iss: clientId,
-                  aud: this.provider.issuer,
-                });
-
-              const auth = new this.AuthorizationRequest({
-                client_id: undefined,
-                state: undefined,
-                redirect_uri: undefined,
-                request_uri,
-              });
-
-              return this.wrap({ route: '/auth', verb: 'get', auth })
-                .expect(303)
-                .expect(auth.validatePresence(['code']));
-            });
           });
         });
       });
@@ -616,6 +592,7 @@ describe('Pushed Request Object', () => {
 
             it('handles expired or invalid pushed authorization request object', async function () {
               const auth = new this.AuthorizationRequest({
+                client_id: clientId,
                 request_uri: 'urn:ietf:params:oauth:request_uri:foobar',
               });
 
@@ -626,54 +603,6 @@ describe('Pushed Request Object', () => {
                 .expect(auth.validateClientLocation)
                 .expect(auth.validateError('invalid_request_uri'))
                 .expect(auth.validateErrorDescription('request_uri is invalid or expired'));
-            });
-
-            it('handles expired or invalid pushed authorization request object (when no client_id in the request)', async function () {
-              const renderSpy = sinon.spy(i(this.provider).configuration(), 'renderError');
-
-              const auth = new this.AuthorizationRequest({
-                client_id: undefined,
-                request_uri: 'urn:ietf:params:oauth:request_uri:foobar',
-              });
-
-              return this.wrap({ route: '/auth', verb: 'get', auth })
-                .expect(() => {
-                  renderSpy.restore();
-                })
-                .expect(400)
-                .expect(() => {
-                  expect(renderSpy.calledOnce).to.be.true;
-                  const renderArgs = renderSpy.args[0];
-                  expect(renderArgs[1]).to.have.property('error', 'invalid_request_uri');
-                  expect(renderArgs[1]).to.have.property('error_description', 'request_uri is invalid or expired');
-                });
-            });
-
-            it('allows the request_uri to be used without passing client_id to the request', async function () {
-              const { body: { request_uri } } = await this.agent.post('/request')
-                .auth(clientId, 'secret')
-                .type('form')
-                .send({
-                  request: await JWT.sign({
-                    jti: randomBytes(16).toString('base64url'),
-                    scope: 'openid',
-                    response_type: 'code',
-                    client_id: clientId,
-                    iss: clientId,
-                    aud: this.provider.issuer,
-                  }, this.key, 'HS256', { expiresIn: 30 }),
-                });
-
-              const auth = new this.AuthorizationRequest({
-                client_id: undefined,
-                state: undefined,
-                redirect_uri: undefined,
-                request_uri,
-              });
-
-              return this.wrap({ route: '/auth', verb: 'get', auth })
-                .expect(303)
-                .expect(auth.validatePresence(['code']));
             });
           });
         });
