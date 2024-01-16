@@ -831,9 +831,29 @@ Enables the use and validations of `claims` parameter as described in the specif
 _**default value**_:
 ```js
 {
+  assertClaimsParameter: [AsyncFunction: assertClaimsParameter], // see expanded details below
   enabled: false
 }
 ```
+
+<details><summary>(Click to expand) features.claimsParameter options details</summary><br>
+
+
+#### assertClaimsParameter
+
+Helper function used to validate the claims parameter beyond what the OpenID Connect 1.0 specification requires.  
+
+
+_**default value**_:
+```js
+async function assertClaimsParameter(ctx, claims, client) {
+  // @param ctx - koa request context
+  // @param claims - parsed claims parameter
+  // @param client - the Client instance
+}
+```
+
+</details>
 
 ### features.clientCredentials
 
