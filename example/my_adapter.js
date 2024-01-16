@@ -135,6 +135,7 @@ class MyAdapter {
      * - iat {number} - timestamp of the interaction's creation
      * - returnTo {string} - after resolving interactions send the user-agent to this url
      * - deviceCode {string} - [DeviceCode user flows only] deviceCode reference
+     * - parJti {string} - [PAR user flows only] PushedAuthorizationCode uid reference
      * - params {object} - parsed recognized parameters object
      * - lastSubmission {object} - previous interaction result submission
      * - trusted {string[]} - parameter names that come from a trusted source

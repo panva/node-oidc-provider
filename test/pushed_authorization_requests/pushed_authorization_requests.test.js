@@ -201,7 +201,7 @@ describe('Pushed Request Object', () => {
                 .expect(303)
                 .expect(auth.validatePresence(['code']));
 
-              expect(await this.provider.PushedAuthorizationRequest.find(id)).not.to.be.ok;
+              expect(await this.provider.PushedAuthorizationRequest.find(id)).to.be.ok.and.have.property('consumed').and.is.ok;
             });
 
             it('allows the request_uri to be used (when request object was not used but client has request_object_signing_alg for its optional use)', async function () {
@@ -234,7 +234,7 @@ describe('Pushed Request Object', () => {
                 .expect(303)
                 .expect(auth.validatePresence(['code']));
 
-              expect(await this.provider.PushedAuthorizationRequest.find(id)).not.to.be.ok;
+              expect(await this.provider.PushedAuthorizationRequest.find(id)).to.be.ok.and.have.property('consumed').and.is.ok;
             });
           });
         });
@@ -556,7 +556,7 @@ describe('Pushed Request Object', () => {
                 .expect(303)
                 .expect(auth.validatePresence(['code']));
 
-              expect(await this.provider.PushedAuthorizationRequest.find(id)).not.to.be.ok;
+              expect(await this.provider.PushedAuthorizationRequest.find(id)).to.be.ok.and.have.property('consumed').and.is.ok;
             });
 
             it('handles expired or invalid pushed authorization request object', async function () {
@@ -571,7 +571,7 @@ describe('Pushed Request Object', () => {
                 .expect(auth.validateState)
                 .expect(auth.validateClientLocation)
                 .expect(auth.validateError('invalid_request_uri'))
-                .expect(auth.validateErrorDescription('request_uri is invalid or expired'));
+                .expect(auth.validateErrorDescription('request_uri is invalid, expired, or was already used'));
             });
           });
         });
