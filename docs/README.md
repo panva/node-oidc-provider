@@ -2268,13 +2268,42 @@ function extraClientMetadataValidator(ctx, key, value, metadata) {
 
 ### extraParams
 
-Pass an iterable object (i.e. Array or Set of strings) to extend the parameters recognised by the authorization, device authorization, and pushed authorization request endpoints. These parameters are then available in `ctx.oidc.params` as well as passed to interaction session details.  
+Pass an iterable object (i.e. Array or Set of strings) to extend the parameters recognised by the authorization, device authorization, backchannel authentication, and pushed authorization request endpoints. These parameters are then available in `ctx.oidc.params` as well as passed to interaction session details.   
+   
+ This may also be a plain object with string properties representing parameter names and values being either a function or async function to validate said parameter value. These validators are executed regardless of the parameters' presence or value such that this can be used to validate presence of custom parameters as well as to assign default values for them. If the value is `null` or `undefined` the parameter is added without a validator. Note that these validators execute near the very end of the request's validation process and changes to (such as assigning default values) other parameters will not trigger any re-validation of the whole request again.   
+  
 
 
 _**default value**_:
 ```js
 []
 ```
+<a id="extra-params-registering-an-extra-origin-parameter-with-its-validator"></a><details><summary>(Click to expand) registering an extra `origin` parameter with its validator
+</summary><br>
+
+```js
+import { errors } from 'oidc-provider';
+const extraParams = {
+  async origin(ctx, value, client) {
+    // @param ctx - koa request context
+    // @param value - the `origin` parameter value (string or undefined)
+    // @param client - client making the request
+    if (hasDefaultOrigin(client)) {
+      // assign default
+      ctx.oidc.params.origin ||= value ||= getDefaultOrigin(client);
+    }
+    if (!value && requiresOrigin(ctx, client)) {
+      // reject when missing but required
+      throw new errors.InvalidRequest('"origin" is required for this request')
+    }
+    if (!allowedOrigin(value, client)) {
+      // reject when not allowed
+      throw new errors.InvalidRequest('requested "origin" is not allowed for this client')
+    }
+  }
+}
+```
+</details>
 
 ### extraTokenClaims
 

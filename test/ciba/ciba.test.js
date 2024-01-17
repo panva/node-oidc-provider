@@ -134,6 +134,7 @@ describe('features.ciba', () => {
               scope: 'openid',
               login_hint: 'accountId',
               client_id: 'client',
+              extra: 'provided',
               unrecognized: true,
             })
             .type('form')
@@ -157,7 +158,9 @@ describe('features.ciba', () => {
         expect(request.claims).to.deep.eql({});
         expect(request.nonce).to.be.undefined;
         expect(request.scope).to.be.eql('openid');
-        expect(request.params).to.deep.eql({ client_id: 'client', login_hint: 'accountId', scope: 'openid' });
+        expect(request.params).to.deep.eql({
+          client_id: 'client', login_hint: 'accountId', scope: 'openid', extra2: 'defaulted', extra: 'provided',
+        });
       });
 
       it('minimal w/ login_hint_token', async function () {

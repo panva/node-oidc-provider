@@ -93,6 +93,7 @@ describe('Pushed Request Object', () => {
                   response_type: 'code',
                   client_id: clientId,
                   iss: clientId,
+                  extra: 'provided',
                   aud: this.provider.issuer,
                 })
                 .expect(201)
@@ -103,6 +104,10 @@ describe('Pushed Request Object', () => {
                 });
 
               expect(spy).to.have.property('calledOnce', true);
+              expect(spy.args[0][0].oidc.params).to.include({
+                extra: 'provided',
+                extra2: 'defaulted',
+              });
               expect(spy2).to.have.property('calledOnce', true);
               const stored = spy2.args[0][0];
               expect(stored).to.have.property('trusted', true);
@@ -313,6 +318,7 @@ describe('Pushed Request Object', () => {
                     jti: randomBytes(16).toString('base64url'),
                     response_type: 'code',
                     client_id: clientId,
+                    extra: 'provided',
                     iss: clientId,
                     aud: this.provider.issuer,
                   }, this.key, 'HS256', {
@@ -327,6 +333,10 @@ describe('Pushed Request Object', () => {
                 });
 
               expect(spy).to.have.property('calledOnce', true);
+              expect(spy.args[0][0].oidc.params).to.include({
+                extra: 'provided',
+                extra2: 'defaulted',
+              });
             });
 
             it('defaults to MAX_TTL when no expires_in is present', async function () {

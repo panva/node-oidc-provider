@@ -4,6 +4,13 @@ import getConfig from '../default.config.js';
 
 const config = getConfig();
 
+config.extraParams = {
+  extra: null,
+  extra2(ctx) {
+    ctx.oidc.params.extra2 ||= 'defaulted';
+  },
+};
+
 merge(config.features, {
   pushedAuthorizationRequests: {
     requirePushedAuthorizationRequests: false,

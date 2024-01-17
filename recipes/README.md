@@ -13,6 +13,7 @@ If you or your company use this module, or you need help using/upgrading the mod
 
 - [Accepting Dynamic OP Scope Values](dynamic_op_scope.md)
 - [Allowing HTTP and/or localhost for implicit response types](implicit_http_localhost.md)
+- [Applying default client scope](default_scope.md)
 - [Claim configuration](claim_configuration.md)
 - [Client-based CORS origins](client_based_origins.md)
 - [Debugging and events](debugging-and-events.md)

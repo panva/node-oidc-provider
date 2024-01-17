@@ -53,12 +53,24 @@ describe('Provider configuration', () => {
   });
 
   describe('extraParams', () => {
-    it('only accepts arrays and sets', () => {
+    it('accepts arrays, sets, or plain objects with validators', () => {
       new Provider('http://localhost:3000', { extraParams: ['foo', 'bar'] });
       new Provider('http://localhost:3000', { extraParams: new Set(['foo', 'bar']) });
+      new Provider('http://localhost:3000', { extraParams: { foo: null } });
+      new Provider('http://localhost:3000', { extraParams: { foo: undefined } });
+      new Provider('http://localhost:3000', { extraParams: { foo() {} } });
+      // eslint-disable-next-line no-empty-function
+      new Provider('http://localhost:3000', { extraParams: { async foo() {} } });
+      expect(() => {
+        new Provider('http://localhost:3000', { extraParams: Boolean });
+      }).to.throw('extraParams must be an Array or Set');
       expect(() => {
         new Provider('http://localhost:3000', { extraParams: { foo: true } });
-      }).to.throw('extraParams must be an Array or Set');
+      }).to.throw('invalid extraParams.foo type, it must be a function, null, or undefined');
+      expect(() => {
+        // eslint-disable-next-line no-empty-function
+        new Provider('http://localhost:3000', { extraParams: { * foo() {} } });
+      }).to.throw('invalid extraParams.foo type, it must be a function, null, or undefined');
     });
   });
 

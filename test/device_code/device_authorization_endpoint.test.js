@@ -105,6 +105,7 @@ describe('device_authorization_endpoint', () => {
         client_id: 'client',
         scope: 'openid',
         extra: 'included',
+        extra2: 'defaulted',
         claims: JSON.stringify({ userinfo: { email: null } }),
         redirect_uri: 'https://rp.example.com/cb/not/included',
         response_mode: 'not included',

@@ -9,6 +9,14 @@ const config = getConfig();
 
 export const emitter = new events.EventEmitter();
 
+config.extraParams = {
+  extra: null,
+  extra2(ctx) {
+    if (ctx.oidc.params.login_hint) {
+      ctx.oidc.params.extra2 ||= 'defaulted';
+    }
+  },
+};
 config.features.encryption = {
   enabled: true,
 };

@@ -53,11 +53,16 @@ describe('BASIC code', () => {
       it('populates ctx.oidc.entities', function (done) {
         this.provider.use(this.assertOnce((ctx) => {
           expect(ctx.oidc.entities).to.have.keys('AuthorizationCode', 'Grant', 'Client', 'Account', 'Session');
+          expect(ctx.oidc.params).to.include({
+            extra: 'provided',
+            extra2: 'defaulted',
+          });
         }, done));
 
         const auth = new this.AuthorizationRequest({
           response_type,
           scope,
+          extra: 'provided',
         });
 
         this.wrap({ route, verb, auth }).end(() => {});
