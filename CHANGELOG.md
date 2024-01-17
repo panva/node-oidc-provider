@@ -2,6 +2,19 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [8.4.5](https://github.com/panva/node-oidc-provider/compare/v8.4.4...v8.4.5) (2024-01-17)
+
+
+### Refactor
+
+* use doc argument in web_message js code ([da3198b](https://github.com/panva/node-oidc-provider/commit/da3198b307ea50ff3033d9b5eaa873025494a20e))
+
+
+### Fixes
+
+* add missing opening html tags ([23997c5](https://github.com/panva/node-oidc-provider/commit/23997c5946c14a301868dabbbe43431227234adb))
+* **DPoP:** mark defaulted dpop_jkt parameter as trusted ([ee633f3](https://github.com/panva/node-oidc-provider/commit/ee633f3baa2308ec84cd02d93db737a17baf37bb))
+
 ## [8.4.4](https://github.com/panva/node-oidc-provider/compare/v8.4.3...v8.4.4) (2024-01-08)
 
 
