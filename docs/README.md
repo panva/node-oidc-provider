@@ -979,6 +979,7 @@ async function successSource(ctx) {
     clientId, clientName, clientUri, initiateLoginUri, logoUri, policyUri, tosUri,
   } = ctx.oidc.client;
   ctx.body = `<!DOCTYPE html>
+    <html>
     <head>
       <title>Sign-in Success</title>
       <style>/* css and html classes omitted for brevity, see lib/helpers/defaults.js */</style>
@@ -1010,6 +1011,7 @@ async function userCodeConfirmSource(ctx, form, client, deviceInfo, userCode) {
     clientId, clientName, clientUri, logoUri, policyUri, tosUri,
   } = ctx.oidc.client;
   ctx.body = `<!DOCTYPE html>
+    <html>
     <head>
       <title>Device Login Confirmation</title>
       <style>/* css and html classes omitted for brevity, see lib/helpers/defaults.js */</style>
@@ -1062,6 +1064,7 @@ async function userCodeInputSource(ctx, form, out, err) {
     msg = '<p>Enter the code displayed on your device</p>';
   }
   ctx.body = `<!DOCTYPE html>
+    <html>
     <head>
       <title>Sign-in</title>
       <style>/* css and html classes omitted for brevity, see lib/helpers/defaults.js */</style>
@@ -1822,6 +1825,7 @@ async function logoutSource(ctx, form) {
   // @param form - form source (id="op.logoutForm") to be embedded in the page and submitted by
   //   the End-User
   ctx.body = `<!DOCTYPE html>
+    <html>
     <head>
       <title>Logout Request</title>
       <style>/* css and html classes omitted for brevity, see lib/helpers/defaults.js */</style>
@@ -1852,6 +1856,7 @@ async function postLogoutSuccessSource(ctx) {
   } = ctx.oidc.client || {}; // client is defined if the user chose to stay logged in with the OP
   const display = clientName || clientId;
   ctx.body = `<!DOCTYPE html>
+    <html>
     <head>
       <title>Sign-out Success</title>
       <style>/* css and html classes omitted for brevity, see lib/helpers/defaults.js */</style>
@@ -2732,6 +2737,7 @@ _**default value**_:
 async function renderError(ctx, out, error) {
   ctx.type = 'html';
   ctx.body = `<!DOCTYPE html>
+    <html>
     <head>
       <title>oops! something went wrong</title>
       <style>/* css and html classes omitted for brevity, see lib/helpers/defaults.js */</style>
