@@ -3510,10 +3510,10 @@ const client_secret = 'some secure & non-standard secret';
 
 // After formencoding these two tokens
 const encoded_id = 'an%3Aidentifier';
-const encoded_secret = 'some+secure+%26+non-standard+secret';
+const encoded_secret = 'some+secure+%26+non%2Dstandard+secret';
 
 // Basic auth header format Authorization: Basic base64(encoded_id + ':' + encoded_secret)
-// Authorization: Basic YW4lM0FpZGVudGlmaWVyOnNvbWUrc2VjdXJlKyUyNitub24tc3RhbmRhcmQrc2VjcmV0
+// Authorization: Basic YW4lM0FpZGVudGlmaWVyOnNvbWUrc2VjdXJlKyUyNitub24lMkRzdGFuZGFyZCtzZWNyZXQ=
 ```
 
 So essentially, your client is not submitting the client auth in a conform way and you should fix
