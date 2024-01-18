@@ -30,7 +30,7 @@ const prefix = 'oidc:event:'
  * @param {Provider} provider - The oidc-provider instance.
 */
 function subscribe(provider) {
-	const eventHandlers = [
+  const eventHandlers = [
     ['access_token.destroyed', onAccessTokenDestroyed],
     ['access_token.saved', onAccessTokenSaved],
     ['access_token.issued', onAccessTokenIssued],
@@ -85,15 +85,15 @@ function subscribe(provider) {
     ['session.destroyed', onSessionDestroyed],
     ['session.saved', onSessionSaved],
     ['userinfo.error', onUserinfoError]
-	]
+  ]
 
-	eventHandlers.map(([event, handler]) => {
+  eventHandlers.map(([event, handler]) => {
     const eventDebug = debug(`${prefix}${event}`)
     provider.on(event, (...args) => {
-    	eventDebug(handler.name, ...args)
-    	handler(...args)
+      eventDebug(handler.name, ...args)
+      handler(...args)
     })
-	})
+  })
 }
 
 /**
