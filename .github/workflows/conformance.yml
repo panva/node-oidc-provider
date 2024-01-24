@@ -55,40 +55,6 @@ jobs:
           # Back-Channel OP
           - plan: oidcc-backchannel-rp-initiated-logout-certification-test-plan
 
-          # FAPI 1.0 R/W (ID2)
-          - plan: fapi-rw-id2-test-plan
-            fapi_auth_request_method: by_value
-            client_auth_type: private_key_jwt
-            fapi_response_mode: plain_response
-          - plan: fapi-rw-id2-test-plan
-            fapi_auth_request_method: pushed
-            client_auth_type: private_key_jwt
-            fapi_response_mode: plain_response
-          - plan: fapi-rw-id2-test-plan
-            fapi_auth_request_method: by_value
-            client_auth_type: private_key_jwt
-            fapi_response_mode: jarm
-          - plan: fapi-rw-id2-test-plan
-            fapi_auth_request_method: pushed
-            client_auth_type: private_key_jwt
-            fapi_response_mode: jarm
-          - plan: fapi-rw-id2-test-plan
-            fapi_auth_request_method: by_value
-            client_auth_type: mtls
-            fapi_response_mode: plain_response
-          - plan: fapi-rw-id2-test-plan
-            fapi_auth_request_method: pushed
-            client_auth_type: mtls
-            fapi_response_mode: plain_response
-          - plan: fapi-rw-id2-test-plan
-            fapi_auth_request_method: by_value
-            client_auth_type: mtls
-            fapi_response_mode: jarm
-          - plan: fapi-rw-id2-test-plan
-            fapi_auth_request_method: pushed
-            client_auth_type: mtls
-            fapi_response_mode: jarm
-
           # FAPI 1.0 Advanced (Final)
           - plan: fapi1-advanced-final-test-plan
             fapi_auth_request_method: by_value
