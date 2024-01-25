@@ -16,7 +16,7 @@
 
     var fields = parseQuery(window.location.hash.slice(1));
     fields.upstream = '<%= upstream %>'
-    var uid = fields.state.split('|')[0]
+    var uid = fields.state;
 
     var form = document.createElement('form');
     form.method = 'POST';

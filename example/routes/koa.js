@@ -121,10 +121,9 @@ export default (provider) => {
 
         // init
         if (!Object.keys(callbackParams).length) {
-          const state = `${ctx.params.uid}|${crypto.randomBytes(32).toString('hex')}`;
+          const state = ctx.params.uid;
           const nonce = crypto.randomBytes(32).toString('hex');
 
-          ctx.cookies.set('google.state', state, { path, sameSite: 'strict' });
           ctx.cookies.set('google.nonce', nonce, { path, sameSite: 'strict' });
 
           ctx.status = 303;
@@ -134,12 +133,10 @@ export default (provider) => {
         }
 
         // callback
-        const state = ctx.cookies.get('google.state');
-        ctx.cookies.set('google.state', null, { path });
         const nonce = ctx.cookies.get('google.nonce');
         ctx.cookies.set('google.nonce', null, { path });
 
-        const tokenset = await ctx.google.callback(undefined, callbackParams, { state, nonce, response_type: 'id_token' });
+        const tokenset = await ctx.google.callback(undefined, callbackParams, { state: ctx.params.uid, nonce, response_type: 'id_token' });
         const account = await Account.findByFederated('google', tokenset.claims());
 
         const result = {
