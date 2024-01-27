@@ -1,29 +1,45 @@
+# Subscribing to events
+
+To get started with event listeners here is a recipe, which you can expand further depending for your needs.
+
+Some usecases might be:
+- logging
+- providing a audit trail so you can analyze your events for anomalies
+- exporting events to analytics services
+- doing something else independent of your request flows
+
+In your code, an instance of the `Provider` will be created like this:
+```js
+...
+const provider = new Provider(ISSUER, configuration);
+...
+```
+
+Let's say you would want to subscribe to all possible events described in the [events documentation](../docs/events.md)
+
+What you need to do is to give this provider instance to a module that will subscribe to all possible events, so something similar to
+
+## Subscribe
+```diff
++ import subscribe from './events-listeners.js'
+...
+const provider = new Provider(ISSUER, configuration);
++ subscribe(provider);
+...
+```
+
+## Implement event listeners module
+You need to create a new `./events-listeners.js` file (you can name it however you like)
+
+```js
 import debug from 'debug'
 export default subscribe
 
-/* 
+// Since oidc-provider already is using `debug` package, let's create a prefix that will be compatible with existing `debug` module usage across the library.
 
-1. How to debug any event triggered from oidc-provider?
+const prefix = 'oidc-provider:events:'
 
-- Start server with DEBUG=oidc:event:*
-- debug individually DEBUG=oidc:event:access_token.destroyed
-- or use regex for all events of a single type like access_token i.e. DEBUG=oidc:event:access_token.*
-- or for selected individual events i.e. DEBUG=oidc:event:access_token.destroyed,oidc:event:access_token.saved
-- or for groups of events DEBUG=oidc:event:interaction.*,oidc:event:authorization.*
-
-2. How to implement custom event listeners logic?
-
-Simply fill in the function body for the corresponding event listener you are interested in.
-If you want to log the access_token.destroyed event every time, you can do:
-
-function onAccessTokenDestroyed(token) {
-  console.log('access_token.destroyed', token)
-  or send to your logging/audit/analytics service
-}
-
-*/
-
-const prefix = 'oidc:event:'
+// Then we can implement listeners for all events by their respective names:
 
 /**
  * @description Subscribe to all oidc-provider events.
@@ -87,11 +103,16 @@ function subscribe(provider) {
     ['userinfo.error', onUserinfoError]
   ]
 
-  eventHandlers.map(([event, handler]) => {
+  eventHandlers.map(([eventName, listener]) => {
     const eventDebug = debug(`${prefix}${event}`)
-    provider.on(event, (...args) => {
-      eventDebug(handler.name, ...args)
-      handler(...args)
+    provider.on(eventName, (...args) => {
+      // we detect here when ctx arg is passed so we skip writing ctx argument when debugging, 
+      // since it will contain koa request, and can bloat our stdout easily
+      const withoutCtx = args.filter(arg => !arg.req)
+      // we call a namespaced event debug,
+      eventDebug(...withoutCtx)
+      // finally, we call our listener function that is one of the functions defined bellow
+      listener(...args)
     })
   })
 }
@@ -501,3 +522,27 @@ function onSessionSaved(session) {}
  * @param {Error} error - The encountered error.
  */
 function onUserinfoError(ctx, error) {}
+```
+
+### Examples
+
+### How to debug any event triggered from oidc-provider?
+
+- Start server with `DEBUG=oidc-provider:*` - to simply include all events
+- debug individual events, like `DEBUG=oidc-provider:events:access_token.destroyed`
+- or for several selected individual events i.e. `DEBUG=oidc-provider:events:access_token.destroyed,oidc-provider:events:access_token.saved`
+- or use regex for all events of a single group like access_token using wildcard i.e. `DEBUG=oidc-provider:events:access_token.*`
+- or for several groups of events using wildcards i.e. `DEBUG=oidc:event:interaction.*,oidc:event:authorization.*`
+
+### How to implement event listener logic?
+
+Simply fill in the function body for the corresponding event listener.
+For example:
+
+If you want to send to analytics when the `access_token.destroyed` event is emitted, you can do:
+
+```diff
+function onAccessTokenDestroyed(token) {
++  myAnalytics('access_token.destroyed', token)
+}
+```
