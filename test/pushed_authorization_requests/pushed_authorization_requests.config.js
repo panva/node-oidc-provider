@@ -16,6 +16,9 @@ merge(config.features, {
     requirePushedAuthorizationRequests: false,
     enabled: true,
   },
+  claimsParameter: {
+    enabled: true,
+  },
   requestObjects: {
     request: false,
     requestUri: false,

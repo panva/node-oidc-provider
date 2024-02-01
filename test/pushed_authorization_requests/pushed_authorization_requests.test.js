@@ -90,11 +90,17 @@ describe('Pushed Request Object', () => {
                 .auth(clientId, 'secret')
                 .type('form')
                 .send({
+                  scope: 'openid',
                   response_type: 'code',
                   client_id: clientId,
                   iss: clientId,
                   extra: 'provided',
                   aud: this.provider.issuer,
+                  claims: JSON.stringify({
+                    id_token: {
+                      auth_time: { essential: true },
+                    },
+                  }),
                 })
                 .expect(201)
                 .expect(({ body }) => {
@@ -114,7 +120,11 @@ describe('Pushed Request Object', () => {
               const header = decodeProtectedHeader(stored.request);
               expect(header).to.deep.eql({ alg: 'none' });
               const payload = decodeJwt(stored.request);
-              expect(payload).to.contain.keys(['aud', 'exp', 'iat', 'nbf', 'iss']);
+              expect(payload).to.contain.keys(['aud', 'exp', 'iat', 'nbf', 'iss']).to.have.deep.property('claims', {
+                id_token: {
+                  auth_time: { essential: true },
+                },
+              });
             });
 
             it('forbids request_uri to be used', async function () {
