@@ -582,7 +582,7 @@ _**recommendation**_: The following action order is recommended when rotating si
 Enable/disable features. Some features are still either based on draft or experimental RFCs. Enabling those will produce a warning in your console and you must be aware that breaking changes may occur between draft implementations and that those will be published as minor versions of oidc-provider. See the example below on how to acknowledge the specification is a draft (this will remove the warning log) and ensure the provider instance will fail to instantiate if a new version of oidc-provider bundles newer version of the RFC with breaking changes in it.   
   
 
-<a id="features-acknowledging-a-draft-experimental-feature"></a><details><summary>(Click to expand) Acknowledging a draft / experimental feature
+<a id="features-acknowledging-an-experimental-feature"></a><details><summary>(Click to expand) Acknowledging an experimental feature
 </summary><br>
 
 ```js
@@ -596,7 +596,7 @@ new Provider('http://localhost:3000', {
 // The above code produces this NOTICE
 // NOTICE: The following draft features are enabled and their implemented version not acknowledged
 // NOTICE:   - OpenID Connect Back-Channel Logout 1.0 - draft 06 (OIDF AB/Connect Working Group draft. URL: https://openid.net/specs/openid-connect-backchannel-1_0-06.html)
-// NOTICE: Breaking changes between draft version updates may occur and these will be published as MINOR semver oidc-provider updates.
+// NOTICE: Breaking changes between experimental feature updates may occur and these will be published as MINOR semver oidc-provider updates.
 // NOTICE: You may disable this notice and these potentially breaking updates by acknowledging the current draft version. See https://github.com/panva/node-oidc-provider/tree/v7.3.0/docs/README.md#features
 new Provider('http://localhost:3000', {
   features: {
@@ -1886,6 +1886,153 @@ _**default value**_:
 }
 ```
 
+### features.richAuthorizationRequests
+
+[`RFC9396`](https://www.rfc-editor.org/rfc/rfc9396.html) - OAuth 2.0 Rich Authorization Requests  
+
+Enables the use of `authorization_details` parameter for the authorization and token endpoints to enable issuing Access Tokens with fine-grained authorization data.  
+
+
+_**default value**_:
+```js
+{
+  ack: undefined,
+  enabled: false,
+  rarForAuthorizationCode: [Function: rarForAuthorizationCode], // see expanded details below
+  rarForCodeResponse: [Function: rarForCodeResponse], // see expanded details below
+  rarForIntrospectionResponse: [Function: rarForIntrospectionResponse], // see expanded details below
+  rarForRefreshTokenResponse: [Function: rarForRefreshTokenResponse], // see expanded details below
+  types: {}
+}
+```
+
+<details><summary>(Click to expand) features.richAuthorizationRequests options details</summary><br>
+
+
+#### rarForAuthorizationCode
+
+Function used to transform the requested and granted RAR details that are then stored in the authorization code. Return array of details or undefined.  
+
+
+_**default value**_:
+```js
+rarForAuthorizationCode(ctx) {
+  // decision points:
+  // - ctx.oidc.client
+  // - ctx.oidc.resourceServers
+  // - ctx.oidc.params.authorization_details (unparsed authorization_details from the authorization request)
+  // - ctx.oidc.grant.rar (authorization_details granted)
+  throw new Error('features.richAuthorizationRequests.rarForAuthorizationCode not implemented');
+}
+```
+
+#### rarForCodeResponse
+
+Function used to transform transform the requested and granted RAR details to be returned in the Access Token Response as authorization_details as well as assigned to the issued Access Token. Return array of details or undefined.  
+
+
+_**default value**_:
+```js
+rarForCodeResponse(ctx, resourceServer) {
+  // decision points:
+  // - ctx.oidc.client
+  // - resourceServer
+  // - ctx.oidc.authorizationCode.rar (previously returned from rarForAuthorizationCode)
+  // - ctx.oidc.params.authorization_details (unparsed authorization_details from the body params in the Access Token Request)
+  // - ctx.oidc.grant.rar (authorization_details granted)
+  throw new Error('features.richAuthorizationRequests.rarForCodeResponse not implemented');
+}
+```
+
+#### rarForIntrospectionResponse
+
+Function used to transform transform the requested and granted RAR details to be returned in the Access Token Response as authorization_details as well as assigned to the issued Access Token. Return array of details or undefined.  
+
+
+_**default value**_:
+```js
+rarForIntrospectionResponse(ctx, token) {
+  // decision points:
+  // - ctx.oidc.client
+  // - token.kind
+  // - token.rar
+  // - ctx.oidc.grant.rar
+  throw new Error('features.richAuthorizationRequests.rarForIntrospectionResponse not implemented');
+}
+```
+
+#### rarForRefreshTokenResponse
+
+Function used to transform transform the requested and granted RAR details to be returned in the Access Token Response as authorization_details as well as assigned to the issued Access Token. Return array of details or undefined.  
+
+
+_**default value**_:
+```js
+rarForRefreshTokenResponse(ctx, resourceServer) {
+  // decision points:
+  // - ctx.oidc.client
+  // - resourceServer
+  // - ctx.oidc.refreshToken.rar (previously returned from rarForAuthorizationCode and later assigned to the refresh token)
+  // - ctx.oidc.params.authorization_details (unparsed authorization_details from the body params in the Access Token Request)
+  // - ctx.oidc.grant.rar
+  throw new Error('features.richAuthorizationRequests.rarForRefreshTokenResponse not implemented');
+}
+```
+
+#### types
+
+Supported authorization details type identifiers.   
+  
+
+
+_**default value**_:
+```js
+{}
+```
+<a id="types-https-www-rfc-editor-org-rfc-rfc-9396-html-appendix-a-3"></a><details><summary>(Click to expand) https://www.rfc-editor.org/rfc/rfc9396.html#appendix-A.3
+</summary><br>
+
+```js
+import { z } from 'zod';
+const TaxData = z
+  .object({
+    duration_of_access: z.number().int().positive(),
+    locations: z.array(z.literal('https://taxservice.govehub.no.example.com')).length(1),
+    actions: z.array(z.literal('read_tax_declaration')).length(1),
+    periods: z
+      .array(
+        z.coerce
+          .number()
+          .max(new Date().getFullYear() - 1)
+          .min(1997)
+      )
+      .min(1),
+    tax_payer_id: z.string().min(1),
+  })
+  .strict();
+const configuration = {
+  features: {
+    richAuthorizationRequests: {
+      enabled: true,
+      // ...
+      types: {
+        tax_data: {
+          validate(ctx, detail, client) {
+            const { success: valid, error } = TaxData.parse(detail);
+            if (!valid) {
+              throw new InvalidAuthorizationDetails()
+            }
+          }
+        }
+      }
+    }
+  }
+}
+```
+</details>
+
+</details>
+
 ### features.rpInitiatedLogout
 
 [`OIDC RP-Initiated Logout 1.0`](https://openid.net/specs/openid-connect-rpinitiated-1_0-final.html)  
@@ -2691,6 +2838,17 @@ new Prompt(
 
     return Check.NO_NEED_TO_PROMPT;
   }, ({ oidc }) => ({ missingResourceScopes: oidc[missingResourceScopes] })),
+
+  // checks authorization_details
+  new Check('rar_prompt', 'authorization_details were requested', (ctx) => {
+    const { oidc } = ctx;
+
+    if (oidc.params.authorization_details && (!oidc.result || !('consent' in oidc.result))) {
+      return Check.REQUEST_PROMPT;
+    }
+
+    return Check.NO_NEED_TO_PROMPT;
+  }, ({ oidc }) => ({ rar: JSON.parse(oidc.params.authorization_details) })),
 )
 ]
 ```

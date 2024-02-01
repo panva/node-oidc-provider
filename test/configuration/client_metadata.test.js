@@ -2001,6 +2001,23 @@ describe('Client metadata validation', () => {
     expect(client.redirectUris).to.be.empty;
   }));
 
+  context('authorization_details_types', function () {
+    const features = {
+      richAuthorizationRequests: {
+        enabled: true,
+        types: {
+          foo: {
+            validate() {},
+          },
+        },
+      },
+    };
+    mustBeArray(this.title, undefined, { features });
+    defaultsTo(this.title, [], undefined, { features });
+    rejects(this.title, [123], /must only contain strings$/, undefined, { features });
+    rejects(this.title, ['bar'], /can only contain 'foo'$/, undefined, { features });
+  });
+
   it('fails to determine sector identifier', () => addClient(
     {
       client_id: 'authorization-server',
