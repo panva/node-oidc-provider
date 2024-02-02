@@ -880,6 +880,7 @@ _**default value**_:
 ```js
 {
   ack: undefined,
+  allowReplay: false,
   enabled: false,
   nonceSecret: undefined,
   requireNonce: [Function: requireNonce] // see expanded details below
@@ -888,6 +889,16 @@ _**default value**_:
 
 <details><summary>(Click to expand) features.dPoP options details</summary><br>
 
+
+#### allowReplay
+
+Controls whether DPoP Proof Replay Detection is used or not.  
+
+
+_**default value**_:
+```js
+false
+```
 
 #### nonceSecret
 
