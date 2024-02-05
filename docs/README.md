@@ -2558,8 +2558,8 @@ new Prompt(
 
       for (const scope of requestedScopes) {
         if (availableScopes.has(scope) && !encounteredScopes.has(scope)) {
-          missing || (missing = {});
-          missing[indicator] || (missing[indicator] = []);
+          missing ||= {};
+          missing[indicator] ||= [];
           missing[indicator].push(scope);
         }
       }
