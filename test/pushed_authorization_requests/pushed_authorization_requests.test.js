@@ -1,4 +1,5 @@
 import { randomBytes } from 'node:crypto';
+import { parse as parseUrl } from 'node:url';
 
 import { expect } from 'chai';
 import sinon from 'sinon';
@@ -43,6 +44,123 @@ describe('Pushed Request Object', () => {
 
     ['client', 'client-par-required'].forEach((clientId) => {
       const requirePushedAuthorizationRequests = clientId === 'client-par-required';
+
+      context('allowUnregisteredRedirectUris', () => {
+        before(function () {
+          i(this.provider).configuration('features.pushedAuthorizationRequests').allowUnregisteredRedirectUris = true;
+        });
+        after(function () {
+          i(this.provider).configuration('features.pushedAuthorizationRequests').allowUnregisteredRedirectUris = false;
+        });
+        before(function () { return this.login(); });
+        after(function () { return this.logout(); });
+
+        it('allows unregistered redirect_uris to be used', async function () {
+          const { body: { request_uri } } = await this.agent.post('/request')
+            .auth(clientId, 'secret')
+            .type('form')
+            .send({
+              scope: 'openid',
+              response_type: 'code',
+              client_id: clientId,
+              iss: clientId,
+              aud: this.provider.issuer,
+              redirect_uri: 'https://rp.example.com/unlisted',
+            })
+            .expect(201);
+
+          let id = request_uri.split(':');
+          id = id[id.length - 1];
+
+          const { request } = await this.provider.PushedAuthorizationRequest.find(id);
+          expect(decodeJwt(request)).to.have.property('redirect_uri', 'https://rp.example.com/unlisted');
+
+          const auth = new this.AuthorizationRequest({
+            client_id: clientId,
+            iss: clientId,
+            aud: this.provider.issuer,
+            state: undefined,
+            redirect_uri: undefined,
+            request_uri,
+          });
+
+          let code;
+          await this.wrap({ route: '/auth', verb: 'get', auth })
+            .expect(303)
+            .expect(auth.validatePresence(['code']))
+            .expect((response) => {
+              ({ query: { code } } = parseUrl(response.headers.location, true));
+              const jti = this.getTokenJti(code);
+              expect(this.TestAdapter.for('AuthorizationCode').syncFind(jti)).to.have.property('redirectUri', 'https://rp.example.com/unlisted');
+            });
+
+          return this.agent.post('/token')
+            .auth(clientId, 'secret')
+            .type('form')
+            .send({
+              code,
+              grant_type: 'authorization_code',
+              redirect_uri: 'https://rp.example.com/unlisted',
+            })
+            .expect(200);
+        });
+
+        it('except for public clients', async function () {
+          const testClientId = 'client-unregistered-test-public';
+          return this.agent.post('/request')
+            .type('form')
+            .send({
+              response_type: 'code',
+              client_id: testClientId,
+              iss: testClientId,
+              aud: this.provider.issuer,
+              redirect_uri: 'https://rp.example.com/unlisted',
+            })
+            .expect(400)
+            .expect({
+              error: 'invalid_request',
+              error_description: "redirect_uri did not match any of the client's registered redirect_uris",
+            });
+        });
+
+        it('still validates the URI to be valid redirect_uri', async function () {
+          // must only contain valid uris
+          await this.agent.post('/request')
+            .auth(clientId, 'secret')
+            .type('form')
+            .send({
+              scope: 'openid',
+              response_type: 'code',
+              client_id: clientId,
+              iss: clientId,
+              aud: this.provider.issuer,
+              redirect_uri: 'not-a-valid-uri',
+            })
+            .expect(400)
+            .expect({
+              error: 'invalid_request',
+              error_description: 'redirect_uri must only contain valid uris',
+            });
+
+          // must not contain fragments
+          await this.agent.post('/request')
+            .auth(clientId, 'secret')
+            .type('form')
+            .send({
+              scope: 'openid',
+              response_type: 'code',
+              client_id: clientId,
+              iss: clientId,
+              aud: this.provider.issuer,
+              redirect_uri: 'https://rp.example.com/unlisted#fragment',
+            })
+            .expect(400)
+            .expect({
+              error: 'invalid_request',
+              error_description: 'redirect_uri must not contain fragments',
+            });
+        });
+      });
 
       describe(`when require_pushed_authorization_requests=${requirePushedAuthorizationRequests}`, () => {
         describe('using a JAR request parameter', () => {
@@ -141,7 +259,7 @@ describe('Pushed Request Object', () => {
                 });
             });
 
-            it('does not remap request validation errors to be related to the request object', async function () {
+            it('remaps invalid_redirect_uri error to invalid_request', async function () {
               return this.agent.post('/request')
                 .auth(clientId, 'secret')
                 .type('form')
@@ -492,7 +610,7 @@ describe('Pushed Request Object', () => {
                 });
             });
 
-            it('remaps request validation errors to be related to the request object', async function () {
+            it('remaps invalid_redirect_uri error to invalid_request', async function () {
               return this.agent.post('/request')
                 .auth(clientId, 'secret')
                 .type('form')

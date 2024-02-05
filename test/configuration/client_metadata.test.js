@@ -425,6 +425,36 @@ describe('Client metadata validation', () => {
     allows(this.title, ['https://some'], {
       application_type: 'web',
     });
+    context('PAR allowUnregisteredRedirectUris', () => {
+      allows(this.title, [], {
+        require_pushed_authorization_requests: true,
+      }, { features: { pushedAuthorizationRequests: { allowUnregisteredRedirectUris: true } } });
+      allows(this.title, [], {
+        application_type: 'native',
+        require_pushed_authorization_requests: true,
+      }, { features: { pushedAuthorizationRequests: { allowUnregisteredRedirectUris: true } } });
+      rejects(this.title, [], /redirect_uris must contain members/, {
+        require_pushed_authorization_requests: true,
+      }, {
+        features: {
+          pushedAuthorizationRequests: { enabled: false, allowUnregisteredRedirectUris: true },
+        },
+      });
+      rejects(this.title, [], /redirect_uris must contain members/, {
+        require_pushed_authorization_requests: true,
+        token_endpoint_auth_method: 'none',
+      }, { features: { pushedAuthorizationRequests: { allowUnregisteredRedirectUris: true } } });
+      rejects(this.title, [], /redirect_uris must contain members/, {
+        require_pushed_authorization_requests: true,
+        sector_identifier_uri: 'https://foobar.example.com/sector',
+      }, { features: { pushedAuthorizationRequests: { allowUnregisteredRedirectUris: true } } });
+      rejects(this.title, [], /redirect_uris must contain members/, {
+        require_pushed_authorization_requests: true,
+      }, { features: { pushedAuthorizationRequests: { allowUnregisteredRedirectUris: false } } });
+      rejects(this.title, [], /redirect_uris must contain members/, {
+        require_pushed_authorization_requests: false,
+      }, { features: { pushedAuthorizationRequests: { allowUnregisteredRedirectUris: true } } });
+    });
     rejects(this.title, ['https://rp.example.com#'], /redirect_uris must not contain fragments$/);
     rejects(
       this.title,

@@ -1348,6 +1348,7 @@ Enables the use of `pushed_authorization_request_endpoint` defined by the Pushed
 _**default value**_:
 ```js
 {
+  allowUnregisteredRedirectUris: false,
   enabled: true,
   requirePushedAuthorizationRequests: false
 }
@@ -1355,6 +1356,16 @@ _**default value**_:
 
 <details><summary>(Click to expand) features.pushedAuthorizationRequests options details</summary><br>
 
+
+#### allowUnregisteredRedirectUris
+
+Allows unregistered redirect_uri values to be used by authenticated clients using PAR that do not use a `sector_identifier_uri`.  
+
+
+_**default value**_:
+```js
+false
+```
 
 #### requirePushedAuthorizationRequests
 
