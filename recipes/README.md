@@ -15,6 +15,7 @@ If you or your company use this module, or you need help using/upgrading the mod
 - [Allowing HTTP and/or localhost for implicit response types](implicit_http_localhost.md)
 - [Claim configuration](claim_configuration.md)
 - [Client-based CORS origins](client_based_origins.md)
+- [Debugging and events](debugging-and-events.md)
 - [Decentralized claims](decentralized_claims.md)
 - [Redirect URI wildcards](redirect_uri_wildcards.md)
 - [Render instead Redirect on invalid_request](skip_redirect.md)
