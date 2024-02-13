@@ -994,7 +994,11 @@ describe('features.dPoP', () => {
         })
         .set('DPoP', await DPoP(this.keypair, `${this.provider.issuer}${this.suitePath('/request')}`, 'POST', nonce))
         .type('form')
-        .expect(201);
+        .expect(201)
+        .expect((response) => {
+          // because the sent one is fresh
+          expect(response.headers).not.to.have.property('dpop-nonce');
+        });
     });
 
     it('@ userinfo', async function () {
@@ -1012,6 +1016,10 @@ describe('features.dPoP', () => {
         .send({ grant_type: 'client_credentials' })
         .set('DPoP', await DPoP(this.keypair, `${this.provider.issuer}${this.suitePath('/me')}`, 'GET', nonce, 'foo'))
         .expect(401)
+        .expect((response) => {
+          // because the sent one is fresh
+          expect(response.headers).not.to.have.property('dpop-nonce');
+        })
         .expect({ error: 'invalid_token', error_description: 'invalid token provided' });
     });
 
@@ -1031,7 +1039,11 @@ describe('features.dPoP', () => {
         .send({ grant_type: 'client_credentials' })
         .set('DPoP', await DPoP(this.keypair, `${this.provider.issuer}${this.suitePath('/token')}`, 'POST', nonce))
         .type('form')
-        .expect(200);
+        .expect(200)
+        .expect((response) => {
+          // because the sent one is fresh
+          expect(response.headers).not.to.have.property('dpop-nonce');
+        });
     });
   });
 });
