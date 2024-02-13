@@ -356,6 +356,7 @@ const fapi = new Provider(ISSUER, {
     },
     dPoP: {
       enabled: true,
+      nonceSecret: crypto.randomBytes(32),
     },
     mTLS: {
       enabled: true,

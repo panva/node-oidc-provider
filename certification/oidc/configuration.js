@@ -64,7 +64,10 @@ export default {
     },
     claimsParameter: { enabled: true },
     deviceFlow: { enabled: true },
-    dPoP: { enabled: true },
+    dPoP: {
+      enabled: true,
+      nonceSecret: crypto.randomBytes(32),
+    },
     encryption: { enabled: true },
     jwtUserinfo: { enabled: true },
     introspection: { enabled: true },

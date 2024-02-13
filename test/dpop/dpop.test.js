@@ -270,35 +270,48 @@ describe('features.dPoP', () => {
           .expect('WWW-Authenticate', /algs="ES256 PS256"/);
       });
 
-      it('iat too old', async function () {
-        await this.agent.get('/me')
-          .set('DPoP', await new SignJWT({ htm: 'GET', htu: `${this.provider.issuer}${this.suitePath('/me')}`, ath: this.ath })
-            .setProtectedHeader({ alg: 'ES256', typ: 'dpop+jwt', jwk: this.jwk })
-            .setIssuedAt(epochTime() - 301)
-            .setJti(randomUUID())
-            .sign(this.keypair.privateKey))
-          .set('Authorization', `DPoP ${this.access_token}`)
-          .expect(401)
-          .expect({ error: 'invalid_dpop_proof', error_description: 'DPoP proof iat is not recent enough' })
-          .expect('WWW-Authenticate', /^DPoP /)
-          .expect('WWW-Authenticate', /error="invalid_dpop_proof"/)
-          .expect('WWW-Authenticate', /algs="ES256 PS256"/);
-      });
+      for (const enabled of [true, false]) {
+        describe(`with DPoP-Nonces ${enabled ? 'enabled' : 'disabled'}`, () => {
+          before(function () {
+            ({ DPoPNonces: this.DPoPNonces } = i(this.provider));
+            if (enabled) {
+              i(this.provider).DPoPNonces = this.DPoPNonces;
+            } else {
+              i(this.provider).DPoPNonces = undefined;
+            }
+          });
 
-      it('iat too in the future', async function () {
-        await this.agent.get('/me')
-          .set('DPoP', await new SignJWT({ htm: 'GET', htu: `${this.provider.issuer}${this.suitePath('/me')}`, ath: this.ath })
-            .setProtectedHeader({ alg: 'ES256', typ: 'dpop+jwt', jwk: this.jwk })
-            .setIssuedAt(epochTime() + 301)
-            .setJti(randomUUID())
-            .sign(this.keypair.privateKey))
-          .set('Authorization', `DPoP ${this.access_token}`)
-          .expect(401)
-          .expect({ error: 'invalid_dpop_proof', error_description: 'DPoP proof iat is not recent enough' })
-          .expect('WWW-Authenticate', /^DPoP /)
-          .expect('WWW-Authenticate', /error="invalid_dpop_proof"/)
-          .expect('WWW-Authenticate', /algs="ES256 PS256"/);
-      });
+          after(function () {
+            i(this.provider).DPoPNonces = this.DPoPNonces;
+          });
+
+          for (const offset of [301, -301]) {
+            it(`iat too ${offset > 0 ? 'far in the future' : 'old'}`, async function () {
+              await this.agent.get('/me')
+                .set('DPoP', await new SignJWT({ htm: 'GET', htu: `${this.provider.issuer}${this.suitePath('/me')}`, ath: this.ath })
+                  .setProtectedHeader({ alg: 'ES256', typ: 'dpop+jwt', jwk: this.jwk })
+                  .setIssuedAt(epochTime() - 301)
+                  .setJti(randomUUID())
+                  .sign(this.keypair.privateKey))
+                .set('Authorization', `DPoP ${this.access_token}`)
+                .expect(401)
+                .expect('WWW-Authenticate', /^DPoP /)
+                .expect('WWW-Authenticate', /algs="ES256 PS256"/)
+                .expect('WWW-Authenticate', /DPoP proof iat is not recent enough/)
+                .expect(({ headers }) => {
+                  if (enabled) {
+                    expect(headers).to.have.property('dpop-nonce').that.matches(/^[\w-]{43}$/);
+                    expect(headers).to.have.property('www-authenticate').that.matches(/error="use_dpop_nonce"/);
+                    expect(headers).to.have.property('www-authenticate').that.matches(/use a DPoP nonce instead/);
+                  } else {
+                    expect(headers).not.to.have.property('dpop-nonce');
+                    expect(headers).to.have.property('www-authenticate').that.matches(/error="invalid_dpop_proof"/);
+                  }
+                });
+            });
+          }
+        });
+      }
     });
 
     it('acts like an RS checking the DPoP proof and thumbprint now', async function () {
@@ -982,7 +995,7 @@ describe('features.dPoP', () => {
         .set('DPoP', await DPoP(this.keypair, `${this.provider.issuer}${this.suitePath('/request')}`, 'POST'))
         .type('form')
         .expect(400)
-        .expect('dpop-nonce', /^[\w-]{43}$/)
+        .expect('DPoP-Nonce', /^[\w-]{43}$/)
         .expect({ error: 'use_dpop_nonce', error_description: 'nonce is required in the DPoP proof' })
         .expect(({ headers }) => { nonce = headers['dpop-nonce']; });
 
