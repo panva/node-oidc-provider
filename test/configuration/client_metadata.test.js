@@ -1554,6 +1554,7 @@ describe('Client metadata validation', () => {
             enabled: true,
           },
         },
+        responseTypes: ['code', 'code token'],
       };
       mustBeBoolean(this.title, undefined, configuration);
       mustBeBoolean(this.title, undefined, configuration);
@@ -1562,6 +1563,7 @@ describe('Client metadata validation', () => {
         ...configuration,
         clientDefaults: { dpop_bound_access_tokens: true },
       });
+      rejects(this.title, true, 'response_types must not include "token" when dpop_bound_access_tokens is used', { grant_types: ['authorization_code', 'implicit'], response_types: ['code', 'code token'] }, configuration);
     });
   });
 
@@ -1842,11 +1844,13 @@ describe('Client metadata validation', () => {
         features: {
           mTLS: { enabled: true, certificateBoundAccessTokens: true },
         },
+        responseTypes: ['code', 'code token'],
       };
 
       defaultsTo(this.title, false, undefined, configuration);
       defaultsTo(this.title, undefined);
       mustBeBoolean(this.title, undefined, configuration);
+      rejects(this.title, true, 'response_types must not include "token" when tls_client_certificate_bound_access_tokens is used', { grant_types: ['authorization_code', 'implicit'], response_types: ['code', 'code token'] }, configuration);
     });
   });
 
