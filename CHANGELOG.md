@@ -2,6 +2,27 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [8.4.6](https://github.com/panva/node-oidc-provider/compare/v8.4.5...v8.4.6) (2024-04-23)
+
+
+### Documentation
+
+* adds events and debugging recipe ([#1246](https://github.com/panva/node-oidc-provider/issues/1246)) ([0bf7696](https://github.com/panva/node-oidc-provider/commit/0bf769665263117420026d877d889a76ce674a4b))
+* fix client_secret_basic special characters encoding example ([73baae1](https://github.com/panva/node-oidc-provider/commit/73baae15001a30b8c29c3c35ea2b821a7fb3eafd))
+* re-run update docs ([99cc84a](https://github.com/panva/node-oidc-provider/commit/99cc84ac64c9455a11c72f403ab4783bd222c5a5))
+
+
+### Refactor
+
+* avoid iteration resource iteration in client_credentials ([e306640](https://github.com/panva/node-oidc-provider/commit/e30664025d6d0acd86ba05f09e02b7880af11765))
+* avoid use of prototype attributes in object-hash ([270af1d](https://github.com/panva/node-oidc-provider/commit/270af1da83dda4c49edb4aaab48908f737d73379))
+* use logical or assignment ([8f55588](https://github.com/panva/node-oidc-provider/commit/8f55588a1a51aafba95c22aee05c7a0beb55e063))
+
+
+### Fixes
+
+* ensure each individual resource indicator is a valid URI ([d9e1ad2](https://github.com/panva/node-oidc-provider/commit/d9e1ad21dff34b2619664475728548178ca5e2f8))
+
 ## [8.4.5](https://github.com/panva/node-oidc-provider/compare/v8.4.4...v8.4.5) (2024-01-17)
 
 
