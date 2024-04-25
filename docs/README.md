@@ -2094,7 +2094,6 @@ _**default value**_:
 ```js
 {
   httpOnly: true,
-  overwrite: true,
   sameSite: 'none'
 }
 ```
@@ -2124,7 +2123,6 @@ _**default value**_:
 ```js
 {
   httpOnly: true,
-  overwrite: true,
   sameSite: 'lax'
 }
 ```

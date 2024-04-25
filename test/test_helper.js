@@ -93,6 +93,10 @@ Object.defineProperties(Provider.prototype, {
   },
 });
 
+function getSetCookies(response) {
+  return response.headers['set-cookie'].filter((val) => !val.includes('Thu, 01 Jan 1970 00:00:00 GMT'));
+}
+
 function readCookie(value) {
   expect(value).to.exist;
   const parsed = querystring.parse(value, '; ');
@@ -290,8 +294,9 @@ export default function testHelper(importMetaUrl, {
             expect(query).to.be.null;
             expect(response).to.have.nested.property('headers.set-cookie').that.is.an('array');
 
-            const uid = readCookie(response.headers['set-cookie'][0]);
-            expect(readCookie(response.headers['set-cookie'][0])).to.equal(readCookie(response.headers['set-cookie'][2]));
+            const uid = readCookie(getSetCookies(response)[0]);
+            expect(readCookie(getSetCookies(response)[0]))
+              .to.equal(readCookie(getSetCookies(response)[2]));
 
             const interaction = TestAdapter.for('Interaction').syncFind(uid);
 
@@ -313,7 +318,7 @@ export default function testHelper(importMetaUrl, {
 
     AuthorizationRequest.prototype.validateInteraction = (eName, ...eReasons) => { // eslint-disable-line arrow-body-style
       return (response) => {
-        const uid = readCookie(response.headers['set-cookie'][0]);
+        const uid = readCookie(getSetCookies(response)[0]);
         const { prompt: { name, reasons } } = TestAdapter.for('Interaction').syncFind(uid);
         expect(name).to.equal(eName);
         expect(reasons).to.contain.members(eReasons);
