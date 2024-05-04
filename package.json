@@ -71,7 +71,7 @@
     "raw-body": "^2.5.2"
   },
   "devDependencies": {
-    "@fastify/middie": "^8.3.0",
+    "@fastify/middie": "^8.3.1",
     "@hapi/hapi": "^21.3.9",
     "@koa/ejs": "^5.1.0",
     "base64url": "^3.0.1",
