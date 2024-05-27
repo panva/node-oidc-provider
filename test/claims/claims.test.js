@@ -231,9 +231,8 @@ expire.setDate(expire.getDate() + 1);
           }
 
           this.agent._saveCookies.bind(this.agent)({
-            headers: {
-              'set-cookie': cookies,
-            },
+            request: { url: this.provider.issuer },
+            headers: { 'set-cookie': cookies },
           });
 
           return sess.save(30); // TODO: bother running the ttl helper?
