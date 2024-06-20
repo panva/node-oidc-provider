@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [8.4.7](https://github.com/panva/node-oidc-provider/compare/v8.4.6...v8.4.7) (2024-06-20)
+
+
+### Fixes
+
+* include ID Token auth_time when client's default_max_age is zero ([bebda04](https://github.com/panva/node-oidc-provider/commit/bebda04fd125a69829fa933aa0bf4c7bb22f601e))
+
 ## [8.4.6](https://github.com/panva/node-oidc-provider/compare/v8.4.5...v8.4.6) (2024-04-23)
 
 
