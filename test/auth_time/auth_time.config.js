@@ -28,5 +28,12 @@ export default {
     grant_types: ['implicit'],
     redirect_uris: ['https://client.example.com/cb'],
     default_max_age: 999,
+  }, {
+    client_id: 'client-with-default_max_age-zero',
+    token_endpoint_auth_method: 'none',
+    response_types: ['id_token'],
+    grant_types: ['implicit'],
+    redirect_uris: ['https://client.example.com/cb'],
+    default_max_age: 0,
   }],
 };

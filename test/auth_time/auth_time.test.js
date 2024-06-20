@@ -87,6 +87,28 @@ describe('responds with a id_token containing auth_time', () => {
 
       expect(decodeJwt(id_token)).to.have.property('auth_time');
     });
+
+    it('when client has default_max_age=0', async function () {
+      const auth = new this.AuthorizationRequest({
+        response_type,
+        scope,
+        client_id: 'client-with-default_max_age-zero',
+      });
+
+      let id_token;
+
+      await this.wrap({ route: '/auth', verb: 'get', auth })
+        .expect(303)
+        .expect(auth.validateFragment)
+        .expect(auth.validatePresence(['id_token', 'state']))
+        .expect(auth.validateState)
+        .expect(auth.validateClientLocation)
+        .expect((response) => {
+          ({ query: { id_token } } = url.parse(response.headers.location, true));
+        });
+
+      expect(decodeJwt(id_token)).to.have.property('auth_time');
+    });
   });
 
   it('when client has require_auth_time', async function () {
