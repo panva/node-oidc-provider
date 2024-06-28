@@ -2,6 +2,43 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [8.5.0](https://github.com/panva/node-oidc-provider/compare/v8.4.7...v8.5.0) (2024-06-28)
+
+
+### Features
+
+* add a Client static validate() method ([d1f7d73](https://github.com/panva/node-oidc-provider/commit/d1f7d736b57b8167374a22d7f88bf181b58ff9c6))
+* add a helper allowing custom claims parameter validations ([ec2a1f5](https://github.com/panva/node-oidc-provider/commit/ec2a1f5a32f48758cea09d08303e895a08aa53d6))
+* add experimental support for RFC9396 - Rich Authorization Requests ([e9fb573](https://github.com/panva/node-oidc-provider/commit/e9fb5735c2e2410afed035b3b9046eb53371e1b1))
+* add response_modes client metadata allow list ([76f9af0](https://github.com/panva/node-oidc-provider/commit/76f9af086ebffaa50e6cc4f9ccdb2c25ac307444))
+* allow extraParams to define validations for extra parameters ([b7d3322](https://github.com/panva/node-oidc-provider/commit/b7d3322ff8be2a106d6477d490129327ef7bd2ca))
+* **DPoP:** add a setting to disable DPoP Proof Replay Detection ([2744fc8](https://github.com/panva/node-oidc-provider/commit/2744fc8c093ac3c9d43720f243c89ea682b7eee6))
+* **DPoP:** send a dpop-nonce when the proof's iat check fails and nonces are configured but not required ([1b073c0](https://github.com/panva/node-oidc-provider/commit/1b073c021f5414bd4835f4e0fe01341a8f52aa35))
+* **FAPI:** add FAPI 2.0 profile behaviours ([5212609](https://github.com/panva/node-oidc-provider/commit/5212609832167ecd9de29094a89f418522bcbef3))
+* **JAR:** add a helper allowing custom JWT claim and header validations ([be9242a](https://github.com/panva/node-oidc-provider/commit/be9242a74d46fb4b6deeb5ec2da112bc9563149e))
+* **PAR:** add a setting to allow use of unregistered redirect_uri values ([a7e73fa](https://github.com/panva/node-oidc-provider/commit/a7e73fa5db6893c37a2cd77f83da8b4edaf9cefc))
+* update Web Message Response Mode and remove its Relay Mode ([a91add8](https://github.com/panva/node-oidc-provider/commit/a91add87f54dfd4f57faa5cd1292a02fa5e32b30))
+
+
+### Fixes
+
+* **DPoP,mTLS:** reject client configuration in which binding is required but response types include an implicit token response ([cd7e0f4](https://github.com/panva/node-oidc-provider/commit/cd7e0f4a8e7b847ab3ada8af7a4ffaecfcdcfe0f))
+
+
+### Refactor
+
+* deprecate FAPI 1.0 ID2, lax request objects, plain PKCE ([3e8a784](https://github.com/panva/node-oidc-provider/commit/3e8a7844fd0060839a5617cccbc40ec75d38f480))
+* don't use overwrite cookie option by default ([dfbcb94](https://github.com/panva/node-oidc-provider/commit/dfbcb94cfdb5a48b10e308574a7e012ca5cce54c))
+* **DPoP:** move the accepted timespan into a constant ([a8e8006](https://github.com/panva/node-oidc-provider/commit/a8e8006e10e02b6b20b8e5cde2361e1290da1162))
+* **DPoP:** omit sending the dpop-nonce header if the existing one used is fresh ([4d635e2](https://github.com/panva/node-oidc-provider/commit/4d635e2b6c12ea373c037514820d0bed4af57495))
+* ensure param-assigned max_age from client.defaultMaxAge is a string ([0c52469](https://github.com/panva/node-oidc-provider/commit/0c52469f08b0a4a1854d90a96546a3f7aa090e5e))
+* **FAPI:** deprecate FAPI profile hardcoded PKCE checks ([56641ec](https://github.com/panva/node-oidc-provider/commit/56641ecf5d9a49061a229a1b10deaa314a2ffcd8))
+* **JAR:** authorization requests with JAR now require a client_id parameter ([9131cd5](https://github.com/panva/node-oidc-provider/commit/9131cd56148aebfaec08a497f2a50d37baafd001))
+* **JAR:** Request Objects are no longer checked for one time use ([18efa70](https://github.com/panva/node-oidc-provider/commit/18efa7083fb4abde4e48f2930f728f20e94a258e))
+* **PAR:** consume PAR after user interactions instead of before ([53babe6](https://github.com/panva/node-oidc-provider/commit/53babe6dca1eeba70ef3e2c2ffee4121e3418d1e))
+* store claims value parsed in non-JAR PAR ([9cd865b](https://github.com/panva/node-oidc-provider/commit/9cd865b726c8db39c5c1e480e2a717e589f37b5a))
+* use invalid_request instead of unauthorized_client ([7947d87](https://github.com/panva/node-oidc-provider/commit/7947d87206dbf3b9b1d5cce1946066fc9bc2b896))
+
 ## [8.4.7](https://github.com/panva/node-oidc-provider/compare/v8.4.6...v8.4.7) (2024-06-20)
 
 
