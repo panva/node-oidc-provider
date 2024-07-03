@@ -2,6 +2,18 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [8.5.1](https://github.com/panva/node-oidc-provider/compare/v8.5.0...v8.5.1) (2024-07-03)
+
+
+### Documentation
+
+* update README.md ([41a7a0b](https://github.com/panva/node-oidc-provider/commit/41a7a0b857cf3428da240884af305774484f39a2))
+
+
+### Refactor
+
+* **build:** export Provider also as a named export ([083c7c4](https://github.com/panva/node-oidc-provider/commit/083c7c4cc6350ed99fe9aaee69d316cdd2d0f906))
+
 ## [8.5.0](https://github.com/panva/node-oidc-provider/compare/v8.4.7...v8.5.0) (2024-06-28)
 
 
