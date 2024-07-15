@@ -411,22 +411,11 @@ Object.defineProperty(fapi.OIDCContext.prototype, 'clientJwtAuthExpectedAudience
   },
 });
 
-const SUITE_ORIGINS = new Set([
-  'https://demo.certification.openid.net',
+const SUITE_ORIGINS = /^https:\/\/.+\.certification\.openid\.net$/;
+const LOCAL_SUITE_ORIGINS = new Set([
   'https://localhost:8443',
   'https://localhost.emobix.co.uk:8443',
   'https://localhost.emobix.co.uk',
-  'https://review-app-dev-branch-1.certification.openid.net',
-  'https://review-app-dev-branch-2.certification.openid.net',
-  'https://review-app-dev-branch-3.certification.openid.net',
-  'https://review-app-dev-branch-4.certification.openid.net',
-  'https://review-app-dev-branch-5.certification.openid.net',
-  'https://review-app-dev-branch-6.certification.openid.net',
-  'https://review-app-dev-branch-7.certification.openid.net',
-  'https://review-app-dev-branch-8.certification.openid.net',
-  'https://review-app-dev-branch-9.certification.openid.net',
-  'https://staging.certification.openid.net',
-  'https://www.certification.openid.net',
 ]);
 
 Object.defineProperty(fapi.Client.prototype, 'redirectUriAllowed', {
@@ -438,7 +427,7 @@ Object.defineProperty(fapi.Client.prototype, 'redirectUriAllowed', {
       return false;
     }
 
-    return SUITE_ORIGINS.has(parsed.origin) && parsed.pathname.endsWith('/callback') && (parsed.search === '' || parsed.search === '?dummy1=lorem&dummy2=ipsum');
+    return (LOCAL_SUITE_ORIGINS.has(parsed.origin) || SUITE_ORIGINS.test(parsed.origin)) && parsed.pathname.endsWith('/callback') && (parsed.search === '' || parsed.search === '?dummy1=lorem&dummy2=ipsum');
   },
 });
 
