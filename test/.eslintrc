@@ -9,6 +9,7 @@
   "rules": {
     "func-names": "off",
     "no-unused-expressions": "off",
-    "camelcase": "off"
+    "camelcase": "off",
+    "import/no-named-as-default": "off"
   }
 }
