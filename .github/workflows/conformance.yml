@@ -214,7 +214,7 @@ jobs:
       - name: Run Conformance Suite
         working-directory: ./conformance-suite
         run: |
-          docker-compose -f docker-compose-dev.yml up -d
+          docker compose -f docker-compose-dev.yml up -d
           while ! curl -skfail https://localhost.emobix.co.uk:8443/api/runner/available >/dev/null; do sleep 2; done
       - name: Adjust configuration files for CI
         run: |
@@ -240,5 +240,5 @@ jobs:
         working-directory: ./conformance-suite
         run: |
           killall -SIGINT node
-          docker-compose -f docker-compose-dev.yml down
+          docker compose -f docker-compose-dev.yml down
           sudo rm -rf mongo
