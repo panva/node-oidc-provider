@@ -17,6 +17,12 @@ import MemoryAdapter from '../../lib/adapters/memory_adapter.js';
 import { stripPrivateJWKFields } from '../../test/keys.js';
 import Account from '../../example/support/account.js';
 
+const pkg = JSON.parse(
+  readFileSync(path.resolve(dirname(import.meta.url), '../../package.json'), {
+    encoding: 'utf-8',
+  }),
+);
+
 const __dirname = dirname(import.meta.url);
 const selfsigned = generate();
 const { PORT = 3000, ISSUER = `http://localhost:${PORT}` } = process.env;
@@ -257,6 +263,13 @@ const adapter = (name) => {
 
 const fapi = new Provider(ISSUER, {
   acrValues: ['urn:mace:incommon:iap:silver'],
+  discovery: {
+    service_documentation: pkg.homepage,
+    version: [
+      pkg.version,
+      process.env.HEROKU_SLUG_COMMIT ? process.env.HEROKU_SLUG_COMMIT.slice(0, 7) : undefined,
+    ].filter(Boolean).join('-'),
+  },
   routes: {
     userinfo: '/accounts',
   },
