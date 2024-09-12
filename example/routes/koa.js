@@ -6,7 +6,7 @@ import { inspect } from 'node:util';
 
 import isEmpty from 'lodash/isEmpty.js';
 import { koaBody as bodyParser } from 'koa-body';
-import Router from 'koa-router';
+import Router from '@koa/router';
 
 import { defaults } from '../../lib/helpers/defaults.js'; // make your own, you'll need it anyway
 import Account from '../support/account.js';
