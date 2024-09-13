@@ -61,7 +61,7 @@
     "debug": "^4.3.7",
     "eta": "^3.5.0",
     "got": "^13.0.0",
-    "jose": "^5.8.0",
+    "jose": "^5.9.0",
     "jsesc": "^3.0.2",
     "koa": "^2.15.3",
     "nanoid": "^5.0.7",
@@ -71,7 +71,7 @@
     "raw-body": "^3.0.0"
   },
   "devDependencies": {
-    "@fastify/middie": "^8.3.2",
+    "@fastify/middie": "^8.3.3",
     "@hapi/hapi": "^21.3.10",
     "@koa/ejs": "^5.1.0",
     "base64url": "^3.0.1",
