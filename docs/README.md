@@ -8,6 +8,16 @@ is a good starting point to get an idea of what you should provide.
 > ⚠️⚠️ This page now describes oidc-provider version v8.x documentation. See 
 [here](https://github.com/panva/node-oidc-provider/blob/v7.x/docs/README.md) for v7.x.
 
+## Sponsor
+
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="../sponsor/Auth0byOkta_dark.png">
+  <source media="(prefers-color-scheme: light)" srcset=".,/sponsor/Auth0byOkta_light.png">
+  <img height="65" align="left" alt="Auth0 by Okta" src="../sponsor/Auth0byOkta_light.png">
+</picture> 
+
+If you want to quickly add OpenID Connect authentication to Node.js apps, feel free to check out Auth0's Node.js SDK and free plan. [Create an Auth0 account; it's free!][sponsor-auth0]<br><br>
+
 ## Support
 
 If you or your company use this module, or you need help using/upgrading the module, please consider becoming a [sponsor][support-sponsor] so I can continue maintaining it and adding new features carefree. The only way to guarantee you get feedback from the author & sole maintainer of this module is to support the package through GitHub Sponsors.
@@ -3907,3 +3917,4 @@ none. You're getting this error because they are required properties, but they c
 
 
 [support-sponsor]: https://github.com/sponsors/panva
+[sponsor-auth0]: https://auth0.com/signup?utm_source=external_sites&utm_medium=panva&utm_campaign=devn_signup
