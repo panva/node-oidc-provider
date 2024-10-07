@@ -12,7 +12,7 @@ is a good starting point to get an idea of what you should provide.
 
 <picture>
   <source media="(prefers-color-scheme: dark)" srcset="../sponsor/Auth0byOkta_dark.png">
-  <source media="(prefers-color-scheme: light)" srcset=".,/sponsor/Auth0byOkta_light.png">
+  <source media="(prefers-color-scheme: light)" srcset="../sponsor/Auth0byOkta_light.png">
   <img height="65" align="left" alt="Auth0 by Okta" src="../sponsor/Auth0byOkta_light.png">
 </picture> 
 
