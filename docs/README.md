@@ -5,16 +5,13 @@ will have to configure your instance with how to find your user accounts, where 
 persisted data from and where your end-user interactions happen. The [example](/example) application
 is a good starting point to get an idea of what you should provide.
 
-> ⚠️⚠️ This page now describes oidc-provider version v8.x documentation. See 
-[here](https://github.com/panva/node-oidc-provider/blob/v7.x/docs/README.md) for v7.x.
-
 ## Sponsor
 
 <picture>
   <source media="(prefers-color-scheme: dark)" srcset="../sponsor/Auth0byOkta_dark.png">
   <source media="(prefers-color-scheme: light)" srcset="../sponsor/Auth0byOkta_light.png">
   <img height="65" align="left" alt="Auth0 by Okta" src="../sponsor/Auth0byOkta_light.png">
-</picture> 
+</picture>
 
 If you want to quickly add OpenID Connect authentication to Node.js apps, feel free to check out Auth0's Node.js SDK and free plan. [Create an Auth0 account; it's free!][sponsor-auth0]<br><br>
 
@@ -45,24 +42,24 @@ If you or your company use this module, or you need help using/upgrading the mod
 - [Configuration options ❗](#configuration-options)
 - [FAQ ❗](#faq)
 
-
-
 ## Basic configuration example
 
 ```js
-import Provider from 'oidc-provider';
+import Provider from 'oidc-provider'
 const configuration = {
   // ... see the available options in Configuration options section
-  clients: [{
-    client_id: 'foo',
-    client_secret: 'bar',
-    redirect_uris: ['http://lvh.me:8080/cb'],
-    // + other client properties
-  }],
+  clients: [
+    {
+      client_id: 'foo',
+      client_secret: 'bar',
+      redirect_uris: ['http://lvh.me:8080/cb'],
+      // + other client properties
+    },
+  ],
   // ...
-};
+}
 
-const oidc = new Provider('http://localhost:3000', configuration);
+const oidc = new Provider('http://localhost:3000', configuration)
 
 // express/nodejs style application callback (req, res, next) for use with express apps, see /examples/express.js
 oidc.callback()
@@ -72,10 +69,11 @@ oidc.app
 
 // or just expose a server standalone, see /examples/standalone.js
 const server = oidc.listen(3000, () => {
-  console.log('oidc-provider listening on port 3000, check http://localhost:3000/.well-known/openid-configuration');
-});
+  console.log(
+    'oidc-provider listening on port 3000, check http://localhost:3000/.well-known/openid-configuration',
+  )
+})
 ```
-
 
 ## Accounts
 
@@ -89,19 +87,21 @@ const oidc = new Provider('http://localhost:3000', {
   async findAccount(ctx, id) {
     return {
       accountId: id,
-      async claims(use, scope) { return { sub: id }; },
-    };
-  }
-});
+      async claims(use, scope) {
+        return { sub: id }
+      },
+    }
+  },
+})
 ```
 
-
 ## User flows
+
 Since oidc-provider only comes with feature-less views and interaction handlers it is up to you to fill
 those in, here is how this module allows you to do so:
 
 When oidc-provider cannot fulfill the authorization request for any of the possible reasons (missing
-user session, requested ACR not fulfilled, prompt requested, ...) it will resolve the 
+user session, requested ACR not fulfilled, prompt requested, ...) it will resolve the
 [`interactions.url`](#interactionsurl) helper function and redirect the User-Agent to that URL. Before
 doing so it will save a short-lived "interaction session" and dump its identifier into a cookie scoped to the
 resolved interaction path.
@@ -123,23 +123,24 @@ interaction session object.
 The Provider instance comes with helpers that aid with getting interaction details as well as
 packing the results. See them used in the [in-repo](/example) examples.
 
-
 **`#provider.interactionDetails(req, res)`**
+
 ```js
 // with express
 expressApp.get('/interaction/:uid', async (req, res) => {
-  const details = await provider.interactionDetails(req, res);
+  const details = await provider.interactionDetails(req, res)
   // ...
-});
+})
 
 // with koa
 router.get('/interaction/:uid', async (ctx, next) => {
-  const details = await provider.interactionDetails(ctx.req, ctx.res);
+  const details = await provider.interactionDetails(ctx.req, ctx.res)
   // ...
-});
+})
 ```
 
 **`#provider.interactionFinished(req, res, result)`**
+
 ```js
 // with express
 expressApp.post('/interaction/:uid/login', async (req, res) => {
@@ -189,66 +190,75 @@ immediate http redirect.
 ```js
 // with express
 expressApp.post('/interaction/:uid/login', async (req, res) => {
-  const redirectTo = await provider.interactionResult(req, res, result);
+  const redirectTo = await provider.interactionResult(req, res, result)
 
-  res.send({ redirectTo });
-});
+  res.send({ redirectTo })
+})
 
 // with koa
 router.post('/interaction/:uid', async (ctx, next) => {
-  const redirectTo = await provider.interactionResult(ctx.req, ctx.res, result);
+  const redirectTo = await provider.interactionResult(ctx.req, ctx.res, result)
 
-  ctx.body = { redirectTo };
-});
+  ctx.body = { redirectTo }
+})
 ```
 
-
 ## Custom Grant Types
+
 oidc-provider comes with the basic grants implemented, but you can register your own grant types,
-for example to implement an 
+for example to implement an
 [OAuth 2.0 Token Exchange](https://www.rfc-editor.org/rfc/rfc8693.html). You can check the standard
 grant factories [here](/lib/actions/grants).
 
 ```js
 const parameters = [
-  'audience', 'resource', 'scope', 'requested_token_type',
-  'subject_token', 'subject_token_type',
-  'actor_token', 'actor_token_type'
-];
-const allowedDuplicateParameters = ['audience', 'resource'];
-const grantType = 'urn:ietf:params:oauth:grant-type:token-exchange';
+  'audience',
+  'resource',
+  'scope',
+  'requested_token_type',
+  'subject_token',
+  'subject_token_type',
+  'actor_token',
+  'actor_token_type',
+]
+const allowedDuplicateParameters = ['audience', 'resource']
+const grantType = 'urn:ietf:params:oauth:grant-type:token-exchange'
 
 async function tokenExchangeHandler(ctx, next) {
   // ctx.oidc.params holds the parsed parameters
   // ctx.oidc.client has the authenticated client
-
   // your grant implementation
   // see /lib/actions/grants for references on how to instantiate and issue tokens
 }
 
-provider.registerGrantType(grantType, tokenExchangeHandler, parameters, allowedDuplicateParameters);
+provider.registerGrantType(
+  grantType,
+  tokenExchangeHandler,
+  parameters,
+  allowedDuplicateParameters,
+)
 ```
 
-
 ## Registering module middlewares (helmet, ip-filters, rate-limiters, etc)
+
 When using `provider.app` or `provider.callback()` as a mounted application in your own koa or express
 stack just follow the respective module's documentation. However, when using the `provider.app` Koa
 instance directly to register i.e. koa-helmet you must push the middleware in
 front of oidc-provider in the middleware stack.
 
 ```js
-import helmet from 'koa-helmet';
+import helmet from 'koa-helmet'
 
 // Correct, pushes koa-helmet at the end of the middleware stack but BEFORE oidc-provider.
-provider.use(helmet());
+provider.use(helmet())
 
 // Incorrect, pushes koa-helmet at the end of the middleware stack AFTER oidc-provider, not being
 // executed when errors are encountered or during actions that do not "await next()".
-provider.app.use(helmet());
+provider.app.use(helmet())
 ```
 
-
 ## Pre- and post-middlewares
+
 You can push custom middleware to be executed before and after oidc-provider.
 
 ```js
@@ -256,9 +266,9 @@ provider.use(async (ctx, next) => {
   /** pre-processing
    * you may target a specific action here by matching `ctx.path`
    */
-  console.log('pre middleware', ctx.method, ctx.path);
+  console.log('pre middleware', ctx.method, ctx.path)
 
-  await next();
+  await next()
   /** post-processing
    * since internal route matching was already executed you may target a specific action here
    * checking `ctx.oidc.route`, the unique route names used are
@@ -292,84 +302,91 @@ provider.use(async (ctx, next) => {
    * `token`
    * `userinfo`
    */
-   console.log('post middleware', ctx.method, ctx.oidc.route);
-});
+  console.log('post middleware', ctx.method, ctx.oidc.route)
+})
 ```
 
 ## Mounting oidc-provider
+
 The following snippets show how a provider instance can be mounted to existing applications with a
 path prefix `/oidc`.
 
-Note: if you mount oidc-provider to a path it's likely you will have to also update the 
+Note: if you mount oidc-provider to a path it's likely you will have to also update the
 [`interactions.url`](#interactionsurl) configuration to reflect the new path.
 
 ### to a `connect` application
+
 ```js
 // assumes connect ^3.0.0
-connectApp.use('/oidc', oidc.callback());
+connectApp.use('/oidc', oidc.callback())
 ```
 
 ### to a `fastify` application
+
 ```js
 // assumes fastify ^4.0.0
-const fastify = new Fastify();
-await fastify.register(require('@fastify/middie'));
+const fastify = new Fastify()
+await fastify.register(require('@fastify/middie'))
 // or
 // await app.register(require('@fastify/express'));
-fastify.use('/oidc', oidc.callback());
+fastify.use('/oidc', oidc.callback())
 ```
 
 ### to a `hapi` application
+
 ```js
 // assumes @hapi/hapi ^21.0.0
-const callback = oidc.callback();
+const callback = oidc.callback()
 hapiApp.route({
   path: `/oidc/{any*}`,
   method: '*',
   config: { payload: { output: 'stream', parse: false } },
   async handler({ raw: { req, res } }, h) {
-    req.originalUrl = req.url;
-    req.url = req.url.replace('/oidc', '');
+    req.originalUrl = req.url
+    req.url = req.url.replace('/oidc', '')
 
-    callback(req, res);
-    await once(res, 'finish');
+    callback(req, res)
+    await once(res, 'finish')
 
-    req.url = req.url.replace('/', '/oidc');
-    delete req.originalUrl;
+    req.url = req.url.replace('/', '/oidc')
+    delete req.originalUrl
 
-    return res.finished ? h.abandon : h.continue;
-  }
-});
+    return res.finished ? h.abandon : h.continue
+  },
+})
 ```
 
 ### to a `nest` application
+
 ```ts
 // assumes NestJS ^7.0.0
-import { Controller, All, Req, Res } from '@nestjs/common';
-import { Request, Response } from 'express';
-const callback = oidc.callback();
+import { Controller, All, Req, Res } from '@nestjs/common'
+import { Request, Response } from 'express'
+const callback = oidc.callback()
 @Controller('oidc')
 export class OidcController {
   @All('/*')
   public mountedOidc(@Req() req: Request, @Res() res: Response): void {
-    req.url = req.originalUrl.replace('/oidc', '');
-    return callback(req, res);
+    req.url = req.originalUrl.replace('/oidc', '')
+    return callback(req, res)
   }
 }
 ```
 
 ### to an `express` application
+
 ```js
 // assumes express ^4.0.0
-expressApp.use('/oidc', oidc.callback());
+expressApp.use('/oidc', oidc.callback())
 ```
 
 ### to a `koa` application
+
 ```js
 // assumes koa ^2.0.0
 // assumes koa-mount ^4.0.0
-import mount from 'koa-mount';
-koaApp.use(mount('/oidc', oidc.app));
+import mount from 'koa-mount'
+koaApp.use(mount('/oidc', oidc.app))
 ```
 
 Note: when the issuer identifier does not include the path prefix you should take care of rewriting
@@ -390,15 +407,15 @@ https URL endpoints and keeping the right (secure) protocol).
 Depending on your setup you should do the following in your downstream
 application code
 
-| setup | example |
-|---|---|
-| standalone oidc-provider | `provider.proxy = true` |
-| oidc-provider mounted to an `express` application | `provider.proxy = true` |
-| oidc-provider mounted to a `connect` application | `provider.proxy = true` |
-| oidc-provider mounted to a `koa` application | `yourKoaApp.proxy = true` |
-| oidc-provider mounted to a `fastify` application | `provider.proxy = true` |
-| oidc-provider mounted to a `hapi` application | `provider.proxy = true` |
-| oidc-provider mounted to a `nest` application | `provider.proxy = true` |
+| setup                                             | example                   |
+| ------------------------------------------------- | ------------------------- |
+| standalone oidc-provider                          | `provider.proxy = true`   |
+| oidc-provider mounted to an `express` application | `provider.proxy = true`   |
+| oidc-provider mounted to a `connect` application  | `provider.proxy = true`   |
+| oidc-provider mounted to a `koa` application      | `yourKoaApp.proxy = true` |
+| oidc-provider mounted to a `fastify` application  | `provider.proxy = true`   |
+| oidc-provider mounted to a `hapi` application     | `provider.proxy = true`   |
+| oidc-provider mounted to a `nest` application     | `provider.proxy = true`   |
 
 It is also necessary that the web server doing the offloading also passes
 those headers to the downstream application. Here is a common configuration
@@ -417,7 +434,6 @@ location / {
   proxy_redirect off;
 }
 ```
-
 
 ## Configuration options
 
@@ -3810,12 +3826,12 @@ https://www.rfc-editor.org/rfc/rfc6749.html#appendix-B
 Example:
 
 ```js
-const client_id = 'an:identifier';
-const client_secret = 'some secure & non-standard secret';
+const client_id = 'an:identifier'
+const client_secret = 'some secure & non-standard secret'
 
 // After formencoding these two tokens
-const encoded_id = 'an%3Aidentifier';
-const encoded_secret = 'some+secure+%26+non%2Dstandard+secret';
+const encoded_id = 'an%3Aidentifier'
+const encoded_secret = 'some+secure+%26+non%2Dstandard+secret'
 
 // Basic auth header format Authorization: Basic base64(encoded_id + ':' + encoded_secret)
 // Authorization: Basic YW4lM0FpZGVudGlmaWVyOnNvbWUrc2VjdXJlKyUyNitub24lMkRzdGFuZGFyZCtzZWNyZXQ=
@@ -3835,34 +3851,37 @@ listeners for errors
 deliver them to client developers out-of-band, e.g. by logs in an admin interface.
 
 ```js
-function handleClientAuthErrors({ headers: { authorization }, oidc: { body, client } }, err) {
+function handleClientAuthErrors(
+  { headers: { authorization }, oidc: { body, client } },
+  err,
+) {
   if (err.statusCode === 401 && err.message === 'invalid_client') {
     // console.log(err);
     // save error details out-of-bands for the client developers, `authorization`, `body`, `client`
     // are just some details available, you can dig in ctx object for more.
   }
 }
-provider.on('grant.error', handleClientAuthErrors);
-provider.on('introspection.error', handleClientAuthErrors);
-provider.on('revocation.error', handleClientAuthErrors);
+provider.on('grant.error', handleClientAuthErrors)
+provider.on('introspection.error', handleClientAuthErrors)
+provider.on('revocation.error', handleClientAuthErrors)
 ```
 
 ### Refresh Tokens
 
-  > I'm not getting refresh_token from token_endpoint grant_type=authorization_code responses, why?  
+> I'm not getting refresh_token from token_endpoint grant_type=authorization_code responses, why?
 
 Do you support offline_access scope and consent prompt? Did the client request them in the
 authentication request?
 
-  > Yeah, still no refresh_token  
+> Yeah, still no refresh_token
 
 Does the client have grant_type=refresh_token configured?
 
-  > Aaaah, that was it. (or one of the above if you follow [Core 1.0#OfflineAccess](http://openid.net/specs/openid-connect-core-1_0.html#OfflineAccess))  
+> Aaaah, that was it. (or one of the above if you follow [Core 1.0#OfflineAccess](http://openid.net/specs/openid-connect-core-1_0.html#OfflineAccess))
 
-***
+---
 
-  > The Authorization Server MAY grant Refresh Tokens in other contexts that are beyond the scope of this specification. How about that?
+> The Authorization Server MAY grant Refresh Tokens in other contexts that are beyond the scope of this specification. How about that?
 
 Yeah, yeah, see [configuration](#issuerefreshtoken)
 
@@ -3914,7 +3933,6 @@ none. You're getting this error because they are required properties, but they c
   grant_types: []
 }
 ```
-
 
 [support-sponsor]: https://github.com/sponsors/panva
 [sponsor-auth0]: https://auth0.com/signup?utm_source=external_sites&utm_medium=panva&utm_campaign=devn_signup
