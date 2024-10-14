@@ -59,6 +59,7 @@ package.json since breaking changes may be introduced as part of these version u
 your CI.
 
 ## Certification
+
 [<img width="184" height="96" align="right" src="https://cdn.jsdelivr.net/gh/panva/node-oidc-provider@acd3ebf2f5ebbb5605463cb681a1fb2ab9742ace/OpenID_Certified.png" alt="OpenID Certification">][openid-certified-link]  
 Filip Skokan has [certified][openid-certified-link] that [oidc-provider][npm-url]
 conforms to the following profiles of the OpenID Connect™ protocol.
@@ -75,7 +76,7 @@ conforms to the following profiles of the OpenID Connect™ protocol.
   <source media="(prefers-color-scheme: dark)" srcset="./sponsor/Auth0byOkta_dark.png">
   <source media="(prefers-color-scheme: light)" srcset="./sponsor/Auth0byOkta_light.png">
   <img height="65" align="left" alt="Auth0 by Okta" src="./sponsor/Auth0byOkta_light.png">
-</picture> 
+</picture>
 
 If you want to quickly add OpenID Connect authentication to Node.js apps, feel free to check out Auth0's Node.js SDK and free plan. [Create an Auth0 account; it's free!][sponsor-auth0]<br><br>
 
@@ -90,33 +91,36 @@ oidc-provider can be mounted to existing connect, express, fastify, hapi, or koa
 various ways to fit a variety of uses. See the [documentation](/docs/README.md) and [example folder](/example).
 
 ```js
-import Provider from 'oidc-provider';
+import Provider from 'oidc-provider'
 const configuration = {
   // refer to the documentation for other available configuration
-  clients: [{
-    client_id: 'foo',
-    client_secret: 'bar',
-    redirect_uris: ['http://lvh.me:8080/cb'],
-    // ... other client properties
-  }],
-};
+  clients: [
+    {
+      client_id: 'foo',
+      client_secret: 'bar',
+      redirect_uris: ['http://lvh.me:8080/cb'],
+      // ... other client properties
+    },
+  ],
+}
 
-const oidc = new Provider('http://localhost:3000', configuration);
+const oidc = new Provider('http://localhost:3000', configuration)
 
 oidc.listen(3000, () => {
-  console.log('oidc-provider listening on port 3000, check http://localhost:3000/.well-known/openid-configuration');
-});
+  console.log(
+    'oidc-provider listening on port 3000, check http://localhost:3000/.well-known/openid-configuration',
+  )
+})
 ```
 
-
 ## Recipes
+
 Collection of useful configuration use cases are available over at [recipes](/recipes).
 
-
 ## Events
+
 oidc-provider instances are event emitters, using event handlers you can hook into the various
 actions and i.e. emit metrics that react to specific triggers. See the list of available emitted [event names](/docs/events.md) and their description.
-
 
 [npm-url]: https://www.npmjs.com/package/oidc-provider
 [openid-certified-link]: https://openid.net/certification/
