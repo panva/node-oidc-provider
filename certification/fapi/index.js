@@ -5,7 +5,6 @@ import * as path from 'node:path';
 import * as crypto from 'node:crypto';
 import * as https from 'node:https';
 import { promisify } from 'node:util';
-import { URL } from 'node:url';
 
 import { dirname } from 'desm';
 import * as jose from 'jose';

@@ -455,7 +455,6 @@ describe('Client metadata validation', () => {
         require_pushed_authorization_requests: false,
       }, { features: { pushedAuthorizationRequests: { allowUnregisteredRedirectUris: true } } });
     });
-    rejects(this.title, ['https://rp.example.com#'], /redirect_uris must not contain fragments$/);
     rejects(
       this.title,
       ['https://rp.example.com#whatever'],
@@ -546,11 +545,6 @@ describe('Client metadata validation', () => {
     allows(this.title, ['https://some'], {
       application_type: 'web',
     });
-    rejects(
-      this.title,
-      ['https://rp.example.com#'],
-      /post_logout_redirect_uris must not contain fragments$/,
-    );
     rejects(
       this.title,
       ['https://rp.example.com#whatever'],

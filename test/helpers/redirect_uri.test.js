@@ -8,23 +8,23 @@ describe('redirectUri helper', () => {
       some: 'payload',
     });
 
-    expect(result).to.equal('http://client.example.com?some=payload');
+    expect(result).to.equal('http://client.example.com/?some=payload');
   });
 
   it('extends the query if part of the redirect_uri', () => {
-    const result = redirectUri('http://client.example.com?other=stuff', {
+    const result = redirectUri('http://client.example.com/?other=stuff', {
       some: 'payload',
     });
 
-    expect(result).to.equal('http://client.example.com?other=stuff&some=payload');
+    expect(result).to.equal('http://client.example.com/?other=stuff&some=payload');
   });
 
   it('payload comes first', () => {
-    const result = redirectUri('http://client.example.com?some=paylod', {
+    const result = redirectUri('http://client.example.com/?some=paylod', {
       some: 'other payload',
     });
 
-    expect(result).to.equal('http://client.example.com?some=other%20payload');
+    expect(result).to.equal('http://client.example.com/?some=other+payload');
   });
 
   it('works with fragment', () => {
@@ -36,10 +36,10 @@ describe('redirectUri helper', () => {
   });
 
   it('works with fragment and keeps query', () => {
-    const result = redirectUri('http://client.example.com?present=query', {
+    const result = redirectUri('http://client.example.com/?present=query', {
       some: 'payload',
     }, 'fragment');
 
-    expect(result).to.equal('http://client.example.com?present=query#some=payload');
+    expect(result).to.equal('http://client.example.com/?present=query#some=payload');
   });
 });

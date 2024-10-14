@@ -420,7 +420,7 @@ describe('logout endpoint', () => {
           expect(ctx.oidc.entities).to.have.keys('Client', 'Session');
         }, done));
 
-        this.getSession().state = { secret: '123', postLogoutRedirectUri: '/', clientId: 'client' };
+        this.getSession().state = { secret: '123', postLogoutRedirectUri: 'https://rp.example.com/', clientId: 'client' };
 
         this.agent.post('/session/end/confirm')
           .send({ xsrf: '123', logout: 'yes' })
@@ -437,7 +437,7 @@ describe('logout endpoint', () => {
         sinon.spy(authorizationCodeAdapter, 'revokeByGrantId');
         const session = this.getSession();
 
-        session.state = { secret: '123', postLogoutRedirectUri: '/', clientId: 'client' };
+        session.state = { secret: '123', postLogoutRedirectUri: 'https://rp.example.com/', clientId: 'client' };
         session.authorizations.client.persistsLogout = true;
 
         const [firstGrant, secondGrant] = Object.keys(session.authorizations)
@@ -514,7 +514,7 @@ describe('logout endpoint', () => {
 
       it('forwards the state too', function () {
         this.getSession().state = {
-          secret: '123', postLogoutRedirectUri: '/', clientId: 'client', state: 'foobar',
+          secret: '123', postLogoutRedirectUri: 'https://rp.example.com/', clientId: 'client', state: 'foobar',
         };
 
         i(this.provider).configuration().cookies.long.domain = '.oidc.dev';
@@ -526,13 +526,13 @@ describe('logout endpoint', () => {
             delete i(this.provider).configuration().cookies.long.domain;
           })
           .expect(303)
-          .expect('location', '/?state=foobar');
+          .expect('location', 'https://rp.example.com/?state=foobar');
       });
 
       it('handles a no existing session state', async function () {
         Object.assign(this.getSession(), {
           state: {
-            secret: '123', postLogoutRedirectUri: '/', clientId: 'client', state: 'foobar',
+            secret: '123', postLogoutRedirectUri: 'https://rp.example.com/', clientId: 'client', state: 'foobar',
           },
           authorizations: undefined,
         });
