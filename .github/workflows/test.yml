@@ -14,18 +14,26 @@ jobs:
     if: ${{ github.repository == 'panva/node-oidc-provider' || github.event_name == 'workflow_dispatch' }}
     uses: panva/.github/.github/workflows/npm-audit.yml@main
 
+  node-versions:
+    name: Get Node.js Versions
+    runs-on: ubuntu-latest
+    outputs:
+      matrix: ${{ steps.query.outputs.matrix }}
+    steps:
+      - id: query
+        run: |
+          echo "matrix=$(curl -s https://raw.githubusercontent.com/actions/node-versions/refs/heads/main/versions-manifest.json | jq -c '[.[] | select(.lts) | select(.version | split(".")[0] | tonumber >= 18) | .lts | ascii_downcase | "lts/\(.)"] + ["current"] | unique')" >> "$GITHUB_OUTPUT"
+
   test:
     if: ${{ github.repository == 'panva/node-oidc-provider' || github.event_name == 'workflow_dispatch' }}
+    needs:
+      - node-versions
     name: Test Suite
     runs-on: ubuntu-latest
-    continue-on-error: ${{ !startsWith(matrix.node-version, 'lts') }}
     strategy:
       fail-fast: false
       matrix:
-        node-version:
-          - lts/hydrogen # 18
-          - lts/iron # 20
-          - current
+        node-version: ${{ fromJSON(needs.node-versions.outputs.matrix) }}
 
     steps:
       - name: Checkout
@@ -39,23 +47,3 @@ jobs:
           check-latest: true
       - run: npm clean-install
       - run: npm run ci
-
-  # deploy:
-  #   if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' && github.repository == 'panva/node-oidc-provider' }}
-  #   runs-on: ubuntu-latest
-  #   needs:
-  #     - test
-  #   strategy:
-  #     fail-fast: false
-  #     matrix:
-  #       app:
-  #         - radiant-refuge-93411
-  #         - powerful-cove-31049
-  #   steps:
-  #     - name: Checkout
-  #       uses: actions/checkout@v4
-  #     - uses: ruby/setup-ruby@v1
-  #       with:
-  #         ruby-version: '2.7'
-  #     - run: gem install dpl-heroku -v 1.10.14
-  #     - run: dpl --provider=heroku --strategy=api --api-key=${{ secrets.HEROKU_AUTH_TOKEN }} --app=${{ matrix.app }}
