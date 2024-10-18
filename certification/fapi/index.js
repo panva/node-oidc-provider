@@ -5,7 +5,6 @@ import * as path from 'node:path';
 import * as crypto from 'node:crypto';
 import * as https from 'node:https';
 import { promisify } from 'node:util';
-import { URL } from 'node:url';
 
 import { dirname } from 'desm';
 import * as jose from 'jose';
@@ -16,6 +15,12 @@ import Provider, { errors } from '../../lib/index.js'; // from 'oidc-provider';
 import MemoryAdapter from '../../lib/adapters/memory_adapter.js';
 import { stripPrivateJWKFields } from '../../test/keys.js';
 import Account from '../../example/support/account.js';
+
+const pkg = JSON.parse(
+  readFileSync(path.resolve(dirname(import.meta.url), '../../package.json'), {
+    encoding: 'utf-8',
+  }),
+);
 
 const __dirname = dirname(import.meta.url);
 const selfsigned = generate();
@@ -257,6 +262,13 @@ const adapter = (name) => {
 
 const fapi = new Provider(ISSUER, {
   acrValues: ['urn:mace:incommon:iap:silver'],
+  discovery: {
+    service_documentation: pkg.homepage,
+    version: [
+      pkg.version,
+      process.env.HEROKU_SLUG_COMMIT ? process.env.HEROKU_SLUG_COMMIT.slice(0, 7) : undefined,
+    ].filter(Boolean).join('-'),
+  },
   routes: {
     userinfo: '/accounts',
   },
