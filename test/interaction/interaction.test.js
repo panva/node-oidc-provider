@@ -50,6 +50,27 @@ function handlesInteractionSessionErrors() {
     });
   });
 }
+
+const testInteraction = {
+  uid: 'test-interaction-id',
+  save: sinon.stub(),
+  destroy: sinon.stub(),
+  iat: 1729517474,
+  exp: 1729521074,
+  returnTo: 'http://127.0.0.1:62009/auth/test-interaction-id',
+  prompt: { name: 'login', reasons: ['no_session'], details: {} },
+  params: {
+    client_id: 'client',
+    redirect_uri: 'https://client.example.com/cb',
+    response_type: 'code',
+    scope: 'openid',
+    state: '0.9136904896497591',
+  },
+  cid: 'Rb8eTBRrHc7TjG42Si5bR',
+  kind: 'Interaction',
+  jti: 'test-interaction-id',
+};
+
 describe('devInteractions', () => {
   before(bootstrap(import.meta.url));
   afterEach(sinon.restore);
@@ -197,22 +218,49 @@ describe('devInteractions', () => {
         });
     });
 
-    it('accepts the login and resumes auth', async function () {
-      let location;
-      await this.agent.post(`${this.url}`)
-        .send({
-          prompt: 'login',
-          login: 'foobar',
-        })
-        .type('form')
-        .expect(303)
-        .expect('location', new RegExp(this.url.replace('interaction', 'auth')))
-        .expect(({ headers }) => {
-          ({ location } = headers);
-        });
+    context('with cookies enabled', () => {
+      it('accepts the login and resumes auth', async function () {
+        let location;
+        await this.agent.post(`${this.url}`)
+          .send({
+            prompt: 'login',
+            login: 'foobar',
+          })
+          .type('form')
+          .expect(303)
+          .expect('location', new RegExp(this.url.replace('interaction', 'auth')))
+          .expect(({ headers }) => {
+            ({ location } = headers);
+          });
 
-      await this.agent.get(new URL(location).pathname)
-        .expect(303);
+        await this.agent.get(new URL(location).pathname)
+          .expect(303);
+      });
+    });
+    context('with cookies disabled', () => {
+      before(async function () {
+        i(this.provider).configuration('cookies').disabled = true;
+      });
+      after(async function () {
+        i(this.provider).configuration('cookies').disabled = false;
+        sinon.restore();
+      });
+      it('should look up interaction from ID in path params', async function () {
+        sinon.stub(this.provider.Interaction, 'find').withArgs('test-interaction-id').resolves(testInteraction);
+        // If cookies were enabled, this would fail because the interaction ID in the cookie is not the same
+        // as the one in the path.
+        const resp = await this.agent.post('/interaction/test-interaction-id')
+          .send({
+            prompt: 'login',
+            login: 'foobar',
+          })
+          .type('form')
+          .expect(303)
+          .expect('location', /\/auth\/test-interaction-id/);
+
+        await this.agent.get(new URL(resp.headers.location).pathname)
+          .expect(303);
+      });
     });
 
     it('checks that the account is a non empty string', async function () {
@@ -242,6 +290,34 @@ describe('devInteractions', () => {
     });
 
     handlesInteractionSessionErrors();
+
+    context('with cookies disabled', async () => {
+      before(async function () {
+        i(this.provider).configuration('cookies').disabled = true;
+      });
+      after(async function () {
+        i(this.provider).configuration('cookies').disabled = false;
+        sinon.restore();
+      });
+
+      it('should look up interaction from ID in path params', async function () {
+        sinon.stub(this.provider.Interaction, 'find').withArgs('test-interaction-id').resolves(testInteraction);
+        // If cookies were enabled, this would fail because the interaction ID in the cookie is not the same
+        // as the one in the path.
+        await this.agent.get('/interaction/test-interaction-id').expect(200);
+      });
+    });
+  });
+
+  context('with cookies enabled', async () => {
+    before(async function () {
+      i(this.provider).configuration('cookies').disabled = false;
+    });
+    it('should look up interaction from ID in path params', async function () {
+      // If cookies are enabled, this should fail because the interaction ID in the cookie is not the same
+      // as the one in the path.
+      await this.agent.get('/interaction/test-interaction-id').expect(400);
+    });
   });
 
   context('submit consent', () => {
