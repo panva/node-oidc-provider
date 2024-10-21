@@ -2,6 +2,18 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [8.5.2](https://github.com/panva/node-oidc-provider/compare/v8.5.1...v8.5.2) (2024-10-19)
+
+
+### Refactor
+
+* remove use of node:url in favour of WHATWG URL ([0dc59a1](https://github.com/panva/node-oidc-provider/commit/0dc59a142df3d1cbe72e41b7d8a8abd03c2f0ffd))
+
+
+### Documentation
+
+* update docs/README.md ([07f6333](https://github.com/panva/node-oidc-provider/commit/07f6333cca19f8cf65db56e84172885910eda8db))
+
 ## [8.5.1](https://github.com/panva/node-oidc-provider/compare/v8.5.0...v8.5.1) (2024-07-03)
 
 

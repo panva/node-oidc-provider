@@ -18,7 +18,7 @@ jobs:
       - name: Setup node
         uses: actions/setup-node@v4
         with:
-          node-version: lts/iron # 20
+          node-version: lts/*
           registry-url: https://registry.npmjs.org
           always-auth: true
       - run: npm publish --provenance
@@ -51,7 +51,7 @@ jobs:
       - name: Setup node
         uses: actions/setup-node@v4
         with:
-          node-version: lts/iron # 20
+          node-version: lts/*
           cache: 'npm'
       - run: node .release-notes.cjs
         env:
