@@ -126,7 +126,7 @@ actions and i.e. emit metrics that react to specific triggers. See the list of a
 
 | Version                                                 | Security Fixes 🔑 | Other Bug Fixes 🐞 | New Features ⭐ |
 | ------------------------------------------------------- | ----------------- | ------------------ | --------------- |
-| [v8.x](https://github.com/panva/oauth4webapi/tree/v8.x) | ✅                | ✅                 | ✅              |
+| [v8.x](https://github.com/panva/node-oidc-provider/tree/v8.x) | ✅                | ✅                 | ✅              |
 
 [npm-url]: https://www.npmjs.com/package/oidc-provider
 [openid-certified-link]: https://openid.net/certification/
