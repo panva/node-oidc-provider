@@ -122,6 +122,12 @@ Collection of useful configuration use cases are available over at [recipes](/re
 oidc-provider instances are event emitters, using event handlers you can hook into the various
 actions and i.e. emit metrics that react to specific triggers. See the list of available emitted [event names](/docs/events.md) and their description.
 
+## Supported Versions
+
+| Version                                                 | Security Fixes 🔑 | Other Bug Fixes 🐞 | New Features ⭐ |
+| ------------------------------------------------------- | ----------------- | ------------------ | --------------- |
+| [v8.x](https://github.com/panva/oauth4webapi/tree/v8.x) | ✅                | ✅                 | ✅              |
+
 [npm-url]: https://www.npmjs.com/package/oidc-provider
 [openid-certified-link]: https://openid.net/certification/
 [openid-connect]: https://openid.net/connect/
