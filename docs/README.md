@@ -3935,4 +3935,4 @@ none. You're getting this error because they are required properties, but they c
 ```
 
 [support-sponsor]: https://github.com/sponsors/panva
-[sponsor-auth0]: https://auth0.com/signup?utm_source=external_sites&utm_medium=panva&utm_campaign=devn_signup
+[sponsor-auth0]: https://a0.to/signup/panva

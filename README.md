@@ -122,6 +122,12 @@ Collection of useful configuration use cases are available over at [recipes](/re
 oidc-provider instances are event emitters, using event handlers you can hook into the various
 actions and i.e. emit metrics that react to specific triggers. See the list of available emitted [event names](/docs/events.md) and their description.
 
+## Supported Versions
+
+| Version                                                 | Security Fixes 🔑 | Other Bug Fixes 🐞 | New Features ⭐ |
+| ------------------------------------------------------- | ----------------- | ------------------ | --------------- |
+| [v8.x](https://github.com/panva/node-oidc-provider/tree/v8.x) | ✅                | ✅                 | ✅              |
+
 [npm-url]: https://www.npmjs.com/package/oidc-provider
 [openid-certified-link]: https://openid.net/certification/
 [openid-connect]: https://openid.net/connect/
@@ -141,7 +147,7 @@ actions and i.e. emit metrics that react to specific triggers. See the list of a
 [jar]: https://www.rfc-editor.org/rfc/rfc9101.html
 [device-flow]: https://www.rfc-editor.org/rfc/rfc8628.html
 [jwt-introspection]: https://tools.ietf.org/html/draft-ietf-oauth-jwt-introspection-response-10
-[sponsor-auth0]: https://auth0.com/signup?utm_source=external_sites&utm_medium=panva&utm_campaign=devn_signup
+[sponsor-auth0]: https://a0.to/signup/panva
 [mtls]: https://www.rfc-editor.org/rfc/rfc8705.html
 [dpop]: https://www.rfc-editor.org/rfc/rfc9449.html
 [resource-indicators]: https://www.rfc-editor.org/rfc/rfc8707.html
