@@ -64,7 +64,7 @@
     "jose": "^5.9.6",
     "jsesc": "^3.0.2",
     "koa": "^2.15.3",
-    "nanoid": "^5.0.7",
+    "nanoid": "^5.0.8",
     "object-hash": "^3.0.0",
     "oidc-token-hash": "^5.0.3",
     "quick-lru": "^7.0.0",
@@ -72,7 +72,7 @@
   },
   "devDependencies": {
     "@fastify/middie": "^8.3.3",
-    "@hapi/hapi": "^21.3.10",
+    "@hapi/hapi": "^21.3.12",
     "@koa/ejs": "^5.1.0",
     "base64url": "^3.0.1",
     "chai": "^5.1.2",
