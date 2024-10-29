@@ -56,7 +56,7 @@ const testInteraction = {
   save: sinon.stub(),
   destroy: sinon.stub(),
   iat: 1729517474,
-  exp: 1729521074,
+  exp: 4128493153,
   returnTo: 'http://127.0.0.1:62009/auth/test-interaction-id',
   prompt: { name: 'login', reasons: ['no_session'], details: {} },
   params: {
@@ -218,7 +218,7 @@ describe('devInteractions', () => {
         });
     });
 
-    context('with cookies enabled', () => {
+    context('with cookieless fallback disabled', () => {
       it('accepts the login and resumes auth', async function () {
         let location;
         await this.agent.post(`${this.url}`)
@@ -237,12 +237,12 @@ describe('devInteractions', () => {
           .expect(303);
       });
     });
-    context('with cookies disabled', () => {
+    context('with cookieless fallback enabled', () => {
       before(async function () {
-        i(this.provider).configuration('cookies').disabled = true;
+        i(this.provider).configuration('cookies').enableCookielessFallback = true;
       });
       after(async function () {
-        i(this.provider).configuration('cookies').disabled = false;
+        i(this.provider).configuration('cookies').enableCookielessFallback = false;
         sinon.restore();
       });
       it('should look up interaction from ID in path params', async function () {
@@ -291,12 +291,12 @@ describe('devInteractions', () => {
 
     handlesInteractionSessionErrors();
 
-    context('with cookies disabled', async () => {
+    context('with cookieless fallback enabled', async () => {
       before(async function () {
-        i(this.provider).configuration('cookies').disabled = true;
+        i(this.provider).configuration('cookies').enableCookielessFallback = true;
       });
       after(async function () {
-        i(this.provider).configuration('cookies').disabled = false;
+        i(this.provider).configuration('cookies').enableCookielessFallback = false;
         sinon.restore();
       });
 
@@ -309,9 +309,9 @@ describe('devInteractions', () => {
     });
   });
 
-  context('with cookies enabled', async () => {
+  context('with cookieless fallback disabled', async () => {
     before(async function () {
-      i(this.provider).configuration('cookies').disabled = false;
+      i(this.provider).configuration('cookies').enableCookielessFallback = false;
     });
     it('should look up interaction from ID in path params', async function () {
       // If cookies are enabled, this should fail because the interaction ID in the cookie is not the same
