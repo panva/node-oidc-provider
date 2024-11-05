@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [8.5.3](https://github.com/panva/node-oidc-provider/compare/v8.5.2...v8.5.3) (2024-11-05)
+
+
+### Fixes
+
+* normalize single string set-cookie headers ([6effeed](https://github.com/panva/node-oidc-provider/commit/6effeed4629e1dc229e00d93cdec45b8cf4d015e))
+
 ## [8.5.2](https://github.com/panva/node-oidc-provider/compare/v8.5.1...v8.5.2) (2024-10-19)
 
 
