@@ -348,7 +348,7 @@ hapiApp.route({
     callback(req, res)
     await once(res, 'finish')
 
-    req.url = req.url.replace('/', '/oidc')
+    req.url = req.url.replace('/', '/oidc/')
     delete req.originalUrl
 
     return res.finished ? h.abandon : h.continue
