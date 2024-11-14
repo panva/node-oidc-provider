@@ -351,7 +351,7 @@ hapiApp.route({
     req.url = req.url.replace('/', '/oidc')
     delete req.originalUrl
 
-    return res.finished ? h.abandon : h.continue
+    return res.writableEnded ? h.abandon : h.continue
   },
 })
 ```

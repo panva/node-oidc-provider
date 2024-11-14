@@ -71,7 +71,7 @@
     "raw-body": "^3.0.0"
   },
   "devDependencies": {
-    "@fastify/middie": "^8.3.3",
+    "@fastify/middie": "^9.0.2",
     "@hapi/hapi": "^21.3.12",
     "@koa/ejs": "^5.1.0",
     "base64url": "^3.0.1",
@@ -83,16 +83,16 @@
     "eslint-config-airbnb-base": "^15.0.0",
     "eslint-plugin-import": "^2.31.0",
     "express": "^4.21.1",
-    "fastify": "^4.28.1",
-    "helmet": "^7.2.0",
+    "fastify": "^5.1.0",
+    "helmet": "^8.0.0",
     "koa-body": "^6.0.1",
     "koa-mount": "^4.0.0",
     "lodash": "^4.17.21",
-    "mocha": "^10.7.3",
+    "mocha": "^10.8.2",
     "moment": "^2.30.1",
-    "nock": "^13.5.5",
+    "nock": "^13.5.6",
     "selfsigned": "^2.4.1",
-    "sinon": "^18.0.1",
+    "sinon": "^19.0.2",
     "supertest": "^7.0.0",
     "timekeeper": "^2.3.1"
   }

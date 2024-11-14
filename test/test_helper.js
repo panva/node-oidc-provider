@@ -549,7 +549,7 @@ export default function testHelper(importMetaUrl, {
             req.url = req.url.replace('/', mountTo);
             delete req.originalUrl;
 
-            return res.finished ? h.abandon : h.continue;
+            return res.writableEnded ? h.abandon : h.continue;
           },
         });
         await new Promise((resolve) => { global.server.close(resolve); });
@@ -572,7 +572,7 @@ export default function testHelper(importMetaUrl, {
       ['get', 'post', 'put', 'del', 'options', 'trace'].forEach((method) => {
         const orig = agent[method];
         agent[method] = function (route, ...args) {
-          if (route.startsWith(`${mountTo}/`)) {
+          if (route.startsWith(mountTo)) {
             return orig.call(this, route, ...args);
           }
           return orig.call(this, `${mountTo}${route}`, ...args);
