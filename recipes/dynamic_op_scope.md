@@ -1,4 +1,4 @@
-# Accepting Dynamic OP Scope Values
+# Accepting Dynamic Authorization Server Scope Values
 
 - built for version: ^7.1.2 || ^8.0.0
 - For dynamic scopes at the Resource Server you'd use the helpers in the `resourceIndicators` feature.

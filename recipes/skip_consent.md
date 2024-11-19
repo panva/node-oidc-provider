@@ -7,7 +7,7 @@ your own
 applications
 
 Sometimes your use-case doesn't need a consent screen.
-This use-case might occur if your provider has only *first-party* clients configured.
+This use-case might occur if the authorization server has only *first-party* clients configured.
 To achieve that you want to add the requested claims/scopes/resource scopes to the grant:
 
 ```js

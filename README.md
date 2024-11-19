@@ -87,7 +87,7 @@ If you or your company use this module, or you need help using/upgrading the mod
 ## [Documentation](/docs/README.md) & Configuration
 
 oidc-provider can be mounted to existing connect, express, fastify, hapi, or koa applications, see
-[how](/docs/README.md#mounting-oidc-provider). The provider allows to be extended and configured in
+[how](/docs/README.md#mounting-oidc-provider). The authorization server allows to be extended and configured in
 various ways to fit a variety of uses. See the [documentation](/docs/README.md) and [example folder](/example).
 
 ```js

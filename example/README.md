@@ -3,11 +3,11 @@
 See the following examples
 
 - [Koa](/example/koa.js)
-  - the provider is a part of your Koa application
+  - the authorization server is a part of your Koa application
 - [Express](/example/express.js)
-  - the provider is a part of your express application
+  - the authorization server is a part of your express application
 - [Standalone](/example/standalone.js)
-  - the provider is completely standalone
+  - the authorization server is completely standalone
 
 Further resources
 

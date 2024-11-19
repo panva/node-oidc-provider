@@ -160,7 +160,7 @@ router.post('/interaction/:uid', async (ctx, next) => {
     accountId: string, // logged-in account id
     acr: string, // acr value for the authentication
     amr: string[], // amr values for the authentication
-    remember: boolean, // true if provider should use a persistent cookie rather than a session one, defaults to true
+    remember: boolean, // true if authorization server should use a persistent cookie rather than a session one, defaults to true
     ts: number, // unix timestamp of the authentication, defaults to now()
   },
 
@@ -308,7 +308,7 @@ provider.use(async (ctx, next) => {
 
 ## Mounting oidc-provider
 
-The following snippets show how a provider instance can be mounted to existing applications with a
+The following snippets show how a Provider instance can be mounted to existing applications with a
 path prefix `/oidc`.
 
 Note: if you mount oidc-provider to a path it's likely you will have to also update the
@@ -401,7 +401,7 @@ Having a TLS offloading proxy in front of Node.js running oidc-provider is
 the norm. To let your downstream application know of the original protocol and
 ip you have to tell your app to trust `x-forwarded-proto` and `x-forwarded-for`
 headers commonly set by those proxies (as with any express/koa application).
-This is needed for the provider responses to be correct (e.g. to have the right
+This is needed for the authorization server responses to be correct (e.g. to have the right
 https URL endpoints and keeping the right (secure) protocol).
 
 Depending on your setup you should do the following in your downstream
@@ -537,7 +537,7 @@ See [/lib/adapters/memory_adapter.js](/lib/adapters/memory_adapter.js)
 
 ### clients
 
-Array of objects representing client metadata. These clients are referred to as static, they don't expire, never reload, are always available. In addition to these clients the provider will use your adapter's `find` method when a non-static client_id is encountered. If you only wish to support statically configured clients and no dynamic registration then make it so that your adapter resolves client find calls with a falsy value (e.g. `return Promise.resolve()`) and don't take unnecessary DB trips.   
+Array of objects representing client metadata. These clients are referred to as static, they don't expire, never reload, are always available. In addition to these clients the authorization server will use your adapter's `find` method when a non-static client_id is encountered. If you only wish to support statically configured clients and no dynamic registration then make it so that your adapter resolves client find calls with a falsy value (e.g. `return Promise.resolve()`) and don't take unnecessary DB trips.   
  Client's metadata is validated as defined by the respective specification they've been defined in.   
   
 
@@ -587,7 +587,7 @@ async function findAccount(ctx, sub, token) {
 
 ### jwks
 
-JSON Web Key Set used by the provider for signing and decryption. The object must be in [JWK Set format](https://www.rfc-editor.org/rfc/rfc7517.html#section-5). All provided keys must be private keys.   
+JSON Web Key Set used by the authorization server for signing and decryption. The object must be in [JWK Set format](https://www.rfc-editor.org/rfc/rfc7517.html#section-5). All provided keys must be private keys.   
  Supported key types are:   
  - RSA
  - OKP (Ed25519, Ed448, X25519, X448 sub types)
@@ -605,7 +605,7 @@ _**recommendation**_: The following action order is recommended when rotating si
 
 ### features
 
-Enable/disable features. Some features are still either based on draft or experimental RFCs. Enabling those will produce a warning in your console and you must be aware that breaking changes may occur between draft implementations and that those will be published as minor versions of oidc-provider. See the example below on how to acknowledge the specification is a draft (this will remove the warning log) and ensure the provider instance will fail to instantiate if a new version of oidc-provider bundles newer version of the RFC with breaking changes in it.   
+Enable/disable features. Some features are still either based on draft or experimental RFCs. Enabling those will produce a warning in your console and you must be aware that breaking changes may occur between draft implementations and that those will be published as minor versions of oidc-provider. See the example below on how to acknowledge the specification is a draft (this will remove the warning log) and ensure the Provider instance will fail to instantiate if a new version of oidc-provider bundles newer version of the RFC with breaking changes in it.   
   
 
 <a id="features-acknowledging-an-experimental-feature"></a><details><summary>(Click to expand) Acknowledging an experimental feature
@@ -1395,7 +1395,7 @@ false
 
 #### requirePushedAuthorizationRequests
 
-Makes the use of `PAR` required for all authorization requests as an OP policy.  
+Makes the use of `PAR` required for all authorization requests as an authorization server policy.  
 
 
 _**default value**_:
@@ -1574,7 +1574,7 @@ _**default value**_:
 
 #### rotateRegistrationAccessToken
 
-Enables registration access token rotation. The provider will discard the current Registration Access Token with a successful update and issue a new one, returning it to the client with the Registration Update Response. Supported values are
+Enables registration access token rotation. The authorization server will discard the current Registration Access Token with a successful update and issue a new one, returning it to the client with the Registration Update Response. Supported values are
  - `false` registration access tokens are not rotated
  - `true` registration access tokens are rotated when used
  - function returning true/false, true when rotation should occur, false when it shouldn't  
@@ -1709,7 +1709,7 @@ false
 
 #### requireSignedRequestObject
 
-Makes the use of signed request objects required for all authorization requests as an OP policy.  
+Makes the use of signed request objects required for all authorization requests as an authorization server policy.  
 
 
 _**default value**_:
@@ -1768,7 +1768,7 @@ _**default value**_:
 async function defaultResource(ctx, client, oneOf) {
   // @param ctx - koa request context
   // @param client - client making the request
-  // @param oneOf {string[]} - The OP needs to select **one** of the values provided.
+  // @param oneOf {string[]} - The authorization server needs to select **one** of the values provided.
   //                           Default is that the array is provided so that the request will fail.
   //                           This argument is only provided when called during
   //                           Authorization Code / Refresh Token / Device Code exchanges.
@@ -2118,7 +2118,7 @@ async function postLogoutSuccessSource(ctx) {
   // @param ctx - koa request context
   const {
     clientId, clientName, clientUri, initiateLoginUri, logoUri, policyUri, tosUri,
-  } = ctx.oidc.client || {}; // client is defined if the user chose to stay logged in with the OP
+  } = ctx.oidc.client || {}; // client is defined if the user chose to stay logged in with the authorization server
   const display = clientName || clientId;
   ctx.body = `<!DOCTYPE html>
     <html>
@@ -2165,7 +2165,7 @@ false
 
 ### acrValues
 
-Array of strings, the Authentication Context Class References that the OP supports.  
+Array of strings, the Authentication Context Class References that the authorization server supports.  
 
 
 _**default value**_:
@@ -2979,7 +2979,7 @@ async function loadExistingGrant(ctx) {
 
 ### pairwiseIdentifier
 
-Function used by the OP when resolving pairwise ID Token and Userinfo sub claim values. See [`OIDC Core 1.0`](https://openid.net/specs/openid-connect-core-1_0.html#PairwiseAlg)  
+Function used by the authorization server when resolving pairwise ID Token and Userinfo sub claim values. See [`OIDC Core 1.0`](https://openid.net/specs/openid-connect-core-1_0.html#PairwiseAlg)  
 
 _**recommendation**_: Since this might be called several times in one request with the same arguments consider using memoization or otherwise caching the result based on account and client ids.  
 
@@ -3018,7 +3018,7 @@ _**default value**_:
 
 ### pkce.required
 
-Configures if and when the OP requires clients to use `PKCE`. This helper is called whenever an authorization request lacks the code_challenge parameter. Return
+Configures if and when the authorization server requires clients to use `PKCE`. This helper is called whenever an authorization request lacks the code_challenge parameter. Return
  - `false` to allow the request to continue without `PKCE`
  - `true` to abort the request  
 
@@ -3075,7 +3075,7 @@ async function renderError(ctx, out, error) {
 
 ### responseTypes
 
-Array of response_type values that the OP supports. The default omits all response types that result in access tokens being issued by the authorization endpoint directly as per [OAuth 2.0 Security Best Current Practice](https://tools.ietf.org/html/draft-ietf-oauth-security-topics-13#section-3.1.2) You can still enable them if you need to.   
+Array of response_type values that the authorization server supports. The default omits all response types that result in access tokens being issued by the authorization endpoint directly as per [OAuth 2.0 Security Best Current Practice](https://tools.ietf.org/html/draft-ietf-oauth-security-topics-13#section-3.1.2) You can still enable them if you need to.   
   
 
 
@@ -3125,7 +3125,7 @@ function revokeGrantPolicy(ctx) {
 
 ### rotateRefreshToken
 
-Configures if and how the OP rotates refresh tokens after they are used. Supported values are
+Configures if and how the authorization server rotates refresh tokens after they are used. Supported values are
  - `false` refresh tokens are not rotated and their initial expiration date is final
  - `true` refresh tokens are rotated when used, current token is marked as consumed and new one is issued with new TTL, when a consumed refresh token is encountered an error is returned instead and the whole token chain (grant) is revoked
  - `function` returning true/false, true when rotation should occur, false when it shouldn't   
@@ -3156,7 +3156,7 @@ function rotateRefreshToken(ctx) {
 
 ### routes
 
-Routing values used by the OP. Only provide routes starting with "/"  
+Routing values used by the authorization server. Only provide routes starting with "/"  
 
 
 _**default value**_:
@@ -3179,7 +3179,7 @@ _**default value**_:
 
 ### scopes
 
-Array of additional scope values that the OP signals to support in the discovery endpoint. Only add scopes the OP has a corresponding resource for. Resource Server scopes don't belong here, see `features.resourceIndicators` for configuring those.  
+Array of additional scope values that the authorization server signals to support in the discovery endpoint. Only add scopes the authorization server has a corresponding resource for. Resource Server scopes don't belong here, see `features.resourceIndicators` for configuring those.  
 
 
 _**default value**_:
@@ -3205,7 +3205,7 @@ function sectorIdentifierUriValidate(client) {
 
 ### subjectTypes
 
-Array of the Subject Identifier types that this OP supports. When only `pairwise` is supported it becomes the default `subject_type` client metadata value. Valid types are
+Array of the Subject Identifier types that this authorization server supports. When only `pairwise` is supported it becomes the default `subject_type` client metadata value. Valid types are
  - `public`
  - `pairwise`  
 
@@ -3286,12 +3286,12 @@ Configure `ttl` for a given token type with a function like so, this must return
 
 ### enabledJWA
 
-Fine-tune the algorithms your provider will support by declaring algorithm values for each respective JWA use  
+Fine-tune the algorithms the authorization server supports by declaring algorithm values for each respective JWA use  
 
 
 ### enabledJWA.authorizationEncryptionAlgValues
 
-JWE "alg" Algorithm values the provider supports for JWT Authorization response (`JARM`) encryption   
+JWE "alg" Algorithm values the authorization server supports for JWT Authorization response (`JARM`) encryption   
   
 
 
@@ -3325,7 +3325,7 @@ _**default value**_:
 
 ### enabledJWA.authorizationEncryptionEncValues
 
-JWE "enc" Content Encryption Algorithm values the provider supports to encrypt JWT Authorization Responses (`JARM`) with   
+JWE "enc" Content Encryption Algorithm values the authorization server supports to encrypt JWT Authorization Responses (`JARM`) with   
   
 
 
@@ -3350,7 +3350,7 @@ _**default value**_:
 
 ### enabledJWA.authorizationSigningAlgValues
 
-JWS "alg" Algorithm values the provider supports to sign JWT Authorization Responses (`JARM`) with   
+JWS "alg" Algorithm values the authorization server supports to sign JWT Authorization Responses (`JARM`) with   
   
 
 
@@ -3379,7 +3379,7 @@ _**default value**_:
 
 ### enabledJWA.clientAuthSigningAlgValues
 
-JWS "alg" Algorithm values the provider supports for signed JWT Client Authentication   
+JWS "alg" Algorithm values the authorization server supports for signed JWT Client Authentication   
   
 
 
@@ -3409,7 +3409,7 @@ _**default value**_:
 
 ### enabledJWA.dPoPSigningAlgValues
 
-JWS "alg" Algorithm values the provider supports to verify signed DPoP proof JWTs with   
+JWS "alg" Algorithm values the authorization server supports to verify signed DPoP proof JWTs with   
   
 
 
@@ -3435,7 +3435,7 @@ _**default value**_:
 
 ### enabledJWA.idTokenEncryptionAlgValues
 
-JWE "alg" Algorithm values the provider supports for ID Token encryption   
+JWE "alg" Algorithm values the authorization server supports for ID Token encryption   
   
 
 
@@ -3469,7 +3469,7 @@ _**default value**_:
 
 ### enabledJWA.idTokenEncryptionEncValues
 
-JWE "enc" Content Encryption Algorithm values the provider supports to encrypt ID Tokens with   
+JWE "enc" Content Encryption Algorithm values the authorization server supports to encrypt ID Tokens with   
   
 
 
@@ -3494,7 +3494,7 @@ _**default value**_:
 
 ### enabledJWA.idTokenSigningAlgValues
 
-JWS "alg" Algorithm values the provider supports to sign ID Tokens with.   
+JWS "alg" Algorithm values the authorization server supports to sign ID Tokens with.   
   
 
 
@@ -3523,7 +3523,7 @@ _**default value**_:
 
 ### enabledJWA.introspectionEncryptionAlgValues
 
-JWE "alg" Algorithm values the provider supports for JWT Introspection response encryption   
+JWE "alg" Algorithm values the authorization server supports for JWT Introspection response encryption   
   
 
 
@@ -3557,7 +3557,7 @@ _**default value**_:
 
 ### enabledJWA.introspectionEncryptionEncValues
 
-JWE "enc" Content Encryption Algorithm values the provider supports to encrypt JWT Introspection responses with   
+JWE "enc" Content Encryption Algorithm values the authorization server supports to encrypt JWT Introspection responses with   
   
 
 
@@ -3582,7 +3582,7 @@ _**default value**_:
 
 ### enabledJWA.introspectionSigningAlgValues
 
-JWS "alg" Algorithm values the provider supports to sign JWT Introspection responses with   
+JWS "alg" Algorithm values the authorization server supports to sign JWT Introspection responses with   
   
 
 
@@ -3611,7 +3611,7 @@ _**default value**_:
 
 ### enabledJWA.requestObjectEncryptionAlgValues
 
-JWE "alg" Algorithm values the provider supports to receive encrypted Request Objects (`JAR`) with   
+JWE "alg" Algorithm values the authorization server supports to receive encrypted Request Objects (`JAR`) with   
   
 
 
@@ -3645,7 +3645,7 @@ _**default value**_:
 
 ### enabledJWA.requestObjectEncryptionEncValues
 
-JWE "enc" Content Encryption Algorithm values the provider supports to decrypt Request Objects (`JAR`) with   
+JWE "enc" Content Encryption Algorithm values the authorization server supports to decrypt Request Objects (`JAR`) with   
   
 
 
@@ -3670,7 +3670,7 @@ _**default value**_:
 
 ### enabledJWA.requestObjectSigningAlgValues
 
-JWS "alg" Algorithm values the provider supports to receive signed Request Objects (`JAR`) with   
+JWS "alg" Algorithm values the authorization server supports to receive signed Request Objects (`JAR`) with   
   
 
 
@@ -3700,7 +3700,7 @@ _**default value**_:
 
 ### enabledJWA.userinfoEncryptionAlgValues
 
-JWE "alg" Algorithm values the provider supports for UserInfo Response encryption   
+JWE "alg" Algorithm values the authorization server supports for UserInfo Response encryption   
   
 
 
@@ -3734,7 +3734,7 @@ _**default value**_:
 
 ### enabledJWA.userinfoEncryptionEncValues
 
-JWE "enc" Content Encryption Algorithm values the provider supports to encrypt UserInfo responses with   
+JWE "enc" Content Encryption Algorithm values the authorization server supports to encrypt UserInfo responses with   
   
 
 
@@ -3759,7 +3759,7 @@ _**default value**_:
 
 ### enabledJWA.userinfoSigningAlgValues
 
-JWS "alg" Algorithm values the provider supports to sign UserInfo responses with   
+JWS "alg" Algorithm values the authorization server supports to sign UserInfo responses with   
   
 
 
@@ -3805,7 +3805,7 @@ But, if you absolutely need to have scope-requested claims in ID Tokens you can 
 
 ### Why does my .well-known/openid-configuration link to http endpoints instead of https endpoints?
 
-Your provider is behind a TLS terminating proxy, tell your provider instance to trust the proxy
+Your authorization server is behind a TLS terminating proxy, tell your Provider instance to trust the proxy
 headers. More on this in
 [Trusting TLS offloading proxies](#trusting-tls-offloading-proxies)
 
@@ -3845,7 +3845,7 @@ that.
 Every client is configured with one of 7 available
 [`token_endpoint_auth_method` values](https://www.iana.org/assignments/oauth-parameters/oauth-parameters.xhtml#token-endpoint-auth-method)
 and it must adhere to how that given method must be submitted. Submitting multiple means of
-authentication is also not possible. If you're a provider operator you're encouraged to set up
+authentication is also not possible. If you're an authorization server operator you're encouraged to set up
 listeners for errors
 (see [events.md](https://github.com/panva/node-oidc-provider/blob/v8.x/docs/events.md)) and
 deliver them to client developers out-of-band, e.g. by logs in an admin interface.
@@ -3897,7 +3897,7 @@ and the claims, it does not ask for an interface necessary to find an account by
 validating the password digest. Custom implementation using the provided
 [`registerGrantType`](#custom-grant-types) API is simple enough if you absolutely need ROPC.
 
-### How to display, on the website of the OP itself, if the user is signed-in or not
+### How to display, on the website of the authorization server itself, if the user is signed-in or not
 
 ```js
 const ctx = provider.app.createContext(req, res)
