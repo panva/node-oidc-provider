@@ -129,6 +129,7 @@ describe('Financial-grade API - Part 2: Read and Write API Security Profile (ID2
 
     it('requires exp to be provided in the Request Object', async function () {
       const request = await new SignJWT({
+        aud: this.provider.issuer,
         client_id: 'client',
         scope: 'openid',
         iss: 'client',
