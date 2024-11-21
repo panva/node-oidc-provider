@@ -470,6 +470,7 @@ location / {
   - [userinfo](#featuresuserinfo)
 - [acrValues](#acrvalues)
 - [allowOmittingSingleRegisteredRedirectUri](#allowomittingsingleregisteredredirecturi)
+- [assertJwtClientAuthClaimsAndHeader](#assertjwtclientauthclaimsandheader)
 - [claims ❗](#claims)
 - [clientBasedCORS](#clientbasedcors)
 - [clientDefaults](#clientdefaults)
@@ -2181,6 +2182,21 @@ Allow omitting the redirect_uri parameter when only a single one is registered f
 _**default value**_:
 ```js
 true
+```
+
+### assertJwtClientAuthClaimsAndHeader
+
+Helper function used to validate the JWT Client Authentication Assertion Claims Set and Header beyond what its specification mandates.  
+
+
+_**default value**_:
+```js
+async function assertJwtClientAuthClaimsAndHeader(ctx, claims, header, client) {
+  // @param ctx - koa request context
+  // @param claims - parsed JWT Client Authentication Assertion Claims Set as object
+  // @param header - parsed JWT Client Authentication Assertion Headers as object
+  // @param client - the Client instance
+}
 ```
 
 ### claims
