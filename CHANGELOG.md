@@ -2,6 +2,23 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [8.6.0](https://github.com/panva/node-oidc-provider/compare/v8.5.3...v8.6.0) (2024-11-21)
+
+
+### Features
+
+* add a helper for asserting JWT Client Auth claims and header ([82d4e50](https://github.com/panva/node-oidc-provider/commit/82d4e506c8d2dd807c4a0211770dc172f541ba2a))
+
+
+### Documentation
+
+* update verbiage "provider" > "authorization server" ([3768192](https://github.com/panva/node-oidc-provider/commit/3768192b811452c046e5e3f8b5bc43f6e041c2ec))
+
+
+### Refactor
+
+* move assertJwtClaimsAndHeader after regular JWT claims set validation ([05f6bf4](https://github.com/panva/node-oidc-provider/commit/05f6bf489b66bd35d8be80cdad64605ef33a7dfc))
+
 ## [8.5.3](https://github.com/panva/node-oidc-provider/compare/v8.5.2...v8.5.3) (2024-11-05)
 
 
