@@ -4,9 +4,13 @@ import getConfig from '../../default.config.js';
 
 const config = getConfig();
 merge(config, {
-  httpOptions: (url) => {
-    return url.pathname === '/with-custom-user-agent' ? { 'user-agent': 'some user agent' } : {};
-  }
+  httpOptions(url) {
+    if (url.pathname === '/with-custom-user-agent') {
+      return { 'user-agent': 'some user agent' };
+    }
+
+    return {};
+  },
 });
 
 export default {

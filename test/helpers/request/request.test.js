@@ -27,7 +27,7 @@ describe('request helper', () => {
     it("uses a custom 'user-agent' HTTP header", async function () {
       nock('https://www.example.com/', {
         reqheaders: {
-          'user-agent': "some user agent",
+          'user-agent': 'some user agent',
         },
       })
         .get('/with-custom-user-agent')
