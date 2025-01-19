@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [8.6.1](https://github.com/panva/node-oidc-provider/compare/v8.6.0...v8.6.1) (2025-01-19)
+
+
+### Fixes
+
+* allow specifying the user-agent header for outgoing requests ([#1287](https://github.com/panva/node-oidc-provider/issues/1287)) ([c77513c](https://github.com/panva/node-oidc-provider/commit/c77513ca44115661f96fb2ae200c194966d76aca))
+
 ## [8.6.0](https://github.com/panva/node-oidc-provider/compare/v8.5.3...v8.6.0) (2024-11-21)
 
 
