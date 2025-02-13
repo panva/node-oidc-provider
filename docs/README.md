@@ -2354,7 +2354,8 @@ Options for the [cookie module](https://github.com/pillarjs/cookies#cookiesset-n
 
 ### cookies.keys
 
-[Keygrip](https://www.npmjs.com/package/keygrip) Signing keys used for cookie signing to prevent tampering.  
+[Keygrip](https://www.npmjs.com/package/keygrip) Signing keys used for cookie signing to prevent tampering. You may also pass your own KeyGrip instance.   
+  
 
 _**recommendation**_: Rotate regularly (by prepending new keys) with a reasonable interval and keep a reasonable history of keys to allow for returning user session cookies to still be valid and re-signed  
 
