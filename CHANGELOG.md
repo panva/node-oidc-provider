@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [8.7.0](https://github.com/panva/node-oidc-provider/compare/v8.6.1...v8.7.0) (2025-02-13)
+
+
+### Features
+
+* allow own KeyGrip instances in cookies.keys configuration ([d5d2900](https://github.com/panva/node-oidc-provider/commit/d5d2900b2a7224e19d79a43b59d8888ad3bfbbf3))
+
 ## [8.6.1](https://github.com/panva/node-oidc-provider/compare/v8.6.0...v8.6.1) (2025-01-19)
 
 
