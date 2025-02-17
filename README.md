@@ -36,6 +36,7 @@ _Note that not all features are enabled by default, check the configuration sect
 - [`RFC9126` - OAuth 2.0 Pushed Authorization Requests (`PAR`)][par]
 - [`RFC9207` - OAuth 2.0 Authorization Server Issuer Identifier in Authorization Response][iss-auth-resp]
 - [`RFC9449` - OAuth 2.0 Demonstration of Proof-of-Possession at the Application Layer (`DPoP`)][dpop]
+- [`RFC9701` - JWT Response for OAuth Token Introspection][jwt-introspection]
 - [Financial-grade API Security Profile 1.0 - Part 2: Advanced (`FAPI 1.0`)][fapi]
 - [JWT Secured Authorization Response Mode for OAuth 2.0 (`JARM`)][jarm]
 - [OIDC Client Initiated Backchannel Authentication Flow (`CIBA`)][ciba]
@@ -47,7 +48,6 @@ Supported Access Token formats:
 
 The following draft specifications are implemented by oidc-provider:
 
-- [JWT Response for OAuth Token Introspection - draft 10][jwt-introspection]
 - [Financial-grade API: Client Initiated Backchannel Authentication Profile (`FAPI-CIBA`) - Implementer's Draft 01][fapi-ciba]
 - [FAPI 2.0 Security Profile (`FAPI 2.0`) - Implementer's Draft 02][fapi2sp-id2]
 - [FAPI 2.0 Message Signing (`FAPI 2.0`) - Implementer's Draft 01][fapi2ms-id1]
@@ -146,7 +146,7 @@ actions and i.e. emit metrics that react to specific triggers. See the list of a
 [oauth-native-apps]: https://www.rfc-editor.org/rfc/rfc8252.html
 [jar]: https://www.rfc-editor.org/rfc/rfc9101.html
 [device-flow]: https://www.rfc-editor.org/rfc/rfc8628.html
-[jwt-introspection]: https://tools.ietf.org/html/draft-ietf-oauth-jwt-introspection-response-10
+[jwt-introspection]: https://www.rfc-editor.org/rfc/rfc9701.html
 [sponsor-auth0]: https://a0.to/signup/panva
 [mtls]: https://www.rfc-editor.org/rfc/rfc8705.html
 [dpop]: https://www.rfc-editor.org/rfc/rfc9449.html

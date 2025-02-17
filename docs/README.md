@@ -1229,18 +1229,14 @@ async function introspectionAllowedPolicy(ctx, client, token) {
 
 ### features.jwtIntrospection
 
-[draft-ietf-oauth-jwt-introspection-response-10](https://tools.ietf.org/html/draft-ietf-oauth-jwt-introspection-response-10) - JWT Response for OAuth Token Introspection  
+[`RFC9701`](https://www.rfc-editor.org/rfc/rfc9701.html) - JWT Response for OAuth Token Introspection  
 
-Enables JWT responses for Token Introspection features   
-  
-
-_**recommendation**_: Updates to draft specification versions are released as MINOR library versions, if you utilize these specification implementations consider using the tilde `~` operator in your package.json since breaking changes may be introduced as part of these version updates. Alternatively, [acknowledge](#features) the version and be notified of breaking changes as part of your CI.  
+Enables JWT responses for Token Introspection features  
 
 
 _**default value**_:
 ```js
 {
-  ack: undefined,
   enabled: false
 }
 ```
