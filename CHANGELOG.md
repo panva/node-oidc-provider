@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [8.8.0](https://github.com/panva/node-oidc-provider/compare/v8.7.0...v8.8.0) (2025-02-17)
+
+
+### Features
+
+* mark RFC9701 (features.jwtIntrospection) as stable ([e2a2de2](https://github.com/panva/node-oidc-provider/commit/e2a2de2c9e51095b1a856b57af640f3b95cf6be9))
+
 ## [8.7.0](https://github.com/panva/node-oidc-provider/compare/v8.6.1...v8.7.0) (2025-02-13)
 
 
