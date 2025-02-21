@@ -550,7 +550,7 @@ _**default value**_:
 <a id="clients-available-metadata"></a><details><summary>(Click to expand) Available Metadata</summary><br>
 
 
-application_type, client_id, client_name, client_secret, client_uri, contacts, default_acr_values, default_max_age, grant_types, id_token_signed_response_alg, initiate_login_uri, jwks, jwks_uri, logo_uri, policy_uri, post_logout_redirect_uris, redirect_uris, require_auth_time, response_types, response_modes, scope, sector_identifier_uri, subject_type, token_endpoint_auth_method, tos_uri, userinfo_signed_response_alg <br/><br/>The following metadata is available but may not be recognized depending on your provider's configuration.<br/><br/> authorization_encrypted_response_alg, authorization_encrypted_response_enc, authorization_signed_response_alg, backchannel_logout_session_required, backchannel_logout_uri, id_token_encrypted_response_alg, id_token_encrypted_response_enc, introspection_encrypted_response_alg, introspection_encrypted_response_enc, introspection_signed_response_alg, request_object_encryption_alg, request_object_encryption_enc, request_object_signing_alg, request_uris, tls_client_auth_san_dns, tls_client_auth_san_email, tls_client_auth_san_ip, tls_client_auth_san_uri, tls_client_auth_subject_dn, tls_client_certificate_bound_access_tokens, token_endpoint_auth_signing_alg, userinfo_encrypted_response_alg, userinfo_encrypted_response_enc  
+application_type, client_id, client_name, client_secret, client_uri, contacts, default_acr_values, default_max_age, grant_types, id_token_signed_response_alg, initiate_login_uri, jwks, jwks_uri, logo_uri, policy_uri, post_logout_redirect_uris, redirect_uris, require_auth_time, response_types, response_modes, scope, sector_identifier_uri, subject_type, token_endpoint_auth_method, tos_uri, userinfo_signed_response_alg <br/><br/>The following metadata is available but may not be recognized depending on your provider's configuration.<br/><br/> authorization_encrypted_response_alg, authorization_encrypted_response_enc, authorization_signed_response_alg, backchannel_logout_session_required, backchannel_logout_uri, id_token_encrypted_response_alg, id_token_encrypted_response_enc, introspection_encrypted_response_alg, introspection_encrypted_response_enc, introspection_signed_response_alg, request_object_encryption_alg, request_object_encryption_enc, request_object_signing_alg, request_uris, tls_client_auth_san_dns, tls_client_auth_san_email, tls_client_auth_san_ip, tls_client_auth_san_uri, tls_client_auth_subject_dn, tls_client_certificate_bound_access_tokens, use_mtls_endpoint_aliases, token_endpoint_auth_signing_alg, userinfo_encrypted_response_alg, userinfo_encrypted_response_enc  
 
 
 </details>
@@ -1173,7 +1173,7 @@ _**default value**_:
 #### profile
 
 The specific profile of `FAPI` to enable. Supported values are:   
- - '2.0' (Experimental) Enables behaviours from [FAPI 2.0 Security Profile - Implementer's Draft 02](https://openid.net/specs/fapi-2_0-security-profile-ID2.html)
+ - '2.0' Enables behaviours from [FAPI 2.0 Security Profile](https://openid.net/specs/fapi-security-profile-2_0-final.html)
  - '1.0 Final' Enables behaviours from [Financial-grade API Security Profile 1.0 - Part 2: Advanced](https://openid.net/specs/openid-financial-api-part-2-1_0-final.html)
  - '1.0 ID2' Enables behaviours from [Financial-grade API - Part 2: Read and Write API Security Profile - Implementer's Draft 02](https://openid.net/specs/openid-financial-api-part-2-ID2.html)
  - Function returning one of the other supported values, or undefined if `FAPI` behaviours are to be ignored. The function is invoked with two arguments `(ctx, client)` and serves the purpose of allowing the used profile to be context-specific.   
@@ -2191,6 +2191,11 @@ async function assertJwtClientAuthClaimsAndHeader(ctx, claims, header, client) {
   // @param claims - parsed JWT Client Authentication Assertion Claims Set as object
   // @param header - parsed JWT Client Authentication Assertion Headers as object
   // @param client - the Client instance
+  if (ctx.oidc.isFapi('2.0')) {
+    if (claims.aud !== ctx.oidc.issuer) {
+      throw new errors.InvalidClientAuth('audience (aud) must equal the issuer identifier url');
+    }
+  }
 }
 ```
 
@@ -3041,7 +3046,7 @@ function pkceRequired(ctx, client) {
   const fapiProfile = ctx.oidc.isFapi('2.0', '1.0 Final');
   switch (true) {
     // FAPI 2.0 as per
-    // https://openid.net/specs/fapi-2_0-security-profile-ID2.html#section-5.3.1.2-2.5.1
+    // https://openid.net/specs/fapi-security-profile-2_0-final.html#section-5.3.2.2-2.5
     case fapiProfile === '2.0':
       return true;
     // FAPI 1.0 Advanced as per
