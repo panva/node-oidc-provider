@@ -1844,7 +1844,7 @@ async function getResourceServerInfo(ctx, resourceIndicator, client) {
     // Tokens will be signed
     sign?:
      | {
-         alg?: string, // 'PS256' | 'PS384' | 'PS512' | 'ES256' | 'ES384' | 'ES512' | 'EdDSA' | 'RS256' | 'RS384' | 'RS512'
+         alg?: string, // 'PS256' | 'PS384' | 'PS512' | 'ES256' | 'ES384' | 'ES512' | 'Ed25519' | 'RS256' | 'RS384' | 'RS512' | 'EdDSA'
          kid?: string, // OPTIONAL `kid` to aid in signing key selection
        }
      | {
@@ -3372,6 +3372,7 @@ _**default value**_:
   'RS256',
   'PS256',
   'ES256',
+  'Ed25519',
   'EdDSA'
 ]
 ```
@@ -3383,7 +3384,7 @@ _**default value**_:
   'RS256', 'RS384', 'RS512',
   'PS256', 'PS384', 'PS512',
   'ES256', 'ES384', 'ES512',
-  'EdDSA',
+  'Ed25519', 'EdDSA',
   'HS256', 'HS384', 'HS512',
 ]
 ```
@@ -3402,6 +3403,7 @@ _**default value**_:
   'RS256',
   'PS256',
   'ES256',
+  'Ed25519',
   'EdDSA'
 ]
 ```
@@ -3413,7 +3415,7 @@ _**default value**_:
   'RS256', 'RS384', 'RS512',
   'PS256', 'PS384', 'PS512',
   'ES256', 'ES384', 'ES512',
-  'EdDSA',
+  'Ed25519', 'EdDSA',
   'HS256', 'HS384', 'HS512',
 ]
 ```
@@ -3429,6 +3431,7 @@ _**default value**_:
 ```js
 [
   'ES256',
+  'Ed25519',
   'EdDSA'
 ]
 ```
@@ -3440,7 +3443,7 @@ _**default value**_:
   'RS256', 'RS384', 'RS512',
   'PS256', 'PS384', 'PS512',
   'ES256', 'ES384', 'ES512',
-  'EdDSA',
+  'Ed25519', 'EdDSA',
 ]
 ```
 </details>
@@ -3516,6 +3519,7 @@ _**default value**_:
   'RS256',
   'PS256',
   'ES256',
+  'Ed25519',
   'EdDSA'
 ]
 ```
@@ -3527,7 +3531,7 @@ _**default value**_:
   'RS256', 'RS384', 'RS512',
   'PS256', 'PS384', 'PS512',
   'ES256', 'ES384', 'ES512',
-  'EdDSA',
+  'Ed25519', 'EdDSA',
   'HS256', 'HS384', 'HS512',
 ]
 ```
@@ -3604,6 +3608,7 @@ _**default value**_:
   'RS256',
   'PS256',
   'ES256',
+  'Ed25519',
   'EdDSA'
 ]
 ```
@@ -3615,7 +3620,7 @@ _**default value**_:
   'RS256', 'RS384', 'RS512',
   'PS256', 'PS384', 'PS512',
   'ES256', 'ES384', 'ES512',
-  'EdDSA',
+  'Ed25519', 'EdDSA',
   'HS256', 'HS384', 'HS512',
 ]
 ```
@@ -3693,6 +3698,7 @@ _**default value**_:
   'RS256',
   'PS256',
   'ES256',
+  'Ed25519',
   'EdDSA'
 ]
 ```
@@ -3704,7 +3710,7 @@ _**default value**_:
   'RS256', 'RS384', 'RS512',
   'PS256', 'PS384', 'PS512',
   'ES256', 'ES384', 'ES512',
-  'EdDSA',
+  'Ed25519', 'EdDSA',
   'HS256', 'HS384', 'HS512',
 ]
 ```
@@ -3781,6 +3787,7 @@ _**default value**_:
   'RS256',
   'PS256',
   'ES256',
+  'Ed25519',
   'EdDSA'
 ]
 ```
@@ -3792,7 +3799,7 @@ _**default value**_:
   'RS256', 'RS384', 'RS512',
   'PS256', 'PS384', 'PS512',
   'ES256', 'ES384', 'ES512',
-  'EdDSA',
+  'Ed25519', 'EdDSA',
   'HS256', 'HS384', 'HS512',
 ]
 ```

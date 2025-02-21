@@ -7,7 +7,7 @@ function exportJwk({ privateKey }) {
 export default await Promise.all([
   generateKeyPair('RS256', { extractable: true }).then(exportJwk),
   generateKeyPair('ES256', { extractable: true }).then(exportJwk),
-  generateKeyPair('EdDSA', { crv: 'Ed25519', extractable: true }).then(exportJwk),
+  generateKeyPair('EdDSA', { extractable: true }).then(exportJwk),
 ]);
 
 export function stripPrivateJWKFields(key) {
