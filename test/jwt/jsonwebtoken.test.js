@@ -297,7 +297,6 @@ describe('JSON Web Token (JWT) RFC7519 implementation', () => {
       const jwk = await exportJWK(keyobject);
       return JWT.sign({ data: true }, keyobject, 'HS256', {
         audience: ['client', 'momma'],
-        authorizedParty: 'client',
       })
         .then((jwt) => JWT.verify(jwt, new KeyStore([jwk]), {
           audience: 'client',
