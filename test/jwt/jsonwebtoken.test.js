@@ -25,7 +25,7 @@ describe('JSON Web Token (JWT) RFC7519 implementation', () => {
     }));
 
   it('does not verify none with a key', async () => {
-    const keyobject = await generateSecret('HS256');
+    const keyobject = await generateSecret('HS256', { extractable: true });
     const jwk = await exportJWK(keyobject);
 
     return JWT.sign({ data: true }, null, 'none')
@@ -38,7 +38,7 @@ describe('JSON Web Token (JWT) RFC7519 implementation', () => {
   });
 
   it('signs and validates with oct', async () => {
-    const keyobject = await generateSecret('HS256');
+    const keyobject = await generateSecret('HS256', { extractable: true });
     const jwk = await exportJWK(keyobject);
     return JWT.sign({ data: true }, keyobject, 'HS256')
       .then((jwt) => JWT.verify(jwt, new KeyStore([jwk])))
@@ -50,7 +50,7 @@ describe('JSON Web Token (JWT) RFC7519 implementation', () => {
   });
 
   it('handles utf8 characters', async () => {
-    const keyobject = await generateSecret('HS256');
+    const keyobject = await generateSecret('HS256', { extractable: true });
     return JWT.sign({ 'ś∂źć√': 'ś∂źć√' }, keyobject, 'HS256')
       .then((jwt) => JWT.decode(jwt))
       .then((decoded) => {
@@ -92,31 +92,31 @@ describe('JSON Web Token (JWT) RFC7519 implementation', () => {
   });
 
   describe('sign options', () => {
-    it('iat by default', async () => JWT.sign({ data: true }, await generateSecret('HS256'), 'HS256')
+    it('iat by default', async () => JWT.sign({ data: true }, await generateSecret('HS256', { extractable: true }), 'HS256')
       .then((jwt) => JWT.decode(jwt))
       .then((decoded) => {
         expect(decoded.payload).to.have.property('iat');
       }));
 
-    it('expiresIn', async () => JWT.sign({ data: true }, await generateSecret('HS256'), 'HS256', { expiresIn: 60 })
+    it('expiresIn', async () => JWT.sign({ data: true }, await generateSecret('HS256', { extractable: true }), 'HS256', { expiresIn: 60 })
       .then((jwt) => JWT.decode(jwt))
       .then((decoded) => {
         expect(decoded.payload).to.have.property('exp', decoded.payload.iat + 60);
       }));
 
-    it('audience', async () => JWT.sign({ data: true }, await generateSecret('HS256'), 'HS256', { audience: 'clientId' })
+    it('audience', async () => JWT.sign({ data: true }, await generateSecret('HS256', { extractable: true }), 'HS256', { audience: 'clientId' })
       .then((jwt) => JWT.decode(jwt))
       .then((decoded) => {
         expect(decoded.payload).to.have.property('aud', 'clientId');
       }));
 
-    it('issuer', async () => JWT.sign({ data: true }, await generateSecret('HS256'), 'HS256', { issuer: 'http://example.com/issuer' })
+    it('issuer', async () => JWT.sign({ data: true }, await generateSecret('HS256', { extractable: true }), 'HS256', { issuer: 'http://example.com/issuer' })
       .then((jwt) => JWT.decode(jwt))
       .then((decoded) => {
         expect(decoded.payload).to.have.property('iss', 'http://example.com/issuer');
       }));
 
-    it('subject', async () => JWT.sign({ data: true }, await generateSecret('HS256'), 'HS256', { subject: 'http://example.com/subject' })
+    it('subject', async () => JWT.sign({ data: true }, await generateSecret('HS256', { extractable: true }), 'HS256', { subject: 'http://example.com/subject' })
       .then((jwt) => JWT.decode(jwt))
       .then((decoded) => {
         expect(decoded.payload).to.have.property('sub', 'http://example.com/subject');
@@ -125,7 +125,7 @@ describe('JSON Web Token (JWT) RFC7519 implementation', () => {
 
   describe('verify', () => {
     it('nbf', async () => {
-      const keyobject = await generateSecret('HS256');
+      const keyobject = await generateSecret('HS256', { extractable: true });
       const jwk = await exportJWK(keyobject);
       return JWT.sign({ data: true, nbf: epochTime() + 3600 }, keyobject, 'HS256')
         .then((jwt) => JWT.verify(jwt, new KeyStore([jwk])))
@@ -139,7 +139,7 @@ describe('JSON Web Token (JWT) RFC7519 implementation', () => {
     });
 
     it('nbf ignored', async () => {
-      const keyobject = await generateSecret('HS256');
+      const keyobject = await generateSecret('HS256', { extractable: true });
       const jwk = await exportJWK(keyobject);
       return JWT.sign({ data: true, nbf: epochTime() + 3600 }, keyobject, 'HS256')
         .then((jwt) => JWT.verify(jwt, new KeyStore([jwk]), {
@@ -148,7 +148,7 @@ describe('JSON Web Token (JWT) RFC7519 implementation', () => {
     });
 
     it('nbf accepted within set clock tolerance', async () => {
-      const keyobject = await generateSecret('HS256');
+      const keyobject = await generateSecret('HS256', { extractable: true });
       const jwk = await exportJWK(keyobject);
       return JWT.sign({ data: true, nbf: epochTime() + 5 }, keyobject, 'HS256')
         .then((jwt) => JWT.verify(jwt, new KeyStore([jwk]), {
@@ -157,7 +157,7 @@ describe('JSON Web Token (JWT) RFC7519 implementation', () => {
     });
 
     it('nbf invalid', async () => {
-      const keyobject = await generateSecret('HS256');
+      const keyobject = await generateSecret('HS256', { extractable: true });
       const jwk = await exportJWK(keyobject);
       return JWT.sign({ data: true, nbf: 'not a nbf' }, keyobject, 'HS256')
         .then((jwt) => JWT.verify(jwt, new KeyStore([jwk])))
@@ -171,7 +171,7 @@ describe('JSON Web Token (JWT) RFC7519 implementation', () => {
     });
 
     it('iat', async () => {
-      const keyobject = await generateSecret('HS256');
+      const keyobject = await generateSecret('HS256', { extractable: true });
       const jwk = await exportJWK(keyobject);
       return JWT.sign({ data: true, iat: epochTime() + 3600 }, keyobject, 'HS256', {
         noTimestamp: true,
@@ -187,7 +187,7 @@ describe('JSON Web Token (JWT) RFC7519 implementation', () => {
     });
 
     it('iat ignored', async () => {
-      const keyobject = await generateSecret('HS256');
+      const keyobject = await generateSecret('HS256', { extractable: true });
       const jwk = await exportJWK(keyobject);
       return JWT.sign({ data: true, iat: epochTime() + 3600 }, keyobject, 'HS256', {
         noTimestamp: true,
@@ -198,7 +198,7 @@ describe('JSON Web Token (JWT) RFC7519 implementation', () => {
     });
 
     it('iat accepted within set clock tolerance', async () => {
-      const keyobject = await generateSecret('HS256');
+      const keyobject = await generateSecret('HS256', { extractable: true });
       const jwk = await exportJWK(keyobject);
       return JWT.sign({ data: true, iat: epochTime() + 5 }, keyobject, 'HS256', {
         noTimestamp: true,
@@ -209,7 +209,7 @@ describe('JSON Web Token (JWT) RFC7519 implementation', () => {
     });
 
     it('iat invalid', async () => {
-      const keyobject = await generateSecret('HS256');
+      const keyobject = await generateSecret('HS256', { extractable: true });
       const jwk = await exportJWK(keyobject);
       return JWT.sign({ data: true, iat: 'not an iat' }, keyobject, 'HS256', {
         noTimestamp: true,
@@ -225,7 +225,7 @@ describe('JSON Web Token (JWT) RFC7519 implementation', () => {
     });
 
     it('exp', async () => {
-      const keyobject = await generateSecret('HS256');
+      const keyobject = await generateSecret('HS256', { extractable: true });
       const jwk = await exportJWK(keyobject);
       return JWT.sign({ data: true, exp: epochTime() - 3600 }, keyobject, 'HS256')
         .then((jwt) => JWT.verify(jwt, new KeyStore([jwk])))
@@ -239,7 +239,7 @@ describe('JSON Web Token (JWT) RFC7519 implementation', () => {
     });
 
     it('exp ignored', async () => {
-      const keyobject = await generateSecret('HS256');
+      const keyobject = await generateSecret('HS256', { extractable: true });
       const jwk = await exportJWK(keyobject);
       return JWT.sign({ data: true, exp: epochTime() - 3600 }, keyobject, 'HS256')
         .then((jwt) => JWT.verify(jwt, new KeyStore([jwk]), {
@@ -248,7 +248,7 @@ describe('JSON Web Token (JWT) RFC7519 implementation', () => {
     });
 
     it('exp accepted within set clock tolerance', async () => {
-      const keyobject = await generateSecret('HS256');
+      const keyobject = await generateSecret('HS256', { extractable: true });
       const jwk = await exportJWK(keyobject);
       return JWT.sign({ data: true, exp: epochTime() - 5 }, keyobject, 'HS256')
         .then((jwt) => JWT.verify(jwt, new KeyStore([jwk]), {
@@ -257,7 +257,7 @@ describe('JSON Web Token (JWT) RFC7519 implementation', () => {
     });
 
     it('exp invalid', async () => {
-      const keyobject = await generateSecret('HS256');
+      const keyobject = await generateSecret('HS256', { extractable: true });
       const jwk = await exportJWK(keyobject);
       return JWT.sign({ data: true, exp: 'not an exp' }, keyobject, 'HS256')
         .then((jwt) => JWT.verify(jwt, new KeyStore([jwk])))
@@ -271,7 +271,7 @@ describe('JSON Web Token (JWT) RFC7519 implementation', () => {
     });
 
     it('audience (single)', async () => {
-      const keyobject = await generateSecret('HS256');
+      const keyobject = await generateSecret('HS256', { extractable: true });
       const jwk = await exportJWK(keyobject);
       return JWT.sign({ data: true }, keyobject, 'HS256', {
         audience: 'client',
@@ -282,7 +282,7 @@ describe('JSON Web Token (JWT) RFC7519 implementation', () => {
     });
 
     it('audience (multi)', async () => {
-      const keyobject = await generateSecret('HS256');
+      const keyobject = await generateSecret('HS256', { extractable: true });
       const jwk = await exportJWK(keyobject);
       return JWT.sign({ data: true }, keyobject, 'HS256', {
         audience: ['client', 'momma'],
@@ -294,7 +294,7 @@ describe('JSON Web Token (JWT) RFC7519 implementation', () => {
     });
 
     it('audience (single) failed', async () => {
-      const keyobject = await generateSecret('HS256');
+      const keyobject = await generateSecret('HS256', { extractable: true });
       const jwk = await exportJWK(keyobject);
       return JWT.sign({ data: true }, keyobject, 'HS256', {
         audience: 'client',
@@ -313,7 +313,7 @@ describe('JSON Web Token (JWT) RFC7519 implementation', () => {
     });
 
     it('audience (multi) failed', async () => {
-      const keyobject = await generateSecret('HS256');
+      const keyobject = await generateSecret('HS256', { extractable: true });
       const jwk = await exportJWK(keyobject);
       return JWT.sign({ data: true }, keyobject, 'HS256', {
         audience: ['client', 'momma'],
@@ -332,7 +332,7 @@ describe('JSON Web Token (JWT) RFC7519 implementation', () => {
     });
 
     it('issuer', async () => {
-      const keyobject = await generateSecret('HS256');
+      const keyobject = await generateSecret('HS256', { extractable: true });
       const jwk = await exportJWK(keyobject);
       return JWT.sign({ data: true }, keyobject, 'HS256', {
         issuer: 'me',
@@ -343,7 +343,7 @@ describe('JSON Web Token (JWT) RFC7519 implementation', () => {
     });
 
     it('issuer failed', async () => {
-      const keyobject = await generateSecret('HS256');
+      const keyobject = await generateSecret('HS256', { extractable: true });
       const jwk = await exportJWK(keyobject);
       return JWT.sign({ data: true }, keyobject, 'HS256', {
         issuer: 'me',

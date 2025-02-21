@@ -1,6 +1,6 @@
 import { strict as assert } from 'node:assert';
 
-import { generateKeyPair } from 'jose';
+import { generateKeyPair, exportJWK } from 'jose';
 import merge from 'lodash/merge.js';
 
 import getConfig from '../default.config.js';
@@ -38,7 +38,7 @@ export default {
     redirect_uris: ['https://client.example.com/cb'],
     token_endpoint_auth_method: 'none',
     jwks: {
-      keys: [keypair.publicKey.export({ format: 'jwk' })],
+      keys: [await exportJWK(keypair.publicKey)],
     },
   }],
 };

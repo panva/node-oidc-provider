@@ -16,13 +16,13 @@ function ath(accessToken) {
   return base64url.encode(createHash('sha256').update(accessToken).digest());
 }
 
-function DPoP(keypair, htu, htm, nonce = undefined, accessToken = undefined) {
+async function DPoP(keypair, htu, htm, nonce = undefined, accessToken = undefined) {
   return new SignJWT({
     htu,
     htm,
     nonce,
     ath: accessToken ? ath(accessToken) : undefined,
-  }).setProtectedHeader({ alg: 'ES256', typ: 'dpop+jwt', jwk: keypair.publicKey.export({ format: 'jwk' }) })
+  }).setProtectedHeader({ alg: 'ES256', typ: 'dpop+jwt', jwk: await exportJWK(keypair.publicKey) })
     .setJti(nanoid())
     .setIssuedAt()
     .sign(keypair.privateKey);
@@ -33,7 +33,7 @@ describe('features.dPoP', () => {
   before(function () { return this.login({ scope: 'openid offline_access' }); });
   skipConsent();
   before(async function () {
-    this.keypair = await generateKeyPair('ES256');
+    this.keypair = await generateKeyPair('ES256', { extractable: true });
     this.jwk = await exportJWK(this.keypair.publicKey);
     this.thumbprint = await calculateJwkThumbprint(this.jwk);
   });
@@ -348,7 +348,7 @@ describe('features.dPoP', () => {
 
       await this.agent.get('/me')
         .set('Authorization', `DPoP ${dpop}`)
-        .set('DPoP', await DPoP(await generateKeyPair('ES256'), `${this.provider.issuer}${this.suitePath('/me')}`, 'GET', undefined, dpop))
+        .set('DPoP', await DPoP(await generateKeyPair('ES256', { extractable: true }), `${this.provider.issuer}${this.suitePath('/me')}`, 'GET', undefined, dpop))
         .expect({ error: 'invalid_token', error_description: 'invalid token provided' })
         .expect(401);
 
@@ -726,7 +726,7 @@ describe('features.dPoP', () => {
               redirect_uri: 'https://client.example.com/cb',
             })
             .type('form')
-            .set('DPoP', await DPoP(await generateKeyPair('ES256'), `${this.provider.issuer}${this.suitePath('/token')}`, 'POST'))
+            .set('DPoP', await DPoP(await generateKeyPair('ES256', { extractable: true }), `${this.provider.issuer}${this.suitePath('/token')}`, 'POST'))
             .expect(400)
             .expect({ error: 'invalid_grant', error_description: 'grant request is invalid' });
 
@@ -894,7 +894,7 @@ describe('features.dPoP', () => {
             grant_type: 'refresh_token',
             refresh_token: this.rt,
           })
-          .set('DPoP', await DPoP(await generateKeyPair('ES256'), `${this.provider.issuer}${this.suitePath('/token')}`, 'POST'))
+          .set('DPoP', await DPoP(await generateKeyPair('ES256', { extractable: true }), `${this.provider.issuer}${this.suitePath('/token')}`, 'POST'))
           .type('form')
           .expect(400)
           .expect({ error: 'invalid_grant', error_description: 'grant request is invalid' });

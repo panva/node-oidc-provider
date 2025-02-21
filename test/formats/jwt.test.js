@@ -138,6 +138,24 @@ describe('jwt format', () => {
       expect(header).not.to.have.property('kid');
     });
 
+    it('can be used to specify the signing algorithm to be HMAC (CryptoKey)', async function () {
+      const resourceServer = new ResourceServer(resource, {
+        accessTokenFormat: 'jwt',
+        audience: 'foo',
+        jwt: {
+          sign: { alg: 'HS256', key: await crypto.subtle.generateKey({ name: 'HMAC', hash: 'SHA-256' }, false, ['sign']) },
+        },
+      });
+
+      const client = await this.provider.Client.find(clientId);
+      const token = new this.provider.AccessToken({ client, ...fullPayload, resourceServer });
+      const jwt = await token.save();
+
+      const header = decode(jwt.split('.')[0]);
+      expect(header).to.have.property('alg', 'HS256');
+      expect(header).not.to.have.property('kid');
+    });
+
     it('kid must be a string (sign)', async function () {
       const resourceServer = new ResourceServer(resource, {
         accessTokenFormat: 'jwt',
@@ -214,7 +232,7 @@ describe('jwt format', () => {
       expect(header).not.to.have.property('kid');
     });
 
-    it('can be an encrypted JWT', async function () {
+    it('can be an encrypted JWT (Buffer)', async function () {
       const resourceServer = new ResourceServer(resource, {
         accessTokenFormat: 'jwt',
         audience: 'foo',
@@ -224,6 +242,60 @@ describe('jwt format', () => {
             alg: 'dir',
             enc: 'A128GCM',
             key: crypto.randomBytes(16),
+          },
+        },
+      });
+
+      const client = await this.provider.Client.find(clientId);
+      const token = new this.provider.AccessToken({ client, ...fullPayload, resourceServer });
+      const jwt = await token.save();
+
+      const header = decode(jwt.split('.')[0]);
+      expect(header).to.have.property('alg', 'dir');
+      expect(header).to.have.property('enc', 'A128GCM');
+      expect(header).not.to.have.property('kid');
+      expect(header).to.have.property('typ', 'at+jwt');
+      expect(header).to.have.property('iss', this.provider.issuer);
+      expect(header).to.have.property('aud', 'foo');
+    });
+
+    it('can be an encrypted JWT (KeyObject)', async function () {
+      const resourceServer = new ResourceServer(resource, {
+        accessTokenFormat: 'jwt',
+        audience: 'foo',
+        jwt: {
+          sign: false,
+          encrypt: {
+            alg: 'dir',
+            enc: 'A128GCM',
+            key: crypto.generateKeySync('aes', { length: 128 }),
+          },
+        },
+      });
+
+      const client = await this.provider.Client.find(clientId);
+      const token = new this.provider.AccessToken({ client, ...fullPayload, resourceServer });
+      const jwt = await token.save();
+
+      const header = decode(jwt.split('.')[0]);
+      expect(header).to.have.property('alg', 'dir');
+      expect(header).to.have.property('enc', 'A128GCM');
+      expect(header).not.to.have.property('kid');
+      expect(header).to.have.property('typ', 'at+jwt');
+      expect(header).to.have.property('iss', this.provider.issuer);
+      expect(header).to.have.property('aud', 'foo');
+    });
+
+    it('can be an encrypted JWT (CryptoKey)', async function () {
+      const resourceServer = new ResourceServer(resource, {
+        accessTokenFormat: 'jwt',
+        audience: 'foo',
+        jwt: {
+          sign: false,
+          encrypt: {
+            alg: 'dir',
+            enc: 'A128GCM',
+            key: await crypto.subtle.generateKey({ name: 'AES-GCM', length: 128 }, false, ['encrypt']),
           },
         },
       });

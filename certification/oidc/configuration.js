@@ -121,13 +121,6 @@ export default {
         x: 'Eb3RtGgBGOEz33yu46aha_RU6pyBaYNlu6SawlWGGHQ',
         y: 'tUncttzF6Ud4Abfn1N2A1Rz2MBbJSdI0zuKS28BNb-U',
       }, {
-        crv: 'secp256k1',
-        d: 'ANJ-5X72e_4mNAbM-gGIpKTyrJozJe9rVSnex_w2Lj4',
-        kty: 'EC',
-        use: 'sig',
-        x: 'KDAUHh_SpgROXXAq8IFs9B9lGNB9VP4RwebeAO2tBao',
-        y: 'wr3L1dZyUCrS4H18fDYy5hcvGTCp05tiiBy0ZUG8Qs4',
-      }, {
         crv: 'P-384',
         d: 'nHHV7KHGMNp1P7fIiC3iSNUb07pzgcjNgumLhy2nGYCeNticodVEOve1DQEGkVtJ',
         kty: 'EC',
@@ -162,21 +155,9 @@ export default {
         use: 'sig',
         x: 'lDkysGJKRmJeUp8ncTyGraHPHHiIfdxSajxGm7Srla8',
       }, {
-        crv: 'Ed448',
-        d: '1dlYYuxIZytq_AyQxiMAL6CaxveKKE-AZJQJhBOAwAZjsjrvQ3K1McqGjri5_AxM6cOCtVyT-GrR',
-        kty: 'OKP',
-        use: 'sig',
-        x: 'BG1zKFg6A_Rzix4pA08oYN5xHqhKIiREXZ59NZoA8p3xhgjh-tm8nc-6udtiL5ZNhWDbnRSq4jQA',
-      }, {
         crv: 'X25519',
         d: '2FxH51AcogWa_0iVjUngdfu-HBXXt7qdAeqUKLbRwnA',
         x: 'k78x74A5JRGr8XW75Rpu7W4_cgZFkm_mvToVAXHDgE8',
-        kty: 'OKP',
-        use: 'enc',
-      }, {
-        crv: 'X448',
-        d: 'ONXShn4L3QWTSuXd2JSTzuwQ0ZJHUu39j35owJ_qtXzRCqWVtkjCo7FXYNxo-mwtFR8xkO-hO8Y',
-        x: 'b30-VJpeXpRLcWtQpr75W2YIN4010rHjfV850uK1Ap9RddHw9Bs7VZ-8lE7-nB7X9E8jLB6C_xw',
         kty: 'OKP',
         use: 'enc',
       },

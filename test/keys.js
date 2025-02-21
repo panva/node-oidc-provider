@@ -1,13 +1,13 @@
-import { generateKeyPair } from 'jose';
+import { generateKeyPair, exportJWK } from 'jose';
 
 function exportJwk({ privateKey }) {
-  return privateKey.export({ format: 'jwk' });
+  return exportJWK(privateKey);
 }
 
 export default await Promise.all([
-  generateKeyPair('RS256').then(exportJwk),
-  generateKeyPair('ES256').then(exportJwk),
-  generateKeyPair('EdDSA', { crv: 'Ed25519' }).then(exportJwk),
+  generateKeyPair('RS256', { extractable: true }).then(exportJwk),
+  generateKeyPair('ES256', { extractable: true }).then(exportJwk),
+  generateKeyPair('EdDSA', { crv: 'Ed25519', extractable: true }).then(exportJwk),
 ]);
 
 export function stripPrivateJWKFields(key) {
