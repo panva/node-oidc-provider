@@ -91,6 +91,17 @@ describe('JSON Web Token (JWT) RFC7519 implementation', () => {
       });
   });
 
+  it('signs and validates with Ed25519', async () => {
+    const { privateKey, publicKey } = await generateKeyPair('Ed25519');
+    const jwk = await exportJWK(publicKey);
+    return JWT.sign({ data: true }, privateKey, 'Ed25519')
+      .then((jwt) => JWT.verify(jwt, new KeyStore([jwk])))
+      .then((decoded) => {
+        expect(decoded.header).to.have.property('alg', 'Ed25519');
+        expect(decoded.payload).to.contain({ data: true });
+      });
+  });
+
   describe('sign options', () => {
     it('iat by default', async () => JWT.sign({ data: true }, await generateSecret('HS256', { extractable: true }), 'HS256')
       .then((jwt) => JWT.decode(jwt))
