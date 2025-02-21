@@ -21,7 +21,6 @@ merge(config.features, {
   jwtResponseModes: { enabled: true },
   requestObjects: {
     request: true,
-    mode: 'strict',
   },
 });
 config.enabledJWA = {
