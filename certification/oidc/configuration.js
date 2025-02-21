@@ -29,9 +29,6 @@ export default {
     },
   },
   acrValues: ['urn:mace:incommon:iap:bronze'],
-  cookies: {
-    keys: ['some secret key', 'and also the old rotated away some time ago', 'and one more'],
-  },
   discovery: {
     service_documentation: pkg.homepage,
     version: [

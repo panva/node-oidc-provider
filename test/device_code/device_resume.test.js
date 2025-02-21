@@ -1,6 +1,5 @@
 /* eslint-disable no-underscore-dangle */
 import { expect } from 'chai';
-import KeyGrip from 'keygrip'; // eslint-disable-line import/no-extraneous-dependencies
 import { createSandbox } from 'sinon';
 
 import nanoid from '../../lib/helpers/nanoid.js';
@@ -47,18 +46,13 @@ describe('device interaction resume /device/:uid/', () => {
     }).save();
 
     const interaction = new this.provider.Interaction(uid, { uid, session, deviceCode });
-    const keys = new KeyGrip(i(this.provider).configuration('cookies.keys'));
 
     const cookie = `_interaction_resume=${uid}; path=${path}; expires=${expire.toGMTString()}; httponly`;
     cookies.push(cookie);
-    let [pre, ...post] = cookie.split(';');
-    cookies.push([`_interaction_resume.sig=${keys.sign(pre)}`, ...post].join(';'));
     Object.assign(interaction, { params });
 
     const sessionCookie = `_session=sess; path=/; expires=${expire.toGMTString()}; httponly`;
     cookies.push(sessionCookie);
-    [pre, ...post] = sessionCookie.split(';');
-    cookies.push([`_session.sig=${keys.sign(pre)}`, ...post].join(';'));
 
     if (result) {
       if (result.login && !result.login.ts) {
@@ -93,10 +87,9 @@ describe('device interaction resume /device/:uid/', () => {
           consent: {},
         });
 
-        // force an invalid sig, hence the framework not loading the cookie
         this.agent._saveCookies.bind(this.agent)({
           request: { url: this.provider.issuer },
-          headers: { 'set-cookie': `_interaction_resume.sig=; path=${path}; httpOnly` },
+          headers: { 'set-cookie': `_interaction_resume=; path=${path}; httpOnly` },
         });
 
         await this.agent.get(path)
