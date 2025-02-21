@@ -4,7 +4,7 @@ import { once } from 'node:events';
 import sinon from 'sinon';
 import { expect } from 'chai';
 import nock from 'nock';
-import { generateKeyPair, SignJWT } from 'jose';
+import { generateKeyPair, SignJWT, exportJWK } from 'jose';
 
 import { AccessDenied } from '../../lib/helpers/errors.js';
 import bootstrap from '../test_helper.js';
@@ -606,7 +606,7 @@ describe('features.ciba', () => {
 
           nock('https://rp.example.com/')
             .get('/jwks')
-            .reply(200, { keys: [publicKey.export({ format: 'jwk' })] });
+            .reply(200, { keys: [await exportJWK(publicKey)] });
 
           return this.agent.post(route)
             .send({

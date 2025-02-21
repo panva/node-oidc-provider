@@ -142,18 +142,6 @@ describe('Provider configuration', () => {
     }).to.throw('only supported clientAuthMethods are \'none\', \'client_secret_basic\', \'client_secret_jwt\', \'client_secret_post\', and \'private_key_jwt\'');
   });
 
-  describe('secp256k1', () => {
-    it('is supported', () => {
-      expect(() => {
-        new Provider('http://localhost:3000', {
-          enabledJWA: {
-            requestObjectSigningAlgValues: ['ES256K'],
-          },
-        });
-      }).not.to.throw();
-    });
-  });
-
   describe('pkce.methods', () => {
     it('validates configuration pkce.methods members', () => {
       const throws = [

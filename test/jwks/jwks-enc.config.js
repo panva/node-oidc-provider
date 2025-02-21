@@ -42,13 +42,6 @@ config.jwks = {
       alg: 'RSA-OAEP',
     },
     {
-      crv: 'secp256k1',
-      x: 'ADwk2-e--j0e-BPXlgJ_d7funjsWA8fi98u2uVYQUaU',
-      y: 'J9wWPI_2hUxe3PkygNSaiLoUlM2sBPYVREb7EvrXjq0',
-      d: 'epWVqvzY0IWne_lJEmEljLmrjbCwWWBe2ZoX_jjUHgM',
-      kty: 'EC',
-    },
-    {
       crv: 'P-256',
       x: '0pm-JC6KeQqFwxdTLsBdtnrT4hV6VDlv3AWE6BSyFSk',
       y: 'ZvRmSa23_647WNcK_gkp5r8Jm4_9MnuyClguRYvu7Ik',
@@ -62,18 +55,6 @@ config.jwks = {
       d: 'Ure4tn0SJrst29oCjWRcSeb4zzfvuOxgQ0jbh8ASWT4',
       kty: 'EC',
       alg: 'ECDH-ES',
-    },
-    {
-      crv: 'Ed448',
-      x: 'bSI-zbfp5DeKlG1-tyQi4_2OZIQdoQYv79BKtotgOkCUYLyuvVQfasiEbpv1RzMPbYLu6Qrxf7QA',
-      d: '6iCElWuLMOvd2iNXGX5_5FkOKJcoSIC0nhmCaZKmT6Z7aUKovF2qWB4XoFtB6ml8PEI6ch2EaJky',
-      kty: 'OKP',
-    },
-    {
-      crv: 'X448',
-      x: 'VGcaaNI0fHoa0A39PptMppoJU37-WRSh-p4qjPVpORvV-USWGKMAENK22n_HD3zbqsFp9biK7ws',
-      d: 'KD0qCaSnNOssm-_LADm7wR429a5eikurwiynRxGLLyqbdUnLszbg2faBgwdsFvidcvJ-3HSoUZM',
-      kty: 'OKP',
     },
   ],
 };
