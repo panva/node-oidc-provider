@@ -14,7 +14,6 @@ import { agent as supertest } from 'supertest';
 import { expect } from 'chai';
 import koaMount from 'koa-mount';
 import base64url from 'base64url';
-import KeyGrip from 'keygrip'; // eslint-disable-line import/no-extraneous-dependencies
 import { CookieAccessInfo } from 'cookiejar'; // eslint-disable-line import/no-extraneous-dependencies
 import Connect from 'connect';
 import Express from 'express';
@@ -155,7 +154,6 @@ export default function testHelper(importMetaUrl, {
       const expire = new Date(0);
       const cookies = [
         `_session=; path=/; expires=${expire.toGMTString()}; httponly`,
-        `_session.sig=; path=/; expires=${expire.toGMTString()}; httponly`,
       ];
 
       return agent._saveCookies.bind(agent)({
@@ -178,14 +176,10 @@ export default function testHelper(importMetaUrl, {
       expire.setDate(expire.getDate() + 1);
       this.loggedInAccountId = accountId;
 
-      const keyGrip = new KeyGrip(i(provider).configuration('cookies.keys'));
       const session = new (provider.Session)({ jti: sessionId, loginTs, accountId });
       lastSession = session;
       const sessionCookie = `_session=${sessionId}; path=/; expires=${expire.toGMTString()}; httponly`;
       const cookies = [sessionCookie];
-
-      const [pre, ...post] = sessionCookie.split(';');
-      cookies.push([`_session.sig=${keyGrip.sign(pre)}`, ...post].join(';'));
 
       session.authorizations = {};
       const ctx = new provider.OIDCContext({ req: { socket: {} }, res: {} });
@@ -294,7 +288,7 @@ export default function testHelper(importMetaUrl, {
 
             const uid = readCookie(getSetCookies(response)[0]);
             expect(readCookie(getSetCookies(response)[0]))
-              .to.equal(readCookie(getSetCookies(response)[2]));
+              .to.equal(readCookie(getSetCookies(response)[1]));
 
             const interaction = TestAdapter.for('Interaction').syncFind(uid);
 

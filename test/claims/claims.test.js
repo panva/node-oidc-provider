@@ -4,7 +4,6 @@ import { parse as parseLocation } from 'node:url';
 
 import get from 'lodash/get.js';
 import { expect } from 'chai';
-import KeyGrip from 'keygrip'; // eslint-disable-line import/no-extraneous-dependencies
 
 import { decode as decodeJWT } from '../../lib/helpers/jwt.js';
 import bootstrap from '../test_helper.js';
@@ -217,12 +216,9 @@ expire.setDate(expire.getDate() + 1);
           const cookies = [];
 
           const sess = new this.provider.Interaction('resume', { uid: 'resume' });
-          const keys = new KeyGrip(i(this.provider).configuration('cookies.keys'));
           if (grant) {
             const cookie = `_interaction_resume=resume; path=${this.suitePath('/auth/resume')}; expires=${expire.toGMTString()}; httponly`;
             cookies.push(cookie);
-            const [pre, ...post] = cookie.split(';');
-            cookies.push([`_interaction_resume.sig=${keys.sign(pre)}`, ...post].join(';'));
             Object.assign(sess, { params: grant });
           }
 

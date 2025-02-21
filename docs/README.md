@@ -2332,24 +2332,9 @@ true
 Options for the [cookie module](https://github.com/pillarjs/cookies#cookiesset-name--value---options--) used to keep track of various User-Agent states. The options `maxAge` and `expires` are ignored. Use `ttl.Session` and `ttl.Interaction` to configure the ttl and in turn the cookie expiration values for Session and Interaction models.  
 
 
-### cookies.keys
-
-[Keygrip](https://www.npmjs.com/package/keygrip) Signing keys used for cookie signing to prevent tampering. You may also pass your own KeyGrip instance.   
-  
-
-_**recommendation**_: Rotate regularly (by prepending new keys) with a reasonable interval and keep a reasonable history of keys to allow for returning user session cookies to still be valid and re-signed  
-
-
-_**default value**_:
-```js
-[]
-```
-
 ### cookies.long
 
 Options for long-term cookies  
-
-_**recommendation**_: set cookies.keys and cookies.long.signed = true  
 
 
 _**default value**_:
@@ -2377,8 +2362,6 @@ _**default value**_:
 ### cookies.short
 
 Options for short-term cookies  
-
-_**recommendation**_: set cookies.keys and cookies.short.signed = true  
 
 
 _**default value**_:
