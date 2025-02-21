@@ -389,7 +389,6 @@ const fapi = new Provider(ISSUER, {
       request: true,
       requestUri: false,
       requireSignedRequestObject: false,
-      mode: 'strict',
     },
   },
   responseTypes: ['code id_token', 'code'],

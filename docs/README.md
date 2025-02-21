@@ -1609,7 +1609,6 @@ _**default value**_:
 ```js
 {
   assertJwtClaimsAndHeader: [AsyncFunction: assertJwtClaimsAndHeader], // see expanded details below
-  mode: 'strict',
   request: false,
   requestUri: false,
   requireSignedRequestObject: false,
@@ -1662,20 +1661,6 @@ async function assertJwtClaimsAndHeader(ctx, claims, header, client) {
     }
   }
 }
-```
-
-#### mode
-
-defines the provider's strategy when it comes to using regular OAuth 2.0 parameters that are present. Parameters inside the Request Object are ALWAYS used, this option controls whether to combine those with the regular ones or not.   
- Supported values are:   
- - 'lax' This is the behaviour expected by `OIDC Core 1.0` - all parameters that are not present in the Resource Object are used when resolving the authorization request.
- - 'strict' (default) All parameters outside of the Request Object are ignored. For `PAR`, `FAPI`, and `CIBA` this value is enforced.   
-  
-
-
-_**default value**_:
-```js
-'strict'
 ```
 
 #### request
