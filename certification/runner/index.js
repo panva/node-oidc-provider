@@ -86,10 +86,9 @@ const auth = VARIANT.client_auth_type === 'mtls' ? 'mtls' : 'pkjwt';
 let override;
 // eslint-disable-next-line default-case
 switch (PLAN_NAME) {
-  case 'fapi-rw-id2-test-plan':
   case 'fapi1-advanced-final-test-plan': {
-    const revision = PLAN_NAME.split('-')[2]; // id2 or final
-    override = revision === 'final' ? 'fapi1-advanced-final' : 'fapi-rw-id2';
+    const revision = 'final';
+    override = 'fapi1-advanced-final';
     configuration.client.client_id = `1.0-${revision}-${auth}-one`;
     configuration.client2.client_id = `1.0-${revision}-${auth}-two`;
     break;
