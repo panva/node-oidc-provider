@@ -8,7 +8,7 @@ merge(config.features, {
   introspection: { enabled: true },
   revocation: { enabled: true },
 });
-config.pkce = { methods: ['plain', 'S256'] };
+config.pkce = {};
 
 export default {
   config,

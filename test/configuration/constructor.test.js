@@ -141,49 +141,4 @@ describe('Provider configuration', () => {
       new Provider('http://localhost:3000', { clientAuthMethods: ['foo'] });
     }).to.throw('only supported clientAuthMethods are \'none\', \'client_secret_basic\', \'client_secret_jwt\', \'client_secret_post\', and \'private_key_jwt\'');
   });
-
-  describe('pkce.methods', () => {
-    it('validates configuration pkce.methods members', () => {
-      const throws = [
-        () => {
-          new Provider('http://localhost:3000', {
-            pkce: {
-              methods: ['S256', 'plain', 'foobar'],
-            },
-          });
-        },
-        () => {
-          new Provider('http://localhost:3000', {
-            pkce: {
-              methods: ['foobar'],
-            },
-          });
-        },
-      ];
-
-      throws.forEach((fn) => {
-        expect(fn).to.throw('only plain and S256 code challenge methods are supported');
-      });
-    });
-
-    it('validates configuration pkce.methods presence', () => {
-      expect(() => {
-        new Provider('http://localhost:3000', {
-          pkce: {
-            methods: [],
-          },
-        });
-      }).to.throw('pkce.methods must not be empty');
-    });
-
-    it('validates configuration pkce.methods type', () => {
-      expect(() => {
-        new Provider('http://localhost:3000', {
-          pkce: {
-            methods: 'public',
-          },
-        });
-      }).to.throw('pkce.methods must be an array');
-    });
-  });
 });
