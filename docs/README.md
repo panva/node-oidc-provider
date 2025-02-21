@@ -2999,20 +2999,6 @@ async function pairwiseIdentifier(ctx, accountId, client) {
 `PKCE` configuration such as available methods and policy check on required use of `PKCE`  
 
 
-### pkce.methods
-
-Fine-tune the supported code challenge methods. Supported values are
- - `S256`
- - `plain`  
-
-
-_**default value**_:
-```js
-[
-  'S256'
-]
-```
-
 ### pkce.required
 
 Configures if and when the authorization server requires clients to use `PKCE`. This helper is called whenever an authorization request lacks the code_challenge parameter. Return
