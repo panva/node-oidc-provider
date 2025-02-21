@@ -5,40 +5,11 @@ import { importJWK } from 'jose';
 import sinon from 'sinon';
 import { expect } from 'chai';
 
-import Provider from '../../lib/index.js';
 import * as JWT from '../../lib/helpers/jwt.js';
 import bootstrap from '../test_helper.js';
 
 describe('request parameter features', () => {
   before(bootstrap(import.meta.url));
-
-  describe('modes', () => {
-    ['lax', 'strict'].forEach((value) => {
-      it(`${value} is an allowed strategy name`, () => {
-        expect(() => {
-          new Provider('http://localhost:3000', { // eslint-disable-line no-new
-            features: {
-              requestObjects: {
-                mode: value,
-              },
-            },
-          });
-        }).not.to.throw();
-      });
-    });
-
-    it('throws on unsupported strategy names', () => {
-      expect(() => {
-        new Provider('http://localhost:3000', { // eslint-disable-line no-new
-          features: {
-            requestObjects: {
-              mode: 'foobar',
-            },
-          },
-        });
-      }).to.throw(TypeError, "'mode' must be 'lax' or 'strict'");
-    });
-  });
 
   describe('configuration features.requestUri', () => {
     it('extends discovery', async function () {
@@ -94,94 +65,40 @@ describe('request parameter features', () => {
         return this.logout();
       });
 
-      describe('modes', () => {
-        beforeEach(function () {
-          const ro = i(this.provider).configuration().features.requestObjects;
-          this.orig = {
-            mode: ro.mode,
-          };
-        });
+      it('does not use anything from the OAuth 2.0 parameters', async function () {
+        i(this.provider).configuration().features.requestObjects.mode = 'strict';
 
-        afterEach(function () {
-          const ro = i(this.provider).configuration().features.requestObjects;
-          ro.mode = this.orig.mode;
-        });
+        const spy = sinon.spy();
+        this.provider.once('authorization.success', spy);
 
-        describe('strict', () => {
-          it('does not use anything from the OAuth 2.0 parameters', async function () {
-            i(this.provider).configuration().features.requestObjects.mode = 'strict';
-
-            const spy = sinon.spy();
-            this.provider.once('authorization.success', spy);
-
-            if (successCode === 200) {
-              this.provider.once('device_authorization.success', ({ oidc }) => {
-                this.provider.emit('authorization.success', { oidc: { params: oidc.entities.DeviceCode.params } });
-              });
-            }
-
-            await JWT.sign({
-              jti: randomBytes(16).toString('base64url'),
-              client_id: 'client',
-              response_type: 'code',
-              redirect_uri: 'https://client.example.com/cb',
-              scope: 'openid',
-            }, Buffer.from('secret'), 'HS256', { issuer: 'client', audience: this.provider.issuer, expiresIn: 30 }).then((request) => this.wrap({
-              agent: this.agent,
-              route,
-              verb,
-              auth: {
-                request,
-                ui_locales: 'foo',
-                client_id: 'client',
-              },
-            })
-              .expect(successCode)
-              .expect(successFnCheck)
-              .expect(() => {
-                expect(spy.calledOnce).to.be.true;
-                expect(spy.args[0][0].oidc.params.ui_locales).to.eq(undefined);
-              }));
+        if (successCode === 200) {
+          this.provider.once('device_authorization.success', ({ oidc }) => {
+            this.provider.emit('authorization.success', { oidc: { params: oidc.entities.DeviceCode.params } });
           });
-        });
+        }
 
-        describe('lax', () => {
-          it('uses anything not found in the Request Object', async function () {
-            i(this.provider).configuration().features.requestObjects.mode = 'lax';
-
-            const spy = sinon.spy();
-            this.provider.once('authorization.success', spy);
-
-            if (successCode === 200) {
-              this.provider.once('device_authorization.success', ({ oidc }) => {
-                this.provider.emit('authorization.success', { oidc: { params: oidc.entities.DeviceCode.params } });
-              });
-            }
-
-            await JWT.sign({
-              jti: randomBytes(16).toString('base64url'),
-              client_id: 'client',
-              response_type: 'code',
-              redirect_uri: 'https://client.example.com/cb',
-              scope: 'openid',
-            }, Buffer.from('secret'), 'HS256', { issuer: 'client', audience: this.provider.issuer, expiresIn: 30 }).then((request) => this.wrap({
-              agent: this.agent,
-              route,
-              verb,
-              auth: {
-                request,
-                ui_locales: 'foo',
-                client_id: 'client',
-              },
-            })
-              .expect(successCode)
-              .expect(successFnCheck)
-              .expect(() => {
-                expect(spy.calledOnce).to.be.true;
-                expect(spy.args[0][0].oidc.params.ui_locales).to.eq('foo');
-              }));
-          });
-        });
+        await JWT.sign({
+          jti: randomBytes(16).toString('base64url'),
+          client_id: 'client',
+          response_type: 'code',
+          redirect_uri: 'https://client.example.com/cb',
+          scope: 'openid',
+        }, Buffer.from('secret'), 'HS256', { issuer: 'client', audience: this.provider.issuer, expiresIn: 30 }).then((request) => this.wrap({
+          agent: this.agent,
+          route,
+          verb,
+          auth: {
+            request,
+            ui_locales: 'foo',
+            client_id: 'client',
+          },
+        })
+          .expect(successCode)
+          .expect(successFnCheck)
+          .expect(() => {
+            expect(spy.calledOnce).to.be.true;
+            expect(spy.args[0][0].oidc.params.ui_locales).to.eq(undefined);
+          }));
       });
 
       it('can contain max_age parameter as a number and it (and other params too) will be forced as string', async function () {

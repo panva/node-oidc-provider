@@ -78,7 +78,6 @@ export default {
     requestObjects: {
       request: true,
       requestUri: true,
-      mode: 'strict',
     },
     revocation: { enabled: true },
   },
