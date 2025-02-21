@@ -124,9 +124,6 @@ const adapter = (name) => {
           case 'final':
             metadata.profile = '1.0 Final';
             break;
-          case 'id2':
-            metadata.profile = '1.0 ID2';
-            break;
           default:
             return orig.call(this, id);
         }
