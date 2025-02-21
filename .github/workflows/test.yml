@@ -18,7 +18,7 @@ jobs:
     if: ${{ github.repository == 'panva/node-oidc-provider' || github.event_name == 'workflow_dispatch' }}
     uses: panva/.github/.github/workflows/node-versions.yml@main
     with:
-      min: 18
+      min: 22
 
   test:
     needs:
