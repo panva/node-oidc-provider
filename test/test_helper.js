@@ -155,9 +155,7 @@ export default function testHelper(importMetaUrl, {
       const expire = new Date(0);
       const cookies = [
         `_session=; path=/; expires=${expire.toGMTString()}; httponly`,
-        `_session.legacy=; path=/; expires=${expire.toGMTString()}; httponly`,
         `_session.sig=; path=/; expires=${expire.toGMTString()}; httponly`,
-        `_session.legacy.sig=; path=/; expires=${expire.toGMTString()}; httponly`,
       ];
 
       return agent._saveCookies.bind(agent)({
