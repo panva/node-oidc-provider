@@ -34,13 +34,13 @@ describe('default routing behavior', () => {
         });
     });
 
-    it('handles unhandled verbs unhandled unknown routes', function () {
-      return this.agent.trace('/foobar')
+    it('handles unhandled verbs on unknown routes', function () {
+      return this.agent.put('/foobar')
         .expect(404)
         .expect('content-type', /application\/json/)
         .expect({
           error: 'invalid_request',
-          error_description: 'unrecognized route or not allowed method (TRACE on /foobar)',
+          error_description: 'unrecognized route or not allowed method (PUT on /foobar)',
         });
     });
   });

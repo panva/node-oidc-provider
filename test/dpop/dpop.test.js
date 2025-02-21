@@ -38,8 +38,8 @@ describe('features.dPoP', () => {
     this.thumbprint = await calculateJwkThumbprint(this.jwk);
   });
 
-  it('extends discovery', function () {
-    return this.agent.get('/.well-known/openid-configuration')
+  it('extends discovery', async function () {
+    await this.agent.get('/.well-known/openid-configuration')
       .expect(200)
       .expect((response) => {
         expect(response.body).to.have.deep.property('dpop_signing_alg_values_supported', ['ES256', 'PS256']);
@@ -925,7 +925,7 @@ describe('features.dPoP', () => {
 
   describe('status codes at the token endpoint', () => {
     it('should be 400 for invalid_dpop_proof', async function () {
-      return this.agent.post('/token')
+      await this.agent.post('/token')
         .auth('client', 'secret')
         .send({ grant_type: 'client_credentials' })
         .set('DPoP', 'invalid')
@@ -940,15 +940,13 @@ describe('features.dPoP', () => {
       let nonce;
       await this.agent.get('/me')
         .set('Authorization', 'DPoP foo')
-        .send({ grant_type: 'client_credentials' })
         .set('DPoP', await DPoP(this.keypair, `${this.provider.issuer}${this.suitePath('/me')}`, 'GET', 'foo', 'foo'))
         .expect(401)
         .expect({ error: 'use_dpop_nonce', error_description: 'invalid nonce in DPoP proof' })
         .expect(({ headers }) => { nonce = headers['dpop-nonce']; });
 
-      return this.agent.get('/me')
+      await this.agent.get('/me')
         .set('Authorization', 'DPoP foo')
-        .send({ grant_type: 'client_credentials' })
         .set('DPoP', await DPoP(this.keypair, `${this.provider.issuer}${this.suitePath('/me')}`, 'GET', nonce, 'foo'))
         .expect(401)
         .expect({ error: 'invalid_token', error_description: 'invalid token provided' });
@@ -965,7 +963,7 @@ describe('features.dPoP', () => {
         .expect({ error: 'use_dpop_nonce', error_description: 'invalid nonce in DPoP proof' })
         .expect(({ headers }) => { nonce = headers['dpop-nonce']; });
 
-      return this.agent.post('/token')
+      await this.agent.post('/token')
         .auth('client', 'secret')
         .send({ grant_type: 'client_credentials' })
         .set('DPoP', await DPoP(this.keypair, `${this.provider.issuer}${this.suitePath('/token')}`, 'POST', nonce))
@@ -1018,15 +1016,13 @@ describe('features.dPoP', () => {
       let nonce;
       await this.agent.get('/me')
         .set('Authorization', 'DPoP foo')
-        .send({ grant_type: 'client_credentials' })
         .set('DPoP', await DPoP(this.keypair, `${this.provider.issuer}${this.suitePath('/me')}`, 'GET', undefined, 'foo'))
         .expect(401)
         .expect({ error: 'use_dpop_nonce', error_description: 'nonce is required in the DPoP proof' })
         .expect(({ headers }) => { nonce = headers['dpop-nonce']; });
 
-      return this.agent.get('/me')
+      await this.agent.get('/me')
         .set('Authorization', 'DPoP foo')
-        .send({ grant_type: 'client_credentials' })
         .set('DPoP', await DPoP(this.keypair, `${this.provider.issuer}${this.suitePath('/me')}`, 'GET', nonce, 'foo'))
         .expect(401)
         .expect((response) => {
@@ -1047,7 +1043,7 @@ describe('features.dPoP', () => {
         .expect({ error: 'use_dpop_nonce', error_description: 'nonce is required in the DPoP proof' })
         .expect(({ headers }) => { nonce = headers['dpop-nonce']; });
 
-      return this.agent.post('/token')
+      await this.agent.post('/token')
         .auth('client', 'secret')
         .send({ grant_type: 'client_credentials' })
         .set('DPoP', await DPoP(this.keypair, `${this.provider.issuer}${this.suitePath('/token')}`, 'POST', nonce))
