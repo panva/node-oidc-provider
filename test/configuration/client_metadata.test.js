@@ -606,6 +606,7 @@ describe('Client metadata validation', () => {
         'ES256',
         'ES384',
         'ES512',
+        'Ed25519',
         'EdDSA',
       ].forEach((alg) => {
         allows(this.title, alg, { jwks: { keys: [sigKey] } }, configuration);
@@ -1614,6 +1615,7 @@ describe('Client metadata validation', () => {
         'ES256',
         'ES384',
         'ES512',
+        'Ed25519',
         'EdDSA',
       ].forEach((alg) => {
         allows(this.title, alg, { ...metadata, jwks: { keys: [sigKey] } }, withRequestObjects);

@@ -138,6 +138,7 @@ describe('client authentication options', () => {
         'ES256',
         'ES384',
         'ES512',
+        'Ed25519',
         'EdDSA',
       ];
 
@@ -169,6 +170,7 @@ describe('client authentication options', () => {
         'ES256',
         'ES384',
         'ES512',
+        'Ed25519',
         'EdDSA',
       ];
 
