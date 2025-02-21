@@ -591,8 +591,8 @@ async function findAccount(ctx, sub, token) {
 JSON Web Key Set used by the authorization server for signing and decryption. The object must be in [JWK Set format](https://www.rfc-editor.org/rfc/rfc7517.html#section-5). All provided keys must be private keys.   
  Supported key types are:   
  - RSA
- - OKP (Ed25519, Ed448, X25519, X448 sub types)
- - EC (P-256, secp256k1, P-384, and P-521 curves)   
+ - OKP (Ed25519 and X25519 sub types)
+ - EC (P-256, P-384, and P-521 curves)   
   
 
 _**recommendation**_: Be sure to follow best practices for distributing private keying material and secrets for your respective target deployment environment.  
@@ -1844,19 +1844,19 @@ async function getResourceServerInfo(ctx, resourceIndicator, client) {
     // Tokens will be signed
     sign?:
      | {
-         alg?: string, // 'PS256' | 'PS384' | 'PS512' | 'ES256' | 'ES256K' | 'ES384' | 'ES512' | 'EdDSA' | 'RS256' | 'RS384' | 'RS512'
+         alg?: string, // 'PS256' | 'PS384' | 'PS512' | 'ES256' | 'ES384' | 'ES512' | 'EdDSA' | 'RS256' | 'RS384' | 'RS512'
          kid?: string, // OPTIONAL `kid` to aid in signing key selection
        }
      | {
          alg: string, // 'HS256' | 'HS384' | 'HS512'
-         key: crypto.KeyObject | Buffer, // shared symmetric secret to sign the JWT token with
+         key: CryptoKey | KeyObject | Buffer, // shared symmetric secret to sign the JWT token with
          kid?: string, // OPTIONAL `kid` JOSE Header Parameter to put in the token's JWS Header
        },
     // Tokens will be encrypted
     encrypt?: {
       alg: string, // 'dir' | 'RSA-OAEP' | 'RSA-OAEP-256' | 'RSA-OAEP-384' | 'RSA-OAEP-512' | 'ECDH-ES' | 'ECDH-ES+A128KW' | 'ECDH-ES+A192KW' | 'ECDH-ES+A256KW' | 'A128KW' | 'A192KW' | 'A256KW' | 'A128GCMKW' | 'A192GCMKW' | 'A256GCMKW'
       enc: string, // 'A128CBC-HS256' | 'A128GCM' | 'A192CBC-HS384' | 'A192GCM' | 'A256CBC-HS512' | 'A256GCM'
-      key: crypto.KeyObject | Buffer, // public key or shared symmetric secret to encrypt the JWT token with
+      key: CryptoKey | KeyObject | Buffer, // public key or shared symmetric secret to encrypt the JWT token with
       kid?: string, // OPTIONAL `kid` JOSE Header Parameter to put in the token's JWE Header
     }
   }
@@ -3382,7 +3382,7 @@ _**default value**_:
 [
   'RS256', 'RS384', 'RS512',
   'PS256', 'PS384', 'PS512',
-  'ES256', 'ES256K', 'ES384', 'ES512',
+  'ES256', 'ES384', 'ES512',
   'EdDSA',
   'HS256', 'HS384', 'HS512',
 ]
@@ -3412,7 +3412,7 @@ _**default value**_:
 [
   'RS256', 'RS384', 'RS512',
   'PS256', 'PS384', 'PS512',
-  'ES256', 'ES256K', 'ES384', 'ES512',
+  'ES256', 'ES384', 'ES512',
   'EdDSA',
   'HS256', 'HS384', 'HS512',
 ]
@@ -3439,7 +3439,7 @@ _**default value**_:
 [
   'RS256', 'RS384', 'RS512',
   'PS256', 'PS384', 'PS512',
-  'ES256', 'ES256K', 'ES384', 'ES512',
+  'ES256', 'ES384', 'ES512',
   'EdDSA',
 ]
 ```
@@ -3526,7 +3526,7 @@ _**default value**_:
 [
   'RS256', 'RS384', 'RS512',
   'PS256', 'PS384', 'PS512',
-  'ES256', 'ES256K', 'ES384', 'ES512',
+  'ES256', 'ES384', 'ES512',
   'EdDSA',
   'HS256', 'HS384', 'HS512',
 ]
@@ -3614,7 +3614,7 @@ _**default value**_:
 [
   'RS256', 'RS384', 'RS512',
   'PS256', 'PS384', 'PS512',
-  'ES256', 'ES256K', 'ES384', 'ES512',
+  'ES256', 'ES384', 'ES512',
   'EdDSA',
   'HS256', 'HS384', 'HS512',
 ]
@@ -3703,7 +3703,7 @@ _**default value**_:
 [
   'RS256', 'RS384', 'RS512',
   'PS256', 'PS384', 'PS512',
-  'ES256', 'ES256K', 'ES384', 'ES512',
+  'ES256', 'ES384', 'ES512',
   'EdDSA',
   'HS256', 'HS384', 'HS512',
 ]
@@ -3791,7 +3791,7 @@ _**default value**_:
 [
   'RS256', 'RS384', 'RS512',
   'PS256', 'PS384', 'PS512',
-  'ES256', 'ES256K', 'ES384', 'ES512',
+  'ES256', 'ES384', 'ES512',
   'EdDSA',
   'HS256', 'HS384', 'HS512',
 ]

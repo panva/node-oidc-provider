@@ -1,5 +1,5 @@
 import { expect } from 'chai';
-import { generateKeyPair } from 'jose';
+import { generateKeyPair, exportJWK } from 'jose';
 
 import Provider from '../../lib/index.js';
 
@@ -35,13 +35,13 @@ describe('Provider declaring supported algorithms', () => {
   });
 
   it('idTokenSigningAlgValues', async () => {
-    const { privateKey } = await generateKeyPair('RS256');
+    const { privateKey } = await generateKeyPair('RS256', { extractable: true });
     const provider = new Provider('https://op.example.com', {
       enabledJWA: {
         idTokenSigningAlgValues: ['HS256', 'RS256'],
       },
       jwks: {
-        keys: [privateKey.export({ format: 'jwk' })],
+        keys: [await exportJWK(privateKey)],
       },
     });
 
