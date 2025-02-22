@@ -1,5 +1,5 @@
 import * as url from 'node:url';
-import { createHash, randomBytes, randomUUID } from 'node:crypto';
+import { hash, randomBytes, randomUUID } from 'node:crypto';
 
 import sinon from 'sinon';
 import { expect } from 'chai';
@@ -13,7 +13,7 @@ import bootstrap, { skipConsent } from '../test_helper.js';
 import * as base64url from '../../lib/helpers/base64url.js';
 
 function ath(accessToken) {
-  return base64url.encode(createHash('sha256').update(accessToken).digest());
+  return hash('sha256', accessToken, 'base64url');
 }
 
 async function DPoP(keypair, htu, htm, nonce = undefined, accessToken = undefined) {
@@ -103,7 +103,7 @@ describe('features.dPoP', () => {
         at.setThumbprint('jkt', this.thumbprint);
 
         this.access_token = await at.save();
-        this.ath = createHash('sha256').update(this.access_token).digest('base64url');
+        this.ath = hash('sha256', this.access_token, 'base64url');
       });
 
       afterEach(function () {
