@@ -126,7 +126,8 @@ actions and i.e. emit metrics that react to specific triggers. See the list of a
 
 | Version                                                       | Security Fixes 🔑 | Other Bug Fixes 🐞 | New Features ⭐ |
 | ------------------------------------------------------------- | ----------------- | ------------------ | --------------- |
-| [v8.x](https://github.com/panva/node-oidc-provider/tree/v8.x) | [Security Policy] | ✅                 | ✅              |
+| [v9.x](https://github.com/panva/node-oidc-provider/tree/v9.x) | [Security Policy] | ✅                 | ✅              |
+| [v8.x](https://github.com/panva/node-oidc-provider/tree/v8.x) | [Security Policy] | ❌                 | ❌              |
 
 [npm-url]: https://www.npmjs.com/package/oidc-provider
 [openid-certified-link]: https://openid.net/certification/
