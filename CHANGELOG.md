@@ -2,6 +2,18 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [8.8.1](https://github.com/panva/node-oidc-provider/compare/v8.8.0...v8.8.1) (2025-03-06)
+
+
+### Fixes
+
+* add "exp" to Logout Tokens ([c6c01f1](https://github.com/panva/node-oidc-provider/commit/c6c01f112c29ade904a23d90bc3ea74408981bba)), closes [#1295](https://github.com/panva/node-oidc-provider/issues/1295)
+
+
+### Documentation
+
+* update spec links ([076ee58](https://github.com/panva/node-oidc-provider/commit/076ee58b3df60e1987a0f4a06fb8c42ea75e68ba))
+
 ## [8.8.0](https://github.com/panva/node-oidc-provider/compare/v8.7.0...v8.8.0) (2025-02-17)
 
 
