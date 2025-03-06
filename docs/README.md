@@ -392,7 +392,7 @@ koaApp.use(mount('/oidc', oidc.app))
 Note: when the issuer identifier does not include the path prefix you should take care of rewriting
 your `${root}/.well-known/openid-configuration` to `${root}${prefix}/.well-known/openid-configuration`
 so that your deployment remains conform to the
-[Discovery 1.0](https://openid.net/specs/openid-connect-discovery-1_0.html#ProviderConfigurationRequest)
+[Discovery 1.0](https://openid.net/specs/openid-connect-discovery-1_0-errata2.html#ProviderConfigurationRequest)
 specification.
 
 ## Trusting TLS offloading proxies
@@ -849,7 +849,7 @@ async function verifyUserCode(ctx, account, userCode) {
 
 ### features.claimsParameter
 
-[`OIDC Core 1.0`](https://openid.net/specs/openid-connect-core-1_0.html#ClaimsParameter) - Requesting Claims using the "claims" Request Parameter  
+[`OIDC Core 1.0`](https://openid.net/specs/openid-connect-core-1_0-errata2.html#ClaimsParameter) - Requesting Claims using the "claims" Request Parameter  
 
 Enables the use and validations of `claims` parameter as described in the specification.   
   
@@ -1175,7 +1175,7 @@ _**default value**_:
 
 The specific profile of `FAPI` to enable. Supported values are:   
  - '2.0' (Experimental) Enables behaviours from [FAPI 2.0 Security Profile - Implementer's Draft 02](https://openid.net/specs/fapi-2_0-security-profile-ID2.html)
- - '1.0 Final' Enables behaviours from [Financial-grade API Security Profile 1.0 - Part 2: Advanced](https://openid.net/specs/openid-financial-api-part-2-1_0.html)
+ - '1.0 Final' Enables behaviours from [Financial-grade API Security Profile 1.0 - Part 2: Advanced](https://openid.net/specs/openid-financial-api-part-2-1_0-final.html)
  - '1.0 ID2' Enables behaviours from [Financial-grade API - Part 2: Read and Write API Security Profile - Implementer's Draft 02](https://openid.net/specs/openid-financial-api-part-2-ID2.html)
  - Function returning one of the other supported values, or undefined if `FAPI` behaviours are to be ignored. The function is invoked with two arguments `(ctx, client)` and serves the purpose of allowing the used profile to be context-specific.   
    
@@ -1243,7 +1243,7 @@ _**default value**_:
 
 ### features.jwtResponseModes
 
-[JWT Secured Authorization Response Mode (`JARM`)](https://openid.net/specs/oauth-v2-jarm.html)  
+[JWT Secured Authorization Response Mode (`JARM`)](https://openid.net/specs/oauth-v2-jarm-final.html)  
 
 Enables JWT Secured Authorization Responses  
 
@@ -1257,7 +1257,7 @@ _**default value**_:
 
 ### features.jwtUserinfo
 
-[`OIDC Core 1.0`](https://openid.net/specs/openid-connect-core-1_0.html#UserInfo) - JWT UserInfo Endpoint Responses  
+[`OIDC Core 1.0`](https://openid.net/specs/openid-connect-core-1_0-errata2.html#UserInfo) - JWT UserInfo Endpoint Responses  
 
 Enables the userinfo to optionally return signed and/or encrypted JWTs, also enables the relevant client metadata for setting up signing and/or encryption.  
 
@@ -1404,7 +1404,7 @@ false
 
 ### features.registration
 
-[`Dynamic Client Registration 1.0`](https://openid.net/specs/openid-connect-registration-1_0.html) and [`RFC7591` - OAuth 2.0 Dynamic Client Registration Protocol](https://www.rfc-editor.org/rfc/rfc7591.html)  
+[`Dynamic Client Registration 1.0`](https://openid.net/specs/openid-connect-registration-1_0-errata2.html) and [`RFC7591` - OAuth 2.0 Dynamic Client Registration Protocol](https://www.rfc-editor.org/rfc/rfc7591.html)  
 
 Enables Dynamic Client Registration.  
 
@@ -1604,7 +1604,7 @@ true
 
 ### features.requestObjects
 
-[`OIDC Core 1.0`](https://openid.net/specs/openid-connect-core-1_0.html#RequestObject) and [JWT Secured Authorization Request (`JAR`)](https://www.rfc-editor.org/rfc/rfc9101.html) - Request Object  
+[`OIDC Core 1.0`](https://openid.net/specs/openid-connect-core-1_0-errata2.html#RequestObject) and [JWT Secured Authorization Request (`JAR`)](https://www.rfc-editor.org/rfc/rfc9101.html) - Request Object  
 
 Enables the use and validations of the `request` and/or `request_uri` parameters.  
 
@@ -2137,7 +2137,7 @@ async function postLogoutSuccessSource(ctx) {
 
 ### features.userinfo
 
-[`OIDC Core 1.0`](https://openid.net/specs/openid-connect-core-1_0.html#UserInfo) - UserInfo Endpoint  
+[`OIDC Core 1.0`](https://openid.net/specs/openid-connect-core-1_0-errata2.html#UserInfo) - UserInfo Endpoint  
 
 Enables the userinfo endpoint. Its use requires an opaque Access Token with at least `openid` scope that's without a Resource Server audience.  
 
@@ -2333,7 +2333,7 @@ _**default value**_:
 
 ID Token only contains End-User claims when the requested `response_type` is `id_token`  
 
-[`OIDC Core 1.0` - Requesting Claims using Scope Values](https://openid.net/specs/openid-connect-core-1_0.html#ScopeClaims) defines that claims requested using the `scope` parameter are only returned from the UserInfo Endpoint unless the `response_type` is `id_token`.   
+[`OIDC Core 1.0` - Requesting Claims using Scope Values](https://openid.net/specs/openid-connect-core-1_0-errata2.html#ScopeClaims) defines that claims requested using the `scope` parameter are only returned from the UserInfo Endpoint unless the `response_type` is `id_token`.   
  Despite of this configuration the ID Token always includes claims requested using the `scope` parameter when the userinfo endpoint is disabled, or when issuing an Access Token not applicable for access to the userinfo endpoint.   
   
 
@@ -2992,7 +2992,7 @@ async function loadExistingGrant(ctx) {
 
 ### pairwiseIdentifier
 
-Function used by the authorization server when resolving pairwise ID Token and Userinfo sub claim values. See [`OIDC Core 1.0`](https://openid.net/specs/openid-connect-core-1_0.html#PairwiseAlg)  
+Function used by the authorization server when resolving pairwise ID Token and Userinfo sub claim values. See [`OIDC Core 1.0`](https://openid.net/specs/openid-connect-core-1_0-errata2.html#PairwiseAlg)  
 
 _**recommendation**_: Since this might be called several times in one request with the same arguments consider using memoization or otherwise caching the result based on account and client ids.  
 
@@ -3046,15 +3046,15 @@ function pkceRequired(ctx, client) {
     case fapiProfile === '2.0':
       return true;
     // FAPI 1.0 Advanced as per
-    // https://openid.net/specs/openid-financial-api-part-2-1_0.html#authorization-server
+    // https://openid.net/specs/openid-financial-api-part-2-1_0-final.html#authorization-server
     case fapiProfile === '1.0 Final' && ctx.oidc.route === 'pushed_authorization_request':
       return true;
     // All Public clients as per
-    // https://datatracker.ietf.org/doc/html/draft-ietf-oauth-security-topics-22#section-2.1.1-2.1.1
+    // https://www.rfc-editor.org/rfc/rfc9700.html#section-2.1.1-2.1
     case client.clientAuthMethod === 'none':
       return true;
     // All other cases RECOMMENDED as per
-    // https://datatracker.ietf.org/doc/html/draft-ietf-oauth-security-topics-22#section-2.1.1-2.2.1
+    // https://www.rfc-editor.org/rfc/rfc9700.html#section-2.1.1-2.2
     default:
       return true;
   }
@@ -3088,7 +3088,7 @@ async function renderError(ctx, out, error) {
 
 ### responseTypes
 
-Array of response_type values that the authorization server supports. The default omits all response types that result in access tokens being issued by the authorization endpoint directly as per [OAuth 2.0 Security Best Current Practice](https://tools.ietf.org/html/draft-ietf-oauth-security-topics-13#section-3.1.2) You can still enable them if you need to.   
+Array of response_type values that the authorization server supports. The default omits all response types that result in access tokens being issued by the authorization endpoint directly as per [`RFC9700 - Best Current Practice for OAuth 2.0 Security`](https://www.rfc-editor.org/rfc/rfc9700.html#section-2.1.2) You can still enable them if you need to.   
   
 
 
@@ -3104,7 +3104,7 @@ _**default value**_:
 <a id="response-types-supported-values-list"></a><details><summary>(Click to expand) Supported values list</summary><br>
 
 
-These are values defined in [`OIDC Core 1.0`](https://openid.net/specs/openid-connect-core-1_0.html#Authentication) and [OAuth 2.0 Multiple Response Type Encoding Practices](https://openid.net/specs/oauth-v2-multiple-response-types-1_0.html)
+These are values defined in [`OIDC Core 1.0`](https://openid.net/specs/openid-connect-core-1_0-errata2.html#Authentication) and [OAuth 2.0 Multiple Response Type Encoding Practices](https://openid.net/specs/oauth-v2-multiple-response-types-1_0-final.html)
   
 
 ```js
@@ -3237,7 +3237,7 @@ description: Expirations for various token and session types. The value can be a
 
 _**recommendation**_: Do not set token TTLs longer then they absolutely have to be, the shorter the TTL, the better.  
 
-_**recommendation**_: Rather than setting crazy high Refresh Token TTL look into `rotateRefreshToken` configuration option which is set up in way that when refresh tokens are regularly used they will have their TTL refreshed (via rotation). This is inline with the [OAuth 2.0 Security Best Current Practice](https://tools.ietf.org/html/draft-ietf-oauth-security-topics-13)  
+_**recommendation**_: Rather than setting crazy high Refresh Token TTL look into `rotateRefreshToken` configuration option which is set up in way that when refresh tokens are regularly used they will have their TTL refreshed (via rotation).  
 
 
 _**default value**_:
@@ -3806,7 +3806,7 @@ _**default value**_:
 
 Only response types that do not end up with an access_token (so, response_type=id_token) have
 end-user claims other than `sub` in their ID Tokens. This is the
-[Core 1.0](https://openid.net/specs/openid-connect-core-1_0.html#ScopeClaims) spec behaviour. Read
+[Core 1.0](https://openid.net/specs/openid-connect-core-1_0-errata2.html#ScopeClaims) spec behaviour. Read
 it you'll see requesting claims through the scope parameter only adds these claims to userinfo
 unless the response_type is `id_token` in which case they're added there. All other response types
 have access to the userinfo endpoint which returns these scope-requested claims. The other option is

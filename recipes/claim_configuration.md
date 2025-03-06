@@ -35,4 +35,4 @@ new Provider(/* your issuer */, {
 });
 ```
 
-[core-account-claims]: https://openid.net/specs/openid-connect-core-1_0.html#ScopeClaims
+[core-account-claims]: https://openid.net/specs/openid-connect-core-1_0-errata2.html#ScopeClaims

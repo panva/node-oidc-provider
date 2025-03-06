@@ -4,7 +4,7 @@
 
 Returning aggregated and distributed claims is as easy as having your `findAccount`'s `claims()`
 method return the two necessary members `_claim_sources` and `_claim_names` with the
-[expected](https://openid.net/specs/openid-connect-core-1_0.html#AggregatedDistributedClaims)
+[expected](https://openid.net/specs/openid-connect-core-1_0-errata2.html#AggregatedDistributedClaims)
 properties. oidc-provider will include only the sources for claims that are part of the request
 scope, omitting the ones that the RP did not request and leaving out the entire `_claim_sources` and
 `_claim_sources` if they bear no requested claims.
