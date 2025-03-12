@@ -386,7 +386,7 @@ const fapi = new Provider(ISSUER, {
     jwtResponseModes: { enabled: true },
     pushedAuthorizationRequests: { enabled: true },
     requestObjects: {
-      request: true,
+      enabled: true,
       requireSignedRequestObject: false,
     },
   },

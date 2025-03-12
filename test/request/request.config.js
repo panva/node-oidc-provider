@@ -7,7 +7,7 @@ const config = getConfig();
 
 merge(config.features, {
   requestObjects: {
-    request: true,
+    enabled: true,
     requireUriRegistration: false,
   },
   claimsParameter: { enabled: true },

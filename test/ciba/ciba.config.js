@@ -20,9 +20,6 @@ config.extraParams = {
 config.features.encryption = {
   enabled: true,
 };
-config.features.requestObjects = {
-  request: false,
-};
 config.features.ciba = {
   enabled: true,
   deliveryModes: ['poll', 'ping'],
