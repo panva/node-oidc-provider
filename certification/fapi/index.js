@@ -387,7 +387,6 @@ const fapi = new Provider(ISSUER, {
     pushedAuthorizationRequests: { enabled: true },
     requestObjects: {
       request: true,
-      requestUri: false,
       requireSignedRequestObject: false,
     },
   },

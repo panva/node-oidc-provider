@@ -314,10 +314,10 @@ describe('Client metadata validation', () => {
   });
 
   context('require_signed_request_object', function () {
-    const configuration = (value = false, requestUri = true) => ({
+    const configuration = (value = false, request = true) => ({
       features: {
         requestObjects: {
-          requestUri,
+          request,
           requireSignedRequestObject: value,
         },
         pushedAuthorizationRequests: {
@@ -578,89 +578,33 @@ describe('Client metadata validation', () => {
   });
 
   context('request_object_signing_alg', function () {
-    for (const configuration of [
-      {
-        features: {
-          requestObjects: { requestUri: true, request: false },
-          pushedAuthorizationRequests: { enabled: false },
-        },
-      },
-      {
-        features: {
-          requestObjects: { requestUri: false, request: true },
-          pushedAuthorizationRequests: { enabled: false },
-        },
-      },
-    ]) {
-      mustBeString(this.title, undefined, undefined, configuration);
-      [
-        'HS256',
-        'HS384',
-        'HS512',
-        'RS256',
-        'RS384',
-        'RS512',
-        'PS256',
-        'PS384',
-        'PS512',
-        'ES256',
-        'ES384',
-        'ES512',
-        'Ed25519',
-        'EdDSA',
-      ].forEach((alg) => {
-        allows(this.title, alg, { jwks: { keys: [sigKey] } }, configuration);
-      });
-      rejects(this.title, 'not-an-alg', undefined, undefined, configuration);
-      rejects(this.title, 'none', undefined, undefined, configuration);
-    }
-  });
-
-  context('request_uris', function () {
-    defaultsTo(this.title, [], undefined, {
-      features: {
-        requestObjects: { requestUri: true },
-      },
-    });
-    defaultsTo(this.title, undefined, undefined, {
-      features: {
-        requestObjects: {
-          requestUri: true,
-          requireUriRegistration: false,
-        },
-      },
-    });
     const configuration = {
       features: {
-        requestObjects: { requestUri: true },
+        requestObjects: { request: true },
+        pushedAuthorizationRequests: { enabled: false },
       },
     };
-    mustBeArray(this.title, undefined, configuration);
-
-    allows(this.title, ['https://a-web-uri'], undefined, configuration);
-    allows(this.title, ['http://a-web-uri'], /must only contain https uris$/, configuration);
-    rejects(this.title, [123], /must only contain strings$/, undefined, configuration);
-    rejects(
-      this.title,
-      ['not a uri'],
-      /request_uris must only contain web uris$/,
-      undefined,
-      configuration,
-    );
-    rejects(
-      this.title,
-      ['custom-scheme://not-a-web-uri'],
-      /request_uris must only contain web uris$/,
-      undefined,
-      configuration,
-    );
-    rejects(
-      this.title,
-      ['urn:example'],
-      /request_uris must only contain web uris$/,
-      undefined,
-      configuration,
-    );
+    mustBeString(this.title, undefined, undefined, configuration);
+    [
+      'HS256',
+      'HS384',
+      'HS512',
+      'RS256',
+      'RS384',
+      'RS512',
+      'PS256',
+      'PS384',
+      'PS512',
+      'ES256',
+      'ES384',
+      'ES512',
+      'Ed25519',
+      'EdDSA',
+    ].forEach((alg) => {
+      allows(this.title, alg, { jwks: { keys: [sigKey] } }, configuration);
+    });
+    rejects(this.title, 'not-an-alg', undefined, undefined, configuration);
+    rejects(this.title, 'none', undefined, undefined, configuration);
   });
 
   context('require_auth_time', function () {
@@ -1566,7 +1510,7 @@ describe('Client metadata validation', () => {
     const configuration = {
       features: {
         ciba: { enabled: true, deliveryModes: ['ping', 'poll'] },
-        requestObjects: { request: false, requestUri: false },
+        requestObjects: { request: false },
       },
     };
     const metadata = {

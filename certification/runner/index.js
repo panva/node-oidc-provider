@@ -31,7 +31,7 @@ if (PLAN_NAME.startsWith('fapi')) {
 
 switch (PLAN_NAME) {
   case 'oidcc-dynamic-certification-test-plan':
-    SKIP = 'oidcc-server-rotate-keys';
+    SKIP = 'oidcc-server-rotate-keys,oidcc-request-uri-unsigned,oidcc-request-uri-signed-rs256';
     break;
   case 'oidcc-test-plan':
     SKIP = 'oidcc-server-rotate-keys';

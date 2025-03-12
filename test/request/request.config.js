@@ -8,7 +8,6 @@ const config = getConfig();
 merge(config.features, {
   requestObjects: {
     request: true,
-    requestUri: true,
     requireUriRegistration: false,
   },
   claimsParameter: { enabled: true },
