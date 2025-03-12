@@ -67,13 +67,7 @@ if (process.env.NODE_ENV === 'production') {
 
 let server;
 try {
-  let adapter;
-  if (process.env.MONGODB_URI) {
-    ({ default: adapter } = await import('./adapters/mongodb.js'));
-    await adapter.connect();
-  }
-
-  const provider = new Provider(ISSUER, { adapter, ...configuration });
+  const provider = new Provider(ISSUER, configuration);
 
   app.use(routes(provider).routes());
   app.use(mount(provider.app));
