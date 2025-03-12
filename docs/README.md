@@ -668,7 +668,7 @@ _**default value**_:
 
 [OIDC Client Initiated Backchannel Authentication Flow (`CIBA`)](https://openid.net/specs/openid-client-initiated-backchannel-authentication-core-1_0-final.html)  
 
-Enables Core `CIBA` Flow, when combined with `features.fapi` and `features.requestObjects.request` enables [Financial-grade API: Client Initiated Backchannel Authentication Profile - Implementer's Draft 01](https://openid.net/specs/openid-financial-api-ciba-ID1.html) as well.   
+Enables Core `CIBA` Flow, when combined with `features.fapi` and `features.requestObjects.enabled` enables [Financial-grade API: Client Initiated Backchannel Authentication Profile - Implementer's Draft 01](https://openid.net/specs/openid-financial-api-ciba-ID1.html) as well.   
   
 
 
@@ -1609,7 +1609,7 @@ _**default value**_:
 ```js
 {
   assertJwtClaimsAndHeader: [AsyncFunction: assertJwtClaimsAndHeader], // see expanded details below
-  request: false,
+  enabled: false,
   requireSignedRequestObject: false
 }
 ```
@@ -1659,16 +1659,6 @@ async function assertJwtClaimsAndHeader(ctx, claims, header, client) {
     }
   }
 }
-```
-
-#### request
-
-Enables the use and validations of the `request` parameter.  
-
-
-_**default value**_:
-```js
-false
 ```
 
 #### requireSignedRequestObject

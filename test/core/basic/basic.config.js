@@ -14,7 +14,6 @@ config.extraParams = {
 };
 merge(config.features, {
   pushedAuthorizationRequests: { enabled: false },
-  requestObjects: { request: false },
 });
 config.responseTypes = ['id_token', 'code', 'none'];
 config.allowOmittingSingleRegisteredRedirectUri = false;
