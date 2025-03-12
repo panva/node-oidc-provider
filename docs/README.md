@@ -2153,7 +2153,7 @@ Describes the claims that the OpenID Provider MAY be able to supply values for.
  It is used to achieve two different things related to claims:
  - which additional claims are available to RPs (configure as `{ claimName: null }`)
  - which claims fall under what scope (configure `{ scopeName: ['claim', 'another-claim'] }`)   
-  
+ See [Configuring OpenID Connect 1.0 Standard Claims](https://github.com/panva/node-oidc-provider/discussions/1299)  
 
 
 _**default value**_:
@@ -2168,13 +2168,6 @@ _**default value**_:
   sid: null
 }
 ```
-<a id="claims-open-id-connect-1-0-standard-claims"></a><details><summary>(Click to expand) OpenID Connect 1.0 Standard Claims</summary><br>
-
-
-See [/recipes/claim_configuration.md](/recipes/claim_configuration.md)  
-
-
-</details>
 
 ### clientAuthMethods
 
@@ -2207,7 +2200,7 @@ _**default value**_:
 ### clientBasedCORS
 
 Function used to check whether a given CORS request should be allowed based on the request's client.   
-  
+ See [Configuring Client Metadata-based CORS Origin allow list](https://github.com/panva/node-oidc-provider/discussions/1298)  
 
 
 _**default value**_:
@@ -2216,13 +2209,6 @@ function clientBasedCORS(ctx, origin, client) {
   return false;
 }
 ```
-<a id="client-based-cors-client-metadata-based-cors-origin-allow-list"></a><details><summary>(Click to expand) Client Metadata-based CORS Origin allow list</summary><br>
-
-
-See [/recipes/client_based_origins.md](/recipes/client_based_origins.md)  
-
-
-</details>
 
 ### clientDefaults
 

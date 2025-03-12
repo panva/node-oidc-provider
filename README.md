@@ -8,7 +8,7 @@ other additional features and standards.
 - [Implemented specs & features](#implemented-specs--features)
 - [Certification](#certification)
 - [Documentation & Configuration](#documentation--configuration)
-- [Recipes](#recipes)
+- [Community Guides](#community-guides)
 - [Events](#events)
 
 ## Implemented specs & features
@@ -113,9 +113,9 @@ oidc.listen(3000, () => {
 })
 ```
 
-## Recipes
+## Community Guides
 
-Collection of useful configuration use cases are available over at [recipes](/recipes).
+Collection of Community-maintained configuration use cases are in the [Community Guides Discussions section](https://github.com/panva/node-oidc-provider/discussions/categories/community-guides)
 
 ## Events
 
