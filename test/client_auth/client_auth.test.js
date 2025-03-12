@@ -1,7 +1,7 @@
 import { createPrivateKey, X509Certificate } from 'node:crypto';
 import { readFileSync } from 'node:fs';
+import { request } from 'node:http';
 
-import got from 'got'; // eslint-disable-line import/no-unresolved
 import nock from 'nock';
 import { importJWK } from 'jose';
 import sinon from 'sinon';
@@ -448,24 +448,42 @@ describe('client authentication options', () => {
         .expect(tokenAuthSucceeded);
     });
 
-    // TODO: not sure why when mounted everything crap out
-    if (!process.env.MOUNT_VIA) {
-      it('can use transfer-encoding: chunked', async () => {
-        const { address, port } = global.server.address();
+    it('can use transfer-encoding: chunked', function (done) {
+      const { address, port } = global.server.address();
 
-        const response = await got.post(`http://[${address}]:${port}${route}`, {
-          throwHttpErrors: false,
-          form: {
-            grant_type: 'foo',
-            client_id: 'client-post',
-            client_secret: 'secret',
-          },
-          headers: { 'transfer-encoding': 'chunked' },
+      const req = request({
+        hostname: address,
+        port,
+        path: this.suitePath(route),
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/x-www-form-urlencoded',
+          'Transfer-Encoding': 'chunked',
+        },
+      }, (res) => {
+        let data = '';
+
+        res.on('data', (chunk) => {
+          data += chunk;
         });
 
-        expect(JSON.parse(response.body)).to.deep.eql(tokenAuthSucceeded);
+        res.on('end', () => {
+          try {
+            expect(JSON.parse(data)).to.deep.eql(tokenAuthSucceeded);
+            done();
+          } catch (err) {
+            done(err);
+          }
+        });
+
+        res.on('error', done);
       });
-    }
+
+      req.write('grant_type=foo&client_id');
+      req.write('=client-post&client_secret=secret');
+      req.end();
+      req.on('error', done);
+    });
 
     it('accepts the auth (but client configured with basic)', function () {
       return this.agent.post(route)
