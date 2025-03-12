@@ -22,7 +22,6 @@ config.features.encryption = {
 };
 config.features.requestObjects = {
   request: false,
-  requestUri: false,
 };
 config.features.ciba = {
   enabled: true,

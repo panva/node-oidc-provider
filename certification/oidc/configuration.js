@@ -74,7 +74,6 @@ export default {
     pushedAuthorizationRequests: { enabled: true },
     requestObjects: {
       request: true,
-      requestUri: true,
     },
     revocation: { enabled: true },
   },

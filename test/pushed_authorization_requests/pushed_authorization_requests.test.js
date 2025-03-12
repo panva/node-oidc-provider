@@ -12,11 +12,6 @@ describe('Pushed Request Object', () => {
   context('w/o Request Objects', () => {
     before(bootstrap(import.meta.url));
 
-    before(async function () {
-      const client = await this.provider.Client.find('client');
-      this.key = await importJWK(client.symmetricKeyStore.selectForSign({ alg: 'HS256' })[0]);
-    });
-
     describe('discovery', () => {
       it('extends the well known config', async function () {
         await this.agent.get('/.well-known/openid-configuration')
@@ -24,7 +19,6 @@ describe('Pushed Request Object', () => {
             expect(response.body).not.to.have.property('request_object_endpoint');
             expect(response.body).to.have.property('pushed_authorization_request_endpoint');
             expect(response.body).not.to.have.property('request_object_signing_alg_values_supported');
-            expect(response.body).to.have.property('request_parameter_supported', false);
             expect(response.body).to.have.property('request_uri_parameter_supported', false);
             expect(response.body).not.to.have.property('require_pushed_authorization_requests');
           });
