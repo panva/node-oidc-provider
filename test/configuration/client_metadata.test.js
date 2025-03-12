@@ -314,10 +314,10 @@ describe('Client metadata validation', () => {
   });
 
   context('require_signed_request_object', function () {
-    const configuration = (value = false, request = true) => ({
+    const configuration = (value = false, enabled = true) => ({
       features: {
         requestObjects: {
-          request,
+          enabled,
           requireSignedRequestObject: value,
         },
         pushedAuthorizationRequests: {
@@ -580,7 +580,7 @@ describe('Client metadata validation', () => {
   context('request_object_signing_alg', function () {
     const configuration = {
       features: {
-        requestObjects: { request: true },
+        requestObjects: { enabled: true },
         pushedAuthorizationRequests: { enabled: false },
       },
     };
@@ -1360,7 +1360,7 @@ describe('Client metadata validation', () => {
     const configuration = {
       features: {
         encryption: { enabled: true },
-        requestObjects: { request: true },
+        requestObjects: { enabled: true },
       },
     };
     context('request_object_encryption_alg', function () {
@@ -1510,7 +1510,6 @@ describe('Client metadata validation', () => {
     const configuration = {
       features: {
         ciba: { enabled: true, deliveryModes: ['ping', 'poll'] },
-        requestObjects: { request: false },
       },
     };
     const metadata = {
@@ -1546,7 +1545,7 @@ describe('Client metadata validation', () => {
 
     context('backchannel_authentication_request_signing_alg', function () {
       const withRequestObjects = merge({}, configuration, {
-        features: { requestObjects: { request: true } },
+        features: { requestObjects: { enabled: true } },
       });
       mustBeString(this.title, undefined, metadata, withRequestObjects);
       [
@@ -1696,7 +1695,7 @@ describe('Client metadata validation', () => {
         encryption: { enabled: true },
         jwtUserinfo: { enabled: true },
         ciba: { enabled: true },
-        requestObjects: { request: true },
+        requestObjects: { enabled: true },
       },
     };
 

@@ -73,7 +73,7 @@ export default {
     jwtResponseModes: { enabled: true },
     pushedAuthorizationRequests: { enabled: true },
     requestObjects: {
-      request: true,
+      enabled: true,
     },
     revocation: { enabled: true },
   },
