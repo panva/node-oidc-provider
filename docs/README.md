@@ -900,14 +900,14 @@ _**default value**_:
 
 [`RFC9449`](https://www.rfc-editor.org/rfc/rfc9449.html) - OAuth 2.0 Demonstration of Proof-of-Possession at the Application Layer (`DPoP`)  
 
-Enables `DPoP` - mechanism for sender-constraining tokens via a proof-of-possession mechanism on the application level. Browser DPoP proof generation [here](https://www.npmjs.com/package/dpop).  
+Enables `DPoP` - mechanism for sender-constraining tokens via a proof-of-possession mechanism on the application level.  
 
 
 _**default value**_:
 ```js
 {
   allowReplay: false,
-  enabled: false,
+  enabled: true,
   nonceSecret: undefined,
   requireNonce: [Function: requireNonce] // see expanded details below
 }
