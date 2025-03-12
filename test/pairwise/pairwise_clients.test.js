@@ -198,7 +198,7 @@ describe('pairwise features', () => {
         }, (err) => {
           expect(err).to.be.ok;
           expect(err.message).to.eq('invalid_client_metadata');
-          expect(err.error_description).to.eq('could not load sector_identifier_uri response');
+          expect(err.error_description).to.eq('failed to parse sector_identifier_uri JSON response');
         });
       });
 

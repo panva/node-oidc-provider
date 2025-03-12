@@ -60,7 +60,6 @@
     "@koa/router": "^13.1.0",
     "debug": "^4.4.0",
     "eta": "^3.5.0",
-    "got": "^14.4.6",
     "jose": "^6.0.10",
     "jsesc": "^3.1.0",
     "koa": "^2.16.1",
@@ -84,6 +83,7 @@
     "eslint-plugin-import": "^2.31.0",
     "express": "^4.21.2",
     "fastify": "^5.2.1",
+    "got": "^14.4.6",
     "helmet": "^8.0.0",
     "koa-body": "^6.0.1",
     "koa-mount": "^4.0.0",
@@ -94,6 +94,7 @@
     "selfsigned": "^2.4.1",
     "sinon": "^19.0.2",
     "supertest": "^7.0.0",
-    "timekeeper": "^2.3.1"
+    "timekeeper": "^2.3.1",
+    "undici": "^7.4.0"
   }
 }

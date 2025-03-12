@@ -482,7 +482,7 @@ location / {
 - [extraClientMetadata](#extraclientmetadata)
 - [extraParams](#extraparams)
 - [extraTokenClaims](#extratokenclaims)
-- [httpOptions](#httpoptions)
+- [fetch](#fetch)
 - [interactions ❗](#interactions)
 - [issueRefreshToken](#issuerefreshtoken)
 - [loadExistingGrant](#loadexistinggrant)
@@ -2474,6 +2474,38 @@ async function extraTokenClaims(ctx, token) {
 ```
 </details>
 
+### fetch
+
+Function called whenever calls to an external HTTP(S) resource are being made. The interface as well as expected return is the [Fetch API's](https://fetch.spec.whatwg.org/) [`fetch()`](https://developer.mozilla.org/en-US/docs/Web/API/Window/fetch). The default is using timeout of 2500ms and not sending a user-agent header.   
+  
+
+
+_**default value**_:
+```js
+function fetch(url, options) {
+  options.signal = AbortSignal.timeout(2500);
+  options.headers = new Headers(options.headers);
+  options.headers.set('user-agent', ''); // removes the user-agent header in Node's global fetch()
+ 
+  return globalThis.fetch(url, options);
+}
+```
+<a id="fetch-to-change-the-request's-timeout"></a><details><summary>(Click to expand) To change the request's timeout</summary><br>
+
+
+To change all request's timeout configure the fetch as a function like so:
+  
+
+```js
+ {
+   fetch(url, options) {
+     options.signal = AbortSignal.timeout(5000);
+     return globalThis.fetch(url, options);
+   }
+ }
+```
+</details>
+
 ### formats.bitsOfOpaqueRandomness
 
 The value should be an integer (or a function returning an integer) and the resulting opaque token length is equal to `Math.ceil(i / Math.log2(n))` where n is the number of symbols in the used alphabet, 64 in our case.   
@@ -2521,38 +2553,6 @@ _**default value**_:
     }
   }
 }
-```
-</details>
-
-### httpOptions
-
-Function called whenever calls to an external HTTP(S) resource are being made. You can change the request timeout through the `signal` option, the request `agent` used, the `user-agent` string used for the `user-agent` HTTP header, as well as the `dnsLookup` resolver function.   
-  
-
-
-_**default value**_:
-```js
-function httpOptions(url) {
-  return {
-    signal: undefined, // defaults to AbortSignal.timeout(2500)
-    agent: undefined, // defaults to node's global agents (https.globalAgent or http.globalAgent)
-    dnsLookup: undefined, // defaults to `dns.lookup()` (https://nodejs.org/api/dns.html#dnslookuphostname-options-callback)
-    'user-agent': undefined, // defaults to not sending the user-agent HTTP header
-  };
-}
-```
-<a id="http-options-to-change-the-request's-timeout"></a><details><summary>(Click to expand) To change the request's timeout</summary><br>
-
-
-To change all request's timeout configure the httpOptions as a function like so:
-  
-
-```js
- {
-   httpOptions(url) {
-     return { signal: AbortSignal.timeout(5000) };
-   }
- }
 ```
 </details>
 

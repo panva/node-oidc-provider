@@ -12,7 +12,6 @@ const pkg = JSON.parse(
 
 const enabledJWA = JSON.parse(JSON.stringify(await import('../../lib/consts/jwa.js')));
 
-const timeout = parseInt(process.env.TIMEOUT, 10);
 const clientAuthMethods = [
   'none',
   'client_secret_basic',
@@ -171,10 +170,6 @@ export default {
     RegistrationAccessToken: 1 * 24 * 60 * 60,
   },
   clientAuthMethods,
-  httpOptions(gotOptions) {
-    gotOptions.timeout = timeout || gotOptions.timeout; // eslint-disable-line no-param-reassign
-    return gotOptions;
-  },
   async issueRefreshToken(ctx, client, code) {
     if (!client.grantTypeAllowed('refresh_token')) {
       return false;
