@@ -504,37 +504,15 @@ location / {
 <!-- START CONF OPTIONS -->
 ### adapter
 
-The provided example and any new instance of oidc-provider will use the basic in-memory adapter for storing issued tokens, codes, user sessions, dynamically registered clients, etc. This is fine as long as you develop, configure and generally just play around since every time you restart your process all information will be lost. As soon as you cannot live with this limitation you will be required to provide your own custom adapter constructor for oidc-provider to use. This constructor will be called for every model accessed the first time it is needed. The API oidc-provider expects is documented [here](/example/my_adapter.js).   
+The provided example and any new instance of oidc-provider will use the basic in-memory adapter for storing issued tokens, codes, user sessions, dynamically registered clients, etc. This is fine as long as you develop, configure and generally just play around since every time you restart your process all information will be lost. As soon as you cannot live with this limitation you will be required to provide your own custom adapter constructor for oidc-provider to use. This constructor will be called for every model accessed the first time it is needed.   
+ - The API oidc-provider expects is documented [here](/example/my_adapter.js).
+ - See also: [Example MongoDB adapter implementation](https://github.com/panva/node-oidc-provider/discussions/1308)
+ - See also: [Example Redis adapter implementation](https://github.com/panva/node-oidc-provider/discussions/1309)
+ - See also: [Example Redis w/ JSON Adapter](https://github.com/panva/node-oidc-provider/discussions/1310)
+ - See also: [Default in-memory adapter implementation](/lib/adapters/memory_adapter.js)
+ - See also: [Community Contributed Adapter Archive](https://github.com/panva/node-oidc-provider/discussions/1311)   
   
 
-<a id="adapter-mongo-db-adapter-implementation"></a><details><summary>(Click to expand) MongoDB adapter implementation</summary><br>
-
-
-See [/example/adapters/mongodb.js](/example/adapters/mongodb.js)  
-
-
-</details>
-<a id="adapter-redis-adapter-implementation"></a><details><summary>(Click to expand) Redis adapter implementation</summary><br>
-
-
-See [/example/adapters/redis.js](/example/adapters/redis.js)  
-
-
-</details>
-<a id="adapter-redis-w-re-json-adapter-implementation"></a><details><summary>(Click to expand) Redis w/ ReJSON adapter implementation</summary><br>
-
-
-See [/example/adapters/redis_rejson.js](/example/adapters/redis_rejson.js)  
-
-
-</details>
-<a id="adapter-default-in-memory-adapter-implementation"></a><details><summary>(Click to expand) Default in-memory adapter implementation</summary><br>
-
-
-See [/lib/adapters/memory_adapter.js](/lib/adapters/memory_adapter.js)  
-
-
-</details>
 
 ### clients
 
