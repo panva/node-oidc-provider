@@ -2690,7 +2690,7 @@ new Prompt(
       const { oidc } = ctx;
       const request = get(oidc.claims, 'id_token.acr', {});
 
-      if (!request || !request.essential || !request.values) {
+      if (!request?.essential || !request?.values) {
         return Check.NO_NEED_TO_PROMPT;
       }
 
@@ -2714,7 +2714,7 @@ new Prompt(
       const { oidc } = ctx;
       const request = get(oidc.claims, 'id_token.acr', {});
 
-      if (!request || !request.essential || !request.value) {
+      if (!request?.essential || !request?.value) {
         return Check.NO_NEED_TO_PROMPT;
       }
 
@@ -2737,7 +2737,7 @@ new Prompt(
     if (
       oidc.client.applicationType === 'native'
       && oidc.params.response_type !== 'none'
-      && (!oidc.result || !('consent' in oidc.result))
+      && (!oidc.result?.consent)
     ) {
       return Check.REQUEST_PROMPT;
     }
@@ -2817,7 +2817,7 @@ new Prompt(
   new Check('rar_prompt', 'authorization_details were requested', (ctx) => {
     const { oidc } = ctx;
 
-    if (oidc.params.authorization_details && (!oidc.result || !('consent' in oidc.result))) {
+    if (oidc.params.authorization_details && !oidc.result?.consent) {
       return Check.REQUEST_PROMPT;
     }
 
