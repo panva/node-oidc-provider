@@ -539,7 +539,7 @@ describe('client authentication options', () => {
     it('accepts the auth', function () {
       return JWT.sign({
         jti: nanoid(),
-        aud: this.provider.issuer + this.suitePath('/token'),
+        aud: this.provider.issuer,
         sub: 'client-jwt-secret',
         iss: 'client-jwt-secret',
       }, this.key, 'HS256', { expiresIn: 60 }).then((assertion) => this.agent.post(route)
@@ -552,56 +552,8 @@ describe('client authentication options', () => {
         .expect(tokenAuthSucceeded));
     });
 
-    describe('audience', () => {
-      it('accepts the auth (issuer as aud)', function () {
-        return JWT.sign({
-          jti: nanoid(),
-          aud: this.provider.issuer,
-          sub: 'client-jwt-secret',
-          iss: 'client-jwt-secret',
-        }, this.key, 'HS256', { expiresIn: 60 }).then((assertion) => this.agent.post(route)
-          .send({
-            client_assertion: assertion,
-            grant_type: 'foo',
-            client_assertion_type: 'urn:ietf:params:oauth:client-assertion-type:jwt-bearer',
-          })
-          .type('form')
-          .expect(tokenAuthSucceeded));
-      });
-
-      it('accepts the auth (endpoint URL as aud)', function () {
-        return JWT.sign({
-          jti: nanoid(),
-          aud: this.provider.issuer + this.suitePath('/token/introspection'),
-          sub: 'client-jwt-secret',
-          iss: 'client-jwt-secret',
-        }, this.key, 'HS256', { expiresIn: 60 }).then((assertion) => this.agent.post('/token/introspection')
-          .send({
-            client_assertion: assertion,
-            token: 'foo',
-            client_assertion_type: 'urn:ietf:params:oauth:client-assertion-type:jwt-bearer',
-          })
-          .type('form')
-          .expect(introspectionAuthSucceeded));
-      });
-
-      it('accepts the auth (token endpoint URL as aud)', function () {
-        return JWT.sign({
-          jti: nanoid(),
-          aud: this.provider.issuer + this.suitePath('/token'),
-          sub: 'client-jwt-secret',
-          iss: 'client-jwt-secret',
-        }, this.key, 'HS256', { expiresIn: 60 }).then((assertion) => this.agent.post('/token/introspection')
-          .send({
-            client_assertion: assertion,
-            token: 'foo',
-            client_assertion_type: 'urn:ietf:params:oauth:client-assertion-type:jwt-bearer',
-          })
-          .type('form')
-          .expect(introspectionAuthSucceeded));
-      });
-
-      it('accepts the auth (issuer as [aud])', function () {
+    describe('additional audience values', () => {
+      it('accepts the auth when aud is an array', function () {
         return JWT.sign({
           jti: nanoid(),
           aud: [this.provider.issuer],
@@ -617,45 +569,67 @@ describe('client authentication options', () => {
           .expect(tokenAuthSucceeded));
       });
 
-      it('accepts the auth (endpoint URL as [aud])', function () {
-        return JWT.sign({
-          jti: nanoid(),
-          aud: [this.provider.issuer + this.suitePath('/token/introspection')],
-          sub: 'client-jwt-secret',
-          iss: 'client-jwt-secret',
-        }, this.key, 'HS256', { expiresIn: 60 }).then((assertion) => this.agent.post('/token/introspection')
-          .send({
-            client_assertion: assertion,
-            token: 'foo',
-            client_assertion_type: 'urn:ietf:params:oauth:client-assertion-type:jwt-bearer',
-          })
-          .type('form')
-          .expect(introspectionAuthSucceeded));
+      it('accepts the auth when aud is the token endpoint', async function () {
+        for (const aud of [this.provider.issuer + this.suitePath('/token'), [this.provider.issuer + this.suitePath('/token')]]) {
+          await JWT.sign({
+            jti: nanoid(),
+            aud,
+            sub: 'client-jwt-secret',
+            iss: 'client-jwt-secret',
+          }, this.key, 'HS256', { expiresIn: 60 }).then((assertion) => this.agent.post(route)
+            .send({
+              client_assertion: assertion,
+              grant_type: 'foo',
+              client_assertion_type: 'urn:ietf:params:oauth:client-assertion-type:jwt-bearer',
+            })
+            .type('form')
+            .expect(tokenAuthSucceeded));
+        }
       });
 
-      it('accepts the auth (token endpoint URL as [aud])', function () {
-        return JWT.sign({
-          jti: nanoid(),
-          aud: [this.provider.issuer + this.suitePath('/token')],
-          sub: 'client-jwt-secret',
-          iss: 'client-jwt-secret',
-        }, this.key, 'HS256', { expiresIn: 60 }).then((assertion) => this.agent.post('/token/introspection')
-          .send({
-            client_assertion: assertion,
-            token: 'foo',
-            client_assertion_type: 'urn:ietf:params:oauth:client-assertion-type:jwt-bearer',
-          })
-          .type('form')
-          .expect(introspectionAuthSucceeded));
+      it('accepts the auth when aud is the token endpoint at another endpoint', async function () {
+        for (const aud of [this.provider.issuer + this.suitePath('/token'), [this.provider.issuer + this.suitePath('/token')]]) {
+          await JWT.sign({
+            jti: nanoid(),
+            aud,
+            sub: 'client-jwt-secret',
+            iss: 'client-jwt-secret',
+          }, this.key, 'HS256', { expiresIn: 60 }).then((assertion) => this.agent.post('/token/introspection')
+            .send({
+              client_assertion: assertion,
+              client_assertion_type: 'urn:ietf:params:oauth:client-assertion-type:jwt-bearer',
+              token: 'foo',
+            })
+            .type('form')
+            .expect(introspectionAuthSucceeded));
+        }
+      });
+
+      it('accepts the auth when aud is the url of another endpoint it is used at', async function () {
+        for (const aud of [this.provider.issuer + this.suitePath('/token/introspection'), [this.provider.issuer + this.suitePath('/token/introspection')]]) {
+          await JWT.sign({
+            jti: nanoid(),
+            aud,
+            sub: 'client-jwt-secret',
+            iss: 'client-jwt-secret',
+          }, this.key, 'HS256', { expiresIn: 60 }).then((assertion) => this.agent.post('/token/introspection')
+            .send({
+              client_assertion: assertion,
+              client_assertion_type: 'urn:ietf:params:oauth:client-assertion-type:jwt-bearer',
+              token: 'foo',
+            })
+            .type('form')
+            .expect(introspectionAuthSucceeded));
+        }
       });
     });
 
-    it('rejects the auth if this is actually a none-client', function () {
+    it('rejects the auth if this is actually a none-client', async function () {
       const spy = sinon.spy();
       this.provider.once('grant.error', spy);
       return JWT.sign({
         jti: nanoid(),
-        aud: this.provider.issuer + this.suitePath('/token'),
+        aud: this.provider.issuer,
         sub: 'client-none',
         iss: 'client-none',
       }, this.key, 'HS256', { expiresIn: 60 }).then((assertion) => this.agent.post(route)
@@ -677,7 +651,7 @@ describe('client authentication options', () => {
     it('rejects the auth if authorization header is also present', function () {
       return JWT.sign({
         jti: nanoid(),
-        aud: this.provider.issuer + this.suitePath('/token'),
+        aud: this.provider.issuer,
         sub: 'client-jwt-secret',
         iss: 'client-jwt-secret',
       }, this.key, 'HS256', { expiresIn: 60 }).then((assertion) => this.agent.post(route)
@@ -698,7 +672,7 @@ describe('client authentication options', () => {
     it('rejects the auth if client secret is also present', function () {
       return JWT.sign({
         jti: nanoid(),
-        aud: this.provider.issuer + this.suitePath('/token'),
+        aud: this.provider.issuer,
         sub: 'client-jwt-secret',
         iss: 'client-jwt-secret',
       }, this.key, 'HS256', { expiresIn: 60 }).then((assertion) => this.agent.post(route)
@@ -714,22 +688,6 @@ describe('client authentication options', () => {
           error: 'invalid_request',
           error_description: 'client authentication must only be provided using one mechanism',
         }));
-    });
-
-    it('accepts the auth when aud is an array', function () {
-      return JWT.sign({
-        jti: nanoid(),
-        aud: [this.provider.issuer + this.suitePath('/token')],
-        sub: 'client-jwt-secret',
-        iss: 'client-jwt-secret',
-      }, this.key, 'HS256', { expiresIn: 60 }).then((assertion) => this.agent.post(route)
-        .send({
-          client_assertion: assertion,
-          grant_type: 'foo',
-          client_assertion_type: 'urn:ietf:params:oauth:client-assertion-type:jwt-bearer',
-        })
-        .type('form')
-        .expect(tokenAuthSucceeded));
     });
 
     it('rejects malformed assertions', function () {
@@ -753,7 +711,7 @@ describe('client authentication options', () => {
       this.provider.once('grant.error', spy);
       return JWT.sign({
         jti: nanoid(),
-        aud: this.provider.issuer + this.suitePath('/token'),
+        aud: this.provider.issuer,
         sub: 'client-jwt-secret',
         iss: 'client-jwt-secret',
         exp: '',
@@ -803,7 +761,7 @@ describe('client authentication options', () => {
       this.provider.once('grant.error', spy);
       return JWT.sign({
         // jti: nanoid(),
-        aud: this.provider.issuer + this.suitePath('/token'),
+        aud: this.provider.issuer,
         sub: 'client-jwt-secret',
         iss: 'client-jwt-secret',
       }, this.key, 'HS256', {
@@ -828,7 +786,7 @@ describe('client authentication options', () => {
       this.provider.once('grant.error', spy);
       return JWT.sign({
         jti: nanoid(),
-        aud: this.provider.issuer + this.suitePath('/token'),
+        aud: this.provider.issuer,
         sub: 'client-jwt-secret',
         // iss: 'client-jwt-secret',
       }, this.key, 'HS256', {
@@ -853,7 +811,7 @@ describe('client authentication options', () => {
       this.provider.once('grant.error', spy);
       return JWT.sign({
         jti: nanoid(),
-        aud: this.provider.issuer + this.suitePath('/token'),
+        aud: this.provider.issuer,
         // sub: 'client-jwt-secret',
         iss: 'client-jwt-secret',
       }, this.key, 'HS256', {
@@ -878,7 +836,7 @@ describe('client authentication options', () => {
       this.provider.once('grant.error', spy);
       return JWT.sign({
         jti: nanoid(),
-        aud: this.provider.issuer + this.suitePath('/token'),
+        aud: this.provider.issuer,
         sub: 'client-jwt-secret',
         iss: 'not equal to clientid',
       }, this.key, 'HS256', {
@@ -898,62 +856,10 @@ describe('client authentication options', () => {
         }));
     });
 
-    it('audience as array must contain the token endpoint', function () {
-      const spy = sinon.spy();
-      this.provider.once('grant.error', spy);
-      return JWT.sign({
-        jti: nanoid(),
-        // aud: this.provider.issuer + this.suitePath('/token'),
-        aud: ['misses the token endpoint'],
-        sub: 'client-jwt-secret',
-        iss: 'client-jwt-secret',
-      }, this.key, 'HS256', {
-        expiresIn: 60,
-      }).then((assertion) => this.agent.post(route)
-        .send({
-          client_assertion: assertion,
-          grant_type: 'foo',
-          client_assertion_type: 'urn:ietf:params:oauth:client-assertion-type:jwt-bearer',
-        })
-        .type('form')
-        .expect(401)
-        .expect(tokenAuthRejected)
-        .expect(() => {
-          expect(spy.calledOnce).to.be.true;
-          expect(errorDetail(spy)).to.equal('list of audience (aud) must include the endpoint url, issuer identifier or token endpoint url');
-        }));
-    });
-
-    it('audience as single entry must be the token endpoint', function () {
-      const spy = sinon.spy();
-      this.provider.once('grant.error', spy);
-      return JWT.sign({
-        jti: nanoid(),
-        // aud: this.provider.issuer + this.suitePath('/token'),
-        aud: 'not the token endpoint',
-        sub: 'client-jwt-secret',
-        iss: 'client-jwt-secret',
-      }, this.key, 'HS256', {
-        expiresIn: 60,
-      }).then((assertion) => this.agent.post(route)
-        .send({
-          client_assertion: assertion,
-          grant_type: 'foo',
-          client_assertion_type: 'urn:ietf:params:oauth:client-assertion-type:jwt-bearer',
-        })
-        .type('form')
-        .expect(401)
-        .expect(tokenAuthRejected)
-        .expect(() => {
-          expect(spy.calledOnce).to.be.true;
-          expect(errorDetail(spy)).to.equal('audience (aud) must equal the endpoint url, issuer identifier or token endpoint url');
-        }));
-    });
-
     it('checks for mismatch in client_assertion client_id and body client_id', function () {
       return JWT.sign({
         jti: nanoid(),
-        aud: this.provider.issuer + this.suitePath('/token'),
+        aud: this.provider.issuer,
         sub: 'client-jwt-secret',
         iss: 'client-jwt-secret',
       }, this.key, 'HS256', { expiresIn: 60 }).then((assertion) => this.agent.post(route)
@@ -974,7 +880,7 @@ describe('client authentication options', () => {
     it('requires client_assertion_type', function () {
       return JWT.sign({
         jti: nanoid(),
-        aud: this.provider.issuer + this.suitePath('/token'),
+        aud: this.provider.issuer,
         sub: 'client-jwt-secret',
         iss: 'client-jwt-secret',
       }, this.key, 'HS256', {
@@ -996,7 +902,7 @@ describe('client authentication options', () => {
     it('requires client_assertion_type of specific value', function () {
       return JWT.sign({
         jti: nanoid(),
-        aud: this.provider.issuer + this.suitePath('/token'),
+        aud: this.provider.issuer,
         sub: 'client-jwt-secret',
         iss: 'client-jwt-secret',
       }, this.key, 'HS256', {
@@ -1035,7 +941,7 @@ describe('client authentication options', () => {
       this.provider.once('grant.error', spy);
       return JWT.sign({
         jti: nanoid(),
-        aud: this.provider.issuer + this.suitePath('/token'),
+        aud: this.provider.issuer,
         sub: 'client-jwt-secret',
         iss: 'client-jwt-secret',
       }, this.key, 'HS256', {
@@ -1059,7 +965,7 @@ describe('client authentication options', () => {
       const key = await importJWK((await this.provider.Client.find('secret-expired-jwt')).symmetricKeyStore.selectForSign({ alg: 'HS256' })[0]);
       return JWT.sign({
         jti: nanoid(),
-        aud: this.provider.issuer + this.suitePath('/token'),
+        aud: this.provider.issuer,
         sub: 'secret-expired-jwt',
         iss: 'secret-expired-jwt',
       }, key, 'HS256', {
@@ -1083,7 +989,7 @@ describe('client authentication options', () => {
         const spy = sinon.spy();
         return JWT.sign({
           jti: nanoid(),
-          aud: this.provider.issuer + this.suitePath('/token'),
+          aud: this.provider.issuer,
           sub: 'client-jwt-secret',
           iss: 'client-jwt-secret',
         }, this.key, 'HS256', {
@@ -1128,7 +1034,7 @@ describe('client authentication options', () => {
         this.provider.once('grant.error', spy);
         return JWT.sign({
           jti: nanoid(),
-          aud: this.provider.issuer + this.suitePath('/token'),
+          aud: this.provider.issuer,
           sub: 'client-jwt-secret',
           iss: 'client-jwt-secret',
         }, this.key, 'HS256', {
@@ -1160,7 +1066,7 @@ describe('client authentication options', () => {
     it('accepts the auth', function () {
       return JWT.sign({
         jti: nanoid(),
-        aud: this.provider.issuer + this.suitePath('/token'),
+        aud: this.provider.issuer,
         sub: 'client-jwt-key',
         iss: 'client-jwt-key',
       }, privateKey, 'RS256', {
@@ -1179,7 +1085,7 @@ describe('client authentication options', () => {
       i(this.provider).configuration().clockTolerance = 10;
       return JWT.sign({
         jti: nanoid(),
-        aud: this.provider.issuer + this.suitePath('/token'),
+        aud: this.provider.issuer,
         sub: 'client-jwt-key',
         iss: 'client-jwt-key',
         iat: Math.ceil(Date.now() / 1000) + 5,
