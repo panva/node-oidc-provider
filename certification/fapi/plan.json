@@ -231,6 +231,78 @@
                     ]
                 }
             ]
+        },
+        "REPLACEME-par-ensure-reused-request-uri-prior-to-auth-completion-succeeds": {
+            "browser": [
+                {
+                    "comment": "Do nothing",
+                    "match": "https://fapi.panva.cz/auth*",
+                    "match-limit": 1,
+                    "tasks": [
+                        {
+                            "task": "Initial Login Page Load",
+                            "match": "https://fapi.panva.cz/interaction*",
+                            "commands": []
+                        }
+                    ]
+                },
+                {
+                    "match": "https://fapi.panva.cz/auth*",
+                    "tasks": [
+                        {
+                            "task": "Login",
+                            "optional": true,
+                            "match": "https://fapi.panva.cz/interaction*",
+                            "commands": [
+                                [
+                                    "text",
+                                    "name",
+                                    "login",
+                                    "foo",
+                                    "optional"
+                                ],
+                                [
+                                    "text",
+                                    "name",
+                                    "password",
+                                    "bar",
+                                    "optional"
+                                ],
+                                [
+                                    "click",
+                                    "class",
+                                    "login-submit"
+                                ]
+                            ]
+                        },
+                        {
+                            "task": "Consent",
+                            "optional": true,
+                            "match": "https://fapi.panva.cz/interaction*",
+                            "commands": [
+                                [
+                                    "click",
+                                    "class",
+                                    "login-submit"
+                                ]
+                            ]
+                        },
+                        {
+                            "task": "Verify Complete",
+                            "match": "https://*/test/a/*/callback*",
+                            "commands": [
+                                [
+                                    "wait",
+                                    "id",
+                                    "submission_complete",
+                                    10
+                                ]
+                            ]
+                        }
+                    ]
+                }
+
+            ]
         }
     }
 }
