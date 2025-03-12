@@ -11,7 +11,7 @@ import bootstrap from '../test_helper.js';
 describe('request parameter features', () => {
   before(bootstrap(import.meta.url));
 
-  describe('configuration features.requestUri', () => {
+  describe('configuration features.request', () => {
     it('extends discovery', async function () {
       await this.agent.get('/.well-known/openid-configuration')
         .expect(200)

@@ -550,7 +550,7 @@ _**default value**_:
 <a id="clients-available-metadata"></a><details><summary>(Click to expand) Available Metadata</summary><br>
 
 
-application_type, client_id, client_name, client_secret, client_uri, contacts, default_acr_values, default_max_age, grant_types, id_token_signed_response_alg, initiate_login_uri, jwks, jwks_uri, logo_uri, policy_uri, post_logout_redirect_uris, redirect_uris, require_auth_time, response_types, response_modes, scope, sector_identifier_uri, subject_type, token_endpoint_auth_method, tos_uri, userinfo_signed_response_alg <br/><br/>The following metadata is available but may not be recognized depending on your provider's configuration.<br/><br/> authorization_encrypted_response_alg, authorization_encrypted_response_enc, authorization_signed_response_alg, backchannel_logout_session_required, backchannel_logout_uri, id_token_encrypted_response_alg, id_token_encrypted_response_enc, introspection_encrypted_response_alg, introspection_encrypted_response_enc, introspection_signed_response_alg, request_object_encryption_alg, request_object_encryption_enc, request_object_signing_alg, request_uris, tls_client_auth_san_dns, tls_client_auth_san_email, tls_client_auth_san_ip, tls_client_auth_san_uri, tls_client_auth_subject_dn, tls_client_certificate_bound_access_tokens, use_mtls_endpoint_aliases, token_endpoint_auth_signing_alg, userinfo_encrypted_response_alg, userinfo_encrypted_response_enc  
+application_type, client_id, client_name, client_secret, client_uri, contacts, default_acr_values, default_max_age, grant_types, id_token_signed_response_alg, initiate_login_uri, jwks, jwks_uri, logo_uri, policy_uri, post_logout_redirect_uris, redirect_uris, require_auth_time, response_types, response_modes, scope, sector_identifier_uri, subject_type, token_endpoint_auth_method, tos_uri, userinfo_signed_response_alg <br/><br/>The following metadata is available but may not be recognized depending on your provider's configuration.<br/><br/> authorization_encrypted_response_alg, authorization_encrypted_response_enc, authorization_signed_response_alg, backchannel_logout_session_required, backchannel_logout_uri, id_token_encrypted_response_alg, id_token_encrypted_response_enc, introspection_encrypted_response_alg, introspection_encrypted_response_enc, introspection_signed_response_alg, request_object_encryption_alg, request_object_encryption_enc, request_object_signing_alg, tls_client_auth_san_dns, tls_client_auth_san_email, tls_client_auth_san_ip, tls_client_auth_san_uri, tls_client_auth_subject_dn, tls_client_certificate_bound_access_tokens, use_mtls_endpoint_aliases, token_endpoint_auth_signing_alg, userinfo_encrypted_response_alg, userinfo_encrypted_response_enc  
 
 
 </details>
@@ -1602,7 +1602,7 @@ true
 
 [`OIDC Core 1.0`](https://openid.net/specs/openid-connect-core-1_0-errata2.html#RequestObject) and [JWT Secured Authorization Request (`JAR`)](https://www.rfc-editor.org/rfc/rfc9101.html) - Request Object  
 
-Enables the use and validations of the `request` and/or `request_uri` parameters.  
+Enables the use and validations of the `request` parameter.  
 
 
 _**default value**_:
@@ -1610,9 +1610,7 @@ _**default value**_:
 {
   assertJwtClaimsAndHeader: [AsyncFunction: assertJwtClaimsAndHeader], // see expanded details below
   request: false,
-  requestUri: false,
-  requireSignedRequestObject: false,
-  requireUriRegistration: true
+  requireSignedRequestObject: false
 }
 ```
 
@@ -1673,16 +1671,6 @@ _**default value**_:
 false
 ```
 
-#### requestUri
-
-Enables the use and validations of the `request_uri` parameter.  
-
-
-_**default value**_:
-```js
-false
-```
-
 #### requireSignedRequestObject
 
 Makes the use of signed request objects required for all authorization requests as an authorization server policy.  
@@ -1691,16 +1679,6 @@ Makes the use of signed request objects required for all authorization requests 
 _**default value**_:
 ```js
 false
-```
-
-#### requireUriRegistration
-
-Makes request_uri pre-registration mandatory (true) or optional (false).  
-
-
-_**default value**_:
-```js
-true
 ```
 
 </details>

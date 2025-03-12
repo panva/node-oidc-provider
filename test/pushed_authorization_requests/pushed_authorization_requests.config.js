@@ -22,7 +22,6 @@ merge(config.features, {
   },
   requestObjects: {
     request: false,
-    requestUri: false,
   },
 });
 
