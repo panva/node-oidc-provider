@@ -906,7 +906,6 @@ Enables `DPoP` - mechanism for sender-constraining tokens via a proof-of-possess
 _**default value**_:
 ```js
 {
-  ack: undefined,
   allowReplay: false,
   enabled: false,
   nonceSecret: undefined,
