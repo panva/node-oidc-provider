@@ -9,7 +9,7 @@ import Provider from '../../lib/index.js';
 
 describe('body parser', () => {
   afterEach(() => {
-    global.server.removeAllListeners('request');
+    globalThis.server.removeAllListeners('request');
   });
 
   describe('application/x-www-form-urlencoded', () => {
@@ -30,9 +30,9 @@ describe('body parser', () => {
       app.use(upstreamParser());
       app.use(mount('/op', provider.app));
 
-      global.server.on('request', app.callback());
+      globalThis.server.on('request', app.callback());
 
-      return supertest(global.server)
+      return supertest(globalThis.server)
         .post('/op/token')
         .send({
           client_id: 'client',
@@ -62,9 +62,9 @@ describe('body parser', () => {
       app.use(upstreamParser());
       app.use(mount('/op', provider.app));
 
-      global.server.on('request', app.callback());
+      globalThis.server.on('request', app.callback());
 
-      await supertest(global.server)
+      await supertest(globalThis.server)
         .post('/op/token')
         .send({
           client_id: 'client',
@@ -91,9 +91,9 @@ describe('body parser', () => {
       app.use(upstreamParser());
       app.use(mount('/op', provider.app));
 
-      global.server.on('request', app.callback());
+      globalThis.server.on('request', app.callback());
 
-      return supertest(global.server)
+      return supertest(globalThis.server)
         .post('/op/reg')
         .send({
           redirect_uris: ['https://rp.example.com/cb'],
@@ -107,9 +107,9 @@ describe('body parser', () => {
         features: { registration: { enabled: true } },
       });
 
-      global.server.on('request', provider.app.callback());
+      globalThis.server.on('request', provider.app.callback());
 
-      return supertest(global.server)
+      return supertest(globalThis.server)
         .post('/reg')
         .send('not a json')
         .type('json')

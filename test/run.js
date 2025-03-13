@@ -31,8 +31,8 @@ async function run() {
 
   const { MOUNT_VIA: via, MOUNT_TO: to } = process.env;
 
-  global.server = createServer().listen(0, '::');
-  await once(global.server, 'listening');
+  globalThis.server = createServer().listen(0, '::');
+  await once(globalThis.server, 'listening');
   const mocha = new Mocha();
   mocha.timeout(3000);
   mocha.files = files;
@@ -51,7 +51,7 @@ async function run() {
     mocha.run((failures) => {
       if (!failures) {
         passed.push(`Suite passed${mountAddendum}`);
-        global.server.close(resolve);
+        globalThis.server.close(resolve);
       } else {
         reject(new SuiteFailedError(`Suite failed${mountAddendum}`));
       }
@@ -69,6 +69,6 @@ try {
   } else {
     console.error(error);
   }
-  global.server.close();
+  globalThis.server.close();
   process.exitCode = 1;
 }

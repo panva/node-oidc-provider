@@ -68,7 +68,7 @@ Request.prototype._auth = function (user, pass, options, encoder) {
 
 process.env.NODE_ENV = process.env.NODE_ENV || 'test';
 
-global.i = instance;
+globalThis.i = instance;
 
 Object.defineProperties(Provider.prototype, {
   enable: {
@@ -103,7 +103,7 @@ function readCookie(value) {
   return parsed[key];
 }
 
-const { port } = global.server.address();
+const { port } = globalThis.server.address();
 
 const jwt = (token) => JSON.parse(base64url.decode(token.split('.')[1])).jti;
 
@@ -120,7 +120,7 @@ export default function testHelper(importMetaUrl, {
 
   after(async () => {
     TestAdapter.clear();
-    global.server.removeAllListeners('request');
+    globalThis.server.removeAllListeners('request');
     await Promise.all(afterPromises.map((x) => x()));
   });
 
@@ -491,20 +491,20 @@ export default function testHelper(importMetaUrl, {
       case 'koa': {
         const app = new Koa();
         app.use(koaMount(mountTo, provider.app));
-        global.server.on('request', app.callback());
+        globalThis.server.on('request', app.callback());
         this.app = app;
         break;
       }
       case 'express': {
         const app = new Express();
         app.use(mountTo, provider.callback());
-        global.server.on('request', app);
+        globalThis.server.on('request', app);
         break;
       }
       case 'connect': {
         const app = new Connect();
         app.use(mountTo, provider.callback());
-        global.server.on('request', app);
+        globalThis.server.on('request', app);
         break;
       }
       case 'fastify': {
@@ -513,13 +513,13 @@ export default function testHelper(importMetaUrl, {
         const app = new Fastify();
         await app.register(middie);
         app.use(mountTo, provider.callback());
-        await new Promise((resolve) => { global.server.close(resolve); });
+        await new Promise((resolve) => { globalThis.server.close(resolve); });
         await app.listen({ port, host: '::' });
-        global.server = app.server;
+        globalThis.server = app.server;
         afterPromises.push(async () => {
           await app.close();
-          global.server = createServer().listen(port, '::');
-          await once(global.server, 'listening');
+          globalThis.server = createServer().listen(port, '::');
+          await once(globalThis.server, 'listening');
         });
         break;
       }
@@ -544,21 +544,21 @@ export default function testHelper(importMetaUrl, {
             return res.writableEnded ? h.abandon : h.continue;
           },
         });
-        await new Promise((resolve) => { global.server.close(resolve); });
+        await new Promise((resolve) => { globalThis.server.close(resolve); });
         await app.start();
-        global.server = app.listener;
+        globalThis.server = app.listener;
         afterPromises.push(async () => {
           await app.stop();
-          global.server = createServer().listen(port, '::');
-          await once(global.server, 'listening');
+          globalThis.server = createServer().listen(port, '::');
+          await once(globalThis.server, 'listening');
         });
         break;
       }
       default:
-        global.server.on('request', provider.callback());
+        globalThis.server.on('request', provider.callback());
     }
 
-    agent = supertest(global.server);
+    agent = supertest(globalThis.server);
 
     if (mountTo !== '/') {
       ['get', 'post', 'put', 'del', 'options', 'trace'].forEach((method) => {
