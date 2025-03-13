@@ -449,7 +449,7 @@ describe('client authentication options', () => {
     });
 
     it('can use transfer-encoding: chunked', function (done) {
-      const { address, port } = global.server.address();
+      const { address, port } = globalThis.server.address();
 
       const req = request({
         hostname: address,
