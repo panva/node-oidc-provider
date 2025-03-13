@@ -4,7 +4,8 @@
   },
   "globals": {
     "i": true,
-    "instance": true
+    "instance": true,
+    "globalThis": true
   },
   "rules": {
     "func-names": "off",
