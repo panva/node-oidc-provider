@@ -91,7 +91,7 @@ oidc-provider can be mounted to existing connect, express, fastify, hapi, or koa
 various ways to fit a variety of uses. See the [documentation](/docs/README.md) and [example folder](/example).
 
 ```js
-import Provider from 'oidc-provider'
+import { Provider } from 'oidc-provider'
 const configuration = {
   // refer to the documentation for other available configuration
   clients: [

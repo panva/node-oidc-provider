@@ -45,7 +45,7 @@ If you or your company use this module, or you need help using/upgrading the mod
 ## Basic configuration example
 
 ```js
-import Provider from 'oidc-provider'
+import { Provider } from 'oidc-provider'
 const configuration = {
   // ... see the available options in Configuration options section
   clients: [
