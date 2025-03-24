@@ -10,7 +10,7 @@ const pkg = JSON.parse(
   }),
 );
 
-const enabledJWA = JSON.parse(JSON.stringify(await import('../../lib/consts/jwa.js')));
+const enabledJWA = structuredClone({ ...await import('../../lib/consts/jwa.js') });
 
 const clientAuthMethods = [
   'none',
