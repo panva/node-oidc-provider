@@ -39,23 +39,25 @@ describe('configuration.jwks', () => {
 
     expect(() => {
       new Provider('http://localhost', { jwks });
-    }).to.throw('jwks.keys[0] configuration is missing required properties');
+    }).to.throw('jwks.keys[0].d configuration must be a non-empty string');
   });
 
-  it('warns if "kid" is the same for multiple keys', async () => {
-    sinon.stub(console, 'warn').returns();
+  it('rejects if "kid" is the same for multiple keys', async () => {
     const [rsa, ec] = await Promise.all([
       generateKeyPair('RS256', { extractable: true }),
       generateKeyPair('ES256', { extractable: true }),
     ]);
-    new Provider('http://localhost', {
+    const config = {
       jwks: {
         keys: [
           { ...await exportJWK(rsa.privateKey), kid: 'nov-2019' },
           { ...await exportJWK(ec.privateKey), kid: 'nov-2019' },
         ],
       },
-    });
-    expect(console.warn.calledWithMatch(/different keys within the keystore SHOULD use distinct `kid` values, with your current keystore you should expect interoperability issues with your clients/)).to.be.true;
+    };
+
+    expect(() => {
+      new Provider('http://localhost', config);
+    }).to.throw('jwks.keys configuration must not contain duplicate "kid" values');
   });
 });
