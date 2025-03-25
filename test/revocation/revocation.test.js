@@ -1,11 +1,14 @@
-import sinon from 'sinon';
+import { createSandbox } from 'sinon';
 import { expect } from 'chai';
 
 import bootstrap from '../test_helper.js';
 
+const sinon = createSandbox();
 const route = '/token/revocation';
+
 describe('revocation features', () => {
   before(bootstrap(import.meta.url));
+  afterEach(sinon.restore);
 
   describe('enriched discovery', () => {
     it('shows the url now', function () {
@@ -27,7 +30,8 @@ describe('revocation features', () => {
         scope: 'scope',
       });
 
-      const stub = sinon.stub(this.provider.AccessToken.prototype, 'destroy').callsFake(() => Promise.resolve());
+      const atDestroy = sinon.stub(this.provider.AccessToken.prototype, 'destroy').callsFake(() => Promise.resolve());
+      const grantDestroy = sinon.stub(this.provider.Grant.adapter, 'destroy').callsFake(() => Promise.resolve());
 
       const token = await at.save();
       return this.agent.post(route)
@@ -35,8 +39,33 @@ describe('revocation features', () => {
         .send({ token })
         .type('form')
         .expect(() => {
-          expect(stub.calledOnce).to.be.true;
-          this.provider.AccessToken.prototype.destroy.restore();
+          expect(atDestroy.calledOnce).to.be.true;
+          expect(grantDestroy.called).to.be.false;
+        })
+        .expect(200)
+        .expect('');
+    });
+
+    it('revokes access token and grant when configured', async function () {
+      const at = new this.provider.AccessToken({
+        accountId: 'accountId',
+        grantId: 'foo',
+        client: await this.provider.Client.find('client'),
+        scope: 'scope',
+      });
+
+      sinon.stub(i(this.provider).configuration(), 'revokeGrantPolicy').callsFake(() => true);
+      const atDestroy = sinon.stub(this.provider.AccessToken.prototype, 'destroy').callsFake(() => Promise.resolve());
+      const grantDestroy = sinon.stub(this.provider.Grant.adapter, 'destroy').callsFake(() => Promise.resolve());
+
+      const token = await at.save();
+      return this.agent.post(route)
+        .auth('client', 'secret')
+        .send({ token })
+        .type('form')
+        .expect(() => {
+          expect(atDestroy.calledOnce).to.be.true;
+          expect(grantDestroy.calledOnce).to.be.true;
         })
         .expect(200)
         .expect('');
@@ -59,7 +88,6 @@ describe('revocation features', () => {
         .type('form')
         .expect(() => {
           expect(stub.calledOnce).to.be.true;
-          this.provider.AccessToken.prototype.destroy.restore();
         })
         .expect(200)
         .expect('');
@@ -82,7 +110,6 @@ describe('revocation features', () => {
         .type('form')
         .expect(() => {
           expect(stub.calledOnce).to.be.true;
-          this.provider.AccessToken.prototype.destroy.restore();
         })
         .expect(200)
         .expect('');
@@ -105,7 +132,6 @@ describe('revocation features', () => {
         .type('form')
         .expect(() => {
           expect(stub.calledOnce).to.be.true;
-          this.provider.AccessToken.prototype.destroy.restore();
         })
         .expect(200)
         .expect('');
@@ -126,9 +152,6 @@ describe('revocation features', () => {
         .auth('client', 'secret')
         .send({ token })
         .type('form')
-        .expect(() => {
-          this.provider.AccessToken.find.restore();
-        })
         .expect(500)
         .expect((response) => {
           expect(response.body.error).to.eql('server_error');
@@ -143,7 +166,8 @@ describe('revocation features', () => {
         scope: 'scope',
       });
 
-      const stub = sinon.stub(this.provider.RefreshToken.prototype, 'destroy').callsFake(() => Promise.resolve());
+      const rtDestroy = sinon.stub(this.provider.RefreshToken.prototype, 'destroy').callsFake(() => Promise.resolve());
+      const grantDestroy = sinon.stub(this.provider.Grant.adapter, 'destroy').callsFake(() => Promise.resolve());
 
       const token = await rt.save();
       return this.agent.post(route)
@@ -151,8 +175,8 @@ describe('revocation features', () => {
         .send({ token })
         .type('form')
         .expect(() => {
-          expect(stub.calledOnce).to.be.true;
-          this.provider.RefreshToken.prototype.destroy.restore();
+          expect(rtDestroy.calledOnce).to.be.true;
+          expect(grantDestroy.calledOnce).to.be.true;
         })
         .expect(200)
         .expect('');
@@ -175,7 +199,6 @@ describe('revocation features', () => {
         .type('form')
         .expect(() => {
           expect(stub.calledOnce).to.be.true;
-          this.provider.RefreshToken.prototype.destroy.restore();
         })
         .expect(200)
         .expect('');
@@ -198,7 +221,6 @@ describe('revocation features', () => {
         .type('form')
         .expect(() => {
           expect(stub.calledOnce).to.be.true;
-          this.provider.RefreshToken.prototype.destroy.restore();
         })
         .expect(200)
         .expect('');
@@ -221,7 +243,6 @@ describe('revocation features', () => {
         .type('form')
         .expect(() => {
           expect(stub.calledOnce).to.be.true;
-          this.provider.RefreshToken.prototype.destroy.restore();
         })
         .expect(200)
         .expect('');
@@ -241,7 +262,6 @@ describe('revocation features', () => {
         .type('form')
         .expect(() => {
           expect(stub.calledOnce).to.be.true;
-          this.provider.ClientCredentials.prototype.destroy.restore();
         })
         .expect(200)
         .expect('');
@@ -261,7 +281,6 @@ describe('revocation features', () => {
         .type('form')
         .expect(() => {
           expect(stub.calledOnce).to.be.true;
-          this.provider.ClientCredentials.prototype.destroy.restore();
         })
         .expect(200)
         .expect('');
@@ -281,7 +300,6 @@ describe('revocation features', () => {
         .type('form')
         .expect(() => {
           expect(stub.calledOnce).to.be.true;
-          this.provider.ClientCredentials.prototype.destroy.restore();
         })
         .expect(200)
         .expect('');
@@ -301,7 +319,6 @@ describe('revocation features', () => {
         .type('form')
         .expect(() => {
           expect(stub.calledOnce).to.be.true;
-          this.provider.ClientCredentials.prototype.destroy.restore();
         })
         .expect(200)
         .expect('');
@@ -390,11 +407,7 @@ describe('revocation features', () => {
         })
         .type('form')
         .expect(200)
-        .expect(() => {
-          this.provider.AccessToken.find.restore();
-        })
         .catch((err) => {
-          this.provider.AccessToken.find.restore();
           throw err;
         });
     });
