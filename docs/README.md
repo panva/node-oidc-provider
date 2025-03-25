@@ -468,6 +468,10 @@ location / {
   - [revocation](#featuresrevocation)
   - [rpInitiatedLogout](#featuresrpinitiatedlogout)
   - [userinfo](#featuresuserinfo)
+  - Experimental features:
+    - [externalSigningSupport (e.g. KMS)](#featuresexternalsigningsupport)
+    - [richAuthorizationRequests](#featuresrichauthorizationrequests)
+    - [webMessageResponseMode](#featureswebmessageresponsemode)
 - [acrValues](#acrvalues)
 - [allowOmittingSingleRegisteredRedirectUri](#allowomittingsingleregisteredredirecturi)
 - [assertJwtClientAuthClaimsAndHeader](#assertjwtclientauthclaimsandheader)
@@ -584,7 +588,8 @@ _**recommendation**_: The following action order is recommended when rotating si
 
 ### features
 
-Enable/disable features. Some features are still either based on draft or experimental RFCs. Enabling those will produce a warning in your console and you must be aware that breaking changes may occur between draft implementations and that those will be published as minor versions of oidc-provider. See the example below on how to acknowledge the specification is a draft (this will remove the warning log) and ensure the Provider instance will fail to instantiate if a new version of oidc-provider bundles newer version of the RFC with breaking changes in it.   
+Enable/disable features.   
+ Some features may be experimental. Enabling those will produce a warning and you must be aware that breaking changes may occur and that those changes will be published as minor versions of oidc-provider. See the example below on how to acknowledge an experimental feature version (this will remove the warning) and ensure the Provider configuration will throw an error if a new version of oidc-provider includes breaking changes to this experimental feature.   
   
 
 <a id="features-acknowledging-an-experimental-feature"></a><details><summary>(Click to expand) Acknowledging an experimental feature
@@ -593,38 +598,38 @@ Enable/disable features. Some features are still either based on draft or experi
 ```js
 new Provider('http://localhost:3000', {
   features: {
-    backchannelLogout: {
+    webMessageResponseMode: {
       enabled: true,
     },
   },
 });
 // The above code produces this NOTICE
-// NOTICE: The following draft features are enabled and their implemented version not acknowledged
-// NOTICE:   - OpenID Connect Back-Channel Logout 1.0 - draft 06 (OIDF AB/Connect Working Group draft. URL: https://openid.net/specs/openid-connect-backchannel-1_0-06.html)
+// NOTICE: The following experimental features are enabled and their implemented version not acknowledged
+// NOTICE:   - OAuth 2.0 Web Message Response Mode - draft 01 (Acknowledging this feature's implemented version can be done with the value 'individual-draft-01')
 // NOTICE: Breaking changes between experimental feature updates may occur and these will be published as MINOR semver oidc-provider updates.
-// NOTICE: You may disable this notice and these potentially breaking updates by acknowledging the current draft version. See https://github.com/panva/node-oidc-provider/tree/v7.3.0/docs/README.md#features
+// NOTICE: You may disable this notice and be warned when breaking updates occur by acknowledging the current experiment's version. See the documentation for more details.
 new Provider('http://localhost:3000', {
   features: {
-    backchannelLogout: {
+    webMessageResponseMode: {
       enabled: true,
-      ack: 'draft-06', // < we're acknowledging draft 06 of the RFC
+      ack: 'individual-draft-01',
     },
   },
 });
-// No more NOTICE, at this point if the draft implementation changed to 07 and contained no breaking
+// No more NOTICE, at this point if the experimental was updated and contained no breaking
 // changes, you're good to go, still no NOTICE, your code is safe to run.
-// Now lets assume you upgrade oidc-provider version and it bundles draft 08 and it contains breaking
-// changes
+// Now lets assume you upgrade oidc-provider version and it includes a breaking change in
+// this experimental feature
 new Provider('http://localhost:3000', {
   features: {
-    backchannelLogout: {
+    webMessageResponseMode: {
       enabled: true,
-      ack: 'draft-06', // < bundled is draft-08, but we're still acknowledging draft-06
+      ack: 'individual-draft-01',
     },
   },
 });
 // Thrown:
-// Error: An unacknowledged version of a draft feature is included in this oidc-provider version.
+// Error: An unacknowledged version of an experimental feature is included in this oidc-provider version.
 ```
 </details>
 
@@ -1126,6 +1131,21 @@ Enables encryption features such as receiving encrypted UserInfo responses, encr
 _**default value**_:
 ```js
 {
+  enabled: false
+}
+```
+
+### features.externalSigningSupport
+
+External Signing Support  
+
+Enables the use of the exported `ExternalSigningKey` class instances in place of a Private JWK in the `jwks.keys` configuration array. This allows Digital Signature Algorithm (such as PS256, ES256, or others) signatures to be produced externally, for example via a KMS service or an HSM. This is an experimental feature.  
+
+
+_**default value**_:
+```js
+{
+  ack: undefined,
   enabled: false
 }
 ```
@@ -1838,7 +1858,7 @@ _**default value**_:
 
 [`RFC9396`](https://www.rfc-editor.org/rfc/rfc9396.html) - OAuth 2.0 Rich Authorization Requests  
 
-Enables the use of `authorization_details` parameter for the authorization and token endpoints to enable issuing Access Tokens with fine-grained authorization data.  
+Enables the use of `authorization_details` parameter for the authorization and token endpoints to enable issuing Access Tokens with fine-grained authorization data. This is an experimental feature.  
 
 
 _**default value**_:
@@ -2071,6 +2091,24 @@ _**default value**_:
 ```js
 {
   enabled: true
+}
+```
+
+### features.webMessageResponseMode
+
+[draft-sakimura-oauth-wmrm-01](https://tools.ietf.org/html/draft-sakimura-oauth-wmrm-01) - OAuth 2.0 Web Message Response Mode  
+
+Enables `web_message` response mode. Only Simple Mode is supported. Requests containing the Relay Mode parameters will be rejected. This is an experimental feature.   
+  
+
+_**recommendation**_: Although a general advise to use a `helmet` (e.g. for [express](https://www.npmjs.com/package/helmet), [koa](https://www.npmjs.com/package/koa-helmet)) it is especially advised for your interaction views routes if Web Message Response Mode is enabled in your deployment. You will have to experiment with removal of the Cross-Origin-Embedder-Policy and Cross-Origin-Opener-Policy headers at various endpoints throughout the authorization request end-user journey to finalize this feature.  
+
+
+_**default value**_:
+```js
+{
+  ack: undefined,
+  enabled: false
 }
 ```
 
