@@ -50,10 +50,10 @@
     "lib"
   ],
   "scripts": {
-    "ci": "node ./test/ci",
     "format": "eslint lib example certification test docs --fix",
     "heroku-postbuild": "npm install mongodb@^4.3.0 openid-client@^5.0.0",
-    "test": "node ./test/run"
+    "test": "node ./test/run",
+    "test-ci": "node ./test/ci"
   },
   "dependencies": {
     "@koa/cors": "^5.0.0",
