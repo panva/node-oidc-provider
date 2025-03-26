@@ -1537,9 +1537,7 @@ Function used to generate random client secrets during dynamic client registrati
 _**default value**_:
 ```js
 async function secretFactory(ctx) {
-  const bytes = Buffer.allocUnsafe(64);
-  await randomFill(bytes);
-  return base64url.encodeBuffer(bytes);
+  return crypto.randomBytes(64).toString('base64url');
 }
 ```
 
