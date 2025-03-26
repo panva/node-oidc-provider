@@ -403,10 +403,6 @@ const fapi = new Provider(ISSUER, {
   extraClientMetadata: {
     properties: ['profile'],
   },
-  pkce: {
-    // TODO: remove in v9.x
-    required: () => false,
-  },
 });
 
 const clientJwtAuthExpectedAudience = Object.getOwnPropertyDescriptor(fapi.OIDCContext.prototype, 'clientJwtAuthExpectedAudience').value;
