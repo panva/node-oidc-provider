@@ -427,14 +427,11 @@ const LOCAL_SUITE_ORIGINS = new Set([
 
 Object.defineProperty(fapi.Client.prototype, 'redirectUriAllowed', {
   value(url) {
-    let parsed;
-    try {
-      parsed = new URL(url);
-    } catch (err) {
-      return false;
-    }
+    const parsed = URL.parse(url);
+    if (!parsed) return false;
+    const { origin, pathname, search } = parsed;
 
-    return (LOCAL_SUITE_ORIGINS.has(parsed.origin) || SUITE_ORIGINS.test(parsed.origin)) && parsed.pathname.endsWith('/callback') && (parsed.search === '' || parsed.search === '?dummy1=lorem&dummy2=ipsum');
+    return (LOCAL_SUITE_ORIGINS.has(origin) || SUITE_ORIGINS.test(origin)) && pathname.endsWith('/callback') && (search === '' || search === '?dummy1=lorem&dummy2=ipsum');
   },
 });
 
