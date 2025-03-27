@@ -1,6 +1,7 @@
 /* eslint-disable no-underscore-dangle */
 
 import { parse, pathToFileURL } from 'node:url';
+import { randomBytes } from 'node:crypto';
 import * as path from 'node:path';
 import * as querystring from 'node:querystring';
 import { createServer } from 'node:http';
@@ -238,12 +239,12 @@ export default function testHelper(importMetaUrl, {
 
         this.client_id = 'client_id' in parameters ? parameters.client_id : clients[0].client_id;
         const c = clients.find((cl) => cl.client_id === this.client_id);
-        this.state = 'state' in parameters ? parameters.state : Math.random().toString();
+        this.state = 'state' in parameters ? parameters.state : randomBytes(16).toString('base64url');
         this.redirect_uri = 'redirect_uri' in parameters ? parameters.redirect_uri : parameters.redirect_uri || (c && c.redirect_uris[0]);
         this.res = {};
 
         if (this.response_type && this.response_type.includes('id_token')) {
-          this.nonce = 'nonce' in parameters ? parameters.nonce : Math.random().toString();
+          this.nonce = 'nonce' in parameters ? parameters.nonce : randomBytes(16).toString('base64url');
         }
 
         Object.defineProperty(this, 'validateClientLocation', {

@@ -1,4 +1,5 @@
 import { parse as parseUrl } from 'node:url';
+import { randomBytes } from 'node:crypto';
 
 import { createSandbox } from 'sinon';
 import { expect } from 'chai';
@@ -46,7 +47,7 @@ describe('logout endpoint', () => {
         .query({
           client_id: 'client',
           scope: 'openid',
-          nonce: String(Math.random()),
+          nonce: randomBytes(16).toString('base64url'),
           response_type: 'id_token',
           redirect_uri: 'https://client.example.com/cb',
         })
@@ -187,7 +188,7 @@ describe('logout endpoint', () => {
                 .query({
                   client_id: 'client-hmac',
                   scope: 'openid',
-                  nonce: String(Math.random()),
+                  nonce: randomBytes(16).toString('base64url'),
                   response_type: 'id_token',
                   redirect_uri: 'https://client.example.com/cb',
                 })
