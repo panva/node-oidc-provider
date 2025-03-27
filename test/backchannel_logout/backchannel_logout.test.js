@@ -1,5 +1,6 @@
 import { strict as assert } from 'node:assert';
 import { parse as parseUrl } from 'node:url';
+import { randomBytes } from 'node:crypto';
 
 import { createSandbox } from 'sinon';
 import { expect } from 'chai';
@@ -93,7 +94,7 @@ describe('Back-Channel Logout 1.0', () => {
           client_id: 'client',
           scope: 'openid offline_access',
           prompt: 'consent',
-          nonce: String(Math.random()),
+          nonce: randomBytes(16).toString('base64url'),
           response_type: 'code id_token',
           redirect_uri: 'https://client.example.com/cb',
         })
