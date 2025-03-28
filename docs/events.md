@@ -62,3 +62,5 @@ loaded client or session.
 | `session.destroyed` | `(session)` | ... whenever session is destroyed |
 | `session.saved` | `(session)` | ... whenever session is saved |
 | `userinfo.error` | `(ctx, error)` | ... whenever a handled error is encountered at the `userinfo_endpoint` |
+
+External type definitions are available via [DefinitelyTyped](https://npmjs.com/package/@types/oidc-provider).
