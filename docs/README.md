@@ -32,7 +32,6 @@ If you or your company use this module, or you need help using/upgrading the mod
 - [Registering module middlewares (helmet, ip-filters, rate-limiters, etc)](#registering-module-middlewares-helmet-ip-filters-rate-limiters-etc)
 - [Pre- and post-middlewares ❗](#pre--and-post-middlewares)
 - [Mounting oidc-provider](#mounting-oidc-provider)
-  - [to a connect application](#to-a-connect-application)
   - [to a fastify application](#to-a-fastify-application)
   - [to a nest application](#to-a-nest-application)
   - [to a hapi application](#to-a-hapi-application)
@@ -316,13 +315,6 @@ path prefix `/oidc`.
 Note: if you mount oidc-provider to a path it's likely you will have to also update the
 [`interactions.url`](#interactionsurl) configuration to reflect the new path.
 
-### to a `connect` application
-
-```js
-// assumes connect ^3.0.0
-connectApp.use('/oidc', oidc.callback())
-```
-
 ### to a `fastify` application
 
 ```js
@@ -413,7 +405,6 @@ application code
 | ------------------------------------------------- | ------------------------- |
 | standalone oidc-provider                          | `provider.proxy = true`   |
 | oidc-provider mounted to an `express` application | `provider.proxy = true`   |
-| oidc-provider mounted to a `connect` application  | `provider.proxy = true`   |
 | oidc-provider mounted to a `koa` application      | `yourKoaApp.proxy = true` |
 | oidc-provider mounted to a `fastify` application  | `provider.proxy = true`   |
 | oidc-provider mounted to a `hapi` application     | `provider.proxy = true`   |
