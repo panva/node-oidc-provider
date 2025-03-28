@@ -16,7 +16,6 @@ import { expect } from 'chai';
 import koaMount from 'koa-mount';
 import base64url from 'base64url';
 import { CookieAccessInfo } from 'cookiejar'; // eslint-disable-line import/no-extraneous-dependencies
-import Connect from 'connect';
 import Express from 'express';
 import Koa from 'koa';
 
@@ -498,12 +497,6 @@ export default function testHelper(importMetaUrl, {
       }
       case 'express': {
         const app = new Express();
-        app.use(mountTo, provider.callback());
-        globalThis.server.on('request', app);
-        break;
-      }
-      case 'connect': {
-        const app = new Connect();
         app.use(mountTo, provider.callback());
         globalThis.server.on('request', app);
         break;

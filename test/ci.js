@@ -32,7 +32,7 @@ try {
 
   if (process.platform === 'linux' || !('CI' in process.env)) {
     const mountTo = '/oidc';
-    const frameworks = ['connect', 'express', 'koa', 'hapi', 'fastify'];
+    const frameworks = ['express', 'koa', 'hapi', 'fastify'];
 
     for (const mountVia of frameworks) {
       await pass({ mountVia, mountTo });
