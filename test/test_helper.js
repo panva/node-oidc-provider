@@ -16,7 +16,8 @@ import { expect } from 'chai';
 import koaMount from 'koa-mount';
 import base64url from 'base64url';
 import { CookieAccessInfo } from 'cookiejar'; // eslint-disable-line import/no-extraneous-dependencies
-import Express from 'express';
+import Express4 from 'express4';
+import Express5 from 'express5';
 import Koa from 'koa';
 
 import nanoid from '../lib/helpers/nanoid.js';
@@ -495,8 +496,14 @@ export default function testHelper(importMetaUrl, {
         this.app = app;
         break;
       }
-      case 'express': {
-        const app = new Express();
+      case 'express@4': {
+        const app = new Express4();
+        app.use(mountTo, provider.callback());
+        globalThis.server.on('request', app);
+        break;
+      }
+      case 'express@5': {
+        const app = new Express5();
         app.use(mountTo, provider.callback());
         globalThis.server.on('request', app);
         break;
