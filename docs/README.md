@@ -75,6 +75,8 @@ const server = oidc.listen(3000, () => {
 })
 ```
 
+External type definitions are available via [DefinitelyTyped](https://npmjs.com/package/@types/oidc-provider).
+
 ## Accounts
 
 This module needs to be able to find an account and once found the account needs to have an

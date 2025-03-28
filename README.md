@@ -113,6 +113,8 @@ oidc.listen(3000, () => {
 })
 ```
 
+External type definitions are available via [DefinitelyTyped](https://npmjs.com/package/@types/oidc-provider).
+
 ## Community Guides
 
 Collection of Community-maintained configuration use cases are in the [Community Guides Discussions section](https://github.com/panva/node-oidc-provider/discussions/categories/community-guides)
