@@ -59,7 +59,7 @@ try {
       }
     });
   }
-  render(provider.koa(), {
+  render(provider, {
     cache: false,
     viewExt: 'ejs',
     layout: '_layout',
