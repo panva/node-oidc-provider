@@ -91,25 +91,25 @@ oidc-provider can be mounted to existing connect, express, fastify, hapi, or koa
 various ways to fit a variety of uses. See the [documentation](/docs/README.md) and [example folder](/example).
 
 ```js
-import * as oidc from 'oidc-provider'
+import * as oidc from "oidc-provider";
 
-const provider = new oidc.Provider('http://localhost:3000', {
+const provider = new oidc.Provider("http://localhost:3000", {
   // refer to the documentation for other available configuration
   clients: [
     {
-      client_id: 'foo',
-      client_secret: 'bar',
-      redirect_uris: ['http://lvh.me:8080/cb'],
+      client_id: "foo",
+      client_secret: "bar",
+      redirect_uris: ["http://lvh.me:8080/cb"],
       // ... other client properties
     },
   ],
-})
+});
 
 const server = oidc.listen(3000, () => {
   console.log(
-    'oidc-provider listening on port 3000, check http://localhost:3000/.well-known/openid-configuration',
-  )
-})
+    "oidc-provider listening on port 3000, check http://localhost:3000/.well-known/openid-configuration",
+  );
+});
 ```
 
 External type definitions are available via [DefinitelyTyped](https://npmjs.com/package/@types/oidc-provider).

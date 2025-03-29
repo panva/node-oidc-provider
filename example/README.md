@@ -15,5 +15,6 @@ Further resources
 - [Mounting to a path](/docs/README.md#mounting-oidc-provider)
 
 Useful to know oidc-provider dependencies
+
 - [Koa](https://koajs.com/) - web framework oidc-provider uses internally
 - [jose](https://github.com/panva/jose) - everything JOSE
