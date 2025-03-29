@@ -15,20 +15,20 @@ describe('custom token endpoint grant types', () => {
 
   before('allows for grant types to be added', function () {
     register(this.provider, 'lotto', 'name');
-    expect(i(this.provider).configuration('grantTypes').has('lotto')).to.be.true;
+    expect(i(this.provider).configuration.grantTypes.has('lotto')).to.be.true;
   });
 
   it('does not need to be passed extra parameters', function () {
     register(this.provider, 'lotto-2');
-    expect(i(this.provider).configuration('grantTypes').has('lotto-2')).to.be.true;
+    expect(i(this.provider).configuration.grantTypes.has('lotto-2')).to.be.true;
   });
 
   it('can be passed null or a string', function () {
     register(this.provider, 'lotto-3', null);
     register(this.provider, 'lotto-4', 'name');
 
-    expect(i(this.provider).configuration('grantTypes').has('lotto-3')).to.be.true;
-    expect(i(this.provider).configuration('grantTypes').has('lotto-4')).to.be.true;
+    expect(i(this.provider).configuration.grantTypes.has('lotto-3')).to.be.true;
+    expect(i(this.provider).configuration.grantTypes.has('lotto-4')).to.be.true;
   });
 
   describe('when added', () => {

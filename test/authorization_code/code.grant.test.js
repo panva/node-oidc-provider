@@ -124,13 +124,13 @@ describe('grant_type=authorization_code', () => {
 
     context('', () => {
       before(function () {
-        const ttl = i(this.provider).configuration('ttl');
+        const { ttl } = i(this.provider).configuration;
         this.prev = ttl.AuthorizationCode;
         ttl.AuthorizationCode = 5;
       });
 
       after(function () {
-        i(this.provider).configuration('ttl').AuthorizationCode = this.prev;
+        i(this.provider).configuration.ttl.AuthorizationCode = this.prev;
       });
 
       it('validates code is not expired', function () {
@@ -339,12 +339,12 @@ describe('grant_type=authorization_code', () => {
 
   context('with real tokens (3/3) - one redirect_uri registered with allowOmittingSingleRegisteredRedirectUri=true', () => {
     beforeEach(function () {
-      i(this.provider).configuration().allowOmittingSingleRegisteredRedirectUri = true;
+      i(this.provider).configuration.allowOmittingSingleRegisteredRedirectUri = true;
       return this.login();
     });
 
     afterEach(function () {
-      i(this.provider).configuration().allowOmittingSingleRegisteredRedirectUri = false;
+      i(this.provider).configuration.allowOmittingSingleRegisteredRedirectUri = false;
       return this.logout();
     });
 
@@ -437,13 +437,13 @@ describe('grant_type=authorization_code', () => {
 
     context('', () => {
       before(function () {
-        const ttl = i(this.provider).configuration('ttl');
+        const { ttl } = i(this.provider).configuration;
         this.prev = ttl.AuthorizationCode;
         ttl.AuthorizationCode = 5;
       });
 
       after(function () {
-        i(this.provider).configuration('ttl').AuthorizationCode = this.prev;
+        i(this.provider).configuration.ttl.AuthorizationCode = this.prev;
       });
 
       it('validates code is not expired', function () {

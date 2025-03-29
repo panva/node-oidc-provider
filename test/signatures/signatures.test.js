@@ -15,7 +15,7 @@ describe('signatures', () => {
     beforeEach(async function () {
       const ac = new this.provider.AuthorizationCode({
         accountId: this.loggedInAccountId,
-        acr: i(this.provider).configuration('acrValues[0]'),
+        acr: i(this.provider).configuration.acrValues[0],
         authTime: epochTime(),
         clientId: 'client-sig-HS256',
         grantId: this.getGrantId('client-sig-HS256'),

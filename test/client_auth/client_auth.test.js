@@ -61,7 +61,7 @@ describe('client authentication options', () => {
         ],
       });
 
-      expect(i(provider).configuration('clientAuthSigningAlgValues')).to.be.undefined;
+      expect(i(provider).configuration.clientAuthSigningAlgValues).to.be.undefined;
     });
 
     it('removes client_secret_jwt when no HMAC based alg is enabled', () => {
@@ -78,7 +78,7 @@ describe('client authentication options', () => {
         },
       });
 
-      expect(i(provider).configuration('clientAuthMethods')).not.to.include('client_secret_jwt');
+      expect(i(provider).configuration.clientAuthMethods).not.to.include('client_secret_jwt');
     });
 
     it('removes private_key_jwt when no public key crypto based alg is enabled', () => {
@@ -95,7 +95,7 @@ describe('client authentication options', () => {
         },
       });
 
-      expect(i(provider).configuration('clientAuthMethods')).not.to.include('private_key_jwt');
+      expect(i(provider).configuration.clientAuthMethods).not.to.include('private_key_jwt');
     });
 
     it('pushes only symmetric algs when client_secret_jwt is enabled', () => {
@@ -115,7 +115,7 @@ describe('client authentication options', () => {
         'HS512',
       ];
 
-      expect(i(provider).configuration('clientAuthSigningAlgValues')).to.eql(algs);
+      expect(i(provider).configuration.clientAuthSigningAlgValues).to.eql(algs);
     });
 
     it('pushes only asymmetric algs when private_key_jwt is enabled', () => {
@@ -143,7 +143,7 @@ describe('client authentication options', () => {
         'EdDSA',
       ];
 
-      expect(i(provider).configuration('clientAuthSigningAlgValues')).to.eql(algs);
+      expect(i(provider).configuration.clientAuthSigningAlgValues).to.eql(algs);
     });
 
     it('pushes all algs when both _jwt methods are enabled', () => {
@@ -175,7 +175,7 @@ describe('client authentication options', () => {
         'EdDSA',
       ];
 
-      expect(i(provider).configuration('clientAuthSigningAlgValues')).to.eql(algs);
+      expect(i(provider).configuration.clientAuthSigningAlgValues).to.eql(algs);
     });
   });
 
@@ -1079,7 +1079,7 @@ describe('client authentication options', () => {
     const privateKey = createPrivateKey({ format: 'jwk', key: clientKey });
 
     after(function () {
-      i(this.provider).configuration().clockTolerance = 0;
+      i(this.provider).configuration.clockTolerance = 0;
     });
 
     it('accepts the auth', function () {
@@ -1101,7 +1101,7 @@ describe('client authentication options', () => {
     });
 
     it('accepts client assertions issued within acceptable system clock skew', function () {
-      i(this.provider).configuration().clockTolerance = 10;
+      i(this.provider).configuration.clockTolerance = 10;
       return JWT.sign({
         jti: nanoid(),
         aud: this.provider.issuer,

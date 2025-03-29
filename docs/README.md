@@ -2659,7 +2659,7 @@ new Prompt(
       }
 
       if (oidc.client.subjectType === 'pairwise') {
-        sub = await instance(oidc.provider).configuration('pairwiseIdentifier')(
+        sub = await instance(oidc.provider).configuration.pairwiseIdentifier(
           ctx,
           sub,
           oidc.client,
@@ -2694,7 +2694,7 @@ new Prompt(
       }
 
       if (oidc.client.subjectType === 'pairwise') {
-        sub = await instance(oidc.provider).configuration('pairwiseIdentifier')(
+        sub = await instance(oidc.provider).configuration.pairwiseIdentifier(
           ctx,
           sub,
           oidc.client,
@@ -2715,7 +2715,7 @@ new Prompt(
     'none of the requested ACRs could not be obtained',
     (ctx) => {
       const { oidc } = ctx;
-      const request = get(oidc.claims, 'id_token.acr', {});
+      const request = oidc.claims?.id_token?.acr ?? {};
 
       if (!request?.essential || !request?.values) {
         return Check.NO_NEED_TO_PROMPT;
@@ -2739,7 +2739,7 @@ new Prompt(
     'requested ACR could not be obtained',
     (ctx) => {
       const { oidc } = ctx;
-      const request = get(oidc.claims, 'id_token.acr', {});
+      const request = oidc.claims?.id_token?.acr ?? {};
 
       if (!request?.essential || !request?.value) {
         return Check.NO_NEED_TO_PROMPT;

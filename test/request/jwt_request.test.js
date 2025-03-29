@@ -20,7 +20,7 @@ describe('request parameter features', () => {
           expect(response.body).not.to.have.property('require_signed_request_object');
         });
 
-      i(this.provider).configuration('features.requestObjects').requireSignedRequestObject = true;
+      i(this.provider).features.requestObjects.requireSignedRequestObject = true;
 
       await this.agent.get('/.well-known/openid-configuration')
         .expect(200)
@@ -31,7 +31,7 @@ describe('request parameter features', () => {
     });
 
     after(function () {
-      i(this.provider).configuration('features.requestObjects').requireSignedRequestObject = false;
+      i(this.provider).features.requestObjects.requireSignedRequestObject = false;
     });
   });
 
@@ -61,12 +61,12 @@ describe('request parameter features', () => {
         });
       });
       after(function () {
-        i(this.provider).configuration().clockTolerance = 0;
+        i(this.provider).configuration.clockTolerance = 0;
         return this.logout();
       });
 
       it('does not use anything from the OAuth 2.0 parameters', async function () {
-        i(this.provider).configuration().features.requestObjects.mode = 'strict';
+        i(this.provider).features.requestObjects.mode = 'strict';
 
         const spy = sinon.spy();
         this.provider.once('authorization.success', spy);
@@ -229,7 +229,7 @@ describe('request parameter features', () => {
         const client = await this.provider.Client.find('client-with-HS-sig');
         let [key] = client.symmetricKeyStore.selectForSign({ alg: 'HS256' });
         key = await importJWK(key);
-        i(this.provider).configuration().clockTolerance = 10;
+        i(this.provider).configuration.clockTolerance = 10;
         return JWT.sign({
           jti: randomBytes(16).toString('base64url'),
           iat: Math.ceil(Date.now() / 1000) + 5,

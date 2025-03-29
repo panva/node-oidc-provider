@@ -69,7 +69,7 @@ describe('POST code_verification endpoint w/o verification', () => {
   });
 
   it('renders a confirmation page', async function () {
-    const spy = sinon.spy(i(this.provider).configuration('features.deviceFlow'), 'userCodeConfirmSource');
+    const spy = sinon.spy(i(this.provider).features.deviceFlow, 'userCodeConfirmSource');
     const deviceInfo = {
       ip: '127.0.0.1',
       ua: 'foo',
@@ -100,7 +100,7 @@ describe('POST code_verification endpoint w/o verification', () => {
   it('re-renders on no submitted code', async function () {
     const errSpy = sinon.spy();
     this.provider.once('code_verification.error', errSpy);
-    const spy = sinon.spy(i(this.provider).configuration('features.deviceFlow'), 'userCodeInputSource');
+    const spy = sinon.spy(i(this.provider).features.deviceFlow, 'userCodeInputSource');
 
     await this.agent.post(route)
       .send({ xsrf })
@@ -121,7 +121,7 @@ describe('POST code_verification endpoint w/o verification', () => {
   it('re-renders on not found code', async function () {
     const errSpy = sinon.spy();
     this.provider.once('code_verification.error', errSpy);
-    const spy = sinon.spy(i(this.provider).configuration('features.deviceFlow'), 'userCodeInputSource');
+    const spy = sinon.spy(i(this.provider).features.deviceFlow, 'userCodeInputSource');
 
     await this.agent.post(route)
       .send({
@@ -145,7 +145,7 @@ describe('POST code_verification endpoint w/o verification', () => {
   it('re-renders on found but expired code', async function () {
     const errSpy = sinon.spy();
     this.provider.once('code_verification.error', errSpy);
-    const spy = sinon.spy(i(this.provider).configuration('features.deviceFlow'), 'userCodeInputSource');
+    const spy = sinon.spy(i(this.provider).features.deviceFlow, 'userCodeInputSource');
     await new this.provider.DeviceCode({
       userCode: 'FOOEXPIRED',
     }).save();
@@ -173,7 +173,7 @@ describe('POST code_verification endpoint w/o verification', () => {
   it('re-renders on found but already user code', async function () {
     const errSpy = sinon.spy();
     this.provider.once('code_verification.error', errSpy);
-    const spy = sinon.spy(i(this.provider).configuration('features.deviceFlow'), 'userCodeInputSource');
+    const spy = sinon.spy(i(this.provider).features.deviceFlow, 'userCodeInputSource');
     await new this.provider.DeviceCode({
       userCode: 'FOOCONSUMED',
       accountId: 'account',
@@ -201,7 +201,7 @@ describe('POST code_verification endpoint w/o verification', () => {
   it('re-renders on invalid client', async function () {
     const errSpy = sinon.spy();
     this.provider.once('code_verification.error', errSpy);
-    const spy = sinon.spy(i(this.provider).configuration('features.deviceFlow'), 'userCodeInputSource');
+    const spy = sinon.spy(i(this.provider).features.deviceFlow, 'userCodeInputSource');
     await new this.provider.DeviceCode({
       userCode: 'FOONOTFOUNDCLIENT',
       clientId: 'client',
@@ -230,7 +230,7 @@ describe('POST code_verification endpoint w/o verification', () => {
   it('re-renders on !ctx.oidc.session.state', async function () {
     const errSpy = sinon.spy();
     this.provider.once('code_verification.error', errSpy);
-    const spy = sinon.spy(i(this.provider).configuration('features.deviceFlow'), 'userCodeInputSource');
+    const spy = sinon.spy(i(this.provider).features.deviceFlow, 'userCodeInputSource');
     await new this.provider.DeviceCode({
       userCode: 'FOOCSRF1',
     }).save();
@@ -259,7 +259,7 @@ describe('POST code_verification endpoint w/o verification', () => {
   it('re-renders on invalid csrf', async function () {
     const errSpy = sinon.spy();
     this.provider.once('code_verification.error', errSpy);
-    const spy = sinon.spy(i(this.provider).configuration('features.deviceFlow'), 'userCodeInputSource');
+    const spy = sinon.spy(i(this.provider).features.deviceFlow, 'userCodeInputSource');
     await new this.provider.DeviceCode({
       userCode: 'FOOCSRF2',
     }).save();
@@ -304,7 +304,7 @@ describe('POST code_verification endpoint w/ verification', () => {
 
   passInteractionChecks('native_client_prompt', 'op_claims_missing', () => {
     it('accepts an abort command', async function () {
-      const spy = sinon.spy(i(this.provider).configuration('features.deviceFlow'), 'userCodeInputSource');
+      const spy = sinon.spy(i(this.provider).features.deviceFlow, 'userCodeInputSource');
 
       let code = await new this.provider.DeviceCode({
         clientId: 'client',
@@ -337,7 +337,7 @@ describe('POST code_verification endpoint w/ verification', () => {
     });
 
     it('renders a confirmation and assigns', async function () {
-      const spy = sinon.spy(i(this.provider).configuration('features.deviceFlow'), 'successSource');
+      const spy = sinon.spy(i(this.provider).features.deviceFlow, 'successSource');
 
       let code = await new this.provider.DeviceCode({
         clientId: 'client',
@@ -372,7 +372,7 @@ describe('POST code_verification endpoint w/ verification', () => {
     });
 
     it('renders a confirmation and assigns (incl. sid because of client configuration)', async function () {
-      const spy = sinon.spy(i(this.provider).configuration('features.deviceFlow'), 'successSource');
+      const spy = sinon.spy(i(this.provider).features.deviceFlow, 'successSource');
 
       let code = await new this.provider.DeviceCode({
         clientId: 'client-backchannel',
@@ -399,7 +399,7 @@ describe('POST code_verification endpoint w/ verification', () => {
     });
 
     it('renders a confirmation and assigns (incl. sid because of claims)', async function () {
-      const spy = sinon.spy(i(this.provider).configuration('features.deviceFlow'), 'successSource');
+      const spy = sinon.spy(i(this.provider).features.deviceFlow, 'successSource');
 
       let code = await new this.provider.DeviceCode({
         clientId: 'client',
@@ -427,7 +427,7 @@ describe('POST code_verification endpoint w/ verification', () => {
     });
 
     it('allows for punctuation to be included and characters to be downcased', async function () {
-      const spy = sinon.spy(i(this.provider).configuration('features.deviceFlow'), 'successSource');
+      const spy = sinon.spy(i(this.provider).features.deviceFlow, 'successSource');
 
       let code = await new this.provider.DeviceCode({
         clientId: 'client',

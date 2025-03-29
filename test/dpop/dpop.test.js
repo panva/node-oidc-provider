@@ -974,12 +974,12 @@ describe('features.dPoP', () => {
 
   describe('required nonce', () => {
     before(function () {
-      this.orig = i(this.provider).configuration().features.dPoP.requireNonce;
-      i(this.provider).configuration().features.dPoP.requireNonce = () => true;
+      this.orig = i(this.provider).features.dPoP.requireNonce;
+      i(this.provider).features.dPoP.requireNonce = () => true;
     });
 
     after(function () {
-      i(this.provider).configuration().features.dPoP.requireNonce = this.orig;
+      i(this.provider).features.dPoP.requireNonce = this.orig;
     });
 
     it('@ PAR endpoint', async function () {
