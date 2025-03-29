@@ -7,6 +7,7 @@ import { expect } from 'chai';
 import * as JWT from '../../lib/helpers/jwt.js';
 import epochTime from '../../lib/helpers/epoch_time.js';
 import bootstrap, { assertNoPendingInterceptors, mock } from '../test_helper.js';
+import initializeClients from '../../lib/helpers/initialize_clients.js';
 
 const sinon = createSandbox();
 
@@ -34,7 +35,7 @@ describe('client keystore refresh', () => {
   before(bootstrap(import.meta.url, { config: 'client_keystore' }));
 
   before(async function () {
-    return i(this.provider).clientAddStatic({
+    initializeClients.call(this.provider, [{
       client_id: 'client',
       client_secret: 'secret',
       redirect_uris: ['https://client.example.com/cb'],
@@ -42,7 +43,7 @@ describe('client keystore refresh', () => {
       id_token_signed_response_alg: 'HS256',
       id_token_encrypted_response_alg: 'ECDH-ES+A128KW',
       id_token_encrypted_response_enc: 'A128CBC-HS256',
-    });
+    }]);
   });
 
   afterEach(sinon.restore);

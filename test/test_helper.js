@@ -79,7 +79,7 @@ globalThis.i = instance;
 Object.defineProperties(Provider.prototype, {
   enable: {
     value(feature, options = {}) {
-      const config = i(this).configuration(`features.${feature}`);
+      const config = i(this).features[feature];
       if (!config) {
         throw new Error(`invalid feature: ${feature}`);
       }
@@ -220,7 +220,7 @@ export default function testHelper(importMetaUrl, {
         };
       }
 
-      let ttl = i(provider).configuration('ttl.Session');
+      let ttl = i(provider).configuration.ttl.Session;
 
       if (typeof ttl === 'function') {
         ttl = ttl(ctx, session);
@@ -598,7 +598,7 @@ export function passInteractionChecks(...reasons) {
 
   context('', () => {
     before(function () {
-      const { policy } = i(this.provider).configuration('interactions');
+      const { policy } = i(this.provider).configuration.interactions;
 
       const iChecks = flatten(policy.map((i) => i.checks));
 

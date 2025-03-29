@@ -142,12 +142,12 @@ describe('BASIC code', () => {
     describe(`${verb} ${route} interactions`, () => {
       before(function () { return this.logout(); });
       before(function () {
-        this.policy = i(this.provider).configuration('interactions').policy;
-        i(this.provider).configuration('interactions').policy = [];
+        this.policy = i(this.provider).configuration.interactions.policy;
+        i(this.provider).configuration.interactions.policy = [];
       });
 
       after(function () {
-        i(this.provider).configuration('interactions').policy = this.policy;
+        i(this.provider).configuration.interactions.policy = this.policy;
       });
 
       it('no account id was resolved and no interactions requested', async function () {
@@ -524,13 +524,13 @@ describe('BASIC code', () => {
 
       context('when client has a single redirect_uri', () => {
         after(async function () {
-          i(this.provider).configuration().allowOmittingSingleRegisteredRedirectUri = false;
+          i(this.provider).configuration.allowOmittingSingleRegisteredRedirectUri = false;
           await this.logout();
         });
 
         it('missing mandatory parameter redirect_uri', function () {
           const emitSpy = sinon.spy();
-          const renderSpy = sinon.spy(i(this.provider).configuration(), 'renderError');
+          const renderSpy = sinon.spy(i(this.provider).configuration, 'renderError');
           this.provider.once('authorization.error', emitSpy);
           const auth = new this.AuthorizationRequest({
             response_type,
@@ -554,7 +554,7 @@ describe('BASIC code', () => {
         });
 
         it('unless allowOmittingSingleRegisteredRedirectUri is true', async function () {
-          i(this.provider).configuration().allowOmittingSingleRegisteredRedirectUri = true;
+          i(this.provider).configuration.allowOmittingSingleRegisteredRedirectUri = true;
           await this.login();
           const auth = new this.AuthorizationRequest({
             response_type,
@@ -585,7 +585,7 @@ describe('BASIC code', () => {
 
         it('missing mandatory parameter redirect_uri', function () {
           const emitSpy = sinon.spy();
-          const renderSpy = sinon.spy(i(this.provider).configuration(), 'renderError');
+          const renderSpy = sinon.spy(i(this.provider).configuration, 'renderError');
           this.provider.once('authorization.error', emitSpy);
           const auth = new this.AuthorizationRequest({
             response_type,
@@ -696,7 +696,7 @@ describe('BASIC code', () => {
 
       // section-4.1.2.1 RFC6749
       it('missing mandatory parameter client_id', function () {
-        const renderSpy = sinon.spy(i(this.provider).configuration(), 'renderError');
+        const renderSpy = sinon.spy(i(this.provider).configuration, 'renderError');
         const auth = new this.AuthorizationRequest({
           response_type,
           scope,
@@ -720,7 +720,7 @@ describe('BASIC code', () => {
 
       // section-4.1.2.1 RFC6749
       it('unrecognized client_id provided', function () {
-        const renderSpy = sinon.spy(i(this.provider).configuration(), 'renderError');
+        const renderSpy = sinon.spy(i(this.provider).configuration, 'renderError');
         const auth = new this.AuthorizationRequest({
           response_type,
           scope,
@@ -743,7 +743,7 @@ describe('BASIC code', () => {
 
       describe('section-4.1.2.1 RFC6749', () => {
         it('validates redirect_uri ad acta [regular error]', function () {
-          const renderSpy = sinon.spy(i(this.provider).configuration(), 'renderError');
+          const renderSpy = sinon.spy(i(this.provider).configuration, 'renderError');
           const spy = sinon.spy();
           this.provider.on('authorization.error', spy);
           const auth = new this.AuthorizationRequest({
@@ -775,7 +775,7 @@ describe('BASIC code', () => {
         });
 
         it('validates redirect_uri ad acta [server error]', function () {
-          const renderSpy = sinon.spy(i(this.provider).configuration(), 'renderError');
+          const renderSpy = sinon.spy(i(this.provider).configuration, 'renderError');
           const authErrorSpy = sinon.spy();
           const serverErrorSpy = sinon.spy();
           this.provider.on('authorization.error', authErrorSpy);
@@ -940,7 +940,7 @@ describe('BASIC code', () => {
 
       it('redirect_uri mismatch', function () {
         const emitSpy = sinon.spy();
-        const renderSpy = sinon.spy(i(this.provider).configuration(), 'renderError');
+        const renderSpy = sinon.spy(i(this.provider).configuration, 'renderError');
         this.provider.once('authorization.error', emitSpy);
         const auth = new this.AuthorizationRequest({
           response_type,

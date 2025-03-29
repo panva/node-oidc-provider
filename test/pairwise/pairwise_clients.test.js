@@ -3,6 +3,7 @@ import uniq from 'lodash/uniq.js';
 import { expect } from 'chai';
 
 import bootstrap, { assertNoPendingInterceptors, mock } from '../test_helper.js';
+import addClient from '../../lib/helpers/add_client.js';
 
 describe('pairwise features', () => {
   before(bootstrap(import.meta.url));
@@ -12,7 +13,7 @@ describe('pairwise features', () => {
   describe('pairwise client configuration', () => {
     context('sector_identifier_uri is not provided', () => {
       it('resolves the sector_identifier from one redirect_uri', function () {
-        return i(this.provider).clientAdd({
+        return addClient(this.provider, {
           client_id: 'client',
           client_secret: 'secret',
           redirect_uris: ['https://client.example.com/cb'],
@@ -24,7 +25,7 @@ describe('pairwise features', () => {
       });
 
       it('resolves the sector_identifier if redirect_uris hosts are the same', function () {
-        return i(this.provider).clientAdd({
+        return addClient(this.provider, {
           client_id: 'client',
           client_secret: 'secret',
           redirect_uris: ['https://client.example.com/cb', 'https://client.example.com/forum/cb'],
@@ -36,7 +37,7 @@ describe('pairwise features', () => {
       });
 
       it('fails to validate when multiple redirect_uris hosts are provided', function () {
-        return i(this.provider).clientAdd({
+        return addClient(this.provider, {
           client_id: 'client',
           client_secret: 'secret',
           redirect_uris: ['https://client.example.com/cb', 'https://wrongsubdomain.example.com/forum/cb'],
@@ -59,7 +60,7 @@ describe('pairwise features', () => {
           })
           .reply(200, JSON.stringify(['https://client.example.com/cb', 'https://another.example.com/forum/cb']));
 
-        return i(this.provider).clientAdd({
+        return addClient(this.provider, {
           client_id: 'client',
           client_secret: 'secret',
           redirect_uris: ['https://client.example.com/cb', 'https://another.example.com/forum/cb'],
@@ -78,7 +79,7 @@ describe('pairwise features', () => {
           })
           .reply(200, JSON.stringify(['https://client.example.com/cb', 'https://another.example.com/forum/cb']));
 
-        return i(this.provider).clientAdd({
+        return addClient(this.provider, {
           client_id: 'client',
           client_secret: 'secret',
           redirect_uris: ['https://client.example.com/cb', 'https://another.example.com/forum/cb'],
@@ -104,7 +105,7 @@ describe('pairwise features', () => {
       });
 
       it('must be an https uri', function () {
-        return i(this.provider).clientAdd({
+        return addClient(this.provider, {
           client_id: 'client',
           client_secret: 'secret',
           redirect_uris: ['https://client.example.com/cb', 'https://another.example.com/forum/cb'],
@@ -125,7 +126,7 @@ describe('pairwise features', () => {
           })
           .reply(200, JSON.stringify(['https://client.example.com/cb', 'https://another.example.com/forum/cb']));
 
-        return i(this.provider).clientAdd({
+        return addClient(this.provider, {
           client_id: 'client',
           client_secret: 'secret',
           redirect_uris: ['https://client.example.com/cb', 'https://missing.example.com/forum/cb'],
@@ -148,7 +149,7 @@ describe('pairwise features', () => {
             })
             .reply(200, JSON.stringify(['https://client.example.com/cb', 'https://another.example.com/forum/cb']));
 
-          return i(this.provider).clientAdd({
+          return addClient(this.provider, {
             client_id: 'client',
             response_types: [],
             backchannel_token_delivery_mode: 'poll',
@@ -175,7 +176,7 @@ describe('pairwise features', () => {
             })
             .reply(200, JSON.stringify(['https://client.example.com/cb', 'https://another.example.com/forum/cb']));
 
-          return i(this.provider).clientAdd({
+          return addClient(this.provider, {
             client_id: 'client',
             response_types: [],
             grant_types: ['urn:ietf:params:oauth:grant-type:device_code'],
@@ -200,7 +201,7 @@ describe('pairwise features', () => {
           })
           .reply(200, '{ not a valid json');
 
-        return i(this.provider).clientAdd({
+        return addClient(this.provider, {
           client_id: 'client',
           client_secret: 'secret',
           redirect_uris: ['https://client.example.com/cb', 'https://missing.example.com/forum/cb'],
@@ -222,7 +223,7 @@ describe('pairwise features', () => {
           })
           .reply(200, JSON.stringify('https://client.example.com/cb'));
 
-        return i(this.provider).clientAdd({
+        return addClient(this.provider, {
           client_id: 'client',
           client_secret: 'secret',
           redirect_uris: ['https://client.example.com/cb', 'https://missing.example.com/forum/cb'],
@@ -244,7 +245,7 @@ describe('pairwise features', () => {
           })
           .reply(500);
 
-        return i(this.provider).clientAdd({
+        return addClient(this.provider, {
           client_id: 'client',
           client_secret: 'secret',
           redirect_uris: ['https://client.example.com/cb', 'https://missing.example.com/forum/cb'],
@@ -266,7 +267,7 @@ describe('pairwise features', () => {
           })
           .reply(201, JSON.stringify('https://client.example.com/cb'));
 
-        return i(this.provider).clientAdd({
+        return addClient(this.provider, {
           client_id: 'client',
           client_secret: 'secret',
           redirect_uris: ['https://client.example.com/cb', 'https://missing.example.com/forum/cb'],
@@ -287,7 +288,7 @@ describe('pairwise features', () => {
     const clients = [];
 
     before(function () {
-      return i(this.provider).clientAdd({
+      return addClient(this.provider, {
         client_id: 'clientOne',
         client_secret: 'secret',
         redirect_uris: ['https://clientone.com/cb'],
@@ -298,7 +299,7 @@ describe('pairwise features', () => {
     });
 
     before(function () {
-      return i(this.provider).clientAdd({
+      return addClient(this.provider, {
         client_id: 'clientTwo',
         client_secret: 'secret',
         redirect_uris: ['https://clienttwo.com/cb'],
@@ -309,7 +310,7 @@ describe('pairwise features', () => {
     });
 
     before(function () {
-      return i(this.provider).clientAdd({
+      return addClient(this.provider, {
         client_id: 'clientThree',
         client_secret: 'secret',
         redirect_uris: ['https://clientthree.com/cb'],

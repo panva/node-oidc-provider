@@ -23,7 +23,8 @@ describe('Pushed Request Object', () => {
             expect(response.body).not.to.have.property('require_pushed_authorization_requests');
           });
 
-        i(this.provider).configuration('features.pushedAuthorizationRequests').requirePushedAuthorizationRequests = true;
+        i(this.provider).features.pushedAuthorizationRequests
+          .requirePushedAuthorizationRequests = true;
 
         return this.agent.get('/.well-known/openid-configuration')
           .expect((response) => {
@@ -32,7 +33,8 @@ describe('Pushed Request Object', () => {
       });
 
       after(function () {
-        i(this.provider).configuration('features.pushedAuthorizationRequests').requirePushedAuthorizationRequests = false;
+        i(this.provider).features.pushedAuthorizationRequests
+          .requirePushedAuthorizationRequests = false;
       });
     });
 
@@ -41,10 +43,12 @@ describe('Pushed Request Object', () => {
 
       context('allowUnregisteredRedirectUris', () => {
         before(function () {
-          i(this.provider).configuration('features.pushedAuthorizationRequests').allowUnregisteredRedirectUris = true;
+          i(this.provider).features.pushedAuthorizationRequests
+            .allowUnregisteredRedirectUris = true;
         });
         after(function () {
-          i(this.provider).configuration('features.pushedAuthorizationRequests').allowUnregisteredRedirectUris = false;
+          i(this.provider).features.pushedAuthorizationRequests
+            .allowUnregisteredRedirectUris = false;
         });
         before(function () { return this.login(); });
         after(function () { return this.logout(); });
@@ -389,7 +393,8 @@ describe('Pushed Request Object', () => {
             expect(response.body).not.to.have.property('require_pushed_authorization_requests');
           });
 
-        i(this.provider).configuration('features.pushedAuthorizationRequests').requirePushedAuthorizationRequests = true;
+        i(this.provider).features.pushedAuthorizationRequests
+          .requirePushedAuthorizationRequests = true;
 
         return this.agent.get('/.well-known/openid-configuration')
           .expect((response) => {
@@ -398,7 +403,8 @@ describe('Pushed Request Object', () => {
       });
 
       after(function () {
-        i(this.provider).configuration('features.pushedAuthorizationRequests').requirePushedAuthorizationRequests = false;
+        i(this.provider).features.pushedAuthorizationRequests
+          .requirePushedAuthorizationRequests = false;
       });
     });
 

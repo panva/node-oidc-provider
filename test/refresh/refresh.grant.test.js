@@ -112,13 +112,13 @@ describe('grant_type=refresh_token', () => {
   describe('validates', () => {
     context('', () => {
       before(function () {
-        const ttl = i(this.provider).configuration('ttl');
+        const { ttl } = i(this.provider).configuration;
         this.prev = ttl.RefreshToken;
         ttl.RefreshToken = 5;
       });
 
       after(function () {
-        i(this.provider).configuration('ttl').RefreshToken = this.prev;
+        i(this.provider).configuration.ttl.RefreshToken = this.prev;
       });
 
       it('validates the refresh token is not expired', function () {
@@ -320,11 +320,11 @@ describe('grant_type=refresh_token', () => {
 
   describe('rotateRefreshToken=true', () => {
     before(function () {
-      i(this.provider).configuration().rotateRefreshToken = true;
+      i(this.provider).configuration.rotateRefreshToken = true;
     });
 
     after(function () {
-      i(this.provider).configuration().rotateRefreshToken = false;
+      i(this.provider).configuration.rotateRefreshToken = false;
     });
 
     it('populates ctx.oidc.entities', function (done) {
@@ -460,12 +460,12 @@ describe('grant_type=refresh_token', () => {
 
   describe('rotateRefreshToken is a function (returns true)', () => {
     beforeEach(function () {
-      i(this.provider).configuration().rotateRefreshToken = sinon.mock().returns(true);
+      i(this.provider).configuration.rotateRefreshToken = sinon.mock().returns(true);
     });
 
     afterEach(function () {
-      const spy = i(this.provider).configuration().rotateRefreshToken;
-      i(this.provider).configuration().rotateRefreshToken = false;
+      const spy = i(this.provider).configuration.rotateRefreshToken;
+      i(this.provider).configuration.rotateRefreshToken = false;
       expect(spy.calledOnce).to.be.true;
     });
 
@@ -600,12 +600,12 @@ describe('grant_type=refresh_token', () => {
 
   describe('rotateRefreshToken is a function (returns false)', () => {
     beforeEach(function () {
-      i(this.provider).configuration().rotateRefreshToken = sinon.mock().returns(false);
+      i(this.provider).configuration.rotateRefreshToken = sinon.mock().returns(false);
     });
 
     afterEach(function () {
-      const spy = i(this.provider).configuration().rotateRefreshToken;
-      i(this.provider).configuration().rotateRefreshToken = false;
+      const spy = i(this.provider).configuration.rotateRefreshToken;
+      i(this.provider).configuration.rotateRefreshToken = false;
       expect(spy.calledOnce).to.be.true;
     });
 
