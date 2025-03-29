@@ -4,9 +4,9 @@
 
 The following major versions are currently supported with security updates.
 
-| Version                                                       | Security Fixes 🔑 |
-| ------------------------------------------------------------- | ----------------- |
-| [v8.x](https://github.com/panva/node-oidc-provider/tree/v8.x) | ✅                |
+| Version                                                       | Security Fixes 🔑 | End-of-life |
+| ------------------------------------------------------------- | ----------------- | ----------- |
+| [v8.x](https://github.com/panva/node-oidc-provider/tree/v8.x) | ✅                | 2026-04-30  |
 
 ## Reporting a Vulnerability
 

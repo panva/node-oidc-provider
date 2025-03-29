@@ -124,9 +124,9 @@ actions and i.e. emit metrics that react to specific triggers. See the list of a
 
 ## Supported Versions
 
-| Version                                                 | Security Fixes 🔑 | Other Bug Fixes 🐞 | New Features ⭐ |
-| ------------------------------------------------------- | ----------------- | ------------------ | --------------- |
-| [v8.x](https://github.com/panva/node-oidc-provider/tree/v8.x) | ✅                | ✅                 | ✅              |
+| Version                                                       | Security Fixes 🔑 | Other Bug Fixes 🐞 | New Features ⭐ |
+| ------------------------------------------------------------- | ----------------- | ------------------ | --------------- |
+| [v8.x](https://github.com/panva/node-oidc-provider/tree/v8.x) | [Security Policy] | ✅                 | ✅              |
 
 [npm-url]: https://www.npmjs.com/package/oidc-provider
 [openid-certified-link]: https://openid.net/certification/
@@ -162,3 +162,4 @@ actions and i.e. emit metrics that react to specific triggers. See the list of a
 [fapi-ciba]: https://openid.net/specs/openid-financial-api-ciba-ID1.html
 [fapi2sp-id2]: https://openid.net/specs/fapi-2_0-security-profile-ID2.html
 [fapi2ms-id1]: https://openid.net/specs/fapi-2_0-message-signing-ID1.html
+[Security Policy]: https://github.com/panva/node-oidc-provider/security/policy
