@@ -63,7 +63,7 @@
     "jose": "^6.0.10",
     "jsesc": "^3.1.0",
     "koa": "^2.16.1",
-    "nanoid": "^5.1.3",
+    "nanoid": "^5.1.5",
     "oidc-token-hash": "^5.1.0",
     "quick-lru": "^7.0.0",
     "raw-body": "^3.0.0"
@@ -81,18 +81,18 @@
     "eslint-plugin-import": "^2.31.0",
     "express4": "npm:express@^4.21.2",
     "express5": "npm:express@^5.0.1",
-    "fastify": "^5.2.1",
+    "fastify": "^5.2.2",
     "got": "^14.4.6",
-    "helmet": "^8.0.0",
+    "helmet": "^8.1.0",
     "koa-body": "^6.0.1",
     "koa-mount": "^4.0.0",
     "lodash": "^4.17.21",
-    "mocha": "^11.1.0",
+    "mocha": "^11.2.0",
     "moment": "^2.30.1",
     "selfsigned": "^2.4.1",
-    "sinon": "^19.0.2",
-    "supertest": "^7.0.0",
+    "sinon": "^20.0.0",
+    "supertest": "^7.1.0",
     "timekeeper": "^2.3.1",
-    "undici": "^7.4.0"
+    "undici": "^7.6.0"
   }
 }
