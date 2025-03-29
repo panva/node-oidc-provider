@@ -32,7 +32,7 @@ try {
       redirect_uris: [`${ISSUER}/interaction/callback/google`],
       grant_types: ['implicit'],
     });
-    provider.app.context.google = googleClient;
+    provider.koa().context.google = googleClient;
   }
 
   // don't wanna re-bundle the interactions so just insert the login amr and acr as static whenever
@@ -123,7 +123,7 @@ try {
     });
   }
 
-  render(provider.app, {
+  render(provider.koa(), {
     cache: false,
     viewExt: 'ejs',
     layout: '_layout',
