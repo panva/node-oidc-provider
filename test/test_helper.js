@@ -497,7 +497,7 @@ export default function testHelper(importMetaUrl, {
     switch (mountVia) {
       case 'koa': {
         const app = new Koa();
-        app.use(koaMount(mountTo, provider.koa()));
+        app.use(koaMount(mountTo, provider));
         globalThis.server.on('request', app.callback());
         this.app = app;
         break;

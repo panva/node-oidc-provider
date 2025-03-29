@@ -35,7 +35,7 @@ provider.interactionFinished = (...args) => {
   return interactionFinished.call(provider, ...args);
 };
 
-render(provider.koa(), {
+render(provider, {
   cache: false,
   viewExt: 'ejs',
   layout: '_layout',

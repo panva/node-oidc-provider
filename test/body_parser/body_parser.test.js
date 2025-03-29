@@ -28,7 +28,7 @@ describe('body parser', () => {
       const app = new Koa();
 
       app.use(upstreamParser());
-      app.use(mount('/op', provider.koa()));
+      app.use(mount('/op', provider));
 
       globalThis.server.on('request', app.callback());
 
@@ -60,7 +60,7 @@ describe('body parser', () => {
       const app = new Koa();
 
       app.use(upstreamParser());
-      app.use(mount('/op', provider.koa()));
+      app.use(mount('/op', provider));
 
       globalThis.server.on('request', app.callback());
 
@@ -89,7 +89,7 @@ describe('body parser', () => {
       const app = new Koa();
 
       app.use(upstreamParser());
-      app.use(mount('/op', provider.koa()));
+      app.use(mount('/op', provider));
 
       globalThis.server.on('request', app.callback());
 
@@ -107,7 +107,7 @@ describe('body parser', () => {
         features: { registration: { enabled: true } },
       });
 
-      globalThis.server.on('request', provider.koa().callback());
+      globalThis.server.on('request', provider.callback());
 
       return supertest(globalThis.server)
         .post('/reg')
