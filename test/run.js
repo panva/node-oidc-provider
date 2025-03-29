@@ -5,7 +5,6 @@ import { once } from 'node:events';
 import { createRequire } from 'node:module';
 
 import Mocha from 'mocha';
-import clearRequireCache from 'clear-module';
 
 const require = createRequire(import.meta.url);
 const lookupFiles = require('mocha/lib/cli/lookup-files.js');
@@ -24,8 +23,6 @@ console.warn = function (...args) {
 };
 
 async function run() {
-  clearRequireCache.all();
-
   process.env.MOUNT_VIA = process.env.MOUNT_VIA || '';
   process.env.MOUNT_TO = process.env.MOUNT_TO || '/';
 
