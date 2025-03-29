@@ -44,25 +44,25 @@ If you or your company use this module, or you need help using/upgrading the mod
 ## Basic configuration example
 
 ```js
-import * as oidc from 'oidc-provider'
+import * as oidc from "oidc-provider";
 
-const provider = new oidc.Provider('http://localhost:3000', {
+const provider = new oidc.Provider("http://localhost:3000", {
   // refer to the documentation for other available configuration
   clients: [
     {
-      client_id: 'foo',
-      client_secret: 'bar',
-      redirect_uris: ['http://lvh.me:8080/cb'],
+      client_id: "foo",
+      client_secret: "bar",
+      redirect_uris: ["http://lvh.me:8080/cb"],
       // ... other client properties
     },
   ],
-})
+});
 
 const server = oidc.listen(3000, () => {
   console.log(
-    'oidc-provider listening on port 3000, check http://localhost:3000/.well-known/openid-configuration',
-  )
-})
+    "oidc-provider listening on port 3000, check http://localhost:3000/.well-known/openid-configuration",
+  );
+});
 ```
 
 External type definitions are available via [DefinitelyTyped](https://npmjs.com/package/@types/oidc-provider).
@@ -72,19 +72,21 @@ External type definitions are available via [DefinitelyTyped](https://npmjs.com/
 This module needs to be able to find an account and once found the account needs to have an
 `accountId` property as well as `claims()` function returning an object with claims that correspond
 to the claims your issuer supports. Tell oidc-provider how to find your account by an ID.
-`#claims()` can also return a Promise later resolved / rejected.
+`claims()` can also return a Promise later resolved / rejected.
 
 ```js
-const provider = new oidc.Provider('http://localhost:3000', {
+import * as oidc from "oidc-provider";
+
+const provider = new oidc.Provider("http://localhost:3000", {
   async findAccount(ctx, id) {
     return {
       accountId: id,
       async claims(use, scope) {
-        return { sub: id }
+        return { sub: id };
       },
-    }
+    };
   },
-})
+});
 ```
 
 ## User flows
@@ -115,23 +117,23 @@ interaction session object.
 The Provider instance comes with helpers that aid with getting interaction details as well as
 packing the results. See them used in the [in-repo](/example) examples.
 
-**`#provider.interactionDetails(req, res)`**
+**`provider.interactionDetails(req, res)`**
 
 ```js
 // with express
-expressApp.get('/interaction/:uid', async (req, res) => {
-  const details = await provider.interactionDetails(req, res)
+expressApp.get("/interaction/:uid", async (req, res) => {
+  const details = await provider.interactionDetails(req, res);
   // ...
-})
+});
 
 // with koa
-router.get('/interaction/:uid', async (ctx, next) => {
-  const details = await provider.interactionDetails(ctx.req, ctx.res)
+router.get("/interaction/:uid", async (ctx, next) => {
+  const details = await provider.interactionDetails(ctx.req, ctx.res);
   // ...
-})
+});
 ```
 
-**`#provider.interactionFinished(req, res, result)`**
+**`provider.interactionFinished(req, res, result)`**
 
 ```js
 // with express
@@ -175,24 +177,24 @@ router.post('/interaction/:uid', async (ctx, next) => {
 }
 ```
 
-**`#provider.interactionResult`**
-Unlike `#provider.interactionFinished` authorization request resume uri is returned instead of
+**`provider.interactionResult`**
+Unlike `provider.interactionFinished` authorization request resume uri is returned instead of
 immediate http redirect.
 
 ```js
 // with express
-expressApp.post('/interaction/:uid/login', async (req, res) => {
-  const redirectTo = await provider.interactionResult(req, res, result)
+expressApp.post("/interaction/:uid/login", async (req, res) => {
+  const redirectTo = await provider.interactionResult(req, res, result);
 
-  res.send({ redirectTo })
-})
+  res.send({ redirectTo });
+});
 
 // with koa
-router.post('/interaction/:uid', async (ctx, next) => {
-  const redirectTo = await provider.interactionResult(ctx.req, ctx.res, result)
+router.post("/interaction/:uid", async (ctx, next) => {
+  const redirectTo = await provider.interactionResult(ctx.req, ctx.res, result);
 
-  ctx.body = { redirectTo }
-})
+  ctx.body = { redirectTo };
+});
 ```
 
 ## Custom Grant Types
@@ -204,17 +206,17 @@ grant factories [here](/lib/actions/grants).
 
 ```js
 const parameters = [
-  'audience',
-  'resource',
-  'scope',
-  'requested_token_type',
-  'subject_token',
-  'subject_token_type',
-  'actor_token',
-  'actor_token_type',
-]
-const allowedDuplicateParameters = ['audience', 'resource']
-const grantType = 'urn:ietf:params:oauth:grant-type:token-exchange'
+  "audience",
+  "resource",
+  "scope",
+  "requested_token_type",
+  "subject_token",
+  "subject_token_type",
+  "actor_token",
+  "actor_token_type",
+];
+const allowedDuplicateParameters = ["audience", "resource"];
+const grantType = "urn:ietf:params:oauth:grant-type:token-exchange";
 
 async function tokenExchangeHandler(ctx, next) {
   // ctx.oidc.params holds the parsed parameters
@@ -223,12 +225,7 @@ async function tokenExchangeHandler(ctx, next) {
   // see /lib/actions/grants for references on how to instantiate and issue tokens
 }
 
-provider.registerGrantType(
-  grantType,
-  tokenExchangeHandler,
-  parameters,
-  allowedDuplicateParameters,
-)
+provider.registerGrantType(grantType, tokenExchangeHandler, parameters, allowedDuplicateParameters);
 ```
 
 ## Registering module middlewares (helmet, ip-filters, rate-limiters, etc)
@@ -239,14 +236,14 @@ instance directly to register i.e. koa-helmet you must push the middleware in
 front of oidc-provider in the middleware stack.
 
 ```js
-import helmet from 'koa-helmet'
+import helmet from "koa-helmet";
 
 // Correct, this pushes koa-helmet at the end of the middleware stack but BEFORE oidc-provider.
-provider.use(helmet())
+provider.use(helmet());
 
 // Incorrect, this pushes koa-helmet at the end of the middleware stack AFTER oidc-provider, not being
 // executed when errors are encountered or during actions that do not "await next()".
-provider.koa().use(helmet())
+provider.koa().use(helmet());
 ```
 
 ## Pre- and post-middlewares
@@ -258,9 +255,9 @@ provider.use(async (ctx, next) => {
   /** pre-processing
    * you may target a specific action here by matching `ctx.path`
    */
-  console.log('pre middleware', ctx.method, ctx.path)
+  console.log("pre middleware", ctx.method, ctx.path);
 
-  await next()
+  await next();
   /** post-processing
    * since internal route matching was already executed you may target a specific action here
    * checking `ctx.oidc.route`, the unique route names used are
@@ -294,8 +291,8 @@ provider.use(async (ctx, next) => {
    * `token`
    * `userinfo`
    */
-  console.log('post middleware', ctx.method, ctx.oidc.route)
-})
+  console.log("post middleware", ctx.method, ctx.oidc.route);
+});
 ```
 
 ## Mounting oidc-provider
@@ -310,50 +307,50 @@ Note: if you mount oidc-provider to a path it's likely you will have to also upd
 
 ```js
 // assumes fastify ^4.0.0
-const fastify = new Fastify()
-await fastify.register(require('@fastify/middie'))
+const fastify = new Fastify();
+await fastify.register(require("@fastify/middie"));
 // or
 // await app.register(require('@fastify/express'));
-fastify.use('/oidc', provider.callback())
+fastify.use("/oidc", provider.callback());
 ```
 
 ### to a `hapi` application
 
 ```js
 // assumes @hapi/hapi ^21.0.0
-const callback = provider.callback()
+const callback = provider.callback();
 hapiApp.route({
   path: `/oidc/{any*}`,
-  method: '*',
-  config: { payload: { output: 'stream', parse: false } },
+  method: "*",
+  config: { payload: { output: "stream", parse: false } },
   async handler({ raw: { req, res } }, h) {
-    req.originalUrl = req.url
-    req.url = req.url.replace('/oidc', '')
+    req.originalUrl = req.url;
+    req.url = req.url.replace("/oidc", "");
 
-    callback(req, res)
-    await once(res, 'finish')
+    callback(req, res);
+    await once(res, "finish");
 
-    req.url = req.url.replace('/', '/oidc')
-    delete req.originalUrl
+    req.url = req.url.replace("/", "/oidc");
+    delete req.originalUrl;
 
-    return res.writableEnded ? h.abandon : h.continue
+    return res.writableEnded ? h.abandon : h.continue;
   },
-})
+});
 ```
 
 ### to a `nest` application
 
 ```ts
 // assumes NestJS ^7.0.0
-import { Controller, All, Req, Res } from '@nestjs/common'
-import { Request, Response } from 'express'
-const callback = provider.callback()
-@Controller('oidc')
+import { Controller, All, Req, Res } from "@nestjs/common";
+import { Request, Response } from "express";
+const callback = provider.callback();
+@Controller("oidc")
 export class OidcController {
-  @All('/*')
+  @All("/*")
   public mountedOidc(@Req() req: Request, @Res() res: Response): void {
-    req.url = req.originalUrl.replace('/oidc', '')
-    return callback(req, res)
+    req.url = req.originalUrl.replace("/oidc", "");
+    return callback(req, res);
   }
 }
 ```
@@ -362,7 +359,7 @@ export class OidcController {
 
 ```js
 // assumes express ^4.0.0
-expressApp.use('/oidc', provider.callback())
+expressApp.use("/oidc", provider.callback());
 ```
 
 ### to a `koa` application
@@ -370,8 +367,8 @@ expressApp.use('/oidc', provider.callback())
 ```js
 // assumes koa ^2.0.0
 // assumes koa-mount ^4.0.0
-import mount from 'koa-mount'
-koaApp.use(mount('/oidc', provider.koa()))
+import mount from "koa-mount";
+koaApp.use(mount("/oidc", provider.koa()));
 ```
 
 Note: when the issuer identifier does not include the path prefix you should take care of rewriting
@@ -581,7 +578,8 @@ Enable/disable features.
 </summary><br>
 
 ```js
-new Provider('http://localhost:3000', {
+import * as oidc from 'oidc-provider'
+new oidc.Provider('http://localhost:3000', {
   features: {
     webMessageResponseMode: {
       enabled: true,
@@ -593,7 +591,7 @@ new Provider('http://localhost:3000', {
 // NOTICE:   - OAuth 2.0 Web Message Response Mode - draft 01 (Acknowledging this feature's implemented version can be done with the value 'individual-draft-01')
 // NOTICE: Breaking changes between experimental feature updates may occur and these will be published as MINOR semver oidc-provider updates.
 // NOTICE: You may disable this notice and be warned when breaking updates occur by acknowledging the current experiment's version. See the documentation for more details.
-new Provider('http://localhost:3000', {
+new oidc.Provider('http://localhost:3000', {
   features: {
     webMessageResponseMode: {
       enabled: true,
@@ -605,7 +603,7 @@ new Provider('http://localhost:3000', {
 // changes, you're good to go, still no NOTICE, your code is safe to run.
 // Now lets assume you upgrade oidc-provider version and it includes a breaking change in
 // this experimental feature
-new Provider('http://localhost:3000', {
+new oidc.Provider('http://localhost:3000', {
   features: {
     webMessageResponseMode: {
       enabled: true,
@@ -738,7 +736,8 @@ async function triggerAuthenticationDevice(ctx, request, account, client) {
   
 
 ```js
-const provider = new Provider(...);
+import * as oidc from 'oidc-provider';
+const provider = new oidc.Provider(...);
 await provider.backchannelResult(...);
 ```
 `backchannelResult(request, result[, options]);`
@@ -767,7 +766,9 @@ async function validateBindingMessage(ctx, bindingMessage) {
   // @param ctx - koa request context
   // @param bindingMessage - string value of the binding_message parameter, when not provided it is undefined
   if (bindingMessage && !/^[a-zA-Z0-9-._+/!?#]{1,20}$/.exec(bindingMessage)) {
-    throw new errors.InvalidBindingMessage('the binding_message value, when provided, needs to be 1 - 20 characters in length and use only a basic set of characters (matching the regex: ^[a-zA-Z0-9-._+/!?#]{1,20}$ )');
+    throw new errors.InvalidBindingMessage(
+      'the binding_message value, when provided, needs to be 1 - 20 characters in length and use only a basic set of characters (matching the regex: ^[a-zA-Z0-9-._+/!?#]{1,20}$ )',
+    );
   }
 }
 ```
@@ -1001,7 +1002,13 @@ _**default value**_:
 async function successSource(ctx) {
   // @param ctx - koa request context
   const {
-    clientId, clientName, clientUri, initiateLoginUri, logoUri, policyUri, tosUri,
+    clientId,
+    clientName,
+    clientUri,
+    initiateLoginUri,
+    logoUri,
+    policyUri,
+    tosUri,
   } = ctx.oidc.client;
   ctx.body = `<!DOCTYPE html>
     <html>
@@ -1199,7 +1206,10 @@ Helper function used to determine whether the client/RS (client argument) is all
 _**default value**_:
 ```js
 async function introspectionAllowedPolicy(ctx, client, token) {
-  if (client.clientAuthMethod === 'none' && token.clientId !== ctx.oidc.client.clientId) {
+  if (
+    client.clientAuthMethod === 'none'
+    && token.clientId !== ctx.oidc.client.clientId
+  ) {
     return false;
   }
   return true;
@@ -1615,29 +1625,41 @@ async function assertJwtClaimsAndHeader(ctx, claims, header, client) {
   const fapiProfile = ctx.oidc.isFapi('1.0 Final', '2.0');
   if (fapiProfile) {
     if (!('exp' in claims)) {
-      throw new errors.InvalidRequestObject("Request Object is missing the 'exp' claim");
+      throw new errors.InvalidRequestObject(
+        "Request Object is missing the 'exp' claim",
+      );
     }
     if (!('aud' in claims)) {
-      throw new errors.InvalidRequestObject("Request Object is missing the 'aud' claim");
+      throw new errors.InvalidRequestObject(
+        "Request Object is missing the 'aud' claim",
+      );
     }
     if (!('nbf' in claims)) {
-      throw new errors.InvalidRequestObject("Request Object is missing the 'nbf' claim");
+      throw new errors.InvalidRequestObject(
+        "Request Object is missing the 'nbf' claim",
+      );
     }
     const diff = claims.exp - claims.nbf;
     if (Math.sign(diff) !== 1 || diff > 3600) {
-      throw new errors.InvalidRequestObject("Request Object 'exp' claim too far from 'nbf' claim");
+      throw new errors.InvalidRequestObject(
+        "Request Object 'exp' claim too far from 'nbf' claim",
+      );
     }
   }
   if (ctx.oidc.route === 'backchannel_authentication') {
     for (const claim of ['exp', 'iat', 'nbf', 'jti']) {
       if (!(claim in claims)) {
-        throw new errors.InvalidRequestObject(`Request Object is missing the '${claim}' claim`);
+        throw new errors.InvalidRequestObject(
+          `Request Object is missing the '${claim}' claim`,
+        );
       }
     }
     if (fapiProfile) {
       const diff = claims.exp - claims.nbf;
       if (Math.sign(diff) !== 1 || diff > 3600) {
-        throw new errors.InvalidRequestObject("Request Object 'exp' claim too far from 'nbf' claim");
+        throw new errors.InvalidRequestObject(
+          "Request Object 'exp' claim too far from 'nbf' claim",
+        );
       }
     }
   }
@@ -1875,7 +1897,9 @@ rarForAuthorizationCode(ctx) {
   // - ctx.oidc.resourceServers
   // - ctx.oidc.params.authorization_details (unparsed authorization_details from the authorization request)
   // - ctx.oidc.grant.rar (authorization_details granted)
-  throw new Error('features.richAuthorizationRequests.rarForAuthorizationCode not implemented');
+  throw new Error(
+    'features.richAuthorizationRequests.rarForAuthorizationCode not implemented',
+  );
 }
 ```
 
@@ -1893,7 +1917,9 @@ rarForCodeResponse(ctx, resourceServer) {
   // - ctx.oidc.authorizationCode.rar (previously returned from rarForAuthorizationCode)
   // - ctx.oidc.params.authorization_details (unparsed authorization_details from the body params in the Access Token Request)
   // - ctx.oidc.grant.rar (authorization_details granted)
-  throw new Error('features.richAuthorizationRequests.rarForCodeResponse not implemented');
+  throw new Error(
+    'features.richAuthorizationRequests.rarForCodeResponse not implemented',
+  );
 }
 ```
 
@@ -1910,7 +1936,9 @@ rarForIntrospectionResponse(ctx, token) {
   // - token.kind
   // - token.rar
   // - ctx.oidc.grant.rar
-  throw new Error('features.richAuthorizationRequests.rarForIntrospectionResponse not implemented');
+  throw new Error(
+    'features.richAuthorizationRequests.rarForIntrospectionResponse not implemented',
+  );
 }
 ```
 
@@ -1928,7 +1956,9 @@ rarForRefreshTokenResponse(ctx, resourceServer) {
   // - ctx.oidc.refreshToken.rar (previously returned from rarForAuthorizationCode and later assigned to the refresh token)
   // - ctx.oidc.params.authorization_details (unparsed authorization_details from the body params in the Access Token Request)
   // - ctx.oidc.grant.rar
-  throw new Error('features.richAuthorizationRequests.rarForRefreshTokenResponse not implemented');
+  throw new Error(
+    'features.richAuthorizationRequests.rarForRefreshTokenResponse not implemented',
+  );
 }
 ```
 
@@ -1946,23 +1976,29 @@ _**default value**_:
 </summary><br>
 
 ```js
-import { z } from 'zod';
+import { z } from 'zod'
 const TaxData = z
   .object({
     duration_of_access: z.number().int().positive(),
-    locations: z.array(z.literal('https://taxservice.govehub.no.example.com')).length(1),
-    actions: z.array(z.literal('read_tax_declaration')).length(1),
+    locations: z
+      .array(
+        z.literal('https://taxservice.govehub.no.example.com'),
+      )
+      .length(1),
+    actions: z
+      .array(z.literal('read_tax_declaration'))
+      .length(1),
     periods: z
       .array(
         z.coerce
           .number()
           .max(new Date().getFullYear() - 1)
-          .min(1997)
+          .min(1997),
       )
       .min(1),
     tax_payer_id: z.string().min(1),
   })
-  .strict();
+  .strict()
 const configuration = {
   features: {
     richAuthorizationRequests: {
@@ -1971,15 +2007,16 @@ const configuration = {
       types: {
         tax_data: {
           validate(ctx, detail, client) {
-            const { success: valid, error } = TaxData.parse(detail);
+            const { success: valid, error } =
+              TaxData.parse(detail)
             if (!valid) {
               throw new InvalidAuthorizationDetails()
             }
-          }
-        }
-      }
-    }
-  }
+          },
+        },
+      },
+    },
+  },
 }
 ```
 </details>
@@ -2044,7 +2081,13 @@ _**default value**_:
 async function postLogoutSuccessSource(ctx) {
   // @param ctx - koa request context
   const {
-    clientId, clientName, clientUri, initiateLoginUri, logoUri, policyUri, tosUri,
+    clientId,
+    clientName,
+    clientUri,
+    initiateLoginUri,
+    logoUri,
+    policyUri,
+    tosUri,
   } = ctx.oidc.client || {}; // client is defined if the user chose to stay logged in with the authorization server
   const display = clientName || clientId;
   ctx.body = `<!DOCTYPE html>
@@ -2142,7 +2185,9 @@ async function assertJwtClientAuthClaimsAndHeader(ctx, claims, header, client) {
   // @param client - the Client instance
   if (ctx.oidc.isFapi('2.0')) {
     if (claims.aud !== ctx.oidc.issuer) {
-      throw new errors.InvalidClientAuth('audience (aud) must equal the issuer identifier url');
+      throw new errors.InvalidClientAuth(
+        'audience (aud) must equal the issuer identifier url',
+      );
     }
   }
 }
@@ -2391,10 +2436,6 @@ function extraClientMetadataValidator(ctx, key, value, metadata) {
   // @param metadata - the current accumulated client metadata
   // @param ctx - koa request context (only provided when a client is being constructed during
   //              Client Registration Request or Client Update Request
-  // validations for key, value, other related metadata
-  // throw new errors.InvalidClientMetadata() to reject the client metadata
-  // metadata[key] = value; to (re)assign metadata values
-  // return not necessary, metadata is already a reference
 }
 ```
 
@@ -2553,7 +2594,7 @@ Holds the configuration for interaction policy and a URL to send end-users to wh
 
 ### interactions.policy
 
-structure of Prompts and their checks formed by Prompt and Check class instances. The default you can get a fresh instance for and the classes are available under `Provider.interactionPolicy`.   
+structure of Prompts and their checks formed by Prompt and Check class instances. The default you can get a fresh instance for and the classes are exported.   
   
 
 
@@ -2878,7 +2919,10 @@ Function used to decide whether a refresh token will be issued or not
 _**default value**_:
 ```js
 async function issueRefreshToken(ctx, client, code) {
-  return client.grantTypeAllowed('refresh_token') && code.scopes.has('offline_access');
+  return (
+    client.grantTypeAllowed('refresh_token')
+    && code.scopes.has('offline_access')
+  );
 }
 ```
 <a id="issue-refresh-token-to-always-issue-a-refresh-tokens"></a><details><summary>(Click to expand) To always issue a refresh tokens ...</summary><br>
@@ -2905,7 +2949,7 @@ Helper function used to load existing but also just in time pre-established Gran
 _**default value**_:
 ```js
 async function loadExistingGrant(ctx) {
-  const grantId = (ctx.oidc.result?.consent?.grantId)
+  const grantId = ctx.oidc.result?.consent?.grantId
     || ctx.oidc.session.grantIdFor(ctx.oidc.client.clientId);
   if (grantId) {
     return ctx.oidc.provider.Grant.find(grantId);
@@ -2924,7 +2968,8 @@ _**recommendation**_: Since this might be called several times in one request wi
 _**default value**_:
 ```js
 async function pairwiseIdentifier(ctx, accountId, client) {
-  return crypto.createHash('sha256')
+  return crypto
+    .createHash('sha256')
     .update(client.sectorIdentifier)
     .update(accountId)
     .update(os.hostname()) // put your own unique salt here, or implement other mechanism
@@ -2957,7 +3002,8 @@ function pkceRequired(ctx, client) {
       return true;
     // FAPI 1.0 Advanced as per
     // https://openid.net/specs/openid-financial-api-part-2-1_0-final.html#authorization-server
-    case fapiProfile === '1.0 Final' && ctx.oidc.route === 'pushed_authorization_request':
+    case fapiProfile === '1.0 Final'
+      && ctx.oidc.route === 'pushed_authorization_request':
       return true;
     // All Public clients as per
     // https://www.rfc-editor.org/rfc/rfc9700.html#section-2.1.1-2.1
@@ -3073,7 +3119,10 @@ function rotateRefreshToken(ctx) {
     return false;
   }
   // rotate non sender-constrained public client refresh tokens
-  if (client.clientAuthMethod === 'none' && !refreshToken.isSenderConstrained()) {
+  if (
+    client.clientAuthMethod === 'none'
+    && !refreshToken.isSenderConstrained()
+  ) {
     return true;
   }
   // rotate if the token is nearing expiration (it's beyond 70% of its lifetime)
@@ -3177,7 +3226,7 @@ _**default value**_:
   Interaction: 3600 /* 1 hour in seconds */,
   RefreshToken: function RefreshTokenTTL(ctx, token, client) {
     if (
-      ctx && ctx.oidc.entities.RotatedRefreshToken
+      ctx?.oidc?.entities.RotatedRefreshToken
       && client.applicationType === 'web'
       && client.clientAuthMethod === 'none'
       && !token.isSenderConstrained()
@@ -3760,12 +3809,12 @@ https://www.rfc-editor.org/rfc/rfc6749.html#appendix-B
 Example:
 
 ```js
-const client_id = 'an:identifier'
-const client_secret = 'some secure & non-standard secret'
+const client_id = "an:identifier";
+const client_secret = "some secure & non-standard secret";
 
 // After formencoding these two tokens
-const encoded_id = 'an%3Aidentifier'
-const encoded_secret = 'some+secure+%26+non%2Dstandard+secret'
+const encoded_id = "an%3Aidentifier";
+const encoded_secret = "some+secure+%26+non%2Dstandard+secret";
 
 // Basic auth header format Authorization: Basic base64(encoded_id + ':' + encoded_secret)
 // Authorization: Basic YW4lM0FpZGVudGlmaWVyOnNvbWUrc2VjdXJlKyUyNitub24lMkRzdGFuZGFyZCtzZWNyZXQ=
@@ -3785,19 +3834,16 @@ listeners for errors
 deliver them to client developers out-of-band, e.g. by logs in an admin interface.
 
 ```js
-function handleClientAuthErrors(
-  { headers: { authorization }, oidc: { body, client } },
-  err,
-) {
-  if (err.statusCode === 401 && err.message === 'invalid_client') {
+function handleClientAuthErrors({ headers: { authorization }, oidc: { body, client } }, err) {
+  if (err.statusCode === 401 && err.message === "invalid_client") {
     // console.log(err);
     // save error details out-of-bands for the client developers, `authorization`, `body`, `client`
     // are just some details available, you can dig in ctx object for more.
   }
 }
-provider.on('grant.error', handleClientAuthErrors)
-provider.on('introspection.error', handleClientAuthErrors)
-provider.on('revocation.error', handleClientAuthErrors)
+provider.on("grant.error", handleClientAuthErrors);
+provider.on("introspection.error", handleClientAuthErrors);
+provider.on("revocation.error", handleClientAuthErrors);
 ```
 
 ### Refresh Tokens
@@ -3834,9 +3880,9 @@ validating the password digest. Custom implementation using the provided
 ### How to display, on the website of the authorization server itself, if the user is signed-in or not
 
 ```js
-const ctx = provider.koa().createContext(req, res)
-const session = await provider.Session.get(ctx)
-const signedIn = !!session.accountId
+const ctx = provider.koa().createContext(req, res);
+const session = await provider.Session.get(ctx);
+const signedIn = !!session.accountId;
 ```
 
 ### Client Credentials only clients
