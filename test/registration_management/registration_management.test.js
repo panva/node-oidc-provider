@@ -208,14 +208,14 @@ describe('OAuth 2.0 Dynamic Client Registration Management Protocol', () => {
 
     describe('rotateRegistrationAccessToken', () => {
       before(function () {
-        const conf = i(this.provider).configuration();
+        const conf = i(this.provider).configuration;
         conf.features.registrationManagement = {
           enabled: true, rotateRegistrationAccessToken: true,
         };
       });
 
       after(function () {
-        const conf = i(this.provider).configuration();
+        const conf = i(this.provider).configuration;
         conf.features.registrationManagement = { enabled: true };
       });
 

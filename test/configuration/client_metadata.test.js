@@ -12,6 +12,7 @@ import Provider, { errors } from '../../lib/index.js';
 import { enabledJWA } from '../default.config.js';
 import sectorIdentifier from '../../lib/helpers/sector_identifier.js';
 import keys, { stripPrivateJWKFields } from '../keys.js';
+import addClient from '../../lib/helpers/add_client.js';
 
 const sigKey = stripPrivateJWKFields(keys[0]);
 const privateKey = keys[0];
@@ -26,7 +27,7 @@ describe('Client metadata validation', () => {
     });
   });
 
-  function addClient(metadata, configuration) {
+  function register(metadata, configuration) {
     let provider;
     if (configuration) {
       provider = new Provider(
@@ -43,7 +44,7 @@ describe('Client metadata validation', () => {
       provider = DefaultProvider;
     }
 
-    return i(provider).clientAdd({
+    return addClient(provider, {
       client_id: 'client',
       client_secret: 'secret',
       redirect_uris: ['https://client.example.com/cb'],
@@ -62,7 +63,7 @@ describe('Client metadata validation', () => {
       if (metadata) msg = util.format(`${msg}, [client %j]`, omit(metadata, ['jwks.keys']));
       if (configuration) msg = util.format(`${msg}, [provider %j]`, configuration);
       // eslint-disable-next-line max-len
-      it(msg, () => assert.rejects(addClient({ ...metadata, [prop]: value }, configuration), (err) => {
+      it(msg, () => assert.rejects(register({ ...metadata, [prop]: value }, configuration), (err) => {
         if (prop === 'redirect_uris') {
           expect(err.message).to.equal('invalid_redirect_uri');
         } else {
@@ -76,7 +77,7 @@ describe('Client metadata validation', () => {
 
   const mustBeUri = (prop, protocols, configuration, metadata) => {
     it('must be a uri', () => assert.rejects(
-      addClient(
+      register(
         {
           ...metadata,
           [prop]: 'whatever://not but not a uri',
@@ -99,7 +100,7 @@ describe('Client metadata validation', () => {
     ));
 
     protocols.forEach((protocol) => {
-      it(`can be ${protocol} uri`, () => addClient({
+      it(`can be ${protocol} uri`, () => register({
         [prop]: `${protocol}://example.com/${prop}`,
       }));
     });
@@ -111,7 +112,7 @@ describe('Client metadata validation', () => {
       let msg = util.format('must be a array, %j provided', value);
       if (configuration) msg = util.format(`${msg}, [provider %j]`, configuration);
       it(msg, () => assert.rejects(
-        addClient(
+        register(
           {
             [prop]: value,
           },
@@ -136,7 +137,7 @@ describe('Client metadata validation', () => {
       if (metadata) msg = util.format(`${msg}, [client %j]`, omit(metadata, ['jwks.keys']));
       if (configuration) msg = util.format(`${msg}, [provider %j]`, configuration);
       it(msg, () => assert.rejects(
-        addClient(
+        register(
           {
             [prop]: value,
           },
@@ -160,7 +161,7 @@ describe('Client metadata validation', () => {
     if (metadata) msg = util.format(`${msg}, [client %j]`, omit(metadata, ['jwks.keys']));
     if (configuration) msg = util.format(`${msg}, [provider %j]`, configuration);
 
-    it(msg, () => addClient(metadata, configuration).then((client) => {
+    it(msg, () => register(metadata, configuration).then((client) => {
       if (value === undefined) {
         expect(client.metadata()).not.to.have.property(prop);
       } else {
@@ -180,7 +181,7 @@ describe('Client metadata validation', () => {
       let msg = util.format('is required, %j provided', value);
       if (configuration) msg = util.format(`${msg}, [provider %j]`, configuration);
       it(msg, () => assert.rejects(
-        addClient(
+        register(
           {
             [prop]: value,
             ...metadata,
@@ -213,7 +214,7 @@ describe('Client metadata validation', () => {
     if (metadata) msg = util.format(`${msg}, [client %j]`, omit(metadata, ['jwks.keys']));
     if (configuration) msg = util.format(`${msg}, [provider %j]`, configuration);
     // eslint-disable-next-line max-len
-    it(msg, () => addClient({ ...metadata, [prop]: value }, configuration).then(assertion, (err) => {
+    it(msg, () => register({ ...metadata, [prop]: value }, configuration).then(assertion, (err) => {
       if (err instanceof InvalidClientMetadata) {
         throw new Error(`InvalidClientMetadata received ${err.message} ${err.error_description}`);
       }
@@ -225,7 +226,7 @@ describe('Client metadata validation', () => {
     if (metadata) msg = util.format(`${msg}, [client %j]`, omit(metadata, ['jwks.keys']));
     if (configuration) msg = util.format(`${msg}, [provider %j]`, configuration);
     // eslint-disable-next-line max-len
-    it(msg, () => assert.rejects(addClient({ ...metadata, [prop]: value }, configuration), (err) => {
+    it(msg, () => assert.rejects(register({ ...metadata, [prop]: value }, configuration), (err) => {
       if (prop === 'redirect_uris') {
         expect(err.message).to.equal('invalid_redirect_uri');
       } else {
@@ -488,7 +489,7 @@ describe('Client metadata validation', () => {
     it('has an schema invalidation hook for forcing https on implicit', async () => {
       const sandbox = sinon.createSandbox();
       sandbox.spy(DefaultProvider.Client.Schema.prototype, 'invalidate');
-      await addClient({
+      await register({
         grant_types: ['implicit'],
         response_types: ['id_token'],
         redirect_uris: ['http://foo/bar'],
@@ -512,7 +513,7 @@ describe('Client metadata validation', () => {
     it('has an schema invalidation hook for preventing localhost', async () => {
       const sandbox = sinon.createSandbox();
       sandbox.spy(DefaultProvider.Client.Schema.prototype, 'invalidate');
-      await addClient({
+      await register({
         grant_types: ['implicit'],
         response_types: ['id_token'],
         redirect_uris: ['https://localhost'],
@@ -953,7 +954,7 @@ describe('Client metadata validation', () => {
         configuration,
       );
       it('is required when id_token_encrypted_response_enc is also provided', () => assert.rejects(
-        addClient(
+        register(
           {
             id_token_encrypted_response_enc: 'whatever',
           },
@@ -1059,7 +1060,7 @@ describe('Client metadata validation', () => {
       defaultsTo(this.title, undefined, undefined, configuration);
       mustBeString(this.title, undefined, metadata, configuration);
       it('is required when userinfo_encrypted_response_enc is also provided', () => assert.rejects(
-        addClient(
+        register(
           {
             userinfo_encrypted_response_enc: 'whatever',
           },
@@ -1164,7 +1165,7 @@ describe('Client metadata validation', () => {
       defaultsTo(this.title, undefined, undefined, configuration);
       mustBeString(this.title, undefined, metadata, configuration);
       it('is required when introspection_encrypted_response_enc is also provided', () => assert.rejects(
-        addClient(
+        register(
           {
             introspection_encrypted_response_enc: 'whatever',
           },
@@ -1264,7 +1265,7 @@ describe('Client metadata validation', () => {
       defaultsTo(this.title, undefined, undefined, configuration);
       mustBeString(this.title, undefined, metadata, configuration);
       it('is required when authorization_encrypted_response_enc is also provided', () => assert.rejects(
-        addClient(
+        register(
           {
             authorization_encrypted_response_enc: 'whatever',
           },
@@ -1368,7 +1369,7 @@ describe('Client metadata validation', () => {
       defaultsTo(this.title, undefined, undefined, configuration);
       mustBeString(this.title, undefined, undefined, configuration);
       it('is required when request_object_encryption_enc is also provided', () => assert.rejects(
-        addClient(
+        register(
           {
             request_object_encryption_enc: 'whatever',
           },
@@ -1905,13 +1906,13 @@ describe('Client metadata validation', () => {
     // more in client_keystore.test.js
   });
 
-  it('allows unrecognized properties but does not yield them back', () => addClient({
+  it('allows unrecognized properties but does not yield them back', () => register({
     unrecognized: true,
   }).then((client) => {
     expect(client).not.to.have.property('unrecognized');
   }));
 
-  it('allows clients without grants, for introspection, revocation (RS clients)', () => addClient({
+  it('allows clients without grants, for introspection, revocation (RS clients)', () => register({
     client_id: 'authorization-server',
     client_secret: 'foobar',
     redirect_uris: [],
@@ -1923,7 +1924,7 @@ describe('Client metadata validation', () => {
     expect(client.redirectUris).to.be.empty;
   }));
 
-  it('allows clients only with client_credentials', () => addClient(
+  it('allows clients only with client_credentials', () => register(
     {
       client_id: 'resource-server',
       client_secret: 'foobar',
@@ -1957,7 +1958,7 @@ describe('Client metadata validation', () => {
     rejects(this.title, ['bar'], /can only contain 'foo'$/, undefined, { features });
   });
 
-  it('fails to determine sector identifier', () => addClient(
+  it('fails to determine sector identifier', () => register(
     {
       client_id: 'authorization-server',
       client_secret: 'foobar',

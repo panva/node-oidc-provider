@@ -44,13 +44,13 @@ describe('session exp handling', () => {
 
   describe('clockTolerance', () => {
     afterEach(function () {
-      i(this.provider).configuration().clockTolerance = 0;
+      i(this.provider).configuration.clockTolerance = 0;
     });
 
     it('respects clockTolerance option', async function () {
       await this.login();
       const session = this.getSession();
-      i(this.provider).configuration().clockTolerance = 10;
+      i(this.provider).configuration.clockTolerance = 10;
       session.exp = epochTime() - 5;
 
       sinon.spy(this.TestAdapter.for('Session'), 'destroy');
@@ -72,7 +72,7 @@ describe('session exp handling', () => {
     it('generates a new session id when an expired session is found by the adapter', async function () {
       await this.login();
       const session = this.getSession();
-      i(this.provider).configuration().clockTolerance = 10;
+      i(this.provider).configuration.clockTolerance = 10;
       session.exp = epochTime() - 10;
       const oldSessionId = this.getSessionId();
 

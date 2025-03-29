@@ -40,13 +40,13 @@ describe('registration features', () => {
 
     context('when issueRegistrationAccessToken is false', () => {
       before(function () {
-        const config = i(this.provider).configuration('features.registration');
+        const config = i(this.provider).features.registration;
         this.orig = config.issueRegistrationAccessToken;
         config.issueRegistrationAccessToken = false;
       });
 
       after(function () {
-        i(this.provider).configuration('features.registration').issueRegistrationAccessToken = this.orig;
+        i(this.provider).features.registration.issueRegistrationAccessToken = this.orig;
       });
 
       it('omits issuing a registration access token and does not return registration_client_uri', function () {
@@ -75,13 +75,13 @@ describe('registration features', () => {
 
     context('when issueRegistrationAccessToken is a function returning false', () => {
       before(function () {
-        const config = i(this.provider).configuration('features.registration');
+        const config = i(this.provider).features.registration;
         this.orig = config.issueRegistrationAccessToken;
         config.issueRegistrationAccessToken = () => false;
       });
 
       after(function () {
-        i(this.provider).configuration('features.registration').issueRegistrationAccessToken = this.orig;
+        i(this.provider).features.registration.issueRegistrationAccessToken = this.orig;
       });
 
       it('omits issuing a registration access token and does not return registration_client_uri', function () {
@@ -110,13 +110,13 @@ describe('registration features', () => {
 
     context('when issueRegistrationAccessToken is a function returning true', () => {
       before(function () {
-        const config = i(this.provider).configuration('features.registration');
+        const config = i(this.provider).features.registration;
         this.orig = config.issueRegistrationAccessToken;
         config.issueRegistrationAccessToken = () => true;
       });
 
       after(function () {
-        i(this.provider).configuration('features.registration').issueRegistrationAccessToken = this.orig;
+        i(this.provider).features.registration.issueRegistrationAccessToken = this.orig;
       });
 
       it('issues a registration access token and does return registration_client_uri', function () {
@@ -145,13 +145,13 @@ describe('registration features', () => {
 
     context('when issueRegistrationAccessToken is true', () => {
       before(function () {
-        const config = i(this.provider).configuration('features.registration');
+        const config = i(this.provider).features.registration;
         this.orig = config.issueRegistrationAccessToken;
         config.issueRegistrationAccessToken = true;
       });
 
       after(function () {
-        i(this.provider).configuration('features.registration').issueRegistrationAccessToken = this.orig;
+        i(this.provider).features.registration.issueRegistrationAccessToken = this.orig;
       });
 
       it('issues a registration access token and does return registration_client_uri', function () {

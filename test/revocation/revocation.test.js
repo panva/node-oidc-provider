@@ -54,7 +54,7 @@ describe('revocation features', () => {
         scope: 'scope',
       });
 
-      sinon.stub(i(this.provider).configuration(), 'revokeGrantPolicy').callsFake(() => true);
+      sinon.stub(i(this.provider).configuration, 'revokeGrantPolicy').callsFake(() => true);
       const atDestroy = sinon.stub(this.provider.AccessToken.prototype, 'destroy').callsFake(() => Promise.resolve());
       const grantDestroy = sinon.stub(this.provider.Grant.adapter, 'destroy').callsFake(() => Promise.resolve());
 

@@ -748,11 +748,11 @@ expire.setDate(expire.getDate() + 1);
 
       describe('when userinfo is disabled', () => {
         before(function () {
-          i(this.provider).configuration('features').userinfo.enabled = false;
+          i(this.provider).features.userinfo.enabled = false;
         });
 
         after(function () {
-          i(this.provider).configuration('features').userinfo.enabled = false;
+          i(this.provider).features.userinfo.enabled = false;
         });
 
         it('should not accept userinfo as a property', function () {
