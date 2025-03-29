@@ -502,14 +502,15 @@ location / {
 ### adapter
 
 The provided example and any new instance of oidc-provider will use the basic in-memory adapter for storing issued tokens, codes, user sessions, dynamically registered clients, etc. This is fine as long as you develop, configure and generally just play around since every time you restart your process all information will be lost. As soon as you cannot live with this limitation you will be required to provide your own custom adapter constructor for oidc-provider to use. This constructor will be called for every model accessed the first time it is needed.   
- - The API oidc-provider expects is documented [here](/example/my_adapter.js).
- - See also: [Example MongoDB adapter implementation](https://github.com/panva/node-oidc-provider/discussions/1308)
- - See also: [Example Redis adapter implementation](https://github.com/panva/node-oidc-provider/discussions/1309)
- - See also: [Example Redis w/ JSON Adapter](https://github.com/panva/node-oidc-provider/discussions/1310)
- - See also: [Default in-memory adapter implementation](/lib/adapters/memory_adapter.js)
- - See also: [Community Contributed Adapter Archive](https://github.com/panva/node-oidc-provider/discussions/1311)   
   
 
+See:
+- [The interface oidc-provider expects](/example/my_adapter.js)
+- [Example MongoDB adapter implementation](https://github.com/panva/node-oidc-provider/discussions/1308)
+- [Example Redis adapter implementation](https://github.com/panva/node-oidc-provider/discussions/1309)
+- [Example Redis w/ JSON Adapter](https://github.com/panva/node-oidc-provider/discussions/1310)
+- [Default in-memory adapter implementation](/lib/adapters/memory_adapter.js)
+- [Community Contributed Adapter Archive](https://github.com/panva/node-oidc-provider/discussions/1311)
 
 ### clients
 
@@ -1132,8 +1133,10 @@ _**default value**_:
 
 External Signing Support  
 
-Enables the use of the exported `ExternalSigningKey` class instances in place of a Private JWK in the `jwks.keys` configuration array. This allows Digital Signature Algorithm (such as PS256, ES256, or others) signatures to be produced externally, for example via a KMS service or an HSM. This is an experimental feature.  
+Enables the use of the exported `ExternalSigningKey` class instances in place of a Private JWK in the `jwks.keys` configuration array. This allows Digital Signature Algorithm (such as PS256, ES256, or others) signatures to be produced externally, for example via a KMS service or an HSM. This is an experimental feature.   
+  
 
+See [KMS integration with AWS Key Management Service](https://github.com/panva/node-oidc-provider/discussions/1316)
 
 _**default value**_:
 ```js
@@ -2160,8 +2163,9 @@ Describes the claims that the OpenID Provider MAY be able to supply values for.
  It is used to achieve two different things related to claims:
  - which additional claims are available to RPs (configure as `{ claimName: null }`)
  - which claims fall under what scope (configure `{ scopeName: ['claim', 'another-claim'] }`)   
- See [Configuring OpenID Connect 1.0 Standard Claims](https://github.com/panva/node-oidc-provider/discussions/1299)  
+  
 
+See [Configuring OpenID Connect 1.0 Standard Claims](https://github.com/panva/node-oidc-provider/discussions/1299)
 
 _**default value**_:
 ```js
@@ -2207,8 +2211,9 @@ _**default value**_:
 ### clientBasedCORS
 
 Function used to check whether a given CORS request should be allowed based on the request's client.   
- See [Configuring Client Metadata-based CORS Origin allow list](https://github.com/panva/node-oidc-provider/discussions/1298)  
+  
 
+See [Configuring Client Metadata-based CORS Origin allow list](https://github.com/panva/node-oidc-provider/discussions/1298)
 
 _**default value**_:
 ```js
@@ -2290,7 +2295,7 @@ true
 
 ### cookies
 
-Options for the [cookie module](https://github.com/pillarjs/cookies#cookiesset-name--value---options--) used to keep track of various User-Agent states. The options `maxAge` and `expires` are ignored. Use `ttl.Session` and `ttl.Interaction` to configure the ttl and in turn the cookie expiration values for Session and Interaction models.  
+Options for the [cookies module](https://github.com/pillarjs/cookies#cookiesset-name--value---options--) used to keep track of various User-Agent states. The options `maxAge` and `expires` are ignored. Use `ttl.Session` and `ttl.Interaction` to configure the ttl and in turn the cookie expiration values for Session and Interaction models.  
 
 
 ### cookies.long
