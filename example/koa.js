@@ -70,7 +70,7 @@ try {
   const provider = new Provider(ISSUER, configuration);
 
   app.use(routes(provider).routes());
-  app.use(mount(provider.app));
+  app.use(mount(provider.koa()));
   server = app.listen(PORT, () => {
     console.log(`application is listening on port ${PORT}, check its /.well-known/openid-configuration`);
   });

@@ -44,29 +44,20 @@ If you or your company use this module, or you need help using/upgrading the mod
 ## Basic configuration example
 
 ```js
-import { Provider } from 'oidc-provider'
-const configuration = {
-  // ... see the available options in Configuration options section
+import * as oidc from 'oidc-provider'
+
+const provider = new oidc.Provider('http://localhost:3000', {
+  // refer to the documentation for other available configuration
   clients: [
     {
       client_id: 'foo',
       client_secret: 'bar',
       redirect_uris: ['http://lvh.me:8080/cb'],
-      // + other client properties
+      // ... other client properties
     },
   ],
-  // ...
-}
+})
 
-const oidc = new Provider('http://localhost:3000', configuration)
-
-// express/nodejs style application callback (req, res, next) for use with express apps, see /examples/express.js
-oidc.callback()
-
-// koa application for use with koa apps, see /examples/koa.js
-oidc.app
-
-// or just expose a server standalone, see /examples/standalone.js
 const server = oidc.listen(3000, () => {
   console.log(
     'oidc-provider listening on port 3000, check http://localhost:3000/.well-known/openid-configuration',
@@ -84,7 +75,7 @@ to the claims your issuer supports. Tell oidc-provider how to find your account 
 `#claims()` can also return a Promise later resolved / rejected.
 
 ```js
-const oidc = new Provider('http://localhost:3000', {
+const provider = new oidc.Provider('http://localhost:3000', {
   async findAccount(ctx, id) {
     return {
       accountId: id,
@@ -242,20 +233,20 @@ provider.registerGrantType(
 
 ## Registering module middlewares (helmet, ip-filters, rate-limiters, etc)
 
-When using `provider.app` or `provider.callback()` as a mounted application in your own koa or express
-stack just follow the respective module's documentation. However, when using the `provider.app` Koa
+When using `provider.koa()` or `provider.callback()` as a mounted application in your own koa or express
+stack just follow the respective module's documentation. However, when using the `provider.koa()` Koa
 instance directly to register i.e. koa-helmet you must push the middleware in
 front of oidc-provider in the middleware stack.
 
 ```js
 import helmet from 'koa-helmet'
 
-// Correct, pushes koa-helmet at the end of the middleware stack but BEFORE oidc-provider.
+// Correct, this pushes koa-helmet at the end of the middleware stack but BEFORE oidc-provider.
 provider.use(helmet())
 
-// Incorrect, pushes koa-helmet at the end of the middleware stack AFTER oidc-provider, not being
+// Incorrect, this pushes koa-helmet at the end of the middleware stack AFTER oidc-provider, not being
 // executed when errors are encountered or during actions that do not "await next()".
-provider.app.use(helmet())
+provider.koa().use(helmet())
 ```
 
 ## Pre- and post-middlewares
@@ -323,14 +314,14 @@ const fastify = new Fastify()
 await fastify.register(require('@fastify/middie'))
 // or
 // await app.register(require('@fastify/express'));
-fastify.use('/oidc', oidc.callback())
+fastify.use('/oidc', provider.callback())
 ```
 
 ### to a `hapi` application
 
 ```js
 // assumes @hapi/hapi ^21.0.0
-const callback = oidc.callback()
+const callback = provider.callback()
 hapiApp.route({
   path: `/oidc/{any*}`,
   method: '*',
@@ -356,7 +347,7 @@ hapiApp.route({
 // assumes NestJS ^7.0.0
 import { Controller, All, Req, Res } from '@nestjs/common'
 import { Request, Response } from 'express'
-const callback = oidc.callback()
+const callback = provider.callback()
 @Controller('oidc')
 export class OidcController {
   @All('/*')
@@ -371,7 +362,7 @@ export class OidcController {
 
 ```js
 // assumes express ^4.0.0
-expressApp.use('/oidc', oidc.callback())
+expressApp.use('/oidc', provider.callback())
 ```
 
 ### to a `koa` application
@@ -380,7 +371,7 @@ expressApp.use('/oidc', oidc.callback())
 // assumes koa ^2.0.0
 // assumes koa-mount ^4.0.0
 import mount from 'koa-mount'
-koaApp.use(mount('/oidc', oidc.app))
+koaApp.use(mount('/oidc', provider.koa()))
 ```
 
 Note: when the issuer identifier does not include the path prefix you should take care of rewriting
@@ -3843,7 +3834,7 @@ validating the password digest. Custom implementation using the provided
 ### How to display, on the website of the authorization server itself, if the user is signed-in or not
 
 ```js
-const ctx = provider.app.createContext(req, res)
+const ctx = provider.koa().createContext(req, res)
 const session = await provider.Session.get(ctx)
 const signedIn = !!session.accountId
 ```

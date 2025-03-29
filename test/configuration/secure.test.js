@@ -51,7 +51,7 @@ describe('x-forwarded-proto trust, detection and warnings', () => {
       if (this.app) {
         this.app.proxy = true;
       } else {
-        this.provider.app.proxy = true;
+        this.provider.koa().proxy = true;
       }
       await this.agent.get('/.well-known/openid-configuration', acceptUnauthorized)
         .set('x-forwarded-proto', 'https')
