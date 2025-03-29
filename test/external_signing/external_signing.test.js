@@ -2,15 +2,17 @@ import * as url from 'node:url';
 
 import * as jose from 'jose';
 
-import bootstrap from '../test_helper.js';
+import bootstrap, { enableNetConnect, resetNetConnect } from '../test_helper.js';
 
 const route = '/auth';
 const response_type = 'id_token';
 const scope = 'openid';
 
 describe('External Signing Keys', () => {
+  before(enableNetConnect);
   before(bootstrap(import.meta.url));
   before(function () { return this.login(); });
+  after(resetNetConnect);
 
   it('still signs with in-process JWKS', function () {
     const auth = new this.AuthorizationRequest({

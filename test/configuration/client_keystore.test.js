@@ -1,17 +1,14 @@
 import { strict as assert } from 'node:assert';
 
 import moment from 'moment';
-import nock from 'nock';
 import { createSandbox } from 'sinon';
 import { expect } from 'chai';
 
 import * as JWT from '../../lib/helpers/jwt.js';
 import epochTime from '../../lib/helpers/epoch_time.js';
-import bootstrap from '../test_helper.js';
+import bootstrap, { assertNoPendingInterceptors, mock } from '../test_helper.js';
 
 const sinon = createSandbox();
-
-const endpoint = nock('https://client.example.com/');
 
 const keys = [{
   kty: 'EC',
@@ -23,17 +20,16 @@ const keys = [{
 function setResponse(body = {
   keys,
 }, statusCode = 200, headers = {}) {
-  endpoint
-    .get('/jwks')
-    .reply(statusCode, typeof body === 'string' ? body : JSON.stringify(body), headers);
-  assert(!nock.isDone(), 'expected client\'s jwks_uri to be fetched');
+  mock('https://client.example.com')
+    .intercept({
+      path: '/jwks',
+    })
+    .reply(statusCode, typeof body === 'string' ? body : JSON.stringify(body), { headers });
 }
 
 // NOTE: these tests are to be run sequentially, picking one random won't pass
 describe('client keystore refresh', () => {
-  afterEach(() => {
-    expect(nock.isDone()).to.be.true;
-  });
+  afterEach(assertNoPendingInterceptors);
 
   before(bootstrap(import.meta.url, { config: 'client_keystore' }));
 

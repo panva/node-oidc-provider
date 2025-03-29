@@ -1,16 +1,15 @@
 import map from 'lodash/map.js';
 import uniq from 'lodash/uniq.js';
 import { expect } from 'chai';
-import nock from 'nock';
 
-import bootstrap from '../test_helper.js';
+import bootstrap, { assertNoPendingInterceptors, mock } from '../test_helper.js';
 
 describe('pairwise features', () => {
   before(bootstrap(import.meta.url));
 
-  describe('pairwise client configuration', () => {
-    beforeEach(nock.cleanAll);
+  afterEach(assertNoPendingInterceptors);
 
+  describe('pairwise client configuration', () => {
     context('sector_identifier_uri is not provided', () => {
       it('resolves the sector_identifier from one redirect_uri', function () {
         return i(this.provider).clientAdd({
@@ -54,8 +53,10 @@ describe('pairwise features', () => {
 
     context('sector_identifier_uri is provided', () => {
       it('is not ignored even without subject_type=pairwise', function () {
-        nock('https://foobar.example.com')
-          .get('/sector')
+        mock('https://foobar.example.com')
+          .intercept({
+            path: '/sector',
+          })
           .reply(200, JSON.stringify(['https://client.example.com/cb', 'https://another.example.com/forum/cb']));
 
         return i(this.provider).clientAdd({
@@ -71,8 +72,10 @@ describe('pairwise features', () => {
       });
 
       it('validates the sector from the provided uri', function () {
-        nock('https://foobar.example.com')
-          .get('/sector')
+        mock('https://foobar.example.com')
+          .intercept({
+            path: '/sector',
+          })
           .reply(200, JSON.stringify(['https://client.example.com/cb', 'https://another.example.com/forum/cb']));
 
         return i(this.provider).clientAdd({
@@ -88,8 +91,10 @@ describe('pairwise features', () => {
       });
 
       it('validates the sector from the provided uri for static clients too', function () {
-        nock('https://foobar.example.com')
-          .get('/sector')
+        mock('https://foobar.example.com')
+          .intercept({
+            path: '/sector',
+          })
           .reply(200, JSON.stringify(['https://client.example.com/cb', 'https://another.example.com/forum/cb']));
 
         return this.provider.Client.find('client-static-with-sector').then((client) => {
@@ -114,8 +119,10 @@ describe('pairwise features', () => {
       });
 
       it('validates all redirect_uris are in the uri', function () {
-        nock('https://client.example.com')
-          .get('/sector')
+        mock('https://client.example.com')
+          .intercept({
+            path: '/sector',
+          })
           .reply(200, JSON.stringify(['https://client.example.com/cb', 'https://another.example.com/forum/cb']));
 
         return i(this.provider).clientAdd({
@@ -135,8 +142,10 @@ describe('pairwise features', () => {
 
       describe('features.ciba', () => {
         it('validates jwks_uri is in the response', function () {
-          nock('https://client.example.com')
-            .get('/sector')
+          mock('https://client.example.com')
+            .intercept({
+              path: '/sector',
+            })
             .reply(200, JSON.stringify(['https://client.example.com/cb', 'https://another.example.com/forum/cb']));
 
           return i(this.provider).clientAdd({
@@ -160,8 +169,10 @@ describe('pairwise features', () => {
 
       describe('features.deviceFlow', () => {
         it('validates jwks_uri is in the response', function () {
-          nock('https://client.example.com')
-            .get('/sector')
+          mock('https://client.example.com')
+            .intercept({
+              path: '/sector',
+            })
             .reply(200, JSON.stringify(['https://client.example.com/cb', 'https://another.example.com/forum/cb']));
 
           return i(this.provider).clientAdd({
@@ -183,8 +194,10 @@ describe('pairwise features', () => {
       });
 
       it('validates the response is a json', function () {
-        nock('https://client.example.com')
-          .get('/sector')
+        mock('https://client.example.com')
+          .intercept({
+            path: '/sector',
+          })
           .reply(200, '{ not a valid json');
 
         return i(this.provider).clientAdd({
@@ -203,8 +216,10 @@ describe('pairwise features', () => {
       });
 
       it('validates only accepts json array responses', function () {
-        nock('https://client.example.com')
-          .get('/sector')
+        mock('https://client.example.com')
+          .intercept({
+            path: '/sector',
+          })
           .reply(200, JSON.stringify('https://client.example.com/cb'));
 
         return i(this.provider).clientAdd({
@@ -223,8 +238,10 @@ describe('pairwise features', () => {
       });
 
       it('handles got lib errors', function () {
-        nock('https://client.example.com')
-          .get('/sector')
+        mock('https://client.example.com')
+          .intercept({
+            path: '/sector',
+          })
           .reply(500);
 
         return i(this.provider).clientAdd({
@@ -243,8 +260,10 @@ describe('pairwise features', () => {
       });
 
       it('doesnt accepts 200s, rejects even on redirect', function () {
-        nock('https://client.example.com')
-          .get('/sector')
+        mock('https://client.example.com')
+          .intercept({
+            path: '/sector',
+          })
           .reply(201, JSON.stringify('https://client.example.com/cb'));
 
         return i(this.provider).clientAdd({
