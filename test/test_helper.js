@@ -7,6 +7,7 @@ import * as querystring from 'node:querystring';
 import { createServer } from 'node:http';
 import { once } from 'node:events';
 
+import { setGlobalDispatcher, MockAgent } from 'undici';
 import sinon from 'sinon';
 import { dirname } from 'desm';
 import flatten from 'lodash/flatten.js';
@@ -27,6 +28,10 @@ import instance from '../lib/helpers/weak_cache.js';
 
 import { Account, TestAdapter } from './models.js';
 import keys from './keys.js';
+
+const fetchAgent = new MockAgent();
+fetchAgent.disableNetConnect();
+setGlobalDispatcher(fetchAgent);
 
 const { _auth } = Request.prototype;
 
@@ -486,6 +491,7 @@ export default function testHelper(importMetaUrl, {
       provider,
       TestAdapter,
       wrap,
+      fetchAgent,
     });
 
     switch (mountVia) {
@@ -617,4 +623,24 @@ export function skipConsent() {
   });
 
   after(sandbox.restore);
+}
+
+export function enableNetConnect() {
+  fetchAgent.enableNetConnect();
+}
+
+export function resetNetConnect() {
+  fetchAgent.disableNetConnect();
+}
+
+export function disableNetConnect() {
+  fetchAgent.disableNetConnect();
+}
+
+export function assertNoPendingInterceptors() {
+  fetchAgent.assertNoPendingInterceptors();
+}
+
+export function mock(origin) {
+  return fetchAgent.get(origin);
 }
