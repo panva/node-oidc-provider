@@ -230,20 +230,17 @@ provider.registerGrantType(grantType, tokenExchangeHandler, parameters, allowedD
 
 ## Registering module middlewares (helmet, ip-filters, rate-limiters, etc)
 
-When using `provider.koa()` or `provider.callback()` as a mounted application in your own koa or express
-stack just follow the respective module's documentation. However, when using the `provider.koa()` Koa
+TODO: revise this
+
+When using `provider` or `provider.callback()` as a mounted application in your own koa or express
+stack just follow the respective module's documentation. However, when using the `provider` Koa
 instance directly to register i.e. koa-helmet you must push the middleware in
 front of oidc-provider in the middleware stack.
 
 ```js
 import helmet from "koa-helmet";
 
-// Correct, this pushes koa-helmet at the end of the middleware stack but BEFORE oidc-provider.
 provider.use(helmet());
-
-// Incorrect, this pushes koa-helmet at the end of the middleware stack AFTER oidc-provider, not being
-// executed when errors are encountered or during actions that do not "await next()".
-provider.koa().use(helmet());
 ```
 
 ## Pre- and post-middlewares
@@ -358,17 +355,17 @@ export class OidcController {
 ### to an `express` application
 
 ```js
-// assumes express ^4.0.0
+// assumes express ^4.0.0 || ^5.0.0
 expressApp.use("/oidc", provider.callback());
 ```
 
 ### to a `koa` application
 
 ```js
-// assumes koa ^2.0.0
+// assumes koa ^2.0.0 || ^3.0.0
 // assumes koa-mount ^4.0.0
 import mount from "koa-mount";
-koaApp.use(mount("/oidc", provider.koa()));
+koaApp.use(mount("/oidc", provider));
 ```
 
 Note: when the issuer identifier does not include the path prefix you should take care of rewriting
@@ -3880,7 +3877,7 @@ validating the password digest. Custom implementation using the provided
 ### How to display, on the website of the authorization server itself, if the user is signed-in or not
 
 ```js
-const ctx = provider.koa().createContext(req, res);
+const ctx = provider.createContext(req, res);
 const session = await provider.Session.get(ctx);
 const signedIn = !!session.accountId;
 ```
