@@ -2,7 +2,6 @@ import { createPrivateKey, X509Certificate } from 'node:crypto';
 import { readFileSync } from 'node:fs';
 import { request } from 'node:http';
 
-import nock from 'nock';
 import { importJWK } from 'jose';
 import sinon from 'sinon';
 import { expect } from 'chai';
@@ -10,7 +9,7 @@ import cloneDeep from 'lodash/cloneDeep.js';
 
 import nanoid from '../../lib/helpers/nanoid.js';
 import Provider from '../../lib/index.js';
-import bootstrap from '../test_helper.js';
+import bootstrap, { assertNoPendingInterceptors, mock } from '../test_helper.js';
 import clientKey from '../client.sig.key.js';
 import * as JWT from '../../lib/helpers/jwt.js';
 import { JWA } from '../../lib/consts/index.js';
@@ -43,6 +42,8 @@ function errorDetail(spy) {
 
 describe('client authentication options', () => {
   before(bootstrap(import.meta.url));
+
+  afterEach(assertNoPendingInterceptors);
 
   before(function () {
     this.provider.registerGrantType('foo', (ctx) => {
@@ -1219,8 +1220,10 @@ describe('client authentication options', () => {
     });
 
     it('handles rotation of stale jwks', function () {
-      nock('https://client.example.com/')
-        .get('/jwks')
+      mock('https://client.example.com')
+        .intercept({
+          path: '/jwks',
+        })
         .reply(200, JSON.stringify(mtlsKeys));
 
       return this.agent.post(route)
