@@ -29,6 +29,7 @@ If you or your company use this module, or you need help using/upgrading the mod
 - [Accounts](#accounts)
 - [User flows](#user-flows)
 - [Custom Grant Types ❗](#custom-grant-types)
+- [General access to `ctx` ❗](#general-access-to-ctx)
 - [Registering module middlewares (helmet, ip-filters, rate-limiters, etc)](#registering-module-middlewares-helmet-ip-filters-rate-limiters-etc)
 - [Pre- and post-middlewares ❗](#pre--and-post-middlewares)
 - [Mounting oidc-provider](#mounting-oidc-provider)
@@ -227,6 +228,15 @@ async function tokenExchangeHandler(ctx, next) {
 
 provider.registerGrantType(grantType, tokenExchangeHandler, parameters, allowedDuplicateParameters);
 ```
+
+## General access to `ctx`
+
+It is possible to access the `ctx` object in functions and helpers that don't get it as an argument via the
+Provider static `ctx` getter (`Provider.ctx`). This utilizes node's 
+[`AsyncLocalStorage`](https://nodejs.org/api/async_context.html#class-asynclocalstorage) and results in `ctx`
+being available in method invocations where it isn't normally passed as an argument (e.g. in [Adapter](#adapter))
+so long as that method is invoked within the context of an HTTP request that is being handled by oidc-provider's
+route handlers.
 
 ## Registering module middlewares (helmet, ip-filters, rate-limiters, etc)
 
