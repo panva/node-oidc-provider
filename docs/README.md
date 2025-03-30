@@ -230,12 +230,9 @@ provider.registerGrantType(grantType, tokenExchangeHandler, parameters, allowedD
 
 ## Registering module middlewares (helmet, ip-filters, rate-limiters, etc)
 
-TODO: revise this
-
 When using `provider` or `provider.callback()` as a mounted application in your own koa or express
-stack just follow the respective module's documentation. However, when using the `provider` Koa
-instance directly to register i.e. koa-helmet you must push the middleware in
-front of oidc-provider in the middleware stack.
+stack just follow the respective module's documentation. When using the `provider` Koa
+instance directly this is effectively the same as [registering any Koa middleware](https://koajs.com/#app-use-function-).
 
 ```js
 import helmet from "koa-helmet";
@@ -245,7 +242,8 @@ provider.use(helmet());
 
 ## Pre- and post-middlewares
 
-You can push custom middleware to be executed before and after oidc-provider.
+You can push custom middleware to be executed before and after oidc-provider's route handlers. This is effectively
+the same as [Middleware Cascading in Koa](https://koajs.com/#cascading).
 
 ```js
 provider.use(async (ctx, next) => {

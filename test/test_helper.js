@@ -153,6 +153,11 @@ export default function testHelper(importMetaUrl, {
       ...config,
     });
 
+    // eslint-disable-next-line prefer-arrow-callback
+    provider.middleware.push(async function neverInvoked(ctx) {
+      ctx.throw(500, 'this is never invoked');
+    });
+
     let agent;
     let lastSession;
 
@@ -428,26 +433,19 @@ export default function testHelper(importMetaUrl, {
       }
     }
 
-    function assertOnce(fn, done, finished) {
-      let final;
-      let finish;
-      return async (ctx, next) => {
-        await next();
-        if (typeof finished === 'function') {
-          finish = finished(ctx);
-        } else if (!finish) {
-          finish = true;
-        }
-        if (!final && finish) {
-          final = true;
+    function assertOnce(ondone, done) {
+      async function removeAfterUse(ctx, next) {
+        await next().finally(() => {
+          provider.middleware.splice(provider.middleware.indexOf(removeAfterUse), 1);
           try {
-            await fn(ctx);
+            ondone(ctx);
             done();
           } catch (err) {
             done(err);
           }
-        }
-      };
+        });
+      }
+      provider.use(removeAfterUse);
     }
 
     function getTokenJti(token) {
@@ -465,15 +463,15 @@ export default function testHelper(importMetaUrl, {
         expect(body).to.have.property('error', error);
         expect(body).to.have.property('error_description', error_description);
         expect(wwwAuth).to.match(new RegExp(`^Bearer realm="${issuer}"`));
-        let assert = expect(wwwAuth);
+        let check = expect(wwwAuth);
         if (error_description === 'no access token provided') {
-          assert = assert.not.to;
+          check = check.not.to;
         } else {
-          assert = assert.to;
+          check = check.to;
         }
-        assert.match(new RegExp(`error="${error}"`));
-        assert.match(new RegExp(`error_description="${error_description.replace(/[-/\\^$*+?.()|[\]{}]/g, '\\$&')}"`));
-        if (scope) assert.match(new RegExp(`scope="${scope}"`));
+        check.match(new RegExp(`error="${error}"`));
+        check.match(new RegExp(`error_description="${error_description.replace(/[-/\\^$*+?.()|[\]{}]/g, '\\$&')}"`));
+        if (scope) check.match(new RegExp(`scope="${scope}"`));
       };
     }
 

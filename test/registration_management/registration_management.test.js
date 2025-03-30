@@ -68,12 +68,11 @@ describe('OAuth 2.0 Dynamic Client Registration Management Protocol', () => {
     });
 
     it('populates ctx.oidc.entities', function (done) {
-      this.provider.use(this.assertOnce((ctx) => {
-        expect(ctx.oidc.entities).to.have.keys('Client', 'RegistrationAccessToken');
-      }, done, (ctx) => ctx.method === 'PUT'));
-
       (async () => {
         const client = await setup.call(this, {});
+        this.assertOnce((ctx) => {
+          expect(ctx.oidc.entities).to.have.keys('Client', 'RegistrationAccessToken');
+        }, done);
         await this.agent.put(`/reg/${client.client_id}`)
           .auth(client.registration_access_token, { type: 'bearer' })
           .send(updateProperties(client));
@@ -234,14 +233,13 @@ describe('OAuth 2.0 Dynamic Client Registration Management Protocol', () => {
       });
 
       it('populates ctx.oidc.entities with RotatedRegistrationAccessToken too', function (done) {
-        this.provider.use(this.assertOnce((ctx) => {
-          expect(ctx.oidc.entities).to.contain.keys('RotatedRegistrationAccessToken', 'RegistrationAccessToken');
-          expect(ctx.oidc.entities.RotatedRegistrationAccessToken)
-            .not.to.eql(ctx.oidc.entities.RegistrationAccessToken);
-        }, done, (ctx) => ctx.method === 'PUT'));
-
         (async () => {
           const client = await setup.call(this, {});
+          this.assertOnce((ctx) => {
+            expect(ctx.oidc.entities).to.contain.keys('RotatedRegistrationAccessToken', 'RegistrationAccessToken');
+            expect(ctx.oidc.entities.RotatedRegistrationAccessToken)
+              .not.to.eql(ctx.oidc.entities.RegistrationAccessToken);
+          }, done);
           await this.agent.put(`/reg/${client.client_id}`)
             .auth(client.registration_access_token, { type: 'bearer' })
             .send(updateProperties(client));
@@ -282,12 +280,11 @@ describe('OAuth 2.0 Dynamic Client Registration Management Protocol', () => {
     });
 
     it('populates ctx.oidc.entities', function (done) {
-      this.provider.use(this.assertOnce((ctx) => {
-        expect(ctx.oidc.entities).to.have.keys('Client', 'RegistrationAccessToken');
-      }, done, (ctx) => ctx.method === 'DELETE'));
-
       (async () => {
         const client = await setup.call(this, {});
+        this.assertOnce((ctx) => {
+          expect(ctx.oidc.entities).to.have.keys('Client', 'RegistrationAccessToken');
+        }, done);
         await this.agent.del(`/reg/${client.client_id}`)
           .auth(client.registration_access_token, { type: 'bearer' });
       })().catch(done);

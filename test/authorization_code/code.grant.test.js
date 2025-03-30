@@ -70,10 +70,10 @@ describe('grant_type=authorization_code', () => {
     });
 
     it('populates ctx.oidc.entities (no offline_access)', function (done) {
-      this.provider.use(this.assertOnce((ctx) => {
+      this.assertOnce((ctx) => {
         expect(ctx.oidc.entities).to.have.keys('Account', 'Grant', 'Client', 'AuthorizationCode', 'AccessToken');
         expect(ctx.oidc.entities.AccessToken).to.have.property('gty', 'authorization_code');
-      }, done));
+      }, done);
 
       this.agent.post(route)
         .auth('client', 'secret')
@@ -87,11 +87,11 @@ describe('grant_type=authorization_code', () => {
     });
 
     it('populates ctx.oidc.entities (w/ offline_access)', function (done) {
-      this.provider.use(this.assertOnce((ctx) => {
+      this.assertOnce((ctx) => {
         expect(ctx.oidc.entities).to.have.keys('Account', 'Grant', 'Client', 'AuthorizationCode', 'AccessToken', 'RefreshToken');
         expect(ctx.oidc.entities.AccessToken).to.have.property('gty', 'authorization_code');
         expect(ctx.oidc.entities.RefreshToken).to.have.property('gty', 'authorization_code');
-      }, done));
+      }, done);
 
       this.TestAdapter.for('Grant').syncUpdate(this.getSession().authorizations.client.grantId, {
         scope: 'openid offline_access',
@@ -386,10 +386,10 @@ describe('grant_type=authorization_code', () => {
     });
 
     it('populates ctx.oidc.entities (no offline_access)', function (done) {
-      this.provider.use(this.assertOnce((ctx) => {
+      this.assertOnce((ctx) => {
         expect(ctx.oidc.entities).to.have.keys('Account', 'Grant', 'Client', 'AuthorizationCode', 'AccessToken');
         expect(ctx.oidc.entities.AccessToken).to.have.property('gty', 'authorization_code');
-      }, done));
+      }, done);
 
       this.agent.post(route)
         .auth('client2', 'secret')
@@ -402,11 +402,11 @@ describe('grant_type=authorization_code', () => {
     });
 
     it('populates ctx.oidc.entities (w/ offline_access)', function (done) {
-      this.provider.use(this.assertOnce((ctx) => {
+      this.assertOnce((ctx) => {
         expect(ctx.oidc.entities).to.have.keys('Account', 'Grant', 'Client', 'AuthorizationCode', 'AccessToken', 'RefreshToken');
         expect(ctx.oidc.entities.AccessToken).to.have.property('gty', 'authorization_code');
         expect(ctx.oidc.entities.RefreshToken).to.have.property('gty', 'authorization_code');
-      }, done));
+      }, done);
 
       this.TestAdapter.for('Grant').syncUpdate(this.getSession().authorizations.client2.grantId, {
         scope: 'openid offline_access',

@@ -414,9 +414,9 @@ describe('revocation features', () => {
 
     describe('populates ctx.oidc.entities', () => {
       it('when revoking an AccessToken', function (done) {
-        this.provider.use(this.assertOnce((ctx) => {
+        this.assertOnce((ctx) => {
           expect(ctx.oidc.entities).to.have.keys('Client', 'AccessToken');
-        }, done));
+        }, done);
 
         (async () => {
           const at = new this.provider.AccessToken({
@@ -437,9 +437,9 @@ describe('revocation features', () => {
       });
 
       it('when revoking a RefreshToken', function (done) {
-        this.provider.use(this.assertOnce((ctx) => {
+        this.assertOnce((ctx) => {
           expect(ctx.oidc.entities).to.have.keys('Client', 'RefreshToken');
-        }, done));
+        }, done);
 
         (async () => {
           const rt = new this.provider.RefreshToken({
@@ -458,9 +458,9 @@ describe('revocation features', () => {
       });
 
       it('when revoking ClientCredentials', function (done) {
-        this.provider.use(this.assertOnce((ctx) => {
+        this.assertOnce((ctx) => {
           expect(ctx.oidc.entities).to.have.keys('Client', 'ClientCredentials');
-        }, done));
+        }, done);
 
         (async () => {
           const rt = new this.provider.ClientCredentials({

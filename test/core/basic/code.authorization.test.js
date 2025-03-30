@@ -51,13 +51,13 @@ describe('BASIC code', () => {
       });
 
       it('populates ctx.oidc.entities', function (done) {
-        this.provider.use(this.assertOnce((ctx) => {
+        this.assertOnce((ctx) => {
           expect(ctx.oidc.entities).to.have.keys('AuthorizationCode', 'Grant', 'Client', 'Account', 'Session');
           expect(ctx.oidc.params).to.include({
             extra: 'provided',
             extra2: 'defaulted',
           });
-        }, done));
+        }, done);
 
         const auth = new this.AuthorizationRequest({
           response_type,

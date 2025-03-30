@@ -99,9 +99,9 @@ describe('custom token endpoint grant types', () => {
     });
 
     it('populates ctx.oidc.entities', function (done) {
-      this.provider.use(this.assertOnce((ctx) => {
+      this.assertOnce((ctx) => {
         expect(ctx.oidc.entities).to.have.keys('Client');
-      }, done));
+      }, done);
 
       this.agent.post('/token')
         .auth('client', 'secret')

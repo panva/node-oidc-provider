@@ -180,9 +180,9 @@ describe('Pushed Request Object', () => {
         describe('using a plain pushed authorization request', () => {
           describe('Pushed Authorization Request Endpoint', () => {
             it('populates ctx.oidc.entities', function (done) {
-              this.provider.use(this.assertOnce((ctx) => {
+              this.assertOnce((ctx) => {
                 expect(ctx.oidc.entities).to.have.keys('Client', 'PushedAuthorizationRequest');
-              }, done));
+              }, done);
 
               this.agent.post('/request')
                 .auth(clientId, 'secret')
@@ -415,9 +415,9 @@ describe('Pushed Request Object', () => {
         describe('using a JAR request parameter', () => {
           describe('Pushed Authorization Request Endpoint', () => {
             it('populates ctx.oidc.entities', function (done) {
-              this.provider.use(this.assertOnce((ctx) => {
+              this.assertOnce((ctx) => {
                 expect(ctx.oidc.entities).to.have.keys('Client', 'PushedAuthorizationRequest');
-              }, done));
+              }, done);
 
               JWT.sign({
                 jti: randomBytes(16).toString('base64url'),
