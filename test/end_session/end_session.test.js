@@ -226,9 +226,9 @@ describe('logout endpoint', () => {
           });
 
           it('populates ctx.oidc.entities', function (done) {
-            this.provider.use(this.assertOnce((ctx) => {
+            this.assertOnce((ctx) => {
               expect(ctx.oidc.entities).to.have.keys('Client', 'IdTokenHint', 'Session');
-            }, done));
+            }, done);
 
             const params = {
               id_token_hint: this.idToken,
@@ -417,9 +417,9 @@ describe('logout endpoint', () => {
       });
 
       it('populates ctx.oidc.entities', function (done) {
-        this.provider.use(this.assertOnce((ctx) => {
+        this.assertOnce((ctx) => {
           expect(ctx.oidc.entities).to.have.keys('Client', 'Session');
-        }, done));
+        }, done);
 
         this.getSession().state = { secret: '123', postLogoutRedirectUri: 'https://rp.example.com/', clientId: 'client' };
 

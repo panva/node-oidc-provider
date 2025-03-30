@@ -93,11 +93,11 @@ describe('grant_type=refresh_token', () => {
   });
 
   it('populates ctx.oidc.entities', function (done) {
-    this.provider.use(this.assertOnce((ctx) => {
+    this.assertOnce((ctx) => {
       expect(ctx.oidc.entities).to.have.keys('Account', 'Grant', 'Client', 'AccessToken', 'RefreshToken');
       expect(ctx.oidc.entities.RefreshToken).to.have.property('gty', 'authorization_code');
       expect(ctx.oidc.entities.AccessToken).to.have.property('gty', 'authorization_code refresh_token');
-    }, done));
+    }, done);
 
     this.agent.post(route)
       .auth('client', 'secret')
@@ -328,13 +328,13 @@ describe('grant_type=refresh_token', () => {
     });
 
     it('populates ctx.oidc.entities', function (done) {
-      this.provider.use(this.assertOnce((ctx) => {
+      this.assertOnce((ctx) => {
         expect(ctx.oidc.entities).to.have.keys('Account', 'Grant', 'Client', 'AccessToken', 'RotatedRefreshToken', 'RefreshToken');
         expect(ctx.oidc.entities.RotatedRefreshToken).not.to.eql(ctx.oidc.entities.RefreshToken);
         expect(ctx.oidc.entities.RotatedRefreshToken).to.have.property('gty', 'authorization_code');
         expect(ctx.oidc.entities.RefreshToken).to.have.property('gty', 'authorization_code refresh_token');
         expect(ctx.oidc.entities.AccessToken).to.have.property('gty', 'authorization_code refresh_token');
-      }, done));
+      }, done);
 
       this.agent.post(route)
         .auth('client', 'secret')
@@ -470,13 +470,13 @@ describe('grant_type=refresh_token', () => {
     });
 
     it('populates ctx.oidc.entities', function (done) {
-      this.provider.use(this.assertOnce((ctx) => {
+      this.assertOnce((ctx) => {
         expect(ctx.oidc.entities).to.have.keys('Account', 'Grant', 'Client', 'AccessToken', 'RotatedRefreshToken', 'RefreshToken');
         expect(ctx.oidc.entities.RotatedRefreshToken).not.to.eql(ctx.oidc.entities.RefreshToken);
         expect(ctx.oidc.entities.RotatedRefreshToken).to.have.property('gty', 'authorization_code');
         expect(ctx.oidc.entities.RefreshToken).to.have.property('gty', 'authorization_code refresh_token');
         expect(ctx.oidc.entities.AccessToken).to.have.property('gty', 'authorization_code refresh_token');
-      }, done));
+      }, done);
 
       this.agent.post(route)
         .auth('client', 'secret')
@@ -610,11 +610,11 @@ describe('grant_type=refresh_token', () => {
     });
 
     it('does not rotate', function (done) {
-      this.provider.use(this.assertOnce((ctx) => {
+      this.assertOnce((ctx) => {
         expect(ctx.oidc.entities).to.have.keys('Account', 'Grant', 'Client', 'AccessToken', 'RefreshToken');
         expect(ctx.oidc.entities.RefreshToken).to.have.property('gty', 'authorization_code');
         expect(ctx.oidc.entities.AccessToken).to.have.property('gty', 'authorization_code refresh_token');
-      }, done));
+      }, done);
 
       this.agent.post(route)
         .auth('client', 'secret')

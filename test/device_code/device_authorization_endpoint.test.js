@@ -167,9 +167,9 @@ describe('device_authorization_endpoint', () => {
   });
 
   it('populates ctx.oidc.entities', function (done) {
-    this.provider.use(this.assertOnce((ctx) => {
+    this.assertOnce((ctx) => {
       expect(ctx.oidc.entities).to.have.keys('Client', 'DeviceCode');
-    }, done));
+    }, done);
 
     this.agent.post(route)
       .send({

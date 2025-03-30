@@ -27,9 +27,9 @@ describe('registration features', () => {
     });
 
     it('populates ctx.oidc.entities', function (done) {
-      this.provider.use(this.assertOnce((ctx) => {
+      this.assertOnce((ctx) => {
         expect(ctx.oidc.entities).to.have.keys('Client', 'RegistrationAccessToken');
-      }, done));
+      }, done);
 
       this.agent.post('/reg')
         .send({
@@ -61,9 +61,9 @@ describe('registration features', () => {
       });
 
       it('populates ctx.oidc.entities', function (done) {
-        this.provider.use(this.assertOnce((ctx) => {
+        this.assertOnce((ctx) => {
           expect(ctx.oidc.entities).not.to.have.property('RegistrationAccessToken');
-        }, done));
+        }, done);
 
         this.agent.post('/reg')
           .send({
@@ -96,9 +96,9 @@ describe('registration features', () => {
       });
 
       it('populates ctx.oidc.entities', function (done) {
-        this.provider.use(this.assertOnce((ctx) => {
+        this.assertOnce((ctx) => {
           expect(ctx.oidc.entities).not.to.have.property('RegistrationAccessToken');
-        }, done));
+        }, done);
 
         this.agent.post('/reg')
           .send({
@@ -131,9 +131,9 @@ describe('registration features', () => {
       });
 
       it('populates ctx.oidc.entities', function (done) {
-        this.provider.use(this.assertOnce((ctx) => {
+        this.assertOnce((ctx) => {
           expect(ctx.oidc.entities).to.have.property('RegistrationAccessToken');
-        }, done));
+        }, done);
 
         this.agent.post('/reg')
           .send({
@@ -166,9 +166,9 @@ describe('registration features', () => {
       });
 
       it('populates ctx.oidc.entities', function (done) {
-        this.provider.use(this.assertOnce((ctx) => {
+        this.assertOnce((ctx) => {
           expect(ctx.oidc.entities).to.have.property('RegistrationAccessToken');
-        }, done));
+        }, done);
 
         this.agent.post('/reg')
           .send({
@@ -413,9 +413,9 @@ describe('registration features', () => {
         });
 
         it('adds InitialAccessToken to ctx.oidc.entities', function (done) {
-          this.provider.use(this.assertOnce((ctx) => {
+          this.assertOnce((ctx) => {
             expect(ctx.oidc.entities).to.have.property('InitialAccessToken');
-          }, done));
+          }, done);
 
           this.agent.post('/reg')
             .send({
@@ -487,9 +487,9 @@ describe('registration features', () => {
     });
 
     it('populates ctx.oidc.entities', function (done) {
-      this.provider.use(this.assertOnce((ctx) => {
+      this.assertOnce((ctx) => {
         expect(ctx.oidc.entities).to.have.keys('Client', 'RegistrationAccessToken');
-      }, done));
+      }, done);
 
       this.agent.get(`/reg/${this.clientId}`)
         .auth(this.token, { type: 'bearer' })
