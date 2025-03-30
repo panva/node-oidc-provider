@@ -51,7 +51,7 @@
   ],
   "scripts": {
     "format": "eslint lib example certification test docs --fix",
-    "heroku-postbuild": "npm install mongodb@^4.3.0 openid-client@^5.0.0",
+    "heroku-postbuild": "npm install openid-client@^5.0.0",
     "test": "node ./test/run",
     "test-ci": "node ./test/ci"
   },
