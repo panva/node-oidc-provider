@@ -60,9 +60,9 @@ describe(route, () => {
       });
 
       it('does not populate ctx.oidc.entities', function (done) {
-        this.provider.use(this.assertOnce((ctx) => {
+        this.assertOnce((ctx) => {
           expect(ctx.oidc.entities).to.be.empty;
-        }, done));
+        }, done);
 
         this.agent.get(route).end(() => {});
       });
@@ -110,9 +110,9 @@ describe(route, () => {
       });
 
       it('does not populate ctx.oidc.entities', function (done) {
-        this.provider.use(this.assertOnce((ctx) => {
+        this.assertOnce((ctx) => {
           expect(ctx.oidc.entities).to.be.empty;
-        }, done));
+        }, done);
 
         this.agent.get(route).end(() => {});
       });
