@@ -1,5 +1,5 @@
 import { expect } from 'chai';
-import sinon from 'sinon';
+import { createSandbox } from 'sinon';
 import base64url from 'base64url';
 
 import bootstrap from '../test_helper.js';
@@ -8,6 +8,8 @@ import epochTime from '../../lib/helpers/epoch_time.js';
 const route = '/token';
 const grant_type = 'urn:ietf:params:oauth:grant-type:device_code';
 
+const sinon = createSandbox();
+
 function errorDetail(spy) {
   return spy.args[0][1].error_detail;
 }
@@ -15,6 +17,7 @@ function errorDetail(spy) {
 describe('grant_type=urn:ietf:params:oauth:grant-type:device_code w/ conformIdTokenClaims=false', () => {
   before(bootstrap(import.meta.url, { config: 'device_code_non_conform' })); // agent
   before(function () { return this.login({ scope: 'openid profile offline_access', accountId: 'sub' }); });
+  afterEach(sinon.restore);
 
   it('returns the right stuff', async function () {
     const spy = sinon.spy();
@@ -49,6 +52,7 @@ describe('grant_type=urn:ietf:params:oauth:grant-type:device_code w/ conformIdTo
 describe('grant_type=urn:ietf:params:oauth:grant-type:device_code', () => {
   before(bootstrap(import.meta.url));
   before(function () { return this.login({ scope: 'openid profile offline_access', accountId: 'sub' }); });
+  afterEach(sinon.restore);
 
   it('returns the right stuff', async function () {
     const spy = sinon.spy();
@@ -166,7 +170,7 @@ describe('grant_type=urn:ietf:params:oauth:grant-type:device_code', () => {
     });
 
     it('validates account is still there', async function () {
-      sinon.stub(this.provider.Account, 'findAccount').callsFake(() => Promise.resolve());
+      sinon.stub(i(this.provider).configuration, 'findAccount').callsFake(() => Promise.resolve());
 
       const spy = sinon.spy();
       this.provider.once('grant.error', spy);
@@ -186,9 +190,6 @@ describe('grant_type=urn:ietf:params:oauth:grant-type:device_code', () => {
           grant_type,
         })
         .type('form')
-        .expect(() => {
-          this.provider.Account.findAccount.restore();
-        })
         .expect(400)
         .expect(() => {
           expect(spy.calledOnce).to.be.true;

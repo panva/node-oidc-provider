@@ -19,6 +19,7 @@ describe('grant_type=authorization_code', () => {
   before(bootstrap(import.meta.url));
 
   afterEach(() => timekeeper.reset());
+  afterEach(sinon.restore);
 
   afterEach(function () {
     this.provider.removeAllListeners('grant.success');
@@ -274,7 +275,7 @@ describe('grant_type=authorization_code', () => {
     });
 
     it('validates account is still there', function () {
-      sinon.stub(this.provider.Account, 'findAccount').callsFake(() => Promise.resolve());
+      sinon.stub(i(this.provider).configuration, 'findAccount').callsFake(() => Promise.resolve());
 
       const spy = sinon.spy();
       this.provider.on('grant.error', spy);
@@ -287,9 +288,6 @@ describe('grant_type=authorization_code', () => {
           redirect_uri: 'https://client.example.com/cb',
         })
         .type('form')
-        .expect(() => {
-          this.provider.Account.findAccount.restore();
-        })
         .expect(400)
         .expect(() => {
           expect(spy.calledOnce).to.be.true;
@@ -568,7 +566,7 @@ describe('grant_type=authorization_code', () => {
     });
 
     it('validates account is still there', function () {
-      sinon.stub(this.provider.Account, 'findAccount').callsFake(() => Promise.resolve());
+      sinon.stub(i(this.provider).configuration, 'findAccount').callsFake(() => Promise.resolve());
 
       const spy = sinon.spy();
       this.provider.on('grant.error', spy);
@@ -580,9 +578,6 @@ describe('grant_type=authorization_code', () => {
           grant_type: 'authorization_code',
         })
         .type('form')
-        .expect(() => {
-          this.provider.Account.findAccount.restore();
-        })
         .expect(400)
         .expect(() => {
           expect(spy.calledOnce).to.be.true;
@@ -666,7 +661,6 @@ describe('grant_type=authorization_code', () => {
     before(function () {
       sinon.stub(this.provider.Client, 'find').callsFake(async () => { throw new Error(); });
     });
-    after(sinon.restore);
 
     it('handles exceptions', function () {
       const spy = sinon.spy();

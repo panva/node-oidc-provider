@@ -1,12 +1,14 @@
 import { strict as assert } from 'node:assert';
 import { parse as parseUrl } from 'node:url';
 
-import sinon from 'sinon';
+import { createSandbox } from 'sinon';
 import base64url from 'base64url';
 import { expect } from 'chai';
 import timekeeper from 'timekeeper';
 
 import bootstrap, { skipConsent } from '../test_helper.js';
+
+const sinon = createSandbox();
 
 const route = '/token';
 
@@ -21,6 +23,7 @@ describe('grant_type=refresh_token', () => {
   afterEach(function () {
     this.provider.removeAllListeners();
   });
+  afterEach(sinon.restore);
 
   beforeEach(function () { return this.login({ scope: 'openid email offline_access' }); });
   afterEach(function () { return this.logout(); });
@@ -257,7 +260,7 @@ describe('grant_type=refresh_token', () => {
 
     it('validates account is still there', function () {
       const { rt } = this;
-      sinon.stub(this.provider.Account, 'findAccount').callsFake(() => Promise.resolve());
+      sinon.stub(i(this.provider).configuration, 'findAccount').callsFake(() => Promise.resolve());
 
       const spy = sinon.spy();
       this.provider.on('grant.error', spy);
@@ -269,9 +272,6 @@ describe('grant_type=refresh_token', () => {
           grant_type: 'refresh_token',
         })
         .type('form')
-        .expect(() => {
-          this.provider.Account.findAccount.restore();
-        })
         .expect(400)
         .expect(() => {
           expect(spy.calledOnce).to.be.true;
