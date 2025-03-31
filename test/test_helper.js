@@ -1,7 +1,7 @@
 /* eslint-disable no-underscore-dangle */
 
 import { parse, pathToFileURL } from 'node:url';
-import { randomBytes } from 'node:crypto';
+import * as crypto from 'node:crypto';
 import * as path from 'node:path';
 import * as querystring from 'node:querystring';
 import { createServer } from 'node:http';
@@ -248,12 +248,18 @@ export default function testHelper(importMetaUrl, {
 
         this.client_id = 'client_id' in parameters ? parameters.client_id : clients[0].client_id;
         const c = clients.find((cl) => cl.client_id === this.client_id);
-        this.state = 'state' in parameters ? parameters.state : randomBytes(16).toString('base64url');
+        this.state = 'state' in parameters ? parameters.state : crypto.randomBytes(16).toString('base64url');
         this.redirect_uri = 'redirect_uri' in parameters ? parameters.redirect_uri : parameters.redirect_uri || (c && c.redirect_uris[0]);
         this.res = {};
 
         if (this.response_type && this.response_type.includes('id_token')) {
-          this.nonce = 'nonce' in parameters ? parameters.nonce : randomBytes(16).toString('base64url');
+          this.nonce = 'nonce' in parameters ? parameters.nonce : crypto.randomBytes(16).toString('base64url');
+        }
+
+        if (this.response_type && this.response_type.includes('code')) {
+          this.code_challenge_method = 'code_challenge_method' in parameters ? parameters.code_challenge_method : 'S256';
+          this.code_verifier = crypto.randomBytes(32).toString('base64url');
+          this.code_challenge = 'code_challenge' in parameters ? parameters.code_challenge : crypto.hash('sha256', this.code_verifier, 'base64url');
         }
 
         Object.defineProperty(this, 'validateClientLocation', {
@@ -305,6 +311,7 @@ export default function testHelper(importMetaUrl, {
             Object.entries(this).forEach(([key, value]) => {
               if (key === 'res') return;
               if (key === 'request') return;
+              if (key === 'code_verifier') return;
               if (key === 'request_uri') return;
               if (key === 'max_age' && value === 0) {
                 expect(interaction.params).not.to.have.property('max_age');

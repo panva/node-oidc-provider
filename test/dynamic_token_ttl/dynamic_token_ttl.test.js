@@ -157,6 +157,7 @@ describe('dynamic ttl', () => {
       .send({
         client_id: 'client',
         grant_type: 'authorization_code',
+        code_verifier: auth.code_verifier,
         code,
         redirect_uri: 'https://rp.example.com/cb',
       })
@@ -197,6 +198,7 @@ describe('dynamic ttl', () => {
       .send({
         client_id: 'client',
         grant_type: 'authorization_code',
+        code_verifier: auth.code_verifier,
         code,
         redirect_uri: 'https://rp.example.com/cb',
       })

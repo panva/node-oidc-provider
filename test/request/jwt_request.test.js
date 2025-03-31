@@ -1,4 +1,4 @@
-import { createSecretKey, randomBytes } from 'node:crypto';
+import * as crypto from 'node:crypto';
 import { parse } from 'node:url';
 
 import { importJWK } from 'jose';
@@ -64,10 +64,15 @@ describe('request parameter features', () => {
         i(this.provider).configuration.clockTolerance = 0;
         return this.logout();
       });
+      if (route === '/auth') {
+        beforeEach(function () {
+          this.code_challenge_method = 'S256';
+          this.code_verifier = crypto.randomBytes(32).toString('base64url');
+          this.code_challenge = crypto.hash('sha256', this.code_verifier, 'base64url');
+        });
+      }
 
       it('does not use anything from the OAuth 2.0 parameters', async function () {
-        i(this.provider).features.requestObjects.mode = 'strict';
-
         const spy = sinon.spy();
         this.provider.once('authorization.success', spy);
 
@@ -78,10 +83,12 @@ describe('request parameter features', () => {
         }
 
         await JWT.sign({
-          jti: randomBytes(16).toString('base64url'),
+          jti: crypto.randomBytes(16).toString('base64url'),
           client_id: 'client',
           response_type: 'code',
           redirect_uri: 'https://client.example.com/cb',
+          code_challenge_method: this.code_challenge_method,
+          code_challenge: this.code_challenge,
           scope: 'openid',
         }, Buffer.from('secret'), 'HS256', { issuer: 'client', audience: this.provider.issuer, expiresIn: 30 }).then((request) => this.wrap({
           agent: this.agent,
@@ -106,11 +113,13 @@ describe('request parameter features', () => {
         this.provider.once(successEvt, spy);
 
         await JWT.sign({
-          jti: randomBytes(16).toString('base64url'),
+          jti: crypto.randomBytes(16).toString('base64url'),
           client_id: 'client',
           response_type: 'code',
           scope: 'openid',
           redirect_uri: 'https://client.example.com/cb',
+          code_challenge_method: this.code_challenge_method,
+          code_challenge: this.code_challenge,
           max_age: 300,
         }, Buffer.from('secret'), 'HS256', { issuer: 'client', audience: this.provider.issuer, expiresIn: 30 }).then((request) => this.wrap({
           agent: this.agent,
@@ -136,11 +145,13 @@ describe('request parameter features', () => {
         this.provider.once(errorEvt, spy);
 
         return JWT.sign({
-          jti: randomBytes(16).toString('base64url'),
+          jti: crypto.randomBytes(16).toString('base64url'),
           client_id: 'client',
           response_type: 'code',
           scope: ['openid', 'profile'],
           redirect_uri: 'https://client.example.com/cb',
+          code_challenge_method: this.code_challenge_method,
+          code_challenge: this.code_challenge,
         }, Buffer.from('secret'), 'HS256', { issuer: 'client', audience: this.provider.issuer, expiresIn: 30 }).then((request) => this.wrap({
           agent: this.agent,
           route,
@@ -169,10 +180,12 @@ describe('request parameter features', () => {
         const claims = JSON.stringify({ id_token: { email: null } });
 
         await JWT.sign({
-          jti: randomBytes(16).toString('base64url'),
+          jti: crypto.randomBytes(16).toString('base64url'),
           client_id: 'client',
           response_type: 'code',
           redirect_uri: 'https://client.example.com/cb',
+          code_challenge_method: this.code_challenge_method,
+          code_challenge: this.code_challenge,
           scope: 'openid',
           claims,
         }, Buffer.from('secret'), 'HS256', { issuer: 'client', audience: this.provider.issuer, expiresIn: 30 }).then((request) => this.wrap({
@@ -200,10 +213,12 @@ describe('request parameter features', () => {
         const claims = { id_token: { email: null } };
 
         await JWT.sign({
-          jti: randomBytes(16).toString('base64url'),
+          jti: crypto.randomBytes(16).toString('base64url'),
           client_id: 'client',
           response_type: 'code',
           redirect_uri: 'https://client.example.com/cb',
+          code_challenge_method: this.code_challenge_method,
+          code_challenge: this.code_challenge,
           claims: { id_token: { email: null } },
           scope: 'openid',
         }, Buffer.from('secret'), 'HS256', { issuer: 'client', audience: this.provider.issuer, expiresIn: 30 }).then((request) => this.wrap({
@@ -231,12 +246,14 @@ describe('request parameter features', () => {
         key = await importJWK(key);
         i(this.provider).configuration.clockTolerance = 10;
         return JWT.sign({
-          jti: randomBytes(16).toString('base64url'),
+          jti: crypto.randomBytes(16).toString('base64url'),
           iat: Math.ceil(Date.now() / 1000) + 5,
           client_id: 'client-with-HS-sig',
           scope: 'openid',
           response_type: 'code',
           redirect_uri: 'https://client.example.com/cb',
+          code_challenge_method: this.code_challenge_method,
+          code_challenge: this.code_challenge,
         }, key, 'HS256', { issuer: 'client-with-HS-sig', audience: this.provider.issuer, expiresIn: 30 }).then((request) => this.wrap({
           agent: this.agent,
           route,
@@ -257,11 +274,13 @@ describe('request parameter features', () => {
         let [key] = client.symmetricKeyStore.selectForSign({ alg: 'HS256' });
         key = await importJWK(key);
         return JWT.sign({
-          jti: randomBytes(16).toString('base64url'),
+          jti: crypto.randomBytes(16).toString('base64url'),
           client_id: 'client-with-HS-sig',
           scope: 'openid',
           response_type: 'code',
           redirect_uri: 'https://client.example.com/cb',
+          code_challenge_method: this.code_challenge_method,
+          code_challenge: this.code_challenge,
         }, key, 'HS256', { issuer: 'client-with-HS-sig', audience: this.provider.issuer, expiresIn: 30 }).then((request) => this.wrap({
           agent: this.agent,
           route,
@@ -286,10 +305,12 @@ describe('request parameter features', () => {
         this.provider.once(errorEvt, spy);
 
         return JWT.sign({
-          jti: randomBytes(16).toString('base64url'),
+          jti: crypto.randomBytes(16).toString('base64url'),
           client_id: 'client-with-HS-sig-expired',
           response_type: 'code',
           redirect_uri: 'https://client.example.com/cb',
+          code_challenge_method: this.code_challenge_method,
+          code_challenge: this.code_challenge,
         }, key, 'HS256', { issuer: 'client-with-HS-sig-expired', audience: this.provider.issuer, expiresIn: 30 }).then((request) => this.wrap({
           agent: this.agent,
           route,
@@ -317,11 +338,13 @@ describe('request parameter features', () => {
         this.provider.once(errorEvt, spy);
 
         return JWT.sign({
-          jti: randomBytes(16).toString('base64url'),
+          jti: crypto.randomBytes(16).toString('base64url'),
           client_id: 'client',
           response_type: 'code',
           request: 'request inception',
           redirect_uri: 'https://client.example.com/cb',
+          code_challenge_method: this.code_challenge_method,
+          code_challenge: this.code_challenge,
         }, Buffer.from('secret'), 'HS256', { issuer: 'client', audience: this.provider.issuer, expiresIn: 30 }).then((request) => this.wrap({
           agent: this.agent,
           route,
@@ -349,11 +372,13 @@ describe('request parameter features', () => {
         this.provider.once(errorEvt, spy);
 
         return JWT.sign({
-          jti: randomBytes(16).toString('base64url'),
+          jti: crypto.randomBytes(16).toString('base64url'),
           client_id: 'client',
           response_type: 'code',
           request_uri: 'request uri inception',
           redirect_uri: 'https://client.example.com/cb',
+          code_challenge_method: this.code_challenge_method,
+          code_challenge: this.code_challenge,
         }, Buffer.from('secret'), 'HS256', { issuer: 'client', audience: this.provider.issuer, expiresIn: 30 }).then((request) => this.wrap({
           agent: this.agent,
           route,
@@ -379,12 +404,14 @@ describe('request parameter features', () => {
       if (route !== '/device/auth') {
         it('may contain a response_mode and it will be honoured', function () {
           return JWT.sign({
-            jti: randomBytes(16).toString('base64url'),
+            jti: crypto.randomBytes(16).toString('base64url'),
             client_id: 'client',
             response_type: 'code',
             response_mode: 'fragment',
             scope: 'openid',
             redirect_uri: 'https://client.example.com/cb',
+            code_challenge_method: this.code_challenge_method,
+            code_challenge: this.code_challenge,
           }, Buffer.from('secret'), 'HS256', { issuer: 'client', audience: this.provider.issuer, expiresIn: 30 }).then((request) => this.wrap({
             agent: this.agent,
             route,
@@ -406,10 +433,12 @@ describe('request parameter features', () => {
           this.provider.once(errorEvt, spy);
 
           return JWT.sign({
-            jti: randomBytes(16).toString('base64url'),
+            jti: crypto.randomBytes(16).toString('base64url'),
             client_id: 'client',
             response_type: 'code',
             redirect_uri: 'https://client.example.com/cb',
+            code_challenge_method: this.code_challenge_method,
+            code_challenge: this.code_challenge,
             response_mode: 'foo',
           }, Buffer.from('secret'), 'HS256', { issuer: 'client', audience: this.provider.issuer, expiresIn: 30 }).then((request) => this.wrap({
             agent: this.agent,
@@ -439,10 +468,12 @@ describe('request parameter features', () => {
           this.provider.once(errorEvt, spy);
 
           return JWT.sign({
-            jti: randomBytes(16).toString('base64url'),
+            jti: crypto.randomBytes(16).toString('base64url'),
             client_id: 'client',
             response_type: 'id_token',
             redirect_uri: 'https://client.example.com/cb',
+            code_challenge_method: this.code_challenge_method,
+            code_challenge: this.code_challenge,
           }, Buffer.from('secret'), 'HS256', { issuer: 'client', audience: this.provider.issuer, expiresIn: 30 }).then((request) => this.wrap({
             agent: this.agent,
             route,
@@ -470,10 +501,12 @@ describe('request parameter features', () => {
           this.provider.once(errorEvt, spy);
 
           return JWT.sign({
-            jti: randomBytes(16).toString('base64url'),
+            jti: crypto.randomBytes(16).toString('base64url'),
             client_id: 'client2',
             response_type: 'code',
             redirect_uri: 'https://client.example.com/cb',
+            code_challenge_method: this.code_challenge_method,
+            code_challenge: this.code_challenge,
             state: 'foobar',
           }, Buffer.from('secret'), 'HS256', { issuer: 'client2', audience: this.provider.issuer, expiresIn: 30 }).then((request) => this.wrap({
             agent: this.agent,
@@ -504,10 +537,12 @@ describe('request parameter features', () => {
         this.provider.once(errorEvt, spy);
 
         return JWT.sign({
-          jti: randomBytes(16).toString('base64url'),
+          jti: crypto.randomBytes(16).toString('base64url'),
           client_id: 'client2',
           response_type: 'code',
           redirect_uri: 'https://client.example.com/cb',
+          code_challenge_method: this.code_challenge_method,
+          code_challenge: this.code_challenge,
         }, Buffer.from('secret'), 'HS256', { issuer: 'client2', audience: this.provider.issuer, expiresIn: 30 }).then((request) => this.wrap({
           agent: this.agent,
           route,
@@ -558,11 +593,13 @@ describe('request parameter features', () => {
         this.provider.once(errorEvt, spy);
 
         return JWT.sign({
-          jti: randomBytes(16).toString('base64url'),
+          jti: crypto.randomBytes(16).toString('base64url'),
           client_id: 'client-with-HS-sig',
           scope: 'openid',
           response_type: 'code',
           redirect_uri: 'https://client.example.com/cb',
+          code_challenge_method: this.code_challenge_method,
+          code_challenge: this.code_challenge,
         }, Buffer.from('secret'), 'HS512', { issuer: 'client-with-HS-sig', audience: this.provider.issuer, expiresIn: 30 }).then((request) => this.wrap({
           agent: this.agent,
           route,
@@ -590,11 +627,13 @@ describe('request parameter features', () => {
         this.provider.once(errorEvt, spy);
 
         return JWT.sign({
-          jti: randomBytes(16).toString('base64url'),
+          jti: crypto.randomBytes(16).toString('base64url'),
           client_id: 'client',
           response_type: 'code',
           redirect_uri: 'https://client.example.com/cb',
-        }, createSecretKey(randomBytes(48)), 'HS384', { issuer: 'client', audience: this.provider.issuer, expiresIn: 30 }).then((request) => this.wrap({
+          code_challenge_method: this.code_challenge_method,
+          code_challenge: this.code_challenge,
+        }, crypto.createSecretKey(crypto.randomBytes(48)), 'HS384', { issuer: 'client', audience: this.provider.issuer, expiresIn: 30 }).then((request) => this.wrap({
           agent: this.agent,
           route,
           verb,
@@ -617,10 +656,12 @@ describe('request parameter features', () => {
         const spy = sinon.spy();
         this.provider.once(errorEvt, spy);
         return JWT.sign({
-          jti: randomBytes(16).toString('base64url'),
+          jti: crypto.randomBytes(16).toString('base64url'),
           client_id: 'client',
           response_type: 'code',
           redirect_uri: 'https://client.example.com/cb',
+          code_challenge_method: this.code_challenge_method,
+          code_challenge: this.code_challenge,
         }, Buffer.from('not THE secret'), 'HS256', { issuer: 'client', audience: this.provider.issuer, expiresIn: 30 }).then((request) => this.wrap({
           agent: this.agent,
           route,
@@ -645,10 +686,12 @@ describe('request parameter features', () => {
         this.provider.once(errorEvt, spy);
 
         return JWT.sign({
-          jti: randomBytes(16).toString('base64url'),
+          jti: crypto.randomBytes(16).toString('base64url'),
           client_id: 'client',
           response_type: 'code',
           redirect_uri: 'https://client.example.com/cb',
+          code_challenge_method: this.code_challenge_method,
+          code_challenge: this.code_challenge,
           registration: 'foo',
         }, Buffer.from('secret'), 'HS256', { issuer: 'client', audience: this.provider.issuer, expiresIn: 30 }).then((request) => this.wrap({
           agent: this.agent,
@@ -673,12 +716,14 @@ describe('request parameter features', () => {
         let [key] = client.symmetricKeyStore.selectForSign({ alg: 'HS256' });
         key = await importJWK(key);
         return JWT.sign({
-          jti: randomBytes(16).toString('base64url'),
+          jti: crypto.randomBytes(16).toString('base64url'),
           client_id: 'client-with-HS-sig',
           unrecognized: true,
           response_type: 'code',
           scope: 'openid',
           redirect_uri: 'https://client.example.com/cb',
+          code_challenge_method: this.code_challenge_method,
+          code_challenge: this.code_challenge,
         }, key, 'HS256', { issuer: 'client-with-HS-sig', audience: this.provider.issuer, expiresIn: 30 }).then((request) => this.wrap({
           agent: this.agent,
           route,

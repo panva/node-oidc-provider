@@ -45,7 +45,4 @@ export default () => ({
   ],
   features: {},
   enabledJWA: cloneDeep({ ...JWA }),
-  pkce: {
-    required: () => false,
-  },
 });
