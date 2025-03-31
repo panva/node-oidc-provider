@@ -32,10 +32,10 @@ export default {
   config,
   clients: [{
     client_id: 'client',
+    client_secret: 'secret',
     response_types: ['code id_token', 'code'],
     grant_types: ['implicit', 'authorization_code'],
     redirect_uris: ['https://client.example.com/cb'],
-    token_endpoint_auth_method: 'none',
     jwks: {
       keys: [await exportJWK(keypair.publicKey)],
     },

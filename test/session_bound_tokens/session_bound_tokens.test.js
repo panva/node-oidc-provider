@@ -26,7 +26,7 @@ describe('session bound tokens behaviours', () => {
 
   describe('authorization_code flow', () => {
     it('"code" issues tokens bound to session', async function () {
-      const auth = new this.AuthorizationRequest({
+      const auth = this.auth = new this.AuthorizationRequest({
         response_type: 'code',
         scope: 'openid',
       });
@@ -47,6 +47,7 @@ describe('session bound tokens behaviours', () => {
           client_id: 'client',
           code: this.code,
           grant_type: 'authorization_code',
+          code_verifier: this.auth.code_verifier,
         })
         .type('form')
         .expect(200)
@@ -67,7 +68,7 @@ describe('session bound tokens behaviours', () => {
     });
 
     it('"code" with "online" refresh token', async function () {
-      const auth = new this.AuthorizationRequest({
+      const auth = this.auth = new this.AuthorizationRequest({
         client_id: 'client-refresh',
         response_type: 'code',
         scope: 'openid',
@@ -89,6 +90,7 @@ describe('session bound tokens behaviours', () => {
           client_id: 'client-refresh',
           code: this.code,
           grant_type: 'authorization_code',
+          code_verifier: this.auth.code_verifier,
         })
         .type('form')
         .expect(200)
@@ -139,7 +141,7 @@ describe('session bound tokens behaviours', () => {
     });
 
     it('"code" with offline_access refresh token isnt affected', async function () {
-      const auth = new this.AuthorizationRequest({
+      const auth = this.auth = new this.AuthorizationRequest({
         client_id: 'client-offline',
         response_type: 'code',
         scope: 'openid offline_access',
@@ -162,6 +164,7 @@ describe('session bound tokens behaviours', () => {
           client_id: 'client-offline',
           code: this.code,
           grant_type: 'authorization_code',
+          code_verifier: this.auth.code_verifier,
         })
         .type('form')
         .expect(200)
