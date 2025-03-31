@@ -635,7 +635,7 @@ describe('features.dPoP', () => {
   describe('authorization flow', () => {
     describe('without dpop_jkt', () => {
       beforeEach(async function () {
-        const auth = new this.AuthorizationRequest({
+        const auth = this.auth = new this.AuthorizationRequest({
           response_type: 'code',
           scope: 'openid offline_access',
           prompt: 'consent',
@@ -659,6 +659,7 @@ describe('features.dPoP', () => {
             .auth('client', 'secret')
             .send({
               grant_type: 'authorization_code',
+              code_verifier: this.auth.code_verifier,
               code: this.code,
               redirect_uri: 'https://client.example.com/cb',
             })
@@ -676,7 +677,7 @@ describe('features.dPoP', () => {
 
     describe('with dpop_jkt', () => {
       beforeEach(async function () {
-        const auth = new this.AuthorizationRequest({
+        const auth = this.auth = new this.AuthorizationRequest({
           response_type: 'code',
           scope: 'openid offline_access',
           prompt: 'consent',
@@ -701,6 +702,7 @@ describe('features.dPoP', () => {
             .auth('client', 'secret')
             .send({
               grant_type: 'authorization_code',
+              code_verifier: this.auth.code_verifier,
               code: this.code,
               redirect_uri: 'https://client.example.com/cb',
             })
@@ -722,6 +724,7 @@ describe('features.dPoP', () => {
             .auth('client', 'secret')
             .send({
               grant_type: 'authorization_code',
+              code_verifier: this.auth.code_verifier,
               code: this.code,
               redirect_uri: 'https://client.example.com/cb',
             })
@@ -742,6 +745,7 @@ describe('features.dPoP', () => {
             .auth('client', 'secret')
             .send({
               grant_type: 'authorization_code',
+              code_verifier: this.auth.code_verifier,
               code: this.code,
               redirect_uri: 'https://client.example.com/cb',
             })
@@ -757,7 +761,7 @@ describe('features.dPoP', () => {
 
     describe('refresh_token', () => {
       beforeEach(async function () {
-        const auth = new this.AuthorizationRequest({
+        const auth = this.auth = new this.AuthorizationRequest({
           response_type: 'code',
           scope: 'openid offline_access',
           prompt: 'consent',
@@ -775,6 +779,7 @@ describe('features.dPoP', () => {
           .auth('client', 'secret')
           .send({
             grant_type: 'authorization_code',
+            code_verifier: this.auth.code_verifier,
             code: this.code,
             redirect_uri: 'https://client.example.com/cb',
           })
@@ -809,7 +814,7 @@ describe('features.dPoP', () => {
 
   describe('authorization flow (public client)', () => {
     beforeEach(async function () {
-      const auth = new this.AuthorizationRequest({
+      const auth = this.auth = new this.AuthorizationRequest({
         client_id: 'client-none',
         response_type: 'code',
         scope: 'openid offline_access',
@@ -834,6 +839,7 @@ describe('features.dPoP', () => {
           .send({
             client_id: 'client-none',
             grant_type: 'authorization_code',
+            code_verifier: this.auth.code_verifier,
             code: this.code,
             redirect_uri: 'https://client.example.com/cb',
           })
@@ -854,6 +860,7 @@ describe('features.dPoP', () => {
           .send({
             client_id: 'client-none',
             grant_type: 'authorization_code',
+            code_verifier: this.auth.code_verifier,
             code: this.code,
             redirect_uri: 'https://client.example.com/cb',
           })

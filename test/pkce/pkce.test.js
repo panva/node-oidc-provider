@@ -14,6 +14,7 @@ describe('PKCE RFC7636', () => {
       const auth = new this.AuthorizationRequest({
         response_type: 'code',
         scope: 'openid',
+        code_challenge: undefined,
         code_challenge_method: 'S256',
       });
 
@@ -84,10 +85,12 @@ describe('PKCE RFC7636', () => {
         .expect(auth.validateErrorDescription('not supported value of code_challenge_method'));
     });
 
-    it('forces clients using code flow to use pkce', function () {
+    it('forces public clients using code flow to use pkce', function () {
       const auth = new this.AuthorizationRequest({
         response_type: 'code',
         scope: 'openid',
+        code_challenge: undefined,
+        code_challenge_method: undefined,
       });
 
       return this.agent.get('/auth')
@@ -97,10 +100,12 @@ describe('PKCE RFC7636', () => {
         .expect(auth.validateErrorDescription('Authorization Server policy requires PKCE to be used for this request'));
     });
 
-    it('forces clients using hybrid flow to use pkce', function () {
+    it('forces public clients using hybrid flow to use pkce', function () {
       const auth = new this.AuthorizationRequest({
         response_type: 'code id_token',
         scope: 'openid',
+        code_challenge: undefined,
+        code_challenge_method: undefined,
       });
 
       return this.agent.get('/auth')
@@ -162,9 +167,9 @@ describe('PKCE RFC7636', () => {
       const code = await authCode.save();
 
       return this.agent.post('/token')
-        .auth('client', 'secret')
         .type('form')
         .send({
+          client_id: 'client',
           code,
           grant_type: 'authorization_code',
           redirect_uri: 'com.example.myapp:/localhost/cb',
@@ -186,9 +191,9 @@ describe('PKCE RFC7636', () => {
       const code = await authCode.save();
 
       return this.agent.post('/token')
-        .auth('client', 'secret')
         .type('form')
         .send({
+          client_id: 'client',
           code,
           grant_type: 'authorization_code',
           redirect_uri: 'com.example.myapp:/localhost/cb',
@@ -212,9 +217,9 @@ describe('PKCE RFC7636', () => {
       const code = await authCode.save();
 
       return this.agent.post('/token')
-        .auth('client', 'secret')
         .type('form')
         .send({
+          client_id: 'client',
           code,
           grant_type: 'authorization_code',
           redirect_uri: 'com.example.myapp:/localhost/cb',
@@ -239,9 +244,9 @@ describe('PKCE RFC7636', () => {
       const code = await authCode.save();
 
       return this.agent.post('/token')
-        .auth('client', 'secret')
         .type('form')
         .send({
+          client_id: 'client',
           code,
           grant_type: 'authorization_code',
           redirect_uri: 'com.example.myapp:/localhost/cb',
@@ -267,9 +272,9 @@ describe('PKCE RFC7636', () => {
       const code = await authCode.save();
 
       return this.agent.post('/token')
-        .auth('client', 'secret')
         .type('form')
         .send({
+          client_id: 'client',
           code,
           grant_type: 'authorization_code',
           redirect_uri: 'com.example.myapp:/localhost/cb',
@@ -295,9 +300,9 @@ describe('PKCE RFC7636', () => {
       const code = await authCode.save();
 
       return this.agent.post('/token')
-        .auth('client', 'secret')
         .type('form')
         .send({
+          client_id: 'client',
           code,
           grant_type: 'authorization_code',
           redirect_uri: 'com.example.myapp:/localhost/cb',
@@ -323,9 +328,9 @@ describe('PKCE RFC7636', () => {
       const code = await authCode.save();
 
       return this.agent.post('/token')
-        .auth('client', 'secret')
         .type('form')
         .send({
+          client_id: 'client',
           code,
           grant_type: 'authorization_code',
           redirect_uri: 'com.example.myapp:/localhost/cb',
