@@ -147,7 +147,7 @@ describe('features.ciba', () => {
             .expect('content-type', /application\/json/)
             .expect((response) => {
               expect(response.body).to.have.keys('expires_in', 'auth_req_id');
-              expect(response.body.expires_in).to.be.a('number');
+              expect(response.body.expires_in).to.be.a('number').most(600);
               expect(response.body.auth_req_id).to.be.a('string');
             }),
           once(emitter, 'triggerAuthenticationDevice'),
@@ -166,6 +166,22 @@ describe('features.ciba', () => {
         expect(request.params).to.deep.eql({
           client_id: 'client', login_hint: 'accountId', scope: 'openid', extra2: 'defaulted', extra: 'provided',
         });
+      });
+
+      it('requested_expiry', async function () {
+        await this.agent.post(route)
+          .send({
+            scope: 'openid',
+            login_hint: 'accountId',
+            client_id: 'client',
+            requested_expiry: 300,
+          })
+          .type('form')
+          .expect(200)
+          .expect('content-type', /application\/json/)
+          .expect((response) => {
+            expect(response.body.expires_in).to.be.a('number').most(300);
+          });
       });
 
       it('minimal w/ login_hint_token', async function () {
