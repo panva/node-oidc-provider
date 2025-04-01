@@ -1627,45 +1627,27 @@ async function assertJwtClaimsAndHeader(ctx, claims, header, client) {
   // @param claims - parsed Request Object JWT Claims Set as object
   // @param header - parsed Request Object JWT Headers as object
   // @param client - the Client instance
+  const requiredClaims = [];
   const fapiProfile = ctx.oidc.isFapi('1.0 Final', '2.0');
   if (fapiProfile) {
-    if (!('exp' in claims)) {
+    requiredClaims.push('exp', 'aud', 'nbf');
+  }
+  if (ctx.oidc.route === 'backchannel_authentication') {
+    requiredClaims.push('exp', 'iat', 'nbf', 'jti');
+  }
+  for (const claim of new Set(requiredClaims)) {
+    if (claims[claim] === undefined) {
       throw new errors.InvalidRequestObject(
-        "Request Object is missing the 'exp' claim",
+        `Request Object is missing the '${claim}' claim`,
       );
     }
-    if (!('aud' in claims)) {
-      throw new errors.InvalidRequestObject(
-        "Request Object is missing the 'aud' claim",
-      );
-    }
-    if (!('nbf' in claims)) {
-      throw new errors.InvalidRequestObject(
-        "Request Object is missing the 'nbf' claim",
-      );
-    }
+  }
+  if (fapiProfile) {
     const diff = claims.exp - claims.nbf;
     if (Math.sign(diff) !== 1 || diff > 3600) {
       throw new errors.InvalidRequestObject(
         "Request Object 'exp' claim too far from 'nbf' claim",
       );
-    }
-  }
-  if (ctx.oidc.route === 'backchannel_authentication') {
-    for (const claim of ['exp', 'iat', 'nbf', 'jti']) {
-      if (!(claim in claims)) {
-        throw new errors.InvalidRequestObject(
-          `Request Object is missing the '${claim}' claim`,
-        );
-      }
-    }
-    if (fapiProfile) {
-      const diff = claims.exp - claims.nbf;
-      if (Math.sign(diff) !== 1 || diff > 3600) {
-        throw new errors.InvalidRequestObject(
-          "Request Object 'exp' claim too far from 'nbf' claim",
-        );
-      }
     }
   }
 }
