@@ -8,7 +8,7 @@ other additional features and standards.
 - [Implemented specs & features](#implemented-specs--features)
 - [Certification](#certification)
 - [Documentation & Configuration](#documentation--configuration)
-- [Recipes](#recipes)
+- [Community Guides](#community-guides)
 - [Events](#events)
 
 ## Implemented specs & features
@@ -37,7 +37,8 @@ _Note that not all features are enabled by default, check the configuration sect
 - [`RFC9207` - OAuth 2.0 Authorization Server Issuer Identifier in Authorization Response][iss-auth-resp]
 - [`RFC9449` - OAuth 2.0 Demonstration of Proof-of-Possession at the Application Layer (`DPoP`)][dpop]
 - [`RFC9701` - JWT Response for OAuth Token Introspection][jwt-introspection]
-- [Financial-grade API Security Profile 1.0 - Part 2: Advanced (`FAPI 1.0`)][fapi]
+- [FAPI 1.0 Security Profile - Part 2: Advanced (`FAPI 1.0`)][fapi]
+- [FAPI 2.0 Security Profile (`FAPI 2.0`)][fapi2sp]
 - [JWT Secured Authorization Response Mode for OAuth 2.0 (`JARM`)][jarm]
 - [OIDC Client Initiated Backchannel Authentication Flow (`CIBA`)][ciba]
 
@@ -49,7 +50,6 @@ Supported Access Token formats:
 The following draft specifications are implemented by oidc-provider:
 
 - [Financial-grade API: Client Initiated Backchannel Authentication Profile (`FAPI-CIBA`) - Implementer's Draft 01][fapi-ciba]
-- [FAPI 2.0 Security Profile (`FAPI 2.0`) - Implementer's Draft 02][fapi2sp-id2]
 - [FAPI 2.0 Message Signing (`FAPI 2.0`) - Implementer's Draft 01][fapi2ms-id1]
 
 Updates to draft specification versions are released as MINOR library versions,
@@ -64,7 +64,7 @@ your CI.
 Filip Skokan has [certified][openid-certified-link] that [oidc-provider][npm-url]
 conforms to the following profiles of the OpenID Connect™ protocol.
 
-- Basic, Implicit, Hybrid, Config, Dynamic, Form Post, and 3rd Party-Init
+- Basic, Implicit, Hybrid, Config, Form Post, and 3rd Party-Init
 - Back-Channel Logout and RP-Initiated Logout
 - FAPI 1.0
 - FAPI CIBA
@@ -91,31 +91,32 @@ oidc-provider can be mounted to existing connect, express, fastify, hapi, or koa
 various ways to fit a variety of uses. See the [documentation](/docs/README.md) and [example folder](/example).
 
 ```js
-import { Provider } from 'oidc-provider'
-const configuration = {
+import * as oidc from "oidc-provider";
+
+const provider = new oidc.Provider("http://localhost:3000", {
   // refer to the documentation for other available configuration
   clients: [
     {
-      client_id: 'foo',
-      client_secret: 'bar',
-      redirect_uris: ['http://lvh.me:8080/cb'],
+      client_id: "foo",
+      client_secret: "bar",
+      redirect_uris: ["http://lvh.me:8080/cb"],
       // ... other client properties
     },
   ],
-}
+});
 
-const oidc = new Provider('http://localhost:3000', configuration)
-
-oidc.listen(3000, () => {
+const server = oidc.listen(3000, () => {
   console.log(
-    'oidc-provider listening on port 3000, check http://localhost:3000/.well-known/openid-configuration',
-  )
-})
+    "oidc-provider listening on port 3000, check http://localhost:3000/.well-known/openid-configuration",
+  );
+});
 ```
 
-## Recipes
+External type definitions are available via [DefinitelyTyped](https://npmjs.com/package/@types/oidc-provider).
 
-Collection of useful configuration use cases are available over at [recipes](/recipes).
+## Community Guides
+
+Collection of Community-maintained configuration use cases are in the [Community Guides Discussions section](https://github.com/panva/node-oidc-provider/discussions/categories/community-guides)
 
 ## Events
 
@@ -126,7 +127,8 @@ actions and i.e. emit metrics that react to specific triggers. See the list of a
 
 | Version                                                       | Security Fixes 🔑 | Other Bug Fixes 🐞 | New Features ⭐ |
 | ------------------------------------------------------------- | ----------------- | ------------------ | --------------- |
-| [v8.x](https://github.com/panva/node-oidc-provider/tree/v8.x) | [Security Policy] | ✅                 | ✅              |
+| [v9.x](https://github.com/panva/node-oidc-provider/tree/v9.x) | [Security Policy] | ✅                 | ✅              |
+| [v8.x](https://github.com/panva/node-oidc-provider/tree/v8.x) | [Security Policy] | ❌                 | ❌              |
 
 [npm-url]: https://www.npmjs.com/package/oidc-provider
 [openid-certified-link]: https://openid.net/certification/
@@ -160,6 +162,6 @@ actions and i.e. emit metrics that react to specific triggers. See the list of a
 [fapi]: https://openid.net/specs/openid-financial-api-part-2-1_0-final.html
 [ciba]: https://openid.net/specs/openid-client-initiated-backchannel-authentication-core-1_0-final.html
 [fapi-ciba]: https://openid.net/specs/openid-financial-api-ciba-ID1.html
-[fapi2sp-id2]: https://openid.net/specs/fapi-2_0-security-profile-ID2.html
+[fapi2sp]: https://openid.net/specs/fapi-security-profile-2_0-final.html
 [fapi2ms-id1]: https://openid.net/specs/fapi-2_0-message-signing-ID1.html
 [Security Policy]: https://github.com/panva/node-oidc-provider/security/policy

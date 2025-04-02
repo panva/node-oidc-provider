@@ -80,6 +80,7 @@ const props = [
   'title',
   'recommendation',
   'example',
+  'see',
   '@nodefault',
   '@skip',
 ];
@@ -256,6 +257,17 @@ try {
 
     if (section.description) {
       append(`${capitalizeSentences(section.description.join(' '))}  \n\n`);
+    }
+
+    if (section.see) {
+      if (section.see.length > 1) {
+        append('See:\n');
+        for (const see of section.see) {
+          append(`- ${see.toString('utf-8')}\n`);
+        }
+      } else {
+        append(`See ${section.see[0].toString('utf-8')}\n`);
+      }
     }
 
     Object.keys(section).filter((x) => x.startsWith('recommendation')).forEach((prop) => {

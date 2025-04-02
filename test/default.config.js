@@ -34,15 +34,6 @@ export default () => ({
       zoneinfo: null,
     },
   },
-  cookies: {
-    long: {
-      signed: true,
-    },
-    short: {
-      signed: true,
-    },
-    keys: ['foo'],
-  },
   responseTypes: [
     'code id_token token',
     'code id_token',
@@ -54,7 +45,4 @@ export default () => ({
   ],
   features: {},
   enabledJWA: cloneDeep({ ...JWA }),
-  pkce: {
-    required: () => false,
-  },
 });

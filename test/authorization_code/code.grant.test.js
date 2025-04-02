@@ -19,6 +19,7 @@ describe('grant_type=authorization_code', () => {
   before(bootstrap(import.meta.url));
 
   afterEach(() => timekeeper.reset());
+  afterEach(sinon.restore);
 
   afterEach(function () {
     this.provider.removeAllListeners('grant.success');
@@ -70,10 +71,10 @@ describe('grant_type=authorization_code', () => {
     });
 
     it('populates ctx.oidc.entities (no offline_access)', function (done) {
-      this.provider.use(this.assertOnce((ctx) => {
+      this.assertOnce((ctx) => {
         expect(ctx.oidc.entities).to.have.keys('Account', 'Grant', 'Client', 'AuthorizationCode', 'AccessToken');
         expect(ctx.oidc.entities.AccessToken).to.have.property('gty', 'authorization_code');
-      }, done));
+      }, done);
 
       this.agent.post(route)
         .auth('client', 'secret')
@@ -87,11 +88,11 @@ describe('grant_type=authorization_code', () => {
     });
 
     it('populates ctx.oidc.entities (w/ offline_access)', function (done) {
-      this.provider.use(this.assertOnce((ctx) => {
+      this.assertOnce((ctx) => {
         expect(ctx.oidc.entities).to.have.keys('Account', 'Grant', 'Client', 'AuthorizationCode', 'AccessToken', 'RefreshToken');
         expect(ctx.oidc.entities.AccessToken).to.have.property('gty', 'authorization_code');
         expect(ctx.oidc.entities.RefreshToken).to.have.property('gty', 'authorization_code');
-      }, done));
+      }, done);
 
       this.TestAdapter.for('Grant').syncUpdate(this.getSession().authorizations.client.grantId, {
         scope: 'openid offline_access',
@@ -124,13 +125,13 @@ describe('grant_type=authorization_code', () => {
 
     context('', () => {
       before(function () {
-        const ttl = i(this.provider).configuration('ttl');
+        const { ttl } = i(this.provider).configuration;
         this.prev = ttl.AuthorizationCode;
         ttl.AuthorizationCode = 5;
       });
 
       after(function () {
-        i(this.provider).configuration('ttl').AuthorizationCode = this.prev;
+        i(this.provider).configuration.ttl.AuthorizationCode = this.prev;
       });
 
       it('validates code is not expired', function () {
@@ -274,7 +275,7 @@ describe('grant_type=authorization_code', () => {
     });
 
     it('validates account is still there', function () {
-      sinon.stub(this.provider.Account, 'findAccount').callsFake(() => Promise.resolve());
+      sinon.stub(i(this.provider).configuration, 'findAccount').callsFake(() => Promise.resolve());
 
       const spy = sinon.spy();
       this.provider.on('grant.error', spy);
@@ -287,9 +288,6 @@ describe('grant_type=authorization_code', () => {
           redirect_uri: 'https://client.example.com/cb',
         })
         .type('form')
-        .expect(() => {
-          this.provider.Account.findAccount.restore();
-        })
         .expect(400)
         .expect(() => {
           expect(spy.calledOnce).to.be.true;
@@ -339,12 +337,12 @@ describe('grant_type=authorization_code', () => {
 
   context('with real tokens (3/3) - one redirect_uri registered with allowOmittingSingleRegisteredRedirectUri=true', () => {
     beforeEach(function () {
-      i(this.provider).configuration().allowOmittingSingleRegisteredRedirectUri = true;
+      i(this.provider).configuration.allowOmittingSingleRegisteredRedirectUri = true;
       return this.login();
     });
 
     afterEach(function () {
-      i(this.provider).configuration().allowOmittingSingleRegisteredRedirectUri = false;
+      i(this.provider).configuration.allowOmittingSingleRegisteredRedirectUri = false;
       return this.logout();
     });
 
@@ -386,10 +384,10 @@ describe('grant_type=authorization_code', () => {
     });
 
     it('populates ctx.oidc.entities (no offline_access)', function (done) {
-      this.provider.use(this.assertOnce((ctx) => {
+      this.assertOnce((ctx) => {
         expect(ctx.oidc.entities).to.have.keys('Account', 'Grant', 'Client', 'AuthorizationCode', 'AccessToken');
         expect(ctx.oidc.entities.AccessToken).to.have.property('gty', 'authorization_code');
-      }, done));
+      }, done);
 
       this.agent.post(route)
         .auth('client2', 'secret')
@@ -402,11 +400,11 @@ describe('grant_type=authorization_code', () => {
     });
 
     it('populates ctx.oidc.entities (w/ offline_access)', function (done) {
-      this.provider.use(this.assertOnce((ctx) => {
+      this.assertOnce((ctx) => {
         expect(ctx.oidc.entities).to.have.keys('Account', 'Grant', 'Client', 'AuthorizationCode', 'AccessToken', 'RefreshToken');
         expect(ctx.oidc.entities.AccessToken).to.have.property('gty', 'authorization_code');
         expect(ctx.oidc.entities.RefreshToken).to.have.property('gty', 'authorization_code');
-      }, done));
+      }, done);
 
       this.TestAdapter.for('Grant').syncUpdate(this.getSession().authorizations.client2.grantId, {
         scope: 'openid offline_access',
@@ -437,13 +435,13 @@ describe('grant_type=authorization_code', () => {
 
     context('', () => {
       before(function () {
-        const ttl = i(this.provider).configuration('ttl');
+        const { ttl } = i(this.provider).configuration;
         this.prev = ttl.AuthorizationCode;
         ttl.AuthorizationCode = 5;
       });
 
       after(function () {
-        i(this.provider).configuration('ttl').AuthorizationCode = this.prev;
+        i(this.provider).configuration.ttl.AuthorizationCode = this.prev;
       });
 
       it('validates code is not expired', function () {
@@ -568,7 +566,7 @@ describe('grant_type=authorization_code', () => {
     });
 
     it('validates account is still there', function () {
-      sinon.stub(this.provider.Account, 'findAccount').callsFake(() => Promise.resolve());
+      sinon.stub(i(this.provider).configuration, 'findAccount').callsFake(() => Promise.resolve());
 
       const spy = sinon.spy();
       this.provider.on('grant.error', spy);
@@ -580,9 +578,6 @@ describe('grant_type=authorization_code', () => {
           grant_type: 'authorization_code',
         })
         .type('form')
-        .expect(() => {
-          this.provider.Account.findAccount.restore();
-        })
         .expect(400)
         .expect(() => {
           expect(spy.calledOnce).to.be.true;
@@ -666,7 +661,6 @@ describe('grant_type=authorization_code', () => {
     before(function () {
       sinon.stub(this.provider.Client, 'find').callsFake(async () => { throw new Error(); });
     });
-    after(sinon.restore);
 
     it('handles exceptions', function () {
       const spy = sinon.spy();

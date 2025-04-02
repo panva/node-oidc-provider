@@ -175,7 +175,7 @@ describe('encryption', () => {
           }, Buffer.from('secret'), 'HS256', { issuer: 'client', audience: this.provider.issuer });
 
           let [key] = i(this.provider).keystore.selectForEncrypt({ kty: 'RSA', alg: 'RSA-OAEP-512' });
-          key = await i(this.provider).keystore.getKeyObject(key, 'RSA-OAEP-512');
+          key = i(this.provider).keystore.getKeyObject(key, true);
 
           const encrypted = await new CompactEncrypt(encoder.encode(signed))
             .setProtectedHeader({ enc: 'A128CBC-HS256', alg: 'RSA-OAEP-512' })
@@ -206,7 +206,7 @@ describe('encryption', () => {
           }, Buffer.from('secret'), 'HS256', { issuer: 'client', audience: this.provider.issuer });
 
           let [key] = i(this.provider).keystore.selectForEncrypt({ kty: 'RSA', alg: 'RSA-OAEP-512' });
-          key = await i(this.provider).keystore.getKeyObject(key, 'RSA-OAEP-512');
+          key = i(this.provider).keystore.getKeyObject(key, true);
 
           const encrypted = await new CompactEncrypt(encoder.encode(signed))
             .setProtectedHeader({ enc: 'A192CBC-HS384', alg: 'RSA-OAEP-512' })
@@ -239,10 +239,10 @@ describe('encryption', () => {
             response_type: 'code',
             redirect_uri: 'https://client.example.com/cb',
             scope: 'openid',
-          }, await client.symmetricKeyStore.getKeyObject(hsSecret, 'HS256'), 'HS256', { issuer: 'client', audience: this.provider.issuer });
+          }, client.symmetricKeyStore.getKeyObject(hsSecret), 'HS256', { issuer: 'client', audience: this.provider.issuer });
 
           let [key] = i(this.provider).keystore.selectForEncrypt({ kty: 'RSA', alg: 'RSA-OAEP' });
-          key = await i(this.provider).keystore.getKeyObject(key, 'RSA-OAEP');
+          key = i(this.provider).keystore.getKeyObject(key, true);
 
           const encrypted = await new CompactEncrypt(encoder.encode(signed))
             .setProtectedHeader({ enc: 'A128CBC-HS256', alg: 'RSA-OAEP' })
@@ -280,10 +280,10 @@ describe('encryption', () => {
             response_type: 'code',
             redirect_uri: 'https://client.example.com/cb',
             scope: 'openid',
-          }, await client.symmetricKeyStore.getKeyObject(hsSecret, 'HS256'), 'HS256', { issuer: 'clientRequestObjectSigningAlg', audience: this.provider.issuer });
+          }, client.symmetricKeyStore.getKeyObject(hsSecret), 'HS256', { issuer: 'clientRequestObjectSigningAlg', audience: this.provider.issuer });
 
           let [key] = i(this.provider).keystore.selectForEncrypt({ kty: 'RSA', alg: 'RSA-OAEP' });
-          key = await i(this.provider).keystore.getKeyObject(key, 'RSA-OAEP');
+          key = i(this.provider).keystore.getKeyObject(key, true);
 
           const encrypted = await new CompactEncrypt(encoder.encode(signed))
             .setProtectedHeader({ enc: 'A128CBC-HS256', alg: 'RSA-OAEP' })
@@ -363,7 +363,7 @@ describe('encryption', () => {
           }, Buffer.from('secret'), 'HS256', { issuer: 'clientSymmetric', audience: this.provider.issuer });
 
           let [key] = client.symmetricKeyStore.selectForEncrypt({ alg: 'A128KW' });
-          key = await client.symmetricKeyStore.getKeyObject(key, 'A128KW');
+          key = client.symmetricKeyStore.getKeyObject(key);
 
           const encrypted = await new CompactEncrypt(encoder.encode(signed))
             .setProtectedHeader({ enc: 'A128CBC-HS256', alg: 'A128KW' })
@@ -399,7 +399,7 @@ describe('encryption', () => {
           }, Buffer.from('secret'), 'HS256', { issuer: 'clientSymmetric-expired', audience: this.provider.issuer });
 
           let [key] = client.symmetricKeyStore.selectForEncrypt({ alg: 'A128KW' });
-          key = await client.symmetricKeyStore.getKeyObject(key, 'A128KW');
+          key = client.symmetricKeyStore.getKeyObject(key);
 
           const encrypted = await new CompactEncrypt(encoder.encode(signed))
             .setProtectedHeader({ enc: 'A128CBC-HS256', alg: 'A128KW' })
@@ -461,7 +461,7 @@ describe('encryption', () => {
           }, Buffer.from('secret'), 'HS256', { issuer: 'clientSymmetric-dir', audience: this.provider.issuer });
 
           let [key] = client.symmetricKeyStore.selectForEncrypt({ alg: 'A128CBC-HS256' });
-          key = await client.symmetricKeyStore.getKeyObject(key, 'A128CBC-HS256');
+          key = client.symmetricKeyStore.getKeyObject(key);
 
           const encrypted = await new CompactEncrypt(encoder.encode(signed))
             .setProtectedHeader({ enc: 'A128CBC-HS256', alg: 'dir' })
@@ -497,7 +497,7 @@ describe('encryption', () => {
           }, Buffer.from('secret'), 'HS256', { issuer: 'clientSymmetric-expired', audience: this.provider.issuer });
 
           let [key] = client.symmetricKeyStore.selectForEncrypt({ alg: 'A128CBC-HS256' });
-          key = await client.symmetricKeyStore.getKeyObject(key, 'A128CBC-HS256');
+          key = client.symmetricKeyStore.getKeyObject(key);
 
           const encrypted = await new CompactEncrypt(encoder.encode(signed))
             .setProtectedHeader({ enc: 'A128CBC-HS256', alg: 'dir' })

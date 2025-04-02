@@ -27,9 +27,9 @@ describe('registration features', () => {
     });
 
     it('populates ctx.oidc.entities', function (done) {
-      this.provider.use(this.assertOnce((ctx) => {
+      this.assertOnce((ctx) => {
         expect(ctx.oidc.entities).to.have.keys('Client', 'RegistrationAccessToken');
-      }, done));
+      }, done);
 
       this.agent.post('/reg')
         .send({
@@ -40,13 +40,13 @@ describe('registration features', () => {
 
     context('when issueRegistrationAccessToken is false', () => {
       before(function () {
-        const config = i(this.provider).configuration('features.registration');
+        const config = i(this.provider).features.registration;
         this.orig = config.issueRegistrationAccessToken;
         config.issueRegistrationAccessToken = false;
       });
 
       after(function () {
-        i(this.provider).configuration('features.registration').issueRegistrationAccessToken = this.orig;
+        i(this.provider).features.registration.issueRegistrationAccessToken = this.orig;
       });
 
       it('omits issuing a registration access token and does not return registration_client_uri', function () {
@@ -61,9 +61,9 @@ describe('registration features', () => {
       });
 
       it('populates ctx.oidc.entities', function (done) {
-        this.provider.use(this.assertOnce((ctx) => {
+        this.assertOnce((ctx) => {
           expect(ctx.oidc.entities).not.to.have.property('RegistrationAccessToken');
-        }, done));
+        }, done);
 
         this.agent.post('/reg')
           .send({
@@ -75,13 +75,13 @@ describe('registration features', () => {
 
     context('when issueRegistrationAccessToken is a function returning false', () => {
       before(function () {
-        const config = i(this.provider).configuration('features.registration');
+        const config = i(this.provider).features.registration;
         this.orig = config.issueRegistrationAccessToken;
         config.issueRegistrationAccessToken = () => false;
       });
 
       after(function () {
-        i(this.provider).configuration('features.registration').issueRegistrationAccessToken = this.orig;
+        i(this.provider).features.registration.issueRegistrationAccessToken = this.orig;
       });
 
       it('omits issuing a registration access token and does not return registration_client_uri', function () {
@@ -96,9 +96,9 @@ describe('registration features', () => {
       });
 
       it('populates ctx.oidc.entities', function (done) {
-        this.provider.use(this.assertOnce((ctx) => {
+        this.assertOnce((ctx) => {
           expect(ctx.oidc.entities).not.to.have.property('RegistrationAccessToken');
-        }, done));
+        }, done);
 
         this.agent.post('/reg')
           .send({
@@ -110,13 +110,13 @@ describe('registration features', () => {
 
     context('when issueRegistrationAccessToken is a function returning true', () => {
       before(function () {
-        const config = i(this.provider).configuration('features.registration');
+        const config = i(this.provider).features.registration;
         this.orig = config.issueRegistrationAccessToken;
         config.issueRegistrationAccessToken = () => true;
       });
 
       after(function () {
-        i(this.provider).configuration('features.registration').issueRegistrationAccessToken = this.orig;
+        i(this.provider).features.registration.issueRegistrationAccessToken = this.orig;
       });
 
       it('issues a registration access token and does return registration_client_uri', function () {
@@ -131,9 +131,9 @@ describe('registration features', () => {
       });
 
       it('populates ctx.oidc.entities', function (done) {
-        this.provider.use(this.assertOnce((ctx) => {
+        this.assertOnce((ctx) => {
           expect(ctx.oidc.entities).to.have.property('RegistrationAccessToken');
-        }, done));
+        }, done);
 
         this.agent.post('/reg')
           .send({
@@ -145,13 +145,13 @@ describe('registration features', () => {
 
     context('when issueRegistrationAccessToken is true', () => {
       before(function () {
-        const config = i(this.provider).configuration('features.registration');
+        const config = i(this.provider).features.registration;
         this.orig = config.issueRegistrationAccessToken;
         config.issueRegistrationAccessToken = true;
       });
 
       after(function () {
-        i(this.provider).configuration('features.registration').issueRegistrationAccessToken = this.orig;
+        i(this.provider).features.registration.issueRegistrationAccessToken = this.orig;
       });
 
       it('issues a registration access token and does return registration_client_uri', function () {
@@ -166,9 +166,9 @@ describe('registration features', () => {
       });
 
       it('populates ctx.oidc.entities', function (done) {
-        this.provider.use(this.assertOnce((ctx) => {
+        this.assertOnce((ctx) => {
           expect(ctx.oidc.entities).to.have.property('RegistrationAccessToken');
-        }, done));
+        }, done);
 
         this.agent.post('/reg')
           .send({
@@ -413,9 +413,9 @@ describe('registration features', () => {
         });
 
         it('adds InitialAccessToken to ctx.oidc.entities', function (done) {
-          this.provider.use(this.assertOnce((ctx) => {
+          this.assertOnce((ctx) => {
             expect(ctx.oidc.entities).to.have.property('InitialAccessToken');
-          }, done));
+          }, done);
 
           this.agent.post('/reg')
             .send({
@@ -487,9 +487,9 @@ describe('registration features', () => {
     });
 
     it('populates ctx.oidc.entities', function (done) {
-      this.provider.use(this.assertOnce((ctx) => {
+      this.assertOnce((ctx) => {
         expect(ctx.oidc.entities).to.have.keys('Client', 'RegistrationAccessToken');
-      }, done));
+      }, done);
 
       this.agent.get(`/reg/${this.clientId}`)
         .auth(this.token, { type: 'bearer' })

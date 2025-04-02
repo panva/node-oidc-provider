@@ -86,7 +86,7 @@ describe('requests without the openid scope', () => {
 
         describe('authorization code exchange', () => {
           beforeEach(async function () {
-            const auth = new this.AuthorizationRequest({
+            const auth = this.auth = new this.AuthorizationRequest({
               response_type,
               scope,
             });
@@ -110,6 +110,7 @@ describe('requests without the openid scope', () => {
               .send({
                 client_id: 'client',
                 grant_type: 'authorization_code',
+                code_verifier: this.auth.code_verifier,
                 code: this.code,
               })
               .type('form')
@@ -142,6 +143,7 @@ describe('requests without the openid scope', () => {
               .send({
                 client_id: 'client',
                 grant_type: 'authorization_code',
+                code_verifier: this.auth.code_verifier,
                 code: this.code,
               })
               .type('form')
@@ -184,6 +186,7 @@ describe('requests without the openid scope', () => {
               .send({
                 client_id: 'client',
                 grant_type: 'authorization_code',
+                code_verifier: auth.code_verifier,
                 code,
               })
               .type('form')

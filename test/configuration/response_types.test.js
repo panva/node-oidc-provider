@@ -7,7 +7,7 @@ describe('response_types Provider configuration', () => {
     const provider = new Provider('https://op.example.com', { // eslint-disable-line no-new
       responseTypes: ['token id_token code', 'token id_token'],
     });
-    expect(i(provider).configuration('responseTypes')).to.eql(['code id_token token', 'id_token token']);
+    expect(i(provider).configuration.responseTypes).to.eql(['code id_token token', 'id_token token']);
   });
 
   it('throws when invalid types are configured', () => {

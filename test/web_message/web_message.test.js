@@ -87,7 +87,7 @@ describe('configuration features.webMessageResponseMode', () => {
 
       it('rejects relay mode with a rendered page', function () {
         const emitSpy = sinon.spy();
-        const renderSpy = sinon.spy(i(this.provider).configuration(), 'renderError');
+        const renderSpy = sinon.spy(i(this.provider).configuration, 'renderError');
         this.provider.once('authorization.error', emitSpy);
 
         const auth = new this.AuthorizationRequest({

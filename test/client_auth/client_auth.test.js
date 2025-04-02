@@ -2,7 +2,6 @@ import { createPrivateKey, X509Certificate } from 'node:crypto';
 import { readFileSync } from 'node:fs';
 import { request } from 'node:http';
 
-import nock from 'nock';
 import { importJWK } from 'jose';
 import sinon from 'sinon';
 import { expect } from 'chai';
@@ -10,7 +9,7 @@ import cloneDeep from 'lodash/cloneDeep.js';
 
 import nanoid from '../../lib/helpers/nanoid.js';
 import Provider from '../../lib/index.js';
-import bootstrap from '../test_helper.js';
+import bootstrap, { assertNoPendingInterceptors, mock } from '../test_helper.js';
 import clientKey from '../client.sig.key.js';
 import * as JWT from '../../lib/helpers/jwt.js';
 import { JWA } from '../../lib/consts/index.js';
@@ -44,6 +43,8 @@ function errorDetail(spy) {
 describe('client authentication options', () => {
   before(bootstrap(import.meta.url));
 
+  afterEach(assertNoPendingInterceptors);
+
   before(function () {
     this.provider.registerGrantType('foo', (ctx) => {
       ctx.body = { success: true };
@@ -60,7 +61,7 @@ describe('client authentication options', () => {
         ],
       });
 
-      expect(i(provider).configuration('clientAuthSigningAlgValues')).to.be.undefined;
+      expect(i(provider).configuration.clientAuthSigningAlgValues).to.be.undefined;
     });
 
     it('removes client_secret_jwt when no HMAC based alg is enabled', () => {
@@ -77,7 +78,7 @@ describe('client authentication options', () => {
         },
       });
 
-      expect(i(provider).configuration('clientAuthMethods')).not.to.include('client_secret_jwt');
+      expect(i(provider).configuration.clientAuthMethods).not.to.include('client_secret_jwt');
     });
 
     it('removes private_key_jwt when no public key crypto based alg is enabled', () => {
@@ -94,7 +95,7 @@ describe('client authentication options', () => {
         },
       });
 
-      expect(i(provider).configuration('clientAuthMethods')).not.to.include('private_key_jwt');
+      expect(i(provider).configuration.clientAuthMethods).not.to.include('private_key_jwt');
     });
 
     it('pushes only symmetric algs when client_secret_jwt is enabled', () => {
@@ -114,7 +115,7 @@ describe('client authentication options', () => {
         'HS512',
       ];
 
-      expect(i(provider).configuration('clientAuthSigningAlgValues')).to.eql(algs);
+      expect(i(provider).configuration.clientAuthSigningAlgValues).to.eql(algs);
     });
 
     it('pushes only asymmetric algs when private_key_jwt is enabled', () => {
@@ -136,13 +137,13 @@ describe('client authentication options', () => {
         'PS384',
         'PS512',
         'ES256',
-        'ES256K',
         'ES384',
         'ES512',
+        'Ed25519',
         'EdDSA',
       ];
 
-      expect(i(provider).configuration('clientAuthSigningAlgValues')).to.eql(algs);
+      expect(i(provider).configuration.clientAuthSigningAlgValues).to.eql(algs);
     });
 
     it('pushes all algs when both _jwt methods are enabled', () => {
@@ -168,13 +169,13 @@ describe('client authentication options', () => {
         'PS384',
         'PS512',
         'ES256',
-        'ES256K',
         'ES384',
         'ES512',
+        'Ed25519',
         'EdDSA',
       ];
 
-      expect(i(provider).configuration('clientAuthSigningAlgValues')).to.eql(algs);
+      expect(i(provider).configuration.clientAuthSigningAlgValues).to.eql(algs);
     });
   });
 
@@ -449,7 +450,7 @@ describe('client authentication options', () => {
     });
 
     it('can use transfer-encoding: chunked', function (done) {
-      const { address, port } = global.server.address();
+      const { address, port } = globalThis.server.address();
 
       const req = request({
         hostname: address,
@@ -1078,7 +1079,7 @@ describe('client authentication options', () => {
     const privateKey = createPrivateKey({ format: 'jwk', key: clientKey });
 
     after(function () {
-      i(this.provider).configuration().clockTolerance = 0;
+      i(this.provider).configuration.clockTolerance = 0;
     });
 
     it('accepts the auth', function () {
@@ -1100,7 +1101,7 @@ describe('client authentication options', () => {
     });
 
     it('accepts client assertions issued within acceptable system clock skew', function () {
-      i(this.provider).configuration().clockTolerance = 10;
+      i(this.provider).configuration.clockTolerance = 10;
       return JWT.sign({
         jti: nanoid(),
         aud: this.provider.issuer,
@@ -1219,8 +1220,10 @@ describe('client authentication options', () => {
     });
 
     it('handles rotation of stale jwks', function () {
-      nock('https://client.example.com/')
-        .get('/jwks')
+      mock('https://client.example.com')
+        .intercept({
+          path: '/jwks',
+        })
         .reply(200, JSON.stringify(mtlsKeys));
 
       return this.agent.post(route)

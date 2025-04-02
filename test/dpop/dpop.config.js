@@ -11,7 +11,7 @@ merge(config.features, {
   introspection: { enabled: true },
   deviceFlow: { enabled: true },
   pushedAuthorizationRequests: { enabled: true },
-  requestObjects: { request: true },
+  requestObjects: { enabled: true },
   ciba: {
     enabled: true,
     processLoginHint(ctx, loginHint) {

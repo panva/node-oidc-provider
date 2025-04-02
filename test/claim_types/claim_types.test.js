@@ -10,8 +10,7 @@ import { decode as decodeJWT } from '../../lib/helpers/jwt.js';
 describe('distributed and aggregated claims', () => {
   before(bootstrap(import.meta.url));
   before(function () {
-    const { Account } = this.provider;
-    Account.findAccount = (ctx, id) => Promise.resolve({
+    i(this.provider).configuration.findAccount = (ctx, id) => Promise.resolve({
       accountId: id,
       claims() {
         return {

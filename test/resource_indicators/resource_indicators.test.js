@@ -173,6 +173,7 @@ describe('features.resourceIndicators', () => {
           .send({
             client_id: 'client',
             grant_type: 'authorization_code',
+            code_verifier: auth.code_verifier,
             code: code.jti,
           })
           .type('form')
@@ -239,6 +240,7 @@ describe('features.resourceIndicators', () => {
           .send({
             client_id: 'client',
             grant_type: 'authorization_code',
+            code_verifier: auth.code_verifier,
             code: code.jti,
           })
           .type('form')
@@ -305,6 +307,7 @@ describe('features.resourceIndicators', () => {
           .send({
             client_id: 'client',
             grant_type: 'authorization_code',
+            code_verifier: auth.code_verifier,
             code: code.jti,
             usegranted: true,
           })
@@ -373,6 +376,7 @@ describe('features.resourceIndicators', () => {
           .send({
             client_id: 'client',
             grant_type: 'authorization_code',
+            code_verifier: auth.code_verifier,
             code: code.jti,
             resource: 'urn:wl:default',
           })

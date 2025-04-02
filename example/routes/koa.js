@@ -2,8 +2,9 @@
 import { strict as assert } from 'node:assert';
 import * as querystring from 'node:querystring';
 import * as crypto from 'node:crypto';
-import { inspect } from 'node:util';
+import { inspect, promisify } from 'node:util';
 
+import * as oidc from 'openid-client';
 import isEmpty from 'lodash/isEmpty.js';
 import { koaBody as bodyParser } from 'koa-body';
 import Router from '@koa/router';
@@ -12,6 +13,7 @@ import { defaults } from '../../lib/helpers/defaults.js'; // make your own, you'
 import Account from '../support/account.js';
 import { errors } from '../../lib/index.js'; // from 'oidc-provider';
 
+const hkdf = promisify(crypto.hkdf);
 const keys = new Set();
 const debug = (obj) => querystring.stringify(Object.entries(obj).reduce((acc, [key, value]) => {
   keys.add(key);
@@ -23,6 +25,13 @@ const debug = (obj) => querystring.stringify(Object.entries(obj).reduce((acc, [k
 });
 
 const { SessionNotFound } = errors;
+
+const { GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET } = process.env;
+
+let google;
+if (GOOGLE_CLIENT_ID && GOOGLE_CLIENT_SECRET) {
+  google = await oidc.discovery(new URL('https://accounts.google.com'), GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET);
+}
 
 export default (provider) => {
   const router = new Router();
@@ -56,7 +65,7 @@ export default (provider) => {
           details: prompt.details,
           params,
           title: 'Sign-in',
-          google: ctx.google,
+          google,
           session: session ? debug(session) : undefined,
           dbg: {
             params: debug(params),
@@ -87,11 +96,6 @@ export default (provider) => {
     text: false, json: false, patchNode: true, patchKoa: true,
   });
 
-  router.get('/interaction/callback/google', (ctx) => {
-    const nonce = ctx.res.locals.cspNonce;
-    return ctx.render('repost', { layout: false, upstream: 'google', nonce });
-  });
-
   router.post('/interaction/:uid/login', body, async (ctx) => {
     const { prompt: { name } } = await provider.interactionDetails(ctx.req, ctx.res);
     assert.equal(name, 'login');
@@ -109,49 +113,69 @@ export default (provider) => {
     });
   });
 
-  router.post('/interaction/:uid/federated', body, async (ctx) => {
-    const { prompt: { name } } = await provider.interactionDetails(ctx.req, ctx.res);
-    assert.equal(name, 'login');
+  const ENABLE_FEDERATED_ROUTES = process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET;
+  if (ENABLE_FEDERATED_ROUTES) {
+    const GOOGLE_CALLBACK_PATHNAME = '/interaction/callback/google';
+    const federatedLogin = async (ctx) => {
+      const { prompt: { name } } = await provider.interactionDetails(ctx.req, ctx.res);
+      assert.equal(name, 'login');
 
-    const path = `/interaction/${ctx.params.uid}/federated`;
+      switch (ctx.method === 'POST' ? ctx.request.body.upstream : ctx.query.upstream) {
+        case 'google': {
+          const code_verifier = Buffer.from(
+            await hkdf(
+              'sha256',
+              process.env.GOOGLE_CLIENT_SECRET,
+              ctx.params.uid,
+              process.env.GOOGLE_CLIENT_ID,
+              32,
+            ),
+          ).toString('base64url');
 
-    switch (ctx.request.body.upstream) {
-      case 'google': {
-        const callbackParams = ctx.google.callbackParams(ctx.req);
+          if (ctx.method === 'POST') {
+            ctx.status = 303;
+            return ctx.redirect(oidc.buildAuthorizationUrl(google, {
+              redirect_uri: new URL(GOOGLE_CALLBACK_PATHNAME, ctx.origin),
+              scope: 'openid email profile',
+              code_challenge: await oidc.calculatePKCECodeChallenge(code_verifier),
+              code_challenge_method: 'S256',
+              state: ctx.params.uid,
+            }));
+          }
 
-        // init
-        if (!Object.keys(callbackParams).length) {
-          const state = ctx.params.uid;
-          const nonce = crypto.randomBytes(32).toString('hex');
+          const url = new URL(ctx.request.URL);
+          url.pathname = GOOGLE_CALLBACK_PATHNAME;
+          const tokens = await oidc.authorizationCodeGrant(google, url, {
+            pkceCodeVerifier: code_verifier,
+            idTokenExpected: true,
+            expectedState: ctx.params.uid,
+          });
 
-          ctx.cookies.set('google.nonce', nonce, { path, sameSite: 'strict' });
+          const account = await Account.findByFederated('google', tokens.claims());
 
-          ctx.status = 303;
-          return ctx.redirect(ctx.google.authorizationUrl({
-            state, nonce, scope: 'openid email profile',
-          }));
+          const result = {
+            login: {
+              accountId: account.accountId,
+            },
+          };
+          return provider.interactionFinished(ctx.req, ctx.res, result, {
+            mergeWithLastSubmission: false,
+          });
         }
-
-        // callback
-        const nonce = ctx.cookies.get('google.nonce');
-        ctx.cookies.set('google.nonce', null, { path });
-
-        const tokenset = await ctx.google.callback(undefined, callbackParams, { state: ctx.params.uid, nonce, response_type: 'id_token' });
-        const account = await Account.findByFederated('google', tokenset.claims());
-
-        const result = {
-          login: {
-            accountId: account.accountId,
-          },
-        };
-        return provider.interactionFinished(ctx.req, ctx.res, result, {
-          mergeWithLastSubmission: false,
-        });
+        default:
+          return undefined;
       }
-      default:
-        return undefined;
-    }
-  });
+    };
+
+    router.get(GOOGLE_CALLBACK_PATHNAME, (ctx) => {
+      const target = new URL(ctx.request.URL);
+      target.pathname = `/interaction/${ctx.query.state}/federated`;
+      target.searchParams.set('upstream', 'google');
+      ctx.redirect(target);
+    });
+    router.get('/interaction/:uid/federated', body, federatedLogin);
+    router.post('/interaction/:uid/federated', body, federatedLogin);
+  }
 
   router.post('/interaction/:uid/confirm', body, async (ctx) => {
     const interactionDetails = await provider.interactionDetails(ctx.req, ctx.res);

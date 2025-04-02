@@ -453,9 +453,9 @@ describe('introspection features', () => {
 
     describe('populates ctx.oidc.entities', () => {
       it('when introspecting an AccessToken', function (done) {
-        this.provider.use(this.assertOnce((ctx) => {
+        this.assertOnce((ctx) => {
           expect(ctx.oidc.entities).to.have.keys('Client', 'AccessToken');
-        }, done));
+        }, done);
 
         (async () => {
           const at = new this.provider.AccessToken({
@@ -475,9 +475,9 @@ describe('introspection features', () => {
       });
 
       it('when introspecting a RefreshToken', function (done) {
-        this.provider.use(this.assertOnce((ctx) => {
+        this.assertOnce((ctx) => {
           expect(ctx.oidc.entities).to.have.keys('Client', 'RefreshToken');
-        }, done));
+        }, done);
 
         (async () => {
           const rt = new this.provider.RefreshToken({
@@ -495,9 +495,9 @@ describe('introspection features', () => {
       });
 
       it('when introspecting ClientCredentials', function (done) {
-        this.provider.use(this.assertOnce((ctx) => {
+        this.assertOnce((ctx) => {
           expect(ctx.oidc.entities).to.have.keys('Client', 'ClientCredentials');
-        }, done));
+        }, done);
 
         (async () => {
           const rt = new this.provider.ClientCredentials({

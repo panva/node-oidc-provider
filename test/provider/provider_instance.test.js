@@ -43,7 +43,7 @@ describe('provider instance', () => {
         new Provider('http://localhost', { // eslint-disable-line no-new
           features: { webMessageResponseMode: { enabled: true, ack: 'not a current version' } },
         });
-      }).to.throw('An unacknowledged version of a draft feature is included in this oidc-provider version.');
+      }).to.throw('An unacknowledged version of an experimental feature is included in this oidc-provider version.');
       expect(console.info.called).to.be.true;
     });
     /* eslint-enable */

@@ -1,4 +1,4 @@
-import { generateKeyPair } from 'jose';
+import { generateKeyPair, exportJWK } from 'jose';
 import merge from 'lodash/merge.js';
 import pull from 'lodash/pull.js';
 
@@ -7,7 +7,7 @@ import getConfig from '../default.config.js';
 const config = getConfig();
 
 merge(config.features, {
-  requestObjects: { request: true },
+  requestObjects: { enabled: true },
   encryption: { enabled: true },
   introspection: { enabled: true },
   jwtIntrospection: { enabled: true },
@@ -18,7 +18,7 @@ merge(config.features, {
 pull(config.enabledJWA.requestObjectEncryptionAlgValues, 'RSA-OAEP-512');
 pull(config.enabledJWA.requestObjectEncryptionEncValues, 'A192CBC-HS384');
 
-export const keypair = await generateKeyPair('RS256');
+export const keypair = await generateKeyPair('RSA-OAEP');
 
 export default {
   config,
@@ -29,7 +29,7 @@ export default {
       redirect_uris: ['https://client.example.com/cb'],
       response_types: ['id_token token', 'code'],
       grant_types: ['implicit', 'authorization_code'],
-      jwks: { keys: [keypair.publicKey.export({ format: 'jwk' })] },
+      jwks: { keys: [await exportJWK(keypair.publicKey)] },
       id_token_encrypted_response_alg: 'RSA-OAEP',
       // id_token_encrypted_response_enc: 'A128CBC-HS256',
       request_object_encryption_alg: 'RSA-OAEP',

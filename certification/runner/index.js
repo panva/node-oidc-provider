@@ -31,7 +31,7 @@ if (PLAN_NAME.startsWith('fapi')) {
 
 switch (PLAN_NAME) {
   case 'oidcc-dynamic-certification-test-plan':
-    SKIP = 'oidcc-server-rotate-keys';
+    SKIP = 'oidcc-server-rotate-keys,oidcc-request-uri-unsigned,oidcc-request-uri-signed-rs256';
     break;
   case 'oidcc-test-plan':
     SKIP = 'oidcc-server-rotate-keys';
@@ -47,20 +47,36 @@ switch (PLAN_NAME) {
     VARIANT.response_type = 'code';
     break;
   case 'oidcc-basic-certification-test-plan':
+    // TODO: unskip when https://gitlab.com/openid/conformance-suite/-/issues/1497 is fixed
+    SKIP = 'oidcc-request-uri-unsigned-supported-correctly-or-rejected-as-unsupported';
     VARIANT.server_metadata = 'discovery';
     VARIANT.client_registration = 'dynamic_client';
     break;
   case 'oidcc-hybrid-certification-test-plan':
+    // TODO: unskip when https://gitlab.com/openid/conformance-suite/-/issues/1497 is fixed
+    SKIP = 'oidcc-request-uri-unsigned-supported-correctly-or-rejected-as-unsupported';
     VARIANT.server_metadata = 'discovery';
     VARIANT.client_registration = 'dynamic_client';
     break;
   case 'oidcc-implicit-certification-test-plan':
+    // TODO: unskip when https://gitlab.com/openid/conformance-suite/-/issues/1497 is fixed
+    SKIP = 'oidcc-request-uri-unsigned-supported-correctly-or-rejected-as-unsupported';
     VARIANT.server_metadata = 'discovery';
     VARIANT.client_registration = 'dynamic_client';
     break;
   case 'fapi2-message-signing-id1-test-plan':
+    if (VARIANT.client_auth_type === 'private_key_jwt') {
+      // TODO: unskip when https://gitlab.com/openid/conformance-suite/-/issues/1443#note_2430893342 is fixed
+      SKIP = 'fapi2-security-profile-id2-par-test-pushed-authorization-url-as-audience-for-client-JWT-assertion,fapi2-security-profile-id2-par-test-token-endpoint-url-as-audience-for-client-JWT-assertion,fapi2-security-profile-id2-test-array-as-audience-for-client-JWT-assertion,fapi2-security-profile-id2-attempt-reuse-authorization-code-after-one-second';
+    }
     VARIANT.fapi_request_method = 'signed_non_repudiation';
     VARIANT.fapi_response_mode = 'jarm';
+    break;
+  case 'fapi2-security-profile-id2-test-plan':
+    if (VARIANT.client_auth_type === 'private_key_jwt') {
+      // TODO: unskip when https://gitlab.com/openid/conformance-suite/-/issues/1443#note_2430893342 is fixed
+      SKIP = 'fapi2-security-profile-id2-par-test-pushed-authorization-url-as-audience-for-client-JWT-assertion,fapi2-security-profile-id2-par-test-token-endpoint-url-as-audience-for-client-JWT-assertion,fapi2-security-profile-id2-test-array-as-audience-for-client-JWT-assertion,fapi2-security-profile-id2-attempt-reuse-authorization-code-after-one-second';
+    }
     break;
   default:
     break;
@@ -86,10 +102,9 @@ const auth = VARIANT.client_auth_type === 'mtls' ? 'mtls' : 'pkjwt';
 let override;
 // eslint-disable-next-line default-case
 switch (PLAN_NAME) {
-  case 'fapi-rw-id2-test-plan':
   case 'fapi1-advanced-final-test-plan': {
-    const revision = PLAN_NAME.split('-')[2]; // id2 or final
-    override = revision === 'final' ? 'fapi1-advanced-final' : 'fapi-rw-id2';
+    const revision = 'final';
+    override = 'fapi1-advanced-final';
     configuration.client.client_id = `1.0-${revision}-${auth}-one`;
     configuration.client2.client_id = `1.0-${revision}-${auth}-two`;
     break;

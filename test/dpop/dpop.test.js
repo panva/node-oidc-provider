@@ -1,5 +1,5 @@
 import * as url from 'node:url';
-import { createHash, randomBytes, randomUUID } from 'node:crypto';
+import { hash, randomBytes, randomUUID } from 'node:crypto';
 
 import sinon from 'sinon';
 import { expect } from 'chai';
@@ -13,16 +13,16 @@ import bootstrap, { skipConsent } from '../test_helper.js';
 import * as base64url from '../../lib/helpers/base64url.js';
 
 function ath(accessToken) {
-  return base64url.encode(createHash('sha256').update(accessToken).digest());
+  return hash('sha256', accessToken, 'base64url');
 }
 
-function DPoP(keypair, htu, htm, nonce = undefined, accessToken = undefined) {
+async function DPoP(keypair, htu, htm, nonce = undefined, accessToken = undefined) {
   return new SignJWT({
     htu,
     htm,
     nonce,
     ath: accessToken ? ath(accessToken) : undefined,
-  }).setProtectedHeader({ alg: 'ES256', typ: 'dpop+jwt', jwk: keypair.publicKey.export({ format: 'jwk' }) })
+  }).setProtectedHeader({ alg: 'ES256', typ: 'dpop+jwt', jwk: await exportJWK(keypair.publicKey) })
     .setJti(nanoid())
     .setIssuedAt()
     .sign(keypair.privateKey);
@@ -33,13 +33,13 @@ describe('features.dPoP', () => {
   before(function () { return this.login({ scope: 'openid offline_access' }); });
   skipConsent();
   before(async function () {
-    this.keypair = await generateKeyPair('ES256');
+    this.keypair = await generateKeyPair('ES256', { extractable: true });
     this.jwk = await exportJWK(this.keypair.publicKey);
     this.thumbprint = await calculateJwkThumbprint(this.jwk);
   });
 
-  it('extends discovery', function () {
-    return this.agent.get('/.well-known/openid-configuration')
+  it('extends discovery', async function () {
+    await this.agent.get('/.well-known/openid-configuration')
       .expect(200)
       .expect((response) => {
         expect(response.body).to.have.deep.property('dpop_signing_alg_values_supported', ['ES256', 'PS256']);
@@ -103,7 +103,7 @@ describe('features.dPoP', () => {
         at.setThumbprint('jkt', this.thumbprint);
 
         this.access_token = await at.save();
-        this.ath = createHash('sha256').update(this.access_token).digest('base64url');
+        this.ath = hash('sha256', this.access_token, 'base64url');
       });
 
       afterEach(function () {
@@ -348,7 +348,7 @@ describe('features.dPoP', () => {
 
       await this.agent.get('/me')
         .set('Authorization', `DPoP ${dpop}`)
-        .set('DPoP', await DPoP(await generateKeyPair('ES256'), `${this.provider.issuer}${this.suitePath('/me')}`, 'GET', undefined, dpop))
+        .set('DPoP', await DPoP(await generateKeyPair('ES256', { extractable: true }), `${this.provider.issuer}${this.suitePath('/me')}`, 'GET', undefined, dpop))
         .expect({ error: 'invalid_token', error_description: 'invalid token provided' })
         .expect(401);
 
@@ -635,7 +635,7 @@ describe('features.dPoP', () => {
   describe('authorization flow', () => {
     describe('without dpop_jkt', () => {
       beforeEach(async function () {
-        const auth = new this.AuthorizationRequest({
+        const auth = this.auth = new this.AuthorizationRequest({
           response_type: 'code',
           scope: 'openid offline_access',
           prompt: 'consent',
@@ -659,6 +659,7 @@ describe('features.dPoP', () => {
             .auth('client', 'secret')
             .send({
               grant_type: 'authorization_code',
+              code_verifier: this.auth.code_verifier,
               code: this.code,
               redirect_uri: 'https://client.example.com/cb',
             })
@@ -676,7 +677,7 @@ describe('features.dPoP', () => {
 
     describe('with dpop_jkt', () => {
       beforeEach(async function () {
-        const auth = new this.AuthorizationRequest({
+        const auth = this.auth = new this.AuthorizationRequest({
           response_type: 'code',
           scope: 'openid offline_access',
           prompt: 'consent',
@@ -701,6 +702,7 @@ describe('features.dPoP', () => {
             .auth('client', 'secret')
             .send({
               grant_type: 'authorization_code',
+              code_verifier: this.auth.code_verifier,
               code: this.code,
               redirect_uri: 'https://client.example.com/cb',
             })
@@ -722,11 +724,12 @@ describe('features.dPoP', () => {
             .auth('client', 'secret')
             .send({
               grant_type: 'authorization_code',
+              code_verifier: this.auth.code_verifier,
               code: this.code,
               redirect_uri: 'https://client.example.com/cb',
             })
             .type('form')
-            .set('DPoP', await DPoP(await generateKeyPair('ES256'), `${this.provider.issuer}${this.suitePath('/token')}`, 'POST'))
+            .set('DPoP', await DPoP(await generateKeyPair('ES256', { extractable: true }), `${this.provider.issuer}${this.suitePath('/token')}`, 'POST'))
             .expect(400)
             .expect({ error: 'invalid_grant', error_description: 'grant request is invalid' });
 
@@ -742,6 +745,7 @@ describe('features.dPoP', () => {
             .auth('client', 'secret')
             .send({
               grant_type: 'authorization_code',
+              code_verifier: this.auth.code_verifier,
               code: this.code,
               redirect_uri: 'https://client.example.com/cb',
             })
@@ -757,7 +761,7 @@ describe('features.dPoP', () => {
 
     describe('refresh_token', () => {
       beforeEach(async function () {
-        const auth = new this.AuthorizationRequest({
+        const auth = this.auth = new this.AuthorizationRequest({
           response_type: 'code',
           scope: 'openid offline_access',
           prompt: 'consent',
@@ -775,6 +779,7 @@ describe('features.dPoP', () => {
           .auth('client', 'secret')
           .send({
             grant_type: 'authorization_code',
+            code_verifier: this.auth.code_verifier,
             code: this.code,
             redirect_uri: 'https://client.example.com/cb',
           })
@@ -809,7 +814,7 @@ describe('features.dPoP', () => {
 
   describe('authorization flow (public client)', () => {
     beforeEach(async function () {
-      const auth = new this.AuthorizationRequest({
+      const auth = this.auth = new this.AuthorizationRequest({
         client_id: 'client-none',
         response_type: 'code',
         scope: 'openid offline_access',
@@ -834,6 +839,7 @@ describe('features.dPoP', () => {
           .send({
             client_id: 'client-none',
             grant_type: 'authorization_code',
+            code_verifier: this.auth.code_verifier,
             code: this.code,
             redirect_uri: 'https://client.example.com/cb',
           })
@@ -854,6 +860,7 @@ describe('features.dPoP', () => {
           .send({
             client_id: 'client-none',
             grant_type: 'authorization_code',
+            code_verifier: this.auth.code_verifier,
             code: this.code,
             redirect_uri: 'https://client.example.com/cb',
           })
@@ -894,7 +901,7 @@ describe('features.dPoP', () => {
             grant_type: 'refresh_token',
             refresh_token: this.rt,
           })
-          .set('DPoP', await DPoP(await generateKeyPair('ES256'), `${this.provider.issuer}${this.suitePath('/token')}`, 'POST'))
+          .set('DPoP', await DPoP(await generateKeyPair('ES256', { extractable: true }), `${this.provider.issuer}${this.suitePath('/token')}`, 'POST'))
           .type('form')
           .expect(400)
           .expect({ error: 'invalid_grant', error_description: 'grant request is invalid' });
@@ -925,7 +932,7 @@ describe('features.dPoP', () => {
 
   describe('status codes at the token endpoint', () => {
     it('should be 400 for invalid_dpop_proof', async function () {
-      return this.agent.post('/token')
+      await this.agent.post('/token')
         .auth('client', 'secret')
         .send({ grant_type: 'client_credentials' })
         .set('DPoP', 'invalid')
@@ -940,15 +947,13 @@ describe('features.dPoP', () => {
       let nonce;
       await this.agent.get('/me')
         .set('Authorization', 'DPoP foo')
-        .send({ grant_type: 'client_credentials' })
         .set('DPoP', await DPoP(this.keypair, `${this.provider.issuer}${this.suitePath('/me')}`, 'GET', 'foo', 'foo'))
         .expect(401)
         .expect({ error: 'use_dpop_nonce', error_description: 'invalid nonce in DPoP proof' })
         .expect(({ headers }) => { nonce = headers['dpop-nonce']; });
 
-      return this.agent.get('/me')
+      await this.agent.get('/me')
         .set('Authorization', 'DPoP foo')
-        .send({ grant_type: 'client_credentials' })
         .set('DPoP', await DPoP(this.keypair, `${this.provider.issuer}${this.suitePath('/me')}`, 'GET', nonce, 'foo'))
         .expect(401)
         .expect({ error: 'invalid_token', error_description: 'invalid token provided' });
@@ -965,7 +970,7 @@ describe('features.dPoP', () => {
         .expect({ error: 'use_dpop_nonce', error_description: 'invalid nonce in DPoP proof' })
         .expect(({ headers }) => { nonce = headers['dpop-nonce']; });
 
-      return this.agent.post('/token')
+      await this.agent.post('/token')
         .auth('client', 'secret')
         .send({ grant_type: 'client_credentials' })
         .set('DPoP', await DPoP(this.keypair, `${this.provider.issuer}${this.suitePath('/token')}`, 'POST', nonce))
@@ -976,12 +981,12 @@ describe('features.dPoP', () => {
 
   describe('required nonce', () => {
     before(function () {
-      this.orig = i(this.provider).configuration().features.dPoP.requireNonce;
-      i(this.provider).configuration().features.dPoP.requireNonce = () => true;
+      this.orig = i(this.provider).features.dPoP.requireNonce;
+      i(this.provider).features.dPoP.requireNonce = () => true;
     });
 
     after(function () {
-      i(this.provider).configuration().features.dPoP.requireNonce = this.orig;
+      i(this.provider).features.dPoP.requireNonce = this.orig;
     });
 
     it('@ PAR endpoint', async function () {
@@ -1018,15 +1023,13 @@ describe('features.dPoP', () => {
       let nonce;
       await this.agent.get('/me')
         .set('Authorization', 'DPoP foo')
-        .send({ grant_type: 'client_credentials' })
         .set('DPoP', await DPoP(this.keypair, `${this.provider.issuer}${this.suitePath('/me')}`, 'GET', undefined, 'foo'))
         .expect(401)
         .expect({ error: 'use_dpop_nonce', error_description: 'nonce is required in the DPoP proof' })
         .expect(({ headers }) => { nonce = headers['dpop-nonce']; });
 
-      return this.agent.get('/me')
+      await this.agent.get('/me')
         .set('Authorization', 'DPoP foo')
-        .send({ grant_type: 'client_credentials' })
         .set('DPoP', await DPoP(this.keypair, `${this.provider.issuer}${this.suitePath('/me')}`, 'GET', nonce, 'foo'))
         .expect(401)
         .expect((response) => {
@@ -1047,7 +1050,7 @@ describe('features.dPoP', () => {
         .expect({ error: 'use_dpop_nonce', error_description: 'nonce is required in the DPoP proof' })
         .expect(({ headers }) => { nonce = headers['dpop-nonce']; });
 
-      return this.agent.post('/token')
+      await this.agent.post('/token')
         .auth('client', 'secret')
         .send({ grant_type: 'client_credentials' })
         .set('DPoP', await DPoP(this.keypair, `${this.provider.issuer}${this.suitePath('/token')}`, 'POST', nonce))

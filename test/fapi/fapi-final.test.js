@@ -36,9 +36,51 @@ describe('Financial-grade API Security Profile 1.0 - Part 2: Advanced (FINAL) be
     });
   });
 
-  describe('FAPI Mode Authorization Request', () => {
+  describe('FAPI 1.0 Final Authorization Request', () => {
     beforeEach(function () { return this.login(); });
     afterEach(function () { return this.logout(); });
+
+    it('does not require PKCE to be used on the authorization endpoint', function () {
+      const auth = new this.AuthorizationRequest({
+        scope: 'openid',
+        client_id: 'client',
+        response_type: 'code id_token',
+        nonce: 'foo',
+        code_challenge_method: undefined,
+        code_challenge: undefined,
+      });
+
+      return this.wrap({
+        agent: this.agent,
+        route: '/auth',
+        verb: 'get',
+        auth,
+      })
+        .expect(303)
+        .expect(auth.validateFragment)
+        .expect(auth.validatePresence(['id_token', 'code', 'state']))
+        .expect(auth.validateClientLocation);
+    });
+
+    it('requires PKCE to be used when PAR is used', function () {
+      return this.agent.post('/request')
+        .auth('client', 'secret')
+        .send({
+          scope: 'openid',
+          client_id: 'client',
+          response_type: 'code',
+          response_mode: 'jwt',
+          code_challenge_method: undefined,
+          code_challenge: undefined,
+          nonce: 'foo',
+        })
+        .type('form')
+        .expect(400)
+        .expect({
+          error: 'invalid_request',
+          error_description: 'Authorization Server policy requires PKCE to be used for this request',
+        });
+    });
 
     it('requires jwt response mode to be used when id token is not issued by authorization endpoint', function () {
       const auth = new this.AuthorizationRequest({

@@ -52,7 +52,11 @@ describe('configuration conformIdTokenClaims=false', () => {
         if (response_type.includes('code')) {
           ({ body: { id_token, refresh_token, access_token } } = await this.agent.post('/token')
             .send({
-              client_id, code, grant_type: 'authorization_code', redirect_uri,
+              client_id,
+              code,
+              grant_type: 'authorization_code',
+              code_verifier: auth.code_verifier,
+              redirect_uri,
             })
             .type('form')
             .expect(200));

@@ -57,9 +57,9 @@ describe('userinfo /me', () => {
   });
 
   it('populates ctx.oidc.entities', function (done) {
-    this.provider.use(this.assertOnce((ctx) => {
+    this.assertOnce((ctx) => {
       expect(ctx.oidc.entities).to.have.keys('Client', 'Grant', 'AccessToken', 'Account');
-    }, done));
+    }, done);
 
     (async () => {
       await this.agent.get('/me').auth(this.access_token, { type: 'bearer' });

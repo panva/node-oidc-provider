@@ -1,12 +1,14 @@
 import { strict as assert } from 'node:assert';
 import { parse as parseUrl } from 'node:url';
 
-import sinon from 'sinon';
+import { createSandbox } from 'sinon';
 import base64url from 'base64url';
 import { expect } from 'chai';
 import timekeeper from 'timekeeper';
 
 import bootstrap, { skipConsent } from '../test_helper.js';
+
+const sinon = createSandbox();
 
 const route = '/token';
 
@@ -21,6 +23,7 @@ describe('grant_type=refresh_token', () => {
   afterEach(function () {
     this.provider.removeAllListeners();
   });
+  afterEach(sinon.restore);
 
   beforeEach(function () { return this.login({ scope: 'openid email offline_access' }); });
   afterEach(function () { return this.logout(); });
@@ -93,11 +96,11 @@ describe('grant_type=refresh_token', () => {
   });
 
   it('populates ctx.oidc.entities', function (done) {
-    this.provider.use(this.assertOnce((ctx) => {
+    this.assertOnce((ctx) => {
       expect(ctx.oidc.entities).to.have.keys('Account', 'Grant', 'Client', 'AccessToken', 'RefreshToken');
       expect(ctx.oidc.entities.RefreshToken).to.have.property('gty', 'authorization_code');
       expect(ctx.oidc.entities.AccessToken).to.have.property('gty', 'authorization_code refresh_token');
-    }, done));
+    }, done);
 
     this.agent.post(route)
       .auth('client', 'secret')
@@ -112,13 +115,13 @@ describe('grant_type=refresh_token', () => {
   describe('validates', () => {
     context('', () => {
       before(function () {
-        const ttl = i(this.provider).configuration('ttl');
+        const { ttl } = i(this.provider).configuration;
         this.prev = ttl.RefreshToken;
         ttl.RefreshToken = 5;
       });
 
       after(function () {
-        i(this.provider).configuration('ttl').RefreshToken = this.prev;
+        i(this.provider).configuration.ttl.RefreshToken = this.prev;
       });
 
       it('validates the refresh token is not expired', function () {
@@ -257,7 +260,7 @@ describe('grant_type=refresh_token', () => {
 
     it('validates account is still there', function () {
       const { rt } = this;
-      sinon.stub(this.provider.Account, 'findAccount').callsFake(() => Promise.resolve());
+      sinon.stub(i(this.provider).configuration, 'findAccount').callsFake(() => Promise.resolve());
 
       const spy = sinon.spy();
       this.provider.on('grant.error', spy);
@@ -269,9 +272,6 @@ describe('grant_type=refresh_token', () => {
           grant_type: 'refresh_token',
         })
         .type('form')
-        .expect(() => {
-          this.provider.Account.findAccount.restore();
-        })
         .expect(400)
         .expect(() => {
           expect(spy.calledOnce).to.be.true;
@@ -320,21 +320,21 @@ describe('grant_type=refresh_token', () => {
 
   describe('rotateRefreshToken=true', () => {
     before(function () {
-      i(this.provider).configuration().rotateRefreshToken = true;
+      i(this.provider).configuration.rotateRefreshToken = true;
     });
 
     after(function () {
-      i(this.provider).configuration().rotateRefreshToken = false;
+      i(this.provider).configuration.rotateRefreshToken = false;
     });
 
     it('populates ctx.oidc.entities', function (done) {
-      this.provider.use(this.assertOnce((ctx) => {
+      this.assertOnce((ctx) => {
         expect(ctx.oidc.entities).to.have.keys('Account', 'Grant', 'Client', 'AccessToken', 'RotatedRefreshToken', 'RefreshToken');
         expect(ctx.oidc.entities.RotatedRefreshToken).not.to.eql(ctx.oidc.entities.RefreshToken);
         expect(ctx.oidc.entities.RotatedRefreshToken).to.have.property('gty', 'authorization_code');
         expect(ctx.oidc.entities.RefreshToken).to.have.property('gty', 'authorization_code refresh_token');
         expect(ctx.oidc.entities.AccessToken).to.have.property('gty', 'authorization_code refresh_token');
-      }, done));
+      }, done);
 
       this.agent.post(route)
         .auth('client', 'secret')
@@ -460,23 +460,23 @@ describe('grant_type=refresh_token', () => {
 
   describe('rotateRefreshToken is a function (returns true)', () => {
     beforeEach(function () {
-      i(this.provider).configuration().rotateRefreshToken = sinon.mock().returns(true);
+      i(this.provider).configuration.rotateRefreshToken = sinon.mock().returns(true);
     });
 
     afterEach(function () {
-      const spy = i(this.provider).configuration().rotateRefreshToken;
-      i(this.provider).configuration().rotateRefreshToken = false;
+      const spy = i(this.provider).configuration.rotateRefreshToken;
+      i(this.provider).configuration.rotateRefreshToken = false;
       expect(spy.calledOnce).to.be.true;
     });
 
     it('populates ctx.oidc.entities', function (done) {
-      this.provider.use(this.assertOnce((ctx) => {
+      this.assertOnce((ctx) => {
         expect(ctx.oidc.entities).to.have.keys('Account', 'Grant', 'Client', 'AccessToken', 'RotatedRefreshToken', 'RefreshToken');
         expect(ctx.oidc.entities.RotatedRefreshToken).not.to.eql(ctx.oidc.entities.RefreshToken);
         expect(ctx.oidc.entities.RotatedRefreshToken).to.have.property('gty', 'authorization_code');
         expect(ctx.oidc.entities.RefreshToken).to.have.property('gty', 'authorization_code refresh_token');
         expect(ctx.oidc.entities.AccessToken).to.have.property('gty', 'authorization_code refresh_token');
-      }, done));
+      }, done);
 
       this.agent.post(route)
         .auth('client', 'secret')
@@ -600,21 +600,21 @@ describe('grant_type=refresh_token', () => {
 
   describe('rotateRefreshToken is a function (returns false)', () => {
     beforeEach(function () {
-      i(this.provider).configuration().rotateRefreshToken = sinon.mock().returns(false);
+      i(this.provider).configuration.rotateRefreshToken = sinon.mock().returns(false);
     });
 
     afterEach(function () {
-      const spy = i(this.provider).configuration().rotateRefreshToken;
-      i(this.provider).configuration().rotateRefreshToken = false;
+      const spy = i(this.provider).configuration.rotateRefreshToken;
+      i(this.provider).configuration.rotateRefreshToken = false;
       expect(spy.calledOnce).to.be.true;
     });
 
     it('does not rotate', function (done) {
-      this.provider.use(this.assertOnce((ctx) => {
+      this.assertOnce((ctx) => {
         expect(ctx.oidc.entities).to.have.keys('Account', 'Grant', 'Client', 'AccessToken', 'RefreshToken');
         expect(ctx.oidc.entities.RefreshToken).to.have.property('gty', 'authorization_code');
         expect(ctx.oidc.entities.AccessToken).to.have.property('gty', 'authorization_code refresh_token');
-      }, done));
+      }, done);
 
       this.agent.post(route)
         .auth('client', 'secret')

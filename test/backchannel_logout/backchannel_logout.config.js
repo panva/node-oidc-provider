@@ -29,7 +29,7 @@ export default {
     client_secret: 'secret',
     response_types: ['code id_token'],
     grant_types: ['implicit', 'authorization_code', 'refresh_token'],
-    redirect_uris: ['https://second-client.example.com/cb'],
+    redirect_uris: ['https://no-sid.example.com/cb'],
     backchannel_logout_uri: 'https://no-sid.example.com/backchannel_logout',
     // backchannel_logout_session_required: false,
   }],

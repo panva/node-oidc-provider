@@ -39,15 +39,6 @@ describe(route, () => {
                   use: 'enc',
                 },
                 {
-                  crv: 'secp256k1',
-                  x: 'ADwk2-e--j0e-BPXlgJ_d7funjsWA8fi98u2uVYQUaU',
-                  y: 'J9wWPI_2hUxe3PkygNSaiLoUlM2sBPYVREb7EvrXjq0',
-                  kty: 'EC',
-                  use: 'sig',
-                  alg: 'ES256K',
-                  kid: 'uNozOx5Tg2nsSkAWGLgOC4XbJj4pf2NFZR01Pc9Xb60',
-                },
-                {
                   crv: 'P-256',
                   x: '0pm-JC6KeQqFwxdTLsBdtnrT4hV6VDlv3AWE6BSyFSk',
                   y: 'ZvRmSa23_647WNcK_gkp5r8Jm4_9MnuyClguRYvu7Ik',
@@ -63,30 +54,15 @@ describe(route, () => {
                   alg: 'ECDH-ES',
                   use: 'enc',
                 },
-                {
-                  crv: 'Ed448',
-                  x: 'bSI-zbfp5DeKlG1-tyQi4_2OZIQdoQYv79BKtotgOkCUYLyuvVQfasiEbpv1RzMPbYLu6Qrxf7QA',
-                  kty: 'OKP',
-                  kid: 'earwWGhKnBHKVMXdJICpeZxBceKOgDkOzgkM14pm3vQ',
-                  use: 'sig',
-                  alg: 'EdDSA',
-                },
-                {
-                  crv: 'X448',
-                  x: 'VGcaaNI0fHoa0A39PptMppoJU37-WRSh-p4qjPVpORvV-USWGKMAENK22n_HD3zbqsFp9biK7ws',
-                  kty: 'OKP',
-                  kid: 'jHmhuCbd6IC-O2kf3wsyJqQwkRmkUagoRhqF1OlFwI0',
-                  use: 'enc',
-                },
               ],
             });
           });
       });
 
       it('does not populate ctx.oidc.entities', function (done) {
-        this.provider.use(this.assertOnce((ctx) => {
+        this.assertOnce((ctx) => {
           expect(ctx.oidc.entities).to.be.empty;
-        }, done));
+        }, done);
 
         this.agent.get(route).end(() => {});
       });
@@ -120,15 +96,6 @@ describe(route, () => {
                   use: 'sig',
                 },
                 {
-                  crv: 'secp256k1',
-                  x: 'ADwk2-e--j0e-BPXlgJ_d7funjsWA8fi98u2uVYQUaU',
-                  y: 'J9wWPI_2hUxe3PkygNSaiLoUlM2sBPYVREb7EvrXjq0',
-                  kty: 'EC',
-                  use: 'sig',
-                  alg: 'ES256K',
-                  kid: 'uNozOx5Tg2nsSkAWGLgOC4XbJj4pf2NFZR01Pc9Xb60',
-                },
-                {
                   crv: 'P-256',
                   x: '0pm-JC6KeQqFwxdTLsBdtnrT4hV6VDlv3AWE6BSyFSk',
                   y: 'ZvRmSa23_647WNcK_gkp5r8Jm4_9MnuyClguRYvu7Ik',
@@ -137,23 +104,15 @@ describe(route, () => {
                   use: 'sig',
                   alg: 'ES256',
                 },
-                {
-                  crv: 'Ed448',
-                  x: 'bSI-zbfp5DeKlG1-tyQi4_2OZIQdoQYv79BKtotgOkCUYLyuvVQfasiEbpv1RzMPbYLu6Qrxf7QA',
-                  kty: 'OKP',
-                  kid: 'earwWGhKnBHKVMXdJICpeZxBceKOgDkOzgkM14pm3vQ',
-                  use: 'sig',
-                  alg: 'EdDSA',
-                },
               ],
             });
           });
       });
 
       it('does not populate ctx.oidc.entities', function (done) {
-        this.provider.use(this.assertOnce((ctx) => {
+        this.assertOnce((ctx) => {
           expect(ctx.oidc.entities).to.be.empty;
-        }, done));
+        }, done);
 
         this.agent.get(route).end(() => {});
       });

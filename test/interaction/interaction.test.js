@@ -3,7 +3,6 @@
 import { strict as assert } from 'node:assert';
 
 import { expect } from 'chai';
-import KeyGrip from 'keygrip'; // eslint-disable-line import/no-extraneous-dependencies
 import { createSandbox } from 'sinon';
 
 import nanoid from '../../lib/helpers/nanoid.js';
@@ -20,7 +19,6 @@ function handlesInteractionSessionErrors() {
   it('"handles" not found interaction session id cookie', async function () {
     const cookies = [
       `_interaction=; path=${this.url}; expires=${expired.toGMTString()}; httponly`,
-      `_interaction.sig=; path=${this.url}; expires=${expired.toGMTString()}; httponly`,
     ];
     this.agent._saveCookies.bind(this.agent)({
       request: { url: this.provider.issuer },
@@ -364,19 +362,14 @@ describe('resume after consent', () => {
       params: grant,
       session,
     });
-    const keys = new KeyGrip(i(this.provider).configuration('cookies.keys'));
 
     expect(grant).to.be.ok;
 
     const cookie = `_interaction_resume=resume; path=${this.suitePath('/auth/resume')}; expires=${expire.toGMTString()}; httponly`;
     cookies.push(cookie);
-    let [pre, ...post] = cookie.split(';');
-    cookies.push([`_interaction_resume.sig=${keys.sign(pre)}`, ...post].join(';'));
 
     const sessionCookie = `_session=${session.jti || 'sess'}; path=/; expires=${expire.toGMTString()}; httponly`;
     cookies.push(sessionCookie);
-    [pre, ...post] = sessionCookie.split(';');
-    cookies.push([`_session.sig=${keys.sign(pre)}`, ...post].join(';'));
 
     if (result) {
       if (result.login && !result.login.ts) {
@@ -492,7 +485,7 @@ describe('resume after consent', () => {
       return this.agent.get('/auth/resume')
         .expect(303)
         .expect(auth.validateState)
-        .expect('set-cookie', /_session=((?!expires).)+,/) // expect a transient session cookie
+        .expect('set-cookie', /_session=((?!expires).)+/) // expect a transient session cookie
         .expect(auth.validateClientLocation)
         .expect(auth.validatePresence(['code', 'state']))
         .expect(() => {

@@ -253,7 +253,7 @@ describe('features.mTLS.certificateBoundAccessTokens', () => {
     skipConsent();
 
     beforeEach(async function () {
-      const auth = new this.AuthorizationRequest({
+      const auth = this.auth = new this.AuthorizationRequest({
         response_type: 'code',
         scope: 'openid offline_access',
         prompt: 'consent',
@@ -277,6 +277,7 @@ describe('features.mTLS.certificateBoundAccessTokens', () => {
           .auth('client', 'secret')
           .send({
             grant_type: 'authorization_code',
+            code_verifier: this.auth.code_verifier,
             code: this.code,
             redirect_uri: 'https://client.example.com/cb',
           })
@@ -298,6 +299,7 @@ describe('features.mTLS.certificateBoundAccessTokens', () => {
           .auth('client', 'secret')
           .send({
             grant_type: 'authorization_code',
+            code_verifier: this.auth.code_verifier,
             code: this.code,
             redirect_uri: 'https://client.example.com/cb',
           })
@@ -316,6 +318,7 @@ describe('features.mTLS.certificateBoundAccessTokens', () => {
           .auth('client', 'secret')
           .send({
             grant_type: 'authorization_code',
+            code_verifier: this.auth.code_verifier,
             code: this.code,
             redirect_uri: 'https://client.example.com/cb',
           })
@@ -371,7 +374,7 @@ describe('features.mTLS.certificateBoundAccessTokens', () => {
     skipConsent();
 
     beforeEach(async function () {
-      const auth = new this.AuthorizationRequest({
+      const auth = this.auth = new this.AuthorizationRequest({
         client_id: 'client-none',
         response_type: 'code',
         scope: 'openid offline_access',
@@ -396,6 +399,7 @@ describe('features.mTLS.certificateBoundAccessTokens', () => {
           .send({
             client_id: 'client-none',
             grant_type: 'authorization_code',
+            code_verifier: this.auth.code_verifier,
             code: this.code,
             redirect_uri: 'https://client.example.com/cb',
           })
@@ -417,6 +421,7 @@ describe('features.mTLS.certificateBoundAccessTokens', () => {
           .send({
             client_id: 'client-none',
             grant_type: 'authorization_code',
+            code_verifier: this.auth.code_verifier,
             code: this.code,
             redirect_uri: 'https://client.example.com/cb',
           })
@@ -435,6 +440,7 @@ describe('features.mTLS.certificateBoundAccessTokens', () => {
           .send({
             client_id: 'client-none',
             grant_type: 'authorization_code',
+            code_verifier: this.auth.code_verifier,
             code: this.code,
             redirect_uri: 'https://client.example.com/cb',
           })

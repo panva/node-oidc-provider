@@ -51,7 +51,7 @@ describe('client registration policies', () => {
 
     it('runs the policies when a client is getting created', async function () {
       const spy = sinon.spy(
-        i(this.provider).configuration('features.registration.policies'),
+        i(this.provider).features.registration.policies,
         'empty-policy',
       );
       const value = await new this.provider.InitialAccessToken({
@@ -68,7 +68,7 @@ describe('client registration policies', () => {
     });
 
     it('allows for policies to set property defaults', async function () {
-      i(this.provider).configuration('features.registration.policies')['set-default'] = (
+      i(this.provider).features.registration.policies['set-default'] = (
         ctx,
         properties,
       ) => {
@@ -104,7 +104,7 @@ describe('client registration policies', () => {
     });
 
     it('allows for policies to force property values', async function () {
-      i(this.provider).configuration('features.registration.policies')['force-default'] = (
+      i(this.provider).features.registration.policies['force-default'] = (
         ctx,
         properties,
       ) => {
@@ -129,7 +129,7 @@ describe('client registration policies', () => {
     });
 
     it('allows for policies to validate property values', async function () {
-      i(this.provider).configuration('features.registration.policies')['throw-error'] = () => {
+      i(this.provider).features.registration.policies['throw-error'] = () => {
         throw new errors.InvalidClientMetadata('foo');
       };
 
@@ -170,7 +170,7 @@ describe('client registration policies', () => {
     });
 
     it('can be done to push different policies to rat', async function () {
-      i(this.provider).configuration('features.registration.policies')['change-rat-policy'] = async (ctx) => {
+      i(this.provider).features.registration.policies['change-rat-policy'] = async (ctx) => {
         ctx.oidc.entities.RegistrationAccessToken.policies = ['empty-policy'];
       };
 
@@ -295,7 +295,7 @@ describe('client registration policies', () => {
         policies: ['empty-policy'],
       });
       const spy = sinon.spy(
-        i(this.provider).configuration('features.registration.policies'),
+        i(this.provider).features.registration.policies,
         'empty-policy',
       );
 
@@ -310,7 +310,7 @@ describe('client registration policies', () => {
     });
 
     it('allows for policies to set property defaults', async function () {
-      i(this.provider).configuration('features.registration.policies')['set-default'] = (
+      i(this.provider).features.registration.policies['set-default'] = (
         ctx,
         properties,
       ) => {
@@ -347,7 +347,7 @@ describe('client registration policies', () => {
     });
 
     it('allows for policies to force property values', async function () {
-      i(this.provider).configuration('features.registration.policies')['force-value'] = (
+      i(this.provider).features.registration.policies['force-value'] = (
         ctx,
         properties,
       ) => {
@@ -372,7 +372,7 @@ describe('client registration policies', () => {
     });
 
     it('allows for policies to validate property values', async function () {
-      i(this.provider).configuration('features.registration.policies')['throw-error'] = () => {
+      i(this.provider).features.registration.policies['throw-error'] = () => {
         throw new errors.InvalidClientMetadata('foo');
       };
       this.TestAdapter.for('RegistrationAccessToken').syncUpdate(this.getTokenJti(this.rat), {
@@ -393,12 +393,12 @@ describe('client registration policies', () => {
 
     describe('rotateRegistrationAccessToken', () => {
       before(function () {
-        const conf = i(this.provider).configuration();
+        const conf = i(this.provider).configuration;
         conf.features.registrationManagement = { rotateRegistrationAccessToken: true };
       });
 
       after(function () {
-        const conf = i(this.provider).configuration();
+        const conf = i(this.provider).configuration;
         conf.features.registrationManagement = { rotateRegistrationAccessToken: false };
       });
 
