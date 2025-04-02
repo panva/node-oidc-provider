@@ -3,7 +3,6 @@ import { createWriteStream, writeFileSync } from 'node:fs';
 import * as stream from 'node:stream';
 import { promisify } from 'node:util';
 
-import got from 'got'; // eslint-disable-line import/no-unresolved
 import ms from 'ms';
 
 import debug from './debug.js';
@@ -14,104 +13,107 @@ const FINISHED = new Set(['FINISHED']);
 const RESULTS = new Set(['REVIEW', 'PASSED', 'WARNING', 'SKIPPED']);
 
 class API {
+  #headers = new Headers({ accept: 'application/json' });
+
+  #baseUrl;
+
   constructor({ baseUrl, bearerToken } = {}) {
     assert(baseUrl, 'argument property "baseUrl" missing');
-
-    const { get, post } = got.extend({
-      prefixUrl: baseUrl,
-      throwHttpErrors: false,
-      followRedirect: false,
-      headers: {
-        ...(bearerToken ? { authorization: `bearer ${bearerToken}` } : undefined),
-        'content-type': 'application/json',
-      },
-      responseType: 'json',
-      retry: { limit: 0 },
-      https: {
-        rejectUnauthorized: process.env.NODE_TLS_REJECT_UNAUTHORIZED !== '0',
-      },
-    });
-
-    this.get = get;
-    this.post = post;
-
-    this.stream = got.extend({
-      prefixUrl: baseUrl,
-      throwHttpErrors: false,
-      followRedirect: false,
-      headers: {
-        ...(bearerToken ? { authorization: `bearer ${bearerToken}` } : undefined),
-        'content-type': 'application/json',
-      },
-      retry: { limit: 0 },
-      https: {
-        rejectUnauthorized: process.env.NODE_TLS_REJECT_UNAUTHORIZED !== '0',
-      },
-    }).stream;
+    this.#baseUrl = baseUrl;
+    if (bearerToken) {
+      this.#headers.set('authorization', `bearer ${bearerToken}`);
+    }
   }
 
   async getAllTestModules() {
-    const { statusCode, body: response } = await this.get('api/runner/available');
+    const response = await fetch(new URL('api/runner/available', this.#baseUrl), { headers: this.#headers });
 
-    assert.equal(statusCode, 200);
+    try {
+      assert.equal(response.status, 200);
+    } catch (err) {
+      throw new Error('unexpected response code', { cause: [response.status, await response.text()] });
+    }
 
-    return response;
+    return response.json();
   }
 
   async createTestPlan({ planName, configuration, variant } = {}) {
     assert(planName, 'argument property "planName" missing');
     assert(configuration, 'argument property "configuration" missing');
 
-    const { statusCode, body: response } = await this.post('api/plan', {
-      searchParams: {
-        planName,
-        ...(variant ? { variant } : undefined),
-      },
-      json: configuration,
+    const headers = new Headers(this.#headers);
+    headers.set('content-type', 'application/json');
+
+    const url = new URL('api/plan', this.#baseUrl);
+    url.searchParams.set('planName', planName);
+    if (variant) {
+      url.searchParams.set('variant', variant);
+    }
+
+    const response = await fetch(url, {
+      method: 'POST',
+      headers,
+      body: JSON.stringify(configuration),
     });
 
-    assert.equal(statusCode, 201);
+    try {
+      assert.equal(response.status, 201);
+    } catch (err) {
+      throw new Error('unexpected response code', { cause: [response.status, await response.text()] });
+    }
 
-    return response;
+    return response.json();
   }
 
   async createTestFromPlan({ plan, test, variant } = {}) {
     assert(plan, 'argument property "plan" missing');
     assert(test, 'argument property "test" missing');
 
-    const searchParams = { test, plan };
+    const url = new URL('api/runner', this.#baseUrl);
+    url.searchParams.set('test', test);
+    url.searchParams.set('plan', plan);
+    url.searchParams.set('variant', JSON.stringify(variant));
 
-    if (variant) {
-      Object.assign(searchParams, { variant: JSON.stringify(variant) });
-    }
-
-    const { statusCode, body: response } = await this.post('api/runner', {
-      searchParams,
+    const response = await fetch(url, {
+      method: 'POST',
+      headers: this.#headers,
     });
 
-    assert.equal(statusCode, 201);
+    try {
+      assert.equal(response.status, 201);
+    } catch (err) {
+      throw new Error('unexpected response code', { cause: [response.status, await response.text()] });
+    }
 
-    return response;
+    return response.json();
   }
 
   async getModuleInfo({ moduleId } = {}) {
     assert(moduleId, 'argument property "moduleId" missing');
 
-    const { statusCode, body: response } = await this.get(`api/info/${moduleId}`);
+    const response = await fetch(new URL(`api/info/${moduleId}`, this.#baseUrl), { headers: this.#headers });
 
-    assert.equal(statusCode, 200);
+    try {
+      assert.equal(response.status, 200);
+    } catch (err) {
+      throw new Error('unexpected response code', { cause: [response.status, await response.text()] });
+    }
 
-    return response;
+    return response.json();
   }
 
   async getTestLog({ moduleId } = {}) {
     assert(moduleId, 'argument property "moduleId" missing');
 
-    const { statusCode, body: response } = await this.get(`api/log/${moduleId}`);
+    const response = await fetch(new URL(`api/log/${moduleId}`, this.#baseUrl), { headers: this.#headers });
 
-    assert.equal(statusCode, 200);
+    try {
+      assert.equal(response.status, 200);
+    } catch (err) {
+      throw new Error('unexpected response code', { cause: [response.status, await response.text()] });
+    }
 
-    return response;
+    return response.json();
   }
 
   async downloadArtifact({ planId } = {}) {
@@ -123,11 +125,18 @@ class API {
     if (process.env.GITHUB_STEP_SUMMARY) {
       writeFileSync(process.env.GITHUB_STEP_SUMMARY, `\n\nArtifact: \`${filename}\``, { flag: 'a' });
     }
+    const headers = new Headers(this.#headers);
+    headers.set('accept', 'application/zip');
+    const response = await fetch(new URL(`api/plan/exporthtml/${planId}`, this.#baseUrl), { headers });
+
+    try {
+      assert.equal(response.status, 200);
+    } catch (err) {
+      throw new Error('unexpected response code', { cause: [response.status, await response.text()] });
+    }
+
     return pipeline(
-      this.stream(`api/plan/exporthtml/${planId}`, {
-        headers: { accept: 'application/zip' },
-        responseType: 'buffer',
-      }),
+      response.body,
       createWriteStream(filename),
     );
   }
