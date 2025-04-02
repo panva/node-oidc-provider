@@ -47,20 +47,36 @@ switch (PLAN_NAME) {
     VARIANT.response_type = 'code';
     break;
   case 'oidcc-basic-certification-test-plan':
+    // TODO: unskip when https://gitlab.com/openid/conformance-suite/-/issues/1497 is fixed
+    SKIP = 'oidcc-request-uri-unsigned-supported-correctly-or-rejected-as-unsupported';
     VARIANT.server_metadata = 'discovery';
     VARIANT.client_registration = 'dynamic_client';
     break;
   case 'oidcc-hybrid-certification-test-plan':
+    // TODO: unskip when https://gitlab.com/openid/conformance-suite/-/issues/1497 is fixed
+    SKIP = 'oidcc-request-uri-unsigned-supported-correctly-or-rejected-as-unsupported';
     VARIANT.server_metadata = 'discovery';
     VARIANT.client_registration = 'dynamic_client';
     break;
   case 'oidcc-implicit-certification-test-plan':
+    // TODO: unskip when https://gitlab.com/openid/conformance-suite/-/issues/1497 is fixed
+    SKIP = 'oidcc-request-uri-unsigned-supported-correctly-or-rejected-as-unsupported';
     VARIANT.server_metadata = 'discovery';
     VARIANT.client_registration = 'dynamic_client';
     break;
   case 'fapi2-message-signing-id1-test-plan':
+    if (VARIANT.client_auth_type === 'private_key_jwt') {
+      // TODO: unskip when https://gitlab.com/openid/conformance-suite/-/issues/1443#note_2430893342 is fixed
+      SKIP = 'fapi2-security-profile-id2-par-test-pushed-authorization-url-as-audience-for-client-JWT-assertion,fapi2-security-profile-id2-par-test-token-endpoint-url-as-audience-for-client-JWT-assertion,fapi2-security-profile-id2-test-array-as-audience-for-client-JWT-assertion,fapi2-security-profile-id2-attempt-reuse-authorization-code-after-one-second';
+    }
     VARIANT.fapi_request_method = 'signed_non_repudiation';
     VARIANT.fapi_response_mode = 'jarm';
+    break;
+  case 'fapi2-security-profile-id2-test-plan':
+    if (VARIANT.client_auth_type === 'private_key_jwt') {
+      // TODO: unskip when https://gitlab.com/openid/conformance-suite/-/issues/1443#note_2430893342 is fixed
+      SKIP = 'fapi2-security-profile-id2-par-test-pushed-authorization-url-as-audience-for-client-JWT-assertion,fapi2-security-profile-id2-par-test-token-endpoint-url-as-audience-for-client-JWT-assertion,fapi2-security-profile-id2-test-array-as-audience-for-client-JWT-assertion,fapi2-security-profile-id2-attempt-reuse-authorization-code-after-one-second';
+    }
     break;
   default:
     break;
