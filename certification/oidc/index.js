@@ -16,24 +16,12 @@ import configuration from './configuration.js';
 
 const __dirname = dirname(import.meta.url);
 
-const { GOOGLE_CLIENT_ID, PORT = 3000, ISSUER = `http://localhost:${PORT}` } = process.env;
+const { PORT = 3000, ISSUER = `http://localhost:${PORT}` } = process.env;
 
 let server;
 
 try {
   const provider = new Provider(ISSUER, { ...configuration, findAccount: Account.findAccount });
-
-  if (GOOGLE_CLIENT_ID) {
-    const openid = await import('openid-client'); // eslint-disable-line import/no-unresolved
-    const google = await openid.Issuer.discover('https://accounts.google.com/.well-known/openid-configuration');
-    const googleClient = new google.Client({
-      client_id: GOOGLE_CLIENT_ID,
-      response_types: ['id_token'],
-      redirect_uris: [`${ISSUER}/interaction/callback/google`],
-      grant_types: ['implicit'],
-    });
-    provider.context.google = googleClient;
-  }
 
   // don't wanna re-bundle the interactions so just insert the login amr and acr as static whenever
   // login is submitted, usually you would submit them from your interaction
