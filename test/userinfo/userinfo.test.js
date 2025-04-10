@@ -74,7 +74,7 @@ describe('userinfo /me', () => {
 
   it('validates access token is provided', function () {
     return this.agent.get('/me')
-      .expect(this.failWith(400, 'invalid_request', 'no access token provided'));
+      .expect(this.failWith(401, 'invalid_token', 'no access token provided'));
   });
 
   it('validates the openid scope is present', async function () {
