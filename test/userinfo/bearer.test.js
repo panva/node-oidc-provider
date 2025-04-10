@@ -5,7 +5,7 @@ describe('providing Bearer token', () => {
   context('invalid requests', () => {
     it('nothing provided', function () {
       return this.agent.get('/me')
-        .expect(this.failWith(400, 'invalid_request', 'no access token provided'));
+        .expect(this.failWith(401, 'invalid_token', 'no access token provided'));
     });
 
     it('provided twice', function () {
@@ -36,18 +36,18 @@ describe('providing Bearer token', () => {
     it('[query] empty token provided', function () {
       return this.agent.get('/me')
         .query({ access_token: '' })
-        .expect(this.failWith(400, 'invalid_request', 'no access token provided'));
+        .expect(this.failWith(401, 'invalid_token', 'no access token provided'));
     });
 
     it('[body] empty token provided', function () {
       return this.agent.post('/me')
         .send('access_token=')
-        .expect(this.failWith(400, 'invalid_request', 'no access token provided'));
+        .expect(this.failWith(401, 'invalid_token', 'no access token provided'));
     });
 
     it('empty body w/ auth header', function () {
       return this.agent.post('/me')
-        .expect(this.failWith(400, 'invalid_request', 'no access token provided'));
+        .expect(this.failWith(401, 'invalid_token', 'no access token provided'));
     });
   });
 });

@@ -332,11 +332,7 @@ describe('registration features', () => {
               redirect_uris: ['https://client.example.com/cb'],
               access_token: 'foobar',
             })
-            .expect(400)
-            .expect({
-              error: 'invalid_request',
-              error_description: 'no access token provided',
-            });
+            .expect(this.failWith(401, 'invalid_token', 'no access token provided'));
         });
 
         it('allows reg calls with the access tokens as a Bearer token [header]', function () {
@@ -396,11 +392,7 @@ describe('registration features', () => {
               redirect_uris: ['https://client.example.com/cb'],
               access_token: this.token,
             })
-            .expect(400)
-            .expect({
-              error: 'invalid_request',
-              error_description: 'no access token provided',
-            });
+            .expect(this.failWith(401, 'invalid_token', 'no access token provided'));
         });
 
         it('allows reg calls with the access tokens as a Bearer token [header]', function () {
@@ -510,7 +502,7 @@ describe('registration features', () => {
 
     it('validates auth presence', function () {
       return this.agent.get(`/reg/${this.clientId}`)
-        .expect(this.failWith(400, 'invalid_request', 'no access token provided'));
+        .expect(this.failWith(401, 'invalid_token', 'no access token provided'));
     });
 
     it('validates auth', function () {
