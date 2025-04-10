@@ -462,13 +462,13 @@ export default function testHelper(importMetaUrl, {
       return token; // opaque
     }
 
-    function failWith(code, error, error_description, scope) {
+    function failWith(code, error, error_description, scope, scheme = 'Bearer') {
       return ({ status, body, headers: { 'www-authenticate': wwwAuth } }) => {
         const { provider: { issuer } } = this;
         expect(status).to.eql(code);
         expect(body).to.have.property('error', error);
         expect(body).to.have.property('error_description', error_description);
-        expect(wwwAuth).to.match(new RegExp(`^Bearer realm="${issuer}"`));
+        expect(wwwAuth).to.match(new RegExp(`^${scheme} realm="${issuer}"`));
         let check = expect(wwwAuth);
         if (error_description === 'no access token provided') {
           check = check.not.to;
