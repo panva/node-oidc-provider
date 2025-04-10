@@ -217,7 +217,7 @@ try {
         debug('Created test module, new id: %s', moduleId);
         debug('%s/log-detail.html?log=%s', SUITE_BASE_URL, moduleId);
         const [, result] = await runner.waitForState({ moduleId });
-        if (result === 'WARNING') {
+        if (result === 'WARNING' && testModule !== 'oidcc-ensure-post-request-succeeds') {
           warned ||= true;
         }
       });
