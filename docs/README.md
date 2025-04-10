@@ -2330,7 +2330,7 @@ _**default value**_:
 ```js
 {
   httpOnly: true,
-  sameSite: 'none'
+  sameSite: 'lax'
 }
 ```
 
