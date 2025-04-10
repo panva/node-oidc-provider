@@ -1079,6 +1079,21 @@
                   ]
               }
           ]
+      },
+      "oidcc-ensure-post-request-succeeds" : {
+          "browser": [
+              {
+                  "comment": "Do nothing",
+                  "match": "https://op.panva.cz/auth*",
+                  "tasks": [
+                      {
+                          "task": "Do nothing",
+                          "match": "https://op.panva.cz/auth*",
+                          "commands": []
+                      }
+                  ]
+              }
+          ]
       }
   }
 }

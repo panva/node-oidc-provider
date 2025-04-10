@@ -468,6 +468,7 @@ location / {
 - [conformIdTokenClaims](#conformidtokenclaims)
 - [cookies](#cookies)
 - [discovery](#discovery)
+- [enableHttpPostMethods](#enablehttppostmethods)
 - [expiresWithSession](#expireswithsession)
 - [extraClientMetadata](#extraclientmetadata)
 - [extraParams](#extraparams)
@@ -2379,6 +2380,16 @@ _**default value**_:
   service_documentation: undefined,
   ui_locales_supported: undefined
 }
+```
+
+### enableHttpPostMethods
+
+Enables HTTP POST Method support at the Authorization Endpoint and the Logout Endpoint (if enabled). This setting can only be used when the `cookies.long.sameSite` configuration value is `none`.  
+
+
+_**default value**_:
+```js
+false
 ```
 
 ### expiresWithSession
