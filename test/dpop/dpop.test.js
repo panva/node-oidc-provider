@@ -314,6 +314,23 @@ describe('features.dPoP', () => {
       }
     });
 
+    it("doesn't allow Bearer tokens to be passed with DPoP scheme", async function () {
+      const at = new this.provider.AccessToken({
+        accountId: this.loggedInAccountId,
+        grantId: this.getGrantId(),
+        client: await this.provider.Client.find('client'),
+        scope: 'openid',
+      });
+
+      const dpop = await at.save();
+      const proof = await DPoP(this.keypair, `${this.provider.issuer}${this.suitePath('/me')}`, 'GET', undefined, dpop);
+
+      await this.agent.get('/me')
+        .set('Authorization', `DPoP ${dpop}`)
+        .set('DPoP', proof)
+        .expect(this.failWith(401, 'invalid_token', 'invalid token provided', undefined, 'DPoP'));
+    });
+
     it('acts like an RS checking the DPoP proof and thumbprint now', async function () {
       const at = new this.provider.AccessToken({
         accountId: this.loggedInAccountId,
