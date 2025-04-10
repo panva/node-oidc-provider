@@ -42,4 +42,48 @@ describe('Provider configuration', () => {
       });
     }).to.throw('Features are not enabled/disabled with a boolean value. See the documentation for more details.');
   });
+
+  it('checks that cookies.long.sameSite is none when configuring enableHttpPostMethods', () => {
+    expect(new Configuration().enableHttpPostMethods).to.be.false;
+    expect(new Configuration({ enableHttpPostMethods: false }).enableHttpPostMethods).to.be.false;
+    expect(new Configuration({
+      enableHttpPostMethods: true,
+      cookies: {
+        long: {
+          sameSite: 'none',
+        },
+      },
+    }).enableHttpPostMethods).to.be.true;
+    new Configuration({ // eslint-disable-line no-new
+      enableHttpPostMethods: true,
+      cookies: {
+        long: {
+          sameSite: 'None',
+        },
+      },
+    });
+    new Configuration({ // eslint-disable-line no-new
+      enableHttpPostMethods: false,
+      cookies: {
+        long: {
+          sameSite: 'Lax',
+        },
+      },
+    });
+    expect(() => {
+      new Configuration({ // eslint-disable-line no-new
+        enableHttpPostMethods: true,
+      });
+    }).to.throw('HTTP POST Method support requires that cookies.long.sameSite is set to none');
+    expect(() => {
+      new Configuration({ // eslint-disable-line no-new
+        enableHttpPostMethods: true,
+        cookies: {
+          long: {
+            sameSite: 'Lax',
+          },
+        },
+      });
+    }).to.throw('HTTP POST Method support requires that cookies.long.sameSite is set to none');
+  });
 });

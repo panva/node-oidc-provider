@@ -45,4 +45,10 @@ export default () => ({
   ],
   features: {},
   enabledJWA: cloneDeep({ ...JWA }),
+  enableHttpPostMethods: true,
+  cookies: {
+    long: {
+      sameSite: 'none',
+    },
+  },
 });
