@@ -40,7 +40,11 @@ function errorDetail(spy) {
   return spy.args[0][1].error_detail;
 }
 
-describe('client authentication options', () => {
+function noW3A({ headers }) {
+  expect(headers).not.to.have.property('www-authenticate');
+}
+
+describe('client authentication methods', () => {
   before(bootstrap(import.meta.url));
 
   afterEach(assertNoPendingInterceptors);
@@ -184,6 +188,7 @@ describe('client authentication options', () => {
       .send({})
       .type('form')
       .expect(400)
+      .expect(noW3A)
       .expect({
         error: 'invalid_request',
         error_description: 'no client authentication mechanism provided',
@@ -198,6 +203,7 @@ describe('client authentication options', () => {
       })
       .type('form')
       .expect(401)
+      .expect(noW3A)
       .expect(tokenAuthRejected);
   });
 
@@ -228,6 +234,7 @@ describe('client authentication options', () => {
           expect(errorDetail(spy)).to.equal('the provided authentication mechanism does not match the registered client authentication method');
         })
         .expect(401)
+        .expect(noW3A)
         .expect(tokenAuthRejected);
     });
   });
@@ -276,6 +283,7 @@ describe('client authentication options', () => {
         .type('form')
         .auth('client-basic', 'secret')
         .expect(400)
+        .expect(noW3A)
         .expect({
           error: 'invalid_request',
           error_description: 'mismatch in body and authorization client ids',
@@ -325,6 +333,7 @@ describe('client authentication options', () => {
         .type('form')
         .set('Authorization', 'Basic')
         .expect(400)
+        .expect(noW3A)
         .expect({
           error: 'invalid_request',
           error_description: 'invalid authorization header value format',
@@ -339,6 +348,7 @@ describe('client authentication options', () => {
         .type('form')
         .auth('foo', { type: 'bearer' })
         .expect(400)
+        .expect(noW3A)
         .expect({
           error: 'invalid_request',
           error_description: 'invalid authorization header value format',
@@ -353,6 +363,7 @@ describe('client authentication options', () => {
         .type('form')
         .set('Authorization', 'Basic Zm9v')
         .expect(400)
+        .expect(noW3A)
         .expect({
           error: 'invalid_request',
           error_description: 'invalid authorization header value format',
@@ -372,8 +383,7 @@ describe('client authentication options', () => {
           expect(spy.calledOnce).to.be.true;
           expect(errorDetail(spy)).to.equal('invalid secret provided');
         })
-        .expect(401)
-        .expect(tokenAuthRejected);
+        .expect(this.failWith(401, tokenAuthRejected.error, tokenAuthRejected.error_description, undefined, 'Basic'));
     });
 
     it('rejects double auth', function () {
@@ -386,6 +396,7 @@ describe('client authentication options', () => {
         .type('form')
         .auth('client-basic', 'invalid secret')
         .expect(400)
+        .expect(noW3A)
         .expect({
           error: 'invalid_request',
           error_description: 'client authentication must only be provided using one mechanism',
@@ -401,6 +412,7 @@ describe('client authentication options', () => {
         .type('form')
         .auth('client-basic', 'invalid secret')
         .expect(400)
+        .expect(noW3A)
         .expect({
           error: 'invalid_request',
           error_description: 'client authentication must only be provided using one mechanism',
@@ -415,6 +427,7 @@ describe('client authentication options', () => {
         .type('form')
         .auth('client-basic', '')
         .expect(400)
+        .expect(noW3A)
         .expect({
           error: 'invalid_request',
           error_description: 'client_secret must be provided in the Authorization header',
@@ -429,6 +442,7 @@ describe('client authentication options', () => {
         .type('form')
         .auth('secret-expired-basic', 'secret')
         .expect(400)
+        .expect(noW3A)
         .expect({
           error: 'invalid_client',
           error_description: 'could not authenticate the client - its client secret is expired',
@@ -513,6 +527,7 @@ describe('client authentication options', () => {
           expect(errorDetail(spy)).to.equal('invalid secret provided');
         })
         .expect(401)
+        .expect(noW3A)
         .expect(tokenAuthRejected);
     });
 
@@ -531,6 +546,7 @@ describe('client authentication options', () => {
           expect(errorDetail(spy)).to.equal('the provided authentication mechanism does not match the registered client authentication method');
         })
         .expect(401)
+        .expect(noW3A)
         .expect(tokenAuthRejected);
     });
 
@@ -543,6 +559,7 @@ describe('client authentication options', () => {
         })
         .type('form')
         .expect(400)
+        .expect(noW3A)
         .expect({
           error: 'invalid_client',
           error_description: 'could not authenticate the client - its client secret is expired',
@@ -660,6 +677,7 @@ describe('client authentication options', () => {
         })
         .type('form')
         .expect(401)
+        .expect(noW3A)
         .expect(tokenAuthRejected)
         .expect(() => {
           expect(spy.calledOnce).to.be.true;
@@ -682,6 +700,7 @@ describe('client authentication options', () => {
         })
         .type('form')
         .expect(400)
+        .expect(noW3A)
         .expect({
           error: 'invalid_request',
           error_description: 'client authentication must only be provided using one mechanism',
@@ -703,6 +722,7 @@ describe('client authentication options', () => {
         })
         .type('form')
         .expect(400)
+        .expect(noW3A)
         .expect({
           error: 'invalid_request',
           error_description: 'client authentication must only be provided using one mechanism',
@@ -719,6 +739,7 @@ describe('client authentication options', () => {
         })
         .type('form')
         .expect(400)
+        .expect(noW3A)
         .expect({
           error: 'invalid_request',
           error_description: 'invalid client_assertion format',
@@ -744,6 +765,7 @@ describe('client authentication options', () => {
         })
         .type('form')
         .expect(401)
+        .expect(noW3A)
         .expect(tokenAuthRejected)
         .expect(() => {
           expect(spy.calledOnce).to.be.true;
@@ -768,6 +790,7 @@ describe('client authentication options', () => {
         })
         .type('form')
         .expect(401)
+        .expect(noW3A)
         .expect(tokenAuthRejected)
         .expect(() => {
           expect(spy.calledOnce).to.be.true;
@@ -793,6 +816,7 @@ describe('client authentication options', () => {
         })
         .type('form')
         .expect(401)
+        .expect(noW3A)
         .expect(tokenAuthRejected)
         .expect(() => {
           expect(spy.calledOnce).to.be.true;
@@ -818,6 +842,7 @@ describe('client authentication options', () => {
         })
         .type('form')
         .expect(401)
+        .expect(noW3A)
         .expect(tokenAuthRejected)
         .expect(() => {
           expect(spy.calledOnce).to.be.true;
@@ -843,6 +868,7 @@ describe('client authentication options', () => {
         })
         .type('form')
         .expect(401)
+        .expect(noW3A)
         .expect(tokenAuthRejected)
         .expect(() => {
           expect(spy.calledOnce).to.be.true;
@@ -868,6 +894,7 @@ describe('client authentication options', () => {
         })
         .type('form')
         .expect(401)
+        .expect(noW3A)
         .expect(tokenAuthRejected)
         .expect(() => {
           expect(spy.calledOnce).to.be.true;
@@ -890,6 +917,7 @@ describe('client authentication options', () => {
         })
         .type('form')
         .expect(400)
+        .expect(noW3A)
         .expect({
           error: 'invalid_request',
           error_description: 'subject of client_assertion must be the same as client_id provided in the body',
@@ -912,6 +940,7 @@ describe('client authentication options', () => {
         })
         .type('form')
         .expect(400)
+        .expect(noW3A)
         .expect({
           error: 'invalid_request',
           error_description: 'client_assertion_type must be provided',
@@ -934,6 +963,7 @@ describe('client authentication options', () => {
         })
         .type('form')
         .expect(400)
+        .expect(noW3A)
         .expect({
           error: 'invalid_request',
           error_description: 'client_assertion_type must have value urn:ietf:params:oauth:client-assertion-type:jwt-bearer',
@@ -949,6 +979,7 @@ describe('client authentication options', () => {
         })
         .type('form')
         .expect(400)
+        .expect(noW3A)
         .expect({
           error: 'invalid_request',
           error_description: 'invalid client_assertion format',
@@ -973,6 +1004,7 @@ describe('client authentication options', () => {
         })
         .type('form')
         .expect(401)
+        .expect(noW3A)
         .expect(tokenAuthRejected)
         .expect(() => {
           expect(spy.calledOnce).to.be.true;
@@ -997,6 +1029,7 @@ describe('client authentication options', () => {
         })
         .type('form')
         .expect(400)
+        .expect(noW3A)
         .expect({
           error: 'invalid_client',
           error_description: 'could not authenticate the client - its client secret used for the client_assertion is expired',
@@ -1033,6 +1066,7 @@ describe('client authentication options', () => {
               })
               .type('form')
               .expect(401)
+              .expect(noW3A)
               .expect(tokenAuthRejected)
               .expect(() => {
                 expect(spy.calledOnce).to.be.true;
@@ -1066,6 +1100,7 @@ describe('client authentication options', () => {
           })
           .type('form')
           .expect(401)
+          .expect(noW3A)
           .expect(tokenAuthRejected)
           .expect(() => {
             expect(spy.calledOnce).to.be.true;
