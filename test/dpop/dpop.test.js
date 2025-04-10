@@ -343,14 +343,21 @@ describe('features.dPoP', () => {
       expect(spy).to.have.property('calledOnce', true);
       expect(spy.args[0][1]).to.have.property('error_detail', 'DPoP proof JWT Replay detected');
 
+      {
+        const token = 'token';
+        await this.agent.get('/me')
+          .set('Authorization', `DPoP ${token}`)
+          .set('DPoP', await DPoP(await generateKeyPair('ES256', { extractable: true }), `${this.provider.issuer}${this.suitePath('/me')}`, 'GET', undefined, token))
+          .expect(this.failWith(401, 'invalid_token', 'invalid token provided', undefined, 'DPoP'));
+      }
+
       spy = sinon.spy();
       this.provider.once('userinfo.error', spy);
 
       await this.agent.get('/me')
         .set('Authorization', `DPoP ${dpop}`)
         .set('DPoP', await DPoP(await generateKeyPair('ES256', { extractable: true }), `${this.provider.issuer}${this.suitePath('/me')}`, 'GET', undefined, dpop))
-        .expect({ error: 'invalid_token', error_description: 'invalid token provided' })
-        .expect(401);
+        .expect(this.failWith(401, 'invalid_token', 'invalid token provided', undefined, 'DPoP'));
 
       await this.agent.get('/me')
         .set('Authorization', `DPoP ${dpop}`)
@@ -366,8 +373,7 @@ describe('features.dPoP', () => {
 
       await this.agent.get('/me')
         .set('Authorization', `Bearer ${dpop}`)
-        .expect({ error: 'invalid_token', error_description: 'invalid token provided' })
-        .expect(401);
+        .expect(this.failWith(401, 'invalid_token', 'invalid token provided', undefined, 'DPoP'));
 
       expect(spy).to.have.property('calledOnce', true);
       expect(spy.args[0][1]).to.have.property('error_detail', 'failed jkt verification');
