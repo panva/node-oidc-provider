@@ -54,70 +54,70 @@ jobs:
           # Back-Channel OP
           - plan: oidcc-backchannel-rp-initiated-logout-certification-test-plan
 
-          # FAPI 2.0 Security Profile ID2
-          - plan: fapi2-security-profile-id2-test-plan
+          # FAPI 2.0 Security Profile Final
+          - plan: fapi2-security-profile-final-test-plan
             client_auth_type: private_key_jwt
             sender_constrain: dpop
             openid: openid_connect
-          - plan: fapi2-security-profile-id2-test-plan
+          - plan: fapi2-security-profile-final-test-plan
             client_auth_type: private_key_jwt
             sender_constrain: dpop
             openid: plain_oauth
-          - plan: fapi2-security-profile-id2-test-plan
+          - plan: fapi2-security-profile-final-test-plan
             client_auth_type: private_key_jwt
             sender_constrain: mtls
             openid: openid_connect
-          - plan: fapi2-security-profile-id2-test-plan
+          - plan: fapi2-security-profile-final-test-plan
             client_auth_type: private_key_jwt
             sender_constrain: mtls
             openid: plain_oauth
-          - plan: fapi2-security-profile-id2-test-plan
+          - plan: fapi2-security-profile-final-test-plan
             client_auth_type: mtls
             sender_constrain: dpop
             openid: openid_connect
-          - plan: fapi2-security-profile-id2-test-plan
+          - plan: fapi2-security-profile-final-test-plan
             client_auth_type: mtls
             sender_constrain: dpop
             openid: plain_oauth
-          - plan: fapi2-security-profile-id2-test-plan
+          - plan: fapi2-security-profile-final-test-plan
             client_auth_type: mtls
             sender_constrain: mtls
             openid: openid_connect
-          - plan: fapi2-security-profile-id2-test-plan
+          - plan: fapi2-security-profile-final-test-plan
             client_auth_type: mtls
             sender_constrain: mtls
             openid: plain_oauth
 
-          # FAPI 2.0 Message Signing ID1
-          - plan: fapi2-message-signing-id1-test-plan
+          # FAPI 2.0 Message Signing Final
+          - plan: fapi2-message-signing-final-test-plan
             client_auth_type: private_key_jwt
             sender_constrain: dpop
             openid: openid_connect
-          - plan: fapi2-message-signing-id1-test-plan
+          - plan: fapi2-message-signing-final-test-plan
             client_auth_type: private_key_jwt
             sender_constrain: dpop
             openid: plain_oauth
-          - plan: fapi2-message-signing-id1-test-plan
+          - plan: fapi2-message-signing-final-test-plan
             client_auth_type: private_key_jwt
             sender_constrain: mtls
             openid: openid_connect
-          - plan: fapi2-message-signing-id1-test-plan
+          - plan: fapi2-message-signing-final-test-plan
             client_auth_type: private_key_jwt
             sender_constrain: mtls
             openid: plain_oauth
-          - plan: fapi2-message-signing-id1-test-plan
+          - plan: fapi2-message-signing-final-test-plan
             client_auth_type: mtls
             sender_constrain: dpop
             openid: openid_connect
-          - plan: fapi2-message-signing-id1-test-plan
+          - plan: fapi2-message-signing-final-test-plan
             client_auth_type: mtls
             sender_constrain: dpop
             openid: plain_oauth
-          - plan: fapi2-message-signing-id1-test-plan
+          - plan: fapi2-message-signing-final-test-plan
             client_auth_type: mtls
             sender_constrain: mtls
             openid: openid_connect
-          - plan: fapi2-message-signing-id1-test-plan
+          - plan: fapi2-message-signing-final-test-plan
             client_auth_type: mtls
             sender_constrain: mtls
             openid: plain_oauth
