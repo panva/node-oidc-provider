@@ -4,6 +4,7 @@ import * as util from 'node:util';
 import sinon from 'sinon';
 import { expect } from 'chai';
 import merge from 'lodash/merge.js';
+import mergeWith from 'lodash/mergeWith.js';
 import omit from 'lodash/omit.js';
 import pull from 'lodash/pull.js';
 import cloneDeep from 'lodash/cloneDeep.js';
@@ -32,12 +33,18 @@ describe('Client metadata validation', () => {
     if (configuration) {
       provider = new Provider(
         'http://localhost',
-        merge(
+        mergeWith(
           {
             jwks: { keys },
             enabledJWA: cloneDeep(enabledJWA),
           },
           configuration,
+          (objValue, srcValue) => {
+            if (Array.isArray(objValue)) {
+              return srcValue;
+            }
+            return undefined;
+          },
         ),
       );
     } else {
@@ -2007,4 +2014,41 @@ describe('Client metadata validation', () => {
       });
     },
   );
+
+  describe('OpenID Connect Relying Party Metadata Choices 1.0', () => {
+    const configuration = {
+      features: {
+        rpMetadataChoices: {
+          enabled: true,
+        },
+      },
+    };
+
+    context('id_token_signing_alg_values_supported', function () {
+      defaultsTo(this.title, undefined);
+      defaultsTo(this.title, undefined, undefined, configuration);
+      mustBeArray(this.title, undefined, configuration);
+      // picks an explicit value if it's in the choice list
+      const supported = ['PS256', 'ES256', 'RS256'];
+      for (const alg of supported) {
+        defaultsTo('id_token_signed_response_alg', alg, {
+          id_token_signed_response_alg: alg,
+          id_token_signing_alg_values_supported: ['PS256', 'RS256', 'ES256'],
+        }, configuration);
+      }
+      // rejects a choice if it includes non-string values
+      rejects(this.title, [0], `${this.title} must only contain strings`, undefined, configuration);
+      // rejects a choice if an explicit value is not in it
+      rejects(this.title, ['ES256'], `${this.title} must include the value of provided id_token_signed_response_alg`, {
+        id_token_signed_response_alg: 'RS256',
+      }, configuration);
+      // rejects a choice if there are no supported values in it
+      rejects(this.title, ['ES256'], `${this.title} includes no supported values`, undefined, {
+        ...configuration,
+        enabledJWA: {
+          idTokenSigningAlgValues: ['RS256'],
+        },
+      });
+    });
+  });
 });

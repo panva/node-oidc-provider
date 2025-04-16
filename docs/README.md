@@ -457,6 +457,7 @@ location / {
   - Experimental features:
     - [externalSigningSupport (e.g. KMS)](#featuresexternalsigningsupport)
     - [richAuthorizationRequests](#featuresrichauthorizationrequests)
+    - [rpMetadataChoices](#featuresrpmetadatachoices)
     - [webMessageResponseMode](#featureswebmessageresponsemode)
 - [acrValues](#acrvalues)
 - [allowOmittingSingleRegisteredRedirectUri](#allowomittingsingleregisteredredirecturi)
@@ -2080,6 +2081,43 @@ async function postLogoutSuccessSource(ctx) {
 ```
 
 </details>
+
+### features.rpMetadataChoices
+
+[`OIDC Relying Party Metadata Choices 1.0 - draft 02`](https://openid.net/specs/openid-connect-rp-metadata-choices-1_0-02.html)  
+
+> [!NOTE]
+> This is an experimental feature.
+
+Enables the use of the following multi-valued input parameters metadata from the Relying Party Metadata Choices draft assuming their underlying feature is also enabled:   
+ - subject_types_supported
+ - id_token_signing_alg_values_supported
+ - id_token_encryption_alg_values_supported
+ - id_token_encryption_enc_values_supported
+ - userinfo_signing_alg_values_supported
+ - userinfo_encryption_alg_values_supported
+ - userinfo_encryption_enc_values_supported
+ - request_object_signing_alg_values_supported
+ - request_object_encryption_alg_values_supported
+ - request_object_encryption_enc_values_supported
+ - token_endpoint_auth_methods_supported
+ - token_endpoint_auth_signing_alg_values_supported
+ - introspection_signing_alg_values_supported
+ - introspection_encryption_alg_values_supported
+ - introspection_encryption_enc_values_supported
+ - authorization_signing_alg_values_supported
+ - authorization_encryption_alg_values_supported
+ - authorization_encryption_enc_values_supported
+ - backchannel_authentication_request_signing_alg_values_supported  
+
+
+_**default value**_:
+```js
+{
+  ack: undefined,
+  enabled: false
+}
+```
 
 ### features.userinfo
 
