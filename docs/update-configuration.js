@@ -16,6 +16,7 @@ for (const [key, value] of Object.entries(defaults.ttl)) {
     value[inspect.custom] = () => (
       value.toString()
         .replace(/ {6}/g, '  ')
+        // eslint-disable-next-line redos/no-vulnerable
         .replace(/\s+}$/, '\n}')
         .split('\n')
         .filter((line) => !line.includes('Change'))
