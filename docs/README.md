@@ -1137,7 +1137,10 @@ _**default value**_:
 
 External Signing Support  
 
-Enables the use of the exported `ExternalSigningKey` class instances in place of a Private JWK in the `jwks.keys` configuration array. This allows Digital Signature Algorithm (such as PS256, ES256, or others) signatures to be produced externally, for example via a KMS service or an HSM. This is an experimental feature.   
+> [!NOTE]
+> This is an experimental feature.
+
+Enables the use of the exported `ExternalSigningKey` class instances in place of a Private JWK in the `jwks.keys` configuration array. This allows Digital Signature Algorithm (such as PS256, ES256, or others) signatures to be produced externally, for example via a KMS service or an HSM.   
   
 
 See [KMS integration with AWS Key Management Service](https://github.com/panva/node-oidc-provider/discussions/1316)
@@ -1853,7 +1856,10 @@ _**default value**_:
 
 [`RFC9396`](https://www.rfc-editor.org/rfc/rfc9396.html) - OAuth 2.0 Rich Authorization Requests  
 
-Enables the use of `authorization_details` parameter for the authorization and token endpoints to enable issuing Access Tokens with fine-grained authorization data. This is an experimental feature.  
+> [!NOTE]
+> This is an experimental feature.
+
+Enables the use of `authorization_details` parameter for the authorization and token endpoints to enable issuing Access Tokens with fine-grained authorization data.  
 
 
 _**default value**_:
@@ -2114,7 +2120,10 @@ _**default value**_:
 
 [draft-sakimura-oauth-wmrm-01](https://tools.ietf.org/html/draft-sakimura-oauth-wmrm-01) - OAuth 2.0 Web Message Response Mode  
 
-Enables `web_message` response mode. Only Simple Mode is supported. Requests containing the Relay Mode parameters will be rejected. This is an experimental feature.   
+> [!NOTE]
+> This is an experimental feature.
+
+Enables `web_message` response mode. Only Simple Mode is supported. Requests containing the Relay Mode parameters will be rejected.   
   
 
 _**recommendation**_: Although a general advise to use a `helmet` (e.g. for [express](https://www.npmjs.com/package/helmet), [koa](https://www.npmjs.com/package/koa-helmet)) it is especially advised for your interaction views routes if Web Message Response Mode is enabled in your deployment. You will have to experiment with removal of the Cross-Origin-Embedder-Policy and Cross-Origin-Opener-Policy headers at various endpoints throughout the authorization request end-user journey to finalize this feature.  

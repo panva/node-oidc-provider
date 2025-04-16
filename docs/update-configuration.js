@@ -256,6 +256,13 @@ try {
       append(`${section.title}  \n\n`);
     }
 
+    const value = get(defaults, block);
+
+    if (typeof value === 'object' && 'ack' in value) {
+      append('> [!NOTE]\n');
+      append('> This is an experimental feature.\n\n');
+    }
+
     if (section.description) {
       append(`${capitalizeSentences(section.description.join(' '))}  \n\n`);
     }
@@ -276,7 +283,6 @@ try {
     });
 
     if (!('@nodefault' in section)) {
-      const value = get(defaults, block);
       switch (typeof value) {
         case 'boolean':
         case 'number':
