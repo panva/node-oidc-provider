@@ -1401,7 +1401,7 @@ false
 
 ### features.registration
 
-[`Dynamic Client Registration 1.0`](https://openid.net/specs/openid-connect-registration-1_0-errata2.html) and [`RFC7591` - OAuth 2.0 Dynamic Client Registration Protocol](https://www.rfc-editor.org/rfc/rfc7591.html)  
+[`OIDC Dynamic Client Registration 1.0`](https://openid.net/specs/openid-connect-registration-1_0-errata2.html) and [`RFC7591`](https://www.rfc-editor.org/rfc/rfc7591.html) - OAuth 2.0 Dynamic Client Registration Protocol  
 
 Enables Dynamic Client Registration.  
 
@@ -1548,7 +1548,7 @@ async function secretFactory(ctx) {
 
 ### features.registrationManagement
 
-[OAuth 2.0 Dynamic Client Registration Management Protocol](https://www.rfc-editor.org/rfc/rfc7592.html)  
+[`RFC7592`](https://www.rfc-editor.org/rfc/rfc7592.html) - OAuth 2.0 Dynamic Client Registration Management Protocol  
 
 Enables Update and Delete features described in the RFC  
 
@@ -1599,7 +1599,7 @@ true
 
 ### features.requestObjects
 
-[`OIDC Core 1.0`](https://openid.net/specs/openid-connect-core-1_0-errata2.html#RequestObject) and [JWT Secured Authorization Request (`JAR`)](https://www.rfc-editor.org/rfc/rfc9101.html) - Request Object  
+[`OIDC Core 1.0`](https://openid.net/specs/openid-connect-core-1_0-errata2.html#RequestObject) and [`RFC9101`](https://www.rfc-editor.org/rfc/rfc9101.html#name-passing-a-request-object-by) - Passing a Request Object by Value (`JAR`)  
 
 Enables the use and validations of the `request` parameter.  
 
@@ -2977,9 +2977,10 @@ async function pairwiseIdentifier(ctx, accountId, client) {
 
 ### pkce
 
-[`RFC7636` - Proof Key for Code Exchange (`PKCE`)](https://www.rfc-editor.org/rfc/rfc7636.html)  
+[`RFC7636`](https://www.rfc-editor.org/rfc/rfc7636.html) - Proof Key for Code Exchange (`PKCE`)  
 
-`PKCE` configuration such as available methods and policy check on required use of `PKCE`  
+`PKCE` configuration such as policy check on the required use of `PKCE`   
+  
 
 
 ### pkce.required
