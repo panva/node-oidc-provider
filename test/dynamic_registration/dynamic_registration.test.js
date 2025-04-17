@@ -3,6 +3,10 @@ import sinon from 'sinon';
 
 import bootstrap from '../test_helper.js';
 
+function noW3A({ headers }) {
+  expect(headers).not.to.have.property('www-authenticate');
+}
+
 describe('registration features', () => {
   before(bootstrap(import.meta.url));
 
@@ -292,7 +296,12 @@ describe('registration features', () => {
           grant_types: ['this is clearly wrong'],
           redirect_uris: ['https://client.example.com/cb'],
         })
-        .expect(this.failWith(400, 'invalid_client_metadata', "grant_types can only contain 'implicit', 'authorization_code', or 'refresh_token'"));
+        .expect(400)
+        .expect(noW3A)
+        .expect({
+          error: 'invalid_client_metadata',
+          error_description: "grant_types can only contain 'implicit', 'authorization_code', or 'refresh_token'",
+        });
     });
 
     it('validates the parameters to be valid and responds with redirect_uri errors', function () {
@@ -300,7 +309,12 @@ describe('registration features', () => {
         .send({
         // redirect_uris missing here
         })
-        .expect(this.failWith(400, 'invalid_redirect_uri', 'redirect_uris is mandatory property'));
+        .expect(400)
+        .expect(noW3A)
+        .expect({
+          error: 'invalid_redirect_uri',
+          error_description: 'redirect_uris is mandatory property',
+        });
     });
 
     it('only accepts application/json POSTs', function () {
@@ -310,6 +324,7 @@ describe('registration features', () => {
         })
         .type('form')
         .expect(400)
+        .expect(noW3A)
         .expect({
           error: 'invalid_request',
           error_description: 'only application/json content-type bodies are supported on POST /reg',
@@ -549,7 +564,12 @@ describe('registration features', () => {
       const bearer = await rat.save();
       return this.agent.get('/reg/client')
         .auth(bearer, { type: 'bearer' })
-        .expect(this.failWith(403, 'invalid_request', 'client does not have permission to read its record'));
+        .expect(403)
+        .expect(noW3A)
+        .expect({
+          error: 'invalid_request',
+          error_description: 'client does not have permission to read its record',
+        });
     });
   });
 });
