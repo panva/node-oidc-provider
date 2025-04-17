@@ -2,6 +2,27 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [9.0.1](https://github.com/panva/node-oidc-provider/compare/v9.0.0...v9.0.1) (2025-04-17)
+
+
+### Documentation
+
+* mark experimental features more distinctly ([986adc5](https://github.com/panva/node-oidc-provider/commit/986adc5904841bae45e50f9aec486986534d36a0))
+* update references and styling of spec links ([a4787b8](https://github.com/panva/node-oidc-provider/commit/a4787b87084dd90c94043cfabfaa317fc3c4021c))
+
+
+### Fixes
+
+* DCR endpoints only include www-authenticate for non-registration related errors ([9a864d6](https://github.com/panva/node-oidc-provider/commit/9a864d6e1af242ceb6456f2473a1925c112367b5))
+
+
+### Refactor
+
+* client schema defaults and static props ([843943d](https://github.com/panva/node-oidc-provider/commit/843943d871d05445e6af2dc8fcd636f73a2751a6))
+* handle frame-ancestors in wmrm without a regexp ([4f85585](https://github.com/panva/node-oidc-provider/commit/4f8558525f0e8025abdaa38c29eff23085694775))
+* push multiple elements to the recognized array in client_schema ([d478a8b](https://github.com/panva/node-oidc-provider/commit/d478a8bd8a3ab539cde5d695ef8a3f06c63e7778))
+* simpler DCR validate registration access token ([5f01eda](https://github.com/panva/node-oidc-provider/commit/5f01edadb81e7a9b739f65c31b738f41a7a6898e))
+
 ## [9.0.0](https://github.com/panva/node-oidc-provider/compare/v8.8.1...v9.0.0) (2025-04-15)
 
 
