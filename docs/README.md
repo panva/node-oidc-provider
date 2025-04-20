@@ -771,7 +771,7 @@ _**default value**_:
 async function validateBindingMessage(ctx, bindingMessage) {
   // @param ctx - koa request context
   // @param bindingMessage - string value of the binding_message parameter, when not provided it is undefined
-  if (bindingMessage && !/^[a-zA-Z0-9-._+/!?#]{1,20}$/.exec(bindingMessage)) {
+  if (bindingMessage?.match(/^[a-zA-Z0-9-._+/!?#]{1,20}$/) === null) {
     throw new errors.InvalidBindingMessage(
       'the binding_message value, when provided, needs to be 1 - 20 characters in length and use only a basic set of characters (matching the regex: ^[a-zA-Z0-9-._+/!?#]{1,20}$ )',
     );
@@ -1007,15 +1007,6 @@ _**default value**_:
 ```js
 async function successSource(ctx) {
   // @param ctx - koa request context
-  const {
-    clientId,
-    clientName,
-    clientUri,
-    initiateLoginUri,
-    logoUri,
-    policyUri,
-    tosUri,
-  } = ctx.oidc.client;
   ctx.body = `<!DOCTYPE html>
     <html>
     <head>
@@ -1025,7 +1016,7 @@ async function successSource(ctx) {
     <body>
       <div>
         <h1>Sign-in Success</h1>
-        <p>Your sign-in ${clientName ? `with ${clientName}` : ''} was successful, you can now close this page.</p>
+        <p>Your sign-in ${ctx.oidc.client.clientName ? `with ${ctx.oidc.client.clientName}` : ''} was successful, you can now close this page.</p>
       </div>
     </body>
     </html>`;
@@ -1045,9 +1036,6 @@ async function userCodeConfirmSource(ctx, form, client, deviceInfo, userCode) {
   //   submitted by the End-User.
   // @param deviceInfo - device information from the device_authorization_endpoint call
   // @param userCode - formatted user code by the configured mask
-  const {
-    clientId, clientName, clientUri, logoUri, policyUri, tosUri,
-  } = ctx.oidc.client;
   ctx.body = `<!DOCTYPE html>
     <html>
     <head>
@@ -1058,7 +1046,7 @@ async function userCodeConfirmSource(ctx, form, client, deviceInfo, userCode) {
       <div>
         <h1>Confirm Device</h1>
         <p>
-          <strong>${clientName || clientId}</strong>
+          <strong>${ctx.oidc.client.clientName || ctx.oidc.client.clientId}</strong>
           <br/><br/>
           The following code should be displayed on your device<br/><br/>
           <code>${userCode}</code>
@@ -2074,16 +2062,7 @@ _**default value**_:
 ```js
 async function postLogoutSuccessSource(ctx) {
   // @param ctx - koa request context
-  const {
-    clientId,
-    clientName,
-    clientUri,
-    initiateLoginUri,
-    logoUri,
-    policyUri,
-    tosUri,
-  } = ctx.oidc.client || {}; // client is defined if the user chose to stay logged in with the authorization server
-  const display = clientName || clientId;
+  const display = ctx.oidc.client?.clientName || ctx.oidc.client?.clientId;
   ctx.body = `<!DOCTYPE html>
     <html>
     <head>
@@ -2180,12 +2159,10 @@ async function assertJwtClientAuthClaimsAndHeader(ctx, claims, header, client) {
   // @param claims - parsed JWT Client Authentication Assertion Claims Set as object
   // @param header - parsed JWT Client Authentication Assertion Headers as object
   // @param client - the Client instance
-  if (ctx.oidc.isFapi('2.0')) {
-    if (claims.aud !== ctx.oidc.issuer) {
-      throw new errors.InvalidClientAuth(
-        'audience (aud) must equal the issuer identifier url',
-      );
-    }
+  if (ctx.oidc.isFapi('2.0') && claims.aud !== ctx.oidc.issuer) {
+    throw new errors.InvalidClientAuth(
+      'audience (aud) must equal the issuer identifier url',
+    );
   }
 }
 ```
@@ -3002,27 +2979,26 @@ Configures if and when the authorization server requires clients to use `PKCE`. 
 _**default value**_:
 ```js
 function pkceRequired(ctx, client) {
-  const fapiProfile = ctx.oidc.isFapi('2.0', '1.0 Final');
-  switch (true) {
-    // FAPI 2.0 as per
-    // https://openid.net/specs/fapi-security-profile-2_0-final.html#section-5.3.2.2-2.5
-    case fapiProfile === '2.0':
-      return true;
-    // FAPI 1.0 Advanced as per
-    // https://openid.net/specs/openid-financial-api-part-2-1_0-final.html#authorization-server
-    case fapiProfile === '1.0 Final'
-      && ctx.oidc.route === 'pushed_authorization_request':
-      return true;
-    // All public clients MUST use PKCE as per
-    // https://www.rfc-editor.org/rfc/rfc9700.html#section-2.1.1-2.1
-    case client.clientAuthMethod === 'none':
-      return true;
-    // In all other cases use of PKCE is RECOMMENDED as per
-    // https://www.rfc-editor.org/rfc/rfc9700.html#section-2.1.1-2.2
-    // but the server doesn't force them to.
-    default:
-      return false;
+  // All public clients MUST use PKCE as per
+  // https://www.rfc-editor.org/rfc/rfc9700.html#section-2.1.1-2.1
+  if (client.clientAuthMethod === 'none') {
+    return true;
   }
+  const fapiProfile = ctx.oidc.isFapi('2.0', '1.0 Final');
+  // FAPI 2.0 as per
+  // https://openid.net/specs/fapi-security-profile-2_0-final.html#section-5.3.2.2-2.5
+  if (fapiProfile === '2.0') {
+    return true;
+  }
+  // FAPI 1.0 Advanced as per
+  // https://openid.net/specs/openid-financial-api-part-2-1_0-final.html#authorization-server
+  if (fapiProfile === '1.0 Final' && ctx.oidc.route === 'pushed_authorization_request') {
+    return true;
+  }
+  // In all other cases use of PKCE is RECOMMENDED as per
+  // https://www.rfc-editor.org/rfc/rfc9700.html#section-2.1.1-2.2
+  // but the server doesn't force them to.
+  return false;
 }
 ```
 
