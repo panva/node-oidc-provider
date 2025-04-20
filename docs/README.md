@@ -893,7 +893,7 @@ _**default value**_:
 
 #### allowReplay
 
-Controls whether DPoP Proof Replay Detection is used or not.  
+Controls whether DPoP Proof Replay is allowed or not.  
 
 
 _**default value**_:
