@@ -79,7 +79,7 @@
     "eslint-plugin-import": "^2.31.0",
     "eslint-plugin-redos": "^4.5.0",
     "express": "^5.1.0",
-    "fastify": "^5.3.0",
+    "fastify": "^5.3.2",
     "helmet": "^8.1.0",
     "koa-body": "^6.0.1",
     "koa-mount": "^4.0.0",
