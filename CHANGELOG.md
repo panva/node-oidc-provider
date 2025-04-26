@@ -2,6 +2,30 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [9.1.0](https://github.com/panva/node-oidc-provider/compare/v9.0.1...v9.1.0) (2025-04-26)
+
+
+### Features
+
+* experimental support for OIDC RP Metadata Choices ([f3550da](https://github.com/panva/node-oidc-provider/commit/f3550daff76329a5a820a85a40afebcd0638abb6))
+
+
+### Fixes
+
+* only include DPoP-Nonce in Access-Control-Expose-Headers when DPoP is enabled ([e769aa8](https://github.com/panva/node-oidc-provider/commit/e769aa85f07f48d4970aad2500e62a3042659d3c))
+
+
+### Refactor
+
+* avoid assignment operators in conditional expressions ([b7ed877](https://github.com/panva/node-oidc-provider/commit/b7ed877a5d75d1eabfefd1034d74b89c1925470a))
+* improve static find performance ([106f94a](https://github.com/panva/node-oidc-provider/commit/106f94a11f36e0ae3058b8d457ab25a82b3bc742))
+* update some default helpers for readability ([0818c36](https://github.com/panva/node-oidc-provider/commit/0818c36fc4d2004d05b3e011873d02be307de478))
+
+
+### Documentation
+
+* more clarity for features.dPoP.allowReplay ([779a141](https://github.com/panva/node-oidc-provider/commit/779a14187d22218ea770dee255d32c2fb6c25564))
+
 ## [9.0.1](https://github.com/panva/node-oidc-provider/compare/v9.0.0...v9.0.1) (2025-04-17)
 
 
