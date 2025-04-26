@@ -51,7 +51,7 @@ The following draft specifications are implemented by oidc-provider:
 
 - [Financial-grade API: Client Initiated Backchannel Authentication Profile (`FAPI-CIBA`) - Implementer's Draft 01][fapi-ciba]
 - [FAPI 2.0 Message Signing (`FAPI 2.0`) - Implementer's Draft 01][fapi2ms-id1]
-- [OIDC Relying Party Metadata Choices 1.0 - draft 01][rp-metadata-choices]
+- [OIDC Relying Party Metadata Choices 1.0 - draft 02][rp-metadata-choices]
 
 Updates to draft specification versions are released as MINOR library versions,
 if you utilize these specification implementations consider using the tilde `~` operator in your
