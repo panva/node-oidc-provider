@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [9.1.1](https://github.com/panva/node-oidc-provider/compare/v9.1.0...v9.1.1) (2025-04-28)
+
+
+### Refactor
+
+* oidc-provider now uses koa@3 ([3a83d32](https://github.com/panva/node-oidc-provider/commit/3a83d324f611e8f42e79f92f6f046721dcc5dba2))
+
 ## [9.1.0](https://github.com/panva/node-oidc-provider/compare/v9.0.1...v9.1.0) (2025-04-26)
 
 
