@@ -135,7 +135,7 @@ export default (provider) => {
           if (ctx.method === 'POST') {
             ctx.status = 303;
             return ctx.redirect(oidc.buildAuthorizationUrl(google, {
-              redirect_uri: new URL(GOOGLE_CALLBACK_PATHNAME, ctx.origin),
+              redirect_uri: new URL(GOOGLE_CALLBACK_PATHNAME, ctx.request.URL.origin),
               scope: 'openid email profile',
               code_challenge: await oidc.calculatePKCECodeChallenge(code_verifier),
               code_challenge_method: 'S256',
