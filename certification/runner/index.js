@@ -47,6 +47,8 @@ switch (PLAN_NAME) {
     VARIANT.response_type = 'code';
     break;
   case 'oidcc-basic-certification-test-plan':
+    // TODO: unskip when https://gitlab.com/openid/conformance-suite/-/issues/1519 is fixed
+    SKIP = 'oidcc-ensure-post-request-succeeds';
     VARIANT.server_metadata = 'discovery';
     VARIANT.client_registration = 'dynamic_client';
     break;
@@ -59,18 +61,8 @@ switch (PLAN_NAME) {
     VARIANT.client_registration = 'dynamic_client';
     break;
   case 'fapi2-message-signing-final-test-plan':
-    if (VARIANT.client_auth_type === 'private_key_jwt') {
-      // TODO: unskip when https://gitlab.com/openid/conformance-suite/-/issues/1498 is fixed
-      SKIP = 'fapi2-security-profile-final-attempt-reuse-authorization-code-after-one-second';
-    }
     VARIANT.fapi_request_method = 'signed_non_repudiation';
     VARIANT.fapi_response_mode = 'jarm';
-    break;
-  case 'fapi2-security-profile-final-test-plan':
-    if (VARIANT.client_auth_type === 'private_key_jwt') {
-      // TODO: unskip when https://gitlab.com/openid/conformance-suite/-/issues/1498 is fixed
-      SKIP = 'fapi2-security-profile-final-attempt-reuse-authorization-code-after-one-second';
-    }
     break;
   default:
     break;
