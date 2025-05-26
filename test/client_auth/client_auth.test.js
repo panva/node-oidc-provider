@@ -1,8 +1,8 @@
-import { createPrivateKey, X509Certificate } from 'node:crypto';
+import { createPrivateKey, X509Certificate, generateKeyPairSync } from 'node:crypto';
 import { readFileSync } from 'node:fs';
 import { request } from 'node:http';
 
-import { importJWK } from 'jose';
+import { importJWK, SignJWT } from 'jose';
 import sinon from 'sinon';
 import { expect } from 'chai';
 import cloneDeep from 'lodash/cloneDeep.js';
@@ -286,7 +286,7 @@ describe('client authentication methods', () => {
         .expect(noW3A)
         .expect({
           error: 'invalid_request',
-          error_description: 'mismatch in body and authorization client ids',
+          error_description: 'client_id mismatch',
         });
     });
 
@@ -920,7 +920,7 @@ describe('client authentication methods', () => {
         .expect(noW3A)
         .expect({
           error: 'invalid_request',
-          error_description: 'subject of client_assertion must be the same as client_id provided in the body',
+          error_description: 'client_id mismatch',
         }));
     });
 
@@ -1153,6 +1153,395 @@ describe('client authentication methods', () => {
         })
         .type('form')
         .expect(tokenAuthSucceeded));
+    });
+  });
+
+  describe('attest_jwt_client_auth auth', () => {
+    let challenge;
+    before(async function () {
+      const response = await this.agent.post('/challenge');
+      expect(response.body).to.have.property('attestation_challenge');
+      expect(response.headers['oauth-client-attestation-challenge']).to.equal(response.body.attestation_challenge);
+      challenge = response.body.attestation_challenge;
+    });
+
+    const privateKey = createPrivateKey({ format: 'jwk', key: clientKey });
+    const instanceKeyPair = generateKeyPairSync('ed25519');
+
+    it('accepts the auth', async function () {
+      const [attestation, pop] = await Promise.all([
+        new SignJWT({
+          cnf: {
+            jwk: instanceKeyPair.publicKey.export({ format: 'jwk' }),
+          },
+        })
+          .setProtectedHeader({
+            typ: 'oauth-client-attestation+jwt',
+            alg: 'RS256',
+          })
+          .setIssuer('https://attester.example.com')
+          .setSubject('attest_jwt_client_auth')
+          .setExpirationTime('2h')
+          .sign(privateKey),
+        new SignJWT({ challenge })
+          .setProtectedHeader({
+            typ: 'oauth-client-attestation-pop+jwt',
+            alg: 'Ed25519',
+          })
+          .setIssuer('attest_jwt_client_auth')
+          .setAudience(this.provider.issuer)
+          .setJti(nanoid())
+          .sign(instanceKeyPair.privateKey),
+      ]);
+
+      return this.agent.post(route)
+        .set('OAuth-Client-Attestation', attestation)
+        .set('OAuth-Client-Attestation-PoP', pop)
+        .send({
+          grant_type: 'foo',
+        })
+        .type('form')
+        .expect(tokenAuthSucceeded);
+    });
+
+    describe('oauth-client-attestation', () => {
+      before(function () {
+        this.signPop = () => new SignJWT({ challenge })
+          .setProtectedHeader({
+            typ: 'oauth-client-attestation-pop+jwt',
+            alg: 'Ed25519',
+          })
+          .setIssuer('attest_jwt_client_auth')
+          .setAudience(this.provider.issuer)
+          .setJti(nanoid())
+          .sign(instanceKeyPair.privateKey);
+      });
+
+      it('checks all required properties and their values', async function () {
+        for (const attestation of await Promise.all([
+          new SignJWT({
+            cnf: {
+              jwk: instanceKeyPair.publicKey.export({ format: 'jwk' }),
+            },
+          })
+            .setProtectedHeader({
+              typ: 'oauth-client-attestation+jwt',
+              alg: 'RS256',
+            })
+            // .setIssuer('https://attester.example.com')
+            .setSubject('attest_jwt_client_auth')
+            .setExpirationTime('2h')
+            .sign(privateKey),
+          new SignJWT({
+            cnf: {
+              jwk: instanceKeyPair.publicKey.export({ format: 'jwk' }),
+            },
+          })
+            .setProtectedHeader({
+              typ: 'oauth-client-attestation+jwt',
+              alg: 'RS256',
+            })
+            .setIssuer('foo')
+            .setSubject('attest_jwt_client_auth')
+            .setExpirationTime('2h')
+            .sign(privateKey),
+          new SignJWT({
+            cnf: {
+              jwk: instanceKeyPair.publicKey.export({ format: 'jwk' }),
+            },
+          })
+            .setProtectedHeader({
+              typ: 'oauth-client-attestation+jwt',
+              alg: 'RS256',
+            })
+            .setIssuer('https://attester.example.com')
+            // .setSubject('attest_jwt_client_auth')
+            .setExpirationTime('2h')
+            .sign(privateKey),
+          new SignJWT({
+            cnf: {
+              jwk: instanceKeyPair.publicKey.export({ format: 'jwk' }),
+            },
+          })
+            .setProtectedHeader({
+              typ: 'oauth-client-attestation+jwt',
+              alg: 'RS256',
+            })
+            .setIssuer('https://attester.example.com')
+            .setSubject('foo')
+            .setExpirationTime('2h')
+            .sign(privateKey),
+          new SignJWT({
+            cnf: {
+              jwk: instanceKeyPair.publicKey.export({ format: 'jwk' }),
+            },
+          })
+            .setProtectedHeader({
+              typ: 'oauth-client-attestation+jwt',
+              alg: 'RS256',
+            })
+            .setIssuer('https://attester.example.com')
+            .setSubject('attest_jwt_client_auth')
+            // .setExpirationTime('2h')
+            .sign(privateKey),
+          new SignJWT({
+            cnf: {
+              jwk: instanceKeyPair.publicKey.export({ format: 'jwk' }),
+            },
+          })
+            .setProtectedHeader({
+              typ: 'oauth-client-attestation+jwt',
+              alg: 'RS256',
+            })
+            .setIssuer('https://attester.example.com')
+            .setSubject('attest_jwt_client_auth')
+            .setExpirationTime(0)
+            .sign(privateKey),
+          new SignJWT({
+            cnf: {
+              // jwk: instanceKeyPair.publicKey.export({ format: 'jwk' }),
+            },
+          })
+            .setProtectedHeader({
+              typ: 'oauth-client-attestation+jwt',
+              alg: 'RS256',
+            })
+            .setIssuer('https://attester.example.com')
+            .setSubject('attest_jwt_client_auth')
+            .setExpirationTime('2h')
+            .sign(privateKey),
+          new SignJWT({
+            // cnf: {
+            //   jwk: instanceKeyPair.publicKey.export({ format: 'jwk' }),
+            // },
+          })
+            .setProtectedHeader({
+              typ: 'oauth-client-attestation+jwt',
+              alg: 'RS256',
+            })
+            .setIssuer('https://attester.example.com')
+            .setSubject('attest_jwt_client_auth')
+            .setExpirationTime('2h')
+            .sign(privateKey),
+          new SignJWT({
+            cnf: {
+              jwk: instanceKeyPair.publicKey.export({ format: 'jwk' }),
+            },
+          })
+            .setProtectedHeader({
+              // typ: 'oauth-client-attestation+jwt',
+              alg: 'RS256',
+            })
+            .setIssuer('https://attester.example.com')
+            .setSubject('attest_jwt_client_auth')
+            .setExpirationTime('2h')
+            .sign(privateKey),
+          new SignJWT({
+            cnf: {
+              jwk: instanceKeyPair.publicKey.export({ format: 'jwk' }),
+            },
+          })
+            .setProtectedHeader({
+              typ: 'foo',
+              alg: 'RS256',
+            })
+            .setIssuer('https://attester.example.com')
+            .setSubject('attest_jwt_client_auth')
+            .setExpirationTime('2h')
+            .sign(privateKey),
+        ])) {
+          await this.agent.post(route)
+            .set('OAuth-Client-Attestation', attestation)
+            .set('OAuth-Client-Attestation-PoP', await this.signPop())
+            .send({
+              grant_type: 'foo',
+            })
+            .type('form')
+            .expect(tokenAuthRejected);
+        }
+      });
+    });
+
+    describe('oauth-client-attestation-pop', () => {
+      before(function () {
+        this.signAttestation = () => new SignJWT({
+          cnf: {
+            jwk: instanceKeyPair.publicKey.export({ format: 'jwk' }),
+          },
+        })
+          .setProtectedHeader({
+            typ: 'oauth-client-attestation+jwt',
+            alg: 'RS256',
+          })
+          .setIssuer('https://attester.example.com')
+          .setSubject('attest_jwt_client_auth')
+          .setExpirationTime('2h')
+          .sign(privateKey);
+      });
+
+      it('must not be re-used', async function () {
+        const pop = await new SignJWT({ challenge })
+          .setProtectedHeader({
+            typ: 'oauth-client-attestation-pop+jwt',
+            alg: 'Ed25519',
+          })
+          .setIssuer('attest_jwt_client_auth')
+          .setAudience(this.provider.issuer)
+          .setJti(nanoid())
+          .sign(instanceKeyPair.privateKey);
+
+        await this.agent.post(route)
+          .set('OAuth-Client-Attestation', await this.signAttestation())
+          .set('OAuth-Client-Attestation-PoP', pop)
+          .send({
+            grant_type: 'foo',
+          })
+          .type('form')
+          .expect(tokenAuthSucceeded);
+
+        await this.agent.post(route)
+          .set('OAuth-Client-Attestation', await this.signAttestation())
+          .set('OAuth-Client-Attestation-PoP', pop)
+          .send({
+            grant_type: 'foo',
+          })
+          .type('form')
+          .expect(tokenAuthRejected);
+      });
+
+      describe('challenge handling', async () => {
+        it('requires challenge to be present', async function () {
+          const pop = await new SignJWT({ challenge: undefined })
+            .setProtectedHeader({
+              typ: 'oauth-client-attestation-pop+jwt',
+              alg: 'Ed25519',
+            })
+            .setIssuer('attest_jwt_client_auth')
+            .setAudience(this.provider.issuer)
+            .setJti(nanoid())
+            .sign(instanceKeyPair.privateKey);
+
+          await this.agent.post(route)
+            .set('OAuth-Client-Attestation', await this.signAttestation())
+            .set('OAuth-Client-Attestation-PoP', pop)
+            .send({
+              grant_type: 'foo',
+            })
+            .type('form')
+            .expect(400)
+            .expect('OAuth-Client-Attestation-Challenge', /^[A-Za-z0-9_-]+$/)
+            .expect({ error: 'use_attestation_challenge' });
+        });
+
+        it('requires a valid challenge to be present', async function () {
+          const pop = await new SignJWT({ challenge: 'invalid' })
+            .setProtectedHeader({
+              typ: 'oauth-client-attestation-pop+jwt',
+              alg: 'Ed25519',
+            })
+            .setIssuer('attest_jwt_client_auth')
+            .setAudience(this.provider.issuer)
+            .setJti(nanoid())
+            .sign(instanceKeyPair.privateKey);
+
+          await this.agent.post(route)
+            .set('OAuth-Client-Attestation', await this.signAttestation())
+            .set('OAuth-Client-Attestation-PoP', pop)
+            .send({
+              grant_type: 'foo',
+            })
+            .type('form')
+            .expect(400)
+            .expect('OAuth-Client-Attestation-Challenge', /^[A-Za-z0-9_-]+$/)
+            .expect({ error: 'use_attestation_challenge' });
+        });
+      });
+
+      it('checks all required properties and their values', async function () {
+        for (const pop of await Promise.all([
+          new SignJWT({ challenge })
+            .setProtectedHeader({
+              typ: 'oauth-client-attestation-pop+jwt',
+              alg: 'Ed25519',
+            })
+            .setIssuer('attest_jwt_client_auth')
+            .setAudience(this.provider.issuer)
+            // .setJti(nanoid())
+            .sign(instanceKeyPair.privateKey),
+          new SignJWT({ challenge })
+            .setProtectedHeader({
+              typ: 'oauth-client-attestation-pop+jwt',
+              alg: 'Ed25519',
+            })
+            .setIssuer('attest_jwt_client_auth')
+            // .setAudience(this.provider.issuer)
+            .setJti(nanoid())
+            .sign(instanceKeyPair.privateKey),
+          new SignJWT({ challenge })
+            .setProtectedHeader({
+              typ: 'oauth-client-attestation-pop+jwt',
+              alg: 'Ed25519',
+            })
+            .setIssuer('attest_jwt_client_auth')
+            .setAudience([this.provider.issuer])
+            .setJti(nanoid())
+            .sign(instanceKeyPair.privateKey),
+          new SignJWT({ challenge })
+            .setProtectedHeader({
+              typ: 'oauth-client-attestation-pop+jwt',
+              alg: 'Ed25519',
+            })
+            .setIssuer('attest_jwt_client_auth')
+            .setAudience('foo')
+            .setJti(nanoid())
+            .sign(instanceKeyPair.privateKey),
+          new SignJWT({ challenge })
+            .setProtectedHeader({
+              typ: 'oauth-client-attestation-pop+jwt',
+              alg: 'Ed25519',
+            })
+            // .setIssuer('attest_jwt_client_auth')
+            .setAudience(this.provider.issuer)
+            .setJti(nanoid())
+            .sign(instanceKeyPair.privateKey),
+          new SignJWT({ challenge })
+            .setProtectedHeader({
+              typ: 'oauth-client-attestation-pop+jwt',
+              alg: 'Ed25519',
+            })
+            .setIssuer('foo')
+            .setAudience(this.provider.issuer)
+            .setJti(nanoid())
+            .sign(instanceKeyPair.privateKey),
+          new SignJWT({ challenge })
+            .setProtectedHeader({
+              // typ: 'oauth-client-attestation-pop+jwt',
+              alg: 'Ed25519',
+            })
+            .setIssuer('attest_jwt_client_auth')
+            .setAudience(this.provider.issuer)
+            .setJti(nanoid())
+            .sign(instanceKeyPair.privateKey),
+          new SignJWT({ challenge })
+            .setProtectedHeader({
+              typ: 'foo',
+              alg: 'Ed25519',
+            })
+            .setIssuer('attest_jwt_client_auth')
+            .setAudience(this.provider.issuer)
+            .setJti(nanoid())
+            .sign(instanceKeyPair.privateKey),
+        ])) {
+          await this.agent.post(route)
+            .set('OAuth-Client-Attestation', await this.signAttestation())
+            .set('OAuth-Client-Attestation-PoP', pop)
+            .send({
+              grant_type: 'foo',
+            })
+            .type('form')
+            .expect(tokenAuthRejected);
+        }
+      });
     });
   });
 

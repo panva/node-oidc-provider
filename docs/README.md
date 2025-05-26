@@ -470,6 +470,7 @@ location / {
   - [rpInitiatedLogout](#featuresrpinitiatedlogout)
   - [userinfo](#featuresuserinfo)
   - Experimental features:
+    - [attestClientAuth](#featuresattestclientauth)
     - [externalSigningSupport (e.g. KMS)](#featuresexternalsigningsupport)
     - [richAuthorizationRequests](#featuresrichauthorizationrequests)
     - [rpMetadataChoices](#featuresrpmetadatachoices)
@@ -636,6 +637,83 @@ new oidc.Provider('http://localhost:3000', {
 // Thrown:
 // Error: An unacknowledged version of an experimental feature is included in this oidc-provider version.
 ```
+</details>
+
+### features.attestClientAuth
+
+[`draft-ietf-oauth-attestation-based-client-auth-06`](https://www.ietf.org/archive/id/draft-ietf-oauth-attestation-based-client-auth-06.html) - OAuth 2.0 Attestation-Based Client Authentication  
+
+> [!NOTE]
+> This is an experimental feature.
+
+Enables the method `attest_jwt_client_auth` for use in the server's `clientAuthMethods` configuration.   
+  
+
+
+_**default value**_:
+```js
+{
+  ack: undefined,
+  assertAttestationJwtAndPop: [AsyncFunction: assertAttestationJwtAndPop], // see expanded details below
+  challengeSecret: undefined,
+  enabled: false,
+  getAttestationSignaturePublicKey: [AsyncFunction: getAttestationSignaturePublicKey] // see expanded details below
+}
+```
+
+<details><summary>(Click to expand) features.attestClientAuth options details</summary><br>
+
+
+#### assertAttestationJwtAndPop
+
+Helper function used to assert the Attestation JWT and Attestation JWT PoP beyond its specification definition, e.g. According to used extension profiles.   
+ At the point of this helper's invocation the Attestation JWT and Attestation JWT PoP have had their signatures and validity claims verified.  
+
+
+_**default value**_:
+```js
+async function assertAttestationJwtAndPop(ctx, attestation, pop, client) {
+  // @param ctx - koa request context
+  // @param attestation - verified and parsed Attestation JWT
+  //        attestation.protectedHeader - parsed protected header object
+  //        attestation.payload - parsed protected header object
+  //        attestation.key - CryptoKey that verified the Attestation JWT signature
+  // @param pop - verified and parsed Attestation JWT PoP
+  //        pop.protectedHeader - parsed protected header object
+  //        pop.payload - parsed protected header object
+  //        pop.key - CryptoKey that verified the Attestation JWT PoP signature
+  // @param client - client making the request
+}
+```
+
+#### challengeSecret
+
+A secret value used for generating server-provided Client Attestation PoP JWT challenges. Must be a 32-byte length Buffer instance.  
+
+
+_**default value**_:
+```js
+undefined
+```
+
+#### getAttestationSignaturePublicKey
+
+Helper function used to verify the issuer identifier of a Client Attestation JWT and to retrieve a public key with which the Client Attestation JWT signature will be verified.   
+ At the point of this helper's invocation nothing about the Attestation JWT has been verified, only that its format is a JWT.   
+ The key may be returned as CryptoKey, KeyObject, or a JWK.  
+
+
+_**default value**_:
+```js
+async function getAttestationSignaturePublicKey(ctx, iss, header, client) {
+  // @param ctx - koa request context
+  // @param iss - Issuer Identifier from the Client Attestation JWT
+  // @param header - Protected Header of the Client Attestation JWT
+  // @param client - client making the request
+  throw new Error('features.attestClientAuth.getAttestationSignaturePublicKey not implemented');
+}
+```
+
 </details>
 
 ### features.backchannelLogout
@@ -2233,7 +2311,7 @@ true
 
 ### assertJwtClientAuthClaimsAndHeader
 
-Helper function used to validate the JWT Client Authentication Assertion Claims Set and Header beyond what its specification mandates.  
+Helper function used to validate the JWT Client Authentication (`private_key_jwt` and `client_secret_jwt`) Assertion Claims Set and Header beyond what its specification mandates.  
 
 
 _**default value**_:
@@ -3212,6 +3290,7 @@ _**default value**_:
 {
   authorization: '/auth',
   backchannel_authentication: '/backchannel',
+  challenge: '/challenge',
   code_verification: '/device',
   device_authorization: '/device/auth',
   end_session: '/session/end',
@@ -3337,6 +3416,33 @@ Configure `ttl` for a given token type with a function like so, this must return
 Fine-tune the algorithms the authorization server supports by declaring algorithm values for each respective JWA use  
 
 
+### enabledJWA.attestSigningAlgValues
+
+JWS "alg" Algorithm values the authorization server supports to verify signed Client Attestation and Client Attestation PoP JWTs with   
+  
+
+
+_**default value**_:
+```js
+[
+  'ES256',
+  'Ed25519',
+  'EdDSA'
+]
+```
+<a id="enabled-jwa-attest-signing-alg-values-supported-values-list"></a><details><summary>(Click to expand) Supported values list
+</summary><br>
+
+```js
+[
+  'RS256', 'RS384', 'RS512',
+  'PS256', 'PS384', 'PS512',
+  'ES256', 'ES384', 'ES512',
+  'Ed25519', 'EdDSA',
+]
+```
+</details>
+
 ### enabledJWA.authorizationEncryptionAlgValues
 
 JWE "alg" Algorithm values the authorization server supports for JWT Authorization response (`JARM`) encryption   
@@ -3428,7 +3534,7 @@ _**default value**_:
 
 ### enabledJWA.clientAuthSigningAlgValues
 
-JWS "alg" Algorithm values the authorization server supports for signed JWT Client Authentication   
+JWS "alg" Algorithm values the authorization server supports for signed JWT Client Authentication (`private_key_jwt` and `client_secret_jwt`)   
   
 
 

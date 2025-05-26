@@ -407,6 +407,12 @@ export default function testHelper(importMetaUrl, {
       return raw;
     }
 
+    function getSub() {
+      const sessionId = getSessionId();
+      const raw = TestAdapter.for('Session').syncFind(sessionId);
+      return raw.accountId;
+    }
+
     function getGrantId(client_id) {
       const session = getSession();
       let clientId = client_id;
@@ -488,6 +494,7 @@ export default function testHelper(importMetaUrl, {
       getSession,
       getSessionId,
       getGrantId,
+      getSub,
       getTokenJti,
       login,
       logout,
@@ -495,6 +502,7 @@ export default function testHelper(importMetaUrl, {
       TestAdapter,
       wrap,
       fetchAgent,
+      config: mod,
     });
 
     switch (mountVia) {
