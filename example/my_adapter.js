@@ -69,6 +69,8 @@ class MyAdapter {
      *     refresh token
      * - 'jkt' {string} - JWK SHA-256 Thumbprint (according to [RFC7638]) of a DPoP bound
      *     access or refresh token
+     * - 'attestationJkt' {string} - [BackchannelAuthenticationRequest, DeviceCode, RefreshToken, PushedAuthorizationRequest only]
+     *     JWK SHA-256 Thumbprint (according to [RFC7638]) of an attest_jwt_client_auth client instance
      * - gty {string} - [AccessToken, RefreshToken only] space delimited grant values, indicating
      *     the grant type(s) they originate from (implicit, authorization_code, refresh_token or
      *     device_code) the original one is always first, second is refresh_token if refreshed
