@@ -100,6 +100,51 @@ describe('FAPI 2.0 Final behaviours', () => {
     });
   });
 
+  context('allowOmittingSingleRegisteredRedirectUri', () => {
+    before(function () {
+      this.orig = i(this.provider).configuration.allowOmittingSingleRegisteredRedirectUri;
+      i(this.provider).configuration.allowOmittingSingleRegisteredRedirectUri = true;
+    });
+    after(function () {
+      i(this.provider).configuration.allowOmittingSingleRegisteredRedirectUri = this.orig;
+    });
+    before(function () { return this.login(); });
+    after(function () { return this.logout(); });
+
+    it('is ignored when FAPI 2.0 is used', async function () {
+      const emitSpy = sinon.spy();
+      const renderSpy = sinon.spy(i(this.provider).configuration, 'renderError');
+      this.provider.once('authorization.error', emitSpy);
+
+      const auth = new this.AuthorizationRequest({
+        scope: 'openid',
+        client_id: 'client',
+        response_type: 'code',
+        code_challenge_method: undefined,
+        code_challenge: undefined,
+        redirect_uri: undefined,
+      });
+
+      return this.wrap({
+        agent: this.agent,
+        route: '/auth',
+        verb: 'get',
+        auth,
+      })
+        .expect(() => {
+          renderSpy.restore();
+        })
+        .expect(400)
+        .expect(() => {
+          expect(emitSpy.calledOnce).to.be.true;
+          expect(renderSpy.calledOnce).to.be.true;
+          const renderArgs = renderSpy.args[0];
+          expect(renderArgs[1]).to.have.property('error', 'invalid_request');
+          expect(renderArgs[1]).to.have.property('error_description', "missing required parameter 'redirect_uri'");
+        });
+    });
+  });
+
   describe('Request Object', () => {
     beforeEach(function () { return this.login(); });
     afterEach(function () { return this.logout(); });
