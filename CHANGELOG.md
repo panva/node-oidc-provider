@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [9.1.2](https://github.com/panva/node-oidc-provider/compare/v9.1.1...v9.1.2) (2025-05-28)
+
+
+### Fixes
+
+* ignore allowOmittingSingleRegisteredRedirectUri when FAPI 2.0 is used ([e2de529](https://github.com/panva/node-oidc-provider/commit/e2de529bea57e9349bed54bda7f42f2e20ba8602))
+
 ## [9.1.1](https://github.com/panva/node-oidc-provider/compare/v9.1.0...v9.1.1) (2025-04-28)
 
 
