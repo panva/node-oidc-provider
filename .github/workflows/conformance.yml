@@ -213,6 +213,8 @@ jobs:
           fail-on-cache-miss: true
       - name: Run Conformance Suite
         working-directory: ./conformance-suite
+        env:
+          COMPOSE_BAKE: true
         run: |
           docker compose -f docker-compose-dev.yml up -d
           while ! curl -skfail https://localhost.emobix.co.uk:8443/api/runner/available >/dev/null; do sleep 2; done
@@ -238,6 +240,8 @@ jobs:
         if: ${{ always() }}
       - name: Stop Conformance Suite
         working-directory: ./conformance-suite
+        env:
+          COMPOSE_BAKE: true
         run: |
           killall -SIGINT node
           docker compose -f docker-compose-dev.yml down
