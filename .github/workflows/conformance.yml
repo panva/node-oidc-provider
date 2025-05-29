@@ -200,10 +200,6 @@ jobs:
           DEBUG: oidc-provider:*
           NODE_OPTIONS: --tls-cipher-list="ECDHE-RSA-AES128-GCM-SHA256 ECDHE-RSA-AES256-GCM-SHA384 ECDHE-ECDSA-AES128-GCM-SHA256 ECDHE-ECDSA-AES256-GCM-SHA384"
           NODE_TLS_REJECT_UNAUTHORIZED: 0
-      - name: Set Conformance Suite Version
-        run: |
-          export VERSION=($(curl --silent "https://gitlab.com/api/v4/projects/4175605/releases" | jq -r '.[0].tag_name'))
-          echo "VERSION=$VERSION" >> $GITHUB_ENV
       - name: Load Cached Conformance Suite Build
         uses: actions/cache@v4
         id: cache
