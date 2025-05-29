@@ -84,7 +84,7 @@
     "koa-body": "^6.0.1",
     "koa-mount": "^4.2.0",
     "lodash": "^4.17.21",
-    "mocha": "^11.4.0",
+    "mocha": "^11.5.0",
     "moment": "^2.30.1",
     "openid-client": "^6.5.0",
     "selfsigned": "^2.4.1",
