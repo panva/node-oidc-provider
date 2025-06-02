@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [9.1.3](https://github.com/panva/node-oidc-provider/compare/v9.1.2...v9.1.3) (2025-06-02)
+
+
+### Fixes
+
+* ensure an account's accountId and claims().sub is the same ([9b89153](https://github.com/panva/node-oidc-provider/commit/9b89153c0ea2f2280a26e35f3b66d1900aed7c79)), closes [#1336](https://github.com/panva/node-oidc-provider/issues/1336)
+
 ## [9.1.2](https://github.com/panva/node-oidc-provider/compare/v9.1.1...v9.1.2) (2025-05-28)
 
 
