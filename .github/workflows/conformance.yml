@@ -1,5 +1,7 @@
 name: Conformance Checks
 
+permissions: {}
+
 on:
   push:
     branches: [main]
