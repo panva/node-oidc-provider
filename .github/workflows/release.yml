@@ -1,5 +1,7 @@
 name: Release
 
+permissions: {}
+
 on:
   push:
     tags: ['v[0-9]+.[0-9]+.[0-9]+']
@@ -11,7 +13,6 @@ jobs:
     permissions:
       id-token: write
     steps:
-      - uses: GitHubSecurityLab/actions-permissions/monitor@v1
       - name: Checkout
         uses: actions/checkout@v4
         with:
@@ -33,7 +34,6 @@ jobs:
     permissions:
       contents: write
     steps:
-      - uses: GitHubSecurityLab/actions-permissions/monitor@v1
       - name: Checkout
         uses: actions/checkout@v4
         with:
@@ -45,8 +45,10 @@ jobs:
     needs:
       - npm
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      discussions: write
     steps:
-      - uses: GitHubSecurityLab/actions-permissions/monitor@v1
       - name: Checkout
         uses: actions/checkout@v4
         with:
