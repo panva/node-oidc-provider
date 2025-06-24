@@ -59,17 +59,6 @@ try {
     return next();
   });
 
-  provider.use((ctx, next) => {
-    if (ctx.path !== '/.well-known/oauth-authorization-server') {
-      return next();
-    }
-
-    ctx.path = '/.well-known/openid-configuration';
-    return next().then(() => {
-      ctx.path = '/.well-known/oauth-authorization-server';
-    });
-  });
-
   if (process.env.NODE_ENV === 'production') {
     provider.proxy = true;
 

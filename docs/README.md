@@ -305,8 +305,29 @@ provider.use(async (ctx, next) => {
 The following snippets show how a Provider instance can be mounted to existing applications with a
 path prefix `/oidc`.
 
-Note: if you mount oidc-provider to a path it's likely you will have to also update the
-[`interactions.url`](#interactionsurl) configuration to reflect the new path.
+> [!NOTE]
+> If you mount oidc-provider to a path it's likely you will have to also update the
+> [`interactions.url`](#interactionsurl) configuration to reflect the new path.
+
+> [!NOTE]
+> Depending on the value of the issuer identifier you shall make sure that the expected
+> authorization server metadata endpoints are available on the expected route
+
+> [!TIP]
+> Example: When the issuer identifier is `https://op.example.com/oidc` and you're mounting the
+> provider routes to `/oidc` the following routes must be configured on the mounted-to
+> application to be internally resolved to the respective provider routes.
+>
+> - `https://op.example.com/oidc/.well-known/openid-configuration`
+> - `https://op.example.com/.well-known/oauth-authorization-server/oidc`
+
+> [!TIP]
+> Example: When the issuer identifier is `https://op.example.com` but you're mounting the
+> provider routes to `/oidc` the following routes must be configured on the mounted-to
+> application to be internally resolved to the respective provider routes.
+>
+> - `https://op.example.com/.well-known/openid-configuration`
+> - `https://op.example.com/.well-known/oauth-authorization-server`
 
 ### to a `fastify` application
 
@@ -375,12 +396,6 @@ expressApp.use("/oidc", provider.callback());
 import mount from "koa-mount";
 koaApp.use(mount("/oidc", provider));
 ```
-
-Note: when the issuer identifier does not include the path prefix you should take care of rewriting
-your `${root}/.well-known/openid-configuration` to `${root}${prefix}/.well-known/openid-configuration`
-so that your deployment remains conform to the
-[Discovery 1.0](https://openid.net/specs/openid-connect-discovery-1_0-errata2.html#ProviderConfigurationRequest)
-specification.
 
 ## Trusting TLS offloading proxies
 

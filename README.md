@@ -18,7 +18,7 @@ The following specifications are implemented by oidc-provider (not exhaustive):
 _Note that not all features are enabled by default, check the configuration section on how to enable them._
 
 - [`RFC6749` - OAuth 2.0][oauth2] & [`OIDC` Core 1.0][core]
-- [OIDC `Discovery 1.0`][discovery]
+- [OIDC `Discovery 1.0`][discovery] & [`RFC8414` Authorization Server Metadata][rfc8414]
 - Dynamic Client Registration
   - [OIDC `Dynamic Client Registration 1.0`][registration]
   - [`RFC7591` - OAuth 2.0 Dynamic Client Registration Protocol][oauth2-registration]
@@ -167,3 +167,4 @@ actions and i.e. emit metrics that react to specific triggers. See the list of a
 [fapi2ms-id1]: https://openid.net/specs/fapi-2_0-message-signing-ID1.html
 [Security Policy]: https://github.com/panva/node-oidc-provider/security/policy
 [rp-metadata-choices]: https://openid.net/specs/openid-connect-rp-metadata-choices-1_0-02.html
+[rfc8414]: https://www.rfc-editor.org/rfc/rfc8414.html
