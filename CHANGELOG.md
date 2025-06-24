@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [9.2.0](https://github.com/panva/node-oidc-provider/compare/v9.1.3...v9.2.0) (2025-06-24)
+
+
+### Features
+
+* expose RFC8414 Authorization Server Metadata route ([c5bd90f](https://github.com/panva/node-oidc-provider/commit/c5bd90f2021e7614115873202482b46e36388b39))
+
 ## [9.1.3](https://github.com/panva/node-oidc-provider/compare/v9.1.2...v9.1.3) (2025-06-02)
 
 
