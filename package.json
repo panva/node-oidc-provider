@@ -56,7 +56,7 @@
   },
   "dependencies": {
     "@koa/cors": "^5.0.0",
-    "@koa/router": "^13.1.0",
+    "@koa/router": "^13.1.1",
     "debug": "^4.4.1",
     "eta": "^3.5.0",
     "jose": "^6.0.11",
@@ -86,11 +86,11 @@
     "lodash": "^4.17.21",
     "mocha": "^11.7.1",
     "moment": "^2.30.1",
-    "openid-client": "^6.6.1",
+    "openid-client": "^6.6.2",
     "selfsigned": "^2.4.1",
     "sinon": "^21.0.0",
     "supertest": "^7.1.1",
     "timekeeper": "^2.3.1",
-    "undici": "^7.10.0"
+    "undici": "^7.11.0"
   }
 }
