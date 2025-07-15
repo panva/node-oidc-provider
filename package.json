@@ -72,7 +72,7 @@
     "@hapi/hapi": "^21.4.0",
     "@koa/ejs": "^5.1.0",
     "base64url": "^3.0.1",
-    "chai": "^5.2.0",
+    "chai": "^5.2.1",
     "desm": "^1.3.1",
     "eslint": "^8.57.1",
     "eslint-config-airbnb-base": "^15.0.0",
@@ -89,7 +89,7 @@
     "openid-client": "^6.6.2",
     "selfsigned": "^2.4.1",
     "sinon": "^21.0.0",
-    "supertest": "^7.1.1",
+    "supertest": "^7.1.3",
     "timekeeper": "^2.3.1",
     "undici": "^7.11.0"
   }
