@@ -5,7 +5,7 @@ describe('pre-middleware setting "set-cookie" header', () => {
 
   before(function () {
     this.provider.use((ctx, next) => {
-      ctx.response.set('set-cookie', 'foo=bar;');
+      ctx.set('set-cookie', 'foo=bar;');
       return next();
     });
   });
