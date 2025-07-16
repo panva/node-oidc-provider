@@ -478,7 +478,7 @@ location / {
 - [allowOmittingSingleRegisteredRedirectUri](#allowomittingsingleregisteredredirecturi)
 - [assertJwtClientAuthClaimsAndHeader](#assertjwtclientauthclaimsandheader)
 - [claims ❗](#claims)
-- [clientBasedCORS](#clientbasedcors)
+- [clientBasedCORS ❗](#clientbasedcors)
 - [clientDefaults](#clientdefaults)
 - [clockTolerance](#clocktolerance)
 - [conformIdTokenClaims](#conformidtokenclaims)
@@ -2312,6 +2312,9 @@ See [Configuring Client Metadata-based CORS Origin allow list](https://github.co
 _**default value**_:
 ```js
 function clientBasedCORS(ctx, origin, client) {
+  if (ctx.oidc.route === 'userinfo' || client.clientAuthMethod === 'none') {
+    return client.redirectUris.some((uri) => URL.parse(uri)?.origin === origin);
+  }
   return false;
 }
 ```
