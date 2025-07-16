@@ -217,7 +217,7 @@ describe('revocation features', () => {
       const token = await rt.save();
       return this.agent.post(route)
         .auth('client', 'secret')
-        .send({ token, token_type_hint: 'client_credentials' })
+        .send({ token, token_type_hint: 'access_token' })
         .type('form')
         .expect(() => {
           expect(stub.calledOnce).to.be.true;
@@ -268,25 +268,6 @@ describe('revocation features', () => {
     });
 
     it('revokes client credentials token [correct hint]', async function () {
-      const rt = new this.provider.ClientCredentials({
-        client: await this.provider.Client.find('client'),
-      });
-
-      const stub = sinon.stub(this.provider.ClientCredentials.prototype, 'destroy').callsFake(() => Promise.resolve());
-
-      const token = await rt.save();
-      return this.agent.post(route)
-        .auth('client', 'secret')
-        .send({ token, token_type_hint: 'client_credentials' })
-        .type('form')
-        .expect(() => {
-          expect(stub.calledOnce).to.be.true;
-        })
-        .expect(200)
-        .expect('');
-    });
-
-    it('revokes client credentials token [wrong hint]', async function () {
       const rt = new this.provider.ClientCredentials({
         client: await this.provider.Client.find('client'),
       });
@@ -347,15 +328,15 @@ describe('revocation features', () => {
         .expect(200);
     });
 
-    it('rejects wrong tokens', function () {
+    it('rejects structured tokens', function () {
       return this.agent.post(route)
         .auth('client', 'secret')
         .send({
           token: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiYWRtaW4iOnRydWV9.TJVA95OrM7E2cBab30RMHrHDcEfxjoYZgeFONFh7HgQ',
         })
         .type('form')
-        .expect('')
-        .expect(200);
+        .expect(400)
+        .expect({ error: 'unsupported_token_type', error_description: 'Structured JWT Tokens cannot be revoked via the revocation_endpoint' });
     });
 
     it('does not revoke tokens of other clients', async function () {
