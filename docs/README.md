@@ -1219,6 +1219,9 @@ Helper function used to determine whether the client/RS (client argument) is all
 _**default value**_:
 ```js
 async function introspectionAllowedPolicy(ctx, client, token) {
+  // @param ctx - koa request context
+  // @param client - authenticated client making the request
+  // @param token being introspected
   if (
     client.clientAuthMethod === 'none'
     && token.clientId !== ctx.oidc.client.clientId
