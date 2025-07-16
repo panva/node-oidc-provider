@@ -2,6 +2,29 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [9.3.0](https://github.com/panva/node-oidc-provider/compare/v9.2.0...v9.3.0) (2025-07-16)
+
+
+### Features
+
+* **revocation:** add an allowed token revocation policy helper ([a7e47e4](https://github.com/panva/node-oidc-provider/commit/a7e47e4cc700722ed826c2a86a3aabb4fd1846ee))
+
+
+### Documentation
+
+* update README.md ([857c34d](https://github.com/panva/node-oidc-provider/commit/857c34d2c9816af309933f2eb4d6fcb84306d167))
+
+
+### Fixes
+
+* **introspection:** use unsupported_token_type to indicate structured jwt tokens cannot be introspected ([c9001be](https://github.com/panva/node-oidc-provider/commit/c9001be07d8f5a0ff32efcc61f5bdfec7bdda3fb))
+* **revocation:** use unsupported_token_type to indicate structured jwt tokens cannot be revoked ([b45b00c](https://github.com/panva/node-oidc-provider/commit/b45b00caad804894f225ddffcaaf84226172ae43))
+
+
+### Refactor
+
+* pull structured token rejection to a shared middleware ([30367af](https://github.com/panva/node-oidc-provider/commit/30367af7ea6a5a399785d8fd78f7a499d4f7ae48))
+
 ## [9.2.0](https://github.com/panva/node-oidc-provider/compare/v9.1.3...v9.2.0) (2025-06-24)
 
 
