@@ -1221,7 +1221,7 @@ _**default value**_:
 async function introspectionAllowedPolicy(ctx, client, token) {
   // @param ctx - koa request context
   // @param client - authenticated client making the request
-  // @param token being introspected
+  // @param token - token being introspected
   if (
     client.clientAuthMethod === 'none'
     && token.clientId !== ctx.oidc.client.clientId
@@ -1855,9 +1855,37 @@ Enables Token Revocation for:
 _**default value**_:
 ```js
 {
+  allowedPolicy: [AsyncFunction: revocationAllowedPolicy], // see expanded details below
   enabled: false
 }
 ```
+
+<details><summary>(Click to expand) features.revocation options details</summary><br>
+
+
+#### allowedPolicy
+
+Helper function used to determine whether the client/RS (client argument) is allowed to revoke the given token (token argument).  
+
+
+_**default value**_:
+```js
+async function revocationAllowedPolicy(ctx, client, token) {
+  // @param ctx - koa request context
+  // @param client - authenticated client making the request
+  // @param token - token being revoked
+  if (token.clientId !== client.clientId) {
+    if (client.clientAuthMethod === 'none') {
+      // do not revoke but respond as success to disallow guessing valid tokens
+      return false;
+    }
+    throw new errors.InvalidRequest('client is not authorized to revoke the presented token');
+  }
+  return true;
+}
+```
+
+</details>
 
 ### features.richAuthorizationRequests
 

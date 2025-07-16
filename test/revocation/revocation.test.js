@@ -339,7 +339,7 @@ describe('revocation features', () => {
         .expect({ error: 'unsupported_token_type', error_description: 'Structured JWT Tokens cannot be revoked via the revocation_endpoint' });
     });
 
-    it('does not revoke tokens of other clients', async function () {
+    it('does not revoke tokens of other clients (confidential client making the request - exposed error)', async function () {
       const at = new this.provider.AccessToken({
         accountId: 'accountId',
         grantId: 'foo',
@@ -347,17 +347,41 @@ describe('revocation features', () => {
         scope: 'scope',
       });
 
+      const stub = sinon.stub(this.provider.AccessToken.prototype, 'destroy');
+
       const token = await at.save();
       return this.agent.post(route)
         .auth('client', 'secret')
         .send({ token })
         .type('form')
         .expect(400)
-        .expect((response) => {
-          expect(response.body).to.eql({
-            error: 'invalid_request',
-            error_description: 'this token does not belong to you',
-          });
+        .expect({
+          error: 'invalid_request',
+          error_description: 'client is not authorized to revoke the presented token',
+        })
+        .expect(() => {
+          expect(stub.called).to.be.false;
+        });
+    });
+
+    it('does not revoke tokens of other clients (public client making the request - silent ignore)', async function () {
+      const at = new this.provider.AccessToken({
+        accountId: 'accountId',
+        grantId: 'foo',
+        client: await this.provider.Client.find('client2'),
+        scope: 'scope',
+      });
+
+      const stub = sinon.stub(this.provider.AccessToken.prototype, 'destroy');
+
+      const token = await at.save();
+      return this.agent.post(route)
+        .send({ token, client_id: 'client-public' })
+        .type('form')
+        .expect(200)
+        .expect('')
+        .expect(() => {
+          expect(stub.called).to.be.false;
         });
     });
 
