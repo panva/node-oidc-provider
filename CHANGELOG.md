@@ -2,6 +2,25 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [9.4.0](https://github.com/panva/node-oidc-provider/compare/v9.3.0...v9.4.0) (2025-07-17)
+
+
+### Features
+
+* Experimental support for Attestation-Based Client Authentication ([d655ebd](https://github.com/panva/node-oidc-provider/commit/d655ebde6428d5b8a5d2f29ce2fc2a0203f442d7))
+
+
+### Refactor
+
+* consistently lowercase header names and use req/res aliases ([1748a54](https://github.com/panva/node-oidc-provider/commit/1748a54e8212d2c716977e0ea3c2c01f68117261))
+* **cors:** update default client-based cors helper ([77e06eb](https://github.com/panva/node-oidc-provider/commit/77e06eb554a4a62a87a350b348ae2d22a4d8548c))
+* reconcile dpop and attestation challenge implementations ([e31f639](https://github.com/panva/node-oidc-provider/commit/e31f63977c0ffdce620301f23d8af0c93fb52b71))
+
+
+### Documentation
+
+* updated documentation for configuration options ([5710d61](https://github.com/panva/node-oidc-provider/commit/5710d619ce684b2974433949e9115f450820f8f5))
+
 ## [9.3.0](https://github.com/panva/node-oidc-provider/compare/v9.2.0...v9.3.0) (2025-07-16)
 
 
