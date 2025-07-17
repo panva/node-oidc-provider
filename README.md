@@ -51,7 +51,7 @@ The following draft specifications are implemented by oidc-provider:
 
 - [Financial-grade API: Client Initiated Backchannel Authentication Profile (`FAPI-CIBA`) - Implementer's Draft 01][fapi-ciba]
 - [FAPI 2.0 Message Signing (`FAPI 2.0`) - Implementer's Draft 01][fapi2ms-id1]
-- [OIDC Relying Party Metadata Choices 1.0 - draft 02][rp-metadata-choices]
+- [OIDC Relying Party Metadata Choices 1.0 - Implementers Draft 01][rp-metadata-choices]
 
 Updates to draft specification versions are released as MINOR library versions,
 if you utilize these specification implementations consider using the tilde `~` operator in your
@@ -166,5 +166,5 @@ actions and i.e. emit metrics that react to specific triggers. See the list of a
 [fapi2sp]: https://openid.net/specs/fapi-security-profile-2_0-final.html
 [fapi2ms-id1]: https://openid.net/specs/fapi-2_0-message-signing-ID1.html
 [Security Policy]: https://github.com/panva/node-oidc-provider/security/policy
-[rp-metadata-choices]: https://openid.net/specs/openid-connect-rp-metadata-choices-1_0-02.html
+[rp-metadata-choices]: https://openid.net/specs/openid-connect-rp-metadata-choices-1_0-ID1.html
 [rfc8414]: https://www.rfc-editor.org/rfc/rfc8414.html

@@ -2130,7 +2130,7 @@ async function postLogoutSuccessSource(ctx) {
 
 ### features.rpMetadataChoices
 
-[`OIDC Relying Party Metadata Choices 1.0 - draft 02`](https://openid.net/specs/openid-connect-rp-metadata-choices-1_0-02.html)  
+[`OIDC Relying Party Metadata Choices 1.0 - Implementers Draft 01`](https://openid.net/specs/openid-connect-rp-metadata-choices-1_0-ID1.html)  
 
 > [!NOTE]
 > This is an experimental feature.
