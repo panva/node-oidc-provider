@@ -2409,7 +2409,14 @@ async function assertJwtClientAuthClaimsAndHeader(ctx, claims, header, client) {
   // @param claims - parsed JWT Client Authentication Assertion Claims Set as object
   // @param header - parsed JWT Client Authentication Assertion Headers as object
   // @param client - the Client instance
-  if (ctx.oidc.isFapi('2.0') && claims.aud !== ctx.oidc.issuer) {
+  let typ = header.typ?.toLowerCase?.();
+  if (typ?.includes('/') === false) {
+    typ = `application/${typ}`;
+  }
+  if (
+    (typ === 'application/client-authentication+jwt' || ctx.oidc.isFapi('2.0'))
+    && claims.aud !== ctx.oidc.issuer
+  ) {
     throw new errors.InvalidClientAuth(
       'audience (aud) must equal the issuer identifier url',
     );

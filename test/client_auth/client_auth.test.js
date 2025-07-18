@@ -588,7 +588,39 @@ describe('client authentication methods', () => {
         .expect(tokenAuthSucceeded));
     });
 
+    it('accepts the auth (RFC7523bis typ)', function () {
+      return JWT.sign({
+        jti: nanoid(),
+        aud: this.provider.issuer,
+        sub: 'client-jwt-secret',
+        iss: 'client-jwt-secret',
+      }, this.key, 'HS256', { expiresIn: 60, typ: 'client-authentication+jwt' }).then((assertion) => this.agent.post(route)
+        .send({
+          client_assertion: assertion,
+          grant_type: 'foo',
+          client_assertion_type: 'urn:ietf:params:oauth:client-assertion-type:jwt-bearer',
+        })
+        .type('form')
+        .expect(tokenAuthSucceeded));
+    });
+
     describe('additional audience values', () => {
+      it('rejects the auth (RFC7523bis typ)', function () {
+        return JWT.sign({
+          jti: nanoid(),
+          aud: this.provider.issuer + this.suitePath('/token'),
+          sub: 'client-jwt-secret',
+          iss: 'client-jwt-secret',
+        }, this.key, 'HS256', { expiresIn: 60, typ: 'client-authentication+jwt' }).then((assertion) => this.agent.post(route)
+          .send({
+            client_assertion: assertion,
+            grant_type: 'foo',
+            client_assertion_type: 'urn:ietf:params:oauth:client-assertion-type:jwt-bearer',
+          })
+          .type('form')
+          .expect(tokenAuthRejected));
+      });
+
       it('accepts the auth when aud is an array', function () {
         return JWT.sign({
           jti: nanoid(),
