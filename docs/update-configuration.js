@@ -216,6 +216,7 @@ try {
   const findAccountIdx = configuration.findIndex((x) => x === 'findAccount');
   const findAccount = configuration.splice(findAccountIdx, 1);
 
+  let first = true;
   let hidden;
   let prev;
   for (const block of [
@@ -250,6 +251,12 @@ try {
       append('\n</details>\n');
     }
     prev = block;
+
+    if (first) {
+      first = false;
+    } else if (!hidden) {
+      append('\n---\n');
+    }
 
     append(`\n${heading} ${headingTitle}\n\n`);
     if (section.title) {

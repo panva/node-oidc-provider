@@ -527,6 +527,8 @@ See:
 - [Default in-memory adapter implementation](/lib/adapters/memory_adapter.js)
 - [Community Contributed Adapter Archive](https://github.com/panva/node-oidc-provider/discussions/1311)
 
+---
+
 ### clients
 
 An array of client metadata objects representing statically configured OAuth 2.0 and OpenID Connect clients. These clients are persistent, do not expire, and remain available throughout the authorization server's lifetime. For dynamic client discovery, the authorization server will invoke the adapter's `find` method when encountering unregistered client identifiers.   
@@ -546,6 +548,8 @@ application_type, client_id, client_name, client_secret, client_uri, contacts, d
 
 
 </details>
+
+---
 
 ### findAccount
 
@@ -578,6 +582,8 @@ async function findAccount(ctx, sub, token) {
 }
 ```
 
+---
+
 ### jwks
 
 Specifies the JSON Web Key Set that shall be used by the authorization server for cryptographic signing and decryption operations. The key set MUST be provided in [JWK Set format](https://www.rfc-editor.org/rfc/rfc7517.html#section-5) as defined in RFC 7517. All keys within the set MUST be private keys.   
@@ -595,6 +601,8 @@ _**recommendation**_: The following action order is recommended when rotating si
  3. move your new key to the very front of the "keys" array in your JWKS, this means the key will be used for signing after reload
  4. reload all your processes  
 
+
+---
 
 ### features
 
@@ -643,6 +651,8 @@ new oidc.Provider('http://localhost:3000', {
 // Error: An unacknowledged version of an experimental feature is included in this oidc-provider version.
 ```
 </details>
+
+---
 
 ### features.attestClientAuth
 
@@ -734,6 +744,8 @@ function getAttestationSignaturePublicKey(ctx, iss, header, client) {
 
 </details>
 
+---
+
 ### features.backchannelLogout
 
 [`OIDC Back-Channel Logout 1.0`](https://openid.net/specs/openid-connect-backchannel-1_0-final.html)  
@@ -747,6 +759,8 @@ _**default value**_:
   enabled: false
 }
 ```
+
+---
 
 ### features.ciba
 
@@ -934,6 +948,8 @@ async function verifyUserCode(ctx, account, userCode) {
 
 </details>
 
+---
+
 ### features.claimsParameter
 
 [`OIDC Core 1.0`](https://openid.net/specs/openid-connect-core-1_0-errata2.html#ClaimsParameter) - Requesting Claims using the "claims" Request Parameter  
@@ -970,6 +986,8 @@ async function assertClaimsParameter(ctx, claims, client) {
 
 </details>
 
+---
+
 ### features.clientCredentials
 
 [`RFC6749`](https://www.rfc-editor.org/rfc/rfc6749.html#section-1.3.4) - Client Credentials  
@@ -983,6 +1001,8 @@ _**default value**_:
   enabled: false
 }
 ```
+
+---
 
 ### features.dPoP
 
@@ -1038,6 +1058,8 @@ function requireNonce(ctx) {
 
 </details>
 
+---
+
 ### features.devInteractions
 
 Enables development-only interaction views that provide pre-built user interface components for rapid prototyping and testing of authorization flows. These views accept any username (used as the subject claim value) and any password for authentication, bypassing production-grade security controls.   
@@ -1050,6 +1072,8 @@ _**default value**_:
   enabled: true
 }
 ```
+
+---
 
 ### features.deviceFlow
 
@@ -1222,6 +1246,8 @@ async function userCodeInputSource(ctx, form, out, err) {
 
 </details>
 
+---
+
 ### features.encryption
 
 Specifies whether encryption capabilities shall be enabled. When enabled, the authorization server shall support accepting and issuing encrypted tokens involved in its other enabled capabilities.  
@@ -1233,6 +1259,8 @@ _**default value**_:
   enabled: false
 }
 ```
+
+---
 
 ### features.externalSigningSupport
 
@@ -1253,6 +1281,8 @@ _**default value**_:
   enabled: false
 }
 ```
+
+---
 
 ### features.fapi
 
@@ -1286,6 +1316,8 @@ undefined
 ```
 
 </details>
+
+---
 
 ### features.introspection
 
@@ -1331,6 +1363,8 @@ async function introspectionAllowedPolicy(ctx, client, token) {
 
 </details>
 
+---
+
 ### features.jwtIntrospection
 
 [`RFC9701`](https://www.rfc-editor.org/rfc/rfc9701.html) - JWT Response for OAuth Token Introspection  
@@ -1344,6 +1378,8 @@ _**default value**_:
   enabled: false
 }
 ```
+
+---
 
 ### features.jwtResponseModes
 
@@ -1359,6 +1395,8 @@ _**default value**_:
 }
 ```
 
+---
+
 ### features.jwtUserinfo
 
 [`OIDC Core 1.0`](https://openid.net/specs/openid-connect-core-1_0-errata2.html#UserInfo) - JWT UserInfo Endpoint Responses  
@@ -1372,6 +1410,8 @@ _**default value**_:
   enabled: false
 }
 ```
+
+---
 
 ### features.mTLS
 
@@ -1465,6 +1505,8 @@ false
 
 </details>
 
+---
+
 ### features.pushedAuthorizationRequests
 
 [`RFC9126`](https://www.rfc-editor.org/rfc/rfc9126.html) - OAuth 2.0 Pushed Authorization Requests (`PAR`)  
@@ -1505,6 +1547,8 @@ false
 ```
 
 </details>
+
+---
 
 ### features.registration
 
@@ -1651,6 +1695,8 @@ async function secretFactory(ctx) {
 
 </details>
 
+---
+
 ### features.registrationManagement
 
 [`RFC7592`](https://www.rfc-editor.org/rfc/rfc7592.html) - OAuth 2.0 Dynamic Client Registration Management Protocol  
@@ -1702,6 +1748,8 @@ true
 </details>
 
 </details>
+
+---
 
 ### features.requestObjects
 
@@ -1771,6 +1819,8 @@ false
 ```
 
 </details>
+
+---
 
 ### features.resourceIndicators
 
@@ -1936,6 +1986,8 @@ async function useGrantedResource(ctx, model) {
 
 </details>
 
+---
+
 ### features.revocation
 
 [`RFC7009`](https://www.rfc-editor.org/rfc/rfc7009.html) - OAuth 2.0 Token Revocation  
@@ -1980,6 +2032,8 @@ async function revocationAllowedPolicy(ctx, client, token) {
 ```
 
 </details>
+
+---
 
 ### features.richAuthorizationRequests
 
@@ -2145,6 +2199,8 @@ const configuration = {
 
 </details>
 
+---
+
 ### features.rpInitiatedLogout
 
 [`OIDC RP-Initiated Logout 1.0`](https://openid.net/specs/openid-connect-rpinitiated-1_0-final.html)  
@@ -2221,6 +2277,8 @@ async function postLogoutSuccessSource(ctx) {
 
 </details>
 
+---
+
 ### features.rpMetadataChoices
 
 [`OIDC Relying Party Metadata Choices 1.0 - Implementers Draft 01`](https://openid.net/specs/openid-connect-rp-metadata-choices-1_0-ID1.html)  
@@ -2258,6 +2316,8 @@ _**default value**_:
 }
 ```
 
+---
+
 ### features.userinfo
 
 [`OIDC Core 1.0`](https://openid.net/specs/openid-connect-core-1_0-errata2.html#UserInfo) - UserInfo Endpoint  
@@ -2271,6 +2331,8 @@ _**default value**_:
   enabled: true
 }
 ```
+
+---
 
 ### features.webMessageResponseMode
 
@@ -2293,6 +2355,8 @@ _**default value**_:
 }
 ```
 
+---
+
 ### acceptQueryParamAccessTokens
 
 Controls whether access tokens may be transmitted via URI query parameters. Several OAuth 2.0 and OpenID Connect profiles require that access tokens be transmitted exclusively via the Authorization header. When set to false, the authorization server shall reject requests attempting to transmit access tokens via query parameters.   
@@ -2304,6 +2368,8 @@ _**default value**_:
 false
 ```
 
+---
+
 ### acrValues
 
 An array of strings representing the Authentication Context Class References that this authorization server supports.  
@@ -2313,6 +2379,8 @@ _**default value**_:
 ```js
 []
 ```
+
+---
 
 ### allowOmittingSingleRegisteredRedirectUri
 
@@ -2326,6 +2394,8 @@ _**default value**_:
 ```js
 true
 ```
+
+---
 
 ### assertJwtClientAuthClaimsAndHeader
 
@@ -2346,6 +2416,8 @@ async function assertJwtClientAuthClaimsAndHeader(ctx, claims, header, client) {
   }
 }
 ```
+
+---
 
 ### claims
 
@@ -2369,6 +2441,8 @@ _**default value**_:
   sid: null
 }
 ```
+
+---
 
 ### clientAuthMethods
 
@@ -2398,6 +2472,8 @@ _**default value**_:
 ```
 </details>
 
+---
+
 ### clientBasedCORS
 
 Specifies a function that determines whether Cross-Origin Resource Sharing (CORS) requests shall be permitted based on the requesting client. This function is invoked for each CORS preflight and actual request to evaluate the client's authorization to access the authorization server from the specified origin.   
@@ -2414,6 +2490,8 @@ function clientBasedCORS(ctx, origin, client) {
   return false;
 }
 ```
+
+---
 
 ### clientDefaults
 
@@ -2460,6 +2538,8 @@ To change the default client response_types, configure `clientDefaults` to be an
 ```
 </details>
 
+---
+
 ### clockTolerance
 
 Specifies the maximum acceptable clock skew tolerance (in seconds) for validating time-sensitive operations, including JWT validation for Request Objects, DPoP Proofs, and other timestamp-based security mechanisms.   
@@ -2472,6 +2552,8 @@ _**default value**_:
 ```js
 15
 ```
+
+---
 
 ### conformIdTokenClaims
 
@@ -2487,10 +2569,14 @@ _**default value**_:
 true
 ```
 
+---
+
 ### cookies
 
 Configuration for HTTP cookies used to maintain User-Agent state throughout the authorization flow. These settings conform to the [cookies module interface specification](https://github.com/pillarjs/cookies/tree/0.9.1?tab=readme-ov-file#cookiessetname--values--options). The `maxAge` and `expires` properties are ignored; cookie lifetimes are instead controlled via the `ttl.Session` and `ttl.Interaction` configuration parameters.  
 
+
+---
 
 ### cookies.long
 
@@ -2504,6 +2590,8 @@ _**default value**_:
   sameSite: 'lax'
 }
 ```
+
+---
 
 ### cookies.names
 
@@ -2519,6 +2607,8 @@ _**default value**_:
 }
 ```
 
+---
+
 ### cookies.short
 
 Options for short-term cookies.  
@@ -2531,6 +2621,8 @@ _**default value**_:
   sameSite: 'lax'
 }
 ```
+
+---
 
 ### discovery
 
@@ -2552,6 +2644,8 @@ _**default value**_:
 }
 ```
 
+---
+
 ### enableHttpPostMethods
 
 Specifies whether HTTP POST method support shall be enabled at the Authorization Endpoint and the Logout Endpoint (if enabled). When enabled, the authorization server shall accept POST requests at these endpoints in addition to the standard GET requests. This configuration may only be used when the `cookies.long.sameSite` configuration value is `none`.  
@@ -2561,6 +2655,8 @@ _**default value**_:
 ```js
 false
 ```
+
+---
 
 ### expiresWithSession
 
@@ -2574,10 +2670,14 @@ async function expiresWithSession(ctx, code) {
 }
 ```
 
+---
+
 ### extraClientMetadata
 
 Specifies the configuration for custom client metadata properties that shall be supported by the authorization server for client registration and metadata validation purposes. This configuration enables extension of standard OAuth 2.0 and OpenID Connect client metadata with deployment-specific properties. Existing standards-defined properties are snakeCased on a Client instance (e.g. `client.redirectUris`), while new properties defined by this configuration shall be available with their names verbatim (e.g. `client['urn:example:client:my-property']`).  
 
+
+---
 
 ### extraClientMetadata.properties
 
@@ -2588,6 +2688,8 @@ _**default value**_:
 ```js
 []
 ```
+
+---
 
 ### extraClientMetadata.validator
 
@@ -2606,6 +2708,8 @@ function extraClientMetadataValidator(ctx, key, value, metadata) {
   //              Client Registration Request or Client Update Request
 }
 ```
+
+---
 
 ### extraParams
 
@@ -2646,6 +2750,8 @@ const extraParams = {
 ```
 </details>
 
+---
+
 ### extraTokenClaims
 
 Specifies a helper function that shall be invoked to add additional claims to Access Tokens during the token issuance process. For opaque Access Tokens, the returned claims shall be stored in the authorization server storage under the `extra` property and shall be returned by the introspection endpoint as top-level claims. For JWT-formatted Access Tokens, the returned claims shall be included as top-level claims within the JWT payload. Claims returned by this function will not overwrite pre-existing top-level claims in the token.   
@@ -2670,6 +2776,8 @@ async function extraTokenClaims(ctx, token) {
 }
 ```
 </details>
+
+---
 
 ### fetch
 
@@ -2703,6 +2811,8 @@ To change all request's timeout configure the fetch as a function like so:
 ```
 </details>
 
+---
+
 ### formats.bitsOfOpaqueRandomness
 
 Specifies the entropy configuration for opaque token generation. The value shall be an integer (or a function returning an integer) that determines the cryptographic strength of generated opaque tokens. The resulting opaque token length shall be calculated as `Math.ceil(i / Math.log2(n))` where `i` is the specified bit count and `n` is the number of symbols in the encoding alphabet (64 characters in the base64url character set used by this implementation).   
@@ -2724,6 +2834,8 @@ function bitsOfOpaqueRandomness(ctx, token) {
 }
 ```
 </details>
+
+---
 
 ### formats.customizers
 
@@ -2751,11 +2863,15 @@ _**default value**_:
 ```
 </details>
 
+---
+
 ### interactions
 
 Specifies the configuration for interaction policy and end-user redirection that shall be applied to determine that user interaction is required during the authorization process. This configuration enables customization of authentication and consent flows according to deployment-specific requirements.   
   
 
+
+---
 
 ### interactions.policy
 
@@ -3062,6 +3178,8 @@ const basePolicy = base()
 ```
 </details>
 
+---
+
 ### interactions.url
 
 Specifies a function that shall be invoked to determine the destination URL for redirecting the User-Agent when user interaction is required during authorization processing. This function enables customization of the interaction endpoint location and may return both absolute and relative URLs according to deployment requirements.  
@@ -3073,6 +3191,8 @@ async function interactionsUrl(ctx, interaction) {
   return `/interaction/${interaction.uid}`;
 }
 ```
+
+---
 
 ### issueRefreshToken
 
@@ -3105,6 +3225,8 @@ async issueRefreshToken(ctx, client, code) {
 ```
 </details>
 
+---
+
 ### loadExistingGrant
 
 Helper function invoked to load existing authorization grants that may be used to resolve an Authorization Request without requiring additional end-user interaction. The default implementation attempts to load grants based on the interaction result's `consent.grantId` property, falling back to the existing grantId for the requesting client in the current session.  
@@ -3121,6 +3243,8 @@ async function loadExistingGrant(ctx) {
   return undefined;
 }
 ```
+
+---
 
 ### pairwiseIdentifier
 
@@ -3142,6 +3266,8 @@ async function pairwiseIdentifier(ctx, accountId, client) {
 }
 ```
 
+---
+
 ### pkce
 
 [`RFC7636`](https://www.rfc-editor.org/rfc/rfc7636.html) - Proof Key for Code Exchange (`PKCE`)  
@@ -3149,6 +3275,8 @@ async function pairwiseIdentifier(ctx, accountId, client) {
 `PKCE` configuration such as policy check on the required use of `PKCE`.   
   
 
+
+---
 
 ### pkce.required
 
@@ -3183,6 +3311,8 @@ function pkceRequired(ctx, client) {
 }
 ```
 
+---
+
 ### renderError
 
 Specifies a function that shall be invoked to present error responses to the User-Agent during authorization server operations. This function enables customization of error presentation according to deployment-specific user interface requirements.  
@@ -3207,6 +3337,8 @@ async function renderError(ctx, out, error) {
     </html>`;
 }
 ```
+
+---
 
 ### responseTypes
 
@@ -3239,6 +3371,8 @@ These are values defined in [`OIDC Core 1.0`](https://openid.net/specs/openid-co
 ```
 </details>
 
+---
+
 ### revokeGrantPolicy
 
 Specifies a helper function that shall be invoked to determine whether an underlying Grant entry shall be revoked in addition to the specific token or code being processed. This function enables enforcement of grant revocation policies according to authorization server security requirements. The function is invoked in the following contexts:
@@ -3260,6 +3394,8 @@ function revokeGrantPolicy(ctx) {
   return true;
 }
 ```
+
+---
 
 ### rotateRefreshToken
 
@@ -3295,6 +3431,8 @@ function rotateRefreshToken(ctx) {
 }
 ```
 
+---
+
 ### routes
 
 Defines the URL path mappings for authorization server endpoints. All route values are relative and shall begin with a forward slash ("/") character.  
@@ -3319,6 +3457,8 @@ _**default value**_:
 }
 ```
 
+---
+
 ### scopes
 
 Specifies additional OAuth 2.0 scope values that this authorization server shall support and advertise in its discovery document. Resource Server-specific scopes shall be configured via the `features.resourceIndicators` mechanism.  
@@ -3331,6 +3471,8 @@ _**default value**_:
   'offline_access'
 ]
 ```
+
+---
 
 ### sectorIdentifierUriValidate
 
@@ -3345,6 +3487,8 @@ function sectorIdentifierUriValidate(client) {
 }
 ```
 
+---
+
 ### subjectTypes
 
 Specifies the array of Subject Identifier types that this authorization server shall support for end-user identification purposes. When only `pairwise` is supported, it shall become the default `subject_type` client metadata value. Supported identifier types shall include:
@@ -3358,6 +3502,8 @@ _**default value**_:
   'public'
 ]
 ```
+
+---
 
 ### ttl
 
@@ -3426,10 +3572,14 @@ Configure `ttl` for a given token type with a function like so, this must return
 ```
 </details>
 
+---
+
 ### enabledJWA
 
 Specifies the JSON Web Algorithm (JWA) values supported by this authorization server for various cryptographic operations, as defined in RFC 7518 and related specifications.  
 
+
+---
 
 ### enabledJWA.attestSigningAlgValues
 
@@ -3456,6 +3606,8 @@ _**default value**_:
 ]
 ```
 </details>
+
+---
 
 ### enabledJWA.authorizationEncryptionAlgValues
 
@@ -3490,6 +3642,8 @@ _**default value**_:
 ```
 </details>
 
+---
+
 ### enabledJWA.authorizationEncryptionEncValues
 
 JWE "enc" Content Encryption Algorithm values the authorization server supports to encrypt JWT Authorization Responses (`JARM`) with   
@@ -3513,6 +3667,8 @@ _**default value**_:
 ]
 ```
 </details>
+
+---
 
 ### enabledJWA.authorizationSigningAlgValues
 
@@ -3542,6 +3698,8 @@ _**default value**_:
 ]
 ```
 </details>
+
+---
 
 ### enabledJWA.clientAuthSigningAlgValues
 
@@ -3573,6 +3731,8 @@ _**default value**_:
 ```
 </details>
 
+---
+
 ### enabledJWA.dPoPSigningAlgValues
 
 JWS "alg" Algorithm values the authorization server supports to verify signed DPoP proof JWTs with   
@@ -3598,6 +3758,8 @@ _**default value**_:
 ]
 ```
 </details>
+
+---
 
 ### enabledJWA.idTokenEncryptionAlgValues
 
@@ -3632,6 +3794,8 @@ _**default value**_:
 ```
 </details>
 
+---
+
 ### enabledJWA.idTokenEncryptionEncValues
 
 JWE "enc" Content Encryption Algorithm values the authorization server supports to encrypt ID Tokens with   
@@ -3655,6 +3819,8 @@ _**default value**_:
 ]
 ```
 </details>
+
+---
 
 ### enabledJWA.idTokenSigningAlgValues
 
@@ -3684,6 +3850,8 @@ _**default value**_:
 ]
 ```
 </details>
+
+---
 
 ### enabledJWA.introspectionEncryptionAlgValues
 
@@ -3718,6 +3886,8 @@ _**default value**_:
 ```
 </details>
 
+---
+
 ### enabledJWA.introspectionEncryptionEncValues
 
 JWE "enc" Content Encryption Algorithm values the authorization server supports to encrypt JWT Introspection responses with   
@@ -3741,6 +3911,8 @@ _**default value**_:
 ]
 ```
 </details>
+
+---
 
 ### enabledJWA.introspectionSigningAlgValues
 
@@ -3770,6 +3942,8 @@ _**default value**_:
 ]
 ```
 </details>
+
+---
 
 ### enabledJWA.requestObjectEncryptionAlgValues
 
@@ -3804,6 +3978,8 @@ _**default value**_:
 ```
 </details>
 
+---
+
 ### enabledJWA.requestObjectEncryptionEncValues
 
 JWE "enc" Content Encryption Algorithm values the authorization server supports to decrypt Request Objects (`JAR`) with   
@@ -3827,6 +4003,8 @@ _**default value**_:
 ]
 ```
 </details>
+
+---
 
 ### enabledJWA.requestObjectSigningAlgValues
 
@@ -3857,6 +4035,8 @@ _**default value**_:
 ]
 ```
 </details>
+
+---
 
 ### enabledJWA.userinfoEncryptionAlgValues
 
@@ -3891,6 +4071,8 @@ _**default value**_:
 ```
 </details>
 
+---
+
 ### enabledJWA.userinfoEncryptionEncValues
 
 JWE "enc" Content Encryption Algorithm values the authorization server supports to encrypt UserInfo responses with   
@@ -3914,6 +4096,8 @@ _**default value**_:
 ]
 ```
 </details>
+
+---
 
 ### enabledJWA.userinfoSigningAlgValues
 
