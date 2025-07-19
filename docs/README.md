@@ -539,7 +539,7 @@ _**default value**_:
 ```js
 []
 ```
-<a id="clients-available-metadata"></a><details><summary>(Click to expand) Available Metadata</summary><br>
+<a id="clients-available-metadata"></a><details><summary>Example: (Click to expand) Available Metadata.</summary><br>
 
 
 application_type, client_id, client_name, client_secret, client_uri, contacts, default_acr_values, default_max_age, grant_types, id_token_signed_response_alg, initiate_login_uri, jwks, jwks_uri, logo_uri, policy_uri, post_logout_redirect_uris, redirect_uris, require_auth_time, response_types, response_modes, scope, sector_identifier_uri, subject_type, token_endpoint_auth_method, tos_uri, userinfo_signed_response_alg <br/><br/>The following metadata is available but may not be recognized depending on this authorization server's configuration.<br/><br/> authorization_encrypted_response_alg, authorization_encrypted_response_enc, authorization_signed_response_alg, backchannel_logout_session_required, backchannel_logout_uri, id_token_encrypted_response_alg, id_token_encrypted_response_enc, introspection_encrypted_response_alg, introspection_encrypted_response_enc, introspection_signed_response_alg, request_object_encryption_alg, request_object_encryption_enc, request_object_signing_alg, tls_client_auth_san_dns, tls_client_auth_san_email, tls_client_auth_san_ip, tls_client_auth_san_uri, tls_client_auth_subject_dn, tls_client_certificate_bound_access_tokens, use_mtls_endpoint_aliases, token_endpoint_auth_signing_alg, userinfo_encrypted_response_alg, userinfo_encrypted_response_enc  
@@ -603,8 +603,7 @@ Specifies the authorization server feature capabilities that shall be enabled or
  To suppress experimental feature warnings and ensure configuration validation against breaking changes, implementations shall acknowledge the specific experimental feature version using the acknowledgment mechanism demonstrated in the example below. When an unacknowledged breaking change is detected, the authorization server configuration will throw an error during instantiation.   
   
 
-<a id="features-acknowledging-an-experimental-feature"></a><details><summary>(Click to expand) Acknowledging an experimental feature
-</summary><br>
+<a id="features-acknowledging-an-experimental-feature"></a><details><summary>Example: (Click to expand) Acknowledging an experimental feature.</summary><br>
 
 ```js
 import * as oidc from 'oidc-provider'
@@ -834,7 +833,7 @@ async function triggerAuthenticationDevice(ctx, request, account, client) {
   throw new Error('features.ciba.triggerAuthenticationDevice not implemented');
 }
 ```
-<a id="trigger-authentication-device-provider-backchannel-result-method"></a><details><summary>(Click to expand) `provider.backchannelResult()` method</summary><br>
+<a id="trigger-authentication-device-provider-backchannel-result-method"></a><details><summary>Example: (Click to expand) `provider.backchannelResult()` method.</summary><br>
 
 
 `backchannelResult` is a method on the Provider prototype, it returns a `Promise` with no fulfillment value.
@@ -1539,8 +1538,7 @@ _**default value**_:
 ```js
 false
 ```
-<a id="initial-access-token-to-add-an-adapter-backed-initial-access-token-and-retrive-its-value"></a><details><summary>(Click to expand) To add an adapter backed initial access token and retrive its value
-</summary><br>
+<a id="initial-access-token-to-add-an-adapter-backed-initial-access-token-and-retrive-its-value"></a><details><summary>Example: (Click to expand) To add an adapter backed initial access token and retrive its value.</summary><br>
 
 ```js
 new (provider.InitialAccessToken)({}).save().then(console.log);
@@ -1560,8 +1558,7 @@ _**default value**_:
 ```js
 true
 ```
-<a id="issue-registration-access-token-to-determine-if-a-registration-access-token-should-be-issued-dynamically"></a><details><summary>(Click to expand) To determine if a registration access token should be issued dynamically
-</summary><br>
+<a id="issue-registration-access-token-to-determine-if-a-registration-access-token-should-be-issued-dynamically"></a><details><summary>Example: (Click to expand) To determine if a registration access token should be issued dynamically.</summary><br>
 
 ```js
 // @param ctx - koa request context
@@ -1589,7 +1586,7 @@ _**default value**_:
 ```js
 undefined
 ```
-<a id="policies-to-define-registration-and-registration-management-policies"></a><details><summary>(Click to expand) To define registration and registration management policies</summary><br>
+<a id="policies-to-define-registration-and-registration-management-policies"></a><details><summary>Example: (Click to expand) To define registration and registration management policies.</summary><br>
 
 
 To define policy functions configure `features.registration` to be an object like so:
@@ -1672,8 +1669,7 @@ _**default value**_:
 ```js
 true
 ```
-<a id="rotate-registration-access-token-dynamic-token-rotation-policy-implementation"></a><details><summary>(Click to expand) Dynamic token rotation policy implementation
-</summary><br>
+<a id="rotate-registration-access-token-dynamic-token-rotation-policy-implementation"></a><details><summary>Example: (Click to expand) Dynamic token rotation policy implementation.</summary><br>
 
 ```js
 {
@@ -1828,41 +1824,7 @@ async function getResourceServerInfo(ctx, resourceIndicator, client) {
   throw new errors.InvalidTarget();
 }
 ```
-<a id="get-resource-server-info-resource-server-api-with-two-scopes-an-expected-audience-value-an-access-token-ttl-and-a-jwt-access-token-format"></a><details><summary>(Click to expand) Resource Server (API) with two scopes, an expected audience value, an Access Token TTL and a JWT Access Token Format.
-</summary><br>
-
-```js
-{
-  scope: 'api:read api:write',
-  audience: 'resource-server-audience-value',
-  accessTokenTTL: 2 * 60 * 60, // 2 hours
-  accessTokenFormat: 'jwt',
-  jwt: {
-    sign: { alg: 'ES256' },
-  },
-}
-```
-</details>
-<a id="get-resource-server-info-resource-server-api-with-two-scopes-and-a-symmetrically-encrypted-jwt-access-token-format"></a><details><summary>(Click to expand) Resource Server (API) with two scopes and a symmetrically encrypted JWT Access Token Format.
-</summary><br>
-
-```js
-{
-  scope: 'api:read api:write',
-  accessTokenFormat: 'jwt',
-  jwt: {
-    sign: false,
-    encrypt: {
-      alg: 'dir',
-      enc: 'A128CBC-HS256',
-      key: Buffer.from('f40dd9591646bebcb9c32aed02f5e610c2d15e1d38cde0c1fe14a55cf6bfe2d9', 'hex')
-    },
-  }
-}
-```
-</details>
-<a id="get-resource-server-info-resource-server-definition"></a><details><summary>(Click to expand) Resource Server Definition
-</summary><br>
+<a id="get-resource-server-info-resource-server-definition"></a><details><summary>Example: (Click to expand) Resource Server Definition.</summary><br>
 
 ```js
 {
@@ -1902,6 +1864,37 @@ async function getResourceServerInfo(ctx, resourceIndicator, client) {
       key: CryptoKey | KeyObject | Buffer, // public key or shared symmetric secret to encrypt the JWT token with
       kid?: string, // OPTIONAL `kid` JOSE Header Parameter to put in the token's JWE Header
     }
+  }
+}
+```
+</details>
+<a id="get-resource-server-info-resource-server-api-with-two-scopes-an-expected-audience-value-an-access-token-ttl-and-a-jwt-access-token-format"></a><details><summary>Example: (Click to expand) Resource Server (API) with two scopes, an expected audience value, an Access Token TTL and a JWT Access Token Format.</summary><br>
+
+```js
+{
+  scope: 'api:read api:write',
+  audience: 'resource-server-audience-value',
+  accessTokenTTL: 2 * 60 * 60, // 2 hours
+  accessTokenFormat: 'jwt',
+  jwt: {
+    sign: { alg: 'ES256' },
+  },
+}
+```
+</details>
+<a id="get-resource-server-info-resource-server-api-with-two-scopes-and-a-symmetrically-encrypted-jwt-access-token-format"></a><details><summary>Example: (Click to expand) Resource Server (API) with two scopes and a symmetrically encrypted JWT Access Token Format.</summary><br>
+
+```js
+{
+  scope: 'api:read api:write',
+  accessTokenFormat: 'jwt',
+  jwt: {
+    sign: false,
+    encrypt: {
+      alg: 'dir',
+      enc: 'A128CBC-HS256',
+      key: Buffer.from('f40dd9591646bebcb9c32aed02f5e610c2d15e1d38cde0c1fe14a55cf6bfe2d9', 'hex')
+    },
   }
 }
 ```
@@ -2088,8 +2081,7 @@ _**default value**_:
 ```js
 {}
 ```
-<a id="types-authorization-details-type-validation-for-tax-data-access"></a><details><summary>(Click to expand) Authorization details type validation for tax data access
-</summary><br>
+<a id="types-authorization-details-type-validation-for-tax-data-access"></a><details><summary>Example: (Click to expand) Authorization details type validation for tax data access.</summary><br>
 
 ```js
 import { z } from 'zod'
@@ -2380,8 +2372,7 @@ _**default value**_:
   'none'
 ]
 ```
-<a id="client-auth-methods-supported-values-list"></a><details><summary>(Click to expand) Supported values list
-</summary><br>
+<a id="client-auth-methods-supported-values-list"></a><details><summary>Example: (Click to expand) Supported values list.</summary><br>
 
 ```js
 [
@@ -2429,7 +2420,7 @@ _**default value**_:
   token_endpoint_auth_method: 'client_secret_basic'
 }
 ```
-<a id="client-defaults-changing-the-default-client-token-endpoint-auth-method"></a><details><summary>(Click to expand) Changing the default client token_endpoint_auth_method</summary><br>
+<a id="client-defaults-changing-the-default-client-token-endpoint-auth-method"></a><details><summary>Example: (Click to expand) Changing the default client token_endpoint_auth_method.</summary><br>
 
 
 To change the default client token_endpoint_auth_method, configure `clientDefaults` to be an object like so:
@@ -2441,7 +2432,7 @@ To change the default client token_endpoint_auth_method, configure `clientDefaul
 }
 ```
 </details>
-<a id="client-defaults-changing-the-default-client-response-type-to-code-id-token"></a><details><summary>(Click to expand) Changing the default client response type to `code id_token`</summary><br>
+<a id="client-defaults-changing-the-default-client-response-type-to-code-id-token"></a><details><summary>Example: (Click to expand) Changing the default client response type to `code id_token`.</summary><br>
 
 
 To change the default client response_types, configure `clientDefaults` to be an object like so:
@@ -2615,8 +2606,7 @@ _**default value**_:
 ```js
 []
 ```
-<a id="extra-params-registering-an-extra-origin-parameter-with-its-validator"></a><details><summary>(Click to expand) registering an extra `origin` parameter with its validator
-</summary><br>
+<a id="extra-params-registering-an-extra-origin-parameter-with-its-validator"></a><details><summary>Example: (Click to expand) Registering an extra `origin` parameter with its validator.</summary><br>
 
 ```js
 import { errors } from 'oidc-provider';
@@ -2654,8 +2644,7 @@ async function extraTokenClaims(ctx, token) {
   return undefined;
 }
 ```
-<a id="extra-token-claims-to-add-an-arbitrary-claim-to-an-access-token"></a><details><summary>(Click to expand) To add an arbitrary claim to an Access Token
-</summary><br>
+<a id="extra-token-claims-to-add-an-arbitrary-claim-to-an-access-token"></a><details><summary>Example: (Click to expand) To add an arbitrary claim to an Access Token.</summary><br>
 
 ```js
 {
@@ -2684,7 +2673,7 @@ function fetch(url, options) {
   return globalThis.fetch(url, options);
 }
 ```
-<a id="fetch-to-change-the-request's-timeout"></a><details><summary>(Click to expand) To change the request's timeout</summary><br>
+<a id="fetch-to-change-the-request's-timeout"></a><details><summary>Example: (Click to expand) To change the request's timeout.</summary><br>
 
 
 To change all request's timeout configure the fetch as a function like so:
@@ -2710,8 +2699,7 @@ _**default value**_:
 ```js
 256
 ```
-<a id="formats-bits-of-opaque-randomness-to-have-e-g-refresh-tokens-values-longer-than-access-tokens"></a><details><summary>(Click to expand) To have e.g. Refresh Tokens values longer than Access Tokens.
-</summary><br>
+<a id="formats-bits-of-opaque-randomness-to-have-e-g-refresh-tokens-values-longer-than-access-tokens"></a><details><summary>Example: (Click to expand) To have e.g. Refresh Tokens values longer than Access Tokens.</summary><br>
 
 ```js
 function bitsOfOpaqueRandomness(ctx, token) {
@@ -2735,8 +2723,7 @@ _**default value**_:
   jwt: undefined
 }
 ```
-<a id="formats-customizers-to-push-additional-headers-and-payload-claims-to-a-jwt-format-access-token"></a><details><summary>(Click to expand) To push additional headers and payload claims to a `jwt` format Access Token
-</summary><br>
+<a id="formats-customizers-to-push-additional-headers-and-payload-claims-to-a-jwt-format-access-token"></a><details><summary>Example: (Click to expand) To push additional headers and payload claims to a `jwt` format Access Token.</summary><br>
 
 ```js
 {
@@ -3020,7 +3007,7 @@ new Prompt(
 )
 ]
 ```
-<a id="interactions-policy-default-interaction-policy-description"></a><details><summary>(Click to expand) default interaction policy description</summary><br>
+<a id="interactions-policy-default-interaction-policy-description"></a><details><summary>Example: (Click to expand) default interaction policy description.</summary><br>
 
 
 The default interaction policy consists of two available prompts, login and consent <br/><br/>
@@ -3039,15 +3026,14 @@ The default interaction policy consists of two available prompts, login and cons
 
 
 </details>
-<a id="interactions-policy-disabling-default-consent-checks"></a><details><summary>(Click to expand) disabling default consent checks</summary><br>
+<a id="interactions-policy-disabling-default-consent-checks"></a><details><summary>Example: (Click to expand) disabling default consent checks.</summary><br>
 
 
 You may be required to skip (silently accept) some of the consent checks, while it is discouraged there are valid reasons to do that, for instance in some first-party scenarios or going with pre-existing, previously granted, consents. To simply silenty "accept" first-party/resource indicated scopes or pre-agreed-upon claims use the `loadExistingGrant` configuration helper function, in there you may just instantiate (and save!) a grant for the current clientId and accountId values.  
 
 
 </details>
-<a id="interactions-policy-modifying-the-default-interaction-policy"></a><details><summary>(Click to expand) modifying the default interaction policy
-</summary><br>
+<a id="interactions-policy-modifying-the-default-interaction-policy"></a><details><summary>Example: (Click to expand) modifying the default interaction policy.</summary><br>
 
 ```js
 import { interactionPolicy } from 'oidc-provider';
@@ -3089,10 +3075,10 @@ async function issueRefreshToken(ctx, client, code) {
   );
 }
 ```
-<a id="issue-refresh-token-to-always-issue-a-refresh-tokens"></a><details><summary>(Click to expand) To always issue a refresh tokens ...</summary><br>
+<a id="issue-refresh-token-to-always-issue-a-refresh-token-cont"></a><details><summary>Example: (Click to expand) To always issue a refresh token (cont.)</summary><br>
 
 
-... If a client has the grant allowed and scope includes offline_access or the client is a public web client doing code flow. Configure `issueRefreshToken` like so
+(cont.) if a client has the grant allowed and scope includes offline_access or the client is a public web client doing code flow. Configure `issueRefreshToken` like so
   
 
 ```js
@@ -3223,7 +3209,7 @@ _**default value**_:
   'none'
 ]
 ```
-<a id="response-types-supported-values-list"></a><details><summary>(Click to expand) Supported values list</summary><br>
+<a id="response-types-supported-values-list"></a><details><summary>Example: (Click to expand) Supported values list.</summary><br>
 
 
 These are values defined in [`OIDC Core 1.0`](https://openid.net/specs/openid-connect-core-1_0-errata2.html#Authentication) and [OAuth 2.0 Multiple Response Type Encoding Practices](https://openid.net/specs/oauth-v2-multiple-response-types-1_0-final.html)
@@ -3406,7 +3392,7 @@ _**default value**_:
   Session: 1209600 /* 14 days in seconds */
 }
 ```
-<a id="ttl-to-resolve-a-ttl-on-runtime-for-each-new-token"></a><details><summary>(Click to expand) To resolve a ttl on runtime for each new token</summary><br>
+<a id="ttl-to-resolve-a-ttl-on-runtime-for-each-new-token"></a><details><summary>Example: (Click to expand) To resolve a ttl on runtime for each new token.</summary><br>
 
 
 Configure `ttl` for a given token type with a function like so, this must return a value, not a Promise.
@@ -3445,8 +3431,7 @@ _**default value**_:
   'EdDSA'
 ]
 ```
-<a id="enabled-jwa-attest-signing-alg-values-supported-values-list"></a><details><summary>(Click to expand) Supported values list
-</summary><br>
+<a id="enabled-jwa-attest-signing-alg-values-supported-values-list"></a><details><summary>Example: (Click to expand) Supported values list.</summary><br>
 
 ```js
 [
@@ -3475,8 +3460,7 @@ _**default value**_:
   'dir'
 ]
 ```
-<a id="enabled-jwa-authorization-encryption-alg-values-supported-values-list"></a><details><summary>(Click to expand) Supported values list
-</summary><br>
+<a id="enabled-jwa-authorization-encryption-alg-values-supported-values-list"></a><details><summary>Example: (Click to expand) Supported values list.</summary><br>
 
 ```js
 [
@@ -3507,8 +3491,7 @@ _**default value**_:
   'A256GCM'
 ]
 ```
-<a id="enabled-jwa-authorization-encryption-enc-values-supported-values-list"></a><details><summary>(Click to expand) Supported values list
-</summary><br>
+<a id="enabled-jwa-authorization-encryption-enc-values-supported-values-list"></a><details><summary>Example: (Click to expand) Supported values list.</summary><br>
 
 ```js
 [
@@ -3533,8 +3516,7 @@ _**default value**_:
   'EdDSA'
 ]
 ```
-<a id="enabled-jwa-authorization-signing-alg-values-supported-values-list"></a><details><summary>(Click to expand) Supported values list
-</summary><br>
+<a id="enabled-jwa-authorization-signing-alg-values-supported-values-list"></a><details><summary>Example: (Click to expand) Supported values list.</summary><br>
 
 ```js
 [
@@ -3564,8 +3546,7 @@ _**default value**_:
   'EdDSA'
 ]
 ```
-<a id="enabled-jwa-client-auth-signing-alg-values-supported-values-list"></a><details><summary>(Click to expand) Supported values list
-</summary><br>
+<a id="enabled-jwa-client-auth-signing-alg-values-supported-values-list"></a><details><summary>Example: (Click to expand) Supported values list.</summary><br>
 
 ```js
 [
@@ -3592,8 +3573,7 @@ _**default value**_:
   'EdDSA'
 ]
 ```
-<a id="enabled-jwa-d-po-p-signing-alg-values-supported-values-list"></a><details><summary>(Click to expand) Supported values list
-</summary><br>
+<a id="enabled-jwa-d-po-p-signing-alg-values-supported-values-list"></a><details><summary>Example: (Click to expand) Supported values list.</summary><br>
 
 ```js
 [
@@ -3622,8 +3602,7 @@ _**default value**_:
   'dir'
 ]
 ```
-<a id="enabled-jwa-id-token-encryption-alg-values-supported-values-list"></a><details><summary>(Click to expand) Supported values list
-</summary><br>
+<a id="enabled-jwa-id-token-encryption-alg-values-supported-values-list"></a><details><summary>Example: (Click to expand) Supported values list.</summary><br>
 
 ```js
 [
@@ -3654,8 +3633,7 @@ _**default value**_:
   'A256GCM'
 ]
 ```
-<a id="enabled-jwa-id-token-encryption-enc-values-supported-values-list"></a><details><summary>(Click to expand) Supported values list
-</summary><br>
+<a id="enabled-jwa-id-token-encryption-enc-values-supported-values-list"></a><details><summary>Example: (Click to expand) Supported values list.</summary><br>
 
 ```js
 [
@@ -3680,8 +3658,7 @@ _**default value**_:
   'EdDSA'
 ]
 ```
-<a id="enabled-jwa-id-token-signing-alg-values-supported-values-list"></a><details><summary>(Click to expand) Supported values list
-</summary><br>
+<a id="enabled-jwa-id-token-signing-alg-values-supported-values-list"></a><details><summary>Example: (Click to expand) Supported values list.</summary><br>
 
 ```js
 [
@@ -3711,8 +3688,7 @@ _**default value**_:
   'dir'
 ]
 ```
-<a id="enabled-jwa-introspection-encryption-alg-values-supported-values-list"></a><details><summary>(Click to expand) Supported values list
-</summary><br>
+<a id="enabled-jwa-introspection-encryption-alg-values-supported-values-list"></a><details><summary>Example: (Click to expand) Supported values list.</summary><br>
 
 ```js
 [
@@ -3743,8 +3719,7 @@ _**default value**_:
   'A256GCM'
 ]
 ```
-<a id="enabled-jwa-introspection-encryption-enc-values-supported-values-list"></a><details><summary>(Click to expand) Supported values list
-</summary><br>
+<a id="enabled-jwa-introspection-encryption-enc-values-supported-values-list"></a><details><summary>Example: (Click to expand) Supported values list.</summary><br>
 
 ```js
 [
@@ -3769,8 +3744,7 @@ _**default value**_:
   'EdDSA'
 ]
 ```
-<a id="enabled-jwa-introspection-signing-alg-values-supported-values-list"></a><details><summary>(Click to expand) Supported values list
-</summary><br>
+<a id="enabled-jwa-introspection-signing-alg-values-supported-values-list"></a><details><summary>Example: (Click to expand) Supported values list.</summary><br>
 
 ```js
 [
@@ -3800,8 +3774,7 @@ _**default value**_:
   'dir'
 ]
 ```
-<a id="enabled-jwa-request-object-encryption-alg-values-supported-values-list"></a><details><summary>(Click to expand) Supported values list
-</summary><br>
+<a id="enabled-jwa-request-object-encryption-alg-values-supported-values-list"></a><details><summary>Example: (Click to expand) Supported values list.</summary><br>
 
 ```js
 [
@@ -3832,8 +3805,7 @@ _**default value**_:
   'A256GCM'
 ]
 ```
-<a id="enabled-jwa-request-object-encryption-enc-values-supported-values-list"></a><details><summary>(Click to expand) Supported values list
-</summary><br>
+<a id="enabled-jwa-request-object-encryption-enc-values-supported-values-list"></a><details><summary>Example: (Click to expand) Supported values list.</summary><br>
 
 ```js
 [
@@ -3859,8 +3831,7 @@ _**default value**_:
   'EdDSA'
 ]
 ```
-<a id="enabled-jwa-request-object-signing-alg-values-supported-values-list"></a><details><summary>(Click to expand) Supported values list
-</summary><br>
+<a id="enabled-jwa-request-object-signing-alg-values-supported-values-list"></a><details><summary>Example: (Click to expand) Supported values list.</summary><br>
 
 ```js
 [
@@ -3890,8 +3861,7 @@ _**default value**_:
   'dir'
 ]
 ```
-<a id="enabled-jwa-userinfo-encryption-alg-values-supported-values-list"></a><details><summary>(Click to expand) Supported values list
-</summary><br>
+<a id="enabled-jwa-userinfo-encryption-alg-values-supported-values-list"></a><details><summary>Example: (Click to expand) Supported values list.</summary><br>
 
 ```js
 [
@@ -3922,8 +3892,7 @@ _**default value**_:
   'A256GCM'
 ]
 ```
-<a id="enabled-jwa-userinfo-encryption-enc-values-supported-values-list"></a><details><summary>(Click to expand) Supported values list
-</summary><br>
+<a id="enabled-jwa-userinfo-encryption-enc-values-supported-values-list"></a><details><summary>Example: (Click to expand) Supported values list.</summary><br>
 
 ```js
 [
@@ -3948,8 +3917,7 @@ _**default value**_:
   'EdDSA'
 ]
 ```
-<a id="enabled-jwa-userinfo-signing-alg-values-supported-values-list"></a><details><summary>(Click to expand) Supported values list
-</summary><br>
+<a id="enabled-jwa-userinfo-signing-alg-values-supported-values-list"></a><details><summary>Example: (Click to expand) Supported values list.</summary><br>
 
 ```js
 [

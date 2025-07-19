@@ -349,7 +349,7 @@ try {
     Object.keys(section).filter((p) => p.startsWith('example')).forEach((prop) => {
       const [title, ...content] = section[prop];
       append(`<a id="${words(`${headingTitle} ${title}`).map((w) => w.toLowerCase()).join('-')}"></a>`.replace('\n', ''));
-      append(`<details><summary>(Click to expand) ${title}</summary><br>\n\n`);
+      append(`<details><summary>Example: (Click to expand) ${title ? title.toString('utf8').replaceAll('\n', '').trim() : ''}</summary><br>\n\n`);
 
       const parts = [];
       let incode;
