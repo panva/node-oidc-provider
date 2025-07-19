@@ -704,7 +704,8 @@ undefined
 #### getAttestationSignaturePublicKey
 
 Specifies a helper function that shall be invoked to verify the issuer identifier of a Client Attestation JWT and retrieve the public key used for signature verification. At the point of this function's invocation, only the JWT format has been validated; no cryptographic or claims verification has occurred.   
- The function MUST return a public key in one of the supported formats: CryptoKey, KeyObject, or JSON Web Key (JWK) representation. The authorization server shall use this key to verify the Client Attestation JWT signature.  
+ The function MUST return a public key in one of the supported formats: CryptoKey, KeyObject, or JSON Web Key (JWK) representation. The authorization server shall use this key to verify the Client Attestation JWT signature.   
+  
 
 
 _**default value**_:
@@ -717,6 +718,19 @@ async function getAttestationSignaturePublicKey(ctx, iss, header, client) {
   throw new Error('features.attestClientAuth.getAttestationSignaturePublicKey not implemented');
 }
 ```
+<a id="get-attestation-signature-public-key-fetching-attester-public-keys-from-the-attester's-hosted-jwks"></a><details><summary>Example: (Click to expand) Fetching attester public keys from the attester's hosted JWKS</summary><br>
+
+```js
+import * as jose from 'jose';
+const attesters = new Map(Object.entries({
+  'https://attester.example.com': jose.createRemoteJWKSet(new URL('https://attester.example.com/jwks')),
+}));
+function getAttestationSignaturePublicKey(ctx, iss, header, client) {
+  if (attesters.has(iss)) return attesters.get(iss)(header);
+  throw new Error('unsupported oauth-client-attestation issuer');
+}
+```
+</details>
 
 </details>
 
