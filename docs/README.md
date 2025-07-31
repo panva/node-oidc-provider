@@ -3257,12 +3257,7 @@ _**recommendation**_: Implementations should employ memoization or caching mecha
 _**default value**_:
 ```js
 async function pairwiseIdentifier(ctx, accountId, client) {
-  return crypto
-    .createHash('sha256')
-    .update(client.sectorIdentifier)
-    .update(accountId)
-    .update(os.hostname()) // put your own unique salt here, or implement other mechanism
-    .digest('hex');
+  throw new Error('pairwiseIdentifier not implemented');
 }
 ```
 

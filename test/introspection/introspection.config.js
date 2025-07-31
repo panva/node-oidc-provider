@@ -1,3 +1,6 @@
+import * as os from 'node:os';
+import * as crypto from 'node:crypto';
+
 import merge from 'lodash/merge.js';
 
 import getConfig from '../default.config.js';
@@ -10,6 +13,14 @@ merge(config.features, {
   encryption: { enabled: true },
   clientCredentials: { enabled: true },
 });
+config.pairwiseIdentifier = async function pairwiseIdentifier(ctx, accountId, client) {
+  return crypto
+    .createHash('sha256')
+    .update(client.sectorIdentifier)
+    .update(accountId)
+    .update(os.hostname()) // put your own unique salt here, or implement other mechanism
+    .digest('hex');
+};
 
 export default {
   config,
