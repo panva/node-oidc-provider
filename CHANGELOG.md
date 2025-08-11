@@ -2,6 +2,20 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [9.4.1](https://github.com/panva/node-oidc-provider/compare/v9.4.0...v9.4.1) (2025-08-11)
+
+
+### Documentation
+
+* add an getAttestationSignaturePublicKey example ([3a7730c](https://github.com/panva/node-oidc-provider/commit/3a7730c451ac242122bf0105732c24fbfa460bef))
+
+
+### Refactor
+
+* avoid code generation from strings by pre-compiling eta views ([f997073](https://github.com/panva/node-oidc-provider/commit/f997073f09e8c699ff4319ef0fbf19167347e3a7))
+* drop the default implementation of pairwiseIdentifier ([6a2338a](https://github.com/panva/node-oidc-provider/commit/6a2338a76bc87b31b4b9854dcbf61bf5fce4af68))
+* remove oidc-token-hash dependency ([b607491](https://github.com/panva/node-oidc-provider/commit/b607491d1c9dc20c8884b6ac7fbd0286845c616a))
+
 ## [9.4.0](https://github.com/panva/node-oidc-provider/compare/v9.3.0...v9.4.0) (2025-07-17)
 
 
