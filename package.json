@@ -56,7 +56,7 @@
   },
   "dependencies": {
     "@koa/cors": "^5.0.0",
-    "@koa/router": "^13.1.1",
+    "@koa/router": "^14.0.0",
     "debug": "^4.4.1",
     "eta": "^3.5.0",
     "jose": "^6.0.12",
@@ -68,7 +68,7 @@
   },
   "devDependencies": {
     "@fastify/middie": "^9.0.3",
-    "@hapi/hapi": "^21.4.0",
+    "@hapi/hapi": "^21.4.2",
     "@koa/ejs": "^5.1.0",
     "base64url": "^3.0.1",
     "chai": "^5.2.1",
@@ -85,7 +85,7 @@
     "lodash": "^4.17.21",
     "mocha": "^11.7.1",
     "moment": "^2.30.1",
-    "openid-client": "^6.6.2",
+    "openid-client": "^6.6.3",
     "selfsigned": "^3.0.1",
     "sinon": "^21.0.0",
     "supertest": "^7.1.4",
