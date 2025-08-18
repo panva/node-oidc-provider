@@ -124,9 +124,6 @@ const adapter = (name) => {
           case 'final':
             metadata.profile = '1.0 Final';
             break;
-          case 'id2':
-            metadata.profile = '1.0 ID2';
-            break;
           default:
             return orig.call(this, id);
         }
@@ -389,10 +386,8 @@ const fapi = new Provider(ISSUER, {
     jwtResponseModes: { enabled: true },
     pushedAuthorizationRequests: { enabled: true },
     requestObjects: {
-      request: true,
-      requestUri: false,
+      enabled: true,
       requireSignedRequestObject: false,
-      mode: 'strict',
     },
   },
   responseTypes: ['code id_token', 'code'],
@@ -407,10 +402,6 @@ const fapi = new Provider(ISSUER, {
   },
   extraClientMetadata: {
     properties: ['profile'],
-  },
-  pkce: {
-    // TODO: remove in v9.x
-    required: () => false,
   },
 });
 
@@ -432,14 +423,11 @@ const LOCAL_SUITE_ORIGINS = new Set([
 
 Object.defineProperty(fapi.Client.prototype, 'redirectUriAllowed', {
   value(url) {
-    let parsed;
-    try {
-      parsed = new URL(url);
-    } catch (err) {
-      return false;
-    }
+    const parsed = URL.parse(url);
+    if (!parsed) return false;
+    const { origin, pathname, search } = parsed;
 
-    return (LOCAL_SUITE_ORIGINS.has(parsed.origin) || SUITE_ORIGINS.test(parsed.origin)) && parsed.pathname.endsWith('/callback') && (parsed.search === '' || parsed.search === '?dummy1=lorem&dummy2=ipsum');
+    return (LOCAL_SUITE_ORIGINS.has(origin) || SUITE_ORIGINS.test(origin)) && pathname.endsWith('/callback') && (search === '' || search === '?dummy1=lorem&dummy2=ipsum');
   },
 });
 

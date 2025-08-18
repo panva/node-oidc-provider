@@ -16,24 +16,12 @@ import configuration from './configuration.js';
 
 const __dirname = dirname(import.meta.url);
 
-const { GOOGLE_CLIENT_ID, PORT = 3000, ISSUER = `http://localhost:${PORT}` } = process.env;
+const { PORT = 3000, ISSUER = `http://localhost:${PORT}` } = process.env;
 
 let server;
 
 try {
   const provider = new Provider(ISSUER, { ...configuration, findAccount: Account.findAccount });
-
-  if (GOOGLE_CLIENT_ID) {
-    const openid = await import('openid-client'); // eslint-disable-line import/no-unresolved
-    const google = await openid.Issuer.discover('https://accounts.google.com/.well-known/openid-configuration');
-    const googleClient = new google.Client({
-      client_id: GOOGLE_CLIENT_ID,
-      response_types: ['id_token'],
-      redirect_uris: [`${ISSUER}/interaction/callback/google`],
-      grant_types: ['implicit'],
-    });
-    provider.app.context.google = googleClient;
-  }
 
   // don't wanna re-bundle the interactions so just insert the login amr and acr as static whenever
   // login is submitted, usually you would submit them from your interaction
@@ -69,17 +57,6 @@ try {
     await pHelmet(ctx.req, ctx.res);
     ctx.req.secure = origSecure;
     return next();
-  });
-
-  provider.use((ctx, next) => {
-    if (ctx.path !== '/.well-known/oauth-authorization-server') {
-      return next();
-    }
-
-    ctx.path = '/.well-known/openid-configuration';
-    return next().then(() => {
-      ctx.path = '/.well-known/oauth-authorization-server';
-    });
   });
 
   if (process.env.NODE_ENV === 'production') {
@@ -123,7 +100,7 @@ try {
     });
   }
 
-  render(provider.app, {
+  render(provider, {
     cache: false,
     viewExt: 'ejs',
     layout: '_layout',

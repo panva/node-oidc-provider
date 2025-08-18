@@ -1,11 +1,17 @@
 name: 'Lock threads'
 
+permissions: {}
+
 on:
   schedule:
     - cron: '55 11 * * 1'
 
 jobs:
   lock:
+    permissions:
+      issues: write
+      pull-requests: write
+      discussions: write
     if: ${{ github.repository == 'panva/node-oidc-provider' }}
     continue-on-error: true
     runs-on: ubuntu-latest

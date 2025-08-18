@@ -2,7 +2,7 @@
 
 import { randomBytes } from 'node:crypto';
 
-import { generateKeyPair } from 'jose';
+import { generateKeyPair, exportJWK } from 'jose';
 import { createSandbox } from 'sinon';
 import { expect } from 'chai';
 
@@ -35,34 +35,29 @@ describe('configuration.jwks', () => {
 
   it('must only contain private keys', async () => {
     const { publicKey } = await generateKeyPair('EdDSA');
+    const jwks = { keys: [await exportJWK(publicKey)] };
 
     expect(() => {
-      new Provider('http://localhost', { jwks: { keys: [publicKey.export({ format: 'jwk' })] } });
-    }).to.throw('jwks.keys[0] configuration is missing required properties');
+      new Provider('http://localhost', { jwks });
+    }).to.throw('jwks.keys[0].d configuration must be a non-empty string');
   });
 
-  it('warns if "kid" is the same for multiple keys', async () => {
-    sinon.stub(console, 'warn').returns();
+  it('rejects if "kid" is the same for multiple keys', async () => {
     const [rsa, ec] = await Promise.all([
-      generateKeyPair('RS256'),
-      generateKeyPair('ES256'),
+      generateKeyPair('RS256', { extractable: true }),
+      generateKeyPair('ES256', { extractable: true }),
     ]);
-    new Provider('http://localhost', {
+    const config = {
       jwks: {
         keys: [
-          { ...rsa.privateKey.export({ format: 'jwk' }), kid: 'nov-2019' },
-          { ...ec.privateKey.export({ format: 'jwk' }), kid: 'nov-2019' },
+          { ...await exportJWK(rsa.privateKey), kid: 'nov-2019' },
+          { ...await exportJWK(ec.privateKey), kid: 'nov-2019' },
         ],
       },
-    });
-    expect(console.warn.calledWithMatch(/different keys within the keystore SHOULD use distinct `kid` values, with your current keystore you should expect interoperability issues with your clients/)).to.be.true;
-  });
-
-  it('supports secp256k1 keys', async () => {
-    const { privateKey } = await generateKeyPair('ES256K');
+    };
 
     expect(() => {
-      new Provider('http://localhost', { jwks: { keys: [privateKey.export({ format: 'jwk' })] } });
-    }).not.to.throw();
+      new Provider('http://localhost', config);
+    }).to.throw('jwks.keys configuration must not contain duplicate "kid" values');
   });
 });

@@ -1,5 +1,7 @@
 name: Test
 
+permissions: {}
+
 on:
   push:
     branches: [main]
@@ -15,12 +17,12 @@ jobs:
     uses: panva/.github/.github/workflows/npm-audit.yml@main
 
   node-versions:
+    if: ${{ github.repository == 'panva/node-oidc-provider' || github.event_name == 'workflow_dispatch' }}
     uses: panva/.github/.github/workflows/node-versions.yml@main
     with:
-      min: 18
+      min: 22
 
   test:
-    if: ${{ github.repository == 'panva/node-oidc-provider' || github.event_name == 'workflow_dispatch' }}
     needs:
       - node-versions
     name: Test Suite
@@ -41,4 +43,4 @@ jobs:
           cache: 'npm'
           check-latest: true
       - run: npm clean-install
-      - run: npm run ci
+      - run: npm run test-ci

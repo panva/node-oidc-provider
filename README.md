@@ -8,7 +8,7 @@ other additional features and standards.
 - [Implemented specs & features](#implemented-specs--features)
 - [Certification](#certification)
 - [Documentation & Configuration](#documentation--configuration)
-- [Recipes](#recipes)
+- [Community Guides](#community-guides)
 - [Events](#events)
 
 ## Implemented specs & features
@@ -18,7 +18,7 @@ The following specifications are implemented by oidc-provider (not exhaustive):
 _Note that not all features are enabled by default, check the configuration section on how to enable them._
 
 - [`RFC6749` - OAuth 2.0][oauth2] & [`OIDC` Core 1.0][core]
-- [OIDC `Discovery 1.0`][discovery]
+- [OIDC `Discovery 1.0`][discovery] & [`RFC8414` Authorization Server Metadata][rfc8414]
 - Dynamic Client Registration
   - [OIDC `Dynamic Client Registration 1.0`][registration]
   - [`RFC7591` - OAuth 2.0 Dynamic Client Registration Protocol][oauth2-registration]
@@ -36,7 +36,9 @@ _Note that not all features are enabled by default, check the configuration sect
 - [`RFC9126` - OAuth 2.0 Pushed Authorization Requests (`PAR`)][par]
 - [`RFC9207` - OAuth 2.0 Authorization Server Issuer Identifier in Authorization Response][iss-auth-resp]
 - [`RFC9449` - OAuth 2.0 Demonstration of Proof-of-Possession at the Application Layer (`DPoP`)][dpop]
-- [Financial-grade API Security Profile 1.0 - Part 2: Advanced (`FAPI 1.0`)][fapi]
+- [`RFC9701` - JWT Response for OAuth Token Introspection][jwt-introspection]
+- [FAPI 1.0 Security Profile - Part 2: Advanced (`FAPI 1.0`)][fapi]
+- [FAPI 2.0 Security Profile (`FAPI 2.0`)][fapi2sp]
 - [JWT Secured Authorization Response Mode for OAuth 2.0 (`JARM`)][jarm]
 - [OIDC Client Initiated Backchannel Authentication Flow (`CIBA`)][ciba]
 
@@ -47,10 +49,10 @@ Supported Access Token formats:
 
 The following draft specifications are implemented by oidc-provider:
 
-- [JWT Response for OAuth Token Introspection - draft 10][jwt-introspection]
-- [Financial-grade API: Client Initiated Backchannel Authentication Profile (`FAPI-CIBA`) - Implementer's Draft 01][fapi-ciba]
-- [FAPI 2.0 Security Profile (`FAPI 2.0`) - Implementer's Draft 02][fapi2sp-id2]
-- [FAPI 2.0 Message Signing (`FAPI 2.0`) - Implementer's Draft 01][fapi2ms-id1]
+- [Financial-grade API: Client Initiated Backchannel Authentication Profile (`FAPI-CIBA`) - Implementers Draft 01][fapi-ciba]
+- [FAPI 2.0 Message Signing (`FAPI 2.0`) - Implementers Draft 01][fapi2ms-id1]
+- [OIDC Relying Party Metadata Choices 1.0 - Implementers Draft 01][rp-metadata-choices]
+- [OAuth 2.0 Attestation-Based Client Authentication - Draft 06][attestation-client-auth]
 
 Updates to draft specification versions are released as MINOR library versions,
 if you utilize these specification implementations consider using the tilde `~` operator in your
@@ -64,7 +66,7 @@ your CI.
 Filip Skokan has [certified][openid-certified-link] that [oidc-provider][npm-url]
 conforms to the following profiles of the OpenID Connect™ protocol.
 
-- Basic, Implicit, Hybrid, Config, Dynamic, Form Post, and 3rd Party-Init
+- Basic, Implicit, Hybrid, Config, Form Post, and 3rd Party-Init
 - Back-Channel Logout and RP-Initiated Logout
 - FAPI 1.0
 - FAPI CIBA
@@ -87,35 +89,36 @@ If you or your company use this module, or you need help using/upgrading the mod
 ## [Documentation](/docs/README.md) & Configuration
 
 oidc-provider can be mounted to existing connect, express, fastify, hapi, or koa applications, see
-[how](/docs/README.md#mounting-oidc-provider). The provider allows to be extended and configured in
+[how](/docs/README.md#mounting-oidc-provider). The authorization server allows to be extended and configured in
 various ways to fit a variety of uses. See the [documentation](/docs/README.md) and [example folder](/example).
 
 ```js
-import Provider from 'oidc-provider'
-const configuration = {
+import * as oidc from "oidc-provider";
+
+const provider = new oidc.Provider("http://localhost:3000", {
   // refer to the documentation for other available configuration
   clients: [
     {
-      client_id: 'foo',
-      client_secret: 'bar',
-      redirect_uris: ['http://lvh.me:8080/cb'],
+      client_id: "foo",
+      client_secret: "bar",
+      redirect_uris: ["http://localhost:8080/cb"],
       // ... other client properties
     },
   ],
-}
+});
 
-const oidc = new Provider('http://localhost:3000', configuration)
-
-oidc.listen(3000, () => {
+const server = provider.listen(3000, () => {
   console.log(
-    'oidc-provider listening on port 3000, check http://localhost:3000/.well-known/openid-configuration',
-  )
-})
+    "oidc-provider listening on port 3000, check http://localhost:3000/.well-known/openid-configuration",
+  );
+});
 ```
 
-## Recipes
+External type definitions are available via [DefinitelyTyped](https://npmjs.com/package/@types/oidc-provider).
 
-Collection of useful configuration use cases are available over at [recipes](/recipes).
+## Community Guides
+
+Collection of Community-maintained configuration use cases are in the [Community Guides Discussions section](https://github.com/panva/node-oidc-provider/discussions/categories/community-guides)
 
 ## Events
 
@@ -124,41 +127,46 @@ actions and i.e. emit metrics that react to specific triggers. See the list of a
 
 ## Supported Versions
 
-| Version                                                 | Security Fixes 🔑 | Other Bug Fixes 🐞 | New Features ⭐ |
-| ------------------------------------------------------- | ----------------- | ------------------ | --------------- |
-| [v8.x](https://github.com/panva/node-oidc-provider/tree/v8.x) | ✅                | ✅                 | ✅              |
+| Version                                                       | Security Fixes 🔑 | Other Bug Fixes 🐞 | New Features ⭐ |
+| ------------------------------------------------------------- | ----------------- | ------------------ | --------------- |
+| [v9.x](https://github.com/panva/node-oidc-provider/tree/v9.x) | [Security Policy] | ✅                 | ✅              |
+| [v8.x](https://github.com/panva/node-oidc-provider/tree/v8.x) | [Security Policy] | ❌                 | ❌              |
 
 [npm-url]: https://www.npmjs.com/package/oidc-provider
 [openid-certified-link]: https://openid.net/certification/
 [openid-connect]: https://openid.net/connect/
-[core]: https://openid.net/specs/openid-connect-core-1_0.html
-[discovery]: https://openid.net/specs/openid-connect-discovery-1_0.html
+[core]: https://openid.net/specs/openid-connect-core-1_0-errata2.html
+[discovery]: https://openid.net/specs/openid-connect-discovery-1_0-errata2.html
 [oauth2-registration]: https://www.rfc-editor.org/rfc/rfc7591.html
-[registration]: https://openid.net/specs/openid-connect-registration-1_0.html
+[registration]: https://openid.net/specs/openid-connect-registration-1_0-errata2.html
 [oauth2]: https://www.rfc-editor.org/rfc/rfc6749.html
 [oauth2-bearer]: https://www.rfc-editor.org/rfc/rfc6750.html
 [revocation]: https://www.rfc-editor.org/rfc/rfc7009.html
 [introspection]: https://www.rfc-editor.org/rfc/rfc7662.html
 [pkce]: https://www.rfc-editor.org/rfc/rfc7636.html
 [example-repo]: https://github.com/panva/node-oidc-provider-example
-[backchannel-logout]: https://openid.net/specs/openid-connect-backchannel-1_0-final.html
+[backchannel-logout]: https://openid.net/specs/openid-connect-backchannel-1_0-errata1.html
 [registration-management]: https://www.rfc-editor.org/rfc/rfc7592.html
 [oauth-native-apps]: https://www.rfc-editor.org/rfc/rfc8252.html
 [jar]: https://www.rfc-editor.org/rfc/rfc9101.html
 [device-flow]: https://www.rfc-editor.org/rfc/rfc8628.html
-[jwt-introspection]: https://tools.ietf.org/html/draft-ietf-oauth-jwt-introspection-response-10
+[jwt-introspection]: https://www.rfc-editor.org/rfc/rfc9701.html
 [sponsor-auth0]: https://a0.to/signup/panva
 [mtls]: https://www.rfc-editor.org/rfc/rfc8705.html
 [dpop]: https://www.rfc-editor.org/rfc/rfc9449.html
 [resource-indicators]: https://www.rfc-editor.org/rfc/rfc8707.html
-[jarm]: https://openid.net/specs/oauth-v2-jarm.html
+[jarm]: https://openid.net/specs/oauth-v2-jarm-final.html
 [jwt-at]: https://www.rfc-editor.org/rfc/rfc9068.html
 [support-sponsor]: https://github.com/sponsors/panva
 [par]: https://www.rfc-editor.org/rfc/rfc9126.html
 [rpinitiated-logout]: https://openid.net/specs/openid-connect-rpinitiated-1_0-final.html
 [iss-auth-resp]: https://www.rfc-editor.org/rfc/rfc9207.html
-[fapi]: https://openid.net/specs/openid-financial-api-part-2-1_0.html
+[fapi]: https://openid.net/specs/openid-financial-api-part-2-1_0-final.html
 [ciba]: https://openid.net/specs/openid-client-initiated-backchannel-authentication-core-1_0-final.html
 [fapi-ciba]: https://openid.net/specs/openid-financial-api-ciba-ID1.html
-[fapi2sp-id2]: https://openid.net/specs/fapi-2_0-security-profile-ID2.html
+[fapi2sp]: https://openid.net/specs/fapi-security-profile-2_0-final.html
 [fapi2ms-id1]: https://openid.net/specs/fapi-2_0-message-signing-ID1.html
+[Security Policy]: https://github.com/panva/node-oidc-provider/security/policy
+[rp-metadata-choices]: https://openid.net/specs/openid-connect-rp-metadata-choices-1_0-ID1.html
+[rfc8414]: https://www.rfc-editor.org/rfc/rfc8414.html
+[attestation-client-auth]: https://www.ietf.org/archive/id/draft-ietf-oauth-attestation-based-client-auth-06.html

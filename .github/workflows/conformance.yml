@@ -1,5 +1,7 @@
 name: Conformance Checks
 
+permissions: {}
+
 on:
   push:
     branches: [main]
@@ -54,70 +56,70 @@ jobs:
           # Back-Channel OP
           - plan: oidcc-backchannel-rp-initiated-logout-certification-test-plan
 
-          # FAPI 2.0 Security Profile ID2
-          - plan: fapi2-security-profile-id2-test-plan
+          # FAPI 2.0 Security Profile Final
+          - plan: fapi2-security-profile-final-test-plan
             client_auth_type: private_key_jwt
             sender_constrain: dpop
             openid: openid_connect
-          - plan: fapi2-security-profile-id2-test-plan
+          - plan: fapi2-security-profile-final-test-plan
             client_auth_type: private_key_jwt
             sender_constrain: dpop
             openid: plain_oauth
-          - plan: fapi2-security-profile-id2-test-plan
+          - plan: fapi2-security-profile-final-test-plan
             client_auth_type: private_key_jwt
             sender_constrain: mtls
             openid: openid_connect
-          - plan: fapi2-security-profile-id2-test-plan
+          - plan: fapi2-security-profile-final-test-plan
             client_auth_type: private_key_jwt
             sender_constrain: mtls
             openid: plain_oauth
-          - plan: fapi2-security-profile-id2-test-plan
+          - plan: fapi2-security-profile-final-test-plan
             client_auth_type: mtls
             sender_constrain: dpop
             openid: openid_connect
-          - plan: fapi2-security-profile-id2-test-plan
+          - plan: fapi2-security-profile-final-test-plan
             client_auth_type: mtls
             sender_constrain: dpop
             openid: plain_oauth
-          - plan: fapi2-security-profile-id2-test-plan
+          - plan: fapi2-security-profile-final-test-plan
             client_auth_type: mtls
             sender_constrain: mtls
             openid: openid_connect
-          - plan: fapi2-security-profile-id2-test-plan
+          - plan: fapi2-security-profile-final-test-plan
             client_auth_type: mtls
             sender_constrain: mtls
             openid: plain_oauth
 
-          # FAPI 2.0 Message Signing ID1
-          - plan: fapi2-message-signing-id1-test-plan
+          # FAPI 2.0 Message Signing Final
+          - plan: fapi2-message-signing-final-test-plan
             client_auth_type: private_key_jwt
             sender_constrain: dpop
             openid: openid_connect
-          - plan: fapi2-message-signing-id1-test-plan
+          - plan: fapi2-message-signing-final-test-plan
             client_auth_type: private_key_jwt
             sender_constrain: dpop
             openid: plain_oauth
-          - plan: fapi2-message-signing-id1-test-plan
+          - plan: fapi2-message-signing-final-test-plan
             client_auth_type: private_key_jwt
             sender_constrain: mtls
             openid: openid_connect
-          - plan: fapi2-message-signing-id1-test-plan
+          - plan: fapi2-message-signing-final-test-plan
             client_auth_type: private_key_jwt
             sender_constrain: mtls
             openid: plain_oauth
-          - plan: fapi2-message-signing-id1-test-plan
+          - plan: fapi2-message-signing-final-test-plan
             client_auth_type: mtls
             sender_constrain: dpop
             openid: openid_connect
-          - plan: fapi2-message-signing-id1-test-plan
+          - plan: fapi2-message-signing-final-test-plan
             client_auth_type: mtls
             sender_constrain: dpop
             openid: plain_oauth
-          - plan: fapi2-message-signing-id1-test-plan
+          - plan: fapi2-message-signing-final-test-plan
             client_auth_type: mtls
             sender_constrain: mtls
             openid: openid_connect
-          - plan: fapi2-message-signing-id1-test-plan
+          - plan: fapi2-message-signing-final-test-plan
             client_auth_type: mtls
             sender_constrain: mtls
             openid: plain_oauth
@@ -200,10 +202,6 @@ jobs:
           DEBUG: oidc-provider:*
           NODE_OPTIONS: --tls-cipher-list="ECDHE-RSA-AES128-GCM-SHA256 ECDHE-RSA-AES256-GCM-SHA384 ECDHE-ECDSA-AES128-GCM-SHA256 ECDHE-ECDSA-AES256-GCM-SHA384"
           NODE_TLS_REJECT_UNAUTHORIZED: 0
-      - name: Set Conformance Suite Version
-        run: |
-          export VERSION=($(curl --silent "https://gitlab.com/api/v4/projects/4175605/releases" | jq -r '.[0].tag_name'))
-          echo "VERSION=$VERSION" >> $GITHUB_ENV
       - name: Load Cached Conformance Suite Build
         uses: actions/cache@v4
         id: cache
@@ -213,6 +211,8 @@ jobs:
           fail-on-cache-miss: true
       - name: Run Conformance Suite
         working-directory: ./conformance-suite
+        env:
+          COMPOSE_BAKE: true
         run: |
           docker compose -f docker-compose-dev.yml up -d
           while ! curl -skfail https://localhost.emobix.co.uk:8443/api/runner/available >/dev/null; do sleep 2; done
@@ -238,6 +238,8 @@ jobs:
         if: ${{ always() }}
       - name: Stop Conformance Suite
         working-directory: ./conformance-suite
+        env:
+          COMPOSE_BAKE: true
         run: |
           killall -SIGINT node
           docker compose -f docker-compose-dev.yml down

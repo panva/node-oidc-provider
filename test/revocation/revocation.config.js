@@ -19,5 +19,10 @@ export default {
       client_secret: 'secret',
       redirect_uris: ['https://client2.example.com/cb'],
     },
+    {
+      client_id: 'client-public',
+      token_endpoint_auth_method: 'none',
+      redirect_uris: ['https://client-public.example.com/cb'],
+    },
   ],
 };

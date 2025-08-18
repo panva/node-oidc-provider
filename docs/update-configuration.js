@@ -16,6 +16,7 @@ for (const [key, value] of Object.entries(defaults.ttl)) {
     value[inspect.custom] = () => (
       value.toString()
         .replace(/ {6}/g, '  ')
+        // eslint-disable-next-line redos/no-vulnerable
         .replace(/\s+}$/, '\n}')
         .split('\n')
         .filter((line) => !line.includes('Change'))
@@ -80,6 +81,7 @@ const props = [
   'title',
   'recommendation',
   'example',
+  'see',
   '@nodefault',
   '@skip',
 ];
@@ -214,6 +216,7 @@ try {
   const findAccountIdx = configuration.findIndex((x) => x === 'findAccount');
   const findAccount = configuration.splice(findAccountIdx, 1);
 
+  let first = true;
   let hidden;
   let prev;
   for (const block of [
@@ -249,13 +252,37 @@ try {
     }
     prev = block;
 
+    if (first) {
+      first = false;
+    } else if (!hidden) {
+      append('\n---\n');
+    }
+
     append(`\n${heading} ${headingTitle}\n\n`);
     if (section.title) {
       append(`${section.title}  \n\n`);
     }
 
+    const value = get(defaults, block);
+
+    if (typeof value === 'object' && 'ack' in value) {
+      append('> [!NOTE]\n');
+      append('> This is an experimental feature.\n\n');
+    }
+
     if (section.description) {
       append(`${capitalizeSentences(section.description.join(' '))}  \n\n`);
+    }
+
+    if (section.see) {
+      if (section.see.length > 1) {
+        append('See:\n');
+        for (const see of section.see) {
+          append(`- ${see.toString('utf-8')}\n`);
+        }
+      } else {
+        append(`See ${section.see[0].toString('utf-8')}\n`);
+      }
     }
 
     Object.keys(section).filter((x) => x.startsWith('recommendation')).forEach((prop) => {
@@ -263,7 +290,6 @@ try {
     });
 
     if (!('@nodefault' in section)) {
-      const value = get(defaults, block);
       switch (typeof value) {
         case 'boolean':
         case 'number':
@@ -330,7 +356,7 @@ try {
     Object.keys(section).filter((p) => p.startsWith('example')).forEach((prop) => {
       const [title, ...content] = section[prop];
       append(`<a id="${words(`${headingTitle} ${title}`).map((w) => w.toLowerCase()).join('-')}"></a>`.replace('\n', ''));
-      append(`<details><summary>(Click to expand) ${title}</summary><br>\n\n`);
+      append(`<details><summary>Example: (Click to expand) ${title ? title.toString('utf8').replaceAll('\n', '').trim() : ''}</summary><br>\n\n`);
 
       const parts = [];
       let incode;

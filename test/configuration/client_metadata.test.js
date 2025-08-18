@@ -4,6 +4,7 @@ import * as util from 'node:util';
 import sinon from 'sinon';
 import { expect } from 'chai';
 import merge from 'lodash/merge.js';
+import mergeWith from 'lodash/mergeWith.js';
 import omit from 'lodash/omit.js';
 import pull from 'lodash/pull.js';
 import cloneDeep from 'lodash/cloneDeep.js';
@@ -12,6 +13,7 @@ import Provider, { errors } from '../../lib/index.js';
 import { enabledJWA } from '../default.config.js';
 import sectorIdentifier from '../../lib/helpers/sector_identifier.js';
 import keys, { stripPrivateJWKFields } from '../keys.js';
+import addClient from '../../lib/helpers/add_client.js';
 
 const sigKey = stripPrivateJWKFields(keys[0]);
 const privateKey = keys[0];
@@ -26,24 +28,30 @@ describe('Client metadata validation', () => {
     });
   });
 
-  function addClient(metadata, configuration) {
+  function register(metadata, configuration) {
     let provider;
     if (configuration) {
       provider = new Provider(
         'http://localhost',
-        merge(
+        mergeWith(
           {
             jwks: { keys },
             enabledJWA: cloneDeep(enabledJWA),
           },
           configuration,
+          (objValue, srcValue) => {
+            if (Array.isArray(objValue)) {
+              return srcValue;
+            }
+            return undefined;
+          },
         ),
       );
     } else {
       provider = DefaultProvider;
     }
 
-    return i(provider).clientAdd({
+    return addClient(provider, {
       client_id: 'client',
       client_secret: 'secret',
       redirect_uris: ['https://client.example.com/cb'],
@@ -62,7 +70,7 @@ describe('Client metadata validation', () => {
       if (metadata) msg = util.format(`${msg}, [client %j]`, omit(metadata, ['jwks.keys']));
       if (configuration) msg = util.format(`${msg}, [provider %j]`, configuration);
       // eslint-disable-next-line max-len
-      it(msg, () => assert.rejects(addClient({ ...metadata, [prop]: value }, configuration), (err) => {
+      it(msg, () => assert.rejects(register({ ...metadata, [prop]: value }, configuration), (err) => {
         if (prop === 'redirect_uris') {
           expect(err.message).to.equal('invalid_redirect_uri');
         } else {
@@ -76,7 +84,7 @@ describe('Client metadata validation', () => {
 
   const mustBeUri = (prop, protocols, configuration, metadata) => {
     it('must be a uri', () => assert.rejects(
-      addClient(
+      register(
         {
           ...metadata,
           [prop]: 'whatever://not but not a uri',
@@ -99,7 +107,7 @@ describe('Client metadata validation', () => {
     ));
 
     protocols.forEach((protocol) => {
-      it(`can be ${protocol} uri`, () => addClient({
+      it(`can be ${protocol} uri`, () => register({
         [prop]: `${protocol}://example.com/${prop}`,
       }));
     });
@@ -111,7 +119,7 @@ describe('Client metadata validation', () => {
       let msg = util.format('must be a array, %j provided', value);
       if (configuration) msg = util.format(`${msg}, [provider %j]`, configuration);
       it(msg, () => assert.rejects(
-        addClient(
+        register(
           {
             [prop]: value,
           },
@@ -136,7 +144,7 @@ describe('Client metadata validation', () => {
       if (metadata) msg = util.format(`${msg}, [client %j]`, omit(metadata, ['jwks.keys']));
       if (configuration) msg = util.format(`${msg}, [provider %j]`, configuration);
       it(msg, () => assert.rejects(
-        addClient(
+        register(
           {
             [prop]: value,
           },
@@ -160,7 +168,7 @@ describe('Client metadata validation', () => {
     if (metadata) msg = util.format(`${msg}, [client %j]`, omit(metadata, ['jwks.keys']));
     if (configuration) msg = util.format(`${msg}, [provider %j]`, configuration);
 
-    it(msg, () => addClient(metadata, configuration).then((client) => {
+    it(msg, () => register(metadata, configuration).then((client) => {
       if (value === undefined) {
         expect(client.metadata()).not.to.have.property(prop);
       } else {
@@ -180,7 +188,7 @@ describe('Client metadata validation', () => {
       let msg = util.format('is required, %j provided', value);
       if (configuration) msg = util.format(`${msg}, [provider %j]`, configuration);
       it(msg, () => assert.rejects(
-        addClient(
+        register(
           {
             [prop]: value,
             ...metadata,
@@ -213,7 +221,7 @@ describe('Client metadata validation', () => {
     if (metadata) msg = util.format(`${msg}, [client %j]`, omit(metadata, ['jwks.keys']));
     if (configuration) msg = util.format(`${msg}, [provider %j]`, configuration);
     // eslint-disable-next-line max-len
-    it(msg, () => addClient({ ...metadata, [prop]: value }, configuration).then(assertion, (err) => {
+    it(msg, () => register({ ...metadata, [prop]: value }, configuration).then(assertion, (err) => {
       if (err instanceof InvalidClientMetadata) {
         throw new Error(`InvalidClientMetadata received ${err.message} ${err.error_description}`);
       }
@@ -225,7 +233,7 @@ describe('Client metadata validation', () => {
     if (metadata) msg = util.format(`${msg}, [client %j]`, omit(metadata, ['jwks.keys']));
     if (configuration) msg = util.format(`${msg}, [provider %j]`, configuration);
     // eslint-disable-next-line max-len
-    it(msg, () => assert.rejects(addClient({ ...metadata, [prop]: value }, configuration), (err) => {
+    it(msg, () => assert.rejects(register({ ...metadata, [prop]: value }, configuration), (err) => {
       if (prop === 'redirect_uris') {
         expect(err.message).to.equal('invalid_redirect_uri');
       } else {
@@ -314,10 +322,10 @@ describe('Client metadata validation', () => {
   });
 
   context('require_signed_request_object', function () {
-    const configuration = (value = false, requestUri = true) => ({
+    const configuration = (value = false, enabled = true) => ({
       features: {
         requestObjects: {
-          requestUri,
+          enabled,
           requireSignedRequestObject: value,
         },
         pushedAuthorizationRequests: {
@@ -488,7 +496,7 @@ describe('Client metadata validation', () => {
     it('has an schema invalidation hook for forcing https on implicit', async () => {
       const sandbox = sinon.createSandbox();
       sandbox.spy(DefaultProvider.Client.Schema.prototype, 'invalidate');
-      await addClient({
+      await register({
         grant_types: ['implicit'],
         response_types: ['id_token'],
         redirect_uris: ['http://foo/bar'],
@@ -512,7 +520,7 @@ describe('Client metadata validation', () => {
     it('has an schema invalidation hook for preventing localhost', async () => {
       const sandbox = sinon.createSandbox();
       sandbox.spy(DefaultProvider.Client.Schema.prototype, 'invalidate');
-      await addClient({
+      await register({
         grant_types: ['implicit'],
         response_types: ['id_token'],
         redirect_uris: ['https://localhost'],
@@ -578,88 +586,33 @@ describe('Client metadata validation', () => {
   });
 
   context('request_object_signing_alg', function () {
-    for (const configuration of [
-      {
-        features: {
-          requestObjects: { requestUri: true, request: false },
-          pushedAuthorizationRequests: { enabled: false },
-        },
-      },
-      {
-        features: {
-          requestObjects: { requestUri: false, request: true },
-          pushedAuthorizationRequests: { enabled: false },
-        },
-      },
-    ]) {
-      mustBeString(this.title, undefined, undefined, configuration);
-      [
-        'HS256',
-        'HS384',
-        'HS512',
-        'RS256',
-        'RS384',
-        'RS512',
-        'PS256',
-        'PS384',
-        'PS512',
-        'ES256',
-        'ES384',
-        'ES512',
-        'EdDSA',
-      ].forEach((alg) => {
-        allows(this.title, alg, { jwks: { keys: [sigKey] } }, configuration);
-      });
-      rejects(this.title, 'not-an-alg', undefined, undefined, configuration);
-      rejects(this.title, 'none', undefined, undefined, configuration);
-    }
-  });
-
-  context('request_uris', function () {
-    defaultsTo(this.title, [], undefined, {
-      features: {
-        requestObjects: { requestUri: true },
-      },
-    });
-    defaultsTo(this.title, undefined, undefined, {
-      features: {
-        requestObjects: {
-          requestUri: true,
-          requireUriRegistration: false,
-        },
-      },
-    });
     const configuration = {
       features: {
-        requestObjects: { requestUri: true },
+        requestObjects: { enabled: true },
+        pushedAuthorizationRequests: { enabled: false },
       },
     };
-    mustBeArray(this.title, undefined, configuration);
-
-    allows(this.title, ['https://a-web-uri'], undefined, configuration);
-    allows(this.title, ['http://a-web-uri'], /must only contain https uris$/, configuration);
-    rejects(this.title, [123], /must only contain strings$/, undefined, configuration);
-    rejects(
-      this.title,
-      ['not a uri'],
-      /request_uris must only contain web uris$/,
-      undefined,
-      configuration,
-    );
-    rejects(
-      this.title,
-      ['custom-scheme://not-a-web-uri'],
-      /request_uris must only contain web uris$/,
-      undefined,
-      configuration,
-    );
-    rejects(
-      this.title,
-      ['urn:example'],
-      /request_uris must only contain web uris$/,
-      undefined,
-      configuration,
-    );
+    mustBeString(this.title, undefined, undefined, configuration);
+    [
+      'HS256',
+      'HS384',
+      'HS512',
+      'RS256',
+      'RS384',
+      'RS512',
+      'PS256',
+      'PS384',
+      'PS512',
+      'ES256',
+      'ES384',
+      'ES512',
+      'Ed25519',
+      'EdDSA',
+    ].forEach((alg) => {
+      allows(this.title, alg, { jwks: { keys: [sigKey] } }, configuration);
+    });
+    rejects(this.title, 'not-an-alg', undefined, undefined, configuration);
+    rejects(this.title, 'none', undefined, undefined, configuration);
   });
 
   context('require_auth_time', function () {
@@ -1008,7 +961,7 @@ describe('Client metadata validation', () => {
         configuration,
       );
       it('is required when id_token_encrypted_response_enc is also provided', () => assert.rejects(
-        addClient(
+        register(
           {
             id_token_encrypted_response_enc: 'whatever',
           },
@@ -1114,7 +1067,7 @@ describe('Client metadata validation', () => {
       defaultsTo(this.title, undefined, undefined, configuration);
       mustBeString(this.title, undefined, metadata, configuration);
       it('is required when userinfo_encrypted_response_enc is also provided', () => assert.rejects(
-        addClient(
+        register(
           {
             userinfo_encrypted_response_enc: 'whatever',
           },
@@ -1219,7 +1172,7 @@ describe('Client metadata validation', () => {
       defaultsTo(this.title, undefined, undefined, configuration);
       mustBeString(this.title, undefined, metadata, configuration);
       it('is required when introspection_encrypted_response_enc is also provided', () => assert.rejects(
-        addClient(
+        register(
           {
             introspection_encrypted_response_enc: 'whatever',
           },
@@ -1319,7 +1272,7 @@ describe('Client metadata validation', () => {
       defaultsTo(this.title, undefined, undefined, configuration);
       mustBeString(this.title, undefined, metadata, configuration);
       it('is required when authorization_encrypted_response_enc is also provided', () => assert.rejects(
-        addClient(
+        register(
           {
             authorization_encrypted_response_enc: 'whatever',
           },
@@ -1415,7 +1368,7 @@ describe('Client metadata validation', () => {
     const configuration = {
       features: {
         encryption: { enabled: true },
-        requestObjects: { request: true },
+        requestObjects: { enabled: true },
       },
     };
     context('request_object_encryption_alg', function () {
@@ -1423,7 +1376,7 @@ describe('Client metadata validation', () => {
       defaultsTo(this.title, undefined, undefined, configuration);
       mustBeString(this.title, undefined, undefined, configuration);
       it('is required when request_object_encryption_enc is also provided', () => assert.rejects(
-        addClient(
+        register(
           {
             request_object_encryption_enc: 'whatever',
           },
@@ -1565,7 +1518,6 @@ describe('Client metadata validation', () => {
     const configuration = {
       features: {
         ciba: { enabled: true, deliveryModes: ['ping', 'poll'] },
-        requestObjects: { request: false, requestUri: false },
       },
     };
     const metadata = {
@@ -1601,7 +1553,7 @@ describe('Client metadata validation', () => {
 
     context('backchannel_authentication_request_signing_alg', function () {
       const withRequestObjects = merge({}, configuration, {
-        features: { requestObjects: { request: true } },
+        features: { requestObjects: { enabled: true } },
       });
       mustBeString(this.title, undefined, metadata, withRequestObjects);
       [
@@ -1614,6 +1566,7 @@ describe('Client metadata validation', () => {
         'ES256',
         'ES384',
         'ES512',
+        'Ed25519',
         'EdDSA',
       ].forEach((alg) => {
         allows(this.title, alg, { ...metadata, jwks: { keys: [sigKey] } }, withRequestObjects);
@@ -1750,7 +1703,7 @@ describe('Client metadata validation', () => {
         encryption: { enabled: true },
         jwtUserinfo: { enabled: true },
         ciba: { enabled: true },
-        requestObjects: { request: true },
+        requestObjects: { enabled: true },
       },
     };
 
@@ -1960,13 +1913,13 @@ describe('Client metadata validation', () => {
     // more in client_keystore.test.js
   });
 
-  it('allows unrecognized properties but does not yield them back', () => addClient({
+  it('allows unrecognized properties but does not yield them back', () => register({
     unrecognized: true,
   }).then((client) => {
     expect(client).not.to.have.property('unrecognized');
   }));
 
-  it('allows clients without grants, for introspection, revocation (RS clients)', () => addClient({
+  it('allows clients without grants, for introspection, revocation (RS clients)', () => register({
     client_id: 'authorization-server',
     client_secret: 'foobar',
     redirect_uris: [],
@@ -1978,7 +1931,7 @@ describe('Client metadata validation', () => {
     expect(client.redirectUris).to.be.empty;
   }));
 
-  it('allows clients only with client_credentials', () => addClient(
+  it('allows clients only with client_credentials', () => register(
     {
       client_id: 'resource-server',
       client_secret: 'foobar',
@@ -2012,7 +1965,7 @@ describe('Client metadata validation', () => {
     rejects(this.title, ['bar'], /can only contain 'foo'$/, undefined, { features });
   });
 
-  it('fails to determine sector identifier', () => addClient(
+  it('fails to determine sector identifier', () => register(
     {
       client_id: 'authorization-server',
       client_secret: 'foobar',
@@ -2061,4 +2014,41 @@ describe('Client metadata validation', () => {
       });
     },
   );
+
+  describe('OpenID Connect Relying Party Metadata Choices 1.0', () => {
+    const configuration = {
+      features: {
+        rpMetadataChoices: {
+          enabled: true,
+        },
+      },
+    };
+
+    context('id_token_signing_alg_values_supported', function () {
+      defaultsTo(this.title, undefined);
+      defaultsTo(this.title, undefined, undefined, configuration);
+      mustBeArray(this.title, undefined, configuration);
+      // picks an explicit value if it's in the choice list
+      const supported = ['PS256', 'ES256', 'RS256'];
+      for (const alg of supported) {
+        defaultsTo('id_token_signed_response_alg', alg, {
+          id_token_signed_response_alg: alg,
+          id_token_signing_alg_values_supported: ['PS256', 'RS256', 'ES256'],
+        }, configuration);
+      }
+      // rejects a choice if it includes non-string values
+      rejects(this.title, [0], `${this.title} must only contain strings`, undefined, configuration);
+      // rejects a choice if an explicit value is not in it
+      rejects(this.title, ['ES256'], `${this.title} must include the value of provided id_token_signed_response_alg`, {
+        id_token_signed_response_alg: 'RS256',
+      }, configuration);
+      // rejects a choice if there are no supported values in it
+      rejects(this.title, ['ES256'], `${this.title} includes no supported values`, undefined, {
+        ...configuration,
+        enabledJWA: {
+          idTokenSigningAlgValues: ['RS256'],
+        },
+      });
+    });
+  });
 });

@@ -12,11 +12,6 @@ describe('Pushed Request Object', () => {
   context('w/o Request Objects', () => {
     before(bootstrap(import.meta.url));
 
-    before(async function () {
-      const client = await this.provider.Client.find('client');
-      this.key = await importJWK(client.symmetricKeyStore.selectForSign({ alg: 'HS256' })[0]);
-    });
-
     describe('discovery', () => {
       it('extends the well known config', async function () {
         await this.agent.get('/.well-known/openid-configuration')
@@ -24,12 +19,12 @@ describe('Pushed Request Object', () => {
             expect(response.body).not.to.have.property('request_object_endpoint');
             expect(response.body).to.have.property('pushed_authorization_request_endpoint');
             expect(response.body).not.to.have.property('request_object_signing_alg_values_supported');
-            expect(response.body).to.have.property('request_parameter_supported', false);
             expect(response.body).to.have.property('request_uri_parameter_supported', false);
             expect(response.body).not.to.have.property('require_pushed_authorization_requests');
           });
 
-        i(this.provider).configuration('features.pushedAuthorizationRequests').requirePushedAuthorizationRequests = true;
+        i(this.provider).features.pushedAuthorizationRequests
+          .requirePushedAuthorizationRequests = true;
 
         return this.agent.get('/.well-known/openid-configuration')
           .expect((response) => {
@@ -38,7 +33,8 @@ describe('Pushed Request Object', () => {
       });
 
       after(function () {
-        i(this.provider).configuration('features.pushedAuthorizationRequests').requirePushedAuthorizationRequests = false;
+        i(this.provider).features.pushedAuthorizationRequests
+          .requirePushedAuthorizationRequests = false;
       });
     });
 
@@ -47,10 +43,12 @@ describe('Pushed Request Object', () => {
 
       context('allowUnregisteredRedirectUris', () => {
         before(function () {
-          i(this.provider).configuration('features.pushedAuthorizationRequests').allowUnregisteredRedirectUris = true;
+          i(this.provider).features.pushedAuthorizationRequests
+            .allowUnregisteredRedirectUris = true;
         });
         after(function () {
-          i(this.provider).configuration('features.pushedAuthorizationRequests').allowUnregisteredRedirectUris = false;
+          i(this.provider).features.pushedAuthorizationRequests
+            .allowUnregisteredRedirectUris = false;
         });
         before(function () { return this.login(); });
         after(function () { return this.logout(); });
@@ -182,9 +180,9 @@ describe('Pushed Request Object', () => {
         describe('using a plain pushed authorization request', () => {
           describe('Pushed Authorization Request Endpoint', () => {
             it('populates ctx.oidc.entities', function (done) {
-              this.provider.use(this.assertOnce((ctx) => {
+              this.assertOnce((ctx) => {
                 expect(ctx.oidc.entities).to.have.keys('Client', 'PushedAuthorizationRequest');
-              }, done));
+              }, done);
 
               this.agent.post('/request')
                 .auth(clientId, 'secret')
@@ -395,7 +393,8 @@ describe('Pushed Request Object', () => {
             expect(response.body).not.to.have.property('require_pushed_authorization_requests');
           });
 
-        i(this.provider).configuration('features.pushedAuthorizationRequests').requirePushedAuthorizationRequests = true;
+        i(this.provider).features.pushedAuthorizationRequests
+          .requirePushedAuthorizationRequests = true;
 
         return this.agent.get('/.well-known/openid-configuration')
           .expect((response) => {
@@ -404,7 +403,8 @@ describe('Pushed Request Object', () => {
       });
 
       after(function () {
-        i(this.provider).configuration('features.pushedAuthorizationRequests').requirePushedAuthorizationRequests = false;
+        i(this.provider).features.pushedAuthorizationRequests
+          .requirePushedAuthorizationRequests = false;
       });
     });
 
@@ -415,9 +415,9 @@ describe('Pushed Request Object', () => {
         describe('using a JAR request parameter', () => {
           describe('Pushed Authorization Request Endpoint', () => {
             it('populates ctx.oidc.entities', function (done) {
-              this.provider.use(this.assertOnce((ctx) => {
+              this.assertOnce((ctx) => {
                 expect(ctx.oidc.entities).to.have.keys('Client', 'PushedAuthorizationRequest');
-              }, done));
+              }, done);
 
               JWT.sign({
                 jti: randomBytes(16).toString('base64url'),
