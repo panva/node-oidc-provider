@@ -26,3 +26,5 @@ With only this flag set, the cookies will still be set by the auth server, and c
    ```
 
    When `shouldWriteCookies` is not provided, the library defaults to checking `!cookies.doNotSet` for backward compatibility.
+
+   If `shouldWriteCookies` returns false, any existing cookies from previous sessions are also deleted, in addition to not writing cookies for the current session.
