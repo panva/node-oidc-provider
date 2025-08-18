@@ -3,6 +3,10 @@ import sinon from 'sinon';
 
 import bootstrap from '../test_helper.js';
 
+function noW3A({ headers }) {
+  expect(headers).not.to.have.property('www-authenticate');
+}
+
 describe('registration features', () => {
   before(bootstrap(import.meta.url));
 
@@ -27,9 +31,9 @@ describe('registration features', () => {
     });
 
     it('populates ctx.oidc.entities', function (done) {
-      this.provider.use(this.assertOnce((ctx) => {
+      this.assertOnce((ctx) => {
         expect(ctx.oidc.entities).to.have.keys('Client', 'RegistrationAccessToken');
-      }, done));
+      }, done);
 
       this.agent.post('/reg')
         .send({
@@ -40,13 +44,13 @@ describe('registration features', () => {
 
     context('when issueRegistrationAccessToken is false', () => {
       before(function () {
-        const config = i(this.provider).configuration('features.registration');
+        const config = i(this.provider).features.registration;
         this.orig = config.issueRegistrationAccessToken;
         config.issueRegistrationAccessToken = false;
       });
 
       after(function () {
-        i(this.provider).configuration('features.registration').issueRegistrationAccessToken = this.orig;
+        i(this.provider).features.registration.issueRegistrationAccessToken = this.orig;
       });
 
       it('omits issuing a registration access token and does not return registration_client_uri', function () {
@@ -61,9 +65,9 @@ describe('registration features', () => {
       });
 
       it('populates ctx.oidc.entities', function (done) {
-        this.provider.use(this.assertOnce((ctx) => {
+        this.assertOnce((ctx) => {
           expect(ctx.oidc.entities).not.to.have.property('RegistrationAccessToken');
-        }, done));
+        }, done);
 
         this.agent.post('/reg')
           .send({
@@ -75,13 +79,13 @@ describe('registration features', () => {
 
     context('when issueRegistrationAccessToken is a function returning false', () => {
       before(function () {
-        const config = i(this.provider).configuration('features.registration');
+        const config = i(this.provider).features.registration;
         this.orig = config.issueRegistrationAccessToken;
         config.issueRegistrationAccessToken = () => false;
       });
 
       after(function () {
-        i(this.provider).configuration('features.registration').issueRegistrationAccessToken = this.orig;
+        i(this.provider).features.registration.issueRegistrationAccessToken = this.orig;
       });
 
       it('omits issuing a registration access token and does not return registration_client_uri', function () {
@@ -96,9 +100,9 @@ describe('registration features', () => {
       });
 
       it('populates ctx.oidc.entities', function (done) {
-        this.provider.use(this.assertOnce((ctx) => {
+        this.assertOnce((ctx) => {
           expect(ctx.oidc.entities).not.to.have.property('RegistrationAccessToken');
-        }, done));
+        }, done);
 
         this.agent.post('/reg')
           .send({
@@ -110,13 +114,13 @@ describe('registration features', () => {
 
     context('when issueRegistrationAccessToken is a function returning true', () => {
       before(function () {
-        const config = i(this.provider).configuration('features.registration');
+        const config = i(this.provider).features.registration;
         this.orig = config.issueRegistrationAccessToken;
         config.issueRegistrationAccessToken = () => true;
       });
 
       after(function () {
-        i(this.provider).configuration('features.registration').issueRegistrationAccessToken = this.orig;
+        i(this.provider).features.registration.issueRegistrationAccessToken = this.orig;
       });
 
       it('issues a registration access token and does return registration_client_uri', function () {
@@ -131,9 +135,9 @@ describe('registration features', () => {
       });
 
       it('populates ctx.oidc.entities', function (done) {
-        this.provider.use(this.assertOnce((ctx) => {
+        this.assertOnce((ctx) => {
           expect(ctx.oidc.entities).to.have.property('RegistrationAccessToken');
-        }, done));
+        }, done);
 
         this.agent.post('/reg')
           .send({
@@ -145,13 +149,13 @@ describe('registration features', () => {
 
     context('when issueRegistrationAccessToken is true', () => {
       before(function () {
-        const config = i(this.provider).configuration('features.registration');
+        const config = i(this.provider).features.registration;
         this.orig = config.issueRegistrationAccessToken;
         config.issueRegistrationAccessToken = true;
       });
 
       after(function () {
-        i(this.provider).configuration('features.registration').issueRegistrationAccessToken = this.orig;
+        i(this.provider).features.registration.issueRegistrationAccessToken = this.orig;
       });
 
       it('issues a registration access token and does return registration_client_uri', function () {
@@ -166,9 +170,9 @@ describe('registration features', () => {
       });
 
       it('populates ctx.oidc.entities', function (done) {
-        this.provider.use(this.assertOnce((ctx) => {
+        this.assertOnce((ctx) => {
           expect(ctx.oidc.entities).to.have.property('RegistrationAccessToken');
-        }, done));
+        }, done);
 
         this.agent.post('/reg')
           .send({
@@ -292,7 +296,12 @@ describe('registration features', () => {
           grant_types: ['this is clearly wrong'],
           redirect_uris: ['https://client.example.com/cb'],
         })
-        .expect(this.failWith(400, 'invalid_client_metadata', "grant_types can only contain 'implicit', 'authorization_code', or 'refresh_token'"));
+        .expect(400)
+        .expect(noW3A)
+        .expect({
+          error: 'invalid_client_metadata',
+          error_description: "grant_types can only contain 'implicit', 'authorization_code', or 'refresh_token'",
+        });
     });
 
     it('validates the parameters to be valid and responds with redirect_uri errors', function () {
@@ -300,7 +309,12 @@ describe('registration features', () => {
         .send({
         // redirect_uris missing here
         })
-        .expect(this.failWith(400, 'invalid_redirect_uri', 'redirect_uris is mandatory property'));
+        .expect(400)
+        .expect(noW3A)
+        .expect({
+          error: 'invalid_redirect_uri',
+          error_description: 'redirect_uris is mandatory property',
+        });
     });
 
     it('only accepts application/json POSTs', function () {
@@ -310,6 +324,7 @@ describe('registration features', () => {
         })
         .type('form')
         .expect(400)
+        .expect(noW3A)
         .expect({
           error: 'invalid_request',
           error_description: 'only application/json content-type bodies are supported on POST /reg',
@@ -332,11 +347,7 @@ describe('registration features', () => {
               redirect_uris: ['https://client.example.com/cb'],
               access_token: 'foobar',
             })
-            .expect(400)
-            .expect({
-              error: 'invalid_request',
-              error_description: 'no access token provided',
-            });
+            .expect(this.failWith(401, 'invalid_token', 'no access token provided'));
         });
 
         it('allows reg calls with the access tokens as a Bearer token [header]', function () {
@@ -396,11 +407,7 @@ describe('registration features', () => {
               redirect_uris: ['https://client.example.com/cb'],
               access_token: this.token,
             })
-            .expect(400)
-            .expect({
-              error: 'invalid_request',
-              error_description: 'no access token provided',
-            });
+            .expect(this.failWith(401, 'invalid_token', 'no access token provided'));
         });
 
         it('allows reg calls with the access tokens as a Bearer token [header]', function () {
@@ -413,9 +420,9 @@ describe('registration features', () => {
         });
 
         it('adds InitialAccessToken to ctx.oidc.entities', function (done) {
-          this.provider.use(this.assertOnce((ctx) => {
+          this.assertOnce((ctx) => {
             expect(ctx.oidc.entities).to.have.property('InitialAccessToken');
-          }, done));
+          }, done);
 
           this.agent.post('/reg')
             .send({
@@ -487,9 +494,9 @@ describe('registration features', () => {
     });
 
     it('populates ctx.oidc.entities', function (done) {
-      this.provider.use(this.assertOnce((ctx) => {
+      this.assertOnce((ctx) => {
         expect(ctx.oidc.entities).to.have.keys('Client', 'RegistrationAccessToken');
-      }, done));
+      }, done);
 
       this.agent.get(`/reg/${this.clientId}`)
         .auth(this.token, { type: 'bearer' })
@@ -510,7 +517,7 @@ describe('registration features', () => {
 
     it('validates auth presence', function () {
       return this.agent.get(`/reg/${this.clientId}`)
-        .expect(this.failWith(400, 'invalid_request', 'no access token provided'));
+        .expect(this.failWith(401, 'invalid_token', 'no access token provided'));
     });
 
     it('validates auth', function () {
@@ -557,7 +564,12 @@ describe('registration features', () => {
       const bearer = await rat.save();
       return this.agent.get('/reg/client')
         .auth(bearer, { type: 'bearer' })
-        .expect(this.failWith(403, 'invalid_request', 'client does not have permission to read its record'));
+        .expect(403)
+        .expect(noW3A)
+        .expect({
+          error: 'invalid_request',
+          error_description: 'client does not have permission to read its record',
+        });
     });
   });
 });

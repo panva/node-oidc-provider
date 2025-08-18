@@ -32,9 +32,9 @@ describe('IMPLICIT id_token', () => {
       });
 
       it('populates ctx.oidc.entities', function (done) {
-        this.provider.use(this.assertOnce((ctx) => {
+        this.assertOnce((ctx) => {
           expect(ctx.oidc.entities).to.have.keys('Client', 'Grant', 'Account', 'Session');
-        }, done));
+        }, done);
 
         const auth = new this.AuthorizationRequest({
           response_type,

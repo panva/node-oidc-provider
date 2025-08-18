@@ -1,6 +1,6 @@
 import { strict as assert } from 'node:assert';
 
-import { generateKeyPair } from 'jose';
+import { generateKeyPair, exportJWK } from 'jose';
 import merge from 'lodash/merge.js';
 
 import getConfig from '../default.config.js';
@@ -20,8 +20,7 @@ merge(config.features, {
   },
   jwtResponseModes: { enabled: true },
   requestObjects: {
-    request: true,
-    mode: 'strict',
+    enabled: true,
   },
 });
 config.enabledJWA = {
@@ -33,12 +32,12 @@ export default {
   config,
   clients: [{
     client_id: 'client',
+    client_secret: 'secret',
     response_types: ['code id_token', 'code'],
     grant_types: ['implicit', 'authorization_code'],
     redirect_uris: ['https://client.example.com/cb'],
-    token_endpoint_auth_method: 'none',
     jwks: {
-      keys: [keypair.publicKey.export({ format: 'jwk' })],
+      keys: [await exportJWK(keypair.publicKey)],
     },
   }],
 };

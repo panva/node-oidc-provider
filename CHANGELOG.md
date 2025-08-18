@@ -2,6 +2,295 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [9.4.1](https://github.com/panva/node-oidc-provider/compare/v9.4.0...v9.4.1) (2025-08-11)
+
+
+### Documentation
+
+* add an getAttestationSignaturePublicKey example ([3a7730c](https://github.com/panva/node-oidc-provider/commit/3a7730c451ac242122bf0105732c24fbfa460bef))
+
+
+### Refactor
+
+* avoid code generation from strings by pre-compiling eta views ([f997073](https://github.com/panva/node-oidc-provider/commit/f997073f09e8c699ff4319ef0fbf19167347e3a7))
+* drop the default implementation of pairwiseIdentifier ([6a2338a](https://github.com/panva/node-oidc-provider/commit/6a2338a76bc87b31b4b9854dcbf61bf5fce4af68))
+* remove oidc-token-hash dependency ([b607491](https://github.com/panva/node-oidc-provider/commit/b607491d1c9dc20c8884b6ac7fbd0286845c616a))
+
+## [9.4.0](https://github.com/panva/node-oidc-provider/compare/v9.3.0...v9.4.0) (2025-07-17)
+
+
+### Features
+
+* Experimental support for Attestation-Based Client Authentication ([d655ebd](https://github.com/panva/node-oidc-provider/commit/d655ebde6428d5b8a5d2f29ce2fc2a0203f442d7))
+
+
+### Refactor
+
+* consistently lowercase header names and use req/res aliases ([1748a54](https://github.com/panva/node-oidc-provider/commit/1748a54e8212d2c716977e0ea3c2c01f68117261))
+* **cors:** update default client-based cors helper ([77e06eb](https://github.com/panva/node-oidc-provider/commit/77e06eb554a4a62a87a350b348ae2d22a4d8548c))
+* reconcile dpop and attestation challenge implementations ([e31f639](https://github.com/panva/node-oidc-provider/commit/e31f63977c0ffdce620301f23d8af0c93fb52b71))
+
+
+### Documentation
+
+* updated documentation for configuration options ([5710d61](https://github.com/panva/node-oidc-provider/commit/5710d619ce684b2974433949e9115f450820f8f5))
+
+## [9.3.0](https://github.com/panva/node-oidc-provider/compare/v9.2.0...v9.3.0) (2025-07-16)
+
+
+### Features
+
+* **revocation:** add an allowed token revocation policy helper ([a7e47e4](https://github.com/panva/node-oidc-provider/commit/a7e47e4cc700722ed826c2a86a3aabb4fd1846ee))
+
+
+### Documentation
+
+* update README.md ([857c34d](https://github.com/panva/node-oidc-provider/commit/857c34d2c9816af309933f2eb4d6fcb84306d167))
+
+
+### Fixes
+
+* **introspection:** use unsupported_token_type to indicate structured jwt tokens cannot be introspected ([c9001be](https://github.com/panva/node-oidc-provider/commit/c9001be07d8f5a0ff32efcc61f5bdfec7bdda3fb))
+* **revocation:** use unsupported_token_type to indicate structured jwt tokens cannot be revoked ([b45b00c](https://github.com/panva/node-oidc-provider/commit/b45b00caad804894f225ddffcaaf84226172ae43))
+
+
+### Refactor
+
+* pull structured token rejection to a shared middleware ([30367af](https://github.com/panva/node-oidc-provider/commit/30367af7ea6a5a399785d8fd78f7a499d4f7ae48))
+
+## [9.2.0](https://github.com/panva/node-oidc-provider/compare/v9.1.3...v9.2.0) (2025-06-24)
+
+
+### Features
+
+* expose RFC8414 Authorization Server Metadata route ([c5bd90f](https://github.com/panva/node-oidc-provider/commit/c5bd90f2021e7614115873202482b46e36388b39))
+
+## [9.1.3](https://github.com/panva/node-oidc-provider/compare/v9.1.2...v9.1.3) (2025-06-02)
+
+
+### Fixes
+
+* ensure an account's accountId and claims().sub is the same ([9b89153](https://github.com/panva/node-oidc-provider/commit/9b89153c0ea2f2280a26e35f3b66d1900aed7c79)), closes [#1336](https://github.com/panva/node-oidc-provider/issues/1336)
+
+## [9.1.2](https://github.com/panva/node-oidc-provider/compare/v9.1.1...v9.1.2) (2025-05-28)
+
+
+### Fixes
+
+* ignore allowOmittingSingleRegisteredRedirectUri when FAPI 2.0 is used ([e2de529](https://github.com/panva/node-oidc-provider/commit/e2de529bea57e9349bed54bda7f42f2e20ba8602))
+
+## [9.1.1](https://github.com/panva/node-oidc-provider/compare/v9.1.0...v9.1.1) (2025-04-28)
+
+
+### Refactor
+
+* oidc-provider now uses koa@3 ([3a83d32](https://github.com/panva/node-oidc-provider/commit/3a83d324f611e8f42e79f92f6f046721dcc5dba2))
+
+## [9.1.0](https://github.com/panva/node-oidc-provider/compare/v9.0.1...v9.1.0) (2025-04-26)
+
+
+### Features
+
+* experimental support for OIDC RP Metadata Choices ([f3550da](https://github.com/panva/node-oidc-provider/commit/f3550daff76329a5a820a85a40afebcd0638abb6))
+
+
+### Fixes
+
+* only include DPoP-Nonce in Access-Control-Expose-Headers when DPoP is enabled ([e769aa8](https://github.com/panva/node-oidc-provider/commit/e769aa85f07f48d4970aad2500e62a3042659d3c))
+
+
+### Refactor
+
+* avoid assignment operators in conditional expressions ([b7ed877](https://github.com/panva/node-oidc-provider/commit/b7ed877a5d75d1eabfefd1034d74b89c1925470a))
+* improve static find performance ([106f94a](https://github.com/panva/node-oidc-provider/commit/106f94a11f36e0ae3058b8d457ab25a82b3bc742))
+* update some default helpers for readability ([0818c36](https://github.com/panva/node-oidc-provider/commit/0818c36fc4d2004d05b3e011873d02be307de478))
+
+
+### Documentation
+
+* more clarity for features.dPoP.allowReplay ([779a141](https://github.com/panva/node-oidc-provider/commit/779a14187d22218ea770dee255d32c2fb6c25564))
+
+## [9.0.1](https://github.com/panva/node-oidc-provider/compare/v9.0.0...v9.0.1) (2025-04-17)
+
+
+### Documentation
+
+* mark experimental features more distinctly ([986adc5](https://github.com/panva/node-oidc-provider/commit/986adc5904841bae45e50f9aec486986534d36a0))
+* update references and styling of spec links ([a4787b8](https://github.com/panva/node-oidc-provider/commit/a4787b87084dd90c94043cfabfaa317fc3c4021c))
+
+
+### Fixes
+
+* DCR endpoints only include www-authenticate for non-registration related errors ([9a864d6](https://github.com/panva/node-oidc-provider/commit/9a864d6e1af242ceb6456f2473a1925c112367b5))
+
+
+### Refactor
+
+* client schema defaults and static props ([843943d](https://github.com/panva/node-oidc-provider/commit/843943d871d05445e6af2dc8fcd636f73a2751a6))
+* handle frame-ancestors in wmrm without a regexp ([4f85585](https://github.com/panva/node-oidc-provider/commit/4f8558525f0e8025abdaa38c29eff23085694775))
+* push multiple elements to the recognized array in client_schema ([d478a8b](https://github.com/panva/node-oidc-provider/commit/d478a8bd8a3ab539cde5d695ef8a3f06c63e7778))
+* simpler DCR validate registration access token ([5f01eda](https://github.com/panva/node-oidc-provider/commit/5f01edadb81e7a9b739f65c31b738f41a7a6898e))
+
+## [9.0.0](https://github.com/panva/node-oidc-provider/compare/v8.8.1...v9.0.0) (2025-04-15)
+
+
+### ⚠ BREAKING CHANGES
+
+* authorization and logout endpoints no longer support the HTTP POST method by default, this can be re-enabled using the `enableHttpPostMethods` boolean configuration, this also requires that cookies.long.sameSite is set to `none`
+* cookie session sameSite attribute default is now "lax" instead of "none"
+* userinfo requests with bearer tokens will now fail if they also include DPoP
+* userinfo now includes both dpop and bearer challenges when dpop is enabled
+* accessing protected resources without an access token will now yield a 401 HTTP Status Code instead of a 400
+* default PKCE configuration no longer requires PKCE to be used unless RFC9700 or a given profile says so
+* removed the provider.Account getter
+* all Provider routes will now end the HTTP request when finished, koa middlewares that are "downstream" will no longer be executed after a route is matched in oidc-provider, "upstream" control flows are unaffected
+* the Provider no longer includes a catch-all 404 Not Found error handler
+* FAPI profile behaviours no longer force PKCE, these should be forced by configuring the pkce.required configuration helper the default of which already does so.
+* the server's JWK Key IDs (JWK kid parameter) now must be unique, no two keys must use the same kid.
+* the revokeGrantPolicy configuration helper is now also invoked during opaque Access Token revocation, its default return remains false for this case though
+* CIBA ping and poll delivery mode ID Tokens no longer include at_hash, urn:openid:params:jwt:claim:rt_hash, and urn:openid:params:jwt:claim:auth_req_id
+* authorization code grant type issued ID Tokens no longer include at_hash
+* device authorization grant type issued ID Tokens no longer include at_hash
+* refresh token grant type issued ID Tokens no longer include at_hash
+* implicit grant type issued ID Tokens no longer include s_hash unless the request is a FAPI 1.0 Final request
+* global fetch() API is now used to make outgoing HTTP requests instead of the "got" module.
+* the httpOptions configuration option was removed and a new option to accomodate the use of fetch() interface was added. This options is aptly called "fetch" and its call signature and expected returns mirror the fetch() API.
+* Enabling JAR (Request Objects by Value) is now enabled via features.requestObjects.enabled boolean instead of features.requestObjects.request boolean
+* removed support for Passing a Request Object by Reference (JAR request_uri)
+* removed legacy sameSite cookie fallback
+* removed support for Node.js 18.x
+* removed support for Node.js 20.x
+* removed the pkce.methods configuration
+* removed the features.requestObjects.mode configuration
+* removed support for Ed448
+* removed support for X448
+* removed support for secp256k1 / ES256K
+* removed support for FAPI 1.0 ID2
+
+### Features
+
+* Access Token revocation may now also optionally revoke the underlying grant ([4f69668](https://github.com/panva/node-oidc-provider/commit/4f696680ba86f5589e74405a9381c90b87344d64))
+* add support for the fully-specified Ed25519 JWS Algorithm Identifier ([645b900](https://github.com/panva/node-oidc-provider/commit/645b900aa4e07d314d723b9484f132c95e002ee2))
+* DPoP support is now enabled by default ([a5694af](https://github.com/panva/node-oidc-provider/commit/a5694af25989f5cb9612bf4c9322fb51c5abb984))
+* Experimental support for external signing keys, e.g. in a KMS or HSM ([8b3ceff](https://github.com/panva/node-oidc-provider/commit/8b3ceff0206cf6367d92a9151c6a4ce570778f49))
+* expose current requests' ctx via Provider.ctx static getter ([1fbd81b](https://github.com/panva/node-oidc-provider/commit/1fbd81b9a2a1c064f0e56ae15717f12e6900c8af))
+* update FAPI 2.0 implementation to FAPI 2.0 Final ([eff3115](https://github.com/panva/node-oidc-provider/commit/eff31151ae6721db7b0ea9ae72111f5d425dd302))
+
+
+### Documentation
+
+* auto-format code blocks ([c2c520f](https://github.com/panva/node-oidc-provider/commit/c2c520fe294c907a85b06d0498481b73faa5307c))
+* dpop cannot acked anymore, it is stable ([a48c51f](https://github.com/panva/node-oidc-provider/commit/a48c51f1129624ac7d5fc1d43eb860ee2d7fa85a))
+* improvements to linked resources ([cf77770](https://github.com/panva/node-oidc-provider/commit/cf777703517f903d053d446b2118048f69c771d5))
+* mention external types ([5f8a450](https://github.com/panva/node-oidc-provider/commit/5f8a450ab9546f6ab1d40eec840d15336b5fb138))
+* move adapters to the Community Guides Discussions section ([ba806ca](https://github.com/panva/node-oidc-provider/commit/ba806ca86908f7d53a6b1207038889c9ef43cef0))
+* move recipes to the Community Guides Discussions section ([cd8da28](https://github.com/panva/node-oidc-provider/commit/cd8da28c7631e2fe6a302f7a2c407d843d2dee22))
+* remove mentions of the connect server framework ([7cb1aaa](https://github.com/panva/node-oidc-provider/commit/7cb1aaab23800a26e36f40025936ca0f0d98660f))
+* update README to use named exports ([8355886](https://github.com/panva/node-oidc-provider/commit/8355886459b756a648b481321c048a6e0af5ca71))
+* update version support matrix ([abbfe2f](https://github.com/panva/node-oidc-provider/commit/abbfe2f3f2407d35c627a4800703808c6dfb0686))
+
+
+### Fixes
+
+* no access token provided error is now a 401 ([8493e2d](https://github.com/panva/node-oidc-provider/commit/8493e2dfee3546b9a7a4c75ef59e5937ad747946))
+* userinfo now includes both dpop and bearer challenges when dpop is enabled ([1093f6b](https://github.com/panva/node-oidc-provider/commit/1093f6b0ab7da26cc00d715f5cfcbb4641b8c874))
+
+
+### Refactor
+
+* change default PKCE usage requirement ([fdf8ad8](https://github.com/panva/node-oidc-provider/commit/fdf8ad87922cdf670c2235cafba5c49fb7d7ab3e))
+* change default session cookie from sameSite none to lax ([b47eee8](https://github.com/panva/node-oidc-provider/commit/b47eee8175125c20937cccaab75b613b03f9ecb1))
+* cleanup unused azp claim code ([6c57e63](https://github.com/panva/node-oidc-provider/commit/6c57e634b2b5afb15712d882a0a6e1132dd77802))
+* deprecate the `.app` getter ([9b61212](https://github.com/panva/node-oidc-provider/commit/9b61212c630b00ff802a62f62b2e26d87d90caa2))
+* disable HTTP POST Method handling of authorization and logout endpoints ([d56304c](https://github.com/panva/node-oidc-provider/commit/d56304c79ce95609c0040325aeb0f8dde490707d))
+* encryption and key derivation is not blocking the main thread ([73a422f](https://github.com/panva/node-oidc-provider/commit/73a422fdd3c4b5ea134b7aabbf2f49bbe82cea0a))
+* ensure all route handlers are final ([8cc44e6](https://github.com/panva/node-oidc-provider/commit/8cc44e6b41c69f8a810cebc95829e565584c833c))
+* escape www-authenticate backslashes despite not directly using them ([e789b98](https://github.com/panva/node-oidc-provider/commit/e789b988c12857254e640af54b27b4241363396c))
+* increase all random identifiers from ~126 bits of randomness to ~256 ([45721f8](https://github.com/panva/node-oidc-provider/commit/45721f8fa05a3ae3990e2f025aabebe787e61f81))
+* minimal change to support koa@3 ([925cee5](https://github.com/panva/node-oidc-provider/commit/925cee57db319d8d63fe192f09bfc26b9171a334))
+* no more warnings if cookie keys are missing ([7ab6157](https://github.com/panva/node-oidc-provider/commit/7ab615730b7d236e5e53d2948305989b88ae7a1d))
+* omit generic "typ: JWT" in issued JSON Web Tokens ([4eb4004](https://github.com/panva/node-oidc-provider/commit/4eb4004ab66d75eb8627fe6b935fa51f6bbfb80e))
+* pass over internal configuration getters ([0243964](https://github.com/panva/node-oidc-provider/commit/0243964c369bd0e444b83138d1c83b530febea0b))
+* Provider is now the Koa application instance ([167216e](https://github.com/panva/node-oidc-provider/commit/167216ed916492c141962510c18474c8327e9b70))
+* remove hardcoded require PKCE checks ([be0b2fd](https://github.com/panva/node-oidc-provider/commit/be0b2fd0aaa0f22c18ef9e277fc760e99ae1b675))
+* remove object-hash dependency ([fda9385](https://github.com/panva/node-oidc-provider/commit/fda9385e125645dc49e4a2a9c15a6007c314eecb))
+* remove optional ID Token _hash claims ([58ca2c2](https://github.com/panva/node-oidc-provider/commit/58ca2c267d867d1dc6c05375278156ba90987a6f))
+* remove the provider.Account getter ([dd2bde4](https://github.com/panva/node-oidc-provider/commit/dd2bde4e8256204a24a606c8dacd61d0801cb0ed))
+* remove unused code ([e5fc3cb](https://github.com/panva/node-oidc-provider/commit/e5fc3cbbcc2f95dd141eca899e60938782aa78e7))
+* remove uses of randomFill and Buffer.allocUnsafe ([00fe106](https://github.com/panva/node-oidc-provider/commit/00fe106b8c40d6c2acc2dd5bebaaf8873150c41a))
+* removed legacy sameSite cookie fallback ([2defa70](https://github.com/panva/node-oidc-provider/commit/2defa709b53d3cec15f4b1c985aa000858c1c6e6))
+* removed support for FAPI 1.0 ID2 ([311e3e2](https://github.com/panva/node-oidc-provider/commit/311e3e25e2b9e3e41ff01a703dac9a3ee42e90a8))
+* removed support for Passing a Request Object by Reference (JAR request_uri) ([bacf375](https://github.com/panva/node-oidc-provider/commit/bacf375caa2bbdd153424f704c3475324290aca7))
+* removed the features.requestObjects.mode configuration ([4ec8327](https://github.com/panva/node-oidc-provider/commit/4ec8327c0b7186e1edad6c2960417537fedb6dc7))
+* removed the pkce.methods configuration ([4a736b8](https://github.com/panva/node-oidc-provider/commit/4a736b82f2963fdb4545142d14345c547c8ceb15))
+* Request Object (JAR) is now enabled with features.requestObjects.enabled ([20d60a4](https://github.com/panva/node-oidc-provider/commit/20d60a49e584cf6edcd7818322b157e677d8992d))
+* simplify default assertJwtClaimsAndHeader configuration ([1ea27a6](https://github.com/panva/node-oidc-provider/commit/1ea27a6358709c4805011237f124a43e5179c8ca))
+* update Node.js support matrix ([db57556](https://github.com/panva/node-oidc-provider/commit/db575566c2648dc0dbd03344e6ad9c4cbf36d720))
+* use fetch() api to make outgoing HTTP requests ([cc70e5a](https://github.com/panva/node-oidc-provider/commit/cc70e5aaf005cfb3ef8bde1c945d96ec16d5b8fb))
+* use hkdf in dpop's rolling nonce calculation ([7b77967](https://github.com/panva/node-oidc-provider/commit/7b77967edf2ace72abe41070aa19bd6b8d211b8c))
+* use more optional chaining ([e5539ae](https://github.com/panva/node-oidc-provider/commit/e5539aed3ac32b9177723b0448aa3288f877dff0))
+* use oneshot hash methods instead of intermediate Hash objects ([2dc4bd1](https://github.com/panva/node-oidc-provider/commit/2dc4bd1f3ea43c24f69ff7210e4e8f4341c08124))
+* use structuredClone instead of JSON.stringify then parse ([ad02170](https://github.com/panva/node-oidc-provider/commit/ad021700dcfc41fe3152b59e6cf06dfb65529ab5))
+* use URL.parse ([11e1b33](https://github.com/panva/node-oidc-provider/commit/11e1b330c8df82c566c68897815f9af4a3b688b7))
+* userinfo requests with bearer tokens will now fail if they also include DPoP ([e5efa5c](https://github.com/panva/node-oidc-provider/commit/e5efa5cfdab7ba931a917d75b91a1428ad0b0cdb))
+
+## [8.8.1](https://github.com/panva/node-oidc-provider/compare/v8.8.0...v8.8.1) (2025-03-06)
+
+
+### Fixes
+
+* add "exp" to Logout Tokens ([c6c01f1](https://github.com/panva/node-oidc-provider/commit/c6c01f112c29ade904a23d90bc3ea74408981bba)), closes [#1295](https://github.com/panva/node-oidc-provider/issues/1295)
+
+
+### Documentation
+
+* update spec links ([076ee58](https://github.com/panva/node-oidc-provider/commit/076ee58b3df60e1987a0f4a06fb8c42ea75e68ba))
+
+## [8.8.0](https://github.com/panva/node-oidc-provider/compare/v8.7.0...v8.8.0) (2025-02-17)
+
+
+### Features
+
+* mark RFC9701 (features.jwtIntrospection) as stable ([e2a2de2](https://github.com/panva/node-oidc-provider/commit/e2a2de2c9e51095b1a856b57af640f3b95cf6be9))
+
+## [8.7.0](https://github.com/panva/node-oidc-provider/compare/v8.6.1...v8.7.0) (2025-02-13)
+
+
+### Features
+
+* allow own KeyGrip instances in cookies.keys configuration ([d5d2900](https://github.com/panva/node-oidc-provider/commit/d5d2900b2a7224e19d79a43b59d8888ad3bfbbf3))
+
+## [8.6.1](https://github.com/panva/node-oidc-provider/compare/v8.6.0...v8.6.1) (2025-01-19)
+
+
+### Fixes
+
+* allow specifying the user-agent header for outgoing requests ([#1287](https://github.com/panva/node-oidc-provider/issues/1287)) ([c77513c](https://github.com/panva/node-oidc-provider/commit/c77513ca44115661f96fb2ae200c194966d76aca))
+
+## [8.6.0](https://github.com/panva/node-oidc-provider/compare/v8.5.3...v8.6.0) (2024-11-21)
+
+
+### Features
+
+* add a helper for asserting JWT Client Auth claims and header ([82d4e50](https://github.com/panva/node-oidc-provider/commit/82d4e506c8d2dd807c4a0211770dc172f541ba2a))
+
+
+### Documentation
+
+* update verbiage "provider" > "authorization server" ([3768192](https://github.com/panva/node-oidc-provider/commit/3768192b811452c046e5e3f8b5bc43f6e041c2ec))
+
+
+### Refactor
+
+* move assertJwtClaimsAndHeader after regular JWT claims set validation ([05f6bf4](https://github.com/panva/node-oidc-provider/commit/05f6bf489b66bd35d8be80cdad64605ef33a7dfc))
+
+## [8.5.3](https://github.com/panva/node-oidc-provider/compare/v8.5.2...v8.5.3) (2024-11-05)
+
+
+### Fixes
+
+* normalize single string set-cookie headers ([6effeed](https://github.com/panva/node-oidc-provider/commit/6effeed4629e1dc229e00d93cdec45b8cf4d015e))
+
 ## [8.5.2](https://github.com/panva/node-oidc-provider/compare/v8.5.1...v8.5.2) (2024-10-19)
 
 

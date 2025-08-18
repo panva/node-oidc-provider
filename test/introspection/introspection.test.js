@@ -165,7 +165,7 @@ describe('introspection features', () => {
       const token = await rt.save();
       return this.agent.post(route)
         .auth('client', 'secret')
-        .send({ token, token_type_hint: 'client_credentials' })
+        .send({ token, token_type_hint: 'access_token' })
         .type('form')
         .expect(200)
         .expect((response) => {
@@ -216,22 +216,6 @@ describe('introspection features', () => {
       const token = await rt.save();
       return this.agent.post(route)
         .auth('client', 'secret')
-        .send({ token, token_type_hint: 'client_credentials' })
-        .type('form')
-        .expect(200)
-        .expect((response) => {
-          expect(response.body).to.contain.keys('client_id');
-        });
-    });
-
-    it('returns the properties for client credentials token [wrong hint]', async function () {
-      const rt = new this.provider.ClientCredentials({
-        client: await this.provider.Client.find('client'),
-      });
-
-      const token = await rt.save();
-      return this.agent.post(route)
-        .auth('client', 'secret')
         .send({ token, token_type_hint: 'access_token' })
         .type('form')
         .expect(200)
@@ -254,6 +238,17 @@ describe('introspection features', () => {
         .expect((response) => {
           expect(response.body).to.contain.keys('client_id');
         });
+    });
+
+    it('rejects structured tokens', function () {
+      return this.agent.post(route)
+        .auth('client', 'secret')
+        .send({
+          token: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiYWRtaW4iOnRydWV9.TJVA95OrM7E2cBab30RMHrHDcEfxjoYZgeFONFh7HgQ',
+        })
+        .type('form')
+        .expect(400)
+        .expect({ error: 'unsupported_token_type', error_description: 'Structured JWT Tokens cannot be introspected via the introspection_endpoint' });
     });
 
     it('can be called by pairwise clients', async function () {
@@ -453,9 +448,9 @@ describe('introspection features', () => {
 
     describe('populates ctx.oidc.entities', () => {
       it('when introspecting an AccessToken', function (done) {
-        this.provider.use(this.assertOnce((ctx) => {
+        this.assertOnce((ctx) => {
           expect(ctx.oidc.entities).to.have.keys('Client', 'AccessToken');
-        }, done));
+        }, done);
 
         (async () => {
           const at = new this.provider.AccessToken({
@@ -475,9 +470,9 @@ describe('introspection features', () => {
       });
 
       it('when introspecting a RefreshToken', function (done) {
-        this.provider.use(this.assertOnce((ctx) => {
+        this.assertOnce((ctx) => {
           expect(ctx.oidc.entities).to.have.keys('Client', 'RefreshToken');
-        }, done));
+        }, done);
 
         (async () => {
           const rt = new this.provider.RefreshToken({
@@ -495,9 +490,9 @@ describe('introspection features', () => {
       });
 
       it('when introspecting ClientCredentials', function (done) {
-        this.provider.use(this.assertOnce((ctx) => {
+        this.assertOnce((ctx) => {
           expect(ctx.oidc.entities).to.have.keys('Client', 'ClientCredentials');
-        }, done));
+        }, done);
 
         (async () => {
           const rt = new this.provider.ClientCredentials({

@@ -70,9 +70,9 @@ describe('grant_type=client_credentials', () => {
   });
 
   it('populates ctx.oidc.entities', function (done) {
-    this.provider.use(this.assertOnce((ctx) => {
+    this.assertOnce((ctx) => {
       expect(ctx.oidc.entities).to.have.keys('Client', 'ClientCredentials');
-    }, done));
+    }, done);
 
     this.agent.post(route)
       .auth('client', 'secret')

@@ -3,7 +3,6 @@
 import { strict as assert } from 'node:assert';
 
 import { expect } from 'chai';
-import KeyGrip from 'keygrip'; // eslint-disable-line import/no-extraneous-dependencies
 import { createSandbox } from 'sinon';
 
 import nanoid from '../../lib/helpers/nanoid.js';
@@ -20,7 +19,6 @@ function handlesInteractionSessionErrors() {
   it('"handles" not found interaction session id cookie', async function () {
     const cookies = [
       `_interaction=; path=${this.url}; expires=${expired.toGMTString()}; httponly`,
-      `_interaction.sig=; path=${this.url}; expires=${expired.toGMTString()}; httponly`,
     ];
     this.agent._saveCookies.bind(this.agent)({
       request: { url: this.provider.issuer },
@@ -56,7 +54,7 @@ const testInteraction = {
   save: sinon.stub(),
   destroy: sinon.stub(),
   iat: 1729517474,
-  exp: 1729521074,
+  exp: 4128493153,
   returnTo: 'http://127.0.0.1:62009/auth/test-interaction-id',
   prompt: { name: 'login', reasons: ['no_session'], details: {} },
   params: {
@@ -218,7 +216,7 @@ describe('devInteractions', () => {
         });
     });
 
-    context('with cookies enabled', () => {
+    context('with cookieless fallback disabled', () => {
       it('accepts the login and resumes auth', async function () {
         let location;
         await this.agent.post(`${this.url}`)
@@ -237,12 +235,12 @@ describe('devInteractions', () => {
           .expect(303);
       });
     });
-    context('with cookies disabled', () => {
+    context('with cookieless fallback enabled', () => {
       before(async function () {
-        i(this.provider).configuration('cookies').disabled = true;
+        i(this.provider).configuration.cookies.enableCookielessFallback = true;
       });
       after(async function () {
-        i(this.provider).configuration('cookies').disabled = false;
+        i(this.provider).configuration.cookies.enableCookielessFallback = false;
         sinon.restore();
       });
       it('should look up interaction from ID in path params', async function () {
@@ -291,12 +289,12 @@ describe('devInteractions', () => {
 
     handlesInteractionSessionErrors();
 
-    context('with cookies disabled', async () => {
+    context('with cookieless fallback enabled', async () => {
       before(async function () {
-        i(this.provider).configuration('cookies').disabled = true;
+        i(this.provider).configuration.cookies.enableCookielessFallback = true;
       });
       after(async function () {
-        i(this.provider).configuration('cookies').disabled = false;
+        i(this.provider).configuration.cookies.enableCookielessFallback = false;
         sinon.restore();
       });
 
@@ -309,9 +307,9 @@ describe('devInteractions', () => {
     });
   });
 
-  context('with cookies enabled', async () => {
+  context('with cookieless fallback disabled', async () => {
     before(async function () {
-      i(this.provider).configuration('cookies').disabled = false;
+      i(this.provider).configuration.cookies.enableCookielessFallback = false;
     });
     it('should look up interaction from ID in path params', async function () {
       // If cookies are enabled, this should fail because the interaction ID in the cookie is not the same
@@ -440,19 +438,14 @@ describe('resume after consent', () => {
       params: grant,
       session,
     });
-    const keys = new KeyGrip(i(this.provider).configuration('cookies.keys'));
 
     expect(grant).to.be.ok;
 
     const cookie = `_interaction_resume=resume; path=${this.suitePath('/auth/resume')}; expires=${expire.toGMTString()}; httponly`;
     cookies.push(cookie);
-    let [pre, ...post] = cookie.split(';');
-    cookies.push([`_interaction_resume.sig=${keys.sign(pre)}`, ...post].join(';'));
 
     const sessionCookie = `_session=${session.jti || 'sess'}; path=/; expires=${expire.toGMTString()}; httponly`;
     cookies.push(sessionCookie);
-    [pre, ...post] = sessionCookie.split(';');
-    cookies.push([`_session.sig=${keys.sign(pre)}`, ...post].join(';'));
 
     if (result) {
       if (result.login && !result.login.ts) {
@@ -568,7 +561,7 @@ describe('resume after consent', () => {
       return this.agent.get('/auth/resume')
         .expect(303)
         .expect(auth.validateState)
-        .expect('set-cookie', /_session=((?!expires).)+,/) // expect a transient session cookie
+        .expect('set-cookie', /_session=((?!expires).)+/) // expect a transient session cookie
         .expect(auth.validateClientLocation)
         .expect(auth.validatePresence(['code', 'state']))
         .expect(() => {

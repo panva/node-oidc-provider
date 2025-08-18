@@ -3,21 +3,17 @@ import { once } from 'node:events';
 
 import sinon from 'sinon';
 import { expect } from 'chai';
-import nock from 'nock';
-import { generateKeyPair, SignJWT } from 'jose';
+import { generateKeyPair, SignJWT, exportJWK } from 'jose';
 
 import { AccessDenied } from '../../lib/helpers/errors.js';
-import bootstrap from '../test_helper.js';
+import bootstrap, { assertNoPendingInterceptors, mock } from '../test_helper.js';
 
 import { emitter } from './ciba.config.js';
 
 describe('features.ciba', () => {
+  afterEach(assertNoPendingInterceptors);
   context('w/o request objects', () => {
     before(bootstrap(import.meta.url));
-
-    afterEach(() => {
-      expect(nock.isDone()).to.be.true;
-    });
 
     it('extends discovery', function () {
       return this.agent.get('/.well-known/openid-configuration')
@@ -99,8 +95,11 @@ describe('features.ciba', () => {
       it('pings the client (204)', async function () {
         const result = new this.provider.Grant({ clientId: 'client-ping', accountId: 'accountId' });
         const request = new this.provider.BackchannelAuthenticationRequest({ clientId: 'client-ping', accountId: 'accountId', params: { client_notification_token: 'foo' } });
-        nock('https://rp.example.com/')
-          .post('/ping')
+        mock('https://rp.example.com')
+          .intercept({
+            path: '/ping',
+            method: 'POST',
+          })
           .reply(204);
         await this.provider.backchannelResult(request, result);
       });
@@ -108,8 +107,11 @@ describe('features.ciba', () => {
       it('pings the client (200)', async function () {
         const result = new this.provider.Grant({ clientId: 'client-ping', accountId: 'accountId' });
         const request = new this.provider.BackchannelAuthenticationRequest({ clientId: 'client-ping', accountId: 'accountId', params: { client_notification_token: 'foo' } });
-        nock('https://rp.example.com/')
-          .post('/ping')
+        mock('https://rp.example.com')
+          .intercept({
+            path: '/ping',
+            method: 'POST',
+          })
           .reply(200);
         await this.provider.backchannelResult(request, result);
       });
@@ -117,8 +119,11 @@ describe('features.ciba', () => {
       it('pings the client (400)', async function () {
         const result = new this.provider.Grant({ clientId: 'client-ping', accountId: 'accountId' });
         const request = new this.provider.BackchannelAuthenticationRequest({ clientId: 'client-ping', accountId: 'accountId', params: { client_notification_token: 'foo' } });
-        nock('https://rp.example.com/')
-          .post('/ping')
+        mock('https://rp.example.com')
+          .intercept({
+            path: '/ping',
+            method: 'POST',
+          })
           .reply(400);
         return assert.rejects(this.provider.backchannelResult(request, result), { name: 'Error', message: 'expected 204 No Content from https://rp.example.com/ping, got: 400 Bad Request' });
       });
@@ -142,7 +147,7 @@ describe('features.ciba', () => {
             .expect('content-type', /application\/json/)
             .expect((response) => {
               expect(response.body).to.have.keys('expires_in', 'auth_req_id');
-              expect(response.body.expires_in).to.be.a('number');
+              expect(response.body.expires_in).to.be.a('number').most(600);
               expect(response.body.auth_req_id).to.be.a('string');
             }),
           once(emitter, 'triggerAuthenticationDevice'),
@@ -161,6 +166,22 @@ describe('features.ciba', () => {
         expect(request.params).to.deep.eql({
           client_id: 'client', login_hint: 'accountId', scope: 'openid', extra2: 'defaulted', extra: 'provided',
         });
+      });
+
+      it('requested_expiry', async function () {
+        await this.agent.post(route)
+          .send({
+            scope: 'openid',
+            login_hint: 'accountId',
+            client_id: 'client',
+            requested_expiry: 300,
+          })
+          .type('form')
+          .expect(200)
+          .expect('content-type', /application\/json/)
+          .expect((response) => {
+            expect(response.body.expires_in).to.be.a('number').most(300);
+          });
       });
 
       it('minimal w/ login_hint_token', async function () {
@@ -543,10 +564,6 @@ describe('features.ciba', () => {
   context('with request objects', () => {
     before(bootstrap(import.meta.url, { config: 'ciba_jar' }));
 
-    afterEach(() => {
-      expect(nock.isDone()).to.be.true;
-    });
-
     it('extends discovery', function () {
       return this.agent.get('/.well-known/openid-configuration')
         .expect(200)
@@ -604,9 +621,11 @@ describe('features.ciba', () => {
 
           const { privateKey, publicKey } = await generateKeyPair('ES256');
 
-          nock('https://rp.example.com/')
-            .get('/jwks')
-            .reply(200, { keys: [publicKey.export({ format: 'jwk' })] });
+          mock('https://rp.example.com')
+            .intercept({
+              path: '/jwks',
+            })
+            .reply(200, { keys: [await exportJWK(publicKey)] });
 
           return this.agent.post(route)
             .send({

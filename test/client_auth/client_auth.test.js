@@ -1,16 +1,15 @@
-import { createPrivateKey, X509Certificate } from 'node:crypto';
+import { createPrivateKey, X509Certificate, generateKeyPairSync } from 'node:crypto';
 import { readFileSync } from 'node:fs';
+import { request } from 'node:http';
 
-import got from 'got'; // eslint-disable-line import/no-unresolved
-import nock from 'nock';
-import { importJWK } from 'jose';
+import { importJWK, SignJWT } from 'jose';
 import sinon from 'sinon';
 import { expect } from 'chai';
 import cloneDeep from 'lodash/cloneDeep.js';
 
 import nanoid from '../../lib/helpers/nanoid.js';
 import Provider from '../../lib/index.js';
-import bootstrap from '../test_helper.js';
+import bootstrap, { assertNoPendingInterceptors, mock } from '../test_helper.js';
 import clientKey from '../client.sig.key.js';
 import * as JWT from '../../lib/helpers/jwt.js';
 import { JWA } from '../../lib/consts/index.js';
@@ -41,8 +40,14 @@ function errorDetail(spy) {
   return spy.args[0][1].error_detail;
 }
 
-describe('client authentication options', () => {
+function noW3A({ headers }) {
+  expect(headers).not.to.have.property('www-authenticate');
+}
+
+describe('client authentication methods', () => {
   before(bootstrap(import.meta.url));
+
+  afterEach(assertNoPendingInterceptors);
 
   before(function () {
     this.provider.registerGrantType('foo', (ctx) => {
@@ -60,7 +65,7 @@ describe('client authentication options', () => {
         ],
       });
 
-      expect(i(provider).configuration('clientAuthSigningAlgValues')).to.be.undefined;
+      expect(i(provider).configuration.clientAuthSigningAlgValues).to.be.undefined;
     });
 
     it('removes client_secret_jwt when no HMAC based alg is enabled', () => {
@@ -77,7 +82,7 @@ describe('client authentication options', () => {
         },
       });
 
-      expect(i(provider).configuration('clientAuthMethods')).not.to.include('client_secret_jwt');
+      expect(i(provider).configuration.clientAuthMethods).not.to.include('client_secret_jwt');
     });
 
     it('removes private_key_jwt when no public key crypto based alg is enabled', () => {
@@ -94,7 +99,7 @@ describe('client authentication options', () => {
         },
       });
 
-      expect(i(provider).configuration('clientAuthMethods')).not.to.include('private_key_jwt');
+      expect(i(provider).configuration.clientAuthMethods).not.to.include('private_key_jwt');
     });
 
     it('pushes only symmetric algs when client_secret_jwt is enabled', () => {
@@ -114,7 +119,7 @@ describe('client authentication options', () => {
         'HS512',
       ];
 
-      expect(i(provider).configuration('clientAuthSigningAlgValues')).to.eql(algs);
+      expect(i(provider).configuration.clientAuthSigningAlgValues).to.eql(algs);
     });
 
     it('pushes only asymmetric algs when private_key_jwt is enabled', () => {
@@ -136,13 +141,13 @@ describe('client authentication options', () => {
         'PS384',
         'PS512',
         'ES256',
-        'ES256K',
         'ES384',
         'ES512',
+        'Ed25519',
         'EdDSA',
       ];
 
-      expect(i(provider).configuration('clientAuthSigningAlgValues')).to.eql(algs);
+      expect(i(provider).configuration.clientAuthSigningAlgValues).to.eql(algs);
     });
 
     it('pushes all algs when both _jwt methods are enabled', () => {
@@ -168,13 +173,13 @@ describe('client authentication options', () => {
         'PS384',
         'PS512',
         'ES256',
-        'ES256K',
         'ES384',
         'ES512',
+        'Ed25519',
         'EdDSA',
       ];
 
-      expect(i(provider).configuration('clientAuthSigningAlgValues')).to.eql(algs);
+      expect(i(provider).configuration.clientAuthSigningAlgValues).to.eql(algs);
     });
   });
 
@@ -183,6 +188,7 @@ describe('client authentication options', () => {
       .send({})
       .type('form')
       .expect(400)
+      .expect(noW3A)
       .expect({
         error: 'invalid_request',
         error_description: 'no client authentication mechanism provided',
@@ -197,6 +203,7 @@ describe('client authentication options', () => {
       })
       .type('form')
       .expect(401)
+      .expect(noW3A)
       .expect(tokenAuthRejected);
   });
 
@@ -227,6 +234,7 @@ describe('client authentication options', () => {
           expect(errorDetail(spy)).to.equal('the provided authentication mechanism does not match the registered client authentication method');
         })
         .expect(401)
+        .expect(noW3A)
         .expect(tokenAuthRejected);
     });
   });
@@ -275,9 +283,10 @@ describe('client authentication options', () => {
         .type('form')
         .auth('client-basic', 'secret')
         .expect(400)
+        .expect(noW3A)
         .expect({
           error: 'invalid_request',
-          error_description: 'mismatch in body and authorization client ids',
+          error_description: 'client_id mismatch',
         });
     });
 
@@ -324,6 +333,7 @@ describe('client authentication options', () => {
         .type('form')
         .set('Authorization', 'Basic')
         .expect(400)
+        .expect(noW3A)
         .expect({
           error: 'invalid_request',
           error_description: 'invalid authorization header value format',
@@ -338,6 +348,7 @@ describe('client authentication options', () => {
         .type('form')
         .auth('foo', { type: 'bearer' })
         .expect(400)
+        .expect(noW3A)
         .expect({
           error: 'invalid_request',
           error_description: 'invalid authorization header value format',
@@ -352,6 +363,7 @@ describe('client authentication options', () => {
         .type('form')
         .set('Authorization', 'Basic Zm9v')
         .expect(400)
+        .expect(noW3A)
         .expect({
           error: 'invalid_request',
           error_description: 'invalid authorization header value format',
@@ -371,8 +383,7 @@ describe('client authentication options', () => {
           expect(spy.calledOnce).to.be.true;
           expect(errorDetail(spy)).to.equal('invalid secret provided');
         })
-        .expect(401)
-        .expect(tokenAuthRejected);
+        .expect(this.failWith(401, tokenAuthRejected.error, tokenAuthRejected.error_description, undefined, 'Basic'));
     });
 
     it('rejects double auth', function () {
@@ -385,6 +396,7 @@ describe('client authentication options', () => {
         .type('form')
         .auth('client-basic', 'invalid secret')
         .expect(400)
+        .expect(noW3A)
         .expect({
           error: 'invalid_request',
           error_description: 'client authentication must only be provided using one mechanism',
@@ -400,6 +412,7 @@ describe('client authentication options', () => {
         .type('form')
         .auth('client-basic', 'invalid secret')
         .expect(400)
+        .expect(noW3A)
         .expect({
           error: 'invalid_request',
           error_description: 'client authentication must only be provided using one mechanism',
@@ -414,6 +427,7 @@ describe('client authentication options', () => {
         .type('form')
         .auth('client-basic', '')
         .expect(400)
+        .expect(noW3A)
         .expect({
           error: 'invalid_request',
           error_description: 'client_secret must be provided in the Authorization header',
@@ -428,6 +442,7 @@ describe('client authentication options', () => {
         .type('form')
         .auth('secret-expired-basic', 'secret')
         .expect(400)
+        .expect(noW3A)
         .expect({
           error: 'invalid_client',
           error_description: 'could not authenticate the client - its client secret is expired',
@@ -448,24 +463,42 @@ describe('client authentication options', () => {
         .expect(tokenAuthSucceeded);
     });
 
-    // TODO: not sure why when mounted everything crap out
-    if (!process.env.MOUNT_VIA) {
-      it('can use transfer-encoding: chunked', async () => {
-        const { address, port } = global.server.address();
+    it('can use transfer-encoding: chunked', function (done) {
+      const { address, port } = globalThis.server.address();
 
-        const response = await got.post(`http://[${address}]:${port}${route}`, {
-          throwHttpErrors: false,
-          form: {
-            grant_type: 'foo',
-            client_id: 'client-post',
-            client_secret: 'secret',
-          },
-          headers: { 'transfer-encoding': 'chunked' },
+      const req = request({
+        hostname: address,
+        port,
+        path: this.suitePath(route),
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/x-www-form-urlencoded',
+          'Transfer-Encoding': 'chunked',
+        },
+      }, (res) => {
+        let data = '';
+
+        res.on('data', (chunk) => {
+          data += chunk;
         });
 
-        expect(JSON.parse(response.body)).to.deep.eql(tokenAuthSucceeded);
+        res.on('end', () => {
+          try {
+            expect(JSON.parse(data)).to.deep.eql(tokenAuthSucceeded);
+            done();
+          } catch (err) {
+            done(err);
+          }
+        });
+
+        res.on('error', done);
       });
-    }
+
+      req.write('grant_type=foo&client_id');
+      req.write('=client-post&client_secret=secret');
+      req.end();
+      req.on('error', done);
+    });
 
     it('accepts the auth (but client configured with basic)', function () {
       return this.agent.post(route)
@@ -494,6 +527,7 @@ describe('client authentication options', () => {
           expect(errorDetail(spy)).to.equal('invalid secret provided');
         })
         .expect(401)
+        .expect(noW3A)
         .expect(tokenAuthRejected);
     });
 
@@ -512,6 +546,7 @@ describe('client authentication options', () => {
           expect(errorDetail(spy)).to.equal('the provided authentication mechanism does not match the registered client authentication method');
         })
         .expect(401)
+        .expect(noW3A)
         .expect(tokenAuthRejected);
     });
 
@@ -524,6 +559,7 @@ describe('client authentication options', () => {
         })
         .type('form')
         .expect(400)
+        .expect(noW3A)
         .expect({
           error: 'invalid_client',
           error_description: 'could not authenticate the client - its client secret is expired',
@@ -539,7 +575,7 @@ describe('client authentication options', () => {
     it('accepts the auth', function () {
       return JWT.sign({
         jti: nanoid(),
-        aud: this.provider.issuer + this.suitePath('/token'),
+        aud: this.provider.issuer,
         sub: 'client-jwt-secret',
         iss: 'client-jwt-secret',
       }, this.key, 'HS256', { expiresIn: 60 }).then((assertion) => this.agent.post(route)
@@ -552,56 +588,8 @@ describe('client authentication options', () => {
         .expect(tokenAuthSucceeded));
     });
 
-    describe('audience', () => {
-      it('accepts the auth (issuer as aud)', function () {
-        return JWT.sign({
-          jti: nanoid(),
-          aud: this.provider.issuer,
-          sub: 'client-jwt-secret',
-          iss: 'client-jwt-secret',
-        }, this.key, 'HS256', { expiresIn: 60 }).then((assertion) => this.agent.post(route)
-          .send({
-            client_assertion: assertion,
-            grant_type: 'foo',
-            client_assertion_type: 'urn:ietf:params:oauth:client-assertion-type:jwt-bearer',
-          })
-          .type('form')
-          .expect(tokenAuthSucceeded));
-      });
-
-      it('accepts the auth (endpoint URL as aud)', function () {
-        return JWT.sign({
-          jti: nanoid(),
-          aud: this.provider.issuer + this.suitePath('/token/introspection'),
-          sub: 'client-jwt-secret',
-          iss: 'client-jwt-secret',
-        }, this.key, 'HS256', { expiresIn: 60 }).then((assertion) => this.agent.post('/token/introspection')
-          .send({
-            client_assertion: assertion,
-            token: 'foo',
-            client_assertion_type: 'urn:ietf:params:oauth:client-assertion-type:jwt-bearer',
-          })
-          .type('form')
-          .expect(introspectionAuthSucceeded));
-      });
-
-      it('accepts the auth (token endpoint URL as aud)', function () {
-        return JWT.sign({
-          jti: nanoid(),
-          aud: this.provider.issuer + this.suitePath('/token'),
-          sub: 'client-jwt-secret',
-          iss: 'client-jwt-secret',
-        }, this.key, 'HS256', { expiresIn: 60 }).then((assertion) => this.agent.post('/token/introspection')
-          .send({
-            client_assertion: assertion,
-            token: 'foo',
-            client_assertion_type: 'urn:ietf:params:oauth:client-assertion-type:jwt-bearer',
-          })
-          .type('form')
-          .expect(introspectionAuthSucceeded));
-      });
-
-      it('accepts the auth (issuer as [aud])', function () {
+    describe('additional audience values', () => {
+      it('accepts the auth when aud is an array', function () {
         return JWT.sign({
           jti: nanoid(),
           aud: [this.provider.issuer],
@@ -617,45 +605,67 @@ describe('client authentication options', () => {
           .expect(tokenAuthSucceeded));
       });
 
-      it('accepts the auth (endpoint URL as [aud])', function () {
-        return JWT.sign({
-          jti: nanoid(),
-          aud: [this.provider.issuer + this.suitePath('/token/introspection')],
-          sub: 'client-jwt-secret',
-          iss: 'client-jwt-secret',
-        }, this.key, 'HS256', { expiresIn: 60 }).then((assertion) => this.agent.post('/token/introspection')
-          .send({
-            client_assertion: assertion,
-            token: 'foo',
-            client_assertion_type: 'urn:ietf:params:oauth:client-assertion-type:jwt-bearer',
-          })
-          .type('form')
-          .expect(introspectionAuthSucceeded));
+      it('accepts the auth when aud is the token endpoint', async function () {
+        for (const aud of [this.provider.issuer + this.suitePath('/token'), [this.provider.issuer + this.suitePath('/token')]]) {
+          await JWT.sign({
+            jti: nanoid(),
+            aud,
+            sub: 'client-jwt-secret',
+            iss: 'client-jwt-secret',
+          }, this.key, 'HS256', { expiresIn: 60 }).then((assertion) => this.agent.post(route)
+            .send({
+              client_assertion: assertion,
+              grant_type: 'foo',
+              client_assertion_type: 'urn:ietf:params:oauth:client-assertion-type:jwt-bearer',
+            })
+            .type('form')
+            .expect(tokenAuthSucceeded));
+        }
       });
 
-      it('accepts the auth (token endpoint URL as [aud])', function () {
-        return JWT.sign({
-          jti: nanoid(),
-          aud: [this.provider.issuer + this.suitePath('/token')],
-          sub: 'client-jwt-secret',
-          iss: 'client-jwt-secret',
-        }, this.key, 'HS256', { expiresIn: 60 }).then((assertion) => this.agent.post('/token/introspection')
-          .send({
-            client_assertion: assertion,
-            token: 'foo',
-            client_assertion_type: 'urn:ietf:params:oauth:client-assertion-type:jwt-bearer',
-          })
-          .type('form')
-          .expect(introspectionAuthSucceeded));
+      it('accepts the auth when aud is the token endpoint at another endpoint', async function () {
+        for (const aud of [this.provider.issuer + this.suitePath('/token'), [this.provider.issuer + this.suitePath('/token')]]) {
+          await JWT.sign({
+            jti: nanoid(),
+            aud,
+            sub: 'client-jwt-secret',
+            iss: 'client-jwt-secret',
+          }, this.key, 'HS256', { expiresIn: 60 }).then((assertion) => this.agent.post('/token/introspection')
+            .send({
+              client_assertion: assertion,
+              client_assertion_type: 'urn:ietf:params:oauth:client-assertion-type:jwt-bearer',
+              token: 'foo',
+            })
+            .type('form')
+            .expect(introspectionAuthSucceeded));
+        }
+      });
+
+      it('accepts the auth when aud is the url of another endpoint it is used at', async function () {
+        for (const aud of [this.provider.issuer + this.suitePath('/token/introspection'), [this.provider.issuer + this.suitePath('/token/introspection')]]) {
+          await JWT.sign({
+            jti: nanoid(),
+            aud,
+            sub: 'client-jwt-secret',
+            iss: 'client-jwt-secret',
+          }, this.key, 'HS256', { expiresIn: 60 }).then((assertion) => this.agent.post('/token/introspection')
+            .send({
+              client_assertion: assertion,
+              client_assertion_type: 'urn:ietf:params:oauth:client-assertion-type:jwt-bearer',
+              token: 'foo',
+            })
+            .type('form')
+            .expect(introspectionAuthSucceeded));
+        }
       });
     });
 
-    it('rejects the auth if this is actually a none-client', function () {
+    it('rejects the auth if this is actually a none-client', async function () {
       const spy = sinon.spy();
       this.provider.once('grant.error', spy);
       return JWT.sign({
         jti: nanoid(),
-        aud: this.provider.issuer + this.suitePath('/token'),
+        aud: this.provider.issuer,
         sub: 'client-none',
         iss: 'client-none',
       }, this.key, 'HS256', { expiresIn: 60 }).then((assertion) => this.agent.post(route)
@@ -667,6 +677,7 @@ describe('client authentication options', () => {
         })
         .type('form')
         .expect(401)
+        .expect(noW3A)
         .expect(tokenAuthRejected)
         .expect(() => {
           expect(spy.calledOnce).to.be.true;
@@ -677,7 +688,7 @@ describe('client authentication options', () => {
     it('rejects the auth if authorization header is also present', function () {
       return JWT.sign({
         jti: nanoid(),
-        aud: this.provider.issuer + this.suitePath('/token'),
+        aud: this.provider.issuer,
         sub: 'client-jwt-secret',
         iss: 'client-jwt-secret',
       }, this.key, 'HS256', { expiresIn: 60 }).then((assertion) => this.agent.post(route)
@@ -689,6 +700,7 @@ describe('client authentication options', () => {
         })
         .type('form')
         .expect(400)
+        .expect(noW3A)
         .expect({
           error: 'invalid_request',
           error_description: 'client authentication must only be provided using one mechanism',
@@ -698,7 +710,7 @@ describe('client authentication options', () => {
     it('rejects the auth if client secret is also present', function () {
       return JWT.sign({
         jti: nanoid(),
-        aud: this.provider.issuer + this.suitePath('/token'),
+        aud: this.provider.issuer,
         sub: 'client-jwt-secret',
         iss: 'client-jwt-secret',
       }, this.key, 'HS256', { expiresIn: 60 }).then((assertion) => this.agent.post(route)
@@ -710,26 +722,11 @@ describe('client authentication options', () => {
         })
         .type('form')
         .expect(400)
+        .expect(noW3A)
         .expect({
           error: 'invalid_request',
           error_description: 'client authentication must only be provided using one mechanism',
         }));
-    });
-
-    it('accepts the auth when aud is an array', function () {
-      return JWT.sign({
-        jti: nanoid(),
-        aud: [this.provider.issuer + this.suitePath('/token')],
-        sub: 'client-jwt-secret',
-        iss: 'client-jwt-secret',
-      }, this.key, 'HS256', { expiresIn: 60 }).then((assertion) => this.agent.post(route)
-        .send({
-          client_assertion: assertion,
-          grant_type: 'foo',
-          client_assertion_type: 'urn:ietf:params:oauth:client-assertion-type:jwt-bearer',
-        })
-        .type('form')
-        .expect(tokenAuthSucceeded));
     });
 
     it('rejects malformed assertions', function () {
@@ -742,6 +739,7 @@ describe('client authentication options', () => {
         })
         .type('form')
         .expect(400)
+        .expect(noW3A)
         .expect({
           error: 'invalid_request',
           error_description: 'invalid client_assertion format',
@@ -753,7 +751,7 @@ describe('client authentication options', () => {
       this.provider.once('grant.error', spy);
       return JWT.sign({
         jti: nanoid(),
-        aud: this.provider.issuer + this.suitePath('/token'),
+        aud: this.provider.issuer,
         sub: 'client-jwt-secret',
         iss: 'client-jwt-secret',
         exp: '',
@@ -767,6 +765,7 @@ describe('client authentication options', () => {
         })
         .type('form')
         .expect(401)
+        .expect(noW3A)
         .expect(tokenAuthRejected)
         .expect(() => {
           expect(spy.calledOnce).to.be.true;
@@ -791,6 +790,7 @@ describe('client authentication options', () => {
         })
         .type('form')
         .expect(401)
+        .expect(noW3A)
         .expect(tokenAuthRejected)
         .expect(() => {
           expect(spy.calledOnce).to.be.true;
@@ -803,7 +803,7 @@ describe('client authentication options', () => {
       this.provider.once('grant.error', spy);
       return JWT.sign({
         // jti: nanoid(),
-        aud: this.provider.issuer + this.suitePath('/token'),
+        aud: this.provider.issuer,
         sub: 'client-jwt-secret',
         iss: 'client-jwt-secret',
       }, this.key, 'HS256', {
@@ -816,6 +816,7 @@ describe('client authentication options', () => {
         })
         .type('form')
         .expect(401)
+        .expect(noW3A)
         .expect(tokenAuthRejected)
         .expect(() => {
           expect(spy.calledOnce).to.be.true;
@@ -828,7 +829,7 @@ describe('client authentication options', () => {
       this.provider.once('grant.error', spy);
       return JWT.sign({
         jti: nanoid(),
-        aud: this.provider.issuer + this.suitePath('/token'),
+        aud: this.provider.issuer,
         sub: 'client-jwt-secret',
         // iss: 'client-jwt-secret',
       }, this.key, 'HS256', {
@@ -841,6 +842,7 @@ describe('client authentication options', () => {
         })
         .type('form')
         .expect(401)
+        .expect(noW3A)
         .expect(tokenAuthRejected)
         .expect(() => {
           expect(spy.calledOnce).to.be.true;
@@ -853,7 +855,7 @@ describe('client authentication options', () => {
       this.provider.once('grant.error', spy);
       return JWT.sign({
         jti: nanoid(),
-        aud: this.provider.issuer + this.suitePath('/token'),
+        aud: this.provider.issuer,
         // sub: 'client-jwt-secret',
         iss: 'client-jwt-secret',
       }, this.key, 'HS256', {
@@ -866,6 +868,7 @@ describe('client authentication options', () => {
         })
         .type('form')
         .expect(401)
+        .expect(noW3A)
         .expect(tokenAuthRejected)
         .expect(() => {
           expect(spy.calledOnce).to.be.true;
@@ -878,7 +881,7 @@ describe('client authentication options', () => {
       this.provider.once('grant.error', spy);
       return JWT.sign({
         jti: nanoid(),
-        aud: this.provider.issuer + this.suitePath('/token'),
+        aud: this.provider.issuer,
         sub: 'client-jwt-secret',
         iss: 'not equal to clientid',
       }, this.key, 'HS256', {
@@ -891,6 +894,7 @@ describe('client authentication options', () => {
         })
         .type('form')
         .expect(401)
+        .expect(noW3A)
         .expect(tokenAuthRejected)
         .expect(() => {
           expect(spy.calledOnce).to.be.true;
@@ -898,62 +902,10 @@ describe('client authentication options', () => {
         }));
     });
 
-    it('audience as array must contain the token endpoint', function () {
-      const spy = sinon.spy();
-      this.provider.once('grant.error', spy);
-      return JWT.sign({
-        jti: nanoid(),
-        // aud: this.provider.issuer + this.suitePath('/token'),
-        aud: ['misses the token endpoint'],
-        sub: 'client-jwt-secret',
-        iss: 'client-jwt-secret',
-      }, this.key, 'HS256', {
-        expiresIn: 60,
-      }).then((assertion) => this.agent.post(route)
-        .send({
-          client_assertion: assertion,
-          grant_type: 'foo',
-          client_assertion_type: 'urn:ietf:params:oauth:client-assertion-type:jwt-bearer',
-        })
-        .type('form')
-        .expect(401)
-        .expect(tokenAuthRejected)
-        .expect(() => {
-          expect(spy.calledOnce).to.be.true;
-          expect(errorDetail(spy)).to.equal('list of audience (aud) must include the endpoint url, issuer identifier or token endpoint url');
-        }));
-    });
-
-    it('audience as single entry must be the token endpoint', function () {
-      const spy = sinon.spy();
-      this.provider.once('grant.error', spy);
-      return JWT.sign({
-        jti: nanoid(),
-        // aud: this.provider.issuer + this.suitePath('/token'),
-        aud: 'not the token endpoint',
-        sub: 'client-jwt-secret',
-        iss: 'client-jwt-secret',
-      }, this.key, 'HS256', {
-        expiresIn: 60,
-      }).then((assertion) => this.agent.post(route)
-        .send({
-          client_assertion: assertion,
-          grant_type: 'foo',
-          client_assertion_type: 'urn:ietf:params:oauth:client-assertion-type:jwt-bearer',
-        })
-        .type('form')
-        .expect(401)
-        .expect(tokenAuthRejected)
-        .expect(() => {
-          expect(spy.calledOnce).to.be.true;
-          expect(errorDetail(spy)).to.equal('audience (aud) must equal the endpoint url, issuer identifier or token endpoint url');
-        }));
-    });
-
     it('checks for mismatch in client_assertion client_id and body client_id', function () {
       return JWT.sign({
         jti: nanoid(),
-        aud: this.provider.issuer + this.suitePath('/token'),
+        aud: this.provider.issuer,
         sub: 'client-jwt-secret',
         iss: 'client-jwt-secret',
       }, this.key, 'HS256', { expiresIn: 60 }).then((assertion) => this.agent.post(route)
@@ -965,16 +917,17 @@ describe('client authentication options', () => {
         })
         .type('form')
         .expect(400)
+        .expect(noW3A)
         .expect({
           error: 'invalid_request',
-          error_description: 'subject of client_assertion must be the same as client_id provided in the body',
+          error_description: 'client_id mismatch',
         }));
     });
 
     it('requires client_assertion_type', function () {
       return JWT.sign({
         jti: nanoid(),
-        aud: this.provider.issuer + this.suitePath('/token'),
+        aud: this.provider.issuer,
         sub: 'client-jwt-secret',
         iss: 'client-jwt-secret',
       }, this.key, 'HS256', {
@@ -987,6 +940,7 @@ describe('client authentication options', () => {
         })
         .type('form')
         .expect(400)
+        .expect(noW3A)
         .expect({
           error: 'invalid_request',
           error_description: 'client_assertion_type must be provided',
@@ -996,7 +950,7 @@ describe('client authentication options', () => {
     it('requires client_assertion_type of specific value', function () {
       return JWT.sign({
         jti: nanoid(),
-        aud: this.provider.issuer + this.suitePath('/token'),
+        aud: this.provider.issuer,
         sub: 'client-jwt-secret',
         iss: 'client-jwt-secret',
       }, this.key, 'HS256', {
@@ -1009,6 +963,7 @@ describe('client authentication options', () => {
         })
         .type('form')
         .expect(400)
+        .expect(noW3A)
         .expect({
           error: 'invalid_request',
           error_description: 'client_assertion_type must have value urn:ietf:params:oauth:client-assertion-type:jwt-bearer',
@@ -1024,6 +979,7 @@ describe('client authentication options', () => {
         })
         .type('form')
         .expect(400)
+        .expect(noW3A)
         .expect({
           error: 'invalid_request',
           error_description: 'invalid client_assertion format',
@@ -1035,7 +991,7 @@ describe('client authentication options', () => {
       this.provider.once('grant.error', spy);
       return JWT.sign({
         jti: nanoid(),
-        aud: this.provider.issuer + this.suitePath('/token'),
+        aud: this.provider.issuer,
         sub: 'client-jwt-secret',
         iss: 'client-jwt-secret',
       }, this.key, 'HS256', {
@@ -1048,6 +1004,7 @@ describe('client authentication options', () => {
         })
         .type('form')
         .expect(401)
+        .expect(noW3A)
         .expect(tokenAuthRejected)
         .expect(() => {
           expect(spy.calledOnce).to.be.true;
@@ -1059,7 +1016,7 @@ describe('client authentication options', () => {
       const key = await importJWK((await this.provider.Client.find('secret-expired-jwt')).symmetricKeyStore.selectForSign({ alg: 'HS256' })[0]);
       return JWT.sign({
         jti: nanoid(),
-        aud: this.provider.issuer + this.suitePath('/token'),
+        aud: this.provider.issuer,
         sub: 'secret-expired-jwt',
         iss: 'secret-expired-jwt',
       }, key, 'HS256', {
@@ -1072,6 +1029,7 @@ describe('client authentication options', () => {
         })
         .type('form')
         .expect(400)
+        .expect(noW3A)
         .expect({
           error: 'invalid_client',
           error_description: 'could not authenticate the client - its client secret used for the client_assertion is expired',
@@ -1083,7 +1041,7 @@ describe('client authentication options', () => {
         const spy = sinon.spy();
         return JWT.sign({
           jti: nanoid(),
-          aud: this.provider.issuer + this.suitePath('/token'),
+          aud: this.provider.issuer,
           sub: 'client-jwt-secret',
           iss: 'client-jwt-secret',
         }, this.key, 'HS256', {
@@ -1108,6 +1066,7 @@ describe('client authentication options', () => {
               })
               .type('form')
               .expect(401)
+              .expect(noW3A)
               .expect(tokenAuthRejected)
               .expect(() => {
                 expect(spy.calledOnce).to.be.true;
@@ -1128,7 +1087,7 @@ describe('client authentication options', () => {
         this.provider.once('grant.error', spy);
         return JWT.sign({
           jti: nanoid(),
-          aud: this.provider.issuer + this.suitePath('/token'),
+          aud: this.provider.issuer,
           sub: 'client-jwt-secret',
           iss: 'client-jwt-secret',
         }, this.key, 'HS256', {
@@ -1141,6 +1100,7 @@ describe('client authentication options', () => {
           })
           .type('form')
           .expect(401)
+          .expect(noW3A)
           .expect(tokenAuthRejected)
           .expect(() => {
             expect(spy.calledOnce).to.be.true;
@@ -1154,13 +1114,13 @@ describe('client authentication options', () => {
     const privateKey = createPrivateKey({ format: 'jwk', key: clientKey });
 
     after(function () {
-      i(this.provider).configuration().clockTolerance = 0;
+      i(this.provider).configuration.clockTolerance = 0;
     });
 
     it('accepts the auth', function () {
       return JWT.sign({
         jti: nanoid(),
-        aud: this.provider.issuer + this.suitePath('/token'),
+        aud: this.provider.issuer,
         sub: 'client-jwt-key',
         iss: 'client-jwt-key',
       }, privateKey, 'RS256', {
@@ -1176,10 +1136,10 @@ describe('client authentication options', () => {
     });
 
     it('accepts client assertions issued within acceptable system clock skew', function () {
-      i(this.provider).configuration().clockTolerance = 10;
+      i(this.provider).configuration.clockTolerance = 10;
       return JWT.sign({
         jti: nanoid(),
-        aud: this.provider.issuer + this.suitePath('/token'),
+        aud: this.provider.issuer,
         sub: 'client-jwt-key',
         iss: 'client-jwt-key',
         iat: Math.ceil(Date.now() / 1000) + 5,
@@ -1193,6 +1153,395 @@ describe('client authentication options', () => {
         })
         .type('form')
         .expect(tokenAuthSucceeded));
+    });
+  });
+
+  describe('attest_jwt_client_auth auth', () => {
+    let challenge;
+    before(async function () {
+      const response = await this.agent.post('/challenge');
+      expect(response.body).to.have.property('attestation_challenge');
+      expect(response.headers['oauth-client-attestation-challenge']).to.equal(response.body.attestation_challenge);
+      challenge = response.body.attestation_challenge;
+    });
+
+    const privateKey = createPrivateKey({ format: 'jwk', key: clientKey });
+    const instanceKeyPair = generateKeyPairSync('ed25519');
+
+    it('accepts the auth', async function () {
+      const [attestation, pop] = await Promise.all([
+        new SignJWT({
+          cnf: {
+            jwk: instanceKeyPair.publicKey.export({ format: 'jwk' }),
+          },
+        })
+          .setProtectedHeader({
+            typ: 'oauth-client-attestation+jwt',
+            alg: 'RS256',
+          })
+          .setIssuer('https://attester.example.com')
+          .setSubject('attest_jwt_client_auth')
+          .setExpirationTime('2h')
+          .sign(privateKey),
+        new SignJWT({ challenge })
+          .setProtectedHeader({
+            typ: 'oauth-client-attestation-pop+jwt',
+            alg: 'Ed25519',
+          })
+          .setIssuer('attest_jwt_client_auth')
+          .setAudience(this.provider.issuer)
+          .setJti(nanoid())
+          .sign(instanceKeyPair.privateKey),
+      ]);
+
+      return this.agent.post(route)
+        .set('OAuth-Client-Attestation', attestation)
+        .set('OAuth-Client-Attestation-PoP', pop)
+        .send({
+          grant_type: 'foo',
+        })
+        .type('form')
+        .expect(tokenAuthSucceeded);
+    });
+
+    describe('oauth-client-attestation', () => {
+      before(function () {
+        this.signPop = () => new SignJWT({ challenge })
+          .setProtectedHeader({
+            typ: 'oauth-client-attestation-pop+jwt',
+            alg: 'Ed25519',
+          })
+          .setIssuer('attest_jwt_client_auth')
+          .setAudience(this.provider.issuer)
+          .setJti(nanoid())
+          .sign(instanceKeyPair.privateKey);
+      });
+
+      it('checks all required properties and their values', async function () {
+        for (const attestation of await Promise.all([
+          new SignJWT({
+            cnf: {
+              jwk: instanceKeyPair.publicKey.export({ format: 'jwk' }),
+            },
+          })
+            .setProtectedHeader({
+              typ: 'oauth-client-attestation+jwt',
+              alg: 'RS256',
+            })
+            // .setIssuer('https://attester.example.com')
+            .setSubject('attest_jwt_client_auth')
+            .setExpirationTime('2h')
+            .sign(privateKey),
+          new SignJWT({
+            cnf: {
+              jwk: instanceKeyPair.publicKey.export({ format: 'jwk' }),
+            },
+          })
+            .setProtectedHeader({
+              typ: 'oauth-client-attestation+jwt',
+              alg: 'RS256',
+            })
+            .setIssuer('foo')
+            .setSubject('attest_jwt_client_auth')
+            .setExpirationTime('2h')
+            .sign(privateKey),
+          new SignJWT({
+            cnf: {
+              jwk: instanceKeyPair.publicKey.export({ format: 'jwk' }),
+            },
+          })
+            .setProtectedHeader({
+              typ: 'oauth-client-attestation+jwt',
+              alg: 'RS256',
+            })
+            .setIssuer('https://attester.example.com')
+            // .setSubject('attest_jwt_client_auth')
+            .setExpirationTime('2h')
+            .sign(privateKey),
+          new SignJWT({
+            cnf: {
+              jwk: instanceKeyPair.publicKey.export({ format: 'jwk' }),
+            },
+          })
+            .setProtectedHeader({
+              typ: 'oauth-client-attestation+jwt',
+              alg: 'RS256',
+            })
+            .setIssuer('https://attester.example.com')
+            .setSubject('foo')
+            .setExpirationTime('2h')
+            .sign(privateKey),
+          new SignJWT({
+            cnf: {
+              jwk: instanceKeyPair.publicKey.export({ format: 'jwk' }),
+            },
+          })
+            .setProtectedHeader({
+              typ: 'oauth-client-attestation+jwt',
+              alg: 'RS256',
+            })
+            .setIssuer('https://attester.example.com')
+            .setSubject('attest_jwt_client_auth')
+            // .setExpirationTime('2h')
+            .sign(privateKey),
+          new SignJWT({
+            cnf: {
+              jwk: instanceKeyPair.publicKey.export({ format: 'jwk' }),
+            },
+          })
+            .setProtectedHeader({
+              typ: 'oauth-client-attestation+jwt',
+              alg: 'RS256',
+            })
+            .setIssuer('https://attester.example.com')
+            .setSubject('attest_jwt_client_auth')
+            .setExpirationTime(0)
+            .sign(privateKey),
+          new SignJWT({
+            cnf: {
+              // jwk: instanceKeyPair.publicKey.export({ format: 'jwk' }),
+            },
+          })
+            .setProtectedHeader({
+              typ: 'oauth-client-attestation+jwt',
+              alg: 'RS256',
+            })
+            .setIssuer('https://attester.example.com')
+            .setSubject('attest_jwt_client_auth')
+            .setExpirationTime('2h')
+            .sign(privateKey),
+          new SignJWT({
+            // cnf: {
+            //   jwk: instanceKeyPair.publicKey.export({ format: 'jwk' }),
+            // },
+          })
+            .setProtectedHeader({
+              typ: 'oauth-client-attestation+jwt',
+              alg: 'RS256',
+            })
+            .setIssuer('https://attester.example.com')
+            .setSubject('attest_jwt_client_auth')
+            .setExpirationTime('2h')
+            .sign(privateKey),
+          new SignJWT({
+            cnf: {
+              jwk: instanceKeyPair.publicKey.export({ format: 'jwk' }),
+            },
+          })
+            .setProtectedHeader({
+              // typ: 'oauth-client-attestation+jwt',
+              alg: 'RS256',
+            })
+            .setIssuer('https://attester.example.com')
+            .setSubject('attest_jwt_client_auth')
+            .setExpirationTime('2h')
+            .sign(privateKey),
+          new SignJWT({
+            cnf: {
+              jwk: instanceKeyPair.publicKey.export({ format: 'jwk' }),
+            },
+          })
+            .setProtectedHeader({
+              typ: 'foo',
+              alg: 'RS256',
+            })
+            .setIssuer('https://attester.example.com')
+            .setSubject('attest_jwt_client_auth')
+            .setExpirationTime('2h')
+            .sign(privateKey),
+        ])) {
+          await this.agent.post(route)
+            .set('OAuth-Client-Attestation', attestation)
+            .set('OAuth-Client-Attestation-PoP', await this.signPop())
+            .send({
+              grant_type: 'foo',
+            })
+            .type('form')
+            .expect(tokenAuthRejected);
+        }
+      });
+    });
+
+    describe('oauth-client-attestation-pop', () => {
+      before(function () {
+        this.signAttestation = () => new SignJWT({
+          cnf: {
+            jwk: instanceKeyPair.publicKey.export({ format: 'jwk' }),
+          },
+        })
+          .setProtectedHeader({
+            typ: 'oauth-client-attestation+jwt',
+            alg: 'RS256',
+          })
+          .setIssuer('https://attester.example.com')
+          .setSubject('attest_jwt_client_auth')
+          .setExpirationTime('2h')
+          .sign(privateKey);
+      });
+
+      it('must not be re-used', async function () {
+        const pop = await new SignJWT({ challenge })
+          .setProtectedHeader({
+            typ: 'oauth-client-attestation-pop+jwt',
+            alg: 'Ed25519',
+          })
+          .setIssuer('attest_jwt_client_auth')
+          .setAudience(this.provider.issuer)
+          .setJti(nanoid())
+          .sign(instanceKeyPair.privateKey);
+
+        await this.agent.post(route)
+          .set('OAuth-Client-Attestation', await this.signAttestation())
+          .set('OAuth-Client-Attestation-PoP', pop)
+          .send({
+            grant_type: 'foo',
+          })
+          .type('form')
+          .expect(tokenAuthSucceeded);
+
+        await this.agent.post(route)
+          .set('OAuth-Client-Attestation', await this.signAttestation())
+          .set('OAuth-Client-Attestation-PoP', pop)
+          .send({
+            grant_type: 'foo',
+          })
+          .type('form')
+          .expect(tokenAuthRejected);
+      });
+
+      describe('challenge handling', async () => {
+        it('requires challenge to be present', async function () {
+          const pop = await new SignJWT({ challenge: undefined })
+            .setProtectedHeader({
+              typ: 'oauth-client-attestation-pop+jwt',
+              alg: 'Ed25519',
+            })
+            .setIssuer('attest_jwt_client_auth')
+            .setAudience(this.provider.issuer)
+            .setJti(nanoid())
+            .sign(instanceKeyPair.privateKey);
+
+          await this.agent.post(route)
+            .set('OAuth-Client-Attestation', await this.signAttestation())
+            .set('OAuth-Client-Attestation-PoP', pop)
+            .send({
+              grant_type: 'foo',
+            })
+            .type('form')
+            .expect(400)
+            .expect('OAuth-Client-Attestation-Challenge', /^[A-Za-z0-9_-]+$/)
+            .expect({ error: 'use_attestation_challenge' });
+        });
+
+        it('requires a valid challenge to be present', async function () {
+          const pop = await new SignJWT({ challenge: 'invalid' })
+            .setProtectedHeader({
+              typ: 'oauth-client-attestation-pop+jwt',
+              alg: 'Ed25519',
+            })
+            .setIssuer('attest_jwt_client_auth')
+            .setAudience(this.provider.issuer)
+            .setJti(nanoid())
+            .sign(instanceKeyPair.privateKey);
+
+          await this.agent.post(route)
+            .set('OAuth-Client-Attestation', await this.signAttestation())
+            .set('OAuth-Client-Attestation-PoP', pop)
+            .send({
+              grant_type: 'foo',
+            })
+            .type('form')
+            .expect(400)
+            .expect('OAuth-Client-Attestation-Challenge', /^[A-Za-z0-9_-]+$/)
+            .expect({ error: 'use_attestation_challenge' });
+        });
+      });
+
+      it('checks all required properties and their values', async function () {
+        for (const pop of await Promise.all([
+          new SignJWT({ challenge })
+            .setProtectedHeader({
+              typ: 'oauth-client-attestation-pop+jwt',
+              alg: 'Ed25519',
+            })
+            .setIssuer('attest_jwt_client_auth')
+            .setAudience(this.provider.issuer)
+            // .setJti(nanoid())
+            .sign(instanceKeyPair.privateKey),
+          new SignJWT({ challenge })
+            .setProtectedHeader({
+              typ: 'oauth-client-attestation-pop+jwt',
+              alg: 'Ed25519',
+            })
+            .setIssuer('attest_jwt_client_auth')
+            // .setAudience(this.provider.issuer)
+            .setJti(nanoid())
+            .sign(instanceKeyPair.privateKey),
+          new SignJWT({ challenge })
+            .setProtectedHeader({
+              typ: 'oauth-client-attestation-pop+jwt',
+              alg: 'Ed25519',
+            })
+            .setIssuer('attest_jwt_client_auth')
+            .setAudience([this.provider.issuer])
+            .setJti(nanoid())
+            .sign(instanceKeyPair.privateKey),
+          new SignJWT({ challenge })
+            .setProtectedHeader({
+              typ: 'oauth-client-attestation-pop+jwt',
+              alg: 'Ed25519',
+            })
+            .setIssuer('attest_jwt_client_auth')
+            .setAudience('foo')
+            .setJti(nanoid())
+            .sign(instanceKeyPair.privateKey),
+          new SignJWT({ challenge })
+            .setProtectedHeader({
+              typ: 'oauth-client-attestation-pop+jwt',
+              alg: 'Ed25519',
+            })
+            // .setIssuer('attest_jwt_client_auth')
+            .setAudience(this.provider.issuer)
+            .setJti(nanoid())
+            .sign(instanceKeyPair.privateKey),
+          new SignJWT({ challenge })
+            .setProtectedHeader({
+              typ: 'oauth-client-attestation-pop+jwt',
+              alg: 'Ed25519',
+            })
+            .setIssuer('foo')
+            .setAudience(this.provider.issuer)
+            .setJti(nanoid())
+            .sign(instanceKeyPair.privateKey),
+          new SignJWT({ challenge })
+            .setProtectedHeader({
+              // typ: 'oauth-client-attestation-pop+jwt',
+              alg: 'Ed25519',
+            })
+            .setIssuer('attest_jwt_client_auth')
+            .setAudience(this.provider.issuer)
+            .setJti(nanoid())
+            .sign(instanceKeyPair.privateKey),
+          new SignJWT({ challenge })
+            .setProtectedHeader({
+              typ: 'foo',
+              alg: 'Ed25519',
+            })
+            .setIssuer('attest_jwt_client_auth')
+            .setAudience(this.provider.issuer)
+            .setJti(nanoid())
+            .sign(instanceKeyPair.privateKey),
+        ])) {
+          await this.agent.post(route)
+            .set('OAuth-Client-Attestation', await this.signAttestation())
+            .set('OAuth-Client-Attestation-PoP', pop)
+            .send({
+              grant_type: 'foo',
+            })
+            .type('form')
+            .expect(tokenAuthRejected);
+        }
+      });
     });
   });
 
@@ -1295,8 +1644,10 @@ describe('client authentication options', () => {
     });
 
     it('handles rotation of stale jwks', function () {
-      nock('https://client.example.com/')
-        .get('/jwks')
+      mock('https://client.example.com')
+        .intercept({
+          path: '/jwks',
+        })
         .reply(200, JSON.stringify(mtlsKeys));
 
       return this.agent.post(route)

@@ -1,5 +1,6 @@
-import { X509Certificate } from 'node:crypto';
+import { X509Certificate, randomBytes } from 'node:crypto';
 import { readFileSync } from 'node:fs';
+import * as assert from 'node:assert/strict';
 
 import cloneDeep from 'lodash/cloneDeep.js';
 import merge from 'lodash/merge.js';
@@ -25,6 +26,12 @@ const clientKey = {
 const rsaKeys = cloneDeep(mtlsKeys);
 rsaKeys.keys.splice(0, 1);
 
+const attestationKey = {
+  e: key.e,
+  n: key.n,
+  kty: key.kty,
+};
+
 config.clientAuthMethods = [
   'none',
   'client_secret_basic',
@@ -33,9 +40,34 @@ config.clientAuthMethods = [
   'client_secret_jwt',
   'tls_client_auth',
   'self_signed_tls_client_auth',
+  'attest_jwt_client_auth',
 ];
 merge(config.features, {
   introspection: { enabled: true },
+  attestClientAuth: {
+    enabled: true,
+    challengeSecret: randomBytes(32),
+    getAttestationSignaturePublicKey(ctx, iss, header, client) {
+      assert.ok(ctx);
+      assert.equal(typeof iss, 'string');
+      assert.ok(header);
+      assert.ok(client);
+      if (iss === 'https://attester.example.com' && header.alg === 'RS256') {
+        return client.jwks.keys[0];
+      }
+      throw new Error('unexpected attestation jwt issuer');
+    },
+    assertAttestationJwtAndPop(ctx, attestation, pop, client) {
+      assert.ok(ctx);
+      assert.ok(attestation?.payload?.iss);
+      assert.ok(attestation?.protectedHeader?.alg);
+      assert.ok(attestation?.key?.algorithm);
+      assert.ok(pop?.payload?.iss);
+      assert.ok(pop?.protectedHeader?.alg);
+      assert.ok(pop?.key?.algorithm);
+      assert.ok(client);
+    },
+  },
   mTLS: {
     enabled: true,
     selfSignedTlsClientAuth: true,
@@ -102,6 +134,13 @@ export default {
     jwks: {
       keys: [clientKey],
     },
+  }, {
+    client_id: 'attest_jwt_client_auth',
+    grant_types: ['foo'],
+    response_types: [],
+    redirect_uris: [],
+    token_endpoint_auth_method: 'attest_jwt_client_auth',
+    jwks: { keys: [attestationKey] },
   }, {
     client_id: 'client-pki-mtls',
     grant_types: ['foo'],

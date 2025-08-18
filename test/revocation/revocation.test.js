@@ -1,11 +1,14 @@
-import sinon from 'sinon';
+import { createSandbox } from 'sinon';
 import { expect } from 'chai';
 
 import bootstrap from '../test_helper.js';
 
+const sinon = createSandbox();
 const route = '/token/revocation';
+
 describe('revocation features', () => {
   before(bootstrap(import.meta.url));
+  afterEach(sinon.restore);
 
   describe('enriched discovery', () => {
     it('shows the url now', function () {
@@ -27,7 +30,8 @@ describe('revocation features', () => {
         scope: 'scope',
       });
 
-      const stub = sinon.stub(this.provider.AccessToken.prototype, 'destroy').callsFake(() => Promise.resolve());
+      const atDestroy = sinon.stub(this.provider.AccessToken.prototype, 'destroy').callsFake(() => Promise.resolve());
+      const grantDestroy = sinon.stub(this.provider.Grant.adapter, 'destroy').callsFake(() => Promise.resolve());
 
       const token = await at.save();
       return this.agent.post(route)
@@ -35,8 +39,33 @@ describe('revocation features', () => {
         .send({ token })
         .type('form')
         .expect(() => {
-          expect(stub.calledOnce).to.be.true;
-          this.provider.AccessToken.prototype.destroy.restore();
+          expect(atDestroy.calledOnce).to.be.true;
+          expect(grantDestroy.called).to.be.false;
+        })
+        .expect(200)
+        .expect('');
+    });
+
+    it('revokes access token and grant when configured', async function () {
+      const at = new this.provider.AccessToken({
+        accountId: 'accountId',
+        grantId: 'foo',
+        client: await this.provider.Client.find('client'),
+        scope: 'scope',
+      });
+
+      sinon.stub(i(this.provider).configuration, 'revokeGrantPolicy').callsFake(() => true);
+      const atDestroy = sinon.stub(this.provider.AccessToken.prototype, 'destroy').callsFake(() => Promise.resolve());
+      const grantDestroy = sinon.stub(this.provider.Grant.adapter, 'destroy').callsFake(() => Promise.resolve());
+
+      const token = await at.save();
+      return this.agent.post(route)
+        .auth('client', 'secret')
+        .send({ token })
+        .type('form')
+        .expect(() => {
+          expect(atDestroy.calledOnce).to.be.true;
+          expect(grantDestroy.calledOnce).to.be.true;
         })
         .expect(200)
         .expect('');
@@ -59,7 +88,6 @@ describe('revocation features', () => {
         .type('form')
         .expect(() => {
           expect(stub.calledOnce).to.be.true;
-          this.provider.AccessToken.prototype.destroy.restore();
         })
         .expect(200)
         .expect('');
@@ -82,7 +110,6 @@ describe('revocation features', () => {
         .type('form')
         .expect(() => {
           expect(stub.calledOnce).to.be.true;
-          this.provider.AccessToken.prototype.destroy.restore();
         })
         .expect(200)
         .expect('');
@@ -105,7 +132,6 @@ describe('revocation features', () => {
         .type('form')
         .expect(() => {
           expect(stub.calledOnce).to.be.true;
-          this.provider.AccessToken.prototype.destroy.restore();
         })
         .expect(200)
         .expect('');
@@ -126,9 +152,6 @@ describe('revocation features', () => {
         .auth('client', 'secret')
         .send({ token })
         .type('form')
-        .expect(() => {
-          this.provider.AccessToken.find.restore();
-        })
         .expect(500)
         .expect((response) => {
           expect(response.body.error).to.eql('server_error');
@@ -143,7 +166,8 @@ describe('revocation features', () => {
         scope: 'scope',
       });
 
-      const stub = sinon.stub(this.provider.RefreshToken.prototype, 'destroy').callsFake(() => Promise.resolve());
+      const rtDestroy = sinon.stub(this.provider.RefreshToken.prototype, 'destroy').callsFake(() => Promise.resolve());
+      const grantDestroy = sinon.stub(this.provider.Grant.adapter, 'destroy').callsFake(() => Promise.resolve());
 
       const token = await rt.save();
       return this.agent.post(route)
@@ -151,8 +175,8 @@ describe('revocation features', () => {
         .send({ token })
         .type('form')
         .expect(() => {
-          expect(stub.calledOnce).to.be.true;
-          this.provider.RefreshToken.prototype.destroy.restore();
+          expect(rtDestroy.calledOnce).to.be.true;
+          expect(grantDestroy.calledOnce).to.be.true;
         })
         .expect(200)
         .expect('');
@@ -175,7 +199,6 @@ describe('revocation features', () => {
         .type('form')
         .expect(() => {
           expect(stub.calledOnce).to.be.true;
-          this.provider.RefreshToken.prototype.destroy.restore();
         })
         .expect(200)
         .expect('');
@@ -194,11 +217,10 @@ describe('revocation features', () => {
       const token = await rt.save();
       return this.agent.post(route)
         .auth('client', 'secret')
-        .send({ token, token_type_hint: 'client_credentials' })
+        .send({ token, token_type_hint: 'access_token' })
         .type('form')
         .expect(() => {
           expect(stub.calledOnce).to.be.true;
-          this.provider.RefreshToken.prototype.destroy.restore();
         })
         .expect(200)
         .expect('');
@@ -221,7 +243,6 @@ describe('revocation features', () => {
         .type('form')
         .expect(() => {
           expect(stub.calledOnce).to.be.true;
-          this.provider.RefreshToken.prototype.destroy.restore();
         })
         .expect(200)
         .expect('');
@@ -241,7 +262,6 @@ describe('revocation features', () => {
         .type('form')
         .expect(() => {
           expect(stub.calledOnce).to.be.true;
-          this.provider.ClientCredentials.prototype.destroy.restore();
         })
         .expect(200)
         .expect('');
@@ -257,31 +277,10 @@ describe('revocation features', () => {
       const token = await rt.save();
       return this.agent.post(route)
         .auth('client', 'secret')
-        .send({ token, token_type_hint: 'client_credentials' })
-        .type('form')
-        .expect(() => {
-          expect(stub.calledOnce).to.be.true;
-          this.provider.ClientCredentials.prototype.destroy.restore();
-        })
-        .expect(200)
-        .expect('');
-    });
-
-    it('revokes client credentials token [wrong hint]', async function () {
-      const rt = new this.provider.ClientCredentials({
-        client: await this.provider.Client.find('client'),
-      });
-
-      const stub = sinon.stub(this.provider.ClientCredentials.prototype, 'destroy').callsFake(() => Promise.resolve());
-
-      const token = await rt.save();
-      return this.agent.post(route)
-        .auth('client', 'secret')
         .send({ token, token_type_hint: 'access_token' })
         .type('form')
         .expect(() => {
           expect(stub.calledOnce).to.be.true;
-          this.provider.ClientCredentials.prototype.destroy.restore();
         })
         .expect(200)
         .expect('');
@@ -301,7 +300,6 @@ describe('revocation features', () => {
         .type('form')
         .expect(() => {
           expect(stub.calledOnce).to.be.true;
-          this.provider.ClientCredentials.prototype.destroy.restore();
         })
         .expect(200)
         .expect('');
@@ -330,18 +328,18 @@ describe('revocation features', () => {
         .expect(200);
     });
 
-    it('rejects wrong tokens', function () {
+    it('rejects structured tokens', function () {
       return this.agent.post(route)
         .auth('client', 'secret')
         .send({
           token: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiYWRtaW4iOnRydWV9.TJVA95OrM7E2cBab30RMHrHDcEfxjoYZgeFONFh7HgQ',
         })
         .type('form')
-        .expect('')
-        .expect(200);
+        .expect(400)
+        .expect({ error: 'unsupported_token_type', error_description: 'Structured JWT Tokens cannot be revoked via the revocation_endpoint' });
     });
 
-    it('does not revoke tokens of other clients', async function () {
+    it('does not revoke tokens of other clients (confidential client making the request - exposed error)', async function () {
       const at = new this.provider.AccessToken({
         accountId: 'accountId',
         grantId: 'foo',
@@ -349,17 +347,41 @@ describe('revocation features', () => {
         scope: 'scope',
       });
 
+      const stub = sinon.stub(this.provider.AccessToken.prototype, 'destroy');
+
       const token = await at.save();
       return this.agent.post(route)
         .auth('client', 'secret')
         .send({ token })
         .type('form')
         .expect(400)
-        .expect((response) => {
-          expect(response.body).to.eql({
-            error: 'invalid_request',
-            error_description: 'this token does not belong to you',
-          });
+        .expect({
+          error: 'invalid_request',
+          error_description: 'client is not authorized to revoke the presented token',
+        })
+        .expect(() => {
+          expect(stub.called).to.be.false;
+        });
+    });
+
+    it('does not revoke tokens of other clients (public client making the request - silent ignore)', async function () {
+      const at = new this.provider.AccessToken({
+        accountId: 'accountId',
+        grantId: 'foo',
+        client: await this.provider.Client.find('client2'),
+        scope: 'scope',
+      });
+
+      const stub = sinon.stub(this.provider.AccessToken.prototype, 'destroy');
+
+      const token = await at.save();
+      return this.agent.post(route)
+        .send({ token, client_id: 'client-public' })
+        .type('form')
+        .expect(200)
+        .expect('')
+        .expect(() => {
+          expect(stub.called).to.be.false;
         });
     });
 
@@ -390,20 +412,16 @@ describe('revocation features', () => {
         })
         .type('form')
         .expect(200)
-        .expect(() => {
-          this.provider.AccessToken.find.restore();
-        })
         .catch((err) => {
-          this.provider.AccessToken.find.restore();
           throw err;
         });
     });
 
     describe('populates ctx.oidc.entities', () => {
       it('when revoking an AccessToken', function (done) {
-        this.provider.use(this.assertOnce((ctx) => {
+        this.assertOnce((ctx) => {
           expect(ctx.oidc.entities).to.have.keys('Client', 'AccessToken');
-        }, done));
+        }, done);
 
         (async () => {
           const at = new this.provider.AccessToken({
@@ -424,9 +442,9 @@ describe('revocation features', () => {
       });
 
       it('when revoking a RefreshToken', function (done) {
-        this.provider.use(this.assertOnce((ctx) => {
+        this.assertOnce((ctx) => {
           expect(ctx.oidc.entities).to.have.keys('Client', 'RefreshToken');
-        }, done));
+        }, done);
 
         (async () => {
           const rt = new this.provider.RefreshToken({
@@ -445,9 +463,9 @@ describe('revocation features', () => {
       });
 
       it('when revoking ClientCredentials', function (done) {
-        this.provider.use(this.assertOnce((ctx) => {
+        this.assertOnce((ctx) => {
           expect(ctx.oidc.entities).to.have.keys('Client', 'ClientCredentials');
-        }, done));
+        }, done);
 
         (async () => {
           const rt = new this.provider.ClientCredentials({

@@ -31,7 +31,7 @@ if (PLAN_NAME.startsWith('fapi')) {
 
 switch (PLAN_NAME) {
   case 'oidcc-dynamic-certification-test-plan':
-    SKIP = 'oidcc-server-rotate-keys';
+    SKIP = 'oidcc-server-rotate-keys,oidcc-request-uri-unsigned,oidcc-request-uri-signed-rs256';
     break;
   case 'oidcc-test-plan':
     SKIP = 'oidcc-server-rotate-keys';
@@ -47,6 +47,8 @@ switch (PLAN_NAME) {
     VARIANT.response_type = 'code';
     break;
   case 'oidcc-basic-certification-test-plan':
+    // TODO: unskip when https://gitlab.com/openid/conformance-suite/-/issues/1519 is fixed
+    SKIP = 'oidcc-ensure-post-request-succeeds';
     VARIANT.server_metadata = 'discovery';
     VARIANT.client_registration = 'dynamic_client';
     break;
@@ -58,7 +60,7 @@ switch (PLAN_NAME) {
     VARIANT.server_metadata = 'discovery';
     VARIANT.client_registration = 'dynamic_client';
     break;
-  case 'fapi2-message-signing-id1-test-plan':
+  case 'fapi2-message-signing-final-test-plan':
     VARIANT.fapi_request_method = 'signed_non_repudiation';
     VARIANT.fapi_response_mode = 'jarm';
     break;
@@ -86,17 +88,16 @@ const auth = VARIANT.client_auth_type === 'mtls' ? 'mtls' : 'pkjwt';
 let override;
 // eslint-disable-next-line default-case
 switch (PLAN_NAME) {
-  case 'fapi-rw-id2-test-plan':
   case 'fapi1-advanced-final-test-plan': {
-    const revision = PLAN_NAME.split('-')[2]; // id2 or final
-    override = revision === 'final' ? 'fapi1-advanced-final' : 'fapi-rw-id2';
+    const revision = 'final';
+    override = 'fapi1-advanced-final';
     configuration.client.client_id = `1.0-${revision}-${auth}-one`;
     configuration.client2.client_id = `1.0-${revision}-${auth}-two`;
     break;
   }
-  case 'fapi2-security-profile-id2-test-plan':
-  case 'fapi2-message-signing-id1-test-plan': {
-    override = 'fapi2-security-profile-id2';
+  case 'fapi2-security-profile-final-test-plan':
+  case 'fapi2-message-signing-final-test-plan': {
+    override = 'fapi2-security-profile-final';
     const spec = PLAN_NAME.split('-').slice(1, 3).join('').replace('-', ''); // securityprofile or messagesigning
     if (VARIANT.openid === 'plain_oauth') {
       removeOpenidScope(configuration);
@@ -202,7 +203,7 @@ try {
         debug('Created test module, new id: %s', moduleId);
         debug('%s/log-detail.html?log=%s', SUITE_BASE_URL, moduleId);
         const [, result] = await runner.waitForState({ moduleId });
-        if (result === 'WARNING') {
+        if (result === 'WARNING' && testModule !== 'oidcc-ensure-post-request-succeeds') {
           warned ||= true;
         }
       });

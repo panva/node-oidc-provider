@@ -5,6 +5,10 @@ import { expect } from 'chai';
 import bootstrap from '../test_helper.js';
 import Provider from '../../lib/index.js';
 
+function noW3A({ headers }) {
+  expect(headers).not.to.have.property('www-authenticate');
+}
+
 describe('OAuth 2.0 Dynamic Client Registration Management Protocol', () => {
   before(bootstrap(import.meta.url));
 
@@ -64,16 +68,15 @@ describe('OAuth 2.0 Dynamic Client Registration Management Protocol', () => {
     it('rejects calls with no registration access token', async function () {
       const client = await setup.call(this, {});
       return this.agent.put(`/reg/${client.client_id}`)
-        .expect(this.failWith(400, 'invalid_request', 'no access token provided'));
+        .expect(this.failWith(401, 'invalid_token', 'no access token provided'));
     });
 
     it('populates ctx.oidc.entities', function (done) {
-      this.provider.use(this.assertOnce((ctx) => {
-        expect(ctx.oidc.entities).to.have.keys('Client', 'RegistrationAccessToken');
-      }, done, (ctx) => ctx.method === 'PUT'));
-
       (async () => {
         const client = await setup.call(this, {});
+        this.assertOnce((ctx) => {
+          expect(ctx.oidc.entities).to.have.keys('Client', 'RegistrationAccessToken');
+        }, done);
         await this.agent.put(`/reg/${client.client_id}`)
           .auth(client.registration_access_token, { type: 'bearer' })
           .send(updateProperties(client));
@@ -100,7 +103,12 @@ describe('OAuth 2.0 Dynamic Client Registration Management Protocol', () => {
         .send(updateProperties(client, {
           client_secret: null,
         }))
-        .expect(this.failWith(400, 'invalid_request', "provided client_secret does not match the authenticated client's one"));
+        .expect(400)
+        .expect(noW3A)
+        .expect({
+          error: 'invalid_request',
+          error_description: "provided client_secret does not match the authenticated client's one",
+        });
     });
 
     it('allows for properties to be deleted by omission', async function () {
@@ -155,7 +163,12 @@ describe('OAuth 2.0 Dynamic Client Registration Management Protocol', () => {
           redirect_uris: ['https://client.example.com/foobar/cb'],
           registration_access_token: 'foobar',
         }))
-        .expect(this.failWith(400, 'invalid_request', 'request MUST NOT include the registration_access_token field'));
+        .expect(400)
+        .expect(noW3A)
+        .expect({
+          error: 'invalid_request',
+          error_description: 'request MUST NOT include the registration_access_token field',
+        });
     });
 
     it('must not contain registration_client_uri', async function () {
@@ -167,7 +180,12 @@ describe('OAuth 2.0 Dynamic Client Registration Management Protocol', () => {
           redirect_uris: ['https://client.example.com/foobar/cb'],
           registration_client_uri: 'foobar',
         }))
-        .expect(this.failWith(400, 'invalid_request', 'request MUST NOT include the registration_client_uri field'));
+        .expect(400)
+        .expect(noW3A)
+        .expect({
+          error: 'invalid_request',
+          error_description: 'request MUST NOT include the registration_client_uri field',
+        });
     });
 
     it('must not contain client_secret_expires_at', async function () {
@@ -179,7 +197,12 @@ describe('OAuth 2.0 Dynamic Client Registration Management Protocol', () => {
           redirect_uris: ['https://client.example.com/foobar/cb'],
           client_secret_expires_at: 'foobar',
         }))
-        .expect(this.failWith(400, 'invalid_request', 'request MUST NOT include the client_secret_expires_at field'));
+        .expect(400)
+        .expect(noW3A)
+        .expect({
+          error: 'invalid_request',
+          error_description: 'request MUST NOT include the client_secret_expires_at field',
+        });
     });
 
     it('must not contain client_id_issued_at', async function () {
@@ -191,7 +214,12 @@ describe('OAuth 2.0 Dynamic Client Registration Management Protocol', () => {
           redirect_uris: ['https://client.example.com/foobar/cb'],
           client_id_issued_at: 'foobar',
         }))
-        .expect(this.failWith(400, 'invalid_request', 'request MUST NOT include the client_id_issued_at field'));
+        .expect(400)
+        .expect(noW3A)
+        .expect({
+          error: 'invalid_request',
+          error_description: 'request MUST NOT include the client_id_issued_at field',
+        });
     });
 
     it('cannot update non-dynamic clients', async function () {
@@ -203,19 +231,24 @@ describe('OAuth 2.0 Dynamic Client Registration Management Protocol', () => {
         .send(updateProperties(client.metadata(), {
           redirect_uris: ['https://client.example.com/foobar/cb'],
         }))
-        .expect(this.failWith(403, 'invalid_request', 'client does not have permission to update its record'));
+        .expect(403)
+        .expect(noW3A)
+        .expect({
+          error: 'invalid_request',
+          error_description: 'client does not have permission to update its record',
+        });
     });
 
     describe('rotateRegistrationAccessToken', () => {
       before(function () {
-        const conf = i(this.provider).configuration();
+        const conf = i(this.provider).configuration;
         conf.features.registrationManagement = {
           enabled: true, rotateRegistrationAccessToken: true,
         };
       });
 
       after(function () {
-        const conf = i(this.provider).configuration();
+        const conf = i(this.provider).configuration;
         conf.features.registrationManagement = { enabled: true };
       });
 
@@ -234,14 +267,13 @@ describe('OAuth 2.0 Dynamic Client Registration Management Protocol', () => {
       });
 
       it('populates ctx.oidc.entities with RotatedRegistrationAccessToken too', function (done) {
-        this.provider.use(this.assertOnce((ctx) => {
-          expect(ctx.oidc.entities).to.contain.keys('RotatedRegistrationAccessToken', 'RegistrationAccessToken');
-          expect(ctx.oidc.entities.RotatedRegistrationAccessToken)
-            .not.to.eql(ctx.oidc.entities.RegistrationAccessToken);
-        }, done, (ctx) => ctx.method === 'PUT'));
-
         (async () => {
           const client = await setup.call(this, {});
+          this.assertOnce((ctx) => {
+            expect(ctx.oidc.entities).to.contain.keys('RotatedRegistrationAccessToken', 'RegistrationAccessToken');
+            expect(ctx.oidc.entities.RotatedRegistrationAccessToken)
+              .not.to.eql(ctx.oidc.entities.RegistrationAccessToken);
+          }, done);
           await this.agent.put(`/reg/${client.client_id}`)
             .auth(client.registration_access_token, { type: 'bearer' })
             .send(updateProperties(client));
@@ -282,12 +314,11 @@ describe('OAuth 2.0 Dynamic Client Registration Management Protocol', () => {
     });
 
     it('populates ctx.oidc.entities', function (done) {
-      this.provider.use(this.assertOnce((ctx) => {
-        expect(ctx.oidc.entities).to.have.keys('Client', 'RegistrationAccessToken');
-      }, done, (ctx) => ctx.method === 'DELETE'));
-
       (async () => {
         const client = await setup.call(this, {});
+        this.assertOnce((ctx) => {
+          expect(ctx.oidc.entities).to.have.keys('Client', 'RegistrationAccessToken');
+        }, done);
         await this.agent.del(`/reg/${client.client_id}`)
           .auth(client.registration_access_token, { type: 'bearer' });
       })().catch(done);
@@ -316,7 +347,7 @@ describe('OAuth 2.0 Dynamic Client Registration Management Protocol', () => {
     it('rejects calls with no registration access token', async function () {
       const client = await setup.call(this, {});
       return this.agent.del(`/reg/${client.client_id}`)
-        .expect(this.failWith(400, 'invalid_request', 'no access token provided'));
+        .expect(this.failWith(401, 'invalid_token', 'no access token provided'));
     });
 
     it('cannot delete non-dynamic clients', async function () {
@@ -324,7 +355,12 @@ describe('OAuth 2.0 Dynamic Client Registration Management Protocol', () => {
       const bearer = await rat.save();
       return this.agent.del('/reg/client')
         .auth(bearer, { type: 'bearer' })
-        .expect(this.failWith(403, 'invalid_request', 'client does not have permission to delete its record'));
+        .expect(403)
+        .expect(noW3A)
+        .expect({
+          error: 'invalid_request',
+          error_description: 'client does not have permission to delete its record',
+        });
     });
   });
 });
