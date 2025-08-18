@@ -237,10 +237,10 @@ describe('devInteractions', () => {
     });
     context('with cookieless fallback enabled', () => {
       before(async function () {
-        i(this.provider).configuration('cookies').enableCookielessFallback = true;
+        i(this.provider).configuration.cookies.enableCookielessFallback = true;
       });
       after(async function () {
-        i(this.provider).configuration('cookies').enableCookielessFallback = false;
+        i(this.provider).configuration.cookies.enableCookielessFallback = false;
         sinon.restore();
       });
       it('should look up interaction from ID in path params', async function () {
@@ -291,10 +291,10 @@ describe('devInteractions', () => {
 
     context('with cookieless fallback enabled', async () => {
       before(async function () {
-        i(this.provider).configuration('cookies').enableCookielessFallback = true;
+        i(this.provider).configuration.cookies.enableCookielessFallback = true;
       });
       after(async function () {
-        i(this.provider).configuration('cookies').enableCookielessFallback = false;
+        i(this.provider).configuration.cookies.enableCookielessFallback = false;
         sinon.restore();
       });
 
@@ -309,7 +309,7 @@ describe('devInteractions', () => {
 
   context('with cookieless fallback disabled', async () => {
     before(async function () {
-      i(this.provider).configuration('cookies').enableCookielessFallback = false;
+      i(this.provider).configuration.cookies.enableCookielessFallback = false;
     });
     it('should look up interaction from ID in path params', async function () {
       // If cookies are enabled, this should fail because the interaction ID in the cookie is not the same
