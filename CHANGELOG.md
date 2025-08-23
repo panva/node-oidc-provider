@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [9.4.2](https://github.com/panva/node-oidc-provider/compare/v9.4.1...v9.4.2) (2025-08-23)
+
+
+### Fixes
+
+* check for native logout redirect allowed same way as during auth ([419f286](https://github.com/panva/node-oidc-provider/commit/419f286529fd66d0cb577ea64dd544867eb27b18)), closes [#1351](https://github.com/panva/node-oidc-provider/issues/1351)
+
 ## [9.4.1](https://github.com/panva/node-oidc-provider/compare/v9.4.0...v9.4.1) (2025-08-11)
 
 
