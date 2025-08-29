@@ -19,6 +19,13 @@ const sigKey = stripPrivateJWKFields(keys[0]);
 const privateKey = keys[0];
 const { InvalidClientMetadata } = errors;
 
+const pqc = [];
+for (const alg of ['ML-DSA-44', 'ML-DSA-65', 'ML-DSA-87']) {
+  if (SubtleCrypto.supports?.('generateKey', alg)) {
+    pqc.push(alg);
+  }
+}
+
 describe('Client metadata validation', () => {
   let DefaultProvider;
   before(() => {
@@ -608,6 +615,7 @@ describe('Client metadata validation', () => {
       'ES512',
       'Ed25519',
       'EdDSA',
+      ...pqc,
     ].forEach((alg) => {
       allows(this.title, alg, { jwks: { keys: [sigKey] } }, configuration);
     });
@@ -1568,6 +1576,7 @@ describe('Client metadata validation', () => {
         'ES512',
         'Ed25519',
         'EdDSA',
+        ...pqc,
       ].forEach((alg) => {
         allows(this.title, alg, { ...metadata, jwks: { keys: [sigKey] } }, withRequestObjects);
       });
@@ -1743,24 +1752,17 @@ describe('Client metadata validation', () => {
       'request_object_signing_alg',
       'backchannel_authentication_request_signing_alg',
     ]) {
-      rejects(
-        this.title,
-        undefined,
-        'jwks or jwks_uri is mandatory for this client',
-        {
-          [prop]: 'RS256',
-        },
-        configuration,
-      );
-      rejects(
-        this.title,
-        undefined,
-        'jwks or jwks_uri is mandatory for this client',
-        {
-          [prop]: 'ES384',
-        },
-        configuration,
-      );
+      for (const alg of ['RS256', 'PS384', 'ES512', 'Ed25519', 'EdDSA', ...pqc]) {
+        rejects(
+          this.title,
+          undefined,
+          'jwks or jwks_uri is mandatory for this client',
+          {
+            [prop]: alg,
+          },
+          configuration,
+        );
+      }
     }
 
     [
