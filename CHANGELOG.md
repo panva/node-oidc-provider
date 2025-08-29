@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [9.5.1](https://github.com/panva/node-oidc-provider/compare/v9.5.0...v9.5.1) (2025-08-29)
+
+
+### Fixes
+
+* safeguard global navigator access ([1caae21](https://github.com/panva/node-oidc-provider/commit/1caae21008fb69eb3933354a705886c751876cdb))
+
 ## [9.5.0](https://github.com/panva/node-oidc-provider/compare/v9.4.2...v9.5.0) (2025-08-29)
 
 
