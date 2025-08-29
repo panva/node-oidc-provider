@@ -2,6 +2,19 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [9.5.0](https://github.com/panva/node-oidc-provider/compare/v9.4.2...v9.5.0) (2025-08-29)
+
+
+### Features
+
+* support ML-DSA JWS algorithm identifiers ([f308b09](https://github.com/panva/node-oidc-provider/commit/f308b0930c665058c64b713438bf956c7af2449c))
+
+
+### Refactor
+
+* add a warning for more unsupported runtimes ([c55d58e](https://github.com/panva/node-oidc-provider/commit/c55d58e8d56b56ecd724a10e133933a955593879))
+* make warn/info warnings colorization a no-op in nonTTY ([0c0a5b6](https://github.com/panva/node-oidc-provider/commit/0c0a5b633ddac7d9d98b485a69608f9e947ebdef))
+
 ## [9.4.2](https://github.com/panva/node-oidc-provider/compare/v9.4.1...v9.4.2) (2025-08-23)
 
 
