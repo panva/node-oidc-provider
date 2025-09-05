@@ -23,6 +23,13 @@ const mtlsKeys = JSON.parse(
 const rsacrt = new X509Certificate(readFileSync('test/jwks/rsa.crt', { encoding: 'ascii' }));
 const eccrt = new X509Certificate(readFileSync('test/jwks/ec.crt', { encoding: 'ascii' }));
 
+const pqc = [];
+for (const alg of ['ML-DSA-44', 'ML-DSA-65', 'ML-DSA-87']) {
+  if (SubtleCrypto.supports?.('generateKey', alg)) {
+    pqc.push(alg);
+  }
+}
+
 const route = '/token';
 
 const tokenAuthSucceeded = { success: true };
@@ -145,6 +152,7 @@ describe('client authentication methods', () => {
         'ES512',
         'Ed25519',
         'EdDSA',
+        ...pqc,
       ];
 
       expect(i(provider).configuration.clientAuthSigningAlgValues).to.eql(algs);
@@ -177,6 +185,7 @@ describe('client authentication methods', () => {
         'ES512',
         'Ed25519',
         'EdDSA',
+        ...pqc,
       ];
 
       expect(i(provider).configuration.clientAuthSigningAlgValues).to.eql(algs);

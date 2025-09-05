@@ -1913,7 +1913,7 @@ async function getResourceServerInfo(ctx, resourceIndicator, client) {
     // Tokens will be signed
     sign?:
      | {
-         alg?: string, // 'PS256' | 'PS384' | 'PS512' | 'ES256' | 'ES384' | 'ES512' | 'Ed25519' | 'RS256' | 'RS384' | 'RS512' | 'EdDSA'
+         alg?: string, // 'PS256' | 'PS384' | 'PS512' | 'ES256' | 'ES384' | 'ES512' | 'Ed25519' | 'RS256' | 'RS384' | 'RS512' | 'EdDSA' | 'ML-DSA-44' | 'ML-DSA-65' | 'ML-DSA-87'
          kid?: string, // OPTIONAL `kid` to aid in signing key selection
        }
      | {
@@ -3598,6 +3598,7 @@ _**default value**_:
   'PS256', 'PS384', 'PS512',
   'ES256', 'ES384', 'ES512',
   'Ed25519', 'EdDSA',
+  'ML-DSA-44', 'ML-DSA-65', 'ML-DSA-87', // available in Node.js >= 24.7.0
 ]
 ```
 </details>
@@ -3689,6 +3690,7 @@ _**default value**_:
   'PS256', 'PS384', 'PS512',
   'ES256', 'ES384', 'ES512',
   'Ed25519', 'EdDSA',
+  'ML-DSA-44', 'ML-DSA-65', 'ML-DSA-87', // available in Node.js >= 24.7.0
   'HS256', 'HS384', 'HS512',
 ]
 ```
@@ -3721,6 +3723,7 @@ _**default value**_:
   'PS256', 'PS384', 'PS512',
   'ES256', 'ES384', 'ES512',
   'Ed25519', 'EdDSA',
+  'ML-DSA-44', 'ML-DSA-65', 'ML-DSA-87', // available in Node.js >= 24.7.0
   'HS256', 'HS384', 'HS512',
 ]
 ```
@@ -3750,6 +3753,7 @@ _**default value**_:
   'PS256', 'PS384', 'PS512',
   'ES256', 'ES384', 'ES512',
   'Ed25519', 'EdDSA',
+  'ML-DSA-44', 'ML-DSA-65', 'ML-DSA-87', // available in Node.js >= 24.7.0
 ]
 ```
 </details>
@@ -3841,6 +3845,7 @@ _**default value**_:
   'PS256', 'PS384', 'PS512',
   'ES256', 'ES384', 'ES512',
   'Ed25519', 'EdDSA',
+  'ML-DSA-44', 'ML-DSA-65', 'ML-DSA-87', // available in Node.js >= 24.7.0
   'HS256', 'HS384', 'HS512',
 ]
 ```
@@ -3933,6 +3938,7 @@ _**default value**_:
   'PS256', 'PS384', 'PS512',
   'ES256', 'ES384', 'ES512',
   'Ed25519', 'EdDSA',
+  'ML-DSA-44', 'ML-DSA-65', 'ML-DSA-87', // available in Node.js >= 24.7.0
   'HS256', 'HS384', 'HS512',
 ]
 ```
@@ -4026,6 +4032,7 @@ _**default value**_:
   'PS256', 'PS384', 'PS512',
   'ES256', 'ES384', 'ES512',
   'Ed25519', 'EdDSA',
+  'ML-DSA-44', 'ML-DSA-65', 'ML-DSA-87', // available in Node.js >= 24.7.0
   'HS256', 'HS384', 'HS512',
 ]
 ```
@@ -4118,6 +4125,7 @@ _**default value**_:
   'PS256', 'PS384', 'PS512',
   'ES256', 'ES384', 'ES512',
   'Ed25519', 'EdDSA',
+  'ML-DSA-44', 'ML-DSA-65', 'ML-DSA-87', // available in Node.js >= 24.7.0
   'HS256', 'HS384', 'HS512',
 ]
 ```

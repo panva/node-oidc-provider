@@ -30,7 +30,7 @@ describe('configuration.jwks', () => {
           ],
         },
       });
-    }).to.throw('only RSA, EC, or OKP keys should be part of jwks configuration');
+    }).to.throw('only RSA, EC, OKP, or AKP keys should be part of jwks configuration');
   });
 
   it('must only contain private keys', async () => {
@@ -40,6 +40,18 @@ describe('configuration.jwks', () => {
     expect(() => {
       new Provider('http://localhost', { jwks });
     }).to.throw('jwks.keys[0].d configuration must be a non-empty string');
+  });
+
+  it('must only contain private keys (ML-DSA)', async function () {
+    if (SubtleCrypto.supports?.('generateKey', 'ML-DSA-44') !== true) {
+      this.skip();
+    }
+    const { publicKey } = await generateKeyPair('ML-DSA-44');
+    const jwks = { keys: [await exportJWK(publicKey)] };
+
+    expect(() => {
+      new Provider('http://localhost', { jwks });
+    }).to.throw('jwks.keys[0].priv configuration must be a non-empty string');
   });
 
   it('rejects if "kid" is the same for multiple keys', async () => {

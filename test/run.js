@@ -38,7 +38,6 @@ async function run() {
   if ('CI' in process.env) {
     mocha.reporter('min');
     mocha.forbidOnly(); // force suite fail on encountered only test
-    mocha.forbidPending(); // force suite fail on encountered skip test
   }
 
   const mountAddendum = via ? ` mounted using ${via === 'koa' ? 'koa-mount' : via} to ${to}` : '';

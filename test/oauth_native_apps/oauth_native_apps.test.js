@@ -74,10 +74,14 @@ describe('OAuth 2.0 for Native Apps Best Current Practice features', () => {
           response_types: ['id_token'],
           token_endpoint_auth_method: 'none',
           redirect_uris: ['http://127.0.0.1:2355/op/callback'],
+          post_logout_redirect_uris: ['http://127.0.0.1:2355/op/logout'],
         }).then((client) => {
           expect(client.redirectUriAllowed('http:')).to.be.false;
           expect(client.redirectUriAllowed('http://127.0.0.')).to.be.false;
           expect(client.redirectUriAllowed('http://127.0.0.1::')).to.be.false;
+          expect(client.postLogoutRedirectUriAllowed('http:')).to.be.false;
+          expect(client.postLogoutRedirectUriAllowed('http://127.0.0.')).to.be.false;
+          expect(client.postLogoutRedirectUriAllowed('http://127.0.0.1::')).to.be.false;
         });
       });
 
@@ -89,6 +93,7 @@ describe('OAuth 2.0 for Native Apps Best Current Practice features', () => {
           response_types: ['id_token'],
           token_endpoint_auth_method: 'none',
           redirect_uris: ['http://localhost:2355/op/callback'],
+          post_logout_redirect_uris: ['http://localhost:2355/op/logout'],
         }).then((client) => {
           expect(client.redirectUris).to.contain('http://localhost:2355/op/callback');
           expect(client.redirectUriAllowed('http://localhost/op/callback')).to.be.true;
@@ -96,6 +101,13 @@ describe('OAuth 2.0 for Native Apps Best Current Practice features', () => {
           expect(client.redirectUriAllowed('http://localhost:443/op/callback')).to.be.true;
           expect(client.redirectUriAllowed('http://localhost:2355/op/callback')).to.be.true;
           expect(client.redirectUriAllowed('http://localhost:8888/op/callback')).to.be.true;
+
+          expect(client.postLogoutRedirectUris).to.contain('http://localhost:2355/op/logout');
+          expect(client.postLogoutRedirectUriAllowed('http://localhost/op/logout')).to.be.true;
+          expect(client.postLogoutRedirectUriAllowed('http://localhost:80/op/logout')).to.be.true;
+          expect(client.postLogoutRedirectUriAllowed('http://localhost:443/op/logout')).to.be.true;
+          expect(client.postLogoutRedirectUriAllowed('http://localhost:2355/op/logout')).to.be.true;
+          expect(client.postLogoutRedirectUriAllowed('http://localhost:8888/op/logout')).to.be.true;
         });
       });
 
@@ -107,6 +119,7 @@ describe('OAuth 2.0 for Native Apps Best Current Practice features', () => {
           response_types: ['id_token'],
           token_endpoint_auth_method: 'none',
           redirect_uris: ['http://localhost/op/callback'],
+          post_logout_redirect_uris: ['http://localhost/op/logout'],
         }).then((client) => {
           expect(client.redirectUris).to.contain('http://localhost/op/callback');
           expect(client.redirectUriAllowed('http://localhost/op/callback')).to.be.true;
@@ -114,6 +127,13 @@ describe('OAuth 2.0 for Native Apps Best Current Practice features', () => {
           expect(client.redirectUriAllowed('http://localhost:443/op/callback')).to.be.true;
           expect(client.redirectUriAllowed('http://localhost:2355/op/callback')).to.be.true;
           expect(client.redirectUriAllowed('http://localhost:8888/op/callback')).to.be.true;
+
+          expect(client.postLogoutRedirectUris).to.contain('http://localhost/op/logout');
+          expect(client.postLogoutRedirectUriAllowed('http://localhost/op/logout')).to.be.true;
+          expect(client.postLogoutRedirectUriAllowed('http://localhost:80/op/logout')).to.be.true;
+          expect(client.postLogoutRedirectUriAllowed('http://localhost:443/op/logout')).to.be.true;
+          expect(client.postLogoutRedirectUriAllowed('http://localhost:2355/op/logout')).to.be.true;
+          expect(client.postLogoutRedirectUriAllowed('http://localhost:8888/op/logout')).to.be.true;
         });
       });
 
@@ -125,6 +145,7 @@ describe('OAuth 2.0 for Native Apps Best Current Practice features', () => {
           response_types: ['id_token'],
           token_endpoint_auth_method: 'none',
           redirect_uris: ['http://127.0.0.1:2355/op/callback'],
+          post_logout_redirect_uris: ['http://127.0.0.1:2355/op/logout'],
         }).then((client) => {
           expect(client.redirectUris).to.contain('http://127.0.0.1:2355/op/callback');
           expect(client.redirectUriAllowed('http://127.0.0.1/op/callback')).to.be.true;
@@ -132,6 +153,13 @@ describe('OAuth 2.0 for Native Apps Best Current Practice features', () => {
           expect(client.redirectUriAllowed('http://127.0.0.1:443/op/callback')).to.be.true;
           expect(client.redirectUriAllowed('http://127.0.0.1:2355/op/callback')).to.be.true;
           expect(client.redirectUriAllowed('http://127.0.0.1:8888/op/callback')).to.be.true;
+
+          expect(client.postLogoutRedirectUris).to.contain('http://127.0.0.1:2355/op/logout');
+          expect(client.postLogoutRedirectUriAllowed('http://127.0.0.1/op/logout')).to.be.true;
+          expect(client.postLogoutRedirectUriAllowed('http://127.0.0.1:80/op/logout')).to.be.true;
+          expect(client.postLogoutRedirectUriAllowed('http://127.0.0.1:443/op/logout')).to.be.true;
+          expect(client.postLogoutRedirectUriAllowed('http://127.0.0.1:2355/op/logout')).to.be.true;
+          expect(client.postLogoutRedirectUriAllowed('http://127.0.0.1:8888/op/logout')).to.be.true;
         });
       });
 
@@ -143,6 +171,7 @@ describe('OAuth 2.0 for Native Apps Best Current Practice features', () => {
           response_types: ['id_token'],
           token_endpoint_auth_method: 'none',
           redirect_uris: ['http://127.0.0.1/op/callback'],
+          post_logout_redirect_uris: ['http://127.0.0.1/op/logout'],
         }).then((client) => {
           expect(client.redirectUris).to.contain('http://127.0.0.1/op/callback');
           expect(client.redirectUriAllowed('http://127.0.0.1/op/callback')).to.be.true;
@@ -150,6 +179,13 @@ describe('OAuth 2.0 for Native Apps Best Current Practice features', () => {
           expect(client.redirectUriAllowed('http://127.0.0.1:443/op/callback')).to.be.true;
           expect(client.redirectUriAllowed('http://127.0.0.1:2355/op/callback')).to.be.true;
           expect(client.redirectUriAllowed('http://127.0.0.1:8888/op/callback')).to.be.true;
+
+          expect(client.postLogoutRedirectUris).to.contain('http://127.0.0.1/op/logout');
+          expect(client.postLogoutRedirectUriAllowed('http://127.0.0.1/op/logout')).to.be.true;
+          expect(client.postLogoutRedirectUriAllowed('http://127.0.0.1:80/op/logout')).to.be.true;
+          expect(client.postLogoutRedirectUriAllowed('http://127.0.0.1:443/op/logout')).to.be.true;
+          expect(client.postLogoutRedirectUriAllowed('http://127.0.0.1:2355/op/logout')).to.be.true;
+          expect(client.postLogoutRedirectUriAllowed('http://127.0.0.1:8888/op/logout')).to.be.true;
         });
       });
 
@@ -161,6 +197,7 @@ describe('OAuth 2.0 for Native Apps Best Current Practice features', () => {
           response_types: ['id_token'],
           token_endpoint_auth_method: 'none',
           redirect_uris: ['http://[::1]:2355/op/callback'],
+          post_logout_redirect_uris: ['http://[::1]:2355/op/logout'],
         }).then((client) => {
           expect(client.redirectUris).to.contain('http://[::1]:2355/op/callback');
           expect(client.redirectUriAllowed('http://[::1]/op/callback')).to.be.true;
@@ -168,6 +205,13 @@ describe('OAuth 2.0 for Native Apps Best Current Practice features', () => {
           expect(client.redirectUriAllowed('http://[::1]:443/op/callback')).to.be.true;
           expect(client.redirectUriAllowed('http://[::1]:2355/op/callback')).to.be.true;
           expect(client.redirectUriAllowed('http://[::1]:8888/op/callback')).to.be.true;
+
+          expect(client.postLogoutRedirectUris).to.contain('http://[::1]:2355/op/logout');
+          expect(client.postLogoutRedirectUriAllowed('http://[::1]/op/logout')).to.be.true;
+          expect(client.postLogoutRedirectUriAllowed('http://[::1]:80/op/logout')).to.be.true;
+          expect(client.postLogoutRedirectUriAllowed('http://[::1]:443/op/logout')).to.be.true;
+          expect(client.postLogoutRedirectUriAllowed('http://[::1]:2355/op/logout')).to.be.true;
+          expect(client.postLogoutRedirectUriAllowed('http://[::1]:8888/op/logout')).to.be.true;
         });
       });
 
@@ -179,6 +223,7 @@ describe('OAuth 2.0 for Native Apps Best Current Practice features', () => {
           response_types: ['id_token'],
           token_endpoint_auth_method: 'none',
           redirect_uris: ['http://[::1]/op/callback'],
+          post_logout_redirect_uris: ['http://[::1]/op/logout'],
         }).then((client) => {
           expect(client.redirectUris).to.contain('http://[::1]/op/callback');
           expect(client.redirectUriAllowed('http://[::1]/op/callback')).to.be.true;
@@ -186,10 +231,17 @@ describe('OAuth 2.0 for Native Apps Best Current Practice features', () => {
           expect(client.redirectUriAllowed('http://[::1]:443/op/callback')).to.be.true;
           expect(client.redirectUriAllowed('http://[::1]:2355/op/callback')).to.be.true;
           expect(client.redirectUriAllowed('http://[::1]:8888/op/callback')).to.be.true;
+
+          expect(client.postLogoutRedirectUris).to.contain('http://[::1]/op/logout');
+          expect(client.postLogoutRedirectUriAllowed('http://[::1]/op/logout')).to.be.true;
+          expect(client.postLogoutRedirectUriAllowed('http://[::1]:80/op/logout')).to.be.true;
+          expect(client.postLogoutRedirectUriAllowed('http://[::1]:443/op/logout')).to.be.true;
+          expect(client.postLogoutRedirectUriAllowed('http://[::1]:2355/op/logout')).to.be.true;
+          expect(client.postLogoutRedirectUriAllowed('http://[::1]:8888/op/logout')).to.be.true;
         });
       });
 
-      it('rejects http protocol uris not using loopback uris', function () {
+      it('rejects http protocol redirect_uris not using loopback uris', function () {
         return assert.rejects(addClient(this.provider, {
           application_type: 'native',
           client_id: 'native-custom',
@@ -200,6 +252,22 @@ describe('OAuth 2.0 for Native Apps Best Current Practice features', () => {
         }), (err) => {
           expect(err).to.have.property('message', 'invalid_redirect_uri');
           expect(err).to.have.property('error_description', 'redirect_uris for native clients using http as a protocol can only use loopback addresses as hostnames');
+          return true;
+        });
+      });
+
+      it('rejects http protocol post_logout_redirect_uris not using loopback uris', function () {
+        return assert.rejects(addClient(this.provider, {
+          application_type: 'native',
+          client_id: 'native-custom',
+          grant_types: ['implicit'],
+          response_types: ['id_token'],
+          token_endpoint_auth_method: 'none',
+          redirect_uris: ['http://[::1]/op/callback'],
+          post_logout_redirect_uris: ['http://rp.example.com/op/logout'],
+        }), (err) => {
+          expect(err).to.have.property('message', 'invalid_client_metadata');
+          expect(err).to.have.property('error_description', 'post_logout_redirect_uris for native clients using http as a protocol can only use loopback addresses as hostnames');
           return true;
         });
       });
