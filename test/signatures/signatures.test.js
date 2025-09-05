@@ -94,6 +94,30 @@ describe('signatures', () => {
       }
     });
 
+    for (const alg of ['ML-DSA-44', 'ML-DSA-65', 'ML-DSA-87']) {
+      it(`responds with a access_token and code (half of shake256(m, 64) for ${alg})`, async function () {
+        if (SubtleCrypto.supports?.('generateKey', alg) !== true) {
+          this.skip();
+        }
+        this.client.idTokenSignedResponseAlg = alg;
+        const auth = new this.AuthorizationRequest({
+          response_type: 'code id_token token',
+          scope: 'openid',
+        });
+
+        await this.wrap({ auth, verb: 'get', route: '/auth' })
+          .expect(303)
+          .expect(auth.validateFragment)
+          .expect(auth.validateClientLocation)
+          .expect((response) => {
+            const { query: { id_token } } = parseLocation(response.headers.location, true);
+            const { payload } = decode(id_token);
+            expect(payload).to.contain.keys('at_hash', 'c_hash');
+            expect(payload.at_hash).to.have.lengthOf(43);
+          });
+      });
+    }
+
     it('responds with a access_token and code (half of sha512)', function () {
       this.client.idTokenSignedResponseAlg = 'RS512';
       const auth = new this.AuthorizationRequest({

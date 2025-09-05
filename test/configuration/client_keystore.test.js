@@ -89,6 +89,34 @@ describe('client keystore refresh', () => {
     ]);
   });
 
+  it('fails when private keys are encountered (ML-DSA)', async function () {
+    setResponse({
+      keys: [{
+        kty: 'AKP',
+        alg: 'ML-DSA-44',
+        pub: '<...>',
+        priv: 'AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA',
+      }],
+    });
+
+    const client = await this.provider.Client.find('client');
+    sinon.stub(client.asymmetricKeyStore, 'fresh').returns(false);
+    return Promise.all([
+      assert.rejects(client.asymmetricKeyStore.refresh(), (err) => {
+        expect(err).to.be.an('error');
+        expect(err.message).to.equal('invalid_client_metadata');
+        expect(err.error_description).to.eql('client JSON Web Key Set failed to be refreshed');
+        return true;
+      }),
+      assert.rejects(client.asymmetricKeyStore.refresh(), (err) => {
+        expect(err).to.be.an('error');
+        expect(err.message).to.equal('invalid_client_metadata');
+        expect(err.error_description).to.eql('client JSON Web Key Set failed to be refreshed');
+        return true;
+      }),
+    ]);
+  });
+
   it('adds new keys', async function () {
     const client = await this.provider.Client.find('client');
     keys.push({

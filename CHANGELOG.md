@@ -2,6 +2,33 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [9.5.1](https://github.com/panva/node-oidc-provider/compare/v9.5.0...v9.5.1) (2025-08-29)
+
+
+### Fixes
+
+* safeguard global navigator access ([1caae21](https://github.com/panva/node-oidc-provider/commit/1caae21008fb69eb3933354a705886c751876cdb))
+
+## [9.5.0](https://github.com/panva/node-oidc-provider/compare/v9.4.2...v9.5.0) (2025-08-29)
+
+
+### Features
+
+* support ML-DSA JWS algorithm identifiers ([f308b09](https://github.com/panva/node-oidc-provider/commit/f308b0930c665058c64b713438bf956c7af2449c))
+
+
+### Refactor
+
+* add a warning for more unsupported runtimes ([c55d58e](https://github.com/panva/node-oidc-provider/commit/c55d58e8d56b56ecd724a10e133933a955593879))
+* make warn/info warnings colorization a no-op in nonTTY ([0c0a5b6](https://github.com/panva/node-oidc-provider/commit/0c0a5b633ddac7d9d98b485a69608f9e947ebdef))
+
+## [9.4.2](https://github.com/panva/node-oidc-provider/compare/v9.4.1...v9.4.2) (2025-08-23)
+
+
+### Fixes
+
+* check for native logout redirect allowed same way as during auth ([419f286](https://github.com/panva/node-oidc-provider/commit/419f286529fd66d0cb577ea64dd544867eb27b18)), closes [#1351](https://github.com/panva/node-oidc-provider/issues/1351)
+
 ## [9.4.1](https://github.com/panva/node-oidc-provider/compare/v9.4.0...v9.4.1) (2025-08-11)
 
 
