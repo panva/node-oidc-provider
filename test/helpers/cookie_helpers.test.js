@@ -38,68 +38,83 @@ describe('cookie helpers', () => {
       sinon.restore();
     });
 
-    it('returns true when no cookie configuration is set (default behavior)', () => {
-      expect(shouldWriteCookies(mockCtx)).to.be.true;
+    it('returns true when no cookie configuration is set (default behavior)', async () => {
+      expect(await shouldWriteCookies(mockCtx)).to.be.true;
     });
 
-    it('returns false when doNotSet is true', () => {
+    it('returns false when doNotSet is true', async () => {
       mockInstance.configuration.cookies.doNotSet = true;
       
-      expect(shouldWriteCookies(mockCtx)).to.be.false;
+      expect(await shouldWriteCookies(mockCtx)).to.be.false;
     });
 
-    it('returns true when doNotSet is false', () => {
+    it('returns true when doNotSet is false', async () => {
       mockInstance.configuration.cookies.doNotSet = false;
       
-      expect(shouldWriteCookies(mockCtx)).to.be.true;
+      expect(await shouldWriteCookies(mockCtx)).to.be.true;
     });
 
-    it('uses custom shouldWriteCookies function when provided', () => {
+    it('uses custom shouldWriteCookies function when provided', async () => {
       const customFunction = sinon.stub().returns(false);
       mockInstance.configuration.cookies.shouldWriteCookies = customFunction;
       
-      const result = shouldWriteCookies(mockCtx);
+      const result = await shouldWriteCookies(mockCtx);
       
       expect(customFunction.calledOnce).to.be.true;
       expect(customFunction.calledWith(mockCtx)).to.be.true;
       expect(result).to.be.false;
     });
 
-    it('custom shouldWriteCookies function overrides doNotSet configuration', () => {
+    it('custom shouldWriteCookies function overrides doNotSet configuration', async () => {
       const customFunction = sinon.stub().returns(true);
       mockInstance.configuration.cookies.shouldWriteCookies = customFunction;
       mockInstance.configuration.cookies.doNotSet = true; // This should be ignored
       
-      const result = shouldWriteCookies(mockCtx);
+      const result = await shouldWriteCookies(mockCtx);
       
       expect(customFunction.calledOnce).to.be.true;
       expect(result).to.be.true; // Custom function returned true, overriding doNotSet
     });
 
-    it('falls back to doNotSet when custom function is not a function', () => {
+    it('falls back to doNotSet when custom function is not a function', async () => {
       mockInstance.configuration.cookies.shouldWriteCookies = 'not-a-function';
       mockInstance.configuration.cookies.doNotSet = true;
       
-      expect(shouldWriteCookies(mockCtx)).to.be.false;
+      expect(await shouldWriteCookies(mockCtx)).to.be.false;
     });
 
-    it('falls back to doNotSet when custom function is undefined', () => {
+    it('falls back to doNotSet when custom function is undefined', async () => {
       mockInstance.configuration.cookies.shouldWriteCookies = undefined;
       mockInstance.configuration.cookies.doNotSet = true;
       
-      expect(shouldWriteCookies(mockCtx)).to.be.false;
+      expect(await shouldWriteCookies(mockCtx)).to.be.false;
     });
 
-    it('custom function receives correct context parameter', () => {
+    it('custom function receives correct context parameter', async () => {
       const customFunction = sinon.stub().returns(true);
       mockInstance.configuration.cookies.shouldWriteCookies = customFunction;
       
       mockCtx.customProperty = 'test-value';
-      shouldWriteCookies(mockCtx);
+      await shouldWriteCookies(mockCtx);
       
       const calledWithCtx = customFunction.getCall(0).args[0];
       expect(calledWithCtx.customProperty).to.equal('test-value');
       expect(calledWithCtx.oidc).to.equal(mockCtx.oidc);
+    });
+
+    it('handles async custom shouldWriteCookies function', async () => {
+      const asyncCustomFunction = sinon.stub().callsFake(async () => {
+        return new Promise(resolve => {
+          setTimeout(() => resolve(false), 10);
+        });
+      });
+      mockInstance.configuration.cookies.shouldWriteCookies = asyncCustomFunction;
+      
+      const result = await shouldWriteCookies(mockCtx);
+      
+      expect(asyncCustomFunction.calledOnce).to.be.true;
+      expect(asyncCustomFunction.calledWith(mockCtx)).to.be.true;
+      expect(result).to.be.false;
     });
   });
 

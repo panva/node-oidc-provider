@@ -63,10 +63,10 @@ describe('session cookie logic integration', () => {
   });
 
   describe('shouldWriteCookies integration with clearAllCookies', () => {
-    it('should clear cookies when shouldWriteCookies returns false', () => {
+    it('should clear cookies when shouldWriteCookies returns false', async () => {
       mockInstance.configuration.cookies.doNotSet = true;
       
-      const shouldWrite = shouldWriteCookies(mockCtx);
+      const shouldWrite = await shouldWriteCookies(mockCtx);
       expect(shouldWrite).to.be.false;
       
       if (!shouldWrite) {
@@ -76,10 +76,10 @@ describe('session cookie logic integration', () => {
       expect(mockCtx.cookies.set.calledThrice).to.be.true;
     });
 
-    it('should not clear cookies when shouldWriteCookies returns true', () => {
+    it('should not clear cookies when shouldWriteCookies returns true', async () => {
       mockInstance.configuration.cookies.doNotSet = false;
       
-      const shouldWrite = shouldWriteCookies(mockCtx);
+      const shouldWrite = await shouldWriteCookies(mockCtx);
       expect(shouldWrite).to.be.true;
       
       if (!shouldWrite) {
@@ -89,11 +89,11 @@ describe('session cookie logic integration', () => {
       expect(mockCtx.cookies.set.called).to.be.false;
     });
 
-    it('should use custom shouldWriteCookies function and clear appropriately', () => {
+    it('should use custom shouldWriteCookies function and clear appropriately', async () => {
       const customFunction = sinon.stub().returns(false);
       mockInstance.configuration.cookies.shouldWriteCookies = customFunction;
       
-      const shouldWrite = shouldWriteCookies(mockCtx);
+      const shouldWrite = await shouldWriteCookies(mockCtx);
       expect(shouldWrite).to.be.false;
       expect(customFunction.calledWith(mockCtx)).to.be.true;
       
