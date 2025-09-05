@@ -44,10 +44,10 @@ describe('interactions cookie logic integration', () => {
   });
 
   describe('interaction middleware cookie behavior', () => {
-    it('should clear cookies when shouldWriteCookies returns false', () => {
+    it('should clear cookies when shouldWriteCookies returns false', async () => {
       mockInstance.configuration.cookies.doNotSet = true;
       
-      const shouldWrite = shouldWriteCookies(mockCtx);
+      const shouldWrite = await shouldWriteCookies(mockCtx);
       expect(shouldWrite).to.be.false;
       
       // Simulate the interaction middleware behavior
@@ -66,10 +66,10 @@ describe('interactions cookie logic integration', () => {
       expect(mockCtx.cookies.set.calledWith('_session', null)).to.be.true;
     });
 
-    it('should set interaction cookie when shouldWriteCookies returns true', () => {
+    it('should set interaction cookie when shouldWriteCookies returns true', async () => {
       mockInstance.configuration.cookies.doNotSet = false;
       
-      const shouldWrite = shouldWriteCookies(mockCtx);
+      const shouldWrite = await shouldWriteCookies(mockCtx);
       expect(shouldWrite).to.be.true;
       
       // Simulate the interaction middleware behavior
@@ -89,11 +89,11 @@ describe('interactions cookie logic integration', () => {
       })).to.be.true;
     });
 
-    it('should handle custom shouldWriteCookies function in interaction flow', () => {
+    it('should handle custom shouldWriteCookies function in interaction flow', async () => {
       const customFunction = sinon.stub().returns(true);
       mockInstance.configuration.cookies.shouldWriteCookies = customFunction;
       
-      const shouldWrite = shouldWriteCookies(mockCtx);
+      const shouldWrite = await shouldWriteCookies(mockCtx);
       expect(shouldWrite).to.be.true;
       expect(customFunction.calledWith(mockCtx)).to.be.true;
       

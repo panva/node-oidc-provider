@@ -15,7 +15,7 @@ With only this flag set, the cookies will still be set by the auth server, and c
    new Provider(issuer, {
      cookies: {
        enableCookielessFallback: true,
-       shouldWriteCookies(ctx) {
+       async shouldWriteCookies(ctx) {
          // Custom logic to determine if cookies should be written
          // Example: Don't write cookies for requests with Civic SDK state parameters
          const stateParam = ctx.query?.state || ctx.oidc?.params?.state;
