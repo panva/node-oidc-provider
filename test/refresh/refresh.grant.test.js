@@ -637,14 +637,20 @@ describe('grant_type=refresh_token', () => {
     });
   });
 
-  describe('refreshTokenGracePeriodSeconds configuration', () => {
+  describe('refreshTolerance.gracePeriodSeconds configuration', () => {
     beforeEach(function () {
-      i(this.provider).configuration.refreshTokenGracePeriodSeconds = 10; // 10 seconds grace period
+      i(this.provider).configuration.refreshTolerance = {
+        gracePeriodSeconds: 10, // 10 seconds grace period
+        revokeEntireGrantAfterGracePeriod: true
+      };
       i(this.provider).configuration.rotateRefreshToken = true;
     });
 
     afterEach(function () {
-      i(this.provider).configuration.refreshTokenGracePeriodSeconds = undefined;
+      i(this.provider).configuration.refreshTolerance = {
+        gracePeriodSeconds: undefined,
+        revokeEntireGrantAfterGracePeriod: true
+      };
       i(this.provider).configuration.rotateRefreshToken = false;
     });
 
@@ -762,7 +768,7 @@ describe('grant_type=refresh_token', () => {
     });
 
     it('maintains strict validation when grace period is disabled', function (done) {
-      i(this.provider).configuration.refreshTokenGracePeriodSeconds = 0; // Disable grace period
+      i(this.provider).configuration.refreshTolerance.gracePeriodSeconds = 0; // Disable grace period
       const gracePeriodEventSpy = sinon.spy();
       this.provider.on('refresh_token.reused_within_grace_period', gracePeriodEventSpy);
 
@@ -874,20 +880,25 @@ describe('grant_type=refresh_token', () => {
         });
     });
 
-    describe('refreshTokenGracePeriodRevokeEntireGrant configuration', () => {
+    describe('refreshTolerance.revokeEntireGrantAfterGracePeriod configuration', () => {
       beforeEach(function () {
-        i(this.provider).configuration.refreshTokenGracePeriodSeconds = 10; // 10 seconds grace period
+        i(this.provider).configuration.refreshTolerance = {
+          gracePeriodSeconds: 10, // 10 seconds grace period
+          revokeEntireGrantAfterGracePeriod: true
+        };
         i(this.provider).configuration.rotateRefreshToken = true;
       });
 
       afterEach(function () {
-        i(this.provider).configuration.refreshTokenGracePeriodSeconds = undefined;
+        i(this.provider).configuration.refreshTolerance = {
+          gracePeriodSeconds: undefined,
+          revokeEntireGrantAfterGracePeriod: true
+        };
         i(this.provider).configuration.rotateRefreshToken = false;
-        i(this.provider).configuration.refreshTokenGracePeriodRevokeEntireGrant = true; // Reset to default
       });
 
       it('revokes entire grant when flag is true (default behavior)', function (done) {
-        i(this.provider).configuration.refreshTokenGracePeriodRevokeEntireGrant = true;
+        i(this.provider).configuration.refreshTolerance.revokeEntireGrantAfterGracePeriod = true;
         let newRefreshToken;
         const grantRevokeSpy = sinon.spy();
         this.provider.on('grant.revoked', grantRevokeSpy);
@@ -946,7 +957,7 @@ describe('grant_type=refresh_token', () => {
       });
 
       it('only invalidates specific token when flag is false', function (done) {
-        i(this.provider).configuration.refreshTokenGracePeriodRevokeEntireGrant = false;
+        i(this.provider).configuration.refreshTolerance.revokeEntireGrantAfterGracePeriod = false;
         let newRefreshToken;
         const grantRevokeSpy = sinon.spy();
         this.provider.on('grant.revoked', grantRevokeSpy);
@@ -1005,7 +1016,7 @@ describe('grant_type=refresh_token', () => {
       });
 
       it('maintains grace period behavior regardless of revocation flag setting', function (done) {
-        i(this.provider).configuration.refreshTokenGracePeriodRevokeEntireGrant = false;
+        i(this.provider).configuration.refreshTolerance.revokeEntireGrantAfterGracePeriod = false;
         const gracePeriodEventSpy = sinon.spy();
         this.provider.on('refresh_token.reused_within_grace_period', gracePeriodEventSpy);
 

@@ -29,12 +29,15 @@ With only this flag set, the cookies will still be set by the auth server, and c
 
    If `shouldWriteCookies` returns false, any existing cookies from previous sessions are also deleted, in addition to not writing cookies for the current session.
 
-4. Refresh Token Grace Period (`refreshTokenGracePeriodSeconds`)
-   The library now supports a configurable grace period for refresh tokens to address multi-tab/session scenarios where clients may have cached tokens that become invalid due to rotation or revocation by other sessions.
+4. Refresh Token Tolerance Configuration (`refreshTolerance`)
+   The library now supports configurable refresh token tolerance settings to address multi-tab/session scenarios where clients may have cached tokens that become invalid due to rotation or revocation by other sessions.
 
    ```js
    new Provider(issuer, {
-     refreshTokenGracePeriodSeconds: 10, // Allow consumed tokens to be valid for 10 more seconds
+     refreshTolerance: {
+       gracePeriodSeconds: 10, // Allow consumed tokens to be valid for 10 more seconds
+       revokeEntireGrantAfterGracePeriod: true, // Revoke entire grant if token used beyond grace period
+     },
    })
    ```
 
@@ -57,18 +60,23 @@ With only this flag set, the cookies will still be set by the auth server, and c
    ```js
    // Conservative production setting
    new Provider(issuer, {
-     refreshTokenGracePeriodSeconds: 15, // 15 second grace period
+     refreshTolerance: {
+       gracePeriodSeconds: 15, // 15 second grace period
+       revokeEntireGrantAfterGracePeriod: true, // Default security behavior
+     },
      rotateRefreshToken: true, // Enable token rotation
    })
    ```
 
-5. Refresh Token Grace Period Grant Revocation Control (`refreshTokenGracePeriodRevokeEntireGrant`)
+5. Refresh Token Grace Period Grant Revocation Control (`refreshTolerance.revokeEntireGrantAfterGracePeriod`)
    This configuration flag controls the behavior when a refresh token is presented beyond its grace period, providing granular control over security responses to out-of-grace token usage.
 
    ```js
    new Provider(issuer, {
-     refreshTokenGracePeriodSeconds: 10, // Enable grace period
-     refreshTokenGracePeriodRevokeEntireGrant: false, // Only invalidate specific token
+     refreshTolerance: {
+       gracePeriodSeconds: 10, // Enable grace period
+       revokeEntireGrantAfterGracePeriod: false, // Only invalidate specific token
+     },
    })
    ```
 
@@ -90,8 +98,10 @@ With only this flag set, the cookies will still be set by the auth server, and c
    ```js
    // Granular token invalidation mode
    new Provider(issuer, {
-     refreshTokenGracePeriodSeconds: 10, // 10 second grace period
-     refreshTokenGracePeriodRevokeEntireGrant: false, // Only invalidate specific token
+     refreshTolerance: {
+       gracePeriodSeconds: 10, // 10 second grace period
+       revokeEntireGrantAfterGracePeriod: false, // Only invalidate specific token
+     },
      rotateRefreshToken: true,
    })
    ```
@@ -109,7 +119,10 @@ With only this flag set, the cookies will still be set by the auth server, and c
    **Usage Example:**
    ```js
    const provider = new Provider(issuer, {
-     refreshTokenGracePeriodSeconds: 10, // Enable grace period
+     refreshTolerance: {
+       gracePeriodSeconds: 10, // Enable grace period
+       revokeEntireGrantAfterGracePeriod: true, // Default behavior
+     },
    });
 
    // Listen for grace period reuse events
@@ -132,6 +145,6 @@ With only this flag set, the cookies will still be set by the auth server, and c
    - **Audit Logging**: Maintain detailed logs of all grace period token reuse for compliance
 
    **Event Properties:**
-   - Only emitted when `refreshTokenGracePeriodSeconds` is configured and greater than 0
+   - Only emitted when `refreshTolerance.gracePeriodSeconds` is configured and greater than 0
    - Not emitted for tokens that are reused beyond their grace period (those trigger errors instead)
    - Provides full context about the request and token for comprehensive logging
