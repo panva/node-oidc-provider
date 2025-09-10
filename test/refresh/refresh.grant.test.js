@@ -687,7 +687,13 @@ describe('grant_type=refresh_token', () => {
         });
     });
 
-    it('rejects consumed refresh token after grace period expires', function (done) {
+    it('rejects consumed refresh token after grace period expires and revokes entire grant', function (done) {
+      let newRefreshToken;
+      const grantRevokeSpy = sinon.spy();
+      const tokenDestroySpy = sinon.spy();
+      this.provider.on('grant.revoked', grantRevokeSpy);
+      this.provider.on('refresh_token.destroyed', tokenDestroySpy);
+
       // First refresh token request
       this.agent.post(route)
         .auth('client', 'secret')
@@ -697,13 +703,16 @@ describe('grant_type=refresh_token', () => {
         })
         .type('form')
         .expect(200)
+        .expect(({ body }) => {
+          newRefreshToken = body.refresh_token;
+        })
         .end((err) => {
           if (err) return done(err);
 
           // Fast forward time beyond grace period
           timekeeper.travel(Date.now() + 15000); // 15 seconds later
 
-          // Second refresh token request should now fail
+          // Second refresh token request should now fail and revoke entire grant
           this.agent.post(route)
             .auth('client', 'secret')
             .send({
@@ -716,7 +725,27 @@ describe('grant_type=refresh_token', () => {
               expect(body).to.have.property('error', 'invalid_grant');
               expect(body).to.have.property('error_description').that.matches(/refresh token already used|grant request is invalid/);
             })
-            .end(done);
+            .end((err) => {
+              if (err) return done(err);
+
+              // Verify that grant was revoked
+              expect(grantRevokeSpy.calledOnce).to.be.true;
+              expect(tokenDestroySpy.calledOnce).to.be.true;
+
+              // Verify that the new token from first request is now also invalid due to grant revocation
+              this.agent.post(route)
+                .auth('client', 'secret')
+                .send({
+                  refresh_token: newRefreshToken,
+                  grant_type: 'refresh_token',
+                })
+                .type('form')
+                .expect(400)
+                .expect(({ body }) => {
+                  expect(body).to.have.property('error', 'invalid_grant');
+                })
+                .end(done);
+            });
         });
     });
 
@@ -752,9 +781,11 @@ describe('grant_type=refresh_token', () => {
         });
     });
 
-    it('does not revoke entire grant when one token expires but another is still in grace period', function (done) {
+    it('revokes entire grant when any token is used after its grace period expires', function (done) {
       let firstNewToken;
       let secondNewToken;
+      const grantRevokeSpy = sinon.spy();
+      this.provider.on('grant.revoked', grantRevokeSpy);
 
       // First rotation: original -> Token A
       this.agent.post(route)
@@ -790,7 +821,7 @@ describe('grant_type=refresh_token', () => {
               // Fast forward time so original token's grace period expires
               timekeeper.travel(Date.now() + 15000); // 15 seconds later
 
-              // Using expired original token should fail
+              // Using expired original token should fail and revoke the entire grant
               this.agent.post(route)
                 .auth('client', 'secret')
                 .send({
@@ -802,7 +833,10 @@ describe('grant_type=refresh_token', () => {
                 .end((err) => {
                   if (err) return done(err);
 
-                  // But Token A should still work (it was created later, still in grace period)
+                  // Verify grant was revoked
+                  expect(grantRevokeSpy.calledOnce).to.be.true;
+
+                  // Token A should now also be invalid due to grant revocation
                   this.agent.post(route)
                     .auth('client', 'secret')
                     .send({
@@ -810,9 +844,9 @@ describe('grant_type=refresh_token', () => {
                       grant_type: 'refresh_token',
                     })
                     .type('form')
-                    .expect(200)
+                    .expect(400)
                     .expect(({ body }) => {
-                      expect(body).to.have.keys('access_token', 'id_token', 'expires_in', 'token_type', 'refresh_token', 'scope');
+                      expect(body).to.have.property('error', 'invalid_grant');
                     })
                     .end(done);
                 });
