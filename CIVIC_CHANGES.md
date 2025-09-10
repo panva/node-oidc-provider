@@ -28,3 +28,36 @@ With only this flag set, the cookies will still be set by the auth server, and c
    When `shouldWriteCookies` is not provided, the library defaults to checking `!cookies.doNotSet` for backward compatibility.
 
    If `shouldWriteCookies` returns false, any existing cookies from previous sessions are also deleted, in addition to not writing cookies for the current session.
+
+4. Refresh Token Grace Period (`refreshTokenGracePeriodSeconds`)
+   The library now supports a configurable grace period for refresh tokens to address multi-tab/session scenarios where clients may have cached tokens that become invalid due to rotation or revocation by other sessions.
+
+   ```js
+   new Provider(issuer, {
+     refreshTokenGracePeriodSeconds: 10, // Allow consumed tokens to be valid for 10 more seconds
+   })
+   ```
+
+   **How it works:**
+   - When set to a positive value, consumed or revoked refresh tokens remain valid for the specified duration
+   - During token rotation, consumed tokens can still be used within the grace period to issue new access tokens
+   - Helps prevent authentication errors in multi-tab scenarios where one tab refreshes tokens while others are still using the original token
+   - Maintains backward compatibility: when undefined or 0, strict OAuth security behavior is preserved
+
+   **Security considerations:**
+   - Extends the attack window for compromised refresh tokens by the grace period duration
+   - Allows multiple valid tokens for the same grant during the grace period
+   - **Recommendation**: Use conservative values (5-30 seconds) and only when multi-session token conflicts are observed
+   - Default value of `undefined` maintains strict OAuth security behavior without any grace period
+
+   **OAuth/OIDC Specification Compliance:**
+   This feature represents a minor deviation from RFC 6749 Section 6, which states refresh tokens should be single-use. The implementation prioritizes practical multi-session usability over strict specification compliance. This is documented as a **non-standard extension** that trades strict spec compliance for improved user experience in multi-tab scenarios.
+
+   **Usage Example:**
+   ```js
+   // Conservative production setting
+   new Provider(issuer, {
+     refreshTokenGracePeriodSeconds: 15, // 15 second grace period
+     rotateRefreshToken: true, // Enable token rotation
+   })
+   ```
