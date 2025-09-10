@@ -61,3 +61,77 @@ With only this flag set, the cookies will still be set by the auth server, and c
      rotateRefreshToken: true, // Enable token rotation
    })
    ```
+
+5. Refresh Token Grace Period Grant Revocation Control (`refreshTokenGracePeriodRevokeEntireGrant`)
+   This configuration flag controls the behavior when a refresh token is presented beyond its grace period, providing granular control over security responses to out-of-grace token usage.
+
+   ```js
+   new Provider(issuer, {
+     refreshTokenGracePeriodSeconds: 10, // Enable grace period
+     refreshTokenGracePeriodRevokeEntireGrant: false, // Only invalidate specific token
+   })
+   ```
+
+   **Behavior modes:**
+   - **`true` (default)**: When a consumed token is used beyond its grace period, the entire grant and all associated tokens are revoked for maximum security
+   - **`false`**: When a consumed token is used beyond its grace period, only that specific token is invalidated while other tokens in the grant remain valid
+
+   **Security considerations:**
+   - **Default `true` provides maximum security**: Assumes token compromise when presented beyond grace period, triggering full grant revocation
+   - **Setting to `false` reduces security**: Potentially compromised tokens don't trigger full grant revocation, allowing other tokens to remain valid
+   - **Recommendation**: Keep default value of `true` unless specific use cases require token-level granular control and security implications are well understood
+
+   **Use cases for `false` setting:**
+   - Applications with very long-lived grants containing many tokens
+   - Scenarios where token-level invalidation is preferred over grant-level revocation
+   - Development/testing environments where less aggressive revocation is desired
+
+   **Usage Example:**
+   ```js
+   // Granular token invalidation mode
+   new Provider(issuer, {
+     refreshTokenGracePeriodSeconds: 10, // 10 second grace period
+     refreshTokenGracePeriodRevokeEntireGrant: false, // Only invalidate specific token
+     rotateRefreshToken: true,
+   })
+   ```
+
+   **Important**: This setting only affects behavior when tokens are used beyond their grace period. Grace period functionality itself (allowing consumed tokens within the grace period) remains unchanged regardless of this setting.
+
+6. Refresh Token Grace Period Event (`refresh_token.reused_within_grace_period`)
+   The provider emits a special event whenever a consumed refresh token is successfully reused within its grace period, allowing applications to track and monitor this behavior for security and auditing purposes.
+
+   **Event Details:**
+   - **Event Name**: `refresh_token.reused_within_grace_period`
+   - **When Emitted**: When a consumed refresh token is presented and accepted because it's still within its grace period
+   - **Event Arguments**: `(ctx, refreshToken)` where `ctx` is the request context and `refreshToken` is the token instance
+
+   **Usage Example:**
+   ```js
+   const provider = new Provider(issuer, {
+     refreshTokenGracePeriodSeconds: 10, // Enable grace period
+   });
+
+   // Listen for grace period reuse events
+   provider.on('refresh_token.reused_within_grace_period', (ctx, refreshToken) => {
+     console.log('Refresh token reused within grace period', {
+       clientId: ctx.oidc.client.clientId,
+       accountId: refreshToken.accountId,
+       grantId: refreshToken.grantId,
+       consumedAt: new Date(refreshToken.consumed * 1000),
+       userAgent: ctx.get('user-agent'),
+       ipAddress: ctx.ip,
+     });
+   });
+   ```
+
+   **Use Cases:**
+   - **Security Monitoring**: Track potential multi-tab/session conflicts or suspicious token reuse patterns
+   - **Analytics**: Monitor grace period effectiveness and frequency of usage
+   - **Alerting**: Set up alerts for unusual grace period usage patterns
+   - **Audit Logging**: Maintain detailed logs of all grace period token reuse for compliance
+
+   **Event Properties:**
+   - Only emitted when `refreshTokenGracePeriodSeconds` is configured and greater than 0
+   - Not emitted for tokens that are reused beyond their grace period (those trigger errors instead)
+   - Provides full context about the request and token for comprehensive logging

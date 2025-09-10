@@ -651,6 +651,8 @@ describe('grant_type=refresh_token', () => {
     it('allows consumed refresh token to be used again within grace period', function (done) {
       let firstNewRefreshToken;
       let secondNewRefreshToken;
+      const gracePeriodEventSpy = sinon.spy();
+      this.provider.on('refresh_token.reused_within_grace_period', gracePeriodEventSpy);
 
       // First refresh token request
       this.agent.post(route)
@@ -683,7 +685,17 @@ describe('grant_type=refresh_token', () => {
               // Should get a different token (new rotation)
               expect(secondNewRefreshToken).not.to.equal(firstNewRefreshToken);
             })
-            .end(done);
+            .end((err) => {
+              if (err) return done(err);
+
+              // Verify the grace period event was emitted
+              expect(gracePeriodEventSpy.calledOnce).to.be.true;
+              const [ctx, refreshToken] = gracePeriodEventSpy.firstCall.args;
+              expect(ctx).to.have.property('oidc');
+              expect(refreshToken).to.have.property('consumed');
+              expect(refreshToken.consumed).to.be.a('number');
+              done();
+            });
         });
     });
 
@@ -751,6 +763,8 @@ describe('grant_type=refresh_token', () => {
 
     it('maintains strict validation when grace period is disabled', function (done) {
       i(this.provider).configuration.refreshTokenGracePeriodSeconds = 0; // Disable grace period
+      const gracePeriodEventSpy = sinon.spy();
+      this.provider.on('refresh_token.reused_within_grace_period', gracePeriodEventSpy);
 
       // First refresh token request
       this.agent.post(route)
@@ -777,7 +791,13 @@ describe('grant_type=refresh_token', () => {
               expect(body).to.have.property('error', 'invalid_grant');
               expect(body).to.have.property('error_description').that.matches(/refresh token already used|grant request is invalid/);
             })
-            .end(done);
+            .end((err) => {
+              if (err) return done(err);
+
+              // Verify the grace period event was NOT emitted since grace period is disabled
+              expect(gracePeriodEventSpy.called).to.be.false;
+              done();
+            });
         });
     });
 
@@ -852,6 +872,179 @@ describe('grant_type=refresh_token', () => {
                 });
             });
         });
+    });
+
+    describe('refreshTokenGracePeriodRevokeEntireGrant configuration', () => {
+      beforeEach(function () {
+        i(this.provider).configuration.refreshTokenGracePeriodSeconds = 10; // 10 seconds grace period
+        i(this.provider).configuration.rotateRefreshToken = true;
+      });
+
+      afterEach(function () {
+        i(this.provider).configuration.refreshTokenGracePeriodSeconds = undefined;
+        i(this.provider).configuration.rotateRefreshToken = false;
+        i(this.provider).configuration.refreshTokenGracePeriodRevokeEntireGrant = true; // Reset to default
+      });
+
+      it('revokes entire grant when flag is true (default behavior)', function (done) {
+        i(this.provider).configuration.refreshTokenGracePeriodRevokeEntireGrant = true;
+        let newRefreshToken;
+        const grantRevokeSpy = sinon.spy();
+        this.provider.on('grant.revoked', grantRevokeSpy);
+
+        // First refresh token request
+        this.agent.post(route)
+          .auth('client', 'secret')
+          .send({
+            refresh_token: this.rt,
+            grant_type: 'refresh_token',
+          })
+          .type('form')
+          .expect(200)
+          .expect(({ body }) => {
+            newRefreshToken = body.refresh_token;
+          })
+          .end((err) => {
+            if (err) return done(err);
+
+            // Fast forward time beyond grace period
+            timekeeper.travel(Date.now() + 15000); // 15 seconds later
+
+            // Second request should fail and revoke entire grant
+            this.agent.post(route)
+              .auth('client', 'secret')
+              .send({
+                refresh_token: this.rt, // Using original consumed token
+                grant_type: 'refresh_token',
+              })
+              .type('form')
+              .expect(400)
+              .expect(({ body }) => {
+                expect(body).to.have.property('error', 'invalid_grant');
+              })
+              .end((err) => {
+                if (err) return done(err);
+
+                // Verify grant was revoked
+                expect(grantRevokeSpy.calledOnce).to.be.true;
+
+                // New token should also be invalid due to grant revocation
+                this.agent.post(route)
+                  .auth('client', 'secret')
+                  .send({
+                    refresh_token: newRefreshToken,
+                    grant_type: 'refresh_token',
+                  })
+                  .type('form')
+                  .expect(400)
+                  .expect(({ body }) => {
+                    expect(body).to.have.property('error', 'invalid_grant');
+                  })
+                  .end(done);
+              });
+          });
+      });
+
+      it('only invalidates specific token when flag is false', function (done) {
+        i(this.provider).configuration.refreshTokenGracePeriodRevokeEntireGrant = false;
+        let newRefreshToken;
+        const grantRevokeSpy = sinon.spy();
+        this.provider.on('grant.revoked', grantRevokeSpy);
+
+        // First refresh token request
+        this.agent.post(route)
+          .auth('client', 'secret')
+          .send({
+            refresh_token: this.rt,
+            grant_type: 'refresh_token',
+          })
+          .type('form')
+          .expect(200)
+          .expect(({ body }) => {
+            newRefreshToken = body.refresh_token;
+          })
+          .end((err) => {
+            if (err) return done(err);
+
+            // Fast forward time beyond grace period
+            timekeeper.travel(Date.now() + 15000); // 15 seconds later
+
+            // Second request should fail but NOT revoke entire grant
+            this.agent.post(route)
+              .auth('client', 'secret')
+              .send({
+                refresh_token: this.rt, // Using original consumed token
+                grant_type: 'refresh_token',
+              })
+              .type('form')
+              .expect(400)
+              .expect(({ body }) => {
+                expect(body).to.have.property('error', 'invalid_grant');
+              })
+              .end((err) => {
+                if (err) return done(err);
+
+                // Verify grant was NOT revoked
+                expect(grantRevokeSpy.called).to.be.false;
+
+                // New token should still be valid since grant wasn't revoked
+                this.agent.post(route)
+                  .auth('client', 'secret')
+                  .send({
+                    refresh_token: newRefreshToken,
+                    grant_type: 'refresh_token',
+                  })
+                  .type('form')
+                  .expect(200)
+                  .expect(({ body }) => {
+                    expect(body).to.have.keys('access_token', 'id_token', 'expires_in', 'token_type', 'refresh_token', 'scope');
+                  })
+                  .end(done);
+              });
+          });
+      });
+
+      it('maintains grace period behavior regardless of revocation flag setting', function (done) {
+        i(this.provider).configuration.refreshTokenGracePeriodRevokeEntireGrant = false;
+        const gracePeriodEventSpy = sinon.spy();
+        this.provider.on('refresh_token.reused_within_grace_period', gracePeriodEventSpy);
+
+        // First refresh token request
+        this.agent.post(route)
+          .auth('client', 'secret')
+          .send({
+            refresh_token: this.rt,
+            grant_type: 'refresh_token',
+          })
+          .type('form')
+          .expect(200)
+          .end((err) => {
+            if (err) return done(err);
+
+            // Second request within grace period should still succeed
+            this.agent.post(route)
+              .auth('client', 'secret')
+              .send({
+                refresh_token: this.rt, // Using original token again within grace period
+                grant_type: 'refresh_token',
+              })
+              .type('form')
+              .expect(200)
+              .expect(({ body }) => {
+                expect(body).to.have.keys('access_token', 'id_token', 'expires_in', 'token_type', 'refresh_token', 'scope');
+              })
+              .end((err) => {
+                if (err) return done(err);
+
+                // Verify the grace period event was emitted
+                expect(gracePeriodEventSpy.calledOnce).to.be.true;
+                const [ctx, refreshToken] = gracePeriodEventSpy.firstCall.args;
+                expect(ctx).to.have.property('oidc');
+                expect(refreshToken).to.have.property('consumed');
+                done();
+              });
+          });
+      });
     });
   });
 });
