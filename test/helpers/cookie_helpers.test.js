@@ -122,26 +122,36 @@ describe('cookie helpers', () => {
     let mockCtx;
     let mockProvider;
     let mockCookies;
+    let mockInstance;
 
     beforeEach(() => {
       mockCookies = {
         set: sinon.spy()
       };
-      
+
       mockProvider = {
         cookieName: sinon.stub()
       };
-      
+
       mockProvider.cookieName.withArgs('interaction').returns('_interaction');
       mockProvider.cookieName.withArgs('resume').returns('_resume');
       mockProvider.cookieName.withArgs('session').returns('_session');
-      
+
+      mockInstance = {
+        configuration: {
+          cookies: {}
+        }
+      };
+
       mockCtx = {
         cookies: mockCookies,
         oidc: {
           provider: mockProvider
         }
       };
+
+      // Mock the instance cache to return our mock configuration
+      setInstance(mockProvider, mockInstance);
     });
 
     afterEach(() => {
@@ -159,10 +169,70 @@ describe('cookie helpers', () => {
 
     it('uses provider cookieName method to get correct cookie names', () => {
       clearAllCookies(mockCtx);
-      
+
       expect(mockProvider.cookieName.calledWith('interaction')).to.be.true;
       expect(mockProvider.cookieName.calledWith('resume')).to.be.true;
       expect(mockProvider.cookieName.calledWith('session')).to.be.true;
+    });
+
+    it('clears cookies at additional paths when clearCookiesAtAdditionalPaths is configured', () => {
+      mockInstance.configuration.cookies.clearCookiesAtAdditionalPaths = ['/auth', '/login'];
+
+      clearAllCookies(mockCtx);
+
+      // Should clear cookies at default path (3 calls) + additional paths (2 paths * 3 cookies = 6 calls) = 9 total calls
+      expect(mockCookies.set.callCount).to.equal(9);
+
+      // Verify default path cookies are cleared
+      expect(mockCookies.set.calledWith('_interaction', null)).to.be.true;
+      expect(mockCookies.set.calledWith('_resume', null)).to.be.true;
+      expect(mockCookies.set.calledWith('_session', null)).to.be.true;
+
+      // Verify cookies are cleared at additional paths
+      expect(mockCookies.set.calledWith('_interaction', null, { path: '/auth' })).to.be.true;
+      expect(mockCookies.set.calledWith('_resume', null, { path: '/auth' })).to.be.true;
+      expect(mockCookies.set.calledWith('_session', null, { path: '/auth' })).to.be.true;
+      expect(mockCookies.set.calledWith('_interaction', null, { path: '/login' })).to.be.true;
+      expect(mockCookies.set.calledWith('_resume', null, { path: '/login' })).to.be.true;
+      expect(mockCookies.set.calledWith('_session', null, { path: '/login' })).to.be.true;
+    });
+
+    it('works when clearCookiesAtAdditionalPaths is empty array', () => {
+      mockInstance.configuration.cookies.clearCookiesAtAdditionalPaths = [];
+
+      clearAllCookies(mockCtx);
+
+      // Should only clear cookies at default path (3 calls)
+      expect(mockCookies.set.calledThrice).to.be.true;
+      expect(mockCookies.set.calledWith('_interaction', null)).to.be.true;
+      expect(mockCookies.set.calledWith('_resume', null)).to.be.true;
+      expect(mockCookies.set.calledWith('_session', null)).to.be.true;
+    });
+
+    it('works when clearCookiesAtAdditionalPaths is undefined', () => {
+      // clearCookiesAtAdditionalPaths is not set (undefined)
+
+      clearAllCookies(mockCtx);
+
+      // Should only clear cookies at default path (3 calls)
+      expect(mockCookies.set.calledThrice).to.be.true;
+      expect(mockCookies.set.calledWith('_interaction', null)).to.be.true;
+      expect(mockCookies.set.calledWith('_resume', null)).to.be.true;
+      expect(mockCookies.set.calledWith('_session', null)).to.be.true;
+    });
+
+    it('handles single path in clearCookiesAtAdditionalPaths', () => {
+      mockInstance.configuration.cookies.clearCookiesAtAdditionalPaths = ['/api'];
+
+      clearAllCookies(mockCtx);
+
+      // Should clear cookies at default path (3 calls) + additional path (1 path * 3 cookies = 3 calls) = 6 total calls
+      expect(mockCookies.set.callCount).to.equal(6);
+
+      // Verify cookies are cleared at the additional path
+      expect(mockCookies.set.calledWith('_interaction', null, { path: '/api' })).to.be.true;
+      expect(mockCookies.set.calledWith('_resume', null, { path: '/api' })).to.be.true;
+      expect(mockCookies.set.calledWith('_session', null, { path: '/api' })).to.be.true;
     });
   });
 });
