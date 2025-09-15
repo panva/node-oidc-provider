@@ -148,3 +148,45 @@ With only this flag set, the cookies will still be set by the auth server, and c
    - Only emitted when `refreshTolerance.gracePeriodSeconds` is configured and greater than 0
    - Not emitted for tokens that are reused beyond their grace period (those trigger errors instead)
    - Provides full context about the request and token for comprehensive logging
+
+7. Additional Cookie Clearing Paths (`cookies.clearCookiesAtAdditionalPaths`)
+   The library now supports clearing cookies at additional paths when the auth server clears cookies, addressing scenarios where cookies may have been set by other components (e.g., login applications) at different paths.
+
+   ```js
+   new Provider(issuer, {
+     cookies: {
+       clearCookiesAtAdditionalPaths: ['/login', '/auth'],
+     },
+   })
+   ```
+
+   **Problem Solved:**
+   Auth server cookies are sometimes set for different paths (like `/login` for the login application) and may cause problems with subsequent logins if not properly cleared when the auth server clears its own cookies.
+
+   **How it works:**
+   - When the auth server calls `clearAllCookies()`, it will clear cookies at the default path as usual
+   - Additionally, it will clear the same cookies (`_session`, `_interaction`, `_interaction_resume`) at each path specified in `clearCookiesAtAdditionalPaths`
+   - This ensures cookies set by other applications at different paths don't interfere with fresh authentication flows
+
+   **Use Cases:**
+   - Multi-application auth systems where different components set cookies at different paths
+   - Login applications that set cookies at `/login` path
+   - Preventing cookie interference between authentication sessions
+
+   **Security Considerations:**
+   - This feature only affects cookie clearing, not cookie setting or reading behavior
+   - No negative security impact as it only clears more cookies, not fewer
+   - Helps prevent session state pollution across different application paths
+
+   **Usage Example:**
+   ```js
+   // Clear cookies at both default path and login app path
+   new Provider(issuer, {
+     cookies: {
+       clearCookiesAtAdditionalPaths: ['/login'],
+     },
+   })
+   ```
+
+   **OAuth/OIDC Specification Compliance:**
+   This is a cookie management enhancement that doesn't affect OAuth/OIDC protocol compliance. It's an implementation detail for proper session cleanup in multi-component authentication systems.
