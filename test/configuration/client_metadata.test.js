@@ -388,6 +388,83 @@ describe('Client metadata validation', () => {
       // misses implicit
       response_types: ['token'],
     });
+
+    // Test relaxImplicitGrantRequirement configuration
+    context('with relaxImplicitGrantRequirement enabled', function () {
+      const configuration = {
+        relaxImplicitGrantRequirement: true,
+        responseTypes: [
+          'code id_token token',
+          'code id_token',
+          'code token',
+          'code',
+          'id_token token',
+          'id_token',
+          'none',
+        ],
+      };
+
+      it('allows authorization_code grant for id_token response_type', () => register({
+        grant_types: ['authorization_code'],
+        response_types: ['id_token'],
+      }, configuration).then((client) => {
+        expect(client.grantTypes).to.deep.equal(['authorization_code']);
+        expect(client.responseTypes).to.deep.equal(['id_token']);
+      }));
+
+      it('allows authorization_code grant for id_token token response_type', () => register({
+        grant_types: ['authorization_code'],
+        response_types: ['id_token token'],
+      }, configuration).then((client) => {
+        expect(client.grantTypes).to.deep.equal(['authorization_code']);
+        expect(client.responseTypes).to.deep.equal(['id_token token']);
+      }));
+
+      it('allows authorization_code grant for code token response_type', () => register({
+        grant_types: ['authorization_code'],
+        response_types: ['code token'],
+      }, configuration).then((client) => {
+        expect(client.grantTypes).to.deep.equal(['authorization_code']);
+        expect(client.responseTypes).to.deep.equal(['code token']);
+      }));
+
+      // Should still require authorization_code for code response type
+      it('rejects implicit grant for code response_type (validation still applies)', () => assert.rejects(
+        register({
+          grant_types: ['implicit'],
+          response_types: ['code'],
+        }, configuration),
+        (err) => {
+          expect(err.message).to.equal('invalid_client_metadata');
+          expect(err.error_description).to.match(/grant_types must contain 'authorization_code' when code is amongst response_types/);
+          return true;
+        }
+      ));
+    });
+
+    context('with relaxImplicitGrantRequirement disabled (default)', function () {
+      const configuration = {
+        relaxImplicitGrantRequirement: false,
+        responseTypes: [
+          'code id_token token',
+          'code id_token',
+          'code token',
+          'code',
+          'id_token token',
+          'id_token',
+          'none',
+        ],
+      };
+
+      // Verify default behavior is preserved
+      rejects(this.title, ['authorization_code'], /grant_types must contain 'implicit' when 'id_token' or 'token' are amongst response_types/, {
+        response_types: ['id_token'],
+      }, configuration);
+
+      rejects(this.title, ['authorization_code'], /grant_types must contain 'implicit' when 'id_token' or 'token' are amongst response_types/, {
+        response_types: ['id_token token'],
+      }, configuration);
+    });
   });
 
   context('id_token_signed_response_alg', function () {

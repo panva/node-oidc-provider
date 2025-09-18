@@ -190,3 +190,29 @@ With only this flag set, the cookies will still be set by the auth server, and c
 
    **OAuth/OIDC Specification Compliance:**
    This is a cookie management enhancement that doesn't affect OAuth/OIDC protocol compliance. It's an implementation detail for proper session cleanup in multi-component authentication systems.
+
+8. Relaxed Implicit Grant Requirement (`relaxImplicitGrantRequirement`)
+   The library now supports relaxing the requirement that clients with 'id_token' or 'token' in their response_types must include 'implicit' in their grant_types, allowing clients to register with implicit flow response types while only using authorization code flow.
+
+   ```js
+   new Provider(issuer, {
+     relaxImplicitGrantRequirement: true, // Allow response types without implicit grant
+   })
+   ```
+
+   **Problem Solved:**
+   The OAuth 2.0 specification states that authorization servers MAY reject or replace client metadata values. Some clients want to indicate they can accept implicit flow responses (id_token, token) but prefer to only use authorization code flow for security reasons.
+   i.e. clients can say: "I accept responses one of which can only be obtained via the implicit flow, but I don't want to use the implicit flow, I only want to use auth code flow"
+
+   **How it works:**
+   - When set to `false` (default): Standard OAuth 2.0 validation applies - clients with 'id_token' or 'token' response types MUST include 'implicit' grant type
+   - When set to `true`: Clients can register with 'id_token' or 'token' response types without requiring 'implicit' grant type
+   - This allows clients to signal acceptance of implicit response types while restricting themselves to authorization code flow only
+
+   **Security Considerations:**
+   - **Positive security impact**: Allows clients to avoid enabling implicit grant type while still indicating support for implicit response types
+   - **No negative security impact**: Clients that don't want implicit flow can avoid it entirely while maintaining response type compatibility
+   - **Maintains client control**: Individual clients can choose their preferred grant types without being forced into implicit flow
+
+   **OAuth/OIDC Specification Compliance:**
+   This feature leverages OAuth 2.0 RFC 6749 Section 2 which states: "The authorization server MAY reject or replace any of the client's requested metadata values submitted during the registration and substitute them with suitable values." This is a minor relaxation of typical validation rules that prioritizes security by allowing clients to avoid implicit grant while maintaining response type flexibility.
