@@ -159,6 +159,7 @@ describe('opaque storage', () => {
       sessionUid,
       expiresWithSession,
       inFlight,
+      dpopJkt,
     });
   });
 

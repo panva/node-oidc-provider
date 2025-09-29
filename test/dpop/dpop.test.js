@@ -487,6 +487,72 @@ describe('features.dPoP', () => {
     });
   });
 
+  describe('urn:ietf:params:oauth:grant-type:device_code w/ DPoP code binding', () => {
+    beforeEach(async function () {
+      await this.agent.post('/device/auth')
+        .auth('client', 'secret')
+        .send({ scope: 'openid' })
+        .type('form')
+        .set('DPoP', await DPoP(this.keypair, `${this.provider.issuer}${this.suitePath('/device/auth')}`, 'POST'))
+        .expect(200)
+        .expect(({ body: { device_code: dc } }) => {
+          this.dc = dc;
+        });
+
+      const dc = this.TestAdapter.for('DeviceCode').syncFind(this.getTokenJti(this.dc));
+
+      expect(dc).to.have.property('dpopJkt', this.thumbprint);
+
+      this.TestAdapter.for('DeviceCode').syncUpdate(this.getTokenJti(this.dc), {
+        scope: 'openid offline_access',
+        accountId: this.loggedInAccountId,
+        grantId: this.getGrantId(),
+      });
+    });
+
+    it('asserts the device code to the jwk', async function () {
+      const spy = sinon.spy();
+      this.provider.once('grant.error', spy);
+
+      await this.agent.post('/token')
+        .auth('client', 'secret')
+        .send({
+          grant_type: 'urn:ietf:params:oauth:grant-type:device_code',
+          device_code: this.dc,
+        })
+        .type('form')
+        .set('DPoP', await DPoP(await generateKeyPair('ES256', { extractable: true }), `${this.provider.issuer}${this.suitePath('/token')}`, 'POST'))
+        .expect(400)
+        .expect({ error: 'invalid_grant', error_description: 'grant request is invalid' });
+
+      expect(spy).to.have.property('calledOnce', true);
+      expect(spy.args[0][1]).to.have.property('error_detail', 'DPoP proof key thumbprint mismatch');
+
+      const dc = this.TestAdapter.for('DeviceCode').syncFind(this.getTokenJti(this.dc));
+      expect(dc).to.have.property('consumed').that.is.a('number');
+    });
+
+    it('binds the access token code to the jwk', async function () {
+      const spy = sinon.spy();
+      this.provider.once('grant.success', spy);
+
+      await this.agent.post('/token')
+        .auth('client', 'secret')
+        .send({
+          grant_type: 'urn:ietf:params:oauth:grant-type:device_code',
+          device_code: this.dc,
+        })
+        .type('form')
+        .set('DPoP', await DPoP(this.keypair, `${this.provider.issuer}${this.suitePath('/token')}`, 'POST'))
+        .expect(200);
+
+      expect(spy).to.have.property('calledOnce', true);
+      const { oidc: { entities: { AccessToken, RefreshToken } } } = spy.args[0][0];
+      expect(AccessToken).to.have.property('jkt', this.thumbprint);
+      expect(RefreshToken).not.to.have.property('jkt');
+    });
+  });
+
   describe('urn:openid:params:grant-type:ciba', () => {
     beforeEach(async function () {
       await this.agent.post('/backchannel')
