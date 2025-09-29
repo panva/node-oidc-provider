@@ -86,7 +86,7 @@ class MyAdapter {
      *     from authnz to be returned to the polling client
      * - policies {string[]} - [InitialAccessToken, RegistrationAccessToken only] array of policies
      * - request {string} - [PushedAuthorizationRequest only] Pushed Request Object value
-     * - dpopJkt {string} - [PushedAuthorizationRequest only] Calculated or provided dpop_jkt parameter
+     * - dpopJkt {string} - [PushedAuthorizationRequest, DeviceCode, AuthorizationCode only] Calculated or provided dpop_jkt parameter
      * - trusted {boolean} - [PushedAuthorizationRequest only] Whether the parameters in the PAR object
      *     were coming from an authenticated request or an authenticated source.
      *
