@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [9.5.2](https://github.com/panva/node-oidc-provider/compare/v9.5.1...v9.5.2) (2025-10-24)
+
+
+### Refactor
+
+* change new Debug() to debug() ([#1363](https://github.com/panva/node-oidc-provider/issues/1363)) ([b86b47c](https://github.com/panva/node-oidc-provider/commit/b86b47ca654d61bebff79d318bea42bec1e36c4b))
+
 ## [9.5.1](https://github.com/panva/node-oidc-provider/compare/v9.5.0...v9.5.1) (2025-08-29)
 
 
