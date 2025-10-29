@@ -13,7 +13,7 @@ import routes from '../../example/routes/koa.js';
 
 import configuration from './configuration.js';
 
-const selfsigned = generate();
+const selfsigned = generate(null, { keySize: 2048 });
 const { PORT = 3000, ISSUER = `http://localhost:${PORT}` } = process.env;
 configuration.findAccount = Account.findAccount;
 
