@@ -184,7 +184,8 @@ jobs:
       - name: Run oidc-provider (OIDC)
         run: |
           set -o pipefail
-          node certification/oidc/docker |& tee server.log &
+          node certification/oidc/docker > >(tee server.log) 2>&1 &
+          echo "OIDC_PROVIDER_PID=$!" >> $GITHUB_ENV
         if: ${{ startsWith(matrix.setup.plan, 'oidcc') }}
         env:
           PORT: 3000
@@ -194,7 +195,8 @@ jobs:
       - name: Run oidc-provider (FAPI)
         run: |
           set -o pipefail
-          node certification/fapi |& tee server.log &
+          node certification/fapi > >(tee server.log) 2>&1 &
+          echo "OIDC_PROVIDER_PID=$!" >> $GITHUB_ENV
         if: ${{ startsWith(matrix.setup.plan, 'fapi') }}
         env:
           ISSUER: https://172.17.0.1:3000
@@ -241,6 +243,8 @@ jobs:
         env:
           COMPOSE_BAKE: true
         run: |
-          killall -SIGINT node
+          if [ -n "${{ env.OIDC_PROVIDER_PID }}" ]; then
+            kill -SIGINT ${{ env.OIDC_PROVIDER_PID }} || true
+          fi
           docker compose -f docker-compose-dev.yml down
           sudo rm -rf mongo
