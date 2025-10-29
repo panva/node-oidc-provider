@@ -1,7 +1,6 @@
 /* eslint-disable no-param-reassign */
 
 import { strict as assert } from 'node:assert';
-import * as url from 'node:url';
 
 import { createSandbox } from 'sinon';
 import { expect } from 'chai';
@@ -284,7 +283,7 @@ describe('client registration policies', () => {
             },
           }) => {
             this.rat = registration_access_token;
-            this.url = url.parse(registration_client_uri).pathname;
+            this.url = new URL(registration_client_uri).pathname;
             this.body = body;
           },
         );

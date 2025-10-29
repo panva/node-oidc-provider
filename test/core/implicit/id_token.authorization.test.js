@@ -1,5 +1,4 @@
 import * as querystring from 'node:querystring';
-import * as url from 'node:url';
 
 import sinon from 'sinon';
 import { expect } from 'chai';
@@ -100,8 +99,8 @@ describe('IMPLICIT id_token', () => {
           .expect(auth.validateFragment)
           .expect(auth.validatePresence(['id_token', 'state']))
           .expect((response) => {
-            const { query } = url.parse(response.headers.location.replace('#', '?'), true);
-            idTokenHint = query.id_token;
+            const parsedUrl = new URL(response.headers.location.replace('#', '?'));
+            idTokenHint = parsedUrl.searchParams.get('id_token');
           });
 
         client.clientSecretExpiresAt = 1;

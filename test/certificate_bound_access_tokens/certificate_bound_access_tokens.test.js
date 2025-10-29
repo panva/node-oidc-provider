@@ -1,6 +1,5 @@
 import { X509Certificate } from 'node:crypto';
 import { readFileSync } from 'node:fs';
-import * as url from 'node:url';
 
 import sinon from 'sinon';
 import { expect } from 'chai';
@@ -263,7 +262,8 @@ describe('features.mTLS.certificateBoundAccessTokens', () => {
         .expect(303)
         .expect(auth.validateClientLocation)
         .expect(({ headers: { location } }) => {
-          const { query: { code } } = url.parse(location, true);
+          const parsedUrl = new URL(location);
+          const code = parsedUrl.searchParams.get('code');
           this.code = code;
         });
     });
@@ -385,7 +385,8 @@ describe('features.mTLS.certificateBoundAccessTokens', () => {
         .expect(303)
         .expect(auth.validateClientLocation)
         .expect(({ headers: { location } }) => {
-          const { query: { code } } = url.parse(location, true);
+          const parsedUrl = new URL(location);
+          const code = parsedUrl.searchParams.get('code');
           this.code = code;
         });
     });

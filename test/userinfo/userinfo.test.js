@@ -1,5 +1,3 @@
-import * as url from 'node:url';
-
 import { expect } from 'chai';
 import sinon from 'sinon';
 
@@ -20,8 +18,8 @@ describe('userinfo /me', () => {
     return this.wrap({ auth, verb: 'get', route: '/auth' })
       .expect(auth.validateFragment)
       .expect((response) => {
-        const { query } = url.parse(response.headers.location, true);
-        this.access_token = query.access_token;
+        const parsedUrl = new URL(response.headers.location);
+        this.access_token = parsedUrl.searchParams.get('access_token');
       });
   });
 

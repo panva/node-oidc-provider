@@ -1,5 +1,3 @@
-import * as url from 'node:url';
-
 import { expect } from 'chai';
 import sinon from 'sinon';
 import cloneDeep from 'lodash/cloneDeep.js';
@@ -112,7 +110,9 @@ describe('dynamic ttl', () => {
       .expect(303)
       .expect(auth.validateFragment)
       .expect(({ headers: { location } }) => {
-        const { query: { expires_in, id_token } } = url.parse(location, true);
+        const parsedUrl = new URL(location);
+        const expires_in = parsedUrl.searchParams.get('expires_in');
+        const id_token = parsedUrl.searchParams.get('id_token');
         expect(expires_in).to.eql('1234');
         const { payload: { iat, exp } } = JWT.decode(id_token);
         expect(exp - iat).to.eql(123);
@@ -150,7 +150,8 @@ describe('dynamic ttl', () => {
     await this.wrap({ route: '/auth', verb: 'get', auth })
       .expect(303)
       .expect(({ headers: { location } }) => {
-        ({ query: { code } } = url.parse(location, true));
+        const parsedUrl = new URL(location);
+        code = parsedUrl.searchParams.get('code');
       });
 
     await this.agent.post('/token')
@@ -189,7 +190,8 @@ describe('dynamic ttl', () => {
     await this.wrap({ route: '/auth', verb: 'get', auth })
       .expect(303)
       .expect(({ headers: { location } }) => {
-        ({ query: { code } } = url.parse(location, true));
+        const parsedUrl = new URL(location);
+        code = parsedUrl.searchParams.get('code');
       });
 
     let refresh_token;

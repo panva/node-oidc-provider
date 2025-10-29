@@ -1,5 +1,3 @@
-import * as url from 'node:url';
-
 import * as jose from 'jose';
 
 import bootstrap, { enableNetConnect, resetNetConnect } from '../test_helper.js';
@@ -44,7 +42,8 @@ describe('External Signing Keys', () => {
       .expect(auth.validateState)
       .expect(auth.validateClientLocation)
       .expect((response) => {
-        ({ query: { id_token } } = url.parse(response.headers.location.replace('#', '?'), true));
+        const parsedUrl = new URL(response.headers.location.replace('#', '?'));
+        id_token = parsedUrl.searchParams.get('id_token');
       });
 
     await jose.compactVerify(id_token, jose.createRemoteJWKSet(new URL(this.provider.issuer + this.suitePath('/jwks'))));
@@ -57,7 +56,8 @@ describe('External Signing Keys', () => {
       .expect(auth.validateState)
       .expect(auth.validateClientLocation)
       .expect((response) => {
-        ({ query: { id_token } } = url.parse(response.headers.location.replace('#', '?'), true));
+        const parsedUrl = new URL(response.headers.location.replace('#', '?'));
+        id_token = parsedUrl.searchParams.get('id_token');
       });
   });
 });
