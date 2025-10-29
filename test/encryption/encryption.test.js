@@ -1,5 +1,3 @@
-import * as url from 'node:url';
-
 import { expect } from 'chai';
 import {
   compactDecrypt, CompactEncrypt, decodeJwt, decodeProtectedHeader,
@@ -72,7 +70,11 @@ describe('encryption', () => {
           return this.wrap({ route, verb, auth })
             .expect(auth.validateFragment)
             .expect((response) => {
-              const { query } = url.parse(response.headers.location, true);
+              const parsedUrl = new URL(response.headers.location);
+              const query = {};
+              parsedUrl.searchParams.forEach((value, paramKey) => {
+                query[paramKey] = value;
+              });
               this.id_token = query.id_token;
               this.access_token = query.access_token;
             });
@@ -192,7 +194,11 @@ describe('encryption', () => {
             },
           })
             .expect((response) => {
-              const { query } = url.parse(response.headers.location, true);
+              const parsedUrl = new URL(response.headers.location);
+              const query = {};
+              parsedUrl.searchParams.forEach((value, paramKey) => {
+                query[paramKey] = value;
+              });
               expect(query).to.have.property('error', 'invalid_request_object');
               expect(query).to.have.property('error_description', 'could not decrypt request object');
             });
@@ -223,7 +229,11 @@ describe('encryption', () => {
             },
           })
             .expect((response) => {
-              const { query } = url.parse(response.headers.location, true);
+              const parsedUrl = new URL(response.headers.location);
+              const query = {};
+              parsedUrl.searchParams.forEach((value, paramKey) => {
+                query[paramKey] = value;
+              });
               expect(query).to.have.property('error', 'invalid_request_object');
               expect(query).to.have.property('error_description', 'could not decrypt request object');
             });
@@ -263,12 +273,26 @@ describe('encryption', () => {
           })
             .expect(303)
             .expect((response) => {
-              const expected = url.parse('https://client.example.com/cb', true);
-              const actual = url.parse(response.headers.location, true);
+              const expectedUrl = new URL('https://client.example.com/cb');
+              const expected = {};
+              expectedUrl.searchParams.forEach((value, paramKey) => {
+                expected[paramKey] = value;
+              });
+              expected.protocol = expectedUrl.protocol;
+              expected.host = expectedUrl.host;
+              expected.pathname = expectedUrl.pathname;
+              const actualUrl = new URL(response.headers.location);
+              const actual = {};
+              actualUrl.searchParams.forEach((value, paramKey) => {
+                actual[paramKey] = value;
+              });
+              actual.protocol = actualUrl.protocol;
+              actual.host = actualUrl.host;
+              actual.pathname = actualUrl.pathname;
               ['protocol', 'host', 'pathname'].forEach((attr) => {
                 expect(actual[attr]).to.equal(expected[attr]);
               });
-              expect(actual.query).to.have.property('code');
+              expect(actual).to.have.property('code');
             });
         });
 
@@ -304,12 +328,26 @@ describe('encryption', () => {
           })
             .expect(303)
             .expect((response) => {
-              const expected = url.parse('https://client.example.com/cb', true);
-              const actual = url.parse(response.headers.location, true);
+              const expectedUrl = new URL('https://client.example.com/cb');
+              const expected = {};
+              expectedUrl.searchParams.forEach((value, paramKey) => {
+                expected[paramKey] = value;
+              });
+              expected.protocol = expectedUrl.protocol;
+              expected.host = expectedUrl.host;
+              expected.pathname = expectedUrl.pathname;
+              const actualUrl = new URL(response.headers.location);
+              const actual = {};
+              actualUrl.searchParams.forEach((value, paramKey) => {
+                actual[paramKey] = value;
+              });
+              actual.protocol = actualUrl.protocol;
+              actual.host = actualUrl.host;
+              actual.pathname = actualUrl.pathname;
               ['protocol', 'host', 'pathname'].forEach((attr) => {
                 expect(actual[attr]).to.equal(expected[attr]);
               });
-              expect(actual.query).to.have.property('code');
+              expect(actual).to.have.property('code');
             });
         });
       });
@@ -330,7 +368,11 @@ describe('encryption', () => {
           })
           .expect(auth.validateFragment)
           .expect((response) => {
-            const { query } = url.parse(response.headers.location, true);
+            const parsedUrl = new URL(response.headers.location);
+            const query = {};
+            parsedUrl.searchParams.forEach((value, paramKey) => {
+              query[paramKey] = value;
+            });
             expect(query).to.have.property('error', 'invalid_client_metadata');
             expect(query).to.have.property('error_description', 'no suitable encryption key found (ECDH-ES)');
           });
@@ -347,7 +389,11 @@ describe('encryption', () => {
           return this.wrap({ route, verb, auth })
             .expect(auth.validateFragment)
             .expect((response) => {
-              const { query } = url.parse(response.headers.location, true);
+              const parsedUrl = new URL(response.headers.location);
+              const query = {};
+              parsedUrl.searchParams.forEach((value, paramKey) => {
+                query[paramKey] = value;
+              });
               this.id_token = query.id_token;
             });
         });
@@ -381,12 +427,26 @@ describe('encryption', () => {
           })
             .expect(303)
             .expect((response) => {
-              const expected = url.parse('https://client.example.com/cb', true);
-              const actual = url.parse(response.headers.location.replace('#', '?'), true);
+              const expectedUrl = new URL('https://client.example.com/cb');
+              const expected = {};
+              expectedUrl.searchParams.forEach((value, paramKey) => {
+                expected[paramKey] = value;
+              });
+              expected.protocol = expectedUrl.protocol;
+              expected.host = expectedUrl.host;
+              expected.pathname = expectedUrl.pathname;
+              const actualUrl = new URL(response.headers.location.replace('#', '?'));
+              const actual = {};
+              actualUrl.searchParams.forEach((value, paramKey) => {
+                actual[paramKey] = value;
+              });
+              actual.protocol = actualUrl.protocol;
+              actual.host = actualUrl.host;
+              actual.pathname = actualUrl.pathname;
               ['protocol', 'host', 'pathname'].forEach((attr) => {
                 expect(actual[attr]).to.equal(expected[attr]);
               });
-              expect(actual.query).to.have.property('id_token');
+              expect(actual).to.have.property('id_token');
             });
         });
 
@@ -418,7 +478,11 @@ describe('encryption', () => {
           })
             .expect(303)
             .expect((response) => {
-              const { query } = url.parse(response.headers.location.replace('#', '?'), true);
+              const parsedUrl = new URL(response.headers.location.replace('#', '?'));
+              const query = {};
+              parsedUrl.searchParams.forEach((value, paramKey) => {
+                query[paramKey] = value;
+              });
               expect(query).to.have.property('error', 'invalid_request_object');
               expect(query).to.have.property('error_description', 'could not decrypt the Request Object - the client secret used for its encryption is expired');
             });
@@ -445,7 +509,11 @@ describe('encryption', () => {
           return this.wrap({ route, verb, auth })
             .expect(auth.validateFragment)
             .expect((response) => {
-              const { query } = url.parse(response.headers.location, true);
+              const parsedUrl = new URL(response.headers.location);
+              const query = {};
+              parsedUrl.searchParams.forEach((value, paramKey) => {
+                query[paramKey] = value;
+              });
               this.id_token = query.id_token;
             });
         });
@@ -479,12 +547,26 @@ describe('encryption', () => {
           })
             .expect(303)
             .expect((response) => {
-              const expected = url.parse('https://client.example.com/cb', true);
-              const actual = url.parse(response.headers.location.replace('#', '?'), true);
+              const expectedUrl = new URL('https://client.example.com/cb');
+              const expected = {};
+              expectedUrl.searchParams.forEach((value, paramKey) => {
+                expected[paramKey] = value;
+              });
+              expected.protocol = expectedUrl.protocol;
+              expected.host = expectedUrl.host;
+              expected.pathname = expectedUrl.pathname;
+              const actualUrl = new URL(response.headers.location.replace('#', '?'));
+              const actual = {};
+              actualUrl.searchParams.forEach((value, paramKey) => {
+                actual[paramKey] = value;
+              });
+              actual.protocol = actualUrl.protocol;
+              actual.host = actualUrl.host;
+              actual.pathname = actualUrl.pathname;
               ['protocol', 'host', 'pathname'].forEach((attr) => {
                 expect(actual[attr]).to.equal(expected[attr]);
               });
-              expect(actual.query).to.have.property('id_token');
+              expect(actual).to.have.property('id_token');
             });
         });
 
@@ -516,7 +598,11 @@ describe('encryption', () => {
           })
             .expect(303)
             .expect((response) => {
-              const { query } = url.parse(response.headers.location.replace('#', '?'), true);
+              const parsedUrl = new URL(response.headers.location.replace('#', '?'));
+              const query = {};
+              parsedUrl.searchParams.forEach((value, paramKey) => {
+                query[paramKey] = value;
+              });
               expect(query).to.have.property('error', 'invalid_request_object');
               expect(query).to.have.property('error_description', 'could not decrypt the Request Object - the client secret used for its encryption is expired');
             });

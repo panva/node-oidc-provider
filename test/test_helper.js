@@ -298,7 +298,7 @@ export default function testHelper(importMetaUrl, {
 
         Object.defineProperty(this, 'validateInteractionRedirect', {
           value: (response) => {
-            const location = response.headers.location;
+            const { location } = response.headers;
             // For relative URLs, check if it doesn't start with http/https
             const isRelative = !location.startsWith('http://') && !location.startsWith('https://');
             expect(isRelative).to.be.true;

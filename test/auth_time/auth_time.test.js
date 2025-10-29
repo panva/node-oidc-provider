@@ -1,5 +1,3 @@
-import * as url from 'node:url';
-
 import sinon from 'sinon';
 import { decodeJwt } from 'jose';
 import { expect } from 'chai';
@@ -29,7 +27,8 @@ describe('responds with a id_token containing auth_time', () => {
       .expect(auth.validateState)
       .expect(auth.validateClientLocation)
       .expect((response) => {
-        ({ query: { id_token } } = url.parse(response.headers.location, true));
+        const parsedUrl = new URL(response.headers.location);
+        id_token = parsedUrl.searchParams.get('id_token');
       });
 
     expect(decodeJwt(id_token)).to.have.property('auth_time');
@@ -60,7 +59,8 @@ describe('responds with a id_token containing auth_time', () => {
         .expect(auth.validateState)
         .expect(auth.validateClientLocation)
         .expect((response) => {
-          ({ query: { id_token } } = url.parse(response.headers.location, true));
+          const parsedUrl = new URL(response.headers.location);
+          id_token = parsedUrl.searchParams.get('id_token');
         });
 
       expect(decodeJwt(id_token)).to.have.property('auth_time');
@@ -82,7 +82,8 @@ describe('responds with a id_token containing auth_time', () => {
         .expect(auth.validateState)
         .expect(auth.validateClientLocation)
         .expect((response) => {
-          ({ query: { id_token } } = url.parse(response.headers.location, true));
+          const parsedUrl = new URL(response.headers.location);
+          id_token = parsedUrl.searchParams.get('id_token');
         });
 
       expect(decodeJwt(id_token)).to.have.property('auth_time');
@@ -104,7 +105,8 @@ describe('responds with a id_token containing auth_time', () => {
         .expect(auth.validateState)
         .expect(auth.validateClientLocation)
         .expect((response) => {
-          ({ query: { id_token } } = url.parse(response.headers.location, true));
+          const parsedUrl = new URL(response.headers.location);
+          id_token = parsedUrl.searchParams.get('id_token');
         });
 
       expect(decodeJwt(id_token)).to.have.property('auth_time');
@@ -127,7 +129,8 @@ describe('responds with a id_token containing auth_time', () => {
       .expect(auth.validateState)
       .expect(auth.validateClientLocation)
       .expect((response) => {
-        ({ query: { id_token } } = url.parse(response.headers.location, true));
+        const parsedUrl = new URL(response.headers.location);
+        id_token = parsedUrl.searchParams.get('id_token');
       });
 
     expect(decodeJwt(id_token)).to.have.property('auth_time');
@@ -149,7 +152,8 @@ describe('responds with a id_token containing auth_time', () => {
       .expect(auth.validateState)
       .expect(auth.validateClientLocation)
       .expect((response) => {
-        ({ query: { id_token } } = url.parse(response.headers.location, true));
+        const parsedUrl = new URL(response.headers.location);
+        id_token = parsedUrl.searchParams.get('id_token');
       });
 
     expect(decodeJwt(id_token)).to.have.property('auth_time');

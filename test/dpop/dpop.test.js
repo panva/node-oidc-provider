@@ -1,4 +1,3 @@
-import * as url from 'node:url';
 import { hash, randomBytes, randomUUID } from 'node:crypto';
 
 import sinon from 'sinon';
@@ -603,7 +602,8 @@ describe('features.dPoP', () => {
         .expect(303)
         .expect(auth.validateClientLocation)
         .expect(({ headers: { location } }) => {
-          ({ query: { code } } = url.parse(location, true));
+          const parsedUrl = new URL(location);
+          code = parsedUrl.searchParams.get('code');
         });
 
       const { dpopJkt } = this.TestAdapter.for('AuthorizationCode').syncFind(code);
@@ -647,7 +647,8 @@ describe('features.dPoP', () => {
         .expect(303)
         .expect(auth.validateClientLocation)
         .expect(({ headers: { location } }) => {
-          ({ query: { code } } = url.parse(location, true));
+          const parsedUrl = new URL(location);
+          code = parsedUrl.searchParams.get('code');
         });
 
       const { dpopJkt } = this.TestAdapter.for('AuthorizationCode').syncFind(code);
@@ -668,7 +669,8 @@ describe('features.dPoP', () => {
           .expect(303)
           .expect(auth.validateClientLocation)
           .expect(({ headers: { location } }) => {
-            const { query: { code } } = url.parse(location, true);
+            const parsedUrl = new URL(location);
+            const code = parsedUrl.searchParams.get('code');
             this.code = code;
           });
       });
@@ -711,7 +713,8 @@ describe('features.dPoP', () => {
           .expect(303)
           .expect(auth.validateClientLocation)
           .expect(({ headers: { location } }) => {
-            const { query: { code } } = url.parse(location, true);
+            const parsedUrl = new URL(location);
+            const code = parsedUrl.searchParams.get('code');
             this.code = code;
           });
       });
@@ -794,7 +797,8 @@ describe('features.dPoP', () => {
           .expect(303)
           .expect(auth.validateClientLocation)
           .expect(({ headers: { location } }) => {
-            const { query: { code } } = url.parse(location, true);
+            const parsedUrl = new URL(location);
+            const code = parsedUrl.searchParams.get('code');
             this.code = code;
           });
 
@@ -848,7 +852,8 @@ describe('features.dPoP', () => {
         .expect(303)
         .expect(auth.validateClientLocation)
         .expect(({ headers: { location } }) => {
-          const { query: { code } } = url.parse(location, true);
+          const parsedUrl = new URL(location);
+          const code = parsedUrl.searchParams.get('code');
           this.code = code;
         });
     });

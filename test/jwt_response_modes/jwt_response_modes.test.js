@@ -1,5 +1,3 @@
-import * as url from 'node:url';
-
 import { expect } from 'chai';
 import sinon from 'sinon';
 
@@ -44,7 +42,8 @@ describe('configuration features.jwtResponseModes', () => {
         .expect(auth.validatePresence(['response']))
         .expect(auth.validateClientLocation)
         .expect(({ headers: { location } }) => {
-          const { query: { response } } = url.parse(location, true);
+          const parsedUrl = new URL(location);
+          const response = parsedUrl.searchParams.get('response');
           const { payload } = decode(response);
           expect(payload).to.include.keys('id_token', 'access_token', 'expires_in', 'token_type');
           expect(payload).to.have.property('exp').that.is.a('number');
@@ -67,7 +66,8 @@ describe('configuration features.jwtResponseModes', () => {
         .expect(auth.validatePresence(['response']))
         .expect(auth.validateClientLocation)
         .expect(({ headers: { location } }) => {
-          const { query: { response } } = url.parse(location, true);
+          const parsedUrl = new URL(location);
+          const response = parsedUrl.searchParams.get('response');
           const { payload } = decode(response);
           expect(payload).to.include.keys('code');
           expect(payload).to.have.property('exp').that.is.a('number');
@@ -90,7 +90,8 @@ describe('configuration features.jwtResponseModes', () => {
         .expect(auth.validatePresence(['response']))
         .expect(auth.validateClientLocation)
         .expect(({ headers: { location } }) => {
-          const { query: { response } } = url.parse(location, true);
+          const parsedUrl = new URL(location);
+          const response = parsedUrl.searchParams.get('response');
           const { payload } = decode(response);
           expect(payload).to.have.all.keys('exp', 'aud', 'state', 'iss');
         });
@@ -161,7 +162,8 @@ describe('configuration features.jwtResponseModes', () => {
         .expect(auth.validatePresence(['response']))
         .expect(auth.validateClientLocation)
         .expect(({ headers: { location } }) => {
-          const { query: { response } } = url.parse(location, true);
+          const parsedUrl = new URL(location);
+          const response = parsedUrl.searchParams.get('response');
           const { payload } = decode(response);
           expect(payload).to.have.all.keys('error', 'error_description', 'state', 'aud', 'exp', 'iss');
           expect(payload.error).to.eql('invalid_request');
@@ -214,7 +216,8 @@ describe('configuration features.jwtResponseModes', () => {
         .expect(auth.validatePresence(['response']))
         .expect(auth.validateClientLocation)
         .expect(({ headers: { location } }) => {
-          const { query: { response } } = url.parse(location, true);
+          const parsedUrl = new URL(location);
+          const response = parsedUrl.searchParams.get('response');
           const { payload } = decode(response);
           expect(payload).to.include.keys('code');
           expect(payload).to.have.property('exp').that.is.a('number');
@@ -237,7 +240,8 @@ describe('configuration features.jwtResponseModes', () => {
         .expect(auth.validatePresence(['response']))
         .expect(auth.validateClientLocation)
         .expect(({ headers: { location } }) => {
-          const { query: { response } } = url.parse(location, true);
+          const parsedUrl = new URL(location);
+          const response = parsedUrl.searchParams.get('response');
           const { payload } = decode(response);
           expect(payload).to.have.all.keys('exp', 'aud', 'state', 'iss');
         });
