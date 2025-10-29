@@ -1,5 +1,4 @@
 import * as crypto from 'node:crypto';
-import { parse } from 'node:url';
 
 import { importJWK } from 'jose';
 import sinon from 'sinon';
@@ -36,12 +35,12 @@ describe('request parameter features', () => {
   });
 
   function redirectSuccess(response) {
-    const expected = parse('https://client.example.com/cb', true);
-    const actual = parse(response.headers.location, true);
+    const expected = new URL('https://client.example.com/cb');
+    const actual = new URL(response.headers.location);
     ['protocol', 'host', 'pathname'].forEach((attr) => {
       expect(actual[attr]).to.equal(expected[attr]);
     });
-    expect(actual.query).to.have.property('code');
+    expect(actual.searchParams.get('code')).to.exist;
   }
   function httpSuccess({ body }) {
     expect(body).to.contain.key('device_code');

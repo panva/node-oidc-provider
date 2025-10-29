@@ -1,5 +1,4 @@
 import { randomBytes } from 'node:crypto';
-import { parse as parseUrl } from 'node:url';
 
 import { expect } from 'chai';
 import sinon from 'sinon';
@@ -87,7 +86,8 @@ describe('Pushed Request Object', () => {
             .expect(303)
             .expect(auth.validatePresence(['code']))
             .expect((response) => {
-              ({ query: { code } } = parseUrl(response.headers.location, true));
+              const parsedUrl = new URL(response.headers.location);
+              code = parsedUrl.searchParams.get('code');
               const jti = this.getTokenJti(code);
               expect(this.TestAdapter.for('AuthorizationCode').syncFind(jti)).to.have.property('redirectUri', 'https://rp.example.com/unlisted');
             });

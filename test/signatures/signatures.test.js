@@ -1,5 +1,3 @@
-import { parse as parseLocation } from 'node:url';
-
 import { expect } from 'chai';
 
 import bootstrap from '../test_helper.js';
@@ -86,7 +84,8 @@ describe('signatures', () => {
           .expect(auth.validateFragment)
           .expect(auth.validateClientLocation)
           .expect((response) => {
-            const { query: { id_token } } = parseLocation(response.headers.location, true);
+            const parsedUrl = new URL(response.headers.location);
+            const id_token = parsedUrl.searchParams.get('id_token');
             const { payload } = decode(id_token);
             expect(payload).to.contain.keys('at_hash', 'c_hash');
             expect(payload.at_hash).to.have.lengthOf(43);
@@ -110,7 +109,8 @@ describe('signatures', () => {
           .expect(auth.validateFragment)
           .expect(auth.validateClientLocation)
           .expect((response) => {
-            const { query: { id_token } } = parseLocation(response.headers.location, true);
+            const parsedUrl = new URL(response.headers.location);
+            const id_token = parsedUrl.searchParams.get('id_token');
             const { payload } = decode(id_token);
             expect(payload).to.contain.keys('at_hash', 'c_hash');
             expect(payload.at_hash).to.have.lengthOf(43);
@@ -130,7 +130,8 @@ describe('signatures', () => {
         .expect(auth.validateFragment)
         .expect(auth.validateClientLocation)
         .expect((response) => {
-          const { query: { id_token } } = parseLocation(response.headers.location, true);
+          const parsedUrl = new URL(response.headers.location);
+          const id_token = parsedUrl.searchParams.get('id_token');
           const { payload } = decode(id_token);
           expect(payload).to.contain.keys('at_hash', 'c_hash');
           expect(payload.at_hash).to.have.lengthOf(43);
@@ -149,7 +150,8 @@ describe('signatures', () => {
         .expect(auth.validateFragment)
         .expect(auth.validateClientLocation)
         .expect((response) => {
-          const { query: { id_token } } = parseLocation(response.headers.location, true);
+          const parsedUrl = new URL(response.headers.location);
+          const id_token = parsedUrl.searchParams.get('id_token');
           const { payload } = decode(id_token);
           expect(payload).to.contain.keys('at_hash', 'c_hash');
           expect(payload.at_hash).to.have.lengthOf(32);
@@ -168,7 +170,8 @@ describe('signatures', () => {
         .expect(auth.validateFragment)
         .expect(auth.validateClientLocation)
         .expect((response) => {
-          const { query: { id_token } } = parseLocation(response.headers.location, true);
+          const parsedUrl = new URL(response.headers.location);
+          const id_token = parsedUrl.searchParams.get('id_token');
           const { payload } = decode(id_token);
           expect(payload).to.contain.keys('at_hash', 'c_hash');
           expect(payload.at_hash).to.have.lengthOf(22);

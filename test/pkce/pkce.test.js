@@ -1,5 +1,3 @@
-import { parse as parseUrl } from 'node:url';
-
 import { expect } from 'chai';
 
 import bootstrap, { passInteractionChecks } from '../test_helper.js';
@@ -141,7 +139,8 @@ describe('PKCE RFC7636', () => {
       return this.agent.get('/auth')
         .query(auth)
         .expect((response) => {
-          const { query: { code } } = parseUrl(response.headers.location, true);
+          const parsedUrl = new URL(response.headers.location);
+          const code = parsedUrl.searchParams.get('code');
           const jti = this.getTokenJti(code);
           const stored = this.TestAdapter.for('AuthorizationCode').syncFind(jti);
 

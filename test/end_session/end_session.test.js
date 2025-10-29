@@ -1,4 +1,3 @@
-import { parse as parseUrl } from 'node:url';
 import { randomBytes } from 'node:crypto';
 
 import { createSandbox } from 'sinon';
@@ -53,7 +52,8 @@ describe('logout endpoint', () => {
         })
         .expect(303)
         .expect((response) => {
-          const { query: { id_token: idToken } } = parseUrl(response.headers.location.replace('#', '?'), true);
+          const parsedUrl = new URL(response.headers.location.replace('#', '?'));
+          const idToken = parsedUrl.searchParams.get('id_token');
           this.idToken = idToken;
         });
     });
@@ -194,7 +194,8 @@ describe('logout endpoint', () => {
                 })
                 .expect(303)
                 .expect((response) => {
-                  ({ query: { id_token: idToken } } = parseUrl(response.headers.location.replace('#', '?'), true));
+                  const parsedUrl = new URL(response.headers.location.replace('#', '?'));
+                  idToken = parsedUrl.searchParams.get('id_token');
                 });
 
               client.clientSecretExpiresAt = 1;
@@ -452,7 +453,12 @@ describe('logout endpoint', () => {
             expect(sessionAdapter.destroy.called).to.be.true;
             expect(sessionAdapter.upsert.called).not.to.be.true;
             expect(sessionAdapter.destroy.withArgs(sessionId).calledOnce).to.be.true;
-            expect(parseUrl(response.headers.location, true).query).not.to.have.property('client_id');
+            const parsedUrl = new URL(response.headers.location);
+            const query = {};
+            parsedUrl.searchParams.forEach((value, key) => {
+              query[key] = value;
+            });
+            expect(query).not.to.have.property('client_id');
             expect(authorizationCodeAdapter
               .revokeByGrantId.calledOnce).to.be.true;
             expect(authorizationCodeAdapter
@@ -484,7 +490,12 @@ describe('logout endpoint', () => {
             expect(session.state).to.be.undefined;
             expect(this.getSessionId()).not.to.eql(oldId);
             expect(adapter.destroy.calledOnceWith(oldId)).to.be.true;
-            expect(parseUrl(response.headers.location, true).query).not.to.have.key('client_id');
+            const parsedUrl = new URL(response.headers.location);
+            const query = {};
+            parsedUrl.searchParams.forEach((value, key) => {
+              query[key] = value;
+            });
+            expect(query).not.to.have.key('client_id');
             expect(authorizationCodeAdapter
               .revokeByGrantId.called).to.be.false;
           });
@@ -509,7 +520,12 @@ describe('logout endpoint', () => {
             expect(session.state).to.be.undefined;
             expect(this.getSessionId()).not.to.eql(oldId);
             expect(adapter.destroy.calledOnceWith(oldId)).to.be.true;
-            expect(parseUrl(response.headers.location, true).query).to.have.property('client_id', 'client');
+            const parsedUrl = new URL(response.headers.location);
+            const query = {};
+            parsedUrl.searchParams.forEach((value, key) => {
+              query[key] = value;
+            });
+            expect(query).to.have.property('client_id', 'client');
           });
       });
 

@@ -1,12 +1,12 @@
 /* eslint-disable no-shadow */
-import * as url from 'node:url';
-
 import { expect } from 'chai';
 
 import bootstrap, { skipConsent } from '../test_helper.js';
 
 function assignAuthorizationResponseValues({ headers: { location } }) {
-  const { query: { access_token, code } } = url.parse(location, true);
+  const parsedUrl = new URL(location);
+  const access_token = parsedUrl.searchParams.get('access_token');
+  const code = parsedUrl.searchParams.get('code');
 
   this.access_token = access_token;
   this.code = code;

@@ -1,5 +1,4 @@
 import { strict as assert } from 'node:assert';
-import { parse as parseUrl } from 'node:url';
 import { randomBytes } from 'node:crypto';
 
 import { createSandbox } from 'sinon';
@@ -110,11 +109,13 @@ describe('Back-Channel Logout 1.0', () => {
         })
         .expect(303)
         .expect((response) => {
-          const { query } = parseUrl(response.headers.location.replace('#', '?'), true);
-          expect(query).to.have.property('code');
-          expect(query).to.have.property('id_token');
-          this.idToken = query.id_token;
-          this.code = query.code;
+          const parsedUrl = new URL(response.headers.location.replace('#', '?'));
+          const code = parsedUrl.searchParams.get('code');
+          const id_token = parsedUrl.searchParams.get('id_token');
+          expect(code).to.exist;
+          expect(id_token).to.exist;
+          this.idToken = id_token;
+          this.code = code;
         });
     });
 
