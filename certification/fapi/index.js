@@ -23,7 +23,7 @@ const pkg = JSON.parse(
 );
 
 const __dirname = dirname(import.meta.url);
-const selfsigned = generate();
+const selfsigned = generate(null, { keySize: 2048 });
 const { PORT = 3000, ISSUER = `http://localhost:${PORT}` } = process.env;
 
 const ALGS = ['PS256'];
