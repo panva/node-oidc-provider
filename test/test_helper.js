@@ -1,6 +1,6 @@
 /* eslint-disable no-underscore-dangle */
 
-import { parse, pathToFileURL } from 'node:url';
+import { pathToFileURL } from 'node:url';
 import * as crypto from 'node:crypto';
 import * as path from 'node:path';
 import * as querystring from 'node:querystring';
@@ -264,14 +264,14 @@ export default function testHelper(importMetaUrl, {
 
         Object.defineProperty(this, 'validateClientLocation', {
           value: (response) => {
-            const actual = parse(response.headers.location, true);
+            const actual = new URL(response.headers.location);
             let expected;
             if (this.redirect_uri) {
               expect(response.headers.location).to.match(new RegExp(this.redirect_uri));
-              expected = parse(this.redirect_uri, true);
+              expected = new URL(this.redirect_uri);
             } else {
               expect(response.headers.location).to.match(new RegExp(c.redirect_uris[0]));
-              expected = parse(c.redirect_uris[0], true);
+              expected = new URL(c.redirect_uris[0]);
             }
 
             ['protocol', 'host', 'pathname'].forEach((attr) => {
@@ -282,24 +282,27 @@ export default function testHelper(importMetaUrl, {
 
         Object.defineProperty(this, 'validateState', {
           value: (response) => {
-            const { query: { state } } = parse(response.headers.location, true);
+            const parsedUrl = new URL(response.headers.location);
+            const state = parsedUrl.searchParams.get('state');
             expect(state).to.equal(this.state);
           },
         });
 
         Object.defineProperty(this, 'validateIss', {
           value: (response) => {
-            const { query: { iss } } = parse(response.headers.location, true);
+            const parsedUrl = new URL(response.headers.location);
+            const iss = parsedUrl.searchParams.get('iss');
             expect(iss).to.equal(issuerIdentifier);
           },
         });
 
         Object.defineProperty(this, 'validateInteractionRedirect', {
           value: (response) => {
-            const { hostname, search, query } = parse(response.headers.location);
-            expect(hostname).to.be.null;
-            expect(search).to.be.null;
-            expect(query).to.be.null;
+            const location = response.headers.location;
+            // For relative URLs, check if it doesn't start with http/https
+            const isRelative = !location.startsWith('http://') && !location.startsWith('https://');
+            expect(isRelative).to.be.true;
+            expect(location.includes('?')).to.be.false;
             expect(response).to.have.nested.property('headers.set-cookie').that.is.an('array');
 
             const uid = readCookie(getSetCookies(response)[0]);
@@ -335,8 +338,8 @@ export default function testHelper(importMetaUrl, {
     };
 
     AuthorizationRequest.prototype.validateFragment = function (response) {
-      const { hash } = parse(response.headers.location);
-      expect(hash).to.exist;
+      const parsedUrl = new URL(response.headers.location);
+      expect(parsedUrl.hash).to.not.equal('');
       response.headers.location = response.headers.location.replace('#', '?'); // eslint-disable-line no-param-reassign
     };
 
@@ -352,7 +355,11 @@ export default function testHelper(importMetaUrl, {
       properties = (!absolute || properties.includes('id_token') || properties.includes('response')) ? properties : [...new Set(properties.concat('iss'))];
 
       return (response) => {
-        const { query } = parse(response.headers.location, true);
+        const parsedUrl = new URL(response.headers.location);
+        const query = {};
+        parsedUrl.searchParams.forEach((value, key) => {
+          query[key] = value;
+        });
         if (absolute) {
           expect(query).to.have.keys(properties);
         } else {
@@ -366,7 +373,8 @@ export default function testHelper(importMetaUrl, {
 
     AuthorizationRequest.prototype.validateResponseParameter = function (parameter, expected) {
       return (response) => {
-        const { query: { [parameter]: value } } = parse(response.headers.location, true);
+        const parsedUrl = new URL(response.headers.location);
+        const value = parsedUrl.searchParams.get(parameter);
         if (expected.exec) {
           expect(value).to.match(expected);
         } else {

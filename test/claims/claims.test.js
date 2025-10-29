@@ -1,7 +1,5 @@
 /* eslint-disable no-underscore-dangle */
 
-import { parse as parseLocation } from 'node:url';
-
 import get from 'lodash/get.js';
 import { expect } from 'chai';
 
@@ -50,7 +48,8 @@ expire.setDate(expire.getDate() + 1);
           .expect(auth.validateFragment)
           .expect(auth.validatePresence(['id_token'], false))
           .expect((response) => {
-            const { query: { id_token } } = parseLocation(response.headers.location, true);
+            const parsedUrl = new URL(response.headers.location);
+            const id_token = parsedUrl.searchParams.get('id_token');
             const { payload } = decodeJWT(id_token);
             expect(payload).to.contain.keys('email', 'middle_name');
             expect(payload).not.to.have.keys('preferred_username', 'picture', 'website');
@@ -90,7 +89,8 @@ expire.setDate(expire.getDate() + 1);
           .expect(auth.validateFragment)
           .expect(auth.validatePresence(['id_token'], false))
           .expect((response) => {
-            const { query: { id_token } } = parseLocation(response.headers.location, true);
+            const parsedUrl = new URL(response.headers.location);
+            const id_token = parsedUrl.searchParams.get('id_token');
             const { payload } = decodeJWT(id_token);
             expect(payload).to.contain.keys('acr');
             Object.defineProperty(this.provider.OIDCContext.prototype, 'acr', descriptor);
@@ -140,7 +140,8 @@ expire.setDate(expire.getDate() + 1);
               return done(err);
             }
 
-            const { query: { access_token } } = parseLocation(response.headers.location, true);
+            const parsedUrl = new URL(response.headers.location);
+            const access_token = parsedUrl.searchParams.get('access_token');
             return this.agent
               .get('/me')
               .auth(access_token, { type: 'bearer' })
@@ -188,13 +189,15 @@ expire.setDate(expire.getDate() + 1);
           .expect(auth.validateFragment)
           .expect(auth.validatePresence(['id_token', 'access_token', 'scope'], false))
           .expect((response) => {
-            const { query: { id_token } } = parseLocation(response.headers.location, true);
+            const parsedUrl = new URL(response.headers.location);
+            const id_token = parsedUrl.searchParams.get('id_token');
             const { payload } = decodeJWT(id_token);
             expect(payload).to.contain.key('email');
             expect(payload).not.to.have.key('given_name');
           })
           .end((err, response) => {
-            const { query: { access_token } } = parseLocation(response.headers.location, true);
+            const parsedUrl = new URL(response.headers.location);
+            const access_token = parsedUrl.searchParams.get('access_token');
             this.agent
               .get('/me')
               .auth(access_token, { type: 'bearer' })

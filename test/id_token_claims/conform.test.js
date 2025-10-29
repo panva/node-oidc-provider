@@ -1,7 +1,5 @@
 /* eslint-disable prefer-const */
 
-import { parse as parseUrl } from 'node:url';
-
 import { expect } from 'chai';
 
 import bootstrap, { skipConsent } from '../test_helper.js';
@@ -55,7 +53,10 @@ describe('configuration conformIdTokenClaims=true', () => {
           })
           .expect(auth.validateClientLocation);
 
-        ({ query: { code, id_token, access_token } } = parseUrl(location, true));
+        const parsedUrl = new URL(location);
+        code = parsedUrl.searchParams.get('code');
+        id_token = parsedUrl.searchParams.get('id_token');
+        access_token = parsedUrl.searchParams.get('access_token');
 
         this.authorization = { id_token };
 
