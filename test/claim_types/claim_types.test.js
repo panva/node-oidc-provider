@@ -1,7 +1,5 @@
 /* eslint-disable no-underscore-dangle */
 
-import { parse as parseLocation } from 'node:url';
-
 import { expect } from 'chai';
 
 import bootstrap from '../test_helper.js';
@@ -44,7 +42,8 @@ describe('distributed and aggregated claims', () => {
       return this.wrap({ auth, route: '/auth', verb: 'get' })
         .expect(auth.validateFragment)
         .expect((response) => {
-          const { query: { id_token } } = parseLocation(response.headers.location, true);
+          const parsedUrl = new URL(response.headers.location);
+          const id_token = parsedUrl.searchParams.get('id_token');
           const { payload } = decodeJWT(id_token);
 
           expect(payload).to.have.property('nickname', 'foobar');
@@ -67,7 +66,8 @@ describe('distributed and aggregated claims', () => {
       return this.wrap({ auth, route: '/auth', verb: 'get' })
         .expect(auth.validateFragment)
         .expect((response) => {
-          const { query: { id_token } } = parseLocation(response.headers.location, true);
+          const parsedUrl = new URL(response.headers.location);
+          const id_token = parsedUrl.searchParams.get('id_token');
           const { payload } = decodeJWT(id_token);
 
           expect(payload).not.to.have.property('_claim_names');
@@ -88,7 +88,8 @@ describe('distributed and aggregated claims', () => {
         .end((error, authorization) => {
           if (error) return done(error);
 
-          const { query: { access_token } } = parseLocation(authorization.headers.location, true);
+          const parsedUrl = new URL(authorization.headers.location);
+          const access_token = parsedUrl.searchParams.get('access_token');
 
           return this.agent.get('/me')
             .auth(access_token, { type: 'bearer' })
@@ -123,7 +124,8 @@ describe('distributed and aggregated claims', () => {
         .end((error, authorization) => {
           if (error) return done(error);
 
-          const { query: { access_token } } = parseLocation(authorization.headers.location, true);
+          const parsedUrl = new URL(authorization.headers.location);
+          const access_token = parsedUrl.searchParams.get('access_token');
 
           return this.agent.get('/me')
             .auth(access_token, { type: 'bearer' })

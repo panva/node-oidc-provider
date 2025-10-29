@@ -1,5 +1,3 @@
-import { parse as parseUrl } from 'node:url';
-
 import sinon from 'sinon';
 import { expect } from 'chai';
 import snakeCase from 'lodash/snakeCase.js';
@@ -96,7 +94,8 @@ describe('requests without the openid scope', () => {
               .expect(auth.validateClientLocation)
               .expect(auth.validatePresence(['code', 'state']))
               .expect((response) => {
-                const { query: { code } } = parseUrl(response.headers.location, true);
+                const parsedUrl = new URL(response.headers.location);
+                const code = parsedUrl.searchParams.get('code');
                 this.code = code;
               });
           });
@@ -179,7 +178,8 @@ describe('requests without the openid scope', () => {
               .expect(auth.validateClientLocation)
               .expect(auth.validatePresence(['code', 'state']))
               .expect((response) => {
-                ({ query: { code } } = parseUrl(response.headers.location, true));
+                const parsedUrl = new URL(response.headers.location);
+                code = parsedUrl.searchParams.get('code');
               });
 
             await this.agent.post('/token')

@@ -1,5 +1,3 @@
-import { parse as parseUrl } from 'node:url';
-
 import { createSandbox } from 'sinon';
 import { expect } from 'chai';
 import timekeeper from 'timekeeper';
@@ -41,7 +39,8 @@ describe('grant_type=authorization_code', () => {
         })
         .expect(303)
         .expect((response) => {
-          const { query: { code } } = parseUrl(response.headers.location, true);
+          const parsedUrl = new URL(response.headers.location);
+          const code = parsedUrl.searchParams.get('code');
           const jti = this.getTokenJti(code);
           this.code = this.TestAdapter.for('AuthorizationCode').syncFind(jti);
           this.ac = code;
@@ -311,7 +310,8 @@ describe('grant_type=authorization_code', () => {
         })
         .expect(303)
         .expect((response) => {
-          const { query: { code } } = parseUrl(response.headers.location, true);
+          const parsedUrl = new URL(response.headers.location);
+          const code = parsedUrl.searchParams.get('code');
           this.ac = code;
         });
     });
@@ -355,7 +355,8 @@ describe('grant_type=authorization_code', () => {
         })
         .expect(303)
         .expect((response) => {
-          const { query: { code } } = parseUrl(response.headers.location, true);
+          const parsedUrl = new URL(response.headers.location);
+          const code = parsedUrl.searchParams.get('code');
           const jti = this.getTokenJti(code);
           this.code = this.TestAdapter.for('AuthorizationCode').syncFind(jti);
           this.ac = code;

@@ -1,5 +1,4 @@
 import { strict as assert } from 'node:assert';
-import { parse as parseUrl } from 'node:url';
 
 import { createSandbox } from 'sinon';
 import base64url from 'base64url';
@@ -45,7 +44,8 @@ describe('grant_type=refresh_token', () => {
           return done(err);
         }
 
-        const { query: { code } } = parseUrl(authResponse.headers.location, true);
+        const parsedUrl = new URL(authResponse.headers.location);
+        const code = parsedUrl.searchParams.get('code');
 
         return this.agent.post(route)
           .auth('client', 'secret')
