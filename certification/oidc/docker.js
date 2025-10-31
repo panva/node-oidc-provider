@@ -16,7 +16,7 @@ import configuration from './configuration.js';
 // TODO: revert after https://gitlab.com/openid/conformance-suite/-/issues/1598 is fixed
 configuration.jwks.keys = configuration.jwks.keys.filter((jwk) => jwk.kty !== 'AKP');
 
-const selfsigned = generate(null, { keySize: 2048 });
+const selfsigned = generate();
 const { PORT = 3000, ISSUER = `http://localhost:${PORT}` } = process.env;
 configuration.findAccount = Account.findAccount;
 

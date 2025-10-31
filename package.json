@@ -86,7 +86,7 @@
     "mocha": "^11.7.4",
     "moment": "^2.30.1",
     "openid-client": "^6.8.1",
-    "selfsigned": "^3.0.1",
+    "selfsigned": "^4.0.0",
     "sinon": "^21.0.0",
     "supertest": "^7.1.4",
     "timekeeper": "^2.3.1",
