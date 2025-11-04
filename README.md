@@ -39,6 +39,7 @@ _Note that not all features are enabled by default, check the configuration sect
 - [`RFC9701` - JWT Response for OAuth Token Introspection][jwt-introspection]
 - [FAPI 1.0 Security Profile - Part 2: Advanced (`FAPI 1.0`)][fapi]
 - [FAPI 2.0 Security Profile (`FAPI 2.0`)][fapi2sp]
+- [FAPI 2.0 Message Signing (`FAPI 2.0`)][fapi2ms]
 - [JWT Secured Authorization Response Mode for OAuth 2.0 (`JARM`)][jarm]
 - [OIDC Client Initiated Backchannel Authentication Flow (`CIBA`)][ciba]
 
@@ -50,7 +51,6 @@ Supported Access Token formats:
 The following draft specifications are implemented by oidc-provider:
 
 - [Financial-grade API: Client Initiated Backchannel Authentication Profile (`FAPI-CIBA`) - Implementers Draft 01][fapi-ciba]
-- [FAPI 2.0 Message Signing (`FAPI 2.0`) - Implementers Draft 01][fapi2ms-id1]
 - [OIDC Relying Party Metadata Choices 1.0 - Implementers Draft 01][rp-metadata-choices]
 - [OAuth 2.0 Attestation-Based Client Authentication - Draft 06][attestation-client-auth]
 
@@ -155,7 +155,7 @@ actions and i.e. emit metrics that react to specific triggers. See the list of a
 [mtls]: https://www.rfc-editor.org/rfc/rfc8705.html
 [dpop]: https://www.rfc-editor.org/rfc/rfc9449.html
 [resource-indicators]: https://www.rfc-editor.org/rfc/rfc8707.html
-[jarm]: https://openid.net/specs/oauth-v2-jarm-final.html
+[jarm]: https://openid.net/specs/oauth-v2-jarm-errata1.html
 [jwt-at]: https://www.rfc-editor.org/rfc/rfc9068.html
 [support-sponsor]: https://github.com/sponsors/panva
 [par]: https://www.rfc-editor.org/rfc/rfc9126.html
@@ -165,7 +165,7 @@ actions and i.e. emit metrics that react to specific triggers. See the list of a
 [ciba]: https://openid.net/specs/openid-client-initiated-backchannel-authentication-core-1_0-final.html
 [fapi-ciba]: https://openid.net/specs/openid-financial-api-ciba-ID1.html
 [fapi2sp]: https://openid.net/specs/fapi-security-profile-2_0-final.html
-[fapi2ms-id1]: https://openid.net/specs/fapi-2_0-message-signing-ID1.html
+[fapi2ms]: https://openid.net/specs/fapi-message-signing-2_0-final.html
 [Security Policy]: https://github.com/panva/node-oidc-provider/security/policy
 [rp-metadata-choices]: https://openid.net/specs/openid-connect-rp-metadata-choices-1_0-ID1.html
 [rfc8414]: https://www.rfc-editor.org/rfc/rfc8414.html

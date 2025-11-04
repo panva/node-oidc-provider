@@ -1383,7 +1383,7 @@ _**default value**_:
 
 ### features.jwtResponseModes
 
-[JWT Secured Authorization Response Mode (`JARM`)](https://openid.net/specs/oauth-v2-jarm-final.html)  
+[JWT Secured Authorization Response Mode (`JARM`)](https://openid.net/specs/oauth-v2-jarm-errata1.html)  
 
 Specifies whether JWT Secured Authorization Response Mode capabilities shall be enabled. When enabled, the authorization server shall support encoding authorization responses as JSON Web Tokens, providing cryptographic protection and integrity assurance for authorization response parameters.  
 
