@@ -2,6 +2,18 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [9.6.0](https://github.com/panva/node-oidc-provider/compare/v9.5.2...v9.6.0) (2025-12-07)
+
+
+### Features
+
+* add RAR support to CIBA flows ([0fc5893](https://github.com/panva/node-oidc-provider/commit/0fc58937c4d1d1f80b0f36a07f8d63f85bd474cb)), closes [#1358](https://github.com/panva/node-oidc-provider/issues/1358)
+
+
+### Documentation
+
+* update spec links ([019fa43](https://github.com/panva/node-oidc-provider/commit/019fa43f91c9687b1e7435acad85cc22062c91d2))
+
 ## [9.5.2](https://github.com/panva/node-oidc-provider/compare/v9.5.1...v9.5.2) (2025-10-24)
 
 
