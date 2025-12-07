@@ -2051,6 +2051,7 @@ _**default value**_:
   ack: undefined,
   enabled: false,
   rarForAuthorizationCode: [Function: rarForAuthorizationCode], // see expanded details below
+  rarForBackchannelResponse: [Function: rarForBackchannelResponse], // see expanded details below
   rarForCodeResponse: [Function: rarForCodeResponse], // see expanded details below
   rarForIntrospectionResponse: [Function: rarForIntrospectionResponse], // see expanded details below
   rarForRefreshTokenResponse: [Function: rarForRefreshTokenResponse], // see expanded details below
@@ -2080,9 +2081,30 @@ rarForAuthorizationCode(ctx) {
 }
 ```
 
+#### rarForBackchannelResponse
+
+Specifies a helper function that shall be invoked to transform the requested and granted Rich Authorization Request details for inclusion in the Access Token Response as authorization_details and assignment to the issued Access Token during the ciba grant. This function enables resource-specific filtering and transformation of authorization details according to token endpoint policy. The function shall return an array of authorization details or undefined.  
+
+
+_**default value**_:
+```js
+rarForBackchannelResponse(ctx, resourceServer) {
+  // decision points:
+  // - ctx.oidc.client
+  // - resourceServer
+  // - ctx.oidc.entities.BackchannelAuthenticationRequest.rar (the rar applied during await provider.backchannelResult())
+  // - ctx.oidc.entities.BackchannelAuthenticationRequest.params.authorization_details (the original backchannel authentication request authorization_details object)
+  // - ctx.oidc.params.authorization_details (unparsed authorization_details from the body params in the Access Token Request)
+  // - ctx.oidc.grant.rar (authorization_details granted)
+  throw new Error(
+    'features.richAuthorizationRequests.rarForBackchannelResponse not implemented',
+  );
+}
+```
+
 #### rarForCodeResponse
 
-Specifies a helper function that shall be invoked to transform the requested and granted Rich Authorization Request details for inclusion in the Access Token Response as authorization_details and assignment to the issued Access Token. This function enables resource-specific filtering and transformation of authorization details according to token endpoint policy. The function shall return an array of authorization details or undefined.  
+Specifies a helper function that shall be invoked to transform the requested and granted Rich Authorization Request details for inclusion in the Access Token Response as authorization_details and assignment to the issued Access Token during the authorization code grant. This function enables resource-specific filtering and transformation of authorization details according to token endpoint policy. The function shall return an array of authorization details or undefined.  
 
 
 _**default value**_:
