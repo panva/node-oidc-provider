@@ -174,9 +174,9 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
       - name: Setup node
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@39370e3970a6d050c480ffad4ff0ed4d3fdee5af # v4.1.0
         with:
           node-version: lts/*
           cache: 'npm'
@@ -205,7 +205,7 @@ jobs:
           NODE_OPTIONS: --tls-cipher-list="ECDHE-RSA-AES128-GCM-SHA256 ECDHE-RSA-AES256-GCM-SHA384 ECDHE-ECDSA-AES128-GCM-SHA256 ECDHE-ECDSA-AES256-GCM-SHA384"
           NODE_TLS_REJECT_UNAUTHORIZED: 0
       - name: Load Cached Conformance Suite Build
-        uses: actions/cache@v4
+        uses: actions/cache@1bd1e32a3bdc45362d1e726936510720a7c30a57 # v4.2.0
         id: cache
         with:
           path: ./conformance-suite
@@ -232,7 +232,7 @@ jobs:
         run: |
           zip -ur ${{ env.EXPORT_FILE }} server.log
       - name: Upload test artifacts
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@6f51ac03b9356f520e9adb1b1b7802705f340c2b # v4.5.0
         with:
           path: export-*.zip
           name: certification html results idx(${{ strategy.job-index }})
