@@ -4,7 +4,7 @@ import * as querystring from 'node:querystring';
 import { inspect } from 'node:util';
 
 import isEmpty from 'lodash/isEmpty.js';
-import { urlencoded } from 'express'; // eslint-disable-line import/no-unresolved
+import { urlencoded } from 'express';
 
 import Account from '../support/account.js';
 import { errors } from '../../lib/index.js'; // from 'oidc-provider';

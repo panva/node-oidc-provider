@@ -4,7 +4,7 @@ import * as path from 'node:path';
 import * as url from 'node:url';
 
 import { dirname } from 'desm';
-import express from 'express'; // eslint-disable-line import/no-unresolved
+import express from 'express';
 import helmet from 'helmet';
 
 import Provider from '../lib/index.js'; // from 'oidc-provider';
