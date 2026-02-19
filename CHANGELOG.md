@@ -2,6 +2,20 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [9.6.1](https://github.com/panva/node-oidc-provider/compare/v9.6.0...v9.6.1) (2026-02-19)
+
+
+### Refactor
+
+* extract NON_REJECTABLE_CLAIMS into shared constant ([2b7c025](https://github.com/panva/node-oidc-provider/commit/2b7c025b0e295ccb433928988b1e994a26d15ae2))
+* extract shared grant handler helpers to reduce duplication ([f5eee9e](https://github.com/panva/node-oidc-provider/commit/f5eee9e0e5c11a80053401d3edebbdfe0078c6eb))
+* extract shared token finder for introspection and revocation ([666c2b0](https://github.com/panva/node-oidc-provider/commit/666c2b09a394cdd154c6e40eb8ae7f1920403e46))
+
+
+### Fixes
+
+* required PAR should not affect CIBA and DAG ([8167bd0](https://github.com/panva/node-oidc-provider/commit/8167bd0277556f374247e26eaeae14e5a40000e7))
+
 ## [9.6.0](https://github.com/panva/node-oidc-provider/compare/v9.5.2...v9.6.0) (2025-12-07)
 
 
