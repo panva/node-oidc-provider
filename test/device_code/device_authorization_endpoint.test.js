@@ -149,6 +149,26 @@ describe('device_authorization_endpoint', () => {
     expect(dc.params).not.to.have.property('response_mode');
   });
 
+  it('does not require PAR for clients with require_pushed_authorization_requests', function () {
+    return this.agent.post(route)
+      .send({
+        client_id: 'client-par-required',
+        scope: 'openid',
+      })
+      .type('form')
+      .expect(200)
+      .expect('content-type', /application\/json/)
+      .expect(({ body }) => {
+        expect(body).to.have.keys([
+          'device_code',
+          'user_code',
+          'verification_uri',
+          'verification_uri_complete',
+          'expires_in',
+        ]);
+      });
+  });
+
   it('handles regular client auth', function () {
     return this.agent.post(route)
       .auth('client-basic-auth', 'secret')
