@@ -168,6 +168,21 @@ describe('features.ciba', () => {
         });
       });
 
+      it('does not require PAR for clients with require_pushed_authorization_requests', async function () {
+        return this.agent.post(route)
+          .send({
+            scope: 'openid',
+            login_hint: 'accountId',
+            client_id: 'client-par-required',
+          })
+          .type('form')
+          .expect(200)
+          .expect('content-type', /application\/json/)
+          .expect((response) => {
+            expect(response.body).to.have.keys('expires_in', 'auth_req_id');
+          });
+      });
+
       it('requested_expiry', async function () {
         await this.agent.post(route)
           .send({
