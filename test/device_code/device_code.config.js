@@ -9,7 +9,7 @@ merge(config.features, {
   backchannelLogout: { enabled: true },
   claimsParameter: { enabled: true },
   rpInitiatedLogout: { enabled: false },
-  pushedAuthorizationRequests: { enabled: false },
+  pushedAuthorizationRequests: { enabled: true },
 });
 
 config.extraParams = {
