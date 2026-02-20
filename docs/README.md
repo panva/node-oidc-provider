@@ -3164,17 +3164,17 @@ new Prompt(
 
 The default interaction policy consists of two available prompts, login and consent <br/><br/>
  - `login` does the following checks:
- - no_session - checks that there's an established session, an authenticated end-user
- - max_age - processes the max_age parameter (when the session's auth_time is too old it requires login)
- - id_token_hint - processes the id_token_hint parameter (when the end-user sub differs it requires login)
- - claims_id_token_sub_value - processes the claims parameter `sub` (when the `claims` parameter requested sub differs it requires login)
- - essential_acrs - processes the claims parameter `acr` (when the current acr is not amongst the `claims` parameter essential `acr.values` it requires login)
- - essential_acr - processes the claims parameter `acr` (when the current acr is not equal to the `claims` parameter essential `acr.value` it requires login) <br/><br/>
+   - no_session - checks that there's an established session, an authenticated end-user
+   - max_age - processes the max_age parameter (when the session's auth_time is too old it requires login)
+   - id_token_hint - processes the id_token_hint parameter (when the end-user sub differs it requires login)
+   - claims_id_token_sub_value - processes the claims parameter `sub` (when the `claims` parameter requested sub differs it requires login)
+   - essential_acrs - processes the claims parameter `acr` (when the current acr is not amongst the `claims` parameter essential `acr.values` it requires login)
+   - essential_acr - processes the claims parameter `acr` (when the current acr is not equal to the `claims` parameter essential `acr.value` it requires login) <br/><br/>
  - `consent` does the following checks:
- - native_client_prompt - native clients always require re-consent
- - op_scopes_missing - requires consent when the requested scope includes scope values previously not requested
- - op_claims_missing - requires consent when the requested claims parameter includes claims previously not requested
- - rs_scopes_missing - requires consent when the requested resource indicated scope values include scopes previously not requested <br/><br/> These checks are the best practice for various privacy and security reasons.  
+   - native_client_prompt - native clients always require re-consent
+   - op_scopes_missing - requires consent when the requested scope includes scope values previously not requested
+   - op_claims_missing - requires consent when the requested claims parameter includes claims previously not requested
+   - rs_scopes_missing - requires consent when the requested resource indicated scope values include scopes previously not requested <br/><br/> These checks are the best practice for various privacy and security reasons.  
 
 
 </details>

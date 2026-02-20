@@ -50,15 +50,41 @@ class Block {
     if (!this[this.active]) {
       this[this.active] = [buffer];
     } else {
-      while (buffer.indexOf('*') === 0 || buffer.indexOf(' ') === 0) {
+      // Strip leading * characters
+      while (buffer.length && buffer[0] === 0x2A) {
         buffer = buffer.slice(1);
+      }
+
+      // Count leading spaces
+      let spaceCount = 0;
+      while (buffer.length > spaceCount && buffer[spaceCount] === 0x20) {
+        spaceCount += 1;
+      }
+
+      // Check if this is a list item (- or 1. after spaces)
+      const afterSpaces = buffer.slice(spaceCount).toString();
+      const isListItem = afterSpaces.startsWith('-') || /^\d+\./.test(afterSpaces);
+
+      if (isListItem) {
+        // Track base indentation per section to preserve sub-list indentation
+        const bliKey = `_baseListIndent_${this.active}`;
+        if (this[bliKey] === undefined) {
+          this[bliKey] = spaceCount;
+        }
+        const relativeIndent = Math.max(0, spaceCount - this[bliKey]);
+        buffer = Buffer.from(`${' '.repeat(relativeIndent)}${afterSpaces}`);
+      } else {
+        // Strip all leading spaces for non-list content
+        buffer = buffer.slice(spaceCount);
       }
 
       if (buffer.indexOf('@indent@') === 0) {
         buffer = buffer.slice(10);
       }
 
-      if (buffer.indexOf('-') === 0 || /^\d+\./.exec(buffer) || buffer.indexOf('```') !== -1 || buffer.indexOf('|') === 0) {
+      const bufStr = buffer.toString();
+      const trimmedBufStr = bufStr.trimStart();
+      if (trimmedBufStr.startsWith('-') || /^\d+\./.test(trimmedBufStr) || bufStr.includes('```') || trimmedBufStr.startsWith('|')) {
         const last = this[this.active].pop();
         if (last.toString().endsWith('\n')) {
           this[this.active].push(last);
