@@ -511,7 +511,7 @@ location / {
 - [revokeGrantPolicy](#revokegrantpolicy) - Grant Revocation Policy
 - [rotateRefreshToken](#rotaterefreshtoken) - Refresh Token Rotation Policy
 - [routes](#routes) - Endpoint URL Paths
-- [scopes](#scopes) - Additional OAuth 2.0 Scope Values
+- [scopes](#scopes) - Supported OAuth 2.0 Scope Values
 - [sectorIdentifierUriValidate](#sectoridentifierurivalidate) - Sector Identifier URI Validation
 - [subjectTypes](#subjecttypes) - Subject Identifier Types
 
@@ -569,7 +569,7 @@ _**default value**_:
 
 Cross-Origin Resource Sharing (CORS)  
 
-Specifies a function that determines whether Cross-Origin Resource Sharing (CORS) requests shall be permitted based on the requesting client. This function is invoked for each CORS preflight and actual request to evaluate the client's authorization to access the authorization server from the specified origin. 
+Specifies a function that determines whether Cross-Origin Resource Sharing (CORS) requests shall be permitted based on the requesting client. This function is invoked for each actual CORS request to evaluate the client's authorization to access the authorization server from the specified origin. The function receives three arguments: `ctx` (the Koa request context), `origin` (the requesting origin string), and `client` (the resolved Client instance). It must return a boolean (or a Promise resolving to one). 
 
   
 
@@ -591,7 +591,7 @@ function clientBasedCORS(ctx, origin, client) {
 
 Statically Configured Clients  
 
-An array of client metadata objects representing statically configured OAuth 2.0 and OpenID Connect clients. These clients are persistent, do not expire, and remain available throughout the authorization server's lifetime. For dynamic client discovery, the authorization server will invoke the adapter's `find` method when encountering unregistered client identifiers. 
+An array of client metadata objects representing statically configured OAuth 2.0 and OpenID Connect clients. These clients are persistent, do not expire, and remain available throughout the authorization server's lifetime. For dynamic client resolution, the authorization server will invoke the adapter's `find` method when encountering unregistered client identifiers. 
 
 To restrict the authorization server to only statically configured clients and disable dynamic registration, configure the adapter to return falsy values for client lookup operations (e.g., `return Promise.resolve()`). 
 
@@ -652,7 +652,7 @@ new oidc.Provider('http://localhost:3000', {
 });
 // No more NOTICE, at this point if the experimental was updated and contained no breaking
 // changes, you're good to go, still no NOTICE, your code is safe to run.
-// Now lets assume you upgrade oidc-provider version and it includes a breaking change in
+// Now let's assume you upgrade oidc-provider version and it includes a breaking change in
 // this experimental feature
 new oidc.Provider('http://localhost:3000', {
   features: {
@@ -862,7 +862,7 @@ async function useGrantedResource(ctx, model) {
 
 [OIDC Back-Channel Logout 1.0](https://openid.net/specs/openid-connect-backchannel-1_0-final.html)  
 
-Specifies whether Back-Channel Logout capabilities shall be enabled. When enabled, the authorization server shall support propagating end-user logouts initiated by relying parties to clients that were involved throughout the lifetime of the terminated session.  
+Specifies whether Back-Channel Logout capabilities shall be enabled. When enabled, the authorization server shall support propagating end-user logout events to clients that were involved throughout the lifetime of the terminated session.  
 
 
 _**default value**_:
@@ -878,7 +878,7 @@ _**default value**_:
 
 [OIDC Client Initiated Backchannel Authentication Flow (CIBA)](https://openid.net/specs/openid-client-initiated-backchannel-authentication-core-1_0-final.html)  
 
-Enables Core `CIBA` Flow, when combined with `features.fapi` and `features.requestObjects.enabled` enables [Financial-grade API: Client Initiated Backchannel Authentication Profile - Implementers Draft 01](https://openid.net/specs/openid-financial-api-ciba-ID1.html) as well. 
+Specifies whether Core `CIBA` Flow shall be enabled. When combined with `features.fapi` and `features.requestObjects` this also enables [Financial-grade API: Client Initiated Backchannel Authentication Profile - Implementers Draft 01](https://openid.net/specs/openid-financial-api-ciba-ID1.html) as well. 
 
   
 
@@ -1314,7 +1314,7 @@ async function userCodeInputSource(ctx, form, out, err) {
 
 [RFC9449](https://www.rfc-editor.org/rfc/rfc9449.html) - OAuth 2.0 Demonstration of Proof-of-Possession at the Application Layer (DPoP)  
 
-Enables sender-constraining of OAuth 2.0 tokens through application-level proof-of-possession mechanisms.  
+Specifies whether sender-constraining of OAuth 2.0 tokens through application-level proof-of-possession mechanisms shall be enabled.  
 
 
 _**default value**_:
@@ -1342,7 +1342,7 @@ false
 
 #### nonceSecret
 
-Specifies the cryptographic secret value used for generating server-provided DPoP nonces. When provided, this value MUST be a 32-byte length Buffer instance to ensure sufficient entropy for secure nonce generation.  
+Specifies the cryptographic secret value used for generating server-provided DPoP nonces. When provided, this value MUST be a 32-byte Buffer instance to ensure sufficient entropy for secure nonce generation.  
 
 
 _**default value**_:
@@ -1517,7 +1517,7 @@ _**default value**_:
 
 [RFC8705](https://www.rfc-editor.org/rfc/rfc8705.html) - OAuth 2.0 Mutual TLS Client Authentication and Certificate Bound Access Tokens (MTLS)  
 
-Specifies whether Mutual TLS capabilities shall be enabled. The authorization server supports three distinct features that require separate configuration settings within this feature's configuration object. Implementations MUST provide deployment-specific helper functions for certificate validation and processing operations. 
+Specifies whether Mutual TLS capabilities shall be enabled. The authorization server supports three distinct capabilities that require separate configuration settings within this feature's configuration object. Implementations MUST provide deployment-specific helper functions for certificate validation and processing operations. 
 
   
 
@@ -1698,7 +1698,7 @@ _**default value**_:
 ```js
 false
 ```
-<a id="initial-access-token-to-add-an-adapter-backed-initial-access-token-and-retrive-its-value"></a><details><summary>Example: (Click to expand) To add an adapter backed initial access token and retrive its value.</summary><br>
+<a id="initial-access-token-to-add-an-adapter-backed-initial-access-token-and-retrieve-its-value"></a><details><summary>Example: (Click to expand) To add an adapter backed initial access token and retrieve its value.</summary><br>
 
 ```js
 new (provider.InitialAccessToken)({}).save().then(console.log);
@@ -1934,7 +1934,7 @@ false
 
 [RFC7009](https://www.rfc-editor.org/rfc/rfc7009.html) - OAuth 2.0 Token Revocation  
 
-Specifies whether Token Revocation capabilities shall be enabled. When enabled, the authorization server shall expose a token revocation endpoint that allows authorized clients and resource servers to notify the authorization server that a particular token is no longer needed. This feature supports revocation of the following token types:
+Specifies whether Token Revocation capabilities shall be enabled. When enabled, the authorization server shall expose a token revocation endpoint that allows authorized clients to notify the authorization server that a particular token is no longer needed. This feature supports revocation of the following token types:
 - Opaque access tokens
 - Refresh tokens 
 
@@ -2123,7 +2123,7 @@ async function assertAttestationJwtAndPop(ctx, attestation, pop, client) {
 
 #### challengeSecret
 
-Specifies the cryptographic secret value used for generating server-provided challenges. This value MUST be a 32-byte length Buffer instance to ensure sufficient entropy for secure challenge generation.  
+Specifies the cryptographic secret value used for generating server-provided challenges. This value MUST be a 32-byte Buffer instance to ensure sufficient entropy for secure challenge generation.  
 
 
 _**default value**_:
@@ -2363,7 +2363,7 @@ const configuration = {
         tax_data: {
           validate(ctx, detail, client) {
             const { success: valid, error } =
-              TaxData.parse(detail)
+              TaxData.safeParse(detail)
             if (!valid) {
               throw new InvalidAuthorizationDetails()
             }
@@ -2431,7 +2431,7 @@ Specifies whether Web Message Response Mode capabilities shall be enabled. When 
 
   
 
-_**recommendation**_: Although a general advise to use a `helmet` (e.g. for [express](https://www.npmjs.com/package/helmet), [koa](https://www.npmjs.com/package/koa-helmet)) it is especially advised for your interaction views routes if Web Message Response Mode is enabled in your deployment. You will have to experiment with removal of the Cross-Origin-Embedder-Policy and Cross-Origin-Opener-Policy headers at various endpoints throughout the authorization request end-user journey to finalize this feature.  
+_**recommendation**_: Although a general advice to use a `helmet` (e.g. for [express](https://www.npmjs.com/package/helmet), [koa](https://www.npmjs.com/package/koa-helmet)) it is especially advised for your interaction views routes if Web Message Response Mode is enabled in your deployment. You will have to experiment with removal of the Cross-Origin-Embedder-Policy and Cross-Origin-Opener-Policy headers at various endpoints throughout the authorization request end-user journey to finalize this feature.  
 
 
 _**default value**_:
@@ -2483,7 +2483,7 @@ async function findAccount(ctx, sub, token) {
 
 End-User Interaction Policy  
 
-Specifies the configuration for interaction policy and end-user redirection that shall be applied to determine that user interaction is required during the authorization process. This configuration enables customization of authentication and consent flows according to deployment-specific requirements. 
+Specifies the configuration for interaction policy and end-user redirection that shall be applied to determine when user interaction is required during the authorization process. This configuration enables customization of authentication and consent flows according to deployment-specific requirements. 
 
   
 
@@ -2499,7 +2499,7 @@ Specifies the JSON Web Key Set that shall be used by the authorization server fo
 Supported key types include: 
 
 - RSA
-- OKP (Ed25519 and X25519 sub types)
+- OKP (Ed25519 and X25519 subtypes)
 - EC (P-256, P-384, and P-521 curves) 
 
   
@@ -2524,7 +2524,7 @@ _**recommendation**_: The following action order is recommended when rotating si
 
 [RFC7636](https://www.rfc-editor.org/rfc/rfc7636.html) - Proof Key for Code Exchange (PKCE)  
 
-`PKCE` configuration such as policy check on the required use of `PKCE`. 
+Specifies the PKCE configuration, such as a policy check on the required use of PKCE. 
 
   
 
@@ -2595,8 +2595,8 @@ Configure `ttl` for a given token type with a function like so, this must return
 {
   ttl: {
     AccessToken(ctx, token, client) {
-      // return a Number (in seconds) for the given token (first argument), the associated client is
-      // passed as a second argument
+      // return a Number (in seconds) for the given token (second argument), the associated client is
+      // passed as a third argument
       // Tip: if the values are entirely client based memoize the results
       return resolveTTLfor(token, client);
     },
@@ -2764,7 +2764,7 @@ To change the default client response_types, configure `clientDefaults` to be an
 
 Clock Skew Tolerance  
 
-Specifies the maximum acceptable clock skew tolerance (in seconds) for validating time-sensitive operations, including JWT validation for Request Objects, DPoP Proofs, and other timestamp-based security mechanisms. 
+Specifies the maximum acceptable clock skew tolerance (in seconds) for validating time-sensitive operations, including JWT validation for Request Objects and other timestamp-based security mechanisms. 
 
   
 
@@ -2855,7 +2855,9 @@ _**default value**_:
 
 Extending the Discovery Document  
 
-Pass additional properties to this object to extend the discovery document.  
+Pass additional properties to this object to extend the discovery document. 
+
+Note: Standard discovery properties derived from the provider's configuration cannot be overridden through this object.  
 
 
 _**default value**_:
@@ -3626,10 +3628,10 @@ function fetch(url, options) {
   return globalThis.fetch(url, options);
 }
 ```
-<a id="fetch-to-change-the-request's-timeout"></a><details><summary>Example: (Click to expand) To change the request's timeout.</summary><br>
+<a id="fetch-to-change-the-requests-timeout"></a><details><summary>Example: (Click to expand) To change the requests' timeout.</summary><br>
 
 
-To change all request's timeout configure the fetch as a function like so:
+To change all requests' timeout configure the fetch as a function like so:
   
 
 ```js
@@ -3682,7 +3684,7 @@ _**default value**_:
   jwt: undefined
 }
 ```
-<a id="formats-customizers-to-push-additional-headers-and-payload-claims-to-a-jwt-format-access-token"></a><details><summary>Example: (Click to expand) To push additional headers and payload claims to a `jwt` format Access Token.</summary><br>
+<a id="formats-customizers-to-add-additional-headers-and-payload-claims-to-a-jwt-format-access-token"></a><details><summary>Example: (Click to expand) To add additional headers and payload claims to a `jwt` format Access Token.</summary><br>
 
 ```js
 {
@@ -3985,7 +3987,7 @@ The default interaction policy consists of two available prompts, login and cons
 <a id="interactions-policy-disabling-default-consent-checks"></a><details><summary>Example: (Click to expand) disabling default consent checks.</summary><br>
 
 
-You may be required to skip (silently accept) some of the consent checks, while it is discouraged there are valid reasons to do that, for instance in some first-party scenarios or going with pre-existing, previously granted, consents. To simply silenty "accept" first-party/resource indicated scopes or pre-agreed-upon claims use the `loadExistingGrant` configuration helper function, in there you may just instantiate (and save!) a grant for the current clientId and accountId values.  
+You may be required to skip (silently accept) some of the consent checks, while it is discouraged there are valid reasons to do that, for instance in some first-party scenarios or going with pre-existing, previously granted, consents. To simply silently "accept" first-party/resource indicated scopes or pre-agreed-upon claims use the `loadExistingGrant` configuration helper function, in there you may just instantiate (and save!) a grant for the current clientId and accountId values.  
 
 
 </details>
@@ -4291,7 +4293,7 @@ _**default value**_:
 
 ### scopes
 
-Additional OAuth 2.0 Scope Values  
+Supported OAuth 2.0 Scope Values  
 
 Specifies additional OAuth 2.0 scope values that this authorization server shall support and advertise in its discovery document. Resource Server-specific scopes shall be configured via the `features.resourceIndicators` mechanism.  
 
