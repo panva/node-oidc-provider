@@ -95,8 +95,8 @@ class Block {
 
       if (buffer.length) {
         this[this.active].push(buffer);
-      } else if (this.active === 'description') {
-        this[this.active].push(Buffer.from('  \n'));
+      } else if (this.active === 'description' || this.active.startsWith('recommendation')) {
+        this[this.active].push(Buffer.from('\n\n'));
       }
     }
   }
@@ -116,6 +116,18 @@ let mid = Buffer.from('');
 
 function append(what) {
   mid = Buffer.concat([mid, Buffer.from(what)]);
+}
+
+function smartJoin(parts) {
+  let result = '';
+  for (let i = 0; i < parts.length; i++) {
+    const part = parts[i].toString();
+    if (i > 0 && !result.endsWith('\n')) {
+      result += ' ';
+    }
+    result += part;
+  }
+  return result;
 }
 
 function expand(what) {
@@ -297,7 +309,7 @@ try {
     }
 
     if (section.description) {
-      append(`${capitalizeSentences(section.description.join(' '))}  \n\n`);
+      append(`${capitalizeSentences(smartJoin(section.description))}  \n\n`);
     }
 
     if (section.see) {
@@ -312,7 +324,7 @@ try {
     }
 
     Object.keys(section).filter((x) => x.startsWith('recommendation')).forEach((prop) => {
-      append(`_**recommendation**_: ${section[prop].join(' ')}  \n\n`);
+      append(`_**recommendation**_: ${smartJoin(section[prop])}  \n\n`);
     });
 
     if (!('@nodefault' in section)) {
@@ -411,7 +423,7 @@ try {
           lines.forEach(append);
         } else {
           const lines = parts.splice(0, until === -1 ? parts.length : until);
-          append(`\n${capitalizeSentences(lines.join(' '))}  \n\n`);
+          append(`\n${capitalizeSentences(smartJoin(lines))}  \n\n`);
         }
       }
 

@@ -515,8 +515,10 @@ location / {
 <!-- START CONF OPTIONS -->
 ### adapter
 
-Specifies the storage adapter implementation for persisting authorization server state. The default implementation provides a basic in-memory adapter suitable for development and testing purposes only. When this process is restarted, all stored information will be lost. Production deployments MUST provide a custom adapter implementation that persists data to external storage (e.g., database, Redis, etc.).   
- The adapter constructor will be instantiated for each model type when first accessed.   
+Specifies the storage adapter implementation for persisting authorization server state. The default implementation provides a basic in-memory adapter suitable for development and testing purposes only. When this process is restarted, all stored information will be lost. Production deployments MUST provide a custom adapter implementation that persists data to external storage (e.g., database, Redis, etc.). 
+
+The adapter constructor will be instantiated for each model type when first accessed. 
+
   
 
 See:
@@ -531,9 +533,12 @@ See:
 
 ### clients
 
-An array of client metadata objects representing statically configured OAuth 2.0 and OpenID Connect clients. These clients are persistent, do not expire, and remain available throughout the authorization server's lifetime. For dynamic client discovery, the authorization server will invoke the adapter's `find` method when encountering unregistered client identifiers.   
- To restrict the authorization server to only statically configured clients and disable dynamic registration, configure the adapter to return falsy values for client lookup operations (e.g., `return Promise.resolve()`).   
- Each client's metadata shall be validated according to the specifications in which the respective properties are defined.   
+An array of client metadata objects representing statically configured OAuth 2.0 and OpenID Connect clients. These clients are persistent, do not expire, and remain available throughout the authorization server's lifetime. For dynamic client discovery, the authorization server will invoke the adapter's `find` method when encountering unregistered client identifiers. 
+
+To restrict the authorization server to only statically configured clients and disable dynamic registration, configure the adapter to return falsy values for client lookup operations (e.g., `return Promise.resolve()`). 
+
+Each client's metadata shall be validated according to the specifications in which the respective properties are defined. 
+
   
 
 
@@ -544,7 +549,7 @@ _**default value**_:
 <a id="clients-available-metadata"></a><details><summary>Example: (Click to expand) Available Metadata.</summary><br>
 
 
-application_type, client_id, client_name, client_secret, client_uri, contacts, default_acr_values, default_max_age, grant_types, id_token_signed_response_alg, initiate_login_uri, jwks, jwks_uri, logo_uri, policy_uri, post_logout_redirect_uris, redirect_uris, require_auth_time, response_types, response_modes, scope, sector_identifier_uri, subject_type, token_endpoint_auth_method, tos_uri, userinfo_signed_response_alg <br/><br/>The following metadata is available but may not be recognized depending on this authorization server's configuration.<br/><br/> authorization_encrypted_response_alg, authorization_encrypted_response_enc, authorization_signed_response_alg, backchannel_logout_session_required, backchannel_logout_uri, id_token_encrypted_response_alg, id_token_encrypted_response_enc, introspection_encrypted_response_alg, introspection_encrypted_response_enc, introspection_signed_response_alg, request_object_encryption_alg, request_object_encryption_enc, request_object_signing_alg, tls_client_auth_san_dns, tls_client_auth_san_email, tls_client_auth_san_ip, tls_client_auth_san_uri, tls_client_auth_subject_dn, tls_client_certificate_bound_access_tokens, use_mtls_endpoint_aliases, token_endpoint_auth_signing_alg, userinfo_encrypted_response_alg, userinfo_encrypted_response_enc  
+application_type, client_id, client_name, client_secret, client_uri, contacts, default_acr_values, default_max_age, grant_types, id_token_signed_response_alg, initiate_login_uri, jwks, jwks_uri, logo_uri, policy_uri, redirect_uris, require_auth_time, response_types, response_modes, scope, sector_identifier_uri, subject_type, token_endpoint_auth_method, tos_uri The following metadata is available but may not be recognized depending on this authorization server's configuration. Authorization_details_types, authorization_encrypted_response_alg, authorization_encrypted_response_enc, authorization_signed_response_alg, backchannel_authentication_request_signing_alg, backchannel_client_notification_endpoint, backchannel_logout_session_required, backchannel_logout_uri, backchannel_token_delivery_mode, backchannel_user_code_parameter, dpop_bound_access_tokens, id_token_encrypted_response_alg, id_token_encrypted_response_enc, introspection_encrypted_response_alg, introspection_encrypted_response_enc, introspection_signed_response_alg, post_logout_redirect_uris, request_object_encryption_alg, request_object_encryption_enc, request_object_signing_alg, require_pushed_authorization_requests, require_signed_request_object, tls_client_auth_san_dns, tls_client_auth_san_email, tls_client_auth_san_ip, tls_client_auth_san_uri, tls_client_auth_subject_dn, tls_client_certificate_bound_access_tokens, token_endpoint_auth_signing_alg, use_mtls_endpoint_aliases, userinfo_encrypted_response_alg, userinfo_encrypted_response_enc, userinfo_signed_response_alg  
 
 
 </details>
@@ -586,29 +591,40 @@ async function findAccount(ctx, sub, token) {
 
 ### jwks
 
-Specifies the JSON Web Key Set that shall be used by the authorization server for cryptographic signing and decryption operations. The key set MUST be provided in [JWK Set format](https://www.rfc-editor.org/rfc/rfc7517.html#section-5) as defined in RFC 7517. All keys within the set MUST be private keys.   
- Supported key types include:   
- - RSA
- - OKP (Ed25519 and X25519 sub types)
- - EC (P-256, P-384, and P-521 curves)   
+Specifies the JSON Web Key Set that shall be used by the authorization server for cryptographic signing and decryption operations. The key set MUST be provided in [JWK Set format](https://www.rfc-editor.org/rfc/rfc7517.html#section-5) as defined in RFC 7517. All keys within the set MUST be private keys. 
+
+Supported key types include: 
+
+- RSA
+- OKP (Ed25519 and X25519 sub types)
+- EC (P-256, P-384, and P-521 curves) 
+
   
 
-_**recommendation**_: Be sure to follow best practices for distributing private keying material and secrets for your respective target deployment environment.  
+_**recommendation**_: Be sure to follow best practices for distributing private keying material and secrets for your respective target deployment environment. 
 
-_**recommendation**_: The following action order is recommended when rotating signing keys on a distributed deployment with rolling reloads in place.
- 1. push new keys at the very end of the "keys" array in your JWKS, this means the keys will become available for verification should they be encountered but not yet used for signing
- 2. reload all your processes
- 3. move your new key to the very front of the "keys" array in your JWKS, this means the key will be used for signing after reload
- 4. reload all your processes  
+  
+
+_**recommendation**_: The following action order is recommended when rotating signing keys on a distributed deployment with rolling reloads in place. 
+
+1. push new keys at the very end of the "keys" array in your JWKS, this means the keys will become available for verification should they be encountered but not yet used for signing
+2. reload all your processes
+3. move your new key to the very front of the "keys" array in your JWKS, this means the key will be used for signing after reload
+4. reload all your processes 
+
+  
 
 
 ---
 
 ### features
 
-Specifies the authorization server feature capabilities that shall be enabled or disabled. This configuration controls the availability of optional OAuth 2.0 and OpenID Connect extensions, experimental specifications, and proprietary enhancements.   
- Certain features may be designated as experimental implementations. When experimental features are enabled, the authorization server will emit warnings to indicate that breaking changes may occur in future releases. These changes will be published as minor version updates of the oidc-provider module.   
- To suppress experimental feature warnings and ensure configuration validation against breaking changes, implementations shall acknowledge the specific experimental feature version using the acknowledgment mechanism demonstrated in the example below. When an unacknowledged breaking change is detected, the authorization server configuration will throw an error during instantiation.   
+Specifies the authorization server feature capabilities that shall be enabled or disabled. This configuration controls the availability of optional OAuth 2.0 and OpenID Connect extensions, experimental specifications, and proprietary enhancements. 
+
+Certain features may be designated as experimental implementations. When experimental features are enabled, the authorization server will emit warnings to indicate that breaking changes may occur in future releases. These changes will be published as minor version updates of the oidc-provider module. 
+
+To suppress experimental feature warnings and ensure configuration validation against breaking changes, implementations shall acknowledge the specific experimental feature version using the acknowledgment mechanism demonstrated in the example below. When an unacknowledged breaking change is detected, the authorization server configuration will throw an error during instantiation. 
+
   
 
 <a id="features-acknowledging-an-experimental-feature"></a><details><summary>Example: (Click to expand) Acknowledging an experimental feature.</summary><br>
@@ -661,7 +677,8 @@ new oidc.Provider('http://localhost:3000', {
 > [!NOTE]
 > This is an experimental feature.
 
-Specifies whether Attestation-Based Client Authentication capabilities shall be enabled. When enabled, the authorization server shall support the `attest_jwt_client_auth` authentication method within the server's `clientAuthMethods` configuration. This mechanism enables Client Instances to authenticate using a Client Attestation JWT issued by a trusted Client Attester and a corresponding Client Attestation Proof-of-Possession JWT generated by the Client Instance.   
+Specifies whether Attestation-Based Client Authentication capabilities shall be enabled. When enabled, the authorization server shall support the `attest_jwt_client_auth` authentication method within the server's `clientAuthMethods` configuration. This mechanism enables Client Instances to authenticate using a Client Attestation JWT issued by a trusted Client Attester and a corresponding Client Attestation Proof-of-Possession JWT generated by the Client Instance. 
+
   
 
 
@@ -681,8 +698,9 @@ _**default value**_:
 
 #### assertAttestationJwtAndPop
 
-Specifies a helper function that shall be invoked to perform additional validation of the Client Attestation JWT and Client Attestation Proof-of-Possession JWT beyond the specification requirements. This enables enforcement of extension profiles, deployment-specific policies, or additional security constraints.   
- At the point of invocation, both JWTs have undergone signature verification and standard validity claim validation. The function may throw errors to reject non-compliant attestations or return successfully to indicate acceptance of the client authentication attempt.  
+Specifies a helper function that shall be invoked to perform additional validation of the Client Attestation JWT and Client Attestation Proof-of-Possession JWT beyond the specification requirements. This enables enforcement of extension profiles, deployment-specific policies, or additional security constraints. 
+
+At the point of invocation, both JWTs have undergone signature verification and standard validity claim validation. The function may throw errors to reject non-compliant attestations or return successfully to indicate acceptance of the client authentication attempt.  
 
 
 _**default value**_:
@@ -713,8 +731,10 @@ undefined
 
 #### getAttestationSignaturePublicKey
 
-Specifies a helper function that shall be invoked to verify the issuer identifier of a Client Attestation JWT and retrieve the public key used for signature verification. At the point of this function's invocation, only the JWT format has been validated; no cryptographic or claims verification has occurred.   
- The function MUST return a public key in one of the supported formats: CryptoKey, KeyObject, or JSON Web Key (JWK) representation. The authorization server shall use this key to verify the Client Attestation JWT signature.   
+Specifies a helper function that shall be invoked to verify the issuer identifier of a Client Attestation JWT and retrieve the public key used for signature verification. At the point of this function's invocation, only the JWT format has been validated; no cryptographic or claims verification has occurred. 
+
+The function MUST return a public key in one of the supported formats: CryptoKey, KeyObject, or JSON Web Key (JWK) representation. The authorization server shall use this key to verify the Client Attestation JWT signature. 
+
   
 
 
@@ -766,7 +786,8 @@ _**default value**_:
 
 [OIDC Client Initiated Backchannel Authentication Flow (`CIBA`)](https://openid.net/specs/openid-client-initiated-backchannel-authentication-core-1_0-final.html)  
 
-Enables Core `CIBA` Flow, when combined with `features.fapi` and `features.requestObjects.enabled` enables [Financial-grade API: Client Initiated Backchannel Authentication Profile - Implementers Draft 01](https://openid.net/specs/openid-financial-api-ciba-ID1.html) as well.   
+Enables Core `CIBA` Flow, when combined with `features.fapi` and `features.requestObjects.enabled` enables [Financial-grade API: Client Initiated Backchannel Authentication Profile - Implementers Draft 01](https://openid.net/specs/openid-financial-api-ciba-ID1.html) as well. 
+
   
 
 
@@ -792,8 +813,9 @@ _**default value**_:
 #### deliveryModes
 
 Specifies the token delivery modes supported by this authorization server. The following delivery modes are defined:
- - `poll` - Client polls the token endpoint for completion
- - `ping` - Authorization server notifies client of completion via HTTP callback   
+- `poll` - Client polls the token endpoint for completion
+- `ping` - Authorization server notifies client of completion via HTTP callback 
+
   
 
 
@@ -806,12 +828,15 @@ _**default value**_:
 
 #### processLoginHint
 
-Specifies a helper function that shall be invoked to process the `login_hint` parameter and extract the corresponding accountId value for request processing. This function MUST validate the hint format and content according to authorization server policy.   
+Specifies a helper function that shall be invoked to process the `login_hint` parameter and extract the corresponding accountId value for request processing. This function MUST validate the hint format and content according to authorization server policy. 
+
   
 
 _**recommendation**_: Use `throw new errors.InvalidRequest('validation error message')` when the login_hint format or content is invalid.  
 
-_**recommendation**_: Use `return undefined` when the accountId cannot be determined from the provided login_hint.  
+_**recommendation**_: Use `return undefined` when the accountId cannot be determined from the provided login_hint. 
+
+  
 
 
 _**default value**_:
@@ -825,14 +850,17 @@ async function processLoginHint(ctx, loginHint) {
 
 #### processLoginHintToken
 
-Specifies a helper function that shall be invoked to process the `login_hint_token` parameter and extract the corresponding accountId value for request processing. This function MUST validate token expiration and format according to authorization server policy.   
+Specifies a helper function that shall be invoked to process the `login_hint_token` parameter and extract the corresponding accountId value for request processing. This function MUST validate token expiration and format according to authorization server policy. 
+
   
 
 _**recommendation**_: Use `throw new errors.ExpiredLoginHintToken('validation error message')` when the login_hint_token has expired.  
 
 _**recommendation**_: Use `throw new errors.InvalidRequest('validation error message')` when the login_hint_token format or content is invalid.  
 
-_**recommendation**_: Use `return undefined` when the accountId cannot be determined from the provided login_hint_token.  
+_**recommendation**_: Use `return undefined` when the accountId cannot be determined from the provided login_hint_token. 
+
+  
 
 
 _**default value**_:
@@ -846,8 +874,10 @@ async function processLoginHintToken(ctx, loginHintToken) {
 
 #### triggerAuthenticationDevice
 
-Specifies a helper function that shall be invoked to initiate authentication and authorization processes on the end-user's Authentication Device as defined in the CIBA specification. This function is executed after accepting the backchannel authentication request but before transmitting the response to the requesting client.   
- Upon successful end-user authentication, implementations shall use `provider.backchannelResult()` to complete the Consumption Device login process.   
+Specifies a helper function that shall be invoked to initiate authentication and authorization processes on the end-user's Authentication Device as defined in the CIBA specification. This function is executed after accepting the backchannel authentication request but before transmitting the response to the requesting client. 
+
+Upon successful end-user authentication, implementations shall use `provider.backchannelResult()` to complete the Consumption Device login process. 
+
   
 
 
@@ -873,23 +903,26 @@ const provider = new oidc.Provider(...);
 await provider.backchannelResult(...);
 ```
 `backchannelResult(request, result[, options]);`
- - `request` BackchannelAuthenticationRequest - BackchannelAuthenticationRequest instance.
- - `result` Grant | OIDCProviderError - instance of a persisted Grant model or an OIDCProviderError (all exported by errors).
- - `options.acr?`: string - Authentication Context Class Reference value that identifies the Authentication Context Class that the authentication performed satisfied.
- - `options.amr?`: string[] - Identifiers for authentication methods used in the authentication.
- - `options.authTime?`: number - Time when the end-user authentication occurred.  
+- `request` BackchannelAuthenticationRequest - BackchannelAuthenticationRequest instance.
+- `result` Grant | OIDCProviderError - instance of a persisted Grant model or an OIDCProviderError (all exported by errors).
+- `options.acr?`: string - Authentication Context Class Reference value that identifies the Authentication Context Class that the authentication performed satisfied.
+- `options.amr?`: string[] - Identifiers for authentication methods used in the authentication.
+- `options.authTime?`: number - Time when the end-user authentication occurred.  
 
 
 </details>
 
 #### validateBindingMessage
 
-Specifies a helper function that shall be invoked to validate the `binding_message` parameter according to authorization server policy. This function MUST reject invalid binding messages by throwing appropriate error instances.   
+Specifies a helper function that shall be invoked to validate the `binding_message` parameter according to authorization server policy. This function MUST reject invalid binding messages by throwing appropriate error instances. 
+
   
 
 _**recommendation**_: Use `throw new errors.InvalidBindingMessage('validation error message')` when the binding_message violates authorization server policy.  
 
-_**recommendation**_: Use `return undefined` when a binding_message is not required by policy and was not provided in the request.  
+_**recommendation**_: Use `return undefined` when a binding_message is not required by policy and was not provided in the request. 
+
+  
 
 
 _**default value**_:
@@ -907,12 +940,15 @@ async function validateBindingMessage(ctx, bindingMessage) {
 
 #### validateRequestContext
 
-Specifies a helper function that shall be invoked to validate the `request_context` parameter according to authorization server policy. This function MUST enforce policy requirements for request context validation and reject non-compliant requests.   
+Specifies a helper function that shall be invoked to validate the `request_context` parameter according to authorization server policy. This function MUST enforce policy requirements for request context validation and reject non-compliant requests. 
+
   
 
 _**recommendation**_: Use `throw new errors.InvalidRequest('validation error message')` when the request_context is required by policy but missing or invalid.  
 
-_**recommendation**_: Use `return undefined` when a request_context is not required by policy and was not provided in the request.  
+_**recommendation**_: Use `return undefined` when a request_context is not required by policy and was not provided in the request. 
+
+  
 
 
 _**default value**_:
@@ -926,14 +962,17 @@ async function validateRequestContext(ctx, requestContext) {
 
 #### verifyUserCode
 
-Specifies a helper function that shall be invoked to verify the presence and validity of the `user_code` parameter when required by authorization server policy.   
+Specifies a helper function that shall be invoked to verify the presence and validity of the `user_code` parameter when required by authorization server policy. 
+
   
 
 _**recommendation**_: Use `throw new errors.MissingUserCode('validation error message')` when user_code is required by policy but was not provided.  
 
 _**recommendation**_: Use `throw new errors.InvalidUserCode('validation error message')` when the provided user_code value is invalid or does not meet policy requirements.  
 
-_**recommendation**_: Use `return undefined` when no user_code was provided and it is not required by authorization server policy.  
+_**recommendation**_: Use `return undefined` when no user_code was provided and it is not required by authorization server policy. 
+
+  
 
 
 _**default value**_:
@@ -954,7 +993,8 @@ async function verifyUserCode(ctx, account, userCode) {
 
 [`OIDC Core 1.0`](https://openid.net/specs/openid-connect-core-1_0-errata2.html#ClaimsParameter) - Requesting Claims using the "claims" Request Parameter  
 
-Specifies whether the `claims` request parameter shall be enabled for authorization requests. When enabled, the authorization server shall accept and process the `claims` parameter to enable fine-grained control over which claims are returned in ID Tokens and from the UserInfo Endpoint.   
+Specifies whether the `claims` request parameter shall be enabled for authorization requests. When enabled, the authorization server shall accept and process the `claims` parameter to enable fine-grained control over which claims are returned in ID Tokens and from the UserInfo Endpoint. 
+
   
 
 
@@ -971,8 +1011,9 @@ _**default value**_:
 
 #### assertClaimsParameter
 
-Specifies a helper function that shall be invoked to perform additional validation of the `claims` parameter. This function enables enforcement of deployment-specific policies, security constraints, or extended claim validation logic according to authorization server requirements.   
- The function may throw errors to reject non-compliant claims requests or return successfully to indicate acceptance of the claims parameter content.  
+Specifies a helper function that shall be invoked to perform additional validation of the `claims` parameter. This function enables enforcement of deployment-specific policies, security constraints, or extended claim validation logic according to authorization server requirements. 
+
+The function may throw errors to reject non-compliant claims requests or return successfully to indicate acceptance of the claims parameter content.  
 
 
 _**default value**_:
@@ -1062,8 +1103,9 @@ function requireNonce(ctx) {
 
 ### features.devInteractions
 
-Enables development-only interaction views that provide pre-built user interface components for rapid prototyping and testing of authorization flows. These views accept any username (used as the subject claim value) and any password for authentication, bypassing production-grade security controls.   
- Production deployments MUST disable this feature and implement proper end-user authentication and authorization mechanisms. These development views MUST NOT be used in production environments as they provide no security guarantees and accept arbitrary credentials.  
+Enables development-only interaction views that provide pre-built user interface components for rapid prototyping and testing of authorization flows. These views accept any username (used as the subject claim value) and any password for authentication, bypassing production-grade security controls. 
+
+Production deployments MUST disable this feature and implement proper end-user authentication and authorization mechanisms. These development views MUST NOT be used in production environments as they provide no security guarantees and accept arbitrary credentials.  
 
 
 _**default value**_:
@@ -1101,8 +1143,8 @@ _**default value**_:
 #### charset
 
 Specifies the character set used for generating user codes in the device authorization flow. This configuration determines the alphabet from which user codes are constructed. Supported values include:
- - `base-20` - Uses characters BCDFGHJKLMNPQRSTVWXZ (excludes easily confused characters)
- - `digits` - Uses characters 0123456789 (numeric only)  
+- `base-20` - Uses characters BCDFGHJKLMNPQRSTVWXZ (excludes easily confused characters)
+- `digits` - Uses characters 0123456789 (numeric only)  
 
 
 _**default value**_:
@@ -1269,7 +1311,8 @@ External Signing Support
 > [!NOTE]
 > This is an experimental feature.
 
-Specifies whether external signing capabilities shall be enabled. When enabled, the authorization server shall support the use of `ExternalSigningKey` class instances in place of private JWK entries within the `jwks.keys` configuration array. This feature enables Digital Signature Algorithm operations (such as PS256, ES256, or other supported algorithms) to be performed by external cryptographic services, including Key Management Services (KMS) and Hardware Security Modules (HSM), providing enhanced security for private key material through externalized signing operations.   
+Specifies whether external signing capabilities shall be enabled. When enabled, the authorization server shall support the use of `ExternalSigningKey` class instances in place of private JWK entries within the `jwks.keys` configuration array. This feature enables Digital Signature Algorithm operations (such as PS256, ES256, or other supported algorithms) to be performed by external cryptographic services, including Key Management Services (KMS) and Hardware Security Modules (HSM), providing enhanced security for private key material through externalized signing operations. 
+
   
 
 See [KMS integration with AWS Key Management Service](https://github.com/panva/node-oidc-provider/discussions/1316)
@@ -1304,10 +1347,11 @@ _**default value**_:
 
 #### profile
 
-Specifies the FAPI profile version that shall be applied for security policy enforcement. The authorization server shall implement the behaviors defined in the selected profile specification. Supported values include:   
- - '2.0' - The authorization server shall implement behaviors from [FAPI 2.0 Security Profile](https://openid.net/specs/fapi-security-profile-2_0-final.html)
- - '1.0 Final' - The authorization server shall implement behaviors from [FAPI 1.0 Security Profile - Part 2: Advanced](https://openid.net/specs/openid-financial-api-part-2-1_0-final.html)
- - Function - A function that shall be invoked with arguments `(ctx, client)` to determine the profile contextually. The function shall return one of the supported profile values or undefined when FAPI behaviors should be ignored for the current request context.  
+Specifies the FAPI profile version that shall be applied for security policy enforcement. The authorization server shall implement the behaviors defined in the selected profile specification. Supported values include: 
+
+- '2.0' - The authorization server shall implement behaviors from [FAPI 2.0 Security Profile](https://openid.net/specs/fapi-security-profile-2_0-final.html)
+- '1.0 Final' - The authorization server shall implement behaviors from [FAPI 1.0 Security Profile - Part 2: Advanced](https://openid.net/specs/openid-financial-api-part-2-1_0-final.html)
+- Function - A function that shall be invoked with arguments `(ctx, client)` to determine the profile contextually. The function shall return one of the supported profile values or undefined when FAPI behaviors should be ignored for the current request context.  
 
 
 _**default value**_:
@@ -1324,8 +1368,9 @@ undefined
 [`RFC7662`](https://www.rfc-editor.org/rfc/rfc7662.html) - OAuth 2.0 Token Introspection  
 
 Specifies whether OAuth 2.0 Token Introspection capabilities shall be enabled. When enabled, the authorization server shall expose a token introspection endpoint that allows authorized clients and resource servers to query the metadata and status of the following token types:
- - Opaque access tokens
- - Refresh tokens   
+- Opaque access tokens
+- Refresh tokens 
+
   
 
 
@@ -1417,7 +1462,8 @@ _**default value**_:
 
 [`RFC8705`](https://www.rfc-editor.org/rfc/rfc8705.html) - OAuth 2.0 Mutual TLS Client Authentication and Certificate Bound Access Tokens (`MTLS`)  
 
-Specifies whether Mutual TLS capabilities shall be enabled. The authorization server supports three distinct features that require separate configuration settings within this feature's configuration object. Implementations MUST provide deployment-specific helper functions for certificate validation and processing operations.   
+Specifies whether Mutual TLS capabilities shall be enabled. The authorization server supports three distinct features that require separate configuration settings within this feature's configuration object. Implementations MUST provide deployment-specific helper functions for certificate validation and processing operations. 
+
   
 
 
@@ -1587,8 +1633,9 @@ function idFactory(ctx) {
 #### initialAccessToken
 
 Specifies whether the registration endpoint shall require an initial access token as authorization for client registration requests. This configuration controls access to the dynamic registration functionality. Supported values include:
- - `string` - The authorization server shall validate the provided bearer token against this static initial access token value
- - `boolean` - When true, the authorization server shall require adapter-backed initial access tokens; when false, registration requests are processed without initial access tokens.   
+- `string` - The authorization server shall validate the provided bearer token against this static initial access token value
+- `boolean` - When true, the authorization server shall require adapter-backed initial access tokens; when false, registration requests are processed without initial access tokens. 
+
   
 
 
@@ -1606,9 +1653,10 @@ new (provider.InitialAccessToken)({}).save().then(console.log);
 #### issueRegistrationAccessToken
 
 Specifies whether a registration access token shall be issued upon successful client registration. This configuration determines if clients receive tokens for subsequent registration management operations. Supported values include:
- - `true` - Registration access tokens shall be issued for all successful registrations
- - `false` - Registration access tokens shall not be issued
- - Function - A function that shall be invoked to dynamically determine token issuance based on request context and authorization server policy   
+- `true` - Registration access tokens shall be issued for all successful registrations
+- `false` - Registration access tokens shall not be issued
+- Function - A function that shall be invoked to dynamically determine token issuance based on request context and authorization server policy 
+
   
 
 
@@ -1628,16 +1676,19 @@ async issueRegistrationAccessToken(ctx) {
 
 #### policies
 
-Specifies registration and registration management policies that shall be applied to client metadata properties during dynamic registration operations. Policies are synchronous or asynchronous functions assigned to Initial Access Tokens that execute before standard client property validations. Multiple policies may be assigned to an Initial Access Token, and by default, the same policies shall transfer to the Registration Access Token. Policy functions may throw errors to reject registration requests or modify the client properties object before validation.   
+Specifies registration and registration management policies that shall be applied to client metadata properties during dynamic registration operations. Policies are synchronous or asynchronous functions assigned to Initial Access Tokens that execute before standard client property validations. Multiple policies may be assigned to an Initial Access Token, and by default, the same policies shall transfer to the Registration Access Token. Policy functions may throw errors to reject registration requests or modify the client properties object before validation. 
+
   
 
-_**recommendation**_: Referenced policies MUST always be present when encountered on a token; an AssertionError will be thrown inside the request context if a policy is not found, resulting in a 500 Server Error.  
+_**recommendation**_: Referenced policies MUST always be present when encountered on a token; an AssertionError will be thrown inside the request context if a policy is not found, resulting in a 500 Server Error. 
+
+  
 
 _**recommendation**_: The same policies will be assigned to the Registration Access Token after a successful validation. If you wish to assign different policies to the Registration Access Token:
- ```js
- // inside your final ran policy
- ctx.oidc.entities.RegistrationAccessToken.policies = ['update-policy'];
- ```  
+```js
+// inside your final ran policy
+ctx.oidc.entities.RegistrationAccessToken.policies = ['update-policy'];
+```  
 
 
 _**default value**_:
@@ -1717,11 +1768,13 @@ _**default value**_:
 
 #### rotateRegistrationAccessToken
 
-Specifies whether registration access token rotation shall be enabled as a security policy for client registration management operations. When token rotation is active, the authorization server shall discard the current Registration Access Token upon successful update operations and issue a new token, returning it to the client with the Registration Update Response.   
- Supported values include:
- - `false` - Registration access tokens shall not be rotated and remain valid after use
- - `true` - Registration access tokens shall be rotated when used for management operations
- - Function - A function that shall be invoked to dynamically determine whether rotation should occur based on request context and authorization server policy   
+Specifies whether registration access token rotation shall be enabled as a security policy for client registration management operations. When token rotation is active, the authorization server shall discard the current Registration Access Token upon successful update operations and issue a new token, returning it to the client with the Registration Update Response. 
+
+Supported values include:
+- `false` - Registration access tokens shall not be rotated and remain valid after use
+- `true` - Registration access tokens shall be rotated when used for management operations
+- Function - A function that shall be invoked to dynamically determine whether rotation should occur based on request context and authorization server policy 
+
   
 
 
@@ -1826,17 +1879,18 @@ false
 
 [`RFC8707`](https://www.rfc-editor.org/rfc/rfc8707.html) - Resource Indicators for OAuth 2.0  
 
-Specifies whether Resource Indicator capabilities shall be enabled. When enabled, the authorization server shall support the `resource` parameter at the authorization and token endpoints to enable issuing Access Tokens for specific Resource Servers (APIs) with enhanced audience control and scope management.   
- The authorization server implements the following resource indicator processing rules:
- - Multiple resource parameters may be present during Authorization Code Flow, Device Authorization Grant, and Backchannel Authentication Requests, but only a single audience for an Access Token is permitted.
- - Authorization and Authentication Requests that result in an Access Token being issued by the Authorization Endpoint MUST only contain a single resource (or one MUST be resolved using the `defaultResource` helper).
- - Client Credentials grant MUST only contain a single resource parameter.
- - During Authorization Code / Refresh Token / Device Code / Backchannel Authentication Request exchanges, if the exchanged code/token does not include the `'openid'` scope and only has a single resource then the resource parameter may be omitted - an Access Token for the single resource is returned.
- - During Authorization Code / Refresh Token / Device Code / Backchannel Authentication Request exchanges, if the exchanged code/token does not include the `'openid'` scope and has multiple resources then the resource parameter MUST be provided (or one MUST be resolved using the `defaultResource` helper). An Access Token for the provided/resolved resource is returned.
- - (with userinfo endpoint enabled and useGrantedResource helper returning falsy) During Authorization Code / Refresh Token / Device Code exchanges, if the exchanged code/token includes the `'openid'` scope and no resource parameter is present - an Access Token for the UserInfo Endpoint is returned.
- - (with userinfo endpoint enabled and useGrantedResource helper returning truthy) During Authorization Code / Refresh Token / Device Code exchanges, even if the exchanged code/token includes the `'openid'` scope and only has a single resource then the resource parameter may be omitted - an Access Token for the single resource is returned.
- - (with userinfo endpoint disabled) During Authorization Code / Refresh Token / Device Code exchanges, if the exchanged code/token includes the `'openid'` scope and only has a single resource then the resource parameter may be omitted - an Access Token for the single resource is returned.
- - Issued Access Tokens shall always only contain scopes that are defined on the respective Resource Server (returned from `features.resourceIndicators.getResourceServerInfo`).  
+Specifies whether Resource Indicator capabilities shall be enabled. When enabled, the authorization server shall support the `resource` parameter at the authorization and token endpoints to enable issuing Access Tokens for specific Resource Servers (APIs) with enhanced audience control and scope management. 
+
+The authorization server implements the following resource indicator processing rules:
+- Multiple resource parameters may be present during Authorization Code Flow, Device Authorization Grant, and Backchannel Authentication Requests, but only a single audience for an Access Token is permitted.
+- Authorization and Authentication Requests that result in an Access Token being issued by the Authorization Endpoint MUST only contain a single resource (or one MUST be resolved using the `defaultResource` helper).
+- Client Credentials grant MUST only contain a single resource parameter.
+- During Authorization Code / Refresh Token / Device Code / Backchannel Authentication Request exchanges, if the exchanged code/token does not include the `'openid'` scope and only has a single resource then the resource parameter may be omitted - an Access Token for the single resource is returned.
+- During Authorization Code / Refresh Token / Device Code / Backchannel Authentication Request exchanges, if the exchanged code/token does not include the `'openid'` scope and has multiple resources then the resource parameter MUST be provided (or one MUST be resolved using the `defaultResource` helper). An Access Token for the provided/resolved resource is returned.
+- (with userinfo endpoint enabled and useGrantedResource helper returning falsy) During Authorization Code / Refresh Token / Device Code exchanges, if the exchanged code/token includes the `'openid'` scope and no resource parameter is present - an Access Token for the UserInfo Endpoint is returned.
+- (with userinfo endpoint enabled and useGrantedResource helper returning truthy) During Authorization Code / Refresh Token / Device Code exchanges, even if the exchanged code/token includes the `'openid'` scope and only has a single resource then the resource parameter may be omitted - an Access Token for the single resource is returned.
+- (with userinfo endpoint disabled) During Authorization Code / Refresh Token / Device Code exchanges, if the exchanged code/token includes the `'openid'` scope and only has a single resource then the resource parameter may be omitted - an Access Token for the single resource is returned.
+- Issued Access Tokens shall always only contain scopes that are defined on the respective Resource Server (returned from `features.resourceIndicators.getResourceServerInfo`).  
 
 
 _**default value**_:
@@ -1873,10 +1927,13 @@ async function defaultResource(ctx, client, oneOf) {
 
 #### getResourceServerInfo
 
-Specifies a helper function that shall be invoked to load information about a Resource Server (API) and determine whether the client is authorized to request scopes for that particular resource. This function enables resource-specific scope validation and Access Token configuration according to authorization server policy.   
+Specifies a helper function that shall be invoked to load information about a Resource Server (API) and determine whether the client is authorized to request scopes for that particular resource. This function enables resource-specific scope validation and Access Token configuration according to authorization server policy. 
+
   
 
-_**recommendation**_: Only allow client's pre-registered resource values. To pre-register these you shall use the `extraClientMetadata` configuration option to define a custom metadata and use that to implement your policy using this function.  
+_**recommendation**_: Only allow client's pre-registered resource values. To pre-register these you shall use the `extraClientMetadata` configuration option to define a custom metadata and use that to implement your policy using this function. 
+
+  
 
 
 _**default value**_:
@@ -1966,7 +2023,8 @@ async function getResourceServerInfo(ctx, resourceIndicator, client) {
 
 #### useGrantedResource
 
-Specifies a helper function that shall be invoked to determine whether an already granted resource indicator should be used without being explicitly requested by the client during the Token Endpoint request. This function enables flexible resource selection policies for token issuance operations.   
+Specifies a helper function that shall be invoked to determine whether an already granted resource indicator should be used without being explicitly requested by the client during the Token Endpoint request. This function enables flexible resource selection policies for token issuance operations. 
+
   
 
 _**recommendation**_: Use `return true` when it's allowed for a client to skip providing the "resource" parameter at the Token Endpoint.  
@@ -1993,8 +2051,9 @@ async function useGrantedResource(ctx, model) {
 [`RFC7009`](https://www.rfc-editor.org/rfc/rfc7009.html) - OAuth 2.0 Token Revocation  
 
 Specifies whether Token Revocation capabilities shall be enabled. When enabled, the authorization server shall expose a token revocation endpoint that allows authorized clients and resource servers to notify the authorization server that a particular token is no longer needed. This feature supports revocation of the following token types:
- - Opaque access tokens
- - Refresh tokens   
+- Opaque access tokens
+- Refresh tokens 
+
   
 
 
@@ -2163,7 +2222,8 @@ rarForRefreshTokenResponse(ctx, resourceServer) {
 
 #### types
 
-Specifies the authorization details type identifiers that shall be supported by the authorization server. Each type identifier MUST have an associated validation function that defines the required structure and constraints for authorization details of that specific type according to authorization server policy.   
+Specifies the authorization details type identifiers that shall be supported by the authorization server. Each type identifier MUST have an associated validation function that defines the required structure and constraints for authorization details of that specific type according to authorization server policy. 
+
   
 
 
@@ -2308,26 +2368,27 @@ async function postLogoutSuccessSource(ctx) {
 > [!NOTE]
 > This is an experimental feature.
 
-Specifies whether Relying Party Metadata Choices capabilities shall be enabled. When enabled, the authorization server shall support the following multi-valued input parameters metadata from the Relying Party Metadata Choices draft, provided that their underlying feature is also enabled:   
- - subject_types_supported
- - id_token_signing_alg_values_supported
- - id_token_encryption_alg_values_supported
- - id_token_encryption_enc_values_supported
- - userinfo_signing_alg_values_supported
- - userinfo_encryption_alg_values_supported
- - userinfo_encryption_enc_values_supported
- - request_object_signing_alg_values_supported
- - request_object_encryption_alg_values_supported
- - request_object_encryption_enc_values_supported
- - token_endpoint_auth_methods_supported
- - token_endpoint_auth_signing_alg_values_supported
- - introspection_signing_alg_values_supported
- - introspection_encryption_alg_values_supported
- - introspection_encryption_enc_values_supported
- - authorization_signing_alg_values_supported
- - authorization_encryption_alg_values_supported
- - authorization_encryption_enc_values_supported
- - backchannel_authentication_request_signing_alg_values_supported  
+Specifies whether Relying Party Metadata Choices capabilities shall be enabled. When enabled, the authorization server shall support the following multi-valued input parameters metadata from the Relying Party Metadata Choices draft, provided that their underlying feature is also enabled: 
+
+- subject_types_supported
+- id_token_signing_alg_values_supported
+- id_token_encryption_alg_values_supported
+- id_token_encryption_enc_values_supported
+- userinfo_signing_alg_values_supported
+- userinfo_encryption_alg_values_supported
+- userinfo_encryption_enc_values_supported
+- request_object_signing_alg_values_supported
+- request_object_encryption_alg_values_supported
+- request_object_encryption_enc_values_supported
+- token_endpoint_auth_methods_supported
+- token_endpoint_auth_signing_alg_values_supported
+- introspection_signing_alg_values_supported
+- introspection_encryption_alg_values_supported
+- introspection_encryption_enc_values_supported
+- authorization_signing_alg_values_supported
+- authorization_encryption_alg_values_supported
+- authorization_encryption_enc_values_supported
+- backchannel_authentication_request_signing_alg_values_supported  
 
 
 _**default value**_:
@@ -2363,7 +2424,8 @@ _**default value**_:
 > [!NOTE]
 > This is an experimental feature.
 
-Specifies whether Web Message Response Mode capabilities shall be enabled. When enabled, the authorization server shall support the `web_message` response mode for returning authorization responses via HTML5 Web Messaging. The implementation shall support only Simple Mode operation; authorization requests containing Relay Mode parameters will be rejected.   
+Specifies whether Web Message Response Mode capabilities shall be enabled. When enabled, the authorization server shall support the `web_message` response mode for returning authorization responses via HTML5 Web Messaging. The implementation shall support only Simple Mode operation; authorization requests containing Relay Mode parameters will be rejected. 
+
   
 
 _**recommendation**_: Although a general advise to use a `helmet` (e.g. for [express](https://www.npmjs.com/package/helmet), [koa](https://www.npmjs.com/package/koa-helmet)) it is especially advised for your interaction views routes if Web Message Response Mode is enabled in your deployment. You will have to experiment with removal of the Cross-Origin-Embedder-Policy and Cross-Origin-Opener-Policy headers at various endpoints throughout the authorization request end-user journey to finalize this feature.  
@@ -2381,7 +2443,8 @@ _**default value**_:
 
 ### acceptQueryParamAccessTokens
 
-Controls whether access tokens may be transmitted via URI query parameters. Several OAuth 2.0 and OpenID Connect profiles require that access tokens be transmitted exclusively via the Authorization header. When set to false, the authorization server shall reject requests attempting to transmit access tokens via query parameters.   
+Controls whether access tokens may be transmitted via URI query parameters. Several OAuth 2.0 and OpenID Connect profiles require that access tokens be transmitted exclusively via the Authorization header. When set to false, the authorization server shall reject requests attempting to transmit access tokens via query parameters. 
+
   
 
 
@@ -2408,8 +2471,9 @@ _**default value**_:
 
 Redirect URI Parameter Omission for Single Registered URI  
 
-Specifies whether clients may omit the `redirect_uri` parameter in authorization requests when only a single redirect URI is registered in their client metadata. When enabled, the authorization server shall automatically use the sole registered redirect URI for clients that have exactly one URI configured.   
- When disabled, all authorization requests MUST explicitly include the `redirect_uri` parameter regardless of the number of registered redirect URIs.  
+Specifies whether clients may omit the `redirect_uri` parameter in authorization requests when only a single redirect URI is registered in their client metadata. When enabled, the authorization server shall automatically use the sole registered redirect URI for clients that have exactly one URI configured. 
+
+When disabled, all authorization requests MUST explicitly include the `redirect_uri` parameter regardless of the number of registered redirect URIs.  
 
 
 _**default value**_:
@@ -2443,10 +2507,12 @@ async function assertJwtClientAuthClaimsAndHeader(ctx, claims, header, client) {
 
 ### claims
 
-Describes the claims that this authorization server may be able to supply values for.   
- It is used to achieve two different things related to claims:
- - which additional claims are available to RPs (configure as `{ claimName: null }`)
- - which claims fall under what scope (configure `{ scopeName: ['claim', 'another-claim'] }`)   
+Describes the claims that this authorization server may be able to supply values for. 
+
+It is used to achieve two different things related to claims:
+- which additional claims are available to RPs (configure as `{ claimName: null }`)
+- which claims fall under what scope (configure `{ scopeName: ['claim', 'another-claim'] }`) 
+
   
 
 See [Configuring OpenID Connect 1.0 Standard Claims](https://github.com/panva/node-oidc-provider/discussions/1299)
@@ -2468,7 +2534,8 @@ _**default value**_:
 
 ### clientAuthMethods
 
-Specifies the client authentication methods that this authorization server shall support for authenticating clients at the token endpoint and other authenticated endpoints.   
+Specifies the client authentication methods that this authorization server shall support for authenticating clients at the token endpoint and other authenticated endpoints. 
+
   
 
 
@@ -2498,7 +2565,8 @@ _**default value**_:
 
 ### clientBasedCORS
 
-Specifies a function that determines whether Cross-Origin Resource Sharing (CORS) requests shall be permitted based on the requesting client. This function is invoked for each CORS preflight and actual request to evaluate the client's authorization to access the authorization server from the specified origin.   
+Specifies a function that determines whether Cross-Origin Resource Sharing (CORS) requests shall be permitted based on the requesting client. This function is invoked for each CORS preflight and actual request to evaluate the client's authorization to access the authorization server from the specified origin. 
+
   
 
 See [Configuring Client Metadata-based CORS Origin allow list](https://github.com/panva/node-oidc-provider/discussions/1298)
@@ -2517,7 +2585,8 @@ function clientBasedCORS(ctx, origin, client) {
 
 ### clientDefaults
 
-Specifies default client metadata values that shall be applied when properties are not explicitly provided during Dynamic Client Registration or for statically configured clients. This configuration allows override of the authorization server's built-in default values for any supported client metadata property.   
+Specifies default client metadata values that shall be applied when properties are not explicitly provided during Dynamic Client Registration or for statically configured clients. This configuration allows override of the authorization server's built-in default values for any supported client metadata property. 
+
   
 
 
@@ -2564,7 +2633,8 @@ To change the default client response_types, configure `clientDefaults` to be an
 
 ### clockTolerance
 
-Specifies the maximum acceptable clock skew tolerance (in seconds) for validating time-sensitive operations, including JWT validation for Request Objects, DPoP Proofs, and other timestamp-based security mechanisms.   
+Specifies the maximum acceptable clock skew tolerance (in seconds) for validating time-sensitive operations, including JWT validation for Request Objects, DPoP Proofs, and other timestamp-based security mechanisms. 
+
   
 
 _**recommendation**_: This value should be kept as small as possible while accommodating expected clock drift between the authorization server and client systems.  
@@ -2581,8 +2651,10 @@ _**default value**_:
 
 ID Token only contains End-User claims when the requested `response_type` is `id_token`  
 
-[`OIDC Core 1.0` - Requesting Claims using Scope Values](https://openid.net/specs/openid-connect-core-1_0-errata2.html#ScopeClaims) defines that claims requested using the `scope` parameter are only returned from the UserInfo Endpoint unless the `response_type` is `id_token`.   
- Despite this configuration, the ID Token always includes claims requested using the `scope` parameter when the userinfo endpoint is disabled, or when issuing an Access Token not applicable for access to the userinfo endpoint.   
+[`OIDC Core 1.0` - Requesting Claims using Scope Values](https://openid.net/specs/openid-connect-core-1_0-errata2.html#ScopeClaims) defines that claims requested using the `scope` parameter are only returned from the UserInfo Endpoint unless the `response_type` is `id_token`. 
+
+Despite this configuration, the ID Token always includes claims requested using the `scope` parameter when the userinfo endpoint is disabled, or when issuing an Access Token not applicable for access to the userinfo endpoint. 
+
   
 
 
@@ -2735,10 +2807,14 @@ function extraClientMetadataValidator(ctx, key, value, metadata) {
 
 ### extraParams
 
-Specifies additional parameters that shall be recognized by the authorization, device authorization, backchannel authentication, and pushed authorization request endpoints. These extended parameters become available in `ctx.oidc.params` and are passed to interaction session details for processing.   
- This configuration accepts either an iterable object (array or Set of strings) for simple parameter registration, or a plain object with string properties representing parameter names and values being validation functions (synchronous or asynchronous) for the corresponding parameter values.   
- Parameter validators are executed regardless of the parameter's presence or value, enabling validation of parameter presence as well as assignment of default values. When the value is `null` or `undefined`, the parameter is registered without validation constraints.   
- Note: These validators execute during the final phase of the request validation process. Modifications to other parameters (such as assigning default values) will not trigger re-validation of the entire request.   
+Specifies additional parameters that shall be recognized by the authorization, device authorization, backchannel authentication, and pushed authorization request endpoints. These extended parameters become available in `ctx.oidc.params` and are passed to interaction session details for processing. 
+
+This configuration accepts either an iterable object (array or Set of strings) for simple parameter registration, or a plain object with string properties representing parameter names and values being validation functions (synchronous or asynchronous) for the corresponding parameter values. 
+
+Parameter validators are executed regardless of the parameter's presence or value, enabling validation of parameter presence as well as assignment of default values. When the value is `null` or `undefined`, the parameter is registered without validation constraints. 
+
+Note: These validators execute during the final phase of the request validation process. Modifications to other parameters (such as assigning default values) will not trigger re-validation of the entire request. 
+
   
 
 
@@ -2776,7 +2852,8 @@ const extraParams = {
 
 ### extraTokenClaims
 
-Specifies a helper function that shall be invoked to add additional claims to Access Tokens during the token issuance process. For opaque Access Tokens, the returned claims shall be stored in the authorization server storage under the `extra` property and shall be returned by the introspection endpoint as top-level claims. For JWT-formatted Access Tokens, the returned claims shall be included as top-level claims within the JWT payload. Claims returned by this function will not overwrite pre-existing top-level claims in the token.   
+Specifies a helper function that shall be invoked to add additional claims to Access Tokens during the token issuance process. For opaque Access Tokens, the returned claims shall be stored in the authorization server storage under the `extra` property and shall be returned by the introspection endpoint as top-level claims. For JWT-formatted Access Tokens, the returned claims shall be included as top-level claims within the JWT payload. Claims returned by this function will not overwrite pre-existing top-level claims in the token. 
+
   
 
 
@@ -2803,7 +2880,8 @@ async function extraTokenClaims(ctx, token) {
 
 ### fetch
 
-Specifies a function that shall be invoked whenever the authorization server needs to make calls to external HTTPS resources. The interface and expected return value shall conform to the [Fetch API specification](https://fetch.spec.whatwg.org/) [`fetch()`](https://developer.mozilla.org/en-US/docs/Web/API/Window/fetch) standard. The default implementation uses a timeout of 2500ms and does not send a user-agent header.   
+Specifies a function that shall be invoked whenever the authorization server needs to make calls to external HTTPS resources. The interface and expected return value shall conform to the [Fetch API specification](https://fetch.spec.whatwg.org/) [`fetch()`](https://developer.mozilla.org/en-US/docs/Web/API/Window/fetch) standard. The default implementation uses a timeout of 2500ms and does not send a user-agent header. 
+
   
 
 
@@ -2837,7 +2915,8 @@ To change all request's timeout configure the fetch as a function like so:
 
 ### formats.bitsOfOpaqueRandomness
 
-Specifies the entropy configuration for opaque token generation. The value shall be an integer (or a function returning an integer) that determines the cryptographic strength of generated opaque tokens. The resulting opaque token length shall be calculated as `Math.ceil(i / Math.log2(n))` where `i` is the specified bit count and `n` is the number of symbols in the encoding alphabet (64 characters in the base64url character set used by this implementation).   
+Specifies the entropy configuration for opaque token generation. The value shall be an integer (or a function returning an integer) that determines the cryptographic strength of generated opaque tokens. The resulting opaque token length shall be calculated as `Math.ceil(i / Math.log2(n))` where `i` is the specified bit count and `n` is the number of symbols in the encoding alphabet (64 characters in the base64url character set used by this implementation). 
+
   
 
 
@@ -2861,7 +2940,8 @@ function bitsOfOpaqueRandomness(ctx, token) {
 
 ### formats.customizers
 
-Specifies customizer functions that shall be invoked immediately before issuing structured Access Tokens to enable modification of token headers and payload claims according to authorization server policy. These functions shall be called during the token formatting process to apply deployment-specific customizations to the token structure before signing.   
+Specifies customizer functions that shall be invoked immediately before issuing structured Access Tokens to enable modification of token headers and payload claims according to authorization server policy. These functions shall be called during the token formatting process to apply deployment-specific customizations to the token structure before signing. 
+
   
 
 
@@ -2889,7 +2969,8 @@ _**default value**_:
 
 ### interactions
 
-Specifies the configuration for interaction policy and end-user redirection that shall be applied to determine that user interaction is required during the authorization process. This configuration enables customization of authentication and consent flows according to deployment-specific requirements.   
+Specifies the configuration for interaction policy and end-user redirection that shall be applied to determine that user interaction is required during the authorization process. This configuration enables customization of authentication and consent flows according to deployment-specific requirements. 
+
   
 
 
@@ -2897,7 +2978,8 @@ Specifies the configuration for interaction policy and end-user redirection that
 
 ### interactions.policy
 
-Specifies the structure of Prompts and their associated checks that shall be applied during authorization request processing. The policy is formed by Prompt and Check class instances that define the conditions under which user interaction is required. The default policy implementation provides a fresh instance that can be customized, and the relevant classes are exported for configuration purposes.   
+Specifies the structure of Prompts and their associated checks that shall be applied during authorization request processing. The policy is formed by Prompt and Check class instances that define the conditions under which user interaction is required. The default policy implementation provides a fresh instance that can be customized, and the relevant classes are exported for configuration purposes. 
+
   
 
 
@@ -3162,19 +3244,19 @@ new Prompt(
 <a id="interactions-policy-default-interaction-policy-description"></a><details><summary>Example: (Click to expand) default interaction policy description.</summary><br>
 
 
-The default interaction policy consists of two available prompts, login and consent <br/><br/>
- - `login` does the following checks:
-   - no_session - checks that there's an established session, an authenticated end-user
-   - max_age - processes the max_age parameter (when the session's auth_time is too old it requires login)
-   - id_token_hint - processes the id_token_hint parameter (when the end-user sub differs it requires login)
-   - claims_id_token_sub_value - processes the claims parameter `sub` (when the `claims` parameter requested sub differs it requires login)
-   - essential_acrs - processes the claims parameter `acr` (when the current acr is not amongst the `claims` parameter essential `acr.values` it requires login)
-   - essential_acr - processes the claims parameter `acr` (when the current acr is not equal to the `claims` parameter essential `acr.value` it requires login) <br/><br/>
- - `consent` does the following checks:
-   - native_client_prompt - native clients always require re-consent
-   - op_scopes_missing - requires consent when the requested scope includes scope values previously not requested
-   - op_claims_missing - requires consent when the requested claims parameter includes claims previously not requested
-   - rs_scopes_missing - requires consent when the requested resource indicated scope values include scopes previously not requested <br/><br/> These checks are the best practice for various privacy and security reasons.  
+The default interaction policy consists of two available prompts, login and consent
+- `login` does the following checks:
+  - no_session - checks that there's an established session, an authenticated end-user
+  - max_age - processes the max_age parameter (when the session's auth_time is too old it requires login)
+  - id_token_hint - processes the id_token_hint parameter (when the end-user sub differs it requires login)
+  - claims_id_token_sub_value - processes the claims parameter `sub` (when the `claims` parameter requested sub differs it requires login)
+  - essential_acrs - processes the claims parameter `acr` (when the current acr is not amongst the `claims` parameter essential `acr.values` it requires login)
+  - essential_acr - processes the claims parameter `acr` (when the current acr is not equal to the `claims` parameter essential `acr.value` it requires login)
+- `consent` does the following checks:
+  - native_client_prompt - native clients always require re-consent
+  - op_scopes_missing - requires consent when the requested scope includes scope values previously not requested
+  - op_claims_missing - requires consent when the requested claims parameter includes claims previously not requested
+  - rs_scopes_missing - requires consent when the requested resource indicated scope values include scopes previously not requested These checks are the best practice for various privacy and security reasons.  
 
 
 </details>
@@ -3218,7 +3300,8 @@ async function interactionsUrl(ctx, interaction) {
 
 ### issueRefreshToken
 
-Specifies a helper function that shall be invoked to determine whether a refresh token shall be issued during token endpoint operations. This function enables policy-based control over refresh token issuance according to authorization server requirements, client capabilities, and granted scope values.   
+Specifies a helper function that shall be invoked to determine whether a refresh token shall be issued during token endpoint operations. This function enables policy-based control over refresh token issuance according to authorization server requirements, client capabilities, and granted scope values. 
+
   
 
 
@@ -3270,7 +3353,8 @@ async function loadExistingGrant(ctx) {
 
 ### pairwiseIdentifier
 
-Specifies a helper function that shall be invoked to generate pairwise subject identifier values for ID Tokens and UserInfo responses, as specified in OpenID Connect Core 1.0. This function enables privacy-preserving subject identifier generation that provides unique identifiers per client while maintaining consistent identification for the same end-user across requests to the same client.   
+Specifies a helper function that shall be invoked to generate pairwise subject identifier values for ID Tokens and UserInfo responses, as specified in OpenID Connect Core 1.0. This function enables privacy-preserving subject identifier generation that provides unique identifiers per client while maintaining consistent identification for the same end-user across requests to the same client. 
+
   
 
 _**recommendation**_: Implementations should employ memoization or caching mechanisms when this function may be invoked multiple times with identical arguments within a single request.  
@@ -3289,7 +3373,8 @@ async function pairwiseIdentifier(ctx, accountId, client) {
 
 [`RFC7636`](https://www.rfc-editor.org/rfc/rfc7636.html) - Proof Key for Code Exchange (`PKCE`)  
 
-`PKCE` configuration such as policy check on the required use of `PKCE`.   
+`PKCE` configuration such as policy check on the required use of `PKCE`. 
+
   
 
 
@@ -3298,8 +3383,8 @@ async function pairwiseIdentifier(ctx, accountId, client) {
 ### pkce.required
 
 Configures if and when the authorization server requires clients to use `PKCE`. This helper is called whenever an authorization request lacks the code_challenge parameter. Return:
- - `false` to allow the request to continue without `PKCE`
- - `true` to abort the request  
+- `false` to allow the request to continue without `PKCE`
+- `true` to abort the request  
 
 
 _**default value**_:
@@ -3359,7 +3444,8 @@ async function renderError(ctx, out, error) {
 
 ### responseTypes
 
-Specifies the response_type values supported by this authorization server. In accordance with RFC 9700 (OAuth 2.0 Security Best Current Practice), the default configuration excludes response types that result in access tokens being issued directly by the authorization endpoint.   
+Specifies the response_type values supported by this authorization server. In accordance with RFC 9700 (OAuth 2.0 Security Best Current Practice), the default configuration excludes response types that result in access tokens being issued directly by the authorization endpoint. 
+
   
 
 
@@ -3393,13 +3479,13 @@ These are values defined in [`OIDC Core 1.0`](https://openid.net/specs/openid-co
 ### revokeGrantPolicy
 
 Specifies a helper function that shall be invoked to determine whether an underlying Grant entry shall be revoked in addition to the specific token or code being processed. This function enables enforcement of grant revocation policies according to authorization server security requirements. The function is invoked in the following contexts:
- - RP-Initiated Logout
- - Opaque Access Token Revocation
- - Refresh Token Revocation
- - Authorization Code re-use
- - Device Code re-use
- - Backchannel Authentication Request re-use
- - Rotated Refresh Token re-use  
+- RP-Initiated Logout
+- Opaque Access Token Revocation
+- Refresh Token Revocation
+- Authorization Code re-use
+- Device Code re-use
+- Backchannel Authentication Request re-use
+- Rotated Refresh Token re-use  
 
 
 _**default value**_:
@@ -3417,14 +3503,14 @@ function revokeGrantPolicy(ctx) {
 ### rotateRefreshToken
 
 Specifies the refresh token rotation policy that shall be applied by the authorization server when refresh tokens are used. This configuration determines whether and under what conditions refresh tokens shall be rotated. Supported values include:
- - `false` - refresh tokens shall not be rotated and their initial expiration date is final
- - `true` - refresh tokens shall be rotated when used, with the current token marked as consumed and a new one issued with new TTL; when a consumed refresh token is encountered an error shall be returned and the whole token chain (grant) is revoked
- - `function` - a function returning true/false that shall be invoked to determine whether rotation should occur based on request context and authorization server policy   
- <br/><br/>   
- The default configuration value implements a sensible refresh token rotation policy that:
- - only allows refresh tokens to be rotated (have their TTL prolonged by issuing a new one) for one year
- - otherwise always rotates public client tokens that are not sender-constrained
- - otherwise only rotates tokens if they're being used close to their expiration (>= 70% TTL passed)  
+- `false` - refresh tokens shall not be rotated and their initial expiration date is final
+- `true` - refresh tokens shall be rotated when used, with the current token marked as consumed and a new one issued with new TTL; when a consumed refresh token is encountered an error shall be returned and the whole token chain (grant) is revoked
+- `function` - a function returning true/false that shall be invoked to determine whether rotation should occur based on request context and authorization server policy 
+
+The default configuration value implements a sensible refresh token rotation policy that:
+- only allows refresh tokens to be rotated (have their TTL prolonged by issuing a new one) for one year
+- otherwise always rotates public client tokens that are not sender-constrained
+- otherwise only rotates tokens if they're being used close to their expiration (>= 70% TTL passed)  
 
 
 _**default value**_:
@@ -3509,8 +3595,8 @@ function sectorIdentifierUriValidate(client) {
 ### subjectTypes
 
 Specifies the array of Subject Identifier types that this authorization server shall support for end-user identification purposes. When only `pairwise` is supported, it shall become the default `subject_type` client metadata value. Supported identifier types shall include:
- - `public` - provides the same subject identifier value to all clients
- - `pairwise` - provides a unique subject identifier value per client to enhance privacy  
+- `public` - provides the same subject identifier value to all clients
+- `pairwise` - provides a unique subject identifier value per client to enhance privacy  
 
 
 _**default value**_:
@@ -3524,12 +3610,17 @@ _**default value**_:
 
 ### ttl
 
-Specifies the Time-To-Live (TTL) values that shall be applied to various artifacts within the authorization server. TTL values may be specified as either a numeric value (in seconds) or a synchronous function that returns a numeric value based on the current request context and authorization server policy.   
+Specifies the Time-To-Live (TTL) values that shall be applied to various artifacts within the authorization server. TTL values may be specified as either a numeric value (in seconds) or a synchronous function that returns a numeric value based on the current request context and authorization server policy. 
+
   
 
-_**recommendation**_: Token TTL values should be set to the minimum duration necessary for the intended use case to minimize security exposure.  
+_**recommendation**_: Token TTL values should be set to the minimum duration necessary for the intended use case to minimize security exposure. 
 
-_**recommendation**_: For refresh tokens requiring extended lifetimes, consider utilizing the `rotateRefreshToken` configuration option, which extends effective token lifetime through rotation rather than extended initial TTL values.  
+  
+
+_**recommendation**_: For refresh tokens requiring extended lifetimes, consider utilizing the `rotateRefreshToken` configuration option, which extends effective token lifetime through rotation rather than extended initial TTL values. 
+
+  
 
 
 _**default value**_:
@@ -3600,7 +3691,8 @@ Specifies the JSON Web Algorithm (JWA) values supported by this authorization se
 
 ### enabledJWA.attestSigningAlgValues
 
-JWS "alg" Algorithm values the authorization server supports to verify signed Client Attestation and Client Attestation PoP JWTs with   
+JWS "alg" Algorithm values the authorization server supports to verify signed Client Attestation and Client Attestation PoP JWTs with 
+
   
 
 
@@ -3629,7 +3721,8 @@ _**default value**_:
 
 ### enabledJWA.authorizationEncryptionAlgValues
 
-JWE "alg" Algorithm values the authorization server supports for JWT Authorization response (`JARM`) encryption   
+JWE "alg" Algorithm values the authorization server supports for JWT Authorization response (`JARM`) encryption 
+
   
 
 
@@ -3664,7 +3757,8 @@ _**default value**_:
 
 ### enabledJWA.authorizationEncryptionEncValues
 
-JWE "enc" Content Encryption Algorithm values the authorization server supports to encrypt JWT Authorization Responses (`JARM`) with   
+JWE "enc" Content Encryption Algorithm values the authorization server supports to encrypt JWT Authorization Responses (`JARM`) with 
+
   
 
 
@@ -3690,7 +3784,8 @@ _**default value**_:
 
 ### enabledJWA.authorizationSigningAlgValues
 
-JWS "alg" Algorithm values the authorization server supports to sign JWT Authorization Responses (`JARM`) with   
+JWS "alg" Algorithm values the authorization server supports to sign JWT Authorization Responses (`JARM`) with 
+
   
 
 
@@ -3722,7 +3817,8 @@ _**default value**_:
 
 ### enabledJWA.clientAuthSigningAlgValues
 
-JWS "alg" Algorithm values the authorization server supports for signed JWT Client Authentication (`private_key_jwt` and `client_secret_jwt`)   
+JWS "alg" Algorithm values the authorization server supports for signed JWT Client Authentication (`private_key_jwt` and `client_secret_jwt`) 
+
   
 
 
@@ -3755,7 +3851,8 @@ _**default value**_:
 
 ### enabledJWA.dPoPSigningAlgValues
 
-JWS "alg" Algorithm values the authorization server supports to verify signed DPoP proof JWTs with   
+JWS "alg" Algorithm values the authorization server supports to verify signed DPoP proof JWTs with 
+
   
 
 
@@ -3784,7 +3881,8 @@ _**default value**_:
 
 ### enabledJWA.idTokenEncryptionAlgValues
 
-JWE "alg" Algorithm values the authorization server supports for ID Token encryption   
+JWE "alg" Algorithm values the authorization server supports for ID Token encryption 
+
   
 
 
@@ -3819,7 +3917,8 @@ _**default value**_:
 
 ### enabledJWA.idTokenEncryptionEncValues
 
-JWE "enc" Content Encryption Algorithm values the authorization server supports to encrypt ID Tokens with   
+JWE "enc" Content Encryption Algorithm values the authorization server supports to encrypt ID Tokens with 
+
   
 
 
@@ -3845,7 +3944,8 @@ _**default value**_:
 
 ### enabledJWA.idTokenSigningAlgValues
 
-JWS "alg" Algorithm values the authorization server supports to sign ID Tokens with.   
+JWS "alg" Algorithm values the authorization server supports to sign ID Tokens with. 
+
   
 
 
@@ -3877,7 +3977,8 @@ _**default value**_:
 
 ### enabledJWA.introspectionEncryptionAlgValues
 
-JWE "alg" Algorithm values the authorization server supports for JWT Introspection response encryption   
+JWE "alg" Algorithm values the authorization server supports for JWT Introspection response encryption 
+
   
 
 
@@ -3912,7 +4013,8 @@ _**default value**_:
 
 ### enabledJWA.introspectionEncryptionEncValues
 
-JWE "enc" Content Encryption Algorithm values the authorization server supports to encrypt JWT Introspection responses with   
+JWE "enc" Content Encryption Algorithm values the authorization server supports to encrypt JWT Introspection responses with 
+
   
 
 
@@ -3938,7 +4040,8 @@ _**default value**_:
 
 ### enabledJWA.introspectionSigningAlgValues
 
-JWS "alg" Algorithm values the authorization server supports to sign JWT Introspection responses with   
+JWS "alg" Algorithm values the authorization server supports to sign JWT Introspection responses with 
+
   
 
 
@@ -3970,7 +4073,8 @@ _**default value**_:
 
 ### enabledJWA.requestObjectEncryptionAlgValues
 
-JWE "alg" Algorithm values the authorization server supports to receive encrypted Request Objects (`JAR`) with   
+JWE "alg" Algorithm values the authorization server supports to receive encrypted Request Objects (`JAR`) with 
+
   
 
 
@@ -4005,7 +4109,8 @@ _**default value**_:
 
 ### enabledJWA.requestObjectEncryptionEncValues
 
-JWE "enc" Content Encryption Algorithm values the authorization server supports to decrypt Request Objects (`JAR`) with   
+JWE "enc" Content Encryption Algorithm values the authorization server supports to decrypt Request Objects (`JAR`) with 
+
   
 
 
@@ -4031,7 +4136,8 @@ _**default value**_:
 
 ### enabledJWA.requestObjectSigningAlgValues
 
-JWS "alg" Algorithm values the authorization server supports to receive signed Request Objects (`JAR`) with   
+JWS "alg" Algorithm values the authorization server supports to receive signed Request Objects (`JAR`) with 
+
   
 
 
@@ -4064,7 +4170,8 @@ _**default value**_:
 
 ### enabledJWA.userinfoEncryptionAlgValues
 
-JWE "alg" Algorithm values the authorization server supports for UserInfo Response encryption   
+JWE "alg" Algorithm values the authorization server supports for UserInfo Response encryption 
+
   
 
 
@@ -4099,7 +4206,8 @@ _**default value**_:
 
 ### enabledJWA.userinfoEncryptionEncValues
 
-JWE "enc" Content Encryption Algorithm values the authorization server supports to encrypt UserInfo responses with   
+JWE "enc" Content Encryption Algorithm values the authorization server supports to encrypt UserInfo responses with 
+
   
 
 
@@ -4125,7 +4233,8 @@ _**default value**_:
 
 ### enabledJWA.userinfoSigningAlgValues
 
-JWS "alg" Algorithm values the authorization server supports to sign UserInfo responses with   
+JWS "alg" Algorithm values the authorization server supports to sign UserInfo responses with 
+
   
 
 
