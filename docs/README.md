@@ -2074,7 +2074,7 @@ _**default value**_:
 
 ### features.attestClientAuth
 
-[draft-ietf-oauth-attestation-based-client-auth-06](https://www.ietf.org/archive/id/draft-ietf-oauth-attestation-based-client-auth-07.html) - OAuth 2.0 Attestation-Based Client Authentication  
+[draft-ietf-oauth-attestation-based-client-auth-06](https://www.ietf.org/archive/id/draft-ietf-oauth-attestation-based-client-auth-06.html) - OAuth 2.0 Attestation-Based Client Authentication  
 
 > [!NOTE]
 > This is an experimental feature.
