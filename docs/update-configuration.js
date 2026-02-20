@@ -110,6 +110,7 @@ const props = [
   'see',
   '@nodefault',
   '@skip',
+  '@important',
 ];
 
 let mid = Buffer.from('');
@@ -223,43 +224,109 @@ try {
     read.on('error', reject);
   });
 
-  const jwa = [];
-  let featuresIdx = 0;
-  const configuration = Object.keys(blocks).sort().filter((value) => {
-    if (!value) {
-      return false;
-    }
-    if (value.startsWith('enabledJWA')) {
-      jwa.push(value);
-      return false;
-    }
-    return true;
-  }, []).reduce((acc, cur) => {
-    if (cur.startsWith('features')) {
-      featuresIdx += 1;
-      acc.unshift(cur);
-    } else {
-      acc.push(cur);
-    }
-    return acc;
-  }, []);
+  function sortBlocks(list) {
+    return list.sort((a, b) => {
+      const aImportant = '@important' in blocks[a];
+      const bImportant = '@important' in blocks[b];
+      if (aImportant !== bImportant) return aImportant ? -1 : 1;
+      return a.localeCompare(b);
+    });
+  }
 
-  const features = configuration.splice(0, featuresIdx).sort();
-  const clientsIdx = configuration.findIndex((x) => x === 'clients');
-  const clients = configuration.splice(clientsIdx, 1);
-  const adapterIdx = configuration.findIndex((x) => x === 'adapter');
-  const adapter = configuration.splice(adapterIdx, 1);
-  const jwksIdx = configuration.findIndex((x) => x === 'jwks');
-  const jwks = configuration.splice(jwksIdx, 1);
-  const findAccountIdx = configuration.findIndex((x) => x === 'findAccount');
-  const findAccount = configuration.splice(findAccountIdx, 1);
+  const allBlocks = Object.keys(blocks).filter((value) => value && !('@skip' in blocks[value]));
+
+  // Separate into categories
+  const featureBlocks = []; // top-level features.X (not sub-options like features.X.Y)
+  const topLevel = [];
+
+  for (const name of allBlocks) {
+    if (name.startsWith('features.')) {
+      featureBlocks.push(name);
+    } else {
+      topLevel.push(name);
+    }
+  }
+
+  // Split features into parent-level (features.X) and sub-options (features.X.Y)
+  const featureParents = featureBlocks.filter((f) => f.split('.').length === 2);
+  const featureChildren = featureBlocks.filter((f) => f.split('.').length > 2);
+
+  // Split parent features into stable and experimental
+  const stableFeatures = featureParents.filter((f) => {
+    const value = get(defaults, f);
+    return !(typeof value === 'object' && value !== null && 'ack' in value);
+  });
+  const experimentalFeatures = featureParents.filter((f) => {
+    const value = get(defaults, f);
+    return typeof value === 'object' && value !== null && 'ack' in value;
+  });
+
+  // Sort each group: important first, then alphabetically
+  sortBlocks(stableFeatures);
+  sortBlocks(experimentalFeatures);
+  sortBlocks(topLevel);
+  sortBlocks(featureChildren);
+
+  // Build the ordered feature list: stable features first, then experimental
+  const orderedFeatures = [...stableFeatures, ...experimentalFeatures];
+
+  // Build the final ordered block list
+  const orderedBlocks = [];
+  for (const block of topLevel) {
+    orderedBlocks.push(block);
+    if (block === 'features') {
+      // Insert all feature blocks (parents + their children) right after 'features'
+      for (const parent of orderedFeatures) {
+        orderedBlocks.push(parent);
+        // Add any sub-options for this feature
+        const children = featureChildren.filter((c) => c.startsWith(`${parent}.`));
+        sortBlocks(children);
+        orderedBlocks.push(...children);
+      }
+    }
+  }
+
+  // Generate Table of Contents
+  function tocAnchor(block) {
+    return block.replace(/[.]/g, '').toLowerCase();
+  }
+
+  append('\n**Table of Contents**\n\n');
+  append('> ❗ marks the configuration you most likely want to take a look at.\n\n');
+
+  let inExperimental = false;
+  for (const block of orderedBlocks) {
+    // Skip child/sub options in the ToC
+    if (block.includes('.') && !block.startsWith('features.')) continue; // eslint-disable-line no-continue
+    if (block.startsWith('features.') && block.split('.').length > 2) continue; // eslint-disable-line no-continue
+
+    const section = blocks[block];
+    const isImportant = '@important' in section;
+    const mark = isImportant ? ' ❗' : '';
+    const rawTitle = section.title ? section.title.toString().trim().replace(/\[([^\]]+)\]\([^)]+\)/g, '$1') : '';
+    const title = rawTitle ? ` - ${rawTitle}` : '';
+
+    if (block.startsWith('features.')) {
+      const isExp = experimentalFeatures.includes(block);
+      if (isExp && !inExperimental) {
+        inExperimental = true;
+        append('  - Experimental features:\n');
+      }
+
+      const featureName = block.split('.').slice(1).join('.');
+      const indent = inExperimental ? '    ' : '  ';
+      append(`${indent}- [${featureName}${mark}](#${tocAnchor(block)})${title}\n`);
+    } else {
+      if (inExperimental) inExperimental = false;
+      append(`- [${block}${mark}](#${tocAnchor(block)})${title}\n`);
+    }
+  }
+  append('\n');
 
   let first = true;
   let hidden;
   let prev;
-  for (const block of [
-    ...adapter, ...clients, ...findAccount, ...jwks, ...features, ...configuration, ...jwa,
-  ]) {
+  for (const block of orderedBlocks) {
     const section = blocks[block];
 
     if ('@skip' in section) {
@@ -439,7 +506,7 @@ try {
   const pre = conf.slice(0, conf.indexOf(comStart) + comStart.length);
   const post = conf.slice(conf.indexOf(comEnd));
 
-  writeFileSync('./docs/README.md', Buffer.concat([pre, mid, post]));
+  writeFileSync('./docs/README.md', Buffer.concat([pre, Buffer.from('\n'), mid, post]));
 } catch (err) {
   console.error(err); // eslint-disable-line no-console
   process.exitCode = 1;
