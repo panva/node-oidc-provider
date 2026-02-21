@@ -47,22 +47,20 @@ merge(config.features, {
   attestClientAuth: {
     enabled: true,
     challengeSecret: randomBytes(32),
-    getAttestationSignaturePublicKey(ctx, iss, header, client) {
+    getAttestationSignaturePublicKey(ctx, header, payload, client) {
       assert.ok(ctx);
-      assert.equal(typeof iss, 'string');
       assert.ok(header);
+      assert.ok(payload);
       assert.ok(client);
-      if (iss === 'https://attester.example.com' && header.alg === 'RS256') {
-        return client.jwks.keys[0];
+      if (header.alg === 'RS256') {
+        return attestationKey;
       }
-      throw new Error('unexpected attestation jwt issuer');
+      throw new Error('unexpected attestation jwt alg');
     },
     assertAttestationJwtAndPop(ctx, attestation, pop, client) {
       assert.ok(ctx);
-      assert.ok(attestation?.payload?.iss);
       assert.ok(attestation?.protectedHeader?.alg);
       assert.ok(attestation?.key?.algorithm);
-      assert.ok(pop?.payload?.iss);
       assert.ok(pop?.protectedHeader?.alg);
       assert.ok(pop?.key?.algorithm);
       assert.ok(client);

@@ -52,7 +52,7 @@ Supported Access Token formats:
 The following specifications and drafts are implemented as experimental features:
 
 - [Financial-grade API: Client Initiated Backchannel Authentication Profile (`FAPI-CIBA`) - Implementers Draft 01][fapi-ciba]
-- [OAuth 2.0 Attestation-Based Client Authentication - Draft 06][attestation-client-auth]
+- [OAuth 2.0 Attestation-Based Client Authentication - Draft 10][attestation-client-auth]
 - [OAuth Client ID Metadata Document (`CIMD`) - Draft 02][cimd]
 - [OpenID for Verifiable Credential Issuance 1.0][openid4vci]
 
@@ -171,6 +171,6 @@ actions and i.e. emit metrics that react to specific triggers. See the list of a
 [Security Policy]: https://github.com/panva/node-oidc-provider/security/policy
 [rp-metadata-choices]: https://openid.net/specs/openid-connect-rp-metadata-choices-1_0-final.html
 [rfc8414]: https://www.rfc-editor.org/info/rfc8414/
-[attestation-client-auth]: https://www.ietf.org/archive/id/draft-ietf-oauth-attestation-based-client-auth-06.html
+[attestation-client-auth]: https://www.ietf.org/archive/id/draft-ietf-oauth-attestation-based-client-auth-10.html
 [cimd]: https://www.ietf.org/archive/id/draft-ietf-oauth-client-id-metadata-document-02.html
 [openid4vci]: https://openid.net/specs/openid-4-verifiable-credential-issuance-1_0-final.html

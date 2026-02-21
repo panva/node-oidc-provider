@@ -51,6 +51,46 @@ function noW3A({ headers }) {
   expect(headers).not.to.have.property('www-authenticate');
 }
 
+const attestationPrivateKey = createPrivateKey({ format: 'jwk', key: clientKey });
+
+function signAttestation(subject, instanceKeyPair) {
+  return new SignJWT({
+    cnf: {
+      jwk: instanceKeyPair.publicKey.export({ format: 'jwk' }),
+    },
+  })
+    .setProtectedHeader({
+      typ: 'oauth-client-attestation+jwt',
+      alg: 'RS256',
+    })
+    .setSubject(subject)
+    .setExpirationTime('2h')
+    .sign(attestationPrivateKey);
+}
+
+function signAttestationPop(provider, instanceKeyPair, challenge) {
+  return new SignJWT({ challenge })
+    .setProtectedHeader({
+      typ: 'oauth-client-attestation-pop+jwt',
+      alg: 'Ed25519',
+    })
+    .setAudience(provider.issuer)
+    .setJti(nanoid())
+    .setIssuedAt()
+    .sign(instanceKeyPair.privateKey);
+}
+
+async function withAdditionalSecuritySignal(provider, value, fn) {
+  const config = i(provider).configuration.features.attestClientAuth;
+  const previous = config.additionalSecuritySignal;
+  config.additionalSecuritySignal = value;
+  try {
+    await fn();
+  } finally {
+    config.additionalSecuritySignal = previous;
+  }
+}
+
 describe('client authentication methods', () => {
   before(bootstrap(import.meta.url));
 
@@ -189,6 +229,36 @@ describe('client authentication methods', () => {
       ];
 
       expect(i(provider).configuration.clientAuthSigningAlgValues).to.eql(algs);
+    });
+
+    it('does not advertise additional client attestation signal methods by default', function () {
+      return this.agent.get('/.well-known/openid-configuration')
+        .expect(200)
+        .expect(({ body }) => {
+          expect(body).not.to.have.property('client_attestation_pop_methods_supported');
+        });
+    });
+
+    it('advertises optional additional client attestation signal methods', function () {
+      return withAdditionalSecuritySignal(this.provider, 'optional', async () => {
+        await this.agent.get('/.well-known/openid-configuration')
+          .expect(200)
+          .expect(({ body }) => {
+            expect(body).to.have.property('client_attestation_pop_methods_supported')
+              .and.eql(['attestation_pop_jwt', 'none']);
+          });
+      });
+    });
+
+    it('advertises required additional client attestation signal methods', function () {
+      return withAdditionalSecuritySignal(this.provider, 'required', async () => {
+        await this.agent.get('/.well-known/openid-configuration')
+          .expect(200)
+          .expect(({ body }) => {
+            expect(body).to.have.property('client_attestation_pop_methods_supported')
+              .and.eql(['attestation_pop_jwt']);
+          });
+      });
     });
   });
 
@@ -1165,6 +1235,156 @@ describe('client authentication methods', () => {
     });
   });
 
+  describe('client attestation as an additional security signal', () => {
+    async function getSignalHeaders(ctx, subject) {
+      const { body: { attestation_challenge: challenge } } = await ctx.agent.post('/challenge');
+      const instanceKeyPair = generateKeyPairSync('ed25519');
+
+      return {
+        attestation: await signAttestation(subject, instanceKeyPair),
+        pop: await signAttestationPop(ctx.provider, instanceKeyPair, challenge),
+      };
+    }
+
+    it('rejects client_secret_basic with attestation headers when the signal is disabled', async function () {
+      const { attestation, pop } = await getSignalHeaders(this, 'client-basic');
+
+      await this.agent.post(route)
+        .auth('client-basic', 'secret')
+        .set('OAuth-Client-Attestation', attestation)
+        .set('OAuth-Client-Attestation-PoP', pop)
+        .send({ grant_type: 'foo' })
+        .type('form')
+        .expect(400)
+        .expect(noW3A)
+        .expect({
+          error: 'invalid_request',
+          error_description: 'client authentication must only be provided using one mechanism',
+        });
+    });
+
+    it('rejects none auth with attestation headers when the signal is disabled', async function () {
+      const { attestation, pop } = await getSignalHeaders(this, 'client-none');
+
+      await this.agent.post(route)
+        .set('OAuth-Client-Attestation', attestation)
+        .set('OAuth-Client-Attestation-PoP', pop)
+        .send({
+          grant_type: 'foo',
+          client_id: 'client-none',
+        })
+        .type('form')
+        .expect(400)
+        .expect({
+          error: 'invalid_request',
+          error_description: 'client authentication must only be provided using one mechanism',
+        });
+    });
+
+    it('accepts client_secret_basic with an optional signal', function () {
+      return withAdditionalSecuritySignal(this.provider, 'optional', async () => {
+        const { attestation, pop } = await getSignalHeaders(this, 'client-basic');
+        const spy = sinon.spy();
+        this.provider.once('grant.success', spy);
+
+        await this.agent.post(route)
+          .auth('client-basic', 'secret')
+          .set('OAuth-Client-Attestation', attestation)
+          .set('OAuth-Client-Attestation-PoP', pop)
+          .send({ grant_type: 'foo' })
+          .type('form')
+          .expect(200)
+          .expect(tokenAuthSucceeded)
+          .expect(() => {
+            expect(spy.calledOnce).to.be.true;
+            expect(spy.firstCall.args[0].oidc.clientAttestation).to.include({
+              method: 'attestation_pop_jwt',
+              signal: true,
+            });
+            expect(spy.firstCall.args[0].oidc.clientAttestation.attestation.payload)
+              .to.have.property('sub', 'client-basic');
+          });
+      });
+    });
+
+    it('accepts none auth with a required signal', function () {
+      return withAdditionalSecuritySignal(this.provider, 'required', async () => {
+        const { attestation, pop } = await getSignalHeaders(this, 'client-none');
+
+        await this.agent.post(route)
+          .set('OAuth-Client-Attestation', attestation)
+          .set('OAuth-Client-Attestation-PoP', pop)
+          .send({
+            grant_type: 'foo',
+            client_id: 'client-none',
+          })
+          .type('form')
+          .expect(200)
+          .expect(tokenAuthSucceeded);
+      });
+    });
+
+    it('rejects when a required signal is missing', function () {
+      return withAdditionalSecuritySignal(this.provider, 'required', async () => {
+        const spy = sinon.spy();
+        this.provider.once('grant.error', spy);
+
+        await this.agent.post(route)
+          .auth('client-basic', 'secret')
+          .send({ grant_type: 'foo' })
+          .type('form')
+          .expect(400)
+          .expect(noW3A)
+          .expect({ error: 'invalid_client_attestation' })
+          .expect(() => {
+            expect(spy.calledOnce).to.be.true;
+            expect(errorDetail(spy)).to.equal('oauth-client-attestation missing');
+          });
+      });
+    });
+
+    it('rejects a partial optional signal', function () {
+      return withAdditionalSecuritySignal(this.provider, 'optional', async () => {
+        const { attestation } = await getSignalHeaders(this, 'client-basic');
+        const spy = sinon.spy();
+        this.provider.once('grant.error', spy);
+
+        await this.agent.post(route)
+          .auth('client-basic', 'secret')
+          .set('OAuth-Client-Attestation', attestation)
+          .send({ grant_type: 'foo' })
+          .type('form')
+          .expect(400)
+          .expect({ error: 'invalid_client_attestation' })
+          .expect(() => {
+            expect(spy.calledOnce).to.be.true;
+            expect(errorDetail(spy)).to.equal('oauth-client-attestation-pop missing');
+          });
+      });
+    });
+
+    it('rejects when the signal subject does not match the authenticated client', function () {
+      return withAdditionalSecuritySignal(this.provider, 'optional', async () => {
+        const { attestation, pop } = await getSignalHeaders(this, 'client-none');
+        const spy = sinon.spy();
+        this.provider.once('grant.error', spy);
+
+        await this.agent.post(route)
+          .auth('client-basic', 'secret')
+          .set('OAuth-Client-Attestation', attestation)
+          .set('OAuth-Client-Attestation-PoP', pop)
+          .send({ grant_type: 'foo' })
+          .type('form')
+          .expect(400)
+          .expect({ error: 'invalid_client_attestation' })
+          .expect(() => {
+            expect(spy.calledOnce).to.be.true;
+            expect(errorDetail(spy)).to.match(/unexpected "sub" claim value/);
+          });
+      });
+    });
+  });
+
   describe('attest_jwt_client_auth auth', () => {
     let challenge;
     before(async function () {
@@ -1188,7 +1408,6 @@ describe('client authentication methods', () => {
             typ: 'oauth-client-attestation+jwt',
             alg: 'RS256',
           })
-          .setIssuer('https://attester.example.com')
           .setSubject('attest_jwt_client_auth')
           .setExpirationTime('2h')
           .sign(privateKey),
@@ -1197,9 +1416,9 @@ describe('client authentication methods', () => {
             typ: 'oauth-client-attestation-pop+jwt',
             alg: 'Ed25519',
           })
-          .setIssuer('attest_jwt_client_auth')
           .setAudience(this.provider.issuer)
           .setJti(nanoid())
+          .setIssuedAt()
           .sign(instanceKeyPair.privateKey),
       ]);
 
@@ -1220,9 +1439,9 @@ describe('client authentication methods', () => {
             typ: 'oauth-client-attestation-pop+jwt',
             alg: 'Ed25519',
           })
-          .setIssuer('attest_jwt_client_auth')
           .setAudience(this.provider.issuer)
           .setJti(nanoid())
+          .setIssuedAt()
           .sign(instanceKeyPair.privateKey);
       });
 
@@ -1237,33 +1456,6 @@ describe('client authentication methods', () => {
               typ: 'oauth-client-attestation+jwt',
               alg: 'RS256',
             })
-            // .setIssuer('https://attester.example.com')
-            .setSubject('attest_jwt_client_auth')
-            .setExpirationTime('2h')
-            .sign(privateKey),
-          new SignJWT({
-            cnf: {
-              jwk: instanceKeyPair.publicKey.export({ format: 'jwk' }),
-            },
-          })
-            .setProtectedHeader({
-              typ: 'oauth-client-attestation+jwt',
-              alg: 'RS256',
-            })
-            .setIssuer('foo')
-            .setSubject('attest_jwt_client_auth')
-            .setExpirationTime('2h')
-            .sign(privateKey),
-          new SignJWT({
-            cnf: {
-              jwk: instanceKeyPair.publicKey.export({ format: 'jwk' }),
-            },
-          })
-            .setProtectedHeader({
-              typ: 'oauth-client-attestation+jwt',
-              alg: 'RS256',
-            })
-            .setIssuer('https://attester.example.com')
             // .setSubject('attest_jwt_client_auth')
             .setExpirationTime('2h')
             .sign(privateKey),
@@ -1276,7 +1468,6 @@ describe('client authentication methods', () => {
               typ: 'oauth-client-attestation+jwt',
               alg: 'RS256',
             })
-            .setIssuer('https://attester.example.com')
             .setSubject('foo')
             .setExpirationTime('2h')
             .sign(privateKey),
@@ -1289,7 +1480,6 @@ describe('client authentication methods', () => {
               typ: 'oauth-client-attestation+jwt',
               alg: 'RS256',
             })
-            .setIssuer('https://attester.example.com')
             .setSubject('attest_jwt_client_auth')
             // .setExpirationTime('2h')
             .sign(privateKey),
@@ -1302,7 +1492,6 @@ describe('client authentication methods', () => {
               typ: 'oauth-client-attestation+jwt',
               alg: 'RS256',
             })
-            .setIssuer('https://attester.example.com')
             .setSubject('attest_jwt_client_auth')
             .setExpirationTime(0)
             .sign(privateKey),
@@ -1315,7 +1504,6 @@ describe('client authentication methods', () => {
               typ: 'oauth-client-attestation+jwt',
               alg: 'RS256',
             })
-            .setIssuer('https://attester.example.com')
             .setSubject('attest_jwt_client_auth')
             .setExpirationTime('2h')
             .sign(privateKey),
@@ -1328,7 +1516,6 @@ describe('client authentication methods', () => {
               typ: 'oauth-client-attestation+jwt',
               alg: 'RS256',
             })
-            .setIssuer('https://attester.example.com')
             .setSubject('attest_jwt_client_auth')
             .setExpirationTime('2h')
             .sign(privateKey),
@@ -1341,7 +1528,6 @@ describe('client authentication methods', () => {
               // typ: 'oauth-client-attestation+jwt',
               alg: 'RS256',
             })
-            .setIssuer('https://attester.example.com')
             .setSubject('attest_jwt_client_auth')
             .setExpirationTime('2h')
             .sign(privateKey),
@@ -1354,7 +1540,6 @@ describe('client authentication methods', () => {
               typ: 'foo',
               alg: 'RS256',
             })
-            .setIssuer('https://attester.example.com')
             .setSubject('attest_jwt_client_auth')
             .setExpirationTime('2h')
             .sign(privateKey),
@@ -1382,7 +1567,6 @@ describe('client authentication methods', () => {
             typ: 'oauth-client-attestation+jwt',
             alg: 'RS256',
           })
-          .setIssuer('https://attester.example.com')
           .setSubject('attest_jwt_client_auth')
           .setExpirationTime('2h')
           .sign(privateKey);
@@ -1394,9 +1578,9 @@ describe('client authentication methods', () => {
             typ: 'oauth-client-attestation-pop+jwt',
             alg: 'Ed25519',
           })
-          .setIssuer('attest_jwt_client_auth')
           .setAudience(this.provider.issuer)
           .setJti(nanoid())
+          .setIssuedAt()
           .sign(instanceKeyPair.privateKey);
 
         await this.agent.post(route)
@@ -1425,9 +1609,9 @@ describe('client authentication methods', () => {
               typ: 'oauth-client-attestation-pop+jwt',
               alg: 'Ed25519',
             })
-            .setIssuer('attest_jwt_client_auth')
             .setAudience(this.provider.issuer)
             .setJti(nanoid())
+            .setIssuedAt()
             .sign(instanceKeyPair.privateKey);
 
           await this.agent.post(route)
@@ -1448,9 +1632,9 @@ describe('client authentication methods', () => {
               typ: 'oauth-client-attestation-pop+jwt',
               alg: 'Ed25519',
             })
-            .setIssuer('attest_jwt_client_auth')
             .setAudience(this.provider.issuer)
             .setJti(nanoid())
+            .setIssuedAt()
             .sign(instanceKeyPair.privateKey);
 
           await this.agent.post(route)
@@ -1473,72 +1657,63 @@ describe('client authentication methods', () => {
               typ: 'oauth-client-attestation-pop+jwt',
               alg: 'Ed25519',
             })
-            .setIssuer('attest_jwt_client_auth')
             .setAudience(this.provider.issuer)
             // .setJti(nanoid())
+            .setIssuedAt()
             .sign(instanceKeyPair.privateKey),
           new SignJWT({ challenge })
             .setProtectedHeader({
               typ: 'oauth-client-attestation-pop+jwt',
               alg: 'Ed25519',
             })
-            .setIssuer('attest_jwt_client_auth')
             // .setAudience(this.provider.issuer)
             .setJti(nanoid())
+            .setIssuedAt()
             .sign(instanceKeyPair.privateKey),
           new SignJWT({ challenge })
             .setProtectedHeader({
               typ: 'oauth-client-attestation-pop+jwt',
               alg: 'Ed25519',
             })
-            .setIssuer('attest_jwt_client_auth')
             .setAudience([this.provider.issuer])
             .setJti(nanoid())
+            .setIssuedAt()
             .sign(instanceKeyPair.privateKey),
           new SignJWT({ challenge })
             .setProtectedHeader({
               typ: 'oauth-client-attestation-pop+jwt',
               alg: 'Ed25519',
             })
-            .setIssuer('attest_jwt_client_auth')
             .setAudience('foo')
             .setJti(nanoid())
-            .sign(instanceKeyPair.privateKey),
-          new SignJWT({ challenge })
-            .setProtectedHeader({
-              typ: 'oauth-client-attestation-pop+jwt',
-              alg: 'Ed25519',
-            })
-            // .setIssuer('attest_jwt_client_auth')
-            .setAudience(this.provider.issuer)
-            .setJti(nanoid())
-            .sign(instanceKeyPair.privateKey),
-          new SignJWT({ challenge })
-            .setProtectedHeader({
-              typ: 'oauth-client-attestation-pop+jwt',
-              alg: 'Ed25519',
-            })
-            .setIssuer('foo')
-            .setAudience(this.provider.issuer)
-            .setJti(nanoid())
+            .setIssuedAt()
             .sign(instanceKeyPair.privateKey),
           new SignJWT({ challenge })
             .setProtectedHeader({
               // typ: 'oauth-client-attestation-pop+jwt',
               alg: 'Ed25519',
             })
-            .setIssuer('attest_jwt_client_auth')
             .setAudience(this.provider.issuer)
             .setJti(nanoid())
+            .setIssuedAt()
             .sign(instanceKeyPair.privateKey),
           new SignJWT({ challenge })
             .setProtectedHeader({
               typ: 'foo',
               alg: 'Ed25519',
             })
-            .setIssuer('attest_jwt_client_auth')
             .setAudience(this.provider.issuer)
             .setJti(nanoid())
+            .setIssuedAt()
+            .sign(instanceKeyPair.privateKey),
+          new SignJWT({ challenge })
+            .setProtectedHeader({
+              typ: 'oauth-client-attestation-pop+jwt',
+              alg: 'Ed25519',
+            })
+            .setAudience(this.provider.issuer)
+            .setJti(nanoid())
+            // .setIssuedAt()
             .sign(instanceKeyPair.privateKey),
         ])) {
           await this.agent.post(route)

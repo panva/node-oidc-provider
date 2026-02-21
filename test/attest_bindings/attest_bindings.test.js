@@ -23,7 +23,6 @@ function attestation(instanceKeyPair) {
       typ: 'oauth-client-attestation+jwt',
       alg: 'Ed25519',
     })
-    .setIssuer('https://attester.example.com')
     .setSubject('client')
     .setExpirationTime('2h')
     .sign(this.config.attestationKeyPair.privateKey);
@@ -36,9 +35,9 @@ function pop(instanceKeyPair) {
       typ: 'oauth-client-attestation-pop+jwt',
       alg: 'Ed25519',
     })
-    .setIssuer('client')
     .setAudience(this.provider.issuer)
     .setJti(crypto.randomUUID())
+    .setIssuedAt()
     .sign(instanceKeyPair.privateKey);
 }
 

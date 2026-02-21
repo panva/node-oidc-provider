@@ -21,11 +21,11 @@ merge(config.features, {
   attestClientAuth: {
     enabled: true,
     challengeSecret: randomBytes(32),
-    getAttestationSignaturePublicKey(_ctx, iss, _header, client) {
-      if (iss === 'https://attester.example.com') {
+    getAttestationSignaturePublicKey(_ctx, _header, _payload, client) {
+      if (client.clientId === 'client') {
         return client.jwks.keys[0];
       }
-      throw new Error('unexpected attestation jwt issuer');
+      throw new Error('unexpected attestation client');
     },
   },
   deviceFlow: {
