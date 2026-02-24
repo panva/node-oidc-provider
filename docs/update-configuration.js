@@ -1,4 +1,4 @@
-/* eslint-disable no-param-reassign */
+/* eslint-disable no-param-reassign, no-plusplus */
 
 import { createInterface as readline } from 'node:readline';
 import { inspect } from 'node:util';
@@ -224,14 +224,12 @@ try {
     read.on('error', reject);
   });
 
-  function sortBlocks(list) {
-    return list.sort((a, b) => {
-      const aImportant = '@important' in blocks[a];
-      const bImportant = '@important' in blocks[b];
-      if (aImportant !== bImportant) return aImportant ? -1 : 1;
-      return a.localeCompare(b);
-    });
-  }
+  const sortBlocks = (list) => list.sort((a, b) => {
+    const aImportant = '@important' in blocks[a];
+    const bImportant = '@important' in blocks[b];
+    if (aImportant !== bImportant) return aImportant ? -1 : 1;
+    return a.localeCompare(b);
+  });
 
   const allBlocks = Object.keys(blocks).filter((value) => value && !('@skip' in blocks[value]));
 
@@ -287,9 +285,7 @@ try {
   }
 
   // Generate Table of Contents
-  function tocAnchor(block) {
-    return block.replace(/[.]/g, '').toLowerCase();
-  }
+  const tocAnchor = (block) => block.replace(/[.]/g, '').toLowerCase();
 
   append('\n**Table of Contents**\n\n');
   append('> ❗ marks the configuration you most likely want to take a look at.\n\n');
@@ -303,7 +299,7 @@ try {
     const section = blocks[block];
     const isImportant = '@important' in section;
     const mark = isImportant ? ' ❗' : '';
-    const rawTitle = section.title ? section.title.toString().trim().replace(/\[([^\]]+)\]\([^)]+\)/g, '$1') : '';
+    const rawTitle = section.title ? section.title.toString().trim().replace(/\[([^\]]+)\]\([^)]+\)/g, '$1') : ''; // eslint-disable-line redos/no-vulnerable
     const title = rawTitle ? ` - ${rawTitle}` : '';
 
     if (block.startsWith('features.')) {
