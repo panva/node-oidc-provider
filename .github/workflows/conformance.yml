@@ -5,8 +5,14 @@ permissions: {}
 on:
   push:
     branches: [main]
+    paths:
+      - 'lib/**'
+      - 'certification/**'
   pull_request:
     branches: [main]
+    paths:
+      - 'lib/**'
+      - 'certification/**'
   schedule:
     - cron: '55 11 * * 1'
   workflow_dispatch:
