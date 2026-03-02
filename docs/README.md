@@ -503,6 +503,7 @@ location / {
 - [extraParams](#extraparams) - Additional Authorization Request Parameters
 - [extraTokenClaims](#extratokenclaims) - Additional Access Token Claims
 - [fetch](#fetch) - Fetching External Resources
+- [fetchResponseBodyLimits](#fetchresponsebodylimits) - Fetch Response Body Size Limits
 - [issueRefreshToken](#issuerefreshtoken) - Refresh Token Issuance Policy
 - [loadExistingGrant](#loadexistinggrant) - Loading Existing Grants
 - [pairwiseIdentifier](#pairwiseidentifier) - Pairwise Subject Identifier Generation
@@ -3624,6 +3625,23 @@ Before each invocation the authorization server sets the following fetch options
 _**default value**_:
 ```js
 (url, options) => globalThis.fetch(url, options)
+```
+
+---
+
+### fetchResponseBodyLimits
+
+Fetch Response Body Size Limits  
+
+Specifies per-purpose maximum response body size limits (in bytes) for external HTTPS resource fetches. When a limit is defined for a given purpose, the authorization server will bail out early on `Content-Length` header values exceeding the limit and will also abort reading the response body when the accumulated size exceeds the limit. Purposes with a limit of `Infinity` will not enforce any size restriction.  
+
+
+_**default value**_:
+```js
+{
+  jwks_uri: Infinity,
+  sector_identifier_uri: Infinity
+}
 ```
 
 ---

@@ -86,4 +86,75 @@ describe('Provider configuration', () => {
       });
     }).to.throw('HTTP POST Method support requires that cookies.long.sameSite is set to none');
   });
+
+  describe('fetchResponseBodyLimits', () => {
+    it('accepts valid finite limits', () => {
+      const conf = new Configuration({
+        fetchResponseBodyLimits: {
+          jwks_uri: 10240,
+          sector_identifier_uri: 2048,
+        },
+      });
+      expect(conf.fetchResponseBodyLimits.jwks_uri).to.equal(10240);
+    });
+
+    it('accepts Infinity (no limit)', () => {
+      const conf = new Configuration({
+        fetchResponseBodyLimits: {
+          jwks_uri: Infinity,
+        },
+      });
+      expect(conf.fetchResponseBodyLimits.jwks_uri).to.equal(Infinity);
+    });
+
+    it('rejects negative values', () => {
+      expect(() => {
+        new Configuration({ // eslint-disable-line no-new
+          fetchResponseBodyLimits: {
+            jwks_uri: -1,
+          },
+        });
+      }).to.throw('fetchResponseBodyLimits."jwks_uri" must be a non-negative safe integer or Infinity');
+    });
+
+    it('rejects non-number values', () => {
+      expect(() => {
+        new Configuration({ // eslint-disable-line no-new
+          fetchResponseBodyLimits: {
+            jwks_uri: '1024',
+          },
+        });
+      }).to.throw('fetchResponseBodyLimits."jwks_uri" must be a non-negative safe integer or Infinity');
+    });
+
+    it('rejects null values', () => {
+      expect(() => {
+        new Configuration({ // eslint-disable-line no-new
+          fetchResponseBodyLimits: {
+            jwks_uri: null,
+          },
+        });
+      }).to.throw('fetchResponseBodyLimits."jwks_uri" must be a non-negative safe integer or Infinity');
+    });
+
+    it('rejects NaN', () => {
+      expect(() => {
+        new Configuration({ // eslint-disable-line no-new
+          fetchResponseBodyLimits: {
+            jwks_uri: NaN,
+          },
+        });
+      }).to.throw('fetchResponseBodyLimits."jwks_uri" must be a non-negative safe integer or Infinity');
+    });
+
+    it('rejects floats', () => {
+      expect(() => {
+        new Configuration({ // eslint-disable-line no-new
+          fetchResponseBodyLimits: {
+            jwks_uri: 10.5,
+          },
+        });
+      }).to.throw('fetchResponseBodyLimits."jwks_uri" must be a non-negative safe integer or Infinity');
+    });
+  });
 });
