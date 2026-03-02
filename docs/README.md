@@ -3613,36 +3613,18 @@ async function extraTokenClaims(ctx, token) {
 
 Fetching External Resources  
 
-Specifies a function that shall be invoked whenever the authorization server needs to make calls to external HTTPS resources. The interface and expected return value shall conform to the [Fetch API specification](https://fetch.spec.whatwg.org/) [`fetch()`](https://developer.mozilla.org/en-US/docs/Web/API/Window/fetch) standard. The default implementation uses a timeout of 2500ms and does not send a user-agent header. 
+Specifies a function that shall be invoked whenever the authorization server needs to make calls to external HTTPS resources. The interface and expected return value shall conform to the [Fetch API specification](https://fetch.spec.whatwg.org/) [`fetch()`](https://developer.mozilla.org/en-US/docs/Web/API/Window/fetch) standard. 
 
-  
+Before each invocation the authorization server sets the following fetch options:
+- `signal` to `AbortSignal.timeout(2500)`
+- `headers` to a new `Headers` instance with the `user-agent` header set to an empty string in order to remove the default one
+- `dispatcher` to a custom `undici.Agent` that rejects connections to private, loopback, and other non-globally-routable IP addresses, preventing Server-Side Request Forgery (SSRF)  
 
 
 _**default value**_:
 ```js
-function fetch(url, options) {
-  options.signal = AbortSignal.timeout(2500);
-  options.headers = new Headers(options.headers);
-  options.headers.set('user-agent', ''); // removes the user-agent header in Node's global fetch()
- 
-  return globalThis.fetch(url, options);
-}
+(url, options) => globalThis.fetch(url, options)
 ```
-<a id="fetch-to-change-the-requests-timeout"></a><details><summary>Example: (Click to expand) To change the requests' timeout.</summary><br>
-
-
-To change all requests' timeout configure the fetch as a function like so:
-  
-
-```js
- {
-   fetch(url, options) {
-     options.signal = AbortSignal.timeout(5000);
-     return globalThis.fetch(url, options);
-   }
- }
-```
-</details>
 
 ---
 

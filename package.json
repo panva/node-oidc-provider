@@ -64,7 +64,8 @@
     "koa": "^3.1.2",
     "nanoid": "^5.1.6",
     "quick-lru": "^7.3.0",
-    "raw-body": "^3.0.2"
+    "raw-body": "^3.0.2",
+    "undici": "^7.22.0"
   },
   "devDependencies": {
     "@fastify/middie": "^9.3.1",
@@ -89,7 +90,6 @@
     "selfsigned": "^5.5.0",
     "sinon": "^21.0.2",
     "supertest": "^7.2.2",
-    "timekeeper": "^2.3.1",
-    "undici": "^7.22.0"
+    "timekeeper": "^2.3.1"
   }
 }

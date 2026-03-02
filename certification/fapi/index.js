@@ -392,6 +392,12 @@ const fapi = new Provider(ISSUER, {
   },
   responseTypes: ['code id_token', 'code'],
   clientAuthMethods,
+  ...(JSON.parse(process.env.SETUP || '{}').plan === 'fapi-ciba-id1-test-plan' && JSON.parse(process.env.SETUP).ciba_mode === 'ping' && {
+    fetch: (url, options) => {
+      delete options.dispatcher; // eslint-disable-line no-param-reassign
+      return globalThis.fetch(url, options);
+    },
+  }),
   enabledJWA: {
     authorizationSigningAlgValues: ALGS,
     idTokenSigningAlgValues: ALGS,

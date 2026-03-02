@@ -149,6 +149,10 @@ export default function testHelper(importMetaUrl, {
       clients,
       jwks: { keys },
       adapter: TestAdapter,
+      fetch: (url, options) => {
+        delete options.dispatcher; // eslint-disable-line no-param-reassign
+        return globalThis.fetch(url, options);
+      },
       ...config,
     });
 
