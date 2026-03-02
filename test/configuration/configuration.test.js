@@ -91,6 +91,7 @@ describe('Provider configuration', () => {
     it('accepts valid finite limits', () => {
       const conf = new Configuration({
         fetchResponseBodyLimits: {
+          'client_id metadata document': 1024,
           jwks_uri: 10240,
           sector_identifier_uri: 2048,
         },

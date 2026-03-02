@@ -153,6 +153,7 @@ export default {
   features: {
     backchannelLogout: { enabled: true },
     devInteractions: { enabled: false },
+    clientIdMetadataDocument: { enabled: true },
     mTLS: {
       enabled: true,
       certificateBoundAccessTokens: true,

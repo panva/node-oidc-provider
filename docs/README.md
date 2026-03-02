@@ -477,6 +477,7 @@ location / {
   - [userinfo](#featuresuserinfo) - OIDC Core 1.0 - UserInfo Endpoint
   - Experimental features:
     - [attestClientAuth](#featuresattestclientauth) - draft-ietf-oauth-attestation-based-client-auth-06 - OAuth 2.0 Attestation-Based Client Authentication
+    - [clientIdMetadataDocument](#featuresclientidmetadatadocument) - `draft-ietf-oauth-client-id-metadata-document-01` - OAuth Client ID Metadata Document (CIMD)
     - [externalSigningSupport](#featuresexternalsigningsupport) - External Signing Support
     - [richAuthorizationRequests](#featuresrichauthorizationrequests) - RFC9396 - OAuth 2.0 Rich Authorization Requests
     - [rpMetadataChoices](#featuresrpmetadatachoices) - OIDC Relying Party Metadata Choices 1.0 - Implementers Draft 01
@@ -2169,6 +2170,76 @@ function getAttestationSignaturePublicKey(ctx, iss, header, client) {
 
 ---
 
+### features.clientIdMetadataDocument
+
+[`draft-ietf-oauth-client-id-metadata-document-01`](https://www.ietf.org/archive/id/draft-ietf-oauth-client-id-metadata-document-01.html) - OAuth Client ID Metadata Document (CIMD)  
+
+> [!NOTE]
+> This is an experimental feature.
+
+Specifies whether the authorization server shall support resolving client metadata from HTTPS URLs used as `client_id` values. When enabled, if a `client_id` is an HTTPS URL conforming to the specification's requirements, the authorization server shall fetch the client metadata document from that URL and use it as the client's registration data, without requiring prior client registration. 
+
+  
+
+
+_**default value**_:
+```js
+{
+  ack: undefined,
+  allowClient: [AsyncFunction: allowClient], // see expanded details below
+  allowFetch: [AsyncFunction: allowFetch], // see expanded details below
+  cacheDuration: {
+    max: 86400,
+    min: 30
+  },
+  enabled: false
+}
+```
+
+<details><summary>(Click to expand) features.clientIdMetadataDocument options details</summary><br>
+
+
+#### allowClient
+
+Specifies a helper function that shall be invoked every time a client resolved from a metadata document is about to be used, including when served from cache. This function enables per-request evaluation of trust and authorization policies for metadata-document-resolved clients. Return `true` to allow the client, or `false` to reject it.  
+
+
+_**default value**_:
+```js
+async allowClient(ctx, client) {
+  return true;
+}
+```
+
+#### allowFetch
+
+Specifies a helper function that shall be invoked before fetching a client metadata document from a `client_id` URL. This function enables enforcement of domain allowlisting, rate limiting, or other security policies. Return `true` to allow the fetch, or `false` to reject the `client_id`.  
+
+
+_**default value**_:
+```js
+async allowFetch(ctx, clientId) {
+  return true;
+}
+```
+
+#### cacheDuration
+
+Specifies the minimum and maximum cache duration bounds (in seconds) applied to HTTP cache headers when caching fetched client metadata documents. Cache-Control and Expires response headers are respected within these bounds.  
+
+
+_**default value**_:
+```js
+{
+  max: 86400,
+  min: 30
+}
+```
+
+</details>
+
+---
+
 ### features.externalSigningSupport
 
 External Signing Support  
@@ -3639,6 +3710,7 @@ Specifies per-purpose maximum response body size limits (in bytes) for external 
 _**default value**_:
 ```js
 {
+  'client_id metadata document': 5120,
   jwks_uri: Infinity,
   sector_identifier_uri: Infinity
 }

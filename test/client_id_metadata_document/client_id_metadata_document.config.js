@@ -1,0 +1,26 @@
+import merge from 'lodash/merge.js';
+
+import getConfig from '../default.config.js';
+
+const config = getConfig();
+
+merge(config, {
+  features: {
+    clientIdMetadataDocument: {
+      enabled: true,
+      ack: 'draft-01',
+    },
+  },
+  pkce: {
+    required: () => false,
+  },
+});
+
+export default {
+  config,
+  clients: [{
+    client_id: 'client',
+    client_secret: 'secret',
+    redirect_uris: ['https://client.example.com/cb'],
+  }],
+};
