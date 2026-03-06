@@ -2,6 +2,30 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [9.7.0](https://github.com/panva/node-oidc-provider/compare/v9.6.1...v9.7.0) (2026-03-06)
+
+
+### Features
+
+* add configuration for limiting external resource body limits ([0c424cd](https://github.com/panva/node-oidc-provider/commit/0c424cd852ac56b37127a0fae8d74c77c38903e4))
+* experimental support for Client ID Metadata Document (CIMD) ([d5323f4](https://github.com/panva/node-oidc-provider/commit/d5323f4cf81200382dc0f374b80364c82f059f93))
+* prevent fetching special-use IP address resources ([1548834](https://github.com/panva/node-oidc-provider/commit/1548834c5f93c546e940f6c5d75e3911696f1ad1))
+
+
+### Documentation
+
+* align section titles and auto-generate toc ([287bfa8](https://github.com/panva/node-oidc-provider/commit/287bfa8c2dfe120b1ad8661fbdd45a6c1310785b))
+* description fixes and various editorial edits ([a8f4f15](https://github.com/panva/node-oidc-provider/commit/a8f4f15500cce567fe225c809795c1e30aa91e12))
+* fix attestClientAuth link ([9c6f095](https://github.com/panva/node-oidc-provider/commit/9c6f095f909762397f4fd6c964bbbc72a758cbac))
+* solve generated nested lists ([d1ebcd2](https://github.com/panva/node-oidc-provider/commit/d1ebcd26f42f4beb4ca2a76fd2d17a8632f6170b))
+* update README.md prose for experimental features ([b029f47](https://github.com/panva/node-oidc-provider/commit/b029f47fb35668dbc00c6edebfa4a6761996bcbe))
+* update the generated content to reflect the jsdoc structure ([aa9f83b](https://github.com/panva/node-oidc-provider/commit/aa9f83b0a81fbc6c5458c31b638e20a2fa0f61a2))
+
+
+### Refactor
+
+* extract setWWWAuthenticateHeader to a shared module ([bb66e62](https://github.com/panva/node-oidc-provider/commit/bb66e62832a8ba4e6d452382fff8058a12913e70))
+
 ## [9.6.1](https://github.com/panva/node-oidc-provider/compare/v9.6.0...v9.6.1) (2026-02-19)
 
 
