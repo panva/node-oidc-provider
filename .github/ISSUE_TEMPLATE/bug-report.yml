@@ -1,0 +1,54 @@
+name: 🐞Bug report
+description: Report a bug in oidc-provider
+labels:
+  - triage
+body:
+  - type: markdown
+    attributes:
+      value: |
+        **This issue tracker is for bug reports only.** It is not for asking questions or getting support.
+
+        Issues that are not bug reports will be closed and eventually deleted.
+
+        If you want to propose a feature, use the [Ideas](https://github.com/panva/node-oidc-provider/discussions/new?category=ideas) Discussions Category instead.
+  - type: textarea
+    attributes:
+      label: What happened?
+      description: A clear and concise description of what the bug is and what you expected to happen instead.
+    validations:
+      required: true
+  - type: input
+    attributes:
+      label: Version
+      description: What exact version of oidc-provider do you use?
+      placeholder: e.g. v9.0.0
+    validations:
+      required: true
+  - type: input
+    attributes:
+      label: Runtime Details
+      description: Node.js version and operating system
+      placeholder: e.g. Node.js v22.0.0, macOS
+    validations:
+      required: true
+  - type: textarea
+    attributes:
+      label: Configuration
+      description: Minimal Provider configuration needed to reproduce the issue. Include clients with the necessary client metadata.
+      render: js
+    validations:
+      required: true
+  - type: textarea
+    attributes:
+      label: Steps to reproduce
+      description: Describe the steps to reproduce the issue.
+    validations:
+      required: true
+  - type: checkboxes
+    attributes:
+      label: Required
+      options:
+        - label: I understand this issue tracker is for bug reports only. Questions and support requests will be closed and eventually deleted.
+          required: true
+        - label: I agree to follow this project's [Code of Conduct](https://github.com/panva/node-oidc-provider/blob/main/CODE_OF_CONDUCT.md)
+          required: true

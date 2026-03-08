@@ -1,0 +1,10 @@
+blank_issues_enabled: false
+contact_links:
+  - name: 💡 Feature proposal
+    url: https://github.com/panva/node-oidc-provider/discussions/new?category=ideas
+    about: Have a proposal for a new feature? Head over to the discussions "Ideas" Category
+  - name: Support the project
+    url: https://github.com/sponsors/panva
+    about:
+      Relying on oidc-provider for critical operations? Consider supporting the project so that it
+      may continue being maintained.
