@@ -17,13 +17,18 @@ on:
   schedule:
     - cron: '55 11 * * 1'
   workflow_dispatch:
+    inputs:
+      conformance_suite_version:
+        description: 'Conformance Suite version override, e.g. release-v5.1.39 (takes precedence over vars.CONFORMANCE_SUITE_VERSION)'
+        required: false
+        type: string
 
 jobs:
   build:
     if: ${{ github.repository == 'panva/node-oidc-provider' || github.event_name == 'workflow_dispatch' }}
     uses: panva/.github/.github/workflows/build-conformance-suite.yml@main
     with:
-      version: ${{ vars.CONFORMANCE_SUITE_VERSION || '' }}
+      version: ${{ inputs.conformance_suite_version || vars.CONFORMANCE_SUITE_VERSION || '' }}
 
   run:
     runs-on: ubuntu-latest
