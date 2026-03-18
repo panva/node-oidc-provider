@@ -502,6 +502,142 @@ describe('Client ID Metadata Document', () => {
     });
   });
 
+  describe('unsupported metadata value filtering', () => {
+    it('filters unsupported grant_types and keeps supported ones', function () {
+      mock('https://filter-grants.example.com')
+        .intercept({ path: '/client' })
+        .reply(200, JSON.stringify({
+          client_id: 'https://filter-grants.example.com/client',
+          redirect_uris: ['https://filter-grants.example.com/cb'],
+          token_endpoint_auth_method: 'none',
+          grant_types: ['authorization_code', 'urn:ietf:params:oauth:grant-type:device_code'],
+        }), {
+          headers: { 'content-type': 'application/json' },
+        });
+
+      return this.agent.get('/auth')
+        .query({
+          client_id: 'https://filter-grants.example.com/client',
+          redirect_uri: 'https://filter-grants.example.com/cb',
+          response_type: 'code',
+          scope: 'openid',
+        })
+        .expect(303)
+        .expect((response) => {
+          const location = new URL(response.headers.location, this.provider.issuer);
+          expect(location.pathname).to.match(/\/interaction\//);
+        });
+    });
+
+    it('rejects when all grant_types are unsupported', function () {
+      mock('https://no-grants.example.com')
+        .intercept({ path: '/client' })
+        .reply(200, JSON.stringify({
+          client_id: 'https://no-grants.example.com/client',
+          redirect_uris: ['https://no-grants.example.com/cb'],
+          token_endpoint_auth_method: 'none',
+          grant_types: ['urn:ietf:params:oauth:grant-type:device_code'],
+        }), {
+          headers: { 'content-type': 'application/json' },
+        });
+
+      return this.agent.get('/auth')
+        .query({
+          client_id: 'https://no-grants.example.com/client',
+          redirect_uri: 'https://no-grants.example.com/cb',
+          response_type: 'code',
+          scope: 'openid',
+        })
+        .expect(400)
+        .expect((response) => {
+          expect(response.text).to.contain('invalid_client_metadata');
+        });
+    });
+
+    it('filters unsupported response_types and keeps supported ones', function () {
+      mock('https://filter-rt.example.com')
+        .intercept({ path: '/client' })
+        .reply(200, JSON.stringify({
+          client_id: 'https://filter-rt.example.com/client',
+          redirect_uris: ['https://filter-rt.example.com/cb'],
+          token_endpoint_auth_method: 'none',
+          grant_types: ['authorization_code'],
+          response_types: ['code', 'code token id_token unsupported'],
+        }), {
+          headers: { 'content-type': 'application/json' },
+        });
+
+      return this.agent.get('/auth')
+        .query({
+          client_id: 'https://filter-rt.example.com/client',
+          redirect_uri: 'https://filter-rt.example.com/cb',
+          response_type: 'code',
+          scope: 'openid',
+        })
+        .expect(303)
+        .expect((response) => {
+          const location = new URL(response.headers.location, this.provider.issuer);
+          expect(location.pathname).to.match(/\/interaction\//);
+        });
+    });
+
+    it('filters unsupported response_modes and keeps supported ones', function () {
+      mock('https://filter-rm.example.com')
+        .intercept({ path: '/client' })
+        .reply(200, JSON.stringify({
+          client_id: 'https://filter-rm.example.com/client',
+          redirect_uris: ['https://filter-rm.example.com/cb'],
+          token_endpoint_auth_method: 'none',
+          response_modes: ['query', 'unsupported_mode'],
+        }), {
+          headers: { 'content-type': 'application/json' },
+        });
+
+      return this.agent.get('/auth')
+        .query({
+          client_id: 'https://filter-rm.example.com/client',
+          redirect_uri: 'https://filter-rm.example.com/cb',
+          response_type: 'code',
+          scope: 'openid',
+        })
+        .expect(303)
+        .expect((response) => {
+          const location = new URL(response.headers.location, this.provider.issuer);
+          expect(location.pathname).to.match(/\/interaction\//);
+        });
+    });
+
+    it('post-enum consistency validation still applies to filtered values', function () {
+      mock('https://consistency.example.com')
+        .intercept({ path: '/client' })
+        .reply(200, JSON.stringify({
+          client_id: 'https://consistency.example.com/client',
+          redirect_uris: ['https://consistency.example.com/cb'],
+          token_endpoint_auth_method: 'none',
+          grant_types: ['urn:ietf:params:oauth:grant-type:device_code', 'implicit'],
+          response_types: ['id_token'],
+        }), {
+          headers: { 'content-type': 'application/json' },
+        });
+
+      // implicit is supported but device_code is not
+      // after filtering grant_types becomes ['implicit'], response_types ['id_token'] is ok
+      return this.agent.get('/auth')
+        .query({
+          client_id: 'https://consistency.example.com/client',
+          redirect_uri: 'https://consistency.example.com/cb',
+          response_type: 'id_token',
+          scope: 'openid',
+          nonce: 'nonce',
+        })
+        .expect(303)
+        .expect((response) => {
+          const location = new URL(response.headers.location, this.provider.issuer);
+          expect(location.pathname).to.match(/\/interaction\//);
+        });
+    });
+  });
+
   describe('allowFetch hook', () => {
     it('rejects when allowFetch returns false', async function () {
       const { features } = i(this.provider); // eslint-disable-line no-undef
