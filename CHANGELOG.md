@@ -2,6 +2,17 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [9.7.1](https://github.com/panva/node-oidc-provider/compare/v9.7.0...v9.7.1) (2026-03-18)
+
+
+### Refactor
+
+* **CIMD:** filter unrecognized array members before validating ([969edba](https://github.com/panva/node-oidc-provider/commit/969edbaee66aae84bb50433c66efde774a261594)), closes [#1398](https://github.com/panva/node-oidc-provider/issues/1398)
+* fetch_body_check.js now returns early when limit is Infinite ([a794f51](https://github.com/panva/node-oidc-provider/commit/a794f518175b089b5f4ee483d7206180c5aeab0f))
+* fixup grant_types and response_types mismatch instead of rejecting ([81538bf](https://github.com/panva/node-oidc-provider/commit/81538bf55ae3fc963f6d8cd4ed8f8c801ff48ee2))
+* process client schema after custom metadata processing ([35fb736](https://github.com/panva/node-oidc-provider/commit/35fb736a0d927dbf92b555b067b267f7146e2158))
+* pull csrf into a shared module ([6239f17](https://github.com/panva/node-oidc-provider/commit/6239f175a8ce3467db171f6e24969945ff19b91f))
+
 ## [9.7.0](https://github.com/panva/node-oidc-provider/compare/v9.6.1...v9.7.0) (2026-03-06)
 
 
