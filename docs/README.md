@@ -4531,14 +4531,13 @@ const signedIn = !!session.accountId;
 
 ### Client Credentials only clients
 
-The `redirect_uris is mandatory property` error occurs but Client Credential clients
-don't need `redirect_uris` or `response_types`... This error appears
-because they are required properties, but they can be empty...
+Client Credential clients don't use the authorization endpoint, so set
+`response_types` to an empty array. The `redirect_uris` will default to `[]`
+automatically.
 
 ```js
 {
   // ... rest of the client configuration
-  redirect_uris: [],
   response_types: [],
   grant_types: ['client_credentials']
 }
@@ -4546,13 +4545,13 @@ because they are required properties, but they can be empty...
 
 ### Resource Server only clients (e.g. for token introspection)
 
-The `redirect_uris is mandatory property` error occurs but the resource server needs
-none. This error appears because they are required properties, but they can be empty...
+Resource server clients don't use any grants or the authorization endpoint, so set
+`response_types` to an empty array. The `redirect_uris` will default to `[]`
+automatically.
 
 ```js
 {
   // ... rest of the client configuration
-  redirect_uris: [],
   response_types: [],
   grant_types: []
 }

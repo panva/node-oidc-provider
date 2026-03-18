@@ -147,7 +147,7 @@ describe('extraClientMetadata configuration', () => {
     expect(validator.calledWith(undefined, 'client_name', undefined)).to.be.true;
   });
 
-  it('should not allow customization to introduce grant_types and response_types mismatch', async () => {
+  it('should allow customization to set grant_types that get auto-fixed based on response_types', async () => {
     const provider = new Provider('http://localhost:3000', {
       extraClientMetadata: {
         properties: ['foo'],
@@ -164,16 +164,8 @@ describe('extraClientMetadata configuration', () => {
       ],
     });
 
-    try {
-      await provider.Client.find('client');
-      throw new Error('expected a throw from the above');
-    } catch (err) {
-      expect(err).to.have.property('message', 'invalid_client_metadata');
-      expect(err).to.have.property(
-        'error_description',
-        "grant_types must contain 'authorization_code' when code is amongst response_types",
-      );
-    }
+    const client = await provider.Client.find('client');
+    expect(client.metadata()).to.have.property('grant_types').and.deep.eql(['authorization_code']);
   });
 
   it('should not allow customization to remove redirect_uris when response_types need them', async () => {

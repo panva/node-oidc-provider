@@ -373,20 +373,31 @@ describe('Client metadata validation', () => {
     defaultsTo(this.title, ['authorization_code']);
     mustBeArray(this.title);
     allows(this.title, ['authorization_code', 'refresh_token']);
+    allows(this.title, [], { response_types: ['none'] });
     rejects(this.title, [123], /must only contain strings$/);
-    rejects(this.title, []);
     rejects(this.title, ['not-a-type']);
-    rejects(this.title, ['implicit'], undefined, {
+
+    // grant types auto-fixup
+    allows(this.title, [], undefined, undefined, (client) => {
+      expect(client.metadata()).to.have.property('grant_types').and.deep.eql(['authorization_code']);
+    });
+    allows(this.title, ['implicit'], {
       // misses authorization_code
       response_types: ['id_token', 'code'],
+    }, undefined, (client) => {
+      expect(client.metadata()).to.have.property('grant_types').and.deep.eql(['implicit', 'authorization_code']);
     });
-    rejects(this.title, ['authorization_code'], undefined, {
-      // misses implicit
+    allows(this.title, ['authorization_code'], {
+      // misses code in response_types
       response_types: ['id_token'],
+    }, undefined, (client) => {
+      expect(client.metadata()).to.have.property('grant_types').and.deep.eql(['implicit']);
     });
-    rejects(this.title, ['authorization_code'], undefined, {
-      // misses implicit
-      response_types: ['token'],
+    allows(this.title, ['authorization_code', 'implicit'], {
+      // misses token or id_token in response_types
+      response_types: ['code'],
+    }, undefined, (client) => {
+      expect(client.metadata()).to.have.property('grant_types').and.deep.eql(['authorization_code']);
     });
   });
 
@@ -679,7 +690,9 @@ describe('Client metadata validation', () => {
     );
 
     rejects(this.title, [123], /must only contain strings$/);
-    rejects(this.title, [], /must contain members$/);
+    allows(this.title, [], undefined, undefined, (client) => {
+      expect(client.metadata()).to.have.property('grant_types').and.deep.eql([]);
+    });
     rejects(this.title, ['not-a-type']);
     rejects(this.title, ['not-a-type', 'none']);
   });
