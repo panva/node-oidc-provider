@@ -147,6 +147,81 @@ describe('extraClientMetadata configuration', () => {
     expect(validator.calledWith(undefined, 'client_name', undefined)).to.be.true;
   });
 
+  it('should not allow customization to introduce grant_types and response_types mismatch', async () => {
+    const provider = new Provider('http://localhost:3000', {
+      extraClientMetadata: {
+        properties: ['foo'],
+        validator(ctx, key, value, metadata) {
+          metadata.grant_types = ['implicit'];
+        },
+      },
+      clients: [
+        {
+          client_id: 'client',
+          client_secret: 'bar',
+          redirect_uris: ['https://rp.example.com/cb'],
+        },
+      ],
+    });
+
+    try {
+      await provider.Client.find('client');
+      throw new Error('expected a throw from the above');
+    } catch (err) {
+      expect(err).to.have.property('message', 'invalid_client_metadata');
+      expect(err).to.have.property(
+        'error_description',
+        "grant_types must contain 'authorization_code' when code is amongst response_types",
+      );
+    }
+  });
+
+  it('should not allow customization to remove redirect_uris when response_types need them', async () => {
+    const provider = new Provider('http://localhost:3000', {
+      extraClientMetadata: {
+        properties: ['foo'],
+        validator(ctx, key, value, metadata) {
+          metadata.redirect_uris = undefined;
+        },
+      },
+      clients: [
+        {
+          client_id: 'client',
+          client_secret: 'bar',
+          redirect_uris: ['https://rp.example.com/cb'],
+        },
+      ],
+    });
+
+    try {
+      await provider.Client.find('client');
+      throw new Error('expected a throw from the above');
+    } catch (err) {
+      expect(err).to.have.property('message', 'invalid_redirect_uri');
+      expect(err).to.have.property('error_description', 'redirect_uris is mandatory property');
+    }
+  });
+
+  it('allows the validator to change standard properties before validation runs', async () => {
+    const provider = new Provider('http://localhost:3000', {
+      extraClientMetadata: {
+        properties: ['foo'],
+        validator(ctx, key, value, metadata) {
+          metadata.token_endpoint_auth_method = 'none';
+        },
+      },
+      clients: [
+        {
+          client_id: 'client',
+          redirect_uris: ['https://rp.example.com/cb'],
+        },
+      ],
+    });
+
+    const client = await provider.Client.find('client');
+    expect(client).to.have.property('tokenEndpointAuthMethod', 'none');
+  });
+
   it('should throw regular errors during #find()', async () => {
     try {
       const provider = new Provider('http://localhost:3000', { // eslint-disable-line no-new
