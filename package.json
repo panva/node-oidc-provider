@@ -56,20 +56,20 @@
   },
   "dependencies": {
     "@koa/cors": "^5.0.0",
-    "@koa/router": "^15.3.1",
+    "@koa/router": "^15.4.0",
     "debug": "^4.4.3",
     "eta": "^4.5.1",
-    "jose": "^6.2.0",
+    "jose": "^6.2.2",
     "jsesc": "^3.1.0",
     "koa": "^3.1.2",
-    "nanoid": "^5.1.6",
+    "nanoid": "^5.1.7",
     "quick-lru": "^7.3.0",
     "raw-body": "^3.0.2",
-    "undici": "^7.22.0"
+    "undici": "^7.24.4"
   },
   "devDependencies": {
     "@fastify/middie": "^9.3.1",
-    "@hapi/hapi": "^21.4.6",
+    "@hapi/hapi": "^21.4.7",
     "@koa/ejs": "^5.1.0",
     "base64url": "^3.0.1",
     "chai": "^6.2.2",
@@ -79,7 +79,7 @@
     "eslint-plugin-import": "^2.32.0",
     "eslint-plugin-redos": "^4.5.0",
     "express": "^5.2.1",
-    "fastify": "^5.8.1",
+    "fastify": "^5.8.2",
     "helmet": "^8.1.0",
     "koa-body": "^7.0.1",
     "koa-mount": "^4.2.0",
@@ -88,7 +88,7 @@
     "moment": "^2.30.1",
     "openid-client": "^6.8.2",
     "selfsigned": "^5.5.0",
-    "sinon": "^21.0.2",
+    "sinon": "^21.0.3",
     "supertest": "^7.2.2",
     "timekeeper": "^2.3.1"
   }
