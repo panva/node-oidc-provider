@@ -42,6 +42,7 @@ _Note that not all features are enabled by default, check the configuration sect
 - [FAPI 2.0 Message Signing (`FAPI 2.0`)][fapi2ms]
 - [JWT Secured Authorization Response Mode for OAuth 2.0 (`JARM`)][jarm]
 - [OIDC Client Initiated Backchannel Authentication Flow (`CIBA`)][ciba]
+- [OIDC Relying Party Metadata Choices 1.0][rp-metadata-choices]
 
 Supported Access Token formats:
 
@@ -51,7 +52,6 @@ Supported Access Token formats:
 The following specifications and drafts are implemented as experimental features:
 
 - [Financial-grade API: Client Initiated Backchannel Authentication Profile (`FAPI-CIBA`) - Implementers Draft 01][fapi-ciba]
-- [OIDC Relying Party Metadata Choices 1.0 - Implementers Draft 01][rp-metadata-choices]
 - [OAuth 2.0 Attestation-Based Client Authentication - Draft 06][attestation-client-auth]
 - [OAuth Client ID Metadata Document (`CIMD`) - Draft 01][cimd]
 
@@ -168,7 +168,7 @@ actions and i.e. emit metrics that react to specific triggers. See the list of a
 [fapi2sp]: https://openid.net/specs/fapi-security-profile-2_0-final.html
 [fapi2ms]: https://openid.net/specs/fapi-message-signing-2_0-final.html
 [Security Policy]: https://github.com/panva/node-oidc-provider/security/policy
-[rp-metadata-choices]: https://openid.net/specs/openid-connect-rp-metadata-choices-1_0-ID1.html
+[rp-metadata-choices]: https://openid.net/specs/openid-connect-rp-metadata-choices-1_0-final.html
 [rfc8414]: https://www.rfc-editor.org/rfc/rfc8414.html
 [attestation-client-auth]: https://www.ietf.org/archive/id/draft-ietf-oauth-attestation-based-client-auth-06.html
 [cimd]: https://www.ietf.org/archive/id/draft-ietf-oauth-client-id-metadata-document-01.html

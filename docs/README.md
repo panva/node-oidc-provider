@@ -474,13 +474,13 @@ location / {
   - [requestObjects](#featuresrequestobjects) - OIDC Core 1.0 and RFC9101 - Passing a Request Object by Value (JAR)
   - [revocation](#featuresrevocation) - RFC7009 - OAuth 2.0 Token Revocation
   - [rpInitiatedLogout](#featuresrpinitiatedlogout) - OIDC RP-Initiated Logout 1.0
+  - [rpMetadataChoices](#featuresrpmetadatachoices) - OIDC Relying Party Metadata Choices 1.0
   - [userinfo](#featuresuserinfo) - OIDC Core 1.0 - UserInfo Endpoint
   - Experimental features:
     - [attestClientAuth](#featuresattestclientauth) - draft-ietf-oauth-attestation-based-client-auth-06 - OAuth 2.0 Attestation-Based Client Authentication
     - [clientIdMetadataDocument](#featuresclientidmetadatadocument) - `draft-ietf-oauth-client-id-metadata-document-01` - OAuth Client ID Metadata Document (CIMD)
     - [externalSigningSupport](#featuresexternalsigningsupport) - External Signing Support
     - [richAuthorizationRequests](#featuresrichauthorizationrequests) - RFC9396 - OAuth 2.0 Rich Authorization Requests
-    - [rpMetadataChoices](#featuresrpmetadatachoices) - OIDC Relying Party Metadata Choices 1.0 - Implementers Draft 01
     - [webMessageResponseMode](#featureswebmessageresponsemode) - draft-sakimura-oauth-wmrm-01 - OAuth 2.0 Web Message Response Mode
 - [findAccount ❗](#findaccount) - Account Loading and Claims Resolution
 - [interactions ❗](#interactions) - End-User Interaction Policy
@@ -2058,6 +2058,42 @@ async function postLogoutSuccessSource(ctx) {
 
 ---
 
+### features.rpMetadataChoices
+
+[OIDC Relying Party Metadata Choices 1.0](https://openid.net/specs/openid-connect-rp-metadata-choices-1_0-final.html)  
+
+Specifies whether Relying Party Metadata Choices capabilities shall be enabled. When enabled, the authorization server shall support the following multi-valued input parameters metadata from the Relying Party Metadata Choices draft, provided that their underlying feature is also enabled: 
+
+- subject_types_supported
+- id_token_signing_alg_values_supported
+- id_token_encryption_alg_values_supported
+- id_token_encryption_enc_values_supported
+- userinfo_signing_alg_values_supported
+- userinfo_encryption_alg_values_supported
+- userinfo_encryption_enc_values_supported
+- request_object_signing_alg_values_supported
+- request_object_encryption_alg_values_supported
+- request_object_encryption_enc_values_supported
+- token_endpoint_auth_methods_supported
+- token_endpoint_auth_signing_alg_values_supported
+- introspection_signing_alg_values_supported
+- introspection_encryption_alg_values_supported
+- introspection_encryption_enc_values_supported
+- authorization_signing_alg_values_supported
+- authorization_encryption_alg_values_supported
+- authorization_encryption_enc_values_supported
+- backchannel_authentication_request_signing_alg_values_supported  
+
+
+_**default value**_:
+```js
+{
+  enabled: false
+}
+```
+
+---
+
 ### features.userinfo
 
 [OIDC Core 1.0](https://openid.net/specs/openid-connect-core-1_0-errata2.html#UserInfo) - UserInfo Endpoint  
@@ -2449,46 +2485,6 @@ const configuration = {
 </details>
 
 </details>
-
----
-
-### features.rpMetadataChoices
-
-[OIDC Relying Party Metadata Choices 1.0 - Implementers Draft 01](https://openid.net/specs/openid-connect-rp-metadata-choices-1_0-ID1.html)  
-
-> [!NOTE]
-> This is an experimental feature.
-
-Specifies whether Relying Party Metadata Choices capabilities shall be enabled. When enabled, the authorization server shall support the following multi-valued input parameters metadata from the Relying Party Metadata Choices draft, provided that their underlying feature is also enabled: 
-
-- subject_types_supported
-- id_token_signing_alg_values_supported
-- id_token_encryption_alg_values_supported
-- id_token_encryption_enc_values_supported
-- userinfo_signing_alg_values_supported
-- userinfo_encryption_alg_values_supported
-- userinfo_encryption_enc_values_supported
-- request_object_signing_alg_values_supported
-- request_object_encryption_alg_values_supported
-- request_object_encryption_enc_values_supported
-- token_endpoint_auth_methods_supported
-- token_endpoint_auth_signing_alg_values_supported
-- introspection_signing_alg_values_supported
-- introspection_encryption_alg_values_supported
-- introspection_encryption_enc_values_supported
-- authorization_signing_alg_values_supported
-- authorization_encryption_alg_values_supported
-- authorization_encryption_enc_values_supported
-- backchannel_authentication_request_signing_alg_values_supported  
-
-
-_**default value**_:
-```js
-{
-  ack: undefined,
-  enabled: false
-}
-```
 
 ---
 
