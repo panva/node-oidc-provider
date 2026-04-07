@@ -2,6 +2,18 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [9.8.0](https://github.com/panva/node-oidc-provider/compare/v9.7.1...v9.8.0) (2026-04-07)
+
+
+### Features
+
+* promote rpMetadataChoices to stable ([cc8cfcc](https://github.com/panva/node-oidc-provider/commit/cc8cfcc39fcef4eef298bc295b614bcd7343f53d))
+
+
+### Refactor
+
+* do not depend on undici being part of the bundle ([2ffec73](https://github.com/panva/node-oidc-provider/commit/2ffec73aa8001e79d6df025b39e59f6d7f3f1c29))
+
 ## [9.7.1](https://github.com/panva/node-oidc-provider/compare/v9.7.0...v9.7.1) (2026-03-18)
 
 
