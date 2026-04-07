@@ -7,7 +7,7 @@ import * as querystring from 'node:querystring';
 import { createServer } from 'node:http';
 import { once } from 'node:events';
 
-import { setGlobalDispatcher, MockAgent } from 'undici';
+import { setGlobalDispatcher, MockAgent, Dispatcher1Wrapper } from 'undici';
 import sinon from 'sinon';
 import { dirname } from 'desm';
 import flatten from 'lodash/flatten.js';
@@ -30,7 +30,11 @@ import keys from './keys.js';
 
 const fetchAgent = new MockAgent();
 fetchAgent.disableNetConnect();
-setGlobalDispatcher(fetchAgent);
+setGlobalDispatcher(
+  parseInt(process.versions.undici, 10) < 8
+    ? new Dispatcher1Wrapper(fetchAgent)
+    : fetchAgent,
+);
 
 const { _auth } = Request.prototype;
 

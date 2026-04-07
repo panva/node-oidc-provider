@@ -10,6 +10,13 @@ import bootstrap, { skipConsent, assertNoPendingInterceptors, mock } from '../te
 
 const sinon = createSandbox();
 
+async function consumeBody(body) {
+  if (typeof body === 'string') return body;
+  const chunks = [];
+  for await (const chunk of body) chunks.push(chunk);
+  return Buffer.concat(chunks).toString();
+}
+
 describe('Back-Channel Logout 1.0', () => {
   before(bootstrap(import.meta.url));
 
@@ -24,20 +31,20 @@ describe('Back-Channel Logout 1.0', () => {
         .intercept({
           path: '/backchannel_logout',
           method: 'POST',
-          body(value) {
-            expect(value).to.match(/^logout_token=(([\w-]+\.?){3})$/);
-            const header = JSON.parse(base64url.decode(RegExp.$1.split('.')[0]));
-            expect(header).to.have.property('typ', 'logout+jwt');
-            const decoded = JSON.parse(base64url.decode(RegExp.$1.split('.')[1]));
-            expect(decoded).to.have.all.keys('sub', 'events', 'iat', 'exp', 'aud', 'iss', 'jti', 'sid');
-            expect(decoded).to.have.property('events').and.eql({ 'http://schemas.openid.net/event/backchannel-logout': {} });
-            expect(decoded).to.have.property('aud', 'client');
-            expect(decoded).to.have.property('sub', 'subject');
-            expect(decoded).to.have.property('sid', 'foo');
-            return true;
-          },
         })
-        .reply(200);
+        .reply(200, async (opts) => {
+          const value = await consumeBody(opts.body);
+          expect(value).to.match(/^logout_token=(([\w-]+\.?){3})$/);
+          const header = JSON.parse(base64url.decode(RegExp.$1.split('.')[0]));
+          expect(header).to.have.property('typ', 'logout+jwt');
+          const decoded = JSON.parse(base64url.decode(RegExp.$1.split('.')[1]));
+          expect(decoded).to.have.all.keys('sub', 'events', 'iat', 'exp', 'aud', 'iss', 'jti', 'sid');
+          expect(decoded).to.have.property('events').and.eql({ 'http://schemas.openid.net/event/backchannel-logout': {} });
+          expect(decoded).to.have.property('aud', 'client');
+          expect(decoded).to.have.property('sub', 'subject');
+          expect(decoded).to.have.property('sid', 'foo');
+          return '';
+        });
 
       return client.backchannelLogout('subject', 'foo');
     });
@@ -49,18 +56,18 @@ describe('Back-Channel Logout 1.0', () => {
         .intercept({
           path: '/backchannel_logout',
           method: 'POST',
-          body(value) {
-            expect(value).to.match(/^logout_token=(([\w-]+\.?){3})$/);
-            const decoded = JSON.parse(base64url.decode(RegExp.$1.split('.')[1]));
-            expect(decoded).to.have.all.keys('sub', 'events', 'iat', 'exp', 'aud', 'iss', 'jti');
-            expect(decoded).to.have.property('events').and.eql({ 'http://schemas.openid.net/event/backchannel-logout': {} });
-            expect(decoded).to.have.property('aud', 'no-sid');
-            expect(decoded).to.have.property('sub', 'subject');
-            expect(decoded).not.to.have.property('sid');
-            return true;
-          },
         })
-        .reply(200);
+        .reply(200, async (opts) => {
+          const value = await consumeBody(opts.body);
+          expect(value).to.match(/^logout_token=(([\w-]+\.?){3})$/);
+          const decoded = JSON.parse(base64url.decode(RegExp.$1.split('.')[1]));
+          expect(decoded).to.have.all.keys('sub', 'events', 'iat', 'exp', 'aud', 'iss', 'jti');
+          expect(decoded).to.have.property('events').and.eql({ 'http://schemas.openid.net/event/backchannel-logout': {} });
+          expect(decoded).to.have.property('aud', 'no-sid');
+          expect(decoded).to.have.property('sub', 'subject');
+          expect(decoded).not.to.have.property('sid');
+          return '';
+        });
 
       return client.backchannelLogout('subject', 'foo');
     });
