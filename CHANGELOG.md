@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [9.8.1](https://github.com/panva/node-oidc-provider/compare/v9.8.0...v9.8.1) (2026-04-15)
+
+
+### Refactor
+
+* relax native app custom URI scheme validation ([75be6ce](https://github.com/panva/node-oidc-provider/commit/75be6ce14449d5e59d6499d07bd667a8e1b1577c)), closes [#1411](https://github.com/panva/node-oidc-provider/issues/1411)
+
 ## [9.8.0](https://github.com/panva/node-oidc-provider/compare/v9.7.1...v9.8.0) (2026-04-07)
 
 
