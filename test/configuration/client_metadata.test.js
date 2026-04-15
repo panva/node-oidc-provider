@@ -506,11 +506,28 @@ describe('Client metadata validation', () => {
     rejects(this.title, ['not-a-uri'], undefined, {
       application_type: 'native',
     });
+    rejects(this.title, ['https://localhost/op/callback'], /for native clients using claimed HTTPS URIs must not be using localhost as hostname/, {
+      application_type: 'native',
+    });
+    allows(this.title, ['com.example.app://localhost/op/callback', 'com.example.app:/op/callback'], {
+      application_type: 'native',
+    });
+    allows(this.title, ['myapp:/op/callback'], {
+      application_type: 'native',
+    });
+    allows(this.title, ['cursor://anysphere.cursor-mcp/oauth/callback'], {
+      application_type: 'native',
+    });
     rejects(this.title, ['http://foo/bar'], undefined, {
       application_type: 'web',
       grant_types: ['implicit'],
       response_types: ['id_token'],
     });
+    for (const scheme of ['javascript', 'vbscript', 'data', 'blob', 'file', 'about']) {
+      rejects(this.title, [`${scheme}:foo`], `redirect_uris must not use the ${scheme} URI scheme`, {
+        application_type: 'native',
+      });
+    }
     it('has an schema invalidation hook for forcing https on implicit', async () => {
       const sandbox = sinon.createSandbox();
       sandbox.spy(DefaultProvider.Client.Schema.prototype, 'invalidate');
@@ -601,6 +618,11 @@ describe('Client metadata validation', () => {
       grant_types: ['implicit'],
       response_types: ['id_token'],
     });
+    for (const scheme of ['javascript', 'vbscript', 'data', 'blob', 'file', 'about']) {
+      rejects(this.title, [`${scheme}:foo`], `post_logout_redirect_uris must not use the ${scheme} URI scheme`, {
+        application_type: 'native',
+      });
+    }
   });
 
   context('request_object_signing_alg', function () {
