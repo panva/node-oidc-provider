@@ -18,7 +18,6 @@
       "complexity": {
         "noArguments": "off",
         "noThisInStatic": "off",
-        "useArrowFunction": "off",
         "useOptionalChain": "off"
       },
       "correctness": {

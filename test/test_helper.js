@@ -338,7 +338,7 @@ export default function testHelper(importMetaUrl, {
       };
     };
 
-    AuthorizationRequest.prototype.validateFragment = function (response) {
+    AuthorizationRequest.prototype.validateFragment = (response) => {
       const { hash } = parse(response.headers.location);
       expect(hash).to.exist;
       response.headers.location = response.headers.location.replace('#', '?');
@@ -367,8 +367,7 @@ export default function testHelper(importMetaUrl, {
       };
     };
 
-    AuthorizationRequest.prototype.validateResponseParameter = function (parameter, expected) {
-      return (response) => {
+    AuthorizationRequest.prototype.validateResponseParameter = (parameter, expected) => (response) => {
         const { query: { [parameter]: value } } = parse(response.headers.location, true);
         if (expected.exec) {
           expect(value).to.match(expected);
@@ -376,7 +375,6 @@ export default function testHelper(importMetaUrl, {
           expect(value).to.equal(expected);
         }
       };
-    };
 
     AuthorizationRequest.prototype.validateError = function (expected) {
       return this.validateResponseParameter('error', expected);
