@@ -100,6 +100,7 @@ describe('provider instance', () => {
 
     it('can be a class static function', async () => {
       const provider = new Provider('https://op.example.com', {
+        // biome-ignore lint/complexity/noStaticOnlyClass: test intentionally uses a static-only class
         adapter: (class {
           static factory() {
             return {

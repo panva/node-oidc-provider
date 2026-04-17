@@ -10,6 +10,7 @@ describe('initializeAdapter helper', () => {
 
   it('should be success if argument is static method of class', () => {
     expect(
+      // biome-ignore lint/complexity/noStaticOnlyClass: test intentionally uses a static-only class
       initializeAdapter.bind(undefined, (class { static method() {} }).method),
     ).to.be.not.throw;
   });

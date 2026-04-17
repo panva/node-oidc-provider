@@ -17,7 +17,6 @@
       "recommended": true,
       "complexity": {
         "noArguments": "off",
-        "noStaticOnlyClass": "off",
         "noThisInStatic": "off",
         "useArrowFunction": "off",
         "useOptionalChain": "off"
