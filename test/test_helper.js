@@ -253,14 +253,14 @@ export default function testHelper(importMetaUrl, {
         this.client_id = 'client_id' in parameters ? parameters.client_id : clients[0].client_id;
         const c = clients.find((cl) => cl.client_id === this.client_id);
         this.state = 'state' in parameters ? parameters.state : crypto.randomBytes(16).toString('base64url');
-        this.redirect_uri = 'redirect_uri' in parameters ? parameters.redirect_uri : parameters.redirect_uri || (c && c.redirect_uris[0]);
+        this.redirect_uri = 'redirect_uri' in parameters ? parameters.redirect_uri : parameters.redirect_uri || (c?.redirect_uris[0]);
         this.res = {};
 
-        if (this.response_type && this.response_type.includes('id_token')) {
+        if (this.response_type?.includes('id_token')) {
           this.nonce = 'nonce' in parameters ? parameters.nonce : crypto.randomBytes(16).toString('base64url');
         }
 
-        if (this.response_type && this.response_type.includes('code')) {
+        if (this.response_type?.includes('code')) {
           this.code_challenge_method = 'code_challenge_method' in parameters ? parameters.code_challenge_method : 'S256';
           this.code_verifier = crypto.randomBytes(32).toString('base64url');
           this.code_challenge = 'code_challenge' in parameters ? parameters.code_challenge : crypto.hash('sha256', this.code_verifier, 'base64url');

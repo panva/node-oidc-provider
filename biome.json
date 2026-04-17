@@ -17,8 +17,7 @@
       "recommended": true,
       "complexity": {
         "noArguments": "off",
-        "noThisInStatic": "off",
-        "useOptionalChain": "off"
+        "noThisInStatic": "off"
       },
       "correctness": {
         "noUnusedFunctionParameters": "off",
