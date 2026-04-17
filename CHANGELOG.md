@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [9.8.2](https://github.com/panva/node-oidc-provider/compare/v9.8.1...v9.8.2) (2026-04-17)
+
+
+### Fixes
+
+* html-escape debug data sent to development-only interactions ([924d25c](https://github.com/panva/node-oidc-provider/commit/924d25c2553ec5da103dc48708fa5f9f1bbcf402)), closes [#1414](https://github.com/panva/node-oidc-provider/issues/1414)
+
 ## [9.8.1](https://github.com/panva/node-oidc-provider/compare/v9.8.0...v9.8.1) (2026-04-15)
 
 
