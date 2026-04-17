@@ -78,6 +78,32 @@ describe('devInteractions', () => {
     handlesInteractionSessionErrors();
   });
 
+  context('escapes debug output HTML', () => {
+    beforeEach(function () { return this.logout(); });
+    beforeEach(function () {
+      const auth = new this.AuthorizationRequest({
+        response_type: 'code',
+        scope: 'openid',
+        state: '<img src=x onerror=alert(1)>',
+      });
+
+      return this.agent.get('/auth')
+        .query(auth)
+        .then((response) => {
+          this.url = response.headers.location;
+        });
+    });
+
+    it('HTML-escapes parameter values in the debug section', function () {
+      return this.agent.get(this.url)
+        .expect(200)
+        .expect((response) => {
+          expect(response.text).not.to.match(/<img src=x onerror=alert\(1\)>/);
+          expect(response.text).to.contain('&lt;img src=x onerror=alert(1)&gt;');
+        });
+    });
+  });
+
   context('render interaction', () => {
     beforeEach(function () { return this.logout(); });
     beforeEach(function () { return this.login(); });

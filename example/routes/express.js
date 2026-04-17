@@ -7,6 +7,7 @@ import isEmpty from 'lodash/isEmpty.js';
 import { urlencoded } from 'express';
 
 import Account from '../support/account.js';
+import htmlSafe from '../support/html_safe.js';
 import { errors } from '../../lib/index.js'; // from 'oidc-provider';
 
 const body = urlencoded({ extended: false });
@@ -18,7 +19,7 @@ const debug = (obj) => querystring.stringify(Object.entries(obj).reduce((acc, [k
   acc[key] = inspect(value, { depth: null });
   return acc;
 }, {}), '<br/>', ': ', {
-  encodeURIComponent(value) { return keys.has(value) ? `<strong>${value}</strong>` : value; },
+  encodeURIComponent(value) { return keys.has(value) ? `<strong>${value}</strong>` : htmlSafe(value); },
 });
 const { SessionNotFound } = errors;
 export default (app, provider) => {

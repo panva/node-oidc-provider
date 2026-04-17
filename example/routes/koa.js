@@ -11,6 +11,7 @@ import Router from '@koa/router';
 
 import { defaults } from '../../lib/helpers/defaults.js'; // make your own, you'll need it anyway
 import Account from '../support/account.js';
+import htmlSafe from '../support/html_safe.js';
 import { errors } from '../../lib/index.js'; // from 'oidc-provider';
 
 const hkdf = promisify(crypto.hkdf);
@@ -21,7 +22,7 @@ const debug = (obj) => querystring.stringify(Object.entries(obj).reduce((acc, [k
   acc[key] = inspect(value, { depth: null });
   return acc;
 }, {}), '<br/>', ': ', {
-  encodeURIComponent(value) { return keys.has(value) ? `<strong>${value}</strong>` : value; },
+  encodeURIComponent(value) { return keys.has(value) ? `<strong>${value}</strong>` : htmlSafe(value); },
 });
 
 const { SessionNotFound } = errors;
