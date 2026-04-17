@@ -17,9 +17,6 @@
       "recommended": true,
       "correctness": {
         "noUnusedFunctionParameters": "off"
-      },
-      "suspicious": {
-        "noDuplicateTestHooks": "off"
       }
     }
   },
@@ -30,6 +27,16 @@
         "rules": {
           "complexity": {
             "noThisInStatic": "off"
+          }
+        }
+      }
+    },
+    {
+      "includes": ["test/**"],
+      "linter": {
+        "rules": {
+          "suspicious": {
+            "noDuplicateTestHooks": "off"
           }
         }
       }
