@@ -25,6 +25,7 @@ describe('session bound tokens behaviours', () => {
 
   describe('authorization_code flow', () => {
     it('"code" issues tokens bound to session', async function () {
+      // biome-ignore lint/suspicious/noAssignInExpressions: test pattern
       const auth = this.auth = new this.AuthorizationRequest({
         response_type: 'code',
         scope: 'openid',
@@ -67,6 +68,7 @@ describe('session bound tokens behaviours', () => {
     });
 
     it('"code" with "online" refresh token', async function () {
+      // biome-ignore lint/suspicious/noAssignInExpressions: test pattern
       const auth = this.auth = new this.AuthorizationRequest({
         client_id: 'client-refresh',
         response_type: 'code',
@@ -140,6 +142,7 @@ describe('session bound tokens behaviours', () => {
     });
 
     it('"code" with offline_access refresh token isnt affected', async function () {
+      // biome-ignore lint/suspicious/noAssignInExpressions: test pattern
       const auth = this.auth = new this.AuthorizationRequest({
         client_id: 'client-offline',
         response_type: 'code',

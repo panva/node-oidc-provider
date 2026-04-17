@@ -86,6 +86,7 @@ describe('requests without the openid scope', () => {
 
         describe('authorization code exchange', () => {
           beforeEach(async function () {
+            // biome-ignore lint/suspicious/noAssignInExpressions: test pattern
             const auth = this.auth = new this.AuthorizationRequest({
               response_type,
               scope,

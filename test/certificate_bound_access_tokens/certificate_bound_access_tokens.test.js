@@ -253,6 +253,7 @@ describe('features.mTLS.certificateBoundAccessTokens', () => {
     skipConsent();
 
     beforeEach(async function () {
+      // biome-ignore lint/suspicious/noAssignInExpressions: test pattern
       const auth = this.auth = new this.AuthorizationRequest({
         response_type: 'code',
         scope: 'openid offline_access',
@@ -374,6 +375,7 @@ describe('features.mTLS.certificateBoundAccessTokens', () => {
     skipConsent();
 
     beforeEach(async function () {
+      // biome-ignore lint/suspicious/noAssignInExpressions: test pattern
       const auth = this.auth = new this.AuthorizationRequest({
         client_id: 'client-none',
         response_type: 'code',

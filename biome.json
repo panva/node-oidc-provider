@@ -26,7 +26,6 @@
         "useConst": "off"
       },
       "suspicious": {
-        "noAssignInExpressions": "off",
         "noDuplicateTestHooks": "off"
       }
     }
