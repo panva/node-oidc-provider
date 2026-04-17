@@ -32,8 +32,7 @@
       },
       "suspicious": {
         "noAssignInExpressions": "off",
-        "noDuplicateTestHooks": "off",
-        "useIterableCallbackReturn": "off"
+        "noDuplicateTestHooks": "off"
       }
     }
   },
