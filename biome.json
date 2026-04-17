@@ -22,9 +22,6 @@
         "noUnusedFunctionParameters": "off",
         "noUnusedVariables": "off"
       },
-      "style": {
-        "useConst": "off"
-      },
       "suspicious": {
         "noDuplicateTestHooks": "off"
       }
