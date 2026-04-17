@@ -44,14 +44,12 @@ describe('opaque storage', () => {
 
   // TODO: add Session and Interaction
 
-  /* eslint-disable object-property-newline */
   const fullPayload = {
     accountId, claims, grantId, scope, sid, consumed, acr, amr, authTime, nonce,
     redirectUri, codeChallenge, codeChallengeMethod, aud, error, errorDescription, params,
     userCode, deviceInfo, gty, resource, policies, sessionUid, expiresWithSession,
     'x5t#S256': s256, inFlight, iiat, rotations, extra, jkt: s256, dpopJkt,
   };
-  /* eslint-enable object-property-newline */
 
   afterEach(sinon.restore);
 

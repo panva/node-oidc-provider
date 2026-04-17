@@ -68,7 +68,7 @@ describe('Client metadata validation', () => {
 
   const mustBeString = (
     prop,
-    values = [[], 123, true, null, false, {}, ''], // eslint-disable-line default-param-last
+    values = [[], 123, true, null, false, {}, ''],
     metadata,
     configuration,
   ) => {
@@ -76,7 +76,6 @@ describe('Client metadata validation', () => {
       let msg = util.format('must be a string, %j provided', value);
       if (metadata) msg = util.format(`${msg}, [client %j]`, omit(metadata, ['jwks.keys']));
       if (configuration) msg = util.format(`${msg}, [provider %j]`, configuration);
-      // eslint-disable-next-line max-len
       it(msg, () => assert.rejects(register({ ...metadata, [prop]: value }, configuration), (err) => {
         if (prop === 'redirect_uris') {
           expect(err.message).to.equal('invalid_redirect_uri');
@@ -120,7 +119,6 @@ describe('Client metadata validation', () => {
     });
   };
 
-  // eslint-disable-next-line default-param-last
   const mustBeArray = (prop, values = [{}, 'string', 123, true, null, false], configuration) => {
     values.forEach((value) => {
       let msg = util.format('must be a array, %j provided', value);
@@ -227,7 +225,6 @@ describe('Client metadata validation', () => {
     let msg = util.format('passes %j', value);
     if (metadata) msg = util.format(`${msg}, [client %j]`, omit(metadata, ['jwks.keys']));
     if (configuration) msg = util.format(`${msg}, [provider %j]`, configuration);
-    // eslint-disable-next-line max-len
     it(msg, () => register({ ...metadata, [prop]: value }, configuration).then(assertion, (err) => {
       if (err instanceof InvalidClientMetadata) {
         throw new Error(`InvalidClientMetadata received ${err.message} ${err.error_description}`);
@@ -239,7 +236,6 @@ describe('Client metadata validation', () => {
     let msg = util.format('rejects %j', value);
     if (metadata) msg = util.format(`${msg}, [client %j]`, omit(metadata, ['jwks.keys']));
     if (configuration) msg = util.format(`${msg}, [provider %j]`, configuration);
-    // eslint-disable-next-line max-len
     it(msg, () => assert.rejects(register({ ...metadata, [prop]: value }, configuration), (err) => {
       if (prop === 'redirect_uris') {
         expect(err.message).to.equal('invalid_redirect_uri');

@@ -1,5 +1,3 @@
-/* eslint-disable no-console */
-
 import { createServer } from 'node:http';
 import { once } from 'node:events';
 import { createRequire } from 'node:module';

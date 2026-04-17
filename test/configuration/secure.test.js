@@ -4,7 +4,6 @@ import { expect } from 'chai';
 import bootstrap from '../test_helper.js';
 
 describe('x-forwarded-proto trust', () => {
-  /* eslint-disable no-console */
   beforeEach(() => {
     sinon.stub(console, 'warn').returns();
   });

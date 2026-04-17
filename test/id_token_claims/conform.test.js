@@ -1,5 +1,3 @@
-/* eslint-disable prefer-const */
-
 import { parse as parseUrl } from 'node:url';
 
 import { expect } from 'chai';

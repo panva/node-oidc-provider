@@ -93,7 +93,7 @@ describe('BaseToken', () => {
         return true;
       }),
     );
-    timekeeper.travel(((Date.now() / 1000 | 0) + 60) * 1000); // eslint-disable-line no-bitwise
+    timekeeper.travel(((Date.now() / 1000 | 0) + 60) * 1000);
     token = await this.provider.RefreshToken.find(value);
     await token.save();
     sinon.assert.calledWith(

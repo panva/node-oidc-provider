@@ -26,7 +26,7 @@ describe('jwtIntrospection features', () => {
     before(function () { return this.login({ accountId: 'accountId' }); });
     it('can only be enabled with introspection', () => {
       expect(() => {
-        new Provider('http://localhost', { // eslint-disable-line no-new
+        new Provider('http://localhost', {
           features: {
             jwtIntrospection: { enabled: true },
           },

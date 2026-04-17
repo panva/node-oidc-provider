@@ -1,5 +1,3 @@
-/* eslint-disable no-param-reassign */
-
 import { strict as assert } from 'node:assert';
 import * as url from 'node:url';
 
@@ -18,7 +16,6 @@ describe('client registration policies', () => {
   describe('configuration', () => {
     it('must only be enabled in conjuction with adapter-backed initial access tokens', () => {
       expect(() => {
-        // eslint-disable-next-line no-new
         new Provider('http://localhost', {
           features: {
             registration: {

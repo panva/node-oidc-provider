@@ -1,5 +1,3 @@
-/* eslint-disable no-new */
-
 import { expect } from 'chai';
 
 import Provider from '../../lib/index.js';
@@ -59,7 +57,6 @@ describe('Provider configuration', () => {
       new Provider('http://localhost:3000', { extraParams: { foo: null } });
       new Provider('http://localhost:3000', { extraParams: { foo: undefined } });
       new Provider('http://localhost:3000', { extraParams: { foo() {} } });
-      // eslint-disable-next-line no-empty-function
       new Provider('http://localhost:3000', { extraParams: { async foo() {} } });
       expect(() => {
         new Provider('http://localhost:3000', { extraParams: Boolean });
@@ -68,7 +65,6 @@ describe('Provider configuration', () => {
         new Provider('http://localhost:3000', { extraParams: { foo: true } });
       }).to.throw('invalid extraParams.foo type, it must be a function, null, or undefined');
       expect(() => {
-        // eslint-disable-next-line no-empty-function
         new Provider('http://localhost:3000', { extraParams: { * foo() {} } });
       }).to.throw('invalid extraParams.foo type, it must be a function, null, or undefined');
     });

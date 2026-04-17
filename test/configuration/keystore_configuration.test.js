@@ -1,5 +1,3 @@
-/* eslint-disable no-new, no-console */
-
 import { randomBytes } from 'node:crypto';
 
 import { generateKeyPair, exportJWK } from 'jose';

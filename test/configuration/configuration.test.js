@@ -5,7 +5,7 @@ import Configuration from '../../lib/helpers/configuration.js';
 describe('Provider configuration', () => {
   it('checks that a feature configuration property is valid', () => {
     expect(() => {
-      new Configuration({ // eslint-disable-line no-new
+      new Configuration({
         features: {
           foo: {},
         },
@@ -15,7 +15,7 @@ describe('Provider configuration', () => {
 
   it('checks that a stable feature does not have an ack', () => {
     expect(() => {
-      new Configuration({ // eslint-disable-line no-new
+      new Configuration({
         features: {
           deviceFlow: {
             enabled: true,
@@ -28,14 +28,14 @@ describe('Provider configuration', () => {
 
   it('checks that a feature configuration is not a boolean', () => {
     expect(() => {
-      new Configuration({ // eslint-disable-line no-new
+      new Configuration({
         features: {
           devInteractions: false,
         },
       });
     }).to.throw('Features are not enabled/disabled with a boolean value. See the documentation for more details.');
     expect(() => {
-      new Configuration({ // eslint-disable-line no-new
+      new Configuration({
         features: {
           devInteractions: true,
         },
@@ -54,7 +54,7 @@ describe('Provider configuration', () => {
         },
       },
     }).enableHttpPostMethods).to.be.true;
-    new Configuration({ // eslint-disable-line no-new
+    new Configuration({
       enableHttpPostMethods: true,
       cookies: {
         long: {
@@ -62,7 +62,7 @@ describe('Provider configuration', () => {
         },
       },
     });
-    new Configuration({ // eslint-disable-line no-new
+    new Configuration({
       enableHttpPostMethods: false,
       cookies: {
         long: {
@@ -71,12 +71,12 @@ describe('Provider configuration', () => {
       },
     });
     expect(() => {
-      new Configuration({ // eslint-disable-line no-new
+      new Configuration({
         enableHttpPostMethods: true,
       });
     }).to.throw('HTTP POST Method support requires that cookies.long.sameSite is set to none');
     expect(() => {
-      new Configuration({ // eslint-disable-line no-new
+      new Configuration({
         enableHttpPostMethods: true,
         cookies: {
           long: {
@@ -110,7 +110,7 @@ describe('Provider configuration', () => {
 
     it('rejects negative values', () => {
       expect(() => {
-        new Configuration({ // eslint-disable-line no-new
+        new Configuration({
           fetchResponseBodyLimits: {
             jwks_uri: -1,
           },
@@ -120,7 +120,7 @@ describe('Provider configuration', () => {
 
     it('rejects non-number values', () => {
       expect(() => {
-        new Configuration({ // eslint-disable-line no-new
+        new Configuration({
           fetchResponseBodyLimits: {
             jwks_uri: '1024',
           },
@@ -130,7 +130,7 @@ describe('Provider configuration', () => {
 
     it('rejects null values', () => {
       expect(() => {
-        new Configuration({ // eslint-disable-line no-new
+        new Configuration({
           fetchResponseBodyLimits: {
             jwks_uri: null,
           },
@@ -140,7 +140,7 @@ describe('Provider configuration', () => {
 
     it('rejects NaN', () => {
       expect(() => {
-        new Configuration({ // eslint-disable-line no-new
+        new Configuration({
           fetchResponseBodyLimits: {
             jwks_uri: NaN,
           },
@@ -150,7 +150,7 @@ describe('Provider configuration', () => {
 
     it('rejects floats', () => {
       expect(() => {
-        new Configuration({ // eslint-disable-line no-new
+        new Configuration({
           fetchResponseBodyLimits: {
             jwks_uri: 10.5,
           },

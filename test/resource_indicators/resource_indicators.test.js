@@ -1,5 +1,3 @@
-/* eslint-disable prefer-destructuring */
-
 import { strict as assert } from 'node:assert';
 
 import sinon from 'sinon';

@@ -6,12 +6,12 @@ describe('Provider configuration', () => {
   it('validates subjectTypes members', () => {
     const throws = [
       () => {
-        new Provider('http://localhost:3000', { // eslint-disable-line no-new
+        new Provider('http://localhost:3000', {
           subjectTypes: ['public', 'pairwise', 'foobar'],
         });
       },
       () => {
-        new Provider('http://localhost:3000', { // eslint-disable-line no-new
+        new Provider('http://localhost:3000', {
           subjectTypes: ['foobar'],
         });
       },
@@ -24,7 +24,7 @@ describe('Provider configuration', () => {
 
   it('validates subjectTypes presence', () => {
     expect(() => {
-      new Provider('http://localhost:3000', { // eslint-disable-line no-new
+      new Provider('http://localhost:3000', {
         subjectTypes: [],
       });
     }).to.throw('subjectTypes must not be empty');

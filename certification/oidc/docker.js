@@ -1,5 +1,3 @@
-/* eslint-disable no-console */
-
 import * as path from 'node:path';
 import * as https from 'node:https';
 

@@ -1,5 +1,3 @@
-/* eslint-disable no-underscore-dangle */
-
 import { strict as assert } from 'node:assert';
 
 import { expect } from 'chai';

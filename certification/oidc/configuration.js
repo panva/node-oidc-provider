@@ -208,7 +208,7 @@ export default {
   enabledJWA,
   ...(['oidcc-dynamic-certification-test-plan', 'oidcc-backchannel-rp-initiated-logout-certification-test-plan'].includes(JSON.parse(process.env.SETUP || '{}').plan) && {
     fetch: (url, options) => {
-      delete options.dispatcher; // eslint-disable-line no-param-reassign
+      delete options.dispatcher;
       return globalThis.fetch(url, options);
     },
   }),

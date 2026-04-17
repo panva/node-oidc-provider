@@ -1,5 +1,3 @@
-/* eslint-disable max-classes-per-file */
-
 import { strict as assert } from 'node:assert';
 
 import { expect } from 'chai';
@@ -9,7 +7,6 @@ import Provider from '../../lib/index.js';
 
 describe('provider instance', () => {
   context('draft/experimental spec warnings', () => {
-    /* eslint-disable no-console */
     before(() => {
       sinon.stub(console, 'info').callsFake(() => {});
     });
@@ -23,7 +20,7 @@ describe('provider instance', () => {
     });
 
     it('it warns when draft/experimental specs are enabled', () => {
-      new Provider('http://localhost', { // eslint-disable-line no-new
+      new Provider('http://localhost', {
         features: { webMessageResponseMode: { enabled: true } },
       });
 
@@ -31,7 +28,7 @@ describe('provider instance', () => {
     });
 
     it('it is silent when a version is acknowledged', () => {
-      new Provider('http://localhost', { // eslint-disable-line no-new
+      new Provider('http://localhost', {
         features: { webMessageResponseMode: { enabled: true, ack: 'individual-draft-01' } },
       });
 
@@ -40,13 +37,12 @@ describe('provider instance', () => {
 
     it('throws when an acked feature has breaking changes since', () => {
       expect(() => {
-        new Provider('http://localhost', { // eslint-disable-line no-new
+        new Provider('http://localhost', {
           features: { webMessageResponseMode: { enabled: true, ack: 'not a current version' } },
         });
       }).to.throw('An unacknowledged version of an experimental feature is included in this oidc-provider version.');
       expect(console.info.called).to.be.true;
     });
-    /* eslint-enable */
   });
 
   describe('provider.Client#find', () => {
@@ -89,7 +85,6 @@ describe('provider instance', () => {
     it('can be a class', async () => {
       const provider = new Provider('https://op.example.com', {
         adapter: class {
-          // eslint-disable-next-line
           async find() {
             throw error;
           }
@@ -106,9 +101,7 @@ describe('provider instance', () => {
     it('can be a class static function', async () => {
       const provider = new Provider('https://op.example.com', {
         adapter: (class {
-          // eslint-disable-next-line
           static factory() {
-            // eslint-disable-next-line
             return {
               async find() {
                 throw error;

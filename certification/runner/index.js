@@ -1,6 +1,3 @@
-/* eslint-env mocha */
-/* eslint-disable no-bitwise, func-names, no-console, no-multi-assign */
-
 import { strict as assert } from 'node:assert';
 import * as fs from 'node:fs';
 
@@ -79,14 +76,12 @@ function removeOpenidScope(config) {
   for (const client of [config.client, config.client2]) {
     const scope = new Set(client.scope.split(' '));
     scope.delete('openid');
-    // eslint-disable-next-line no-param-reassign
     client.scope = [...scope].join(' ');
   }
 }
 
 const auth = VARIANT.client_auth_type === 'mtls' ? 'mtls' : 'pkjwt';
 let override;
-// eslint-disable-next-line default-case
 switch (PLAN_NAME) {
   case 'fapi1-advanced-final-test-plan': {
     const revision = 'final';
@@ -194,7 +189,6 @@ try {
     const skips = SKIP ? SKIP.split(',') : [];
     for (const { testModule, variant } of MODULES) {
       const test = skips.includes(testModule) ? it.skip : it;
-      // eslint-disable-next-line no-loop-func
       test(`${testModule}, ${JSON.stringify(variant)}`, async () => {
         debug('\n\nRunning test module: %s', testModule);
         const { id: moduleId } = await runner.createTestFromPlan({

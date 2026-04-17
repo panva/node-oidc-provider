@@ -1,5 +1,3 @@
-/* eslint-disable prefer-rest-params */
-
 import { strict as assert } from 'node:assert';
 import * as events from 'node:events';
 

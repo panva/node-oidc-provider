@@ -159,7 +159,7 @@ describe('IMPLICIT id_token', () => {
           response_mode: 'fragment',
         });
 
-        const wrapped = ((data) => { // eslint-disable-line consistent-return
+        const wrapped = ((data) => {
           switch (verb) {
             case 'get':
               return this.agent

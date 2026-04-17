@@ -1,5 +1,3 @@
-/* eslint-disable no-console */
-
 import { readFileSync } from 'node:fs';
 import * as path from 'node:path';
 import * as crypto from 'node:crypto';
@@ -394,7 +392,7 @@ const fapi = new Provider(ISSUER, {
   clientAuthMethods,
   ...(JSON.parse(process.env.SETUP || '{}').plan === 'fapi-ciba-id1-test-plan' && JSON.parse(process.env.SETUP).ciba_mode === 'ping' && {
     fetch: (url, options) => {
-      delete options.dispatcher; // eslint-disable-line no-param-reassign
+      delete options.dispatcher;
       return globalThis.fetch(url, options);
     },
   }),
@@ -440,7 +438,7 @@ Object.defineProperty(fapi.Client.prototype, 'redirectUriAllowed', {
 const orig = fapi.interactionResult;
 fapi.interactionResult = function patchedInteractionResult(...args) {
   if (args[2]?.login) {
-    args[2].login.acr = 'urn:mace:incommon:iap:silver'; // eslint-disable-line no-param-reassign
+    args[2].login.acr = 'urn:mace:incommon:iap:silver';
   }
 
   return orig.call(this, ...args);
@@ -476,7 +474,6 @@ fapi.use(async (ctx, next) => {
         claims = claims.concat(Object.keys(request.claims.userinfo));
       }
       grant.addOIDCClaims(claims);
-      // eslint-disable-next-line no-restricted-syntax
       for (const indicator of request.params.resource) {
         grant.addResourceScope(indicator, request.params.scope);
       }

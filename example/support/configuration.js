@@ -8,7 +8,7 @@ export default {
     // }
   ],
   interactions: {
-    url(ctx, interaction) { // eslint-disable-line no-unused-vars
+    url(ctx, interaction) {
       return `/interaction/${interaction.uid}`;
     },
   },

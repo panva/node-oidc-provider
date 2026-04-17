@@ -1,0 +1,60 @@
+{
+  "$schema": "https://biomejs.dev/schemas/2.4.11/schema.json",
+  "vcs": {
+    "enabled": true,
+    "clientKind": "git",
+    "useIgnoreFile": true
+  },
+  "files": {
+    "ignoreUnknown": false
+  },
+  "formatter": {
+    "enabled": false
+  },
+  "linter": {
+    "enabled": true,
+    "rules": {
+      "recommended": true,
+      "complexity": {
+        "noArguments": "off",
+        "noStaticOnlyClass": "off",
+        "noThisInStatic": "off",
+        "noUselessConstructor": "off",
+        "useArrowFunction": "off",
+        "useFlatMap": "off",
+        "useOptionalChain": "off"
+      },
+      "correctness": {
+        "noConstructorReturn": "off",
+        "noUnreachableSuper": "off",
+        "noUnusedFunctionParameters": "off",
+        "noUnusedVariables": "off"
+      },
+      "performance": {
+        "noDynamicNamespaceImportAccess": "off"
+      },
+      "style": {
+        "useConst": "off"
+      },
+      "suspicious": {
+        "noAssignInExpressions": "off",
+        "noDuplicateTestHooks": "off",
+        "noFallthroughSwitchClause": "off",
+        "noPrototypeBuiltins": "off",
+        "noRedundantUseStrict": "off",
+        "useIterableCallbackReturn": "off"
+      }
+    }
+  },
+  "javascript": {
+    "globals": ["globalThis", "navigator"]
+  },
+  "assist": {
+    "enabled": true,
+    "actions": {
+      "source": {
+        "organizeImports": "on"
+      }
+    }
+  }
+}

@@ -27,7 +27,7 @@ describe('userinfo /me', () => {
 
   it('jwtUserinfo can only be enabled with userinfo', () => {
     expect(() => {
-      new Provider('http://localhost', { // eslint-disable-line no-new
+      new Provider('http://localhost', {
         features: {
           jwtUserinfo: { enabled: true },
           userinfo: { enabled: false },

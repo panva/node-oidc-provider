@@ -1,4 +1,3 @@
-/* eslint-disable no-console, camelcase, no-unused-vars */
 import { strict as assert } from 'node:assert';
 import * as querystring from 'node:querystring';
 import { inspect } from 'node:util';

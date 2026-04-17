@@ -640,7 +640,7 @@ describe('Client ID Metadata Document', () => {
 
   describe('allowFetch hook', () => {
     it('rejects when allowFetch returns false', async function () {
-      const { features } = i(this.provider); // eslint-disable-line no-undef
+      const { features } = i(this.provider);
       const orig = features.clientIdMetadataDocument.allowFetch;
       features.clientIdMetadataDocument.allowFetch = async () => false;
 
@@ -664,7 +664,7 @@ describe('Client ID Metadata Document', () => {
 
   describe('allowClient hook', () => {
     it('rejects when allowClient returns false', async function () {
-      const { features } = i(this.provider); // eslint-disable-line no-undef
+      const { features } = i(this.provider);
       const orig = features.clientIdMetadataDocument.allowClient;
       features.clientIdMetadataDocument.allowClient = async () => false;
 

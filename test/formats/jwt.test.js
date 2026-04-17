@@ -1,5 +1,3 @@
-/* eslint-disable no-shadow */
-/* eslint-disable no-param-reassign */
 import { strict as assert } from 'node:assert';
 import * as crypto from 'node:crypto';
 import * as util from 'node:util';
@@ -60,14 +58,12 @@ describe('jwt format', () => {
     audience: 'foo',
   });
 
-  /* eslint-disable object-property-newline */
   const fullPayload = {
     accountId, claims, clientId, grantId, scope, sid, consumed, acr, amr, authTime, nonce,
     redirectUri, codeChallenge, codeChallengeMethod, error, errorDescription, params,
     userCode, deviceInfo, gty, resource, policies, sessionUid, expiresWithSession,
     'x5t#S256': s256, inFlight, iiat, rotations, extra, jkt: s256, resourceServer,
   };
-  /* eslint-enable object-property-newline */
 
   afterEach(sinon.restore);
 
@@ -563,7 +559,6 @@ describe('jwt format', () => {
     });
 
     for (const prop of ['alg', 'enc', 'key']) {
-      // eslint-disable-next-line no-loop-func
       it(`ensures JWE Configuration has ${prop}`, async function () {
         const resourceServer = new ResourceServer(resource, {
           accessTokenFormat: 'jwt',

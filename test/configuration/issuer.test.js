@@ -1,5 +1,3 @@
-/* eslint-disable no-new */
-
 import { strict as assert } from 'node:assert';
 
 import { expect } from 'chai';
@@ -56,4 +54,3 @@ describe('Provider issuer configuration', () => {
   });
 });
 
-/* eslint-enable no-new */

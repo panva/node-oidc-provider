@@ -1,5 +1,3 @@
-/* eslint-disable no-param-reassign */
-
 import { expect } from 'chai';
 import sinon from 'sinon';
 
@@ -127,7 +125,7 @@ describe('extraClientMetadata configuration', () => {
 
   it('can be used to add validations to existing standard properties', async () => {
     const validator = sinon.spy();
-    const provider = new Provider('http://localhost:3000', { // eslint-disable-line no-new
+    const provider = new Provider('http://localhost:3000', {
       extraClientMetadata: {
         properties: ['client_name'],
         validator,
@@ -216,7 +214,7 @@ describe('extraClientMetadata configuration', () => {
 
   it('should throw regular errors during #find()', async () => {
     try {
-      const provider = new Provider('http://localhost:3000', { // eslint-disable-line no-new
+      const provider = new Provider('http://localhost:3000', {
         extraClientMetadata: {
           properties: ['client_description'],
           validator() {

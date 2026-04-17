@@ -1,11 +1,9 @@
-/* eslint-disable no-param-reassign, no-plusplus */
-
 import { createInterface as readline } from 'node:readline';
 import { inspect } from 'node:util';
 import { createReadStream, writeFileSync, readFileSync } from 'node:fs';
 
-import get from 'lodash/get.js'; // eslint-disable-line import/no-extraneous-dependencies
-import words from 'lodash/words.js'; // eslint-disable-line import/no-extraneous-dependencies
+import get from 'lodash/get.js';
+import words from 'lodash/words.js';
 
 import { defaults } from '../lib/helpers/defaults.js';
 import login from '../lib/helpers/interaction_policy/prompts/login.js';
@@ -16,7 +14,6 @@ for (const [key, value] of Object.entries(defaults.ttl)) {
     value[inspect.custom] = () => (
       value.toString()
         .replace(/ {6}/g, '  ')
-        // eslint-disable-next-line redos/no-vulnerable
         .replace(/\s+}$/, '\n}')
         .split('\n')
         .filter((line) => !line.includes('Change'))
@@ -174,7 +171,7 @@ try {
 
       if (nextIsOption) {
         nextIsOption = false;
-        option = blocks[strLine.slice(2)] = new Block(); // eslint-disable-line no-multi-assign
+        option = blocks[strLine.slice(2)] = new Block();
         return;
       }
 
@@ -293,13 +290,13 @@ try {
   let inExperimental = false;
   for (const block of orderedBlocks) {
     // Skip child/sub options in the ToC
-    if (block.includes('.') && !block.startsWith('features.')) continue; // eslint-disable-line no-continue
-    if (block.startsWith('features.') && block.split('.').length > 2) continue; // eslint-disable-line no-continue
+    if (block.includes('.') && !block.startsWith('features.')) continue;
+    if (block.startsWith('features.') && block.split('.').length > 2) continue;
 
     const section = blocks[block];
     const isImportant = '@important' in section;
     const mark = isImportant ? ' ❗' : '';
-    const rawTitle = section.title ? section.title.toString().trim().replace(/\[([^\]]+)\]\([^)]+\)/g, '$1') : ''; // eslint-disable-line redos/no-vulnerable
+    const rawTitle = section.title ? section.title.toString().trim().replace(/\[([^\]]+)\]\([^)]+\)/g, '$1') : '';
     const title = rawTitle ? ` - ${rawTitle}` : '';
 
     if (block.startsWith('features.')) {
@@ -326,7 +323,7 @@ try {
     const section = blocks[block];
 
     if ('@skip' in section) {
-      continue; // eslint-disable-line no-continue
+      continue;
     }
 
     let heading;
@@ -422,13 +419,6 @@ try {
             if (line.startsWith(' ')) {
               line = line.replace(new RegExp(`^( {0,${fixIndent}})`), '');
             }
-            line = line.replace(/ \/\/ eslint-disable.+/, '');
-            if (line.includes('/* eslint-disable')) {
-              return undefined;
-            }
-            if (line.includes('/* eslint-enable')) {
-              return undefined;
-            }
             line = line.replace(/ \/\/ TODO.+/, '');
             line = line.replace(/ class="[ \-\w]+ ?"/, '');
             if (line.includes('<meta ')) {
@@ -468,7 +458,7 @@ try {
           if (backticks) {
             incode = false;
           }
-          continue; // eslint-disable-line no-continue
+          continue;
         }
 
         if (backticks) {
@@ -504,6 +494,6 @@ try {
 
   writeFileSync('./docs/README.md', Buffer.concat([pre, Buffer.from('\n'), mid, post]));
 } catch (err) {
-  console.error(err); // eslint-disable-line no-console
+  console.error(err);
   process.exitCode = 1;
 }

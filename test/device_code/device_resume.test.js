@@ -1,4 +1,3 @@
-/* eslint-disable no-underscore-dangle */
 import { expect } from 'chai';
 import { createSandbox } from 'sinon';
 

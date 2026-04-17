@@ -1,4 +1,3 @@
-/* eslint-disable prefer-arrow-callback */
 import { expect } from 'chai';
 
 import isConstructable from '../../lib/helpers/type_validators.js';

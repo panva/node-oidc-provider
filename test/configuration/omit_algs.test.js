@@ -6,7 +6,7 @@ import Provider from '../../lib/index.js';
 describe('Provider declaring supported algorithms', () => {
   it('validates the configuration properties', () => {
     expect(() => {
-      new Provider('https://op.example.com', { // eslint-disable-line no-new
+      new Provider('https://op.example.com', {
         enabledJWA: {
           invalidProperty: ['HS256', 'RS256'],
         },
@@ -16,7 +16,7 @@ describe('Provider declaring supported algorithms', () => {
 
   it('validates an array is provided', () => {
     expect(() => {
-      new Provider('https://op.example.com', { // eslint-disable-line no-new
+      new Provider('https://op.example.com', {
         enabledJWA: {
           idTokenSigningAlgValues: new Set(['HS256', 'RS256']),
         },
@@ -26,7 +26,7 @@ describe('Provider declaring supported algorithms', () => {
 
   it('validates only implemented algs are provided', () => {
     expect(() => {
-      new Provider('https://op.example.com', { // eslint-disable-line no-new
+      new Provider('https://op.example.com', {
         enabledJWA: {
           clientAuthSigningAlgValues: ['none'],
         },

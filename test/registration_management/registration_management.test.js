@@ -24,7 +24,7 @@ describe('OAuth 2.0 Dynamic Client Registration Management Protocol', () => {
   describe('feature flag', () => {
     it('checks registration is also enabled', () => {
       expect(() => {
-        new Provider('http://localhost', { // eslint-disable-line no-new
+        new Provider('http://localhost', {
           features: {
             registrationManagement: { enabled: true },
           },

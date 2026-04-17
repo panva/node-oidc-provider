@@ -1,5 +1,3 @@
-/* eslint-disable no-underscore-dangle */
-
 import { parse as parseLocation } from 'node:url';
 
 import { expect } from 'chai';

@@ -357,7 +357,7 @@ describe('BASIC code', () => {
           state: 'foo',
         });
 
-        const wrapped = ((data) => { // eslint-disable-line consistent-return
+        const wrapped = ((data) => {
           switch (verb) {
             case 'get':
               return this.agent
@@ -395,7 +395,7 @@ describe('BASIC code', () => {
           response_mode: 'foo',
         });
 
-        const wrapped = ((data) => { // eslint-disable-line consistent-return
+        const wrapped = ((data) => {
           switch (verb) {
             case 'get':
               return this.agent
@@ -430,7 +430,7 @@ describe('BASIC code', () => {
           response_mode: 'query',
         });
 
-        const wrapped = ((data) => { // eslint-disable-line consistent-return
+        const wrapped = ((data) => {
           switch (verb) {
             case 'get':
               return this.agent

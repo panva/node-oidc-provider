@@ -1,5 +1,3 @@
-/* eslint-disable no-console */
-
 import { promisify } from 'node:util';
 import * as path from 'node:path';
 import * as crypto from 'node:crypto';
@@ -51,7 +49,6 @@ try {
   provider.use(async (ctx, next) => {
     const origSecure = ctx.req.secure;
     ctx.req.secure = ctx.request.secure;
-    // eslint-disable-next-line no-unused-expressions
     ctx.res.locals ||= {};
     ctx.res.locals.cspNonce = crypto.randomBytes(16).toString('base64');
     await pHelmet(ctx.req, ctx.res);

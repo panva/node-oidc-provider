@@ -1,4 +1,3 @@
-/* eslint-disable no-shadow */
 import * as url from 'node:url';
 
 import { expect } from 'chai';
