@@ -24,9 +24,6 @@
         "noUnusedFunctionParameters": "off",
         "noUnusedVariables": "off"
       },
-      "performance": {
-        "noDynamicNamespaceImportAccess": "off"
-      },
       "style": {
         "useConst": "off"
       },
