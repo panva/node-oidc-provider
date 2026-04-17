@@ -13,6 +13,7 @@ class MyAdapter {
    * "BackchannelAuthenticationRequest", or "PushedAuthorizationRequest"
    *
    */
+  // biome-ignore lint/complexity/noUselessConstructor: example template documents the constructor signature
   constructor(name) {
 
   }

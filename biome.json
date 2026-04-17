@@ -19,7 +19,6 @@
         "noArguments": "off",
         "noStaticOnlyClass": "off",
         "noThisInStatic": "off",
-        "noUselessConstructor": "off",
         "useArrowFunction": "off",
         "useFlatMap": "off",
         "useOptionalChain": "off"
