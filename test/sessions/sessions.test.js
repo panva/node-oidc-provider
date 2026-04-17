@@ -15,7 +15,7 @@ describe('session exp handling', () => {
   afterEach(function () {
     try {
       this.TestAdapter.for('Session').destroy.restore();
-    } catch (err) {}
+    } catch (_err) {}
   });
   afterEach(function () { return this.logout(); });
 

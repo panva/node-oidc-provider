@@ -19,8 +19,7 @@
         "noThisInStatic": "off"
       },
       "correctness": {
-        "noUnusedFunctionParameters": "off",
-        "noUnusedVariables": "off"
+        "noUnusedFunctionParameters": "off"
       },
       "suspicious": {
         "noDuplicateTestHooks": "off"
