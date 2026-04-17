@@ -23,7 +23,6 @@
         "useOptionalChain": "off"
       },
       "correctness": {
-        "noConstructorReturn": "off",
         "noUnreachableSuper": "off",
         "noUnusedFunctionParameters": "off",
         "noUnusedVariables": "off"
