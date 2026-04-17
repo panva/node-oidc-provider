@@ -16,7 +16,6 @@
     "rules": {
       "recommended": true,
       "complexity": {
-        "noArguments": "off",
         "noThisInStatic": "off"
       },
       "correctness": {

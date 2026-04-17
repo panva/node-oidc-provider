@@ -24,13 +24,13 @@ config.features.ciba = {
   processLoginHint(ctx, loginHint) {
     assert(ctx?.oidc);
     assert(typeof loginHint === 'string');
-    emitter.emit('processLoginHint', ...arguments);
+    emitter.emit('processLoginHint', ctx, loginHint);
     return loginHint;
   },
   processLoginHintToken(ctx, loginHintToken) {
     assert(ctx?.oidc);
     assert(typeof loginHintToken === 'string');
-    emitter.emit('processLoginHintToken', ...arguments);
+    emitter.emit('processLoginHintToken', ctx, loginHintToken);
     if (loginHintToken === 'notfound') {
       return undefined;
     }
@@ -39,21 +39,21 @@ config.features.ciba = {
   validateBindingMessage(ctx, bindingMessage) {
     assert(ctx?.oidc);
     assert(bindingMessage === undefined || typeof bindingMessage === 'string');
-    emitter.emit('validateBindingMessage', ...arguments);
+    emitter.emit('validateBindingMessage', ctx, bindingMessage);
   },
   validateRequestContext(ctx, requestContext) {
     assert(ctx?.oidc);
     assert(requestContext === undefined || typeof requestContext === 'string');
-    emitter.emit('validateRequestContext', ...arguments);
+    emitter.emit('validateRequestContext', ctx, requestContext);
   },
   verifyUserCode(ctx, account, userCode) {
     assert(ctx?.oidc);
     assert(account?.accountId && typeof account.claims === 'function');
     assert(userCode === undefined || typeof userCode === 'string');
-    emitter.emit('verifyUserCode', ...arguments);
+    emitter.emit('verifyUserCode', ctx, account, userCode);
   },
-  triggerAuthenticationDevice() {
-    emitter.emit('triggerAuthenticationDevice', ...arguments);
+  triggerAuthenticationDevice(...args) {
+    emitter.emit('triggerAuthenticationDevice', ...args);
   },
 };
 
