@@ -15,6 +15,7 @@ setStorage(map);
 const testStorage = new Map();
 
 export class TestAdapter extends MemoryAdapter {
+  // biome-ignore lint/correctness/noUnreachableSuper: intentional caching of adapter instances by name
   constructor(name) {
     // biome-ignore lint/correctness/noConstructorReturn: intentional caching of adapter instances by name
     if (testStorage.has(name)) return testStorage.get(name);
