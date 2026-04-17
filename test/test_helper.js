@@ -422,7 +422,7 @@ export default function testHelper(importMetaUrl, {
       if (!clientId && clients) clientId = clients[0].client_id;
       try {
         return session.authorizations[clientId].grantId;
-      } catch (_err) {
+      } catch {
         throw new Error('getGrantId() failed');
       }
     }
@@ -464,7 +464,7 @@ export default function testHelper(importMetaUrl, {
     function getTokenJti(token) {
       try {
         return jwt(token);
-      } catch (_err) {}
+      } catch {}
 
       return token; // opaque
     }

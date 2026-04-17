@@ -30,7 +30,7 @@ class API {
 
     try {
       assert.equal(response.status, 200);
-    } catch (_err) {
+    } catch {
       throw new Error('unexpected response code', { cause: [response.status, await response.text()] });
     }
 
@@ -58,7 +58,7 @@ class API {
 
     try {
       assert.equal(response.status, 201);
-    } catch (_err) {
+    } catch {
       throw new Error('unexpected response code', { cause: [response.status, await response.text()] });
     }
 
@@ -81,7 +81,7 @@ class API {
 
     try {
       assert.equal(response.status, 201);
-    } catch (_err) {
+    } catch {
       throw new Error('unexpected response code', { cause: [response.status, await response.text()] });
     }
 
@@ -95,7 +95,7 @@ class API {
 
     try {
       assert.equal(response.status, 200);
-    } catch (_err) {
+    } catch {
       throw new Error('unexpected response code', { cause: [response.status, await response.text()] });
     }
 
@@ -109,7 +109,7 @@ class API {
 
     try {
       assert.equal(response.status, 200);
-    } catch (_err) {
+    } catch {
       throw new Error('unexpected response code', { cause: [response.status, await response.text()] });
     }
 
@@ -131,7 +131,7 @@ class API {
 
     try {
       assert.equal(response.status, 200);
-    } catch (_err) {
+    } catch {
       throw new Error('unexpected response code', { cause: [response.status, await response.text()] });
     }
 
