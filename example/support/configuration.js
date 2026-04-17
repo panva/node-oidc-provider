@@ -8,7 +8,7 @@ export default {
     // }
   ],
   interactions: {
-    url(ctx, interaction) {
+    url(_ctx, interaction) {
       return `/interaction/${interaction.uid}`;
     },
   },

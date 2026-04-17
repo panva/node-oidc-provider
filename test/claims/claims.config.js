@@ -7,7 +7,7 @@ const config = getConfig();
 config.subjectTypes = ['pairwise', 'public'];
 merge(config.features, { claimsParameter: { enabled: true } });
 config.acrValues = ['0', '1', '2'];
-config.pairwiseIdentifier = (ctx, sub) => `${sub}-pairwise`;
+config.pairwiseIdentifier = (_ctx, sub) => `${sub}-pairwise`;
 
 export default {
   config,

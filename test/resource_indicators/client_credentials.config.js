@@ -8,7 +8,7 @@ const config = getConfig();
 merge(config.features, {
   clientCredentials: { enabled: true },
   resourceIndicators: {
-    getResourceServerInfo(ctx, resourceIndicator) {
+    getResourceServerInfo(_ctx, resourceIndicator) {
       const [, wl, format] = resourceIndicator.split(':');
       if (wl.includes('wl')) {
         return {

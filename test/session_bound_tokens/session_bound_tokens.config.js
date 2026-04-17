@@ -5,7 +5,7 @@ import getConfig from '../default.config.js';
 const config = getConfig();
 
 merge(config.features, { deviceFlow: { enabled: true } });
-config.issueRefreshToken = (ctx, client) => client.grantTypeAllowed('refresh_token');
+config.issueRefreshToken = (_ctx, client) => client.grantTypeAllowed('refresh_token');
 
 export default {
   config,

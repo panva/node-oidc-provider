@@ -191,7 +191,7 @@ expire.setDate(expire.getDate() + 1);
             expect(payload).to.contain.key('email');
             expect(payload).not.to.have.key('given_name');
           })
-          .end((err, response) => {
+          .end((_err, response) => {
             const { query: { access_token } } = parseLocation(response.headers.location, true);
             this.agent
               .get('/me')

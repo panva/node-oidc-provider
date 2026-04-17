@@ -38,7 +38,7 @@ try {
 
   const directives = helmet.contentSecurityPolicy.getDefaultDirectives();
   delete directives['form-action'];
-  directives['script-src'] = ["'self'", (req, res) => `'nonce-${res.locals.cspNonce}'`];
+  directives['script-src'] = ["'self'", (_req, res) => `'nonce-${res.locals.cspNonce}'`];
   const pHelmet = promisify(helmet({
     contentSecurityPolicy: {
       useDefaults: false,

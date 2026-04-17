@@ -54,7 +54,7 @@ describe('extraClientMetadata configuration', () => {
     const provider = new Provider('http://localhost:3000', {
       extraClientMetadata: {
         properties: ['foo'],
-        validator(ctx, key, value, metadata) {
+        validator(_ctx, key, value, metadata) {
           expect(key).to.eql('foo');
           expect(value).to.eql(undefined);
           metadata[key] = 'default';
@@ -79,7 +79,7 @@ describe('extraClientMetadata configuration', () => {
     const provider = new Provider('http://localhost:3000', {
       extraClientMetadata: {
         properties: ['bar'],
-        validator(ctx, key, value, metadata) {
+        validator(_ctx, _key, _value, metadata) {
           metadata.foo = 'foo';
         },
       },
@@ -100,7 +100,7 @@ describe('extraClientMetadata configuration', () => {
     const provider = new Provider('http://localhost:3000', {
       extraClientMetadata: {
         properties: ['foo'],
-        validator(ctx, key, value, metadata) {
+        validator(_ctx, _key, _value, metadata) {
           metadata.client_secret = undefined;
         },
       },
@@ -149,7 +149,7 @@ describe('extraClientMetadata configuration', () => {
     const provider = new Provider('http://localhost:3000', {
       extraClientMetadata: {
         properties: ['foo'],
-        validator(ctx, key, value, metadata) {
+        validator(_ctx, _key, _value, metadata) {
           metadata.grant_types = ['implicit'];
         },
       },
@@ -170,7 +170,7 @@ describe('extraClientMetadata configuration', () => {
     const provider = new Provider('http://localhost:3000', {
       extraClientMetadata: {
         properties: ['foo'],
-        validator(ctx, key, value, metadata) {
+        validator(_ctx, _key, _value, metadata) {
           metadata.redirect_uris = undefined;
         },
       },
@@ -196,7 +196,7 @@ describe('extraClientMetadata configuration', () => {
     const provider = new Provider('http://localhost:3000', {
       extraClientMetadata: {
         properties: ['foo'],
-        validator(ctx, key, value, metadata) {
+        validator(_ctx, _key, _value, metadata) {
           metadata.token_endpoint_auth_method = 'none';
         },
       },

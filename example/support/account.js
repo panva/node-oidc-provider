@@ -18,7 +18,7 @@ class Account {
    *   loading some claims from external resources etc. based on this detail
    *   or not return them in id tokens but only userinfo and so on.
    */
-  async claims(use, scope) {
+  async claims(_use, _scope) {
     if (this.profile) {
       return {
         sub: this.accountId, // it is essential to always return a sub claim
@@ -79,7 +79,7 @@ class Account {
     return logins.get(login);
   }
 
-  static async findAccount(ctx, id, token) {
+  static async findAccount(_ctx, id, _token) {
     // token is a reference to the token used for which a given account is being loaded,
     //   it is undefined in scenarios where account claims are returned from authorization endpoint
     // ctx is the koa request context

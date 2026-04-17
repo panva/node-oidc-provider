@@ -268,7 +268,7 @@ const fapi = new Provider(ISSUER, {
     userinfo: '/accounts',
   },
   findAccount: Account.findAccount,
-  async extraTokenClaims(ctx, token) {
+  async extraTokenClaims(_ctx, token) {
     if (token.kind === 'AccessToken' && token.resourceServer?.identifier() === resource) {
       return { grantId: token.grantId };
     }
@@ -310,14 +310,14 @@ const fapi = new Provider(ISSUER, {
       enabled: true,
     },
     resourceIndicators: {
-      defaultResource(ctx, client, oneOf) {
+      defaultResource(_ctx, _client, oneOf) {
         if (oneOf) return oneOf;
         return resource;
       },
       useGrantedResource() {
         return true;
       },
-      getResourceServerInfo(ctx, resourceIndicator) {
+      getResourceServerInfo(_ctx, resourceIndicator) {
         if (resourceIndicator === resource) {
           return {
             scope: 'openid address email phone profile',
@@ -338,7 +338,7 @@ const fapi = new Provider(ISSUER, {
     },
     ciba: {
       enabled: true,
-      processLoginHint(ctx, loginHint) {
+      processLoginHint(_ctx, loginHint) {
         return loginHint;
       },
       verifyUserCode() {},
@@ -350,7 +350,7 @@ const fapi = new Provider(ISSUER, {
     registrationManagement: { enabled: true },
     fapi: {
       enabled: true,
-      profile(ctx, client) {
+      profile(_ctx, client) {
         if (!client?.profile) {
           if (client.grantTypes.includes('urn:openid:params:grant-type:ciba')) {
             return '1.0 Final';

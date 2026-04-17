@@ -108,7 +108,7 @@ export class Account {
     };
   }
 
-  static async findAccount(ctx, sub, token) {
+  static async findAccount(_ctx, sub, _token) {
     if (sub === 'notfound') {
       return undefined;
     }

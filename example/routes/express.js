@@ -22,7 +22,7 @@ const debug = (obj) => querystring.stringify(Object.entries(obj).reduce((acc, [k
 });
 const { SessionNotFound } = errors;
 export default (app, provider) => {
-  app.use((req, res, next) => {
+  app.use((_req, res, next) => {
     const orig = res.render;
     // you'll probably want to use a full blown render engine capable of layouts
     res.render = (view, locals) => {
@@ -37,7 +37,7 @@ export default (app, provider) => {
     next();
   });
 
-  function setNoCache(req, res, next) {
+  function setNoCache(_req, res, next) {
     res.set('cache-control', 'no-store');
     next();
   }
@@ -164,7 +164,7 @@ export default (app, provider) => {
     }
   });
 
-  app.use((err, req, res, next) => {
+  app.use((err, _req, _res, next) => {
     if (err instanceof SessionNotFound) {
       // handle interaction expired / session not found error
     }

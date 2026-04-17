@@ -687,7 +687,7 @@ describe('jwt format', () => {
       const client = await this.provider.Client.find(clientId);
       const accessToken = new this.provider.AccessToken({ client, ...fullPayload });
       accessToken.resourceServer = resourceServer;
-      i(this.provider).configuration.formats.customizers.jwt = (ctx, token, jwt) => {
+      i(this.provider).configuration.formats.customizers.jwt = (_ctx, token, jwt) => {
         expect(token).to.equal(accessToken);
         expect(jwt).to.have.property('payload');
         expect(jwt).to.have.property('header', undefined);

@@ -66,7 +66,7 @@ describe('client registration policies', () => {
 
     it('allows for policies to set property defaults', async function () {
       i(this.provider).features.registration.policies['set-default'] = (
-        ctx,
+        _ctx,
         properties,
       ) => {
         if (!('id_token_signed_response_alg' in properties)) {
@@ -102,7 +102,7 @@ describe('client registration policies', () => {
 
     it('allows for policies to force property values', async function () {
       i(this.provider).features.registration.policies['force-default'] = (
-        ctx,
+        _ctx,
         properties,
       ) => {
         properties.id_token_signed_response_alg = 'HS256';
@@ -308,7 +308,7 @@ describe('client registration policies', () => {
 
     it('allows for policies to set property defaults', async function () {
       i(this.provider).features.registration.policies['set-default'] = (
-        ctx,
+        _ctx,
         properties,
       ) => {
         if (!('client_name' in properties)) {
@@ -345,7 +345,7 @@ describe('client registration policies', () => {
 
     it('allows for policies to force property values', async function () {
       i(this.provider).features.registration.policies['force-value'] = (
-        ctx,
+        _ctx,
         properties,
       ) => {
         properties.client_name = 'foobar';

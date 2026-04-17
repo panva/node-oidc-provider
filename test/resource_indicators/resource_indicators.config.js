@@ -15,7 +15,7 @@ merge(config, {
     deviceFlow: { enabled: true },
     ciba: {
       enabled: true,
-      processLoginHint(ctx, loginHint) {
+      processLoginHint(_ctx, loginHint) {
         return loginHint;
       },
       validateBindingMessage() {},
@@ -42,7 +42,7 @@ merge(config, {
       async useGrantedResource(ctx) {
         return ctx.oidc.body?.usegranted;
       },
-      getResourceServerInfo(ctx, resource) {
+      getResourceServerInfo(_ctx, resource) {
         if (resource.includes('wl')) {
           return {
             audience: resource,

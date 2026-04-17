@@ -21,7 +21,7 @@ merge(config.features, {
   attestClientAuth: {
     enabled: true,
     challengeSecret: randomBytes(32),
-    getAttestationSignaturePublicKey(ctx, iss, header, client) {
+    getAttestationSignaturePublicKey(_ctx, iss, _header, client) {
       if (iss === 'https://attester.example.com') {
         return client.jwks.keys[0];
       }

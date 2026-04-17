@@ -130,7 +130,7 @@ if (SubtleCrypto.supports?.('importKey', 'ML-DSA-87')) {
 
 export default {
   interactions: {
-    url(ctx, interaction) {
+    url(_ctx, interaction) {
       return `/interaction/${interaction.uid}`;
     },
   },
@@ -187,7 +187,7 @@ export default {
   jwks: { keys },
   responseTypes: ['code id_token token', 'code id_token', 'code token', 'code', 'id_token token', 'id_token', 'none'],
   subjectTypes: ['public', 'pairwise'],
-  pairwiseIdentifier(ctx, accountId, { sectorIdentifier }) {
+  pairwiseIdentifier(_ctx, accountId, { sectorIdentifier }) {
     return crypto.createHash('sha256')
       .update(sectorIdentifier)
       .update(accountId)
@@ -198,7 +198,7 @@ export default {
     RegistrationAccessToken: 1 * 24 * 60 * 60,
   },
   clientAuthMethods,
-  async issueRefreshToken(ctx, client, code) {
+  async issueRefreshToken(_ctx, client, code) {
     if (!client.grantTypeAllowed('refresh_token')) {
       return false;
     }

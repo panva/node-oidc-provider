@@ -14,10 +14,7 @@
   "linter": {
     "enabled": true,
     "rules": {
-      "recommended": true,
-      "correctness": {
-        "noUnusedFunctionParameters": "off"
-      }
+      "recommended": true
     }
   },
   "overrides": [
@@ -27,6 +24,16 @@
         "rules": {
           "complexity": {
             "noThisInStatic": "off"
+          }
+        }
+      }
+    },
+    {
+      "includes": ["lib/helpers/defaults.js"],
+      "linter": {
+        "rules": {
+          "correctness": {
+            "noUnusedFunctionParameters": "off"
           }
         }
       }

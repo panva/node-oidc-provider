@@ -2,7 +2,7 @@ import getConfig from '../default.config.js';
 
 const config = getConfig();
 
-config.findAccount = (ctx, id) => {
+config.findAccount = (_ctx, id) => {
   if (id === 'notfound') return undefined;
   return {
     accountId: id,

@@ -8,7 +8,7 @@ const config = getConfig();
 config.subjectTypes = ['public', 'pairwise'];
 config.features.ciba = { enabled: true };
 config.features.deviceFlow = { enabled: true };
-config.pairwiseIdentifier = async function pairwiseIdentifier(ctx, accountId, client) {
+config.pairwiseIdentifier = async function pairwiseIdentifier(_ctx, accountId, client) {
   return crypto
     .createHash('sha256')
     .update(client.sectorIdentifier)

@@ -13,7 +13,7 @@ merge(config.features, {
   encryption: { enabled: true },
   clientCredentials: { enabled: true },
 });
-config.pairwiseIdentifier = async function pairwiseIdentifier(ctx, accountId, client) {
+config.pairwiseIdentifier = async function pairwiseIdentifier(_ctx, accountId, client) {
   return crypto
     .createHash('sha256')
     .update(client.sectorIdentifier)

@@ -14,7 +14,7 @@ merge(config.features, {
   requestObjects: { enabled: true },
   ciba: {
     enabled: true,
-    processLoginHint(ctx, loginHint) {
+    processLoginHint(_ctx, loginHint) {
       return loginHint;
     },
     validateBindingMessage() {},

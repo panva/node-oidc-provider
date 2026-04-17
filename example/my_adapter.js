@@ -14,7 +14,7 @@ class MyAdapter {
    *
    */
   // biome-ignore lint/complexity/noUselessConstructor: example template documents the constructor signature
-  constructor(name) {
+  constructor(_name) {
 
   }
 
@@ -30,7 +30,7 @@ class MyAdapter {
    * @param {integer} expiresIn Number of seconds intended for this model to be stored.
    *
    */
-  async upsert(id, payload, expiresIn) {
+  async upsert(_id, _payload, _expiresIn) {
 
     /**
      *
@@ -169,7 +169,7 @@ class MyAdapter {
    * @param {string} id Identifier of oidc-provider model
    *
    */
-  async find(id) {
+  async find(_id) {
 
   }
 
@@ -184,7 +184,7 @@ class MyAdapter {
    * @param {string} userCode the user_code value associated with a DeviceCode instance
    *
    */
-  async findByUserCode(userCode) {
+  async findByUserCode(_userCode) {
 
   }
 
@@ -198,7 +198,7 @@ class MyAdapter {
    * @param {string} uid the uid value associated with a Session instance
    *
    */
-  async findByUid(uid) {
+  async findByUid(_uid) {
 
   }
 
@@ -213,7 +213,7 @@ class MyAdapter {
    * @param {string} id Identifier of oidc-provider model
    *
    */
-  async consume(id) {
+  async consume(_id) {
 
   }
 
@@ -227,7 +227,7 @@ class MyAdapter {
    * @param {string} id Identifier of oidc-provider model
    *
    */
-  async destroy(id) {
+  async destroy(_id) {
 
   }
 
@@ -241,7 +241,7 @@ class MyAdapter {
    * @param {string} grantId the grantId value associated with a this model's instance
    *
    */
-  async revokeByGrantId(grantId) {
+  async revokeByGrantId(_grantId) {
 
   }
 }
