@@ -15,9 +15,6 @@
     "enabled": true,
     "rules": {
       "recommended": true,
-      "complexity": {
-        "noThisInStatic": "off"
-      },
       "correctness": {
         "noUnusedFunctionParameters": "off"
       },
@@ -26,6 +23,18 @@
       }
     }
   },
+  "overrides": [
+    {
+      "includes": ["lib/models/**"],
+      "linter": {
+        "rules": {
+          "complexity": {
+            "noThisInStatic": "off"
+          }
+        }
+      }
+    }
+  ],
   "javascript": {
     "globals": ["globalThis", "navigator"]
   },

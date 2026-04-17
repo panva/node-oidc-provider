@@ -26,7 +26,7 @@ export class TestAdapter extends MemoryAdapter {
 
   static for(name) {
     if (testStorage.has(name)) return testStorage.get(name);
-    return new this(name);
+    return new TestAdapter(name);
   }
 
   get(key) {
