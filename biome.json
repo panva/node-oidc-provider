@@ -35,7 +35,6 @@
       "suspicious": {
         "noAssignInExpressions": "off",
         "noDuplicateTestHooks": "off",
-        "noRedundantUseStrict": "off",
         "useIterableCallbackReturn": "off"
       }
     }
