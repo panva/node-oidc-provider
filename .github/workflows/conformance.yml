@@ -19,24 +19,59 @@ on:
   workflow_dispatch:
     inputs:
       conformance_suite_version:
-        description: 'Conformance Suite version override, e.g. release-v5.1.39 (takes precedence over vars.CONFORMANCE_SUITE_VERSION)'
+        description: 'Conformance Suite tag override, e.g. release-v5.1.39 (takes precedence over vars.CONFORMANCE_SUITE_VERSION)'
         required: false
         type: string
 
 jobs:
-  build:
+  suite:
+    name: Conformance Suite
     if: ${{ github.repository == 'panva/node-oidc-provider' || github.event_name == 'workflow_dispatch' }}
-    uses: panva/.github/.github/workflows/build-conformance-suite.yml@main
-    with:
-      version: ${{ inputs.conformance_suite_version || vars.CONFORMANCE_SUITE_VERSION || '' }}
+    runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.version.outputs.value }}
+    steps:
+      - name: Set Conformance Suite Version
+        id: version
+        env:
+          VERSION_OVERRIDE: ${{ inputs.conformance_suite_version || vars.CONFORMANCE_SUITE_VERSION || '' }}
+        run: |
+          set -o pipefail
+          if [ -n "$VERSION_OVERRIDE" ]; then
+            VERSION="$VERSION_OVERRIDE"
+            LATEST=$(curl -fsSL https://gitlab.com/api/v4/projects/4175605/releases | jq -r '.[0].tag_name' || true)
+          else
+            LATEST=$(curl -fsSL https://gitlab.com/api/v4/projects/4175605/releases | jq -r '.[0].tag_name')
+            if [ -z "$LATEST" ] || [ "$LATEST" = "null" ]; then
+              echo "Could not resolve the latest Conformance Suite release" >&2
+              exit 1
+            fi
+            VERSION="$LATEST"
+          fi
+          echo "value=$VERSION" >> $GITHUB_OUTPUT
+          echo "### Conformance Suite Details" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          if [ -n "$VERSION_OVERRIDE" ]; then
+            echo "Version: **$VERSION** (override)" >> $GITHUB_STEP_SUMMARY
+            if [ -n "$LATEST" ] && [ "$LATEST" != "null" ] && [ "$VERSION" != "$LATEST" ]; then
+              echo "Latest Available: **$LATEST**" >> $GITHUB_STEP_SUMMARY
+            fi
+          else
+            echo "Version: **$VERSION**" >> $GITHUB_STEP_SUMMARY
+          fi
+          echo "Compose: **docker-compose-prebuilt.yml@$VERSION**" >> $GITHUB_STEP_SUMMARY
 
   run:
+    if: ${{ github.repository == 'panva/node-oidc-provider' || github.event_name == 'workflow_dispatch' }}
     runs-on: ubuntu-latest
     needs:
-      - build
+      - suite
     env:
+      BASE_URL: https://localhost.emobix.co.uk:8443
+      IMAGE_TAG: ${{ needs.suite.outputs.version }}
       SUITE_BASE_URL: https://localhost.emobix.co.uk:8443
       SETUP: ${{ toJSON(matrix.setup) }}
+      VERSION: ${{ needs.suite.outputs.version }}
     strategy:
       fail-fast: false
       matrix:
@@ -218,19 +253,14 @@ jobs:
           DEBUG: oidc-provider:*
           NODE_OPTIONS: --tls-cipher-list="ECDHE-RSA-AES128-GCM-SHA256 ECDHE-RSA-AES256-GCM-SHA384 ECDHE-ECDSA-AES128-GCM-SHA256 ECDHE-ECDSA-AES256-GCM-SHA384"
           NODE_TLS_REJECT_UNAUTHORIZED: 0
-      - name: Load Cached Conformance Suite Build
-        uses: actions/cache@668228422ae6a00e4ad889ee87cd7109ec5666a7 # v5.0.4
-        id: cache
-        with:
-          path: ./conformance-suite
-          key: ${{ needs.build.outputs.cache-key }}
-          fail-on-cache-miss: true
-      - name: Run Conformance Suite
-        working-directory: ./conformance-suite
-        env:
-          COMPOSE_BAKE: true
+      - name: Fetch Conformance Suite Compose
         run: |
-          docker compose -f docker-compose-dev.yml up -d
+          mkdir -p conformance-suite
+          curl -fsSLo conformance-suite/docker-compose-prebuilt.yml "https://gitlab.com/openid/conformance-suite/-/raw/$VERSION/docker-compose-prebuilt.yml"
+      - name: Run Conformance Suite
+        run: |
+          docker compose -f conformance-suite/docker-compose-prebuilt.yml pull
+          docker compose -f conformance-suite/docker-compose-prebuilt.yml up -d
           while ! curl -skfail https://localhost.emobix.co.uk:8443/api/runner/available >/dev/null; do sleep 2; done
       - name: Adjust configuration files for CI
         run: |
@@ -253,12 +283,12 @@ jobs:
           if-no-files-found: ignore
         if: ${{ always() }}
       - name: Stop Conformance Suite
-        working-directory: ./conformance-suite
-        env:
-          COMPOSE_BAKE: true
+        if: ${{ always() }}
         run: |
-          if [ -n "${{ env.OIDC_PROVIDER_PID }}" ]; then
-            kill -SIGINT ${{ env.OIDC_PROVIDER_PID }} || true
+          if [ -n "${OIDC_PROVIDER_PID:-}" ]; then
+            kill -SIGINT "$OIDC_PROVIDER_PID" || true
           fi
-          docker compose -f docker-compose-dev.yml down
-          sudo rm -rf mongo
+          if [ -f conformance-suite/docker-compose-prebuilt.yml ]; then
+            docker compose -f conformance-suite/docker-compose-prebuilt.yml down --volumes || true
+          fi
+          sudo rm -rf conformance-suite/mongo
