@@ -78,6 +78,15 @@ export default {
       backchannel_token_delivery_mode: 'ping',
     },
     {
+      client_id: 'client-user-code',
+      grant_types: ['urn:openid:params:grant-type:ciba', 'refresh_token'],
+      response_types: [],
+      redirect_uris: [],
+      token_endpoint_auth_method: 'none',
+      backchannel_token_delivery_mode: 'poll',
+      backchannel_user_code_parameter: true,
+    },
+    {
       client_id: 'client-par-required',
       grant_types: ['urn:openid:params:grant-type:ciba', 'refresh_token'],
       response_types: [],

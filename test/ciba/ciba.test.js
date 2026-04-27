@@ -133,7 +133,7 @@ describe('features.ciba', () => {
       const route = '/backchannel';
 
       it('minimal w/ login_hint', async function () {
-        const [, [, request, account, client]] = await Promise.all([
+        const [, [, request, account, client], verifyUserCode] = await Promise.all([
           this.agent.post(route)
             .send({
               scope: 'openid',
@@ -166,6 +166,7 @@ describe('features.ciba', () => {
         expect(request.params).to.deep.eql({
           client_id: 'client', login_hint: 'accountId', scope: 'openid', extra2: 'defaulted', extra: 'provided',
         });
+        expect(verifyUserCode[2]).to.be.undefined;
       });
 
       it('does not require PAR for clients with require_pushed_authorization_requests', async function () {
@@ -181,6 +182,24 @@ describe('features.ciba', () => {
           .expect((response) => {
             expect(response.body).to.have.keys('expires_in', 'auth_req_id');
           });
+      });
+
+      it('passes user_code to verifyUserCode', async function () {
+        const [, verifyUserCode] = await Promise.all([
+          this.agent.post(route)
+            .send({
+              scope: 'openid',
+              login_hint: 'accountId',
+              user_code: '1234',
+              client_id: 'client-user-code',
+            })
+            .type('form')
+            .expect(200)
+            .expect('content-type', /application\/json/),
+          once(emitter, 'verifyUserCode'),
+        ]);
+
+        expect(verifyUserCode[2]).to.equal('1234');
       });
 
       it('requested_expiry', async function () {
