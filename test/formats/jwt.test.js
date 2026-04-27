@@ -116,6 +116,38 @@ describe('jwt format', () => {
       expect(header).to.have.property('kid', i(this.provider).keystore.selectForSign({ alg: 'RS256' })[0].kid);
     });
 
+    it('selects provider keys allowed for signing JWT access tokens', async function () {
+      const { keystore } = i(this.provider);
+      const original = [...keystore];
+      const [source] = keystore.selectForSign({ alg: 'RS256' });
+      const jwk = { ...source, key_ops: ['sign'] };
+
+      keystore.clear();
+      keystore.add(jwk);
+
+      try {
+        const resourceServer = new ResourceServer(resource, {
+          accessTokenFormat: 'jwt',
+          audience: 'foo',
+          jwt: {
+            sign: { alg: 'RS256', kid: jwk.kid },
+          },
+        });
+
+        const client = await this.provider.Client.find(clientId);
+        const token = new this.provider.AccessToken({ client, ...fullPayload, resourceServer });
+        const jwt = await token.save();
+
+        const header = decode(jwt.split('.')[0]);
+        expect(header).to.have.property('kid', jwk.kid);
+      } finally {
+        keystore.clear();
+        for (const key of original) {
+          keystore.add(key);
+        }
+      }
+    });
+
     it('can be used to specify the signing algorithm to be HMAC (buffer)', async function () {
       const resourceServer = new ResourceServer(resource, {
         accessTokenFormat: 'jwt',
