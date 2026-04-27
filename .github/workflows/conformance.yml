@@ -73,6 +73,7 @@ jobs:
       OIDC_GITLAB_SECRET: gitlab-secret
       OIDC_GOOGLE_CLIENTID: google-client
       OIDC_GOOGLE_SECRET: google-secret
+      SUITE_ACCESS_TOKEN: ci-runner-token
       SUITE_BASE_URL: https://localhost.emobix.co.uk:8443
       SETUP: ${{ toJSON(matrix.setup) }}
       VERSION: ${{ needs.suite.outputs.version }}
@@ -277,8 +278,37 @@ jobs:
           "${compose[@]}" pull
           "${compose[@]}" up -d
 
+          for attempt in {1..60}; do
+            if "${compose[@]}" exec -T -e SUITE_ACCESS_TOKEN="$SUITE_ACCESS_TOKEN" mongodb mongosh test_suite --quiet --eval '
+              const token = process.env.SUITE_ACCESS_TOKEN;
+              db.API_TOKEN.updateOne(
+                { token },
+                {
+                  $setOnInsert: {
+                    _id: "ci-runner",
+                    owner: { iss: "https://developer.com", sub: "developer" },
+                    info: null,
+                    token,
+                    expires: null
+                  }
+                },
+                { upsert: true }
+              );
+            ' >/dev/null; then
+              break
+            fi
+
+            if (( attempt == 60 )); then
+              "${compose[@]}" ps
+              "${compose[@]}" logs --tail=300 mongodb
+              exit 1
+            fi
+
+            sleep 1
+          done
+
           for attempt in {1..120}; do
-            if curl -skfail "$SUITE_BASE_URL/api/runner/available" >/dev/null; then
+            if curl -skfail -H "authorization: bearer $SUITE_ACCESS_TOKEN" "$SUITE_BASE_URL/api/runner/available" >/dev/null; then
               exit 0
             fi
 
