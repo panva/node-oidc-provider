@@ -2,6 +2,17 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [9.8.3](https://github.com/panva/node-oidc-provider/compare/v9.8.2...v9.8.3) (2026-04-27)
+
+
+### Fixes
+
+* await registration token policy ([6269602](https://github.com/panva/node-oidc-provider/commit/62696027a9c579576b0a55d9a899d4143973d809))
+* pass ciba user code to verifier ([a340869](https://github.com/panva/node-oidc-provider/commit/a3408691fc9f4404a05ba16b9112d2ce6fbe8df6))
+* reject malformed dpop htu with a clearer message ([1b6146c](https://github.com/panva/node-oidc-provider/commit/1b6146c82f9557a8db87e2f91b360b370a8fb14f))
+* select signing keys for jwt access tokens ([1d6df9c](https://github.com/panva/node-oidc-provider/commit/1d6df9c72f8d859be6261726c6854a902e13c996))
+* validate ciba notification tokens ([2807a8f](https://github.com/panva/node-oidc-provider/commit/2807a8f1cdaff7b7c183f62033d31d19a7a4e201))
+
 ## [9.8.2](https://github.com/panva/node-oidc-provider/compare/v9.8.1...v9.8.2) (2026-04-17)
 
 
