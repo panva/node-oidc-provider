@@ -257,11 +257,39 @@ jobs:
         run: |
           mkdir -p conformance-suite
           curl -fsSLo conformance-suite/docker-compose-prebuilt.yml "https://gitlab.com/openid/conformance-suite/-/raw/$VERSION/docker-compose-prebuilt.yml"
+          cat > conformance-suite/docker-compose-ci.yml <<'YAML'
+          services:
+            nginx:
+              ports:
+                - "8444:8444"
+                - "8445:8445"
+            server:
+              environment:
+                BASE_MTLS_URL: https://localhost.emobix.co.uk:8444
+                JAVA_EXTRA_ARGS: "-Dfintechlabs.devmode=true"
+          YAML
       - name: Run Conformance Suite
         run: |
-          docker compose -f conformance-suite/docker-compose-prebuilt.yml pull
-          docker compose -f conformance-suite/docker-compose-prebuilt.yml up -d
-          while ! curl -skfail https://localhost.emobix.co.uk:8443/api/runner/available >/dev/null; do sleep 2; done
+          compose=(docker compose -f conformance-suite/docker-compose-prebuilt.yml -f conformance-suite/docker-compose-ci.yml)
+          "${compose[@]}" pull
+          "${compose[@]}" up -d
+
+          for attempt in {1..120}; do
+            if curl -skfail "$SUITE_BASE_URL/api/runner/available" >/dev/null; then
+              exit 0
+            fi
+
+            if (( attempt % 10 == 0 )); then
+              "${compose[@]}" ps
+              "${compose[@]}" logs --tail=80 server nginx
+            fi
+
+            sleep 2
+          done
+
+          "${compose[@]}" ps
+          "${compose[@]}" logs --tail=300
+          exit 1
       - name: Adjust configuration files for CI
         run: |
           sed -i -e 's/op.panva.cz/172.17.0.1:3000/g' certification/oidc/plan.json
@@ -288,7 +316,9 @@ jobs:
           if [ -n "${OIDC_PROVIDER_PID:-}" ]; then
             kill -SIGINT "$OIDC_PROVIDER_PID" || true
           fi
-          if [ -f conformance-suite/docker-compose-prebuilt.yml ]; then
+          if [ -f conformance-suite/docker-compose-prebuilt.yml ] && [ -f conformance-suite/docker-compose-ci.yml ]; then
+            docker compose -f conformance-suite/docker-compose-prebuilt.yml -f conformance-suite/docker-compose-ci.yml down --volumes || true
+          elif [ -f conformance-suite/docker-compose-prebuilt.yml ]; then
             docker compose -f conformance-suite/docker-compose-prebuilt.yml down --volumes || true
           fi
           sudo rm -rf conformance-suite/mongo
