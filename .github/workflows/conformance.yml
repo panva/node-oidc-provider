@@ -258,6 +258,11 @@ jobs:
           curl -fsSLo conformance-suite/docker-compose-prebuilt.yml "https://gitlab.com/openid/conformance-suite/-/raw/$VERSION/docker-compose-prebuilt.yml"
           cat > conformance-suite/docker-compose-prebuilt.override.yml <<'YAML'
           services:
+            nginx:
+              networks:
+                default:
+                  aliases:
+                    - localhost.emobix.co.uk
             server:
               environment:
                 SPRING_PROFILES_ACTIVE: "dev"
