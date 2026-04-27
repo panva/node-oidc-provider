@@ -1,8 +1,8 @@
 import { strict as assert } from 'node:assert';
 import * as fs from 'node:fs';
 
-import debug from './debug.js';
 import API from './api.js';
+import debug from './debug.js';
 
 const {
   SUITE_ACCESS_TOKEN,
@@ -20,7 +20,7 @@ const {
 let SKIP;
 let CONFIGURATION;
 if (PLAN_NAME.startsWith('fapi')) {
-  VARIANT.fapi_profile = 'plain_fapi';
+  VARIANT[PLAN_NAME.includes('ciba') ? 'fapi_ciba_profile' : 'fapi_profile'] = 'plain_fapi';
   CONFIGURATION = './certification/fapi/plan.json';
 } else {
   CONFIGURATION = './certification/oidc/plan.json';
@@ -44,8 +44,6 @@ switch (PLAN_NAME) {
     VARIANT.response_type = 'code';
     break;
   case 'oidcc-basic-certification-test-plan':
-    // TODO: unskip when https://gitlab.com/openid/conformance-suite/-/issues/1519 is fixed
-    SKIP = 'oidcc-ensure-post-request-succeeds';
     VARIANT.server_metadata = 'discovery';
     VARIANT.client_registration = 'dynamic_client';
     break;
@@ -204,6 +202,9 @@ try {
     }
   });
 } catch (err) {
-  console.error(err);
-  process.exitCode = 1;
+  describe(PLAN_NAME, () => {
+    it('creates test plan', () => {
+      throw err;
+    });
+  });
 }

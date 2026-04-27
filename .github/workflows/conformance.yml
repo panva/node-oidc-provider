@@ -19,24 +19,14 @@ on:
   workflow_dispatch:
     inputs:
       conformance_suite_version:
-        description: 'Conformance Suite version override, e.g. release-v5.1.39 (takes precedence over vars.CONFORMANCE_SUITE_VERSION)'
+        description: 'Conformance Suite tag override, e.g. release-v5.1.39 (takes precedence over vars.CONFORMANCE_SUITE_VERSION)'
         required: false
         type: string
 
 jobs:
-  build:
-    if: ${{ github.repository == 'panva/node-oidc-provider' || github.event_name == 'workflow_dispatch' }}
-    uses: panva/.github/.github/workflows/build-conformance-suite.yml@main
-    with:
-      version: ${{ inputs.conformance_suite_version || vars.CONFORMANCE_SUITE_VERSION || '' }}
-
   run:
+    if: ${{ github.repository == 'panva/node-oidc-provider' || github.event_name == 'workflow_dispatch' }}
     runs-on: ubuntu-latest
-    needs:
-      - build
-    env:
-      SUITE_BASE_URL: https://localhost.emobix.co.uk:8443
-      SETUP: ${{ toJSON(matrix.setup) }}
     strategy:
       fail-fast: false
       matrix:
@@ -206,6 +196,7 @@ jobs:
           DEBUG: oidc-provider:*
           ISSUER: https://172.17.0.1:3000
           NODE_TLS_REJECT_UNAUTHORIZED: 0
+          SETUP: ${{ toJSON(matrix.setup) }}
       - name: Run oidc-provider (FAPI)
         run: |
           set -o pipefail
@@ -218,29 +209,21 @@ jobs:
           DEBUG: oidc-provider:*
           NODE_OPTIONS: --tls-cipher-list="ECDHE-RSA-AES128-GCM-SHA256 ECDHE-RSA-AES256-GCM-SHA384 ECDHE-ECDSA-AES128-GCM-SHA256 ECDHE-ECDSA-AES256-GCM-SHA384"
           NODE_TLS_REJECT_UNAUTHORIZED: 0
-      - name: Load Cached Conformance Suite Build
-        uses: actions/cache@668228422ae6a00e4ad889ee87cd7109ec5666a7 # v5.0.4
-        id: cache
-        with:
-          path: ./conformance-suite
-          key: ${{ needs.build.outputs.cache-key }}
-          fail-on-cache-miss: true
+          SETUP: ${{ toJSON(matrix.setup) }}
       - name: Run Conformance Suite
-        working-directory: ./conformance-suite
-        env:
-          COMPOSE_BAKE: true
-        run: |
-          docker compose -f docker-compose-dev.yml up -d
-          while ! curl -skfail https://localhost.emobix.co.uk:8443/api/runner/available >/dev/null; do sleep 2; done
+        uses: panva/.github/.github/actions/conformance-suite@main
+        with:
+          version-override: ${{ inputs.conformance_suite_version || vars.CONFORMANCE_SUITE_VERSION || '' }}
       - name: Adjust configuration files for CI
         run: |
           sed -i -e 's/op.panva.cz/172.17.0.1:3000/g' certification/oidc/plan.json
           sed -i -e 's/mtls.fapi.panva.cz/172.17.0.1:3000/g' certification/fapi/plan.json
           sed -i -e 's/fapi.panva.cz/172.17.0.1:3000/g' certification/fapi/plan.json
       - name: Run the plan
-        run: npx mocha --timeout 0 --retries 1 certification/runner
+        run: npx mocha --timeout 0 --retries 1 --fail-zero certification/runner
         env:
           NODE_TLS_REJECT_UNAUTHORIZED: 0
+          SETUP: ${{ toJSON(matrix.setup) }}
       - name: Add server log to artifact
         if: ${{ failure() }}
         run: |
@@ -252,13 +235,9 @@ jobs:
           name: certification html results idx(${{ strategy.job-index }})
           if-no-files-found: ignore
         if: ${{ always() }}
-      - name: Stop Conformance Suite
-        working-directory: ./conformance-suite
-        env:
-          COMPOSE_BAKE: true
+      - name: Stop oidc-provider
+        if: ${{ always() }}
         run: |
-          if [ -n "${{ env.OIDC_PROVIDER_PID }}" ]; then
-            kill -SIGINT ${{ env.OIDC_PROVIDER_PID }} || true
+          if [ -n "${OIDC_PROVIDER_PID:-}" ]; then
+            kill -SIGINT "$OIDC_PROVIDER_PID" || true
           fi
-          docker compose -f docker-compose-dev.yml down
-          sudo rm -rf mongo

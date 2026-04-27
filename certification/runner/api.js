@@ -11,6 +11,20 @@ const pipeline = promisify(stream.pipeline);
 
 const FINISHED = new Set(['FINISHED']);
 const RESULTS = new Set(['REVIEW', 'PASSED', 'WARNING', 'SKIPPED']);
+const MAX_ERROR_BODY_LENGTH = 4000;
+
+async function assertResponseStatus(response, expected) {
+  if (response.status === expected) {
+    return;
+  }
+
+  let body = await response.text();
+  if (body.length > MAX_ERROR_BODY_LENGTH) {
+    body = `${body.slice(0, MAX_ERROR_BODY_LENGTH)}\n... truncated ...`;
+  }
+
+  throw new Error(`unexpected response code: expected ${expected}, got ${response.status}\n${body || '<empty response body>'}`);
+}
 
 class API {
   #headers = new Headers({ accept: 'application/json' });
@@ -28,11 +42,7 @@ class API {
   async getAllTestModules() {
     const response = await fetch(new URL('api/runner/available', this.#baseUrl), { headers: this.#headers });
 
-    try {
-      assert.equal(response.status, 200);
-    } catch {
-      throw new Error('unexpected response code', { cause: [response.status, await response.text()] });
-    }
+    await assertResponseStatus(response, 200);
 
     return response.json();
   }
@@ -56,11 +66,7 @@ class API {
       body: JSON.stringify(configuration),
     });
 
-    try {
-      assert.equal(response.status, 201);
-    } catch {
-      throw new Error('unexpected response code', { cause: [response.status, await response.text()] });
-    }
+    await assertResponseStatus(response, 201);
 
     return response.json();
   }
@@ -79,11 +85,7 @@ class API {
       headers: this.#headers,
     });
 
-    try {
-      assert.equal(response.status, 201);
-    } catch {
-      throw new Error('unexpected response code', { cause: [response.status, await response.text()] });
-    }
+    await assertResponseStatus(response, 201);
 
     return response.json();
   }
@@ -93,11 +95,7 @@ class API {
 
     const response = await fetch(new URL(`api/info/${moduleId}`, this.#baseUrl), { headers: this.#headers });
 
-    try {
-      assert.equal(response.status, 200);
-    } catch {
-      throw new Error('unexpected response code', { cause: [response.status, await response.text()] });
-    }
+    await assertResponseStatus(response, 200);
 
     return response.json();
   }
@@ -107,11 +105,7 @@ class API {
 
     const response = await fetch(new URL(`api/log/${moduleId}`, this.#baseUrl), { headers: this.#headers });
 
-    try {
-      assert.equal(response.status, 200);
-    } catch {
-      throw new Error('unexpected response code', { cause: [response.status, await response.text()] });
-    }
+    await assertResponseStatus(response, 200);
 
     return response.json();
   }
@@ -129,11 +123,7 @@ class API {
     headers.set('accept', 'application/zip');
     const response = await fetch(new URL(`api/plan/exporthtml/${planId}`, this.#baseUrl), { headers });
 
-    try {
-      assert.equal(response.status, 200);
-    } catch {
-      throw new Error('unexpected response code', { cause: [response.status, await response.text()] });
-    }
+    await assertResponseStatus(response, 200);
 
     return pipeline(
       response.body,
