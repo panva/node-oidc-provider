@@ -265,6 +265,7 @@ jobs:
           services:
             server:
               environment:
+                JAVA_EXTRA_ARGS: ""
                 OIDC_GITLAB_CLIENTID: ${OIDC_GITLAB_CLIENTID}
                 OIDC_GITLAB_SECRET: ${OIDC_GITLAB_SECRET}
                 OIDC_GOOGLE_CLIENTID: ${OIDC_GOOGLE_CLIENTID}
