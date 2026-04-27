@@ -69,6 +69,10 @@ jobs:
     env:
       BASE_URL: https://localhost.emobix.co.uk:8443
       IMAGE_TAG: ${{ needs.suite.outputs.version }}
+      OIDC_GITLAB_CLIENTID: gitlab-client
+      OIDC_GITLAB_SECRET: gitlab-secret
+      OIDC_GOOGLE_CLIENTID: google-client
+      OIDC_GOOGLE_SECRET: google-secret
       SUITE_BASE_URL: https://localhost.emobix.co.uk:8443
       SETUP: ${{ toJSON(matrix.setup) }}
       VERSION: ${{ needs.suite.outputs.version }}
@@ -259,18 +263,12 @@ jobs:
           curl -fsSLo conformance-suite/docker-compose-prebuilt.yml "https://gitlab.com/openid/conformance-suite/-/raw/$VERSION/docker-compose-prebuilt.yml"
           cat > conformance-suite/docker-compose-ci.yml <<'YAML'
           services:
-            nginx:
-              ports:
-                - "8444:8444"
-                - "8445:8445"
             server:
               environment:
-                BASE_MTLS_URL: https://localhost.emobix.co.uk:8444
-                JAVA_EXTRA_ARGS: "-Dfintechlabs.devmode=true"
-                OIDC_GITLAB_CLIENTID: gitlab-client
-                OIDC_GITLAB_SECRET: gitlab-secret
-                OIDC_GOOGLE_CLIENTID: google-client
-                OIDC_GOOGLE_SECRET: google-secret
+                OIDC_GITLAB_CLIENTID: ${OIDC_GITLAB_CLIENTID}
+                OIDC_GITLAB_SECRET: ${OIDC_GITLAB_SECRET}
+                OIDC_GOOGLE_CLIENTID: ${OIDC_GOOGLE_CLIENTID}
+                OIDC_GOOGLE_SECRET: ${OIDC_GOOGLE_SECRET}
           YAML
       - name: Run Conformance Suite
         run: |
