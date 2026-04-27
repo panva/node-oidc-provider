@@ -967,6 +967,16 @@ describe('features.dPoP', () => {
         .expect(400)
         .expect({ error: 'invalid_dpop_proof', error_description: 'invalid DPoP key binding' });
     });
+
+    it('should be 400 for malformed htu', async function () {
+      await this.agent.post('/token')
+        .auth('client', 'secret')
+        .send({ grant_type: 'client_credentials' })
+        .set('DPoP', await DPoP(this.keypair, 'not a url', 'POST'))
+        .type('form')
+        .expect(400)
+        .expect({ error: 'invalid_dpop_proof', error_description: 'DPoP proof htu mismatch' });
+    });
   });
 
   describe('invalid nonce', () => {
