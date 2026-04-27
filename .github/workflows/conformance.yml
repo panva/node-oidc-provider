@@ -67,13 +67,7 @@ jobs:
     needs:
       - suite
     env:
-      BASE_URL: https://localhost.emobix.co.uk:8443
       IMAGE_TAG: ${{ needs.suite.outputs.version }}
-      OIDC_GITLAB_CLIENTID: gitlab-client
-      OIDC_GITLAB_SECRET: gitlab-secret
-      OIDC_GOOGLE_CLIENTID: google-client
-      OIDC_GOOGLE_SECRET: google-secret
-      SUITE_ACCESS_TOKEN: ci-runner-token
       SUITE_BASE_URL: https://localhost.emobix.co.uk:8443
       SETUP: ${{ toJSON(matrix.setup) }}
       VERSION: ${{ needs.suite.outputs.version }}
@@ -262,58 +256,25 @@ jobs:
         run: |
           mkdir -p conformance-suite
           curl -fsSLo conformance-suite/docker-compose-prebuilt.yml "https://gitlab.com/openid/conformance-suite/-/raw/$VERSION/docker-compose-prebuilt.yml"
-          cat > conformance-suite/docker-compose-ci.yml <<'YAML'
+          cat > conformance-suite/docker-compose-prebuilt.override.yml <<'YAML'
           services:
-            nginx:
-              networks:
-                default:
-                  aliases:
-                    - localhost.emobix.co.uk
             server:
               environment:
+                SPRING_PROFILES_ACTIVE: "dev"
                 JAVA_EXTRA_ARGS: ""
-                OIDC_GITLAB_CLIENTID: ${OIDC_GITLAB_CLIENTID}
-                OIDC_GITLAB_SECRET: ${OIDC_GITLAB_SECRET}
-                OIDC_GOOGLE_CLIENTID: ${OIDC_GOOGLE_CLIENTID}
-                OIDC_GOOGLE_SECRET: ${OIDC_GOOGLE_SECRET}
+                OIDC_GOOGLE_CLIENTID: ${OIDC_GOOGLE_CLIENTID:-google-client}
+                OIDC_GOOGLE_SECRET: ${OIDC_GOOGLE_SECRET:-google-secret}
+                OIDC_GITLAB_CLIENTID: ${OIDC_GITLAB_CLIENTID:-gitlab-client}
+                OIDC_GITLAB_SECRET: ${OIDC_GITLAB_SECRET:-gitlab-secret}
           YAML
       - name: Run Conformance Suite
         run: |
-          compose=(docker compose -f conformance-suite/docker-compose-prebuilt.yml -f conformance-suite/docker-compose-ci.yml)
+          compose=(docker compose -f conformance-suite/docker-compose-prebuilt.yml -f conformance-suite/docker-compose-prebuilt.override.yml)
           "${compose[@]}" pull
           "${compose[@]}" up -d
 
-          for attempt in {1..60}; do
-            if "${compose[@]}" exec -T -e SUITE_ACCESS_TOKEN="$SUITE_ACCESS_TOKEN" mongodb mongosh test_suite --quiet --eval '
-              const token = process.env.SUITE_ACCESS_TOKEN;
-              db.API_TOKEN.updateOne(
-                { token },
-                {
-                  $setOnInsert: {
-                    _id: "ci-runner",
-                    owner: { iss: "https://developer.com", sub: "developer" },
-                    info: null,
-                    token,
-                    expires: null
-                  }
-                },
-                { upsert: true }
-              );
-            ' >/dev/null; then
-              break
-            fi
-
-            if (( attempt == 60 )); then
-              "${compose[@]}" ps
-              "${compose[@]}" logs --tail=300 mongodb
-              exit 1
-            fi
-
-            sleep 1
-          done
-
           for attempt in {1..120}; do
-            if curl -skfail -H "authorization: bearer $SUITE_ACCESS_TOKEN" "$SUITE_BASE_URL/api/runner/available" >/dev/null; then
+            if curl -skfail "$SUITE_BASE_URL/api/runner/available" >/dev/null; then
               exit 0
             fi
 
@@ -354,8 +315,8 @@ jobs:
           if [ -n "${OIDC_PROVIDER_PID:-}" ]; then
             kill -SIGINT "$OIDC_PROVIDER_PID" || true
           fi
-          if [ -f conformance-suite/docker-compose-prebuilt.yml ] && [ -f conformance-suite/docker-compose-ci.yml ]; then
-            docker compose -f conformance-suite/docker-compose-prebuilt.yml -f conformance-suite/docker-compose-ci.yml down --volumes || true
+          if [ -f conformance-suite/docker-compose-prebuilt.yml ] && [ -f conformance-suite/docker-compose-prebuilt.override.yml ]; then
+            docker compose -f conformance-suite/docker-compose-prebuilt.yml -f conformance-suite/docker-compose-prebuilt.override.yml down --volumes || true
           elif [ -f conformance-suite/docker-compose-prebuilt.yml ]; then
             docker compose -f conformance-suite/docker-compose-prebuilt.yml down --volumes || true
           fi
