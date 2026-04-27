@@ -112,6 +112,41 @@ describe('registration features', () => {
       });
     });
 
+    context('when issueRegistrationAccessToken is an async function resolving false', () => {
+      before(function () {
+        const config = i(this.provider).features.registration;
+        this.orig = config.issueRegistrationAccessToken;
+        config.issueRegistrationAccessToken = async () => false;
+      });
+
+      after(function () {
+        i(this.provider).features.registration.issueRegistrationAccessToken = this.orig;
+      });
+
+      it('omits issuing a registration access token and does not return registration_client_uri', function () {
+        return this.agent.post('/reg')
+          .send({
+            redirect_uris: ['https://client.example.com/cb'],
+          })
+          .expect(201)
+          .expect((response) => {
+            expect(response.body).not.to.contain.keys('registration_client_uri', 'registration_access_token');
+          });
+      });
+
+      it('populates ctx.oidc.entities', function (done) {
+        this.assertOnce((ctx) => {
+          expect(ctx.oidc.entities).not.to.have.property('RegistrationAccessToken');
+        }, done);
+
+        this.agent.post('/reg')
+          .send({
+            redirect_uris: ['https://client.example.com/cb'],
+          })
+          .end(() => {});
+      });
+    });
+
     context('when issueRegistrationAccessToken is a function returning true', () => {
       before(function () {
         const config = i(this.provider).features.registration;
