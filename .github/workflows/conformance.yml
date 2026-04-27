@@ -267,6 +267,10 @@ jobs:
               environment:
                 BASE_MTLS_URL: https://localhost.emobix.co.uk:8444
                 JAVA_EXTRA_ARGS: "-Dfintechlabs.devmode=true"
+                OIDC_GITLAB_CLIENTID: gitlab-client
+                OIDC_GITLAB_SECRET: gitlab-secret
+                OIDC_GOOGLE_CLIENTID: google-client
+                OIDC_GOOGLE_SECRET: google-secret
           YAML
       - name: Run Conformance Suite
         run: |
