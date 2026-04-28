@@ -75,7 +75,7 @@ merge(config.features, {
     getCertificate(ctx) {
       try {
         return new X509Certificate(Buffer.from(ctx.get('x-ssl-client-cert'), 'base64'));
-      } catch (_e) {
+      } catch {
         return undefined;
       }
     },
