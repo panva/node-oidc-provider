@@ -5,7 +5,7 @@ import * as querystring from 'node:querystring';
 import { createServer } from 'node:http';
 import { once } from 'node:events';
 
-import { setGlobalDispatcher, MockAgent, Dispatcher1Wrapper } from 'undici';
+import { setGlobalDispatcher, MockAgent } from 'undici';
 import sinon from 'sinon';
 import { dirname } from 'desm';
 import flatten from 'lodash/flatten.js';
@@ -26,13 +26,22 @@ import instance from '../lib/helpers/weak_cache.js';
 import { Account, TestAdapter } from './models.js';
 import keys from './keys.js';
 
-const fetchAgent = new MockAgent();
+// TODO: Remove once https://github.com/nodejs/undici/issues/5036 is fixed in a released undici version.
+// See https://github.com/nodejs/undici/pull/5052.
+class CompatibleMockAgent extends MockAgent {
+  dispatch(opts, handler) {
+    if (opts.allowH2 === false) {
+      opts = { ...opts };
+      delete opts.allowH2;
+    }
+
+    return super.dispatch(opts, handler);
+  }
+}
+
+const fetchAgent = new CompatibleMockAgent();
 fetchAgent.disableNetConnect();
-setGlobalDispatcher(
-  parseInt(process.versions.undici, 10) < 8
-    ? new Dispatcher1Wrapper(fetchAgent)
-    : fetchAgent,
-);
+setGlobalDispatcher(fetchAgent);
 
 const { _auth } = Request.prototype;
 
