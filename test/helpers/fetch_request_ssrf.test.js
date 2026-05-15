@@ -7,7 +7,8 @@ import { expect } from 'chai';
 import { Agent, Dispatcher1Wrapper } from 'undici';
 
 import {
-  isSpecialUseIP,
+  applySSRFProtection,
+  destroySpecialUseSocket,
 } from '../../lib/helpers/fetch_request.js';
 
 const execFileAsync = promisify(execFile);
@@ -31,17 +32,16 @@ function createCompatibleAgent() {
   return { agent, dispatcher };
 }
 
-// Mirrors the connect-event SSRF handler in fetch_request.js
-function addSSRFHandler(agent) {
-  agent.on('connect', (_origin, targets) => {
-    // targets = [Agent, Pool, Client] — the socket lives on the Client
-    const client = targets[2];
-    const socketSym = Object.getOwnPropertySymbols(client).find((s) => s.description === 'socket');
-    const socket = client[socketSym];
-    if (socket?.remoteAddress !== undefined && isSpecialUseIP(socket.remoteAddress)) {
-      socket.destroy(new Error('hostname resolves to a special-use IP address'));
-    }
-  });
+function socketTarget(remoteAddress, destroy) {
+  const target = {};
+  target[Symbol('socket')] = { remoteAddress, destroy };
+  return target;
+}
+
+function isDestroyed(remoteAddress) {
+  let destroyed = false;
+  destroySpecialUseSocket(socketTarget(remoteAddress, () => { destroyed = true; }));
+  return destroyed;
 }
 
 describe('SSRF-protected dispatcher', () => {
@@ -106,7 +106,7 @@ describe('SSRF-protected dispatcher', () => {
       expect(result.hasClose).to.equal(true);
     });
 
-    it('targets has at least 3 elements and targets[2] has Symbol(socket) with remoteAddress', async () => {
+    it('targets has at least 3 elements and the last target has Symbol(socket) with remoteAddress', async () => {
       const result = await freshNode(`
         import { createServer } from 'node:http';
         import { once } from 'node:events';
@@ -122,7 +122,7 @@ describe('SSRF-protected dispatcher', () => {
         const result = {};
         agent.on('connect', (_origin, targets) => {
           result.targetsLength = targets.length;
-          const client = targets[2];
+          const client = targets[targets.length - 1];
           const socketSym = Object.getOwnPropertySymbols(client)
             .find((s) => s.description === 'socket');
           result.hasSocketSym = socketSym != null;
@@ -160,7 +160,7 @@ describe('SSRF-protected dispatcher', () => {
 
     it('rejects fetch to 127.0.0.1 (loopback)', async () => {
       const { agent, dispatcher } = createCompatibleAgent();
-      addSSRFHandler(agent);
+      applySSRFProtection(agent);
       try {
         await fetch(`http://127.0.0.1:${port}/`, { dispatcher });
         expect.fail('should have thrown');
@@ -187,7 +187,7 @@ describe('SSRF-protected dispatcher', () => {
 
       const v6port = v6server.address().port;
       const { agent, dispatcher } = createCompatibleAgent();
-      addSSRFHandler(agent);
+      applySSRFProtection(agent);
       try {
         await fetch(`http://[::1]:${v6port}/`, { dispatcher });
         expect.fail('should have thrown');
@@ -201,7 +201,7 @@ describe('SSRF-protected dispatcher', () => {
 
     it('blocks repeatedly (persistent on listener, not once)', async () => {
       const { agent, dispatcher } = createCompatibleAgent();
-      addSSRFHandler(agent);
+      applySSRFProtection(agent);
       const errors = [];
 
       for (let i = 0; i < 3; i += 1) {
@@ -223,125 +223,41 @@ describe('SSRF-protected dispatcher', () => {
 
   describe('handler logic (simulated targets)', () => {
     it('does not destroy socket for public IPv4', () => {
-      let destroyed = false;
-      const target = {};
-      target[Symbol('socket')] = {
-        remoteAddress: '93.184.216.34',
-        destroy() { destroyed = true; },
-      };
-
-      for (const sym of Object.getOwnPropertySymbols(target)) {
-        const socket = target[sym];
-        if (socket?.remoteAddress !== undefined && isSpecialUseIP(socket.remoteAddress)) {
-          socket.destroy(new Error('blocked'));
-        }
-      }
-
-      expect(destroyed).to.be.false;
+      expect(isDestroyed('93.184.216.34')).to.be.false;
     });
 
     it('destroys socket for private IPv4 (10.x)', () => {
       let destroyMsg;
-      const target = {};
-      target[Symbol('socket')] = {
-        remoteAddress: '10.0.0.1',
-        destroy(err) { destroyMsg = err.message; },
-      };
-
-      for (const sym of Object.getOwnPropertySymbols(target)) {
-        const socket = target[sym];
-        if (socket?.remoteAddress !== undefined && isSpecialUseIP(socket.remoteAddress)) {
-          socket.destroy(new Error('hostname resolves to a special-use IP address'));
-        }
-      }
-
+      destroySpecialUseSocket(socketTarget('10.0.0.1', (err) => { destroyMsg = err.message; }));
       expect(destroyMsg).to.equal('hostname resolves to a special-use IP address');
     });
 
     it('destroys socket for link-local 169.254.169.254 (cloud metadata)', () => {
-      let destroyed = false;
-      const target = {};
-      target[Symbol('socket')] = {
-        remoteAddress: '169.254.169.254',
-        destroy() { destroyed = true; },
-      };
-
-      for (const sym of Object.getOwnPropertySymbols(target)) {
-        const socket = target[sym];
-        if (socket?.remoteAddress !== undefined && isSpecialUseIP(socket.remoteAddress)) {
-          socket.destroy(new Error('blocked'));
-        }
-      }
-
-      expect(destroyed).to.be.true;
+      expect(isDestroyed('169.254.169.254')).to.be.true;
     });
 
     it('destroys socket for IPv4-mapped IPv6 private address', () => {
-      let destroyed = false;
-      const target = {};
-      target[Symbol('socket')] = {
-        remoteAddress: '::ffff:192.168.1.1',
-        destroy() { destroyed = true; },
-      };
-
-      for (const sym of Object.getOwnPropertySymbols(target)) {
-        const socket = target[sym];
-        if (socket?.remoteAddress !== undefined && isSpecialUseIP(socket.remoteAddress)) {
-          socket.destroy(new Error('blocked'));
-        }
-      }
-
-      expect(destroyed).to.be.true;
+      expect(isDestroyed('::ffff:192.168.1.1')).to.be.true;
     });
 
     it('does not destroy socket for IPv4-mapped IPv6 public address', () => {
-      let destroyed = false;
-      const target = {};
-      target[Symbol('socket')] = {
-        remoteAddress: '::ffff:8.8.8.8',
-        destroy() { destroyed = true; },
-      };
-
-      for (const sym of Object.getOwnPropertySymbols(target)) {
-        const socket = target[sym];
-        if (socket?.remoteAddress !== undefined && isSpecialUseIP(socket.remoteAddress)) {
-          socket.destroy(new Error('blocked'));
-        }
-      }
-
-      expect(destroyed).to.be.false;
+      expect(isDestroyed('::ffff:8.8.8.8')).to.be.false;
     });
 
     it('skips targets without symbol properties', () => {
       const targets = [{}, { foo: 'bar' }, Object.create(null)];
       expect(() => {
-        for (const target of targets) {
-          for (const sym of Object.getOwnPropertySymbols(target)) {
-            const socket = target[sym];
-            if (socket?.remoteAddress !== undefined && isSpecialUseIP(socket.remoteAddress)) {
-              socket.destroy(new Error('blocked'));
-            }
-          }
-        }
+        for (const target of targets) destroySpecialUseSocket(target);
       }).to.not.throw();
     });
 
     it('skips symbol properties that are not sockets', () => {
-      let destroyed = false;
       const target = {};
       target[Symbol('notSocket')] = { foo: 'bar' };
       target[Symbol('number')] = 42;
       target[Symbol('null')] = null;
 
-      for (const sym of Object.getOwnPropertySymbols(target)) {
-        const socket = target[sym];
-        if (socket?.remoteAddress !== undefined && isSpecialUseIP(socket.remoteAddress)) {
-          socket.destroy(new Error('blocked'));
-          destroyed = true;
-        }
-      }
-
-      expect(destroyed).to.be.false;
+      expect(destroySpecialUseSocket(target)).to.be.false;
     });
   });
 });
