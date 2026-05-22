@@ -23,7 +23,8 @@ jobs:
         with:
           node-version: lts/*
           registry-url: https://registry.npmjs.org
-      - run: npm publish
+      - run: npm install -g npm@latest
+      - run: npm stage publish
 
   cleanup:
     needs:
