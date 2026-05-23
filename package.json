@@ -77,7 +77,7 @@
     "express": "^5.2.1",
     "fastify": "^5.8.5",
     "helmet": "^8.1.0",
-    "koa-body": "^7.0.1",
+    "koa-body": "^8.0.0",
     "koa-mount": "^4.2.0",
     "lodash": "^4.18.1",
     "mocha": "^11.7.5",
@@ -87,6 +87,6 @@
     "sinon": "^22.0.0",
     "supertest": "^7.2.2",
     "timekeeper": "^2.3.1",
-    "undici": "^8.2.0"
+    "undici": "^8.3.0"
   }
 }
