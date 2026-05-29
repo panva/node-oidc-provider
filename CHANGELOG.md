@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [9.8.4](https://github.com/panva/node-oidc-provider/compare/v9.8.3...v9.8.4) (2026-05-29)
+
+
+### Refactor
+
+* detect non-node runtimes before checking for LTS ([b3be0fd](https://github.com/panva/node-oidc-provider/commit/b3be0fd4885fa718df3959add2cceb04d464d608)), closes [#1424](https://github.com/panva/node-oidc-provider/issues/1424)
+* isolate SSRF dispatcher protection ([1f64996](https://github.com/panva/node-oidc-provider/commit/1f649965a3c62b1f8ee554abe08e59033ddd0f21))
+
 ## [9.8.3](https://github.com/panva/node-oidc-provider/compare/v9.8.2...v9.8.3) (2026-04-27)
 
 
