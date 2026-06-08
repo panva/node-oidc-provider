@@ -82,7 +82,7 @@ This library does not guarantee that key material or other sensitive data is cle
 
 ### Threat Actors and Security Properties
 
-This library aims to provide the security properties defined by the OAuth 2.0 and OpenID Connect specifications. For detailed security considerations, refer to [RFC 6819 (OAuth 2.0 Threat Model)](https://www.rfc-editor.org/rfc/rfc6819), [OAuth 2.0 Security Best Current Practice](https://www.rfc-editor.org/rfc/rfc9700.html), and [OpenID Connect Core 1.0 Security Considerations](https://openid.net/specs/openid-connect-core-1_0.html#Security).
+This library aims to provide the security properties defined by the OAuth 2.0 and OpenID Connect specifications. For detailed security considerations, refer to [RFC 6819 (OAuth 2.0 Threat Model)](https://www.rfc-editor.org/info/rfc6819/), [OAuth 2.0 Security Best Current Practice](https://www.rfc-editor.org/info/rfc9700/), and [OpenID Connect Core 1.0 Security Considerations](https://openid.net/specs/openid-connect-core-1_0.html#Security).
 
 ### What is NOT Considered a Vulnerability
 

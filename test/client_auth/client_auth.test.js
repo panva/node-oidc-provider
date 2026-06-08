@@ -299,7 +299,7 @@ describe('client authentication methods', () => {
         });
     });
 
-    it('accepts the auth (https://tools.ietf.org/html/rfc6749#appendix-B)', function () {
+    it('accepts the auth (https://www.rfc-editor.org/info/rfc6749/#appendix-B)', function () {
       return this.agent.post(route)
         .send({
           grant_type: 'foo',
@@ -310,7 +310,7 @@ describe('client authentication methods', () => {
         .expect(tokenAuthSucceeded);
     });
 
-    it('accepts the auth (https://tools.ietf.org/html/rfc6749#appendix-B again)', function () {
+    it('accepts the auth (https://www.rfc-editor.org/info/rfc6749/#appendix-B again)', function () {
       return this.agent.post(route)
         .send({
           grant_type: 'foo',

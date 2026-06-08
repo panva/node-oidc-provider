@@ -205,7 +205,7 @@ router.post("/interaction/:uid", async (ctx, next) => {
 
 The authorization server comes with the basic grants implemented, but implementations may register custom grant types,
 for example to implement an
-[OAuth 2.0 Token Exchange](https://www.rfc-editor.org/rfc/rfc8693.html). Implementations can examine the standard
+[OAuth 2.0 Token Exchange](https://www.rfc-editor.org/info/rfc8693/). Implementations can examine the standard
 grant factories [here](/lib/actions/grants).
 
 ```js
@@ -691,7 +691,7 @@ _**default value**_:
 
 ### features.resourceIndicators
 
-[RFC8707](https://www.rfc-editor.org/rfc/rfc8707.html) - Resource Indicators for OAuth 2.0  
+[RFC8707](https://www.rfc-editor.org/info/rfc8707/) - Resource Indicators for OAuth 2.0  
 
 Specifies whether Resource Indicator capabilities shall be enabled. When enabled, the authorization server shall support the `resource` parameter at the authorization and token endpoints to enable issuing Access Tokens for specific Resource Servers (APIs) with enhanced audience control and scope management. 
 
@@ -1125,7 +1125,7 @@ async function assertClaimsParameter(ctx, claims, client) {
 
 ### features.clientCredentials
 
-[RFC6749](https://www.rfc-editor.org/rfc/rfc6749.html#section-1.3.4) - Client Credentials  
+[RFC6749](https://www.rfc-editor.org/info/rfc6749/#section-1.3.4) - Client Credentials  
 
 Specifies whether the Client Credentials grant type shall be enabled. When enabled, the authorization server shall accept `grant_type=client_credentials` requests at the token endpoint, allowing clients to obtain access tokens.  
 
@@ -1141,7 +1141,7 @@ _**default value**_:
 
 ### features.deviceFlow
 
-[RFC8628](https://www.rfc-editor.org/rfc/rfc8628.html) - OAuth 2.0 Device Authorization Grant (Device Flow)  
+[RFC8628](https://www.rfc-editor.org/info/rfc8628/) - OAuth 2.0 Device Authorization Grant (Device Flow)  
 
 Specifies whether the OAuth 2.0 Device Authorization Grant shall be enabled. When enabled, the authorization server shall support the device authorization flow, enabling OAuth clients on input-constrained devices to obtain user authorization by directing the user to perform the authorization flow on a secondary device with richer input and display capabilities.  
 
@@ -1314,7 +1314,7 @@ async function userCodeInputSource(ctx, form, out, err) {
 
 ### features.dPoP
 
-[RFC9449](https://www.rfc-editor.org/rfc/rfc9449.html) - OAuth 2.0 Demonstration of Proof-of-Possession at the Application Layer (DPoP)  
+[RFC9449](https://www.rfc-editor.org/info/rfc9449/) - OAuth 2.0 Demonstration of Proof-of-Possession at the Application Layer (DPoP)  
 
 Specifies whether sender-constraining of OAuth 2.0 tokens through application-level proof-of-possession mechanisms shall be enabled.  
 
@@ -1422,7 +1422,7 @@ undefined
 
 ### features.introspection
 
-[RFC7662](https://www.rfc-editor.org/rfc/rfc7662.html) - OAuth 2.0 Token Introspection  
+[RFC7662](https://www.rfc-editor.org/info/rfc7662/) - OAuth 2.0 Token Introspection  
 
 Specifies whether OAuth 2.0 Token Introspection capabilities shall be enabled. When enabled, the authorization server shall expose a token introspection endpoint that allows authorized clients and resource servers to query the metadata and status of the following token types:
 - Opaque access tokens
@@ -1469,7 +1469,7 @@ async function introspectionAllowedPolicy(ctx, client, token) {
 
 ### features.jwtIntrospection
 
-[RFC9701](https://www.rfc-editor.org/rfc/rfc9701.html) - JWT Response for OAuth Token Introspection  
+[RFC9701](https://www.rfc-editor.org/info/rfc9701/) - JWT Response for OAuth Token Introspection  
 
 Specifies whether JWT-formatted token introspection responses shall be enabled. When enabled, the authorization server shall support issuing introspection responses as JSON Web Tokens, providing enhanced security and integrity protection for token metadata transmission between authorized parties.  
 
@@ -1517,7 +1517,7 @@ _**default value**_:
 
 ### features.mTLS
 
-[RFC8705](https://www.rfc-editor.org/rfc/rfc8705.html) - OAuth 2.0 Mutual TLS Client Authentication and Certificate Bound Access Tokens (MTLS)  
+[RFC8705](https://www.rfc-editor.org/info/rfc8705/) - OAuth 2.0 Mutual TLS Client Authentication and Certificate Bound Access Tokens (MTLS)  
 
 Specifies whether Mutual TLS capabilities shall be enabled. The authorization server supports three distinct capabilities that require separate configuration settings within this feature's configuration object. Implementations MUST provide deployment-specific helper functions for certificate validation and processing operations. 
 
@@ -1612,7 +1612,7 @@ false
 
 ### features.pushedAuthorizationRequests
 
-[RFC9126](https://www.rfc-editor.org/rfc/rfc9126.html) - OAuth 2.0 Pushed Authorization Requests (PAR)  
+[RFC9126](https://www.rfc-editor.org/info/rfc9126/) - OAuth 2.0 Pushed Authorization Requests (PAR)  
 
 Specifies whether Pushed Authorization Request capabilities shall be enabled. When enabled, the authorization server shall expose a pushed authorization request endpoint that allows clients to lodge authorization request parameters at the authorization server prior to redirecting end-users to the authorization endpoint, enhancing security by removing the need to transmit parameters via query string parameters.  
 
@@ -1655,7 +1655,7 @@ false
 
 ### features.registration
 
-[OIDC Dynamic Client Registration 1.0](https://openid.net/specs/openid-connect-registration-1_0-errata2.html) and [RFC7591](https://www.rfc-editor.org/rfc/rfc7591.html) - OAuth 2.0 Dynamic Client Registration Protocol  
+[OIDC Dynamic Client Registration 1.0](https://openid.net/specs/openid-connect-registration-1_0-errata2.html) and [RFC7591](https://www.rfc-editor.org/info/rfc7591/) - OAuth 2.0 Dynamic Client Registration Protocol  
 
 Specifies whether Dynamic Client Registration capabilities shall be enabled. When enabled, the authorization server shall expose a client registration endpoint that allows clients to dynamically register themselves with the authorization server at runtime, enabling automated client onboarding and configuration management.  
 
@@ -1807,7 +1807,7 @@ async function secretFactory(ctx) {
 
 ### features.registrationManagement
 
-[RFC7592](https://www.rfc-editor.org/rfc/rfc7592.html) - OAuth 2.0 Dynamic Client Registration Management Protocol  
+[RFC7592](https://www.rfc-editor.org/info/rfc7592/) - OAuth 2.0 Dynamic Client Registration Management Protocol  
 
 Specifies whether Dynamic Client Registration Management capabilities shall be enabled. When enabled, the authorization server shall expose Update and Delete operations as defined in RFC 7592, allowing clients to modify or remove their registration entries using Registration Access Tokens for client lifecycle management operations.  
 
@@ -1863,7 +1863,7 @@ true
 
 ### features.requestObjects
 
-[OIDC Core 1.0](https://openid.net/specs/openid-connect-core-1_0-errata2.html#RequestObject) and [RFC9101](https://www.rfc-editor.org/rfc/rfc9101.html#name-passing-a-request-object-by) - Passing a Request Object by Value (JAR)  
+[OIDC Core 1.0](https://openid.net/specs/openid-connect-core-1_0-errata2.html#RequestObject) and [RFC9101](https://www.rfc-editor.org/info/rfc9101/#name-passing-a-request-object-by) - Passing a Request Object by Value (JAR)  
 
 Specifies whether Request Object capabilities shall be enabled. When enabled, the authorization server shall support the use and validation of the `request` parameter for conveying authorization request parameters as JSON Web Tokens, providing enhanced security and integrity protection for authorization requests.  
 
@@ -1934,7 +1934,7 @@ false
 
 ### features.revocation
 
-[RFC7009](https://www.rfc-editor.org/rfc/rfc7009.html) - OAuth 2.0 Token Revocation  
+[RFC7009](https://www.rfc-editor.org/info/rfc7009/) - OAuth 2.0 Token Revocation  
 
 Specifies whether Token Revocation capabilities shall be enabled. When enabled, the authorization server shall expose a token revocation endpoint that allows authorized clients to notify the authorization server that a particular token is no longer needed. This feature supports revocation of the following token types:
 - Opaque access tokens
@@ -2301,7 +2301,7 @@ _**default value**_:
 
 ### features.richAuthorizationRequests
 
-[RFC9396](https://www.rfc-editor.org/rfc/rfc9396.html) - OAuth 2.0 Rich Authorization Requests  
+[RFC9396](https://www.rfc-editor.org/info/rfc9396/) - OAuth 2.0 Rich Authorization Requests  
 
 > [!NOTE]
 > This is an experimental feature.
@@ -2562,7 +2562,7 @@ Specifies the configuration for interaction policy and end-user redirection that
 
 JSON Web Key Set (JWKS)  
 
-Specifies the JSON Web Key Set that shall be used by the authorization server for cryptographic signing and decryption operations. The key set MUST be provided in [JWK Set format](https://www.rfc-editor.org/rfc/rfc7517.html#section-5) as defined in RFC 7517. All keys within the set MUST be private keys. 
+Specifies the JSON Web Key Set that shall be used by the authorization server for cryptographic signing and decryption operations. The key set MUST be provided in [JWK Set format](https://www.rfc-editor.org/info/rfc7517/#section-5) as defined in RFC 7517. All keys within the set MUST be private keys. 
 
 Supported key types include: 
 
@@ -2590,7 +2590,7 @@ _**recommendation**_: The following action order is recommended when rotating si
 
 ### pkce
 
-[RFC7636](https://www.rfc-editor.org/rfc/rfc7636.html) - Proof Key for Code Exchange (PKCE)  
+[RFC7636](https://www.rfc-editor.org/info/rfc7636/) - Proof Key for Code Exchange (PKCE)  
 
 Specifies the PKCE configuration, such as a policy check on the required use of PKCE. 
 
@@ -3815,7 +3815,7 @@ new Prompt(
       return Check.REQUEST_PROMPT;
     }
 
-    if (oidc.session.past(oidc.params.max_age) && (!ctx.oidc.result || !ctx.oidc.result.login)) {
+    if (oidc.session.past(oidc.params.max_age) && (!ctx.oidc.result?.login)) {
       return Check.REQUEST_PROMPT;
     }
 
@@ -3861,8 +3861,7 @@ new Prompt(
       const { oidc } = ctx;
 
       if (
-        !oidc.claims.id_token
-          || !oidc.claims.id_token.sub
+        !oidc.claims.id_token?.sub
           || !('value' in oidc.claims.id_token.sub)
       ) {
         return Check.NO_NEED_TO_PROMPT;
@@ -4178,7 +4177,7 @@ _**default value**_:
 ```js
 function pkceRequired(ctx, client) {
   // All public clients MUST use PKCE as per
-  // https://www.rfc-editor.org/rfc/rfc9700.html#section-2.1.1-2.1
+  // https://www.rfc-editor.org/info/rfc9700/#section-2.1.1-2.1
   if (client.clientAuthMethod === 'none') {
     return true;
   }
@@ -4194,7 +4193,7 @@ function pkceRequired(ctx, client) {
     return true;
   }
   // In all other cases use of PKCE is RECOMMENDED as per
-  // https://www.rfc-editor.org/rfc/rfc9700.html#section-2.1.1-2.2
+  // https://www.rfc-editor.org/info/rfc9700/#section-2.1.1-2.2
   // but the server doesn't force them to.
   return false;
 }
@@ -4443,8 +4442,8 @@ be additionally formencoded.
 
 A proper way of submitting `client_id` and `client_secret` using `client_secret_basic` is
 `Authorization: base64(formEncode(client_id):formEncode(client_secret))` as per
-https://www.rfc-editor.org/rfc/rfc6749.html#section-2.3.1 incl.
-https://www.rfc-editor.org/rfc/rfc6749.html#appendix-B
+https://www.rfc-editor.org/info/rfc6749/#section-2.3.1 incl.
+https://www.rfc-editor.org/info/rfc6749/#appendix-B
 
 Example:
 
