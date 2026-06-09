@@ -571,6 +571,9 @@ _**default value**_:
 
 Cross-Origin Resource Sharing (CORS)  
 
+> [!NOTE]
+> The default helper implementation is intended as a starting point and SHOULD be customized by a deployment.
+
 Specifies a function that determines whether Cross-Origin Resource Sharing (CORS) requests shall be permitted based on the requesting client. This function is invoked for each actual CORS request to evaluate the client's authorization to access the authorization server from the specified origin. The function receives three arguments: `ctx` (the Koa request context), `origin` (the requesting origin string), and `client` (the resolved Client instance). It must return a boolean (or a Promise resolving to one). 
 
   
@@ -740,6 +743,9 @@ async function defaultResource(ctx, client, oneOf) {
 ```
 
 #### getResourceServerInfo
+
+> [!CAUTION]
+> The default helper implementation is a placeholder and MUST be replaced by a deployment before use.
 
 Specifies a helper function that shall be invoked to load information about a Resource Server (API) and determine whether the client is authorized to request scopes for that particular resource. This function enables resource-specific scope validation and Access Token configuration according to authorization server policy. 
 
@@ -922,6 +928,9 @@ _**default value**_:
 
 #### processLoginHint
 
+> [!CAUTION]
+> The default helper implementation is a placeholder and MUST be replaced by a deployment before use.
+
 Specifies a helper function that shall be invoked to process the `login_hint` parameter and extract the corresponding accountId value for request processing. This function MUST validate the hint format and content according to authorization server policy. 
 
   
@@ -943,6 +952,9 @@ async function processLoginHint(ctx, loginHint) {
 ```
 
 #### processLoginHintToken
+
+> [!CAUTION]
+> The default helper implementation is a placeholder and MUST be replaced by a deployment before use.
 
 Specifies a helper function that shall be invoked to process the `login_hint_token` parameter and extract the corresponding accountId value for request processing. This function MUST validate token expiration and format according to authorization server policy. 
 
@@ -967,6 +979,9 @@ async function processLoginHintToken(ctx, loginHintToken) {
 ```
 
 #### triggerAuthenticationDevice
+
+> [!CAUTION]
+> The default helper implementation is a placeholder and MUST be replaced by a deployment before use.
 
 Specifies a helper function that shall be invoked to initiate authentication and authorization processes on the end-user's Authentication Device as defined in the CIBA specification. This function is executed after accepting the backchannel authentication request but before transmitting the response to the requesting client. 
 
@@ -1008,6 +1023,9 @@ await provider.backchannelResult(...);
 
 #### validateBindingMessage
 
+> [!NOTE]
+> The default helper implementation is intended as a starting point and SHOULD be customized by a deployment.
+
 Specifies a helper function that shall be invoked to validate the `binding_message` parameter according to authorization server policy. This function MUST reject invalid binding messages by throwing appropriate error instances. 
 
   
@@ -1034,6 +1052,9 @@ async function validateBindingMessage(ctx, bindingMessage) {
 
 #### validateRequestContext
 
+> [!CAUTION]
+> The default helper implementation is a placeholder and MUST be replaced by a deployment before use.
+
 Specifies a helper function that shall be invoked to validate the `request_context` parameter according to authorization server policy. This function MUST enforce policy requirements for request context validation and reject non-compliant requests. 
 
   
@@ -1055,6 +1076,9 @@ async function validateRequestContext(ctx, requestContext) {
 ```
 
 #### verifyUserCode
+
+> [!CAUTION]
+> The default helper implementation is a placeholder and MUST be replaced by a deployment before use.
 
 Specifies a helper function that shall be invoked to verify the presence and validity of the `user_code` parameter when required by authorization server policy. 
 
@@ -1201,6 +1225,9 @@ _**default value**_:
 
 #### successSource
 
+> [!NOTE]
+> The default helper implementation is intended as a starting point and SHOULD be customized by a deployment.
+
 Specifies the HTML source that shall be rendered when the device flow feature displays a success page to the User-Agent. This template is presented upon successful completion of the device authorization flow to inform the end-user that authorization has been granted to the requesting device.  
 
 
@@ -1226,6 +1253,9 @@ async function successSource(ctx) {
 ```
 
 #### userCodeConfirmSource
+
+> [!NOTE]
+> The default helper implementation is intended as a starting point and SHOULD be customized by a deployment.
 
 Specifies the HTML source that shall be rendered when the device flow feature displays a confirmation prompt to the User-Agent. This template is presented after successful user code validation to confirm the authorization request before proceeding with the device authorization flow.  
 
@@ -1268,6 +1298,9 @@ async function userCodeConfirmSource(ctx, form, client, deviceInfo, userCode) {
 ```
 
 #### userCodeInputSource
+
+> [!NOTE]
+> The default helper implementation is intended as a starting point and SHOULD be customized by a deployment.
 
 Specifies the HTML source that shall be rendered when the device flow feature displays a user code input prompt to the User-Agent. This template is presented during the device authorization flow when the authorization server requires the end-user to enter a device-generated user code for verification.  
 
@@ -1446,6 +1479,9 @@ _**default value**_:
 
 #### allowedPolicy
 
+> [!NOTE]
+> The default helper implementation is intended as a starting point and SHOULD be customized by a deployment.
+
 Specifies a helper function that shall be invoked to determine whether the requesting client or resource server is authorized to introspect the specified token. This function enables enforcement of fine-grained access control policies for token introspection operations according to authorization server security requirements.  
 
 
@@ -1544,6 +1580,9 @@ _**default value**_:
 
 #### certificateAuthorized
 
+> [!CAUTION]
+> The default helper implementation is a placeholder and MUST be replaced by a deployment before use.
+
 Specifies a helper function that shall be invoked to determine whether the client certificate used in the request is verified and originates from a trusted Certificate Authority for the requesting client. This function MUST return a boolean value indicating certificate authorization status. This validation is exclusively used for the `tls_client_auth` client authentication method.  
 
 
@@ -1566,6 +1605,9 @@ false
 
 #### certificateSubjectMatches
 
+> [!CAUTION]
+> The default helper implementation is a placeholder and MUST be replaced by a deployment before use.
+
 Specifies a helper function that shall be invoked to determine whether the client certificate subject used in the request matches the registered client property according to authorization server policy. This function MUST return a boolean value indicating subject matching status. This validation is exclusively used for the `tls_client_auth` client authentication method.  
 
 
@@ -1577,6 +1619,9 @@ function certificateSubjectMatches(ctx, property, expected) {
 ```
 
 #### getCertificate
+
+> [!CAUTION]
+> The default helper implementation is a placeholder and MUST be replaced by a deployment before use.
 
 Specifies a helper function that shall be invoked to retrieve the client certificate used in the current request. This function MUST return either a `crypto.X509Certificate` instance or a PEM-formatted string representation of the client certificate for mutual TLS processing.  
 
@@ -1958,6 +2003,9 @@ _**default value**_:
 
 #### allowedPolicy
 
+> [!NOTE]
+> The default helper implementation is intended as a starting point and SHOULD be customized by a deployment.
+
 Specifies a helper function that shall be invoked to determine whether the requesting client or resource server is authorized to revoke the specified token. This function enables enforcement of fine-grained access control policies for token revocation operations according to authorization server security requirements.  
 
 
@@ -2003,6 +2051,9 @@ _**default value**_:
 
 #### logoutSource
 
+> [!NOTE]
+> The default helper implementation is intended as a starting point and SHOULD be customized by a deployment.
+
 Specifies the HTML source that shall be rendered when RP-Initiated Logout displays a confirmation prompt to the User-Agent. This template shall be presented to request explicit end-user confirmation before proceeding with the logout operation, ensuring user awareness and consent for session termination.  
 
 
@@ -2031,6 +2082,9 @@ async function logoutSource(ctx, form) {
 ```
 
 #### postLogoutSuccessSource
+
+> [!NOTE]
+> The default helper implementation is intended as a starting point and SHOULD be customized by a deployment.
 
 Specifies the HTML source that shall be rendered when an RP-Initiated Logout request concludes successfully but no `post_logout_redirect_uri` was provided by the requesting client. This template shall be presented to inform the end-user that the logout operation has completed successfully and provide appropriate post-logout guidance.  
 
@@ -2173,6 +2227,9 @@ undefined
 ```
 
 #### getAttestationSignaturePublicKey
+
+> [!CAUTION]
+> The default helper implementation is a placeholder and MUST be replaced by a deployment before use.
 
 Specifies a helper function that shall be invoked to verify the issuer identifier of a Client Attestation JWT and retrieve the public key used for signature verification. At the point of this function's invocation, only the JWT format has been validated; no cryptographic or claims verification has occurred. 
 
@@ -2331,6 +2388,9 @@ _**default value**_:
 
 #### rarForAuthorizationCode
 
+> [!CAUTION]
+> The default helper implementation is a placeholder and MUST be replaced by a deployment before use.
+
 Specifies a helper function that shall be invoked to transform the requested and granted Rich Authorization Request details for storage in the authorization code. This function enables filtering and processing of authorization details according to authorization server policy before code persistence. The function shall return an array of authorization details or undefined.  
 
 
@@ -2349,6 +2409,9 @@ rarForAuthorizationCode(ctx) {
 ```
 
 #### rarForBackchannelResponse
+
+> [!CAUTION]
+> The default helper implementation is a placeholder and MUST be replaced by a deployment before use.
 
 Specifies a helper function that shall be invoked to transform the requested and granted Rich Authorization Request details for inclusion in the Access Token Response as authorization_details and assignment to the issued Access Token during the ciba grant. This function enables resource-specific filtering and transformation of authorization details according to token endpoint policy. The function shall return an array of authorization details or undefined.  
 
@@ -2371,6 +2434,9 @@ rarForBackchannelResponse(ctx, resourceServer) {
 
 #### rarForCodeResponse
 
+> [!CAUTION]
+> The default helper implementation is a placeholder and MUST be replaced by a deployment before use.
+
 Specifies a helper function that shall be invoked to transform the requested and granted Rich Authorization Request details for inclusion in the Access Token Response as authorization_details and assignment to the issued Access Token during the authorization code grant. This function enables resource-specific filtering and transformation of authorization details according to token endpoint policy. The function shall return an array of authorization details or undefined.  
 
 
@@ -2391,6 +2457,9 @@ rarForCodeResponse(ctx, resourceServer) {
 
 #### rarForIntrospectionResponse
 
+> [!CAUTION]
+> The default helper implementation is a placeholder and MUST be replaced by a deployment before use.
+
 Specifies a helper function that shall be invoked to transform the token's stored Rich Authorization Request details for inclusion in the Token Introspection Response. This function enables filtering and processing of authorization details according to introspection endpoint policy and requesting party authorization. The function shall return an array of authorization details or undefined.  
 
 
@@ -2409,6 +2478,9 @@ rarForIntrospectionResponse(ctx, token) {
 ```
 
 #### rarForRefreshTokenResponse
+
+> [!CAUTION]
+> The default helper implementation is a placeholder and MUST be replaced by a deployment before use.
 
 Specifies a helper function that shall be invoked to transform the requested and granted Rich Authorization Request details for inclusion in the Access Token Response during refresh token exchanges as authorization_details and assignment to the newly issued Access Token. This function enables resource-specific processing of previously granted authorization details according to refresh token policy. The function shall return an array of authorization details or undefined.  
 
@@ -2519,6 +2591,9 @@ _**default value**_:
 
 Account Loading and Claims Resolution  
 
+> [!CAUTION]
+> The default helper implementation is a placeholder and MUST be replaced by a deployment before use.
+
 Specifies a function that shall be invoked to load an account and retrieve its available claims during authorization server operations. This function enables the authorization server to resolve end-user account information based on the provided account identifier. The function MUST return a Promise that resolves to an account object containing an `accountId` property and a `claims()` method that returns an object with claims corresponding to the claims supported by the issuer. The `claims()` method may also return a Promise that shall be resolved or rejected according to account availability and authorization server policy.  
 
 
@@ -2605,6 +2680,9 @@ Specifies the PKCE configuration, such as a policy check on the required use of 
 ### ttl
 
 Artifact Expirations (TTL)  
+
+> [!NOTE]
+> The default helper implementations in this option are intended as starting points and SHOULD be customized by a deployment.
 
 Specifies the Time-To-Live (TTL) values that shall be applied to various artifacts within the authorization server. TTL values may be specified as either a numeric value (in seconds) or a synchronous function that returns a numeric value based on the current request context and authorization server policy. 
 
@@ -4153,6 +4231,9 @@ async function loadExistingGrant(ctx) {
 
 Pairwise Subject Identifier Generation  
 
+> [!CAUTION]
+> The default helper implementation is a placeholder and MUST be replaced by a deployment before use.
+
 Specifies a helper function that shall be invoked to generate pairwise subject identifier values for ID Tokens and UserInfo responses, as specified in OpenID Connect Core 1.0. This function enables privacy-preserving subject identifier generation that provides unique identifiers per client while maintaining consistent identification for the same end-user across requests to the same client. 
 
   
@@ -4207,6 +4288,9 @@ function pkceRequired(ctx, client) {
 ### renderError
 
 Error Response Rendering  
+
+> [!NOTE]
+> The default helper implementation is intended as a starting point and SHOULD be customized by a deployment.
 
 Specifies a function that shall be invoked to present error responses to the User-Agent during authorization server operations. This function enables customization of error presentation according to deployment-specific user interface requirements.  
 

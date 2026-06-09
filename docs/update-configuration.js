@@ -135,6 +135,51 @@ function expand(what) {
   return what;
 }
 
+function collectChangeMarkers(value, seen = new Set()) {
+  if (typeof value === 'function') {
+    return Array.from(
+      value.toString().matchAll(/\b(shouldChange|mustChange)\((['"])([^'"]+)\2/g),
+      ([, change, , block]) => ({ change, block }),
+    );
+  }
+
+  if (!value || typeof value !== 'object' || seen.has(value)) {
+    return [];
+  }
+
+  seen.add(value);
+
+  return Object.values(value).flatMap((entry) => collectChangeMarkers(entry, seen));
+}
+
+function rendersOwnSection(blocks, block) {
+  return block in blocks && !('@skip' in blocks[block]);
+}
+
+function changeAdmonition(value, block, blocks) {
+  const markers = collectChangeMarkers(value)
+    .filter((marker) => marker.block === block || !rendersOwnSection(blocks, marker.block));
+
+  if (!markers.length) {
+    return undefined;
+  }
+
+  const nested = markers.every((marker) => marker.block !== block);
+  const helper = nested ? 'default helper implementations in this option are' : 'default helper implementation is';
+  const placeholder = nested ? 'default helper implementations in this option include placeholders and' : 'default helper implementation is a placeholder and';
+  const result = [];
+
+  if (markers.some(({ change }) => change === 'mustChange')) {
+    result.push(`> [!CAUTION]\n> The ${placeholder} MUST be replaced by a deployment before use.\n\n`);
+  }
+
+  if (markers.some(({ change }) => change === 'shouldChange')) {
+    result.push(`> [!NOTE]\n> The ${helper} intended as ${nested ? 'starting points' : 'a starting point'} and SHOULD be customized by a deployment.\n\n`);
+  }
+
+  return result.join('');
+}
+
 try {
   const blocks = {};
   await new Promise((resolve, reject) => {
@@ -366,6 +411,11 @@ try {
     if (typeof value === 'object' && 'ack' in value) {
       append('> [!NOTE]\n');
       append('> This is an experimental feature.\n\n');
+    }
+
+    const admonition = changeAdmonition(value, block, blocks);
+    if (admonition) {
+      append(admonition);
     }
 
     if (section.description) {
