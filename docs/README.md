@@ -1208,6 +1208,7 @@ _**default value**_:
 ```js
 async function successSource(ctx) {
   // @param ctx - koa request context
+  const display = ctx.oidc.client.clientName ? `with ${htmlSafe(ctx.oidc.client.clientName)}` : '';
   ctx.body = `<!DOCTYPE html>
     <html>
     <head>
@@ -1217,7 +1218,7 @@ async function successSource(ctx) {
     <body>
       <div>
         <h1>Sign-in Success</h1>
-        <p>Your sign-in ${ctx.oidc.client.clientName ? `with ${ctx.oidc.client.clientName}` : ''} was successful, you can now close this page.</p>
+        <p>Your sign-in ${display} was successful, you can now close this page.</p>
       </div>
     </body>
     </html>`;
@@ -1237,6 +1238,7 @@ async function userCodeConfirmSource(ctx, form, client, deviceInfo, userCode) {
   //   submitted by the End-User.
   // @param deviceInfo - device information from the device_authorization_endpoint call
   // @param userCode - formatted user code by the configured mask
+  const display = htmlSafe(ctx.oidc.client.clientName || ctx.oidc.client.clientId);
   ctx.body = `<!DOCTYPE html>
     <html>
     <head>
@@ -1247,7 +1249,7 @@ async function userCodeConfirmSource(ctx, form, client, deviceInfo, userCode) {
       <div>
         <h1>Confirm Device</h1>
         <p>
-          <strong>${ctx.oidc.client.clientName || ctx.oidc.client.clientId}</strong>
+          <strong>${display}</strong>
           <br/><br/>
           The following code should be displayed on your device<br/><br/>
           <code>${userCode}</code>
@@ -2018,7 +2020,7 @@ async function logoutSource(ctx, form) {
     </head>
     <body>
       <div>
-        <h1>Do you want to sign-out from ${ctx.host}?</h1>
+        <h1>Do you want to sign-out from ${htmlSafe(ctx.host)}?</h1>
         ${form}
         <button autofocus type="submit" form="op.logoutForm" value="yes" name="logout">Yes, sign me out</button>
         <button type="submit" form="op.logoutForm">No, stay signed in</button>
@@ -2038,6 +2040,7 @@ _**default value**_:
 async function postLogoutSuccessSource(ctx) {
   // @param ctx - koa request context
   const display = ctx.oidc.client?.clientName || ctx.oidc.client?.clientId;
+  const safeDisplay = display ? `with ${htmlSafe(display)}` : '';
   ctx.body = `<!DOCTYPE html>
     <html>
     <head>
@@ -2047,7 +2050,7 @@ async function postLogoutSuccessSource(ctx) {
     <body>
       <div>
         <h1>Sign-out Success</h1>
-        <p>Your sign-out ${display ? `with ${display}` : ''} was successful.</p>
+        <p>Your sign-out ${safeDisplay} was successful.</p>
       </div>
     </body>
     </html>`;

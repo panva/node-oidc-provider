@@ -1,5 +1,6 @@
 import { expect } from 'chai';
 
+import { defaults } from '../../lib/helpers/defaults.js';
 import htmlSafe from '../../lib/helpers/html_safe.js';
 
 describe('htmlSafe helper', () => {
@@ -27,5 +28,69 @@ describe('htmlSafe helper', () => {
   it('handles the rest', () => {
     expect(htmlSafe(null)).to.eql('');
     expect(htmlSafe(undefined)).to.eql('');
+  });
+});
+
+describe('default html rendering helpers', () => {
+  const payload = '<img src=x onerror=alert(1)>';
+  const escaped = '&lt;img src=x onerror=alert(1)&gt;';
+
+  it('escapes device confirmation client display', async () => {
+    const ctx = {
+      oidc: {
+        client: {
+          clientId: 'client',
+          clientName: payload,
+        },
+      },
+    };
+
+    await defaults.features.deviceFlow.userCodeConfirmSource(ctx, '', ctx.oidc.client, undefined, 'ABCD-EFGH');
+
+    expect(ctx.body).not.to.contain(payload);
+    expect(ctx.body).to.contain(`<strong>${escaped}</strong>`);
+  });
+
+  it('escapes device success client display', async () => {
+    const ctx = {
+      oidc: {
+        client: {
+          clientId: 'client',
+          clientName: payload,
+        },
+      },
+    };
+
+    await defaults.features.deviceFlow.successSource(ctx);
+
+    expect(ctx.body).not.to.contain(payload);
+    expect(ctx.body).to.contain(`with ${escaped}`);
+  });
+
+  it('escapes post logout success client display', async () => {
+    const ctx = {
+      oidc: {
+        client: {
+          clientId: 'client',
+          clientName: payload,
+        },
+      },
+    };
+
+    await defaults.features.rpInitiatedLogout.postLogoutSuccessSource(ctx);
+
+    expect(ctx.body).not.to.contain(payload);
+    expect(ctx.body).to.contain(`with ${escaped}`);
+  });
+
+  it('escapes logout host display', async () => {
+    const ctx = {
+      host: payload,
+    };
+
+    await defaults.features.rpInitiatedLogout.logoutSource(ctx, '');
+
+    expect(ctx.body).not.to.contain(payload);
+    expect(ctx.body).to.contain(`from ${escaped}?`);
   });
 });
