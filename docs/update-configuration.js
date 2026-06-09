@@ -156,28 +156,71 @@ function rendersOwnSection(blocks, block) {
   return block in blocks && !('@skip' in blocks[block]);
 }
 
-function changeAdmonition(value, block, blocks) {
+function parentBlock(block) {
+  return block.split('.').slice(0, -1).join('.');
+}
+
+function appliesToBlock(marker, block, blocks) {
+  if (marker.block === block || parentBlock(marker.block) === block) {
+    return true;
+  }
+
+  return !rendersOwnSection(blocks, marker.block) && marker.block.startsWith(`${block}.`);
+}
+
+function markerName(marker, block) {
+  return marker.block === block ? block : marker.block.slice(block.length + 1);
+}
+
+function changeMarkerLines(markers, block, change) {
+  const changeMarkers = markers.filter((marker) => marker.change === change);
+  if (!changeMarkers.length) {
+    return [];
+  }
+
+  const direct = changeMarkers.length === 1 && changeMarkers[0].block === block;
+  const lines = [];
+
+  if (change === 'mustChange') {
+    lines.push(direct
+      ? '> The default helper implementation is a placeholder and MUST be replaced by a deployment before use.\n'
+      : '> The following default helper implementations in this option include placeholders and MUST be replaced by a deployment before use.\n');
+  } else {
+    lines.push(direct
+      ? '> The default helper implementation is intended as a starting point and SHOULD be customized by a deployment.\n'
+      : '> The following default helper implementations in this option are intended as starting points and SHOULD be customized by a deployment.\n');
+  }
+
+  if (!direct) {
+    for (const marker of changeMarkers) {
+      lines.push(`> - \`${markerName(marker, block)}\`\n`);
+    }
+  }
+
+  return lines;
+}
+
+function changeAdmonition(value, block, blocks, hidden) {
+  if (hidden) {
+    return undefined;
+  }
+
   const markers = collectChangeMarkers(value)
-    .filter((marker) => marker.block === block || !rendersOwnSection(blocks, marker.block));
+    .filter((marker) => appliesToBlock(marker, block, blocks));
 
   if (!markers.length) {
     return undefined;
   }
 
-  const nested = markers.every((marker) => marker.block !== block);
-  const helper = nested ? 'default helper implementations in this option are' : 'default helper implementation is';
-  const placeholder = nested ? 'default helper implementations in this option include placeholders and' : 'default helper implementation is a placeholder and';
-  const result = [];
-
-  if (markers.some(({ change }) => change === 'mustChange')) {
-    result.push(`> [!CAUTION]\n> The ${placeholder} MUST be replaced by a deployment before use.\n\n`);
+  const mustChange = changeMarkerLines(markers, block, 'mustChange');
+  const shouldChange = changeMarkerLines(markers, block, 'shouldChange');
+  const result = ['> [!IMPORTANT]\n', ...mustChange];
+  if (mustChange.length && shouldChange.length) {
+    result.push('>\n');
   }
+  result.push(...shouldChange);
 
-  if (markers.some(({ change }) => change === 'shouldChange')) {
-    result.push(`> [!NOTE]\n> The ${helper} intended as ${nested ? 'starting points' : 'a starting point'} and SHOULD be customized by a deployment.\n\n`);
-  }
-
-  return result.join('');
+  return `${result.join('')}\n`;
 }
 
 try {
@@ -413,7 +456,7 @@ try {
       append('> This is an experimental feature.\n\n');
     }
 
-    const admonition = changeAdmonition(value, block, blocks);
+    const admonition = changeAdmonition(value, block, blocks, hidden);
     if (admonition) {
       append(admonition);
     }
