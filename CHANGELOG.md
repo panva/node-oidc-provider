@@ -2,6 +2,18 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [9.8.5](https://github.com/panva/node-oidc-provider/compare/v9.8.4...v9.8.5) (2026-06-15)
+
+
+### Fixes
+
+* escape default html helper output in shouldChange functions ([f688321](https://github.com/panva/node-oidc-provider/commit/f688321bd3a702d296b893b449a1c46866a414e6))
+
+
+### Documentation
+
+* note helpers requiring deployment customization ([567e551](https://github.com/panva/node-oidc-provider/commit/567e551957237bae975bf5943a8acc7be37aaaab))
+
 ## [9.8.4](https://github.com/panva/node-oidc-provider/compare/v9.8.3...v9.8.4) (2026-05-29)
 
 
