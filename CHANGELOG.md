@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [9.8.6](https://github.com/panva/node-oidc-provider/compare/v9.8.5...v9.8.6) (2026-06-26)
+
+
+### Fixes
+
+* don't call revokeByGrantId with no grantId ([0bc71ad](https://github.com/panva/node-oidc-provider/commit/0bc71ad1b8e75026871c0853852f19e3a7980f5f)), closes [#1431](https://github.com/panva/node-oidc-provider/issues/1431)
+
 ## [9.8.5](https://github.com/panva/node-oidc-provider/compare/v9.8.4...v9.8.5) (2026-06-15)
 
 
