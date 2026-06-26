@@ -10,6 +10,10 @@ import bootstrap, { assertNoPendingInterceptors, mock } from '../test_helper.js'
 
 import { emitter } from './ciba.config.js';
 
+function errorDetail(spy) {
+  return spy.args[0][1].error_detail;
+}
+
 describe('features.ciba', () => {
   afterEach(assertNoPendingInterceptors);
   context('w/o request objects', () => {
@@ -665,6 +669,62 @@ describe('features.ciba', () => {
               error: 'request_not_supported',
             });
         });
+      });
+    });
+
+    describe('grant_type=urn:openid:params:grant-type:ciba', () => {
+      const grant_type = 'urn:openid:params:grant-type:ciba';
+
+      it('skips grant revocation when an already consumed request has no grantId', async function () {
+        const request = new this.provider.BackchannelAuthenticationRequest({ clientId: 'client' });
+        await this.provider.backchannelResult(request, new AccessDenied());
+
+        await this.agent.post('/token')
+          .send({
+            client_id: 'client',
+            auth_req_id: request.jti,
+            grant_type,
+          })
+          .type('form')
+          .expect(400)
+          .expect((response) => {
+            expect(response.body).to.have.property('error', 'access_denied');
+          });
+
+        const sandbox = sinon.createSandbox();
+        try {
+          const accessTokenRevokeByGrantIdSpy = sandbox.spy(this.TestAdapter.for('AccessToken'), 'revokeByGrantId');
+          const refreshTokenRevokeByGrantIdSpy = sandbox.spy(this.TestAdapter.for('RefreshToken'), 'revokeByGrantId');
+          const backchannelRequestRevokeByGrantIdSpy = sandbox.spy(this.TestAdapter.for('BackchannelAuthenticationRequest'), 'revokeByGrantId');
+          const grantDestroySpy = sandbox.spy(this.TestAdapter.for('Grant'), 'destroy');
+          const grantErrorSpy = sinon.spy();
+          const grantRevokeSpy = sinon.spy();
+          this.provider.once('grant.error', grantErrorSpy);
+          this.provider.once('grant.revoked', grantRevokeSpy);
+
+          await this.agent.post('/token')
+            .send({
+              client_id: 'client',
+              auth_req_id: request.jti,
+              grant_type,
+            })
+            .type('form')
+            .expect(400)
+            .expect(() => {
+              expect(grantErrorSpy.calledOnce).to.be.true;
+              expect(errorDetail(grantErrorSpy)).to.equal('backchannel authentication request already consumed');
+              expect(grantRevokeSpy.called).to.be.false;
+              expect(accessTokenRevokeByGrantIdSpy.called).to.be.false;
+              expect(refreshTokenRevokeByGrantIdSpy.called).to.be.false;
+              expect(backchannelRequestRevokeByGrantIdSpy.called).to.be.false;
+              expect(grantDestroySpy.called).to.be.false;
+            })
+            .expect((response) => {
+              expect(response.body).to.have.property('error', 'invalid_grant');
+            });
+        } finally {
+          sandbox.restore();
+        }
       });
     });
   });

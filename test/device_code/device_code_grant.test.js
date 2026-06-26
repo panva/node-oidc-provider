@@ -315,6 +315,59 @@ describe('grant_type=urn:ietf:params:oauth:grant-type:device_code', () => {
           expect(response.body).to.have.property('error', 'invalid_grant');
         });
     });
+
+    it('skips grant revocation when an already consumed code has no grantId', async function () {
+      const deviceCode = new this.provider.DeviceCode({
+        scope: 'openid',
+        clientId: 'client',
+        error: 'access_denied',
+        errorDescription: 'user has denied access',
+      });
+      const code = await deviceCode.save();
+
+      await this.agent.post(route)
+        .send({
+          client_id: 'client',
+          device_code: code,
+          grant_type,
+        })
+        .type('form')
+        .expect(400)
+        .expect({
+          error: 'access_denied',
+          error_description: 'user has denied access',
+        });
+
+      const accessTokenRevokeByGrantIdSpy = sinon.spy(this.TestAdapter.for('AccessToken'), 'revokeByGrantId');
+      const refreshTokenRevokeByGrantIdSpy = sinon.spy(this.TestAdapter.for('RefreshToken'), 'revokeByGrantId');
+      const deviceCodeRevokeByGrantIdSpy = sinon.spy(this.TestAdapter.for('DeviceCode'), 'revokeByGrantId');
+      const grantDestroySpy = sinon.spy(this.TestAdapter.for('Grant'), 'destroy');
+      const grantErrorSpy = sinon.spy();
+      const grantRevokeSpy = sinon.spy();
+      this.provider.once('grant.error', grantErrorSpy);
+      this.provider.once('grant.revoked', grantRevokeSpy);
+
+      return this.agent.post(route)
+        .send({
+          client_id: 'client',
+          device_code: code,
+          grant_type,
+        })
+        .type('form')
+        .expect(400)
+        .expect(() => {
+          expect(grantErrorSpy.calledOnce).to.be.true;
+          expect(errorDetail(grantErrorSpy)).to.equal('device code already consumed');
+          expect(grantRevokeSpy.called).to.be.false;
+          expect(accessTokenRevokeByGrantIdSpy.called).to.be.false;
+          expect(refreshTokenRevokeByGrantIdSpy.called).to.be.false;
+          expect(deviceCodeRevokeByGrantIdSpy.called).to.be.false;
+          expect(grantDestroySpy.called).to.be.false;
+        })
+        .expect((response) => {
+          expect(response.body).to.have.property('error', 'invalid_grant');
+        });
+    });
   });
 
   it('responds with authorization_pending if interactions are still pending resolving', async function () {
