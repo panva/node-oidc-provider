@@ -2,8 +2,10 @@ import { expect } from 'chai';
 
 import bootstrap, { mock } from '../test_helper.js';
 import { isValidClientIdUrl } from '../../lib/helpers/client_id_metadata_document.js';
+import keys, { stripPrivateJWKFields } from '../keys.js';
 
 const CLIENT_ID_URL = 'https://app.example.com/metadata';
+const publicKey = stripPrivateJWKFields(keys[0]);
 const VALID_METADATA = {
   client_id: CLIENT_ID_URL,
   redirect_uris: ['https://app.example.com/cb'],
@@ -27,13 +29,18 @@ describe('Client ID Metadata Document', () => {
       expect(isValidClientIdUrl('https://example.com/client?id=123')).to.be.true;
     });
 
-    it('rejects non-HTTPS URLs', () => {
-      expect(isValidClientIdUrl('http://example.com/client')).to.be.false;
+    it('accepts URLs with an uppercase scheme', () => {
+      expect(isValidClientIdUrl('HTTPS://example.com/client')).to.be.true;
     });
 
-    it('rejects URLs without a path component', () => {
-      expect(isValidClientIdUrl('https://example.com')).to.be.false;
-      expect(isValidClientIdUrl('https://example.com/')).to.be.false;
+    it('accepts root-equivalent URLs', () => {
+      expect(isValidClientIdUrl('https://example.com')).to.be.true;
+      expect(isValidClientIdUrl('https://example.com/')).to.be.true;
+      expect(isValidClientIdUrl('https://example.com?foo=bar')).to.be.true;
+    });
+
+    it('rejects non-HTTPS URLs', () => {
+      expect(isValidClientIdUrl('http://example.com/client')).to.be.false;
     });
 
     it('rejects URLs with single-dot path segments', () => {
@@ -43,6 +50,20 @@ describe('Client ID Metadata Document', () => {
     it('rejects URLs with double-dot path segments', () => {
       expect(isValidClientIdUrl('https://example.com/../client')).to.be.false;
       expect(isValidClientIdUrl('https://example.com/a/../client')).to.be.false;
+    });
+
+    it('rejects URLs with percent-encoded dot path segments', () => {
+      expect(isValidClientIdUrl('https://example.com/%2e/client')).to.be.false;
+      expect(isValidClientIdUrl('https://example.com/%2E/client')).to.be.false;
+      expect(isValidClientIdUrl('https://example.com/%2e%2e/client')).to.be.false;
+      expect(isValidClientIdUrl('https://example.com/.%2e/client')).to.be.false;
+      expect(isValidClientIdUrl('https://example.com/%2e./client')).to.be.false;
+      expect(isValidClientIdUrl('https://example.com/client/%2e')).to.be.false;
+      expect(isValidClientIdUrl('https://example.com/client/%2e%2e')).to.be.false;
+    });
+
+    it('accepts path segments that only look like double-encoded dot segments', () => {
+      expect(isValidClientIdUrl('https://example.com/%252e/client')).to.be.true;
     });
 
     it('rejects URLs with a fragment', () => {
@@ -59,6 +80,21 @@ describe('Client ID Metadata Document', () => {
 
     it('rejects non-URL strings', () => {
       expect(isValidClientIdUrl('not-a-url')).to.be.false;
+    });
+
+    it('rejects URLs that require WHATWG authority repair', () => {
+      expect(isValidClientIdUrl('https:example.com/client')).to.be.false;
+      expect(isValidClientIdUrl('https:/example.com/client')).to.be.false;
+      expect(isValidClientIdUrl('https:///client')).to.be.false;
+    });
+
+    it('rejects URLs with raw characters WHATWG would strip or normalize', () => {
+      expect(isValidClientIdUrl(' https://example.com/client')).to.be.false;
+      expect(isValidClientIdUrl('https://example.com/client ')).to.be.false;
+      expect(isValidClientIdUrl('https://example.com/\tclient')).to.be.false;
+      expect(isValidClientIdUrl('https://example.com/\nclient')).to.be.false;
+      expect(isValidClientIdUrl('https://example.com\\client')).to.be.false;
+      expect(isValidClientIdUrl('https:\\\\example.com\\client')).to.be.false;
     });
   });
 
@@ -168,6 +204,30 @@ describe('Client ID Metadata Document', () => {
         });
     });
 
+    it('compares client_id values without default port normalization', function () {
+      mock('https://defaultport.example.com')
+        .intercept({ path: '/client' })
+        .reply(200, JSON.stringify({
+          client_id: 'https://defaultport.example.com/client',
+          redirect_uris: ['https://defaultport.example.com/cb'],
+          token_endpoint_auth_method: 'none',
+        }), {
+          headers: { 'content-type': 'application/json' },
+        });
+
+      return this.agent.get('/auth')
+        .query({
+          client_id: 'https://defaultport.example.com:443/client',
+          redirect_uri: 'https://defaultport.example.com/cb',
+          response_type: 'code',
+          scope: 'openid',
+        })
+        .expect(400)
+        .expect((response) => {
+          expect(response.text).to.contain('invalid_client_metadata');
+        });
+    });
+
     it('rejects when metadata document uses client_secret_basic', function () {
       mock('https://secretauth.example.com')
         .intercept({ path: '/client' })
@@ -256,6 +316,57 @@ describe('Client ID Metadata Document', () => {
         .query({
           client_id: 'https://hassecret.example.com/client',
           redirect_uri: 'https://hassecret.example.com/cb',
+          response_type: 'code',
+          scope: 'openid',
+        })
+        .expect(400)
+        .expect((response) => {
+          expect(response.text).to.contain('invalid_client_metadata');
+        });
+    });
+
+    it('accepts public key material in an inline jwks', function () {
+      mock('https://publicjwks.example.com')
+        .intercept({ path: '/client' })
+        .reply(200, JSON.stringify({
+          client_id: 'https://publicjwks.example.com/client',
+          redirect_uris: ['https://publicjwks.example.com/cb'],
+          token_endpoint_auth_method: 'private_key_jwt',
+          jwks: { keys: [publicKey] },
+        }), {
+          headers: { 'content-type': 'application/json' },
+        });
+
+      return this.agent.get('/auth')
+        .query({
+          client_id: 'https://publicjwks.example.com/client',
+          redirect_uri: 'https://publicjwks.example.com/cb',
+          response_type: 'code',
+          scope: 'openid',
+        })
+        .expect(303)
+        .expect((response) => {
+          const location = new URL(response.headers.location, this.provider.issuer);
+          expect(location.pathname).to.match(/\/interaction\//);
+        });
+    });
+
+    it('rejects private key material in an inline jwks', function () {
+      mock('https://privatejwks.example.com')
+        .intercept({ path: '/client' })
+        .reply(200, JSON.stringify({
+          client_id: 'https://privatejwks.example.com/client',
+          redirect_uris: ['https://privatejwks.example.com/cb'],
+          token_endpoint_auth_method: 'none',
+          jwks: { keys: [keys[0]] },
+        }), {
+          headers: { 'content-type': 'application/json' },
+        });
+
+      return this.agent.get('/auth')
+        .query({
+          client_id: 'https://privatejwks.example.com/client',
+          redirect_uri: 'https://privatejwks.example.com/cb',
           response_type: 'code',
           scope: 'openid',
         })

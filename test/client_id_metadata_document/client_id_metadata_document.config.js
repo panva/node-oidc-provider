@@ -8,7 +8,7 @@ merge(config, {
   features: {
     clientIdMetadataDocument: {
       enabled: true,
-      ack: 'draft-01',
+      ack: 'draft-02',
     },
   },
   pkce: {
