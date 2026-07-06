@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [9.9.0](https://github.com/panva/node-oidc-provider/compare/v9.8.6...v9.9.0) (2026-07-06)
+
+
+### Features
+
+* bump CIMD draft to -02 ([6a26aff](https://github.com/panva/node-oidc-provider/commit/6a26aff486c9df59776c7de0b3f815158a1553b3))
+
 ## [9.8.6](https://github.com/panva/node-oidc-provider/compare/v9.8.5...v9.8.6) (2026-06-26)
 
 
