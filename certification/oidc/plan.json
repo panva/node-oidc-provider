@@ -1,6 +1,7 @@
 {
   "server": {
     "discoveryUrl": "https://op.panva.cz/.well-known/openid-configuration",
+    "allow_unexpected_metadata_fields": ["version"],
     "login_hint": "bob@example.com"
   },
   "client": {

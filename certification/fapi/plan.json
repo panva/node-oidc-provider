@@ -2,7 +2,8 @@
   "alias": "oidc-provider",
   "automated_ciba_approval_url": "https://fapi.panva.cz/ciba-sim?authReqId={auth_req_id}&action={action}",
   "server": {
-    "discoveryUrl": "https://fapi.panva.cz/.well-known/openid-configuration"
+    "discoveryUrl": "https://fapi.panva.cz/.well-known/openid-configuration",
+    "allow_unexpected_metadata_fields": ["version"]
   },
   "client": {
     "client_name": "one",
