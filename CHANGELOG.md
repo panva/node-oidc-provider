@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [9.9.1](https://github.com/panva/node-oidc-provider/compare/v9.9.0...v9.9.1) (2026-07-07)
+
+
+### Fixes
+
+* ignore stale clients during logout confirmation ([7216f2b](https://github.com/panva/node-oidc-provider/commit/7216f2bcec103e2de62f618efdf2171f049ba004))
+
 ## [9.9.0](https://github.com/panva/node-oidc-provider/compare/v9.8.6...v9.9.0) (2026-07-06)
 
 
