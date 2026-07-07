@@ -513,6 +513,35 @@ describe('logout endpoint', () => {
           });
       });
 
+      it('clears one clients session when the client can no longer be resolved', function () {
+        const find = sinon.stub(this.provider.Client, 'find').callsFake(async function clientFind(clientId) {
+          if (clientId === 'client') {
+            throw new InvalidClient('client is invalid', 'client not found');
+          }
+
+          return find.wrappedMethod.call(this, clientId);
+        });
+
+        let session = this.getSession();
+        const oldId = this.getSessionId();
+        session.state = { secret: '123', clientId: 'client' };
+
+        expect(session.authorizations.client).to.be.ok;
+
+        return this.agent.post('/session/end/confirm')
+          .send({ xsrf: '123' })
+          .type('form')
+          .expect(303)
+          .expect((response) => {
+            find.restore();
+            session = this.getSession();
+            expect(session.authorizations.client).to.be.undefined;
+            expect(session.state).to.be.undefined;
+            expect(this.getSessionId()).not.to.eql(oldId);
+            expect(parseUrl(response.headers.location, true).query).to.have.property('client_id', 'client');
+          });
+      });
+
       it('forwards the state too', function () {
         this.getSession().state = {
           secret: '123', postLogoutRedirectUri: 'https://rp.example.com/', clientId: 'client', state: 'foobar',

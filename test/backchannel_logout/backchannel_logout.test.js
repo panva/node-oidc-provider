@@ -7,6 +7,7 @@ import { expect } from 'chai';
 import base64url from 'base64url';
 
 import bootstrap, { skipConsent, assertNoPendingInterceptors, mock } from '../test_helper.js';
+import { InvalidClient } from '../../lib/helpers/errors.js';
 
 const sinon = createSandbox();
 
@@ -219,6 +220,41 @@ describe('Back-Channel Logout 1.0', () => {
             client2.backchannelLogout.restore();
             expect(errorSpy.calledOnce).to.be.true;
           })();
+        });
+    });
+
+    it('skips stale clients during global backchannel logout', async function () {
+      const session = this.getSession();
+      const staleClientId = 'https://old.example.com/client';
+      session.state = { secret: '123', clientId: 'client', postLogoutRedirectUri: 'https://rp.example.com/' };
+      session.authorizations[staleClientId] = { sid: 'old-sid' };
+
+      const client = await this.provider.Client.find('client');
+      sinon.spy(client, 'backchannelLogout');
+
+      const find = sinon.stub(this.provider.Client, 'find').callsFake(async function clientFind(clientId) {
+        if (clientId === staleClientId) {
+          throw new InvalidClient('client is invalid', 'client not found');
+        }
+
+        return find.wrappedMethod.call(this, clientId);
+      });
+
+      mock('https://client.example.com')
+        .intercept({
+          path: '/backchannel_logout',
+          method: 'POST',
+        })
+        .reply(200);
+
+      return this.agent.post('/session/end/confirm')
+        .send({ logout: 'yes', xsrf: '123' })
+        .type('form')
+        .expect(303)
+        .expect(() => {
+          expect(find.calledWith(staleClientId)).to.be.true;
+          expect(client.backchannelLogout.called).to.be.true;
+          client.backchannelLogout.restore();
         });
     });
 
