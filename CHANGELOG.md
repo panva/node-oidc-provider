@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [9.10.0](https://github.com/panva/node-oidc-provider/compare/v9.9.1...v9.10.0) (2026-07-20)
+
+
+### Features
+
+* Experimental support for OpenID for Verifiable Credential Issuance ([43a5a88](https://github.com/panva/node-oidc-provider/commit/43a5a880eee7335c3a0fe94ecc9203c69270451e))
+* update Attestation-Based Client Authentication to -10 ([b833e2f](https://github.com/panva/node-oidc-provider/commit/b833e2fc65d21f760b1470d6d0471fcf847c0b2a))
+
 ## [9.9.1](https://github.com/panva/node-oidc-provider/compare/v9.9.0...v9.9.1) (2026-07-07)
 
 
