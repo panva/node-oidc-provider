@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [9.11.0](https://github.com/panva/node-oidc-provider/compare/v9.10.0...v9.11.0) (2026-07-26)
+
+
+### Features
+
+* allow customizing the OpenID4VCI Credential Endpoint expected audience ([313eaa6](https://github.com/panva/node-oidc-provider/commit/313eaa64c82d7705f58cf6436ece51b70783849a))
+
 ## [9.10.0](https://github.com/panva/node-oidc-provider/compare/v9.9.1...v9.10.0) (2026-07-20)
 
 
