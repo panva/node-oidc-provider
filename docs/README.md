@@ -2381,7 +2381,7 @@ Specifies whether OpenID4VCI core capabilities shall be enabled. When enabled, t
 
 Credential Offer is an application-level concern outside the scope of the framework. The Issuer constructs the Credential Offer JSON object (containing `credential_issuer`, `credential_configuration_ids`, and `grants`) and delivers it to the Wallet via a custom URL scheme redirect (same-device) or QR code (cross-device). The `issuer_state` authorization parameter, included in the offer's `grants.authorization_code` object and sent back by the Wallet in the authorization request, should be registered via `extraParams` with a validator callback. Once registered, it becomes available in `ctx.oidc.params` and is included in the interaction session details automatically. The Wallet's `credential_offer_endpoint` client metadata can be supported via `extraClientMetadata` if needed. The `metadata` configuration property below can be used to add any additional Credential Issuer Metadata members. 
 
-Access to the Credential Endpoint requires an Access Token issued through a user-facing authorization grant (e.g. Authorization Code). The token's audience MUST match the Credential Endpoint URL. The token MUST use the `opaque` format. Deployments shall use the `features.resourceIndicators` mechanism to configure the Credential Endpoint URL as a resource indicator. Use the `defaultResource` helper to detect credential-requesting authorization requests and return the Credential Endpoint URL as the resource so that the client needs not to use the `resource` parameter. Use the `useGrantedResource` helper to return so that the issued Access Token targets the Credential Endpoint rather than the UserInfo Endpoint. 
+Access to the Credential Endpoint requires an Access Token issued through a user-facing authorization grant (e.g. Authorization Code). The token MUST use the `opaque` format and its audience MUST equal the value returned by the `credentialEndpointExpectedAudience` helper. Deployments shall use the `features.resourceIndicators` mechanism to configure that same value as a resource indicator. Use the `defaultResource` helper to detect credential-requesting authorization requests and return it as the resource so that the client needs not to use the `resource` parameter. Use the `useGrantedResource` helper to return `true` so that the issued Access Token targets the Credential Endpoint rather than the UserInfo Endpoint. 
 
   
 
@@ -2392,6 +2392,7 @@ _**default value**_:
   ack: undefined,
   credentialConfigurationPolicy: [Function: openid4vciCredentialConfigurationPolicy], // see expanded details below
   credentialConfigurationsSupported: {},
+  credentialEndpointExpectedAudience: [Function: openid4vciCredentialEndpointExpectedAudience], // see expanded details below
   enabled: false,
   getKeyAttestationSignaturePublicKey: [AsyncFunction: openid4vciGetKeyAttestationSignaturePublicKey], // see expanded details below
   issueCredential: [AsyncFunction: openid4vciIssueCredential], // see expanded details below
@@ -2532,6 +2533,22 @@ _**default value**_:
 }
 ```
 </details>
+
+#### credentialEndpointExpectedAudience
+
+Specifies a helper function that shall be invoked to resolve the value the Access Token's `aud` claim must equal in order to access the Credential Endpoint. It shall return a non-empty string. 
+
+The default derives the Credential Endpoint URL from the incoming request, which only resolves consistently when the Credential Endpoint and the Token Endpoint are served on the same host. Deployments serving the Credential Endpoint on another host, such as a mutual-TLS host, shall return a fixed absolute URL from this helper. 
+
+Whatever this helper returns MUST equal the resource indicator the Access Token was issued for; this helper and the `features.resourceIndicators` configuration are two halves of the same contract. Note that OpenID4VCI recommends the Credential Issuer Identifier (`ctx.oidc.issuer`) as the `resource` parameter value, which is another value that does not vary with the host serving the request.  
+
+
+_**default value**_:
+```js
+function openid4vciCredentialEndpointExpectedAudience(ctx) {
+  return ctx.oidc.urlFor('credential');
+}
+```
 
 #### getKeyAttestationSignaturePublicKey
 

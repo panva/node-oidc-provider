@@ -1,6 +1,7 @@
 import { hash, randomUUID } from 'node:crypto';
 
 import { expect } from 'chai';
+import sinon from 'sinon';
 import {
   SignJWT, exportJWK, generateKeyPair, calculateJwkThumbprint,
 } from 'jose';
@@ -676,6 +677,121 @@ describe('features.openid4vci', () => {
           error: 'invalid_token',
           error_description: 'invalid token provided',
         });
+    });
+
+    describe('access token audience', () => {
+      const aliasAudience = 'https://mtls.op.example.com/credential';
+
+      async function getAccessTokenWithAudience(aud) {
+        const at = new this.provider.AccessToken({
+          accountId: this.loggedInAccountId,
+          aud,
+          client: await this.provider.Client.find('client'),
+          grantId: this.getGrantId('client'),
+          scope: 'mdl_scope',
+        });
+
+        return at.save();
+      }
+
+      it('rejects access tokens with a different audience', async function () {
+        const accessToken = await getAccessTokenWithAudience.call(this, aliasAudience);
+
+        const spy = sinon.spy();
+        this.provider.once('credential.error', spy);
+
+        await this.agent.post('/credential')
+          .set('Authorization', `Bearer ${accessToken}`)
+          .send({
+            credential_configuration_id: 'org.iso.18013.5.1.mDL',
+          })
+          .expect(401)
+          .expect({
+            error: 'invalid_token',
+            error_description: 'invalid token provided',
+          });
+
+        expect(spy).to.have.property('calledOnce', true);
+        expect(spy.args[0][1]).to.have.property('error_detail', 'token audience prevents accessing the credential endpoint');
+      });
+
+      describe('with a credentialEndpointExpectedAudience helper', () => {
+        before(function () {
+          this.orig = i(this.provider).features.openid4vci.credentialEndpointExpectedAudience;
+          i(this.provider).features.openid4vci.credentialEndpointExpectedAudience = () => aliasAudience;
+        });
+        after(function () {
+          i(this.provider).features.openid4vci.credentialEndpointExpectedAudience = this.orig;
+        });
+
+        it('accepts the audience the helper returns', async function () {
+          const accessToken = await getAccessTokenWithAudience.call(this, aliasAudience);
+          const proof = await credentialProof(this.keypair, this.provider.issuer, {
+            nonce: await getCNonce.call(this),
+          });
+
+          return this.agent.post('/credential')
+            .set('Authorization', `Bearer ${accessToken}`)
+            .send({
+              credential_configuration_id: 'org.iso.18013.5.1.mDL',
+              proofs: {
+                jwt: [proof],
+              },
+            })
+            .expect(200)
+            .expect((response) => {
+              expect(response.body).to.have.property('credentials').that.is.an('array').with.lengthOf(1);
+            });
+        });
+
+        it('rejects the credential endpoint url the default would have accepted', async function () {
+          const accessToken = await getAccessTokenWithAudience.call(this, `${this.provider.issuer}${this.suitePath('/credential')}`);
+
+          const spy = sinon.spy();
+          this.provider.once('credential.error', spy);
+
+          await this.agent.post('/credential')
+            .set('Authorization', `Bearer ${accessToken}`)
+            .send({
+              credential_configuration_id: 'org.iso.18013.5.1.mDL',
+            })
+            .expect(401)
+            .expect({
+              error: 'invalid_token',
+              error_description: 'invalid token provided',
+            });
+
+          expect(spy).to.have.property('calledOnce', true);
+          expect(spy.args[0][1]).to.have.property('error_detail', 'token audience prevents accessing the credential endpoint');
+        });
+      });
+
+      describe('with a credentialEndpointExpectedAudience helper returning a non-string', () => {
+        before(function () {
+          this.orig = i(this.provider).features.openid4vci.credentialEndpointExpectedAudience;
+          i(this.provider).features.openid4vci.credentialEndpointExpectedAudience = () => undefined;
+        });
+        after(function () {
+          i(this.provider).features.openid4vci.credentialEndpointExpectedAudience = this.orig;
+        });
+
+        it('is a server_error', async function () {
+          const accessToken = await getAccessTokenWithAudience.call(this, aliasAudience);
+
+          const spy = sinon.spy();
+          this.provider.once('server_error', spy);
+
+          await this.agent.post('/credential')
+            .set('Authorization', `Bearer ${accessToken}`)
+            .send({
+              credential_configuration_id: 'org.iso.18013.5.1.mDL',
+            })
+            .expect(500);
+
+          expect(spy).to.have.property('calledOnce', true);
+          expect(spy.args[0][1]).to.have.property('message', 'features.openid4vci.credentialEndpointExpectedAudience must return a string');
+        });
+      });
     });
 
     it('returns unknown_credential_configuration for unknown ids', async function () {
