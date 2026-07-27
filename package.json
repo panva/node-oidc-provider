@@ -84,9 +84,9 @@
     "moment": "^2.30.1",
     "openid-client": "^6.8.4",
     "selfsigned": "^5.5.0",
-    "sinon": "^22.0.0",
+    "sinon": "^22.1.0",
     "supertest": "^7.2.2",
     "timekeeper": "^2.3.1",
-    "undici": "^8.7.0"
+    "undici": "^8.9.0"
   }
 }
