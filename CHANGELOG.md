@@ -2,6 +2,29 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [9.11.1](https://github.com/panva/node-oidc-provider/compare/v9.11.0...v9.11.1) (2026-07-27)
+
+
+### Fixes
+
+* correct typos and grammar in user-facing messages ([1be723e](https://github.com/panva/node-oidc-provider/commit/1be723eafb1e8704b7ae98f797d00217b2f8c026))
+* derive server challenges from the clock rather than a timer ([ba9d960](https://github.com/panva/node-oidc-provider/commit/ba9d960bceb82a54de6d1e0562792a8fbb9c11a1)), closes [#1438](https://github.com/panva/node-oidc-provider/issues/1438)
+* don't dereference a skipped refresh token lookup ([fe6f90e](https://github.com/panva/node-oidc-provider/commit/fe6f90e6fcc87ac705f9cd4cea39814d746f80b0))
+* don't emit grant.revoked twice during logout ([a41d043](https://github.com/panva/node-oidc-provider/commit/a41d04389d53cb67e742e24166852bf150b19a4e))
+* only recognize dpop_jkt when DPoP is enabled ([8c38630](https://github.com/panva/node-oidc-provider/commit/8c38630d21e2b72f43ad06927e2336019c60094d))
+* use the effective scope when resolving ID Token claims ([ab1f41b](https://github.com/panva/node-oidc-provider/commit/ab1f41b6b3faf1212ae50b01beaed549872ca466))
+
+
+### Documentation
+
+* correct stale configuration documentation ([6096bef](https://github.com/panva/node-oidc-provider/commit/6096bef1e214e5667772f1b99df38f892261f3b6))
+* document the missing emitted events ([c295623](https://github.com/panva/node-oidc-provider/commit/c295623a3d64ab841c308be091958572e1fbd534))
+
+
+### Refactor
+
+* remove unused OIDCContext resolvedClaims ([5fe6807](https://github.com/panva/node-oidc-provider/commit/5fe68070f5d596b463cb831c3070849553d89214))
+
 ## [9.11.0](https://github.com/panva/node-oidc-provider/compare/v9.10.0...v9.11.0) (2026-07-26)
 
 
