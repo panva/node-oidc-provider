@@ -1371,7 +1371,7 @@ false
 
 #### nonceSecret
 
-Specifies the cryptographic secret value used for generating server-provided DPoP nonces. When provided, this value MUST be a 32-byte Buffer instance to ensure sufficient entropy for secure nonce generation.  
+Specifies the cryptographic secret value used for generating server-provided DPoP nonces. When provided, this value MUST be a 32-byte Buffer instance to ensure sufficient entropy for secure nonce generation. Nonces are derived from this secret rather than stored; the same value MUST be configured on all instances of a deployment and kept stable across restarts.  
 
 
 _**default value**_:
@@ -2227,7 +2227,7 @@ async function assertAttestationJwtAndPop(ctx, attestation, pop, client) {
 
 #### challengeSecret
 
-Specifies the cryptographic secret value used for generating server-provided challenges. This value MUST be a 32-byte Buffer instance to ensure sufficient entropy for secure challenge generation.  
+Specifies the cryptographic secret value used for generating server-provided challenges. This value MUST be a 32-byte Buffer instance to ensure sufficient entropy for secure challenge generation. Challenges are derived from this secret rather than stored; the same value MUST be configured on all instances of a deployment and kept stable across restarts.  
 
 
 _**default value**_:
@@ -2657,7 +2657,7 @@ _**default value**_:
 
 #### nonceSecret
 
-Specifies the cryptographic secret used to generate and validate OpenID4VCI `c_nonce` challenges exposed by the nonce endpoint. This value MUST be a 32-byte Buffer instance.  
+Specifies the cryptographic secret used to generate and validate OpenID4VCI `c_nonce` challenges exposed by the nonce endpoint. This value MUST be a 32-byte Buffer instance. `c_nonce` values are derived from this secret rather than stored; the same value MUST be configured on all instances of a deployment and kept stable across restarts.  
 
 
 _**default value**_:
