@@ -33,7 +33,7 @@ describe('userinfo /me', () => {
           userinfo: { enabled: false },
         },
       });
-    }).to.throw('jwtUserinfo is only available in conjuction with userinfo');
+    }).to.throw('jwtUserinfo is only available in conjunction with userinfo');
   });
 
   it('[get] returns 200 OK and user claims except the rejected ones', function () {

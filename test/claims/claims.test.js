@@ -439,7 +439,7 @@ expire.setDate(expire.getDate() + 1);
             .expect(auth.validateState)
             .expect(auth.validateClientLocation)
             .expect(auth.validateError('login_required'))
-            .expect(auth.validateErrorDescription('none of the requested ACRs could not be obtained'));
+            .expect(auth.validateErrorDescription('none of the requested ACRs could be obtained'));
         });
 
         it('none of multiple authentication context class references requested are met (2/2)', function () {

@@ -35,7 +35,7 @@ describe('features.mTLS.certificateBoundAccessTokens', () => {
       });
       at.setThumbprint('x5t', crt);
 
-      expect(() => at.setThumbprint('jkt', 'foo')).to.throw().with.property('error_description', 'multiple proof-of-posession mechanisms are not allowed');
+      expect(() => at.setThumbprint('jkt', 'foo')).to.throw().with.property('error_description', 'multiple proof-of-possession mechanisms are not allowed');
 
       const bearer = await at.save();
 

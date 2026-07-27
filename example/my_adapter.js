@@ -124,7 +124,7 @@ class MyAdapter {
      * - loginTs {number} - timestamp of user's authentication
      * - acr {string} - authentication context class reference value
      * - amr {string[]} - Authentication methods references
-     * - transient {boolean} - whether the session is using a persistant or session cookie
+     * - transient {boolean} - whether the session is using a persistent or session cookie
      * - state: {object} - temporary objects used for one-time csrf and state persistance between
      *     form submissions
      *

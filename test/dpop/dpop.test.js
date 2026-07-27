@@ -55,7 +55,7 @@ describe('features.dPoP', () => {
       });
       at.setThumbprint('jkt', this.thumbprint);
 
-      expect(() => at.setThumbprint('x5t', 'foo')).to.throw().with.property('error_description', 'multiple proof-of-posession mechanisms are not allowed');
+      expect(() => at.setThumbprint('x5t', 'foo')).to.throw().with.property('error_description', 'multiple proof-of-possession mechanisms are not allowed');
 
       const dpop = await at.save();
 

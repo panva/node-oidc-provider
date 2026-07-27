@@ -14,7 +14,7 @@ describe('client registration policies', () => {
   beforeEach(sinon.restore);
 
   describe('configuration', () => {
-    it('must only be enabled in conjuction with adapter-backed initial access tokens', () => {
+    it('must only be enabled in conjunction with adapter-backed initial access tokens', () => {
       expect(() => {
         new Provider('http://localhost', {
           features: {
@@ -25,7 +25,7 @@ describe('client registration policies', () => {
           },
         });
       }).to.throw(
-        'registration policies are only available in conjuction with adapter-backed initial access tokens',
+        'registration policies are only available in conjunction with adapter-backed initial access tokens',
       );
     });
   });

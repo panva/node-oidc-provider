@@ -29,7 +29,7 @@ describe('OAuth 2.0 Dynamic Client Registration Management Protocol', () => {
             registrationManagement: { enabled: true },
           },
         });
-      }).to.throw('registrationManagement is only available in conjuction with registration');
+      }).to.throw('registrationManagement is only available in conjunction with registration');
     });
   });
 

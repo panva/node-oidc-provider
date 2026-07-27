@@ -4326,7 +4326,7 @@ new Prompt(
 
   new Check(
     'essential_acrs',
-    'none of the requested ACRs could not be obtained',
+    'none of the requested ACRs could be obtained',
     (ctx) => {
       const { oidc } = ctx;
       const request = oidc.claims?.id_token?.acr ?? {};

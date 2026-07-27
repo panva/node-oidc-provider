@@ -31,7 +31,7 @@ describe('jwtIntrospection features', () => {
             jwtIntrospection: { enabled: true },
           },
         });
-      }).to.throw('jwtIntrospection is only available in conjuction with introspection');
+      }).to.throw('jwtIntrospection is only available in conjunction with introspection');
     });
 
     it('returns the response as json when not negotiated to be a JWT', async function () {
