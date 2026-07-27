@@ -272,18 +272,23 @@ provider.use(async (ctx, next) => {
    *
    * `authorization`
    * `backchannel_authentication`
+   * `challenge`
    * `client_delete`
    * `client_update`
    * `client`
    * `code_verification`
+   * `cors.challenge`
+   * `cors.credential`
    * `cors.device_authorization`
    * `cors.discovery`
    * `cors.introspection`
    * `cors.jwks`
+   * `cors.openid_credential_issuer`
    * `cors.pushed_authorization_request`
    * `cors.revocation`
    * `cors.token`
    * `cors.userinfo`
+   * `credential`
    * `device_authorization`
    * `device_resume`
    * `discovery`
@@ -292,6 +297,7 @@ provider.use(async (ctx, next) => {
    * `end_session`
    * `introspection`
    * `jwks`
+   * `openid_credential_issuer`
    * `pushed_authorization_request`
    * `registration`
    * `resume`
@@ -335,11 +341,11 @@ path prefix `/oidc`.
 ### to a `fastify` application
 
 ```js
-// assumes fastify ^4.0.0
+// assumes fastify ^5.0.0
 const fastify = new Fastify();
-await fastify.register(require("@fastify/middie"));
+await fastify.register(await import("@fastify/middie"));
 // or
-// await app.register(require('@fastify/express'));
+// await fastify.register(await import('@fastify/express'));
 fastify.use("/oidc", provider.callback());
 ```
 
@@ -1374,11 +1380,6 @@ false
 Specifies the cryptographic secret value used for generating server-provided DPoP nonces. When provided, this value MUST be a 32-byte Buffer instance to ensure sufficient entropy for secure nonce generation. Nonces are derived from this secret rather than stored; the same value MUST be configured on all instances of a deployment and kept stable across restarts.  
 
 
-_**default value**_:
-```js
-undefined
-```
-
 #### requireNonce
 
 Specifies a function that determines whether a DPoP nonce shall be required for proof-of-possession validation in the current request context. This function is invoked during DPoP proof validation to enforce nonce requirements based on authorization server policy.  
@@ -1437,11 +1438,6 @@ Specifies the FAPI profile version that shall be applied for security policy enf
 - '1.0 Final' - The authorization server shall implement behaviors from [FAPI 1.0 Security Profile - Part 2: Advanced](https://openid.net/specs/openid-financial-api-part-2-1_0-final.html)
 - Function - A function that shall be invoked with arguments `(ctx, client)` to determine the profile contextually. The function shall return one of the supported profile values or undefined when FAPI behaviors should be ignored for the current request context.  
 
-
-_**default value**_:
-```js
-undefined
-```
 
 </details>
 
@@ -1784,11 +1780,6 @@ _**recommendation**_: The same policies will be assigned to the Registration Acc
 ctx.oidc.entities.RegistrationAccessToken.policies = ['update-policy'];
 ```  
 
-
-_**default value**_:
-```js
-undefined
-```
 <a id="policies-to-define-registration-and-registration-management-policies"></a><details><summary>Example: (Click to expand) To define registration and registration management policies.</summary><br>
 
 
@@ -2230,11 +2221,6 @@ async function assertAttestationJwtAndPop(ctx, attestation, pop, client) {
 Specifies the cryptographic secret value used for generating server-provided challenges. This value MUST be a 32-byte Buffer instance to ensure sufficient entropy for secure challenge generation. Challenges are derived from this secret rather than stored; the same value MUST be configured on all instances of a deployment and kept stable across restarts.  
 
 
-_**default value**_:
-```js
-undefined
-```
-
 #### getAttestationSignaturePublicKey
 
 Specifies a helper function that shall be invoked to retrieve the public key used for Client Attestation JWT signature verification. At the point of this function's invocation, only the JWT format has been validated; no cryptographic or claims verification has occurred. 
@@ -2659,11 +2645,6 @@ _**default value**_:
 
 Specifies the cryptographic secret used to generate and validate OpenID4VCI `c_nonce` challenges exposed by the nonce endpoint. This value MUST be a 32-byte Buffer instance. `c_nonce` values are derived from this secret rather than stored; the same value MUST be configured on all instances of a deployment and kept stable across restarts.  
 
-
-_**default value**_:
-```js
-undefined
-```
 
 #### preAuthorizedCodeGrant
 
@@ -4028,8 +4009,6 @@ function extraClientMetadataValidator(ctx, key, value, metadata) {
   // @param key - the client metadata property name
   // @param value - the property value
   // @param metadata - the current accumulated client metadata
-  // @param ctx - koa request context (only provided when a client is being constructed during
-  //              Client Registration Request or Client Update Request
 }
 ```
 
@@ -4906,7 +4885,7 @@ that.
 
 ### I'm getting a client authentication failed error with no details
 
-Every client is configured with one of 7 available
+Every client is configured with one of 8 available
 [`token_endpoint_auth_method` values](https://www.iana.org/assignments/oauth-parameters/oauth-parameters.xhtml#token-endpoint-auth-method)
 and it must adhere to how that given method must be submitted. Submitting multiple means of
 authentication is also not possible. Authorization server operators are encouraged to set up
