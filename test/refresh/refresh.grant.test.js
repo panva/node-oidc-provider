@@ -7,6 +7,7 @@ import { expect } from 'chai';
 import timekeeper from 'timekeeper';
 
 import bootstrap, { skipConsent } from '../test_helper.js';
+import { Account } from '../models.js';
 
 const sinon = createSandbox();
 
@@ -255,6 +256,28 @@ describe('grant_type=refresh_token', () => {
           expect(spy.firstCall.args[0]).to.have.property('scope', 'openid email');
           expect(body).to.have.property('scope', 'openid email');
           expect(body).to.have.property('id_token');
+        });
+    });
+
+    it('passes the slimmed down scope to the account claims helper', function () {
+      const { rt } = this;
+      const claims = sinon.spy(Account.prototype, 'claims');
+
+      return this.agent.post(route)
+        .auth('client', 'secret')
+        .send({
+          refresh_token: rt,
+          grant_type: 'refresh_token',
+          scope: 'openid',
+        })
+        .type('form')
+        .expect(200)
+        .expect(({ body }) => {
+          expect(body).to.have.property('scope', 'openid');
+          const idToken = claims.getCalls().find(({ args: [use] }) => use === 'id_token');
+          assert(idToken, 'account claims were not resolved for the ID Token');
+          // and not the refresh token's original 'openid email offline_access'
+          expect(idToken.args[1]).to.equal('openid');
         });
     });
 
