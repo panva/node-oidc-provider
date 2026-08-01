@@ -1,8 +1,57 @@
 import { expect } from 'chai';
 
 import Provider from '../../lib/index.js';
+import { parameters as authorizationCodeParameters } from '../../lib/actions/grants/authorization_code.js';
+import instance from '../../lib/helpers/weak_cache.js';
+
+function providerWithFeatureGrantParameters(issuer) {
+  return new Provider(issuer, {
+    features: {
+      resourceIndicators: { enabled: true },
+      richAuthorizationRequests: {
+        enabled: true,
+        types: {
+          example: { validate() {} },
+        },
+      },
+    },
+  });
+}
+
+function providerWithoutFeatureGrantParameters(issuer) {
+  return new Provider(issuer, {
+    features: {
+      resourceIndicators: { enabled: false },
+      richAuthorizationRequests: { enabled: false },
+    },
+  });
+}
+
+function authorizationCodeGrantParameters(provider) {
+  return instance(provider).grantTypeParams.get('authorization_code');
+}
 
 describe('Provider configuration', () => {
+  describe('grant parameters', () => {
+    it('does not leak enabled feature parameters to a subsequent Provider', () => {
+      const enabled = providerWithFeatureGrantParameters('http://enabled.example.com');
+      const disabled = providerWithoutFeatureGrantParameters('http://disabled.example.com');
+
+      expect(authorizationCodeGrantParameters(enabled)).to.include('resource').and.include('authorization_details');
+      expect(authorizationCodeGrantParameters(disabled)).not.to.include('resource').and.not.include('authorization_details');
+      expect(authorizationCodeParameters).not.to.include('resource').and.not.include('authorization_details');
+    });
+
+    it('does not add disabled feature parameters based on Provider construction order', () => {
+      const disabled = providerWithoutFeatureGrantParameters('http://disabled-first.example.com');
+      const enabled = providerWithFeatureGrantParameters('http://enabled-second.example.com');
+
+      expect(authorizationCodeGrantParameters(disabled)).not.to.include('resource').and.not.include('authorization_details');
+      expect(authorizationCodeGrantParameters(enabled)).to.include('resource').and.include('authorization_details');
+      expect(authorizationCodeParameters).not.to.include('resource').and.not.include('authorization_details');
+    });
+  });
+
   describe('clients', () => {
     it('may contain static clients when these have at least the client_id', () => {
       expect(() => {
