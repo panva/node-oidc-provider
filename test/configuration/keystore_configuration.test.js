@@ -12,11 +12,19 @@ describe('configuration.jwks', () => {
   afterEach(sinon.restore);
 
   it('must be a valid JWKS object', async () => {
-    expect(() => {
+    const jwks = [];
+    let caught;
+    try {
       new Provider('http://localhost', {
-        jwks: [],
+        jwks,
       });
-    }).to.throw('keystore must be a JSON Web Key Set formatted object');
+    } catch (err) {
+      caught = err;
+    }
+
+    expect(caught).to.be.instanceOf(Error)
+      .and.to.have.property('message', 'keystore must be a JSON Web Key Set formatted object');
+    expect(caught.cause).to.deep.equal(jwks);
   });
 
   it('must only contain RSA, EC, or OKP keys', () => {

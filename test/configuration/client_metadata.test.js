@@ -1769,6 +1769,48 @@ describe('Client metadata validation', () => {
     );
     allows(this.title, { keys: [{ kty: 'unrecognized' }] });
     allows(this.title, { keys: [] });
+
+    it('provides specific details for invalid JWK members', async () => {
+      const invalid = [
+        [[{ kty: 'unrecognized' }, {}], 'jwks.keys[1].kty must be a non-empty string'],
+        [[{ kty: 'EC' }], 'jwks.keys[0].crv must be a non-empty string for EC keys'],
+        [[{ kty: 'EC', crv: 'P-256' }], 'jwks.keys[0].x must be a non-empty string for EC keys'],
+        [[{ kty: 'EC', crv: 'P-256', x: 'x' }], 'jwks.keys[0].y must be a non-empty string for EC keys'],
+        [[{ kty: 'EC', crv: 'P-256', x: 'x', y: 'y', d: 'd' }], 'jwks.keys[0].d must not be provided for EC keys'],
+        [[{ kty: 'OKP' }], 'jwks.keys[0].crv must be a non-empty string for OKP keys'],
+        [[{ kty: 'OKP', crv: 'Ed25519' }], 'jwks.keys[0].x must be a non-empty string for OKP keys'],
+        [[{ kty: 'OKP', crv: 'Ed25519', x: 'x', d: 'd' }], 'jwks.keys[0].d must not be provided for OKP keys'],
+        [[{ kty: 'AKP' }], 'jwks.keys[0].alg must be a non-empty string for AKP keys'],
+        [[{ kty: 'AKP', alg: 'ML-DSA-44' }], 'jwks.keys[0].pub must be a non-empty string for AKP keys'],
+        [[{ kty: 'AKP', alg: 'ML-DSA-44', pub: 'pub', priv: 'priv' }], 'jwks.keys[0].priv must not be provided for AKP keys'],
+        [[{ kty: 'RSA' }], 'jwks.keys[0].e must be a non-empty string for RSA keys'],
+        [[{ kty: 'RSA', e: 'AQAB' }], 'jwks.keys[0].n must be a non-empty string for RSA keys'],
+        [[{ kty: 'RSA', e: 'AQAB', n: 'n', d: 'd', p: 'p' }], 'jwks.keys[0].d must not be provided for RSA keys'],
+        [[{ kty: 'RSA', e: 'AQAB', n: 'n', p: 'p' }], 'jwks.keys[0].p must not be provided for RSA keys'],
+        [[{ kty: 'RSA', e: 'AQAB', n: 'n', q: 'q' }], 'jwks.keys[0].q must not be provided for RSA keys'],
+        [[{ kty: 'RSA', e: 'AQAB', n: 'n', dp: 'dp' }], 'jwks.keys[0].dp must not be provided for RSA keys'],
+        [[{ kty: 'RSA', e: 'AQAB', n: 'n', dq: 'dq' }], 'jwks.keys[0].dq must not be provided for RSA keys'],
+        [[{ kty: 'RSA', e: 'AQAB', n: 'n', qi: 'qi' }], 'jwks.keys[0].qi must not be provided for RSA keys'],
+        [[{ kty: 'RSA', e: 'AQAB', n: 'n', oth: [] }], 'jwks.keys[0].oth must not be provided for RSA keys'],
+        [[{ kty: 'oct' }], 'jwks.keys[0] must not contain symmetric keys'],
+        [[{ kty: 'EC', crv: 'P-256', x: 'x', y: 'y', alg: 1 }], 'jwks.keys[0].alg must be a non-empty string if provided'],
+        [[{ kty: 'EC', crv: 'P-256', x: 'x', y: 'y', kid: '' }], 'jwks.keys[0].kid must be a non-empty string if provided'],
+        [[{ kty: 'EC', crv: 'P-256', x: 'x', y: 'y', use: true }], 'jwks.keys[0].use must be a non-empty string if provided'],
+        [[{ kty: 'EC', crv: 'P-256', x: 'x', y: 'y', x5c: [1] }], 'jwks.keys[0].x5c must be an array of non-empty strings if provided'],
+      ];
+
+      for (const [invalidKeys, detail] of invalid) {
+        await assert.rejects(register({ jwks: { keys: invalidKeys } }), (err) => {
+          expect(err).to.be.instanceOf(errors.InvalidClientMetadata);
+          expect(err.error_description).to.equal('client JSON Web Key Set is invalid');
+          expect(err.error_detail).to.equal(detail);
+          expect(err.cause).to.be.instanceOf(Error).and.to.have.property('message', detail);
+          expect(err.cause.cause).to.equal(invalidKeys.at(-1));
+          return true;
+        });
+      }
+    });
+
     rejects(
       this.title,
       undefined,

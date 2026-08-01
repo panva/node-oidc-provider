@@ -386,6 +386,7 @@ describe('device interaction resume /device/:uid/', () => {
         expect(spy.calledOnce).to.be.true;
         sinon.assert.calledWithMatch(spy, any, any, any, sinon.match((err) => {
           expect(err.message).to.equal('the interaction was aborted');
+          expect(err.cause).to.be.an.instanceof(Error).and.have.property('error', 'access_denied');
           return true;
         }));
       });

@@ -6,6 +6,15 @@ import epochTime from '../../lib/helpers/epoch_time.js';
 import KeyStore from '../../lib/helpers/keystore.js';
 
 describe('JSON Web Token (JWT) RFC7519 implementation', () => {
+  it('reports unsupported algorithms', () => {
+    const keystore = new KeyStore();
+
+    expect(() => keystore.selectForVerify({ alg: 'unsupported' }))
+      .to.throw('unsupported JWS algorithm (unsupported)');
+    expect(() => keystore.selectForDecrypt({ alg: 'unsupported' }))
+      .to.throw('unsupported JWE key management algorithm (unsupported)');
+  });
+
   describe('.decode()', () => {
     it('doesnt decode non strings or non buffers', () => {
       expect(() => JWT.decode({})).to.throw(TypeError);

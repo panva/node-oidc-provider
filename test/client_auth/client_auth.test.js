@@ -1379,7 +1379,9 @@ describe('client authentication methods', () => {
           .expect({ error: 'invalid_client_attestation' })
           .expect(() => {
             expect(spy.calledOnce).to.be.true;
-            expect(errorDetail(spy)).to.match(/unexpected "sub" claim value/);
+            const err = spy.args[0][1];
+            expect(err.cause).to.be.instanceOf(Error);
+            expect(errorDetail(spy)).to.equal(err.cause.message);
           });
       });
     });

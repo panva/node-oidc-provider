@@ -78,12 +78,24 @@ describe('client keystore refresh', () => {
         expect(err).to.be.an('error');
         expect(err.message).to.equal('invalid_client_metadata');
         expect(err.error_description).to.eql('client JSON Web Key Set failed to be refreshed');
+        expect(err.error_detail).to.equal('invalid_client_metadata');
+        expect(err.cause).to.be.instanceOf(Error)
+          .and.to.have.property('error_description', 'client JSON Web Key Set is invalid');
+        expect(err.cause.error_detail).to.equal('jwks.keys[0].d must not be provided for EC keys');
+        expect(err.cause.cause).to.be.instanceOf(Error)
+          .and.to.have.property('message', err.cause.error_detail);
         return true;
       }),
       assert.rejects(client.asymmetricKeyStore.refresh(), (err) => {
         expect(err).to.be.an('error');
         expect(err.message).to.equal('invalid_client_metadata');
         expect(err.error_description).to.eql('client JSON Web Key Set failed to be refreshed');
+        expect(err.error_detail).to.equal('invalid_client_metadata');
+        expect(err.cause).to.be.instanceOf(Error)
+          .and.to.have.property('error_description', 'client JSON Web Key Set is invalid');
+        expect(err.cause.error_detail).to.equal('jwks.keys[0].d must not be provided for EC keys');
+        expect(err.cause.cause).to.be.instanceOf(Error)
+          .and.to.have.property('message', err.cause.error_detail);
         return true;
       }),
     ]);
@@ -106,12 +118,16 @@ describe('client keystore refresh', () => {
         expect(err).to.be.an('error');
         expect(err.message).to.equal('invalid_client_metadata');
         expect(err.error_description).to.eql('client JSON Web Key Set failed to be refreshed');
+        expect(err.cause.error_detail).to.equal('jwks.keys[0].priv must not be provided for AKP keys');
+        expect(err.cause.cause).to.have.property('message', err.cause.error_detail);
         return true;
       }),
       assert.rejects(client.asymmetricKeyStore.refresh(), (err) => {
         expect(err).to.be.an('error');
         expect(err.message).to.equal('invalid_client_metadata');
         expect(err.error_description).to.eql('client JSON Web Key Set failed to be refreshed');
+        expect(err.cause.error_detail).to.equal('jwks.keys[0].priv must not be provided for AKP keys');
+        expect(err.cause.cause).to.have.property('message', err.cause.error_detail);
         return true;
       }),
     ]);
@@ -287,6 +303,26 @@ describe('client keystore refresh', () => {
       const token = new IdToken({ foo: 'bar' }, { client, ctx: undefined });
 
       await token.issue({ use: 'idtoken' });
+    });
+
+    it('reports an invalid id_token signing algorithm', async function () {
+      const client = await this.provider.Client.find('client');
+      const original = client.idTokenSignedResponseAlg;
+      client.idTokenSignedResponseAlg = undefined;
+
+      try {
+        const { IdToken } = this.provider;
+        const token = new IdToken({ foo: 'bar' }, { client, ctx: undefined });
+
+        await assert.rejects(token.issue({ use: 'idtoken' }), (err) => {
+          expect(err).to.be.instanceOf(Error)
+            .and.to.have.property('message', 'idtoken signing algorithm must be a string');
+          expect(err.cause).to.equal(client);
+          return true;
+        });
+      } finally {
+        client.idTokenSignedResponseAlg = original;
+      }
     });
   });
 });

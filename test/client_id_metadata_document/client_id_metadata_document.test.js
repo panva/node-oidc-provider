@@ -512,6 +512,11 @@ describe('Client ID Metadata Document', () => {
     });
 
     it('rejects when response is not valid JSON', function () {
+      let emitted;
+      this.provider.once('authorization.error', (_ctx, err) => {
+        emitted = err;
+      });
+
       mock('https://notjson.example.com')
         .intercept({ path: '/client' })
         .reply(200, 'this is not json', {
@@ -528,6 +533,9 @@ describe('Client ID Metadata Document', () => {
         .expect(400)
         .expect((response) => {
           expect(response.text).to.contain('invalid_client');
+          expect(emitted.cause).to.be.instanceOf(SyntaxError);
+          expect(emitted.error_detail).to.equal(emitted.cause.message);
+          expect(response.text).not.to.contain(emitted.error_detail);
         });
     });
 

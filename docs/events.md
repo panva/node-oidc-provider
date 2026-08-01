@@ -6,6 +6,10 @@ Provider instance. In events where
 [OIDCContext](/lib/helpers/oidc_context.js) holds additional details like recognized parameters,
 loaded client or session.
 
+Handled errors that wrap an underlying failure may expose it through the standard `cause`
+property. This is intended for diagnostics in error listeners and is not included in protocol
+responses.
+
 | event name                                     | event handler function parameters      | Emitted ..                                                                                                                                                                                                      |
 | ---------------------------------------------- | -------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `access_token.destroyed`                       | `(token)`                              | ... whenever an access token is destroyed                                                                                                                                                                       |

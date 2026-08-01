@@ -128,11 +128,17 @@ describe('features.dPoP', () => {
             .expect({ error: 'invalid_dpop_proof', error_description: 'invalid DPoP key binding' })
             .expect('WWW-Authenticate', /^DPoP /)
             .expect('WWW-Authenticate', /error="invalid_dpop_proof"/)
-            .expect('WWW-Authenticate', /algs="ES256 PS256"/);
+            .expect('WWW-Authenticate', /algs="ES256 PS256"/)
+            .expect((response) => {
+              expect(response.headers['www-authenticate']).not.to.include('error_detail');
+              expect(response.headers['www-authenticate']).not.to.include('cause');
+            });
         }
 
         for (const { args: [, err] } of spy.getCalls()) {
           expect(err.error_detail).to.eql('unexpected "typ" JWT header value');
+          expect(err.cause).to.be.instanceOf(Error);
+          expect(err.cause.message).to.equal(err.error_detail);
         }
       });
 

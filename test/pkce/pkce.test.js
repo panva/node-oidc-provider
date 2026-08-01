@@ -189,6 +189,10 @@ describe('PKCE RFC7636', () => {
         redirectUri: 'com.example.myapp:/localhost/cb',
       });
       const code = await authCode.save();
+      let emitted;
+      this.provider.once('grant.error', (_ctx, err) => {
+        emitted = err;
+      });
 
       return this.agent.post('/token')
         .type('form')
@@ -201,6 +205,11 @@ describe('PKCE RFC7636', () => {
         .expect(400)
         .expect((response) => {
           expect(response.body).to.have.property('error', 'invalid_grant');
+          expect(response.body).not.to.have.property('error_detail');
+          expect(response.body).not.to.have.property('cause');
+          expect(emitted.cause).to.be.instanceOf(Error);
+          expect(emitted.error_detail).to.equal(emitted.cause.message)
+            .and.to.equal('code_verifier must be provided');
         });
     });
 
@@ -215,6 +224,10 @@ describe('PKCE RFC7636', () => {
         redirectUri: 'com.example.myapp:/localhost/cb',
       });
       const code = await authCode.save();
+      let emitted;
+      this.provider.once('grant.error', (_ctx, err) => {
+        emitted = err;
+      });
 
       return this.agent.post('/token')
         .type('form')
@@ -228,6 +241,9 @@ describe('PKCE RFC7636', () => {
         .expect(400)
         .expect((response) => {
           expect(response.body).to.have.property('error', 'invalid_grant');
+          expect(emitted.cause).to.be.instanceOf(Error);
+          expect(emitted.error_detail).to.equal(emitted.cause.message)
+            .and.to.equal('code_verifier does not match code_challenge');
         });
     });
 
