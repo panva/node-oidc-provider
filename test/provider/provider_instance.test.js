@@ -4,6 +4,7 @@ import { expect } from 'chai';
 import sinon from 'sinon';
 
 import Provider from '../../lib/index.js';
+import MemoryAdapter from '../../lib/adapters/memory_adapter.js';
 
 describe('provider instance', () => {
   context('draft/experimental spec warnings', () => {
@@ -81,6 +82,22 @@ describe('provider instance', () => {
 
   describe('adapters', () => {
     const error = new Error('used this adapter');
+
+    for (const [label, configuration] of [
+      ['implicit default', undefined],
+      ['explicit default', { adapter: MemoryAdapter }],
+    ]) {
+      it(`isolates ${label} adapter storage per Provider`, async () => {
+        const first = new Provider('https://first.example.com', configuration);
+        const second = new Provider('https://second.example.com', configuration);
+        const payload = { kind: 'AccessToken' };
+
+        await first.AccessToken.adapter.upsert('shared-id', payload, 60);
+
+        expect(await first.AccessToken.adapter.find('shared-id')).to.equal(payload);
+        expect(await second.AccessToken.adapter.find('shared-id')).to.be.undefined;
+      });
+    }
 
     it('can be a class', async () => {
       const provider = new Provider('https://op.example.com', {
