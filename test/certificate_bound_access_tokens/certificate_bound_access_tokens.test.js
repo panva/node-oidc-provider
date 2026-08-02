@@ -38,10 +38,15 @@ describe('features.mTLS.certificateBoundAccessTokens', () => {
       expect(() => at.setThumbprint('jkt', 'foo')).to.throw().with.property('error_description', 'multiple proof-of-possession mechanisms are not allowed');
 
       const bearer = await at.save();
+      const spy = sinon.spy();
+      this.provider.once('userinfo.error', spy);
 
       await this.agent.get('/me')
         .auth(bearer, { type: 'bearer' })
         .expect(401);
+
+      expect(spy).to.have.property('calledOnce', true);
+      expect(spy.args[0][1]).to.have.property('error_detail', 'failed x5t#S256 verification');
 
       await this.agent.get('/me')
         .auth(bearer, { type: 'bearer' })

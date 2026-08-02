@@ -332,11 +332,20 @@ describe('features.dPoP', () => {
 
       const dpop = await at.save();
       const proof = await DPoP(this.keypair, `${this.provider.issuer}${this.suitePath('/me')}`, 'GET', undefined, dpop);
+      const spy = sinon.spy();
+      this.provider.once('userinfo.error', spy);
 
       await this.agent.get('/me')
         .set('Authorization', `DPoP ${dpop}`)
         .set('DPoP', proof)
         .expect(this.failWith(401, 'invalid_token', 'invalid token provided', undefined, 'DPoP'));
+
+      expect(spy).to.have.property('calledOnce', true);
+      expect(spy.args[0][1]).to.be.instanceOf(InvalidToken);
+      expect(spy.args[0][1]).to.have.property(
+        'error_detail',
+        'access token is not sender-constrained but proof of possession was provided',
+      );
     });
 
     it('acts like an RS checking the DPoP proof and thumbprint now', async function () {

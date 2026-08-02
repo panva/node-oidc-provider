@@ -512,6 +512,27 @@ describe('features.openid4vci', () => {
       return response.body.c_nonce;
     }
 
+    async function expectCredentialTokenError(accessToken, errorDetail, expectedEntities) {
+      const spy = sinon.spy();
+      this.provider.once('credential.error', spy);
+
+      await this.agent.post('/credential')
+        .set('Authorization', `Bearer ${accessToken}`)
+        .send({
+          credential_configuration_id: 'org.iso.18013.5.1.mDL',
+        })
+        .expect(401)
+        .expect({
+          error: 'invalid_token',
+          error_description: 'invalid token provided',
+        });
+
+      expect(spy).to.have.property('calledOnce', true);
+      expect(spy.args[0][1]).to.be.instanceOf(InvalidToken);
+      expect(spy.args[0][1]).to.have.property('error_detail', errorDetail);
+      expect(Object.keys(spy.args[0][0].oidc.entities)).to.deep.equal(expectedEntities);
+    }
+
     it('issues credentials through configured helper', async function () {
       const accessToken = await getAccessToken.call(this);
       const proof = await credentialProof(this.keypair, this.provider.issuer, {
@@ -531,6 +552,95 @@ describe('features.openid4vci', () => {
           expect(response.body).to.have.property('credentials').that.is.an('array').with.lengthOf(1);
           expect(response.body.credentials[0]).to.have.property('credential');
         });
+    });
+
+    it('populates access token entities in dependency order', function (done) {
+      (async () => {
+        const accessToken = await getAccessToken.call(this);
+        const proof = await credentialProof(this.keypair, this.provider.issuer, {
+          nonce: await getCNonce.call(this),
+        });
+
+        this.assertOnce((ctx) => {
+          expect(Object.keys(ctx.oidc.entities)).to.deep.equal([
+            'AccessToken',
+            'Client',
+            'Account',
+            'Grant',
+          ]);
+        }, done);
+
+        await this.agent.post('/credential')
+          .set('Authorization', `Bearer ${accessToken}`)
+          .send({
+            credential_configuration_id: 'org.iso.18013.5.1.mDL',
+            proofs: {
+              jwt: [proof],
+            },
+          })
+          .expect(200);
+      })().catch(done);
+    });
+
+    it('rejects unknown access tokens', function () {
+      return expectCredentialTokenError.call(
+        this,
+        'Loremipsumdolorsitametconsecteturadipisicingelitsed',
+        'access token not found',
+        [],
+      );
+    });
+
+    it('rejects access tokens whose client no longer exists', async function () {
+      const accessToken = await new this.provider.AccessToken({
+        accountId: this.loggedInAccountId,
+        aud: `${this.provider.issuer}${this.suitePath('/credential')}`,
+        clientId: 'missing-client',
+        expiresIn: 300,
+        grantId: this.getGrantId('client'),
+        scope: 'mdl_scope',
+      }).save();
+
+      await expectCredentialTokenError.call(
+        this,
+        accessToken,
+        'associated client not found',
+        ['AccessToken'],
+      );
+    });
+
+    it('rejects access tokens whose account no longer exists', async function () {
+      const accessToken = await new this.provider.AccessToken({
+        accountId: 'notfound',
+        aud: `${this.provider.issuer}${this.suitePath('/credential')}`,
+        client: await this.provider.Client.find('client'),
+        grantId: this.getGrantId('client'),
+        scope: 'mdl_scope',
+      }).save();
+
+      await expectCredentialTokenError.call(
+        this,
+        accessToken,
+        'associated account not found',
+        ['AccessToken', 'Client'],
+      );
+    });
+
+    it('rejects access tokens whose grant no longer exists', async function () {
+      const accessToken = await new this.provider.AccessToken({
+        accountId: this.loggedInAccountId,
+        aud: `${this.provider.issuer}${this.suitePath('/credential')}`,
+        client: await this.provider.Client.find('client'),
+        grantId: 'missing-grant',
+        scope: 'mdl_scope',
+      }).save();
+
+      await expectCredentialTokenError.call(
+        this,
+        accessToken,
+        'grant not found',
+        ['AccessToken', 'Client', 'Account'],
+      );
     });
 
     it('issues c_nonce from challenge endpoint', function () {
