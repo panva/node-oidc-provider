@@ -262,6 +262,7 @@ describe('opaque storage', () => {
     const kind = 'InitialAccessToken';
     const upsert = spy(this.TestAdapter.for('InitialAccessToken'), 'upsert');
     const token = new this.provider.InitialAccessToken({
+      clientId,
       expiresIn: 100,
       ...fullPayload,
     });
@@ -275,6 +276,43 @@ describe('opaque storage', () => {
       kind,
       policies,
     });
+    expect(upsert.getCall(0).args[1]).not.to.have.property('clientId');
+  });
+
+  it('retains allowed undefined properties in memory but omits them from storage', async function () {
+    const upsert = spy(this.TestAdapter.for('AccessToken'), 'upsert');
+    const token = new this.provider.AccessToken({
+      scope: undefined,
+      unsupported: 'value',
+    });
+
+    expect(token).to.have.own.property('scope', undefined);
+    expect(token).not.to.have.property('unsupported');
+
+    await token.save();
+    expect(upsert.getCall(0).args[1]).not.to.have.property('scope');
+  });
+
+  it('resolves payload properties once per concrete model', async function () {
+    let getterCalls = 0;
+    const Parent = this.provider.AccessToken;
+    class Model extends Parent {
+      static get IN_PAYLOAD() {
+        getterCalls += 1;
+        return [...Parent.IN_PAYLOAD, 'custom'];
+      }
+    }
+
+    const first = new Model({ custom: 'first' });
+    const second = new Model({ custom: 'second' });
+    first.format = 'opaque';
+    second.format = 'opaque';
+    const { payload: firstPayload } = await first.getValueAndPayload();
+    const { payload: secondPayload } = await second.getValueAndPayload();
+
+    expect(firstPayload).to.have.property('custom', 'first');
+    expect(secondPayload).to.have.property('custom', 'second');
+    expect(getterCalls).to.equal(1);
   });
 
   it('for RegistrationAccessToken', async function () {
