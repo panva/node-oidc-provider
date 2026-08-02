@@ -1,9 +1,21 @@
+import { rejects } from 'node:assert/strict';
+
 import { expect } from 'chai';
 import { generateKeyPair, generateSecret, exportJWK } from 'jose';
 
 import * as JWT from '../../lib/helpers/jwt.js';
 import epochTime from '../../lib/helpers/epoch_time.js';
 import KeyStore from '../../lib/helpers/keystore.js';
+
+function countKeyObjectCalls(keystore) {
+  const getKeyObject = keystore.getKeyObject.bind(keystore);
+  let calls = 0;
+  keystore.getKeyObject = (...args) => {
+    calls += 1;
+    return getKeyObject(...args);
+  };
+  return () => calls;
+}
 
 describe('JSON Web Token (JWT) RFC7519 implementation', () => {
   it('reports unsupported algorithms', () => {
@@ -109,6 +121,86 @@ describe('JSON Web Token (JWT) RFC7519 implementation', () => {
         expect(decoded.header).to.have.property('alg', 'Ed25519');
         expect(decoded.payload).to.contain({ data: true });
       });
+  });
+
+  describe('candidate keys', () => {
+    let signingKeys;
+    let signingJwks;
+    let encryptionKeys;
+    let encryptionJwks;
+
+    before(async () => {
+      signingKeys = await Promise.all(Array.from(
+        { length: 4 },
+        () => generateSecret('HS256', { extractable: true }),
+      ));
+      signingJwks = await Promise.all(signingKeys.map((key) => exportJWK(key)));
+      encryptionKeys = await Promise.all(Array.from(
+        { length: 4 },
+        () => generateSecret('A128GCM', { extractable: true }),
+      ));
+      encryptionJwks = await Promise.all(encryptionKeys.map((key) => exportJWK(key)));
+    });
+
+    for (const [label, position] of [['first', 0], ['middle', 1], ['last', 2]]) {
+      it(`stops verification after the ${label} successful key`, async () => {
+        const jwt = await JWT.sign({ data: true }, signingKeys[position], 'HS256');
+        const keystore = new KeyStore(signingJwks.slice(0, 3));
+        const calls = countKeyObjectCalls(keystore);
+
+        await JWT.verify(jwt, keystore);
+
+        expect(calls()).to.equal(position + 1);
+      });
+
+      it(`stops decryption after the ${label} successful key`, async () => {
+        const jwe = await JWT.encrypt('cleartext', encryptionKeys[position], {
+          alg: 'dir', enc: 'A128GCM',
+        });
+        const keystore = new KeyStore(encryptionJwks.slice(0, 3));
+        const calls = countKeyObjectCalls(keystore);
+
+        expect(await JWT.decrypt(jwe, keystore)).to.deep.equal(Buffer.from('cleartext'));
+        expect(calls()).to.equal(position + 1);
+      });
+    }
+
+    it('tries every verification key when none succeeds', async () => {
+      const jwt = await JWT.sign({ data: true }, signingKeys[3], 'HS256');
+      const keystore = new KeyStore(signingJwks.slice(0, 3));
+      const calls = countKeyObjectCalls(keystore);
+
+      await rejects(JWT.verify(jwt, keystore));
+      expect(calls()).to.equal(3);
+    });
+
+    it('tries every decryption key when none succeeds', async () => {
+      const jwe = await JWT.encrypt('cleartext', encryptionKeys[3], {
+        alg: 'dir', enc: 'A128GCM',
+      });
+      const keystore = new KeyStore(encryptionJwks.slice(0, 3));
+      const calls = countKeyObjectCalls(keystore);
+
+      await rejects(JWT.decrypt(jwe, keystore));
+      expect(calls()).to.equal(3);
+    });
+
+    it('refreshes a stale keystore after every candidate fails', async () => {
+      const jwt = await JWT.sign({ data: true }, signingKeys[3], 'HS256');
+      const keystore = new KeyStore(signingJwks.slice(0, 3));
+      let stale = true;
+      let refreshes = 0;
+      keystore.fresh = () => !stale;
+      keystore.refresh = async () => {
+        stale = false;
+        refreshes += 1;
+        keystore.clear();
+        keystore.add(signingJwks[3]);
+      };
+
+      expect((await JWT.verify(jwt, keystore)).payload).to.have.property('data', true);
+      expect(refreshes).to.equal(1);
+    });
   });
 
   describe('sign options', () => {
