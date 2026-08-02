@@ -84,6 +84,14 @@ describe('Provider configuration', () => {
     }).to.throw('Unknown feature configuration: foo');
   });
 
+  it('can validate feature configuration after construction', () => {
+    const configuration = new Configuration();
+    configuration.features.unknown = {};
+
+    expect(() => configuration.logDraftNotice())
+      .to.throw('Unknown feature configuration: unknown');
+  });
+
   it('checks that a stable feature does not have an ack', () => {
     expect(() => {
       new Configuration({
@@ -95,6 +103,22 @@ describe('Provider configuration', () => {
         },
       });
     }).to.throw("deviceFlow feature is now stable, the ack draft-01 is no longer valid. Check the stable feature's configuration for any breaking changes.");
+  });
+
+  it('accepts stable and acknowledged experimental features together', () => {
+    expect(() => {
+      new Configuration({
+        features: {
+          deviceFlow: {
+            enabled: true,
+          },
+          webMessageResponseMode: {
+            enabled: true,
+            ack: 'individual-draft-01',
+          },
+        },
+      });
+    }).not.to.throw();
   });
 
   it('checks that a feature configuration is not a boolean', () => {
