@@ -6,6 +6,7 @@ import { expect } from 'chai';
 import { generateKeyPair, SignJWT, exportJWK } from 'jose';
 
 import { AccessDenied } from '../../lib/helpers/errors.js';
+import epochTime from '../../lib/helpers/epoch_time.js';
 import bootstrap, { assertNoPendingInterceptors, mock } from '../test_helper.js';
 
 import { emitter } from './ciba.config.js';
@@ -674,6 +675,121 @@ describe('features.ciba', () => {
 
     describe('grant_type=urn:openid:params:grant-type:ciba', () => {
       const grant_type = 'urn:openid:params:grant-type:ciba';
+
+      it('validates the backchannel authentication request is found', async function () {
+        const spy = sinon.spy();
+        this.provider.once('grant.error', spy);
+
+        await this.agent.post('/token')
+          .send({
+            client_id: 'client',
+            auth_req_id: 'notfound',
+            grant_type,
+          })
+          .type('form')
+          .expect(400)
+          .expect((response) => {
+            expect(response.body).to.have.property('error', 'invalid_grant');
+          });
+
+        expect(spy.calledOnce).to.be.true;
+        expect(errorDetail(spy)).to.equal('backchannel authentication request not found');
+      });
+
+      it('validates the backchannel authentication request belongs to the client', async function () {
+        const request = new this.provider.BackchannelAuthenticationRequest({
+          clientId: 'client-ping',
+          grantId: 'grant',
+        });
+        const authReqId = await request.save();
+        const spy = sinon.spy();
+        this.provider.once('grant.error', spy);
+
+        await this.agent.post('/token')
+          .send({
+            client_id: 'client',
+            auth_req_id: authReqId,
+            grant_type,
+          })
+          .type('form')
+          .expect(400)
+          .expect((response) => {
+            expect(response.body).to.have.property('error', 'invalid_grant');
+          });
+
+        expect(spy.calledOnce).to.be.true;
+        expect(errorDetail(spy)).to.equal('client mismatch');
+      });
+
+      it('validates the backchannel authentication request is not expired', async function () {
+        const request = new this.provider.BackchannelAuthenticationRequest({
+          clientId: 'client',
+          exp: epochTime() - 1,
+          grantId: 'grant',
+        });
+        const authReqId = await request.save();
+        const spy = sinon.spy();
+        this.provider.once('grant.error', spy);
+
+        await this.agent.post('/token')
+          .send({
+            client_id: 'client',
+            auth_req_id: authReqId,
+            grant_type,
+          })
+          .type('form')
+          .expect(400)
+          .expect({
+            error: 'expired_token',
+            error_description: 'backchannel authentication request is expired',
+        });
+
+        expect(spy.calledOnce).to.be.true;
+        expect(spy.args[0][1]).to.have.property(
+          'error_description',
+          'backchannel authentication request is expired',
+        );
+      });
+
+      it('revokes the grant when the request was already consumed', async function () {
+        const grant = new this.provider.Grant({
+          accountId: 'accountId',
+          clientId: 'client',
+        });
+        const grantId = await grant.save();
+        const request = new this.provider.BackchannelAuthenticationRequest({
+          accountId: 'accountId',
+          clientId: 'client',
+          grantId,
+        });
+        const authReqId = await request.save();
+        await request.consume();
+
+        const grantErrorSpy = sinon.spy();
+        const grantRevokeSpy = sinon.spy();
+        this.provider.once('grant.error', grantErrorSpy);
+        this.provider.once('grant.revoked', grantRevokeSpy);
+
+        await this.agent.post('/token')
+          .send({
+            client_id: 'client',
+            auth_req_id: authReqId,
+            grant_type,
+          })
+          .type('form')
+          .expect(400)
+          .expect((response) => {
+            expect(response.body).to.have.property('error', 'invalid_grant');
+          });
+
+        expect(grantErrorSpy.calledOnce).to.be.true;
+        expect(errorDetail(grantErrorSpy)).to.equal(
+          'backchannel authentication request already consumed',
+        );
+        expect(grantRevokeSpy.calledOnceWithExactly(grantErrorSpy.args[0][0], grantId)).to.be.true;
+        expect(await this.provider.Grant.find(grantId)).to.be.undefined;
+        expect(await this.provider.BackchannelAuthenticationRequest.find(authReqId)).to.be.undefined;
+      });
 
       it('skips grant revocation when an already consumed request has no grantId', async function () {
         const request = new this.provider.BackchannelAuthenticationRequest({ clientId: 'client' });
