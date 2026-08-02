@@ -8,6 +8,7 @@ import {
 
 import Provider from '../../lib/index.js';
 import epochTime from '../../lib/helpers/epoch_time.js';
+import { InvalidToken } from '../../lib/helpers/errors.js';
 import getConfig from '../default.config.js';
 import bootstrap from '../test_helper.js';
 
@@ -663,7 +664,9 @@ describe('features.openid4vci', () => {
         })
         .expect(200);
 
-      return this.agent.post('/credential')
+      const spy = sinon.spy();
+      this.provider.once('credential.error', spy);
+      await this.agent.post('/credential')
         .set('Authorization', `DPoP ${accessToken}`)
         .set('DPoP', dpop)
         .send({
@@ -677,6 +680,13 @@ describe('features.openid4vci', () => {
           error: 'invalid_token',
           error_description: 'invalid token provided',
         });
+
+      expect(spy).to.have.property('calledOnce', true);
+      expect(spy.args[0][1]).to.be.instanceOf(InvalidToken);
+      expect(spy.args[0][1]).to.have.property(
+        'error_detail',
+        'DPoP proof JWT Replay detected',
+      );
     });
 
     describe('access token audience', () => {
