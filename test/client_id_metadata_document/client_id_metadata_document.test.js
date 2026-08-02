@@ -1,8 +1,15 @@
 import { expect } from 'chai';
+import timekeeper from 'timekeeper';
 
 import bootstrap, { mock } from '../test_helper.js';
-import { isValidClientIdUrl } from '../../lib/helpers/client_id_metadata_document.js';
+import Provider from '../../lib/index.js';
+import als from '../../lib/helpers/als.js';
+import {
+  isValidClientIdUrl,
+  resolveClientByMetadataDocument,
+} from '../../lib/helpers/client_id_metadata_document.js';
 import keys, { stripPrivateJWKFields } from '../keys.js';
+import { TestAdapter } from '../models.js';
 
 const CLIENT_ID_URL = 'https://app.example.com/metadata';
 const publicKey = stripPrivateJWKFields(keys[0]);
@@ -12,6 +19,43 @@ const VALID_METADATA = {
   token_endpoint_auth_method: 'none',
   client_name: 'Test App',
 };
+
+function createProvider() {
+  return new Provider('https://op.example.com', {
+    adapter: TestAdapter,
+    features: {
+      clientIdMetadataDocument: {
+        enabled: true,
+        ack: 'draft-02',
+      },
+    },
+    fetch: (url, options) => {
+      delete options.dispatcher;
+      return globalThis.fetch(url, options);
+    },
+  });
+}
+
+function resolve(provider, id) {
+  return als.run({}, () => resolveClientByMetadataDocument(provider, id));
+}
+
+function mockMetadata(id, metadata = {}, maxAge = 3600) {
+  const url = new URL(id);
+  mock(url.origin)
+    .intercept({ path: `${url.pathname}${url.search}` })
+    .reply(200, JSON.stringify({
+      client_id: id,
+      redirect_uris: ['https://client.example.com/cb'],
+      token_endpoint_auth_method: 'none',
+      ...metadata,
+    }), {
+      headers: {
+        'content-type': 'application/json',
+        'cache-control': `max-age=${maxAge}`,
+      },
+    });
+}
 
 describe('Client ID Metadata Document', () => {
   before(bootstrap(import.meta.url));
@@ -618,6 +662,57 @@ describe('Client ID Metadata Document', () => {
         .expect((response) => {
           expect(response.text).to.contain('invalid_client');
         });
+    });
+  });
+
+  describe('metadata document cache', () => {
+    afterEach(timekeeper.reset);
+
+    it('expires entries using their response-derived TTL', async () => {
+      const provider = createProvider();
+      const id = 'https://ttl-cache.example.com/client';
+      timekeeper.freeze(new Date('2026-08-03T12:00:00.000Z'));
+      mockMetadata(id, { client_name: 'first' }, 30);
+
+      const first = await resolve(provider, id);
+      first.localMutation = true;
+      const cached = await resolve(provider, id);
+
+      expect(cached).not.to.equal(first);
+      expect(cached.clientName).to.equal('first');
+      expect(cached).not.to.have.property('localMutation');
+
+      timekeeper.travel(Date.now() + 30_001);
+      mockMetadata(id, { client_name: 'refreshed' }, 30);
+
+      expect((await resolve(provider, id)).clientName).to.equal('refreshed');
+    });
+
+    it('evicts least-recently-used entries', async () => {
+      const provider = createProvider();
+      const target = 'https://lru-cache.example.com/client/target';
+      mockMetadata(target, { client_name: 'first' });
+      expect((await resolve(provider, target)).clientName).to.equal('first');
+
+      for (let i = 0; i < 200; i++) {
+        const id = `https://lru-cache.example.com/client/${i}`;
+        mockMetadata(id);
+        await resolve(provider, id);
+      }
+
+      mockMetadata(target, { client_name: 'refetched' });
+      expect((await resolve(provider, target)).clientName).to.equal('refetched');
+    });
+
+    it('isolates entries per provider', async () => {
+      const firstProvider = createProvider();
+      const secondProvider = createProvider();
+      const id = 'https://isolated-cache.example.com/client';
+      mockMetadata(id, { client_name: 'first provider' });
+      mockMetadata(id, { client_name: 'second provider' });
+
+      expect((await resolve(firstProvider, id)).clientName).to.equal('first provider');
+      expect((await resolve(secondProvider, id)).clientName).to.equal('second provider');
     });
   });
 
