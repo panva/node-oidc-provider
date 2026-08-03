@@ -148,4 +148,24 @@ describe('MemoryAdapter', () => {
     clock.tick(1000);
     expect(store.has('grant:grant')).to.be.false;
   });
+
+  it('applies clock tolerance to entries and indexes', async () => {
+    const session = new MemoryAdapter('Session', store, 1);
+    const device = new MemoryAdapter('DeviceCode', store, 1);
+    const sessionPayload = { uid: 'uid' };
+    const devicePayload = { grantId: 'grant', jti: 'device', userCode: 'code' };
+
+    await session.upsert('session', sessionPayload, 1);
+    await device.upsert('device', devicePayload, 1);
+
+    clock.tick(1001);
+    expect(await session.findByUid('uid')).to.equal(sessionPayload);
+    expect(await device.findByUserCode('code')).to.equal(devicePayload);
+    expect(store.has('grant:grant')).to.be.true;
+
+    clock.tick(1000);
+    expect(await session.findByUid('uid')).to.be.undefined;
+    expect(await device.findByUserCode('code')).to.be.undefined;
+    expect(store.has('grant:grant')).to.be.false;
+  });
 });

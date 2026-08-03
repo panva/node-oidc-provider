@@ -83,6 +83,34 @@ describe('provider instance', () => {
   describe('adapters', () => {
     const error = new Error('used this adapter');
 
+    it('retains expired artifacts through the clock tolerance window', async () => {
+      const clock = sinon.useFakeTimers();
+
+      try {
+        const provider = new Provider('https://op.example.com', { clockTolerance: 1 });
+        const request = new provider.BackchannelAuthenticationRequest({
+          clientId: 'client',
+          expiresIn: 1,
+        });
+        const authReqId = await request.save();
+
+        clock.tick(1001);
+        expect(await provider.BackchannelAuthenticationRequest.find(authReqId))
+          .to.be.instanceOf(provider.BackchannelAuthenticationRequest);
+        const expired = await provider.BackchannelAuthenticationRequest.find(authReqId, {
+          ignoreExpiration: true,
+        });
+        expect(expired).to.have.property('isExpired', true);
+
+        clock.tick(1000);
+        expect(await provider.BackchannelAuthenticationRequest.find(authReqId, {
+          ignoreExpiration: true,
+        })).to.be.undefined;
+      } finally {
+        clock.restore();
+      }
+    });
+
     for (const [label, configuration] of [
       ['implicit default', undefined],
       ['explicit default', { adapter: MemoryAdapter }],
