@@ -2,6 +2,33 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [9.11.2](https://github.com/panva/node-oidc-provider/compare/v9.11.1...v9.11.2) (2026-08-03)
+
+### Fixes
+
+* **adapter:** apply memory entry expiration correctly ([ff6c0d9](https://github.com/panva/node-oidc-provider/commit/ff6c0d9ec481bc748b58b00c690fc220fb0b3c2d))
+* **adapter:** isolate default memory storage per provider ([b4d27aa](https://github.com/panva/node-oidc-provider/commit/b4d27aa402467d61245288388a8c00719bc596d3))
+* **cimd:** bound the metadata document cache ([62e1f66](https://github.com/panva/node-oidc-provider/commit/62e1f66e82c00950723f7ba9a8bd7fb28a7b0d70))
+* **grants:** isolate feature-specific grant parameters ([5490fc9](https://github.com/panva/node-oidc-provider/commit/5490fc9c2fced99db624f4cc522ae0ec257da26c))
+
+### Refactor
+
+* **adapter:** maintain memory adapter indexes ([3196032](https://github.com/panva/node-oidc-provider/commit/3196032298800a7e7c81ff63a20591dc71e2e3ef))
+* add cause to provider errors ([b329354](https://github.com/panva/node-oidc-provider/commit/b32935406ef0c735c6360582c43446bfffbc2c65))
+* **dpop:** centralize replay detection ([1d764c8](https://github.com/panva/node-oidc-provider/commit/1d764c83b8c67ba2bc8e2d202cb279102059879a))
+* ensure incoming Configuration is not mutated ([e59fd60](https://github.com/panva/node-oidc-provider/commit/e59fd60d7735fcc7cc0a9960ffe143ab2f9c142d))
+* **grants:** share source lifecycle checks ([d12f969](https://github.com/panva/node-oidc-provider/commit/d12f9697e790e7246da834ef99c86e65884f88ca))
+* **resources:** share access token validation ([1770bcf](https://github.com/panva/node-oidc-provider/commit/1770bcf7754ab962c1ac6ac0852fc708ecbe9b6f))
+* retain memory entries through clock tolerance ([72ea716](https://github.com/panva/node-oidc-provider/commit/72ea71667addb86a71f28e11cdefc764868d193b))
+
+### Performance
+
+* **cimd:** coalesce concurrent document fetches ([5248ff2](https://github.com/panva/node-oidc-provider/commit/5248ff2b5bee99aa0d244ce5744418bda86e4be0))
+* **configuration:** reuse defaults during draft validation ([1b1306d](https://github.com/panva/node-oidc-provider/commit/1b1306d6c54a1ade47c0cda4e0c7547e455e5f06))
+* **jwt:** stop key iteration after successful crypto ([d428277](https://github.com/panva/node-oidc-provider/commit/d4282773e7becf16c0d25617ddac3d3da16e5959))
+* **models:** cache payload allowlists ([1b781c9](https://github.com/panva/node-oidc-provider/commit/1b781c9cc3cd86aa36f3c22c12e0c9758f9d504f))
+* **params:** scan duplicate parameters once ([b572798](https://github.com/panva/node-oidc-provider/commit/b572798e606608bc6c569669d46aae88dc6c6e1a))
+
 ## [9.11.1](https://github.com/panva/node-oidc-provider/compare/v9.11.0...v9.11.1) (2026-07-27)
 
 
