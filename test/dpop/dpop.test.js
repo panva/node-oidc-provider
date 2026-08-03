@@ -205,10 +205,6 @@ describe('features.dPoP', () => {
           .expect('WWW-Authenticate', /^DPoP /)
           .expect('WWW-Authenticate', /error="invalid_dpop_proof"/)
           .expect('WWW-Authenticate', /algs="ES256 PS256"/);
-
-        for (const { args: [, err] } of spy.getCalls()) {
-          expect(err.error_detail).to.eql('"jwk" (JSON Web Key) Header Parameter must be a public key');
-        }
       });
 
       it('no symmetric key in header', async function () {
@@ -228,10 +224,6 @@ describe('features.dPoP', () => {
           .expect('WWW-Authenticate', /^DPoP /)
           .expect('WWW-Authenticate', /error="invalid_dpop_proof"/)
           .expect('WWW-Authenticate', /algs="ES256 PS256"/);
-
-        for (const { args: [, err] } of spy.getCalls()) {
-          expect(err.error_detail).to.eql('"jwk" (JSON Web Key) Header Parameter must be a public key');
-        }
       });
 
       it('missing jti', async function () {

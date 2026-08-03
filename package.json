@@ -59,7 +59,7 @@
     "@koa/router": "^15.7.0",
     "debug": "^4.4.3",
     "eta": "^4.6.0",
-    "jose": "^6.2.3",
+    "jose": "^6.2.8",
     "jsesc": "^3.1.0",
     "koa": "^3.2.1",
     "nanoid": "^6.0.0",
@@ -69,7 +69,7 @@
   "devDependencies": {
     "@biomejs/biome": "2.4.11",
     "@fastify/middie": "^9.3.3",
-    "@hapi/hapi": "^21.4.9",
+    "@hapi/hapi": "^21.4.10",
     "@koa/ejs": "^5.1.0",
     "base64url": "^3.0.1",
     "chai": "^6.2.2",
