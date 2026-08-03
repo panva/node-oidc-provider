@@ -10,7 +10,7 @@ import helmet from 'helmet';
 import { generate } from 'selfsigned';
 
 import Provider, { errors } from '../../lib/index.js'; // from 'oidc-provider';
-import MemoryAdapter from '../../lib/adapters/memory_adapter.js';
+import MemoryAdapter, { createMemoryAdapter } from '../../lib/adapters/memory_adapter.js';
 import { stripPrivateJWKFields } from '../../test/keys.js';
 import Account from '../../example/support/account.js';
 
@@ -26,6 +26,7 @@ const { PORT = 3000, ISSUER = `http://localhost:${PORT}` } = process.env;
 
 const ALGS = ['PS256'];
 const clientAuthMethods = ['private_key_jwt', 'self_signed_tls_client_auth'];
+const clockTolerance = 15;
 
 const {
   client: { jwks: { keys: [JWK_ONE] } },
@@ -103,10 +104,11 @@ function fapi2(metadata) {
 
 const eKey = crypto.randomBytes(32);
 const resource = 'urn:example:resource-endpoint';
+const memoryAdapter = createMemoryAdapter(clockTolerance);
 
 const adapter = (name) => {
   if (name === 'Client') {
-    const memory = new MemoryAdapter(name);
+    const memory = memoryAdapter(name);
     const orig = MemoryAdapter.prototype.find;
     memory.find = async function find(id) {
       const { 0: version, length, ...rest } = id.split('-');
@@ -217,7 +219,7 @@ const adapter = (name) => {
   }
 
   if (name === 'AccessToken') {
-    const accessTokensAdapter = new MemoryAdapter(name);
+    const accessTokensAdapter = memoryAdapter(name);
     const orig = MemoryAdapter.prototype.find;
     accessTokensAdapter.find = async function find(id) {
       try {
@@ -252,11 +254,12 @@ const adapter = (name) => {
     return accessTokensAdapter;
   }
 
-  return new MemoryAdapter(name);
+  return memoryAdapter(name);
 };
 
 const fapi = new Provider(ISSUER, {
   acrValues: ['urn:mace:incommon:iap:silver'],
+  clockTolerance,
   discovery: {
     service_documentation: pkg.homepage,
     version: [
