@@ -1,6 +1,6 @@
 {
   "scripts": {
-    "postchangelog": "sed -i '' -e 's/### \\[/## [/g' CHANGELOG.md"
+    "postchangelog": "node ./.postchangelog.cjs"
   },
   "types": [
     {
