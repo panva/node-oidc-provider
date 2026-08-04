@@ -484,7 +484,7 @@ location / {
   - [userinfo](#featuresuserinfo) - OIDC Core 1.0 - UserInfo Endpoint
   - Experimental features:
     - [attestClientAuth](#featuresattestclientauth) - draft-ietf-oauth-attestation-based-client-auth-10 - OAuth 2.0 Attestation-Based Client Authentication
-    - [clientIdMetadataDocument](#featuresclientidmetadatadocument) - `draft-ietf-oauth-client-id-metadata-document-02` - OAuth Client ID Metadata Document (CIMD)
+    - [clientIdMetadataDocument](#featuresclientidmetadatadocument) - draft-ietf-oauth-client-id-metadata-document-02 - OAuth Client ID Metadata Document (CIMD)
     - [externalSigningSupport](#featuresexternalsigningsupport) - External Signing Support
     - [openid4vci](#featuresopenid4vci) - OpenID for Verifiable Credential Issuance 1.0
     - [richAuthorizationRequests](#featuresrichauthorizationrequests) - RFC9396 - OAuth 2.0 Rich Authorization Requests
@@ -2260,7 +2260,7 @@ function getAttestationSignaturePublicKey(ctx, header, payload, client) {
 
 ### features.clientIdMetadataDocument
 
-[`draft-ietf-oauth-client-id-metadata-document-02`](https://www.ietf.org/archive/id/draft-ietf-oauth-client-id-metadata-document-02.html) - OAuth Client ID Metadata Document (CIMD)  
+[draft-ietf-oauth-client-id-metadata-document-02](https://www.ietf.org/archive/id/draft-ietf-oauth-client-id-metadata-document-02.html) - OAuth Client ID Metadata Document (CIMD)  
 
 > [!NOTE]
 > This is an experimental feature.
