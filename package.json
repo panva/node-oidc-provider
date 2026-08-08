@@ -61,7 +61,6 @@
     "debug": "^4.4.3",
     "jose": "^6.2.8",
     "koa": "^3.2.1",
-    "nanoid": "^6.0.0",
     "quick-lru": "^7.3.0"
   },
   "devDependencies": {
@@ -82,6 +81,7 @@
     "lodash": "^4.18.1",
     "mocha": "^11.7.6",
     "moment": "^2.30.1",
+    "nanoid": "^6.0.0",
     "openid-client": "^6.8.4",
     "raw-body": "^4.0.0",
     "selfsigned": "^5.5.0",
