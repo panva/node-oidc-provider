@@ -67,8 +67,17 @@ jobs:
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           fetch-depth: 0
-      - run: git push origin $GITHUB_SHA:v9.x
-      - run: git push origin HEAD:main
+      # $GITHUB_SHA is what HEAD is checked out at, and the tag already carries
+      # the major. Fully qualified so the first release of a major creates its
+      # maintenance branch rather than failing on it. Main moving on during the
+      # approval window is ordinary; a rejected push is only an error when main
+      # does not already contain the release commit.
+      - run: |
+          git push origin "HEAD:refs/heads/${GITHUB_REF_NAME%%.*}.x"
+          if ! git push origin HEAD:refs/heads/main; then
+            git fetch origin main
+            git merge-base --is-ancestor HEAD FETCH_HEAD
+          fi
 
   github:
     needs:
