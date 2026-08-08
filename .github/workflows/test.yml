@@ -37,6 +37,12 @@ jobs:
           check-latest: true
       - run: npm clean-install
       - run: npm run lint
+      # lib/views is generated from tools/views/*.eta; fail if it was not
+      # regenerated alongside a template change
+      - run: npm run build:views
+      # Make untracked outputs from newly added templates visible to git diff
+      - run: git add --intent-to-add lib/views
+      - run: git diff --exit-code lib/views
 
   test:
     needs:

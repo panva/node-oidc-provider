@@ -39,6 +39,10 @@
       }
     },
     {
+      "includes": ["lib/views/interaction.js", "lib/views/layout.js", "lib/views/login.js"],
+      "linter": { "enabled": false }
+    },
+    {
       "includes": ["test/**"],
       "linter": {
         "rules": {
