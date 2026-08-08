@@ -47,3 +47,6 @@ types/*.js
 
 # Build output
 dist
+
+# Packed tarballs
+*.tgz

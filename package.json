@@ -52,6 +52,7 @@
   "scripts": {
     "build": "node ./tools/build.js",
     "test": "node ./test/run",
+    "test-dist": "node ./tools/test-dist.js",
     "test-ci": "node ./test/ci",
     "lint": "biome lint"
   },

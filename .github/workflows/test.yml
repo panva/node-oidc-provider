@@ -60,3 +60,20 @@ jobs:
           check-latest: true
       - run: npm clean-install
       - run: npm run test-ci
+
+  dist:
+    name: Packaged Artifact
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - name: Setup node
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: lts/*
+          cache: 'npm'
+          check-latest: true
+      - run: npm clean-install
+      # builds dist/, packs it, and runs the suite against the extracted
+      # tarball rather than the working tree
+      - run: npm run test-dist
