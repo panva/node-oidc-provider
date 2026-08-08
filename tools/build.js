@@ -68,12 +68,17 @@ let count = 0;
   }
 }(join(root, 'lib'), 'lib'));
 
+// npm always includes package.json, README and LICENSE, but nothing else, so
+// the third party notices have to be listed to be packed
+const NOTICES = 'THIRD-PARTY-NOTICES.md';
+
 const pkg = JSON.parse(readFileSync(join(root, 'package.json'), 'utf8'));
 delete pkg.scripts;
 delete pkg.devDependencies;
+pkg.files = [...pkg.files, NOTICES];
 writeFileSync(join(dist, 'package.json'), `${JSON.stringify(pkg, null, 2)}\n`);
 
-for (const file of ['README.md', 'LICENSE.md']) {
+for (const file of ['README.md', 'LICENSE.md', NOTICES]) {
   cpSync(join(root, file), join(dist, file));
 }
 
