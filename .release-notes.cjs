@@ -1,5 +1,5 @@
 const fs = require('node:fs')
-const { execSync } = require('node:child_process')
+const { execFileSync } = require('node:child_process')
 
 function extractReleaseNotes(changelog, version) {
   const releaseHeading = `## [${version}]`
@@ -15,13 +15,28 @@ function extractReleaseNotes(changelog, version) {
 }
 
 function main() {
-  const tag = execSync('git tag --points-at HEAD').toString().trim()
+  // GITHUB_REF_NAME is the tag that triggered the run; `git tag --points-at
+  // HEAD` returns every tag on the commit, newline separated
+  const tag = process.env.GITHUB_REF_NAME
+  if (!tag) {
+    throw new Error('GITHUB_REF_NAME is not set')
+  }
   const version = tag.replace(/^v/, '')
   const changelog = fs.readFileSync('CHANGELOG.md', 'utf8')
   const notes = extractReleaseNotes(changelog, version)
 
   fs.writeFileSync('notes.md', notes)
-  execSync(`gh release create ${tag} -F notes.md --title ${tag} --discussion-category Releases`)
+
+  // any remaining arguments are attached to the release as assets
+  const assets = process.argv.slice(2)
+
+  execFileSync('gh', [
+    'release', 'create', tag,
+    '-F', 'notes.md',
+    '--title', tag,
+    '--discussion-category', 'Releases',
+    ...assets,
+  ], { stdio: 'inherit' })
 }
 
 module.exports = { extractReleaseNotes }
