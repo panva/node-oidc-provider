@@ -1,0 +1,7 @@
+<form autocomplete="off" action="<%= it.submitUrl %>" method="post">
+  <input type="hidden" name="prompt" value="login"/>
+  <input required type="text" name="login" placeholder="Enter any login" <% if (!it.params.login_hint) { %>autofocus="on"<% } else { %> value="<%= it.params.login_hint %>" <% } %>>
+  <input required type="password" name="password" placeholder="and password" <% if (it.params.login_hint) { %>autofocus="on"<% } %>>
+
+  <button type="submit" class="login login-submit">Sign-in</button>
+</form>

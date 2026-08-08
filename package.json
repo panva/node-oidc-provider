@@ -50,6 +50,7 @@
     "lib"
   ],
   "scripts": {
+    "build": "node ./tools/build.js",
     "test": "node ./test/run",
     "test-ci": "node ./test/ci",
     "lint": "biome lint"
