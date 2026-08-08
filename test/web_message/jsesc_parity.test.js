@@ -1,6 +1,8 @@
 import { expect } from 'chai';
 import jsesc from 'jsesc';
 
+import omitBy from '../../lib/helpers/_/omit_by.js';
+
 /*
  * lib/response_modes/web_message.js used to serialise the web_message payload
  * with jsesc's `{ json: true, isScriptContext: true }` mode. jsesc is kept as a
@@ -36,6 +38,35 @@ const HOSTILE = [
 ];
 
 describe('web_message payload serialisation', () => {
+  /*
+   * A key holding `undefined` serialises differently in every response mode -
+   * omitted here, but the literal string "undefined" in query, fragment and
+   * form_post. It is reachable: process_response_types.js assigns
+   * `expires_in: token.expiration` unconditionally, and a ttl.AccessToken
+   * helper returning undefined puts it on the response.
+   *
+   * respond.js and authorization_error_handler.js drop undefined-valued keys
+   * before handing the response to any response mode. These pin that.
+   */
+  it('omits undefined-valued keys rather than emitting "undefined"', () => {
+    const out = {
+      access_token: 'at', expires_in: undefined, token_type: 'Bearer', state: 's',
+    };
+    const cleaned = omitBy({ ...out }, (value) => value === undefined);
+
+    expect(cleaned).not.to.have.property('expires_in');
+    expect(serialise({ response: cleaned })).to.equal('{"response":{"access_token":"at","token_type":"Bearer","state":"s"}}');
+
+    // what the other response modes would otherwise have produced
+    expect(new URLSearchParams(out).toString()).to.include('expires_in=undefined');
+    expect(new URLSearchParams(cleaned).toString()).not.to.include('expires_in');
+  });
+
+  it('leaves null and empty-string values alone', () => {
+    const out = { a: null, b: '', c: 0, d: false };
+    expect(omitBy({ ...out }, (value) => value === undefined)).to.deep.equal(out);
+  });
+
   it('encodes the same value as jsesc for hostile payloads', () => {
     for (const value of HOSTILE) {
       const payload = { response: { code: value, state: value }, redirect_uri: value };
