@@ -2,6 +2,22 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [9.11.3](https://github.com/panva/node-oidc-provider/compare/v9.11.2...v9.11.3) (2026-08-08)
+
+### Fixes
+
+* omit undefined response parameters ([0c65aa6](https://github.com/panva/node-oidc-provider/commit/0c65aa672aded69b4d555bb90f7116e4dbb1e906))
+
+### Refactor
+
+* drop the @koa/cors runtime dependency ([4eca0f2](https://github.com/panva/node-oidc-provider/commit/4eca0f2eaa7e7722fe5252aa87deff7a04384687))
+* drop the eta runtime dependency ([f0da9d2](https://github.com/panva/node-oidc-provider/commit/f0da9d203d8fe2598e59340d4f975fc1bdc7ab5d))
+* drop the jsesc runtime dependency ([b2f6c0c](https://github.com/panva/node-oidc-provider/commit/b2f6c0c246a9b94dc7aac8324e7fa43b9f1d4720))
+* drop the nanoid runtime dependency ([86a42da](https://github.com/panva/node-oidc-provider/commit/86a42da6679fa5c577e7985110ee5811dcbaf3c1))
+* drop the quick-lru runtime dependency ([e818a6d](https://github.com/panva/node-oidc-provider/commit/e818a6d7e5fc4a5d0248bb54c66e68979186d819))
+* drop the raw-body runtime dependency ([9312ca7](https://github.com/panva/node-oidc-provider/commit/9312ca7e6bd3b51014b7d4f583c6bba3ab15c482))
+* replace @koa/router with an internal router ([3b33e5f](https://github.com/panva/node-oidc-provider/commit/3b33e5f282b9862471a61adae053b0d3c704fe06))
+
 ## [9.11.2](https://github.com/panva/node-oidc-provider/compare/v9.11.1...v9.11.2) (2026-08-03)
 
 ### Fixes
