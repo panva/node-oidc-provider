@@ -48,7 +48,7 @@ describe('configuration features.webMessageResponseMode', () => {
             expect(response.headers['x-frame-options']).not.to.be.ok;
             expect(response.headers['content-security-policy']).not.to.match(/frame-ancestors/);
           })
-          .expect(/var data = ({[a-zA-Z0-9"{}~ ,-_]+});/);
+          .expect(/var data = (\{[^<>&]+?\});/);
 
         const response = JSON.parse(RegExp.$1);
         expect(response).to.have.keys('redirect_uri', 'response');
@@ -76,7 +76,7 @@ describe('configuration features.webMessageResponseMode', () => {
             expect(response.headers['x-frame-options']).not.to.be.ok;
             expect(response.headers['content-security-policy']).not.to.match(/frame-ancestors/);
           })
-          .expect(/var data = ({[a-zA-Z0-9"{}~ ,-_]+});/);
+          .expect(/var data = (\{[^<>&]+?\});/);
 
         const response = JSON.parse(RegExp.$1);
         expect(response).to.have.keys('redirect_uri', 'response');
@@ -135,7 +135,7 @@ describe('configuration features.webMessageResponseMode', () => {
         .expect(() => {
           expect(spy.called).to.be.true;
         })
-        .expect(/var data = ({[a-zA-Z0-9"{} ,-_]+});/);
+        .expect(/var data = (\{[^<>&]+?\});/);
 
       const { response } = JSON.parse(RegExp.$1);
       expect(response).to.have.property('iss');
