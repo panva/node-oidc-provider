@@ -142,5 +142,29 @@ describe('configuration features.webMessageResponseMode', () => {
       expect(response).to.have.property('error', 'login_required');
       expect(response).to.have.property('state', auth.state);
     });
+
+    it('escapes markup in the payload rather than emitting it into the inline script', async function () {
+      const HOSTILE = '</script><img src=x onerror=alert(1)><!--\u2028\u2029&';
+      const auth = new this.AuthorizationRequest({
+        response_type, prompt: 'none', response_mode, scope, state: HOSTILE,
+      });
+
+      let body;
+      await this.wrap({ route, auth, verb: 'get' })
+        .expect(400)
+        .expect((response) => { body = response.text; });
+
+      const [, payload] = body.match(/var data = (\{[\s\S]*?\});\n/);
+
+      // nothing an HTML parser acts on may survive into the script data
+      expect(payload).not.to.match(/[<>&\u2028\u2029]/);
+      expect(body.match(/<\/script/gi)).to.have.lengthOf(1);
+      expect(body).not.to.include('<img');
+
+      // and it still decodes back to exactly what was sent
+      expect(JSON.parse(payload).response).to.have.property('state', HOSTILE);
+      // eslint-disable-next-line no-new-func
+      expect(new Function(`return (${payload});`)().response.state).to.equal(HOSTILE);
+    });
   });
 });
