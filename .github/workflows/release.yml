@@ -4,105 +4,17 @@ permissions: {}
 
 on:
   push:
-    tags: ['v[0-9]+.[0-9]+.[0-9]+']
+    tags: ["v[0-9]+.[0-9]+.[0-9]+"]
 
 jobs:
-  npm:
-    if: ${{ github.repository == 'panva/node-oidc-provider' }}
-    runs-on: ubuntu-latest
-    permissions:
-      contents: read
-      id-token: write
-    steps:
-      - name: Checkout
-        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-        with:
-          fetch-depth: 0
-      - name: Setup node
-        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
-        with:
-          node-version: lts/*
-          registry-url: https://registry.npmjs.org
-      - run: npm install -g npm@latest
-      - run: npm run build
-      # pack once: the tarball kept as a workflow artifact is the same file that
-      # gets published, not a second pack that merely ought to match
-      - run: npm pack ./dist --pack-destination ${{ runner.temp }}
-      - name: Upload the published package
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
-        with:
-          name: ${{ github.ref_name }}
-          path: ${{ runner.temp }}/*.tgz
-          if-no-files-found: error
-          overwrite: true
-      - run: npm stage publish ${{ runner.temp }}/*.tgz
-
-  # npm stage publish only stages: everything downstream needs the version to be
-  # installable first. Its own job so that a timed out or cancelled wait can be
-  # rerun without trying to stage the version a second time, which npm rejects.
-  wait:
-    needs:
-      - npm
-    runs-on: ubuntu-latest
-    permissions:
-      contents: read
-    timeout-minutes: 65
-    steps:
-      - name: Checkout
-        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-      - name: Setup node
-        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
-        with:
-          node-version: lts/*
-      - run: node .wait-for-npm.cjs
-
-  cleanup:
-    needs:
-      - wait
-    runs-on: ubuntu-latest
-    permissions:
-      contents: write
-    steps:
-      - name: Checkout
-        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-        with:
-          fetch-depth: 0
-      # $GITHUB_SHA is what HEAD is checked out at, and the tag already carries
-      # the major. Fully qualified so the first release of a major creates its
-      # maintenance branch rather than failing on it. Main moving on during the
-      # approval window is ordinary; a rejected push is only an error when main
-      # does not already contain the release commit.
-      - run: |
-          git push origin "HEAD:refs/heads/${GITHUB_REF_NAME%%.*}.x"
-          if ! git push origin HEAD:refs/heads/main; then
-            git fetch origin main
-            git merge-base --is-ancestor HEAD FETCH_HEAD
-          fi
-
-  github:
-    needs:
-      - wait
-    runs-on: ubuntu-latest
+  release:
     permissions:
       actions: read
       contents: write
       discussions: write
-    steps:
-      - name: Checkout
-        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-        with:
-          fetch-depth: 2
-      - name: Setup node
-        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
-        with:
-          node-version: lts/*
-          cache: 'npm'
-      # the very tarball the npm job published, attached to the release
-      - name: Download the published package
-        uses: actions/download-artifact@37930b1c2abaa49bbe596cd826c3c89aef350131 # v7.0.0
-        with:
-          name: ${{ github.ref_name }}
-          path: ${{ runner.temp }}
-      - run: node .release-notes.cjs ${{ runner.temp }}/*.tgz
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      id-token: write
+    uses: panva/.github/.github/workflows/npm-release.yml@main
+    with:
+      artifact_check_command: node tools/test-dist.js "$PACKAGE_TARBALL"
+      package_directory: ./dist
+      prepare_command: npm run build

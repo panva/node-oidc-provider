@@ -1,5 +1,6 @@
 {
   "scripts": {
+    "prerelease": "npm run test-dist",
     "postchangelog": "node ./.postchangelog.cjs"
   },
   "types": [
