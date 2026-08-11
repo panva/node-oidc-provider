@@ -1,7 +1,7 @@
 import { strict as assert } from 'node:assert';
 import * as fs from 'node:fs';
 
-import API from './api.js';
+import API, { assertPlanId } from './api.js';
 import debug from './debug.js';
 
 const {
@@ -117,33 +117,39 @@ if (PLAN_NAME.startsWith('fapi2') && VARIANT.client_auth_type !== 'mtls' && VARI
   delete configuration.mtls2;
 }
 
-function summary(prefix, failedTests) {
+function markdownCode(value) {
+  const text = String(value).replaceAll('\r', '\\r').replaceAll('\n', '\\n');
+  const backticks = text.match(/`+/g) ?? [];
+  const fence = '`'.repeat(Math.max(1, ...backticks.map((run) => run.length + 1)));
+  return `${fence} ${text} ${fence}`;
+}
+
+function summary(status, planId, affectedTests) {
   const backticks = '```';
+  const heading = status === 'failure' ? '## ❌ Conformance failure' : '## ⚠️ Conformance warning';
 
   fs.writeFileSync(process.env.GITHUB_STEP_SUMMARY, `
-${prefix} Plan Name: \`${PLAN_NAME}\`
+${heading}
 
-${prefix} Variant:
-
-${backticks}json
-${JSON.stringify(VARIANT, null, 4)}
-${backticks}
+- Plan: ${markdownCode(PLAN_NAME)}
+- Plan ID: ${markdownCode(planId)}
 
 <details>
-<summary>Expand Configuration</summary>
+<summary>Variant</summary>
 
 ${backticks}json
-${JSON.stringify(configuration, null, 4)}
+${JSON.stringify(VARIANT, null, 2)}
 ${backticks}
 
 </details>
 
 `, { flag: 'a' });
 
-  if (failedTests) {
+  if (affectedTests.length) {
     fs.writeFileSync(process.env.GITHUB_STEP_SUMMARY, `
-${prefix} Tests:
-${[...new Set(failedTests.map((test) => `* \`${test.split(',')[0]}\``))].join('\n')}
+### Affected tests
+
+${[...new Set(affectedTests.map((test) => `- ${markdownCode(test.split(',')[0])}`))].join('\n')}
 `, { flag: 'a' });
   }
 }
@@ -156,25 +162,26 @@ try {
   });
 
   const { id: PLAN_ID, modules: MODULES } = plan;
+  assertPlanId(PLAN_ID);
 
   debug('Created test plan, new id %s', PLAN_ID);
   debug('%s/plan-detail.html?plan=%s', SUITE_BASE_URL, PLAN_ID);
   debug('modules to test %O', MODULES);
 
   const failedTests = [];
-  let warned = false;
+  const warningTests = [];
   describe(PLAN_NAME, () => {
-    after(() => {
+    after(async () => {
       if (process.env.GITHUB_STEP_SUMMARY) {
         if (failedTests.length) {
-          summary('Failed', failedTests);
-        } else if (warned) {
-          summary('Warned');
+          summary('failure', PLAN_ID, [...failedTests, ...warningTests]);
+        } else if (warningTests.length) {
+          summary('warning', PLAN_ID, warningTests);
         }
       }
 
-      if (failedTests.length || warned) {
-        runner.downloadArtifact({ planId: PLAN_ID });
+      if (failedTests.length || warningTests.length) {
+        await runner.downloadArtifact({ planId: PLAN_ID });
       }
     });
 
@@ -196,7 +203,7 @@ try {
         debug('%s/log-detail.html?log=%s', SUITE_BASE_URL, moduleId);
         const [, result] = await runner.waitForState({ moduleId });
         if (result === 'WARNING' && testModule !== 'oidcc-ensure-post-request-succeeds') {
-          warned ||= true;
+          warningTests.push(testModule);
         }
       });
     }

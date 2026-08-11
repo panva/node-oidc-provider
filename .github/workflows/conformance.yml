@@ -225,16 +225,24 @@ jobs:
           NODE_TLS_REJECT_UNAUTHORIZED: 0
           SETUP: ${{ toJSON(matrix.setup) }}
       - name: Add server log to artifact
-        if: ${{ failure() }}
+        if: ${{ !cancelled() && env.EXPORT_FILE != '' }}
         run: |
-          zip -ur ${{ env.EXPORT_FILE }} server.log
-      - name: Upload test artifacts
+          zip -ur "$EXPORT_FILE" server.log
+        env:
+          EXPORT_FILE: ${{ env.EXPORT_FILE }}
+      - name: Upload conformance diagnostics
+        id: conformance_artifact
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
-          path: export-*.zip
-          name: certification html results idx(${{ strategy.job-index }})
+          path: ${{ env.EXPORT_FILE }}
+          name: conformance diagnostics idx(${{ strategy.job-index }})
           if-no-files-found: ignore
-        if: ${{ always() }}
+        if: ${{ !cancelled() && env.EXPORT_FILE != '' }}
+      - name: Link conformance diagnostics
+        if: ${{ !cancelled() && steps.conformance_artifact.outputs.artifact-url != '' }}
+        run: printf '\n[Download conformance diagnostics](%s)\n' "$ARTIFACT_URL" >> "$GITHUB_STEP_SUMMARY"
+        env:
+          ARTIFACT_URL: ${{ steps.conformance_artifact.outputs.artifact-url }}
       - name: Stop oidc-provider
         if: ${{ always() }}
         run: |

@@ -12,6 +12,11 @@ const pipeline = promisify(stream.pipeline);
 const FINISHED = new Set(['FINISHED']);
 const RESULTS = new Set(['REVIEW', 'PASSED', 'WARNING', 'SKIPPED']);
 const MAX_ERROR_BODY_LENGTH = 4000;
+const PLAN_ID_PATTERN = /^[A-Za-z0-9_-]{1,128}$/;
+
+export function assertPlanId(planId) {
+  assert(typeof planId === 'string' && PLAN_ID_PATTERN.test(planId), 'argument property "planId" is invalid');
+}
 
 async function assertResponseStatus(response, expected) {
   if (response.status === expected) {
@@ -111,24 +116,22 @@ class API {
   }
 
   async downloadArtifact({ planId } = {}) {
-    assert(planId, 'argument property "planId" missing');
+    assertPlanId(planId);
     const filename = `export-${planId}.zip`;
-    if (process.env.GITHUB_ENV) {
-      writeFileSync(process.env.GITHUB_ENV, `EXPORT_FILE=${filename}`, { flag: 'a' });
-    }
-    if (process.env.GITHUB_STEP_SUMMARY) {
-      writeFileSync(process.env.GITHUB_STEP_SUMMARY, `\n\nArtifact: \`${filename}\``, { flag: 'a' });
-    }
     const headers = new Headers(this.#headers);
     headers.set('accept', 'application/zip');
     const response = await fetch(new URL(`api/plan/exporthtml/${planId}`, this.#baseUrl), { headers });
 
     await assertResponseStatus(response, 200);
 
-    return pipeline(
+    await pipeline(
       response.body,
       createWriteStream(filename),
     );
+
+    if (process.env.GITHUB_ENV) {
+      writeFileSync(process.env.GITHUB_ENV, `EXPORT_FILE=${filename}\n`, { flag: 'a' });
+    }
   }
 
   async waitForState({ moduleId, timeout = ms('4m') } = {}) {
