@@ -1,4 +1,5 @@
-import { hash, randomUUID } from 'node:crypto';
+import { createPrivateKey, createPublicKey, hash, randomUUID } from 'node:crypto';
+import { readFileSync } from 'node:fs';
 
 import { expect } from 'chai';
 import sinon from 'sinon';
@@ -14,6 +15,14 @@ import bootstrap from '../test_helper.js';
 
 import { attesterKeypair } from './openid4vci.config.js';
 
+const certificatePrivateKey = createPrivateKey(readFileSync(new URL('../jwks/ec.key', import.meta.url)));
+const certificateKeypair = {
+  privateKey: certificatePrivateKey,
+  publicKey: createPublicKey(certificatePrivateKey),
+};
+const certificate = readFileSync(new URL('../jwks/ec.crt', import.meta.url), 'utf8')
+  .replace(/-----(?:BEGIN|END) CERTIFICATE-----|\s/g, '');
+
 function ath(accessToken) {
   return hash('sha256', accessToken, 'base64url');
 }
@@ -23,6 +32,8 @@ async function credentialProof(keypair, issuer, {
   nonce,
   typ = 'openid4vci-proof+jwt',
   alg = 'ES256',
+  kid,
+  x5c,
   withIat = true,
   key_attestation,
 } = {}) {
@@ -31,6 +42,14 @@ async function credentialProof(keypair, issuer, {
     typ,
     jwk: await exportJWK(keypair.publicKey),
   };
+
+  if (kid !== undefined) {
+    header.kid = kid;
+  }
+
+  if (x5c !== undefined) {
+    header.x5c = x5c;
+  }
 
   if (key_attestation !== undefined) {
     header.key_attestation = key_attestation;
@@ -1500,6 +1519,50 @@ describe('features.openid4vci', () => {
         .expect({
           error: 'invalid_proof',
           error_description: 'jwt proof typ must be openid4vci-proof+jwt',
+        });
+    });
+
+    it('returns invalid_proof when JWT proof has both jwk and kid headers', async function () {
+      const accessToken = await getAccessToken.call(this);
+      const proof = await credentialProof(this.keypair, this.provider.issuer, {
+        kid: 'wallet-key',
+        nonce: await getCNonce.call(this),
+      });
+
+      return this.agent.post('/credential')
+        .set('Authorization', `Bearer ${accessToken}`)
+        .send({
+          credential_configuration_id: 'org.iso.18013.5.1.mDL',
+          proofs: {
+            jwt: [proof],
+          },
+        })
+        .expect(400)
+        .expect({
+          error: 'invalid_proof',
+          error_description: 'jwt proof must use exactly one of kid, jwk, or x5c',
+        });
+    });
+
+    it('returns invalid_proof when JWT proof has both jwk and x5c headers', async function () {
+      const accessToken = await getAccessToken.call(this);
+      const proof = await credentialProof(certificateKeypair, this.provider.issuer, {
+        nonce: await getCNonce.call(this),
+        x5c: [certificate],
+      });
+
+      return this.agent.post('/credential')
+        .set('Authorization', `Bearer ${accessToken}`)
+        .send({
+          credential_configuration_id: 'org.iso.18013.5.1.mDL',
+          proofs: {
+            jwt: [proof],
+          },
+        })
+        .expect(400)
+        .expect({
+          error: 'invalid_proof',
+          error_description: 'jwt proof must use exactly one of kid, jwk, or x5c',
         });
     });
 
