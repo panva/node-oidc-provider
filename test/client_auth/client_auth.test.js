@@ -404,6 +404,21 @@ describe('client authentication methods', () => {
         });
     });
 
+    it('rejects a Basic credential containing non-base64 characters', function () {
+      return this.agent.post(route)
+        .send({
+          grant_type: 'foo',
+        })
+        .type('form')
+        .set('Authorization', `Basic ${btoa('client-basic:secret')}!`)
+        .expect(400)
+        .expect(noW3A)
+        .expect({
+          error: 'invalid_request',
+          error_description: 'invalid authorization header value format',
+        });
+    });
+
     it('validates the Basic scheme format (parts)', function () {
       return this.agent.post(route)
         .send({
