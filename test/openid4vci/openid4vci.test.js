@@ -390,6 +390,28 @@ describe('features.openid4vci', () => {
         .expect(auth.validateErrorDescription("'credential_configuration_id' must be a non-empty string"));
     });
 
+    for (const credentialConfigurationId of ['not_found', 'toString']) {
+      it(`rejects unknown credential_configuration_id ${credentialConfigurationId} in authorization details`, function () {
+        const auth = new this.AuthorizationRequest({
+          response_type: 'code',
+          authorization_details: JSON.stringify([
+            {
+              type: 'openid_credential',
+              credential_configuration_id: credentialConfigurationId,
+            },
+          ]),
+        });
+
+        return this.wrap({ route: '/auth', verb: 'get', auth })
+          .expect(303)
+          .expect(auth.validatePresence(['error', 'error_description', 'state']))
+          .expect(auth.validateState)
+          .expect(auth.validateClientLocation)
+          .expect(auth.validateError('invalid_authorization_details'))
+          .expect(auth.validateErrorDescription("'credential_configuration_id' must reference an entry in credential_configurations_supported"));
+      });
+    }
+
     it('rejects openid_credential claims path entries with invalid types', function () {
       const auth = new this.AuthorizationRequest({
         response_type: 'code',
@@ -929,6 +951,21 @@ describe('features.openid4vci', () => {
         });
     });
 
+    it('does not treat an inherited property as a credential configuration', async function () {
+      const accessToken = await getRarAccessToken.call(this, 'toString');
+
+      return this.agent.post('/credential')
+        .set('Authorization', `Bearer ${accessToken}`)
+        .send({
+          credential_configuration_id: 'toString',
+        })
+        .expect(400)
+        .expect({
+          error: 'unknown_credential_configuration',
+          error_description: 'requested credential_configuration_id is unknown',
+        });
+    });
+
     it('rejects a JSON null credential request', async function () {
       const accessToken = await getAccessToken.call(this);
 
@@ -1204,6 +1241,25 @@ describe('features.openid4vci', () => {
           const issued = JSON.parse(response.body.credentials[0].credential);
           expect(issued).to.have.property('format', 'org.iso.18013.5.1.mDL');
           expect(issued).to.have.property('credential_identifier', 'mDL-instance-1');
+        });
+    });
+
+    it('does not resolve a credential_identifier to an inherited configuration property', async function () {
+      const accessToken = await getRarAccessTokenWithIdentifiers.call(
+        this,
+        'toString',
+        ['inherited-configuration'],
+      );
+
+      return this.agent.post('/credential')
+        .set('Authorization', `Bearer ${accessToken}`)
+        .send({
+          credential_identifier: 'inherited-configuration',
+        })
+        .expect(400)
+        .expect({
+          error: 'unknown_credential_configuration',
+          error_description: 'credential configuration referenced by credential_identifier is unknown',
         });
     });
 
