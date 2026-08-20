@@ -623,6 +623,71 @@ describe('request parameter features', () => {
           });
       });
 
+      it('rejects a Request Object whose payload is not a JSON object', async function () {
+        const spy = sinon.spy();
+        this.provider.once(errorEvt, spy);
+        const request = [
+          Buffer.from(JSON.stringify({ alg: 'HS256' })).toString('base64url'),
+          Buffer.from('null').toString('base64url'),
+          'invalid-signature',
+        ].join('.');
+
+        await this.wrap({
+          agent: this.agent,
+          route,
+          verb,
+          auth: {
+            request,
+            scope: 'openid',
+            client_id: 'client',
+            response_type: 'code',
+            redirect_uri: 'https://client.example.com/cb',
+          },
+        })
+          .expect(errorCode);
+
+        expect(spy.calledOnce).to.be.true;
+        expect(spy.args[0][1]).to.have.property('message', 'invalid_request_object');
+        expect(spy.args[0][1]).to.have.property(
+          'error_description',
+          'could not parse Request Object',
+        );
+      });
+
+      it('rejects a signed Request Object whose protected header is not a JSON object', async function () {
+        const spy = sinon.spy();
+        this.provider.once(errorEvt, spy);
+        const signingInput = [
+          Buffer.from('null').toString('base64url'),
+          Buffer.from('{}').toString('base64url'),
+        ].join('.');
+        const signature = crypto.createHmac('sha256', 'secret')
+          .update(signingInput)
+          .digest('base64url');
+        const request = `${signingInput}.${signature}`;
+
+        await this.wrap({
+          agent: this.agent,
+          route,
+          verb,
+          auth: {
+            request,
+            scope: 'openid',
+            client_id: 'client',
+            response_type: 'code',
+            redirect_uri: 'https://client.example.com/cb',
+          },
+        })
+          .expect(errorCode);
+
+        expect(spy.calledOnce).to.be.true;
+        expect(spy.args[0][1]).to.have.property('message', 'invalid_request_object');
+        expect(spy.args[0][1]).to.have.property(
+          'error_description',
+          'could not parse Request Object',
+        );
+      });
+
       it('doesnt allow clients with predefined alg to bypass this alg', function () {
         const spy = sinon.spy();
         this.provider.once(errorEvt, spy);

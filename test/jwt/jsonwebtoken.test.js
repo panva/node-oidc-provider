@@ -35,6 +35,14 @@ describe('JSON Web Token (JWT) RFC7519 implementation', () => {
     it('only handles length 3', () => {
       expect(() => JWT.decode('foo.bar.baz.')).to.throw(TypeError);
     });
+
+    it('only handles JSON object headers and payloads', () => {
+      const encode = (value) => Buffer.from(JSON.stringify(value)).toString('base64url');
+
+      expect(() => JWT.decode(`${encode(null)}.${encode({})}.signature`)).to.throw();
+      expect(() => JWT.decode(`${encode({})}.${encode(null)}.signature`)).to.throw();
+      expect(() => JWT.decode(`${encode({})}.${encode([])}.signature`)).to.throw();
+    });
   });
 
   it('does not verify none', () => JWT.sign({ data: true }, null, 'none')

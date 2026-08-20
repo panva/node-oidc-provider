@@ -849,12 +849,32 @@ describe('client authentication methods', () => {
           client_assertion_type: 'urn:ietf:params:oauth:client-assertion-type:jwt-bearer',
         })
         .type('form')
-        .expect(400)
+        .expect(401)
         .expect(noW3A)
-        .expect({
-          error: 'invalid_request',
-          error_description: 'invalid client_assertion format',
-        });
+        .expect(tokenAuthRejected);
+    });
+
+    it('rejects an assertion whose protected header is JSON null', function () {
+      const signingInput = [
+        Buffer.from('null').toString('base64url'),
+        Buffer.from(JSON.stringify({
+          aud: this.provider.issuer,
+          exp: Math.floor(Date.now() / 1000) + 60,
+          iss: 'client-jwt-secret',
+          jti: nanoid(),
+          sub: 'client-jwt-secret',
+        })).toString('base64url'),
+      ].join('.');
+      return this.agent.post(route)
+        .send({
+          client_assertion: `${signingInput}.invalid-signature`,
+          grant_type: 'foo',
+          client_assertion_type: 'urn:ietf:params:oauth:client-assertion-type:jwt-bearer',
+        })
+        .type('form')
+        .expect(401)
+        .expect(noW3A)
+        .expect(tokenAuthRejected);
     });
 
     it('exp must be set', function () {

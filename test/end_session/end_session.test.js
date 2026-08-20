@@ -354,6 +354,36 @@ describe('logout endpoint', () => {
             });
         });
 
+        it('rejects an id_token_hint whose payload is not a JSON object', async function () {
+          const emitSpy = sinon.spy();
+          const renderSpy = sinon.spy(i(this.provider).configuration, 'renderError');
+          this.provider.once('end_session.error', emitSpy);
+          const id_token_hint = [
+            Buffer.from(JSON.stringify({ alg: 'HS256' })).toString('base64url'),
+            Buffer.from('null').toString('base64url'),
+            'invalid-signature',
+          ].join('.');
+
+          let request = this.agent[verb](route)
+            .set('Accept', 'text/html');
+          if (verb === 'get') {
+            request = request.query({ id_token_hint });
+          } else {
+            request = request.type('form').send({ id_token_hint });
+          }
+
+          return request
+            .expect(400)
+            .expect(() => {
+              expect(emitSpy.calledOnce).to.be.true;
+              expect(renderSpy.calledOnce).to.be.true;
+              const renderArgs = renderSpy.args[0];
+              expect(renderArgs[1]).to.have.property('error', 'invalid_request');
+              expect(renderArgs[1]).to.have.property('error_description', 'could not decode id_token_hint');
+              expect(renderArgs[2]).to.be.an.instanceof(InvalidRequest);
+            });
+        });
+
         it('rejects JWTs with unrecognized client', async function () {
           const emitSpy = sinon.spy();
           const renderSpy = sinon.spy(i(this.provider).configuration, 'renderError');
