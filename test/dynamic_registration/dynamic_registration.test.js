@@ -11,6 +11,18 @@ describe('registration features', () => {
   before(bootstrap(import.meta.url));
 
   context('POST /reg', () => {
+    it('rejects a JSON null Client Registration Request', function () {
+      return this.agent.post('/reg')
+        .set('Content-Type', 'application/json')
+        .send('null')
+        .expect(400)
+        .expect(noW3A)
+        .expect({
+          error: 'invalid_request',
+          error_description: 'client registration request must be a JSON object',
+        });
+    });
+
     it('generates the id, secret that does not expire and reg access token and returns the defaulted values', function () {
       return this.agent.post('/reg')
         .send({

@@ -71,6 +71,21 @@ describe('OAuth 2.0 Dynamic Client Registration Management Protocol', () => {
         .expect(this.failWith(401, 'invalid_token', 'no access token provided'));
     });
 
+    it('rejects a JSON null Client Update Request', async function () {
+      const client = await setup.call(this, {});
+
+      return this.agent.put(`/reg/${client.client_id}`)
+        .auth(client.registration_access_token, { type: 'bearer' })
+        .set('Content-Type', 'application/json')
+        .send('null')
+        .expect(400)
+        .expect(noW3A)
+        .expect({
+          error: 'invalid_request',
+          error_description: 'client update request must be a JSON object',
+        });
+    });
+
     it('populates ctx.oidc.entities', function (done) {
       (async () => {
         const client = await setup.call(this, {});

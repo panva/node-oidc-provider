@@ -929,6 +929,20 @@ describe('features.openid4vci', () => {
         });
     });
 
+    it('rejects a JSON null credential request', async function () {
+      const accessToken = await getAccessToken.call(this);
+
+      return this.agent.post('/credential')
+        .set('Authorization', `Bearer ${accessToken}`)
+        .set('Content-Type', 'application/json')
+        .send('null')
+        .expect(400)
+        .expect({
+          error: 'invalid_credential_request',
+          error_description: 'credential request body must be a JSON object',
+        });
+    });
+
     it('supports full authorization code flow with scope for scoped configuration', async function () {
       const auth = new this.AuthorizationRequest({
         response_type: 'code',
