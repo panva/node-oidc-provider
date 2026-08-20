@@ -1,10 +1,12 @@
 import { parse as parseLocation } from 'node:url';
+import { createPrivateKey } from 'node:crypto';
 
 import get from 'lodash/get.js';
 import { expect } from 'chai';
 
-import { decode as decodeJWT } from '../../lib/helpers/jwt.js';
+import { decode as decodeJWT, sign as signJWT } from '../../lib/helpers/jwt.js';
 import bootstrap from '../test_helper.js';
+import keys from '../keys.js';
 
 const route = '/auth';
 const expire = new Date();
@@ -510,6 +512,31 @@ expire.setDate(expire.getDate() + 1);
             .expect(auth.validateClientLocation)
             .expect(auth.validateError('consent_required'))
             .expect(auth.validateErrorDescription('requested claims not granted'));
+        });
+
+        it('rejects an id_token_hint aud array containing a non-string member', async function () {
+          const hint = await signJWT({
+            aud: ['client', null],
+            exp: Math.floor(Date.now() / 1000) + 3600,
+            iss: this.provider.issuer,
+            sub: this.loggedInAccountId,
+          }, createPrivateKey({ format: 'jwk', key: keys[0] }), 'RS256');
+
+          const auth = new this.AuthorizationRequest({
+            response_type: 'id_token',
+            scope: 'openid',
+            prompt: 'none',
+            id_token_hint: hint,
+          });
+
+          return this.wrap({ route, verb, auth })
+            .expect(303)
+            .expect(auth.validateFragment)
+            .expect(auth.validatePresence(['error', 'error_description', 'state']))
+            .expect(auth.validateState)
+            .expect(auth.validateClientLocation)
+            .expect(auth.validateError('invalid_request'))
+            .expect(auth.validateErrorDescription('could not validate id_token_hint'));
         });
 
         it('id_token_hint belongs to a user that is not currently logged in [1/3]', async function () {

@@ -684,6 +684,23 @@ describe('client authentication methods', () => {
           .expect(tokenAuthSucceeded));
       });
 
+      it('rejects an aud array containing a non-string member', function () {
+        return JWT.sign({
+          jti: nanoid(),
+          aud: [this.provider.issuer, null],
+          sub: 'client-jwt-secret',
+          iss: 'client-jwt-secret',
+        }, this.key, 'HS256', { expiresIn: 60 }).then((assertion) => this.agent.post(route)
+          .send({
+            client_assertion: assertion,
+            grant_type: 'foo',
+            client_assertion_type: 'urn:ietf:params:oauth:client-assertion-type:jwt-bearer',
+          })
+          .type('form')
+          .expect(401)
+          .expect(tokenAuthRejected));
+      });
+
       it('accepts the auth when aud is the token endpoint', async function () {
         for (const aud of [this.provider.issuer + this.suitePath('/token'), [this.provider.issuer + this.suitePath('/token')]]) {
           await JWT.sign({

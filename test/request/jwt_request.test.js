@@ -108,6 +108,41 @@ describe('request parameter features', () => {
           }));
       });
 
+      it('rejects an aud array containing a non-string member', async function () {
+        const spy = sinon.spy();
+        this.provider.once(errorEvt, spy);
+
+        await JWT.sign({
+          jti: crypto.randomBytes(16).toString('base64url'),
+          client_id: 'client',
+          response_type: 'code',
+          redirect_uri: 'https://client.example.com/cb',
+          code_challenge_method: this.code_challenge_method,
+          code_challenge: this.code_challenge,
+          scope: 'openid',
+        }, Buffer.from('secret'), 'HS256', {
+          issuer: 'client',
+          audience: [this.provider.issuer, null],
+          expiresIn: 30,
+        }).then((request) => this.wrap({
+          agent: this.agent,
+          route,
+          verb,
+          auth: {
+            request,
+            client_id: 'client',
+          },
+        })
+          .expect(errorCode));
+
+        expect(spy.calledOnce).to.be.true;
+        expect(spy.args[0][1]).to.have.property('message', 'invalid_request_object');
+        expect(spy.args[0][1]).to.have.property(
+          'error_description',
+          'Request Object claims are invalid',
+        );
+      });
+
       it('can contain max_age parameter as a number and it (and other params too) will be forced as string', async function () {
         const spy = sinon.spy();
         this.provider.once(successEvt, spy);

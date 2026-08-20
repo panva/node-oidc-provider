@@ -989,7 +989,7 @@ describe('features.resourceIndicators', () => {
           .expect({ error: 'invalid_token', error_description: 'invalid token provided' });
 
         expect(spy).to.have.property('calledOnce', true);
-        expect(spy.args[0][1]).to.have.property('error_detail', 'token audience prevents accessing the userinfo endpoint');
+        expect(spy.args[0][1]).to.have.property('error_detail', 'access token not found');
       });
     });
   });

@@ -1,5 +1,6 @@
 import { strict as assert } from 'node:assert';
 import { once } from 'node:events';
+import { createPrivateKey } from 'node:crypto';
 
 import sinon from 'sinon';
 import { expect } from 'chai';
@@ -7,7 +8,9 @@ import { generateKeyPair, SignJWT, exportJWK } from 'jose';
 
 import { AccessDenied } from '../../lib/helpers/errors.js';
 import epochTime from '../../lib/helpers/epoch_time.js';
+import { sign as signJWT } from '../../lib/helpers/jwt.js';
 import bootstrap, { assertNoPendingInterceptors, mock } from '../test_helper.js';
+import keys from '../keys.js';
 
 import { emitter } from './ciba.config.js';
 
@@ -336,6 +339,29 @@ describe('features.ciba', () => {
         expect(request2.nonce).to.be.undefined;
         expect(request2.scope).to.be.eql('openid');
         expect(request2.params).to.deep.eql({ client_id: 'client', id_token_hint: id_token, scope: 'openid' });
+      });
+
+      it('rejects an id_token_hint aud array containing a non-string member', async function () {
+        const idTokenHint = await signJWT({
+          aud: ['client', null],
+          exp: Math.floor(Date.now() / 1000) + 3600,
+          iss: this.provider.issuer,
+          sub: 'accountId',
+        }, createPrivateKey({ format: 'jwk', key: keys[0] }), 'RS256');
+
+        return this.agent.post(route)
+          .send({
+            scope: 'openid',
+            id_token_hint: idTokenHint,
+            client_id: 'client',
+          })
+          .type('form')
+          .expect(400)
+          .expect('content-type', /application\/json/)
+          .expect({
+            error: 'invalid_request',
+            error_description: 'could not validate id_token_hint',
+          });
       });
 
       describe('client validation', () => {
