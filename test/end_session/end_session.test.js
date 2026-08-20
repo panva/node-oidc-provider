@@ -111,6 +111,37 @@ describe('logout endpoint', () => {
               });
           });
 
+          for (const post_logout_redirect_uri of [
+            'https://client.example.com:443/logout/cb',
+            'https://CLIENT.EXAMPLE.COM/logout/cb',
+          ]) {
+            it(`requires exact post_logout_redirect_uri matching (${post_logout_redirect_uri})`, function () {
+              const params = {
+                client_id: 'client',
+                post_logout_redirect_uri,
+              };
+
+              const emitSpy = sinon.spy();
+              const renderSpy = sinon.spy(i(this.provider).configuration, 'renderError');
+              this.provider.once('end_session.error', emitSpy);
+
+              return this.wrap({ route, verb, params })
+                .set('Accept', 'text/html')
+                .expect(400)
+                .expect(() => {
+                  expect(emitSpy.calledOnce).to.be.true;
+                  expect(renderSpy.calledOnce).to.be.true;
+                  const renderArgs = renderSpy.args[0];
+                  expect(renderArgs[1]).to.have.property('error', 'invalid_request');
+                  expect(renderArgs[1]).to.have.property(
+                    'error_description',
+                    'post_logout_redirect_uri not registered',
+                  );
+                  expect(renderArgs[2]).to.be.an.instanceof(InvalidRequest);
+                });
+            });
+          }
+
           it('allows to redirect there (with id_token_hint and client_id)', function () {
             const params = {
               client_id: 'client',

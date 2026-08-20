@@ -964,6 +964,35 @@ describe('BASIC code', () => {
           });
       });
 
+      for (const redirect_uri of [
+        'https://client.example.com:443/cb',
+        'https://CLIENT.EXAMPLE.COM/cb',
+      ]) {
+        it(`redirect_uri comparison uses exact string matching (${redirect_uri})`, function () {
+          const emitSpy = sinon.spy();
+          const renderSpy = sinon.spy(i(this.provider).configuration, 'renderError');
+          this.provider.once('authorization.error', emitSpy);
+          const auth = new this.AuthorizationRequest({
+            response_type,
+            scope,
+            redirect_uri,
+          });
+
+          return this.wrap({ route, verb, auth })
+            .expect(() => {
+              renderSpy.restore();
+            })
+            .expect(400)
+            .expect(() => {
+              expect(emitSpy.calledOnce).to.be.true;
+              expect(renderSpy.calledOnce).to.be.true;
+              const renderArgs = renderSpy.args[0];
+              expect(renderArgs[1]).to.have.property('error', 'invalid_redirect_uri');
+              expect(renderArgs[2]).to.be.an.instanceof(InvalidRedirectUri);
+            });
+        });
+      }
+
       describe('login state specific', () => {
         before(function () { return this.login(); });
 

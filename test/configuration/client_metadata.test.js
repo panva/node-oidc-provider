@@ -485,6 +485,14 @@ describe('Client metadata validation', () => {
         application_type: 'web',
       },
     );
+    rejects(
+      this.title,
+      ['https://rp.example.com#'],
+      /redirect_uris must not contain fragments$/,
+      {
+        application_type: 'web',
+      },
+    );
     rejects(this.title, ['no-dot-reverse-notation:/some'], undefined, {
       application_type: 'web',
     });
@@ -587,6 +595,14 @@ describe('Client metadata validation', () => {
     rejects(
       this.title,
       ['https://rp.example.com#whatever'],
+      /post_logout_redirect_uris must not contain fragments$/,
+      {
+        application_type: 'web',
+      },
+    );
+    rejects(
+      this.title,
+      ['https://rp.example.com#'],
       /post_logout_redirect_uris must not contain fragments$/,
       {
         application_type: 'web',

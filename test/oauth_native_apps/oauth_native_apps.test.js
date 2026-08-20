@@ -29,6 +29,49 @@ describe('OAuth 2.0 for Native Apps Best Current Practice features', () => {
         });
       });
 
+      it('matches every raw loopback URI component except the port', function () {
+        return addClient(this.provider, {
+          application_type: 'native',
+          client_id: 'native-exact-loopback',
+          grant_types: ['implicit'],
+          response_types: ['id_token'],
+          token_endpoint_auth_method: 'none',
+          redirect_uris: [
+            'http://localhost:2355/op/callback',
+            'http://127.0.0.1:2355/op/callback',
+            'http://user:pass@localhost/op/callback',
+          ],
+          post_logout_redirect_uris: [
+            'http://localhost:2355/op/logout',
+            'http://127.0.0.1:2355/op/logout',
+            'http://user:pass@localhost/op/logout',
+          ],
+        }).then((client) => {
+          expect(client.redirectUriAllowed('http://localhost:8888/op/callback')).to.be.true;
+          expect(client.postLogoutRedirectUriAllowed('http://localhost:8888/op/logout')).to.be.true;
+          expect(client.redirectUriAllowed('http://user:pass@localhost:8888/op/callback')).to.be.true;
+          expect(client.postLogoutRedirectUriAllowed('http://user:pass@localhost:8888/op/logout')).to.be.true;
+
+          for (const redirectUri of [
+            'HTTP://localhost:8888/op/callback',
+            'http://LOCALHOST:8888/op/callback',
+            'http://127.000.000.001:8888/op/callback',
+            'http://127.0.0.1:8888/op/x/../callback',
+          ]) {
+            expect(client.redirectUriAllowed(redirectUri)).to.be.false;
+          }
+
+          for (const postLogoutRedirectUri of [
+            'HTTP://localhost:8888/op/logout',
+            'http://LOCALHOST:8888/op/logout',
+            'http://127.000.000.001:8888/op/logout',
+            'http://127.0.0.1:8888/op/x/../logout',
+          ]) {
+            expect(client.postLogoutRedirectUriAllowed(postLogoutRedirectUri)).to.be.false;
+          }
+        });
+      });
+
       it('allows http protocol localhost loopback uris (when registered with a random port)', function () {
         return addClient(this.provider, {
           application_type: 'native',
