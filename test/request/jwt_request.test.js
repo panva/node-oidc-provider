@@ -108,6 +108,51 @@ describe('request parameter features', () => {
           }));
       });
 
+      it('treats empty Request Object parameter values as omitted', async function () {
+        const spy = sinon.spy();
+        const succeeds = successCode === 200;
+        this.provider.once(succeeds ? 'authorization.success' : errorEvt, spy);
+
+        if (succeeds) {
+          this.provider.once('device_authorization.success', ({ oidc }) => {
+            this.provider.emit('authorization.success', { oidc: { params: oidc.entities.DeviceCode.params } });
+          });
+        }
+
+        const request = await JWT.sign({
+          jti: crypto.randomBytes(16).toString('base64url'),
+          client_id: 'client',
+          response_type: 'code',
+          redirect_uri: 'https://client.example.com/cb',
+          code_challenge_method: this.code_challenge_method,
+          code_challenge: this.code_challenge,
+          scope: '',
+        }, Buffer.from('secret'), 'HS256', {
+          issuer: 'client',
+          audience: this.provider.issuer,
+          expiresIn: 30,
+        });
+
+        return this.wrap({
+          agent: this.agent,
+          route,
+          verb,
+          auth: {
+            request,
+            client_id: 'client',
+          },
+        })
+          .expect(successCode)
+          .expect(succeeds ? successFnCheck : (response) => {
+            const { query } = parse(response.headers.location, true);
+            expect(query).to.have.property('error', 'access_denied');
+          })
+          .expect(() => {
+            expect(spy.calledOnce).to.be.true;
+            expect(spy.args[0][0].oidc.params.scope).to.be.undefined;
+          });
+      });
+
       it('rejects an aud array containing a non-string member', async function () {
         const spy = sinon.spy();
         this.provider.once(errorEvt, spy);
