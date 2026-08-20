@@ -108,6 +108,58 @@ describe('request parameter features', () => {
           }));
       });
 
+      if (route === '/auth') {
+        it('preserves JSON object semantics for Claims requests', async function () {
+          const claims = {
+            constructor: null,
+            id_token: {
+              constructor: null,
+              email: { constructor: null },
+            },
+          };
+          const request = await JWT.sign({
+            jti: crypto.randomBytes(16).toString('base64url'),
+            client_id: 'client',
+            response_type: 'code',
+            redirect_uri: 'https://client.example.com/cb',
+            code_challenge_method: this.code_challenge_method,
+            code_challenge: this.code_challenge,
+            scope: 'openid',
+            max_age: 3600,
+            claims,
+          }, Buffer.from('secret'), 'HS256', {
+            issuer: 'client',
+            audience: this.provider.issuer,
+            expiresIn: 30,
+          });
+          const spy = sinon.spy();
+          this.provider.once('authorization.success', spy);
+
+          return this.wrap({
+            agent: this.agent,
+            route,
+            verb,
+            auth: {
+              request,
+              client_id: 'client',
+            },
+          })
+            .expect(303)
+            .expect(redirectSuccess)
+            .expect(() => {
+              expect(spy.calledOnce).to.be.true;
+              const { oidc } = spy.args[0][0];
+              expect(JSON.parse(oidc.params.claims)).to.deep.equal(claims);
+              expect(oidc.requestParamClaims).to.include('email');
+              expect(oidc.claims.id_token).to.contain.keys(
+                'constructor',
+                'email',
+                'auth_time',
+              );
+            });
+        });
+      }
+
       it('treats empty Request Object parameter values as omitted', async function () {
         const spy = sinon.spy();
         const succeeds = successCode === 200;

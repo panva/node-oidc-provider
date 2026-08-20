@@ -21,7 +21,7 @@ expire.setDate(expire.getDate() + 1);
         return this.login({
           claims: {
             id_token: {
-              email: null,
+              email: { constructor: null },
               middle_name: {},
             },
           },
@@ -37,10 +37,6 @@ expire.setDate(expire.getDate() + 1);
             id_token: {
               email: null,
               middle_name: {},
-
-              preferred_username: 'not returned',
-              picture: 1, // not returned
-              website: true, // not returned
             },
           },
         });
@@ -54,6 +50,31 @@ expire.setDate(expire.getDate() + 1);
             const { payload } = decodeJWT(id_token);
             expect(payload).to.contain.keys('email', 'middle_name');
             expect(payload).not.to.have.keys('preferred_username', 'picture', 'website');
+          });
+      });
+
+      it('accepts constructor-named JSON object members', function () {
+        const auth = new this.AuthorizationRequest({
+          response_type: 'id_token token',
+          scope: 'openid',
+          max_age: 3600,
+          claims: JSON.stringify({
+            constructor: null,
+            id_token: {
+              constructor: null,
+              email: { constructor: null },
+            },
+          }),
+        });
+
+        return this.wrap({ route, verb, auth })
+          .expect(303)
+          .expect(auth.validateFragment)
+          .expect(auth.validatePresence(['id_token'], false))
+          .expect((response) => {
+            const { query: { id_token } } = parseLocation(response.headers.location, true);
+            const { payload } = decodeJWT(id_token);
+            expect(payload).to.contain.keys('auth_time', 'email');
           });
       });
     });
@@ -121,12 +142,8 @@ expire.setDate(expire.getDate() + 1);
           scope: 'openid',
           claims: {
             userinfo: {
-              email: null,
+              email: { constructor: null },
               middle_name: {},
-
-              preferred_username: 'not returned',
-              picture: 1, // not returned
-              website: true, // not returned
             },
           },
         });
@@ -769,6 +786,55 @@ expire.setDate(expire.getDate() + 1);
           .expect(auth.validateClientLocation)
           .expect(auth.validateError('invalid_request'))
           .expect(auth.validateErrorDescription('claims.id_token should be an object'));
+      });
+
+      for (const container of ['userinfo', 'id_token']) {
+        for (const [type, value] of [
+          ['string', 'invalid'],
+          ['boolean', false],
+          ['number', 0],
+          ['array', []],
+        ]) {
+          it(`rejects ${type} members in claims.${container}`, function () {
+            const auth = new this.AuthorizationRequest({
+              response_type: 'id_token token',
+              scope: 'openid',
+              claims: {
+                [container]: {
+                  email: value,
+                },
+              },
+            });
+
+            return this.wrap({ route, verb, auth })
+              .expect(303)
+              .expect(auth.validateFragment)
+              .expect(auth.validatePresence(['error', 'error_description', 'state']))
+              .expect(auth.validateState)
+              .expect(auth.validateClientLocation)
+              .expect(auth.validateError('invalid_request'))
+              .expect(auth.validateErrorDescription(`claims.${container} members must be null or objects`));
+          });
+        }
+      }
+
+      it('does not reflect invalid individual claim names in errors', function () {
+        const auth = new this.AuthorizationRequest({
+          response_type: 'id_token token',
+          scope: 'openid',
+          claims: {
+            id_token: Object.fromEntries([['"\\\r\n', false]]),
+          },
+        });
+
+        return this.wrap({ route, verb, auth })
+          .expect(303)
+          .expect(auth.validateFragment)
+          .expect(auth.validatePresence(['error', 'error_description', 'state']))
+          .expect(auth.validateState)
+          .expect(auth.validateClientLocation)
+          .expect(auth.validateError('invalid_request'))
+          .expect(auth.validateErrorDescription('claims.id_token members must be null or objects'));
       });
 
       describe('when userinfo is disabled', () => {
