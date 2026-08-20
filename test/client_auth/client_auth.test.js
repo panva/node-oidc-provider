@@ -1636,6 +1636,29 @@ describe('client authentication methods', () => {
           .expect(tokenAuthRejected);
       });
 
+      for (const [jti, description] of [[123, 'non-string'], ['', 'empty']]) {
+        it(`rejects a ${description} jti`, async function () {
+          const pop = await new SignJWT({ challenge, jti })
+            .setProtectedHeader({
+              typ: 'oauth-client-attestation-pop+jwt',
+              alg: 'Ed25519',
+            })
+            .setAudience(this.provider.issuer)
+            .setIssuedAt()
+            .sign(instanceKeyPair.privateKey);
+
+          await this.agent.post(route)
+            .set('OAuth-Client-Attestation', await this.signAttestation())
+            .set('OAuth-Client-Attestation-PoP', pop)
+            .send({
+              grant_type: 'foo',
+            })
+            .type('form')
+            .expect(401)
+            .expect(tokenAuthRejected);
+        });
+      }
+
       describe('challenge handling', async () => {
         it('requires challenge to be present', async function () {
           const pop = await new SignJWT({ challenge: undefined })
