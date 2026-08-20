@@ -227,4 +227,17 @@ describe('userinfo /me', () => {
       .auth(this.access_token, { type: 'bearer' })
       .expect(this.failWith(403, 'insufficient_scope', 'access token missing requested scope', 'profile'));
   });
+
+  it('rejects control characters in a requested scope without failing header serialization', function () {
+    return this.agent.get('/me')
+      .query({
+        scope: 'openid profile\ninjected',
+      })
+      .auth(this.access_token, { type: 'bearer' })
+      .expect(400)
+      .expect({
+        error: 'invalid_request',
+        error_description: 'scope contains invalid characters',
+      });
+  });
 });

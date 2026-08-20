@@ -69,6 +69,21 @@ describe('grant_type=client_credentials', () => {
       });
   });
 
+  it('rejects scope values outside the scope-token grammar', function () {
+    return this.agent.post(route)
+      .auth('client', 'secret')
+      .send({
+        grant_type: 'client_credentials',
+        scope: 'api:read\ninjected',
+      })
+      .type('form')
+      .expect(400)
+      .expect({
+        error: 'invalid_scope',
+        error_description: 'scope contains invalid characters',
+      });
+  });
+
   it('populates ctx.oidc.entities', function (done) {
     this.assertOnce((ctx) => {
       expect(ctx.oidc.entities).to.have.keys('Client', 'ClientCredentials');

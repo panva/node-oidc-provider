@@ -478,6 +478,21 @@ describe('BASIC code', () => {
           .expect(auth.validateErrorDescription('requested scope is not allowed'));
       });
 
+      it('rejects scope values outside the scope-token grammar', function () {
+        const auth = new this.AuthorizationRequest({
+          response_type: 'code',
+          scope: 'openid profile\ninjected',
+        });
+
+        return this.wrap({ route, verb, auth })
+          .expect(303)
+          .expect(auth.validatePresence(['error', 'error_description', 'state']))
+          .expect(auth.validateState)
+          .expect(auth.validateClientLocation)
+          .expect(auth.validateError('invalid_scope'))
+          .expect(auth.validateErrorDescription('scope contains invalid characters'));
+      });
+
       it('disallowed response mode', function () {
         const spy = sinon.spy();
         this.provider.once('authorization.error', spy);
