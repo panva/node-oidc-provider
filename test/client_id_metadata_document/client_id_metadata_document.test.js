@@ -113,14 +113,18 @@ describe('Client ID Metadata Document', () => {
 
     it('rejects URLs with a fragment', () => {
       expect(isValidClientIdUrl('https://example.com/client#frag')).to.be.false;
+      expect(isValidClientIdUrl('https://example.com/client#')).to.be.false;
+      expect(isValidClientIdUrl('https://example.com/client?#')).to.be.false;
     });
 
     it('rejects URLs with a username', () => {
       expect(isValidClientIdUrl('https://user@example.com/client')).to.be.false;
+      expect(isValidClientIdUrl('https://@example.com/client')).to.be.false;
     });
 
     it('rejects URLs with a password', () => {
       expect(isValidClientIdUrl('https://user:pass@example.com/client')).to.be.false;
+      expect(isValidClientIdUrl('https://:@example.com/client')).to.be.false;
     });
 
     it('rejects non-URL strings', () => {
