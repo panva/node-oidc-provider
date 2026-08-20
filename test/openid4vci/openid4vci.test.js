@@ -1615,7 +1615,10 @@ describe('features.openid4vci', () => {
       it('issues credentials with a valid key_attestation in jwt proof header', async function () {
         const accessToken = await getAccessToken.call(this);
         const nonce = await getCNonce.call(this);
-        const attestedKeys = [await exportJWK(this.keypair.publicKey)];
+        const attestedKeys = [
+          { kty: 'urn:example:unrecognized-key-type' },
+          await exportJWK(this.keypair.publicKey),
+        ];
         const ka = await keyAttestation(attestedKeys, { withExp: true });
         const proof = await credentialProof(this.keypair, this.provider.issuer, {
           nonce,
@@ -1635,7 +1638,7 @@ describe('features.openid4vci', () => {
             expect(response.body).to.have.property('credentials').that.is.an('array').with.lengthOf(1);
             const issued = JSON.parse(response.body.credentials[0].credential);
             expect(issued).to.have.property('proof_type', 'jwt');
-            expect(issued).to.have.property('attested_keys_count', 1);
+            expect(issued).to.have.property('attested_keys_count', 2);
           });
       });
 
@@ -1991,6 +1994,45 @@ describe('features.openid4vci', () => {
           });
       });
 
+      it('ignores public JWK members for other key types', async function () {
+        const accessToken = await getAccessToken.call(this);
+        const nonce = await getCNonce.call(this);
+        const publicJwk = await exportJWK(this.keypair.publicKey);
+        publicJwk.priv = 'an extension member for this key type';
+        const attestation = await keyAttestation([publicJwk], { nonce });
+
+        return this.agent.post('/credential')
+          .set('Authorization', `Bearer ${accessToken}`)
+          .send({
+            credential_configuration_id: 'org.iso.18013.5.1.mDL.attestation',
+            proofs: {
+              attestation: [attestation],
+            },
+          })
+          .expect(200);
+      });
+
+      it('allows unrecognized JWK key types', async function () {
+        const accessToken = await getAccessToken.call(this);
+        const nonce = await getCNonce.call(this);
+        const attestedKeys = [{ kty: 'urn:example:unrecognized-key-type' }];
+        const attestation = await keyAttestation(attestedKeys, { nonce });
+
+        return this.agent.post('/credential')
+          .set('Authorization', `Bearer ${accessToken}`)
+          .send({
+            credential_configuration_id: 'org.iso.18013.5.1.mDL.attestation',
+            proofs: {
+              attestation: [attestation],
+            },
+          })
+          .expect(200)
+          .expect((response) => {
+            const issued = JSON.parse(response.body.credentials[0].credential);
+            expect(issued).to.have.property('attested_keys_count', 1);
+          });
+      });
+
       it('issues credentials with multiple attested keys', async function () {
         const accessToken = await getAccessToken.call(this);
         const nonce = await getCNonce.call(this);
@@ -2242,6 +2284,142 @@ describe('features.openid4vci', () => {
           });
       });
 
+      it('rejects attested keys without a key type', async function () {
+        const accessToken = await getAccessToken.call(this);
+        const nonce = await getCNonce.call(this);
+        const attestation = await keyAttestation([{}], { nonce });
+
+        return this.agent.post('/credential')
+          .set('Authorization', `Bearer ${accessToken}`)
+          .send({
+            credential_configuration_id: 'org.iso.18013.5.1.mDL.attestation',
+            proofs: {
+              attestation: [attestation],
+            },
+          })
+          .expect(400)
+          .expect({
+            error: 'invalid_proof',
+            error_description: 'attestation proof attested_keys entries must be public asymmetric JWKs',
+          });
+      });
+
+      it('rejects attested keys missing required public members', async function () {
+        const accessToken = await getAccessToken.call(this);
+        const nonce = await getCNonce.call(this);
+        const attestation = await keyAttestation([{
+          kty: 'EC',
+          crv: 'P-256',
+          x: 'AQ',
+        }], { nonce });
+
+        return this.agent.post('/credential')
+          .set('Authorization', `Bearer ${accessToken}`)
+          .send({
+            credential_configuration_id: 'org.iso.18013.5.1.mDL.attestation',
+            proofs: {
+              attestation: [attestation],
+            },
+          })
+          .expect(400)
+          .expect({
+            error: 'invalid_proof',
+            error_description: 'attestation proof attested_keys entries must be public asymmetric JWKs',
+          });
+      });
+
+      it('rejects attestation proof with a private JWK in attested_keys', async function () {
+        const accessToken = await getAccessToken.call(this);
+        const nonce = await getCNonce.call(this);
+        const privateJwk = await exportJWK(this.keypair.privateKey);
+        const attestation = await keyAttestation([privateJwk], { nonce });
+
+        return this.agent.post('/credential')
+          .set('Authorization', `Bearer ${accessToken}`)
+          .send({
+            credential_configuration_id: 'org.iso.18013.5.1.mDL.attestation',
+            proofs: {
+              attestation: [attestation],
+            },
+          })
+          .expect(400)
+          .expect({
+            error: 'invalid_proof',
+            error_description: 'attestation proof attested_keys entries must be public asymmetric JWKs',
+          });
+      });
+
+      it('rejects private RSA and OKP JWKs in attested_keys', async function () {
+        const accessToken = await getAccessToken.call(this);
+        for (const alg of ['RS256', 'Ed25519']) {
+          const nonce = await getCNonce.call(this);
+          const { privateKey } = await generateKeyPair(alg, { extractable: true });
+          const privateJwk = await exportJWK(privateKey);
+          const attestation = await keyAttestation([privateJwk], { nonce });
+
+          await this.agent.post('/credential')
+            .set('Authorization', `Bearer ${accessToken}`)
+            .send({
+              credential_configuration_id: 'org.iso.18013.5.1.mDL.attestation',
+              proofs: {
+                attestation: [attestation],
+              },
+            })
+            .expect(400)
+            .expect({
+              error: 'invalid_proof',
+              error_description: 'attestation proof attested_keys entries must be public asymmetric JWKs',
+            });
+        }
+      });
+
+      if (SubtleCrypto.supports?.('generateKey', 'ML-DSA-44')) {
+        it('rejects attestation proof with a private AKP JWK in attested_keys', async function () {
+          const accessToken = await getAccessToken.call(this);
+          const nonce = await getCNonce.call(this);
+          const { privateKey } = await generateKeyPair('ML-DSA-44', { extractable: true });
+          const privateJwk = await exportJWK(privateKey);
+          const attestation = await keyAttestation([privateJwk], { nonce });
+
+          return this.agent.post('/credential')
+            .set('Authorization', `Bearer ${accessToken}`)
+            .send({
+              credential_configuration_id: 'org.iso.18013.5.1.mDL.attestation',
+              proofs: {
+                attestation: [attestation],
+              },
+            })
+            .expect(400)
+            .expect({
+              error: 'invalid_proof',
+              error_description: 'attestation proof attested_keys entries must be public asymmetric JWKs',
+            });
+        });
+      }
+
+      it('rejects attestation proof with a symmetric JWK in attested_keys', async function () {
+        const accessToken = await getAccessToken.call(this);
+        const nonce = await getCNonce.call(this);
+        const attestation = await keyAttestation([{
+          kty: 'oct',
+          k: Buffer.from('secret').toString('base64url'),
+        }], { nonce });
+
+        return this.agent.post('/credential')
+          .set('Authorization', `Bearer ${accessToken}`)
+          .send({
+            credential_configuration_id: 'org.iso.18013.5.1.mDL.attestation',
+            proofs: {
+              attestation: [attestation],
+            },
+          })
+          .expect(400)
+          .expect({
+            error: 'invalid_proof',
+            error_description: 'attestation proof attested_keys entries must be public asymmetric JWKs',
+          });
+      });
+
       it('rejects attestation proof with unknown issuer', async function () {
         const accessToken = await getAccessToken.call(this);
         const nonce = await getCNonce.call(this);
@@ -2402,6 +2580,30 @@ describe('features.openid4vci', () => {
             .expect({
               error: 'invalid_proof',
               error_description: 'attestation proof certification must be a non-empty string',
+            });
+        });
+
+        it('rejects certification that is not a URL', async function () {
+          const accessToken = await getAccessToken.call(this);
+          const nonce = await getCNonce.call(this);
+          const attestedKeys = [await exportJWK(this.keypair.publicKey)];
+          const attestation = await keyAttestation(attestedKeys, {
+            nonce,
+            certification: 'not a URL',
+          });
+
+          return this.agent.post('/credential')
+            .set('Authorization', `Bearer ${accessToken}`)
+            .send({
+              credential_configuration_id: 'org.iso.18013.5.1.mDL.attestation',
+              proofs: {
+                attestation: [attestation],
+              },
+            })
+            .expect(400)
+            .expect({
+              error: 'invalid_proof',
+              error_description: 'attestation proof certification must be a URL',
             });
         });
 
