@@ -5,8 +5,8 @@
  * is pointed at dist/ instead of the repository root, so a failed or
  * interrupted release cannot leave stripped sources behind.
  *
- * Intentionally dependency-free: the release workflow packs without installing
- * devDependencies.
+ * The release workflow installs locked devDependencies before running this so
+ * comment boundaries come from a real JavaScript parser.
  */
 
 import { execFileSync } from 'node:child_process';
@@ -23,7 +23,14 @@ const dist = join(root, 'dist');
 
 const countLines = (str) => {
   let n = 1;
-  for (let i = 0; i < str.length; i += 1) if (str[i] === '\n') n += 1;
+  for (let i = 0; i < str.length; i += 1) {
+    if (str[i] === '\r') {
+      n += 1;
+      if (str[i + 1] === '\n') i += 1;
+    } else if (str[i] === '\n' || str[i] === '\u2028' || str[i] === '\u2029') {
+      n += 1;
+    }
+  }
   return n;
 };
 

@@ -63,6 +63,7 @@
     "koa": "^3.2.1"
   },
   "devDependencies": {
+    "@babel/parser": "^7.29.8",
     "@biomejs/biome": "2.4.11",
     "@fastify/middie": "^9.3.3",
     "@hapi/hapi": "^21.4.10",

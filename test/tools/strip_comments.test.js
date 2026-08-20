@@ -2,12 +2,15 @@ import { expect } from 'chai';
 
 import { stripComments } from '../../tools/strip-comments.js';
 
-/*
- * tools/build.js runs this over every published file, so a bug here corrupts
- * the package silently - the output still parses, which is why `node --check`
- * in the build is not on its own enough.
- */
 describe('publish-time comment stripping', () => {
+  const lineTerminators = [
+    ['LF', '\n'],
+    ['CR', '\r'],
+    ['CRLF', '\r\n'],
+    ['LINE SEPARATOR', '\u2028'],
+    ['PARAGRAPH SEPARATOR', '\u2029'],
+  ];
+
   it('keeps the tokens either side of a comment apart', () => {
     for (const [source, expected] of [
       ['const x = typeof/* c */foo;', 'const x = typeof foo;'],
@@ -20,14 +23,17 @@ describe('publish-time comment stripping', () => {
     }
   });
 
-  it('preserves the line count', () => {
-    for (const source of [
-      'a;\n/*\n *\n */\nb;',
-      '// line\nconst x = 1; // trailing\n',
-      'const t = `a\nb`; /* c */\n',
-      'const x = 1; /* one line */ const y = 2;',
-    ]) {
-      expect(stripComments(source).split('\n')).to.have.lengthOf(source.split('\n').length);
+  it('preserves every ECMAScript line terminator', () => {
+    for (const [name, terminator] of lineTerminators) {
+      const block = `return/*${terminator}*/1`;
+      const line = `let value = 1; // comment${terminator}value = 2;\nreturn value`;
+
+      expect(stripComments(block), `${name} block`).to.equal(`return${terminator}1`);
+      expect(stripComments(line), `${name} line`)
+        .to.equal(`let value = 1; ${terminator}value = 2;\nreturn value`);
+      expect(Function(block)(), `${name} block source`).to.be.undefined;
+      expect(Function(stripComments(block))(), `${name} block output`).to.be.undefined;
+      expect(Function(stripComments(line))(), `${name} line output`).to.equal(2);
     }
   });
 
@@ -46,9 +52,30 @@ describe('publish-time comment stripping', () => {
     // biome-ignore-end lint/suspicious/noTemplateCurlyInString: template source under test
   });
 
+  it('uses parser context to distinguish comments, regexes and division', () => {
+    for (const source of [
+      'let hit = false; if (true) /[/*]/.test("/") && (hit = true); return hit;',
+      'const x = async function () {} / /[/*]/.test("/"); /* remove */ return Number.isNaN(x);',
+      'let x = 6; x++ / /[/*]/.test("/"); /* remove */ return x === 7;',
+    ]) {
+      const stripped = stripComments(source);
+
+      expect(stripped).not.to.include('remove');
+      expect(Function(source)()).to.be.true;
+      expect(Function(stripped)()).to.be.true;
+    }
+  });
+
+  it('preserves hashbang contents', () => {
+    const source = '#!/usr/bin/env node /* part of hashbang\n'
+      + 'const matched = /[/*]/.test("/"); /* remove */';
+    const stripped = stripComments(source);
+
+    expect(stripped.startsWith('#!/usr/bin/env node /* part of hashbang\n')).to.be.true;
+    expect(stripped).not.to.include('remove');
+  });
+
   it('removes what it is meant to', () => {
-    // a multi-line block leaves its newlines behind, a single-line block leaves
-    // the one space that keeps the tokens apart
     expect(stripComments('/**\n * jsdoc\n */\nconst x = 1;')).to.equal('\n\n\nconst x = 1;');
     expect(stripComments('/** jsdoc */\nconst x = 1;')).to.equal(' \nconst x = 1;');
     expect(stripComments('const x = 1; // trailing')).to.equal('const x = 1; ');

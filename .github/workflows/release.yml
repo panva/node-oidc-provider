@@ -17,4 +17,4 @@ jobs:
     with:
       artifact_check_command: node tools/test-dist.js "$PACKAGE_TARBALL"
       package_directory: ./dist
-      prepare_command: npm run build
+      prepare_command: npm clean-install --ignore-scripts && npm run build
