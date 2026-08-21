@@ -66,6 +66,35 @@ describe('Client metadata validation', () => {
     });
   }
 
+  it('rejects sparse and inherited string-array metadata entries', async () => {
+    const inherited = Array(1);
+    const prototype = Object.create(Array.prototype);
+    Object.defineProperty(prototype, '0', { enumerable: true, value: 'code' });
+    Object.setPrototypeOf(inherited, prototype);
+
+    for (const [property, configuration] of [
+      ['contacts'],
+      ['response_types'],
+      [
+        'id_token_signing_alg_values_supported',
+        { features: { rpMetadataChoices: { enabled: true } } },
+      ],
+    ]) {
+      for (const value of [Array(1), inherited]) {
+        await assert.rejects(
+          register({ [property]: value }, configuration),
+          (error) => {
+            expect(error).to.have.property(
+              'error_description',
+              `${property} must only contain strings`,
+            );
+            return true;
+          },
+        );
+      }
+    }
+  });
+
   const mustBeString = (
     prop,
     values = [[], 123, true, null, false, {}, ''],
