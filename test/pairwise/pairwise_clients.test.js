@@ -238,6 +238,28 @@ describe('pairwise features', () => {
         });
       });
 
+      it('rejects non-string sector identifier document members', function () {
+        mock('https://client.example.com')
+          .intercept({
+            path: '/sector',
+          })
+          .reply(200, JSON.stringify(['https://client.example.com/cb', null]));
+
+        return addClient(this.provider, {
+          client_id: 'client',
+          client_secret: 'secret',
+          redirect_uris: ['https://client.example.com/cb'],
+          sector_identifier_uri: 'https://client.example.com/sector',
+          subject_type: 'pairwise',
+        }).then((client) => {
+          expect(client).not.to.be.ok;
+        }, (err) => {
+          expect(err).to.be.ok;
+          expect(err.message).to.eq('invalid_client_metadata');
+          expect(err.error_description).to.eq('sector_identifier_uri must return an array of redirect_uri values');
+        });
+      });
+
       it('handles got lib errors', function () {
         mock('https://client.example.com')
           .intercept({
