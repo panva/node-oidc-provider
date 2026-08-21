@@ -3,6 +3,68 @@ import { expect } from 'chai';
 import Configuration from '../../lib/helpers/configuration.js';
 
 describe('Provider configuration', () => {
+  it('rejects inherited enabled feature members', () => {
+    class DeviceFlow {}
+    Object.defineProperties(DeviceFlow.prototype, {
+      charset: { value: 'digits' },
+      enabled: {
+        get() {
+          throw new Error('inherited getter was invoked');
+        },
+      },
+      mask: { value: '***' },
+    });
+
+    expect(() => new Configuration({
+      features: { deviceFlow: new DeviceFlow() },
+    })).to.throw('features.deviceFlow.enabled must be an own property');
+
+    class DisabledDeviceFlow {}
+    DisabledDeviceFlow.prototype.enabled = false;
+    expect(() => new Configuration({
+      features: { deviceFlow: new DisabledDeviceFlow() },
+    })).to.throw('features.deviceFlow.enabled must be an own property');
+  });
+
+  it('uses curated errors for null validation containers', () => {
+    expect(() => new Configuration({ enabledJWA: null }))
+      .to.throw('enabledJWA must be an object');
+
+    expect(() => new Configuration({
+      features: {
+        openid4vci: {
+          ack: 'experimental-01',
+          credentialConfigurationsSupported: {
+            example: {
+              format: 'example',
+              proof_types_supported: { attestation: null },
+            },
+          },
+          enabled: true,
+        },
+      },
+    })).to.throw("features.openid4vci.credentialConfigurationsSupported['example'].proof_types_supported.attestation must be an object");
+
+    class ProofTypeConfiguration {}
+    ProofTypeConfiguration.prototype.key_attestations_required = { key_storage: [] };
+    expect(() => new Configuration({
+      features: {
+        openid4vci: {
+          ack: 'experimental-01',
+          credentialConfigurationsSupported: {
+            example: {
+              format: 'example',
+              proof_types_supported: {
+                attestation: new ProofTypeConfiguration(),
+              },
+            },
+          },
+          enabled: true,
+        },
+      },
+    })).to.throw("features.openid4vci.credentialConfigurationsSupported['example'].proof_types_supported.attestation.key_attestations_required.key_storage must be a non-empty array of non-empty strings");
+  });
+
   it('does not mutate frozen configuration input', () => {
     const input = {
       claims: {
