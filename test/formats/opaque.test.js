@@ -293,6 +293,61 @@ describe('opaque storage', () => {
     expect(upsert.getCall(0).args[1]).not.to.have.property('scope');
   });
 
+  it('filters model payloads without invoking unknown accessors or prototypes', async function () {
+    const Parent = this.provider.Session;
+    class Model extends Parent {
+      static get IN_PAYLOAD() {
+        return [...Parent.IN_PAYLOAD, 'custom', '__proto__'];
+      }
+
+      set custom(value) {
+        this.seen = value;
+      }
+    }
+
+    const input = Object.create({
+      accountId,
+      jti: 'inherited-jti',
+      kind: 'AccessToken',
+    });
+    Object.defineProperties(input, {
+      state: { enumerable: true, value: { own: true } },
+      custom: { enumerable: true, value: 'setter value' },
+      unsupported: {
+        enumerable: true,
+        get() {
+          throw new Error('unknown property was read');
+        },
+      },
+      [Symbol('unsupported')]: {
+        enumerable: true,
+        get() {
+          throw new Error('unknown symbol was read');
+        },
+      },
+    });
+    Object.defineProperty(input, '__proto__', {
+      enumerable: true,
+      value: { polluted: true },
+    });
+
+    const model = new Model(input);
+    expect(model).not.to.have.own.property('accountId');
+    expect(model).not.to.have.property('jti', 'inherited-jti');
+    expect(model).not.to.have.property('kind', 'AccessToken');
+    expect(model).to.have.property('seen', 'setter value');
+    expect(model).not.to.have.own.property('custom');
+    expect(model).to.have.own.property('__proto__').that.eql({ polluted: true });
+    expect(Object.getPrototypeOf(model)).to.equal(Model.prototype);
+
+    model.format = 'opaque';
+    const { payload } = await model.getValueAndPayload();
+    expect(payload).to.have.own.property('__proto__').that.eql({ polluted: true });
+    expect(Object.getPrototypeOf(payload)).to.equal(Object.prototype);
+
+    expect(() => new Parent(null)).to.throw(TypeError, 'invalid model payload');
+  });
+
   it('resolves payload properties once per concrete model', async function () {
     let getterCalls = 0;
     const Parent = this.provider.AccessToken;
