@@ -320,6 +320,21 @@ describe('CORS setup', () => {
   });
 
   describe('with clientBasedCORS false (default)', () => {
+    it('does not allow opaque origins based on a native custom-scheme redirect URI', async function () {
+      const { status, headers } = await req.call(
+        this,
+        'get',
+        '/me',
+        'null',
+        ['set', 'authorization', `Bearer ${this.token}`],
+      );
+      expect(status).to.eql(400);
+      assertCorsHeaders(headers, {
+        // no Access-Control-Allow-Origin
+        [ACEHeaders]: 'WWW-Authenticate',
+      });
+    });
+
     it('userinfo has cors closed', async function () {
       const { status, headers } = await req.call(
         this,

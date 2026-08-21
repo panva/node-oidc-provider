@@ -15,9 +15,10 @@ export default {
   config,
   client: {
     client_id: 'client',
+    application_type: 'native',
     grant_types: ['client_credentials', 'urn:ietf:params:oauth:grant-type:device_code'],
     response_types: [],
-    redirect_uris: [],
+    redirect_uris: ['com.example.app:/cb'],
     token_endpoint_auth_method: 'none',
   },
 };
