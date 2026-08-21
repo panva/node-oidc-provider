@@ -390,6 +390,27 @@ describe('features.openid4vci', () => {
   });
 
   describe('authorization_details validations', () => {
+    for (const verb of ['get', 'post']) {
+      it(`rejects an unknown inherited authorization details type over ${verb}`, function () {
+        const auth = new this.AuthorizationRequest({
+          response_type: 'code',
+          authorization_details: JSON.stringify([
+            {
+              type: 'toString',
+            },
+          ]),
+        });
+
+        return this.wrap({ route: '/auth', verb, auth })
+          .expect(303)
+          .expect(auth.validatePresence(['error', 'error_description', 'state']))
+          .expect(auth.validateState)
+          .expect(auth.validateClientLocation)
+          .expect(auth.validateError('invalid_authorization_details'))
+          .expect(auth.validateErrorDescription('unsupported authorization details type value (authorization details index 0)'));
+      });
+    }
+
     it('rejects openid_credential detail without credential_configuration_id', function () {
       const auth = new this.AuthorizationRequest({
         response_type: 'code',
