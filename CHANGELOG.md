@@ -2,6 +2,32 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [9.11.4](https://github.com/panva/node-oidc-provider/compare/v9.11.3...v9.11.4) (2026-08-21)
+
+### Fixes
+
+* **cimd:** reject empty URL components ([2bcc7b9](https://github.com/panva/node-oidc-provider/commit/2bcc7b908bb9e11ee1dfd52a6a2a3fd0f2c997d6))
+* **claims:** validate individual claim request shapes ([55f64e7](https://github.com/panva/node-oidc-provider/commit/55f64e7f451d51ade6982e2a39774a96c2747715))
+* **client-auth:** reject loosely decoded Basic credentials ([f1bb868](https://github.com/panva/node-oidc-provider/commit/f1bb868df8ef47189f64d0a17c0ec93cdb6a68e9))
+* **client-auth:** validate attestation PoP jti ([e5f7bea](https://github.com/panva/node-oidc-provider/commit/e5f7bea43babb605e4408e96ef5b125a129ae80a))
+* **client:** compare registered redirects exactly ([48cc79c](https://github.com/panva/node-oidc-provider/commit/48cc79c2508fab678dba2687b8395cedcd0b7659))
+* **client:** reject non-string sector document entries ([5e1c963](https://github.com/panva/node-oidc-provider/commit/5e1c963f5dec0dec5f0c61aa6a49f09d285467fc))
+* **client:** reject sparse metadata arrays ([507c71f](https://github.com/panva/node-oidc-provider/commit/507c71f09eb3283713aa2ae3fc2d49d2ce6ce193))
+* **configuration:** harden nested option validation ([f6ecdfb](https://github.com/panva/node-oidc-provider/commit/f6ecdfb54d611eeaa3e0fc1965cd751329f892c8))
+* **cors:** reject opaque origins by default ([99f0e46](https://github.com/panva/node-oidc-provider/commit/99f0e461bbab248294a2fe4ea707e9be93d8fb2c))
+* **credential:** reject ambiguous JWT proof keys ([2d4ffc1](https://github.com/panva/node-oidc-provider/commit/2d4ffc1a7f5baccf7195f2445198159d690c856a))
+* **credential:** validate configuration references ([34f4333](https://github.com/panva/node-oidc-provider/commit/34f4333633e41839d7bd801aaa97aa99fac49a1f))
+* **credential:** validate JWT proof identity claims ([33f4945](https://github.com/panva/node-oidc-provider/commit/33f4945afefe51540eebec9e2b6fb329d83bde16))
+* **credential:** validate key attestation contents ([705650c](https://github.com/panva/node-oidc-provider/commit/705650c7c69f55ce024dbe179006b9bded1f8b74))
+* **dpop:** reject non-string htu claims ([dbf6bfc](https://github.com/panva/node-oidc-provider/commit/dbf6bfc1c7c852f3fd4b425caa5bd5850175332d))
+* **jwt:** use strict compact JWT decoders ([19dd9bb](https://github.com/panva/node-oidc-provider/commit/19dd9bbbe9c702f8344c8e2950885654fd6cb6c1))
+* **jwt:** validate audience claim members ([d5f4a27](https://github.com/panva/node-oidc-provider/commit/d5f4a2786dc0f63c7fea6889cf336068294894ac))
+* **models:** safely filter model payloads ([bf25eb5](https://github.com/panva/node-oidc-provider/commit/bf25eb5d97fee914b7f051c7a50d46292e1495ba))
+* **rar:** reject unknown authorization detail types ([c2611da](https://github.com/panva/node-oidc-provider/commit/c2611da87b42792bf3696e18b0ea756d2890ba2c))
+* **request:** omit empty Request Object parameters ([3d22206](https://github.com/panva/node-oidc-provider/commit/3d22206517e45f45b1e1ccb2ac28d10de2ec6f21))
+* **request:** require JSON object request bodies ([84cef90](https://github.com/panva/node-oidc-provider/commit/84cef90ce9787b78fe45019d0c5439a7acb70901))
+* **scope:** enforce OAuth request syntax ([3f1baef](https://github.com/panva/node-oidc-provider/commit/3f1baef420624032f52bba5aac6738ae951c974a))
+
 ## [9.11.3](https://github.com/panva/node-oidc-provider/compare/v9.11.2...v9.11.3) (2026-08-08)
 
 ### Fixes
