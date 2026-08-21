@@ -1125,6 +1125,20 @@ describe('features.dPoP', () => {
         .expect(400)
         .expect({ error: 'invalid_dpop_proof', error_description: 'DPoP proof htu mismatch' });
     });
+
+    it('rejects an htu claim that is not a string', async function () {
+      await this.agent.post('/token')
+        .auth('client', 'secret')
+        .send({ grant_type: 'client_credentials' })
+        .set('DPoP', await DPoP(
+          this.keypair,
+          [`${this.provider.issuer}${this.suitePath('/token')}`],
+          'POST',
+        ))
+        .type('form')
+        .expect(400)
+        .expect({ error: 'invalid_dpop_proof', error_description: 'DPoP proof htu mismatch' });
+    });
   });
 
   describe('invalid nonce', () => {
