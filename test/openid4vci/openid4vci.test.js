@@ -29,6 +29,7 @@ function ath(accessToken) {
 
 async function credentialProof(keypair, issuer, {
   aud = issuer,
+  iss,
   nonce,
   typ = 'openid4vci-proof+jwt',
   alg = 'ES256',
@@ -57,6 +58,7 @@ async function credentialProof(keypair, issuer, {
 
   const jwt = new SignJWT({
     aud,
+    iss,
     nonce,
   })
     .setProtectedHeader(header);
@@ -1606,6 +1608,50 @@ describe('features.openid4vci', () => {
         .expect({
           error: 'invalid_proof',
           error_description: 'jwt proof aud must equal credential issuer identifier',
+        });
+    });
+
+    it('returns invalid_proof when JWT proof aud is not a string', async function () {
+      const accessToken = await getAccessToken.call(this);
+      const proof = await credentialProof(this.keypair, this.provider.issuer, {
+        aud: [this.provider.issuer],
+        nonce: await getCNonce.call(this),
+      });
+
+      return this.agent.post('/credential')
+        .set('Authorization', `Bearer ${accessToken}`)
+        .send({
+          credential_configuration_id: 'org.iso.18013.5.1.mDL',
+          proofs: {
+            jwt: [proof],
+          },
+        })
+        .expect(400)
+        .expect({
+          error: 'invalid_proof',
+          error_description: 'jwt proof aud must be a string',
+        });
+    });
+
+    it('returns invalid_proof when JWT proof iss does not match the client_id', async function () {
+      const accessToken = await getAccessToken.call(this);
+      const proof = await credentialProof(this.keypair, this.provider.issuer, {
+        iss: 'attacker',
+        nonce: await getCNonce.call(this),
+      });
+
+      return this.agent.post('/credential')
+        .set('Authorization', `Bearer ${accessToken}`)
+        .send({
+          credential_configuration_id: 'org.iso.18013.5.1.mDL',
+          proofs: {
+            jwt: [proof],
+          },
+        })
+        .expect(400)
+        .expect({
+          error: 'invalid_proof',
+          error_description: 'jwt proof iss must equal client_id',
         });
     });
 
