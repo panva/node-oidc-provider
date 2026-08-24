@@ -144,7 +144,6 @@ try {
     cpSync(join(packed, "lib"), join(work, "lib"), { recursive: true });
     cpSync(join(root, "test"), join(work, "test"), { recursive: true });
     cpSync(join(root, "tools"), join(work, "tools"), { recursive: true });
-    cpSync(join(root, ".postchangelog.cjs"), join(work, ".postchangelog.cjs"));
     cpSync(join(root, "package.json"), join(work, "package.json"));
     symlinkSync(
       join(root, "node_modules"),
