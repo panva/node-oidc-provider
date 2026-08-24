@@ -10,10 +10,12 @@ jobs:
   release:
     permissions:
       actions: read
+      attestations: write
+      artifact-metadata: write
       contents: write
       discussions: write
       id-token: write
-    uses: panva/.github/.github/workflows/npm-release.yml@main
+    uses: panva/.github/.github/workflows/npm-release.yml@bd045b0d7d15f7827910cdedd3e7f0570bc5bf58
     with:
       artifact_check_command: node tools/test-dist.js "$PACKAGE_TARBALL"
       package_directory: ./dist
