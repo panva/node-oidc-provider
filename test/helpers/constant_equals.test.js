@@ -14,6 +14,7 @@ describe('constantEquals', () => {
     expect(constantEquals(c, d)).to.be.false;
     expect(constantEquals(a, a)).to.be.true;
     expect(constantEquals('abc', 'a0c')).to.be.false;
+    expect(constantEquals('éa', 'éb')).to.be.false;
     expect(() => constantEquals(Buffer.alloc(1), 'abc')).to.throw();
   });
 
