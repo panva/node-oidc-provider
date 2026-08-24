@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [9.11.5](https://github.com/panva/node-oidc-provider/compare/v9.11.4...v9.11.5) (2026-08-24)
+
+### Fixes
+
+* compare strings using UTF-8 byte lengths ([7d964ca](https://github.com/panva/node-oidc-provider/commit/7d964caa26c6fa900c92e9e5623000b44718b946))
+* **release:** generalize changelog separation ([44bb1b2](https://github.com/panva/node-oidc-provider/commit/44bb1b214d51f1d8b80625d3943e4b99c701e0f8))
+
 ## [9.11.4](https://github.com/panva/node-oidc-provider/compare/v9.11.3...v9.11.4) (2026-08-21)
 
 ### Fixes
