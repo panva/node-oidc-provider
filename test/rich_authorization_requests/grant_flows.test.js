@@ -62,7 +62,8 @@ describe('Rich Authorization Requests grant flows', () => {
       .expect(303)
       .expect((response) => {
         ({ location } = response.headers);
-        expect(new URL(location, this.provider.issuer).pathname).to.match(/^\/interaction\//);
+        expect(new URL(location, this.provider.issuer).pathname)
+          .to.match(new RegExp(`^${this.suitePath('/interaction/')}`));
       });
 
     await this.agent.post(location)
