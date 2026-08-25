@@ -253,7 +253,7 @@ describe('Rich Authorization Requests', () => {
       const target = new URL(response.headers.location, this.provider.issuer);
 
       expect(params.has('error')).to.be.false;
-      expect(target.pathname).to.match(/^\/interaction\//);
+      expect(target.pathname).to.match(new RegExp(`^${this.suitePath('/interaction/')}`));
       expect(rarState.validationCalls).to.be.empty;
     });
 
@@ -268,7 +268,7 @@ describe('Rich Authorization Requests', () => {
       const target = new URL(response.headers.location, this.provider.issuer);
 
       expect(params.has('error')).to.be.false;
-      expect(target.pathname).to.match(/^\/interaction\//);
+      expect(target.pathname).to.match(new RegExp(`^${this.suitePath('/interaction/')}`));
       expect(rarState.validationCalls).to.deep.equal([detail]);
     });
   });

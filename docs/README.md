@@ -203,16 +203,21 @@ router.post("/interaction/:uid", async (ctx, next) => {
 
 ## Custom Grant Types
 
-The authorization server comes with the basic grants implemented, but implementations may register custom grant types,
-for example to implement an
-[OAuth 2.0 Token Exchange](https://www.rfc-editor.org/info/rfc8693/). Implementations can examine the standard
-grant factories [here](/lib/actions/grants).
+The authorization server comes with the basic grants implemented, but implementations may register OAuth 2.0
+[extension grants](https://www.rfc-editor.org/info/rfc6749/#section-4.5), for example
+[OAuth 2.0 Token Exchange (RFC 8693)](https://www.rfc-editor.org/info/rfc8693/),
+[JWT bearer grants (RFC 7523)](https://www.rfc-editor.org/info/rfc7523/),
+[SAML bearer grants (RFC 7522)](https://www.rfc-editor.org/info/rfc7522/), or the
+[Identity Assertion Authorization Grant](https://datatracker.ietf.org/doc/draft-ietf-oauth-identity-assertion-authz-grant/).
 
 ```js
+import * as grants from "oidc-provider/lib/helpers/grants.js";
+
 const parameters = [
   "audience",
   "resource",
   "scope",
+  "authorization_details",
   "requested_token_type",
   "subject_token",
   "subject_token_type",
@@ -222,15 +227,116 @@ const parameters = [
 const allowedDuplicateParameters = ["audience", "resource"];
 const grantType = "urn:ietf:params:oauth:grant-type:token-exchange";
 
-async function tokenExchangeHandler(ctx, next) {
-  // ctx.oidc.params holds the parsed parameters
-  // ctx.oidc.client has the authenticated client
-  // your grant implementation
-  // see /lib/actions/grants for references on how to instantiate and issue tokens
+async function tokenExchangeHandler(ctx) {
+  // Grant-specific validation, authorization, issuance, and ctx.body assignment.
 }
 
 provider.registerGrantType(grantType, tokenExchangeHandler, parameters, allowedDuplicateParameters);
 ```
+
+The handler is called as `handler(ctx)`. Before it runs, oidc-provider parses the request, authenticates the client,
+checks that the client may use the grant type, rejects unexpected duplicate parameters, validates `scope` syntax, and
+validates Rich Authorization Requests when enabled. `ctx.oidc.params` contains only client-authentication parameters,
+`grant_type`, and the parameters registered for the selected grant. Therefore, every custom parameter, including
+`resource` and `authorization_details`, must be registered explicitly. Repeated values are rejected by default; list a
+parameter in `allowedDuplicateParameters` only when its specification permits repetition. A permitted repeated value is
+exposed as an array. Repeated `grant_type` values are always rejected.
+
+> [!WARNING]
+> The `oidc-provider/lib/helpers/grants.js` module is intended for custom grant implementations and is not covered by
+> semantic versioning conventions. Its exports, signatures, and behavior may change in any release. Pin an exact
+> oidc-provider version when using these helpers and review their changes before upgrading. Making this subpath an
+> explicit package export would only preserve access; it would not change this compatibility policy.
+
+The helpers keep protocol-specific code small while preserving control over policy and token shape. A custom handler
+should perform work in this order:
+
+1. Validate the grant's required parameters, assertion or input-token integrity, issuer, audience, replay rules, and
+   deployment authorization policy. For provider-managed artifacts, use `findGrantSource(provider, ctx, Model, value,
+   label)`, `validateGrant(provider, ctx, grantId)`, and `findAccount(provider, ctx, accountId, source?)` where applicable.
+   The handler must still validate source-specific state and reject a missing account or an account/Grant mismatch.
+   Translate assertion-verification failures to a sanitized OAuth error and retain the original exception only as its
+   internal `cause`; do not expose signature, parser, trust-store, or subject-mapping details to the client.
+2. Call `validateSenderConstraints(provider, ctx, ErrorClass?)` once. Normalize and authorize requested scopes with
+   `validateClientScope(provider, ctx, scopes?)`, which enforces the client's static scope allow list. For an externally
+   validated assertion or client-only grant, call `resolveRequestedResources(provider, ctx)`; it populates
+   `ctx.oidc.resourceServers` and returns the resolved Resource Servers. The handler must select and assign at most one of
+   them to a provider token. A provider-managed source and Grant can instead use `resolveAndApplyResource(...)` after
+   constructing a token.
+3. Only after non-mutating validation succeeds, call `consumeGrantSource(provider, ctx, source, label)` when the grant
+   source is defined as single-use. Token Exchange input tokens, for example, are not consumed merely by being exchanged.
+4. Construct the appropriate provider token model, apply resource policy, and call
+   `applyAuthorizationDetails(provider, ctx, token, source?)`. After every other fallible authorization and response
+   validation has succeeded, call `applySenderConstraints(provider, ctx, token, constraints, ErrorClass?)` as the last
+   pre-persistence stage so its DPoP replay check is not consumed by an earlier failure.
+5. Assign relevant objects with `ctx.oidc.entity(name, value)` before calling their `save()` methods. The helpers do not
+   assign entities or persist newly constructed tokens. Use `shouldIssueRefreshToken(provider, ctx, source)` before
+   creating a Refresh Token and `applyRefreshTokenBindings(provider, ctx, accessToken, refreshToken)` before saving it.
+6. Set `ctx.body`, usually with `buildTokenResponse(provider, input)`. Throw the public `errors` exported by
+   `oidc-provider` for OAuth errors; grant-specific validation and error selection remain the handler's responsibility.
+
+The following issuance tail shows a provider `AccessToken`. It assumes application code has already validated the custom
+grant and produced a provider-compatible `source`, its persisted `grant`, and its `account`.
+
+```js
+async function issueProviderAccessToken(ctx, source, grant, account, effectiveScopes) {
+  const constraints = await grants.validateSenderConstraints(provider, ctx);
+  const scopes = grants.validateClientScope(provider, ctx, effectiveScopes);
+
+  ctx.oidc.entity("Grant", grant);
+  ctx.oidc.entity("Account", account);
+
+  const token = new provider.AccessToken({
+    accountId: account.accountId,
+    client: ctx.oidc.client,
+    grantId: grant.jti,
+    gty: ctx.oidc.params.grant_type,
+  });
+
+  await grants.resolveAndApplyResource(provider, ctx, source, token, grant, scopes);
+  await grants.applyAuthorizationDetails(provider, ctx, token, source);
+  await grants.applySenderConstraints(provider, ctx, token, constraints);
+
+  ctx.oidc.entity("AccessToken", token);
+  const accessToken = await token.save();
+
+  ctx.body = grants.buildTokenResponse(provider, {
+    accessToken,
+    tokenType: token.tokenType,
+    expiresIn: token.expiration,
+    scope: token.scope,
+    authorizationDetails: token.rar,
+  });
+}
+```
+
+`buildTokenResponse` requires `accessToken` and `tokenType`. It also accepts `expiresIn`, `scope`,
+`authorizationDetails`, `refreshToken`, `idToken`, and `issuedTokenType`, maps them to their wire names, and omits
+undefined values. Additional response members may be supplied in a plain `parameters` object; it cannot override a
+reserved response member.
+
+RFC 8693 can return a security token that is not an OAuth Access Token and is not usable as one. The application is
+responsible for producing such a token; use the RFC 8693 `N_A` token type and include the required issued-token type:
+
+```js
+async function tokenExchangeHandler(ctx) {
+  const issued = await validateExchangeAndIssueToken(ctx);
+
+  ctx.body = grants.buildTokenResponse(provider, {
+    accessToken: issued.value,
+    tokenType: "N_A",
+    issuedTokenType: issued.type,
+    expiresIn: issued.expiresIn,
+  });
+}
+```
+
+These helpers do not implement RFC 8693, RFC 7522, RFC 7523, or the Identity Assertion Authorization Grant; they do not
+establish assertion trust, decide delegation or impersonation policy, sign arbitrary security-token formats, or relax
+the token endpoint's registered-client and `grant_types` checks. External assertion replay rejection also needs an
+application-selected, atomic replay store; it is independent from stored-source consumption and DPoP replay detection.
+Implementations can also examine the built-in grant handlers [here](/lib/actions/grants), but should not treat their
+internal structure as a public API.
 
 ## General access to `ctx`
 
