@@ -1,9 +1,8 @@
+import base64url from 'base64url';
 import { expect } from 'chai';
 import { createSandbox } from 'sinon';
-import base64url from 'base64url';
-
-import bootstrap from '../test_helper.js';
 import epochTime from '../../lib/helpers/epoch_time.js';
+import bootstrap from '../test_helper.js';
 
 const route = '/token';
 const grant_type = 'urn:ietf:params:oauth:grant-type:device_code';
@@ -230,20 +229,11 @@ describe('grant_type=urn:ietf:params:oauth:grant-type:device_code', () => {
     });
 
     context('', () => {
-      before(function () {
-        const { ttl } = i(this.provider).configuration;
-        this.prev = ttl.DeviceCode;
-        ttl.DeviceCode = 0;
-      });
-
-      after(function () {
-        i(this.provider).configuration.ttl.DeviceCode = this.prev;
-      });
-
       it('validates code is not expired', async function () {
         const deviceCode = new this.provider.DeviceCode({
           scope: 'openid',
           clientId: 'client',
+          expiresIn: -1,
         });
         const code = await deviceCode.save();
 

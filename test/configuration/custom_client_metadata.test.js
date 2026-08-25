@@ -239,4 +239,33 @@ describe('extraClientMetadata configuration', () => {
       expect(err).to.have.property('error_description', 'invalid client_description name provided');
     }
   });
+
+  it('rejects thenables returned by regular validators', async () => {
+    const provider = new Provider('http://localhost:3000', {
+      extraClientMetadata: {
+        properties: ['foo'],
+        validator() {
+          return Promise.resolve();
+        },
+      },
+      clients: [
+        {
+          client_id: 'client',
+          client_secret: 'bar',
+          redirect_uris: ['http://rp.example.com/cb'],
+        },
+      ],
+    });
+
+    try {
+      await provider.Client.find('client');
+      throw new Error('expected a throw from the above');
+    } catch (err) {
+      expect(err).to.be.an.instanceof(TypeError);
+      expect(err).to.have.property(
+        'message',
+        'extraClientMetadata.validator must be a synchronous function',
+      );
+    }
+  });
 });

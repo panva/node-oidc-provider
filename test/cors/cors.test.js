@@ -1,5 +1,7 @@
 import { expect } from 'chai';
+import sinon from 'sinon';
 
+import instance from '../../lib/helpers/weak_cache.js';
 import bootstrap from '../test_helper.js';
 
 function req(verb, url, origin, ...methods) {
@@ -54,16 +56,18 @@ describe('CORS setup', () => {
 
   describe('error handling', () => {
     before(function () {
-      this.default = i(this.provider).configuration.clientBasedCORS;
+      this.default = instance(this.provider).configuration.clientBasedCORS;
     });
 
     after(function () {
-      const conf = i(this.provider).configuration;
+      const conf = instance(this.provider).configuration;
       conf.clientBasedCORS = this.default;
     });
 
     it('500s when clientBasedCORS returns non-boolean', async function () {
-      i(this.provider).configuration.clientBasedCORS = () => Promise.resolve(true);
+      const spy = sinon.spy();
+      this.provider.once('server_error', spy);
+      instance(this.provider).configuration.clientBasedCORS = () => Promise.resolve(true);
       const { status, headers } = await req.call(
         this,
         'get',
@@ -72,6 +76,10 @@ describe('CORS setup', () => {
         ['set', 'authorization', `Bearer ${this.token}`],
       );
       expect(status).to.eql(500);
+      expect(spy.args[0][1]).to.have.property(
+        'message',
+        'clientBasedCORS must return a Boolean',
+      );
       assertCorsHeaders(headers, {
         [ACEHeaders]: 'WWW-Authenticate',
         [ACAOrigin]: 'https://example.com',
@@ -119,13 +127,13 @@ describe('CORS setup', () => {
 
   describe('with clientBasedCORS resolving to true', () => {
     before(function () {
-      const conf = i(this.provider).configuration;
+      const conf = instance(this.provider).configuration;
       this.clientBasedCORS = conf.clientBasedCORS;
       conf.clientBasedCORS = () => true;
     });
 
     after(function () {
-      const conf = i(this.provider).configuration;
+      const conf = instance(this.provider).configuration;
       conf.clientBasedCORS = this.clientBasedCORS;
     });
 
