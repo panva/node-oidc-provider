@@ -479,6 +479,7 @@ location / {
   - [registrationManagement](#featuresregistrationmanagement) - RFC7592 - OAuth 2.0 Dynamic Client Registration Management Protocol
   - [requestObjects](#featuresrequestobjects) - OIDC Core 1.0 and RFC9101 - Passing a Request Object by Value (JAR)
   - [revocation](#featuresrevocation) - RFC7009 - OAuth 2.0 Token Revocation
+  - [richAuthorizationRequests](#featuresrichauthorizationrequests) - RFC9396 - OAuth 2.0 Rich Authorization Requests
   - [rpInitiatedLogout](#featuresrpinitiatedlogout) - OIDC RP-Initiated Logout 1.0
   - [rpMetadataChoices](#featuresrpmetadatachoices) - OIDC Relying Party Metadata Choices 1.0
   - [userinfo](#featuresuserinfo) - OIDC Core 1.0 - UserInfo Endpoint
@@ -487,7 +488,6 @@ location / {
     - [clientIdMetadataDocument](#featuresclientidmetadatadocument) - draft-ietf-oauth-client-id-metadata-document-02 - OAuth Client ID Metadata Document (CIMD)
     - [externalSigningSupport](#featuresexternalsigningsupport) - External Signing Support
     - [openid4vci](#featuresopenid4vci) - OpenID for Verifiable Credential Issuance 1.0
-    - [richAuthorizationRequests](#featuresrichauthorizationrequests) - RFC9396 - OAuth 2.0 Rich Authorization Requests
     - [webMessageResponseMode](#featureswebmessageresponsemode) - draft-sakimura-oauth-wmrm-01 - OAuth 2.0 Web Message Response Mode
 - [findAccount ❗](#findaccount) - Account Loading and Claims Resolution
 - [interactions ❗](#interactions) - End-User Interaction Policy
@@ -2015,6 +2015,158 @@ async function revocationAllowedPolicy(ctx, client, token) {
 
 ---
 
+### features.richAuthorizationRequests
+
+[RFC9396](https://www.rfc-editor.org/info/rfc9396/) - OAuth 2.0 Rich Authorization Requests  
+
+> [!IMPORTANT]
+> The following default helper implementations in this option include placeholders and MUST be replaced by a deployment before use.
+> - `authorizationDetailsForGrantSource`
+> - `authorizationDetailsForAccessToken`
+> - `authorizationDetailsForIntrospection`
+
+Specifies whether Rich Authorization Request capabilities shall be enabled. When enabled, the authorization server shall support the `authorization_details` parameter at the authorization and token endpoints to enable issuing Access Tokens with fine-grained authorization data and enhanced authorization scope control. 
+
+This provider profile requires `features.resourceIndicators` and supports authorization requests whose response type contains `code` but not `token`. Deployments handling sensitive authorization details SHOULD use JAR or PAR, sanitize all consent presentation, compare string values exactly without Unicode normalization, and disclose details to clients and Resource Servers only as required by policy.  
+
+
+_**default value**_:
+```js
+{
+  authorizationDetailsForAccessToken: [Function: authorizationDetailsForAccessToken], // see expanded details below
+  authorizationDetailsForGrantSource: [Function: authorizationDetailsForGrantSource], // see expanded details below
+  authorizationDetailsForIntrospection: [Function: authorizationDetailsForIntrospection], // see expanded details below
+  enabled: false,
+  types: {}
+}
+```
+
+<details><summary>(Click to expand) features.richAuthorizationRequests options details</summary><br>
+
+
+#### authorizationDetailsForAccessToken
+
+Specifies a helper function that shall be invoked before an AccessToken or ClientCredentials token is persisted whenever Rich Authorization Request details were requested or inherited from the grant source. The function shall perform type-specific grant comparison, client policy enforcement, resource-specific filtering, and any response enrichment. It shall return the exact authorization details assigned to the access token and returned from the token endpoint, or undefined. An empty array is treated as undefined. `source` is the exchanged grant source, or undefined for client credentials; `grantType` is the exact token request `grant_type` value, including full URN values. To reject client-provided authorization details, throw `errors.InvalidAuthorizationDetails`.  
+
+
+_**default value**_:
+```js
+authorizationDetailsForAccessToken(ctx, token, source, grantType) {
+  // decision points:
+  // - ctx.oidc.client
+  // - token (the AccessToken or ClientCredentials instance about to be persisted)
+  // - token.resourceServer
+  // - source (the exchanged grant source, or undefined for client_credentials)
+  // - grantType (the exact grant_type parameter value)
+  // - ctx.oidc.params.authorization_details (unparsed authorization_details from the token request)
+  // - ctx.oidc.grant.rar (authorization_details granted)
+  throw new Error(
+    'features.richAuthorizationRequests.authorizationDetailsForAccessToken not implemented',
+  );
+}
+```
+
+#### authorizationDetailsForGrantSource
+
+Specifies a helper function that shall be invoked before an AuthorizationCode or DeviceCode grant source is persisted when Rich Authorization Request details were requested or granted. The function shall apply authorization server policy to the requested and granted details and return the authorization details to store in the grant source, or undefined. An empty array is treated as undefined.  
+
+
+_**default value**_:
+```js
+authorizationDetailsForGrantSource(ctx, source) {
+  // decision points:
+  // - ctx.oidc.client
+  // - ctx.oidc.resourceServers
+  // - ctx.oidc.params.authorization_details (unparsed authorization_details from the request)
+  // - ctx.oidc.grant.rar (authorization_details granted during the interaction)
+  // - source (the AuthorizationCode or DeviceCode about to be persisted)
+  throw new Error(
+    'features.richAuthorizationRequests.authorizationDetailsForGrantSource not implemented',
+  );
+}
+```
+
+#### authorizationDetailsForIntrospection
+
+Specifies a helper function that shall be invoked when a token containing Rich Authorization Request details is introspected. It shall apply authorization server policy for the requesting party and return the authorization details to include as the top-level `authorization_details` introspection response member, or undefined. An empty array is treated as undefined.  
+
+
+_**default value**_:
+```js
+authorizationDetailsForIntrospection(ctx, token) {
+  // decision points:
+  // - ctx.oidc.client
+  // - token.kind
+  // - token.rar
+  throw new Error(
+    'features.richAuthorizationRequests.authorizationDetailsForIntrospection not implemented',
+  );
+}
+```
+
+#### types
+
+Specifies the authorization details type identifiers that shall be supported by the authorization server. Each type identifier MUST have an associated validation function that defines the required structure and constraints for authorization details of that specific type according to authorization server policy. The validation function is responsible for rejecting unknown fields as well as missing or invalid type-specific fields with `errors.InvalidAuthorizationDetails`. 
+
+  
+
+
+_**default value**_:
+```js
+{}
+```
+<a id="types-authorization-details-type-validation-for-tax-data-access"></a><details><summary>Example: (Click to expand) Authorization details type validation for tax data access.</summary><br>
+
+```js
+import { z } from 'zod'
+const TaxData = z
+  .object({
+    duration_of_access: z.number().int().positive(),
+    locations: z
+      .array(
+        z.literal('https://taxservice.govehub.no.example.com'),
+      )
+      .length(1),
+    actions: z
+      .array(z.literal('read_tax_declaration'))
+      .length(1),
+    periods: z
+      .array(
+        z.coerce
+          .number()
+          .max(new Date().getFullYear() - 1)
+          .min(1997),
+      )
+      .min(1),
+    tax_payer_id: z.string().min(1),
+  })
+  .strict()
+const configuration = {
+  features: {
+    richAuthorizationRequests: {
+      enabled: true,
+      // ...
+      types: {
+        tax_data: {
+          validate(ctx, detail, client) {
+            const { success: valid, error } =
+              TaxData.safeParse(detail)
+            if (!valid) {
+              throw new InvalidAuthorizationDetails()
+            }
+          },
+        },
+      },
+    },
+  },
+}
+```
+</details>
+
+</details>
+
+---
+
 ### features.rpInitiatedLogout
 
 [OIDC RP-Initiated Logout 1.0](https://openid.net/specs/openid-connect-rpinitiated-1_0-final.html)  
@@ -2686,203 +2838,6 @@ const code = new provider.PreAuthorizedCode({
 // deliver as grants['urn:ietf:params:oauth:grant-type:pre-authorized_code']['pre-authorized_code']
 // in a Credential Offer
 const preAuthorizedCode = await code.save();
-```
-</details>
-
-</details>
-
----
-
-### features.richAuthorizationRequests
-
-[RFC9396](https://www.rfc-editor.org/info/rfc9396/) - OAuth 2.0 Rich Authorization Requests  
-
-> [!NOTE]
-> This is an experimental feature.
-
-> [!IMPORTANT]
-> The following default helper implementations in this option include placeholders and MUST be replaced by a deployment before use.
-> - `rarForAuthorizationCode`
-> - `rarForCodeResponse`
-> - `rarForBackchannelResponse`
-> - `rarForRefreshTokenResponse`
-> - `rarForIntrospectionResponse`
-
-Specifies whether Rich Authorization Request capabilities shall be enabled. When enabled, the authorization server shall support the `authorization_details` parameter at the authorization and token endpoints to enable issuing Access Tokens with fine-grained authorization data and enhanced authorization scope control.  
-
-
-_**default value**_:
-```js
-{
-  ack: undefined,
-  enabled: false,
-  rarForAuthorizationCode: [Function: rarForAuthorizationCode], // see expanded details below
-  rarForBackchannelResponse: [Function: rarForBackchannelResponse], // see expanded details below
-  rarForCodeResponse: [Function: rarForCodeResponse], // see expanded details below
-  rarForIntrospectionResponse: [Function: rarForIntrospectionResponse], // see expanded details below
-  rarForRefreshTokenResponse: [Function: rarForRefreshTokenResponse], // see expanded details below
-  types: {}
-}
-```
-
-<details><summary>(Click to expand) features.richAuthorizationRequests options details</summary><br>
-
-
-#### rarForAuthorizationCode
-
-Specifies a helper function that shall be invoked to transform the requested and granted Rich Authorization Request details for storage in the authorization code. This function enables filtering and processing of authorization details according to authorization server policy before code persistence. The function shall return an array of authorization details or undefined.  
-
-
-_**default value**_:
-```js
-rarForAuthorizationCode(ctx) {
-  // decision points:
-  // - ctx.oidc.client
-  // - ctx.oidc.resourceServers
-  // - ctx.oidc.params.authorization_details (unparsed authorization_details from the authorization request)
-  // - ctx.oidc.grant.rar (authorization_details granted)
-  throw new Error(
-    'features.richAuthorizationRequests.rarForAuthorizationCode not implemented',
-  );
-}
-```
-
-#### rarForBackchannelResponse
-
-Specifies a helper function that shall be invoked to transform the requested and granted Rich Authorization Request details for inclusion in the Access Token Response as authorization_details and assignment to the issued Access Token during the ciba grant. This function enables resource-specific filtering and transformation of authorization details according to token endpoint policy. The function shall return an array of authorization details or undefined.  
-
-
-_**default value**_:
-```js
-rarForBackchannelResponse(ctx, resourceServer) {
-  // decision points:
-  // - ctx.oidc.client
-  // - resourceServer
-  // - ctx.oidc.entities.BackchannelAuthenticationRequest.rar (the rar applied during await provider.backchannelResult())
-  // - ctx.oidc.entities.BackchannelAuthenticationRequest.params.authorization_details (the original backchannel authentication request authorization_details object)
-  // - ctx.oidc.params.authorization_details (unparsed authorization_details from the body params in the Access Token Request)
-  // - ctx.oidc.grant.rar (authorization_details granted)
-  throw new Error(
-    'features.richAuthorizationRequests.rarForBackchannelResponse not implemented',
-  );
-}
-```
-
-#### rarForCodeResponse
-
-Specifies a helper function that shall be invoked to transform the requested and granted Rich Authorization Request details for inclusion in the Access Token Response as authorization_details and assignment to the issued Access Token during the authorization code grant. This function enables resource-specific filtering and transformation of authorization details according to token endpoint policy. The function shall return an array of authorization details or undefined.  
-
-
-_**default value**_:
-```js
-rarForCodeResponse(ctx, resourceServer) {
-  // decision points:
-  // - ctx.oidc.client
-  // - resourceServer
-  // - ctx.oidc.authorizationCode.rar (previously returned from rarForAuthorizationCode)
-  // - ctx.oidc.params.authorization_details (unparsed authorization_details from the body params in the Access Token Request)
-  // - ctx.oidc.grant.rar (authorization_details granted)
-  throw new Error(
-    'features.richAuthorizationRequests.rarForCodeResponse not implemented',
-  );
-}
-```
-
-#### rarForIntrospectionResponse
-
-Specifies a helper function that shall be invoked to transform the token's stored Rich Authorization Request details for inclusion in the Token Introspection Response. This function enables filtering and processing of authorization details according to introspection endpoint policy and requesting party authorization. The function shall return an array of authorization details or undefined.  
-
-
-_**default value**_:
-```js
-rarForIntrospectionResponse(ctx, token) {
-  // decision points:
-  // - ctx.oidc.client
-  // - token.kind
-  // - token.rar
-  // - ctx.oidc.grant.rar
-  throw new Error(
-    'features.richAuthorizationRequests.rarForIntrospectionResponse not implemented',
-  );
-}
-```
-
-#### rarForRefreshTokenResponse
-
-Specifies a helper function that shall be invoked to transform the requested and granted Rich Authorization Request details for inclusion in the Access Token Response during refresh token exchanges as authorization_details and assignment to the newly issued Access Token. This function enables resource-specific processing of previously granted authorization details according to refresh token policy. The function shall return an array of authorization details or undefined.  
-
-
-_**default value**_:
-```js
-rarForRefreshTokenResponse(ctx, resourceServer) {
-  // decision points:
-  // - ctx.oidc.client
-  // - resourceServer
-  // - ctx.oidc.refreshToken.rar (previously returned from rarForAuthorizationCode and later assigned to the refresh token)
-  // - ctx.oidc.params.authorization_details (unparsed authorization_details from the body params in the Access Token Request)
-  // - ctx.oidc.grant.rar
-  throw new Error(
-    'features.richAuthorizationRequests.rarForRefreshTokenResponse not implemented',
-  );
-}
-```
-
-#### types
-
-Specifies the authorization details type identifiers that shall be supported by the authorization server. Each type identifier MUST have an associated validation function that defines the required structure and constraints for authorization details of that specific type according to authorization server policy. 
-
-  
-
-
-_**default value**_:
-```js
-{}
-```
-<a id="types-authorization-details-type-validation-for-tax-data-access"></a><details><summary>Example: (Click to expand) Authorization details type validation for tax data access.</summary><br>
-
-```js
-import { z } from 'zod'
-const TaxData = z
-  .object({
-    duration_of_access: z.number().int().positive(),
-    locations: z
-      .array(
-        z.literal('https://taxservice.govehub.no.example.com'),
-      )
-      .length(1),
-    actions: z
-      .array(z.literal('read_tax_declaration'))
-      .length(1),
-    periods: z
-      .array(
-        z.coerce
-          .number()
-          .max(new Date().getFullYear() - 1)
-          .min(1997),
-      )
-      .min(1),
-    tax_payer_id: z.string().min(1),
-  })
-  .strict()
-const configuration = {
-  features: {
-    richAuthorizationRequests: {
-      enabled: true,
-      // ...
-      types: {
-        tax_data: {
-          validate(ctx, detail, client) {
-            const { success: valid, error } =
-              TaxData.safeParse(detail)
-            if (!valid) {
-              throw new InvalidAuthorizationDetails()
-            }
-          },
-        },
-      },
-    },
-  },
-}
 ```
 </details>
 
