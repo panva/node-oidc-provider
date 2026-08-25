@@ -1,9 +1,9 @@
 import { strict as assert } from 'node:assert';
-
-import { createSandbox } from 'sinon';
 import { expect } from 'chai';
+import { createSandbox } from 'sinon';
 import timekeeper from 'timekeeper';
 
+import instance from '../../lib/helpers/weak_cache.js';
 import bootstrap from '../test_helper.js';
 
 const sinon = createSandbox();
@@ -74,6 +74,21 @@ describe('BaseToken', () => {
     }).save();
     const jti = this.getTokenJti(token);
     expect(this.adapter.upsert.calledWith(jti, sinon.match({}), 60)).to.be.true;
+  });
+
+  it('rejects invalid TTL callback results with the configuration path', async function () {
+    const { ttl } = instance(this.provider).configuration;
+    const original = ttl.RefreshToken;
+    ttl.RefreshToken = () => 0;
+
+    try {
+      await assert.rejects(
+        new this.provider.RefreshToken({ grantId: 'foo' }).save(),
+        { name: 'TypeError', message: 'ttl.RefreshToken must return a positive integer' },
+      );
+    } finally {
+      ttl.RefreshToken = original;
+    }
   });
 
   it('resaves tokens with their actual remaining ttl passed to expiration', async function () {

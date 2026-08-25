@@ -1,11 +1,12 @@
 import { expect } from 'chai';
-import { createSandbox } from 'sinon';
 import {
-  SignJWT, exportJWK, generateKeyPair,
+  exportJWK,
+  generateKeyPair,
+  SignJWT,
 } from 'jose';
-
-import bootstrap from '../test_helper.js';
+import { createSandbox } from 'sinon';
 import epochTime from '../../lib/helpers/epoch_time.js';
+import bootstrap from '../test_helper.js';
 import { rarEvents } from './openid4vci.config.js';
 
 const route = '/token';
@@ -24,6 +25,7 @@ describe('grant_type=urn:ietf:params:oauth:grant-type:pre-authorized_code', () =
   async function mint({
     accountId = 'account',
     clientId = 'wallet',
+    expiresIn,
     grantAccountId = accountId,
     grantId,
     scope = 'mdl_scope',
@@ -45,6 +47,7 @@ describe('grant_type=urn:ietf:params:oauth:grant-type:pre-authorized_code', () =
     const preAuthorizedCode = new this.provider.PreAuthorizedCode({
       accountId,
       clientId,
+      expiresIn,
       grantId,
       resource,
       scope,
@@ -328,21 +331,11 @@ describe('grant_type=urn:ietf:params:oauth:grant-type:pre-authorized_code', () =
     });
 
     context('', () => {
-      before(function () {
-        const { ttl } = i(this.provider).configuration;
-        this.prev = ttl.PreAuthorizedCode;
-        ttl.PreAuthorizedCode = 0;
-      });
-
-      after(function () {
-        i(this.provider).configuration.ttl.PreAuthorizedCode = this.prev;
-      });
-
       it('code is not expired', async function () {
         const spy = sinon.spy();
         this.provider.once('grant.error', spy);
 
-        const code = await mint.call(this);
+        const code = await mint.call(this, { expiresIn: -1 });
 
         return this.agent.post(route)
           .type('form')

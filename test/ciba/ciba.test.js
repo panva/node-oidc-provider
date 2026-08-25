@@ -1,16 +1,14 @@
 import { strict as assert } from 'node:assert';
-import { once } from 'node:events';
 import { createPrivateKey } from 'node:crypto';
-
-import sinon from 'sinon';
+import { once } from 'node:events';
 import { expect } from 'chai';
-import { generateKeyPair, SignJWT, exportJWK } from 'jose';
-
-import { AccessDenied } from '../../lib/helpers/errors.js';
+import { exportJWK, generateKeyPair, SignJWT } from 'jose';
+import sinon from 'sinon';
 import epochTime from '../../lib/helpers/epoch_time.js';
+import { AccessDenied } from '../../lib/helpers/errors.js';
 import { sign as signJWT } from '../../lib/helpers/jwt.js';
-import bootstrap, { assertNoPendingInterceptors, mock } from '../test_helper.js';
 import keys from '../keys.js';
+import bootstrap, { assertNoPendingInterceptors, mock } from '../test_helper.js';
 
 import { emitter } from './ciba.config.js';
 
@@ -141,7 +139,7 @@ describe('features.ciba', () => {
       const route = '/backchannel';
 
       it('minimal w/ login_hint', async function () {
-        const [, [, request, account, client], verifyUserCode] = await Promise.all([
+        const [, [, request, account, client], , , , verifyUserCode] = await Promise.all([
           this.agent.post(route)
             .send({
               scope: 'openid',
@@ -174,6 +172,7 @@ describe('features.ciba', () => {
         expect(request.params).to.deep.eql({
           client_id: 'client', login_hint: 'accountId', scope: 'openid', extra2: 'defaulted', extra: 'provided',
         });
+        expect(verifyUserCode[1]).to.equal(account);
         expect(verifyUserCode[2]).to.be.undefined;
       });
 

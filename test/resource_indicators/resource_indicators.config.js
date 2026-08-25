@@ -40,7 +40,7 @@ merge(config, {
     resourceIndicators: {
       enabled: true,
       async useGrantedResource(ctx) {
-        return ctx.oidc.body?.usegranted;
+        return ctx.oidc.body?.usegranted === true || ctx.oidc.body?.usegranted === 'true';
       },
       getResourceServerInfo(_ctx, resource) {
         if (resource.includes('wl')) {
