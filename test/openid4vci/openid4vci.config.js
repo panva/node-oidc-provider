@@ -1,9 +1,15 @@
+import { EventEmitter } from 'node:events';
+
 import { generateKeyPair } from 'jose';
 
 import getConfig from '../default.config.js';
-import { InvalidTarget } from '../../lib/helpers/errors.js';
+import {
+  InvalidAuthorizationDetails,
+  InvalidTarget,
+} from '../../lib/helpers/errors.js';
 
 export const attesterKeypair = await generateKeyPair('ES256', { extractable: true });
+export const rarEvents = new EventEmitter();
 
 const config = getConfig();
 
@@ -14,21 +20,30 @@ config.features.dPoP = {
 };
 config.features.richAuthorizationRequests = {
   enabled: true,
-  ack: 'experimental-01',
-  rarForAuthorizationCode(ctx) {
-    if (!ctx.oidc.params.authorization_details) {
-      return undefined;
+  authorizationDetailsForGrantSource(ctx) {
+    return ctx.oidc.grant.rar;
+  },
+  authorizationDetailsForAccessToken(ctx, token, source, grantType) {
+    rarEvents.emit('authorizationDetailsForAccessToken', ctx, token, source, grantType);
+
+    const requested = ctx.oidc.params.authorization_details
+      ? JSON.parse(ctx.oidc.params.authorization_details)
+      : source?.rar;
+
+    if (!requested) return undefined;
+
+    const granted = new Set(source?.rar?.map((detail) => detail.credential_configuration_id));
+    if (requested.some((detail) => !granted.has(detail.credential_configuration_id))) {
+      throw new InvalidAuthorizationDetails('requested authorization details were not granted');
     }
 
-    return JSON.parse(ctx.oidc.params.authorization_details).filter((detail) => detail.type === 'openid_credential');
-  },
-  rarForCodeResponse(ctx) {
-    const { rar } = ctx.oidc.authorizationCode;
-    if (!rar) return undefined;
-    return rar.map((detail) => ({
+    return requested.map((detail) => ({
       ...detail,
       credential_identifiers: [`${detail.credential_configuration_id}-id-1`],
     }));
+  },
+  authorizationDetailsForIntrospection(_ctx, token) {
+    return token.rar;
   },
 };
 config.features.resourceIndicators = {
@@ -178,6 +193,7 @@ export default {
       response_types: [],
       redirect_uris: [],
       token_endpoint_auth_method: 'none',
+      authorization_details_types: ['openid_credential'],
     },
     {
       client_id: 'wallet-other',
@@ -185,6 +201,7 @@ export default {
       response_types: [],
       redirect_uris: [],
       token_endpoint_auth_method: 'none',
+      authorization_details_types: ['openid_credential'],
     },
   ],
 };

@@ -136,6 +136,11 @@ export default (app, provider) => {
           grant.addResourceScope(indicator, scopes.join(' '));
         }
       }
+      if (details.rar) {
+        for (const detail of details.rar) {
+          grant.addRar(detail);
+        }
+      }
 
       grantId = await grant.save();
 

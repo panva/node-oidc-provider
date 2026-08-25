@@ -35,6 +35,7 @@ _Note that not all features are enabled by default, check the configuration sect
 - [`RFC9101` - OAuth 2.0 JWT-Secured Authorization Request (`JAR`)][jar]
 - [`RFC9126` - OAuth 2.0 Pushed Authorization Requests (`PAR`)][par]
 - [`RFC9207` - OAuth 2.0 Authorization Server Issuer Identifier in Authorization Response][iss-auth-resp]
+- [`RFC9396` - OAuth 2.0 Rich Authorization Requests][rar]
 - [`RFC9449` - OAuth 2.0 Demonstration of Proof-of-Possession at the Application Layer (`DPoP`)][dpop]
 - [`RFC9701` - JWT Response for OAuth Token Introspection][jwt-introspection]
 - [FAPI 1.0 Security Profile - Part 2: Advanced (`FAPI 1.0`)][fapi]
@@ -162,6 +163,7 @@ actions and i.e. emit metrics that react to specific triggers. See the list of a
 [par]: https://www.rfc-editor.org/info/rfc9126/
 [rpinitiated-logout]: https://openid.net/specs/openid-connect-rpinitiated-1_0-final.html
 [iss-auth-resp]: https://www.rfc-editor.org/info/rfc9207/
+[rar]: https://www.rfc-editor.org/info/rfc9396/
 [fapi]: https://openid.net/specs/openid-financial-api-part-2-1_0-final.html
 [ciba]: https://openid.net/specs/openid-client-initiated-backchannel-authentication-core-1_0-final.html
 [fapi-ciba]: https://openid.net/specs/openid-financial-api-ciba-ID1.html

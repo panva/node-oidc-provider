@@ -6,6 +6,7 @@ import {
 
 import bootstrap from '../test_helper.js';
 import epochTime from '../../lib/helpers/epoch_time.js';
+import { rarEvents } from './openid4vci.config.js';
 
 const route = '/token';
 const grant_type = 'urn:ietf:params:oauth:grant-type:pre-authorized_code';
@@ -126,7 +127,7 @@ describe('grant_type=urn:ietf:params:oauth:grant-type:pre-authorized_code', () =
       });
   });
 
-  it('passes authorization_details through to the token response', async function () {
+  it('returns the authorization_details assigned to the access token', async function () {
     const rar = [{
       type: 'openid_credential',
       credential_configuration_id: 'org.iso.18013.5.1.mDL',
@@ -142,7 +143,10 @@ describe('grant_type=urn:ietf:params:oauth:grant-type:pre-authorized_code', () =
       })
       .expect(200)
       .expect((response) => {
-        expect(response.body).to.have.deep.property('authorization_details', rar);
+        expect(response.body).to.have.deep.property('authorization_details', [{
+          ...rar[0],
+          credential_identifiers: ['org.iso.18013.5.1.mDL-id-1'],
+        }]);
       });
   });
 
@@ -218,8 +222,48 @@ describe('grant_type=urn:ietf:params:oauth:grant-type:pre-authorized_code', () =
         });
     });
 
-    it('authorization_details parameter is not supported', async function () {
-      const code = await mint.call(this);
+    it('accepts and narrows authorization_details', async function () {
+      const granted = [{
+        type: 'openid_credential',
+        credential_configuration_id: 'org.iso.18013.5.1.mDL',
+      }, {
+        type: 'openid_credential',
+        credential_configuration_id: 'org.iso.18013.5.1.mDL.no_scope',
+      }];
+      const requested = [granted[1]];
+      const code = await mint.call(this, { rar: granted });
+      const callback = new Promise((resolve) => {
+        rarEvents.once('authorizationDetailsForAccessToken', (...args) => resolve(args));
+      });
+
+      const response = await this.agent.post(route)
+        .type('form')
+        .send({
+          client_id: 'wallet',
+          'pre-authorized_code': code,
+          grant_type,
+          authorization_details: JSON.stringify(requested),
+        })
+        .expect(200);
+
+      expect(response.body).to.have.deep.property('authorization_details', [{
+        ...requested[0],
+        credential_identifiers: ['org.iso.18013.5.1.mDL.no_scope-id-1'],
+      }]);
+
+      const [, token, source, actualGrantType] = await callback;
+      expect(token).to.have.property('kind', 'AccessToken');
+      expect(source).to.have.property('kind', 'PreAuthorizedCode');
+      expect(actualGrantType).to.equal(grant_type);
+    });
+
+    it('rejects authorization_details not present in the grant', async function () {
+      const code = await mint.call(this, {
+        rar: [{
+          type: 'openid_credential',
+          credential_configuration_id: 'org.iso.18013.5.1.mDL',
+        }],
+      });
 
       return this.agent.post(route)
         .type('form')
@@ -227,12 +271,15 @@ describe('grant_type=urn:ietf:params:oauth:grant-type:pre-authorized_code', () =
           client_id: 'wallet',
           'pre-authorized_code': code,
           grant_type,
-          authorization_details: JSON.stringify([{ type: 'openid_credential' }]),
+          authorization_details: JSON.stringify([{
+            type: 'openid_credential',
+            credential_configuration_id: 'org.iso.18013.5.1.mDL.no_scope',
+          }]),
         })
         .expect(400)
         .expect({
-          error: 'invalid_request',
-          error_description: 'authorization_details is unsupported for this grant_type',
+          error: 'invalid_authorization_details',
+          error_description: 'requested authorization details were not granted',
         });
     });
 
