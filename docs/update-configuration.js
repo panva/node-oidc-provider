@@ -1,38 +1,160 @@
+import { createReadStream, readFileSync, writeFileSync } from 'node:fs';
 import { createInterface as readline } from 'node:readline';
 import { inspect } from 'node:util';
-import { createReadStream, writeFileSync, readFileSync } from 'node:fs';
 
+import { parse, parseExpression } from '@babel/parser';
 import get from 'lodash/get.js';
 import words from 'lodash/words.js';
 
 import { defaults } from '../lib/helpers/defaults.js';
-import login from '../lib/helpers/interaction_policy/prompts/login.js';
 import consent from '../lib/helpers/interaction_policy/prompts/consent.js';
+import login from '../lib/helpers/interaction_policy/prompts/login.js';
 
-for (const [key, value] of Object.entries(defaults.ttl)) {
-  if (['RefreshToken', 'ClientCredentials', 'AccessToken', 'BackchannelAuthenticationRequest'].includes(key)) {
-    value[inspect.custom] = () => (
-      value.toString()
-        .replace(/ {6}/g, '  ')
-        .replace(/\s+}$/, '\n}')
-        .split('\n')
-        .filter((line) => !line.includes('Change'))
-        .join('\n')
-    );
-  } else if (typeof value === 'function') {
-    const comp = value();
-    value[inspect.custom] = () => (
-      value.toString()
-        .split('\n')
-        .map((line) => (line.includes('return') ? `${comp} /* ${line.trim().split('// ')[1]} */` : undefined))
-        .filter(Boolean)[0]
-    );
+// Usage:
+//   node docs/update-configuration.js
+//     Regenerates the configuration reference in docs/README.md.
+//   node docs/update-configuration.js --configuration-json
+//     Prints configuration documentation and declared types as JSON without
+//     modifying docs/README.md. Paths are resolved relative to this script.
+const [mode, ...extraArguments] = process.argv.slice(2);
+const emitConfigurationJson = mode === '--configuration-json';
+
+const parserOptions = { plugins: ['typescript'] };
+
+function publicName(block) {
+  const name = block.split('.').at(-1);
+  return /^[A-Za-z_$][\w$]*$/.test(name) ? name : 'defaultValue';
+}
+
+function parsedFunction(source) {
+  try {
+    return { node: parseExpression(`(${source})`, parserOptions), offset: 1 };
+  } catch (functionError) {
+    try {
+      const expression = parseExpression(`({${source}})`, parserOptions);
+      const [node] = expression.properties;
+      if (expression.properties.length !== 1 || node.type !== 'ObjectMethod') {
+        throw functionError;
+      }
+      return { node, offset: 2 };
+    } catch {
+      throw functionError;
+    }
+  }
+}
+
+function normalizeFunctionExpression(source, block, placeholder = false) {
+  const { node, offset } = parsedFunction(source);
+  if (!['FunctionExpression', 'ArrowFunctionExpression', 'ObjectMethod'].includes(node.type)) {
+    throw new TypeError(`unsupported function source for ${block}`);
+  }
+  if (node.generator) {
+    throw new TypeError(`generator functions are not supported as configuration defaults (${block})`);
+  }
+
+  const params = node.params.length
+    ? source.slice(node.params[0].start - offset, node.params.at(-1).end - offset)
+    : '';
+  let body;
+  if (placeholder) {
+    body = '{ /* implementation required */ }';
+  } else if (node.body.type === 'BlockStatement') {
+    body = source.slice(node.body.start - offset, node.body.end - offset);
+  } else {
+    const expression = source.slice(node.body.start - offset, node.body.end - offset);
+    body = `{ return ${expression}; }`;
+  }
+
+  return `${node.async ? 'async ' : ''}function ${publicName(block)}(${params}) ${body}`;
+}
+
+function stripLeadingParameterComments(source) {
+  const { node, offset } = parsedFunction(source);
+  const start = node.body.start - offset + 1;
+  const end = (node.body.body[0]?.start ?? node.body.end - 1) - offset;
+  const prefix = source.slice(start, end);
+
+  if (!prefix.includes('// @param')) {
+    return source;
+  }
+
+  let removing = false;
+  let stripped = prefix.split('\n').map((line) => {
+    if (/^\s*\/\/ @param\b/.test(line)) {
+      removing = true;
+      return '';
+    }
+    if (removing && /^\s*\/\//.test(line)) {
+      return '';
+    }
+    removing = false;
+    return line;
+  }).join('\n');
+
+  if (!stripped.trim()) {
+    const indentation = prefix.match(/\n([ \t]*)$/)?.[1] || '  ';
+    stripped = node.body.body.length ? `\n${indentation}` : '';
+  }
+
+  return `${source.slice(0, start)}${stripped}${source.slice(end)}`;
+}
+
+function isUnconditionalPlaceholder(value) {
+  const source = String(value);
+  return source.includes('mustChange(')
+    && /\bthrow\b/.test(source)
+    && !/(?:^|\n)\s*return\b/.test(source);
+}
+
+function functionSource(value, block) {
+  if (isUnconditionalPlaceholder(value)) {
+    return normalizeFunctionExpression(String(value).trim(), block, true);
+  }
+
+  const implementation = value;
+  let fixIndent;
+  let mute = false;
+
+  const source = String(implementation).trim().split('\n').map((line, index) => {
+    if (index === 1) {
+      line.match(/^(\s+)\S+/);
+      fixIndent = RegExp.$1.length - 2;
+    }
+    if (line.includes('shouldChange')) return undefined;
+    if (line.includes('mustChange')) return undefined;
+    if (line.startsWith(' ')) {
+      line = line.replace(new RegExp(`^( {0,${fixIndent}})`), '');
+    }
+    line = line.replace(/ \/\/ TODO.+/, '');
+    line = line.replace(/ class="[ \-\w]+ ?"/, '');
+    if (line.includes('<meta ')) {
+      return undefined;
+    }
+    if (line.includes('<style>')) {
+      mute = true;
+      line.match(/^(\s+)/);
+      return `${' '.repeat(Math.max(fixIndent, RegExp.$1.length))}<style>/* css and html classes omitted for brevity, see lib/helpers/defaults.js */</style>`;
+    }
+    if (line.includes('</style>')) {
+      mute = false;
+      return undefined;
+    }
+    if (mute) return undefined;
+    return line;
+  }).filter(Boolean).join('\n');
+
+  return stripLeadingParameterComments(normalizeFunctionExpression(source, block));
+}
+
+for (const [name, value] of Object.entries(defaults.ttl)) {
+  if (typeof value === 'function') {
+    value[inspect.custom] = () => functionSource(value, `ttl.${name}`);
   }
 }
 
 defaults.interactions.policy[inspect.custom] = () => `[
 /* LOGIN PROMPT */
-${login.toString().replace('() => new Prompt', 'new Prompt')}
+${login.toString().replace('() => new Prompt', 'new Prompt')},
 
 /* CONSENT PROMPT */
 ${consent.toString().replace('() => new Prompt', 'new Prompt')}
@@ -50,6 +172,14 @@ class Block {
       // Strip leading * characters
       while (buffer.length && buffer[0] === 0x2A) {
         buffer = buffer.slice(1);
+      }
+
+      if (this.active === 'type') {
+        if (buffer[0] === 0x20) {
+          buffer = buffer.slice(1);
+        }
+        this[this.active].push(buffer);
+        return;
       }
 
       // Count leading spaces
@@ -102,6 +232,7 @@ class Block {
 const props = [
   'description',
   'title',
+  'type',
   'recommendation',
   'example',
   'see',
@@ -128,17 +259,200 @@ function smartJoin(parts) {
   return result;
 }
 
-function expand(what) {
-  what = `\`\`\`js\n${what}\n\`\`\`\n`;
+function normalizeMarkdown(value) {
+  return value.replace(/[ \t]+$/gm, '').trim();
+}
+
+function expand(what, language = 'js') {
+  what = `\`\`\`${language}\n${what}\n\`\`\`\n`;
 
   append('\n_**default value**_:\n');
   return what;
 }
 
+function typeSource(section) {
+  return section.type?.map((part) => part.toString()).join('\n').trim();
+}
+
+function configurationDocumentation(blocks, orderedBlocks) {
+  return orderedBlocks.map((path) => {
+    const section = blocks[path];
+    const value = get(defaults, path);
+    const type = typeSource(blocks[path]);
+    const title = section.title && normalizeMarkdown(smartJoin(section.title));
+    const description = section.description
+      && normalizeMarkdown(capitalizeSentences(smartJoin(section.description)));
+    const see = section.see
+      ?.map((part) => normalizeMarkdown(part.toString()))
+      .filter(Boolean);
+    const recommendations = Object.keys(section)
+      .filter((property) => property.startsWith('recommendation'))
+      .map((property) => normalizeMarkdown(smartJoin(section[property])))
+      .filter(Boolean);
+    const markers = collectChangeMarkers(value)
+      .filter((marker) => appliesToBlock(marker, path, blocks));
+    const mustConfigure = Array.from(new Set(
+      markers.filter(({ change }) => change === 'mustChange').map((marker) => marker.block),
+    ));
+    const shouldCustomize = Array.from(new Set(
+      markers.filter(({ change }) => change === 'shouldChange').map((marker) => marker.block),
+    ));
+    const entry = { path };
+
+    if (type) entry.type = type;
+    if (title) entry.title = title;
+    if (description) entry.description = description;
+    if (see?.length) entry.see = see;
+    if (recommendations.length) entry.recommendations = recommendations;
+    if ('@important' in section) entry.important = true;
+    if (typeof value === 'object' && value !== null && 'ack' in value) {
+      entry.experimental = true;
+    }
+    if ('@nodefault' in section) entry.nodefault = true;
+    const defaultWarning = changeAdmonition(value, path, blocks, false);
+    if (defaultWarning) entry.defaultWarning = normalizeMarkdown(defaultWarning);
+    if (mustConfigure.length || shouldCustomize.length) {
+      entry.placeholders = {};
+      if (mustConfigure.length) entry.placeholders.mustConfigure = mustConfigure;
+      if (shouldCustomize.length) entry.placeholders.shouldCustomize = shouldCustomize;
+    }
+
+    return entry;
+  });
+}
+
+function typedDefault(name, type, implementation) {
+  const source = `const ${name}: ${type} = ${implementation};`;
+  parse(source, { ...parserOptions, sourceType: 'module' });
+  return source;
+}
+
+function parsedType(type) {
+  const source = `type Callback = ${type};`;
+  const [declaration] = parse(source, parserOptions).program.body;
+
+  return { node: declaration?.typeAnnotation, source };
+}
+
+function parsedFunctionType(type, block) {
+  const { node, source } = parsedType(type);
+
+  if (node?.type !== 'TSFunctionType') {
+    throw new TypeError(`callable type metadata must be a function type (${block})`);
+  }
+
+  return { node, source };
+}
+
+function sourceForNode(source, node, offset = 0) {
+  return source.slice(node.start - offset, node.end - offset);
+}
+
+function typeAnnotationSource(source, parameter, block) {
+  const annotation = parameter.typeAnnotation?.typeAnnotation;
+  if (!annotation) {
+    throw new TypeError(`missing parameter type metadata for ${block}`);
+  }
+  return sourceForNode(source, annotation);
+}
+
+function typedParameter(parameter, declared, implementation, offset, metadata, block) {
+  const type = typeAnnotationSource(metadata, declared, block);
+
+  switch (parameter.type) {
+    case 'Identifier':
+    case 'ObjectPattern':
+    case 'ArrayPattern': {
+      const pattern = sourceForNode(implementation, parameter, offset);
+      if (declared.optional) {
+        if (parameter.type !== 'Identifier') {
+          throw new TypeError(`optional binding patterns are not supported (${block})`);
+        }
+        return `${pattern}?: ${type}`;
+      }
+      return `${pattern}: ${type}`;
+    }
+    case 'AssignmentPattern': {
+      const left = sourceForNode(implementation, parameter.left, offset);
+      const right = sourceForNode(implementation, parameter.right, offset);
+      return `${left}: ${type} = ${right}`;
+    }
+    case 'RestElement':
+      if (declared.type !== 'RestElement') {
+        throw new TypeError(`rest parameter metadata mismatch for ${block}`);
+      }
+      return `${sourceForNode(implementation, parameter, offset)}: ${type}`;
+    default:
+      throw new TypeError(`unsupported function parameter in ${block}`);
+  }
+}
+
+function declaredParameter(parameter, metadata, block) {
+  if (!parameter.typeAnnotation) {
+    throw new TypeError(`missing parameter type metadata for ${block}`);
+  }
+  return sourceForNode(metadata, parameter);
+}
+
+function returnTypeSource(metadata, returnType, asynchronous, block) {
+  const node = returnType?.typeAnnotation;
+  if (!node) {
+    throw new TypeError(`missing return type metadata for ${block}`);
+  }
+
+  if (!asynchronous) {
+    return sourceForNode(metadata, node);
+  }
+
+  if (
+    node.type === 'TSTypeReference'
+    && node.typeName.type === 'Identifier'
+    && node.typeName.name === 'CanBePromise'
+    && node.typeArguments?.params.length === 1
+  ) {
+    return `Promise<${sourceForNode(metadata, node.typeArguments.params[0])}>`;
+  }
+
+  if (
+    node.type === 'TSTypeReference'
+    && node.typeName.type === 'Identifier'
+    && node.typeName.name === 'Promise'
+  ) {
+    return sourceForNode(metadata, node);
+  }
+
+  throw new TypeError(`async callable type must return CanBePromise<T> or Promise<T> (${block})`);
+}
+
+function typedFunctionDefault(block, type, implementation) {
+  const parsedImplementation = parsedFunction(implementation);
+  const { node: fn, offset } = parsedImplementation;
+  const { node: declared, source: metadata } = parsedFunctionType(type, block);
+
+  if (fn.params.length > declared.params.length) {
+    throw new TypeError(`callable default has more parameters than its type metadata (${block})`);
+  }
+
+  const parameters = declared.params.map((parameter, index) => (
+    fn.params[index]
+      ? typedParameter(fn.params[index], parameter, implementation, offset, metadata, block)
+      : declaredParameter(parameter, metadata, block)
+  ));
+  const body = sourceForNode(implementation, fn.body, offset);
+  const returns = returnTypeSource(metadata, declared.returnType, fn.async, block);
+  const signature = type.includes('\n')
+    ? `(\n  ${parameters.join(',\n  ')},\n)`
+    : `(${parameters.join(', ')})`;
+  const source = `${fn.async ? 'async ' : ''}function ${publicName(block)}${signature}: ${returns} ${body}`;
+
+  parse(source, { ...parserOptions, sourceType: 'module' });
+  return source;
+}
+
 function collectChangeMarkers(value, seen = new Set()) {
   if (typeof value === 'function') {
     return Array.from(
-      value.toString().matchAll(/\b(shouldChange|mustChange)\((['"])([^'"]+)\2/g),
+      value.toString().matchAll(/\b(shouldChange|mustChange)\((?:ctx,\s*)?(['"])([^'"]+)\2/g),
       ([, change, , block]) => ({ change, block }),
     );
   }
@@ -224,9 +538,15 @@ function changeAdmonition(value, block, blocks, hidden) {
 }
 
 try {
+  if (extraArguments.length || (mode && !emitConfigurationJson)) {
+    throw new TypeError('usage: node docs/update-configuration.js [--configuration-json]');
+  }
+
   const blocks = {};
   await new Promise((resolve, reject) => {
-    const read = readline({ input: createReadStream('./lib/helpers/defaults.js') });
+    const read = readline({
+      input: createReadStream(new URL('../lib/helpers/defaults.js', import.meta.url)),
+    });
     let nextIsOption;
     let inBlock;
     let option;
@@ -369,10 +689,15 @@ try {
     }
   }
 
+  if (orderedBlocks.length !== allBlocks.length) {
+    throw new TypeError('not all configuration documentation blocks were ordered');
+  }
+
   // Generate Table of Contents
   const tocAnchor = (block) => block.replace(/[.]/g, '').toLowerCase();
 
-  append('\n**Table of Contents**\n\n');
+  append('\nCallable default values below use TypeScript syntax. Unqualified types are exported by `@types/oidc-provider`.\n\n');
+  append('**Table of Contents**\n\n');
   append('> ❗ marks the configuration you most likely want to take a look at.\n\n');
 
   let inExperimental = false;
@@ -446,10 +771,11 @@ try {
 
     append(`\n${heading} ${headingTitle}\n\n`);
     if (section.title) {
-      append(`${section.title}  \n\n`);
+      append(`${section.title}\n\n`);
     }
 
     const value = get(defaults, block);
+    const callableType = typeSource(section);
 
     if (typeof value === 'object' && 'ack' in value) {
       append('> [!NOTE]\n');
@@ -462,7 +788,7 @@ try {
     }
 
     if (section.description) {
-      append(`${capitalizeSentences(smartJoin(section.description))}  \n\n`);
+      append(`${capitalizeSentences(smartJoin(section.description))}\n\n`);
     }
 
     if (section.see) {
@@ -477,59 +803,55 @@ try {
     }
 
     Object.keys(section).filter((x) => x.startsWith('recommendation')).forEach((prop) => {
-      append(`_**recommendation**_: ${smartJoin(section[prop])}  \n\n`);
+      append(`_**recommendation**_: ${smartJoin(section[prop])}\n\n`);
     });
 
-    if (!('@nodefault' in section)) {
+    if ('@nodefault' in section && callableType) {
+      append('\n_**type**_:\n');
+      append('```ts\n');
+      append(callableType);
+      append('\n```\n');
+    } else if (!('@nodefault' in section)) {
       switch (typeof value) {
         case 'boolean':
-        case 'number':
-          append('\n_**default value**_:\n');
-          append('```js\n');
-          append(`${String(value)}`);
-          append('\n```\n');
+        case 'number': {
+          const output = String(value);
+          const rendered = callableType
+            ? typedDefault(publicName(block), callableType, output)
+            : output;
+          append(expand(rendered, callableType ? 'ts' : 'js'));
           break;
+        }
         case 'string':
         case 'undefined':
         case 'object': {
+          if (value === null && callableType) {
+            throw new TypeError(`callable type metadata cannot describe a null default (${block})`);
+          }
           const output = inspect(value, { compact: false, sorted: true });
-          append(expand(output).split('\n').map((line) => {
-            line = line.replace(/(\[(?:Async)?Function: \w+\],?)/, '$1 // see expanded details below');
+          const hasExpandedDetails = Object.entries(blocks).some(([name, details]) => (
+            name.startsWith(`${block}.`) && !('@skip' in details)
+          ));
+          const rendered = callableType
+            ? typedDefault(publicName(block), callableType, output)
+            : output;
+          append(expand(rendered, callableType ? 'ts' : 'js').split('\n').map((line) => {
+            if (hasExpandedDetails) {
+              line = line.replace(/(\[(?:Async)?Function: \w+\],?)/, '$1 // see expanded details below');
+            }
             return line;
           }).join('\n'));
           break;
         }
         case 'function': {
-          let fixIndent;
-          let mute = false;
-          append(expand(String(value).split('\n').map((line, index) => {
-            if (index === 1) {
-              line.match(/^(\s+)\S+/);
-              fixIndent = RegExp.$1.length - 2;
-            }
-            if (line.includes('shouldChange')) return undefined;
-            if (line.includes('mustChange')) return undefined;
-            if (line.startsWith(' ')) {
-              line = line.replace(new RegExp(`^( {0,${fixIndent}})`), '');
-            }
-            line = line.replace(/ \/\/ TODO.+/, '');
-            line = line.replace(/ class="[ \-\w]+ ?"/, '');
-            if (line.includes('<meta ')) {
-              return undefined;
-            }
-            if (line.includes('<style>')) {
-              mute = true;
-              line.match(/^(\s+)/);
-              return `${' '.repeat(Math.max(fixIndent, RegExp.$1.length))}<style>/* css and html classes omitted for brevity, see lib/helpers/defaults.js */</style>`;
-            }
-            if (line.includes('</style>')) {
-              mute = false;
-              return undefined;
-            }
-            if (mute) return undefined;
-            return line;
-          }).filter(Boolean)
-            .join('\n')));
+          if (!callableType) {
+            throw new TypeError(`missing type metadata for callable default ${block}`);
+          }
+          append(expand(typedFunctionDefault(
+            block,
+            callableType,
+            functionSource(value, block),
+          ), 'ts'));
           break;
         }
         default:
@@ -569,7 +891,7 @@ try {
           lines.forEach(append);
         } else {
           const lines = parts.splice(0, until === -1 ? parts.length : until);
-          append(`\n${capitalizeSentences(smartJoin(lines))}  \n\n`);
+          append(`\n${capitalizeSentences(smartJoin(lines))}\n\n`);
         }
       }
 
@@ -577,15 +899,20 @@ try {
     });
   }
 
-  const conf = readFileSync('./docs/README.md');
+  if (emitConfigurationJson) {
+    process.stdout.write(`${JSON.stringify(configurationDocumentation(blocks, orderedBlocks), null, 2)}\n`);
+  } else {
+    const readme = new URL('./README.md', import.meta.url);
+    const conf = readFileSync(readme);
 
-  const comStart = '<!-- START CONF OPTIONS -->';
-  const comEnd = '<!-- END CONF OPTIONS -->';
+    const comStart = '<!-- START CONF OPTIONS -->';
+    const comEnd = '<!-- END CONF OPTIONS -->';
 
-  const pre = conf.slice(0, conf.indexOf(comStart) + comStart.length);
-  const post = conf.slice(conf.indexOf(comEnd));
-
-  writeFileSync('./docs/README.md', Buffer.concat([pre, Buffer.from('\n'), mid, post]));
+    const pre = conf.slice(0, conf.indexOf(comStart) + comStart.length);
+    const post = conf.slice(conf.indexOf(comEnd));
+    const normalized = Buffer.from(mid.toString().replace(/[ \t]+$/gm, ''));
+    writeFileSync(readme, Buffer.concat([pre, Buffer.from('\n'), normalized, post]));
+  }
 } catch (err) {
   console.error(err);
   process.exitCode = 1;
