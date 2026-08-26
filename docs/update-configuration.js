@@ -4,11 +4,25 @@ import { inspect } from 'node:util';
 
 import { parse, parseExpression } from '@babel/parser';
 import get from 'lodash/get.js';
+import has from 'lodash/has.js';
 import words from 'lodash/words.js';
 
 import { defaults } from '../lib/helpers/defaults.js';
 import consent from '../lib/helpers/interaction_policy/prompts/consent.js';
 import login from '../lib/helpers/interaction_policy/prompts/login.js';
+import {
+  TYPES_SCHEMA_VERSION,
+  contentHash,
+  readConfigurationContract,
+  readGrantHelperContract,
+  readRelatedContract,
+  renderConfigurationContract,
+  renderConfigurationJSDoc,
+  renderEventMapContract,
+  renderEventsDocumentation,
+  renderProviderContract,
+  validateEvents,
+} from './type-contracts.js';
 
 // Usage:
 //   node docs/update-configuration.js
@@ -16,10 +30,17 @@ import login from '../lib/helpers/interaction_policy/prompts/login.js';
 //   node docs/update-configuration.js --configuration-json
 //     Prints configuration documentation and declared types as JSON without
 //     modifying docs/README.md. Paths are resolved relative to this script.
+//   node docs/update-configuration.js --types-json
+//     Prints the provider-owned declaration fragments consumed by DefinitelyTyped.
+//   node docs/update-configuration.js --check
+//     Verifies generated documentation without modifying it.
 const [mode, ...extraArguments] = process.argv.slice(2);
 const emitConfigurationJson = mode === '--configuration-json';
+const emitTypesJson = mode === '--types-json';
+const check = mode === '--check';
 
 const parserOptions = { plugins: ['typescript'] };
+const configurationContract = readConfigurationContract();
 
 function publicName(block) {
   const name = block.split('.').at(-1);
@@ -174,14 +195,6 @@ class Block {
         buffer = buffer.slice(1);
       }
 
-      if (this.active === 'type') {
-        if (buffer[0] === 0x20) {
-          buffer = buffer.slice(1);
-        }
-        this[this.active].push(buffer);
-        return;
-      }
-
       // Count leading spaces
       let spaceCount = 0;
       while (buffer.length > spaceCount && buffer[spaceCount] === 0x20) {
@@ -232,7 +245,6 @@ class Block {
 const props = [
   'description',
   'title',
-  'type',
   'recommendation',
   'example',
   'see',
@@ -270,15 +282,11 @@ function expand(what, language = 'js') {
   return what;
 }
 
-function typeSource(section) {
-  return section.type?.map((part) => part.toString()).join('\n').trim();
-}
-
 function configurationDocumentation(blocks, orderedBlocks) {
   return orderedBlocks.map((path) => {
     const section = blocks[path];
     const value = get(defaults, path);
-    const type = typeSource(blocks[path]);
+    const type = configurationContract.types.get(path);
     const title = section.title && normalizeMarkdown(smartJoin(section.title));
     const description = section.description
       && normalizeMarkdown(capitalizeSentences(smartJoin(section.description)));
@@ -319,6 +327,56 @@ function configurationDocumentation(blocks, orderedBlocks) {
 
     return entry;
   });
+}
+
+function readmeType(path, section, value) {
+  if (typeof value === 'function') {
+    return configurationContract.callbacks.get(path) ?? configurationContract.types.get(path);
+  }
+  const hasDocumentedChildren = [...configurationContract.paths.keys()]
+    .some((candidate) => candidate.startsWith(`${path}.`));
+  if (
+    ('@nodefault' in section && !hasDocumentedChildren)
+    || (configurationContract.callablePaths.has(path) && !hasDocumentedChildren)
+    || configurationContract.dynamic.has(path)
+    || value?.[inspect.custom]
+  ) {
+    return configurationContract.types.get(path);
+  }
+  return undefined;
+}
+
+function runtimeConfigurationPaths(configuration) {
+  const paths = [];
+  const optionContainers = new Set([
+    'cookies',
+    'enabledJWA',
+    'extraClientMetadata',
+    'formats',
+    'interactions',
+    'pkce',
+  ]);
+
+  for (const [name, value] of Object.entries(configuration)) {
+    // `formats` only groups its two independently documented options.
+    if (name !== 'formats') paths.push(name);
+
+    if (optionContainers.has(name)) {
+      for (const option of Object.keys(value)) paths.push(`${name}.${option}`);
+    } else if (name === 'features') {
+      for (const [feature, featureConfiguration] of Object.entries(value)) {
+        paths.push(`features.${feature}`);
+        for (const option of Object.keys(featureConfiguration)) {
+          // These two common feature controls are documented by the feature itself.
+          if (option !== 'enabled' && option !== 'ack') {
+            paths.push(`features.${feature}.${option}`);
+          }
+        }
+      }
+    }
+  }
+
+  return new Set(paths);
 }
 
 function typedDefault(name, type, implementation) {
@@ -538,8 +596,10 @@ function changeAdmonition(value, block, blocks, hidden) {
 }
 
 try {
-  if (extraArguments.length || (mode && !emitConfigurationJson)) {
-    throw new TypeError('usage: node docs/update-configuration.js [--configuration-json]');
+  if (extraArguments.length || (mode && !emitConfigurationJson && !emitTypesJson && !check)) {
+    throw new TypeError(
+      'usage: node docs/update-configuration.js [--configuration-json|--types-json|--check]',
+    );
   }
 
   const blocks = {};
@@ -775,7 +835,7 @@ try {
     }
 
     const value = get(defaults, block);
-    const callableType = typeSource(section);
+    const callableType = readmeType(block, section, value);
 
     if (typeof value === 'object' && 'ack' in value) {
       append('> [!NOTE]\n');
@@ -899,19 +959,79 @@ try {
     });
   }
 
+  const documentation = configurationDocumentation(blocks, orderedBlocks);
+  const documentedPaths = new Set(documentation.map(({ path }) => path));
+  const declaredPaths = new Set(configurationContract.paths.keys());
+  const runtimePaths = runtimeConfigurationPaths(defaults);
+  const undocumented = [...declaredPaths].filter((path) => !documentedPaths.has(path));
+  const undeclared = [...documentedPaths].filter((path) => !declaredPaths.has(path));
+  const undocumentedRuntimePaths = [...runtimePaths].filter((path) => !documentedPaths.has(path));
+  const unknownRuntimePaths = [...documentedPaths].filter((path) => !runtimePaths.has(path) || !has(defaults, path));
+  if (
+    undocumented.length
+    || undeclared.length
+    || undocumentedRuntimePaths.length
+    || unknownRuntimePaths.length
+  ) {
+    const details = [];
+    if (undocumented.length) details.push(`undocumented declarations: ${undocumented.join(', ')}`);
+    if (undeclared.length) details.push(`undeclared documentation: ${undeclared.join(', ')}`);
+    if (undocumentedRuntimePaths.length) {
+      details.push(`undocumented runtime paths: ${undocumentedRuntimePaths.join(', ')}`);
+    }
+    if (unknownRuntimePaths.length) details.push(`unknown runtime paths: ${unknownRuntimePaths.join(', ')}`);
+    throw new TypeError(`configuration declaration/documentation coverage mismatch (${details.join('; ')})`);
+  }
+
+  validateEvents();
+
   if (emitConfigurationJson) {
-    process.stdout.write(`${JSON.stringify(configurationDocumentation(blocks, orderedBlocks), null, 2)}\n`);
+    process.stdout.write(`${JSON.stringify(documentation, null, 2)}\n`);
+  } else if (emitTypesJson) {
+    const packageJson = JSON.parse(readFileSync(new URL('../package.json', import.meta.url)));
+    const sourceBase = `${packageJson.homepage}/blob/main`;
+    const documentationByPath = new Map(documentation.map((entry) => [entry.path, entry]));
+    const configuration = renderConfigurationContract(
+      configurationContract.source,
+      documentationByPath,
+      (entry, indentation) => renderConfigurationJSDoc(entry, indentation, sourceBase),
+    );
+    const indexFragments = {
+      contracts: `${configuration.trim()}\n\n${renderEventMapContract()}`,
+      providerMembers: renderProviderContract(),
+      relatedContracts: readRelatedContract(),
+    };
+    const files = {
+      'lib/helpers/grants.d.ts': readGrantHelperContract(),
+    };
+    const contents = { indexFragments, files };
+    const artifact = {
+      schemaVersion: TYPES_SCHEMA_VERSION,
+      providerVersion: packageJson.version,
+      hash: contentHash(contents),
+      ...contents,
+    };
+    process.stdout.write(`${JSON.stringify(artifact, null, 2)}\n`);
   } else {
     const readme = new URL('./README.md', import.meta.url);
+    const events = new URL('./events.md', import.meta.url);
     const conf = readFileSync(readme);
 
     const comStart = '<!-- START CONF OPTIONS -->';
     const comEnd = '<!-- END CONF OPTIONS -->';
-
     const pre = conf.slice(0, conf.indexOf(comStart) + comStart.length);
     const post = conf.slice(conf.indexOf(comEnd));
     const normalized = Buffer.from(mid.toString().replace(/[ \t]+$/gm, ''));
-    writeFileSync(readme, Buffer.concat([pre, Buffer.from('\n'), normalized, post]));
+    const renderedReadme = Buffer.concat([pre, Buffer.from('\n'), normalized, post]);
+    const renderedEvents = Buffer.from(renderEventsDocumentation());
+
+    if (check) {
+      if (!renderedReadme.equals(conf)) throw new TypeError('docs/README.md is not up to date');
+      if (!renderedEvents.equals(readFileSync(events))) throw new TypeError('docs/events.md is not up to date');
+    } else {
+      writeFileSync(readme, renderedReadme);
+      writeFileSync(events, renderedEvents);
+    }
   }
 } catch (err) {
   console.error(err);
