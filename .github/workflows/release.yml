@@ -20,3 +20,154 @@ jobs:
       artifact_check_command: node tools/test-dist.js "$PACKAGE_TARBALL"
       package_directory: ./dist
       prepare_command: npm clean-install --ignore-scripts && npm run build
+
+  definitely-typed:
+    name: DefinitelyTyped release handoff
+    # TODO: Re-enable after the first manual sync with the new generated structure lands in DefinitelyTyped.
+    if: ${{ false }}
+    needs: release
+    runs-on: ubuntu-latest
+    continue-on-error: true
+    permissions:
+      contents: read
+    steps:
+      - name: Checkout released oidc-provider tag
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 1
+          path: provider
+          persist-credentials: false
+          ref: ${{ github.ref }}
+          sparse-checkout: |
+            docs
+            lib/helpers
+            types
+
+      - name: Checkout DefinitelyTyped master
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 1
+          repository: DefinitelyTyped/DefinitelyTyped
+          path: definitely-typed
+          persist-credentials: false
+          ref: master
+          sparse-checkout: |
+            types/oidc-provider
+
+      - name: Setup node
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: lts/*
+          cache: npm
+          cache-dependency-path: provider/package-lock.json
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@0ebf47130e4866e96fce0953f49152a61190b271 # v6.0.9
+        with:
+          package_json_file: definitely-typed/package.json
+
+      - name: Verify released tag
+        working-directory: provider
+        run: |
+          set -euo pipefail
+          test "$(git rev-parse HEAD)" = "$(git rev-parse "${GITHUB_SHA}^{commit}")"
+          node --input-type=module -e '
+            import { readFileSync } from "node:fs";
+
+            const tag = process.env.GITHUB_REF_NAME;
+            const version = JSON.parse(readFileSync("package.json", "utf8")).version;
+            if (`v${version}` !== tag) {
+              throw new Error(`release tag ${tag} does not match package version ${version}`);
+            }
+          '
+
+      - name: Install handoff dependencies
+        run: |
+          set -euo pipefail
+          npm clean-install --ignore-scripts --prefix provider
+          pnpm --dir definitely-typed install --filter definitely-typed --ignore-scripts --no-frozen-lockfile
+
+      - name: Generate provider types artifact
+        working-directory: provider
+        run: node docs/update-configuration.js --types-json > "$RUNNER_TEMP/oidc-provider-types.json"
+
+      - name: Inspect DefinitelyTyped update
+        id: inspect_types
+        working-directory: definitely-typed
+        run: |
+          set -euo pipefail
+          node types/oidc-provider/scripts/update-types.mjs \
+            --status \
+            --artifact "$RUNNER_TEMP/oidc-provider-types.json" \
+            > "$RUNNER_TEMP/oidc-provider-types-status.json"
+          node --input-type=module -e '
+            import { appendFileSync, readFileSync } from "node:fs";
+
+            const status = JSON.parse(readFileSync(process.env.STATUS_FILE, "utf8"));
+            if (status.schemaVersion !== 1 || typeof status.updateRequired !== "boolean") {
+              throw new Error("DefinitelyTyped updater returned an invalid status document");
+            }
+            if (!Array.isArray(status.reasons)
+              || status.reasons.some((reason) => !["declarations", "major-version"].includes(reason))) {
+              throw new Error("DefinitelyTyped updater returned invalid update reasons");
+            }
+
+            appendFileSync(
+              process.env.GITHUB_OUTPUT,
+              `update_required=${status.updateRequired}\nreasons=${status.reasons.join(", ")}\n`,
+            );
+
+            if (status.warning !== undefined) {
+              if (typeof status.warning !== "string") {
+                throw new Error("DefinitelyTyped updater returned an invalid warning");
+              }
+              console.log(`DefinitelyTyped release handoff: ${status.warning}`);
+            }
+          '
+        env:
+          STATUS_FILE: ${{ runner.temp }}/oidc-provider-types-status.json
+
+      - name: Upload provider types artifact
+        id: upload_artifact
+        if: ${{ steps.inspect_types.outputs.update_required == 'true' }}
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: oidc-provider-types-${{ github.ref_name }}
+          path: ${{ runner.temp }}/oidc-provider-types.json
+          if-no-files-found: error
+          retention-days: 30
+
+      - name: Report DefinitelyTyped handoff
+        if: ${{ always() }}
+        run: |
+          if [[ "$STATUS_OUTCOME" != "success" ]]; then
+            echo "::warning title=DefinitelyTyped release handoff::The declaration check did not complete;" \
+              "the npm release is unaffected. Inspect this job and run the DT updater manually."
+          elif [[ "$UPDATE_REQUIRED" == "true" && "$UPLOAD_OUTCOME" != "success" ]]; then
+            echo "::warning title=DefinitelyTyped release handoff::A declaration update is required," \
+              "but its handoff artifact could not be uploaded. The npm release is unaffected."
+          elif [[ "$UPDATE_REQUIRED" == "true" ]]; then
+            HANDOFF_COMMAND='node types/oidc-provider/scripts/sync-release.mjs'
+            HANDOFF_COMMAND+=" --tag ${GITHUB_REF_NAME}"
+            HANDOFF_COMMAND+=" --run-id ${GITHUB_RUN_ID} --submit"
+            echo "::notice title=DefinitelyTyped update available::${HANDOFF_COMMAND}"
+            printf '%s\n' \
+              '## DefinitelyTyped update available' \
+              '' \
+              "The released declarations require an update (${UPDATE_REASONS}). From a DefinitelyTyped checkout, run:" \
+              '' \
+              '```sh' \
+              "node types/oidc-provider/scripts/sync-release.mjs \\" \
+              "  --tag ${GITHUB_REF_NAME} \\" \
+              "  --run-id ${GITHUB_RUN_ID} \\" \
+              '  --submit' \
+              '```' \
+              >> "$GITHUB_STEP_SUMMARY"
+          else
+            echo "No DefinitelyTyped update is required for ${GITHUB_REF_NAME}."
+          fi
+        env:
+          STATUS_OUTCOME: ${{ steps.inspect_types.outcome }}
+          UPDATE_REQUIRED: ${{ steps.inspect_types.outputs.update_required }}
+          UPDATE_REASONS: ${{ steps.inspect_types.outputs.reasons }}
+          UPLOAD_OUTCOME: ${{ steps.upload_artifact.outcome }}
