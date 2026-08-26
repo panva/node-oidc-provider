@@ -106,6 +106,9 @@ try {
   ]) {
     if (!contents.includes(required)) throw new Error(`packed package is missing ${required}`);
   }
+  if (contents.includes("types")) {
+    throw new Error("source-only declaration templates must not be included in the package");
+  }
 
   const sourceManifest = JSON.parse(readFileSync(join(root, "package.json"), "utf8"));
   const packedManifest = JSON.parse(readFileSync(join(packed, "package.json"), "utf8"));
