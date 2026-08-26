@@ -43,6 +43,10 @@
       "linter": { "enabled": false }
     },
     {
+      "includes": ["types/**/*.d.ts"],
+      "linter": { "enabled": false }
+    },
+    {
       "includes": ["test/**"],
       "linter": {
         "rules": {
