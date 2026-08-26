@@ -651,6 +651,11 @@ See:
 - [Default in-memory adapter implementation](/lib/adapters/memory_adapter.js)
 - [Community Contributed Adapter Archive](https://github.com/panva/node-oidc-provider/discussions/1311)
 
+_**type**_:
+```ts
+AdapterConstructor | AdapterFactory
+```
+
 ---
 
 ### claims
@@ -668,8 +673,10 @@ It is used to achieve two different things related to claims:
 See [Configuring OpenID Connect 1.0 Standard Claims](https://github.com/panva/node-oidc-provider/discussions/1299)
 
 _**default value**_:
-```js
-{
+```ts
+const claims: {
+    [key: string]: null | readonly string[] | Readonly<Record<string, null>>;
+} = {
   acr: null,
   auth_time: null,
   iss: null,
@@ -677,7 +684,7 @@ _**default value**_:
     'sub'
   ],
   sid: null
-}
+};
 ```
 
 ---
@@ -724,8 +731,8 @@ Each client's metadata shall be validated according to the specifications in whi
 
 
 _**default value**_:
-```js
-[]
+```ts
+const clients: readonly ClientMetadata[] = [];
 ```
 <a id="clients-available-metadata"></a><details><summary>Example: (Click to expand) Available Metadata.</summary><br>
 
@@ -868,6 +875,8 @@ async function defaultResource(
 
 Specifies a helper function that shall be invoked to load information about a Resource Server (API) and determine whether the client is authorized to request scopes for that particular resource. This function enables resource-specific scope validation and Access Token configuration according to authorization server policy.
 
+A returned `accessTokenTTL` must be a positive safe integer number of seconds. Fractional, non-finite, non-positive, and unsafe integer values are rejected.
+
 Reject unauthorized resource indicators with `errors.InvalidTarget`.
 
 
@@ -897,7 +906,7 @@ async function getResourceServerInfo(
   // Default is the resource indicator value will be used as token audience
   audience?: string,
   // OPTIONAL
-  // Issued Token TTL
+  // Issued Token TTL as a positive safe integer number of seconds
   // Default is - see `ttl` configuration
   accessTokenTTL?: number,
   // Issued Token Format
@@ -979,10 +988,10 @@ _**default value**_:
 async function useGrantedResource(
   _ctx: KoaContextWithOIDC,
   _source: | AuthorizationCode
-    | RefreshToken
-    | DeviceCode
-    | BackchannelAuthenticationRequest
-    | PreAuthorizedCode,
+        | RefreshToken
+        | DeviceCode
+        | BackchannelAuthenticationRequest
+        | PreAuthorizedCode,
 ): Promise<boolean> {
   return false;
 }
@@ -1492,6 +1501,11 @@ false
 Specifies the cryptographic secret value used for generating server-provided DPoP nonces. When provided, this value MUST be a 32-byte Buffer instance to ensure sufficient entropy for secure nonce generation. Nonces are derived from this secret rather than stored; the same value MUST be configured on all instances of a deployment and kept stable across restarts.
 
 
+_**type**_:
+```ts
+Buffer
+```
+
 #### requireNonce
 
 Specifies a function that determines whether a DPoP nonce shall be required for proof-of-possession validation in the current request context. This function is invoked during DPoP proof validation to enforce nonce requirements based on authorization server policy.
@@ -1553,9 +1567,10 @@ Specifies the FAPI profile version that shall be applied for security policy enf
 
 _**type**_:
 ```ts
-FapiProfile | ((
-  ctx: KoaContextWithOIDC,
-  client: Client,
+| FapiProfile
+| ((
+    ctx: KoaContextWithOIDC,
+    client: Client,
 ) => FapiProfile | undefined)
 ```
 
@@ -1879,7 +1894,8 @@ Specifies whether a registration access token shall be issued upon successful cl
 
 _**default value**_:
 ```ts
-const issueRegistrationAccessToken: boolean | ((ctx: KoaContextWithOIDC) => CanBePromise<boolean>) = true;
+const issueRegistrationAccessToken: | boolean
+| ((ctx: KoaContextWithOIDC) => CanBePromise<boolean>) = true;
 ```
 <a id="issue-registration-access-token-to-determine-if-a-registration-access-token-should-be-issued-dynamically"></a><details><summary>Example: (Click to expand) To determine if a registration access token should be issued dynamically.</summary><br>
 
@@ -1911,10 +1927,10 @@ ctx.oidc.entities.RegistrationAccessToken.policies = ['update-policy'];
 _**type**_:
 ```ts
 {
-  [name: string]: (
-    ctx: KoaContextWithOIDC,
-    metadata: ClientMetadata,
-  ) => CanBePromise<undefined | void>;
+    [name: string]: (
+        ctx: KoaContextWithOIDC,
+        metadata: ClientMetadata,
+    ) => CanBePromise<undefined | void>;
 }
 ```
 <a id="policies-to-define-registration-and-registration-management-policies"></a><details><summary>Example: (Click to expand) To define registration and registration management policies.</summary><br>
@@ -2002,7 +2018,8 @@ Supported values include:
 
 _**default value**_:
 ```ts
-const rotateRegistrationAccessToken: boolean | ((ctx: KoaContextWithOIDC) => CanBePromise<boolean>) = true;
+const rotateRegistrationAccessToken: | boolean
+| ((ctx: KoaContextWithOIDC) => CanBePromise<boolean>) = true;
 ```
 <a id="rotate-registration-access-token-dynamic-token-rotation-policy-implementation"></a><details><summary>Example: (Click to expand) Dynamic token rotation policy implementation.</summary><br>
 
@@ -2193,11 +2210,11 @@ function authorizationDetailsForAccessToken(
   ctx: KoaContextWithOIDC,
   token: AccessToken | ClientCredentials,
   source: | AuthorizationCode
-    | BackchannelAuthenticationRequest
-    | DeviceCode
-    | PreAuthorizedCode
-    | RefreshToken
-    | undefined,
+        | BackchannelAuthenticationRequest
+        | DeviceCode
+        | PreAuthorizedCode
+        | RefreshToken
+        | undefined,
   grantType: string,
 ): CanBePromise<readonly AuthorizationDetail[] | undefined> { /* implementation required */ }
 ```
@@ -2237,15 +2254,7 @@ Specifies the authorization details type identifiers that shall be supported by 
 
 _**default value**_:
 ```ts
-const types: {
-  [type: string]: {
-    validate: (
-      ctx: KoaContextWithOIDC,
-      detail: AuthorizationDetail,
-      client: Client,
-    ) => CanBePromise<void>;
-  };
-} = {};
+const types: Readonly<Record<string, RichAuthorizationRequestType>> = {};
 ```
 <a id="types-authorization-details-type-validation-for-tax-data-access"></a><details><summary>Example: (Click to expand) Authorization details type validation for tax data access.</summary><br>
 
@@ -2496,6 +2505,11 @@ async function assertAttestationJwtAndPop(
 
 Specifies the cryptographic secret value used for generating server-provided challenges. This value MUST be a 32-byte Buffer instance to ensure sufficient entropy for secure challenge generation. Challenges are derived from this secret rather than stored; the same value MUST be configured on all instances of a deployment and kept stable across restarts.
 
+
+_**type**_:
+```ts
+Buffer
+```
 
 #### getAttestationSignaturePublicKey
 
@@ -2753,8 +2767,8 @@ Specifies static Credential Issuer metadata values for `credential_configuration
 
 
 _**default value**_:
-```js
-{}
+```ts
+const credentialConfigurationsSupported: Readonly<Record<string, OpenID4VCICredentialConfiguration>> = {};
 ```
 <a id="credential-configurations-supported-defining-credential-configurations"></a><details><summary>Example: (Click to expand) Defining credential configurations.</summary><br>
 
@@ -2917,14 +2931,19 @@ Free-form object with additional top-level members to be merged into the Credent
 
 
 _**default value**_:
-```js
-{}
+```ts
+const metadata: OpenID4VCIMetadata = {};
 ```
 
 #### nonceSecret
 
 Specifies the cryptographic secret used to generate and validate OpenID4VCI `c_nonce` challenges exposed by the nonce endpoint. This value MUST be a 32-byte Buffer instance. `c_nonce` values are derived from this secret rather than stored; the same value MUST be configured on all instances of a deployment and kept stable across restarts.
 
+
+_**type**_:
+```ts
+Buffer
+```
 
 #### preAuthorizedCodeGrant
 
@@ -3009,7 +3028,12 @@ _**default value**_:
 async function findAccount(
   ctx: KoaContextWithOIDC,
   sub: string,
-  token?: AuthorizationCode | AccessToken | RefreshToken | DeviceCode | BackchannelAuthenticationRequest | PreAuthorizedCode,
+  token?: | AuthorizationCode
+        | AccessToken
+        | RefreshToken
+        | DeviceCode
+        | BackchannelAuthenticationRequest
+        | PreAuthorizedCode,
 ): Promise<Account | undefined> {
   return {
     accountId: sub,
@@ -3071,6 +3095,11 @@ _**recommendation**_: The following action order is recommended when rotating si
 
 
 
+_**type**_:
+```ts
+JWKS
+```
+
 ---
 
 ### pkce
@@ -3101,7 +3130,7 @@ Artifact Expirations (TTL)
 > - `RefreshToken`
 > - `Session`
 
-Specifies the Time-To-Live (TTL) values that shall be applied to various artifacts within the authorization server. TTL values may be specified as either a numeric value (in seconds) or a synchronous function that returns a numeric value based on the current request context and authorization server policy.
+Specifies the Time-To-Live (TTL) values that shall be applied to various artifacts within the authorization server. Every static value and every synchronous callback result MUST be a positive safe integer number of seconds (`Number.isSafeInteger(value) && value > 0`). Zero, negative, fractional, `NaN`, infinite, and unsafe integer values are rejected. TypeScript represents this contract as `number`, so these constraints are enforced when the Provider is constructed for static values and whenever a configured callback is evaluated for dynamic values.
 
 
 
@@ -3117,18 +3146,33 @@ _**recommendation**_: For refresh tokens requiring extended lifetimes, consider 
 _**default value**_:
 ```ts
 const ttl: {
-  AccessToken?: number | ((ctx: KoaContextWithOIDC, token: AccessToken, client: Client) => number) | undefined;
-  AuthorizationCode?: number | ((ctx: KoaContextWithOIDC, code: AuthorizationCode, client: Client) => number) | undefined;
-  BackchannelAuthenticationRequest?: number | ((ctx: KoaContextWithOIDC, request: BackchannelAuthenticationRequest, client: Client) => number) | undefined;
-  ClientCredentials?: number | ((ctx: KoaContextWithOIDC, token: ClientCredentials, client: Client) => number) | undefined;
-  DeviceCode?: number | ((ctx: KoaContextWithOIDC, code: DeviceCode, client: Client) => number) | undefined;
-  Grant?: number | ((ctx: KoaContextWithOIDC, grant: Grant) => number) | undefined;
-  IdToken?: number | ((ctx: KoaContextWithOIDC, token: IdToken, client: Client) => number) | undefined;
-  Interaction?: number | ((ctx: KoaContextWithOIDC, interaction: Interaction) => number) | undefined;
-  PreAuthorizedCode?: number | ((ctx: KoaContextWithOIDC, code: PreAuthorizedCode) => number) | undefined;
-  RefreshToken?: number | ((ctx: KoaContextWithOIDC, token: RefreshToken, client: Client) => number) | undefined;
-  Session?: number | ((ctx: KoaContextWithOIDC, session: Session) => number) | undefined;
-  [key: string]: unknown;
+    AccessToken?:
+        | number
+        | ((ctx: KoaContextWithOIDC, token: AccessToken, client: Client) => number)
+        | undefined;
+    AuthorizationCode?:
+        | number
+        | ((ctx: KoaContextWithOIDC, code: AuthorizationCode, client: Client) => number)
+        | undefined;
+    BackchannelAuthenticationRequest?:
+        | number
+        | ((ctx: KoaContextWithOIDC, request: BackchannelAuthenticationRequest, client: Client) => number)
+        | undefined;
+    ClientCredentials?:
+        | number
+        | ((ctx: KoaContextWithOIDC, token: ClientCredentials, client: Client) => number)
+        | undefined;
+    DeviceCode?: number | ((ctx: KoaContextWithOIDC, code: DeviceCode, client: Client) => number) | undefined;
+    Grant?: number | ((ctx: KoaContextWithOIDC, grant: Grant) => number) | undefined;
+    IdToken?: number | ((ctx: KoaContextWithOIDC, token: IdToken, client: Client) => number) | undefined;
+    Interaction?: number | ((ctx: KoaContextWithOIDC, interaction: Interaction) => number) | undefined;
+    PreAuthorizedCode?: number | ((ctx: KoaContextWithOIDC, code: PreAuthorizedCode) => number) | undefined;
+    RefreshToken?:
+        | number
+        | ((ctx: KoaContextWithOIDC, token: RefreshToken, client: Client) => number)
+        | undefined;
+    Session?: number | ((ctx: KoaContextWithOIDC, session: Session) => number) | undefined;
+    [key: string]: unknown;
 } = {
   AccessToken: function AccessToken(ctx, token, client) {
     return token.resourceServer?.accessTokenTTL || 60 * 60; // 1 hour in seconds
@@ -3187,8 +3231,8 @@ Configure `ttl` for a given token type with a function like so, this must return
 {
   ttl: {
     AccessToken(ctx, token, client) {
-      // return a Number (in seconds) for the given token (second argument), the associated client is
-      // passed as a third argument
+      // Return a positive safe integer number of seconds for the given token (second
+      // argument). The associated client is passed as a third argument.
       // Tip: if the values are entirely client based memoize the results
       return resolveTTLfor(token, client);
     },
@@ -3315,8 +3359,8 @@ Specifies default client metadata values that shall be applied when properties a
 
 
 _**default value**_:
-```js
-{
+```ts
+const clientDefaults: AllClientMetadata = {
   grant_types: [
     'authorization_code'
   ],
@@ -3325,7 +3369,7 @@ _**default value**_:
     'code'
   ],
   token_endpoint_auth_method: 'client_secret_basic'
-}
+};
 ```
 <a id="client-defaults-changing-the-default-client-token-endpoint-auth-method"></a><details><summary>Example: (Click to expand) Changing the default client token_endpoint_auth_method.</summary><br>
 
@@ -3400,6 +3444,22 @@ Configuration for HTTP cookies used to maintain User-Agent state throughout the 
 
 ---
 
+### cookies.keys
+
+[Keygrip](https://www.npmjs.com/package/keygrip) signing keys used for cookie signing to prevent tampering. You may also pass your own KeyGrip instance.
+
+
+
+_**recommendation**_: Rotate regularly (by prepending new keys) with a reasonable interval and keep a reasonable history of keys to allow for returning user session cookies to still be valid and re-signed.
+
+
+_**default value**_:
+```js
+[]
+```
+
+---
+
 ### cookies.long
 
 Options for long-term cookies.
@@ -3456,8 +3516,8 @@ Note: Standard discovery properties derived from the provider's configuration ca
 
 
 _**default value**_:
-```js
-{
+```ts
+const discovery: UnknownObject = {
   claim_types_supported: [
     'normal'
   ],
@@ -3467,7 +3527,7 @@ _**default value**_:
   op_tos_uri: undefined,
   service_documentation: undefined,
   ui_locales_supported: undefined
-}
+};
 ```
 
 ---
@@ -4147,13 +4207,13 @@ Note: These validators execute during the final phase of the request validation 
 _**default value**_:
 ```ts
 const extraParams: readonly string[] | ReadonlySet<string> | {
-  [name: string]:
-    | null
-    | ((
-      ctx: KoaContextWithOIDC,
-      value: string | undefined,
-      client: Client,
-    ) => CanBePromise<void>);
+    [name: string]:
+        | null
+        | ((
+            ctx: KoaContextWithOIDC,
+            value: string | undefined,
+            client: Client,
+        ) => CanBePromise<void>);
 } = [];
 ```
 <a id="extra-params-registering-an-extra-origin-parameter-with-its-validator"></a><details><summary>Example: (Click to expand) Registering an extra `origin` parameter with its validator.</summary><br>
@@ -4247,12 +4307,17 @@ Specifies per-purpose maximum response body size limits (in bytes) for external 
 
 
 _**default value**_:
-```js
-{
+```ts
+const fetchResponseBodyLimits: {
+    "client_id metadata document"?: number | undefined;
+    jwks_uri?: number | undefined;
+    sector_identifier_uri?: number | undefined;
+    [purpose: string]: number | undefined;
+} = {
   'client_id metadata document': 5120,
   jwks_uri: Infinity,
   sector_identifier_uri: Infinity
-}
+};
 ```
 
 ---
@@ -4292,11 +4357,13 @@ Specifies customizer functions that shall be invoked immediately before issuing 
 _**default value**_:
 ```ts
 const customizers: {
-  jwt?: ((
-    ctx: KoaContextWithOIDC,
-    token: AccessToken | ClientCredentials,
-    parts: JWTStructured,
-  ) => CanBePromise<void>) | undefined;
+    jwt?:
+        | ((
+            ctx: KoaContextWithOIDC,
+            token: AccessToken | ClientCredentials,
+            parts: JWTStructured,
+        ) => CanBePromise<void>)
+        | undefined;
 } = {
   jwt: undefined
 };
@@ -4319,7 +4386,7 @@ const customizers: {
 
 ### interactions.policy
 
-Specifies the structure of Prompts and their associated checks that shall be applied during authorization request processing. The policy is formed by Prompt and Check class instances that define the conditions under which user interaction is required. The default policy implementation provides a fresh instance that can be customized, and the relevant classes are exported for configuration purposes. 
+Specifies the structure of Prompts and their associated checks that shall be applied during authorization request processing. The policy is formed by Prompt and Check class instances that define the conditions under which user interaction is required. The default policy implementation provides a fresh instance that can be customized, and the relevant classes are exported for configuration purposes. All checks belonging to a Prompt are evaluated concurrently. Checks within the same Prompt MUST NOT depend on evaluation order or on mutations performed by another check.
 
 
 
@@ -4614,10 +4681,12 @@ import { interactionPolicy } from 'oidc-provider';
 const { Prompt, Check, base } = interactionPolicy;
 const basePolicy = base()
 // basePolicy.get(name) => returns a Prompt instance by its name
-// basePolicy.remove(name) => removes a Prompt instance by its name
+// basePolicy.remove(name) => removes a Prompt by name; a missing name is a no-op
+// basePolicy.clear() => removes all Prompts
 // basePolicy.add(prompt, index) => adds a Prompt instance to a specific index, default is add the prompt as the last one
 // prompt.checks.get(reason) => returns a Check instance by its reason
-// prompt.checks.remove(reason) => removes a Check instance by its reason
+// prompt.checks.remove(reason) => removes a Check by reason; a missing reason is a no-op
+// prompt.checks.clear() => removes all Checks
 // prompt.checks.add(check, index) => adds a Check instance to a specific index, default is add the check as the last one
 ```
 </details>

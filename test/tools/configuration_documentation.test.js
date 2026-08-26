@@ -7,8 +7,8 @@ import { expect } from 'chai';
 const generator = fileURLToPath(new URL('../../docs/update-configuration.js', import.meta.url));
 const testDirectory = fileURLToPath(new URL('.', import.meta.url));
 
-function generate() {
-  return execFileSync(process.execPath, [generator, '--configuration-json'], {
+function generate(mode = '--configuration-json') {
+  return execFileSync(process.execPath, [generator, mode], {
     cwd: testDirectory,
     encoding: 'utf8',
   });
@@ -32,11 +32,11 @@ describe('configuration documentation metadata', () => {
 
     expect(entries[0]).to.include({
       path: 'adapter',
+      type: 'AdapterConstructor | AdapterFactory',
       title: 'Storage Adapter',
       important: true,
       nodefault: true,
     });
-    expect(entries[0]).not.to.have.property('type');
     expect(entries[0].description).to.include('Production deployments MUST provide a custom adapter');
     expect(entries[0].see).to.include('[The expected interface](/example/my_adapter.js)');
     expect(entries.at(-1)).to.include({ path: 'subjectTypes' });
@@ -49,10 +49,13 @@ describe('configuration documentation metadata', () => {
     });
     expect(entries.find(({ path }) => path === 'features.webMessageResponseMode'))
       .to.include({ experimental: true });
+    expect(entries.find(({ path }) => path === 'cookies.keys')).to.include({
+      type: 'ReadonlyArray<string | Buffer> | KeyGrip',
+    });
 
     for (const entry of entries) {
       expect(entry.path).to.be.a('string').that.is.not.empty;
-      if (entry.type) expect(entry.type).to.be.a('string').that.is.not.empty;
+      expect(entry.type).to.be.a('string').that.is.not.empty;
       if (entry.title) expect(entry.title).to.be.a('string').that.is.not.empty;
       if (entry.description) expect(entry.description).to.be.a('string').that.is.not.empty;
       if (entry.see) expect(entry.see).to.be.an('array').that.is.not.empty;
