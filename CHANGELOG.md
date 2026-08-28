@@ -2,6 +2,26 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [9.12.0](https://github.com/panva/node-oidc-provider/compare/v9.11.5...v9.12.0) (2026-08-28)
+
+### Features
+
+* add grant helpers for custom grant implementers ([ef311dc](https://github.com/panva/node-oidc-provider/commit/ef311dcf641cf229c9f8bcdb3e8077510e3f30bb))
+* graduate Rich Authorization Requests ([40d691b](https://github.com/panva/node-oidc-provider/commit/40d691b4a8ded148bcf2ee9f66a66331b58de054)), references [#1429](https://github.com/panva/node-oidc-provider/issues/1429)
+
+### Fixes
+
+* ignore missing interaction policy removals ([08a825f](https://github.com/panva/node-oidc-provider/commit/08a825f2ae4e8343a9007b66ab416c2e29b828c8))
+
+### Documentation
+
+* generate extensibility contracts ([da48c9e](https://github.com/panva/node-oidc-provider/commit/da48c9eaf6f674109f9584796d2c53f26df3caf2))
+* generate typed configuration defaults ([feb9500](https://github.com/panva/node-oidc-provider/commit/feb9500d1c677cd98f461ae1882d3d4eefe8ff5f))
+
+### Refactor
+
+* enforce configuration hook contracts ([5c4d05b](https://github.com/panva/node-oidc-provider/commit/5c4d05b024b6ee88ac220cfc1de0522215aae9bc))
+
 ## [9.11.5](https://github.com/panva/node-oidc-provider/compare/v9.11.4...v9.11.5) (2026-08-24)
 
 ### Fixes
