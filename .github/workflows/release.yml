@@ -23,8 +23,6 @@ jobs:
 
   definitely-typed:
     name: DefinitelyTyped release handoff
-    # TODO: Re-enable after the first manual sync with the new generated structure lands in DefinitelyTyped.
-    if: ${{ false }}
     needs: release
     runs-on: ubuntu-latest
     continue-on-error: true
