@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [9.12.1](https://github.com/panva/node-oidc-provider/compare/v9.12.0...v9.12.1) (2026-09-04)
+
+### Fixes
+
+* restore PAR parameter trust metadata ([da4bf42](https://github.com/panva/node-oidc-provider/commit/da4bf429ad7130f32a30ababc68ed30d4b405b09))
+
 ## [9.12.0](https://github.com/panva/node-oidc-provider/compare/v9.11.5...v9.12.0) (2026-08-28)
 
 ### Features
