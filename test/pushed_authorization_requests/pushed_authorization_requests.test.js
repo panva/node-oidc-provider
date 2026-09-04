@@ -38,6 +38,51 @@ describe('Pushed Request Object', () => {
       });
     });
 
+    describe('trust metadata for public clients', () => {
+      before(function () { return this.login(); });
+      after(function () { return this.logout(); });
+
+      it('does not mark parameters from an unauthenticated plain PAR as trusted', async function () {
+        const clientId = 'client-unregistered-test-public';
+        const parameters = new this.AuthorizationRequest({
+          client_id: clientId,
+          response_type: 'code',
+          scope: 'openid',
+        });
+        const { body: { request_uri } } = await this.agent.post('/request')
+          .type('form')
+          .send({
+            client_id: clientId,
+            response_type: parameters.response_type,
+            scope: parameters.scope,
+            redirect_uri: parameters.redirect_uri,
+            code_challenge: parameters.code_challenge,
+            code_challenge_method: parameters.code_challenge_method,
+          })
+          .expect(201);
+
+        const id = request_uri.split(':').at(-1);
+        expect(await this.provider.PushedAuthorizationRequest.find(id))
+          .to.have.property('trusted', false);
+
+        const authorizationSuccess = sinon.spy();
+        this.provider.once('authorization.success', authorizationSuccess);
+        const auth = new this.AuthorizationRequest({
+          client_id: clientId,
+          request_uri,
+          state: undefined,
+          redirect_uri: undefined,
+        });
+
+        await this.wrap({ route: '/auth', verb: 'get', auth })
+          .expect(303)
+          .expect(auth.validatePresence(['code']));
+
+        expect(authorizationSuccess.calledOnce).to.be.true;
+        expect(authorizationSuccess.firstCall.args[0].oidc.trusted).to.be.undefined;
+      });
+    });
+
     ['client', 'client-par-required'].forEach((clientId) => {
       const requirePushedAuthorizationRequests = clientId === 'client-par-required';
 
@@ -303,6 +348,9 @@ describe('Pushed Request Object', () => {
             after(function () { return this.logout(); });
 
             it('allows the request_uri to be used', async function () {
+              const authorizationSuccess = sinon.spy();
+              this.provider.once('authorization.success', authorizationSuccess);
+
               const { body: { request_uri } } = await this.agent.post('/request')
                 .auth(clientId, 'secret')
                 .type('form')
@@ -332,6 +380,10 @@ describe('Pushed Request Object', () => {
                 .expect(303)
                 .expect(auth.validatePresence(['code']));
 
+              expect(authorizationSuccess.calledOnce).to.be.true;
+              expect(authorizationSuccess.firstCall.args[0].oidc.trusted)
+                .to.include.members(['client_id', 'response_type', 'scope'])
+                .and.not.include('request_uri');
               expect(await this.provider.PushedAuthorizationRequest.find(id)).to.be.ok.and.have.property('consumed').and.is.ok;
             });
 
@@ -662,6 +714,9 @@ describe('Pushed Request Object', () => {
             after(function () { return this.logout(); });
 
             it('allows the request_uri to be used', async function () {
+              const authorizationSuccess = sinon.spy();
+              this.provider.once('authorization.success', authorizationSuccess);
+
               const { body: { request_uri } } = await this.agent.post('/request')
                 .auth(clientId, 'secret')
                 .type('form')
@@ -694,6 +749,10 @@ describe('Pushed Request Object', () => {
                 .expect(303)
                 .expect(auth.validatePresence(['code']));
 
+              expect(authorizationSuccess.calledOnce).to.be.true;
+              expect(authorizationSuccess.firstCall.args[0].oidc.trusted)
+                .to.include.members(['client_id', 'response_type', 'scope'])
+                .and.not.include('request_uri');
               expect(await this.provider.PushedAuthorizationRequest.find(id)).to.be.ok.and.have.property('consumed').and.is.ok;
             });
 
