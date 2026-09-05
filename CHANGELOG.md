@@ -2,6 +2,20 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [9.12.2](https://github.com/panva/node-oidc-provider/compare/v9.12.1...v9.12.2) (2026-09-05)
+
+### Refactor
+
+* consolidate authorization middleware ([fe435d6](https://github.com/panva/node-oidc-provider/commit/fe435d6ea18a37121c66f5ba9732c65ac1784127))
+* expose built-in sender constraint checks ([2a93e49](https://github.com/panva/node-oidc-provider/commit/2a93e49681f9b0fe01bbecb4bc158fc680414aa5))
+* flatten model composition ([8bb6022](https://github.com/panva/node-oidc-provider/commit/8bb6022807a86b28b9de79e7b9f98feb7a61b8e5))
+* read live provider configuration ([a54b482](https://github.com/panva/node-oidc-provider/commit/a54b4825b0be412f7405b4dc4aa240e29e08704e))
+* remove provider-bound middleware factories ([2bc5022](https://github.com/panva/node-oidc-provider/commit/2bc5022b1eedcf064846b53a308d15be665a2dff))
+* share CORS middleware across providers ([ec3619f](https://github.com/panva/node-oidc-provider/commit/ec3619f7766ca2818ef7c94bedf04b84fb971c05))
+* share request body parsers ([7769cb1](https://github.com/panva/node-oidc-provider/commit/7769cb11e542bbb6795d6e78dba6cade15357fcf))
+* share single-use grant issuance ([67a0f5b](https://github.com/panva/node-oidc-provider/commit/67a0f5b0f9454870877b5a29f0a7cb7ce12ad3ca))
+* use a single request parameter class ([ba997e2](https://github.com/panva/node-oidc-provider/commit/ba997e23ac85f4122202eb2dd167752c82945c1c))
+
 ## [9.12.1](https://github.com/panva/node-oidc-provider/compare/v9.12.0...v9.12.1) (2026-09-04)
 
 ### Fixes
