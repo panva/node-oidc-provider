@@ -87,6 +87,53 @@ describe('grant_type=authorization_code', () => {
         .end(() => {});
     });
 
+    it('preserves token issuance callback order and entity availability', async function () {
+      const calls = [];
+      const configuration = i(this.provider).configuration;
+
+      sinon.stub(configuration, 'findAccount').callsFake((ctx, accountId, source) => {
+        calls.push('findAccount');
+        expect(ctx.oidc.entities).to.have.keys('Client', 'AuthorizationCode', 'Grant');
+        expect(source).to.equal(ctx.oidc.entities.AuthorizationCode);
+        expect(this.TestAdapter.for('AuthorizationCode').syncFind(source.jti).consumed).to.be.a('number');
+
+        return {
+          accountId,
+          claims() {
+            calls.push('claims');
+            expect(ctx.oidc.entities).to.have.keys(
+              'Client', 'AuthorizationCode', 'Grant', 'Account', 'AccessToken', 'RefreshToken',
+            );
+            return { sub: accountId };
+          },
+        };
+      });
+      sinon.stub(configuration, 'issueRefreshToken').callsFake((ctx, client, source) => {
+        calls.push('issueRefreshToken');
+        expect(client).to.equal(ctx.oidc.client);
+        expect(source).to.equal(ctx.oidc.entities.AuthorizationCode);
+        expect(ctx.oidc.entities).to.have.property('AccessToken');
+        expect(ctx.oidc.entities).not.to.have.property('RefreshToken');
+        return true;
+      });
+      this.provider.once('access_token.saved', () => calls.push('access_token.saved'));
+      this.provider.once('refresh_token.saved', () => calls.push('refresh_token.saved'));
+
+      await this.agent.post(route)
+        .auth('client', 'secret')
+        .type('form')
+        .send({
+          code: this.ac,
+          grant_type: 'authorization_code',
+          redirect_uri: 'https://client.example.com/cb',
+        })
+        .expect(200);
+
+      expect(calls).to.deep.equal([
+        'findAccount', 'access_token.saved', 'issueRefreshToken', 'refresh_token.saved', 'claims',
+      ]);
+    });
+
     it('populates ctx.oidc.entities (w/ offline_access)', function (done) {
       this.assertOnce((ctx) => {
         expect(ctx.oidc.entities).to.have.keys('Account', 'Grant', 'Client', 'AuthorizationCode', 'AccessToken', 'RefreshToken');

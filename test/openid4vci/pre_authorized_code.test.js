@@ -130,6 +130,26 @@ describe('grant_type=urn:ietf:params:oauth:grant-type:pre-authorized_code', () =
       });
   });
 
+  it('does not issue an ID token when the source includes openid scope', async function () {
+    const code = await mint.call(this, {
+      scope: 'openid offline_access mdl_scope',
+      oidcScope: 'openid offline_access',
+    });
+
+    await this.agent.post(route)
+      .type('form')
+      .send({
+        client_id: 'wallet',
+        'pre-authorized_code': code,
+        grant_type,
+      })
+      .expect(200)
+      .expect(({ body }) => {
+        expect(body).to.have.property('refresh_token');
+        expect(body).not.to.have.property('id_token');
+      });
+  });
+
   it('returns the authorization_details assigned to the access token', async function () {
     const rar = [{
       type: 'openid_credential',
