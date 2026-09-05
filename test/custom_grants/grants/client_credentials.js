@@ -1,15 +1,18 @@
 import { errors } from '../../../lib/index.js';
 import {
   applyAuthorizationDetails,
-  applySenderConstraints,
   buildTokenResponse,
+  checkDpopReplay,
+  checkDpopRequired,
+  checkMtlsCert,
   resolveRequestedResources,
   validateClientScope,
-  validateSenderConstraints,
+  validateDpop,
 } from '../../../lib/helpers/grants.js';
 
 import {
   asScopes,
+  checkBindingConflicts,
   ensureScopeSubset,
   ensureSingleResource,
   scopeString,
@@ -44,7 +47,11 @@ export function register(provider, { authorize } = {}) {
       );
     }
 
-    const constraints = await validateSenderConstraints(provider, ctx, errors.InvalidGrant);
+    const dPoP = await validateDpop(provider, ctx);
+    const certificate = checkMtlsCert(provider, ctx, errors.InvalidGrant);
+    checkDpopRequired(provider, ctx, dPoP, errors.InvalidGrant);
+    const constraints = { certificate, dPoP };
+    checkBindingConflicts(constraints, errors.InvalidGrant);
     const token = new provider.ClientCredentials({
       client: ctx.oidc.client,
       resourceServer,
@@ -52,7 +59,14 @@ export function register(provider, { authorize } = {}) {
     });
 
     await applyAuthorizationDetails(provider, ctx, token);
-    await applySenderConstraints(provider, ctx, token, constraints, errors.InvalidGrant);
+    checkBindingConflicts(constraints, errors.InvalidGrant, token);
+    if (constraints.certificate) {
+      token.setThumbprint('x5t', constraints.certificate);
+    }
+    if (constraints.dPoP) {
+      await checkDpopReplay(provider, ctx, constraints.dPoP, ctx.oidc.client.clientId, errors.InvalidGrant);
+      token.setThumbprint('jkt', constraints.dPoP.thumbprint);
+    }
 
     ctx.oidc.entity('ClientCredentials', token);
     const accessToken = await token.save();

@@ -1,5 +1,15 @@
 import { errors } from '../../../lib/index.js';
 
+export function checkBindingConflicts({ certificate, dPoP }, ErrorClass, token) {
+  if (
+    (certificate && dPoP)
+    || (certificate && token?.jkt)
+    || (dPoP && token?.['x5t#S256'])
+  ) {
+    throw new ErrorClass('multiple proof-of-possession mechanisms are not allowed');
+  }
+}
+
 export function asArray(value) {
   if (value === undefined) {
     return [];

@@ -1,14 +1,16 @@
 import { errors } from '../../../lib/index.js';
 import {
   applyAuthorizationDetails,
-  applySenderConstraints,
   buildTokenResponse,
+  checkDpopReplay,
+  checkDpopRequired,
+  checkMtlsCert,
   findAccount,
   findGrantSource,
   resolveRequestedResources,
   validateClientScope,
+  validateDpop,
   validateGrant,
-  validateSenderConstraints,
 } from '../../../lib/helpers/grants.js';
 
 import {
@@ -16,6 +18,7 @@ import {
   asArray,
   asScopes,
   authorizationDetails,
+  checkBindingConflicts,
   ensureScopeSubset,
   identifiers,
   requireString,
@@ -175,7 +178,11 @@ export function register(provider, {
         ? cause
         : new errors.InvalidRequest('subject token authorization details are invalid', undefined, { cause });
     }
-    const constraints = await validateSenderConstraints(provider, ctx, errors.InvalidRequest);
+    const dPoP = await validateDpop(provider, ctx);
+    const certificate = checkMtlsCert(provider, ctx, errors.InvalidRequest);
+    checkDpopRequired(provider, ctx, dPoP, errors.InvalidRequest);
+    const constraints = { certificate, dPoP };
+    checkBindingConflicts(constraints, errors.InvalidRequest);
 
     if (authorize) {
       const result = await authorize(ctx, {
@@ -295,12 +302,12 @@ export function register(provider, {
         scope: issued.scope ?? scopeString(effectiveScopes),
         tokenType: issued.tokenType,
       });
-      const bindingToken = new provider.ClientCredentials({ client: ctx.oidc.client });
-      await applySenderConstraints(
+      checkBindingConflicts(constraints, errors.InvalidRequest);
+      await checkDpopReplay(
         provider,
         ctx,
-        bindingToken,
-        constraints,
+        constraints.dPoP,
+        ctx.oidc.client.clientId,
         errors.InvalidRequest,
       );
       if (account) {
@@ -373,7 +380,14 @@ export function register(provider, {
         'issued token authorization details exceed the exchange authorization',
       );
     }
-    await applySenderConstraints(provider, ctx, token, constraints, errors.InvalidRequest);
+    checkBindingConflicts(constraints, errors.InvalidRequest, token);
+    if (constraints.certificate) {
+      token.setThumbprint('x5t', constraints.certificate);
+    }
+    if (constraints.dPoP) {
+      await checkDpopReplay(provider, ctx, constraints.dPoP, ctx.oidc.client.clientId, errors.InvalidRequest);
+      token.setThumbprint('jkt', constraints.dPoP.thumbprint);
+    }
 
     ctx.oidc.entity('Account', account);
     ctx.oidc.entity('Grant', grant);

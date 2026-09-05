@@ -1,11 +1,13 @@
 import { expect } from 'chai';
 
-import { errors } from '../../lib/index.js';
+import Provider, { errors } from '../../lib/index.js';
 import {
   applyAuthorizationDetails,
   applyRefreshTokenBindings,
-  applySenderConstraints,
   buildTokenResponse,
+  checkDpopReplay,
+  checkDpopRequired,
+  checkMtlsCert,
   consumeGrantSource,
   findAccount,
   findGrantSource,
@@ -14,8 +16,9 @@ import {
   shouldIssueRefreshToken,
   validateClientScope,
   validateGrant,
-  validateSenderConstraints,
+  validateDpop,
 } from '../../lib/helpers/grants.js';
+import instance from '../../lib/helpers/weak_cache.js';
 
 async function getError(operation) {
   try {
@@ -35,7 +38,9 @@ describe('grant implementation helpers', () => {
     const operations = {
       applyAuthorizationDetails: () => applyAuthorizationDetails(otherProvider, ctx),
       applyRefreshTokenBindings: () => applyRefreshTokenBindings(otherProvider, ctx),
-      applySenderConstraints: () => applySenderConstraints(otherProvider, ctx, undefined, {}),
+      checkDpopReplay: () => checkDpopReplay(otherProvider, ctx),
+      checkDpopRequired: () => checkDpopRequired(otherProvider, ctx),
+      checkMtlsCert: () => checkMtlsCert(otherProvider, ctx),
       consumeGrantSource: () => consumeGrantSource(otherProvider, ctx),
       findAccount: () => findAccount(otherProvider, ctx),
       findGrantSource: () => findGrantSource(otherProvider, ctx),
@@ -44,7 +49,7 @@ describe('grant implementation helpers', () => {
       shouldIssueRefreshToken: () => shouldIssueRefreshToken(otherProvider, ctx),
       validateClientScope: () => validateClientScope(otherProvider, ctx),
       validateGrant: () => validateGrant(otherProvider, ctx),
-      validateSenderConstraints: () => validateSenderConstraints(otherProvider, ctx),
+      validateDpop: () => validateDpop(otherProvider, ctx),
     };
 
     for (const [name, operation] of Object.entries(operations)) {
@@ -135,41 +140,64 @@ describe('grant implementation helpers', () => {
     });
   });
 
-  describe('applySenderConstraints', () => {
-    const provider = {};
-    const ctx = { oidc: { provider } };
+  describe('sender-constraint stages', () => {
+    let provider;
+    let ctx;
 
-    it('rejects conflicting bindings before mutating the token', async () => {
-      const token = {
-        setThumbprint() {
-          throw new Error('must not be called');
-        },
+    beforeEach(() => {
+      provider = new Provider('https://op.example.com', {
+        features: { devInteractions: { enabled: false } },
+      });
+      ctx = {
+        oidc: { provider, client: {} },
+        get() { return ''; },
+        assert(value, error) { if (!value) throw error; },
       };
-
-      const err = await getError(() => applySenderConstraints(provider, ctx, token, {
-        certificate: 'certificate',
-        dPoP: { thumbprint: 'thumbprint' },
-      }, errors.InvalidRequest));
-
-      expect(err).to.be.instanceOf(errors.InvalidRequest);
-      expect(err.error_description).to.equal('multiple proof-of-possession mechanisms are not allowed');
     });
 
-    it('rejects a binding that conflicts with one already on the token', async () => {
-      const token = {
-        'x5t#S256': 'certificate-thumbprint',
-        setThumbprint() {
-          throw new Error('must not be called');
-        },
+    it('keeps proof validation separate from the client requirement', async () => {
+      ctx.oidc.client.dpopBoundAccessTokens = true;
+
+      expect(await validateDpop(provider, ctx)).to.equal(undefined);
+      expect(() => checkDpopRequired(provider, ctx, undefined)).to.throw(errors.InvalidGrant);
+      expect(() => checkDpopRequired(provider, ctx, undefined, errors.InvalidRequest))
+        .to.throw(errors.InvalidRequest);
+      expect(() => checkDpopRequired(provider, ctx, { thumbprint: 'thumbprint' })).not.to.throw();
+
+      ctx.oidc.client.dpopBoundAccessTokens = false;
+      expect(() => checkDpopRequired(provider, ctx, undefined)).not.to.throw();
+    });
+
+    it('retrieves certificates only when required and supports the grant error class', () => {
+      const { mTLS } = instance(provider).features;
+      let calls = 0;
+      mTLS.getCertificate = (actual) => {
+        expect(actual).to.equal(ctx);
+        calls += 1;
+        return 'certificate';
       };
 
-      const err = await getError(() => applySenderConstraints(provider, ctx, token, {
-        dPoP: { thumbprint: 'thumbprint' },
-      }));
+      expect(checkMtlsCert(provider, ctx)).to.equal(undefined);
+      expect(calls).to.equal(0);
+      ctx.oidc.client.tlsClientCertificateBoundAccessTokens = true;
+      expect(checkMtlsCert(provider, ctx)).to.equal('certificate');
+      expect(calls).to.equal(1);
 
-      expect(err).to.be.instanceOf(errors.InvalidGrant);
-      expect(err.error_description).to.equal('grant request is invalid');
-      expect(err.error_detail).to.equal('multiple proof-of-possession mechanisms are not allowed');
+      mTLS.getCertificate = () => undefined;
+      expect(() => checkMtlsCert(provider, ctx)).to.throw(errors.InvalidGrant);
+      expect(() => checkMtlsCert(provider, ctx, errors.InvalidRequest)).to.throw(errors.InvalidRequest);
+    });
+
+    it('checks replay without a token and preserves the supplied client namespace', async () => {
+      const proof = { jti: 'proof', thumbprint: 'thumbprint' };
+
+      await checkDpopReplay(provider, ctx, proof, 'first');
+      await checkDpopReplay(provider, ctx, proof, 'second');
+
+      expect(await getError(() => checkDpopReplay(provider, ctx, proof, 'first')))
+        .to.be.instanceOf(errors.InvalidGrant);
+      expect(await getError(() => checkDpopReplay(provider, ctx, proof, 'first', errors.InvalidRequest)))
+        .to.be.instanceOf(errors.InvalidRequest);
     });
   });
 });

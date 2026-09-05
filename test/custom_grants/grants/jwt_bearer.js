@@ -8,12 +8,14 @@ import {
 import { errors } from '../../../lib/index.js';
 import {
   applyAuthorizationDetails,
-  applySenderConstraints,
   buildTokenResponse,
+  checkDpopReplay,
+  checkDpopRequired,
+  checkMtlsCert,
   findAccount,
   resolveRequestedResources,
   validateClientScope,
-  validateSenderConstraints,
+  validateDpop,
 } from '../../../lib/helpers/grants.js';
 
 import {
@@ -22,6 +24,7 @@ import {
   assertionResources as normalizeAssertionResources,
   assertionScopes as normalizeAssertionScopes,
   authorizationDetails,
+  checkBindingConflicts,
   ensureScopeSubset,
   ensureSingleResource,
   identifiers,
@@ -236,7 +239,11 @@ export function register(provider, {
     token.assertionIssuer = payload.iss;
     token.actor = payload.act;
 
-    const constraints = await validateSenderConstraints(provider, ctx, errors.InvalidGrant);
+    const dPoP = await validateDpop(provider, ctx);
+    const certificate = checkMtlsCert(provider, ctx, errors.InvalidGrant);
+    checkDpopRequired(provider, ctx, dPoP, errors.InvalidGrant);
+    const constraints = { certificate, dPoP };
+    checkBindingConflicts(constraints, errors.InvalidGrant);
     if (payload.cnf?.jkt) {
       if (!constraints.dPoP || constraints.dPoP.thumbprint !== payload.cnf.jkt) {
         throw invalidGrant(new Error('assertion proof-of-possession key mismatch'));
@@ -267,7 +274,14 @@ export function register(provider, {
 
     let accessToken;
     try {
-      await applySenderConstraints(provider, ctx, token, constraints, errors.InvalidGrant);
+      checkBindingConflicts(constraints, errors.InvalidGrant, token);
+      if (constraints.certificate) {
+        token.setThumbprint('x5t', constraints.certificate);
+      }
+      if (constraints.dPoP) {
+        await checkDpopReplay(provider, ctx, constraints.dPoP, ctx.oidc.client.clientId, errors.InvalidGrant);
+        token.setThumbprint('jkt', constraints.dPoP.thumbprint);
+      }
       ctx.oidc.entity('Account', account);
       ctx.oidc.entity('Grant', grant);
       ctx.oidc.entity('AccessToken', token);

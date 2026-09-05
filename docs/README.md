@@ -211,6 +211,7 @@ The authorization server comes with the basic grants implemented, but implementa
 [Identity Assertion Authorization Grant](https://datatracker.ietf.org/doc/draft-ietf-oauth-identity-assertion-authz-grant/).
 
 ```js
+import { errors } from "oidc-provider";
 import * as grants from "oidc-provider/lib/helpers/grants.js";
 
 const parameters = [
@@ -257,30 +258,42 @@ should perform work in this order:
    The handler must still validate source-specific state and reject a missing account or an account/Grant mismatch.
    Translate assertion-verification failures to a sanitized OAuth error and retain the original exception only as its
    internal `cause`; do not expose signature, parser, trust-store, or subject-mapping details to the client.
-2. Call `validateSenderConstraints(provider, ctx, ErrorClass?)` once. Normalize and authorize requested scopes with
-   `validateClientScope(provider, ctx, scopes?)`, which enforces the client's static scope allow list. For an externally
-   validated assertion or client-only grant, call `resolveRequestedResources(provider, ctx)`; it populates
-   `ctx.oidc.resourceServers` and returns the resolved Resource Servers. The handler must select and assign at most one of
-   them to a provider token. A provider-managed source and Grant can instead use `resolveAndApplyResource(...)` after
-   constructing a token.
+2. Validate a supplied DPoP proof with `validateDpop(provider, ctx, accessToken?)`; its optional `accessToken` argument
+   checks the proof's access-token hash when the operation requires one. Retrieve a required mutual TLS certificate with
+   `checkMtlsCert(provider, ctx, ErrorClass?)`, and enforce the client's DPoP requirement with
+   `checkDpopRequired(provider, ctx, dPoP, ErrorClass?)`. These checks do not record DPoP replay. Normalize and authorize
+   requested scopes with `validateClientScope(provider, ctx, scopes?)`, which enforces the client's static scope allow
+   list. For an externally validated assertion or client-only grant, call `resolveRequestedResources(provider, ctx)`;
+   it populates `ctx.oidc.resourceServers` and returns the resolved Resource Servers. The handler must select and assign
+   at most one of them to a provider token. A provider-managed source and Grant can instead use
+   `resolveAndApplyResource(...)` after constructing a token.
 3. Only after non-mutating validation succeeds, call `consumeGrantSource(provider, ctx, source, label)` when the grant
    source is defined as single-use. Token Exchange input tokens, for example, are not consumed merely by being exchanged.
 4. Construct the appropriate provider token model, apply resource policy, and call
-   `applyAuthorizationDetails(provider, ctx, token, source?)`. After every other fallible authorization and response
-   validation has succeeded, call `applySenderConstraints(provider, ctx, token, constraints, ErrorClass?)` as the last
-   pre-persistence stage so its DPoP replay check is not consumed by an earlier failure.
-5. Assign relevant objects with `ctx.oidc.entity(name, value)` before calling their `save()` methods. The helpers do not
-   assign entities or persist newly constructed tokens. Use `shouldIssueRefreshToken(provider, ctx, source)` before
-   creating a Refresh Token and `applyRefreshTokenBindings(provider, ctx, accessToken, refreshToken)` before saving it.
+   `applyAuthorizationDetails(provider, ctx, token, source?)`. Apply the certificate with
+   `token.setThumbprint("x5t", certificate)` or the DPoP key with `token.setThumbprint("jkt", dPoP.thumbprint)`.
+   Use `shouldIssueRefreshToken(provider, ctx, source)` before creating a Refresh Token and
+   `applyRefreshTokenBindings(provider, ctx, accessToken, refreshToken)` to bind it. Reject conflicting bindings and
+   finish authorization and output validation before recording DPoP replay.
+5. Assign relevant objects with `ctx.oidc.entity(name, value)`. Call
+   `checkDpopReplay(provider, ctx, dPoP, ctx.oidc.client.clientId, ErrorClass?)` as the final step before persistence,
+   then save the issued tokens. The helpers do not assign entities or persist newly constructed tokens.
 6. Set `ctx.body`, usually with `buildTokenResponse(provider, input)`. Throw the public `errors` exported by
    `oidc-provider` for OAuth errors; grant-specific validation and error selection remain the handler's responsibility.
+
+The optional `ErrorClass` argument defaults to `errors.InvalidGrant`. `validateDpop` returns `undefined` when no proof
+is supplied or DPoP is disabled; `checkDpopRequired` enforces whether the client must supply one. `checkMtlsCert` returns
+`undefined` when the client does not require certificate-bound Access Tokens. `checkDpopReplay` accepts an undefined
+DPoP result, so a handler can call it regardless of whether a proof was supplied.
 
 The following issuance tail shows a provider `AccessToken`. It assumes application code has already validated the custom
 grant and produced a provider-compatible `source`, its persisted `grant`, and its `account`.
 
 ```js
 async function issueProviderAccessToken(ctx, source, grant, account, effectiveScopes) {
-  const constraints = await grants.validateSenderConstraints(provider, ctx);
+  const dPoP = await grants.validateDpop(provider, ctx);
+  const certificate = grants.checkMtlsCert(provider, ctx);
+  grants.checkDpopRequired(provider, ctx, dPoP);
   const scopes = grants.validateClientScope(provider, ctx, effectiveScopes);
 
   ctx.oidc.entity("Grant", grant);
@@ -295,15 +308,18 @@ async function issueProviderAccessToken(ctx, source, grant, account, effectiveSc
 
   await grants.resolveAndApplyResource(provider, ctx, source, token, grant, scopes);
   await grants.applyAuthorizationDetails(provider, ctx, token, source);
-  await grants.applySenderConstraints(provider, ctx, token, constraints);
+  if (certificate) token.setThumbprint("x5t", certificate);
+  if (dPoP) token.setThumbprint("jkt", dPoP.thumbprint);
+  const expiresIn = token.expiration;
 
   ctx.oidc.entity("AccessToken", token);
+  await grants.checkDpopReplay(provider, ctx, dPoP, ctx.oidc.client.clientId);
   const accessToken = await token.save();
 
   ctx.body = grants.buildTokenResponse(provider, {
     accessToken,
     tokenType: token.tokenType,
-    expiresIn: token.expiration,
+    expiresIn,
     scope: token.scope,
     authorizationDetails: token.rar,
   });
@@ -316,18 +332,33 @@ undefined values. Additional response members may be supplied in a plain `parame
 reserved response member.
 
 RFC 8693 can return a security token that is not an OAuth Access Token and is not usable as one. The application is
-responsible for producing such a token; use the RFC 8693 `N_A` token type and include the required issued-token type:
+responsible for producing and binding such a token; use the RFC 8693 `N_A` token type and include the required
+issued-token type. In this example, application code validates and authorizes the exchange, constructs its token with
+the supplied sender binding, and returns it without persisting it. The handler validates the response before calling
+the replay helper directly. Any application persistence would follow the replay check.
 
 ```js
 async function tokenExchangeHandler(ctx) {
-  const issued = await validateExchangeAndIssueToken(ctx);
+  const dPoP = await grants.validateDpop(provider, ctx);
+  const certificate = grants.checkMtlsCert(provider, ctx);
+  grants.checkDpopRequired(provider, ctx, dPoP);
+  if (certificate && dPoP) {
+    throw new errors.InvalidGrant("multiple proof-of-possession mechanisms are not allowed");
+  }
 
-  ctx.body = grants.buildTokenResponse(provider, {
+  const issued = await validateExchangeAndCreateToken(ctx, {
+    certificate,
+    dpopJkt: dPoP?.thumbprint,
+  });
+  const response = grants.buildTokenResponse(provider, {
     accessToken: issued.value,
     tokenType: "N_A",
     issuedTokenType: issued.type,
     expiresIn: issued.expiresIn,
   });
+
+  await grants.checkDpopReplay(provider, ctx, dPoP, ctx.oidc.client.clientId);
+  ctx.body = response;
 }
 ```
 
