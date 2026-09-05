@@ -365,7 +365,7 @@ interface UnrelatedConfiguration {
       )) {
         staticallyEmitted.add(match[1]);
       }
-      for (const match of source.matchAll(/\berror\(this,\s*['"]([^'"]+)['"]\)/g)) {
+      for (const match of source.matchAll(/\berror\(\s*['"]([^'"]+)['"]\)/g)) {
         errorHandlerEvents.add(match[1]);
       }
     }

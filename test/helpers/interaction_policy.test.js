@@ -32,7 +32,7 @@ describe('interaction policy collections', () => {
       });
 
       await assert.rejects(
-        interactions('resume', { oidc: { provider } }, () => {}),
+        interactions({ oidc: { provider, route: 'authorization' } }, () => {}),
         {
           name: 'TypeError',
           message: 'interactions.policy.custom.checks.custom_reason.check must return a Boolean',
