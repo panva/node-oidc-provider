@@ -2,44 +2,14 @@ import cors from '@koa/cors';
 import { expect } from 'chai';
 import Koa from 'koa';
 
+import mine from '../../lib/shared/cors.js';
+
 /*
  * lib/shared/cors.js used to delegate to @koa/cors. @koa/cors is kept as a
  * devDependency so the transcription can be held to it: for every profile
  * oidc-provider configures and every request shape it can see, both must emit
  * exactly the same response headers and the same status.
  */
-
-const list = (value) => (Array.isArray(value) ? value.join(',') : value);
-
-// kept in sync with lib/shared/cors.js
-function mine({ allowMethods, maxAge, exposeHeaders }) {
-  const methods = list(allowMethods) ?? 'GET,HEAD,PUT,POST,DELETE,PATCH';
-  const expose = list(exposeHeaders);
-  const age = maxAge ? String(maxAge) : undefined;
-
-  return async (ctx, next) => {
-    ctx.vary('Origin');
-    const origin = ctx.get('Origin') || '*';
-
-    if (ctx.method !== 'OPTIONS') {
-      ctx.set('Access-Control-Allow-Origin', origin);
-      if (expose) ctx.set('Access-Control-Expose-Headers', expose);
-      return next();
-    }
-
-    if (!ctx.get('Access-Control-Request-Method')) return next();
-
-    ctx.set('Access-Control-Allow-Origin', origin);
-    if (age) ctx.set('Access-Control-Max-Age', age);
-    if (methods) ctx.set('Access-Control-Allow-Methods', methods);
-
-    const allowHeaders = ctx.get('Access-Control-Request-Headers');
-    if (allowHeaders) ctx.set('Access-Control-Allow-Headers', allowHeaders);
-
-    ctx.status = 204;
-    return undefined;
-  };
-}
 
 const theirs = (options) => cors({
   keepHeadersOnError: false,

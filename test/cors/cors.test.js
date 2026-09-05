@@ -95,6 +95,32 @@ describe('CORS setup', () => {
     });
   });
 
+  it('reads the current DPoP configuration when exposing response headers', async function () {
+    const { configuration } = instance(this.provider);
+    const original = configuration.features.dPoP;
+    const originalClientBasedCORS = configuration.clientBasedCORS;
+    const request = () => req.call(
+      this, 'get', '/me', 'https://example.com',
+      ['set', 'authorization', `Bearer ${this.token}`],
+    );
+
+    try {
+      configuration.clientBasedCORS = () => true;
+      configuration.features.dPoP = { ...original, enabled: true, nonceSecret: Buffer.alloc(32) };
+      const enabled = await request();
+      expect(enabled.status).to.equal(200);
+      expect(enabled.headers[ACEHeaders]).to.equal('DPoP-Nonce,WWW-Authenticate');
+
+      configuration.features.dPoP = { ...original, enabled: false };
+      const disabled = await request();
+      expect(disabled.status).to.equal(200);
+      expect(disabled.headers[ACEHeaders]).to.equal('WWW-Authenticate');
+    } finally {
+      configuration.features.dPoP = original;
+      configuration.clientBasedCORS = originalClientBasedCORS;
+    }
+  });
+
   it('discovery preflights have cors open', async function () {
     const { status, headers } = await preflight.call(this, 'GET', '/.well-known/openid-configuration', 'https://example.com');
     expect(status).to.eql(204);
