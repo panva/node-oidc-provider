@@ -6,16 +6,20 @@ on:
   push:
     tags: ["v[0-9]+.[0-9]+.[0-9]+"]
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: false # Let publishing finish before another run of this tag.
+
 jobs:
   release:
     permissions:
-      actions: read
-      attestations: write
-      artifact-metadata: write
-      contents: write
-      discussions: write
-      id-token: write
-    uses: panva/.github/.github/workflows/npm-release.yml@bd045b0d7d15f7827910cdedd3e7f0570bc5bf58
+      actions: read # Read workflow metadata for npm provenance and attestations.
+      attestations: write # Publish package attestations.
+      artifact-metadata: write # Associate package artifacts with attestations.
+      contents: write # Publish GitHub releases and update release branches.
+      discussions: write # Create release discussions.
+      id-token: write # Authenticate npm publishing and sign attestations.
+    uses: panva/.github/.github/workflows/npm-release.yml@3faba8af3880247be43547787aedd52780c9f946
     with:
       artifact_check_command: node tools/test-dist.js "$PACKAGE_TARBALL"
       package_directory: ./dist
@@ -56,8 +60,7 @@ jobs:
         uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
         with:
           node-version: lts/*
-          cache: npm
-          cache-dependency-path: provider/package-lock.json
+          package-manager-cache: false
 
       - name: Setup pnpm
         uses: pnpm/action-setup@0977fd99725f1db4007ccb2928dbb4e90d06cc86 # v6.0.10

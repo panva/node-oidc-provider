@@ -6,12 +6,17 @@ on:
   schedule:
     - cron: '55 11 * * 1'
 
+concurrency:
+  group: ${{ github.workflow }}
+  cancel-in-progress: true
+
 jobs:
   lock:
+    name: Lock inactive threads
     permissions:
-      issues: write
-      pull-requests: write
-      discussions: write
+      issues: write # Lock inactive issues.
+      pull-requests: write # Lock inactive pull requests.
+      discussions: write # Lock inactive discussions.
     if: ${{ github.repository == 'panva/node-oidc-provider' }}
     continue-on-error: true
     runs-on: ubuntu-latest

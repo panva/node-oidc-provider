@@ -9,13 +9,20 @@ on:
     types:
       - completed
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.workflow_run.id }}
+  cancel-in-progress: true
+
 jobs:
   retry:
+    name: Retry failed conformance jobs
     permissions:
-      actions: write
+      actions: write # Rerun failed jobs from the completed conformance run.
     runs-on: ubuntu-latest
     if: ${{ github.event.workflow_run.conclusion == 'failure' && github.event.workflow_run.run_attempt == 1 }}
     steps:
-      - run: gh api -XPOST ${{ github.event.workflow_run.rerun_url }}-failed-jobs
+      - name: Rerun failed jobs
+        run: gh run rerun --failed --repo "$GITHUB_REPOSITORY" -- "$WORKFLOW_RUN_ID"
         env:
           GH_TOKEN: ${{ github.token }}
+          WORKFLOW_RUN_ID: ${{ github.event.workflow_run.id }}

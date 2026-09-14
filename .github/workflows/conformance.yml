@@ -23,8 +23,13 @@ on:
         required: false
         type: string
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event_name }}-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   run:
+    name: Run conformance suite
     if: ${{ github.repository == 'panva/node-oidc-provider' || github.event_name == 'workflow_dispatch' }}
     runs-on: ubuntu-latest
     strategy:
@@ -179,6 +184,8 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
       - name: Setup node
         uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
         with:
@@ -211,7 +218,7 @@ jobs:
           NODE_TLS_REJECT_UNAUTHORIZED: 0
           SETUP: ${{ toJSON(matrix.setup) }}
       - name: Run Conformance Suite
-        uses: panva/.github/.github/actions/conformance-suite@bd045b0d7d15f7827910cdedd3e7f0570bc5bf58
+        uses: panva/.github/.github/actions/conformance-suite@3faba8af3880247be43547787aedd52780c9f946
         with:
           version-override: ${{ inputs.conformance_suite_version || vars.CONFORMANCE_SUITE_VERSION || '' }}
       - name: Adjust configuration files for CI
