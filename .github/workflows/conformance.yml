@@ -218,7 +218,7 @@ jobs:
           NODE_TLS_REJECT_UNAUTHORIZED: 0
           SETUP: ${{ toJSON(matrix.setup) }}
       - name: Run Conformance Suite
-        uses: panva/.github/.github/actions/conformance-suite@3faba8af3880247be43547787aedd52780c9f946
+        uses: panva/.github/.github/actions/conformance-suite@3e38641fadf88675f7089e33385f176cf1f37ac7
         with:
           version-override: ${{ inputs.conformance_suite_version || vars.CONFORMANCE_SUITE_VERSION || '' }}
       - name: Adjust configuration files for CI
