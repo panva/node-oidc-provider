@@ -166,15 +166,25 @@ describe('provider-owned type contracts', () => {
       'indexFragments',
       'files',
     ]);
-    expect(parsed.schemaVersion).to.equal(1);
+    expect(parsed.schemaVersion).to.equal(2);
     expect(parsed.providerVersion).to.equal(JSON.parse(readFileSync(packageUrl)).version);
     expect(parsed.hash).to.match(/^[a-f0-9]{64}$/);
     expect(Object.keys(parsed.indexFragments)).to.deep.equal([
       'contracts',
       'providerMembers',
       'relatedContracts',
+      'clientAuthMethods',
+      'oidcContext',
     ]);
-    expect(Object.keys(parsed.files)).to.deep.equal(['lib/helpers/grants.d.ts']);
+    expect(Object.keys(parsed.files)).to.deep.equal([
+      'lib/helpers/grants.d.ts',
+      'oidc-provider-tests.ts',
+      'scripts/update-types.mjs',
+      'scripts/update-types.test.mjs',
+      'scripts/sync-release.mjs',
+      'scripts/sync-release.test.mjs',
+      'scripts/README.md',
+    ]);
 
     for (const fragment of Object.values(parsed.indexFragments)) {
       expect(fragment).to.be.a('string').that.is.not.empty;
@@ -192,7 +202,10 @@ describe('provider-owned type contracts', () => {
     const contracts = parse(parsed.indexFragments.contracts, parserOptions);
     parse(`declare class Provider {\n${parsed.indexFragments.providerMembers}\n}`, parserOptions);
     parse(parsed.indexFragments.relatedContracts, parserOptions);
+    parse(parsed.indexFragments.clientAuthMethods, parserOptions);
+    parse(parsed.indexFragments.oidcContext, parserOptions);
     parse(parsed.files['lib/helpers/grants.d.ts'], parserOptions);
+    parse(parsed.files['oidc-provider-tests.ts'], parserOptions);
 
     const conditionalFeatures = declaration(
       contracts,
@@ -224,6 +237,41 @@ describe('provider-owned type contracts', () => {
     expect(artifact.files['lib/helpers/grants.d.ts']).to.equal(
       readFileSync(grantsSourceUrl, 'utf8').replaceAll('\r\n', '\n'),
     );
+  });
+
+  it('carries the client authentication and context declarations required by the release', () => {
+    const clientAuth = declaration(
+      parse(artifact.indexFragments.clientAuthMethods, parserOptions),
+      'TSTypeAliasDeclaration',
+      'ClientAuthMethod',
+    );
+    expect(clientAuth.typeAnnotation.types.map((type) => type.literal.value))
+      .to.include('attest_jwt_client_auth_dpop');
+
+    const context = declaration(
+      parse(artifact.indexFragments.oidcContext, parserOptions),
+      'ClassDeclaration',
+      'OIDCContext',
+    );
+    const attestation = context.body.body.find((member) => member.key?.name === 'clientAttestation');
+    expect(attestation).to.include({ optional: true, readonly: true });
+    expect(artifact.indexFragments.oidcContext).to.include('"dpop_combined"');
+  });
+
+  it('includes the canonical tests and sync tools in the hashed release files', () => {
+    const sources = {
+      'oidc-provider-tests.ts': 'types/oidc-provider-tests.ts',
+      'scripts/update-types.mjs': 'tools/dt/update-types.mjs',
+      'scripts/update-types.test.mjs': 'tools/dt/update-types.test.mjs',
+      'scripts/sync-release.mjs': 'tools/dt/sync-release.mjs',
+      'scripts/sync-release.test.mjs': 'tools/dt/sync-release.test.mjs',
+      'scripts/README.md': 'tools/dt/README.md',
+    };
+    for (const [target, source] of Object.entries(sources)) {
+      expect(artifact.files[target]).to.equal(
+        readFileSync(new URL(source, root), 'utf8').replaceAll('\r\n', '\n'),
+      );
+    }
   });
 
   it('rejects repeated configuration paths on unrelated declarations', () => {

@@ -13,9 +13,11 @@ import login from '../lib/helpers/interaction_policy/prompts/login.js';
 import {
   TYPES_SCHEMA_VERSION,
   contentHash,
+  readClientAuthMethodsContract,
   readConfigurationContract,
-  readGrantHelperContract,
+  readOIDCContextContract,
   readRelatedContract,
+  readTypeReleaseFiles,
   renderConfigurationContract,
   renderConfigurationJSDoc,
   renderEventMapContract,
@@ -1000,10 +1002,10 @@ try {
       contracts: `${configuration.trim()}\n\n${renderEventMapContract()}`,
       providerMembers: renderProviderContract(),
       relatedContracts: readRelatedContract(),
+      clientAuthMethods: readClientAuthMethodsContract(),
+      oidcContext: readOIDCContextContract(),
     };
-    const files = {
-      'lib/helpers/grants.d.ts': readGrantHelperContract(),
-    };
+    const files = readTypeReleaseFiles();
     const contents = { indexFragments, files };
     const artifact = {
       schemaVersion: TYPES_SCHEMA_VERSION,

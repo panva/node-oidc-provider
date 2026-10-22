@@ -73,6 +73,7 @@ jobs:
           cache: 'npm'
           check-latest: true
       - run: npm clean-install
+      - run: node --test tools/dt/sync-release.test.mjs
       - run: npm run test-ci
 
   dist:

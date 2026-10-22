@@ -43,6 +43,7 @@ jobs:
           sparse-checkout: |
             docs
             lib/helpers
+            tools/dt
             types
 
       - name: Checkout DefinitelyTyped master
@@ -88,18 +89,26 @@ jobs:
           npm clean-install --ignore-scripts --prefix provider
           pnpm --dir definitely-typed install --filter definitely-typed --ignore-scripts --no-frozen-lockfile
 
-      - name: Generate provider types artifact
+      - name: Generate provider types handoff bundle
         working-directory: provider
-        run: node docs/update-configuration.js --types-json > "$RUNNER_TEMP/oidc-provider-types.json"
+        run: |
+          set -euo pipefail
+          mkdir "$RUNNER_TEMP/oidc-provider-types"
+          node docs/update-configuration.js --types-json \
+            > "$RUNNER_TEMP/oidc-provider-types/oidc-provider-types.json"
+          cp tools/dt/update-types.mjs tools/dt/sync-release.mjs \
+            tools/dt/update-types.test.mjs tools/dt/sync-release.test.mjs tools/dt/README.md \
+            "$RUNNER_TEMP/oidc-provider-types/"
 
       - name: Inspect DefinitelyTyped update
         id: inspect_types
-        working-directory: definitely-typed
+        working-directory: provider
         run: |
           set -euo pipefail
-          node types/oidc-provider/scripts/update-types.mjs \
+          node tools/dt/update-types.mjs \
+            --package-dir "$GITHUB_WORKSPACE/definitely-typed/types/oidc-provider" \
             --status \
-            --artifact "$RUNNER_TEMP/oidc-provider-types.json" \
+            --artifact "$RUNNER_TEMP/oidc-provider-types/oidc-provider-types.json" \
             > "$RUNNER_TEMP/oidc-provider-types-status.json"
           node --input-type=module -e '
             import { appendFileSync, readFileSync } from "node:fs";
@@ -109,7 +118,7 @@ jobs:
               throw new Error("DefinitelyTyped updater returned an invalid status document");
             }
             if (!Array.isArray(status.reasons)
-              || status.reasons.some((reason) => !["declarations", "major-version"].includes(reason))) {
+              || status.reasons.some((reason) => !["declarations", "tests", "major-version"].includes(reason))) {
               throw new Error("DefinitelyTyped updater returned invalid update reasons");
             }
 
@@ -128,39 +137,44 @@ jobs:
         env:
           STATUS_FILE: ${{ runner.temp }}/oidc-provider-types-status.json
 
-      - name: Upload provider types artifact
+      - name: Upload provider types handoff bundle
         id: upload_artifact
         if: ${{ steps.inspect_types.outputs.update_required == 'true' }}
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: oidc-provider-types-${{ github.ref_name }}
-          path: ${{ runner.temp }}/oidc-provider-types.json
+          path: ${{ runner.temp }}/oidc-provider-types/*
           if-no-files-found: error
           retention-days: 30
 
       - name: Report DefinitelyTyped handoff
         if: ${{ always() }}
         run: |
+          set -euo pipefail
           if [[ "$STATUS_OUTCOME" != "success" ]]; then
-            echo "::warning title=DefinitelyTyped release handoff::The declaration check did not complete;" \
+            echo "::warning title=DefinitelyTyped release handoff::The type update check did not complete;" \
               "the npm release is unaffected. Inspect this job and run the DT updater manually."
           elif [[ "$UPDATE_REQUIRED" == "true" && "$UPLOAD_OUTCOME" != "success" ]]; then
-            echo "::warning title=DefinitelyTyped release handoff::A declaration update is required," \
+            echo "::warning title=DefinitelyTyped release handoff::A type update is required," \
               "but its handoff artifact could not be uploaded. The npm release is unaffected."
           elif [[ "$UPDATE_REQUIRED" == "true" ]]; then
-            HANDOFF_COMMAND='node types/oidc-provider/scripts/sync-release.mjs'
-            HANDOFF_COMMAND+=" --tag ${GITHUB_REF_NAME}"
-            HANDOFF_COMMAND+=" --run-id ${GITHUB_RUN_ID} --submit"
-            echo "::notice title=DefinitelyTyped update available::${HANDOFF_COMMAND}"
+            echo "::notice title=DefinitelyTyped update available::Download and run the released" \
+              "sync tools using the commands in this job summary."
             printf '%s\n' \
               '## DefinitelyTyped update available' \
               '' \
-              "The released declarations require an update (${UPDATE_REASONS}). From a DefinitelyTyped checkout, run:" \
+              "The released type definitions or tests require an update (${UPDATE_REASONS}). From a DefinitelyTyped checkout, run:" \
               '' \
               '```sh' \
-              "node types/oidc-provider/scripts/sync-release.mjs \\" \
-              "  --tag ${GITHUB_REF_NAME} \\" \
-              "  --run-id ${GITHUB_RUN_ID} \\" \
+              'bundle="$(mktemp -d)"' \
+              "gh run download '${GITHUB_RUN_ID}' \\" \
+              "  --repo '${GITHUB_REPOSITORY}' \\" \
+              "  --name 'oidc-provider-types-${GITHUB_REF_NAME}' \\" \
+              '  --dir "$bundle"' \
+              'node "$bundle/sync-release.mjs" \' \
+              '  --repository "$PWD" \' \
+              "  --tag '${GITHUB_REF_NAME}' \\" \
+              '  --artifact "$bundle/oidc-provider-types.json" \' \
               '  --submit' \
               '```' \
               >> "$GITHUB_STEP_SUMMARY"

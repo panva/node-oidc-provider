@@ -13,8 +13,19 @@ a related type refinement without declaring a second contract, and
 application-defined.
 
 `provider.d.ts`, `events.js`, and `related.d.ts` own Provider extension methods,
-event overloads, interaction policy, and public error declarations. The grant
-helper declaration under `lib/` is copied byte-for-byte.
+event overloads, interaction policy, and public error declarations.
+`client-auth.d.ts` owns the supported client authentication method union, and
+`oidc-context.d.ts` owns the OIDC request context contract. Their generated
+regions are updated together with configuration so that related runtime
+changes reach DefinitelyTyped in the same release. The grant helper
+declaration under `lib/` is copied byte-for-byte.
+
+`oidc-provider-tests.ts` is the canonical DefinitelyTyped test suite. It is
+copied in full by the release sync alongside the declarations, including
+configuration constraints and examples for experimental grant helpers.
+Change declaration templates and tests here; do not edit their generated
+regions or the mirrored test file directly in DefinitelyTyped. The sources
+and tests in this directory are not published in the npm package.
 
 Run the documentation generator after changing these files:
 

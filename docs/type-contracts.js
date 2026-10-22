@@ -5,7 +5,7 @@ import { parse } from '@babel/parser';
 
 import events from '../types/events.js';
 
-export const TYPES_SCHEMA_VERSION = 1;
+export const TYPES_SCHEMA_VERSION = 2;
 
 const parserOptions = {
   plugins: ['typescript'],
@@ -16,6 +16,8 @@ const configurationUrl = new URL('../types/configuration.d.ts', import.meta.url)
 const providerUrl = new URL('../types/provider.d.ts', import.meta.url);
 const relatedUrl = new URL('../types/related.d.ts', import.meta.url);
 const grantsUrl = new URL('../types/lib/helpers/grants.d.ts', import.meta.url);
+const clientAuthMethodsUrl = new URL('../types/client-auth.d.ts', import.meta.url);
+const oidcContextUrl = new URL('../types/oidc-context.d.ts', import.meta.url);
 
 function visit(value, callback, ancestors = []) {
   if (Array.isArray(value)) {
@@ -516,10 +518,47 @@ export function readRelatedContract() {
   return source;
 }
 
+export function readClientAuthMethodsContract() {
+  const source = withoutTemplateHeader(
+    readFileSync(clientAuthMethodsUrl, 'utf8').replaceAll('\r\n', '\n'),
+  ).trim();
+  parse(source, parserOptions);
+  return source;
+}
+
+export function readOIDCContextContract() {
+  const source = withoutTemplateHeader(
+    readFileSync(oidcContextUrl, 'utf8').replaceAll('\r\n', '\n'),
+  ).trim();
+  parse(source, parserOptions);
+  return source;
+}
+
 export function readGrantHelperContract() {
   const source = readFileSync(grantsUrl, 'utf8').replaceAll('\r\n', '\n');
   parse(source, parserOptions);
   return source;
+}
+
+export function readTypeReleaseFiles() {
+  const files = {
+    'lib/helpers/grants.d.ts': readGrantHelperContract(),
+    'oidc-provider-tests.ts': readFileSync(new URL('../types/oidc-provider-tests.ts', import.meta.url), 'utf8'),
+  };
+  for (const name of [
+    'update-types.mjs',
+    'update-types.test.mjs',
+    'sync-release.mjs',
+    'sync-release.test.mjs',
+    'README.md',
+  ]) {
+    files[`scripts/${name}`] = readFileSync(new URL(`../tools/dt/${name}`, import.meta.url), 'utf8');
+  }
+  for (const path of Object.keys(files)) {
+    files[path] = files[path].replaceAll('\r\n', '\n');
+  }
+  parse(files['oidc-provider-tests.ts'], parserOptions);
+  return files;
 }
 
 export function renderEventMapContract() {

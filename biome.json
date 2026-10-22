@@ -47,6 +47,10 @@
       "linter": { "enabled": false }
     },
     {
+      "includes": ["types/oidc-provider-tests.ts"],
+      "linter": { "enabled": false }
+    },
+    {
       "includes": ["test/**"],
       "linter": {
         "rules": {
