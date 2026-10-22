@@ -190,4 +190,44 @@ describe('Provider configuration', () => {
       new Provider('http://localhost:3000', { clientAuthMethods: ['foo'] });
     }).to.throw('only supported clientAuthMethods are \'none\', \'client_secret_basic\', \'client_secret_jwt\', \'client_secret_post\', and \'private_key_jwt\'');
   });
+
+  it('requires attestation and DPoP support for combined client authentication', () => {
+    for (const [attest, dpop] of [[false, false], [true, false], [false, true]]) {
+      expect(() => new Provider('http://localhost:3000', {
+        clientAuthMethods: ['attest_jwt_client_auth_dpop'],
+        features: {
+          attestClientAuth: { enabled: attest, challengeSecret: Buffer.alloc(32) },
+          dPoP: { enabled: dpop },
+        },
+      })).to.throw('only supported clientAuthMethods are');
+    }
+
+    expect(() => new Provider('http://localhost:3000', {
+      clientAuthMethods: ['attest_jwt_client_auth_dpop'],
+      features: {
+        attestClientAuth: { enabled: true, challengeSecret: Buffer.alloc(32) },
+        dPoP: { enabled: true, nonceSecret: Buffer.alloc(32) },
+      },
+    })).not.to.throw();
+  });
+
+  it('requires a DPoP nonce secret whenever attestation and DPoP are enabled', () => {
+    for (const dPoP of [undefined, { enabled: true }]) {
+      expect(() => new Provider('http://localhost:3000', {
+        features: {
+          attestClientAuth: { enabled: true, challengeSecret: Buffer.alloc(32) },
+          dPoP,
+        },
+      })).to.throw('features.dPoP.nonceSecret is required when features.attestClientAuth and features.dPoP are enabled');
+    }
+
+    for (const [attest, dpop] of [[false, true], [true, false]]) {
+      expect(() => new Provider('http://localhost:3000', {
+        features: {
+          attestClientAuth: { enabled: attest, challengeSecret: Buffer.alloc(32) },
+          dPoP: { enabled: dpop },
+        },
+      })).not.to.throw();
+    }
+  });
 });

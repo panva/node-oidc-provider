@@ -10,8 +10,10 @@ const attestationKeyPair = generateKeyPairSync('ed25519');
 
 config.clientAuthMethods = [
   'attest_jwt_client_auth',
+  'attest_jwt_client_auth_dpop',
 ];
 merge(config.features, {
+  dPoP: { enabled: true, nonceSecret: randomBytes(32), requireNonce: () => true },
   introspection: {
     enabled: true,
   },

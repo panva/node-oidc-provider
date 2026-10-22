@@ -41,8 +41,11 @@ config.clientAuthMethods = [
   'tls_client_auth',
   'self_signed_tls_client_auth',
   'attest_jwt_client_auth',
+  'attest_jwt_client_auth_dpop',
 ];
 merge(config.features, {
+  clientCredentials: { enabled: true },
+  dPoP: { enabled: true, nonceSecret: randomBytes(32) },
   introspection: { enabled: true },
   attestClientAuth: {
     enabled: true,
@@ -134,10 +137,17 @@ export default {
     },
   }, {
     client_id: 'attest_jwt_client_auth',
-    grant_types: ['foo'],
+    grant_types: ['foo', 'client_credentials'],
     response_types: [],
     redirect_uris: [],
     token_endpoint_auth_method: 'attest_jwt_client_auth',
+    jwks: { keys: [attestationKey] },
+  }, {
+    client_id: 'attest_jwt_client_auth_dpop',
+    grant_types: ['foo'],
+    response_types: [],
+    redirect_uris: [],
+    token_endpoint_auth_method: 'attest_jwt_client_auth_dpop',
     jwks: { keys: [attestationKey] },
   }, {
     client_id: 'client-pki-mtls',

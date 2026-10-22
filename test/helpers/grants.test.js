@@ -1,4 +1,7 @@
+import { generateKeyPairSync, hash } from 'node:crypto';
+
 import { expect } from 'chai';
+import { SignJWT } from 'jose';
 
 import Provider, { errors } from '../../lib/index.js';
 import {
@@ -199,5 +202,36 @@ describe('grant implementation helpers', () => {
       expect(await getError(() => checkDpopReplay(provider, ctx, proof, 'first', errors.InvalidRequest)))
         .to.be.instanceOf(errors.InvalidRequest);
     });
+
+    for (const [description, ath] of [
+      ['missing', undefined],
+      ['incorrect', hash('sha256', 'another-token', 'base64url')],
+      ['correct', hash('sha256', 'access-token', 'base64url')],
+    ]) {
+      it(`checks a ${description} access token hash after DPoP validation was cached`, async () => {
+        const { configuration } = instance(provider);
+        configuration.features.dPoP.enabled = true;
+        configuration.dPoPSigningAlgValues = ['Ed25519'];
+        const { publicKey, privateKey } = generateKeyPairSync('ed25519');
+        const proof = await new SignJWT({ htm: 'POST', htu: 'https://op.example.com/token', ath })
+          .setProtectedHeader({ typ: 'dpop+jwt', alg: 'Ed25519', jwk: publicKey.export({ format: 'jwk' }) })
+          .setJti('cached-proof')
+          .setIssuedAt()
+          .sign(privateKey);
+        ctx.method = 'POST';
+        ctx.get = () => proof;
+        ctx.set = () => {};
+        ctx.oidc.urlFor = () => 'https://op.example.com/token';
+
+        const result = await validateDpop(provider, ctx);
+        if (description === 'correct') {
+          expect(await validateDpop(provider, ctx, 'access-token')).to.equal(result);
+        } else {
+          const err = await getError(() => validateDpop(provider, ctx, 'access-token'));
+          expect(err).to.be.instanceOf(errors.InvalidDpopProof);
+          expect(err.error_description).to.equal('DPoP proof ath mismatch');
+        }
+      });
+    }
   });
 });

@@ -2,7 +2,7 @@ import { createPrivateKey, X509Certificate, generateKeyPairSync } from 'node:cry
 import { readFileSync } from 'node:fs';
 import { request } from 'node:http';
 
-import { importJWK, SignJWT } from 'jose';
+import { calculateJwkThumbprint, importJWK, SignJWT } from 'jose';
 import sinon from 'sinon';
 import { expect } from 'chai';
 import cloneDeep from 'lodash/cloneDeep.js';
@@ -53,17 +53,16 @@ function noW3A({ headers }) {
 
 const attestationPrivateKey = createPrivateKey({ format: 'jwk', key: clientKey });
 
-function signAttestation(subject, instanceKeyPair) {
+function signAttestation(subject, instanceKeyPair, jwk = instanceKeyPair.publicKey.export({ format: 'jwk' })) {
   return new SignJWT({
-    cnf: {
-      jwk: instanceKeyPair.publicKey.export({ format: 'jwk' }),
-    },
+    cnf: { jwk },
   })
     .setProtectedHeader({
       typ: 'oauth-client-attestation+jwt',
       alg: 'RS256',
     })
     .setSubject(subject)
+    .setIssuedAt()
     .setExpirationTime('2h')
     .sign(attestationPrivateKey);
 }
@@ -78,6 +77,32 @@ function signAttestationPop(provider, instanceKeyPair, challenge) {
     .setJti(nanoid())
     .setIssuedAt()
     .sign(instanceKeyPair.privateKey);
+}
+
+function signDpop(ctx, instanceKeyPair, nonce, path = route) {
+  return new SignJWT({
+    htu: `${ctx.provider.issuer}${ctx.suitePath(path)}`,
+    htm: 'POST',
+    nonce,
+  })
+    .setProtectedHeader({
+      typ: 'dpop+jwt',
+      alg: 'Ed25519',
+      jwk: instanceKeyPair.publicKey.export({ format: 'jwk' }),
+    })
+    .setJti(nanoid())
+    .setIssuedAt()
+    .sign(instanceKeyPair.privateKey);
+}
+
+async function getCombinedHeaders(ctx, subject) {
+  const response = await ctx.agent.post('/challenge').expect(200);
+  const instanceKeyPair = generateKeyPairSync('ed25519');
+
+  return {
+    attestation: await signAttestation(subject, instanceKeyPair),
+    dpop: await signDpop(ctx, instanceKeyPair, response.headers['dpop-nonce']),
+  };
 }
 
 async function withAdditionalSecuritySignal(provider, value, fn) {
@@ -245,7 +270,7 @@ describe('client authentication methods', () => {
           .expect(200)
           .expect(({ body }) => {
             expect(body).to.have.property('client_attestation_pop_methods_supported')
-              .and.eql(['attestation_pop_jwt', 'none']);
+              .and.eql(['attestation_pop_jwt', 'dpop_combined', 'none']);
           });
       });
     });
@@ -256,8 +281,25 @@ describe('client authentication methods', () => {
           .expect(200)
           .expect(({ body }) => {
             expect(body).to.have.property('client_attestation_pop_methods_supported')
-              .and.eql(['attestation_pop_jwt']);
+              .and.eql(['attestation_pop_jwt', 'dpop_combined']);
           });
+      });
+    });
+
+    it('does not advertise combined DPoP signals when DPoP is disabled', function () {
+      return withAdditionalSecuritySignal(this.provider, 'optional', async () => {
+        const { dPoP } = i(this.provider).features;
+        dPoP.enabled = false;
+        try {
+          await this.agent.get('/.well-known/openid-configuration')
+            .expect(200)
+            .expect(({ body }) => {
+              expect(body).to.have.property('client_attestation_pop_methods_supported')
+                .and.eql(['attestation_pop_jwt', 'none']);
+            });
+        } finally {
+          dPoP.enabled = true;
+        }
       });
     });
   });
@@ -1376,6 +1418,80 @@ describe('client authentication methods', () => {
       });
     });
 
+    for (const [method, clientId, alg] of [
+      ['client_secret_jwt', 'client-jwt-secret', 'HS256'],
+      ['private_key_jwt', 'client-jwt-key', 'RS256'],
+    ]) {
+      for (const proofMethod of ['attestation_pop_jwt', 'dpop_combined']) {
+        for (const value of ['optional', 'required']) {
+          it(`accepts ${method} without client_id with ${value} ${proofMethod} signal`, function () {
+            return withAdditionalSecuritySignal(this.provider, value, async () => {
+              const key = alg === 'RS256' ? attestationPrivateKey : await importJWK(
+                (await this.provider.Client.find(clientId)).symmetricKeyStore.selectForSign({ alg })[0],
+              );
+              const assertion = await JWT.sign({
+                jti: nanoid(),
+                aud: this.provider.issuer,
+                sub: clientId,
+                iss: clientId,
+              }, key, alg, { expiresIn: 60 });
+              const { attestation, pop, dpop } = await (proofMethod === 'dpop_combined'
+                ? getCombinedHeaders(this, clientId) : getSignalHeaders(this, clientId));
+              const spy = sinon.spy();
+              this.provider.once('grant.success', spy);
+
+              await this.agent.post(route)
+                .set('OAuth-Client-Attestation', attestation)
+                .set(pop ? 'OAuth-Client-Attestation-PoP' : 'DPoP', pop || dpop)
+                .send({
+                  client_assertion: assertion,
+                  client_assertion_type: 'urn:ietf:params:oauth:client-assertion-type:jwt-bearer',
+                  grant_type: 'foo',
+                })
+                .type('form')
+                .expect(200)
+                .expect(tokenAuthSucceeded)
+                .expect(() => {
+                  expect(spy.calledOnce).to.be.true;
+                  expect(spy.firstCall.args[0].oidc.clientAttestation).to.include({
+                    method: proofMethod,
+                    signal: true,
+                  });
+                });
+            });
+          });
+        }
+      }
+    }
+
+    for (const value of ['optional', 'required']) {
+      it(`accepts client_secret_basic with a ${value} combined DPoP signal`, function () {
+        return withAdditionalSecuritySignal(this.provider, value, async () => {
+          const { attestation, dpop } = await getCombinedHeaders(this, 'client-basic');
+          const spy = sinon.spy();
+          this.provider.once('grant.success', spy);
+
+          await this.agent.post(route)
+            .auth('client-basic', 'secret')
+            .set('OAuth-Client-Attestation', attestation)
+            .set('DPoP', dpop)
+            .send({ grant_type: 'foo' })
+            .type('form')
+            .expect(200)
+            .expect(tokenAuthSucceeded)
+            .expect(() => {
+              expect(spy.calledOnce).to.be.true;
+              expect(spy.firstCall.args[0].oidc.clientAttestation).to.include({
+                method: 'dpop_combined',
+                signal: true,
+              });
+              expect(spy.firstCall.args[0].oidc.clientAttestation.attestation.payload)
+                .to.have.property('sub', 'client-basic');
+            });
+        });
+      });
+    }
+
     it('rejects when a required signal is missing', function () {
       return withAdditionalSecuritySignal(this.provider, 'required', async () => {
         const spy = sinon.spy();
@@ -1463,6 +1579,7 @@ describe('client authentication methods', () => {
             alg: 'RS256',
           })
           .setSubject('attest_jwt_client_auth')
+          .setIssuedAt()
           .setExpirationTime('2h')
           .sign(privateKey),
         new SignJWT({ challenge })
@@ -1499,6 +1616,35 @@ describe('client authentication methods', () => {
           .sign(instanceKeyPair.privateKey);
       });
 
+      it('requires the iat claim', async function () {
+        const attestation = await new SignJWT({
+          cnf: {
+            jwk: instanceKeyPair.publicKey.export({ format: 'jwk' }),
+          },
+        })
+          .setProtectedHeader({
+            typ: 'oauth-client-attestation+jwt',
+            alg: 'RS256',
+          })
+          .setSubject('attest_jwt_client_auth')
+          .setExpirationTime('2h')
+          .sign(privateKey);
+        const spy = sinon.spy();
+        this.provider.once('grant.error', spy);
+
+        await this.agent.post(route)
+          .set('OAuth-Client-Attestation', attestation)
+          .set('OAuth-Client-Attestation-PoP', await this.signPop())
+          .send({ grant_type: 'foo' })
+          .type('form')
+          .expect(401)
+          .expect(tokenAuthRejected)
+          .expect(() => {
+            expect(spy.calledOnce).to.be.true;
+            expect(errorDetail(spy)).to.equal('missing required "iat" claim');
+          });
+      });
+
       it('checks all required properties and their values', async function () {
         for (const attestation of await Promise.all([
           new SignJWT({
@@ -1511,6 +1657,7 @@ describe('client authentication methods', () => {
               alg: 'RS256',
             })
             // .setSubject('attest_jwt_client_auth')
+            .setIssuedAt()
             .setExpirationTime('2h')
             .sign(privateKey),
           new SignJWT({
@@ -1523,6 +1670,7 @@ describe('client authentication methods', () => {
               alg: 'RS256',
             })
             .setSubject('foo')
+            .setIssuedAt()
             .setExpirationTime('2h')
             .sign(privateKey),
           new SignJWT({
@@ -1535,6 +1683,7 @@ describe('client authentication methods', () => {
               alg: 'RS256',
             })
             .setSubject('attest_jwt_client_auth')
+            .setIssuedAt()
             // .setExpirationTime('2h')
             .sign(privateKey),
           new SignJWT({
@@ -1547,6 +1696,7 @@ describe('client authentication methods', () => {
               alg: 'RS256',
             })
             .setSubject('attest_jwt_client_auth')
+            .setIssuedAt()
             .setExpirationTime(0)
             .sign(privateKey),
           new SignJWT({
@@ -1559,6 +1709,7 @@ describe('client authentication methods', () => {
               alg: 'RS256',
             })
             .setSubject('attest_jwt_client_auth')
+            .setIssuedAt()
             .setExpirationTime('2h')
             .sign(privateKey),
           new SignJWT({
@@ -1571,6 +1722,7 @@ describe('client authentication methods', () => {
               alg: 'RS256',
             })
             .setSubject('attest_jwt_client_auth')
+            .setIssuedAt()
             .setExpirationTime('2h')
             .sign(privateKey),
           new SignJWT({
@@ -1583,6 +1735,7 @@ describe('client authentication methods', () => {
               alg: 'RS256',
             })
             .setSubject('attest_jwt_client_auth')
+            .setIssuedAt()
             .setExpirationTime('2h')
             .sign(privateKey),
           new SignJWT({
@@ -1595,6 +1748,7 @@ describe('client authentication methods', () => {
               alg: 'RS256',
             })
             .setSubject('attest_jwt_client_auth')
+            .setIssuedAt()
             .setExpirationTime('2h')
             .sign(privateKey),
         ])) {
@@ -1622,6 +1776,7 @@ describe('client authentication methods', () => {
             alg: 'RS256',
           })
           .setSubject('attest_jwt_client_auth')
+          .setIssuedAt()
           .setExpirationTime('2h')
           .sign(privateKey);
       });
@@ -1803,6 +1958,294 @@ describe('client authentication methods', () => {
             .expect(tokenAuthRejected);
         }
       });
+    });
+  });
+
+  describe('attest_jwt_client_auth_dpop auth', () => {
+    const instanceKeyPair = generateKeyPairSync('ed25519');
+    let nonce;
+
+    before(async function () {
+      this.origRequireNonce = i(this.provider).features.dPoP.requireNonce;
+      i(this.provider).features.dPoP.requireNonce = () => true;
+
+      const response = await this.agent.post('/challenge')
+        .expect(200)
+        .expect('DPoP-Nonce', /^[\w-]{43}$/);
+      nonce = response.headers['dpop-nonce'];
+    });
+
+    after(function () {
+      i(this.provider).features.dPoP.requireNonce = this.origRequireNonce;
+    });
+
+    it('requires a DPoP nonce even when requireNonce is false', async function () {
+      const { dPoP } = i(this.provider).features;
+      const original = dPoP.requireNonce;
+      dPoP.requireNonce = () => false;
+      try {
+        await this.agent.post('/challenge')
+          .expect(200)
+          .expect('DPoP-Nonce', /^[\w-]{43}$/);
+
+        await this.agent.post(route)
+          .set('OAuth-Client-Attestation', await signAttestation('attest_jwt_client_auth_dpop', instanceKeyPair))
+          .set('DPoP', await signDpop(this, instanceKeyPair))
+          .send({ grant_type: 'foo' })
+          .type('form')
+          .expect(400)
+          .expect(noW3A)
+          .expect('DPoP-Nonce', /^[\w-]{43}$/)
+          .expect({
+            error: 'use_dpop_nonce',
+            error_description: 'nonce is required in the DPoP proof',
+          })
+          .expect(({ headers }) => {
+            expect(headers).not.to.have.property('oauth-client-attestation-challenge');
+          });
+      } finally {
+        dPoP.requireNonce = original;
+      }
+    });
+
+    it('accepts the auth using the DPoP nonce from the challenge endpoint', async function () {
+      const spy = sinon.spy();
+      this.provider.once('grant.success', spy);
+
+      await this.agent.post(route)
+        .set('OAuth-Client-Attestation', await signAttestation('attest_jwt_client_auth_dpop', instanceKeyPair))
+        .set('DPoP', await signDpop(this, instanceKeyPair, nonce))
+        .send({ grant_type: 'foo' })
+        .type('form')
+        .expect(200)
+        .expect(tokenAuthSucceeded)
+        .expect(({ headers }) => {
+          expect(headers).not.to.have.property('oauth-client-attestation-challenge');
+          expect(spy.calledOnce).to.be.true;
+          expect(spy.firstCall.args[0].oidc.clientAttestation).to.include({
+            method: 'dpop_combined',
+            signal: false,
+          });
+        });
+    });
+
+    it('compares public keys independently of optional JWK members', async function () {
+      const jwk = {
+        ...instanceKeyPair.publicKey.export({ format: 'jwk' }),
+        kid: 'attested-instance',
+      };
+
+      await this.agent.post(route)
+        .set('OAuth-Client-Attestation', await signAttestation('attest_jwt_client_auth_dpop', instanceKeyPair, jwk))
+        .set('DPoP', await signDpop(this, instanceKeyPair, nonce))
+        .send({ grant_type: 'foo' })
+        .type('form')
+        .expect(200)
+        .expect(tokenAuthSucceeded);
+    });
+
+    for (const [value, description] of [[undefined, 'missing'], ['invalid', 'invalid']]) {
+      it(`rejects a ${description} DPoP nonce with use_dpop_nonce`, async function () {
+        await this.agent.post(route)
+          .set('OAuth-Client-Attestation', await signAttestation('attest_jwt_client_auth_dpop', instanceKeyPair))
+          .set('DPoP', await signDpop(this, instanceKeyPair, value))
+          .send({ grant_type: 'foo' })
+          .type('form')
+          .expect(400)
+          .expect(noW3A)
+          .expect('DPoP-Nonce', /^[\w-]{43}$/)
+          .expect({
+            error: 'use_dpop_nonce',
+            error_description: value ? 'invalid nonce in DPoP proof' : 'nonce is required in the DPoP proof',
+          })
+          .expect(({ headers }) => {
+            expect(headers).not.to.have.property('oauth-client-attestation-challenge');
+          });
+      });
+    }
+
+    it('rejects an invalid DPoP proof with invalid_dpop_proof', async function () {
+      await this.agent.post(route)
+        .set('OAuth-Client-Attestation', await signAttestation('attest_jwt_client_auth_dpop', instanceKeyPair))
+        .set('DPoP', 'invalid')
+        .send({ grant_type: 'foo' })
+        .type('form')
+        .expect(400)
+        .expect(noW3A)
+        .expect({
+          error: 'invalid_dpop_proof',
+          error_description: 'invalid DPoP key binding',
+        });
+    });
+
+    it('rejects a DPoP key that differs from the attestation key', async function () {
+      const otherKeyPair = generateKeyPairSync('ed25519');
+
+      await this.agent.post(route)
+        .set('OAuth-Client-Attestation', await signAttestation('attest_jwt_client_auth_dpop', instanceKeyPair))
+        .set('DPoP', await signDpop(this, otherKeyPair, nonce))
+        .send({ grant_type: 'foo' })
+        .type('form')
+        .expect(401)
+        .expect(tokenAuthRejected);
+    });
+
+    it('rejects a replayed DPoP proof', async function () {
+      const attestation = await signAttestation('attest_jwt_client_auth_dpop', instanceKeyPair);
+      const dpop = await signDpop(this, instanceKeyPair, nonce);
+
+      await this.agent.post(route)
+        .set('OAuth-Client-Attestation', attestation)
+        .set('DPoP', dpop)
+        .send({ grant_type: 'foo' })
+        .type('form')
+        .expect(200)
+        .expect(tokenAuthSucceeded);
+
+      await this.agent.post(route)
+        .set('OAuth-Client-Attestation', attestation)
+        .set('DPoP', dpop)
+        .send({ grant_type: 'foo' })
+        .type('form')
+        .expect(400)
+        .expect({
+          error: 'invalid_dpop_proof',
+          error_description: 'DPoP proof JWT Replay detected',
+        });
+    });
+
+    it('rejects the auth without a DPoP proof', async function () {
+      await this.agent.post(route)
+        .set('OAuth-Client-Attestation', await signAttestation('attest_jwt_client_auth_dpop', instanceKeyPair))
+        .send({ grant_type: 'foo' })
+        .type('form')
+        .expect(401)
+        .expect(tokenAuthRejected);
+    });
+
+    it('rejects combined mode when DPoP is disabled', async function () {
+      const { dPoP } = i(this.provider).features;
+      dPoP.enabled = false;
+      try {
+        await this.agent.post(route)
+          .set('OAuth-Client-Attestation', await signAttestation('attest_jwt_client_auth_dpop', instanceKeyPair))
+          .set('DPoP', await signDpop(this, instanceKeyPair, nonce))
+          .send({ grant_type: 'foo' })
+          .type('form')
+          .expect(401)
+          .expect(tokenAuthRejected);
+      } finally {
+        dPoP.enabled = true;
+      }
+    });
+
+    it('rejects the auth with an attestation PoP JWT', async function () {
+      const { body: { attestation_challenge: challenge } } = await this.agent.post('/challenge');
+
+      await this.agent.post(route)
+        .set('OAuth-Client-Attestation', await signAttestation('attest_jwt_client_auth_dpop', instanceKeyPair))
+        .set('OAuth-Client-Attestation-PoP', await signAttestationPop(this.provider, instanceKeyPair, challenge))
+        .set('DPoP', await signDpop(this, instanceKeyPair, nonce))
+        .send({ grant_type: 'foo' })
+        .type('form')
+        .expect(401)
+        .expect(tokenAuthRejected);
+    });
+
+    it('rejects combined mode for a client registered with attest_jwt_client_auth', async function () {
+      await this.agent.post(route)
+        .set('OAuth-Client-Attestation', await signAttestation('attest_jwt_client_auth', instanceKeyPair))
+        .set('DPoP', await signDpop(this, instanceKeyPair, nonce))
+        .send({ grant_type: 'foo' })
+        .type('form')
+        .expect(401)
+        .expect(tokenAuthRejected);
+    });
+
+    it('accepts attest_jwt_client_auth alongside independent DPoP with a different key', async function () {
+      const { body: { attestation_challenge: challenge } } = await this.agent.post('/challenge');
+      const otherKeyPair = generateKeyPairSync('ed25519');
+      const spy = sinon.spy();
+      this.provider.once('grant.success', spy);
+
+      const { body } = await this.agent.post(route)
+        .set('OAuth-Client-Attestation', await signAttestation('attest_jwt_client_auth', instanceKeyPair))
+        .set('OAuth-Client-Attestation-PoP', await signAttestationPop(this.provider, instanceKeyPair, challenge))
+        .set('DPoP', await signDpop(this, otherKeyPair, nonce))
+        .send({ grant_type: 'client_credentials' })
+        .type('form')
+        .expect(200)
+        .expect(() => {
+          expect(spy.calledOnce).to.be.true;
+          expect(spy.firstCall.args[0].oidc.clientAttestation).to.include({
+            method: 'attestation_pop_jwt',
+            signal: false,
+          });
+        });
+
+      expect(body).to.have.property('token_type', 'DPoP');
+      const token = await this.provider.ClientCredentials.find(body.access_token);
+      expect(token).to.have.property('jkt', await calculateJwkThumbprint(otherKeyPair.publicKey.export({ format: 'jwk' })));
+
+      await this.agent.post(route)
+        .set('OAuth-Client-Attestation', await signAttestation('attest_jwt_client_auth', instanceKeyPair))
+        .set('OAuth-Client-Attestation-PoP', await signAttestationPop(this.provider, instanceKeyPair, challenge))
+        .set('DPoP', 'invalid')
+        .send({ grant_type: 'client_credentials' })
+        .type('form')
+        .expect(400)
+        .expect({
+          error: 'invalid_dpop_proof',
+          error_description: 'invalid DPoP key binding',
+        });
+    });
+
+    it('authenticates introspection and exposes DPoP nonce errors through CORS', async function () {
+      const { configuration } = i(this.provider);
+      const original = configuration.clientBasedCORS;
+      configuration.clientBasedCORS = () => true;
+      try {
+        await this.agent.post('/token/introspection')
+          .set('Origin', 'https://rp.example.com')
+          .set('OAuth-Client-Attestation', await signAttestation('attest_jwt_client_auth_dpop', instanceKeyPair))
+          .set('DPoP', await signDpop(this, instanceKeyPair, nonce, '/token/introspection'))
+          .send({ token: 'not-found' })
+          .type('form')
+          .expect(200)
+          .expect('Access-Control-Allow-Origin', 'https://rp.example.com')
+          .expect('Access-Control-Expose-Headers', /DPoP-Nonce/)
+          .expect(introspectionAuthSucceeded);
+
+        await this.agent.post('/token/introspection')
+          .set('Origin', 'https://rp.example.com')
+          .set('OAuth-Client-Attestation', await signAttestation('attest_jwt_client_auth_dpop', instanceKeyPair))
+          .set('DPoP', await signDpop(this, instanceKeyPair, undefined, '/token/introspection'))
+          .send({ token: 'not-found' })
+          .type('form')
+          .expect(400)
+          .expect('Access-Control-Allow-Origin', 'https://rp.example.com')
+          .expect('Access-Control-Expose-Headers', /DPoP-Nonce/)
+          .expect('DPoP-Nonce', /^[\w-]{43}$/)
+          .expect({
+            error: 'use_dpop_nonce',
+            error_description: 'nonce is required in the DPoP proof',
+          });
+      } finally {
+        configuration.clientBasedCORS = original;
+      }
+    });
+
+    it('rejects a token endpoint DPoP proof at introspection', async function () {
+      await this.agent.post('/token/introspection')
+        .set('OAuth-Client-Attestation', await signAttestation('attest_jwt_client_auth_dpop', instanceKeyPair))
+        .set('DPoP', await signDpop(this, instanceKeyPair, nonce))
+        .send({ token: 'not-found' })
+        .type('form')
+        .expect(400)
+        .expect({
+          error: 'invalid_dpop_proof',
+          error_description: 'DPoP proof htu mismatch',
+        });
     });
   });
 

@@ -628,6 +628,17 @@ export type AttestClientAuthConfiguration =
     | AttestClientAuthDisabledConfiguration
     | AttestClientAuthEnabledConfiguration;
 
+type ConditionalAttestationFeatures =
+    | {
+        attestClientAuth?: AttestClientAuthDisabledConfiguration | undefined;
+    }
+    | {
+        dPoP: { enabled: false };
+    }
+    | {
+        dPoP: { nonceSecret: Buffer };
+    };
+
 export type OpenID4VCIIssueCredential = (
     ctx: KoaContextWithOIDC,
     details: OpenID4VCIIssueCredentialContext,
@@ -1193,7 +1204,7 @@ export interface Configuration {
 
             // @configuration-path features.attestClientAuth
             attestClientAuth?: AttestClientAuthConfiguration | undefined;
-        } & ConditionalRichAuthorizationRequestFeatures
+        } & ConditionalRichAuthorizationRequestFeatures & ConditionalAttestationFeatures
         | undefined;
 
     // @configuration-path extraTokenClaims
