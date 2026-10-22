@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [9.13.0](https://github.com/panva/node-oidc-provider/compare/v9.12.2...v9.13.0) (2026-10-22)
+
+### Features
+
+* update attestation client auth to draft-12 ([aec461c](https://github.com/panva/node-oidc-provider/commit/aec461c3a1d75caf7c76dec24aa5d570da9d64f8))
+
 ## [9.12.2](https://github.com/panva/node-oidc-provider/compare/v9.12.1...v9.12.2) (2026-09-05)
 
 ### Refactor
