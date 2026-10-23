@@ -10,7 +10,6 @@ import {
     assertPackageChanges,
     githubRepository,
     parseArguments,
-    pullRequestBody,
     releasePlan,
     shellCommand,
     submitPreparedBranch,
@@ -94,11 +93,18 @@ describe("sync-release command entrypoint", () => {
 describe("sync-release argument and status validation", () => {
     it("accepts exactly one artifact source and resolves local paths", () => {
         assert.deepEqual(
-            parseArguments(["--tag", "v9.12.3", "--artifact", "artifact.json"], "/fixture"),
+            parseArguments([
+                "--repository",
+                "DefinitelyTyped",
+                "--tag",
+                "v9.12.3",
+                "--artifact",
+                "artifact.json",
+            ], "/fixture"),
             {
                 artifact: "/fixture/artifact.json",
                 keepTemp: false,
-                repository: undefined,
+                repository: "/fixture/DefinitelyTyped",
                 runId: undefined,
                 submit: false,
                 tag: "v9.12.3",
@@ -106,6 +112,8 @@ describe("sync-release argument and status validation", () => {
         );
         assert.deepEqual(
             parseArguments([
+                "--repository",
+                "/repo",
                 "--run-id",
                 "12345",
                 "--keep-temp",
@@ -116,7 +124,7 @@ describe("sync-release argument and status validation", () => {
             {
                 artifact: undefined,
                 keepTemp: true,
-                repository: undefined,
+                repository: "/repo",
                 runId: "12345",
                 submit: true,
                 tag: "v9.12.3",
@@ -138,26 +146,33 @@ describe("sync-release argument and status validation", () => {
         );
     });
 
-    it("requires a target before running commands from a standalone bundle", async () => {
-        const directory = mkdtempSync(join(tmpdir(), "sync-release-standalone-"));
-        try {
-            const script = join(directory, "sync-release.mjs");
-            copyFileSync(join(toolDirectory, "sync-release.mjs"), script);
-            const portable = await import(pathToFileURL(script).href);
-            assert.throws(
-                () =>
-                    portable.synchronize(parseArguments(["--tag", "v9.12.3", "--artifact", "artifact.json"]), () => {
-                        assert.fail("target validation must precede external commands");
-                    }),
-                /--repository is required/,
-            );
-        } finally {
-            rmSync(directory, { recursive: true, force: true });
-        }
-    });
+    for (const layout of ["standalone", "DT package scripts"]) {
+        it(`requires an explicit target before running commands from ${layout}`, async () => {
+            const directory = mkdtempSync(join(tmpdir(), "sync-release-target-"));
+            try {
+                const scriptDirectory = layout === "standalone"
+                    ? directory
+                    : join(directory, "types", "oidc-provider", "scripts");
+                mkdirSync(scriptDirectory, { recursive: true });
+                const script = join(scriptDirectory, "sync-release.mjs");
+                copyFileSync(join(toolDirectory, "sync-release.mjs"), script);
+                const portable = await import(pathToFileURL(script).href);
+                assert.throws(
+                    () =>
+                        portable.synchronize({ tag: "v9.12.3", artifact: "artifact.json" }, () => {
+                            assert.fail("target validation must precede external commands");
+                        }),
+                    /--repository is required/,
+                );
+            } finally {
+                rmSync(directory, { recursive: true, force: true });
+            }
+        });
+    }
 
     for (
         const [label, argv, pattern] of [
+            ["missing repository", ["--tag", "v9.12.3", "--artifact", "a.json"], /--repository is required/],
             ["missing tag", ["--artifact", "a.json"], /--tag is required/],
             ["invalid tag", ["--tag", "9.12.3", "--artifact", "a.json"], /form vX\.Y\.Z/],
             ["missing source", ["--tag", "v9.12.3"], /exactly one/],
@@ -186,7 +201,10 @@ describe("sync-release argument and status validation", () => {
         ]
     ) {
         it(`rejects ${label}`, () => {
-            assert.throws(() => parseArguments(argv), pattern);
+            const args = label === "missing repository" || argv.includes("--repository")
+                ? argv
+                : ["--repository", "/repo", ...argv];
+            assert.throws(() => parseArguments(args), pattern);
         });
     }
 
@@ -199,14 +217,6 @@ describe("sync-release argument and status validation", () => {
             tag: "v9.12.3",
             version: "9.12.3",
         });
-        assert.equal(
-            pullRequestBody(plan, status()),
-            [
-                "Synchronizes the generated oidc-provider declaration mirrors with oidc-provider v9.12.3.",
-                "",
-                `Rendered declaration hash: \`${candidateHash}\`.`,
-            ].join("\n"),
-        );
     });
 
     it("prints copyable shell commands without evaluating artifact paths", () => {
@@ -221,17 +231,10 @@ describe("sync-release argument and status validation", () => {
         assert.throws(() => validateStatus(status(), "9.12.4"), /does not match release/);
     });
 
-    it("accepts tests and portable tooling changes through the status contract", () => {
+    it("accepts a tests-only update through the status contract", () => {
         const value = status({
             reasons: ["tests"],
-            changedFiles: [
-                "oidc-provider-tests.ts",
-                "scripts/update-types.mjs",
-                "scripts/update-types.test.mjs",
-                "scripts/sync-release.mjs",
-                "scripts/sync-release.test.mjs",
-                "scripts/README.md",
-            ],
+            changedFiles: ["oidc-provider-tests.ts"],
         });
         assert.deepEqual(validateStatus(value, "9.12.3"), value);
     });
@@ -246,6 +249,13 @@ describe("sync-release argument and status validation", () => {
             ["hash", status({ candidateHash: "bad" }), /SHA-256/],
             ["unsafe path", status({ changedFiles: ["../package.json"] }), /safe package-relative/],
             ["unmanaged package path", status({ changedFiles: ["unrelated.ts"] }), /safe package-relative/],
+            ...[
+                "scripts/update-types.mjs",
+                "scripts/update-types.test.mjs",
+                "scripts/sync-release.mjs",
+                "scripts/sync-release.test.mjs",
+                "scripts/README.md",
+            ].map((path) => [path, status({ changedFiles: [path] }), /safe package-relative/]),
             ["duplicate path", status({ changedFiles: ["index.d.ts", "index.d.ts"] }), /duplicates/],
             [
                 "file invariant",
@@ -334,7 +344,6 @@ function submissionFixture(responses) {
             originOwner: "panva",
             plan,
             repositoryDirectory: "/repo",
-            status: status(),
             worktreeDirectory: "/worktree",
         });
     return { calls, invoke, plan };
@@ -359,32 +368,82 @@ describe("sync-release submission safety", () => {
         assert.deepEqual(fixture.calls[0].args.slice(0, 2), ["pr", "list"]);
     });
 
-    it("pushes a new branch without force and creates the deterministic pull request", () => {
+    for (const newline of ["\n", "\r\n"]) {
+        it(`creates a draft using the exact upstream template with ${JSON.stringify(newline)} line endings`, () => {
+            const template = [
+                "Please fill in this template.",
+                "",
+                "- [ ] Provide a URL: <<url here>>",
+                "",
+                "",
+            ].join(newline);
+            const fixture = submissionFixture([
+                { stdout: "[]\n" },
+                { stdout: "" },
+                { stdout: template },
+                { stdout: "" },
+                { stdout: "[]\n" },
+                { stdout: "https://github.com/DefinitelyTyped/DefinitelyTyped/pull/456\n" },
+            ]);
+            assert.deepEqual(fixture.invoke(), {
+                created: true,
+                url: "https://github.com/DefinitelyTyped/DefinitelyTyped/pull/456",
+            });
+            const push = fixture.calls.find(({ args }) => args.includes("push"));
+            assert.ok(push);
+            assert.deepEqual(push.args, [
+                "-C",
+                "/worktree",
+                "push",
+                "--set-upstream",
+                "origin",
+                fixture.plan.branch,
+            ]);
+            assert.equal(push.args.some((argument) => argument === "-f" || argument.startsWith("--force")), false);
+            const readTemplate = fixture.calls.find(({ args }) =>
+                args.includes("HEAD:.github/PULL_REQUEST_TEMPLATE.md")
+            );
+            assert.deepEqual(readTemplate.args, ["-C", "/worktree", "show", "HEAD:.github/PULL_REQUEST_TEMPLATE.md"]);
+            assert.ok(fixture.calls.indexOf(readTemplate) < fixture.calls.indexOf(push));
+            const create = fixture.calls.at(-1);
+            assert.deepEqual(create.args, [
+                "pr",
+                "create",
+                "--draft",
+                "--repo",
+                "DefinitelyTyped/DefinitelyTyped",
+                "--base",
+                "master",
+                "--head",
+                "panva:oidc-provider-v9.12.3",
+                "--title",
+                fixture.plan.commitTitle,
+                "--body",
+                template,
+            ]);
+        });
+    }
+
+    it("fails before pushing if the upstream template is missing", () => {
         const fixture = submissionFixture([
             { stdout: "[]\n" },
             { stdout: "" },
-            { stdout: "" },
+            { error: new Error("upstream pull request template is missing") },
+        ]);
+        assert.throws(fixture.invoke, /template is missing/);
+        assert.equal(fixture.calls.some(({ args }) => args.includes("push")), false);
+        assert.equal(fixture.calls.some(({ args }) => args.includes("create")), false);
+    });
+
+    it("fails before pushing if the upstream template is empty", () => {
+        const fixture = submissionFixture([
             { stdout: "[]\n" },
-            { stdout: "https://github.com/DefinitelyTyped/DefinitelyTyped/pull/456\n" },
+            { stdout: "" },
+            { stdout: " \r\n" },
         ]);
-        assert.deepEqual(fixture.invoke(), {
-            created: true,
-            url: "https://github.com/DefinitelyTyped/DefinitelyTyped/pull/456",
-        });
-        const push = fixture.calls.find(({ args }) => args.includes("push"));
-        assert.ok(push);
-        assert.deepEqual(push.args, [
-            "-C",
-            "/worktree",
-            "push",
-            "--set-upstream",
-            "origin",
-            fixture.plan.branch,
-        ]);
-        assert.equal(push.args.some((argument) => argument === "-f" || argument.startsWith("--force")), false);
-        const create = fixture.calls.at(-1);
-        assert.deepEqual(create.args.slice(0, 2), ["pr", "create"]);
-        assert.ok(create.args.includes(fixture.plan.commitTitle));
+        assert.throws(fixture.invoke, /template must be non-empty/);
+        assert.equal(fixture.calls.some(({ args }) => args.includes("push")), false);
+        assert.equal(fixture.calls.some(({ args }) => args.includes("create")), false);
     });
 
     it("refuses to overwrite or adopt an orphaned remote branch", () => {
@@ -435,6 +494,7 @@ function orchestrationFixture({
     mutateCommit = false,
     pullRequest,
     runId = false,
+    statusOverrides = {},
 } = {}) {
     const fixtureDirectory = mkdtempSync(join(tmpdir(), "sync-release-test-"));
     const artifactPath = join(fixtureDirectory, "oidc-provider-types.json");
@@ -446,7 +506,8 @@ function orchestrationFixture({
     let staged = false;
     let downloadDirectory;
     let worktreeDirectory;
-    const updatedStatus = status();
+    const updatedStatus = status(statusOverrides);
+    const changedPaths = updatedStatus.changedFiles.map((path) => `types/oidc-provider/${path}\n`).join("");
 
     const result = (stdout = "", statusCode = 0) => ({ status: statusCode, stderr: "", stdout });
     const execute = (command, args, options = {}) => {
@@ -495,6 +556,7 @@ function orchestrationFixture({
             return result();
         }
         if (command === "node") {
+            assert.equal(existsSync(join(worktreeDirectory, "types", "oidc-provider", "scripts")), false);
             if (args.includes("--status")) {
                 if (failStatus) throw new Error("injected artifact validation failure");
                 return result(`${JSON.stringify(updatedStatus)}\n`);
@@ -537,17 +599,17 @@ function orchestrationFixture({
         if (args.includes("merge-base")) return result();
         if (args.includes("rev-list")) return result("1\n");
         if (args.includes("log")) return result("[oidc-provider] sync declarations for v9.12.3\n");
-        if (args.includes("diff-tree")) return result("types/oidc-provider/index.d.ts\n");
+        if (args.includes("diff-tree")) return result(changedPaths);
         if (args.includes("diff") && args.some((argument) => argument.startsWith("upstream/master..."))) {
-            return result("types/oidc-provider/index.d.ts\n");
+            return result(changedPaths);
         }
         if (args.includes("diff") && args.includes("--quiet")) return result();
         if (args.includes("diff") && args.includes("--cached")) {
-            return result(staged && !committed ? "types/oidc-provider/index.d.ts\n" : "");
+            return result(staged && !committed ? changedPaths : "");
         }
         if (args.includes("write-tree")) return result("prepared-tree\n");
         if (args.includes("diff")) {
-            return result(applied && !staged && !committed ? "types/oidc-provider/index.d.ts\n" : "");
+            return result(applied && !staged && !committed ? changedPaths : "");
         }
         if (args.includes("ls-files")) return result();
         if (args.includes("add")) {
@@ -593,6 +655,27 @@ function orchestrationFixture({
 }
 
 describe("sync-release worktree lifecycle", () => {
+    it("prepares and validates a tests-only update without scripts in the DT package", (t) => {
+        t.mock.method(console, "log", () => {});
+        const fixture = orchestrationFixture({
+            statusOverrides: { reasons: ["tests"], changedFiles: ["oidc-provider-tests.ts"] },
+        });
+        try {
+            assert.deepEqual(synchronize(fixture.options, fixture.execute), {
+                branch: "oidc-provider-v9.12.3",
+                pullRequest: undefined,
+                updated: true,
+            });
+            const validations = fixture.calls.filter(({ command }) => command === "node");
+            assert.equal(validations.length, 6);
+            assert.ok(validations.some(({ args }) => args[0] === updaterTestPath));
+            assert.ok(validations.some(({ args }) => args[0] === "--test" && args[1] === syncTestPath));
+            assert.ok(fixture.calls.some(({ args, command }) => command === "pnpm" && args[0] === "test"));
+        } finally {
+            fixture.cleanup();
+        }
+    });
+
     it("removes the temporary worktree after preparing a local branch", (t) => {
         t.mock.method(console, "log", () => {});
         const fixture = orchestrationFixture();

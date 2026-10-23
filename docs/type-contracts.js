@@ -5,7 +5,7 @@ import { parse } from '@babel/parser';
 
 import events from '../types/events.js';
 
-export const TYPES_SCHEMA_VERSION = 2;
+export const TYPES_SCHEMA_VERSION = 3;
 
 const parserOptions = {
   plugins: ['typescript'],
@@ -545,15 +545,6 @@ export function readTypeReleaseFiles() {
     'lib/helpers/grants.d.ts': readGrantHelperContract(),
     'oidc-provider-tests.ts': readFileSync(new URL('../types/oidc-provider-tests.ts', import.meta.url), 'utf8'),
   };
-  for (const name of [
-    'update-types.mjs',
-    'update-types.test.mjs',
-    'sync-release.mjs',
-    'sync-release.test.mjs',
-    'README.md',
-  ]) {
-    files[`scripts/${name}`] = readFileSync(new URL(`../tools/dt/${name}`, import.meta.url), 'utf8');
-  }
   for (const path of Object.keys(files)) {
     files[path] = files[path].replaceAll('\r\n', '\n');
   }

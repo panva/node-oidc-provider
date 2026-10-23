@@ -35,5 +35,7 @@ node docs/update-configuration.js --check
 node docs/update-configuration.js --types-json
 ```
 
-The last command emits the versioned, hashed artifact consumed by
-`@types/oidc-provider`'s `scripts/update-types.mjs` mirror.
+The last command emits the versioned, hashed declaration and test artifact
+consumed by `tools/dt/update-types.mjs` or its copy in the downloaded release
+bundle. Synchronization tooling stays in provider and the bundle; it is not
+copied into DefinitelyTyped.

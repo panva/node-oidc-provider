@@ -3,7 +3,7 @@
 import { spawnSync } from "node:child_process";
 import { lstatSync, mkdirSync, mkdtempSync, readdirSync, realpathSync, rmSync, statSync } from "node:fs";
 import { tmpdir } from "node:os";
-import { basename, dirname, join, posix, relative, resolve, sep } from "node:path";
+import { dirname, join, posix, relative, resolve, sep } from "node:path";
 import { fileURLToPath } from "node:url";
 
 const STATUS_SCHEMA_VERSION = 1;
@@ -19,11 +19,6 @@ const MANAGED_PATHS = new Set([
     "package.json",
     "lib/helpers/grants.d.ts",
     "oidc-provider-tests.ts",
-    "scripts/update-types.mjs",
-    "scripts/update-types.test.mjs",
-    "scripts/sync-release.mjs",
-    "scripts/sync-release.test.mjs",
-    "scripts/README.md",
 ]);
 const BUNDLE_FILES = [
     "oidc-provider-types.json",
@@ -38,7 +33,7 @@ const UPDATER_PATH = join(TOOL_DIRECTORY, "update-types.mjs");
 const UPDATER_TEST_PATH = join(TOOL_DIRECTORY, "update-types.test.mjs");
 const SYNC_TEST_PATH = join(TOOL_DIRECTORY, "sync-release.test.mjs");
 function usage() {
-    return "usage: node sync-release.mjs [--repository <DT-checkout>] --tag vX.Y.Z (--run-id <id> | --artifact <path>) [--submit] [--keep-temp]";
+    return "usage: node sync-release.mjs --repository <DT-checkout> --tag vX.Y.Z (--run-id <id> | --artifact <path>) [--submit] [--keep-temp]";
 }
 
 function fail(message) {
@@ -98,6 +93,7 @@ export function parseArguments(argv, cwd = process.cwd()) {
         }
     }
 
+    if (!parsed.repository) fail(`--repository is required\n${usage()}`);
     if (!parsed.tag) fail(`--tag is required\n${usage()}`);
     if (!TAG_PATTERN.test(parsed.tag)) fail("--tag must have the form vX.Y.Z");
     if ((parsed.artifact === undefined) === (parsed.runId === undefined)) {
@@ -545,20 +541,11 @@ function remoteBranchHead(repositoryDirectory, branch, execute) {
     return rows[0].split(/\s+/)[0];
 }
 
-export function pullRequestBody(plan, status) {
-    return [
-        `Synchronizes the generated oidc-provider declaration mirrors with oidc-provider ${plan.tag}.`,
-        "",
-        `Rendered declaration hash: \`${status.candidateHash}\`.`,
-    ].join("\n");
-}
-
 export function submitPreparedBranch({
     execute = runCommand,
     originOwner,
     plan,
     repositoryDirectory,
-    status,
     worktreeDirectory,
 }) {
     const existing = successfulPullRequest(matchingPullRequest(plan, originOwner, execute), plan);
@@ -568,6 +555,14 @@ export function submitPreparedBranch({
         fail(
             `origin/${plan.branch} exists without a pull request; refusing to overwrite or adopt the orphaned branch`,
         );
+    }
+    const body = execute(
+        "git",
+        ["-C", worktreeDirectory, "show", "HEAD:.github/PULL_REQUEST_TEMPLATE.md"],
+        { capture: true },
+    ).stdout;
+    if (typeof body !== "string" || !/\S/.test(body)) {
+        fail("DefinitelyTyped pull request template must be non-empty");
     }
     execute(
         "git",
@@ -581,6 +576,7 @@ export function submitPreparedBranch({
     const result = execute("gh", [
         "pr",
         "create",
+        "--draft",
         "--repo",
         UPSTREAM_REPOSITORY,
         "--base",
@@ -590,7 +586,7 @@ export function submitPreparedBranch({
         "--title",
         plan.commitTitle,
         "--body",
-        pullRequestBody(plan, status),
+        body,
     ], { capture: true, cwd: worktreeDirectory });
     const url = result.stdout.trim();
     if (!url) fail("gh pr create did not return a pull request URL");
@@ -661,14 +657,8 @@ function cleanupTemporaryWorktree(repositoryDirectory, worktreeDirectory, tempor
 }
 
 export function synchronize(options, execute = runCommand) {
-    let packageDirectory;
-    if (options.repository !== undefined) {
-        packageDirectory = resolve(options.repository, PACKAGE_PATH);
-    } else if (basename(TOOL_DIRECTORY) === "scripts") {
-        packageDirectory = dirname(TOOL_DIRECTORY);
-    } else {
-        fail("--repository is required when running the portable sync outside a DT package scripts directory");
-    }
+    if (!options.repository) fail("--repository is required");
+    const packageDirectory = resolve(options.repository, PACKAGE_PATH);
     const plan = releasePlan(options.tag);
     const preflightResult = preflight(packageDirectory, execute);
     const temporaryDirectory = mkdtempSync(join(tmpdir(), "oidc-provider-sync-"));
@@ -824,7 +814,6 @@ export function synchronize(options, execute = runCommand) {
                 originOwner: preflightResult.originOwner,
                 plan,
                 repositoryDirectory: preflightResult.repositoryDirectory,
-                status,
                 worktreeDirectory,
             });
             pullRequest = submitted.url;

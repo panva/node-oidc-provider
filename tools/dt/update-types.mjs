@@ -4,21 +4,12 @@ import { spawnSync } from "node:child_process";
 import { createHash } from "node:crypto";
 import { existsSync, lstatSync, mkdirSync, readFileSync, realpathSync, writeFileSync } from "node:fs";
 import { basename, dirname, isAbsolute, relative, resolve, sep } from "node:path";
-import { fileURLToPath } from "node:url";
 
-const SCHEMA_VERSION = 2;
+const SCHEMA_VERSION = 3;
 const STATUS_SCHEMA_VERSION = 1;
 const GRANTS_PATH = "lib/helpers/grants.d.ts";
 const FRAGMENT_NAMES = ["contracts", "providerMembers", "relatedContracts", "clientAuthMethods", "oidcContext"];
-const FILE_PATHS = [
-    GRANTS_PATH,
-    "oidc-provider-tests.ts",
-    "scripts/update-types.mjs",
-    "scripts/update-types.test.mjs",
-    "scripts/sync-release.mjs",
-    "scripts/sync-release.test.mjs",
-    "scripts/README.md",
-];
+const FILE_PATHS = [GRANTS_PATH, "oidc-provider-tests.ts"];
 const REGIONS = {
     contracts: {
         start: "// BEGIN GENERATED OIDC-PROVIDER CONTRACTS",
@@ -53,7 +44,7 @@ function fail(message) {
 }
 
 function usage() {
-    return "usage: node update-types.mjs [--package-dir <absolute-path>] [--check | --status] (--artifact <path> | <provider-checkout>)";
+    return "usage: node update-types.mjs --package-dir <absolute-path> [--check | --status] (--artifact <path> | <provider-checkout>)";
 }
 
 function parseArguments(argv) {
@@ -87,6 +78,8 @@ function parseArguments(argv) {
     if ((artifactPath === undefined && positional.length !== 1) || (artifactPath !== undefined && positional.length)) {
         fail(usage());
     }
+
+    if (packageDirectory === undefined) fail("--package-dir is required");
 
     return {
         artifactPath: artifactPath === undefined ? undefined : resolve(artifactPath),
@@ -329,15 +322,7 @@ function safeOutput(packageDirectory, path) {
 
 const parsed = parseArguments(process.argv.slice(2));
 const { artifactPath, mode, providerDirectory } = parsed;
-let packageDirectory = parsed.packageDirectory;
-if (packageDirectory === undefined) {
-    const scriptDirectory = dirname(fileURLToPath(import.meta.url));
-    if (basename(scriptDirectory) !== "scripts") {
-        fail("--package-dir is required when running the portable updater outside a DT package scripts directory");
-    }
-    packageDirectory = dirname(scriptDirectory);
-}
-packageDirectory = realpathSync(packageDirectory);
+const packageDirectory = realpathSync(parsed.packageDirectory);
 const indexPath = safeOutput(packageDirectory, "index.d.ts");
 const packagePath = safeOutput(packageDirectory, "package.json");
 for (const path of FILE_PATHS) safeOutput(packageDirectory, path);

@@ -14,7 +14,7 @@ import {
     writeFileSync,
 } from "node:fs";
 import { tmpdir } from "node:os";
-import { basename, dirname, isAbsolute, join, resolve } from "node:path";
+import { isAbsolute, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 
 const arguments_ = process.argv.slice(2);
@@ -26,13 +26,7 @@ if (packageOption !== -1) {
     packageDirectory = resolve(value);
     arguments_.splice(packageOption, 2);
 }
-if (packageDirectory === undefined) {
-    const scriptDirectory = dirname(fileURLToPath(import.meta.url));
-    if (basename(scriptDirectory) !== "scripts") {
-        throw new TypeError("--package-dir is required for portable updater tests");
-    }
-    packageDirectory = dirname(scriptDirectory);
-}
+if (packageDirectory === undefined) throw new TypeError("--package-dir is required for portable updater tests");
 let providerDirectory;
 let baselineArtifact;
 if (arguments_.length === 1 && arguments_[0] !== "--artifact") {
@@ -41,21 +35,13 @@ if (arguments_.length === 1 && arguments_[0] !== "--artifact") {
     baselineArtifact = JSON.parse(readFileSync(resolve(arguments_[1]), "utf8"));
 } else {
     throw new TypeError(
-        "usage: node update-types.test.mjs [--package-dir <absolute-path>] (<provider-checkout> | --artifact <types-json-path>)",
+        "usage: node update-types.test.mjs --package-dir <absolute-path> (<provider-checkout> | --artifact <types-json-path>)",
     );
 }
 const repositoryDirectory = resolve(packageDirectory, "..", "..");
 const updaterPath = fileURLToPath(new URL("./update-types.mjs", import.meta.url));
 const fragmentNames = ["contracts", "providerMembers", "relatedContracts", "clientAuthMethods", "oidcContext"];
-const managedFiles = [
-    "lib/helpers/grants.d.ts",
-    "oidc-provider-tests.ts",
-    "scripts/update-types.mjs",
-    "scripts/update-types.test.mjs",
-    "scripts/sync-release.mjs",
-    "scripts/sync-release.test.mjs",
-    "scripts/README.md",
-];
+const managedFiles = ["lib/helpers/grants.d.ts", "oidc-provider-tests.ts"];
 
 function run(command, args, cwd) {
     return spawnSync(command, args, {
@@ -119,7 +105,6 @@ try {
     const packagePath = join(temporaryPackage, "package.json");
     const grantsPath = join(temporaryGrants, "grants.d.ts");
 
-    mkdirSync(temporaryScripts, { recursive: true });
     mkdirSync(temporaryGrants, { recursive: true });
     mkdirSync(fakeProviderDocs, { recursive: true });
     mkdirSync(join(temporaryRepository, "node_modules"), { recursive: true });
@@ -129,7 +114,6 @@ try {
     }
     copyFileSync(join(repositoryDirectory, ".dprint.jsonc"), join(temporaryRepository, ".dprint.jsonc"));
     copyFileSync(join(packageDirectory, "lib", "helpers", "grants.d.ts"), grantsPath);
-    copyFileSync(join(packageDirectory, "scripts", "update-types.mjs"), join(temporaryScripts, "update-types.mjs"));
     symlinkSync(
         join(repositoryDirectory, "node_modules", "dprint"),
         join(temporaryRepository, "node_modules", "dprint"),
@@ -207,15 +191,17 @@ try {
     );
     const baselineArtifactCheck = check(["--artifact", artifactPath]);
     assert.equal(baselineArtifactCheck.status, 0, baselineArtifactCheck.stderr);
-    const inferredPackageCheck = run(
-        process.execPath,
-        [join(temporaryScripts, "update-types.mjs"), "--check", "--artifact", artifactPath],
-        temporaryPackage,
-    );
-    assert.equal(inferredPackageCheck.status, 0, inferredPackageCheck.stderr);
+    assert.equal(existsSync(temporaryScripts), false, "the updater must not install tooling in DT");
     const missingPortableTarget = run(process.execPath, [updaterPath, "--artifact", artifactPath], temporaryPackage);
     assert.notEqual(missingPortableTarget.status, 0);
     assert.match(missingPortableTarget.stderr, /--package-dir is required/);
+    const missingTestTarget = run(
+        process.execPath,
+        [fileURLToPath(import.meta.url), "--artifact", artifactPath],
+        temporaryPackage,
+    );
+    assert.notEqual(missingTestTarget.status, 0);
+    assert.match(missingTestTarget.stderr, /--package-dir is required/);
     const relativeTarget = run(
         process.execPath,
         [updaterPath, "--package-dir", "relative", "--artifact", artifactPath],
@@ -352,14 +338,12 @@ try {
     assert.notEqual(testsStatus.currentHash, testsStatus.candidateHash);
     assert.deepEqual(testsStatus.changedFiles, ["index.d.ts", "oidc-provider-tests.ts"]);
 
-    const toolingOnly = structuredClone(baselineArtifact);
-    toolingOnly.files["scripts/README.md"] += "\nAdditional release tooling documentation.\n";
-    updateHash(toolingOnly);
-    const toolingStatus = status(toolingOnly);
-    assert.equal(toolingStatus.updateRequired, true);
-    assert.deepEqual(toolingStatus.reasons, ["tests"]);
-    assert.notEqual(toolingStatus.currentHash, toolingStatus.candidateHash);
-    assert.deepEqual(toolingStatus.changedFiles, ["index.d.ts", "scripts/README.md"]);
+    const bundledScript = structuredClone(baselineArtifact);
+    bundledScript.files["scripts/update-types.mjs"] = "throw new Error('must stay in provider');\n";
+    updateHash(bundledScript);
+    writeArtifact(bundledScript);
+    expectFailure("artifact scripts", ["--artifact", artifactPath], /files must have exactly these keys/);
+    assert.equal(existsSync(temporaryScripts), false, "rejected artifacts must not install tooling in DT");
 
     const forbiddenFile = structuredClone(baselineArtifact);
     forbiddenFile.files["../../package.json"] = "{}\n";
@@ -488,15 +472,15 @@ try {
     assert.equal(existsSync(danglingTarget), false);
     rmSync(managedTestPath);
     restorePackage();
-    const outsideScripts = join(temporaryDirectory, "outside-scripts");
-    mkdirSync(outsideScripts);
-    rmSync(temporaryScripts, { recursive: true });
-    symlinkSync(outsideScripts, temporaryScripts, "dir");
+    const outsideGrants = join(temporaryDirectory, "outside-grants");
+    mkdirSync(outsideGrants);
+    rmSync(temporaryGrants, { recursive: true });
+    symlinkSync(outsideGrants, temporaryGrants, "dir");
     expectFailure("symlinked managed directory", ["--artifact", artifactPath], /must not contain a symbolic link/);
-    assert.equal(existsSync(join(outsideScripts, "update-types.mjs")), false);
+    assert.equal(existsSync(join(outsideGrants, "grants.d.ts")), false);
     assert.equal(readFileSync(indexPath, "utf8"), baselineFiles.get("index.d.ts"));
-    rmSync(temporaryScripts);
-    mkdirSync(temporaryScripts);
+    rmSync(temporaryGrants);
+    mkdirSync(temporaryGrants);
 
     restorePackage();
     const index = readFileSync(indexPath, "utf8");
@@ -520,6 +504,7 @@ try {
         assert.match(artifactOnlyRun.stdout, /update-types artifact and status checks passed/);
     }
 
+    assert.equal(existsSync(temporaryScripts), false, "the updater must leave DT free of release tooling");
     process.stdout.write("update-types artifact and status checks passed.\n");
 } finally {
     rmSync(temporaryDirectory, { recursive: true, force: true });

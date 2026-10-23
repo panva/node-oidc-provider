@@ -166,7 +166,7 @@ describe('provider-owned type contracts', () => {
       'indexFragments',
       'files',
     ]);
-    expect(parsed.schemaVersion).to.equal(2);
+    expect(parsed.schemaVersion).to.equal(3);
     expect(parsed.providerVersion).to.equal(JSON.parse(readFileSync(packageUrl)).version);
     expect(parsed.hash).to.match(/^[a-f0-9]{64}$/);
     expect(Object.keys(parsed.indexFragments)).to.deep.equal([
@@ -179,11 +179,6 @@ describe('provider-owned type contracts', () => {
     expect(Object.keys(parsed.files)).to.deep.equal([
       'lib/helpers/grants.d.ts',
       'oidc-provider-tests.ts',
-      'scripts/update-types.mjs',
-      'scripts/update-types.test.mjs',
-      'scripts/sync-release.mjs',
-      'scripts/sync-release.test.mjs',
-      'scripts/README.md',
     ]);
 
     for (const fragment of Object.values(parsed.indexFragments)) {
@@ -258,20 +253,10 @@ describe('provider-owned type contracts', () => {
     expect(artifact.indexFragments.oidcContext).to.include('"dpop_combined"');
   });
 
-  it('includes the canonical tests and sync tools in the hashed release files', () => {
-    const sources = {
-      'oidc-provider-tests.ts': 'types/oidc-provider-tests.ts',
-      'scripts/update-types.mjs': 'tools/dt/update-types.mjs',
-      'scripts/update-types.test.mjs': 'tools/dt/update-types.test.mjs',
-      'scripts/sync-release.mjs': 'tools/dt/sync-release.mjs',
-      'scripts/sync-release.test.mjs': 'tools/dt/sync-release.test.mjs',
-      'scripts/README.md': 'tools/dt/README.md',
-    };
-    for (const [target, source] of Object.entries(sources)) {
-      expect(artifact.files[target]).to.equal(
-        readFileSync(new URL(source, root), 'utf8').replaceAll('\r\n', '\n'),
-      );
-    }
+  it('copies the canonical DT tests byte-for-byte', () => {
+    expect(artifact.files['oidc-provider-tests.ts']).to.equal(
+      readFileSync(new URL('types/oidc-provider-tests.ts', root), 'utf8').replaceAll('\r\n', '\n'),
+    );
   });
 
   it('rejects repeated configuration paths on unrelated declarations', () => {
