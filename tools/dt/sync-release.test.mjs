@@ -1,4 +1,5 @@
 import assert from "node:assert/strict";
+import { spawnSync } from "node:child_process";
 import { copyFileSync, existsSync, mkdirSync, mkdtempSync, rmSync, symlinkSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { dirname, join, resolve } from "node:path";
@@ -38,6 +39,57 @@ function status(overrides = {}) {
         ...overrides,
     };
 }
+
+describe("sync-release command entrypoint", () => {
+    for (const preserveSymlinks of [false, true]) {
+        for (const entry of ["direct", "file symlink", "directory symlink"]) {
+            it(`executes through ${entry}${preserveSymlinks ? " with --preserve-symlinks-main" : ""}`, () => {
+                const directory = mkdtempSync(join(tmpdir(), "sync-release-entrypoint-"));
+                try {
+                    const sourceDirectory = join(directory, "source");
+                    mkdirSync(sourceDirectory);
+                    const script = join(sourceDirectory, "sync-release.mjs");
+                    copyFileSync(join(toolDirectory, "sync-release.mjs"), script);
+                    let entryPath = script;
+                    if (entry === "file symlink") {
+                        entryPath = join(directory, "sync-release.mjs");
+                        symlinkSync(script, entryPath, "file");
+                    } else if (entry === "directory symlink") {
+                        const linkedDirectory = join(directory, "linked");
+                        symlinkSync(sourceDirectory, linkedDirectory, "dir");
+                        entryPath = join(linkedDirectory, "sync-release.mjs");
+                    }
+                    const result = spawnSync(process.execPath, [
+                        ...(preserveSymlinks ? ["--preserve-symlinks-main"] : []),
+                        entryPath,
+                        "--unexpected",
+                    ], { encoding: "utf8" });
+                    assert.equal(result.status, 1, result.stderr);
+                    assert.equal(result.stdout, "");
+                    assert.match(result.stderr, /sync-release: unknown argument "--unexpected"/);
+                } finally {
+                    rmSync(directory, { recursive: true, force: true });
+                }
+            });
+        }
+    }
+
+    for (const source of ["eval", "stdin"]) {
+        it(`remains inert when imported from ${source}`, () => {
+            const code = `await import(${
+                JSON.stringify(pathToFileURL(join(toolDirectory, "sync-release.mjs")).href)
+            });`;
+            const result = spawnSync(
+                process.execPath,
+                ["--input-type=module", ...(source === "eval" ? ["--eval", code] : ["-"])],
+                { encoding: "utf8", input: source === "stdin" ? code : undefined },
+            );
+            assert.equal(result.status, 0, result.stderr);
+            assert.equal(result.stdout, "");
+            assert.equal(result.stderr, "");
+        });
+    }
+});
 
 describe("sync-release argument and status validation", () => {
     it("accepts exactly one artifact source and resolves local paths", () => {
