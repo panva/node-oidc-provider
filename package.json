@@ -82,7 +82,7 @@
     "koa-body": "^8.0.1",
     "koa-mount": "^4.2.0",
     "lodash": "^4.18.1",
-    "mocha": "^11.8.0",
+    "mocha": "^12.0.3",
     "moment": "^2.31.0",
     "nanoid": "^6.0.2",
     "openid-client": "^6.8.8",

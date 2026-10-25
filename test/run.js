@@ -1,11 +1,8 @@
 import { createServer } from 'node:http';
 import { once } from 'node:events';
-import { createRequire } from 'node:module';
 
 import Mocha from 'mocha';
-
-const require = createRequire(import.meta.url);
-const lookupFiles = require('mocha/lib/cli/lookup-files.js');
+import { lookupFiles } from 'mocha/lib/cli/lookup-files.js';
 
 const passed = [];
 
