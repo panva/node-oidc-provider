@@ -2866,7 +2866,7 @@ function credentialEndpointExpectedAudience(ctx: KoaContextWithOIDC): CanBePromi
 
 #### getKeyAttestationSignaturePublicKey
 
-Specifies a helper function used to resolve the public key for verifying Key Attestation JWT (typ `key-attestation+jwt`) signatures when the `attestation` proof type is used. At the point of invocation the JWT format and `iss` claim presence have been validated; no cryptographic or further claims verification has occurred yet.
+Specifies a helper function used to resolve the public key for verifying Key Attestation JWT (typ `key-attestation+jwt`) signatures in the `jwt` proof type's `key_attestation` header or the `attestation` proof type. At the point of invocation the JWT format and the type of the optional `iss` claim have been validated; no cryptographic or further claims verification has occurred yet. The `iss` argument is undefined when the attestation omits that claim; deployments can use the JOSE header's certificate or key identifier to resolve a trusted verification key instead.
 
 An unsupported or invalid key causes the credential endpoint to respond with `invalid_proof`.
 
@@ -2877,7 +2877,7 @@ _**default value**_:
 ```ts
 async function getKeyAttestationSignaturePublicKey(
   ctx: KoaContextWithOIDC,
-  iss: string,
+  iss: string | undefined,
   header: UnknownObject,
   client: Client,
 ): Promise<crypto.KeyObject | crypto.webcrypto.CryptoKey | JWK> { /* implementation required */ }

@@ -70,8 +70,8 @@ config.features.openid4vci = {
   ack: 'experimental-01',
   preAuthorizedCodeGrant: true,
   nonceSecret: Buffer.alloc(32, 0),
-  async getKeyAttestationSignaturePublicKey(_ctx, iss) {
-    if (iss !== 'https://wallet-provider.example.com') {
+  async getKeyAttestationSignaturePublicKey(_ctx, iss, header) {
+    if (iss !== 'https://wallet-provider.example.com' && !(iss === undefined && header.kid === 'trusted-attester')) {
       throw new Error('unknown attestation issuer');
     }
     return attesterKeypair.publicKey;

@@ -646,7 +646,7 @@ export type OpenID4VCIIssueCredential = (
 
 export type OpenID4VCIKeyAttestationSignaturePublicKey = (
     ctx: KoaContextWithOIDC,
-    issuer: string,
+    issuer: string | undefined,
     header: UnknownObject,
     client: Client,
 ) => CanBePromise<crypto.KeyObject | crypto.webcrypto.CryptoKey | JWK>;

@@ -76,12 +76,14 @@ async function keyAttestation(attestedKeys, {
   typ = 'key-attestation+jwt',
   alg = 'ES256',
   withIat = true,
+  withIss = true,
   withAttestedKeys = true,
   withExp = false,
   signingKey = attesterKeypair.privateKey,
   key_storage,
   user_authentication,
   certification,
+  kid,
 } = {}) {
   const payload = {};
   if (nonce !== undefined) payload.nonce = nonce;
@@ -91,8 +93,11 @@ async function keyAttestation(attestedKeys, {
   if (certification !== undefined) payload.certification = certification;
 
   const jwt = new SignJWT(payload)
-    .setProtectedHeader({ alg, typ })
-    .setIssuer(iss);
+    .setProtectedHeader({ alg, typ, kid });
+
+  if (withIss) {
+    jwt.setIssuer(iss);
+  }
 
   if (withIat) {
     jwt.setIssuedAt();
@@ -1679,6 +1684,28 @@ describe('features.openid4vci', () => {
     });
 
     describe('jwt proof with key_attestation header', () => {
+      it('resolves a trusted key_attestation key by kid when iss is omitted', async function () {
+        const accessToken = await getAccessToken.call(this);
+        const nonce = await getCNonce.call(this);
+        const ka = await keyAttestation([await exportJWK(this.keypair.publicKey)], {
+          withExp: true,
+          withIss: false,
+          kid: 'trusted-attester',
+        });
+        const proof = await credentialProof(this.keypair, this.provider.issuer, {
+          nonce,
+          key_attestation: ka,
+        });
+
+        return this.agent.post('/credential')
+          .set('Authorization', `Bearer ${accessToken}`)
+          .send({
+            credential_configuration_id: 'org.iso.18013.5.1.mDL',
+            proofs: { jwt: [proof] },
+          })
+          .expect(200);
+      });
+
       it('issues credentials with a valid key_attestation in jwt proof header', async function () {
         const accessToken = await getAccessToken.call(this);
         const nonce = await getCNonce.call(this);
@@ -2038,6 +2065,47 @@ describe('features.openid4vci', () => {
     });
 
     describe('attestation proof type', () => {
+      it('resolves a trusted attestation proof key by kid when iss is omitted', async function () {
+        const accessToken = await getAccessToken.call(this);
+        const nonce = await getCNonce.call(this);
+        const attestation = await keyAttestation([await exportJWK(this.keypair.publicKey)], {
+          nonce,
+          withIss: false,
+          kid: 'trusted-attester',
+        });
+
+        return this.agent.post('/credential')
+          .set('Authorization', `Bearer ${accessToken}`)
+          .send({
+            credential_configuration_id: 'org.iso.18013.5.1.mDL.attestation',
+            proofs: { attestation: [attestation] },
+          })
+          .expect(200);
+      });
+
+      it('still verifies the attestation signature when iss is omitted', async function () {
+        const accessToken = await getAccessToken.call(this);
+        const nonce = await getCNonce.call(this);
+        const attestation = await keyAttestation([await exportJWK(this.keypair.publicKey)], {
+          nonce,
+          withIss: false,
+          kid: 'trusted-attester',
+          signingKey: this.otherKeypair.privateKey,
+        });
+
+        return this.agent.post('/credential')
+          .set('Authorization', `Bearer ${accessToken}`)
+          .send({
+            credential_configuration_id: 'org.iso.18013.5.1.mDL.attestation',
+            proofs: { attestation: [attestation] },
+          })
+          .expect(400)
+          .expect({
+            error: 'invalid_proof',
+            error_description: 'attestation proof signature verification failed',
+          });
+      });
+
       it('issues credentials with a valid attestation proof', async function () {
         const accessToken = await getAccessToken.call(this);
         const nonce = await getCNonce.call(this);

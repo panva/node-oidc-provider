@@ -1298,7 +1298,7 @@ new Provider("https://op.example.com", {
             },
             getKeyAttestationSignaturePublicKey(ctx, issuer, header, client) {
                 ctx.oidc.issuer.substring(0);
-                issuer.substring(0);
+                issuer?.substring(0);
                 JSON.stringify(header);
                 client.clientId.substring(0);
                 return crypto.generateKeyPairSync("ed25519").publicKey;
