@@ -2,7 +2,7 @@ import { readFileSync } from 'node:fs';
 import * as path from 'node:path';
 import * as crypto from 'node:crypto';
 import * as https from 'node:https';
-import { promisify } from 'node:util';
+import { isDeepStrictEqual, promisify } from 'node:util';
 
 import { dirname } from 'desm';
 import * as jose from 'jose';
@@ -11,6 +11,10 @@ import { generate } from 'selfsigned';
 
 import Provider, { errors } from '../../lib/index.js'; // from 'oidc-provider';
 import MemoryAdapter, { createMemoryAdapter } from '../../lib/adapters/memory_adapter.js';
+import certificateThumbprint from '../../lib/helpers/certificate_thumbprint.js';
+import validateDpop, { checkDpopReplay } from '../../lib/helpers/validate_dpop.js';
+import getErrorHandler from '../../lib/shared/error_handler.js';
+import getSetWWWAuthenticateHeader from '../../lib/shared/set_www_authenticate_header.js';
 import { stripPrivateJWKFields } from '../../test/keys.js';
 import Account from '../../example/support/account.js';
 
@@ -23,6 +27,9 @@ const pkg = JSON.parse(
 const __dirname = dirname(import.meta.url);
 const selfsigned = await generate();
 const { PORT = 3000, ISSUER = `http://localhost:${PORT}` } = process.env;
+const setup = JSON.parse(process.env.SETUP || '{}');
+const clientCredentialsGrant = setup.fapi_profile === 'fapi_client_credentials_grant';
+const rar = setup.authorization_request_type === 'rar';
 
 const ALGS = ['PS256'];
 const clientAuthMethods = ['private_key_jwt', 'self_signed_tls_client_auth'];
@@ -95,16 +102,29 @@ function fapi1(metadata) {
 function fapi2(metadata) {
   return {
     ...metadata,
-    grant_types: ['authorization_code', 'refresh_token'],
-    response_types: ['code'],
-    require_pushed_authorization_requests: true,
-    redirect_uris: ['https://rp.example.com/cb'],
+    grant_types: clientCredentialsGrant ? ['client_credentials'] : ['authorization_code', 'refresh_token'],
+    response_types: clientCredentialsGrant ? [] : ['code'],
+    require_pushed_authorization_requests: !clientCredentialsGrant,
+    redirect_uris: clientCredentialsGrant ? [] : ['https://rp.example.com/cb'],
+    ...(rar ? { authorization_details_types: ['account_information'] } : undefined),
   };
 }
 
 const eKey = crypto.randomBytes(32);
 const resource = 'urn:example:resource-endpoint';
 const memoryAdapter = createMemoryAdapter(clockTolerance);
+
+function getCertificate(ctx) {
+  if (process.env.NODE_ENV === 'production') {
+    try {
+      return new crypto.X509Certificate(Buffer.from(ctx.get('client-certificate'), 'base64'));
+    } catch {
+      return undefined;
+    }
+  }
+
+  return ctx.socket.getPeerX509Certificate();
+}
 
 const adapter = (name) => {
   if (name === 'Client') {
@@ -218,7 +238,7 @@ const adapter = (name) => {
     return memory;
   }
 
-  if (name === 'AccessToken') {
+  if (name === 'AccessToken' || (clientCredentialsGrant && name === 'ClientCredentials')) {
     const accessTokensAdapter = memoryAdapter(name);
     const orig = MemoryAdapter.prototype.find;
     accessTokensAdapter.find = async function find(id) {
@@ -236,16 +256,18 @@ const adapter = (name) => {
             aud,
             iss,
             cnf,
+            authorization_details: authorizationDetails,
             ...payload
           },
         } = verified;
 
         return {
           ...payload,
-          scope: `openid ${payload.scope}`,
+          scope: name === 'AccessToken' ? `openid ${payload.scope}` : payload.scope,
           ...cnf,
           clientId,
-          accountId,
+          ...(name === 'AccessToken' ? { accountId } : { aud }),
+          rar: authorizationDetails,
         };
       } catch {
         return orig.call(this, id);
@@ -309,6 +331,41 @@ const fapi = new Provider(ISSUER, {
     request_object_signing_alg: 'PS256',
   },
   features: {
+    clientCredentials: { enabled: clientCredentialsGrant },
+    richAuthorizationRequests: {
+      enabled: rar,
+      types: {
+        account_information: {
+          validate(_ctx, detail) {
+            if (
+              Object.keys(detail).some((key) => !['type', 'locations', 'actions'].includes(key))
+              || !isDeepStrictEqual(detail.locations, [resource])
+              || !isDeepStrictEqual(detail.actions, ['read'])
+            ) {
+              throw new errors.InvalidAuthorizationDetails('unsupported account information authorization details');
+            }
+          },
+        },
+      },
+      authorizationDetailsForGrantSource(ctx) {
+        return ctx.oidc.grant.rar;
+      },
+      authorizationDetailsForAccessToken(ctx, token, source) {
+        const granted = source?.rar ?? ctx.oidc.grant?.rar;
+        const requested = ctx.oidc.params.authorization_details
+          ? JSON.parse(ctx.oidc.params.authorization_details)
+          : granted;
+
+        if (requested?.some((detail) => !granted?.some((allowed) => isDeepStrictEqual(detail, allowed)))) {
+          throw new errors.InvalidAuthorizationDetails('requested authorization details were not granted');
+        }
+
+        return requested?.filter((detail) => detail.locations.includes(token.resourceServer?.identifier()));
+      },
+      authorizationDetailsForIntrospection(_ctx, token) {
+        return token.rar;
+      },
+    },
     claimsParameter: {
       enabled: true,
     },
@@ -372,17 +429,7 @@ const fapi = new Provider(ISSUER, {
       enabled: true,
       certificateBoundAccessTokens: true,
       selfSignedTlsClientAuth: true,
-      getCertificate(ctx) {
-        if (process.env.NODE_ENV === 'production') {
-          try {
-            return new crypto.X509Certificate(Buffer.from(ctx.get('client-certificate'), 'base64'));
-          } catch {
-            return undefined;
-          }
-        }
-
-        return ctx.socket.getPeerX509Certificate();
-      },
+      getCertificate,
     },
     jwtResponseModes: { enabled: true },
     pushedAuthorizationRequests: { enabled: true },
@@ -393,7 +440,7 @@ const fapi = new Provider(ISSUER, {
   },
   responseTypes: ['code id_token', 'code'],
   clientAuthMethods,
-  ...(JSON.parse(process.env.SETUP || '{}').plan === 'fapi-ciba-id1-test-plan' && JSON.parse(process.env.SETUP).ciba_mode === 'ping' && {
+  ...(setup.plan === 'fapi-ciba-id1-test-plan' && setup.ciba_mode === 'ping' && {
     fetch: (url, options) => {
       delete options.dispatcher;
       return globalThis.fetch(url, options);
@@ -505,6 +552,44 @@ fapi.use((ctx, next) => {
   ctx.set('x-fapi-interaction-id', ctx.get('x-fapi-interaction-id') || crypto.randomUUID());
   return next();
 });
+
+if (clientCredentialsGrant) {
+  const resourceErrorHandler = getErrorHandler('resource.error');
+  const setWWWAuthenticateHeader = getSetWWWAuthenticateHeader();
+
+  fapi.use(async (ctx, next) => {
+    if (ctx.path !== '/accounts') return next();
+
+    ctx.oidc = new fapi.OIDCContext(ctx);
+    ctx.oidc.route = 'userinfo';
+    ctx.set('cache-control', 'no-store');
+
+    return resourceErrorHandler(ctx, () => setWWWAuthenticateHeader(ctx, async () => {
+      const value = ctx.oidc.getAccessToken({ acceptDPoP: true });
+      const dpop = await validateDpop(fapi, ctx, value);
+      const token = await fapi.ClientCredentials.find(value);
+      ctx.assert(token, new errors.InvalidToken('access token not found'));
+      ctx.oidc.entity('AccessToken', token);
+
+      if (token['x5t#S256']) {
+        const cert = getCertificate(ctx);
+        if (!cert || token['x5t#S256'] !== certificateThumbprint(cert)) {
+          throw new errors.InvalidToken('failed x5t#S256 verification');
+        }
+      }
+
+      await checkDpopReplay(fapi, ctx, dpop, token.clientId, errors.InvalidToken);
+      if (dpop && !token.jkt) {
+        throw new errors.InvalidToken('access token is not sender-constrained but proof of possession was provided');
+      }
+      if (token.jkt && (!dpop || token.jkt !== dpop.thumbprint)) {
+        throw new errors.InvalidToken('failed jkt verification');
+      }
+
+      ctx.body = { client_id: token.clientId };
+    }));
+  });
+}
 
 if (process.env.NODE_ENV === 'production') {
   fapi.proxy = true;

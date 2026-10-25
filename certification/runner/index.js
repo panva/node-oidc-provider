@@ -3,6 +3,7 @@ import * as fs from 'node:fs';
 
 import API, { assertPlanId } from './api.js';
 import debug from './debug.js';
+import credentialOfferDriver from './vci.js';
 
 const {
   SUITE_ACCESS_TOKEN,
@@ -14,13 +15,16 @@ assert(SETUP, 'process.env.SETUP missing');
 
 const {
   plan: PLAN_NAME,
+  credential_configuration_id: CREDENTIAL_CONFIGURATION_ID,
   ...VARIANT
 } = JSON.parse(process.env.SETUP);
 
 let SKIP;
 let CONFIGURATION;
-if (PLAN_NAME.startsWith('fapi')) {
-  VARIANT[PLAN_NAME.includes('ciba') ? 'fapi_ciba_profile' : 'fapi_profile'] = 'plain_fapi';
+if (PLAN_NAME.startsWith('oid4vci')) {
+  CONFIGURATION = './certification/vci/.plan.json';
+} else if (PLAN_NAME.startsWith('fapi')) {
+  VARIANT[PLAN_NAME.includes('ciba') ? 'fapi_ciba_profile' : 'fapi_profile'] ??= 'plain_fapi';
   CONFIGURATION = './certification/fapi/plan.json';
 } else {
   CONFIGURATION = './certification/oidc/plan.json';
@@ -67,7 +71,9 @@ const configuration = JSON.parse(fs.readFileSync(CONFIGURATION));
 const runner = new API({ baseUrl: SUITE_BASE_URL, bearerToken: SUITE_ACCESS_TOKEN });
 
 if ('alias' in configuration) {
-  configuration.alias = `${configuration.alias}-${Object.values(VARIANT).sort().join('-')}`;
+  const suffix = [CREDENTIAL_CONFIGURATION_ID, ...Object.values(VARIANT)]
+    .filter(Boolean).sort().join('-').replace(/[^A-Za-z0-9_-]/g, '-');
+  configuration.alias = `${configuration.alias}-${suffix}`;
 }
 
 function removeOpenidScope(config) {
@@ -81,6 +87,10 @@ function removeOpenidScope(config) {
 const auth = VARIANT.client_auth_type === 'mtls' ? 'mtls' : 'pkjwt';
 let override;
 switch (PLAN_NAME) {
+  case 'oid4vci-1_0-issuer-haip-test-plan':
+  case 'oid4vci-1_0-issuer-test-plan':
+    override = 'fapi2-security-profile-final';
+    break;
   case 'fapi1-advanced-final-test-plan': {
     const revision = 'final';
     override = 'fapi1-advanced-final';
@@ -201,7 +211,9 @@ try {
         });
         debug('Created test module, new id: %s', moduleId);
         debug('%s/log-detail.html?log=%s', SUITE_BASE_URL, moduleId);
-        const [, result] = await runner.waitForState({ moduleId });
+        const onUpdate = VARIANT.vci_authorization_code_flow_variant === 'issuer_initiated'
+          ? credentialOfferDriver(configuration, runner, moduleId) : undefined;
+        const [, result] = await runner.waitForState({ moduleId, onUpdate });
         if (result === 'WARNING' && testModule !== 'oidcc-ensure-post-request-succeeds') {
           warningTests.push(testModule);
         }

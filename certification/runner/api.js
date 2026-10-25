@@ -115,6 +115,16 @@ class API {
     return response.json();
   }
 
+  async getModuleState({ moduleId } = {}) {
+    assert(moduleId, 'argument property "moduleId" missing');
+
+    const response = await fetch(new URL(`api/runner/${moduleId}`, this.#baseUrl), { headers: this.#headers });
+
+    await assertResponseStatus(response, 200);
+
+    return response.json();
+  }
+
   async downloadArtifact({ planId } = {}) {
     assertPlanId(planId);
     const filename = `export-${planId}.zip`;
@@ -134,7 +144,7 @@ class API {
     }
   }
 
-  async waitForState({ moduleId, timeout = ms('4m') } = {}) {
+  async waitForState({ moduleId, timeout = ms('4m'), onUpdate } = {}) {
     assert(moduleId, 'argument property "moduleId" missing');
     assert(moduleId, 'argument property "states" missing');
     assert(moduleId, 'argument property "timeout" missing');
@@ -142,7 +152,9 @@ class API {
     const timeoutAt = Date.now() + timeout;
 
     while (Date.now() < timeoutAt) {
-      const { status, result } = await this.getModuleInfo({ moduleId });
+      const info = await this.getModuleInfo({ moduleId });
+      await onUpdate?.(info);
+      const { status, result } = info;
       if (!['WAITING', 'FINISHED', 'RUNNING', 'CREATED'].includes(status)) {
         debug('module id %s status is %s', moduleId, status);
       }

@@ -1,0 +1,17 @@
+{
+  "alias": "oidc-provider-vci",
+  "vci": {
+    "credential_configuration_id": "eu.europa.ec.eudi.pid.1"
+  },
+  "client": {
+    "client_id": "vci-one",
+    "scope": "eudi.pid.1 offline_access"
+  },
+  "client2": {
+    "client_id": "vci-two",
+    "scope": "eudi.pid.1 offline_access"
+  },
+  "client_attestation": {
+    "issuer": "https://attester.example.com"
+  }
+}
