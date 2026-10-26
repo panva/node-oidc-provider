@@ -313,8 +313,10 @@ describe('Client metadata validation', () => {
   context('contacts', function () {
     mustBeArray(this.title);
     allows(this.title, ['developer@example.com', 'info@example.com', 'info+some@example.com']);
+    allows(this.title, ["o'connor@example.com"]);
     rejects(this.title, [123], /must only contain strings$/);
     rejects(this.title, ['john doe'], 'contacts can only contain email addresses');
+    rejects(this.title, ['o\u2019connor@example.com'], 'contacts can only contain email addresses');
   });
 
   context('default_acr_values', function () {
