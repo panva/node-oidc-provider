@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [9.13.1](https://github.com/panva/node-oidc-provider/compare/v9.13.0...v9.13.1) (2026-10-27)
+
+### Fixes
+
+* accept key attestations without issuer claim ([463371a](https://github.com/panva/node-oidc-provider/commit/463371a87373846509794d0921593a7cf9c57324))
+* correct apostrophe in contacts validation ([d9ec597](https://github.com/panva/node-oidc-provider/commit/d9ec597c211a3a4a76ac006339d5009be98f6a44))
+
 ## [9.13.0](https://github.com/panva/node-oidc-provider/compare/v9.12.2...v9.13.0) (2026-10-22)
 
 ### Features
