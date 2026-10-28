@@ -672,6 +672,8 @@ Specifies the storage adapter implementation for persisting authorization server
 
 The adapter constructor will be instantiated for each model type when first accessed.
 
+To prevent concurrent replay, the `ReplayDetection` adapter's `upsert` SHOULD use an atomic insert-if-absent operation and reject when an unexpired entry already exists.
+
 
 
 See:

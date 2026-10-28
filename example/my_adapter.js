@@ -154,6 +154,9 @@ class MyAdapter {
      * - kind {string} - "ReplayDetection" fixed string value
      * - exp {number} - timestamp of the replay object cache expiration
      * - iat {number} - timestamp of the replay object cache's creation
+     *
+     * To prevent concurrent replay, ReplayDetection upserts SHOULD atomically insert only if no
+     * unexpired entry exists for the id, and reject otherwise. Returning false is not sufficient.
      */
   }
 

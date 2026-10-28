@@ -1210,6 +1210,59 @@ describe('client authentication methods', () => {
     });
 
     describe('JTI uniqueness', () => {
+      it('fails closed when an atomic adapter rejects concurrent assertion reuse', async function () {
+        const assertion = await JWT.sign({
+          jti: nanoid(),
+          aud: this.provider.issuer,
+          sub: 'client-jwt-secret',
+          iss: 'client-jwt-secret',
+        }, this.key, 'HS256', { expiresIn: 60 });
+        const adapter = this.provider.ReplayDetection.adapter;
+        const find = adapter.find.bind(adapter);
+        const upsert = adapter.upsert.bind(adapter);
+        const claims = new Set();
+        const duplicate = new Error('replay identifier already exists');
+        let lookups = 0;
+        let release;
+        const ready = new Promise((resolve) => { release = resolve; });
+        const findStub = sinon.stub(adapter, 'find').callsFake(async (id) => {
+          const found = await find(id);
+          expect(found).to.be.undefined;
+          lookups += 1;
+          if (lookups === 2) release();
+          await ready;
+          return found;
+        });
+        const upsertStub = sinon.stub(adapter, 'upsert').callsFake((id, payload, expiresIn) => {
+          if (claims.has(id)) throw duplicate;
+          claims.add(id);
+          return upsert(id, payload, expiresIn);
+        });
+
+        try {
+          const responses = await Promise.all([0, 1].map(() => this.agent.post(route)
+            .send({
+              client_assertion: assertion,
+              grant_type: 'foo',
+              client_assertion_type: 'urn:ietf:params:oauth:client-assertion-type:jwt-bearer',
+            })
+            .type('form')));
+
+          expect(responses.map(({ status }) => status).sort()).to.eql([200, 500]);
+          expect(responses.find(({ status }) => status === 200).body).to.eql(tokenAuthSucceeded);
+          expect(responses.find(({ status }) => status === 500).body).to.eql({
+            error: 'server_error',
+            error_description: 'oops! something went wrong',
+          });
+          expect(findStub.callCount).to.equal(2);
+          expect(upsertStub.callCount).to.equal(2);
+          expect(claims.size).to.equal(1);
+        } finally {
+          findStub.restore();
+          upsertStub.restore();
+        }
+      });
+
       it('reused jtis must be rejected', function () {
         const spy = sinon.spy();
         return JWT.sign({
