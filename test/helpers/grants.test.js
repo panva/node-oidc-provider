@@ -143,6 +143,38 @@ describe('grant implementation helpers', () => {
     });
   });
 
+  describe('resolveAndApplyResource', () => {
+    it('filters an explicit scope override against the current Resource Server scopes', async () => {
+      const resource = 'urn:example:resource';
+      const provider = new Provider('https://op.example.com', {
+        features: {
+          devInteractions: { enabled: false },
+          resourceIndicators: {
+            getResourceServerInfo() {
+              return { scope: 'api:read api:write api:ungranted' };
+            },
+          },
+        },
+      });
+      const client = { clientId: 'client' };
+      const ctx = { oidc: { provider, client, params: { resource } } };
+      const grant = new provider.Grant({ accountId: 'account', clientId: client.clientId });
+      grant.addResourceScope(resource, 'api:read api:write api:removed');
+      const source = {
+        scopes: new Set(['api:read', 'api:write', 'api:removed']),
+        resourceIndicators: new Set([resource]),
+      };
+      const token = {};
+
+      await resolveAndApplyResource(
+        provider, ctx, source, token, grant, new Set(['api:read', 'api:removed', 'api:ungranted']),
+      );
+
+      expect(token.scope).to.equal('api:read');
+      expect([...source.scopes]).to.deep.equal(['api:read', 'api:write', 'api:removed']);
+    });
+  });
+
   describe('sender-constraint stages', () => {
     let provider;
     let ctx;

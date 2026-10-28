@@ -6,6 +6,7 @@ import {
 } from 'jose';
 import { createSandbox } from 'sinon';
 import epochTime from '../../lib/helpers/epoch_time.js';
+import instance from '../../lib/helpers/weak_cache.js';
 import bootstrap from '../test_helper.js';
 import { rarEvents } from './openid4vci.config.js';
 
@@ -109,6 +110,25 @@ describe('grant_type=urn:ietf:params:oauth:grant-type:pre-authorized_code', () =
         })
         .end(() => {});
     });
+  });
+
+  it('filters removed Resource Server scopes when exchanging a pre-authorized code', async function () {
+    const code = await mint.call(this);
+    sinon.stub(instance(this.provider).features.resourceIndicators, 'getResourceServerInfo')
+      .callsFake((_ctx, resource) => ({ audience: resource, scope: 'other_scope' }));
+
+    const { body } = await this.agent.post(route)
+      .type('form')
+      .send({
+        client_id: 'wallet',
+        'pre-authorized_code': code,
+        grant_type,
+      })
+      .expect(200);
+
+    expect(body).to.have.property('scope', '');
+    const token = await this.provider.AccessToken.find(body.access_token);
+    expect(token).to.have.property('scope', '');
   });
 
   it('issues a refresh token (w/ offline_access)', async function () {

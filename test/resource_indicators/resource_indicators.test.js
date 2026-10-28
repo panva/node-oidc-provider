@@ -2,9 +2,11 @@ import { strict as assert } from 'node:assert';
 
 import sinon from 'sinon';
 import { expect } from 'chai';
+import { decodeJwt } from 'jose';
 
 import bootstrap from '../test_helper.js';
 import { defaults } from '../../lib/helpers/defaults.js';
+import instance from '../../lib/helpers/weak_cache.js';
 
 const { features: { resourceIndicators } } = defaults;
 
@@ -33,6 +35,102 @@ describe('features.resourceIndicators', () => {
         'urn:wl:explicit': 'api:read api:write',
       },
     });
+  });
+
+  describe('Resource Server scope changes before token issuance', () => {
+    const sandbox = sinon.createSandbox();
+    const resource = 'urn:wl:explicit';
+    const scope = 'api:read api:write';
+    const grantTypes = {
+      authorization_code: async function () {
+        const auth = new this.AuthorizationRequest({ response_type: 'code', resource, scope });
+        const response = await this.wrap({ route: '/auth', verb: 'get', auth })
+          .expect(303)
+          .expect(auth.validatePresence(['code', 'state']));
+
+        return {
+          code: new URL(response.headers.location).searchParams.get('code'),
+          code_verifier: auth.code_verifier,
+        };
+      },
+      'urn:ietf:params:oauth:grant-type:device_code': async function () {
+        const { body: { user_code, device_code } } = await this.agent.post('/device/auth')
+          .send({ client_id: 'client', resource, scope })
+          .type('form')
+          .expect(200);
+
+        this.getSession().state = { secret: 'scope-change' };
+        await this.agent.post('/device')
+          .send({ user_code, xsrf: 'scope-change', confirm: true })
+          .type('form')
+          .expect(200);
+
+        return { device_code };
+      },
+      'urn:openid:params:grant-type:ciba': async function () {
+        sandbox.stub(instance(this.provider).features.ciba, 'triggerAuthenticationDevice')
+          .callsFake(async (_ctx, request) => {
+            const grant = new this.provider.Grant({
+              clientId: request.clientId, accountId: request.accountId,
+            });
+            grant.addOIDCScope('openid');
+            grant.addResourceScope(resource, scope);
+            await grant.save();
+            return this.provider.backchannelResult(request, grant.jti);
+          });
+
+        const { body: { auth_req_id } } = await this.agent.post('/backchannel')
+          .send({
+            client_id: 'client', resource, scope: `openid ${scope}`, login_hint: 'accountId',
+          })
+          .type('form')
+          .expect(200);
+
+        return { auth_req_id };
+      },
+    };
+
+    afterEach(sandbox.restore);
+
+    for (const [grant_type, authorize] of Object.entries(grantTypes)) {
+      for (const accessTokenFormat of ['opaque', 'jwt']) {
+        for (const [policy, currentScope, expectedScope] of [
+          ['unchanged', scope, scope],
+          ['narrowed', 'api:read api:admin', 'api:read'],
+          ['removed', 'api:admin', ''],
+        ]) {
+          it(`${grant_type} applies ${policy} scopes to ${accessTokenFormat} access tokens`, async function () {
+            let resourceScope = scope;
+            sandbox.stub(instance(this.provider).features.resourceIndicators, 'getResourceServerInfo')
+              .callsFake(() => ({ scope: resourceScope, audience: resource, accessTokenFormat }));
+
+            const parameters = await authorize.call(this);
+            resourceScope = currentScope;
+
+            const issued = sandbox.spy();
+            this.provider.once('access_token.saved', issued);
+            this.provider.once('access_token.issued', issued);
+
+            const { body } = await this.agent.post('/token')
+              .send({ client_id: 'client', grant_type, resource, ...parameters })
+              .type('form')
+              .expect(200);
+
+            expect(body).to.have.property('scope', expectedScope);
+            expect(issued.calledOnce).to.be.true;
+            expect(issued.firstCall.args[0]).to.have.property('scope', expectedScope);
+            if (accessTokenFormat === 'jwt') {
+              const payload = decodeJwt(body.access_token);
+              if (expectedScope) {
+                expect(payload).to.have.property('scope', expectedScope);
+              } else {
+                expect(payload).not.to.have.property('scope');
+              }
+            }
+          });
+        }
+      }
+    }
   });
 
   describe('resource validations', () => {
