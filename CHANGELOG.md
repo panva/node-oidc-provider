@@ -2,6 +2,16 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [9.13.2](https://github.com/panva/node-oidc-provider/compare/v9.13.1...v9.13.2) (2026-10-28)
+
+### Fixes
+
+* apply current resource scopes at token issuance ([a56afec](https://github.com/panva/node-oidc-provider/commit/a56afeca4fd2d4c287bb405c5dfa1695ba4869d2))
+
+### Documentation
+
+* recommend atomic replay detection in adapters ([77ebc3b](https://github.com/panva/node-oidc-provider/commit/77ebc3b502fb430c3c2127a1b781d3cb331e97ac))
+
 ## [9.13.1](https://github.com/panva/node-oidc-provider/compare/v9.13.0...v9.13.1) (2026-10-27)
 
 ### Fixes
