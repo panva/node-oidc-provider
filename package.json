@@ -59,14 +59,14 @@
   },
   "dependencies": {
     "debug": "^4.4.3",
-    "jose": "^6.2.12",
+    "jose": "^6.2.13",
     "koa": "^3.2.1"
   },
   "devDependencies": {
     "@babel/parser": "^8.0.7",
     "@biomejs/biome": "2.4.11",
-    "@fastify/middie": "^9.3.5",
-    "@hapi/hapi": "^21.4.10",
+    "@fastify/middie": "^9.3.6",
+    "@hapi/hapi": "^21.4.11",
     "@koa/cors": "^5.0.0",
     "@koa/ejs": "^5.1.0",
     "@koa/router": "^15.7.0",
@@ -92,6 +92,6 @@
     "sinon": "^22.1.0",
     "supertest": "^7.3.1",
     "timekeeper": "^2.3.1",
-    "undici": "^8.12.2"
+    "undici": "^8.12.3"
   }
 }
