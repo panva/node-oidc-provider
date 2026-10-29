@@ -2,6 +2,16 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [9.13.3](https://github.com/panva/node-oidc-provider/compare/v9.13.2...v9.13.3) (2026-10-29)
+
+### Documentation
+
+* clarify DefinitelyTyped release handoff ([9fb9c8c](https://github.com/panva/node-oidc-provider/commit/9fb9c8c3af6597fa142941eefe01c2eda3549648))
+
+### Refactor
+
+* make claim request validation extensible ([2e7a00b](https://github.com/panva/node-oidc-provider/commit/2e7a00b9786a207888d4c19f90496c6d1f049479))
+
 ## [9.13.2](https://github.com/panva/node-oidc-provider/compare/v9.13.1...v9.13.2) (2026-10-28)
 
 ### Fixes
