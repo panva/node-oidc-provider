@@ -1286,18 +1286,28 @@ _**default value**_:
 
 #### assertClaimsParameter
 
-Specifies a helper function that shall be invoked to perform additional validation of the `claims` parameter. This function enables enforcement of deployment-specific policies, security constraints, or extended claim validation logic according to authorization server requirements.
+Specifies a helper function that validates individual claim requests in the parsed `claims` parameter. The default implementation requires each member of `userinfo` and `id_token` to be null or a JSON object, as defined by OIDC Core. A custom implementation may accept extension syntax or enforce deployment-specific policies. JSON parsing and validation of the top-level object and its `userinfo` and `id_token` containers are always performed before this function is invoked.
 
-The function may throw errors to reject non-compliant claims requests or return successfully to indicate acceptance of the claims parameter content.
+The function may throw errors to reject non-compliant claims requests or return successfully to indicate acceptance of the claims parameter content. Accepting extension syntax does not add support for its consent, claim selection, or response processing requirements.
 
 
 _**default value**_:
 ```ts
 async function assertClaimsParameter(
   ctx: KoaContextWithOIDC,
-  claims: ClaimsParameter,
+  claims: Partial<Record<"userinfo" | "id_token", UnknownObject | undefined>>,
   client: Client,
-): Promise<void> {}
+): Promise<void> {
+  for (const container of ['userinfo', 'id_token']) {
+    if (claims[container] !== undefined) {
+      for (const value of Object.values(claims[container])) {
+        if (value !== null && !isJsonObject(value)) {
+          throw new errors.InvalidRequest(`claims.${container} members must be null or objects`);
+        }
+      }
+    }
+  }
+}
 ```
 
 </details>

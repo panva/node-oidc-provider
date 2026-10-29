@@ -3,8 +3,10 @@ import { createPrivateKey } from 'node:crypto';
 
 import get from 'lodash/get.js';
 import { expect } from 'chai';
+import sinon from 'sinon';
 
 import { decode as decodeJWT, sign as signJWT } from '../../lib/helpers/jwt.js';
+import { InvalidRequest } from '../../lib/helpers/errors.js';
 import bootstrap from '../test_helper.js';
 import keys from '../keys.js';
 
@@ -686,6 +688,82 @@ expire.setDate(expire.getDate() + 1);
       });
     });
 
+    describe('custom claims validation', () => {
+      let assertion;
+
+      beforeEach(function () {
+        assertion = sinon.stub(i(this.provider).features.claimsParameter, 'assertClaimsParameter').resolves();
+      });
+
+      afterEach(() => assertion.restore());
+
+      for (const container of ['userinfo', 'id_token']) {
+        it(`can accept verified_claims arrays in claims.${container}`, async function () {
+          const claims = {
+            [container]: {
+              verified_claims: [{
+                verification: { trust_framework: { value: 'eidas' } },
+                claims: { given_name: null, family_name: null },
+              }],
+            },
+          };
+          const auth = new this.AuthorizationRequest({
+            response_type: 'id_token token',
+            scope: 'openid',
+            claims,
+          });
+
+          await this.wrap({ route, verb, auth })
+            .expect(303)
+            .expect(auth.validateInteractionRedirect);
+
+          expect(assertion.calledOnce).to.be.true;
+          const [ctx, parsedClaims, client] = assertion.firstCall.args;
+          expect(parsedClaims).to.deep.equal(claims);
+          expect(client).to.equal(ctx.oidc.client);
+        });
+      }
+
+      it('can reject claims with a custom error', async function () {
+        assertion.rejects(new InvalidRequest('custom claims validation failed'));
+        const auth = new this.AuthorizationRequest({
+          response_type: 'id_token token',
+          scope: 'openid',
+          claims: { id_token: { email: null } },
+        });
+
+        await this.wrap({ route, verb, auth })
+          .expect(303)
+          .expect(auth.validateFragment)
+          .expect(auth.validateError('invalid_request'))
+          .expect(auth.validateErrorDescription('custom claims validation failed'));
+
+        expect(assertion.calledOnce).to.be.true;
+      });
+
+      for (const [claims, description] of [
+        [[], 'claims parameter should be a JSON object'],
+        [{ userinfo: [] }, 'claims.userinfo should be an object'],
+        [{ id_token: [] }, 'claims.id_token should be an object'],
+      ]) {
+        it(`still enforces that ${description}`, async function () {
+          const auth = new this.AuthorizationRequest({
+            response_type: 'id_token token',
+            scope: 'openid',
+            claims: JSON.stringify(claims),
+          });
+
+          await this.wrap({ route, verb, auth })
+            .expect(303)
+            .expect(auth.validateFragment)
+            .expect(auth.validateError('invalid_request'))
+            .expect(auth.validateErrorDescription(description));
+
+          expect(assertion.called).to.be.false;
+        });
+      }
+    });
+
     describe('parameter validations', () => {
       it('should not be combined with response_type=none', function () {
         const auth = new this.AuthorizationRequest({
@@ -817,6 +895,20 @@ expire.setDate(expire.getDate() + 1);
           });
         }
       }
+
+      it('validates individual claim shapes before response type restrictions', function () {
+        const auth = new this.AuthorizationRequest({
+          response_type: 'id_token',
+          scope: 'openid',
+          claims: { userinfo: { email: [] } },
+        });
+
+        return this.wrap({ route, verb, auth })
+          .expect(303)
+          .expect(auth.validateFragment)
+          .expect(auth.validateError('invalid_request'))
+          .expect(auth.validateErrorDescription('claims.userinfo members must be null or objects'));
+      });
 
       it('does not reflect invalid individual claim names in errors', function () {
         const auth = new this.AuthorizationRequest({

@@ -38,6 +38,60 @@ describe('Pushed Request Object', () => {
       });
     });
 
+    describe('claims validation', () => {
+      for (const container of ['userinfo', 'id_token']) {
+        const claims = {
+          [container]: {
+            verified_claims: [{
+              verification: { trust_framework: { value: 'eidas' } },
+              claims: { given_name: null, family_name: null },
+            }],
+          },
+        };
+
+        it(`rejects claims.${container} arrays by default`, async function () {
+          await this.agent.post('/request')
+            .auth('client', 'secret')
+            .type('form')
+            .send({
+              client_id: 'client',
+              scope: 'openid',
+              response_type: 'code',
+              claims: JSON.stringify(claims),
+            })
+            .expect(400)
+            .expect({
+              error: 'invalid_request',
+              error_description: `claims.${container} members must be null or objects`,
+            });
+        });
+
+        it(`can accept claims.${container} arrays with custom validation`, async function () {
+          const assertion = sinon.stub(i(this.provider).features.claimsParameter, 'assertClaimsParameter').resolves();
+
+          try {
+            const { body: { request_uri } } = await this.agent.post('/request')
+              .auth('client', 'secret')
+              .type('form')
+              .send({
+                client_id: 'client',
+                scope: 'openid',
+                response_type: 'code',
+                claims: JSON.stringify(claims),
+              })
+              .expect(201);
+
+            expect(assertion.calledOnce).to.be.true;
+            expect(assertion.firstCall.args[1]).to.deep.equal(claims);
+            const stored = await this.provider.PushedAuthorizationRequest.find(request_uri.split(':').at(-1));
+            expect(decodeJwt(stored.request).claims).to.deep.equal(claims);
+          } finally {
+            assertion.restore();
+          }
+        });
+      }
+    });
+
     describe('trust metadata for public clients', () => {
       before(function () { return this.login(); });
       after(function () { return this.logout(); });

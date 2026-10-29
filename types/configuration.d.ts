@@ -901,7 +901,7 @@ export interface Configuration {
                     assertClaimsParameter?:
                         | ((
                             ctx: KoaContextWithOIDC,
-                            claims: ClaimsParameter,
+                            claims: Partial<Record<"userinfo" | "id_token", UnknownObject | undefined>>,
                             client: Client,
                         ) => CanBePromise<void>)
                         | undefined;
