@@ -27,6 +27,12 @@ Change declaration templates and tests here; do not edit their generated
 regions or the mirrored test file directly in DefinitelyTyped. The sources
 and tests in this directory are not published in the npm package.
 
+Commit declaration and test changes here alongside the provider change.
+DefinitelyTyped synchronization happens after release as a separate task using
+the released tag's handoff bundle. Do not update or commit a sibling
+DefinitelyTyped checkout during provider development. See the
+[release synchronization flow](../tools/dt/README.md).
+
 Run the documentation generator after changing these files:
 
 ```sh

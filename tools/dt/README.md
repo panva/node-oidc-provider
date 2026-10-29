@@ -1,64 +1,37 @@
-# oidc-provider declaration and test mirror
+# oidc-provider DefinitelyTyped release handoff
 
 The provider owns the release synchronization tools in `tools/dt`, the declaration
 sources in `types`, and the generated configuration contracts. The schema 3
 artifact includes the client authentication methods and complete `OIDCContext`
 declaration, the grant helper declarations, and the DT test suite. Synchronization
-tools stay in provider and the downloaded release bundle. Do not edit generated
-DT declaration regions or the mirrored test file by hand.
+tools stay in provider and the downloaded release bundle.
 
-Generate and apply the complete artifact from a provider checkout:
+## Provider development
 
-```sh
-node tools/dt/update-types.mjs \
-  --package-dir /path/to/DefinitelyTyped/types/oidc-provider \
-  /path/to/oidc-provider
-```
+Edit and commit declaration templates and tests in the provider's `types/`
+directory alongside the runtime change. Regenerate provider documentation as
+described in [the declaration source guide](https://github.com/panva/node-oidc-provider/blob/main/types/README.md).
 
-Alternatively, consume a release artifact without provider source:
+Do not synchronize or commit a sibling DefinitelyTyped checkout during provider
+development, even when it is available and writable. Unreleased provider changes
+are expected to differ from DT; an exact mirror check against provider HEAD is
+not a development gate. A request to change or commit provider code does not
+authorize a DT update.
 
-```sh
-node update-types.mjs \
-  --package-dir /path/to/DefinitelyTyped/types/oidc-provider \
-  --artifact /path/to/oidc-provider-types.json
-```
-
-The updater requires an explicit absolute `--package-dir` path. It validates the
-exact schema, provider version, and SHA-256 hash before writing. It accepts only
-the fixed managed file list and refuses symbolic links in output paths. Existing
-DT declarations without the client
-authentication and context markers are migrated only when each declaration can
-be identified exactly once; missing, duplicate, or partial regions fail.
-
-Use `--check` to verify the exact mirror without writing, or `--status` to produce
-deterministic JSON describing a potential DT update. Both accept either source
-form above. The status schema remains 1; its possible reasons are `declarations`,
-`tests`, and `major-version`.
-
-Status compares all managed content after formatting it with DT's dprint and
-ignores only artifact provenance. Declaration, generated documentation, and test
-changes require an update, as does a new provider major. Tooling changes alone
-do not require a DT update. A patch or minor release with no content changes does
-not. Required updates advance DT to `X.Y.9999`. Artifacts older than DT's tracked
-major/minor line are reported and
-skipped. Exact `--check` additionally verifies provenance and the provider/DT
-major/minor version lines.
-
-The updater uses only Node.js built-ins and the dprint installation from the DT
-repository. It formats `index.d.ts` and copies the managed source files
-byte-for-byte. Install DT's dependencies before running it. The integration
-checks accept the same source options:
-
-```sh
-node update-types.test.mjs \
-  --package-dir /path/to/DefinitelyTyped/types/oidc-provider \
-  --artifact /path/to/oidc-provider-types.json
-```
+DT synchronization is a separate, explicitly requested task after a provider
+release. Use the released tag's handoff bundle and `sync-release.mjs` below.
+Do not use an unreleased provider checkout to prepare a DT release update, and
+do not edit generated DT declaration regions or the mirrored test file by hand.
 
 ## Release synchronization
 
-Download the complete artifact named `oidc-provider-types-vX.Y.Z` from the
-provider's release workflow. It contains exactly `oidc-provider-types.json`,
+After publishing the provider release, the release workflow checks DT using
+declarations and tests from the released tag. When an update is required, it
+uploads `oidc-provider-types-vX.Y.Z` and prints the handoff commands in the job
+summary. The workflow does not commit or submit changes to DT.
+
+For the requested DT synchronization, download that complete artifact. It
+contains exactly `oidc-provider-types.json`,
 `update-types.mjs`, `update-types.test.mjs`, `sync-release.mjs`,
 `sync-release.test.mjs`, and `README.md`. Run its portable helper against your DT
 checkout:
@@ -111,3 +84,58 @@ success as well. Run the focused orchestration tests separately with:
 ```sh
 node --test /path/to/bundle/sync-release.test.mjs
 ```
+
+## Low-level updater and tooling checks
+
+`update-types.mjs` is used by the release helper. It also accepts a provider
+checkout for tooling development and diagnostics; that interface is not the
+release synchronization workflow. Running it without `--check` or `--status`
+writes to the target package, so do not point a development update at a working
+DT checkout.
+
+Use `--status` for a read-only comparison with development sources:
+
+```sh
+node tools/dt/update-types.mjs \
+  --package-dir /path/to/DefinitelyTyped/types/oidc-provider \
+  --status \
+  /path/to/oidc-provider
+```
+
+Use `--check` to verify an exact mirror without writing. Both options also accept
+`--artifact /path/to/oidc-provider-types.json` instead of a provider checkout.
+The status schema remains 1; its possible reasons are `declarations`, `tests`,
+and `major-version`.
+
+Status compares all managed content after formatting it with DT's dprint and
+ignores only artifact provenance. For a released artifact, declaration,
+generated documentation, and test changes require a DT update, as does a new
+provider major. Tooling changes alone do not require a DT update. A patch or
+minor release with no content changes does not. Required updates advance DT to
+`X.Y.9999`. Artifacts older than DT's tracked major/minor line are reported and
+skipped. Exact `--check` additionally verifies provenance and the provider/DT
+major/minor version lines.
+
+The updater requires an explicit absolute `--package-dir` path. It validates
+the exact schema, provider version, and SHA-256 hash before writing. It accepts
+only the fixed managed file list and refuses symbolic links in output paths.
+Existing DT declarations without the client authentication and context markers
+are migrated only when each declaration can be identified exactly once;
+missing, duplicate, or partial regions fail.
+
+The updater uses only Node.js built-ins and the dprint installation from the DT
+repository. It formats `index.d.ts` and copies the managed source files
+byte-for-byte. Install DT's dependencies before running it.
+
+The updater integration checks read the supplied DT package as a baseline and
+apply changes only to temporary copies. To test development sources without
+updating the supplied checkout:
+
+```sh
+node tools/dt/update-types.test.mjs \
+  --package-dir /path/to/DefinitelyTyped/types/oidc-provider \
+  /path/to/oidc-provider
+```
+
+The tests also accept `--artifact /path/to/oidc-provider-types.json` instead of
+a provider checkout.
