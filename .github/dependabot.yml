@@ -3,7 +3,9 @@ updates:
   - package-ecosystem: "github-actions"
     directory: "/"
     schedule:
-      interval: "monthly"
+      interval: "cron"
+      cronjob: "0 9 * * mon#1"
+      timezone: "Europe/Prague"
     groups:
       actions:
         patterns:
