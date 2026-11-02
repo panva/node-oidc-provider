@@ -1,10 +1,11 @@
+import { describe, before, afterEach, it, after } from 'node:test';
+import assert from 'node:assert/strict';
 import { createPrivateKey, X509Certificate, generateKeyPairSync } from 'node:crypto';
 import { readFileSync } from 'node:fs';
 import { request } from 'node:http';
 
 import { calculateJwkThumbprint, importJWK, SignJWT } from 'jose';
 import sinon from 'sinon';
-import { expect } from 'chai';
 import cloneDeep from 'lodash/cloneDeep.js';
 
 import nanoid from '../../lib/helpers/nanoid.js';
@@ -48,7 +49,7 @@ function errorDetail(spy) {
 }
 
 function noW3A({ headers }) {
-  expect(headers).not.to.have.property('www-authenticate');
+  assert.ok(!('www-authenticate' in Object(headers)));
 }
 
 const attestationPrivateKey = createPrivateKey({ format: 'jwk', key: clientKey });
@@ -117,18 +118,22 @@ async function withAdditionalSecuritySignal(provider, value, fn) {
 }
 
 describe('client authentication methods', () => {
-  before(bootstrap(import.meta.url));
+  const fixture = {};
 
-  afterEach(assertNoPendingInterceptors);
+  before(bootstrap(import.meta.url, fixture), { timeout: 3000 });
 
-  before(function () {
-    this.provider.registerGrantType('foo', (ctx) => {
+  afterEach(() => assertNoPendingInterceptors(), { timeout: 3000 });
+
+  before(() => {
+    fixture.provider.registerGrantType('foo', (ctx) => {
       ctx.body = { success: true };
     });
-  });
+  }, { timeout: 3000 });
 
   describe('discovery', () => {
-    it('pushes no algs when neither _jwt method is enabled', () => {
+    const fixture1 = Object.create(fixture);
+
+    it('pushes no algs when neither _jwt method is enabled', { timeout: 3000 }, () => {
       const provider = new Provider('http://localhost', {
         clientAuthMethods: [
           'none',
@@ -137,10 +142,10 @@ describe('client authentication methods', () => {
         ],
       });
 
-      expect(i(provider).configuration.clientAuthSigningAlgValues).to.be.undefined;
+      assert.equal(i(provider).configuration.clientAuthSigningAlgValues, undefined);
     });
 
-    it('removes client_secret_jwt when no HMAC based alg is enabled', () => {
+    it('removes client_secret_jwt when no HMAC based alg is enabled', { timeout: 3000 }, () => {
       const provider = new Provider('http://localhost', {
         clientAuthMethods: [
           'none',
@@ -154,10 +159,10 @@ describe('client authentication methods', () => {
         },
       });
 
-      expect(i(provider).configuration.clientAuthMethods).not.to.include('client_secret_jwt');
+      assert.ok(!(i(provider).configuration.clientAuthMethods.has('client_secret_jwt')));
     });
 
-    it('removes private_key_jwt when no public key crypto based alg is enabled', () => {
+    it('removes private_key_jwt when no public key crypto based alg is enabled', { timeout: 3000 }, () => {
       const provider = new Provider('http://localhost', {
         clientAuthMethods: [
           'none',
@@ -171,10 +176,10 @@ describe('client authentication methods', () => {
         },
       });
 
-      expect(i(provider).configuration.clientAuthMethods).not.to.include('private_key_jwt');
+      assert.ok(!(i(provider).configuration.clientAuthMethods.has('private_key_jwt')));
     });
 
-    it('pushes only symmetric algs when client_secret_jwt is enabled', () => {
+    it('pushes only symmetric algs when client_secret_jwt is enabled', { timeout: 3000 }, () => {
       const provider = new Provider('http://localhost', {
         clientAuthMethods: [
           'none',
@@ -191,10 +196,10 @@ describe('client authentication methods', () => {
         'HS512',
       ];
 
-      expect(i(provider).configuration.clientAuthSigningAlgValues).to.eql(algs);
+      assert.deepEqual(i(provider).configuration.clientAuthSigningAlgValues, algs);
     });
 
-    it('pushes only asymmetric algs when private_key_jwt is enabled', () => {
+    it('pushes only asymmetric algs when private_key_jwt is enabled', { timeout: 3000 }, () => {
       const provider = new Provider('http://localhost', {
         clientAuthMethods: [
           'none',
@@ -220,10 +225,10 @@ describe('client authentication methods', () => {
         ...pqc,
       ];
 
-      expect(i(provider).configuration.clientAuthSigningAlgValues).to.eql(algs);
+      assert.deepEqual(i(provider).configuration.clientAuthSigningAlgValues, algs);
     });
 
-    it('pushes all algs when both _jwt methods are enabled', () => {
+    it('pushes all algs when both _jwt methods are enabled', { timeout: 3000 }, () => {
       const provider = new Provider('http://localhost', {
         clientAuthMethods: [
           'none',
@@ -253,59 +258,47 @@ describe('client authentication methods', () => {
         ...pqc,
       ];
 
-      expect(i(provider).configuration.clientAuthSigningAlgValues).to.eql(algs);
+      assert.deepEqual(i(provider).configuration.clientAuthSigningAlgValues, algs);
     });
 
-    it('does not advertise additional client attestation signal methods by default', function () {
-      return this.agent.get('/.well-known/openid-configuration')
+    it('does not advertise additional client attestation signal methods by default', { timeout: 3000 }, () => fixture1.agent.get('/.well-known/openid-configuration')
         .expect(200)
         .expect(({ body }) => {
-          expect(body).not.to.have.property('client_attestation_pop_methods_supported');
-        });
-    });
+          assert.ok(!('client_attestation_pop_methods_supported' in Object(body)));
+        }));
 
-    it('advertises optional additional client attestation signal methods', function () {
-      return withAdditionalSecuritySignal(this.provider, 'optional', async () => {
-        await this.agent.get('/.well-known/openid-configuration')
+    it('advertises optional additional client attestation signal methods', { timeout: 3000 }, () => withAdditionalSecuritySignal(fixture1.provider, 'optional', async () => {
+        await fixture1.agent.get('/.well-known/openid-configuration')
           .expect(200)
           .expect(({ body }) => {
-            expect(body).to.have.property('client_attestation_pop_methods_supported')
-              .and.eql(['attestation_pop_jwt', 'dpop_combined', 'none']);
+            ((actual) => { assert.ok('client_attestation_pop_methods_supported' in Object(actual)); assert.deepEqual(actual.client_attestation_pop_methods_supported, ['attestation_pop_jwt', 'dpop_combined', 'none']); })(body);
           });
-      });
-    });
+      }));
 
-    it('advertises required additional client attestation signal methods', function () {
-      return withAdditionalSecuritySignal(this.provider, 'required', async () => {
-        await this.agent.get('/.well-known/openid-configuration')
+    it('advertises required additional client attestation signal methods', { timeout: 3000 }, () => withAdditionalSecuritySignal(fixture1.provider, 'required', async () => {
+        await fixture1.agent.get('/.well-known/openid-configuration')
           .expect(200)
           .expect(({ body }) => {
-            expect(body).to.have.property('client_attestation_pop_methods_supported')
-              .and.eql(['attestation_pop_jwt', 'dpop_combined']);
+            ((actual) => { assert.ok('client_attestation_pop_methods_supported' in Object(actual)); assert.deepEqual(actual.client_attestation_pop_methods_supported, ['attestation_pop_jwt', 'dpop_combined']); })(body);
           });
-      });
-    });
+      }));
 
-    it('does not advertise combined DPoP signals when DPoP is disabled', function () {
-      return withAdditionalSecuritySignal(this.provider, 'optional', async () => {
-        const { dPoP } = i(this.provider).features;
+    it('does not advertise combined DPoP signals when DPoP is disabled', { timeout: 3000 }, () => withAdditionalSecuritySignal(fixture1.provider, 'optional', async () => {
+        const { dPoP } = i(fixture1.provider).features;
         dPoP.enabled = false;
         try {
-          await this.agent.get('/.well-known/openid-configuration')
+          await fixture1.agent.get('/.well-known/openid-configuration')
             .expect(200)
             .expect(({ body }) => {
-              expect(body).to.have.property('client_attestation_pop_methods_supported')
-                .and.eql(['attestation_pop_jwt', 'none']);
+              ((actual) => { assert.ok('client_attestation_pop_methods_supported' in Object(actual)); assert.deepEqual(actual.client_attestation_pop_methods_supported, ['attestation_pop_jwt', 'none']); })(body);
             });
         } finally {
           dPoP.enabled = true;
         }
-      });
-    });
+      }));
   });
 
-  it('expects auth to be provided', function () {
-    return this.agent.post(route)
+  it('expects auth to be provided', { timeout: 3000 }, () => fixture.agent.post(route)
       .send({})
       .type('form')
       .expect(400)
@@ -313,11 +306,9 @@ describe('client authentication methods', () => {
       .expect({
         error: 'invalid_request',
         error_description: 'no client authentication mechanism provided',
-      });
-  });
+      }));
 
-  it('rejects when no client is found', function () {
-    return this.agent.post(route)
+  it('rejects when no client is found', { timeout: 3000 }, () => fixture.agent.post(route)
       .send({
         grant_type: 'foo',
         client_id: 'client-not-found',
@@ -325,25 +316,24 @@ describe('client authentication methods', () => {
       .type('form')
       .expect(401)
       .expect(noW3A)
-      .expect(tokenAuthRejected);
-  });
+      .expect(tokenAuthRejected));
 
   describe('none "auth"', () => {
-    it('accepts the "auth"', function () {
-      return this.agent.post(route)
+    const fixture2 = Object.create(fixture);
+
+    it('accepts the "auth"', { timeout: 3000 }, () => fixture2.agent.post(route)
         .send({
           grant_type: 'foo',
           client_id: 'client-none',
         })
         .type('form')
         .expect(200)
-        .expect(tokenAuthSucceeded);
-    });
+        .expect(tokenAuthSucceeded));
 
-    it('rejects the "auth" if secret was also provided', function () {
+    it('rejects the "auth" if secret was also provided', { timeout: 3000 }, () => {
       const spy = sinon.spy();
-      this.provider.once('grant.error', spy);
-      return this.agent.post(route)
+      fixture2.provider.once('grant.error', spy);
+      return fixture2.agent.post(route)
         .send({
           grant_type: 'foo',
           client_id: 'client-none',
@@ -351,8 +341,8 @@ describe('client authentication methods', () => {
         })
         .type('form')
         .expect(() => {
-          expect(spy.calledOnce).to.be.true;
-          expect(errorDetail(spy)).to.equal('the provided authentication mechanism does not match the registered client authentication method');
+          assert.equal(spy.calledOnce, true);
+          assert.equal(errorDetail(spy), 'the provided authentication mechanism does not match the registered client authentication method');
         })
         .expect(401)
         .expect(noW3A)
@@ -361,30 +351,27 @@ describe('client authentication methods', () => {
   });
 
   describe('client_secret_basic auth', () => {
-    it('accepts the auth', function () {
-      return this.agent.post(route)
+    const fixture3 = Object.create(fixture);
+
+    it('accepts the auth', { timeout: 3000 }, () => fixture3.agent.post(route)
         .send({
           grant_type: 'foo',
         })
         .type('form')
         .auth('client-basic', 'secret')
         .expect(200)
-        .expect(tokenAuthSucceeded);
-    });
+        .expect(tokenAuthSucceeded));
 
-    it('accepts the auth (but client configured with post)', function () {
-      return this.agent.post(route)
+    it('accepts the auth (but client configured with post)', { timeout: 3000 }, () => fixture3.agent.post(route)
         .send({
           grant_type: 'foo',
         })
         .type('form')
         .auth('client-post', 'secret')
         .expect(200)
-        .expect(tokenAuthSucceeded);
-    });
+        .expect(tokenAuthSucceeded));
 
-    it('accepts the auth even with id in the body', function () {
-      return this.agent.post(route)
+    it('accepts the auth even with id in the body', { timeout: 3000 }, () => fixture3.agent.post(route)
         .send({
           grant_type: 'foo',
           client_id: 'client-basic',
@@ -392,11 +379,9 @@ describe('client authentication methods', () => {
         .type('form')
         .auth('client-basic', 'secret')
         .expect(200)
-        .expect(tokenAuthSucceeded);
-    });
+        .expect(tokenAuthSucceeded));
 
-    it('rejects the auth when body id differs', function () {
-      return this.agent.post(route)
+    it('rejects the auth when body id differs', { timeout: 3000 }, () => fixture3.agent.post(route)
         .send({
           grant_type: 'foo',
           client_id: 'client-basic-other',
@@ -408,33 +393,27 @@ describe('client authentication methods', () => {
         .expect({
           error: 'invalid_request',
           error_description: 'client_id mismatch',
-        });
-    });
+        }));
 
-    it('accepts the auth (https://www.rfc-editor.org/info/rfc6749/#appendix-B)', function () {
-      return this.agent.post(route)
+    it('accepts the auth (https://www.rfc-editor.org/info/rfc6749/#appendix-B)', { timeout: 3000 }, () => fixture3.agent.post(route)
         .send({
           grant_type: 'foo',
         })
         .type('form')
         .auth(' %&+', ' %&+')
         .expect(200)
-        .expect(tokenAuthSucceeded);
-    });
+        .expect(tokenAuthSucceeded));
 
-    it('accepts the auth (https://www.rfc-editor.org/info/rfc6749/#appendix-B again)', function () {
-      return this.agent.post(route)
+    it('accepts the auth (https://www.rfc-editor.org/info/rfc6749/#appendix-B again)', { timeout: 3000 }, () => fixture3.agent.post(route)
         .send({
           grant_type: 'foo',
         })
         .type('form')
         .auth('an:identifier', 'some secure & non-standard secret')
         .expect(200)
-        .expect(tokenAuthSucceeded);
-    });
+        .expect(tokenAuthSucceeded));
 
-    it('rejects improperly encoded headers', function () {
-      return this.agent.post(route)
+    it('rejects improperly encoded headers', { timeout: 3000 }, () => fixture3.agent.post(route)
         .send({
           grant_type: 'foo',
         })
@@ -443,11 +422,9 @@ describe('client authentication methods', () => {
         .expect({
           error: 'invalid_request',
           error_description: 'client_id and client_secret in the authorization header are not properly encoded',
-        });
-    });
+        }));
 
-    it('rejects a Basic credential containing non-base64 characters', function () {
-      return this.agent.post(route)
+    it('rejects a Basic credential containing non-base64 characters', { timeout: 3000 }, () => fixture3.agent.post(route)
         .send({
           grant_type: 'foo',
         })
@@ -458,11 +435,9 @@ describe('client authentication methods', () => {
         .expect({
           error: 'invalid_request',
           error_description: 'invalid authorization header value format',
-        });
-    });
+        }));
 
-    it('validates the Basic scheme format (parts)', function () {
-      return this.agent.post(route)
+    it('validates the Basic scheme format (parts)', { timeout: 3000 }, () => fixture3.agent.post(route)
         .send({
           grant_type: 'foo',
         })
@@ -473,11 +448,9 @@ describe('client authentication methods', () => {
         .expect({
           error: 'invalid_request',
           error_description: 'invalid authorization header value format',
-        });
-    });
+        }));
 
-    it('validates the Basic scheme format (Basic)', function () {
-      return this.agent.post(route)
+    it('validates the Basic scheme format (Basic)', { timeout: 3000 }, () => fixture3.agent.post(route)
         .send({
           grant_type: 'foo',
         })
@@ -488,11 +461,9 @@ describe('client authentication methods', () => {
         .expect({
           error: 'invalid_request',
           error_description: 'invalid authorization header value format',
-        });
-    });
+        }));
 
-    it('validates the Basic scheme format (no :)', function () {
-      return this.agent.post(route)
+    it('validates the Basic scheme format (no :)', { timeout: 3000 }, () => fixture3.agent.post(route)
         .send({
           grant_type: 'foo',
         })
@@ -503,27 +474,25 @@ describe('client authentication methods', () => {
         .expect({
           error: 'invalid_request',
           error_description: 'invalid authorization header value format',
-        });
-    });
+        }));
 
-    it('rejects invalid secrets', function () {
+    it('rejects invalid secrets', { timeout: 3000 }, () => {
       const spy = sinon.spy();
-      this.provider.once('grant.error', spy);
-      return this.agent.post(route)
+      fixture3.provider.once('grant.error', spy);
+      return fixture3.agent.post(route)
         .send({
           grant_type: 'foo',
         })
         .type('form')
         .auth('client-basic', 'invalid secret')
         .expect(() => {
-          expect(spy.calledOnce).to.be.true;
-          expect(errorDetail(spy)).to.equal('invalid secret provided');
+          assert.equal(spy.calledOnce, true);
+          assert.equal(errorDetail(spy), 'invalid secret provided');
         })
-        .expect(this.failWith(401, tokenAuthRejected.error, tokenAuthRejected.error_description, undefined, 'Basic'));
+        .expect(fixture3.failWith(401, tokenAuthRejected.error, tokenAuthRejected.error_description, undefined, 'Basic'));
     });
 
-    it('rejects double auth', function () {
-      return this.agent.post(route)
+    it('rejects double auth', { timeout: 3000 }, () => fixture3.agent.post(route)
         .send({
           grant_type: 'foo',
           client_id: 'client-basic',
@@ -536,11 +505,9 @@ describe('client authentication methods', () => {
         .expect({
           error: 'invalid_request',
           error_description: 'client authentication must only be provided using one mechanism',
-        });
-    });
+        }));
 
-    it('rejects double auth (no client_id in body)', function () {
-      return this.agent.post(route)
+    it('rejects double auth (no client_id in body)', { timeout: 3000 }, () => fixture3.agent.post(route)
         .send({
           grant_type: 'foo',
           client_secret: 'secret',
@@ -552,11 +519,9 @@ describe('client authentication methods', () => {
         .expect({
           error: 'invalid_request',
           error_description: 'client authentication must only be provided using one mechanism',
-        });
-    });
+        }));
 
-    it('requires the client_secret to be sent', function () {
-      return this.agent.post(route)
+    it('requires the client_secret to be sent', { timeout: 3000 }, () => fixture3.agent.post(route)
         .send({
           grant_type: 'foo',
         })
@@ -567,11 +532,9 @@ describe('client authentication methods', () => {
         .expect({
           error: 'invalid_request',
           error_description: 'client_secret must be provided in the Authorization header',
-        });
-    });
+        }));
 
-    it('rejects expired secrets', function () {
-      return this.agent.post(route)
+    it('rejects expired secrets', { timeout: 3000 }, () => fixture3.agent.post(route)
         .send({
           grant_type: 'foo',
         })
@@ -582,13 +545,13 @@ describe('client authentication methods', () => {
         .expect({
           error: 'invalid_client',
           error_description: 'could not authenticate the client - its client secret is expired',
-        });
-    });
+        }));
   });
 
   describe('client_secret_post auth', () => {
-    it('accepts the auth', function () {
-      return this.agent.post(route)
+    const fixture4 = Object.create(fixture);
+
+    it('accepts the auth', { timeout: 3000 }, () => fixture4.agent.post(route)
         .send({
           grant_type: 'foo',
           client_id: 'client-post',
@@ -596,16 +559,15 @@ describe('client authentication methods', () => {
         })
         .type('form')
         .expect(200)
-        .expect(tokenAuthSucceeded);
-    });
+        .expect(tokenAuthSucceeded));
 
-    it('can use transfer-encoding: chunked', function (done) {
+    it('can use transfer-encoding: chunked', { timeout: 3000 }, (_t, done) => {
       const { address, port } = globalThis.server.address();
 
       const req = request({
         hostname: address,
         port,
-        path: this.suitePath(route),
+        path: fixture4.suitePath(route),
         method: 'POST',
         headers: {
           'Content-Type': 'application/x-www-form-urlencoded',
@@ -620,7 +582,7 @@ describe('client authentication methods', () => {
 
         res.on('end', () => {
           try {
-            expect(JSON.parse(data)).to.deep.eql(tokenAuthSucceeded);
+            assert.deepEqual(JSON.parse(data), tokenAuthSucceeded);
             done();
           } catch (err) {
             done(err);
@@ -636,8 +598,7 @@ describe('client authentication methods', () => {
       req.on('error', done);
     });
 
-    it('accepts the auth (but client configured with basic)', function () {
-      return this.agent.post(route)
+    it('accepts the auth (but client configured with basic)', { timeout: 3000 }, () => fixture4.agent.post(route)
         .send({
           grant_type: 'foo',
           client_id: 'client-basic',
@@ -645,13 +606,12 @@ describe('client authentication methods', () => {
         })
         .type('form')
         .expect(200)
-        .expect(tokenAuthSucceeded);
-    });
+        .expect(tokenAuthSucceeded));
 
-    it('rejects invalid secrets', function () {
+    it('rejects invalid secrets', { timeout: 3000 }, () => {
       const spy = sinon.spy();
-      this.provider.once('grant.error', spy);
-      return this.agent.post(route)
+      fixture4.provider.once('grant.error', spy);
+      return fixture4.agent.post(route)
         .send({
           grant_type: 'foo',
           client_id: 'client-post',
@@ -659,18 +619,18 @@ describe('client authentication methods', () => {
         })
         .type('form')
         .expect(() => {
-          expect(spy.calledOnce).to.be.true;
-          expect(errorDetail(spy)).to.equal('invalid secret provided');
+          assert.equal(spy.calledOnce, true);
+          assert.equal(errorDetail(spy), 'invalid secret provided');
         })
         .expect(401)
         .expect(noW3A)
         .expect(tokenAuthRejected);
     });
 
-    it('requires the client_secret to be sent', function () {
+    it('requires the client_secret to be sent', { timeout: 3000 }, () => {
       const spy = sinon.spy();
-      this.provider.once('grant.error', spy);
-      return this.agent.post(route)
+      fixture4.provider.once('grant.error', spy);
+      return fixture4.agent.post(route)
         .send({
           grant_type: 'foo',
           client_id: 'client-post',
@@ -678,16 +638,15 @@ describe('client authentication methods', () => {
         })
         .type('form')
         .expect(() => {
-          expect(spy.calledOnce).to.be.true;
-          expect(errorDetail(spy)).to.equal('the provided authentication mechanism does not match the registered client authentication method');
+          assert.equal(spy.calledOnce, true);
+          assert.equal(errorDetail(spy), 'the provided authentication mechanism does not match the registered client authentication method');
         })
         .expect(401)
         .expect(noW3A)
         .expect(tokenAuthRejected);
     });
 
-    it('rejects expired secrets', function () {
-      return this.agent.post(route)
+    it('rejects expired secrets', { timeout: 3000 }, () => fixture4.agent.post(route)
         .send({
           grant_type: 'foo',
           client_id: 'secret-expired-basic',
@@ -699,55 +658,53 @@ describe('client authentication methods', () => {
         .expect({
           error: 'invalid_client',
           error_description: 'could not authenticate the client - its client secret is expired',
-        });
-    });
+        }));
   });
 
   describe('client_secret_jwt auth', () => {
-    before(async function () {
-      this.key = await importJWK((await this.provider.Client.find('client-jwt-secret')).symmetricKeyStore.selectForSign({ alg: 'HS256' })[0]);
-    });
+    const fixture5 = Object.create(fixture);
 
-    it('accepts the auth', function () {
-      return JWT.sign({
+    before(async () => {
+      fixture5.key = await importJWK((await fixture5.provider.Client.find('client-jwt-secret')).symmetricKeyStore.selectForSign({ alg: 'HS256' })[0]);
+    }, { timeout: 3000 });
+
+    it('accepts the auth', { timeout: 3000 }, () => JWT.sign({
         jti: nanoid(),
-        aud: this.provider.issuer,
+        aud: fixture5.provider.issuer,
         sub: 'client-jwt-secret',
         iss: 'client-jwt-secret',
-      }, this.key, 'HS256', { expiresIn: 60 }).then((assertion) => this.agent.post(route)
+      }, fixture5.key, 'HS256', { expiresIn: 60 }).then((assertion) => fixture5.agent.post(route)
         .send({
           client_assertion: assertion,
           grant_type: 'foo',
           client_assertion_type: 'urn:ietf:params:oauth:client-assertion-type:jwt-bearer',
         })
         .type('form')
-        .expect(tokenAuthSucceeded));
-    });
+        .expect(tokenAuthSucceeded)));
 
     describe('additional audience values', () => {
-      it('accepts the auth when aud is an array', function () {
-        return JWT.sign({
+      const fixture6 = Object.create(fixture5);
+
+      it('accepts the auth when aud is an array', { timeout: 3000 }, () => JWT.sign({
           jti: nanoid(),
-          aud: [this.provider.issuer],
+          aud: [fixture6.provider.issuer],
           sub: 'client-jwt-secret',
           iss: 'client-jwt-secret',
-        }, this.key, 'HS256', { expiresIn: 60 }).then((assertion) => this.agent.post(route)
+        }, fixture6.key, 'HS256', { expiresIn: 60 }).then((assertion) => fixture6.agent.post(route)
           .send({
             client_assertion: assertion,
             grant_type: 'foo',
             client_assertion_type: 'urn:ietf:params:oauth:client-assertion-type:jwt-bearer',
           })
           .type('form')
-          .expect(tokenAuthSucceeded));
-      });
+          .expect(tokenAuthSucceeded)));
 
-      it('rejects an aud array containing a non-string member', function () {
-        return JWT.sign({
+      it('rejects an aud array containing a non-string member', { timeout: 3000 }, () => JWT.sign({
           jti: nanoid(),
-          aud: [this.provider.issuer, null],
+          aud: [fixture6.provider.issuer, null],
           sub: 'client-jwt-secret',
           iss: 'client-jwt-secret',
-        }, this.key, 'HS256', { expiresIn: 60 }).then((assertion) => this.agent.post(route)
+        }, fixture6.key, 'HS256', { expiresIn: 60 }).then((assertion) => fixture6.agent.post(route)
           .send({
             client_assertion: assertion,
             grant_type: 'foo',
@@ -755,17 +712,16 @@ describe('client authentication methods', () => {
           })
           .type('form')
           .expect(401)
-          .expect(tokenAuthRejected));
-      });
+          .expect(tokenAuthRejected)));
 
-      it('accepts the auth when aud is the token endpoint', async function () {
-        for (const aud of [this.provider.issuer + this.suitePath('/token'), [this.provider.issuer + this.suitePath('/token')]]) {
+      it('accepts the auth when aud is the token endpoint', { timeout: 3000 }, async () => {
+        for (const aud of [fixture6.provider.issuer + fixture6.suitePath('/token'), [fixture6.provider.issuer + fixture6.suitePath('/token')]]) {
           await JWT.sign({
             jti: nanoid(),
             aud,
             sub: 'client-jwt-secret',
             iss: 'client-jwt-secret',
-          }, this.key, 'HS256', { expiresIn: 60 }).then((assertion) => this.agent.post(route)
+          }, fixture6.key, 'HS256', { expiresIn: 60 }).then((assertion) => fixture6.agent.post(route)
             .send({
               client_assertion: assertion,
               grant_type: 'foo',
@@ -776,14 +732,14 @@ describe('client authentication methods', () => {
         }
       });
 
-      it('accepts the auth when aud is the token endpoint at another endpoint', async function () {
-        for (const aud of [this.provider.issuer + this.suitePath('/token'), [this.provider.issuer + this.suitePath('/token')]]) {
+      it('accepts the auth when aud is the token endpoint at another endpoint', { timeout: 3000 }, async () => {
+        for (const aud of [fixture6.provider.issuer + fixture6.suitePath('/token'), [fixture6.provider.issuer + fixture6.suitePath('/token')]]) {
           await JWT.sign({
             jti: nanoid(),
             aud,
             sub: 'client-jwt-secret',
             iss: 'client-jwt-secret',
-          }, this.key, 'HS256', { expiresIn: 60 }).then((assertion) => this.agent.post('/token/introspection')
+          }, fixture6.key, 'HS256', { expiresIn: 60 }).then((assertion) => fixture6.agent.post('/token/introspection')
             .send({
               client_assertion: assertion,
               client_assertion_type: 'urn:ietf:params:oauth:client-assertion-type:jwt-bearer',
@@ -794,14 +750,14 @@ describe('client authentication methods', () => {
         }
       });
 
-      it('accepts the auth when aud is the url of another endpoint it is used at', async function () {
-        for (const aud of [this.provider.issuer + this.suitePath('/token/introspection'), [this.provider.issuer + this.suitePath('/token/introspection')]]) {
+      it('accepts the auth when aud is the url of another endpoint it is used at', { timeout: 3000 }, async () => {
+        for (const aud of [fixture6.provider.issuer + fixture6.suitePath('/token/introspection'), [fixture6.provider.issuer + fixture6.suitePath('/token/introspection')]]) {
           await JWT.sign({
             jti: nanoid(),
             aud,
             sub: 'client-jwt-secret',
             iss: 'client-jwt-secret',
-          }, this.key, 'HS256', { expiresIn: 60 }).then((assertion) => this.agent.post('/token/introspection')
+          }, fixture6.key, 'HS256', { expiresIn: 60 }).then((assertion) => fixture6.agent.post('/token/introspection')
             .send({
               client_assertion: assertion,
               client_assertion_type: 'urn:ietf:params:oauth:client-assertion-type:jwt-bearer',
@@ -813,15 +769,15 @@ describe('client authentication methods', () => {
       });
     });
 
-    it('rejects the auth if this is actually a none-client', async function () {
+    it('rejects the auth if this is actually a none-client', { timeout: 3000 }, async () => {
       const spy = sinon.spy();
-      this.provider.once('grant.error', spy);
+      fixture5.provider.once('grant.error', spy);
       return JWT.sign({
         jti: nanoid(),
-        aud: this.provider.issuer,
+        aud: fixture5.provider.issuer,
         sub: 'client-none',
         iss: 'client-none',
-      }, this.key, 'HS256', { expiresIn: 60 }).then((assertion) => this.agent.post(route)
+      }, fixture5.key, 'HS256', { expiresIn: 60 }).then((assertion) => fixture5.agent.post(route)
         .send({
           client_id: 'client-none',
           client_assertion: assertion,
@@ -833,18 +789,17 @@ describe('client authentication methods', () => {
         .expect(noW3A)
         .expect(tokenAuthRejected)
         .expect(() => {
-          expect(spy.calledOnce).to.be.true;
-          expect(errorDetail(spy)).to.equal('the provided authentication mechanism does not match the registered client authentication method');
+          assert.equal(spy.calledOnce, true);
+          assert.equal(errorDetail(spy), 'the provided authentication mechanism does not match the registered client authentication method');
         }));
     });
 
-    it('rejects the auth if authorization header is also present', function () {
-      return JWT.sign({
+    it('rejects the auth if authorization header is also present', { timeout: 3000 }, () => JWT.sign({
         jti: nanoid(),
-        aud: this.provider.issuer,
+        aud: fixture5.provider.issuer,
         sub: 'client-jwt-secret',
         iss: 'client-jwt-secret',
-      }, this.key, 'HS256', { expiresIn: 60 }).then((assertion) => this.agent.post(route)
+      }, fixture5.key, 'HS256', { expiresIn: 60 }).then((assertion) => fixture5.agent.post(route)
         .auth('client-basic', 'secret')
         .send({
           client_assertion: assertion,
@@ -857,16 +812,14 @@ describe('client authentication methods', () => {
         .expect({
           error: 'invalid_request',
           error_description: 'client authentication must only be provided using one mechanism',
-        }));
-    });
+        })));
 
-    it('rejects the auth if client secret is also present', function () {
-      return JWT.sign({
+    it('rejects the auth if client secret is also present', { timeout: 3000 }, () => JWT.sign({
         jti: nanoid(),
-        aud: this.provider.issuer,
+        aud: fixture5.provider.issuer,
         sub: 'client-jwt-secret',
         iss: 'client-jwt-secret',
-      }, this.key, 'HS256', { expiresIn: 60 }).then((assertion) => this.agent.post(route)
+      }, fixture5.key, 'HS256', { expiresIn: 60 }).then((assertion) => fixture5.agent.post(route)
         .send({
           client_assertion: assertion,
           grant_type: 'foo',
@@ -879,11 +832,9 @@ describe('client authentication methods', () => {
         .expect({
           error: 'invalid_request',
           error_description: 'client authentication must only be provided using one mechanism',
-        }));
-    });
+        })));
 
-    it('rejects malformed assertions', function () {
-      return this.agent.post(route)
+    it('rejects malformed assertions', { timeout: 3000 }, () => fixture5.agent.post(route)
         .send({
           client_id: 'client-jwt-secret',
           client_assertion: '.eyJzdWIiOiJjbGllbnQtand0LXNlY3JldCIsImFsZyI6IkhTMjU2In0.',
@@ -893,21 +844,20 @@ describe('client authentication methods', () => {
         .type('form')
         .expect(401)
         .expect(noW3A)
-        .expect(tokenAuthRejected);
-    });
+        .expect(tokenAuthRejected));
 
-    it('rejects an assertion whose protected header is JSON null', function () {
+    it('rejects an assertion whose protected header is JSON null', { timeout: 3000 }, () => {
       const signingInput = [
         Buffer.from('null').toString('base64url'),
         Buffer.from(JSON.stringify({
-          aud: this.provider.issuer,
+          aud: fixture5.provider.issuer,
           exp: Math.floor(Date.now() / 1000) + 60,
           iss: 'client-jwt-secret',
           jti: nanoid(),
           sub: 'client-jwt-secret',
         })).toString('base64url'),
       ].join('.');
-      return this.agent.post(route)
+      return fixture5.agent.post(route)
         .send({
           client_assertion: `${signingInput}.invalid-signature`,
           grant_type: 'foo',
@@ -919,18 +869,18 @@ describe('client authentication methods', () => {
         .expect(tokenAuthRejected);
     });
 
-    it('exp must be set', function () {
+    it('exp must be set', { timeout: 3000 }, () => {
       const spy = sinon.spy();
-      this.provider.once('grant.error', spy);
+      fixture5.provider.once('grant.error', spy);
       return JWT.sign({
         jti: nanoid(),
-        aud: this.provider.issuer,
+        aud: fixture5.provider.issuer,
         sub: 'client-jwt-secret',
         iss: 'client-jwt-secret',
         exp: '',
-      }, this.key, 'HS256', {
+      }, fixture5.key, 'HS256', {
         // expiresIn: 60
-      }).then((assertion) => this.agent.post(route)
+      }).then((assertion) => fixture5.agent.post(route)
         .send({
           client_assertion: assertion,
           grant_type: 'foo',
@@ -941,21 +891,21 @@ describe('client authentication methods', () => {
         .expect(noW3A)
         .expect(tokenAuthRejected)
         .expect(() => {
-          expect(spy.calledOnce).to.be.true;
-          expect(errorDetail(spy)).to.equal('expiration must be specified in the client_assertion JWT');
+          assert.equal(spy.calledOnce, true);
+          assert.equal(errorDetail(spy), 'expiration must be specified in the client_assertion JWT');
         }));
     });
 
-    it('aud must be set', function () {
+    it('aud must be set', { timeout: 3000 }, () => {
       const spy = sinon.spy();
-      this.provider.once('grant.error', spy);
+      fixture5.provider.once('grant.error', spy);
       return JWT.sign({
         jti: nanoid(),
         sub: 'client-jwt-secret',
         iss: 'client-jwt-secret',
-      }, this.key, 'HS256', {
+      }, fixture5.key, 'HS256', {
         expiresIn: 60,
-      }).then((assertion) => this.agent.post(route)
+      }).then((assertion) => fixture5.agent.post(route)
         .send({
           client_assertion: assertion,
           grant_type: 'foo',
@@ -966,22 +916,22 @@ describe('client authentication methods', () => {
         .expect(noW3A)
         .expect(tokenAuthRejected)
         .expect(() => {
-          expect(spy.calledOnce).to.be.true;
-          expect(errorDetail(spy)).to.equal('aud (JWT audience) must be provided in the client_assertion JWT');
+          assert.equal(spy.calledOnce, true);
+          assert.equal(errorDetail(spy), 'aud (JWT audience) must be provided in the client_assertion JWT');
         }));
     });
 
-    it('jti must be set', function () {
+    it('jti must be set', { timeout: 3000 }, () => {
       const spy = sinon.spy();
-      this.provider.once('grant.error', spy);
+      fixture5.provider.once('grant.error', spy);
       return JWT.sign({
         // jti: nanoid(),
-        aud: this.provider.issuer,
+        aud: fixture5.provider.issuer,
         sub: 'client-jwt-secret',
         iss: 'client-jwt-secret',
-      }, this.key, 'HS256', {
+      }, fixture5.key, 'HS256', {
         expiresIn: 60,
-      }).then((assertion) => this.agent.post(route)
+      }).then((assertion) => fixture5.agent.post(route)
         .send({
           client_assertion: assertion,
           grant_type: 'foo',
@@ -992,22 +942,22 @@ describe('client authentication methods', () => {
         .expect(noW3A)
         .expect(tokenAuthRejected)
         .expect(() => {
-          expect(spy.calledOnce).to.be.true;
-          expect(errorDetail(spy)).to.equal('unique jti (JWT ID) must be provided in the client_assertion JWT');
+          assert.equal(spy.calledOnce, true);
+          assert.equal(errorDetail(spy), 'unique jti (JWT ID) must be provided in the client_assertion JWT');
         }));
     });
 
-    it('iss must be set', function () {
+    it('iss must be set', { timeout: 3000 }, () => {
       const spy = sinon.spy();
-      this.provider.once('grant.error', spy);
+      fixture5.provider.once('grant.error', spy);
       return JWT.sign({
         jti: nanoid(),
-        aud: this.provider.issuer,
+        aud: fixture5.provider.issuer,
         sub: 'client-jwt-secret',
         // iss: 'client-jwt-secret',
-      }, this.key, 'HS256', {
+      }, fixture5.key, 'HS256', {
         expiresIn: 60,
-      }).then((assertion) => this.agent.post(route)
+      }).then((assertion) => fixture5.agent.post(route)
         .send({
           client_assertion: assertion,
           grant_type: 'foo',
@@ -1018,22 +968,22 @@ describe('client authentication methods', () => {
         .expect(noW3A)
         .expect(tokenAuthRejected)
         .expect(() => {
-          expect(spy.calledOnce).to.be.true;
-          expect(errorDetail(spy)).to.equal('iss (JWT issuer) must be provided in the client_assertion JWT');
+          assert.equal(spy.calledOnce, true);
+          assert.equal(errorDetail(spy), 'iss (JWT issuer) must be provided in the client_assertion JWT');
         }));
     });
 
-    it('sub must be set', function () {
+    it('sub must be set', { timeout: 3000 }, () => {
       const spy = sinon.spy();
-      this.provider.once('grant.error', spy);
+      fixture5.provider.once('grant.error', spy);
       return JWT.sign({
         jti: nanoid(),
-        aud: this.provider.issuer,
+        aud: fixture5.provider.issuer,
         // sub: 'client-jwt-secret',
         iss: 'client-jwt-secret',
-      }, this.key, 'HS256', {
+      }, fixture5.key, 'HS256', {
         expiresIn: 60,
-      }).then((assertion) => this.agent.post(route)
+      }).then((assertion) => fixture5.agent.post(route)
         .send({
           client_assertion: assertion,
           grant_type: 'foo',
@@ -1044,22 +994,22 @@ describe('client authentication methods', () => {
         .expect(noW3A)
         .expect(tokenAuthRejected)
         .expect(() => {
-          expect(spy.calledOnce).to.be.true;
-          expect(errorDetail(spy)).to.equal('sub (JWT subject) must be provided in the client_assertion JWT');
+          assert.equal(spy.calledOnce, true);
+          assert.equal(errorDetail(spy), 'sub (JWT subject) must be provided in the client_assertion JWT');
         }));
     });
 
-    it('iss must be the client id', function () {
+    it('iss must be the client id', { timeout: 3000 }, () => {
       const spy = sinon.spy();
-      this.provider.once('grant.error', spy);
+      fixture5.provider.once('grant.error', spy);
       return JWT.sign({
         jti: nanoid(),
-        aud: this.provider.issuer,
+        aud: fixture5.provider.issuer,
         sub: 'client-jwt-secret',
         iss: 'not equal to clientid',
-      }, this.key, 'HS256', {
+      }, fixture5.key, 'HS256', {
         expiresIn: 60,
-      }).then((assertion) => this.agent.post(route)
+      }).then((assertion) => fixture5.agent.post(route)
         .send({
           client_assertion: assertion,
           grant_type: 'foo',
@@ -1070,18 +1020,17 @@ describe('client authentication methods', () => {
         .expect(noW3A)
         .expect(tokenAuthRejected)
         .expect(() => {
-          expect(spy.calledOnce).to.be.true;
-          expect(errorDetail(spy)).to.equal('iss (JWT issuer) must be the client_id');
+          assert.equal(spy.calledOnce, true);
+          assert.equal(errorDetail(spy), 'iss (JWT issuer) must be the client_id');
         }));
     });
 
-    it('checks for mismatch in client_assertion client_id and body client_id', function () {
-      return JWT.sign({
+    it('checks for mismatch in client_assertion client_id and body client_id', { timeout: 3000 }, () => JWT.sign({
         jti: nanoid(),
-        aud: this.provider.issuer,
+        aud: fixture5.provider.issuer,
         sub: 'client-jwt-secret',
         iss: 'client-jwt-secret',
-      }, this.key, 'HS256', { expiresIn: 60 }).then((assertion) => this.agent.post(route)
+      }, fixture5.key, 'HS256', { expiresIn: 60 }).then((assertion) => fixture5.agent.post(route)
         .send({
           client_assertion: assertion,
           grant_type: 'foo',
@@ -1094,18 +1043,16 @@ describe('client authentication methods', () => {
         .expect({
           error: 'invalid_request',
           error_description: 'client_id mismatch',
-        }));
-    });
+        })));
 
-    it('requires client_assertion_type', function () {
-      return JWT.sign({
+    it('requires client_assertion_type', { timeout: 3000 }, () => JWT.sign({
         jti: nanoid(),
-        aud: this.provider.issuer,
+        aud: fixture5.provider.issuer,
         sub: 'client-jwt-secret',
         iss: 'client-jwt-secret',
-      }, this.key, 'HS256', {
+      }, fixture5.key, 'HS256', {
         expiresIn: 60,
-      }).then((assertion) => this.agent.post(route)
+      }).then((assertion) => fixture5.agent.post(route)
         .send({
           client_assertion: assertion,
           grant_type: 'foo',
@@ -1117,18 +1064,16 @@ describe('client authentication methods', () => {
         .expect({
           error: 'invalid_request',
           error_description: 'client_assertion_type must be provided',
-        }));
-    });
+        })));
 
-    it('requires client_assertion_type of specific value', function () {
-      return JWT.sign({
+    it('requires client_assertion_type of specific value', { timeout: 3000 }, () => JWT.sign({
         jti: nanoid(),
-        aud: this.provider.issuer,
+        aud: fixture5.provider.issuer,
         sub: 'client-jwt-secret',
         iss: 'client-jwt-secret',
-      }, this.key, 'HS256', {
+      }, fixture5.key, 'HS256', {
         expiresIn: 60,
-      }).then((assertion) => this.agent.post(route)
+      }).then((assertion) => fixture5.agent.post(route)
         .send({
           client_assertion: assertion,
           grant_type: 'foo',
@@ -1140,11 +1085,9 @@ describe('client authentication methods', () => {
         .expect({
           error: 'invalid_request',
           error_description: 'client_assertion_type must have value urn:ietf:params:oauth:client-assertion-type:jwt-bearer',
-        }));
-    });
+        })));
 
-    it('rejects invalid assertions', function () {
-      return this.agent.post(route)
+    it('rejects invalid assertions', { timeout: 3000 }, () => fixture5.agent.post(route)
         .send({
           client_assertion: 'this.notatall.valid',
           grant_type: 'foo',
@@ -1156,20 +1099,19 @@ describe('client authentication methods', () => {
         .expect({
           error: 'invalid_request',
           error_description: 'invalid client_assertion format',
-        });
-    });
+        }));
 
-    it('rejects valid format and signature but expired/invalid jwts', function () {
+    it('rejects valid format and signature but expired/invalid jwts', { timeout: 3000 }, () => {
       const spy = sinon.spy();
-      this.provider.once('grant.error', spy);
+      fixture5.provider.once('grant.error', spy);
       return JWT.sign({
         jti: nanoid(),
-        aud: this.provider.issuer,
+        aud: fixture5.provider.issuer,
         sub: 'client-jwt-secret',
         iss: 'client-jwt-secret',
-      }, this.key, 'HS256', {
+      }, fixture5.key, 'HS256', {
         expiresIn: -300,
-      }).then((assertion) => this.agent.post(route)
+      }).then((assertion) => fixture5.agent.post(route)
         .send({
           client_assertion: assertion,
           grant_type: 'foo',
@@ -1180,21 +1122,21 @@ describe('client authentication methods', () => {
         .expect(noW3A)
         .expect(tokenAuthRejected)
         .expect(() => {
-          expect(spy.calledOnce).to.be.true;
-          expect(errorDetail(spy)).to.equal('jwt expired');
+          assert.equal(spy.calledOnce, true);
+          assert.equal(errorDetail(spy), 'jwt expired');
         }));
     });
 
-    it('rejects assertions when the secret is expired', async function () {
-      const key = await importJWK((await this.provider.Client.find('secret-expired-jwt')).symmetricKeyStore.selectForSign({ alg: 'HS256' })[0]);
+    it('rejects assertions when the secret is expired', { timeout: 3000 }, async () => {
+      const key = await importJWK((await fixture5.provider.Client.find('secret-expired-jwt')).symmetricKeyStore.selectForSign({ alg: 'HS256' })[0]);
       return JWT.sign({
         jti: nanoid(),
-        aud: this.provider.issuer,
+        aud: fixture5.provider.issuer,
         sub: 'secret-expired-jwt',
         iss: 'secret-expired-jwt',
       }, key, 'HS256', {
         expiresIn: -1,
-      }).then((assertion) => this.agent.post(route)
+      }).then((assertion) => fixture5.agent.post(route)
         .send({
           client_assertion: assertion,
           grant_type: 'foo',
@@ -1210,14 +1152,16 @@ describe('client authentication methods', () => {
     });
 
     describe('JTI uniqueness', () => {
-      it('fails closed when an atomic adapter rejects concurrent assertion reuse', async function () {
+      const fixture7 = Object.create(fixture5);
+
+      it('fails closed when an atomic adapter rejects concurrent assertion reuse', { timeout: 3000 }, async () => {
         const assertion = await JWT.sign({
           jti: nanoid(),
-          aud: this.provider.issuer,
+          aud: fixture7.provider.issuer,
           sub: 'client-jwt-secret',
           iss: 'client-jwt-secret',
-        }, this.key, 'HS256', { expiresIn: 60 });
-        const adapter = this.provider.ReplayDetection.adapter;
+        }, fixture7.key, 'HS256', { expiresIn: 60 });
+        const adapter = fixture7.provider.ReplayDetection.adapter;
         const find = adapter.find.bind(adapter);
         const upsert = adapter.upsert.bind(adapter);
         const claims = new Set();
@@ -1227,7 +1171,7 @@ describe('client authentication methods', () => {
         const ready = new Promise((resolve) => { release = resolve; });
         const findStub = sinon.stub(adapter, 'find').callsFake(async (id) => {
           const found = await find(id);
-          expect(found).to.be.undefined;
+          assert.equal(found, undefined);
           lookups += 1;
           if (lookups === 2) release();
           await ready;
@@ -1240,7 +1184,7 @@ describe('client authentication methods', () => {
         });
 
         try {
-          const responses = await Promise.all([0, 1].map(() => this.agent.post(route)
+          const responses = await Promise.all([0, 1].map(() => fixture7.agent.post(route)
             .send({
               client_assertion: assertion,
               grant_type: 'foo',
@@ -1248,32 +1192,32 @@ describe('client authentication methods', () => {
             })
             .type('form')));
 
-          expect(responses.map(({ status }) => status).sort()).to.eql([200, 500]);
-          expect(responses.find(({ status }) => status === 200).body).to.eql(tokenAuthSucceeded);
-          expect(responses.find(({ status }) => status === 500).body).to.eql({
+          assert.deepEqual(responses.map(({ status }) => status).sort(), [200, 500]);
+          assert.deepEqual(responses.find(({ status }) => status === 200).body, tokenAuthSucceeded);
+          assert.deepEqual(responses.find(({ status }) => status === 500).body, {
             error: 'server_error',
             error_description: 'oops! something went wrong',
           });
-          expect(findStub.callCount).to.equal(2);
-          expect(upsertStub.callCount).to.equal(2);
-          expect(claims.size).to.equal(1);
+          assert.equal(findStub.callCount, 2);
+          assert.equal(upsertStub.callCount, 2);
+          assert.equal(claims.size, 1);
         } finally {
           findStub.restore();
           upsertStub.restore();
         }
       });
 
-      it('reused jtis must be rejected', function () {
+      it('reused jtis must be rejected', { timeout: 3000 }, () => {
         const spy = sinon.spy();
         return JWT.sign({
           jti: nanoid(),
-          aud: this.provider.issuer,
+          aud: fixture7.provider.issuer,
           sub: 'client-jwt-secret',
           iss: 'client-jwt-secret',
-        }, this.key, 'HS256', {
+        }, fixture7.key, 'HS256', {
           expiresIn: 60,
         })
-          .then((assertion) => this.agent.post(route)
+          .then((assertion) => fixture7.agent.post(route)
             .send({
               client_assertion: assertion,
               grant_type: 'foo',
@@ -1282,9 +1226,9 @@ describe('client authentication methods', () => {
             .type('form')
             .expect(tokenAuthSucceeded)
             .then(() => {
-              this.provider.once('grant.error', spy);
+              fixture7.provider.once('grant.error', spy);
             })
-            .then(() => this.agent.post(route)
+            .then(() => fixture7.agent.post(route)
               .send({
                 client_assertion: assertion,
                 grant_type: 'foo',
@@ -1295,30 +1239,32 @@ describe('client authentication methods', () => {
               .expect(noW3A)
               .expect(tokenAuthRejected)
               .expect(() => {
-                expect(spy.calledOnce).to.be.true;
-                expect(errorDetail(spy)).to.equal('client assertion tokens must only be used once');
+                assert.equal(spy.calledOnce, true);
+                assert.equal(errorDetail(spy), 'client assertion tokens must only be used once');
               })));
       });
     });
 
     describe('when token_endpoint_auth_signing_alg is set on the client', () => {
-      before(async function () {
-        (await this.provider.Client.find('client-jwt-secret')).tokenEndpointAuthSigningAlg = 'HS384';
-      });
-      after(async function () {
-        delete (await this.provider.Client.find('client-jwt-secret')).tokenEndpointAuthSigningAlg;
-      });
-      it('rejects signatures with different algorithm', function () {
+      const fixture8 = Object.create(fixture5);
+
+      before(async () => {
+        (await fixture8.provider.Client.find('client-jwt-secret')).tokenEndpointAuthSigningAlg = 'HS384';
+      }, { timeout: 3000 });
+      after(async () => {
+        delete (await fixture8.provider.Client.find('client-jwt-secret')).tokenEndpointAuthSigningAlg;
+      }, { timeout: 3000 });
+      it('rejects signatures with different algorithm', { timeout: 3000 }, () => {
         const spy = sinon.spy();
-        this.provider.once('grant.error', spy);
+        fixture8.provider.once('grant.error', spy);
         return JWT.sign({
           jti: nanoid(),
-          aud: this.provider.issuer,
+          aud: fixture8.provider.issuer,
           sub: 'client-jwt-secret',
           iss: 'client-jwt-secret',
-        }, this.key, 'HS256', {
+        }, fixture8.key, 'HS256', {
           expiresIn: 60,
-        }).then((assertion) => this.agent.post(route)
+        }).then((assertion) => fixture8.agent.post(route)
           .send({
             client_assertion: assertion,
             grant_type: 'foo',
@@ -1329,49 +1275,49 @@ describe('client authentication methods', () => {
           .expect(noW3A)
           .expect(tokenAuthRejected)
           .expect(() => {
-            expect(spy.calledOnce).to.be.true;
-            expect(errorDetail(spy)).to.equal('alg mismatch');
+            assert.equal(spy.calledOnce, true);
+            assert.equal(errorDetail(spy), 'alg mismatch');
           }));
       });
     });
   });
 
   describe('private_key_jwt auth', () => {
+    const fixture9 = Object.create(fixture);
+
     const privateKey = createPrivateKey({ format: 'jwk', key: clientKey });
 
-    after(function () {
-      i(this.provider).configuration.clockTolerance = 0;
-    });
+    after(() => {
+      i(fixture9.provider).configuration.clockTolerance = 0;
+    }, { timeout: 3000 });
 
-    it('accepts the auth', function () {
-      return JWT.sign({
+    it('accepts the auth', { timeout: 3000 }, () => JWT.sign({
         jti: nanoid(),
-        aud: this.provider.issuer,
+        aud: fixture9.provider.issuer,
         sub: 'client-jwt-key',
         iss: 'client-jwt-key',
       }, privateKey, 'RS256', {
         expiresIn: 60,
-      }).then((assertion) => this.agent.post(route)
+      }).then((assertion) => fixture9.agent.post(route)
         .send({
           client_assertion: assertion,
           grant_type: 'foo',
           client_assertion_type: 'urn:ietf:params:oauth:client-assertion-type:jwt-bearer',
         })
         .type('form')
-        .expect(tokenAuthSucceeded));
-    });
+        .expect(tokenAuthSucceeded)));
 
-    it('accepts client assertions issued within acceptable system clock skew', function () {
-      i(this.provider).configuration.clockTolerance = 10;
+    it('accepts client assertions issued within acceptable system clock skew', { timeout: 3000 }, () => {
+      i(fixture9.provider).configuration.clockTolerance = 10;
       return JWT.sign({
         jti: nanoid(),
-        aud: this.provider.issuer,
+        aud: fixture9.provider.issuer,
         sub: 'client-jwt-key',
         iss: 'client-jwt-key',
         iat: Math.ceil(Date.now() / 1000) + 5,
       }, privateKey, 'RS256', {
         expiresIn: 60,
-      }).then((assertion) => this.agent.post(route)
+      }).then((assertion) => fixture9.agent.post(route)
         .send({
           client_assertion: assertion,
           grant_type: 'foo',
@@ -1383,6 +1329,8 @@ describe('client authentication methods', () => {
   });
 
   describe('client attestation as an additional security signal', () => {
+    const fixture10 = Object.create(fixture);
+
     async function getSignalHeaders(ctx, subject) {
       const { body: { attestation_challenge: challenge } } = await ctx.agent.post('/challenge');
       const instanceKeyPair = generateKeyPairSync('ed25519');
@@ -1393,10 +1341,10 @@ describe('client authentication methods', () => {
       };
     }
 
-    it('rejects client_secret_basic with attestation headers when the signal is disabled', async function () {
-      const { attestation, pop } = await getSignalHeaders(this, 'client-basic');
+    it('rejects client_secret_basic with attestation headers when the signal is disabled', { timeout: 3000 }, async () => {
+      const { attestation, pop } = await getSignalHeaders(fixture10, 'client-basic');
 
-      await this.agent.post(route)
+      await fixture10.agent.post(route)
         .auth('client-basic', 'secret')
         .set('OAuth-Client-Attestation', attestation)
         .set('OAuth-Client-Attestation-PoP', pop)
@@ -1410,10 +1358,10 @@ describe('client authentication methods', () => {
         });
     });
 
-    it('rejects none auth with attestation headers when the signal is disabled', async function () {
-      const { attestation, pop } = await getSignalHeaders(this, 'client-none');
+    it('rejects none auth with attestation headers when the signal is disabled', { timeout: 3000 }, async () => {
+      const { attestation, pop } = await getSignalHeaders(fixture10, 'client-none');
 
-      await this.agent.post(route)
+      await fixture10.agent.post(route)
         .set('OAuth-Client-Attestation', attestation)
         .set('OAuth-Client-Attestation-PoP', pop)
         .send({
@@ -1428,13 +1376,12 @@ describe('client authentication methods', () => {
         });
     });
 
-    it('accepts client_secret_basic with an optional signal', function () {
-      return withAdditionalSecuritySignal(this.provider, 'optional', async () => {
-        const { attestation, pop } = await getSignalHeaders(this, 'client-basic');
+    it('accepts client_secret_basic with an optional signal', { timeout: 3000 }, () => withAdditionalSecuritySignal(fixture10.provider, 'optional', async () => {
+        const { attestation, pop } = await getSignalHeaders(fixture10, 'client-basic');
         const spy = sinon.spy();
-        this.provider.once('grant.success', spy);
+        fixture10.provider.once('grant.success', spy);
 
-        await this.agent.post(route)
+        await fixture10.agent.post(route)
           .auth('client-basic', 'secret')
           .set('OAuth-Client-Attestation', attestation)
           .set('OAuth-Client-Attestation-PoP', pop)
@@ -1443,22 +1390,16 @@ describe('client authentication methods', () => {
           .expect(200)
           .expect(tokenAuthSucceeded)
           .expect(() => {
-            expect(spy.calledOnce).to.be.true;
-            expect(spy.firstCall.args[0].oidc.clientAttestation).to.include({
-              method: 'attestation_pop_jwt',
-              signal: true,
-            });
-            expect(spy.firstCall.args[0].oidc.clientAttestation.attestation.payload)
-              .to.have.property('sub', 'client-basic');
+            assert.equal(spy.calledOnce, true);
+            ((actual) => { assert.ok("method" in Object(actual)); assert.equal(actual.method, 'attestation_pop_jwt'); assert.ok("signal" in Object(actual)); assert.equal(actual.signal, true); })(spy.firstCall.args[0].oidc.clientAttestation);
+            ((actual) => { assert.ok('sub' in Object(actual)); assert.equal(actual.sub, 'client-basic'); })(spy.firstCall.args[0].oidc.clientAttestation.attestation.payload);
           });
-      });
-    });
+      }));
 
-    it('accepts none auth with a required signal', function () {
-      return withAdditionalSecuritySignal(this.provider, 'required', async () => {
-        const { attestation, pop } = await getSignalHeaders(this, 'client-none');
+    it('accepts none auth with a required signal', { timeout: 3000 }, () => withAdditionalSecuritySignal(fixture10.provider, 'required', async () => {
+        const { attestation, pop } = await getSignalHeaders(fixture10, 'client-none');
 
-        await this.agent.post(route)
+        await fixture10.agent.post(route)
           .set('OAuth-Client-Attestation', attestation)
           .set('OAuth-Client-Attestation-PoP', pop)
           .send({
@@ -1468,8 +1409,7 @@ describe('client authentication methods', () => {
           .type('form')
           .expect(200)
           .expect(tokenAuthSucceeded);
-      });
-    });
+      }));
 
     for (const [method, clientId, alg] of [
       ['client_secret_jwt', 'client-jwt-secret', 'HS256'],
@@ -1477,23 +1417,22 @@ describe('client authentication methods', () => {
     ]) {
       for (const proofMethod of ['attestation_pop_jwt', 'dpop_combined']) {
         for (const value of ['optional', 'required']) {
-          it(`accepts ${method} without client_id with ${value} ${proofMethod} signal`, function () {
-            return withAdditionalSecuritySignal(this.provider, value, async () => {
+          it(`accepts ${method} without client_id with ${value} ${proofMethod} signal`, { timeout: 3000 }, () => withAdditionalSecuritySignal(fixture10.provider, value, async () => {
               const key = alg === 'RS256' ? attestationPrivateKey : await importJWK(
-                (await this.provider.Client.find(clientId)).symmetricKeyStore.selectForSign({ alg })[0],
+                (await fixture10.provider.Client.find(clientId)).symmetricKeyStore.selectForSign({ alg })[0],
               );
               const assertion = await JWT.sign({
                 jti: nanoid(),
-                aud: this.provider.issuer,
+                aud: fixture10.provider.issuer,
                 sub: clientId,
                 iss: clientId,
               }, key, alg, { expiresIn: 60 });
               const { attestation, pop, dpop } = await (proofMethod === 'dpop_combined'
-                ? getCombinedHeaders(this, clientId) : getSignalHeaders(this, clientId));
+                ? getCombinedHeaders(fixture10, clientId) : getSignalHeaders(fixture10, clientId));
               const spy = sinon.spy();
-              this.provider.once('grant.success', spy);
+              fixture10.provider.once('grant.success', spy);
 
-              await this.agent.post(route)
+              await fixture10.agent.post(route)
                 .set('OAuth-Client-Attestation', attestation)
                 .set(pop ? 'OAuth-Client-Attestation-PoP' : 'DPoP', pop || dpop)
                 .send({
@@ -1505,26 +1444,21 @@ describe('client authentication methods', () => {
                 .expect(200)
                 .expect(tokenAuthSucceeded)
                 .expect(() => {
-                  expect(spy.calledOnce).to.be.true;
-                  expect(spy.firstCall.args[0].oidc.clientAttestation).to.include({
-                    method: proofMethod,
-                    signal: true,
-                  });
+                  assert.equal(spy.calledOnce, true);
+                  ((actual) => { assert.ok("method" in Object(actual)); assert.equal(actual.method, proofMethod); assert.ok("signal" in Object(actual)); assert.equal(actual.signal, true); })(spy.firstCall.args[0].oidc.clientAttestation);
                 });
-            });
-          });
+            }));
         }
       }
     }
 
     for (const value of ['optional', 'required']) {
-      it(`accepts client_secret_basic with a ${value} combined DPoP signal`, function () {
-        return withAdditionalSecuritySignal(this.provider, value, async () => {
-          const { attestation, dpop } = await getCombinedHeaders(this, 'client-basic');
+      it(`accepts client_secret_basic with a ${value} combined DPoP signal`, { timeout: 3000 }, () => withAdditionalSecuritySignal(fixture10.provider, value, async () => {
+          const { attestation, dpop } = await getCombinedHeaders(fixture10, 'client-basic');
           const spy = sinon.spy();
-          this.provider.once('grant.success', spy);
+          fixture10.provider.once('grant.success', spy);
 
-          await this.agent.post(route)
+          await fixture10.agent.post(route)
             .auth('client-basic', 'secret')
             .set('OAuth-Client-Attestation', attestation)
             .set('DPoP', dpop)
@@ -1533,24 +1467,18 @@ describe('client authentication methods', () => {
             .expect(200)
             .expect(tokenAuthSucceeded)
             .expect(() => {
-              expect(spy.calledOnce).to.be.true;
-              expect(spy.firstCall.args[0].oidc.clientAttestation).to.include({
-                method: 'dpop_combined',
-                signal: true,
-              });
-              expect(spy.firstCall.args[0].oidc.clientAttestation.attestation.payload)
-                .to.have.property('sub', 'client-basic');
+              assert.equal(spy.calledOnce, true);
+              ((actual) => { assert.ok("method" in Object(actual)); assert.equal(actual.method, 'dpop_combined'); assert.ok("signal" in Object(actual)); assert.equal(actual.signal, true); })(spy.firstCall.args[0].oidc.clientAttestation);
+              ((actual) => { assert.ok('sub' in Object(actual)); assert.equal(actual.sub, 'client-basic'); })(spy.firstCall.args[0].oidc.clientAttestation.attestation.payload);
             });
-        });
-      });
+        }));
     }
 
-    it('rejects when a required signal is missing', function () {
-      return withAdditionalSecuritySignal(this.provider, 'required', async () => {
+    it('rejects when a required signal is missing', { timeout: 3000 }, () => withAdditionalSecuritySignal(fixture10.provider, 'required', async () => {
         const spy = sinon.spy();
-        this.provider.once('grant.error', spy);
+        fixture10.provider.once('grant.error', spy);
 
-        await this.agent.post(route)
+        await fixture10.agent.post(route)
           .auth('client-basic', 'secret')
           .send({ grant_type: 'foo' })
           .type('form')
@@ -1558,19 +1486,17 @@ describe('client authentication methods', () => {
           .expect(noW3A)
           .expect({ error: 'invalid_client_attestation' })
           .expect(() => {
-            expect(spy.calledOnce).to.be.true;
-            expect(errorDetail(spy)).to.equal('oauth-client-attestation missing');
+            assert.equal(spy.calledOnce, true);
+            assert.equal(errorDetail(spy), 'oauth-client-attestation missing');
           });
-      });
-    });
+      }));
 
-    it('rejects a partial optional signal', function () {
-      return withAdditionalSecuritySignal(this.provider, 'optional', async () => {
-        const { attestation } = await getSignalHeaders(this, 'client-basic');
+    it('rejects a partial optional signal', { timeout: 3000 }, () => withAdditionalSecuritySignal(fixture10.provider, 'optional', async () => {
+        const { attestation } = await getSignalHeaders(fixture10, 'client-basic');
         const spy = sinon.spy();
-        this.provider.once('grant.error', spy);
+        fixture10.provider.once('grant.error', spy);
 
-        await this.agent.post(route)
+        await fixture10.agent.post(route)
           .auth('client-basic', 'secret')
           .set('OAuth-Client-Attestation', attestation)
           .send({ grant_type: 'foo' })
@@ -1578,19 +1504,17 @@ describe('client authentication methods', () => {
           .expect(400)
           .expect({ error: 'invalid_client_attestation' })
           .expect(() => {
-            expect(spy.calledOnce).to.be.true;
-            expect(errorDetail(spy)).to.equal('oauth-client-attestation-pop missing');
+            assert.equal(spy.calledOnce, true);
+            assert.equal(errorDetail(spy), 'oauth-client-attestation-pop missing');
           });
-      });
-    });
+      }));
 
-    it('rejects when the signal subject does not match the authenticated client', function () {
-      return withAdditionalSecuritySignal(this.provider, 'optional', async () => {
-        const { attestation, pop } = await getSignalHeaders(this, 'client-none');
+    it('rejects when the signal subject does not match the authenticated client', { timeout: 3000 }, () => withAdditionalSecuritySignal(fixture10.provider, 'optional', async () => {
+        const { attestation, pop } = await getSignalHeaders(fixture10, 'client-none');
         const spy = sinon.spy();
-        this.provider.once('grant.error', spy);
+        fixture10.provider.once('grant.error', spy);
 
-        await this.agent.post(route)
+        await fixture10.agent.post(route)
           .auth('client-basic', 'secret')
           .set('OAuth-Client-Attestation', attestation)
           .set('OAuth-Client-Attestation-PoP', pop)
@@ -1599,28 +1523,29 @@ describe('client authentication methods', () => {
           .expect(400)
           .expect({ error: 'invalid_client_attestation' })
           .expect(() => {
-            expect(spy.calledOnce).to.be.true;
+            assert.equal(spy.calledOnce, true);
             const err = spy.args[0][1];
-            expect(err.cause).to.be.instanceOf(Error);
-            expect(errorDetail(spy)).to.equal(err.cause.message);
+            assert.ok(err.cause instanceof Error);
+            assert.equal(errorDetail(spy), err.cause.message);
           });
-      });
-    });
+      }));
   });
 
   describe('attest_jwt_client_auth auth', () => {
+    const fixture11 = Object.create(fixture);
+
     let challenge;
-    before(async function () {
-      const response = await this.agent.post('/challenge');
-      expect(response.body).to.have.property('attestation_challenge');
-      expect(response.headers['oauth-client-attestation-challenge']).to.equal(response.body.attestation_challenge);
+    before(async () => {
+      const response = await fixture11.agent.post('/challenge');
+      assert.ok('attestation_challenge' in Object(response.body));
+      assert.equal(response.headers['oauth-client-attestation-challenge'], response.body.attestation_challenge);
       challenge = response.body.attestation_challenge;
-    });
+    }, { timeout: 3000 });
 
     const privateKey = createPrivateKey({ format: 'jwk', key: clientKey });
     const instanceKeyPair = generateKeyPairSync('ed25519');
 
-    it('accepts the auth', async function () {
+    it('accepts the auth', { timeout: 3000 }, async () => {
       const [attestation, pop] = await Promise.all([
         new SignJWT({
           cnf: {
@@ -1640,13 +1565,13 @@ describe('client authentication methods', () => {
             typ: 'oauth-client-attestation-pop+jwt',
             alg: 'Ed25519',
           })
-          .setAudience(this.provider.issuer)
+          .setAudience(fixture11.provider.issuer)
           .setJti(nanoid())
           .setIssuedAt()
           .sign(instanceKeyPair.privateKey),
       ]);
 
-      return this.agent.post(route)
+      return fixture11.agent.post(route)
         .set('OAuth-Client-Attestation', attestation)
         .set('OAuth-Client-Attestation-PoP', pop)
         .send({
@@ -1657,19 +1582,21 @@ describe('client authentication methods', () => {
     });
 
     describe('oauth-client-attestation', () => {
-      before(function () {
-        this.signPop = () => new SignJWT({ challenge })
+      const fixture12 = Object.create(fixture11);
+
+      before(() => {
+        fixture12.signPop = () => new SignJWT({ challenge })
           .setProtectedHeader({
             typ: 'oauth-client-attestation-pop+jwt',
             alg: 'Ed25519',
           })
-          .setAudience(this.provider.issuer)
+          .setAudience(fixture12.provider.issuer)
           .setJti(nanoid())
           .setIssuedAt()
           .sign(instanceKeyPair.privateKey);
-      });
+      }, { timeout: 3000 });
 
-      it('requires the iat claim', async function () {
+      it('requires the iat claim', { timeout: 3000 }, async () => {
         const attestation = await new SignJWT({
           cnf: {
             jwk: instanceKeyPair.publicKey.export({ format: 'jwk' }),
@@ -1683,22 +1610,22 @@ describe('client authentication methods', () => {
           .setExpirationTime('2h')
           .sign(privateKey);
         const spy = sinon.spy();
-        this.provider.once('grant.error', spy);
+        fixture12.provider.once('grant.error', spy);
 
-        await this.agent.post(route)
+        await fixture12.agent.post(route)
           .set('OAuth-Client-Attestation', attestation)
-          .set('OAuth-Client-Attestation-PoP', await this.signPop())
+          .set('OAuth-Client-Attestation-PoP', await fixture12.signPop())
           .send({ grant_type: 'foo' })
           .type('form')
           .expect(401)
           .expect(tokenAuthRejected)
           .expect(() => {
-            expect(spy.calledOnce).to.be.true;
-            expect(errorDetail(spy)).to.equal('missing required "iat" claim');
+            assert.equal(spy.calledOnce, true);
+            assert.equal(errorDetail(spy), 'missing required "iat" claim');
           });
       });
 
-      it('checks all required properties and their values', async function () {
+      it('checks all required properties and their values', { timeout: 3000 }, async () => {
         for (const attestation of await Promise.all([
           new SignJWT({
             cnf: {
@@ -1805,9 +1732,9 @@ describe('client authentication methods', () => {
             .setExpirationTime('2h')
             .sign(privateKey),
         ])) {
-          await this.agent.post(route)
+          await fixture12.agent.post(route)
             .set('OAuth-Client-Attestation', attestation)
-            .set('OAuth-Client-Attestation-PoP', await this.signPop())
+            .set('OAuth-Client-Attestation-PoP', await fixture12.signPop())
             .send({
               grant_type: 'foo',
             })
@@ -1818,8 +1745,10 @@ describe('client authentication methods', () => {
     });
 
     describe('oauth-client-attestation-pop', () => {
-      before(function () {
-        this.signAttestation = () => new SignJWT({
+      const fixture13 = Object.create(fixture11);
+
+      before(() => {
+        fixture13.signAttestation = () => new SignJWT({
           cnf: {
             jwk: instanceKeyPair.publicKey.export({ format: 'jwk' }),
           },
@@ -1832,21 +1761,21 @@ describe('client authentication methods', () => {
           .setIssuedAt()
           .setExpirationTime('2h')
           .sign(privateKey);
-      });
+      }, { timeout: 3000 });
 
-      it('must not be re-used', async function () {
+      it('must not be re-used', { timeout: 3000 }, async () => {
         const pop = await new SignJWT({ challenge })
           .setProtectedHeader({
             typ: 'oauth-client-attestation-pop+jwt',
             alg: 'Ed25519',
           })
-          .setAudience(this.provider.issuer)
+          .setAudience(fixture13.provider.issuer)
           .setJti(nanoid())
           .setIssuedAt()
           .sign(instanceKeyPair.privateKey);
 
-        await this.agent.post(route)
-          .set('OAuth-Client-Attestation', await this.signAttestation())
+        await fixture13.agent.post(route)
+          .set('OAuth-Client-Attestation', await fixture13.signAttestation())
           .set('OAuth-Client-Attestation-PoP', pop)
           .send({
             grant_type: 'foo',
@@ -1854,8 +1783,8 @@ describe('client authentication methods', () => {
           .type('form')
           .expect(tokenAuthSucceeded);
 
-        await this.agent.post(route)
-          .set('OAuth-Client-Attestation', await this.signAttestation())
+        await fixture13.agent.post(route)
+          .set('OAuth-Client-Attestation', await fixture13.signAttestation())
           .set('OAuth-Client-Attestation-PoP', pop)
           .send({
             grant_type: 'foo',
@@ -1865,18 +1794,18 @@ describe('client authentication methods', () => {
       });
 
       for (const [jti, description] of [[123, 'non-string'], ['', 'empty']]) {
-        it(`rejects a ${description} jti`, async function () {
+        it(`rejects a ${description} jti`, { timeout: 3000 }, async () => {
           const pop = await new SignJWT({ challenge, jti })
             .setProtectedHeader({
               typ: 'oauth-client-attestation-pop+jwt',
               alg: 'Ed25519',
             })
-            .setAudience(this.provider.issuer)
+            .setAudience(fixture13.provider.issuer)
             .setIssuedAt()
             .sign(instanceKeyPair.privateKey);
 
-          await this.agent.post(route)
-            .set('OAuth-Client-Attestation', await this.signAttestation())
+          await fixture13.agent.post(route)
+            .set('OAuth-Client-Attestation', await fixture13.signAttestation())
             .set('OAuth-Client-Attestation-PoP', pop)
             .send({
               grant_type: 'foo',
@@ -1888,19 +1817,21 @@ describe('client authentication methods', () => {
       }
 
       describe('challenge handling', async () => {
-        it('requires challenge to be present', async function () {
+        const fixture14 = Object.create(fixture13);
+
+        it('requires challenge to be present', { timeout: 3000 }, async () => {
           const pop = await new SignJWT({ challenge: undefined })
             .setProtectedHeader({
               typ: 'oauth-client-attestation-pop+jwt',
               alg: 'Ed25519',
             })
-            .setAudience(this.provider.issuer)
+            .setAudience(fixture14.provider.issuer)
             .setJti(nanoid())
             .setIssuedAt()
             .sign(instanceKeyPair.privateKey);
 
-          await this.agent.post(route)
-            .set('OAuth-Client-Attestation', await this.signAttestation())
+          await fixture14.agent.post(route)
+            .set('OAuth-Client-Attestation', await fixture14.signAttestation())
             .set('OAuth-Client-Attestation-PoP', pop)
             .send({
               grant_type: 'foo',
@@ -1911,19 +1842,19 @@ describe('client authentication methods', () => {
             .expect({ error: 'use_attestation_challenge' });
         });
 
-        it('requires a valid challenge to be present', async function () {
+        it('requires a valid challenge to be present', { timeout: 3000 }, async () => {
           const pop = await new SignJWT({ challenge: 'invalid' })
             .setProtectedHeader({
               typ: 'oauth-client-attestation-pop+jwt',
               alg: 'Ed25519',
             })
-            .setAudience(this.provider.issuer)
+            .setAudience(fixture14.provider.issuer)
             .setJti(nanoid())
             .setIssuedAt()
             .sign(instanceKeyPair.privateKey);
 
-          await this.agent.post(route)
-            .set('OAuth-Client-Attestation', await this.signAttestation())
+          await fixture14.agent.post(route)
+            .set('OAuth-Client-Attestation', await fixture14.signAttestation())
             .set('OAuth-Client-Attestation-PoP', pop)
             .send({
               grant_type: 'foo',
@@ -1935,14 +1866,14 @@ describe('client authentication methods', () => {
         });
       });
 
-      it('checks all required properties and their values', async function () {
+      it('checks all required properties and their values', { timeout: 3000 }, async () => {
         for (const pop of await Promise.all([
           new SignJWT({ challenge })
             .setProtectedHeader({
               typ: 'oauth-client-attestation-pop+jwt',
               alg: 'Ed25519',
             })
-            .setAudience(this.provider.issuer)
+            .setAudience(fixture13.provider.issuer)
             // .setJti(nanoid())
             .setIssuedAt()
             .sign(instanceKeyPair.privateKey),
@@ -1960,7 +1891,7 @@ describe('client authentication methods', () => {
               typ: 'oauth-client-attestation-pop+jwt',
               alg: 'Ed25519',
             })
-            .setAudience([this.provider.issuer])
+            .setAudience([fixture13.provider.issuer])
             .setJti(nanoid())
             .setIssuedAt()
             .sign(instanceKeyPair.privateKey),
@@ -1978,7 +1909,7 @@ describe('client authentication methods', () => {
               // typ: 'oauth-client-attestation-pop+jwt',
               alg: 'Ed25519',
             })
-            .setAudience(this.provider.issuer)
+            .setAudience(fixture13.provider.issuer)
             .setJti(nanoid())
             .setIssuedAt()
             .sign(instanceKeyPair.privateKey),
@@ -1987,7 +1918,7 @@ describe('client authentication methods', () => {
               typ: 'foo',
               alg: 'Ed25519',
             })
-            .setAudience(this.provider.issuer)
+            .setAudience(fixture13.provider.issuer)
             .setJti(nanoid())
             .setIssuedAt()
             .sign(instanceKeyPair.privateKey),
@@ -1996,13 +1927,13 @@ describe('client authentication methods', () => {
               typ: 'oauth-client-attestation-pop+jwt',
               alg: 'Ed25519',
             })
-            .setAudience(this.provider.issuer)
+            .setAudience(fixture13.provider.issuer)
             .setJti(nanoid())
             // .setIssuedAt()
             .sign(instanceKeyPair.privateKey),
         ])) {
-          await this.agent.post(route)
-            .set('OAuth-Client-Attestation', await this.signAttestation())
+          await fixture13.agent.post(route)
+            .set('OAuth-Client-Attestation', await fixture13.signAttestation())
             .set('OAuth-Client-Attestation-PoP', pop)
             .send({
               grant_type: 'foo',
@@ -2015,35 +1946,37 @@ describe('client authentication methods', () => {
   });
 
   describe('attest_jwt_client_auth_dpop auth', () => {
+    const fixture15 = Object.create(fixture);
+
     const instanceKeyPair = generateKeyPairSync('ed25519');
     let nonce;
 
-    before(async function () {
-      this.origRequireNonce = i(this.provider).features.dPoP.requireNonce;
-      i(this.provider).features.dPoP.requireNonce = () => true;
+    before(async () => {
+      fixture15.origRequireNonce = i(fixture15.provider).features.dPoP.requireNonce;
+      i(fixture15.provider).features.dPoP.requireNonce = () => true;
 
-      const response = await this.agent.post('/challenge')
+      const response = await fixture15.agent.post('/challenge')
         .expect(200)
         .expect('DPoP-Nonce', /^[\w-]{43}$/);
       nonce = response.headers['dpop-nonce'];
-    });
+    }, { timeout: 3000 });
 
-    after(function () {
-      i(this.provider).features.dPoP.requireNonce = this.origRequireNonce;
-    });
+    after(() => {
+      i(fixture15.provider).features.dPoP.requireNonce = fixture15.origRequireNonce;
+    }, { timeout: 3000 });
 
-    it('requires a DPoP nonce even when requireNonce is false', async function () {
-      const { dPoP } = i(this.provider).features;
+    it('requires a DPoP nonce even when requireNonce is false', { timeout: 3000 }, async () => {
+      const { dPoP } = i(fixture15.provider).features;
       const original = dPoP.requireNonce;
       dPoP.requireNonce = () => false;
       try {
-        await this.agent.post('/challenge')
+        await fixture15.agent.post('/challenge')
           .expect(200)
           .expect('DPoP-Nonce', /^[\w-]{43}$/);
 
-        await this.agent.post(route)
+        await fixture15.agent.post(route)
           .set('OAuth-Client-Attestation', await signAttestation('attest_jwt_client_auth_dpop', instanceKeyPair))
-          .set('DPoP', await signDpop(this, instanceKeyPair))
+          .set('DPoP', await signDpop(fixture15, instanceKeyPair))
           .send({ grant_type: 'foo' })
           .type('form')
           .expect(400)
@@ -2054,43 +1987,40 @@ describe('client authentication methods', () => {
             error_description: 'nonce is required in the DPoP proof',
           })
           .expect(({ headers }) => {
-            expect(headers).not.to.have.property('oauth-client-attestation-challenge');
+            assert.ok(!('oauth-client-attestation-challenge' in Object(headers)));
           });
       } finally {
         dPoP.requireNonce = original;
       }
     });
 
-    it('accepts the auth using the DPoP nonce from the challenge endpoint', async function () {
+    it('accepts the auth using the DPoP nonce from the challenge endpoint', { timeout: 3000 }, async () => {
       const spy = sinon.spy();
-      this.provider.once('grant.success', spy);
+      fixture15.provider.once('grant.success', spy);
 
-      await this.agent.post(route)
+      await fixture15.agent.post(route)
         .set('OAuth-Client-Attestation', await signAttestation('attest_jwt_client_auth_dpop', instanceKeyPair))
-        .set('DPoP', await signDpop(this, instanceKeyPair, nonce))
+        .set('DPoP', await signDpop(fixture15, instanceKeyPair, nonce))
         .send({ grant_type: 'foo' })
         .type('form')
         .expect(200)
         .expect(tokenAuthSucceeded)
         .expect(({ headers }) => {
-          expect(headers).not.to.have.property('oauth-client-attestation-challenge');
-          expect(spy.calledOnce).to.be.true;
-          expect(spy.firstCall.args[0].oidc.clientAttestation).to.include({
-            method: 'dpop_combined',
-            signal: false,
-          });
+          assert.ok(!('oauth-client-attestation-challenge' in Object(headers)));
+          assert.equal(spy.calledOnce, true);
+          ((actual) => { assert.ok("method" in Object(actual)); assert.equal(actual.method, 'dpop_combined'); assert.ok("signal" in Object(actual)); assert.equal(actual.signal, false); })(spy.firstCall.args[0].oidc.clientAttestation);
         });
     });
 
-    it('compares public keys independently of optional JWK members', async function () {
+    it('compares public keys independently of optional JWK members', { timeout: 3000 }, async () => {
       const jwk = {
         ...instanceKeyPair.publicKey.export({ format: 'jwk' }),
         kid: 'attested-instance',
       };
 
-      await this.agent.post(route)
+      await fixture15.agent.post(route)
         .set('OAuth-Client-Attestation', await signAttestation('attest_jwt_client_auth_dpop', instanceKeyPair, jwk))
-        .set('DPoP', await signDpop(this, instanceKeyPair, nonce))
+        .set('DPoP', await signDpop(fixture15, instanceKeyPair, nonce))
         .send({ grant_type: 'foo' })
         .type('form')
         .expect(200)
@@ -2098,10 +2028,10 @@ describe('client authentication methods', () => {
     });
 
     for (const [value, description] of [[undefined, 'missing'], ['invalid', 'invalid']]) {
-      it(`rejects a ${description} DPoP nonce with use_dpop_nonce`, async function () {
-        await this.agent.post(route)
+      it(`rejects a ${description} DPoP nonce with use_dpop_nonce`, { timeout: 3000 }, async () => {
+        await fixture15.agent.post(route)
           .set('OAuth-Client-Attestation', await signAttestation('attest_jwt_client_auth_dpop', instanceKeyPair))
-          .set('DPoP', await signDpop(this, instanceKeyPair, value))
+          .set('DPoP', await signDpop(fixture15, instanceKeyPair, value))
           .send({ grant_type: 'foo' })
           .type('form')
           .expect(400)
@@ -2112,13 +2042,13 @@ describe('client authentication methods', () => {
             error_description: value ? 'invalid nonce in DPoP proof' : 'nonce is required in the DPoP proof',
           })
           .expect(({ headers }) => {
-            expect(headers).not.to.have.property('oauth-client-attestation-challenge');
+            assert.ok(!('oauth-client-attestation-challenge' in Object(headers)));
           });
       });
     }
 
-    it('rejects an invalid DPoP proof with invalid_dpop_proof', async function () {
-      await this.agent.post(route)
+    it('rejects an invalid DPoP proof with invalid_dpop_proof', { timeout: 3000 }, async () => {
+      await fixture15.agent.post(route)
         .set('OAuth-Client-Attestation', await signAttestation('attest_jwt_client_auth_dpop', instanceKeyPair))
         .set('DPoP', 'invalid')
         .send({ grant_type: 'foo' })
@@ -2131,23 +2061,23 @@ describe('client authentication methods', () => {
         });
     });
 
-    it('rejects a DPoP key that differs from the attestation key', async function () {
+    it('rejects a DPoP key that differs from the attestation key', { timeout: 3000 }, async () => {
       const otherKeyPair = generateKeyPairSync('ed25519');
 
-      await this.agent.post(route)
+      await fixture15.agent.post(route)
         .set('OAuth-Client-Attestation', await signAttestation('attest_jwt_client_auth_dpop', instanceKeyPair))
-        .set('DPoP', await signDpop(this, otherKeyPair, nonce))
+        .set('DPoP', await signDpop(fixture15, otherKeyPair, nonce))
         .send({ grant_type: 'foo' })
         .type('form')
         .expect(401)
         .expect(tokenAuthRejected);
     });
 
-    it('rejects a replayed DPoP proof', async function () {
+    it('rejects a replayed DPoP proof', { timeout: 3000 }, async () => {
       const attestation = await signAttestation('attest_jwt_client_auth_dpop', instanceKeyPair);
-      const dpop = await signDpop(this, instanceKeyPair, nonce);
+      const dpop = await signDpop(fixture15, instanceKeyPair, nonce);
 
-      await this.agent.post(route)
+      await fixture15.agent.post(route)
         .set('OAuth-Client-Attestation', attestation)
         .set('DPoP', dpop)
         .send({ grant_type: 'foo' })
@@ -2155,7 +2085,7 @@ describe('client authentication methods', () => {
         .expect(200)
         .expect(tokenAuthSucceeded);
 
-      await this.agent.post(route)
+      await fixture15.agent.post(route)
         .set('OAuth-Client-Attestation', attestation)
         .set('DPoP', dpop)
         .send({ grant_type: 'foo' })
@@ -2167,8 +2097,8 @@ describe('client authentication methods', () => {
         });
     });
 
-    it('rejects the auth without a DPoP proof', async function () {
-      await this.agent.post(route)
+    it('rejects the auth without a DPoP proof', { timeout: 3000 }, async () => {
+      await fixture15.agent.post(route)
         .set('OAuth-Client-Attestation', await signAttestation('attest_jwt_client_auth_dpop', instanceKeyPair))
         .send({ grant_type: 'foo' })
         .type('form')
@@ -2176,13 +2106,13 @@ describe('client authentication methods', () => {
         .expect(tokenAuthRejected);
     });
 
-    it('rejects combined mode when DPoP is disabled', async function () {
-      const { dPoP } = i(this.provider).features;
+    it('rejects combined mode when DPoP is disabled', { timeout: 3000 }, async () => {
+      const { dPoP } = i(fixture15.provider).features;
       dPoP.enabled = false;
       try {
-        await this.agent.post(route)
+        await fixture15.agent.post(route)
           .set('OAuth-Client-Attestation', await signAttestation('attest_jwt_client_auth_dpop', instanceKeyPair))
-          .set('DPoP', await signDpop(this, instanceKeyPair, nonce))
+          .set('DPoP', await signDpop(fixture15, instanceKeyPair, nonce))
           .send({ grant_type: 'foo' })
           .type('form')
           .expect(401)
@@ -2192,57 +2122,54 @@ describe('client authentication methods', () => {
       }
     });
 
-    it('rejects the auth with an attestation PoP JWT', async function () {
-      const { body: { attestation_challenge: challenge } } = await this.agent.post('/challenge');
+    it('rejects the auth with an attestation PoP JWT', { timeout: 3000 }, async () => {
+      const { body: { attestation_challenge: challenge } } = await fixture15.agent.post('/challenge');
 
-      await this.agent.post(route)
+      await fixture15.agent.post(route)
         .set('OAuth-Client-Attestation', await signAttestation('attest_jwt_client_auth_dpop', instanceKeyPair))
-        .set('OAuth-Client-Attestation-PoP', await signAttestationPop(this.provider, instanceKeyPair, challenge))
-        .set('DPoP', await signDpop(this, instanceKeyPair, nonce))
+        .set('OAuth-Client-Attestation-PoP', await signAttestationPop(fixture15.provider, instanceKeyPair, challenge))
+        .set('DPoP', await signDpop(fixture15, instanceKeyPair, nonce))
         .send({ grant_type: 'foo' })
         .type('form')
         .expect(401)
         .expect(tokenAuthRejected);
     });
 
-    it('rejects combined mode for a client registered with attest_jwt_client_auth', async function () {
-      await this.agent.post(route)
+    it('rejects combined mode for a client registered with attest_jwt_client_auth', { timeout: 3000 }, async () => {
+      await fixture15.agent.post(route)
         .set('OAuth-Client-Attestation', await signAttestation('attest_jwt_client_auth', instanceKeyPair))
-        .set('DPoP', await signDpop(this, instanceKeyPair, nonce))
+        .set('DPoP', await signDpop(fixture15, instanceKeyPair, nonce))
         .send({ grant_type: 'foo' })
         .type('form')
         .expect(401)
         .expect(tokenAuthRejected);
     });
 
-    it('accepts attest_jwt_client_auth alongside independent DPoP with a different key', async function () {
-      const { body: { attestation_challenge: challenge } } = await this.agent.post('/challenge');
+    it('accepts attest_jwt_client_auth alongside independent DPoP with a different key', { timeout: 3000 }, async () => {
+      const { body: { attestation_challenge: challenge } } = await fixture15.agent.post('/challenge');
       const otherKeyPair = generateKeyPairSync('ed25519');
       const spy = sinon.spy();
-      this.provider.once('grant.success', spy);
+      fixture15.provider.once('grant.success', spy);
 
-      const { body } = await this.agent.post(route)
+      const { body } = await fixture15.agent.post(route)
         .set('OAuth-Client-Attestation', await signAttestation('attest_jwt_client_auth', instanceKeyPair))
-        .set('OAuth-Client-Attestation-PoP', await signAttestationPop(this.provider, instanceKeyPair, challenge))
-        .set('DPoP', await signDpop(this, otherKeyPair, nonce))
+        .set('OAuth-Client-Attestation-PoP', await signAttestationPop(fixture15.provider, instanceKeyPair, challenge))
+        .set('DPoP', await signDpop(fixture15, otherKeyPair, nonce))
         .send({ grant_type: 'client_credentials' })
         .type('form')
         .expect(200)
         .expect(() => {
-          expect(spy.calledOnce).to.be.true;
-          expect(spy.firstCall.args[0].oidc.clientAttestation).to.include({
-            method: 'attestation_pop_jwt',
-            signal: false,
-          });
+          assert.equal(spy.calledOnce, true);
+          ((actual) => { assert.ok("method" in Object(actual)); assert.equal(actual.method, 'attestation_pop_jwt'); assert.ok("signal" in Object(actual)); assert.equal(actual.signal, false); })(spy.firstCall.args[0].oidc.clientAttestation);
         });
 
-      expect(body).to.have.property('token_type', 'DPoP');
-      const token = await this.provider.ClientCredentials.find(body.access_token);
-      expect(token).to.have.property('jkt', await calculateJwkThumbprint(otherKeyPair.publicKey.export({ format: 'jwk' })));
+      ((actual) => { assert.ok('token_type' in Object(actual)); assert.equal(actual.token_type, 'DPoP'); })(body);
+      const token = await fixture15.provider.ClientCredentials.find(body.access_token);
+      ((actual, expected0) => { assert.ok('jkt' in Object(actual)); assert.equal(actual.jkt, expected0); })(token, await calculateJwkThumbprint(otherKeyPair.publicKey.export({ format: 'jwk' })));
 
-      await this.agent.post(route)
+      await fixture15.agent.post(route)
         .set('OAuth-Client-Attestation', await signAttestation('attest_jwt_client_auth', instanceKeyPair))
-        .set('OAuth-Client-Attestation-PoP', await signAttestationPop(this.provider, instanceKeyPair, challenge))
+        .set('OAuth-Client-Attestation-PoP', await signAttestationPop(fixture15.provider, instanceKeyPair, challenge))
         .set('DPoP', 'invalid')
         .send({ grant_type: 'client_credentials' })
         .type('form')
@@ -2253,15 +2180,15 @@ describe('client authentication methods', () => {
         });
     });
 
-    it('authenticates introspection and exposes DPoP nonce errors through CORS', async function () {
-      const { configuration } = i(this.provider);
+    it('authenticates introspection and exposes DPoP nonce errors through CORS', { timeout: 3000 }, async () => {
+      const { configuration } = i(fixture15.provider);
       const original = configuration.clientBasedCORS;
       configuration.clientBasedCORS = () => true;
       try {
-        await this.agent.post('/token/introspection')
+        await fixture15.agent.post('/token/introspection')
           .set('Origin', 'https://rp.example.com')
           .set('OAuth-Client-Attestation', await signAttestation('attest_jwt_client_auth_dpop', instanceKeyPair))
-          .set('DPoP', await signDpop(this, instanceKeyPair, nonce, '/token/introspection'))
+          .set('DPoP', await signDpop(fixture15, instanceKeyPair, nonce, '/token/introspection'))
           .send({ token: 'not-found' })
           .type('form')
           .expect(200)
@@ -2269,10 +2196,10 @@ describe('client authentication methods', () => {
           .expect('Access-Control-Expose-Headers', /DPoP-Nonce/)
           .expect(introspectionAuthSucceeded);
 
-        await this.agent.post('/token/introspection')
+        await fixture15.agent.post('/token/introspection')
           .set('Origin', 'https://rp.example.com')
           .set('OAuth-Client-Attestation', await signAttestation('attest_jwt_client_auth_dpop', instanceKeyPair))
-          .set('DPoP', await signDpop(this, instanceKeyPair, undefined, '/token/introspection'))
+          .set('DPoP', await signDpop(fixture15, instanceKeyPair, undefined, '/token/introspection'))
           .send({ token: 'not-found' })
           .type('form')
           .expect(400)
@@ -2288,10 +2215,10 @@ describe('client authentication methods', () => {
       }
     });
 
-    it('rejects a token endpoint DPoP proof at introspection', async function () {
-      await this.agent.post('/token/introspection')
+    it('rejects a token endpoint DPoP proof at introspection', { timeout: 3000 }, async () => {
+      await fixture15.agent.post('/token/introspection')
         .set('OAuth-Client-Attestation', await signAttestation('attest_jwt_client_auth_dpop', instanceKeyPair))
-        .set('DPoP', await signDpop(this, instanceKeyPair, nonce))
+        .set('DPoP', await signDpop(fixture15, instanceKeyPair, nonce))
         .send({ token: 'not-found' })
         .type('form')
         .expect(400)
@@ -2303,8 +2230,9 @@ describe('client authentication methods', () => {
   });
 
   describe('tls_client_auth auth', () => {
-    it('accepts the auth', function () {
-      return this.agent.post(route)
+    const fixture16 = Object.create(fixture);
+
+    it('accepts the auth', { timeout: 3000 }, () => fixture16.agent.post(route)
         .set('x-ssl-client-cert', rsacrt.raw.toString('base64'))
         .set('x-ssl-client-verify', 'SUCCESS')
         .set('x-ssl-client-san-dns', 'rp.example.com')
@@ -2314,21 +2242,17 @@ describe('client authentication methods', () => {
         })
         .type('form')
         .expect(200)
-        .expect(tokenAuthSucceeded);
-    });
+        .expect(tokenAuthSucceeded));
 
-    it('fails the auth when getCertificate() does not return a cert', function () {
-      return this.agent.post(route)
+    it('fails the auth when getCertificate() does not return a cert', { timeout: 3000 }, () => fixture16.agent.post(route)
         .send({
           client_id: 'client-pki-mtls',
           grant_type: 'foo',
         })
         .type('form')
-        .expect(tokenAuthRejected);
-    });
+        .expect(tokenAuthRejected));
 
-    it('fails the auth when certificateAuthorized() fails', function () {
-      return this.agent.post(route)
+    it('fails the auth when certificateAuthorized() fails', { timeout: 3000 }, () => fixture16.agent.post(route)
         .set('x-ssl-client-cert', rsacrt.raw.toString('base64'))
         .set('x-ssl-client-verify', 'FAILED: self signed certificate')
         .set('x-ssl-client-san-dns', 'rp.example.com')
@@ -2337,11 +2261,9 @@ describe('client authentication methods', () => {
           grant_type: 'foo',
         })
         .type('form')
-        .expect(tokenAuthRejected);
-    });
+        .expect(tokenAuthRejected));
 
-    it('fails the auth when certificateSubjectMatches() return false', function () {
-      return this.agent.post(route)
+    it('fails the auth when certificateSubjectMatches() return false', { timeout: 3000 }, () => fixture16.agent.post(route)
         .set('x-ssl-client-cert', rsacrt.raw.toString('base64'))
         .set('x-ssl-client-verify', 'SUCCESS')
         .set('x-ssl-client-san-dns', 'foobarbaz')
@@ -2350,13 +2272,13 @@ describe('client authentication methods', () => {
           grant_type: 'foo',
         })
         .type('form')
-        .expect(tokenAuthRejected);
-    });
+        .expect(tokenAuthRejected));
   });
 
   describe('self_signed_tls_client_auth auth', () => {
-    it('accepts the auth [1/2]', function () {
-      return this.agent.post(route)
+    const fixture17 = Object.create(fixture);
+
+    it('accepts the auth [1/2]', { timeout: 3000 }, () => fixture17.agent.post(route)
         .set('x-ssl-client-cert', rsacrt.raw.toString('base64'))
         .send({
           client_id: 'client-self-signed-mtls',
@@ -2364,11 +2286,9 @@ describe('client authentication methods', () => {
         })
         .type('form')
         .expect(200)
-        .expect(tokenAuthSucceeded);
-    });
+        .expect(tokenAuthSucceeded));
 
-    it('accepts the auth [2/2]', function () {
-      return this.agent.post(route)
+    it('accepts the auth [2/2]', { timeout: 3000 }, () => fixture17.agent.post(route)
         .set('x-ssl-client-cert', eccrt.raw.toString('base64'))
         .send({
           client_id: 'client-self-signed-mtls',
@@ -2376,38 +2296,33 @@ describe('client authentication methods', () => {
         })
         .type('form')
         .expect(200)
-        .expect(tokenAuthSucceeded);
-    });
+        .expect(tokenAuthSucceeded));
 
-    it('fails the auth when x-ssl-client-cert is not passed by the proxy', function () {
-      return this.agent.post(route)
+    it('fails the auth when x-ssl-client-cert is not passed by the proxy', { timeout: 3000 }, () => fixture17.agent.post(route)
         .send({
           client_id: 'client-self-signed-mtls',
           grant_type: 'foo',
         })
         .type('form')
-        .expect(tokenAuthRejected);
-    });
+        .expect(tokenAuthRejected));
 
-    it('fails the auth when x-ssl-client-cert does not match the registered ones', function () {
-      return this.agent.post(route)
+    it('fails the auth when x-ssl-client-cert does not match the registered ones', { timeout: 3000 }, () => fixture17.agent.post(route)
         .set('x-ssl-client-cert', eccrt.raw.toString('base64'))
         .send({
           client_id: 'client-self-signed-mtls-rsa',
           grant_type: 'foo',
         })
         .type('form')
-        .expect(tokenAuthRejected);
-    });
+        .expect(tokenAuthRejected));
 
-    it('handles rotation of stale jwks', function () {
+    it('handles rotation of stale jwks', { timeout: 3000 }, () => {
       mock('https://client.example.com')
         .intercept({
           path: '/jwks',
         })
         .reply(200, JSON.stringify(mtlsKeys));
 
-      return this.agent.post(route)
+      return fixture17.agent.post(route)
         .set('x-ssl-client-cert', rsacrt.raw.toString('base64'))
         .send({
           client_id: 'client-self-signed-mtls-jwks_uri',

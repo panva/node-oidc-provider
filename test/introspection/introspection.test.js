@@ -1,37 +1,42 @@
+import { describe, before, it } from 'node:test';
+import assert from 'node:assert/strict';
 import sinon from 'sinon';
-import { expect } from 'chai';
 
 import bootstrap from '../test_helper.js';
 
 const route = '/token/introspection';
 
 describe('introspection features', () => {
-  before(bootstrap(import.meta.url));
+  const fixture = {};
+
+  before(bootstrap(import.meta.url, fixture), { timeout: 3000 });
 
   describe('enriched discovery', () => {
-    it('shows the url now', function () {
-      return this.agent.get('/.well-known/openid-configuration')
+    const fixture1 = Object.create(fixture);
+
+    it('shows the url now', { timeout: 3000 }, () => fixture1.agent.get('/.well-known/openid-configuration')
         .expect(200)
         .expect((response) => {
-          expect(response.body).to.have.property('introspection_endpoint').and.matches(/token\/introspect/);
-          expect(response.body).not.to.have.property('introspection_signing_alg_values_supported');
-        });
-    });
+          ((actual) => { assert.ok('introspection_endpoint' in Object(actual)); assert.match(actual.introspection_endpoint, /token\/introspect/); })(response.body);
+          assert.ok(!('introspection_signing_alg_values_supported' in Object(response.body)));
+        }));
   });
 
   describe('/token/introspection', () => {
-    before(function () { return this.login({ accountId: 'accountId' }); });
-    it('returns the properties for access token [no hint]', async function () {
-      const at = new this.provider.AccessToken({
+    const fixture2 = Object.create(fixture);
+
+    before(() => fixture2.login({ accountId: 'accountId' }), { timeout: 3000 });
+    it('returns the properties for access token [no hint]', { timeout: 3000 }, async () => {
+      const at = new fixture2.provider.AccessToken({
         accountId: 'accountId',
-        grantId: this.getGrantId(),
-        client: await this.provider.Client.find('client'),
+        grantId: fixture2.getGrantId(),
+        client: await fixture2.provider.Client.find('client'),
         scope: 'scope',
         aud: 'urn:example:foo',
       });
 
       const token = await at.save();
-      return this.agent.post(route)
+      return fixture2.agent.post(route)
         .auth('client', 'secret')
         .send({
           token,
@@ -39,24 +44,24 @@ describe('introspection features', () => {
         .type('form')
         .expect(200)
         .expect((response) => {
-          expect(response.body).to.contain.keys('client_id', 'scope', 'sub', 'iss', 'iat', 'exp', 'token_type', 'aud');
-          expect(response.body.sub).to.equal('accountId');
-          expect(response.body.token_type).to.equal('Bearer');
-          expect(response.body.iss).to.equal(this.provider.issuer);
-          expect(response.body.aud).to.equal('urn:example:foo');
+          assert.ok(['client_id', 'scope', 'sub', 'iss', 'iat', 'exp', 'token_type', 'aud'].every((key) => Object.keys(response.body).includes(key)));
+          assert.equal(response.body.sub, 'accountId');
+          assert.equal(response.body.token_type, 'Bearer');
+          assert.equal(response.body.iss, fixture2.provider.issuer);
+          assert.equal(response.body.aud, 'urn:example:foo');
         });
     });
 
-    it('returns the properties for access token [correct hint]', async function () {
-      const at = new this.provider.AccessToken({
+    it('returns the properties for access token [correct hint]', { timeout: 3000 }, async () => {
+      const at = new fixture2.provider.AccessToken({
         accountId: 'accountId',
-        grantId: this.getGrantId(),
-        client: await this.provider.Client.find('client'),
+        grantId: fixture2.getGrantId(),
+        client: await fixture2.provider.Client.find('client'),
         scope: 'scope',
       });
 
       const token = await at.save();
-      return this.agent.post(route)
+      return fixture2.agent.post(route)
         .auth('client', 'secret')
         .send({
           token,
@@ -65,21 +70,21 @@ describe('introspection features', () => {
         .type('form')
         .expect(200)
         .expect((response) => {
-          expect(response.body).to.contain.keys('client_id', 'scope', 'sub');
-          expect(response.body.sub).to.equal('accountId');
+          assert.ok(['client_id', 'scope', 'sub'].every((key) => Object.keys(response.body).includes(key)));
+          assert.equal(response.body.sub, 'accountId');
         });
     });
 
-    it('returns the properties for access token [wrong hint]', async function () {
-      const at = new this.provider.AccessToken({
+    it('returns the properties for access token [wrong hint]', { timeout: 3000 }, async () => {
+      const at = new fixture2.provider.AccessToken({
         accountId: 'accountId',
-        grantId: this.getGrantId(),
-        client: await this.provider.Client.find('client'),
+        grantId: fixture2.getGrantId(),
+        client: await fixture2.provider.Client.find('client'),
         scope: 'scope',
       });
 
       const token = await at.save();
-      return this.agent.post(route)
+      return fixture2.agent.post(route)
         .auth('client', 'secret')
         .send({
           token,
@@ -88,21 +93,21 @@ describe('introspection features', () => {
         .type('form')
         .expect(200)
         .expect((response) => {
-          expect(response.body).to.contain.keys('client_id', 'scope', 'sub');
-          expect(response.body.sub).to.equal('accountId');
+          assert.ok(['client_id', 'scope', 'sub'].every((key) => Object.keys(response.body).includes(key)));
+          assert.equal(response.body.sub, 'accountId');
         });
     });
 
-    it('returns the properties for access token [unrecognized hint]', async function () {
-      const at = new this.provider.AccessToken({
+    it('returns the properties for access token [unrecognized hint]', { timeout: 3000 }, async () => {
+      const at = new fixture2.provider.AccessToken({
         accountId: 'accountId',
-        grantId: this.getGrantId(),
-        client: await this.provider.Client.find('client'),
+        grantId: fixture2.getGrantId(),
+        client: await fixture2.provider.Client.find('client'),
         scope: 'scope',
       });
 
       const token = await at.save();
-      return this.agent.post(route)
+      return fixture2.agent.post(route)
         .auth('client', 'secret')
         .send({
           token,
@@ -111,208 +116,201 @@ describe('introspection features', () => {
         .type('form')
         .expect(200)
         .expect((response) => {
-          expect(response.body).to.contain.keys('client_id', 'scope', 'sub');
-          expect(response.body.sub).to.equal('accountId');
+          assert.ok(['client_id', 'scope', 'sub'].every((key) => Object.keys(response.body).includes(key)));
+          assert.equal(response.body.sub, 'accountId');
         });
     });
 
-    it('returns the properties for refresh token [no hint]', async function () {
-      const rt = new this.provider.RefreshToken({
+    it('returns the properties for refresh token [no hint]', { timeout: 3000 }, async () => {
+      const rt = new fixture2.provider.RefreshToken({
         accountId: 'accountId',
-        grantId: this.getGrantId(),
-        client: await this.provider.Client.find('client'),
+        grantId: fixture2.getGrantId(),
+        client: await fixture2.provider.Client.find('client'),
         scope: 'scope',
       });
 
       const token = await rt.save();
-      return this.agent.post(route)
+      return fixture2.agent.post(route)
         .auth('client', 'secret')
         .send({ token })
         .type('form')
         .expect(200)
         .expect((response) => {
-          expect(response.body).to.contain.keys('client_id', 'scope', 'sub');
+          assert.ok(['client_id', 'scope', 'sub'].every((key) => Object.keys(response.body).includes(key)));
         });
     });
 
-    it('returns the properties for refresh token [correct hint]', async function () {
-      const rt = new this.provider.RefreshToken({
+    it('returns the properties for refresh token [correct hint]', { timeout: 3000 }, async () => {
+      const rt = new fixture2.provider.RefreshToken({
         accountId: 'accountId',
-        grantId: this.getGrantId(),
-        client: await this.provider.Client.find('client'),
+        grantId: fixture2.getGrantId(),
+        client: await fixture2.provider.Client.find('client'),
         scope: 'scope',
       });
 
       const token = await rt.save();
-      return this.agent.post(route)
+      return fixture2.agent.post(route)
         .auth('client', 'secret')
         .send({ token, token_type_hint: 'refresh_token' })
         .type('form')
         .expect(200)
         .expect((response) => {
-          expect(response.body).to.contain.keys('client_id', 'scope', 'sub');
+          assert.ok(['client_id', 'scope', 'sub'].every((key) => Object.keys(response.body).includes(key)));
         });
     });
 
-    it('returns the properties for refresh token [wrong hint]', async function () {
-      const rt = new this.provider.RefreshToken({
+    it('returns the properties for refresh token [wrong hint]', { timeout: 3000 }, async () => {
+      const rt = new fixture2.provider.RefreshToken({
         accountId: 'accountId',
-        grantId: this.getGrantId(),
-        client: await this.provider.Client.find('client'),
+        grantId: fixture2.getGrantId(),
+        client: await fixture2.provider.Client.find('client'),
         scope: 'scope',
       });
 
       const token = await rt.save();
-      return this.agent.post(route)
+      return fixture2.agent.post(route)
         .auth('client', 'secret')
         .send({ token, token_type_hint: 'access_token' })
         .type('form')
         .expect(200)
         .expect((response) => {
-          expect(response.body).to.contain.keys('client_id', 'scope', 'sub');
+          assert.ok(['client_id', 'scope', 'sub'].every((key) => Object.keys(response.body).includes(key)));
         });
     });
 
-    it('returns the properties for refresh token [unrecognized hint]', async function () {
-      const rt = new this.provider.RefreshToken({
+    it('returns the properties for refresh token [unrecognized hint]', { timeout: 3000 }, async () => {
+      const rt = new fixture2.provider.RefreshToken({
         accountId: 'accountId',
-        grantId: this.getGrantId(),
-        client: await this.provider.Client.find('client'),
+        grantId: fixture2.getGrantId(),
+        client: await fixture2.provider.Client.find('client'),
         scope: 'scope',
       });
 
       const token = await rt.save();
-      return this.agent.post(route)
+      return fixture2.agent.post(route)
         .auth('client', 'secret')
         .send({ token, token_type_hint: 'foobar' })
         .type('form')
         .expect(200)
         .expect((response) => {
-          expect(response.body).to.contain.keys('client_id', 'scope', 'sub');
+          assert.ok(['client_id', 'scope', 'sub'].every((key) => Object.keys(response.body).includes(key)));
         });
     });
 
-    it('returns the properties for client credentials token [no hint]', async function () {
-      const rt = new this.provider.ClientCredentials({
-        client: await this.provider.Client.find('client'),
+    it('returns the properties for client credentials token [no hint]', { timeout: 3000 }, async () => {
+      const rt = new fixture2.provider.ClientCredentials({
+        client: await fixture2.provider.Client.find('client'),
       });
 
       const token = await rt.save();
-      return this.agent.post(route)
+      return fixture2.agent.post(route)
         .auth('client', 'secret')
         .send({ token })
         .type('form')
         .expect(200)
         .expect((response) => {
-          expect(response.body).to.contain.keys('client_id');
+          assert.ok(['client_id'].every((key) => Object.keys(response.body).includes(key)));
         });
     });
 
-    it('returns the properties for client credentials token [correct hint]', async function () {
-      const rt = new this.provider.ClientCredentials({
-        client: await this.provider.Client.find('client'),
+    it('returns the properties for client credentials token [correct hint]', { timeout: 3000 }, async () => {
+      const rt = new fixture2.provider.ClientCredentials({
+        client: await fixture2.provider.Client.find('client'),
       });
 
       const token = await rt.save();
-      return this.agent.post(route)
+      return fixture2.agent.post(route)
         .auth('client', 'secret')
         .send({ token, token_type_hint: 'access_token' })
         .type('form')
         .expect(200)
         .expect((response) => {
-          expect(response.body).to.contain.keys('client_id');
+          assert.ok(['client_id'].every((key) => Object.keys(response.body).includes(key)));
         });
     });
 
-    it('returns the properties for client credentials token [unrecognized hint]', async function () {
-      const rt = new this.provider.ClientCredentials({
-        client: await this.provider.Client.find('client'),
+    it('returns the properties for client credentials token [unrecognized hint]', { timeout: 3000 }, async () => {
+      const rt = new fixture2.provider.ClientCredentials({
+        client: await fixture2.provider.Client.find('client'),
       });
 
       const token = await rt.save();
-      return this.agent.post(route)
+      return fixture2.agent.post(route)
         .auth('client', 'secret')
         .send({ token, token_type_hint: 'foobar' })
         .type('form')
         .expect(200)
         .expect((response) => {
-          expect(response.body).to.contain.keys('client_id');
+          assert.ok(['client_id'].every((key) => Object.keys(response.body).includes(key)));
         });
     });
 
-    it('rejects structured tokens', function () {
-      return this.agent.post(route)
+    it('rejects structured tokens', { timeout: 3000 }, () => fixture2.agent.post(route)
         .auth('client', 'secret')
         .send({
           token: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiYWRtaW4iOnRydWV9.TJVA95OrM7E2cBab30RMHrHDcEfxjoYZgeFONFh7HgQ',
         })
         .type('form')
         .expect(400)
-        .expect({ error: 'unsupported_token_type', error_description: 'Structured JWT Tokens cannot be introspected via the introspection_endpoint' });
-    });
+        .expect({ error: 'unsupported_token_type', error_description: 'Structured JWT Tokens cannot be introspected via the introspection_endpoint' }));
 
-    it('can be called by pairwise clients', async function () {
-      const rt = new this.provider.RefreshToken({
+    it('can be called by pairwise clients', { timeout: 3000 }, async () => {
+      const rt = new fixture2.provider.RefreshToken({
         accountId: 'accountId',
-        grantId: this.getGrantId('client-pairwise'),
+        grantId: fixture2.getGrantId('client-pairwise'),
         clientId: 'client-pairwise',
         scope: 'scope',
       });
 
       const token = await rt.save();
-      return this.agent.post(route)
+      return fixture2.agent.post(route)
         .auth('client-pairwise', 'secret')
         .send({ token })
         .type('form')
         .expect(200)
         .expect((response) => {
-          expect(response.body).to.contain.keys('client_id', 'scope', 'sub');
-          expect(response.body.sub).not.to.equal('accountId');
+          assert.ok(['client_id', 'scope', 'sub'].every((key) => Object.keys(response.body).includes(key)));
+          assert.notEqual(response.body.sub, 'accountId');
         });
     });
 
-    it('can be called by RS clients and uses the original subject_type', async function () {
-      const rt = new this.provider.RefreshToken({
+    it('can be called by RS clients and uses the original subject_type', { timeout: 3000 }, async () => {
+      const rt = new fixture2.provider.RefreshToken({
         accountId: 'accountId',
-        grantId: this.getGrantId('client-pairwise'),
+        grantId: fixture2.getGrantId('client-pairwise'),
         clientId: 'client-pairwise',
         scope: 'scope',
       });
 
       const token = await rt.save();
-      return this.agent.post(route)
+      return fixture2.agent.post(route)
         .auth('client-introspection', 'secret')
         .send({ token })
         .type('form')
         .expect(200)
         .expect((response) => {
-          expect(response.body).to.contain.keys('client_id', 'scope', 'sub');
-          expect(response.body.sub).not.to.equal('accountId');
+          assert.ok(['client_id', 'scope', 'sub'].every((key) => Object.keys(response.body).includes(key)));
+          assert.notEqual(response.body.sub, 'accountId');
         });
     });
 
-    it('returns token-endpoint-like cache headers', function () {
-      return this.agent.post(route)
+    it('returns token-endpoint-like cache headers', { timeout: 3000 }, () => fixture2.agent.post(route)
         .auth('client', 'secret')
         .send({})
         .type('form')
-        .expect('cache-control', 'no-store');
-    });
+        .expect('cache-control', 'no-store'));
 
-    it('validates token param presence', function () {
-      return this.agent.post(route)
+    it('validates token param presence', { timeout: 3000 }, () => fixture2.agent.post(route)
         .auth('client', 'secret')
         .send({})
         .type('form')
         .expect(400)
         .expect((response) => {
-          expect(response.body).to.have.property('error', 'invalid_request');
-          expect(response.body).to.have.property('error_description', "missing required parameter 'token'");
-        });
-    });
+          ((actual) => { assert.ok('error' in Object(actual)); assert.equal(actual.error, 'invalid_request'); })(response.body);
+          ((actual) => { assert.ok('error_description' in Object(actual)); assert.equal(actual.error_description, "missing required parameter 'token'"); })(response.body);
+        }));
 
-    it('responds with active=false for total bs', function () {
-      return this.agent.post(route)
+    it('responds with active=false for total bs', { timeout: 3000 }, () => fixture2.agent.post(route)
         .auth('client', 'secret')
         .send({
           token: 'this is not even a token',
@@ -320,21 +318,20 @@ describe('introspection features', () => {
         .type('form')
         .expect(200)
         .expect((response) => {
-          expect(response.body).to.have.property('active', false);
-          expect(response.body).to.have.keys('active');
-        });
-    });
+          ((actual) => { assert.ok('active' in Object(actual)); assert.equal(actual.active, false); })(response.body);
+          assert.deepEqual(new Set(Object.keys(response.body)), new Set(['active']));
+        }));
 
-    it('responds with active=false when client auth = none and token does not belong to it', async function () {
-      const at = new this.provider.AccessToken({
+    it('responds with active=false when client auth = none and token does not belong to it', { timeout: 3000 }, async () => {
+      const at = new fixture2.provider.AccessToken({
         accountId: 'accountId',
-        grantId: this.getGrantId(),
-        client: await this.provider.Client.find('client'),
+        grantId: fixture2.getGrantId(),
+        client: await fixture2.provider.Client.find('client'),
         scope: 'scope',
       });
 
       const token = await at.save();
-      return this.agent.post(route)
+      return fixture2.agent.post(route)
         .send({
           token,
           client_id: 'client-none',
@@ -342,28 +339,28 @@ describe('introspection features', () => {
         .type('form')
         .expect(200)
         .expect((response) => {
-          expect(response.body).to.have.property('active', false);
-          expect(response.body).to.have.keys('active');
+          ((actual) => { assert.ok('active' in Object(actual)); assert.equal(actual.active, false); })(response.body);
+          assert.deepEqual(new Set(Object.keys(response.body)), new Set(['active']));
         });
     });
 
-    it('emits on (i.e. auth) error', function () {
+    it('emits on (i.e. auth) error', { timeout: 3000 }, () => {
       const spy = sinon.spy();
-      this.provider.once('introspection.error', spy);
+      fixture2.provider.once('introspection.error', spy);
 
-      return this.agent.post(route)
+      return fixture2.agent.post(route)
         .auth('client', 'invalid')
         .send({})
         .type('form')
         .expect(401)
         .expect(() => {
-          expect(spy.calledOnce).to.be.true;
+          assert.equal(spy.calledOnce, true);
         });
     });
 
-    it('ignores unsupported tokens', async function () {
-      const ac = new this.provider.AuthorizationCode({ clientId: 'client' });
-      return this.agent.post(route)
+    it('ignores unsupported tokens', { timeout: 3000 }, async () => {
+      const ac = new fixture2.provider.AuthorizationCode({ clientId: 'client' });
+      return fixture2.agent.post(route)
         .auth('client', 'secret')
         .send({
           token: await ac.save(),
@@ -371,21 +368,21 @@ describe('introspection features', () => {
         .type('form')
         .expect(200)
         .expect((response) => {
-          expect(response.body).to.have.property('active', false);
-          expect(response.body).to.have.keys('active');
+          ((actual) => { assert.ok('active' in Object(actual)); assert.equal(actual.active, false); })(response.body);
+          assert.deepEqual(new Set(Object.keys(response.body)), new Set(['active']));
         });
     });
 
-    it('responds only with active=false when token is expired', async function () {
-      const at = new this.provider.AccessToken({
+    it('responds only with active=false when token is expired', { timeout: 3000 }, async () => {
+      const at = new fixture2.provider.AccessToken({
         accountId: 'accountId',
-        grantId: this.getGrantId(),
-        client: await this.provider.Client.find('client'),
+        grantId: fixture2.getGrantId(),
+        client: await fixture2.provider.Client.find('client'),
         scope: 'scope',
         expiresIn: -1,
       });
 
-      return this.agent.post(route)
+      return fixture2.agent.post(route)
         .auth('client', 'secret')
         .send({
           token: await at.save(),
@@ -393,23 +390,23 @@ describe('introspection features', () => {
         .type('form')
         .expect(200)
         .expect((response) => {
-          expect(response.body).to.have.property('active', false);
-          expect(response.body).to.have.keys('active');
+          ((actual) => { assert.ok('active' in Object(actual)); assert.equal(actual.active, false); })(response.body);
+          assert.deepEqual(new Set(Object.keys(response.body)), new Set(['active']));
         });
     });
 
-    it('responds only with active=false when token is already consumed', async function () {
-      const rt = new this.provider.RefreshToken({
+    it('responds only with active=false when token is already consumed', { timeout: 3000 }, async () => {
+      const rt = new fixture2.provider.RefreshToken({
         accountId: 'accountId',
-        grantId: this.getGrantId(),
-        client: await this.provider.Client.find('client'),
+        grantId: fixture2.getGrantId(),
+        client: await fixture2.provider.Client.find('client'),
         scope: 'scope',
       });
 
       const token = await rt.save();
       await rt.consume();
 
-      return this.agent.post(route)
+      return fixture2.agent.post(route)
         .auth('client', 'secret')
         .send({
           token,
@@ -417,18 +414,18 @@ describe('introspection features', () => {
         .type('form')
         .expect(200)
         .expect((response) => {
-          expect(response.body).to.have.property('active', false);
-          expect(response.body).to.have.keys('active');
+          ((actual) => { assert.ok('active' in Object(actual)); assert.equal(actual.active, false); })(response.body);
+          assert.deepEqual(new Set(Object.keys(response.body)), new Set(['active']));
         });
     });
 
-    it('does not allow to introspect the uninstrospectable (in case adapter is implemented wrong)', async function () {
-      sinon.stub(this.provider.AccessToken, 'find').callsFake(() => ({
+    it('does not allow to introspect the uninstrospectable (in case adapter is implemented wrong)', { timeout: 3000 }, async () => {
+      sinon.stub(fixture2.provider.AccessToken, 'find').callsFake(() => ({
         isValid: true,
         kind: 'AuthorizationCode',
       }));
 
-      return this.agent.post(route)
+      return fixture2.agent.post(route)
         .auth('client', 'secret')
         .send({
           token: 'foo',
@@ -436,31 +433,33 @@ describe('introspection features', () => {
         .type('form')
         .expect(200)
         .expect((response) => {
-          expect(response.body).to.have.property('active', false);
-          expect(response.body).to.have.keys('active');
-          this.provider.AccessToken.find.restore();
+          ((actual) => { assert.ok('active' in Object(actual)); assert.equal(actual.active, false); })(response.body);
+          assert.deepEqual(new Set(Object.keys(response.body)), new Set(['active']));
+          fixture2.provider.AccessToken.find.restore();
         })
         .catch((err) => {
-          this.provider.AccessToken.find.restore();
+          fixture2.provider.AccessToken.find.restore();
           throw err;
         });
     });
 
     describe('populates ctx.oidc.entities', () => {
-      it('when introspecting an AccessToken', function (done) {
-        this.assertOnce((ctx) => {
-          expect(ctx.oidc.entities).to.have.keys('Client', 'AccessToken');
+      const fixture3 = Object.create(fixture2);
+
+      it('when introspecting an AccessToken', { timeout: 3000 }, (_t, done) => {
+        fixture3.assertOnce((ctx) => {
+          assert.deepEqual(new Set(Object.keys(ctx.oidc.entities)), new Set(['Client', 'AccessToken']));
         }, done);
 
         (async () => {
-          const at = new this.provider.AccessToken({
+          const at = new fixture3.provider.AccessToken({
             accountId: 'accountId',
-            client: await this.provider.Client.find('client'),
+            client: await fixture3.provider.Client.find('client'),
             scope: 'scope',
           });
 
           const token = await at.save();
-          await this.agent.post(route)
+          await fixture3.agent.post(route)
             .auth('client', 'secret')
             .send({
               token,
@@ -469,38 +468,38 @@ describe('introspection features', () => {
         })().catch(done);
       });
 
-      it('when introspecting a RefreshToken', function (done) {
-        this.assertOnce((ctx) => {
-          expect(ctx.oidc.entities).to.have.keys('Client', 'RefreshToken');
+      it('when introspecting a RefreshToken', { timeout: 3000 }, (_t, done) => {
+        fixture3.assertOnce((ctx) => {
+          assert.deepEqual(new Set(Object.keys(ctx.oidc.entities)), new Set(['Client', 'RefreshToken']));
         }, done);
 
         (async () => {
-          const rt = new this.provider.RefreshToken({
+          const rt = new fixture3.provider.RefreshToken({
             accountId: 'accountId',
-            client: await this.provider.Client.find('client'),
+            client: await fixture3.provider.Client.find('client'),
             scope: 'scope',
           });
 
           const token = await rt.save();
-          await this.agent.post(route)
+          await fixture3.agent.post(route)
             .auth('client', 'secret')
             .send({ token })
             .type('form');
         })().catch(done);
       });
 
-      it('when introspecting ClientCredentials', function (done) {
-        this.assertOnce((ctx) => {
-          expect(ctx.oidc.entities).to.have.keys('Client', 'ClientCredentials');
+      it('when introspecting ClientCredentials', { timeout: 3000 }, (_t, done) => {
+        fixture3.assertOnce((ctx) => {
+          assert.deepEqual(new Set(Object.keys(ctx.oidc.entities)), new Set(['Client', 'ClientCredentials']));
         }, done);
 
         (async () => {
-          const rt = new this.provider.ClientCredentials({
-            client: await this.provider.Client.find('client'),
+          const rt = new fixture3.provider.ClientCredentials({
+            client: await fixture3.provider.Client.find('client'),
           });
 
           const token = await rt.save();
-          await this.agent.post(route)
+          await fixture3.agent.post(route)
             .auth('client', 'secret')
             .send({ token })
             .type('form');

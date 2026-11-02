@@ -1,4 +1,5 @@
-import { expect } from 'chai';
+import { describe, before, after, it } from 'node:test';
+import assert from 'node:assert/strict';
 
 import bootstrap from '../../test_helper.js';
 
@@ -7,32 +8,34 @@ const response_type = 'none';
 const scope = 'openid';
 ['get', 'post'].forEach((verb) => {
   describe(`${verb} ${route} response_type=none`, () => {
-    before(bootstrap(import.meta.url));
+    const fixture = {};
 
-    before(function () { return this.login(); });
-    after(function () { return this.logout(); });
+    before(bootstrap(import.meta.url, fixture), { timeout: 3000 });
 
-    it('responds with a state in search', function () {
-      const auth = new this.AuthorizationRequest({
+    before(() => fixture.login(), { timeout: 3000 });
+    after(() => fixture.logout(), { timeout: 3000 });
+
+    it('responds with a state in search', { timeout: 3000 }, () => {
+      const auth = new fixture.AuthorizationRequest({
         response_type,
         scope,
       });
 
-      return this.wrap({ route, verb, auth })
+      return fixture.wrap({ route, verb, auth })
         .expect(303)
         .expect(auth.validatePresence(['state']))
         .expect(auth.validateState)
         .expect(auth.validateClientLocation);
     });
 
-    it('responds with a state in fragment', function () {
-      const auth = new this.AuthorizationRequest({
+    it('responds with a state in fragment', { timeout: 3000 }, () => {
+      const auth = new fixture.AuthorizationRequest({
         response_type,
         response_mode: 'fragment',
         scope,
       });
 
-      return this.wrap({ route, verb, auth })
+      return fixture.wrap({ route, verb, auth })
         .expect(303)
         .expect(auth.validateFragment)
         .expect(auth.validatePresence(['state']))
@@ -40,17 +43,17 @@ const scope = 'openid';
         .expect(auth.validateClientLocation);
     });
 
-    it('populates ctx.oidc.entities', function (done) {
-      this.assertOnce((ctx) => {
-        expect(ctx.oidc.entities).to.have.keys('Client', 'Grant', 'Account', 'Session');
+    it('populates ctx.oidc.entities', { timeout: 3000 }, (_t, done) => {
+      fixture.assertOnce((ctx) => {
+        assert.deepEqual(new Set(Object.keys(ctx.oidc.entities)), new Set(['Client', 'Grant', 'Account', 'Session']));
       }, done);
 
-      const auth = new this.AuthorizationRequest({
+      const auth = new fixture.AuthorizationRequest({
         response_type,
         scope,
       });
 
-      this.wrap({ route, verb, auth }).end(() => {});
+      fixture.wrap({ route, verb, auth }).end(() => {});
     });
   });
 });

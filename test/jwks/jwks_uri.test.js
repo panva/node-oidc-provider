@@ -1,20 +1,26 @@
-import { expect } from 'chai';
+import { describe, before, it } from 'node:test';
+import assert from 'node:assert/strict';
 
 import bootstrap from '../test_helper.js';
 
 const route = '/jwks';
 
 describe(route, () => {
+  const fixture = {};
+
   describe('with encryption enabled', () => {
-    before(bootstrap(import.meta.url, { config: 'jwks-enc' }));
+    const fixture1 = Object.create(fixture);
+
+    before(bootstrap(import.meta.url, fixture1, { config: 'jwks-enc' }), { timeout: 3000 });
 
     describe('when populated with signing keys', () => {
-      it('responds with json 200', function () {
-        return this.agent.get(route)
+      const fixture2 = Object.create(fixture1);
+
+      it('responds with json 200', { timeout: 3000 }, () => fixture2.agent.get(route)
           .expect('Content-Type', 'application/jwk-set+json; charset=utf-8')
           .expect(200)
           .expect((res) => {
-            expect(res.body).to.deep.equal({
+            assert.deepEqual(res.body, {
               keys: [
                 {
                   e: 'AQAB',
@@ -56,29 +62,31 @@ describe(route, () => {
                 },
               ],
             });
-          });
-      });
+          }));
 
-      it('does not populate ctx.oidc.entities', function (done) {
-        this.assertOnce((ctx) => {
-          expect(ctx.oidc.entities).to.be.empty;
+      it('does not populate ctx.oidc.entities', { timeout: 3000 }, (_t, done) => {
+        fixture2.assertOnce((ctx) => {
+          assert.equal(Object.keys(ctx.oidc.entities).length, 0);
         }, done);
 
-        this.agent.get(route).end(() => {});
+        fixture2.agent.get(route).end(() => {});
       });
     });
   });
 
   describe('with encryption disabled', () => {
-    before(bootstrap(import.meta.url, { config: 'jwks-noenc' }));
+    const fixture3 = Object.create(fixture);
+
+    before(bootstrap(import.meta.url, fixture3, { config: 'jwks-noenc' }), { timeout: 3000 });
 
     describe('when populated with signing keys', () => {
-      it('responds with json 200', function () {
-        return this.agent.get(route)
+      const fixture4 = Object.create(fixture3);
+
+      it('responds with json 200', { timeout: 3000 }, () => fixture4.agent.get(route)
           .expect('Content-Type', 'application/jwk-set+json; charset=utf-8')
           .expect(200)
           .expect((res) => {
-            expect(res.body).to.deep.equal({
+            assert.deepEqual(res.body, {
               keys: [
                 {
                   e: 'AQAB',
@@ -106,15 +114,14 @@ describe(route, () => {
                 },
               ],
             });
-          });
-      });
+          }));
 
-      it('does not populate ctx.oidc.entities', function (done) {
-        this.assertOnce((ctx) => {
-          expect(ctx.oidc.entities).to.be.empty;
+      it('does not populate ctx.oidc.entities', { timeout: 3000 }, (_t, done) => {
+        fixture4.assertOnce((ctx) => {
+          assert.equal(Object.keys(ctx.oidc.entities).length, 0);
         }, done);
 
-        this.agent.get(route).end(() => {});
+        fixture4.agent.get(route).end(() => {});
       });
     });
   });

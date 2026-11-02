@@ -1,19 +1,20 @@
-import { expect } from 'chai';
+import { describe, it } from 'node:test';
+import assert from 'node:assert/strict';
 
 import isConstructable from '../../lib/helpers/type_validators.js';
 
 describe('type validators helper', () => {
-  it('should be falsy when argument is null', () => {
-    expect(isConstructable(null)).to.be.false;
+  it('should be falsy when argument is null', { timeout: 3000 }, () => {
+    assert.equal(isConstructable(null), false);
   });
 
-  it('should be falsy when argument is arrow function', () => {
-    expect(isConstructable(() => {})).to.be.false;
+  it('should be falsy when argument is arrow function', { timeout: 3000 }, () => {
+    assert.equal(isConstructable(() => {}), false);
   });
 
-  it('should be successfull executed if argument is constructable', () => {
-    expect(isConstructable(class {})).to.be.true;
+  it('should be successfull executed if argument is constructable', { timeout: 3000 }, () => {
+    assert.equal(isConstructable(class {}), true);
     // biome-ignore lint/complexity/useArrowFunction: test intentionally uses a function expression to verify constructable detection
-    expect(isConstructable(function () {})).to.be.true;
+    assert.equal(isConstructable(function () {}), true);
   });
 });

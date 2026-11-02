@@ -1,4 +1,4 @@
-import { strict as assert } from 'node:assert';
+import assert from 'node:assert/strict';
 import * as events from 'node:events';
 
 import getConfig from '../default.config.js';

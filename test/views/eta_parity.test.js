@@ -1,6 +1,7 @@
+import { describe, it } from 'node:test';
+import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 
-import { expect } from 'chai';
 import { Eta } from 'eta/core';
 
 import interactionTemplate from '../../lib/views/interaction.js';
@@ -44,7 +45,7 @@ const locals = [
 describe('views render identically to eta', () => {
   for (const [name, [template, render]] of Object.entries(cases)) {
     for (const [i, data] of locals.entries()) {
-      it(`${name} template, locals #${i}`, () => {
+      it(`${name} template, locals #${i}`, { timeout: 3000 }, () => {
         let expected;
         let actual;
         let expectedErr;
@@ -54,12 +55,12 @@ describe('views render identically to eta', () => {
         try { actual = render(data); } catch (err) { actualErr = err; }
 
         if (expectedErr || actualErr) {
-          expect(actualErr?.constructor).to.equal(expectedErr?.constructor);
-          expect(actualErr?.message).to.equal(expectedErr?.message);
+          assert.equal(actualErr?.constructor, expectedErr?.constructor);
+          assert.equal(actualErr?.message, expectedErr?.message);
           return;
         }
 
-        expect(actual).to.equal(expected);
+        assert.equal(actual, expected);
       });
     }
   }
@@ -68,7 +69,7 @@ describe('views render identically to eta', () => {
   // tools/views/*.eta, which is not published. Nothing else links the two, so
   // this catches a .eta source being edited without recompiling - or a compiled
   // template being edited by hand.
-  it('the checked-in compiled templates still match tools/views/*.eta', () => {
+  it('the checked-in compiled templates still match tools/views/*.eta', { timeout: 3000 }, () => {
     for (const [name, [template]] of Object.entries(cases)) {
       const source = readFileSync(new URL(`../../tools/views/${name}.eta`, import.meta.url), 'utf8');
       const recompiled = eta.compile(source);
@@ -82,10 +83,9 @@ describe('views render identically to eta', () => {
         try { fromSource = eta.render(recompiled, data); } catch (err) { sourceErr = err; }
         try { fromCheckedIn = eta.render(template, data); } catch (err) { checkedInErr = err; }
 
-        expect(!!sourceErr, `${name} locals #${i}`).to.equal(!!checkedInErr);
+        assert.equal(!!sourceErr, !!checkedInErr, `${name} locals #${i}`);
         if (!sourceErr) {
-          expect(fromSource, `${name}.eta has drifted from lib/views/${name}.js (locals #${i})`)
-            .to.equal(fromCheckedIn);
+          assert.equal(fromSource, fromCheckedIn, `${name}.eta has drifted from lib/views/${name}.js (locals #${i})`);
         }
       }
     }
@@ -102,7 +102,7 @@ describe('views render identically to eta', () => {
    * render/renderAsync as own properties that throw, so the shim fails closed
    * instead. This asserts the shim's behaviour, not eta's.
    */
-  it('does not resolve render or layout through Object.prototype', () => {
+  it('does not resolve render or layout through Object.prototype', { timeout: 3000 }, () => {
     const called = [];
     const KEYS = ['render', 'renderAsync', 'layout', 'layoutData'];
     for (const key of KEYS) {
@@ -118,15 +118,15 @@ describe('views render identically to eta', () => {
       for (const [name, [, render]] of Object.entries(cases)) {
         let out;
         try { out = render(locals[1]); } catch { out = undefined; } // failing closed is fine
-        if (out !== undefined) expect(out, name).not.to.include('PWNED');
+        if (out !== undefined) assert.ok(!(out.includes('PWNED')), name);
       }
-      expect(called, 'a polluted prototype function must never be called').to.deep.equal([]);
+      assert.deepEqual(called, [], 'a polluted prototype function must never be called');
     } finally {
       for (const key of KEYS) delete Object.prototype[key];
     }
   });
 
-  it('escapes every code point the same way eta does', () => {
+  it('escapes every code point the same way eta does', { timeout: 3000 }, () => {
     const expected = eta.config.escapeFunction;
     for (let cp = 0; cp <= 0x10ffff; cp += 1) {
       if (cp >= 0xd800 && cp <= 0xdfff) continue; // lone surrogates
@@ -137,20 +137,20 @@ describe('views render identically to eta', () => {
     }
   });
 
-  it('coerces non-string values the same way eta does', () => {
+  it('coerces non-string values the same way eta does', { timeout: 3000 }, () => {
     const expected = eta.config.escapeFunction;
     for (const value of [0, 1, -1, 1.5, true, false, null, undefined, NaN, Infinity, [], [1, 2], {}, 1n, Symbol.iterator]) {
       let a;
       let b;
       try { a = escapeFunction(value); } catch (err) { a = `throws:${err.constructor.name}`; }
       try { b = expected(value); } catch (err) { b = `throws:${err.constructor.name}`; }
-      expect(a).to.equal(b);
+      assert.equal(a, b);
     }
   });
 
-  it('filters non-string values the same way eta does', () => {
+  it('filters non-string values the same way eta does', { timeout: 3000 }, () => {
     for (const value of [0, null, undefined, true, [1, 2], {}]) {
-      expect(String(value)).to.equal(eta.config.filterFunction(value));
+      assert.equal(String(value), eta.config.filterFunction(value));
     }
   });
 });

@@ -1,5 +1,6 @@
+import { describe, it } from 'node:test';
+import assert from 'node:assert/strict';
 import { customAlphabet as theirs, urlAlphabet as theirAlphabet } from 'nanoid';
-import { expect } from 'chai';
 
 import nanoid, { customAlphabet as mine, urlAlphabet } from '../../lib/helpers/nanoid.js';
 
@@ -32,23 +33,23 @@ const distribution = (generate, alphabet, total) => {
 };
 
 describe('nanoid transcription', () => {
-  it('uses the same url alphabet characters', () => {
+  it('uses the same url alphabet characters', { timeout: 3000 }, () => {
     // Upstream may reorder the alphabet without changing the distribution.
-    expect([...urlAlphabet]).to.have.members([...theirAlphabet]);
-    expect(urlAlphabet).to.have.lengthOf(64);
+    assert.deepEqual(new Set([...urlAlphabet]), new Set([...theirAlphabet]));
+    assert.equal(urlAlphabet.length, 64);
   });
 
-  it('produces the same default id length', () => {
-    expect(nanoid()).to.have.lengthOf(43);
-    expect(nanoid()).to.have.lengthOf(theirs(theirAlphabet, 43)().length);
+  it('produces the same default id length', { timeout: 3000 }, () => {
+    assert.equal(nanoid().length, 43);
+    assert.equal(nanoid().length, theirs(theirAlphabet, 43)().length);
   });
 
-  it('returns an empty string for size 0, as nanoid does', () => {
-    expect(mine(urlAlphabet, 43)(0)).to.equal('');
-    expect(theirs(urlAlphabet, 43)(0)).to.equal('');
+  it('returns an empty string for size 0, as nanoid does', { timeout: 3000 }, () => {
+    assert.equal(mine(urlAlphabet, 43)(0), '');
+    assert.equal(theirs(urlAlphabet, 43)(0), '');
   });
 
-  it('coerces and rejects sizes the way nanoid does', () => {
+  it('coerces and rejects sizes the way nanoid does', { timeout: 3000 }, () => {
     // formats.bitsOfOpaqueRandomness is configurable and feeds this; a negative
     // size must throw rather than yield an empty token value
     const ours = mine(urlAlphabet, 43);
@@ -58,37 +59,37 @@ describe('nanoid transcription', () => {
       const run = (fn) => {
         try { return `len ${fn(size).length}`; } catch (err) { return `throws ${err.constructor.name}`; }
       };
-      expect(run(ours), `size ${String(size)}`).to.equal(run(nanoids));
+      assert.equal(run(ours), run(nanoids), `size ${String(size)}`);
     }
 
-    expect(() => ours(-1)).to.throw(RangeError, 'Wrong ID size');
+    assert.throws(() => ours(-1), (error) => { assert.ok(error instanceof RangeError); assert.ok(error.message.includes('Wrong ID size')); return true; });
   });
 
-  it('spans the pool correctly for ids larger than it', () => {
+  it('spans the pool correctly for ids larger than it', { timeout: 3000 }, () => {
     for (const size of [4095, 4096, 4097, 8192, 10_000]) {
       const id = mine(urlAlphabet)(size);
-      expect(id).to.have.lengthOf(size);
-      for (const char of id) expect(urlAlphabet).to.include(char);
+      assert.equal(id.length, size);
+      for (const char of id) assert.ok(urlAlphabet.includes(char));
     }
   });
 
-  it('refuses an alphabet it cannot represent', () => {
-    expect(() => mine('✓✗', 4)).to.throw(TypeError, 'alphabet must be latin1');
+  it('refuses an alphabet it cannot represent', { timeout: 3000 }, () => {
+    assert.throws(() => mine('✓✗', 4), (error) => { assert.ok(error instanceof TypeError); assert.ok(error.message.includes('alphabet must be latin1')); return true; });
   });
 
   for (const [name, alphabet] of Object.entries(ALPHABETS)) {
-    it(`${name}: emits only alphabet characters at the requested length`, () => {
+    it(`${name}: emits only alphabet characters at the requested length`, { timeout: 3000 }, () => {
       for (const size of [1, 2, 3, 6, 8, 9, 10, 21, 43, 64, 128]) {
         const generate = mine(alphabet, size);
         for (let i = 0; i < 200; i += 1) {
           const id = generate();
-          expect(id).to.have.lengthOf(size);
-          for (const char of id) expect(alphabet).to.include(char);
+          assert.equal(id.length, size);
+          for (const char of id) assert.ok(alphabet.includes(char));
         }
       }
     });
 
-    it(`${name}: is as uniformly distributed as nanoid`, () => {
+    it(`${name}: is as uniformly distributed as nanoid`, { timeout: 3000 }, () => {
       const ours = distribution(mine(alphabet), alphabet, 200_000);
       const nanoids = distribution(theirs(alphabet), alphabet, 200_000);
 
@@ -96,8 +97,8 @@ describe('nanoid transcription', () => {
       // below sits above that but far under what a modulo bias would produce,
       // which lands in the thousands.
       const bound = alphabet.length * 4;
-      expect(ours, `chi-square ${ours.toFixed(1)} vs nanoid ${nanoids.toFixed(1)}`).to.be.below(bound);
-      expect(nanoids).to.be.below(bound);
+      ((value) => { assert.equal(typeof value, 'number'); assert.ok(value < bound, `chi-square ${ours.toFixed(1)} vs nanoid ${nanoids.toFixed(1)}`); })(ours);
+      ((value) => { assert.equal(typeof value, 'number'); assert.ok(value < bound); })(nanoids);
     });
 
     // only meaningful where the alphabet does not fill the mask exactly; a
@@ -113,7 +114,7 @@ describe('nanoid transcription', () => {
         counts.set(char, counts.get(char) + 1);
       }
       const values = [...counts.values()];
-      expect(Math.max(...values) / Math.min(...values)).to.be.below(1.25);
+      assert.ok(Math.max(...values) / Math.min(...values) < 1.25);
     });
   }
 });

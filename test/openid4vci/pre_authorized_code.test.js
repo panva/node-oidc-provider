@@ -1,4 +1,5 @@
-import { expect } from 'chai';
+import { describe, before, afterEach, it } from 'node:test';
+import assert from 'node:assert/strict';
 import {
   exportJWK,
   generateKeyPair,
@@ -20,8 +21,10 @@ function errorDetail(spy) {
 }
 
 describe('grant_type=urn:ietf:params:oauth:grant-type:pre-authorized_code', () => {
-  before(bootstrap(import.meta.url));
-  afterEach(sinon.restore);
+  const fixture = {};
+
+  before(bootstrap(import.meta.url, fixture), { timeout: 3000 });
+  afterEach(() => sinon.restore(), { timeout: 3000 });
 
   async function mint({
     accountId = 'account',
@@ -59,21 +62,19 @@ describe('grant_type=urn:ietf:params:oauth:grant-type:pre-authorized_code', () =
     return preAuthorizedCode.save();
   }
 
-  it('is advertised in the discovery document', function () {
-    return this.agent.get('/.well-known/openid-configuration')
+  it('is advertised in the discovery document', { timeout: 3000 }, () => fixture.agent.get('/.well-known/openid-configuration')
       .expect(200)
       .expect((response) => {
-        expect(response.body.grant_types_supported).to.include(grant_type);
-      });
-  });
+        assert.ok(response.body.grant_types_supported.includes(grant_type));
+      }));
 
-  it('returns the right stuff', async function () {
+  it('returns the right stuff', { timeout: 3000 }, async () => {
     const spy = sinon.spy();
-    this.provider.once('grant.success', spy);
+    fixture.provider.once('grant.success', spy);
 
-    const code = await mint.call(this);
+    const code = await mint.call(fixture);
 
-    return this.agent.post(route)
+    return fixture.agent.post(route)
       .type('form')
       .send({
         client_id: 'wallet',
@@ -82,26 +83,26 @@ describe('grant_type=urn:ietf:params:oauth:grant-type:pre-authorized_code', () =
       })
       .expect(200)
       .expect(() => {
-        expect(spy.calledOnce).to.be.true;
-        const jti = this.getTokenJti(code);
-        const stored = this.TestAdapter.for('PreAuthorizedCode').syncFind(jti);
-        expect(stored).to.have.property('consumed').and.be.most(epochTime());
+        assert.equal(spy.calledOnce, true);
+        const jti = fixture.getTokenJti(code);
+        const stored = fixture.TestAdapter.for('PreAuthorizedCode').syncFind(jti);
+        ((actual) => { assert.ok('consumed' in Object(actual)); ((value) => { assert.equal(typeof value, 'number'); assert.ok(value <= epochTime()); })(actual.consumed); })(stored);
       })
       .expect((response) => {
-        expect(response.body).to.have.keys('access_token', 'expires_in', 'token_type', 'scope');
-        expect(response.body).to.have.property('scope', 'mdl_scope');
-        expect(response.body).to.have.property('token_type', 'Bearer');
+        assert.deepEqual(new Set(Object.keys(response.body)), new Set(['access_token', 'expires_in', 'token_type', 'scope']));
+        ((actual) => { assert.ok('scope' in Object(actual)); assert.equal(actual.scope, 'mdl_scope'); })(response.body);
+        ((actual) => { assert.ok('token_type' in Object(actual)); assert.equal(actual.token_type, 'Bearer'); })(response.body);
       });
   });
 
-  it('populates ctx.oidc.entities', function (done) {
-    this.assertOnce((ctx) => {
-      expect(ctx.oidc.entities).to.have.keys('Client', 'Grant', 'Account', 'PreAuthorizedCode', 'AccessToken');
-      expect(ctx.oidc.entities.AccessToken).to.have.property('gty', 'pre_authorized_code');
+  it('populates ctx.oidc.entities', { timeout: 3000 }, (_t, done) => {
+    fixture.assertOnce((ctx) => {
+      assert.deepEqual(new Set(Object.keys(ctx.oidc.entities)), new Set(['Client', 'Grant', 'Account', 'PreAuthorizedCode', 'AccessToken']));
+      ((actual) => { assert.ok('gty' in Object(actual)); assert.equal(actual.gty, 'pre_authorized_code'); })(ctx.oidc.entities.AccessToken);
     }, done);
 
-    mint.call(this).then((code) => {
-      this.agent.post(route)
+    mint.call(fixture).then((code) => {
+      fixture.agent.post(route)
         .type('form')
         .send({
           client_id: 'wallet',
@@ -112,12 +113,12 @@ describe('grant_type=urn:ietf:params:oauth:grant-type:pre-authorized_code', () =
     });
   });
 
-  it('filters removed Resource Server scopes when exchanging a pre-authorized code', async function () {
-    const code = await mint.call(this);
-    sinon.stub(instance(this.provider).features.resourceIndicators, 'getResourceServerInfo')
+  it('filters removed Resource Server scopes when exchanging a pre-authorized code', { timeout: 3000 }, async () => {
+    const code = await mint.call(fixture);
+    sinon.stub(instance(fixture.provider).features.resourceIndicators, 'getResourceServerInfo')
       .callsFake((_ctx, resource) => ({ audience: resource, scope: 'other_scope' }));
 
-    const { body } = await this.agent.post(route)
+    const { body } = await fixture.agent.post(route)
       .type('form')
       .send({
         client_id: 'wallet',
@@ -126,18 +127,18 @@ describe('grant_type=urn:ietf:params:oauth:grant-type:pre-authorized_code', () =
       })
       .expect(200);
 
-    expect(body).to.have.property('scope', '');
-    const token = await this.provider.AccessToken.find(body.access_token);
-    expect(token).to.have.property('scope', '');
+    ((actual) => { assert.ok('scope' in Object(actual)); assert.equal(actual.scope, ''); })(body);
+    const token = await fixture.provider.AccessToken.find(body.access_token);
+    ((actual) => { assert.ok('scope' in Object(actual)); assert.equal(actual.scope, ''); })(token);
   });
 
-  it('issues a refresh token (w/ offline_access)', async function () {
-    const code = await mint.call(this, {
+  it('issues a refresh token (w/ offline_access)', { timeout: 3000 }, async () => {
+    const code = await mint.call(fixture, {
       scope: 'offline_access mdl_scope',
       oidcScope: 'offline_access',
     });
 
-    return this.agent.post(route)
+    return fixture.agent.post(route)
       .type('form')
       .send({
         client_id: 'wallet',
@@ -146,17 +147,17 @@ describe('grant_type=urn:ietf:params:oauth:grant-type:pre-authorized_code', () =
       })
       .expect(200)
       .expect((response) => {
-        expect(response.body).to.have.property('refresh_token');
+        assert.ok('refresh_token' in Object(response.body));
       });
   });
 
-  it('does not issue an ID token when the source includes openid scope', async function () {
-    const code = await mint.call(this, {
+  it('does not issue an ID token when the source includes openid scope', { timeout: 3000 }, async () => {
+    const code = await mint.call(fixture, {
       scope: 'openid offline_access mdl_scope',
       oidcScope: 'openid offline_access',
     });
 
-    await this.agent.post(route)
+    await fixture.agent.post(route)
       .type('form')
       .send({
         client_id: 'wallet',
@@ -165,19 +166,19 @@ describe('grant_type=urn:ietf:params:oauth:grant-type:pre-authorized_code', () =
       })
       .expect(200)
       .expect(({ body }) => {
-        expect(body).to.have.property('refresh_token');
-        expect(body).not.to.have.property('id_token');
+        assert.ok('refresh_token' in Object(body));
+        assert.ok(!('id_token' in Object(body)));
       });
   });
 
-  it('returns the authorization_details assigned to the access token', async function () {
+  it('returns the authorization_details assigned to the access token', { timeout: 3000 }, async () => {
     const rar = [{
       type: 'openid_credential',
       credential_configuration_id: 'org.iso.18013.5.1.mDL',
     }];
-    const code = await mint.call(this, { rar });
+    const code = await mint.call(fixture, { rar });
 
-    return this.agent.post(route)
+    return fixture.agent.post(route)
       .type('form')
       .send({
         client_id: 'wallet',
@@ -186,17 +187,17 @@ describe('grant_type=urn:ietf:params:oauth:grant-type:pre-authorized_code', () =
       })
       .expect(200)
       .expect((response) => {
-        expect(response.body).to.have.deep.property('authorization_details', [{
+        ((actual) => { assert.ok('authorization_details' in Object(actual)); assert.deepEqual(actual.authorization_details, [{
           ...rar[0],
           credential_identifiers: ['org.iso.18013.5.1.mDL-id-1'],
-        }]);
+        }]); })(response.body);
       });
   });
 
-  it('can be used towards the credential endpoint', async function () {
-    const code = await mint.call(this);
+  it('can be used towards the credential endpoint', { timeout: 3000 }, async () => {
+    const code = await mint.call(fixture);
 
-    const { body: { access_token: accessToken } } = await this.agent.post(route)
+    const { body: { access_token: accessToken } } = await fixture.agent.post(route)
       .type('form')
       .send({
         client_id: 'wallet',
@@ -205,11 +206,11 @@ describe('grant_type=urn:ietf:params:oauth:grant-type:pre-authorized_code', () =
       })
       .expect(200);
 
-    const { body: { c_nonce: nonce } } = await this.agent.post('/challenge')
+    const { body: { c_nonce: nonce } } = await fixture.agent.post('/challenge')
       .expect(200);
 
     const keypair = await generateKeyPair('ES256', { extractable: true });
-    const proof = await new SignJWT({ aud: this.provider.issuer, nonce })
+    const proof = await new SignJWT({ aud: fixture.provider.issuer, nonce })
       .setProtectedHeader({
         alg: 'ES256',
         typ: 'openid4vci-proof+jwt',
@@ -218,7 +219,7 @@ describe('grant_type=urn:ietf:params:oauth:grant-type:pre-authorized_code', () =
       .setIssuedAt()
       .sign(keypair.privateKey);
 
-    return this.agent.post('/credential')
+    return fixture.agent.post('/credential')
       .set('Authorization', `Bearer ${accessToken}`)
       .send({
         credential_configuration_id: 'org.iso.18013.5.1.mDL',
@@ -228,15 +229,17 @@ describe('grant_type=urn:ietf:params:oauth:grant-type:pre-authorized_code', () =
       })
       .expect(200)
       .expect((response) => {
-        expect(response.body).to.have.property('credentials').that.is.an('array').with.lengthOf(1);
+        ((actual) => { assert.ok('credentials' in Object(actual)); assert.ok(Array.isArray(actual.credentials)); assert.equal(actual.credentials.length, 1); })(response.body);
       });
   });
 
   describe('validates', () => {
-    it('grant type is allowed for the client', async function () {
-      const code = await mint.call(this, { clientId: 'client' });
+    const fixture1 = Object.create(fixture);
 
-      return this.agent.post(route)
+    it('grant type is allowed for the client', { timeout: 3000 }, async () => {
+      const code = await mint.call(fixture1, { clientId: 'client' });
+
+      return fixture1.agent.post(route)
         .auth('client', 'secret')
         .type('form')
         .send({
@@ -250,8 +253,7 @@ describe('grant_type=urn:ietf:params:oauth:grant-type:pre-authorized_code', () =
         });
     });
 
-    it('pre-authorized_code param presence', function () {
-      return this.agent.post(route)
+    it('pre-authorized_code param presence', { timeout: 3000 }, () => fixture1.agent.post(route)
         .type('form')
         .send({
           client_id: 'wallet',
@@ -262,10 +264,9 @@ describe('grant_type=urn:ietf:params:oauth:grant-type:pre-authorized_code', () =
         .expect({
           error: 'invalid_request',
           error_description: "missing required parameter 'pre-authorized_code'",
-        });
-    });
+        }));
 
-    it('accepts and narrows authorization_details', async function () {
+    it('accepts and narrows authorization_details', { timeout: 3000 }, async () => {
       const granted = [{
         type: 'openid_credential',
         credential_configuration_id: 'org.iso.18013.5.1.mDL',
@@ -274,12 +275,12 @@ describe('grant_type=urn:ietf:params:oauth:grant-type:pre-authorized_code', () =
         credential_configuration_id: 'org.iso.18013.5.1.mDL.no_scope',
       }];
       const requested = [granted[1]];
-      const code = await mint.call(this, { rar: granted });
+      const code = await mint.call(fixture1, { rar: granted });
       const callback = new Promise((resolve) => {
         rarEvents.once('authorizationDetailsForAccessToken', (...args) => resolve(args));
       });
 
-      const response = await this.agent.post(route)
+      const response = await fixture1.agent.post(route)
         .type('form')
         .send({
           client_id: 'wallet',
@@ -289,26 +290,26 @@ describe('grant_type=urn:ietf:params:oauth:grant-type:pre-authorized_code', () =
         })
         .expect(200);
 
-      expect(response.body).to.have.deep.property('authorization_details', [{
+      ((actual) => { assert.ok('authorization_details' in Object(actual)); assert.deepEqual(actual.authorization_details, [{
         ...requested[0],
         credential_identifiers: ['org.iso.18013.5.1.mDL.no_scope-id-1'],
-      }]);
+      }]); })(response.body);
 
       const [, token, source, actualGrantType] = await callback;
-      expect(token).to.have.property('kind', 'AccessToken');
-      expect(source).to.have.property('kind', 'PreAuthorizedCode');
-      expect(actualGrantType).to.equal(grant_type);
+      ((actual) => { assert.ok('kind' in Object(actual)); assert.equal(actual.kind, 'AccessToken'); })(token);
+      ((actual) => { assert.ok('kind' in Object(actual)); assert.equal(actual.kind, 'PreAuthorizedCode'); })(source);
+      assert.equal(actualGrantType, grant_type);
     });
 
-    it('rejects authorization_details not present in the grant', async function () {
-      const code = await mint.call(this, {
+    it('rejects authorization_details not present in the grant', { timeout: 3000 }, async () => {
+      const code = await mint.call(fixture1, {
         rar: [{
           type: 'openid_credential',
           credential_configuration_id: 'org.iso.18013.5.1.mDL',
         }],
       });
 
-      return this.agent.post(route)
+      return fixture1.agent.post(route)
         .type('form')
         .send({
           client_id: 'wallet',
@@ -326,11 +327,11 @@ describe('grant_type=urn:ietf:params:oauth:grant-type:pre-authorized_code', () =
         });
     });
 
-    it('code being "found"', function () {
+    it('code being "found"', { timeout: 3000 }, () => {
       const spy = sinon.spy();
-      this.provider.once('grant.error', spy);
+      fixture1.provider.once('grant.error', spy);
 
-      return this.agent.post(route)
+      return fixture1.agent.post(route)
         .type('form')
         .send({
           client_id: 'wallet',
@@ -339,21 +340,21 @@ describe('grant_type=urn:ietf:params:oauth:grant-type:pre-authorized_code', () =
         })
         .expect(400)
         .expect(() => {
-          expect(spy.calledOnce).to.be.true;
-          expect(errorDetail(spy)).to.equal('pre-authorized code not found');
+          assert.equal(spy.calledOnce, true);
+          assert.equal(errorDetail(spy), 'pre-authorized code not found');
         })
         .expect((response) => {
-          expect(response.body).to.have.property('error', 'invalid_grant');
+          ((actual) => { assert.ok('error' in Object(actual)); assert.equal(actual.error, 'invalid_grant'); })(response.body);
         });
     });
 
-    it('code belongs to client', async function () {
+    it('code belongs to client', { timeout: 3000 }, async () => {
       const spy = sinon.spy();
-      this.provider.once('grant.error', spy);
+      fixture1.provider.once('grant.error', spy);
 
-      const code = await mint.call(this, { clientId: 'wallet-other' });
+      const code = await mint.call(fixture1, { clientId: 'wallet-other' });
 
-      return this.agent.post(route)
+      return fixture1.agent.post(route)
         .type('form')
         .send({
           client_id: 'wallet',
@@ -362,22 +363,24 @@ describe('grant_type=urn:ietf:params:oauth:grant-type:pre-authorized_code', () =
         })
         .expect(400)
         .expect(() => {
-          expect(spy.calledOnce).to.be.true;
-          expect(errorDetail(spy)).to.equal('client mismatch');
+          assert.equal(spy.calledOnce, true);
+          assert.equal(errorDetail(spy), 'client mismatch');
         })
         .expect((response) => {
-          expect(response.body).to.have.property('error', 'invalid_grant');
+          ((actual) => { assert.ok('error' in Object(actual)); assert.equal(actual.error, 'invalid_grant'); })(response.body);
         });
     });
 
-    context('', () => {
-      it('code is not expired', async function () {
+    describe('', () => {
+      const fixture2 = Object.create(fixture1);
+
+      it('code is not expired', { timeout: 3000 }, async () => {
         const spy = sinon.spy();
-        this.provider.once('grant.error', spy);
+        fixture2.provider.once('grant.error', spy);
 
-        const code = await mint.call(this, { expiresIn: -1 });
+        const code = await mint.call(fixture2, { expiresIn: -1 });
 
-        return this.agent.post(route)
+        return fixture2.agent.post(route)
           .type('form')
           .send({
             client_id: 'wallet',
@@ -386,24 +389,24 @@ describe('grant_type=urn:ietf:params:oauth:grant-type:pre-authorized_code', () =
           })
           .expect(400)
           .expect(() => {
-            expect(spy.calledOnce).to.be.true;
-            expect(errorDetail(spy)).to.equal('pre-authorized code is expired');
+            assert.equal(spy.calledOnce, true);
+            assert.equal(errorDetail(spy), 'pre-authorized code is expired');
           })
           .expect((response) => {
-            expect(response.body).to.have.property('error', 'invalid_grant');
+            ((actual) => { assert.ok('error' in Object(actual)); assert.equal(actual.error, 'invalid_grant'); })(response.body);
           });
       });
     });
 
-    it('code is not already used', async function () {
+    it('code is not already used', { timeout: 3000 }, async () => {
       const spy = sinon.spy();
-      this.provider.once('grant.error', spy);
+      fixture1.provider.once('grant.error', spy);
 
-      const code = await mint.call(this);
-      const preAuthorizedCode = await this.provider.PreAuthorizedCode.find(code);
+      const code = await mint.call(fixture1);
+      const preAuthorizedCode = await fixture1.provider.PreAuthorizedCode.find(code);
       await preAuthorizedCode.consume();
 
-      return this.agent.post(route)
+      return fixture1.agent.post(route)
         .type('form')
         .send({
           client_id: 'wallet',
@@ -412,21 +415,21 @@ describe('grant_type=urn:ietf:params:oauth:grant-type:pre-authorized_code', () =
         })
         .expect(400)
         .expect(() => {
-          expect(spy.calledOnce).to.be.true;
-          expect(errorDetail(spy)).to.equal('pre-authorized code already consumed');
+          assert.equal(spy.calledOnce, true);
+          assert.equal(errorDetail(spy), 'pre-authorized code already consumed');
         })
         .expect((response) => {
-          expect(response.body).to.have.property('error', 'invalid_grant');
+          ((actual) => { assert.ok('error' in Object(actual)); assert.equal(actual.error, 'invalid_grant'); })(response.body);
         });
     });
 
-    it('account is still there', async function () {
+    it('account is still there', { timeout: 3000 }, async () => {
       const spy = sinon.spy();
-      this.provider.once('grant.error', spy);
+      fixture1.provider.once('grant.error', spy);
 
-      const code = await mint.call(this, { accountId: 'notfound' });
+      const code = await mint.call(fixture1, { accountId: 'notfound' });
 
-      return this.agent.post(route)
+      return fixture1.agent.post(route)
         .type('form')
         .send({
           client_id: 'wallet',
@@ -435,21 +438,21 @@ describe('grant_type=urn:ietf:params:oauth:grant-type:pre-authorized_code', () =
         })
         .expect(400)
         .expect(() => {
-          expect(spy.calledOnce).to.be.true;
-          expect(errorDetail(spy)).to.equal('pre-authorized code invalid (referenced account not found)');
+          assert.equal(spy.calledOnce, true);
+          assert.equal(errorDetail(spy), 'pre-authorized code invalid (referenced account not found)');
         })
         .expect((response) => {
-          expect(response.body).to.have.property('error', 'invalid_grant');
+          ((actual) => { assert.ok('error' in Object(actual)); assert.equal(actual.error, 'invalid_grant'); })(response.body);
         });
     });
 
-    it('grant is still there', async function () {
+    it('grant is still there', { timeout: 3000 }, async () => {
       const spy = sinon.spy();
-      this.provider.once('grant.error', spy);
+      fixture1.provider.once('grant.error', spy);
 
-      const code = await mint.call(this, { grantId: 'foobar' });
+      const code = await mint.call(fixture1, { grantId: 'foobar' });
 
-      return this.agent.post(route)
+      return fixture1.agent.post(route)
         .type('form')
         .send({
           client_id: 'wallet',
@@ -458,21 +461,21 @@ describe('grant_type=urn:ietf:params:oauth:grant-type:pre-authorized_code', () =
         })
         .expect(400)
         .expect(() => {
-          expect(spy.calledOnce).to.be.true;
-          expect(errorDetail(spy)).to.equal('grant not found');
+          assert.equal(spy.calledOnce, true);
+          assert.equal(errorDetail(spy), 'grant not found');
         })
         .expect((response) => {
-          expect(response.body).to.have.property('error', 'invalid_grant');
+          ((actual) => { assert.ok('error' in Object(actual)); assert.equal(actual.error, 'invalid_grant'); })(response.body);
         });
     });
 
-    it('account matches the grant', async function () {
+    it('account matches the grant', { timeout: 3000 }, async () => {
       const spy = sinon.spy();
-      this.provider.once('grant.error', spy);
+      fixture1.provider.once('grant.error', spy);
 
-      const code = await mint.call(this, { grantAccountId: 'other-account' });
+      const code = await mint.call(fixture1, { grantAccountId: 'other-account' });
 
-      return this.agent.post(route)
+      return fixture1.agent.post(route)
         .type('form')
         .send({
           client_id: 'wallet',
@@ -481,20 +484,22 @@ describe('grant_type=urn:ietf:params:oauth:grant-type:pre-authorized_code', () =
         })
         .expect(400)
         .expect(() => {
-          expect(spy.calledOnce).to.be.true;
-          expect(errorDetail(spy)).to.equal('accountId mismatch');
+          assert.equal(spy.calledOnce, true);
+          assert.equal(errorDetail(spy), 'accountId mismatch');
         })
         .expect((response) => {
-          expect(response.body).to.have.property('error', 'invalid_grant');
+          ((actual) => { assert.ok('error' in Object(actual)); assert.equal(actual.error, 'invalid_grant'); })(response.body);
         });
     });
   });
 
   describe('Transaction Code', () => {
-    it('is validated when attached to the code', async function () {
-      const code = await mint.call(this, { txCode: '493536' });
+    const fixture3 = Object.create(fixture);
 
-      return this.agent.post(route)
+    it('is validated when attached to the code', { timeout: 3000 }, async () => {
+      const code = await mint.call(fixture3, { txCode: '493536' });
+
+      return fixture3.agent.post(route)
         .type('form')
         .send({
           client_id: 'wallet',
@@ -505,10 +510,10 @@ describe('grant_type=urn:ietf:params:oauth:grant-type:pre-authorized_code', () =
         .expect(200);
     });
 
-    it('must be provided when attached to the code (without consuming it)', async function () {
-      const code = await mint.call(this, { txCode: '493536' });
+    it('must be provided when attached to the code (without consuming it)', { timeout: 3000 }, async () => {
+      const code = await mint.call(fixture3, { txCode: '493536' });
 
-      await this.agent.post(route)
+      await fixture3.agent.post(route)
         .type('form')
         .send({
           client_id: 'wallet',
@@ -521,10 +526,10 @@ describe('grant_type=urn:ietf:params:oauth:grant-type:pre-authorized_code', () =
           error_description: "missing required parameter 'tx_code'",
         });
 
-      const jti = this.getTokenJti(code);
-      expect(this.TestAdapter.for('PreAuthorizedCode').syncFind(jti)).not.to.have.property('consumed');
+      const jti = fixture3.getTokenJti(code);
+      assert.ok(!('consumed' in Object(fixture3.TestAdapter.for('PreAuthorizedCode').syncFind(jti))));
 
-      return this.agent.post(route)
+      return fixture3.agent.post(route)
         .type('form')
         .send({
           client_id: 'wallet',
@@ -535,13 +540,13 @@ describe('grant_type=urn:ietf:params:oauth:grant-type:pre-authorized_code', () =
         .expect(200);
     });
 
-    it('must match the one attached to the code (consuming it)', async function () {
+    it('must match the one attached to the code (consuming it)', { timeout: 3000 }, async () => {
       const spy = sinon.spy();
-      this.provider.once('grant.error', spy);
+      fixture3.provider.once('grant.error', spy);
 
-      const code = await mint.call(this, { txCode: '493536' });
+      const code = await mint.call(fixture3, { txCode: '493536' });
 
-      await this.agent.post(route)
+      await fixture3.agent.post(route)
         .type('form')
         .send({
           client_id: 'wallet',
@@ -551,14 +556,14 @@ describe('grant_type=urn:ietf:params:oauth:grant-type:pre-authorized_code', () =
         })
         .expect(400)
         .expect(() => {
-          expect(spy.calledOnce).to.be.true;
-          expect(errorDetail(spy)).to.equal('invalid tx_code provided');
+          assert.equal(spy.calledOnce, true);
+          assert.equal(errorDetail(spy), 'invalid tx_code provided');
         })
         .expect((response) => {
-          expect(response.body).to.have.property('error', 'invalid_grant');
+          ((actual) => { assert.ok('error' in Object(actual)); assert.equal(actual.error, 'invalid_grant'); })(response.body);
         });
 
-      return this.agent.post(route)
+      return fixture3.agent.post(route)
         .type('form')
         .send({
           client_id: 'wallet',
@@ -568,14 +573,14 @@ describe('grant_type=urn:ietf:params:oauth:grant-type:pre-authorized_code', () =
         })
         .expect(400)
         .expect((response) => {
-          expect(response.body).to.have.property('error', 'invalid_grant');
+          ((actual) => { assert.ok('error' in Object(actual)); assert.equal(actual.error, 'invalid_grant'); })(response.body);
         });
     });
 
-    it('must not be provided when not attached to the code (without consuming it)', async function () {
-      const code = await mint.call(this);
+    it('must not be provided when not attached to the code (without consuming it)', { timeout: 3000 }, async () => {
+      const code = await mint.call(fixture3);
 
-      await this.agent.post(route)
+      await fixture3.agent.post(route)
         .type('form')
         .send({
           client_id: 'wallet',
@@ -589,10 +594,10 @@ describe('grant_type=urn:ietf:params:oauth:grant-type:pre-authorized_code', () =
           error_description: 'tx_code is not expected for this pre-authorized code',
         });
 
-      const jti = this.getTokenJti(code);
-      expect(this.TestAdapter.for('PreAuthorizedCode').syncFind(jti)).not.to.have.property('consumed');
+      const jti = fixture3.getTokenJti(code);
+      assert.ok(!('consumed' in Object(fixture3.TestAdapter.for('PreAuthorizedCode').syncFind(jti))));
 
-      return this.agent.post(route)
+      return fixture3.agent.post(route)
         .type('form')
         .send({
           client_id: 'wallet',

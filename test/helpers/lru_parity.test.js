@@ -1,4 +1,5 @@
-import { expect } from 'chai';
+import { describe, it } from 'node:test';
+import assert from 'node:assert/strict';
 import QuickLRU from 'quick-lru';
 
 import LRU from '../../lib/helpers/lru.js';
@@ -23,32 +24,32 @@ const mirror = (maxSize) => {
     },
     check(keys) {
       for (const key of keys) {
-        expect(mine.get(key), `get(${key})`).to.deep.equal(theirs.get(key));
-        expect(mine.has(key), `has(${key})`).to.equal(theirs.has(key));
+        assert.deepEqual(mine.get(key), theirs.get(key), `get(${key})`);
+        assert.equal(mine.has(key), theirs.has(key), `has(${key})`);
       }
-      expect(mine.size, 'size').to.equal(theirs.size);
+      assert.equal(mine.size, theirs.size, 'size');
     },
     delete(key) {
-      expect(mine.delete(key), `delete(${key})`).to.equal(theirs.delete(key));
+      assert.equal(mine.delete(key), theirs.delete(key), `delete(${key})`);
     },
     get(key) {
       const a = mine.get(key);
       const b = theirs.get(key);
-      expect(a).to.deep.equal(b);
+      assert.deepEqual(a, b);
       return a;
     },
   };
 };
 
 describe('lru transcription', () => {
-  it('rejects a missing or zero maxSize, as quick-lru does', () => {
+  it('rejects a missing or zero maxSize, as quick-lru does', { timeout: 3000 }, () => {
     for (const options of [{}, { maxSize: 0 }, { maxSize: -1 }]) {
-      expect(() => new LRU(options)).to.throw(TypeError, '`maxSize` must be a number greater than 0');
-      expect(() => new QuickLRU(options)).to.throw(TypeError);
+      assert.throws(() => new LRU(options), (error) => { assert.ok(error instanceof TypeError); assert.ok(error.message.includes('`maxSize` must be a number greater than 0')); return true; });
+      assert.throws(() => new QuickLRU(options), (error) => { assert.ok(error instanceof TypeError); return true; });
     }
   });
 
-  it('agrees across the eviction boundary', () => {
+  it('agrees across the eviction boundary', { timeout: 3000 }, () => {
     const maxSize = 10;
     const lru = mirror(maxSize);
     const keys = Array.from({ length: 40 }, (_, i) => `k${i}`);
@@ -59,7 +60,7 @@ describe('lru transcription', () => {
     }
   });
 
-  it('agrees when reads promote stale entries', () => {
+  it('agrees when reads promote stale entries', { timeout: 3000 }, () => {
     const lru = mirror(4);
     const keys = ['a', 'b', 'c', 'd', 'e', 'f', 'g'];
 
@@ -77,7 +78,7 @@ describe('lru transcription', () => {
     lru.check(keys);
   });
 
-  it('agrees on overwrites', () => {
+  it('agrees on overwrites', { timeout: 3000 }, () => {
     const lru = mirror(5);
     const keys = ['a', 'b', 'c'];
     lru.set('a', 1);
@@ -88,7 +89,7 @@ describe('lru transcription', () => {
     lru.check(keys);
   });
 
-  it('agrees on delete of present, absent and stale keys', () => {
+  it('agrees on delete of present, absent and stale keys', { timeout: 3000 }, () => {
     const lru = mirror(3);
     lru.set('a', 1);
     lru.set('b', 2);
@@ -101,7 +102,7 @@ describe('lru transcription', () => {
     lru.check(['a', 'b', 'c', 'd', 'zzz']);
   });
 
-  it('agrees on per entry expiry', async () => {
+  it('agrees on per entry expiry', { timeout: 3000 }, async () => {
     const lru = mirror(10);
     lru.set('fresh', 1, { maxAge: 60_000 });
     lru.set('brief', 2, { maxAge: 15 });
@@ -110,11 +111,11 @@ describe('lru transcription', () => {
 
     await new Promise((resolve) => { setTimeout(resolve, 40); });
 
-    expect(lru.get('brief')).to.equal(undefined);
+    assert.equal(lru.get('brief'), undefined);
     lru.check(['fresh', 'brief', 'forever']);
   });
 
-  it('agrees on expiry of entries that fell into the stale generation', async () => {
+  it('agrees on expiry of entries that fell into the stale generation', { timeout: 3000 }, async () => {
     const lru = mirror(3);
     lru.set('a', 1, { maxAge: 15 });
     lru.set('b', 2);
@@ -123,11 +124,11 @@ describe('lru transcription', () => {
 
     await new Promise((resolve) => { setTimeout(resolve, 40); });
 
-    expect(lru.get('a')).to.equal(undefined);
+    assert.equal(lru.get('a'), undefined);
     lru.check(['a', 'b', 'c', 'd']);
   });
 
-  it('agrees over a randomised operation sequence', () => {
+  it('agrees over a randomised operation sequence', { timeout: 3000 }, () => {
     const maxSize = 8;
     const lru = mirror(maxSize);
     const keys = Array.from({ length: 20 }, (_, i) => `k${i}`);

@@ -1,7 +1,8 @@
+import { describe, before, afterEach, beforeEach, it } from 'node:test';
+import assert from 'node:assert/strict';
 import { generateKeyPairSync } from 'node:crypto';
 
 import { createSandbox } from 'sinon';
-import { expect } from 'chai';
 import timekeeper from 'timekeeper';
 import { SignJWT } from 'jose';
 
@@ -65,30 +66,32 @@ async function authHeaders(instanceKeyPair, path) {
 
 for (const authMethod of ['attest_jwt_client_auth', 'attest_jwt_client_auth_dpop']) {
   describe(`${authMethod} bindings`, () => {
-    before(bootstrap(import.meta.url));
-    before(async function () {
-      this.authMethod = authMethod;
-      const client = await this.provider.Client.find('client');
+    const fixture = {};
+
+    before(bootstrap(import.meta.url, fixture), { timeout: 3000 });
+    before(async () => {
+      fixture.authMethod = authMethod;
+      const client = await fixture.provider.Client.find('client');
       client.tokenEndpointAuthMethod = authMethod;
-    });
+    }, { timeout: 3000 });
 
-    afterEach(() => timekeeper.reset());
-    afterEach(function () {
-      this.provider.removeAllListeners();
-    });
-    afterEach(sinon.restore);
+    afterEach(() => timekeeper.reset(), { timeout: 3000 });
+    afterEach(() => {
+      fixture.provider.removeAllListeners();
+    }, { timeout: 3000 });
+    afterEach(() => sinon.restore(), { timeout: 3000 });
 
-    beforeEach(function () { return this.login({ scope: 'openid email offline_access' }); });
-    afterEach(function () { return this.logout(); });
-    skipConsent();
+    beforeEach(() => fixture.login({ scope: 'openid email offline_access' }), { timeout: 3000 });
+    afterEach(() => fixture.logout(), { timeout: 3000 });
+    skipConsent(fixture);
 
-    afterEach(function () {
-      this.provider.removeAllListeners();
-    });
+    afterEach(() => {
+      fixture.provider.removeAllListeners();
+    }, { timeout: 3000 });
 
-    it('refresh token binding', async function () {
+    it('refresh token binding', { timeout: 3000 }, async () => {
       const instanceKeyPair = generateKeyPairSync('ed25519');
-      const { headers: { location } } = await this.agent.get('/auth')
+      const { headers: { location } } = await fixture.agent.get('/auth')
         .query({
           client_id: 'client',
           scope: 'offline_access',
@@ -98,100 +101,100 @@ for (const authMethod of ['attest_jwt_client_auth', 'attest_jwt_client_auth_dpop
         .expect(303);
 
       const callback = new URL(location).searchParams;
-      expect(callback.has('code')).to.be.true;
+      assert.equal(callback.has('code'), true);
       const code = new URL(location).searchParams.get('code');
 
-      const { body: { refresh_token } } = await this.agent.post('/token')
+      const { body: { refresh_token } } = await fixture.agent.post('/token')
         .send({
           code,
           grant_type: 'authorization_code',
         })
         .type('form')
-        .set(await authHeaders.call(this, instanceKeyPair, '/token'))
+        .set(await authHeaders.call(fixture, instanceKeyPair, '/token'))
         .expect(200);
 
-      await this.agent.post('/token')
+      await fixture.agent.post('/token')
         .send({
           refresh_token,
           grant_type: 'refresh_token',
         })
         .type('form')
-        .set(await authHeaders.call(this, instanceKeyPair, '/token'))
+        .set(await authHeaders.call(fixture, instanceKeyPair, '/token'))
         .expect(200);
 
       const spy = sinon.spy();
-      this.provider.once('grant.error', spy);
+      fixture.provider.once('grant.error', spy);
       const instanceKeyPair2 = generateKeyPairSync('ed25519');
-      await this.agent.post('/token')
+      await fixture.agent.post('/token')
         .send({
           refresh_token,
           grant_type: 'refresh_token',
         })
         .type('form')
-        .set(await authHeaders.call(this, instanceKeyPair2, '/token'))
+        .set(await authHeaders.call(fixture, instanceKeyPair2, '/token'))
         .expect(400)
         .expect(() => {
-          expect(spy.calledOnce).to.be.true;
-          expect(errorDetail(spy)).to.equal('oauth-client-attestation instance public key mismatch');
+          assert.equal(spy.calledOnce, true);
+          assert.equal(errorDetail(spy), 'oauth-client-attestation instance public key mismatch');
         });
 
       {
-        const { body: { active } } = await this.agent.post('/token/introspection')
+        const { body: { active } } = await fixture.agent.post('/token/introspection')
           .send({
             token: refresh_token,
           })
           .type('form')
-          .set(await authHeaders.call(this, instanceKeyPair2, '/token/introspection'))
+          .set(await authHeaders.call(fixture, instanceKeyPair2, '/token/introspection'))
           .expect(200);
 
-        expect(active).to.be.false;
+        assert.equal(active, false);
 
-        await this.agent.post('/token/revocation')
+        await fixture.agent.post('/token/revocation')
           .send({
             token: refresh_token,
           })
           .type('form')
-          .set(await authHeaders.call(this, instanceKeyPair2, '/token/revocation'))
-          .expect(200);
-      }
-
-      {
-        const { body: { active } } = await this.agent.post('/token/introspection')
-          .send({
-            token: refresh_token,
-          })
-          .type('form')
-          .set(await authHeaders.call(this, instanceKeyPair, '/token/introspection'))
-          .expect(200);
-
-        expect(active).to.be.true;
-
-        await this.agent.post('/token/revocation')
-          .send({
-            token: refresh_token,
-          })
-          .type('form')
-          .set(await authHeaders.call(this, instanceKeyPair, '/token/revocation'))
+          .set(await authHeaders.call(fixture, instanceKeyPair2, '/token/revocation'))
           .expect(200);
       }
 
       {
-        const { body: { active } } = await this.agent.post('/token/introspection')
+        const { body: { active } } = await fixture.agent.post('/token/introspection')
           .send({
             token: refresh_token,
           })
           .type('form')
-          .set(await authHeaders.call(this, instanceKeyPair, '/token/introspection'))
+          .set(await authHeaders.call(fixture, instanceKeyPair, '/token/introspection'))
           .expect(200);
 
-        expect(active).to.be.false;
+        assert.equal(active, true);
+
+        await fixture.agent.post('/token/revocation')
+          .send({
+            token: refresh_token,
+          })
+          .type('form')
+          .set(await authHeaders.call(fixture, instanceKeyPair, '/token/revocation'))
+          .expect(200);
+      }
+
+      {
+        const { body: { active } } = await fixture.agent.post('/token/introspection')
+          .send({
+            token: refresh_token,
+          })
+          .type('form')
+          .set(await authHeaders.call(fixture, instanceKeyPair, '/token/introspection'))
+          .expect(200);
+
+        assert.equal(active, false);
       }
     });
 
-    it('PAR request_uri binding', async function () {
+    it('PAR request_uri binding', { timeout: 3000 }, async () => {
       const instanceKeyPair = generateKeyPairSync('ed25519');
 
-      const { body: { request_uri } } = await this.agent.post('/request')
+      const { body: { request_uri } } = await fixture.agent.post('/request')
         .send({
           client_id: 'client',
           scope: 'offline_access',
@@ -199,10 +202,10 @@ for (const authMethod of ['attest_jwt_client_auth', 'attest_jwt_client_auth_dpop
           response_type: 'code',
         })
         .type('form')
-        .set(await authHeaders.call(this, instanceKeyPair, '/request'))
+        .set(await authHeaders.call(fixture, instanceKeyPair, '/request'))
         .expect(201);
 
-      const { headers: { location } } = await this.agent.get('/auth')
+      const { headers: { location } } = await fixture.agent.get('/auth')
         .query({
           client_id: 'client',
           request_uri,
@@ -210,25 +213,25 @@ for (const authMethod of ['attest_jwt_client_auth', 'attest_jwt_client_auth_dpop
         .expect(303);
 
       const callback = new URL(location).searchParams;
-      expect(callback.has('code')).to.be.true;
+      assert.equal(callback.has('code'), true);
       const code = new URL(location).searchParams.get('code');
 
-      const { body: { refresh_token } } = await this.agent.post('/token')
+      const { body: { refresh_token } } = await fixture.agent.post('/token')
         .send({
           code,
           grant_type: 'authorization_code',
         })
         .type('form')
-        .set(await authHeaders.call(this, instanceKeyPair, '/token'))
+        .set(await authHeaders.call(fixture, instanceKeyPair, '/token'))
         .expect(200);
 
-      expect(this.TestAdapter.for('RefreshToken').syncFind(refresh_token)).to.have.property('attestationJkt').and.is.string;
+      ((actual) => { assert.ok('attestationJkt' in Object(actual)); assert.equal(typeof actual.attestationJkt, 'string'); })(fixture.TestAdapter.for('RefreshToken').syncFind(refresh_token));
     });
 
-    it('PAR request_uri binding (instance mismatch)', async function () {
+    it('PAR request_uri binding (instance mismatch)', { timeout: 3000 }, async () => {
       const instanceKeyPair = generateKeyPairSync('ed25519');
 
-      const { body: { request_uri } } = await this.agent.post('/request')
+      const { body: { request_uri } } = await fixture.agent.post('/request')
         .send({
           client_id: 'client',
           scope: 'offline_access',
@@ -236,10 +239,10 @@ for (const authMethod of ['attest_jwt_client_auth', 'attest_jwt_client_auth_dpop
           response_type: 'code',
         })
         .type('form')
-        .set(await authHeaders.call(this, instanceKeyPair, '/request'))
+        .set(await authHeaders.call(fixture, instanceKeyPair, '/request'))
         .expect(201);
 
-      const { headers: { location } } = await this.agent.get('/auth')
+      const { headers: { location } } = await fixture.agent.get('/auth')
         .query({
           client_id: 'client',
           request_uri,
@@ -247,90 +250,90 @@ for (const authMethod of ['attest_jwt_client_auth', 'attest_jwt_client_auth_dpop
         .expect(303);
 
       const callback = new URL(location).searchParams;
-      expect(callback.has('code')).to.be.true;
+      assert.equal(callback.has('code'), true);
       const code = new URL(location).searchParams.get('code');
 
       let spy = sinon.spy();
-      this.provider.once('grant.error', spy);
+      fixture.provider.once('grant.error', spy);
       const instanceKeyPair2 = generateKeyPairSync('ed25519');
 
-      await this.agent.post('/token')
+      await fixture.agent.post('/token')
         .send({
           code,
           grant_type: 'authorization_code',
         })
         .type('form')
-        .set(await authHeaders.call(this, instanceKeyPair2, '/token'))
+        .set(await authHeaders.call(fixture, instanceKeyPair2, '/token'))
         .expect(400)
         .expect(() => {
-          expect(spy.calledOnce).to.be.true;
-          expect(errorDetail(spy)).to.equal('oauth-client-attestation instance public key mismatch');
+          assert.equal(spy.calledOnce, true);
+          assert.equal(errorDetail(spy), 'oauth-client-attestation instance public key mismatch');
         });
 
       spy = sinon.spy();
-      this.provider.once('grant.error', spy);
-      await this.agent.post('/token')
+      fixture.provider.once('grant.error', spy);
+      await fixture.agent.post('/token')
         .send({
           code,
           grant_type: 'authorization_code',
         })
         .type('form')
-        .set(await authHeaders.call(this, instanceKeyPair, '/token'))
+        .set(await authHeaders.call(fixture, instanceKeyPair, '/token'))
         .expect(200);
     });
 
-    it('urn:ietf:params:oauth:grant-type:device_code', async function () {
+    it('urn:ietf:params:oauth:grant-type:device_code', { timeout: 3000 }, async () => {
       const instanceKeyPair = generateKeyPairSync('ed25519');
-      const { body } = await this.agent.post('/device/auth')
+      const { body } = await fixture.agent.post('/device/auth')
         .send({
           client_id: 'client',
           scope: 'offline_access',
           prompt: 'consent',
         })
         .type('form')
-        .set(await authHeaders.call(this, instanceKeyPair, '/device/auth'))
+        .set(await authHeaders.call(fixture, instanceKeyPair, '/device/auth'))
         .expect(200);
 
-      const deviceCode = this.TestAdapter.for('DeviceCode').syncFind(body.device_code);
+      const deviceCode = fixture.TestAdapter.for('DeviceCode').syncFind(body.device_code);
 
-      expect(deviceCode).to.have.property('attestationJkt').and.is.string;
+      ((actual) => { assert.ok('attestationJkt' in Object(actual)); assert.equal(typeof actual.attestationJkt, 'string'); })(deviceCode);
 
-      deviceCode.grantId = this.getGrantId();
-      deviceCode.accountId = this.getSub();
+      deviceCode.grantId = fixture.getGrantId();
+      deviceCode.accountId = fixture.getSub();
       deviceCode.scope = 'offline_access';
 
       const spy = sinon.spy();
-      this.provider.once('grant.error', spy);
+      fixture.provider.once('grant.error', spy);
       const instanceKeyPair2 = generateKeyPairSync('ed25519');
 
-      await this.agent.post('/token')
+      await fixture.agent.post('/token')
         .send({
           device_code: body.device_code,
           grant_type: 'urn:ietf:params:oauth:grant-type:device_code',
         })
         .type('form')
-        .set(await authHeaders.call(this, instanceKeyPair2, '/token'))
+        .set(await authHeaders.call(fixture, instanceKeyPair2, '/token'))
         .expect(400)
         .expect(() => {
-          expect(spy.calledOnce).to.be.true;
-          expect(errorDetail(spy)).to.equal('oauth-client-attestation instance public key mismatch');
+          assert.equal(spy.calledOnce, true);
+          assert.equal(errorDetail(spy), 'oauth-client-attestation instance public key mismatch');
         });
 
-      const { body: { refresh_token } } = await this.agent.post('/token')
+      const { body: { refresh_token } } = await fixture.agent.post('/token')
         .send({
           device_code: body.device_code,
           grant_type: 'urn:ietf:params:oauth:grant-type:device_code',
         })
         .type('form')
-        .set(await authHeaders.call(this, instanceKeyPair, '/token'))
+        .set(await authHeaders.call(fixture, instanceKeyPair, '/token'))
         .expect(200);
 
-      expect(this.TestAdapter.for('RefreshToken').syncFind(refresh_token)).to.have.property('attestationJkt').and.is.string;
+      ((actual) => { assert.ok('attestationJkt' in Object(actual)); assert.equal(typeof actual.attestationJkt, 'string'); })(fixture.TestAdapter.for('RefreshToken').syncFind(refresh_token));
     });
 
-    it('urn:openid:params:grant-type:ciba', async function () {
+    it('urn:openid:params:grant-type:ciba', { timeout: 3000 }, async () => {
       const instanceKeyPair = generateKeyPairSync('ed25519');
-      const { body } = await this.agent.post('/backchannel')
+      const { body } = await fixture.agent.post('/backchannel')
         .send({
           client_id: 'client',
           scope: 'openid offline_access',
@@ -338,44 +341,44 @@ for (const authMethod of ['attest_jwt_client_auth', 'attest_jwt_client_auth_dpop
           login_hint: 'sub',
         })
         .type('form')
-        .set(await authHeaders.call(this, instanceKeyPair, '/backchannel'))
+        .set(await authHeaders.call(fixture, instanceKeyPair, '/backchannel'))
         .expect(200);
 
-      const authReq = this.TestAdapter.for('BackchannelAuthenticationRequest').syncFind(body.auth_req_id);
+      const authReq = fixture.TestAdapter.for('BackchannelAuthenticationRequest').syncFind(body.auth_req_id);
 
-      expect(authReq).to.have.property('attestationJkt').and.is.string;
+      ((actual) => { assert.ok('attestationJkt' in Object(actual)); assert.equal(typeof actual.attestationJkt, 'string'); })(authReq);
 
-      authReq.grantId = this.getGrantId();
-      authReq.accountId = this.getSub();
+      authReq.grantId = fixture.getGrantId();
+      authReq.accountId = fixture.getSub();
       authReq.scope = 'openid offline_access';
 
       const spy = sinon.spy();
-      this.provider.once('grant.error', spy);
+      fixture.provider.once('grant.error', spy);
       const instanceKeyPair2 = generateKeyPairSync('ed25519');
 
-      await this.agent.post('/token')
+      await fixture.agent.post('/token')
         .send({
           auth_req_id: body.auth_req_id,
           grant_type: 'urn:openid:params:grant-type:ciba',
         })
         .type('form')
-        .set(await authHeaders.call(this, instanceKeyPair2, '/token'))
+        .set(await authHeaders.call(fixture, instanceKeyPair2, '/token'))
         .expect(400)
         .expect(() => {
-          expect(spy.calledOnce).to.be.true;
-          expect(errorDetail(spy)).to.equal('oauth-client-attestation instance public key mismatch');
+          assert.equal(spy.calledOnce, true);
+          assert.equal(errorDetail(spy), 'oauth-client-attestation instance public key mismatch');
         });
 
-      const { body: { refresh_token } } = await this.agent.post('/token')
+      const { body: { refresh_token } } = await fixture.agent.post('/token')
         .send({
           auth_req_id: body.auth_req_id,
           grant_type: 'urn:openid:params:grant-type:ciba',
         })
         .type('form')
-        .set(await authHeaders.call(this, instanceKeyPair, '/token'))
+        .set(await authHeaders.call(fixture, instanceKeyPair, '/token'))
         .expect(200);
 
-      expect(this.TestAdapter.for('RefreshToken').syncFind(refresh_token)).to.have.property('attestationJkt').and.is.string;
+      ((actual) => { assert.ok('attestationJkt' in Object(actual)); assert.equal(typeof actual.attestationJkt, 'string'); })(fixture.TestAdapter.for('RefreshToken').syncFind(refresh_token));
     });
   });
 }

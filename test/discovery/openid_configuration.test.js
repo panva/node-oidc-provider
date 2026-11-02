@@ -1,4 +1,5 @@
-import { expect } from 'chai';
+import { describe, before, it, after } from 'node:test';
+import assert from 'node:assert/strict';
 import { createSandbox } from 'sinon';
 
 import bootstrap from '../test_helper.js';
@@ -9,81 +10,81 @@ const sinon = createSandbox();
 const route = '/.well-known/openid-configuration';
 
 describe(route, () => {
-  before(bootstrap(import.meta.url));
+  const fixture = {};
 
-  it('responds with json 200', function () {
-    return this.agent.get(route)
+  before(bootstrap(import.meta.url, fixture), { timeout: 3000 });
+
+  it('responds with json 200', { timeout: 3000 }, () => fixture.agent.get(route)
       .expect('Content-Type', /application\/json/)
-      .expect(200);
-  });
+      .expect(200));
 
-  it('does not populate ctx.oidc.entities', function (done) {
-    this.assertOnce((ctx) => {
-      expect(ctx.oidc.entities).to.be.empty;
+  it('does not populate ctx.oidc.entities', { timeout: 3000 }, (_t, done) => {
+    fixture.assertOnce((ctx) => {
+      assert.equal(Object.keys(ctx.oidc.entities).length, 0);
     }, done);
 
-    this.agent.get(route).end(() => {});
+    fixture.agent.get(route).end(() => {});
   });
 
-  it('is configurable with extra properties', function () {
-    i(this.provider).configuration.discovery.service_documentation = 'https://docs.example.com';
-    i(this.provider).configuration.discovery.authorization_endpoint = 'this will not be used';
+  it('is configurable with extra properties', { timeout: 3000 }, () => {
+    i(fixture.provider).configuration.discovery.service_documentation = 'https://docs.example.com';
+    i(fixture.provider).configuration.discovery.authorization_endpoint = 'this will not be used';
 
-    return this.agent.get(route)
+    return fixture.agent.get(route)
       .expect((response) => {
-        expect(response.body).to.have.property('service_documentation', 'https://docs.example.com');
-        expect(response.body.authorization_endpoint).not.to.equal('this will not be used');
+        ((actual) => { assert.ok('service_documentation' in Object(actual)); assert.equal(actual.service_documentation, 'https://docs.example.com'); })(response.body);
+        assert.notEqual(response.body.authorization_endpoint, 'this will not be used');
       });
   });
 
   describe('with errors', () => {
-    before(function () {
-      sinon.stub(this.provider, 'pathFor').throws(new InvalidRequest());
-    });
+    const fixture1 = Object.create(fixture);
 
-    after(sinon.restore);
+    before(() => {
+      sinon.stub(fixture1.provider, 'pathFor').throws(new InvalidRequest());
+    }, { timeout: 3000 });
 
-    it('handles errors with json and corresponding status', function () {
-      return this.agent.get(route)
+    after(() => sinon.restore(), { timeout: 3000 });
+
+    it('handles errors with json and corresponding status', { timeout: 3000 }, () => fixture1.agent.get(route)
         .expect('Content-Type', /application\/json/)
-        .expect(400);
-    });
+        .expect(400));
 
-    it('emits discovery.error on errors', function () {
+    it('emits discovery.error on errors', { timeout: 3000 }, () => {
       const spy = sinon.spy();
-      this.provider.once('discovery.error', spy);
+      fixture1.provider.once('discovery.error', spy);
 
-      return this.agent.get(route)
+      return fixture1.agent.get(route)
         .expect(() => {
-          expect(spy.called).to.be.true;
+          assert.equal(spy.called, true);
         });
     });
   });
 
   describe('with exceptions', () => {
-    before(function () {
-      sinon.stub(this.provider, 'pathFor').throws();
-    });
+    const fixture2 = Object.create(fixture);
 
-    after(sinon.restore);
+    before(() => {
+      sinon.stub(fixture2.provider, 'pathFor').throws();
+    }, { timeout: 3000 });
 
-    it('handles exceptions with json 500', function () {
-      return this.agent.get(route)
+    after(() => sinon.restore(), { timeout: 3000 });
+
+    it('handles exceptions with json 500', { timeout: 3000 }, () => fixture2.agent.get(route)
         .expect('Content-Type', /application\/json/)
         .expect(500)
         .expect({
           error: 'server_error',
           error_description: 'oops! something went wrong',
-        });
-    });
+        }));
 
-    it('emits server_error on exceptions', function () {
+    it('emits server_error on exceptions', { timeout: 3000 }, () => {
       const spy = sinon.spy();
-      this.provider.once('server_error', spy);
+      fixture2.provider.once('server_error', spy);
 
-      return this.agent.get(route)
+      return fixture2.agent.get(route)
         .expect(() => {
-          expect(spy.called).to.be.true;
+          assert.equal(spy.called, true);
         });
     });
   });

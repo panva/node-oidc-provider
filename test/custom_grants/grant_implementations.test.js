@@ -1,6 +1,7 @@
+import { describe, before, it } from 'node:test';
+import assert from 'node:assert/strict';
 import { randomUUID } from 'node:crypto';
 
-import { expect } from 'chai';
 import {
   exportJWK,
   generateKeyPair,
@@ -177,19 +178,21 @@ async function dpopProof(provider, keyPair, htu = `${provider.issuer}/token`) {
 }
 
 describe('consumer-style custom grant implementations', () => {
-  before(bootstrap(import.meta.url));
+  const fixture = {};
 
-  before(async function () {
-    this.jwtKeyPair = await generateKeyPair('ES256');
-    this.otherKeyPair = await generateKeyPair('ES256');
-    this.tokenExchangeAuthorizations = [];
-    this.tokenUrl = new URL(this.suitePath('/token'), this.provider.issuer).href;
+  before(bootstrap(import.meta.url, fixture), { timeout: 3000 });
 
-    clientCredentials.register(this.provider);
-    tokenExchange.register(this.provider, {
+  before(async () => {
+    fixture.jwtKeyPair = await generateKeyPair('ES256');
+    fixture.otherKeyPair = await generateKeyPair('ES256');
+    fixture.tokenExchangeAuthorizations = [];
+    fixture.tokenUrl = new URL(fixture.suitePath('/token'), fixture.provider.issuer).href;
+
+    clientCredentials.register(fixture.provider);
+    tokenExchange.register(fixture.provider, {
       authorizationDetailsPolicy: paymentAuthorizationDetailsPolicy,
       authorize: async (_ctx, input) => {
-        this.tokenExchangeAuthorizations.push(input);
+        fixture.tokenExchangeAuthorizations.push(input);
         return {
           ...input,
           authorizationDetails: input.authorizationDetails?.slice(0, 1),
@@ -212,7 +215,7 @@ describe('consumer-style custom grant implementations', () => {
         };
       },
     });
-    jwtBearer.register(this.provider, {
+    jwtBearer.register(fixture.provider, {
       authorizationDetailsPolicy: paymentAuthorizationDetailsPolicy,
       authorize: async (_ctx, input) => ({
         ...input,
@@ -222,10 +225,10 @@ describe('consumer-style custom grant implementations', () => {
       rejectReplay: true,
       trustedIssuers: new Map([[
         JWT_ISSUER,
-        { algorithms: ['ES256'], key: this.jwtKeyPair.publicKey },
+        { algorithms: ['ES256'], key: fixture.jwtKeyPair.publicKey },
       ]]),
     });
-    saml2Bearer.register(this.provider, {
+    saml2Bearer.register(fixture.provider, {
       authorizationDetailsPolicy: paymentAuthorizationDetailsPolicy,
       authorize: async (_ctx, input) => ({
         ...input,
@@ -235,25 +238,27 @@ describe('consumer-style custom grant implementations', () => {
       verifyAssertion: verifySamlFixture,
     });
 
-    this.client = await this.provider.Client.find('client');
-    this.client.grantTypes.push(
+    fixture.client = await fixture.provider.Client.find('client');
+    fixture.client.grantTypes.push(
       clientCredentials.grantType,
       tokenExchange.grantType,
       jwtBearer.grantType,
       saml2Bearer.grantType,
     );
-  });
+  }, { timeout: 3000 });
 
   describe('client_credentials override', () => {
-    it('uses resource, RAR, sender-constraint, persistence, and response stages', async function () {
+    const fixture1 = Object.create(fixture);
+
+    it('uses resource, RAR, sender-constraint, persistence, and response stages', { timeout: 3000 }, async () => {
       const keyPair = await generateKeyPair('ES256', { extractable: true });
       let success;
-      this.provider.once('grant.success', (ctx) => {
+      fixture1.provider.once('grant.success', (ctx) => {
         success = ctx;
       });
-      const response = await this.agent.post('/token')
+      const response = await fixture1.agent.post('/token')
         .auth('client', 'secret')
-        .set('DPoP', await dpopProof(this.provider, keyPair, this.tokenUrl))
+        .set('DPoP', await dpopProof(fixture1.provider, keyPair, fixture1.tokenUrl))
         .send({
           authorization_details: JSON.stringify(PAYMENT),
           grant_type: clientCredentials.grantType,
@@ -263,16 +268,15 @@ describe('consumer-style custom grant implementations', () => {
         .type('form')
         .expect(200);
 
-      expect(response.body).to.include({ scope: 'api:read', token_type: 'DPoP' });
-      expect(response.body.authorization_details).to.deep.equal(PAYMENT);
-      const stored = await this.provider.ClientCredentials.find(response.body.access_token);
-      expect(stored).to.include({ aud: API, scope: 'api:read' });
-      expect(stored).to.have.property('jkt');
-      expect(success.oidc.entities).to.have.keys('Client', 'ClientCredentials');
+      ((actual) => { assert.ok("scope" in Object(actual)); assert.equal(actual.scope, 'api:read'); assert.ok("token_type" in Object(actual)); assert.equal(actual.token_type, 'DPoP'); })(response.body);
+      assert.deepEqual(response.body.authorization_details, PAYMENT);
+      const stored = await fixture1.provider.ClientCredentials.find(response.body.access_token);
+      ((actual) => { assert.ok("aud" in Object(actual)); assert.equal(actual.aud, API); assert.ok("scope" in Object(actual)); assert.equal(actual.scope, 'api:read'); })(stored);
+      assert.ok('jkt' in Object(stored));
+      assert.deepEqual(new Set(Object.keys(success.oidc.entities)), new Set(['Client', 'ClientCredentials']));
     });
 
-    it('rejects client-disallowed static scope', function () {
-      return this.agent.post('/token')
+    it('rejects client-disallowed static scope', { timeout: 3000 }, () => fixture1.agent.post('/token')
         .auth('client', 'secret')
         .send({
           grant_type: clientCredentials.grantType,
@@ -285,11 +289,9 @@ describe('consumer-style custom grant implementations', () => {
           error: 'invalid_scope',
           error_description: 'requested scope is not allowed',
           scope: 'api:write',
-        });
-    });
+        }));
 
-    it('rejects multiple provider-native token targets', function () {
-      return this.agent.post('/token')
+    it('rejects multiple provider-native token targets', { timeout: 3000 }, () => fixture1.agent.post('/token')
         .auth('client', 'secret')
         .send({
           grant_type: clientCredentials.grantType,
@@ -299,24 +301,25 @@ describe('consumer-style custom grant implementations', () => {
         .type('form')
         .expect(400)
         .expect((response) => {
-          expect(response.body).to.include({ error: 'invalid_target' });
-        });
-    });
+          ((actual) => { assert.ok("error" in Object(actual)); assert.equal(actual.error, 'invalid_target'); })(response.body);
+        }));
   });
 
   describe('RFC 8693 token exchange', () => {
-    it('issues a provider access token without consuming its inputs', async function () {
-      const subject = await issueSource(this.provider, this.client, { rar: PAYMENT });
-      const actor = await issueSource(this.provider, this.client, { accountId: 'actor-user' });
+    const fixture2 = Object.create(fixture);
+
+    it('issues a provider access token without consuming its inputs', { timeout: 3000 }, async () => {
+      const subject = await issueSource(fixture2.provider, fixture2.client, { rar: PAYMENT });
+      const actor = await issueSource(fixture2.provider, fixture2.client, { accountId: 'actor-user' });
       let grantSuccesses = 0;
       let grantContext;
       const listener = (ctx) => {
         grantSuccesses += 1;
         grantContext = ctx;
       };
-      this.provider.on('grant.success', listener);
+      fixture2.provider.on('grant.success', listener);
 
-      const response = await this.agent.post('/token')
+      const response = await fixture2.agent.post('/token')
         .auth('client', 'secret')
         .send({
           actor_token: actor.value,
@@ -332,41 +335,27 @@ describe('consumer-style custom grant implementations', () => {
         })
         .type('form')
         .expect(200);
-      this.provider.off('grant.success', listener);
+      fixture2.provider.off('grant.success', listener);
 
-      expect(response.body).to.include({
-        issued_token_type: tokenExchange.accessTokenType,
-        scope: 'api:read',
-        token_type: 'Bearer',
-      });
-      expect(response.body.authorization_details).to.deep.equal(PAYMENT);
+      ((actual) => { assert.ok("issued_token_type" in Object(actual)); assert.equal(actual.issued_token_type, tokenExchange.accessTokenType); assert.ok("scope" in Object(actual)); assert.equal(actual.scope, 'api:read'); assert.ok("token_type" in Object(actual)); assert.equal(actual.token_type, 'Bearer'); })(response.body);
+      assert.deepEqual(response.body.authorization_details, PAYMENT);
 
-      const output = await this.provider.AccessToken.find(response.body.access_token);
-      expect(output).to.include({ accountId: 'source-user', aud: API });
-      expect(output.extra.act).to.deep.equal({ sub: 'actor-user' });
-      expect((await this.provider.AccessToken.find(subject.value)).consumed).to.be.undefined;
-      expect((await this.provider.AccessToken.find(actor.value)).consumed).to.be.undefined;
-      expect(this.tokenExchangeAuthorizations.at(-1)).to.include.keys(
-        'actorToken',
-        'audiences',
-        'resourceServers',
-        'subjectToken',
-      );
-      expect(grantSuccesses).to.equal(1);
-      expect(grantContext.oidc.entities).to.have.keys(
-        'AccessToken',
-        'Account',
-        'Client',
-        'Grant',
-      );
+      const output = await fixture2.provider.AccessToken.find(response.body.access_token);
+      ((actual) => { assert.ok("accountId" in Object(actual)); assert.equal(actual.accountId, 'source-user'); assert.ok("aud" in Object(actual)); assert.equal(actual.aud, API); })(output);
+      assert.deepEqual(output.extra.act, { sub: 'actor-user' });
+      assert.equal((await fixture2.provider.AccessToken.find(subject.value)).consumed, undefined);
+      assert.equal((await fixture2.provider.AccessToken.find(actor.value)).consumed, undefined);
+      assert.ok(['actorToken', 'audiences', 'resourceServers', 'subjectToken'].every((key) => Object.keys(fixture2.tokenExchangeAuthorizations.at(-1)).includes(key)));
+      assert.equal(grantSuccesses, 1);
+      assert.deepEqual(new Set(Object.keys(grantContext.oidc.entities)), new Set(['AccessToken', 'Account', 'Client', 'Grant']));
     });
 
-    it('uses payment-type semantics to narrow locations independently of JSON shape', async function () {
-      const subject = await issueSource(this.provider, this.client, {
+    it('uses payment-type semantics to narrow locations independently of JSON shape', { timeout: 3000 }, async () => {
+      const subject = await issueSource(fixture2.provider, fixture2.client, {
         rar: MULTI_LOCATION_PAYMENT,
       });
       const requested = [{ locations: [API], amount: 10, type: 'payment' }];
-      const response = await this.agent.post('/token')
+      const response = await fixture2.agent.post('/token')
         .auth('client', 'secret')
         .send({
           authorization_details: JSON.stringify(requested),
@@ -378,12 +367,12 @@ describe('consumer-style custom grant implementations', () => {
         .type('form')
         .expect(200);
 
-      expect(response.body.authorization_details).to.deep.equal(PAYMENT);
+      assert.deepEqual(response.body.authorization_details, PAYMENT);
     });
 
-    it('returns arbitrary security tokens through the RFC 8693 response shape', async function () {
-      const subject = await issueSource(this.provider, this.client);
-      const response = await this.agent.post('/token')
+    it('returns arbitrary security tokens through the RFC 8693 response shape', { timeout: 3000 }, async () => {
+      const subject = await issueSource(fixture2.provider, fixture2.client);
+      const response = await fixture2.agent.post('/token')
         .auth('client', 'secret')
         .send({
           grant_type: tokenExchange.grantType,
@@ -395,7 +384,7 @@ describe('consumer-style custom grant implementations', () => {
         .type('form')
         .expect(200);
 
-      expect(response.body).to.deep.equal({
+      assert.deepEqual(response.body, {
         access_token: 'arbitrary-security-token',
         example_parameter: 'example-value',
         expires_in: 60,
@@ -405,10 +394,10 @@ describe('consumer-style custom grant implementations', () => {
       });
     });
 
-    it('requires arbitrary-token issuers to return issued_token_type', async function () {
-      const subject = await issueSource(this.provider, this.client);
-      const proof = await dpopProof(this.provider, this.jwtKeyPair, this.tokenUrl);
-      await this.agent.post('/token')
+    it('requires arbitrary-token issuers to return issued_token_type', { timeout: 3000 }, async () => {
+      const subject = await issueSource(fixture2.provider, fixture2.client);
+      const proof = await dpopProof(fixture2.provider, fixture2.jwtKeyPair, fixture2.tokenUrl);
+      await fixture2.agent.post('/token')
         .auth('client', 'secret')
         .set('DPoP', proof)
         .send({
@@ -420,10 +409,10 @@ describe('consumer-style custom grant implementations', () => {
         .type('form')
         .expect(500)
         .expect((response) => {
-          expect(response.body).to.include({ error: 'server_error' });
+          ((actual) => { assert.ok("error" in Object(actual)); assert.equal(actual.error, 'server_error'); })(response.body);
         });
 
-      await this.agent.post('/token')
+      await fixture2.agent.post('/token')
         .auth('client', 'secret')
         .set('DPoP', proof)
         .send({
@@ -436,9 +425,9 @@ describe('consumer-style custom grant implementations', () => {
         .expect(200);
     });
 
-    it('keeps authorization-policy RAR narrowing authoritative', async function () {
-      const subject = await issueSource(this.provider, this.client, { rar: BROAD_PAYMENTS });
-      const response = await this.agent.post('/token')
+    it('keeps authorization-policy RAR narrowing authoritative', { timeout: 3000 }, async () => {
+      const subject = await issueSource(fixture2.provider, fixture2.client, { rar: BROAD_PAYMENTS });
+      const response = await fixture2.agent.post('/token')
         .auth('client', 'secret')
         .send({
           authorization_details: JSON.stringify(BROAD_PAYMENTS),
@@ -450,16 +439,16 @@ describe('consumer-style custom grant implementations', () => {
         .type('form')
         .expect(200);
 
-      expect(response.body.authorization_details).to.deep.equal(PAYMENT);
-      const stored = await this.provider.AccessToken.find(response.body.access_token);
-      expect(stored.rar).to.deep.equal(PAYMENT);
+      assert.deepEqual(response.body.authorization_details, PAYMENT);
+      const stored = await fixture2.provider.AccessToken.find(response.body.access_token);
+      assert.deepEqual(stored.rar, PAYMENT);
     });
 
-    it('does not consume DPoP replay state when arbitrary-token issuance is declined', async function () {
-      const subject = await issueSource(this.provider, this.client);
-      const proof = await dpopProof(this.provider, this.jwtKeyPair, this.tokenUrl);
+    it('does not consume DPoP replay state when arbitrary-token issuance is declined', { timeout: 3000 }, async () => {
+      const subject = await issueSource(fixture2.provider, fixture2.client);
+      const proof = await dpopProof(fixture2.provider, fixture2.jwtKeyPair, fixture2.tokenUrl);
 
-      await this.agent.post('/token')
+      await fixture2.agent.post('/token')
         .auth('client', 'secret')
         .set('DPoP', proof)
         .send({
@@ -471,10 +460,10 @@ describe('consumer-style custom grant implementations', () => {
         .type('form')
         .expect(400)
         .expect((response) => {
-          expect(response.body).to.include({ error: 'invalid_request' });
+          ((actual) => { assert.ok("error" in Object(actual)); assert.equal(actual.error, 'invalid_request'); })(response.body);
         });
 
-      await this.agent.post('/token')
+      await fixture2.agent.post('/token')
         .auth('client', 'secret')
         .set('DPoP', proof)
         .send({
@@ -487,11 +476,11 @@ describe('consumer-style custom grant implementations', () => {
         .expect(200);
     });
 
-    it('sanitizes an invalid subject token grant as invalid_request', async function () {
-      const subject = await issueSource(this.provider, this.client);
+    it('sanitizes an invalid subject token grant as invalid_request', { timeout: 3000 }, async () => {
+      const subject = await issueSource(fixture2.provider, fixture2.client);
       await subject.grant.destroy();
 
-      return this.agent.post('/token')
+      return fixture2.agent.post('/token')
         .auth('client', 'secret')
         .send({
           grant_type: tokenExchange.grantType,
@@ -506,9 +495,9 @@ describe('consumer-style custom grant implementations', () => {
         });
     });
 
-    it('enforces the conditional actor token pair', async function () {
-      const subject = await issueSource(this.provider, this.client);
-      return this.agent.post('/token')
+    it('enforces the conditional actor token pair', { timeout: 3000 }, async () => {
+      const subject = await issueSource(fixture2.provider, fixture2.client);
+      return fixture2.agent.post('/token')
         .auth('client', 'secret')
         .send({
           actor_token: subject.value,
@@ -524,12 +513,12 @@ describe('consumer-style custom grant implementations', () => {
         });
     });
 
-    it('validates the actor token Grant before using its actor identity', async function () {
-      const subject = await issueSource(this.provider, this.client);
-      const actor = await issueSource(this.provider, this.client, { accountId: 'actor-user' });
+    it('validates the actor token Grant before using its actor identity', { timeout: 3000 }, async () => {
+      const subject = await issueSource(fixture2.provider, fixture2.client);
+      const actor = await issueSource(fixture2.provider, fixture2.client, { accountId: 'actor-user' });
       await actor.grant.destroy();
 
-      await this.agent.post('/token')
+      await fixture2.agent.post('/token')
         .auth('client', 'secret')
         .send({
           actor_token: actor.value,
@@ -541,12 +530,12 @@ describe('consumer-style custom grant implementations', () => {
         .type('form')
         .expect(400)
         .expect((response) => {
-          expect(response.body).to.include({ error: 'invalid_request' });
+          ((actual) => { assert.ok("error" in Object(actual)); assert.equal(actual.error, 'invalid_request'); })(response.body);
         });
     });
 
-    it('rejects missing token pairs and actor type without actor', async function () {
-      const subject = await issueSource(this.provider, this.client);
+    it('rejects missing token pairs and actor type without actor', { timeout: 3000 }, async () => {
+      const subject = await issueSource(fixture2.provider, fixture2.client);
       const cases = [
         {
           body: { subject_token_type: tokenExchange.accessTokenType },
@@ -567,7 +556,7 @@ describe('consumer-style custom grant implementations', () => {
       ];
 
       for (const { body, description } of cases) {
-        await this.agent.post('/token')
+        await fixture2.agent.post('/token')
           .auth('client', 'secret')
           .send({ grant_type: tokenExchange.grantType, ...body })
           .type('form')
@@ -576,10 +565,10 @@ describe('consumer-style custom grant implementations', () => {
       }
     });
 
-    it('rejects unsupported inputs and unrepresentable target combinations', async function () {
-      const subject = await issueSource(this.provider, this.client);
+    it('rejects unsupported inputs and unrepresentable target combinations', { timeout: 3000 }, async () => {
+      const subject = await issueSource(fixture2.provider, fixture2.client);
 
-      await this.agent.post('/token')
+      await fixture2.agent.post('/token')
         .auth('client', 'secret')
         .send({
           grant_type: tokenExchange.grantType,
@@ -589,10 +578,10 @@ describe('consumer-style custom grant implementations', () => {
         .type('form')
         .expect(400)
         .expect((response) => {
-          expect(response.body).to.include({ error: 'invalid_request' });
+          ((actual) => { assert.ok("error" in Object(actual)); assert.equal(actual.error, 'invalid_request'); })(response.body);
         });
 
-      await this.agent.post('/token')
+      await fixture2.agent.post('/token')
         .auth('client', 'secret')
         .send({
           grant_type: tokenExchange.grantType,
@@ -603,10 +592,10 @@ describe('consumer-style custom grant implementations', () => {
         .type('form')
         .expect(400)
         .expect((response) => {
-          expect(response.body).to.include({ error: 'invalid_target' });
+          ((actual) => { assert.ok("error" in Object(actual)); assert.equal(actual.error, 'invalid_target'); })(response.body);
         });
 
-      await this.agent.post('/token')
+      await fixture2.agent.post('/token')
         .auth('client', 'secret')
         .send({
           audience: 'logical:other-target',
@@ -618,13 +607,13 @@ describe('consumer-style custom grant implementations', () => {
         .type('form')
         .expect(400)
         .expect((response) => {
-          expect(response.body).to.include({ error: 'invalid_target' });
+          ((actual) => { assert.ok("error" in Object(actual)); assert.equal(actual.error, 'invalid_target'); })(response.body);
         });
     });
 
-    it('does not permit scope or authorization-details escalation', async function () {
-      const subject = await issueSource(this.provider, this.client);
-      await this.agent.post('/token')
+    it('does not permit scope or authorization-details escalation', { timeout: 3000 }, async () => {
+      const subject = await issueSource(fixture2.provider, fixture2.client);
+      await fixture2.agent.post('/token')
         .auth('client', 'secret')
         .send({
           grant_type: tokenExchange.grantType,
@@ -635,10 +624,10 @@ describe('consumer-style custom grant implementations', () => {
         .type('form')
         .expect(400)
         .expect((response) => {
-          expect(response.body).to.include({ error: 'invalid_request' });
+          ((actual) => { assert.ok("error" in Object(actual)); assert.equal(actual.error, 'invalid_request'); })(response.body);
         });
 
-      await this.agent.post('/token')
+      await fixture2.agent.post('/token')
         .auth('client', 'secret')
         .send({
           authorization_details: JSON.stringify(BROAD_PAYMENTS),
@@ -650,40 +639,38 @@ describe('consumer-style custom grant implementations', () => {
         .type('form')
         .expect(400)
         .expect((response) => {
-          expect(response.body).to.include({ error: 'invalid_request' });
+          ((actual) => { assert.ok("error" in Object(actual)); assert.equal(actual.error, 'invalid_request'); })(response.body);
         });
     });
   });
 
   describe('RFC 7523 JWT bearer', () => {
-    it('verifies a signed assertion and caps the access token lifetime', async function () {
-      const assertion = await signAssertion(this.jwtKeyPair.privateKey, {
-        audience: this.provider.issuer,
+    const fixture3 = Object.create(fixture);
+
+    it('verifies a signed assertion and caps the access token lifetime', { timeout: 3000 }, async () => {
+      const assertion = await signAssertion(fixture3.jwtKeyPair.privateKey, {
+        audience: fixture3.provider.issuer,
         expiresIn: 45,
       });
-      const response = await this.agent.post('/token')
+      const response = await fixture3.agent.post('/token')
         .auth('client', 'secret')
         .send({ assertion, grant_type: jwtBearer.grantType })
         .type('form')
         .expect(200);
 
-      expect(response.body).to.include({
-        resource: API,
-        scope: 'api:read',
-        token_type: 'Bearer',
-      });
-      expect(response.body.expires_in).to.be.at.most(45);
-      expect(response.body.authorization_details).to.deep.equal(PAYMENT);
-      const token = await this.provider.AccessToken.find(response.body.access_token);
-      expect(token).to.include({ accountId: 'mapped:external-user', aud: API });
+      ((actual) => { assert.ok("resource" in Object(actual)); assert.equal(actual.resource, API); assert.ok("scope" in Object(actual)); assert.equal(actual.scope, 'api:read'); assert.ok("token_type" in Object(actual)); assert.equal(actual.token_type, 'Bearer'); })(response.body);
+      ((value) => { assert.equal(typeof value, 'number'); assert.ok(value <= 45); })(response.body.expires_in);
+      assert.deepEqual(response.body.authorization_details, PAYMENT);
+      const token = await fixture3.provider.AccessToken.find(response.body.access_token);
+      ((actual) => { assert.ok("accountId" in Object(actual)); assert.equal(actual.accountId, 'mapped:external-user'); assert.ok("aud" in Object(actual)); assert.equal(actual.aud, API); })(token);
     });
 
-    it('does not let the final RAR stage undo injected authorization narrowing', async function () {
-      const assertion = await signAssertion(this.jwtKeyPair.privateKey, {
-        audience: this.provider.issuer,
+    it('does not let the final RAR stage undo injected authorization narrowing', { timeout: 3000 }, async () => {
+      const assertion = await signAssertion(fixture3.jwtKeyPair.privateKey, {
+        audience: fixture3.provider.issuer,
         authorizationDetails: BROAD_PAYMENTS,
       });
-      const response = await this.agent.post('/token')
+      const response = await fixture3.agent.post('/token')
         .auth('client', 'secret')
         .send({
           assertion,
@@ -694,16 +681,16 @@ describe('consumer-style custom grant implementations', () => {
         .type('form')
         .expect(200);
 
-      expect(response.body.authorization_details).to.deep.equal(PAYMENT);
-      const token = await this.provider.AccessToken.find(response.body.access_token);
-      expect(token.rar).to.deep.equal(PAYMENT);
+      assert.deepEqual(response.body.authorization_details, PAYMENT);
+      const token = await fixture3.provider.AccessToken.find(response.body.access_token);
+      assert.deepEqual(token.rar, PAYMENT);
     });
 
-    it('returns a sanitized invalid_grant for a bad signature', async function () {
-      const assertion = await signAssertion(this.otherKeyPair.privateKey, {
-        audience: this.provider.issuer,
+    it('returns a sanitized invalid_grant for a bad signature', { timeout: 3000 }, async () => {
+      const assertion = await signAssertion(fixture3.otherKeyPair.privateKey, {
+        audience: fixture3.provider.issuer,
       });
-      return this.agent.post('/token')
+      return fixture3.agent.post('/token')
         .auth('client', 'secret')
         .send({ assertion, grant_type: jwtBearer.grantType })
         .type('form')
@@ -711,11 +698,11 @@ describe('consumer-style custom grant implementations', () => {
         .expect({ error: 'invalid_grant', error_description: 'grant request is invalid' });
     });
 
-    it('rejects the wrong authorization-server audience', async function () {
-      const assertion = await signAssertion(this.jwtKeyPair.privateKey, {
+    it('rejects the wrong authorization-server audience', { timeout: 3000 }, async () => {
+      const assertion = await signAssertion(fixture3.jwtKeyPair.privateKey, {
         audience: 'https://other-as.example.com',
       });
-      return this.agent.post('/token')
+      return fixture3.agent.post('/token')
         .auth('client', 'secret')
         .send({ assertion, grant_type: jwtBearer.grantType })
         .type('form')
@@ -723,11 +710,11 @@ describe('consumer-style custom grant implementations', () => {
         .expect({ error: 'invalid_grant', error_description: 'grant request is invalid' });
     });
 
-    it('applies the configured jti replay policy only after successful issuance', async function () {
-      const assertion = await signAssertion(this.jwtKeyPair.privateKey, {
-        audience: this.provider.issuer,
+    it('applies the configured jti replay policy only after successful issuance', { timeout: 3000 }, async () => {
+      const assertion = await signAssertion(fixture3.jwtKeyPair.privateKey, {
+        audience: fixture3.provider.issuer,
       });
-      const request = (value = assertion) => this.agent.post('/token')
+      const request = (value = assertion) => fixture3.agent.post('/token')
         .auth('client', 'secret')
         .send({ assertion: value, grant_type: jwtBearer.grantType })
         .type('form');
@@ -737,80 +724,80 @@ describe('consumer-style custom grant implementations', () => {
         .expect(400)
         .expect({ error: 'invalid_grant', error_description: 'grant request is invalid' });
 
-      const concurrentAssertion = await signAssertion(this.jwtKeyPair.privateKey, {
-        audience: this.provider.issuer,
+      const concurrentAssertion = await signAssertion(fixture3.jwtKeyPair.privateKey, {
+        audience: fixture3.provider.issuer,
       });
       const responses = await Promise.all([
         request(concurrentAssertion),
         request(concurrentAssertion),
       ]);
-      expect(responses.map(({ status }) => status).sort()).to.deep.equal([200, 400]);
+      assert.deepEqual(responses.map(({ status }) => status).sort(), [200, 400]);
     });
 
-    it('rejects malformed claims, RAR, disallowed algorithms, issuer, sub, exp, and nbf failures', async function () {
+    it('rejects malformed claims, RAR, disallowed algorithms, issuer, sub, exp, and nbf failures', { timeout: 3000 }, async () => {
       const timestamp = now();
       const es384 = await generateKeyPair('ES384');
       const cases = [
         'not-a-jwt',
         await signClaims(es384.privateKey, {
-          aud: this.provider.issuer,
+          aud: fixture3.provider.issuer,
           exp: timestamp + 60,
           iss: JWT_ISSUER,
           sub: 'external-user',
         }, 'ES384'),
-        await signClaims(this.jwtKeyPair.privateKey, {
-          aud: this.provider.issuer,
+        await signClaims(fixture3.jwtKeyPair.privateKey, {
+          aud: fixture3.provider.issuer,
           authorization_details: [{ amount: '10', locations: [API], type: 'payment' }],
           exp: timestamp + 60,
           iss: JWT_ISSUER,
           jti: randomUUID(),
           sub: 'external-user',
         }),
-        await signClaims(this.jwtKeyPair.privateKey, {
-          aud: this.provider.issuer,
+        await signClaims(fixture3.jwtKeyPair.privateKey, {
+          aud: fixture3.provider.issuer,
           exp: timestamp + 60,
           iss: 'https://untrusted.example.com',
           sub: 'external-user',
         }),
-        await signClaims(this.jwtKeyPair.privateKey, {
-          aud: this.provider.issuer,
+        await signClaims(fixture3.jwtKeyPair.privateKey, {
+          aud: fixture3.provider.issuer,
           exp: timestamp + 60,
           iss: JWT_ISSUER,
         }),
-        await signClaims(this.jwtKeyPair.privateKey, {
-          aud: this.provider.issuer,
+        await signClaims(fixture3.jwtKeyPair.privateKey, {
+          aud: fixture3.provider.issuer,
           iss: JWT_ISSUER,
           sub: 'external-user',
         }),
-        await signClaims(this.jwtKeyPair.privateKey, {
-          aud: this.provider.issuer,
+        await signClaims(fixture3.jwtKeyPair.privateKey, {
+          aud: fixture3.provider.issuer,
           exp: timestamp - 1,
           iss: JWT_ISSUER,
           sub: 'external-user',
         }),
-        await signClaims(this.jwtKeyPair.privateKey, {
-          aud: this.provider.issuer,
+        await signClaims(fixture3.jwtKeyPair.privateKey, {
+          aud: fixture3.provider.issuer,
           exp: timestamp + 180,
           iss: JWT_ISSUER,
           nbf: timestamp + 120,
           sub: 'external-user',
         }),
-        await signClaims(this.jwtKeyPair.privateKey, {
-          aud: this.provider.issuer,
+        await signClaims(fixture3.jwtKeyPair.privateKey, {
+          aud: fixture3.provider.issuer,
           exp: timestamp + 60,
           iss: JWT_ISSUER,
           sub: 'external-user',
         }),
-        await signClaims(this.jwtKeyPair.privateKey, {
-          aud: this.provider.issuer,
+        await signClaims(fixture3.jwtKeyPair.privateKey, {
+          aud: fixture3.provider.issuer,
           exp: timestamp + 60,
           iss: JWT_ISSUER,
           jti: randomUUID(),
           scope: {},
           sub: 'external-user',
         }),
-        await signClaims(this.jwtKeyPair.privateKey, {
-          aud: this.provider.issuer,
+        await signClaims(fixture3.jwtKeyPair.privateKey, {
+          aud: fixture3.provider.issuer,
           exp: timestamp + 60,
           iss: JWT_ISSUER,
           jti: randomUUID(),
@@ -820,7 +807,7 @@ describe('consumer-style custom grant implementations', () => {
       ];
 
       for (const assertion of cases) {
-        await this.agent.post('/token')
+        await fixture3.agent.post('/token')
           .auth('client', 'secret')
           .send({ assertion, grant_type: jwtBearer.grantType })
           .type('form')
@@ -831,29 +818,27 @@ describe('consumer-style custom grant implementations', () => {
   });
 
   describe('RFC 7522 SAML bearer', () => {
-    it('issues from the normalized result of an injected secure verifier', async function () {
-      const assertion = encodeSamlFixture({ audiences: [this.provider.issuer] });
-      const response = await this.agent.post('/token')
+    const fixture4 = Object.create(fixture);
+
+    it('issues from the normalized result of an injected secure verifier', { timeout: 3000 }, async () => {
+      const assertion = encodeSamlFixture({ audiences: [fixture4.provider.issuer] });
+      const response = await fixture4.agent.post('/token')
         .auth('client', 'secret')
         .send({ assertion, grant_type: saml2Bearer.grantType })
         .type('form')
         .expect(200);
 
-      expect(response.body).to.include({
-        resource: API,
-        scope: 'api:read',
-        token_type: 'Bearer',
-      });
-      const token = await this.provider.AccessToken.find(response.body.access_token);
-      expect(token).to.include({ accountId: 'saml-user', aud: API });
+      ((actual) => { assert.ok("resource" in Object(actual)); assert.equal(actual.resource, API); assert.ok("scope" in Object(actual)); assert.equal(actual.scope, 'api:read'); assert.ok("token_type" in Object(actual)); assert.equal(actual.token_type, 'Bearer'); })(response.body);
+      const token = await fixture4.provider.AccessToken.find(response.body.access_token);
+      ((actual) => { assert.ok("accountId" in Object(actual)); assert.equal(actual.accountId, 'saml-user'); assert.ok("aud" in Object(actual)); assert.equal(actual.aud, API); })(token);
     });
 
-    it('sanitizes verifier failures', function () {
+    it('sanitizes verifier failures', { timeout: 3000 }, () => {
       const assertion = encodeSamlFixture({
-        audiences: [this.provider.issuer],
+        audiences: [fixture4.provider.issuer],
         signature: 'invalid',
       });
-      return this.agent.post('/token')
+      return fixture4.agent.post('/token')
         .auth('client', 'secret')
         .send({ assertion, grant_type: saml2Bearer.grantType })
         .type('form')

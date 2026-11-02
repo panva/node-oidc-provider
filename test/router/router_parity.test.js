@@ -1,5 +1,6 @@
+import { describe, it } from 'node:test';
+import assert from 'node:assert/strict';
 import KoaRouter from '@koa/router';
-import { expect } from 'chai';
 
 import Router from '../../lib/helpers/router.js';
 
@@ -78,7 +79,7 @@ for (const method of ['GET', 'HEAD', 'POST', 'PUT', 'DELETE', 'OPTIONS', 'PATCH'
 }
 
 describe('router transcription', () => {
-  it('matches the same route for every method and path', () => {
+  it('matches the same route for every method and path', { timeout: 3000 }, () => {
     const mismatches = [];
 
     for (const [method, path] of REQUESTS) {
@@ -96,10 +97,10 @@ describe('router transcription', () => {
       }
     }
 
-    expect(mismatches, mismatches.join('\n')).to.have.lengthOf(0);
+    assert.equal(mismatches.length, 0, mismatches.join('\n'));
   });
 
-  it('extracts the same params', () => {
+  it('extracts the same params', { timeout: 3000 }, () => {
     const mismatches = [];
 
     for (const [method, path] of REQUESTS) {
@@ -117,7 +118,7 @@ describe('router transcription', () => {
       }
     }
 
-    expect(mismatches, mismatches.join('\n')).to.have.lengthOf(0);
+    assert.equal(mismatches.length, 0, mismatches.join('\n'));
   });
 
   describe('url()', () => {
@@ -136,7 +137,7 @@ describe('router transcription', () => {
 
     for (const name of NAMES) {
       for (const [i, params] of PARAMS.entries()) {
-        it(`${name} with params #${i}`, () => {
+        it(`${name} with params #${i}`, { timeout: 3000 }, () => {
           // @koa/router returns an Error for an unknown name but throws for a
           // missing parameter; both have to behave the same way
           const call = (router) => {
@@ -150,22 +151,22 @@ describe('router transcription', () => {
             }
           };
 
-          expect(call(mine)).to.deep.equal(call(theirs));
+          assert.deepEqual(call(mine), call(theirs));
         });
       }
     }
   });
 
-  it('tolerates a trailing slash and matches case insensitively, as path-to-regexp does', () => {
+  it('tolerates a trailing slash and matches case insensitively, as path-to-regexp does', { timeout: 3000 }, () => {
     for (const path of ['/token', '/token/', '/TOKEN', '/Token/']) {
-      expect(mine.match('POST', path)?.route.name, path).to.equal('token');
-      expect(theirs.match(path, 'POST').route, path).to.equal(true);
+      assert.equal(mine.match('POST', path)?.route.name, 'token', path);
+      assert.equal(theirs.match(path, 'POST').route, true, path);
     }
     // params keep the request's casing
-    expect(mine.match('GET', '/REG/AbC/')?.params).to.deep.equal({ clientId: 'AbC' });
+    assert.deepEqual(mine.match('GET', '/REG/AbC/')?.params, { clientId: 'AbC' });
   });
 
-  it('matches a route configured with a trailing slash', () => {
+  it('matches a route configured with a trailing slash', { timeout: 3000 }, () => {
     // routes: { token: '/token/' } is permitted by the configuration
     for (const registered of ['/token', '/token/', '/reg/:id', '/reg/:id/']) {
       const a = new Router();
@@ -174,15 +175,12 @@ describe('router transcription', () => {
       b.post('r', registered, function handler() {});
 
       for (const path of ['/token', '/token/', '/token//', '/reg/abc', '/reg/abc/', '/reg/abc//']) {
-        expect(
-          !!a.match('POST', path),
-          `registered ${registered}, requested ${path}`,
-        ).to.equal(!!b.match(path, 'POST').route);
+        assert.equal(!!a.match('POST', path), !!b.match(path, 'POST').route, `registered ${registered}, requested ${path}`);
       }
     }
   });
 
-  it('establishes the same koa context as @koa/router', async () => {
+  it('establishes the same koa context as @koa/router', { timeout: 3000 }, async () => {
     const router = new Router();
     router.get('client', '/reg/:clientId', function handler() {});
 
@@ -190,16 +188,16 @@ describe('router transcription', () => {
     const ctx = { method: 'GET', path: '/reg/AbC', params: { tenant: 'acme' }, request: {} };
     await router.routes()(ctx, () => {});
 
-    expect(ctx.params).to.deep.equal({ tenant: 'acme', clientId: 'AbC' });
-    expect(ctx.request.params).to.equal(ctx.params);
-    expect(ctx.router).to.equal(router);
-    expect(ctx.routerName).to.equal('client');
-    expect(ctx.routerPath).to.equal('/reg/:clientId');
-    expect(ctx._matchedRoute).to.equal('/reg/:clientId');
-    expect(ctx._matchedRouteName).to.equal('client');
+    assert.deepEqual(ctx.params, { tenant: 'acme', clientId: 'AbC' });
+    assert.equal(ctx.request.params, ctx.params);
+    assert.equal(ctx.router, router);
+    assert.equal(ctx.routerName, 'client');
+    assert.equal(ctx.routerPath, '/reg/:clientId');
+    assert.equal(ctx._matchedRoute, '/reg/:clientId');
+    assert.equal(ctx._matchedRouteName, 'client');
   });
 
-  it('folds case the way a case-insensitive RegExp does, not the way toLowerCase does', () => {
+  it('folds case the way a case-insensitive RegExp does, not the way toLowerCase does', { timeout: 3000 }, () => {
     // U+212A KELVIN SIGN lowercases to `k`, but a case-insensitive RegExp
     // without the `u` flag does not fold it - so /to\u212Aen must NOT reach the
     // token endpoint, or anything in front of the provider matching on the
@@ -209,12 +207,12 @@ describe('router transcription', () => {
     a.post('token', '/token', function handler() {});
     b.post('token', '/token', function handler() {});
 
-    expect(!!a.match('POST', '/to\u212Aen'), 'KELVIN SIGN must not match').to.equal(false);
-    expect(!!b.match('/to\u212Aen', 'POST').route).to.equal(false);
+    assert.equal(!!a.match('POST', '/to\u212Aen'), false, 'KELVIN SIGN must not match');
+    assert.equal(!!b.match('/to\u212Aen', 'POST').route, false);
 
     // while ordinary ASCII and Latin-1 case folding still works, as before
     for (const path of ['/TOKEN', '/ToKeN', '/token']) {
-      expect(!!a.match('POST', path), path).to.equal(!!b.match(path, 'POST').route);
+      assert.equal(!!a.match('POST', path), !!b.match(path, 'POST').route, path);
     }
 
     // sweep the BMP: every code point must agree with @koa/router
@@ -228,20 +226,20 @@ describe('router transcription', () => {
         disagreements.push(`U+${cp.toString(16).toUpperCase()}`);
       }
     }
-    expect(disagreements, disagreements.join(' ')).to.have.lengthOf(0);
+    assert.equal(disagreements.length, 0, disagreements.join(' '));
   });
 
-  it('routes HEAD to GET handlers, as @koa/router does', () => {
-    expect(mine.match('HEAD', '/jwks')?.route.name).to.equal('jwks');
-    expect(mine.match('HEAD', '/token')).to.equal(undefined);
+  it('routes HEAD to GET handlers, as @koa/router does', { timeout: 3000 }, () => {
+    assert.equal(mine.match('HEAD', '/jwks')?.route.name, 'jwks');
+    assert.equal(mine.match('HEAD', '/token'), undefined);
   });
 
-  it('resolves a duplicated route name to the first registration', () => {
-    expect(mine.url('discovery')).to.equal('/.well-known/oauth-authorization-server');
-    expect(mine.url('discovery')).to.equal(theirs.url('discovery'));
+  it('resolves a duplicated route name to the first registration', { timeout: 3000 }, () => {
+    assert.equal(mine.url('discovery'), '/.well-known/oauth-authorization-server');
+    assert.equal(mine.url('discovery'), theirs.url('discovery'));
   });
 
-  it('composes the middleware stack in order and stops when one does not call next', async () => {
+  it('composes the middleware stack in order and stops when one does not call next', { timeout: 3000 }, async () => {
     const router = new Router();
     const calls = [];
     router.get('x', '/x', async (_ctx, next) => { calls.push(1); await next(); calls.push(3); }, async () => { calls.push(2); });
@@ -249,12 +247,12 @@ describe('router transcription', () => {
     const ctx = { method: 'GET', path: '/x' };
     await router.routes()(ctx, () => { calls.push('downstream'); });
 
-    expect(calls).to.deep.equal([1, 2, 3]);
-    expect(ctx._matchedRouteName).to.equal('x');
-    expect(ctx.params).to.deep.equal({});
+    assert.deepEqual(calls, [1, 2, 3]);
+    assert.equal(ctx._matchedRouteName, 'x');
+    assert.deepEqual(ctx.params, {});
   });
 
-  it('rejects a middleware calling next() twice, as koa-compose does', async () => {
+  it('rejects a middleware calling next() twice, as koa-compose does', { timeout: 3000 }, async () => {
     const router = new Router();
     router.get('x', '/x', async (_ctx, next) => { await next(); await next(); });
 
@@ -265,13 +263,13 @@ describe('router transcription', () => {
       caught = err;
     }
 
-    expect(caught).to.be.instanceOf(Error);
-    expect(caught.message).to.equal('next() called multiple times');
+    assert.ok(caught instanceof Error);
+    assert.equal(caught.message, 'next() called multiple times');
   });
 
-  it('falls through to downstream when nothing matches', async () => {
+  it('falls through to downstream when nothing matches', { timeout: 3000 }, async () => {
     let downstream = false;
     await mine.routes()({ method: 'PATCH', path: '/nope' }, () => { downstream = true; });
-    expect(downstream).to.equal(true);
+    assert.equal(downstream, true);
   });
 });

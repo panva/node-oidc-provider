@@ -1,4 +1,5 @@
-import { expect } from 'chai';
+import { describe, afterEach, it } from 'node:test';
+import assert from 'node:assert/strict';
 import { createSandbox } from 'sinon';
 import supertest from 'supertest';
 
@@ -11,10 +12,10 @@ describe('token endpoint policy configuration', () => {
   afterEach(() => {
     sinon.restore();
     globalThis.server.removeAllListeners('request');
-  });
+  }, { timeout: 3000 });
 
   for (const feature of ['introspection', 'revocation']) {
-    it(`${feature} uses a policy replaced after provider construction`, async () => {
+    it(`${feature} uses a policy replaced after provider construction`, { timeout: 3000 }, async () => {
       const initialPolicy = sinon.stub().resolves(false);
       const provider = new Provider('http://localhost:3000', {
         clients: [{
@@ -44,25 +45,25 @@ describe('token endpoint policy configuration', () => {
       }
 
       const denied = await request();
-      if (feature === 'introspection') expect(denied.body).to.eql({ active: false });
-      else expect(denied.text).to.equal('');
-      expect(await provider.ClientCredentials.find(value)).to.be.instanceOf(provider.ClientCredentials);
+      if (feature === 'introspection') assert.deepEqual(denied.body, { active: false });
+      else assert.equal(denied.text, '');
+      assert.ok(await provider.ClientCredentials.find(value) instanceof provider.ClientCredentials);
 
       const replacement = sinon.stub().resolves(true);
       instance(provider).configuration.features[feature].allowedPolicy = replacement;
       const allowed = await request();
       sinon.assert.calledOnce(initialPolicy);
       sinon.assert.calledOnce(replacement);
-      expect(replacement.firstCall.args[0].oidc.provider).to.equal(provider);
-      expect(replacement.firstCall.args[1].clientId).to.equal('client');
-      expect(replacement.firstCall.args[2].jti).to.equal(token.jti);
+      assert.equal(replacement.firstCall.args[0].oidc.provider, provider);
+      assert.equal(replacement.firstCall.args[1].clientId, 'client');
+      assert.equal(replacement.firstCall.args[2].jti, token.jti);
 
       if (feature === 'introspection') {
-        expect(allowed.body).to.include({ active: true, client_id: 'client', scope: 'read' });
+        ((actual) => { assert.ok("active" in Object(actual)); assert.equal(actual.active, true); assert.ok("client_id" in Object(actual)); assert.equal(actual.client_id, 'client'); assert.ok("scope" in Object(actual)); assert.equal(actual.scope, 'read'); })(allowed.body);
         await token.destroy();
       } else {
-        expect(allowed.text).to.equal('');
-        expect(await provider.ClientCredentials.find(value)).to.be.undefined;
+        assert.equal(allowed.text, '');
+        assert.equal(await provider.ClientCredentials.find(value), undefined);
       }
     });
   }

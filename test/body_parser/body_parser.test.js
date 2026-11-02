@@ -1,19 +1,20 @@
+import { describe, afterEach, it } from 'node:test';
+import assert from 'node:assert/strict';
 import Koa from 'koa';
 import mount from 'koa-mount';
 import supertest from 'supertest';
 import { koaBody as upstreamParser } from 'koa-body';
 import sinon from 'sinon';
-import { expect } from 'chai';
 
 import Provider from '../../lib/index.js';
 
 describe('body parser', () => {
   afterEach(() => {
     globalThis.server.removeAllListeners('request');
-  });
+  }, { timeout: 3000 });
 
   describe('application/x-www-form-urlencoded', () => {
-    it('uses the upstream parser albeit reluctantly', async () => {
+    it('uses the upstream parser albeit reluctantly', { timeout: 3000 }, async () => {
       const provider = new Provider('http://localhost:3000', {
         features: { clientCredentials: { enabled: true } },
         clients: [{
@@ -43,7 +44,7 @@ describe('body parser', () => {
         .expect(200);
     });
 
-    it('removes all qs magic', async () => {
+    it('removes all qs magic', { timeout: 3000 }, async () => {
       const provider = new Provider('http://localhost:3000', {
         features: { clientCredentials: { enabled: true } },
         clients: [{
@@ -75,14 +76,12 @@ describe('body parser', () => {
         .type('form')
         .expect(200);
 
-      expect(
-        spy.calledWithMatch({ oidc: { params: { scope: undefined } } }),
-      ).to.be.true;
+      assert.equal(spy.calledWithMatch({ oidc: { params: { scope: undefined } } }), true);
     });
   });
 
   describe('application/json', () => {
-    it('uses the upstream parser albeit reluctantly', async () => {
+    it('uses the upstream parser albeit reluctantly', { timeout: 3000 }, async () => {
       const provider = new Provider('http://localhost:3000', {
         features: { registration: { enabled: true } },
       });
@@ -102,7 +101,7 @@ describe('body parser', () => {
         .expect(201);
     });
 
-    it('handles parsing errors', async () => {
+    it('handles parsing errors', { timeout: 3000 }, async () => {
       const provider = new Provider('http://localhost:3000', {
         features: { registration: { enabled: true } },
       });

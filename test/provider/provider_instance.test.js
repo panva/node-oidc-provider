@@ -1,89 +1,89 @@
-import { strict as assert } from 'node:assert';
+import { describe, before, after, afterEach, it } from 'node:test';
+import assert from 'node:assert/strict';
 
-import { expect } from 'chai';
 import sinon from 'sinon';
 
 import Provider from '../../lib/index.js';
 import MemoryAdapter from '../../lib/adapters/memory_adapter.js';
 
 describe('provider instance', () => {
-  context('draft/experimental spec warnings', () => {
+  describe('draft/experimental spec warnings', () => {
     before(() => {
       sinon.stub(console, 'info').callsFake(() => {});
-    });
+    }, { timeout: 3000 });
 
     after(() => {
       console.info.restore();
-    });
+    }, { timeout: 3000 });
 
     afterEach(() => {
       console.info.resetHistory();
-    });
+    }, { timeout: 3000 });
 
-    it('it warns when draft/experimental specs are enabled', () => {
+    it('it warns when draft/experimental specs are enabled', { timeout: 3000 }, () => {
       new Provider('http://localhost', {
         features: { webMessageResponseMode: { enabled: true } },
       });
 
-      expect(console.info.called).to.be.true;
+      assert.equal(console.info.called, true);
     });
 
-    it('it is silent when a version is acknowledged', () => {
+    it('it is silent when a version is acknowledged', { timeout: 3000 }, () => {
       new Provider('http://localhost', {
         features: { webMessageResponseMode: { enabled: true, ack: 'individual-draft-01' } },
       });
 
-      expect(console.info.called).to.be.false;
+      assert.equal(console.info.called, false);
     });
 
-    it('throws when an acked feature has breaking changes since', () => {
-      expect(() => {
+    it('throws when an acked feature has breaking changes since', { timeout: 3000 }, () => {
+      assert.throws(() => {
         new Provider('http://localhost', {
           features: { webMessageResponseMode: { enabled: true, ack: 'not a current version' } },
         });
-      }).to.throw('An unacknowledged version of an experimental feature is included in this oidc-provider version.');
-      expect(console.info.called).to.be.true;
+      }, (error) => { assert.ok(error.message.includes('An unacknowledged version of an experimental feature is included in this oidc-provider version.')); return true; });
+      assert.equal(console.info.called, true);
     });
   });
 
   describe('provider.Client#find', () => {
-    it('ignores non-string inputs', async () => {
+    it('ignores non-string inputs', { timeout: 3000 }, async () => {
       const provider = new Provider('http://localhost');
-      expect(await provider.Client.find([])).to.be.undefined;
-      expect(await provider.Client.find(Buffer)).to.be.undefined;
-      expect(await provider.Client.find({})).to.be.undefined;
-      expect(await provider.Client.find(true)).to.be.undefined;
-      expect(await provider.Client.find(undefined)).to.be.undefined;
-      expect(await provider.Client.find(64)).to.be.undefined;
+      assert.equal(await provider.Client.find([]), undefined);
+      assert.equal(await provider.Client.find(Buffer), undefined);
+      assert.equal(await provider.Client.find({}), undefined);
+      assert.equal(await provider.Client.find(true), undefined);
+      assert.equal(await provider.Client.find(undefined), undefined);
+      assert.equal(await provider.Client.find(64), undefined);
     });
   });
 
   describe('#urlFor', () => {
-    it('returns the route for unprefixed issuers', () => {
+    it('returns the route for unprefixed issuers', { timeout: 3000 }, () => {
       const provider = new Provider('http://localhost');
-      expect(provider.urlFor('authorization')).to.equal('http://localhost/auth');
+      assert.equal(provider.urlFor('authorization'), 'http://localhost/auth');
     });
 
-    it('returns the route for prefixed issuers (1/2)', () => {
+    it('returns the route for prefixed issuers (1/2)', { timeout: 3000 }, () => {
       const provider = new Provider('http://localhost/op/2.0');
-      expect(provider.urlFor('authorization')).to.equal('http://localhost/op/2.0/auth');
+      assert.equal(provider.urlFor('authorization'), 'http://localhost/op/2.0/auth');
     });
 
-    it('returns the route for prefixed issuers (2/2)', () => {
+    it('returns the route for prefixed issuers (2/2)', { timeout: 3000 }, () => {
       const provider = new Provider('http://localhost/op/2.0/');
-      expect(provider.urlFor('authorization')).to.equal('http://localhost/op/2.0/auth');
+      assert.equal(provider.urlFor('authorization'), 'http://localhost/op/2.0/auth');
     });
 
-    it('passes the options', () => {
+    it('passes the options', { timeout: 3000 }, () => {
       const provider = new Provider('http://localhost');
-      expect(provider.urlFor('resume', { uid: 'foo' })).to.equal('http://localhost/auth/foo');
+      assert.equal(provider.urlFor('resume', { uid: 'foo' }), 'http://localhost/auth/foo');
     });
   });
 
   describe('adapters', () => {
     const error = new Error('used this adapter');
 
-    it('retains expired artifacts through the clock tolerance window', async () => {
+    it('retains expired artifacts through the clock tolerance window', { timeout: 3000 }, async () => {
       const clock = sinon.useFakeTimers();
 
       try {
@@ -95,17 +95,16 @@ describe('provider instance', () => {
         const authReqId = await request.save();
 
         clock.tick(1001);
-        expect(await provider.BackchannelAuthenticationRequest.find(authReqId))
-          .to.be.instanceOf(provider.BackchannelAuthenticationRequest);
+        assert.ok(await provider.BackchannelAuthenticationRequest.find(authReqId) instanceof provider.BackchannelAuthenticationRequest);
         const expired = await provider.BackchannelAuthenticationRequest.find(authReqId, {
           ignoreExpiration: true,
         });
-        expect(expired).to.have.property('isExpired', true);
+        ((actual) => { assert.ok('isExpired' in Object(actual)); assert.equal(actual.isExpired, true); })(expired);
 
         clock.tick(1000);
-        expect(await provider.BackchannelAuthenticationRequest.find(authReqId, {
+        assert.equal(await provider.BackchannelAuthenticationRequest.find(authReqId, {
           ignoreExpiration: true,
-        })).to.be.undefined;
+        }), undefined);
       } finally {
         clock.restore();
       }
@@ -115,19 +114,19 @@ describe('provider instance', () => {
       ['implicit default', undefined],
       ['explicit default', { adapter: MemoryAdapter }],
     ]) {
-      it(`isolates ${label} adapter storage per Provider`, async () => {
+      it(`isolates ${label} adapter storage per Provider`, { timeout: 3000 }, async () => {
         const first = new Provider('https://first.example.com', configuration);
         const second = new Provider('https://second.example.com', configuration);
         const payload = { kind: 'AccessToken' };
 
         await first.AccessToken.adapter.upsert('shared-id', payload, 60);
 
-        expect(await first.AccessToken.adapter.find('shared-id')).to.equal(payload);
-        expect(await second.AccessToken.adapter.find('shared-id')).to.be.undefined;
+        assert.equal(await first.AccessToken.adapter.find('shared-id'), payload);
+        assert.equal(await second.AccessToken.adapter.find('shared-id'), undefined);
       });
     }
 
-    it('can be a class', async () => {
+    it('can be a class', { timeout: 3000 }, async () => {
       const provider = new Provider('https://op.example.com', {
         adapter: class {
           async find() {
@@ -143,7 +142,7 @@ describe('provider instance', () => {
       });
     });
 
-    it('can be a class static function', async () => {
+    it('can be a class static function', { timeout: 3000 }, async () => {
       const provider = new Provider('https://op.example.com', {
         // biome-ignore lint/complexity/noStaticOnlyClass: test intentionally uses a static-only class
         adapter: (class {
@@ -164,7 +163,7 @@ describe('provider instance', () => {
       });
     });
 
-    it('can be an arrow function', async () => {
+    it('can be an arrow function', { timeout: 3000 }, async () => {
       const provider = new Provider('https://op.example.com', {
         adapter: () => ({
           async find() {

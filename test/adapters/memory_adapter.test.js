@@ -1,4 +1,5 @@
-import { expect } from 'chai';
+import { describe, beforeEach, afterEach, it } from 'node:test';
+import assert from 'node:assert/strict';
 import QuickLRU from 'quick-lru';
 import sinon from 'sinon';
 
@@ -11,56 +12,56 @@ describe('MemoryAdapter', () => {
   beforeEach(() => {
     clock = sinon.useFakeTimers();
     store = new QuickLRU({ maxSize: 1000 });
-  });
+  }, { timeout: 3000 });
 
   afterEach(() => {
     clock.restore();
-  });
+  }, { timeout: 3000 });
 
-  it('expires primary entries', async () => {
+  it('expires primary entries', { timeout: 3000 }, async () => {
     const adapter = new MemoryAdapter('AccessToken', store);
     const payload = { accountId: 'account' };
 
     await adapter.upsert('token', payload, 1);
-    expect(await adapter.find('token')).to.equal(payload);
+    assert.equal(await adapter.find('token'), payload);
 
     clock.tick(1001);
-    expect(await adapter.find('token')).to.be.undefined;
+    assert.equal(await adapter.find('token'), undefined);
   });
 
-  it('expires session uid indexes', async () => {
+  it('expires session uid indexes', { timeout: 3000 }, async () => {
     const adapter = new MemoryAdapter('Session', store);
     const payload = { uid: 'uid' };
 
     await adapter.upsert('session', payload, 1);
-    expect(await adapter.findByUid('uid')).to.equal(payload);
+    assert.equal(await adapter.findByUid('uid'), payload);
 
     clock.tick(1001);
-    expect(await adapter.findByUid('uid')).to.be.undefined;
+    assert.equal(await adapter.findByUid('uid'), undefined);
   });
 
-  it('expires user code indexes', async () => {
+  it('expires user code indexes', { timeout: 3000 }, async () => {
     const adapter = new MemoryAdapter('DeviceCode', store);
     const payload = { userCode: 'code' };
 
     await adapter.upsert('device', payload, 1);
-    expect(await adapter.findByUserCode('code')).to.equal(payload);
+    assert.equal(await adapter.findByUserCode('code'), payload);
 
     clock.tick(1001);
-    expect(await adapter.findByUserCode('code')).to.be.undefined;
+    assert.equal(await adapter.findByUserCode('code'), undefined);
   });
 
-  it('deduplicates grant members on repeated upsert', async () => {
+  it('deduplicates grant members on repeated upsert', { timeout: 3000 }, async () => {
     const adapter = new MemoryAdapter('AccessToken', store);
     const payload = { grantId: 'grant', jti: 'token' };
 
     await adapter.upsert('token', payload, 60);
     await adapter.upsert('token', payload, 60);
 
-    expect(store.get('grant:grant')).to.be.instanceOf(Map).and.have.length(1);
+    ((actual) => { assert.ok(actual instanceof Map); assert.equal(actual.size, 1); })(store.get('grant:grant'));
   });
 
-  it('moves grant membership when a record is updated', async () => {
+  it('moves grant membership when a record is updated', { timeout: 3000 }, async () => {
     const adapter = new MemoryAdapter('AccessToken', store);
     const payload = { grantId: 'second', jti: 'token' };
 
@@ -68,14 +69,14 @@ describe('MemoryAdapter', () => {
     await adapter.upsert('token', payload, 60);
     await adapter.revokeByGrantId('first');
 
-    expect(await adapter.find('token')).to.equal(payload);
-    expect(store.has('grant:first')).to.be.false;
+    assert.equal(await adapter.find('token'), payload);
+    assert.equal(store.has('grant:first'), false);
 
     await adapter.revokeByGrantId('second');
-    expect(await adapter.find('token')).to.be.undefined;
+    assert.equal(await adapter.find('token'), undefined);
   });
 
-  it('updates session uid and user code indexes', async () => {
+  it('updates session uid and user code indexes', { timeout: 3000 }, async () => {
     const session = new MemoryAdapter('Session', store);
     const device = new MemoryAdapter('DeviceCode', store);
     const sessionPayload = { uid: 'new-uid' };
@@ -86,13 +87,13 @@ describe('MemoryAdapter', () => {
     await device.upsert('device', { userCode: 'old-code' }, 60);
     await device.upsert('device', devicePayload, 60);
 
-    expect(await session.findByUid('old-uid')).to.be.undefined;
-    expect(await session.findByUid('new-uid')).to.equal(sessionPayload);
-    expect(await device.findByUserCode('old-code')).to.be.undefined;
-    expect(await device.findByUserCode('new-code')).to.equal(devicePayload);
+    assert.equal(await session.findByUid('old-uid'), undefined);
+    assert.equal(await session.findByUid('new-uid'), sessionPayload);
+    assert.equal(await device.findByUserCode('old-code'), undefined);
+    assert.equal(await device.findByUserCode('new-code'), devicePayload);
   });
 
-  it('removes secondary and grant indexes when records are destroyed', async () => {
+  it('removes secondary and grant indexes when records are destroyed', { timeout: 3000 }, async () => {
     const session = new MemoryAdapter('Session', store);
     const device = new MemoryAdapter('DeviceCode', store);
 
@@ -101,12 +102,12 @@ describe('MemoryAdapter', () => {
     await session.destroy('session');
     await device.destroy('device');
 
-    expect(await session.findByUid('uid')).to.be.undefined;
-    expect(await device.findByUserCode('code')).to.be.undefined;
-    expect(store.has('grant:grant')).to.be.false;
+    assert.equal(await session.findByUid('uid'), undefined);
+    assert.equal(await device.findByUserCode('code'), undefined);
+    assert.equal(store.has('grant:grant'), false);
   });
 
-  it('does not delete a secondary index reassigned to another record', async () => {
+  it('does not delete a secondary index reassigned to another record', { timeout: 3000 }, async () => {
     const adapter = new MemoryAdapter('DeviceCode', store);
     const replacement = { userCode: 'code' };
 
@@ -114,10 +115,10 @@ describe('MemoryAdapter', () => {
     await adapter.upsert('second', replacement, 60);
     await adapter.destroy('first');
 
-    expect(await adapter.findByUserCode('code')).to.equal(replacement);
+    assert.equal(await adapter.findByUserCode('code'), replacement);
   });
 
-  it('revokes every model and its secondary indexes for a grant', async () => {
+  it('revokes every model and its secondary indexes for a grant', { timeout: 3000 }, async () => {
     const accessToken = new MemoryAdapter('AccessToken', store);
     const refreshToken = new MemoryAdapter('RefreshToken', store);
     const deviceCode = new MemoryAdapter('DeviceCode', store);
@@ -129,27 +130,27 @@ describe('MemoryAdapter', () => {
     }, 30);
     await accessToken.revokeByGrantId('grant');
 
-    expect(await accessToken.find('access')).to.be.undefined;
-    expect(await refreshToken.find('refresh')).to.be.undefined;
-    expect(await deviceCode.find('device')).to.be.undefined;
-    expect(await deviceCode.findByUserCode('code')).to.be.undefined;
-    expect(store.has('grant:grant')).to.be.false;
+    assert.equal(await accessToken.find('access'), undefined);
+    assert.equal(await refreshToken.find('refresh'), undefined);
+    assert.equal(await deviceCode.find('device'), undefined);
+    assert.equal(await deviceCode.findByUserCode('code'), undefined);
+    assert.equal(store.has('grant:grant'), false);
   });
 
-  it('expires a grant index with its longest-lived member', async () => {
+  it('expires a grant index with its longest-lived member', { timeout: 3000 }, async () => {
     const adapter = new MemoryAdapter('AccessToken', store);
 
     await adapter.upsert('short', { grantId: 'grant', jti: 'short' }, 1);
     await adapter.upsert('long', { grantId: 'grant', jti: 'long' }, 2);
 
     clock.tick(1001);
-    expect(store.has('grant:grant')).to.be.true;
+    assert.equal(store.has('grant:grant'), true);
 
     clock.tick(1000);
-    expect(store.has('grant:grant')).to.be.false;
+    assert.equal(store.has('grant:grant'), false);
   });
 
-  it('applies clock tolerance to entries and indexes', async () => {
+  it('applies clock tolerance to entries and indexes', { timeout: 3000 }, async () => {
     const session = new MemoryAdapter('Session', store, 1);
     const device = new MemoryAdapter('DeviceCode', store, 1);
     const sessionPayload = { uid: 'uid' };
@@ -159,13 +160,13 @@ describe('MemoryAdapter', () => {
     await device.upsert('device', devicePayload, 1);
 
     clock.tick(1001);
-    expect(await session.findByUid('uid')).to.equal(sessionPayload);
-    expect(await device.findByUserCode('code')).to.equal(devicePayload);
-    expect(store.has('grant:grant')).to.be.true;
+    assert.equal(await session.findByUid('uid'), sessionPayload);
+    assert.equal(await device.findByUserCode('code'), devicePayload);
+    assert.equal(store.has('grant:grant'), true);
 
     clock.tick(1000);
-    expect(await session.findByUid('uid')).to.be.undefined;
-    expect(await device.findByUserCode('code')).to.be.undefined;
-    expect(store.has('grant:grant')).to.be.false;
+    assert.equal(await session.findByUid('uid'), undefined);
+    assert.equal(await device.findByUserCode('code'), undefined);
+    assert.equal(store.has('grant:grant'), false);
   });
 });

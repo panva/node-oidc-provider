@@ -1,4 +1,5 @@
-import { expect } from 'chai';
+import { describe, before, beforeEach, afterEach, it } from 'node:test';
+import assert from 'node:assert/strict';
 import { createSandbox } from 'sinon';
 
 import nanoid from '../../lib/helpers/nanoid.js';
@@ -17,18 +18,20 @@ let userCode;
 let path;
 
 describe('device interaction resume /device/:uid/', () => {
-  before(bootstrap(import.meta.url));
+  const fixture = {};
 
-  beforeEach(function () {
+  before(bootstrap(import.meta.url, fixture), { timeout: 3000 });
+
+  beforeEach(() => {
     uid = nanoid();
     userCode = generate('base-20', '***-***-***');
-    path = this.suitePath(`/device/${uid}`);
-  });
+    path = fixture.suitePath(`/device/${uid}`);
+  }, { timeout: 3000 });
 
-  afterEach(sinon.restore);
+  afterEach(() => sinon.restore(), { timeout: 3000 });
 
   async function setup(auth, result, sessionData) {
-    expect(auth).to.be.ok;
+    assert.ok(auth);
 
     const cookies = [];
 
@@ -71,12 +74,16 @@ describe('device interaction resume /device/:uid/', () => {
     ]);
   }
 
-  passInteractionChecks('native_client_prompt', () => {
-    context('general', () => {
-      it('needs the resume cookie to be present, else renders an err', async function () {
-        const spy = sinon.spy(i(this.provider).features.deviceFlow, 'userCodeInputSource');
+  passInteractionChecks(fixture, 'native_client_prompt', () => {
+    const fixture1 = Object.create(fixture);
 
-        await setup.call(this, {
+    describe('general', () => {
+      const fixture2 = Object.create(fixture1);
+
+      it('needs the resume cookie to be present, else renders an err', { timeout: 3000 }, async () => {
+        const spy = sinon.spy(i(fixture2.provider).features.deviceFlow, 'userCodeInputSource');
+
+        await setup.call(fixture2, {
           scope: 'openid',
         }, {
           login: {
@@ -86,162 +93,164 @@ describe('device interaction resume /device/:uid/', () => {
           consent: {},
         });
 
-        this.agent._saveCookies.bind(this.agent)({
-          request: { url: this.provider.issuer },
+        fixture2.agent._saveCookies.bind(fixture2.agent)({
+          request: { url: fixture2.provider.issuer },
           headers: { 'set-cookie': `_interaction_resume=; path=${path}; httpOnly` },
         });
 
-        await this.agent.get(path)
+        await fixture2.agent.get(path)
           .accept('text/html')
           .expect(400)
-          .expect(new RegExp(`<form id="op.deviceInputForm" novalidate method="post" action="http://127.0.0.1:\\d+${this.suitePath('/device')}">`))
+          .expect(new RegExp(`<form id="op.deviceInputForm" novalidate method="post" action="http://127.0.0.1:\\d+${fixture2.suitePath('/device')}">`))
           .expect(/<p class="red">There was an error processing your request<\/p>/);
 
-        expect(spy.calledOnce).to.be.true;
+        assert.equal(spy.calledOnce, true);
         sinon.assert.calledWithMatch(spy, any, any, any, sinon.match((err) => {
-          expect(err.name).to.equal('SessionNotFound');
-          expect(err.error_description).to.equal('authorization request has expired');
+          assert.equal(err.name, 'SessionNotFound');
+          assert.equal(err.error_description, 'authorization request has expired');
           return true;
         }));
       });
 
-      it('needs to find the session to resume', async function () {
-        const spy = sinon.spy(i(this.provider).features.deviceFlow, 'userCodeInputSource');
+      it('needs to find the session to resume', { timeout: 3000 }, async () => {
+        const spy = sinon.spy(i(fixture2.provider).features.deviceFlow, 'userCodeInputSource');
 
-        const auth = new this.AuthorizationRequest({
+        const auth = new fixture2.AuthorizationRequest({
           response_type: 'code',
           scope: 'openid',
         });
 
-        await setup.call(this, auth);
+        await setup.call(fixture2, auth);
 
-        sinon.stub(this.provider.Interaction, 'find').resolves();
+        sinon.stub(fixture2.provider.Interaction, 'find').resolves();
 
-        await this.agent.get(path)
+        await fixture2.agent.get(path)
           .accept('text/html')
           .expect(400)
-          .expect(new RegExp(`<form id="op.deviceInputForm" novalidate method="post" action="http://127.0.0.1:\\d+${this.suitePath('/device')}">`))
+          .expect(new RegExp(`<form id="op.deviceInputForm" novalidate method="post" action="http://127.0.0.1:\\d+${fixture2.suitePath('/device')}">`))
           .expect(/<p class="red">There was an error processing your request<\/p>/);
 
-        expect(spy.calledOnce).to.be.true;
+        assert.equal(spy.calledOnce, true);
         sinon.assert.calledWithMatch(spy, any, any, any, sinon.match((err) => {
-          expect(err.name).to.equal('SessionNotFound');
-          expect(err.error_description).to.equal('interaction session not found');
+          assert.equal(err.name, 'SessionNotFound');
+          assert.equal(err.error_description, 'interaction session not found');
           return true;
         }));
       });
 
-      it('needs to find the code to resume', async function () {
-        const spy = sinon.spy(i(this.provider).features.deviceFlow, 'userCodeInputSource');
+      it('needs to find the code to resume', { timeout: 3000 }, async () => {
+        const spy = sinon.spy(i(fixture2.provider).features.deviceFlow, 'userCodeInputSource');
 
-        const auth = new this.AuthorizationRequest({
+        const auth = new fixture2.AuthorizationRequest({
           response_type: 'code',
           scope: 'openid',
         });
 
-        await setup.call(this, auth);
+        await setup.call(fixture2, auth);
 
-        sinon.stub(this.provider.DeviceCode, 'find').resolves();
+        sinon.stub(fixture2.provider.DeviceCode, 'find').resolves();
 
-        await this.agent.get(path)
+        await fixture2.agent.get(path)
           .accept('text/html')
           .expect(200)
-          .expect(new RegExp(`<form id="op.deviceInputForm" novalidate method="post" action="http://127.0.0.1:\\d+${this.suitePath('/device')}">`))
+          .expect(new RegExp(`<form id="op.deviceInputForm" novalidate method="post" action="http://127.0.0.1:\\d+${fixture2.suitePath('/device')}">`))
           .expect(/<p class="red">There was an error processing your request<\/p>/);
 
-        expect(spy.calledOnce).to.be.true;
+        assert.equal(spy.calledOnce, true);
         sinon.assert.calledWithMatch(spy, any, any, any, sinon.match((err) => {
-          expect(err.name).to.equal('NotFoundError');
-          expect(err.message).to.equal('the code was not found');
+          assert.equal(err.name, 'NotFoundError');
+          assert.equal(err.message, 'the code was not found');
           return true;
         }));
       });
 
-      it('checks code is not expired', async function () {
-        const spy = sinon.spy(i(this.provider).features.deviceFlow, 'userCodeInputSource');
+      it('checks code is not expired', { timeout: 3000 }, async () => {
+        const spy = sinon.spy(i(fixture2.provider).features.deviceFlow, 'userCodeInputSource');
 
-        const auth = new this.AuthorizationRequest({
+        const auth = new fixture2.AuthorizationRequest({
           response_type: 'code',
           scope: 'openid',
         });
 
-        await setup.call(this, auth);
+        await setup.call(fixture2, auth);
 
-        sinon.stub(this.provider.DeviceCode, 'find').resolves({ isExpired: true });
+        sinon.stub(fixture2.provider.DeviceCode, 'find').resolves({ isExpired: true });
 
-        await this.agent.get(path)
+        await fixture2.agent.get(path)
           .accept('text/html')
           .expect(200)
-          .expect(new RegExp(`<form id="op.deviceInputForm" novalidate method="post" action="http://127.0.0.1:\\d+${this.suitePath('/device')}">`))
+          .expect(new RegExp(`<form id="op.deviceInputForm" novalidate method="post" action="http://127.0.0.1:\\d+${fixture2.suitePath('/device')}">`))
           .expect(/<p class="red">There was an error processing your request<\/p>/);
 
-        expect(spy.calledOnce).to.be.true;
+        assert.equal(spy.calledOnce, true);
         sinon.assert.calledWithMatch(spy, any, any, any, sinon.match((err) => {
-          expect(err.name).to.equal('ExpiredError');
-          expect(err.message).to.equal('the code has expired');
+          assert.equal(err.name, 'ExpiredError');
+          assert.equal(err.message, 'the code has expired');
           return true;
         }));
       });
 
-      it('checks code is not used already (1/2)', async function () {
-        const spy = sinon.spy(i(this.provider).features.deviceFlow, 'userCodeInputSource');
+      it('checks code is not used already (1/2)', { timeout: 3000 }, async () => {
+        const spy = sinon.spy(i(fixture2.provider).features.deviceFlow, 'userCodeInputSource');
 
-        const auth = new this.AuthorizationRequest({
+        const auth = new fixture2.AuthorizationRequest({
           response_type: 'code',
           scope: 'openid',
         });
 
-        await setup.call(this, auth);
+        await setup.call(fixture2, auth);
 
-        sinon.stub(this.provider.DeviceCode, 'find').resolves({ accountId: 'foo' });
+        sinon.stub(fixture2.provider.DeviceCode, 'find').resolves({ accountId: 'foo' });
 
-        await this.agent.get(path)
+        await fixture2.agent.get(path)
           .accept('text/html')
           .expect(200)
-          .expect(new RegExp(`<form id="op.deviceInputForm" novalidate method="post" action="http://127.0.0.1:\\d+${this.suitePath('/device')}">`))
+          .expect(new RegExp(`<form id="op.deviceInputForm" novalidate method="post" action="http://127.0.0.1:\\d+${fixture2.suitePath('/device')}">`))
           .expect(/<p class="red">There was an error processing your request<\/p>/);
 
-        expect(spy.calledOnce).to.be.true;
+        assert.equal(spy.calledOnce, true);
         sinon.assert.calledWithMatch(spy, any, any, any, sinon.match((err) => {
-          expect(err.name).to.equal('AlreadyUsedError');
-          expect(err.message).to.equal('code has already been used');
+          assert.equal(err.name, 'AlreadyUsedError');
+          assert.equal(err.message, 'code has already been used');
           return true;
         }));
       });
 
-      it('checks code is not used already (2/2)', async function () {
-        const spy = sinon.spy(i(this.provider).features.deviceFlow, 'userCodeInputSource');
+      it('checks code is not used already (2/2)', { timeout: 3000 }, async () => {
+        const spy = sinon.spy(i(fixture2.provider).features.deviceFlow, 'userCodeInputSource');
 
-        const auth = new this.AuthorizationRequest({
+        const auth = new fixture2.AuthorizationRequest({
           response_type: 'code',
           scope: 'openid',
         });
 
-        await setup.call(this, auth);
+        await setup.call(fixture2, auth);
 
-        sinon.stub(this.provider.DeviceCode, 'find').resolves({ error: 'access_denied' });
+        sinon.stub(fixture2.provider.DeviceCode, 'find').resolves({ error: 'access_denied' });
 
-        await this.agent.get(path)
+        await fixture2.agent.get(path)
           .accept('text/html')
           .expect(200)
-          .expect(new RegExp(`<form id="op.deviceInputForm" novalidate method="post" action="http://127.0.0.1:\\d+${this.suitePath('/device')}">`))
+          .expect(new RegExp(`<form id="op.deviceInputForm" novalidate method="post" action="http://127.0.0.1:\\d+${fixture2.suitePath('/device')}">`))
           .expect(/<p class="red">There was an error processing your request<\/p>/);
 
-        expect(spy.calledOnce).to.be.true;
+        assert.equal(spy.calledOnce, true);
         sinon.assert.calledWithMatch(spy, any, any, any, sinon.match((err) => {
-          expect(err.name).to.equal('AlreadyUsedError');
-          expect(err.message).to.equal('code has already been used');
+          assert.equal(err.name, 'AlreadyUsedError');
+          assert.equal(err.message, 'code has already been used');
           return true;
         }));
       });
     });
 
-    context('login results', () => {
-      it('should process newly established permanent sessions (default)', async function () {
-        sinon.stub(this.provider.Grant.prototype, 'getOIDCScope').returns('openid');
-        const spy = sinon.spy(i(this.provider).features.deviceFlow, 'successSource');
+    describe('login results', () => {
+      const fixture3 = Object.create(fixture1);
 
-        await setup.call(this, {
+      it('should process newly established permanent sessions (default)', { timeout: 3000 }, async () => {
+        sinon.stub(fixture3.provider.Grant.prototype, 'getOIDCScope').returns('openid');
+        const spy = sinon.spy(i(fixture3.provider).features.deviceFlow, 'successSource');
+
+        await setup.call(fixture3, {
           scope: 'openid',
         }, {
           login: {
@@ -250,26 +259,26 @@ describe('device interaction resume /device/:uid/', () => {
           consent: {},
         });
 
-        await this.agent.get(path)
+        await fixture3.agent.get(path)
           .accept('text/html')
           .expect(() => {
-            expect(spy.calledOnce).to.be.true;
+            assert.equal(spy.calledOnce, true);
           })
           .expect(200)
           .expect('set-cookie', /expires/) // expect a permanent cookie
           .expect(() => {
-            expect(this.getSession()).to.be.ok.and.not.have.property('transient');
+            ((actual) => { assert.ok(actual); assert.ok(!('transient' in Object(actual))); })(fixture3.getSession());
           });
 
-        const code = await this.provider.DeviceCode.findByUserCode(userCode);
-        expect(code).to.have.property('accountId');
+        const code = await fixture3.provider.DeviceCode.findByUserCode(userCode);
+        assert.ok('accountId' in Object(code));
       });
 
-      it('should process newly established permanent sessions (explicit)', async function () {
-        sinon.stub(this.provider.Grant.prototype, 'getOIDCScope').returns('openid');
-        const spy = sinon.spy(i(this.provider).features.deviceFlow, 'successSource');
+      it('should process newly established permanent sessions (explicit)', { timeout: 3000 }, async () => {
+        sinon.stub(fixture3.provider.Grant.prototype, 'getOIDCScope').returns('openid');
+        const spy = sinon.spy(i(fixture3.provider).features.deviceFlow, 'successSource');
 
-        await setup.call(this, {
+        await setup.call(fixture3, {
           scope: 'openid',
         }, {
           login: {
@@ -279,26 +288,26 @@ describe('device interaction resume /device/:uid/', () => {
           consent: {},
         });
 
-        await this.agent.get(path)
+        await fixture3.agent.get(path)
           .accept('text/html')
           .expect(() => {
-            expect(spy.calledOnce).to.be.true;
+            assert.equal(spy.calledOnce, true);
           })
           .expect(200)
           .expect('set-cookie', /expires/) // expect a permanent cookie
           .expect(() => {
-            expect(this.getSession()).to.be.ok.and.not.have.property('transient');
+            ((actual) => { assert.ok(actual); assert.ok(!('transient' in Object(actual))); })(fixture3.getSession());
           });
 
-        const code = await this.provider.DeviceCode.findByUserCode(userCode);
-        expect(code).to.have.property('accountId');
+        const code = await fixture3.provider.DeviceCode.findByUserCode(userCode);
+        assert.ok('accountId' in Object(code));
       });
 
-      it('should process newly established temporary sessions', async function () {
-        sinon.stub(this.provider.Grant.prototype, 'getOIDCScope').returns('openid');
-        const spy = sinon.spy(i(this.provider).features.deviceFlow, 'successSource');
+      it('should process newly established temporary sessions', { timeout: 3000 }, async () => {
+        sinon.stub(fixture3.provider.Grant.prototype, 'getOIDCScope').returns('openid');
+        const spy = sinon.spy(i(fixture3.provider).features.deviceFlow, 'successSource');
 
-        await setup.call(this, {
+        await setup.call(fixture3, {
           scope: 'openid',
         }, {
           login: {
@@ -308,27 +317,27 @@ describe('device interaction resume /device/:uid/', () => {
           consent: {},
         });
 
-        await this.agent.get(path)
+        await fixture3.agent.get(path)
           .accept('text/html')
           .expect(() => {
-            expect(spy.calledOnce).to.be.true;
+            assert.equal(spy.calledOnce, true);
           })
           .expect(200)
           .expect(() => {
-            expect(this.getSession()).to.be.ok.and.have.property('transient');
+            ((actual) => { assert.ok(actual); assert.ok('transient' in Object(actual)); })(fixture3.getSession());
           });
 
-        const code = await this.provider.DeviceCode.findByUserCode(userCode);
-        expect(code).to.have.property('accountId');
+        const code = await fixture3.provider.DeviceCode.findByUserCode(userCode);
+        assert.ok('accountId' in Object(code));
       });
 
-      it('should trigger logout when the session subject changes', async function () {
-        sinon.stub(this.provider.Grant.prototype, 'getOIDCScope').returns('openid');
-        const auth = new this.AuthorizationRequest({
+      it('should trigger logout when the session subject changes', { timeout: 3000 }, async () => {
+        sinon.stub(fixture3.provider.Grant.prototype, 'getOIDCScope').returns('openid');
+        const auth = new fixture3.AuthorizationRequest({
           scope: 'openid',
         });
 
-        await setup.call(this, auth, {
+        await setup.call(fixture3, auth, {
           login: {
             accountId: nanoid(),
           },
@@ -338,22 +347,22 @@ describe('device interaction resume /device/:uid/', () => {
 
         let state;
 
-        await this.agent.get(path)
+        await fixture3.agent.get(path)
           .expect(200)
           .expect('content-type', 'text/html; charset=utf-8')
           .expect(/document.addEventListener\('DOMContentLoaded', function \(\) { document.forms\[0\].submit\(\) }\);/)
           .expect(/<input type="hidden" name="logout" value="yes"\/>/)
           .expect(({ text }) => {
-            ({ state } = this.getSession());
-            expect(state).to.have.property('clientId', 'client');
-            expect(state).to.have.property('postLogoutRedirectUri').that.matches(new RegExp(`${path}$`));
-            expect(text).to.match(new RegExp(`input type="hidden" name="xsrf" value="${state.secret}"`));
+            ({ state } = fixture3.getSession());
+            ((actual) => { assert.ok('clientId' in Object(actual)); assert.equal(actual.clientId, 'client'); })(state);
+            ((actual) => { assert.ok('postLogoutRedirectUri' in Object(actual)); assert.match(actual.postLogoutRedirectUri, new RegExp(`${path}$`)); })(state);
+            assert.match(text, new RegExp(`input type="hidden" name="xsrf" value="${state.secret}"`));
           })
           .expect(/<form method="post" action=".+\/session\/end\/confirm">/);
 
-        expect(await this.provider.Interaction.find(uid)).to.be.ok;
+        assert.ok(await fixture3.provider.Interaction.find(uid));
 
-        await this.agent.post('/session/end/confirm')
+        await fixture3.agent.post('/session/end/confirm')
           .send({
             xsrf: state.secret,
             logout: 'yes',
@@ -362,31 +371,33 @@ describe('device interaction resume /device/:uid/', () => {
           .expect(303)
           .expect('location', state.postLogoutRedirectUri);
 
-        await this.agent.get(state.postLogoutRedirectUri.replace(this.provider.issuer, ''))
+        await fixture3.agent.get(state.postLogoutRedirectUri.replace(fixture3.provider.issuer, ''))
           .expect(200);
       });
     });
 
-    context('interaction errors', () => {
-      it('should abort an interaction when given an error result object', async function () {
-        const spy = sinon.spy(i(this.provider).features.deviceFlow, 'userCodeInputSource');
+    describe('interaction errors', () => {
+      const fixture4 = Object.create(fixture1);
 
-        await setup.call(this, {
+      it('should abort an interaction when given an error result object', { timeout: 3000 }, async () => {
+        const spy = sinon.spy(i(fixture4.provider).features.deviceFlow, 'userCodeInputSource');
+
+        await setup.call(fixture4, {
           scope: 'openid',
         }, {
           error: 'access_denied',
           error_description: 'scope out of reach',
         });
 
-        await this.agent.get(path)
+        await fixture4.agent.get(path)
           .accept('text/html')
-          .expect(new RegExp(`<form id="op.deviceInputForm" novalidate method="post" action="http://127.0.0.1:\\d+${this.suitePath('/device')}">`))
+          .expect(new RegExp(`<form id="op.deviceInputForm" novalidate method="post" action="http://127.0.0.1:\\d+${fixture4.suitePath('/device')}">`))
           .expect(/<p class="red">The Sign-in request was interrupted<\/p>/);
 
-        expect(spy.calledOnce).to.be.true;
+        assert.equal(spy.calledOnce, true);
         sinon.assert.calledWithMatch(spy, any, any, any, sinon.match((err) => {
-          expect(err.message).to.equal('the interaction was aborted');
-          expect(err.cause).to.be.an.instanceof(Error).and.have.property('error', 'access_denied');
+          assert.equal(err.message, 'the interaction was aborted');
+          ((actual) => { assert.ok(actual instanceof Error); assert.ok('error' in Object(actual)); assert.equal(actual.error, 'access_denied'); })(err.cause);
           return true;
         }));
       });

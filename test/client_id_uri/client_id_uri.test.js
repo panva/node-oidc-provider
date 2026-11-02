@@ -1,16 +1,19 @@
-import { expect } from 'chai';
+import { describe, before, it } from 'node:test';
+import assert from 'node:assert/strict';
 
 import bootstrap from '../test_helper.js';
 
 describe('registration management with client_id as URI', () => {
-  before(bootstrap(import.meta.url));
+  const fixture = {};
 
-  it('returns client_id as a URI string', async function () {
+  before(bootstrap(import.meta.url, fixture), { timeout: 3000 });
+
+  it('returns client_id as a URI string', { timeout: 3000 }, async () => {
     let client_id;
     let registration_client_uri;
     let registration_access_token;
 
-    await this.agent.post('/reg')
+    await fixture.agent.post('/reg')
       .send({
         redirect_uris: ['https://client.example.com/cb'],
       })
@@ -19,24 +22,24 @@ describe('registration management with client_id as URI', () => {
         ({ client_id, registration_access_token, registration_client_uri } = response.body);
 
         const parsed = new URL(registration_client_uri);
-        expect(parsed.search).to.be.empty;
+        assert.equal(parsed.search.length, 0);
         const i = parsed.pathname.indexOf('/reg/');
-        expect(parsed.pathname.slice(i + 5)).to.equal(encodeURIComponent(client_id));
+        assert.equal(parsed.pathname.slice(i + 5), encodeURIComponent(client_id));
       });
 
-    await this.agent.get(new URL(registration_client_uri).pathname)
+    await fixture.agent.get(new URL(registration_client_uri).pathname)
       .auth(registration_access_token, { type: 'bearer' })
       .expect(200)
       .expect((response) => {
         ({ registration_access_token, registration_client_uri } = response.body);
 
         const parsed = new URL(registration_client_uri);
-        expect(parsed.search).to.be.empty;
+        assert.equal(parsed.search.length, 0);
         const i = parsed.pathname.indexOf('/reg/');
-        expect(parsed.pathname.slice(i + 5)).to.equal(encodeURIComponent(client_id));
+        assert.equal(parsed.pathname.slice(i + 5), encodeURIComponent(client_id));
       });
 
-    await this.agent.put(new URL(registration_client_uri).pathname)
+    await fixture.agent.put(new URL(registration_client_uri).pathname)
       .auth(registration_access_token, { type: 'bearer' })
       .send({
         client_id,
@@ -47,12 +50,12 @@ describe('registration management with client_id as URI', () => {
         ({ registration_access_token, registration_client_uri } = response.body);
 
         const parsed = new URL(registration_client_uri);
-        expect(parsed.search).to.be.empty;
+        assert.equal(parsed.search.length, 0);
         const i = parsed.pathname.indexOf('/reg/');
-        expect(parsed.pathname.slice(i + 5)).to.equal(encodeURIComponent(client_id));
+        assert.equal(parsed.pathname.slice(i + 5), encodeURIComponent(client_id));
       });
 
-    await this.agent.delete(new URL(registration_client_uri).pathname)
+    await fixture.agent.delete(new URL(registration_client_uri).pathname)
       .auth(registration_access_token, { type: 'bearer' })
       .expect(204);
   });

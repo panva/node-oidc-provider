@@ -1,4 +1,5 @@
-import { expect } from 'chai';
+import { describe, before, after, it } from 'node:test';
+import assert from 'node:assert/strict';
 import sinon from 'sinon';
 
 import instance from '../../lib/helpers/weak_cache.js';
@@ -36,50 +37,51 @@ function accessControlHeaders(headers) {
 }
 
 function assertCorsHeaders(headers, expected) {
-  expect(headers[Vary]).to.eql('Origin');
-  expect(accessControlHeaders(headers)).to.eql(expected);
+  assert.deepEqual(headers[Vary], 'Origin');
+  assert.deepEqual(accessControlHeaders(headers), expected);
 }
 
 describe('CORS setup', () => {
-  before(bootstrap(import.meta.url));
-  before(function () { return this.login(); });
-  before(async function () {
-    const at = new this.provider.AccessToken({
-      accountId: this.loggedInAccountId,
-      grantId: this.getGrantId(),
-      client: await this.provider.Client.find('client'),
+  const fixture = {};
+
+  before(bootstrap(import.meta.url, fixture), { timeout: 3000 });
+  before(() => fixture.login(), { timeout: 3000 });
+  before(async () => {
+    const at = new fixture.provider.AccessToken({
+      accountId: fixture.loggedInAccountId,
+      grantId: fixture.getGrantId(),
+      client: await fixture.provider.Client.find('client'),
       scope: 'openid',
     });
 
-    this.token = await at.save();
-  });
+    fixture.token = await at.save();
+  }, { timeout: 3000 });
 
   describe('error handling', () => {
-    before(function () {
-      this.default = instance(this.provider).configuration.clientBasedCORS;
-    });
+    const fixture1 = Object.create(fixture);
 
-    after(function () {
-      const conf = instance(this.provider).configuration;
-      conf.clientBasedCORS = this.default;
-    });
+    before(() => {
+      fixture1.default = instance(fixture1.provider).configuration.clientBasedCORS;
+    }, { timeout: 3000 });
 
-    it('500s when clientBasedCORS returns non-boolean', async function () {
+    after(() => {
+      const conf = instance(fixture1.provider).configuration;
+      conf.clientBasedCORS = fixture1.default;
+    }, { timeout: 3000 });
+
+    it('500s when clientBasedCORS returns non-boolean', { timeout: 3000 }, async () => {
       const spy = sinon.spy();
-      this.provider.once('server_error', spy);
-      instance(this.provider).configuration.clientBasedCORS = () => Promise.resolve(true);
+      fixture1.provider.once('server_error', spy);
+      instance(fixture1.provider).configuration.clientBasedCORS = () => Promise.resolve(true);
       const { status, headers } = await req.call(
-        this,
+        fixture1,
         'get',
         '/me',
         'https://example.com',
-        ['set', 'authorization', `Bearer ${this.token}`],
+        ['set', 'authorization', `Bearer ${fixture1.token}`],
       );
-      expect(status).to.eql(500);
-      expect(spy.args[0][1]).to.have.property(
-        'message',
-        'clientBasedCORS must return a Boolean',
-      );
+      assert.deepEqual(status, 500);
+      ((actual) => { assert.ok('message' in Object(actual)); assert.equal(actual.message, 'clientBasedCORS must return a Boolean'); })(spy.args[0][1]);
       assertCorsHeaders(headers, {
         [ACEHeaders]: 'WWW-Authenticate',
         [ACAOrigin]: 'https://example.com',
@@ -87,43 +89,43 @@ describe('CORS setup', () => {
     });
   });
 
-  it('discovery has cors open', async function () {
-    const { status, headers } = await req.call(this, 'get', '/.well-known/openid-configuration', 'https://example.com');
-    expect(status).to.eql(200);
+  it('discovery has cors open', { timeout: 3000 }, async () => {
+    const { status, headers } = await req.call(fixture, 'get', '/.well-known/openid-configuration', 'https://example.com');
+    assert.deepEqual(status, 200);
     assertCorsHeaders(headers, {
       [ACAOrigin]: 'https://example.com',
     });
   });
 
-  it('reads the current DPoP configuration when exposing response headers', async function () {
-    const { configuration } = instance(this.provider);
+  it('reads the current DPoP configuration when exposing response headers', { timeout: 3000 }, async () => {
+    const { configuration } = instance(fixture.provider);
     const original = configuration.features.dPoP;
     const originalClientBasedCORS = configuration.clientBasedCORS;
     const request = () => req.call(
-      this, 'get', '/me', 'https://example.com',
-      ['set', 'authorization', `Bearer ${this.token}`],
+      fixture, 'get', '/me', 'https://example.com',
+      ['set', 'authorization', `Bearer ${fixture.token}`],
     );
 
     try {
       configuration.clientBasedCORS = () => true;
       configuration.features.dPoP = { ...original, enabled: true, nonceSecret: Buffer.alloc(32) };
       const enabled = await request();
-      expect(enabled.status).to.equal(200);
-      expect(enabled.headers[ACEHeaders]).to.equal('DPoP-Nonce,WWW-Authenticate');
+      assert.equal(enabled.status, 200);
+      assert.equal(enabled.headers[ACEHeaders], 'DPoP-Nonce,WWW-Authenticate');
 
       configuration.features.dPoP = { ...original, enabled: false };
       const disabled = await request();
-      expect(disabled.status).to.equal(200);
-      expect(disabled.headers[ACEHeaders]).to.equal('WWW-Authenticate');
+      assert.equal(disabled.status, 200);
+      assert.equal(disabled.headers[ACEHeaders], 'WWW-Authenticate');
     } finally {
       configuration.features.dPoP = original;
       configuration.clientBasedCORS = originalClientBasedCORS;
     }
   });
 
-  it('discovery preflights have cors open', async function () {
-    const { status, headers } = await preflight.call(this, 'GET', '/.well-known/openid-configuration', 'https://example.com');
-    expect(status).to.eql(204);
+  it('discovery preflights have cors open', { timeout: 3000 }, async () => {
+    const { status, headers } = await preflight.call(fixture, 'GET', '/.well-known/openid-configuration', 'https://example.com');
+    assert.deepEqual(status, 204);
     assertCorsHeaders(headers, {
       [ACAOrigin]: 'https://example.com',
       [ACAMaxAge]: '3600',
@@ -132,17 +134,17 @@ describe('CORS setup', () => {
     });
   });
 
-  it('jwks_uri has cors open', async function () {
-    const { status, headers } = await req.call(this, 'get', '/jwks', 'https://example.com');
-    expect(status).to.eql(200);
+  it('jwks_uri has cors open', { timeout: 3000 }, async () => {
+    const { status, headers } = await req.call(fixture, 'get', '/jwks', 'https://example.com');
+    assert.deepEqual(status, 200);
     assertCorsHeaders(headers, {
       [ACAOrigin]: 'https://example.com',
     });
   });
 
-  it('jwks_uri preflights have cors open', async function () {
-    const { status, headers } = await preflight.call(this, 'GET', '/jwks', 'https://example.com');
-    expect(status).to.eql(204);
+  it('jwks_uri preflights have cors open', { timeout: 3000 }, async () => {
+    const { status, headers } = await preflight.call(fixture, 'GET', '/jwks', 'https://example.com');
+    assert.deepEqual(status, 204);
     assertCorsHeaders(headers, {
       [ACAOrigin]: 'https://example.com',
       [ACAMaxAge]: '3600',
@@ -152,35 +154,37 @@ describe('CORS setup', () => {
   });
 
   describe('with clientBasedCORS resolving to true', () => {
-    before(function () {
-      const conf = instance(this.provider).configuration;
-      this.clientBasedCORS = conf.clientBasedCORS;
+    const fixture2 = Object.create(fixture);
+
+    before(() => {
+      const conf = instance(fixture2.provider).configuration;
+      fixture2.clientBasedCORS = conf.clientBasedCORS;
       conf.clientBasedCORS = () => true;
-    });
+    }, { timeout: 3000 });
 
-    after(function () {
-      const conf = instance(this.provider).configuration;
-      conf.clientBasedCORS = this.clientBasedCORS;
-    });
+    after(() => {
+      const conf = instance(fixture2.provider).configuration;
+      conf.clientBasedCORS = fixture2.clientBasedCORS;
+    }, { timeout: 3000 });
 
-    it('userinfo has cors open', async function () {
+    it('userinfo has cors open', { timeout: 3000 }, async () => {
       const { status, headers } = await req.call(
-        this,
+        fixture2,
         'get',
         '/me',
         'https://example.com',
-        ['set', 'authorization', `Bearer ${this.token}`],
+        ['set', 'authorization', `Bearer ${fixture2.token}`],
       );
-      expect(status).to.eql(200);
+      assert.deepEqual(status, 200);
       assertCorsHeaders(headers, {
         [ACEHeaders]: 'WWW-Authenticate',
         [ACAOrigin]: 'https://example.com',
       });
     });
 
-    it('userinfo preflights have cors open', async function () {
-      const { status, headers } = await preflight.call(this, 'GET', '/me', 'https://example.com');
-      expect(status).to.eql(204);
+    it('userinfo preflights have cors open', { timeout: 3000 }, async () => {
+      const { status, headers } = await preflight.call(fixture2, 'GET', '/me', 'https://example.com');
+      assert.deepEqual(status, 204);
       assertCorsHeaders(headers, {
         [ACAOrigin]: 'https://example.com',
         [ACAMaxAge]: '3600',
@@ -189,9 +193,9 @@ describe('CORS setup', () => {
       });
     });
 
-    it('token has cors open', async function () {
+    it('token has cors open', { timeout: 3000 }, async () => {
       const { status, headers } = await req.call(
-        this,
+        fixture2,
         'post',
         '/token',
         'https://example.com',
@@ -199,16 +203,16 @@ describe('CORS setup', () => {
         ['type', 'form'],
         ['send', { client_id: 'client', grant_type: 'client_credentials' }],
       );
-      expect(status).to.eql(200);
+      assert.deepEqual(status, 200);
       assertCorsHeaders(headers, {
         [ACEHeaders]: 'WWW-Authenticate',
         [ACAOrigin]: 'https://example.com',
       });
     });
 
-    it('token (error) has cors open', async function () {
+    it('token (error) has cors open', { timeout: 3000 }, async () => {
       const { status, headers } = await req.call(
-        this,
+        fixture2,
         'post',
         '/token',
         'https://example.com',
@@ -216,16 +220,16 @@ describe('CORS setup', () => {
         ['type', 'form'],
         ['send', { client_id: 'client' }],
       );
-      expect(status).to.eql(400);
+      assert.deepEqual(status, 400);
       assertCorsHeaders(headers, {
         [ACEHeaders]: 'WWW-Authenticate',
         [ACAOrigin]: 'https://example.com',
       });
     });
 
-    it('token preflights have cors open', async function () {
-      const { status, headers } = await preflight.call(this, 'POST', '/token', 'https://example.com');
-      expect(status).to.eql(204);
+    it('token preflights have cors open', { timeout: 3000 }, async () => {
+      const { status, headers } = await preflight.call(fixture2, 'POST', '/token', 'https://example.com');
+      assert.deepEqual(status, 204);
       assertCorsHeaders(headers, {
         [ACAOrigin]: 'https://example.com',
         [ACAMaxAge]: '3600',
@@ -234,9 +238,9 @@ describe('CORS setup', () => {
       });
     });
 
-    it('revocation has cors open', async function () {
+    it('revocation has cors open', { timeout: 3000 }, async () => {
       const { status, headers } = await req.call(
-        this,
+        fixture2,
         'post',
         '/token/revocation',
         'https://example.com',
@@ -244,16 +248,16 @@ describe('CORS setup', () => {
         ['type', 'form'],
         ['send', { client_id: 'client', token: 'foo' }],
       );
-      expect(status).to.eql(200);
+      assert.deepEqual(status, 200);
       assertCorsHeaders(headers, {
         [ACEHeaders]: 'WWW-Authenticate',
         [ACAOrigin]: 'https://example.com',
       });
     });
 
-    it('revocation preflights have cors open', async function () {
-      const { status, headers } = await preflight.call(this, 'POST', '/token/revocation', 'https://example.com');
-      expect(status).to.eql(204);
+    it('revocation preflights have cors open', { timeout: 3000 }, async () => {
+      const { status, headers } = await preflight.call(fixture2, 'POST', '/token/revocation', 'https://example.com');
+      assert.deepEqual(status, 204);
       assertCorsHeaders(headers, {
         [ACAOrigin]: 'https://example.com',
         [ACAMaxAge]: '3600',
@@ -262,26 +266,26 @@ describe('CORS setup', () => {
       });
     });
 
-    it('introspection has cors open', async function () {
+    it('introspection has cors open', { timeout: 3000 }, async () => {
       const { status, headers } = await req.call(
-        this,
+        fixture2,
         'post',
         '/token/introspection',
         'https://example.com',
         ['set', 'content-type', 'application/x-www-form-urlencoded'],
         ['type', 'form'],
-        ['send', { client_id: 'client', token: this.token }],
+        ['send', { client_id: 'client', token: fixture2.token }],
       );
-      expect(status).to.eql(200);
+      assert.deepEqual(status, 200);
       assertCorsHeaders(headers, {
         [ACEHeaders]: 'WWW-Authenticate',
         [ACAOrigin]: 'https://example.com',
       });
     });
 
-    it('introspection (error) has cors open', async function () {
+    it('introspection (error) has cors open', { timeout: 3000 }, async () => {
       const { status, headers } = await req.call(
-        this,
+        fixture2,
         'post',
         '/token/introspection',
         'https://example.com',
@@ -289,16 +293,16 @@ describe('CORS setup', () => {
         ['type', 'form'],
         ['send', { client_id: 'client' }],
       );
-      expect(status).to.eql(400);
+      assert.deepEqual(status, 400);
       assertCorsHeaders(headers, {
         [ACEHeaders]: 'WWW-Authenticate',
         [ACAOrigin]: 'https://example.com',
       });
     });
 
-    it('introspection preflights have cors open', async function () {
-      const { status, headers } = await preflight.call(this, 'POST', '/token/introspection', 'https://example.com');
-      expect(status).to.eql(204);
+    it('introspection preflights have cors open', { timeout: 3000 }, async () => {
+      const { status, headers } = await preflight.call(fixture2, 'POST', '/token/introspection', 'https://example.com');
+      assert.deepEqual(status, 204);
       assertCorsHeaders(headers, {
         [ACAOrigin]: 'https://example.com',
         [ACAMaxAge]: '3600',
@@ -307,9 +311,9 @@ describe('CORS setup', () => {
       });
     });
 
-    it('device_authorization has cors open', async function () {
+    it('device_authorization has cors open', { timeout: 3000 }, async () => {
       const { status, headers } = await req.call(
-        this,
+        fixture2,
         'post',
         '/device/auth',
         'https://example.com',
@@ -317,16 +321,16 @@ describe('CORS setup', () => {
         ['type', 'form'],
         ['send', { client_id: 'client' }],
       );
-      expect(status).to.eql(200);
+      assert.deepEqual(status, 200);
       assertCorsHeaders(headers, {
         [ACEHeaders]: 'WWW-Authenticate',
         [ACAOrigin]: 'https://example.com',
       });
     });
 
-    it('device_authorization (error) has cors open', async function () {
+    it('device_authorization (error) has cors open', { timeout: 3000 }, async () => {
       const { status, headers } = await req.call(
-        this,
+        fixture2,
         'post',
         '/device/auth',
         'https://example.com',
@@ -334,16 +338,16 @@ describe('CORS setup', () => {
         ['type', 'form'],
         ['send', { client_id: 'client', max_age: '-1' }],
       );
-      expect(status).to.eql(400);
+      assert.deepEqual(status, 400);
       assertCorsHeaders(headers, {
         [ACEHeaders]: 'WWW-Authenticate',
         [ACAOrigin]: 'https://example.com',
       });
     });
 
-    it('device_authorization preflights have cors open', async function () {
-      const { status, headers } = await preflight.call(this, 'POST', '/device/auth', 'https://example.com');
-      expect(status).to.eql(204);
+    it('device_authorization preflights have cors open', { timeout: 3000 }, async () => {
+      const { status, headers } = await preflight.call(fixture2, 'POST', '/device/auth', 'https://example.com');
+      assert.deepEqual(status, 204);
       assertCorsHeaders(headers, {
         [ACAOrigin]: 'https://example.com',
         [ACAMaxAge]: '3600',
@@ -354,39 +358,41 @@ describe('CORS setup', () => {
   });
 
   describe('with clientBasedCORS false (default)', () => {
-    it('does not allow opaque origins based on a native custom-scheme redirect URI', async function () {
+    const fixture3 = Object.create(fixture);
+
+    it('does not allow opaque origins based on a native custom-scheme redirect URI', { timeout: 3000 }, async () => {
       const { status, headers } = await req.call(
-        this,
+        fixture3,
         'get',
         '/me',
         'null',
-        ['set', 'authorization', `Bearer ${this.token}`],
+        ['set', 'authorization', `Bearer ${fixture3.token}`],
       );
-      expect(status).to.eql(400);
+      assert.deepEqual(status, 400);
       assertCorsHeaders(headers, {
         // no Access-Control-Allow-Origin
         [ACEHeaders]: 'WWW-Authenticate',
       });
     });
 
-    it('userinfo has cors closed', async function () {
+    it('userinfo has cors closed', { timeout: 3000 }, async () => {
       const { status, headers } = await req.call(
-        this,
+        fixture3,
         'get',
         '/me',
         'https://example.com',
-        ['set', 'authorization', `Bearer ${this.token}`],
+        ['set', 'authorization', `Bearer ${fixture3.token}`],
       );
-      expect(status).to.eql(400);
+      assert.deepEqual(status, 400);
       assertCorsHeaders(headers, {
         // no Access-Control-Allow-Origin
         [ACEHeaders]: 'WWW-Authenticate',
       });
     });
 
-    it('userinfo preflights have cors open', async function () {
-      const { status, headers } = await preflight.call(this, 'GET', '/me', 'https://example.com');
-      expect(status).to.eql(204);
+    it('userinfo preflights have cors open', { timeout: 3000 }, async () => {
+      const { status, headers } = await preflight.call(fixture3, 'GET', '/me', 'https://example.com');
+      assert.deepEqual(status, 204);
       assertCorsHeaders(headers, {
         [ACAOrigin]: 'https://example.com',
         [ACAMaxAge]: '3600',
@@ -395,9 +401,9 @@ describe('CORS setup', () => {
       });
     });
 
-    it('token has cors closed', async function () {
+    it('token has cors closed', { timeout: 3000 }, async () => {
       const { status, headers } = await req.call(
-        this,
+        fixture3,
         'post',
         '/token',
         'https://example.com',
@@ -405,32 +411,32 @@ describe('CORS setup', () => {
         ['type', 'form'],
         ['send', { client_id: 'client', grant_type: 'client_credentials' }],
       );
-      expect(status).to.eql(400);
+      assert.deepEqual(status, 400);
       assertCorsHeaders(headers, {
         // no Access-Control-Allow-Origin
         [ACEHeaders]: 'WWW-Authenticate',
       });
     });
 
-    it('token (error) has cors open', async function () {
+    it('token (error) has cors open', { timeout: 3000 }, async () => {
       const { status, headers } = await req.call(
-        this,
+        fixture3,
         'post',
         '/token',
         'https://example.com',
         ['set', 'content-type', 'application/x-www-form-urlencoded'],
         ['type', 'form'],
       );
-      expect(status).to.eql(400);
+      assert.deepEqual(status, 400);
       assertCorsHeaders(headers, {
         [ACEHeaders]: 'WWW-Authenticate',
         [ACAOrigin]: 'https://example.com',
       });
     });
 
-    it('token preflights have cors open', async function () {
-      const { status, headers } = await preflight.call(this, 'POST', '/token', 'https://example.com');
-      expect(status).to.eql(204);
+    it('token preflights have cors open', { timeout: 3000 }, async () => {
+      const { status, headers } = await preflight.call(fixture3, 'POST', '/token', 'https://example.com');
+      assert.deepEqual(status, 204);
       assertCorsHeaders(headers, {
         [ACAOrigin]: 'https://example.com',
         [ACAMaxAge]: '3600',
@@ -439,9 +445,9 @@ describe('CORS setup', () => {
       });
     });
 
-    it('revocation has cors closed', async function () {
+    it('revocation has cors closed', { timeout: 3000 }, async () => {
       const { status, headers } = await req.call(
-        this,
+        fixture3,
         'post',
         '/token/revocation',
         'https://example.com',
@@ -449,16 +455,16 @@ describe('CORS setup', () => {
         ['type', 'form'],
         ['send', { client_id: 'client', token: 'foo' }],
       );
-      expect(status).to.eql(400);
+      assert.deepEqual(status, 400);
       assertCorsHeaders(headers, {
         // no Access-Control-Allow-Origin
         [ACEHeaders]: 'WWW-Authenticate',
       });
     });
 
-    it('revocation preflights have cors open', async function () {
-      const { status, headers } = await preflight.call(this, 'POST', '/token/revocation', 'https://example.com');
-      expect(status).to.eql(204);
+    it('revocation preflights have cors open', { timeout: 3000 }, async () => {
+      const { status, headers } = await preflight.call(fixture3, 'POST', '/token/revocation', 'https://example.com');
+      assert.deepEqual(status, 204);
       assertCorsHeaders(headers, {
         [ACAOrigin]: 'https://example.com',
         [ACAMaxAge]: '3600',
@@ -467,42 +473,42 @@ describe('CORS setup', () => {
       });
     });
 
-    it('introspection has cors closed', async function () {
+    it('introspection has cors closed', { timeout: 3000 }, async () => {
       const { status, headers } = await req.call(
-        this,
+        fixture3,
         'post',
         '/token/introspection',
         'https://example.com',
         ['set', 'content-type', 'application/x-www-form-urlencoded'],
         ['type', 'form'],
-        ['send', { client_id: 'client', token: this.token }],
+        ['send', { client_id: 'client', token: fixture3.token }],
       );
-      expect(status).to.eql(400);
+      assert.deepEqual(status, 400);
       assertCorsHeaders(headers, {
         // no Access-Control-Allow-Origin
         [ACEHeaders]: 'WWW-Authenticate',
       });
     });
 
-    it('introspection (error) has cors open', async function () {
+    it('introspection (error) has cors open', { timeout: 3000 }, async () => {
       const { status, headers } = await req.call(
-        this,
+        fixture3,
         'post',
         '/token/introspection',
         'https://example.com',
         ['set', 'content-type', 'application/x-www-form-urlencoded'],
         ['type', 'form'],
       );
-      expect(status).to.eql(400);
+      assert.deepEqual(status, 400);
       assertCorsHeaders(headers, {
         [ACEHeaders]: 'WWW-Authenticate',
         [ACAOrigin]: 'https://example.com',
       });
     });
 
-    it('introspection preflights have cors open', async function () {
-      const { status, headers } = await preflight.call(this, 'POST', '/token/introspection', 'https://example.com');
-      expect(status).to.eql(204);
+    it('introspection preflights have cors open', { timeout: 3000 }, async () => {
+      const { status, headers } = await preflight.call(fixture3, 'POST', '/token/introspection', 'https://example.com');
+      assert.deepEqual(status, 204);
       assertCorsHeaders(headers, {
         [ACAOrigin]: 'https://example.com',
         [ACAMaxAge]: '3600',
@@ -511,9 +517,9 @@ describe('CORS setup', () => {
       });
     });
 
-    it('device_authorization has cors closed', async function () {
+    it('device_authorization has cors closed', { timeout: 3000 }, async () => {
       const { status, headers } = await req.call(
-        this,
+        fixture3,
         'post',
         '/device/auth',
         'https://example.com',
@@ -521,32 +527,32 @@ describe('CORS setup', () => {
         ['type', 'form'],
         ['send', { client_id: 'client' }],
       );
-      expect(status).to.eql(400);
+      assert.deepEqual(status, 400);
       assertCorsHeaders(headers, {
         // no Access-Control-Allow-Origin
         [ACEHeaders]: 'WWW-Authenticate',
       });
     });
 
-    it('device_authorization (error) has cors open', async function () {
+    it('device_authorization (error) has cors open', { timeout: 3000 }, async () => {
       const { status, headers } = await req.call(
-        this,
+        fixture3,
         'post',
         '/device/auth',
         'https://example.com',
         ['set', 'content-type', 'application/x-www-form-urlencoded'],
         ['type', 'form'],
       );
-      expect(status).to.eql(400);
+      assert.deepEqual(status, 400);
       assertCorsHeaders(headers, {
         [ACEHeaders]: 'WWW-Authenticate',
         [ACAOrigin]: 'https://example.com',
       });
     });
 
-    it('device_authorization preflights have cors open', async function () {
-      const { status, headers } = await preflight.call(this, 'POST', '/device/auth', 'https://example.com');
-      expect(status).to.eql(204);
+    it('device_authorization preflights have cors open', { timeout: 3000 }, async () => {
+      const { status, headers } = await preflight.call(fixture3, 'POST', '/device/auth', 'https://example.com');
+      assert.deepEqual(status, 204);
       assertCorsHeaders(headers, {
         [ACAOrigin]: 'https://example.com',
         [ACAMaxAge]: '3600',

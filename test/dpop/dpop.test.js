@@ -1,8 +1,9 @@
+import { describe, before, it, afterEach, after, beforeEach } from 'node:test';
+import assert from 'node:assert/strict';
 import * as url from 'node:url';
 import { hash, randomBytes, randomUUID } from 'node:crypto';
 
 import sinon from 'sinon';
-import { expect } from 'chai';
 import {
   SignJWT, exportJWK, calculateJwkThumbprint, decodeJwt, generateKeyPair,
 } from 'jose';
@@ -31,37 +32,41 @@ async function DPoP(keypair, htu, htm, nonce = undefined, accessToken = undefine
 }
 
 describe('features.dPoP', () => {
-  before(bootstrap(import.meta.url));
-  before(function () { return this.login({ scope: 'openid offline_access' }); });
-  skipConsent();
-  before(async function () {
-    this.keypair = await generateKeyPair('ES256', { extractable: true });
-    this.jwk = await exportJWK(this.keypair.publicKey);
-    this.thumbprint = await calculateJwkThumbprint(this.jwk);
-  });
+  const fixture = {};
 
-  it('extends discovery', async function () {
-    await this.agent.get('/.well-known/openid-configuration')
+  before(bootstrap(import.meta.url, fixture), { timeout: 3000 });
+  before(() => fixture.login({ scope: 'openid offline_access' }), { timeout: 3000 });
+  skipConsent(fixture);
+  before(async () => {
+    fixture.keypair = await generateKeyPair('ES256', { extractable: true });
+    fixture.jwk = await exportJWK(fixture.keypair.publicKey);
+    fixture.thumbprint = await calculateJwkThumbprint(fixture.jwk);
+  }, { timeout: 3000 });
+
+  it('extends discovery', { timeout: 3000 }, async () => {
+    await fixture.agent.get('/.well-known/openid-configuration')
       .expect(200)
       .expect((response) => {
-        expect(response.body).to.have.deep.property('dpop_signing_alg_values_supported', ['ES256', 'PS256']);
+        ((actual) => { assert.ok('dpop_signing_alg_values_supported' in Object(actual)); assert.deepEqual(actual.dpop_signing_alg_values_supported, ['ES256', 'PS256']); })(response.body);
       });
   });
 
   describe('userinfo', () => {
-    it('validates the way DPoP proof JWT is provided', async function () {
-      const at = new this.provider.AccessToken({
+    const fixture1 = Object.create(fixture);
+
+    it('validates the way DPoP proof JWT is provided', { timeout: 3000 }, async () => {
+      const at = new fixture1.provider.AccessToken({
         accountId: 'account',
-        client: await this.provider.Client.find('client'),
+        client: await fixture1.provider.Client.find('client'),
         scope: 'openid',
       });
-      at.setThumbprint('jkt', this.thumbprint);
+      at.setThumbprint('jkt', fixture1.thumbprint);
 
-      expect(() => at.setThumbprint('x5t', 'foo')).to.throw().with.property('error_description', 'multiple proof-of-possession mechanisms are not allowed');
+      ((actual) => { assert.throws(actual, (error) => { assert.ok('error_description' in Object(error)); assert.equal(error.error_description, 'multiple proof-of-possession mechanisms are not allowed'); return true; }); })(() => at.setThumbprint('x5t', 'foo'));
 
       const dpop = await at.save();
 
-      await this.agent.get('/me')
+      await fixture1.agent.get('/me')
         .set('Authorization', `Bearer ${dpop}`)
         .expect(401)
         .expect({ error: 'invalid_token', error_description: 'invalid token provided' })
@@ -69,15 +74,15 @@ describe('features.dPoP', () => {
         .expect('WWW-Authenticate', /error="invalid_token"/)
         .expect('WWW-Authenticate', /algs="ES256 PS256"/);
 
-      await this.agent.get('/me')
+      await fixture1.agent.get('/me')
         .set('Authorization', `DPoP ${dpop}`)
         .expect(400)
         .expect({ error: 'invalid_request', error_description: '`DPoP` header not provided' })
         .expect('WWW-Authenticate', /^DPoP /)
         .expect('WWW-Authenticate', /algs="ES256 PS256"/);
 
-      await this.agent.post('/me')
-        .set('DPoP', await DPoP(this.keypair, `${this.provider.issuer}${this.suitePath('/me')}`, 'POST', undefined, dpop))
+      await fixture1.agent.post('/me')
+        .set('DPoP', await DPoP(fixture1.keypair, `${fixture1.provider.issuer}${fixture1.suitePath('/me')}`, 'POST', undefined, dpop))
         .send({ access_token: dpop })
         .type('form')
         .expect(400)
@@ -85,8 +90,8 @@ describe('features.dPoP', () => {
         .expect('WWW-Authenticate', /^DPoP /)
         .expect('WWW-Authenticate', /algs="ES256 PS256"/);
 
-      await this.agent.get('/me')
-        .set('DPoP', await DPoP(this.keypair, `${this.provider.issuer}${this.suitePath('/me')}`, 'GET', undefined, dpop))
+      await fixture1.agent.get('/me')
+        .set('DPoP', await DPoP(fixture1.keypair, `${fixture1.provider.issuer}${fixture1.suitePath('/me')}`, 'GET', undefined, dpop))
         .set('Authorization', `Bearer ${dpop}`)
         .expect(400)
         .expect({ error: 'invalid_request', error_description: 'authorization header scheme must be `DPoP` when DPoP is used' })
@@ -94,63 +99,65 @@ describe('features.dPoP', () => {
         .expect('WWW-Authenticate', /algs="ES256 PS256"/);
     });
 
-    context('validates the DPoP proof JWT is conform', () => {
-      before(async function () {
-        const at = new this.provider.AccessToken({
-          accountId: this.loggedInAccountId,
-          grantId: this.getGrantId(),
-          client: await this.provider.Client.find('client'),
+    describe('validates the DPoP proof JWT is conform', () => {
+      const fixture2 = Object.create(fixture1);
+
+      before(async () => {
+        const at = new fixture2.provider.AccessToken({
+          accountId: fixture2.loggedInAccountId,
+          grantId: fixture2.getGrantId(),
+          client: await fixture2.provider.Client.find('client'),
           scope: 'openid',
         });
-        at.setThumbprint('jkt', this.thumbprint);
+        at.setThumbprint('jkt', fixture2.thumbprint);
 
-        this.access_token = await at.save();
-        this.ath = hash('sha256', this.access_token, 'base64url');
-      });
+        fixture2.access_token = await at.save();
+        fixture2.ath = hash('sha256', fixture2.access_token, 'base64url');
+      }, { timeout: 3000 });
 
-      afterEach(function () {
-        this.provider.removeAllListeners('userinfo.error');
-      });
+      afterEach(() => {
+        fixture2.provider.removeAllListeners('userinfo.error');
+      }, { timeout: 3000 });
 
-      it('invalid typ', async function () {
+      it('invalid typ', { timeout: 3000 }, async () => {
         const spy = sinon.spy();
-        this.provider.on('userinfo.error', spy);
+        fixture2.provider.on('userinfo.error', spy);
 
         for (const value of ['JWT', 'secevent+jwt']) {
-          await this.agent.get('/me')
+          await fixture2.agent.get('/me')
             .set('DPoP', await new SignJWT({})
               .setProtectedHeader({
                 alg: 'ES256',
-                jwk: this.jwk,
+                jwk: fixture2.jwk,
                 typ: value,
               })
-              .sign(this.keypair.privateKey))
-            .set('Authorization', `DPoP ${this.access_token}`)
+              .sign(fixture2.keypair.privateKey))
+            .set('Authorization', `DPoP ${fixture2.access_token}`)
             .expect(401)
             .expect({ error: 'invalid_dpop_proof', error_description: 'invalid DPoP key binding' })
             .expect('WWW-Authenticate', /^DPoP /)
             .expect('WWW-Authenticate', /error="invalid_dpop_proof"/)
             .expect('WWW-Authenticate', /algs="ES256 PS256"/)
             .expect((response) => {
-              expect(response.headers['www-authenticate']).not.to.include('error_detail');
-              expect(response.headers['www-authenticate']).not.to.include('cause');
+              assert.ok(!(response.headers['www-authenticate'].includes('error_detail')));
+              assert.ok(!(response.headers['www-authenticate'].includes('cause')));
             });
         }
 
         for (const { args: [, err] } of spy.getCalls()) {
-          expect(err.error_detail).to.eql('unexpected "typ" JWT header value');
-          expect(err.cause).to.be.instanceOf(Error);
-          expect(err.cause.message).to.equal(err.error_detail);
+          assert.deepEqual(err.error_detail, 'unexpected "typ" JWT header value');
+          assert.ok(err.cause instanceof Error);
+          assert.equal(err.cause.message, err.error_detail);
         }
       });
 
-      it('alg mismatch', async function () {
+      it('alg mismatch', { timeout: 3000 }, async () => {
         const spy = sinon.spy();
-        this.provider.on('userinfo.error', spy);
+        fixture2.provider.on('userinfo.error', spy);
         for (const value of [1, true, 'none', 'HS256', 'unsupported']) {
-          await this.agent.get('/me')
-            .set('DPoP', `${base64url.encode(JSON.stringify({ jwk: this.jwk, typ: 'dpop+jwt', alg: value }))}.e30.`)
-            .set('Authorization', `DPoP ${this.access_token}`)
+          await fixture2.agent.get('/me')
+            .set('DPoP', `${base64url.encode(JSON.stringify({ jwk: fixture2.jwk, typ: 'dpop+jwt', alg: value }))}.e30.`)
+            .set('Authorization', `DPoP ${fixture2.access_token}`)
             .expect(401)
             .expect({ error: 'invalid_dpop_proof', error_description: 'invalid DPoP key binding' })
             .expect('WWW-Authenticate', /^DPoP /)
@@ -159,23 +166,23 @@ describe('features.dPoP', () => {
         }
 
         for (const { args: [, err] } of spy.getCalls()) {
-          expect(err.error_detail).to.be.oneOf(['"alg" (Algorithm) Header Parameter value not allowed', 'JWS "alg" (Algorithm) Header Parameter missing or invalid']);
+          assert.ok(['"alg" (Algorithm) Header Parameter value not allowed', 'JWS "alg" (Algorithm) Header Parameter missing or invalid'].includes(err.error_detail));
         }
       });
 
-      it('embedded jwk header', async function () {
+      it('embedded jwk header', { timeout: 3000 }, async () => {
         const spy = sinon.spy();
-        this.provider.on('userinfo.error', spy);
+        fixture2.provider.on('userinfo.error', spy);
         for (const value of [undefined, '', 1, true, null, 'foo', []]) {
-          await this.agent.get('/me')
+          await fixture2.agent.get('/me')
             .set('DPoP', await new SignJWT({})
               .setProtectedHeader({
                 alg: 'ES256',
                 jwk: value,
                 typ: 'dpop+jwt',
               })
-              .sign(this.keypair.privateKey))
-            .set('Authorization', `DPoP ${this.access_token}`)
+              .sign(fixture2.keypair.privateKey))
+            .set('Authorization', `DPoP ${fixture2.access_token}`)
             .expect(401)
             .expect({ error: 'invalid_dpop_proof', error_description: 'invalid DPoP key binding' })
             .expect('WWW-Authenticate', /^DPoP /)
@@ -184,22 +191,22 @@ describe('features.dPoP', () => {
         }
 
         for (const { args: [, err] } of spy.getCalls()) {
-          expect(err.error_detail).to.eql('"jwk" (JSON Web Key) Header Parameter must be a JSON object');
+          assert.deepEqual(err.error_detail, '"jwk" (JSON Web Key) Header Parameter must be a JSON object');
         }
       });
 
-      it('no private key in header', async function () {
+      it('no private key in header', { timeout: 3000 }, async () => {
         const spy = sinon.spy();
-        this.provider.on('userinfo.error', spy);
-        await this.agent.get('/me')
+        fixture2.provider.on('userinfo.error', spy);
+        await fixture2.agent.get('/me')
           .set('DPoP', await new SignJWT({})
             .setProtectedHeader({
               alg: 'ES256',
-              jwk: await exportJWK(this.keypair.privateKey),
+              jwk: await exportJWK(fixture2.keypair.privateKey),
               typ: 'dpop+jwt',
             })
-            .sign(this.keypair.privateKey))
-          .set('Authorization', `DPoP ${this.access_token}`)
+            .sign(fixture2.keypair.privateKey))
+          .set('Authorization', `DPoP ${fixture2.access_token}`)
           .expect(401)
           .expect({ error: 'invalid_dpop_proof', error_description: 'invalid DPoP key binding' })
           .expect('WWW-Authenticate', /^DPoP /)
@@ -207,18 +214,18 @@ describe('features.dPoP', () => {
           .expect('WWW-Authenticate', /algs="ES256 PS256"/);
       });
 
-      it('no symmetric key in header', async function () {
+      it('no symmetric key in header', { timeout: 3000 }, async () => {
         const spy = sinon.spy();
-        this.provider.on('userinfo.error', spy);
-        await this.agent.get('/me')
+        fixture2.provider.on('userinfo.error', spy);
+        await fixture2.agent.get('/me')
           .set('DPoP', await new SignJWT({})
             .setProtectedHeader({
               alg: 'ES256',
               jwk: await exportJWK(randomBytes(32)),
               typ: 'dpop+jwt',
             })
-            .sign(this.keypair.privateKey))
-          .set('Authorization', `DPoP ${this.access_token}`)
+            .sign(fixture2.keypair.privateKey))
+          .set('Authorization', `DPoP ${fixture2.access_token}`)
           .expect(401)
           .expect({ error: 'invalid_dpop_proof', error_description: 'invalid DPoP key binding' })
           .expect('WWW-Authenticate', /^DPoP /)
@@ -226,13 +233,13 @@ describe('features.dPoP', () => {
           .expect('WWW-Authenticate', /algs="ES256 PS256"/);
       });
 
-      it('missing jti', async function () {
-        await this.agent.get('/me')
-          .set('DPoP', await new SignJWT({ htm: 'POST', htu: `${this.provider.issuer}${this.suitePath('/me')}` })
-            .setProtectedHeader({ alg: 'ES256', typ: 'dpop+jwt', jwk: this.jwk })
+      it('missing jti', { timeout: 3000 }, async () => {
+        await fixture2.agent.get('/me')
+          .set('DPoP', await new SignJWT({ htm: 'POST', htu: `${fixture2.provider.issuer}${fixture2.suitePath('/me')}` })
+            .setProtectedHeader({ alg: 'ES256', typ: 'dpop+jwt', jwk: fixture2.jwk })
             .setIssuedAt()
-            .sign(this.keypair.privateKey))
-          .set('Authorization', `DPoP ${this.access_token}`)
+            .sign(fixture2.keypair.privateKey))
+          .set('Authorization', `DPoP ${fixture2.access_token}`)
           .expect(401)
           .expect({ error: 'invalid_dpop_proof', error_description: 'DPoP proof must have a jti string property' })
           .expect('WWW-Authenticate', /^DPoP /)
@@ -240,14 +247,14 @@ describe('features.dPoP', () => {
           .expect('WWW-Authenticate', /algs="ES256 PS256"/);
       });
 
-      it('htm mismatch', async function () {
-        await this.agent.get('/me')
-          .set('DPoP', await new SignJWT({ htm: 'POST', htu: `${this.provider.issuer}${this.suitePath('/me')}`, ath: this.ath })
-            .setProtectedHeader({ alg: 'ES256', typ: 'dpop+jwt', jwk: this.jwk })
+      it('htm mismatch', { timeout: 3000 }, async () => {
+        await fixture2.agent.get('/me')
+          .set('DPoP', await new SignJWT({ htm: 'POST', htu: `${fixture2.provider.issuer}${fixture2.suitePath('/me')}`, ath: fixture2.ath })
+            .setProtectedHeader({ alg: 'ES256', typ: 'dpop+jwt', jwk: fixture2.jwk })
             .setIssuedAt()
             .setJti(randomUUID())
-            .sign(this.keypair.privateKey))
-          .set('Authorization', `DPoP ${this.access_token}`)
+            .sign(fixture2.keypair.privateKey))
+          .set('Authorization', `DPoP ${fixture2.access_token}`)
           .expect(401)
           .expect({ error: 'invalid_dpop_proof', error_description: 'DPoP proof htm mismatch' })
           .expect('WWW-Authenticate', /^DPoP /)
@@ -255,14 +262,14 @@ describe('features.dPoP', () => {
           .expect('WWW-Authenticate', /algs="ES256 PS256"/);
       });
 
-      it('htu mismatch', async function () {
-        await this.agent.get('/me')
-          .set('DPoP', await new SignJWT({ htm: 'GET', htu: `${this.provider.issuer}${this.suitePath('/token')}`, ath: this.ath })
-            .setProtectedHeader({ alg: 'ES256', typ: 'dpop+jwt', jwk: this.jwk })
+      it('htu mismatch', { timeout: 3000 }, async () => {
+        await fixture2.agent.get('/me')
+          .set('DPoP', await new SignJWT({ htm: 'GET', htu: `${fixture2.provider.issuer}${fixture2.suitePath('/token')}`, ath: fixture2.ath })
+            .setProtectedHeader({ alg: 'ES256', typ: 'dpop+jwt', jwk: fixture2.jwk })
             .setIssuedAt()
             .setJti(randomUUID())
-            .sign(this.keypair.privateKey))
-          .set('Authorization', `DPoP ${this.access_token}`)
+            .sign(fixture2.keypair.privateKey))
+          .set('Authorization', `DPoP ${fixture2.access_token}`)
           .expect(401)
           .expect({ error: 'invalid_dpop_proof', error_description: 'DPoP proof htu mismatch' })
           .expect('WWW-Authenticate', /^DPoP /)
@@ -272,40 +279,42 @@ describe('features.dPoP', () => {
 
       for (const enabled of [true, false]) {
         describe(`with DPoP-Nonces ${enabled ? 'enabled' : 'disabled'}`, () => {
-          before(function () {
-            ({ DPoPNonces: this.DPoPNonces } = i(this.provider));
-            if (enabled) {
-              i(this.provider).DPoPNonces = this.DPoPNonces;
-            } else {
-              i(this.provider).DPoPNonces = undefined;
-            }
-          });
+          const fixture3 = Object.create(fixture2);
 
-          after(function () {
-            i(this.provider).DPoPNonces = this.DPoPNonces;
-          });
+          before(() => {
+            ({ DPoPNonces: fixture3.DPoPNonces } = i(fixture3.provider));
+            if (enabled) {
+              i(fixture3.provider).DPoPNonces = fixture3.DPoPNonces;
+            } else {
+              i(fixture3.provider).DPoPNonces = undefined;
+            }
+          }, { timeout: 3000 });
+
+          after(() => {
+            i(fixture3.provider).DPoPNonces = fixture3.DPoPNonces;
+          }, { timeout: 3000 });
 
           for (const offset of [301, -301]) {
-            it(`iat too ${offset > 0 ? 'far in the future' : 'old'}`, async function () {
-              await this.agent.get('/me')
-                .set('DPoP', await new SignJWT({ htm: 'GET', htu: `${this.provider.issuer}${this.suitePath('/me')}`, ath: this.ath })
-                  .setProtectedHeader({ alg: 'ES256', typ: 'dpop+jwt', jwk: this.jwk })
+            it(`iat too ${offset > 0 ? 'far in the future' : 'old'}`, { timeout: 3000 }, async () => {
+              await fixture3.agent.get('/me')
+                .set('DPoP', await new SignJWT({ htm: 'GET', htu: `${fixture3.provider.issuer}${fixture3.suitePath('/me')}`, ath: fixture3.ath })
+                  .setProtectedHeader({ alg: 'ES256', typ: 'dpop+jwt', jwk: fixture3.jwk })
                   .setIssuedAt(epochTime() - 301)
                   .setJti(randomUUID())
-                  .sign(this.keypair.privateKey))
-                .set('Authorization', `DPoP ${this.access_token}`)
+                  .sign(fixture3.keypair.privateKey))
+                .set('Authorization', `DPoP ${fixture3.access_token}`)
                 .expect(401)
                 .expect('WWW-Authenticate', /^DPoP /)
                 .expect('WWW-Authenticate', /algs="ES256 PS256"/)
                 .expect('WWW-Authenticate', /DPoP proof iat is not recent enough/)
                 .expect(({ headers }) => {
                   if (enabled) {
-                    expect(headers).to.have.property('dpop-nonce').that.matches(/^[\w-]{43}$/);
-                    expect(headers).to.have.property('www-authenticate').that.matches(/error="use_dpop_nonce"/);
-                    expect(headers).to.have.property('www-authenticate').that.matches(/use a DPoP nonce instead/);
+                    ((actual) => { assert.ok('dpop-nonce' in Object(actual)); assert.match(actual['dpop-nonce'], /^[\w-]{43}$/); })(headers);
+                    ((actual) => { assert.ok('www-authenticate' in Object(actual)); assert.match(actual['www-authenticate'], /error="use_dpop_nonce"/); })(headers);
+                    ((actual) => { assert.ok('www-authenticate' in Object(actual)); assert.match(actual['www-authenticate'], /use a DPoP nonce instead/); })(headers);
                   } else {
-                    expect(headers).not.to.have.property('dpop-nonce');
-                    expect(headers).to.have.property('www-authenticate').that.matches(/error="invalid_dpop_proof"/);
+                    assert.ok(!('dpop-nonce' in Object(headers)));
+                    ((actual) => { assert.ok('www-authenticate' in Object(actual)); assert.match(actual['www-authenticate'], /error="invalid_dpop_proof"/); })(headers);
                   }
                 });
             });
@@ -314,192 +323,195 @@ describe('features.dPoP', () => {
       }
     });
 
-    it("doesn't allow Bearer tokens to be passed with DPoP scheme", async function () {
-      const at = new this.provider.AccessToken({
-        accountId: this.loggedInAccountId,
-        grantId: this.getGrantId(),
-        client: await this.provider.Client.find('client'),
+    it("doesn't allow Bearer tokens to be passed with DPoP scheme", { timeout: 3000 }, async () => {
+      const at = new fixture1.provider.AccessToken({
+        accountId: fixture1.loggedInAccountId,
+        grantId: fixture1.getGrantId(),
+        client: await fixture1.provider.Client.find('client'),
         scope: 'openid',
       });
 
       const dpop = await at.save();
-      const proof = await DPoP(this.keypair, `${this.provider.issuer}${this.suitePath('/me')}`, 'GET', undefined, dpop);
+      const proof = await DPoP(fixture1.keypair, `${fixture1.provider.issuer}${fixture1.suitePath('/me')}`, 'GET', undefined, dpop);
       const spy = sinon.spy();
-      this.provider.once('userinfo.error', spy);
+      fixture1.provider.once('userinfo.error', spy);
 
-      await this.agent.get('/me')
+      await fixture1.agent.get('/me')
         .set('Authorization', `DPoP ${dpop}`)
         .set('DPoP', proof)
-        .expect(this.failWith(401, 'invalid_token', 'invalid token provided', undefined, 'DPoP'));
+        .expect(fixture1.failWith(401, 'invalid_token', 'invalid token provided', undefined, 'DPoP'));
 
-      expect(spy).to.have.property('calledOnce', true);
-      expect(spy.args[0][1]).to.be.instanceOf(InvalidToken);
-      expect(spy.args[0][1]).to.have.property(
-        'error_detail',
-        'access token is not sender-constrained but proof of possession was provided',
-      );
+      ((actual) => { assert.ok('calledOnce' in Object(actual)); assert.equal(actual.calledOnce, true); })(spy);
+      assert.ok(spy.args[0][1] instanceof InvalidToken);
+      ((actual) => { assert.ok('error_detail' in Object(actual)); assert.equal(actual.error_detail, 'access token is not sender-constrained but proof of possession was provided'); })(spy.args[0][1]);
     });
 
-    it('acts like an RS checking the DPoP proof and thumbprint now', async function () {
-      const at = new this.provider.AccessToken({
-        accountId: this.loggedInAccountId,
-        grantId: this.getGrantId(),
-        client: await this.provider.Client.find('client'),
+    it('acts like an RS checking the DPoP proof and thumbprint now', { timeout: 3000 }, async () => {
+      const at = new fixture1.provider.AccessToken({
+        accountId: fixture1.loggedInAccountId,
+        grantId: fixture1.getGrantId(),
+        client: await fixture1.provider.Client.find('client'),
         scope: 'openid',
       });
-      at.setThumbprint('jkt', this.thumbprint);
+      at.setThumbprint('jkt', fixture1.thumbprint);
 
       const dpop = await at.save();
-      const proof = await DPoP(this.keypair, `${this.provider.issuer}${this.suitePath('/me')}`, 'GET', undefined, dpop);
+      const proof = await DPoP(fixture1.keypair, `${fixture1.provider.issuer}${fixture1.suitePath('/me')}`, 'GET', undefined, dpop);
 
-      await this.agent.get('/me')
+      await fixture1.agent.get('/me')
         .set('Authorization', `DPoP ${dpop}`)
         .set('DPoP', proof)
         .expect(200);
 
       let spy = sinon.spy();
-      this.provider.once('userinfo.error', spy);
+      fixture1.provider.once('userinfo.error', spy);
 
-      await this.agent.get('/me')
+      await fixture1.agent.get('/me')
         .set('Authorization', `DPoP ${dpop}`)
         .set('DPoP', proof)
         .expect(401)
         .expect({ error: 'invalid_token', error_description: 'invalid token provided' });
 
-      expect(spy).to.have.property('calledOnce', true);
-      expect(spy.args[0][1]).to.be.instanceOf(InvalidToken);
-      expect(spy.args[0][1]).to.have.property('error_detail', 'DPoP proof JWT Replay detected');
+      ((actual) => { assert.ok('calledOnce' in Object(actual)); assert.equal(actual.calledOnce, true); })(spy);
+      assert.ok(spy.args[0][1] instanceof InvalidToken);
+      ((actual) => { assert.ok('error_detail' in Object(actual)); assert.equal(actual.error_detail, 'DPoP proof JWT Replay detected'); })(spy.args[0][1]);
 
       {
         const token = 'token';
-        await this.agent.get('/me')
+        await fixture1.agent.get('/me')
           .set('Authorization', `DPoP ${token}`)
-          .set('DPoP', await DPoP(await generateKeyPair('ES256', { extractable: true }), `${this.provider.issuer}${this.suitePath('/me')}`, 'GET', undefined, token))
-          .expect(this.failWith(401, 'invalid_token', 'invalid token provided', undefined, 'DPoP'));
+          .set('DPoP', await DPoP(await generateKeyPair('ES256', { extractable: true }), `${fixture1.provider.issuer}${fixture1.suitePath('/me')}`, 'GET', undefined, token))
+          .expect(fixture1.failWith(401, 'invalid_token', 'invalid token provided', undefined, 'DPoP'));
       }
 
       spy = sinon.spy();
-      this.provider.once('userinfo.error', spy);
+      fixture1.provider.once('userinfo.error', spy);
 
-      await this.agent.get('/me')
+      await fixture1.agent.get('/me')
         .set('Authorization', `DPoP ${dpop}`)
-        .set('DPoP', await DPoP(await generateKeyPair('ES256', { extractable: true }), `${this.provider.issuer}${this.suitePath('/me')}`, 'GET', undefined, dpop))
-        .expect(this.failWith(401, 'invalid_token', 'invalid token provided', undefined, 'DPoP'));
+        .set('DPoP', await DPoP(await generateKeyPair('ES256', { extractable: true }), `${fixture1.provider.issuer}${fixture1.suitePath('/me')}`, 'GET', undefined, dpop))
+        .expect(fixture1.failWith(401, 'invalid_token', 'invalid token provided', undefined, 'DPoP'));
 
-      await this.agent.get('/me')
+      await fixture1.agent.get('/me')
         .set('Authorization', `DPoP ${dpop}`)
-        .set('DPoP', await DPoP(this.keypair, `${this.provider.issuer}${this.suitePath('/me')}`, 'GET', undefined, 'anotherAccessTokenValue'))
+        .set('DPoP', await DPoP(fixture1.keypair, `${fixture1.provider.issuer}${fixture1.suitePath('/me')}`, 'GET', undefined, 'anotherAccessTokenValue'))
         .expect({ error: 'invalid_dpop_proof', error_description: 'DPoP proof ath mismatch' })
         .expect(401);
 
-      expect(spy).to.have.property('calledOnce', true);
-      expect(spy.args[0][1]).to.have.property('error_detail', 'failed jkt verification');
+      ((actual) => { assert.ok('calledOnce' in Object(actual)); assert.equal(actual.calledOnce, true); })(spy);
+      ((actual) => { assert.ok('error_detail' in Object(actual)); assert.equal(actual.error_detail, 'failed jkt verification'); })(spy.args[0][1]);
 
       spy = sinon.spy();
-      this.provider.once('userinfo.error', spy);
+      fixture1.provider.once('userinfo.error', spy);
 
-      await this.agent.get('/me')
+      await fixture1.agent.get('/me')
         .set('Authorization', `Bearer ${dpop}`)
-        .expect(this.failWith(401, 'invalid_token', 'invalid token provided', undefined, 'DPoP'));
+        .expect(fixture1.failWith(401, 'invalid_token', 'invalid token provided', undefined, 'DPoP'));
 
-      expect(spy).to.have.property('calledOnce', true);
-      expect(spy.args[0][1]).to.have.property('error_detail', 'failed jkt verification');
+      ((actual) => { assert.ok('calledOnce' in Object(actual)); assert.equal(actual.calledOnce, true); })(spy);
+      ((actual) => { assert.ok('error_detail' in Object(actual)); assert.equal(actual.error_detail, 'failed jkt verification'); })(spy.args[0][1]);
     });
   });
 
   describe('introspection', () => {
-    it('exposes cnf and DPoP proof JWT type now', async function () {
-      const at = new this.provider.AccessToken({
+    const fixture4 = Object.create(fixture);
+
+    it('exposes cnf and DPoP proof JWT type now', { timeout: 3000 }, async () => {
+      const at = new fixture4.provider.AccessToken({
         accountId: 'account',
-        client: await this.provider.Client.find('client'),
+        client: await fixture4.provider.Client.find('client'),
         scope: 'openid',
       });
-      at.setThumbprint('jkt', this.thumbprint);
+      at.setThumbprint('jkt', fixture4.thumbprint);
 
       const token = await at.save();
 
-      await this.agent.post('/token/introspection')
+      await fixture4.agent.post('/token/introspection')
         .auth('client', 'secret')
         .send({ token })
         .type('form')
         .expect(200)
         .expect(({ body }) => {
-          expect(body).to.have.property('cnf');
-          expect(body).to.have.property('token_type', 'DPoP');
-          expect(body.cnf).to.have.property('jkt');
+          assert.ok('cnf' in Object(body));
+          ((actual) => { assert.ok('token_type' in Object(actual)); assert.equal(actual.token_type, 'DPoP'); })(body);
+          assert.ok('jkt' in Object(body.cnf));
         });
     });
   });
 
   describe('urn:ietf:params:oauth:grant-type:device_code', () => {
-    beforeEach(async function () {
-      await this.agent.post('/device/auth')
+    const fixture5 = Object.create(fixture);
+
+    beforeEach(async () => {
+      await fixture5.agent.post('/device/auth')
         .auth('client', 'secret')
         .send({ scope: 'openid' })
         .type('form')
         .expect(200)
         .expect(({ body: { device_code: dc } }) => {
-          this.dc = dc;
+          fixture5.dc = dc;
         });
 
-      this.TestAdapter.for('DeviceCode').syncUpdate(this.getTokenJti(this.dc), {
+      fixture5.TestAdapter.for('DeviceCode').syncUpdate(fixture5.getTokenJti(fixture5.dc), {
         scope: 'openid offline_access',
-        accountId: this.loggedInAccountId,
-        grantId: this.getGrantId(),
+        accountId: fixture5.loggedInAccountId,
+        grantId: fixture5.getGrantId(),
       });
-    });
+    }, { timeout: 3000 });
 
-    it('binds the access token to the jwk', async function () {
+    it('binds the access token to the jwk', { timeout: 3000 }, async () => {
       const spy = sinon.spy();
-      this.provider.once('grant.success', spy);
+      fixture5.provider.once('grant.success', spy);
 
-      await this.agent.post('/token')
+      await fixture5.agent.post('/token')
         .auth('client', 'secret')
         .send({
           grant_type: 'urn:ietf:params:oauth:grant-type:device_code',
-          device_code: this.dc,
+          device_code: fixture5.dc,
         })
         .type('form')
-        .set('DPoP', await DPoP(this.keypair, `${this.provider.issuer}${this.suitePath('/token')}`, 'POST'))
+        .set('DPoP', await DPoP(fixture5.keypair, `${fixture5.provider.issuer}${fixture5.suitePath('/token')}`, 'POST'))
         .expect(200);
 
-      expect(spy).to.have.property('calledOnce', true);
+      ((actual) => { assert.ok('calledOnce' in Object(actual)); assert.equal(actual.calledOnce, true); })(spy);
       const { oidc: { entities: { AccessToken, RefreshToken } } } = spy.args[0][0];
-      expect(AccessToken).to.have.property('jkt', this.thumbprint);
-      expect(RefreshToken).not.to.have.property('jkt');
+      ((actual) => { assert.ok('jkt' in Object(actual)); assert.equal(actual.jkt, fixture5.thumbprint); })(AccessToken);
+      assert.ok(!('jkt' in Object(RefreshToken)));
     });
 
-    it('binds the refresh token to the jwk for public clients', async function () {
+    it('binds the refresh token to the jwk for public clients', { timeout: 3000 }, async () => {
       const spy = sinon.spy();
-      this.provider.once('grant.success', spy);
+      fixture5.provider.once('grant.success', spy);
 
       // changes the code to client-none
-      this.TestAdapter.for('DeviceCode').syncUpdate(this.getTokenJti(this.dc), {
+      fixture5.TestAdapter.for('DeviceCode').syncUpdate(fixture5.getTokenJti(fixture5.dc), {
         clientId: 'client-none',
-        accountId: this.loggedInAccountId,
-        grantId: this.getGrantId('client-none'),
+        accountId: fixture5.loggedInAccountId,
+        grantId: fixture5.getGrantId('client-none'),
       });
 
-      await this.agent.post('/token')
+      await fixture5.agent.post('/token')
         .send({
           client_id: 'client-none',
           grant_type: 'urn:ietf:params:oauth:grant-type:device_code',
-          device_code: this.dc,
+          device_code: fixture5.dc,
         })
         .type('form')
-        .set('DPoP', await DPoP(this.keypair, `${this.provider.issuer}${this.suitePath('/token')}`, 'POST'))
+        .set('DPoP', await DPoP(fixture5.keypair, `${fixture5.provider.issuer}${fixture5.suitePath('/token')}`, 'POST'))
         .expect(200);
 
-      expect(spy).to.have.property('calledOnce', true);
+      ((actual) => { assert.ok('calledOnce' in Object(actual)); assert.equal(actual.calledOnce, true); })(spy);
       const { oidc: { entities: { AccessToken, RefreshToken } } } = spy.args[0][0];
-      expect(AccessToken).to.have.property('jkt', this.thumbprint);
-      expect(RefreshToken).to.have.property('jkt', this.thumbprint);
+      ((actual) => { assert.ok('jkt' in Object(actual)); assert.equal(actual.jkt, fixture5.thumbprint); })(AccessToken);
+      ((actual) => { assert.ok('jkt' in Object(actual)); assert.equal(actual.jkt, fixture5.thumbprint); })(RefreshToken);
     });
   });
 
   describe('urn:openid:params:grant-type:ciba', () => {
-    beforeEach(async function () {
-      await this.agent.post('/backchannel')
+    const fixture6 = Object.create(fixture);
+
+    beforeEach(async () => {
+      await fixture6.agent.post('/backchannel')
         .auth('client', 'secret')
         .send({
           scope: 'openid offline_access',
@@ -508,68 +520,70 @@ describe('features.dPoP', () => {
         .type('form')
         .expect(200)
         .expect(({ body: { auth_req_id: reqId } }) => {
-          this.reqId = reqId;
+          fixture6.reqId = reqId;
         });
-    });
+    }, { timeout: 3000 });
 
-    it('binds the access token to the jwk', async function () {
+    it('binds the access token to the jwk', { timeout: 3000 }, async () => {
       const spy = sinon.spy();
-      this.provider.once('grant.success', spy);
+      fixture6.provider.once('grant.success', spy);
 
-      await this.agent.post('/token')
+      await fixture6.agent.post('/token')
         .auth('client', 'secret')
         .send({
           grant_type: 'urn:openid:params:grant-type:ciba',
-          auth_req_id: this.reqId,
+          auth_req_id: fixture6.reqId,
         })
         .type('form')
-        .set('DPoP', await DPoP(this.keypair, `${this.provider.issuer}${this.suitePath('/token')}`, 'POST'))
+        .set('DPoP', await DPoP(fixture6.keypair, `${fixture6.provider.issuer}${fixture6.suitePath('/token')}`, 'POST'))
         .expect(200);
 
-      expect(spy).to.have.property('calledOnce', true);
+      ((actual) => { assert.ok('calledOnce' in Object(actual)); assert.equal(actual.calledOnce, true); })(spy);
       const { oidc: { entities: { AccessToken, RefreshToken } } } = spy.args[0][0];
-      expect(AccessToken).to.have.property('jkt', this.thumbprint);
-      expect(RefreshToken).not.to.have.property('jkt');
+      ((actual) => { assert.ok('jkt' in Object(actual)); assert.equal(actual.jkt, fixture6.thumbprint); })(AccessToken);
+      assert.ok(!('jkt' in Object(RefreshToken)));
     });
 
-    it('binds the refresh token to the jwk for public clients', async function () {
+    it('binds the refresh token to the jwk for public clients', { timeout: 3000 }, async () => {
       const spy = sinon.spy();
-      this.provider.once('grant.success', spy);
+      fixture6.provider.once('grant.success', spy);
 
       // changes the code to client-none
-      this.TestAdapter.for('BackchannelAuthenticationRequest').syncUpdate(this.getTokenJti(this.reqId), {
+      fixture6.TestAdapter.for('BackchannelAuthenticationRequest').syncUpdate(fixture6.getTokenJti(fixture6.reqId), {
         clientId: 'client-none',
       });
-      const { grantId } = this.TestAdapter.for('BackchannelAuthenticationRequest').syncFind(this.getTokenJti(this.reqId));
-      this.TestAdapter.for('Grant').syncUpdate(grantId, {
+      const { grantId } = fixture6.TestAdapter.for('BackchannelAuthenticationRequest').syncFind(fixture6.getTokenJti(fixture6.reqId));
+      fixture6.TestAdapter.for('Grant').syncUpdate(grantId, {
         clientId: 'client-none',
       });
 
-      await this.agent.post('/token')
+      await fixture6.agent.post('/token')
         .send({
           client_id: 'client-none',
           grant_type: 'urn:openid:params:grant-type:ciba',
-          auth_req_id: this.reqId,
+          auth_req_id: fixture6.reqId,
         })
         .type('form')
-        .set('DPoP', await DPoP(this.keypair, `${this.provider.issuer}${this.suitePath('/token')}`, 'POST'))
+        .set('DPoP', await DPoP(fixture6.keypair, `${fixture6.provider.issuer}${fixture6.suitePath('/token')}`, 'POST'))
         .expect(200);
 
-      expect(spy).to.have.property('calledOnce', true);
+      ((actual) => { assert.ok('calledOnce' in Object(actual)); assert.equal(actual.calledOnce, true); })(spy);
       const { oidc: { entities: { AccessToken, RefreshToken } } } = spy.args[0][0];
-      expect(AccessToken).to.have.property('jkt', this.thumbprint);
-      expect(RefreshToken).to.have.property('jkt', this.thumbprint);
+      ((actual) => { assert.ok('jkt' in Object(actual)); assert.equal(actual.jkt, fixture6.thumbprint); })(AccessToken);
+      ((actual) => { assert.ok('jkt' in Object(actual)); assert.equal(actual.jkt, fixture6.thumbprint); })(RefreshToken);
     });
   });
 
   describe('pushed authorization request', () => {
-    it('rejects replayed proofs with an InvalidRequest', async function () {
+    const fixture7 = Object.create(fixture);
+
+    it('rejects replayed proofs with an InvalidRequest', { timeout: 3000 }, async () => {
       const proof = await DPoP(
-        this.keypair,
-        `${this.provider.issuer}${this.suitePath('/request')}`,
+        fixture7.keypair,
+        `${fixture7.provider.issuer}${fixture7.suitePath('/request')}`,
         'POST',
       );
-      const request = () => this.agent.post('/request')
+      const request = () => fixture7.agent.post('/request')
         .auth('client', 'secret')
         .send({
           response_type: 'code',
@@ -581,7 +595,7 @@ describe('features.dPoP', () => {
       await request().expect(201);
 
       const spy = sinon.spy();
-      this.provider.once('pushed_authorization_request.error', spy);
+      fixture7.provider.once('pushed_authorization_request.error', spy);
       await request()
         .expect(400)
         .expect({
@@ -589,70 +603,70 @@ describe('features.dPoP', () => {
           error_description: 'DPoP proof JWT Replay detected',
         });
 
-      expect(spy).to.have.property('calledOnce', true);
-      expect(spy.args[0][1]).to.be.instanceOf(InvalidRequest);
+      ((actual) => { assert.ok('calledOnce' in Object(actual)); assert.equal(actual.calledOnce, true); })(spy);
+      assert.ok(spy.args[0][1] instanceof InvalidRequest);
     });
 
-    it('checks dpop_jkt equals the jwk thumbprint when both are present', async function () {
-      await this.agent.post('/request')
+    it('checks dpop_jkt equals the jwk thumbprint when both are present', { timeout: 3000 }, async () => {
+      await fixture7.agent.post('/request')
         .auth('client', 'secret')
         .send({
           response_type: 'code',
           client_id: 'client',
-          dpop_jkt: this.thumbprint,
+          dpop_jkt: fixture7.thumbprint,
         })
-        .set('DPoP', await DPoP(this.keypair, `${this.provider.issuer}${this.suitePath('/request')}`, 'POST'))
+        .set('DPoP', await DPoP(fixture7.keypair, `${fixture7.provider.issuer}${fixture7.suitePath('/request')}`, 'POST'))
         .type('form')
         .expect(201);
 
-      await this.agent.post('/request')
+      await fixture7.agent.post('/request')
         .auth('client', 'secret')
         .send({
           response_type: 'code',
           client_id: 'client',
           dpop_jkt: 'cbaZgHZazjgQq0Q2-Hy_o2-OCDpPu02S30lNhTsNU1Q',
         })
-        .set('DPoP', await DPoP(this.keypair, `${this.provider.issuer}${this.suitePath('/request')}`, 'POST'))
+        .set('DPoP', await DPoP(fixture7.keypair, `${fixture7.provider.issuer}${fixture7.suitePath('/request')}`, 'POST'))
         .type('form')
         .expect(400)
         .expect({ error: 'invalid_request', error_description: 'DPoP proof key thumbprint does not match dpop_jkt' });
     });
 
-    it('sets the request dpop_jkt automatically when missing (no request object used)', async function () {
+    it('sets the request dpop_jkt automatically when missing (no request object used)', { timeout: 3000 }, async () => {
       let request_uri;
-      await this.agent.post('/request')
+      await fixture7.agent.post('/request')
         .auth('client', 'secret')
         .send({
           scope: 'openid',
           response_type: 'code',
           client_id: 'client',
         })
-        .set('DPoP', await DPoP(this.keypair, `${this.provider.issuer}${this.suitePath('/request')}`, 'POST'))
+        .set('DPoP', await DPoP(fixture7.keypair, `${fixture7.provider.issuer}${fixture7.suitePath('/request')}`, 'POST'))
         .type('form')
         .expect(201)
         .expect(({ body }) => {
           ({ request_uri } = body);
         });
 
-      const auth = new this.AuthorizationRequest({
+      const auth = new fixture7.AuthorizationRequest({
         request_uri,
       });
 
       let code;
-      await this.wrap({ route: '/auth', verb: 'get', auth })
+      await fixture7.wrap({ route: '/auth', verb: 'get', auth })
         .expect(303)
         .expect(auth.validateClientLocation)
         .expect(({ headers: { location } }) => {
           ({ query: { code } } = url.parse(location, true));
         });
 
-      const { dpopJkt } = this.TestAdapter.for('AuthorizationCode').syncFind(code);
-      expect(dpopJkt).to.be.a('string').of.length(43);
+      const { dpopJkt } = fixture7.TestAdapter.for('AuthorizationCode').syncFind(code);
+      ((actual) => { assert.equal(typeof actual, 'string'); assert.equal(actual.length, 43); })(dpopJkt);
     });
 
-    it('sets the request dpop_jkt automatically when missing (request object used)', async function () {
+    it('sets the request dpop_jkt automatically when missing (request object used)', { timeout: 3000 }, async () => {
       let request_uri;
-      await this.agent.post('/request')
+      await fixture7.agent.post('/request')
         .auth('client', 'secret')
         .send({
           client_id: 'client',
@@ -661,386 +675,406 @@ describe('features.dPoP', () => {
             scope: 'openid',
             response_type: 'code',
             iss: 'client',
-            aud: this.provider.issuer,
+            aud: fixture7.provider.issuer,
           })
             .setProtectedHeader({ alg: 'HS256' })
             .setIssuedAt()
             .setIssuer('client')
-            .setAudience(this.provider.issuer)
+            .setAudience(fixture7.provider.issuer)
             .setExpirationTime('1m')
             .setNotBefore('0s')
             .sign(Buffer.from('secret')),
         })
-        .set('DPoP', await DPoP(this.keypair, `${this.provider.issuer}${this.suitePath('/request')}`, 'POST'))
+        .set('DPoP', await DPoP(fixture7.keypair, `${fixture7.provider.issuer}${fixture7.suitePath('/request')}`, 'POST'))
         .type('form')
         .expect(201)
         .expect(({ body }) => {
           ({ request_uri } = body);
         });
 
-      const auth = new this.AuthorizationRequest({
+      const auth = new fixture7.AuthorizationRequest({
         request_uri,
       });
 
       let code;
-      await this.wrap({ route: '/auth', verb: 'get', auth })
+      await fixture7.wrap({ route: '/auth', verb: 'get', auth })
         .expect(303)
         .expect(auth.validateClientLocation)
         .expect(({ headers: { location } }) => {
           ({ query: { code } } = url.parse(location, true));
         });
 
-      const { dpopJkt } = this.TestAdapter.for('AuthorizationCode').syncFind(code);
-      expect(dpopJkt).to.be.a('string').of.length(43);
+      const { dpopJkt } = fixture7.TestAdapter.for('AuthorizationCode').syncFind(code);
+      ((actual) => { assert.equal(typeof actual, 'string'); assert.equal(actual.length, 43); })(dpopJkt);
     });
   });
 
   describe('authorization flow', () => {
+    const fixture8 = Object.create(fixture);
+
     describe('without dpop_jkt', () => {
-      beforeEach(async function () {
+      const fixture9 = Object.create(fixture8);
+
+      beforeEach(async () => {
         // biome-ignore lint/suspicious/noAssignInExpressions: test pattern
-        const auth = this.auth = new this.AuthorizationRequest({
+        const auth = fixture9.auth = new fixture9.AuthorizationRequest({
           response_type: 'code',
           scope: 'openid offline_access',
           prompt: 'consent',
         });
 
-        await this.wrap({ route: '/auth', verb: 'get', auth })
+        await fixture9.wrap({ route: '/auth', verb: 'get', auth })
           .expect(303)
           .expect(auth.validateClientLocation)
           .expect(({ headers: { location } }) => {
             const { query: { code } } = url.parse(location, true);
-            this.code = code;
+            fixture9.code = code;
           });
-      });
+      }, { timeout: 3000 });
 
       describe('authorization_code', () => {
-        it('binds the access token to the jwk', async function () {
-          const spy = sinon.spy();
-          this.provider.once('grant.success', spy);
+        const fixture10 = Object.create(fixture9);
 
-          await this.agent.post('/token')
+        it('binds the access token to the jwk', { timeout: 3000 }, async () => {
+          const spy = sinon.spy();
+          fixture10.provider.once('grant.success', spy);
+
+          await fixture10.agent.post('/token')
             .auth('client', 'secret')
             .send({
               grant_type: 'authorization_code',
-              code_verifier: this.auth.code_verifier,
-              code: this.code,
+              code_verifier: fixture10.auth.code_verifier,
+              code: fixture10.code,
               redirect_uri: 'https://client.example.com/cb',
             })
             .type('form')
-            .set('DPoP', await DPoP(this.keypair, `${this.provider.issuer}${this.suitePath('/token')}`, 'POST'))
+            .set('DPoP', await DPoP(fixture10.keypair, `${fixture10.provider.issuer}${fixture10.suitePath('/token')}`, 'POST'))
             .expect(200);
 
-          expect(spy).to.have.property('calledOnce', true);
+          ((actual) => { assert.ok('calledOnce' in Object(actual)); assert.equal(actual.calledOnce, true); })(spy);
           const { oidc: { entities: { AccessToken, RefreshToken } } } = spy.args[0][0];
-          expect(AccessToken).to.have.property('jkt', this.thumbprint);
-          expect(RefreshToken).not.to.have.property('jkt');
+          ((actual) => { assert.ok('jkt' in Object(actual)); assert.equal(actual.jkt, fixture10.thumbprint); })(AccessToken);
+          assert.ok(!('jkt' in Object(RefreshToken)));
         });
       });
     });
 
     describe('with dpop_jkt', () => {
-      beforeEach(async function () {
+      const fixture11 = Object.create(fixture8);
+
+      beforeEach(async () => {
         // biome-ignore lint/suspicious/noAssignInExpressions: test pattern
-        const auth = this.auth = new this.AuthorizationRequest({
+        const auth = fixture11.auth = new fixture11.AuthorizationRequest({
           response_type: 'code',
           scope: 'openid offline_access',
           prompt: 'consent',
-          dpop_jkt: this.thumbprint,
+          dpop_jkt: fixture11.thumbprint,
         });
 
-        await this.wrap({ route: '/auth', verb: 'get', auth })
+        await fixture11.wrap({ route: '/auth', verb: 'get', auth })
           .expect(303)
           .expect(auth.validateClientLocation)
           .expect(({ headers: { location } }) => {
             const { query: { code } } = url.parse(location, true);
-            this.code = code;
+            fixture11.code = code;
           });
-      });
+      }, { timeout: 3000 });
 
       describe('authorization_code', () => {
-        it('binds the access token to the jwk', async function () {
-          const spy = sinon.spy();
-          this.provider.once('grant.success', spy);
+        const fixture12 = Object.create(fixture11);
 
-          await this.agent.post('/token')
+        it('binds the access token to the jwk', { timeout: 3000 }, async () => {
+          const spy = sinon.spy();
+          fixture12.provider.once('grant.success', spy);
+
+          await fixture12.agent.post('/token')
             .auth('client', 'secret')
             .send({
               grant_type: 'authorization_code',
-              code_verifier: this.auth.code_verifier,
-              code: this.code,
+              code_verifier: fixture12.auth.code_verifier,
+              code: fixture12.code,
               redirect_uri: 'https://client.example.com/cb',
             })
             .type('form')
-            .set('DPoP', await DPoP(this.keypair, `${this.provider.issuer}${this.suitePath('/token')}`, 'POST'))
+            .set('DPoP', await DPoP(fixture12.keypair, `${fixture12.provider.issuer}${fixture12.suitePath('/token')}`, 'POST'))
             .expect(200);
 
-          expect(spy).to.have.property('calledOnce', true);
+          ((actual) => { assert.ok('calledOnce' in Object(actual)); assert.equal(actual.calledOnce, true); })(spy);
           const { oidc: { entities: { AccessToken, RefreshToken } } } = spy.args[0][0];
-          expect(AccessToken).to.have.property('jkt', this.thumbprint);
-          expect(RefreshToken).not.to.have.property('jkt');
+          ((actual) => { assert.ok('jkt' in Object(actual)); assert.equal(actual.jkt, fixture12.thumbprint); })(AccessToken);
+          assert.ok(!('jkt' in Object(RefreshToken)));
         });
 
-        it('checks the dpop_jkt matches the proof jwk thumbprint', async function () {
+        it('checks the dpop_jkt matches the proof jwk thumbprint', { timeout: 3000 }, async () => {
           const spy = sinon.spy();
-          this.provider.once('grant.error', spy);
+          fixture12.provider.once('grant.error', spy);
 
-          await this.agent.post('/token')
+          await fixture12.agent.post('/token')
             .auth('client', 'secret')
             .send({
               grant_type: 'authorization_code',
-              code_verifier: this.auth.code_verifier,
-              code: this.code,
+              code_verifier: fixture12.auth.code_verifier,
+              code: fixture12.code,
               redirect_uri: 'https://client.example.com/cb',
             })
             .type('form')
-            .set('DPoP', await DPoP(await generateKeyPair('ES256', { extractable: true }), `${this.provider.issuer}${this.suitePath('/token')}`, 'POST'))
+            .set('DPoP', await DPoP(await generateKeyPair('ES256', { extractable: true }), `${fixture12.provider.issuer}${fixture12.suitePath('/token')}`, 'POST'))
             .expect(400)
             .expect({ error: 'invalid_grant', error_description: 'grant request is invalid' });
 
-          expect(spy).to.have.property('calledOnce', true);
-          expect(spy.args[0][1]).to.have.property('error_detail', 'DPoP proof key thumbprint does not match dpop_jkt');
+          ((actual) => { assert.ok('calledOnce' in Object(actual)); assert.equal(actual.calledOnce, true); })(spy);
+          ((actual) => { assert.ok('error_detail' in Object(actual)); assert.equal(actual.error_detail, 'DPoP proof key thumbprint does not match dpop_jkt'); })(spy.args[0][1]);
         });
 
-        it('requires dpop to be used when dpop_jkt was present', async function () {
+        it('requires dpop to be used when dpop_jkt was present', { timeout: 3000 }, async () => {
           const spy = sinon.spy();
-          this.provider.once('grant.error', spy);
+          fixture12.provider.once('grant.error', spy);
 
-          await this.agent.post('/token')
+          await fixture12.agent.post('/token')
             .auth('client', 'secret')
             .send({
               grant_type: 'authorization_code',
-              code_verifier: this.auth.code_verifier,
-              code: this.code,
+              code_verifier: fixture12.auth.code_verifier,
+              code: fixture12.code,
               redirect_uri: 'https://client.example.com/cb',
             })
             .type('form')
             .expect(400)
             .expect({ error: 'invalid_grant', error_description: 'grant request is invalid' });
 
-          expect(spy).to.have.property('calledOnce', true);
-          expect(spy.args[0][1]).to.have.property('error_detail', 'missing DPoP proof JWT');
+          ((actual) => { assert.ok('calledOnce' in Object(actual)); assert.equal(actual.calledOnce, true); })(spy);
+          ((actual) => { assert.ok('error_detail' in Object(actual)); assert.equal(actual.error_detail, 'missing DPoP proof JWT'); })(spy.args[0][1]);
         });
       });
     });
 
     describe('refresh_token', () => {
-      beforeEach(async function () {
+      const fixture13 = Object.create(fixture8);
+
+      beforeEach(async () => {
         // biome-ignore lint/suspicious/noAssignInExpressions: test pattern
-        const auth = this.auth = new this.AuthorizationRequest({
+        const auth = fixture13.auth = new fixture13.AuthorizationRequest({
           response_type: 'code',
           scope: 'openid offline_access',
           prompt: 'consent',
         });
 
-        await this.wrap({ route: '/auth', verb: 'get', auth })
+        await fixture13.wrap({ route: '/auth', verb: 'get', auth })
           .expect(303)
           .expect(auth.validateClientLocation)
           .expect(({ headers: { location } }) => {
             const { query: { code } } = url.parse(location, true);
-            this.code = code;
+            fixture13.code = code;
           });
 
-        await this.agent.post('/token')
+        await fixture13.agent.post('/token')
           .auth('client', 'secret')
           .send({
             grant_type: 'authorization_code',
-            code_verifier: this.auth.code_verifier,
-            code: this.code,
+            code_verifier: fixture13.auth.code_verifier,
+            code: fixture13.code,
             redirect_uri: 'https://client.example.com/cb',
           })
           .type('form')
-          .set('DPoP', await DPoP(this.keypair, `${this.provider.issuer}${this.suitePath('/token')}`, 'POST'))
+          .set('DPoP', await DPoP(fixture13.keypair, `${fixture13.provider.issuer}${fixture13.suitePath('/token')}`, 'POST'))
           .expect(({ body }) => {
-            this.rt = body.refresh_token;
+            fixture13.rt = body.refresh_token;
           });
-      });
+      }, { timeout: 3000 });
 
-      it('binds the access token to the jwk', async function () {
+      it('binds the access token to the jwk', { timeout: 3000 }, async () => {
         const spy = sinon.spy();
-        this.provider.once('grant.success', spy);
+        fixture13.provider.once('grant.success', spy);
 
-        await this.agent.post('/token')
+        await fixture13.agent.post('/token')
           .auth('client', 'secret')
           .send({
             grant_type: 'refresh_token',
-            refresh_token: this.rt,
+            refresh_token: fixture13.rt,
           })
           .type('form')
-          .set('DPoP', await DPoP(this.keypair, `${this.provider.issuer}${this.suitePath('/token')}`, 'POST'))
+          .set('DPoP', await DPoP(fixture13.keypair, `${fixture13.provider.issuer}${fixture13.suitePath('/token')}`, 'POST'))
           .expect(200);
 
-        expect(spy).to.have.property('calledOnce', true);
+        ((actual) => { assert.ok('calledOnce' in Object(actual)); assert.equal(actual.calledOnce, true); })(spy);
         const { oidc: { entities: { AccessToken, RefreshToken } } } = spy.args[0][0];
-        expect(AccessToken).to.have.property('jkt', this.thumbprint);
-        expect(RefreshToken.jkt).to.be.undefined;
+        ((actual) => { assert.ok('jkt' in Object(actual)); assert.equal(actual.jkt, fixture13.thumbprint); })(AccessToken);
+        assert.equal(RefreshToken.jkt, undefined);
       });
     });
   });
 
   describe('authorization flow (public client)', () => {
-    beforeEach(async function () {
+    const fixture14 = Object.create(fixture);
+
+    beforeEach(async () => {
       // biome-ignore lint/suspicious/noAssignInExpressions: test pattern
-      const auth = this.auth = new this.AuthorizationRequest({
+      const auth = fixture14.auth = new fixture14.AuthorizationRequest({
         client_id: 'client-none',
         response_type: 'code',
         scope: 'openid offline_access',
         prompt: 'consent',
       });
 
-      await this.wrap({ route: '/auth', verb: 'get', auth })
+      await fixture14.wrap({ route: '/auth', verb: 'get', auth })
         .expect(303)
         .expect(auth.validateClientLocation)
         .expect(({ headers: { location } }) => {
           const { query: { code } } = url.parse(location, true);
-          this.code = code;
+          fixture14.code = code;
         });
-    });
+    }, { timeout: 3000 });
 
     describe('authorization_code', () => {
-      it('binds the access token to the jwk', async function () {
-        const spy = sinon.spy();
-        this.provider.once('grant.success', spy);
+      const fixture15 = Object.create(fixture14);
 
-        await this.agent.post('/token')
+      it('binds the access token to the jwk', { timeout: 3000 }, async () => {
+        const spy = sinon.spy();
+        fixture15.provider.once('grant.success', spy);
+
+        await fixture15.agent.post('/token')
           .send({
             client_id: 'client-none',
             grant_type: 'authorization_code',
-            code_verifier: this.auth.code_verifier,
-            code: this.code,
+            code_verifier: fixture15.auth.code_verifier,
+            code: fixture15.code,
             redirect_uri: 'https://client.example.com/cb',
           })
           .type('form')
-          .set('DPoP', await DPoP(this.keypair, `${this.provider.issuer}${this.suitePath('/token')}`, 'POST'))
+          .set('DPoP', await DPoP(fixture15.keypair, `${fixture15.provider.issuer}${fixture15.suitePath('/token')}`, 'POST'))
           .expect(200);
 
-        expect(spy).to.have.property('calledOnce', true);
+        ((actual) => { assert.ok('calledOnce' in Object(actual)); assert.equal(actual.calledOnce, true); })(spy);
         const { oidc: { entities: { AccessToken, RefreshToken } } } = spy.args[0][0];
-        expect(AccessToken).to.have.property('jkt', this.thumbprint);
-        expect(RefreshToken).to.have.property('jkt', this.thumbprint);
+        ((actual) => { assert.ok('jkt' in Object(actual)); assert.equal(actual.jkt, fixture15.thumbprint); })(AccessToken);
+        ((actual) => { assert.ok('jkt' in Object(actual)); assert.equal(actual.jkt, fixture15.thumbprint); })(RefreshToken);
       });
     });
 
     describe('refresh_token', () => {
-      beforeEach(async function () {
-        await this.agent.post('/token')
+      const fixture16 = Object.create(fixture14);
+
+      beforeEach(async () => {
+        await fixture16.agent.post('/token')
           .send({
             client_id: 'client-none',
             grant_type: 'authorization_code',
-            code_verifier: this.auth.code_verifier,
-            code: this.code,
+            code_verifier: fixture16.auth.code_verifier,
+            code: fixture16.code,
             redirect_uri: 'https://client.example.com/cb',
           })
           .type('form')
-          .set('DPoP', await DPoP(this.keypair, `${this.provider.issuer}${this.suitePath('/token')}`, 'POST'))
+          .set('DPoP', await DPoP(fixture16.keypair, `${fixture16.provider.issuer}${fixture16.suitePath('/token')}`, 'POST'))
           .expect(({ body }) => {
-            this.rt = body.refresh_token;
+            fixture16.rt = body.refresh_token;
           });
-      });
+      }, { timeout: 3000 });
 
-      it('binds the access token to the jwk', async function () {
+      it('binds the access token to the jwk', { timeout: 3000 }, async () => {
         const spy = sinon.spy();
-        this.provider.once('grant.success', spy);
+        fixture16.provider.once('grant.success', spy);
 
-        await this.agent.post('/token')
+        await fixture16.agent.post('/token')
           .send({
             client_id: 'client-none',
             grant_type: 'refresh_token',
-            refresh_token: this.rt,
+            refresh_token: fixture16.rt,
           })
           .type('form')
-          .set('DPoP', await DPoP(this.keypair, `${this.provider.issuer}${this.suitePath('/token')}`, 'POST'))
+          .set('DPoP', await DPoP(fixture16.keypair, `${fixture16.provider.issuer}${fixture16.suitePath('/token')}`, 'POST'))
           .expect(200);
 
-        expect(spy).to.have.property('calledOnce', true);
+        ((actual) => { assert.ok('calledOnce' in Object(actual)); assert.equal(actual.calledOnce, true); })(spy);
         const { oidc: { entities: { AccessToken, RefreshToken } } } = spy.args[0][0];
-        expect(AccessToken).to.have.property('jkt', this.thumbprint);
-        expect(RefreshToken).to.have.property('jkt', this.thumbprint);
+        ((actual) => { assert.ok('jkt' in Object(actual)); assert.equal(actual.jkt, fixture16.thumbprint); })(AccessToken);
+        ((actual) => { assert.ok('jkt' in Object(actual)); assert.equal(actual.jkt, fixture16.thumbprint); })(RefreshToken);
       });
 
-      it('verifies the request made with the same cert jwk', async function () {
+      it('verifies the request made with the same cert jwk', { timeout: 3000 }, async () => {
         const spy = sinon.spy();
-        this.provider.once('grant.error', spy);
+        fixture16.provider.once('grant.error', spy);
 
-        await this.agent.post('/token')
+        await fixture16.agent.post('/token')
           .send({
             client_id: 'client-none',
             grant_type: 'refresh_token',
-            refresh_token: this.rt,
+            refresh_token: fixture16.rt,
           })
-          .set('DPoP', await DPoP(await generateKeyPair('ES256', { extractable: true }), `${this.provider.issuer}${this.suitePath('/token')}`, 'POST'))
+          .set('DPoP', await DPoP(await generateKeyPair('ES256', { extractable: true }), `${fixture16.provider.issuer}${fixture16.suitePath('/token')}`, 'POST'))
           .type('form')
           .expect(400)
           .expect({ error: 'invalid_grant', error_description: 'grant request is invalid' });
 
-        expect(spy).to.have.property('calledOnce', true);
-        expect(spy.args[0][1]).to.have.property('error_detail', 'failed jkt verification');
+        ((actual) => { assert.ok('calledOnce' in Object(actual)); assert.equal(actual.calledOnce, true); })(spy);
+        ((actual) => { assert.ok('error_detail' in Object(actual)); assert.equal(actual.error_detail, 'failed jkt verification'); })(spy.args[0][1]);
       });
 
-      it('rejects a replay before repeating the token binding check', async function () {
+      it('rejects a replay before repeating the token binding check', { timeout: 3000 }, async () => {
         const proof = await DPoP(
           await generateKeyPair('ES256', { extractable: true }),
-          `${this.provider.issuer}${this.suitePath('/token')}`,
+          `${fixture16.provider.issuer}${fixture16.suitePath('/token')}`,
           'POST',
         );
         const errors = [];
         const listener = (_ctx, err) => errors.push(err);
-        const request = () => this.agent.post('/token')
+        const request = () => fixture16.agent.post('/token')
           .send({
             client_id: 'client-none',
             grant_type: 'refresh_token',
-            refresh_token: this.rt,
+            refresh_token: fixture16.rt,
           })
           .set('DPoP', proof)
           .type('form')
           .expect(400)
           .expect({ error: 'invalid_grant', error_description: 'grant request is invalid' });
 
-        this.provider.on('grant.error', listener);
+        fixture16.provider.on('grant.error', listener);
         try {
           await request();
           await request();
         } finally {
-          this.provider.removeListener('grant.error', listener);
+          fixture16.provider.removeListener('grant.error', listener);
         }
 
-        expect(errors).to.have.length(2);
-        expect(errors[0]).to.be.instanceOf(InvalidGrant);
-        expect(errors[0]).to.have.property('error_detail', 'failed jkt verification');
-        expect(errors[1]).to.be.instanceOf(InvalidGrant);
-        expect(errors[1]).to.have.property('error_detail', 'DPoP proof JWT Replay detected');
+        assert.equal(errors.length, 2);
+        assert.ok(errors[0] instanceof InvalidGrant);
+        ((actual) => { assert.ok('error_detail' in Object(actual)); assert.equal(actual.error_detail, 'failed jkt verification'); })(errors[0]);
+        assert.ok(errors[1] instanceof InvalidGrant);
+        ((actual) => { assert.ok('error_detail' in Object(actual)); assert.equal(actual.error_detail, 'DPoP proof JWT Replay detected'); })(errors[1]);
       });
     });
   });
 
   describe('client_credentials', () => {
-    it('binds the access token to the jwk', async function () {
-      const spy = sinon.spy();
-      this.provider.once('grant.success', spy);
+    const fixture17 = Object.create(fixture);
 
-      await this.agent.post('/token')
+    it('binds the access token to the jwk', { timeout: 3000 }, async () => {
+      const spy = sinon.spy();
+      fixture17.provider.once('grant.success', spy);
+
+      await fixture17.agent.post('/token')
         .auth('client', 'secret')
         .send({ grant_type: 'client_credentials' })
-        .set('DPoP', await DPoP(this.keypair, `${this.provider.issuer}${this.suitePath('/token')}`, 'POST'))
+        .set('DPoP', await DPoP(fixture17.keypair, `${fixture17.provider.issuer}${fixture17.suitePath('/token')}`, 'POST'))
         .type('form')
         .expect(200);
 
-      expect(spy).to.have.property('calledOnce', true);
+      ((actual) => { assert.ok('calledOnce' in Object(actual)); assert.equal(actual.calledOnce, true); })(spy);
       const { oidc: { entities: { ClientCredentials } } } = spy.args[0][0];
-      expect(ClientCredentials).to.have.property('jkt', this.thumbprint);
+      ((actual) => { assert.ok('jkt' in Object(actual)); assert.equal(actual.jkt, fixture17.thumbprint); })(ClientCredentials);
     });
 
-    it('uses the client and proof identifiers with the replay window TTL', async function () {
+    it('uses the client and proof identifiers with the replay window TTL', { timeout: 3000 }, async () => {
       const proof = await DPoP(
-        this.keypair,
-        `${this.provider.issuer}${this.suitePath('/token')}`,
+        fixture17.keypair,
+        `${fixture17.provider.issuer}${fixture17.suitePath('/token')}`,
         'POST',
       );
-      const unique = sinon.spy(this.provider.ReplayDetection, 'unique');
+      const unique = sinon.spy(fixture17.provider.ReplayDetection, 'unique');
 
       try {
         const before = epochTime();
-        await this.agent.post('/token')
+        await fixture17.agent.post('/token')
           .auth('client', 'secret')
           .send({ grant_type: 'client_credentials' })
           .set('DPoP', proof)
@@ -1048,17 +1082,14 @@ describe('features.dPoP', () => {
           .expect(200);
         const after = epochTime();
 
-        expect(unique).to.have.property('calledOnce', true);
-        expect(unique.firstCall.args[0]).to.equal('client');
-        expect(unique.firstCall.args[1]).to.equal(decodeJwt(proof).jti);
-        expect(unique.firstCall.args[2]).to.be.within(
-          before + CHALLENGE_OK_WINDOW,
-          after + CHALLENGE_OK_WINDOW,
-        );
+        ((actual) => { assert.ok('calledOnce' in Object(actual)); assert.equal(actual.calledOnce, true); })(unique);
+        assert.equal(unique.firstCall.args[0], 'client');
+        assert.equal(unique.firstCall.args[1], decodeJwt(proof).jti);
+        ((value) => { assert.equal(typeof value, 'number'); assert.ok(value >= before + CHALLENGE_OK_WINDOW && value <= after + CHALLENGE_OK_WINDOW); })(unique.firstCall.args[2]);
 
         const spy = sinon.spy();
-        this.provider.once('grant.error', spy);
-        await this.agent.post('/token')
+        fixture17.provider.once('grant.error', spy);
+        await fixture17.agent.post('/token')
           .auth('client', 'secret')
           .send({ grant_type: 'client_credentials' })
           .set('DPoP', proof)
@@ -1066,27 +1097,24 @@ describe('features.dPoP', () => {
           .expect(400)
           .expect({ error: 'invalid_grant', error_description: 'grant request is invalid' });
 
-        expect(spy).to.have.property('calledOnce', true);
-        expect(spy.args[0][1]).to.be.instanceOf(InvalidGrant);
-        expect(spy.args[0][1]).to.have.property(
-          'error_detail',
-          'DPoP proof JWT Replay detected',
-        );
+        ((actual) => { assert.ok('calledOnce' in Object(actual)); assert.equal(actual.calledOnce, true); })(spy);
+        assert.ok(spy.args[0][1] instanceof InvalidGrant);
+        ((actual) => { assert.ok('error_detail' in Object(actual)); assert.equal(actual.error_detail, 'DPoP proof JWT Replay detected'); })(spy.args[0][1]);
       } finally {
         unique.restore();
       }
     });
 
-    it('allows replay when configured', async function () {
+    it('allows replay when configured', { timeout: 3000 }, async () => {
       const proof = await DPoP(
-        this.keypair,
-        `${this.provider.issuer}${this.suitePath('/token')}`,
+        fixture17.keypair,
+        `${fixture17.provider.issuer}${fixture17.suitePath('/token')}`,
         'POST',
       );
-      const { dPoP } = i(this.provider).features;
+      const { dPoP } = i(fixture17.provider).features;
       const original = dPoP.allowReplay;
-      const unique = sinon.spy(this.provider.ReplayDetection, 'unique');
-      const request = () => this.agent.post('/token')
+      const unique = sinon.spy(fixture17.provider.ReplayDetection, 'unique');
+      const request = () => fixture17.agent.post('/token')
         .auth('client', 'secret')
         .send({ grant_type: 'client_credentials' })
         .set('DPoP', proof)
@@ -1097,7 +1125,7 @@ describe('features.dPoP', () => {
       try {
         await request();
         await request();
-        expect(unique).to.have.property('notCalled', true);
+        ((actual) => { assert.ok('notCalled' in Object(actual)); assert.equal(actual.notCalled, true); })(unique);
       } finally {
         dPoP.allowReplay = original;
         unique.restore();
@@ -1106,8 +1134,10 @@ describe('features.dPoP', () => {
   });
 
   describe('status codes at the token endpoint', () => {
-    it('should be 400 for invalid_dpop_proof', async function () {
-      await this.agent.post('/token')
+    const fixture18 = Object.create(fixture);
+
+    it('should be 400 for invalid_dpop_proof', { timeout: 3000 }, async () => {
+      await fixture18.agent.post('/token')
         .auth('client', 'secret')
         .send({ grant_type: 'client_credentials' })
         .set('DPoP', 'invalid')
@@ -1116,23 +1146,23 @@ describe('features.dPoP', () => {
         .expect({ error: 'invalid_dpop_proof', error_description: 'invalid DPoP key binding' });
     });
 
-    it('should be 400 for malformed htu', async function () {
-      await this.agent.post('/token')
+    it('should be 400 for malformed htu', { timeout: 3000 }, async () => {
+      await fixture18.agent.post('/token')
         .auth('client', 'secret')
         .send({ grant_type: 'client_credentials' })
-        .set('DPoP', await DPoP(this.keypair, 'not a url', 'POST'))
+        .set('DPoP', await DPoP(fixture18.keypair, 'not a url', 'POST'))
         .type('form')
         .expect(400)
         .expect({ error: 'invalid_dpop_proof', error_description: 'DPoP proof htu mismatch' });
     });
 
-    it('rejects an htu claim that is not a string', async function () {
-      await this.agent.post('/token')
+    it('rejects an htu claim that is not a string', { timeout: 3000 }, async () => {
+      await fixture18.agent.post('/token')
         .auth('client', 'secret')
         .send({ grant_type: 'client_credentials' })
         .set('DPoP', await DPoP(
-          this.keypair,
-          [`${this.provider.issuer}${this.suitePath('/token')}`],
+          fixture18.keypair,
+          [`${fixture18.provider.issuer}${fixture18.suitePath('/token')}`],
           'POST',
         ))
         .type('form')
@@ -1142,122 +1172,126 @@ describe('features.dPoP', () => {
   });
 
   describe('invalid nonce', () => {
-    it('@ userinfo', async function () {
+    const fixture19 = Object.create(fixture);
+
+    it('@ userinfo', { timeout: 3000 }, async () => {
       let nonce;
-      await this.agent.get('/me')
+      await fixture19.agent.get('/me')
         .set('Authorization', 'DPoP foo')
-        .set('DPoP', await DPoP(this.keypair, `${this.provider.issuer}${this.suitePath('/me')}`, 'GET', 'foo', 'foo'))
+        .set('DPoP', await DPoP(fixture19.keypair, `${fixture19.provider.issuer}${fixture19.suitePath('/me')}`, 'GET', 'foo', 'foo'))
         .expect(401)
         .expect({ error: 'use_dpop_nonce', error_description: 'invalid nonce in DPoP proof' })
         .expect(({ headers }) => { nonce = headers['dpop-nonce']; });
 
-      await this.agent.get('/me')
+      await fixture19.agent.get('/me')
         .set('Authorization', 'DPoP foo')
-        .set('DPoP', await DPoP(this.keypair, `${this.provider.issuer}${this.suitePath('/me')}`, 'GET', nonce, 'foo'))
+        .set('DPoP', await DPoP(fixture19.keypair, `${fixture19.provider.issuer}${fixture19.suitePath('/me')}`, 'GET', nonce, 'foo'))
         .expect(401)
         .expect({ error: 'invalid_token', error_description: 'invalid token provided' });
     });
 
-    it('@ token endpoint', async function () {
+    it('@ token endpoint', { timeout: 3000 }, async () => {
       let nonce;
-      await this.agent.post('/token')
+      await fixture19.agent.post('/token')
         .auth('client', 'secret')
         .send({ grant_type: 'client_credentials' })
-        .set('DPoP', await DPoP(this.keypair, `${this.provider.issuer}${this.suitePath('/token')}`, 'POST', 'foo'))
+        .set('DPoP', await DPoP(fixture19.keypair, `${fixture19.provider.issuer}${fixture19.suitePath('/token')}`, 'POST', 'foo'))
         .type('form')
         .expect(400)
         .expect({ error: 'use_dpop_nonce', error_description: 'invalid nonce in DPoP proof' })
         .expect(({ headers }) => { nonce = headers['dpop-nonce']; });
 
-      await this.agent.post('/token')
+      await fixture19.agent.post('/token')
         .auth('client', 'secret')
         .send({ grant_type: 'client_credentials' })
-        .set('DPoP', await DPoP(this.keypair, `${this.provider.issuer}${this.suitePath('/token')}`, 'POST', nonce))
+        .set('DPoP', await DPoP(fixture19.keypair, `${fixture19.provider.issuer}${fixture19.suitePath('/token')}`, 'POST', nonce))
         .type('form')
         .expect(200);
     });
   });
 
   describe('required nonce', () => {
-    before(function () {
-      this.orig = i(this.provider).features.dPoP.requireNonce;
-      i(this.provider).features.dPoP.requireNonce = () => true;
-    });
+    const fixture20 = Object.create(fixture);
 
-    after(function () {
-      i(this.provider).features.dPoP.requireNonce = this.orig;
-    });
+    before(() => {
+      fixture20.orig = i(fixture20.provider).features.dPoP.requireNonce;
+      i(fixture20.provider).features.dPoP.requireNonce = () => true;
+    }, { timeout: 3000 });
 
-    it('@ PAR endpoint', async function () {
+    after(() => {
+      i(fixture20.provider).features.dPoP.requireNonce = fixture20.orig;
+    }, { timeout: 3000 });
+
+    it('@ PAR endpoint', { timeout: 3000 }, async () => {
       let nonce;
-      await this.agent.post('/request')
+      await fixture20.agent.post('/request')
         .auth('client', 'secret')
         .send({
           response_type: 'code',
           client_id: 'client',
         })
-        .set('DPoP', await DPoP(this.keypair, `${this.provider.issuer}${this.suitePath('/request')}`, 'POST'))
+        .set('DPoP', await DPoP(fixture20.keypair, `${fixture20.provider.issuer}${fixture20.suitePath('/request')}`, 'POST'))
         .type('form')
         .expect(400)
         .expect('DPoP-Nonce', /^[\w-]{43}$/)
         .expect({ error: 'use_dpop_nonce', error_description: 'nonce is required in the DPoP proof' })
         .expect(({ headers }) => { nonce = headers['dpop-nonce']; });
 
-      await this.agent.post('/request')
+      await fixture20.agent.post('/request')
         .auth('client', 'secret')
         .send({
           response_type: 'code',
           client_id: 'client',
         })
-        .set('DPoP', await DPoP(this.keypair, `${this.provider.issuer}${this.suitePath('/request')}`, 'POST', nonce))
+        .set('DPoP', await DPoP(fixture20.keypair, `${fixture20.provider.issuer}${fixture20.suitePath('/request')}`, 'POST', nonce))
         .type('form')
         .expect(201)
         .expect((response) => {
           // because the sent one is fresh
-          expect(response.headers).not.to.have.property('dpop-nonce');
+          assert.ok(!('dpop-nonce' in Object(response.headers)));
         });
     });
 
-    it('@ userinfo', async function () {
+    it('@ userinfo', { timeout: 3000 }, async () => {
       let nonce;
-      await this.agent.get('/me')
+      await fixture20.agent.get('/me')
         .set('Authorization', 'DPoP foo')
-        .set('DPoP', await DPoP(this.keypair, `${this.provider.issuer}${this.suitePath('/me')}`, 'GET', undefined, 'foo'))
+        .set('DPoP', await DPoP(fixture20.keypair, `${fixture20.provider.issuer}${fixture20.suitePath('/me')}`, 'GET', undefined, 'foo'))
         .expect(401)
         .expect({ error: 'use_dpop_nonce', error_description: 'nonce is required in the DPoP proof' })
         .expect(({ headers }) => { nonce = headers['dpop-nonce']; });
 
-      await this.agent.get('/me')
+      await fixture20.agent.get('/me')
         .set('Authorization', 'DPoP foo')
-        .set('DPoP', await DPoP(this.keypair, `${this.provider.issuer}${this.suitePath('/me')}`, 'GET', nonce, 'foo'))
+        .set('DPoP', await DPoP(fixture20.keypair, `${fixture20.provider.issuer}${fixture20.suitePath('/me')}`, 'GET', nonce, 'foo'))
         .expect(401)
         .expect((response) => {
           // because the sent one is fresh
-          expect(response.headers).not.to.have.property('dpop-nonce');
+          assert.ok(!('dpop-nonce' in Object(response.headers)));
         })
         .expect({ error: 'invalid_token', error_description: 'invalid token provided' });
     });
 
-    it('@ token endpoint', async function () {
+    it('@ token endpoint', { timeout: 3000 }, async () => {
       let nonce;
-      await this.agent.post('/token')
+      await fixture20.agent.post('/token')
         .auth('client', 'secret')
         .send({ grant_type: 'client_credentials' })
-        .set('DPoP', await DPoP(this.keypair, `${this.provider.issuer}${this.suitePath('/token')}`, 'POST'))
+        .set('DPoP', await DPoP(fixture20.keypair, `${fixture20.provider.issuer}${fixture20.suitePath('/token')}`, 'POST'))
         .type('form')
         .expect(400)
         .expect({ error: 'use_dpop_nonce', error_description: 'nonce is required in the DPoP proof' })
         .expect(({ headers }) => { nonce = headers['dpop-nonce']; });
 
-      await this.agent.post('/token')
+      await fixture20.agent.post('/token')
         .auth('client', 'secret')
         .send({ grant_type: 'client_credentials' })
-        .set('DPoP', await DPoP(this.keypair, `${this.provider.issuer}${this.suitePath('/token')}`, 'POST', nonce))
+        .set('DPoP', await DPoP(fixture20.keypair, `${fixture20.provider.issuer}${fixture20.suitePath('/token')}`, 'POST', nonce))
         .type('form')
         .expect(200)
         .expect((response) => {
           // because the sent one is fresh
-          expect(response.headers).not.to.have.property('dpop-nonce');
+          assert.ok(!('dpop-nonce' in Object(response.headers)));
         });
     });
   });

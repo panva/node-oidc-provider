@@ -1,5 +1,6 @@
+import { describe, before, afterEach, it } from 'node:test';
+import assert from 'node:assert/strict';
 import sinon from 'sinon';
-import { expect } from 'chai';
 
 import bootstrap from '../../test_helper.js';
 
@@ -8,22 +9,26 @@ const response_type = 'code token';
 const scope = 'openid';
 
 describe('HYBRID code+token', () => {
-  before(bootstrap(import.meta.url));
-  afterEach(function () {
-    this.provider.removeAllListeners();
-  });
+  const fixture = {};
+
+  before(bootstrap(import.meta.url, fixture), { timeout: 3000 });
+  afterEach(() => {
+    fixture.provider.removeAllListeners();
+  }, { timeout: 3000 });
 
   ['get', 'post'].forEach((verb) => {
     describe(`${verb} ${route} with session`, () => {
-      before(function () { return this.login(); });
+      const fixture1 = Object.create(fixture);
 
-      it('responds with a access_token and code in fragment', function () {
-        const auth = new this.AuthorizationRequest({
+      before(() => fixture1.login(), { timeout: 3000 });
+
+      it('responds with a access_token and code in fragment', { timeout: 3000 }, () => {
+        const auth = new fixture1.AuthorizationRequest({
           response_type,
           scope,
         });
 
-        return this.wrap({ route, verb, auth })
+        return fixture1.wrap({ route, verb, auth })
           .expect(303)
           .expect(auth.validateFragment)
           .expect(auth.validatePresence(['code', 'state', 'access_token', 'expires_in', 'token_type', 'scope']))
@@ -31,13 +36,13 @@ describe('HYBRID code+token', () => {
           .expect(auth.validateClientLocation);
       });
 
-      it('handles mixed up response_type order', function () {
-        const auth = new this.AuthorizationRequest({
+      it('handles mixed up response_type order', { timeout: 3000 }, () => {
+        const auth = new fixture1.AuthorizationRequest({
           response_type: 'token code',
           scope,
         });
 
-        return this.wrap({ route, verb, auth })
+        return fixture1.wrap({ route, verb, auth })
           .expect(303)
           .expect(auth.validateFragment)
           .expect(auth.validatePresence(['code', 'state', 'access_token', 'expires_in', 'token_type', 'scope']))
@@ -45,56 +50,56 @@ describe('HYBRID code+token', () => {
           .expect(auth.validateClientLocation);
       });
 
-      it('populates ctx.oidc.entities', function (done) {
-        this.assertOnce((ctx) => {
-          expect(ctx.oidc.entities).to.have.keys('Client', 'Grant', 'Account', 'AuthorizationCode', 'AccessToken', 'Session');
+      it('populates ctx.oidc.entities', { timeout: 3000 }, (_t, done) => {
+        fixture1.assertOnce((ctx) => {
+          assert.deepEqual(new Set(Object.keys(ctx.oidc.entities)), new Set(['Client', 'Grant', 'Account', 'AuthorizationCode', 'AccessToken', 'Session']));
         }, done);
 
-        const auth = new this.AuthorizationRequest({
+        const auth = new fixture1.AuthorizationRequest({
           response_type,
           scope,
         });
 
-        this.wrap({ route, verb, auth }).end(() => {});
+        fixture1.wrap({ route, verb, auth }).end(() => {});
       });
 
-      it('ignores the scope offline_access unless prompt consent is present', function () {
+      it('ignores the scope offline_access unless prompt consent is present', { timeout: 3000 }, () => {
         const spy = sinon.spy();
-        this.provider.once('authorization_code.saved', spy);
-        this.provider.once('access_token.saved', spy);
-        this.provider.once('access_token.issued', spy);
+        fixture1.provider.once('authorization_code.saved', spy);
+        fixture1.provider.once('access_token.saved', spy);
+        fixture1.provider.once('access_token.issued', spy);
 
-        const auth = new this.AuthorizationRequest({
+        const auth = new fixture1.AuthorizationRequest({
           response_type,
           scope: 'openid offline_access',
         });
 
-        return this.wrap({ route, verb, auth })
+        return fixture1.wrap({ route, verb, auth })
           .expect(303)
           .expect(auth.validateFragment)
           .expect(auth.validateClientLocation)
           .expect(() => {
-            expect(spy.firstCall.args[0]).to.have.property('scope').and.not.include('offline_access');
-            expect(spy.secondCall.args[0]).to.have.property('scope').and.not.include('offline_access');
+            ((actual) => { assert.ok('scope' in Object(actual)); assert.ok(!(actual.scope.includes('offline_access'))); })(spy.firstCall.args[0]);
+            ((actual) => { assert.ok('scope' in Object(actual)); assert.ok(!(actual.scope.includes('offline_access'))); })(spy.secondCall.args[0]);
           });
       });
     });
 
     describe(`${verb} ${route} with the scope not being fulfilled`, () => {
-      before(function () {
-        return this.login({
+      const fixture2 = Object.create(fixture);
+
+      before(() => fixture2.login({
           scope: 'openid profile email',
           rejectedScopes: ['email'],
-        });
-      });
+        }), { timeout: 3000 });
 
-      it('responds with an extra parameter scope', async function () {
-        const auth = new this.AuthorizationRequest({
+      it('responds with an extra parameter scope', { timeout: 3000 }, async () => {
+        const auth = new fixture2.AuthorizationRequest({
           response_type,
           scope: 'openid profile email',
         });
 
-        await this.wrap({ route, verb, auth })
+        await fixture2.wrap({ route, verb, auth })
           .expect(303)
           .expect(auth.validateFragment)
           .expect(auth.validatePresence(['code', 'state', 'access_token', 'expires_in', 'token_type', 'scope']))
@@ -105,19 +110,21 @@ describe('HYBRID code+token', () => {
     });
 
     describe(`${verb} ${route} errors`, () => {
-      it('disallowed response mode', function () {
+      const fixture3 = Object.create(fixture);
+
+      it('disallowed response mode', { timeout: 3000 }, () => {
         const spy = sinon.spy();
-        this.provider.once('authorization.error', spy);
-        const auth = new this.AuthorizationRequest({
+        fixture3.provider.once('authorization.error', spy);
+        const auth = new fixture3.AuthorizationRequest({
           response_type,
           scope,
           response_mode: 'query',
         });
 
-        return this.wrap({ route, verb, auth })
+        return fixture3.wrap({ route, verb, auth })
           .expect(303)
           .expect(() => {
-            expect(spy.calledOnce).to.be.true;
+            assert.equal(spy.calledOnce, true);
           })
           .expect(auth.validatePresence(['error', 'error_description', 'state']))
           .expect(auth.validateState)

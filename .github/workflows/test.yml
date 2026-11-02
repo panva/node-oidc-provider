@@ -43,6 +43,7 @@ jobs:
           check-latest: true
       - run: npm clean-install
       - run: npm run lint
+      - run: node docs/update-configuration.js --check
       # lib/views is generated from tools/views/*.eta; fail if it was not
       # regenerated alongside a template change
       - run: npm run build:views
@@ -73,7 +74,8 @@ jobs:
           cache: 'npm'
           check-latest: true
       - run: npm clean-install
-      - run: node --test tools/dt/sync-release.test.mjs
+      - run: node --test tools/dt/sync-release.test.mjs tools/check-test-focus.test.js tools/with-timeout.test.js
+      - run: node --test certification/runner/test/runner.test.js
       - run: npm run test-ci
 
   dist:

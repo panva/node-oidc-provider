@@ -1,6 +1,7 @@
+import { describe, before, beforeEach, it, afterEach } from 'node:test';
+import assert from 'node:assert/strict';
 import { randomBytes } from 'node:crypto';
 
-import { expect } from 'chai';
 import { importJWK } from 'jose';
 import sinon from 'sinon';
 
@@ -59,21 +60,25 @@ async function expectAuthorizationError(
     overrides,
   );
 
-  expect(params.get('error')).to.equal(error);
-  expect(params.get('error_description')).to.equal(errorDescription);
-  expect(params.get('state')).to.equal(auth.state);
+  assert.equal(params.get('error'), error);
+  assert.equal(params.get('error_description'), errorDescription);
+  assert.equal(params.get('state'), auth.state);
 }
 
 describe('Rich Authorization Requests', () => {
-  before(bootstrap(import.meta.url));
+  const fixture = {};
+
+  before(bootstrap(import.meta.url, fixture), { timeout: 3000 });
 
   beforeEach(() => {
     resetRarState();
-  });
+  }, { timeout: 3000 });
 
   describe('stable configuration and discovery', () => {
-    it('does not accept the former experimental acknowledgement', () => {
-      expect(() => new Provider('https://op.example.com', {
+    const fixture1 = Object.create(fixture);
+
+    it('does not accept the former experimental acknowledgement', { timeout: 3000 }, () => {
+      assert.throws(() => new Provider('https://op.example.com', {
         features: {
           resourceIndicators: { enabled: true },
           richAuthorizationRequests: {
@@ -84,13 +89,11 @@ describe('Rich Authorization Requests', () => {
             },
           },
         },
-      })).to.throw(
-        'richAuthorizationRequests feature is now stable, the ack experimental-01 is no longer valid',
-      );
+      }), (error) => { assert.ok(error.message.includes('richAuthorizationRequests feature is now stable, the ack experimental-01 is no longer valid')); return true; });
     });
 
-    it('does not accept former experimental callback names', () => {
-      expect(() => new Provider('https://op.example.com', {
+    it('does not accept former experimental callback names', { timeout: 3000 }, () => {
+      assert.throws(() => new Provider('https://op.example.com', {
         features: {
           resourceIndicators: { enabled: true },
           richAuthorizationRequests: {
@@ -101,9 +104,7 @@ describe('Rich Authorization Requests', () => {
             rarForCodeResponse() {},
           },
         },
-      })).to.throw(
-        'Unknown feature configuration: richAuthorizationRequests.rarForCodeResponse',
-      );
+      }), (error) => { assert.ok(error.message.includes('Unknown feature configuration: richAuthorizationRequests.rarForCodeResponse')); return true; });
     });
 
     for (const callback of [
@@ -111,8 +112,8 @@ describe('Rich Authorization Requests', () => {
       'authorizationDetailsForAccessToken',
       'authorizationDetailsForIntrospection',
     ]) {
-      it(`rejects a non-function ${callback} policy`, () => {
-        expect(() => new Provider('https://op.example.com', {
+      it(`rejects a non-function ${callback} policy`, { timeout: 3000 }, () => {
+        assert.throws(() => new Provider('https://op.example.com', {
           features: {
             resourceIndicators: { enabled: true },
             richAuthorizationRequests: {
@@ -123,221 +124,187 @@ describe('Rich Authorization Requests', () => {
               [callback]: 1,
             },
           },
-        })).to.throw(
-          TypeError,
-          `features.richAuthorizationRequests.${callback} must be a function`,
-        );
+        }), (error) => { assert.ok(error instanceof TypeError); assert.ok(error.message.includes(`features.richAuthorizationRequests.${callback} must be a function`)); return true; });
       });
     }
 
-    it('advertises its supported authorization detail types', function () {
-      return this.agent.get('/.well-known/openid-configuration')
+    it('advertises its supported authorization detail types', { timeout: 3000 }, () => fixture1.agent.get('/.well-known/openid-configuration')
         .expect(200)
         .expect((response) => {
-          expect(response.body).to.have.property('authorization_details_types_supported')
-            .that.deep.equals(['account_information', 'payment']);
-        });
-    });
+          ((actual) => { assert.ok('authorization_details_types_supported' in Object(actual)); assert.deepEqual(actual.authorization_details_types_supported, ['account_information', 'payment']); })(response.body);
+        }));
   });
 
   describe('authorization request validation', () => {
-    it('rejects malformed JSON', function () {
-      return expectAuthorizationError(
-        this,
+    const fixture2 = Object.create(fixture);
+
+    it('rejects malformed JSON', { timeout: 3000 }, () => expectAuthorizationError(
+        fixture2,
         '[',
         'invalid_authorization_details',
         'could not parse the authorization_details parameter JSON',
-      );
-    });
+      ));
 
-    it('rejects a non-array value', function () {
-      return expectAuthorizationError(
-        this,
+    it('rejects a non-array value', { timeout: 3000 }, () => expectAuthorizationError(
+        fixture2,
         {},
         'invalid_authorization_details',
         'authorization_details parameter should be a JSON array',
-      );
-    });
+      ));
 
-    it('rejects a non-object array member', function () {
-      return expectAuthorizationError(
-        this,
+    it('rejects a non-object array member', { timeout: 3000 }, () => expectAuthorizationError(
+        fixture2,
         [null],
         'invalid_authorization_details',
         'authorization_details parameter members should be a JSON object',
-      );
-    });
+      ));
 
-    it('rejects a missing type', function () {
-      return expectAuthorizationError(
-        this,
+    it('rejects a missing type', { timeout: 3000 }, () => expectAuthorizationError(
+        fixture2,
         [{}],
         'invalid_authorization_details',
         "authorization_details parameter members' type attribute must be a non-empty string (authorization details index 0)",
-      );
-    });
+      ));
 
-    it('rejects an empty type', function () {
-      return expectAuthorizationError(
-        this,
+    it('rejects an empty type', { timeout: 3000 }, () => expectAuthorizationError(
+        fixture2,
         [{ type: '' }],
         'invalid_authorization_details',
         "authorization_details parameter members' type attribute must be a non-empty string (authorization details index 0)",
-      );
-    });
+      ));
 
     for (const type of ['unknown', 'toString']) {
-      it(`rejects the unsupported ${type} type`, function () {
-        return expectAuthorizationError(
-          this,
+      it(`rejects the unsupported ${type} type`, { timeout: 3000 }, () => expectAuthorizationError(
+          fixture2,
           [{ type }],
           'invalid_authorization_details',
           'unsupported authorization details type value (authorization details index 0)',
-        );
-      });
+        ));
     }
 
     for (const field of ['locations', 'actions', 'datatypes', 'privileges']) {
-      it(`validates the common ${field} field`, function () {
-        return expectAuthorizationError(
-          this,
+      it(`validates the common ${field} field`, { timeout: 3000 }, () => expectAuthorizationError(
+          fixture2,
           [{ type: 'payment', [field]: [''] }],
           'invalid_authorization_details',
           `'${field}' must be an array of non-empty strings (authorization details index 0)`,
-        );
-      });
+        ));
     }
 
-    it('validates the common identifier field', function () {
-      return expectAuthorizationError(
-        this,
+    it('validates the common identifier field', { timeout: 3000 }, () => expectAuthorizationError(
+        fixture2,
         [{ type: 'payment', identifier: '' }],
         'invalid_authorization_details',
         "'identifier' must be a non-empty string (authorization details index 0)",
-      );
-    });
+      ));
 
-    it('enforces the client authorization detail type allowlist', function () {
-      return expectAuthorizationError(
-        this,
+    it('enforces the client authorization detail type allowlist', { timeout: 3000 }, () => expectAuthorizationError(
+        fixture2,
         [{ type: 'account_information' }],
         'invalid_authorization_details',
         "authorization details type 'account_information' is not allowed for this client",
-      );
-    });
+      ));
 
-    it('awaits a strict type validator that rejects unknown fields', async function () {
+    it('awaits a strict type validator that rejects unknown fields', { timeout: 3000 }, async () => {
       const detail = { type: 'payment', unexpected: true };
 
       await expectAuthorizationError(
-        this,
+        fixture2,
         [detail],
         'invalid_authorization_details',
         "unexpected payment authorization detail field 'unexpected'",
       );
 
-      expect(rarState.validationCalls).to.deep.equal([detail]);
+      assert.deepEqual(rarState.validationCalls, [detail]);
     });
 
-    it('applies type-specific value validation', function () {
-      return expectAuthorizationError(
-        this,
+    it('applies type-specific value validation', { timeout: 3000 }, () => expectAuthorizationError(
+        fixture2,
         [{ type: 'payment', currency: 'usd' }],
         'invalid_authorization_details',
         "'currency' must be a three-letter uppercase code",
-      );
+      ));
+
+    it('normalizes an empty array and continues authorization', { timeout: 3000 }, async () => {
+      const { params, response } = await authorizationResponse(fixture2, []);
+      const target = new URL(response.headers.location, fixture2.provider.issuer);
+
+      assert.equal(params.has('error'), false);
+      assert.match(target.pathname, new RegExp(`^${fixture2.suitePath('/interaction/')}`));
+      assert.equal(rarState.validationCalls.length, 0);
     });
 
-    it('normalizes an empty array and continues authorization', async function () {
-      const { params, response } = await authorizationResponse(this, []);
-      const target = new URL(response.headers.location, this.provider.issuer);
-
-      expect(params.has('error')).to.be.false;
-      expect(target.pathname).to.match(new RegExp(`^${this.suitePath('/interaction/')}`));
-      expect(rarState.validationCalls).to.be.empty;
-    });
-
-    it('accepts a valid detail after asynchronous type validation', async function () {
+    it('accepts a valid detail after asynchronous type validation', { timeout: 3000 }, async () => {
       const detail = {
         type: 'payment',
         actions: ['initiate'],
         currency: 'EUR',
         amount: 10,
       };
-      const { params, response } = await authorizationResponse(this, [detail]);
-      const target = new URL(response.headers.location, this.provider.issuer);
+      const { params, response } = await authorizationResponse(fixture2, [detail]);
+      const target = new URL(response.headers.location, fixture2.provider.issuer);
 
-      expect(params.has('error')).to.be.false;
-      expect(target.pathname).to.match(new RegExp(`^${this.suitePath('/interaction/')}`));
-      expect(rarState.validationCalls).to.deep.equal([detail]);
+      assert.equal(params.has('error'), false);
+      assert.match(target.pathname, new RegExp(`^${fixture2.suitePath('/interaction/')}`));
+      assert.deepEqual(rarState.validationCalls, [detail]);
     });
   });
 
   describe('authorization consent', () => {
-    beforeEach(function () {
-      return this.login({ accountId: 'account', scope: 'openid' });
-    });
+    const fixture3 = Object.create(fixture);
 
-    afterEach(function () {
-      return this.logout();
-    });
+    beforeEach(() => fixture3.login({ accountId: 'account', scope: 'openid' }), { timeout: 3000 });
 
-    it('prompts for RAR without requiring a scope parameter', async function () {
-      const auth = new this.AuthorizationRequest({
+    afterEach(() => fixture3.logout(), { timeout: 3000 });
+
+    it('prompts for RAR without requiring a scope parameter', { timeout: 3000 }, async () => {
+      const auth = new fixture3.AuthorizationRequest({
         response_type: 'code',
         resource: API,
         authorization_details: JSON.stringify(CONSENT_DETAILS),
       });
 
-      const response = await this.wrap({ route: '/auth', verb: 'get', auth }).expect(303);
-      const interaction = interactionFromResponse(this, response);
+      const response = await fixture3.wrap({ route: '/auth', verb: 'get', auth }).expect(303);
+      const interaction = interactionFromResponse(fixture3, response);
 
-      expect(interaction.params).not.to.have.property('scope');
-      expect(interaction.prompt).to.deep.include({
-        name: 'consent',
-        reasons: ['rar_prompt'],
-      });
-      expect(interaction.prompt.details).to.deep.equal({ rar: CONSENT_DETAILS });
+      assert.ok(!('scope' in Object(interaction.params)));
+      ((actual) => { assert.ok("name" in Object(actual)); assert.deepEqual(actual.name, 'consent'); assert.ok("reasons" in Object(actual)); assert.deepEqual(actual.reasons, ['rar_prompt']); })(interaction.prompt);
+      assert.deepEqual(interaction.prompt.details, { rar: CONSENT_DETAILS });
     });
 
-    it('presents scope and RAR requirements in the same consent prompt', async function () {
-      const auth = new this.AuthorizationRequest({
+    it('presents scope and RAR requirements in the same consent prompt', { timeout: 3000 }, async () => {
+      const auth = new fixture3.AuthorizationRequest({
         response_type: 'code',
         scope: 'api:read',
         resource: API,
         authorization_details: JSON.stringify(CONSENT_DETAILS),
       });
 
-      const response = await this.wrap({ route: '/auth', verb: 'get', auth }).expect(303);
-      const interaction = interactionFromResponse(this, response);
+      const response = await fixture3.wrap({ route: '/auth', verb: 'get', auth }).expect(303);
+      const interaction = interactionFromResponse(fixture3, response);
 
-      expect(interaction.prompt.name).to.equal('consent');
-      expect(interaction.prompt.reasons).to.include.members(['rs_scopes_missing', 'rar_prompt']);
-      expect(interaction.prompt.details).to.deep.include({
-        missingResourceScopes: { [API]: ['api:read'] },
-        rar: CONSENT_DETAILS,
-      });
+      assert.equal(interaction.prompt.name, 'consent');
+      ((actual) => { assert.ok(Array.isArray(actual)); assert.ok(['rs_scopes_missing', 'rar_prompt'].every((value) => actual.includes(value))); })(interaction.prompt.reasons);
+      ((actual) => { assert.ok("missingResourceScopes" in Object(actual)); assert.deepEqual(actual.missingResourceScopes, { [API]: ['api:read'] }); assert.ok("rar" in Object(actual)); assert.deepEqual(actual.rar, CONSENT_DETAILS); })(interaction.prompt.details);
     });
   });
 
   describe('protected authorization requests', () => {
-    before(async function () {
-      const client = await this.provider.Client.find('client');
-      this.requestObjectKey = await importJWK(
+    const fixture4 = Object.create(fixture);
+
+    before(async () => {
+      const client = await fixture4.provider.Client.find('client');
+      fixture4.requestObjectKey = await importJWK(
         client.symmetricKeyStore.selectForSign({ alg: 'HS256' })[0],
       );
-    });
+    }, { timeout: 3000 });
 
-    beforeEach(function () {
-      return this.login({ accountId: 'account', scope: 'openid' });
-    });
+    beforeEach(() => fixture4.login({ accountId: 'account', scope: 'openid' }), { timeout: 3000 });
 
-    afterEach(function () {
-      return this.logout();
-    });
+    afterEach(() => fixture4.logout(), { timeout: 3000 });
 
-    it('conveys RAR through a Pushed Authorization Request', async function () {
-      const { body: { request_uri: requestUri } } = await this.agent.post('/request')
+    it('conveys RAR through a Pushed Authorization Request', { timeout: 3000 }, async () => {
+      const { body: { request_uri: requestUri } } = await fixture4.agent.post('/request')
         .auth('client', 'secret')
         .type('form')
         .send({
@@ -350,20 +317,20 @@ describe('Rich Authorization Requests', () => {
         })
         .expect(201);
 
-      const response = await this.agent.get('/auth')
+      const response = await fixture4.agent.get('/auth')
         .query({ client_id: 'client', request_uri: requestUri })
         .expect(303);
-      const interaction = interactionFromResponse(this, response);
+      const interaction = interactionFromResponse(fixture4, response);
 
-      expect(interaction.params.authorization_details).to.equal(JSON.stringify(CONSENT_DETAILS));
-      expect(interaction.params.state).to.equal('par-state');
-      expect(interaction.prompt.reasons).to.include('rar_prompt');
-      expect(interaction.prompt.details.rar).to.deep.equal(CONSENT_DETAILS);
+      assert.equal(interaction.params.authorization_details, JSON.stringify(CONSENT_DETAILS));
+      assert.equal(interaction.params.state, 'par-state');
+      assert.ok(interaction.prompt.reasons.includes('rar_prompt'));
+      assert.deepEqual(interaction.prompt.details.rar, CONSENT_DETAILS);
     });
 
-    it('conveys RAR as a Request Object JSON claim', async function () {
+    it('conveys RAR as a Request Object JSON claim', { timeout: 3000 }, async () => {
       const request = await JWT.sign({
-        aud: this.provider.issuer,
+        aud: fixture4.provider.issuer,
         authorization_details: CONSENT_DETAILS,
         client_id: 'client',
         iss: 'client',
@@ -372,25 +339,26 @@ describe('Rich Authorization Requests', () => {
         resource: API,
         response_type: 'code',
         state: 'jar-state',
-      }, this.requestObjectKey, 'HS256', { expiresIn: 30 });
+      }, fixture4.requestObjectKey, 'HS256', { expiresIn: 30 });
 
-      const response = await this.agent.get('/auth')
+      const response = await fixture4.agent.get('/auth')
         .query({ client_id: 'client', request })
         .expect(303);
-      const interaction = interactionFromResponse(this, response);
+      const interaction = interactionFromResponse(fixture4, response);
 
-      expect(interaction.params.authorization_details).to.equal(JSON.stringify(CONSENT_DETAILS));
-      expect(interaction.params.state).to.equal('jar-state');
-      expect(interaction.prompt.reasons).to.include('rar_prompt');
-      expect(interaction.prompt.details.rar).to.deep.equal(CONSENT_DETAILS);
+      assert.equal(interaction.params.authorization_details, JSON.stringify(CONSENT_DETAILS));
+      assert.equal(interaction.params.state, 'jar-state');
+      assert.ok(interaction.prompt.reasons.includes('rar_prompt'));
+      assert.deepEqual(interaction.prompt.details.rar, CONSENT_DETAILS);
     });
   });
 
   describe('retained provider profile restrictions', () => {
+    const fixture5 = Object.create(fixture);
+
     for (const responseType of ['id_token token', 'id_token', 'code token', 'none']) {
-      it(`rejects response_type=${responseType}`, function () {
-        return expectAuthorizationError(
-          this,
+      it(`rejects response_type=${responseType}`, { timeout: 3000 }, () => expectAuthorizationError(
+          fixture5,
           [{ type: 'payment' }],
           'invalid_request',
           'authorization_details parameter is not supported for this response_type',
@@ -398,24 +366,22 @@ describe('Rich Authorization Requests', () => {
             response_type: responseType,
             scope: responseType.includes('id_token') ? 'openid' : undefined,
           },
-        );
-      });
+        ));
     }
 
-    it('requires an explicit or defaulted resource', function () {
-      return expectAuthorizationError(
-        this,
+    it('requires an explicit or defaulted resource', { timeout: 3000 }, () => expectAuthorizationError(
+        fixture5,
         [{ type: 'payment' }],
         'invalid_target',
         'resource indicator must be provided or defaulted to when Rich Authorization Requests are used',
         { resource: undefined },
-      );
-    });
+      ));
   });
 
   describe('client_credentials', () => {
-    it('rejects token-request RAR without an explicit or defaulted resource', function () {
-      return this.agent.post('/token')
+    const fixture6 = Object.create(fixture);
+
+    it('rejects token-request RAR without an explicit or defaulted resource', { timeout: 3000 }, () => fixture6.agent.post('/token')
         .auth('client', 'secret')
         .type('form')
         .send({
@@ -427,10 +393,9 @@ describe('Rich Authorization Requests', () => {
         .expect({
           error: 'invalid_target',
           error_description: 'resource indicator must be provided or defaulted to when Rich Authorization Requests are used',
-        });
-    });
+        }));
 
-    it('assigns and returns the access token authorization details', async function () {
+    it('assigns and returns the access token authorization details', { timeout: 3000 }, async () => {
       const detail = {
         type: 'payment',
         actions: ['initiate'],
@@ -438,9 +403,9 @@ describe('Rich Authorization Requests', () => {
         amount: 10,
       };
       const saved = sinon.spy();
-      this.provider.once('client_credentials.saved', saved);
+      fixture6.provider.once('client_credentials.saved', saved);
 
-      const response = await this.agent.post('/token')
+      const response = await fixture6.agent.post('/token')
         .auth('client', 'secret')
         .type('form')
         .send({
@@ -451,26 +416,26 @@ describe('Rich Authorization Requests', () => {
         })
         .expect(200);
 
-      expect(rarState.accessTokenCalls).to.have.lengthOf(1);
+      assert.equal(rarState.accessTokenCalls.length, 1);
       const [call] = rarState.accessTokenCalls;
-      expect(call.grantType).to.equal('client_credentials');
-      expect(call.source).to.be.undefined;
-      expect(call.token).to.have.property('kind', 'ClientCredentials');
-      expect(call.resource).to.equal(API);
+      assert.equal(call.grantType, 'client_credentials');
+      assert.equal(call.source, undefined);
+      ((actual) => { assert.ok('kind' in Object(actual)); assert.equal(actual.kind, 'ClientCredentials'); })(call.token);
+      assert.equal(call.resource, API);
 
-      expect(saved).to.have.property('calledOnce', true);
+      ((actual) => { assert.ok('calledOnce' in Object(actual)); assert.equal(actual.calledOnce, true); })(saved);
       const token = saved.firstCall.args[0];
-      expect(token).to.equal(call.token);
-      expect(token.rar).to.deep.equal([detail]);
-      expect(response.body.authorization_details).to.deep.equal(token.rar);
+      assert.equal(token, call.token);
+      assert.deepEqual(token.rar, [detail]);
+      assert.deepEqual(response.body.authorization_details, token.rar);
     });
 
-    it('normalizes an empty policy result to undefined', async function () {
+    it('normalizes an empty policy result to undefined', { timeout: 3000 }, async () => {
       rarState.emptyAccessTokenResult = true;
       const saved = sinon.spy();
-      this.provider.once('client_credentials.saved', saved);
+      fixture6.provider.once('client_credentials.saved', saved);
 
-      const response = await this.agent.post('/token')
+      const response = await fixture6.agent.post('/token')
         .auth('client', 'secret')
         .type('form')
         .send({
@@ -481,18 +446,18 @@ describe('Rich Authorization Requests', () => {
         })
         .expect(200);
 
-      expect(saved.firstCall.args[0].rar).to.be.undefined;
-      expect(response.body).not.to.have.property('authorization_details');
+      assert.equal(saved.firstCall.args[0].rar, undefined);
+      assert.ok(!('authorization_details' in Object(response.body)));
     });
 
-    it('treats malformed callback output as a server configuration error', async function () {
+    it('treats malformed callback output as a server configuration error', { timeout: 3000 }, async () => {
       rarState.invalidAccessTokenResult = true;
       const serverError = sinon.spy();
       const saved = sinon.spy();
-      this.provider.once('server_error', serverError);
-      this.provider.once('client_credentials.saved', saved);
+      fixture6.provider.once('server_error', serverError);
+      fixture6.provider.once('client_credentials.saved', saved);
 
-      await this.agent.post('/token')
+      await fixture6.agent.post('/token')
         .auth('client', 'secret')
         .type('form')
         .send({
@@ -507,12 +472,10 @@ describe('Rich Authorization Requests', () => {
           error_description: 'oops! something went wrong',
         });
 
-      expect(saved).to.have.property('called', false);
-      expect(serverError).to.have.property('calledOnce', true);
-      expect(serverError.firstCall.args[1]).to.be.instanceOf(TypeError);
-      expect(serverError.firstCall.args[1].message).to.equal(
-        'authorization details policy result members should be a JSON object',
-      );
+      ((actual) => { assert.ok('called' in Object(actual)); assert.equal(actual.called, false); })(saved);
+      ((actual) => { assert.ok('calledOnce' in Object(actual)); assert.equal(actual.calledOnce, true); })(serverError);
+      assert.ok(serverError.firstCall.args[1] instanceof TypeError);
+      assert.equal(serverError.firstCall.args[1].message, 'authorization details policy result members should be a JSON object');
     });
   });
 });

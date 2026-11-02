@@ -1,6 +1,7 @@
+import { describe, it } from 'node:test';
+import assert from 'node:assert/strict';
 import { hash } from 'node:crypto';
 
-import { expect } from 'chai';
 import fc from 'fast-check';
 
 import constantEquals from '../../lib/helpers/constant_equals.js';
@@ -23,33 +24,31 @@ function mutate(value, position) {
 }
 
 function expectInvalidGrant(operation) {
-  expect(operation).to.throw().with.property('error', 'invalid_grant');
+  ((actual) => { assert.throws(actual, (error) => { assert.ok('error' in Object(error)); assert.equal(error.error, 'invalid_grant'); return true; }); })(operation);
 }
 
 describe('security helper properties', () => {
-  it('constantEquals agrees with string equality for Unicode input', () => {
+  it('constantEquals agrees with string equality for Unicode input', { timeout: 3000 }, () => {
     fc.assert(
       fc.property(
         unicodeStrings,
         unicodeStrings,
         fc.integer({ min: 0, max: 1024 }),
         (left, right, minComp) => {
-          expect(constantEquals(left, right, minComp)).to.equal(left === right);
-          expect(constantEquals(left, right, minComp)).to.equal(
-            constantEquals(right, left, minComp),
-          );
+          assert.equal(constantEquals(left, right, minComp), left === right);
+          assert.equal(constantEquals(left, right, minComp), constantEquals(right, left, minComp));
         },
       ),
       options,
     );
   });
 
-  it('accepts valid S256 PKCE pairs and rejects mutations', () => {
+  it('accepts valid S256 PKCE pairs and rejects mutations', { timeout: 3000 }, () => {
     fc.assert(
       fc.property(codeVerifiers, fc.nat(), (verifier, position) => {
         const challenge = hash('sha256', verifier, 'base64url');
 
-        expect(() => checkPKCE(verifier, challenge, 'S256')).not.to.throw();
+        assert.doesNotThrow(() => checkPKCE(verifier, challenge, 'S256'));
         expectInvalidGrant(
           () => checkPKCE(mutate(verifier, position), challenge, 'S256'),
         );
@@ -61,7 +60,7 @@ describe('security helper properties', () => {
     );
   });
 
-  it('escapes arbitrary text for HTML contexts', () => {
+  it('escapes arbitrary text for HTML contexts', { timeout: 3000 }, () => {
     const entities = {
       '&': '&amp;',
       '<': '&lt;',
@@ -77,8 +76,8 @@ describe('security helper properties', () => {
           .join('');
         const output = htmlSafe(input);
 
-        expect(output).to.equal(expected);
-        expect(output).not.to.match(/[<>"']/);
+        assert.equal(output, expected);
+        assert.doesNotMatch(output, /[<>"']/);
       }),
       options,
     );

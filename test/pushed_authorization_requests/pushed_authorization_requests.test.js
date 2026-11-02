@@ -1,7 +1,8 @@
+import { describe, before, it, after } from 'node:test';
+import assert from 'node:assert/strict';
 import { randomBytes } from 'node:crypto';
 import { parse as parseUrl } from 'node:url';
 
-import { expect } from 'chai';
 import sinon from 'sinon';
 import { importJWK, decodeProtectedHeader, decodeJwt } from 'jose';
 
@@ -9,36 +10,44 @@ import * as JWT from '../../lib/helpers/jwt.js';
 import bootstrap from '../test_helper.js';
 
 describe('Pushed Request Object', () => {
-  context('w/o Request Objects', () => {
-    before(bootstrap(import.meta.url));
+  const fixture = {};
+
+  describe('w/o Request Objects', () => {
+    const fixture1 = Object.create(fixture);
+
+    before(bootstrap(import.meta.url, fixture1), { timeout: 3000 });
 
     describe('discovery', () => {
-      it('extends the well known config', async function () {
-        await this.agent.get('/.well-known/openid-configuration')
+      const fixture2 = Object.create(fixture1);
+
+      it('extends the well known config', { timeout: 3000 }, async () => {
+        await fixture2.agent.get('/.well-known/openid-configuration')
           .expect((response) => {
-            expect(response.body).not.to.have.property('request_object_endpoint');
-            expect(response.body).to.have.property('pushed_authorization_request_endpoint');
-            expect(response.body).not.to.have.property('request_object_signing_alg_values_supported');
-            expect(response.body).to.have.property('request_uri_parameter_supported', false);
-            expect(response.body).not.to.have.property('require_pushed_authorization_requests');
+            assert.ok(!('request_object_endpoint' in Object(response.body)));
+            assert.ok('pushed_authorization_request_endpoint' in Object(response.body));
+            assert.ok(!('request_object_signing_alg_values_supported' in Object(response.body)));
+            ((actual) => { assert.ok('request_uri_parameter_supported' in Object(actual)); assert.equal(actual.request_uri_parameter_supported, false); })(response.body);
+            assert.ok(!('require_pushed_authorization_requests' in Object(response.body)));
           });
 
-        i(this.provider).features.pushedAuthorizationRequests
+        i(fixture2.provider).features.pushedAuthorizationRequests
           .requirePushedAuthorizationRequests = true;
 
-        return this.agent.get('/.well-known/openid-configuration')
+        return fixture2.agent.get('/.well-known/openid-configuration')
           .expect((response) => {
-            expect(response.body).to.have.property('require_pushed_authorization_requests', true);
+            ((actual) => { assert.ok('require_pushed_authorization_requests' in Object(actual)); assert.equal(actual.require_pushed_authorization_requests, true); })(response.body);
           });
       });
 
-      after(function () {
-        i(this.provider).features.pushedAuthorizationRequests
+      after(() => {
+        i(fixture2.provider).features.pushedAuthorizationRequests
           .requirePushedAuthorizationRequests = false;
-      });
+      }, { timeout: 3000 });
     });
 
     describe('claims validation', () => {
+      const fixture3 = Object.create(fixture1);
+
       for (const container of ['userinfo', 'id_token']) {
         const claims = {
           [container]: {
@@ -49,8 +58,8 @@ describe('Pushed Request Object', () => {
           },
         };
 
-        it(`rejects claims.${container} arrays by default`, async function () {
-          await this.agent.post('/request')
+        it(`rejects claims.${container} arrays by default`, { timeout: 3000 }, async () => {
+          await fixture3.agent.post('/request')
             .auth('client', 'secret')
             .type('form')
             .send({
@@ -66,11 +75,11 @@ describe('Pushed Request Object', () => {
             });
         });
 
-        it(`can accept claims.${container} arrays with custom validation`, async function () {
-          const assertion = sinon.stub(i(this.provider).features.claimsParameter, 'assertClaimsParameter').resolves();
+        it(`can accept claims.${container} arrays with custom validation`, { timeout: 3000 }, async () => {
+          const assertion = sinon.stub(i(fixture3.provider).features.claimsParameter, 'assertClaimsParameter').resolves();
 
           try {
-            const { body: { request_uri } } = await this.agent.post('/request')
+            const { body: { request_uri } } = await fixture3.agent.post('/request')
               .auth('client', 'secret')
               .type('form')
               .send({
@@ -81,10 +90,10 @@ describe('Pushed Request Object', () => {
               })
               .expect(201);
 
-            expect(assertion.calledOnce).to.be.true;
-            expect(assertion.firstCall.args[1]).to.deep.equal(claims);
-            const stored = await this.provider.PushedAuthorizationRequest.find(request_uri.split(':').at(-1));
-            expect(decodeJwt(stored.request).claims).to.deep.equal(claims);
+            assert.equal(assertion.calledOnce, true);
+            assert.deepEqual(assertion.firstCall.args[1], claims);
+            const stored = await fixture3.provider.PushedAuthorizationRequest.find(request_uri.split(':').at(-1));
+            assert.deepEqual(decodeJwt(stored.request).claims, claims);
           } finally {
             assertion.restore();
           }
@@ -93,17 +102,19 @@ describe('Pushed Request Object', () => {
     });
 
     describe('trust metadata for public clients', () => {
-      before(function () { return this.login(); });
-      after(function () { return this.logout(); });
+      const fixture4 = Object.create(fixture1);
 
-      it('does not mark parameters from an unauthenticated plain PAR as trusted', async function () {
+      before(() => fixture4.login(), { timeout: 3000 });
+      after(() => fixture4.logout(), { timeout: 3000 });
+
+      it('does not mark parameters from an unauthenticated plain PAR as trusted', { timeout: 3000 }, async () => {
         const clientId = 'client-unregistered-test-public';
-        const parameters = new this.AuthorizationRequest({
+        const parameters = new fixture4.AuthorizationRequest({
           client_id: clientId,
           response_type: 'code',
           scope: 'openid',
         });
-        const { body: { request_uri } } = await this.agent.post('/request')
+        const { body: { request_uri } } = await fixture4.agent.post('/request')
           .type('form')
           .send({
             client_id: clientId,
@@ -116,44 +127,45 @@ describe('Pushed Request Object', () => {
           .expect(201);
 
         const id = request_uri.split(':').at(-1);
-        expect(await this.provider.PushedAuthorizationRequest.find(id))
-          .to.have.property('trusted', false);
+        ((actual) => { assert.ok('trusted' in Object(actual)); assert.equal(actual.trusted, false); })(await fixture4.provider.PushedAuthorizationRequest.find(id));
 
         const authorizationSuccess = sinon.spy();
-        this.provider.once('authorization.success', authorizationSuccess);
-        const auth = new this.AuthorizationRequest({
+        fixture4.provider.once('authorization.success', authorizationSuccess);
+        const auth = new fixture4.AuthorizationRequest({
           client_id: clientId,
           request_uri,
           state: undefined,
           redirect_uri: undefined,
         });
 
-        await this.wrap({ route: '/auth', verb: 'get', auth })
+        await fixture4.wrap({ route: '/auth', verb: 'get', auth })
           .expect(303)
           .expect(auth.validatePresence(['code']));
 
-        expect(authorizationSuccess.calledOnce).to.be.true;
-        expect(authorizationSuccess.firstCall.args[0].oidc.trusted).to.be.undefined;
+        assert.equal(authorizationSuccess.calledOnce, true);
+        assert.equal(authorizationSuccess.firstCall.args[0].oidc.trusted, undefined);
       });
     });
 
     ['client', 'client-par-required'].forEach((clientId) => {
       const requirePushedAuthorizationRequests = clientId === 'client-par-required';
 
-      context('allowUnregisteredRedirectUris', () => {
-        before(function () {
-          i(this.provider).features.pushedAuthorizationRequests
-            .allowUnregisteredRedirectUris = true;
-        });
-        after(function () {
-          i(this.provider).features.pushedAuthorizationRequests
-            .allowUnregisteredRedirectUris = false;
-        });
-        before(function () { return this.login(); });
-        after(function () { return this.logout(); });
+      describe('allowUnregisteredRedirectUris', () => {
+        const fixture5 = Object.create(fixture1);
 
-        it('allows unregistered redirect_uris to be used', async function () {
-          const { body: { request_uri } } = await this.agent.post('/request')
+        before(() => {
+          i(fixture5.provider).features.pushedAuthorizationRequests
+            .allowUnregisteredRedirectUris = true;
+        }, { timeout: 3000 });
+        after(() => {
+          i(fixture5.provider).features.pushedAuthorizationRequests
+            .allowUnregisteredRedirectUris = false;
+        }, { timeout: 3000 });
+        before(() => fixture5.login(), { timeout: 3000 });
+        after(() => fixture5.logout(), { timeout: 3000 });
+
+        it('allows unregistered redirect_uris to be used', { timeout: 3000 }, async () => {
+          const { body: { request_uri } } = await fixture5.agent.post('/request')
             .auth(clientId, 'secret')
             .type('form')
             .send({
@@ -161,7 +173,7 @@ describe('Pushed Request Object', () => {
               response_type: 'code',
               client_id: clientId,
               iss: clientId,
-              aud: this.provider.issuer,
+              aud: fixture5.provider.issuer,
               redirect_uri: 'https://rp.example.com/unlisted',
             })
             .expect(201);
@@ -169,29 +181,29 @@ describe('Pushed Request Object', () => {
           let id = request_uri.split(':');
           id = id[id.length - 1];
 
-          const { request } = await this.provider.PushedAuthorizationRequest.find(id);
-          expect(decodeJwt(request)).to.have.property('redirect_uri', 'https://rp.example.com/unlisted');
+          const { request } = await fixture5.provider.PushedAuthorizationRequest.find(id);
+          ((actual) => { assert.ok('redirect_uri' in Object(actual)); assert.equal(actual.redirect_uri, 'https://rp.example.com/unlisted'); })(decodeJwt(request));
 
-          const auth = new this.AuthorizationRequest({
+          const auth = new fixture5.AuthorizationRequest({
             client_id: clientId,
             iss: clientId,
-            aud: this.provider.issuer,
+            aud: fixture5.provider.issuer,
             state: undefined,
             redirect_uri: undefined,
             request_uri,
           });
 
           let code;
-          await this.wrap({ route: '/auth', verb: 'get', auth })
+          await fixture5.wrap({ route: '/auth', verb: 'get', auth })
             .expect(303)
             .expect(auth.validatePresence(['code']))
             .expect((response) => {
               ({ query: { code } } = parseUrl(response.headers.location, true));
-              const jti = this.getTokenJti(code);
-              expect(this.TestAdapter.for('AuthorizationCode').syncFind(jti)).to.have.property('redirectUri', 'https://rp.example.com/unlisted');
+              const jti = fixture5.getTokenJti(code);
+              ((actual) => { assert.ok('redirectUri' in Object(actual)); assert.equal(actual.redirectUri, 'https://rp.example.com/unlisted'); })(fixture5.TestAdapter.for('AuthorizationCode').syncFind(jti));
             });
 
-          return this.agent.post('/token')
+          return fixture5.agent.post('/token')
             .auth(clientId, 'secret')
             .type('form')
             .send({
@@ -202,15 +214,15 @@ describe('Pushed Request Object', () => {
             .expect(200);
         });
 
-        it('except for public clients', async function () {
+        it('except for public clients', { timeout: 3000 }, async () => {
           const testClientId = 'client-unregistered-test-public';
-          return this.agent.post('/request')
+          return fixture5.agent.post('/request')
             .type('form')
             .send({
               response_type: 'code',
               client_id: testClientId,
               iss: testClientId,
-              aud: this.provider.issuer,
+              aud: fixture5.provider.issuer,
               redirect_uri: 'https://rp.example.com/unlisted',
             })
             .expect(400)
@@ -220,9 +232,9 @@ describe('Pushed Request Object', () => {
             });
         });
 
-        it('still validates the URI to be valid redirect_uri', async function () {
+        it('still validates the URI to be valid redirect_uri', { timeout: 3000 }, async () => {
           // must only contain valid uris
-          await this.agent.post('/request')
+          await fixture5.agent.post('/request')
             .auth(clientId, 'secret')
             .type('form')
             .send({
@@ -230,7 +242,7 @@ describe('Pushed Request Object', () => {
               response_type: 'code',
               client_id: clientId,
               iss: clientId,
-              aud: this.provider.issuer,
+              aud: fixture5.provider.issuer,
               redirect_uri: 'not-a-valid-uri',
             })
             .expect(400)
@@ -240,7 +252,7 @@ describe('Pushed Request Object', () => {
             });
 
           // must not contain fragments
-          await this.agent.post('/request')
+          await fixture5.agent.post('/request')
             .auth(clientId, 'secret')
             .type('form')
             .send({
@@ -248,7 +260,7 @@ describe('Pushed Request Object', () => {
               response_type: 'code',
               client_id: clientId,
               iss: clientId,
-              aud: this.provider.issuer,
+              aud: fixture5.provider.issuer,
               redirect_uri: 'https://rp.example.com/unlisted#fragment',
             })
             .expect(400)
@@ -260,9 +272,12 @@ describe('Pushed Request Object', () => {
       });
 
       describe(`when require_pushed_authorization_requests=${requirePushedAuthorizationRequests}`, () => {
+        const fixture6 = Object.create(fixture1);
+
         describe('using a JAR request parameter', () => {
-          it('is not enabled', async function () {
-            return this.agent.post('/request')
+          const fixture7 = Object.create(fixture6);
+
+          it('is not enabled', { timeout: 3000 }, async () => fixture7.agent.post('/request')
               .auth(clientId, 'secret')
               .type('form')
               .send({
@@ -272,36 +287,39 @@ describe('Pushed Request Object', () => {
               .expect(400)
               .expect({
                 error: 'request_not_supported',
-              });
-          });
+              }));
         });
 
         describe('using a plain pushed authorization request', () => {
+          const fixture8 = Object.create(fixture6);
+
           describe('Pushed Authorization Request Endpoint', () => {
-            it('populates ctx.oidc.entities', function (done) {
-              this.assertOnce((ctx) => {
-                expect(ctx.oidc.entities).to.have.keys('Client', 'PushedAuthorizationRequest');
+            const fixture9 = Object.create(fixture8);
+
+            it('populates ctx.oidc.entities', { timeout: 3000 }, (_t, done) => {
+              fixture9.assertOnce((ctx) => {
+                assert.deepEqual(new Set(Object.keys(ctx.oidc.entities)), new Set(['Client', 'PushedAuthorizationRequest']));
               }, done);
 
-              this.agent.post('/request')
+              fixture9.agent.post('/request')
                 .auth(clientId, 'secret')
                 .type('form')
                 .send({
                   response_type: 'code',
                   client_id: clientId,
                   iss: clientId,
-                  aud: this.provider.issuer,
+                  aud: fixture9.provider.issuer,
                 })
                 .end(() => {});
             });
 
-            it('stores a request object and returns a uri', async function () {
+            it('stores a request object and returns a uri', { timeout: 3000 }, async () => {
               const spy = sinon.spy();
-              this.provider.once('pushed_authorization_request.success', spy);
+              fixture9.provider.once('pushed_authorization_request.success', spy);
               const spy2 = sinon.spy();
-              this.provider.once('pushed_authorization_request.saved', spy2);
+              fixture9.provider.once('pushed_authorization_request.saved', spy2);
 
-              await this.agent.post('/request')
+              await fixture9.agent.post('/request')
                 .auth(clientId, 'secret')
                 .type('form')
                 .send({
@@ -310,7 +328,7 @@ describe('Pushed Request Object', () => {
                   client_id: clientId,
                   iss: clientId,
                   extra: 'provided',
-                  aud: this.provider.issuer,
+                  aud: fixture9.provider.issuer,
                   claims: JSON.stringify({
                     id_token: {
                       auth_time: { essential: true },
@@ -319,31 +337,27 @@ describe('Pushed Request Object', () => {
                 })
                 .expect(201)
                 .expect(({ body }) => {
-                  expect(body).to.have.keys('expires_in', 'request_uri');
-                  expect(body).to.have.property('expires_in').closeTo(60, 1);
-                  expect(body).to.have.property('request_uri').and.match(/^urn:ietf:params:oauth:request_uri:(.+)$/);
+                  assert.deepEqual(new Set(Object.keys(body)), new Set(['expires_in', 'request_uri']));
+                  ((actual) => { assert.ok('expires_in' in Object(actual)); ((value) => { assert.equal(typeof value, 'number'); assert.ok(Math.abs((value) - (60)) <= (1)); })(actual.expires_in); })(body);
+                  ((actual) => { assert.ok('request_uri' in Object(actual)); assert.match(actual.request_uri, /^urn:ietf:params:oauth:request_uri:(.+)$/); })(body);
                 });
 
-              expect(spy).to.have.property('calledOnce', true);
-              expect(spy.args[0][0].oidc.params).to.include({
-                extra: 'provided',
-                extra2: 'defaulted',
-              });
-              expect(spy2).to.have.property('calledOnce', true);
+              ((actual) => { assert.ok('calledOnce' in Object(actual)); assert.equal(actual.calledOnce, true); })(spy);
+              ((actual) => { assert.ok("extra" in Object(actual)); assert.equal(actual.extra, 'provided'); assert.ok("extra2" in Object(actual)); assert.equal(actual.extra2, 'defaulted'); })(spy.args[0][0].oidc.params);
+              ((actual) => { assert.ok('calledOnce' in Object(actual)); assert.equal(actual.calledOnce, true); })(spy2);
               const stored = spy2.args[0][0];
-              expect(stored).to.have.property('trusted', true);
+              ((actual) => { assert.ok('trusted' in Object(actual)); assert.equal(actual.trusted, true); })(stored);
               const header = decodeProtectedHeader(stored.request);
-              expect(header).to.deep.eql({ alg: 'none' });
+              assert.deepEqual(header, { alg: 'none' });
               const payload = decodeJwt(stored.request);
-              expect(payload).to.contain.keys(['aud', 'exp', 'iat', 'nbf', 'iss']).to.have.deep.property('claims', {
+              ((actual) => { assert.ok(['aud', 'exp', 'iat', 'nbf', 'iss'].every((key) => Object.keys(actual).includes(key))); assert.ok('claims' in Object(actual)); assert.deepEqual(actual.claims, {
                 id_token: {
                   auth_time: { essential: true },
                 },
-              });
+              }); })(payload);
             });
 
-            it('forbids request_uri to be used', async function () {
-              return this.agent.post('/request')
+            it('forbids request_uri to be used', { timeout: 3000 }, async () => fixture9.agent.post('/request')
                 .auth(clientId, 'secret')
                 .type('form')
                 .send({
@@ -353,41 +367,38 @@ describe('Pushed Request Object', () => {
                 .expect(400)
                 .expect({
                   error: 'request_uri_not_supported',
-                });
-            });
+                }));
 
-            it('remaps invalid_redirect_uri error to invalid_request', async function () {
-              return this.agent.post('/request')
+            it('remaps invalid_redirect_uri error to invalid_request', { timeout: 3000 }, async () => fixture9.agent.post('/request')
                 .auth(clientId, 'secret')
                 .type('form')
                 .send({
                   response_type: 'code',
                   client_id: clientId,
                   iss: clientId,
-                  aud: this.provider.issuer,
+                  aud: fixture9.provider.issuer,
                   redirect_uri: 'https://rp.example.com/unlisted',
                 })
                 .expect(400)
                 .expect({
                   error: 'invalid_request',
                   error_description: "redirect_uri did not match any of the client's registered redirect_uris",
-                });
-            });
+                }));
 
-            it('leaves non OIDCProviderError alone', async function () {
+            it('leaves non OIDCProviderError alone', { timeout: 3000 }, async () => {
               const adapterThrow = new Error('adapter throw!');
-              sinon.stub(this.TestAdapter.for('PushedAuthorizationRequest'), 'upsert').callsFake(async () => { throw adapterThrow; });
-              return this.agent.post('/request')
+              sinon.stub(fixture9.TestAdapter.for('PushedAuthorizationRequest'), 'upsert').callsFake(async () => { throw adapterThrow; });
+              return fixture9.agent.post('/request')
                 .auth(clientId, 'secret')
                 .type('form')
                 .send({
                   response_type: 'code',
                   client_id: clientId,
                   iss: clientId,
-                  aud: this.provider.issuer,
+                  aud: fixture9.provider.issuer,
                 })
                 .expect(() => {
-                  this.TestAdapter.for('PushedAuthorizationRequest').upsert.restore();
+                  fixture9.TestAdapter.for('PushedAuthorizationRequest').upsert.restore();
                 })
                 .expect(500)
                 .expect({
@@ -398,14 +409,16 @@ describe('Pushed Request Object', () => {
           });
 
           describe('Using Pushed Authorization Requests', () => {
-            before(function () { return this.login(); });
-            after(function () { return this.logout(); });
+            const fixture10 = Object.create(fixture8);
 
-            it('allows the request_uri to be used', async function () {
+            before(() => fixture10.login(), { timeout: 3000 });
+            after(() => fixture10.logout(), { timeout: 3000 });
+
+            it('allows the request_uri to be used', { timeout: 3000 }, async () => {
               const authorizationSuccess = sinon.spy();
-              this.provider.once('authorization.success', authorizationSuccess);
+              fixture10.provider.once('authorization.success', authorizationSuccess);
 
-              const { body: { request_uri } } = await this.agent.post('/request')
+              const { body: { request_uri } } = await fixture10.agent.post('/request')
                 .auth(clientId, 'secret')
                 .type('form')
                 .send({
@@ -413,36 +426,34 @@ describe('Pushed Request Object', () => {
                   response_type: 'code',
                   client_id: clientId,
                   iss: clientId,
-                  aud: this.provider.issuer,
+                  aud: fixture10.provider.issuer,
                 });
 
               let id = request_uri.split(':');
               id = id[id.length - 1];
 
-              expect(await this.provider.PushedAuthorizationRequest.find(id)).to.be.ok;
+              assert.ok(await fixture10.provider.PushedAuthorizationRequest.find(id));
 
-              const auth = new this.AuthorizationRequest({
+              const auth = new fixture10.AuthorizationRequest({
                 client_id: clientId,
                 iss: clientId,
-                aud: this.provider.issuer,
+                aud: fixture10.provider.issuer,
                 state: undefined,
                 redirect_uri: undefined,
                 request_uri,
               });
 
-              await this.wrap({ route: '/auth', verb: 'get', auth })
+              await fixture10.wrap({ route: '/auth', verb: 'get', auth })
                 .expect(303)
                 .expect(auth.validatePresence(['code']));
 
-              expect(authorizationSuccess.calledOnce).to.be.true;
-              expect(authorizationSuccess.firstCall.args[0].oidc.trusted)
-                .to.include.members(['client_id', 'response_type', 'scope'])
-                .and.not.include('request_uri');
-              expect(await this.provider.PushedAuthorizationRequest.find(id)).to.be.ok.and.have.property('consumed').and.is.ok;
+              assert.equal(authorizationSuccess.calledOnce, true);
+              ((actual) => { assert.ok(Array.isArray(actual)); assert.ok(['client_id', 'response_type', 'scope'].every((value) => actual.includes(value))); assert.ok(!(actual.includes('request_uri'))); })(authorizationSuccess.firstCall.args[0].oidc.trusted);
+              ((actual) => { assert.ok(actual); assert.ok('consumed' in Object(actual)); assert.ok(actual.consumed); })(await fixture10.provider.PushedAuthorizationRequest.find(id));
             });
 
-            it('allows the request_uri to be used (when request object was not used but client has request_object_signing_alg for its optional use)', async function () {
-              const { body: { request_uri } } = await this.agent.post('/request')
+            it('allows the request_uri to be used (when request object was not used but client has request_object_signing_alg for its optional use)', { timeout: 3000 }, async () => {
+              const { body: { request_uri } } = await fixture10.agent.post('/request')
                 .auth('client-alg-registered', 'secret')
                 .type('form')
                 .send({
@@ -450,28 +461,28 @@ describe('Pushed Request Object', () => {
                   response_type: 'code',
                   client_id: 'client-alg-registered',
                   iss: 'client-alg-registered',
-                  aud: this.provider.issuer,
+                  aud: fixture10.provider.issuer,
                 });
 
               let id = request_uri.split(':');
               id = id[id.length - 1];
 
-              expect(await this.provider.PushedAuthorizationRequest.find(id)).to.be.ok;
+              assert.ok(await fixture10.provider.PushedAuthorizationRequest.find(id));
 
-              const auth = new this.AuthorizationRequest({
+              const auth = new fixture10.AuthorizationRequest({
                 client_id: 'client-alg-registered',
                 iss: 'client-alg-registered',
-                aud: this.provider.issuer,
+                aud: fixture10.provider.issuer,
                 state: undefined,
                 redirect_uri: undefined,
                 request_uri,
               });
 
-              await this.wrap({ route: '/auth', verb: 'get', auth })
+              await fixture10.wrap({ route: '/auth', verb: 'get', auth })
                 .expect(303)
                 .expect(auth.validatePresence(['code']));
 
-              expect(await this.provider.PushedAuthorizationRequest.find(id)).to.be.ok.and.have.property('consumed').and.is.ok;
+              ((actual) => { assert.ok(actual); assert.ok('consumed' in Object(actual)); assert.ok(actual.consumed); })(await fixture10.provider.PushedAuthorizationRequest.find(id));
             });
           });
         });
@@ -479,50 +490,60 @@ describe('Pushed Request Object', () => {
     });
   });
 
-  context('with Request Objects', () => {
-    before(bootstrap(import.meta.url, { config: 'pushed_authorization_requests_jar' }));
+  describe('with Request Objects', () => {
+    const fixture11 = Object.create(fixture);
 
-    before(async function () {
-      const client = await this.provider.Client.find('client');
-      this.key = await importJWK(client.symmetricKeyStore.selectForSign({ alg: 'HS256' })[0]);
-    });
+    before(bootstrap(import.meta.url, fixture11, { config: 'pushed_authorization_requests_jar' }), { timeout: 3000 });
+
+    before(async () => {
+      const client = await fixture11.provider.Client.find('client');
+      fixture11.key = await importJWK(client.symmetricKeyStore.selectForSign({ alg: 'HS256' })[0]);
+    }, { timeout: 3000 });
 
     describe('discovery', () => {
-      it('extends the well known config', async function () {
-        await this.agent.get('/.well-known/openid-configuration')
+      const fixture12 = Object.create(fixture11);
+
+      it('extends the well known config', { timeout: 3000 }, async () => {
+        await fixture12.agent.get('/.well-known/openid-configuration')
           .expect((response) => {
-            expect(response.body).not.to.have.property('request_object_endpoint');
-            expect(response.body).to.have.property('pushed_authorization_request_endpoint');
-            expect(response.body).to.have.property('request_object_signing_alg_values_supported').with.not.lengthOf(0);
-            expect(response.body).to.have.property('request_parameter_supported', true);
-            expect(response.body).to.have.property('request_uri_parameter_supported', false);
-            expect(response.body).not.to.have.property('require_pushed_authorization_requests');
+            assert.ok(!('request_object_endpoint' in Object(response.body)));
+            assert.ok('pushed_authorization_request_endpoint' in Object(response.body));
+            ((actual) => { assert.ok('request_object_signing_alg_values_supported' in Object(actual)); assert.notEqual(actual.request_object_signing_alg_values_supported.length, 0); })(response.body);
+            ((actual) => { assert.ok('request_parameter_supported' in Object(actual)); assert.equal(actual.request_parameter_supported, true); })(response.body);
+            ((actual) => { assert.ok('request_uri_parameter_supported' in Object(actual)); assert.equal(actual.request_uri_parameter_supported, false); })(response.body);
+            assert.ok(!('require_pushed_authorization_requests' in Object(response.body)));
           });
 
-        i(this.provider).features.pushedAuthorizationRequests
+        i(fixture12.provider).features.pushedAuthorizationRequests
           .requirePushedAuthorizationRequests = true;
 
-        return this.agent.get('/.well-known/openid-configuration')
+        return fixture12.agent.get('/.well-known/openid-configuration')
           .expect((response) => {
-            expect(response.body).to.have.property('require_pushed_authorization_requests', true);
+            ((actual) => { assert.ok('require_pushed_authorization_requests' in Object(actual)); assert.equal(actual.require_pushed_authorization_requests, true); })(response.body);
           });
       });
 
-      after(function () {
-        i(this.provider).features.pushedAuthorizationRequests
+      after(() => {
+        i(fixture12.provider).features.pushedAuthorizationRequests
           .requirePushedAuthorizationRequests = false;
-      });
+      }, { timeout: 3000 });
     });
 
     ['client', 'client-par-required'].forEach((clientId) => {
       const requirePushedAuthorizationRequests = clientId === 'client-par-required';
 
       describe(`when require_pushed_authorization_requests=${requirePushedAuthorizationRequests}`, () => {
+        const fixture13 = Object.create(fixture11);
+
         describe('using a JAR request parameter', () => {
+          const fixture14 = Object.create(fixture13);
+
           describe('Pushed Authorization Request Endpoint', () => {
-            it('populates ctx.oidc.entities', function (done) {
-              this.assertOnce((ctx) => {
-                expect(ctx.oidc.entities).to.have.keys('Client', 'PushedAuthorizationRequest');
+            const fixture15 = Object.create(fixture14);
+
+            it('populates ctx.oidc.entities', { timeout: 3000 }, (_t, done) => {
+              fixture15.assertOnce((ctx) => {
+                assert.deepEqual(new Set(Object.keys(ctx.oidc.entities)), new Set(['Client', 'PushedAuthorizationRequest']));
               }, done);
 
               JWT.sign({
@@ -530,9 +551,9 @@ describe('Pushed Request Object', () => {
                 response_type: 'code',
                 client_id: clientId,
                 iss: clientId,
-                aud: this.provider.issuer,
-              }, this.key, 'HS256', { expiresIn: 30 }).then((request) => {
-                this.agent.post('/request')
+                aud: fixture15.provider.issuer,
+              }, fixture15.key, 'HS256', { expiresIn: 30 }).then((request) => {
+                fixture15.agent.post('/request')
                   .auth(clientId, 'secret')
                   .type('form')
                   .send({ request })
@@ -540,11 +561,11 @@ describe('Pushed Request Object', () => {
               });
             });
 
-            it('stores a request object and returns a uri', async function () {
+            it('stores a request object and returns a uri', { timeout: 3000 }, async () => {
               const spy = sinon.spy();
-              this.provider.once('pushed_authorization_request.success', spy);
+              fixture15.provider.once('pushed_authorization_request.success', spy);
 
-              await this.agent.post('/request')
+              await fixture15.agent.post('/request')
                 .auth(clientId, 'secret')
                 .type('form')
                 .send({
@@ -554,30 +575,27 @@ describe('Pushed Request Object', () => {
                     client_id: clientId,
                     extra: 'provided',
                     iss: clientId,
-                    aud: this.provider.issuer,
-                  }, this.key, 'HS256', {
+                    aud: fixture15.provider.issuer,
+                  }, fixture15.key, 'HS256', {
                     expiresIn: 30,
                   }),
                 })
                 .expect(201)
                 .expect(({ body }) => {
-                  expect(body).to.have.keys('expires_in', 'request_uri');
-                  expect(body).to.have.property('expires_in').closeTo(30, 1);
-                  expect(body).to.have.property('request_uri').and.match(/^urn:ietf:params:oauth:request_uri:(.+)$/);
+                  assert.deepEqual(new Set(Object.keys(body)), new Set(['expires_in', 'request_uri']));
+                  ((actual) => { assert.ok('expires_in' in Object(actual)); ((value) => { assert.equal(typeof value, 'number'); assert.ok(Math.abs((value) - (30)) <= (1)); })(actual.expires_in); })(body);
+                  ((actual) => { assert.ok('request_uri' in Object(actual)); assert.match(actual.request_uri, /^urn:ietf:params:oauth:request_uri:(.+)$/); })(body);
                 });
 
-              expect(spy).to.have.property('calledOnce', true);
-              expect(spy.args[0][0].oidc.params).to.include({
-                extra: 'provided',
-                extra2: 'defaulted',
-              });
+              ((actual) => { assert.ok('calledOnce' in Object(actual)); assert.equal(actual.calledOnce, true); })(spy);
+              ((actual) => { assert.ok("extra" in Object(actual)); assert.equal(actual.extra, 'provided'); assert.ok("extra2" in Object(actual)); assert.equal(actual.extra2, 'defaulted'); })(spy.args[0][0].oidc.params);
             });
 
-            it('defaults to MAX_TTL when no expires_in is present', async function () {
+            it('defaults to MAX_TTL when no expires_in is present', { timeout: 3000 }, async () => {
               const spy = sinon.spy();
-              this.provider.once('pushed_authorization_request.success', spy);
+              fixture15.provider.once('pushed_authorization_request.success', spy);
 
-              await this.agent.post('/request')
+              await fixture15.agent.post('/request')
                 .auth(clientId, 'secret')
                 .type('form')
                 .send({
@@ -586,22 +604,22 @@ describe('Pushed Request Object', () => {
                     response_type: 'code',
                     client_id: clientId,
                     iss: clientId,
-                    aud: this.provider.issuer,
-                  }, this.key, 'HS256'),
+                    aud: fixture15.provider.issuer,
+                  }, fixture15.key, 'HS256'),
                 })
                 .expect(201)
                 .expect(({ body }) => {
-                  expect(body).to.have.property('expires_in').closeTo(60, 1);
+                  ((actual) => { assert.ok('expires_in' in Object(actual)); ((value) => { assert.equal(typeof value, 'number'); assert.ok(Math.abs((value) - (60)) <= (1)); })(actual.expires_in); })(body);
                 });
 
-              expect(spy).to.have.property('calledOnce', true);
+              ((actual) => { assert.ok('calledOnce' in Object(actual)); assert.equal(actual.calledOnce, true); })(spy);
             });
 
-            it('uses the expiration from JWT when below MAX_TTL', async function () {
+            it('uses the expiration from JWT when below MAX_TTL', { timeout: 3000 }, async () => {
               const spy = sinon.spy();
-              this.provider.once('pushed_authorization_request.success', spy);
+              fixture15.provider.once('pushed_authorization_request.success', spy);
 
-              await this.agent.post('/request')
+              await fixture15.agent.post('/request')
                 .auth(clientId, 'secret')
                 .type('form')
                 .send({
@@ -610,26 +628,26 @@ describe('Pushed Request Object', () => {
                     response_type: 'code',
                     client_id: clientId,
                     iss: clientId,
-                    aud: this.provider.issuer,
-                  }, this.key, 'HS256', {
+                    aud: fixture15.provider.issuer,
+                  }, fixture15.key, 'HS256', {
                     expiresIn: 20,
                   }),
                 })
                 .expect(201)
                 .expect(({ body }) => {
-                  expect(body).to.have.keys('expires_in', 'request_uri');
-                  expect(body).to.have.property('expires_in').to.be.closeTo(20, 1);
-                  expect(body).to.have.property('request_uri').and.match(/^urn:ietf:params:oauth:request_uri:(.+)$/);
+                  assert.deepEqual(new Set(Object.keys(body)), new Set(['expires_in', 'request_uri']));
+                  ((actual) => { assert.ok('expires_in' in Object(actual)); ((value) => { assert.equal(typeof value, 'number'); assert.ok(Math.abs((value) - (20)) <= (1)); })(actual.expires_in); })(body);
+                  ((actual) => { assert.ok('request_uri' in Object(actual)); assert.match(actual.request_uri, /^urn:ietf:params:oauth:request_uri:(.+)$/); })(body);
                 });
 
-              expect(spy).to.have.property('calledOnce', true);
+              ((actual) => { assert.ok('calledOnce' in Object(actual)); assert.equal(actual.calledOnce, true); })(spy);
             });
 
-            it('uses MAX_TTL when the expiration from JWT is above it', async function () {
+            it('uses MAX_TTL when the expiration from JWT is above it', { timeout: 3000 }, async () => {
               const spy = sinon.spy();
-              this.provider.once('pushed_authorization_request.success', spy);
+              fixture15.provider.once('pushed_authorization_request.success', spy);
 
-              await this.agent.post('/request')
+              await fixture15.agent.post('/request')
                 .auth(clientId, 'secret')
                 .type('form')
                 .send({
@@ -638,26 +656,26 @@ describe('Pushed Request Object', () => {
                     response_type: 'code',
                     client_id: clientId,
                     iss: clientId,
-                    aud: this.provider.issuer,
-                  }, this.key, 'HS256', {
+                    aud: fixture15.provider.issuer,
+                  }, fixture15.key, 'HS256', {
                     expiresIn: 120,
                   }),
                 })
                 .expect(201)
                 .expect(({ body }) => {
-                  expect(body).to.have.keys('expires_in', 'request_uri');
-                  expect(body).to.have.property('expires_in').closeTo(60, 1);
-                  expect(body).to.have.property('request_uri').and.match(/^urn:ietf:params:oauth:request_uri:(.+)$/);
+                  assert.deepEqual(new Set(Object.keys(body)), new Set(['expires_in', 'request_uri']));
+                  ((actual) => { assert.ok('expires_in' in Object(actual)); ((value) => { assert.equal(typeof value, 'number'); assert.ok(Math.abs((value) - (60)) <= (1)); })(actual.expires_in); })(body);
+                  ((actual) => { assert.ok('request_uri' in Object(actual)); assert.match(actual.request_uri, /^urn:ietf:params:oauth:request_uri:(.+)$/); })(body);
                 });
 
-              expect(spy).to.have.property('calledOnce', true);
+              ((actual) => { assert.ok('calledOnce' in Object(actual)); assert.equal(actual.calledOnce, true); })(spy);
             });
 
-            it('ignores regular parameters when passing a JAR request', async function () {
+            it('ignores regular parameters when passing a JAR request', { timeout: 3000 }, async () => {
               const spy = sinon.spy();
-              this.provider.once('pushed_authorization_request.saved', spy);
+              fixture15.provider.once('pushed_authorization_request.saved', spy);
 
-              await this.agent.post('/request')
+              await fixture15.agent.post('/request')
                 .auth(clientId, 'secret')
                 .type('form')
                 .send({
@@ -668,20 +686,19 @@ describe('Pushed Request Object', () => {
                     response_type: 'code',
                     client_id: clientId,
                     iss: clientId,
-                    aud: this.provider.issuer,
-                  }, this.key, 'HS256', { expiresIn: 30 }),
+                    aud: fixture15.provider.issuer,
+                  }, fixture15.key, 'HS256', { expiresIn: 30 }),
                 })
                 .expect(201);
 
-              expect(spy).to.have.property('calledOnce', true);
+              ((actual) => { assert.ok('calledOnce' in Object(actual)); assert.equal(actual.calledOnce, true); })(spy);
               const { request } = spy.args[0][0];
               const payload = decodeJwt(request);
-              expect(payload).not.to.have.property('nonce');
-              expect(payload).to.have.property('response_type', 'code');
+              assert.ok(!('nonce' in Object(payload)));
+              ((actual) => { assert.ok('response_type' in Object(actual)); assert.equal(actual.response_type, 'code'); })(payload);
             });
 
-            it('requires the registered request object signing alg be used', async function () {
-              return this.agent.post('/request')
+            it('requires the registered request object signing alg be used', { timeout: 3000 }, async () => fixture15.agent.post('/request')
                 .auth('client-alg-registered', 'secret')
                 .type('form')
                 .send({
@@ -689,17 +706,15 @@ describe('Pushed Request Object', () => {
                     jti: randomBytes(16).toString('base64url'),
                     response_type: 'code',
                     client_id: 'client-alg-registered',
-                  }, this.key, 'HS384'),
+                  }, fixture15.key, 'HS384'),
                 })
                 .expect(400)
                 .expect({
                   error: 'invalid_request_object',
                   error_description: 'the preregistered alg must be used in request or request_uri',
-                });
-            });
+                }));
 
-            it('requires the request object client_id to equal the authenticated client one', async function () {
-              return this.agent.post('/request')
+            it('requires the request object client_id to equal the authenticated client one', { timeout: 3000 }, async () => fixture15.agent.post('/request')
                 .auth(clientId, 'secret')
                 .type('form')
                 .send({
@@ -707,17 +722,15 @@ describe('Pushed Request Object', () => {
                     jti: randomBytes(16).toString('base64url'),
                     response_type: 'code',
                     client_id: 'client-foo',
-                  }, this.key, 'HS256', { expiresIn: 30 }),
+                  }, fixture15.key, 'HS256', { expiresIn: 30 }),
                 })
                 .expect(400)
                 .expect({
                   error: 'invalid_request_object',
                   error_description: "request client_id must equal the authenticated client's client_id",
-                });
-            });
+                }));
 
-            it('remaps invalid_redirect_uri error to invalid_request', async function () {
-              return this.agent.post('/request')
+            it('remaps invalid_redirect_uri error to invalid_request', { timeout: 3000 }, async () => fixture15.agent.post('/request')
                 .auth(clientId, 'secret')
                 .type('form')
                 .send({
@@ -726,21 +739,20 @@ describe('Pushed Request Object', () => {
                     response_type: 'code',
                     client_id: clientId,
                     iss: clientId,
-                    aud: this.provider.issuer,
+                    aud: fixture15.provider.issuer,
                     redirect_uri: 'https://rp.example.com/unlisted',
-                  }, this.key, 'HS256', { expiresIn: 30 }),
+                  }, fixture15.key, 'HS256', { expiresIn: 30 }),
                 })
                 .expect(400)
                 .expect({
                   error: 'invalid_request',
                   error_description: "redirect_uri did not match any of the client's registered redirect_uris",
-                });
-            });
+                }));
 
-            it('leaves non OIDCProviderError alone', async function () {
+            it('leaves non OIDCProviderError alone', { timeout: 3000 }, async () => {
               const adapterThrow = new Error('adapter throw!');
-              sinon.stub(this.TestAdapter.for('PushedAuthorizationRequest'), 'upsert').callsFake(async () => { throw adapterThrow; });
-              return this.agent.post('/request')
+              sinon.stub(fixture15.TestAdapter.for('PushedAuthorizationRequest'), 'upsert').callsFake(async () => { throw adapterThrow; });
+              return fixture15.agent.post('/request')
                 .auth(clientId, 'secret')
                 .type('form')
                 .send({
@@ -749,11 +761,11 @@ describe('Pushed Request Object', () => {
                     response_type: 'code',
                     client_id: clientId,
                     iss: clientId,
-                    aud: this.provider.issuer,
-                  }, this.key, 'HS256', { expiresIn: 30 }),
+                    aud: fixture15.provider.issuer,
+                  }, fixture15.key, 'HS256', { expiresIn: 30 }),
                 })
                 .expect(() => {
-                  this.TestAdapter.for('PushedAuthorizationRequest').upsert.restore();
+                  fixture15.TestAdapter.for('PushedAuthorizationRequest').upsert.restore();
                 })
                 .expect(500)
                 .expect({
@@ -764,14 +776,16 @@ describe('Pushed Request Object', () => {
           });
 
           describe('Using Pushed Authorization Requests', () => {
-            before(function () { return this.login(); });
-            after(function () { return this.logout(); });
+            const fixture16 = Object.create(fixture14);
 
-            it('allows the request_uri to be used', async function () {
+            before(() => fixture16.login(), { timeout: 3000 });
+            after(() => fixture16.logout(), { timeout: 3000 });
+
+            it('allows the request_uri to be used', { timeout: 3000 }, async () => {
               const authorizationSuccess = sinon.spy();
-              this.provider.once('authorization.success', authorizationSuccess);
+              fixture16.provider.once('authorization.success', authorizationSuccess);
 
-              const { body: { request_uri } } = await this.agent.post('/request')
+              const { body: { request_uri } } = await fixture16.agent.post('/request')
                 .auth(clientId, 'secret')
                 .type('form')
                 .send({
@@ -781,42 +795,40 @@ describe('Pushed Request Object', () => {
                     response_type: 'code',
                     client_id: clientId,
                     iss: clientId,
-                    aud: this.provider.issuer,
-                  }, this.key, 'HS256', { expiresIn: 30 }),
+                    aud: fixture16.provider.issuer,
+                  }, fixture16.key, 'HS256', { expiresIn: 30 }),
                 });
 
               let id = request_uri.split(':');
               id = id[id.length - 1];
 
-              expect(await this.provider.PushedAuthorizationRequest.find(id)).to.be.ok;
+              assert.ok(await fixture16.provider.PushedAuthorizationRequest.find(id));
 
-              const auth = new this.AuthorizationRequest({
+              const auth = new fixture16.AuthorizationRequest({
                 client_id: clientId,
                 iss: clientId,
-                aud: this.provider.issuer,
+                aud: fixture16.provider.issuer,
                 state: undefined,
                 redirect_uri: undefined,
                 request_uri,
               });
 
-              await this.wrap({ route: '/auth', verb: 'get', auth })
+              await fixture16.wrap({ route: '/auth', verb: 'get', auth })
                 .expect(303)
                 .expect(auth.validatePresence(['code']));
 
-              expect(authorizationSuccess.calledOnce).to.be.true;
-              expect(authorizationSuccess.firstCall.args[0].oidc.trusted)
-                .to.include.members(['client_id', 'response_type', 'scope'])
-                .and.not.include('request_uri');
-              expect(await this.provider.PushedAuthorizationRequest.find(id)).to.be.ok.and.have.property('consumed').and.is.ok;
+              assert.equal(authorizationSuccess.calledOnce, true);
+              ((actual) => { assert.ok(Array.isArray(actual)); assert.ok(['client_id', 'response_type', 'scope'].every((value) => actual.includes(value))); assert.ok(!(actual.includes('request_uri'))); })(authorizationSuccess.firstCall.args[0].oidc.trusted);
+              ((actual) => { assert.ok(actual); assert.ok('consumed' in Object(actual)); assert.ok(actual.consumed); })(await fixture16.provider.PushedAuthorizationRequest.find(id));
             });
 
-            it('handles expired or invalid pushed authorization request object', async function () {
-              const auth = new this.AuthorizationRequest({
+            it('handles expired or invalid pushed authorization request object', { timeout: 3000 }, async () => {
+              const auth = new fixture16.AuthorizationRequest({
                 client_id: clientId,
                 request_uri: 'urn:ietf:params:oauth:request_uri:foobar',
               });
 
-              return this.wrap({ route: '/auth', verb: 'get', auth })
+              return fixture16.wrap({ route: '/auth', verb: 'get', auth })
                 .expect(303)
                 .expect(auth.validatePresence(['error', 'error_description', 'state']))
                 .expect(auth.validateState)

@@ -1,4 +1,5 @@
-import { expect } from 'chai';
+import { describe, beforeEach, it } from 'node:test';
+import assert from 'node:assert/strict';
 
 import {
   assembleAuthorizationParams,
@@ -19,13 +20,13 @@ describe('runtime request parameters', () => {
       'claimsParameter', 'dPoP', 'resourceIndicators',
       'richAuthorizationRequests', 'webMessageResponseMode',
     ]) configuration.features[name].enabled = false;
-  });
+  }, { timeout: 3000 });
 
   function request(route, query = {}) {
     return { method: 'GET', query, oidc: { provider, route } };
   }
 
-  it('reads enabled features and extra parameters for each authorization request', () => {
+  it('reads enabled features and extra parameters for each authorization request', { timeout: 3000 }, () => {
     const query = {
       claims: '{}',
       dpop_jkt: 'thumbprint',
@@ -36,7 +37,7 @@ describe('runtime request parameters', () => {
     };
     const first = request('authorization', query);
     assembleAuthorizationParams(first, () => {});
-    expect(first.oidc.params.toPlainObject()).to.deep.equal({});
+    assert.deepEqual(first.oidc.params.toPlainObject(), {});
 
     for (const name of [
       'claimsParameter', 'dPoP', 'resourceIndicators',
@@ -46,17 +47,17 @@ describe('runtime request parameters', () => {
 
     const second = request('authorization', query);
     assembleAuthorizationParams(second, () => {});
-    expect(second.oidc.params.toPlainObject()).to.deep.equal(query);
+    assert.deepEqual(second.oidc.params.toPlainObject(), query);
 
     configuration.extraParams.delete('extension');
     configuration.features.claimsParameter.enabled = false;
 
     const third = request('authorization', query);
     assembleAuthorizationParams(third, () => {});
-    expect(third.oidc.params.toPlainObject()).not.to.have.any.keys('extension', 'claims');
+    assert.ok(!(['extension', 'claims'].some((key) => Object.keys(third.oidc.params.toPlainObject()).includes(key))));
   });
 
-  it('retains endpoint restrictions after applying current extra parameters', () => {
+  it('retains endpoint restrictions after applying current extra parameters', { timeout: 3000 }, () => {
     configuration.extraParams = new Set(['response_type', 'redirect_uri', 'prompt']);
     configuration.features.dPoP.enabled = true;
     const query = {
@@ -67,35 +68,35 @@ describe('runtime request parameters', () => {
     for (const route of ['device_authorization', 'code_verification', 'device_resume']) {
       const ctx = request(route, query);
       assembleAuthorizationParams(ctx, () => {});
-      expect(ctx.oidc.params.toPlainObject()).to.deep.equal({});
+      assert.deepEqual(ctx.oidc.params.toPlainObject(), {});
     }
 
     const ctx = request('backchannel_authentication', query);
     assembleAuthorizationParams(ctx, () => {});
-    expect(ctx.oidc.params.toPlainObject()).to.deep.equal({ binding_message: 'message' });
+    assert.deepEqual(ctx.oidc.params.toPlainObject(), { binding_message: 'message' });
   });
 
-  it('uses the current resource duplicate policy for request-object parameters', () => {
+  it('uses the current resource duplicate policy for request-object parameters', { timeout: 3000 }, () => {
     const ctx = { oidc: { provider, params: { resource: ['urn:first', 'urn:second'] } } };
-    expect(() => rejectAuthorizationDupes(ctx, () => {})).to.throw('invalid_request');
+    assert.throws(() => rejectAuthorizationDupes(ctx, () => {}), (error) => { assert.ok(error.message.includes('invalid_request')); return true; });
 
     configuration.features.resourceIndicators.enabled = true;
     ctx.oidc.params.resource = ['urn:first', 'urn:second'];
     rejectAuthorizationDupes(ctx, () => {});
-    expect(ctx.oidc.params.resource).to.deep.equal(['urn:first', 'urn:second']);
+    assert.deepEqual(ctx.oidc.params.resource, ['urn:first', 'urn:second']);
   });
 
-  it('reads the current client authentication methods', () => {
+  it('reads the current client authentication methods', { timeout: 3000 }, () => {
     const ctx = request('token');
-    expect([...getClientAuthParams(ctx)]).to.deep.equal(['client_id']);
+    assert.deepEqual([...getClientAuthParams(ctx)], ['client_id']);
 
     configuration.clientAuthMethods.add('client_secret_post');
     configuration.clientAuthMethods.add('private_key_jwt');
-    expect([...getClientAuthParams(ctx)]).to.deep.equal([
+    assert.deepEqual([...getClientAuthParams(ctx)], [
       'client_id', 'client_secret', 'client_assertion', 'client_assertion_type',
     ]);
 
     configuration.clientAuthMethods.delete('client_secret_post');
-    expect(getClientAuthParams(ctx).has('client_secret')).to.equal(false);
+    assert.equal(getClientAuthParams(ctx).has('client_secret'), false);
   });
 });

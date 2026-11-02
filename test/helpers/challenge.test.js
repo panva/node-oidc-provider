@@ -1,6 +1,7 @@
+import { describe, beforeEach, afterEach, it } from 'node:test';
+import assert from 'node:assert/strict';
 import { randomBytes } from 'node:crypto';
 
-import { expect } from 'chai';
 import sinon from 'sinon';
 
 import ServerChallenge, { CHALLENGE_OK_WINDOW } from '../../lib/helpers/challenge.js';
@@ -18,25 +19,25 @@ describe('ServerChallenge', () => {
   beforeEach(() => {
     clock = sinon.stub(Date, 'now');
     at(1_000_000);
-  });
+  }, { timeout: 3000 });
 
   afterEach(() => {
     clock.restore();
+  }, { timeout: 3000 });
+
+  it('validates its constructor arguments', { timeout: 3000 }, () => {
+    assert.throws(() => new ServerChallenge('not a buffer', 'info'), (error) => { assert.ok(error instanceof TypeError); assert.match(error.message, /32-byte Buffer/); return true; });
+    assert.throws(() => new ServerChallenge(randomBytes(31), 'info'), (error) => { assert.ok(error instanceof TypeError); assert.match(error.message, /32-byte Buffer/); return true; });
+    assert.throws(() => new ServerChallenge(secret, ''), (error) => { assert.ok(error instanceof TypeError); assert.match(error.message, /non-empty string/); return true; });
+    assert.throws(() => new ServerChallenge(secret, 0), (error) => { assert.ok(error instanceof TypeError); assert.match(error.message, /non-empty string/); return true; });
   });
 
-  it('validates its constructor arguments', () => {
-    expect(() => new ServerChallenge('not a buffer', 'info')).to.throw(TypeError, /32-byte Buffer/);
-    expect(() => new ServerChallenge(randomBytes(31), 'info')).to.throw(TypeError, /32-byte Buffer/);
-    expect(() => new ServerChallenge(secret, '')).to.throw(TypeError, /non-empty string/);
-    expect(() => new ServerChallenge(secret, 0)).to.throw(TypeError, /non-empty string/);
-  });
-
-  it('accepts the challenge it just issued', () => {
+  it('accepts the challenge it just issued', { timeout: 3000 }, () => {
     const server = new ServerChallenge(secret, 'info');
-    expect(server.checkChallenge(server.nextChallenge())).to.be.true;
+    assert.equal(server.checkChallenge(server.nextChallenge()), true);
   });
 
-  it('derives challenges from the clock, not from process uptime', () => {
+  it('derives challenges from the clock, not from process uptime', { timeout: 3000 }, () => {
     // Instances constructed hours apart must agree. A host that suspends the process between
     // requests (e.g. AWS Lambda) must not desynchronize an instance from its peers.
     const a = new ServerChallenge(secret, 'info');
@@ -44,42 +45,42 @@ describe('ServerChallenge', () => {
     at(1_000_000 + 6 * 60 * 60);
     const b = new ServerChallenge(secret, 'info');
 
-    expect(a.nextChallenge()).to.equal(b.nextChallenge());
-    expect(a.checkChallenge(b.nextChallenge())).to.be.true;
-    expect(b.checkChallenge(a.nextChallenge())).to.be.true;
+    assert.equal(a.nextChallenge(), b.nextChallenge());
+    assert.equal(a.checkChallenge(b.nextChallenge()), true);
+    assert.equal(b.checkChallenge(a.nextChallenge()), true);
   });
 
-  it('accepts an issued challenge for the remainder of its window', () => {
+  it('accepts an issued challenge for the remainder of its window', { timeout: 3000 }, () => {
     const server = new ServerChallenge(secret, 'info');
     const issued = server.nextChallenge();
 
     for (const steps of [0, 1, 2, 3]) {
       at(1_000_000 + steps * STEP);
-      expect(server.checkChallenge(issued), `step +${steps}`).to.be.true;
+      assert.equal(server.checkChallenge(issued), true, `step +${steps}`);
     }
 
     at(1_000_000 + 4 * STEP);
-    expect(server.checkChallenge(issued)).to.be.false;
+    assert.equal(server.checkChallenge(issued), false);
   });
 
-  it('rejects challenges from a different secret or a different info', () => {
+  it('rejects challenges from a different secret or a different info', { timeout: 3000 }, () => {
     const server = new ServerChallenge(secret, 'DPoP');
     const otherInfo = new ServerChallenge(secret, 'OpenID4VCI c_nonce');
     const otherSecret = new ServerChallenge(randomBytes(32), 'DPoP');
 
-    expect(server.checkChallenge(otherInfo.nextChallenge())).to.be.false;
-    expect(server.checkChallenge(otherSecret.nextChallenge())).to.be.false;
+    assert.equal(server.checkChallenge(otherInfo.nextChallenge()), false);
+    assert.equal(server.checkChallenge(otherSecret.nextChallenge()), false);
   });
 
-  it('rejects malformed values', () => {
+  it('rejects malformed values', { timeout: 3000 }, () => {
     const server = new ServerChallenge(secret, 'info');
 
-    expect(server.checkChallenge('')).to.be.false;
-    expect(server.checkChallenge('foo')).to.be.false;
-    expect(server.checkChallenge(`${server.nextChallenge()}x`)).to.be.false;
+    assert.equal(server.checkChallenge(''), false);
+    assert.equal(server.checkChallenge('foo'), false);
+    assert.equal(server.checkChallenge(`${server.nextChallenge()}x`), false);
   });
 
-  it('exposes the accepted window', () => {
-    expect(CHALLENGE_OK_WINDOW).to.equal(STEP * 5);
+  it('exposes the accepted window', { timeout: 3000 }, () => {
+    assert.equal(CHALLENGE_OK_WINDOW, STEP * 5);
   });
 });

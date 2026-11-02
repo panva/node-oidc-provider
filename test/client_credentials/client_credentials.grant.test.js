@@ -1,18 +1,21 @@
+import { describe, before, it } from 'node:test';
+import assert from 'node:assert/strict';
 import sinon from 'sinon';
-import { expect } from 'chai';
 
 import bootstrap from '../test_helper.js';
 
 const route = '/token';
 
 describe('grant_type=client_credentials', () => {
-  before(bootstrap(import.meta.url));
+  const fixture = {};
 
-  it('provides a Bearer client credentials token', function () {
+  before(bootstrap(import.meta.url, fixture), { timeout: 3000 });
+
+  it('provides a Bearer client credentials token', { timeout: 3000 }, () => {
     const spy = sinon.spy();
-    this.provider.once('grant.success', spy);
+    fixture.provider.once('grant.success', spy);
 
-    return this.agent.post(route)
+    return fixture.agent.post(route)
       .auth('client', 'secret')
       .send({
         grant_type: 'client_credentials',
@@ -21,19 +24,19 @@ describe('grant_type=client_credentials', () => {
       .type('form')
       .expect(200)
       .expect(() => {
-        expect(spy.calledOnce).to.be.true;
+        assert.equal(spy.calledOnce, true);
       })
       .expect((response) => {
-        expect(response.body).to.have.keys('access_token', 'expires_in', 'token_type', 'scope');
+        assert.deepEqual(new Set(Object.keys(response.body)), new Set(['access_token', 'expires_in', 'token_type', 'scope']));
       });
   });
 
-  it('ignores unsupported scopes', async function () {
+  it('ignores unsupported scopes', { timeout: 3000 }, async () => {
     const spy = sinon.spy();
-    this.provider.once('client_credentials.saved', spy);
-    this.provider.once('client_credentials.issued', spy);
+    fixture.provider.once('client_credentials.saved', spy);
+    fixture.provider.once('client_credentials.issued', spy);
 
-    await this.agent.post(route)
+    await fixture.agent.post(route)
       .auth('client', 'secret')
       .send({
         grant_type: 'client_credentials',
@@ -42,19 +45,18 @@ describe('grant_type=client_credentials', () => {
       .type('form')
       .expect(200)
       .expect(() => {
-        expect(spy.calledOnce).to.be.true;
+        assert.equal(spy.calledOnce, true);
       })
       .expect((response) => {
-        expect(response.body).to.have.keys('access_token', 'expires_in', 'token_type', 'scope');
+        assert.deepEqual(new Set(Object.keys(response.body)), new Set(['access_token', 'expires_in', 'token_type', 'scope']));
       });
 
     const [[token]] = spy.args;
 
-    expect(token).to.have.property('scope', 'api:read');
+    ((actual) => { assert.ok('scope' in Object(actual)); assert.equal(actual.scope, 'api:read'); })(token);
   });
 
-  it('checks clients scope allow list', async function () {
-    return this.agent.post(route)
+  it('checks clients scope allow list', { timeout: 3000 }, async () => fixture.agent.post(route)
       .auth('client', 'secret')
       .send({
         grant_type: 'client_credentials',
@@ -66,11 +68,9 @@ describe('grant_type=client_credentials', () => {
         error: 'invalid_scope',
         error_description: 'requested scope is not allowed',
         scope: 'api:write',
-      });
-  });
+      }));
 
-  it('rejects scope values outside the scope-token grammar', function () {
-    return this.agent.post(route)
+  it('rejects scope values outside the scope-token grammar', { timeout: 3000 }, () => fixture.agent.post(route)
       .auth('client', 'secret')
       .send({
         grant_type: 'client_credentials',
@@ -81,15 +81,14 @@ describe('grant_type=client_credentials', () => {
       .expect({
         error: 'invalid_scope',
         error_description: 'scope contains invalid characters',
-      });
-  });
+      }));
 
-  it('populates ctx.oidc.entities', function (done) {
-    this.assertOnce((ctx) => {
-      expect(ctx.oidc.entities).to.have.keys('Client', 'ClientCredentials');
+  it('populates ctx.oidc.entities', { timeout: 3000 }, (_t, done) => {
+    fixture.assertOnce((ctx) => {
+      assert.deepEqual(new Set(Object.keys(ctx.oidc.entities)), new Set(['Client', 'ClientCredentials']));
     }, done);
 
-    this.agent.post(route)
+    fixture.agent.post(route)
       .auth('client', 'secret')
       .send({
         grant_type: 'client_credentials',

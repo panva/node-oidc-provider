@@ -1,7 +1,7 @@
-import { strict as assert } from 'node:assert';
+import { describe, afterEach, before, it } from 'node:test';
+import assert from 'node:assert/strict';
 import { createPrivateKey } from 'node:crypto';
 import { once } from 'node:events';
-import { expect } from 'chai';
 import { exportJWK, generateKeyPair, SignJWT } from 'jose';
 import sinon from 'sinon';
 import epochTime from '../../lib/helpers/epoch_time.js';
@@ -17,130 +17,136 @@ function errorDetail(spy) {
 }
 
 describe('features.ciba', () => {
-  afterEach(assertNoPendingInterceptors);
-  context('w/o request objects', () => {
-    before(bootstrap(import.meta.url));
+  const fixture = {};
 
-    it('extends discovery', function () {
-      return this.agent.get('/.well-known/openid-configuration')
+  afterEach(() => assertNoPendingInterceptors(), { timeout: 3000 });
+  describe('w/o request objects', () => {
+    const fixture1 = Object.create(fixture);
+
+    before(bootstrap(import.meta.url, fixture1), { timeout: 3000 });
+
+    it('extends discovery', { timeout: 3000 }, () => fixture1.agent.get('/.well-known/openid-configuration')
         .expect(200)
         .expect((response) => {
-          expect(response.body).to.have.property('backchannel_authentication_endpoint').matches(/\/backchannel$/);
-          expect(response.body).not.to.have.property('backchannel_authentication_request_signing_alg_values_supported');
-          expect(response.body).to.have.property('backchannel_token_delivery_modes_supported').deep.equal(['poll', 'ping']);
-          expect(response.body).to.have.property('backchannel_user_code_parameter_supported', true);
-        });
-    });
+          ((actual) => { assert.ok('backchannel_authentication_endpoint' in Object(actual)); assert.match(actual.backchannel_authentication_endpoint, /\/backchannel$/); })(response.body);
+          assert.ok(!('backchannel_authentication_request_signing_alg_values_supported' in Object(response.body)));
+          ((actual) => { assert.ok('backchannel_token_delivery_modes_supported' in Object(actual)); assert.deepEqual(actual.backchannel_token_delivery_modes_supported, ['poll', 'ping']); })(response.body);
+          ((actual) => { assert.ok('backchannel_user_code_parameter_supported' in Object(actual)); assert.equal(actual.backchannel_user_code_parameter_supported, true); })(response.body);
+        }));
 
     describe('Provider.prototype.backchannelResult', () => {
-      it('"request" can be a string (BackchannelAuthenticationRequest jti)', async function () {
+      const fixture2 = Object.create(fixture1);
+
+      it('"request" can be a string (BackchannelAuthenticationRequest jti)', { timeout: 3000 }, async () => {
         const result = new AccessDenied();
-        const request = new this.provider.BackchannelAuthenticationRequest({ clientId: 'client' });
+        const request = new fixture2.provider.BackchannelAuthenticationRequest({ clientId: 'client' });
         await request.save();
-        await this.provider.backchannelResult(request.jti, result);
-        return assert.rejects(this.provider.backchannelResult('notfound', result), { name: 'Error', message: 'BackchannelAuthenticationRequest not found' });
+        await fixture2.provider.backchannelResult(request.jti, result);
+        return assert.rejects(fixture2.provider.backchannelResult('notfound', result), { name: 'Error', message: 'BackchannelAuthenticationRequest not found' });
       });
 
-      it('"request" can be a BackchannelAuthenticationRequest instance', async function () {
-        const result = new this.provider.Grant({ clientId: 'client', accountId: 'accountId' });
-        const request = new this.provider.BackchannelAuthenticationRequest({ clientId: 'client', accountId: 'accountId' });
+      it('"request" can be a BackchannelAuthenticationRequest instance', { timeout: 3000 }, async () => {
+        const result = new fixture2.provider.Grant({ clientId: 'client', accountId: 'accountId' });
+        const request = new fixture2.provider.BackchannelAuthenticationRequest({ clientId: 'client', accountId: 'accountId' });
         await request.save();
-        return this.provider.backchannelResult(request, result);
+        return fixture2.provider.backchannelResult(request, result);
       });
 
-      it('"request" must be a supported type', async function () {
+      it('"request" must be a supported type', { timeout: 3000 }, async () => {
         const result = new AccessDenied();
 
         for (const request of [{}, [], 0, 1, true, false, new Set(), new Error()]) {
-          await assert.rejects(this.provider.backchannelResult(request, result), { name: 'TypeError', message: 'invalid "request" argument' });
+          await assert.rejects(fixture2.provider.backchannelResult(request, result), { name: 'TypeError', message: 'invalid "request" argument' });
         }
       });
 
-      it('"result" can be a string (Grant jti)', async function () {
-        const result = new this.provider.Grant({ clientId: 'client', accountId: 'accountId' });
-        const request = new this.provider.BackchannelAuthenticationRequest({ clientId: 'client', accountId: 'accountId' });
+      it('"result" can be a string (Grant jti)', { timeout: 3000 }, async () => {
+        const result = new fixture2.provider.Grant({ clientId: 'client', accountId: 'accountId' });
+        const request = new fixture2.provider.BackchannelAuthenticationRequest({ clientId: 'client', accountId: 'accountId' });
         await result.save();
-        await this.provider.backchannelResult(request, result.jti);
-        return assert.rejects(this.provider.backchannelResult(request, 'notfound'), { name: 'Error', message: 'Grant not found' });
+        await fixture2.provider.backchannelResult(request, result.jti);
+        return assert.rejects(fixture2.provider.backchannelResult(request, 'notfound'), { name: 'Error', message: 'Grant not found' });
       });
 
-      it('"result" must be a supported type', async function () {
-        const request = new this.provider.BackchannelAuthenticationRequest({ clientId: 'client' });
+      it('"result" must be a supported type', { timeout: 3000 }, async () => {
+        const request = new fixture2.provider.BackchannelAuthenticationRequest({ clientId: 'client' });
 
         for (const result of [{}, [], 0, 1, true, false, new Set(), new Error()]) {
-          await assert.rejects(this.provider.backchannelResult(request, result), { name: 'TypeError', message: 'invalid "result" argument' });
+          await assert.rejects(fixture2.provider.backchannelResult(request, result), { name: 'TypeError', message: 'invalid "result" argument' });
         }
       });
 
-      it('request.clientId must be a valid client', async function () {
+      it('request.clientId must be a valid client', { timeout: 3000 }, async () => {
         const result = new AccessDenied();
-        const request = new this.provider.BackchannelAuthenticationRequest({ clientId: 'notfound' });
-        return assert.rejects(this.provider.backchannelResult(request, result), { name: 'Error', message: 'Client not found' });
+        const request = new fixture2.provider.BackchannelAuthenticationRequest({ clientId: 'notfound' });
+        return assert.rejects(fixture2.provider.backchannelResult(request, result), { name: 'Error', message: 'Client not found' });
       });
 
-      it('request.clientId must match result.clientId', async function () {
-        const result = new this.provider.Grant({ clientId: 'client', accountId: 'accountId' });
-        const request = new this.provider.BackchannelAuthenticationRequest({ clientId: 'client-ping', accountId: 'accountId' });
-        return assert.rejects(this.provider.backchannelResult(request, result), { name: 'Error', message: 'client mismatch' });
+      it('request.clientId must match result.clientId', { timeout: 3000 }, async () => {
+        const result = new fixture2.provider.Grant({ clientId: 'client', accountId: 'accountId' });
+        const request = new fixture2.provider.BackchannelAuthenticationRequest({ clientId: 'client-ping', accountId: 'accountId' });
+        return assert.rejects(fixture2.provider.backchannelResult(request, result), { name: 'Error', message: 'client mismatch' });
       });
 
-      it('request.accountId must match result.accountId', async function () {
-        const result = new this.provider.Grant({ clientId: 'client', accountId: 'accountId' });
-        const request = new this.provider.BackchannelAuthenticationRequest({ clientId: 'client', accountId: 'accountId-2' });
-        return assert.rejects(this.provider.backchannelResult(request, result), { name: 'Error', message: 'accountId mismatch' });
+      it('request.accountId must match result.accountId', { timeout: 3000 }, async () => {
+        const result = new fixture2.provider.Grant({ clientId: 'client', accountId: 'accountId' });
+        const request = new fixture2.provider.BackchannelAuthenticationRequest({ clientId: 'client', accountId: 'accountId-2' });
+        return assert.rejects(fixture2.provider.backchannelResult(request, result), { name: 'Error', message: 'accountId mismatch' });
       });
 
-      it('saves the "request"', async function () {
-        const result = new this.provider.Grant({ clientId: 'client', accountId: 'accountId' });
-        const request = new this.provider.BackchannelAuthenticationRequest({ clientId: 'client', accountId: 'accountId' });
-        expect(request.jti).not.to.be.ok;
-        await this.provider.backchannelResult(request, result);
-        expect(request.jti).to.be.ok;
+      it('saves the "request"', { timeout: 3000 }, async () => {
+        const result = new fixture2.provider.Grant({ clientId: 'client', accountId: 'accountId' });
+        const request = new fixture2.provider.BackchannelAuthenticationRequest({ clientId: 'client', accountId: 'accountId' });
+        assert.ok(!(request.jti));
+        await fixture2.provider.backchannelResult(request, result);
+        assert.ok(request.jti);
       });
 
-      it('pings the client (204)', async function () {
-        const result = new this.provider.Grant({ clientId: 'client-ping', accountId: 'accountId' });
-        const request = new this.provider.BackchannelAuthenticationRequest({ clientId: 'client-ping', accountId: 'accountId', params: { client_notification_token: 'foo' } });
+      it('pings the client (204)', { timeout: 3000 }, async () => {
+        const result = new fixture2.provider.Grant({ clientId: 'client-ping', accountId: 'accountId' });
+        const request = new fixture2.provider.BackchannelAuthenticationRequest({ clientId: 'client-ping', accountId: 'accountId', params: { client_notification_token: 'foo' } });
         mock('https://rp.example.com')
           .intercept({
             path: '/ping',
             method: 'POST',
           })
           .reply(204);
-        await this.provider.backchannelResult(request, result);
+        await fixture2.provider.backchannelResult(request, result);
       });
 
-      it('pings the client (200)', async function () {
-        const result = new this.provider.Grant({ clientId: 'client-ping', accountId: 'accountId' });
-        const request = new this.provider.BackchannelAuthenticationRequest({ clientId: 'client-ping', accountId: 'accountId', params: { client_notification_token: 'foo' } });
+      it('pings the client (200)', { timeout: 3000 }, async () => {
+        const result = new fixture2.provider.Grant({ clientId: 'client-ping', accountId: 'accountId' });
+        const request = new fixture2.provider.BackchannelAuthenticationRequest({ clientId: 'client-ping', accountId: 'accountId', params: { client_notification_token: 'foo' } });
         mock('https://rp.example.com')
           .intercept({
             path: '/ping',
             method: 'POST',
           })
           .reply(200);
-        await this.provider.backchannelResult(request, result);
+        await fixture2.provider.backchannelResult(request, result);
       });
 
-      it('pings the client (400)', async function () {
-        const result = new this.provider.Grant({ clientId: 'client-ping', accountId: 'accountId' });
-        const request = new this.provider.BackchannelAuthenticationRequest({ clientId: 'client-ping', accountId: 'accountId', params: { client_notification_token: 'foo' } });
+      it('pings the client (400)', { timeout: 3000 }, async () => {
+        const result = new fixture2.provider.Grant({ clientId: 'client-ping', accountId: 'accountId' });
+        const request = new fixture2.provider.BackchannelAuthenticationRequest({ clientId: 'client-ping', accountId: 'accountId', params: { client_notification_token: 'foo' } });
         mock('https://rp.example.com')
           .intercept({
             path: '/ping',
             method: 'POST',
           })
           .reply(400);
-        return assert.rejects(this.provider.backchannelResult(request, result), { name: 'Error', message: 'expected 204 No Content from https://rp.example.com/ping, got: 400 Bad Request' });
+        return assert.rejects(fixture2.provider.backchannelResult(request, result), { name: 'Error', message: 'expected 204 No Content from https://rp.example.com/ping, got: 400 Bad Request' });
       });
     });
 
     describe('backchannel_authentication_endpoint', () => {
+      const fixture3 = Object.create(fixture1);
+
       const route = '/backchannel';
 
-      it('minimal w/ login_hint', async function () {
+      it('minimal w/ login_hint', { timeout: 3000 }, async () => {
         const [, [, request, account, client], , , , verifyUserCode] = await Promise.all([
-          this.agent.post(route)
+          fixture3.agent.post(route)
             .send({
               scope: 'openid',
               login_hint: 'accountId',
@@ -152,9 +158,9 @@ describe('features.ciba', () => {
             .expect(200)
             .expect('content-type', /application\/json/)
             .expect((response) => {
-              expect(response.body).to.have.keys('expires_in', 'auth_req_id');
-              expect(response.body.expires_in).to.be.a('number').most(600);
-              expect(response.body.auth_req_id).to.be.a('string');
+              assert.deepEqual(new Set(Object.keys(response.body)), new Set(['expires_in', 'auth_req_id']));
+              ((actual) => { assert.equal(typeof actual, 'number'); ((value) => { assert.equal(typeof value, 'number'); assert.ok(value <= 600); })(actual); })(response.body.expires_in);
+              assert.equal(typeof response.body.auth_req_id, 'string');
             }),
           once(emitter, 'triggerAuthenticationDevice'),
           once(emitter, 'processLoginHint'),
@@ -163,21 +169,20 @@ describe('features.ciba', () => {
           once(emitter, 'verifyUserCode'),
         ]);
 
-        expect(request.accountId).to.eql(account.accountId);
-        expect(request.clientId).to.eql(client.clientId);
-        expect(request.resource).to.be.undefined;
-        expect(request.claims).to.deep.eql({});
-        expect(request.nonce).to.be.undefined;
-        expect(request.scope).to.be.eql('openid');
-        expect(request.params).to.deep.eql({
+        assert.deepEqual(request.accountId, account.accountId);
+        assert.deepEqual(request.clientId, client.clientId);
+        assert.equal(request.resource, undefined);
+        assert.deepEqual(request.claims, {});
+        assert.equal(request.nonce, undefined);
+        assert.deepEqual(request.scope, 'openid');
+        assert.deepEqual(request.params, {
           client_id: 'client', login_hint: 'accountId', scope: 'openid', extra2: 'defaulted', extra: 'provided',
         });
-        expect(verifyUserCode[1]).to.equal(account);
-        expect(verifyUserCode[2]).to.be.undefined;
+        assert.equal(verifyUserCode[1], account);
+        assert.equal(verifyUserCode[2], undefined);
       });
 
-      it('does not require PAR for clients with require_pushed_authorization_requests', async function () {
-        return this.agent.post(route)
+      it('does not require PAR for clients with require_pushed_authorization_requests', { timeout: 3000 }, async () => fixture3.agent.post(route)
           .send({
             scope: 'openid',
             login_hint: 'accountId',
@@ -187,13 +192,12 @@ describe('features.ciba', () => {
           .expect(200)
           .expect('content-type', /application\/json/)
           .expect((response) => {
-            expect(response.body).to.have.keys('expires_in', 'auth_req_id');
-          });
-      });
+            assert.deepEqual(new Set(Object.keys(response.body)), new Set(['expires_in', 'auth_req_id']));
+          }));
 
-      it('passes user_code to verifyUserCode', async function () {
+      it('passes user_code to verifyUserCode', { timeout: 3000 }, async () => {
         const [, verifyUserCode] = await Promise.all([
-          this.agent.post(route)
+          fixture3.agent.post(route)
             .send({
               scope: 'openid',
               login_hint: 'accountId',
@@ -206,12 +210,12 @@ describe('features.ciba', () => {
           once(emitter, 'verifyUserCode'),
         ]);
 
-        expect(verifyUserCode[2]).to.equal('1234');
+        assert.equal(verifyUserCode[2], '1234');
       });
 
-      it('ignores client_notification_token when using poll', async function () {
+      it('ignores client_notification_token when using poll', { timeout: 3000 }, async () => {
         const [, [, request]] = await Promise.all([
-          this.agent.post(route)
+          fixture3.agent.post(route)
             .send({
               scope: 'openid',
               login_hint: 'accountId',
@@ -224,11 +228,11 @@ describe('features.ciba', () => {
           once(emitter, 'triggerAuthenticationDevice'),
         ]);
 
-        expect(request.params).not.to.have.property('client_notification_token');
+        assert.ok(!('client_notification_token' in Object(request.params)));
       });
 
-      it('requested_expiry', async function () {
-        await this.agent.post(route)
+      it('requested_expiry', { timeout: 3000 }, async () => {
+        await fixture3.agent.post(route)
           .send({
             scope: 'openid',
             login_hint: 'accountId',
@@ -239,13 +243,13 @@ describe('features.ciba', () => {
           .expect(200)
           .expect('content-type', /application\/json/)
           .expect((response) => {
-            expect(response.body.expires_in).to.be.a('number').most(300);
+            ((actual) => { assert.equal(typeof actual, 'number'); ((value) => { assert.equal(typeof value, 'number'); assert.ok(value <= 300); })(actual); })(response.body.expires_in);
           });
       });
 
-      it('minimal w/ login_hint_token', async function () {
+      it('minimal w/ login_hint_token', { timeout: 3000 }, async () => {
         const [, [, request, account, client]] = await Promise.all([
-          this.agent.post(route)
+          fixture3.agent.post(route)
             .send({
               scope: 'openid',
               login_hint_token: 'accountId',
@@ -256,9 +260,9 @@ describe('features.ciba', () => {
             .expect(200)
             .expect('content-type', /application\/json/)
             .expect((response) => {
-              expect(response.body).to.have.keys('expires_in', 'auth_req_id');
-              expect(response.body.expires_in).to.be.a('number');
-              expect(response.body.auth_req_id).to.be.a('string');
+              assert.deepEqual(new Set(Object.keys(response.body)), new Set(['expires_in', 'auth_req_id']));
+              assert.equal(typeof response.body.expires_in, 'number');
+              assert.equal(typeof response.body.auth_req_id, 'string');
             }),
           once(emitter, 'triggerAuthenticationDevice'),
           once(emitter, 'processLoginHintToken'),
@@ -267,18 +271,18 @@ describe('features.ciba', () => {
           once(emitter, 'verifyUserCode'),
         ]);
 
-        expect(request.accountId).to.eql(account.accountId);
-        expect(request.clientId).to.eql(client.clientId);
-        expect(request.resource).to.be.undefined;
-        expect(request.claims).to.deep.eql({});
-        expect(request.nonce).to.be.undefined;
-        expect(request.scope).to.be.eql('openid');
-        expect(request.params).to.deep.eql({ client_id: 'client', login_hint_token: 'accountId', scope: 'openid' });
+        assert.deepEqual(request.accountId, account.accountId);
+        assert.deepEqual(request.clientId, client.clientId);
+        assert.equal(request.resource, undefined);
+        assert.deepEqual(request.claims, {});
+        assert.equal(request.nonce, undefined);
+        assert.deepEqual(request.scope, 'openid');
+        assert.deepEqual(request.params, { client_id: 'client', login_hint_token: 'accountId', scope: 'openid' });
       });
 
-      it('minimal w/ id_token_hint', async function () {
+      it('minimal w/ id_token_hint', { timeout: 3000 }, async () => {
         const [, [, request]] = await Promise.all([
-          this.agent.post(route)
+          fixture3.agent.post(route)
             .send({
               scope: 'openid',
               login_hint_token: 'accountId',
@@ -289,18 +293,18 @@ describe('features.ciba', () => {
             .expect(200)
             .expect('content-type', /application\/json/)
             .expect((response) => {
-              expect(response.body).to.have.keys('expires_in', 'auth_req_id');
-              expect(response.body.expires_in).to.be.a('number');
-              expect(response.body.auth_req_id).to.be.a('string');
+              assert.deepEqual(new Set(Object.keys(response.body)), new Set(['expires_in', 'auth_req_id']));
+              assert.equal(typeof response.body.expires_in, 'number');
+              assert.equal(typeof response.body.auth_req_id, 'string');
             }),
           once(emitter, 'triggerAuthenticationDevice'),
         ]);
-        const grant = new this.provider.Grant({ accountId: 'accountId', clientId: 'client' });
+        const grant = new fixture3.provider.Grant({ accountId: 'accountId', clientId: 'client' });
         grant.addOIDCScope('openid');
         await grant.save();
-        await this.provider.backchannelResult(request, grant);
+        await fixture3.provider.backchannelResult(request, grant);
 
-        const { body: { id_token } } = await this.agent.post('/token')
+        const { body: { id_token } } = await fixture3.agent.post('/token')
           .send({
             client_id: 'client',
             grant_type: 'urn:openid:params:grant-type:ciba',
@@ -310,7 +314,7 @@ describe('features.ciba', () => {
           .expect(200);
 
         const [, [, request2, account, client]] = await Promise.all([
-          this.agent.post(route)
+          fixture3.agent.post(route)
             .send({
               scope: 'openid',
               id_token_hint: id_token,
@@ -321,9 +325,9 @@ describe('features.ciba', () => {
             .expect(200)
             .expect('content-type', /application\/json/)
             .expect((response) => {
-              expect(response.body).to.have.keys('expires_in', 'auth_req_id');
-              expect(response.body.expires_in).to.be.a('number');
-              expect(response.body.auth_req_id).to.be.a('string');
+              assert.deepEqual(new Set(Object.keys(response.body)), new Set(['expires_in', 'auth_req_id']));
+              assert.equal(typeof response.body.expires_in, 'number');
+              assert.equal(typeof response.body.auth_req_id, 'string');
             }),
           once(emitter, 'triggerAuthenticationDevice'),
           once(emitter, 'validateBindingMessage'),
@@ -331,24 +335,24 @@ describe('features.ciba', () => {
           once(emitter, 'verifyUserCode'),
         ]);
 
-        expect(request2.accountId).to.eql(account.accountId);
-        expect(request2.clientId).to.eql(client.clientId);
-        expect(request2.resource).to.be.undefined;
-        expect(request2.claims).to.deep.eql({});
-        expect(request2.nonce).to.be.undefined;
-        expect(request2.scope).to.be.eql('openid');
-        expect(request2.params).to.deep.eql({ client_id: 'client', id_token_hint: id_token, scope: 'openid' });
+        assert.deepEqual(request2.accountId, account.accountId);
+        assert.deepEqual(request2.clientId, client.clientId);
+        assert.equal(request2.resource, undefined);
+        assert.deepEqual(request2.claims, {});
+        assert.equal(request2.nonce, undefined);
+        assert.deepEqual(request2.scope, 'openid');
+        assert.deepEqual(request2.params, { client_id: 'client', id_token_hint: id_token, scope: 'openid' });
       });
 
-      it('rejects an id_token_hint aud array containing a non-string member', async function () {
+      it('rejects an id_token_hint aud array containing a non-string member', { timeout: 3000 }, async () => {
         const idTokenHint = await signJWT({
           aud: ['client', null],
           exp: Math.floor(Date.now() / 1000) + 3600,
-          iss: this.provider.issuer,
+          iss: fixture3.provider.issuer,
           sub: 'accountId',
         }, createPrivateKey({ format: 'jwk', key: keys[0] }), 'RS256');
 
-        return this.agent.post(route)
+        return fixture3.agent.post(route)
           .send({
             scope: 'openid',
             id_token_hint: idTokenHint,
@@ -364,11 +368,13 @@ describe('features.ciba', () => {
       });
 
       describe('client validation', () => {
-        it('only responds to clients with urn:openid:params:grant-type:ciba enabled', function () {
-          const spy = sinon.spy();
-          this.provider.once('backchannel_authentication.error', spy);
+        const fixture4 = Object.create(fixture3);
 
-          return this.agent.post(route)
+        it('only responds to clients with urn:openid:params:grant-type:ciba enabled', { timeout: 3000 }, () => {
+          const spy = sinon.spy();
+          fixture4.provider.once('backchannel_authentication.error', spy);
+
+          return fixture4.agent.post(route)
             .send({
               client_id: 'client-not-allowed',
             })
@@ -380,15 +386,15 @@ describe('features.ciba', () => {
               error_description: 'urn:openid:params:grant-type:ciba is not allowed for this client',
             })
             .expect(() => {
-              expect(spy.calledOnce).to.be.true;
+              assert.equal(spy.calledOnce, true);
             });
         });
 
-        it('rejects invalid clients', function () {
+        it('rejects invalid clients', { timeout: 3000 }, () => {
           const spy = sinon.spy();
-          this.provider.once('backchannel_authentication.error', spy);
+          fixture4.provider.once('backchannel_authentication.error', spy);
 
-          return this.agent.post(route)
+          return fixture4.agent.post(route)
             .send({
               client_id: 'not-found-client',
             })
@@ -396,7 +402,7 @@ describe('features.ciba', () => {
             .expect(401)
             .expect('content-type', /application\/json/)
             .expect(() => {
-              expect(spy.calledOnce).to.be.true;
+              assert.equal(spy.calledOnce, true);
             })
             .expect({
               error: 'invalid_client',
@@ -405,18 +411,18 @@ describe('features.ciba', () => {
         });
       });
 
-      it('rejects other than application/x-www-form-urlencoded', function () {
+      it('rejects other than application/x-www-form-urlencoded', { timeout: 3000 }, () => {
         const spy = sinon.spy();
-        this.provider.once('backchannel_authentication.error', spy);
+        fixture3.provider.once('backchannel_authentication.error', spy);
 
-        return this.agent.post(route)
+        return fixture3.agent.post(route)
           .send({
             client_id: 'client',
           })
           .expect(400)
           .expect('content-type', /application\/json/)
           .expect(() => {
-            expect(spy.calledOnce).to.be.true;
+            assert.equal(spy.calledOnce, true);
           })
           .expect({
             error: 'invalid_request',
@@ -425,12 +431,14 @@ describe('features.ciba', () => {
       });
 
       describe('param validation', () => {
-        ['request', 'request_uri', 'registration'].forEach((param) => {
-          it(`check for not supported parameter ${param}`, function () {
-            const spy = sinon.spy();
-            this.provider.once('backchannel_authentication.error', spy);
+        const fixture5 = Object.create(fixture3);
 
-            return this.agent.post(route)
+        ['request', 'request_uri', 'registration'].forEach((param) => {
+          it(`check for not supported parameter ${param}`, { timeout: 3000 }, () => {
+            const spy = sinon.spy();
+            fixture5.provider.once('backchannel_authentication.error', spy);
+
+            return fixture5.agent.post(route)
               .send({
                 client_id: 'client',
                 scope: 'openid',
@@ -440,7 +448,7 @@ describe('features.ciba', () => {
               .expect(400)
               .expect('content-type', /application\/json/)
               .expect(() => {
-                expect(spy.calledOnce).to.be.true;
+                assert.equal(spy.calledOnce, true);
               })
               .expect({
                 error: `${param}_not_supported`,
@@ -448,11 +456,11 @@ describe('features.ciba', () => {
           });
         });
 
-        it('could not resolve Account', async function () {
+        it('could not resolve Account', { timeout: 3000 }, async () => {
           const spy = sinon.spy();
-          this.provider.once('backchannel_authentication.error', spy);
+          fixture5.provider.once('backchannel_authentication.error', spy);
 
-          return this.agent.post(route)
+          return fixture5.agent.post(route)
             .send({
               scope: 'openid',
               login_hint: 'notfound',
@@ -462,7 +470,7 @@ describe('features.ciba', () => {
             .expect(400)
             .expect('content-type', /application\/json/)
             .expect(() => {
-              expect(spy.calledOnce).to.be.true;
+              assert.equal(spy.calledOnce, true);
             })
             .expect({
               error: 'unknown_user_id',
@@ -470,11 +478,11 @@ describe('features.ciba', () => {
             });
         });
 
-        it('could not resolve account identifier', async function () {
+        it('could not resolve account identifier', { timeout: 3000 }, async () => {
           const spy = sinon.spy();
-          this.provider.once('backchannel_authentication.error', spy);
+          fixture5.provider.once('backchannel_authentication.error', spy);
 
-          return this.agent.post(route)
+          return fixture5.agent.post(route)
             .send({
               scope: 'openid',
               login_hint_token: 'notfound',
@@ -484,7 +492,7 @@ describe('features.ciba', () => {
             .expect(400)
             .expect('content-type', /application\/json/)
             .expect(() => {
-              expect(spy.calledOnce).to.be.true;
+              assert.equal(spy.calledOnce, true);
             })
             .expect({
               error: 'unknown_user_id',
@@ -492,11 +500,11 @@ describe('features.ciba', () => {
             });
         });
 
-        it('requires the scope param', async function () {
+        it('requires the scope param', { timeout: 3000 }, async () => {
           const spy = sinon.spy();
-          this.provider.once('backchannel_authentication.error', spy);
+          fixture5.provider.once('backchannel_authentication.error', spy);
 
-          return this.agent.post(route)
+          return fixture5.agent.post(route)
             .send({
               client_id: 'client',
             })
@@ -504,7 +512,7 @@ describe('features.ciba', () => {
             .expect(400)
             .expect('content-type', /application\/json/)
             .expect(() => {
-              expect(spy.calledOnce).to.be.true;
+              assert.equal(spy.calledOnce, true);
             })
             .expect({
               error: 'invalid_request',
@@ -512,11 +520,11 @@ describe('features.ciba', () => {
             });
         });
 
-        it('requires the client_notification_token param when using ping', async function () {
+        it('requires the client_notification_token param when using ping', { timeout: 3000 }, async () => {
           const spy = sinon.spy();
-          this.provider.once('backchannel_authentication.error', spy);
+          fixture5.provider.once('backchannel_authentication.error', spy);
 
-          return this.agent.post(route)
+          return fixture5.agent.post(route)
             .send({
               client_id: 'client-ping',
               scope: 'openid',
@@ -525,7 +533,7 @@ describe('features.ciba', () => {
             .expect(400)
             .expect('content-type', /application\/json/)
             .expect(() => {
-              expect(spy.calledOnce).to.be.true;
+              assert.equal(spy.calledOnce, true);
             })
             .expect({
               error: 'invalid_request',
@@ -533,8 +541,7 @@ describe('features.ciba', () => {
             });
         });
 
-        it('accepts the client_notification_token Bearer token syntax when using ping', async function () {
-          return this.agent.post(route)
+        it('accepts the client_notification_token Bearer token syntax when using ping', { timeout: 3000 }, async () => fixture5.agent.post(route)
             .send({
               client_id: 'client-ping',
               scope: 'openid',
@@ -543,10 +550,9 @@ describe('features.ciba', () => {
             })
             .type('form')
             .expect(200)
-            .expect('content-type', /application\/json/);
-        });
+            .expect('content-type', /application\/json/));
 
-        it('validates the client_notification_token syntax when using ping', async function () {
+        it('validates the client_notification_token syntax when using ping', { timeout: 3000 }, async () => {
           const values = [
             'foo bar',
             'foo:bar',
@@ -555,7 +561,7 @@ describe('features.ciba', () => {
           ];
 
           for (const client_notification_token of values) {
-            await this.agent.post(route)
+            await fixture5.agent.post(route)
               .send({
                 client_id: 'client-ping',
                 scope: 'openid',
@@ -572,8 +578,7 @@ describe('features.ciba', () => {
           }
         });
 
-        it('validates the client_notification_token length when using ping', async function () {
-          return this.agent.post(route)
+        it('validates the client_notification_token length when using ping', { timeout: 3000 }, async () => fixture5.agent.post(route)
             .send({
               client_id: 'client-ping',
               scope: 'openid',
@@ -586,14 +591,13 @@ describe('features.ciba', () => {
             .expect({
               error: 'invalid_request',
               error_description: 'client_notification_token must not exceed 1024 characters',
-            });
-        });
+            }));
 
-        it('requires the scope param with openid', async function () {
+        it('requires the scope param with openid', { timeout: 3000 }, async () => {
           const spy = sinon.spy();
-          this.provider.once('backchannel_authentication.error', spy);
+          fixture5.provider.once('backchannel_authentication.error', spy);
 
-          return this.agent.post(route)
+          return fixture5.agent.post(route)
             .send({
               client_id: 'client',
               scope: 'foo',
@@ -602,7 +606,7 @@ describe('features.ciba', () => {
             .expect(400)
             .expect('content-type', /application\/json/)
             .expect(() => {
-              expect(spy.calledOnce).to.be.true;
+              assert.equal(spy.calledOnce, true);
             })
             .expect({
               error: 'invalid_request',
@@ -610,11 +614,11 @@ describe('features.ciba', () => {
             });
         });
 
-        it('validates requested_expiry', async function () {
+        it('validates requested_expiry', { timeout: 3000 }, async () => {
           const spy = sinon.spy();
-          this.provider.once('backchannel_authentication.error', spy);
+          fixture5.provider.once('backchannel_authentication.error', spy);
 
-          return this.agent.post(route)
+          return fixture5.agent.post(route)
             .send({
               client_id: 'client',
               scope: 'openid',
@@ -624,7 +628,7 @@ describe('features.ciba', () => {
             .expect(400)
             .expect('content-type', /application\/json/)
             .expect(() => {
-              expect(spy.calledOnce).to.be.true;
+              assert.equal(spy.calledOnce, true);
             })
             .expect({
               error: 'invalid_request',
@@ -632,11 +636,11 @@ describe('features.ciba', () => {
             });
         });
 
-        it('validates one of the hints is provided', async function () {
+        it('validates one of the hints is provided', { timeout: 3000 }, async () => {
           const spy = sinon.spy();
-          this.provider.once('backchannel_authentication.error', spy);
+          fixture5.provider.once('backchannel_authentication.error', spy);
 
-          return this.agent.post(route)
+          return fixture5.agent.post(route)
             .send({
               client_id: 'client',
               scope: 'openid',
@@ -645,7 +649,7 @@ describe('features.ciba', () => {
             .expect(400)
             .expect('content-type', /application\/json/)
             .expect(() => {
-              expect(spy.calledOnce).to.be.true;
+              assert.equal(spy.calledOnce, true);
             })
             .expect({
               error: 'invalid_request',
@@ -653,11 +657,11 @@ describe('features.ciba', () => {
             });
         });
 
-        it('validates exactly one of the hints is provided', async function () {
+        it('validates exactly one of the hints is provided', { timeout: 3000 }, async () => {
           const spy = sinon.spy();
-          this.provider.once('backchannel_authentication.error', spy);
+          fixture5.provider.once('backchannel_authentication.error', spy);
 
-          return this.agent.post(route)
+          return fixture5.agent.post(route)
             .send({
               client_id: 'client',
               scope: 'openid',
@@ -668,7 +672,7 @@ describe('features.ciba', () => {
             .expect(400)
             .expect('content-type', /application\/json/)
             .expect(() => {
-              expect(spy.calledOnce).to.be.true;
+              assert.equal(spy.calledOnce, true);
             })
             .expect({
               error: 'invalid_request',
@@ -676,11 +680,11 @@ describe('features.ciba', () => {
             });
         });
 
-        it('request_not_supported', async function () {
+        it('request_not_supported', { timeout: 3000 }, async () => {
           const spy = sinon.spy();
-          this.provider.once('backchannel_authentication.error', spy);
+          fixture5.provider.once('backchannel_authentication.error', spy);
 
-          return this.agent.post(route)
+          return fixture5.agent.post(route)
             .send({
               client_id: 'client',
               request: 'this.should.be.a.jwt',
@@ -689,7 +693,7 @@ describe('features.ciba', () => {
             .expect(400)
             .expect('content-type', /application\/json/)
             .expect(() => {
-              expect(spy.calledOnce).to.be.true;
+              assert.equal(spy.calledOnce, true);
             })
             .expect({
               error: 'request_not_supported',
@@ -699,13 +703,15 @@ describe('features.ciba', () => {
     });
 
     describe('grant_type=urn:openid:params:grant-type:ciba', () => {
+      const fixture6 = Object.create(fixture1);
+
       const grant_type = 'urn:openid:params:grant-type:ciba';
 
-      it('validates the backchannel authentication request is found', async function () {
+      it('validates the backchannel authentication request is found', { timeout: 3000 }, async () => {
         const spy = sinon.spy();
-        this.provider.once('grant.error', spy);
+        fixture6.provider.once('grant.error', spy);
 
-        await this.agent.post('/token')
+        await fixture6.agent.post('/token')
           .send({
             client_id: 'client',
             auth_req_id: 'notfound',
@@ -714,23 +720,23 @@ describe('features.ciba', () => {
           .type('form')
           .expect(400)
           .expect((response) => {
-            expect(response.body).to.have.property('error', 'invalid_grant');
+            ((actual) => { assert.ok('error' in Object(actual)); assert.equal(actual.error, 'invalid_grant'); })(response.body);
           });
 
-        expect(spy.calledOnce).to.be.true;
-        expect(errorDetail(spy)).to.equal('backchannel authentication request not found');
+        assert.equal(spy.calledOnce, true);
+        assert.equal(errorDetail(spy), 'backchannel authentication request not found');
       });
 
-      it('validates the backchannel authentication request belongs to the client', async function () {
-        const request = new this.provider.BackchannelAuthenticationRequest({
+      it('validates the backchannel authentication request belongs to the client', { timeout: 3000 }, async () => {
+        const request = new fixture6.provider.BackchannelAuthenticationRequest({
           clientId: 'client-ping',
           grantId: 'grant',
         });
         const authReqId = await request.save();
         const spy = sinon.spy();
-        this.provider.once('grant.error', spy);
+        fixture6.provider.once('grant.error', spy);
 
-        await this.agent.post('/token')
+        await fixture6.agent.post('/token')
           .send({
             client_id: 'client',
             auth_req_id: authReqId,
@@ -739,24 +745,24 @@ describe('features.ciba', () => {
           .type('form')
           .expect(400)
           .expect((response) => {
-            expect(response.body).to.have.property('error', 'invalid_grant');
+            ((actual) => { assert.ok('error' in Object(actual)); assert.equal(actual.error, 'invalid_grant'); })(response.body);
           });
 
-        expect(spy.calledOnce).to.be.true;
-        expect(errorDetail(spy)).to.equal('client mismatch');
+        assert.equal(spy.calledOnce, true);
+        assert.equal(errorDetail(spy), 'client mismatch');
       });
 
-      it('validates the backchannel authentication request is not expired', async function () {
-        const request = new this.provider.BackchannelAuthenticationRequest({
+      it('validates the backchannel authentication request is not expired', { timeout: 3000 }, async () => {
+        const request = new fixture6.provider.BackchannelAuthenticationRequest({
           clientId: 'client',
           exp: epochTime() - 1,
           grantId: 'grant',
         });
         const authReqId = await request.save();
         const spy = sinon.spy();
-        this.provider.once('grant.error', spy);
+        fixture6.provider.once('grant.error', spy);
 
-        await this.agent.post('/token')
+        await fixture6.agent.post('/token')
           .send({
             client_id: 'client',
             auth_req_id: authReqId,
@@ -769,20 +775,17 @@ describe('features.ciba', () => {
             error_description: 'backchannel authentication request is expired',
         });
 
-        expect(spy.calledOnce).to.be.true;
-        expect(spy.args[0][1]).to.have.property(
-          'error_description',
-          'backchannel authentication request is expired',
-        );
+        assert.equal(spy.calledOnce, true);
+        ((actual) => { assert.ok('error_description' in Object(actual)); assert.equal(actual.error_description, 'backchannel authentication request is expired'); })(spy.args[0][1]);
       });
 
-      it('revokes the grant when the request was already consumed', async function () {
-        const grant = new this.provider.Grant({
+      it('revokes the grant when the request was already consumed', { timeout: 3000 }, async () => {
+        const grant = new fixture6.provider.Grant({
           accountId: 'accountId',
           clientId: 'client',
         });
         const grantId = await grant.save();
-        const request = new this.provider.BackchannelAuthenticationRequest({
+        const request = new fixture6.provider.BackchannelAuthenticationRequest({
           accountId: 'accountId',
           clientId: 'client',
           grantId,
@@ -792,10 +795,10 @@ describe('features.ciba', () => {
 
         const grantErrorSpy = sinon.spy();
         const grantRevokeSpy = sinon.spy();
-        this.provider.once('grant.error', grantErrorSpy);
-        this.provider.once('grant.revoked', grantRevokeSpy);
+        fixture6.provider.once('grant.error', grantErrorSpy);
+        fixture6.provider.once('grant.revoked', grantRevokeSpy);
 
-        await this.agent.post('/token')
+        await fixture6.agent.post('/token')
           .send({
             client_id: 'client',
             auth_req_id: authReqId,
@@ -804,23 +807,21 @@ describe('features.ciba', () => {
           .type('form')
           .expect(400)
           .expect((response) => {
-            expect(response.body).to.have.property('error', 'invalid_grant');
+            ((actual) => { assert.ok('error' in Object(actual)); assert.equal(actual.error, 'invalid_grant'); })(response.body);
           });
 
-        expect(grantErrorSpy.calledOnce).to.be.true;
-        expect(errorDetail(grantErrorSpy)).to.equal(
-          'backchannel authentication request already consumed',
-        );
-        expect(grantRevokeSpy.calledOnceWithExactly(grantErrorSpy.args[0][0], grantId)).to.be.true;
-        expect(await this.provider.Grant.find(grantId)).to.be.undefined;
-        expect(await this.provider.BackchannelAuthenticationRequest.find(authReqId)).to.be.undefined;
+        assert.equal(grantErrorSpy.calledOnce, true);
+        assert.equal(errorDetail(grantErrorSpy), 'backchannel authentication request already consumed');
+        assert.equal(grantRevokeSpy.calledOnceWithExactly(grantErrorSpy.args[0][0], grantId), true);
+        assert.equal(await fixture6.provider.Grant.find(grantId), undefined);
+        assert.equal(await fixture6.provider.BackchannelAuthenticationRequest.find(authReqId), undefined);
       });
 
-      it('skips grant revocation when an already consumed request has no grantId', async function () {
-        const request = new this.provider.BackchannelAuthenticationRequest({ clientId: 'client' });
-        await this.provider.backchannelResult(request, new AccessDenied());
+      it('skips grant revocation when an already consumed request has no grantId', { timeout: 3000 }, async () => {
+        const request = new fixture6.provider.BackchannelAuthenticationRequest({ clientId: 'client' });
+        await fixture6.provider.backchannelResult(request, new AccessDenied());
 
-        await this.agent.post('/token')
+        await fixture6.agent.post('/token')
           .send({
             client_id: 'client',
             auth_req_id: request.jti,
@@ -829,21 +830,21 @@ describe('features.ciba', () => {
           .type('form')
           .expect(400)
           .expect((response) => {
-            expect(response.body).to.have.property('error', 'access_denied');
+            ((actual) => { assert.ok('error' in Object(actual)); assert.equal(actual.error, 'access_denied'); })(response.body);
           });
 
         const sandbox = sinon.createSandbox();
         try {
-          const accessTokenRevokeByGrantIdSpy = sandbox.spy(this.TestAdapter.for('AccessToken'), 'revokeByGrantId');
-          const refreshTokenRevokeByGrantIdSpy = sandbox.spy(this.TestAdapter.for('RefreshToken'), 'revokeByGrantId');
-          const backchannelRequestRevokeByGrantIdSpy = sandbox.spy(this.TestAdapter.for('BackchannelAuthenticationRequest'), 'revokeByGrantId');
-          const grantDestroySpy = sandbox.spy(this.TestAdapter.for('Grant'), 'destroy');
+          const accessTokenRevokeByGrantIdSpy = sandbox.spy(fixture6.TestAdapter.for('AccessToken'), 'revokeByGrantId');
+          const refreshTokenRevokeByGrantIdSpy = sandbox.spy(fixture6.TestAdapter.for('RefreshToken'), 'revokeByGrantId');
+          const backchannelRequestRevokeByGrantIdSpy = sandbox.spy(fixture6.TestAdapter.for('BackchannelAuthenticationRequest'), 'revokeByGrantId');
+          const grantDestroySpy = sandbox.spy(fixture6.TestAdapter.for('Grant'), 'destroy');
           const grantErrorSpy = sinon.spy();
           const grantRevokeSpy = sinon.spy();
-          this.provider.once('grant.error', grantErrorSpy);
-          this.provider.once('grant.revoked', grantRevokeSpy);
+          fixture6.provider.once('grant.error', grantErrorSpy);
+          fixture6.provider.once('grant.revoked', grantRevokeSpy);
 
-          await this.agent.post('/token')
+          await fixture6.agent.post('/token')
             .send({
               client_id: 'client',
               auth_req_id: request.jti,
@@ -852,16 +853,16 @@ describe('features.ciba', () => {
             .type('form')
             .expect(400)
             .expect(() => {
-              expect(grantErrorSpy.calledOnce).to.be.true;
-              expect(errorDetail(grantErrorSpy)).to.equal('backchannel authentication request already consumed');
-              expect(grantRevokeSpy.called).to.be.false;
-              expect(accessTokenRevokeByGrantIdSpy.called).to.be.false;
-              expect(refreshTokenRevokeByGrantIdSpy.called).to.be.false;
-              expect(backchannelRequestRevokeByGrantIdSpy.called).to.be.false;
-              expect(grantDestroySpy.called).to.be.false;
+              assert.equal(grantErrorSpy.calledOnce, true);
+              assert.equal(errorDetail(grantErrorSpy), 'backchannel authentication request already consumed');
+              assert.equal(grantRevokeSpy.called, false);
+              assert.equal(accessTokenRevokeByGrantIdSpy.called, false);
+              assert.equal(refreshTokenRevokeByGrantIdSpy.called, false);
+              assert.equal(backchannelRequestRevokeByGrantIdSpy.called, false);
+              assert.equal(grantDestroySpy.called, false);
             })
             .expect((response) => {
-              expect(response.body).to.have.property('error', 'invalid_grant');
+              ((actual) => { assert.ok('error' in Object(actual)); assert.equal(actual.error, 'invalid_grant'); })(response.body);
             });
         } finally {
           sandbox.restore();
@@ -870,27 +871,31 @@ describe('features.ciba', () => {
     });
   });
 
-  context('with request objects', () => {
-    before(bootstrap(import.meta.url, { config: 'ciba_jar' }));
+  describe('with request objects', () => {
+    const fixture7 = Object.create(fixture);
 
-    it('extends discovery', function () {
-      return this.agent.get('/.well-known/openid-configuration')
+    before(bootstrap(import.meta.url, fixture7, { config: 'ciba_jar' }), { timeout: 3000 });
+
+    it('extends discovery', { timeout: 3000 }, () => fixture7.agent.get('/.well-known/openid-configuration')
         .expect(200)
         .expect((response) => {
-          expect(response.body).to.have.property('backchannel_authentication_request_signing_alg_values_supported').not.contains('HS256');
-        });
-    });
+          ((actual) => { assert.ok('backchannel_authentication_request_signing_alg_values_supported' in Object(actual)); assert.ok(!(actual.backchannel_authentication_request_signing_alg_values_supported.includes('HS256'))); })(response.body);
+        }));
 
     describe('backchannel_authentication_endpoint', () => {
+      const fixture8 = Object.create(fixture7);
+
       const route = '/backchannel';
 
       describe('param validation', () => {
-        ['request_uri', 'registration'].forEach((param) => {
-          it(`check for not supported parameter ${param}`, function () {
-            const spy = sinon.spy();
-            this.provider.once('backchannel_authentication.error', spy);
+        const fixture9 = Object.create(fixture8);
 
-            return this.agent.post(route)
+        ['request_uri', 'registration'].forEach((param) => {
+          it(`check for not supported parameter ${param}`, { timeout: 3000 }, () => {
+            const spy = sinon.spy();
+            fixture9.provider.once('backchannel_authentication.error', spy);
+
+            return fixture9.agent.post(route)
               .send({
                 client_id: 'client',
                 scope: 'openid',
@@ -900,7 +905,7 @@ describe('features.ciba', () => {
               .expect(400)
               .expect('content-type', /application\/json/)
               .expect(() => {
-                expect(spy.calledOnce).to.be.true;
+                assert.equal(spy.calledOnce, true);
               })
               .expect({
                 error: `${param}_not_supported`,
@@ -908,11 +913,11 @@ describe('features.ciba', () => {
           });
         });
 
-        it('validates request object is used', async function () {
+        it('validates request object is used', { timeout: 3000 }, async () => {
           const spy = sinon.spy();
-          this.provider.once('backchannel_authentication.error', spy);
+          fixture9.provider.once('backchannel_authentication.error', spy);
 
-          await this.agent.post(route)
+          await fixture9.agent.post(route)
             .send({
               client_id: 'client-signed',
               scope: 'openid',
@@ -921,7 +926,7 @@ describe('features.ciba', () => {
             .expect(400)
             .expect('content-type', /application\/json/)
             .expect(() => {
-              expect(spy.calledOnce).to.be.true;
+              assert.equal(spy.calledOnce, true);
             })
             .expect({
               error: 'invalid_request',
@@ -936,7 +941,7 @@ describe('features.ciba', () => {
             })
             .reply(200, { keys: [await exportJWK(publicKey)] });
 
-          return this.agent.post(route)
+          return fixture9.agent.post(route)
             .send({
               client_id: 'client-signed',
               request: await new SignJWT({
@@ -949,20 +954,20 @@ describe('features.ciba', () => {
                 .setNotBefore('0s')
                 .setIssuer('client-signed')
                 .setIssuedAt()
-                .setAudience(this.provider.issuer)
+                .setAudience(fixture9.provider.issuer)
                 .sign(privateKey),
             })
             .type('form')
             .expect(200);
         });
 
-        it('validates request object claims are present (exp)', async function () {
+        it('validates request object claims are present (exp)', { timeout: 3000 }, async () => {
           const spy = sinon.spy();
-          this.provider.once('backchannel_authentication.error', spy);
+          fixture9.provider.once('backchannel_authentication.error', spy);
 
           const { privateKey } = await generateKeyPair('ES256');
 
-          return this.agent.post(route)
+          return fixture9.agent.post(route)
             .send({
               client_id: 'client-signed',
               request: await new SignJWT({
@@ -975,14 +980,14 @@ describe('features.ciba', () => {
                 .setNotBefore('0s')
                 .setIssuer('client-signed')
                 .setIssuedAt()
-                .setAudience(this.provider.issuer)
+                .setAudience(fixture9.provider.issuer)
                 .sign(privateKey),
             })
             .type('form')
             .expect(400)
             .expect('content-type', /application\/json/)
             .expect(() => {
-              expect(spy.calledOnce).to.be.true;
+              assert.equal(spy.calledOnce, true);
             })
             .expect({
               error: 'invalid_request',
@@ -990,13 +995,13 @@ describe('features.ciba', () => {
             });
         });
 
-        it('validates request object claims are present (nbf)', async function () {
+        it('validates request object claims are present (nbf)', { timeout: 3000 }, async () => {
           const spy = sinon.spy();
-          this.provider.once('backchannel_authentication.error', spy);
+          fixture9.provider.once('backchannel_authentication.error', spy);
 
           const { privateKey } = await generateKeyPair('ES256');
 
-          return this.agent.post(route)
+          return fixture9.agent.post(route)
             .send({
               client_id: 'client-signed',
               request: await new SignJWT({
@@ -1009,14 +1014,14 @@ describe('features.ciba', () => {
                 // .setNotBefore('0s')
                 .setIssuer('client-signed')
                 .setIssuedAt()
-                .setAudience(this.provider.issuer)
+                .setAudience(fixture9.provider.issuer)
                 .sign(privateKey),
             })
             .type('form')
             .expect(400)
             .expect('content-type', /application\/json/)
             .expect(() => {
-              expect(spy.calledOnce).to.be.true;
+              assert.equal(spy.calledOnce, true);
             })
             .expect({
               error: 'invalid_request',
@@ -1024,13 +1029,13 @@ describe('features.ciba', () => {
             });
         });
 
-        it('validates request object claims are present (jti)', async function () {
+        it('validates request object claims are present (jti)', { timeout: 3000 }, async () => {
           const spy = sinon.spy();
-          this.provider.once('backchannel_authentication.error', spy);
+          fixture9.provider.once('backchannel_authentication.error', spy);
 
           const { privateKey } = await generateKeyPair('ES256');
 
-          return this.agent.post(route)
+          return fixture9.agent.post(route)
             .send({
               client_id: 'client-signed',
               request: await new SignJWT({
@@ -1043,14 +1048,14 @@ describe('features.ciba', () => {
                 .setNotBefore('0s')
                 .setIssuer('client-signed')
                 .setIssuedAt()
-                .setAudience(this.provider.issuer)
+                .setAudience(fixture9.provider.issuer)
                 .sign(privateKey),
             })
             .type('form')
             .expect(400)
             .expect('content-type', /application\/json/)
             .expect(() => {
-              expect(spy.calledOnce).to.be.true;
+              assert.equal(spy.calledOnce, true);
             })
             .expect({
               error: 'invalid_request',
@@ -1058,13 +1063,13 @@ describe('features.ciba', () => {
             });
         });
 
-        it('validates request object claims are present (iat)', async function () {
+        it('validates request object claims are present (iat)', { timeout: 3000 }, async () => {
           const spy = sinon.spy();
-          this.provider.once('backchannel_authentication.error', spy);
+          fixture9.provider.once('backchannel_authentication.error', spy);
 
           const { privateKey } = await generateKeyPair('ES256');
 
-          return this.agent.post(route)
+          return fixture9.agent.post(route)
             .send({
               client_id: 'client-signed',
               request: await new SignJWT({
@@ -1077,14 +1082,14 @@ describe('features.ciba', () => {
                 .setNotBefore('0s')
                 .setIssuer('client-signed')
                 // .setIssuedAt()
-                .setAudience(this.provider.issuer)
+                .setAudience(fixture9.provider.issuer)
                 .sign(privateKey),
             })
             .type('form')
             .expect(400)
             .expect('content-type', /application\/json/)
             .expect(() => {
-              expect(spy.calledOnce).to.be.true;
+              assert.equal(spy.calledOnce, true);
             })
             .expect({
               error: 'invalid_request',
@@ -1092,11 +1097,11 @@ describe('features.ciba', () => {
             });
         });
 
-        it('validates Encrypted Request Objects are not used', async function () {
+        it('validates Encrypted Request Objects are not used', { timeout: 3000 }, async () => {
           const spy = sinon.spy();
-          this.provider.once('backchannel_authentication.error', spy);
+          fixture9.provider.once('backchannel_authentication.error', spy);
 
-          return this.agent.post(route)
+          return fixture9.agent.post(route)
             .send({
               client_id: 'client-signed',
               scope: 'openid',
@@ -1106,7 +1111,7 @@ describe('features.ciba', () => {
             .expect(400)
             .expect('content-type', /application\/json/)
             .expect(() => {
-              expect(spy.calledOnce).to.be.true;
+              assert.equal(spy.calledOnce, true);
             })
             .expect({
               error: 'invalid_request',

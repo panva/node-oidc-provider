@@ -1,5 +1,6 @@
+import { describe, before, it, afterEach, beforeEach } from 'node:test';
+import assert from 'node:assert/strict';
 import { createSandbox } from 'sinon';
-import { expect } from 'chai';
 import timekeeper from 'timekeeper';
 
 import bootstrap, { passInteractionChecks } from '../test_helper.js';
@@ -10,303 +11,309 @@ const { any } = sinon.match;
 const route = '/device';
 
 describe('GET code_verification endpoint', () => {
-  before(bootstrap(import.meta.url));
+  const fixture = {};
+
+  before(bootstrap(import.meta.url, fixture), { timeout: 3000 });
 
   describe('when accessed without user_code in query (verification_uri)', () => {
-    it('renders 200 OK end-user form with csrf', function () {
-      return this.agent.get(route)
+    const fixture1 = Object.create(fixture);
+
+    it('renders 200 OK end-user form with csrf', { timeout: 3000 }, () => fixture1.agent.get(route)
         .expect(200)
         .expect('content-type', 'text/html; charset=utf-8')
         .expect(() => {
-          const { state: { secret } } = this.getSession();
-          expect(secret).to.be.a('string');
+          const { state: { secret } } = fixture1.getSession();
+          assert.equal(typeof secret, 'string');
         })
-        .expect(new RegExp(`<form id="op.deviceInputForm" novalidate method="post" action="http://127.0.0.1:\\d+${this.suitePath('/device')}">`));
-    });
+        .expect(new RegExp(`<form id="op.deviceInputForm" novalidate method="post" action="http://127.0.0.1:\\d+${fixture1.suitePath('/device')}">`)));
   });
 
   describe('when accessed with user_code in query (verification_uri_complete)', () => {
-    it('renders 200 OK self-submitting form with csrf and the value from uri', function () {
+    const fixture2 = Object.create(fixture);
+
+    it('renders 200 OK self-submitting form with csrf and the value from uri', { timeout: 3000 }, () => {
       let secret;
 
-      return this.agent.get(route)
+      return fixture2.agent.get(route)
         .query({ user_code: '123-456-789' })
         .expect(200)
         .expect('content-type', 'text/html; charset=utf-8')
         .expect(/document.addEventListener\('DOMContentLoaded', function \(\) { document.forms\[0\].submit\(\) }\);/)
         .expect(({ text }) => {
-          ({ state: { secret } } = this.getSession());
-          expect(text).to.match(new RegExp(`input type="hidden" name="xsrf" value="${secret}"`));
+          ({ state: { secret } } = fixture2.getSession());
+          assert.match(text, new RegExp(`input type="hidden" name="xsrf" value="${secret}"`));
         })
-        .expect(new RegExp(`<form method="post" action="http://127.0.0.1:\\d+${this.suitePath('/device')}">`))
+        .expect(new RegExp(`<form method="post" action="http://127.0.0.1:\\d+${fixture2.suitePath('/device')}">`))
         .expect(/<input type="hidden" name="user_code" value="123-456-789"\/>/);
     });
 
-    it('escapes the user_code values', function () {
-      return this.agent.get(route)
+    it('escapes the user_code values', { timeout: 3000 }, () => fixture2.agent.get(route)
         .query({ user_code: '&<>"\'123-456-789' })
         .expect(200)
         .expect('content-type', 'text/html; charset=utf-8')
-        .expect(/<input type="hidden" name="user_code" value="&amp;&lt;&gt;&quot;&#39;123-456-789"\/>/);
-    });
+        .expect(/<input type="hidden" name="user_code" value="&amp;&lt;&gt;&quot;&#39;123-456-789"\/>/));
   });
 });
 
 describe('POST code_verification endpoint w/o verification', () => {
-  before(bootstrap(import.meta.url));
-  before(function () { return this.login(); });
-  afterEach(() => timekeeper.reset());
+  const fixture3 = {};
+
+  before(bootstrap(import.meta.url, fixture3), { timeout: 3000 });
+  before(() => fixture3.login(), { timeout: 3000 });
+  afterEach(() => timekeeper.reset(), { timeout: 3000 });
 
   const xsrf = 'foo';
 
-  beforeEach(function () {
-    this.getSession().state = { secret: xsrf };
-  });
+  beforeEach(() => {
+    fixture3.getSession().state = { secret: xsrf };
+  }, { timeout: 3000 });
 
-  afterEach(function () {
-    this.provider.removeAllListeners('code_verification.error');
+  afterEach(() => {
+    fixture3.provider.removeAllListeners('code_verification.error');
     sinon.restore();
-  });
+  }, { timeout: 3000 });
 
-  it('renders a confirmation page', async function () {
-    const spy = sinon.spy(i(this.provider).features.deviceFlow, 'userCodeConfirmSource');
+  it('renders a confirmation page', { timeout: 3000 }, async () => {
+    const spy = sinon.spy(i(fixture3.provider).features.deviceFlow, 'userCodeConfirmSource');
     const deviceInfo = {
       ip: '127.0.0.1',
       ua: 'foo',
     };
 
-    await new this.provider.DeviceCode({
+    await new fixture3.provider.DeviceCode({
       clientId: 'client',
       userCode: 'FOOCODE',
       deviceInfo,
     }).save();
 
-    await this.agent.post(route)
+    await fixture3.agent.post(route)
       .send({
         xsrf,
         user_code: 'FOO-CODE',
       })
       .type('form')
       .expect(200)
-      .expect(new RegExp(`<form id="op.deviceConfirmForm" method="post" action="http://127.0.0.1:\\d+${this.suitePath('/device')}">`));
+      .expect(new RegExp(`<form id="op.deviceConfirmForm" method="post" action="http://127.0.0.1:\\d+${fixture3.suitePath('/device')}">`));
 
-    expect(spy.calledOnce).to.be.true;
+    assert.equal(spy.calledOnce, true);
     sinon.assert.calledWithMatch(spy, any, any, sinon.match((client) => {
-      expect(client.clientId).to.equal('client');
+      assert.equal(client.clientId, 'client');
       return true;
     }), deviceInfo);
   });
 
-  it('re-renders on no submitted code', async function () {
+  it('re-renders on no submitted code', { timeout: 3000 }, async () => {
     const errSpy = sinon.spy();
-    this.provider.once('code_verification.error', errSpy);
-    const spy = sinon.spy(i(this.provider).features.deviceFlow, 'userCodeInputSource');
+    fixture3.provider.once('code_verification.error', errSpy);
+    const spy = sinon.spy(i(fixture3.provider).features.deviceFlow, 'userCodeInputSource');
 
-    await this.agent.post(route)
+    await fixture3.agent.post(route)
       .send({ xsrf })
       .type('form')
       .expect(200)
-      .expect(new RegExp(`<form id="op.deviceInputForm" novalidate method="post" action="http://127.0.0.1:\\d+${this.suitePath('/device')}">`))
+      .expect(new RegExp(`<form id="op.deviceInputForm" novalidate method="post" action="http://127.0.0.1:\\d+${fixture3.suitePath('/device')}">`))
       .expect(/<p class="red">The code you entered is incorrect\. Try again<\/p>/);
 
-    expect(spy.calledOnce).to.be.true;
+    assert.equal(spy.calledOnce, true);
     sinon.assert.calledWithMatch(spy, any, any, any, sinon.match((err) => {
-      expect(err.name).to.equal('NoCodeError');
+      assert.equal(err.name, 'NoCodeError');
       return true;
     }));
 
-    expect(errSpy).to.have.property('called', false);
+    ((actual) => { assert.ok('called' in Object(actual)); assert.equal(actual.called, false); })(errSpy);
   });
 
-  it('re-renders on not found code', async function () {
+  it('re-renders on not found code', { timeout: 3000 }, async () => {
     const errSpy = sinon.spy();
-    this.provider.once('code_verification.error', errSpy);
-    const spy = sinon.spy(i(this.provider).features.deviceFlow, 'userCodeInputSource');
+    fixture3.provider.once('code_verification.error', errSpy);
+    const spy = sinon.spy(i(fixture3.provider).features.deviceFlow, 'userCodeInputSource');
 
-    await this.agent.post(route)
+    await fixture3.agent.post(route)
       .send({
         xsrf,
         user_code: 'FOO-NOT-FOUND',
       })
       .type('form')
       .expect(200)
-      .expect(new RegExp(`<form id="op.deviceInputForm" novalidate method="post" action="http://127.0.0.1:\\d+${this.suitePath('/device')}">`))
+      .expect(new RegExp(`<form id="op.deviceInputForm" novalidate method="post" action="http://127.0.0.1:\\d+${fixture3.suitePath('/device')}">`))
       .expect(/<p class="red">The code you entered is incorrect\. Try again<\/p>/);
 
-    expect(spy.calledOnce).to.be.true;
+    assert.equal(spy.calledOnce, true);
     sinon.assert.calledWithMatch(spy, any, any, any, sinon.match((err) => {
-      expect(err.name).to.equal('NotFoundError');
+      assert.equal(err.name, 'NotFoundError');
       return true;
     }));
 
-    expect(errSpy).to.have.property('called', false);
+    ((actual) => { assert.ok('called' in Object(actual)); assert.equal(actual.called, false); })(errSpy);
   });
 
-  it('re-renders on found but expired code', async function () {
+  it('re-renders on found but expired code', { timeout: 3000 }, async () => {
     const errSpy = sinon.spy();
-    this.provider.once('code_verification.error', errSpy);
-    const spy = sinon.spy(i(this.provider).features.deviceFlow, 'userCodeInputSource');
-    await new this.provider.DeviceCode({
+    fixture3.provider.once('code_verification.error', errSpy);
+    const spy = sinon.spy(i(fixture3.provider).features.deviceFlow, 'userCodeInputSource');
+    await new fixture3.provider.DeviceCode({
       userCode: 'FOOEXPIRED',
     }).save();
 
     timekeeper.travel(Date.now() + (((10 * 60) + 10) * 1000));
-    await this.agent.post(route)
+    await fixture3.agent.post(route)
       .send({
         xsrf,
         user_code: 'FOO-EXPIRED',
       })
       .type('form')
       .expect(200)
-      .expect(new RegExp(`<form id="op.deviceInputForm" novalidate method="post" action="http://127.0.0.1:\\d+${this.suitePath('/device')}">`))
+      .expect(new RegExp(`<form id="op.deviceInputForm" novalidate method="post" action="http://127.0.0.1:\\d+${fixture3.suitePath('/device')}">`))
       .expect(/<p class="red">The code you entered is incorrect\. Try again<\/p>/);
 
-    expect(spy.calledOnce).to.be.true;
+    assert.equal(spy.calledOnce, true);
     sinon.assert.calledWithMatch(spy, any, any, any, sinon.match((err) => {
-      expect(err.name).to.equal('ExpiredError');
+      assert.equal(err.name, 'ExpiredError');
       return true;
     }));
 
-    expect(errSpy).to.have.property('called', false);
+    ((actual) => { assert.ok('called' in Object(actual)); assert.equal(actual.called, false); })(errSpy);
   });
 
-  it('re-renders on found but already user code', async function () {
+  it('re-renders on found but already user code', { timeout: 3000 }, async () => {
     const errSpy = sinon.spy();
-    this.provider.once('code_verification.error', errSpy);
-    const spy = sinon.spy(i(this.provider).features.deviceFlow, 'userCodeInputSource');
-    await new this.provider.DeviceCode({
+    fixture3.provider.once('code_verification.error', errSpy);
+    const spy = sinon.spy(i(fixture3.provider).features.deviceFlow, 'userCodeInputSource');
+    await new fixture3.provider.DeviceCode({
       userCode: 'FOOCONSUMED',
       accountId: 'account',
     }).save();
 
-    await this.agent.post(route)
+    await fixture3.agent.post(route)
       .send({
         xsrf,
         user_code: 'FOO-CONSUMED',
       })
       .type('form')
       .expect(200)
-      .expect(new RegExp(`<form id="op.deviceInputForm" novalidate method="post" action="http://127.0.0.1:\\d+${this.suitePath('/device')}">`))
+      .expect(new RegExp(`<form id="op.deviceInputForm" novalidate method="post" action="http://127.0.0.1:\\d+${fixture3.suitePath('/device')}">`))
       .expect(/<p class="red">The code you entered is incorrect\. Try again<\/p>/);
 
-    expect(spy.calledOnce).to.be.true;
+    assert.equal(spy.calledOnce, true);
     sinon.assert.calledWithMatch(spy, any, any, any, sinon.match((err) => {
-      expect(err.name).to.equal('AlreadyUsedError');
+      assert.equal(err.name, 'AlreadyUsedError');
       return true;
     }));
 
-    expect(errSpy).to.have.property('called', false);
+    ((actual) => { assert.ok('called' in Object(actual)); assert.equal(actual.called, false); })(errSpy);
   });
 
-  it('re-renders on invalid client', async function () {
+  it('re-renders on invalid client', { timeout: 3000 }, async () => {
     const errSpy = sinon.spy();
-    this.provider.once('code_verification.error', errSpy);
-    const spy = sinon.spy(i(this.provider).features.deviceFlow, 'userCodeInputSource');
-    await new this.provider.DeviceCode({
+    fixture3.provider.once('code_verification.error', errSpy);
+    const spy = sinon.spy(i(fixture3.provider).features.deviceFlow, 'userCodeInputSource');
+    await new fixture3.provider.DeviceCode({
       userCode: 'FOONOTFOUNDCLIENT',
       clientId: 'client',
     }).save();
 
-    sinon.stub(this.provider.Client, 'find').callsFake(async () => { });
-    await this.agent.post(route)
+    sinon.stub(fixture3.provider.Client, 'find').callsFake(async () => { });
+    await fixture3.agent.post(route)
       .send({
         xsrf,
         user_code: 'FOO-NOT-FOUND-CLIENT',
       })
       .type('form')
       .expect(400)
-      .expect(new RegExp(`<form id="op.deviceInputForm" novalidate method="post" action="http://127.0.0.1:\\d+${this.suitePath('/device')}">`))
+      .expect(new RegExp(`<form id="op.deviceInputForm" novalidate method="post" action="http://127.0.0.1:\\d+${fixture3.suitePath('/device')}">`))
       .expect(/<p class="red">There was an error processing your request<\/p>/);
 
-    expect(spy.calledOnce).to.be.true;
+    assert.equal(spy.calledOnce, true);
     sinon.assert.calledWithMatch(spy, any, any, any, sinon.match((err) => {
-      expect(err.name).to.equal('InvalidClient');
+      assert.equal(err.name, 'InvalidClient');
       return true;
     }));
 
-    expect(errSpy.calledOnce).to.be.true;
+    assert.equal(errSpy.calledOnce, true);
   });
 
-  it('re-renders on !ctx.oidc.session.state', async function () {
+  it('re-renders on !ctx.oidc.session.state', { timeout: 3000 }, async () => {
     const errSpy = sinon.spy();
-    this.provider.once('code_verification.error', errSpy);
-    const spy = sinon.spy(i(this.provider).features.deviceFlow, 'userCodeInputSource');
-    await new this.provider.DeviceCode({
+    fixture3.provider.once('code_verification.error', errSpy);
+    const spy = sinon.spy(i(fixture3.provider).features.deviceFlow, 'userCodeInputSource');
+    await new fixture3.provider.DeviceCode({
       userCode: 'FOOCSRF1',
     }).save();
 
-    delete this.getSession().state;
-    await this.agent.post(route)
+    delete fixture3.getSession().state;
+    await fixture3.agent.post(route)
       .send({
         xsrf,
         user_code: 'FOO-CSRF-1',
       })
       .type('form')
       .expect(400)
-      .expect(new RegExp(`<form id="op.deviceInputForm" novalidate method="post" action="http://127.0.0.1:\\d+${this.suitePath('/device')}">`))
+      .expect(new RegExp(`<form id="op.deviceInputForm" novalidate method="post" action="http://127.0.0.1:\\d+${fixture3.suitePath('/device')}">`))
       .expect(/<p class="red">There was an error processing your request<\/p>/);
 
-    expect(spy.calledOnce).to.be.true;
+    assert.equal(spy.calledOnce, true);
     sinon.assert.calledWithMatch(spy, any, any, any, sinon.match((err) => {
-      expect(err.name).to.equal('InvalidRequest');
-      expect(err.error_description).to.equal('could not find device form details');
+      assert.equal(err.name, 'InvalidRequest');
+      assert.equal(err.error_description, 'could not find device form details');
       return true;
     }));
 
-    expect(errSpy.calledOnce).to.be.true;
+    assert.equal(errSpy.calledOnce, true);
   });
 
-  it('re-renders on invalid csrf', async function () {
+  it('re-renders on invalid csrf', { timeout: 3000 }, async () => {
     const errSpy = sinon.spy();
-    this.provider.once('code_verification.error', errSpy);
-    const spy = sinon.spy(i(this.provider).features.deviceFlow, 'userCodeInputSource');
-    await new this.provider.DeviceCode({
+    fixture3.provider.once('code_verification.error', errSpy);
+    const spy = sinon.spy(i(fixture3.provider).features.deviceFlow, 'userCodeInputSource');
+    await new fixture3.provider.DeviceCode({
       userCode: 'FOOCSRF2',
     }).save();
 
-    await this.agent.post(route)
+    await fixture3.agent.post(route)
       .send({
         xsrf: 'invalid-csrf',
         user_code: 'FOO-CSRF-FOO',
       })
       .type('form')
       .expect(400)
-      .expect(new RegExp(`<form id="op.deviceInputForm" novalidate method="post" action="http://127.0.0.1:\\d+${this.suitePath('/device')}">`))
+      .expect(new RegExp(`<form id="op.deviceInputForm" novalidate method="post" action="http://127.0.0.1:\\d+${fixture3.suitePath('/device')}">`))
       .expect(/<p class="red">There was an error processing your request<\/p>/);
 
-    expect(spy.calledOnce).to.be.true;
+    assert.equal(spy.calledOnce, true);
     sinon.assert.calledWithMatch(spy, any, any, any, sinon.match((err) => {
-      expect(err.name).to.equal('InvalidRequest');
-      expect(err.error_description).to.equal('xsrf token invalid');
+      assert.equal(err.name, 'InvalidRequest');
+      assert.equal(err.error_description, 'xsrf token invalid');
       return true;
     }));
 
-    expect(errSpy.calledOnce).to.be.true;
+    assert.equal(errSpy.calledOnce, true);
   });
 });
 
 describe('POST code_verification endpoint w/ verification', () => {
-  before(bootstrap(import.meta.url));
-  before(function () {
-    return this.login({
+  const fixture4 = {};
+
+  before(bootstrap(import.meta.url, fixture4), { timeout: 3000 });
+  before(() => fixture4.login({
       scope: 'openid email',
       rejectedClaims: ['email_verified'],
-    });
-  });
-  afterEach(timekeeper.reset);
-  afterEach(sinon.restore);
+    }), { timeout: 3000 });
+  afterEach(() => timekeeper.reset(), { timeout: 3000 });
+  afterEach(() => sinon.restore(), { timeout: 3000 });
 
   const xsrf = 'foo';
 
-  beforeEach(function () {
-    this.getSession().state = { secret: xsrf };
-  });
+  beforeEach(() => {
+    fixture4.getSession().state = { secret: xsrf };
+  }, { timeout: 3000 });
 
-  passInteractionChecks('native_client_prompt', 'op_claims_missing', () => {
-    it('accepts an abort command', async function () {
-      const spy = sinon.spy(i(this.provider).features.deviceFlow, 'userCodeInputSource');
+  passInteractionChecks(fixture4, 'native_client_prompt', 'op_claims_missing', () => {
+    const fixture5 = Object.create(fixture4);
 
-      let code = await new this.provider.DeviceCode({
+    it('accepts an abort command', { timeout: 3000 }, async () => {
+      const spy = sinon.spy(i(fixture5.provider).features.deviceFlow, 'userCodeInputSource');
+
+      let code = await new fixture5.provider.DeviceCode({
         clientId: 'client',
         userCode: 'FOO',
         params: {
@@ -316,7 +323,7 @@ describe('POST code_verification endpoint w/ verification', () => {
         },
       }).save();
 
-      await this.agent.post(route)
+      await fixture5.agent.post(route)
         .send({
           xsrf,
           confirm: '',
@@ -327,19 +334,19 @@ describe('POST code_verification endpoint w/ verification', () => {
         .expect(200)
         .expect(/The Sign-in request was interrupted/);
 
-      code = await this.provider.DeviceCode.find(code);
+      code = await fixture5.provider.DeviceCode.find(code);
 
-      expect(code).not.to.have.property('accountId');
-      expect(code).to.have.property('error', 'access_denied');
-      expect(code).to.have.property('errorDescription', 'End-User aborted interaction');
+      assert.ok(!('accountId' in Object(code)));
+      ((actual) => { assert.ok('error' in Object(actual)); assert.equal(actual.error, 'access_denied'); })(code);
+      ((actual) => { assert.ok('errorDescription' in Object(actual)); assert.equal(actual.errorDescription, 'End-User aborted interaction'); })(code);
 
-      expect(spy.calledOnce).to.be.true;
+      assert.equal(spy.calledOnce, true);
     });
 
-    it('renders a confirmation and assigns', async function () {
-      const spy = sinon.spy(i(this.provider).features.deviceFlow, 'successSource');
+    it('renders a confirmation and assigns', { timeout: 3000 }, async () => {
+      const spy = sinon.spy(i(fixture5.provider).features.deviceFlow, 'successSource');
 
-      let code = await new this.provider.DeviceCode({
+      let code = await new fixture5.provider.DeviceCode({
         clientId: 'client',
         userCode: 'FOO',
         params: {
@@ -349,7 +356,7 @@ describe('POST code_verification endpoint w/ verification', () => {
         },
       }).save();
 
-      await this.agent.post(route)
+      await fixture5.agent.post(route)
         .send({
           xsrf,
           confirm: 'yes',
@@ -358,23 +365,23 @@ describe('POST code_verification endpoint w/ verification', () => {
         .type('form')
         .expect(200);
 
-      code = await this.provider.DeviceCode.find(code);
+      code = await fixture5.provider.DeviceCode.find(code);
 
-      const session = this.getSession();
+      const session = fixture5.getSession();
 
-      expect(code).not.to.have.property('sid');
-      expect(code).to.have.property('accountId', session.accountId);
-      expect(code).to.have.property('authTime', session.loginTs);
-      expect(code).to.have.property('scope', 'openid email');
-      expect(code).to.have.property('claims').that.eqls({ userinfo: { email: null } });
+      assert.ok(!('sid' in Object(code)));
+      ((actual) => { assert.ok('accountId' in Object(actual)); assert.equal(actual.accountId, session.accountId); })(code);
+      ((actual) => { assert.ok('authTime' in Object(actual)); assert.equal(actual.authTime, session.loginTs); })(code);
+      ((actual) => { assert.ok('scope' in Object(actual)); assert.equal(actual.scope, 'openid email'); })(code);
+      ((actual) => { assert.ok('claims' in Object(actual)); assert.deepEqual(actual.claims, { userinfo: { email: null } }); })(code);
 
-      expect(spy.calledOnce).to.be.true;
+      assert.equal(spy.calledOnce, true);
     });
 
-    it('renders a confirmation and assigns (incl. sid because of client configuration)', async function () {
-      const spy = sinon.spy(i(this.provider).features.deviceFlow, 'successSource');
+    it('renders a confirmation and assigns (incl. sid because of client configuration)', { timeout: 3000 }, async () => {
+      const spy = sinon.spy(i(fixture5.provider).features.deviceFlow, 'successSource');
 
-      let code = await new this.provider.DeviceCode({
+      let code = await new fixture5.provider.DeviceCode({
         clientId: 'client-backchannel',
         userCode: 'FOO',
         params: {
@@ -383,7 +390,7 @@ describe('POST code_verification endpoint w/ verification', () => {
         },
       }).save();
 
-      await this.agent.post(route)
+      await fixture5.agent.post(route)
         .send({
           xsrf,
           confirm: 'yes',
@@ -392,16 +399,16 @@ describe('POST code_verification endpoint w/ verification', () => {
         .type('form')
         .expect(200);
 
-      code = await this.provider.DeviceCode.find(code);
+      code = await fixture5.provider.DeviceCode.find(code);
 
-      expect(code).to.have.property('sid');
-      expect(spy.calledOnce).to.be.true;
+      assert.ok('sid' in Object(code));
+      assert.equal(spy.calledOnce, true);
     });
 
-    it('renders a confirmation and assigns (incl. sid because of claims)', async function () {
-      const spy = sinon.spy(i(this.provider).features.deviceFlow, 'successSource');
+    it('renders a confirmation and assigns (incl. sid because of claims)', { timeout: 3000 }, async () => {
+      const spy = sinon.spy(i(fixture5.provider).features.deviceFlow, 'successSource');
 
-      let code = await new this.provider.DeviceCode({
+      let code = await new fixture5.provider.DeviceCode({
         clientId: 'client',
         userCode: 'FOO',
         params: {
@@ -411,7 +418,7 @@ describe('POST code_verification endpoint w/ verification', () => {
         },
       }).save();
 
-      await this.agent.post(route)
+      await fixture5.agent.post(route)
         .send({
           xsrf,
           confirm: 'yes',
@@ -420,16 +427,16 @@ describe('POST code_verification endpoint w/ verification', () => {
         .type('form')
         .expect(200);
 
-      code = await this.provider.DeviceCode.find(code);
+      code = await fixture5.provider.DeviceCode.find(code);
 
-      expect(code).to.have.property('sid');
-      expect(spy.calledOnce).to.be.true;
+      assert.ok('sid' in Object(code));
+      assert.equal(spy.calledOnce, true);
     });
 
-    it('allows for punctuation to be included and characters to be downcased', async function () {
-      const spy = sinon.spy(i(this.provider).features.deviceFlow, 'successSource');
+    it('allows for punctuation to be included and characters to be downcased', { timeout: 3000 }, async () => {
+      const spy = sinon.spy(i(fixture5.provider).features.deviceFlow, 'successSource');
 
-      let code = await new this.provider.DeviceCode({
+      let code = await new fixture5.provider.DeviceCode({
         clientId: 'client',
         userCode: 'FOOBAR',
         params: {
@@ -439,7 +446,7 @@ describe('POST code_verification endpoint w/ verification', () => {
         },
       }).save();
 
-      await this.agent.post(route)
+      await fixture5.agent.post(route)
         .send({
           xsrf,
           confirm: 'yes',
@@ -448,16 +455,16 @@ describe('POST code_verification endpoint w/ verification', () => {
         .type('form')
         .expect(200);
 
-      code = await this.provider.DeviceCode.find(code);
+      code = await fixture5.provider.DeviceCode.find(code);
 
-      const session = this.getSession();
+      const session = fixture5.getSession();
 
-      expect(code).to.have.property('accountId', session.accountId);
-      expect(code).to.have.property('authTime', session.loginTs);
-      expect(code).to.have.property('scope', 'openid email');
-      expect(code).to.have.property('claims').that.eqls({ userinfo: { email: null } });
+      ((actual) => { assert.ok('accountId' in Object(actual)); assert.equal(actual.accountId, session.accountId); })(code);
+      ((actual) => { assert.ok('authTime' in Object(actual)); assert.equal(actual.authTime, session.loginTs); })(code);
+      ((actual) => { assert.ok('scope' in Object(actual)); assert.equal(actual.scope, 'openid email'); })(code);
+      ((actual) => { assert.ok('claims' in Object(actual)); assert.deepEqual(actual.claims, { userinfo: { email: null } }); })(code);
 
-      expect(spy.calledOnce).to.be.true;
+      assert.equal(spy.calledOnce, true);
     });
   });
 });

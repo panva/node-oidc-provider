@@ -1,4 +1,4 @@
-import { strict as assert } from 'node:assert';
+import assert from 'node:assert/strict';
 
 import { generateKeyPair, exportJWK } from 'jose';
 import merge from 'lodash/merge.js';

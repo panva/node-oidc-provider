@@ -1,3 +1,4 @@
+import { describe, before, it, beforeEach, afterEach } from 'node:test';
 import { SignJWT } from 'jose';
 
 import bootstrap from '../test_helper.js';
@@ -6,42 +7,48 @@ import epochTime from '../../lib/helpers/epoch_time.js';
 import { keypair } from './fapi-final.config.js';
 
 describe('Financial-grade API Security Profile 1.0 - Part 2: Advanced (FINAL) behaviours', () => {
-  before(bootstrap(import.meta.url, { config: 'fapi-final' }));
+  const fixture = {};
+
+  before(bootstrap(import.meta.url, fixture, { config: 'fapi-final' }), { timeout: 3000 });
 
   describe('userinfo', () => {
-    before(function () { return this.login(); });
+    const fixture1 = Object.create(fixture);
 
-    it('does not allow query string bearer token', async function () {
-      const at = await new this.provider.AccessToken({
-        client: await this.provider.Client.find('client'),
-        accountId: this.loggedInAccountId,
-        grantId: this.getGrantId(),
+    before(() => fixture1.login(), { timeout: 3000 });
+
+    it('does not allow query string bearer token', { timeout: 3000 }, async () => {
+      const at = await new fixture1.provider.AccessToken({
+        client: await fixture1.provider.Client.find('client'),
+        accountId: fixture1.loggedInAccountId,
+        grantId: fixture1.getGrantId(),
         scope: 'openid',
       }).save();
 
-      await this.agent.get('/me')
+      await fixture1.agent.get('/me')
         .query({ access_token: at })
-        .expect(this.failWith(400, 'invalid_request', 'access tokens must not be provided via query parameter'));
+        .expect(fixture1.failWith(400, 'invalid_request', 'access tokens must not be provided via query parameter'));
 
-      await this.agent.get('/me')
+      await fixture1.agent.get('/me')
         .auth(at, { type: 'bearer' })
         .expect(200)
-        .expect({ sub: this.loggedInAccountId });
+        .expect({ sub: fixture1.loggedInAccountId });
 
-      await this.agent.post('/me')
+      await fixture1.agent.post('/me')
         .type('form')
         .send({ access_token: at })
         .expect(200)
-        .expect({ sub: this.loggedInAccountId });
+        .expect({ sub: fixture1.loggedInAccountId });
     });
   });
 
   describe('FAPI 1.0 Final Authorization Request', () => {
-    beforeEach(function () { return this.login(); });
-    afterEach(function () { return this.logout(); });
+    const fixture2 = Object.create(fixture);
 
-    it('does not require PKCE to be used on the authorization endpoint', function () {
-      const auth = new this.AuthorizationRequest({
+    beforeEach(() => fixture2.login(), { timeout: 3000 });
+    afterEach(() => fixture2.logout(), { timeout: 3000 });
+
+    it('does not require PKCE to be used on the authorization endpoint', { timeout: 3000 }, () => {
+      const auth = new fixture2.AuthorizationRequest({
         scope: 'openid',
         client_id: 'client',
         response_type: 'code id_token',
@@ -50,8 +57,8 @@ describe('Financial-grade API Security Profile 1.0 - Part 2: Advanced (FINAL) be
         code_challenge: undefined,
       });
 
-      return this.wrap({
-        agent: this.agent,
+      return fixture2.wrap({
+        agent: fixture2.agent,
         route: '/auth',
         verb: 'get',
         auth,
@@ -62,8 +69,7 @@ describe('Financial-grade API Security Profile 1.0 - Part 2: Advanced (FINAL) be
         .expect(auth.validateClientLocation);
     });
 
-    it('requires PKCE to be used when PAR is used', function () {
-      return this.agent.post('/request')
+    it('requires PKCE to be used when PAR is used', { timeout: 3000 }, () => fixture2.agent.post('/request')
         .auth('client', 'secret')
         .send({
           scope: 'openid',
@@ -79,19 +85,18 @@ describe('Financial-grade API Security Profile 1.0 - Part 2: Advanced (FINAL) be
         .expect({
           error: 'invalid_request',
           error_description: 'Authorization Server policy requires PKCE to be used for this request',
-        });
-    });
+        }));
 
-    it('requires jwt response mode to be used when id token is not issued by authorization endpoint', function () {
-      const auth = new this.AuthorizationRequest({
+    it('requires jwt response mode to be used when id token is not issued by authorization endpoint', { timeout: 3000 }, () => {
+      const auth = new fixture2.AuthorizationRequest({
         scope: 'openid',
         client_id: 'client',
         response_type: 'code',
         nonce: 'foo',
       });
 
-      return this.wrap({
-        agent: this.agent,
+      return fixture2.wrap({
+        agent: fixture2.agent,
         route: '/auth',
         verb: 'get',
         auth,
@@ -102,25 +107,25 @@ describe('Financial-grade API Security Profile 1.0 - Part 2: Advanced (FINAL) be
         .expect(auth.validateErrorDescription('requested response_mode is not allowed for this client or request'));
     });
 
-    it('requires jwt response mode to be used when id token is not issued by authorization endpoint (JAR)', async function () {
+    it('requires jwt response mode to be used when id token is not issued by authorization endpoint (JAR)', { timeout: 3000 }, async () => {
       const request = await new SignJWT({
         scope: 'openid',
         client_id: 'client',
         response_type: 'code',
         nonce: 'foo',
         iss: 'client',
-        aud: this.provider.issuer,
+        aud: fixture2.provider.issuer,
         exp: epochTime() + 60,
         nbf: epochTime(),
       }).setProtectedHeader({ alg: 'ES256' }).sign(keypair.privateKey);
 
-      const auth = new this.AuthorizationRequest({
+      const auth = new fixture2.AuthorizationRequest({
         request,
         state: undefined,
       });
 
-      return this.wrap({
-        agent: this.agent,
+      return fixture2.wrap({
+        agent: fixture2.agent,
         route: '/auth',
         verb: 'get',
         auth,
@@ -133,10 +138,12 @@ describe('Financial-grade API Security Profile 1.0 - Part 2: Advanced (FINAL) be
   });
 
   describe('Request Object', () => {
-    beforeEach(function () { return this.login(); });
-    afterEach(function () { return this.logout(); });
+    const fixture3 = Object.create(fixture);
 
-    it('still works', async function () {
+    beforeEach(() => fixture3.login(), { timeout: 3000 });
+    afterEach(() => fixture3.logout(), { timeout: 3000 });
+
+    it('still works', { timeout: 3000 }, async () => {
       const request = await new SignJWT({
         client_id: 'client',
         iss: 'client',
@@ -144,13 +151,13 @@ describe('Financial-grade API Security Profile 1.0 - Part 2: Advanced (FINAL) be
         response_type: 'code id_token',
         nonce: 'foo',
         redirect_uri: 'https://client.example.com/cb',
-        aud: this.provider.issuer,
+        aud: fixture3.provider.issuer,
         state: 'foo',
         exp: epochTime() + 60,
         nbf: epochTime(),
       }).setProtectedHeader({ alg: 'ES256' }).sign(keypair.privateKey);
 
-      const auth = new this.AuthorizationRequest({
+      const auth = new fixture3.AuthorizationRequest({
         request,
         scope: 'openid',
         client_id: 'client',
@@ -159,8 +166,8 @@ describe('Financial-grade API Security Profile 1.0 - Part 2: Advanced (FINAL) be
         state: 'foo',
       });
 
-      return this.wrap({
-        agent: this.agent,
+      return fixture3.wrap({
+        agent: fixture3.agent,
         route: '/auth',
         verb: 'get',
         auth,
@@ -171,9 +178,9 @@ describe('Financial-grade API Security Profile 1.0 - Part 2: Advanced (FINAL) be
         .expect(auth.validateClientLocation);
     });
 
-    it('requires exp to be provided in the Request Object', async function () {
+    it('requires exp to be provided in the Request Object', { timeout: 3000 }, async () => {
       const request = await new SignJWT({
-        aud: this.provider.issuer,
+        aud: fixture3.provider.issuer,
         // exp: epochTime() + 60,
         nbf: epochTime(),
         iss: 'client',
@@ -183,7 +190,7 @@ describe('Financial-grade API Security Profile 1.0 - Part 2: Advanced (FINAL) be
         nonce: 'foo',
       }).setProtectedHeader({ alg: 'ES256' }).sign(keypair.privateKey);
 
-      const auth = new this.AuthorizationRequest({
+      const auth = new fixture3.AuthorizationRequest({
         request,
         scope: 'openid',
         client_id: 'client',
@@ -191,8 +198,8 @@ describe('Financial-grade API Security Profile 1.0 - Part 2: Advanced (FINAL) be
         nonce: 'foo',
       });
 
-      return this.wrap({
-        agent: this.agent,
+      return fixture3.wrap({
+        agent: fixture3.agent,
         route: '/auth',
         verb: 'get',
         auth,
@@ -205,9 +212,9 @@ describe('Financial-grade API Security Profile 1.0 - Part 2: Advanced (FINAL) be
         .expect(auth.validateErrorDescription("Request Object is missing the 'exp' claim"));
     });
 
-    it('requires nbf to be provided in the Request Object', async function () {
+    it('requires nbf to be provided in the Request Object', { timeout: 3000 }, async () => {
       const request = await new SignJWT({
-        aud: this.provider.issuer,
+        aud: fixture3.provider.issuer,
         exp: epochTime() + 60,
         // nbf: epochTime(),
         client_id: 'client',
@@ -217,7 +224,7 @@ describe('Financial-grade API Security Profile 1.0 - Part 2: Advanced (FINAL) be
         nonce: 'foo',
       }).setProtectedHeader({ alg: 'ES256' }).sign(keypair.privateKey);
 
-      const auth = new this.AuthorizationRequest({
+      const auth = new fixture3.AuthorizationRequest({
         request,
         scope: 'openid',
         client_id: 'client',
@@ -225,8 +232,8 @@ describe('Financial-grade API Security Profile 1.0 - Part 2: Advanced (FINAL) be
         nonce: 'foo',
       });
 
-      return this.wrap({
-        agent: this.agent,
+      return fixture3.wrap({
+        agent: fixture3.agent,
         route: '/auth',
         verb: 'get',
         auth,
@@ -239,11 +246,11 @@ describe('Financial-grade API Security Profile 1.0 - Part 2: Advanced (FINAL) be
         .expect(auth.validateErrorDescription("Request Object is missing the 'nbf' claim"));
     });
 
-    it('requires nbf to be no more than 3600 from exp', async function () {
+    it('requires nbf to be no more than 3600 from exp', { timeout: 3000 }, async () => {
       const request = await new SignJWT({
         exp: epochTime() + 60,
         nbf: epochTime() - 3600,
-        aud: this.provider.issuer,
+        aud: fixture3.provider.issuer,
         client_id: 'client',
         scope: 'openid',
         iss: 'client',
@@ -251,7 +258,7 @@ describe('Financial-grade API Security Profile 1.0 - Part 2: Advanced (FINAL) be
         nonce: 'foo',
       }).setProtectedHeader({ alg: 'ES256' }).sign(keypair.privateKey);
 
-      const auth = new this.AuthorizationRequest({
+      const auth = new fixture3.AuthorizationRequest({
         request,
         scope: 'openid',
         client_id: 'client',
@@ -259,8 +266,8 @@ describe('Financial-grade API Security Profile 1.0 - Part 2: Advanced (FINAL) be
         nonce: 'foo',
       });
 
-      return this.wrap({
-        agent: this.agent,
+      return fixture3.wrap({
+        agent: fixture3.agent,
         route: '/auth',
         verb: 'get',
         auth,

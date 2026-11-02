@@ -1,7 +1,8 @@
+import { describe, before, it, after, beforeEach } from 'node:test';
+import assert from 'node:assert/strict';
 import * as querystring from 'node:querystring';
 
 import sinon from 'sinon';
-import { expect } from 'chai';
 
 import bootstrap, { skipConsent } from '../../test_helper.js';
 import epochTime from '../../../lib/helpers/epoch_time.js';
@@ -16,33 +17,37 @@ const response_type = 'code';
 const scope = 'openid';
 
 describe('BASIC code', () => {
-  before(bootstrap(import.meta.url));
+  const fixture = {};
+
+  before(bootstrap(import.meta.url, fixture), { timeout: 3000 });
 
   ['get', 'post'].forEach((verb) => {
     describe(`${verb} ${route} with session`, () => {
-      before(function () { return this.login(); });
+      const fixture1 = Object.create(fixture);
 
-      it('responds with a code in search', function () {
-        const auth = new this.AuthorizationRequest({
+      before(() => fixture1.login(), { timeout: 3000 });
+
+      it('responds with a code in search', { timeout: 3000 }, () => {
+        const auth = new fixture1.AuthorizationRequest({
           response_type,
           scope,
         });
 
-        return this.wrap({ route, verb, auth })
+        return fixture1.wrap({ route, verb, auth })
           .expect(303)
           .expect(auth.validatePresence(['code', 'state']))
           .expect(auth.validateState)
           .expect(auth.validateClientLocation);
       });
 
-      it('responds with a code in fragment', function () {
-        const auth = new this.AuthorizationRequest({
+      it('responds with a code in fragment', { timeout: 3000 }, () => {
+        const auth = new fixture1.AuthorizationRequest({
           response_type,
           response_mode: 'fragment',
           scope,
         });
 
-        return this.wrap({ route, verb, auth })
+        return fixture1.wrap({ route, verb, auth })
           .expect(303)
           .expect(auth.validateFragment)
           .expect(auth.validatePresence(['code', 'state']))
@@ -50,26 +55,23 @@ describe('BASIC code', () => {
           .expect(auth.validateClientLocation);
       });
 
-      it('populates ctx.oidc.entities', function (done) {
-        this.assertOnce((ctx) => {
-          expect(ctx.oidc.entities).to.have.keys('AuthorizationCode', 'Grant', 'Client', 'Account', 'Session');
-          expect(ctx.oidc.params).to.include({
-            extra: 'provided',
-            extra2: 'defaulted',
-          });
+      it('populates ctx.oidc.entities', { timeout: 3000 }, (_t, done) => {
+        fixture1.assertOnce((ctx) => {
+          assert.deepEqual(new Set(Object.keys(ctx.oidc.entities)), new Set(['AuthorizationCode', 'Grant', 'Client', 'Account', 'Session']));
+          ((actual) => { assert.ok("extra" in Object(actual)); assert.equal(actual.extra, 'provided'); assert.ok("extra2" in Object(actual)); assert.equal(actual.extra2, 'defaulted'); })(ctx.oidc.params);
         }, done);
 
-        const auth = new this.AuthorizationRequest({
+        const auth = new fixture1.AuthorizationRequest({
           response_type,
           scope,
           extra: 'provided',
         });
 
-        this.wrap({ route, verb, auth }).end(() => {});
+        fixture1.wrap({ route, verb, auth }).end(() => {});
       });
 
-      it('allows native apps to do none auth check when already authorized', function () {
-        const auth = new this.AuthorizationRequest({
+      it('allows native apps to do none auth check when already authorized', { timeout: 3000 }, () => {
+        const auth = new fixture1.AuthorizationRequest({
           response_type: 'none',
           prompt: 'none',
           client_id: 'client-native',
@@ -77,153 +79,159 @@ describe('BASIC code', () => {
           scope,
         });
 
-        return this.wrap({ route, verb, auth })
+        return fixture1.wrap({ route, verb, auth })
           .expect(303)
           .expect(auth.validatePresence(['state']))
           .expect(auth.validateState)
           .expect(auth.validateClientLocation);
       });
 
-      it('ignores unsupported scopes', function () {
+      it('ignores unsupported scopes', { timeout: 3000 }, () => {
         const spy = sinon.spy();
-        this.provider.once('authorization_code.saved', spy);
-        const auth = new this.AuthorizationRequest({
+        fixture1.provider.once('authorization_code.saved', spy);
+        const auth = new fixture1.AuthorizationRequest({
           response_type,
           scope: 'openid and unsupported',
         });
 
-        return this.wrap({ route, verb, auth })
+        return fixture1.wrap({ route, verb, auth })
           .expect(303)
           .expect(auth.validateClientLocation)
           .expect(() => {
-            expect(spy.firstCall.args[0]).to.have.property('scope', 'openid');
+            ((actual) => { assert.ok('scope' in Object(actual)); assert.equal(actual.scope, 'openid'); })(spy.firstCall.args[0]);
           });
       });
 
       describe('ignoring the offline_access scope', () => {
-        skipConsent();
+        const fixture2 = Object.create(fixture1);
 
-        it('ignores the scope offline_access unless prompt consent is present', function () {
+        skipConsent(fixture2);
+
+        it('ignores the scope offline_access unless prompt consent is present', { timeout: 3000 }, () => {
           const spy = sinon.spy();
-          this.provider.once('authorization_code.saved', spy);
-          const auth = new this.AuthorizationRequest({
+          fixture2.provider.once('authorization_code.saved', spy);
+          const auth = new fixture2.AuthorizationRequest({
             response_type,
             scope: 'openid offline_access',
           });
 
-          return this.wrap({ route, verb, auth })
+          return fixture2.wrap({ route, verb, auth })
             .expect(303)
             .expect(auth.validateClientLocation)
             .expect(() => {
-              expect(spy.firstCall.args[0]).to.have.property('scope').and.not.include('offline_access');
+              ((actual) => { assert.ok('scope' in Object(actual)); assert.ok(!(actual.scope.includes('offline_access'))); })(spy.firstCall.args[0]);
             });
         });
 
-        it('ignores the scope offline_access unless the client can do refresh_token exchange', function () {
+        it('ignores the scope offline_access unless the client can do refresh_token exchange', { timeout: 3000 }, () => {
           const spy = sinon.spy();
-          this.provider.once('authorization_code.saved', spy);
-          const auth = new this.AuthorizationRequest({
+          fixture2.provider.once('authorization_code.saved', spy);
+          const auth = new fixture2.AuthorizationRequest({
             client_id: 'client-no-refresh',
             response_type,
             prompt: 'consent',
             scope: 'openid offline_access',
           });
 
-          return this.wrap({ route, verb, auth })
+          return fixture2.wrap({ route, verb, auth })
             .expect(303)
             .expect(auth.validateClientLocation)
             .expect(() => {
-              expect(spy.firstCall.args[0]).to.have.property('scope').and.not.include('offline_access');
+              ((actual) => { assert.ok('scope' in Object(actual)); assert.ok(!(actual.scope.includes('offline_access'))); })(spy.firstCall.args[0]);
             });
         });
       });
     });
 
     describe(`${verb} ${route} interactions`, () => {
-      before(function () { return this.logout(); });
-      before(function () {
-        this.policy = i(this.provider).configuration.interactions.policy;
-        i(this.provider).configuration.interactions.policy = [];
-      });
+      const fixture3 = Object.create(fixture);
 
-      after(function () {
-        i(this.provider).configuration.interactions.policy = this.policy;
-      });
+      before(() => fixture3.logout(), { timeout: 3000 });
+      before(() => {
+        fixture3.policy = i(fixture3.provider).configuration.interactions.policy;
+        i(fixture3.provider).configuration.interactions.policy = [];
+      }, { timeout: 3000 });
 
-      it('no account id was resolved and no interactions requested', async function () {
+      after(() => {
+        i(fixture3.provider).configuration.interactions.policy = fixture3.policy;
+      }, { timeout: 3000 });
+
+      it('no account id was resolved and no interactions requested', { timeout: 3000 }, async () => {
         const spy = sinon.spy();
-        this.provider.on('authorization.error', spy);
+        fixture3.provider.on('authorization.error', spy);
 
-        const auth = new this.AuthorizationRequest({
+        const auth = new fixture3.AuthorizationRequest({
           response_type,
           scope,
         });
 
-        await this.wrap({ route, verb, auth })
+        await fixture3.wrap({ route, verb, auth })
           .expect(303)
           .expect(auth.validateClientLocation)
           .expect(auth.validatePresence(['error', 'state']))
           .expect(auth.validateError('access_denied'));
 
-        expect(spy.calledOnce).to.be.true;
-        expect(spy.args[0][1]).to.have.property('error_detail', 'authorization request resolved without requesting interactions but no account id was resolved');
+        assert.equal(spy.calledOnce, true);
+        ((actual) => { assert.ok('error_detail' in Object(actual)); assert.equal(actual.error_detail, 'authorization request resolved without requesting interactions but no account id was resolved'); })(spy.args[0][1]);
       });
 
-      it('no scope was resolved and no interactions requested', async function () {
-        await this.login();
+      it('no scope was resolved and no interactions requested', { timeout: 3000 }, async () => {
+        await fixture3.login();
         const spy = sinon.spy();
-        this.provider.on('authorization.error', spy);
+        fixture3.provider.on('authorization.error', spy);
 
-        const auth = new this.AuthorizationRequest({
+        const auth = new fixture3.AuthorizationRequest({
           response_type,
           // scope,
         });
 
-        await this.wrap({ route, verb, auth })
+        await fixture3.wrap({ route, verb, auth })
           .expect(303)
           .expect(auth.validateClientLocation)
           .expect(auth.validatePresence(['error', 'state']))
           .expect(auth.validateError('access_denied'));
 
-        expect(spy.calledOnce).to.be.true;
-        expect(spy.args[0][1]).to.have.property('error_detail', 'authorization request resolved without requesting interactions but no scope was granted');
+        assert.equal(spy.calledOnce, true);
+        ((actual) => { assert.ok('error_detail' in Object(actual)); assert.equal(actual.error_detail, 'authorization request resolved without requesting interactions but no scope was granted'); })(spy.args[0][1]);
       });
     });
 
     describe(`${verb} ${route} interactions`, () => {
-      beforeEach(function () { return this.login(); });
-      after(function () { return this.logout(); });
+      const fixture4 = Object.create(fixture);
 
-      it('no account id was found in the session info', function () {
-        const session = this.getSession();
+      beforeEach(() => fixture4.login(), { timeout: 3000 });
+      after(() => fixture4.logout(), { timeout: 3000 });
+
+      it('no account id was found in the session info', { timeout: 3000 }, () => {
+        const session = fixture4.getSession();
         delete session.loginTs;
         delete session.accountId;
 
-        const auth = new this.AuthorizationRequest({
+        const auth = new fixture4.AuthorizationRequest({
           response_type,
           scope,
         });
 
-        return this.wrap({ route, verb, auth })
+        return fixture4.wrap({ route, verb, auth })
           .expect(303)
           .expect(auth.validateInteractionRedirect)
           .expect(auth.validateInteraction('login', 'no_session'));
       });
 
-      it('additional scopes are requested', function () {
-        const auth = new this.AuthorizationRequest({
+      it('additional scopes are requested', { timeout: 3000 }, () => {
+        const auth = new fixture4.AuthorizationRequest({
           response_type,
           scope: 'openid email',
         });
 
-        return this.wrap({ route, verb, auth })
+        return fixture4.wrap({ route, verb, auth })
           .expect(303)
           .expect(auth.validateInteractionRedirect)
           .expect(auth.validateInteraction('consent', 'op_scopes_missing'));
       });
 
-      it('are required for native clients by default', function () {
-        const auth = new this.AuthorizationRequest({
+      it('are required for native clients by default', { timeout: 3000 }, () => {
+        const auth = new fixture4.AuthorizationRequest({
           response_type,
           client_id: 'client-native',
           redirect_uri: 'com.example.app:/cb',
@@ -232,111 +240,111 @@ describe('BASIC code', () => {
           code_challenge_method: 'S256',
         });
 
-        return this.wrap({ route, verb, auth })
+        return fixture4.wrap({ route, verb, auth })
           .expect(303)
           .expect(auth.validateInteractionRedirect)
           .expect(auth.validateInteraction('consent', 'native_client_prompt'));
       });
 
-      it('login was requested by the client by prompt parameter', function () {
-        const auth = new this.AuthorizationRequest({
+      it('login was requested by the client by prompt parameter', { timeout: 3000 }, () => {
+        const auth = new fixture4.AuthorizationRequest({
           response_type,
           prompt: 'login',
           scope,
         });
 
-        return this.wrap({ route, verb, auth })
+        return fixture4.wrap({ route, verb, auth })
           .expect(303)
           .expect(auth.validateInteractionRedirect)
           .expect(auth.validateInteraction('login', 'login_prompt'));
       });
 
-      it('login was requested by the client by max_age=0', function () {
-        const auth = new this.AuthorizationRequest({
+      it('login was requested by the client by max_age=0', { timeout: 3000 }, () => {
+        const auth = new fixture4.AuthorizationRequest({
           response_type,
           max_age: 0,
           scope,
         });
 
-        return this.wrap({ route, verb, auth })
+        return fixture4.wrap({ route, verb, auth })
           .expect(303)
           .expect(auth.validateInteractionRedirect)
           .expect(auth.validateInteraction('login', 'login_prompt'));
       });
 
-      it('interaction check no session & max_age combo', function () {
-        this.logout();
+      it('interaction check no session & max_age combo', { timeout: 3000 }, () => {
+        fixture4.logout();
 
-        const auth = new this.AuthorizationRequest({
+        const auth = new fixture4.AuthorizationRequest({
           response_type,
           max_age: '1800', // 30 minutes old session max
           scope,
         });
 
-        return this.wrap({ route, verb, auth })
+        return fixture4.wrap({ route, verb, auth })
           .expect(303)
           .expect(auth.validateInteractionRedirect)
           .expect(auth.validateInteraction('login', 'max_age', 'no_session'));
       });
 
-      it('session is too old for this authorization request (1/2)', function () {
-        const session = this.getSession();
+      it('session is too old for this authorization request (1/2)', { timeout: 3000 }, () => {
+        const session = fixture4.getSession();
         session.loginTs = epochTime() - 3600; // an hour ago
 
-        const auth = new this.AuthorizationRequest({
+        const auth = new fixture4.AuthorizationRequest({
           response_type,
           max_age: '1800', // 30 minutes old session max
           scope,
         });
 
-        return this.wrap({ route, verb, auth })
+        return fixture4.wrap({ route, verb, auth })
           .expect(303)
           .expect(auth.validateInteractionRedirect)
           .expect(auth.validateInteraction('login', 'max_age'));
       });
 
-      it('session is too old for this authorization request (2/2)', function () {
-        const session = this.getSession();
+      it('session is too old for this authorization request (2/2)', { timeout: 3000 }, () => {
+        const session = fixture4.getSession();
         delete session.loginTs;
 
-        const auth = new this.AuthorizationRequest({
+        const auth = new fixture4.AuthorizationRequest({
           response_type,
           max_age: '1800', // 30 minutes old session max
           scope,
         });
 
-        return this.wrap({ route, verb, auth })
+        return fixture4.wrap({ route, verb, auth })
           .expect(303)
           .expect(auth.validateInteractionRedirect)
           .expect(auth.validateInteraction('login', 'max_age'));
       });
 
-      it('custom interactions can be requested', function () {
-        const auth = new this.AuthorizationRequest({
+      it('custom interactions can be requested', { timeout: 3000 }, () => {
+        const auth = new fixture4.AuthorizationRequest({
           response_type,
           scope,
           triggerCustomFail: 'foo',
         });
 
-        return this.wrap({ route, verb, auth })
+        return fixture4.wrap({ route, verb, auth })
           .expect(303)
           .expect(auth.validateInteractionRedirect)
           .expect(auth.validateInteraction('login', 'reason_foo'));
       });
 
-      it('session is too old for this client', async function () {
-        const client = await this.provider.Client.find('client');
+      it('session is too old for this client', { timeout: 3000 }, async () => {
+        const client = await fixture4.provider.Client.find('client');
         client.defaultMaxAge = 1800;
 
-        const session = this.getSession();
+        const session = fixture4.getSession();
         session.loginTs = epochTime() - 3600; // an hour ago
 
-        const auth = new this.AuthorizationRequest({
+        const auth = new fixture4.AuthorizationRequest({
           response_type,
           scope,
         });
 
-        return this.wrap({ route, verb, auth })
+        return fixture4.wrap({ route, verb, auth })
           .expect(() => {
             delete client.defaultMaxAge;
           })
@@ -347,11 +355,13 @@ describe('BASIC code', () => {
     });
 
     describe(`${verb} ${route} errors`, () => {
-      it('dupe parameters are rejected and ignored in further processing', function () {
+      const fixture5 = Object.create(fixture);
+
+      it('dupe parameters are rejected and ignored in further processing', { timeout: 3000 }, () => {
         // fake a query like this state=foo&state=foo
         const spy = sinon.spy();
-        this.provider.once('authorization.error', spy);
-        const auth = new this.AuthorizationRequest({
+        fixture5.provider.once('authorization.error', spy);
+        const auth = new fixture5.AuthorizationRequest({
           response_type,
           scope,
           state: 'foo',
@@ -360,11 +370,11 @@ describe('BASIC code', () => {
         const wrapped = ((data) => {
           switch (verb) {
             case 'get':
-              return this.agent
+              return fixture5.agent
                 .get(route)
                 .query(`${data}&state=foo&scope=openid&response_type=${response_type}`);
             case 'post':
-              return this.agent
+              return fixture5.agent
                 .post(route)
                 .send(`${data}&state=foo&scope=openid&response_type=${response_type}`)
                 .type('form');
@@ -374,7 +384,7 @@ describe('BASIC code', () => {
 
         return wrapped.expect(303)
           .expect(() => {
-            expect(spy.calledOnce).to.be.true;
+            assert.equal(spy.calledOnce, true);
           })
           .expect(auth.validatePresence(['error', 'error_description'])) // notice state is not expected
           // .expect(auth.validateState) // notice state is not expected
@@ -383,12 +393,12 @@ describe('BASIC code', () => {
           .expect(auth.validateErrorDescription("'response_type', 'scope', and 'state' parameters must not be provided twice"));
       });
 
-      it('invalid response mode (not validated yet)', function () {
+      it('invalid response mode (not validated yet)', { timeout: 3000 }, () => {
         // fake a query like this state=foo&state=foo to trigger
         // a validation error prior to validating response mode
         const spy = sinon.spy();
-        this.provider.once('authorization.error', spy);
-        const auth = new this.AuthorizationRequest({
+        fixture5.provider.once('authorization.error', spy);
+        const auth = new fixture5.AuthorizationRequest({
           response_type,
           scope,
           state: 'foo',
@@ -398,11 +408,11 @@ describe('BASIC code', () => {
         const wrapped = ((data) => {
           switch (verb) {
             case 'get':
-              return this.agent
+              return fixture5.agent
                 .get(route)
                 .query(`${data}&state=bar`);
             case 'post':
-              return this.agent
+              return fixture5.agent
                 .post(route)
                 .send(`${data}&state=bar`)
                 .type('form');
@@ -412,7 +422,7 @@ describe('BASIC code', () => {
 
         return wrapped.expect(303)
           .expect(() => {
-            expect(spy.calledOnce).to.be.true;
+            assert.equal(spy.calledOnce, true);
           })
           .expect(auth.validatePresence(['error', 'error_description'])) // notice state is not expected
           // .expect(auth.validateState) // notice state is not expected
@@ -421,10 +431,10 @@ describe('BASIC code', () => {
           .expect(auth.validateErrorDescription("'state' parameter must not be provided twice"));
       });
 
-      it('response mode provided twice', function () {
+      it('response mode provided twice', { timeout: 3000 }, () => {
         const spy = sinon.spy();
-        this.provider.once('authorization.error', spy);
-        const auth = new this.AuthorizationRequest({
+        fixture5.provider.once('authorization.error', spy);
+        const auth = new fixture5.AuthorizationRequest({
           response_type,
           scope,
           response_mode: 'query',
@@ -433,11 +443,11 @@ describe('BASIC code', () => {
         const wrapped = ((data) => {
           switch (verb) {
             case 'get':
-              return this.agent
+              return fixture5.agent
                 .get(route)
                 .query(`${data}&response_mode=query`);
             case 'post':
-              return this.agent
+              return fixture5.agent
                 .post(route)
                 .send(`${data}&response_mode=query`)
                 .type('form');
@@ -447,7 +457,7 @@ describe('BASIC code', () => {
 
         return wrapped.expect(303)
           .expect(() => {
-            expect(spy.calledOnce).to.be.true;
+            assert.equal(spy.calledOnce, true);
           })
           .expect(auth.validatePresence(['error', 'error_description', 'state']))
           .expect(auth.validateClientLocation)
@@ -455,20 +465,20 @@ describe('BASIC code', () => {
           .expect(auth.validateErrorDescription("'response_mode' parameter must not be provided twice"));
       });
 
-      it('unregistered scope requested', function () {
+      it('unregistered scope requested', { timeout: 3000 }, () => {
         const spy = sinon.spy();
-        this.provider.once('authorization.error', spy);
-        const auth = new this.AuthorizationRequest({
+        fixture5.provider.once('authorization.error', spy);
+        const auth = new fixture5.AuthorizationRequest({
           client_id: 'client-limited-scope',
           response_type: 'code',
           prompt: 'consent',
           scope: 'openid foobar offline_access', // foobar is ignored, offline_access is not allowed
         });
 
-        return this.wrap({ route, verb, auth })
+        return fixture5.wrap({ route, verb, auth })
           .expect(303)
           .expect(() => {
-            expect(spy.calledOnce).to.be.true;
+            assert.equal(spy.calledOnce, true);
           })
           .expect(auth.validatePresence(['error', 'error_description', 'state', 'scope']))
           .expect(auth.validateState)
@@ -478,13 +488,13 @@ describe('BASIC code', () => {
           .expect(auth.validateErrorDescription('requested scope is not allowed'));
       });
 
-      it('rejects scope values outside the scope-token grammar', function () {
-        const auth = new this.AuthorizationRequest({
+      it('rejects scope values outside the scope-token grammar', { timeout: 3000 }, () => {
+        const auth = new fixture5.AuthorizationRequest({
           response_type: 'code',
           scope: 'openid profile\ninjected',
         });
 
-        return this.wrap({ route, verb, auth })
+        return fixture5.wrap({ route, verb, auth })
           .expect(303)
           .expect(auth.validatePresence(['error', 'error_description', 'state']))
           .expect(auth.validateState)
@@ -493,19 +503,19 @@ describe('BASIC code', () => {
           .expect(auth.validateErrorDescription('scope contains invalid characters'));
       });
 
-      it('disallowed response mode', function () {
+      it('disallowed response mode', { timeout: 3000 }, () => {
         const spy = sinon.spy();
-        this.provider.once('authorization.error', spy);
-        const auth = new this.AuthorizationRequest({
+        fixture5.provider.once('authorization.error', spy);
+        const auth = new fixture5.AuthorizationRequest({
           response_type: 'code token',
           scope,
           response_mode: 'query',
         });
 
-        return this.wrap({ route, verb, auth })
+        return fixture5.wrap({ route, verb, auth })
           .expect(303)
           .expect(() => {
-            expect(spy.calledOnce).to.be.true;
+            assert.equal(spy.calledOnce, true);
           })
           .expect(auth.validatePresence(['error', 'error_description', 'state']))
           .expect(auth.validateState)
@@ -515,20 +525,20 @@ describe('BASIC code', () => {
       });
 
       ['request', 'request_uri', 'registration'].forEach((param) => {
-        it(`not supported parameter ${param}`, function () {
+        it(`not supported parameter ${param}`, { timeout: 3000 }, () => {
           const spy = sinon.spy();
-          this.provider.once('authorization.error', spy);
-          const auth = new this.AuthorizationRequest({
+          fixture5.provider.once('authorization.error', spy);
+          const auth = new fixture5.AuthorizationRequest({
             response_type,
             scope,
             [param]: 'some',
           });
 
-          return this.agent.get(route)
+          return fixture5.agent.get(route)
             .query(auth)
             .expect(303)
             .expect(() => {
-              expect(spy.calledOnce).to.be.true;
+              assert.equal(spy.calledOnce, true);
             })
             .expect(auth.validatePresence(['error', 'state']))
             .expect(auth.validateState)
@@ -537,41 +547,43 @@ describe('BASIC code', () => {
         });
       });
 
-      context('when client has a single redirect_uri', () => {
-        after(async function () {
-          i(this.provider).configuration.allowOmittingSingleRegisteredRedirectUri = false;
-          await this.logout();
-        });
+      describe('when client has a single redirect_uri', () => {
+        const fixture6 = Object.create(fixture5);
 
-        it('missing mandatory parameter redirect_uri', function () {
+        after(async () => {
+          i(fixture6.provider).configuration.allowOmittingSingleRegisteredRedirectUri = false;
+          await fixture6.logout();
+        }, { timeout: 3000 });
+
+        it('missing mandatory parameter redirect_uri', { timeout: 3000 }, () => {
           const emitSpy = sinon.spy();
-          const renderSpy = sinon.spy(i(this.provider).configuration, 'renderError');
-          this.provider.once('authorization.error', emitSpy);
-          const auth = new this.AuthorizationRequest({
+          const renderSpy = sinon.spy(i(fixture6.provider).configuration, 'renderError');
+          fixture6.provider.once('authorization.error', emitSpy);
+          const auth = new fixture6.AuthorizationRequest({
             response_type,
             scope,
           });
           delete auth.redirect_uri;
 
-          return this.wrap({ route, verb, auth })
+          return fixture6.wrap({ route, verb, auth })
             .expect(() => {
               renderSpy.restore();
             })
             .expect(400)
             .expect(() => {
-              expect(emitSpy.calledOnce).to.be.true;
-              expect(renderSpy.calledOnce).to.be.true;
+              assert.equal(emitSpy.calledOnce, true);
+              assert.equal(renderSpy.calledOnce, true);
               const renderArgs = renderSpy.args[0];
-              expect(renderArgs[1]).to.have.property('error', 'invalid_request');
-              expect(renderArgs[1]).to.have.property('error_description', 'missing required parameter \'redirect_uri\'');
-              expect(renderArgs[2]).to.be.an.instanceof(InvalidRequest);
+              ((actual) => { assert.ok('error' in Object(actual)); assert.equal(actual.error, 'invalid_request'); })(renderArgs[1]);
+              ((actual) => { assert.ok('error_description' in Object(actual)); assert.equal(actual.error_description, 'missing required parameter \'redirect_uri\''); })(renderArgs[1]);
+              ((actual) => { assert.ok(actual instanceof InvalidRequest); })(renderArgs[2]);
             });
         });
 
-        it('unless allowOmittingSingleRegisteredRedirectUri is true', async function () {
-          i(this.provider).configuration.allowOmittingSingleRegisteredRedirectUri = true;
-          await this.login();
-          const auth = new this.AuthorizationRequest({
+        it('unless allowOmittingSingleRegisteredRedirectUri is true', { timeout: 3000 }, async () => {
+          i(fixture6.provider).configuration.allowOmittingSingleRegisteredRedirectUri = true;
+          await fixture6.login();
+          const auth = new fixture6.AuthorizationRequest({
             response_type,
             scope,
             client_id: 'client',
@@ -579,7 +591,7 @@ describe('BASIC code', () => {
 
           delete auth.redirect_uri;
 
-          return this.wrap({ route, verb, auth })
+          return fixture6.wrap({ route, verb, auth })
             .expect(303)
             .expect(auth.validatePresence(['code', 'state']))
             .expect(auth.validateState)
@@ -587,57 +599,59 @@ describe('BASIC code', () => {
         });
       });
 
-      context('when client has more then one redirect_uri', () => {
-        before(async function () {
-          const client = await this.provider.Client.find('client');
+      describe('when client has more then one redirect_uri', () => {
+        const fixture7 = Object.create(fixture5);
+
+        before(async () => {
+          const client = await fixture7.provider.Client.find('client');
           client.redirectUris.push('https://someOtherUri.com');
-        });
+        }, { timeout: 3000 });
 
-        after(async function () {
-          const client = await this.provider.Client.find('client');
+        after(async () => {
+          const client = await fixture7.provider.Client.find('client');
           client.redirectUris.pop();
-        });
+        }, { timeout: 3000 });
 
-        it('missing mandatory parameter redirect_uri', function () {
+        it('missing mandatory parameter redirect_uri', { timeout: 3000 }, () => {
           const emitSpy = sinon.spy();
-          const renderSpy = sinon.spy(i(this.provider).configuration, 'renderError');
-          this.provider.once('authorization.error', emitSpy);
-          const auth = new this.AuthorizationRequest({
+          const renderSpy = sinon.spy(i(fixture7.provider).configuration, 'renderError');
+          fixture7.provider.once('authorization.error', emitSpy);
+          const auth = new fixture7.AuthorizationRequest({
             response_type,
             scope,
           });
           delete auth.redirect_uri;
 
-          return this.agent.get(route)
+          return fixture7.agent.get(route)
             .query(auth)
             .expect(() => {
               renderSpy.restore();
             })
             .expect(400)
             .expect(() => {
-              expect(emitSpy.calledOnce).to.be.true;
-              expect(renderSpy.calledOnce).to.be.true;
+              assert.equal(emitSpy.calledOnce, true);
+              assert.equal(renderSpy.calledOnce, true);
               const renderArgs = renderSpy.args[0];
-              expect(renderArgs[1]).to.have.property('error', 'invalid_request');
-              expect(renderArgs[1]).to.have.property('error_description', 'missing required parameter \'redirect_uri\'');
-              expect(renderArgs[2]).to.be.an.instanceof(InvalidRequest);
+              ((actual) => { assert.ok('error' in Object(actual)); assert.equal(actual.error, 'invalid_request'); })(renderArgs[1]);
+              ((actual) => { assert.ok('error_description' in Object(actual)); assert.equal(actual.error_description, 'missing required parameter \'redirect_uri\''); })(renderArgs[1]);
+              ((actual) => { assert.ok(actual instanceof InvalidRequest); })(renderArgs[2]);
             });
         });
       });
 
-      it('missing mandatory parameter response_type', function () {
+      it('missing mandatory parameter response_type', { timeout: 3000 }, () => {
         const spy = sinon.spy();
-        this.provider.once('authorization.error', spy);
-        const auth = new this.AuthorizationRequest({
+        fixture5.provider.once('authorization.error', spy);
+        const auth = new fixture5.AuthorizationRequest({
           scope,
         });
         delete auth.response_type;
 
-        return this.agent.get(route)
+        return fixture5.agent.get(route)
           .query(auth)
           .expect(303)
           .expect(() => {
-            expect(spy.calledOnce).to.be.true;
+            assert.equal(spy.calledOnce, true);
           })
           .expect(auth.validatePresence(['error', 'error_description', 'state']))
           .expect(auth.validateState)
@@ -646,19 +660,19 @@ describe('BASIC code', () => {
           .expect(auth.validateErrorDescription('missing required parameter \'response_type\''));
       });
 
-      it('unsupported prompt', function () {
+      it('unsupported prompt', { timeout: 3000 }, () => {
         const spy = sinon.spy();
-        this.provider.once('authorization.error', spy);
-        const auth = new this.AuthorizationRequest({
+        fixture5.provider.once('authorization.error', spy);
+        const auth = new fixture5.AuthorizationRequest({
           response_type,
           scope,
           prompt: 'unsupported',
         });
 
-        return this.wrap({ route, verb, auth })
+        return fixture5.wrap({ route, verb, auth })
           .expect(303)
           .expect(() => {
-            expect(spy.calledOnce).to.be.true;
+            assert.equal(spy.calledOnce, true);
           })
           .expect(auth.validatePresence(['error', 'error_description', 'state']))
           .expect(auth.validateState)
@@ -667,19 +681,19 @@ describe('BASIC code', () => {
           .expect(auth.validateErrorDescription('unsupported prompt value requested'));
       });
 
-      it('supported but not requestable prompt', function () {
+      it('supported but not requestable prompt', { timeout: 3000 }, () => {
         const spy = sinon.spy();
-        this.provider.once('authorization.error', spy);
-        const auth = new this.AuthorizationRequest({
+        fixture5.provider.once('authorization.error', spy);
+        const auth = new fixture5.AuthorizationRequest({
           response_type,
           scope,
           prompt: 'unrequestable',
         });
 
-        return this.wrap({ route, verb, auth })
+        return fixture5.wrap({ route, verb, auth })
           .expect(303)
           .expect(() => {
-            expect(spy.calledOnce).to.be.true;
+            assert.equal(spy.calledOnce, true);
           })
           .expect(auth.validatePresence(['error', 'error_description', 'state']))
           .expect(auth.validateState)
@@ -688,19 +702,19 @@ describe('BASIC code', () => {
           .expect(auth.validateErrorDescription('unsupported prompt value requested'));
       });
 
-      it('bad prompt combination', function () {
+      it('bad prompt combination', { timeout: 3000 }, () => {
         const spy = sinon.spy();
-        this.provider.once('authorization.error', spy);
-        const auth = new this.AuthorizationRequest({
+        fixture5.provider.once('authorization.error', spy);
+        const auth = new fixture5.AuthorizationRequest({
           response_type,
           scope,
           prompt: 'none login',
         });
 
-        return this.wrap({ route, verb, auth })
+        return fixture5.wrap({ route, verb, auth })
           .expect(303)
           .expect(() => {
-            expect(spy.calledOnce).to.be.true;
+            assert.equal(spy.calledOnce, true);
           })
           .expect(auth.validatePresence(['error', 'error_description', 'state']))
           .expect(auth.validateState)
@@ -710,136 +724,138 @@ describe('BASIC code', () => {
       });
 
       // section-4.1.2.1 RFC6749
-      it('missing mandatory parameter client_id', function () {
-        const renderSpy = sinon.spy(i(this.provider).configuration, 'renderError');
-        const auth = new this.AuthorizationRequest({
+      it('missing mandatory parameter client_id', { timeout: 3000 }, () => {
+        const renderSpy = sinon.spy(i(fixture5.provider).configuration, 'renderError');
+        const auth = new fixture5.AuthorizationRequest({
           response_type,
           scope,
         });
         delete auth.client_id;
 
-        return this.agent.get(route)
+        return fixture5.agent.get(route)
           .query(auth)
           .expect(() => {
             renderSpy.restore();
           })
           .expect(400)
           .expect(() => {
-            expect(renderSpy.calledOnce).to.be.true;
+            assert.equal(renderSpy.calledOnce, true);
             const renderArgs = renderSpy.args[0];
-            expect(renderArgs[1]).to.have.property('error', 'invalid_request');
-            expect(renderArgs[1]).to.have.property('error_description', 'missing required parameter \'client_id\'');
-            expect(renderArgs[2]).to.be.an.instanceof(InvalidRequest);
+            ((actual) => { assert.ok('error' in Object(actual)); assert.equal(actual.error, 'invalid_request'); })(renderArgs[1]);
+            ((actual) => { assert.ok('error_description' in Object(actual)); assert.equal(actual.error_description, 'missing required parameter \'client_id\''); })(renderArgs[1]);
+            ((actual) => { assert.ok(actual instanceof InvalidRequest); })(renderArgs[2]);
           });
       });
 
       // section-4.1.2.1 RFC6749
-      it('unrecognized client_id provided', function () {
-        const renderSpy = sinon.spy(i(this.provider).configuration, 'renderError');
-        const auth = new this.AuthorizationRequest({
+      it('unrecognized client_id provided', { timeout: 3000 }, () => {
+        const renderSpy = sinon.spy(i(fixture5.provider).configuration, 'renderError');
+        const auth = new fixture5.AuthorizationRequest({
           response_type,
           scope,
           client_id: 'foobar',
         });
 
-        return this.agent.get(route)
+        return fixture5.agent.get(route)
           .query(auth)
           .expect(() => {
             renderSpy.restore();
           })
           .expect(400)
           .expect(() => {
-            expect(renderSpy.calledOnce).to.be.true;
+            assert.equal(renderSpy.calledOnce, true);
             const renderArgs = renderSpy.args[0];
-            expect(renderArgs[1]).to.have.property('error', 'invalid_client');
-            expect(renderArgs[2]).to.be.an.instanceof(InvalidClient);
+            ((actual) => { assert.ok('error' in Object(actual)); assert.equal(actual.error, 'invalid_client'); })(renderArgs[1]);
+            ((actual) => { assert.ok(actual instanceof InvalidClient); })(renderArgs[2]);
           });
       });
 
       describe('section-4.1.2.1 RFC6749', () => {
-        it('validates redirect_uri ad acta [regular error]', function () {
-          const renderSpy = sinon.spy(i(this.provider).configuration, 'renderError');
+        const fixture8 = Object.create(fixture5);
+
+        it('validates redirect_uri ad acta [regular error]', { timeout: 3000 }, () => {
+          const renderSpy = sinon.spy(i(fixture8.provider).configuration, 'renderError');
           const spy = sinon.spy();
-          this.provider.on('authorization.error', spy);
-          const auth = new this.AuthorizationRequest({
+          fixture8.provider.on('authorization.error', spy);
+          const auth = new fixture8.AuthorizationRequest({
             response_type,
             // scope, => 'openid' required when id_token_hint is provided
             id_token_hint: 'foo',
             redirect_uri: 'https://attacker.example.com/foobar',
           });
 
-          return this.agent.get(route)
+          return fixture8.agent.get(route)
             .query(auth)
             .expect(() => {
-              this.provider.removeAllListeners('authorization.error');
+              fixture8.provider.removeAllListeners('authorization.error');
               renderSpy.restore();
             })
             .expect(() => {
-              expect(spy.calledTwice).to.be.true;
+              assert.equal(spy.calledTwice, true);
             })
             .expect(() => {
-              expect(spy.firstCall.calledWithMatch({}, { message: 'invalid_request' })).to.be.true;
-              expect(spy.secondCall.calledWithMatch({}, { message: 'invalid_redirect_uri' })).to.be.true;
+              assert.equal(spy.firstCall.calledWithMatch({}, { message: 'invalid_request' }), true);
+              assert.equal(spy.secondCall.calledWithMatch({}, { message: 'invalid_redirect_uri' }), true);
             })
             .expect(() => {
-              expect(renderSpy.calledOnce).to.be.true;
+              assert.equal(renderSpy.calledOnce, true);
               const renderArgs = renderSpy.args[0];
-              expect(renderArgs[1]).to.have.property('error', 'invalid_redirect_uri');
-              expect(renderArgs[2]).to.be.an.instanceof(InvalidRedirectUri);
+              ((actual) => { assert.ok('error' in Object(actual)); assert.equal(actual.error, 'invalid_redirect_uri'); })(renderArgs[1]);
+              ((actual) => { assert.ok(actual instanceof InvalidRedirectUri); })(renderArgs[2]);
             });
         });
 
-        it('validates redirect_uri ad acta [server error]', function () {
-          const renderSpy = sinon.spy(i(this.provider).configuration, 'renderError');
+        it('validates redirect_uri ad acta [server error]', { timeout: 3000 }, () => {
+          const renderSpy = sinon.spy(i(fixture8.provider).configuration, 'renderError');
           const authErrorSpy = sinon.spy();
           const serverErrorSpy = sinon.spy();
-          this.provider.on('authorization.error', authErrorSpy);
-          this.provider.on('server_error', serverErrorSpy);
-          sinon.stub(i(this.provider).responseModes, 'has').callsFake(() => { throw new Error('foobar'); });
-          const auth = new this.AuthorizationRequest({
+          fixture8.provider.on('authorization.error', authErrorSpy);
+          fixture8.provider.on('server_error', serverErrorSpy);
+          sinon.stub(i(fixture8.provider).responseModes, 'has').callsFake(() => { throw new Error('foobar'); });
+          const auth = new fixture8.AuthorizationRequest({
             response_type,
             scope,
             response_mode: 'fragment',
             redirect_uri: 'https://attacker.example.com/foobar',
           });
 
-          return this.agent.get(route)
+          return fixture8.agent.get(route)
             .query(auth)
             .expect(() => {
-              i(this.provider).responseModes.has.restore();
-              this.provider.removeAllListeners('authorization.error');
-              this.provider.removeAllListeners('server_error');
+              i(fixture8.provider).responseModes.has.restore();
+              fixture8.provider.removeAllListeners('authorization.error');
+              fixture8.provider.removeAllListeners('server_error');
               renderSpy.restore();
             })
             .expect(() => {
-              expect(serverErrorSpy.calledOnce).to.be.true;
-              expect(authErrorSpy.calledOnce).to.be.true;
+              assert.equal(serverErrorSpy.calledOnce, true);
+              assert.equal(authErrorSpy.calledOnce, true);
             })
             .expect(() => {
-              expect(serverErrorSpy.calledWithMatch({}, { message: 'foobar' })).to.be.true;
-              expect(authErrorSpy.calledWithMatch({}, { message: 'invalid_redirect_uri' })).to.be.true;
+              assert.equal(serverErrorSpy.calledWithMatch({}, { message: 'foobar' }), true);
+              assert.equal(authErrorSpy.calledWithMatch({}, { message: 'invalid_redirect_uri' }), true);
             })
             .expect(() => {
-              expect(renderSpy.calledOnce).to.be.true;
+              assert.equal(renderSpy.calledOnce, true);
               const renderArgs = renderSpy.args[0];
-              expect(renderArgs[1]).to.have.property('error', 'invalid_redirect_uri');
-              expect(renderArgs[2]).to.be.an.instanceof(InvalidRedirectUri);
+              ((actual) => { assert.ok('error' in Object(actual)); assert.equal(actual.error, 'invalid_redirect_uri'); })(renderArgs[1]);
+              ((actual) => { assert.ok(actual instanceof InvalidRedirectUri); })(renderArgs[2]);
             });
         });
       });
 
-      it('unsupported response_type', function () {
+      it('unsupported response_type', { timeout: 3000 }, () => {
         const spy = sinon.spy();
-        this.provider.once('authorization.error', spy);
-        const auth = new this.AuthorizationRequest({
+        fixture5.provider.once('authorization.error', spy);
+        const auth = new fixture5.AuthorizationRequest({
           response_type: 'unsupported',
           scope,
         });
 
-        return this.wrap({ route, verb, auth })
+        return fixture5.wrap({ route, verb, auth })
           .expect(303)
           .expect(() => {
-            expect(spy.calledOnce).to.be.true;
+            assert.equal(spy.calledOnce, true);
           })
           .expect(auth.validatePresence(['error', 'error_description', 'state']))
           .expect(auth.validateState)
@@ -848,19 +864,19 @@ describe('BASIC code', () => {
           .expect(auth.validateErrorDescription('unsupported response_type requested'));
       });
 
-      it('invalid max_age (negative)', function () {
+      it('invalid max_age (negative)', { timeout: 3000 }, () => {
         const spy = sinon.spy();
-        this.provider.once('authorization.error', spy);
-        const auth = new this.AuthorizationRequest({
+        fixture5.provider.once('authorization.error', spy);
+        const auth = new fixture5.AuthorizationRequest({
           response_type,
           scope: 'openid',
           max_age: -1,
         });
 
-        return this.wrap({ route, verb, auth })
+        return fixture5.wrap({ route, verb, auth })
           .expect(303)
           .expect(() => {
-            expect(spy.calledOnce).to.be.true;
+            assert.equal(spy.calledOnce, true);
           })
           .expect(auth.validatePresence(['error', 'error_description', 'state']))
           .expect(auth.validateState)
@@ -869,19 +885,19 @@ describe('BASIC code', () => {
           .expect(auth.validateErrorDescription('invalid max_age parameter value'));
       });
 
-      it('invalid max_age (MAX_SAFE_INTEGER)', function () {
+      it('invalid max_age (MAX_SAFE_INTEGER)', { timeout: 3000 }, () => {
         const spy = sinon.spy();
-        this.provider.once('authorization.error', spy);
-        const auth = new this.AuthorizationRequest({
+        fixture5.provider.once('authorization.error', spy);
+        const auth = new fixture5.AuthorizationRequest({
           response_type,
           scope: 'openid',
           max_age: Number.MAX_SAFE_INTEGER + 1,
         });
 
-        return this.wrap({ route, verb, auth })
+        return fixture5.wrap({ route, verb, auth })
           .expect(303)
           .expect(() => {
-            expect(spy.calledOnce).to.be.true;
+            assert.equal(spy.calledOnce, true);
           })
           .expect(auth.validatePresence(['error', 'error_description', 'state']))
           .expect(auth.validateState)
@@ -891,37 +907,37 @@ describe('BASIC code', () => {
       });
 
       if (verb === 'post') {
-        it('only supports application/x-www-form-urlencoded', function () {
+        it('only supports application/x-www-form-urlencoded', { timeout: 3000 }, () => {
           const spy = sinon.spy();
-          this.provider.once('authorization.error', spy);
-          const auth = new this.AuthorizationRequest({
+          fixture5.provider.once('authorization.error', spy);
+          const auth = new fixture5.AuthorizationRequest({
             response_type,
             scope,
           });
 
-          return this.wrap({ route, verb, auth })
+          return fixture5.wrap({ route, verb, auth })
             .type('json')
             .expect(400)
             .expect(/only application\/x-www-form-urlencoded content-type bodies are supported on POST \/auth/)
             .expect(/invalid_request/)
             .expect(() => {
-              expect(spy.calledOnce).to.be.true;
+              assert.equal(spy.calledOnce, true);
             });
         });
       }
 
-      it('restricted response_type', function () {
+      it('restricted response_type', { timeout: 3000 }, () => {
         const spy = sinon.spy();
-        this.provider.once('authorization.error', spy);
-        const auth = new this.AuthorizationRequest({
+        fixture5.provider.once('authorization.error', spy);
+        const auth = new fixture5.AuthorizationRequest({
           response_type: 'id_token',
           scope,
         });
 
-        return this.wrap({ route, verb, auth })
+        return fixture5.wrap({ route, verb, auth })
           .expect(303)
           .expect(() => {
-            expect(spy.calledOnce).to.be.true;
+            assert.equal(spy.calledOnce, true);
           })
           .expect(auth.validateFragment)
           .expect(auth.validatePresence(['error', 'error_description', 'state']))
@@ -931,19 +947,19 @@ describe('BASIC code', () => {
           .expect(auth.validateErrorDescription('requested response_type is not allowed for this client'));
       });
 
-      it('unsupported response type validation runs before oidc required params', function () {
+      it('unsupported response type validation runs before oidc required params', { timeout: 3000 }, () => {
         const spy = sinon.spy();
-        this.provider.once('authorization.error', spy);
-        const auth = new this.AuthorizationRequest({
+        fixture5.provider.once('authorization.error', spy);
+        const auth = new fixture5.AuthorizationRequest({
           response_type: 'id_token token',
           nonce: undefined,
           scope,
         });
 
-        return this.wrap({ route, verb, auth })
+        return fixture5.wrap({ route, verb, auth })
           .expect(303)
           .expect(() => {
-            expect(spy.calledOnce).to.be.true;
+            assert.equal(spy.calledOnce, true);
           })
           .expect(auth.validateFragment)
           .expect(auth.validatePresence(['error', 'error_description', 'state']))
@@ -953,29 +969,29 @@ describe('BASIC code', () => {
           .expect(auth.validateErrorDescription('unsupported response_type requested'));
       });
 
-      it('redirect_uri mismatch', function () {
+      it('redirect_uri mismatch', { timeout: 3000 }, () => {
         const emitSpy = sinon.spy();
-        const renderSpy = sinon.spy(i(this.provider).configuration, 'renderError');
-        this.provider.once('authorization.error', emitSpy);
-        const auth = new this.AuthorizationRequest({
+        const renderSpy = sinon.spy(i(fixture5.provider).configuration, 'renderError');
+        fixture5.provider.once('authorization.error', emitSpy);
+        const auth = new fixture5.AuthorizationRequest({
           response_type,
           scope,
           redirect_uri: 'https://client.example.com/cb/not/registered',
         });
 
-        return this.agent.get(route)
+        return fixture5.agent.get(route)
           .query(auth)
           .expect(() => {
             renderSpy.restore();
           })
           .expect(400)
           .expect(() => {
-            expect(emitSpy.calledOnce).to.be.true;
-            expect(renderSpy.calledOnce).to.be.true;
+            assert.equal(emitSpy.calledOnce, true);
+            assert.equal(renderSpy.calledOnce, true);
             const renderArgs = renderSpy.args[0];
-            expect(renderArgs[1]).to.have.property('error', 'invalid_redirect_uri');
-            expect(renderArgs[1]).to.have.property('error_description', 'redirect_uri did not match any of the client\'s registered redirect_uris');
-            expect(renderArgs[2]).to.be.an.instanceof(InvalidRedirectUri);
+            ((actual) => { assert.ok('error' in Object(actual)); assert.equal(actual.error, 'invalid_redirect_uri'); })(renderArgs[1]);
+            ((actual) => { assert.ok('error_description' in Object(actual)); assert.equal(actual.error_description, 'redirect_uri did not match any of the client\'s registered redirect_uris'); })(renderArgs[1]);
+            ((actual) => { assert.ok(actual instanceof InvalidRedirectUri); })(renderArgs[2]);
           });
       });
 
@@ -983,47 +999,49 @@ describe('BASIC code', () => {
         'https://client.example.com:443/cb',
         'https://CLIENT.EXAMPLE.COM/cb',
       ]) {
-        it(`redirect_uri comparison uses exact string matching (${redirect_uri})`, function () {
+        it(`redirect_uri comparison uses exact string matching (${redirect_uri})`, { timeout: 3000 }, () => {
           const emitSpy = sinon.spy();
-          const renderSpy = sinon.spy(i(this.provider).configuration, 'renderError');
-          this.provider.once('authorization.error', emitSpy);
-          const auth = new this.AuthorizationRequest({
+          const renderSpy = sinon.spy(i(fixture5.provider).configuration, 'renderError');
+          fixture5.provider.once('authorization.error', emitSpy);
+          const auth = new fixture5.AuthorizationRequest({
             response_type,
             scope,
             redirect_uri,
           });
 
-          return this.wrap({ route, verb, auth })
+          return fixture5.wrap({ route, verb, auth })
             .expect(() => {
               renderSpy.restore();
             })
             .expect(400)
             .expect(() => {
-              expect(emitSpy.calledOnce).to.be.true;
-              expect(renderSpy.calledOnce).to.be.true;
+              assert.equal(emitSpy.calledOnce, true);
+              assert.equal(renderSpy.calledOnce, true);
               const renderArgs = renderSpy.args[0];
-              expect(renderArgs[1]).to.have.property('error', 'invalid_redirect_uri');
-              expect(renderArgs[2]).to.be.an.instanceof(InvalidRedirectUri);
+              ((actual) => { assert.ok('error' in Object(actual)); assert.equal(actual.error, 'invalid_redirect_uri'); })(renderArgs[1]);
+              ((actual) => { assert.ok(actual instanceof InvalidRedirectUri); })(renderArgs[2]);
             });
         });
       }
 
       describe('login state specific', () => {
-        before(function () { return this.login(); });
+        const fixture9 = Object.create(fixture5);
 
-        it('malformed id_token_hint', function () {
+        before(() => fixture9.login(), { timeout: 3000 });
+
+        it('malformed id_token_hint', { timeout: 3000 }, () => {
           const spy = sinon.spy();
-          this.provider.once('authorization.error', spy);
-          const auth = new this.AuthorizationRequest({
+          fixture9.provider.once('authorization.error', spy);
+          const auth = new fixture9.AuthorizationRequest({
             response_type,
             scope,
             id_token_hint: 'invalid',
           });
 
-          return this.wrap({ route, verb, auth })
+          return fixture9.wrap({ route, verb, auth })
             .expect(303)
             .expect(() => {
-              expect(spy.calledOnce).to.be.true;
+              assert.equal(spy.calledOnce, true);
             })
             .expect(auth.validatePresence(['error', 'error_description', 'state']))
             .expect(auth.validateState)

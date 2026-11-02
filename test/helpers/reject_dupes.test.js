@@ -1,4 +1,5 @@
-import { expect } from 'chai';
+import { describe, it } from 'node:test';
+import assert from 'node:assert/strict';
 
 import rejectDupes from '../../lib/shared/reject_dupes.js';
 
@@ -13,7 +14,7 @@ function rejection(options, ctx) {
 }
 
 describe('rejectDupes helper', () => {
-  it('rejects and clears duplicate parameters in their original order', () => {
+  it('rejects and clears duplicate parameters in their original order', { timeout: 3000 }, () => {
     const ctx = {
       oidc: {
         params: {
@@ -24,18 +25,15 @@ describe('rejectDupes helper', () => {
       },
     };
 
-    expect(rejection({}, ctx)).to.have.property(
-      'error_description',
-      "'state' and 'nonce' parameters must not be provided twice",
-    );
-    expect(ctx.oidc.params).to.deep.equal({
+    ((actual) => { assert.ok('error_description' in Object(actual)); assert.equal(actual.error_description, "'state' and 'nonce' parameters must not be provided twice"); })(rejection({}, ctx));
+    assert.deepEqual(ctx.oidc.params, {
       state: undefined,
       scope: 'openid',
       nonce: undefined,
     });
   });
 
-  it('gives except precedence over only', () => {
+  it('gives except precedence over only', { timeout: 3000 }, () => {
     const ctx = {
       oidc: {
         params: {
@@ -45,20 +43,17 @@ describe('rejectDupes helper', () => {
       },
     };
 
-    expect(rejection({
+    ((actual) => { assert.ok('error_description' in Object(actual)); assert.equal(actual.error_description, "'scope' parameter must not be provided twice"); })(rejection({
       except: new Set(['resource']),
       only: new Set(['resource']),
-    }, ctx)).to.have.property(
-      'error_description',
-      "'scope' parameter must not be provided twice",
-    );
-    expect(ctx.oidc.params).to.deep.equal({
+    }, ctx));
+    assert.deepEqual(ctx.oidc.params, {
       resource: ['one', 'two'],
       scope: undefined,
     });
   });
 
-  it('checks only selected parameters', () => {
+  it('checks only selected parameters', { timeout: 3000 }, () => {
     const ctx = {
       oidc: {
         params: {
@@ -68,11 +63,8 @@ describe('rejectDupes helper', () => {
       },
     };
 
-    expect(rejection({ only: new Set(['scope']) }, ctx)).to.have.property(
-      'error_description',
-      "'scope' parameter must not be provided twice",
-    );
-    expect(ctx.oidc.params).to.deep.equal({
+    ((actual) => { assert.ok('error_description' in Object(actual)); assert.equal(actual.error_description, "'scope' parameter must not be provided twice"); })(rejection({ only: new Set(['scope']) }, ctx));
+    assert.deepEqual(ctx.oidc.params, {
       resource: ['one', 'two'],
       scope: undefined,
     });

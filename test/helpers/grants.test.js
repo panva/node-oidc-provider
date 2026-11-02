@@ -1,6 +1,7 @@
+import { describe, it, beforeEach } from 'node:test';
+import assert from 'node:assert/strict';
 import { generateKeyPairSync, hash } from 'node:crypto';
 
-import { expect } from 'chai';
 import { SignJWT } from 'jose';
 
 import Provider, { errors } from '../../lib/index.js';
@@ -56,10 +57,10 @@ describe('grant implementation helpers', () => {
     };
 
     for (const [name, operation] of Object.entries(operations)) {
-      it(`${name} rejects a mismatched provider`, async () => {
+      it(`${name} rejects a mismatched provider`, { timeout: 3000 }, async () => {
         const err = await getError(operation);
-        expect(err).to.be.instanceOf(TypeError);
-        expect(err.message).to.equal('provider does not match ctx.oidc.provider');
+        assert.ok(err instanceof TypeError);
+        assert.equal(err.message, 'provider does not match ctx.oidc.provider');
       });
     }
   });
@@ -67,8 +68,8 @@ describe('grant implementation helpers', () => {
   describe('buildTokenResponse', () => {
     const provider = {};
 
-    it('maps input names, preserves extension parameters, and omits undefined values', () => {
-      expect(buildTokenResponse(provider, {
+    it('maps input names, preserves extension parameters, and omits undefined values', { timeout: 3000 }, () => {
+      assert.deepEqual(buildTokenResponse(provider, {
         accessToken: 'access-token',
         authorizationDetails: [{ type: 'payment' }],
         expiresIn: 300,
@@ -81,7 +82,7 @@ describe('grant implementation helpers', () => {
         refreshToken: 'refresh-token',
         scope: 'openid',
         tokenType: 'Bearer',
-      })).to.deep.equal({
+      }), {
         access_token: 'access-token',
         authorization_details: [{ type: 'payment' }],
         expires_in: 300,
@@ -94,12 +95,12 @@ describe('grant implementation helpers', () => {
       });
     });
 
-    it('supports RFC 8693 non-access-token output', () => {
-      expect(buildTokenResponse(provider, {
+    it('supports RFC 8693 non-access-token output', { timeout: 3000 }, () => {
+      assert.deepEqual(buildTokenResponse(provider, {
         accessToken: 'signed-assertion',
         issuedTokenType: 'urn:example:assertion',
         tokenType: 'N_A',
-      })).to.deep.equal({
+      }), {
         access_token: 'signed-assertion',
         issued_token_type: 'urn:example:assertion',
         token_type: 'N_A',
@@ -116,35 +117,35 @@ describe('grant implementation helpers', () => {
       'scope',
       'token_type',
     ]) {
-      it(`rejects the reserved ${member} extension parameter`, () => {
-        expect(() => buildTokenResponse(provider, {
+      it(`rejects the reserved ${member} extension parameter`, { timeout: 3000 }, () => {
+        assert.throws(() => buildTokenResponse(provider, {
           accessToken: 'access-token',
           parameters: { [member]: 'replacement' },
           tokenType: 'Bearer',
-        })).to.throw(TypeError, `parameters must not contain reserved member ${member}`);
+        }), (error) => { assert.ok(error instanceof TypeError); assert.ok(error.message.includes(`parameters must not contain reserved member ${member}`)); return true; });
       });
     }
 
-    it('requires a plain extension parameter object', () => {
-      expect(() => buildTokenResponse(provider, {
+    it('requires a plain extension parameter object', { timeout: 3000 }, () => {
+      assert.throws(() => buildTokenResponse(provider, {
         accessToken: 'access-token',
         parameters: new Date(),
         tokenType: 'Bearer',
-      })).to.throw(TypeError, 'parameters must be a plain object');
+      }), (error) => { assert.ok(error instanceof TypeError); assert.ok(error.message.includes('parameters must be a plain object')); return true; });
     });
 
-    it('requires accessToken and tokenType', () => {
-      expect(() => buildTokenResponse(provider, {
+    it('requires accessToken and tokenType', { timeout: 3000 }, () => {
+      assert.throws(() => buildTokenResponse(provider, {
         tokenType: 'Bearer',
-      })).to.throw(TypeError, 'accessToken must be a non-empty string');
-      expect(() => buildTokenResponse(provider, {
+      }), (error) => { assert.ok(error instanceof TypeError); assert.ok(error.message.includes('accessToken must be a non-empty string')); return true; });
+      assert.throws(() => buildTokenResponse(provider, {
         accessToken: 'access-token',
-      })).to.throw(TypeError, 'tokenType must be a non-empty string');
+      }), (error) => { assert.ok(error instanceof TypeError); assert.ok(error.message.includes('tokenType must be a non-empty string')); return true; });
     });
   });
 
   describe('resolveAndApplyResource', () => {
-    it('filters an explicit scope override against the current Resource Server scopes', async () => {
+    it('filters an explicit scope override against the current Resource Server scopes', { timeout: 3000 }, async () => {
       const resource = 'urn:example:resource';
       const provider = new Provider('https://op.example.com', {
         features: {
@@ -170,8 +171,8 @@ describe('grant implementation helpers', () => {
         provider, ctx, source, token, grant, new Set(['api:read', 'api:removed', 'api:ungranted']),
       );
 
-      expect(token.scope).to.equal('api:read');
-      expect([...source.scopes]).to.deep.equal(['api:read', 'api:write', 'api:removed']);
+      assert.equal(token.scope, 'api:read');
+      assert.deepEqual([...source.scopes], ['api:read', 'api:write', 'api:removed']);
     });
   });
 
@@ -188,51 +189,48 @@ describe('grant implementation helpers', () => {
         get() { return ''; },
         assert(value, error) { if (!value) throw error; },
       };
-    });
+    }, { timeout: 3000 });
 
-    it('keeps proof validation separate from the client requirement', async () => {
+    it('keeps proof validation separate from the client requirement', { timeout: 3000 }, async () => {
       ctx.oidc.client.dpopBoundAccessTokens = true;
 
-      expect(await validateDpop(provider, ctx)).to.equal(undefined);
-      expect(() => checkDpopRequired(provider, ctx, undefined)).to.throw(errors.InvalidGrant);
-      expect(() => checkDpopRequired(provider, ctx, undefined, errors.InvalidRequest))
-        .to.throw(errors.InvalidRequest);
-      expect(() => checkDpopRequired(provider, ctx, { thumbprint: 'thumbprint' })).not.to.throw();
+      assert.equal(await validateDpop(provider, ctx), undefined);
+      assert.throws(() => checkDpopRequired(provider, ctx, undefined), (error) => { assert.ok(error instanceof errors.InvalidGrant); return true; });
+      assert.throws(() => checkDpopRequired(provider, ctx, undefined, errors.InvalidRequest), (error) => { assert.ok(error instanceof errors.InvalidRequest); return true; });
+      assert.doesNotThrow(() => checkDpopRequired(provider, ctx, { thumbprint: 'thumbprint' }));
 
       ctx.oidc.client.dpopBoundAccessTokens = false;
-      expect(() => checkDpopRequired(provider, ctx, undefined)).not.to.throw();
+      assert.doesNotThrow(() => checkDpopRequired(provider, ctx, undefined));
     });
 
-    it('retrieves certificates only when required and supports the grant error class', () => {
+    it('retrieves certificates only when required and supports the grant error class', { timeout: 3000 }, () => {
       const { mTLS } = instance(provider).features;
       let calls = 0;
       mTLS.getCertificate = (actual) => {
-        expect(actual).to.equal(ctx);
+        assert.equal(actual, ctx);
         calls += 1;
         return 'certificate';
       };
 
-      expect(checkMtlsCert(provider, ctx)).to.equal(undefined);
-      expect(calls).to.equal(0);
+      assert.equal(checkMtlsCert(provider, ctx), undefined);
+      assert.equal(calls, 0);
       ctx.oidc.client.tlsClientCertificateBoundAccessTokens = true;
-      expect(checkMtlsCert(provider, ctx)).to.equal('certificate');
-      expect(calls).to.equal(1);
+      assert.equal(checkMtlsCert(provider, ctx), 'certificate');
+      assert.equal(calls, 1);
 
       mTLS.getCertificate = () => undefined;
-      expect(() => checkMtlsCert(provider, ctx)).to.throw(errors.InvalidGrant);
-      expect(() => checkMtlsCert(provider, ctx, errors.InvalidRequest)).to.throw(errors.InvalidRequest);
+      assert.throws(() => checkMtlsCert(provider, ctx), (error) => { assert.ok(error instanceof errors.InvalidGrant); return true; });
+      assert.throws(() => checkMtlsCert(provider, ctx, errors.InvalidRequest), (error) => { assert.ok(error instanceof errors.InvalidRequest); return true; });
     });
 
-    it('checks replay without a token and preserves the supplied client namespace', async () => {
+    it('checks replay without a token and preserves the supplied client namespace', { timeout: 3000 }, async () => {
       const proof = { jti: 'proof', thumbprint: 'thumbprint' };
 
       await checkDpopReplay(provider, ctx, proof, 'first');
       await checkDpopReplay(provider, ctx, proof, 'second');
 
-      expect(await getError(() => checkDpopReplay(provider, ctx, proof, 'first')))
-        .to.be.instanceOf(errors.InvalidGrant);
-      expect(await getError(() => checkDpopReplay(provider, ctx, proof, 'first', errors.InvalidRequest)))
-        .to.be.instanceOf(errors.InvalidRequest);
+      assert.ok(await getError(() => checkDpopReplay(provider, ctx, proof, 'first')) instanceof errors.InvalidGrant);
+      assert.ok(await getError(() => checkDpopReplay(provider, ctx, proof, 'first', errors.InvalidRequest)) instanceof errors.InvalidRequest);
     });
 
     for (const [description, ath] of [
@@ -240,7 +238,7 @@ describe('grant implementation helpers', () => {
       ['incorrect', hash('sha256', 'another-token', 'base64url')],
       ['correct', hash('sha256', 'access-token', 'base64url')],
     ]) {
-      it(`checks a ${description} access token hash after DPoP validation was cached`, async () => {
+      it(`checks a ${description} access token hash after DPoP validation was cached`, { timeout: 3000 }, async () => {
         const { configuration } = instance(provider);
         configuration.features.dPoP.enabled = true;
         configuration.dPoPSigningAlgValues = ['Ed25519'];
@@ -257,11 +255,11 @@ describe('grant implementation helpers', () => {
 
         const result = await validateDpop(provider, ctx);
         if (description === 'correct') {
-          expect(await validateDpop(provider, ctx, 'access-token')).to.equal(result);
+          assert.equal(await validateDpop(provider, ctx, 'access-token'), result);
         } else {
           const err = await getError(() => validateDpop(provider, ctx, 'access-token'));
-          expect(err).to.be.instanceOf(errors.InvalidDpopProof);
-          expect(err.error_description).to.equal('DPoP proof ath mismatch');
+          assert.ok(err instanceof errors.InvalidDpopProof);
+          assert.equal(err.error_description, 'DPoP proof ath mismatch');
         }
       });
     }

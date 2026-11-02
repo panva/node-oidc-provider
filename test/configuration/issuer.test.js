@@ -1,56 +1,56 @@
-import { strict as assert } from 'node:assert';
+import { describe, it } from 'node:test';
+import assert from 'node:assert/strict';
 
-import { expect } from 'chai';
 
 import Provider from '../../lib/index.js';
 
 describe('Provider issuer configuration', () => {
-  it('validates the issuer input to be present and valid', () => {
-    expect(() => {
+  it('validates the issuer input to be present and valid', { timeout: 3000 }, () => {
+    assert.throws(() => {
       new Provider();
-    }).to.throw(assert.AssertionError);
-    expect(() => {
+    }, (error) => { assert.ok(error instanceof assert.AssertionError); return true; });
+    assert.throws(() => {
       new Provider({});
-    }).to.throw(assert.AssertionError);
-    expect(() => {
+    }, (error) => { assert.ok(error instanceof assert.AssertionError); return true; });
+    assert.throws(() => {
       new Provider(0);
-    }).to.throw(assert.AssertionError);
-    expect(() => {
+    }, (error) => { assert.ok(error instanceof assert.AssertionError); return true; });
+    assert.throws(() => {
       new Provider(true);
-    }).to.throw(assert.AssertionError);
-    expect(() => {
+    }, (error) => { assert.ok(error instanceof assert.AssertionError); return true; });
+    assert.throws(() => {
       new Provider('');
-    }).to.throw(assert.AssertionError);
-    expect(() => {
+    }, (error) => { assert.ok(error instanceof assert.AssertionError); return true; });
+    assert.throws(() => {
       new Provider('https://op.example.com?');
-    }).to.throw(assert.AssertionError);
-    expect(() => {
+    }, (error) => { assert.ok(error instanceof assert.AssertionError); return true; });
+    assert.throws(() => {
       new Provider('https://op.example.com?query');
-    }).to.throw(assert.AssertionError);
-    expect(() => {
+    }, (error) => { assert.ok(error instanceof assert.AssertionError); return true; });
+    assert.throws(() => {
       new Provider('https://op.example.com?query=complete');
-    }).to.throw(assert.AssertionError);
-    expect(() => {
+    }, (error) => { assert.ok(error instanceof assert.AssertionError); return true; });
+    assert.throws(() => {
       new Provider('https://op.example.com#fragment');
-    }).to.throw(assert.AssertionError);
-    expect(() => {
+    }, (error) => { assert.ok(error instanceof assert.AssertionError); return true; });
+    assert.throws(() => {
       new Provider('https://op.example.com?query=and#fragment');
-    }).to.throw(assert.AssertionError);
-    expect(() => {
+    }, (error) => { assert.ok(error instanceof assert.AssertionError); return true; });
+    assert.throws(() => {
       new Provider('foobar');
-    }).to.throw(assert.AssertionError);
-    expect(() => {
+    }, (error) => { assert.ok(error instanceof assert.AssertionError); return true; });
+    assert.throws(() => {
       new Provider('foobar:');
-    }).to.throw(assert.AssertionError);
-    expect(() => {
+    }, (error) => { assert.ok(error instanceof assert.AssertionError); return true; });
+    assert.throws(() => {
       new Provider('foobar://');
-    }).to.throw(assert.AssertionError);
-    expect(() => {
+    }, (error) => { assert.ok(error instanceof assert.AssertionError); return true; });
+    assert.throws(() => {
       new Provider('op.example.com');
-    }).to.throw(assert.AssertionError);
-    expect(() => {
+    }, (error) => { assert.ok(error instanceof assert.AssertionError); return true; });
+    assert.throws(() => {
       new Provider('op.example.com:443');
-    }).to.throw(assert.AssertionError);
+    }, (error) => { assert.ok(error instanceof assert.AssertionError); return true; });
   });
 });
 

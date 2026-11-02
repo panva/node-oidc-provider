@@ -1,6 +1,6 @@
-import { strict as assert } from 'node:assert';
+import { it, describe, before, afterEach, beforeEach, after } from 'node:test';
+import assert from 'node:assert/strict';
 
-import { expect } from 'chai';
 import { createSandbox } from 'sinon';
 
 import nanoid from '../../lib/helpers/nanoid.js';
@@ -13,137 +13,139 @@ const expire = new Date();
 expire.setDate(expire.getDate() + 1);
 const expired = new Date(0);
 
-function handlesInteractionSessionErrors() {
-  it('"handles" not found interaction session id cookie', async function () {
+function handlesInteractionSessionErrors(fixture) {
+  it('"handles" not found interaction session id cookie', { timeout: 3000 }, async () => {
     const cookies = [
-      `_interaction=; path=${this.url}; expires=${expired.toGMTString()}; httponly`,
+      `_interaction=; path=${fixture.url}; expires=${expired.toGMTString()}; httponly`,
     ];
-    this.agent._saveCookies.bind(this.agent)({
-      request: { url: this.provider.issuer },
+    fixture.agent._saveCookies.bind(fixture.agent)({
+      request: { url: fixture.provider.issuer },
       headers: { 'set-cookie': cookies },
     });
 
-    sinon.spy(this.provider, 'interactionDetails');
+    sinon.spy(fixture.provider, 'interactionDetails');
 
-    await this.agent.get(this.url).expect(400);
-    return assert.rejects(this.provider.interactionDetails.getCall(0).returnValue, (err) => {
-      expect(err.name).to.eql('SessionNotFound');
-      expect(err.error_description).to.eql('interaction session id cookie not found');
+    await fixture.agent.get(fixture.url).expect(400);
+    return assert.rejects(fixture.provider.interactionDetails.getCall(0).returnValue, (err) => {
+      assert.deepEqual(err.name, 'SessionNotFound');
+      assert.deepEqual(err.error_description, 'interaction session id cookie not found');
       return true;
     });
   });
 
-  it('"handles" not found interaction session', async function () {
-    sinon.stub(this.provider.Interaction, 'find').resolves();
+  it('"handles" not found interaction session', { timeout: 3000 }, async () => {
+    sinon.stub(fixture.provider.Interaction, 'find').resolves();
 
-    sinon.spy(this.provider, 'interactionDetails');
+    sinon.spy(fixture.provider, 'interactionDetails');
 
-    await this.agent.get(this.url).expect(400);
-    return assert.rejects(this.provider.interactionDetails.getCall(0).returnValue, (err) => {
-      expect(err.name).to.eql('SessionNotFound');
-      expect(err.error_description).to.eql('interaction session not found');
+    await fixture.agent.get(fixture.url).expect(400);
+    return assert.rejects(fixture.provider.interactionDetails.getCall(0).returnValue, (err) => {
+      assert.deepEqual(err.name, 'SessionNotFound');
+      assert.deepEqual(err.error_description, 'interaction session not found');
       return true;
     });
   });
 }
 describe('devInteractions', () => {
-  before(bootstrap(import.meta.url));
-  afterEach(sinon.restore);
+  const fixture = {};
 
-  context('render login', () => {
-    beforeEach(function () { return this.logout(); });
-    beforeEach(function () {
-      const auth = new this.AuthorizationRequest({
+  before(bootstrap(import.meta.url, fixture), { timeout: 3000 });
+  afterEach(() => sinon.restore(), { timeout: 3000 });
+
+  describe('render login', () => {
+    const fixture1 = Object.create(fixture);
+
+    beforeEach(() => fixture1.logout(), { timeout: 3000 });
+    beforeEach(() => {
+      const auth = new fixture1.AuthorizationRequest({
         response_type: 'code',
         scope: 'openid',
       });
 
-      return this.agent.get('/auth')
+      return fixture1.agent.get('/auth')
         .query(auth)
         .then((response) => {
-          this.url = response.headers.location;
+          fixture1.url = response.headers.location;
         });
-    });
+    }, { timeout: 3000 });
 
-    it('with a form', function () {
-      return this.agent.get(this.url)
+    it('with a form', { timeout: 3000 }, () => fixture1.agent.get(fixture1.url)
         .expect(200)
-        .expect(new RegExp(`action="${this.provider.issuer}${this.url}"`))
+        .expect(new RegExp(`action="${fixture1.provider.issuer}${fixture1.url}"`))
         .expect(/name="prompt" value="login"/)
-        .expect(/Sign-in/);
-    });
+        .expect(/Sign-in/));
 
-    handlesInteractionSessionErrors();
+    handlesInteractionSessionErrors(fixture1);
   });
 
-  context('escapes debug output HTML', () => {
-    beforeEach(function () { return this.logout(); });
-    beforeEach(function () {
-      const auth = new this.AuthorizationRequest({
+  describe('escapes debug output HTML', () => {
+    const fixture2 = Object.create(fixture);
+
+    beforeEach(() => fixture2.logout(), { timeout: 3000 });
+    beforeEach(() => {
+      const auth = new fixture2.AuthorizationRequest({
         response_type: 'code',
         scope: 'openid',
         state: '<img src=x onerror=alert(1)>',
       });
 
-      return this.agent.get('/auth')
+      return fixture2.agent.get('/auth')
         .query(auth)
         .then((response) => {
-          this.url = response.headers.location;
+          fixture2.url = response.headers.location;
         });
-    });
+    }, { timeout: 3000 });
 
-    it('HTML-escapes parameter values in the debug section', function () {
-      return this.agent.get(this.url)
+    it('HTML-escapes parameter values in the debug section', { timeout: 3000 }, () => fixture2.agent.get(fixture2.url)
         .expect(200)
         .expect((response) => {
-          expect(response.text).not.to.match(/<img src=x onerror=alert\(1\)>/);
-          expect(response.text).to.contain('&lt;img src=x onerror=alert(1)&gt;');
-        });
-    });
+          assert.doesNotMatch(response.text, /<img src=x onerror=alert\(1\)>/);
+          assert.ok(response.text.includes('&lt;img src=x onerror=alert(1)&gt;'));
+        }));
   });
 
-  context('render interaction', () => {
-    beforeEach(function () { return this.logout(); });
-    beforeEach(function () { return this.login(); });
-    beforeEach(function () {
-      const auth = new this.AuthorizationRequest({
+  describe('render interaction', () => {
+    const fixture3 = Object.create(fixture);
+
+    beforeEach(() => fixture3.logout(), { timeout: 3000 });
+    beforeEach(() => fixture3.login(), { timeout: 3000 });
+    beforeEach(() => {
+      const auth = new fixture3.AuthorizationRequest({
         response_type: 'code',
         scope: 'openid',
         prompt: 'consent',
       });
 
-      return this.agent.get('/auth')
+      return fixture3.agent.get('/auth')
         .query(auth)
         .then((response) => {
-          this.url = response.headers.location;
+          fixture3.url = response.headers.location;
         });
-    });
+    }, { timeout: 3000 });
 
-    it('with a form', function () {
-      return this.agent.get(this.url)
+    it('with a form', { timeout: 3000 }, () => fixture3.agent.get(fixture3.url)
         .expect(200)
-        .expect(new RegExp(`action="${this.provider.issuer}${this.url}"`))
+        .expect(new RegExp(`action="${fixture3.provider.issuer}${fixture3.url}"`))
         .expect(/name="prompt" value="consent"/)
-        .expect(/Authorize/);
-    });
+        .expect(/Authorize/));
 
-    it('checks that the authentication session is still there', async function () {
-      const session = this.getSession({ instantiate: true });
+    it('checks that the authentication session is still there', { timeout: 3000 }, async () => {
+      const session = fixture3.getSession({ instantiate: true });
       await session.destroy();
 
-      await this.agent.get(this.url)
+      await fixture3.agent.get(fixture3.url)
         .accept('text/html')
         .expect(400)
         .expect('content-type', 'text/html; charset=utf-8')
         .expect(/session not found/);
     });
 
-    it("checks that the authentication session's principal didn't change", async function () {
-      const session = this.getSession({ instantiate: true });
+    it("checks that the authentication session's principal didn't change", { timeout: 3000 }, async () => {
+      const session = fixture3.getSession({ instantiate: true });
       session.accountId = 'foobar';
       await session.persist();
 
-      await this.agent.get(this.url)
+      await fixture3.agent.get(fixture3.url)
         .accept('text/html')
         .expect(400)
         .expect('content-type', 'text/html; charset=utf-8')
@@ -151,50 +153,54 @@ describe('devInteractions', () => {
     });
   });
 
-  context('when unimplemented prompt is requested', () => {
-    beforeEach(function () { return this.logout(); });
+  describe('when unimplemented prompt is requested', () => {
+    const fixture4 = Object.create(fixture);
 
-    it('throws a 501', async function () {
-      const auth = new this.AuthorizationRequest({
+    beforeEach(() => fixture4.logout(), { timeout: 3000 });
+
+    it('throws a 501', { timeout: 3000 }, async () => {
+      const auth = new fixture4.AuthorizationRequest({
         response_type: 'code',
         scope: 'openid',
       });
 
-      const url = await this.agent.get('/auth')
+      const url = await fixture4.agent.get('/auth')
         .query(auth)
         .then((response) => response.headers.location);
 
       const split = url.split('/');
       const uid = split[split.length - 1];
-      const interaction = this.TestAdapter.for('Interaction').syncFind(uid);
+      const interaction = fixture4.TestAdapter.for('Interaction').syncFind(uid);
       interaction.prompt.name = 'notimplemented';
 
-      return this.agent.get(url).expect(501);
+      return fixture4.agent.get(url).expect(501);
     });
   });
 
-  context('navigate to abort', () => {
-    before(function () { return this.logout(); });
+  describe('navigate to abort', () => {
+    const fixture5 = Object.create(fixture);
 
-    it('should abort an interaction with an error', async function () {
-      const auth = new this.AuthorizationRequest({
+    before(() => fixture5.logout(), { timeout: 3000 });
+
+    it('should abort an interaction with an error', { timeout: 3000 }, async () => {
+      const auth = new fixture5.AuthorizationRequest({
         response_type: 'code',
         scope: 'openid',
       });
 
-      await this.agent.get('/auth')
+      await fixture5.agent.get('/auth')
         .query(auth)
         .then((response) => {
-          this.url = response.headers.location;
+          fixture5.url = response.headers.location;
         });
 
-      await this.agent.get(`${this.url}/abort`)
+      await fixture5.agent.get(`${fixture5.url}/abort`)
         .expect(303)
         .expect(({ headers: { location } }) => {
-          this.location = location;
+          fixture5.location = location;
         });
 
-      return this.agent.get(this.url.replace('interaction', 'auth'))
+      return fixture5.agent.get(fixture5.url.replace('interaction', 'auth'))
         .expect(303)
         .expect(auth.validateClientLocation)
         .expect(auth.validateState)
@@ -203,174 +209,180 @@ describe('devInteractions', () => {
     });
   });
 
-  context('submit login', () => {
-    beforeEach(function () { return this.logout(); });
-    beforeEach(function () {
-      const auth = new this.AuthorizationRequest({
+  describe('submit login', () => {
+    const fixture6 = Object.create(fixture);
+
+    beforeEach(() => fixture6.logout(), { timeout: 3000 });
+    beforeEach(() => {
+      const auth = new fixture6.AuthorizationRequest({
         response_type: 'code',
         scope: 'openid',
       });
-      this.auth = auth;
+      fixture6.auth = auth;
 
-      return this.agent.get('/auth')
+      return fixture6.agent.get('/auth')
         .query(auth)
         .then((response) => {
-          this.url = response.headers.location;
+          fixture6.url = response.headers.location;
         });
-    });
+    }, { timeout: 3000 });
 
-    it('accepts the login and resumes auth', async function () {
+    it('accepts the login and resumes auth', { timeout: 3000 }, async () => {
       let location;
-      await this.agent.post(`${this.url}`)
+      await fixture6.agent.post(`${fixture6.url}`)
         .send({
           prompt: 'login',
           login: 'foobar',
         })
         .type('form')
         .expect(303)
-        .expect('location', new RegExp(this.url.replace('interaction', 'auth')))
+        .expect('location', new RegExp(fixture6.url.replace('interaction', 'auth')))
         .expect(({ headers }) => {
           ({ location } = headers);
         });
 
-      await this.agent.get(new URL(location).pathname)
+      await fixture6.agent.get(new URL(location).pathname)
         .expect(303);
     });
 
-    it('checks that the account is a non empty string', async function () {
+    it('checks that the account is a non empty string', { timeout: 3000 }, async () => {
       let location;
       const spy = sinon.spy();
-      this.provider.once('server_error', spy);
+      fixture6.provider.once('server_error', spy);
 
-      await this.agent.post(`${this.url}`)
+      await fixture6.agent.post(`${fixture6.url}`)
         .send({
           prompt: 'login',
           login: '',
         })
         .type('form')
         .expect(303)
-        .expect('location', new RegExp(this.url.replace('interaction', 'auth')))
+        .expect('location', new RegExp(fixture6.url.replace('interaction', 'auth')))
         .expect(({ headers }) => {
           ({ location } = headers);
         });
 
-      await this.agent.get(new URL(location).pathname)
+      await fixture6.agent.get(new URL(location).pathname)
         .expect(500);
 
-      expect(spy).to.have.property('calledOnce', true);
+      ((actual) => { assert.ok('calledOnce' in Object(actual)); assert.equal(actual.calledOnce, true); })(spy);
       const error = spy.firstCall.args[1];
-      expect(error).to.be.an.instanceof(TypeError);
-      expect(error).to.have.property('message', 'accountId must be a non-empty string, got: string');
+      ((actual) => { assert.ok(actual instanceof TypeError); })(error);
+      ((actual) => { assert.ok('message' in Object(actual)); assert.equal(actual.message, 'accountId must be a non-empty string, got: string'); })(error);
     });
 
-    handlesInteractionSessionErrors();
+    handlesInteractionSessionErrors(fixture6);
   });
 
-  context('submit consent', () => {
-    beforeEach(function () { return this.logout(); });
-    beforeEach(function () { return this.login(); });
-    beforeEach(function () {
-      const auth = new this.AuthorizationRequest({
+  describe('submit consent', () => {
+    const fixture7 = Object.create(fixture);
+
+    beforeEach(() => fixture7.logout(), { timeout: 3000 });
+    beforeEach(() => fixture7.login(), { timeout: 3000 });
+    beforeEach(() => {
+      const auth = new fixture7.AuthorizationRequest({
         response_type: 'code',
         scope: 'openid',
         prompt: 'consent',
       });
 
-      return this.agent.get('/auth')
+      return fixture7.agent.get('/auth')
         .query(auth)
         .then((response) => {
-          this.url = response.headers.location;
+          fixture7.url = response.headers.location;
         });
-    });
+    }, { timeout: 3000 });
 
-    it('accepts the consent and resumes auth', async function () {
+    it('accepts the consent and resumes auth', { timeout: 3000 }, async () => {
       let location;
-      await this.agent.post(`${this.url}`)
+      await fixture7.agent.post(`${fixture7.url}`)
         .send({
           prompt: 'consent',
         })
         .type('form')
         .expect(303)
-        .expect('location', new RegExp(this.url.replace('interaction', 'auth')))
+        .expect('location', new RegExp(fixture7.url.replace('interaction', 'auth')))
         .expect(({ headers }) => {
           ({ location } = headers);
         });
 
-      await this.agent.get(new URL(location).pathname)
+      await fixture7.agent.get(new URL(location).pathname)
         .expect(303);
     });
 
-    it('checks the session interaction came from still exists', async function () {
+    it('checks the session interaction came from still exists', { timeout: 3000 }, async () => {
       let location;
-      await this.agent.post(`${this.url}`)
+      await fixture7.agent.post(`${fixture7.url}`)
         .send({
           prompt: 'consent',
         })
         .type('form')
         .expect(303)
-        .expect('location', new RegExp(this.url.replace('interaction', 'auth')))
+        .expect('location', new RegExp(fixture7.url.replace('interaction', 'auth')))
         .expect(({ headers }) => {
           ({ location } = headers);
         });
 
-      const session = this.getSession({ instantiate: true });
+      const session = fixture7.getSession({ instantiate: true });
       await session.destroy();
 
-      await this.agent.get(new URL(location).pathname)
+      await fixture7.agent.get(new URL(location).pathname)
         .expect(400)
         .expect('content-type', 'text/html; charset=utf-8')
         .expect(/interaction session and authentication session mismatch/);
     });
 
-    it('checks the session interaction came from is still the one', async function () {
+    it('checks the session interaction came from is still the one', { timeout: 3000 }, async () => {
       let location;
-      await this.agent.post(`${this.url}`)
+      await fixture7.agent.post(`${fixture7.url}`)
         .send({
           prompt: 'consent',
         })
         .type('form')
         .expect(303)
-        .expect('location', new RegExp(this.url.replace('interaction', 'auth')))
+        .expect('location', new RegExp(fixture7.url.replace('interaction', 'auth')))
         .expect(({ headers }) => {
           ({ location } = headers);
         });
 
-      await this.login();
+      await fixture7.login();
 
-      await this.agent.get(new URL(location).pathname)
+      await fixture7.agent.get(new URL(location).pathname)
         .expect(400)
         .expect('content-type', 'text/html; charset=utf-8')
         .expect(/interaction session and authentication session mismatch/);
     });
 
-    it('checks the session interaction came from is still the one', async function () {
+    it('checks the session interaction came from is still the one', { timeout: 3000 }, async () => {
       let location;
-      await this.agent.post(`${this.url}`)
+      await fixture7.agent.post(`${fixture7.url}`)
         .send({
           prompt: 'consent',
         })
         .type('form')
         .expect(303)
-        .expect('location', new RegExp(this.url.replace('interaction', 'auth')))
+        .expect('location', new RegExp(fixture7.url.replace('interaction', 'auth')))
         .expect(({ headers }) => {
           ({ location } = headers);
         });
 
-      await this.login();
+      await fixture7.login();
 
-      await this.agent.get(new URL(location).pathname)
+      await fixture7.agent.get(new URL(location).pathname)
         .expect(400)
         .expect('content-type', 'text/html; charset=utf-8')
         .expect(/interaction session and authentication session mismatch/);
     });
 
-    handlesInteractionSessionErrors();
+    handlesInteractionSessionErrors(fixture7);
   });
 });
 
 describe('resume after consent', () => {
-  before(bootstrap(import.meta.url));
-  afterEach(sinon.restore);
+  const fixture8 = {};
+
+  before(bootstrap(import.meta.url, fixture8), { timeout: 3000 });
+  afterEach(() => sinon.restore(), { timeout: 3000 });
 
   function setup(grant, result, sessionData) {
     const cookies = [];
@@ -387,7 +399,7 @@ describe('resume after consent', () => {
       session,
     });
 
-    expect(grant).to.be.ok;
+    assert.ok(grant);
 
     const cookie = `_interaction_resume=resume; path=${this.suitePath('/auth/resume')}; expires=${expire.toGMTString()}; httponly`;
     cookies.push(cookie);
@@ -413,119 +425,121 @@ describe('resume after consent', () => {
     ]);
   }
 
-  context('general', () => {
-    before(function () { return this.login(); });
-    after(function () { return this.logout(); });
+  describe('general', () => {
+    const fixture9 = Object.create(fixture8);
 
-    it('needs the resume cookie to be present, else renders an err', function () {
-      return this.agent.get('/auth/resume')
+    before(() => fixture9.login(), { timeout: 3000 });
+    after(() => fixture9.logout(), { timeout: 3000 });
+
+    it('needs the resume cookie to be present, else renders an err', { timeout: 3000 }, () => fixture9.agent.get('/auth/resume')
         .expect(400)
-        .expect(/authorization request has expired/);
-    });
+        .expect(/authorization request has expired/));
 
-    it('needs to find the session to resume', async function () {
-      const auth = new this.AuthorizationRequest({
+    it('needs to find the session to resume', { timeout: 3000 }, async () => {
+      const auth = new fixture9.AuthorizationRequest({
         response_type: 'code',
         scope: 'openid',
       });
 
-      await setup.call(this, auth);
+      await setup.call(fixture9, auth);
 
-      sinon.stub(this.provider.Interaction, 'find').resolves();
+      sinon.stub(fixture9.provider.Interaction, 'find').resolves();
 
-      return this.agent.get('/auth/resume')
+      return fixture9.agent.get('/auth/resume')
         .expect(400)
         .expect(/interaction session not found/);
     });
   });
 
-  context('login results', () => {
-    it('should process newly established permanent sessions (default)', async function () {
-      sinon.stub(this.provider.Grant.prototype, 'getOIDCScope').returns('openid');
-      const auth = new this.AuthorizationRequest({
+  describe('login results', () => {
+    const fixture10 = Object.create(fixture8);
+
+    it('should process newly established permanent sessions (default)', { timeout: 3000 }, async () => {
+      sinon.stub(fixture10.provider.Grant.prototype, 'getOIDCScope').returns('openid');
+      const auth = new fixture10.AuthorizationRequest({
         response_type: 'code',
         response_mode: 'query',
         scope: 'openid',
       });
 
-      await setup.call(this, auth, {
+      await setup.call(fixture10, auth, {
         login: {
           accountId: nanoid(),
         },
       });
 
-      return this.agent.get('/auth/resume')
+      return fixture10.agent.get('/auth/resume')
         .expect(303)
         .expect('set-cookie', /expires/) // expect a permanent cookie
         .expect(auth.validateClientLocation)
         .expect(auth.validateState)
         .expect(auth.validatePresence(['code', 'state']))
         .expect(() => {
-          expect(this.getSession()).to.be.ok.and.not.have.property('transient');
+          ((actual) => { assert.ok(actual); assert.ok(!('transient' in Object(actual))); })(fixture10.getSession());
         });
     });
 
-    it('should process newly established permanent sessions (explicit)', async function () {
-      sinon.stub(this.provider.Grant.prototype, 'getOIDCScope').returns('openid');
-      const auth = new this.AuthorizationRequest({
+    it('should process newly established permanent sessions (explicit)', { timeout: 3000 }, async () => {
+      sinon.stub(fixture10.provider.Grant.prototype, 'getOIDCScope').returns('openid');
+      const auth = new fixture10.AuthorizationRequest({
         response_type: 'code',
         response_mode: 'query',
         scope: 'openid',
       });
 
-      await setup.call(this, auth, {
+      await setup.call(fixture10, auth, {
         login: {
           accountId: nanoid(),
           remember: true,
         },
       });
 
-      return this.agent.get('/auth/resume')
+      return fixture10.agent.get('/auth/resume')
         .expect(303)
         .expect('set-cookie', /expires/) // expect a permanent cookie
         .expect(auth.validateClientLocation)
         .expect(auth.validateState)
         .expect(auth.validatePresence(['code', 'state']))
         .expect(() => {
-          expect(this.getSession()).to.be.ok.and.not.have.property('transient');
+          ((actual) => { assert.ok(actual); assert.ok(!('transient' in Object(actual))); })(fixture10.getSession());
         });
     });
 
-    it('should process newly established temporary sessions', async function () {
-      sinon.stub(this.provider.Grant.prototype, 'getOIDCScope').returns('openid');
-      const auth = new this.AuthorizationRequest({
+    it('should process newly established temporary sessions', { timeout: 3000 }, async () => {
+      sinon.stub(fixture10.provider.Grant.prototype, 'getOIDCScope').returns('openid');
+      const auth = new fixture10.AuthorizationRequest({
         response_type: 'code',
         response_mode: 'query',
         scope: 'openid',
       });
 
-      await setup.call(this, auth, {
+      await setup.call(fixture10, auth, {
         login: {
           accountId: nanoid(),
           remember: false,
         },
       });
 
-      return this.agent.get('/auth/resume')
+      return fixture10.agent.get('/auth/resume')
         .expect(303)
         .expect(auth.validateState)
         .expect('set-cookie', /_session=((?!expires).)+/) // expect a transient session cookie
         .expect(auth.validateClientLocation)
         .expect(auth.validatePresence(['code', 'state']))
         .expect(() => {
-          expect(this.getSession()).to.be.ok.and.have.property('transient');
+          ((actual) => { assert.ok(actual); assert.ok('transient' in Object(actual)); })(fixture10.getSession());
         });
     });
 
-    it('should trigger logout when the session subject changes', async function () {
-      sinon.stub(this.provider.Grant.prototype, 'getOIDCScope').returns('openid');
-      const auth = new this.AuthorizationRequest({
+    it('should trigger logout when the session subject changes', { timeout: 3000 }, async () => {
+      sinon.stub(fixture10.provider.Grant.prototype, 'getOIDCScope').returns('openid');
+      const auth = new fixture10.AuthorizationRequest({
         response_type: 'code',
         response_mode: 'query',
         scope: 'openid',
       });
 
-      await setup.call(this, auth, {
+      await setup.call(fixture10, auth, {
         login: {
           accountId: nanoid(),
         },
@@ -535,22 +549,22 @@ describe('resume after consent', () => {
 
       let state;
 
-      await this.agent.get('/auth/resume')
+      await fixture10.agent.get('/auth/resume')
         .expect(200)
         .expect('content-type', 'text/html; charset=utf-8')
         .expect(/document.addEventListener\('DOMContentLoaded', function \(\) { document.forms\[0\].submit\(\) }\);/)
         .expect(/<input type="hidden" name="logout" value="yes"\/>/)
         .expect(({ text }) => {
-          ({ state } = this.getSession());
-          expect(state).to.have.property('clientId', 'client');
-          expect(state).to.have.property('postLogoutRedirectUri').that.matches(/\/auth\/resume$/);
-          expect(text).to.match(new RegExp(`input type="hidden" name="xsrf" value="${state.secret}"`));
+          ({ state } = fixture10.getSession());
+          ((actual) => { assert.ok('clientId' in Object(actual)); assert.equal(actual.clientId, 'client'); })(state);
+          ((actual) => { assert.ok('postLogoutRedirectUri' in Object(actual)); assert.match(actual.postLogoutRedirectUri, /\/auth\/resume$/); })(state);
+          assert.match(text, new RegExp(`input type="hidden" name="xsrf" value="${state.secret}"`));
         })
         .expect(/<form method="post" action=".+\/session\/end\/confirm">/);
 
-      expect(await this.provider.Interaction.find('resume')).to.be.ok;
+      assert.ok(await fixture10.provider.Interaction.find('resume'));
 
-      await this.agent.post('/session/end/confirm')
+      await fixture10.agent.post('/session/end/confirm')
         .send({
           xsrf: state.secret,
           logout: 'yes',
@@ -559,7 +573,7 @@ describe('resume after consent', () => {
         .expect(303)
         .expect('location', /\/auth\/resume$/);
 
-      await this.agent.get('/auth/resume')
+      await fixture10.agent.get('/auth/resume')
         .expect(303)
         .expect(auth.validateClientLocation)
         .expect(auth.validateState);
@@ -567,18 +581,22 @@ describe('resume after consent', () => {
   });
 
   describe('custom interaction errors', () => {
+    const fixture11 = Object.create(fixture8);
+
     describe('when prompt=none', () => {
-      before(function () { return this.login(); });
-      after(function () { return this.logout(); });
-      it('custom interactions can fail too (prompt none)', async function () {
-        const auth = new this.AuthorizationRequest({
+      const fixture12 = Object.create(fixture11);
+
+      before(() => fixture12.login(), { timeout: 3000 });
+      after(() => fixture12.logout(), { timeout: 3000 });
+      it('custom interactions can fail too (prompt none)', { timeout: 3000 }, async () => {
+        const auth = new fixture12.AuthorizationRequest({
           response_type: 'code',
           scope: 'openid',
           triggerCustomFail: 'foo',
           prompt: 'none',
         });
 
-        return this.agent.get('/auth')
+        return fixture12.agent.get('/auth')
           .query(auth)
           .expect(303)
           .expect(auth.validateState)
@@ -588,14 +606,14 @@ describe('resume after consent', () => {
       });
     });
 
-    it('custom interactions can fail too', async function () {
-      const auth = new this.AuthorizationRequest({
+    it('custom interactions can fail too', { timeout: 3000 }, async () => {
+      const auth = new fixture11.AuthorizationRequest({
         response_type: 'code',
         scope: 'openid',
         triggerCustomFail: 'foo',
       });
 
-      await setup.call(this, auth, {
+      await setup.call(fixture11, auth, {
         login: {
           accountId: nanoid(),
           remember: true,
@@ -603,79 +621,81 @@ describe('resume after consent', () => {
         consent: {},
       });
 
-      return this.agent.get('/auth/resume')
+      return fixture11.agent.get('/auth/resume')
         .expect(303)
         .expect(auth.validateInteractionRedirect)
         .expect(auth.validateInteraction('login', 'reason_foo'));
     });
   });
 
-  context('interaction errors', () => {
-    it('should abort an interaction when given an error result object (no description)', async function () {
-      const auth = new this.AuthorizationRequest({
+  describe('interaction errors', () => {
+    const fixture13 = Object.create(fixture8);
+
+    it('should abort an interaction when given an error result object (no description)', { timeout: 3000 }, async () => {
+      const auth = new fixture13.AuthorizationRequest({
         response_type: 'code',
         scope: 'openid',
       });
 
-      await setup.call(this, auth, {
+      await setup.call(fixture13, auth, {
         error: 'access_denied',
       });
 
-      return this.agent.get('/auth/resume')
+      return fixture13.agent.get('/auth/resume')
         .expect(303)
         .expect(auth.validateState)
         .expect(auth.validatePresence(['error', 'state']))
         .expect(auth.validateError('access_denied'));
     });
 
-    it('should abort an interaction when given an error result object (with state)', async function () {
-      const auth = new this.AuthorizationRequest({
+    it('should abort an interaction when given an error result object (with state)', { timeout: 3000 }, async () => {
+      const auth = new fixture13.AuthorizationRequest({
         response_type: 'code',
         scope: 'openid',
         state: 'bf458-00aa3',
       });
 
-      await setup.call(this, auth, {
+      await setup.call(fixture13, auth, {
         error: 'access_denied',
       });
 
-      return this.agent.get('/auth/resume')
+      return fixture13.agent.get('/auth/resume')
         .expect(303)
         .expect(auth.validateState)
         .expect(auth.validatePresence(['error', 'state']))
         .expect(auth.validateError('access_denied'));
     });
 
-    it('should abort an interaction when given an error result object (with description)', async function () {
-      const auth = new this.AuthorizationRequest({
+    it('should abort an interaction when given an error result object (with description)', { timeout: 3000 }, async () => {
+      const auth = new fixture13.AuthorizationRequest({
         response_type: 'code',
         scope: 'openid',
       });
 
-      await setup.call(this, auth, {
+      await setup.call(fixture13, auth, {
         error: 'access_denied',
         error_description: 'scope out of reach',
       });
 
-      return this.agent.get('/auth/resume')
+      return fixture13.agent.get('/auth/resume')
         .expect(303)
         .expect(auth.validateState)
         .expect(auth.validateError('access_denied'))
         .expect(auth.validateErrorDescription('scope out of reach'));
     });
 
-    it('should abort an interaction when given an error result object (custom error)', async function () {
-      const auth = new this.AuthorizationRequest({
+    it('should abort an interaction when given an error result object (custom error)', { timeout: 3000 }, async () => {
+      const auth = new fixture13.AuthorizationRequest({
         response_type: 'code',
         scope: 'openid',
       });
 
-      await setup.call(this, auth, {
+      await setup.call(fixture13, auth, {
         error: 'custom_foo',
         error_description: 'custom_foobar',
       });
 
-      return this.agent.get('/auth/resume')
+      return fixture13.agent.get('/auth/resume')
         .expect(303)
         .expect(auth.validateState)
         .expect(auth.validateError('custom_foo'))
@@ -683,51 +703,55 @@ describe('resume after consent', () => {
     });
   });
 
-  context('custom requestable prompts', () => {
-    before(function () { return this.login(); });
-    after(function () { return this.logout(); });
+  describe('custom requestable prompts', () => {
+    const fixture14 = Object.create(fixture8);
 
-    it('should fail if they are not resolved', async function () {
-      const auth = new this.AuthorizationRequest({
+    before(() => fixture14.login(), { timeout: 3000 });
+    after(() => fixture14.logout(), { timeout: 3000 });
+
+    it('should fail if they are not resolved', { timeout: 3000 }, async () => {
+      const auth = new fixture14.AuthorizationRequest({
         response_type: 'code',
         scope: 'openid',
         prompt: 'custom',
       });
 
-      await setup.call(this, auth, {});
+      await setup.call(fixture14, auth, {});
 
-      return this.agent.get('/auth/resume')
+      return fixture14.agent.get('/auth/resume')
         .expect(303)
         .expect(auth.validateInteractionRedirect)
         .expect(auth.validateInteraction('custom', 'custom_prompt'));
     });
   });
 
-  context('custom unrequestable prompts', () => {
-    it('should prompt interaction', async function () {
-      const auth = new this.AuthorizationRequest({
+  describe('custom unrequestable prompts', () => {
+    const fixture15 = Object.create(fixture8);
+
+    it('should prompt interaction', { timeout: 3000 }, async () => {
+      const auth = new fixture15.AuthorizationRequest({
         response_type: 'code',
         triggerUnrequestable: 'foo',
         response_mode: 'query',
         scope: 'openid',
       });
 
-      return this.agent.get('/auth')
+      return fixture15.agent.get('/auth')
         .query(auth)
         .expect(303)
         .expect(auth.validateInteractionRedirect)
         .expect(auth.validateInteraction('unrequestable', 'un_foo'));
     });
 
-    it('should fail if they are not satisfied', async function () {
-      const auth = new this.AuthorizationRequest({
+    it('should fail if they are not satisfied', { timeout: 3000 }, async () => {
+      const auth = new fixture15.AuthorizationRequest({
         response_type: 'code',
         triggerUnrequestable: 'foo',
         response_mode: 'query',
         scope: 'openid',
       });
 
-      await setup.call(this, auth, {
+      await setup.call(fixture15, auth, {
         login: {
           accountId: nanoid(),
           remember: true,
@@ -735,7 +759,7 @@ describe('resume after consent', () => {
         consent: {},
       });
 
-      return this.agent.get('/auth/resume')
+      return fixture15.agent.get('/auth/resume')
         .expect(303)
         .expect(auth.validateInteractionRedirect)
         .expect(auth.validateInteraction('unrequestable', 'un_foo'));

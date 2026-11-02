@@ -1,4 +1,5 @@
-import { expect } from 'chai';
+import { describe, before, afterEach, it } from 'node:test';
+import assert from 'node:assert/strict';
 import timekeeper from 'timekeeper';
 
 import bootstrap from '../test_helper.js';
@@ -8,46 +9,50 @@ import Provider from '../../lib/index.js';
 const route = '/token/introspection';
 
 describe('jwtIntrospection features', () => {
-  before(bootstrap(import.meta.url));
+  const fixture = {};
 
-  afterEach(() => timekeeper.reset());
+  before(bootstrap(import.meta.url, fixture), { timeout: 3000 });
+
+  afterEach(() => timekeeper.reset(), { timeout: 3000 });
 
   describe('enriched discovery', () => {
-    it('shows the url now', function () {
-      return this.agent.get('/.well-known/openid-configuration')
+    const fixture1 = Object.create(fixture);
+
+    it('shows the url now', { timeout: 3000 }, () => fixture1.agent.get('/.well-known/openid-configuration')
         .expect(200)
         .expect((response) => {
-          expect(response.body).to.have.property('introspection_signing_alg_values_supported');
-        });
-    });
+          assert.ok('introspection_signing_alg_values_supported' in Object(response.body));
+        }));
   });
 
   describe('JWT Response for OAuth Token Introspection', () => {
-    before(function () { return this.login({ accountId: 'accountId' }); });
-    it('can only be enabled with introspection', () => {
-      expect(() => {
+    const fixture2 = Object.create(fixture);
+
+    before(() => fixture2.login({ accountId: 'accountId' }), { timeout: 3000 });
+    it('can only be enabled with introspection', { timeout: 3000 }, () => {
+      assert.throws(() => {
         new Provider('http://localhost', {
           features: {
             jwtIntrospection: { enabled: true },
           },
         });
-      }).to.throw('jwtIntrospection is only available in conjunction with introspection');
+      }, (error) => { assert.ok(error.message.includes('jwtIntrospection is only available in conjunction with introspection')); return true; });
     });
 
-    it('returns the response as json when not negotiated to be a JWT', async function () {
+    it('returns the response as json when not negotiated to be a JWT', { timeout: 3000 }, async () => {
       const now = Date.now();
       timekeeper.freeze(now);
-      const at = new this.provider.AccessToken({
+      const at = new fixture2.provider.AccessToken({
         accountId: 'accountId',
-        grantId: this.getGrantId(),
-        client: await this.provider.Client.find('client-signed'),
+        grantId: fixture2.getGrantId(),
+        client: await fixture2.provider.Client.find('client-signed'),
         scope: 'openid',
       });
 
       let json;
       let iat;
       const token = await at.save();
-      await this.agent.post(route)
+      await fixture2.agent.post(route)
         .auth('client-signed', 'secret')
         .send({
           token,
@@ -62,7 +67,7 @@ describe('jwtIntrospection features', () => {
 
       timekeeper.travel(now + (10 * 1000));
 
-      return this.agent.post(route)
+      return fixture2.agent.post(route)
         .auth('client-signed', 'secret')
         .send({
           token,
@@ -77,19 +82,19 @@ describe('jwtIntrospection features', () => {
               iat: jwtIat, iss, aud, token_introspection,
             }, header,
           } = JWT.decode(text);
-          expect(iss).to.eql(this.provider.issuer);
-          expect(aud).to.eql('client-signed');
-          expect(token_introspection).to.eql(json);
-          expect(jwtIat).to.eql(iat + 10);
-          expect(header).to.have.property('typ', 'token-introspection+jwt');
+          assert.deepEqual(iss, fixture2.provider.issuer);
+          assert.deepEqual(aud, 'client-signed');
+          assert.deepEqual(token_introspection, json);
+          assert.deepEqual(jwtIat, iat + 10);
+          ((actual) => { assert.ok('typ' in Object(actual)); assert.equal(actual.typ, 'token-introspection+jwt'); })(header);
         });
     });
 
-    it('returns the response as jwt (active: false)', async function () {
+    it('returns the response as jwt (active: false)', { timeout: 3000 }, async () => {
       const now = Date.now();
       timekeeper.freeze(now);
 
-      return this.agent.post(route)
+      return fixture2.agent.post(route)
         .auth('client-signed', 'secret')
         .send({
           token: 'foobar',
@@ -104,25 +109,25 @@ describe('jwtIntrospection features', () => {
               iat: jwtIat, iss, aud, token_introspection,
             }, header,
           } = JWT.decode(text);
-          expect(iss).to.eql(this.provider.issuer);
-          expect(aud).to.eql('client-signed');
-          expect(token_introspection).to.eql({ active: false });
-          expect(jwtIat).to.eql(Math.floor(now / 1000));
-          expect(header).to.have.property('typ', 'token-introspection+jwt');
+          assert.deepEqual(iss, fixture2.provider.issuer);
+          assert.deepEqual(aud, 'client-signed');
+          assert.deepEqual(token_introspection, { active: false });
+          assert.deepEqual(jwtIat, Math.floor(now / 1000));
+          ((actual) => { assert.ok('typ' in Object(actual)); assert.equal(actual.typ, 'token-introspection+jwt'); })(header);
         });
     });
 
-    it('errors when secret is expired for HMAC alg', async function () {
-      const at = new this.provider.AccessToken({
+    it('errors when secret is expired for HMAC alg', { timeout: 3000 }, async () => {
+      const at = new fixture2.provider.AccessToken({
         accountId: 'accountId',
-        grantId: this.getGrantId(),
-        client: await this.provider.Client.find('client-HS-expired'),
+        grantId: fixture2.getGrantId(),
+        client: await fixture2.provider.Client.find('client-HS-expired'),
         scope: 'openid',
       });
 
       const token = await at.save();
 
-      return this.agent.post(route)
+      return fixture2.agent.post(route)
         .send({
           client_id: 'client-HS-expired',
           token,
@@ -137,16 +142,16 @@ describe('jwtIntrospection features', () => {
         });
     });
 
-    it('non-authenticated without accept: application/token-introspection+jwt fails', async function () {
-      const at = new this.provider.AccessToken({
+    it('non-authenticated without accept: application/token-introspection+jwt fails', { timeout: 3000 }, async () => {
+      const at = new fixture2.provider.AccessToken({
         accountId: 'accountId',
-        grantId: this.getGrantId(),
-        client: await this.provider.Client.find('client-encrypted'),
+        grantId: fixture2.getGrantId(),
+        client: await fixture2.provider.Client.find('client-encrypted'),
         scope: 'openid',
       });
 
       const token = await at.save();
-      await this.agent.post(route)
+      await fixture2.agent.post(route)
         .send({
           client_id: 'client-encrypted',
           token,
@@ -159,7 +164,7 @@ describe('jwtIntrospection features', () => {
           error_description: 'introspection must be requested with Accept: application/token-introspection+jwt for this client',
         });
 
-      return this.agent.post(route)
+      return fixture2.agent.post(route)
         .send({
           client_id: 'client-encrypted',
           token,
@@ -170,8 +175,8 @@ describe('jwtIntrospection features', () => {
         .expect('content-type', 'application/token-introspection+jwt; charset=utf-8')
         .expect(({ text }) => {
           const header = JWT.header(text);
-          expect(header).to.have.property('alg', 'A128KW');
-          expect(header).to.have.property('enc', 'A128CBC-HS256');
+          ((actual) => { assert.ok('alg' in Object(actual)); assert.equal(actual.alg, 'A128KW'); })(header);
+          ((actual) => { assert.ok('enc' in Object(actual)); assert.equal(actual.enc, 'A128CBC-HS256'); })(header);
         });
     });
   });

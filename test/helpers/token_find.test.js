@@ -1,4 +1,5 @@
-import { expect } from 'chai';
+import { describe, afterEach, it } from 'node:test';
+import assert from 'node:assert/strict';
 import sinon from 'sinon';
 
 import Provider from '../../lib/index.js';
@@ -29,9 +30,9 @@ function setup(scopes) {
 }
 
 describe('findToken helper', () => {
-  afterEach(() => sinon.restore());
+  afterEach(() => sinon.restore(), { timeout: 3000 });
 
-  it('keeps access token and client credentials lookups concurrent and prefers access tokens', async () => {
+  it('keeps access token and client credentials lookups concurrent and prefers access tokens', { timeout: 3000 }, async () => {
     const { provider } = setup(['openid', 'offline_access']);
     const accessToken = { kind: 'AccessToken' };
     const credentialsToken = { kind: 'ClientCredentials' };
@@ -47,11 +48,11 @@ describe('findToken helper', () => {
     sinon.assert.calledOnceWithExactly(credentials, 'token-value');
     sinon.assert.notCalled(refresh);
     resolveAccessToken(accessToken);
-    expect(await pending).to.equal(accessToken);
+    assert.equal(await pending, accessToken);
     sinon.assert.notCalled(refresh);
   });
 
-  it('uses the current grant registrations when selecting models to query', async () => {
+  it('uses the current grant registrations when selecting models to query', { timeout: 3000 }, async () => {
     const { provider, grantTypeHandlers } = setup(['openid', 'offline_access']);
     const refreshToken = { kind: 'RefreshToken' };
     const refresh = sinon.stub(provider.RefreshToken, 'find').resolves(refreshToken);
@@ -60,57 +61,57 @@ describe('findToken helper', () => {
     grantTypeHandlers.delete('refresh_token');
     grantTypeHandlers.delete('client_credentials');
 
-    expect(await findToken(provider, 'token-value')).to.be.undefined;
+    assert.equal(await findToken(provider, 'token-value'), undefined);
     sinon.assert.notCalled(refresh);
     sinon.assert.notCalled(credentials);
     grantTypeHandlers.set('refresh_token', refreshHandler);
-    expect(await findToken(provider, 'token-value')).to.equal(refreshToken);
+    assert.equal(await findToken(provider, 'token-value'), refreshToken);
     sinon.assert.calledOnceWithExactly(refresh, 'token-value');
   });
 
   describe('with the refresh_token grant disabled', () => {
     // the grant is only registered when offline_access is amongst the scopes or issueRefreshToken
     // was customized, leaving RefreshToken lookups to be skipped entirely
-    it('resolves for every token_type_hint rather than throwing', async () => {
+    it('resolves for every token_type_hint rather than throwing', { timeout: 3000 }, async () => {
       const { provider, grantTypeHandlers } = setup(['openid']);
-      expect(grantTypeHandlers.has('refresh_token')).to.be.false;
+      assert.equal(grantTypeHandlers.has('refresh_token'), false);
 
       for (const hint of HINTS) {
-        expect(await findToken(provider, 'token-value', hint), `token_type_hint=${hint}`).to.be.undefined;
+        assert.equal(await findToken(provider, 'token-value', hint), undefined, `token_type_hint=${hint}`);
       }
     });
 
-    it('still finds the other token types when hinted at a refresh token', async () => {
+    it('still finds the other token types when hinted at a refresh token', { timeout: 3000 }, async () => {
       const { provider } = setup(['openid']);
       const accessToken = { kind: 'AccessToken' };
       sinon.stub(provider.AccessToken, 'find').resolves(accessToken);
 
-      expect(await findToken(provider, 'token-value', 'refresh_token')).to.equal(accessToken);
-      expect(await findToken(provider, 'token-value', 'urn:ietf:params:oauth:token-type:refresh_token')).to.equal(accessToken);
+      assert.equal(await findToken(provider, 'token-value', 'refresh_token'), accessToken);
+      assert.equal(await findToken(provider, 'token-value', 'urn:ietf:params:oauth:token-type:refresh_token'), accessToken);
     });
   });
 
   describe('with the refresh_token grant enabled', () => {
-    it('honours the refresh_token hint', async () => {
+    it('honours the refresh_token hint', { timeout: 3000 }, async () => {
       const { provider, grantTypeHandlers } = setup(['openid', 'offline_access']);
-      expect(grantTypeHandlers.has('refresh_token')).to.be.true;
+      assert.equal(grantTypeHandlers.has('refresh_token'), true);
 
       const refreshToken = { kind: 'RefreshToken' };
       const accessToken = sinon.stub(provider.AccessToken, 'find').resolves({ kind: 'AccessToken' });
       sinon.stub(provider.RefreshToken, 'find').resolves(refreshToken);
 
-      expect(await findToken(provider, 'token-value', 'refresh_token')).to.equal(refreshToken);
-      expect(await findToken(provider, 'token-value', 'urn:ietf:params:oauth:token-type:refresh_token')).to.equal(refreshToken);
-      expect(accessToken).not.to.have.property('called', true);
+      assert.equal(await findToken(provider, 'token-value', 'refresh_token'), refreshToken);
+      assert.equal(await findToken(provider, 'token-value', 'urn:ietf:params:oauth:token-type:refresh_token'), refreshToken);
+      ((actual) => { assert.ok(!('called' in Object(actual) && actual.called === true)); })(accessToken);
     });
 
-    it('falls back to the other token types when the hint does not match', async () => {
+    it('falls back to the other token types when the hint does not match', { timeout: 3000 }, async () => {
       const { provider } = setup(['openid', 'offline_access']);
       const accessToken = { kind: 'AccessToken' };
       sinon.stub(provider.RefreshToken, 'find').resolves(undefined);
       sinon.stub(provider.AccessToken, 'find').resolves(accessToken);
 
-      expect(await findToken(provider, 'token-value', 'refresh_token')).to.equal(accessToken);
+      assert.equal(await findToken(provider, 'token-value', 'refresh_token'), accessToken);
     });
   });
 });
